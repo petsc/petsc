@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.7 1995/04/19 01:29:31 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.8 1995/04/20 16:03:15 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -550,26 +550,24 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 
   if (!bsif->assembled) 
     SETERR(1,"MatMult_MPIRowbs: Must assemble matrix first.");
-  ierr = VecGetArray(bsif->xwork,&xworka); CHKERR(ierr);
-  /* This isn't the best implementation if the vectors aren't permuted, 
-     but we're really interested in efficiency for the permuted case. */
-  if (!bsif->vecs_permuted) {
-    ierr = VecGetArray(xx,&xxa); CHKERR(ierr);
-    BSperm_dvec(xxa,xworka,bsif->pA->perm); CHKERRBS(0);
-    ierr = VecCopy(bsif->xwork,xx); CHKERR(ierr);
-  }
-  /* Apply diagonal scaling to vector:  [ xwork = D^{1/2} * x ] */
-  ierr = VecPDiv(xx,bsif->diag,bsif->xwork); CHKERR(ierr);
   ierr = VecGetArray(yy,&yya); CHKERR(ierr);
+  ierr = VecGetArray(xx,&xxa); CHKERR(ierr);
+
+  /* Permute and apply diagonal scaling:  [ xwork = D^{1/2} * x ] */
+  if (!bsif->vecs_permscale) {
+    ierr = VecGetArray(bsif->xwork,&xworka); CHKERR(ierr);
+    BSperm_dvec(xxa,xworka,bsif->pA->perm); CHKERRBS(0);
+    ierr = VecPDiv(bsif->xwork,bsif->diag,xx); CHKERR(ierr);
+  } 
 
   /* Do lower triangular multiplication:  [ y = L * xwork ] */
 #if defined(PETSC_DEBUG)
   MLOG_ELM(bspinfo->procset);
 #endif
   if (bspinfo->single)
-      BSforward1( bsif->pA, xworka, yya, bsif->comm_pA, bspinfo );
+      BSforward1( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
   else
-      BSforward( bsif->pA, xworka, yya, bsif->comm_pA, bspinfo );
+      BSforward( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
   CHKERRBS(0);
 #if defined(PETSC_DEBUG)
   MLOG_ACC(MM_FORWARD);
@@ -578,22 +576,78 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 
   /* Do upper triangular multiplication:  [ y = y + L^{T} * xwork ] */
   if (bspinfo->single)
-      BSbackward1( bsif->pA, xworka, yya, bsif->comm_pA, bspinfo );
+      BSbackward1( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
   else
-      BSbackward( bsif->pA, xworka, yya, bsif->comm_pA, bspinfo );
+      BSbackward( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
   CHKERRBS(0);
 #if defined(PETSC_DEBUG)
   MLOG_ACC(MM_BACKWARD);
 #endif
 
   /* Apply diagonal scaling to vector:  [  y = D^{1/2} * y ] */
-  ierr = VecPDiv(yy,bsif->diag,yy); CHKERR(ierr);
-  if (!bsif->vecs_permuted) {
-    BSiperm_dvec(xxa,xworka,bsif->pA->perm); CHKERRBS(0);
-    ierr = VecCopy(bsif->xwork,xx); CHKERR(ierr);
-    BSiperm_dvec(yya,xworka,bsif->pA->perm); CHKERRBS(0);
-    ierr = VecCopy(bsif->xwork,yy); CHKERR(ierr);
+  if (!bsif->vecs_permscale) {
+    BSiperm_dvec(xworka,xxa,bsif->pA->perm); CHKERRBS(0);
+    ierr = VecPDiv(yy,bsif->diag,bsif->xwork); CHKERR(ierr);
+    BSiperm_dvec(xworka,yya,bsif->pA->perm); CHKERRBS(0);
   }
+  return 0;
+}
+
+static int MatRelax_MPIRowbs(Mat mat,Vec bb,double omega,int flag,
+                             double shift,int its,Vec xx)
+{
+  Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) mat->data;
+  Scalar *b;
+  int ierr;
+
+  if (!bsif->assembled) 
+    SETERR(1,"MatRelax_MPIRowbs: Must assemble matrix first");
+  VecGetArray(bb,&b);
+  if (flag & SOR_ZERO_INITIAL_GUESS) {
+      /* do nothing */ 
+  } else SETERR(1,"Not done yet.");
+  if (shift) SETERR(1,"shift != 0 : Not yet done.")
+  if (omega != 1.0) SETERR(1,"omega != 1.0 : Not yet done.")
+  if (its != 1) SETERR(1,"its != 1 : Not yet done.")
+
+  if (flag == SOR_APPLY_UPPER) {
+   /* apply ( U + D/omega) to the vector */
+    SETERR(1,"Not done yet");
+  }
+  if (flag == SOR_APPLY_LOWER) {
+    SETERR(1,"Not done yet");
+  }
+  if (flag & SOR_EISENSTAT) {
+    SETERR(1,"Not done yet");
+  }
+  if (flag & SOR_LOCAL_FORWARD_SWEEP) {
+    SETERR(1,"Not done yet");
+  }
+  if (flag & SOR_LOCAL_BACKWARD_SWEEP) {
+    SETERR(1,"Not done yet");
+  }
+  if (flag & SOR_LOCAL_SYMMETRIC_SWEEP) {
+    SETERR(1,"Not done yet");
+  }
+  if (flag & SOR_FORWARD_SWEEP) {
+    MLOG_ELM(bsif->procinfo->procset);
+    if (bsif->procinfo->single) {
+      BSfor_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+    } else {
+      BSfor_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+    }
+    MLOG_ACC(MS_FORWARD);
+  }
+  if (flag & SOR_BACKWARD_SWEEP) {
+    MLOG_ELM(bsif->procinfo->procset);
+    if (bsif->procinfo->single) {
+      BSback_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+    } else {
+      BSback_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+    }
+    MLOG_ACC(MS_BACKWARD);
+  }
+  ierr = VecCopy(bb,xx); CHKERR(ierr);
   return 0;
 }
 
@@ -637,16 +691,18 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
 {
   Mat          mat = (Mat) obj;
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
+  BSspmat   *A = mrow->A;
+  BSsprow   *vs;
+  int       i, ierr;
 
+  if (mrow->fact_clone) {
+    mrow->fact_clone = 0;
+    return 0;
+  }
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows %d Cols %d",mrow->M,mrow->N);
 #endif
   FREE(mrow->rowners); 
-  /* Destroy BlockSolve interface stuff */
-  if (mrow->ctx_filled) {
-    BSspmat   *A = mrow->A;
-    BSsprow   *vs;
-    int       i, ierr;
 
     /* already freed elsewhere
     if (bsmap) {
@@ -685,7 +741,7 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
     if (mrow->comm_fpA) {BSfree_comm(mrow->comm_fpA); CHKERRBS(0);}
     if (mrow->imax)     FREE(mrow->imax);    
     if (mrow->inv_diag) FREE(mrow->inv_diag);
-  }
+
   FREE(mrow);  
   PLogObjectDestroy(mat);
   PETSCHEADERDESTROY(mat);
@@ -761,7 +817,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
        MatMult_MPIRowbs,0,
        MatSolve_MPIRowbs,0,0,0,
        0,0,
-       0,
+       MatRelax_MPIRowbs,
        0,
        MatGetInfo_MPIRowbs,0,
        0,
@@ -776,76 +832,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
        0,0 };
 
 /* ------------------------------------------------------------------- */
-int MatCreateShellMPIRowbs(MPI_Comm comm,int m,int M, int nz,int *nnz,
-                           Mat *newmat)
-{
-  Mat          mat;
-  Mat_MPIRowbs *mrow;
-  int          i;
-  *newmat       = 0;
-  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIROW_BS,comm);
-  PLogObjectCreate(mat);
-  mat->data	= (void *) (mrow = NEW(Mat_MPIRowbs)); CHKPTR(mrow);
-  mat->ops	= &MatOps;
-  mat->destroy	= MatDestroy_MPIRowbs;
-  mat->view	= MatView_MPIRowbs;
-  mat->factor	= 0;
-  mat->row	= 0;
-  mat->col	= 0;
-  mat->comm	= comm;
-  mrow->assembled        = 0;
-  mrow->reassemble_begun = 0;
-  mrow->vecs_permuted    = 0;
 
-  mrow->insertmode = NotSetValues;
-  MPI_Comm_rank(comm,&mrow->mytid);
-  MPI_Comm_size(comm,&mrow->numtids);
-
-  if (M == -1) {MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm );}
-  if (m == -1) {m = M/mrow->numtids + ((M % mrow->numtids) > mrow->mytid);}
-  mrow->N       = M;
-  mrow->M       = M;
-  mrow->m       = m;
-  mrow->n       = mrow->N; /* each row stores all columns */
-  mrow->imax    = 0;
-
-  /* build local table of row ownerships */
-  mrow->rowners = (int *) MALLOC((mrow->numtids+2)*sizeof(int)); 
-  CHKPTR(mrow->rowners);
-  MPI_Allgather(&m,1,MPI_INT,mrow->rowners+1,1,MPI_INT,comm);
-  mrow->rowners[0] = 0;
-  for ( i=2; i<=mrow->numtids; i++ ) {
-    mrow->rowners[i] += mrow->rowners[i-1];
-  }
-  mrow->rstart = mrow->rowners[mrow->mytid]; 
-  mrow->rend   = mrow->rowners[mrow->mytid+1]; 
-
-  mrow->stash.nmax  = 0;
-  mrow->stash.n     = 0;
-  mrow->stash.array = 0;
-  mrow->stash.idx   = 0;
-  mrow->stash.idy   = 0;
-  mrow->ctx_filled  = 0;
-
-  /* Initialize BlockSolve interface */
-  mrow->procinfo    = 0;
-  mrow->bsmap       = 0;
-  mrow->A	    = 0;
-  mrow->pA	    = 0;
-  mrow->comm_pA	    = 0;
-  mrow->fpA	    = 0;
-  mrow->comm_fpA    = 0;
-  mrow->alpha	    = 1.0;
-  mrow->diag	    = 0;
-  mrow->xwork	    = 0;
-  mrow->ierr	    = 0;
-  mrow->failures    = 0;
-  mrow->diag        = 0;
-
-  *newmat = mat;
-  return 0;
-}
-/* ------------------------------------------------------------------- */
 /*@
    MatCreateMPIRowbs - Creates a symmetric, sparse parallel matrix in 
    the MPIRowbs format.  This format is currently only partially 
@@ -884,14 +871,44 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   Mat_MPIRowbs *mrow;
   BSmapping    *bsmap;
   BSoff_map    *bsoff;
-  int          ierr, *offset, low, high;
+  int          i, ierr, *offset, low, high;
   BSprocinfo   *bspinfo = (BSprocinfo *) procinfo;
   
-  *newmat = 0;
-  MatCreateShellMPIRowbs(comm,m,M,nz,nnz,&mat);
-  mrow = (Mat_MPIRowbs *) mat->data;
+  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIROW_BS,comm);
+  PLogObjectCreate(mat);
+  mat->data	= (void *) (mrow = NEW(Mat_MPIRowbs)); CHKPTR(mrow);
+  mat->ops	= &MatOps;
+  mat->destroy	= MatDestroy_MPIRowbs;
+  mat->view	= MatView_MPIRowbs;
+  mat->factor	= 0;
+  mat->row	= 0;
+  mat->col	= 0;
+  mat->comm	= comm;
+  mrow->assembled        = 0;
+  mrow->fact_clone       = 0;
+  mrow->reassemble_begun = 0;
+  mrow->insertmode       = NotSetValues;
+  MPI_Comm_rank(comm,&mrow->mytid);
+  MPI_Comm_size(comm,&mrow->numtids);
 
-  mrow->imax    = (int *) MALLOC( (mrow->m)*sizeof(int) ); CHKPTR(mrow->imax);
+  if (M == -1) {MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm );}
+  if (m == -1) {m = M/mrow->numtids + ((M % mrow->numtids) > mrow->mytid);}
+  mrow->N    = M;
+  mrow->M    = M;
+  mrow->m    = m;
+  mrow->n    = mrow->N; /* each row stores all columns */
+  mrow->imax = (int *) MALLOC( (mrow->m)*sizeof(int) ); CHKPTR(mrow->imax);
+
+  /* build local table of row ownerships */
+  mrow->rowners = (int *) MALLOC((mrow->numtids+2)*sizeof(int)); 
+  CHKPTR(mrow->rowners);
+  MPI_Allgather(&m,1,MPI_INT,mrow->rowners+1,1,MPI_INT,comm);
+  mrow->rowners[0] = 0;
+  for ( i=2; i<=mrow->numtids; i++ ) {
+    mrow->rowners[i] += mrow->rowners[i-1];
+  }
+  mrow->rstart = mrow->rowners[mrow->mytid]; 
+  mrow->rend   = mrow->rowners[mrow->mytid+1]; 
 
   /* build cache for off array entries formed */
   mrow->stash.nmax = CHUNCKSIZE; /* completely arbitrary number */
@@ -901,6 +918,15 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   mrow->stash.idx = (int *) (mrow->stash.array + mrow->stash.nmax);
   mrow->stash.idy = (int *) (mrow->stash.idx + mrow->stash.nmax);
 
+  /* Initialize BlockSolve information */
+  mrow->A	    = 0;
+  mrow->pA	    = 0;
+  mrow->comm_pA	    = 0;
+  mrow->fpA	    = 0;
+  mrow->comm_fpA    = 0;
+  mrow->alpha	    = 1.0;
+  mrow->ierr	    = 0;
+  mrow->failures    = 0;
   if (!mrow->diag) {ierr = VecCreateMPI(mat->comm,mrow->m,mrow->M,
                             &(mrow->diag)); CHKERR(ierr);}
   if (!mrow->xwork) {ierr = VecCreate(mrow->diag,&(mrow->xwork)); 
@@ -924,7 +950,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   BSctx_set_pr(bspinfo,1); CHKERRBS(0);
   BSctx_set_si(bspinfo,0); CHKERRBS(0);
 #if defined(PETSC_DEBUG)
-    MLOG_INIT();  /* Initialize logging */
+  MLOG_INIT();  /* Initialize logging */
 #endif
 
   /* Compute global offsets */
@@ -951,7 +977,6 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
 
   ierr = MatCreateMPIRowbs_local(mat,nz,nnz); CHKERR(ierr);
   PLogObjectParent(mat,mrow->A);
-  mrow->ctx_filled = 1;
   *newmat = mat;
   return 0;
 }
