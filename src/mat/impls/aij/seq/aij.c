@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.297 1999/02/11 19:51:52 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.298 1999/02/15 21:56:14 balay Exp bsmith $";
 #endif
 
 /*
@@ -2229,14 +2229,14 @@ int MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqAIJ)); CHKPTRQ(c);
   PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));
-  C->ops->destroy    = MatDestroy_SeqAIJ;
-  C->ops->view       = MatView_SeqAIJ;
-  C->factor     = A->factor;
-  c->row        = 0;
-  c->col        = 0;
-  c->icol       = 0;
-  c->indexshift = shift;
-  C->assembled  = PETSC_TRUE;
+  C->ops->destroy = MatDestroy_SeqAIJ;
+  C->ops->view    = MatView_SeqAIJ;
+  C->factor       = A->factor;
+  c->row          = 0;
+  c->col          = 0;
+  c->icol         = 0;
+  c->indexshift   = shift;
+  C->assembled    = PETSC_TRUE;
 
   c->m = C->m   = a->m;
   c->n = C->n   = a->n;
