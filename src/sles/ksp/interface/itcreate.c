@@ -112,6 +112,9 @@ $                 CG, CHEBYCHEV, and RICHARDSON
 $   KSP_NATURAL_NORM - supported  by cg, cr, and cgs 
 
 
+   Options Database:
+.   -ksp_norm_type <none,preconditioned,unpreconditioned,natural>
+
    Notes: 
    Currently only works with the CG, Richardson, Bi-CG-stab, CR, and CGS methods.
 

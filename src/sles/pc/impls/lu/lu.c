@@ -89,7 +89,7 @@ static int PCSetFromOptions_LU(PC pc)
     }
     ierr = PetscOptionsReal("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,&tol,0);CHKERRQ(ierr);
 
-    ierr = PetscOptionsReal("-pc_lu_pivoting","Pivoting tolerance (used only for SuperLU)","PCLUSetPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_lu_pivoting","Pivoting tolerance (used only for some factorization)","PCLUSetPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
