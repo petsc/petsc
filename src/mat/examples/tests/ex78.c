@@ -1,4 +1,4 @@
-/*$Id: ex78.c,v 1.1 2000/11/09 20:08:01 balay Exp hzhang $*/
+/*$Id: ex78.c,v 1.2 2000/11/10 15:46:47 hzhang Exp hzhang $*/
 
 static char help[] =
 "Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format, then writes them using the PETSc sparse format.\n\
@@ -19,8 +19,8 @@ int main(int argc,char **args)
   Vec    b,u,u_tmp;
   char   Ain[128],bin[128],uin[128]; 
   int    i,m,n,nz,ierr,*ib,col_i,row_i;
-  Scalar *val,*bval,*uval,mone=-1.0;
-  double *col,*row,res_norm;
+  Scalar val_i,*bval,*uval,mone=-1.0;
+  double *col,*row,res_norm,*val;
   FILE   *Afile,*bfile,*ufile;
   Viewer view;
   PetscTruth flg_A,flg_b,flg_u;
@@ -40,7 +40,7 @@ int main(int argc,char **args)
     ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRA(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRA(ierr);
 
-    val = (Scalar*)PetscMalloc(nz*sizeof(Scalar));CHKPTRA(val);
+    val = (double*)PetscMalloc(nz*sizeof(double));CHKPTRA(val);
     row = (double*)PetscMalloc(nz*sizeof(double));CHKPTRA(row);
     col = (double*)PetscMalloc(nz*sizeof(double));CHKPTRA(col);
     for (i=0; i<nz; i++) {
@@ -85,8 +85,8 @@ int main(int argc,char **args)
     }
     */
     for (i=0; i<nz; i++) {
-      row_i =(int)row[i]; col_i =(int)col[i];
-      ierr = MatSetValues(A,1,&row_i,1,&col_i,&val[i],INSERT_VALUES);CHKERRA(ierr);
+      row_i =(int)row[i]; col_i =(int)col[i]; val_i = (Scalar)val[i];
+      ierr = MatSetValues(A,1,&row_i,1,&col_i,&val_i,INSERT_VALUES);CHKERRA(ierr);
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
