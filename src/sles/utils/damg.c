@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.12 2000/07/13 21:00:08 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.13 2000/07/14 18:06:09 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -250,6 +250,7 @@ int DAMGSolveSLES(DAMG *damg,int level)
   int        ierr,its;
 
   PetscFunctionBegin;
+  ierr = (*damg[level]->rhs)(damg[level],damg[level]->b);CHKERRQ(ierr); 
   ierr = SLESSetOperators(damg[level]->sles,damg[level]->J,damg[level]->J,DIFFERENT_NONZERO_PATTERN);
   ierr = SLESSolve(damg[level]->sles,damg[level]->b,damg[level]->x,&its);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -285,11 +286,11 @@ int DAMGSetSLES(DAMG *damg,int (*rhs)(DAMG,Vec),int (*func)(DAMG,Mat))
     ierr = SLESCreate(damg[i]->comm,&damg[i]->sles);CHKERRQ(ierr);
     ierr = DAMGSetUpLevel(damg,damg[i]->sles,i+1);CHKERRQ(ierr);
     damg[i]->solve = DAMGSolveSLES;
+    damg[i]->rhs   = rhs;
   }
 
   for (i=0; i<nlevels; i++) {
     ierr = (*func)(damg[i],damg[i]->J);CHKERRQ(ierr);
-    ierr = (*rhs)(damg[i],damg[i]->b);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

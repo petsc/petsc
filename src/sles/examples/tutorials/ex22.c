@@ -1,5 +1,5 @@
 
-/*$Id: ex22.c,v 1.3 2000/07/12 03:31:17 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.4 2000/07/14 18:05:17 bsmith Exp bsmith $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -73,7 +73,7 @@ int ComputeRHS(DAMG damg,Vec b)
   Scalar h;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(damg->da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(damg->da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h    = 1.0/((mx-1)*(my-1)*(mz-1));
   ierr = VecSet(&h,b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
