@@ -182,7 +182,7 @@ c
 #include "param.h"
 #include "wing.h"
 
-      integer surface,itl1
+      integer surface
 
       wingsurface = 0
 

@@ -1,7 +1,7 @@
 
 c ----------------------------------------------------------------------
 c
-      integer function rbuild_direct( f, sctype, dt, dxx )
+      integer function rbuild_direct_euler( f, sctype, dt, dxx )
 c
 c  rbuild_direct - Assembles residual vector directly (without using
 c                  VecSetValues().  See the routine rbuild() for
@@ -40,17 +40,17 @@ c     uniprocessor grid!
       double precision f(0:*)
       integer i,j,k,jk,sctype,ijkx
 
-      rbuild_direct = 0
+      rbuild_direct_euler = 0
       if ((bctype .ne. EXPLICIT) .and. (bctype .ne. IMPLICIT)) then
-        if (rank .eq. 0) 
-     &    write(6,*) 'rbuild_direct: invalid value of bctype flag!'
-        rbuild_direct = -1
+        if (rank .eq. 0) write(6,*) 
+     &       'rbuild_direct_euler: invalid value of bctype flag!'
+        rbuild_direct_euler = -1
         return
       endif
       if (sctype .ne. DT_MULT .and. sctype .ne. DT_DIV) then
         if (rank .eq. 0) 
      &    write(6,*) 'rbuild_direct: invalid value of sctype flag!'
-        rbuild_direct = -1
+        rbuild_direct_euler = -1
         return
       endif
 
@@ -134,7 +134,7 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  450     continue
       else
         if (rank .eq. 0) write(6,*) 'rbuild_direct: invalid sctype!'
-        rbuild_direct = -1
+        rbuild_direct_euler = -1
         return
       endif
 
@@ -237,7 +237,6 @@ c     of the grid.
 c
 #include "param.h"
 #include "wing.h"
-#include "mmfort.h"
 
       integer ijk,ijkn,ndof_ee,istart,iend,format,ijk_noghosts
       integer b1c,b2c,b3c,b4c,b5c,b6c,i,j,k,l,wkdim,ndof_block
@@ -466,11 +465,13 @@ c               col1 = is1(ict)
 c               if (col .ne. col1)
 c     &           write(6,*) 'ALLOC: k,j,i,ict,col, col1 = ',
 c     &                       k,j,i,ict,col,col1
+               if (nowake .eq. 1) goto 122
                if (col .ge. istart .and. col .lt. iend) then
                   nnz_d(row) = nnz_d(row) + 1
                else
                   nnz_o(row) = nnz_o(row) + 1
                endif
+ 122           continue
                ict = ict + 1
  124        continue
  200     continue

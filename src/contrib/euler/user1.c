@@ -37,7 +37,7 @@ Runtime options include:\n\
   -problem <1,2,3,4>         : 1(50x10x10 grid), 2(98x18x18 grid), 3(194x34x34 grid),\n\
                                4(data structure test)\n\
   -mm_type <euler,fp,hybrid,hybrid_e,hybrid_f> : multi-model variant\n\
-  -2d                        : use 2D problem only\n\
+  -dim2                      : use 2D problem only\n\
   -angle <angle_in_degrees>  : angle of attack (default is 3.06 degrees)\n\
   -matrix_free               : Use matrix-free Newton-Krylov method\n\
     -pc_ilu_in_place         : When using matrix-free KSP with ILU(0), do so in-place\n\
@@ -56,10 +56,6 @@ Runtime options include:\n\
   -global_grid               : Retain global grid instead of just local part\n\
   -no_output                 : Do not print any output during SNES solve (intended for use\n\
                                during timing runs)\n\n";
-
-static char help2[] = "Options for Julianne solver:\n\
-  -julianne                  : Use original Julianne solver (uniprocessor only)\n\
-  -julianne_rtol [rtol]      : Set convergence tolerance for Julianne solver\n\n";
 
 static char help3[] = "Options for VRML viewing:\n\
   -vrmlevenhue               : Use uniform colors for VRML output\n\
@@ -122,7 +118,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = MPI_COMM_WORLD;
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRA(ierr);
-  if (flg) {PetscPrintf(comm,help2);PetscPrintf(comm,help3);PetscPrintf(comm,help4);}
+  if (flg) {PetscPrintf(comm,help3);PetscPrintf(comm,help4);}
 
   /* Temporarily deactivate these events */
   ierr = PLogEventDeactivate(VEC_SetValues); CHKERRA(ierr);
@@ -476,6 +472,13 @@ int UserDestroyEuler(Euler *app)
   if (app->lin_its) PetscFree(app->lin_its);
   if (app->p)       PetscFree(app->p);
   PetscFree(app);
+
+  /* If fp or multimodel */
+  ierr = VecDestroy(app->den); CHKERRQ(ierr);
+  ierr = VecDestroy(app->xvel); CHKERRQ(ierr);
+  ierr = VecDestroy(app->yvel); CHKERRQ(ierr);
+  ierr = VecDestroy(app->zvel); CHKERRQ(ierr);
+
   return 0;
 }
 #undef __FUNC__
@@ -573,7 +576,7 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
 
     PLogEventBegin(app->event_localf,0,0,0,0);
 
-    ierr =localfortfct_(&jacform,fv_array,
+    ierr =localfortfct_euler_(&jacform,fv_array,
            app->xx,app->p,app->xx_bc,app->p_bc,
            app->sadai,app->sadaj,app->sadak,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
@@ -609,14 +612,31 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
     } else {
 #endif
       /* Build Fvec(X) directly, without using VecSetValues() */
-      ierr = rbuild_direct_(fv_array, &app->sctype, app->dt, app->dxx );  CHKERRQ(ierr);
+      ierr = rbuild_direct_euler_(fv_array, &app->sctype, app->dt, app->dxx );  CHKERRQ(ierr);
 #if defined(ACTIVATE_OLD_ASSEMBLY)
     }
 #endif
 
-  } else {
-    /* DAVID */
+  }
+  if (app->mmtype != MMEULER && app->mmtype != MMHYBRID_E) {
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+          Full potential code   DAVID!DAVID!DAVID
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
     fv_array[0] = 1.e-13;
+
+    /* Full potential function call */
+    /* ierr =localfortfct_fp_(&jacform,fv_array,
+           app->xx,app->p,app->xx_bc,app->p_bc,
+           app->sadai,app->sadaj,app->sadak,
+           app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+           app->aiz,app->ajz,app->akz,app->dxx,
+           app->den_a,app->xvel_a,app->yvel_a,app->zvel_a,app->phi_te); CHKERRQ(ierr); */
+
+    /* Build Fvec(X) directly, without using VecSetValues() */
+    /* ierr = rbuild_direct_fp_(fv_array, &app->sctype, app->dt, app->dxx );  CHKERRQ(ierr); */
+
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -868,7 +888,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   if (app->global_grid) PetscPrintf(app->comm,"Using global grid (needed for post processing only)\n");
 
   /* 2-dimensional variant */
-  ierr = OptionsHasName(PETSC_NULL,"-2d",&app->dim2); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-dim2",&app->dim2); CHKERRA(ierr);
   app->nktot = nk1;
   if (app->dim2) {
     nk1 = 3;
@@ -1056,6 +1076,16 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = VecDuplicate(app->P,&app->Pbc); CHKERRQ(ierr);
   ierr = DAGetLocalVector(app->da1,&app->localP); CHKERRQ(ierr);
 
+  /* Do only for FP or multimodel */
+  ierr = VecDuplicate(app->localP,&app->den); CHKERRQ(ierr);
+  ierr = VecDuplicate(app->localP,&app->xvel); CHKERRQ(ierr);
+  ierr = VecDuplicate(app->localP,&app->yvel); CHKERRQ(ierr);
+  ierr = VecDuplicate(app->localP,&app->zvel); CHKERRQ(ierr);
+  ierr = VecGetArray(app->den,&app->den_a); CHKERRQ(ierr);
+  ierr = VecGetArray(app->xvel,&app->xvel_a); CHKERRQ(ierr);
+  ierr = VecGetArray(app->yvel,&app->yvel_a); CHKERRQ(ierr);
+  ierr = VecGetArray(app->zvel,&app->zvel_a); CHKERRQ(ierr);
+
   app->xe     = app->xs + app->xm;
   app->ye     = app->ys + app->ym;
   app->ze     = app->zs + app->zm;
@@ -1099,7 +1129,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
             &app->gxm, &app->gym, &app->gzm,
             &app->xef01, &app->yef01, &app->zef01,
             &app->gxef01, &app->gyef01, &app->gzef01,
-            &ndof, &app->global_grid, &app->bcswitch); CHKERRQ(ierr);
+            &ndof, &app->global_grid, &app->bcswitch, 
+            &app->mmtype); CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Allocate local Fortran work space
@@ -1207,6 +1238,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   llenb = 2*(app->size+1)*sizeof(Scalar);
   app->work_p = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->work_p);
   PetscMemzero(app->work_p,llenb);
+
+  /* Fortran work space for full potential model */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                  Set up scatters for certain BCs

@@ -38,6 +38,7 @@ typedef struct {
     DA       da;                 /* distributed array for X, F */ 
     DA       da1;                /* distributed array for pressure */ 
     Mat      J;                  /* Jacobian (preconditioner) matrix */
+    MatFDColoring fdcoloring;    /* coloring context for FD Jacobian approx (optional) */
     Mat      Jmf;                /* matrix-free Jacobian context */
     KSP      ksp;                /* Krylov context */
     Vec      X, Xbc, F;          /* global solution, residual vectors */
@@ -200,73 +201,89 @@ typedef struct {
     Scalar *sp, *sm, *sp1, *sm1, *sp2, *sm2;
     int    refine;
     int    dim2, nktot;                      /* 2-dimensional problem variant */
+
+   /* --------------------------------------------------------
+       multi-model data
+      -------------------------------------------------------- */
+
     MM     multimodel;
     MMType mmtype;
+    Vec    den, xvel, yvel, zvel;             /* full potential work space */
+    Scalar *den_a, *xvel_a, *yvel_a, *zvel_a; /* full potential work space */
+    Scalar phi_te[2];                         /* 2-component circulation */
+    VecScatter phi_te_scatter;
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
 #ifdef HAVE_FORTRAN_CAPS
-#define eigenv_        EIGENV
-#define localfortfct_  LOCALFORTFCT
-#define resid_         RESID
-#define residbc_       RESIDBC
-#define bc_uni_        BC_UNI
-#define rbuild_        RBUILD
-#define rbuild_direct_ RBUILD_DIRECT
-#define jmonitor_      JMONITOR
-#define jform_         JFORM
-#define jform2_        JFORM2
-#define jformdt_       JFORMDT
-#define jformdt2_      JFORMDT2
-#define buildmat_      BUILDMAT
-#define nzmat_         NZMAT
-#define pvar_          PVAR
-#define printvec_      PRINTVEC
-#define julianne_      JULIANNE
-#define printjul_      PRINTJUL
-#define printgjul_     PRINTGJUL
-#define printbjul_     PRINTBJUL
-#define parsetup_      PARSETUP
-#define jpressure_     JPRESSURE
-#define bc_            BC
-#define bcpart_j1_     BCPART_J1
-#define readmesh_      READMESH
-#define wingsurface_   WINGSURFACE
+#define eigenv_              EIGENV
+#define localfortfct_euler_  LOCALFORTFCT_EULER
+#define localfortfct_fp_     LOCALFORTFCT_FP
+#define resid_               RESID
+#define residbc_             RESIDBC
+#define bc_uni_              BC_UNI
+#define rbuild_              RBUILD
+#define rbuild_direct_euler_ RBUILD_DIRECT_EULER
+#define rbuild_direct_fp_    RBUILD_DIRECT_FP
+#define jmonitor_            JMONITOR
+#define jform_               JFORM
+#define jform2_              JFORM2
+#define jformdt_             JFORMDT
+#define jformdt2_            JFORMDT2
+#define buildmat_            BUILDMAT
+#define nzmat_               NZMAT
+#define pvar_                PVAR
+#define printvec_            PRINTVEC
+#define julianne_            JULIANNE
+#define printjul_            PRINTJUL
+#define printgjul_           PRINTGJUL
+#define printbjul_           PRINTBJUL
+#define parsetup_            PARSETUP
+#define jpressure_           JPRESSURE
+#define bc_                  BC
+#define bcpart_j1_           BCPART_J1
+#define readmesh_            READMESH
+#define wingsurface_         WINGSURFACE
 
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define eigenv_        eigenv
-#define localfortfct_  localfortfct
-#define resid_         resid
-#define bc_uni_        bc_uni
-#define residbc_       residbc
-#define rbuild_        rbuild
-#define rbuild_direct_ rbuild_direct
-#define jmonitor_      jmonitor
-#define jform_         jform
-#define jform2_        jform2
-#define jformdt_       jformdt
-#define jformdt2_      jformdt2
-#define buildmat_      buildmat
-#define nzmat_         nzmat
-#define pvar_          pvar
-#define julianne_      julianne
-#define printjul_      printjul
-#define printgjul_     printgjul
-#define printbjul_     printbjul
-#define parsetup_      parsetup
-#define jpressure_     jpressure
-#define bc_            bc
-#define bcpart_j1_     bcpart_j1
-#define readmesh_      readmesh
-#define wingsurface_   wingsurface
+#define eigenv_              eigenv
+#define localfortfct_euler_ localfortfct_euler
+#define localfortfct_fp_    localfortfct_fp
+#define resid_               resid
+#define bc_uni_              bc_uni
+#define residbc_             residbc
+#define rbuild_              rbuild
+#define rbuild_direct_euler_ rbuild_direct_euler
+#define rbuild_direct_fp_    rbuild_direct_fp
+#define jmonitor_            jmonitor
+#define jform_               jform
+#define jform2_              jform2
+#define jformdt_             jformdt
+#define jformdt2_            jformdt2
+#define buildmat_            buildmat
+#define nzmat_               nzmat
+#define pvar_                pvar
+#define julianne_            julianne
+#define printjul_            printjul
+#define printgjul_           printgjul
+#define printbjul_           printbjul
+#define parsetup_            parsetup
+#define jpressure_           jpressure
+#define bc_                  bc
+#define bcpart_j1_           bcpart_j1
+#define readmesh_            readmesh
+#define wingsurface_         wingsurface
 #endif
 
 /* Basic routines */
 int UserCreateEuler(MPI_Comm,int,int,Euler**);
 int UserDestroyEuler(Euler*);
 int InitialGuess(SNES,Euler*,Vec);
-int ComputeFunction(SNES,Vec,Vec,void*);
-int ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+int ComputeFunctionBasic(SNES,Vec,Vec,void*);
+int ComputeFunctionNoWake(SNES,Vec,Vec,void*);
+int ComputeFunctionCore(int,SNES,Vec,Vec,void*);
+int ComputeJacobianFDColoring(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+int ComputeJacobianFDBasic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int UserSetJacobian(SNES,Euler*);
 int UserMatrixFreeMatCreate(SNES,Euler*,Vec,Mat*);
 int UserMatrixFreeMatDestroy(Mat);
@@ -310,7 +327,7 @@ extern int jpressure_(Scalar*,Scalar*);
 extern void eigenv_(Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,TimeStepType*);
-extern int  localfortfct_(int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+extern int  localfortfct_euler_(int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
@@ -355,7 +372,8 @@ extern int resid_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*);
-extern int rbuild_direct_(Scalar*,ScaleType*,Scalar*,Scalar*);
+extern int rbuild_direct_fp_(Scalar*,ScaleType*,Scalar*,Scalar*);
+extern int rbuild_direct_euler_(Scalar*,ScaleType*,Scalar*,Scalar*);
 extern int rbuild_(int*,ScaleType*,Scalar*,Scalar*,Scalar*,int*,int*);
 extern int bc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
@@ -364,8 +382,8 @@ extern int bcpart_j1_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Sc
 extern int parsetup_(int*,int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
+                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
+                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,MMType*);
 extern int buildmat_(int*,ScaleType*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*);
@@ -373,6 +391,11 @@ extern int nzmat_(MatType*,MMType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
 extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,
                       Scalar*,Scalar*,int*,int*);
+
+extern int  localfortfct_fp_(int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 
 /* Fortran interface definitions */
 

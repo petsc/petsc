@@ -22,21 +22,21 @@
  */
 int UserSetJacobian(SNES snes,Euler *app)
 {
-  MatType    mtype = MATMPIBAIJ;      /* matrix format */
-  MPI_Comm   comm = app->comm;       /* comunicator */
-  Mat        J;                      /* Jacobian matrix context */
-  int        ldim = app->ldim;       /* local dimension of vectors and matrix */
-  int        gdim = app->gdim;	     /* global dimension of vectors and matrix */
-  int        ndof = app->ndof;	     /* DoF per node */
-  int        ndof_block;             /* size of matrix blocks (ndof, except when
-                                        experimenting with block size = 1) */
-  int        ndof_euler;             /* DoF per node for Euler model */
-  int        istart, iend;           /* range of locally owned matrix rows */
-  int        *nnz_d = 0, *nnz_o = 0; /* arrays for preallocating matrix memory */
-  int        wkdim;                  /* dimension of nnz_d and nnz_o */
-  MatFDColoring fdc;                 /* finite difference coloring context */
-  PetscTruth mset; 
-  int        jac_snes_fd, ierr, flg;
+  MatType       mtype = MATMPIBAIJ;     /* matrix format */
+  MPI_Comm      comm = app->comm;       /* comunicator */
+  Mat           J;                      /* Jacobian matrix context */
+  int           ldim = app->ldim;       /* local dimension of vectors and matrix */
+  int           gdim = app->gdim;	/* global dimension of vectors and matrix */
+  int           ndof = app->ndof;	/* DoF per node */
+  int           ndof_block;             /* size of matrix blocks (ndof, except when
+                                           experimenting with block size = 1) */
+  int           ndof_euler;             /* DoF per node for Euler model */
+  int           istart, iend;           /* range of locally owned matrix rows */
+  int           *nnz_d = 0, *nnz_o = 0; /* arrays for preallocating matrix memory */
+  int           wkdim;                  /* dimension of nnz_d and nnz_o */
+  /*  MatFDColoring fdc; */                   /* finite difference coloring context */
+  PetscTruth    mset; 
+  int           jac_snes_fd = 0, ierr, flg;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      First, compute amount of space for matrix preallocation, to enable
@@ -128,12 +128,10 @@ int UserSetJacobian(SNES snes,Euler *app)
      approximation of the Jacobian
    */
 
-
-
-  ierr = OptionsHasName(PETSC_NULL,"-jac_snes_fd",&jac_snes_fd); CHKERRQ(ierr);
+    /* Change to use Barry's new code */
+  /*  ierr = OptionsHasName(PETSC_NULL,"-jac_snes_fd",&jac_snes_fd); CHKERRQ(ierr);
   if (jac_snes_fd) {
     ISColoring    iscoloring;
-    MatFDColoring fdc;
 
     ierr = DAGetColoring3dBox(app->da,&iscoloring,&J); CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&fdc); CHKERRQ(ierr); 
@@ -152,7 +150,7 @@ int UserSetJacobian(SNES snes,Euler *app)
     PetscPrintf(comm,"Jacobian for preconditioner formed via PETSc FD approx\n"); 
   } else {
     PetscPrintf(comm,"Jacobian for preconditioner formed via application code FD approx\n"); 
-  }
+  } */
 
   ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&app->matrix_free); CHKERRQ(ierr);
   if (!app->matrix_free) {
@@ -652,128 +650,3 @@ int ComputeJacobianFDBasic(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag
   return 0;
 }
 
-
-/* ---------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "DAGetColoring3dBox" 
-/*@C
-     DAGetColoring3dBox - Gets the coloring required for computing the Jacobian via
-     finite differences on a function defined using the standard nine-point stencil
-     on a two-dimensional grid. 
-
-     Input Parameter:
-.    da - the distributed array
-
-     Output Parameters:
-.    coloring - matrix coloring for compute Jacobians
-.    J  - matrix with the correct nonzero structured 
-            (obviously without the correct Jacobian values)
-
-     Notes:
-     This is a utility routine that will change over time, not part of the 
-     core PETSc package.
-
-     **** THIS CODE IS NOT FINISHED AND INEVITABLY INCORRECT AT THIS POINT!! *****
-@*/
-int DAGetColoring3dBox(DA da,ISColoring *coloring,Mat *J)
-{
-  int      ierr,ind,xs,ys,zs,xm,ym,zm,*colors,i,j,ii,slot;
-  int      gxs,gys,gzs,gxm,gym,gzm,k,xs1,nc,ng,*rows;
-  int      swidth,bnc,bsw,sw,l,m,n,p,dim,w,s,N,*indices,*gindices;
-  MPI_Comm comm;
-  Scalar   *values;
-
-  /*
-                                  m
-          ------------------------------------------------------
-         |                                                     |
-         |                                                     |
-         |               ----------------------                |
-         |               |                    |                |
-      n  |           ym  |                    |                |
-         |               |                    |                |
-         |               .---------------------                |
-         |             (xs,ys)     xm                          |
-         |            .                                        |
-         |         (gxs,gys)                                   |
-         |                                                     |
-          -----------------------------------------------------
-  */
-  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&w,&swidth,0); CHKERRQ(ierr);
-  if (dim != 3) SETERRQ(1,0,"3d only");
-
-  /* also no support for periodic boundary conditions */
-  nc = w;
-  sw = swidth*2+1;
-  if (dim == 1)      {bsw = sw; bnc = nc;}
-  else if (dim == 2) {bsw = 3*sw; bnc = nc*nc;}
-  else if (dim == 3) {bsw = 5*sw; bnc = nc*nc;}
-  else SETERRQ(1,0,"Unsupported dim");
-
-  values = (Scalar *) PetscMalloc( bsw*bnc*sizeof(Scalar) ); CHKPTRQ(values);
-  PetscMemzero(values,bsw*bnc*sizeof(Scalar));
-  rows    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(rows);
-  indices = (int *) PetscMalloc( bsw*bnc*sizeof(int) ); CHKPTRQ(indices);
-  N       = m*n;
-
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm); CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)da,&comm); CHKERRQ(ierr);
-
-  /* create the coloring */
-  colors = (int *) PetscMalloc( nc*xm*ym*zm*sizeof(int) ); CHKPTRQ(colors);
-  ii = 0;
-  for ( k=zs; k<zs+zm; k++ ) {
-    for ( j=ys; j<ys+ym; j++ ) {
-      for ( i=xs; i<xs+xm; i++ ) {
-        for ( l=0; l<nc; l++ ) {
-          colors[ii++] = l + nc*((i % sw) + sw*(j % sw) + sw*sw*(k % sw));
-        }
-      }
-    }
-  }
-  ierr = ISColoringCreate(comm,nc*xm*ym*zm,colors,coloring); CHKERRQ(ierr);
-  PetscFree(colors);
-
-  /* Use incoming Jacobian matrix data structure */
-
-  ierr = DAGetGlobalIndices(da,&ng,&gindices);
-  {
-    ISLocalToGlobalMapping ltog;
-    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,ng,gindices,&ltog);CHKERRQ(ierr);
-    ierr = MatSetLocalToGlobalMapping(*J,ltog); CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(ltog); CHKERRQ(ierr);
-  }
-
-  /*
-    For each node in the grid: we get the neighbors in the local (on processor ordering
-    that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
-    PETSc ordering.
-  */
-
-  /* fill up Jacobian for interior of grid */
-  for ( k=zs; k<zs+zm; k++ ) {
-    for ( j=ys; j<ys+ym; j++ ) {
-      for ( i=xs; i<xs+xm; i++ ) {
-        slot = i - gxs + gxm*(j - gys) + gxm*gym*(k - gzs);
-        for ( s= -swidth; s<=swidth; s++) {
-          for ( l=0; l<nc; l++ ) {    
-            ind = indices[l]      = l + nc*(slot - gxm*gym + s); if (ind < 0 || ind >= ng) indices[l]      = l + nc*(slot);
-            ind = indices[1*nc+l] = l + nc*(slot - gxm + s);     if (ind < 0 || ind >= ng) indices[1*nc+l] = l + nc*(slot);
-            ind = indices[2*nc+l] = l + nc*(slot + s);           if (ind < 0 || ind >= ng) indices[2*nc+l] = l + nc*(slot);
-            ind = indices[3*nc+l] = l + nc*(slot + gxm + s);     if (ind < 0 || ind >= ng) indices[3*nc+l] = l + nc*(slot);
-            ind = indices[4*nc+l] = l + nc*(slot + gxm*gym + s); if (ind < 0 || ind >= ng) indices[4*nc+l] = l + nc*(slot);
-            rows[l]              = l + nc*(slot);
-          }
-          ierr = MatSetValuesLocal(*J,nc,rows,5*nc,indices,values,INSERT_VALUES); CHKERRQ(ierr);
-        }
-      }
-    }
-  }
-  PetscFree(values); 
-  PetscFree(rows);
-  PetscFree(indices);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
-  return 0;
-}

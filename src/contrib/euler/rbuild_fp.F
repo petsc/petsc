@@ -40,17 +40,17 @@ c     uniprocessor grid!
       double precision f(0:*)
       integer i,j,k,jk,sctype,ijkx
 
-      rbuild_direct = 0
+      rbuild_direct_fp = 0
       if ((bctype .ne. EXPLICIT) .and. (bctype .ne. IMPLICIT)) then
         if (rank .eq. 0) 
-     &    write(6,*) 'rbuild_direct: invalid value of bctype flag!'
-        rbuild_direct = -1
+     &    write(6,*) 'rbuild_direct_fp: invalid value of bctype flag!'
+        rbuild_direct_fp = -1
         return
       endif
       if (sctype .ne. DT_MULT .and. sctype .ne. DT_DIV) then
         if (rank .eq. 0) 
-     &    write(6,*) 'rbuild_direct: invalid value of sctype flag!'
-        rbuild_direct = -1
+     &    write(6,*) 'rbuild_direct_fp: invalid value of sctype flag!'
+        rbuild_direct_fp = -1
         return
       endif
 
@@ -133,8 +133,8 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
              f(ijkx+4) = de(i,j,k)
  450     continue
       else
-        if (rank .eq. 0) write(6,*) 'rbuild_direct: invalid sctype!'
-        rbuild_direct = -1
+        if (rank .eq. 0) write(6,*) 'rbuild_direct_fp: invalid sctype!'
+        rbuild_direct_fp = -1
         return
       endif
 

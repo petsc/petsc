@@ -2,7 +2,7 @@ c ----------------------------------------------------------------
 c  Full potential physics code
 c ----------------------------------------------------------------
 
-      SUBROUTINE IC_FP(xx)
+      SUBROUTINE IC_FP(xx,p)
 
 c IC - Reads case data and initializes the flow field to plug flow
 

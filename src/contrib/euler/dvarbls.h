@@ -28,3 +28,14 @@ c      COMMON /DVRBLS/ DRW(NI1,NJ1,NK1),DE(NI1,NJ1,NK1)
         double precision
      &   dxx(ndof,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 
+c ---------------------------------------------------------------
+c
+c  Parallel array sizes, including ghost points, for the full
+c  potential component of the residual, corresponding to the F
+c  vector in PETSc code.  Space is allocated in UserCreateEuler().
+c  This space is used for the multi-model variant of code.
+c
+c      double precision dfp(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+
+#define dfp(i,j,k) dxx(ndof,i,j,k)
+

@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.16 1997/09/10 19:25:34 curfman Exp curfman $ 
+# $Id: makefile,v 1.17 1997/09/10 19:29:22 curfman Exp curfman $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -13,8 +13,8 @@
 # -----------------------------------------------------------------------
 
 # Argonne Quad machine
-#  PETSC_DIR = /home/petsc/petsc-2.0.18
-   PETSC_DIR = /ccsthome/petsc/petsc
+  PETSC_DIR = /home/petsc/petsc-2.0.20
+#   PETSC_DIR = /ccsthome/petsc/petsc
 # Argonne tmp directories
 #   PETSC_DIR = /tmp/petsc
 # Argonne network
@@ -91,21 +91,23 @@ ALL: ex1
   SOURCEF_COMMON   = xnd.F resid.F jac.F pvar.F
   SOURCEF_JULIANNE = xjul.F
   SOURCEF_PETSC    = xmod.F mat.F obselete.F 
-  SOURCEF          = $(SOURCEF_COMMON) $(SOURCEF_PETSC) $(SOURCEF_JULIANNE)
+  SOURCEF_FP       = resid_fp.F xnd_fp.F rbuild_fp.F
+  SOURCEF          = $(SOURCEF_COMMON) $(SOURCEF_PETSC) $(SOURCEF_FP) $(SOURCEF_JULIANNE)
 
   OBJSF_COMMON     = xnd.o resid.o jac.o pvar.o
   OBJSF_JULIANNE   = xjul.o
   OBJSF_PETSC      = xmod.o mat.o obselete.o
-#  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
-  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) 
+  OBJSF_FP         = resid_fp.o xnd_fp.o rbuild_fp.o
+#  OBJSF           = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
+  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_FP) 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #
 # Define C source code:
   OBJSC_MM   = mmregis.o mmset.o mmbasic.o mmmethods.o matv.o
   SOURCEC_MM = mmregis.c mmset.c mmbasic.c mmmethods.c matv.c
-  OBJSC      = user1.o grid.o bc.o misc.o mfj.o monitor.o vrml.o $(OBJSC_MM)
-  SOURCEC    = user1.c grid.c bc.c misc.c mfj.c monitor.c vrml.c $(SOURCEC_MM)
+  OBJSC      = user1.o grid.o jacob.o bc.o misc.o mfj.o monitor.o vrml.o $(OBJSC_MM)
+  SOURCEC    = user1.c grid.c jacob.c bc.c misc.c mfj.c monitor.c vrml.c $(SOURCEC_MM)
 
 # Source no longer used.
 # SOURCE_SURPLUS = regmpimat.c matbd.F
@@ -121,7 +123,8 @@ ALL: ex1
   SOURCEH_C = user.h 
   SOURCEH_F = matrixb.h diag.h dt.h varbls.h dvarbls.h param.h ang.h \
               avctrs.h condi.h consts.h coord.h bc.h es.h freq.h fv.h \
-              gs.h init.h sada.h sigma.h wing.h bcimpl.h ibcwork.h
+              gs.h init.h sada.h sigma.h wing.h bcimpl.h ibcwork.h \
+              aux_fp.h
   SOURCEH   = $(SOURCEH_C) $(SOURCEH_F)
 
 # -----------------------------------------------------------------------

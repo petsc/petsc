@@ -9,7 +9,7 @@
 extern int MatView_Hybrid(Mat A,Viewer viewer)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
-  int         ierr, i,j, m = a->m, shift = a->indexshift, format, flg1,flg2;
+  int         ierr, i,j, m = a->m, shift = a->indexshift, format;
   FILE        *fd;
   char        *outputname;
   int         mod, bsize = 6, bsub, col, col1, base, ict;
@@ -26,7 +26,7 @@ extern int MatView_Hybrid(Mat A,Viewer viewer)
         fprintf(fd,"row %d:",ict++);
         for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
           col1 = a->j[j]+shift;
-          if (mod = (col1+1)%bsize) {
+          if ((mod = (col1+1)%bsize)) {
             if (a->a[j] != 0.0) {
               base = col1/bsize;
               col = bsub*base + mod-1;

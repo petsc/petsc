@@ -25,13 +25,13 @@ c
      &        Agxsfw, Agysfw, Agzsfw, Agxefw, Agyefw, Agzefw,
      &        Agxm, Agym, Agzm,
      &        Axef01, Ayef01, Azef01, Agxef01, Agyef01,
-     &        Agzef01, Andof, Aggrid, Abcswitch)
+     &        Agzef01, Andof, Aggrid, Abcswitch, Amodel)
 
 #include "param.h"
 
       integer Aprintg, Acomm, Arank, Asize, Abctype, Anowake,
      &        Aproblem, Agxsf, Agysf, Agzsf, Agxef, Agyef, Agzef,
-     &        Axsf, Aysf, Azsf, Axef, Ayef, Azef, 
+     &        Axsf, Aysf, Azsf, Axef, Ayef, Azef, Amodel,
      &        Axefm1, Ayefm1, Azefm1, Axefp1, Ayefp1, Azefp1, 
      &        Agxefp1, Agyefp1, Agzefp1, ctot, Abcswitch,
      &        Axsf1, Aysf1, Azsf1, Agxsf1, Agysf1, Agzsf1,
@@ -54,6 +54,7 @@ c  in param.h: Common block, pgrid, for local grid data:
       ndof_e    = 5
       bcswitch  = Abcswitch
       nowake    = Anowake
+      model     = Amodel
 
       if (problem .eq. 1) then
          OPEN (2,FILE='m6c',STATUS='OLD')

@@ -11,6 +11,7 @@ c
 #include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/ao.h"
+#include "mmfort.h"
 
 c   Parameters
         double precision one, two, zero, p5
@@ -111,4 +112,8 @@ c   Common block for local ghost parameters
        common /pghost/ gxefp1, gyefp1, gzefp1
        common /pghost/ gxef01, gyef01, gzef01
 
-c
+c   Type of multi-model
+        integer model
+
+c   Common block for multi-model data
+       common /multimodel/ model

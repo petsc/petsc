@@ -5,7 +5,7 @@ c  require processing.
 c
 c -------------------------------------------------------------------
 c
-      integer function localfortfct(first_time_resid,fff,
+      integer function localfortfct_euler(jacform,fff,
      &                xx,p,xx_bc,p_bc,sadai,sadaj,sadak,
      &                aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                dxx,br,bl,be,f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
@@ -26,28 +26,27 @@ c                to facilitate use of automatic differentiation.
 #include "sigma.h"
 #include "fv.h"
 
-      integer first_time_resid,ierr,resid,residbc,jpressure
+      integer ierr,resid,residbc
+      integer jacform, jpressure
   
-      localfortfct = 0
+      localfortfct_euler = 0
 
 C  Compute pressures 
-      if (first_time_resid .eq. 0) then 
-        ierr = jpressure(xx, p)
-        if (ierr .ne. 0) then
-           write(6,*)  'localfortfct:rank,jpressure',
-     &                  rank,ierr
-           localfortfct = -1
-           return
-        endif
+      ierr = jpressure(xx, p)
+      if (ierr .ne. 0) then
+         write(6,*)  'localfortfct:rank,jpressure',
+     &                rank,ierr
+         localfortfct_euler = -1
+         return
       endif
 
 C  If using implicit BC's, compute function components for boundary points 
-      ierr = residbc(xx, fff, p, xx_bc, p_bc, sadai, sadaj, sadak,
-     &         aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz)
+      ierr = residbc(jacform, xx, fff, p, xx_bc, p_bc, sadai, sadaj, 
+     &         sadak, aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz)
       if (ierr .ne. 0) then
          write(6,*)  'local_fortran_fct:rank,residbc',
      &                rank,ierr
-         localfortfct = -1
+         localfortfct_euler = -1
          return
       endif
 
@@ -59,7 +58,7 @@ C  Compute function components for interior grid points
       if (ierr .ne. 0) then
          write(6,*)  'local_fortran_fct:rank,resid',
      &                rank,ierr
-         localfortfct = -1
+         localfortfct_euler = -1
          return
       endif
 
@@ -394,7 +393,7 @@ c      DO 4 K=2,NK
 
 c ---------------------------------------------------------------
 
-      integer function residbc(xx,fff,p,xx_bc,p_bc,
+      integer function residbc(jacform,xx,fff,p,xx_bc,p_bc,
      &                sadai,sadaj,sadak,
      &                aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 
@@ -429,7 +428,9 @@ c      COMMON /INIT/ RINIT,RUINIT,RVINIT,RWINIT,EINIT
       double precision  u2,v2,w2,ub,con,r0c0,rb,vb,wb,pinj1k,rinj1k,pij1
       double precision  pijnk1,rni1jk,r1jk
 
-      integer i,j,k
+      integer i,j,k,jacform
+
+c     jacform - if 1, we are in the midst of forming the Jacobian via FD approx
 
       residbc = 0
 c
@@ -476,16 +477,24 @@ C   THESE ARE CHARACTERISTIC VARIABLE IMPERMEABLE WALL B.C.s
     4 CONTINUE
 cc      ID=NI+2-I
 c      ID=NI+1-I
-      fbcruj1(i,k)=ru(I,1,K)-RU_bc(I,2,K)
-      fbcrvj1(i,k)=rv(I,1,K)-RV_bc(I,2,K)
-      fbcrwj1(i,k)=rw(I,1,K)-RW_bc(I,2,K)
-      fbcrj1(i,k)=r(I,1,K)-R_bc(I,2,K)
-      fbcej1(i,k)=e(I,1,K)-E_bc(I,2,K)
-c      fbcruj1(i,k)=ru(I,1,K)-RU(ID,2,K)
-c      fbcrvj1(i,k)=rv(I,1,K)-RV(ID,2,K)
-c      fbcrwj1(i,k)=rw(I,1,K)-RW(ID,2,K)
-c      fbcrj1(i,k)=r(I,1,K)-R(ID,2,K)
-c      fbcej1(i,k)=e(I,1,K)-E(ID,2,K)
+      if (nowake .eq. 1 .and. jacform .eq. 1) then
+         fbcruj1(i,k)=0.0
+         fbcrvj1(i,k)=0.0
+         fbcrwj1(i,k)=0.0
+         fbcrj1(i,k)=0.0
+         fbcej1(i,k)=0.0
+      else
+         fbcruj1(i,k)=ru(I,1,K)-RU_bc(I,2,K)
+         fbcrvj1(i,k)=rv(I,1,K)-RV_bc(I,2,K)
+         fbcrwj1(i,k)=rw(I,1,K)-RW_bc(I,2,K)
+         fbcrj1(i,k)=r(I,1,K)-R_bc(I,2,K)
+         fbcej1(i,k)=e(I,1,K)-E_bc(I,2,K)
+c         fbcruj1(i,k)=ru(I,1,K)-RU(ID,2,K)
+c         fbcrvj1(i,k)=rv(I,1,K)-RV(ID,2,K)
+c         fbcrwj1(i,k)=rw(I,1,K)-RW(ID,2,K)
+c         fbcrj1(i,k)=r(I,1,K)-R(ID,2,K)
+c         fbcej1(i,k)=e(I,1,K)-E(ID,2,K)
+      endif
     2 CONTINUE
       endif
 c
