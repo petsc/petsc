@@ -1,6 +1,7 @@
 !
-!      "$Id: ex5f.F,v 1.7 1998/04/21 18:30:54 balay Exp balay $";
+!      "$Id: ex5f.F,v 1.8 2000/05/05 22:17:55 balay Exp bsmith $";
 !
+      program main
        implicit none
 
 #include "include/finclude/petsc.h"

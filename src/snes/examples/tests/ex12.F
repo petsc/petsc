@@ -1,5 +1,5 @@
 !
-!    "$Id: ex12.F,v 1.55 2000/05/05 22:18:29 balay Exp balay $";
+!    "$Id: ex12.F,v 1.56 2000/09/26 23:20:16 balay Exp bsmith $";
 !
 !  This example demonstrates basic use of the SNES Fortran interface.
 !  
@@ -23,8 +23,8 @@
 #define xx(ib)  vxx(ixx + (ib))
 #define ff(ib)  vff(iff + (ib))
 #define F2(ib)  vF2(iF2 + (ib))
-
-       implicit none
+      program main
+      implicit none
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex6f.F,v 1.29 2000/05/05 22:18:00 balay Exp bsmith $";
+!    "$Id: ex6f.F,v 1.30 2000/09/22 20:45:46 bsmith Exp bsmith $";
 !
 !  Description: This example demonstrates repeated linear solves as
 !  well as the use of different preconditioner and linear system
@@ -24,6 +24,7 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
+      program main
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscmat.h"

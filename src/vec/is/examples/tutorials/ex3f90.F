@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f90.F,v 1.12 2000/07/10 03:39:11 bsmith Exp bsmith $"; */
+!      "$Id: ex3f90.F,v 1.13 2000/09/22 20:42:58 bsmith Exp bsmith $"; */
 !
 !
 !/*T
@@ -16,6 +16,7 @@
 !     petscis.h     - index sets (IS objects)
 !     petscis.h90   - to allow access to Fortran90 features of index sets
 !
+      program main
       implicit none
 
 #include "finclude/petsc.h"

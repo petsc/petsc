@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f.F,v 1.12 2000/05/05 22:15:21 balay Exp bsmith $";
+!      "$Id: ex3f.F,v 1.13 2000/09/22 20:43:24 bsmith Exp bsmith $";
 !
 !  Description: Displays a vector visually.
 !
@@ -9,7 +9,7 @@
 !T*/
 ! -----------------------------------------------------------------------
 
-      program ex3f
+      program main
       implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -1,8 +1,9 @@
 !
-!      "$Id: ex36.F,v 1.26 2000/01/11 21:01:03 bsmith Exp balay $";
+!      "$Id: ex36.F,v 1.27 2000/05/05 22:16:17 balay Exp bsmith $";
 !
 !   This program demonstrates use of PETSc dense matrices.
 !
+      program main
 
 #include "include/finclude/petsc.h"
 

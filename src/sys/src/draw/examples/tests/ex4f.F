@@ -1,5 +1,5 @@
 !
-!    "$Id: ex4f.F,v 1.5 2000/01/11 20:59:19 bsmith Exp balay $";
+!    "$Id: ex4f.F,v 1.6 2000/05/05 22:13:41 balay Exp bsmith $";
 !
 !
 !  This example demonstrates use of DrawZoom()
@@ -21,6 +21,7 @@
       return 
       end
 
+      program main
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscdraw.h"
       Draw draw

@@ -1,7 +1,8 @@
-!    "$Id: ex6.F,v 1.9 2000/01/11 20:59:47 bsmith Exp balay $";
+!    "$Id: ex6.F,v 1.10 2000/05/05 22:14:28 balay Exp bsmith $";
 !
 !  Progran to test random number generation routines from fortran.
 !
+       program main
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscsys.h"
       integer         ierr

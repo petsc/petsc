@@ -1,9 +1,9 @@
 
-C      "$Id: ex67f.F,v 1.5 2000/01/11 21:01:03 bsmith Exp balay $";
+C      "$Id: ex67f.F,v 1.6 2000/05/05 22:16:17 balay Exp bsmith $";
 C
 C   This program demonstrates use of MatGetSubMatrices() from Fortran
 C
-
+      program main
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscis.h"

@@ -1,5 +1,5 @@
 !
-!     "$Id: ex14f.F,v 1.3 2000/05/05 22:15:21 balay Exp bsmith $";
+!     "$Id: ex14f.F,v 1.4 2000/09/22 20:43:24 bsmith Exp bsmith $";
 !
 ! Description: Illustrates the use of VecCreateGhost()
 !
@@ -14,7 +14,7 @@
 !      vector computations are otherwise unaffected.
 !T*/
 
-      program ex14f
+      program main
       implicit none
 
 !

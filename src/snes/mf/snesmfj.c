@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.111 2000/09/07 15:17:55 balay Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.112 2000/09/22 20:45:59 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -177,7 +177,11 @@ int MatSNESMFView_Private(Mat J,Viewer viewer)
   if (isascii) {
      ierr = ViewerASCIIPrintf(viewer,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
      ierr = ViewerASCIIPrintf(viewer,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
-     ierr = ViewerASCIIPrintf(viewer,"    Using %s compute h routine\n",ctx->type_name);CHKERRQ(ierr);
+     if (!ctx->type_name) {
+       ierr = ViewerASCIIPrintf(viewer,"    The compute h routine has not yet been set\n");CHKERRQ(ierr);
+     } else {
+       ierr = ViewerASCIIPrintf(viewer,"    Using %s compute h routine\n",ctx->type_name);CHKERRQ(ierr);
+     }
      if (ctx->ops->view) {
        ierr = (*ctx->ops->view)(ctx,viewer);CHKERRQ(ierr);
      }

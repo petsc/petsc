@@ -1,10 +1,10 @@
 !
-! "$Id: ex17f.F,v 1.1 2000/07/03 18:00:54 bsmith Exp bsmith $";
+! "$Id: ex17f.F,v 1.2 2000/07/10 03:39:03 bsmith Exp bsmith $";
 !
 !
 !     Test for PetscFOpen() from Fortran
 !
-
+       program main
 #include "finclude/petsc.h"
 
       integer          ierr,rank

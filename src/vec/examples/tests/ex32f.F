@@ -1,8 +1,9 @@
 !
-!    "$Id: ex32f.F,v 1.1 2000/05/30 15:23:15 bsmith Exp bsmith $";
+!    "$Id: ex32f.F,v 1.2 2000/07/10 03:39:23 bsmith Exp bsmith $";
 !
 !  Tests PescOffsetFortran()
 !  duplicated
+      program main
        implicit none
 
 #include "include/finclude/petsc.h"

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.25 2000/08/03 20:15:20 balay Exp bsmith $"
+!    "$Id: ex1f.F,v 1.26 2000/09/22 20:43:24 bsmith Exp bsmith $"
 !
 !   Program usage:  mpirun ex1f [-help] [all PETSc options] 
 !
@@ -10,7 +10,7 @@
 !
 ! -----------------------------------------------------------------------
 
-      program ex1f
+      program main
       implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

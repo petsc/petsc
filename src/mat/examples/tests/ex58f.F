@@ -1,9 +1,9 @@
 !
-!      "$Id: ex58f.F,v 1.8 1999/03/27 14:43:46 bsmith Exp balay $";
+!      "$Id: ex58f.F,v 1.9 2000/05/05 22:16:17 balay Exp bsmith $";
 !
 !   This program demonstrates use of MatGetRow() from Fortran
 !
-
+      program main
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscviewer.h"

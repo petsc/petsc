@@ -1,9 +1,10 @@
 !
-!    "$Id: ex30f.F,v 1.1 2000/04/26 01:17:32 bsmith Exp balay $";
+!    "$Id: ex30f.F,v 1.2 2000/05/05 22:15:11 balay Exp bsmith $";
 !
 !  Tests parallel to parallel scatter where a to from index are 
 !  duplicated
-       implicit none
+      program main
+      implicit none
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscis.h"

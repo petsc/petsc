@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f90.F,v 1.21 2000/08/07 22:20:00 bsmith Exp bsmith $"
+!    "$Id: ex1f90.F,v 1.22 2000/09/22 20:43:24 bsmith Exp bsmith $"
 !
 !/*T
 !   Concepts: vectors^using basic vector routines;
@@ -9,7 +9,7 @@
 !
 ! -----------------------------------------------------------------------
 
-      program ex1f90
+      program main
       implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

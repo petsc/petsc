@@ -1,11 +1,11 @@
 !
-!  "$Id: ex16f90.F,v 1.12 2000/01/11 21:01:03 bsmith Exp balay $";
+!  "$Id: ex16f90.F,v 1.13 2000/05/05 22:16:17 balay Exp bsmith $";
 !
 !
 !  Tests MatGetArray() on a dense matrix
 !
 
-      program ex16f90
+      program main
       implicit none
 
 

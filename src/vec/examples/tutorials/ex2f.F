@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2f.F,v 1.10 2000/05/05 22:15:21 balay Exp bsmith $"
+!    "$Id: ex2f.F,v 1.11 2000/09/22 20:43:24 bsmith Exp bsmith $"
 !
 !  Description: Builds a parallel vector with 1 component on the first
 !               processor, 2 on the second, etc.  Then each processor adds
@@ -11,7 +11,7 @@
 !T*/
 ! -----------------------------------------------------------------------
 
-      program ex2f
+      program main
       implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -1,8 +1,9 @@
 !
-!  "$Id: ex2f.F,v 1.15 2000/07/10 03:39:09 bsmith Exp balay $"
+!  "$Id: ex2f.F,v 1.16 2000/08/03 20:15:22 balay Exp bsmith $"
 !
 !  Formatted Test for IS stride routines
 !
+      program main
       implicit none
 #include "finclude/petsc.h"
 #include "finclude/petscis.h"

@@ -1,5 +1,5 @@
 !
-! "$Id: ex11f.F,v 1.6 2000/05/05 22:15:21 balay Exp bsmith $";
+! "$Id: ex11f.F,v 1.7 2000/09/22 20:43:24 bsmith Exp bsmith $";
 !
 !
 ! Program usage:  mpirun ex1 [-help] [all PETSc options] 
@@ -10,7 +10,7 @@
 !   Processors: n
 !T*/
 
-      program ex11f
+      program main
       implicit none
 
 !

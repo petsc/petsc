@@ -1,5 +1,5 @@
 !
-!  "$Id: ex1f.F,v 1.20 2000/07/10 03:39:11 bsmith Exp bsmith $";
+!  "$Id: ex1f.F,v 1.21 2000/09/22 20:42:58 bsmith Exp bsmith $";
 !
 !/*T
 !    Concepts: Index sets^manipulating a general index set;
@@ -13,6 +13,7 @@
 !     petsc.h  - base PETSc routines
 !     petscis.h     - index sets (IS objects)
 !
+      program main
       implicit none
 
 #include "include/finclude/petsc.h"
