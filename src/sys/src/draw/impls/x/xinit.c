@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.31 1997/07/30 22:11:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.32 1997/08/22 15:16:14 bsmith Exp gropp $";
 #endif
 
 /* 
@@ -13,6 +13,9 @@ static char vcid[] = "$Id: xinit.c,v 1.31 1997/07/30 22:11:31 bsmith Exp bsmith 
    Window id of the window that it is managing.  Use that instead of the
    call to XiCreateWindow .  Similarly for the Display.
 */
+
+/* Include petsc in case it is including petscconf.h */
+#include "petsc.h"
 
 #include <stdio.h>
 #if defined(HAVE_X11)
