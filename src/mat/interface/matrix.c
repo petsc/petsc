@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.307 1998/12/17 22:10:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.308 1998/12/21 00:59:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -3315,7 +3315,7 @@ M*/
 .   isrow - rows this processor should obtain
 .   iscol - columns for all processors you wish kept
 .   csize - number of columns "local" to this processor (does nothing for sequential 
-            matrices). This should match the result from VecGetLocalSize() if you 
+            matrices). This should match the result from VecGetLocalSize(x,...) if you 
             plan to use the matrix in a A*x
 -  cll - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
