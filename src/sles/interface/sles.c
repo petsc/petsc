@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.13 1995/03/21 23:19:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.14 1995/04/05 20:33:20 bsmith Exp curfman $";
 #endif
 
 #include "slesimpl.h"
@@ -160,14 +160,23 @@ int SLESGetPC(SLES sles,PC *pc)
 
 #include "mat/matimpl.h"
 /*@
-    SLESSetOperators - Sets the matrix to use for the sles solver.
+    SLESSetOperators - Sets the matrix associated with the linear system
+       and a (possibly) different one associated with the preconditioner. 
 
   Input Parameters:
 .   sles - the sles context
 .   mat - the matrix to use
-.   pmat - alternative matrix to use in constructing preconditioner
+.   pmat - matrix to be used in constructing the preconditioner, usually
+           the same as mat.  If pmat is 0, the old preconditioner is
+           reused.  
 .   flag - use 0 or MAT_SAME_NONZERO_PATTERN
 
+  Notes:
+  The flag can be used to eliminate unnecessary repeated work in the 
+  repeated solution of linear systems of the same size using the same 
+  preconditioner.  The user can set flag = MAT_SAME_NONZERO_PATTERN to 
+  indicate that the preconditioning matrix has the same nonzero pattern 
+  during successive linear solves.
 @*/
 int SLESSetOperators(SLES sles,Mat mat,Mat pmat,int flag)
 {
@@ -178,7 +187,3 @@ int SLESSetOperators(SLES sles,Mat mat,Mat pmat,int flag)
   sles->setupcalled = 0;  /* so that next solve call will call setup */
   return 0;
 }
-
-
-
-
