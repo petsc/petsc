@@ -2,6 +2,9 @@
 #
 #   RDict - A remote dictionary server
 #
+# This is necessary for us to create Project objects on load
+import project
+
 import atexit
 import cPickle
 import os
@@ -55,7 +58,7 @@ try:
         if dargs.data.has_key(name) and dargs.data[name].data.has_key(key) and dargs.data[name].readpw == readpw:
           cPickle.dump((1,dargs.data[name].data[key]),self.wfile)
         else:
-          dargs.logfile.write("Rejected, missing dictionary, key or wrong readpw\n");
+          dargs.logfile.write("Rejected, missing dictionary key or wrong readpw\n");
           dargs.logfile.flush()
           cPickle.dump((0,None),self.wfile)
 
@@ -63,7 +66,7 @@ try:
         if dargs.data.has_key(name) and dargs.data[name].data.has_key(key) and dargs.data[name].readpw == readpw:
           cPickle.dump((1,None),self.wfile)
         else:
-          dargs.logfile.write("Rejected, missing dictionary, key or wrong readpw\n");
+          dargs.logfile.write("Rejected, missing dictionary key or wrong readpw\n");
           dargs.logfile.flush()
           cPickle.dump((0,None),self.wfile)
 
@@ -71,7 +74,7 @@ try:
         if dargs.data.has_key(name) and dargs.data[name].readpw == readpw:
           cPickle.dump((len(dargs.data[name].data),None),self.wfile)
         else:
-          dargs.logfile.write("Rejected, missing dictionary, or wrong readpw\n");
+          dargs.logfile.write("Rejected, missing dictionary or wrong readpw\n");
           dargs.logfile.flush()
           cPickle.dump((0,None),self.wfile)
 
@@ -79,7 +82,7 @@ try:
         if dargs.data.has_key(name) and dargs.data[name].readpw == readpw:
           cPickle.dump((1,dargs.data[name].data.keys()),self.wfile)
         else:
-          dargs.logfile.write("Rejected, missing dictionary, or wrong readpw\n");
+          dargs.logfile.write("Rejected, missing dictionary or wrong readpw\n");
           dargs.logfile.flush()
           cPickle.dump((0,None),self.wfile)
 
@@ -95,7 +98,7 @@ try:
           dargs.data[name].data.clear()
           dargs.saveifold()
         else:
-          dargs.logfile.write("Rejected, missing dictionary, wrong writepw\n");
+          dargs.logfile.write("Rejected, missing dictionary or wrong writepw\n");
           dargs.logfile.flush()
         cPickle.dump((0,None),self.wfile)
 
@@ -137,20 +140,28 @@ class Args (UserDict.UserDict):
 #  This is the remote dictionary server
 class DArgs:
   def __init__(self, dictpw = "open"):
-    self.data      = UserDict.UserDict()
-    self.filename  = os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.db')
-    self.load()
     self.dictpw    = dictpw
-    self.logfile   = open(os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.log'),'a')
-    self.logfile.write("greetings\n")
     self.savedelay = 30
     self.timer     = 0
+    self.data      = UserDict.UserDict()
+    self.logfile   = open(os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.log'), 'a')
+    self.logfile.write('Greetings\n')
+    self.filename  = os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.db')
+    self.load()
+    return
 
   def load(self):
     if self.filename and os.path.exists(self.filename):
-      dbFile    = open(self.filename, 'r')
-      self.data = cPickle.load(dbFile)
-      dbFile.close()
+      try:
+        dbFile    = file(self.filename)
+        self.data = cPickle.load(dbFile)
+        dbFile.close()
+        self.logfile.write('Loaded dictionary from '+self.filename+'\n')
+      except Exception, e:
+        self.logfile.write('Problem loading dictionary from '+self.filename+'\n--> '+str(e)+'\n')
+    else:
+      self.logfile.write('No dictionary to load in this file: '+self.filename+'\n')
+    return
 
 #  Start new save timer running if it is not already running
   def saveifold(self):
@@ -309,7 +320,7 @@ class RArgs (UserDict.UserDict):
 
 
   def send(self,object):
-    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
       s.connect(self.addr)
     except Exception, e:

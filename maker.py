@@ -1,6 +1,7 @@
 import fileset
 import logging
 import nargs
+import project
 
 import commands
 import os
@@ -149,7 +150,7 @@ class Maker (logging.Logger):
     for project in self.argDB['installedprojects']:
       if project.getRoot() == dir:
         return project
-    return bs.Project(os.path.basename(dir).lower(), '')
+    return project.Project(os.path.basename(dir).lower(), '')
 
   def getMakeModule(self, root, name = 'make'):
     import imp

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import bs
+import project
 
 class PetscMake(bs.BS):
   def __init__(self, clArgs = None, argDB = None):
-    bs.BS.__init__(self, bs.Project('bs', 'bk://sidl.bkbits.net/BuildSystem', self.getRoot()), clArgs, argDB)
+    bs.BS.__init__(self, project.Project('bs', 'bk://sidl.bkbits.net/BuildSystem', self.getRoot()), clArgs, argDB)
     return
 
   def t_getDependencies(self):
