@@ -229,15 +229,19 @@ class RArgs (UserDict.UserDict):
         self.addr  = (addr[0], int(addr[1]))
     return
 
+  def startServer(sles):
+    filename = os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.loc')
+    try: os.unlink(filename)
+    except: pass
+    os.spawnvp(os.P_NOWAIT,'python',['python',os.path.join(os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)),'RDict.py'),"server"])
+    time.sleep(2)
+    if not os.path.exists(filename):
+      raise RuntimeError,"No running server: Could not start it"
+
   def getServerAddr(self):
     filename = os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.loc')
-    if not os.path.exists(filename):
-      os.spawnvp(os.P_NOWAIT,'python',['python',os.path.join(os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)),'RDict.py'),"server"])
-      import time
-      time.sleep(2)
-      if not os.path.exists(filename):
-        raise RuntimeError,"No running server: Could not start it"
-    f    = open(filename, 'r')
+    if not os.path.exists(filename): self.startServer()
+    f = open(filename, 'r')
     addr = cPickle.load(f)
     f.close()
     return addr
@@ -304,7 +308,6 @@ class RArgs (UserDict.UserDict):
 
   def send(self,object):
     s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    # if the file DArgs.loc exists but no server is running we are screwed
     try:
       s.connect(self.addr)
     except Exception, e:
@@ -312,7 +315,13 @@ class RArgs (UserDict.UserDict):
       try:
         s.connect(self.addr)
       except Exception, e:
-        raise RuntimeError('Cannot connect to server: '+str(e))
+        # the file DArgs.loc exists but no server is running
+        self.startServer()
+        self.addr = self.getServerAddr()
+        try:
+          s.connect(self.addr)
+        except:
+          raise RuntimeError('Cannot connect to server: '+str(e))
               
     try:
       f = s.makefile("w")
