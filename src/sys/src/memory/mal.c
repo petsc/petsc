@@ -6,7 +6,7 @@
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
+#if defined(HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
 #include "petscfix.h"
