@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.236 1997/09/18 03:06:45 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.237 1997/09/26 02:19:01 bsmith Exp balay $";
 #endif
 
 /*
@@ -1517,7 +1517,8 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        shift, row, i,j,k,l,m,n, *idx,ierr, *nidx, isz, val;
   int        start, end, *ai, *aj;
-  char       *table;
+  BT         table;
+
   shift = a->indexshift;
   m     = a->m;
   ai    = a->i;
@@ -1525,13 +1526,13 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
 
   if (ov < 0)  SETERRQ(1,0,"illegal overlap value used");
 
-  table = (char *) PetscMalloc((m/BITSPERBYTE +1)*sizeof(char)); CHKPTRQ(table); 
   nidx  = (int *) PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(nidx); 
+  ierr  = BTCreate(m,table); CHKERRQ(ierr);
 
   for ( i=0; i<is_max; i++ ) {
     /* Initialize the two local arrays */
     isz  = 0;
-    PetscMemzero(table,(m/BITSPERBYTE +1)*sizeof(char));
+    BTMemzero(m,table);
                  
     /* Extract the indices, assume there can be duplicate entries */
     ierr = ISGetIndices(is[i],&idx);  CHKERRQ(ierr);
@@ -1539,7 +1540,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
     
     /* Enter these into the temp arrays. I.e., mark table[row], enter row into new index */
     for ( j=0; j<n ; ++j){
-      if(!BT_LOOKUP(table, idx[j])) { nidx[isz++] = idx[j];}
+      if(!BTLookupSet(table, idx[j])) { nidx[isz++] = idx[j];}
     }
     ierr = ISRestoreIndices(is[i],&idx);  CHKERRQ(ierr);
     ierr = ISDestroy(is[i]); CHKERRQ(ierr);
@@ -1553,13 +1554,13 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
         end   = ai[row+1];
         for ( l = start; l<end ; l++){
           val = aj[l] + shift;
-          if (!BT_LOOKUP(table,val)) {nidx[isz++] = val;}
+          if (!BTLookup(table,val)) {nidx[isz++] = val;}
         }
       }
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, (is+i)); CHKERRQ(ierr);
   }
-  PetscFree(table);
+  BTDestroy(table);
   PetscFree(nidx);
   return 0;
 }
