@@ -5,8 +5,9 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     libraries = [('cygwin', 'log')]
     # Add dependencies
-    self.compilers = self.framework.require('config.compilers', self)
-    self.libraries = self.framework.require('config.libraries', self)
+    self.setCompilers = self.framework.require('config.setCompilers', self)
+    self.compilers    = self.framework.require('config.compilers',    self)
+    self.libraries    = self.framework.require('config.libraries',    self)
     self.libraries.libraries.extend(libraries)
     return
 
@@ -21,7 +22,7 @@ class Configure(config.base.Configure):
 
   def checkCompiler(self):
     '''Make sure the compiler is recent enough'''
-    if self.compilers.isGCXX:
+    if self.setCompilers.isGCXX:
       import commands
 
       (status,output) = commands.getstatusoutput(self.framework.argDB['CXX']+' -dumpversion')
