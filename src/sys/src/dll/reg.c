@@ -223,7 +223,7 @@ static PetscFList   dlallhead = 0;
    for that particular component (e.g., SNESRegisterDynamic()) instead of
    calling PetscFListAddDynamic() directly.
 
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT}, or ${any environmental variable}
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environmental variable}
   occuring in pathname will be replaced with appropriate values.
 
    Level: developer

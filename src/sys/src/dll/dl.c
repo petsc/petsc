@@ -130,7 +130,7 @@ PetscErrorCode PetscDLLibraryGetInfo(void *handle,const char type[],const char *
    Notes:
    [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
 
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT}, or ${any environmental variable}
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environmental variable}
    occuring in directoryname and filename will be replaced with appropriate values.
 @*/
 PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,PetscTruth *found)
@@ -143,7 +143,7 @@ PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *l
   PetscFunctionBegin;
 
   /* 
-     make copy of library name and replace $PETSC_ARCH and $BOPT and 
+     make copy of library name and replace $PETSC_ARCH and and 
      so we can add to the end of it to look for something like .so.1.0 etc.
   */
   ierr = PetscStrlen(libname,&len);CHKERRQ(ierr);
@@ -218,8 +218,8 @@ PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *l
    Notes:
    [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
 
-   ${PETSC_ARCH} and ${BOPT} occuring in directoryname and filename 
-   will be replaced with appropriate values.
+   ${PETSC_ARCH} occuring in directoryname and filename 
+   will be replaced with the appropriate value.
 @*/
 PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 {
