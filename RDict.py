@@ -295,35 +295,24 @@ from nargs import *
 
 #===============================================================================================
 if __name__ ==  '__main__':
-  if len(sys.argv) < 2:
-    print "RDict.py [server] or [client]"
-    exit(0)
-  if sys.argv[1] == "server":
-    try:
-      dargs = DArgs()
-      dargs.loop()
-    except Exception, e:
-      print 'ERROR: '+str(e)
-      sys.exit(1)
-    sys.exit(0)
-  elif sys.argv[1] == "client":
-    print "Entries in server dictionary"
-    try:
-      for d in RArgs().dicts():
-        for k in RArgs(d).keys():
-          print d+" "+str(k)+" "+str(RArgs(d)[k].getValue(k))
-    except Exception, e:
-      print 'ERROR: '+str(e)
-      sys.exit(1)
-    sys.exit(0)
-  elif sys.argv[1] == "clear":
-    print "Clearing remote dictionary database"
-    try:
-      RArgs("ArgDict").clear()
-    except Exception, e:
-      print 'ERROR: '+str(e)
-      sys.exit(1)
-    sys.exit(0)
-  else:
-    print "Unknown option "+sys.argv[1]
-    sys.exit(1)
+  try:
+    if len(sys.argv) < 2:
+      print 'RDict.py [server | client]'
+    else:
+      action = sys.argv[1]
+      if action == 'server':
+        dargs = DArgs()
+        dargs.loop()
+      elif action == 'client':
+        print 'Entries in server dictionary'
+        for d in RArgs().dicts():
+          for k in RArgs(d).keys():
+            print d+' '+str(k)+' '+str(RArgs(d)[k].getValue(k))
+      elif action == 'clear':
+        print 'Clearing remote dictionary database'
+        RArgs('ArgDict').clear()
+      else:
+        raise SystemExit('Unknown action: '+sys.argv[1])
+  except Exception, e:
+    sys.exit('ERROR: '+str(e))
+  sys.exit(0)
