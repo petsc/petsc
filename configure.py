@@ -188,6 +188,8 @@ class Configure:
 
   def getCode(self, includes, body = None):
     language = self.language[-1]
+    if includes and not includes[-1] == '\n':
+      includes += '\n'
     if language == 'C' or language == 'C++':
       codeStr = '#include "confdefs.h"\n'+includes
       if not body is None:
