@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.51 1997/11/12 16:08:19 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.52 1997/11/25 05:43:09 bsmith Exp bsmith $ 
 
 onepager.ps: onepager.tex
 	latex onepager
@@ -41,7 +41,7 @@ homepage:
 	-/usr/bin/cp -r ../manual /mcs/www/petsc
 	-/usr/bin/cp onepager.html /mcs/www/petsc
 	-chmod ug+w /home/ftp/pub/petsc/* /mcs/www/petsc/*
-	-cd /mcs/www/petsc/; chgrp -R pdetools docs/www; chmod -R g+w docs/www
+	-cd /mcs/www/petsc/; chgrp -R pdetools docs/manualpages; chmod -R g+w docs/manualpages
 	@echo "Finshed making PETSc homepage: remember to do the source! and manpages!"
 
 
