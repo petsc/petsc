@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.138 1999/12/17 19:18:55 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.139 1999/12/18 00:44:57 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -61,7 +61,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   int        ishift = !a->indexshift;
   int        jmax,lfill,job,*o_i,*o_j;
   Scalar     *old_a = a->a, *w, *new_a, *old_a2, *wk,*o_a;
-  double     permtol;
+  double     permtol,af;
 
   PetscFunctionBegin;
 
@@ -251,6 +251,12 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
 
   /* check out for identical nodes. If found, use inode functions */
   ierr = Mat_AIJ_CheckInode(*fact);CHKERRQ(ierr);
+
+  af = ((double)b->nz)/((double)a->nz) + .001;
+  PLogInfo(A,"MatILUDTFactor_SeqAIJ:Fill ratio:given %g needed %g\n",info->fill,af);
+  PLogInfo(A,"MatILUDTFactor_SeqAIJ:Run with -pc_ilu_fill %g or use \n",af);
+  PLogInfo(A,"MatILUDTFactor_SeqAIJ:PCILUSetFill(pc,%g);\n",af);
+  PLogInfo(A,"MatILUDTFactor_SeqAIJ:for best performance.\n");
 
   PetscFunctionReturn(0);
 }
