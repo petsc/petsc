@@ -1,4 +1,4 @@
-/*$Id: dgefa4.c,v 1.14 2001/01/15 21:45:50 bsmith Exp balay $*/
+/*$Id: dgefa4.c,v 1.15 2001/03/23 23:22:07 balay Exp buschelm $*/
 /*
        Inverts 4 by 4 matrix using partial pivoting.
 
@@ -150,4 +150,115 @@ int Kernel_A_gets_inverse_A_4(MatScalar *a)
     }
     PetscFunctionReturn(0);
 }
+
+#ifdef PETSC_HAVE_ICL_SSE
+#include "xmmintrin.h"
+
+#undef __FUNCT__
+#define __FUNCT__ "Kernel_A_gets_inverse_A_4SSE"
+int Kernel_A_gets_inverse_A_4SSE(float *a)
+{
+  /* 
+     This routine is taken from Intel's Small Matrix Library.
+     See: Streaming SIMD Extensions -- Inverse of 4x4 Matrix
+     Order Number: 245043-001
+     March 1999
+     http://www.intel.com
+
+     Note: Intel's SML uses row-wise storage for these small matrices,
+     and PETSc uses column-wise storage.  However since inv(A')=(inv(A))'
+     the same code can be used here.
+
+     Inverse of a 4x4 matrix via Kramer's Rule:
+     bool Invert4x4(SMLXMatrix &);
+  */
+  __m128 minor0, minor1, minor2, minor3;
+  __m128 row0, row1, row2, row3;
+  __m128 det, tmp1;
+
+  PetscFunctionBegin;
+  tmp1 = _mm_loadh_pi(_mm_loadl_pi(tmp1, (__m64*)(a)), (__m64*)(a+ 4));
+  row1 = _mm_loadh_pi(_mm_loadl_pi(row1, (__m64*)(a+8)), (__m64*)(a+12));
+  row0 = _mm_shuffle_ps(tmp1, row1, 0x88);
+  row1 = _mm_shuffle_ps(row1, tmp1, 0xDD);
+  tmp1 = _mm_loadh_pi(_mm_loadl_pi(tmp1, (__m64*)(a+ 2)), (__m64*)(a+ 6));
+  row3 = _mm_loadh_pi(_mm_loadl_pi(row3, (__m64*)(a+10)), (__m64*)(a+14));
+  row2 = _mm_shuffle_ps(tmp1, row3, 0x88);
+  row3 = _mm_shuffle_ps(row3, tmp1, 0xDD);
+  /* ----------------------------------------------- */
+  tmp1 = _mm_mul_ps(row2, row3);
+  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0xB1);
+  minor0 = _mm_mul_ps(row1, tmp1);
+  minor1 = _mm_mul_ps(row0, tmp1);
+  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0x4E);
+  minor0 = _mm_sub_ps(_mm_mul_ps(row1, tmp1), minor0);
+  minor1 = _mm_sub_ps(_mm_mul_ps(row0, tmp1), minor1);
+  minor1 = _mm_shuffle_ps(minor1, minor1, 0x4E);
+  /* ----------------------------------------------- */
+  tmp1 = _mm_mul_ps(row1, row2);
+  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0xB1);
+  minor0 = _mm_add_ps(_mm_mul_ps(row3, tmp1), minor0);
+  minor3 = _mm_mul_ps(row0, tmp1);
+  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0x4E);
+  minor0 = _mm_sub_ps(minor0, _mm_mul_ps(row3, tmp1));
+  minor3 = _mm_sub_ps(_mm_mul_ps(row0, tmp1), minor3);
+  minor3 = _mm_shuffle_ps(minor3, minor3, 0x4E);
+  /* ----------------------------------------------- */
+  tmp1 = _mm_mul_ps(_mm_shuffle_ps(row1, row1, 0x4E), row3);
+  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0xB1);
+  row2 = _mm_shuffle_ps(row2, row2, 0x4E);
+  minor0 = _mm_add_ps(_mm_mul_ps(row2, tmp1), minor0);
+  minor2 = _mm_mul_ps(row0, tmp1);
+  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0x4E);
+  minor0 = _mm_sub_ps(minor0, _mm_mul_ps(row2, tmp1));
+  minor2 = _mm_sub_ps(_mm_mul_ps(row0, tmp1), minor2);
+  minor2 = _mm_shuffle_ps(minor2, minor2, 0x4E);
+  /* ----------------------------------------------- */
+  tmp1 = _mm_mul_ps(row0, row1);
+  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0xB1);
+  minor2 = _mm_add_ps(_mm_mul_ps(row3, tmp1), minor2);
+  minor3 = _mm_sub_ps(_mm_mul_ps(row2, tmp1), minor3);
+  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0x4E);
+  minor2 = _mm_sub_ps(_mm_mul_ps(row3, tmp1), minor2);
+  minor3 = _mm_sub_ps(minor3, _mm_mul_ps(row2, tmp1));
+  /* ----------------------------------------------- */
+  tmp1 = _mm_mul_ps(row0, row3);
+  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0xB1);
+  minor1 = _mm_sub_ps(minor1, _mm_mul_ps(row2, tmp1));
+  minor2 = _mm_add_ps(_mm_mul_ps(row1, tmp1), minor2);
+  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0x4E);
+  minor1 = _mm_add_ps(_mm_mul_ps(row2, tmp1), minor1);
+  minor2 = _mm_sub_ps(minor2, _mm_mul_ps(row1, tmp1));
+  /* ----------------------------------------------- */
+  tmp1 = _mm_mul_ps(row0, row2);
+  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0xB1);
+  minor1 = _mm_add_ps(_mm_mul_ps(row3, tmp1), minor1);
+  minor3 = _mm_sub_ps(minor3, _mm_mul_ps(row1, tmp1));
+  tmp1 = _mm_shuffle_ps(tmp1, tmp1, 0x4E);
+  minor1 = _mm_sub_ps(minor1, _mm_mul_ps(row3, tmp1));
+  minor3 = _mm_add_ps(_mm_mul_ps(row1, tmp1), minor3);
+  /* ----------------------------------------------- */
+  det = _mm_mul_ps(row0, minor0);
+  det = _mm_add_ps(_mm_shuffle_ps(det, det, 0x4E), det);
+  det = _mm_add_ss(_mm_shuffle_ps(det, det, 0xB1), det);
+  tmp1 = _mm_rcp_ss(det);
+  det = _mm_sub_ss(_mm_add_ss(tmp1, tmp1), _mm_mul_ss(det, _mm_mul_ss(tmp1, tmp1)));
+  det = _mm_shuffle_ps(det, det, 0x00);
+  minor0 = _mm_mul_ps(det, minor0);
+  _mm_storel_pi((__m64*)(a), minor0);
+  _mm_storeh_pi((__m64*)(a+2), minor0);
+  minor1 = _mm_mul_ps(det, minor1);
+  _mm_storel_pi((__m64*)(a+4), minor1);
+  _mm_storeh_pi((__m64*)(a+6), minor1);
+  minor2 = _mm_mul_ps(det, minor2);
+  _mm_storel_pi((__m64*)(a+ 8), minor2);
+  _mm_storeh_pi((__m64*)(a+10), minor2);
+  minor3 = _mm_mul_ps(det, minor3);
+  _mm_storel_pi((__m64*)(a+12), minor3);
+  _mm_storeh_pi((__m64*)(a+14), minor3);
+  PetscFunctionReturn(0);
+}
+
+#endif
+
 
