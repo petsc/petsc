@@ -831,6 +831,12 @@ runex93:
 	   else echo "Possible problem with ex93_1, diffs above"; fi; \
 	   ${RM} -f ex93_1.tmp
 
+runex95:
+	-@${MPIRUN} -np 3 ex95 > ex95_1.tmp 2>&1; \
+	   if (${DIFF} output/ex95_1.out ex95_1.tmp) then true; \
+	   else echo "Possible problem with ex95_1, diffs above"; fi; \
+	   ${RM} -f ex95_1.tmp
+
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		   runex5 runex5_2 ex5.rm ex6.PETSc runex6 ex6.rm ex8.PETSc \
 		   runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm \
@@ -864,7 +870,7 @@ TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		   ex10.PETSc runex10 ex10.rm ex14.PETSc runex14 ex14.rm ex15.PETSc\
 		   runex15 ex15.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 \
 		   ex21.rm ex35.PETSc runex35 ex35.rm  ex48.PETSc runex48 ex48.rm \
-                   ex71.PETSc ex71.rm ex93.PETSc runex93 ex93.rm
+                   ex71.PETSc ex71.rm ex93.PETSc runex93 ex93.rm ex95.PETSc runex95 ex95.rm
 TESTEXAMPLES_6	 = ex32.PETSc ex32.rm ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 ex41.rm \
 	           ex42.PETSc runex42 ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm  \
 	           ex50.PETSc ex50.rm ex53.PETSc runex53 ex53.rm

@@ -20,7 +20,7 @@ int main(int argc,char **argv) {
   ierr = MatCreate(PETSC_COMM_SELF,PETSC_DETERMINE,PETSC_DETERMINE,m,n,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
 
-  a[0] = rank;
+  a[0] = rank+1;
   for (i=0; i<m-rank; i++){
     col = i+rank;
     ierr = MatSetValues(A,1,&i,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
@@ -35,11 +35,10 @@ int main(int argc,char **argv) {
 
   /* Test MatMerge_SeqsToMPI */
   ierr = MatMerge_SeqsToMPI(PETSC_COMM_WORLD,A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  /* ierr = MatView(B, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Test MAT_REUSE_MATRIX */
-  for (i=0; i<0; i++){
-    alpha -=0.1;
+  alpha = 0.1;
+  for (i=1; i<4; i++){
     ierr = MatScale(&alpha,A);CHKERRQ(ierr);
     ierr = MatMerge_SeqsToMPI(PETSC_COMM_WORLD,A,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
   }
