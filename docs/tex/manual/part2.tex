@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.352 2001/02/22 15:47:56 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.353 2001/03/13 04:25:07 bsmith Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1827,7 +1827,7 @@ distribution across the processors can (and should) be done in a ``pre-processin
 before the numerical computations. However, this does not mean it need be done
 in a separate, sequential program, rather it should be done before one sets up the 
 parallel grid data structures in the actual program. PETSc provides an interface to
-the ParMETIS (developed by George Karypis; see the docs/installation.html file
+the ParMETIS (developed by George Karypis; see the docs/installation/index.htm file
 for directions on installing PETSc to use ParMETIS), to allow the partitioning to be done in
 parallel. PETSc does not currently provide directly support for dynamic
 repartitioning, load balancing by migrating matrix entries between processors, etc.
@@ -2555,7 +2555,7 @@ solvers.  Since PETSc automatically handles matrix assembly,
 preconditioner setup, profiling, etc., users who employ BlockSolve95
 through the PETSc interface need not concern themselves with many
 details provided within the BlockSolve95 users manual. Consult the file
-\url{docs/installation.html} for details on installing PETSc to allow 
+\url{docs/installation/index.htm} for details on installing PETSc to allow 
 the use of BlockSolve95.
 
 One can create a matrix that is compatible with BlockSolve95 by using
@@ -4149,7 +4149,7 @@ corresponds to \url{SNESDefaultComputeJacobian()}. \findex{TSDefaultComputeJacob
 
 PVODE is a parallel ODE solver developed by Hindmarsh et al. at LLNL.
 The TS component provides an interface to use PVODE directly from PETSc.
-(To install PETSc to use PVODE, see the installation guide, \url{docs/installation.html}.) 
+(To install PETSc to use PVODE, see the installation guide, \url{docs/installation/index.htm}.) 
 
 To use the PVODE integrators, call 
 \begin{verbatim}
@@ -4479,7 +4479,7 @@ can easily be modified to serve specialized needs.
 \sindex{graphics, disabling}
 To disable all x-window-based graphics, edit the file
 \url{${PETSC_DIR}/bmake/${PETSC_ARCH}/base} and remove the flag
-\url{-DHAVE_X11} from the CONF variable definition.  Then (re)compile
+\url{-PETSC_DHAVE_X11} from the CONF variable definition.  Then (re)compile
 the PETSc libraries.
 
 %------------------------------------------------------------------
@@ -5037,12 +5037,12 @@ application codes and tips for accurate profiling.
 \sindex{profiling} \sindex{logging} \sindex{timing} 
 
 If an application code and the PETSc libraries have been compiled with
-the \url{-DPETSC_LOG} flag (which is the default for all versions),
+the \url{-DPETSC_USE_LOG} flag (which is the default for all versions),
 then various kinds of profiling of code between calls to \url{
 PetscInitialize()} and \url{PetscFinalize()} can be \findex{PETSC_USE_LOG}
-activated at runtime.  Note that the flag \url{-DPETSC_LOG} can be
+activated at runtime.  Note that the flag \url{-DPETSC_USE_LOG} can be
 specified for an installation of PETSc in the file \url{
-${PETSC_DIR}/bmake/${PETSC_ARCH}/base.$\{BOPT\}}, as discussed in
+${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables}, as discussed in
 Section~\ref{sec:makeflags}.  The profiling options include the following:
 \findex{-log_summary} \findex{-log_info}
 \findex{-log_trace}
@@ -5239,8 +5239,8 @@ specify an optional name via \url{logfile}.
 To use this logging option, the user may employ any implementation of
 MPI (not necessarily MPICH), but must build and link the MPE part of
 the MPICH.  The user must compile the PETSc library with the \url{
--DHAVE_MPE} flag, which is {\em not} activated by default. The user
-can turn on MPE logging by specifying \url{-DHAVE_MPE} in the \url{
+-DPETSC_HAVE_MPE} flag, which is {\em not} activated by default. The user
+can turn on MPE logging by specifying \url{-DPETSC_HAVE_MPE} in the \url{
 PCONF} variable within \url{
 ${PETSC_DIR}/bmake/${PETSC_ARCH}/base.site} and (re)compiling all
 of PETSc.
@@ -5764,17 +5764,6 @@ first having been set, a floating point exception is generated.  This
 option also calls {PetscInitializeLargeInts()}; see the manual pages for
 details.  Note that so far these work only on the certain systems.
 
-\item The utility \url{${PETSC_DIR}/bin/petscview} can illustrate graphically
-what PETSc objects have never been properly destroyed during a run.  
-First, one should check that the source has been compiled with the
-\url{-DPETSC_LOG} flag (which is the default for all versions).
-Then one can run the program with the \url{-log} option, and view the resulting
-log file with \url{petscview}, which uses colors to illustrate different
-levels of object activity.  When PETSc objects have been destroyed,
-they change color (gray, by default).  Any objects that have not
-been properly destroyed (so that their memory remains allocated)
-should not turn gray.
-\index{petscview}
 \end{itemize}
 
 \section{Machine-Specific Optimizations}
@@ -6275,13 +6264,13 @@ libraries).  To work with complex numbers,
 the user should compile the PETSc libraries (including the Fortran
 interface library) and the application code with
 \url{BOPT=[g_complex,O_complex]} for debugging, optimized,
-and profiling versions, respectively.  The file \url{${PETSC_DIR}/docs/installation.html}
+and profiling versions, respectively.  The file \url{${PETSC_DIR}/docs/installation/index.htm}
 provides detailed instructions for installing PETSc.
 
 We recommend using optimized Fortran kernels for some key numerical
 routines with complex numbers (such as matrix-vector products, vector
 norms, etc.) instead of the default C++ routines.  See the ``Complex
-Numbers'' section of the file \url{${PETSC_DIR}/docs/installation.html} for
+Numbers'' section of the file \url{${PETSC_DIR}/docs/installation/index.htm} for
 details on building these kernels.  This implementation exploits the
 maturity of Fortran compilers while retaining the identical user
 interface.  For example, on rs6000 machines, the base single-node
