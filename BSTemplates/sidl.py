@@ -212,7 +212,7 @@ class UsingCompiler:
     linker.doLibraryCheck = doLibraryCheck
     return [link.TagLibrary(), linker]
 
-  def getExecutableCompileTarget(self, sources, executable):
+  def getExecutableCompileTarget(self, project, sources, executable):
     baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
     library  = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
     compiler = self.getCompiler(library)
@@ -358,8 +358,8 @@ class UsingPython(UsingCompiler):
     compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
     return [compile.TagC(root = rootDir), compiler]
 
-  def getExecutableCompileTarget(self, sources, executable):
-    raise RuntimeError('No excutable compilation in '+self.getLanguage())
+  def getExecutableCompileTarget(self, project, sources, executable):
+    raise RuntimeError('No executable compilation in '+self.getLanguage())
 
   def getExecutableLinkTarget(self, project):
     raise RuntimeError('No executable link in '+self.getLanguage())
@@ -402,7 +402,7 @@ class UsingF77 (UsingCompiler):
     compileF77.includeDirs.extend(self.includeDirs[self.getLanguage()])
     return [compile.TagC(root = rootDir), compileC, compile.TagF77(root = rootDir), compileF77]
 
-  def getExecutableCompileTarget(self, sources, executable):
+  def getExecutableCompileTarget(self, project, sources, executable):
     baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
     library  = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
     compileC = compile.CompileC(library)
@@ -470,10 +470,11 @@ class UsingJava (UsingCompiler):
   def getServerCompileTarget(self, project, package):
     raise RuntimeError('No server for '+self.getLanguage())
 
-  def getExecutableCompileTarget(self, sources, executable):
+  def getExecutableCompileTarget(self, project, sources, executable):
     baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
     library  = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.jar')])
     compileJava = compile.CompileJava(library)
+    compileJava.includeDirs.extend(self.getClientLibrary(project, self.getLanguage()))
     compileJava.includeDirs.extend(self.getSIDLRuntimeLibraries())
     compileJava.archiverRoot = os.path.dirname(sources[0])
     return [compile.TagJava(), compileJava]
@@ -652,7 +653,7 @@ class CompileDefaults (Defaults):
 
   def getExecutableDriverTargets(self, sources, lang, executable):
     try:
-      compiler = self.getUsing(lang).getExecutableCompileTarget(sources, executable)
+      compiler = self.getUsing(lang).getExecutableCompileTarget(self.project, sources, executable)
       linker   = self.getUsing(lang).getExecutableLinkTarget(self.project)
     except AttributeError, e:
       import sys
@@ -667,9 +668,7 @@ class CompileDefaults (Defaults):
     # TODO: Of course this should be determined from configure
     libraries = fileset.FileSet(['libdl.so'])
 
-    return target.Target(sources,
-                         [self.getCompileTarget(),
-                          transform.FileFilter(self.isNotLibrary)]+
-                         self.getExecutableDriverTargets(sources, lang, executable)+
-                         [link.TagShared(),
-                          link.LinkExecutable(executable, extraLibraries = libraries)])
+    t = [self.getCompileTarget(), transform.FileFilter(self.isNotLibrary)] + self.getExecutableDriverTargets(sources, lang, executable)
+    if not lang == 'Java':
+      t += [link.TagShared(), link.LinkExecutable(executable, extraLibraries = libraries)]
+    return target.Target(sources, t)
