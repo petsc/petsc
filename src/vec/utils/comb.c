@@ -70,21 +70,21 @@ int VecSplitReductionApply(VecSplitReduction *sr)
 {
   int        ierr,i,numops = sr->numopsbegin, *reducetype = sr->reducetype;
   Scalar     *lvalues = sr->lvalues,*gvalues = sr->gvalues;
-  PetscTruth sum = PETSC_FALSE, abs = PETSC_FALSE;
+  PetscTruth sum_flg = PETSC_FALSE, abs_flg = PETSC_FALSE;
   MPI_Comm   comm = sr->comm;
 
   PetscFunctionBegin;
   /* determine if all reductions are sum, or if some involve abs() */
   for ( i=0; i<numops; i++ ) {
     if (reducetype[i] == REDUCE_ABS) {
-      abs = PETSC_TRUE;
+      abs_flg = PETSC_TRUE;
     } else {
-      sum = PETSC_TRUE;
+      sum_flg = PETSC_TRUE;
     }
   }
-  if (sum && abs) {
+  if (sum_flg && abs_flg) {
     SETERRQ(1,1,"Cannot yet handled mixed sum and abs in reductions");
-  } else if (abs) {
+  } else if (abs_flg) {
     ;
   } else {
     ierr = MPI_Allreduce(lvalues,gvalues,numops,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
