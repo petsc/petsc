@@ -39,12 +39,12 @@ Thanks for your continued support.
 The PETSc developers,
 Satish, Kris, Bill, Dinesh, Lois, and Barry
 
-Why 2.1.0?  PETSc 2.1.0 represents the  cumulation of several years of
-effort to  convert   PETSc 2.0  to   use dynamic   libraries.  Dynamic
-libraries  allow  users to delay   until runtime the   choices of what
-algorithms  and  data  structures to run  without  generating enormous
-executables. This  capability increases the flexibility of application
-codes  and  makes  it trivial to   determine  experimentally the  best
-available data structures and algorithms for YOUR particular problem. 
+Why 2.1.0?  PETSc 2.1.0 represents the cumulation of several years of
+effort to convert PETSc 2.0 to use dynamic libraries.  Dynamic
+libraries allow users to delay until runtime the choices of what
+algorithms and data structures to run without generating enormous
+executables. This capability increases the flexibility of application
+codes and makes it trivial to determine experimentally the best
+available data structures and algorithms for YOUR particular problem.
 
 
