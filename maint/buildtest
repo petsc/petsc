@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.136 1998/04/20 18:29:54 balay Exp balay $ 
+# $Id: buildtest,v 1.137 1998/04/20 18:33:35 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -177,6 +177,7 @@ foreach job ($*)
   rsh $mach -n "cd $hme ;echo 'Finished Build on $mach $arch $bopt `date`' >> maint/examples_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ; echo 'Finished Build `date`' >> maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ;echo 'Finished Build `date`' >> maint/examples_$arch.$bopt.$mach.log"
+  rsh $mach -n "cd $hme ; echo 'X******************************************************X' >> maint/examples_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ;/bin/cp  maint/examples_$arch.$bopt.$mach.log /home/bsmith/petsc/maint/nightlylogs"
   rsh $mach -n "cd $hme ;/bin/cp  maint/build_$arch.$bopt.$mach.log /home/bsmith/petsc/maint/nightlylogs"
 end
