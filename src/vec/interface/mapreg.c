@@ -227,7 +227,7 @@ int PetscMapRegister(const char sname[], const char path[], const char name[], i
   PetscFunctionReturn(0);
 }
 
-/*@M
+/*CM
   PetscMapSerializeRegisterDynamic - Adds a serialization method to the map package.
 
   Synopsis:
