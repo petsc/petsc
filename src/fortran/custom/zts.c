@@ -1,4 +1,4 @@
-/*$Id: zts.c,v 1.28 2000/05/04 16:27:10 bsmith Exp balay $*/
+/*$Id: zts.c,v 1.29 2000/05/05 22:26:47 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscts.h"
@@ -21,6 +21,9 @@
 #define tsgetoptionsprefix_                  TSGETOPTIONSPREFIX
 #define tsdefaultmonitor_                    TSDEFAULTMONITOR
 #define tsview_                              TSVIEW
+#define tsgetrhsjacobian_                    TSGETRHSJACOBIAN
+#define tsgetrhsmatrix_                      TSGETRHSMATRIX
+#define tssetrhsboundaryconditions_          TSSETRHSBOUNDARYCONDITIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define tsdefaultcomputejacobian_            tsdefaultcomputejacobian
 #define tsdefaultcomputejacobiancolor_       tsdefaultcomputejacobiancolor
@@ -39,9 +42,36 @@
 #define tsgetoptionsprefix_                  tsgetoptionsprefix
 #define tsdefaultmonitor_                    tsdefaultmonitor
 #define tsview_                              tsview
+#define tsgetrhsjacobian_                    tsgetrhsjacobian
+#define tsgetrhsmatrix_                      tsgetrhsmatrix
+#define tssetrhsboundaryconditions_          tssetrhsboundaryconditions
 #endif
 
 EXTERN_C_BEGIN
+
+static int (*f11)(TS*,double*,Vec*,void*,int*);
+static int ourtsbcfunction(TS ts,double d,Vec x,void *ctx)
+{
+  int ierr = 0;
+  (*f11)(&ts,&d,&x,ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+void PETSC_STDCALL tssetrhsboundaryconditions_(TS *ts,int (*f)(TS*,double*,Vec*,void*,int*),void *ctx,int *ierr)
+{
+  f11 = f;
+  *ierr = TSSetRHSBoundaryConditions(*ts,ourtsbcfunction,ctx);
+}
+
+void PETSC_STDCALL tsgetrhsjacobian_(TS *ts,Mat *J,Mat *M,void **ctx,int *ierr)
+{
+  *ierr = TSGetRHSJacobian(*ts,J,M,ctx);
+}
+
+void PETSC_STDCALL tsgetrhsmatrix_(TS *ts,Mat *J,Mat *M,void **ctx,int *ierr)
+{
+  *ierr = TSGetRHSMatrix(*ts,J,M,ctx);
+}
 
 void PETSC_STDCALL tsview_(TS *ts,Viewer *viewer, int *ierr)
 {
