@@ -205,7 +205,8 @@ class Configure(config.base.Configure):
       elif not typename == 'sizeof_long_long':
         raise RuntimeError('Unable to determine '+typename)
       else:
-        self.framework.log.write('Compiler does not support long long')
+        self.framework.log.write('Compiler does not support long long\n')
+        size = 0
     else:
       size = self.framework.argDB[typename]
     self.addDefine(typename.upper(), size)
