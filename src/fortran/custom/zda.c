@@ -252,7 +252,7 @@ void PETSC_STDCALL daview_(DA *da,PetscViewer *vin,PetscErrorCode *ierr)
   *ierr = DAView(*da,v);
 }
 
-void PETSC_STDCALL dagetglobalindices_(DA *da,PetscInt *n,PetscInt *indices,PetscInt *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL dagetglobalindices_(DA *da,PetscInt *n,PetscInt *indices,size_t *ia,PetscErrorCode *ierr)
 {
   PetscInt *idx;
   *ierr = DAGetGlobalIndices(*da,n,&idx);

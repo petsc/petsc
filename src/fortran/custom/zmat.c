@@ -206,21 +206,21 @@ void PETSC_STDCALL matsetvaluesstencil_(Mat *mat,PetscInt *m,MatStencil *idxm,Pe
   *ierr = MatSetValuesStencil(*mat,*m,idxm,*n,idxn,v,*addv);
 }
 
-void PETSC_STDCALL matmpiaijgetseqaij_(Mat *A,Mat *Ad,Mat *Ao,PetscInt *ic,PetscInt *iic,PetscErrorCode *ierr)
+void PETSC_STDCALL matmpiaijgetseqaij_(Mat *A,Mat *Ad,Mat *Ao,PetscInt *ic,size_t *iic,PetscErrorCode *ierr)
 {
   PetscInt *i;
   *ierr = MatMPIAIJGetSeqAIJ(*A,Ad,Ao,&i);if (*ierr) return;
   *iic  = PetscIntAddressToFortran(ic,i);
 }
 
-void PETSC_STDCALL matmpibaijgetseqbaij_(Mat *A,Mat *Ad,Mat *Ao,PetscInt *ic,PetscInt *iic,PetscErrorCode *ierr)
+void PETSC_STDCALL matmpibaijgetseqbaij_(Mat *A,Mat *Ad,Mat *Ao,PetscInt *ic,size_t *iic,PetscErrorCode *ierr)
 {
   PetscInt *i;
   *ierr = MatMPIBAIJGetSeqBAIJ(*A,Ad,Ao,&i);if (*ierr) return;
   *iic  = PetscIntAddressToFortran(ic,i);
 }
 
-void PETSC_STDCALL matgetrowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscInt *n,PetscInt *ia,PetscInt *iia,PetscInt *ja,PetscInt *jja,
+void PETSC_STDCALL matgetrowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscInt *n,PetscInt *ia,size_t *iia,PetscInt *ja,size_t *jja,
                                 PetscTruth *done,PetscErrorCode *ierr)
 {
   PetscInt *IA,*JA;
@@ -229,7 +229,7 @@ void PETSC_STDCALL matgetrowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscInt 
   *jja  = PetscIntAddressToFortran(ja,JA);
 }
 
-void PETSC_STDCALL matrestorerowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscInt *n,PetscInt *ia,PetscInt *iia,PetscInt *ja,PetscInt *jja,
+void PETSC_STDCALL matrestorerowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscInt *n,PetscInt *ia,size_t *iia,PetscInt *ja,size_t *jja,
                                     PetscTruth *done,PetscErrorCode *ierr)
 {
   PetscInt *IA = PetscIntAddressFromFortran(ia,*iia),*JA = PetscIntAddressFromFortran(ja,*jja);
