@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.329 2001/03/09 21:53:15 balay Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.330 2001/03/22 20:29:56 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1049,8 +1049,6 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
     ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
   } else if (op == MAT_ROWS_SORTED || 
              op == MAT_ROWS_UNSORTED ||
-             op == MAT_SYMMETRIC ||
-             op == MAT_STRUCTURALLY_SYMMETRIC ||
              op == MAT_YES_NEW_DIAGONALS) {
     PetscLogInfo(A,"MatSetOption_MPIAIJ:Option ignored\n");
   } else if (op == MAT_COLUMN_ORIENTED) {
@@ -1539,7 +1537,7 @@ EXTERN_C_BEGIN
 EXTERN int MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
 EXTERN_C_END
 
-EXTERN int MatUseXXT_MPIAIJ(Mat);
+EXTERN int MatUseXT_MPIAIJ(Mat);
 EXTERN int MatUseXYT_MPIAIJ(Mat);
 
 EXTERN_C_BEGIN
