@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex48.c,v 1.6 1999/05/04 20:33:03 balay Exp balay $";
+static char vcid[] = "$Id: ex48.c,v 1.7 1999/06/30 23:52:15 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -18,6 +18,7 @@ int main(int argc,char **args)
   PetscRandom rand;
   IS          is1,is2;
   double      s1norm,s2norm,rnorm,tol = 1.e-10;
+  PetscTruth  flag;
   
   PetscInitialize(&argc,&args,(char *)0,help);
   
@@ -95,9 +96,10 @@ int main(int argc,char **args)
     rows[1] = (int)(PetscReal(rval)*M);
     ierr = MatGetValues(A,2,rows,2,cols,vals1);CHKERRA(ierr);
     ierr = MatGetValues(B,2,rows,2,cols,vals2);CHKERRA(ierr);
-    if(PetscMemcmp(vals1,vals2,4*sizeof(Scalar))) 
+    ierr = PetscMemcmp(vals1,vals2,4*sizeof(Scalar),&flag);CHKERRA(ierr);
+    if (!flag) {
       PetscPrintf(PETSC_COMM_SELF,"Error: MatGetValues\n");
-  }
+    }
   
   /* Test MatMult(), MatMultAdd() */
   for ( i=0; i<40; i++) {

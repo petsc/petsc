@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.68 1999/10/01 21:23:14 bsmith Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.69 1999/10/04 22:51:03 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -229,7 +229,8 @@ static char FIXCHARSTRING[1024];
   } else {  \
     while((n > 0) && (b[n-1] == ' ')) n--; \
     b = FIXCHARSTRING; \
-    PetscStrncpy(b,_fcdtocp(a),n); \
+    *__ierr = PetscStrncpy(b,_fcdtocp(a),n); \
+    if (*__ierr) return; \
     b[n] = 0; \
   } \
 }
@@ -245,7 +246,8 @@ static char FIXCHARSTRING[1024];
     while((n > 0) && (a[n-1] == ' ')) n--; \
     if (a[n] != 0) { \
       b = FIXCHARSTRING; \
-      PetscStrncpy(b,a,n); \
+      *__ierr = PetscStrncpy(b,a,n); \
+      if (*__ierr) return; \
       b[n] = 0; \
     } else b = a;\
   } \
@@ -274,7 +276,7 @@ void PETSC_STDCALL petscrandomgetvalue_(PetscRandom *r,Scalar *val, int *__ierr 
 }
 
 
-void PETSC_STDCALL petscobjectgetname(PetscObject *obj, CHAR name, int *__ierr, int len)
+void PETSC_STDCALL petscobjectgetname_(PetscObject *obj, CHAR name, int *__ierr, int len)
 {
   char *tmp;
   *__ierr = PetscObjectGetName(*obj,&tmp);

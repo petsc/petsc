@@ -69,6 +69,8 @@ PetscStrncmp() and PetscStrcasecmp() now return PETSC_TRUE as a final argument
 if the strings match else PETSC_FALSE. Note this means removing ! from your current
 tests and adding it where you don't have it.
 
+PetscMemcmp() now has a final argument of true for matching memories.
+
    The Fortran versions of the PetscStrxxx() and PetscMemxxx() routines also now 
 have the error flag as the final argument.
    
