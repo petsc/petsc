@@ -585,7 +585,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
   SNES_KSP_EW_ConvCtx *kctx;
 
   PetscFunctionBegin;
-  PetscValidPointer(outsnes,1);
+  PetscValidPointer(outsnes,2);
   *outsnes = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = SNESInitializePackage(PETSC_NULL);CHKERRQ(ierr);

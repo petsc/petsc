@@ -100,7 +100,7 @@ EXTERN_C_END
       } \
       if (a->nonew == 1) goto a_noinsert; \
       if (a->nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
-      MatSeqXAIJReallocateAIJ(a,bs2,nrow,brow,rmax,aa,ai,aj,a->mbs,rp,ap,aimax);\
+      MatSeqXAIJReallocateAIJ(a,bs2,nrow,brow,bcol,rmax,aa,ai,aj,a->mbs,rp,ap,aimax,a->nonew); \
       N = nrow++ - 1;  \
       /* shift up all the later entries in this row */ \
       for (ii=N; ii>=_i; ii--) { \
@@ -138,7 +138,7 @@ EXTERN_C_END
       } \
       if (b->nonew == 1) goto b_noinsert; \
       if (b->nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
-      MatSeqXAIJReallocateAIJ(b,bs2,nrow,brow,rmax,ba,bi,bj,b->mbs,rp,ap,bimax);\
+      MatSeqXAIJReallocateAIJ(b,bs2,nrow,brow,bcol,rmax,ba,bi,bj,b->mbs,rp,ap,bimax,b->nonew); \
       N = nrow++ - 1;  \
       /* shift up all the later entries in this row */ \
       for (ii=N; ii>=_i; ii--) { \

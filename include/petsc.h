@@ -1002,11 +1002,13 @@ typedef void (**PetscVoidFunction)(void);
 /*
     Functions that can act on any PETSc object.
 */
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm,PetscObject*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroy(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectExists(PetscObject,PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetComm(PetscObject,MPI_Comm *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetCookie(PetscObject,int *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetType(PetscObject,int *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetType(PetscObject,const char []);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetType(PetscObject,const char *[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetName(PetscObject,const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetName(PetscObject,char*[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectReference(PetscObject);
@@ -1018,6 +1020,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectView(PetscObject,PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectCompose(PetscObject,const char[],PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectQuery(PetscObject,const char[],PetscObject *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposeFunction(PetscObject,const char[],const char[],void (*)(void));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetFromOptions(PetscObject);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetUp(PetscObject);
 
 typedef void (*FCNVOID)(void); /* cast in next macro should never be extern C */
 typedef PetscErrorCode (*FCNINTVOID)(void); /* used in casts to make sure they are not extern C */
