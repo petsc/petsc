@@ -516,23 +516,68 @@ class Configure(config.base.Configure):
     return
 
   def configureArchiver(self):
-    '''Check the archiver'''
-    self.getExecutable(self.framework.argDB['with-ar'], getFullPath = 1, resultName = 'AR')
-    self.AR_FLAGS = self.framework.argDB['AR_FLAGS']
-    self.addArgumentSubstitution('AR_FLAGS', 'AR_FLAGS')
+    '''Check that the archiver exists and can make a library usable by the compiler'''
+    def checkArchive(command, status, output, error):
+      if error or status:
+        self.framework.log.write('Possible ERROR while running archiver: '+output)
+        if status: self.framework.log.write('ret = '+str(status)+'\n')
+        if error: self.framework.log.write('error message = {'+error+'}\n')
+        os.remove('conf1.o')
+        raise RuntimeError('Archiver is not functional')
+      return
+    self.framework.getExecutable(self.framework.argDB['with-ar'], getFullPath = 1, resultName = 'AR')
+    self.framework.addArgumentSubstitution('AR_FLAGS', 'AR_FLAGS')
+    self.pushLanguage('C')
+    if not self.checkCompile('', 'int foo(int a) {\n  return a+1;\n}\n\n', cleanup = 0, codeBegin = '', codeEnd = ''):
+      raise RuntimeError('Compiler is not functional')
+    os.rename(self.compilerObj, 'conf1.o')
+    (output, error, status) = config.base.Configure.executeShellCommand(self.framework.AR+' '+self.framework.argDB['AR_FLAGS']+' conf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
+    os.remove('conf1.o')
+    oldLibs = self.framework.argDB['LIBS']
+    self.framework.argDB['LIBS'] = 'conf1.a'
+    if not self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n', cleanup = 0):
+      self.framework.argDB['LIBS'] = oldLibs
+      os.rename('conf1.a','conf1.lib')
+      self.framework.argDB['LIBS'] = 'conf1.lib'
+      if not self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n', cleanup = 0):
+        self.framework.argDB['LIBS'] = oldLibs
+        os.remove('conf1.lib')
+        raise RuntimeError('Compiler cannot use libaries made by archiver')
+      os.remove('conf1.lib')
+    else:
+      os.remove('conf1.a')
+    self.framework.argDB['LIBS'] = oldLibs
+    self.popLanguage()
     return
 
   def configureRanlib(self):
-    '''Check for ranlib, using "true" if it is not found'''
+    '''Check for ranlib, using "true" if it is not found. If found, test it on a library.'''
     if 'with-ranlib' in self.framework.argDB:
-      found = selfgetExecutable(self.framework.argDB['with-ranlib'], resultName = 'RANLIB')
+      found = self.framework.getExecutable(self.framework.argDB['with-ranlib'], resultName = 'RANLIB')
       if not found:
          raise RuntimeError('You set a value for --with-ranlib, but '+self.framework.argDB['with-ranlib']+' does not exist')
     else:
-      found = self.getExecutable('ranlib',resultName = 'RANLIB')
+      found = self.framework.getExecutable('ranlib', resultName = 'RANLIB')
       if not found:
-        self.addSubstitution('RANLIB', 'true')
-        self.RANLIB = 'true'
+        self.framework.addSubstitution('RANLIB', 'true')
+    if found:
+      def checkRanlib(command, status, output, error):
+        if error or status:
+          self.framework.log.write('Possible ERROR while running ranlib: '+output)
+          if status: self.framework.log.write('ret = '+str(status)+'\n')
+          if error: self.framework.log.write('error message = {'+error+'}\n')
+          os.remove('conf1.a')
+          raise RuntimeError('Ranlib is not functional')
+        return
+      self.pushLanguage('C')
+      if not self.checkCompile('', 'int foo(int a) {\n  return a+1;\n}\n\n', cleanup = 0, codeBegin = '', codeEnd = ''):
+        raise RuntimeError('Compiler is not functional')
+      os.rename(self.compilerObj, 'conf1.o')
+      (output, error, status) = config.base.Configure.executeShellCommand(self.framework.AR+' '+self.framework.argDB['AR_FLAGS']+' conf1.a conf1.o', log = self.framework.log)
+      os.remove('conf1.o')
+      self.popLanguage()
+      config.base.Configure.executeShellCommand(self.framework.RANLIB+' conf1.a', checkCommand = checkRanlib, log = self.framework.log)
+      os.remove('conf1.a')
     return
 
   def configure(self):
