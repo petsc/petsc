@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daload.c,v 1.2 1999/03/07 17:30:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daload.c,v 1.3 1999/03/15 02:28:48 bsmith Exp balay $";
 #endif
 
 #include "src/dm/da/daimpl.h"     /*I  "da.h"   I*/
@@ -27,7 +27,6 @@ int DALoad(Viewer viewer,int M,int N, int P,DA *da)
   int         rank, size,ierr,info[8],nmax = 8,flag,fd;
   ViewerType  vtype;
   MPI_Comm    comm;
-  Vec         natural,global;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
