@@ -1210,13 +1210,14 @@ PetscErrorCode MatRestoreArray_SeqSBAIJ(Mat A,PetscScalar *array[])
 #define __FUNCT__ "MatAXPY_SeqSBAIJ"
 PetscErrorCode MatAXPY_SeqSBAIJ(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
-  Mat_SeqSBAIJ *x=(Mat_SeqSBAIJ *)X->data, *y=(Mat_SeqSBAIJ *)Y->data;
+  Mat_SeqSBAIJ   *x=(Mat_SeqSBAIJ *)X->data, *y=(Mat_SeqSBAIJ *)Y->data;
   PetscErrorCode ierr;
-  int one=1,i,bs=y->bs,bs2,j;
+  int            i,bs=y->bs,bs2,j;
+  PetscBLASInt   bnz = (PetscBLASInt)x->nz,one = 1;
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
-    BLaxpy_(&x->nz,(PetscScalar*)a,x->a,&one,y->a,&one);
+    BLaxpy_(&bnz,(PetscScalar*)a,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);

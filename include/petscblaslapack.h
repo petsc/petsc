@@ -369,63 +369,63 @@ EXTERN_C_BEGIN
    BLdot cannot be used with COMPLEX because it cannot 
    handle returing a double complex to C++.
 */
-EXTERN PetscReal BLdot_(int*,PetscScalar*,int*,PetscScalar*,int*);
-EXTERN PetscReal BLnrm2_(int*,PetscScalar*,int*);
-EXTERN PetscReal BLasum_(int*,PetscScalar*,int*);
-EXTERN void      BLscal_(int*,PetscScalar*,PetscScalar*,int*);
-EXTERN void      BLcopy_(int*,PetscScalar*,int*,PetscScalar*,int*);
-EXTERN void      BLswap_(int*,PetscScalar*,int*,PetscScalar*,int*);
-EXTERN void      BLaxpy_(int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*);
-EXTERN void      LAgetrf_(int*,int*,PetscScalar*,int*,int*,int*);
-EXTERN void      LAgetf2_(int*,int*,PetscScalar*,int*,int*,int*);
-EXTERN void      LAgeqrf_(int*,int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,int*);
+EXTERN PetscReal BLdot_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+EXTERN PetscReal BLnrm2_(PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+EXTERN PetscReal BLasum_(PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+EXTERN void      BLscal_(PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
+EXTERN void      BLcopy_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+EXTERN void      BLswap_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+EXTERN void      BLaxpy_(PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
+EXTERN void      LAgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void      LAgetf2_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void      LAgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 
 #if defined(PETSC_USES_CPTOFCD)
 
 #if defined(PETSC_USE_COMPLEX)
-EXTERN void   ZORMQR(_fcd,_fcd,int*,int*,int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,int*);
-EXTERN void   ZTRTRS(_fcd,_fcd,_fcd,int*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
-EXTERN void   ZPOTRF(_fcd,int*,PetscScalar*,int*,int*);
-EXTERN void   ZGEMV(_fcd,int*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar *,int*,PetscScalar*,PetscScalar*,int*);
-EXTERN void   ZPOTRS(_fcd,int*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
-EXTERN void   ZGETRS(_fcd,int*,int*,PetscScalar*,int*,int*,PetscScalar*,int*,int*);
-EXTERN void   ZGEMM(_fcd,_fcd,int*,int*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*);
-EXTERN void   ZGESVD(_fcd,_fcd,int *,int*,PetscScalar *,int*,PetscReal*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,PetscReal*,int*);
-EXTERN void   ZGEEV(_fcd,_fcd,int *,PetscScalar *,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,PetscReal*,int*);
+EXTERN void   ZORMQR(_fcd,_fcd,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   ZTRTRS(_fcd,_fcd,_fcd,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   ZPOTRF(_fcd,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   ZGEMV(_fcd,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
+EXTERN void   ZPOTRS(_fcd,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   ZGETRS(_fcd,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   ZGEMM(_fcd,_fcd,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
+EXTERN void   ZGESVD(_fcd,_fcd,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
+EXTERN void   ZGEEV(_fcd,_fcd,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
 #else
-EXTERN void   DORMQR(_fcd,_fcd,int*,int*,int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,int*);
-EXTERN void   DTRTRS(_fcd,_fcd,_fcd,int*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
-EXTERN void   DPOTRF(_fcd,int*,PetscScalar*,int*,int*);
-EXTERN void   DGEMV(_fcd,int*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar *,int*,PetscScalar*,PetscScalar*,int*);
-EXTERN void   DPOTRS(_fcd,int*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
-EXTERN void   DGETRS(_fcd,int*,int*,PetscScalar*,int*,int*,PetscScalar*,int*,int*);
-EXTERN void   DGEMM(_fcd,_fcd,int*,int*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*);
-EXTERN void   DGESVD(_fcd,_fcd,int *,int*,PetscScalar *,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
-EXTERN void   DGEEV(_fcd,_fcd,int *,PetscScalar *,int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
+EXTERN void   DORMQR(_fcd,_fcd,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   DTRTRS(_fcd,_fcd,_fcd,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   DPOTRF(_fcd,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   DGEMV(_fcd,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
+EXTERN void   DPOTRS(_fcd,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   DGETRS(_fcd,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   DGEMM(_fcd,_fcd,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
+EXTERN void   DGESVD(_fcd,_fcd,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   DGEEV(_fcd,_fcd,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #endif
 
 #else
-EXTERN void   LAormqr_(const char*,const char*,int*,int*,int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,int*);
-EXTERN void   LAtrtrs_(const char*,const char*,const char*,int*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
-EXTERN void   LApotrf_(const char*,int*,PetscScalar*,int*,int*);
-EXTERN void   LAgemv_(const char*,int*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar *,int*,PetscScalar*,PetscScalar*,int*);
-EXTERN void   LApotrs_(const char*,int*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
-EXTERN void   LAgetrs_(const char*,int*,int*,PetscScalar*,int*,int*,PetscScalar*,int*,int*);
-EXTERN void   BLgemm_(const char*,const char*,int*,int*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*);
+EXTERN void   LAormqr_(const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   LAtrtrs_(const char*,const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   LApotrf_(const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   LAgemv_(const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
+EXTERN void   LApotrs_(const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   LAgetrs_(const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   BLgemm_(const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
 
 /* ESSL uses a different calling sequence for dgeev(), zgeev() than LAPACK; */
 #if defined(PETSC_HAVE_ESSL) && defined(PETSC_USE_COMPLEX)
-EXTERN void   LAgeev_(int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,int*,int*,PetscReal*,int*);
-EXTERN void   LAgesvd_(const char*,const char*,int *,int*,PetscScalar *,int*,PetscReal*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,PetscReal*,int*);
+EXTERN void   LAgeev_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
+EXTERN void   LAgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
 #elif defined(PETSC_HAVE_ESSL)
-EXTERN void   LAgeev_(int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,int*,int*,PetscReal*,int*);
-EXTERN void   LAgesvd_(const char*,const char*,int *,int*,PetscScalar *,int*,PetscReal*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
+EXTERN void   LAgeev_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
+EXTERN void   LAgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #elif !defined(PETSC_USE_COMPLEX)
-EXTERN void   LAgeev_(const char*,const char*,int *,PetscScalar *,int*,PetscReal*,PetscReal*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
-EXTERN void   LAgesvd_(const char*,const char*,int *,int*,PetscScalar *,int*,PetscReal*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
+EXTERN void   LAgeev_(const char*,const char*,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscReal*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void   LAgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #else
-EXTERN void   LAgeev_(const char*,const char*,int *,PetscScalar *,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,PetscReal*,int*);
-EXTERN void   LAgesvd_(const char*,const char*,int *,int*,PetscScalar *,int*,PetscReal*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,PetscReal*,int*);
+EXTERN void   LAgeev_(const char*,const char*,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
+EXTERN void   LAgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
 #endif
 #endif
 

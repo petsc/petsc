@@ -880,10 +880,9 @@ PetscErrorCode MatScale_MPIDense(const PetscScalar *alpha,Mat inA)
 {
   Mat_MPIDense *A = (Mat_MPIDense*)inA->data;
   Mat_SeqDense *a = (Mat_SeqDense*)A->A->data;
-  int          one = 1,nz;
+  PetscBLASInt one = 1,nz = (PetscBLASInt)inA->m*inA->N;
 
   PetscFunctionBegin;
-  nz = inA->m*inA->N;
   BLscal_(&nz,(PetscScalar*)alpha,a->v,&one);
   PetscLogFlops(nz);
   PetscFunctionReturn(0);

@@ -14,11 +14,12 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,Pet
   */
   SETERRQ(PETSC_ERR_SUP,"GESVD - Lapack routine is unavailable\nNot able to provide singular value estimates.");
 #else
-  KSP_GMRES   *gmres = (KSP_GMRES*)ksp->data;
+  KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
-  int         n = gmres->it + 1,N = gmres->max_k + 2,lwork = 5*N,idummy = N,i,lierr;
-  PetscScalar *R = gmres->Rsvd,*work = R + N*N,sdummy;
-  PetscReal   *realpart = gmres->Dsvd;
+  int            n = gmres->it + 1,i,N = gmres->max_k + 2;
+  PetscBLASInt   bn = (PetscBLASInt)n,bN = (PetscBLASInt)N,lwork = (PetscBLASInt)5*N,idummy = (PetscBLASInt)N,lierr;
+  PetscScalar    *R = gmres->Rsvd,*work = R + N*N,sdummy;
+  PetscReal      *realpart = gmres->Dsvd;
 
   PetscFunctionBegin;
   if (!n) {
@@ -35,11 +36,11 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,Pet
   
   /* compute Singular Values */
 #if !defined(PETSC_USE_COMPLEX)
-  LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr);
+  LAgesvd_("N","N",&bn,&bn,R,&bN,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr);
 #else
-  LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,realpart+N,&lierr);
+  LAgesvd_("N","N",&bn,&bn,R,&bN,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,realpart+N,&lierr);
 #endif
-  if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in SVD Lapack routine %d",lierr);
+  if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in SVD Lapack routine %d",(int)lierr);
 
   *emin = realpart[n-1];
   *emax = realpart[0];
@@ -112,9 +113,10 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscRe
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
 #elif !defined(PETSC_USE_COMPLEX)
-  KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
+  KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
-  int       n = gmres->it + 1,N = gmres->max_k + 1,lwork = 5*N,idummy = N,i,*perm,lierr;
+  int            n = gmres->it + 1,N = gmres->max_k + 1,i,*perm;
+  PetscBLASInt   bn = (PetscBLASInt)n,bN = (PetscBLASInt)N,lwork = (PetscBLASInt)5*N,idummy = (PetscBLASInt)N,lierr;
   PetscScalar    *R = gmres->Rsvd,*work = R + N*N;
   PetscScalar    *realpart = gmres->Dsvd,*imagpart = realpart + N,sdummy;
 
@@ -130,8 +132,8 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscRe
   ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* compute eigenvalues */
-  LAgeev_("N","N",&n,R,&N,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr);
-  if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",lierr);
+  LAgeev_("N","N",&bn,R,&bN,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr);
+  if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
   ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) { perm[i] = i;}
   ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
