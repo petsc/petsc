@@ -8,13 +8,13 @@
 #
 # Location of BLAS and LAPACK
 #
-BLAS_LIB           = @BLAS_LIB@ @FLIBS@
+BLAS_LIB           = @BLAS_LIB@
 LAPACK_LIB         = @LAPACK_LIB@
-BLASLAPACK_LIB     = @LAPACK_LIB@ @BLAS_LIB@ @FLIBS@
+BLASLAPACK_LIB     = @LAPACK_LIB@ @BLAS_LIB@
 #
 # Location of MPI (Message Passing Interface) software  
 #
-MPI_LIB            = @MPI_LIB@ @FLIBS@
+MPI_LIB            = @MPI_LIB@
 MPI_INCLUDE        = @MPI_INCLUDE@
 MPIRUN             = @MPIRUN@
 #
