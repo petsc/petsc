@@ -1,11 +1,16 @@
 import args
 import sys
 
+# Compatibility fixes
 try:
   enumerate([0, 1])
 except NameError:
   def enumerate(l):
     return zip(range(len(l)), l)
+try:
+  True, False
+except NameError:
+  True, False = (0==0, 0!=0)
 
 class Logger(args.ArgumentProcessor):
   '''This class creates a shared log and provides methods for writing to it'''
