@@ -114,7 +114,7 @@ class Importer(ihooks.ModuleImporter):
         subname = "%s.%s" % (m.__name__, sub)
         submod = self.import_it(sub, subname, m)
         if not submod:
-          raise ImportError, "No module named " + subname
+          raise ImportError, 'No symbol '+sub+' in module '+m.__name__
 
   def import_it(self, partname, fqname, parent, force_load=0):
     if not partname:
