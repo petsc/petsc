@@ -1,20 +1,18 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	      =	  $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
-FFLAGS	      = 
-SOURCEC	      = 
-SOURCEF	      =
-SOURCEH	      =
-OBJSC	      =
-OBJSF	      =
-LOCDIR        = src/viewer/examples/
-LIBBASE	      = libpetscvec
-EXAMPLES_2    = 
-EXAMPLESC     = ex1.c ex2.c ex1.m
-RUNEXAMPLES_2 = 
-EXAMPLES_4    = ex1 ex2
-RUNEXAMPLES_4 = 
+CFLAGS	       =  $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
+FFLAGS	       = 
+SOURCEC	       = 
+SOURCEF	       =
+SOURCEH	       =
+OBJSC	       =
+OBJSF	       =
+LOCDIR         = src/viewer/examples/
+LIBBASE	       = libpetscvec
+TESTEXAMPLES_2 = 
+TESTEXAMPLES_4 = ex1.PETSc ex2.PETSc clean
+EXAMPLESC      = ex1.c ex2.c ex1.m
 
 runex2:
 	@echo "There are no externally runable examples in this directory"

@@ -1,23 +1,21 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	      =	 $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
-FFLAGS	      = 
-SOURCEC	      = 
-SOURCEF	      =
-SOURCEH	      =
-OBJSC	      =
-OBJSF	      =
-LIBBASE	      = libpetscsys
-LOCDIR        = src/sys/examples/
-RUNEXAMPLES_2 = runex1 runex2 runex3 runex4
-EXAMPLES_2    = ex1 ex2 ex3 ex4
-RUNEXAMPLES_3 = 
-EXAMPLES_3    = ex5  ex6
-RUNEXAMPLES_4 = 
-EXAMPLES_4    = ex1 ex2 ex3 ex4
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c
-EXAMPLESF     = ex5.F
+CFLAGS	       =	 $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
+FFLAGS	       = 
+SOURCEC	       = 
+SOURCEF	       =
+SOURCEH	       =
+OBJSC	       =
+OBJSF	       =
+LIBBASE	       = libpetscsys
+LOCDIR         = src/sys/examples/
+TESTEXAMPLES_2 = ex1.PETSc runex1 clean ex2.PETSc runex2 clean ex3.PETSc\
+		 runex3 clean ex4.PETSc runex4 clean
+TESTEXAMPLES_3 = ex5.PETSc runex5 clean ex6.PETSc runex6 clean
+TESTEXAMPLES_4 = ex1.PETSc ex2.PETSc ex3.PETSc ex4.PETSc clean
+EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c
+EXAMPLESF      = ex5.F
 
 runex1:
 	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1; grep -v p0 ex1_1.tmp > ex1_1.tmpz ;\

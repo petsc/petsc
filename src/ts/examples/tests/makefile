@@ -1,25 +1,22 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	      =	$(CPPFLAGS) -D__DIR__='"$(LOCDIR)"' 
-FFLAGS	      =	 
-SOURCEC	      = 
-SOURCEF	      =
-SOURCEH	      =
-OBJSC	      =
-OBJSF	      =
-LIBBASE	      = libpetscts
-LOCDIR        = src/ts/examples/
-EXAMPLES_1    = ex1 ex2
-RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6 runex2
-EXAMPLES_2    = 
-RUNEXAMPLES_2 = 
-EXAMPLES_3    = 
-RUNEXAMPLES_3 = 
-EXAMPLES_4    = 
-RUNEXAMPLES_4 = 
-EXAMPLESC     = ex1.c ex2.c
-EXAMPLESF     = 
+CFLAGS	       = $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"' 
+FFLAGS	       = 
+SOURCEC	       = 
+SOURCEF	       =
+SOURCEH	       =
+OBJSC	       =
+OBJSF	       =
+LIBBASE	       = libpetscts
+LOCDIR         = src/ts/examples/
+TESTEXAMPLES_1 = ex1.PETSc runex1 runex1_2 runex1_3 runex1_4 runex1_5\
+		 runex1_6 ex2.PETSc runex6 clean
+TESTEXAMPLES_2 = 
+TESTEXAMPLES_3 = 
+TESTEXAMPLES_4 = 
+EXAMPLESC      = ex1.c ex2.c
+EXAMPLESF      = 
 #
 #
 ex1: ex1.o  chkopts
