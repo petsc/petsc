@@ -277,10 +277,11 @@ use kpasswd to change the password
 > smaller cache lines (64b, rather than 128 or 256, as i recall), and
 > this fits the majority of our nodes. 
 
----------
 Other tc.cornell.edu machines
 rs6000: corylus,rhus,populus etc..
 IRIX  : thuja,laburnum,juglans
+
+---------
 Accounts on NAS machines
 For your convenience NAS User Services is available to answer questions
 and resolve problems 24 hours each day, 7 days each week.  They can be
