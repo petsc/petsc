@@ -61,6 +61,8 @@ to do what you need.
   a seperate file, called filename.rank for each processor and print the 
   output there.
 
+    Added PetscTypeCompare(), see the manual page
+
   Viewer
 
     Changed ViewerFileOpenASCII() to ViewerASCIIOpen()
