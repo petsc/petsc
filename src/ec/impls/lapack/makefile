@@ -3,13 +3,13 @@ ALL: lib
 #PETSC_DIR = ../../../../
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
-SOURCEC  = gmres.c borthog.c
-SOURCEH  = gmresp.h
+SOURCEC  = elapack.c
+SOURCEH  = 
 SOURCEF  = 
-OBJSC    = gmres.o borthog.o
+OBJSC    = elapack.c
 OBJSF    = 
-LIBBASE  = libpetscksp
+LIBBASE  = libpetscec
 MANSEC   = 5
-LOCDIR   = src/ksp/impls/gmres/
+LOCDIR   = src/ec/impls/lapack/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
