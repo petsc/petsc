@@ -166,6 +166,9 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
 
   for (i=0; i<maxits; i++) {
 
+    /* Call general purpose update function */
+    ierr = (*snes->update)(snes, snes->iter); CHKERRQ(ierr);
+
     /* Solve J Y = F, where J is Jacobian matrix */
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
@@ -901,6 +904,29 @@ int SNESSetLineSearchCheck_LS(SNES snes,int (*func)(SNES,void*,Vec,PetscTruth*),
 EXTERN_C_END
 /* -------------------------------------------------------------------------- */
 /*
+   SNESPrintHelp_EQ_LS - Prints all options for the SNES_EQ_LS method.
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Application Interface Routine: SNESPrintHelp()
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "SNESPrintHelp_EQ_LS"
+static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
+{
+  SNES_EQ_LS *ls = (SNES_EQ_LS *)snes->data;
+
+  PetscFunctionBegin;
+  (*PetscHelpPrintf)(snes->comm," method SNES_EQ_LS (ls) for systems of nonlinear equations:\n");
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls [cubic,quadratic,basic,basicnonorms,...]\n",p);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_alpha <alpha> (default %g)\n",p,ls->alpha);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_maxstep <max> (default %g)\n",p,ls->maxstep);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_steptol <tol> (default %g)\n",p,ls->steptol);
+  PetscFunctionReturn(0);
+}
+
+/*
    SNESView_EQ_LS - Prints info from the SNESEQLS data structure.
 
    Input Parameters:
@@ -1008,6 +1034,7 @@ int SNESCreate_EQ_LS(SNES snes)
   snes->solve		= SNESSolve_EQ_LS;
   snes->destroy		= SNESDestroy_EQ_LS;
   snes->converged	= SNESConverged_EQ_LS;
+  snes->printhelp       = SNESPrintHelp_EQ_LS;
   snes->setfromoptions  = SNESSetFromOptions_EQ_LS;
   snes->view            = SNESView_EQ_LS;
   snes->nwork           = 0;
