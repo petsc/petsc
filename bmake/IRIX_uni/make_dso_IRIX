@@ -1,0 +1,19 @@
+#! /bin/csh 
+#
+# This Utility converts the static ".a" library files to dynamic ".so" files
+# invoked as make_dso_IRIX $(PETSC_LIBRARY_PATH)
+#
+echo  making dynamic libraries in $argv[1]
+cd $argv[1]
+foreach LIBNAME (mpiuni petsccontrib petscdraw petscksp petscmat \
+  petscsles petscsnes petscsys petscts petscvec)
+  if ( -e lib$LIBNAME.a) then 
+     if ( -e lib$LIBNAME.so ) then
+        find . -type f -name "lib$LIBNAME.a" -newer "lib$LIBNAME.so" -exec \
+            ld -elf -no_library_replacement -shared -rdata_shared -all lib$LIBNAME.a -o lib$LIBNAME.so \;
+     else
+        ld -elf -no_library_replacement -shared -rdata_shared -all lib$LIBNAME.a -o lib$LIBNAME.so 
+     endif
+  endif
+end
+
