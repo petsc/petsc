@@ -170,6 +170,7 @@ class UsingCompiler:
   '''This class handles all interaction specific to a compiled language'''
   def __init__(self, usingSIDL):
     self.usingSIDL      = usingSIDL
+    self.defines        = ['PIC']
     self.includeDirs    = SIDLPackageDict(usingSIDL)
     self.extraLibraries = SIDLPackageDict(usingSIDL)
     self.libDir         = os.path.abspath('lib')
@@ -238,7 +239,7 @@ class UsingC (UsingCompiler):
     return ['.h', '.c']
 
   def getDefines(self):
-    return ['PIC']
+    return self.defines
 
   def getTagger(self, rootDir):
     return compile.TagC(root = rootDir)
@@ -246,13 +247,13 @@ class UsingC (UsingCompiler):
   def getCompiler(self, library):
     return compile.CompileC(library)
 
-  def getServerCompileTarget(self, package):
+  def getServerCompileTarget(self, project, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
     stubDir = self.usingSIDL.getStubDir(self.getLanguage(), package)
     library = self.getServerLibrary(project, self.getLanguage(), package)
     # IOR and server compile are both C
     compiler = compile.CompileC(library)
-    compiler.defines.append('PIC')
+    compiler.defines.extend(self.getDefines())
     compiler.includeDirs.append(rootDir)
     compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     # Server specific flags
@@ -275,7 +276,7 @@ class UsingCxx (UsingCompiler):
     return ['.hh', '.cc']
 
   def getDefines(self):
-    return ['PIC']
+    return self.defines
 
   def getTagger(self, rootDir):
     return compile.TagCxx(root = rootDir)
@@ -289,12 +290,12 @@ class UsingCxx (UsingCompiler):
     library = self.getServerLibrary(project, self.getLanguage(), package)
     # IOR compiler
     compileC = compile.CompileC(library)
-    compileC.defines.append('PIC')
+    compileC.defines.extend(self.getDefines())
     compileC.includeDirs.append(rootDir)
     compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     # Server compiler
     compileCxx = compile.CompileCxx(library)
-    compileCxx.defines.append('PIC')
+    compileCxx.defines.extend(self.getDefines())
     compileCxx.includeDirs.append(rootDir)
     compileCxx.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     compileCxx.includeDirs.append(stubDir)
@@ -333,7 +334,7 @@ class UsingPython(UsingCompiler):
     return ['.py']
 
   def getDefines(self):
-    return ['PIC']
+    return self.defines
 
   def getTagger(self, rootDir):
     return compile.TagC(root = rootDir)
@@ -347,7 +348,7 @@ class UsingPython(UsingCompiler):
     library = self.getServerLibrary(project, self.getLanguage(), package)
     # IOR and server compile are both C
     compiler = compile.CompileC(library)
-    compiler.defines.append('PIC')
+    compiler.defines.extend(self.getDefines())
     compiler.includeDirs.append(rootDir)
     compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     # Server specific flags
@@ -376,13 +377,13 @@ class UsingF77 (UsingCompiler):
     return ['.f', '.f90']
 
   def getDefines(self):
-    return ['PIC']
+    return self.defines
 
   def getTagger(self, rootDir):
     return compile.TagC(root = rootDir)
 
   def getCompiler(self, library):
-    return compile.CompileC()
+    return compile.CompileC(library)
 
   def getServerCompileTarget(self, project, package):
     rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
@@ -390,12 +391,12 @@ class UsingF77 (UsingCompiler):
     library = self.getServerLibrary(project, self.getLanguage(), package)
     # IOR compiler
     compileC = compile.CompileC(library)
-    compileC.defines.append('PIC')
+    compileC.defines.extend(self.getDefines())
     compileC.includeDirs.append(rootDir)
     compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     # Server compiler
     compileF77 = compile.CompileF77(library)
-    compileF77.defines.append('PIC')
+    compileF77.defines.extend(self.getDefines())
     compileF77.includeDirs.append(rootDir)
     compileF77.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     compileF77.includeDirs.append(stubDir)
@@ -438,7 +439,7 @@ class UsingJava (UsingCompiler):
     return ['.java']
 
   def getDefines(self):
-    return ['PIC']
+    return self.defines
 
   def getSIDLRuntimeLibraries(self):
     '''The SIDL runtime library for Java'''
@@ -468,7 +469,7 @@ class UsingJava (UsingCompiler):
     compileJava.archiverRoot = sourceDir
     return [compile.TagC(root = sourceDir), compile.TagJava(root = sourceDir), compileC, compileJava]
 
-  def getServerCompileTarget(self, package):
+  def getServerCompileTarget(self, project, package):
     raise RuntimeError('No server for '+self.getLanguage())
 
   def getExecutableCompileTarget(self, sources, executable):
