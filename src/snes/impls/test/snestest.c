@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snestest.c,v 1.38 1997/12/01 01:56:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.39 1998/01/14 02:44:57 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -108,7 +108,6 @@ int SNESCreate_Test(SNES  snes )
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"SNES_NONLINEAR_EQUATIONS only");
   }
-  snes->type		= SNES_EQ_TEST;
   snes->setup		= 0;
   snes->solve		= SNESSolve_Test;
   snes->destroy		= SNESDestroy_Test;

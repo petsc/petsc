@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.40 1997/07/09 20:53:11 balay Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.41 1997/09/22 15:22:40 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
@@ -12,14 +12,15 @@ users should employ the SLES interface instead of using PC directly.\n\n";
 
 int main(int argc,char **args)
 {
-  Mat    mat;          /* matrix */
-  Vec    b, ustar, u;  /* vectors (RHS, exact solution, approx solution) */
-  PC     pc;           /* PC context */
-  KSP    ksp;          /* KSP context */
-  int    ierr, n = 10, i, its, col[3];
-  Scalar value[3], mone = -1.0, one = 1.0, zero = 0.0;
-  char   *kspname, *pcname;
-  double norm;
+  Mat     mat;          /* matrix */
+  Vec     b, ustar, u;  /* vectors (RHS, exact solution, approx solution) */
+  PC      pc;           /* PC context */
+  KSP     ksp;          /* KSP context */
+  int     ierr, n = 10, i, its, col[3];
+  Scalar  value[3], mone = -1.0, one = 1.0, zero = 0.0;
+  PCType  pcname;
+  KSPType kspname;
+  double  norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -66,8 +67,8 @@ int main(int argc,char **args)
   ierr = KSPSetUp(ksp); CHKERRA(ierr);
 
   /* Solve the problem */
-  ierr = KSPGetType(ksp,PETSC_NULL,&kspname); CHKERRA(ierr);
-  ierr = PCGetType(pc,PETSC_NULL,&pcname); CHKERRA(ierr);
+  ierr = KSPGetType(ksp,&kspname); CHKERRA(ierr);
+  ierr = PCGetType(pc,&pcname); CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
   ierr = KSPSolve(ksp,&its); CHKERRA(ierr);
   ierr = VecAXPY(&mone,ustar,u); CHKERRA(ierr);

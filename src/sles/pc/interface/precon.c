@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.138 1997/12/01 01:53:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.139 1998/01/06 20:09:44 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -57,18 +57,12 @@ int PCDestroy(PC pc)
 int PCCreate(MPI_Comm comm,PC *newpc)
 {
   PC     pc;
-  PCType initialtype = PCJACOBI;
-  int    ierr,size;
 
   PetscFunctionBegin;
   *newpc          = 0;
-  MPI_Comm_size(comm,&size);
-  if (size == 1) initialtype = PCILU;
-  else           initialtype = PCBJACOBI;
 
-  PetscHeaderCreate(pc,_p_PC,PC_COOKIE,initialtype,comm,PCDestroy,PCView);
+  PetscHeaderCreate(pc,_p_PC,PC_COOKIE,-1,comm,PCDestroy,PCView);
   PLogObjectCreate(pc);
-  pc->type               = -1;
   pc->vec                = 0;
   pc->mat                = 0;
   pc->setupcalled        = 0;
@@ -88,8 +82,6 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   pc->modifysubmatrices   = 0;
   pc->modifysubmatricesP  = 0;
   *newpc                  = pc;
-  /* this violates rule about seperating abstract from implementions*/
-  ierr = PCSetType(pc,initialtype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 
 }
@@ -293,13 +285,11 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
     ierr = PCApply(pc,x,work); CHKERRQ(ierr);
     ierr = MatMult(pc->mat,work,y); CHKERRQ(ierr);
     PetscFunctionReturn(0);
-  }
-  else if (side == PC_LEFT) {
+  } else if (side == PC_LEFT) {
     ierr = MatMult(pc->mat,x,work); CHKERRQ(ierr);
     ierr = PCApply(pc,work,y); CHKERRQ(ierr);
     PetscFunctionReturn(0);
-  }
-  else if (side == PC_SYMMETRIC) {
+  } else if (side == PC_SYMMETRIC) {
     /* There's an extra copy here; maybe should provide 2 work vectors instead? */
     ierr = PCApplySymmetricRight(pc,x,work); CHKERRQ(ierr);
     ierr = MatMult(pc->mat,work,y); CHKERRQ(ierr);
@@ -358,8 +348,7 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
   if (side == PC_RIGHT) {
     ierr = MatMultTrans(pc->mat,x,work); CHKERRQ(ierr);
     ierr = PCApplyTrans(pc,work,y); CHKERRQ(ierr);
-  }
-  else if (side == PC_LEFT) {
+  } else if (side == PC_LEFT) {
     ierr = PCApplyTrans(pc,x,work); CHKERRQ(ierr);
     ierr = MatMultTrans(pc->mat,work,y); CHKERRQ(ierr);
   }
@@ -671,7 +660,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   */
   ierr = MatGetType(Amat,&type,PETSC_NULL); CHKERRQ(ierr);
   if (type == MATMPIROWBS) {
-    if (pc->type == PCBJACOBI) {
+    if (!PetscStrcmp(pc->type_name,PCBJACOBI)) {
       ierr = PCSetType(pc,PCILU); CHKERRQ(ierr);
       PLogInfo(pc,"PCSetOperators:Switching default PC to PCILU since BS95 doesn't support PCBJACOBI\n");
     }
@@ -680,7 +669,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
       Shell matrix (probably) cannot support a preconditioner
   */
   ierr = MatGetType(Pmat,&type,PETSC_NULL); CHKERRQ(ierr);
-  if (type == MATSHELL && pc->type != PCSHELL && pc->type != PCMG) {
+  if (type == MATSHELL && PetscStrcmp(pc->type_name,PCSHELL) && PetscStrcmp(pc->type_name,PCMG)) {
     ierr = PCSetType(pc,PCNONE); CHKERRQ(ierr);
     PLogInfo(pc,"PCSetOperators:Setting default PC to PCNONE since MATSHELL doesn't support\n\
     preconditioners (unless defined by the user)\n");
@@ -719,7 +708,7 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (mat) *mat  = pc->mat;
+  if (mat)  *mat  = pc->mat;
   if (pmat) *pmat = pc->pmat;
   if (flag) *flag = pc->flag;
   PetscFunctionReturn(0);
@@ -954,7 +943,7 @@ $    ViewerFileOpenASCII() - output to a specified file
 int PCView(PC pc,Viewer viewer)
 {
   FILE        *fd;
-  char        *cstr;
+  PCType      cstr;
   int         fmt, ierr, mat_exists;
   ViewerType  vtype;
 
@@ -968,7 +957,7 @@ int PCView(PC pc,Viewer viewer)
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = ViewerGetFormat(viewer,&fmt); CHKERRQ(ierr);
     PetscFPrintf(pc->comm,fd,"PC Object:\n");
-    PCGetType(pc,PETSC_NULL,&cstr);
+    PCGetType(pc,&cstr);
     PetscFPrintf(pc->comm,fd,"  method: %s\n",cstr);
     if (pc->view) (*pc->view)((PetscObject)pc,viewer);
     PetscObjectExists((PetscObject)pc->mat,&mat_exists);
@@ -990,7 +979,7 @@ int PCView(PC pc,Viewer viewer)
       ViewerPopFormat(viewer);
     }
   } else if (vtype == STRING_VIEWER) {
-    PCGetType(pc,PETSC_NULL,&cstr);
+    PCGetType(pc,&cstr);
     ViewerStringSPrintf(viewer," %-7.7s",cstr);
     if (pc->view) (*pc->view)((PetscObject)pc,viewer);
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.38 1997/09/22 15:21:58 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.39 1997/10/19 03:24:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR, and\n\
@@ -11,13 +11,14 @@ also tests the MatRelax() routines.  Input parameters are:\n\
 
 int main(int argc,char **args)
 {
-  Mat    mat;          /* matrix */
-  Vec    b, ustar, u;  /* vectors (RHS, exact solution, approx solution) */
-  PC     pc;           /* PC context */
-  KSP    ksp;          /* KSP context */
-  int    ierr, n = 10, i, its, col[3],flg;
-  Scalar value[3], one = 1.0, zero = 0.0;
-  char   *kspname, *pcname;
+  Mat     mat;          /* matrix */
+  Vec     b, ustar, u;  /* vectors (RHS, exact solution, approx solution) */
+  PC      pc;           /* PC context */
+  KSP     ksp;          /* KSP context */
+  int     ierr, n = 10, i, its, col[3],flg;
+  Scalar  value[3], one = 1.0, zero = 0.0;
+  KSPType kspname;
+  PCType  pcname;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
@@ -65,8 +66,8 @@ int main(int argc,char **args)
   ierr = KSPSetUp(ksp); CHKERRA(ierr);
 
   /* Solve the problem */
-  ierr = KSPGetType(ksp,PETSC_NULL,&kspname); CHKERRA(ierr);
-  ierr = PCGetType(pc,PETSC_NULL,&pcname); CHKERRA(ierr);
+  ierr = KSPGetType(ksp,&kspname); CHKERRA(ierr);
+  ierr = PCGetType(pc,&pcname); CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
   ierr = KSPSolve(ksp,&its); CHKERRA(ierr);
   fprintf(stdout,"Number of iterations %d\n",its);

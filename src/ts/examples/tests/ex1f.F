@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.15 1997/10/10 04:05:11 bsmith Exp bsmith $";
+C "$Id: ex1f.F,v 1.16 1998/02/15 16:28:17 bsmith Exp bsmith $";
 C
 C       Formatted test for TS routines.
 C
@@ -37,7 +37,8 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       TSProblemType    tsproblem
       Draw             draw
       Viewer           viewer
-      character*(60)   tsinfo
+      character*(60)   type,tsinfo
+      character*(5)    etype
 
 C
 C    Application context data, stored in common block
@@ -192,7 +193,6 @@ C
       endif
 
       call TSSetFromOptions(ts,ierr)
-      call TSGetType(ts,type,PETSC_NULL_CHARACTER,ierr) 
 
       call TSSetInitialTimeStep(ts,zero,dt,ierr) 
       tmax = 100.0
@@ -203,10 +203,16 @@ C
       call TSStep(ts,steps,ftime,ierr) 
       call ViewerStringOpen(PETSC_COMM_WORLD,tsinfo,60,viewer,ierr) 
       call TSView(ts,viewer,ierr) 
+      call TSGetType(ts,type,ierr)
 
       call OptionsHasName(PETSC_NULL_CHARACTER,'-test',flg,ierr) 
       if (flg .eq. 1) then
-        if (type .eq. TS_EULER) then
+C   
+C         copy type to string of length 5 to ensure equality test        
+C         is done correctly
+C
+        call PetscStrncpy(etype,type,5)
+        if (etype .eq. TS_EULER) then
           if (abs(nrm_2/steps - 0.00257244) .gt. 1.e-4) then
             print*,'Error in Euler method: 2-norm ',nrm_2/steps,
      &            ' expecting: ',0.00257244

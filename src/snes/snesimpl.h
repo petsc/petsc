@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.40 1997/03/26 01:37:40 bsmith Exp balay $ */
+/* $Id: snesimpl.h,v 1.41 1997/05/23 18:35:59 balay Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -11,7 +11,7 @@
 #define MAXSNESMONITORS 5
 
 struct _p_SNES {
-  PETSCHEADER
+  PETSCHEADER(int dummy)
 
   /*  ------------------------ User-provided stuff -------------------------------*/
   void  *user;		                        /* user-defined context */
@@ -44,7 +44,7 @@ struct _p_SNES {
   /* --- Routines and data that are unique to each particular solver --- */
 
   int   (*setup)(SNES);             /* routine to set up the nonlinear solver */
-  int   setup_called;               /* true if setup has been called */
+  int   setupcalled;               /* true if setup has been called */
   int   (*solve)(SNES,int*);        /* actual nonlinear solver */
   int   (*setfromoptions)(SNES);    /* sets options from database */
   int   (*printhelp)(SNES,char*);   /* prints help info */

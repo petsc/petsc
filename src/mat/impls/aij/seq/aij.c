@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.248 1998/01/28 21:01:50 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.249 1998/02/18 21:01:23 balay Exp bsmith $";
 #endif
 
 /*
@@ -709,6 +709,7 @@ int MatDestroy_SeqAIJ(PetscObject obj)
 {
   Mat        A  = (Mat) obj;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+  int        ierr;
 
   PetscFunctionBegin;  
 #if defined(USE_PETSC_LOG)
@@ -721,6 +722,7 @@ int MatDestroy_SeqAIJ(PetscObject obj)
   if (a->imax) PetscFree(a->imax);
   if (a->solve_work) PetscFree(a->solve_work);
   if (a->inode.size) PetscFree(a->inode.size);
+  if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   PetscFree(a); 
 
   PLogObjectDestroy(A);
@@ -1774,6 +1776,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
                         (int*) &b->ilu_preserve_row_sums); CHKERRQ(ierr);
   b->row              = 0;
   b->col              = 0;
+  b->icol             = 0;
   b->indexshift       = 0;
   b->reallocs         = 0;
   ierr = OptionsHasName(PETSC_NULL,"-mat_aij_oneindex", &flg); CHKERRQ(ierr);
@@ -1862,6 +1865,7 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   C->factor     = A->factor;
   c->row        = 0;
   c->col        = 0;
+  c->icol       = 0;
   c->indexshift = shift;
   C->assembled  = PETSC_TRUE;
 

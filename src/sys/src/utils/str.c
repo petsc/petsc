@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.16 1997/09/26 02:18:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.17 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -30,10 +30,17 @@ int PetscStrlen(char *s)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrcpy"
+/*
+    Handles copying null string correctly
+*/
 int PetscStrcpy(char *s,char *t)
 {
   PetscFunctionBegin;
-  strcpy(s,t);
+  if (t && !s) {
+    SETERRQ(1,1,"Trying to copy string into null pointer");
+  }
+  if (t) {strcpy(s,t);}
+  else {s[0] = 0;}
   PetscFunctionReturn(0);
 }
 

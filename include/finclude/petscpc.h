@@ -1,10 +1,9 @@
 C
-C  $Id: pc.h,v 1.20 1996/09/28 13:46:45 bsmith Exp balay $;
+C  $Id: pc.h,v 1.21 1997/11/13 19:35:16 balay Exp bsmith $;
 C
 C  Include file for Fortran use of the PC (preconditioner) package in PETSc
 C
 #define PC           integer
-#define PCType       integer
 #define PCNullSpace  integer
 #define PCSide       integer
 #define PCBGSType    integer
@@ -12,13 +11,20 @@ C
 C
 C  Various preconditioners
 C
-      integer PCNONE, PCJACOBI, PCSOR, PCLU, PCSHELL, PCBJACOBI, PCMG,
-     *        PCEISENSTAT, PCILU, PCICC, PCASM, PCBGS, PCNEW
-
-      parameter (PCNONE = 0, PCJACOBI = 1, PCSOR = 2, PCLU = 3, 
-     *           PCSHELL = 4, PCBJACOBI = 5, PCMG = 6,
-     *           PCEISENSTAT = 7, PCILU = 8, PCICC = 9, PCASM = 10,
-     *           PCBGS = 11, PCNEW = 12)
+#define PCNONE      'none'
+#define PCJACOBI    'jacobi'
+#define PCSOR       'sor'
+#define PCLU        'lu'
+#define PCSHELL     'shell'
+#define PCBJACOBI   'bjacobi'
+#define PCMG        'mg'
+#define PCEISENSTAT 'eisenstat'
+#define PCILU       'ilu'
+#define PCICC       'icc'
+#define PCASM       'asm'
+#define PCBGS       'bgs'
+#define PCSLES      'sles'
+#define PCCOMPOSITE 'composite'
 
 C
 C  PCSide

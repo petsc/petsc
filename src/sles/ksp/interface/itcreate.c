@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.110 1998/01/17 17:36:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.111 1998/01/28 21:00:42 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -49,7 +49,7 @@ int KSPView(KSP ksp,Viewer viewer)
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(ksp->comm,fd,"KSP Object:\n");
-    KSPGetType(ksp,PETSC_NULL,&method);
+    KSPGetType(ksp,&method);
     PetscFPrintf(ksp->comm,fd,"  method: %s\n",method);
     if (ksp->view) (*ksp->view)((PetscObject)ksp,viewer);
     if (ksp->guess_zero) PetscFPrintf(ksp->comm,fd,
@@ -62,12 +62,6 @@ int KSPView(KSP ksp,Viewer viewer)
     else if (ksp->pc_side == PC_SYMMETRIC) 
       PetscFPrintf(ksp->comm,fd,"  symmetric preconditioning\n");
     else PetscFPrintf(ksp->comm,fd,"  left preconditioning\n");
-  } else if (vtype == STRING_VIEWER) {
-    KSPType type;
-    KSPGetType(ksp,&type,&method);
-    if (type != KSPPREONLY) {    
-      ierr = ViewerStringSPrintf(viewer," %-7.7s",method); CHKERRQ(ierr);
-    }
   }
   PetscFunctionReturn(0);
 }
@@ -75,7 +69,7 @@ int KSPView(KSP ksp,Viewer viewer)
 /*
    Contains the list of registered KSP routines
 */
-static DLList __KSPList = 0;
+DLList KSPList = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate"
@@ -99,12 +93,12 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
 
   PetscFunctionBegin;
   *ksp = 0;
-  PetscHeaderCreate(ctx,_p_KSP,KSP_COOKIE,KSPUNKNOWN,comm,KSPDestroy,KSPView);
+  PetscHeaderCreate(ctx,_p_KSP,KSP_COOKIE,-1,comm,KSPDestroy,KSPView);
   PLogObjectCreate(ctx);
   *ksp               = ctx;
   ctx->view          = 0;
 
-  ctx->type          = (KSPType) -1;
+  ctx->type          = -1;
   ctx->max_it        = 10000;
   ctx->pc_side       = PC_LEFT;
   ctx->use_pres      = 0;
@@ -148,7 +142,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
  
 #undef __FUNC__  
 #define __FUNC__ "KSPSetType"
-/*@
+/*@C
    KSPSetType - Builds KSP for a particular solver. 
 
    Input Parameter:
@@ -184,7 +178,8 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (ksp->type == (int) itmethod) PetscFunctionReturn(0);
+
+  if (!PetscStrcmp(ksp->type_name,itmethod)) PetscFunctionReturn(0);
 
   if (ksp->setupcalled) {
     /* destroy the old private KSP context */
@@ -192,51 +187,17 @@ int KSPSetType(KSP ksp,KSPType itmethod)
     ksp->data = 0;
   }
   /* Get the function pointers for the iterative method requested */
-  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(); CHKERRQ(ierr);}
+  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
 
-  ierr =  DLFindRoutine( __KSPList, (int)itmethod, (char *)0,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  DLRegisterFind( KSPList, itmethod,(int (**)(void *)) &r );CHKERRQ(ierr);
 
   if (ksp->data) PetscFree(ksp->data);
   ksp->data = 0;
   ierr = (*r)(ksp); CHKERRQ(ierr);
 
-  /* override the type that the create routine put in */
-  ksp->type = itmethod;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "KSPRegister_Private"
-/*
-   KSPRegister_Private - Adds the iterative method to the KSP package,  given
-   an iterative name (KSPType) and a function pointer.
-
-   Input Parameters:
-.  name   - either a predefined name such as KSPCG, or KSPNEW
-            to indicate a new user-defined iterative method
-.  sname  - corresponding string for name
-.  create - routine to create method context
-
-   Output Parameter:
-.  oname - type for new method
-
-   Notes:
-   Multiple user-defined iterative methods can be added by calling
-   KSPRegister() with the input parameter "name" set to be KSPNEW; 
-   each call will return a unique iterative method type in the output
-   parameter "oname".
-
-.keywords: KSP, register
-
-.seealso: KSPRegisterAll(), KSPRegisterDestroy()
-*/
-int  KSPRegister_Private(KSPType name, char *sname, char *fname,int  (*create)(KSP),KSPType *oname)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  if (!__KSPList) {ierr = DLCreate((int)KSPNEW,&__KSPList); CHKERRQ(ierr);}
-  ierr = DLRegister(__KSPList,(int)name,sname,fname,(int (*)(void*))create,(int*)oname);CHKERRQ(ierr);
+  if (ksp->type_name) PetscFree(ksp->type_name);
+  ksp->type_name = (char *) PetscMalloc((PetscStrlen(itmethod)+1)*sizeof(char));CHKPTRQ(ksp->type_name);
+  PetscStrcpy(ksp->type_name,itmethod);
   PetscFunctionReturn(0);
 }
 
@@ -255,9 +216,9 @@ int KSPRegisterDestroy()
   int ierr;
 
   PetscFunctionBegin;
-  if (__KSPList) {
-    ierr = DLDestroy( __KSPList );CHKERRQ(ierr);
-    __KSPList = 0;
+  if (KSPList) {
+    ierr = DLRegisterDestroy( KSPList );CHKERRQ(ierr);
+    KSPList = 0;
   }
   KSPRegisterAllCalled = 0;
   PetscFunctionReturn(0);
@@ -266,26 +227,21 @@ int KSPRegisterDestroy()
 #undef __FUNC__  
 #define __FUNC__ "KSPGetType"
 /*@C
-   KSPGetType - Gets the KSP type and method name (as a string) from 
-   the method type.
+   KSPGetType - Gets the KSP type as a string from 
+                the method type.
 
    Input Parameter:
 .  ksp - Krylov context 
 
    Output Parameters:
-.  itmeth - KSP method (or use PETSC_NULL)
-.  name - name of KSP method (or use PETSC_NULL)
+.  name - name of KSP method 
 
 .keywords: KSP, get, method, name
 @*/
-int KSPGetType(KSP ksp,KSPType *type,char **name)
+int KSPGetType(KSP ksp,KSPType *type)
 {
-  int ierr;
-
   PetscFunctionBegin;
-  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(); CHKERRQ(ierr);}
-  if (type) *type = (KSPType) ksp->type;
-  if (name)  {ierr = DLFindName( __KSPList, (int) ksp->type,name);CHKERRQ(ierr);}
+  *type = ksp->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -315,7 +271,7 @@ int KSPPrintHelp(KSP ksp)
   if (ksp->prefix)  PetscStrcat(p,ksp->prefix);
 
   (*PetscHelpPrintf)(ksp->comm,"KSP options -------------------------------------------------\n");
-  ierr = DLPrintTypes(ksp->comm,stdout,ksp->prefix,"ksp_type",__KSPList);CHKERRQ(ierr);
+  ierr = DLRegisterPrintTypes(ksp->comm,stdout,ksp->prefix,"ksp_type",KSPList);CHKERRQ(ierr);
   (*PetscHelpPrintf)(ksp->comm," %sksp_rtol <tol>: relative tolerance, defaults to %g\n",
                    p,ksp->rtol);
   (*PetscHelpPrintf)(ksp->comm," %sksp_atol <tol>: absolute tolerance, defaults to %g\n",
@@ -379,24 +335,17 @@ extern int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 @*/
 int KSPSetFromOptions(KSP ksp)
 {
-  KSPType   method;
   int       flg, ierr,loc[4], nmax = 4,i;
-  char      fname[256];
+  char      method[256];
 
   PetscFunctionBegin;
   loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
 
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
 
-  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll();CHKERRQ(ierr);}
-  ierr = DLGetTypeFromOptions(ksp->prefix,"-ksp_type",__KSPList,(int *)&method,fname,256,&flg);CHKERRQ(ierr);
+  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  ierr = OptionsGetString(ksp->prefix,"-ksp_type",method,256,&flg);
   if (flg) {
-#if defined(USE_DYNAMIC_LIBRARIES)
-    if (method == (KSPType) -1) { /* indicates method not yet registered */
-      ierr = KSPRegister(KSPNEW,fname,fname,0,&method); CHKERRQ(ierr);
-    }
-#endif
-
     ierr = KSPSetType(ksp,method); CHKERRQ(ierr);
   }
   ierr = OptionsGetInt(ksp->prefix,"-ksp_max_it",&ksp->max_it, &flg); CHKERRQ(ierr);
@@ -515,7 +464,7 @@ int KSPSetFromOptions(KSP ksp)
         Since the private setfromoptions requires the type to all ready have 
       been set we make sure a type is set by this time
   */
-  if (ksp->type == KSPUNKNOWN) {
+  if (!ksp->type_name) {
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcregis.c,v 1.37 1998/01/06 20:09:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.38 1998/01/12 15:55:02 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -20,48 +20,58 @@ extern int PCCreate_BGS(PC);
 extern int PCCreate_SLES(PC);
 extern int PCCreate_Composite(PC);
 
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define PCRegister(a,b,c,d) PCRegister_Private(a,b,c,0)
+#else
+#define PCRegister(a,b,c,d) PCRegister_Private(a,b,c,d)
+#endif
+
+#undef __FUNC__  
+#define __FUNC__ "PCRegister_Private"
+static int PCRegister_Private(char *sname,char *path,char *name,int (*function)(PC))
+{
+  int  ierr;
+  char fullname[256];
+
+  PetscFunctionBegin;
+  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = DLRegister(&PCList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__  
 #define __FUNC__ "PCRegisterAll"
 /*@C
   PCRegisterAll - Registers all of the preconditioners in the PC package.
 
-  Adding new methods:
-  To add new methods to the registry, copy this routine and modify
-  it to incorporate a call to PCRegister() for each new method.  
-
-  Restricting the choices:
-  To prevent all of the methods from being registered and thus 
-  save memory, copy this routine and modify it to register only 
-  those methods you desire.  Make sure that the replacement routine 
-  is linked before libpetscsles.a.
-
-  Notes: 
-  Currently the default preconditioners PCILU (and in parallel PCBJACOBI)
-  must be registered.
+  Input Parameter:
+.   path - the library where the routines are to be found (optional)
 
 .keywords: PC, register, all
 
 .seealso: PCRegister(), PCRegisterDestroy()
 @*/
-int PCRegisterAll()
+int PCRegisterAll(char *path)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PCRegisterAllCalled = 1;
 
-  PCRegister(PCNONE         ,0, "none",       PCCreate_None);
-  PCRegister(PCJACOBI       ,0, "jacobi",     PCCreate_Jacobi);
-  PCRegister(PCBJACOBI      ,0, "bjacobi",    PCCreate_BJacobi);
-  PCRegister(PCSOR          ,0, "sor",        PCCreate_SOR);
-  PCRegister(PCLU           ,0, "lu",         PCCreate_LU);
-  PCRegister(PCSHELL        ,0, "shell",      PCCreate_Shell);
-  PCRegister(PCMG           ,0, "mg",         PCCreate_MG);
-  PCRegister(PCEISENSTAT    ,0, "eisenstat",  PCCreate_Eisenstat);
-  PCRegister(PCILU          ,0, "ilu",        PCCreate_ILU);
-  PCRegister(PCICC          ,0, "icc",        PCCreate_ICC);
-  PCRegister(PCASM          ,0, "asm",        PCCreate_ASM);
-  PCRegister(PCBGS          ,0, "bgs",        PCCreate_BGS);
-  PCRegister(PCSLES         ,0, "sles",       PCCreate_SLES);
-  PCRegister(PCCOMPOSITE    ,0, "composite",  PCCreate_Composite);
+  ierr = PCRegister(PCNONE         ,path,"PCCreate_None",PCCreate_None);CHKERRQ(ierr);
+  ierr = PCRegister(PCJACOBI       ,path,"PCCreate_Jacobi",PCCreate_Jacobi);CHKERRQ(ierr);
+  ierr = PCRegister(PCBJACOBI      ,path,"PCCreate_BJacobi",PCCreate_BJacobi);CHKERRQ(ierr);
+  ierr = PCRegister(PCSOR          ,path,"PCCreate_SOR",PCCreate_SOR);CHKERRQ(ierr);
+  ierr = PCRegister(PCLU           ,path,"PCCreate_LU",PCCreate_LU);CHKERRQ(ierr);
+  ierr = PCRegister(PCSHELL        ,path,"PCCreate_Shell",PCCreate_Shell);CHKERRQ(ierr);
+  ierr = PCRegister(PCMG           ,path,"PCCreate_MG",PCCreate_MG);CHKERRQ(ierr);
+  ierr = PCRegister(PCEISENSTAT    ,path,"PCCreate_Eisenstat",PCCreate_Eisenstat);CHKERRQ(ierr);
+  ierr = PCRegister(PCILU          ,path,"PCCreate_ILU",PCCreate_ILU);CHKERRQ(ierr);
+  ierr = PCRegister(PCICC          ,path,"PCCreate_ICC",PCCreate_ICC);CHKERRQ(ierr);
+  ierr = PCRegister(PCASM          ,path,"PCCreate_ASM",PCCreate_ASM);CHKERRQ(ierr);
+  ierr = PCRegister(PCBGS          ,path,"PCCreate_BGS",PCCreate_BGS);CHKERRQ(ierr);
+  ierr = PCRegister(PCSLES         ,path,"PCCreate_SLES",PCCreate_SLES);CHKERRQ(ierr);
+  ierr = PCRegister(PCCOMPOSITE    ,path,"PCCreate_Composite",PCCreate_Composite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

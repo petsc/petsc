@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.37 1997/11/19 01:42:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.38 1998/01/06 20:09:49 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -30,7 +30,7 @@ static int PCSetUp_Jacobi(PC pc)
     ierr = VecDuplicate(pc->vec,&diagsqrt); CHKERRQ(ierr);
     PLogObjectParent(pc,diagsqrt);
   } else {
-    diag = jac->diag;
+    diag     = jac->diag;
     diagsqrt = jac->diagsqrt;
   }
   ierr = MatGetDiagonal(pc->pmat,diag); CHKERRQ(ierr);
@@ -110,7 +110,6 @@ int PCCreate_Jacobi(PC pc)
   pc->apply          = PCApply_Jacobi;
   pc->setup          = PCSetUp_Jacobi;
   pc->destroy        = PCDestroy_Jacobi;
-  pc->type           = PCJACOBI;
   pc->data           = (void *) jac;
   pc->view           = 0;
   pc->applyrich      = 0;

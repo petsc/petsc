@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.3 1998/01/12 15:55:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.4 1998/01/14 02:40:29 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -27,8 +27,6 @@ static int PCApply_SLES(PC pc,Vec x,Vec y)
   jac->its += its;
   PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNC__  
 #define __FUNC__ "PCSetUp_SLES"
@@ -62,85 +60,6 @@ static int PCDestroy_SLES(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSLESSetUseTrue"
-/*@
-   PCSLESSetUseTrue - Sets a flag to indicate that the true matrix (rather than
-                      the matrix used to define the preconditioner) is used to compute
-                      the residual inside the inner solve.
-
-   Input Parameters:
-.  pc - the preconditioner context
-
-   Options Database Key:
-$  -pc_sles_true
-
-   Note:
-   For the common case in which the preconditioning and linear 
-   system matrices are identical, this routine is unnecessary.
-
-.keywords:  block, Jacobi, set, true, local, flag
-
-.seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal()
-@*/
-int PCSLESSetUseTrue(PC pc)
-{
-  PC_SLES   *jac;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCSLES ) PetscFunctionReturn(0);
-  jac                  = (PC_SLES *) pc->data;
-  jac->use_true_matrix = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions_SLES"
-static int PCSetFromOptions_SLES(PC pc)
-{
-  PC_SLES    *jac = (PC_SLES *) pc->data;
-  int        ierr,flg;
-
-  PetscFunctionBegin;
-  ierr = OptionsHasName(pc->prefix,"-pc_sles_true",&flg); CHKERRQ(ierr);
-  if (flg) {
-    ierr = PCSLESSetUseTrue(pc); CHKERRQ(ierr);
-  }
-  ierr = SLESSetFromOptions(jac->sles);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PCSLESGetSLES"
-/*@C
-   PCSLESGetSLES - Gets the SLES context for a SLES PC.
-   
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Output Parameters:
-.  sles - the PC solver
-
-   You must call SLESSetUp() before calling PCSLESGetSLES().
-
-.keywords:  get, sub, SLES, context
-
-@*/
-int PCSLESGetSLES(PC pc,SLES *sles)
-{
-  PC_SLES   *jac;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCSLES) PetscFunctionReturn(0);
-  if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SLESSetUp first");
-
-  jac          = (PC_SLES *) pc->data;
-  *sles        = jac->sles;
-  PetscFunctionReturn(0);
-}
-
 
 #undef __FUNC__  
 #define __FUNC__ "PCPrintHelp_SLES"
@@ -153,7 +72,6 @@ static int PCPrintHelp_SLES(PC pc,char *p)
  <kspmethod>)\n",p,p);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNC__  
 #define __FUNC__ "PCView_SLES"
@@ -183,6 +101,114 @@ static int PCView_SLES(PetscObject obj,Viewer viewer)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "PCSetFromOptions_SLES"
+static int PCSetFromOptions_SLES(PC pc)
+{
+  PC_SLES    *jac = (PC_SLES *) pc->data;
+  int        ierr,flg;
+
+  PetscFunctionBegin;
+  ierr = OptionsHasName(pc->prefix,"-pc_sles_true",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCSLESSetUseTrue(pc); CHKERRQ(ierr);
+  }
+  ierr = SLESSetFromOptions(jac->sles);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* ----------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "PCSLESSetUseTrue_SLES"
+int PCSLESSetUseTrue_SLES(PC pc)
+{
+  PC_SLES   *jac;
+
+  PetscFunctionBegin;
+  jac                  = (PC_SLES *) pc->data;
+  jac->use_true_matrix = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCSLESGetSLES_SLES"
+int PCSLESGetSLES_SLES(PC pc,SLES *sles)
+{
+  PC_SLES   *jac;
+
+  PetscFunctionBegin;
+  jac          = (PC_SLES *) pc->data;
+  *sles        = jac->sles;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCSLESSetUseTrue"
+/*@
+   PCSLESSetUseTrue - Sets a flag to indicate that the true matrix (rather than
+                      the matrix used to define the preconditioner) is used to compute
+                      the residual inside the inner solve.
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Options Database Key:
+$  -pc_sles_true
+
+   Note:
+   For the common case in which the preconditioning and linear 
+   system matrices are identical, this routine is unnecessary.
+
+.keywords:  block, Jacobi, set, true, local, flag
+
+.seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal()
+@*/
+int PCSLESSetUseTrue(PC pc)
+{
+  int ierr, (*f)(PC);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = DLRegisterFind(pc->qlist,"PCSLESSetUseTrue",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCSLESGetSLES"
+/*@C
+   PCSLESGetSLES - Gets the SLES context for a SLES PC.
+   
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameters:
+.  sles - the PC solver
+
+   You must call SLESSetUp() before calling PCSLESGetSLES().
+
+.keywords:  get, sub, SLES, context
+
+@*/
+int PCSLESGetSLES(PC pc,SLES *sles)
+{
+  int ierr, (*f)(PC,SLES*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SLESSetUp first");
+  ierr = DLRegisterFind(pc->qlist,"PCSLESGetSLES",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,sles);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/* ----------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
 #define __FUNC__ "PCCreate_SLES"
 int PCCreate_SLES(PC pc)
 {
@@ -202,7 +228,6 @@ int PCCreate_SLES(PC pc)
   pc->printhelp          = PCPrintHelp_SLES;
   pc->view               = PCView_SLES;
   pc->applyrich          = 0;
-  pc->type               = PCSLES;
   pc->data               = (void *) jac;
 
   ierr                   = SLESCreate(pc->comm,&jac->sles);CHKERRQ(ierr);
@@ -212,6 +237,12 @@ int PCCreate_SLES(PC pc)
   ierr = SLESAppendOptionsPrefix(jac->sles,"sub_"); CHKERRQ(ierr);
   jac->use_true_matrix = PETSC_FALSE;
   jac->its             = 0;
+
+  ierr = DLRegister(&pc->qlist,"PCSLESSetUseTrue","PCSLESSetUseTrue_SLES",
+                    PCSLESSetUseTrue_SLES);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCSLESGetSLES","PCSLESGetSLES_SLES",
+                    PCSLESGetSLES_SLES);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.29 1996/08/08 14:42:46 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.30 1997/03/26 01:35:45 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 #include <math.h>
@@ -36,7 +36,7 @@ typedef struct {
   int              *ilen;            /* actual length of each row */
   int              *j;               /* column values: j + i[k] - 1 is start of row k */
   Scalar           *a;               /* nonzero elements */
-  IS               row, col;         /* index sets, used for reorderings */
+  IS               row, col, icol;   /* index sets, used for reorderings */
   Scalar           *solve_work;      /* work space used in MatSolve */
   void             *spptr;           /* pointer for special library like SuperLU */
   int              indexshift;       /* zero or -one for C or Fortran indexing */

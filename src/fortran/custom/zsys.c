@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.41 1997/11/28 16:17:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.42 1998/01/14 02:34:51 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -37,7 +37,9 @@ static char vcid[] = "$Id: zsys.c,v 1.41 1997/11/28 16:17:05 bsmith Exp bsmith $
 #define petscbinaryseek_           PETSCBINARYSEEK
 #define petscfixfilename_          PETSCFIXFILENAME
 #define petscreleasepointer_       PETSCRELEASEPOINTER
+#define petscstrncpy_              PETSCSTRNCPY
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define petscstrncpy_              petscstrncpy
 #define petscreleasepointer_       petscreleasepointer
 #define petscfixfilename_          petscfixfilename
 #define petsctrlog_                petsctrlog
@@ -72,6 +74,23 @@ static char vcid[] = "$Id: zsys.c,v 1.41 1997/11/28 16:17:05 bsmith Exp bsmith $
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void petscstrncpy_(CHAR s1, CHAR s2, int *n,int len1, int len2)
+{
+  char *t1,*t2;
+  int  m;
+
+#if defined(PARCH_t3d)
+  t1 = _fcdtocp(s1); 
+  t2 = _fcdtocp(s2); 
+  m = *n; if (_fcdlen(s1) < m) m = _fcdlen(s1); if (_fcdlen(s2) < m) m = _fcdlen(s2);
+#else
+  t1 = s1;
+  t2 = s2;
+  m = *n; if (len1 < m) m = len1; if (len2 < m) m = len2;
+#endif
+  PetscStrncpy(t1,t2,m);
+}
 
 void petscfixfilename_(CHAR file, int *__ierr,int len )
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.57 1997/11/28 16:18:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.58 1998/01/14 02:39:09 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -127,7 +127,7 @@ static int KSPPrintHelp_Richardson(KSP ksp,char *p)
   PetscFunctionBegin;
 
   (*PetscHelpPrintf)(ksp->comm," Options for Richardson method:\n");
-  (*PetscHelpPrintf)(ksp->comm,"   %sksp_richardson_scale <scale> : damping factor\n");
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_richardson_scale <scale> : damping factor\n",p);
 
   PetscFunctionReturn(0);
 }
@@ -148,15 +148,27 @@ int KSPSetFromOptions_Richardson(KSP ksp)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "KSPRichardsonSetScale_Richardson"
+int KSPRichardsonSetScale_Richardson(KSP ksp,double scale)
+{
+  KSP_Richardson *richardsonP;
+
+  PetscFunctionBegin;
+  richardsonP = (KSP_Richardson *) ksp->data;
+  richardsonP->scale = scale;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "KSPCreate_Richardson"
 int KSPCreate_Richardson(KSP ksp)
 {
+  int            ierr;
   KSP_Richardson *richardsonP = PetscNew(KSP_Richardson); CHKPTRQ(richardsonP);
 
   PetscFunctionBegin;
   PLogObjectMemory(ksp,sizeof(KSP_Richardson));
   ksp->data                   = (void *) richardsonP;
-  ksp->type                   = KSPRICHARDSON;
   richardsonP->scale          = 1.0;
   ksp->setup                  = KSPSetUp_Richardson;
   ksp->solver                 = KSPSolve_Richardson;
@@ -169,6 +181,9 @@ int KSPCreate_Richardson(KSP ksp)
   ksp->view                   = KSPView_Richardson;
   ksp->printhelp              = KSPPrintHelp_Richardson;
   ksp->setfromoptions         = KSPSetFromOptions_Richardson;
+
+  ierr = DLRegister(&ksp->qlist,"KSPRichardsonSetScale","KSPRichardsonSetScale_Richardson",KSPRichardsonSetScale_Richardson);
+  CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

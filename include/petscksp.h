@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.61 1998/01/17 17:39:51 bsmith Exp curfman $ */
+/* $Id: ksp.h,v 1.62 1998/01/27 23:47:29 curfman Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -13,8 +13,20 @@
 
 typedef struct _p_KSP*     KSP;
 
-typedef enum { KSPUNKNOWN = -1,KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, KSPTCQMR, KSPBCGS, 
-               KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPPREONLY, KSPQCG, KSPNEW, KSPTRLS} KSPType;
+#define KSPRICHARDSON "richardson"
+#define KSPCHEBYCHEV  "chebychev"
+#define KSPCG         "cg"
+#define KSPGMRES      "gmres"
+#define KSPTCQMR      "tcqmr"
+#define KSPBCGS       "bcgs"
+#define KSPCGS        "cgs"
+#define KSPTFQMR      "tfqmr"
+#define KSPCR         "cr"
+#define KSPLSQR       "lsqr"
+#define KSPPREONLY    "preonly"
+#define KSPQCG        "qcg"
+#define KSPTRLS       "trls"
+typedef char * KSPType;
 
 extern int KSPCreate(MPI_Comm,KSP *);
 extern int KSPSetType(KSP,KSPType);
@@ -22,16 +34,12 @@ extern int KSPSetUp(KSP);
 extern int KSPSolve(KSP,int *);
 extern int KSPDestroy(KSP);
 
-extern int KSPRegisterAll();
+extern DLList KSPList;
+extern int KSPRegisterAll(char *);
 extern int KSPRegisterDestroy();
-extern int KSPRegister_Private(KSPType,char *,char *,int (*)(KSP),KSPType*);
-#if defined(USE_DYNAMIC_LIBRARIES)
-#define    KSPRegister(a,b,c,d,e)  KSPRegister_Private(a,b,c,0,e)
-#else
-#define    KSPRegister(a,b,c,d,e)  KSPRegister_Private(a,b,c,d,e)
-#endif
 
-extern int KSPGetType(KSP, KSPType *,char **);
+
+extern int KSPGetType(KSP, KSPType *);
 extern int KSPSetPreconditionerSide(KSP,PCSide);
 extern int KSPGetPreconditionerSide(KSP,PCSide*);
 extern int KSPGetTolerances(KSP,double*,double*,double*,int*);

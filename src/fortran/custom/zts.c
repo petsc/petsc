@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zts.c,v 1.5 1997/07/09 20:55:52 balay Exp bsmith $";
+static char vcid[] = "$Id: zts.c,v 1.6 1997/10/19 03:18:54 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -17,6 +17,7 @@ static char vcid[] = "$Id: zts.c,v 1.5 1997/07/09 20:55:52 balay Exp bsmith $";
 #define tsdestroy_                           TSDESTROY
 #define tssetmonitor_                        TSSETMONITOR
 #define tssetrhsjacobiandefault_             TSSETRHSJACOBIANDEFAULT
+#define tssettype_                           TSSETTYPE
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define tssetrhsfunction_                     tssetrhsfunction
 #define tssetrhsmatrix_                       tssetrhsmatrix
@@ -29,11 +30,22 @@ static char vcid[] = "$Id: zts.c,v 1.5 1997/07/09 20:55:52 balay Exp bsmith $";
 #define tsdestroy_                            tsdestroy
 #define tssetmonitor_                         tssetmonitor
 #define tssetrhsjacobiandefault_              tssetrhsjacobiandefault
+#define tssettype_                            tssettype
 #endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void tssettype_(TS ts,CHAR itmethod, int *__ierr,int len )
+{
+  char *t;
+
+  FIXCHAR(itmethod,len,t);
+  *__ierr = TSSetType((TS)PetscToPointer( *(int*)(ts) ),t);
+  FREECHAR(itmethod,t);
+}
+
 
 static int (*f2)(int*,double*,int*,int*,void*,int*);
 static int ourtsfunction(TS ts,double d,Vec x,Vec f,void *ctx)
@@ -150,18 +162,18 @@ void tsgetsles_(TS ts,SLES *sles, int *__ierr )
   *(int*) sles = PetscFromPointer(s);
 }
 
-void tsgettype_(TS ts,TSType *type,CHAR name,int *__ierr,int len)
+void tsgettype_(TS ts,CHAR name,int *__ierr,int len)
 {
   char *tname;
-  if (FORTRANNULL(type)) type = PETSC_NULL;
-  *__ierr = TSGetType((TS)PetscToPointer(*(int*)ts),type,&tname);
+
+  *__ierr = TSGetType((TS)PetscToPointer(*(int*)ts),(TSType *)&tname);
 #if defined(USES_CPTOFCD)
   {
-  char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-  if (t != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(t,tname,len1);
+    char *t = _fcdtocp(name); int len1 = _fcdlen(name);
+    PetscStrncpy(t,tname,len1);
   }
 #else
-  if (name != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(name,tname,len);
+  PetscStrncpy(name,tname,len);
 #endif
 }
 

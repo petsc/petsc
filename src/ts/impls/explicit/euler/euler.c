@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: euler.c,v 1.10 1997/07/09 20:58:26 balay Exp bsmith $";
+static char vcid[] = "$Id: euler.c,v 1.11 1997/10/19 03:28:22 bsmith Exp bsmith $";
 #endif
 /*
        Code for Timestepping with explicit Euler.
@@ -98,7 +98,6 @@ int TSCreate_Euler(TS ts )
   TS_Euler *euler;
 
   PetscFunctionBegin;
-  ts->type 	      = TS_EULER;
   ts->setup	      = TSSetUp_Euler;
   ts->step            = TSStep_Euler;
   ts->destroy         = TSDestroy_Euler;

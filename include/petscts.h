@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.21 1998/01/14 02:47:08 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.22 1998/01/17 17:39:51 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -10,7 +10,13 @@
 typedef struct _p_TS* TS;
 #define TS_COOKIE PETSC_COOKIE+18
 
-typedef enum { TS_UNKNOWN = -1,TS_EULER, TS_BEULER, TS_PSEUDO, TS_PVODE, TS_NEW} TSType;
+#define TS_EULER  "euler"
+#define TS_BEULER "beuler"
+#define TS_PSEUDO "pseudo"
+#define TS_PVODE  "pvode"
+
+typedef char *TSType;
+
 typedef enum { TS_LINEAR, TS_NONLINEAR} TSProblemType;
 
 extern int TSCreate(MPI_Comm,TSProblemType,TS*);
@@ -19,7 +25,7 @@ extern int TSGetProblemType(TS,TSProblemType*);
 extern int TSDestroy(TS);
 
 extern int TSSetMonitor(TS,int(*)(TS,int,double,Vec,void*),void *);
-extern int TSGetType(TS,TSType*,char**);
+extern int TSGetType(TS,TSType*);
 
 extern int TSSetOptionsPrefix(TS, char *);
 extern int TSAppendOptionsPrefix(TS, char *);
@@ -65,15 +71,10 @@ extern int TSPseudoIncrementDtFromInitialDt(TS);
 
 extern int TSComputeRHSFunction(TS,double,Vec,Vec);
 
-extern int TSRegisterAll();
+extern DLList TSList;
+extern int TSRegisterAll(char*);
 extern int TSRegisterDestroy();
 extern int TSRegisterAllCalled;
-extern int TSRegister_Private(TSType,char *,char *,int (*)(TS),TSType*);
-#if defined(USE_DYNAMIC_LIBRARIES)
-#define    TSRegister(a,b,c,d,e)  TSRegister_Private(a,b,c,0,e)
-#else
-#define    TSRegister(a,b,c,d,e)  TSRegister_Private(a,b,c,d,e)
-#endif
 
 extern int TSGetSNES(TS,SNES*);
 extern int TSGetSLES(TS,SLES*);

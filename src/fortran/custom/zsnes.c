@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.13 1997/07/01 19:32:56 bsmith Exp balay $";
+static char vcid[] = "$Id: zsnes.c,v 1.14 1997/07/09 20:55:52 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -7,7 +7,6 @@ static char vcid[] = "$Id: zsnes.c,v 1.13 1997/07/01 19:32:56 bsmith Exp balay $
 
 #ifdef HAVE_FORTRAN_CAPS
 #define snesregisterdestroy_         SNESREGISTERDESTROY
-#define snesregisterall_             SNESREGISTERALL
 #define snessetjacobian_             SNESSETJACOBIAN
 #define snescreate_                  SNESCREATE
 #define snessetfunction_             SNESSETFUNCTION
@@ -27,9 +26,9 @@ static char vcid[] = "$Id: zsnes.c,v 1.13 1997/07/01 19:32:56 bsmith Exp balay $
 #define snessetoptionsprefix_        SNESSETOPTIONSPREFIX 
 #define snesappendoptionsprefix_     SNESAPPENDOPTIONSPREFIX 
 #define snesdefaultmatrixfreematcreate_ SNESDEFAULTMATRIXFREEMATCREATE
+#define snessettype_                    SNESSETTYPE
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define snesregisterdestroy_         snesregisterdestroy
-#define snesregisterall_             snesregisterall
 #define snessetjacobian_             snessetjacobian
 #define snescreate_                  snescreate
 #define snessetfunction_             snessetfunction
@@ -49,18 +48,20 @@ static char vcid[] = "$Id: zsnes.c,v 1.13 1997/07/01 19:32:56 bsmith Exp balay $
 #define snessetoptionsprefix_        snessetoptionsprefix 
 #define snesappendoptionsprefix_     snesappendoptionsprefix
 #define snesdefaultmatrixfreematcreate_ snesdefaultmatrixfreematcreate
+#define snessettype_                    snessettype
 #endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-void snessetoptionsprefix_(SNES snes,CHAR prefix, int *__ierr,int len ){
+void snessettype_(SNES snes,CHAR itmethod, int *__ierr,int len )
+{
   char *t;
 
-  FIXCHAR(prefix,len,t);
-  *__ierr = SNESSetOptionsPrefix((SNES)PetscToPointer( *(int*)(snes) ),t);
-  FREECHAR(prefix,t);
+  FIXCHAR(itmethod,len,t);
+  *__ierr = SNESSetType((SNES)PetscToPointer( *(int*)(snes) ),t);
+  FREECHAR(itmethod,t);
 }
 
 void snesappendoptionsprefix_(SNES snes,CHAR prefix, int *__ierr,int len ){
@@ -270,24 +271,18 @@ void snesregisterdestroy_(int *__ierr)
   *__ierr = SNESRegisterDestroy();
 }
 
-void snesregisterall_(int *__ierr)
-{
-  *__ierr = SNESRegisterAll();
-}
-
-void snesgettype_(SNES snes,SNESType *type,CHAR name,int *__ierr,int len)
+void snesgettype_(SNES snes,CHAR name,int *__ierr,int len)
 {
   char *tname;
 
-  if (FORTRANNULL(type)) type = PETSC_NULL;
-  *__ierr = SNESGetType((SNES)PetscToPointer(*(int*)snes),type,&tname);
+  *__ierr = SNESGetType((SNES)PetscToPointer(*(int*)snes),&tname);
 #if defined(USES_CPTOFCD)
   {
-  char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-  if (t != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(t,tname,len1);
+    char *t = _fcdtocp(name); int len1 = _fcdlen(name);
+    PetscStrncpy(t,tname,len1);
   }
 #else
-  if (name != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(name,tname,len);
+  PetscStrncpy(name,tname,len);
 #endif
 }
 

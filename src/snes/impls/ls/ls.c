@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.98 1998/01/06 20:12:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.99 1998/01/14 02:44:52 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -136,7 +136,7 @@ int SNESDestroy_EQ_LS(PetscObject obj)
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
 #define __FUNC__ "SNESNoLineSearch"
-/*ARGSUSED*/
+
 /*@C
    SNESNoLineSearch - This routine is not a line search at all; 
    it simply uses the full Newton step.  Thus, this routine is intended 
@@ -184,7 +184,7 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 /* ------------------------------------------------------------------ */
 #undef __FUNC__  
 #define __FUNC__ "SNESNoLineSearchNoNorms"
-/*ARGSUSED*/
+
 /*@C
    SNESNoLineSearchNoNorms - This routine is not a line search at 
    all; it simply uses the full Newton step. This version does not
@@ -529,6 +529,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   PetscFunctionReturn(0);
 }
+
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
 #define __FUNC__ "SNESSetLineSearch"
@@ -544,6 +545,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 .  SNESCubicLineSearch() - default line search
 .  SNESQuadraticLineSearch() - quadratic line search
 .  SNESNoLineSearch() - the full Newton step (actually not a line search)
+.  SNESNoLineSearchNoNorms() - use the full Newton step (calculate no norms; faster in parallel)
 
     Options Database Keys:
 $   -snes_eq_ls [basic,quadratic,cubic]
@@ -579,10 +581,26 @@ $   -snes_eq_ls_steptol <steptol>
 int SNESSetLineSearch(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
                              double,double*,double*,int*))
 {
+  int ierr, (*f)(SNES,int (*f)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*));
+
   PetscFunctionBegin;
-  if ((snes)->type == SNES_EQ_LS) ((SNES_LS *)(snes->data))->LineSearch = func;
+  ierr = DLRegisterFind(snes->qlist,"SNESSetLineSearch",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(snes,func);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "SNESSetLineSearch_LS"
+int SNESSetLineSearch_LS(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
+                         double,double*,double*,int*))
+{
+  PetscFunctionBegin;
+  ((SNES_LS *)(snes->data))->LineSearch = func;
+  PetscFunctionReturn(0);
+}
+
 /* ------------------------------------------------------------------ */
 #undef __FUNC__  
 #define __FUNC__ "SNESPrintHelp_EQ_LS"
@@ -670,13 +688,14 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
 #define __FUNC__ "SNESCreate_EQ_LS"
 int SNESCreate_EQ_LS(SNES  snes )
 {
+  int     ierr;
   SNES_LS *neP;
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
-  snes->type		= SNES_EQ_LS;
+
   snes->setup		= SNESSetUp_EQ_LS;
   snes->solve		= SNESSolve_EQ_LS;
   snes->destroy		= SNESDestroy_EQ_LS;
@@ -693,6 +712,13 @@ int SNESCreate_EQ_LS(SNES  snes )
   neP->maxstep		= 1.e8;
   neP->steptol		= 1.e-12;
   neP->LineSearch       = SNESCubicLineSearch;
+
+  ierr = DLRegister(&snes->qlist,"SNESSetLineSearch","SNESSetLineSearch_LS",
+                    SNESSetLineSearch_LS);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
+
+
+
 

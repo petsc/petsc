@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.106 1998/01/26 18:54:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.107 1998/01/28 21:00:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -134,7 +134,7 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
   } else { 
     Vec_MPI              *xx = (Vec_MPI *) x->data;
     Vec_Seq              *yy = (Vec_Seq *) y->data;
-    Scalar               *xv = xx->array, *yv = yy->array, *yvt;
+    Scalar               *xv = xx->array, *yv = yy->array, *yvt = 0;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll *) ctx->todata;
     int                  i, size = yy->n,ierr;
 

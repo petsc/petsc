@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: preonly.c,v 1.20 1997/07/09 20:50:56 balay Exp bsmith $";
+static char vcid[] = "$Id: preonly.c,v 1.21 1997/10/19 03:23:36 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -40,7 +40,6 @@ int KSPCreate_PREONLY(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                 = (void *) 0;
-  ksp->type                 = KSPPREONLY;
   ksp->setup                = KSPSetUp_PREONLY;
   ksp->solver               = KSPSolve_PREONLY;
   ksp->adjustwork           = 0;

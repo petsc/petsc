@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: richscale.c,v 1.3 1997/07/09 20:50:50 balay Exp bsmith $";
+static char vcid[] = "$Id: richscale.c,v 1.4 1997/10/19 03:23:32 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -10,11 +10,11 @@ static char vcid[] = "$Id: richscale.c,v 1.3 1997/07/09 20:50:50 balay Exp bsmit
 #include "src/ksp/impls/rich/richctx.h"
 #include "pinclude/pviewer.h"
 
+
 #undef __FUNC__  
 #define __FUNC__ "KSPRichardsonSetScale"
 /*@
-    KSPRichardsonSetScale - Call after KSPCreate(KSPRICHARDSON) to set
-    the damping factor; if this routine is not called, the factor 
+    KSPRichardsonSetScale - Set the damping factor; if this routine is not called, the factor 
     defaults to 1.0.
 
     Input Parameters:
@@ -25,12 +25,13 @@ static char vcid[] = "$Id: richscale.c,v 1.3 1997/07/09 20:50:50 balay Exp bsmit
 @*/
 int KSPRichardsonSetScale(KSP ksp,double scale)
 {
-  KSP_Richardson *richardsonP;
+  int ierr, (*f)(KSP,double);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (ksp->type != KSPRICHARDSON) PetscFunctionReturn(0);
-  richardsonP = (KSP_Richardson *) ksp->data;
-  richardsonP->scale = scale;
+  ierr = DLRegisterFind(ksp->qlist,"KSPRichardsonSetScale",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ksp,scale);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }

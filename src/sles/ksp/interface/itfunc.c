@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.91 1998/01/17 17:36:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.92 1998/02/08 16:14:50 curfman Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -122,7 +122,7 @@ int KSPSetUp(KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
 
-  if (!ksp->typename){
+  if (!ksp->type_name){
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmpre.c,v 1.5 1997/08/22 15:11:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmpre.c,v 1.6 1997/10/19 03:23:21 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
@@ -23,12 +23,13 @@ $   -ksp_gmres_preallocate
 @*/
 int KSPGMRESSetPreAllocateVectors(KSP ksp)
 {
-  KSP_GMRES *gmres;
+  int ierr, (*f)(KSP);
 
   PetscFunctionBegin;
-  if (ksp->type != KSPGMRES) PetscFunctionReturn(0);
-  gmres = (KSP_GMRES *)ksp->data;
-  gmres->q_preallocate = 1;
+  ierr = DLRegisterFind(ksp->qlist,"KSPGMRESSetPreAllocateVectors",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ksp);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.69 1998/01/12 15:55:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.70 1998/01/14 02:40:28 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -298,8 +298,8 @@ static int PCPrintHelp_ASM(PC pc,char *p)
   (*PetscHelpPrintf)(pc->comm, " %spc_asm_overlap <ovl>: amount of overlap between subdomains, defaults to 1\n",p); 
   (*PetscHelpPrintf)(pc->comm, " %spc_asm_type <basic,restrict,interpolate,none>: type of restriction/interpolation\n",p); 
   (*PetscHelpPrintf)(pc->comm," %ssub : prefix to control options for individual blocks.\
- Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
- <method>)\n",p,p);
+  Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
+  <method>)\n",p,p);
   PetscFunctionReturn(0);
 }
 
@@ -328,35 +328,92 @@ static int PCSetFromOptions_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
+/*------------------------------------------------------------------------------------*/
+
 #undef __FUNC__  
-#define __FUNC__ "PCCreate_ASM"
-int PCCreate_ASM(PC pc)
+#define __FUNC__ "PCASMSetLocalSubdomains_ASM"
+int PCASMSetLocalSubdomains_ASM(PC pc, int n, IS *is)
 {
-  PC_ASM *osm = PetscNew(PC_ASM); CHKPTRQ(osm);
+  PC_ASM *osm;
 
   PetscFunctionBegin;
-  PLogObjectMemory(pc,sizeof(PC_ASM));
-  PetscMemzero(osm,sizeof(PC_ASM)); 
-  osm->n                 = PETSC_DECIDE;
-  osm->n_local_true      = PETSC_DECIDE;
-  osm->overlap           = 1;
-  osm->is_flg            = PETSC_FALSE;
-  osm->sles              = 0;
-  osm->type              = PC_ASM_RESTRICT;
-  osm->same_local_solves = 1;
-
-  pc->apply             = PCApply_ASM;
-  pc->setup             = PCSetUp_ASM;
-  pc->destroy           = PCDestroy_ASM;
-  pc->type              = PCASM;
-  pc->printhelp         = PCPrintHelp_ASM;
-  pc->setfromoptions    = PCSetFromOptions_ASM;
-  pc->setuponblocks     = PCSetUpOnBlocks_ASM;
-  pc->data              = (void *) osm;
-  pc->view              = PCView_ASM;
-  pc->applyrich         = 0;
+  if (n <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Each process must have 1 or more blocks");
+  osm               = (PC_ASM *) pc->data;
+  osm->n_local_true = n;
+  osm->is           = is;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "PCASMSetTotalSubdomains_ASM"
+int PCASMSetTotalSubdomains_ASM(PC pc, int N, IS *is)
+{
+  PC_ASM *osm;
+  int    rank,size;
+
+  PetscFunctionBegin;
+
+  if (is) SETERRQ(PETSC_ERR_SUP,0,"Use PCASMSetLocalSubdomains to \
+set specific index sets\n they cannot be set globally yet.");
+
+  osm               = (PC_ASM *) pc->data;
+  /*
+     Split the subdomains equally amoung all processors 
+  */
+  MPI_Comm_rank(pc->comm,&rank);
+  MPI_Comm_size(pc->comm,&size);
+  osm->n_local_true = N/size + ((N % size) > rank);
+  if (osm->n_local_true <= 0) {
+    SETERRQ(PETSC_ERR_SUP,0,"Each process must have 1 or more blocks");
+  }
+  osm->is           = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCASMSetOverlap_ASM"
+int PCASMSetOverlap_ASM(PC pc, int ovl)
+{
+  PC_ASM *osm;
+
+  PetscFunctionBegin;
+  if (ovl < 0 ) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative overlap value requested");
+
+  osm               = (PC_ASM *) pc->data;
+  osm->overlap      = ovl;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCASMSetType_ASM"
+int PCASMSetType_ASM(PC pc,PCASMType type)
+{
+  PC_ASM *osm;
+
+  PetscFunctionBegin;
+  osm        = (PC_ASM *) pc->data;
+  osm->type  = type;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCASMGetSubSLES_ASM"
+int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
+{
+  PC_ASM   *jac;
+
+  PetscFunctionBegin;
+  jac = (PC_ASM *) pc->data;
+  *n_local     = jac->n_local_true;
+  *first_local = -1; /* need to determine global number of local blocks*/
+  *sles        = jac->sles;
+  jac->same_local_solves = 0; /* Assume that local solves are now different;
+                                 not necessarily true though!  This flag is 
+                                 used only for PCView_ASM */
+  PetscFunctionReturn(0);
+}
+
+/*----------------------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ "PCASMSetLocalSubdomains"
@@ -386,15 +443,14 @@ int PCCreate_ASM(PC pc)
 @*/
 int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
 {
-  PC_ASM *osm;
+  int ierr, (*f)(PC,int,IS *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCASM) PetscFunctionReturn(0);  
-  if (n <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Each process must have 1 or more blocks");
-  osm               = (PC_ASM *) pc->data;
-  osm->n_local_true = n;
-  osm->is           = is;
+  ierr = DLRegisterFind(pc->qlist,"PCASMSetLocalSubdomains",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,n,is);CHKERRQ(ierr);
+  } 
   PetscFunctionReturn(0);
 }
 
@@ -431,27 +487,14 @@ $    -pc_asm_blocks <blks>
 @*/
 int PCASMSetTotalSubdomains(PC pc, int N, IS *is)
 {
-  PC_ASM *osm;
-  int    rank,size;
+  int ierr, (*f)(PC,int,IS *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCASM) PetscFunctionReturn(0);  
-
-  if (is) SETERRQ(PETSC_ERR_SUP,0,"Use PCASMSetLocalSubdomains to \
-set specific index sets\n they cannot be set globally yet.");
-
-  osm               = (PC_ASM *) pc->data;
-  /*
-     Split the subdomains equally amoung all processors 
-  */
-  MPI_Comm_rank(pc->comm,&rank);
-  MPI_Comm_size(pc->comm,&size);
-  osm->n_local_true = N/size + ((N % size) > rank);
-  if (osm->n_local_true <= 0) {
-    SETERRQ(PETSC_ERR_SUP,0,"Each process must have 1 or more blocks");
-  }
-  osm->is           = 0;
+  ierr = DLRegisterFind(pc->qlist,"PCASMSetTotalSubdomains",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,N,is);CHKERRQ(ierr);
+  } 
   PetscFunctionReturn(0);
 }
 
@@ -494,15 +537,14 @@ $   -pc_asm_overlap <ovl>
 @*/
 int PCASMSetOverlap(PC pc, int ovl)
 {
-  PC_ASM *osm;
+  int ierr, (*f)(PC,int);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCASM) PetscFunctionReturn(0);  
-  if (ovl < 0 ) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative overlap value requested");
-
-  osm               = (PC_ASM *) pc->data;
-  osm->overlap      = ovl;
+  ierr = DLRegisterFind(pc->qlist,"PCASMSetOverlap",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,ovl);CHKERRQ(ierr);
+  } 
   PetscFunctionReturn(0);
 }
 
@@ -530,16 +572,101 @@ $   -pc_asm_type [basic,restrict,interpolate,none]
 @*/
 int PCASMSetType(PC pc,PCASMType type)
 {
-  PC_ASM *osm;
+  int ierr, (*f)(PC,PCASMType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCASM) PetscFunctionReturn(0);  
-
-  osm        = (PC_ASM *) pc->data;
-  osm->type  = type;
+  ierr = DLRegisterFind(pc->qlist,"PCASMSetType",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,type);CHKERRQ(ierr);
+  } 
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "PCASMGetSubSLES"
+/*@C
+   PCASMGetSubSLES - Gets the local SLES contexts for all blocks on
+   this processor.
+   
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameters:
+.  n_local - the number of blocks on this processor
+.  first_local - the global number of the first block on this processor
+.  sles - the array of SLES contexts
+
+   Note:  
+   Currently for some matrix implementations only 1 block per processor 
+   is supported.
+   
+   You must call SLESSetUp() before calling PCASMGetSubSLES().
+
+.keywords: PC, ASM, additive Schwarz, get, sub, SLES, context
+
+.seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMSetOverlap(),
+          PCASMCreateSubdomains2D(),
+@*/
+int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
+{
+  int ierr, (*f)(PC,int*,int*,SLES **);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = DLRegisterFind(pc->qlist,"PCASMGetSubSLES",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,n_local,first_local,sles);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Cannot get subsles for this type of PC");
+  }
+
+ PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------------------------------------*/
+#undef __FUNC__  
+#define __FUNC__ "PCCreate_ASM"
+int PCCreate_ASM(PC pc)
+{
+  int    ierr;
+  PC_ASM *osm = PetscNew(PC_ASM); CHKPTRQ(osm);
+
+  PetscFunctionBegin;
+  PLogObjectMemory(pc,sizeof(PC_ASM));
+  PetscMemzero(osm,sizeof(PC_ASM)); 
+  osm->n                 = PETSC_DECIDE;
+  osm->n_local_true      = PETSC_DECIDE;
+  osm->overlap           = 1;
+  osm->is_flg            = PETSC_FALSE;
+  osm->sles              = 0;
+  osm->type              = PC_ASM_RESTRICT;
+  osm->same_local_solves = 1;
+
+  pc->apply             = PCApply_ASM;
+  pc->setup             = PCSetUp_ASM;
+  pc->destroy           = PCDestroy_ASM;
+  pc->printhelp         = PCPrintHelp_ASM;
+  pc->setfromoptions    = PCSetFromOptions_ASM;
+  pc->setuponblocks     = PCSetUpOnBlocks_ASM;
+  pc->data              = (void *) osm;
+  pc->view              = PCView_ASM;
+  pc->applyrich         = 0;
+
+  ierr = DLRegister(&pc->qlist,"PCASMSetLocalSubdomains","PCASMSetLocalSubdomains_ASM",
+                    PCASMSetLocalSubdomains_ASM);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCASMSetTotalSubdomains","PCASMSetTotalSubdomains_ASM",
+                    PCASMSetTotalSubdomains_ASM);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCASMSetOverlap","PCASMSetOverlap_ASM",
+                    PCASMSetOverlap_ASM);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCASMSetType","PCASMSetType_ASM",
+                    PCASMSetType_ASM);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCASMGetSubSLES","PCASMGetSubSLES_ASM",
+                    PCASMGetSubSLES_ASM);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNC__  
 #define __FUNC__ "PCASMCreateSubdomains2D"
@@ -614,45 +741,3 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCASMGetSubSLES"
-/*@C
-   PCASMGetSubSLES - Gets the local SLES contexts for all blocks on
-   this processor.
-   
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Output Parameters:
-.  n_local - the number of blocks on this processor
-.  first_local - the global number of the first block on this processor
-.  sles - the array of SLES contexts
-
-   Note:  
-   Currently for some matrix implementations only 1 block per processor 
-   is supported.
-   
-   You must call SLESSetUp() before calling PCASMGetSubSLES().
-
-.keywords: PC, ASM, additive Schwarz, get, sub, SLES, context
-
-.seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMSetOverlap(),
-          PCASMCreateSubdomains2D(),
-@*/
-int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
-{
-  PC_ASM   *jac;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCASM) PetscFunctionReturn(0);
-  if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SLESSetUp first");
-  jac = (PC_ASM *) pc->data;
-  *n_local     = jac->n_local_true;
-  *first_local = -1; /* need to determine global number of local blocks*/
-  *sles        = jac->sles;
-  jac->same_local_solves = 0; /* Assume that local solves are now different;
-                                 not necessarily true though!  This flag is 
-                                 used only for PCView_ASM */
-  PetscFunctionReturn(0);
-}

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.196 1998/01/14 02:47:08 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.197 1998/02/23 21:04:57 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -207,10 +207,10 @@ extern int PetscObjectView(PetscObject,Viewer);
 */
 typedef struct _DLList *DLList;
 extern int    DLRegister_Private(DLList*,char*,char*,int (*)(void *));
-extern int    DLCreate(DLList *);
-extern int    DLDestroy(DLList);
-extern int    DLFindRoutine(DLList,char*,int (**)(void*));
-extern int    DLPrintTypes(MPI_Comm,FILE*,char*,char *,DLList);
+extern int    DLRegisterCreate(DLList *);
+extern int    DLRegisterDestroy(DLList);
+extern int    DLRegisterFind(DLList,char*,int (**)(void*));
+extern int    DLRegisterPrintTypes(MPI_Comm,FILE*,char*,char *,DLList);
 #if defined(USE_DYNAMIC_LIBRARIES)
 #define       DLRegister(a,b,p,c) DLRegister_Private(a,b,p,0)
 #else
@@ -219,11 +219,11 @@ extern int    DLPrintTypes(MPI_Comm,FILE*,char*,char *,DLList);
 
 typedef struct _DLLibraryList *DLLibraryList;
 extern DLLibraryList DLLibrariesLoaded;
-extern int DLOpen(char *,void **);
-extern int DLSym(DLLibraryList *,char*,char *, void **);
-extern int DLAppend(DLLibraryList *,char *);
-extern int DLPrepend(DLLibraryList *,char *);
-extern int DLClose(DLLibraryList);
+extern int DLLibraryOpen(char *,void **);
+extern int DLLibrarySym(DLLibraryList *,char*,char *, void **);
+extern int DLLibraryAppend(DLLibraryList *,char *);
+extern int DLLibraryPrepend(DLLibraryList *,char *);
+extern int DLLibraryClose(DLLibraryList);
 
 
 #include "petschead.h"

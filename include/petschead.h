@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.52 1997/09/07 19:13:17 curfman Exp bsmith $ */
+/* $Id: petschead.h,v 1.53 1997/10/19 03:31:51 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -30,7 +30,7 @@ extern int PetscRegisterCookie(int *);
                       routine for MATSEQAIJ matrices.
 */
 
-#define PETSCHEADER                                    \
+#define PETSCHEADER(SOPS)                              \
   PLogDouble  flops,time,mem;                          \
   int         cookie;                                  \
   int         type;                                    \
@@ -41,6 +41,8 @@ extern int PetscRegisterCookie(int *);
   int         (*copypublic)(PetscObject,PetscObject*); \
   int         (*viewpublic)(PetscObject,Viewer);       \
   MPI_Comm    comm;                                    \
+  DLList      qlist;                                   \
+  char        *type_name;                              \
   PetscObject parent;                                  \
   char*       name;                                    \
   char        *prefix;                                 \
@@ -49,7 +51,9 @@ extern int PetscRegisterCookie(int *);
   int         (*childdestroy)(void *);                 \
   int         (*destroy)(PetscObject);                 \
   int         (*view)(PetscObject,Viewer);             \
-  void**      fortran_func_pointers;
+  void**      fortran_func_pointers;                   \
+  SOPS;
+
   /*  ... */                               
 
 #define  PETSCFREEDHEADER -1
@@ -183,7 +187,7 @@ extern void *PetscLow,*PetscHigh;
    from which all objects are derived.
 */
 struct _p_PetscObject {
-  PETSCHEADER
+  PETSCHEADER(int dummy)
 };
 
 extern int PetscObjectSetOptionsPrefix(PetscObject,char*);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.79 1997/12/01 01:56:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.80 1998/01/06 20:12:28 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -44,6 +44,7 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   }
   PetscFunctionReturn(0);
 }
+
 /*
    SNESSolve_EQ_TR - Implements Newton's Method with a very simple trust 
    region approach for solving systems of nonlinear equations. 
@@ -365,7 +366,6 @@ int SNESCreate_EQ_TR(SNES snes )
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
-  snes->type 		= SNES_EQ_TR;
   snes->setup		= SNESSetUp_EQ_TR;
   snes->solve		= SNESSolve_EQ_TR;
   snes->destroy		= SNESDestroy_EQ_TR;
@@ -391,3 +391,5 @@ int SNESCreate_EQ_TR(SNES snes )
   neP->ttol		= 0;
   PetscFunctionReturn(0);
 }
+
+

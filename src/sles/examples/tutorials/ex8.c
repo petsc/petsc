@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.26 1997/10/19 03:27:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.27 1997/11/28 16:20:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -200,8 +200,8 @@ int main(int argc,char **args)
     /* 
        Flag an error if PCTYPE is changed from the runtime options
      */
-    ierr = PCGetType(pc,&pctype,PETSC_NULL);
-    if (pctype != PCASM) {
+    ierr = PCGetType(pc,&pctype);
+    if (!PetscStrcmp(pctype,PCASM)) {
       SETERRA(1,0,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
     }
     /* 

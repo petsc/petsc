@@ -1,4 +1,4 @@
-/* $Id: tsimpl.h,v 1.12 1997/01/21 18:40:56 bsmith Exp balay $ */
+/* $Id: tsimpl.h,v 1.13 1997/05/23 18:35:55 balay Exp bsmith $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -17,7 +17,7 @@
 #define MAXTSMONITORS 5 
 
 struct _p_TS {
-  PETSCHEADER
+  PETSCHEADER(int dummy)
 
   TSProblemType problem_type;
 
@@ -45,7 +45,7 @@ struct _p_TS {
   /* --- Routines and data that are unique to each particular solver --- */
 
   int           (*setup)(TS);            /* sets up the nonlinear solver */
-  int           setup_called;            /* true if setup has been called */
+  int           setupcalled;            /* true if setup has been called */
   int           (*step)(TS,int*,double*); /* stepping routine */      
   int           (*setfromoptions)(TS);    /* sets options from database */
   int           (*printhelp)(TS,char*);   /* prints help info */

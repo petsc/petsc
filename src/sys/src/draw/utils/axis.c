@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.41 1997/08/22 15:16:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.42 1997/10/19 03:28:11 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: axis.c,v 1.41 1997/08/22 15:16:30 bsmith Exp bsmith $
 #include <math.h>
 
 struct _p_DrawAxis {
-    PETSCHEADER
+    PETSCHEADER(int dummy)
     double  xlow, ylow, xhigh, yhigh;     /* User - coord limits */
     char    *(*ylabelstr)(double,double), /* routines to generate labels */ 
             *(*xlabelstr)(double,double);

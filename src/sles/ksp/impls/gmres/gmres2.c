@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres2.c,v 1.5 1997/08/22 15:11:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres2.c,v 1.6 1997/10/19 03:23:21 bsmith Exp bsmith $";
 #endif
 #include <math.h>
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
@@ -26,13 +26,15 @@ $   -ksp_gmres_restart <max_k>
 @*/
 int KSPGMRESSetRestart(KSP ksp,int max_k )
 {
-  KSP_GMRES *gmres;
+  int ierr, (*f)(KSP,int);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  gmres = (KSP_GMRES *)ksp->data;
-  if (ksp->type != KSPGMRES) PetscFunctionReturn(0);
-  gmres->max_k = max_k;
+  ierr = DLRegisterFind(ksp->qlist,"KSPGMRESSetRestart",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ksp,max_k);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -68,10 +70,13 @@ $  -ksp_gmres_irorthog
 @*/
 int KSPGMRESSetOrthogonalization( KSP ksp,int (*fcn)(KSP,int) )
 {
+  int ierr, (*f)(KSP,int (*)(KSP,int));
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (ksp->type == KSPGMRES) {
-    ((KSP_GMRES *)ksp->data)->orthog = fcn;
+  ierr = DLRegisterFind(ksp->qlist,"KSPGMRESSetOrthogonalization",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ksp,fcn);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

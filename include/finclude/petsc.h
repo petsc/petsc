@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.53 1997/11/21 16:48:38 bsmith Exp bsmith $;
+C  $Id: petsc.h,v 1.54 1997/12/09 23:09:06 bsmith Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -7,7 +7,8 @@ C
 C
 #include "mpif.h"
 
-#define PetscTruth integer
+#define PetscTruth    integer
+#define PetscDataType integer 
 
 C
 C     Flags
@@ -46,6 +47,19 @@ C     Fortran Null
 C
       integer        PETSC_NULL
       character*(80) PETSC_NULL_CHARACTER
+
+      integer PETSC_INT, PETSC_DOUBLE, PETSC_SHORT, PETSC_FLOAT,
+     *        PETSC_COMPLEX, PETSC_CHAR, PETSC_LOGICAL
+
+      parameter (PETSC_INT=0, PETSC_DOUBLE=1, PETSC_SHORT=2, 
+     *           PETSC_FLOAT=3, PETSC_COMPLEX=4, PETSC_CHAR=5, 
+     *           PETSC_LOGICAL=6)
+
+#if defined(USE_PETSC_COMPLEX)
+#define PETSC_SCALAR PETSC_COMPLEX
+#else
+#define PETSC_SCALAR PETSC_DOUBLE
+#endif
 
 C
 C PETSc world communicator

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zksp.c,v 1.18 1997/07/01 19:32:56 bsmith Exp balay $";
+static char vcid[] = "$Id: zksp.c,v 1.19 1997/07/09 20:55:52 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -23,7 +23,9 @@ static char vcid[] = "$Id: zksp.c,v 1.18 1997/07/01 19:32:56 bsmith Exp balay $"
 #define kspgettype_               KSPGETTYPE
 #define kspgetpreconditionerside_ KSPGETPRECONDITIONERSIDE
 #define kspbuildsolution_         KSPBUILDSOLUTION
+#define kspsettype_               KSPSETTYPE           
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define kspsettype_               kspsettype
 #define kspregisterdestroy_       kspregisterdestroy
 #define kspregisterall_           kspregisterall
 #define kspdestroy_               kspdestroy
@@ -46,18 +48,27 @@ static char vcid[] = "$Id: zksp.c,v 1.18 1997/07/01 19:32:56 bsmith Exp balay $"
 extern "C" {
 #endif
 
-void kspgettype_(KSP ksp,KSPType *type,CHAR name,int *__ierr,int len)
+void kspsettype_(KSP ksp,CHAR itmethod, int *__ierr,int len )
+{
+  char *t;
+
+  FIXCHAR(itmethod,len,t);
+  *__ierr = KSPSetType((KSP)PetscToPointer( *(int*)(ksp) ),t);
+  FREECHAR(itmethod,t);
+}
+
+void kspgettype_(KSP ksp,CHAR name,int *__ierr,int len)
 {
   char *tname;
-  if (FORTRANNULL(type)) type = PETSC_NULL;
-  *__ierr = KSPGetType((KSP)PetscToPointer(*(int*)ksp),type,&tname);
+
+  *__ierr = KSPGetType((KSP)PetscToPointer(*(int*)ksp),&tname);
 #if defined(USES_CPTOFCD)
   {
-  char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-  if (t != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(t,tname,len1);
+    char *t = _fcdtocp(name); int len1 = _fcdlen(name);
+    PetscStrncpy(t,tname,len1);
   }
 #else
-  if (name != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(name,tname,len);
+  PetscStrncpy(name,tname,len);
 #endif
 }
 
@@ -164,11 +175,6 @@ void kspdestroy_(KSP ksp, int *__ierr ){
 void kspregisterdestroy_(int* __ierr)
 {
   *__ierr = KSPRegisterDestroy();
-}
-
-void kspregisterall_(int* __ierr)
-{
-  *__ierr = KSPRegisterAll();
 }
 
 void kspbuildsolution_(KSP ctx,Vec v,Vec *V, int *__ierr ){

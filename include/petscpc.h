@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.76 1998/01/06 20:13:31 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.77 1998/01/12 16:02:51 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -8,8 +8,23 @@
 #include "petsc.h"
 #include "mat.h"
 
-typedef enum { PCNONE, PCJACOBI, PCSOR, PCLU, PCSHELL, PCBJACOBI, PCMG,
-               PCEISENSTAT, PCILU, PCICC, PCASM, PCBGS, PCSLES, PCCOMPOSITE, PCNEW } PCType;
+extern DLList PCList;
+typedef char *PCType;
+
+#define PCNONE      "none"
+#define PCJACOBI    "jacobi"
+#define PCSOR       "sor"
+#define PCLU        "lu"
+#define PCSHELL     "shell"
+#define PCBJACOBI   "bjacobi"
+#define PCMG        "mg"
+#define PCEISENSTAT "eisenstat"
+#define PCILU       "ilu"
+#define PCICC       "icc"
+#define PCASM       "asm"
+#define PCBGS       "bgs"
+#define PCSLES      "sles"
+#define PCCOMPOSITE "composite"
 
 typedef struct _p_PC* PC;
 #define PC_COOKIE     PETSC_COOKIE+9
@@ -35,15 +50,13 @@ extern int    PCApplyBAorABTrans(PC,PCSide,Vec,Vec,Vec);
 extern int    PCApplyRichardson(PC,Vec,Vec,Vec,int);
 extern int    PCApplyRichardsonExists(PC,PetscTruth*);
 
-extern int    PCRegister(PCType,PCType*,char *,int (*)(PC));
 extern int    PCRegisterDestroy();
-extern int    PCRegisterAll();
+extern int    PCRegisterAll(char*);
 extern int    PCRegisterAllCalled;
 
 extern int    PCDestroy(PC);
 extern int    PCSetFromOptions(PC);
-extern int    PCGetType(PC,PCType*,char**);
-extern int    PCGetTypeFromName(char *,PCType *);
+extern int    PCGetType(PC,PCType*);
 
 extern int    PCGetFactoredMatrix(PC,Mat*);
 extern int    PCSetModifySubMatrices(PC,int(*)(PC,int,IS*,IS*,Mat*,void*),void*);

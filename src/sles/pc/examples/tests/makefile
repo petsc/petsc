@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: makefile,v 1.54 1997/09/10 18:51:28 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -26,23 +26,23 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
-ex1: ex1.o 
+ex1: ex1.o   chkopts
 	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
 	$(RM) ex1.o
 
-ex2: ex2.o 
+ex2: ex2.o   chkopts
 	-$(CLINKER) -o ex2 ex2.o $(SLES_LIB)
 	$(RM) ex2.o
 
-ex3: ex3.o 
+ex3: ex3.o   chkopts
 	-$(CLINKER) -o ex3 ex3.o $(SLES_LIB)
 	$(RM) ex3.o
 
-ex4: ex4.o 
+ex4: ex4.o   chkopts
 	-$(CLINKER) -o ex4 ex4.o $(SLES_LIB)
 	$(RM) ex4.o
 
-ex5: ex5.o 
+ex5: ex5.o   chkopts
 	-$(CLINKER) -o ex5 ex5.o $(SLES_LIB)
 	$(RM) ex5.o
 

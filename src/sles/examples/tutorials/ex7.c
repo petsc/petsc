@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.33 1997/10/19 03:27:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.34 1997/11/28 16:20:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -156,8 +156,8 @@ int main(int argc,char **args)
      the individual blocks.  These choices are obviously not recommended
      for solving this particular problem.
   */
-  ierr = PCGetType(pc,&pctype,PETSC_NULL); CHKERRA(ierr);
-  if (pctype == PCBJACOBI) {
+  ierr = PCGetType(pc,&pctype); CHKERRA(ierr);
+  if (!PetscStrcmp(pctype,PCBJACOBI)) {
     /* 
        Call SLESSetUp() to set the block Jacobi data structures (including
        creation of an internal SLES context for each block).

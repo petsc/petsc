@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.65 1997/12/01 01:53:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.66 1998/01/14 02:38:56 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -235,9 +235,22 @@ int KSPSetFromOptions_CG(KSP ksp)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "KSPCGSetType_CG" 
+int KSPCGSetType_CG(KSP ksp,KSPCGType type)
+{
+  KSP_CG *cg;
+
+  PetscFunctionBegin;
+  cg = (KSP_CG *)ksp->data;
+  cg->type = type;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "KSPCreate_CG"
 int KSPCreate_CG(KSP ksp)
 {
+  int    ierr;
   KSP_CG *cg = (KSP_CG*) PetscMalloc(sizeof(KSP_CG));  CHKPTRQ(cg);
 
   PetscFunctionBegin;
@@ -249,7 +262,6 @@ int KSPCreate_CG(KSP ksp)
   cg->type                  = KSP_CG_HERMITIAN;
 #endif
   ksp->data                 = (void *) cg;
-  ksp->type                 = KSPCG;
   ksp->pc_side              = PC_LEFT;
   ksp->calc_res             = 1;
   ksp->setup                = KSPSetUp_CG;
@@ -262,6 +274,8 @@ int KSPCreate_CG(KSP ksp)
   ksp->converged            = KSPDefaultConverged;
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
+
+  ierr = DLRegister(&ksp->qlist,"KSPCGSetType","KSPCGSetType_CG",KSPCGSetType_CG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

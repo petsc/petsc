@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.164 1998/02/26 18:12:59 balay Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.165 1998/02/26 18:29:50 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -433,7 +433,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
 
 extern int PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 extern int PetscSequentialPhaseEnd_Private(MPI_Comm,int);
-extern int DLDestroyAll();
+extern int DLRegisterDestroyAll();
 
 #undef __FUNC__  
 #define __FUNC__ "PetscFinalize"
@@ -601,7 +601,7 @@ int PetscFinalize()
      Destroy all the function registration lists created
   */
   NRDestroyAll();
-  ierr = DLDestroyAll(); CHKERRQ(ierr); 
+  ierr = DLRegisterDestroyAll(); CHKERRQ(ierr); 
 
   /*
        Destroy PETSC_COMM_SELF as a MPI_Comm with the PETSc 

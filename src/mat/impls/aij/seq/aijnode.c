@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.81 1997/12/01 01:54:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.82 1997/12/04 19:35:09 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -1184,7 +1184,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
 {
   Mat        C = *B;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b = (Mat_SeqAIJ *)C->data;
-  IS         iscol = b->col, isrow = b->row, isicol;
+  IS         iscol = b->col, isrow = b->row, isicol = b->icol;
   int        shift = a->indexshift, *r,*ic,*c, ierr, n = a->m, *bi = b->i; 
   int        *bj = b->j+shift, *nbj=b->j +(!shift), *ajtmp, *bjtmp, nz, row, prow;
   int        *ics,i,j, idx, *ai = a->i, *aj = a->j+shift, *bd = b->diag, node_max, nsz;
@@ -1193,8 +1193,6 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   Scalar     tmp, *ba = b->a+shift, *aa = a->a+shift, *pv, *rtmps1, *rtmps2, *rtmps3;
 
   PetscFunctionBegin;  
-  ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
-  PLogObjectParent(*B,isicol);
   ierr   = ISGetIndices(isrow,&r); CHKERRQ(ierr);
   ierr   = ISGetIndices(iscol,&c); CHKERRQ(ierr);
   ierr   = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
@@ -1479,7 +1477,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   PetscFree(tmp_vec);
   ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
-  ierr = ISDestroy(isicol); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
   C->factor      = FACTOR_LU;
   C->assembled   = PETSC_TRUE;
   PLogFlops(b->n);

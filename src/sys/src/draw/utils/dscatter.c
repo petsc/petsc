@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dscatter.c,v 1.13 1997/10/10 04:04:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dscatter.c,v 1.14 1997/10/19 03:28:11 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: dscatter.c,v 1.13 1997/10/10 04:04:54 bsmith Exp bsmi
 #include "petsc.h"         /*I "petsc.h" I*/
 
 struct _p_DrawSP {
-  PETSCHEADER 
+  PETSCHEADER(int dummy) 
   int         len,loc;
   Draw        win;
   DrawAxis    axis;

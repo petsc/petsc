@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.62 1998/01/06 20:12:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.63 1998/01/14 02:45:00 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -74,10 +74,10 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
         neP->gamma = neP->gamma_factor*(*gnorm); 
 #if !defined(USE_PETSC_COMPLEX)
         PLogInfo(snes,"SNESSolve_UM_LS:  modify diagonal (assume same nonzero structure), gamma_factor=%g, gamma=%g\n",
-          neP->gamma_factor,neP->gamma);
+                 neP->gamma_factor,neP->gamma);
 #else
         PLogInfo(snes,"SNESSolve_UM_LS:  modify diagonal (asuume same nonzero structure), gamma_factor=%g, gamma=%g\n",
-          neP->gamma_factor,real(neP->gamma));
+                 neP->gamma_factor,real(neP->gamma));
 #endif
         ierr = MatShift(&neP->gamma,snes->jacobian); CHKERRQ(ierr);
         if ((snes->jacobian_pre != snes->jacobian) && (flg != SAME_PRECONDITIONER)){
@@ -211,7 +211,7 @@ static int SNESView_UM_LS(PetscObject obj,Viewer viewer)
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(snes->comm,fd,"    gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
-      ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);
+                 ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);
   }
   PetscFunctionReturn(0);
 }
@@ -268,7 +268,7 @@ int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,void *dummy
     PetscFunctionReturn(2);
   }
   /* Test for termination and stringent tolerances. (failure and stop) */
- if (snes->nfuncs > snes->max_funcs) {
+  if (snes->nfuncs > snes->max_funcs) {
     PLogInfo(snes,"SNESConverged_UM_LS: Exceeded maximum number of function evaluations: %d > %d\n",
              snes->nfuncs,snes->max_funcs );
     PetscFunctionReturn(-1);
@@ -526,6 +526,19 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "SNESLineSearchGetDampingParameter_UMLS"
+int SNESLineSearchGetDampingParameter_UMLS(SNES snes,Scalar *damp)
+{
+  SNES_UMLS *neP;
+
+  PetscFunctionBegin;
+  neP = (SNES_UMLS *) snes->data;
+  *damp = neP->gamma;
+  PetscFunctionReturn(0);
+}
+
 /* ---------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "SNESCreate_UM_LS"
@@ -540,7 +553,6 @@ int SNESCreate_UM_LS(SNES snes)
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
-  snes->type 		  = SNES_UM_LS;
   snes->setup		  = SNESSetUp_UM_LS;
   snes->solve		  = SNESSolve_UM_LS;
   snes->destroy		  = SNESDestroy_UM_LS;
@@ -573,13 +585,18 @@ int SNESCreate_UM_LS(SNES snes)
   ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
   ierr = PCSetType(pc,PCJACOBI); CHKERRQ(ierr);
 
+  ierr = DLRegister(&snes->qlist,"SNESLineSearchGetDampingParameter","SNESLineSearchGetDampingParameter_UMLS",
+                    SNESLineSearchGetDampingParameter_UMLS);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
+
+
 #undef __FUNC__  
-#define __FUNC__ "SNESGetLineSearchDampingParameter"
+#define __FUNC__ "SNESLineSearchGetDampingParameter"
 /* @
-   SNESGetLineSearchDampingParameter - Gets the damping parameter used within
+   SNESLineSearchGetDampingParameter - Gets the damping parameter used within
    the line search method SNES_UM_LS for unconstrained minimization.
 
    Input Parameter:
@@ -590,13 +607,18 @@ int SNESCreate_UM_LS(SNES snes)
 
 .keywords: SNES, nonlinear, get, line search, damping parameter
 @ */
-int SNESGetLineSearchDampingParameter(SNES snes,Scalar *damp)
+int SNESLineSearchGetDampingParameter(SNES snes,Scalar *damp)
 {
-  SNES_UMLS *neP;
+  int ierr, (*f)(SNES,Scalar *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  neP = (SNES_UMLS *) snes->data;
-  *damp = neP->gamma;
+
+  ierr = DLRegisterFind(snes->qlist,"SNESLineSearchGetDampingParameter",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(snes,damp);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Can only get line search damping when line search algorithm used");
+  }
   PetscFunctionReturn(0);
 }

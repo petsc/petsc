@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zpc.c,v 1.15 1997/06/25 01:00:37 curfman Exp balay $";
+static char vcid[] = "$Id: zpc.c,v 1.16 1997/07/09 20:55:52 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -8,7 +8,6 @@ static char vcid[] = "$Id: zpc.c,v 1.15 1997/06/25 01:00:37 curfman Exp balay $"
 #include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
-#define pcregisterall_             PCREGISTERALL
 #define pcregisterdestroy_         PCREGISTERDESTROY
 #define pcdestroy_                 PCDESTROY
 #define pccreate_                  PCCREATE
@@ -24,8 +23,8 @@ static char vcid[] = "$Id: zpc.c,v 1.15 1997/06/25 01:00:37 curfman Exp balay $"
 #define pcshellsetapply_           PCSHELLSETAPPLY
 #define pcshellsetapplyrichardson_ PCSHELLSETAPPLYRICHARDSON
 #define pcgettype_                 PCGETTYPE
+#define pcsettype_                 PCSETTYPE
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define pcregisterall_             pcregisterall
 #define pcregisterdestroy_         pcregisterdestroy
 #define pcdestroy_                 pcdestroy
 #define pccreate_                  pccreate
@@ -41,11 +40,22 @@ static char vcid[] = "$Id: zpc.c,v 1.15 1997/06/25 01:00:37 curfman Exp balay $"
 #define pcshellsetapplyrichardson_ pcshellsetapplyrichardson
 #define pcshellsetapply_           pcshellsetapply
 #define pcgettype_                 pcgettype
+#define pcsettype_                 pcsettype
 #endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void pcsettype_(PC pc,CHAR itmethod, int *__ierr,int len )
+{
+  char *t;
+
+  FIXCHAR(itmethod,len,t);
+  *__ierr = PCSetType((PC)PetscToPointer( *(int*)(pc) ),t);
+  FREECHAR(itmethod,t);
+}
+
 
 static void (*f1)(void *,int*,int*,int*);
 static int ourshellapply(void *ctx,Vec x,Vec y)
@@ -164,23 +174,18 @@ void pcregisterdestroy_(int *__ierr){
   *__ierr = PCRegisterDestroy();
 }
 
-void pcregisterall_(int *__ierr){
-  *__ierr = PCRegisterAll();
-}
-
-void pcgettype_(PC pc,PCType *type,CHAR name,int *__ierr,int len)
+void pcgettype_(PC pc,CHAR name,int *__ierr,int len)
 {
   char *tname;
 
-  if (FORTRANNULL(type)) type = PETSC_NULL;
-  *__ierr = PCGetType((PC)PetscToPointer(*(int*)pc),type,&tname);
+  *__ierr = PCGetType((PC)PetscToPointer(*(int*)pc),&tname);
 #if defined(USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-  if (t != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(t,tname,len1);
+  PetscStrncpy(t,tname,len1);
   }
 #else
-  if (name != PETSC_NULL_CHARACTER_Fortran) PetscStrncpy(name,tname,len);
+  PetscStrncpy(name,tname,len);
 #endif
 }
 

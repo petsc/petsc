@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgtype.c,v 1.5 1997/08/22 15:11:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgtype.c,v 1.6 1997/10/19 03:23:17 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
@@ -28,13 +28,14 @@ $   -ksp_cg_symmetric
 @*/
 int KSPCGSetType(KSP ksp,KSPCGType type)
 {
-  KSP_CG *cg;
+  int ierr, (*f)(KSP,KSPCGType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  cg = (KSP_CG *)ksp->data;
-  if (ksp->type != KSPCG) PetscFunctionReturn(0);
-  cg->type = type;
+  ierr = DLRegisterFind(ksp->qlist,"KSPCGSetType",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ksp,type);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

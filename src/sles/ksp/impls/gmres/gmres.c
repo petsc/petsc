@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.90 1998/01/14 02:39:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.91 1998/01/28 21:00:53 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -603,17 +603,51 @@ extern int KSPComputeEigenvalues_GMRES(KSP,int,double *,double *);
 extern int KSPDefaultConverged_GMRES(KSP,int,double,void*);
 
 #undef __FUNC__  
+#define __FUNC__ "KSPGMRESSetRestart_GMRES" 
+int KSPGMRESSetRestart_GMRES(KSP ksp,int max_k )
+{
+  KSP_GMRES *gmres;
+
+  PetscFunctionBegin;
+  gmres = (KSP_GMRES *)ksp->data;
+  gmres->max_k = max_k;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "KSPGMRESSetOrthogonalization_GMRES" 
+int KSPGMRESSetOrthogonalization_GMRES( KSP ksp,int (*fcn)(KSP,int) )
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  ((KSP_GMRES *)ksp->data)->orthog = fcn;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "KSPGMRESSetPreAllocateVectors_GMRES" 
+int KSPGMRESSetPreAllocateVectors_GMRES(KSP ksp)
+{
+  KSP_GMRES *gmres;
+
+  PetscFunctionBegin;
+  gmres = (KSP_GMRES *)ksp->data;
+  gmres->q_preallocate = 1;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "KSPCreate_GMRES"
 int KSPCreate_GMRES(KSP ksp)
 {
   KSP_GMRES *gmres;
+  int       ierr;
 
   PetscFunctionBegin;
   gmres = (KSP_GMRES*) PetscMalloc(sizeof(KSP_GMRES)); CHKPTRQ(gmres);
   PetscMemzero(gmres,sizeof(KSP_GMRES));
   PLogObjectMemory(ksp,sizeof(KSP_GMRES));
   ksp->data              = (void *) gmres;
-  ksp->type              = KSPGMRES;
   ksp->converged         = KSPDefaultConverged_GMRES;
   ksp->buildsolution     = KSPBuildSolution_GMRES;
 
@@ -626,6 +660,13 @@ int KSPCreate_GMRES(KSP ksp)
   ksp->setfromoptions    = KSPSetFromOptions_GMRES;
   ksp->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
+
+  ierr = DLRegister(&ksp->qlist,"KSPGMRESSetPreAllocateVectors","KSPGMRESSetPreAllocateVectors_GMRES",
+                    KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
+  ierr = DLRegister(&ksp->qlist,"KSPGMRESSetOrthogonalization","KSPGMRESSetOrthogonalization_GMRES",
+                    KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
+  ierr = DLRegister(&ksp->qlist,"KSPGMRESSetRestart","KSPGMRESSetRestart_GMRES",KSPGMRESSetRestart_GMRES);
+  CHKERRQ(ierr);
 
   gmres->haptol         = 1.0e-8;
   gmres->epsabs         = 1.0e-8;

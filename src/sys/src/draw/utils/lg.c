@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.47 1997/10/10 04:04:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.48 1997/10/19 03:28:11 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: lg.c,v 1.47 1997/10/10 04:04:54 bsmith Exp bsmith $";
 #include "petsc.h"         /*I "petsc.h" I*/
 
 struct _p_DrawLG {
-  PETSCHEADER 
+  PETSCHEADER(int dummy) 
   int         len,loc;
   Draw        win;
   DrawAxis    axis;

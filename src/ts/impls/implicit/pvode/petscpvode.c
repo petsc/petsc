@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.17 1998/01/14 02:43:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.18 1998/01/17 17:38:20 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -315,7 +315,7 @@ static int TSSetFromOptions_PVode_Nonlinear(TS ts)
   ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_linear_tolerance",&ltol,&flag);CHKERRQ(ierr);
   ierr = TSPVodeSetLinearTolerance(ts,ltol);CHKERRQ(ierr);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-ts_pvode_gramschmidt_restart",&restart,&flag);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-ts_pvode_gmres_restart",&restart,&flag);CHKERRQ(ierr);
   ierr = TSPVodeSetGMRESRestart(ts,restart);CHKERRQ(ierr);
 
   ierr = PCSetFromOptions(cvode->pc); CHKERRQ(ierr);
@@ -375,12 +375,12 @@ static int TSView_PVode(PetscObject obj,Viewer viewer)
     PetscFPrintf(comm,fd,"PVode integrater type %s\n",type);
     PetscFPrintf(comm,fd,"PVode abs tol %g rel tol %g\n",cvode->abstol,cvode->reltol);
     PetscFPrintf(comm,fd,"PVode linear solver tolerance factor %g\n",cvode->linear_tol);
+    PetscFPrintf(comm,fd,"PVode GMRES max iterations (same as restart in PVODE) %d\n",cvode->restart);
     if (cvode->gtype == PVODE_MODIFIED_GS) {
-      PetscFPrintf(comm,fd,"PVode using modified Gram-Schmidt for orthogonalization in GMRES");
+      PetscFPrintf(comm,fd,"PVode using modified Gram-Schmidt for orthogonalization in GMRES\n");
     } else {
-      PetscFPrintf(comm,fd,"PVode using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES");
+      PetscFPrintf(comm,fd,"PVode using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES\n");
     }
-    PetscFPrintf(comm,fd,"PVode GMRES restart size\n",cvode->restart);
   } else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer,"Pvode type %s",type);
   } 
@@ -388,6 +388,245 @@ static int TSView_PVode(PetscObject obj,Viewer viewer)
 
   PetscFunctionReturn(0);
 }
+
+
+/* --------------------------------------------------------------------------*/
+#undef __FUNC__
+#define __FUNC__ "TSPVodeSetType_Pvode"
+int TSPVodeSetType_Pvode(TS ts, TSPVodeType type)
+{
+  TS_PVode *cvode = (TS_PVode*) ts->data;
+  
+  PetscFunctionBegin;
+  cvode->cvode_type = type;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "TSPVodeSetGMRESRestart_Pvode"
+int TSPVodeSetGMRESRestart_Pvode(TS ts, int restart)
+{
+  TS_PVode *cvode = (TS_PVode*) ts->data;
+  
+  PetscFunctionBegin;
+  cvode->restart = restart;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "TSPVodeSetLinearTolerance_Pvode"
+int TSPVodeSetLinearTolerance_Pvode(TS ts, double tol)
+{
+  TS_PVode *cvode = (TS_PVode*) ts->data;
+  
+  PetscFunctionBegin;
+  cvode->linear_tol = tol;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "TSPVodeSetGramSchmidtType_Pvode"
+int TSPVodeSetGramSchmidtType_Pvode(TS ts, TSPVodeGramSchmidtType type)
+{
+  TS_PVode *cvode = (TS_PVode*) ts->data;
+  
+  PetscFunctionBegin;
+  cvode->gtype = type;
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "TSPVodeSetTolerance_Pvode"
+int TSPVodeSetTolerance_Pvode(TS ts, double aabs, double rel)
+{
+  TS_PVode *cvode = (TS_PVode*) ts->data;
+  
+  PetscFunctionBegin;
+  if (aabs != PETSC_DECIDE) cvode->abstol = aabs;
+  if (rel != PETSC_DECIDE)  cvode->reltol = rel;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "TSPVodeGetPC_Pvode"
+int TSPVodeGetPC_Pvode(TS ts, PC *pc)
+{ 
+  TS_PVode *cvode = (TS_PVode*) ts->data;
+
+  PetscFunctionBegin;
+  *pc = cvode->pc;
+
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------------------------*/
+
+#undef __FUNC__
+#define __FUNC__ "TSPVodeSetType"
+/*@
+   TSPVodeSetType - Sets the method that PVode will use for integration.
+
+   Input parameters:
+    ts     - the time-step context
+    type - one of  PVODE_ADAMS or PVODE_BDF
+
+    Contributed by: Liyang Xu
+
+.keywords: Adams, backward differentiation formula
+
+@*/
+int TSPVodeSetType(TS ts, TSPVodeType type)
+{
+  int ierr, (*f)(TS,TSPVodeType);
+  
+  PetscFunctionBegin;
+  ierr = DLRegisterFind(ts->qlist,"TSPVodeSetType",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ts,type);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "TSPVodeSetGMRESRestart"
+/*@
+   TSPVodeSetGMRESRestart - Sets the dimension of the Krylov space used by 
+       GMRES in the linear solver in PVODE. PVODE DOES NOT use restarted GMRES so
+       this is ALSO the maximum number of GMRES steps that will be used.
+
+   Input parameters:
+    ts     - the time-step context
+    restart - number of direction vectors (the restart size).
+
+
+.keywords: GMRES, restart
+
+@*/
+int TSPVodeSetGMRESRestart(TS ts, int restart)
+{
+  int ierr, (*f)(TS,int);  
+
+  PetscFunctionBegin;
+  ierr = DLRegisterFind(ts->qlist,"TSPVodeSetGMRESRestart",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ts,restart);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "TSPVodeSetLinearTolerance"
+/*@
+   TSPVodeSetLinearTolerance - Sets the tolerance used to solve the linear
+       system by PVODE.
+
+   Input parameters:
+    ts     - the time-step context
+    tol    - the factor by which the tolerance on the nonlinear solver is
+             multiplied to get the tolerance on the linear solver, .05 by default.
+
+
+.keywords: GMRES, linear convergence tolerance, PVODE
+
+@*/
+int TSPVodeSetLinearTolerance(TS ts, double tol)
+{
+  int ierr, (*f)(TS,double);  
+  
+  PetscFunctionBegin;
+  ierr = DLRegisterFind(ts->qlist,"TSPVodeSetLinearTolerance",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ts,tol);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "TSPVodeSetGramSchmidtType"
+/*@
+   TSPVodeSetGramSchmidtType - Sets type of orthogonalization used
+        in GMRES method by PVODE linear solver.
+
+   Input parameters:
+.    ts  - the time-step context
+.    type - either PVODE_MODIFIED_GS or PVODE_CLASSICAL_GS
+
+.keywords: PVode, orthogonalization
+
+@*/
+int TSPVodeSetGramSchmidtType(TS ts, TSPVodeGramSchmidtType type)
+{
+  int ierr, (*f)(TS,TSPVodeGramSchmidtType);  
+  
+  PetscFunctionBegin;
+  ierr = DLRegisterFind(ts->qlist,"TSPVodeSetGramSchmidtType",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ts,type);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "TSPVodeSetTolerance"
+/*@
+   TSPVodeSetTolerance - Sets the absolute and relative tolerance used by 
+                         PVode for error control.
+
+   Input parameters:
+.    ts  - the time-step context
+.    aabs - the absolute tolerance  
+.    rel - the relative tolerance
+
+    Contributed by: Liyang Xu
+
+.keywords: PVode, tolerance
+
+@*/
+int TSPVodeSetTolerance(TS ts, double aabs, double rel)
+{
+  int ierr, (*f)(TS,double,double);  
+  
+  PetscFunctionBegin;
+  ierr = DLRegisterFind(ts->qlist,"TSPVodeSetTolerance",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ts,aabs,rel);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "TSPVodeGetPC"
+/*
+   TSPVodeGetPC - Extract the PC context from a time-step context for PVode.
+
+   Input Parameter:
+.    ts - the time-step context
+
+   Output Parameter:
+.    pc - the preconditioner context
+
+    Contributed by: Liyang Xu
+
+.seealso: 
+*/
+int TSPVodeGetPC(TS ts, PC *pc)
+{ 
+  int ierr, (*f)(TS,PC *);  
+
+  PetscFunctionBegin;
+  ierr = DLRegisterFind(ts->qlist,"TSPVodeGetPC",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ts,pc);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"TS must be of PVode type to extract the PC");
+  }
+
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------------------------*/
 
 /*
 
@@ -401,7 +640,6 @@ int TSCreate_PVode(TS ts )
   int      ierr;
 
   PetscFunctionBegin;
-  ts->type 	      = TS_PVODE;
   ts->destroy         = TSDestroy_PVode;
   ts->printhelp       = TSPrintHelp_PVode;
   ts->view            = TSView_PVode;
@@ -427,158 +665,18 @@ int TSCreate_PVode(TS ts )
   cvode->abstol = 1e-6;
   cvode->reltol = 1e-6;
 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetType"
-/*@
-   TSPVodeSetType - Sets the method that PVode will use for integration.
-
-   Input parameters:
-    ts     - the time-step context
-    type - one of  PVODE_ADAMS or PVODE_BDF
-
-    Contributed by: Liyang Xu
-
-.keywords: Adams, backward differentiation formula
-
-@*/
-int TSPVodeSetType(TS ts, TSPVodeType type)
-{
-  TS_PVode *cvode = (TS_PVode*) ts->data;
-  
-  PetscFunctionBegin;
-  if (ts->type != TS_PVODE) PetscFunctionReturn(0);
-  cvode->cvode_type = type;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetGMRESRestart"
-/*@
-   TSPVodeSetGMRESRestart - Sets the dimension of the Krylov space used by 
-       GMRES in the linear solver in PVODE. PVODE DOES NOT use restarted GMRES so
-       this is ALSO the maximum number of GMRES steps that will be used.
-
-   Input parameters:
-    ts     - the time-step context
-    restart - number of direction vectors (the restart size).
-
-
-.keywords: GMRES, restart
-
-@*/
-int TSPVodeSetGMRESRestart(TS ts, int restart)
-{
-  TS_PVode *cvode = (TS_PVode*) ts->data;
-  
-  PetscFunctionBegin;
-  if (ts->type != TS_PVODE) PetscFunctionReturn(0);
-  cvode->restart = restart;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetLinearTolerance"
-/*@
-   TSPVodeSetLinearTolerance - Sets the tolerance used to solve the linear
-       system by PVODE.
-
-   Input parameters:
-    ts     - the time-step context
-    tol    - the factor by which the tolerance on the nonlinear solver is
-             multiplied to get the tolerance on the linear solver, .05 by default.
-
-
-.keywords: GMRES, linear convergence tolerance, PVODE
-
-@*/
-int TSPVodeSetLinearTolerance(TS ts, double tol)
-{
-  TS_PVode *cvode = (TS_PVode*) ts->data;
-  
-  PetscFunctionBegin;
-  if (ts->type != TS_PVODE) PetscFunctionReturn(0);
-  cvode->linear_tol = tol;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetGramSchmidtType"
-/*@
-   TSPVodeSetGramSchmidtType - Sets type of orthogonalization used
-        in GMRES method by PVODE linear solver.
-
-   Input parameters:
-.    ts  - the time-step context
-.    type - either PVODE_MODIFIED_GS or PVODE_CLASSICAL_GS
-
-.keywords: PVode, orthogonalization
-
-@*/
-int TSPVodeSetGramSchmidtType(TS ts, TSPVodeGramSchmidtType type)
-{
-  TS_PVode *cvode = (TS_PVode*) ts->data;
-  
-  PetscFunctionBegin;
-  if (ts->type != TS_PVODE) PetscFunctionReturn(0);
-  cvode->gtype = type;
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetTolerance"
-/*@
-   TSPVodeSetTolerance - Sets the absolute and relative tolerance used by 
-                         PVode for error control.
-
-   Input parameters:
-.    ts  - the time-step context
-.    aabs - the absolute tolerance  
-.    rel - the relative tolerance
-
-    Contributed by: Liyang Xu
-
-.keywords: PVode, tolerance
-
-@*/
-int TSPVodeSetTolerance(TS ts, double aabs, double rel)
-{
-  TS_PVode *cvode = (TS_PVode*) ts->data;
-  
-  PetscFunctionBegin;
-  if (ts->type != TS_PVODE) PetscFunctionReturn(0);
-  if (aabs != PETSC_DECIDE) cvode->abstol = aabs;
-  if (rel != PETSC_DECIDE)  cvode->reltol = rel;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "TSPVodeGetPC"
-/*
-   TSPVodeGetPC - Extract the PC context from a time-step context for PVode.
-
-   Input Parameter:
-.    ts - the time-step context
-
-   Output Parameter:
-.    pc - the preconditioner context
-
-    Contributed by: Liyang Xu
-
-.seealso: 
-*/
-int TSPVodeGetPC(TS ts, PC *pc)
-{ 
-  TS_PVode *cvode = (TS_PVode*) ts->data;
-
-  PetscFunctionBegin;
-  if (ts->type != TS_PVODE) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"TS must be of PVode type to extract the PC");
-  }
-  *pc = cvode->pc;
+  ierr = DLRegister(&ts->qlist,"TSPVodeSetType","TSPVodeSetType_Pvode",
+                    TSPVodeSetType_Pvode);CHKERRQ(ierr);
+  ierr = DLRegister(&ts->qlist,"TSPVodeSetGMRESRestart","TSPVodeSetGMRESRestart_Pvode",
+                    TSPVodeSetGMRESRestart_Pvode);CHKERRQ(ierr);
+  ierr = DLRegister(&ts->qlist,"TSPVodeSetLinearTolerance","TSPVodeSetLinearTolerance_Pvode",
+                    TSPVodeSetLinearTolerance_Pvode);CHKERRQ(ierr);
+  ierr = DLRegister(&ts->qlist,"TSPVodeSetGramSchmidtType","TSPVodeSetGramSchmidtType_Pvode",
+                    TSPVodeSetGramSchmidtType_Pvode);CHKERRQ(ierr);
+  ierr = DLRegister(&ts->qlist,"TSPVodeSetTolerance","TSPVodeSetTolerance_Pvode",
+                    TSPVodeSetTolerance_Pvode);CHKERRQ(ierr);
+  ierr = DLRegister(&ts->qlist,"TSPVodeGetPC","TSPVodeGetPC_Pvode",
+                    TSPVodeGetPC_Pvode);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

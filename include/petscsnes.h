@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.62 1998/01/15 21:12:46 curfman Exp curfman $ */
+/* $Id: snes.h,v 1.63 1998/01/15 21:54:49 curfman Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -9,17 +9,16 @@
 typedef struct _p_SNES* SNES;
 #define SNES_COOKIE PETSC_COOKIE+13
 
-typedef enum { SNES_UNKNOWN_METHOD=-1,
-               SNES_EQ_LS,
-               SNES_EQ_TR,
-               SNES_EQ_TR_DOG_LEG,
-               SNES_EQ_TR2_LIN,
-               SNES_EQ_TEST,
-               SNES_UM_LS,
-               SNES_UM_TR,
-               SNES_LS_LM,
-               SNES_NEW
-} SNESType;
+#define SNES_EQ_LS          "ls"
+#define SNES_EQ_TR          "tr"
+#define SNES_EQ_TR_DOG_LEG  
+#define SNES_EQ_TR2_LIN
+#define SNES_EQ_TEST        "test"
+#define SNES_UM_LS          "umls"
+#define SNES_UM_TR          "umtr"
+#define SNES_LS_LM          "lslm"
+
+typedef char *SNESType;
 
 typedef enum {SNES_NONLINEAR_EQUATIONS, SNES_UNCONSTRAINED_MINIMIZATION, SNES_LEAST_SQUARES} SNESProblemType;
 
@@ -34,10 +33,9 @@ extern int SNESSetConvergenceHistory(SNES,double*,int);
 extern int SNESSetUp(SNES,Vec);
 extern int SNESSolve(SNES,Vec,int*);
 
-extern int SNESRegister(SNESType,SNESType*,char*,int(*)(SNES));
+extern DLList SNESList;
 extern int SNESRegisterDestroy();
-extern int SNESRegisterAll();
-extern int SNESRegisterAllCalled;
+extern int SNESRegisterAll(char *);
 
 extern int SNESGetSLES(SNES,SLES*);
 extern int SNESGetSolution(SNES,Vec*);
@@ -54,7 +52,7 @@ extern int SNESAddOptionsChecker(int (*)(SNES));
 
 extern int SNESDefaultMatrixFreeMatCreate(SNES,Vec x,Mat*);
 extern int SNESSetMatrixFreeParameters(SNES,double,double);
-extern int SNESGetType(SNES,SNESType*,char**);
+extern int SNESGetType(SNES,SNESType*);
 extern int SNESDefaultMonitor(SNES,int,double,void *);
 extern int SNESDefaultSMonitor(SNES,int,double,void *);
 extern int SNESSetTolerances(SNES,double,double,double,int,int);
@@ -105,7 +103,7 @@ extern int SNESSetMinimizationFunction(SNES,int(*)(SNES,Vec,double*,void*),void*
 extern int SNESComputeMinimizationFunction(SNES,Vec,double*);
 extern int SNESGetMinimizationFunction(SNES,double*);
 extern int SNESSetMinimizationFunctionTolerance(SNES,double);
-extern int SNESGetLineSearchDampingParameter(SNES,Scalar*);
+extern int SNESLineSearchSetDampingParameter(SNES,Scalar*);
 extern int SNESConverged_UM_LS(SNES,double,double,double,void*);
 extern int SNESConverged_UM_TR(SNES,double,double,double,void*);
 

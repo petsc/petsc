@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.100 1998/01/12 15:55:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.101 1998/01/14 02:40:11 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -95,184 +95,6 @@ static int PCSetFromOptions_BGS(PC pc)
 
 
 #undef __FUNC__  
-#define __FUNC__ "PCBGSSetSymmetric"
-/*@
-   PCBGSSetSymmetric - Sets the BGS preconditioner to use symmetric, 
-   backward, or forward relaxation. By default, forward relaxation is used.
-
-   Input Parameters:
-.  pc - the preconditioner context
-.  flag - one of the following:
-$    PCBGS_FORWARD_SWEEP
-$    PCBGS_SYMMETRIC_SWEEP
-
-   Options Database Keys:
-$  -pc_gs_symmetric
-
-.keywords: PC, BGS, Gauss-Seidel, set, relaxation, sweep, forward, symmetric
-
-.seealso: PCBGSSetTotalBlocks() PCBGSSetUseTrueLocal()
-@*/
-int PCBGSSetSymmetric(PC pc, PCBGSType flag)
-{
-  PC_BJacobi *jac;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCBGS) PetscFunctionReturn(0);
-  jac         = (PC_BJacobi *) pc->data; 
-  jac->gstype = flag;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PCBJacobiSetUseTrueLocal"
-/*@
-   PCBJacobiSetUseTrueLocal - Sets a flag to indicate that the block 
-   problem is associated with the linear system matrix instead of the
-   default (where it is associated with the preconditioning matrix).
-   That is, if the local system is solved iteratively then it iterates
-   on the block from the matrix using the block from the preconditioner
-   as the preconditioner for the local block.
-
-   Input Parameters:
-.  pc - the preconditioner context
-
-   Options Database Key:
-$  -pc_bjacobi_truelocal
-
-   Note:
-   For the common case in which the preconditioning and linear 
-   system matrices are identical, this routine is unnecessary.
-
-.keywords:  block, Jacobi, set, true, local, flag
-
-.seealso: PCSetOperators(), PCBJacobiSetLocalBlocks()
-@*/
-int PCBJacobiSetUseTrueLocal(PC pc)
-{
-  PC_BJacobi   *jac;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCBJACOBI && pc->type != PCBGS ) PetscFunctionReturn(0);
-  jac                 = (PC_BJacobi *) pc->data;
-  jac->use_true_local = 1;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PCBGSSetUseTrueLocal"
-/*@
-   PCBGSSetUseTrueLocal - Sets a flag to indicate that the block 
-   problem is associated with the linear system matrix instead of the
-   default (where it is associated with the preconditioning matrix).
-   That is, if the local system is solved iteratively then it iterates
-   on the block from the matrix using the block from the preconditioner
-   as the preconditioner for the local block.
-
-   Input Parameters:
-.  pc - the preconditioner context
-
-   Options Database Key:
-$  -pc_bgs_truelocal
-
-   Note:
-   For the common case in which the preconditioning and linear 
-   system matrices are identical, this routine is unnecessary.
-
-.keywords:  block, BGS, Gauss-Seidel, set, true, local, flag
-
-.seealso: PCSetOperators(), PCBGSSetBlocks()
-@*/
-int PCBGSSetUseTrueLocal(PC pc)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = PCBJacobiSetUseTrueLocal(pc);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PCBJacobiGetSubSLES"
-/*@C
-   PCBJacobiGetSubSLES - Gets the local SLES contexts for all blocks on
-   this processor.
-   
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Output Parameters:
-.  n_local - the number of blocks on this processor
-.  first_local - the global number of the first block on this processor
-.  sles - the array of SLES contexts
-
-   Note:  
-   Currently for some matrix implementations only 1 block per processor 
-   is supported.
-   
-   You must call SLESSetUp() before calling PCBJacobiGetSubSLES().
-
-.keywords:  block, Jacobi, get, sub, SLES, context
-
-.seealso: PCBJacobiGetSubSLES()
-@*/
-int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
-{
-  PC_BJacobi   *jac;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCBJACOBI && pc->type != PCBGS) PetscFunctionReturn(0);
-  if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SLESSetUp first");
-  PetscValidIntPointer(n_local);
-  PetscValidIntPointer(first_local);
-
-  jac          = (PC_BJacobi *) pc->data;
-  *n_local     = jac->n_local;
-  *first_local = jac->first_local;
-  *sles        = jac->sles;
-  jac->same_local_solves = 0; /* Assume that local solves are now different;
-                                 not necessarily true though!  This flag is 
-                                 used only for PCView_BJacobi */
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PCBGSGetSubSLES"
-/*@C
-   PCBGSGetSubSLES - Gets the local SLES contexts for all blocks on
-   this processor.
-   
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Output Parameters:
-.  n_local - the number of blocks on this processor
-.  first_local - the global number of the first block on this processor
-.  sles - the array of SLES contexts
-
-   Note:  
-   Currently for some matrix implementations only 1 block per processor 
-   is supported.
-   
-   You must call SLESSetUp() before calling PCBGSGetSubSLES().
-
-.keywords:  block, BGS, Gauss-Seidel, get, sub, SLES, context
-
-.seealso: PCBJacobiGetSubSLES()
-@*/
-int PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
-{  
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = PCBJacobiGetSubSLES(pc, n_local, first_local, sles);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ "PCPrintHelp_BJacobi"
 static int PCPrintHelp_BJacobi(PC pc,char *p)
 {
@@ -355,56 +177,270 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_BJacobi"
-int PCCreate_BJacobi(PC pc)
-{
-  int          rank,size;
-  PC_BJacobi   *jac = PetscNew(PC_BJacobi); CHKPTRQ(jac);
-
-  PetscFunctionBegin;
-  PLogObjectMemory(pc,sizeof(PC_BJacobi));
-  MPI_Comm_rank(pc->comm,&rank);
-  MPI_Comm_size(pc->comm,&size);
-  pc->apply              = 0;
-  pc->setup              = PCSetUp_BJacobi;
-  pc->destroy            = PCDestroy_BJacobi;
-  pc->setfromoptions     = PCSetFromOptions_BJacobi;
-  pc->printhelp          = PCPrintHelp_BJacobi;
-  pc->view               = PCView_BJacobi;
-  pc->applyrich          = 0;
-  pc->type               = PCBJACOBI;
-  pc->data               = (void *) jac;
-  jac->gs                = PETSC_FALSE;
-  jac->n                 = -1;
-  jac->n_local           = -1;
-  jac->first_local       = rank;
-  jac->sles              = 0;
-  jac->use_true_local    = 0;
-  jac->same_local_solves = 1;
-  jac->g_lens            = 0;
-  jac->l_lens            = 0;
-  PetscFunctionReturn(0);
-}
+/* -------------------------------------------------------------------------------------*/  
 
 #undef __FUNC__  
-#define __FUNC__ "PCCreate_BGS"
-int PCCreate_BGS(PC pc)
+#define __FUNC__ "PCBGSSetSymmetric_BGS"
+int PCBGSSetSymmetric_BGS(PC pc, PCBGSType flag)
 {
-  int        ierr;
   PC_BJacobi *jac;
 
   PetscFunctionBegin;
-  ierr               = PCCreate_BJacobi(pc); CHKERRQ(ierr);
-  jac                = (PC_BJacobi*) pc->data;
-  jac->gs            = PETSC_TRUE;
-  jac->gstype        = PCBGS_FORWARD_SWEEP;
-  pc->setfromoptions = PCSetFromOptions_BGS;
-  pc->printhelp      = PCPrintHelp_BGS;
-  pc->type           = PCBGS;
+  jac         = (PC_BJacobi *) pc->data; 
+  jac->gstype = flag;
   PetscFunctionReturn(0);
 }
-  
+
+#undef __FUNC__  
+#define __FUNC__ "PCBJacobiSetUseTrueLocal_BJacobi"
+int PCBJacobiSetUseTrueLocal_BJacobi(PC pc)
+{
+  PC_BJacobi   *jac;
+
+  PetscFunctionBegin;
+  jac                 = (PC_BJacobi *) pc->data;
+  jac->use_true_local = 1;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCBJacobiGetSubSLES_BJacobi"
+int PCBJacobiGetSubSLES_BJacobi(PC pc,int *n_local,int *first_local,SLES **sles)
+{
+  PC_BJacobi   *jac;
+
+  PetscFunctionBegin;
+  if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SLESSetUp first");
+
+  jac          = (PC_BJacobi *) pc->data;
+  *n_local     = jac->n_local;
+  *first_local = jac->first_local;
+  *sles        = jac->sles;
+  jac->same_local_solves = 0; /* Assume that local solves are now different;
+                                 not necessarily true though!  This flag is 
+                                 used only for PCView_BJacobi */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCBJacobiSetTotalBlocks_BJacobi"
+int PCBJacobiSetTotalBlocks_BJacobi(PC pc, int blocks,int *lens)
+{
+  PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
+
+  PetscFunctionBegin;
+
+  jac->n = blocks;
+  if (!lens) {
+    jac->g_lens = 0;
+  } else {
+    jac->g_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->g_lens);
+    PLogObjectMemory(pc,blocks*sizeof(int));
+    PetscMemcpy(jac->g_lens,lens,blocks*sizeof(int));
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCBJacobiSetLocalBlocks_BJacobi"
+int PCBJacobiSetLocalBlocks_BJacobi(PC pc, int blocks,int *lens)
+{
+  PC_BJacobi *jac;
+
+  PetscFunctionBegin;
+  jac = (PC_BJacobi *) pc->data; 
+
+  jac->n_local = blocks;
+  if (!lens) {
+    jac->l_lens = 0;
+  }
+  else {
+    jac->l_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->l_lens);
+    PLogObjectMemory(pc,blocks*sizeof(int));
+    PetscMemcpy(jac->l_lens,lens,blocks*sizeof(int));
+  }
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------------------*/  
+
+#undef __FUNC__  
+#define __FUNC__ "PCBGSSetSymmetric"
+/*@
+   PCBGSSetSymmetric - Sets the BGS preconditioner to use symmetric, 
+   backward, or forward relaxation. By default, forward relaxation is used.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  flag - one of the following:
+$    PCBGS_FORWARD_SWEEP
+$    PCBGS_SYMMETRIC_SWEEP
+
+   Options Database Keys:
+$  -pc_gs_symmetric
+
+.keywords: PC, BGS, Gauss-Seidel, set, relaxation, sweep, forward, symmetric
+
+.seealso: PCBGSSetTotalBlocks() PCBGSSetUseTrueLocal()
+@*/
+int PCBGSSetSymmetric(PC pc, PCBGSType flag)
+{
+  int ierr, (*f)(PC,PCBGSType);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = DLRegisterFind(pc->qlist,"PCBGSSetSymmetric",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,flag);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCBJacobiSetUseTrueLocal"
+/*@
+   PCBJacobiSetUseTrueLocal - Sets a flag to indicate that the block 
+   problem is associated with the linear system matrix instead of the
+   default (where it is associated with the preconditioning matrix).
+   That is, if the local system is solved iteratively then it iterates
+   on the block from the matrix using the block from the preconditioner
+   as the preconditioner for the local block.
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Options Database Key:
+$  -pc_bjacobi_truelocal
+
+   Note:
+   For the common case in which the preconditioning and linear 
+   system matrices are identical, this routine is unnecessary.
+
+.keywords:  block, Jacobi, set, true, local, flag
+
+.seealso: PCSetOperators(), PCBJacobiSetLocalBlocks()
+@*/
+int PCBJacobiSetUseTrueLocal(PC pc)
+{
+  int ierr, (*f)(PC);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = DLRegisterFind(pc->qlist,"PCBJacobiSetUseTrueLocal",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc);CHKERRQ(ierr);
+  } 
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCBGSSetUseTrueLocal"
+/*@
+   PCBGSSetUseTrueLocal - Sets a flag to indicate that the block 
+   problem is associated with the linear system matrix instead of the
+   default (where it is associated with the preconditioning matrix).
+   That is, if the local system is solved iteratively then it iterates
+   on the block from the matrix using the block from the preconditioner
+   as the preconditioner for the local block.
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Options Database Key:
+$  -pc_bgs_truelocal
+
+   Note:
+   For the common case in which the preconditioning and linear 
+   system matrices are identical, this routine is unnecessary.
+
+.keywords:  block, BGS, Gauss-Seidel, set, true, local, flag
+
+.seealso: PCSetOperators(), PCBGSSetBlocks()
+@*/
+int PCBGSSetUseTrueLocal(PC pc)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PCBJacobiSetUseTrueLocal(pc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCBJacobiGetSubSLES"
+/*@C
+   PCBJacobiGetSubSLES - Gets the local SLES contexts for all blocks on
+   this processor.
+   
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameters:
+.  n_local - the number of blocks on this processor
+.  first_local - the global number of the first block on this processor
+.  sles - the array of SLES contexts
+
+   Note:  
+   Currently for some matrix implementations only 1 block per processor 
+   is supported.
+   
+   You must call SLESSetUp() before calling PCBJacobiGetSubSLES().
+
+.keywords:  block, Jacobi, get, sub, SLES, context
+
+.seealso: PCBJacobiGetSubSLES()
+@*/
+int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
+{
+  int ierr, (*f)(PC,int *,int *,SLES **);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidIntPointer(n_local);
+  PetscValidIntPointer(first_local);
+  ierr = DLRegisterFind(pc->qlist,"PCBJacobiGetSubSLES",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,n_local,first_local,sles);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Cannot get subsolvers for this preconditioner");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCBGSGetSubSLES"
+/*@C
+   PCBGSGetSubSLES - Gets the local SLES contexts for all blocks on
+   this processor.
+   
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameters:
+.  n_local - the number of blocks on this processor
+.  first_local - the global number of the first block on this processor
+.  sles - the array of SLES contexts
+
+   Note:  
+   Currently for some matrix implementations only 1 block per processor 
+   is supported.
+   
+   You must call SLESSetUp() before calling PCBGSGetSubSLES().
+
+.keywords:  block, BGS, Gauss-Seidel, get, sub, SLES, context
+
+.seealso: PCBJacobiGetSubSLES()
+@*/
+int PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
+{  
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PCBJacobiGetSubSLES(pc, n_local, first_local, sles);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__  
 #define __FUNC__ "PCBJacobiSetTotalBlocks"
 /*@
@@ -429,22 +465,15 @@ $  -pc_bjacobi_blocks <blocks>
 @*/
 int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
 {
-  PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
+  int ierr, (*f)(PC,int,int *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (blocks <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have positive blocks");
-  if (pc->type != PCBJACOBI && pc->type != PCBGS) PetscFunctionReturn(0);
-
-  jac->n = blocks;
-  if (!lens) {
-    jac->g_lens = 0;
-  }
-  else {
-    jac->g_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->g_lens);
-    PLogObjectMemory(pc,blocks*sizeof(int));
-    PetscMemcpy(jac->g_lens,lens,blocks*sizeof(int));
-  }
+  ierr = DLRegisterFind(pc->qlist,"PCBJacobiSetTotalBlocks",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
+  } 
   PetscFunctionReturn(0);
 }
   
@@ -499,23 +528,15 @@ int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens)
 @*/
 int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
 {
-  PC_BJacobi *jac;
+  int ierr, (*f)(PC,int ,int *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (blocks < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have nonegative blocks");
-  if (pc->type != PCBJACOBI && pc->type != PCBGS ) PetscFunctionReturn(0);
-  jac = (PC_BJacobi *) pc->data; 
-
-  jac->n_local = blocks;
-  if (!lens) {
-    jac->l_lens = 0;
-  }
-  else {
-    jac->l_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->l_lens);
-    PLogObjectMemory(pc,blocks*sizeof(int));
-    PetscMemcpy(jac->l_lens,lens,blocks*sizeof(int));
-  }
+  ierr = DLRegisterFind(pc->qlist,"PCBJacobiSetLocalBlocks",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
+  } 
   PetscFunctionReturn(0);
 }
 
@@ -546,4 +567,66 @@ int PCBGSSetLocalBlocks(PC pc, int blocks,int *lens)
   PetscFunctionReturn(0);
 }
 
+/* -----------------------------------------------------------------------------------*/
 
+#undef __FUNC__  
+#define __FUNC__ "PCCreate_BJacobi"
+int PCCreate_BJacobi(PC pc)
+{
+  int          rank,size,ierr;
+  PC_BJacobi   *jac = PetscNew(PC_BJacobi); CHKPTRQ(jac);
+
+  PetscFunctionBegin;
+  PLogObjectMemory(pc,sizeof(PC_BJacobi));
+  MPI_Comm_rank(pc->comm,&rank);
+  MPI_Comm_size(pc->comm,&size);
+  pc->apply              = 0;
+  pc->setup              = PCSetUp_BJacobi;
+  pc->destroy            = PCDestroy_BJacobi;
+  pc->setfromoptions     = PCSetFromOptions_BJacobi;
+  pc->printhelp          = PCPrintHelp_BJacobi;
+  pc->view               = PCView_BJacobi;
+  pc->applyrich          = 0;
+  pc->data               = (void *) jac;
+  jac->gs                = PETSC_FALSE;
+  jac->n                 = -1;
+  jac->n_local           = -1;
+  jac->first_local       = rank;
+  jac->sles              = 0;
+  jac->use_true_local    = 0;
+  jac->same_local_solves = 1;
+  jac->g_lens            = 0;
+  jac->l_lens            = 0;
+
+  ierr = DLRegister(&pc->qlist,"PCBJacobiSetUseTrueLocal","PCBJacobiSetUseTrueLocal_BJacobi",
+                    PCBJacobiSetUseTrueLocal_BJacobi);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCBJacobiGetSubSLES","PCBJacobiGetSubSLES_BJacobi",
+                    PCBJacobiGetSubSLES_BJacobi);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCBJacobiSetTotalBlocks","PCBJacobiSetTotalBlocks_BJacobi",
+                    PCBJacobiSetTotalBlocks_BJacobi);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCBJacobiSetLocalBlocks","PCBJacobiSetLocalBlocks_BJacobi",
+                    PCBJacobiSetLocalBlocks_BJacobi);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCCreate_BGS"
+int PCCreate_BGS(PC pc)
+{
+  int        ierr;
+  PC_BJacobi *jac;
+
+  PetscFunctionBegin;
+  ierr               = PCCreate_BJacobi(pc); CHKERRQ(ierr);
+  jac                = (PC_BJacobi*) pc->data;
+  jac->gs            = PETSC_TRUE;
+  jac->gstype        = PCBGS_FORWARD_SWEEP;
+  pc->setfromoptions = PCSetFromOptions_BGS;
+  pc->printhelp      = PCPrintHelp_BGS;
+
+  ierr = DLRegister(&pc->qlist,"PCBGSSetSymmetric","PCBGSSetSymmetric_BGS",
+                    PCBGSSetSymmetric_BGS);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}

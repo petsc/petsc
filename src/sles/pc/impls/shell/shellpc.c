@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.35 1997/09/11 17:01:07 balay Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.36 1997/10/19 03:24:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -74,45 +74,59 @@ static int PCView_Shell(PetscObject obj,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*
-   PCCreate_Shell - creates a new preconditioner class for use with your 
-          own private data storage format. This is intended to 
-          provide a simple class to use with KSP. You should 
-          not use this if you plan to make a complete class.
-
-
-  Usage:
-.             int (*mult)(void *,Vec,Vec);
-.             PCCreate(comm,&pc);
-.             PCSetType(pc,PC_Shell);
-.             PC_ShellSetApply(pc,mult,ctx);
-
-*/
+/* ------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "PCCreate_Shell"
-int PCCreate_Shell(PC pc)
+#define __FUNC__ "PCShellSetApply_Shell"
+int PCShellSetApply_Shell(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 {
   PC_Shell *shell;
 
   PetscFunctionBegin;
-  pc->destroy    = PCDestroy_Shell;
-  shell          = PetscNew(PC_Shell); CHKPTRQ(shell);
-  PLogObjectMemory(pc,sizeof(PC_Shell));
-
-  pc->data         = (void *) shell;
-  pc->apply        = PCApply_Shell;
-  pc->applyrich    = 0;
-  pc->setup        = 0;
-  pc->type         = PCSHELL;
-  pc->view         = PCView_Shell;
-  pc->name         = 0;
-  shell->apply     = 0;
-  shell->name      = 0;
-  shell->applyrich = 0;
-  shell->ctxrich   = 0;
-  shell->ctx       = 0;
+  shell        = (PC_Shell *) pc->data;
+  shell->apply = apply;
+  shell->ctx   = ptr;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "PCShellSetName_Shell"
+int PCShellSetName_Shell(PC pc,char *name)
+{
+  PC_Shell *shell;
+
+  PetscFunctionBegin;
+  shell       = (PC_Shell *) pc->data;
+  shell->name = name;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCShellGetName_Shell"
+int PCShellGetName_Shell(PC pc,char **name)
+{
+  PC_Shell *shell;
+
+  PetscFunctionBegin;
+  shell  = (PC_Shell *) pc->data;
+  *name  = shell->name;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCShellSetApplyRichardson_Shell"
+int PCShellSetApplyRichardson_Shell(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),void *ptr)
+{
+  PC_Shell *shell;
+
+  PetscFunctionBegin;
+  shell            = (PC_Shell *) pc->data;
+  pc->applyrich    = PCApplyRichardson_Shell;
+  shell->applyrich = apply;
+  shell->ctxrich   = ptr;
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ "PCShellSetApply"
@@ -136,13 +150,14 @@ int PCCreate_Shell(PC pc)
 @*/
 int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 {
-  PC_Shell *shell;
+  int ierr, (*f)(PC,int (*)(void*,Vec,Vec),void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  shell        = (PC_Shell *) pc->data;
-  shell->apply = apply;
-  shell->ctx   = ptr;
+  ierr = DLRegisterFind(pc->qlist,"PCShellSetApply",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,apply,ptr);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -162,12 +177,14 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 @*/
 int PCShellSetName(PC pc,char *name)
 {
-  PC_Shell *shell;
+  int ierr, (*f)(PC,char *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  shell       = (PC_Shell *) pc->data;
-  shell->name = name;
+  ierr = DLRegisterFind(pc->qlist,"PCShellSetName",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,name);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -189,12 +206,16 @@ int PCShellSetName(PC pc,char *name)
 @*/
 int PCShellGetName(PC pc,char **name)
 {
-  PC_Shell *shell;
+  int ierr, (*f)(PC,char **);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  shell = (PC_Shell *) pc->data;
-  *name  = shell->name;
+  ierr = DLRegisterFind(pc->qlist,"PCShellGetName",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,name);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Not shell preconditioner, cannot get name");
+  }
   PetscFunctionReturn(0);
 }
 
@@ -221,19 +242,69 @@ int PCShellGetName(PC pc,char **name)
 
 .seealso: PCShellSetApply()
 @*/
-int PCShellSetApplyRichardson(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),
-                              void *ptr)
+int PCShellSetApplyRichardson(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),void *ptr)
 {
-  PC_Shell *shell;
+  int ierr, (*f)(PC,int (*)(void*,Vec,Vec,Vec,int),void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  shell            = (PC_Shell *) pc->data;
-  pc->applyrich    = PCApplyRichardson_Shell;
-  shell->applyrich = apply;
-  shell->ctxrich   = ptr;
+  ierr = DLRegisterFind(pc->qlist,"PCShellSetApplyRichardson",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,apply,ptr);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
+
+/*
+   PCCreate_Shell - creates a new preconditioner class for use with your 
+          own private data storage format. This is intended to 
+          provide a simple class to use with KSP. You should 
+          not use this if you plan to make a complete class.
+
+
+  Usage:
+.             int (*mult)(void *,Vec,Vec);
+.             PCCreate(comm,&pc);
+.             PCSetType(pc,PC_Shell);
+.             PC_ShellSetApply(pc,mult,ctx);
+
+*/
+#undef __FUNC__  
+#define __FUNC__ "PCCreate_Shell"
+int PCCreate_Shell(PC pc)
+{
+  int      ierr;
+  PC_Shell *shell;
+
+  PetscFunctionBegin;
+  pc->destroy    = PCDestroy_Shell;
+  shell          = PetscNew(PC_Shell); CHKPTRQ(shell);
+  PLogObjectMemory(pc,sizeof(PC_Shell));
+
+  pc->data         = (void *) shell;
+  pc->apply        = PCApply_Shell;
+  pc->applyrich    = 0;
+  pc->setup        = 0;
+  pc->view         = PCView_Shell;
+  pc->name         = 0;
+  shell->apply     = 0;
+  shell->name      = 0;
+  shell->applyrich = 0;
+  shell->ctxrich   = 0;
+  shell->ctx       = 0;
+
+  ierr = DLRegister(&pc->qlist,"PCShellSetApply","PCShellSetApply_Shell",
+                    PCShellSetApply_Shell);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCShellSetName","PCShellSetName_Shell",
+                    PCShellSetName_Shell);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCShellGetName","PCShellGetName_Shell",
+                    PCShellGetName_Shell);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCShellSetApplyRichardson","PCShellSetApplyRichardson_Shell",
+                    PCShellSetApplyRichardson_Shell);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 
 
 

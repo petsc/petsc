@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.17 1997/05/23 16:18:23 balay Exp bsmith $ */
+/* $Id: daimpl.h,v 1.18 1997/10/19 03:30:12 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -10,7 +10,7 @@
 #include "dfvec.h"
 
 struct _p_DA {
-  PETSCHEADER
+  PETSCHEADER(int dummy)
   int            M,N,P;             /* array dimensions */
   int            m,n,p;             /* processor layout */
   int            w;                 /* degrees of freedom per node */

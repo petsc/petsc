@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.63 1998/01/06 20:12:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.64 1998/01/14 02:44:58 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -334,14 +334,10 @@ static int SNESPrintHelp_UM_TR(SNES snes,char *p)
   (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta4 <eta4> (default %g)\n",p,ctx->eta4);
   (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_delta0 <delta0> (default %g)\n",p,ctx->delta0);
   (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_factor1 <factor1> (default %g)\n",p,ctx->factor1);
-  (*PetscHelpPrintf)(snes->comm,
-    "   delta0, factor1: used to initialize trust region parameter\n");
-  (*PetscHelpPrintf)(snes->comm,
-    "   eta2, eta3, eta4: used to compute trust region parameter\n");
-  (*PetscHelpPrintf)(snes->comm,
-    "   eta1: step is unsuccessful if actred < eta1 * prered, where\n"); 
-  (*PetscHelpPrintf)(snes->comm,
-    "         pred = predicted reduction, actred = actual reduction\n");
+  (*PetscHelpPrintf)(snes->comm,"   delta0, factor1: used to initialize trust region parameter\n");
+  (*PetscHelpPrintf)(snes->comm,"   eta2, eta3, eta4: used to compute trust region parameter\n");
+  (*PetscHelpPrintf)(snes->comm,"   eta1: step is unsuccessful if actred < eta1 * prered, where\n"); 
+  (*PetscHelpPrintf)(snes->comm,"         pred = predicted reduction, actred = actual reduction\n");
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -379,7 +375,6 @@ int SNESCreate_UM_TR(SNES snes)
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
-  snes->type 		= SNES_UM_TR;
   snes->setup		= SNESSetUp_UM_TR;
   snes->solve		= SNESSolve_UM_TR;
   snes->destroy		= SNESDestroy_UM_TR;

@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.22 1997/10/19 03:27:37 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.23 1997/11/28 16:20:46 bsmith Exp bsmith $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -37,8 +37,7 @@ struct _DrawOps {
 };
 
 struct _p_Draw {
-  PETSCHEADER
-  struct _DrawOps ops;
+  PETSCHEADER(struct _DrawOps ops)
   int             pause;       /* sleep time after a sync flush */
   double          port_xl,port_yl,port_xr,port_yr;
   double          coor_xl,coor_yl,coor_xr,coor_yr;

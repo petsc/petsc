@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.24 1997/12/04 19:33:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.25 1998/01/06 20:09:29 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -39,6 +39,8 @@ int PetscHeaderDestroy_Private(PetscObject h)
 
   PetscFunctionBegin;
   PetscCommFree_Private(&h->comm);
+  ierr = DLRegisterDestroy(h->qlist); CHKERRQ(ierr);
+  if (h->type_name) PetscFree(h->type_name);
   h->cookie = PETSCFREEDHEADER;
   if (h->prefix) PetscFree(h->prefix);
   if (h->child) {

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.181 1998/01/27 19:15:06 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.182 1998/01/28 15:34:44 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -18,7 +18,7 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		  ex15.PETSc runex15 ex15.rm ex19.PETSc ex19.rm ex20.PETSc runex20 \
 		  ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm \
                   ex16.PETSc runex16 ex16.rm ex59.PETSc runex59 runex59_2 runex59_3 \
-                  ex59.rm clean
+                  ex59.rm ex60.PETSc runex60 ex60.rm clean
 TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc \
 		  runex7 ex7.rm ex12.PETSc runex12 runex12_2 ex12.rm  ex13.PETSc runex13 \
 		  ex13.rm ex17.PETSc ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc \
@@ -72,7 +72,7 @@ EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		 ex27.c ex28.c ex30.c ex31.c ex32.c ex33.c \
 		 ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c\
 		 ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c ex52.c \
-		 ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c
+		 ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c ex60.c
 EXAMPLESF      = ex36.F ex16f90.F
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
@@ -636,4 +636,8 @@ runex59_3:
 	   else echo "Possible problem with ex59_3, diffs above"; fi; \
 	   $(RM) -f ex59_3.tmp
 
-
+runex60:
+	-@$(MPIRUN) -np 3  ex60  -col 7 > ex60_1.tmp 2>&1;   \
+	   if (diff output/ex60_1.out ex60_1.tmp) then true; \
+	   else echo "Possible problem with ex60_1, diffs above"; fi; \
+	   $(RM) -f ex60_1.tmp

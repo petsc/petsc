@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.29 1998/01/17 17:38:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.30 1998/01/28 21:03:02 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -7,12 +7,12 @@ static char vcid[] = "$Id: tsreg.c,v 1.29 1998/01/17 17:38:11 bsmith Exp bsmith 
 #include "pinclude/pviewer.h"
 #include <math.h>
 
-static DLList __TSList = 0;
+DLList TSList = 0;
 int TSRegisterAllCalled = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "TSSetType"
-/*@
+/*@C
    TSSetType - Sets the method for the timestepping solver.  
 
    Input Parameters:
@@ -51,60 +51,24 @@ int TSSetType(TS ts,TSType method)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->type == method) PetscFunctionReturn(0);
+  if (!PetscStrcmp(ts->type_name,method)) PetscFunctionReturn(0);
 
   /* Get the function pointers for the method requested */
-  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(); CHKERRQ(ierr);}
-  ierr =  DLFindRoutine( __TSList, (int)method, (char *)0,(int (**)(void *)) &r );CHKERRQ(ierr);
+  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+  ierr =  DLRegisterFind( TSList, method, (int (**)(void *)) &r );CHKERRQ(ierr);
   if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method");}
-  if (ts->type != TS_UNKNOWN) {
-    if (ts->sles) {ierr = SLESDestroy(ts->sles); CHKERRQ(ierr);}
-    if (ts->snes) {ierr = SNESDestroy(ts->snes); CHKERRQ(ierr);}
-    ierr = (*(ts)->destroy)((PetscObject)ts); CHKERRQ(ierr);
-    ts->sles = 0;
-    ts->snes = 0;
-  }
+
+  if (ts->sles) {ierr = SLESDestroy(ts->sles); CHKERRQ(ierr);}
+  if (ts->snes) {ierr = SNESDestroy(ts->snes); CHKERRQ(ierr);}
+  if (ts->destroy) {ierr = (*(ts)->destroy)((PetscObject)ts); CHKERRQ(ierr);}
+  ts->sles = 0;
+  ts->snes = 0;
+
   ierr = (*r)(ts);CHKERRQ(ierr);
 
-  /* override the type that the create routine put in */
-  ts->type = method;
-  PetscFunctionReturn(0);
-}
-
-/* --------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "TSRegister_Private"
-/*
-   TSRegister_Private - Adds the method to the timestepping package, given 
-   a function pointer and a solver name of the type TSType.
-
-   Input Parameters:
-.  name - either a predefined name such as TS_BEULER, or TS_NEW
-          to indicate a new user-defined solver
-.  sname - corresponding string for name
-.  create - routine to create method context
-
-   Output Parameter:
-.  oname - type associated with this new method
-
-   Notes:
-   Multiple user-defined timestepping solvers can be added by calling
-   TSRegister() with the input parameter "name" set to be TS_NEW; 
-   each call will return a unique solver type in the output
-   parameter "oname".
-
-.keywords: TS, timestepper, register
-
-.seealso: TSRegisterAll(), TSRegisterDestroy()
-*/
-int TSRegister_Private(TSType name, char *sname, char *fname,int (*create)(TS),TSType *oname)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-
-  if (!__TSList) {ierr = DLCreate((int)TS_NEW,&__TSList); CHKERRQ(ierr);}
-  ierr = DLRegister( __TSList, (int) name, sname, fname,(int (*)(void*))create,(int*)oname );
+  if (ts->type_name) PetscFree(ts->type_name);
+  ts->type_name = (char *) PetscMalloc((PetscStrlen(method)+1)*sizeof(char));CHKPTRQ(ts->type_name);
+  PetscStrcpy(ts->type_name,method);
   PetscFunctionReturn(0);
 }
 
@@ -113,20 +77,20 @@ int TSRegister_Private(TSType name, char *sname, char *fname,int (*create)(TS),T
 #define __FUNC__ "TSRegisterDestroy"
 /*@C
    TSRegisterDestroy - Frees the list of timesteppers that were
-   registered by TSRegister().
+   registered by DLRegister().
 
 .keywords: TS, timestepper, register, destroy
 
-.seealso: TSRegisterAll(), TSRegisterAll()
+.seealso: TSRegisterAll()
 @*/
 int TSRegisterDestroy()
 {
   int ierr;
 
   PetscFunctionBegin;
-  if (__TSList) {
-    ierr = DLDestroy( __TSList );CHKERRQ(ierr);
-    __TSList = 0;
+  if (TSList) {
+    ierr = DLRegisterDestroy( TSList );CHKERRQ(ierr);
+    TSList = 0;
   }
   TSRegisterAllCalled = 0;
   PetscFunctionReturn(0);
@@ -141,19 +105,17 @@ int TSRegisterDestroy()
 .  ts - timestepper solver context
 
    Output Parameter:
-.  method - TS method (or use PETSC_NULL)
-.  name - name of TS method (or use PETSC_NULL)
+.  type - name of TS method
 
 .keywords: TS, timestepper, get, type, name
 @*/
-int TSGetType(TS ts, TSType *type,char **name)
+int TSGetType(TS ts, TSType *type)
 {
   int ierr;
 
   PetscFunctionBegin;
-  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(); CHKERRQ(ierr);}
-  if (type) *type = (TSType) ts->type;
-  if (name) {ierr = DLFindName( __TSList, (int) ts->type,name ); CHKERRQ(ierr);}
+  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+  *type = ts->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -181,7 +143,7 @@ int TSPrintHelp(TS ts)
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (ts->prefix) prefix = ts->prefix;
   (*PetscHelpPrintf)(ts->comm,"TS options --------------------------------------------------\n");
-  ierr = DLPrintTypes(ts->comm,stdout,ts->prefix,"ts_type",__TSList);CHKERRQ(ierr);
+  ierr = DLRegisterPrintTypes(ts->comm,stdout,ts->prefix,"ts_type",TSList);CHKERRQ(ierr);
   (*PetscHelpPrintf)(ts->comm," %sts_monitor: use default TS monitor\n",prefix);
   (*PetscHelpPrintf)(ts->comm," %sts_view: view TS info after each solve\n",prefix);
 
@@ -206,22 +168,16 @@ int TSPrintHelp(TS ts)
 int TSSetFromOptions(TS ts)
 {
   int    ierr,flg,loc[4],nmax;
-  TSType type;
-  char   fname[256];
+  char   type[256];
 
   PetscFunctionBegin;
   loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
 
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->setup_called) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to TSSetUp!");
-  if (!TSRegisterAllCalled) {ierr = TSRegisterAll();CHKERRQ(ierr);}
-  ierr = DLGetTypeFromOptions(ts->prefix,"-ts_type",__TSList,(int *)&type,fname,256,&flg);CHKERRQ(ierr);
+  if (ts->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to TSSetUp!");
+  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  ierr = OptionsGetString(ts->prefix,"-ts_type",(char *) type,256,&flg);
   if (flg) {
-#if defined(USE_DYNAMIC_LIBRARIES)
-    if (type == (TSType) -1) { /* indicates method not yet registered */
-      ierr = TSRegister(TS_NEW,fname,fname,0,&type); CHKERRQ(ierr);
-    }
-#endif
     ierr = TSSetType(ts,type); CHKERRQ(ierr);
   }
 
@@ -243,7 +199,7 @@ int TSSetFromOptions(TS ts)
       ierr = TSSetMonitor(ts,TSLGMonitor,(void *)lg);CHKERRQ(ierr);
     }
   }
-  if (ts->type == TS_UNKNOWN) {
+  if (!ts->type_name) {
     ierr = TSSetType(ts,TS_EULER);CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
@@ -252,4 +208,5 @@ int TSSetFromOptions(TS ts)
   ierr = (*ts->setfromoptions)(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 

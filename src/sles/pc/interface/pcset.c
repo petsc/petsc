@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.62 1998/01/12 15:55:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.63 1998/01/14 02:39:58 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -10,12 +11,15 @@ static char vcid[] = "$Id: pcset.c,v 1.62 1998/01/12 15:55:02 bsmith Exp bsmith 
 #include "src/sys/nreg.h"
 #include "sys.h"
 
-static NRList *__PCList = 0;
-
 int  PCRegisterAllCalled = 0;
+/*
+   Contains the list of registered KSP routines
+*/
+DLList PCList = 0;
+
 #undef __FUNC__  
 #define __FUNC__ "PCSetType"
-/*@
+/*@C
    PCSetType - Builds PC for a particular preconditioner.
 
    Input Parameter:
@@ -51,7 +55,7 @@ int PCSetType(PC ctx,PCType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,PC_COOKIE);
-  if (ctx->type == (int) type) PetscFunctionReturn(0);
+  if (!PetscStrcmp(ctx->type_name,type)) PetscFunctionReturn(0);
 
   if (ctx->setupcalled) {
     if (ctx->destroy) ierr =  (*ctx->destroy)((PetscObject)ctx);
@@ -60,9 +64,8 @@ int PCSetType(PC ctx,PCType type)
     ctx->setupcalled = 0;
   }
   /* Get the function pointers for the method requested */
-  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
-  r =  (int (*)(PC))NRFindRoutine( __PCList, (int)type, (char *)0 );
-  if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");}
+  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0); CHKERRQ(ierr);}
+  ierr =  DLRegisterFind( PCList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
   if (ctx->data) PetscFree(ctx->data);
 
   ctx->destroy         = ( int (*)(PetscObject) ) 0;
@@ -83,45 +86,10 @@ int PCSetType(PC ctx,PCType type)
   ctx->setuponblocks       = ( int (*)(PC) ) 0;
   ctx->modifysubmatrices   = ( int (*)(PC,int,IS*,IS*,Mat*,void*) ) 0;
   ierr = (*r)(ctx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
-#undef __FUNC__  
-#define __FUNC__ "PCRegister"
-/*@C
-   PCRegister - Adds the preconditioner to the preconditioner
-   package,  given a preconditioner name (PCType) and a function pointer.
-
-   Input Parameters:
-.  name - either a predefined name such as PCJACOBI, or PCNEW
-          to indicate a new user-defined preconditioner
-.  sname -  corresponding string for name
-.  create - routine to create method context
-
-   Output Parameter:
-.  oname - type associated with this new preconditioner
-
-   Notes:
-   Multiple user-defined preconditioners can be added by calling
-   PCRegister() with the input parameter "name" set to be PCNEW; 
-   each call will return a unique preconditioner type in the output
-   parameter "oname".
-
-.keywords: PC, register
-
-.seealso: PCRegisterAll(), PCRegisterDestroy()
-@*/
-int  PCRegister(PCType name,PCType *oname,char *sname,int (*create)(PC))
-{
-  int ierr;
-  static int numberregistered = 0;
-
-  PetscFunctionBegin;
-  if (name == PCNEW) name = (PCType) ((int) PCNEW + numberregistered++);
-
-  if (oname) *oname = name;
-  if (!__PCList) {ierr = NRCreate(&__PCList); CHKERRQ(ierr);}
-  ierr = NRRegister( __PCList, (int) name, sname, (int (*)(void*)) create );CHKERRQ(ierr);
+  if (ctx->type_name) PetscFree(ctx->type_name);
+  ctx->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(ctx->type_name);
+  PetscStrcpy(ctx->type_name,type);
   PetscFunctionReturn(0);
 }
 
@@ -137,10 +105,12 @@ int  PCRegister(PCType name,PCType *oname,char *sname,int (*create)(PC))
 @*/
 int PCRegisterDestroy()
 {
+  int ierr;
+
   PetscFunctionBegin;
-  if (__PCList) {
-    NRDestroy( __PCList );
-    __PCList = 0;
+  if (PCList) {
+    ierr = DLRegisterDestroy( PCList );CHKERRQ(ierr);
+    PCList = 0;
   }
   PCRegisterAllCalled = 0;
   PetscFunctionReturn(0);
@@ -171,7 +141,7 @@ int PCPrintHelp(PC pc)
   PetscStrcpy(p,"-");
   if (pc->prefix) PetscStrcat(p,pc->prefix);
   (*PetscHelpPrintf)(pc->comm,"PC options --------------------------------------------------\n");
-  ierr = NRPrintTypes(pc->comm,stdout,pc->prefix,"pc_type",__PCList);CHKERRQ(ierr);
+  ierr = DLRegisterPrintTypes(pc->comm,stdout,pc->prefix,"pc_type",PCList);CHKERRQ(ierr);
   (*PetscHelpPrintf)(pc->comm,"Run program with -help %spc_type <method> for help on ",p);
   (*PetscHelpPrintf)(pc->comm,"a particular method\n");
   if (pc->printhelp) {
@@ -180,29 +150,6 @@ int PCPrintHelp(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCGetTypeFromName"
-/*@C
-   PCGetTypeFromName - Gets the PC method type from its name (as a string)
-
-   Input Parameter:
-.  name - name of preconditioner
-
-   Output Parameter:
-.  meth - preconditioner method
-
-.keywords: PC, get, method, name, type
-@*/
-int PCGetTypeFromName(char *name,PCType *meth)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
-  *meth = (PCType) NRFindID(__PCList,name);
-  if (*meth == -1) SETERRQ(1,1,"Unknown type from name"); 
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNC__  
 #define __FUNC__ "PCGetType"
@@ -214,19 +161,17 @@ int PCGetTypeFromName(char *name,PCType *meth)
 .  pc - the preconditioner context
 
    Output Parameter:
-.  name - name of preconditioner (or use PETSC_NULL)
-.  meth - preconditioner method (or use PETSC_NULL)
+.  name - name of preconditioner 
 
 .keywords: PC, get, method, name, type
 @*/
-int PCGetType(PC pc,PCType *meth,char **name)
+int PCGetType(PC pc,PCType *meth)
 {
   int ierr;
 
   PetscFunctionBegin;
-  if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
-  if (meth) *meth = (PCType) pc->type;
-  if (name)  *name = NRFindName( __PCList, (int)pc->type );
+  if (!PCList) {ierr = PCRegisterAll(0); CHKERRQ(ierr);}
+  if (meth)  *meth = (PCType) pc->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -246,16 +191,31 @@ int PCGetType(PC pc,PCType *meth,char **name)
 @*/
 int PCSetFromOptions(PC pc)
 {
-  PCType method;
+  char   method[256];
   int    ierr,flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
 
-  if (!__PCList) {ierr = PCRegisterAll();CHKERRQ(ierr);}
-  ierr = NRGetTypeFromOptions(pc->prefix,"-pc_type",__PCList,&method,&flg);CHKERRQ(ierr);
+  if (!PCList) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
+  ierr = OptionsGetString(pc->prefix,"-pc_type",method,256,&flg);
   if (flg) {
     ierr = PCSetType(pc,method); CHKERRQ(ierr);
+  }
+
+  /*
+        Since the private setfromoptions requires the type to all ready have 
+      been set we make sure a type is set by this time
+  */
+  if (!pc->type_name) {
+    int size;
+
+    MPI_Comm_size(pc->comm,&size);
+    if (size == 1) {
+      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
+    } else {
+      ierr = PCSetType(pc,PCBJACOBI);CHKERRQ(ierr);
+    }
   }
   if (pc->setfromoptions) {
     ierr = (*pc->setfromoptions)(pc);CHKERRQ(ierr);
@@ -266,3 +226,7 @@ int PCSetFromOptions(PC pc)
   }
   PetscFunctionReturn(0);
 }
+
+
+
+

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.73 1998/01/12 15:55:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.74 1998/01/14 02:40:14 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -98,170 +98,7 @@ static int PCDestroy_MG(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGCheck"
-/*@
-   MGCheck - Checks that all components of the MG structure have 
-   been set.
 
-   Iput Parameters:
-.  mg - the MG structure
-
-.keywords: MG, check, set, multigrid
-@*/
-int MGCheck(PC pc)
-{
-  MG  *mg;
-  int i, n, count = 0;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCMG) PetscFunctionReturn(0);
-  mg = (MG *) pc->data;
-
-  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Must set MG levels before calling");
-
-  n = mg[0]->levels;
-
-  for (i=1; i<n; i++) {
-    if (!mg[i]->restrct) {
-      (*PetscErrorPrintf)("No restrict set level %d \n",n-i); count++;
-    }    
-    if (!mg[i]->interpolate) {
-      (*PetscErrorPrintf)("No interpolate set level %d \n",n-i); count++;
-    }
-    if (!mg[i]->residual) {
-      (*PetscErrorPrintf)("No residual set level %d \n",n-i); count++;
-    }
-    if (!mg[i]->smoothu) {
-      (*PetscErrorPrintf)("No smoothup set level %d \n",n-i); count++;
-    }  
-    if (!mg[i]->smoothd) {
-      (*PetscErrorPrintf)("No smoothdown set level %d \n",n-i); count++;
-    }
-    if (!mg[i]->r) {
-      (*PetscErrorPrintf)("No r set level %d \n",n-i); count++;
-    } 
-    if (!mg[i-1]->x) {
-      (*PetscErrorPrintf)("No x set level %d \n",n-i); count++;
-    }
-    if (!mg[i-1]->b) {
-      (*PetscErrorPrintf)("No b set level %d \n",n-i); count++;
-    }
-  }
-  PetscFunctionReturn(count);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MGSetNumberSmoothDown"
-/*@
-   MGSetNumberSmoothDown - Sets the number of pre-smoothing steps to
-   use on all levels. Use MGGetSmootherDown() to set different 
-   pre-smoothing steps on different levels.
-
-   Input Parameters:
-.  mg - the multigrid context 
-.  n - the number of smoothing steps
-
-   Options Database Key:
-$  -pc_mg_smoothdown  n
-
-.keywords: MG, smooth, down, pre-smoothing, steps, multigrid
-
-.seealso: MGSetNumberSmoothUp()
-@*/
-int MGSetNumberSmoothDown(PC pc,int n)
-{ 
-  MG  *mg;
-  int i, levels;
-  KSP ksp;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCMG) PetscFunctionReturn(0);
-  mg     = (MG *) pc->data;
-  levels = mg[0]->levels;
-
-  for ( i=0; i<levels; i++ ) {  
-    SLESGetKSP(mg[i]->smoothd,&ksp);
-    KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
-    mg[i]->default_smoothd = n;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MGSetNumberSmoothUp"
-/*@
-   MGSetNumberSmoothUp - Sets the number of post-smoothing steps to use 
-   on all levels. Use MGGetSmootherUp() to set different numbers of 
-   post-smoothing steps on different levels.
-
-   Input Parameters:
-.  mg - the multigrid context 
-.  n - the number of smoothing steps
-
-   Options Database Key:
-$  -pc_mg_smoothup  n
-
-.keywords: MG, smooth, up, post-smoothing, steps, multigrid
-
-.seealso: MGSetNumberSmoothDown()
-@*/
-int  MGSetNumberSmoothUp(PC pc,int n)
-{ 
-  MG  *mg;
-  int i,levels;
-  KSP ksp;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCMG) PetscFunctionReturn(0);
-  mg     = (MG *) pc->data;
-  levels = mg[0]->levels;
-
-  for ( i=0; i<levels; i++ ) {  
-    SLESGetKSP(mg[i]->smoothu,&ksp);
-    KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
-    mg[i]->default_smoothu = n;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MGSetCycles"
-/*@
-   MGSetCycles - Sets the number of cycles to use. 1 denotes a
-   V-cycle; 2 denotes a W-cycle. Use MGSetCyclesOnLevel() for more 
-   complicated cycling.
-
-   Input Parameters:
-.  mg - the multigrid context 
-.  n - the number of cycles
-
-   Options Database Key:
-$  -pc_mg_cycles n
-
-.keywords: MG, set, cycles, V-cycle, W-cycle, multigrid
-
-.seealso: MGSetCyclesOnLevel()
-@*/
-int MGSetCycles(PC pc,int n)
-{ 
-  MG  *mg;
-  int i,levels;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCMG) PetscFunctionReturn(0);
-  mg     = (MG *) pc->data;
-  levels = mg[0]->levels;
-
-  for ( i=0; i<levels; i++ ) {  
-    mg[i]->cycles  = n; 
-  }
-  PetscFunctionReturn(0);
-}
 
 extern int MGACycle_Private(MG*);
 extern int MGFCycle_Private(MG*);
@@ -325,7 +162,6 @@ static int PCSetFromOptions_MG(PC pc)
   char   buff[16];
 
   PetscFunctionBegin;
-  if (pc->type != PCMG) PetscFunctionReturn(0);
   if (!pc->data) {
     ierr = OptionsGetInt(pc->prefix,"-pc_mg_levels",&levels,&flg);CHKERRQ(ierr);
     ierr = MGSetLevels(pc,levels); CHKERRQ(ierr);
@@ -362,11 +198,11 @@ static int PCPrintHelp_MG(PC pc,char *p)
 {
   PetscFunctionBegin;
   (*PetscHelpPrintf)(pc->comm," Options for PCMG preconditioner:\n");
-  PetscFPrintf(pc->comm,stdout," %spc_mg_type [additive,multiplicative,fullmultigrid,kaskade]\n",p);
-  PetscFPrintf(pc->comm,stdout,"              type of multigrid method\n");
-  PetscFPrintf(pc->comm,stdout," %spc_mg_smoothdown m: number of pre-smooths\n",p);
-  PetscFPrintf(pc->comm,stdout," %spc_mg_smoothup m: number of post-smooths\n",p);
-  PetscFPrintf(pc->comm,stdout," %spc_mg_cycles m: 1 for V-cycle, 2 for W-cycle\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_mg_type [additive,multiplicative,fullmultigrid,kaskade]\n",p);
+  (*PetscHelpPrintf)(pc->comm,"              type of multigrid method\n");
+  (*PetscHelpPrintf)(pc->comm," %spc_mg_smoothdown m: number of pre-smooths\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_mg_smoothup m: number of post-smooths\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_mg_cycles m: 1 for V-cycle, 2 for W-cycle\n",p);
   PetscFunctionReturn(0);
 }
 
@@ -454,22 +290,7 @@ static int PCSetUp_MG(PC pc)
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_MG"
-int PCCreate_MG(PC pc)
-{
-  PetscFunctionBegin;
-  pc->apply          = MGCycle;
-  pc->setup          = PCSetUp_MG;
-  pc->destroy        = PCDestroy_MG;
-  pc->type           = PCMG;
-  pc->data           = (void *) 0;
-  pc->setfromoptions = PCSetFromOptions_MG;
-  pc->printhelp      = PCPrintHelp_MG;
-  pc->view           = PCView_MG;
-  PetscFunctionReturn(0);
-}
+/* -------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ "MGSetLevels"
@@ -492,7 +313,6 @@ int MGSetLevels(PC pc,int levels)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCMG) PetscFunctionReturn(0);
 
   ierr          = MGCreate_Private(pc->comm,levels,pc,&mg); CHKERRQ(ierr);
   mg[0]->am     = MGMULTIPLICATIVE;
@@ -522,7 +342,6 @@ int MGGetLevels(PC pc,int *levels)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCMG) PetscFunctionReturn(0);
 
   mg      = (MG*) pc->data;
   *levels = mg[0]->levels;
@@ -554,7 +373,6 @@ int MGSetType(PC pc,MGType form)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCMG) PetscFunctionReturn(0);
   mg = (MG *) pc->data;
 
   mg[0]->am = form;
@@ -563,3 +381,181 @@ int MGSetType(PC pc,MGType form)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "MGSetCycles"
+/*@
+   MGSetCycles - Sets the number of cycles to use. 1 denotes a
+   V-cycle; 2 denotes a W-cycle. Use MGSetCyclesOnLevel() for more 
+   complicated cycling.
+
+   Input Parameters:
+.  mg - the multigrid context 
+.  n - the number of cycles
+
+   Options Database Key:
+$  -pc_mg_cycles n
+
+.keywords: MG, set, cycles, V-cycle, W-cycle, multigrid
+
+.seealso: MGSetCyclesOnLevel()
+@*/
+int MGSetCycles(PC pc,int n)
+{ 
+  MG  *mg;
+  int i,levels;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  mg     = (MG *) pc->data;
+  levels = mg[0]->levels;
+
+  for ( i=0; i<levels; i++ ) {  
+    mg[i]->cycles  = n; 
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MGCheck"
+/*@
+   MGCheck - Checks that all components of the MG structure have 
+   been set.
+
+   Iput Parameters:
+.  mg - the MG structure
+
+.keywords: MG, check, set, multigrid
+@*/
+int MGCheck(PC pc)
+{
+  MG  *mg;
+  int i, n, count = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  mg = (MG *) pc->data;
+
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Must set MG levels before calling");
+
+  n = mg[0]->levels;
+
+  for (i=1; i<n; i++) {
+    if (!mg[i]->restrct) {
+      (*PetscErrorPrintf)("No restrict set level %d \n",n-i); count++;
+    }    
+    if (!mg[i]->interpolate) {
+      (*PetscErrorPrintf)("No interpolate set level %d \n",n-i); count++;
+    }
+    if (!mg[i]->residual) {
+      (*PetscErrorPrintf)("No residual set level %d \n",n-i); count++;
+    }
+    if (!mg[i]->smoothu) {
+      (*PetscErrorPrintf)("No smoothup set level %d \n",n-i); count++;
+    }  
+    if (!mg[i]->smoothd) {
+      (*PetscErrorPrintf)("No smoothdown set level %d \n",n-i); count++;
+    }
+    if (!mg[i]->r) {
+      (*PetscErrorPrintf)("No r set level %d \n",n-i); count++;
+    } 
+    if (!mg[i-1]->x) {
+      (*PetscErrorPrintf)("No x set level %d \n",n-i); count++;
+    }
+    if (!mg[i-1]->b) {
+      (*PetscErrorPrintf)("No b set level %d \n",n-i); count++;
+    }
+  }
+  PetscFunctionReturn(count);
+}
+
+
+#undef __FUNC__  
+#define __FUNC__ "MGSetNumberSmoothDown"
+/*@
+   MGSetNumberSmoothDown - Sets the number of pre-smoothing steps to
+   use on all levels. Use MGGetSmootherDown() to set different 
+   pre-smoothing steps on different levels.
+
+   Input Parameters:
+.  mg - the multigrid context 
+.  n - the number of smoothing steps
+
+   Options Database Key:
+$  -pc_mg_smoothdown  n
+
+.keywords: MG, smooth, down, pre-smoothing, steps, multigrid
+
+.seealso: MGSetNumberSmoothUp()
+@*/
+int MGSetNumberSmoothDown(PC pc,int n)
+{ 
+  MG  *mg;
+  int i, levels,ierr;
+  KSP ksp;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  mg     = (MG *) pc->data;
+  levels = mg[0]->levels;
+
+  for ( i=0; i<levels; i++ ) {  
+    ierr = SLESGetKSP(mg[i]->smoothd,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
+    mg[i]->default_smoothd = n;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MGSetNumberSmoothUp"
+/*@
+   MGSetNumberSmoothUp - Sets the number of post-smoothing steps to use 
+   on all levels. Use MGGetSmootherUp() to set different numbers of 
+   post-smoothing steps on different levels.
+
+   Input Parameters:
+.  mg - the multigrid context 
+.  n - the number of smoothing steps
+
+   Options Database Key:
+$  -pc_mg_smoothup  n
+
+.keywords: MG, smooth, up, post-smoothing, steps, multigrid
+
+.seealso: MGSetNumberSmoothDown()
+@*/
+int  MGSetNumberSmoothUp(PC pc,int n)
+{ 
+  MG  *mg;
+  int i,levels,ierr;
+  KSP ksp;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  mg     = (MG *) pc->data;
+  levels = mg[0]->levels;
+
+  for ( i=0; i<levels; i++ ) {  
+    ierr = SLESGetKSP(mg[i]->smoothu,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);
+    mg[i]->default_smoothu = n;
+  }
+  PetscFunctionReturn(0);
+}
+
+/* ----------------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "PCCreate_MG"
+int PCCreate_MG(PC pc)
+{
+  PetscFunctionBegin;
+  pc->apply          = MGCycle;
+  pc->setup          = PCSetUp_MG;
+  pc->destroy        = PCDestroy_MG;
+  pc->data           = (void *) 0;
+  pc->setfromoptions = PCSetFromOptions_MG;
+  pc->printhelp      = PCPrintHelp_MG;
+  pc->view           = PCView_MG;
+  PetscFunctionReturn(0);
+}

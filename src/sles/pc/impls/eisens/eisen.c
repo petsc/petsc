@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.66 1998/01/12 15:55:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.67 1998/01/14 02:40:19 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -18,35 +18,6 @@ typedef struct {
   int    usediag;    /* indicates preconditioner should include diagonal scaling*/
 } PC_Eisenstat;
 
-#undef __FUNC__  
-#define __FUNC__ "PCEisenstatUseDiagonalScaling"
-/*@
-   PCEisenstatUseDiagonalScaling - Causes the Eisenstat preconditioner
-   to do an additional diagonal preconditioning. For matrices with very 
-   different values along the diagonal, this may improve convergence.
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Options Database Key:
-$  -pc_eisenstat_diagonal_scaling
-
-.keywords: PC, Eisenstat, use, diagonal, scaling, SSOR
-
-.seealso: PCEisenstatSetOmega()
-@*/
-int PCEisenstatUseDiagonalScaling(PC pc)
-{
-  PC_Eisenstat *eis;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCEISENSTAT) PetscFunctionReturn(0);
-
-  eis = (PC_Eisenstat *) pc->data;
-  eis->usediag = 1;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNC__  
 #define __FUNC__ "PCMult_Eisenstat"
@@ -94,7 +65,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
   eis->A    = pc->mat;
   pc->mat   = eis->shell;
 
-  KSPGetRhs(ksp,&b);
+  ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
   if (!eis->b) {
     ierr = VecDuplicate(b,&eis->b); CHKERRQ(ierr);
     PLogObjectParent(pc,eis->b);
@@ -105,7 +76,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
 
   /* if nonzero initial guess, modify x */
   if (!ksp->guess_zero) {
-    KSPGetSolution(ksp,&x);
+    ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
     ierr = MatRelax(eis->A,x,eis->omega,SOR_APPLY_UPPER,0.0,1,x);CHKERRQ(ierr);
   }
 
@@ -227,32 +198,33 @@ static int PCSetUp_Eisenstat(PC pc)
   PetscFunctionReturn(0);
 }
 
+/* --------------------------------------------------------------------*/
+
 #undef __FUNC__  
-#define __FUNC__ "PCCreate_Eisenstat"
-int PCCreate_Eisenstat(PC pc)
+#define __FUNC__ "PCEisenstatSetOmega_Eisenstat"
+int PCEisenstatSetOmega_Eisenstat(PC pc,double omega)
 {
-  PC_Eisenstat *eis = PetscNew(PC_Eisenstat); CHKPTRQ(eis);
+  PC_Eisenstat  *eis;
 
   PetscFunctionBegin;
-  PLogObjectMemory(pc,sizeof(PC_Eisenstat));
-
-  pc->apply          = PCApply_Eisenstat;
-  pc->presolve       = PCPre_Eisenstat;
-  pc->postsolve      = PCPost_Eisenstat;
-  pc->applyrich      = 0;
-  pc->setfromoptions = PCSetFromOptions_Eisenstat;
-  pc->printhelp      = PCPrintHelp_Eisenstat ;
-  pc->destroy        = PCDestroy_Eisenstat;
-  pc->view           = PCView_Eisenstat;
-  pc->type           = PCEISENSTAT;
-  pc->data           = (void *) eis;
-  pc->setup          = PCSetUp_Eisenstat;
-  eis->omega         = 1.0;
-  eis->b             = 0;
-  eis->diag          = 0;
-  eis->usediag       = 0;
+  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Relaxation out of range");
+  eis = (PC_Eisenstat *) pc->data;
+  eis->omega = omega;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "PCEisenstatUseDiagonalScaling_Eisenstat"
+int PCEisenstatUseDiagonalScaling_Eisenstat(PC pc)
+{
+  PC_Eisenstat *eis;
+
+  PetscFunctionBegin;
+  eis = (PC_Eisenstat *) pc->data;
+  eis->usediag = 1;
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNC__  
 #define __FUNC__ "PCEisenstatSetOmega"
@@ -283,16 +255,78 @@ $    -pc_type  sor  -pc_sor_symmetric
 @*/
 int PCEisenstatSetOmega(PC pc,double omega)
 {
-  PC_Eisenstat  *eis;
+  int ierr, (*f)(PC,double);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCEISENSTAT) PetscFunctionReturn(0);
-  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Relaxation out of range");
-
-  eis = (PC_Eisenstat *) pc->data;
-  eis->omega = omega;
+  ierr = DLRegisterFind(pc->qlist,"PCEisenstatSetOmega",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,omega);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PCEisenstatUseDiagonalScaling"
+/*@
+   PCEisenstatUseDiagonalScaling - Causes the Eisenstat preconditioner
+   to do an additional diagonal preconditioning. For matrices with very 
+   different values along the diagonal, this may improve convergence.
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Options Database Key:
+$  -pc_eisenstat_diagonal_scaling
+
+.keywords: PC, Eisenstat, use, diagonal, scaling, SSOR
+
+.seealso: PCEisenstatSetOmega()
+@*/
+int PCEisenstatUseDiagonalScaling(PC pc)
+{
+  int ierr, (*f)(PC);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = DLRegisterFind(pc->qlist,"PCEisenstatUseDiagonalScaling",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/* --------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "PCCreate_Eisenstat"
+int PCCreate_Eisenstat(PC pc)
+{
+  int          ierr;
+  PC_Eisenstat *eis = PetscNew(PC_Eisenstat); CHKPTRQ(eis);
+
+  PetscFunctionBegin;
+  PLogObjectMemory(pc,sizeof(PC_Eisenstat));
+
+  pc->apply          = PCApply_Eisenstat;
+  pc->presolve       = PCPre_Eisenstat;
+  pc->postsolve      = PCPost_Eisenstat;
+  pc->applyrich      = 0;
+  pc->setfromoptions = PCSetFromOptions_Eisenstat;
+  pc->printhelp      = PCPrintHelp_Eisenstat ;
+  pc->destroy        = PCDestroy_Eisenstat;
+  pc->view           = PCView_Eisenstat;
+  pc->data           = (void *) eis;
+  pc->setup          = PCSetUp_Eisenstat;
+  eis->omega         = 1.0;
+  eis->b             = 0;
+  eis->diag          = 0;
+  eis->usediag       = 0;
+
+  ierr = DLRegister(&pc->qlist,"PCEisenstatSetOmega","PCEisenstatSetOmega_Eisenstat",
+                    PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCEisenstatUseDiagonalScaling","PCEisenstatUseDiagonalScaling_Eisenstat",
+                    PCEisenstatUseDiagonalScaling_Eisenstat);CHKERRQ(ierr);
+ PetscFunctionReturn(0);
+}
 

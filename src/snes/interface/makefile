@@ -1,12 +1,12 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $
+# $Id: makefile,v 1.32 1997/08/22 15:17:50 bsmith Exp bsmith $
 
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
-SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c snesj2.c
+SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c snesj2.c dlregis.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = snesregi.o snes.o snesj.o snesmfj.o snesut.o snesj2.o
+OBJSC    = snesregi.o snes.o snesj.o snesmfj.o snesut.o snesj2.o dlregis.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = n

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.136 1998/01/06 20:12:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.137 1998/01/14 02:44:45 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -8,7 +8,8 @@ static char vcid[] = "$Id: snes.c,v 1.136 1998/01/06 20:12:19 bsmith Exp bsmith 
 #include <math.h>
 
 int SNESRegisterAllCalled = 0;
-static NRList *__SNESList = 0;
+DLList SNESList = 0;
+
 
 #undef __FUNC__  
 #define __FUNC__ "SNESView"
@@ -55,7 +56,7 @@ int SNESView(SNES snes,Viewer viewer)
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(snes->comm,fd,"SNES Object:\n");
-    SNESGetType(snes,PETSC_NULL,&method);
+    SNESGetType(snes,&method);
     PetscFPrintf(snes->comm,fd,"  method: %s\n",method);
     if (snes->view) (*snes->view)((PetscObject)snes,viewer);
     PetscFPrintf(snes->comm,fd,
@@ -84,7 +85,7 @@ int SNESView(SNES snes,Viewer viewer)
       }
     }
   } else if (vtype == STRING_VIEWER) {
-    SNESGetType(snes,PETSC_NULL,&method);
+    SNESGetType(snes,&method);
     ViewerStringSPrintf(viewer," %-3.3s",method);
   }
   SNESGetSLES(snes,&sles);
@@ -139,7 +140,7 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
 @*/
 int SNESSetFromOptions(SNES snes)
 {
-  SNESType method;
+  char     method[256];
   double   tmp;
   SLES     sles;
   int      ierr, flg,i,loc[4],nmax = 4;
@@ -155,22 +156,13 @@ int SNESSetFromOptions(SNES snes)
   loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
 
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->setup_called) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to SNESSetUp");
+  if (snes->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to SNESSetUp");
 
-  if (!__SNESList) {ierr = SNESRegisterAll();CHKERRQ(ierr);}
-  ierr = NRGetTypeFromOptions(snes->prefix,"-snes_type",__SNESList,&method,&flg);CHKERRQ(ierr);
+  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  ierr = OptionsGetString(snes->prefix,"-snes_type",method,256,&flg);
   if (flg) {
-    ierr = SNESSetType(snes,method); CHKERRQ(ierr);
-  } else if (!snes->set_method_called) {
-    if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-      ierr = SNESSetType(snes,SNES_EQ_LS); CHKERRQ(ierr);
-    } else {
-      ierr = SNESSetType(snes,SNES_UM_TR); CHKERRQ(ierr);
-    }
+    ierr = SNESSetType(snes,(SNESType) method); CHKERRQ(ierr);
   }
-
-  ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
-  if (flg) { ierr = SNESPrintHelp(snes); CHKERRQ(ierr);} 
   ierr = OptionsGetDouble(snes->prefix,"-snes_stol",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,tmp,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
@@ -242,6 +234,21 @@ int SNESSetFromOptions(SNES snes)
 
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
+  /*
+        Since the private setfromoptions requires the type to all ready have 
+      been set we make sure a type is set by this time
+  */
+  if (!snes->type_name) {
+    if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+      ierr = SNESSetType(snes,SNES_EQ_LS); CHKERRQ(ierr);
+    } else {
+      ierr = SNESSetType(snes,SNES_UM_TR); CHKERRQ(ierr);
+    }
+  }
+
+  ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
+  if (flg) { ierr = SNESPrintHelp(snes); CHKERRQ(ierr);} 
+
   if (snes->setfromoptions) {
     ierr = (*snes->setfromoptions)(snes);CHKERRQ(ierr);
   }
@@ -463,6 +470,7 @@ int SNESGetSLES(SNES snes,SLES *sles)
   *sles = snes->sles;
   PetscFunctionReturn(0);
 }
+
 /* -----------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "SNESCreate"
@@ -503,7 +511,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   if (type != SNES_UNCONSTRAINED_MINIMIZATION && type != SNES_NONLINEAR_EQUATIONS){
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"incorrect method type"); 
   }
-  PetscHeaderCreate(snes,_p_SNES,SNES_COOKIE,SNES_UNKNOWN_METHOD,comm,SNESDestroy,SNESView);
+  PetscHeaderCreate(snes,_p_SNES,SNES_COOKIE,0,comm,SNESDestroy,SNESView);
   PLogObjectCreate(snes);
   snes->max_its           = 50;
   snes->max_funcs	  = 10000;
@@ -532,9 +540,8 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   snes->fmin              = -1.e30;
   snes->method_class      = type;
   snes->set_method_called = 0;
-  snes->setup_called      = 0;
+  snes->setupcalled      = 0;
   snes->ksp_ewconv        = 0;
-  snes->type              = -1;
   snes->xmonitor          = 0;
   snes->vwork             = 0;
   snes->nwork             = 0;
@@ -1162,7 +1169,7 @@ int SNESSetUp(SNES snes,Vec x)
     }
 
     /* Set the KSP stopping criterion to use the Eisenstat-Walker method */
-    if (snes->ksp_ewconv && snes->type != SNES_EQ_TR) {
+    if (snes->ksp_ewconv && PetscStrcmp(snes->type_name,SNES_EQ_TR)) {
       SLES sles; KSP ksp;
       ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
       ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
@@ -1180,7 +1187,7 @@ int SNESSetUp(SNES snes,Vec x)
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method class");
   }
   if (snes->setup) {ierr = (*snes->setup)(snes); CHKERRQ(ierr);}
-  snes->setup_called = 1;
+  snes->setupcalled = 1;
   PetscFunctionReturn(0);
 }
 
@@ -1558,7 +1565,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidIntPointer(its);
-  if (!snes->setup_called) {ierr = SNESSetUp(snes,x); CHKERRQ(ierr);}
+  if (!snes->setupcalled) {ierr = SNESSetUp(snes,x); CHKERRQ(ierr);}
   else {snes->vec_sol = snes->vec_sol_always = x;}
   PLogEventBegin(SNES_Solve,snes,0,0,0);
   snes->nfuncs = 0; snes->linear_its = 0; snes->nfailures = 0;
@@ -1573,7 +1580,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
 
 #undef __FUNC__  
 #define __FUNC__ "SNESSetType"
-/*@
+/*@C
    SNESSetType - Sets the method for the nonlinear solver.  
 
    Input Parameters:
@@ -1614,57 +1621,31 @@ int SNESSetType(SNES snes,SNESType method)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->type == (int) method) PetscFunctionReturn(0);
+
+  if (!PetscStrcmp(snes->type_name,method)) PetscFunctionReturn(0);
+
+  if (snes->setupcalled) {
+    ierr       = (*(snes)->destroy)((PetscObject)snes);CHKERRQ(ierr);
+    snes->data = 0;
+  }
 
   /* Get the function pointers for the iterative method requested */
-  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(); CHKERRQ(ierr);}
-  r =  (int (*)(SNES))NRFindRoutine( __SNESList, (int)method, (char *)0 );
-  if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method");}
+  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+
+  ierr =  DLRegisterFind( SNESList, method,(int (**)(void *)) &r );CHKERRQ(ierr);
+
   if (snes->data) PetscFree(snes->data);
+  snes->data = 0;
+  ierr = (*r)(snes); CHKERRQ(ierr);
+
+  if (snes->type_name) PetscFree(snes->type_name);
+  snes->type_name = (char *) PetscMalloc((PetscStrlen(method)+1)*sizeof(char));CHKPTRQ(snes->type_name);
+  PetscStrcpy(snes->type_name,method);
   snes->set_method_called = 1;
-  ierr = (*r)(snes);CHKERRQ(ierr);
+
   PetscFunctionReturn(0); 
 }
 
-/* --------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "SNESRegister"
-/*@C
-   SNESRegister - Adds the method to the nonlinear solver package, given 
-   a function pointer and a nonlinear solver name of the type SNESType.
-
-   Input Parameters:
-.  name - either a predefined name such as SNES_EQ_LS, or SNES_NEW
-          to indicate a new user-defined solver
-.  sname - corresponding string for name
-.  create - routine to create method context
-
-   Output Parameter:
-.  oname - type associated with this new solver
-
-   Notes:
-   Multiple user-defined nonlinear solvers can be added by calling
-   SNESRegister() with the input parameter "name" set to be SNES_NEW; 
-   each call will return a unique solver type in the output
-   parameter "oname".
-
-.keywords: SNES, nonlinear, register
-
-.seealso: SNESRegisterAll(), SNESRegisterDestroy()
-@*/
-int SNESRegister(SNESType name,SNESType *oname, char *sname, int (*create)(SNES))
-{
-  int        ierr;
-  static int numberregistered = 0;
-
-  PetscFunctionBegin;
-  if (name == SNES_NEW) name = (SNESType) ((int) SNES_NEW + numberregistered++);
-
-  if (oname) *oname = name;
-  if (!__SNESList) {ierr = NRCreate(&__SNESList); CHKERRQ(ierr);}
-  NRRegister( __SNESList, (int) name, sname, (int (*)(void*))create );
-  PetscFunctionReturn(0);
-}
 
 /* --------------------------------------------------------------------- */
 #undef __FUNC__  
@@ -1679,10 +1660,12 @@ int SNESRegister(SNESType name,SNESType *oname, char *sname, int (*create)(SNES)
 @*/
 int SNESRegisterDestroy()
 {
+  int ierr;
+
   PetscFunctionBegin;
-  if (__SNESList) {
-    NRDestroy( __SNESList );
-    __SNESList = 0;
+  if (SNESList) {
+    ierr = DLRegisterDestroy( SNESList );CHKERRQ(ierr);
+    SNESList = 0;
   }
   SNESRegisterAllCalled = 0;
   PetscFunctionReturn(0);
@@ -1697,19 +1680,14 @@ int SNESRegisterDestroy()
 .  snes - nonlinear solver context
 
    Output Parameter:
-.  method - SNES method (or use PETSC_NULL)
-.  name - name of SNES method (or use PETSC_NULL)
+.  method - SNES method (a charactor string)
 
 .keywords: SNES, nonlinear, get, method, name
 @*/
-int SNESGetType(SNES snes, SNESType *method,char **name)
+int SNESGetType(SNES snes, SNESType *method)
 {
-  int ierr;
-
   PetscFunctionBegin;
-  if (!__SNESList) {ierr = SNESRegisterAll(); CHKERRQ(ierr);}
-  if (method) *method = (SNESType) snes->type;
-  if (name)  *name = NRFindName( __SNESList, (int) snes->type );
+  *method = snes->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -1976,7 +1954,7 @@ int SNESPrintHelp(SNES snes)
   kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
 
   (*PetscHelpPrintf)(snes->comm,"SNES options ------------------------------------------------\n");
-  ierr = NRPrintTypes(snes->comm,stdout,snes->prefix,"snes_type",__SNESList);CHKERRQ(ierr);
+  ierr = DLRegisterPrintTypes(snes->comm,stdout,snes->prefix,"snes_type",SNESList);CHKERRQ(ierr);
   (*PetscHelpPrintf)(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",p);
   (*PetscHelpPrintf)(snes->comm," %ssnes_max_it <its>: max iterations (default %d)\n",p,snes->max_its);
   (*PetscHelpPrintf)(snes->comm," %ssnes_max_funcs <maxf>: max function evals (default %d)\n",p,snes->max_funcs);

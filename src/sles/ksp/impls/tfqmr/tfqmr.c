@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tfqmr.c,v 1.33 1997/10/19 03:23:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.34 1997/11/28 16:18:58 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -141,7 +141,6 @@ int KSPCreate_TFQMR(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                 = (void *) 0;
-  ksp->type                 = KSPTFQMR;
   ksp->pc_side              = PC_LEFT;
   ksp->calc_res             = 1;
   ksp->setup                = KSPSetUp_TFQMR;

@@ -1,174 +1,63 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axpy.c,v 1.30 1997/12/01 01:55:30 bsmith Exp $";
+static char vcid[] = "$Id: getcolv.c,v 1.1 1998/01/28 21:03:00 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "MatAXPY"
+#define __FUNC__ "MatGetColumnVector"
 /*@
-   MatAXPY - Computes Y = a*X + Y.
+   MatGetColumnVector - Gets the values from a given column of a matrix.
 
    Input Parameters:
-.  X,Y - the matrices
-.  a - the scalar multiplier
+.  X - the matrix
+.  v - the vector
+.  c - the column requested
 
-   Contributed by: Matthew Knepley
+   Contributed by: Denis Vanderstraeten
 
-.keywords: matrix, add
+.keywords: matrix, column, get 
 
- @*/
-int MatAXPY(Scalar *a,Mat X,Mat Y)
-{
-  int    m1,m2,n1,n2,i,*row,start,end,j,ncols,ierr;
-  Scalar *val,*vals;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(X,MAT_COOKIE); 
-  PetscValidHeaderSpecific(Y,MAT_COOKIE);
-  PetscValidScalarPointer(a);
-
-  MatGetSize(X,&m1,&n1);  MatGetSize(Y,&m2,&n2);
-  if (m1 != m2 || n1 != n2) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Non conforming matrix add");
-
-  if (X->ops.axpy) {
-    ierr = (*X->ops.axpy)(a,X,Y); CHKERRQ(ierr);
-  } else {
-    ierr = MatGetOwnershipRange(X,&start,&end); CHKERRQ(ierr);
-    if (*a == 1.0) {
-      for (i = start; i < end; i++) {
-        ierr = MatGetRow(X, i, &ncols, &row, &vals);                 CHKERRQ(ierr);
-        ierr = MatSetValues(Y, 1, &i, ncols, row, vals, ADD_VALUES); CHKERRQ(ierr);
-        ierr = MatRestoreRow(X, i, &ncols, &row, &vals);             CHKERRQ(ierr);
-      }
-    } else {
-      vals = (Scalar *) PetscMalloc( (n1+1)*sizeof(Scalar) ); CHKPTRQ(vals);
-      for ( i=start; i<end; i++ ) {
-        ierr = MatGetRow(X,i,&ncols,&row,&val); CHKERRQ(ierr);
-        for ( j=0; j<ncols; j++ ) {
-          vals[j] = (*a)*val[j];
-        }
-        ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES); CHKERRQ(ierr);
-        ierr = MatRestoreRow(X,i,&ncols,&row,&val); CHKERRQ(ierr);
-      }
-      PetscFree(vals);
-    }
-    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MatShift"
-/*@
-   MatShift - Computes Y =  Y + a I, where a is a scalar and I is the identity
-   matrix.
-
-   Input Parameters:
-.  Y - the matrices
-.  a - the scalar 
-
-.keywords: matrix, add, shift
-
-.seealso: MatDiagonalShift()
- @*/
-int MatShift(Scalar *a,Mat Y)
-{
-  int    i,start,end,ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(Y,MAT_COOKIE);
-  PetscValidScalarPointer(a);
-  if (Y->ops.shift) {
-    ierr = (*Y->ops.shift)(a,Y); CHKERRQ(ierr);
-  }
-  else {
-    ierr = MatGetOwnershipRange(Y,&start,&end); CHKERRQ(ierr);
-    for ( i=start; i<end; i++ ) {
-      ierr = MatSetValues(Y,1,&i,1,&i,a,ADD_VALUES); CHKERRQ(ierr);
-    }
-    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MatDiagonalShift"
-/*@
-   MatDiagonalShift - Computes Y = Y + D, where D is a diagonal matrix
-   that is represented as a vector.
-
-   Input Parameters:
-.  Y - the input matrix
-.  D - the diagonal matrix, represented as a vector
-
-   Input Parameters:
-.  Y - the shifted ouput matrix
-
-.keywords: matrix, add, shift, diagonal
-
-.seealso: MatShift()
 @*/
-int MatDiagonalShift(Mat Y,Vec D)
+int MatGetColumnVector(Mat A, Vec yy, int col)
 {
-  int    i,start,end,ierr;
-
+  Scalar *y,*v,zero = 0.0;
+  int    ierr,i,j,nz,*idx,M,N,Mv,Rs,Re,rs,re;
+  
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(Y,MAT_COOKIE);
-  PetscValidHeaderSpecific(D,VEC_COOKIE);
-  if (Y->ops.shift) {
-    ierr = (*Y->ops.diagonalshift)(D,Y); CHKERRQ(ierr);
-  }
-  else {
-    int    vstart,vend;
-    Scalar *v;
-    ierr = VecGetOwnershipRange(D,&vstart,&vend); CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(Y,&start,&end); CHKERRQ(ierr);
-    if (vstart != start || vend != end) {
-      SETERRQ(PETSC_ERR_ARG_SIZ,0,"Vector ownership range not compatible with matrix");
+  PetscValidHeaderSpecific(A,MAT_COOKIE); 
+  PetscValidHeaderSpecific(yy,VEC_COOKIE); 
+
+  if (col < 0)  SETERRQ(1,1,"Requested negative column");
+  ierr = MatGetSize(A,&M,&N); CHKERRQ(ierr);
+  if (col >= N)  SETERRQ(1,1,"Requested column larger than number columns in matrix");
+
+  ierr = VecGetSize(yy,&Mv); CHKERRQ(ierr);
+  if (M != Mv) SETERRQ(1,1,"Matrix does not have same number of columns as vector");
+
+  ierr = MatGetOwnershipRange(A,&Rs,&Re);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(yy,&rs,&re);CHKERRQ(ierr);
+  if (Rs != rs || Re != re) SETERRQ(1,1,"Matrix does not have same ownership range as vector");
+
+  ierr = VecSet(&zero,yy);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+
+  for ( i=Rs; i<Re; i++ ) {
+    ierr = MatGetRow(A,i,&nz,&idx,&v);CHKERRQ(ierr);
+    if (nz && idx[0] <= col) {
+      /*
+          Should use faster search here 
+      */
+      for ( j=0; j<nz; j++ ) {
+        if (idx[j] >= col) {
+          if (idx[j] == col) y[i-rs] = v[j];
+          break;
+        }
+      }
     }
-
-    ierr = VecGetArray(D,&v); CHKERRQ(ierr);
-    for ( i=start; i<end; i++ ) {
-      ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,ADD_VALUES); CHKERRQ(ierr);
-    }
-    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,i,&nz,&idx,&v);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
 
-#undef __FUNC__  
-#define __FUNC__ "MatAYPX"
-/*@
-   MatAYPX - Computes Y = X + a*Y.
-
-   Input Parameters:
-.  X,Y - the matrices
-.  a - the scalar multiplier
-
-   Contributed by: Matthew Knepley
-
-.keywords: matrix, add
-
- @*/
-int MatAYPX(Scalar *a,Mat X,Mat Y)
-{
-  Scalar one = 1.0;
-  int    mX, mY,nX, nY,ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(X, MAT_COOKIE);
-  PetscValidHeaderSpecific(Y, MAT_COOKIE);
-  PetscValidScalarPointer(a);
-
-  MatGetSize(X, &mX, &nX);
-  MatGetSize(X, &mY, &nY);
-  if (mX != mY || nX != nY) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Non conforming matrices");
-
-  ierr = MatScale(a, Y);      CHKERRQ(ierr);
-  ierr = MatAXPY(&one, X, Y); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }

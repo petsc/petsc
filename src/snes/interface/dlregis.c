@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.2 1998/01/17 17:36:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.1 1998/02/14 02:33:16 bsmith Exp bsmith $";
 #endif
 
-#include "sles.h"
+#include "snes.h"
 
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryRegister"
@@ -18,17 +18,15 @@ int DLLibraryRegister(char *path)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = KSPRegisterAll(path); CHKERRQ(ierr);
+  ierr = SNESRegisterAll(path); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc Krylov Subspace library\n\
+static char *contents = "PETSc nonlinear solver library\n\
   Contains:\n\
-     GMRES\n\
-     PCG\n\
-     Bi-CG-stab\n\
-";
+     line search\n\
+     trust region\n";
 
 static char *authors = "The PETSc Team\n\
   Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith\n";

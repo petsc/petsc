@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.8 1997/07/30 03:39:10 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.9 1997/09/22 15:18:53 balay Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -36,7 +36,6 @@ int main(int argc,char **argv)
   Vec           global;
   double        dt,ftime;
   TS            ts;
-  TSType        type;
   Viewer	viewer;
   MatStructure  A_structure;
   Mat           A = 0;
@@ -48,7 +47,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);CHKERRA(ierr);
     
   /* set initial conditions */
-  ierr = VecCreate(PETSC_COMM_WORLD,3,&global); CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,3,&global); CHKERRQ(ierr);
   ierr = Initial(global,NULL); CHKERRA(ierr);
  
   /* make timestep context */
@@ -66,7 +65,6 @@ int main(int argc,char **argv)
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL); CHKERRA(ierr);  
  
   ierr = TSSetFromOptions(ts);CHKERRA(ierr);
-  ierr = TSGetType(ts,&type,PETSC_NULL); CHKERRA(ierr);
 
   ierr = TSSetInitialTimeStep(ts,0.0,dt); CHKERRA(ierr);
   ierr = TSSetDuration(ts,time_steps,1); CHKERRA(ierr);
@@ -133,11 +131,11 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   for(i=0; i<n; i++) idx[i]=i;
  
   /* Create local sequential vectors */
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&tmp_vec); CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&tmp_vec); CHKERRQ(ierr);
 
   /* Create scatter context */
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,&from); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,&to); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&from); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&to); CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,tmp_vec,to,&scatter); CHKERRQ(ierr);
   ierr = VecScatterBegin(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);
   CHKERRA(ierr);
@@ -171,12 +169,12 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
   for(i=0; i<n; i++) idx[i]=i;
   
   /* Create local sequential vectors */
-  ierr = VecCreateSeq(MPI_COMM_SELF,n,&tmp_in); CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&tmp_in); CHKERRQ(ierr);
   ierr = VecDuplicate(tmp_in, &tmp_out); CHKERRQ(ierr);
 
   /* Create scatter context */
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,&from); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,&to); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&from); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&to); CHKERRQ(ierr);
   ierr = VecScatterCreate(globalin,from,tmp_in,to,&scatter); CHKERRQ(ierr);
   ierr = VecScatterBegin(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);
   CHKERRA(ierr);

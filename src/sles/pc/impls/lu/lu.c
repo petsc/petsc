@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.85 1998/01/12 15:55:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.86 1998/01/14 02:40:08 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -17,75 +17,6 @@ typedef struct {
   MatReorderingType ordering;         /* matrix ordering */
 } PC_LU;
 
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetFill"
-/*@
-   PCLUSetFill - Indicate the amount of fill you expect in the factored matrix,
-       fill = number nonzeros in factor/number nonzeros in original matrix.
-
-   Input Parameters:
-.  pc - the preconditioner context
-.  fill - amount of expected fill
-
-$  -pc_lu_fill <fill>
-
-   Note:
-    For sparse matrix factorizations it is difficult to predict how much 
-  fill to expect. By running with the option -log_info PETSc will print the 
-  actual amount of fill used; allowing you to set the value accurately for
-  future runs. Bt default PETSc uses a value of 5.0
-
-.keywords: PC, set, factorization, direct, fill
-
-.seealso: PCILUSetFill()
-@*/
-int PCLUSetFill(PC pc,double fill)
-{
-  PC_LU *dir;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  dir = (PC_LU *) pc->data;
-  if (pc->type != PCLU) PetscFunctionReturn(0);
-  if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less then 1.0");
-  dir->fill = fill;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetUseInPlace"
-/*@
-   PCLUSetUseInPlace - Tells the system to do an in-place factorization.
-   For some implementations, for instance, dense matrices, this enables the 
-   solution of much larger problems. 
-
-   Input Parameters:
-.  pc - the preconditioner context
-
-   Options Database Key:
-$  -pc_lu_in_place
-
-   Note:
-   PCLUSetUseInplace() can only be used with the KSP method KSPPREONLY.
-   This is because the Krylov space methods require an application of the 
-   matrix multiplication, which is not possible here because the matrix has 
-   been factored in-place, replacing the original matrix.
-
-.keywords: PC, set, factorization, direct, inplace, in-place, LU
-
-.seealso: PCILUSetUseInPlace()
-@*/
-int PCLUSetUseInPlace(PC pc)
-{
-  PC_LU *dir;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  dir = (PC_LU *) pc->data;
-  if (pc->type != PCLU) PetscFunctionReturn(0);
-  dir->inplace = 1;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNC__  
 #define __FUNC__ "PCSetFromOptions_LU"
@@ -165,30 +96,6 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-/*@
-     PCLUSetMatReordering - Sets the ordering routine (to reduce fill) to 
-         be used it the LU factorization.
-
-    Input Parameters:
-.   pc - the preconditioner context
-.   ordering - the matrix ordering name, for example, ORDER_ND or ORDER_RCM
-
-   Options Database:
-.   -mat_order <nd,rcm,...>
-
-.seealso: PCILUSetMatReordering()
-@*/
-int PCLUSetMatReordering(PC pc, MatReorderingType ordering)
-{
-  PC_LU *dir = (PC_LU *) pc->data;
-
-  PetscFunctionBegin;
-  if (pc->type != PCLU) PetscFunctionReturn(0);
-  
-  dir->ordering = ordering;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNC__  
 #define __FUNC__ "PCSetUp_LU"
 static int PCSetUp_LU(PC pc)
@@ -205,8 +112,7 @@ static int PCSetUp_LU(PC pc)
     if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
     ierr = MatLUFactor(pc->pmat,dir->row,dir->col,dir->fill); CHKERRQ(ierr);
     dir->fact = pc->pmat;
-  }
-  else {
+  } else {
     if (!pc->setupcalled) {
       ierr = MatGetReorderingTypeFromOptions(0,&dir->ordering); CHKERRQ(ierr);
       ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
@@ -219,8 +125,7 @@ static int PCSetUp_LU(PC pc)
       if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
       ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,dir->fact);
-    }
-    else if (pc->flag != SAME_NONZERO_PATTERN) { 
+    } else if (pc->flag != SAME_NONZERO_PATTERN) { 
       ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
       if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
       if (dir->col) {ierr = ISDestroy(dir->col); CHKERRQ(ierr);}
@@ -269,30 +174,176 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+/* -----------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "PCLUSetFill_LU"
+int PCLUSetFill_LU(PC pc,double fill)
+{
+  PC_LU *dir;
+
+  PetscFunctionBegin;
+  dir = (PC_LU *) pc->data;
+  dir->fill = fill;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCLUSetUseInPlace_LU"
+int PCLUSetUseInPlace_LU(PC pc)
+{
+  PC_LU *dir;
+
+  PetscFunctionBegin;
+  dir = (PC_LU *) pc->data;
+  dir->inplace = 1;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCLUSetMatReordering_LU"
+int PCLUSetMatReordering_LU(PC pc, MatReorderingType ordering)
+{
+  PC_LU *dir = (PC_LU *) pc->data;
+
+  PetscFunctionBegin;
+  dir->ordering = ordering;
+  PetscFunctionReturn(0);
+}
+
+/* -----------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "PCLUSetFill"
+/*@
+   PCLUSetFill - Indicate the amount of fill you expect in the factored matrix,
+       fill = number nonzeros in factor/number nonzeros in original matrix.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  fill - amount of expected fill
+
+$  -pc_lu_fill <fill>
+
+   Note:
+    For sparse matrix factorizations it is difficult to predict how much 
+  fill to expect. By running with the option -log_info PETSc will print the 
+  actual amount of fill used; allowing you to set the value accurately for
+  future runs. Bt default PETSc uses a value of 5.0
+
+.keywords: PC, set, factorization, direct, fill
+
+.seealso: PCILUSetFill()
+@*/
+int PCLUSetFill(PC pc,double fill)
+{
+  int ierr, (*f)(PC,double);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less then 1.0");
+  ierr = DLRegisterFind(pc->qlist,"PCLUSetFill",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,fill);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCLUSetUseInPlace"
+/*@
+   PCLUSetUseInPlace - Tells the system to do an in-place factorization.
+   For some implementations, for instance, dense matrices, this enables the 
+   solution of much larger problems. 
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Options Database Key:
+$  -pc_lu_in_place
+
+   Note:
+   PCLUSetUseInplace() can only be used with the KSP method KSPPREONLY.
+   This is because the Krylov space methods require an application of the 
+   matrix multiplication, which is not possible here because the matrix has 
+   been factored in-place, replacing the original matrix.
+
+.keywords: PC, set, factorization, direct, inplace, in-place, LU
+
+.seealso: PCILUSetUseInPlace()
+@*/
+int PCLUSetUseInPlace(PC pc)
+{
+  int ierr, (*f)(PC);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = DLRegisterFind(pc->qlist,"PCLUSetUseInPlace",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+/*@
+     PCLUSetMatReordering - Sets the ordering routine (to reduce fill) to 
+         be used it the LU factorization.
+
+    Input Parameters:
+.   pc - the preconditioner context
+.   ordering - the matrix ordering name, for example, ORDER_ND or ORDER_RCM
+
+   Options Database:
+.   -mat_order <nd,rcm,...>
+
+.seealso: PCILUSetMatReordering()
+@*/
+int PCLUSetMatReordering(PC pc, MatReorderingType ordering)
+{
+  int ierr, (*f)(PC,MatReorderingType);
+
+  PetscFunctionBegin;
+  ierr = DLRegisterFind(pc->qlist,"PCLUSetMatReodering",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,ordering);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+/* ------------------------------------------------------------------------ */
+
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_LU"
 int PCCreate_LU(PC pc)
 {
+  int   ierr;
   PC_LU *dir     = PetscNew(PC_LU); CHKPTRQ(dir);
 
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_LU));
 
-  dir->fact          = 0;
-  dir->inplace       = 0;
-  dir->fill          = 5.0;
-  dir->col           = 0;
-  dir->row           = 0;
-  dir->ordering      = ORDER_ND;
-  pc->destroy        = PCDestroy_LU;
-  pc->apply          = PCApply_LU;
-  pc->setup          = PCSetUp_LU;
-  pc->type           = PCLU;
-  pc->data           = (void *) dir;
-  pc->setfromoptions = PCSetFromOptions_LU;
-  pc->printhelp      = PCPrintHelp_LU;
-  pc->view           = PCView_LU;
-  pc->applyrich      = 0;
+  dir->fact             = 0;
+  dir->inplace          = 0;
+  dir->fill             = 5.0;
+  dir->col              = 0;
+  dir->row              = 0;
+  dir->ordering         = ORDER_ND;
+  pc->destroy           = PCDestroy_LU;
+  pc->apply             = PCApply_LU;
+  pc->setup             = PCSetUp_LU;
+  pc->data              = (void *) dir;
+  pc->setfromoptions    = PCSetFromOptions_LU;
+  pc->printhelp         = PCPrintHelp_LU;
+  pc->view              = PCView_LU;
+  pc->applyrich         = 0;
   pc->getfactoredmatrix = PCGetFactoredMatrix_LU;
+
+  ierr = DLRegister(&pc->qlist,"PCLUSetFill","PCLUSetFill_LU",
+                    PCLUSetFill_LU);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCLUSetUseInPlace","PCLUSetUseInPlace_LU",
+                    PCLUSetUseInPlace_LU);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCLUSetMatReordering","PCLUSetMatReordering_LU",
+                    PCLUSetMatReordering_LU);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: random.c,v 1.32 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.33 1997/12/01 01:53:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: random.c,v 1.32 1997/10/19 03:23:45 bsmith Exp bsmith
 
 /* Private data */
 struct _p_PetscRandom {
-  PETSCHEADER                      /* general PETSc header */
+  PETSCHEADER(int dummy)
   unsigned long seed;
   Scalar        low, width;       /* lower bound and width of the interval over
                                      which the random numbers are distributed */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.19 1997/10/23 00:56:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mem.c,v 1.20 1997/12/01 01:53:22 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -10,6 +10,15 @@ static char vcid[] = "$Id: mem.c,v 1.19 1997/10/23 00:56:32 bsmith Exp bsmith $"
 #if defined(__cplusplus)
 extern "C" {
 #endif
+/*
+   On later versions of Linux you should remove the next line:
+ if you the error message 
+   mem.c:13: declaration of C function 'int getrusage(int, struct
+             rusage*)' conflicts with
+  /usr/include/sys/resource.h:45: previous declaration 'int
+  getrusage(enum_rusage_who, struct rusage*)' here
+
+*/
 extern int getrusage(int,struct rusage*);
 #if !defined(PARCH_linux) && !defined(PARCH_nt_gnu)
 extern int getpagesize();

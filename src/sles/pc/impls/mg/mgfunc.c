@@ -1,31 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mgfunc.c,v 1.22 1997/08/22 15:12:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mgfunc.c,v 1.23 1997/10/19 03:24:36 bsmith Exp bsmith $";
 #endif
 
 #include "src/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
                           /*I "mg.h"   I*/
-
-#undef __FUNC__  
-#define __FUNC__ "MGGetCoarseSolve"
-/*@C
-   MGGetCoarseSolve - Gets the solver context to be used on the coarse grid.
-
-   Input Parameter:
-.  pc - the multigrid context 
-
-   Output Parameter:
-.  sles - the coarse grid solver context 
-
-.keywords: MG, multigrid, get, coarse grid
-@*/ 
-int MGGetCoarseSolve(PC pc,SLES *sles)  
-{ 
-  MG *mg = (MG*) pc->data;
-
-  PetscFunctionBegin;
-  *sles =  mg[0]->smoothd;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNC__  
 #define __FUNC__ "MGDefaultResidual"
@@ -52,6 +30,30 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
   PetscFunctionBegin;
   ierr = MatMult(mat,x,r); CHKERRQ(ierr);
   ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "MGGetCoarseSolve"
+/*@C
+   MGGetCoarseSolve - Gets the solver context to be used on the coarse grid.
+
+   Input Parameter:
+.  pc - the multigrid context 
+
+   Output Parameter:
+.  sles - the coarse grid solver context 
+
+.keywords: MG, multigrid, get, coarse grid
+@*/ 
+int MGGetCoarseSolve(PC pc,SLES *sles)  
+{ 
+  MG *mg = (MG*) pc->data;
+
+  PetscFunctionBegin;
+  *sles =  mg[0]->smoothd;
   PetscFunctionReturn(0);
 }
 
@@ -318,6 +320,8 @@ int MGSetR(PC pc,int l,Vec c)
   mg[l]->r  = c;
   PetscFunctionReturn(0);
 }
+
+
 
 
 

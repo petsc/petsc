@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.4 1998/01/12 15:55:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.5 1998/01/14 02:40:31 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -125,7 +125,6 @@ static int PCSetFromOptions_Composite(PC pc)
   PCCompositeType  type;
   PC_CompositeLink next;
   char             *pcs[8];
-  PCType           pctype;
   char             stype[16];
 
   PetscFunctionBegin;
@@ -144,8 +143,7 @@ static int PCSetFromOptions_Composite(PC pc)
   ierr = OptionsGetStringArray(pc->prefix,"-pc_composite_pcs",pcs,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
     for ( i=0; i<nmax; i++ ) {
-      ierr = PCGetTypeFromName(pcs[i],&pctype);CHKERRQ(ierr);
-      ierr = PCCompositeAddPC(pc,pctype);CHKERRQ(ierr);
+      ierr = PCCompositeAddPC(pc,pcs[i]);CHKERRQ(ierr);
     }
   }
 
@@ -154,127 +152,6 @@ static int PCSetFromOptions_Composite(PC pc)
     ierr = PCSetFromOptions(next->pc);CHKERRQ(ierr);
     next = next->next;
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PCCompositeSetType"
-/*@C
-   PCCompositeSetType
-   
-   Input Parameter:
-.  pc - the preconditioner context
-.  type - PC_COMPOSITE_ADDITIVE (default) or PC_COMPOSITE_MULTIPLICATIVE
-
-
-.keywords:  set,  composite preconditioner, additive, multiplicative
-
-@*/
-int PCCompositeSetType(PC pc,PCCompositeType type)
-{
-  PC_Composite     *jac;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCCOMPOSITE) PetscFunctionReturn(0);
-  if (type == PC_COMPOSITE_ADDITIVE) {
-    pc->apply = PCApply_Composite_Additive;
-  } else if (type ==  PC_COMPOSITE_MULTIPLICATIVE) {
-    pc->apply = PCApply_Composite_Multiplicative;
-  } else {
-    SETERRQ(1,1,"Unkown composite preconditioner type");
-  }
-  jac = (PC_Composite *) type;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PCCompositeAddPC"
-/*@C
-   PCCompositeAddPC - Adds another PC to the composite PC.
-   
-   Input Parameter:
-.  pc - the preconditioner context
-.  type - the type of the new preconditioner
-
-
-.keywords:  composite preconditioner
-
-@*/
-int PCCompositeAddPC(PC pc,PCType type)
-{
-  PC_Composite     *jac;
-  PC_CompositeLink next,link;
-  int              ierr,cnt = 0;
-  char             *prefix,newprefix[8];
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCCOMPOSITE) PetscFunctionReturn(0);
-
-  link       = PetscNew(struct _PC_CompositeLink);CHKPTRQ(link);
-  link->next = 0;
-  ierr = PCCreate(pc->comm,&link->pc);CHKERRQ(ierr);
-  ierr = PCSetType(link->pc,type);CHKERRQ(ierr);
-
-  jac  = (PC_Composite *) pc->data;
-  next = jac->head;
-  if (!next) {
-    jac->head = link;
-  } else {
-    cnt++;
-    while (next->next) {
-      next = next->next;
-      cnt++;
-    }
-    next->next = link;
-  }
-  ierr = PCGetOptionsPrefix(pc,&prefix); CHKERRQ(ierr);
-  ierr = PCSetOptionsPrefix(link->pc,prefix); CHKERRQ(ierr);
-  sprintf(newprefix,"sub_%d_",cnt);
-  ierr = PCAppendOptionsPrefix(link->pc,newprefix); CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PCCompositeGetPC"
-/*@C
-   PCCompositeGetPC - Gets one of the PC objects in the composite PC.
-   
-   Input Parameter:
-.  pc - the preconditioner context
-.  n - the number of the pc requested
-
-   Output Parameters:
-.  subpc - the PC requested
-
-
-.keywords:  get, composite preconditioner, sub preconditioner
-
-.seealso: PCCompositeAddPC()
-
-@*/
-int PCCompositeGetPC(PC pc,int n,PC *subpc)
-{
-  PC_Composite     *jac;
-  PC_CompositeLink next;
-  int              i;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCCOMPOSITE) PetscFunctionReturn(0);
-
-  jac  = (PC_Composite *) pc->data;
-  next = jac->head;
-  i    = 0;
-  for ( i=0; i<n; i++ ) {
-    if (!next->next) {
-      SETERRQ(1,1,"Not enough PCs in composite preconditioner");
-    }
-    next = next->next;
-  }
-  *subpc = next->pc;
   PetscFunctionReturn(0);
 }
 
@@ -331,6 +208,181 @@ static int PCView_Composite(PetscObject obj,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+/* ------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "PCCompositeSetType_Composite"
+int PCCompositeSetType_Composite(PC pc,PCCompositeType type)
+{
+  PC_Composite     *jac;
+
+  PetscFunctionBegin;
+  if (type == PC_COMPOSITE_ADDITIVE) {
+    pc->apply = PCApply_Composite_Additive;
+  } else if (type ==  PC_COMPOSITE_MULTIPLICATIVE) {
+    pc->apply = PCApply_Composite_Multiplicative;
+  } else {
+    SETERRQ(1,1,"Unkown composite preconditioner type");
+  }
+  jac = (PC_Composite *) type;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCCompositeAddPC_Composite"
+int PCCompositeAddPC_Composite(PC pc,PCType type)
+{
+  PC_Composite     *jac;
+  PC_CompositeLink next,link;
+  int              ierr,cnt = 0;
+  char             *prefix,newprefix[8];
+
+  PetscFunctionBegin;
+  link       = PetscNew(struct _PC_CompositeLink);CHKPTRQ(link);
+  link->next = 0;
+  ierr = PCCreate(pc->comm,&link->pc);CHKERRQ(ierr);
+  ierr = PCSetType(link->pc,type);CHKERRQ(ierr);
+
+  jac  = (PC_Composite *) pc->data;
+  next = jac->head;
+  if (!next) {
+    jac->head = link;
+  } else {
+    cnt++;
+    while (next->next) {
+      next = next->next;
+      cnt++;
+    }
+    next->next = link;
+  }
+  ierr = PCGetOptionsPrefix(pc,&prefix); CHKERRQ(ierr);
+  ierr = PCSetOptionsPrefix(link->pc,prefix); CHKERRQ(ierr);
+  sprintf(newprefix,"sub_%d_",cnt);
+  ierr = PCAppendOptionsPrefix(link->pc,newprefix); CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCCompositeGetPC_Composite"
+int PCCompositeGetPC_Composite(PC pc,int n,PC *subpc)
+{
+  PC_Composite     *jac;
+  PC_CompositeLink next;
+  int              i;
+
+  PetscFunctionBegin;
+  jac  = (PC_Composite *) pc->data;
+  next = jac->head;
+  i    = 0;
+  for ( i=0; i<n; i++ ) {
+    if (!next->next) {
+      SETERRQ(1,1,"Not enough PCs in composite preconditioner");
+    }
+    next = next->next;
+  }
+  *subpc = next->pc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCCompositeSetUseTrue_Composite"
+int PCCompositeSetUseTrue_Composite(PC pc)
+{
+  PC_Composite   *jac;
+
+  PetscFunctionBegin;
+  jac                  = (PC_Composite *) pc->data;
+  jac->use_true_matrix = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------------- */
+#undef __FUNC__  
+#define __FUNC__ "PCCompositeSetType"
+/*@C
+   PCCompositeSetType
+   
+   Input Parameter:
+.  pc - the preconditioner context
+.  type - PC_COMPOSITE_ADDITIVE (default) or PC_COMPOSITE_MULTIPLICATIVE
+
+
+.keywords:  set,  composite preconditioner, additive, multiplicative
+
+@*/
+int PCCompositeSetType(PC pc,PCCompositeType type)
+{
+  int ierr, (*f)(PC,PCCompositeType);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = DLRegisterFind(pc->qlist,"PCCompositeSetType",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,type);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCCompositeAddPC"
+/*@C
+   PCCompositeAddPC - Adds another PC to the composite PC.
+   
+   Input Parameter:
+.  pc - the preconditioner context
+.  type - the type of the new preconditioner
+
+
+.keywords:  composite preconditioner
+
+@*/
+int PCCompositeAddPC(PC pc,PCType type)
+{
+  int ierr, (*f)(PC,PCType);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = DLRegisterFind(pc->qlist,"PCCompositeAddPC",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,type);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCCompositeGetPC"
+/*@C
+   PCCompositeGetPC - Gets one of the PC objects in the composite PC.
+   
+   Input Parameter:
+.  pc - the preconditioner context
+.  n - the number of the pc requested
+
+   Output Parameters:
+.  subpc - the PC requested
+
+
+.keywords:  get, composite preconditioner, sub preconditioner
+
+.seealso: PCCompositeAddPC()
+
+@*/
+int PCCompositeGetPC(PC pc,int n,PC *subpc)
+{
+  int ierr, (*f)(PC,int,PC *);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = DLRegisterFind(pc->qlist,"PCCompositeGetPC",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,n,subpc);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Cannot get pc, not composite type");
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__  
 #define __FUNC__ "PCCompositeSetUseTrue"
 /*@
@@ -354,23 +406,25 @@ $  -pc_composite_true
 @*/
 int PCCompositeSetUseTrue(PC pc)
 {
-  PC_Composite   *jac;
+  int ierr, (*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCCOMPOSITE ) PetscFunctionReturn(0);
-  jac                  = (PC_Composite *) pc->data;
-  jac->use_true_matrix = PETSC_TRUE;
+  ierr = DLRegisterFind(pc->qlist,"PCCompositeSetUseTrue",(int (**)(void *))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
+
+/* -------------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ "PCCreate_Composite"
 int PCCreate_Composite(PC pc)
 {
-  int            rank,size;
+  int            rank,size,ierr;
   PC_Composite   *jac = PetscNew(PC_Composite); CHKPTRQ(jac);
-
 
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_Composite));
@@ -383,12 +437,20 @@ int PCCreate_Composite(PC pc)
   pc->printhelp          = PCPrintHelp_Composite;
   pc->view               = PCView_Composite;
   pc->applyrich          = 0;
-  pc->type               = PCCOMPOSITE;
   pc->data               = (void *) jac;
 
   jac->type              = PC_COMPOSITE_ADDITIVE;
   jac->work1             = 0;
   jac->work2             = 0;
+
+  ierr = DLRegister(&pc->qlist,"PCCompositeSetType","PCCompositeSetType_Composite",
+                    PCCompositeSetType_Composite);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCCompositeAddPC","PCCompositeAddPC_Composite",
+                    PCCompositeAddPC_Composite);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCCompositeGetPC","PCCompositeGetPC_Composite",
+                    PCCompositeGetPC_Composite);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCCompositeSetUseTrue","PCCompositeSetUseTrue_Composite",
+                    PCCompositeSetUseTrue_Composite);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.51 1997/10/19 03:23:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.52 1997/11/28 16:18:52 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -24,6 +24,18 @@ int KSPSetUp_Chebychev(KSP ksp)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "KSPChebychevSetEigenvalues_Chebychev"
+int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,double emax,double emin)
+{
+  KSP_Chebychev *chebychevP = (KSP_Chebychev *) ksp->data;
+
+  PetscFunctionBegin;
+  chebychevP->emax = emax;
+  chebychevP->emin = emin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "KSPChebychevSetEigenvalues"
 /*@
    KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
@@ -37,13 +49,14 @@ int KSPSetUp_Chebychev(KSP ksp)
 @*/
 int KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin)
 {
-  KSP_Chebychev *chebychevP = (KSP_Chebychev *) ksp->data;
+  int ierr, (*f)(KSP,double,double);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (ksp->type != KSPCHEBYCHEV) PetscFunctionReturn(0);
-  chebychevP->emax = emax;
-  chebychevP->emin = emin;
+  ierr = DLRegisterFind(ksp->qlist,"KSPChebychevSetEigenvalues",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ksp,emax,emin);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -180,13 +193,13 @@ int KSPView_Chebychev(PetscObject obj,Viewer viewer)
 #define __FUNC__ "KSPCreate_Chebychev"
 int KSPCreate_Chebychev(KSP ksp)
 {
+  int           ierr;
   KSP_Chebychev *chebychevP = PetscNew(KSP_Chebychev);CHKPTRQ(chebychevP);
 
   PetscFunctionBegin;
   PLogObjectMemory(ksp,sizeof(KSP_Chebychev));
 
   ksp->data                 = (void *) chebychevP;
-  ksp->type                 = KSPCHEBYCHEV;
   ksp->pc_side              = PC_LEFT;
   ksp->calc_res             = 1;
 
@@ -201,5 +214,8 @@ int KSPCreate_Chebychev(KSP ksp)
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;
   ksp->view                 = KSPView_Chebychev;
+
+  ierr = DLRegister(&ksp->qlist,"KSPChebychevSetEigenvalues","KSPChebychevSetEigenvalues_Chebychev",
+         KSPChebychevSetEigenvalues_Chebychev); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

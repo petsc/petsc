@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itregis.c,v 1.25 1997/12/20 04:35:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itregis.c,v 1.26 1998/01/17 17:36:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -17,6 +17,26 @@ extern int KSPCreate_PREONLY(KSP);
 extern int KSPCreate_CR(KSP);
 extern int KSPCreate_QCG(KSP);
 
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define KSPRegister(a,b,c,d) KSPRegister_Private(a,b,c,0)
+#else
+#define KSPRegister(a,b,c,d) KSPRegister_Private(a,b,c,d)
+#endif
+
+#undef __FUNC__  
+#define __FUNC__ "KSPRegister_Private"
+static int KSPRegister_Private(char *sname,char *path,char *name,int (*function)(KSP))
+{
+  int ierr;
+  char fullname[256];
+
+  PetscFunctionBegin;
+  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = DLRegister(&KSPList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+  
 /*
       This is used by KSPSetType() to make sure that at least one 
     KSPRegisterAll() is called. In general, if there is more than one
@@ -29,39 +49,28 @@ extern int KSPRegisterAllCalled;
 /*@C
   KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
 
-  Adding new methods:
-  To add a new method to the registry, copy this routine and modify
-  it to incorporate a call to KSPRegister() for the new method.  
-
-  Restricting the choices:
-  To prevent all of the methods from being registered and thus 
-  save memory, copy this routine and modify it to register only 
-  those methods you desire.  Make sure that the replacement routine 
-  is linked before libpetscsles.a.
-
-  Notes:
-  Currently the default iterative method, KSPGMRES, must be
-  registered.
-
 .keywords: KSP, register, all
 
-.seealso:  KSPRegister(), KSPRegisterDestroy()
+.seealso:  KSPRegisterDestroy()
 @*/
-int KSPRegisterAll()
+int KSPRegisterAll(char *path)
 {
+  int ierr;
+
   PetscFunctionBegin;
   KSPRegisterAllCalled = 1;
-  KSPRegister(KSPCG         , "cg",         "KSPCreate_CG",KSPCreate_CG,0);
-  KSPRegister(KSPRICHARDSON , "richardson", "KSPCreate_Richardson",KSPCreate_Richardson,0);
-  KSPRegister(KSPCHEBYCHEV  , "chebychev",  "KSPCreate_Chebychev",KSPCreate_Chebychev,0);
-  KSPRegister(KSPGMRES      , "gmres",      "KSPCreate_GMRES",KSPCreate_GMRES,0);
-  KSPRegister(KSPTCQMR      , "tcqmr",      "KSPCreate_TCQMR",KSPCreate_TCQMR,0);
-  KSPRegister(KSPBCGS       , "bcgs",       "KSPCreate_BCGS",KSPCreate_BCGS,0);
-  KSPRegister(KSPCGS        , "cgs",        "KSPCreate_CGS",KSPCreate_CGS,0);
-  KSPRegister(KSPTFQMR      , "tfqmr",      "KSPCreate_TFQMR",KSPCreate_TFQMR,0);
-  KSPRegister(KSPCR         , "cr",         "KSPCreate_CR",KSPCreate_CR,0); 
-  KSPRegister(KSPLSQR       , "lsqr",       "KSPCreate_LSQR",KSPCreate_LSQR,0);
-  KSPRegister(KSPPREONLY    , "preonly",    "KSPCreate_PREONLY",KSPCreate_PREONLY,0);
-  KSPRegister(KSPQCG        , "qcg",        "KSPCreate_QCG",KSPCreate_QCG,0);
+
+  ierr = KSPRegister(KSPCG,         path,"KSPCreate_CG",        KSPCreate_CG);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPRICHARDSON, path,"KSPCreate_Richardson",KSPCreate_Richardson);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPCHEBYCHEV,  path,"KSPCreate_Chebychev", KSPCreate_Chebychev);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPGMRES,      path,"KSPCreate_GMRES",     KSPCreate_GMRES);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPTCQMR,      path,"KSPCreate_TCQMR",     KSPCreate_TCQMR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPBCGS,       path,"KSPCreate_BCGS",      KSPCreate_BCGS);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPCGS,        path,"KSPCreate_CGS",       KSPCreate_CGS);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPTFQMR,      path,"KSPCreate_TFQMR",     KSPCreate_TFQMR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPCR,         path,"KSPCreate_CR",        KSPCreate_CR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPLSQR,       path,"KSPCreate_LSQR",      KSPCreate_LSQR);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPPREONLY,    path,"KSPCreate_PREONLY",   KSPCreate_PREONLY);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPQCG,        path,"KSPCreate_QCG",       KSPCreate_QCG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.65 1998/01/12 15:55:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.66 1998/01/14 02:40:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -20,6 +20,8 @@ static int PCApply_SOR(PC pc,Vec x,Vec y)
 {
   PC_SOR *jac = (PC_SOR *) pc->data;
   int    ierr, flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
+
+  PetscFunctionBegin;
   ierr = MatRelax(pc->pmat,x,jac->omega,(MatSORType)flag,0.0,jac->its,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -29,13 +31,13 @@ static int PCApply_SOR(PC pc,Vec x,Vec y)
 static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,int its)
 {
   PC_SOR *jac = (PC_SOR *) pc->data;
-  int    ierr, flag;
-  flag = jac->sym;
-  ierr = MatRelax(pc->mat,b,jac->omega,(MatSORType)flag,0.0,its,y);CHKERRQ(ierr);
+  int    ierr;
+
+  PetscFunctionBegin;
+  ierr = MatRelax(pc->mat,b,jac->omega,(MatSORType)jac->sym,0.0,its,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-/* parses arguments of the form -pc_sor [symmetric,forward,back][omega=...] */
 #undef __FUNC__  
 #define __FUNC__ "PCSetFromOptions_SOR"
 static int PCSetFromOptions_SOR(PC pc)
@@ -43,20 +45,21 @@ static int PCSetFromOptions_SOR(PC pc)
   int    its,ierr,flg;
   double omega;
 
+  PetscFunctionBegin;
   ierr = OptionsGetDouble(pc->prefix,"-pc_sor_omega",&omega,&flg); CHKERRQ(ierr);
-  if (flg) {PCSORSetOmega(pc,omega);} 
+  if (flg) {ierr = PCSORSetOmega(pc,omega);CHKERRQ(ierr);} 
   ierr = OptionsGetInt(pc->prefix,"-pc_sor_its",&its,&flg); CHKERRQ(ierr);
-  if (flg) {PCSORSetIterations(pc,its);}
+  if (flg) {ierr = PCSORSetIterations(pc,its);CHKERRQ(ierr);}
   ierr = OptionsHasName(pc->prefix,"-pc_sor_symmetric",&flg); CHKERRQ(ierr);
-  if (flg) {PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);}
+  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);CHKERRQ(ierr);}
   ierr = OptionsHasName(pc->prefix,"-pc_sor_backward",&flg); CHKERRQ(ierr);
-  if (flg) {PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);}
+  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);CHKERRQ(ierr);}
   ierr = OptionsHasName(pc->prefix,"-pc_sor_local_symmetric",&flg); CHKERRQ(ierr);
-  if (flg) {PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);}
+  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);CHKERRQ(ierr);}
   ierr = OptionsHasName(pc->prefix,"-pc_sor_local_backward",&flg); CHKERRQ(ierr);
-  if (flg) {PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP);}
+  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP);CHKERRQ(ierr);}
   ierr = OptionsHasName(pc->prefix,"-pc_sor_local_forward",&flg); CHKERRQ(ierr);
-  if (flg) {PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP);}
+  if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -64,6 +67,7 @@ static int PCSetFromOptions_SOR(PC pc)
 #define __FUNC__ "PCPrintHelp_SOR" 
 static int PCPrintHelp_SOR(PC pc,char *p)
 {
+  PetscFunctionBegin;
   (*PetscHelpPrintf)(pc->comm," Options for PCSOR preconditioner:\n");
   (*PetscHelpPrintf)(pc->comm," %spc_sor_omega <omega>: relaxation factor (0 < omega < 2)\n",p);
   (*PetscHelpPrintf)(pc->comm," %spc_sor_symmetric: use SSOR\n",p);
@@ -87,6 +91,7 @@ static int PCView_SOR(PetscObject obj,Viewer viewer)
   int        ierr;
   ViewerType vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {  
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -111,27 +116,45 @@ static int PCView_SOR(PetscObject obj,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_SOR"
-int PCCreate_SOR(PC pc)
-{
-  PC_SOR *jac   = PetscNew(PC_SOR); CHKPTRQ(jac);
-  PLogObjectMemory(pc,sizeof(PC_SOR));
 
-  pc->apply          = PCApply_SOR;
-  pc->applyrich      = PCApplyRichardson_SOR;
-  pc->setfromoptions = PCSetFromOptions_SOR;
-  pc->printhelp      = PCPrintHelp_SOR;
-  pc->setup          = 0;
-  pc->type           = PCSOR;
-  pc->data           = (void *) jac;
-  pc->view           = PCView_SOR;
-  jac->sym           = SOR_FORWARD_SWEEP;
-  jac->omega         = 1.0;
-  jac->its           = 1;
+/* ------------------------------------------------------------------------------*/
+#undef __FUNC__  
+#define __FUNC__ "PCSORSetSymmetric_SOR"
+int PCSORSetSymmetric_SOR(PC pc, MatSORType flag)
+{
+  PC_SOR *jac;
+
+  PetscFunctionBegin;
+  jac = (PC_SOR *) pc->data; 
+  jac->sym = flag;
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PCSORSetOmega_SOR"
+int PCSORSetOmega_SOR(PC pc, double omega)
+{
+  PC_SOR *jac;
+
+  PetscFunctionBegin;
+  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Relaxation out of range");
+  jac        = (PC_SOR *) pc->data; 
+  jac->omega = omega;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCSORSetIterations_SOR"
+int PCSORSetIterations_SOR(PC pc, int its)
+{
+  PC_SOR *jac;
+
+  PetscFunctionBegin;
+  jac      = (PC_SOR *) pc->data; 
+  jac->its = its;
+  PetscFunctionReturn(0);
+}
+/* ------------------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "PCSORSetSymmetric"
 /*@
@@ -167,11 +190,14 @@ $     -pc_type  eisenstat
 @*/
 int PCSORSetSymmetric(PC pc, MatSORType flag)
 {
-  PC_SOR *jac;
+  int ierr, (*f)(PC,MatSORType);
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCSOR) PetscFunctionReturn(0);
-  jac = (PC_SOR *) pc->data; 
-  jac->sym = flag;
+  ierr = DLRegisterFind(pc->qlist,"PCSORSetSymmetric",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,flag);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -194,12 +220,13 @@ $  -pc_sor_omega <omega>
 @*/
 int PCSORSetOmega(PC pc, double omega)
 {
-  PC_SOR *jac;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCSOR) PetscFunctionReturn(0);
-  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Relaxation out of range");
-  jac        = (PC_SOR *) pc->data; 
-  jac->omega = omega;
+  int ierr, (*f)(PC,double);
+
+  PetscFunctionBegin;
+  ierr = DLRegisterFind(pc->qlist,"PCSORSetOmega",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,omega);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -222,12 +249,47 @@ $  -pc_sor_its <its>
 @*/
 int PCSORSetIterations(PC pc, int its)
 {
-  PC_SOR *jac;
+  int ierr, (*f)(PC,int);
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->type != PCSOR) PetscFunctionReturn(0);
-  jac      = (PC_SOR *) pc->data; 
-  jac->its = its;
+  ierr = DLRegisterFind(pc->qlist,"PCSORSetIterations",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,its);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "PCCreate_SOR"
+int PCCreate_SOR(PC pc)
+{
+  int    ierr;
+  PC_SOR *jac   = PetscNew(PC_SOR); CHKPTRQ(jac);
+
+  PetscFunctionBegin;
+  PLogObjectMemory(pc,sizeof(PC_SOR));
+
+  pc->apply          = PCApply_SOR;
+  pc->applyrich      = PCApplyRichardson_SOR;
+  pc->setfromoptions = PCSetFromOptions_SOR;
+  pc->printhelp      = PCPrintHelp_SOR;
+  pc->setup          = 0;
+  pc->data           = (void *) jac;
+  pc->view           = PCView_SOR;
+  jac->sym           = SOR_FORWARD_SWEEP;
+  jac->omega         = 1.0;
+  jac->its           = 1;
+
+  ierr = DLRegister(&pc->qlist,"PCSORSetSymmetric","PCSORSetSymmetric_SOR",
+                    PCSORSetSymmetric_SOR);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCSORSetOmega","PCSORSetOmega_SOR",
+                    PCSORSetOmega_SOR);CHKERRQ(ierr);
+  ierr = DLRegister(&pc->qlist,"PCSORSetIterations","PCSORSetIterations_SOR",
+                    PCSORSetIterations_SOR);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.9 1998/01/17 17:36:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.10 1998/01/29 21:05:50 bsmith Exp bsmith $";
 #endif
 /*
          Provides a general mechanism to allow one to register
@@ -8,6 +8,28 @@ static char vcid[] = "$Id: reg.c,v 1.9 1998/01/17 17:36:33 bsmith Exp bsmith $";
 */
 #include "petsc.h"
 #include "sys.h"
+
+
+#undef __FUNC__  
+#define __FUNC__ "DLRegisterGetPathAndFunction"
+int DLRegisterGetPathAndFunction(char *name,char **path,char **function)
+{
+  char work[256],*lfunction;
+
+  PetscFunctionBegin;
+  PetscStrncpy(work,name,256);
+  lfunction = PetscStrrchr(work,':');
+  if (lfunction != work) {
+    lfunction[-1] = 0;
+    *path = (char *) PetscMalloc( (PetscStrlen(work) + 1)*sizeof(char));CHKPTRQ(*path);
+    PetscStrcpy(*path,work);
+  } else {
+    *path = 0;
+  }
+  *function = (char *) PetscMalloc((PetscStrlen(lfunction)+1)*sizeof(char));CHKPTRQ(*function);
+  PetscStrcpy(*function,lfunction);
+  PetscFunctionReturn(0);
+}
 
 #if defined(USE_DYNAMIC_LIBRARIES)
 
@@ -31,34 +53,34 @@ int PetscInitialize_DynamicLibraries()
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscts"); CHKERRQ(ierr);
-  ierr = DLAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscsnes"); CHKERRQ(ierr);
-  ierr = DLAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscsles"); CHKERRQ(ierr);
-  ierr = DLAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscmat"); CHKERRQ(ierr);
-  ierr = DLAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscvec"); CHKERRQ(ierr);
-  ierr = DLAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
 
   nmax = 32;
   ierr = OptionsGetStringArray(PETSC_NULL,"-dll_prepend",libname,&nmax,&flg);CHKERRQ(ierr);
   for ( i=nmax-1; i>=0; i-- ) {
-    ierr = DLPrepend(&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
+    ierr = DLLibraryPrepend(&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     PetscFree(libname[i]);
   }
   nmax = 32;
   ierr = OptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,&flg);CHKERRQ(ierr);
   for ( i=0; i<nmax; i++ ) {
-    ierr = DLAppend(&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
+    ierr = DLLibraryAppend(&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     PetscFree(libname[i]);
   }
 
@@ -75,36 +97,31 @@ int PetscInitialize_DynamicLibraries()
 
 /* ------------------------------------------------------------------------------*/
 struct FuncList_struct {
-  int                    id;
   int                    (*routine)(void *);
+  char                   *path;
   char                   *name;               
   char                   *rname;            /* name of create function in link library */
   struct FuncList_struct *next;
 };
 typedef struct FuncList_struct FuncList;
 
-#define DL_MAX_ITEMS 10000
-
 struct _DLList {
     FuncList *head, *tail;
-    int      nextid;          /* next id available */
     char     *regname;        /* registration type name */
+    DLList   next;
 };
 
 /*
-      These are kept so that we may free the space used for all registered systems
-   from a single, centralized location.
+     Keep a linked list of DLLists so that we may destroy all the left-over ones
 */
-static int    NumberRegisters = 0;
-static DLList *Registers[10];
-
+static DLList dlallhead = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "DLCreate"
 /*
   DLCreate - create a name registry.
 
-.seealso: DLRegister(), DLDestroy()
+.seealso: DLRegister(), DLRegisterDestroy()
 */
 int DLCreate(DLList *fl )
 {
@@ -112,66 +129,55 @@ int DLCreate(DLList *fl )
   *fl                = PetscNew(struct _DLList);CHKPTRQ(*fl);
   (*fl)->head        = 0;
   (*fl)->tail        = 0;
-  (*fl)->nextid      = DL_MAX_ITEMS;
-
-  Registers[NumberRegisters++] = fl;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "DLDestroyAll"
-/*
-   DLDestroyAll - Destroys all registers. Should be called only 
-           when you know none of the methods are needed.
-
-@*/
-int DLDestroyAll()
-{
-  int i,ierr;
-
-  PetscFunctionBegin;
-  for ( i=0; i<NumberRegisters; i++ ) {
-    ierr = DLDestroy(*Registers[i]);CHKERRQ(ierr);
-    *Registers[i] = 0;
+  
+  /* 
+      Add list to front of nasty-global lists of lists
+  */
+  if (!dlallhead) {
+    dlallhead       = *fl;
+    (*fl)->next     = 0;
+  } else {
+    DLList tmp = dlallhead;
+    
+    dlallhead   = *fl;
+    (*fl)->next = tmp;
   }
-#if defined(USE_DYNAMIC_LIBRARIES)
-  ierr = DLClose(DLLibrariesLoaded);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
+
 
 /*M
-   DLRegister - Given a routine and two ids (an int and a string), 
+   DLRegister - Given a routine and a string id, 
                 save that routine in the specified registry
- 
-   Input Parameters:
+    Input Parameters:
 .      fl       - pointer registry
-.      id       - integer (or enum) for routine
 .      name     - string for routine
 .      rname    - routine name in dynamic library
 .      fnc      - function pointer (optional if using dynamic libraries)
 
-   Output Parameters:
-.      idout    - id assigned to function, same as id for predefined functions
 
    Synopsis:
-    int DLRegister(DLList fl, int id, char *name, char *rname,int (*fnc)(void *),int *idout)
+    int DLRegister(DLList fl, char *name, char *rname,int (*fnc)(void *))
 
 */
 
 #undef __FUNC__  
 #define __FUNC__ "DLRegister_Private"
-int DLRegister_Private( DLList *fl, int id, char *name, char *rname,int (*fnc)(void *),int *idout)
+int DLRegister_Private( DLList *fl, char *name, char *rname,int (*fnc)(void *))
 {
   FuncList *entry;
   int      ierr;
+  char     *fpath,*fname;
 
   PetscFunctionBegin;
   entry          = (FuncList*) PetscMalloc(sizeof(FuncList));CHKPTRQ(entry);
   entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 ); CHKPTRQ(entry->name);
   PetscStrcpy( entry->name, name );
-  entry->rname   = (char *)PetscMalloc( PetscStrlen(rname) + 1 ); CHKPTRQ(entry->rname);
-  PetscStrcpy( entry->rname, rname );
+
+  ierr = DLRegisterGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
+
+  entry->path    = fpath;
+  entry->rname   = fname;
   entry->routine = fnc;
 
   if (!*fl) {
@@ -183,69 +189,123 @@ int DLRegister_Private( DLList *fl, int id, char *name, char *rname,int (*fnc)(v
   else             (*fl)->head       = entry;
   (*fl)->tail = entry;
   
-  if (id == DL_NEW_ITEM) {
-    entry->id  = (*fl)->nextid--;
-  } else {
-    entry->id  = id;
-  }
-  if (idout) *idout = id;
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLDestroy"
+#define __FUNC__ "DLRegisterDestroy"
 /*
-    DLDestroy - Destroy a list of registered routines
+    DLRegisterDestroy - Destroy a list of registered routines
 
     Input Parameter:
 .   fl   - pointer to list
 */
-int DLDestroy(DLList fl )
+int DLRegisterDestroy(DLList fl )
 {
-  FuncList *entry = fl->head, *next;
+  FuncList *entry, *next;
+  DLList   tmp = dlallhead;
 
   PetscFunctionBegin;
+  if (!fl) PetscFunctionReturn(0);
+
+  entry = fl->head;
   while (entry) {
     next = entry->next;
+    if (entry->path) PetscFree(entry->path);
     PetscFree( entry->name );
     PetscFree( entry->rname );
     PetscFree( entry );
     entry = next;
   }
+
+  /*
+       Remove this entry from the master DL list 
+  */
+  if (dlallhead == fl) {
+    if (dlallhead->next) {
+      dlallhead = dlallhead->next;
+    } else {
+      dlallhead = 0;
+    }
+  } else {
+    while (tmp->next != fl) {
+      tmp = tmp->next;
+      if (!tmp->next) SETERRQ(1,1,"Internal PETSc error, function registration corrupted");
+    }
+    tmp->next = tmp->next->next;
+  }
+ 
   PetscFree( fl );
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLFindRoutine"
+#define __FUNC__ "DLRegisterDestroyAll"
+int DLRegisterDestroyAll()
+{
+  DLList tmp2,tmp1 = dlallhead;
+
+  PetscFunctionBegin;
+  while (tmp1) {
+    tmp2 = tmp1->next;
+    DLRegisterDestroy(tmp1);
+    tmp1 = tmp2;
+  }
+  dlallhead = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DLRegisterFind"
 /*
-    DLFindRoutine - given an id or name, find the matching routine
+    DLRegisterFind - givn a name, find the matching routine
 
     Input Parameters:
 .   fl   - pointer to list
-.   id   - id (-1 for ignore)
-.   name - name string.  (Null for ignore)
+.   name - name string
 
     The id or name must have been registered with the DLList before calling this 
     routine.
 */
-int DLFindRoutine(DLList fl, int id, char *name, int (**r)(void *))
+int DLRegisterFind(DLList fl, char *name, int (**r)(void *))
 {
   FuncList *entry = fl->head;
+  char     *function, *path;
+  int      ierr;
   
   PetscFunctionBegin;
+  ierr = DLRegisterGetPathAndFunction(name,&path,&function);CHKERRQ(ierr);
+
+  /*
+        If path then append it to search libraries
+  */
+#if defined(USE_DYNAMIC_LIBRARIES)
+  if (path) {
+    ierr = DLLibraryAppend(&DLLibrariesLoaded,path); CHKERRQ(ierr);
+  }
+#endif
+
   while (entry) {
-    if ((id >= 0 && entry->id == id) || (name && !PetscStrcmp(name,entry->name))) {
-      /* found it */
-      if (entry->routine) {*r =entry->routine;  PetscFunctionReturn(0);}
+    if ((path && entry->path && !PetscStrcmp(path,entry->path) && !PetscStrcmp(function,entry->rname)) ||
+        (path && entry->path && !PetscStrcmp(path,entry->path) && !PetscStrcmp(function,entry->name)) ||
+        (!path &&  !PetscStrcmp(function,entry->name)) || 
+        (!path &&  !PetscStrcmp(function,entry->rname))) {
+
+      if (entry->routine) {
+        *r = entry->routine; 
+         if (path) PetscFree(path);
+         PetscFree(function);
+         PetscFunctionReturn(0);
+      }
+
       /* it is not yet in memory so load from dynamic library */
 #if defined(USE_DYNAMIC_LIBRARIES)
-      { int ierr;
-        ierr = DLSym(DLLibrariesLoaded,entry->rname,(void **)r);CHKERRQ(ierr);
-      }
+      ierr = DLLibrarySym(&DLLibrariesLoaded,path,entry->rname,(void **)r);CHKERRQ(ierr);
       if (*r) {
         entry->routine = *r;
+        if (path) PetscFree(path);
+        PetscFree(function);
         PetscFunctionReturn(0);
       } else {
         PetscErrorPrintf("Registered function name: %s\n",entry->rname);
@@ -256,6 +316,19 @@ int DLFindRoutine(DLList fl, int id, char *name, int (**r)(void *))
     entry = entry->next;
   }
 
+#if defined(USE_DYNAMIC_LIBRARIES)
+  /* Function never registered; try for it anyways */
+  ierr = DLLibrarySym(&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
+  if (path) PetscFree(path);
+  if (r) {
+    ierr = DLRegister(&fl,name,name,r); CHKERRQ(ierr);
+    PetscFree(function);
+    PetscFunctionReturn(0);
+  }
+#endif
+
+  PetscFree(function);
+
   if (name) PetscErrorPrintf("Function name: %s\n",name);
   SETERRQ(1,1,"Unable to find function: either it is mis-spelled or dynamic library is not in path");
 #if !defined(USE_PETSC_DEBUG)
@@ -264,60 +337,9 @@ int DLFindRoutine(DLList fl, int id, char *name, int (**r)(void *))
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLFindID"
+#define __FUNC__ "DLRegisterPrintTypes"
 /*
-    DLFindID - Given a name, find the corresponding id
-
-    Input Parameters:
-.   fl   - pointer to list
-.   name - name string
-
-    Returns:
-    id - id associate with name, -1 if name not found
-
-*/
-int DLFindID( DLList fl, char *name, int *id )
-{
-  FuncList *entry = fl->head;
-
-  PetscFunctionBegin;
-  *id = -1;
-  while (entry) {
-    if (!PetscStrcmp(name,entry->name)) {*id = entry->id; PetscFunctionReturn(0);}
-    entry = entry->next;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "DLFindName"
-/*
-    DLFindName - Given an id, find the corresponding name
-
-    Input Parameters:
-.   fl   - pointer to list
-.   id   - id 
-
-    Output Parameter:
-.   name - pointer to name of object type. You should NOT free this.
-
-*/
-int DLFindName( DLList fl, int id, char **name )
-{
-  FuncList *entry = fl->head;
-
-  PetscFunctionBegin;
-  while (entry) {
-    if (id == entry->id) {*name = entry->name; PetscFunctionReturn(0);}
-    entry = entry->next;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "DLPrintTypes"
-/*
-   DLPrintTypes - Prints the methods available.
+   DLRegisterPrintTypes - Prints the methods available.
 
    Input Parameters:
 .  comm   - The communicator (usually MPI_COMM_WORLD)
@@ -325,7 +347,7 @@ int DLFindName( DLList fl, int id, char **name )
 .  list   - list of types
 
 */
-int DLPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,DLList list)
+int DLRegisterPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,DLList list)
 {
   FuncList *entry;
   int      count = 0;
@@ -347,53 +369,7 @@ int DLPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,DLList list)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DLGetTypeFromOptions" 
-/*
-   DLGetTypeFromOptions
 
-   Input Parameter:
-.  list - list of registered types
-.  prefix - optional database prefix
-.  name - type name
-
-   Output Parameter:
-.  type -  method
-.  flag - 1 if type found
-.  oname - if not PETSC_NULL, copies option name
-.  len  - if oname is given, this is its length
-
-.keywords: 
-
-.seealso: 
-*/
-int DLGetTypeFromOptions(DLList *list,char *prefix,char *name,int *type,char *oname,int len,int *flag)
-{
-  char sbuf[256];
-  int  ierr,itype;
-  
-  PetscFunctionBegin;
-  ierr = OptionsGetString(prefix,name, sbuf, 256,flag); CHKERRQ(ierr);
-  if (oname) {
-    PetscStrncpy(oname,sbuf,len);
-  }
-  if (*flag) {
-    ierr = DLFindID( *list, sbuf,&itype ); CHKERRQ(ierr);
-#if defined(USE_DYNAMIC_LIBRARIES)
-    if (itype ==  -1) { /* indicates method not yet registered */
-
-      /* strip off path, call DLOpen and call DLFindID() again; in case library calls register */
-
-      /* last hope, register the exact name */
-      ierr = DLRegister(list,DL_NEW_ITEM,sbuf,sbuf,0,&itype); CHKERRQ(ierr);
-      ierr = DLFindID( *list, sbuf,&itype ); CHKERRQ(ierr);
-
-    }
-#endif
-    *(int *)type = itype;
-  }
-  PetscFunctionReturn(0);
-}
 
 
 

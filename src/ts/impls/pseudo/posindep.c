@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: posindep.c,v 1.22 1997/12/01 01:56:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.23 1998/01/14 02:43:54 bsmith Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -29,88 +29,6 @@ typedef struct {
 } TS_Pseudo;
 
 /* ------------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "TSPseudoDefaultTimeStep"
-/*@C
-   TSPseudoDefaultTimeStep - Default code to compute pseudo-timestepping.
-   Use with TSPseudoSetTimeStep().
-
-   Input Parameters:
-.  ts - the timestep context
-.  dtctx - unused timestep context
-
-   Output Parameter:
-.  newdt - the timestep to use for the next step
-
-.keywords: timestep, pseudo, default
-
-.seealso: TSPseudoSetTimeStep(), TSPseudoComputeTimeStep()
-@*/
-int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
-{
-  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
-  double    inc = pseudo->dt_increment,fnorm_previous = pseudo->fnorm_previous;
-  int       ierr;
-
-  PetscFunctionBegin;
-  ierr = TSComputeRHSFunction(ts,ts->ptime,ts->vec_sol,pseudo->func);CHKERRQ(ierr);  
-  ierr = VecNorm(pseudo->func,NORM_2,&pseudo->fnorm); CHKERRQ(ierr); 
-  if (pseudo->initial_fnorm == 0.0) {
-    /* first time through so compute initial function norm */
-    pseudo->initial_fnorm = pseudo->fnorm;
-    fnorm_previous        = pseudo->fnorm;
-  }
-  if (pseudo->fnorm == 0.0) {
-    *newdt = 1.e12*inc*ts->time_step; 
-  }
-  else if (pseudo->increment_dt_from_initial_dt) {
-    *newdt = inc*ts->initial_time_step*pseudo->initial_fnorm/pseudo->fnorm;
-  } else {
-    *newdt = inc*ts->time_step*fnorm_previous/pseudo->fnorm;
-  }
-  pseudo->fnorm_previous = pseudo->fnorm;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "TSPseudoSetTimeStep"
-/*@
-   TSPseudoSetTimeStep - Sets the user-defined routine to be
-   called at each pseudo-timestep to update the timestep.
-
-   Input Parameters:
-.  ts - timestep context
-.  dt - function to compute timestep
-.  ctx - [optional] user-defined context for private data
-         required by the function (may be PETSC_NULL)
-
-   Calling sequence of func:
-.  func (TS ts,double *newdt,void *ctx);
-
-.  newdt - the newly computed timestep
-.  ctx - [optional] timestep context
-
-   Notes:
-   The routine set here will be called by TSPseudoComputeTimeStep()
-   during the timestepping process.
-
-.keywords: timestep, pseudo, set
-
-.seealso: TSPseudoDefaultTimeStep(), TSPseudoComputeTimeStep()
-@*/
-int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
-{
-  TS_Pseudo *pseudo;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->type != TS_PSEUDO) PetscFunctionReturn(0);
-
-  pseudo          = (TS_Pseudo*) ts->data;
-  pseudo->dt      = dt;
-  pseudo->dtctx   = ctx;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNC__  
 #define __FUNC__ "TSPseudoComputeTimeStep"
@@ -176,47 +94,6 @@ int TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,double *newdt,int
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSPseudoSetVerifyTimeStep"
-/*@
-   TSPseudoSetVerifyTimeStep - Sets a user-defined routine to verify the quality of the 
-   last timestep.
-
-   Input Parameters:
-.  ts - timestep context
-.  dt - user-defined function to verify timestep
-.  ctx - [optional] user-defined context for private data
-         for the timestep verification routine (may be PETSC_NULL)
-
-   Calling sequence of func:
-.  func (TS ts,Vec update,void *ctx,double *newdt,int *flag);
-
-.  update - latest solution vector
-.  ctx - [optional] timestep context
-.  newdt - the timestep to use for the next step
-.  flag - flag indicating whether the last time step was acceptable
-
-   Notes:
-   The routine set here will be called by TSPseudoVerifyTimeStep()
-   during the timestepping process.
-
-.keywords: timestep, pseudo, set, verify 
-
-.seealso: TSPseudoDefaultVerifyTimeStep(), TSPseudoVerifyTimeStep()
-@*/
-int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* ctx)
-{
-  TS_Pseudo *pseudo;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->type != TS_PSEUDO) PetscFunctionReturn(0);
-
-  pseudo              = (TS_Pseudo*) ts->data;
-  pseudo->verify      = dt;
-  pseudo->verifyctx   = ctx;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNC__  
 #define __FUNC__ "TSPseudoVerifyTimeStep"
@@ -479,7 +356,208 @@ static int TSView_Pseudo(PetscObject obj,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------ */
+/* ----------------------------------------------------------------------------- */
+#undef __FUNC__  
+#define __FUNC__ "TSPseudoSetVerifyTimeStep"
+/*@
+   TSPseudoSetVerifyTimeStep - Sets a user-defined routine to verify the quality of the 
+   last timestep.
+
+   Input Parameters:
+.  ts - timestep context
+.  dt - user-defined function to verify timestep
+.  ctx - [optional] user-defined context for private data
+         for the timestep verification routine (may be PETSC_NULL)
+
+   Calling sequence of func:
+.  func (TS ts,Vec update,void *ctx,double *newdt,int *flag);
+
+.  update - latest solution vector
+.  ctx - [optional] timestep context
+.  newdt - the timestep to use for the next step
+.  flag - flag indicating whether the last time step was acceptable
+
+   Notes:
+   The routine set here will be called by TSPseudoVerifyTimeStep()
+   during the timestepping process.
+
+.keywords: timestep, pseudo, set, verify 
+
+.seealso: TSPseudoDefaultVerifyTimeStep(), TSPseudoVerifyTimeStep()
+@*/
+int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* ctx)
+{
+  int ierr, (*f)(TS,int (*)(TS,Vec,void*,double *,int *),void *);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE);
+
+  ierr = DLRegisterFind(ts->qlist,"TSPseudoSetVerifyTimeStep",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ts,dt,ctx);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "TSPseudoSetTimeStepIncrement"
+/*@
+    TSPseudoSetTimeStepIncrement - Sets the scaling increment applied to 
+    dt when using the TSPseudoDefaultTimeStep() routine.
+
+    Input Parameters:
+.   ts - the timestep context
+.   inc - the scaling factor >= 1.0
+
+    Options Database Key:
+$    -ts_pseudo_increment <increment>
+
+.keywords: timestep, pseudo, set, increment
+
+.seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
+@*/
+int TSPseudoSetTimeStepIncrement(TS ts,double inc)
+{
+  int ierr, (*f)(TS,double);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE);
+
+  ierr = DLRegisterFind(ts->qlist,"TSPseudoSetTimeStepIncrement",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ts,inc);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "TSPseudoIncrementDtFromInitialDt"
+/*@
+    TSPseudoIncrementDtFromInitialDt - Indicates that a new timestep
+    is computed via the formula
+$         dt = initial_dt*initial_fnorm/current_fnorm 
+      rather than the default update,
+$         dt = current_dt*previous_fnorm/current_fnorm.
+
+    Input Parameter:
+.   ts - the timestep context
+
+    Options Database Key:
+$    -ts_pseudo_increment_dt_from_initial_dt
+
+.keywords: timestep, pseudo, set, increment
+
+.seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
+@*/
+int TSPseudoIncrementDtFromInitialDt(TS ts)
+{
+  int ierr, (*f)(TS);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE);
+
+  ierr = DLRegisterFind(ts->qlist,"TSPseudoIncrementDtFromInitialDt",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ts);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNC__  
+#define __FUNC__ "TSPseudoSetTimeStep"
+/*@
+   TSPseudoSetTimeStep - Sets the user-defined routine to be
+   called at each pseudo-timestep to update the timestep.
+
+   Input Parameters:
+.  ts - timestep context
+.  dt - function to compute timestep
+.  ctx - [optional] user-defined context for private data
+         required by the function (may be PETSC_NULL)
+
+   Calling sequence of func:
+.  func (TS ts,double *newdt,void *ctx);
+
+.  newdt - the newly computed timestep
+.  ctx - [optional] timestep context
+
+   Notes:
+   The routine set here will be called by TSPseudoComputeTimeStep()
+   during the timestepping process.
+
+.keywords: timestep, pseudo, set
+
+.seealso: TSPseudoDefaultTimeStep(), TSPseudoComputeTimeStep()
+@*/
+int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
+{
+  int ierr, (*f)(TS,int (*)(TS,double *,void *),void *);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE);
+
+  ierr = DLRegisterFind(ts->qlist,"TSPseudoSetTimeStep",(int (**)(void *))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ts,dt,ctx);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/* ----------------------------------------------------------------------------- */
+
+#undef __FUNC__  
+#define __FUNC__ "TSPseudoSetVerifyTimeStep_Pseudo"
+int TSPseudoSetVerifyTimeStep_Pseudo(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* ctx)
+{
+  TS_Pseudo *pseudo;
+
+  PetscFunctionBegin;
+  pseudo              = (TS_Pseudo*) ts->data;
+  pseudo->verify      = dt;
+  pseudo->verifyctx   = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "TSPseudoSetTimeStepIncrement_Pseudo"
+int TSPseudoSetTimeStepIncrement_Pseudo(TS ts,double inc)
+{
+  TS_Pseudo *pseudo;
+
+  PetscFunctionBegin;
+  pseudo               = (TS_Pseudo*) ts->data;
+  pseudo->dt_increment = inc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "TSPseudoIncrementDtFromInitialDt_Pseudo"
+int TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
+{
+  TS_Pseudo *pseudo;
+
+  PetscFunctionBegin;
+  pseudo                               = (TS_Pseudo*) ts->data;
+  pseudo->increment_dt_from_initial_dt = 1;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "TSPseudoSetTimeStep_Pseudo"
+int TSPseudoSetTimeStep_Pseudo(TS ts,int (*dt)(TS,double*,void*),void* ctx)
+{
+  TS_Pseudo *pseudo;
+
+  PetscFunctionBegin;
+  pseudo          = (TS_Pseudo*) ts->data;
+  pseudo->dt      = dt;
+  pseudo->dtctx   = ctx;
+  PetscFunctionReturn(0);
+}
+
+/* ----------------------------------------------------------------------------- */
+
 #undef __FUNC__  
 #define __FUNC__ "TSCreate_Pseudo"
 int TSCreate_Pseudo(TS ts )
@@ -489,7 +567,6 @@ int TSCreate_Pseudo(TS ts )
   MatType   mtype;
 
   PetscFunctionBegin;
-  ts->type 	      = TS_PSEUDO;
   ts->destroy         = TSDestroy_Pseudo;
   ts->printhelp       = TSPrintHelp_Pseudo;
   ts->view            = TSView_Pseudo;
@@ -520,70 +597,58 @@ int TSCreate_Pseudo(TS ts )
   pseudo->dt_increment                 = 1.1;
   pseudo->increment_dt_from_initial_dt = 0;
   pseudo->dt                           = TSPseudoDefaultTimeStep;
-  PetscFunctionReturn(0);
-}
 
-
-#undef __FUNC__  
-#define __FUNC__ "TSPseudoSetTimeStepIncrement"
-/*@
-    TSPseudoSetTimeStepIncrement - Sets the scaling increment applied to 
-    dt when using the TSPseudoDefaultTimeStep() routine.
-
-    Input Parameters:
-.   ts - the timestep context
-.   inc - the scaling factor >= 1.0
-
-    Options Database Key:
-$    -ts_pseudo_increment <increment>
-
-.keywords: timestep, pseudo, set, increment
-
-.seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
-@*/
-int TSPseudoSetTimeStepIncrement(TS ts,double inc)
-{
-  TS_Pseudo *pseudo;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->type != TS_PSEUDO) PetscFunctionReturn(0);
-
-  pseudo               = (TS_Pseudo*) ts->data;
-  pseudo->dt_increment = inc;
+  ierr = DLRegister(&ts->qlist,"TSPseudoSetVerifyTimeStep","TSPseudoSetVerifyTimeStep_Pseudo",
+                    TSPseudoSetVerifyTimeStep_Pseudo);CHKERRQ(ierr);
+  ierr = DLRegister(&ts->qlist,"TSPseudoSetTimeStepIncrement","TSPseudoSetTimeStepIncrement_Pseudo",
+         TSPseudoSetTimeStepIncrement_Pseudo);CHKERRQ(ierr);
+  ierr = DLRegister(&ts->qlist,"TSPseudoIncrementDtFromInitialDt","TSPseudoIncrementDtFromInitialDt_Pseudo",
+         TSPseudoIncrementDtFromInitialDt_Pseudo);CHKERRQ(ierr);
+  ierr = DLRegister(&ts->qlist,"TSPseudoSetTimeStep","TSPseudoSetTimeStep_Pseudo",TSPseudoSetTimeStep_Pseudo);
+         CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSPseudoIncrementDtFromInitialDt"
-/*@
-    TSPseudoIncrementDtFromInitialDt - Indicates that a new timestep
-    is computed via the formula
-$         dt = initial_dt*initial_fnorm/current_fnorm 
-      rather than the default update,
-$         dt = current_dt*previous_fnorm/current_fnorm.
+#define __FUNC__ "TSPseudoDefaultTimeStep"
+/*@C
+   TSPseudoDefaultTimeStep - Default code to compute pseudo-timestepping.
+   Use with TSPseudoSetTimeStep().
 
-    Input Parameter:
-.   ts - the timestep context
+   Input Parameters:
+.  ts - the timestep context
+.  dtctx - unused timestep context
 
-    Options Database Key:
-$    -ts_pseudo_increment_dt_from_initial_dt
+   Output Parameter:
+.  newdt - the timestep to use for the next step
 
-.keywords: timestep, pseudo, set, increment
+.keywords: timestep, pseudo, default
 
-.seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
+.seealso: TSPseudoSetTimeStep(), TSPseudoComputeTimeStep()
 @*/
-int TSPseudoIncrementDtFromInitialDt(TS ts)
+int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
 {
-  TS_Pseudo *pseudo;
+  TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+  double    inc = pseudo->dt_increment,fnorm_previous = pseudo->fnorm_previous;
+  int       ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->type != TS_PSEUDO) PetscFunctionReturn(0);
-
-  pseudo                               = (TS_Pseudo*) ts->data;
-  pseudo->increment_dt_from_initial_dt = 1;
+  ierr = TSComputeRHSFunction(ts,ts->ptime,ts->vec_sol,pseudo->func);CHKERRQ(ierr);  
+  ierr = VecNorm(pseudo->func,NORM_2,&pseudo->fnorm); CHKERRQ(ierr); 
+  if (pseudo->initial_fnorm == 0.0) {
+    /* first time through so compute initial function norm */
+    pseudo->initial_fnorm = pseudo->fnorm;
+    fnorm_previous        = pseudo->fnorm;
+  }
+  if (pseudo->fnorm == 0.0) {
+    *newdt = 1.e12*inc*ts->time_step; 
+  }
+  else if (pseudo->increment_dt_from_initial_dt) {
+    *newdt = inc*ts->initial_time_step*pseudo->initial_fnorm/pseudo->fnorm;
+  } else {
+    *newdt = inc*ts->time_step*fnorm_previous/pseudo->fnorm;
+  }
+  pseudo->fnorm_previous = pseudo->fnorm;
   PetscFunctionReturn(0);
 }
-
 

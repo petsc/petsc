@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: icc.c,v 1.48 1998/01/12 15:55:28 bsmith Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.49 1998/01/14 02:40:26 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -45,8 +45,7 @@ static int PCSetup_ICC(PC pc)
     }
     ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,1.0,
 				icc->levels,&icc->fact); CHKERRQ(ierr);
-  }
-  else if (pc->flag != SAME_NONZERO_PATTERN) {
+  } else if (pc->flag != SAME_NONZERO_PATTERN) {
     ierr = MatDestroy(icc->fact); CHKERRQ(ierr);
     ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,1.0,
 				icc->levels,&icc->fact); CHKERRQ(ierr);
@@ -156,7 +155,6 @@ int PCCreate_ICC(PC pc)
   pc->printhelp           = PCPrintHelp_ICC;
   pc->view                = 0;
   pc->getfactoredmatrix   = PCGetFactoredMatrix_ICC;
-  pc->type	          = PCICC;
   pc->data	          = (void *) icc;
   pc->applysymmetricleft  = PCApplySymmetricLeft_ICC;
   pc->applysymmetricright = PCApplySymmetricRight_ICC;
