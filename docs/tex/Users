@@ -18,6 +18,7 @@ diachin - Darin, working with Lori, makefiles and system stuff in C++
 herzog - Jim Herzog, working with Lori
 dheath - Dan Heath, working with Lori
 plassman - ILU, BlockSolve
+bischof, roh, pwu - Chris Bischof, Lucas Roh, Po-Ting Wu - ADIFOR/ADIC interface to PETSc
 zwu - Zhijun Wu - working with Jorge, may use SNES to write new nonlinear solvers?
 kwong - Man Kwong, writing preprocessor
 

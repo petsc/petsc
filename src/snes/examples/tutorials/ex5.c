@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.58 1996/08/23 03:06:27 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.59 1996/08/23 14:00:30 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
-domain, using distributed arrays (DAs) to partition the parallel grid\n\
+domain, using distributed arrays (DAs) to partition the parallel grid.\n\
 The command line options include:\n\
   -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
      problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\

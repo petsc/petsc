@@ -1,5 +1,5 @@
 
-C    "$Id: ex20.F,v 1.8 1996/08/22 15:39:11 curfman Exp curfman $";
+C    "$Id: ex20.F,v 1.9 1996/08/22 21:24:46 curfman Exp curfman $";
 C
 C  Description: This example demonstrates repeated linear solves as
 C  well as the use of different preconditioner and linear system
@@ -19,8 +19,8 @@ C     mat.h    - matrices
 C     pc.h     - preconditioners
 C     ksp.h    - Krylov subspace methods
 C     sles.h   - SLES interface
-C  Additional include statements may be needed if using additional
-C  PETSc routines in a Fortran program, e.g.,
+C  Other include statements may be needed if using additional PETSc
+C  routines in a Fortran program, e.g.,
 C     viewer.h - viewers
 C     is.h     - index sets
 C
@@ -31,6 +31,13 @@ C
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/ksp.h"
 
+C  Variables:
+C
+C  A       - matrix that defines linear system
+C  sles    - SLES context
+C  ksp     - KSP context
+C  x, b, u - approx solution, RHS, exact solution vectors
+C
       Vec     x, u, b
       Mat     A
       SLES    sles
