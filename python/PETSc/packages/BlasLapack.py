@@ -35,6 +35,10 @@ class Configure(config.base.Configure):
     help.addArgument('BLAS/LAPACK', '-with-blas-lapack=<lib>', nargs.Arg(None, None, 'Indicate the library containing BLAS and LAPACK'))
     help.addArgument('BLAS/LAPACK', '-with-blas=<lib>',        nargs.Arg(None, None, 'Indicate the library containing BLAS'))
     help.addArgument('BLAS/LAPACK', '-with-lapack=<lib>',      nargs.Arg(None, None, 'Indicate the library containing LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-with-c-blas-lapack>',    nargs.ArgBool(None, 0, 'Automatically install a C version of BLAS/LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-with-f-blas-lapack>',    nargs.ArgBool(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-with-c-blas-lapack-if-needed>',    nargs.ArgBool(None, 0, 'Automatically install a C version of BLAS/LAPACK if no BLAS/LAPACK found'))
+    help.addArgument('BLAS/LAPACK', '-with-f-blas-lapack-if-needed>',    nargs.ArgBool(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK if no BLAS/LAPACK found'))
     return
 
   def parseLibrary(self, library):
@@ -117,31 +121,75 @@ class Configure(config.base.Configure):
       yield ('PETSc location 3', os.path.join(dir3, 'libblas.a'), os.path.join(dir3, 'liblapack.a'))
     return
 
+  def downLoadBlasLapack(self,f2c,l):
+    self.framework.log.write('Downloading '+l+'blaslapack')
+      
+    self.foundBlas       = 1
+    self.foundLapack     = 1
+    libdir               = os.path.join(self.framework.argDB['PETSC_DIR'],f2c+'blaslapack',self.framework.argDB['PETSC_ARCH'])
+    self.functionalBlasLapack.append((f2c+'blaslapack', os.path.join(libdir,'lib'+f2c+'blas.a'), os.path.join(libdir,'lib'+f2c+'lapack.a')))
+    if not os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'],f2c+'blaslapack')):
+      import urllib
+      try:
+        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/'+f2c+'blaslapack.tar.gz',f2c+'blaslapack.tar.gz')
+      except:
+        raise RuntimeError('Error downloading '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
+      try:
+        self.executeShellCommand('gunzip '+f2c+'blaslapack.tar.gz')
+      except:
+        raise RuntimeError('Error unzipping '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
+      try:
+        self.executeShellCommand('tar -xf '+f2c+'blaslapack.tar')
+      except:
+        raise RuntimeError('Error doing tar -xf '+f2c+'blaslapack.tar requested with -with-'+l+'-blas-lapack option')
+      os.unlink(f2c+'blaslapack.tar')
+    if not os.path.isdir(libdir):
+      os.mkdir(libdir)
+    
   def configureLibrary(self):
-    functionalBlasLapack = []
+    self.functionalBlasLapack = []
     self.foundBlas       = 0
     self.foundLapack     = 0
-    for (name, blasLibrary, lapackLibrary) in self.generateGuesses():
-      
-      self.framework.log.write('================================================================================\n')
-      self.framework.log.write('Checking for a functional BLAS and LAPACK in '+name+'\n')
-      (foundBlas, foundLapack) = self.executeTest(self.checkLib, [lapackLibrary, blasLibrary])
-      if foundBlas:   self.foundBlas   = 1
-      if foundLapack: self.foundLapack = 1
-      if foundBlas and foundLapack:
-        functionalBlasLapack.append((name, blasLibrary, lapackLibrary))
-        if not self.framework.argDB['with-alternatives']:
-          break
+    if self.framework.argDB.has_key('with-c-blas-lapack') or self.framework.argDB.has_key('with-f-blas-lapack'):
+      if self.framework.argDB.has_key('with-c-blas-lapack'):
+        f2c = 'f2c'
+        l   = 'c'
+      else:
+        f2c = 'f'
+        l   = 'f'
+      self.downLoadBlasLapack(f2c,l)        
+    else:
+      for (name, blasLibrary, lapackLibrary) in self.generateGuesses():
+        self.framework.log.write('================================================================================\n')
+        self.framework.log.write('Checking for a functional BLAS and LAPACK in '+name+'\n')
+        (foundBlas, foundLapack) = self.executeTest(self.checkLib, [lapackLibrary, blasLibrary])
+        if foundBlas:   self.foundBlas   = 1
+        if foundLapack: self.foundLapack = 1
+        if foundBlas and foundLapack:
+          self.functionalBlasLapack.append((name, blasLibrary, lapackLibrary))
+          if not self.framework.argDB['with-alternatives']:
+            break
+
+    if not (self.foundBlas and self.foundLapack):
+      if self.framework.argDB.has_key('with-c-blas-lapack-if-needed') or self.framework.argDB.has_key('with-f-blas-lapack-if-needed'):
+        if self.framework.argDB.has_key('with-c-blas-lapack-if-needed'):
+          f2c = 'f2c'
+          l   = 'c'
+        else:
+          f2c = 'f'
+          l   = 'f'
+        self.downLoadBlasLapack(f2c,l)        
+        
     # User chooses one or take first (sort by version)
     if self.foundBlas and self.foundLapack:
-      name, self.blasLibrary, self.lapackLibrary = functionalBlasLapack[0]
+      name, self.blasLibrary, self.lapackLibrary = self.functionalBlasLapack[0]
       if not isinstance(self.blasLibrary,   list): self.blasLibrary   = [self.blasLibrary]
       if not isinstance(self.lapackLibrary, list): self.lapackLibrary = [self.lapackLibrary]
     else:
       if not self.foundBlas:
-        raise RuntimeError('Could not find a functional BLAS. Run with --with-blas=<lib> to indicate location of BLAS\n')
+        raise RuntimeError('Could not find a functional BLAS. Run with --with-blas=<lib> to indicate location of BLAS.\n Or --with-c-blas-lapack or --with-f-blas-lapack to have one automatically downloaded and installed\n')
       if not self.foundLapack:
-        raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack=<lib> to indicate location of LAPACK\n')
+        raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack=<lib> to indicate location of LAPACK.\n Or --with-c-blas-lapack or --with-f-blas-lapack to have one automatically downloaded and installed\n')
     return
 
   def unique(self, l):
