@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.21 2001/01/17 22:24:37 bsmith Exp bsmith $*/
+/* $Id: ispai.c,v 1.22 2001/02/12 19:21:54 bsmith Exp bsmith $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -111,7 +111,7 @@ static int PCSetUp_SPAI(PC pc)
   ierr = ConvertMatrixToMat(ispai->M,&ispai->PM);CHKERRQ(ierr);
 
   /* free the SPAI matrices */
-  ierr = MatrixConvertedFree(ispai->B);CHKERRQ(ierr);
+  sp_free_matrix(ispai->B);
   sp_free_matrix(ispai->M);
 
   PetscFunctionReturn(0);
@@ -560,10 +560,10 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
   M->bs = 1;
   M->max_block_size = 1;
 
-  ierr = PetscMalloc(sizeof(int)*size,&M->mnls);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(int)*size,&M->start_indices);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(int)*n,&M->pe);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(int)*n,&M->block_sizes);CHKERRQ(ierr);
+  M->mnls          = malloc(sizeof(int)*size);
+  M->start_indices = malloc(sizeof(int)*size);
+  M->pe            = malloc(sizeof(int)*n);
+  M->block_sizes   = malloc(sizeof(int)*n);
   for (i=0; i<n; i++) M->block_sizes[i] = 1;
 
   ierr = MPI_Allgather(&mnl,1,MPI_INT,M->mnls,1,MPI_INT,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -624,10 +624,10 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
   }
 
   for (i=rstart; i<rend; i++) {
-    row_indx = i-rstart;
-    len      = num_ptr[row_indx];
-    ierr     = PetscMalloc(len*sizeof(int),&rows->ptrs[row_indx]);CHKERRQ(ierr);
-    ierr     = PetscMalloc(len*sizeof(double),&rows->A[row_indx]);CHKERRQ(ierr);
+    row_indx             = i-rstart;
+    len                  = num_ptr[row_indx];
+    rows->ptrs[row_indx] = malloc(len*sizeof(int));
+    rows->A[row_indx]    = malloc(len*sizeof(double));
   }
 
   /* copy the matrix */
@@ -666,7 +666,7 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
     for (i=rstart; i<rend; i++) {
       row_indx = i-rstart;
       len      = num_ptr[row_indx];
-      ierr     = PetscMalloc(len*sizeof(int),&rows->rptrs[row_indx]);CHKERRQ(ierr);
+      rows->rptrs[row_indx]     = malloc(len*sizeof(int));
     }
 
     /* copy the matrix (i.e., the structure) */

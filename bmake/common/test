@@ -1,4 +1,4 @@
-# $Id: common_test,v 1.1 2000/08/16 19:59:40 bsmith Exp bsmith $ 
+# $Id: common_test,v 1.2 2000/08/17 04:28:55 bsmith Exp bsmith $ 
 #
 #
 #
@@ -20,6 +20,7 @@
 #   15 - AMS (Alice Memory Snooper) tests - src/snes/examples/tutuorials
 #   16 - Requires ParMetis
 #   17 - requires PYTHON (uses urlget.py) and popen()
+#   18 - requires SPAI
 #
 testexamples_1: ${TESTEXAMPLES_1} clean
 testexamples_2: ${TESTEXAMPLES_2} clean
@@ -38,6 +39,7 @@ testexamples_14: ${TESTEXAMPLES_14} clean
 testexamples_15: ${TESTEXAMPLES_15} clean
 testexamples_16: ${TESTEXAMPLES_16} clean
 testexamples_17: ${TESTEXAMPLES_17} clean
+testexamples_18: ${TESTEXAMPLES_18} clean
 
 buildexamples_1: 
 	-@${OMAKE} testexamples_1 TESTEXAMPLES_1=`echo ${TESTEXAMPLES_1} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
