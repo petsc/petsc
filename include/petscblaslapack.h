@@ -1,4 +1,4 @@
-/* $Id: petscblaslapack.h,v 1.47 2001/08/07 03:05:29 balay Exp bsmith $ */
+/* $Id: petscblaslapack.h,v 1.48 2001/08/07 14:54:31 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -119,16 +119,16 @@ Cray T3D/T3E.
    Note that this assumes that machines which use cptofcd() use 
   the PETSC_HAVE_FORTRAN_CAPS option. This is true on the Cray T3D/T3E.
 */
-#define LAormqr_(a,b,c,d,e,f,g,h,i,j,k,l,m)  DORMQR(_cptofcd((a),1),_cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
-#define LAtrtrs_(a,b,c,d,e,f,g,h,i,j) DTRTRS(_cptofcd((a),1),_cptofcd((b),1),_cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
-#define LApotrf_(a,b,c,d,e) DPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
-#define LApotrs_(a,b,c,d,e,f,g,h) DPOTRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h))
-#define LAgemv_(a,b,c,d,e,f,g,h,i,j,k) DGEMV(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i),(j),(k))
-#define LAgetrs_(a,b,c,d,e,f,g,h,i) DGETRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i))
-#define LAgetrs_(a,b,c,d,e,f,g,h,i) DGETRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i))
-#define BLgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m) DGEMM(_cptofcd((a),1), _cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
+#define LAormqr_(a,b,c,d,e,f,g,h,i,j,k,l,m)   DORMQR(_cptofcd((a),1),_cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
+#define LAtrtrs_(a,b,c,d,e,f,g,h,i,j)         DTRTRS(_cptofcd((a),1),_cptofcd((b),1),_cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
+#define LApotrf_(a,b,c,d,e)                   DPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
+#define LApotrs_(a,b,c,d,e,f,g,h)             DPOTRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h))
+#define LAgemv_(a,b,c,d,e,f,g,h,i,j,k)        DGEMV(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i),(j),(k))
+#define LAgetrs_(a,b,c,d,e,f,g,h,i)           DGETRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i))
+#define LAgetrs_(a,b,c,d,e,f,g,h,i)           DGETRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i))
+#define BLgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m)    DGEMM(_cptofcd((a),1), _cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
 #define LAgesvd_(a,b,c,d,e,f,g,h,i,j,k,l,m,n) DGESVD(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
-#define LAgeev_(a,b,c,d,e,f,g,h,i,j,k,l,m,n) DGEEV(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
+#define LAgeev_(a,b,c,d,e,f,g,h,i,j,k,l,m,n)  DGEEV(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
 #define LAtrmv_  DTRMV
 #define LAtrsl_  DTRSL
 #define LAgetrf_ DGETRF
@@ -230,14 +230,14 @@ Cray T3D/T3E.
 #endif
 
 #if defined(PETSC_USES_CPTOFCD)
-#define LAtrtrs_(a,b,c,d,e,f,g,h,i,j) ZTRTRS(_cptofcd((a),1),_cptofcd((b),1),_cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
-#define LApotrf_(a,b,c,d,e)       ZPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
-#define LApotrs_(a,b,c,d,e,f,g,h) ZPOTRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h))
-#define LAgemv_(a,b,c,d,e,f,g,h,i,j,k) ZGEMV(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i),(j),(k))
-#define LAgetrs_(a,b,c,d,e,f,g,h,i) ZGETRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i))
-#define BLgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m) ZGEMM(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
+#define LAtrtrs_(a,b,c,d,e,f,g,h,i,j)           ZTRTRS(_cptofcd((a),1),_cptofcd((b),1),_cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
+#define LApotrf_(a,b,c,d,e)                     ZPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
+#define LApotrs_(a,b,c,d,e,f,g,h)               ZPOTRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h))
+#define LAgemv_(a,b,c,d,e,f,g,h,i,j,k)          ZGEMV(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i),(j),(k))
+#define LAgetrs_(a,b,c,d,e,f,g,h,i)             ZGETRS(_cptofcd((a),1),(b),(c),(d),(e),(f),(g),(h),(i))
+#define BLgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m)      ZGEMM(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
 #define LAgesvd_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,p) ZGESVD(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(p))
-#define LAgeev_(a,b,c,d,e,f,g,h,i,j,k,l,m,n) ZGEEV(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
+#define LAgeev_(a,b,c,d,e,f,g,h,i,j,k,l,m,n)    ZGEEV(_cptofcd((a),1),_cptofcd((a),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
 #define LAtrmv_  ZTRMV
 #define LAtrsl_  ZTRSL
 #elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
@@ -285,16 +285,16 @@ EXTERN_C_BEGIN
    BLdot cannot be used with COMPLEX because it cannot 
    handle returing a double complex to C++.
 */
-EXTERN double BLdot_(int*,PetscScalar*,int*,PetscScalar*,int*);
-EXTERN double BLnrm2_(int*,PetscScalar*,int*);
-EXTERN double BLasum_(int*,PetscScalar*,int*);
-EXTERN void   BLscal_(int*,PetscScalar*,PetscScalar*,int*);
-EXTERN void   BLcopy_(int*,PetscScalar*,int*,PetscScalar*,int*);
-EXTERN void   BLswap_(int*,PetscScalar*,int*,PetscScalar*,int*);
-EXTERN void   BLaxpy_(int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*);
-EXTERN void   LAgetrf_(int*,int*,PetscScalar*,int*,int*,int*);
-EXTERN void   LAgetf2_(int*,int*,PetscScalar*,int*,int*,int*);
-EXTERN void   LAgeqrf_(int*,int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,int*);
+EXTERN PetscReal BLdot_(int*,PetscScalar*,int*,PetscScalar*,int*);
+EXTERN PetscReal BLnrm2_(int*,PetscScalar*,int*);
+EXTERN PetscReal BLasum_(int*,PetscScalar*,int*);
+EXTERN void      BLscal_(int*,PetscScalar*,PetscScalar*,int*);
+EXTERN void      BLcopy_(int*,PetscScalar*,int*,PetscScalar*,int*);
+EXTERN void      BLswap_(int*,PetscScalar*,int*,PetscScalar*,int*);
+EXTERN void      BLaxpy_(int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*);
+EXTERN void      LAgetrf_(int*,int*,PetscScalar*,int*,int*,int*);
+EXTERN void      LAgetf2_(int*,int*,PetscScalar*,int*,int*,int*);
+EXTERN void      LAgeqrf_(int*,int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,int*);
 
 #if defined(PETSC_USES_CPTOFCD)
 
@@ -304,8 +304,8 @@ EXTERN void   ZGEMV(_fcd,int*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar *,
 EXTERN void   ZPOTRS(_fcd,int*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
 EXTERN void   ZGETRS(_fcd,int*,int*,PetscScalar*,int*,int*,PetscScalar*,int*,int*);
 EXTERN void   ZGEMM(_fcd,_fcd,int*,int*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*);
-EXTERN void   ZGESVD(_fcd,_fcd,int *,int*,PetscScalar *,int*,double*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,double*,int*);
-EXTERN void   ZGEEV(_fcd,_fcd,int *,PetscScalar *,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,double*,int*);
+EXTERN void   ZGESVD(_fcd,_fcd,int *,int*,PetscScalar *,int*,PetscReal*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,PetscReal*,int*);
+EXTERN void   ZGEEV(_fcd,_fcd,int *,PetscScalar *,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,PetscReal*,int*);
 #else
 EXTERN void   DPOTRF(_fcd,int*,PetscScalar*,int*,int*);
 EXTERN void   DGEMV(_fcd,int*,int*,PetscScalar*,PetscScalar*,int*,PetscScalar *,int*,PetscScalar*,PetscScalar*,int*);
@@ -327,17 +327,17 @@ EXTERN void   BLgemm_(char *,char*,int*,int*,int*,PetscScalar*,PetscScalar*,int*
 
 /* ESSL uses a different calling sequence for dgeev(), zgeev() than LAPACK; */
 #if defined(PETSC_HAVE_ESSL) && defined(PETSC_USE_COMPLEX)
-EXTERN void   LAgeev_(int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,int*,int*,double*,int*);
-EXTERN void   LAgesvd_(char *,char *,int *,int*,PetscScalar *,int*,double*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,double*,int*);
+EXTERN void   LAgeev_(int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,int*,int*,PetscReal*,int*);
+EXTERN void   LAgesvd_(char *,char *,int *,int*,PetscScalar *,int*,PetscReal*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,PetscReal*,int*);
 #elif defined(PETSC_HAVE_ESSL)
-EXTERN void   LAgeev_(int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,int*,int*,double*,int*);
-EXTERN void   LAgesvd_(char *,char *,int *,int*,PetscScalar *,int*,double*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
+EXTERN void   LAgeev_(int*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,int*,int*,PetscReal*,int*);
+EXTERN void   LAgesvd_(char *,char *,int *,int*,PetscScalar *,int*,PetscReal*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
 #elif !defined(PETSC_USE_COMPLEX)
-EXTERN void   LAgeev_(char *,char *,int *,PetscScalar *,int*,double*,double*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
-EXTERN void   LAgesvd_(char *,char *,int *,int*,PetscScalar *,int*,double*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
+EXTERN void   LAgeev_(char *,char *,int *,PetscScalar *,int*,PetscReal*,PetscReal*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
+EXTERN void   LAgesvd_(char *,char *,int *,int*,PetscScalar *,int*,PetscReal*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,int*);
 #else
-EXTERN void   LAgeev_(char *,char *,int *,PetscScalar *,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,double*,int*);
-EXTERN void   LAgesvd_(char *,char *,int *,int*,PetscScalar *,int*,double*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,double*,int*);
+EXTERN void   LAgeev_(char *,char *,int *,PetscScalar *,int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,PetscReal*,int*);
+EXTERN void   LAgesvd_(char *,char *,int *,int*,PetscScalar *,int*,PetscReal*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*,PetscReal*,int*);
 #endif
 #endif
 
