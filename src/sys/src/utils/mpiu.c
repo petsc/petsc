@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.57 1996/09/14 16:20:48 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiu.c,v 1.58 1996/09/17 14:48:57 balay Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -389,7 +389,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
     /* This communicator is not yet known to this system, so we dup it and set its value */
     MPI_Comm_dup( comm_in, comm_out );
     MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );
-    tagvalp = (int *) PetscMalloc( 2*sizeof(int) ); CHKPTRQ(tagvalp);
+    tagvalp    = (int *) PetscMalloc( 2*sizeof(int) ); CHKPTRQ(tagvalp);
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
     MPI_Attr_put(*comm_out,MPIU_Tag_keyval, tagvalp);
@@ -426,6 +426,9 @@ int PetscCommFree_Private(MPI_Comm *comm)
   int ierr,*tagvalp,flag;
 
   ierr = MPI_Attr_get(*comm,MPIU_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
+  if (!flag) {
+    SETERRQ(1,"PetscCommFree_Private: Error freeing PETSc object, problem with corrupted memory");
+  }
   tagvalp[1]--;
   if (!tagvalp[1]) {MPI_Comm_free(comm);}
   return 0;
