@@ -1,15 +1,21 @@
 
 
-
   This is list of recent PETSc changes before they are 
 transported into the docs/changes.html file. (Because it
 is a pain to always check that file out of SourceSafe to 
 add to it).
 
   VEC
+changed int VecSetOperation(Vec,VecOperation,void*);
+to int VecSetOperation(Vec,VecOperation,void(*)());
 
 
   MAT
+
+Changed int MatShellSetOperation(Mat,MatOperation,void*);
+to int MatShellSetOperation(Mat,MatOperation,void(*)());
+Changed int MatShellGetOperation(Mat,MatOperation,void**);
+to int MatShellGetOperation(Mat,MatOperation,void(**)());
 
    
   KSP
