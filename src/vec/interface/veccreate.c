@@ -37,7 +37,6 @@ PetscErrorCode VecCreate(MPI_Comm comm, Vec *vec)
 #endif
 
   PetscHeaderCreate(v, _p_Vec, struct _VecOps, VEC_COOKIE, -1, "Vec", comm, VecDestroy, VecView);
-  PetscLogObjectCreate(v);
   PetscLogObjectMemory(v, sizeof(struct _p_Vec));
   ierr = PetscMemzero(v->ops, sizeof(struct _VecOps));CHKERRQ(ierr);
   v->bops->publish  = PETSC_NULL /* VecPublish_Petsc */;

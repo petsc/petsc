@@ -43,7 +43,6 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm,const char display[],const char tit
   PetscFunctionBegin;
   *indraw = 0;
   PetscHeaderCreate(draw,_p_PetscDraw,struct _PetscDrawOps,PETSC_DRAW_COOKIE,-1,"Draw",comm,PetscDrawDestroy,0);
-  PetscLogObjectCreate(draw);
   draw->data    = 0;
   ierr          = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
   ierr          = PetscStrallocpy(display,&draw->display);CHKERRQ(ierr);

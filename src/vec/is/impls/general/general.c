@@ -29,8 +29,7 @@ PetscErrorCode ISDestroy_General(IS is)
     ierr = PetscFree(is_general->idx);CHKERRQ(ierr);
   }
   ierr = PetscFree(is_general);CHKERRQ(ierr);
-  PetscLogObjectDestroy(is);
-  PetscHeaderDestroy(is);
+  ierr = PetscHeaderDestroy(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -307,7 +306,6 @@ PetscErrorCode ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],IS 
 #endif
 
   PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView); 
-  PetscLogObjectCreate(Nindex);
   ierr           = PetscNew(IS_General,&sub);CHKERRQ(ierr);
   PetscLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(PetscInt)+sizeof(struct _p_IS));
   ierr           = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
@@ -367,7 +365,6 @@ PetscErrorCode ISCreateGeneralWithArray(MPI_Comm comm,PetscInt n,PetscInt idx[],
 #endif
 
   PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView); 
-  PetscLogObjectCreate(Nindex);
   ierr           = PetscNew(IS_General,&sub);CHKERRQ(ierr);
   PetscLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(PetscInt)+sizeof(struct _p_IS));
   sub->idx       = idx;

@@ -393,7 +393,6 @@ PetscErrorCode MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_COOKIE,0,"MatFDColoring",comm,MatFDColoringDestroy,MatFDColoringView);
-  PetscLogObjectCreate(c);
 
   if (mat->ops->fdcoloringcreate) {
     ierr = (*mat->ops->fdcoloringcreate)(mat,iscoloring,c);CHKERRQ(ierr);
@@ -454,8 +453,7 @@ PetscErrorCode MatFDColoringDestroy(MatFDColoring c)
     ierr = VecDestroy(c->w2);CHKERRQ(ierr);
     ierr = VecDestroy(c->w3);CHKERRQ(ierr);
   }
-  PetscLogObjectDestroy(c);
-  PetscHeaderDestroy(c);
+  ierr = PetscHeaderDestroy(c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

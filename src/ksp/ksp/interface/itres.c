@@ -4,7 +4,9 @@
 #undef __FUNCT__  
 #define __FUNCT__ "KSPInitialResidual"
 /*@C
-   KSPInitialResidual - Computes the residual.
+   KSPInitialResidual - Computes the residual. Either b - A*C*x with right
+     preconditioning or C*b - C*A*x with left preconditioning; that later
+     residual is often called the "preconditioned residual".
 
    Collective on KSP
 
@@ -18,8 +20,8 @@
    This routine assumes that an iterative method, designed for
 $     A x = b
    will be used with a preconditioner, C, such that the actual problem is either
-$     AC u = f (right preconditioning) or
-$     CA x = Cf (left preconditioning).
+$     AC u = b (right preconditioning) or
+$     CA x = Cb (left preconditioning).
 
    Level: developer
 
@@ -29,9 +31,9 @@ $     CA x = Cf (left preconditioning).
 @*/
 PetscErrorCode KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
 {
-  PetscScalar   mone = -1.0;
-  MatStructure  pflag;
-  Mat           Amat,Pmat;
+  PetscScalar    mone = -1.0;
+  MatStructure   pflag;
+  Mat            Amat,Pmat;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -24,8 +24,8 @@ PetscErrorCode ISDestroy_Block(IS is)
   PetscFunctionBegin;
   ierr = PetscFree(is_block->idx);CHKERRQ(ierr);
   ierr = PetscFree(is_block);CHKERRQ(ierr);
-  PetscLogObjectDestroy(is);
-  PetscHeaderDestroy(is); PetscFunctionReturn(0);
+  ierr = PetscHeaderDestroy(is);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -267,7 +267,6 @@ PetscErrorCode ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt
 #endif
 
   PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,"IS",comm,ISDestroy,ISView); 
-  PetscLogObjectCreate(Nindex);
   ierr = PetscNew(IS_Block,&sub);CHKERRQ(ierr);
   PetscLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(PetscInt)+sizeof(struct _p_IS));
   ierr   = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);

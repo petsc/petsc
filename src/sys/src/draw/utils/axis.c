@@ -70,7 +70,6 @@ PetscErrorCode PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
     PetscFunctionReturn(0);
   }
   PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_COOKIE,0,"PetscDrawAxis",obj->comm,PetscDrawAxisDestroy,0);
-  PetscLogObjectCreate(ad);
   PetscLogObjectParent(draw,ad);
   ad->xticks    = PetscADefTicks;
   ad->yticks    = PetscADefTicks;
@@ -112,8 +111,7 @@ PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis axis)
   ierr = PetscStrfree(axis->toplabel);CHKERRQ(ierr);
   ierr = PetscStrfree(axis->xlabel);CHKERRQ(ierr);
   ierr = PetscStrfree(axis->ylabel);CHKERRQ(ierr);
-  PetscLogObjectDestroy(axis);
-  PetscHeaderDestroy(axis);
+  ierr = PetscHeaderDestroy(axis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

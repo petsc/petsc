@@ -298,7 +298,6 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   M = tM; N = tN;
 
   PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
-  PetscLogObjectCreate(da);
   da->bops->publish           = DAPublish_Petsc;
   da->ops->createglobalvector = DACreateGlobalVector;
   da->ops->getinterpolation   = DAGetInterpolation;

@@ -1496,8 +1496,7 @@ PetscErrorCode VecDestroy(Vec v)
   if (v->map) {
     ierr = PetscMapDestroy(v->map);CHKERRQ(ierr);
   }
-  PetscLogObjectDestroy(v);
-  PetscHeaderDestroy(v); 
+  ierr = PetscHeaderDestroy(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

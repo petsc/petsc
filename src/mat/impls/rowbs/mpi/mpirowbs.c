@@ -2036,7 +2036,6 @@ PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,Mat
     the original matrix contains the factor information.
   */
   PetscHeaderCreate(newmat,_p_Mat,struct _MatOps,MAT_COOKIE,-1,"Mat",mat->comm,MatDestroy,MatView);
-  PetscLogObjectCreate(newmat);
   PetscLogObjectMemory(newmat,sizeof(struct _p_Mat));
 
   newmat->data         = (void*)mat;
@@ -2099,7 +2098,6 @@ PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactor
     the original matrix contains the factor information.
   */
   PetscHeaderCreate(newmat,_p_Mat,struct _MatOps,MAT_COOKIE,-1,"Mat",mat->comm,MatDestroy,MatView);
-  PetscLogObjectCreate(newmat);
   PetscLogObjectMemory(newmat,sizeof(struct _p_Mat));
 
   newmat->data         = (void*)mat;

@@ -80,8 +80,8 @@ EXTERN PetscErrorCode (*_PetscLogPHD)(PetscObject);
     ((PetscObject)(c))->parentid = ((PetscObject)p)->id;\
   }
 #define PetscLogObjectParents(p,n,d) {int _i; for (_i=0; _i<n; _i++) PetscLogObjectParent(p,(d)[_i]);}
-#define PetscLogObjectCreate(h)      {if (_PetscLogPHC) (*_PetscLogPHC)((PetscObject)h);}
-#define PetscLogObjectDestroy(h)     {if (_PetscLogPHD) (*_PetscLogPHD)((PetscObject)h);}
+#define PetscLogObjectCreate(h)      ((_PetscLogPHC) ? (*_PetscLogPHC)((PetscObject)h) : 0)
+#define PetscLogObjectDestroy(h)     ((_PetscLogPHD) ? (*_PetscLogPHD)((PetscObject)h) : 0)
 #define PetscLogObjectMemory(p,m)    {PetscValidHeader((PetscObject)p,1);((PetscObject)(p))->mem += (m);}
 /* Initialization functions */
 EXTERN PetscErrorCode PetscLogBegin(void);

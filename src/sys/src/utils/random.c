@@ -44,12 +44,11 @@ struct _p_PetscRandom {
 @*/
 PetscErrorCode PetscRandomDestroy(PetscRandom r)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
   if (--r->refct > 0) PetscFunctionReturn(0);
-
-  PetscLogObjectDestroy((PetscObject)r);
-  PetscHeaderDestroy((PetscObject)r);
+  ierr = PetscHeaderDestroy((PetscObject)r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -161,7 +160,6 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom 
     SETERRQ(PETSC_ERR_SUP,"Not for this random number type");
   }
   PetscHeaderCreate(rr,_p_PetscRandom,int,PETSC_RANDOM_COOKIE,type,"random",comm,PetscRandomDestroy,0);
-  PetscLogObjectCreate(rr);
   rr->low   = 0.0;
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;
@@ -249,7 +247,6 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom 
     SETERRQ(PETSC_ERR_SUP,"Not for this random number type");
   }
   PetscHeaderCreate(rr,_p_PetscRandom,int,PETSC_RANDOM_COOKIE,type,"random",comm,PetscRandomDestroy,0);
-  PetscLogObjectCreate(rr);
   rr->low   = 0.0;
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;
@@ -305,7 +302,6 @@ PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom 
   *r = 0;
   if (type != RANDOM_DEFAULT) SETERRQ(PETSC_ERR_SUP,"Not for this random number type");
   PetscHeaderCreate(rr,_p_PetscRandom,int,PETSC_RANDOM_COOKIE,type,"random",comm,PetscRandomDestroy,0);
-  PetscLogObjectCreate(rr);
   *r = rr;
   ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"PetscRandomCreate: Warning: Random number generator not set for machine %s; using fake random numbers.\n",arch);CHKERRQ(ierr);

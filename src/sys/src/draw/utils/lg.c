@@ -173,8 +173,7 @@ PetscErrorCode PetscDrawLGDestroy(PetscDrawLG lg)
   }
   ierr = PetscDrawAxisDestroy(lg->axis);CHKERRQ(ierr);
   ierr = PetscFree(lg->x);CHKERRQ(ierr);
-  PetscLogObjectDestroy(lg);
-  PetscHeaderDestroy(lg);
+  ierr = PetscHeaderDestroy(lg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

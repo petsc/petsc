@@ -952,8 +952,7 @@ PetscErrorCode TSDestroy(TS ts)
       ierr = (*ts->mdestroy[i])(ts->monitorcontext[i]);CHKERRQ(ierr);
     }
   }
-  PetscLogObjectDestroy((PetscObject)ts);
-  PetscHeaderDestroy((PetscObject)ts);
+  ierr = PetscHeaderDestroy((PetscObject)ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

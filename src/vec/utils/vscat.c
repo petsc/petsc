@@ -264,7 +264,7 @@ PetscErrorCode VecScatterDestroy_MPI_ToAll(VecScatter ctx)
   if (scat->work1) {ierr = PetscFree(scat->work1);CHKERRQ(ierr);}
   if (scat->work2) {ierr = PetscFree(scat->work2);CHKERRQ(ierr);}
   ierr = PetscFree2(ctx->todata,scat->count);CHKERRQ(ierr);
-  PetscHeaderDestroy(ctx);
+  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -276,7 +276,7 @@ PetscErrorCode VecScatterDestroy_SGtoSG(VecScatter ctx)
 
   PetscFunctionBegin;
   ierr = PetscFree4(ctx->todata,((VecScatter_Seq_General*)ctx->todata)->slots,ctx->fromdata,((VecScatter_Seq_General*)ctx->fromdata)->slots);CHKERRQ(ierr);
-  PetscHeaderDestroy(ctx);
+  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -288,7 +288,7 @@ PetscErrorCode VecScatterDestroy_SGtoSS(VecScatter ctx)
 
   PetscFunctionBegin;
   ierr = PetscFree3(ctx->todata,ctx->fromdata,((VecScatter_Seq_General*)ctx->fromdata)->slots);CHKERRQ(ierr);
-  PetscHeaderDestroy(ctx);
+  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -300,7 +300,7 @@ PetscErrorCode VecScatterDestroy_SStoSG(VecScatter ctx)
 
   PetscFunctionBegin;
   ierr = PetscFree3(ctx->todata,((VecScatter_Seq_General*)ctx->todata)->slots,ctx->fromdata);CHKERRQ(ierr);
-  PetscHeaderDestroy(ctx);
+  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -312,7 +312,7 @@ PetscErrorCode VecScatterDestroy_SStoSS(VecScatter ctx)
 
   PetscFunctionBegin;
   ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
-  PetscHeaderDestroy(ctx);
+  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

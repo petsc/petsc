@@ -282,7 +282,6 @@ PetscErrorCode KSPCreate(MPI_Comm comm,KSP *inksp)
 #endif
 
   PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_COOKIE,-1,"KSP",comm,KSPDestroy,KSPView);
-  PetscLogObjectCreate(ksp);
   *inksp             = ksp;
   ksp->bops->publish = KSPPublish_Petsc;
 

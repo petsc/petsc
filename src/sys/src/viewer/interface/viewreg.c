@@ -32,7 +32,6 @@ PetscErrorCode PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
   PetscFunctionBegin;
   *inviewer = 0;
   PetscHeaderCreate(viewer,_p_PetscViewer,struct _PetscViewerOps,PETSC_VIEWER_COOKIE,-1,"PetscViewer",comm,PetscViewerDestroy,0);
-  PetscLogObjectCreate(viewer);
   *inviewer           = viewer;
   viewer->data        = 0;
   PetscFunctionReturn(0);

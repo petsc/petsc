@@ -257,7 +257,6 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   da->ops->getmatrix          = DAGetMatrix;
   da->ops->refine             = DARefine;
 
-  PetscLogObjectCreate(da);
   PetscLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 3;
   da->interptype = DA_Q1;

@@ -40,7 +40,6 @@ PetscErrorCode TSCreate(MPI_Comm comm, TS *ts) {
 #endif
 
   PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_COOKIE, -1, "TS", comm, TSDestroy, TSView);
-  PetscLogObjectCreate(t);
   PetscLogObjectMemory(t, sizeof(struct _p_TS));
   ierr = PetscMemzero(t->ops, sizeof(struct _TSOps));CHKERRQ(ierr);
   t->bops->publish    = TSPublish_Petsc;

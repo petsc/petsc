@@ -191,8 +191,7 @@ PetscErrorCode PetscDrawDestroy(PetscDraw draw)
   }
   ierr = PetscStrfree(draw->title);CHKERRQ(ierr);
   ierr = PetscStrfree(draw->display);CHKERRQ(ierr);
-  PetscLogObjectDestroy(draw);
-  PetscHeaderDestroy(draw);
+  ierr = PetscHeaderDestroy(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -181,8 +181,7 @@ PetscErrorCode PetscDrawHGDestroy(PetscDrawHG hist)
   ierr = PetscDrawDestroy(hist->win);CHKERRQ(ierr);
   ierr = PetscFree(hist->bins);CHKERRQ(ierr);
   ierr = PetscFree(hist->values);CHKERRQ(ierr);
-  PetscLogObjectDestroy(hist);
-  PetscHeaderDestroy(hist);
+  ierr = PetscHeaderDestroy(hist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

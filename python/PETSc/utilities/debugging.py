@@ -15,7 +15,7 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-debugging=<yes or no>', nargs.ArgBool(None, 1, 'Specify debugging'))
+    help.addArgument('PETSc', '-with-debugging=<yes or no>', nargs.ArgBool(None, 1, 'Specify debugging version of libraries'))
     return
 
   def configureDebugging(self):

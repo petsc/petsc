@@ -390,7 +390,7 @@ PetscErrorCode MatTranspose_SeqBDiag(Mat A,Mat *matout)
     ierr = PetscFree(a->dvalue);CHKERRQ(ierr);
     ierr = PetscFree(a);CHKERRQ(ierr);
     ierr = PetscMemcpy(A,tmat,sizeof(struct _p_Mat));CHKERRQ(ierr);
-    PetscHeaderDestroy(tmat);
+    ierr = PetscHeaderDestroy(tmat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

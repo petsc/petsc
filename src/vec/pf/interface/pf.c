@@ -78,8 +78,7 @@ PetscErrorCode PFDestroy(PF pf)
   ierr = PetscObjectDepublish(pf);CHKERRQ(ierr);
 
   if (pf->ops->destroy) {ierr =  (*pf->ops->destroy)(pf->data);CHKERRQ(ierr);}
-  PetscLogObjectDestroy(pf);
-  PetscHeaderDestroy(pf);
+  ierr = PetscHeaderDestroy(pf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -139,7 +138,6 @@ PetscErrorCode PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 #endif
 
   PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_COOKIE,-1,"PF",comm,PFDestroy,PFView);
-  PetscLogObjectCreate(newpf);
   newpf->bops->publish    = PFPublish_Petsc;
   newpf->data             = 0;
 

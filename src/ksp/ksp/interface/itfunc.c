@@ -588,8 +588,7 @@ PetscErrorCode KSPDestroy(KSP ksp)
   ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
   if (ksp->nullsp) {ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);}
-  PetscLogObjectDestroy(ksp);
-  PetscHeaderDestroy(ksp);
+  ierr = PetscHeaderDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -91,7 +91,6 @@ PetscErrorCode MatCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt
 #endif
 
   PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);
-  PetscLogObjectCreate(B);
 
   B->m             = m;
   B->n             = n;
@@ -236,7 +235,6 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   A->type_name = mtype;
   A->name      = mname;
 
-  PetscLogObjectDestroy(C);
-  PetscHeaderDestroy(C);
+  ierr = PetscHeaderDestroy(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -224,7 +224,6 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],
 #endif
 
   PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_COOKIE, AO_BASIC, "AO", comm, AODestroy, AOView); 
-  PetscLogObjectCreate(ao);
   ierr = PetscNew(AO_Basic, &aobasic);CHKERRQ(ierr);
   PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Basic));
 

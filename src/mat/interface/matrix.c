@@ -439,8 +439,7 @@ PetscErrorCode MatDestroy(Mat A)
   }
 
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  PetscLogObjectDestroy(A);
-  PetscHeaderDestroy(A);
+  ierr = PetscHeaderDestroy(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

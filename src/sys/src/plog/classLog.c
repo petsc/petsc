@@ -327,6 +327,8 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
     PetscTime(end);
     BaseTime += (end - start);
   }
+
+  numObjects = obj->id;
   /* Record the creation action */
   if (logActions) {
     PetscTime(actions[numActions].time);
@@ -346,19 +348,18 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
     objects[numObjects].obj    = obj;
     ierr = PetscMemzero(objects[numObjects].name, 64 * sizeof(char));CHKERRQ(ierr);
     ierr = PetscMemzero(objects[numObjects].info, 64 * sizeof(char));CHKERRQ(ierr);
-    numObjects++;
-  }
-  obj->id = numObjects;
+
   /* Dynamically enlarge logging structures */
-  if (numObjects >= maxObjects) {
-    PetscTime(start);
-    ierr = PetscMalloc(maxObjects*2 * sizeof(Object), &tmpObjects);CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpObjects, objects, maxObjects * sizeof(Object));CHKERRQ(ierr);
-    ierr = PetscFree(objects);CHKERRQ(ierr);
-    objects     = tmpObjects;
-    maxObjects *= 2;
-    PetscTime(end);
-    BaseTime += (end - start);
+    if (numObjects >= maxObjects) {
+      PetscTime(start);
+      ierr = PetscMalloc(maxObjects*2 * sizeof(Object), &tmpObjects);CHKERRQ(ierr);
+      ierr = PetscMemcpy(tmpObjects, objects, maxObjects * sizeof(Object));CHKERRQ(ierr);
+      ierr = PetscFree(objects);CHKERRQ(ierr);
+      objects     = tmpObjects;
+      maxObjects *= 2;
+      PetscTime(end);
+      BaseTime += (end - start);
+    }
   }
   PetscFunctionReturn(0);
 }

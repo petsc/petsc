@@ -99,7 +99,6 @@ PetscErrorCode DADestroy(DA da)
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(da);CHKERRQ(ierr);
 
-  PetscLogObjectDestroy(da);
   if (da->ltog)   {ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);}
   if (da->gtol)   {ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);}
   if (da->ltol)   {ierr = VecScatterDestroy(da->ltol);CHKERRQ(ierr);}
@@ -140,7 +139,7 @@ PetscErrorCode DADestroy(DA da)
   if (da->ofill) {ierr = PetscFree(da->ofill);CHKERRQ(ierr);}
   if (da->e) {ierr = PetscFree(da->e);CHKERRQ(ierr);}
 
-  PetscHeaderDestroy(da);
+  ierr = PetscHeaderDestroy(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
