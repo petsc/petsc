@@ -43,7 +43,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   AppCtx         user;                      
-  PetscInt       Nx=PETSC_DECIDE,Ny=PETSC_DECIDE,Nz=PETSC_DECIDE;
+  PetscInt       Npx=PETSC_DECIDE,Npy=PETSC_DECIDE,Npz=PETSC_DECIDE;
   PetscMPIInt    size,rank;
   PetscInt       m,n,M,N,i,nrows,*ia,*ja; 
   PetscScalar    one = 1.0;
@@ -72,17 +72,17 @@ int main(int argc,char **argv)
   user.fine.mz = user.ratio*(user.coarse.mz-1)+1;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Npx",&Nx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Npy",&Ny,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-Npz",&Nz,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Npx",&Npx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Npy",&Npy,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Npz",&Npz,PETSC_NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
   if (!Test_3D){
     ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.fine.mx,
-                    user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+                    user.fine.my,Npx,Npy,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
   } else {
     ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,
-                    user.fine.mx,user.fine.my,user.fine.mz,Nx,Ny,Nz,
+                    user.fine.mx,user.fine.my,user.fine.mz,Npx,Npy,Npz,
                     1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
   }
 
@@ -112,10 +112,10 @@ int main(int argc,char **argv)
   /* Set up distributed array for coarse grid */
   if (!Test_3D){
     ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.coarse.mx,
-                    user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+                    user.coarse.my,Npx,Npy,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
   } else {
     ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,
-                    user.coarse.mx,user.coarse.my,user.coarse.mz,Nx,Ny,Nz,
+                    user.coarse.mx,user.coarse.my,user.coarse.mz,Npx,Npy,Npz,
                     1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
   }
 

@@ -1105,6 +1105,7 @@ PetscErrorCode MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pet
   } else {
     ierr = (*mat->ops->setvalueslocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
   }
+  mat->same_nonzero = PETSC_FALSE;
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

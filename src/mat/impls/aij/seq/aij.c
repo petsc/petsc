@@ -648,10 +648,9 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   }
 
   /* check for zero rows. If found a large number of zero rows, use CompressedRow functions */
-  if (!a->inode.use && a->compressedrow.use && !A->same_nonzero){
+  if (!a->inode.use && a->compressedrow.use){
     ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,ratio);CHKERRQ(ierr); 
   } 
-
   A->same_nonzero = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -975,7 +974,7 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   PetscTruth     usecprow=a->compressedrow.use;
 #endif
 
-  PetscFunctionBegin;
+  PetscFunctionBegin; 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {

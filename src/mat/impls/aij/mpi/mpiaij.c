@@ -372,7 +372,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     }
     ierr = MatStashScatterEnd_Private(&mat->stash);CHKERRQ(ierr);
   }
-
+  a->compressedrow.use     = PETSC_FALSE;
   ierr = MatAssemblyBegin(aij->A,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->A,mode);CHKERRQ(ierr);
 
