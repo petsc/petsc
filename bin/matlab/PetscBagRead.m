@@ -26,8 +26,11 @@ for lcv = 1:count
     val = fread(fd,1,'double');
   elseif dtype == 6 % char
     val = deblank(char(fread(fd,msize,'uchar')'));
-  elseif dtype == 7 % boolean
-    val = fread(fd,1,'bit1');
+  elseif dtype == 9 % truth
+    val = fread(fd,1,'int32');
+% PETSC_LOGICAL is a bit boolean and not currently handled
+%  elseif dtype == 7 % boolean
+%    val = fread(fd,1,'bit1');
   elseif dtype == 8 % Enum
     val   = fread(fd,1,'int32');
     n     = fread(fd,1,'int32');

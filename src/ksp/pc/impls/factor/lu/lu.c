@@ -158,7 +158,7 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
     ierr = PetscOptionsReal("-pc_lu_pivoting","Pivoting tolerance (used only for some factorization)","PCLUSetPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
 
     flg = lu->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
-    ierr = PetscOptionsLogical("-pc_lu_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCLUSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-pc_lu_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCLUSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
     if (set) {
       ierr = PCLUSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
     }

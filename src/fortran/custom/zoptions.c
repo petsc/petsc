@@ -28,7 +28,7 @@ M*/
 extern PetscTruth PetscBeganMPI;
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define petscoptionsgetlogical_            PETSCOPTIONSGETLOGICAL
+#define petscoptionsgettruth_            PETSCOPTIONSGETTRUTH
 #define petscgetarchtype_                  PETSCGETARCHTYPE
 #define petscoptionsgetintarray_           PETSCOPTIONSGETINTARRAY
 #define petscoptionssetvalue_              PETSCOPTIONSSETVALUE
@@ -41,7 +41,7 @@ extern PetscTruth PetscBeganMPI;
 #define petscgetprogramname                PETSCGETPROGRAMNAME
 #define petscoptionsinsertfile_            PETSCOPTIONSINSERTFILE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscoptionsgetlogical_            petscoptionsgetlogical
+#define petscoptionsgettruth_            petscoptionsgettruth
 #define petscgetarchtype_                  petscgetarchtype
 #define petscoptionssetvalue_              petscoptionssetvalue
 #define petscoptionsclearvalue_            petscoptionsclearvalue
@@ -113,14 +113,14 @@ void PETSC_STDCALL petscoptionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name 
   FREECHAR(name,c2);
 }
 
-void PETSC_STDCALL petscoptionsgetlogical_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+void PETSC_STDCALL petscoptionsgettruth_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
                     PetscTruth *ivalue,PetscTruth *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetLogical(c1,c2,ivalue,flg);
+  *ierr = PetscOptionsGetTruth(c1,c2,ivalue,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }

@@ -608,7 +608,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->numbermonitors    = 0;
   snes->data              = 0;
   snes->view              = 0;
-  snes->setupcalled       = 0;
+  snes->setupcalled       = PETSC_FALSE;
   snes->ksp_ewconv        = PETSC_FALSE;
   snes->vwork             = 0;
   snes->nwork             = 0;
@@ -1001,6 +1001,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  if (snes->setupcalled) PetscFunctionReturn(0);
 
   ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_operator",&flg);CHKERRQ(ierr); 
   /*
@@ -1071,7 +1072,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   }
 
   if (snes->setup) {ierr = (*snes->setup)(snes);CHKERRQ(ierr);}
-  snes->setupcalled = 1;
+  snes->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1761,8 +1762,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES snes,SNESType type)
   if (match) PetscFunctionReturn(0);
 
   if (snes->setupcalled) {
-    ierr       = (*(snes)->destroy)(snes);CHKERRQ(ierr);
-    snes->data = 0;
+    snes->setupcalled = PETSC_FALSE;
+    ierr              = (*(snes)->destroy)(snes);CHKERRQ(ierr);
+    snes->data        = 0;
   }
 
   /* Get the function pointers for the iterative method requested */

@@ -56,7 +56,7 @@ struct _p_SNES {
   /* --- Routines and data that are unique to each particular solver --- */
 
   PetscErrorCode (*setup)(SNES);             /* routine to set up the nonlinear solver */
-  PetscInt       setupcalled;                /* true if setup has been called */
+  PetscTruth     setupcalled;                /* true if setup has been called */
   PetscErrorCode (*solve)(SNES);             /* actual nonlinear solver */
   PetscErrorCode (*setfromoptions)(SNES);    /* sets options from database */
   PetscErrorCode (*printhelp)(SNES,char*);   /* prints help info */

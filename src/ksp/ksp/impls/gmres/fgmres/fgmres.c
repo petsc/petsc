@@ -681,9 +681,9 @@ PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp)
   PetscFunctionBegin;
   ierr = KSPSetFromOptions_GMRES(ksp);CHKERRQ(ierr);
   ierr = PetscOptionsHead("KSP flexible GMRES Options");CHKERRQ(ierr);
-    ierr = PetscOptionsLogicalGroupBegin("-ksp_fgmres_modifypcnochange","do not vary the preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsTruthGroupBegin("-ksp_fgmres_modifypcnochange","do not vary the preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCNoChange,0,0);CHKERRQ(ierr);} 
-    ierr = PetscOptionsLogicalGroupEnd("-ksp_fgmres_modifypcksp","vary the KSP based preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsTruthGroupEnd("-ksp_fgmres_modifypcksp","vary the KSP based preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCKSP,0,0);CHKERRQ(ierr);} 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

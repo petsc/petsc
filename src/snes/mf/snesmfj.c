@@ -225,11 +225,12 @@ PetscErrorCode MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
 */
 PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
 {
-  MatSNESMFCtx    ctx = (MatSNESMFCtx)mat->data;
-  SNES            snes;
-  PetscScalar     h,mone = -1.0;
-  Vec             w,U,F;
+  MatSNESMFCtx   ctx = (MatSNESMFCtx)mat->data;
+  SNES           snes;
+  PetscScalar    h,mone = -1.0;
+  Vec            w,U,F;
   PetscErrorCode ierr,(*eval_fct)(SNES,Vec,Vec)=0;
+  PetscTruth     zeroa;
 
   PetscFunctionBegin;
   /* We log matrix-free matrix-vector products separately, so that we can
@@ -249,7 +250,12 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     ierr = MatSNESMFSetType(mat,MATSNESMF_WP);CHKERRQ(ierr);
     ierr = MatSNESMFSetFromOptions(mat);CHKERRQ(ierr);
   }
-  ierr = (*ctx->ops->compute)(ctx,U,a,&h);CHKERRQ(ierr);
+  ierr = (*ctx->ops->compute)(ctx,U,a,&h,&zeroa);CHKERRQ(ierr);
+  if (zeroa) {
+    PetscScalar zero = 0.0;
+    ierr = VecSet(y,zero);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   if (ctx->checkh) {
     ierr = (*ctx->checkh)(U,a,&h,ctx->checkhctx);CHKERRQ(ierr);

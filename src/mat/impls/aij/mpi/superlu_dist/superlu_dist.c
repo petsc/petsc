@@ -451,7 +451,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
     ierr = PetscOptionsInt("-mat_superlu_dist_matinput","Matrix input mode (0: GLOBAL; 1: DISTRIBUTED)","None",lu->MatInputMode,&lu->MatInputMode,PETSC_NULL);CHKERRQ(ierr);
     if(lu->MatInputMode == DISTRIBUTED && size == 1) lu->MatInputMode = GLOBAL;
 
-    ierr = PetscOptionsLogical("-mat_superlu_dist_equil","Equilibrate matrix","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr); 
+    ierr = PetscOptionsTruth("-mat_superlu_dist_equil","Equilibrate matrix","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr); 
     if (!flg) {
       options.Equil = NO;
     }
@@ -486,13 +486,13 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
       }
     }
 
-    ierr = PetscOptionsLogical("-mat_superlu_dist_replacetinypivot","Replace tiny pivots","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr); 
+    ierr = PetscOptionsTruth("-mat_superlu_dist_replacetinypivot","Replace tiny pivots","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr); 
     if (!flg) {
       options.ReplaceTinyPivot = NO;
     }
 
     options.IterRefine = NOREFINE;
-    ierr = PetscOptionsLogical("-mat_superlu_dist_iterrefine","Use iterative refinement","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_dist_iterrefine","Use iterative refinement","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
     if (flg) {
       options.IterRefine = DOUBLE;    
     }
@@ -502,7 +502,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
     } else {
       lu->StatPrint = (PetscInt)PETSC_FALSE; 
     }
-    ierr = PetscOptionsLogical("-mat_superlu_dist_statprint","Print factorization information","None",
+    ierr = PetscOptionsTruth("-mat_superlu_dist_statprint","Print factorization information","None",
                               (PetscTruth)lu->StatPrint,(PetscTruth*)&lu->StatPrint,0);CHKERRQ(ierr); 
   PetscOptionsEnd();
 

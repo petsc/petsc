@@ -477,7 +477,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
       Determine how many elements are assigned to each processor 
   */
   ierr = PetscMalloc(size*sizeof(PetscInt),&counts);CHKERRQ(ierr);
-  ierr   = ISPartitioningCount(gdata->isnewproc,counts);CHKERRQ(ierr);
+  ierr = ISPartitioningCount(gdata->isnewproc,counts);CHKERRQ(ierr);
 
   /* 
      Create a vector to contain the newly ordered element information 
@@ -500,7 +500,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
   /* 
       There are three data items per cell (element), the integer vertex numbers of its three 
     coordinates (we convert to double to use the scatter) (one can think 
-    of the vectors of having a block size of 3 and there is one index in idx[] for each block)
+    of the vectors of having a block size of 3, then there is one index in idx[] for each element)
   */
   ierr = ISGetIndices(isnum,&idx);CHKERRQ(ierr);
   for (i=0; i<gdata->mlocal_ele; i++) {
@@ -511,7 +511,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
   ierr = ISDestroy(isnum);CHKERRQ(ierr);
 
   /* 
-     Create a vector to contain the old ordered element information
+     Create a vector to contain the original vertex information for each element 
   */
   ierr = VecCreateSeq(PETSC_COMM_SELF,3*gdata->mlocal_ele,&veleold);CHKERRQ(ierr);
   ierr = VecGetArray(veleold,&array);CHKERRQ(ierr);
@@ -521,7 +521,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
   ierr = VecRestoreArray(veleold,&array);CHKERRQ(ierr);
   
   /* 
-     Scatter the element vertex information to the correct processor
+     Scatter the element vertex information (still in the original vertex ordering) to the correct processor
   */
   ierr = VecScatterCreate(veleold,PETSC_NULL,vele,isscat,&vecscat);CHKERRQ(ierr);
   ierr = ISDestroy(isscat);CHKERRQ(ierr);
@@ -692,7 +692,6 @@ PetscErrorCode DataMoveVertices(GridData *gdata)
   PetscScalar    *avert;
 
   PetscFunctionBegin;
-
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* ---------------------------------------------------------------------
@@ -759,8 +758,8 @@ PetscErrorCode DataMoveVertices(GridData *gdata)
   ierr = VecDestroy(vert);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Vertex coordinates in new numbering\n");CHKERRQ(ierr);
-  for (i=0; i<2*gdata->mlocal_vert; i++) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%g\n",gdata->vert[i]);CHKERRQ(ierr);
+  for (i=0; i<gdata->mlocal_vert; i++) {
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"(%g,%g)\n",gdata->vert[2*i],gdata->vert[2*i+1]);CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 

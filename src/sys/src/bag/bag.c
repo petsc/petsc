@@ -324,8 +324,29 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag* bag,void *addr,PetscScalar mdefa
 PetscErrorCode PetscBagRegisterTruth(PetscBag* bag,void *addr,PetscTruth mdefault, const char* name, const char* help)
 {
   PetscErrorCode ierr;
+  PetscBagItem   item;
+  char           nname[PETSC_BAG_NAME_LENGTH+1];
+  PetscTruth     printhelp;
+
   PetscFunctionBegin;
-  ierr = PetscBagRegisterEnum(bag,addr,PetscTruths,mdefault,name,help);CHKERRQ(ierr);
+  if (!PetscBagInLoad) {
+    nname[0] = '-';
+    nname[1] = 0;
+    ierr     = PetscStrncat(nname,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
+    ierr     = PetscOptionsHasName(PETSC_NULL,"-help",&printhelp);CHKERRQ(ierr);
+    if (printhelp) {
+      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  %s <%s>: %s \n",nname,PetscTruths[mdefault],help);CHKERRQ(ierr);
+    }
+    ierr     = PetscOptionsGetTruth(PETSC_NULL,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
+  }
+
+  ierr = PetscNew(struct _p_PetscBagItem,&item);CHKERRQ(ierr);
+  item->dtype  = PETSC_TRUTH;
+  item->offset = ((char*)addr) - ((char*)bag);
+  item->next   = 0;
+  item->msize  = 1;
+  *(PetscInt*)addr = mdefault;
+  ierr = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -386,7 +407,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag *bag)
   char           name[PETSC_BAG_NAME_LENGTH+1],helpname[PETSC_BAG_NAME_LENGTH+PETSC_BAG_HELP_LENGTH+3];
   
   PetscFunctionBegin;
-
   ierr = PetscStrcpy(helpname,bag->bagname);CHKERRQ(ierr);
   ierr = PetscStrcat(helpname," ");CHKERRQ(ierr);
   ierr = PetscStrcat(helpname,bag->baghelp);CHKERRQ(ierr);
@@ -412,9 +432,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag *bag)
         PetscInt  i = 0;
         while (nitem->list[i++]);
         ierr = PetscOptionsEnum(name,nitem->help,nitem->list[i-3],nitem->list,*value,value,PETSC_NULL);CHKERRQ(ierr);
-      } else if (nitem->dtype == PETSC_LOGICAL) {
+      } else if (nitem->dtype == PETSC_TRUTH) {
         PetscTruth *value = (PetscTruth*)(((char*)bag) + nitem->offset);
-        ierr = PetscOptionsLogical(name,nitem->help,"",*value,value,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsTruth(name,nitem->help,"",*value,value,PETSC_NULL);CHKERRQ(ierr);
       }
       nitem = nitem->next;
     }
@@ -468,6 +488,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag *bag,PetscViewer view)
       } else if (nitem->dtype == PETSC_INT) {
         PetscInt value = *(PetscInt*)(((char*)bag) + nitem->offset);
         ierr = PetscViewerASCIIPrintf(view,"  %s = %D; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
+      } else if (nitem->dtype == PETSC_TRUTH) {
+        PetscTruth value = *(PetscTruth*)(((char*)bag) + nitem->offset);
+        ierr = PetscViewerASCIIPrintf(view,"  %s = %s; %s\n",nitem->name,PetscTruths[value],nitem->help);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_ENUM) {
         PetscEnum value = *(PetscEnum*)(((char*)bag) + nitem->offset);
         PetscInt  i = 0;
@@ -568,6 +591,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag **bag)
       PetscInt mdefault;
       ierr = PetscViewerBinaryRead(view,&mdefault,1,PETSC_INT);CHKERRQ(ierr);
       ierr = PetscBagRegisterInt(*bag,((char*)(*bag))+offsetdtype[0],mdefault,name,help);CHKERRQ(ierr);
+    } else if (offsetdtype[1] == (PetscInt) PETSC_TRUTH) {
+      PetscTruth mdefault;
+      ierr = PetscViewerBinaryRead(view,&mdefault,1,PETSC_TRUTH);CHKERRQ(ierr);
+      ierr = PetscBagRegisterTruth(*bag,((char*)(*bag))+offsetdtype[0],mdefault,name,help);CHKERRQ(ierr);
     } else if (offsetdtype[1] == (PetscInt) PETSC_ENUM) {
       PetscEnum mdefault;
       ierr = PetscViewerBinaryRead(view,&mdefault,1,PETSC_ENUM);CHKERRQ(ierr);

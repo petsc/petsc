@@ -301,7 +301,7 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Jacobi options");CHKERRQ(ierr);
-    ierr = PetscOptionsLogical("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
+    ierr = PetscOptionsTruth("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
                           &jac->userowmax,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

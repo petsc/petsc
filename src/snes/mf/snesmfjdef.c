@@ -63,7 +63,7 @@ typedef struct {
 .  h - the scale computed
 
 */
-static PetscErrorCode MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
+static PetscErrorCode MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h,PetscTruth *zeroa)
 {
   MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
   PetscReal        nrm,sum,umin = hctx->umin;
@@ -84,15 +84,20 @@ static PetscErrorCode MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Pets
     ierr = VecNormEnd(a,NORM_1,&sum);CHKERRQ(ierr);
     ierr = VecNormEnd(a,NORM_2,&nrm);CHKERRQ(ierr);
 
+    if (nrm == 0.0) {
+      *zeroa = PETSC_TRUE;
+      PetscFunctionReturn(0);
+    }
+    *zeroa = PETSC_FALSE;
+
     /* 
       Safeguard for step sizes that are "too small"
     */
-    if (!sum) {dot = 1.0; nrm = 1.0;}
 #if defined(PETSC_USE_COMPLEX)
-    else if (PetscAbsScalar(dot) < umin*sum && PetscRealPart(dot) >= 0.0) dot = umin*sum;
+    if (PetscAbsScalar(dot) < umin*sum && PetscRealPart(dot) >= 0.0) dot = umin*sum;
     else if (PetscAbsScalar(dot) < 0.0 && PetscRealPart(dot) > -umin*sum) dot = -umin*sum;
 #else
-    else if (dot < umin*sum && dot >= 0.0) dot = umin*sum;
+    if (dot < umin*sum && dot >= 0.0) dot = umin*sum;
     else if (dot < 0.0 && dot > -umin*sum) dot = -umin*sum;
 #endif
     *h = ctx->error_rel*dot/(nrm*nrm);

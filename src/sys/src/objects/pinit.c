@@ -31,7 +31,7 @@ MPI_Comm PETSC_COMM_WORLD = 0;
 const char *PetscTruths[]    = {"FALSE","TRUE","PetscTruth","PETSC_",0};
 const char *PetscDataTypes[] = {"INT", "DOUBLE", "COMPLEX",
                                 "LONG","SHORT",  "FLOAT",
-                                "CHAR","LOGICAL","ENUM","PetscDataType","PETSC_",0};
+                                "CHAR","LOGICAL","ENUM","TRUTH","PetscDataType","PETSC_",0};
 
 /*
        Checks the options database for initializations related to the 
@@ -623,7 +623,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr)
   ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stderr",&flg1);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetLogical(PETSC_NULL,"-options_left",&flg2,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-options_left",&flg2,&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
   if (flg2) {
     ierr = PetscOptionsPrint(stdout);CHKERRQ(ierr);

@@ -335,13 +335,13 @@ PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part)
     if (flag)
         ierr = MatPartitioningPartySetCoarseLevel(part, r);CHKERRQ(ierr);
 
-    ierr = PetscOptionsLogical("-mat_partitioning_party_match_optimization",
+    ierr = PetscOptionsTruth("-mat_partitioning_party_match_optimization",
         "Matching optimization on/off (boolean)",
         "MatPartitioningPartySetMatchOptimization", PETSC_TRUE, &b, &flag);CHKERRQ(ierr);
     if (flag)
         ierr = MatPartitioningPartySetMatchOptimization(part, b);CHKERRQ(ierr);
 
-    ierr = PetscOptionsLogical("-mat_partitioning_party_bipart",
+    ierr = PetscOptionsTruth("-mat_partitioning_party_bipart",
         "Bipartitioning option on/off (boolean)",
         "MatPartitioningPartySetBipart", PETSC_TRUE, &b, &flag);CHKERRQ(ierr);
     if (flag)

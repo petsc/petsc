@@ -664,7 +664,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
       ierr = PCILUSetMatOrdering(pc,tname);CHKERRQ(ierr);
     }
     flg = ilu->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
-    ierr = PetscOptionsLogical("-pc_ilu_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCILUSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-pc_ilu_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCILUSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
     if (set) {
       ierr = PCILUSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
     }
