@@ -295,7 +295,7 @@ runex10_6:
 	   ${RM} -f ex10_6.tmp
 BS = 2 3 4 5 6 7 8
 runex10_7:
-	-@echo > ex10_7.tmp
+	-@touch ex10_7.tmp
 	-@for bs in ${BS}; do \
 	 ${MPIRUN} -np 1 ex10 -f0 ${DATAFILESPATH}/matrices/medium -load_ignore_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_irorthog -ksp_rtol \
@@ -320,7 +320,7 @@ runex10_8:
 	   else echo "Possible problem with ex10_8, diffs above"; fi; \
 	   ${RM} -f ex10_8.tmp
 runex10_9:
-	-@echo > ex10_9.tmp
+	-@touch ex10_9.tmp
 	-@for type in gmres bicg bcgs tcqmr tfqmr; do \
           for bs in 1 2 3 4 5 6 7; do \
           for np in 1 2 3; do \
