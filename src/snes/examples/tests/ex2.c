@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.50 1996/08/27 02:03:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.51 1996/08/27 02:48:13 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
@@ -7,8 +7,8 @@ static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
 /*T
    Concepts: SNES; solving nonlinear equations
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); SNESGetSLES();
-   Routines: SNESSolve(); SNESSetFromOptions(); SNESGetSolution();
-   Routines: SLESGetPC(); SLESGetKSP();
+   Routines: SNESSolve(); SNESSetFromOptions(); 
+   Routines: SLESGetPC(); SLESGetKSP(); KSPSetTolerances(); PCSetType();
    Processors: 1
 T*/
 
@@ -28,7 +28,7 @@ T*/
    User-defined routines
 */
 int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-int FormFunction(SNES,Vec,Vec,void*), Monitor(SNES,int,double,void*);
+int FormFunction(SNES,Vec,Vec,void*);
 
 int main( int argc, char **argv )
 {
@@ -44,10 +44,10 @@ int main( int argc, char **argv )
   PetscInitialize( &argc, &argv,(char *)0,help );
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create nonlinear solver contest
+     Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix and vector data structures; set corresponding routines
@@ -73,11 +73,6 @@ int main( int argc, char **argv )
      Set Jacobian matrix data structure and Jacobian evaluation routine
   */
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,0); CHKERRA(ierr);
-
-  /*
-     Set user-defined monitoring routine (optional)
-  */
-  ierr = SNESSetMonitor(snes,Monitor,PETSC_NULL); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -208,40 +203,6 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
-  return 0;
-}
-/* ------------------------------------------------------------------- */
-/*
-   Monitor - User-defined monitoring routine, set by calling
-   SNESSetMonitor() in the main program.
-
-   Input Parameters:
-.  snes - the SNES context
-.  its - iteration number
-.  fnorm - 2-norm function value (may be estimated)
-.  mctx - optional monitoring context (not used here)
-*/
-int Monitor(SNES snes,int its,double fnorm,void *dummy)
-{
-  int      ierr;
-  Vec      x;
-  MPI_Comm comm;
-
-  PetscObjectGetComm((PetscObject)snes,&comm);
-  if (fnorm > 1.e-9 || fnorm == 0.0) {
-    PetscPrintf(comm, "iter = %d, SNES Function norm %g \n",its,fnorm);
-  }
-  else if (fnorm > 1.e-11){
-    PetscPrintf(comm, "iter = %d, SNES Function norm %5.3e \n",its,fnorm);
-  }
-  else {
-    PetscPrintf(comm, "iter = %d, SNES Function norm < 1.e-11\n",its);
-  }
-  /* 
-     View the current iterate
-  */
-  ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
-  ierr = VecView(x,VIEWER_STDOUT_SELF); CHKERRQ(ierr);
   return 0;
 }
 
