@@ -12,7 +12,6 @@ EXTERN_C_BEGIN
 #include "dscmain.h"
 EXTERN_C_END
 
-#define MAX_MEM_ALLOWED  100
 typedef struct {
   DSC_Solver	My_DSC_Solver;  
   int           num_local_strucs, *local_struc_old_num,
@@ -21,7 +20,7 @@ typedef struct {
                 *global_struc_new_num, *global_struc_owner,  
                 dsc_id,bs,*local_cols_old_num,*replication; 
   int           order_code,scheme_code,factor_type, stat, 
-                LBLASLevel, DBLASLevel;             
+                LBLASLevel,DBLASLevel,max_mem_allowed;             
   MatStructure  flg;
   IS            my_cols,iden,iden_dsc;
   Vec           vec_dsc;
@@ -284,10 +283,10 @@ int MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
       }
 
       ierr = DSC_SFactor(lu->My_DSC_Solver,&max_mem_estimate,&max_single_malloc_blk,
-                     MAX_MEM_ALLOWED, lu->LBLASLevel, lu->DBLASLevel);
+                     lu->max_mem_allowed, lu->LBLASLevel, lu->DBLASLevel);
       if (ierr !=  DSC_NO_ERROR) {
         DSC_ErrorDisplay(lu->My_DSC_Solver);
-        SETERRQ(1,"Error when use DSC_Order");
+        SETERRQ(1,"Error when use DSC_Order"); 
       }
 
       ierr = BAIJtoMyANonz(a_seq->i, a_seq->j, lu->bs, a_seq->a,
@@ -426,23 +425,24 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,PetscReal f,Mat *F)
   lu->scheme_code = 1;
   lu->factor_type = 1;
   lu->stat        = 0; /* do not display stats */
-  lu->LBLASLevel = DSC_LBLAS3;
-  lu->DBLASLevel = DSC_DBLAS2;
+  lu->LBLASLevel  = DSC_LBLAS3;
+  lu->DBLASLevel  = DSC_DBLAS2;
+  lu->max_mem_allowed = 256;
 
   /* Get the runtime input options */
   ierr = PetscOptionsBegin(A->comm,A->prefix,"DSCPACK Options","Mat");CHKERRQ(ierr); 
 
-  ierr = PetscOptionsInt("-mat_baij_dscpack_order","order_code: \n\
+  ierr = PetscOptionsInt("-mat_dscpack_order","order_code: \n\
          1 = ND, 2 = Hybrid with Minimum Degree, 3 = Hybrid with Minimum Deficiency", \
          "None",
          lu->order_code,&lu->order_code,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsInt("-mat_baij_dscpack_scheme","scheme_code: \n\
+  ierr = PetscOptionsInt("-mat_dscpack_scheme","scheme_code: \n\
          1 = standard factorization,  2 = factorization + selective inversion", \
          "None",
          lu->scheme_code,&lu->scheme_code,PETSC_NULL);CHKERRQ(ierr);
   
-  ierr = PetscOptionsEList("-mat_baij_dscpack_factor","factor_type","None",
+  ierr = PetscOptionsEList("-mat_dscpack_factor","factor_type","None",
              ftype,2,ftype[0],buff,32,&flg);CHKERRQ(ierr);
   while (flg) {
     ierr = PetscStrcmp(buff,"LLT",&flg);CHKERRQ(ierr);
@@ -457,11 +457,14 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,PetscReal f,Mat *F)
     }
     SETERRQ1(1,"Unknown factor type %s",buff);
   }
+  ierr = PetscOptionsInt("-mat_dscpack_MaxMemAllowed","", \
+         "None",
+         lu->max_mem_allowed,&lu->max_mem_allowed,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsInt("-mat_baij_dscpack_stats","display stats: 0 = no display,  1 = display",
+  ierr = PetscOptionsInt("-mat_dscpack_stats","display stats: 0 = no display,  1 = display",
          "None", lu->stat,&lu->stat,PETSC_NULL);CHKERRQ(ierr);
   
-  ierr = PetscOptionsEList("-mat_baij_dscpack_LBLAS","BLAS level used in the local phase","None",
+  ierr = PetscOptionsEList("-mat_dscpack_LBLAS","BLAS level used in the local phase","None",
              ltype,3,ltype[2],buff,32,&flg);CHKERRQ(ierr);
   while (flg) {
     ierr = PetscStrcmp(buff,"LBLAS1",&flg);CHKERRQ(ierr);
@@ -482,7 +485,7 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,PetscReal f,Mat *F)
     SETERRQ1(1,"Unknown local phase BLAS level %s",buff);
   }
 
-  ierr = PetscOptionsEList("-mat_baij_dscpack_DBLAS","BLAS level used in the distributed phase","None",
+  ierr = PetscOptionsEList("-mat_dscpack_DBLAS","BLAS level used in the distributed phase","None",
              dtype,2,dtype[1],buff,32,&flg);CHKERRQ(ierr);
   while (flg) {
     ierr = PetscStrcmp(buff,"DBLAS1",&flg);CHKERRQ(ierr);
