@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.79 2001/03/13 04:55:46 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.80 2001/03/13 04:58:12 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -388,7 +388,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   Scalar         *xx,d,A[3];
-  int            i,j[3],ierr,M,N,xs,xm;
+  int            i,j[3],ierr,M,xs,xm;
   DA             da = user->da;
 
   PetscFunctionBegin;
@@ -401,7 +401,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   /*
     Get range of locally owned matrix
   */
-  ierr = MatGetSize(*jac,&M,&N);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,PETSC_NULL,&M,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+                   PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Determine starting and ending local indices for interior grid points.
