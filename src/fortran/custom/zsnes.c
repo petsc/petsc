@@ -5,55 +5,55 @@
 #include "petscda.h"
 
 #ifdef PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE
-#define snesconverged_eq_tr_         snesconverged_eq_tr__
-#define snesconverged_eq_ls_         snesconverged_eq_ls__
-#define snesconverged_um_tr_         snesconverged_um_tr__
-#define snesconverged_um_ls_         snesconverged_um_ls__
+#define snesconverged_eq_tr_             snesconverged_eq_tr__
+#define snesconverged_eq_ls_             snesconverged_eq_ls__
+#define snesconverged_um_tr_             snesconverged_um_tr__
+#define snesconverged_um_ls_             snesconverged_um_ls__
 #endif
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define dmmgsetsnes_                 DMMGSETSNES
+#define dmmgsetsnes_                     DMMGSETSNES
 #define matcreatedaad_                   MATCREATEDAAD
-#define matregisterdaad_                   MATREGISTERDAAD
+#define matregisterdaad_                 MATREGISTERDAAD
 #define matdaadsetsnes_                  MATDAADSETSNES
 #define snesdacomputejacobian_           SNESDACOMPUTEJACOBIAN
 #define snesdacomputejacobianwithadifor_ SNESDACOMPUTEJACOBIANWITHADIFOR
-#define snesdaformfunction_          SNESDAFORMFUNCTION          
-#define matsnesmfsetbase_            MATSNESMFSETBASE
-#define snesconverged_eq_tr_         SNESCONVERGED_EQ_TR
-#define snesconverged_eq_ls_         SNESCONVERGED_EQ_LS
-#define snesconverged_um_tr_         SNESCONVERGED_UM_TR
-#define snesconverged_um_ls_         SNESCONVERGED_UM_LS
-#define snesgetconvergedreason_      SNESGETCONVERGEDREASON
-#define snesdefaultmonitor_          SNESDEFAULTMONITOR
-#define snesvecviewmonitor_          SNESVECVIEWMONITOR
-#define sneslgmonitor_               SNESLGMONITOR
-#define snesvecviewupdatemonitor_    SNESVECVIEWUPDATEMONITOR
-#define snesregisterdestroy_         SNESREGISTERDESTROY
-#define snessetjacobian_             SNESSETJACOBIAN
-#define snescreate_                  SNESCREATE
-#define snessetfunction_             SNESSETFUNCTION
-#define snessetminimizationfunction_ SNESSETMINIMIZATIONFUNCTION
-#define snesgetsles_                 SNESGETSLES
-#define snessetgradient_             SNESSETGRADIENT
-#define snessethessian_              SNESSETHESSIAN
-#define snessetmonitor_              SNESSETMONITOR
-#define snessetconvergencetest_      SNESSETCONVERGENCETEST
-#define snesregisterdestroy_         SNESREGISTERDESTROY
-#define snesgetsolution_             SNESGETSOLUTION
-#define snesgetsolutionupdate_       SNESGETSOLUTIONUPDATE
-#define snesgetfunction_             SNESGETFUNCTION
-#define snesgetminimizationfunction_ SNESGETMINIMIZATIONFUNCTION
-#define snesgetgradient_             SNESGETGRADIENT
-#define snesdestroy_                 SNESDESTROY
-#define snesgettype_                 SNESGETTYPE
-#define snessetoptionsprefix_        SNESSETOPTIONSPREFIX 
-#define snesappendoptionsprefix_     SNESAPPENDOPTIONSPREFIX 
-#define matcreatesnesmf_             MATCREATESNESMF
-#define matcreatemf_                 MATCREATEMF
-#define snessettype_                 SNESSETTYPE
-#define snesgetconvergencehistory_   SNESGETCONVERGENCEHISTORY
-#define snesdefaultcomputejacobian_  SNESDEFAULTCOMPUTEJACOBIAN
+#define snesdaformfunction_              SNESDAFORMFUNCTION          
+#define matsnesmfsetbase_                MATSNESMFSETBASE
+#define snesconverged_eq_tr_             SNESCONVERGED_EQ_TR
+#define snesconverged_eq_ls_             SNESCONVERGED_EQ_LS
+#define snesconverged_um_tr_             SNESCONVERGED_UM_TR
+#define snesconverged_um_ls_             SNESCONVERGED_UM_LS
+#define snesgetconvergedreason_          SNESGETCONVERGEDREASON
+#define snesdefaultmonitor_              SNESDEFAULTMONITOR
+#define snesvecviewmonitor_              SNESVECVIEWMONITOR
+#define sneslgmonitor_                   SNESLGMONITOR
+#define snesvecviewupdatemonitor_        SNESVECVIEWUPDATEMONITOR
+#define snesregisterdestroy_             SNESREGISTERDESTROY
+#define snessetjacobian_                 SNESSETJACOBIAN
+#define snescreate_                      SNESCREATE
+#define snessetfunction_                 SNESSETFUNCTION
+#define snessetminimizationfunction_     SNESSETMINIMIZATIONFUNCTION
+#define snesgetsles_                     SNESGETSLES
+#define snessetgradient_                 SNESSETGRADIENT
+#define snessethessian_                  SNESSETHESSIAN
+#define snessetmonitor_                  SNESSETMONITOR
+#define snessetconvergencetest_          SNESSETCONVERGENCETEST
+#define snesregisterdestroy_             SNESREGISTERDESTROY
+#define snesgetsolution_                 SNESGETSOLUTION
+#define snesgetsolutionupdate_           SNESGETSOLUTIONUPDATE
+#define snesgetfunction_                 SNESGETFUNCTION
+#define snesgetminimizationfunction_     SNESGETMINIMIZATIONFUNCTION
+#define snesgetgradient_                 SNESGETGRADIENT
+#define snesdestroy_                     SNESDESTROY
+#define snesgettype_                     SNESGETTYPE
+#define snessetoptionsprefix_            SNESSETOPTIONSPREFIX 
+#define snesappendoptionsprefix_         SNESAPPENDOPTIONSPREFIX 
+#define matcreatesnesmf_                 MATCREATESNESMF
+#define matcreatemf_                     MATCREATEMF
+#define snessettype_                     SNESSETTYPE
+#define snesgetconvergencehistory_       SNESGETCONVERGENCEHISTORY
+#define snesdefaultcomputejacobian_      SNESDEFAULTCOMPUTEJACOBIAN
 #define snesdefaultcomputejacobiancolor_ SNESDEFAULTCOMPUTEJACOBIANCOLOR
 #define matsnesmfsettype_                MATSNESMFSETTYPE
 #define snesgetoptionsprefix_            SNESGETOPTIONSPREFIX
@@ -62,6 +62,7 @@
 #define snessetlinesearchparams_         SNESSETLINESEARCHPARAMS
 #define snesgetlinesearchparams_         SNESGETLINESEARCHPARAMS
 #define snessetlinesearch_               SNESSETLINESEARCH
+#define snessetlinesearchcheck_          SNESSETLINESEARCHCHECK
 #define snescubiclinesearch_             SNESCUBICLINESEARCH
 #define snesquadraticlinesearch_         SNESQUADRATICLINESEARCH
 #define snesnolinesearch_                SNESNOLINESEARCH
@@ -70,58 +71,59 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmmgsetsnes_                     dmmgsetsnes
 #define matcreatedaad_                   matcreatedaad
-#define matregisterdaad_                   matregisterdaad
+#define matregisterdaad_                 matregisterdaad
 #define matdaadsetsnes_                  matdaadsetsnes
 #define snesdacomputejacobian_           snesdacomputejacobian
 #define snesdacomputejacobianwithadifor_ snesdacomputejacobianwithadifor
-#define snesdaformfunction_          snesdaformfunction
-#define matsnesmfsetbase_            matsnesmfsetbase
-#define snescubiclinesearch_         snescubiclinesearch     
-#define snesquadraticlinesearch_     snesquadraticlinesearch    
-#define snesnolinesearch_            snesnolinesearch    
-#define snesnolinesearchnonorms_     snesnolinesearchnonorms    
-#define snessetlinesearch_           snessetlinesearch
-#define snesconverged_eq_tr_         snesconverged_eq_tr
-#define snesconverged_eq_ls_         snesconverged_eq_ls
-#define snesconverged_um_tr_         snesconverged_um_tr
-#define snesconverged_um_ls_         snesconverged_um_ls
-#define snesgetconvergedreason_      snesgetconvergedreason
-#define sneslgmonitor_               sneslgmonitor
-#define snesdefaultmonitor_          snesdefaultmonitor
-#define snesvecviewmonitor_          snesvecviewmonitor
-#define snesvecviewupdatemonitor_    snesvecviewupdatemonitor
-#define matsnesmfsetfunction_        matsnesmfsetfunction
-#define snesregisterdestroy_         snesregisterdestroy
-#define snessetjacobian_             snessetjacobian
-#define snescreate_                  snescreate
-#define snessetfunction_             snessetfunction
-#define snessethessian_              snessethessian
-#define snessetgradient_             snessetgradient
-#define snesgetsles_                 snesgetsles
-#define snessetminimizationfunction_ snessetminimizationfunction
-#define snesdestroy_                 snesdestroy
-#define snessetmonitor_              snessetmonitor
-#define snessetconvergencetest_      snessetconvergencetest
-#define snesregisterdestroy_         snesregisterdestroy
-#define snesgetsolution_             snesgetsolution
-#define snesgetsolutionupdate_       snesgetsolutionupdate
-#define snesgetfunction_             snesgetfunction
-#define snesgetminimizationfunction_ snesgetminimizationfunction
-#define snesgetgradient_             snesgetgradient
-#define snesgettype_                 snesgettype
-#define snessetoptionsprefix_        snessetoptionsprefix 
-#define snesappendoptionsprefix_     snesappendoptionsprefix
-#define matcreatesnesmf_             matcreatesnesmf
-#define matcreatemf_                 matcreatemf
-#define snessettype_                 snessettype
-#define snesgetconvergencehistory_   snesgetconvergencehistory
-#define snesdefaultcomputejacobian_  snesdefaultcomputejacobian
+#define snesdaformfunction_              snesdaformfunction
+#define matsnesmfsetbase_                matsnesmfsetbase
+#define snescubiclinesearch_             snescubiclinesearch     
+#define snesquadraticlinesearch_         snesquadraticlinesearch    
+#define snesnolinesearch_                snesnolinesearch    
+#define snesnolinesearchnonorms_         snesnolinesearchnonorms    
+#define snessetlinesearchparams_         snessetlinesearchparams
+#define snesgetlinesearchparams_         snesgetlinesearchparams
+#define snessetlinesearch_               snessetlinesearch
+#define snessetlinesearchcheck_          snessetlinesearchcheck
+#define snesconverged_eq_tr_             snesconverged_eq_tr
+#define snesconverged_eq_ls_             snesconverged_eq_ls
+#define snesconverged_um_tr_             snesconverged_um_tr
+#define snesconverged_um_ls_             snesconverged_um_ls
+#define snesgetconvergedreason_          snesgetconvergedreason
+#define sneslgmonitor_                   sneslgmonitor
+#define snesdefaultmonitor_              snesdefaultmonitor
+#define snesvecviewmonitor_              snesvecviewmonitor
+#define snesvecviewupdatemonitor_        snesvecviewupdatemonitor
+#define matsnesmfsetfunction_            matsnesmfsetfunction
+#define snesregisterdestroy_             snesregisterdestroy
+#define snessetjacobian_                 snessetjacobian
+#define snescreate_                      snescreate
+#define snessetfunction_                 snessetfunction
+#define snessethessian_                  snessethessian
+#define snessetgradient_                 snessetgradient
+#define snesgetsles_                     snesgetsles
+#define snessetminimizationfunction_     snessetminimizationfunction
+#define snesdestroy_                     snesdestroy
+#define snessetmonitor_                  snessetmonitor
+#define snessetconvergencetest_          snessetconvergencetest
+#define snesregisterdestroy_             snesregisterdestroy
+#define snesgetsolution_                 snesgetsolution
+#define snesgetsolutionupdate_           snesgetsolutionupdate
+#define snesgetfunction_                 snesgetfunction
+#define snesgetminimizationfunction_     snesgetminimizationfunction
+#define snesgetgradient_                 snesgetgradient
+#define snesgettype_                     snesgettype
+#define snessetoptionsprefix_            snessetoptionsprefix 
+#define snesappendoptionsprefix_         snesappendoptionsprefix
+#define matcreatesnesmf_                 matcreatesnesmf
+#define matcreatemf_                     matcreatemf
+#define snessettype_                     snessettype
+#define snesgetconvergencehistory_       snesgetconvergencehistory
+#define snesdefaultcomputejacobian_      snesdefaultcomputejacobian
 #define snesdefaultcomputejacobiancolor_ snesdefaultcomputejacobiancolor
 #define matsnesmfsettype_                matsnesmfsettype
 #define snesgetoptionsprefix_            snesgetoptionsprefix
 #define snesgetjacobian_                 snesgetjacobian
-#define snessetlinesearchparams_         snessetlinesearchparams
-#define snesgetlinesearchparams_         snesgetlinesearchparams
 #define snesview_                        snesview
 #endif
 
@@ -354,19 +356,32 @@ int OurSNESLineSearch(SNES snes,void *ctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscRea
 void PETSC_STDCALL snessetlinesearch_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,int*),void *ctx,int *ierr)
 {
   if ((void(*)(void))f == (void(*)(void))snescubiclinesearch_) {
-    *ierr = SNESSetLineSearch(*snes,SNESCubicLineSearch,0);
+    *ierr = SNESSetLineSearch(*snes,SNESCubicLineSearch,ctx);
   } else if ((void(*)(void))f == (void(*)(void))snesquadraticlinesearch_) {
-    *ierr = SNESSetLineSearch(*snes,SNESQuadraticLineSearch,0);
+    *ierr = SNESSetLineSearch(*snes,SNESQuadraticLineSearch,ctx);
   } else if ((void(*)(void))f == (void(*)(void))snesnolinesearch_) {
-    *ierr = SNESSetLineSearch(*snes,SNESNoLineSearch,0);
+    *ierr = SNESSetLineSearch(*snes,SNESNoLineSearch,ctx);
   } else if ((void(*)(void))f == (void(*)(void))snesnolinesearchnonorms_) {
-    *ierr = SNESSetLineSearch(*snes,SNESNoLineSearchNoNorms,0);
+    *ierr = SNESSetLineSearch(*snes,SNESNoLineSearchNoNorms,ctx);
   } else {
     f73 = f;
-    *ierr = SNESSetLineSearch(*snes,OurSNESLineSearch,0);
+    *ierr = SNESSetLineSearch(*snes,OurSNESLineSearch,ctx);
   }
 }
-  
+
+void (PETSC_STDCALL *f74)(SNES*,void *,Vec*,PetscTruth*,int*);
+int OurSNESLineSearchCheck(SNES snes,void *checkCtx,Vec x,PetscTruth *flag)
+{
+  int ierr = 0;
+  (*f74)(&snes,(void*)&checkCtx,&x,flag,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+void PETSC_STDCALL snessetlinesearchcheck_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,PetscTruth*,int*),void *ctx,int *ierr)
+{
+  f74 = f;
+  *ierr = SNESSetLineSearchCheck(*snes,OurSNESLineSearchCheck,ctx);
+}  
 
 /*--------------------------------------------------------------------------------------------*/
 void snesconverged_um_ls_(SNES *snes,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,

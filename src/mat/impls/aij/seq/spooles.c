@@ -39,7 +39,6 @@ int MatDestroy_SeqAIJ_Spooles(Mat A)
   int                ierr;
   
   PetscFunctionBegin;
-  /* printf(" MatDestroy is called ...\n"); */
 
   FrontMtx_free(lu->frontmtx) ;        
   IV_free(lu->newToOldIV) ;            
@@ -60,13 +59,12 @@ int MatDestroy_SeqAIJ_Spooles(Mat A)
 int MatSolve_SeqAIJ_Spooles(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ_Spooles      *lu = (Mat_SeqAIJ_Spooles*)A->spptr;
-  int                     ierr;
   PetscScalar             *array;
   DenseMtx                *mtxY, *mtxX ;
-  int                     irow,neqns=A->m,*iv;
+  double                  *entX;
+  int                     ierr,irow,neqns=A->m,*iv;
 
   PetscFunctionBegin;
-  printf(" Solve_SeqAIJ_Spooles is called ...,\n"); 
 
   /* copy permuted b to mtxY */
   mtxY = DenseMtx_new() ;
@@ -83,7 +81,7 @@ int MatSolve_SeqAIJ_Spooles(Mat A,Vec b,Vec x)
                  lu->cpus, lu->msglvl, lu->msgFile) ;
   if ( lu->msglvl > 2 ) {
     fprintf(lu->msgFile, "\n\n right hand side matrix after permutation") ;
-    DenseMtx_writeForHumanEye(mtxY, lu->msgFile) ; /* moved from symbfact() */
+    DenseMtx_writeForHumanEye(mtxY, lu->msgFile) ; 
     fprintf(lu->msgFile, "\n\n solution matrix in new ordering") ;
     DenseMtx_writeForHumanEye(mtxX, lu->msgFile) ;
     fflush(lu->msgFile) ;
@@ -92,15 +90,10 @@ int MatSolve_SeqAIJ_Spooles(Mat A,Vec b,Vec x)
   /* permute solution into original ordering, then copy to x */  
   DenseMtx_permuteRows(mtxX, lu->newToOldIV);
   ierr = VecGetArray(x,&array);CHKERRQ(ierr); 
-  for ( irow = 0 ; irow < neqns ; irow++ ) DenseMtx_realEntry(mtxX,irow,0,array++);
+  entX = DenseMtx_entries(mtxX);
+  DVcopy(neqns, array, entX);
   ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
-  /*
-  iv = IV_entries(lu->newToOldIV);
-  ierr = VecGetArray(x,&array);CHKERRQ(ierr); 
-  for ( irow = 0 ; irow < neqns ; irow++ ) DenseMtx_realEntry(mtxX,irow,0,&array[iv[irow]]);  
-  ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
-  */
-
+  
   /* free memory */
   DenseMtx_free(mtxX) ;
   DenseMtx_free(mtxY) ;
@@ -116,14 +109,12 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   Mat_SeqAIJ_Spooles *lu = (Mat_SeqAIJ_Spooles*)(*F)->spptr;
   ChvManager         *chvmanager  ;
   FrontMtx           *frontmtx ; 
-  int                stats[20],ierr,pivotingflag=1,nz,m=A->m,irow,count;
   Chv                *rootchv ;
-  int                *ai=mat->i,*aj=mat->j;
+  int                stats[20],ierr,pivotingflag=1,nz,m=A->m,irow,count,
+                     *ai=mat->i,*aj=mat->j;
   PetscScalar        *av  = mat->a;
 
   PetscFunctionBegin;
-  printf(" Num_SeqAIJ_Spooles is called ..., lu->flg: %d\n", lu->flg); 
-
   if ( lu->flg == SAME_NONZERO_PATTERN){ /* new num factorization using previously computed symbolic factor */
     
     if (lu->pivotingflag) {              /* different FrontMtx is required */
@@ -220,7 +211,9 @@ Residual norm < 1.e-12
     fflush(lu->msgFile) ;
   }
 
-  lu->flg = SAME_NONZERO_PATTERN;
+  lu->flg         = SAME_NONZERO_PATTERN;
+  (*F)->assembled = PETSC_TRUE;
+
   PetscFunctionReturn(0);
 }
 

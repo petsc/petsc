@@ -333,7 +333,7 @@ int main(int argc,char **args)
     ierr = SLESSolve(sles2,b2,x2,&its);CHKERRQ(ierr);
 
     /*
-       Check error of solution to first linear system
+       Check error of solution to second linear system
     */
     ierr = CheckError(u,x2,b2,its,CHECK_ERROR);CHKERRQ(ierr); 
 

@@ -1087,6 +1087,7 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
+  /* printf(" MatView_MPIBAIJ_ASCIIorDraworSocket is called ...\n"); */
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (isascii) { 

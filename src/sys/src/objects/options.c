@@ -246,7 +246,7 @@ int PetscOptionsInsertString(const char* in_str)
 int PetscOptionsInsertFile(const char file[])
 {
   char       string[128],fname[256],*first,*second,*third,*final;
-  int        len,ierr,i;
+  int        len,ierr,i,startIndex;
   FILE       *fd;
   PetscToken *token;
 
@@ -268,7 +268,10 @@ int PetscOptionsInsertFile(const char file[])
           string[i] = ' ';
         }
       }
-      ierr = PetscTokenCreate(string,' ',&token);CHKERRQ(ierr);
+      for(startIndex = 0; startIndex < len-1; startIndex++) {
+        if (string[startIndex] != ' ') break;
+      }
+      ierr = PetscTokenCreate(&string[startIndex],' ',&token);CHKERRQ(ierr);
       ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
       ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
       if (first && first[0] == '-') {
