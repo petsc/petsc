@@ -156,6 +156,8 @@ class Configure(config.base.Configure):
         f2c = 'f2c'
         l   = 'c'
       else:
+        if not hasattr(self.framework.argDB,'FC'):
+          raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --with-c-blas-lapack?')
         f2c = 'f'
         l   = 'f'
       self.downLoadBlasLapack(f2c,l)        
@@ -177,6 +179,8 @@ class Configure(config.base.Configure):
           f2c = 'f2c'
           l   = 'c'
         else:
+          if not hasattr(self.framework.argDB,'FC'):
+            raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --with-c-blas-lapack?')
           f2c = 'f'
           l   = 'f'
         self.downLoadBlasLapack(f2c,l)        
