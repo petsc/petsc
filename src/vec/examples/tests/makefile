@@ -21,7 +21,8 @@ RUNEXAMPLES_3 = runex19 runex21
 EXAMPLES_4    = ex1 ex2 ex4 ex6 ex7 ex8 ex14 ex20 
 RUNEXAMPLES_4 = runex1	runex2 runex6 runex7 runex8 runex20
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
-		ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex20.c ex22.c
+		ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c \
+                ex20.c ex22.c ex23.c
 EXAMPLESF     = ex19.F ex21.F
 
 ex1: ex1.o  chkopts 
