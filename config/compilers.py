@@ -390,8 +390,9 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkCxxCompiler)
     self.executeTest(self.checkCxxNamespace)
     self.executeTest(self.checkFortranCompiler)
-    self.executeTest(self.checkFortranNameMangling)
+    if 'FC' in self.framework.argDB:
+      self.executeTest(self.checkFortranNameMangling)
+      self.executeTest(self.checkFortranLibraries)
     self.executeTest(self.checkFortran90Compiler)
     self.executeTest(self.checkFortran90Interface)
-    self.executeTest(self.checkFortranLibraries)
     return

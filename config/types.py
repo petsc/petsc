@@ -228,7 +228,8 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkUID)
     self.executeTest(self.checkSignal)
     self.executeTest(self.checkComplex)
-    self.executeTest(self.checkFortranStar)
+    if 'FC' in self.framework.argDB:
+      self.executeTest(self.checkFortranStar)
     self.executeTest(self.checkFortranDReal)
     self.executeTest(self.checkConst)
     self.executeTest(self.checkEndian)
