@@ -7,33 +7,29 @@ Subject: new PETSc release
 
 PETSc Users,
 
-We have just released a new version of PETSc (2.0.17) with a variety
+We have just released a new version of PETSc (2.0.21) with a variety
 of extensions and enhancements to the software.  A list of new
 features and changes in PETSc is provided in the "Changes" file
 available at
-     ftp://info.mcs.anl.gov/pub/petsc/Changes
+     http://www.mcs.anl.gov/petsc/petsc/changes.html
 or
      http://www.mcs.anl.gov/petsc/petsc.html
 Also, before installing a new version of PETSc, please see the list
 of patches at
      http://www.mcs.anl.gov/petsc/petsc-patches.html
-to determine if any are required for your machine(s) of interest.
+to determine whether any are required for your machine(s) of interest.
 
 Highlights of new features added since the last public release of
-PETSc (version 2.0.15) include:
- - Support for Windows NT/95 (using the Microsoft Developers Studio Visual C++)
- - Support for the Cray T3E and SGI Origin
- - Tools for sparse finite difference approximation of Jacobian matrices
- - More tools to help diagnose memory leaks and uninitialized memory
- - Limited support for Fortran90 pointers
+PETSc (version 2.0.17) include:
+ - XXX
+ - XXX
 
 The new release is available for UNIX machines via:
     ftp://info.mcs.anl.gov/pub/petsc/petsc.tar.gz
-    ftp://info.mcs.anl.gov/pub/petsc/petsc.tar.Z
 Users of Windows NT/95 (only!) should instead retrieve the zip file:
     ftp://info.mcs.anl.gov/pub/petsc/petsc.tar.zip
 All of these are also available via the PETSc home page:
-     http://www.mcs.anl.gov/petsc/petsc.html
+    http://www.mcs.anl.gov/petsc/petsc.html
  
 As always, please send bug reports, questions, and requests for new 
 features to petsc-maint@mcs.anl.gov.
@@ -41,7 +37,7 @@ features to petsc-maint@mcs.anl.gov.
 Thanks for your support.
 
 The PETSc developers,
-Barry, Satish, Bill, and Lois
+Satish, Bill, Lois, and Barry
 
 
 
