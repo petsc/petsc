@@ -8,8 +8,10 @@ Additional Capabilities that PETSc Needs:
 
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
------------------------------------------------------------------------
+ -----------------------------------------------------------------------
 
+  - Add segmented sparse column format for scalar problems, reduces
+    the number of loads required?
 
   - Handle PCView_BJacobi, PCView_ASM for the case of multiple blocks with
     potentially different solvers on each
