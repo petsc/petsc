@@ -9,7 +9,7 @@ PETSc Users,
 
 We have just released a new version of PETSc (2.0.22) with a variety
 of extensions, enhancements, and bug fixes to the software.  A list of new
-features and changes in PETSc is provided in the "Changes" file
+features and changes in PETSc is provided in the "docs/changes.html" file
 available at
      http://www.mcs.anl.gov/petsc/docs/changes.html
 or
