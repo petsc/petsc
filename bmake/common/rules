@@ -263,4 +263,8 @@ wwwpages:
 SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
 	libpetscsnes libpetscsys libpetscts libpetscvec
 
+
+deleteshared: chkopts
+	$(RM) -f $(LDIR)/*.so.*  $(LDIR)/*.sl $(LDIR)/so_locations
+
 noshared:

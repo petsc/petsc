@@ -55,8 +55,4 @@ shared: chkopts
 	  -all  $$LIBNAME.a  -o $$LIBNAME.so ; \
 	done
 
-deleteshared: chkopts
-	$(RM) $(LDIR)/*.so $(LDIR)/so_locations
-
-
 
