@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.10 2000/03/25 00:15:08 balay Exp balay $ 
+# $Id: base_variables,v 1.11 2000/04/20 16:10:37 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -12,14 +12,14 @@ SED		   = /bin/sed
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = cc    -KPIC -dalign -xtarget=native
-C_FC		   = f90 -xpp=cpp
+C_FC		   = f77 -xpp=cpp
 C_CLINKER_SLFLAG   = -R
 C_FLINKER_SLFLAG   = -R
 C_CLINKER	   = cc
-C_FLINKER	   = f90
+C_FLINKER	   = f77
 C_CCV		   = cc    -V -c
-C_FCV              = f90 -V | head -1
-C_SYS_LIB	   = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl  -lm
+C_FCV              = f77 -V | head -1
+C_SYS_LIB	   = -L/opt/SUNWspro/SC5.0/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl  -lm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g -xs
 G_FOPTFLAGS	   = -g -xs
@@ -29,13 +29,13 @@ O_FOPTFLAGS	   = -fast
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = CC    -KPIC
-CXX_FC		   = f90   -xpp=cpp
+CXX_FC		   = f77 -xpp=cpp
 CXX_CLINKER_SLFLAG = -R
 CXX_FLINKER_SLFLAG = -R
 CXX_CLINKER	   = CC
 CXX_FLINKER	   = CC
 CXX_CCV		   = CC    -V -c
-CXX_SYS_LIB	   = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -lcomplex -ldl -lm
+CXX_SYS_LIB	   = -L/opt/SUNWspro/SC5.0/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -lcomplex -ldl -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g  -xs
 GCXX_FOPTFLAGS	   = -g  -xs

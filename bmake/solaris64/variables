@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.14 2000/03/25 00:15:02 balay Exp balay $ 
+# $Id: base_variables,v 1.15 2000/04/20 16:10:30 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -12,13 +12,13 @@ SED		   = /bin/sed
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = cc    -KPIC -dalign -xtarget=native -xarch=v9
-C_FC		   = f77   -xpp=cpp -xarch=v9
+C_FC		   = f90   -xpp=cpp -xarch=v9
 C_CLINKER_SLFLAG   = -R
 C_FLINKER_SLFLAG   = -R
 C_CLINKER	   = cc -xarch=v9
-C_FLINKER	   = f77 -xarch=v9
+C_FLINKER	   = f90 -xarch=v9
 C_CCV		   = cc    -V -c
-C_SYS_LIB	   = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl  -lm
+C_SYS_LIB	   = -L/opt/SUNWspro/SC5.0/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl  -lm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g -xs
 G_FOPTFLAGS	   = -g -xs
@@ -28,13 +28,13 @@ O_FOPTFLAGS	   = -fast
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = CC  -w -features=anachronisms -instances=static -KPIC -xarch=v9
-CXX_FC		   = f77   -xpp=cpp -xarch=v9
+CXX_FC		   = f90   -xpp=cpp -xarch=v9
 CXX_CLINKER_SLFLAG = -R
 CXX_FLINKER_SLFLAG = -R
 CXX_CLINKER	   = CC -xarch=v9
 CXX_FLINKER	   = CC -xarch=v9
 CXX_CCV		   = CC    -V -c
-CXX_SYS_LIB	   = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen  -ldl -lm
+CXX_SYS_LIB	   = -L/opt/SUNWspro/SC5.0/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen  -ldl -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g  -xs
 GCXX_FOPTFLAGS	   = -g  -xs

@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.4 2000/03/25 03:35:59 bsmith Exp bsmith $ 
+# $Id: buildtest,v 1.5 2000/04/16 04:40:57 bsmith Exp balay $ 
 #
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
@@ -12,25 +12,25 @@ set NICE=''
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
   set BOPT=O_complex
-  set JOBS=(1 2 3 5 10 13 15)        
+  set JOBS=(1 2 3 5 10 12 13 15)        
 else if ($day == Mon) then
   set BOPT=O_matsingle    
-  set JOBS=(1 2 8 13 15 16 17)        
+  set JOBS=(1 2 8 12 13 15 16 17)        
 else if ($day == Tue) then
   set BOPT=g        
-  set JOBS=(1 2 3 6 7 13 14 16 17)        
+  set JOBS=(1 2 3 6 7 12 13 14 16 17)        
 else if ($day == Wed) then
   set BOPT=g_c++ 
-  set JOBS=(1 2 3 6 8 14 15 16 17)       
+  set JOBS=(1 2 3 6 8 12 14 15 16 17)       
 else if ($day == Thu) then
   set BOPT=g_complex
-  set JOBS=(1 2 3 5 10 13 15)       
+  set JOBS=(1 2 3 5 10 12 13 15)       
 else if ($day == Fri) then
   set BOPT=O_c++    
-  set JOBS=(1 2 3 6 8 14 15 16 17)        
+  set JOBS=(1 2 3 6 8 12 14 15 16 17)        
 else if ($day == Sat) then
   set BOPT=O        
-  set JOBS=(1 2 3 6 7 8 14 15 17)        
+  set JOBS=(1 2 3 6 7 8 12 14 15 17)        
 endif
 
 
