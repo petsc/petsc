@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.9 1998/01/15 21:55:00 balay Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.10 1998/01/27 23:32:33 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -22,6 +23,27 @@ struct _DLLibraryList {
   void          *handle;
   char          libname[1024];
 };
+
+#undef __FUNC__  
+#define __FUNC__ "DLGetPathAndFunction"
+int DLGetPathAndFunction(char *name,char **path,char **function)
+{
+  char work[256],*lfunction;
+
+  PetscFunctionBegin;
+  PetscStrncpy(work,name,256);
+  lfunction = PetscStrrchr(work,':');
+  if (lfunction != work) {
+    lfunction[-1] = 0;
+    *path = (char *) PetscMalloc( (PetscStrlen(work) + 1)*sizeof(char));CHKPTRQ(*path);
+    PetscStrcpy(*path,work);
+  } else {
+    *path = 0;
+  }
+  *function = (char *) PetscMalloc( (PetscStrlen(lfunction) + 1)*sizeof(char));CHKPTRQ(*function);
+  PetscStrcpy(*function,lfunction);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "DLObtainLibrary"
@@ -99,7 +121,7 @@ int DLOpen(char *libname,void **handle)
   char       *par2,ierr,len,*par3,arch[10];
   PetscTruth foundlibrary;
   int        flg;
-  int        (*func)();
+  int        (*func)(char*);
 
   PetscFunctionBegin;
 
@@ -173,10 +195,29 @@ int DLOpen(char *libname,void **handle)
   }
 
   /* run the function DLRegister() if it is in the library */
-  ((void *) func)   = dlsym(*handle,"DLRegisterLibrary");
+  ((void *) func)   = dlsym(*handle,"DLLibraryRegister");
   if (func) {
-    ierr = (*func)();CHKERRQ(ierr);
+    ierr = (*func)(libname);CHKERRQ(ierr);
     PLogInfo(0,"DLOpen:Loading registered routines from %s\n",libname);
+  }
+  if (PLogPrintInfo) {
+    char *(*sfunc)(char *,char*),*mess;
+
+    ((void *) sfunc)   = dlsym(*handle,"DLLibraryInfo");
+    if (sfunc) {
+      mess = (*sfunc)(libname,"Contents");
+      if (mess) {
+        PLogInfo(0,"Library %s contents \n %s",libname,mess);
+      }
+      mess = (*sfunc)(libname,"Authors");
+      if (mess) {
+        PLogInfo(0,"Library %s authors \n %s",libname,mess);
+      }
+      mess = (*sfunc)(libname,"Version");
+      if (mess) {
+        PLogInfo(0,"Library %s version \n %s",libname,mess);
+      }
+    }
   }
 
   PetscFree(par2);
@@ -187,6 +228,7 @@ int DLOpen(char *libname,void **handle)
      DLSym - Load a symbol from the dynamic link libraries.
 
   Input Parameter:
+.  path     - optional complete library name
 .  insymbol - name of symbol
 
   Output Parameter:
@@ -199,10 +241,11 @@ int DLOpen(char *libname,void **handle)
 */
 #undef __FUNC__  
 #define __FUNC__ "DLSym"
-int DLSym(DLLibraryList list,char *insymbol, void **value)
+int DLSym(DLLibraryList *inlist,char *path,char *insymbol, void **value)
 {
   char          *par1,*symbol;
   int           ierr,len;
+  DLLibraryList nlist,prev,list = *inlist;
 
   PetscFunctionBegin;
   *value = 0;
@@ -222,6 +265,10 @@ int DLSym(DLLibraryList list,char *insymbol, void **value)
      check if library path is given in function name 
   */
   par1 = PetscStrrchr(symbol,':');
+  /*
+       Function name does include library 
+       -------------------------------------
+  */
   if (par1 != symbol) {
     void *handle;
     
@@ -229,18 +276,46 @@ int DLSym(DLLibraryList list,char *insymbol, void **value)
       PetscErrorPrintf("Library path and function name %s\n",insymbol);
       SETERRQ(1,1,"Incorrect function name. Has a `/` in it.");
     }
-    
-
     par1[-1] = 0;
-    ierr     = DLOpen(symbol,&handle);CHKERRQ(ierr);
+
+    /*   
+        Look if library is already opened and in path
+    */
+    nlist = list;
+    prev  = 0;
+    while (nlist) {
+      if (!PetscStrcmp(nlist->libname,symbol)) {
+        handle = nlist->handle;
+        goto done;
+      }
+      prev = nlist;
+      nlist = nlist->next;
+    }
+    ierr = DLOpen(symbol,&handle);CHKERRQ(ierr);
+
+    nlist = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
+    nlist->next   = 0;
+    nlist->handle = handle;
+    PetscStrcpy(nlist->libname,symbol);
+
+    if (prev) {
+      prev->next = nlist;
+    } else {
+      *inlist    = list;
+    }
+    PLogInfo(0,"DLAppend:Appending %s to dynamic library search path\n",symbol);
+
+    done:; 
     *value   = dlsym(handle,par1);
     if (!*value) {
       PetscErrorPrintf("Library path and function name %s\n",insymbol);
       SETERRQ(1,1,"Unable to locate function in dynamic library");
     }
     PLogInfo(0,"DLSym:Loading function %s from dynamic library %s\n",par1,symbol);
-  /* 
-     look for symbol in predefined path of libraries 
+
+  /*
+       Function name does not include library so search path
+       -----------------------------------------------------
   */
   } else {
     while (list) {
@@ -291,7 +366,7 @@ int DLAppend(DLLibraryList *outlist,char *libname)
   PetscStrcpy(list->libname,libname);
 
   if (!*outlist) {
-    *outlist = list;
+    *outlist   = list;
   } else {
     prev->next = list;
   }
@@ -366,4 +441,5 @@ int DLClose(DLLibraryList next)
 }
 
 #endif
+
 
