@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.22 1996/03/07 00:31:10 balay Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.23 1996/03/23 16:56:55 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -18,9 +18,6 @@ static char vcid[] = "$Id: zmat.c,v 1.22 1996/03/07 00:31:10 balay Exp bsmith $"
 #define matcreateseqaij_                 MATCREATESEQAIJ
 #define matcreate_                       MATCREATE
 #define matcreateshell_                  MATCREATESHELL
-#define matshellsetmulttransadd_         MATSHELLSETMULTTRANSADD
-#define matshellsetdestroy_              MATSHELLSETDESTROY
-#define matshellsetmult_                 MATSHELLSETMULT
 #define matreorderingregisterdestroy_    MATREORDERINGREGISTERDESTROY
 #define matcreatempirowbs_               MATCREATEMPIROWBS
 #define matcreateseqbdiag_               MATCREATESEQBDIAG
@@ -45,10 +42,7 @@ static char vcid[] = "$Id: zmat.c,v 1.22 1996/03/07 00:31:10 balay Exp bsmith $"
 #define matcreatempiaij_                 matcreatempiaij
 #define matcreateseqaij_                 matcreateseqaij
 #define matcreate_                       matcreate
-#define matshellsetmult_                 matshellsetmult
 #define matcreateshell_                  matcreateshell
-#define matshellsetmulttransadd_         matshellsetmulttransadd
-#define matshellsetdestroy_              matshellsetdestroy
 #define matreorderingregisterdestroy_    matreorderingregisterdestroy
 #define matgetreordering_                matgetreordering
 #define matcreatempirowbs_               matcreatempirowbs
@@ -238,58 +232,6 @@ void matcreateshell_(MPI_Comm comm,int *m,int *n,void *ctx,Mat *mat, int *__ierr
   *__ierr = MatCreateShell((MPI_Comm)MPIR_ToPointer_Comm(*(int*)(comm)),
                            *m,*n,ctx,&mm);
   *(int*) mat = MPIR_FromPointer(mm);
-}
-
-static int (*f2)(void*,int*,int*,int*);
-static int ourmatshellmult(void *ctx,Vec x,Vec f)
-{
-  int ierr = 0, s2, s3;
-  s2 = MPIR_FromPointer(x);
-  s3 = MPIR_FromPointer(f);
-  (*f2)(ctx,&s2,&s3,&ierr); CHKERRQ(ierr);
-  MPIR_RmPointer(s2);
-  MPIR_RmPointer(s3);
-  return 0;
-}
-void matshellsetmult_(Mat mat,int (*mult)(void*,int*,int*,int*), int *__ierr )
-{
-  f2 = mult;
-  *__ierr = MatShellSetMult(
-	(Mat)MPIR_ToPointer( *(int*)(mat) ),ourmatshellmult);
-}
-static int (*f1)(void*,int*,int*,int*,int*);
-static int ourmatshellmulttransadd(void *ctx,Vec x,Vec f,Vec y)
-{
-  int ierr = 0, s2, s3,s4;
-  s2 = MPIR_FromPointer(x);
-  s3 = MPIR_FromPointer(f);
-  s4 = MPIR_FromPointer(y);
-  (*f1)(ctx,&s2,&s3,&s4,&ierr); CHKERRQ(ierr);
-  MPIR_RmPointer(s2);
-  MPIR_RmPointer(s3);
-  MPIR_RmPointer(s4);
-  return 0;
-}
-
-void matshellsetmulttransadd_(Mat mat,int (*mult)(void*,int*,int*,int*,int*), 
-                              int *__ierr )
-{
-  f1 = mult;
-  *__ierr = MatShellSetMultTransAdd(
-	(Mat)MPIR_ToPointer( *(int*)(mat) ),ourmatshellmulttransadd);
-}
-
-static int (*f3)(void*,int*);
-static int ourmatshelldestroy(void *ctx)
-{
-  int ierr = 0;
-  (*f3)(ctx,&ierr); CHKERRQ(ierr);
-  return 0;
-}
-void matshellsetdestroy_(Mat mat,int (*destroy)(void*,int*), int *__ierr )
-{
-  f3 = destroy;
-  *__ierr = MatShellSetDestroy((Mat)MPIR_ToPointer( *(int*)(mat) ),ourmatshelldestroy);
 }
 
 void matgettype_(Mat mm,MatType *type,CHAR name,int *__ierr,int len)
