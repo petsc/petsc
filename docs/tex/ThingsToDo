@@ -17,6 +17,9 @@ Additional Capabilities that PETSc Needs:
     and VecRestoreArray_Quick() <- Null macro. This is to save eight function 
     calls for every MatMult() etc. May not be noticable but can't do any harm.
 
+  - make ViewerPushFormat() ViewerPopFormat() use that to eliminate
+    saving of formats in for example MatCreate().
+
   - ILUDT()
 
   - ordering with flow direction.
