@@ -38,7 +38,7 @@ static int MatPublish_Base(PetscObject obj)
    AIJ, using the routines MatCreateSeqAIJ() or MatCreateMPIAIJ()
    if you do not set a type in the options database. If you never
    call MatSetType() or MatSetFromOptions() it will generate an 
-   eorror when you try to use the matrix.
+   error when you try to use the matrix.
 
    Collective on MPI_Comm
 

@@ -74,7 +74,7 @@ static int VecSetTypeFromOptions_Private(Vec vec)
   Notes:  To see all options, run your program with the -help option, or consult the users manual.
           Must be called after VecCreate() but before the vector is used.
 
-  Level: intermediate
+  Level: beginner
 
   Concepts: vectors^setting options
   Concepts: vectors^setting type

@@ -114,7 +114,7 @@ int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   Vec                     x_seq;
   IS                      iden;
   VecScatter              scat;
-  PetscLogDouble          time0,time,time_min,time_max; /* to be removed later */
+  PetscLogDouble          time0,time,time_min,time_max; 
   
   PetscFunctionBegin;
   if (size > 1) {  /* convert mpi vector b to seq vector x_seq */
@@ -181,7 +181,7 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   int_t                   *asub, *xa;
   double                  *a; 
   SuperMatrix             A_sup;
-  IS                      isrow,iscol;
+  IS                      isrow;
   PetscLogDouble          time0[2],time[2],time_min[2],time_max[2]; 
 
   PetscFunctionBegin;
@@ -191,16 +191,12 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   }
 
   if (size > 1) { /* convert mpi A to seq mat A */
-    ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow); CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol); CHKERRQ(ierr);
-
-    ierr = MatGetSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&tseq); CHKERRQ(ierr);
-
+    ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow); CHKERRQ(ierr);  
+    ierr = MatGetSubMatrices(A,1,&isrow,&isrow,MAT_INITIAL_MATRIX,&tseq); CHKERRQ(ierr);
     ierr = ISDestroy(isrow);CHKERRQ(ierr);
-    ierr = ISDestroy(iscol);CHKERRQ(ierr);
+   
     A_seq = *tseq;
     ierr = PetscFree(tseq);CHKERRQ(ierr);
- 
     aa =  (Mat_SeqAIJ*)A_seq->data;
   } else {
     aa =  (Mat_SeqAIJ*)A->data;

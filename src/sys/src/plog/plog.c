@@ -1487,7 +1487,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   }
   /* Machine and compile information */
 #if defined(PETSC_USE_FORTRAN_KERNELS)
-  ierr = PetscFPrintf(comm, fd, "Compiled without FORTRAN kernels\n");                                    CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "Compiled with FORTRAN kernels\n");                                       CHKERRQ(ierr);
 #else
   ierr = PetscFPrintf(comm, fd, "Compiled without FORTRAN kernels\n");                                    CHKERRQ(ierr);
 #endif

@@ -63,11 +63,14 @@ int DACreateLocalVector(DA da,Vec* g)
    The output parameter, g, is a regular PETSc vector that should be returned with 
    DARestoreLocalVector() DO NOT call VecDestroy() on it.
 
+   VecStride*() operations can be useful when using DA with dof > 1
+
 .keywords: distributed array, create, local, vector
 
 .seealso: DACreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
           DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
-          DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateLocalVector(), DARestoreLocalVector()
+          DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateLocalVector(), DARestoreLocalVector(),
+          VecStrideMax(), VecStrideMin(), VecStrideNorm()
 @*/
 int DAGetLocalVector(DA da,Vec* g)
 {
@@ -158,11 +161,15 @@ int DARestoreLocalVector(DA da,Vec* g)
    The output parameter, g, is a regular PETSc vector that should be returned with 
    DARestoreGlobalVector() DO NOT call VecDestroy() on it.
 
+   VecStride*() operations can be useful when using DA with dof > 1
+
 .keywords: distributed array, create, Global, vector
 
 .seealso: DACreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
           DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateLocalVector(), DARestoreLocalVector()
+          VecStrideMax(), VecStrideMin(), VecStrideNorm()
+
 @*/
 int DAGetGlobalVector(DA da,Vec* g)
 {
