@@ -334,8 +334,8 @@ testex19: ex19.PETSc
 	if [ "${MPIRUN}" != "${PETSC_DIR}/bin/mpirun.uni" ]; then \
            ${MPIRUN} -np 2 ./ex19 -dmmg_nlevels 4   > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
-           echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully with 2 processes"; \
-	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 processes"; \
+           echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully with 2 MPI processes"; \
+	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
            cat ex19_1.tmp; fi; fi; \
 	if [ "${PETSC_HAVE_X11}" != "" ]; then havex="1"; else havex="0"; fi;\
