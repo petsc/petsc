@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.49 1997/08/09 19:05:11 bsmith Exp $ 
+# $Id: common,v 1.187 1997/08/13 22:21:12 bsmith Exp bsmith $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -357,18 +357,6 @@ adiclib2:
 	-@$(RM) -f *.ad.o
 #
 #
-#     Functions that need not be differentiated with ADIC are listed with a
-#   /* ADIC Ignore */ comment. The rule below generates a master list of all
-#   functions to be ignored.
-#
-adicignore: chkpetsc_dir
-	-@if [ ! -f $(PETSC_DIR)/bmake/adicignore ]; then \
-	  echo "[FUNCTIONS_TO_IGNORE]" > $(PETSC_DIR)/bmake/adicignore ; fi
-	@-if [ "$(SOURCEC)" != "" ]; then \
-          for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
-           grep "ADIC Ignore" $$i | cut -f2 -d\" >> $(PETSC_DIR)/bmake/adicignore ; \
-          fi; done ; \
-        fi
 countfunctions: chkpetsc_dir
 	-@if [ ! -f $(PDIR)/countfunctions ]; then \
 	  echo "PetscDummyFunction" > $(PDIR)/countfunctions ; fi
@@ -377,15 +365,6 @@ countfunctions: chkpetsc_dir
            grep "define __FUNC__" $$i | cut -f2 -d\" >> $(PDIR)/countfunctions ; \
           fi; done ; \
         fi
-adicnotignore: chkpetsc_dir
-	-@if [ ! -f $(PDIR)/adicnotignore ]; then \
-	  echo "PetscDummyFunction" > $(PDIR)/adicnotignore ; fi
-	@-if [ "$(SOURCEC)" != "" ]; then \
-          for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
-          grep "ne __FUNC__" $$i | grep -v "ADIC Ignore" | cut -f2 -d\" >> $(PDIR)/adicnotignore; \
-          fi; done ; \
-        fi
-
 # -------------------------------------------------------------------------------
 
 SHLIBS = libmpiuni libpetsccontrib libpetscmat libpetscsles \
