@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   ierr = VecBeginAssembly(x); CHKERR(ierr);
   ierr = VecEndAssembly(x); CHKERR(ierr);
 
-  VecView(x,0);
+  VecView(x,STDOUT_VIEWER);
 
   ierr = VecDestroy(x);CHKERR(ierr);
 

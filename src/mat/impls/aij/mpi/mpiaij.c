@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.11 1995/03/21 23:19:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.12 1995/03/23 01:05:37 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -545,12 +545,12 @@ static int MatiView(PetscObject obj,Viewer viewer)
 
   if (!aij->assembled) SETERR(1,"MatiAIJMulTrans: must assmble matrix first");
   MPE_Seq_begin(mat->comm,1);
-    printf("[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
+    ViewerPrintf(viewer,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
           aij->mytid,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
           aij->cend);
-    ierr = MatView(aij->A,0); CHKERR(ierr);
-    ierr = MatView(aij->B,0); CHKERR(ierr);
-    fflush(stdout);
+    ierr = MatView(aij->A,viewer); CHKERR(ierr);
+    ierr = MatView(aij->B,viewer); CHKERR(ierr);
+    ViewerFlush(viewer);
   MPE_Seq_end(mat->comm,1);
   return 0;
 }

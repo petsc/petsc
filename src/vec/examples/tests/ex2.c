@@ -37,14 +37,14 @@ int main(int argc,char **argv)
   CHKERR(ierr);
   ierr = VecScatterEnd(x,is1,y,is2,InsertValues,ScatterAll,ctx); CHKERR(ierr);
   
-  VecView(y,0);
+  VecView(y,STDOUT_VIEWER);
 
   ierr = VecScatterBegin(y,is1,x,is2,InsertValues,ScatterAll,ctx);
   CHKERR(ierr);
   ierr = VecScatterEnd(y,is1,x,is2,InsertValues,ScatterAll,ctx); CHKERR(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERR(ierr);
 
-  printf("-------\n");VecView(x,0);
+  printf("-------\n");VecView(x,STDOUT_VIEWER);
 
   ierr = ISDestroy(is1); CHKERR(ierr);
   ierr = ISDestroy(is2); CHKERR(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.14 1995/03/22 02:09:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.15 1995/03/22 22:44:44 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -354,12 +354,12 @@ int MatiSDview(PetscObject obj,Viewer ptr)
       v = mat->v + i;
       for ( j=0; j<mat->n; j++ ) {
 #if defined(PETSC_COMPLEX)
-        printf("%6.4e + %6.4e i ",real(*v),imag(*v)); v += mat->m;
+        ViewerPrintf(ptr,"%6.4e + %6.4e i ",real(*v),imag(*v)); v += mat->m;
 #else
-        printf("%6.4e ",*v); v += mat->m;
+        ViewerPrintf(ptr,"%6.4e ",*v); v += mat->m;
 #endif
       }
-      printf("\n");
+      ViewerPrintf(ptr,"\n");
     }
   }
   return 0;

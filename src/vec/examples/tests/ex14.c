@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,is1,y,is2,AddValues,ScatterAll,ctx); CHKERR(ierr);
   VecScatterCtxDestroy(ctx);
   
-  VecView(y,0);
+  VecView(y,STDOUT_VIEWER);
 
   ierr = VecDestroy(x);CHKERR(ierr);
   ierr = VecDestroy(y);CHKERR(ierr);

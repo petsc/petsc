@@ -120,8 +120,7 @@ int main(int argc,char **args)
      VecSetValues(ustar,1,&i,&val,InsertValues); 
   }
   VecBeginAssembly(ustar); VecEndAssembly(ustar);
-/*VecView(u,0); */
-/*VecView(ustar,0); */
+
   if ((ierr = VecAXPY(&none,ustar,u))) SETERR(ierr,0);
   if ((ierr = VecNorm(u,&norm))) SETERR(ierr,0);
   printf("Norm of error %g Number iterations %d\n",norm*h,its);

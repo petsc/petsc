@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStrideSequential(3,1,2,&is2); CHKERR(ierr);
 
   ierr = VecSetValues(x,6,loc,vals,InsertValues); CHKERR(ierr);
-  VecView(x,0); printf("----\n");
+  VecView(x,STDOUT_VIEWER); printf("----\n");
   ierr = VecSet(&two,y);CHKERR(ierr);
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERR(ierr);
   ierr = VecScatterBegin(x,is1,y,is2,InsertValues,ScatterAll,ctx);
@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(x,is1,y,is2,InsertValues,ScatterAll,ctx); CHKERR(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERR(ierr);
   
-  VecView(y,0);
+  VecView(y,STDOUT_VIEWER);
 
   ierr = VecDestroy(x);CHKERR(ierr);
   ierr = VecDestroy(y);CHKERR(ierr);

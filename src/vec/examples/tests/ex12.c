@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   ierr = VecBeginAssembly(y); CHKERR(ierr);
   ierr = VecEndAssembly(y); CHKERR(ierr);
 
-  VecView(y,0); printf("----\n");
+  VecView(y,STDOUT_VIEWER); printf("----\n");
 
   ierr = VecScatterCtxCreate(y,is2,x,is1,&ctx); CHKERR(ierr);
   ierr = VecScatterBegin(y,is2,x,is1,InsertValues,ScatterAll,ctx);
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(y,is2,x,is1,InsertValues,ScatterAll,ctx); CHKERR(ierr);
   VecScatterCtxDestroy(ctx);
   
-  VecView(x,0);
+  VecView(x,STDOUT_VIEWER);
 
   ierr = VecDestroy(x);CHKERR(ierr);
   ierr = VecDestroy(y);CHKERR(ierr);

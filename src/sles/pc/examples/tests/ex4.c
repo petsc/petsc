@@ -49,7 +49,7 @@ int main(int argc,char **args)
     ierr = VecSet(&zero,u);               CHKERR(ierr);
     ierr = VecSetValues(u,1,&i,value,InsertValues); CHKERR(ierr);
     ierr = PCApply(pc,u,b);   CHKERR(ierr);
-    VecView(b,0);
+    VecView(b,STDOUT_VIEWER);
   }
 
   MatDestroy(mat);

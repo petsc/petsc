@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   ierr = VecEndAssembly(x); CHKERR(ierr);
   ierr = VecSet(&mone,y); CHKERR(ierr);
 
-  VecView(x,0); 
+  VecView(x,STDOUT_VIEWER); 
 
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERR(ierr);
   ierr = VecScatterBegin(x,is1,y,is2,InsertValues,ScatterAll,ctx);
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   VecScatterCtxDestroy(ctx);
   
   MPE_Seq_begin(MPI_COMM_WORLD,1);
-  printf("-Node %d ---\n",mytid); VecView(y,0); fflush(stdout);
+  printf("-Node %d ---\n",mytid); VecView(y,STDOUT_VIEWER); fflush(stdout);
   MPE_Seq_end(MPI_COMM_WORLD,1);
 
   ierr = ISDestroy(is1); CHKERR(ierr);

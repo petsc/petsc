@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.6 1995/03/17 04:55:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.7 1995/03/21 23:17:58 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -62,11 +62,11 @@ static int ISgview(PetscObject obj, Viewer viewer)
   IndexiStride *sub = (IndexiStride *)is->data;
   int           i,n = sub->n;
   if (is->isperm) {
-    printf("Index set is permutation\n");
+    ViewerPrintf(viewer,"Index set is permutation\n");
   }
-  printf("Number of indices in set %d\n",n);
+  ViewerPrintf(viewer,"Number of indices in set %d\n",n);
   for ( i=0; i<n; i++ ) {
-    printf("%d %d\n",i,sub->first + i*sub->step);
+    ViewerPrintf(viewer,"%d %d\n",i,sub->first + i*sub->step);
   }
   return 0;
 }

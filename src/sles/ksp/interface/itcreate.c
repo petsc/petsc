@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.12 1995/03/17 04:55:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.13 1995/03/21 23:18:19 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -8,6 +8,8 @@ static char vcid[] = "$Id: itcreate.c,v 1.12 1995/03/17 04:55:51 bsmith Exp bsmi
 #include "sys/nreg.h"
 #include "sys.h"
 #include "options.h"
+#include "viewer.h"
+
 /*@ 
     KSPView - Prints KSP datastructure.
 
@@ -17,8 +19,8 @@ static char vcid[] = "$Id: itcreate.c,v 1.12 1995/03/17 04:55:51 bsmith Exp bsmi
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {
-  fprintf(stderr,"KSP Object\n");
-  fprintf(stderr,"Max. Its. %d rtol %g atol %g\n",
+  ViewerPrintf(viewer,"KSP Object\n");
+  ViewerPrintf(viewer,"Max. Its. %d rtol %g atol %g\n",
           ksp->max_it,ksp->rtol,ksp->atol);
   return 0;
 }
