@@ -13,8 +13,8 @@ int main(int argc,char **args)
   Mat          A,A_save,B,P,C;
   Vec          x,y1,y2;
   PetscViewer  viewer;
-  int          i,ierr,m,n,size,rank,j,idxn[10],M,N;
-  PetscReal    norm,norm_tmp,tol=1.e-10,none = -1.0,fill=4,alpha,nzp;
+  int          i,ierr,m,n,size,rank,j,idxn[10],M,N,nzp;
+  PetscReal    norm,norm_tmp,tol=1.e-10,none = -1.0,fill=4,alpha;
   PetscRandom  rand;
   char         file[4][128];
   PetscTruth   flg,preload = PETSC_TRUE;

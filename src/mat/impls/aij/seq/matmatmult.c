@@ -532,8 +532,6 @@ PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,Pets
   int rank;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  printf(" [%d] MatMatMultTranspose_SeqAIJ_SeqAIJ is called\n",rank);
   if (scall == MAT_INITIAL_MATRIX){
     ierr = MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
   }
