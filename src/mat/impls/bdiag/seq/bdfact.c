@@ -88,7 +88,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBDiag_N(Mat A,MatFactorInfo *info,Mat *B)
 
   if (!a->pivot) {
     ierr = PetscMalloc((m+1)*sizeof(PetscInt),&a->pivot);CHKERRQ(ierr);
-    PetscLogObjectMemory(C,m*sizeof(PetscInt));
+    ierr = PetscLogObjectMemory(C,m*sizeof(PetscInt));CHKERRQ(ierr);
   }
   ierr       = PetscMalloc((bs2+bs+1)*sizeof(PetscScalar),&v_work);CHKERRQ(ierr);
   multiplier = v_work + bs;

@@ -80,11 +80,11 @@ PetscErrorCode MatSetUpMultiply_MPIBDiag(Mat mat)
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,from,mbd->lvec,to,&mbd->Mvctx);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,mbd->Mvctx);
-  PetscLogObjectParent(mat,mbd->lvec);
-  PetscLogObjectParent(mat,to);
-  PetscLogObjectParent(mat,from);
-  PetscLogObjectParent(mat,gvec);
+  ierr = PetscLogObjectParent(mat,mbd->Mvctx);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(mat,mbd->lvec);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(mat,to);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(mat,from);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(mat,gvec);CHKERRQ(ierr);
 
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);

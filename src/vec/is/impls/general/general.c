@@ -305,9 +305,9 @@ PetscErrorCode ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],IS 
   ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView); 
+  ierr           = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
   ierr           = PetscNew(IS_General,&sub);CHKERRQ(ierr);
-  PetscLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(PetscInt)+sizeof(struct _p_IS));
+  ierr           = PetscLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(PetscInt)+sizeof(struct _p_IS));CHKERRQ(ierr);
   ierr           = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
   ierr           = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
   sub->n         = n;
@@ -364,9 +364,9 @@ PetscErrorCode ISCreateGeneralWithArray(MPI_Comm comm,PetscInt n,PetscInt idx[],
   ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView); 
+  ierr           = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
   ierr           = PetscNew(IS_General,&sub);CHKERRQ(ierr);
-  PetscLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(PetscInt)+sizeof(struct _p_IS));
+  ierr           = PetscLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(PetscInt)+sizeof(struct _p_IS));CHKERRQ(ierr);
   sub->idx       = idx;
   sub->n         = n;
   sub->allocated = PETSC_FALSE;

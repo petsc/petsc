@@ -91,7 +91,7 @@ PetscErrorCode TSPrecond_PVode(integertype N,realtype tn,N_Vector y,N_Vector fy,
     /* copy the Jacobian matrix */
     if (!cvode->pmat) {
       ierr = MatDuplicate(Jac,MAT_COPY_VALUES,&cvode->pmat);CHKERRQ(ierr);
-      PetscLogObjectParent(ts,cvode->pmat); 
+      ierr = PetscLogObjectParent(ts,cvode->pmat);CHKERRQ(ierr);
     }
     ierr = MatCopy(Jac,cvode->pmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
@@ -308,8 +308,8 @@ PetscErrorCode TSSetUp_PVode_Nonlinear(TS ts)
   /* initializing vector update and func */
   ierr = VecDuplicate(ts->vec_sol,&cvode->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&cvode->func);CHKERRQ(ierr);  
-  PetscLogObjectParent(ts,cvode->update);
-  PetscLogObjectParent(ts,cvode->func);
+  ierr = PetscLogObjectParent(ts,cvode->update);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(ts,cvode->func);CHKERRQ(ierr);
 
   /* 
       Create work vectors for the TSPSolve_PVode() routine. Note these are
@@ -318,8 +318,8 @@ PetscErrorCode TSSetUp_PVode_Nonlinear(TS ts)
   */
   ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
-  PetscLogObjectParent(ts,cvode->w1);
-  PetscLogObjectParent(ts,cvode->w2);
+  ierr = PetscLogObjectParent(ts,cvode->w1);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(ts,cvode->w2);CHKERRQ(ierr);
 
   /* allocate memory for PVode */
   ierr = VecGetArray(ts->vec_sol,&tmp);CHKERRQ(ierr);
@@ -876,7 +876,7 @@ PetscErrorCode TSCreate_PVode(TS ts)
 
   ierr  = PetscNew(TS_PVode,&cvode);CHKERRQ(ierr);
   ierr  = PCCreate(ts->comm,&cvode->pc);CHKERRQ(ierr);
-  PetscLogObjectParent(ts,cvode->pc);
+  ierr = PetscLogObjectParent(ts,cvode->pc);CHKERRQ(ierr);
   ts->data          = (void*)cvode;
   cvode->cvode_type = BDF;
   cvode->gtype      = PVODE_UNMODIFIED_GS;

@@ -404,7 +404,7 @@ PetscErrorCode PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[
       if (!rank && !found) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot locate file: %s on node zero",vbinary->filename);
       } else if (!found) {
-        PetscLogInfo(viewer,"Nonzero processor did not locate readonly file");
+        PetscLogInfo(viewer,"PetscViewerSetFilename_Binary:Nonzero processor did not locate readonly file");
         fname = 0;
       }
     } else {

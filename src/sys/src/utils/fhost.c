@@ -94,7 +94,7 @@ PetscErrorCode PetscGetHostName(char name[],size_t nlen)
             if (!flag) {
               ierr = PetscStrcmp(name + ll - 4,".mil",&flag);CHKERRQ(ierr);
               if (!flag) {
-                PetscLogInfo(0,"Rejecting domainname, likely is NIS %s\n",name);
+                PetscLogInfo(0,"PetscGetHostName:Rejecting domainname, likely is NIS %s\n",name);
                 name[l-1] = 0;
               }
             }

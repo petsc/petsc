@@ -361,11 +361,11 @@ PetscErrorCode MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,Mat *newmat)
   ierr = PetscOptionsHasName(A->prefix,"-mat_matlab_qr",&qr);CHKERRQ(ierr);
   if (qr) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_Matlab_QR;
-    PetscLogInfo(0,"Using Matlab QR with iterative refinement for LU factorization and solves");
+    PetscLogInfo(0,"MatConvert_SeqAIJ_Matlab:Using Matlab QR with iterative refinement for LU factorization and solves");
   } else {
-    PetscLogInfo(0,"Using Matlab for LU factorizations and solves.");
+    PetscLogInfo(0,"MatConvert_SeqAIJ_Matlab:Using Matlab for LU factorizations and solves.");
   }
-  PetscLogInfo(0,"Using Matlab for ILUDT factorizations and solves.");
+  PetscLogInfo(0,"MatConvert_SeqAIJ_Matlab:Using Matlab for ILUDT factorizations and solves.");
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_matlab_C",
                                            "MatConvert_SeqAIJ_Matlab",MatConvert_SeqAIJ_Matlab);CHKERRQ(ierr);

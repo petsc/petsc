@@ -92,7 +92,10 @@ def petsc_configure(configure_options):
   sys.path.insert(0, pythonDir)
   import config.framework
   import cPickle
-  
+
+  print '================================================================================='
+  print '             Configuring PETSc to compile on your system                         '
+  print '================================================================================='  
   framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options, loadArgDB = 0)
   try:
     framework.configure(out = sys.stdout)

@@ -588,8 +588,9 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw,PetscDraw *sdraw)
 static PetscErrorCode PetscDrawRestoreSingleton_X(PetscDraw draw,PetscDraw *sdraw)
 {
   PetscErrorCode ierr;
-  PetscDraw_X *sXwin = (PetscDraw_X*)(*sdraw)->data;
+  PetscDraw_X    *sXwin = (PetscDraw_X*)(*sdraw)->data;
 
+  PetscFunctionBegin;
   XFreeGC(sXwin->disp,sXwin->gc.set);
   XCloseDisplay(sXwin->disp);
   if ((*sdraw)->popup)   {ierr = PetscDrawDestroy((*sdraw)->popup);CHKERRQ(ierr);}
@@ -598,7 +599,6 @@ static PetscErrorCode PetscDrawRestoreSingleton_X(PetscDraw draw,PetscDraw *sdra
   ierr = PetscFree(sXwin->font);CHKERRQ(ierr);
   ierr = PetscFree(sXwin);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(*sdraw);CHKERRQ(ierr);
-  PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
@@ -729,7 +729,7 @@ PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
 
   /* actually create and open the window */
   ierr = PetscNew(PetscDraw_X,&Xwin);CHKERRQ(ierr);
-  PetscLogObjectMemory(draw,sizeof(PetscDraw_X)+sizeof(struct _p_PetscDraw));
+  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_X)+sizeof(struct _p_PetscDraw));CHKERRQ(ierr);
   ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
 
   if (!rank) {

@@ -174,7 +174,7 @@ PetscErrorCode PCCreate_TFS(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_TFS,&tfs);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,sizeof(PC_TFS));
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_TFS));CHKERRQ(ierr);
 
   tfs->xxt = 0;
   tfs->xyt = 0;

@@ -154,7 +154,7 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat 
   essl->ja          = essl->ia + essl->lna;
   essl->CleanUpESSL = PETSC_TRUE;
 
-  PetscLogObjectMemory(B,len+sizeof(Mat_Essl));
+  ierr = PetscLogObjectMemory(B,len+sizeof(Mat_Essl));CHKERRQ(ierr);
   *F = B;
   PetscFunctionReturn(0);
 }
@@ -170,7 +170,7 @@ PetscErrorCode MatAssemblyEnd_Essl(Mat A,MatAssemblyType mode) {
 
   essl->MatLUFactorSymbolic = A->ops->lufactorsymbolic;
   A->ops->lufactorsymbolic  = MatLUFactorSymbolic_Essl;
-  PetscLogInfo(0,"Using ESSL for LU factorization and solves");
+  PetscLogInfo(0,"MatAssemblyEnd_Essl:Using ESSL for LU factorization and solves");
   PetscFunctionReturn(0);
 }
 

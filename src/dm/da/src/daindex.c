@@ -153,7 +153,7 @@ PetscErrorCode DAGetAO(DA da,AO *ao)
     ierr = DAGetNatural_Private(da,&Nlocal,&isnatural);CHKERRQ(ierr);
     ierr = ISCreateStride(da->comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
     ierr = AOCreateBasicIS(isnatural,ispetsc,&da->ao);CHKERRQ(ierr);
-    PetscLogObjectParent(da,da->ao);
+    ierr = PetscLogObjectParent(da,da->ao);CHKERRQ(ierr);
     ierr = ISDestroy(ispetsc);CHKERRQ(ierr);
     ierr = ISDestroy(isnatural);CHKERRQ(ierr);
   }

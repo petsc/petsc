@@ -383,7 +383,7 @@ PetscErrorCode TSCreate_CN(TS ts)
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
 
   ierr = PetscNew(TS_CN,&cn);CHKERRQ(ierr);
-  PetscLogObjectMemory(ts,sizeof(TS_CN));
+  ierr = PetscLogObjectMemory(ts,sizeof(TS_CN));CHKERRQ(ierr);
   ts->data = (void*)cn;
 
   PetscFunctionReturn(0);

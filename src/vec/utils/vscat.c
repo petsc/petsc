@@ -821,7 +821,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   if (size > 1) {comm = ycomm; yin_type = VEC_MPI_ID;}
   
   /* generate the Scatter context */
-  PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,"VecScatter",comm,VecScatterDestroy,VecScatterView);
+  ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,"VecScatter",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
   ctx->inuse               = PETSC_FALSE;
 
   ctx->beginandendtogether = PETSC_FALSE;
@@ -1627,7 +1627,7 @@ PetscErrorCode VecScatterCopy(VecScatter sctx,VecScatter *ctx)
   PetscValidHeaderSpecific(sctx,VEC_SCATTER_COOKIE,1);
   PetscValidPointer(ctx,2);
   if (!sctx->copy) SETERRQ(PETSC_ERR_SUP,"Cannot copy this type");
-  PetscHeaderCreate(*ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,"VecScatter",sctx->comm,VecScatterDestroy,VecScatterView);
+  ierr = PetscHeaderCreate(*ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,"VecScatter",sctx->comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
   (*ctx)->to_n   = sctx->to_n;
   (*ctx)->from_n = sctx->from_n;
   ierr = (*sctx->copy)(sctx,*ctx);CHKERRQ(ierr);

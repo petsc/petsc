@@ -137,7 +137,7 @@ PetscErrorCode PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
   ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);   
 #endif
 
-  PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_COOKIE,-1,"PF",comm,PFDestroy,PFView);
+  ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_COOKIE,-1,"PF",comm,PFDestroy,PFView);CHKERRQ(ierr);
   newpf->bops->publish    = PFPublish_Petsc;
   newpf->data             = 0;
 

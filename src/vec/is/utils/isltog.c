@@ -192,9 +192,9 @@ PetscErrorCode ISLocalToGlobalMappingCreateNC(MPI_Comm cm,PetscInt n,const Petsc
     ierr = PetscLogClassRegister(&IS_LTOGM_COOKIE,"IS Local to global mapping");CHKERRQ(ierr);
   }
 
-  PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_COOKIE,0,"ISLocalToGlobalMapping",
-                    cm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);
-  PetscLogObjectMemory(*mapping,sizeof(struct _p_ISLocalToGlobalMapping)+n*sizeof(PetscInt));
+  ierr = PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_COOKIE,0,"ISLocalToGlobalMapping",
+                    cm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(*mapping,sizeof(struct _p_ISLocalToGlobalMapping)+n*sizeof(PetscInt));CHKERRQ(ierr);
 
   (*mapping)->n       = n;
   (*mapping)->indices = (PetscInt*)indices;
@@ -395,7 +395,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
     globals[idx[i] - start] = i;
   }
 
-  PetscLogObjectMemory(mapping,(end-start+1)*sizeof(PetscInt));
+  ierr = PetscLogObjectMemory(mapping,(end-start+1)*sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

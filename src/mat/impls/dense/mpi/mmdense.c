@@ -27,11 +27,11 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
 
   /* Generate the scatter context */
   ierr = VecScatterCreate(gvec,from,mdn->lvec,to,&mdn->Mvctx);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,mdn->Mvctx);
-  PetscLogObjectParent(mat,mdn->lvec);
-  PetscLogObjectParent(mat,from);
-  PetscLogObjectParent(mat,to);
-  PetscLogObjectParent(mat,gvec);
+  ierr = PetscLogObjectParent(mat,mdn->Mvctx);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(mat,mdn->lvec);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(mat,from);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(mat,to);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(mat,gvec);CHKERRQ(ierr);
 
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);

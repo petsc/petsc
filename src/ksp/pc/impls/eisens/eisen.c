@@ -59,7 +59,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 
   if (!eis->b) {
     ierr = VecDuplicate(b,&eis->b);CHKERRQ(ierr);
-    PetscLogObjectParent(pc,eis->b);
+    ierr = PetscLogObjectParent(pc,eis->b);CHKERRQ(ierr);
   }
   
   /* save true b, other option is to swap pointers */
@@ -163,13 +163,13 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
     ierr = MatCreate(pc->comm,m,N,M,N,&eis->shell);CHKERRQ(ierr);
     ierr = MatSetType(eis->shell,MATSHELL);CHKERRQ(ierr);
     ierr = MatShellSetContext(eis->shell,(void*)pc);CHKERRQ(ierr);
-    PetscLogObjectParent(pc,eis->shell);
+    ierr = PetscLogObjectParent(pc,eis->shell);CHKERRQ(ierr);
     ierr = MatShellSetOperation(eis->shell,MATOP_MULT,(void(*)(void))PCMult_Eisenstat);CHKERRQ(ierr);
   }
   if (!eis->usediag) PetscFunctionReturn(0);
   if (!pc->setupcalled) {
     ierr = MatGetVecs(pc->pmat,&eis->diag,0);CHKERRQ(ierr);
-    PetscLogObjectParent(pc,eis->diag);
+    ierr = PetscLogObjectParent(pc,eis->diag);CHKERRQ(ierr);
   }
   ierr = MatGetDiagonal(pc->pmat,eis->diag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -320,7 +320,7 @@ PetscErrorCode PCCreate_Eisenstat(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_Eisenstat,&eis);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,sizeof(PC_Eisenstat));
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_Eisenstat));CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_Eisenstat;
   pc->ops->presolve        = PCPreSolve_Eisenstat;

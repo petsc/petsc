@@ -590,7 +590,7 @@ PetscErrorCode SNESCreate(MPI_Comm comm,SNES *outsnes)
   ierr = SNESInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(snes,_p_SNES,PetscInt,SNES_COOKIE,0,"SNES",comm,SNESDestroy,SNESView);
+  ierr = PetscHeaderCreate(snes,_p_SNES,PetscInt,SNES_COOKIE,0,"SNES",comm,SNESDestroy,SNESView);CHKERRQ(ierr);
   snes->bops->publish     = SNESPublish_Petsc;
   snes->max_its           = 50;
   snes->max_funcs	  = 10000;
@@ -620,7 +620,7 @@ PetscErrorCode SNESCreate(MPI_Comm comm,SNES *outsnes)
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
   ierr = PetscNew(SNES_KSP_EW_ConvCtx,&kctx);CHKERRQ(ierr);
-  PetscLogObjectMemory(snes,sizeof(SNES_KSP_EW_ConvCtx));
+  ierr = PetscLogObjectMemory(snes,sizeof(SNES_KSP_EW_ConvCtx));CHKERRQ(ierr);
   snes->kspconvctx  = (void*)kctx;
   kctx->version     = 2;
   kctx->rtol_0      = .3; /* Eisenstat and Walker suggest rtol_0=.5, but 
@@ -635,7 +635,7 @@ PetscErrorCode SNESCreate(MPI_Comm comm,SNES *outsnes)
   kctx->norm_last   = 0;
 
   ierr = KSPCreate(comm,&snes->ksp);CHKERRQ(ierr);
-  PetscLogObjectParent(snes,snes->ksp)
+  ierr = PetscLogObjectParent(snes,snes->ksp);CHKERRQ(ierr);
 
   *outsnes = snes;
   ierr = PetscPublishAll(snes);CHKERRQ(ierr);

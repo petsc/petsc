@@ -902,8 +902,8 @@ PetscErrorCode AODataCreateBasic(MPI_Comm comm,AOData *aoout)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(ao,_p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,"AOData",comm,AODataDestroy,AODataView); 
-  PetscLogObjectMemory(ao,sizeof(struct _p_AOData));
+  ierr = PetscHeaderCreate(ao,_p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,"AOData",comm,AODataDestroy,AODataView);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(ao,sizeof(struct _p_AOData));CHKERRQ(ierr);
 
   ierr = PetscMemcpy(ao->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ao->bops->publish = AODataPublish_Petsc;
@@ -972,8 +972,8 @@ PetscErrorCode AODataLoadBasic(PetscViewer viewer,AOData *aoout)
   /* read in number of segments */
   ierr = PetscBinaryRead(fd,&nkeys,1,PETSC_INT);CHKERRQ(ierr);
 
-  PetscHeaderCreate(ao,_p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,"AOData",comm,AODataDestroy,AODataView); 
-  PetscLogObjectMemory(ao,sizeof(struct _p_AOData) + nkeys*sizeof(void*));
+  ierr = PetscHeaderCreate(ao,_p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,"AOData",comm,AODataDestroy,AODataView);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(ao,sizeof(struct _p_AOData) + nkeys*sizeof(void*));CHKERRQ(ierr);
 
   ierr = PetscMemcpy(ao->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ao->bops->publish  = AODataPublish_Petsc;

@@ -108,7 +108,7 @@ PetscErrorCode SNESCreate_Test(SNES  snes)
   snes->setfromoptions  = SNESSetFromOptions_Test;
 
   ierr			= PetscNew(SNES_Test,&neP);CHKERRQ(ierr);
-  PetscLogObjectMemory(snes,sizeof(SNES_Test));
+  ierr = PetscLogObjectMemory(snes,sizeof(SNES_Test));CHKERRQ(ierr);
   snes->data    	= (void*)neP;
   neP->complete_print   = PETSC_FALSE;
   PetscFunctionReturn(0);

@@ -390,7 +390,7 @@ PetscErrorCode MatZeroRows_MPIDense(Mat A,IS is,const PetscScalar *diag)
     
   /* actually zap the local rows */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
-  PetscLogObjectParent(A,istmp);
+  ierr = PetscLogObjectParent(A,istmp);CHKERRQ(ierr);
   ierr = PetscFree(lrows);CHKERRQ(ierr);
   ierr = MatZeroRows(l->A,istmp,diag);CHKERRQ(ierr);
   ierr = ISDestroy(istmp);CHKERRQ(ierr);
@@ -589,7 +589,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     /* Since this is a temporary matrix, MATMPIDENSE instead of A->type_name here is probably acceptable. */
     ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
     ierr = MatMPIDenseSetPreallocation(A,PETSC_NULL);
-    PetscLogObjectParent(mat,A);
+    ierr = PetscLogObjectParent(mat,A);CHKERRQ(ierr);
 
     /* Copy the matrix ... This isn't the most efficient means,
        but it's quick for now */
@@ -1016,7 +1016,7 @@ PetscErrorCode MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
   ierr = MatCreate(PETSC_COMM_SELF,mat->m,mat->N,mat->m,mat->N,&a->A);CHKERRQ(ierr);
   ierr = MatSetType(a->A,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(a->A,data);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,a->A);
+  ierr = PetscLogObjectParent(mat,a->A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1065,7 +1065,7 @@ PetscErrorCode MatCreate_MPIDense(Mat mat)
   /* build local table of row and column ownerships */
   ierr       = PetscMalloc(2*(a->size+2)*sizeof(PetscInt),&a->rowners);CHKERRQ(ierr);
   a->cowners = a->rowners + a->size + 1;
-  PetscLogObjectMemory(mat,2*(a->size+2)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_MPIDense));
+  ierr = PetscLogObjectMemory(mat,2*(a->size+2)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_MPIDense));CHKERRQ(ierr);
   ierr = MPI_Allgather(&mat->m,1,MPIU_INT,a->rowners+1,1,MPIU_INT,mat->comm);CHKERRQ(ierr);
   a->rowners[0] = 0;
   for (i=2; i<=a->size; i++) {
@@ -1251,13 +1251,13 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   a->nvec         = oldmat->nvec;
   a->donotstash   = oldmat->donotstash;
   ierr            = PetscMalloc((a->size+1)*sizeof(PetscInt),&a->rowners);CHKERRQ(ierr);
-  PetscLogObjectMemory(mat,(a->size+1)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_MPIDense));
+  ierr = PetscLogObjectMemory(mat,(a->size+1)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_MPIDense));CHKERRQ(ierr);
   ierr = PetscMemcpy(a->rowners,oldmat->rowners,(a->size+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = MatStashCreate_Private(A->comm,1,&mat->stash);CHKERRQ(ierr);
 
   ierr = MatSetUpMultiply_MPIDense(mat);CHKERRQ(ierr);
   ierr = MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,a->A);
+  ierr = PetscLogObjectParent(mat,a->A);CHKERRQ(ierr);
   *newmat = mat;
   PetscFunctionReturn(0);
 }

@@ -59,7 +59,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
 
   ierr = PetscMalloc(size,&gmres->hh_origin);CHKERRQ(ierr);
   ierr = PetscMemzero(gmres->hh_origin,size);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,size);
+  ierr = PetscLogObjectMemory(ksp,size);CHKERRQ(ierr);
   gmres->hes_origin = gmres->hh_origin + hh;
   gmres->rs_origin  = gmres->hes_origin + hes;
   gmres->cc_origin  = gmres->rs_origin + rs;
@@ -70,7 +70,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
     size = (max_k + 3)*(max_k + 9)*sizeof(PetscScalar);
     ierr = PetscMalloc(size,&gmres->Rsvd);CHKERRQ(ierr);
     ierr = PetscMalloc(5*(max_k+2)*sizeof(PetscReal),&gmres->Dsvd);CHKERRQ(ierr);
-    PetscLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(PetscReal));
+    ierr = PetscLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
@@ -79,7 +79,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   gmres->vecs_allocated = VEC_OFFSET + 2 + max_k;
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&gmres->user_work);CHKERRQ(ierr);
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(PetscInt),&gmres->mwork_alloc);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)+sizeof(PetscInt)));
+  ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)+sizeof(PetscInt)));CHKERRQ(ierr);
 
   ierr = PCGetOperators(ksp->pc,0,&pmat,0);CHKERRQ(ierr);
   if (!pmat) SETERRQ(PETSC_ERR_ORDER,"You must call KSPSetOperators() or PCSetOperators() before this call");
@@ -175,7 +175,7 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
     hapbnd  = PetscAbsScalar(tt / *GRS(it));
     if (hapbnd > gmres->haptol) hapbnd = gmres->haptol;
     if (tt < hapbnd) {
-      PetscLogInfo(ksp,"Detected happy breakdown, current hapbnd = %g tt = %g\n",hapbnd,tt);
+      PetscLogInfo(ksp,"GMREScycle:Detected happy breakdown, current hapbnd = %g tt = %g\n",hapbnd,tt);
       hapend = PETSC_TRUE;
     }
     ierr = GMRESUpdateHessenberg(ksp,it,hapend,&res);CHKERRQ(ierr);
@@ -470,7 +470,7 @@ static PetscErrorCode GMRESGetNewVectors(KSP ksp,PetscInt it)
 
   gmres->vv_allocated += nalloc;
   ierr = KSPGetVecs(ksp,nalloc,&gmres->user_work[nwork]);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,nalloc,gmres->user_work[nwork]);CHKERRQ(ierr);
+  PetscLogObjectParents(ksp,nalloc,gmres->user_work[nwork]);
   gmres->mwork_alloc[nwork] = nalloc;
   for (k=0; k<nalloc; k++) {
     gmres->vecs[it+VEC_OFFSET+k] = gmres->user_work[nwork][k];
@@ -490,14 +490,14 @@ PetscErrorCode KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result)
   if (!ptr) {
     if (!gmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&gmres->sol_temp);CHKERRQ(ierr);
-      PetscLogObjectParent(ksp,gmres->sol_temp);
+      ierr = PetscLogObjectParent(ksp,gmres->sol_temp);CHKERRQ(ierr);
     }
     ptr = gmres->sol_temp;
   }
   if (!gmres->nrs) {
     /* allocate the work area */
     ierr = PetscMalloc(gmres->max_k*sizeof(PetscScalar),&gmres->nrs);CHKERRQ(ierr);
-    PetscLogObjectMemory(ksp,gmres->max_k*sizeof(PetscScalar));
+    ierr = PetscLogObjectMemory(ksp,gmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   ierr = BuildGmresSoln(gmres->nrs,ksp->vec_sol,ptr,ksp,gmres->it);CHKERRQ(ierr);
@@ -833,7 +833,7 @@ PetscErrorCode KSPCreate_GMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscNew(KSP_GMRES,&gmres);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,sizeof(KSP_GMRES));
+  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_GMRES));CHKERRQ(ierr);
   ksp->data                              = (void*)gmres;
   ksp->ops->buildsolution                = KSPBuildSolution_GMRES;
 

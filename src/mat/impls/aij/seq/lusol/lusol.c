@@ -506,7 +506,7 @@ PetscErrorCode MatConvert_SeqAIJ_LUSOL(Mat A,const MatType type,Mat *newmat)
   B->ops->lufactorsymbolic   = MatLUFactorSymbolic_LUSOL;
   B->ops->destroy            = MatDestroy_LUSOL;
 
-  PetscLogInfo(0,"Using LUSOL for LU factorization and solves.");
+  PetscLogInfo(0,"MatConvert_SeqAIJ_LUSOL:Using LUSOL for LU factorization and solves.");
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_lusol_C",
                                            "MatConvert_SeqAIJ_LUSOL",MatConvert_SeqAIJ_LUSOL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_lusol_seqaij_C",

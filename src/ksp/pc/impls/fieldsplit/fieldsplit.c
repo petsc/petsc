@@ -515,7 +515,7 @@ PetscErrorCode PCCreate_FieldSplit(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_FieldSplit,&jac);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,sizeof(PC_FieldSplit));
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_FieldSplit));CHKERRQ(ierr);
   jac->bs      = -1;
   jac->nsplits = 0;
   jac->type    = PC_COMPOSITE_ADDITIVE;

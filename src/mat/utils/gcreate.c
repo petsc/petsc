@@ -90,7 +90,7 @@ PetscErrorCode MatCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);
+  ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
 
   B->m             = m;
   B->n             = n;

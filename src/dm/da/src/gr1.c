@@ -90,7 +90,7 @@ PetscErrorCode DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,Petsc
     SETERRQ1(PETSC_ERR_SUP,"Cannot create uniform coordinates for this dimension %D\n",dim);
   }
   ierr = DASetCoordinates(da,xcoor);CHKERRQ(ierr);
-  PetscLogObjectParent(da,xcoor);
+  ierr = PetscLogObjectParent(da,xcoor);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -178,7 +178,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 
     ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDrawAxis(v,j,&axis);CHKERRQ(ierr);
-    PetscLogObjectParent(draw,axis);
+    ierr = PetscLogObjectParent(draw,axis);CHKERRQ(ierr);
     if (!rank) {
       char *title;
 

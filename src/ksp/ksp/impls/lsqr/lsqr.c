@@ -197,7 +197,7 @@ PetscErrorCode KSPCreate_LSQR(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(KSP_LSQR),&lsqr);CHKERRQ(ierr);
   ierr = PetscMemzero(lsqr,sizeof(KSP_LSQR));CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,sizeof(KSP_LSQR));
+  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_LSQR));CHKERRQ(ierr);
   ksp->data                      = (void*)lsqr;
   ksp->pc_side                   = PC_LEFT;
   ksp->ops->setup                = KSPSetUp_LSQR;

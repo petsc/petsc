@@ -483,7 +483,7 @@ PetscErrorCode TSCreate_Rk(TS ts)
   ts->ops->view            = TSView_Rk;
 
   ierr = PetscNew(TS_Rk,&rk);CHKERRQ(ierr);
-  PetscLogObjectMemory(ts,sizeof(TS_Rk));
+  ierr = PetscLogObjectMemory(ts,sizeof(TS_Rk));CHKERRQ(ierr);
   ts->data = (void*)rk;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRKSetTolerance_C","TSRKSetTolerance_RK",TSRKSetTolerance_RK);CHKERRQ(ierr);

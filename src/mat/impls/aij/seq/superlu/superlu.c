@@ -447,7 +447,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
   lu->CleanUpSuperLU = PETSC_TRUE;
 
   *F = B;
-  PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SuperLU));
+  ierr = PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SuperLU));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -562,7 +562,7 @@ PetscErrorCode MatConvert_SeqAIJ_SuperLU(Mat A,const MatType type,Mat *newmat)
                                            "MatConvert_SeqAIJ_SuperLU",MatConvert_SeqAIJ_SuperLU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_seqaij_C",
                                            "MatConvert_SuperLU_SeqAIJ",MatConvert_SuperLU_SeqAIJ);CHKERRQ(ierr);
-  PetscLogInfo(0,"Using SuperLU for SeqAIJ LU factorization and solves.");
+  PetscLogInfo(0,"MatConvert_SeqAIJ_SuperLU:Using SuperLU for SeqAIJ LU factorization and solves.");
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSUPERLU);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);

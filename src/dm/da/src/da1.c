@@ -150,14 +150,14 @@ PetscErrorCode DACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt 
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   M = tM;
 
-  PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
+  ierr = PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);CHKERRQ(ierr);
   da->bops->publish           = DAPublish_Petsc;
   da->ops->createglobalvector = DACreateGlobalVector;
   da->ops->getinterpolation   = DAGetInterpolation;
   da->ops->getcoloring        = DAGetColoring;
   da->ops->getmatrix          = DAGetMatrix;
   da->ops->refine             = DARefine;
-  PetscLogObjectMemory(da,sizeof(struct _p_DA));
+  ierr = PetscLogObjectMemory(da,sizeof(struct _p_DA));CHKERRQ(ierr);
   da->dim        = 1;
   da->interptype = DA_Q1;
   da->refine_x   = refine_x;
@@ -236,9 +236,9 @@ PetscErrorCode DACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt 
   ierr = ISCreateStride(comm,x,start,1,&to);CHKERRQ(ierr);
   ierr = ISCreateStride(comm,x,xs-Xs,1,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
-  PetscLogObjectParent(da,to);
-  PetscLogObjectParent(da,from);
-  PetscLogObjectParent(da,ltog);
+  ierr = PetscLogObjectParent(da,to);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,from);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,ltog);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
 
@@ -247,7 +247,7 @@ PetscErrorCode DACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt 
   ierr = ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
  
   ierr = PetscMalloc((x+2*s)*sizeof(PetscInt),&idx);CHKERRQ(ierr);  
-  PetscLogObjectMemory(da,(x+2*s)*sizeof(PetscInt));
+  ierr = PetscLogObjectMemory(da,(x+2*s)*sizeof(PetscInt));CHKERRQ(ierr);
 
   nn = 0;
   if (wrap == DA_XPERIODIC) {    /* Handle all cases with wrap first */
@@ -276,9 +276,9 @@ PetscErrorCode DACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt 
 
   ierr = ISCreateGeneral(comm,nn,idx,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
-  PetscLogObjectParent(da,to);
-  PetscLogObjectParent(da,from);
-  PetscLogObjectParent(da,gtol);
+  ierr = PetscLogObjectParent(da,to);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,from);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(da,gtol);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = VecDestroy(local);CHKERRQ(ierr);
@@ -304,7 +304,7 @@ PetscErrorCode DACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt 
   */
   ierr = ISLocalToGlobalMappingCreateNC(comm,nn,idx,&da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,da->w,&da->ltogmapb);CHKERRQ(ierr);
-  PetscLogObjectParent(da,da->ltogmap);
+  ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
 
   da->ltol = PETSC_NULL;
   da->ao   = PETSC_NULL;

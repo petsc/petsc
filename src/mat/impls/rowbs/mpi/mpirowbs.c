@@ -15,7 +15,7 @@ static PetscErrorCode MatFreeRowbs_Private(Mat A,int n,int *i,PetscScalar *v)
     int len = -n*(sizeof(int)+sizeof(PetscScalar));
 #endif
     ierr = PetscFree(v);CHKERRQ(ierr);
-    PetscLogObjectMemory(A,len);
+    ierr = PetscLogObjectMemory(A,len);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -33,7 +33,7 @@ static PetscErrorCode MatMallocRowbs_Private(Mat A,int n,int **i,PetscScalar **v
   } else {
     len = n*(sizeof(int) + sizeof(PetscScalar));
     ierr = PetscMalloc(len,v);CHKERRQ(ierr);
-    PetscLogObjectMemory(A,len);
+    ierr = PetscLogObjectMemory(A,len);CHKERRQ(ierr);
     *i = (int*)(*v + n);
   }
   PetscFunctionReturn(0);
@@ -112,7 +112,7 @@ static PetscErrorCode MatCreateMPIRowbs_local(Mat A,int nz,const int nnz[])
     vs->length = 0;
     vs++; 
   }
-  PetscLogObjectMemory(A,sizeof(BSspmat) + len);
+  ierr = PetscLogObjectMemory(A,sizeof(BSspmat) + len);CHKERRQ(ierr);
   bsif->nz               = 0;
   bsif->maxnz            = nz;
   bsif->sorted           = 0;
@@ -1078,7 +1078,7 @@ PetscErrorCode MatZeroRows_MPIRowbs(Mat A,IS is,const PetscScalar *diag)
     
   /* actually zap the local rows */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);  
-  PetscLogObjectParent(A,istmp);
+  ierr = PetscLogObjectParent(A,istmp);CHKERRQ(ierr);
   ierr = PetscFree(lrows);CHKERRQ(ierr);
   ierr = MatZeroRows_MPIRowbs_local(A,istmp,diag);CHKERRQ(ierr);
   ierr = ISDestroy(istmp);CHKERRQ(ierr);
@@ -1664,7 +1664,7 @@ PetscErrorCode MatCreate_MPIRowbs(Mat A)
   }
   a->rstart = a->rowners[a->rank]; 
   a->rend   = a->rowners[a->rank+1]; 
-  PetscLogObjectMemory(A,(A->m+a->size+3)*sizeof(int));
+  ierr      = PetscLogObjectMemory(A,(A->m+a->size+3)*sizeof(int));CHKERRQ(ierr);
 
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(A->comm,1,&A->stash);CHKERRQ(ierr);
@@ -1682,8 +1682,8 @@ PetscErrorCode MatCreate_MPIRowbs(Mat A)
   ierr = MPI_Comm_dup(A->comm,&(a->comm_mpirowbs));CHKERRQ(ierr);
   ierr = VecCreateMPI(A->comm,A->m,A->M,&(a->diag));CHKERRQ(ierr);
   ierr = VecDuplicate(a->diag,&(a->xwork));CHKERRQ(ierr);
-  PetscLogObjectParent(A,a->diag);  PetscLogObjectParent(A,a->xwork);
-  PetscLogObjectMemory(A,(A->m+1)*sizeof(PetscScalar));
+  ierr = PetscLogObjectParent(A,a->diag);  PetscLogObjectParent(A,a->xwork);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(A,(A->m+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   bspinfo = BScreate_ctx();CHKERRBS(0);
   a->procinfo = bspinfo;
   BSctx_set_id(bspinfo,a->rank);CHKERRBS(0);
@@ -1716,7 +1716,7 @@ PetscErrorCode MatCreate_MPIRowbs(Mat A)
   offset = &a->rstart;
 
   ierr = PetscNew(BSmapping,&a->bsmap);CHKERRQ(ierr);
-  PetscLogObjectMemory(A,sizeof(BSmapping));
+  ierr = PetscLogObjectMemory(A,sizeof(BSmapping));CHKERRQ(ierr);
   bsmap = a->bsmap;
   ierr                           = PetscMalloc(sizeof(int),&bsmap->vlocal2global);CHKERRQ(ierr);
   *((int*)bsmap->vlocal2global) = (*offset);
@@ -2035,8 +2035,8 @@ PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,Mat
     not this merely contains a pointer to the original matrix, since
     the original matrix contains the factor information.
   */
-  PetscHeaderCreate(newmat,_p_Mat,struct _MatOps,MAT_COOKIE,-1,"Mat",mat->comm,MatDestroy,MatView);
-  PetscLogObjectMemory(newmat,sizeof(struct _p_Mat));
+  ierr = PetscHeaderCreate(newmat,_p_Mat,struct _MatOps,MAT_COOKIE,-1,"Mat",mat->comm,MatDestroy,MatView);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(newmat,sizeof(struct _p_Mat));CHKERRQ(ierr);
 
   newmat->data         = (void*)mat;
   ierr                 = PetscMemcpy(newmat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
@@ -2097,8 +2097,8 @@ PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactor
     not this merely contains a pointer to the original matrix, since
     the original matrix contains the factor information.
   */
-  PetscHeaderCreate(newmat,_p_Mat,struct _MatOps,MAT_COOKIE,-1,"Mat",mat->comm,MatDestroy,MatView);
-  PetscLogObjectMemory(newmat,sizeof(struct _p_Mat));
+  ierr = PetscHeaderCreate(newmat,_p_Mat,struct _MatOps,MAT_COOKIE,-1,"Mat",mat->comm,MatDestroy,MatView);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(newmat,sizeof(struct _p_Mat));CHKERRQ(ierr);
 
   newmat->data         = (void*)mat;
   ierr                 = PetscMemcpy(newmat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);

@@ -223,9 +223,9 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_COOKIE, AO_BASIC, "AO", comm, AODestroy, AOView); 
+  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_COOKIE, AO_BASIC, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
   ierr = PetscNew(AO_Basic, &aobasic);CHKERRQ(ierr);
-  PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Basic));
+  ierr = PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Basic));CHKERRQ(ierr);
 
   ierr = PetscMemcpy(ao->ops, &AOops, sizeof(AOops));CHKERRQ(ierr);
   ao->data = (void*) aobasic;
@@ -266,7 +266,7 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],
 
   /* generate a list of application and PETSc node numbers */
   ierr = PetscMalloc(2*N * sizeof(PetscInt), &aobasic->app);CHKERRQ(ierr);
-  PetscLogObjectMemory(ao,2*N*sizeof(PetscInt));
+  ierr = PetscLogObjectMemory(ao,2*N*sizeof(PetscInt));CHKERRQ(ierr);
   aobasic->petsc = aobasic->app + N;
   ierr = PetscMemzero(aobasic->app, 2*N*sizeof(PetscInt));CHKERRQ(ierr);
   for(i = 0; i < N; i++) {

@@ -52,8 +52,7 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
   /* Allocate space and set pointers to beginning */
   ierr = PetscMalloc(size,&fgmres->hh_origin);CHKERRQ(ierr);
   ierr = PetscMemzero(fgmres->hh_origin,size);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,size);                      /* HH - modified (by plane 
-                                                     rotations) hessenburg */
+  ierr = PetscLogObjectMemory(ksp,size);CHKERRQ(ierr); /* HH - modified (by plane rotations) hessenburg */
   fgmres->hes_origin = fgmres->hh_origin + hh;     /* HES - unmodified hessenburg */
   fgmres->rs_origin  = fgmres->hes_origin + hes;   /* RS - the right-hand-side of the 
                                                       Hessenberg system */
@@ -65,7 +64,7 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
     size = (max_k + 3)*(max_k + 9)*sizeof(PetscScalar);
     ierr = PetscMalloc(size,&fgmres->Rsvd);CHKERRQ(ierr);
     ierr = PetscMalloc(5*(max_k+2)*sizeof(PetscReal),&fgmres->Dsvd);CHKERRQ(ierr);
-    PetscLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(PetscReal));
+    ierr = PetscLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(PetscReal));CHKERRQ(ierr);
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
@@ -74,13 +73,13 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
   fgmres->vecs_allocated = VEC_OFFSET + 2 + max_k;
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->user_work);CHKERRQ(ierr);
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(PetscInt),&fgmres->mwork_alloc);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)+sizeof(PetscInt)));
+  ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)+sizeof(PetscInt)));CHKERRQ(ierr);
 
   /* New for FGMRES - Allocate array to hold pointers to preconditioned 
      vectors - same sizes as user vectors above */
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->prevecs);CHKERRQ(ierr);
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->prevecs_user_work);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)));
+  ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)));CHKERRQ(ierr);
 
 
   /* if q_preallocate = 0 then only allocate one "chunck" of space (for 
@@ -607,7 +606,7 @@ static PetscErrorCode FGMRESGetNewVectors(KSP ksp,PetscInt it)
 
   /* work vectors */
   ierr = KSPGetVecs(ksp,nalloc,&fgmres->user_work[nwork]);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,nalloc,fgmres->user_work[nwork]); 
+  PetscLogObjectParents(ksp,nalloc,fgmres->user_work[nwork]);
   for (k=0; k < nalloc; k++) {
     fgmres->vecs[it+VEC_OFFSET+k] = fgmres->user_work[nwork][k];
   }
@@ -616,7 +615,7 @@ static PetscErrorCode FGMRESGetNewVectors(KSP ksp,PetscInt it)
 
   /* preconditioned vectors */
   ierr = KSPGetVecs(ksp,nalloc,&fgmres->prevecs_user_work[nwork]);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,nalloc,fgmres->prevecs_user_work[nwork]);CHKERRQ(ierr);
+  PetscLogObjectParents(ksp,nalloc,fgmres->prevecs_user_work[nwork]);
   for (k=0; k < nalloc; k++) {
     fgmres->prevecs[it+VEC_OFFSET+k] = fgmres->prevecs_user_work[nwork][k];
   } 
@@ -652,14 +651,14 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
   if (!ptr) {
     if (!fgmres->sol_temp) {
       ierr = VecDuplicate(ksp->vec_sol,&fgmres->sol_temp);CHKERRQ(ierr);
-      PetscLogObjectParent(ksp,fgmres->sol_temp);
+      ierr = PetscLogObjectParent(ksp,fgmres->sol_temp);CHKERRQ(ierr);
     }
     ptr = fgmres->sol_temp;
   }
   if (!fgmres->nrs) {
     /* allocate the work area */
     ierr = PetscMalloc(fgmres->max_k*sizeof(PetscScalar),&fgmres->nrs);CHKERRQ(ierr);
-    PetscLogObjectMemory(ksp,fgmres->max_k*sizeof(PetscScalar));
+    ierr = PetscLogObjectMemory(ksp,fgmres->max_k*sizeof(PetscScalar));CHKERRQ(ierr);
   }
  
   ierr = BuildFgmresSoln(fgmres->nrs,ksp->vec_sol,ptr,ksp,fgmres->it);CHKERRQ(ierr);
@@ -870,7 +869,7 @@ PetscErrorCode KSPCreate_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscNew(KSP_FGMRES,&fgmres);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,sizeof(KSP_FGMRES));
+  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_FGMRES));CHKERRQ(ierr);
   ksp->data                              = (void*)fgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_FGMRES;
 
@@ -915,7 +914,7 @@ PetscErrorCode KSPCreate_FGMRES(KSP ksp)
         This is not great since it changes this without explicit request from the user
      but there is no left preconditioning in the FGMRES
   */
-  PetscLogInfo(ksp,"Warning: Setting PC_SIDE for FGMRES to right!\n");
+  PetscLogInfo(ksp,"KSPCreate_FGMRES: WARNING! Setting PC_SIDE for FGMRES to right!\n");
   ksp->pc_side                = PC_RIGHT;
 
   PetscFunctionReturn(0);

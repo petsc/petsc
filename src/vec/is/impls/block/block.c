@@ -266,9 +266,9 @@ PetscErrorCode ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt
   ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,"IS",comm,ISDestroy,ISView); 
+  ierr = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
   ierr = PetscNew(IS_Block,&sub);CHKERRQ(ierr);
-  PetscLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(PetscInt)+sizeof(struct _p_IS));
+  ierr = PetscLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(PetscInt)+sizeof(struct _p_IS));CHKERRQ(ierr);
   ierr   = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
   sub->n = n;
   ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);

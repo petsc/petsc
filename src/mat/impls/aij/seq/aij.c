@@ -196,7 +196,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
 
         rp   = aj + ai[row]; ap = aa + ai[row] ;
         rmax = imax[row] = imax[row] + CHUNKSIZE;
-        PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(PetscInt) + sizeof(PetscScalar)));
+        ierr = PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(PetscInt) + sizeof(PetscScalar)));CHKERRQ(ierr);
         a->maxnz += CHUNKSIZE;
         a->reallocs++;
       }
@@ -632,7 +632,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   /* diagonals may have moved, so kill the diagonal pointers */
   if (fshift && a->diag) {
     ierr = PetscFree(a->diag);CHKERRQ(ierr);
-    PetscLogObjectMemory(A,-(m+1)*sizeof(PetscInt));
+    ierr = PetscLogObjectMemory(A,-(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
     a->diag = 0;
   } 
   PetscLogInfo(A,"MatAssemblyEnd_SeqAIJ:Matrix size: %D X %D; storage space: %D unneeded,%D used\n",m,A->n,fshift,a->nz);
@@ -1040,7 +1040,7 @@ PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat A)
   if (a->diag) PetscFunctionReturn(0);
 
   ierr = PetscMalloc((m+1)*sizeof(PetscInt),&diag);CHKERRQ(ierr);
-  PetscLogObjectMemory(A,(m+1)*sizeof(PetscInt));
+  ierr = PetscLogObjectMemory(A,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<A->m; i++) {
     diag[i] = a->i[i+1];
     for (j=a->i[i]; j<a->i[i+1]; j++) {
@@ -1758,7 +1758,7 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
   /* Create the inverse permutation so that it can be used in MatLUFactorNumeric() */
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);} /* need to remove old one */
   ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);
-  PetscLogObjectParent(inA,a->icol);
+  ierr = PetscLogObjectParent(inA,a->icol);CHKERRQ(ierr);
 
   if (!a->solve_work) { /* this matrix may have been factored before */
      ierr = PetscMalloc((inA->m+1)*sizeof(PetscScalar),&a->solve_work);CHKERRQ(ierr);
@@ -1993,11 +1993,11 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   PetscFunctionBegin;
   if (!coloring->w1) {
     ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
-    PetscLogObjectParent(coloring,coloring->w1);
+    ierr = PetscLogObjectParent(coloring,coloring->w1);CHKERRQ(ierr);
     ierr = VecDuplicate(x1,&coloring->w2);CHKERRQ(ierr);
-    PetscLogObjectParent(coloring,coloring->w2);
+    ierr = PetscLogObjectParent(coloring,coloring->w2);CHKERRQ(ierr);
     ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
-    PetscLogObjectParent(coloring,coloring->w3);
+    ierr = PetscLogObjectParent(coloring,coloring->w3);CHKERRQ(ierr);
   }
   w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
@@ -2682,7 +2682,7 @@ PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,PetscInt *nnz)
 
   /* b->ilen will count nonzeros in each row so far. */
   ierr = PetscMalloc((B->m+1)*sizeof(PetscInt),&b->ilen);CHKERRQ(ierr);
-  PetscLogObjectMemory(B,len+2*(B->m+1)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_SeqAIJ));
+  ierr = PetscLogObjectMemory(B,len+2*(B->m+1)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_SeqAIJ));CHKERRQ(ierr);
   for (i=0; i<B->m; i++) { b->ilen[i] = 0;}
 
   b->nz                = 0;
@@ -2852,14 +2852,14 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     }
   }
 
-  PetscLogObjectMemory(C,len+2*(m+1)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_SeqAIJ));  
+  ierr = PetscLogObjectMemory(C,len+2*(m+1)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_SeqAIJ));CHKERRQ(ierr);
   c->sorted            = a->sorted;
   c->ignorezeroentries = a->ignorezeroentries;
   c->roworiented       = a->roworiented;
   c->nonew             = a->nonew;
   if (a->diag) {
     ierr = PetscMalloc((m+1)*sizeof(PetscInt),&c->diag);CHKERRQ(ierr);
-    PetscLogObjectMemory(C,(m+1)*sizeof(PetscInt));
+    ierr = PetscLogObjectMemory(C,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       c->diag[i] = a->diag[i];
     }

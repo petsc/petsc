@@ -69,7 +69,7 @@ PetscErrorCode PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,PetscScal
   
   PetscFunctionBegin;  
   if (!ml->rank) {
-    PetscLogInfo(0,"Putting Matlab array %s\n",name);
+    PetscLogInfo(0,"PetscViewerMatlabPutArray:Putting Matlab array %s\n",name);
 #if !defined(PETSC_USE_COMPLEX)
     mat  = mxCreateDoubleMatrix(m,n,mxREAL);
 #else
@@ -78,7 +78,7 @@ PetscErrorCode PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,PetscScal
     ierr = PetscMemcpy(mxGetPr(mat),array,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
     matPutVariable(ml->ep,name,mat);
 
-    PetscLogInfo(0,"Put Matlab array %s\n",name);
+    PetscLogInfo(0,"PetscViewerMatlabPutArray:Put Matlab array %s\n",name);
   }
   PetscFunctionReturn(0);
 }
@@ -120,11 +120,11 @@ PetscErrorCode PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscScal
   
   PetscFunctionBegin;  
   if (!ml->rank) {
-    PetscLogInfo(0,"Getting Matlab array %s\n",name);
+    PetscLogInfo(0,"PetscViewerMatlabGetArray:Getting Matlab array %s\n",name);
     mat  = matGetVariable(ml->ep,name);
     if (!mat) SETERRQ1(PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
     ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(PetscScalar));CHKERRQ(ierr);
-    PetscLogInfo(0,"Got Matlab array %s\n",name);
+    PetscLogInfo(0,"PetscViewerMatlabGetArray:Got Matlab array %s\n",name);
   }
   PetscFunctionReturn(0);
 }

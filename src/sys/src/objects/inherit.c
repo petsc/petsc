@@ -596,7 +596,7 @@ PetscErrorCode PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *co
   if (!CONTAINER_COOKIE) {
     ierr = PetscLogClassRegister(&CONTAINER_COOKIE,          "Container");CHKERRQ(ierr);
   }
-  PetscHeaderCreate(contain,_p_PetscObjectContainer,PetscInt,CONTAINER_COOKIE,0,"container",comm,PetscObjectContainerDestroy,0);
+  ierr = PetscHeaderCreate(contain,_p_PetscObjectContainer,PetscInt,CONTAINER_COOKIE,0,"container",comm,PetscObjectContainerDestroy,0);CHKERRQ(ierr);
   *container = contain;
   PetscFunctionReturn(0);
 }

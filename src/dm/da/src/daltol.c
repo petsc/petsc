@@ -30,7 +30,7 @@ PetscErrorCode DALocalToLocalCreate(DA da)
      rather then from the plain array.
   */
   ierr = VecScatterCopy(da->gtol,&da->ltol);CHKERRQ(ierr);
-  PetscLogObjectParent(da,da->ltol);
+  ierr = PetscLogObjectParent(da,da->ltol);CHKERRQ(ierr);
   if (da->dim == 1) {
     left = da->xs - da->Xs;
     ierr = PetscMalloc((da->xe-da->xs)*sizeof(PetscInt),&idx);CHKERRQ(ierr);

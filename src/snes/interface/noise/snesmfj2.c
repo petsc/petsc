@@ -225,7 +225,7 @@ PetscErrorCode SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
 
   PetscFunctionBegin;
   ierr = PetscNew(MFCtx_Private,&mfctx);CHKERRQ(ierr);
-  PetscLogObjectMemory(snes,sizeof(MFCtx_Private));
+  ierr = PetscLogObjectMemory(snes,sizeof(MFCtx_Private));CHKERRQ(ierr);
   mfctx->sp   = 0;
   mfctx->snes = snes;
   mfctx->error_rel        = PETSC_SQRT_MACHINE_EPSILON;
@@ -273,8 +273,8 @@ PetscErrorCode SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)(void))SNESMatrixFreeDestroy2_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_VIEW,(void(*)(void))SNESMatrixFreeView2_Private);CHKERRQ(ierr);
 
-  PetscLogObjectParent(*J,mfctx->w);
-  PetscLogObjectParent(snes,*J);
+  ierr = PetscLogObjectParent(*J,mfctx->w);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(snes,*J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

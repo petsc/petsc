@@ -745,7 +745,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       if (ilu->row) PetscLogObjectParent(pc,ilu->row); 
       if (ilu->col) PetscLogObjectParent(pc,ilu->col);
       ierr = MatILUDTFactor(pc->pmat,&ilu->info,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
-      PetscLogObjectParent(pc,ilu->fact);
+      ierr = PetscLogObjectParent(pc,ilu->fact);CHKERRQ(ierr);
     } else if (pc->flag != SAME_NONZERO_PATTERN) { 
       ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);
       if (!ilu->reuseordering) {
@@ -756,11 +756,11 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
         if (ilu->col) PetscLogObjectParent(pc,ilu->col);
       }
       ierr = MatILUDTFactor(pc->pmat,&ilu->info,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
-      PetscLogObjectParent(pc,ilu->fact);
+      ierr = PetscLogObjectParent(pc,ilu->fact);CHKERRQ(ierr);
     } else if (!ilu->reusefill) { 
       ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);
       ierr = MatILUDTFactor(pc->pmat,&ilu->info,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
-      PetscLogObjectParent(pc,ilu->fact);
+      ierr = PetscLogObjectParent(pc,ilu->fact);CHKERRQ(ierr);
     } else {
       ierr = MatLUFactorNumeric(pc->pmat,&ilu->info,&ilu->fact);CHKERRQ(ierr);
     }
@@ -775,7 +775,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
       ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
-      PetscLogObjectParent(pc,ilu->fact);
+      ierr = PetscLogObjectParent(pc,ilu->fact);CHKERRQ(ierr);
     } else if (pc->flag != SAME_NONZERO_PATTERN) { 
       if (!ilu->reuseordering) {
         /* compute a new ordering for the ILU */
@@ -791,7 +791,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       }
       ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);
       ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
-      PetscLogObjectParent(pc,ilu->fact);
+      ierr = PetscLogObjectParent(pc,ilu->fact);CHKERRQ(ierr);
     }
     ierr = MatLUFactorNumeric(pc->pmat,&ilu->info,&ilu->fact);CHKERRQ(ierr);
   }
@@ -891,7 +891,7 @@ PetscErrorCode PCCreate_ILU(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_ILU,&ilu);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,sizeof(PC_ILU));
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_ILU));CHKERRQ(ierr);
 
   ilu->fact                    = 0;
   ierr = MatFactorInfoInitialize(&ilu->info);CHKERRQ(ierr);

@@ -182,7 +182,7 @@ static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
 
   PetscFunctionBegin;
   ierr = MatGetVecs(pc->pmat,&jac->diagsqrt,0);CHKERRQ(ierr);
-  PetscLogObjectParent(pc,jac->diagsqrt);
+  ierr = PetscLogObjectParent(pc,jac->diagsqrt);CHKERRQ(ierr);
   ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -204,7 +204,7 @@ static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
 
   PetscFunctionBegin;
   ierr = MatGetVecs(pc->pmat,&jac->diag,0);CHKERRQ(ierr);
-  PetscLogObjectParent(pc,jac->diag);
+  ierr = PetscLogObjectParent(pc,jac->diag);CHKERRQ(ierr);
   ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -358,7 +358,7 @@ PetscErrorCode PCCreate_Jacobi(PC pc)
      Logs the memory usage; this is not needed but allows PETSc to 
      monitor how much memory is being used for various purposes.
   */
-  PetscLogObjectMemory(pc,sizeof(PC_Jacobi));
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_Jacobi));CHKERRQ(ierr);
 
   /*
      Initialize the pointers to vectors to ZERO; these will be used to store

@@ -513,7 +513,7 @@ PetscErrorCode PCCreate_Composite(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_Composite,&jac);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,sizeof(PC_Composite));
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_Composite));CHKERRQ(ierr);
   pc->ops->apply              = PCApply_Composite_Additive;
   pc->ops->setup              = PCSetUp_Composite;
   pc->ops->destroy            = PCDestroy_Composite;

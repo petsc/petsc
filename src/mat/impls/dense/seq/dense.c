@@ -94,7 +94,7 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
   PetscFunctionBegin;
   if (!mat->pivots) {
     ierr = PetscMalloc((A->m+1)*sizeof(PetscBLASInt),&mat->pivots);CHKERRQ(ierr);
-    PetscLogObjectMemory(A,A->m*sizeof(PetscBLASInt));
+    ierr = PetscLogObjectMemory(A,A->m*sizeof(PetscBLASInt));CHKERRQ(ierr);
   }
   A->factor = FACTOR_LU;
   if (!A->m || !A->n) PetscFunctionReturn(0);
@@ -195,7 +195,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
   PetscFunctionBegin;
   if (mat->pivots) {
     ierr = PetscFree(mat->pivots);CHKERRQ(ierr);
-    PetscLogObjectMemory(A,-A->m*sizeof(PetscInt));
+    ierr = PetscLogObjectMemory(A,-A->m*sizeof(PetscInt));CHKERRQ(ierr);
     mat->pivots = 0;
   }
   if (!A->m || !A->n) PetscFunctionReturn(0);
@@ -308,7 +308,7 @@ PetscErrorCode MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   if (!A->m || !A->n) PetscFunctionReturn(0);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp);CHKERRQ(ierr);
-    PetscLogObjectParent(A,tmp);
+    ierr = PetscLogObjectParent(A,tmp);CHKERRQ(ierr);
     ierr = VecCopy(yy,tmp);CHKERRQ(ierr);
   } 
   ierr = PetscMemcpy(y,x,A->m*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -352,7 +352,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp);CHKERRQ(ierr);
-    PetscLogObjectParent(A,tmp);
+    ierr = PetscLogObjectParent(A,tmp);CHKERRQ(ierr);
     ierr = VecCopy(yy,tmp);CHKERRQ(ierr);
   } 
   ierr = PetscMemcpy(y,x,A->m*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1622,7 +1622,7 @@ PetscErrorCode MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
     ierr          = PetscMalloc((B->m*B->n+1)*sizeof(PetscScalar),&b->v);CHKERRQ(ierr);
     ierr          = PetscMemzero(b->v,B->m*B->n*sizeof(PetscScalar));CHKERRQ(ierr);
     b->user_alloc = PETSC_FALSE;
-    PetscLogObjectMemory(B,B->n*B->m*sizeof(PetscScalar));
+    ierr = PetscLogObjectMemory(B,B->n*B->m*sizeof(PetscScalar));CHKERRQ(ierr);
   } else { /* user-allocated storage */
     b->v          = data;
     b->user_alloc = PETSC_TRUE;
@@ -1691,7 +1691,7 @@ PetscErrorCode MatCreate_SeqDense(Mat B)
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;
   B->mapping      = 0;
-  PetscLogObjectMemory(B,sizeof(struct _p_Mat));
+  ierr = PetscLogObjectMemory(B,sizeof(struct _p_Mat));CHKERRQ(ierr);
   B->data         = (void*)b;
 
   ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);

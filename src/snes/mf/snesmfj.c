@@ -438,7 +438,7 @@ PetscErrorCode MatCreateSNESMF(SNES snes,Vec x,Mat *J)
   mfctx          = (MatSNESMFCtx)(*J)->data;
   mfctx->snes    = snes;
   mfctx->usesnes = PETSC_TRUE;
-  PetscLogObjectParent(snes,*J);
+  ierr = PetscLogObjectParent(snes,*J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -557,7 +557,7 @@ PetscErrorCode MatCreate_MFFD(Mat A)
   ierr = SNESInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(mfctx,_p_MatSNESMFCtx,struct _MFOps,MATSNESMFCTX_COOKIE,0,"SNESMF",A->comm,MatDestroy_MFFD,MatView_MFFD);
+  ierr = PetscHeaderCreate(mfctx,_p_MatSNESMFCtx,struct _MFOps,MATSNESMFCTX_COOKIE,0,"SNESMF",A->comm,MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
   mfctx->sp              = 0;
   mfctx->snes            = 0;
   mfctx->error_rel       = PETSC_SQRT_MACHINE_EPSILON;

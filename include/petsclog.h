@@ -55,16 +55,16 @@ EXTERN PetscErrorCode        PetscLogMPEBegin(void);
 EXTERN PetscErrorCode        PetscLogMPEDump(const char[]);
 extern PetscTruth UseMPE;
 #define PETSC_LOG_EVENT_MPE_BEGIN(e) \
-  if(UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) \
-    MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_begin,0,(char*)"");
+  ((UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ?
+   MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_begin,0,(char*)"") : 0)
 
 #define PETSC_LOG_EVENT_MPE_END(e) \
-  if(UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) \
-    MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_end,0,(char*)"");
+  ((UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ?
+   MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_end,0,(char*)"") : 0)
 
 #else 
-#define PETSC_LOG_EVENT_MPE_BEGIN(e)
-#define PETSC_LOG_EVENT_MPE_END(e)
+#define PETSC_LOG_EVENT_MPE_BEGIN(e) 0 
+#define PETSC_LOG_EVENT_MPE_END(e)   0
 #endif
 
 EXTERN PetscErrorCode (*_PetscLogPLB)(PetscEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
@@ -73,16 +73,12 @@ EXTERN PetscErrorCode (*_PetscLogPHC)(PetscObject);
 EXTERN PetscErrorCode (*_PetscLogPHD)(PetscObject);
 
 #define PetscLogObjectParent(p,c) \
-  if (c) {\
-    PetscValidHeader((PetscObject)(c),2);\
-    PetscValidHeader((PetscObject)(p),1);\
-    ((PetscObject)(c))->parent = (PetscObject)(p);\
-    ((PetscObject)(c))->parentid = ((PetscObject)p)->id;\
-  }
+  ((c && p) ? ((PetscObject)(c))->parent = (PetscObject)(p),((PetscObject)(c))->parentid = ((PetscObject)p)->id : 0, 0)
+
 #define PetscLogObjectParents(p,n,d) {int _i; for (_i=0; _i<n; _i++) PetscLogObjectParent(p,(d)[_i]);}
 #define PetscLogObjectCreate(h)      ((_PetscLogPHC) ? (*_PetscLogPHC)((PetscObject)h) : 0)
 #define PetscLogObjectDestroy(h)     ((_PetscLogPHD) ? (*_PetscLogPHD)((PetscObject)h) : 0)
-#define PetscLogObjectMemory(p,m)    {PetscValidHeader((PetscObject)p,1);((PetscObject)(p))->mem += (m);}
+#define PetscLogObjectMemory(p,m)    (((PetscObject)(p))->mem += (m),0)
 /* Initialization functions */
 EXTERN PetscErrorCode PetscLogBegin(void);
 EXTERN PetscErrorCode PetscLogAllBegin(void);
@@ -225,40 +221,22 @@ struct _StageLog {
   ClassRegLog classLog;  /* The registered classes */
 };
 
-#define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) 0; \
-{\
-  int _2_ierr;\
-  if (_PetscLogPLB && \
-      _stageLog->stageInfo[_stageLog->curStage].perfInfo.active && \
-      _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) {\
-    _2_ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);\
-    _2_ierr = MPI_Barrier(cm);CHKERRQ(_2_ierr);\
-    _2_ierr = PetscLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);\
-  }\
-  _2_ierr = PetscLogEventBegin((e)+1,o1,o2,o3,o4);CHKERRQ(_2_ierr);\
-}
+#define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
+  (((_PetscLogPLB && _stageLog->stageInfo[_stageLog->curStage].perfInfo.active &&  _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ? \
+    (PetscLogEventBegin((e),o1,o2,o3,o4) || MPI_Barrier(cm) || PetscLogEventEnd((e),o1,o2,o3,o4)) : 0 ) || \
+   PetscLogEventBegin((e)+1,o1,o2,o3,o4))
 
-#define PetscLogEventBegin(e,o1,o2,o3,o4) 0; \
-{\
-  if (_PetscLogPLB && \
-      _stageLog->stageInfo[_stageLog->curStage].perfInfo.active && \
-      _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) {\
-    (*_PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
-  }\
-  PETSC_LOG_EVENT_MPE_BEGIN(e); \
-}
+#define PetscLogEventBegin(e,o1,o2,o3,o4) \
+  (((_PetscLogPLB && _stageLog->stageInfo[_stageLog->curStage].perfInfo.active && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ? \
+    (*_PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4)) : 0 ) || \
+  PETSC_LOG_EVENT_MPE_BEGIN(e))
 
 #define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PetscLogEventEnd(e+1,o1,o2,o3,o4)
 
-#define PetscLogEventEnd(e,o1,o2,o3,o4) 0; \
-{\
-  if (_PetscLogPLE && \
-      _stageLog->stageInfo[_stageLog->curStage].perfInfo.active && \
-      _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) {\
-    (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
-  }\
-  PETSC_LOG_EVENT_MPE_END(e); \
-} 
+#define PetscLogEventEnd(e,o1,o2,o3,o4) \
+  (((_PetscLogPLE && _stageLog->stageInfo[_stageLog->curStage].perfInfo.active && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ? \
+    (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4)) : 0 ) || \
+  PETSC_LOG_EVENT_MPE_END(e))
 
 /* Creation and destruction functions */
 EXTERN PetscErrorCode StageLogCreate(StageLog *);
@@ -368,11 +346,11 @@ EXTERN PetscErrorCode StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
 #define PetscLogEventEnd(e,o1,o2,o3,o4)     0
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) 0
 #define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm)   0
-#define PetscLogObjectParent(p,c)
+#define PetscLogObjectParent(p,c)           0
 #define PetscLogObjectParents(p,n,c)
-#define PetscLogObjectCreate(h)
-#define PetscLogObjectDestroy(h)
-#define PetscLogObjectMemory(p,m)
+#define PetscLogObjectCreate(h)             0
+#define PetscLogObjectDestroy(h)            0
+#define PetscLogObjectMemory(p,m)           0
 #define PetscLogDestroy()                   0
 #define PetscLogStagePush(a)                0
 #define PetscLogStagePop()                  0

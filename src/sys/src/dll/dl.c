@@ -482,7 +482,7 @@ PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibraryList *outlist,co
   /* is libname a directory? */
   ierr = PetscTestDirectory(libname,'r',&dir);CHKERRQ(ierr);
   if (dir) {
-    PetscLogInfo(0,"Checking directory %s for dynamic libraries\n",libname);
+    PetscLogInfo(0,"PetscDLLibraryAppend:Checking directory %s for dynamic libraries\n",libname);
     ierr  = PetscStrcpy(program,libname);CHKERRQ(ierr);
     ierr  = PetscStrlen(program,&len);CHKERRQ(ierr);
     if (program[len-1] == '/') {
@@ -578,7 +578,7 @@ PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibraryList *outlist,c
   /* is libname a directory? */
   ierr = PetscTestDirectory(libname,'r',&dir);CHKERRQ(ierr);
   if (dir) {
-    PetscLogInfo(0,"Checking directory %s for dynamic libraries\n",libname);
+    PetscLogInfo(0,"PetscDLLibraryPrepend:Checking directory %s for dynamic libraries\n",libname);
     ierr  = PetscStrcpy(program,libname);CHKERRQ(ierr);
     ierr  = PetscStrlen(program,&len);CHKERRQ(ierr);
     if (program[len-1] == '/') {
@@ -705,7 +705,7 @@ PetscErrorCode PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibraryList *outlist
   ierr = PetscTestDirectory(dirname,'r',&dir);CHKERRQ(ierr);
   if (!dir) PetscFunctionReturn(0);
 
-  PetscLogInfo(0,"Checking directory %s for CCA components\n",dirname);
+  PetscLogInfo(0,"PetscDLLibraryCCAAppend:Checking directory %s for CCA components\n",dirname);
   ierr  = PetscStrcpy(program,dirname);CHKERRQ(ierr);
   ierr  = PetscStrcat(program,"/*.cca");CHKERRQ(ierr);
 
@@ -733,7 +733,7 @@ PetscErrorCode PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibraryList *outlist
         }
         ierr = PetscDLLibraryAppend(comm,outlist,lib);CHKERRQ(ierr);
       } else {
-        PetscLogInfo(0,"CCA Component function and name: %s from %s\n",found,libname1);
+        PetscLogInfo(0,"PetscDLLibraryCCAAppend:CCA Component function and name: %s from %s\n",found,libname1);
         ierr = PetscTokenCreate(found,' ',&token2);CHKERRQ(ierr);
         ierr = PetscTokenFind(token2,&func);CHKERRQ(ierr);
         ierr = PetscTokenFind(token2,&funcname);CHKERRQ(ierr);

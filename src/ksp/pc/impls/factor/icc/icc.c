@@ -393,7 +393,7 @@ PetscErrorCode PCCreate_ICC(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_ICC,&icc);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,sizeof(PC_ICC));
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_ICC));CHKERRQ(ierr);
 
   icc->fact	          = 0;
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&icc->ordering);CHKERRQ(ierr);

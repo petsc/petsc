@@ -25,7 +25,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
   }
 #else
   ierr = PetscMalloc((mat->N+1)*sizeof(PetscInt),&aij->colmap);CHKERRQ(ierr);
-  PetscLogObjectMemory(mat,mat->N*sizeof(PetscInt));
+  ierr = PetscLogObjectMemory(mat,mat->N*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(aij->colmap,mat->N*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<n; i++) aij->colmap[aij->garray[i]] = i+1;
 #endif
@@ -92,7 +92,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
  \
         rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift; \
         rmax = aimax[row] = aimax[row] + CHUNKSIZE; \
-        PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(PetscInt) + sizeof(PetscScalar))); \
+        ierr = PetscLogObjectMemory(A,CHUNKSIZE*(sizeof(PetscInt) + sizeof(PetscScalar)));CHKERRQ(ierr); \
         a->maxnz += CHUNKSIZE; \
         a->reallocs++; \
       } \
@@ -167,7 +167,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
  \
         rp   = bj + bi[row] + shift; ap = ba + bi[row] + shift; \
         rmax = bimax[row] = bimax[row] + CHUNKSIZE; \
-        PetscLogObjectMemory(B,CHUNKSIZE*(sizeof(PetscInt) + sizeof(PetscScalar))); \
+        ierr = PetscLogObjectMemory(B,CHUNKSIZE*(sizeof(PetscInt) + sizeof(PetscScalar)));CHKERRQ(ierr); \
         b->maxnz += CHUNKSIZE; \
         b->reallocs++; \
       } \
@@ -530,7 +530,7 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,IS is,const PetscScalar *diag)
     
   /* actually zap the local rows */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
-  PetscLogObjectParent(A,istmp);
+  ierr = PetscLogObjectParent(A,istmp);CHKERRQ(ierr);
 
   /*
         Zero the required rows. If the "diagonal block" of the matrix
@@ -979,7 +979,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     /* This is just a temporary matrix, so explicitly using MATMPIAIJ is probably best */
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(A,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
-    PetscLogObjectParent(mat,A);
+    ierr = PetscLogObjectParent(mat,A);CHKERRQ(ierr);
 
     /* copy over the A part */
     Aloc = (Mat_SeqAIJ*)aij->A->data;
@@ -1838,7 +1838,7 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
     ierr = PetscTableCreateCopy(oldmat->colmap,&a->colmap);CHKERRQ(ierr);
 #else
     ierr = PetscMalloc((mat->N)*sizeof(PetscInt),&a->colmap);CHKERRQ(ierr);
-    PetscLogObjectMemory(mat,(mat->N)*sizeof(PetscInt));
+    ierr = PetscLogObjectMemory(mat,(mat->N)*sizeof(PetscInt));CHKERRQ(ierr);
     ierr      = PetscMemcpy(a->colmap,oldmat->colmap,(mat->N)*sizeof(PetscInt));CHKERRQ(ierr);
 #endif
   } else a->colmap = 0;
@@ -1846,20 +1846,20 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
     PetscInt len;
     len  = oldmat->B->n;
     ierr = PetscMalloc((len+1)*sizeof(PetscInt),&a->garray);CHKERRQ(ierr);
-    PetscLogObjectMemory(mat,len*sizeof(PetscInt));
+    ierr = PetscLogObjectMemory(mat,len*sizeof(PetscInt));CHKERRQ(ierr);
     if (len) { ierr = PetscMemcpy(a->garray,oldmat->garray,len*sizeof(PetscInt));CHKERRQ(ierr); }
   } else a->garray = 0;
   
   ierr =  VecDuplicate(oldmat->lvec,&a->lvec);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,a->lvec);
+  ierr = PetscLogObjectParent(mat,a->lvec);CHKERRQ(ierr);
   ierr =  VecScatterCopy(oldmat->Mvctx,&a->Mvctx);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,a->Mvctx);
+  ierr = PetscLogObjectParent(mat,a->Mvctx);CHKERRQ(ierr);
   ierr =  MatDestroy(a->A);CHKERRQ(ierr);
   ierr =  MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,a->A);
+  ierr = PetscLogObjectParent(mat,a->A);CHKERRQ(ierr);
   ierr =  MatDestroy(a->B);CHKERRQ(ierr);
   ierr =  MatDuplicate(oldmat->B,cpvalues,&a->B);CHKERRQ(ierr);
-  PetscLogObjectParent(mat,a->B);
+  ierr = PetscLogObjectParent(mat,a->B);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(matin->qlist,&mat->qlist);CHKERRQ(ierr);
   *newmat = mat;
   PetscFunctionReturn(0);
@@ -3780,7 +3780,7 @@ PetscErrorCode MatCreate_MPIAIJ(Mat B)
 
   /* build local table of row and column ownerships */
   ierr = PetscMalloc(2*(b->size+2)*sizeof(PetscInt),&b->rowners);CHKERRQ(ierr);
-  PetscLogObjectMemory(B,2*(b->size+2)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAIJ));
+  ierr = PetscLogObjectMemory(B,2*(b->size+2)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAIJ));CHKERRQ(ierr);
   b->cowners = b->rowners + b->size + 2;
   ierr = MPI_Allgather(&B->m,1,MPIU_INT,b->rowners+1,1,MPIU_INT,B->comm);CHKERRQ(ierr);
   b->rowners[0] = 0;
@@ -3816,10 +3816,10 @@ PetscErrorCode MatCreate_MPIAIJ(Mat B)
   /* Explicitly create 2 MATSEQAIJ matrices. */
   ierr = MatCreate(PETSC_COMM_SELF,B->m,B->n,B->m,B->n,&b->A);CHKERRQ(ierr);
   ierr = MatSetType(b->A,MATSEQAIJ);CHKERRQ(ierr);
-  PetscLogObjectParent(B,b->A);
+  ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,B->m,B->N,B->m,B->N,&b->B);CHKERRQ(ierr);
   ierr = MatSetType(b->B,MATSEQAIJ);CHKERRQ(ierr);
-  PetscLogObjectParent(B,b->B);
+  ierr = PetscLogObjectParent(B,b->B);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIAIJ",

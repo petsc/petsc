@@ -392,7 +392,7 @@ PetscErrorCode MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *
   if (M != N) SETERRQ(PETSC_ERR_SUP,"Only for square matrices");
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_COOKIE,0,"MatFDColoring",comm,MatFDColoringDestroy,MatFDColoringView);
+  ierr = PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_COOKIE,0,"MatFDColoring",comm,MatFDColoringDestroy,MatFDColoringView);CHKERRQ(ierr);
 
   if (mat->ops->fdcoloringcreate) {
     ierr = (*mat->ops->fdcoloringcreate)(mat,iscoloring,c);CHKERRQ(ierr);
@@ -551,11 +551,11 @@ PetscErrorCode MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructu
 
     if (!coloring->w1) {
       ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
-      PetscLogObjectParent(coloring,coloring->w1);
+      ierr = PetscLogObjectParent(coloring,coloring->w1);CHKERRQ(ierr);
       ierr = VecDuplicate(x1,&coloring->w2);CHKERRQ(ierr);
-      PetscLogObjectParent(coloring,coloring->w2);
+      ierr = PetscLogObjectParent(coloring,coloring->w2);CHKERRQ(ierr);
       ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
-      PetscLogObjectParent(coloring,coloring->w3);
+      ierr = PetscLogObjectParent(coloring,coloring->w3);CHKERRQ(ierr);
     }
     w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
@@ -741,11 +741,11 @@ PetscErrorCode MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   if (!coloring->w1) {
     ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
-    PetscLogObjectParent(coloring,coloring->w1);
+    ierr = PetscLogObjectParent(coloring,coloring->w1);CHKERRQ(ierr);
     ierr = VecDuplicate(x1,&coloring->w2);CHKERRQ(ierr);
-    PetscLogObjectParent(coloring,coloring->w2);
+    ierr = PetscLogObjectParent(coloring,coloring->w2);CHKERRQ(ierr);
     ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
-    PetscLogObjectParent(coloring,coloring->w3);
+    ierr = PetscLogObjectParent(coloring,coloring->w3);CHKERRQ(ierr);
   }
   w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
