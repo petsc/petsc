@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.55 1995/08/29 23:06:46 curfman Exp bsmith $ */
+/* $Id: mat.h,v 1.56 1995/09/01 02:56:23 bsmith Exp curfman $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -136,8 +136,6 @@ extern int MatCompress(Mat);
 /* Routines unique to particular data structures */
 extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
 
-/* Routines that should move elsewhere */
-extern int MatHasNorm_Private(Mat,int*);
 #endif
 
 

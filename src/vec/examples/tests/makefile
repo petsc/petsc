@@ -10,10 +10,10 @@ OBJSC         =
 OBJSF         =
 LIBBASE       = libpetscvec
 EXAMPLES_1    = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14 \
-                ex16 ex17
+                ex16 ex17 ex20
 RUNEXAMPLES_1 = runex1 runex1_2 runex2 runex3 runex4 runex5 runex6 runex7 \
                 runex8 runex9 runex10 runex11 runex12 runex13 runex14 runex16\
-                runex17
+                runex17 runex20 runex20_2
 EXAMPLES_2    = ex15
 RUNEXAMPLES_2 = runex15
 EXAMPLES_3    = ex19
