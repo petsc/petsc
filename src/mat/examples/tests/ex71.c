@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.21 1995/12/21 18:33:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.22 1996/01/12 22:09:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
@@ -15,7 +15,7 @@ int main(int argc,char **args)
   Mat     A;
   Viewer  viewer;
 
-  PetscInitialize(&argc,&args,0,0,help);
+  PetscInitialize(&argc,&args,(char *)0,help);
   OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
 
