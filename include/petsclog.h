@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.47 1996/02/13 23:30:59 bsmith Exp balay $ */
+/* $Id: plog.h,v 1.48 1996/02/23 14:57:50 balay Exp balay $ */
 
 /*
     Defines high level logging in PETSc.
@@ -9,8 +9,8 @@
 #include "petsc.h"  
 
 /*
-  If you add an event here, make sure you add to petsc/bin/petscview.cfg
-  and petsc/src/sys/src/plog.c!!
+  If you add an event here, make sure you add to petsc/bin/petscview.cfg,
+  petsc/bin/petscview  and petsc/src/sys/src/plog.c!!
 */
 #define MAT_Mult                                0
 #define MAT_MatrixFreeMult                      1

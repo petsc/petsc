@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.71 1996/02/13 23:28:48 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.72 1996/02/22 23:44:20 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -445,6 +445,9 @@ int PLogAllBegin()
   MPI_Barrier(MPI_COMM_WORLD);
   PetscTime(BaseTime);
   PLogStagePush(0);
+#if defined(HAVE_MPE)
+  MPE_Init_Log();
+#endif
   return 0;
 }
 
@@ -488,6 +491,9 @@ int PLogDestroy()
   nobjects         = 0;
   nevents          = 0;
   ObjectsDestroyed = 0;
+#if defined(HAVE_MPE)
+  MPE_Finish_Log("upshot.log");
+#endif
   return 0;
 }
 
@@ -518,6 +524,9 @@ int PLogBegin()
   MPI_Barrier(MPI_COMM_WORLD);
   PetscTime(BaseTime);
   PLogStagePush(0);
+#if defined(HAVE_MPE)
+  MPE_Init_Log();
+#endif
   return 0;
 }
 
@@ -644,7 +653,7 @@ static char *(name[]) = {"MatMult         ",
                          "MatGetSubMatrice",
                          "MatGetValues    ",
                          "MatIncreaseOvlap",
-                         "                ",
+                         "MatGetRow       ",
                          "                ",
                          "                ",
                          "                ",

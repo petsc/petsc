@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.143 1996/02/21 02:42:18 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.144 1996/02/22 17:20:22 curfman Exp balay $";
 #endif
 
 /*
@@ -92,7 +92,10 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 {
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatGetRow:Not for unassembled matrix");
-  return (*mat->ops.getrow)(mat,row,ncols,cols,vals);
+  PLogEventBegin(MAT_GetRow,mat,0,0,0);
+  ierr = (*mat->ops.getrow)(mat,row,ncols,cols,vals); CHKERRQ(ierr);
+  PLogEventEnd(MAT_GetRow,mat,0,0,0);
+  return 0;
 }
 
 /*@C  
