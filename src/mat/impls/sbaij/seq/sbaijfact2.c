@@ -1418,7 +1418,7 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
       ju       = jutmp;
 
       ierr     = PetscMalloc(umax*sizeof(int),&jutmp);CHKERRQ(ierr);
-      ierr     = PetscMemcpy(jutmp,lev,(iu[k]-shift)*sizeof(int));CHKERRQ(ierr);
+      ierr     = PetscMemcpy(jutmp,lev,iu[k]*sizeof(int));CHKERRQ(ierr);
       ierr     = PetscFree(lev);CHKERRQ(ierr);       
       lev      = jutmp;
       realloc += 2; /* count how many times we realloc */
@@ -1427,6 +1427,7 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
     /* save nonzero structure of k-th row in ju */
     i=k;
     jumin = juptr + 1; juptr += nzk; 
+    lev[juptr] = 0;
     for (j=jumin; j<juptr+1; j++){
       i      = q[i];
       ju[j]  = i;

@@ -1666,6 +1666,7 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
 
   /* loop over row lengths determining block row lengths */
   ierr     = PetscMalloc(mbs*sizeof(int),&s_browlengths);CHKERRQ(ierr);
+  ierr     = PetscMemzero(s_browlengths,mbs*sizeof(int));CHKERRQ(ierr);
   ierr     = PetscMalloc(2*mbs*sizeof(int),&mask);CHKERRQ(ierr);
   ierr     = PetscMemzero(mask,mbs*sizeof(int));CHKERRQ(ierr);
   masked   = mask + mbs;
