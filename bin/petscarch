@@ -1,5 +1,5 @@
 #! /bin/csh -f
-# $Id: petscarch,v 1.10 1998/05/06 15:26:00 balay Exp bsmith $ 
+# $Id: petscarch,v 1.11 1998/07/24 19:39:20 bsmith Exp bsmith $ 
 
 #
 #   petscarch - Returns the machine's PETSc environmental variable, PETSC_ARCH.
@@ -65,5 +65,11 @@ else if ("$LARCH" == "i86pc" ) then
   set LARCH = "solaris_x86"
 endif
 #
+#  IS rs6000 actually an IBM SP?
+if ("$LARCH" == "rs6000") then
+  if (-e /usr/bin/mpcc) then
+    set LARCH = "rs6000_sp"
+  endif
+endif
 echo $LARCH
 exit 0
