@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: solid.make,v 1.12 1998/06/08 16:52:36 curfman Exp curfman $ 
+# $Id: solid.make,v 1.13 1998/06/08 18:46:16 curfman Exp balay $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.22"
@@ -77,10 +77,10 @@ rsh -n fire "cd $hme/$src_dir; $make BOPT=O_complex"
 
 arch=IRIX64
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-rsh -n yukon "cd $hme/$src_dir; $make BOPT=g"
-rsh -n yukon "cd $hme/$src_dir; $make BOPT=O"
-rsh -n yukon "cd $hme/$src_dir; $make BOPT=g_complex"
-rsh -n yukon "cd $hme/$src_dir; $make BOPT=O_complex"
+rsh -n denali "cd $hme/$src_dir; $make BOPT=g"
+rsh -n denali "cd $hme/$src_dir; $make BOPT=O"
+rsh -n denali "cd $hme/$src_dir; $make BOPT=g_complex"
+rsh -n denali "cd $hme/$src_dir; $make BOPT=O_complex"
 
 # rs6000
 arch=rs6000
