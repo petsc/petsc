@@ -12,6 +12,10 @@ typedef struct _MatScatterCtx* MatScatterCtx;
 extern int MatCreateSequentialDense(int,int,Mat*);
 extern int MatCreateSequentialAIJ(int,int,int,int *,Mat*);
 
+#if defined(USING_MPI)
+extern int MatCreateMPIAIJ(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
+#endif
+
 extern int MatShellCreate(int,int,void *,Mat*);
 extern int MatShellSetMult(Mat,int (*)(void*,Vec,Vec));
 extern int MatShellSetMultTrans(Mat,int (*)(void*,Vec,Vec));
