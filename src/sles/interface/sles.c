@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.19 1995/04/25 16:23:07 bsmith Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.20 1995/05/12 20:13:56 curfman Exp curfman $";
 #endif
 
 #include "slesimpl.h"
-#include "options.h"
 
 /*@
    SLESPrintHelp - Prints SLES options.

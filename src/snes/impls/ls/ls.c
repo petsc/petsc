@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.15 1995/05/14 16:35:04 bsmith Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.16 1995/05/15 16:54:39 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -561,7 +561,6 @@ static int SNESPrintHelp_LS(SNES snes)
   return 0;
 }
 
-#include "options.h"
 static int SNESSetFromOptions_LS(SNES snes)
 {
   SNES_LS *ls = (SNES_LS *)snes->data;
