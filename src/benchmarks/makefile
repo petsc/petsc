@@ -20,7 +20,7 @@ RUNEXAMPLES_4 =
 EXAMPLESC     = 
 EXAMPLESF     = 
 TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
-		PetscMemcpy PetscMemzero PetscMemcmp
+		PetscMemcpy PetscMemzero PetscMemcmp Index
 
 PetscTime: PetscTime.o  chkopts 
 	-$(CLINKER) -o PetscTime PetscTime.o $(PETSC_LIB)
@@ -54,14 +54,18 @@ PetscMemcmp: PetscMemcmp.o  chkopts
 	-$(CLINKER) -o PetscMemcmp PetscMemcmp.o $(PETSC_LIB)
 	$(RM) -f PetscMemcmp.o
 
+Index: Index.o  chkopts 
+	-$(CLINKER) -o Index Index.o $(PETSC_LIB)
+	$(RM) -f Index.o
+
 
 test: $(TESTS)
 
 runtest: 
 	-@echo "Time Taken by some PETSc routines are as follows:"
 	-@echo "------------------------------------------------"
-	-@$(MPIRUN) PetscTime    > /dev/null
 	-@$(MPIRUN) PetscGetTime > /dev/null
+	-@$(MPIRUN) PetscTime    > /dev/null
 	-@$(MPIRUN) MPI_Wtime    > /dev/null
 	-@echo " "
 	-@echo "PLogEventBegin and PLogEventEnd together with options"
@@ -83,6 +87,10 @@ runtest:
 	-@$(MPIRUN) PetscMemcpy  > /dev/null
 	-@$(MPIRUN) PetscMemzero > /dev/null
 	-@$(MPIRUN) PetscMemcmp  > /dev/null
+	-@echo " "
+	-@echo "Memory Operations "
+	-@echo "------------------------------------------------"
+	-@$(MPIRUN) Index  > /dev/null
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
