@@ -57,8 +57,7 @@
 
 ! Solve system
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
-      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,         &
-     &                      ierr)
+      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
       call KSPSetFromOptions(ksp,ierr)
       call PetscGetTime(time1,ierr)
       call KSPSetRhs(ksp,b,ierr)

@@ -227,8 +227,7 @@
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,         &
-     &                      ierr)
+      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
 
 !  Set linear solver defaults for this problem (optional).
 !   - By extracting the KSP and PC contexts from the KSP context,

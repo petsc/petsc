@@ -202,8 +202,7 @@
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the preconditioning matrix.
 
-      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,         &
-     &                      ierr)
+      call KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN,ierr)
 
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
