@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: posindep.c,v 1.2 1996/09/29 14:39:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: posindep.c,v 1.3 1996/09/30 20:23:41 curfman Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -22,6 +22,8 @@ typedef struct {
   void   *verifyctx;     
 
   double initial_fnorm,fnorm;                  /* original and current norm of F(u) */
+
+  double dt_increment;        /* scaling that dt is incremented each time-step */
 } TS_Pseudo;
 
 /* ------------------------------------------------------------------------------*/
@@ -43,6 +45,7 @@ typedef struct {
 int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
+  double    inc = pseudo->dt_increment;
   int       ierr;
 
   ierr = TSComputeRHSFunction(ts,ts->ptime,ts->vec_sol,pseudo->func);CHKERRQ(ierr);  
@@ -51,8 +54,8 @@ int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
     /* first time through so compute initial function norm */
     pseudo->initial_fnorm = pseudo->fnorm;
   }
-  if (pseudo->fnorm == 0.0) *newdt = 1.e12*1.1*ts->time_step; 
-  else                      *newdt = 1.1*ts->time_step*pseudo->initial_fnorm/pseudo->fnorm;
+  if (pseudo->fnorm == 0.0) *newdt = 1.e12*inc*ts->time_step; 
+  else                      *newdt = inc*ts->time_step*pseudo->initial_fnorm/pseudo->fnorm;
   return 0;
 }
 
@@ -330,13 +333,18 @@ int TSPseudoDefaultMonitor(TS ts, int step, double time,Vec v, void *ctx)
 
 static int TSSetFromOptions_Pseudo(TS ts)
 {
-  int ierr,flg;
+  int    ierr,flg;
+  double inc;
 
   ierr = SNESSetFromOptions(ts->snes); CHKERRQ(ierr);
 
   ierr = OptionsHasName(ts->prefix,"-ts_monitor",&flg); CHKERRQ(ierr);
   if (flg) {
-    TSSetMonitor(ts,TSPseudoDefaultMonitor,0);
+    ierr = TSSetMonitor(ts,TSPseudoDefaultMonitor,0); CHKERRQ(ierr);
+  }
+  ierr = OptionsGetDouble(ts->prefix,"-ts_pseudo_increment",&inc,&flg);  CHKERRQ(ierr);
+  if (flg) {
+    ierr = TSPseudoSetTimeStepIncrement(ts,inc);  CHKERRQ(ierr);
   }
   return 0;
 }
@@ -385,10 +393,36 @@ int TSCreate_Pseudo(TS ts )
   PetscMemzero(pseudo,sizeof(TS_Pseudo));
   ts->data = (void *) pseudo;
 
+  pseudo->dt_increment = 1.1;
+  pseudo->dt           = TSPseudoDefaultTimeStep;
   return 0;
 }
 
 
+/*@
+      TSPseudoSetTimeStepIncrement - Sets the scaling increment applied to 
+         dt when using the TSPseudoDefaultTimeStep() routine.
+
+  Input Parameters:
+.   ts - the timestep context
+.   inc - the scaling factor >= 1.0
+
+   Options Database Key:
+$  -ts_pseudo_increment <increment>
+
+.seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
+@*/
+int TSPseudoSetTimeStepIncrement(TS ts,double inc)
+{
+  TS_Pseudo *pseudo;
+
+  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  if (ts->type != TS_PSEUDO) return 0;
+
+  pseudo               = (TS_Pseudo*) ts->data;
+  pseudo->dt_increment = inc;
+  return 0;
+}
 
 
 
