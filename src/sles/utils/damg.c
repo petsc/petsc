@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.3 2000/07/10 16:02:50 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.4 2000/07/10 17:52:21 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -8,10 +8,6 @@
    Code for almost fully managing multigrid/multi-level linear solvers for DA grids
 */
 
-/*
-   Have two matrices, J and B for preconditioner
-   have ratiox,y and z
-   */
 #undef __FUNC__  
 #define __FUNC__ /*<a name="DAMGCreate"></a>*/"DAMGCreate"
 /*@C
@@ -42,7 +38,9 @@ int DAMGCreate(MPI_Comm comm,int nlevels,DAMG **ctx)
   for (i=0; i<nlevels; i++) {
     p[i]          = (DAMG)PetscMalloc(sizeof(struct _p_DAMG));CHKPTRQ(p[i]);
     p[i]->nlevels = nlevels - i;
-    p[i]->ratio   = 2;
+    p[i]->ratiox  = 2;
+    p[i]->ratioy  = 2;
+    p[i]->ratioz  = 2;
     p[i]->comm    = comm;
   }
   *ctx = p;
@@ -125,9 +123,9 @@ int DAMGSetCoarseDA(DAMG *ctx,DA da)
   ierr       = DAGetInfo(da,&dim,&M,&N,&P,&m,&n,&p,&dof,&sw,&pt,&st);CHKERRQ(ierr);
   ctx[0]->da = da;
   for (i=1; i<nlevels; i++) {
-    M = ctx[i-1]->ratio*(M-1) + 1;
-    N = ctx[i-1]->ratio*(N-1) + 1;
-    P = ctx[i-1]->ratio*(P-1) + 1;
+    M = ctx[i-1]->ratiox*(M-1) + 1;
+    N = ctx[i-1]->ratioy*(N-1) + 1;
+    P = ctx[i-1]->ratioz*(P-1) + 1;
     if (dim == 3) {
       ierr = DACreate3d(comm,pt,st,M,N,P,m,n,p,dof,sw,0,0,0,&ctx[i]->da);CHKERRQ(ierr);
     } else {
@@ -170,10 +168,11 @@ int DAMGSetCoarseDA(DAMG *ctx,DA da)
 @*/
 int DAMGSetSLES(DAMG *ctx,SLES sles,int (*func)(DA,Mat))
 {
-  int      ierr,i,j,nlevels = ctx[0]->nlevels,flag,m,n,p,Nt,dim;
-  MPI_Comm comm;
-  PC       pc;
-  Vec      xyz,txyz;
+  int        ierr,i,j,nlevels = ctx[0]->nlevels,flag,m,n,p,Nt,dim;
+  MPI_Comm   comm;
+  PC         pc;
+  Vec        xyz,txyz;
+  PetscTruth flg;
 
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   ierr = PetscObjectGetComm((PetscObject)sles,&comm);CHKERRQ(ierr);
@@ -257,6 +256,11 @@ int DAMGSetSLES(DAMG *ctx,SLES sles,int (*func)(DA,Mat))
     for (i=0; i<nlevels; i++) {
       ierr = (*func)(ctx[i]->da,ctx[i]->J);CHKERRQ(ierr);
     }
+  }
+
+  ierr = OptionsHasName(PETSC_NULL,"-damg_view",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = DAMGView(ctx,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
