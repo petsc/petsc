@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.129 1996/09/23 15:04:46 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.130 1996/09/23 15:23:40 curfman Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1170,6 +1170,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
 
   PetscFPrintf(comm,fd,  
     "\n------------------------------------------------------------------------------------------------------------------------\n"); 
+  PetscFPrintf(comm,fd,"See the "Profiling" chapter of users manual for details on interpreting output.\n");
   PetscFPrintf(comm,fd,"Phase summary info:\n");
   PetscFPrintf(comm,fd,"   Count: number of times phase was executed\n");
   PetscFPrintf(comm,fd,"   Time and Flops/sec: Max - maximum over all processors\n");
