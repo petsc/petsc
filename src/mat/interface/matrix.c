@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.249 1997/06/08 14:03:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.250 1997/06/13 02:00:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2334,7 +2334,7 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,
   PetscValidPointer(fact);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (fill < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Fill negative");
-  if (!mat->ops.incompletecholeskyfactorsymbolic) SETERRQ(PETSC_ERR_SUP,0,"");
+  if (!mat->ops.incompletecholeskyfactorsymbolic) SETERRQ(PETSC_ERR_SUP,0,"Currently only MatCreateMPIRowbs() matrices support ICC in parallel");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
 
   PLogEventBegin(MAT_IncompleteCholeskyFactorSymbolic,mat,perm,0,0);
