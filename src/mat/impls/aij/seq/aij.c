@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.295 1999/01/27 19:47:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.296 1999/02/03 03:17:11 curfman Exp bsmith $";
 #endif
 
 /*
@@ -1184,11 +1184,11 @@ int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
   if (diag) {
     for ( i=0; i<N; i++ ) {
       if (rows[i] < 0 || rows[i] > m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"row out of range");
-      if (a->ilen[rows[i]] > 0) { /* in case row was completely empty */
+      if (a->ilen[rows[i]] > 0) { 
         a->ilen[rows[i]] = 1; 
         a->a[a->i[rows[i]]+shift] = *diag;
         a->j[a->i[rows[i]]+shift] = rows[i]+shift;
-      } else {
+      } else { /* in case row was completely empty */
         ierr = MatSetValues_SeqAIJ(A,1,&rows[i],1,&rows[i],diag,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
@@ -1198,7 +1198,7 @@ int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
       a->ilen[rows[i]] = 0; 
     }
   }
-  ISRestoreIndices(is,&rows);
+  ierr = ISRestoreIndices(is,&rows);CHKERRQ(ierr);
   ierr = MatAssemblyEnd_SeqAIJ(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
