@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.60 1997/03/20 02:10:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.61 1997/04/10 00:01:22 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -108,9 +108,6 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
   int        rank,flg1,flg2;
   PLogDouble mem,rss;
 
-  if (!fun)  fun = "unknownfunction";
-  if (!dir)  dir = " ";
-
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   if (n == PETSC_ERR_MEM) {
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
@@ -197,8 +194,6 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,ch
   int        rank, flg1, flg2;
   PLogDouble mem,rss;
 
-  if (!fun)  fun = "unknownfunction";
-  if (!dir)  dir = " ";
   if (!mess) mess = " ";
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);

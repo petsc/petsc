@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.104 1997/03/09 18:01:27 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.105 1997/03/26 01:38:58 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -15,7 +15,7 @@
   petsc/bin/petscview.cfg,
   petsc/bin/petscview,
   petsc/src/plog/src/plog.c,  
-  petsc/src/plog/src/plogmpe.c and
+  petsc/src/plog/src/plogmpe.c, and
   petsc/include/FINCLUDE/petsclog.h!!!
 */
 #define MAT_Mult                                0
@@ -231,15 +231,15 @@ extern PLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
    Logging of MPI activities
 */
 
-#define TypeSize(buff,count,type)                                            \
-{                                                                            \
-  if (type == MPIU_SCALAR) {                                                 \
+#define TypeSize(buff,count,type)                                                \
+{                                                                                \
+  if (type == MPIU_SCALAR) {                                                     \
     buff += (PLogDouble) ((count)*sizeof(Scalar));                               \
-  } else if (type == MPI_INT) {                                              \
+  } else if (type == MPI_INT) {                                                  \
     buff += (PLogDouble) ((count)*sizeof(int));                                  \
-  } else {                                                                   \
+  } else {                                                                       \
     int _size; MPI_Type_size(type,&_size); buff += (PLogDouble) ((count)*_size); \
-  }                                                                          \
+  }                                                                              \
 }
 
 #define MPI_Irecv( buf, count,  datatype, source, tag, comm, request)        \
@@ -254,22 +254,22 @@ extern PLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
   isend_ct++;   TypeSize(isend_len,count,datatype);                          \
 }
 
-#define MPI_Startall_irecv( count,number,requests)                            \
-{                                                                             \
-  MPI_Startall( number, requests);                                            \
+#define MPI_Startall_irecv( count,number,requests)                                    \
+{                                                                                     \
+  MPI_Startall( number, requests);                                                    \
   irecv_ct += (PLogDouble)(number); irecv_len += (PLogDouble) (count*sizeof(Scalar)); \
 }
 
-#define MPI_Startall_isend( count,number,requests)                            \
-{                                                                             \
-  MPI_Startall( number, requests);                                            \
+#define MPI_Startall_isend( count,number,requests)                                    \
+{                                                                                     \
+  MPI_Startall( number, requests);                                                    \
   isend_ct += (PLogDouble)(number); isend_len += (PLogDouble) (count*sizeof(Scalar)); \
 }
 
 #define MPI_Start_isend(count,  requests)                                     \
 {                                                                             \
   MPI_Start( requests);                                                       \
-  isend_ct++; isend_len += (PLogDouble) (count*sizeof(Scalar));                   \
+  isend_ct++; isend_len += (PLogDouble) (count*sizeof(Scalar));               \
 }
 
 #define MPI_Recv( buf, count,  datatype, source, tag, comm, status)           \
@@ -298,7 +298,7 @@ extern PLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
 
 #define MPI_Waitall(count, array_of_requests, array_of_statuses) \
 (                                                                \
-  wait_all_ct++, sum_of_waits_ct += (PLogDouble) (count),            \
+  wait_all_ct++, sum_of_waits_ct += (PLogDouble) (count),        \
   MPI_Waitall(count, array_of_requests, array_of_statuses)       \
 )
 

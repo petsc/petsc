@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.11 1997/03/09 18:01:27 bsmith Exp curfman $ */
+/* $Id: petscerror.h,v 1.12 1997/04/17 18:30:59 curfman Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -12,7 +12,7 @@
    in printing error messages. __SDIR__ is usually defined in the makefile.
 */
 #if !defined(__SDIR__)
-#define __SDIR__ 0
+#define __SDIR__ "unknowndirectory/"
 #endif
 
 /*
