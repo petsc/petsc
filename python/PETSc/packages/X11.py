@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 from __future__ import generators
 import user
-import config.base
+import config.autoconf
 import os
 
-class Configure(config.base.Configure):
+class Configure(config.autoconf.Configure):
   def __init__(self, framework):
-    config.base.Configure.__init__(self, framework)
+    config.autoconf.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.foundX11     = 0
+    self.compilers    = self.framework.require('config.compilers',    self)
     self.make         = self.framework.require('PETSc.packages.Make', self)
     return
 
