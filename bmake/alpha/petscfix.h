@@ -1,7 +1,10 @@
 
 /*
-    This fixes various things in system files that are incomplete.
-   For instance many systems don't properly prototype all system functions.
+    This fixes various things in system files that are incomplete, for 
+  instance many systems don't properly prototype all system functions.
+  It is not intended to DUPLICATE anything in the system include files;
+  if the compiler reports a conflict between a prototye in a system file
+  and this file then the prototype in this file should be removed.
 
     This is included by files in src/sys/src and src/viewer/impls/.
 */
@@ -18,7 +21,7 @@
 /*
   This prototype lets us resolve the datastructure 'rusage' only in
   the source files using getrusage, and not in other source files.
-  */
+*/
 typedef struct rusage* s_rusage;
 
 
@@ -31,13 +34,10 @@ extern char   *getcwd(char *,long unsigned int);
 extern char   *getwd(char *);
 extern int     getdomainname(char *,int);
 extern char   *realpath(char *,char *);
-extern char   *getenv( char *);
 extern void   *malloc(long unsigned int );
-extern int    atoi(char*);
 extern void   perror(const char *);
 extern double atof(const char *);
 extern void    free(void *);
-extern void   *malloc(long unsigned int );
 extern int    getrusage(int,s_rusage);
 extern void   *memalign(int,int);
 #include <sys/time.h>
@@ -45,9 +45,17 @@ extern int    gettimeofday(struct timeval *,struct timezone *);
 extern void   exit(int);
 extern int    strcasecmp(const char *,const char *);
 extern int    getpagesize();
-/* In g++ 2.7.2 abort went from not existing to being a built in function */
-/* Gotta love Gnu! Older versions of g++ may need the following line*/
-/* extern int    abort(); */
+/*
+   On some machines with older versions of the gnu compiler and 
+   system libraries these prototypes may be needed
+   extern char   *getenv( char *);
+   extern int    atoi(char*);
+*/
+/*
+   In g++ 2.7.2 abort went from not existing to being a built in function
+   Gotta love Gnu! Older versions of g++ may need the following line
+   extern int    abort(); 
+*/
 }
 
 #else
@@ -55,8 +63,6 @@ extern char   *getwd(char *);
 extern char   *mktemp(char *);
 extern int     getdomainname(char *,int);
 extern char   *realpath(char *,char *);
-extern char   *getenv( char *);
-extern int    atoi(char*);
 extern double atof(const char*);
 extern int    fclose(FILE *);
 extern void   perror(const char *);
@@ -64,6 +70,12 @@ extern int    vfprintf (FILE *, const char *, char * );
 extern int    getrusage(int,s_rusage);
 extern int    strcasecmp(const char *,const char *);
 extern int    getpagesize();
+/*
+   On some machines with older versions of the gnu compiler and 
+   system libraries these prototypes may be needed
+   extern char   *getenv( char *);
+   extern int    atoi(char*);
+*/
 /*
    On some machines the following prototype might be
    extern int vsprintf(char *, const char *, char * );
