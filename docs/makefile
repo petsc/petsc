@@ -4,7 +4,7 @@ CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 WSOURCEC = 
-SOURCEH  = tex/manual.tex
+SOURCEH  = tex/manual.tex www.html
 OBJSC    =
 WOBJS    = 
 OBJSF    =
@@ -18,7 +18,8 @@ runexamples:
 
 #
 #   This rebuilds the WWW PETSc homepage and ftp site from 
-# the master copies of the documents.
+# the master copies of the documents. Since it must copy all the 
+# manual pages; it may take a few minutes
 #
 homepage:
 	@echo "Making PETSc homepage"
@@ -29,4 +30,15 @@ homepage:
 	/usr/bin/cp  ../Machines /home/ftp/pub/petsc
 	chmod ug+w /home/ftp/pub/petsc/installation /home/ftp/pub/petsc/README
 	chmod ug+w /home/ftp/pub/petsc/Machines
+	/usr/bin/cp tex/petsc.html /mcs/www/petsc
+	/usr/bin/cp tex/petsc_color.gif /mcs/www/petsc
+	/usr/bin/cp tex/petsc.map /mcs/www/petsc
+	/usr/bin/cp manual.html /mcs/www/petsc
+	/usr/bin/cp tex/onepager.html /mcs/www/petsc
+	/usr/bin/cp tex/summaries.html /mcs/www/petsc
+	/usr/bin/cp www.html /mcs/www/petsc
+	chmod ug+w /mcs/www/petsc/*
+	tar cf $(HOME)/www.tar www 
+	cd /mcs/www/petsc/; /bin/rm -rf www; tar xf $(HOME)/www.tar; 
+	/bin/rm $(HOME)/www.tar
 	@echo "Finshed making PETSc homepage"

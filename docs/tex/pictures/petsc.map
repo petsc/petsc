@@ -3,38 +3,40 @@
 #        requires the complete path (not just the relative path).
 
 # PETSc default:  
-default http://www.mcs.anl.gov/petsc/contents/petsc.html
+default http://www.mcs.anl.gov/petsc/onepager.html
 
 # PDE Solvers Module
-rect http://www.mcs.anl.gov/petsc/contents/domain.html 107 153 193 125  
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeGrid 105 150 192 186 
 
 # SNES Module
-# decode-petsc rect 300 167 167 40 petsc/contents/snes.html
-rect http://www.mcs.anl.gov/petsc/contents/snes.html 300 167 467 207
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeSNES 135 201 291 243   
 
 # SLES Module
-rect http://www.mcs.anl.gov/petsc/contents/sles.html 121 182 266 222
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeSLES 314 233 446  277
 
 # KSP Module
-rect http://www.mcs.anl.gov/petsc/contents/ksp.html 384 215 515 257
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeKSP 105 256 226  307
 
 # Draw Module
-rect http://www.mcs.anl.gov/petsc/contents/xtools.html 69 265 162 298
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeDraw 388 300 454 338
 
 # Vectors Module
-rect http://www.mcs.anl.gov/petsc/contents/vectors.html 205 265 298 298
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeVectors 274 359 361 396
 
 # Matrices Module
-rect http://www.mcs.anl.gov/petsc/contents/matrices.html 335 265 428 298
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeMatrices 114 354 201 391
 
 # Index Sets Module
-rect http://www.mcs.anl.gov/petsc/contents/blockcomm.html 472 264 565 297
+rect http://www.mcs.anl.gov/petsc/summaries.html#Node 428 352 516  390
 
 # Preconditioners Module
-rect http://www.mcs.anl.gov/petsc/contents/system.html 134 305 309 334
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodePC 259 301 358 351
 
 # MPI Module
-rect http://www.mcs.anl.gov/petsc/contents/chameleon.html 383 305 449 334
+rect http://www.mcs.anl.gov/mpi/index.html 301 462 348 491
 
 # Applications
-rect http://www.mcs.anl.gov/petsc/contents/applications.html 210 77 350 117
+rect http://www.mcs.anl.gov/petsc/petsc.html#NodeApplications 227 115 350 171
+
+# Abstraction
+rect http://www.mcs.anl.gov/petsc/summaries.html#NodeAbstractions 43 79 87   529 

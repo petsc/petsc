@@ -25,8 +25,8 @@ manual.html: manual.tex part1.tex
 	tohtml -mapman ../www/www.cit manual.tex -notopnames \
 	       -mapref../www/petsc.cit
 	-@chmod g+w manual.hux latex.err manual.html
-	-mv *.html ..
-	rm -f *.gif *.xbm latex.err findex.tex sindex.tex
+	-mv manual.html ..
+	rm -f  *.xbm latex.err findex.tex sindex.tex
 
 intro.dvi: intro.tex part1.tex
 	latex intro
@@ -36,8 +36,15 @@ intro.dvi: intro.tex part1.tex
 
 intro.ps: 
 	dvips intro
-	mv intro.ps ..
 	-@chmod g+w ../intro.ps
+
+intro.html: intro.tex part1.tex
+	tohtml -mapman ../www/www.cit intro.tex -notopnames \
+	       -mapref../www/petsc.cit
+	tohtml -mapman ../www/www.cit intro.tex -notopnames \
+	       -mapref../www/petsc.cit
+	-@chmod g+w intro.hux latex.err intro.html
+	rm -f *.xbm latex.err findex.tex sindex.tex
 
 onepager.ps: onepager.tex
 	latex onepager
@@ -51,7 +58,6 @@ onepager.html: onepager.tex
 	tohtml onepager.tex -notopnames -nocontents -nonavnames 
 	rm -f *.gif *.xbm latex.err
 	-@chmod g+w onepager.html
-	-mv onepager.html ..
 
 clean:
 	rm -f routines.ps *.dvi *.aux *.toc *.log *.bbl *.blg *.hux *.err \
