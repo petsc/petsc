@@ -182,6 +182,7 @@ Arg class, which wraps the usual value.'''
     else:
       self.writeLogLine('__getitem__: Setting local type for '+key)
       dict.__setitem__(self, key, nargs.Arg(key))
+      self.save()
     self.writeLogLine('__getitem__: Setting local value for '+key)
     return dict.__getitem__(self, key).getValue()
 
