@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.32 1996/01/27 04:56:41 bsmith Exp $";
+static char vcid[] = "$Id: dadist.c,v 1.1 1996/01/30 04:28:00 bsmith Exp curfman $";
 #endif
  
 /*
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: da2.c,v 1.32 1996/01/27 04:56:41 bsmith Exp $";
 
 .keywords: distributed array, get, global, distributed, vector
 
-.seealso: DAGetLocalVector()
+.seealso: DAGetLocalVector(), VecDuplicate(), VecDuplicateVecs()
 @*/
 int   DAGetDistributedVector(DA da,Vec* g)
 {
