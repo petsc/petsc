@@ -1,4 +1,4 @@
-/*$Id: zerodiag.c,v 1.40 2001/01/15 21:46:25 bsmith Exp bsmith $*/
+/*$Id: zerodiag.c,v 1.41 2001/03/09 20:06:40 bsmith Exp balay $*/
 
 /*
     This file contains routines to reorder a matrix so that the diagonal
@@ -81,7 +81,6 @@ int MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis)
 	if (icol[j[k]] > prow && PetscAbsScalar(v[k]) > repla) {
           /* found a suitable later column */
 	  repl  = icol[j[k]];   
-	  repla = PetscAbsScalar(v[k]);
           SWAP(icol[col[prow]],icol[col[repl]]); 
           SWAP(col[prow],col[repl]); 
           goto found;

@@ -1,4 +1,4 @@
-/*$Id: mmsbaij.c,v 1.5 2001/01/16 18:18:09 balay Exp bsmith $*/
+/*$Id: mmsbaij.c,v 1.6 2001/01/20 03:35:02 bsmith Exp balay $*/
 
 /*
    Support for the parallel SBAIJ matrix vector multiply
@@ -113,7 +113,7 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
   /* create two temporary index sets for building scatter-gather */
 
   /* ierr = ISCreateGeneral(PETSC_COMM_SELF,ec*bs,tmp,&from);CHKERRQ(ierr); */
-  for (i=0,col=0; i<ec; i++) {
+  for (i=0; i<ec; i++) {
     garray[i] = bs*garray[i];
   }
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,&from);CHKERRQ(ierr);   

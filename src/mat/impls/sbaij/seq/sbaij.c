@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.48 2001/01/20 03:35:00 bsmith Exp bsmith $*/
+/*$Id: sbaij.c,v 1.49 2001/02/09 00:48:03 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1229,7 +1229,7 @@ int MatStoreValues_SeqSBAIJ(Mat mat)
 
   /* allocate space for values if not already there */
   if (!aij->saved_values) {
-    ierr = PetscMalloc(nz*sizeof(Scalar),&aij->saved_values);CHKERRQ(ierr);
+    ierr = PetscMalloc((nz+1)*sizeof(Scalar),&aij->saved_values);CHKERRQ(ierr);
   }
 
   /* copy values over */

@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.45 2001/03/07 19:05:15 balay Exp balay $*/
+/*$Id: mpisbaij.c,v 1.46 2001/03/07 19:18:09 balay Exp balay $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -1701,7 +1701,7 @@ EXTERN_C_END
 int MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
 {
   Mat_MPISBAIJ *b;
-  int          ierr,i,mbs,Mbs=PETSC_DECIDE;
+  int          ierr,i,mbs,Mbs;
   PetscTruth   flg2;
 
   PetscFunctionBegin;
