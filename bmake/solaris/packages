@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.50 1999/01/18 18:35:49 balay Exp balay $ 
+# $Id: base.site,v 1.51 1999/01/18 18:39:23 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -31,14 +31,14 @@ X11_LIB        = -L/usr/openwin/lib -lX11
 # libs required by MPI, and use them in the SAME order!
 # If using ch_shmem, run 'mpich/lib/solaris/ch_shmem/mpicc -show'
 #
-#MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpi -lsocket -lnsl
-#MPI_INCLUDE    = -I/home/petsc/mpich/include 
-#MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
-MPI_HOME       = /home/MPI/releases/mpich-1.1.2
-MPI_BUILD_HOME = ${MPI_HOME}/build/solaris/ch_p4
-MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich -lsocket -lnsl -lnsl -laio
-MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
-MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
+MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpi -lsocket -lnsl
+MPI_INCLUDE    = -I/home/petsc/mpich/include 
+MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
+#MPI_HOME       = /home/MPI/releases/mpich-1.1.2
+#MPI_BUILD_HOME = ${MPI_HOME}/build/solaris/ch_p4
+#MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich -lsocket -lnsl -lnsl -laio
+#MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
+#MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 
 #
 #
@@ -49,10 +49,10 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/ma
 #
 # Optional location of MPE
 #
-#MPE_LIB       = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpe -lpmpi
-#MPE_INCLUDE   = -I/home/petsc/mpich/mpe
-MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
-MPE_INCLUDE   = -I${MPI_HOME}/include 
+MPE_LIB       = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpe -lpmpi
+MPE_INCLUDE   = -I/home/petsc/mpich/mpe
+#MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+#MPE_INCLUDE   = -I${MPI_HOME}/include 
 
 #
 # Optional location of BlockSolve (MPI version)

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.25 1998/12/11 19:40:03 balay Exp balay $ 
+# $Id: base.site,v 1.26 1998/12/11 20:57:22 balay Exp bsmith $ 
 #
 #    This file is for SGI Machines running OS 5.x, which is the old
 #  IRIX OS, if you are running 6.x then use either IRIX or IRIX64 
@@ -46,7 +46,7 @@ MPE_INCLUDE   = -I/home/petsc/mpich/mpe
 # Optional location of BlockSolve (MPI version)
 #
 BS_INCLUDE    = -I/home/petsc/BlockSolve95/include
-BS_LIB        = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a -lpetscmat
+BS_LIB        = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
 #
 # Optional Matlab location
 #
