@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.66 2001/05/03 16:28:38 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.67 2001/05/03 16:32:47 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -59,14 +59,15 @@
       SNES                   snes
       Vec                    x,r
       Mat                    J
-      integer                its,matrix_free,flg,ierr
+      integer                its,matrix_free,flg,ierr,skipadifor
       double precision       lambda_max,lambda_min
+      ISColoring             coloring
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
 
       external FormInitialGuess,FormJacobian
-      external FormFunctionLocal
+      external FormFunctionLocal,g_FormFunctionLocal
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Initialize program
@@ -140,7 +141,8 @@
 
 !  Set function evaluation routine and vector
 
-      call DASetLocalFunction(da,FormFunctionLocal,0,ierr)
+      call DASetLocalFunction(da,FormFunctionLocal,g_FormFunctionLocal,      &
+     &                        ierr)
       call SNESSetFunction(snes,r,SNESDAFormFunction,da,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -170,11 +172,21 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',                   &
      &     matrix_free,ierr)
       if (matrix_free .eq. 0) then
-        call DAGetColoring(da,IS_COLORING_LOCAL,MATMPIAIJ,                        &
+        call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-skipadifor',              &
+     &     skipadifor,ierr)
+        if (skipadifor .eq. 1) then
+          call DAGetColoring(da,IS_COLORING_LOCAL,MATMPIAIJ,                        &
      &                     PETSC_NULL_OBJECT,J,ierr)
-        call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,             &
+          call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,             &
      &                       ierr)
-
+        else
+          call DAGetColoring(da,IS_COLORING_LOCAL,MATMPIAIJ,                        &
+     &                     coloring,J,ierr)
+          call MatSetColoring(J,coloring,ierr)
+          call SNESSetJacobian(snes,J,J,SNESDAComputeJacobianWithAD,da,            &
+     &                       ierr)
+          call ISColoringDestroy(coloring,ierr)
+         endif
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -398,8 +410,6 @@
  10      continue
  20   continue
 
-!      print*,'local function',f
-
       call PetscLogFlops(11*ym*xm,ierr)
 
       return
@@ -578,15 +588,6 @@
 !  Local variables:
       integer  row,col(5),i,j
       Scalar   two,one,hx,hy,hxdhy,hydhx,sc,v(5)
-
-      Scalar   g_x(36,4,4),g_f(36,4,4),f(4,4)
-      integer info(20)
-
-      call dagetlocalinfo(da,info,ierr)
-
-!      call g_formfunctionlocal(36, info, x, g_x, 36, f, g_f,               &
-!     &36, ierr)
-!      print*,'ad function',f
 
 !  Set parameters
 
