@@ -53,11 +53,11 @@ extern int PetscML_matvec(void *ML_data, int in_length, double p[], int out_leng
 extern int PetscML_comm(double x[], void *ML_data);
 extern PetscErrorCode MatMult_ML(Mat,Vec,Vec);
 extern PetscErrorCode MatMultAdd_ML(Mat,Vec,Vec,Vec);
-extern PetscErrorCode MatConvert_MPIAIJ_ML(Mat,const MatType,Mat*);
+extern PetscErrorCode MatConvert_MPIAIJ_ML(Mat,const MatType,MatReuse,Mat*);
 extern PetscErrorCode MatDestroy_ML(Mat);
-extern PetscErrorCode MatConvert_ML_SeqAIJ(ML_Operator*,Mat*);
-extern PetscErrorCode MatConvert_ML_MPIAIJ(ML_Operator*,Mat*);
-extern PetscErrorCode MatConvert_ML_SHELL(ML_Operator*,Mat*);
+extern PetscErrorCode MatWrapML_SeqAIJ(ML_Operator*,Mat*);
+extern PetscErrorCode MatWrapML_MPIAIJ(ML_Operator*,Mat*);
+extern PetscErrorCode MatWrapML_SHELL(ML_Operator*,Mat*);
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -79,7 +79,7 @@ extern PetscErrorCode MatConvert_ML_SHELL(ML_Operator*,Mat*);
 static PetscErrorCode PCSetUp_ML(PC pc)
 {
   PetscErrorCode       ierr;
-  PetscMPIInt          size,rank;
+  PetscMPIInt          size;
   FineGridCtx          *PetscMLdata;
   ML                   *ml_object;
   ML_Aggregate         *agg_object;
@@ -103,11 +103,9 @@ static PetscErrorCode PCSetUp_ML(PC pc)
   /* covert A to Aloc to be used by ML at fine grid */
   A = pc->pmat;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr); /* rm! */
   pc_ml->size = size;
   if (size > 1){ 
-    Aloc = PETSC_NULL;
-    ierr = MatConvert_MPIAIJ_ML(A,0,&Aloc);CHKERRQ(ierr);
+    ierr = MatConvert_MPIAIJ_ML(A,PETSC_NULL,MAT_INITIAL_MATRIX,&Aloc);CHKERRQ(ierr);
   } else {
     Aloc = A;
   } 
@@ -174,21 +172,21 @@ static PetscErrorCode PCSetUp_ML(PC pc)
   if (size == 1){ /* convert ML P, R and A into seqaij format */
     for (mllevel=1; mllevel<Nlevels; mllevel++){ 
       mlmat  = &(ml_object->Pmat[mllevel]);
-      ierr = MatConvert_ML_SeqAIJ(mlmat,&gridctx[level].P);CHKERRQ(ierr);
+      ierr = MatWrapML_SeqAIJ(mlmat,&gridctx[level].P);CHKERRQ(ierr);
       mlmat  = &(ml_object->Amat[mllevel]);
-      ierr = MatConvert_ML_SeqAIJ(mlmat,&gridctx[level].A);CHKERRQ(ierr);
+      ierr = MatWrapML_SeqAIJ(mlmat,&gridctx[level].A);CHKERRQ(ierr);
       mlmat  = &(ml_object->Rmat[mllevel-1]);
-      ierr = MatConvert_ML_SeqAIJ(mlmat,&gridctx[level].R);CHKERRQ(ierr);
+      ierr = MatWrapML_SeqAIJ(mlmat,&gridctx[level].R);CHKERRQ(ierr);
       level--;
     }
   } else { /* convert ML P and R into shell format, ML A into mpiaij format */
     for (mllevel=1; mllevel<Nlevels; mllevel++){ 
       mlmat  = &(ml_object->Pmat[mllevel]);
-      ierr = MatConvert_ML_SHELL(mlmat,&gridctx[level].P);CHKERRQ(ierr);
+      ierr = MatWrapML_SHELL(mlmat,&gridctx[level].P);CHKERRQ(ierr);
       mlmat  = &(ml_object->Rmat[mllevel-1]);
-      ierr = MatConvert_ML_SHELL(mlmat,&gridctx[level].R);CHKERRQ(ierr);
+      ierr = MatWrapML_SHELL(mlmat,&gridctx[level].R);CHKERRQ(ierr);
       mlmat  = &(ml_object->Amat[mllevel]);
-      ierr = MatConvert_ML_MPIAIJ(mlmat,&gridctx[level].A);CHKERRQ(ierr);  
+      ierr = MatWrapML_MPIAIJ(mlmat,&gridctx[level].A);CHKERRQ(ierr);  
       level--;
     }
   }
@@ -593,7 +591,7 @@ PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
 /* newtype is ignored because "ml" is not listed under Petsc MatType yet */
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_MPIAIJ_ML"
-PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,const MatType newtype,Mat *Aloc) 
+PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,const MatType newtype,MatReuse scall,Mat *Aloc) 
 {
   PetscErrorCode  ierr;
   Mat_MPIAIJ      *mpimat=(Mat_MPIAIJ*)A->data; 
@@ -602,12 +600,10 @@ PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,const MatType newtype,Mat *Aloc)
   PetscScalar     *aa=a->a,*ba=b->a,*ca;
   PetscInt        am=A->m,an=A->n,i,j,k;
   PetscInt        *ci,*cj,ncols;
-  MatReuse        scall=MAT_INITIAL_MATRIX;
 
   PetscFunctionBegin;
   if (am != an) SETERRQ2(PETSC_ERR_ARG_WRONG,"A must have a square diagonal portion, am: %d != an: %d",am,an);
 
-  if (*Aloc) scall = MAT_REUSE_MATRIX;
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscMalloc((1+am)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
     ci[0] = 0;
@@ -676,8 +672,8 @@ PetscErrorCode MatDestroy_ML(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatConvert_ML_SeqAIJ"
-PetscErrorCode MatConvert_ML_SeqAIJ(ML_Operator *mlmat,Mat *newmat) 
+#define __FUNCT__ "MatWrapML_SeqAIJ"
+PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,Mat *newmat) 
 { 
   struct ML_CSR_MSRdata *matdata = (struct ML_CSR_MSRdata *)mlmat->data;
   PetscErrorCode  ierr;
@@ -727,8 +723,8 @@ PetscErrorCode MatConvert_ML_SeqAIJ(ML_Operator *mlmat,Mat *newmat)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatConvert_ML_SHELL"
-PetscErrorCode MatConvert_ML_SHELL(ML_Operator *mlmat,Mat *newmat) 
+#define __FUNCT__ "MatWrapML_SHELL"
+PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,Mat *newmat) 
 {
   PetscErrorCode ierr;
   PetscInt       m,n;
@@ -757,8 +753,8 @@ PetscErrorCode MatConvert_ML_SHELL(ML_Operator *mlmat,Mat *newmat)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatConvert_ML_MPIAIJ"
-PetscErrorCode MatConvert_ML_MPIAIJ(ML_Operator *mlmat,Mat *newmat) 
+#define __FUNCT__ "MatWrapML_MPIAIJ"
+PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat) 
 {
   struct ML_CSR_MSRdata *matdata = (struct ML_CSR_MSRdata *)mlmat->data;
   PetscInt        *ml_cols=matdata->columns,*aj; 
