@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.27 1995/12/12 17:35:10 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiu.c,v 1.28 1995/12/13 18:51:52 balay Exp balay $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -290,7 +290,7 @@ int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
     MPI_Comm_dup( comm_in, comm_out );
     MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );
     tagvalp = (int *)PetscMalloc( 2*sizeof(int) );
-    if (!tagvalp) return MPI_ERR_EXHAUSTED;
+    if (!tagvalp) return MPI_ERR_OTHER;
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
     MPI_Attr_put(*comm_out,MPIU_Tag_keyval, (void*)tagvalp);
