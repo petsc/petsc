@@ -316,19 +316,19 @@ class Framework(base.Base):
   - With -regExp=<re>, it purge all files matching the expression from the source database'''
     if 'fileset' in self.argDB:
       setName = self.argDB['fileset']
-      try:
+      if setName in self.filesets:
         self.debugPrint('Purging source database of fileset '+setName, 1, 'sourceDB')
-        for file in self.filesets[setName]:
-          if file in self.sourceDB:
-            self.debugPrint('Purging '+file, 3, 'sourceDB')
-            del self.sourceDB[file]
-      except KeyError:
-        try:
-          if self.sourceDB.has_key(setName):
-            self.debugPrint('Purging '+setName, 3, 'sourceDB')
-            del self.sourceDB[setName]
-        except KeyError:
-          print 'FileSet '+setName+' not found for purge'
+        for f in self.filesets[setName]:
+          self.debugPrint('Purging '+f, 3, 'sourceDB')
+          try:
+            del self.sourceDB[f]
+          except KeyError:
+            print 'File '+f+' not found for purge'
+      elif setName in self.sourceDB:
+        self.debugPrint('Purging '+setName, 3, 'sourceDB')
+        del self.sourceDB[setName]
+      else:
+        print 'FileSet '+setName+' not found for purge'
     else:
       import re
 
@@ -348,17 +348,19 @@ class Framework(base.Base):
   - With -fileset=<filename>, it updates one file'''
     if 'fileset' in self.argDB:
       setName = self.argDB['fileset']
-      try:
+      if setName in self.filesets:
         self.debugPrint('Updating source database of fileset '+setName, 1, 'sourceDB')
-        for file in self.filesets[setName]:
-          self.debugPrint('Updating '+file, 3, 'sourceDB')
-          self.sourceDB.updateSource(file)
-      except KeyError:
-        try:
-          self.debugPrint('Updating '+setName, 3, 'sourceDB')
-          self.sourceDB.updateSource(setName)
-        except KeyError:
-          print 'FileSet '+setName+' not found for update'
+        for f in self.filesets[setName]:
+          self.debugPrint('Updating '+f, 3, 'sourceDB')
+          try:
+            self.sourceDB.updateSource(f)
+          except KeyError:
+            print 'File '+f+' not found in source database'
+      elif setName in self.sourceDB:
+        self.debugPrint('Updating '+setName, 3, 'sourceDB')
+        self.sourceDB.updateSource(setName)
+      else:
+        print 'FileSet '+setName+' not found for update'
     else:
       import re
 

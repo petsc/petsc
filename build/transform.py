@@ -33,10 +33,11 @@ class Transform(base.Base):
     '''Process a FileSet
        - This default method calls handleFile() on each member of the set'''
     # Preserve rooted file sets and those with nonexistent files
-    if not set.tag is None:
+    #   Could probably just create all nonempty sets, since empty ones will get filtered out at the next node
+    if not set.tag is None and len(set):
       if isinstance(set, build.fileset.RootedFileSet):
         self.output.children.append(build.fileset.RootedFileSet(set.projectUrl, tag = set.tag))
-      elif not set.mustExist and len(set):
+      elif not set.mustExist:
         self.output.children.append(build.fileset.FileSet(tag = set.tag, mustExist = set.mustExist))
     map(lambda f: self.handleFile(f, set.tag), set)
     map(self.handleFileSet, set.children)

@@ -20,7 +20,7 @@ class PetscMake(build.framework.Framework):
     import build.fileset
     url                     = self.project.getUrl()
     pythonRoot              = self.sidlTemplate.usingSIDL.getClientRootDir('Python')
-    self.filesets['python'] = build.fileset.RootedFileSet(url, [os.path.join(pythonRoot, 'cygwinpath_Module.c')], tag = 'python client c')
+    self.filesets['python'] = build.fileset.RootedFileSet(url, [os.path.join(pythonRoot, 'cygwinpath_Module.c')], tag = 'python client')
     self.filesets['sidl'].children.append(self.filesets['python'])
     return
 
@@ -32,12 +32,12 @@ class PetscMake(build.framework.Framework):
     if not 'clientLanguages'    in self.argDB:
       self.argDB['clientLanguages']    = []
     self.setupSIDL()
+    self.configureHeader = os.path.join(self.project.getRoot(), self.sidlTemplate.usingSIDL.getClientRootDir('Python', 'sidl'), 'cygwinpath_Module.h')
     return
 
   def setupBuild(self):
     self.setupSource()
     self.sidlTemplate.addClient('Python')
-    self.configureHeader = os.path.join(self.project.getRoot(), self.sidlTemplate.usingSIDL.getClientRootDir('Python', 'sidl'), 'cygwinpath_Module.h')
     return
 
 if __name__ ==  '__main__':
