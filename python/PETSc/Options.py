@@ -118,6 +118,8 @@ class Options(config.base.Configure):
     return flags
 
   def getCompilerVersion(self, language, compiler):
+    if compiler is None:
+      raise RuntimeError('Invalid compiler for version determination')
     version = 'Unknown'
     try:
       if language == 'C':
