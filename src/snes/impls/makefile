@@ -2,8 +2,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) $(PCONF) \
-           -I../.. $(CONF)
+CFLAGS   = 
 SOURCEC  =  
 SOURCEF  =
 SOURCEH  = 
@@ -11,6 +10,7 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscsnes
 DIRS     = ls tr test umtr umls
+LOCDIR   = src/snes/impls
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
