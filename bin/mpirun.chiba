@@ -149,7 +149,7 @@ if [ $USE_MYRINET = "yes" ] ; then
 #PBS -l nodes=$num
 #PBS -l walltime=0:${max_minutes}:00
 #ctrans in $rundir
-#ctrans out output
+#ctrans out $HOME/output.$$
 PATH=$PATH
 export PATH
 pbsfile="\${HOME}/.pbsnodefile.\${PBS_JOBID}"
@@ -179,7 +179,7 @@ else
 #PBS -l nodes=$num
 #PBS -l walltime=0:${max_minutes}:00
 #ctrans in $rundir
-#ctrans out output
+#ctrans out $HOME/output.$$
 #
 PATH=$PATH
 export PATH
