@@ -47,12 +47,11 @@ class UsingSIDL (logging.Logger):
     self.clientCompilerFlags = sidlStructs.SIDLLanguageDict(self)
     self.includeDirs         = sidlStructs.SIDLPackageDict(self)
     self.extraLibraries      = sidlStructs.SIDLPackageDict(self)
-    self.libDir              = os.path.join(self.getRootDir(), 'lib')
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
 
   def setupIncludeDirectories(self):
-    rootDir = self.getRootDir()
+    rootDir = self.getRuntimeProject().getRoot()
     for lang in sidlStructs.SIDLConstants.getLanguages():
       self.includeDirs[lang].append(self.getServerRootDir(self.getBaseLanguage(), self.getBasePackage(), root = os.path.join(rootDir, 'server')))
       if not self.compilerDefaults.generatesAllStubs() and not lang == self.getBaseLanguage():
@@ -69,15 +68,14 @@ class UsingSIDL (logging.Logger):
 
   def setupExtraLibraries(self):
     runtimeProject = self.getRuntimeProject()
-    rootDir   = os.path.join(self.getRootDir(), 'lib')
     using     = getattr(compileDefaults, 'Using'+self.getBaseLanguage().replace('+', 'x'))(self)
-    serverLib = using.getServerLibrary(runtimeProject, self.getBaseLanguage(), self.getBasePackage(), isArchive = 0, root = rootDir)
+    serverLib = using.getServerLibrary(runtimeProject, self.getBaseLanguage(), self.getBasePackage(), isArchive = 0)
     self.extraLibraries['executable'].extend(serverLib)
     for lang in sidlStructs.SIDLConstants.getLanguages():
       self.extraLibraries[lang].extend(serverLib)
       if not self.project == runtimeProject and not lang == self.getBaseLanguage():
         using = getattr(compileDefaults, 'Using'+lang.replace('+', 'x'))(self)
-        self.extraLibraries[lang].extend(using.getClientLibrary(runtimeProject, lang, isArchive = 0, root = rootDir))
+        self.extraLibraries[lang].extend(using.getClientLibrary(runtimeProject, lang, isArchive = 0))
     for package in self.getPackages():
       if not self.project == runtimeProject or not package in self.bootstrapPackages:
         self.extraLibraries[package].extend(serverLib)
@@ -144,9 +142,6 @@ class UsingSIDL (logging.Logger):
     self.setClientCompilerFlags(flags, language, notLanguage)
     return
 
-  def getRootDir(self):
-    return os.path.abspath(bs.argDB['SIDL_DIR'])
-
   def getServerRootDir(self, lang, package = None, root = None):
     '''Returns an absolute path if root is given, otherwise a relative path'''
     if not root: root = self.serverBaseDir
@@ -171,10 +166,12 @@ class UsingSIDL (logging.Logger):
     '''Server libraries following the naming scheme:
       lib<project>-<lang>-<package>-server.a    for archives
       lib<project>-<lang>-<package>-server.so   for dynamic libraries'''
+    library = os.path.join(project.getRoot(), 'lib', 'lib'+project.getName()+'-'+lang.lower()+'-'+package+'-server')
     if isArchive:
-      return fileset.FileSet([os.path.join(self.libDir, 'lib'+project.getName()+'-'+lang.lower()+'-'+package+'-server.a')])
+      library += '.a'
     else:
-      return fileset.FileSet([os.path.join(self.libDir, 'lib'+project.getName()+'-'+lang.lower()+'-'+package+'-server.so')])
+      library += '.so'
+    return fileset.FileSet([library])
 
 class TagSIDL (transform.GenericTag):
   def __init__(self, tag = 'sidl', ext = 'sidl', sources = None, extraExt = ''):
