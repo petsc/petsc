@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.10 1997/05/03 22:08:22 curfman Exp curfman $";
+C "$Id: ex4f.F,v 1.11 1997/05/03 23:02:13 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -393,9 +393,6 @@ C  Restore vectors
 
       call PLogFlops(11*mx*my,ierr)
 
-      call VecView(X,VIEWER_STDOUT_SELF,ierr)
-      call VecView(F,VIEWER_STDOUT_SELF,ierr)
-
       return 
       end
 
@@ -524,13 +521,13 @@ C   - Here, we set all entries for a particular row at once.
 C   - Note that MatSetValues() uses 0-based row and column numbers
 C     in Fortran as well as in C.
 
-      do 20 j=0,my-1
-         row = j*mx - 1
-         do 10 i=0,mx-1
+      do 20 j=1,my
+         row = (j-1)*mx - 1
+         do 10 i=1,mx
             row = row + 1
 C           boundary points
-            if (i .eq. 0 .or. j .eq. 0 
-     &             .or. i .eq. mx-1 .or. j .eq. my-1) then
+            if (i .eq. 1 .or. j .eq. 1
+     &             .or. i .eq. mx .or. j .eq. my) then
                call MatSetValues(jac,1,row,1,row,one,
      &                           INSERT_VALUES,ierr)
 C           interior grid points
