@@ -1,6 +1,6 @@
 
 
-/* $Id: dvec2.c,v 1.51 1998/05/29 20:35:29 bsmith Exp balay $ */
+/* $Id: dvec2.c,v 1.52 1998/05/30 00:05:42 balay Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -606,7 +606,7 @@ int VecSetRandom_Seq(PetscRandom r,Vec xin)
 int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
 {
   Vec_Seq      *xdata = (Vec_Seq *) xin->data;
-  int n = xdata->n;
+  int          n = xdata->n;
   int          j,j_rem;
   Scalar       *xx,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
 
