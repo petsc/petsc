@@ -172,8 +172,9 @@ class Linker(Processor):
   '''A Linker processes any FileSet with intermediate object files, and outputs a FileSet of libraries.'''
   def __init__(self, sourceDB, archiver, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = 'a'):
     Processor.__init__(self, sourceDB, archiver, inputTag, outputTag, isSetwise, updateType)
-    self.library = library
-    self.libExt  = libExt
+    self.library        = library
+    self.libExt         = libExt
+    self.extraLibraries = []
     return
 
   def getLibrary(self, object):
@@ -288,7 +289,24 @@ class SharedLinker(Linker):
 
   def getLinkerFlags(self, source):
     '''Return a list of the linker specific flags. The default is -shared.'''
-    return ['-shared']
+    flags = ['-shared']
+    for lib in self.extraLibraries:
+      # Options and object files are passed verbatim
+      if lib[0] == '-' or lib.endswith('.o'):
+        flags.append(lib)
+      # Big Intel F90 hack (the shared library is broken)
+      elif lib.endswith('intrins.a'):
+        flags.append(lib)
+      else:
+        (dir, file) = os.path.split(lib)
+        (base, ext) = os.path.splitext(file)
+        if not base.startswith('lib'):
+          flags.append(lib)
+        else:
+          if dir:
+            flags.extend(['-L'+dir, '-Wl,-rpath,'+dir])
+          flags.append('-l'+base[3:])
+    return flags
 
   def getOutputFlags(self, source):
     '''Return a list of the linker flags specifying the shared library'''

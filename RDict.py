@@ -81,6 +81,29 @@ Arg class, which wraps the usual value.'''
     atexit.register(self.shutdown)
     return
 
+  def __getstate__(self):
+    '''Remove any parent socket object, the XDR translators, and the log file from the dictionary before pickling'''
+    self.writeLogLine('Pickling RDict')
+    d = self.__dict__.copy()
+    print 'RDict dictionary:'
+    print d
+    if 'parent' in d: del d['parent']
+    del d['packer']
+    del d['unpacker']
+    del d['logFile']
+    return d
+
+  def __setstate__(self, d):
+    '''Reconnect the parent socket object, recreate the XDR translators and reopen the log file after unpickling'''
+    self.logFile  = file('RDict.log', 'a')
+    self.writeLogLine('Unpickling RDict')
+    self.__dict__.update(d)
+    import xdrlib
+    self.packer   = xdrlib.Packer()
+    self.unpacker = xdrlib.Unpacker('')
+    self.connectParent(self.parentAddr, self.parentDirectory)
+    return
+
   def writeLogLine(self, message):
     '''Writes the message to the log along with the current time'''
     import time

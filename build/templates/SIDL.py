@@ -33,7 +33,7 @@ class Template(base.Base):
     return self.usingSIDL.addStaticPackage(package)
 
   def addRepositoryDirs(self, compiler):
-    compiler.repositoryDirs.extend([vertex.getRoot() for vertex in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project) if not vertex == self.project])
+    compiler.repositoryDirs.extend([vertex.getRoot() for vertex in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project)])
     return compiler
 
   def getServerTarget(self):

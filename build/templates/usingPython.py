@@ -90,6 +90,7 @@ class UsingPython (base.Base):
     linker       = build.buildGraph.BuildGraph()
     archiver     = build.processor.Archiver(self.sourceDB, 'ar', compiler.output.tag, archiveTag, isSetwise = 1, library = library)
     sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, compiler.output.tag, sharedTag, isSetwise = 1, library = library)
+    sharedLinker.extraLibraries.extend(self.extraLibraries)
     linker.addVertex(archiver)
     linker.addEdges(sharedLinker, [archiver])
     linker.addEdges(build.transform.Operation(lambda f,tag: os.remove(f), compiler.output.tag), [sharedLinker])
@@ -104,8 +105,18 @@ class UsingPython (base.Base):
     linker     = build.buildGraph.BuildGraph()
     archiver     = build.processor.Archiver(self.sourceDB, 'ar', compiler.output.tag, archiveTag)
     sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, compiler.output.tag, sharedTag)
+    sharedLinker.extraLibraries.extend(self.extraLibraries)
     linker.addVertex(archiver)
     linker.addEdges(sharedLinker, [archiver])
     linker.addEdges(build.transform.Operation(lambda f,tag: os.remove(f), compiler.output.tag), [sharedLinker])
     target.appendGraph(linker)
     return target
+
+  def installClient(self):
+    '''Add Python paths for clients to the project'''
+    print 'Installing Python client'
+    return self.project.appendPythonPath(os.path.join(self.project.getRoot(), self.usingSIDL.getClientRootDir(self.language)))
+
+  def installServer(self, package):
+    '''Add Python paths for servers to the project'''
+    return self.project.appendPythonPath(os.path.join(self.project.getRoot(), self.usingSIDL.getServerRootDir(self.language, package)))

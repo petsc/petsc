@@ -16,6 +16,8 @@ class Template(base.Base):
     self.dependenceGraph = dependenceGraph
     self.usingSIDL       = usingSIDL
     self.packages        = packages
+    self.includeDirs     = []
+    self.extraLibraries  = []
     return
 
   def __getattr__(self, name):
@@ -33,28 +35,37 @@ class Template(base.Base):
     setattr(self, '_'+name, obj)
     return obj
 
-  def setupIncludes(self, lang, compileGraph):
-    '''Include the client directories for all dependencies'''
+  def setupExtraOptions(self, lang, compileGraph):
+    '''Set client include directories for all dependencies and the runtime library for linking'''
     import os
 
-    for compiler in compileGraph.vertices:
-      if hasattr(compiler, 'includeDirs'):
+    for vertex in compileGraph.vertices:
+      if hasattr(vertex, 'includeDirs'):
         dft = build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project)
         # Client includes for project dependencies
-        #compiler.includeDirs.extend([os.path.join(vertex.getRoot(), self.usingSIDL.getClientRootDir(lang)) for vertex in dft if not vertex == self.project])
-        compiler.includeDirs.extend([os.path.join(vertex.getRoot(), self.usingSIDL.getClientRootDir(lang)) for vertex in dft])
+        #vertex.includeDirs.extend([os.path.join(vertex.getRoot(), self.usingSIDL.getClientRootDir(lang)) for vertex in dft if not vertex == self.project])
+        vertex.includeDirs.extend([os.path.join(v.getRoot(), self.usingSIDL.getClientRootDir(lang)) for v in dft])
         # Runtime includes
-        compiler.includeDirs.extend(self.usingSIDL.getRuntimeIncludes())
+        vertex.includeDirs.extend(self.usingSIDL.getRuntimeIncludes())
+        # Custom includes
+        vertex.includeDirs.extend(self.includeDirs)
+      if hasattr(vertex, 'extraLibraries'):
+        if self.project == self.usingSIDL.getRuntimeProject() and lang == self.usingSIDL.getRuntimeLanguage(): continue
+        # Runtime libraries
+        vertex.extraLibraries.extend(self.usingSIDL.getRuntimeLibraries())
+        # Custom libraries
+        vertex.extraLibraries.extend(self.extraLibraries)
     return compileGraph
 
-  def getServerTarget(self):
+  def getServerTarget(self, isStatic = 0):
     '''Return a BuildGraph which will compile the servers specified
        - This is a linear array since all source is independent'''
     target = build.buildGraph.BuildGraph()
     for lang in self.usingSIDL.serverLanguages:
       for package in self.packages:
+        if (isStatic and not package in self.usingSIDL.staticPackages) or (not isStatic and package in self.usingSIDL.staticPackages): continue
         using = getattr(self, 'using'+lang.capitalize())
-        graph = self.setupIncludes(lang, using.getServerCompileTarget(package))
+        graph = self.setupExtraOptions(lang, using.getServerCompileTarget(package))
         target.appendGraph(graph)
     return target
 
@@ -64,14 +75,22 @@ class Template(base.Base):
     target = build.buildGraph.BuildGraph()
     for lang in self.usingSIDL.clientLanguages:
       using = getattr(self, 'using'+lang.capitalize())
-      graph = self.setupIncludes(lang, using.getClientCompileTarget())
+      graph = self.setupExtraOptions(lang, using.getClientCompileTarget())
       target.appendGraph(graph)
     return target
 
   def getTarget(self):
     '''Return a BuildGraph which will compile source into object files'''
     target = build.buildGraph.BuildGraph()
+    target.appendGraph(self.getServerTarget(isStatic = 1))
     target.appendGraph(self.getClientTarget())
     target.appendGraph(self.getServerTarget())
     target.appendGraph(build.buildGraph.BuildGraph([build.fileState.Update(self.sourceDB)]))
     return target
+
+  def install(self):
+    for lang in self.usingSIDL.clientLanguages:
+      getattr(self, 'using'+lang.capitalize()).installClient()
+    for lang in self.usingSIDL.serverLanguages:
+      for package in self.packages:
+        getattr(self, 'using'+lang.capitalize()).installServer(package)
