@@ -1,0 +1,8 @@
+#! /bin/csh
+#
+#  Generates a tar file at the ftp site containing all 
+# patch fixed files. The list of replaced files is in
+# docs/tex/petsc-patches-file-list
+#
+cd /mcs/www-unix/petsc
+tar cf /home/ftp/pub/petsc/petsc-patches.tar -I /home/bsmith/petsc/docs/tex/petsc-patches-file-list
