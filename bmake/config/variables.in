@@ -20,6 +20,7 @@ LIB_SUFFIX         = @LIB_SUFFIX@
 BFORT              = @BFORT@
 DOCTEXT            = @DOCTEXT@
 MAPNAMES           = @MAPNAMES@
+C2HTML             = @C2HTML@
 
 top_builddir       = @PETSC_DIR@
 INSTALL_DIR        = @INSTALL_DIR@

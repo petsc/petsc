@@ -181,26 +181,30 @@ class Configure(config.base.Configure):
   def downLoadBlasLapack(self,f2c,l):
     self.framework.log.write('Downloading '+l+'blaslapack')
 
+    packages = os.path.join(self.framework.argDB['PETSC_DIR'],'packages')
+    if not os.path.isdir(packages):
+      os.mkdir(packages)
+
     if f2c == 'f2c': self.addDefine('BLASLAPACK_F2C',1)
     self.foundBlas       = 1
     self.foundLapack     = 1
-    libdir               = os.path.join(self.framework.argDB['PETSC_DIR'],f2c+'blaslapack',self.framework.argDB['PETSC_ARCH'])
+    libdir               = os.path.join(packages,f2c+'blaslapack',self.framework.argDB['PETSC_ARCH'])
     self.functionalBlasLapack.append((f2c+'blaslapack', os.path.join(libdir,'lib'+f2c+'blas.a'), os.path.join(libdir,'lib'+f2c+'lapack.a')))
-    if not os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'],f2c+'blaslapack')):
+    if not os.path.isdir(os.path.join(packages,f2c+'blaslapack')):
       import urllib
       try:
-        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/'+f2c+'blaslapack.tar.gz',f2c+'blaslapack.tar.gz')
+        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/'+f2c+'blaslapack.tar.gz',os.path.join('packages',f2c+'blaslapack.tar.gz'))
       except:
         raise RuntimeError('Error downloading '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
       try:
-        config.base.Configure.executeShellCommand('gunzip '+f2c+'blaslapack.tar.gz', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd packages; gunzip '+f2c+'blaslapack.tar.gz', log = self.framework.log)
       except:
         raise RuntimeError('Error unzipping '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
       try:
-        config.base.Configure.executeShellCommand('tar -xf '+f2c+'blaslapack.tar', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd packages; tar -xf '+f2c+'blaslapack.tar', log = self.framework.log)
       except:
         raise RuntimeError('Error doing tar -xf '+f2c+'blaslapack.tar requested with -with-'+l+'-blas-lapack option')
-      os.unlink(f2c+'blaslapack.tar')
+      os.unlink(os.path.join('packages',f2c+'blaslapack.tar'))
     if not os.path.isdir(libdir):
       os.mkdir(libdir)
     
