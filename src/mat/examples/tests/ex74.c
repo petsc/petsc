@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.29 2000/09/28 21:11:49 bsmith Exp hzhang $*/
+/*$Id: ex74.c,v 1.30 2000/10/16 18:39:46 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -162,7 +162,7 @@ int main(int argc,char **args)
   printf("matrix nonzeros(SBAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo2.nz_used,(int)minfo2.nz_allocated); 
   */
   i = (int) (minfo1.nz_used - minfo2.nz_used); 
-  j = (int) (minfo1.nz_allocated - minfo2.nz_allocated);
+  j = (int) (minfo2.nz_allocated - minfo2.nz_used);
   if (i<0 || j<0) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetInfo()\n");CHKERRQ(ierr);
   }
