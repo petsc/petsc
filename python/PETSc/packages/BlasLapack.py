@@ -408,7 +408,7 @@ class Configure(config.base.Configure):
   def configurePIC(self):
     '''Determine the PIC option for each compiler
        - There needs to be a test that checks that the functionality is actually working'''
-    if (self.framework.argDB['PETSC_ARCH_BASE'].startswith('hpux') or self.framework.argDB['PETSC_ARCH_BASE'].startswith('aix')) and not config.setCompilers.Configure.isGNU(self.framework.argDB['CC']):
+    if (self.framework.argDB['PETSC_ARCH_BASE'].startswith('osf')  or self.framework.argDB['PETSC_ARCH_BASE'].startswith('hpux') or self.framework.argDB['PETSC_ARCH_BASE'].startswith('aix')) and not config.setCompilers.Configure.isGNU(self.framework.argDB['CC']):
       return
     languages = ['C']
     if 'CXX' in self.framework.argDB:
