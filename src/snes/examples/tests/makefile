@@ -242,7 +242,7 @@ runex14_3:
 #
 TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm
 TESTEXAMPLES_2  = ex7.PETSc runex7 ex7.rm ex9.PETSc \
-		  runex9 ex9.rm ex13.PETSc ex13.rm  ex11.PETSc ex11.rm
+		  runex9 ex9.rm ex13.PETSc ex13.rm
 TESTEXAMPLES_3  = ex12.PETSc runex12 ex12.rm  ex1f.PETSc runex1f_2 runex1f_3 ex1f.rm
 TESTEXAMPLES_4  = ex7.PETSc ex7.rm ex9.PETSc ex9.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm 
 TESTEXAMPLES_8  = 

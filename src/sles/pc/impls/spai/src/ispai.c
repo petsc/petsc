@@ -63,7 +63,6 @@ static int PCSetUp_SPAI(PC pc)
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
   int      ierr;
   Mat      AT;
-  MPI_Comm comm;
 
   PetscFunctionBegin;
 

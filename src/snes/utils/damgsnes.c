@@ -380,7 +380,6 @@ int DMMGSolveFAS(DMMG *dmmg,int level)
   MG          *mg;
   PC          pc;
   SLES        sles;
-  PetscTruth  monitor = PETSC_TRUE;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,dmmg[level]->r);CHKERRQ(ierr);
@@ -703,7 +702,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
             ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %d\n",newton_its);CHKERRQ(ierr);
           } else {
 	    ierr = PetscPrintf(dmmg[i]->comm,"  level %d   presmooths    %d\n",i,dmmg[i]->presmooth);CHKERRQ(ierr);
-	    ierr = PetscPrintf(dmmg[i]->comm,"             postsmooths   %d\n",i,dmmg[i]->postsmooth);CHKERRQ(ierr);
+	    ierr = PetscPrintf(dmmg[i]->comm,"             postsmooths   %d\n",dmmg[i]->postsmooth);CHKERRQ(ierr);
             ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %d\n",newton_its);CHKERRQ(ierr);
           }
         }
