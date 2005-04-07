@@ -767,6 +767,7 @@ static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char n
 
   /* append prefix to name */
   if (pre) {
+    if (pre[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,"Prefix should not begin with a -");
     ierr = PetscStrncpy(tmp,pre,256);CHKERRQ(ierr);
     ierr = PetscStrlen(tmp,&len);CHKERRQ(ierr);
     ierr = PetscStrncat(tmp,name+1,256-len-1);CHKERRQ(ierr);
