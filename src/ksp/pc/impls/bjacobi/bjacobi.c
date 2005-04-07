@@ -772,6 +772,8 @@ PetscErrorCode PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr); 
   ierr = KSPSolve(jac->ksp[0],bjac->x,bjac->y);CHKERRQ(ierr); 
+  ierr = VecResetArray(bjac->x);CHKERRQ(ierr); 
+  ierr = VecResetArray(bjac->y);CHKERRQ(ierr); 
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr); 
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
