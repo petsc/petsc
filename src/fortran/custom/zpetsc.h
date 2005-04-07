@@ -152,7 +152,7 @@ extern void *PETSCNULLPOINTERADDRESS;
   if (FORTRANNULL(a) || FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a) || FORTRANNULLINTEGER(a)) { \
     PetscError(__LINE__,"fortran_interface_unknown_file",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONG,1, \
     "Use PETSC_NULL_OBJECT"); *ierr = 1; return; } \
-  else if (FORTRANNULLOBJECT(a)) { ((void**)a) = &PETSCNULLPOINTERADDRESS; }
+  else if (FORTRANNULLOBJECT(a)) { *((void***)&a) = &PETSCNULLPOINTERADDRESS; }
   
 /*
     These are used to support the default viewers that are 
