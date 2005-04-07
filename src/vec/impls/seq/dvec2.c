@@ -953,7 +953,6 @@ PetscErrorCode VecResetArray_Seq(Vec vin)
   Vec_Seq *v = (Vec_Seq *)vin->data;
 
   PetscFunctionBegin;
-  if (v->unplacedarray) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was not called on this vector");
   v->array         = v->unplacedarray;
   v->unplacedarray = 0;
   PetscFunctionReturn(0);

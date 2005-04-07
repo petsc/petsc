@@ -286,7 +286,7 @@ class Configure(PETSc.package.Package):
       fc = self.framework.getCompiler()
       args.append('--disable-f90')      
       if self.compilers.fortranIsF90:
-        output, error, status = self.executeShellCommand(fc+' -v')
+        output, error, status = self.executeShellCommand(fc+' -v | grep IBM')
         if output.find('IBM') >= 0:
           fc = os.path.join(os.path.dirname(fc), 'xlf')
           self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling MPICH\n')      

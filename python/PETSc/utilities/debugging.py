@@ -24,22 +24,16 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-errorchecking']:
       self.addDefine('USE_ERRORCHECKING',1)
     else:
-      self.framework.logClear()
-      print '=================================================================================\r'
-      print '          WARNING! Compiling PETSc with NO error checking/exception handling,  \r'
-      print '        this should only be done for timing and production runs where you DO NOT \r'
-      print '        use PETSc exceptions. All development should be done when configured using\r'
-      print '         --with-errorchecking=1 \r'          
-      print '=================================================================================\r'  
+      self.logPrintBox('     WARNING! Compiling PETSc with NO error checking/exception handling, \n \
+                    this should only be done for timing and production runs where you DO NOT \n \
+                    use PETSc exceptions. All development should be done when configured using \n \
+                    --with-errorchecking=1')          
 
     self.debugging = self.framework.argDB['with-debugging']
     if not self.debugging:
-      self.framework.logClear()
-      print '=================================================================================\r'
-      print '          WARNING! Compiling PETSc with no debugging, this should \r'
-      print '        only be done for timing and production runs. All development should \r'
-      print '        be done when configured using --with-debugging=1 \r'          
-      print '=================================================================================\r'  
+      self.logPrintBox('          WARNING! Compiling PETSc with no debugging, this should \n \
+               only be done for timing and production runs. All development should \n \
+               be done when configured using --with-debugging=1')
     
   def configure(self):
     self.executeTest(self.configureDebugging)
