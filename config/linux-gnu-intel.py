@@ -6,7 +6,7 @@ configure_options = [
   '--with-cxx=icpc',
   '--with-mpi-include=/home/petsc/soft/linux-rh73-intel/mpich-1.2.5.2/include',
   '--with-mpi-lib=[/home/petsc/soft/linux-rh73-intel/mpich-1.2.5.2/lib/libmpich.a,libpmpich.a]',
-  '--with-mpirun=mpirun',
+  '--with-mpirun=/home/petsc/soft/linux-rh73-intel/mpich-1.2.5.2/bin/mpirun',
   '--with-blas-lapack-dir=/home/petsc/soft/linux-rh73-intel/mkl-52'
   ]
 
