@@ -209,7 +209,10 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
 #if defined (PETSC_USE_NARGS)
   short       flg,i;
 #else
-  int         i,j;
+  int         i;
+#if !defined(PETSC_HAVE_PXFGETARG_NEW) && !defined (PETSC_HAVE_PXFGETARG_NEW) 
+  int         j;
+#endif
 #endif
   int         flag,argc = 0;
   PetscMPIInt size;
