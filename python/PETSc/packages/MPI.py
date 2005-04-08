@@ -89,9 +89,8 @@ class Configure(PETSc.package.Package):
           yield (dir)
     # Try MPICH install locations under Windows
     yield(os.path.join('/cygdrive','c','Program\\ Files','MPICH'))
-    yield(os.path.join('c:','Program\\ Files','MPICH'))
-    yield(os.path.join('c:','Program\\ Files','MPICH','SDK.gcc'))
-    yield(os.path.join('c:','Program\\ Files','MPICH','SDK'))
+    yield(os.path.join('/cygdrive','c','Program\\ Files','MPICH','SDK.gcc'))
+    yield(os.path.join('/cygdrive','c','Program\\ Files','MPICH','SDK'))
     return
 
   def checkSharedLibrary(self):
