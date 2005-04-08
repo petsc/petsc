@@ -167,24 +167,32 @@ class Package(config.base.Configure):
     if hasattr(self.source,'bk'):
       for url in self.download:
         if url.startswith('bk://'):
+          failedmessage = 'Unable to bk clone '+self.package+'\n'+\
+                   'You may be off the network. Connect to the internet and run config/configure.py again \n'+\
+                   'or from the directory externalpackages try: \n bk clone '+url+' '+self.package+\
+                   ' if that succeeds then rerun config/configure.py'
           try:
             self.framework.log.write('Downloading it using "bk clone '+url+' '+os.path.join(packages,self.package)+'"\n')
             (output, error, status) = config.base.Configure.executeShellCommand('bk clone '+url+' '+os.path.join(packages,self.package))
           except RuntimeError, e:
-            raise RuntimeError('Error bk cloning '+self.package+' '+str(e))        
+            status = 1
+            output = str(e)
+            error  = ''
           if status:
             if output.find('ommand not found') >= 0:
               raise RuntimeError('Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path')
             elif output.find('Cannot resolve host') >= 0:
-              raise RuntimeError('Unable to download '+self.package+'. You must be off the network. Connect to the internet and run config/configure.py again')
+              self.framework.log.write('Cannot bk clone:'+'\n'+output+'\n'+error+'\n')
+              raise RuntimeError(failedmessage)
             else:
               # Bitkeeper ports could be blocked
               try:
                 (output, error, status) = config.base.Configure.executeShellCommand('bk clone '+url.replace('bk://', 'http://')+' '+os.path.join(packages,self.package))
               except RuntimeError, e:
-                raise RuntimeError('Error bk cloning '+self.package+' '+str(e))        
+                status = 1
               if status:
-                self.logPrint('Unable to clone '+self.package+' into '+self.getDir(0)+'\n'+output+'\n'+error)
+                self.framework.log.write('Cannot bk clone:'+'\n'+output+'\n'+error+'\n')
+                raise RuntimeError(failedmessage)
           self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.package+' into '+self.getDir(0))
           return
 
@@ -193,10 +201,14 @@ class Package(config.base.Configure):
         import urllib
         tarname   = self.name+'.tar'
         tarnamegz = tarname+'.gz'
+        self.framework.log.write('Downloading '+url+' to '+os.path.join(packages,self.package)+'\n')
         try:
           urllib.urlretrieve(url, os.path.join(packages,tarnamegz ))
         except Exception, e:
-          raise RuntimeError('Error downloading '+self.name+': '+str(e))
+          failedmessage = 'Unable to download '+self.package+'\n'+\
+                   'You may be off the network. Connect to the internet and run config/configure.py again \n'+\
+                   'or put in the directory externalpackages the uncompressed untared file obtained \nfrom '+url+'\n'
+          raise RuntimeError(failedmessage)
         try:
           config.base.Configure.executeShellCommand('cd '+packages+'; gunzip '+tarnamegz, log = self.framework.log)
         except RuntimeError, e:
