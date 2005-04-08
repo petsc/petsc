@@ -45,8 +45,10 @@ rm -f $nPETSC_DIR/buildout.tar
 echo "Build on $MACH $ARCH  `date` " > $nPETSC_DIR/build.log
 
 cd $nPETSC_DIR
+bk -r unedit
 bk pull -q >>& $nPETSC_DIR/build.log
 pushd python/BuildSystem
+bk -r unedit
 bk pull -q >>& $nPETSC_DIR/build.log
 popd
 

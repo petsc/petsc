@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/home/petsc/soft/linux-debian_sarge/python-2.2/bin/python
 
 configure_options = [
   '--with-cc=gcc',
