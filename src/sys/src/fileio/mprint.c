@@ -79,6 +79,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintf(FILE *fd,const char *format,va_list
   vfprintf(fd,newformat,(char *)Argp);
 #else
   vfprintf(fd,newformat,Argp);
+  fflush(fd);
 #endif
   return 0;
 }

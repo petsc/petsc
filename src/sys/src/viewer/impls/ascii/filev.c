@@ -489,6 +489,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_ASCII(PetscViewer viewer,c
   char              fname[PETSC_MAX_PATH_LEN],*gz;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
   PetscTruth        isstderr,isstdout;
+  PetscMPIInt       rank;
 
   PetscFunctionBegin;
   if (!name) PetscFunctionReturn(0);
@@ -505,44 +506,46 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_ASCII(PetscViewer viewer,c
       vascii->storecompressed = PETSC_TRUE;
     } 
   }
-  ierr = PetscStrcmp(name,"stderr",&isstderr);CHKERRQ(ierr);
-  ierr = PetscStrcmp(name,"stdout",&isstdout);CHKERRQ(ierr);
-  if (isstderr)      vascii->fd = stderr;
-  else if (isstdout) vascii->fd = stdout;
-  else {
-    ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
-    switch(vascii->mode) {
-    case FILE_MODE_READ:
-      vascii->fd = fopen(fname,"r");
-      break;
-    case FILE_MODE_WRITE:
-      vascii->fd = fopen(fname,"w");
-      break;
-    case FILE_MODE_APPEND:
-      vascii->fd = fopen(fname,"a");
-      break;
-    case FILE_MODE_UPDATE:
-      vascii->fd = fopen(fname,"r+");
-      if (!vascii->fd) {
-        vascii->fd = fopen(fname,"w+");
+  ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscStrcmp(name,"stderr",&isstderr);CHKERRQ(ierr);
+    ierr = PetscStrcmp(name,"stdout",&isstdout);CHKERRQ(ierr);
+    if (isstderr)      vascii->fd = stderr;
+    else if (isstdout) vascii->fd = stdout;
+    else {
+      ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
+      switch(vascii->mode) {
+      case FILE_MODE_READ:
+	vascii->fd = fopen(fname,"r");
+	break;
+      case FILE_MODE_WRITE:
+	vascii->fd = fopen(fname,"w");
+	break;
+      case FILE_MODE_APPEND:
+	vascii->fd = fopen(fname,"a");
+	break;
+      case FILE_MODE_UPDATE:
+	vascii->fd = fopen(fname,"r+");
+	if (!vascii->fd) {
+	  vascii->fd = fopen(fname,"w+");
+	}
+	break;
+      case FILE_MODE_APPEND_UPDATE:
+	/* I really want a file which is opened at the end for updating,
+	   not a+, which opens at the beginning, but makes writes at the end.
+	*/
+	vascii->fd = fopen(fname,"r+");
+	if (!vascii->fd) {
+	  vascii->fd = fopen(fname,"w+");
+	} else {
+	  ierr     = fseek(vascii->fd, 0, SEEK_END);CHKERRQ(ierr);
+	}
+	break;
+      default:
+	SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid file mode %d", vascii->mode);
       }
-      break;
-    case FILE_MODE_APPEND_UPDATE:
-      /* I really want a file which is opened at the end for updating,
-         not a+, which opens at the beginning, but makes writes at the end.
-      */
-      vascii->fd = fopen(fname,"r+");
-      if (!vascii->fd) {
-        vascii->fd = fopen(fname,"w+");
-      } else {
-        ierr     = fseek(vascii->fd, 0, SEEK_END);CHKERRQ(ierr);
-      }
-      break;
-    default:
-      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid file mode %d", vascii->mode);
+      if (!vascii->fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open PetscViewer file: %s",fname);
     }
-
-    if (!vascii->fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open PetscViewer file: %s",fname);
   }
   PetscLogObjectState((PetscObject)viewer,"File: %s",name);
   PetscFunctionReturn(0);
