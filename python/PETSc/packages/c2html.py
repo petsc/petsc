@@ -28,6 +28,7 @@ class Configure(PETSc.package.Package):
       except RuntimeError, e:
         if self.framework.argDB['with-batch']:
           self.logPrintBox('Batch build that could not generate c2html, you will not be able to generate document')
+          return
         raise RuntimeError('Error running configure on C2html: '+str(e))
       try:
         output  = config.base.Configure.executeShellCommand('cd '+c2htmlDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
