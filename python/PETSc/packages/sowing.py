@@ -29,11 +29,17 @@ class Configure(PETSc.package.Package):
       try:
         output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
-        raise RuntimeError('Error running configure on Sowing: '+str(e))
+        if self.framework.argDB['with-batch']:
+          return
+        else:
+          raise RuntimeError('Error running configure on Sowing: '+str(e))
       try:
         output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
-        raise RuntimeError('Error running make; make install on Sowing: '+str(e))
+        if self.framework.argDB['with-batch']:
+          return
+        else:
+          raise RuntimeError('Error running make; make install on Sowing: '+str(e))
       fd = file(os.path.join(installDir,'config.args'), 'w')
       fd.write(args)
       fd.close()
@@ -59,20 +65,20 @@ class Configure(PETSc.package.Package):
 
   def buildFortranStubs(self):
     if 'FC' in self.framework.argDB:
-      if self.framework.argDB['with-batch']:
-        self.framework.log.write('           Skipping generation of fortran stubs; because cross compiling\n')
-        return
-
-      self.framework.log.write('           Running '+self.bfort+' to generate fortran stubs\n')
-      try:
-        import sys
-        sys.path.insert(0, os.path.abspath('maint'))
-        import generatefortranstubs
-        del sys.path[0]
-        generatefortranstubs.main(self.bfort)
-        self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs and made makefile.src')
-      except RuntimeError, e:
-        raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
+      if self.framework.argDB['with-batch'] and not hasattr(self,'bfort'):
+        self.logPrintBox('Batch build that could not generate bfort, skipping generating Fortran stubs\n \
+                          you will need to copy them from some other system (src/fortran/auto)')
+      else:     
+        self.framework.log.write('           Running '+self.bfort+' to generate fortran stubs\n')
+        try:
+          import sys
+          sys.path.insert(0, os.path.abspath('maint'))
+          import generatefortranstubs
+          del sys.path[0]
+          generatefortranstubs.main(self.bfort)
+          self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs and made makefile.src')
+        except RuntimeError, e:
+          raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
     return
 
   def configure(self):

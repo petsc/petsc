@@ -27,6 +27,9 @@ class Configure(PETSc.package.Package):
       try:
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(lgrindDir,'source')+';make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
+        if self.framework.argDB['with-batch']:
+          self.logPrintBox('Batch build that could not generate lgrind, you will not be able to build documentation')
+          return
         raise RuntimeError('Error running make on lgrind: '+str(e))
       try:
         lgrindexe = os.path.join(lgrindDir,'source','lgrind')
@@ -45,11 +48,11 @@ class Configure(PETSc.package.Package):
 
   def configure(self):
     '''Determine whether the Lgrind exist or not'''
-    if os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'BitKeeper')) and not self.framework.argDB['with-batch']:
+    if os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'BitKeeper')):
       self.framework.log.write('BitKeeper clone of PETSc, checking for Lgrind\n')
       self.Install()
     else:
-      self.framework.log.write("Not BitKeeper clone of PETSc or cross compiling, don't need Lgrind\n")
+      self.framework.log.write("Not BitKeeper clone of PETSc don't need Lgrind\n")
     return
 
 if __name__ == '__main__':

@@ -26,10 +26,14 @@ class Configure(PETSc.package.Package):
       try:
         output  = config.base.Configure.executeShellCommand('cd '+c2htmlDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
+        if self.framework.argDB['with-batch']:
+          self.logPrintBox('Batch build that could not generate c2html, you will not be able to generate document')
         raise RuntimeError('Error running configure on C2html: '+str(e))
       try:
         output  = config.base.Configure.executeShellCommand('cd '+c2htmlDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
+        if self.framework.argDB['with-batch']:
+          self.logPrintBox('Batch build that could not generate c2html, you will not be able to generate document')
         raise RuntimeError('Error running make; make install on C2html: '+str(e))
       fd = file(os.path.join(installDir,'config.args'), 'w')
       fd.write(args)
@@ -42,7 +46,7 @@ class Configure(PETSc.package.Package):
 
   def configure(self):
     '''Determine whether the c2html exist or not'''
-    if os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'BitKeeper')) and not self.framework.argDB['with-batch']:
+    if os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'BitKeeper')):
       self.framework.log.write('BitKeeper clone of PETSc, checking for c2html\n')
       self.Install()
     else:
