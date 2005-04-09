@@ -13,7 +13,7 @@ foreach CONF ($*)
   source $dir/confignightly/${CONF}
 
   echo "start build at `date`:$SSH $USR@$MACH $DASHN $LOC/maint/buildtest $CONF" 
-  $SSH $USR@$MACH $DASHN "cd $LOC ; bk pull; $LOC/maint/buildtest $CONF" &
+  $SSH $USR@$MACH $DASHN "cd $LOC ; bk -r unedit; bk pull; $LOC/maint/buildtest $CONF" &
   sleep 300 # perhaps ease the load on petsc.bkbits.net by spacing the builds
 end
 wait
