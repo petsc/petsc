@@ -36,6 +36,7 @@ testexamples_MPE:
 testexamples_ESSL:
 testexamples_BLAS:
 testexamples_MPI:
+testexamples_BLASLAPACK:
 
 buildexamples_C: 
 	-@${OMAKE} testexamples_C TESTEXAMPLES_C=`echo ${TESTEXAMPLES_C} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`

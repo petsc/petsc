@@ -87,7 +87,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 #elif defined(PETSC_HAVE_TASK_INFO)
   task_basic_info_data_t ti;
   unsigned int           count;
-  /* something is very wrong, if I do not include the following then crashes */
+  /* 
+     The next line defined variables that are not used; but if they 
+     are not included the code crashes. Something must be wrong
+     with either the task_info() command or compiler corrupting the 
+     stack.
+  */
   task_basic_info_data_t ti1,ti2;
 #elif defined(PETSC_HAVE_GETRUSAGE)
   static struct rusage   temp;

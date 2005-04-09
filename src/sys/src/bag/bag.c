@@ -375,7 +375,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagDestroy(PetscBag *bag)
   PetscFunctionBegin;
   while (nitem) {
     item  = nitem->next;
-    if (nitem->freelist) {ierr = PetscFree(nitem->list);CHKERRQ(ierr);}
+    if (nitem->freelist) {
+      void *v = (void*)nitem->list;
+      ierr = PetscFree(v);CHKERRQ(ierr);
+    }
     ierr  = PetscFree(nitem);CHKERRQ(ierr);
     nitem = item;
   }
