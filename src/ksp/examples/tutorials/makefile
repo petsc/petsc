@@ -160,8 +160,8 @@ ex30: ex30.o  chkopts
 	${RM} ex30.o
 
 ex31: ex31.o  chkopts
-	-${CLINKER} -o $@ $<  ${PETSC_SNES_LIB}
-	${RM} $<
+	-${CLINKER} -o ex31 ex31.o  ${PETSC_SNES_LIB}
+	${RM} ex31.o
 
 #----------------------------------------------------------------------------
 runex1:

@@ -201,6 +201,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
     void *ptr;
     /* check if this communicator has a PETSc communicator imbedded in it */
     ierr = MPI_Attr_get(comm_in,Petsc_InnerComm_keyval,&ptr,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    /*
+        The next line may generate the warning: cast from pointer to integer of different size
+        It is safe to ignore this warning because ptr is obtained by casting a MPI_Comm to void*
+        so we know it is safe to caste it back.
+    */
     *comm_out = (MPI_Comm) ptr;
     if (!flg) {
       /* This communicator is not yet known to this system, so we duplicate it and set its value */

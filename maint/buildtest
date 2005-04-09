@@ -88,7 +88,7 @@ if ("${CONFIGURE}" == "yes") then
   tar cf buildoutput.tar configure.log bmake/$PETSC_ARCH/*
 else
   #  Get the list of packages installed on the machine
-  set JOBS='C C_X11 FORTRAN'
+  set JOBS='C C_X11 Fortran'
   set EJOBS=`grep PETSC_HAVE_ $nPETSC_DIR/bmake/$PETSC_ARCH/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
 endif
 
