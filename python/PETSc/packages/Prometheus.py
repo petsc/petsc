@@ -13,10 +13,9 @@ class Configure(PETSc.package.Package):
     self.parmetis          = self.framework.require('PETSc.packages.ParMetis',self)
     self.download          = ['http://www.cs.berkeley.edu/~madams/Prometheus-1.8.1.tar.gz']
     self.deps              = [self.parmetis,self.mpi,self.blasLapack]
-    self.functions         = None
-    self.includes          = None
+    self.functions         = []
+    self.includes          = []
     self.liblist           = [['libpromfei.a','libprometheus.a']]
-    self.cxx               = 1   # requires C++
     self.compilePrometheus = 0
     return
 
@@ -38,7 +37,7 @@ class Configure(PETSc.package.Package):
     args += 'PETSCFLAGS = '+self.framework.getCompilerFlags()+'\n'
     self.framework.popLanguage()
     try:
-      fd      = file(os.path.join(installDir,'makefile.in'))
+      fd      = file(os.path.join(installDir,'makefile.petsc'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -46,11 +45,14 @@ class Configure(PETSc.package.Package):
     if not oldargs == args:
       self.framework.log.write('Have to rebuild Prometheus oldargs = '+oldargs+' new args '+args+'\n')
       self.logPrintBox('Configuring Prometheus; this may take a minute')
-      fd = file(os.path.join(installDir,'makefile.in'),'w')
+      fd = file(os.path.join(installDir,'makefile.petsc'),'w')
       fd.write(args)
       fd.close()
-      fd = file(os.path.join(prometheusDir,'makefile.in'),'w')
+      fd = file(os.path.join(prometheusDir,'makefile.petsc'),'w')
       fd.write(args)
+      fd.close()
+      fd = file(os.path.join(prometheusDir,'makefile.in'),'a')
+      fd.write('include makefile.petsc')
       fd.close()
       self.compilePrometheus = 1
       self.prometheusDir     = prometheusDir
@@ -60,7 +62,7 @@ class Configure(PETSc.package.Package):
   def postProcess(self):
     if self.compilePrometheus:
       self.logPrintBox('Compiling Prometheus; this may take several minutes')
-      output  = config.base.Configure.executeShellCommand('cd '+self.prometheusDir+'; Make prometheus; mv '+os.path.join('lib','lib*.a')+' '+os.path.join(self.installDir,'lib'),timeout=250, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cd '+self.prometheusDir+'; make promlib; mv '+os.path.join('lib','lib*.a')+' '+os.path.join(self.installDir,'lib'),timeout=250, log = self.framework.log)[0]
       self.framework.log.write(output)
       output  = config.base.Configure.executeShellCommand('cp '+os.path.join(self.prometheusDir,'include','*.*')+' '+os.path.join(self.prometheusDir,'fei_prom','*.h')+' '+os.path.join(self.installDir,'include'),timeout=250, log = self.framework.log)[0]      
       self.framework.log.write(output)

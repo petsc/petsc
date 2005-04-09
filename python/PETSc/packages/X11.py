@@ -3,18 +3,17 @@ from __future__ import generators
 import user
 import config.autoconf
 import os
+import PETSc.package
 
-class Configure(config.autoconf.Configure):
+class Configure(PETSc.package.Package,config.autoconf.Configure):
   def __init__(self, framework):
     config.autoconf.Configure.__init__(self, framework)
+    PETSc.package.Package.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.foundX11     = 0
     self.compilers    = self.framework.require('config.compilers',    self)
     self.make         = self.framework.require('PETSc.utilities.Make', self)
-    self.name         = 'X11'
-    self.PACKAGE      = self.name.upper()
-    self.package      = self.name.lower()
     return
 
   def __str__(self):

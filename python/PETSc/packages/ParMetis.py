@@ -16,6 +16,7 @@ class Configure(PETSc.package.Package):
     self.functions    = ['ParMETIS_V3_PartKway']
     self.includes     = ['parmetis.h']
     self.liblist      = [['libparmetis.a','libmetis.a']]
+    self.downloadname = 'parmetis'
     return
 
   def Install(self):

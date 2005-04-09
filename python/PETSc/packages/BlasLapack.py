@@ -3,10 +3,11 @@ import user
 import config.base
 import md5
 import os
+import PETSc.package
 
-class Configure(config.base.Configure):
+class Configure(PETSc.package.Package):
   def __init__(self, framework):
-    config.base.Configure.__init__(self, framework)
+    PETSc.package.Package.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.argDB        = framework.argDB
@@ -17,9 +18,6 @@ class Configure(config.base.Configure):
     self.arch         = self.framework.require('PETSc.utilities.arch', self)
     self.programs     = self.framework.require('PETSc.utilities.programs', self)
     self.framework.require('PETSc.packages.sowing', self)
-    self.name         = 'BlasLapack'
-    self.PACKAGE      = self.name.upper()
-    self.package      = self.name.lower()
     self.f2c             = 0
     self.missingRoutines = []
     self.separateBlas    = 1

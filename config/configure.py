@@ -101,6 +101,10 @@ def petsc_configure(configure_options):
     if j.replace('++','xx') == '--with-language=cxx' or j == '--with-scalar-type=complex':
       usingcxx = 1
       break
+    # horrible, horrible hack; downloading Prometheus needs C++
+    if j.find('--download-prometheus') >= 0:
+      usingcxx = 1
+      break
 
   if not usingcxx:
     foundcxx = 0

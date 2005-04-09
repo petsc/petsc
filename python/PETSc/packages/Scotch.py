@@ -15,9 +15,6 @@ class Configure(config.base.Configure):
     self.compilers     = self.framework.require('config.compilers', self)
     self.libraries     = self.framework.require('config.libraries', self)
     self.mpi           = self.framework.require('PETSc.packages.MPI', self)
-    self.name         = 'Scotch'
-    self.PACKAGE      = self.name.upper()
-    self.package      = self.name.lower()
     return
 
   def __str__(self):

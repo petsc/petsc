@@ -15,9 +15,6 @@ class Configure(config.base.Configure):
     self.foundBS95    = 0
     self.lib          = ''
     self.include      = []
-    self.name         = 'BlockSolve'
-    self.PACKAGE      = self.name.upper()
-    self.package      = self.name.lower()
     return
 
   def __str__(self):

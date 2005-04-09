@@ -281,7 +281,6 @@ class Configure(config.base.Configure):
 
     scriptName = os.path.join(self.bmake.bmakeDir, 'configure.py')
     args = filter(lambda a: not a.endswith('-configModules=PETSc.Configure'), self.framework.clArgs)
-    args = filter(lambda a: not a.endswith('-with-batch') and not a.endswith('-with-batch=1'), self.framework.clArgs)
     if not nargs.Arg.findArgument('PETSC_ARCH', args):
       args.append('-PETSC_ARCH='+self.framework.argDB['PETSC_ARCH'])
       self.framework.clArgs.append(args[-1])

@@ -6,9 +6,7 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.compilers    = self.framework.require('config.compilers', self)
-    self.name         = 'Pvode'
-    self.PACKAGE      = self.name.upper()
-    self.package      = self.name.lower()
+    self.downloadname = 'Pvode'
     return
 
   def configureLibrary(self):

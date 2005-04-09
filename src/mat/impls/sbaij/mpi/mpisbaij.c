@@ -1037,7 +1037,7 @@ PetscErrorCode MatScale_MPISBAIJ(Mat A,PetscScalar aa)
 PetscErrorCode MatGetRow_MPISBAIJ(Mat matin,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"MatGetRow is not supported for SBAIJ matrix format");
+  if (matin) SETERRQ(PETSC_ERR_SUP,"MatGetRow is not supported for SBAIJ matrix format");
   PetscFunctionReturn(0);
 }
 

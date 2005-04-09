@@ -6,9 +6,6 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.compilers    = self.framework.require('config.compilers', self)
-    self.name         = 'Triangle'
-    self.PACKAGE      = self.name.upper()
-    self.package      = self.name.lower()
     return
 
   def configureLibrary(self):

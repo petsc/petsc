@@ -253,7 +253,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on LAM/MPI libraries: '+str(e))
-      # start up LAM demon; not lamboot does not close stdout, so call will ALWAYS timeout.
+      # start up LAM demon; note lamboot does not close stdout, so call will ALWAYS timeout.
       try:
         output  = config.base.Configure.executeShellCommand('PATH=${PATH}:'+os.path.join(installDir,'bin')+' '+os.path.join(installDir,'bin','lamboot'), timeout=10, log = self.framework.log)[0]
       except:
@@ -351,7 +351,10 @@ class Configure(PETSc.package.Package):
 
         # start up MPICH's demon
         self.framework.logPrint('Starting up MPICH mpd demon needed for mpirun')
-        self.executeShellCommand('cd '+installDir+'; bin/mpdboot')
+        try:
+          self.executeShellCommand('cd '+installDir+'; bin/mpdboot',timeout=25)
+        except:
+          pass
         self.framework.logPrint('Started up MPICH mpd demon needed for mpirun')
       self.framework.actions.addArgument('MPI', 'Install', 'Installed MPICH into '+installDir)
     return self.getDir()

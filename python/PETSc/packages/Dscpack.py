@@ -3,23 +3,19 @@ from __future__ import generators
 import user
 import config.base
 import os
+import PETSc.package
 
 #Developed for DSCPACK1.0
 
-class Configure(config.base.Configure):
+class Configure(PETSc.package.Package):
   def __init__(self, framework):
-    config.base.Configure.__init__(self, framework)
+    PETSc.package.Package.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.compilers    = self.framework.require('config.compilers',self)
-    self.libraries    = self.framework.require('config.libraries',self)
     self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.found        = 0
     self.lib          = []
     self.include      = []
-    self.name         = 'Dscpack'
-    self.PACKAGE      = self.name.upper()
-    self.package      = self.name.lower()
     return
 
   def __str__(self):
