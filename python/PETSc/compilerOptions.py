@@ -83,6 +83,13 @@ class compilerOptions(config.base.Configure):
   def getCxxFlags(self, compiler, bopt):
     import config.setCompilers
 
+    if compiler.endswith('mpiCC') or compiler.endswith('mpicxx'):
+      try:
+        output   = self.executeShellCommand(compiler+' -show')[0]
+        compiler = output.split(' ')[0]
+      except:
+        pass
+    
     flags = []
     # GNU g++
     if config.setCompilers.Configure.isGNU(compiler):
@@ -165,6 +172,14 @@ class compilerOptions(config.base.Configure):
     return flags
 
   def getFortranFlags(self, compiler, bopt):
+
+    if compiler.endswith('mpif77') or compiler.endswith('mpif90'):
+      try:
+        output   = self.executeShellCommand(compiler+' -show')[0]
+        compiler = output.split(' ')[0]
+      except:
+        pass
+
     flags = []
     if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
