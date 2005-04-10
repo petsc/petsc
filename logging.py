@@ -216,8 +216,9 @@ class Logger(args.ArgumentProcessor):
           global RemoveDirectory
           self.logBack()
           msg = msg.replace(RemoveDirectory,'')
-          f.write(msg[0:self.linewidth])
-          f.write(''.join([' '] * (self.linewidth - len(msg))))
+          for ms in msg.split('\n'):
+            f.write(ms[0:self.linewidth])
+            f.write(''.join([' '] * (self.linewidth - len(ms))))
         else:
           if not debugSection is None and not debugSection == 'screen' and len(msg):
             f.write(str(debugSection))
