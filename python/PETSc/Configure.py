@@ -146,7 +146,9 @@ class Configure(config.base.Configure):
     self.addMakeMacro('PETSC_SCALAR',self.clanguage.scalartype)
     # double or float
     self.addMakeMacro('PETSC_PRECISION',self.clanguage.precision)
-    
+
+    if self.framework.argDB['with-batch']:
+      self.addMakeMacro('PETSC_WITH_BATCH','1')
 
 #-----------------------------------------------------------------------------------------------------
     if self.functions.haveFunction('gethostbyname') and self.functions.haveFunction('socket'):

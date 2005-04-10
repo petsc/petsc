@@ -266,15 +266,18 @@ runex5f_5:
 	   else echo "Possible problem with ex5f_5, diffs above"; fi; \
 	   ${RM} -f ex5f_5.tmp
 testex5f: ex5f.PETSc
-	@if [ -f ex5f ]; then \
+	@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
+           echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex5f with" ; \
+           echo "your systems batch system"; \
+        elif [ -f ex5f ]; then \
 	   ${MPIRUN} -np 1 ./ex5f > ex5f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.testout ex5f_1.tmp > /dev/null 2>&1) then \
            echo "Fortran example src/snes/examples/tutorials/ex5f run successfully with 1 MPI process"; \
 	   else echo "Error running Fortran example src/snes/examples/tutorials/ex5f with 1 MPI process"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html";\
            cat ex5f_1.tmp; fi; fi; 
-	-@${RM} -f ex5f_1.tmp
-	-@${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex5f.rm
+         ${RM} -f ex5f_1.tmp ;\
+	 ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex5f.rm; fi
 runex5f90:
 	-@${MPIRUN} -np 4 ./ex5f90 -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5f90_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.out ex5f90_1.tmp) then true; \
@@ -329,7 +332,10 @@ runex19:
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
 testex19: ex19.PETSc
-	@if [ -f ex19 ]; then \
+	@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
+           echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex19 with" ; \
+           echo "your systems batch system"; \
+	elif [ -f ex19 ]; then \
            ${MPIRUN} -np 1 ./ex19 -dmmg_nlevels 4  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "C/C++ example src/snes/examples/tutorials/ex19 run successfully with 1 MPI process"; \
@@ -352,9 +358,9 @@ testex19: ex19.PETSc
            echo "Graphics example src/snes/examples/tutorials/ex19 run successfully with 1 MPI process"; \
 	   else echo "Possible error running Graphics examples src/snes/examples/tutorials/ex19 1 MPI process"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html";\
-           cat ex19_1.tmp; fi; fi; fi
-	-@${RM} -f ex19_1.tmp
-	-@${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm
+           cat ex19_1.tmp; fi; fi; \
+           ${RM} -f ex19_1.tmp; \
+           ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm ; fi
 runex21:
 	-@${MPIRUN} -np 4 ./ex21  -snes_mf -snes_smonitor -nox > ex21_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
