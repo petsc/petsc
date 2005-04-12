@@ -206,7 +206,7 @@ class ArgFuzzyBool(Arg):
       elif value == 'server':   value = 3
       else:                     value = int(value)
     except:
-      raise TypeError('Invalid boolean value: '+str(value)+' for key '+str(self.key))
+      raise TypeError('Invalid fuzzy boolean value: '+str(value)+' for key '+str(self.key))
     self.value = value
     return
 

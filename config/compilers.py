@@ -472,10 +472,13 @@ class Configure(config.base.Configure):
 
   def checkFortran90(self):
     '''Determine whether the Fortran compiler handles F90'''
-    self.fortranIsF90 = 0
     self.pushLanguage('FC')
     if self.checkLink(body = '      INTEGER, PARAMETER :: int = SELECTED_INT_KIND(8)\n      INTEGER (KIND=int) :: ierr\n\n      ierr = 1'):
       self.fortranIsF90 = 1
+      self.logPrint('Fortran compiler supports F90')
+    else:
+      self.fortranIsF90 = 0
+      self.logPrint('Fortran compiler does not support F90')
     self.popLanguage()
     return
 

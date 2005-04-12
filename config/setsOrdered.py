@@ -97,7 +97,13 @@ class BaseSet(object):
 
     def _getItems(self):
         """Returns a list of the items in the input order"""
-        items = self._data.items()
+        #items = self._data.items()
+        items = []
+        for key, value in self._data.items():
+            if isinstance(value, tuple):
+                items.extend([(key, v) for v in value])
+            else:
+                items.append((key, value))
         items.sort(lambda a, b: a[1].__cmp__(b[1]))
         return [i[0] for i in items]
 
@@ -537,6 +543,36 @@ class Set(BaseSet):
             if transform is None:
                 raise # re-raise the TypeError exception we caught
             self._data[transform()] = len(self._data)
+
+    def addDuplicate(self, element):
+        """Add an element to the set.
+
+        If the element is already present, it adds the duplicate element.
+        """
+        try:
+            if element in self._data:
+                pos = self._data[element]
+                if isinstance(pos, tuple):
+                    pos = tuple(list(pos)+[len(self._data)])
+                else:
+                    pos = (pos, len(self._data))
+                self._data[element] = pos
+            else:
+                self._data[element] = len(self._data)
+        except TypeError:
+            transform = getattr(element, "__as_immutable__", None)
+            if transform is None:
+                raise # re-raise the TypeError exception we caught
+            e = transform()
+            if e in self._data:
+                pos = self._data[e]
+                if isinstance(pos, tuple):
+                    pos = tuple(list(pos)+[len(self._data)])
+                else:
+                    pos = (pos, len(self._data))
+                self._data[e] = len(self._data)
+            else:
+                self._data[e] = len(self._data)
 
     def remove(self, element):
         """Remove an element from a set; it must be a member.
