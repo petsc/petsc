@@ -275,7 +275,7 @@ testex5f: ex5f.PETSc
            echo "Fortran example src/snes/examples/tutorials/ex5f run successfully with 1 MPI process"; \
 	   else echo "Error running Fortran example src/snes/examples/tutorials/ex5f with 1 MPI process"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html";\
-           cat ex5f_1.tmp; fi; fi; \
+           cat ex5f_1.tmp; fi;  \
          ${RM} -f ex5f_1.tmp ;\
          ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex5f.rm; fi
 runex5f90:
