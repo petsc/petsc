@@ -736,18 +736,23 @@ class Configure(config.base.Configure):
   def checkLibC(self):
     '''Test whether we need to explicitly include libc in shared linking
        - Mac OSX requires an explicit reference to libc for shared linking'''
-    code = 'int foo(void) {void *chunk = malloc(31); free(chunk); return 0;}\n'
+    tmpCompilerDefines   = self.compilerDefines
+    self.compilerDefines = ''
+    code = 'int foo(void) {extern void *malloc(int); void *chunk = malloc(31); free(chunk); return 0;}\n'
     if self.checkLink(includes = code, codeBegin = '', codeEnd = '', shared = 1):
       self.logPrint('Shared linking does not require an explicit libc reference')
+      self.compilerDefines = tmpCompilerDefines
       return
     oldLibs = self.framework.argDB['LIBS']
     self.framework.argDB['LIBS'] += '-lc '
     if self.checkLink(includes = code, codeBegin = '', codeEnd = '', shared = 1):
       self.logPrint('Shared linking requires an explicit libc reference')
+      self.compilerDefines = tmpCompilerDefines
       return
     self.framework.argDB['LIBS'] = oldLibs
+    self.compilerDefines = tmpCompilerDefines
     self.logPrint('*** WARNING *** Shared linking may not function on this architecture')
-    raise RuntimeError('shit')
+    raise RuntimeError('Shared linking may not function on this architecture')
 
   def output(self):
     '''Output module data as defines and substitutions'''
