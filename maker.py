@@ -16,11 +16,12 @@ class Make(script.Script):
       import sourceDatabase
       import config.framework
 
-      self.framework  = config.framework.Framework(self.clArgs+['-noOutput'], self.argDB)
-      self.builder    = __import__('builder').Builder(self.framework, sourceDatabase.SourceDB(self.root))
+      self.framework = config.framework.Framework(self.clArgs+['-noOutput'], self.argDB)
+      self.builder   = __import__('builder').Builder(self.framework, sourceDatabase.SourceDB(self.root))
     else:
-      self.builder    = builder
-      self.framework  = builder.framework
+      self.builder   = builder
+      self.framework = builder.framework
+    self.configureMod = None
     self.builder.pushLanguage('C')
     return
 
@@ -80,12 +81,26 @@ class Make(script.Script):
     self.setupDependencies(self.builder.sourceDB)
     return
 
+  def getPythonFile(self, mod, defaultFile = None):
+    '''Get the Python source file associate with the module'''
+    if not self.configureMod is None:
+      (base, ext) = os.path.splitext(self.configureMod.__file__)
+      if ext == '.pyc':
+        ext = '.py'
+      filename = base + ext
+    elif not defaultFile is None:
+      filename = defaultFile
+    else:
+      raise RuntimeError('Could not associate file with module '+str(mod))
+    return filename
+
   def shouldConfigure(self, builder, framework):
     '''Determine whether we should reconfigure
        - If the configure header or substitution files are missing
        - If -forceConfigure is given
-       - If configure.py has changed
+       - If configure module (usually configure.py) has changed
        - If the database does not contain a cached configure'''
+    configureFile = self.getPythonFile(self.configureMod, 'configure.py')
     if framework.header and not os.path.isfile(framework.header):
       self.logPrint('Reconfiguring due to absence of configure header: '+str(framework.header))
       return 1
@@ -95,9 +110,9 @@ class Make(script.Script):
     if self.argDB['forceConfigure']:
       self.logPrint('Reconfiguring forced')
       return 1
-    if (not 'configure.py' in self.builder.sourceDB or
-        not self.builder.sourceDB['configure.py'][0] == self.builder.sourceDB.getChecksum('configure.py')):
-      self.logPrint('Reconfiguring due to changed configure.py')
+    if (not configureFile in self.builder.sourceDB or
+        not self.builder.sourceDB[configureFile][0] == self.builder.sourceDB.getChecksum(configureFile)):
+      self.logPrint('Reconfiguring due to changed '+configureFile)
       return 1
     if not 'configureCache' in self.argDB:
       self.logPrint('Reconfiguring due to absence of configure cache')
@@ -108,7 +123,9 @@ class Make(script.Script):
     framework.header = os.path.join('include', 'config.h')
     framework.cHeader = os.path.join('include', 'configC.h')
     try:
-      self.configureObj = self.getModule(self.root, 'configure').Configure(framework)
+      if self.configureMod is None:
+        self.configureMod = self.getModule(self.root, 'configure')
+      self.configureObj = self.configureMod.Configure(framework)
       self.logPrint('Configure module found in '+self.configureObj.root)
       framework.addChild(self.configureObj)
     except ImportError, e:
@@ -132,11 +149,11 @@ class Make(script.Script):
         self.framework         = framework
         self.builder.framework = self.framework
         if not self.configureObj is None:
-          self.configureObj = self.framework.require('configure', None)
+          self.configureObj = self.framework.require(self.configureMod.__name__, None)
     if doConfigure:
       self.logPrint('Starting new configuration')
       self.framework.configure()
-      self.builder.sourceDB.updateSource('configure.py')
+      self.builder.sourceDB.updateSource(self.getPythonFile(self.configureMod))
       cache = cPickle.dumps(self.framework)
       self.argDB['configureCache'] = cache
       self.logPrint('Wrote configure to cache: size '+str(len(cache)))
@@ -276,6 +293,8 @@ class BasicMake(Make):
       lib.name, lib.src = self.parseDocString(func.__doc__, name[4:])
       lib.includes, lib.libs = func(self)
       lib.configuration = name[4:]
+      self.logPrint('Found configuration '+lib.configuration+' for library '+lib.name)
+      self.logPrint('  includes '+str(lib.includes)+' libraries '+str(lib.libs))
       self.lib[lib.name] = lib
     return
 
@@ -309,33 +328,48 @@ class BasicMake(Make):
   def setupLibraries(self, builder):
     '''Configures the builder for libraries'''
     for lib in self.lib.values():
+      self.logPrint('Configuring library '+lib.name)
       languages = sets.Set(lib.src.keys())
       builder.pushConfiguration(lib.configuration)
       for language in languages:
         builder.pushLanguage(language)
         compiler = builder.getCompilerObject()
+        self.logPrint('  Adding includes '+str(lib.includes))
         compiler.includeDirectories.update(lib.includes)
         builder.popLanguage()
+      linker = builder.getSharedLinkerObject()
+      for l in lib.libs:
+        if isinstance(l, str):
+          self.logPrint('  Adding library '+str(l))
+          linker.libraries.add(l)
+        else:
+          self.logPrint('  Adding library '+os.path.join(self.libDir, l.name+'.'+self.setCompilers.sharedLibraryExt))
+          linker.libraries.add(os.path.join(self.libDir, l.name+'.'+self.setCompilers.sharedLibraryExt))
+      linker.libraries.update(self.compilers.flibs)
+      if self.libraries.math:
+        linker.libraries.update(self.libraries.math)
       builder.popConfiguration()
     return
 
   def setupExecutables(self, builder):
     '''Configures the builder for the executable'''
     for bin in self.bin.values():
+      self.logPrint('Configuring executable '+bin.name)
       languages = sets.Set(bin.src.keys())
       builder.pushConfiguration(bin.configuration)
       for language in languages:
         builder.pushLanguage(language)
         compiler = builder.getCompilerObject()
+        self.logPrint('  Adding includes '+str(lib.includes))
         compiler.includeDirectories.update(bin.includes)
         builder.popLanguage()
       linker = builder.getLinkerObject()
       for l in bin.libs:
         if isinstance(l, str):
-          self.logPrint('Adding library '+str(l))
+          self.logPrint('  Adding library '+str(l))
           linker.libraries.add(l)
         else:
-          self.logPrint('Adding library '+os.path.join(self.libDir, l.name+'.'+self.setCompilers.sharedLibraryExt))
+          self.logPrint('  Adding library '+os.path.join(self.libDir, l.name+'.'+self.setCompilers.sharedLibraryExt))
           linker.libraries.add(os.path.join(self.libDir, l.name+'.'+self.setCompilers.sharedLibraryExt))
       linker.libraries.update(self.compilers.fmainlibs)
       linker.libraries.update(self.compilers.flibs)
@@ -394,18 +428,18 @@ class BasicMake(Make):
   def setupBuild(self, builder):
     self.getImplicitLibraries()
     self.getImplicitExecutables()
-    self.setupDirectories(builder)
-    self.setupLibraries(builder)
-    self.setupExecutables(builder)
+    self.executeSection(self.setupDirectories, builder)
+    self.executeSection(self.setupLibraries, builder)
+    self.executeSection(self.setupExecutables, builder)
     return
 
   def build(self, builder, setupOnly):
     self.setupBuild(builder)
     if setupOnly:
       return
-    self.buildDirectories(builder)
-    self.buildLibraries(builder)
-    self.buildExecutables(builder)
+    self.executeSection(self.buildDirectories, builder)
+    self.executeSection(self.buildLibraries, builder)
+    self.executeSection(self.buildExecutables, builder)
     return
 
 class SIDLMake(Make):
