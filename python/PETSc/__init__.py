@@ -1,1 +1,1 @@
-all = ['Base', 'PetscViewer', 'PetscMap', 'NormType', 'InsertMode', 'Vec', 'Mat', 'MatStructure', 'KSP', 'PC', 'SNESConvergedReason', 'SNES']
+all = ['Base', 'PetscConstants', 'PetscViewer', 'PetscMap', 'NormType', 'InsertMode', 'Vec', 'MatAssemblyType', 'MatReuse', 'MatDuplicateOption', 'MatStructure', 'MatOption', 'Mat', 'PCSide', 'PC', 'KSPNormType', 'KSPConvergedReason', 'KSP', 'SNESConvergedReason', 'SNES']
