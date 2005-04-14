@@ -9,14 +9,14 @@ shared_darwin7:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
         if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="-all_load ${PACKAGES_LIBS} ${EXTERNAL_LIB} ${SYS_LIB} -lstdc++ -lm"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${PETSC_SYS_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PETSC_VEC_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${PETSC_MAT_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="${PETSC_DM_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${PETSC_SNES_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${PETSC_SYS_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PETSC_VEC_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${PETSC_MAT_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="${PETSC_DM_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${PETSC_SNES_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
 	gcc -dynamiclib  -flat_namespace -multiply_defined suppress -undefined warning -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR} $$OTHERLIBS ;\
 	${RM} -f *
 
