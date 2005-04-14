@@ -14,20 +14,20 @@ class Configure(PETSc.package.Package):
     self.download_mpich = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpich2.tar.gz']
     self.functions      = ['MPI_Init','MPI_Comm_create']
     self.includes       = ['mpi.h']
-    self.liblist        = [[],
-                           ['liblammpi++.a','libmpi.a','liblam.a'],
-                           ['libmpich.a'],
+    self.liblist_mpich  = [['libmpich.a'],
                            ['mpich.lib'],
                            ['libmpich.a', 'libpmpich.a'],
                            ['libfmpich.a','libmpich.a', 'libpmpich.a'],
                            ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
+                           ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a']]
+    self.liblist_lam    = [['liblammpi++.a','libmpi.a','liblam.a'],
                            ['libmpi.a','libmpi++.a'],['libmpi.a'],
-                           ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                            ['liblammpio.a','libpmpi.a','liblamf77mpi.a','libmpi.a','liblam.a'],
                            ['liblammpio.a','libpmpi.a','liblamf90mpi.a','libmpi.a','liblam.a'],
                            ['liblammpio.a','libpmpi.a','libmpi.a','liblam.a'],
                            ['liblammpi++.a','libmpi.a','liblam.a'],
                            ['libmpi.a','liblam.a']]
+    self.liblist        = [[]] + self.liblist_lam + self.liblist_mpich
     # defaults to --with-mpi=yes
     self.required       = 1
     self.complex        = 1
@@ -187,7 +187,7 @@ class Configure(PETSc.package.Package):
     return
 
   def checkDownload(self,preOrPost):
-    '''Check if we should download LAM'''
+    '''Check if we should download LAM or MPICH'''
     if self.framework.argDB['download-lam'] == preOrPost:
       return os.path.abspath(os.path.join(self.InstallLAM(),self.arch.arch))
     if self.framework.argDB['download-mpich'] == preOrPost:
@@ -195,6 +195,7 @@ class Configure(PETSc.package.Package):
     return None
 
   def InstallLAM(self):
+    self.liblist      = self.liblist_lam   # only generate LAM MPI guesses
     self.download     = self.download_lam
     self.downloadname = 'lam'
     lamDir = self.getDir()
@@ -262,6 +263,7 @@ class Configure(PETSc.package.Package):
     return self.getDir()
 
   def InstallMPICH(self):
+    self.liblist      = self.liblist_mpich   # only generate MPICH guesses
     self.download     = self.download_mpich
     self.downloadname = 'mpich'
     mpichDir = self.getDir()
