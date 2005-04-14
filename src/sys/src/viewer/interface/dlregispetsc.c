@@ -70,7 +70,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(char *path)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscDLLibraryRegister" 
+#define __FUNCT__ "PetscDLLibraryRegister_petsc" 
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
@@ -79,7 +79,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister(char *path)
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petsc(char *path)
 {
   PetscErrorCode ierr;
 
@@ -98,4 +98,3 @@ static const char *contents = "PETSc Graphics and PetscViewer libraries. \n\
      ASCII, Binary, Sockets, X-windows, ...\n";
 static const char *authors  = PETSC_AUTHOR_INFO;
 
-#include "src/sys/src/utils/dlregis.h"

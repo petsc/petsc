@@ -6,7 +6,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c
 EXAMPLESF       = ex3f.F
 MANSEC          = Sys
 
@@ -67,7 +67,6 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 TESTEXAMPLES_C_X11_MPIUNI = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
                             ex3.PETSc runex3 ex3.rm
 TESTEXAMPLES_FORTRAN	  = ex3f.PETSc runex3f ex3f.rm
-TESTEXAMPLES_13		  = ex4.PETSc ex4.rm
 
 include ${PETSC_DIR}/bmake/common/test
 

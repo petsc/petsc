@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = snes.c snesj.c snesregi.c snesut.c snesj2.c dlregis.c
+SOURCEC  = snes.c snesj.c snesregi.c snesut.c snesj2.c dlregissnes.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = snesregi.o snes.o snesj.o snesut.o snesj2.o dlregis.o
+OBJSC    = snesregi.o snes.o snesj.o snesut.o snesj2.o dlregissnes.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES

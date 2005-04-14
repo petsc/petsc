@@ -130,7 +130,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitializePackage(const char path[]) {
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscDLLibraryRegister"
+#define __FUNCT__ "PetscDLLibraryRegister_petscksp"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
@@ -140,7 +140,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSCKSP_DLLEXPORT PetscDLLibraryRegister(char *path)
+PetscErrorCode PETSCKSP_DLLEXPORT PetscDLLibraryRegister_petscksp(char *path)
 {
   PetscErrorCode ierr;
 
@@ -162,6 +162,5 @@ static const char *contents = "PETSc Krylov subspace method and preconditioner l
      Jacobi, ILU, Block Jacobi, LU, Additive Schwarz, ...\n";
 static const char *authors  = PETSC_AUTHOR_INFO;
 
-#include "src/sys/src/utils/dlregis.h"
 
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

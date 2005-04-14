@@ -24,15 +24,14 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-dynamic=<bool>', nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
     return
 
-
   def configureDynamicLibraries(self):
     '''Checks whether dynamic libraries should be used, for which you must
       - Specify --with-dynamic
       - Find dlfcn.h and libdl
-    Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
+    Defines PETSC_USE_DYNAMIC_LIBRARIES if they are used
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
     self.useDynamic = 0
-    self.useDynamic = self.shared.useShared and self.framework.argDB['with-dynamic'] and not self.framework.host_os.startswith('darwin') and self.headers.check('dlfcn.h')
+    self.useDynamic = self.shared.useShared and self.framework.argDB['with-dynamic'] and self.headers.check('dlfcn.h')
     if not self.libraries.add('dl', ['dlopen', 'dlsym']):
       if not self.libraries.check('', ['dlopen', 'dlsym']):
         self.logPrint('The dynamic linking functions dlopen() and dlsym() were not found')

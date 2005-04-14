@@ -8,16 +8,16 @@ SLSUFFIX = dylib
 shared_darwin7: 
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
-        if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="${MPI_LIB} ${BLASLAPACK_LIB}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${PETSC_SYS_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PETSC_VEC_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${PETSC_MAT_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="${PETSC_DM_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${PETSC_SNES_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-	libtool  -noprebind -dynamic -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR} $$OTHERLIBS ${EXTERNAL_LIB} ${SYS_LIB} -lstdc++ -lgcc -lm -lc;\
+        if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="-all_load ${PACKAGES_LIBS} ${EXTERNAL_LIB} ${SYS_LIB} -lstdc++ -lm"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${PETSC_SYS_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PETSC_VEC_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${PETSC_MAT_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="${PETSC_DM_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${PETSC_SNES_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC} ${PACKAGES_LIBS}"  ; fi;\
+	gcc -dynamiclib  -flat_namespace -multiply_defined suppress -undefined warning -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR} $$OTHERLIBS ;\
 	${RM} -f *
 
 
@@ -29,9 +29,8 @@ shared_darwin7:
 #   e) Executes target 'shared_arch' for any out-of-date library (The library basename is passed as LIBNAME)
 #   c) Removes 'tmp'
 # The 'shared_arch' target is passed
-#   a) BOPT
-#   b) LIBNAME (the library basename)
-#   c) SHARED_LIBRARY_TMPDIR (where .o files should be manipulated)
+#   a) LIBNAME (the library basename)
+#   b) SHARED_LIBRARY_TMPDIR (where .o files should be manipulated)
 # and both the archive and shared library reside in INSTALL_LIB_DIR.
 shared: 
 	-@echo making shared libraries in ${INSTALL_LIB_DIR}; \
@@ -39,18 +38,18 @@ shared:
 	mkdir ${INSTALL_LIB_DIR}/tmp; \
 	for LIBNAME in libmpiuni ${SHLIBS}; \
 	do \
-	  if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${AR_LIB_SUFFIX}; then \
+	  if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/$$LIBNAME.dylib; then \
 	    if test -f ${INSTALL_LIB_DIR}/$$LIBNAME..dylib; then \
 	      flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.dylib -print`; \
 	      if [ "$$flag" = "" ]; then \
-	        flag=`find ${INSTALL_LIB_DIR} -type f -name lt_$$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.dylib -print`; \
+	        flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.dylib -print`; \
 	      fi; \
 	    else \
 	      flag="build"; \
 	    fi; \
 	    if [ "$$flag" != "" ]; then \
             echo "Building $$LIBNAME.dylib"; \
-	      ${OMAKE} BOPT=${BOPT} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp shared_arch; \
+	      ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp shared_arch; \
 	    fi; \
 	  fi; \
 	done; \

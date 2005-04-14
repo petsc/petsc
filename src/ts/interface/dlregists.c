@@ -58,7 +58,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSInitializePackage(const char path[]) {
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscDLLibraryRegister"
+#define __FUNCT__ "PetscDLLibraryRegister_petscts"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
@@ -67,7 +67,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSCTS_DLLEXPORT PetscDLLibraryRegister(char *path)
+PetscErrorCode PETSCTS_DLLEXPORT PetscDLLibraryRegister_petscts(char *path)
 {
   PetscErrorCode ierr;
 
@@ -89,6 +89,5 @@ static const char *contents = "PETSc timestepping library. \n\
      PVODE interface\n";
 static const char *authors  = PETSC_AUTHOR_INFO;
 
-#include "src/sys/src/utils/dlregis.h"
 
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */
