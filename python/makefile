@@ -1,6 +1,6 @@
 .SUFFIXES: .so
 
-PWD = /home/knepley/PETSc-dev/petsc-dev/python
+PWD = /home/knepley/PETSc-dev/petsc-dev/python/wrappers
 SOURCE = PETSc/Base.c PETSc/PetscViewer.c PETSc/PetscMap.c PETSc/Vec.c PETSc/Mat.c PETSc/KSP.c PETSc/PC.c PETSc/SNES.c
 
 build: ${SOURCE:.c=.so}
@@ -19,4 +19,4 @@ realclean: clean
 	rm -f ${SOURCE}
 
 tarball:
-	tar cvzf PETScPython.tgz `find PETSc -name "*.c"`
+	tar cvzf PETScPython.tgz -C wrappers `cd wrappers; find PETSc -name "*.c" -o -name "*.py"`

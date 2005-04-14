@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 import user
 import maker
-import script
 
 import os
 
-class Make(maker.Make):
+class OldMake(maker.Make):
   def __init__(self, builder = None):
     maker.Make.__init__(self, builder)
     self.libBases = ['libpetsc', 'libpetscvec', 'libpetscmat', 'libpetscdm', 'libpetscksp', 'libpetscsnes', 'libpetscts']
@@ -105,6 +104,57 @@ class Make(maker.Make):
   def build(self, builder):
     self.buildSharedLibraries(builder)
     return
+
+class Make(maker.BasicMake):
+  def setupConfigure(self, framework):
+    self.configureMod = self.getModule(os.path.join(os.getcwd(), 'python', 'PETSc'), 'petsc')
+    maker.BasicMake.setupConfigure(self, framework)
+    framework.require('config.python', self.configureObj)
+    return 1
+
+  def configure(self, builder):
+    framework = maker.BasicMake.configure(self, builder)
+    self.python = framework.require('config.python', None)
+    return framework
+
+  def setupDirectories(self, builder):
+    maker.BasicMake.setupDirectories(self, builder)
+    pyDir = os.path.join(os.getcwd(), 'lib', self.configureObj.petsc.arch.arch, 'PETSc')
+    self.srcDir['C'] = pyDir
+    self.libDir = pyDir
+    return
+
+def lib_Base(maker):
+  '''Base.c'''
+  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+
+def lib_PetscViewer(maker):
+  '''PetscViewer.c'''
+  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+
+def lib_PetscMap(maker):
+  '''PetscMap.c'''
+  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+
+def lib_Vec(maker):
+  '''Vec.c'''
+  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+
+def lib_Mat(maker):
+  '''Mat.c'''
+  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+
+def lib_PC(maker):
+  '''PC.c'''
+  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+
+def lib_KSP(maker):
+  '''KSP.c'''
+  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+
+def lib_SNES(maker):
+  '''SNES.c'''
+  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
 
 if __name__ == '__main__':
   Make().run()
