@@ -19,4 +19,4 @@ realclean: clean
 	rm -f ${SOURCE}
 
 tarball:
-	tar cvzf PETScPython.tgz -C wrappers `cd wrappers; find PETSc -name "*.c" -o -name "*.py"`
+	tar cvzf PETScPython.tar.gz -C wrappers `cd wrappers; find PETSc -name "*.c" -o -name "*.py"`
