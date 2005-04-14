@@ -17,7 +17,7 @@ class Configure(config.base.Configure):
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'gethostbyname',
                  'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','erf','dlerror']
-    libraries1 = [(['socket', 'nsl'], 'socket')]
+    libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
     self.setCompilers = self.framework.require('config.setCompilers',      self)
     self.framework.require('PETSc.utilities.arch', self.setCompilers)
     self.languages    = self.framework.require('PETSc.utilities.languages',self.setCompilers)
