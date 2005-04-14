@@ -169,9 +169,4 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscDLLibraryRegister_petscvec(char *path)
 }
 EXTERN_C_END
 
-/* --------------------------------------------------------------------------*/
-static const char *contents = "PETSc Vector library. \n";
-static const char *authors  = PETSC_AUTHOR_INFO;
-
-
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

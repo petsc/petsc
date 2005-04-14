@@ -82,12 +82,5 @@ PetscErrorCode PETSCTS_DLLEXPORT PetscDLLibraryRegister_petscts(char *path)
 }
 EXTERN_C_END
 
-/* --------------------------------------------------------------------------*/
-static const char *contents = "PETSc timestepping library. \n\
-     Euler\n\
-     Backward Euler\n\
-     PVODE interface\n";
-static const char *authors  = PETSC_AUTHOR_INFO;
-
 
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

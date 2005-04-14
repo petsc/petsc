@@ -138,9 +138,5 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscDLLibraryRegister_petscmat(char *path)
 }
 EXTERN_C_END
 
-/* --------------------------------------------------------------------------*/
-static const char *contents = "PETSc Matrix library. \n";
-static const char *authors  = PETSC_AUTHOR_INFO;
-
 
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

@@ -93,12 +93,4 @@ PetscErrorCode PETSCDM_DLLEXPORT PetscDLLibraryRegister_petscdm(char *path)
 }
 EXTERN_C_END
 
-/* --------------------------------------------------------------------------*/
-static const char *contents = "PETSc Distributed Structures library, includes\n\
-Application Orderings, Application Data, and Distributed Arrays";
-static const char *authors  = PETSC_AUTHOR_INFO;
-
-
-/* --------------------------------------------------------------------------*/
-
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

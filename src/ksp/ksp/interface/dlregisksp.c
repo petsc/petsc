@@ -156,11 +156,4 @@ PetscErrorCode PETSCKSP_DLLEXPORT PetscDLLibraryRegister_petscksp(char *path)
 }
 EXTERN_C_END
 
-/* --------------------------------------------------------------------------*/
-static const char *contents = "PETSc Krylov subspace method and preconditioner library.\n\
-     GMRES, PCG, Bi-CG-stab, ...\n\
-     Jacobi, ILU, Block Jacobi, LU, Additive Schwarz, ...\n";
-static const char *authors  = PETSC_AUTHOR_INFO;
-
-
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

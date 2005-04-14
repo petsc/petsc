@@ -84,11 +84,4 @@ PetscErrorCode PETSCSNES_DLLEXPORT PetscDLLibraryRegister_petscsnes(char *path)
 }
 EXTERN_C_END
 
-/* --------------------------------------------------------------------------*/
-static const char *contents = "PETSc nonlinear solver library. \n\
-     line search Newton methods\n\
-     trust region Newton methods\n";
-static const char *authors  = PETSC_AUTHOR_INFO;
-
-
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

@@ -93,8 +93,4 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petsc(char *path)
 }
 EXTERN_C_END
 
-/* --------------------------------------------------------------------------*/
-static const char *contents = "PETSc Graphics and PetscViewer libraries. \n\
-     ASCII, Binary, Sockets, X-windows, ...\n";
-static const char *authors  = PETSC_AUTHOR_INFO;
 
