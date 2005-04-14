@@ -20,7 +20,6 @@ shared_aix5:
 shared_aix6:
 
 shared_darwin6: 
-shared_darwin7: 
 
 shared_hpux11: shared_hpux
 
@@ -59,14 +58,27 @@ shared_solaris:
 	sys_lib=`echo "${SYS_LIB}" | sed s?-Wl,-rpath?-L?g`; external_lib=`echo "${PETSC_EXTERNAL_LIB_BASIC}" | sed s?-Wl,-rpath?-L?g`;\
 	${LD}  -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} $${sys_lib} $${external_lib}
 
-# Actions taken by libtool to rebuild an out-of-date shared library
-#   The library basename is given by LIBNAME
 shared_libtool:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
 	${AR} x ${INSTALL_LIB_DIR}/lt_${LIBNAME}.${AR_LIB_SUFFIX}; \
 	${LIBTOOL} --mode=link ${CLINKER} ${CFLAGS} ${CCPPFLAGS} -rpath ${INSTALL_LIB_DIR} -o ${LIBNAME}.la *.lo; \
 	${LIBTOOL} --mode=install ${PETSC_DIR}/bin/config/install-sh ${LIBNAME}.la ${INSTALL_LIB_DIR}
+
+shared_darwin7: 
+	-@cd ${SHARED_LIBRARY_TMPDIR}; \
+	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
+        if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="-all_load ${PACKAGES_LIBS} ${EXTERNAL_LIB} ${SYS_LIB} -lgcc -lstdc++ -lm -lc"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${PETSC_SYS_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PETSC_VEC_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${PETSC_MAT_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="${PETSC_DM_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${PETSC_SNES_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
+	libtool -v -dynamic  -flat_namespace -multiply_defined suppress -undefined warning -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR} $$OTHERLIBS ;\
+	${RM} -f *
 
 # This is the main target for building shared libraries. It takes the following actions
 #   a) Create 'tmp-petsc-shlib' in the library directory
