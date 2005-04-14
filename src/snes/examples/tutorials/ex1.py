@@ -109,6 +109,20 @@ class Ex1:
     return
 
 if __name__ == '__main__':
-  import os,sys
-  sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))), 'python'))
+  import os,re,sys
+  petscDir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+  petscConf = os.path.join(petscDir, 'bmake', 'petscconf')
+  if 'PETSC_ARCH' in os.environ:
+    petscArch = os.environ['PETSC_ARCH']
+  elif os.path.isfile():
+    archRE = re.compile(r'^PETSC_ARCH=(?P<arch>[\w.\d-]+)[\s]*$');
+    confFile = file(petscConf)
+    for line in input.readlines():
+      m = archRE.match(line)
+      if m:
+        petscArch = m.group('arch')
+    confFile.close()
+  else:
+    raise RuntimeError('Could not determine PETSC_ARCH')
+  sys.path.append(os.path.join(petscDir, 'lib', petscArch))
   Ex1().run()
