@@ -289,7 +289,9 @@ PetscErrorCode ClassRegLogGetClass(ClassRegLog classLog, PetscCookie cookie, int
     /* Could do bisection here */
     if (classLog->classInfo[c].cookie == cookie) break;
   }
-  if (c >= classLog->numClasses) SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid object cookie %d", cookie);
+  if (c >= classLog->numClasses) {
+    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid object cookie %d\nThis often happens if you compile with PETSC_USE_DYNAMIC_LIBRARIES, but link with static libraries.", cookie);
+  }
   *oclass = c;
   PetscFunctionReturn(0);
 }
