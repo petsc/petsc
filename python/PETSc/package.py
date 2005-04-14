@@ -11,12 +11,12 @@ class Package(config.base.Configure):
     self.headerPrefix = 'PETSc'
     self.substPrefix  = 'PETSc'
     self.compilers    = self.framework.require('config.compilers',self)
-    self.setCompilers = self.framework.require('config.setCompilers',self)  
+    self.setCompilers = self.framework.require('config.setCompilers',self)
     self.libraries    = self.framework.require('config.libraries',self)
-    self.clanguage    = self.framework.require('PETSc.utilities.clanguage',self)
-    self.arch         = self.framework.require('PETSc.utilities.arch',self)        
+    self.languages    = self.framework.require('PETSc.utilities.languages',self)
+    self.arch         = self.framework.require('PETSc.utilities.arch',self)
     self.functions    = self.framework.require('config.functions',self)
-    self.source       = self.framework.require('config.sourceControl',self)    
+    self.source       = self.framework.require('config.sourceControl',self)
     self.found        = 0
     self.lib          = []
     # this packages libraries and all those it depends on
@@ -300,12 +300,12 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
       if self.libraryOptions.integerSize == 64:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')    
-      if not self.clanguage.precision.lower() == 'double':
+      if not self.languages.precision.lower() == 'double':
         raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')    
-      if not self.complex and self.clanguage.scalartype.lower() == 'complex':
+      if not self.complex and self.languages.scalartype.lower() == 'complex':
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')    
-      if self.cxx and not self.clanguage.language.lower() == 'cxx':
-        raise RuntimeError('Cannot use '+self.name+' without C++, run config/configure.py --with-language=c++')    
+      if self.cxx and not self.languages.clanguage.lower() == 'cxx':
+        raise RuntimeError('Cannot use '+self.name+' without C++, run config/configure.py --with-clanguage=c++')    
       if self.fc and not 'FC' in self.framework.argDB:
         raise RuntimeError('Cannot use '+self.name+' without Fortran, run config/configure.py --with-fc')    
       self.executeTest(self.configureLibrary)

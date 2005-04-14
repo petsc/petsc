@@ -44,14 +44,17 @@ class Configure(config.base.Configure):
     '''Load the configure module from PETSc 2'''
     import RDict
     import sys
+    confPath = os.path.join(self.dir, 'bmake', self.arch)
     oldDir = os.getcwd()
-    os.chdir(os.path.join(self.dir, 'bmake', self.arch))
+    os.chdir(confPath)
     argDB = RDict.RDict()
     os.chdir(oldDir)
     sys.path.append(os.path.join(self.dir, 'python'))
     framework = self.loadConfigure(argDB)
     if framework is None:
-      raise RuntimeError('PETSc 2 has no cached configuration')
+      raise RuntimeError('PETSc 2 has no cached configuration in '+confPath)
+    else:
+      self.logPrint('Loaded PETSc 2 configuration from '+confPath)
     return framework.require('PETSc.Configure', None)
 
   def getOtherIncludes(self):

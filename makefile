@@ -23,7 +23,7 @@ all:
            echo "********************************************************************"; \
            exit 1; fi
 
-all_build: chk_petsc_dir chklib_dir info info_h deletelibs  build shared
+all_build: chk_petsc_dir chklib_dir info info_h deletelibs  build shared python
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -122,6 +122,16 @@ build:
 	-@${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
 	-@echo "Completed building libraries"
 	-@echo "========================================="
+#
+# Builds the Python wrappers
+python:
+	-@if [ -d "${PETSC_DIR}/lib/${PETSC_ARCH}/PETSc" ]; then \
+	  echo "COMPILING PYTHON WRAPPERS"; \
+	  echo "========================================="; \
+	  PYTHONPATH=${PETSC_DIR}/python ./make.py --with-petsc-arch=${PETSC_ARCH} --with-petsc-shared=0; \
+	  echo "Completed building Python wrappers"; \
+	  echo "========================================="; \
+	fi
 #
 # Builds PETSc test examples for a given architecture
 #
@@ -481,5 +491,5 @@ petscPython.tgz:
 .PHONY: info info_h all all_build build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update chk_petsc_dir \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
         allhtml allcleanhtml  allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
-        start_configure configure_petsc configure_clean petscPython.tgz
+        start_configure configure_petsc configure_clean python
 

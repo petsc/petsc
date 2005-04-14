@@ -109,6 +109,8 @@ class Make(maker.BasicMake):
   def setupConfigure(self, framework):
     self.configureMod = self.getModule(os.path.join(os.getcwd(), 'python', 'PETSc'), 'petsc')
     maker.BasicMake.setupConfigure(self, framework)
+    framework.header = None
+    framework.cHeader = None
     framework.require('config.python', self.configureObj)
     return 1
 
