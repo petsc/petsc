@@ -20,7 +20,7 @@ class Configure(config.base.Configure):
     libraries1 = [(['socket', 'nsl'], 'socket')]
     self.setCompilers = self.framework.require('config.setCompilers',      self)
     self.framework.require('PETSc.utilities.arch', self.setCompilers)
-    self.clanguage    = self.framework.require('PETSc.utilities.clanguage',self.setCompilers)
+    self.languages    = self.framework.require('PETSc.utilities.languages',self.setCompilers)
     self.debugging    = self.framework.require('PETSc.utilities.debugging',self.setCompilers)        
     self.compilers    = self.framework.require('config.compilers',         self)
     self.framework.require('PETSc.utilities.compilerFlags', self.compilers)
@@ -85,7 +85,7 @@ class Configure(config.base.Configure):
     self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS)
     
     # compiler values
-    self.setCompilers.pushLanguage(self.clanguage.language)
+    self.setCompilers.pushLanguage(self.languages.clanguage)
     self.addMakeMacro('CC',self.setCompilers.getCompiler())
     self.addMakeMacro('CC_FLAGS',self.setCompilers.getCompilerFlags())    
     self.setCompilers.popLanguage()
@@ -93,7 +93,7 @@ class Configure(config.base.Configure):
     self.addMakeMacro('CC_SUFFIX','o')
 
     # executable linker values
-    self.setCompilers.pushLanguage(self.clanguage.language)
+    self.setCompilers.pushLanguage(self.languages.clanguage)
     self.addMakeMacro('CC_LINKER',self.setCompilers.getLinker())
     self.addMakeMacro('CC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
     self.setCompilers.popLanguage()
@@ -126,7 +126,7 @@ class Configure(config.base.Configure):
       self.addMakeMacro('FC','')
 
     # shared library linker values
-    self.setCompilers.pushLanguage(self.clanguage.language)
+    self.setCompilers.pushLanguage(self.languages.clanguage)
     # need to fix BuildSystem to collect these seperately
     self.addMakeMacro('SL_LINKER',self.setCompilers.getLinker())
     self.addMakeMacro('SL_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
@@ -138,14 +138,14 @@ class Configure(config.base.Configure):
 #-----------------------------------------------------------------------------------------------------
 
     # CONLY or CPP. We should change the PETSc makefiles to do this better
-    if self.clanguage.language == 'C': lang = 'CONLY'
+    if self.languages.clanguage == 'C': lang = 'CONLY'
     else: lang = 'CXXONLY'
     self.addMakeMacro('PETSC_LANGUAGE',lang)
     
     # real or complex
-    self.addMakeMacro('PETSC_SCALAR',self.clanguage.scalartype)
+    self.addMakeMacro('PETSC_SCALAR',self.languages.scalartype)
     # double or float
-    self.addMakeMacro('PETSC_PRECISION',self.clanguage.precision)
+    self.addMakeMacro('PETSC_PRECISION',self.languages.precision)
 
     if self.framework.argDB['with-batch']:
       self.addMakeMacro('PETSC_WITH_BATCH','1')
@@ -183,9 +183,9 @@ class Configure(config.base.Configure):
 
   def configureInline(self):
     '''Get a generic inline keyword, depending on the language'''
-    if self.clanguage.language == 'C':
+    if self.languages.clanguage == 'C':
       self.addDefine('STATIC_INLINE', self.compilers.cStaticInlineKeyword)
-    elif self.clanguage.language == 'Cxx':
+    elif self.languages.clanguage == 'Cxx':
       self.addDefine('STATIC_INLINE', self.compilers.cxxStaticInlineKeyword)
     return
 

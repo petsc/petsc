@@ -9,7 +9,7 @@ class Configure(config.base.Configure):
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
     self.setCompilers = self.framework.require('config.setCompilers', self)
-    self.clanguage    = self.framework.require('PETSc.utilities.clanguage', self)
+    self.languages    = self.framework.require('PETSc.utilities.languages', self)
     self.debugging    = self.framework.require('PETSc.utilities.debugging', self)
     return
 
@@ -45,7 +45,7 @@ class Configure(config.base.Configure):
       self.framework.logPrint('ERROR: Failed to load user options module')
     if options:
       languages = [('C', 'CFLAGS'), ('FC', 'FFLAGS')]
-      if self.clanguage.language == 'Cxx':
+      if self.languages.clanguage == 'Cxx':
         languages.append(('Cxx', 'CXXFLAGS'))
       for language, flags in languages:
         self.pushLanguage(language)
