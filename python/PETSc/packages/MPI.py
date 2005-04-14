@@ -186,6 +186,17 @@ class Configure(PETSc.package.Package):
       self.addPrototype('#define MPI_Comm_c2f(a) (a)')
     return
 
+  def configureMPICHShared(self):
+    '''MPICH cannot be used with shared libraries on the Mac, reject if trying'''
+    if self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
+      if self.framework.argDB['with-shared']:
+        for lib in self.lib:
+          if lib.find('mpich') >= 0:
+            raise RuntimeError('Sorry, we have not been able to figure out how to use shared libraries on the \n \
+              Mac with MPICH. Either run config/configure.py with --with-shared=0 or use LAM instead of MPICH; \n\
+              for instance with --download-lam=0')
+    return
+
   def checkDownload(self,preOrPost):
     '''Check if we should download LAM or MPICH'''
     if self.framework.argDB['download-lam'] == preOrPost:
@@ -378,6 +389,7 @@ class Configure(PETSc.package.Package):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
     self.addExtraLibraries()
     PETSc.package.Package.configureLibrary(self)
+    self.executeTest(self.configureMPICHShared)
     self.executeTest(self.configureMPIRUN)
     self.executeTest(self.configureConversion)
     self.executeTest(self.configureTypes)
