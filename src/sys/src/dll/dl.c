@@ -79,38 +79,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrintPath(void)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscDLLibraryGetInfo"
-/*@C
-   PetscDLLibraryGetInfo - Gets the text information from a PETSc
-       dynamic library
-
-     Not Collective
-
-   Input Parameters:
-.   handle - library handle returned by PetscDLLibraryOpen()
-
-   Level: developer
-
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryGetInfo(void *handle,const char type[],const char *mess[])
-{
-  PetscErrorCode ierr,(*sfunc)(const char *,const char*,const char *[]);
-
-  PetscFunctionBegin;
-#if defined(PETSC_HAVE_GETPROCADDRESS)
-  sfunc = (PetscErrorCode (*)(const char *,const char*,const char *[])) GetProcAddress((HMODULE)handle,"PetscDLLibraryInfo");
-#else
-  sfunc = (PetscErrorCode (*)(const char *,const char*,const char *[])) dlsym(handle,"PetscDLLibraryInfo");
-#endif
-  if (!sfunc) {
-    *mess = "No library information in the file\n";
-  } else {
-    ierr = (*sfunc)(0,type,mess);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryRetrieve"
 /*@C
    PetscDLLibraryRetrieve - Copies a PETSc dynamic library from a remote location
@@ -135,13 +103,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryGetInfo(void *handle,const char typ
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,PetscTruth *found)
 {
-  char       *par2,buff[10],*en,*gz;
+  char           *par2,buff[10],*en,*gz;
   PetscErrorCode ierr;
-  size_t     len1,len2,len;
-  PetscTruth tflg,flg;
+  size_t         len1,len2,len;
+  PetscTruth     tflg,flg;
 
   PetscFunctionBegin;
-
   /* 
      make copy of library name and replace $PETSC_ARCH and and 
      so we can add to the end of it to look for something like .so.1.0 etc.
@@ -224,9 +191,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char l
 PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 {
   PetscErrorCode ierr;
-  char       *par2;
-  PetscTruth foundlibrary;
+  char           *par2,registername[128],*ptr,*ptrp;
+  PetscTruth     foundlibrary;
   PetscErrorCode (*func)(const char*) = NULL;
+  size_t         len;
 
   PetscFunctionBegin;
   *handle = NULL;
@@ -265,58 +233,42 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char libna
 #elif defined(PETSC_HAVE_GETLASTERROR)
     {
       DWORD erc;
-      char *buff;
+      char  *buff;
       erc   = GetLastError();
       FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-                    NULL,
-                    erc,
-                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), /* Default language */
-                    (LPSTR)&buff,
-                    0,
-                    NULL);
+                    NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,NULL);
       ierr = PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,PETSC_ERR_FILE_OPEN,1,
-                        "Unable to open dynamic library:\n  %s\n  %s\n  Error message from LoadLibrary() %s\n",
-                        libname,par2,buff);
+                        "Unable to open dynamic library:\n  %s\n  %s\n  Error message from LoadLibrary() %s\n",libname,par2,buff);
       LocalFree(buff);
       return(ierr);
     }
 #endif
   }
-  /* run the function PetscFListAddDynamic() if it is in the library */
+
+  /* build name of symbol to look for based on libname */
+  ierr = PetscStrcpy(registername,"PetscDLLibraryRegister_");CHKERRQ(ierr);
+  /* look for libXXXXX.YYY and extract out the XXXXXX */
+  ierr = PetscStrrstr(libname,"lib",&ptr);CHKERRQ(ierr);
+  if (!ptr) SETERRQ1(PETSC_ERR_ARG_WRONG,"Dynamic library name must have lib prefix:%s",libname);
+  ierr = PetscStrchr(ptr+3,'.',&ptrp);CHKERRQ(ierr);
+  if (ptrp) {
+    len = ptrp - ptr;
+  } else {
+    ierr = PetscStrlen(ptr+3,&len);CHKERRQ(ierr);
+  }
+  ierr = PetscStrncat(registername,ptr+3,len);CHKERRQ(ierr);
+
 #if defined(PETSC_HAVE_GETPROCADDRESS)
-  func = (PetscErrorCode (*)(const char *)) GetProcAddress((HMODULE)*handle,"PetscDLLibraryRegister");
+  func = (PetscErrorCode (*)(const char *)) GetProcAddress((HMODULE)*handle,registername);
 #else
-  func = (PetscErrorCode (*)(const char *)) dlsym(*handle,"PetscDLLibraryRegister");
+  func = (PetscErrorCode (*)(const char *)) dlsym(*handle,registername);
 #endif
   if (func) {
     ierr = (*func)(libname);CHKERRQ(ierr);
     ierr = PetscLogInfo((0,"PetscDLLibraryOpen:Loading registered routines from %s\n",libname));CHKERRQ(ierr);
+  } else {
+    SETERRQ2(PETSC_ERR_FILE_UNEXPECTED,"Able to locate dynamic library %s, but cannot load symbol  %s\n",libname,registername);
   }
-  if (PetscLogPrintInfo) {
-    PetscErrorCode (*sfunc)(const char *,const char*,char **);
-    char *mess;
-
-#if defined(PETSC_HAVE_GETPROCADDRESS)
-    sfunc   = (PetscErrorCode (*)(const char *,const char*,char **)) GetProcAddress((HMODULE)*handle,"PetscDLLibraryInfo");
-#else
-    sfunc   = (PetscErrorCode (*)(const char *,const char*,char **)) dlsym(*handle,"PetscDLLibraryInfo");
-#endif
-    if (sfunc) {
-      ierr = (*sfunc)(libname,"Contents",&mess);CHKERRQ(ierr);
-      if (mess) {
-        ierr = PetscLogInfo((0,"Contents:\n %s",mess));CHKERRQ(ierr);
-      }
-      ierr = (*sfunc)(libname,"Authors",&mess);CHKERRQ(ierr);
-      if (mess) {
-        ierr = PetscLogInfo((0,"Authors:\n %s",mess));CHKERRQ(ierr);
-      }
-      ierr = (*sfunc)(libname,"Version",&mess);CHKERRQ(ierr);
-      if (mess) {
-        ierr = PetscLogInfo((0,"Version:\n %s\n",mess));CHKERRQ(ierr);
-      }
-    }
-  }
-
   ierr = PetscFree(par2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -471,7 +423,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary
 {
   PetscDLLibraryList list,prev;
   void*              handle;
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
   size_t             len;
   PetscTruth         match,dir;
   char               program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*found,*libname1,suffix[16],*s;

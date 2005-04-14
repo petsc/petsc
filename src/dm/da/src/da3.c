@@ -212,7 +212,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   PetscInt       sn0 = 0,sn1 = 0,sn2 = 0,sn3 = 0,sn5 = 0,sn6 = 0,sn7 = 0;
   PetscInt       sn8 = 0,sn9 = 0,sn11 = 0,sn15 = 0,sn24 = 0,sn25 = 0,sn26 = 0;
   PetscInt       sn17 = 0,sn18 = 0,sn19 = 0,sn20 = 0,sn21 = 0,sn23 = 0,refine_x = 2, refine_y = 2, refine_z = 2;
-  PetscTruth     flg1,flg2;
+  PetscTruth     flg1;
   DA             da;
   Vec            local,global;
   VecScatter     ltog,gtol;
@@ -348,65 +348,45 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   if (N < n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
   if (P < p) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Partition in z direction is too fine! %D %D",P,p);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2);CHKERRQ(ierr);
   /* 
      Determine locally owned region 
      [x, y, or z]s is the first local node number, [x, y, z] is the number of local nodes 
   */
-  if (lx) { /* user decided distribution */
-    x  = lx[rank % m];
-    xs = 0;
-    for (i=0; i<(rank%m); i++) { xs += lx[i];}
-    if (m > 1 && x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %D %D",x,s);
-  } else if (flg2) { 
-    SETERRQ(PETSC_ERR_SUP,"-da_partition_nodes_at_end not supported");
-  } else { /* Normal PETSc distribution */
-    x = M/m + ((M % m) > (rank % m));
-    if (m > 1 && x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %D %D",x,s);
-    if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
-    else                      { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
+  if (!lx) { /* user decided distribution */
     ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
     flx = lx;
     for (i=0; i<m; i++) {
       lx[i] = M/m + ((M % m) > (i % m));
     }
   }
-  if (ly) { /* user decided distribution */
-    y  = ly[(rank % (m*n))/m];
-    if (n > 1 && y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %D %D",y,s);      
-    ys = 0;
-    for (i=0; i<(rank % (m*n))/m; i++) { ys += ly[i];}
-  } else if (flg2) { 
-    SETERRQ(PETSC_ERR_SUP,"-da_partition_nodes_at_end not supported");
-  } else { /* Normal PETSc distribution */
-    y = N/n + ((N % n) > ((rank % (m*n)) /m)); 
-    if (n > 1 && y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %D %D",y,s);
-    if ((N % n) > ((rank % (m*n)) /m)) {ys = ((rank % (m*n))/m)*y;}
-    else                               {ys = (N % n)*(y+1) + (((rank % (m*n))/m)-(N % n))*y;}
+  x  = lx[rank % m];
+  xs = 0;
+  for (i=0; i<(rank%m); i++) { xs += lx[i];}
+  if (m > 1 && x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %D %D",x,s);
+
+  if (!ly) { /* user decided distribution */
     ierr = PetscMalloc(n*sizeof(PetscInt),&ly);CHKERRQ(ierr);
     fly = ly;
     for (i=0; i<n; i++) {
       ly[i] = N/n + ((N % n) > (i % n));
     }
   }
-  if (lz) { /* user decided distribution */
-    z  = lz[rank/(m*n)];
-    if (p > 1 && z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Plane width is too thin for stencil! %D %D",z,s);      
-    zs = 0;
-    for (i=0; i<(rank/(m*n)); i++) { zs += lz[i];}
-  } else if (flg2) { 
-    SETERRQ(PETSC_ERR_SUP,"-da_partition_nodes_at_end not supported");
-  } else { /* Normal PETSc distribution */
-    z = P/p + ((P % p) > (rank / (m*n)));
-    if (p > 1 && z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Plane width is too thin for stencil! %D %D",z,s);
-    if ((P % p) > (rank / (m*n))) {zs = (rank/(m*n))*z;}
-    else                          {zs = (P % p)*(z+1) + ((rank/(m*n))-(P % p))*z;}
+  y  = ly[(rank % (m*n))/m];
+  if (n > 1 && y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %D %D",y,s);      
+  ys = 0;
+  for (i=0; i<(rank % (m*n))/m; i++) { ys += ly[i];}
+
+  if (!lz) { /* user decided distribution */
     ierr = PetscMalloc(p*sizeof(PetscInt),&lz);CHKERRQ(ierr);
     flz = lz;
     for (i=0; i<p; i++) {
       lz[i] = P/p + ((P % p) > (i % p));
     }
   }
+  z  = lz[rank/(m*n)];
+  if (p > 1 && z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Plane width is too thin for stencil! %D %D",z,s);      
+  zs = 0;
+  for (i=0; i<(rank/(m*n)); i++) { zs += lz[i];}
   ye = ys + y;
   xe = xs + x;
   ze = zs + z;

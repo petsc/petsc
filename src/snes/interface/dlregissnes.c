@@ -60,7 +60,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[]) {
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscDLLibraryRegister"
+#define __FUNCT__ "PetscDLLibraryRegister_petscsnes"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
@@ -70,7 +70,7 @@ EXTERN_C_BEGIN
   path - library path
 
  */
-PetscErrorCode PETSCSNES_DLLEXPORT PetscDLLibraryRegister(char *path)
+PetscErrorCode PETSCSNES_DLLEXPORT PetscDLLibraryRegister_petscsnes(char *path)
 {
   PetscErrorCode ierr;
 
@@ -90,6 +90,5 @@ static const char *contents = "PETSc nonlinear solver library. \n\
      trust region Newton methods\n";
 static const char *authors  = PETSC_AUTHOR_INFO;
 
-#include "src/sys/src/utils/dlregis.h"
 
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

@@ -266,7 +266,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   PetscInt       s_x,s_y; /* s proportionalized to w */
   PetscInt       *flx = 0,*fly = 0;
   PetscInt       sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0,refine_x = 2, refine_y = 2,tM = M,tN = N;
-  PetscTruth     flg1,flg2;
+  PetscTruth     flg1;
   DA             da;
   Vec            local,global;
   VecScatter     ltog,gtol;
@@ -351,77 +351,58 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
      set to true.  That would create a NEW communicator that we would
      need to use for operations on this distributed array 
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2);CHKERRQ(ierr);
 
   /* 
      Determine locally owned region 
      xs is the first local node number, x is the number of local nodes 
   */
-  if (lx) { /* user sets distribution */
-    x  = lx[rank % m];
-    xs = 0;
-    for (i=0; i<(rank % m); i++) {
-      xs += lx[i];
-    }
-    left = xs;
-    for (i=(rank % m); i<m; i++) {
-      left += lx[i];
-    }
-    if (left != M) {
-      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %D %D",left,M);
-    }
-  } else if (flg2) { 
-    x = (M + rank%m)/m;
-    if (m > 1 && x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %D %D",x,s);
-    if (M/m == x) { xs = (rank % m)*x; }
-    else          { xs = (rank % m)*(x-1) + (M+(rank % m))%(x*m); }
-    SETERRQ(PETSC_ERR_SUP,"-da_partition_nodes_at_end not supported");
-  } else { /* Normal PETSc distribution */
-    x = M/m + ((M % m) > (rank % m));
-    if (m > 1 && x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %D %D",x,s);
-    if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
-    else                      { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
+  if (!lx) { /* user sets distribution */
     ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
     flx = lx;
     for (i=0; i<m; i++) {
       lx[i] = M/m + ((M % m) > i);
     }
   }
+  x  = lx[rank % m];
+  xs = 0;
+  for (i=0; i<(rank % m); i++) {
+    xs += lx[i];
+  }
+#if defined(PETSC_USE_DEBUGGING)
+  left = xs;
+  for (i=(rank % m); i<m; i++) {
+    left += lx[i];
+  }
+  if (left != M) {
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %D %D",left,M);
+  }
+#endif
 
   /* 
      Determine locally owned region 
      ys is the first local node number, y is the number of local nodes 
   */
-  if (ly) { /* user sets distribution */
-    y  = ly[rank/m];
-    ys = 0;
-    for (i=0; i<(rank/m); i++) {
-      ys += ly[i];
-    }
-    left = ys;
-    for (i=(rank/m); i<n; i++) {
-      left += ly[i];
-    }
-    if (left != N) {
-      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %D %D",left,N);
-    }
-  } else if (flg2) { 
-    y = (N + rank/m)/n;
-    if (n > 1 && y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %D %D",y,s);
-    if (N/n == y) { ys = (rank/m)*y;  }
-    else          { ys = (rank/m)*(y-1) + (N+(rank/m))%(y*n); }
-    SETERRQ(PETSC_ERR_SUP,"-da_partition_nodes_at_end not supported");
-  } else { /* Normal PETSc distribution */
-    y = N/n + ((N % n) > (rank/m));
-    if (n > 1 && y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %D %D",y,s);
-    if ((N % n) > (rank/m)) { ys = (rank/m)*y; }
-    else                    { ys = (N % n)*(y+1) + ((rank/m)-(N % n))*y; }
+  if (!ly) { /* user sets distribution */
     ierr = PetscMalloc(n*sizeof(PetscInt),&ly);CHKERRQ(ierr);
     fly  = ly;
     for (i=0; i<n; i++) {
       ly[i] = N/n + ((N % n) > i);
     }
   }
+  y  = ly[rank/m];
+  ys = 0;
+  for (i=0; i<(rank/m); i++) {
+    ys += ly[i];
+  }
+#if defined(PETSC_USE_DEBUGGING)
+  left = ys;
+  for (i=(rank/m); i<n; i++) {
+    left += ly[i];
+  }
+  if (left != N) {
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %D %D",left,N);
+  }
+#endif
 
   xe = xs + x;
   ye = ys + y;

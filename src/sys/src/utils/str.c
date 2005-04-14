@@ -535,6 +535,36 @@ PetscErrorCode PETSC_DLLEXPORT PetscTokenDestroy(PetscToken *a)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscStrrstr"
+/*@C
+   PetscStrrstr - Locates last occurance of string in another string
+
+   Not Collective
+
+   Input Parameters:
++  a - pointer to string
+-  b - string to find
+
+   Output Parameter:
+.  tmp - location of occurance
+
+   Level: intermediate
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscStrrstr(const char a[],const char b[],char *tmp[])
+{
+  const char *stmp = a, *ltmp = 0;
+
+  PetscFunctionBegin;
+  while (stmp) {
+    stmp = (char *)strstr(stmp,b);
+    if (stmp) {ltmp = stmp;stmp++;}
+  }
+  *tmp = (char *)ltmp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscStrstr"
 /*@C
    PetscStrstr - Locates first occurance of string in another string
