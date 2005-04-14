@@ -286,7 +286,8 @@ class Configure(PETSc.package.Package):
       args.append('--disable-f90')      
       if self.compilers.fortranIsF90:
         try:
-          output, error, status = self.executeShellCommand(fc+' -v 2>&1 | grep IBM')
+          output, error, status = self.executeShellCommand(fc+' -v')
+          output += error
         except:
           output = ''
         if output.find('IBM') >= 0:
