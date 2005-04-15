@@ -64,7 +64,6 @@ class Configure(config.base.Configure):
       except Exception, e:
         failedmessage = '''Unable to download %s
         You may be off the network. Connect to the internet and run config/configure.py again
-        or put in the directory externalpackages the uncompressed untared file obtained
         from %s
         ''' % (package, url)
         raise RuntimeError(failedmessage)
@@ -88,7 +87,17 @@ class Configure(config.base.Configure):
   def configurePythonLanguage(self):
     '''Download the Python bindings'''
     import os
-    self.retrievePackage('Python Bindings', 'PETScPython', 'ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz', os.path.join(self.arch.dir, 'lib', self.arch.arch))
+    if os.path.isdir(os.path.join(self.arch.dir,'BitKeeper')):
+      try:
+        self.retrievePackage('Python Bindings', 'PETScPython', 'ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz', os.path.join(self.arch.dir, 'src'))
+        if os.path.isdir(os.path.join(self.arch.dir, 'src','python')): os.remove(os.path.join(self.arch.dir, 'src','python'))
+        os.rename(os.path.join(self.arch.dir, 'src','PETSc'),os.path.join(self.arch.dir, 'src','python'))
+      except:
+        if os.path.isdir(os.path.join('src','python')):
+          self.logPrintBox('Warning: Unable to update the PETSc Python bindings, using current ones')
+        else:
+          self.logPrintBox('Warning: Unable to get the PETSc Python bindings; perhaps you are off the network.\nBuilding without Python bindings')
+          return
     return
 
   def configureExternC(self):
