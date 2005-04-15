@@ -27,7 +27,7 @@ class Configure(config.base.Configure):
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created '+self.bmakeDir+' for configuration data')
     if os.path.isfile(self.framework.argDB.saveFilename):
       os.remove(self.framework.argDB.saveFilename)
-    self.framework.argDB.saveFilename = os.path.join(self.bmakeDir, 'RDict.db')
+    self.framework.argDB.saveFilename = os.path.abspath(os.path.join(self.bmakeDir, 'RDict.db'))
     self.framework.logPrint('Changed persistence directory to '+self.bmakeDir)
     return
 
