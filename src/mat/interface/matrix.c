@@ -5242,8 +5242,8 @@ PetscErrorCode MatGetPetscMaps_Petsc(Mat mat,PetscMap *rmap,PetscMap *cmap)
    Level: intermediate
 
    Notes: 
-     The block-stash is used for values set with VecSetValuesBlocked() while
-     the stash is used for values set with VecSetValues()
+     The block-stash is used for values set with MatSetValuesBlocked() while
+     the stash is used for values set with MatSetValues()
 
      Run with the option -log_info and look for output of the form
      MatAssemblyBegin_MPIXXX:Stash has MM entries, uses nn mallocs.
@@ -5262,7 +5262,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatStashSetInitialSize(Mat mat,PetscInt size, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
-  ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = MatStashSetInitialSize_Private(&mat->stash,size);CHKERRQ(ierr);
   ierr = MatStashSetInitialSize_Private(&mat->bstash,bsize);CHKERRQ(ierr);
   PetscFunctionReturn(0);
