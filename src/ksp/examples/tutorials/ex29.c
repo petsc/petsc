@@ -287,5 +287,6 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
   }
   ierr = VecRestoreArray(x, &array);CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
