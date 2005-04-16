@@ -26,6 +26,11 @@ package PETSc {
 
     // Output a representation of the object using 
     void view(in PETSc.PetscViewer viewer);
+
+    // Get the PETSc object pointer
+    opaque getObject();
+    // Set the PETSc object pointer
+    void setObject(in opaque object);
   }
 
   class Base implements PetscObject {
@@ -38,6 +43,16 @@ package PETSc {
     static bool Initialized();
     // Check whether PETSc has been finalized
     static bool Finalized();
+  }
+
+  class PetscLog implements PetscObject {
+    static void stageRegister(out int stage, in string stageName);
+    static void stagePush(in int stage);
+    static void stagePop();
+    static void eventRegister(out int event, in string eventName, in int cookie);
+    static void eventBegin(in int event);
+    static void eventEnd(in int event);
+    static void flops(in int flops);
   }
 
   enum PetscConstants {PETSC_IGNORE = 0, PETSC_DECIDE = -1, PETSC_DEFAULT = -2};
