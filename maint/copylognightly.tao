@@ -10,7 +10,7 @@ foreach CONF ($*)
   set SCP=scp
   source $dir/confignightly/${CONF}
 
-  $SCP $USR@${MACH}:$TAO_LOC/build.log /home/petsc/logs/taologs/build_$CONF.$MACH.log ;/bin/chmod a+r /home/petsc/logs/taologs/build_$CONF.$MACH.log &
+  $SCP $USR@${MACH}:$TAO_LOC/test.log /home/petsc/logs/taologs/build_$CONF.$MACH.log ;/bin/chmod a+r /home/petsc/logs/taologs/build_$CONF.$MACH.log &
   $SCP $USR@${MACH}:$TAO_LOC/examples.log /home/petsc/logs/taologs/examples_$CONF.$MACH.log ;/bin/chmod a+r /home/petsc/logs/taologs/examples_$CONF.$MACH.log &
 end
 sleep 300
