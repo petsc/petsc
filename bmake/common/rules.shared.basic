@@ -77,7 +77,7 @@ shared_darwin7:
         if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${PETSC_SNES_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
-	libtool -v -dynamic  -flat_namespace -multiply_defined suppress -undefined warning -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR} $$OTHERLIBS ;\
+	libtool -dynamic  -flat_namespace -multiply_defined suppress -undefined warning -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR} $$OTHERLIBS ;\
 	${RM} -f *
 
 # This is the main target for building shared libraries. It takes the following actions

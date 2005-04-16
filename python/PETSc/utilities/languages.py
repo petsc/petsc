@@ -89,15 +89,9 @@ class Configure(config.base.Configure):
     import os
     if os.path.isdir(os.path.join(self.arch.dir,'BitKeeper')):
       try:
-        self.retrievePackage('Python Bindings', 'PETScPython', 'ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz', os.path.join(self.arch.dir, 'src'))
-        if os.path.isdir(os.path.join(self.arch.dir, 'src','python')): os.remove(os.path.join(self.arch.dir, 'src','python'))
-        os.rename(os.path.join(self.arch.dir, 'src','PETSc'),os.path.join(self.arch.dir, 'src','python'))
+        self.retrievePackage('Python Bindings', 'PETScPython', 'ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz', os.path.join(self.arch.dir, 'lib',self.arch.arch))
       except:
-        if os.path.isdir(os.path.join('src','python')):
-          self.logPrintBox('Warning: Unable to update the PETSc Python bindings, using current ones')
-        else:
-          self.logPrintBox('Warning: Unable to get the PETSc Python bindings; perhaps you are off the network.\nBuilding without Python bindings')
-          return
+        self.logPrintBox('Warning: Unable to get the PETSc Python bindings; perhaps you are off the network.\nBuilding without Python bindings')
     return
 
   def configureExternC(self):
