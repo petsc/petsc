@@ -251,8 +251,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = output.splitlines()
       if self.argDB['ignoreWarnings']:
         lines = filter(lambda s: not self.warningRE.search(s), lines)
+      # GCC: Ignore headers to toplevel
+      lines = filter(lambda s: s.find('At the top level') < 0, lines)
+      # GCC: Ignore headers to functions
+      lines = filter(lambda s: s.find(': In function') < 0, lines)
       # GCC: Ignore stupid warning about builtins
       lines = filter(lambda s: s.find('warning: conflicting types for built-in function') < 0, lines)
+      # GCC: Ignore stupid warning about unused variables
+      lines = filter(lambda s: s.find('warning: unused variable') < 0, lines)
       # PGI: Ignore warning about temporary license
       lines = filter(lambda s: s.find('license.dat') < 0, lines)
       output = reduce(lambda s, t: s+t, lines, '')

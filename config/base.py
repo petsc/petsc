@@ -268,7 +268,9 @@ class Configure(script.Script):
     if includes and not includes[-1] == '\n':
       includes += '\n'
     if language in ['C', 'C++', 'Cxx']:
-      codeStr = '#include "confdefs.h"\n#include "conffix.h"\n'+includes
+      codeStr = ''
+      if self.compilerDefines: codeStr = '#include "'+self.compilerDefines+'"\n'
+      codeStr += '#include "conffix.h"\n'+includes
       if not body is None:
         if codeBegin is None:
           codeBegin = '\nint main() {\n'
@@ -300,7 +302,7 @@ class Configure(script.Script):
       return
 
     command = self.getPreprocessorCmd()
-    self.framework.outputHeader(self.compilerDefines)
+    if self.compilerDefines: self.framework.outputHeader(self.compilerDefines)
     self.framework.outputCHeader(self.compilerFixes)
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
@@ -337,7 +339,7 @@ class Configure(script.Script):
 
     cleanup = cleanup and self.framework.cleanup
     command = self.getCompilerCmd()
-    self.framework.outputHeader(self.compilerDefines)
+    if self.compilerDefines: self.framework.outputHeader(self.compilerDefines)
     self.framework.outputCHeader(self.compilerFixes)
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(includes, body, codeBegin, codeEnd))
@@ -408,13 +410,12 @@ class Configure(script.Script):
   def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
     import sys
 
-    
     (out, err, ret) = self.outputCompile(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd)
     out = self.filterCompileOutput(out+'\n'+err)
     if ret or len(out):
+      self.framework.logPrint('Compile failed inside link\n'+out)
+      self.linkerObj = ''
       return (out, ret)
-
-
 
     cleanup = cleanup and self.framework.cleanup
     if shared:
