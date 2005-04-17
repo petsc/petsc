@@ -737,6 +737,7 @@ class Configure(config.base.Configure):
   def checkLibC(self):
     '''Test whether we need to explicitly include libc in shared linking
        - Mac OSX requires an explicit reference to libc for shared linking'''
+    self.explicitLibc = None
     tmpCompilerDefines   = self.compilerDefines
     self.compilerDefines = ''
     code = 'int foo(void) {extern void *malloc(int); void *chunk = malloc(31); free(chunk); return 0;}\n'
@@ -749,6 +750,7 @@ class Configure(config.base.Configure):
     if self.checkLink(includes = code, codeBegin = '', codeEnd = '', shared = 1):
       self.logPrint('Shared linking requires an explicit libc reference')
       self.compilerDefines = tmpCompilerDefines
+      self.explicitLibc = ['libc.so']
       return
     self.framework.argDB['LIBS'] = oldLibs
     self.compilerDefines = tmpCompilerDefines

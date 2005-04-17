@@ -348,6 +348,8 @@ class BasicMake(Make):
       linker.libraries.update(self.compilers.flibs)
       if self.libraries.math:
         linker.libraries.update(self.libraries.math)
+      if self.setCompilers.explicitLibc:
+        linker.libraries.update(self.setCompilers.explicitLibc)
       builder.popConfiguration()
     return
 
@@ -521,7 +523,7 @@ class SIDLMake(Make):
     if framework is None:
       for depMake, depSidlFiles in graph.DirectedGraph.topologicalSort(self.dependencyGraph, outEdges = 0):
         if depMake is self: continue
-        self.logWrite('Loading configure for '+depMake.getRoot())
+        self.logPrint('Loading configure for '+depMake.getRoot())
         framework = depMake.loadConfigure()
         if not framework is None:
           self.framework         = framework
