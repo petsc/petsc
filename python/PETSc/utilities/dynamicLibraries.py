@@ -21,7 +21,7 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-dynamic=<bool>', nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
+    help.addArgument('PETSc', '-with-dynamic=<bool>', nargs.ArgBool(None, 0, 'Build dynamic libraries for PETSc'))
     return
 
   def configureDynamicLibraries(self):
