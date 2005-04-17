@@ -140,7 +140,7 @@ class Package(config.base.Configure):
       dir = self.framework.argDB['with-'+self.package+'-dir']
       for l in self.generateLibList(os.path.join(dir, self.libdir)):
         yield('User specified root directory '+self.PACKAGE, l, os.path.join(dir,self.includedir))
-        raise RuntimeError('--with-'+self.package+'-dir='+self.framework.argDB['with-'+self.package+'-dir']+'did not work')
+      raise RuntimeError('--with-'+self.package+'-dir='+self.framework.argDB['with-'+self.package+'-dir']+' did not work')
 
     if 'with-'+self.package+'-include-dir' in self.framework.argDB:
         raise RuntimeError('Use --with-'+self.package+'-include; not --with-'+self.package+'-include-dir') 
