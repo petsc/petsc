@@ -90,7 +90,7 @@ class Package(config.base.Configure):
     if self.download:
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Download and install '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' include files'))
-    help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<dir,or list of libraries>',nargs.ArgLibrary(None,None,'Indicate the directory of the '+self.name+' libraries or a list of libraries'))    
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../libparmetis.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))    
     return
 
   # by default, just check for all the libraries in self.liblist 
@@ -140,12 +140,15 @@ class Package(config.base.Configure):
       dir = self.framework.argDB['with-'+self.package+'-dir']
       for l in self.generateLibList(os.path.join(dir, self.libdir)):
         yield('User specified root directory '+self.PACKAGE, l, os.path.join(dir,self.includedir))
+        raise RuntimeError('--with-'+self.package+'-dir='+self.framework.argDB['with-'+self.package+'-dir']+'did not work')
 
     if 'with-'+self.package+'-include' in self.framework.argDB and 'with-'+self.package+'-lib' in self.framework.argDB:
       libs = self.framework.argDB['with-'+self.package+'-lib']
       if not isinstance(libs, list): libs = [libs]
       libs = [os.path.abspath(l) for l in libs]
       yield('User specified '+self.PACKAGE+' libraries', libs, os.path.abspath(self.framework.argDB['with-'+self.package+'-include']))
+      raise RuntimeError('--with-'+self.package+'-lib='+self.framework.argDB['with-'+self.package+'-lib']+' and \n'+\
+        '--with-'+self.package+'-include='+self.framework.argDB['with-'+self.package+'-include']+' did not work') 
 
     for d in self.getSearchDirectories():
       for l in self.generateLibList(os.path.join(d,self.libdir)):
@@ -173,7 +176,7 @@ class Package(config.base.Configure):
                    ' if that succeeds then rerun config/configure.py'
           try:
             self.framework.log.write('Downloading it using "bk clone '+url+' '+os.path.join(packages,self.package)+'"\n')
-            (output, error, status) = config.base.Configure.executeShellCommand('bk clone '+url+' '+os.path.join(packages,self.package))
+            (output, error, status) = config.base.Configure.executeShellCommand('bk clone '+url+' '+os.path.join(packages,self.downloadname))
           except RuntimeError, e:
             status = 1
             output = str(e)
