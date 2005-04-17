@@ -150,7 +150,7 @@ class Package(config.base.Configure):
       if not isinstance(libs, list): libs = [libs]
       libs = [os.path.abspath(l) for l in libs]
       yield('User specified '+self.PACKAGE+' libraries', libs, os.path.abspath(self.framework.argDB['with-'+self.package+'-include']))
-      raise RuntimeError('--with-'+self.package+'-lib='+self.framework.argDB['with-'+self.package+'-lib']+' and \n'+\
+      raise RuntimeError('--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])+' and \n'+\
         '--with-'+self.package+'-include='+self.framework.argDB['with-'+self.package+'-include']+' did not work') 
 
     for d in self.getSearchDirectories():
