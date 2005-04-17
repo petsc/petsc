@@ -348,6 +348,8 @@ class BasicMake(Make):
       linker.libraries.update(self.compilers.flibs)
       if self.libraries.math:
         linker.libraries.update(self.libraries.math)
+      if self.setCompilers.explicitLibc:
+        linker.libraries.update(self.setCompilers.explicitLibc)
       builder.popConfiguration()
     return
 

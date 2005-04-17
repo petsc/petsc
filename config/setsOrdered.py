@@ -544,6 +544,11 @@ class Set(BaseSet):
                 raise # re-raise the TypeError exception we caught
             self._data[transform()] = len(self._data)
 
+    def updateDuplicate(self,iterable):
+        '''Adds with possible duplication several elements to the set'''
+        for i in iterable:
+          self.addDuplicate(i)
+
     def addDuplicate(self, element):
         """Add an element to the set.
 

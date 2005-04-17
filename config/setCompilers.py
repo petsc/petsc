@@ -61,7 +61,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', 'AR',                      nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('Compilers', 'AR_FLAGS',                nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('Compilers', '-with-ranlib',            nargs.Arg(None, None,   'Specify ranlib'))
-    help.addArgument('Compilers', '-with-shared',            nargs.ArgBool(None, 1, 'Enable shared libraries'))
+    help.addArgument('Compilers', '-with-shared',            nargs.ArgBool(None, 0, 'Enable shared libraries'))
     help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
     return
 
@@ -662,7 +662,8 @@ class Configure(config.base.Configure):
     # C compiler default
     yield (self.framework.argDB['CC'], ['-shared'], 'so')
     # Mac OSX
-    yield ('libtool', ['-noprebind', '-dynamic'], 'dylib')
+    # undefined warning must also have flat_namespace
+    yield ('libtool', ['-noprebind','-dynamic','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
     # Default to static linker
     self.framework.argDB['with-shared']=0
     self.framework.argDB['LD_SHARED'] = ''
@@ -736,6 +737,7 @@ class Configure(config.base.Configure):
   def checkLibC(self):
     '''Test whether we need to explicitly include libc in shared linking
        - Mac OSX requires an explicit reference to libc for shared linking'''
+    self.explicitLibc = None
     tmpCompilerDefines   = self.compilerDefines
     self.compilerDefines = ''
     code = 'int foo(void) {extern void *malloc(int); void *chunk = malloc(31); free(chunk); return 0;}\n'
@@ -748,6 +750,7 @@ class Configure(config.base.Configure):
     if self.checkLink(includes = code, codeBegin = '', codeEnd = '', shared = 1):
       self.logPrint('Shared linking requires an explicit libc reference')
       self.compilerDefines = tmpCompilerDefines
+      self.explicitLibc = ['libc.so']
       return
     self.framework.argDB['LIBS'] = oldLibs
     self.compilerDefines = tmpCompilerDefines
