@@ -81,8 +81,10 @@ def petsc_configure(configure_options):
   check_petsc_arch(sys.argv)
 
   # support a few standard configure option types 
-  for l in range(0,len(sys.argv)-1):
+  for l in range(0,len(sys.argv)):
     name = sys.argv[l]
+    if name.startswith('--download'):
+      sys.argv[l] = name.lower()
     if name.startswith('--enable'):
       sys.argv[l] = name.replace('--enable','--with')
       if name.find('=') == -1: sys.argv[l] += '=1'
