@@ -96,28 +96,6 @@ def petsc_configure(configure_options):
       sys.argv[l] = name.replace('--without','--with')
       if name.find('=') == -1: sys.argv[l] += '=0'
       elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
-  
-  # if language is C then should not be checking C++
-  usingcxx = 0
-  for j in sys.argv:
-    if j.replace('++','xx') == '--with-clanguage=cxx' or j == '--with-scalar-type=complex':
-      usingcxx = 1
-      break
-    # horrible, horrible hack; downloading Prometheus needs C++
-    if j.find('--download-prometheus') >= 0:
-      usingcxx = 1
-      break
-
-  if not usingcxx:
-    foundcxx = 0
-    for l in range(0,len(sys.argv)-1):
-      name = sys.argv[l]
-      if name.startswith('--with-cxx'):
-        sys.argv[l] = '--with-cxx=0'
-        foundcxx = 1
-        break
-    if not foundcxx:
-      sys.argv.append('--with-cxx=0')
 
   # Disable threads on RHL9
   if rhl9():
@@ -170,6 +148,11 @@ def petsc_configure(configure_options):
   sys.path.insert(0, pythonDir)
   import config.framework
   import cPickle
+
+  # Disable shared libraries by default
+  import nargs
+  if nargs.Arg.findArgument('with-shared', sys.argv[1:]) is None:
+    sys.argv.append('--with-shared=0')
 
   framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure'], loadArgDB = 0)
   try:
