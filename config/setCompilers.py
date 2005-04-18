@@ -128,13 +128,13 @@ class Configure(config.base.Configure):
       raise RuntimeError('bin/<mpicc,hcc> you provided with -with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work')
     else:
       if 'with-mpi' in self.framework.argDB and self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers']  and not self.framework.argDB['download-mpich'] == 1 and not self.framework.argDB['download-lam'] == 1:
-        if Configure.isGNU('mpicc') and self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpicc') and self.framework.argDB['with-gnu-compilers'] and self.framework.argDB['with-mpi-compilers']:
           yield 'mpicc'
-        if Configure.isGNU('hcc') and self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('hcc') and self.framework.argDB['with-gnu-compilers'] and self.framework.argDB['with-mpi-compilers']:
           yield 'hcc'
-        if not Configure.isGNU('mpicc') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+        if not Configure.isGNU('mpicc') and (not self.framework.argDB['with-vendor-compilers'] == '0') and self.framework.argDB['with-mpi-compilers']:
           yield 'mpicc'
-        if not Configure.isGNU('hcc') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+        if not Configure.isGNU('hcc') and (not self.framework.argDB['with-vendor-compilers'] == '0') and self.framework.argDB['with-mpi-compilers']:
           yield 'hcc'
         if not self.framework.argDB['with-vendor-compilers'] == '0':
           yield 'mpcc_r'
@@ -262,17 +262,17 @@ class Configure(config.base.Configure):
         raise RuntimeError('bin/<mpiCC,mpicxx,hcp> you provided with -with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work\nRun with -with-cxx=0 if you wish to use this MPI and disable C++')
     else:
       if 'with-mpi' in self.framework.argDB and self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers'] and not self.framework.argDB['download-mpich'] == 1  and not self.framework.argDB['download-lam'] == 1:
-        if Configure.isGNU('mpicxx') and self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpicxx') and self.framework.argDB['with-gnu-compilers'] and self.framework.argDB['with-mpi-compilers']:
           yield 'mpicxx'
-        if not Configure.isGNU('mpicxx') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+        if not Configure.isGNU('mpicxx') and (not self.framework.argDB['with-vendor-compilers'] == '0') and self.framework.argDB['with-mpi-compilers']:
           yield 'mpicxx'
-        if Configure.isGNU('mpiCC') and self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpiCC') and self.framework.argDB['with-gnu-compilers'] and self.framework.argDB['with-mpi-compilers']:
           yield 'mpiCC'
-        if not Configure.isGNU('mpiCC') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+        if not Configure.isGNU('mpiCC') and (not self.framework.argDB['with-vendor-compilers'] == '0') and self.framework.argDB['with-mpi-compilers']:
           yield 'mpiCC'
-        if Configure.isGNU('mpic++') and self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpic++') and self.framework.argDB['with-gnu-compilers'] and self.framework.argDB['with-mpi-compilers']:
           yield 'mpic++'
-        if not Configure.isGNU('mpic++') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+        if not Configure.isGNU('mpic++') and (not self.framework.argDB['with-vendor-compilers'] == '0') and self.framework.argDB['with-mpi-compilers']:
           yield 'mpic++'
         if not self.framework.argDB['with-vendor-compilers'] == '0':
           yield 'mpCC_r'
@@ -408,13 +408,13 @@ class Configure(config.base.Configure):
         raise RuntimeError('bin/mpif90[f77] you provided with --with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran')
     else:
       if 'with-mpi' in self.framework.argDB and self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers'] and not self.framework.argDB['download-mpich'] == 1  and not self.framework.argDB['download-lam'] == 1:
-        if Configure.isGNU('mpif90') and self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpif90') and self.framework.argDB['with-gnu-compilers'] and self.framework.argDB['with-mpi-compilers']:
           yield 'mpif90'
-        if not Configure.isGNU('mpif90') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+        if not Configure.isGNU('mpif90') and (not self.framework.argDB['with-vendor-compilers'] == '0') and self.framework.argDB['with-mpi-compilers']:
           yield 'mpif90'
-        if Configure.isGNU('mpif77') and self.framework.argDB['with-gnu-compilers']:
+        if Configure.isGNU('mpif77') and self.framework.argDB['with-gnu-compilers'] and self.framework.argDB['with-mpi-compilers']:
           yield 'mpif77'
-        if not Configure.isGNU('mpif77') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+        if not Configure.isGNU('mpif77') and (not self.framework.argDB['with-vendor-compilers'] == '0') and self.framework.argDB['with-mpi-compilers']:
           yield 'mpif77'
         if not self.framework.argDB['with-vendor-compilers'] == '0':
           yield 'mpxlf_r'

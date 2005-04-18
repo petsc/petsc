@@ -605,6 +605,7 @@ class Configure(config.base.Configure):
         self.addDefine('HAVE_FORTRAN_UNDERSCORE_UNDERSCORE',1)
     self.AR = self.setCompilers.AR
     self.AR_FLAGS = self.setCompilers.AR_FLAGS
+    self.AR_LIB_SUFFIX = self.setCompilers.AR_LIB_SUFFIX
     self.RANLIB = self.setCompilers.RANLIB
     self.LD_SHARED = self.setCompilers.LD_SHARED
     self.sharedLibraryFlags = ' '.join(self.setCompilers.sharedLibraryFlags)
