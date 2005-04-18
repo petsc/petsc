@@ -11,6 +11,7 @@ class Configure(config.base.Configure):
     self.setCompilers = self.framework.require('config.setCompilers', self)
     self.libraries = self.framework.require('config.libraries', self)
     self.fortranMangling = 'unchanged'
+    self.fincs = []
     self.flibs = []
     self.fmainlibs = []
     return
@@ -309,6 +310,7 @@ class Configure(config.base.Configure):
       
     # Parse output
     argIter = iter(output.split())
+    fincs   = []
     flibs   = []
     fmainlibs = []
     lflags  = []
@@ -323,6 +325,14 @@ class Configure(config.base.Configure):
             lflags.append(arg)
             self.logPrint('Found full library spec: '+arg, 4, 'compilers')
             flibs.append(arg)
+          continue
+        # Check for special include argument
+        # AIX does this for MPI and perhaps other things
+        m = re.match(r'^-I.*$', arg)
+        if m:
+          inc = arg
+          self.logPrint('Found special include: '+inc, 4, 'compilers')
+          fincs.append(inc)
           continue
         # Check for ???
         m = re.match(r'^-bI:.*$', arg)
