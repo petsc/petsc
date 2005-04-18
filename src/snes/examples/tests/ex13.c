@@ -46,7 +46,7 @@ extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int main(int argc,char **argv)
 {
   SNES           snes;                      /* nonlinear solver */
-  const SNESType type = SNESLS;             /* nonlinear solution method */
+  SNESType       type = SNESLS;             /* nonlinear solution method */
   Vec            x,r;                       /* solution, residual vectors */
   Mat            J;                         /* Jacobian matrix */
   AppCtx         user;                      /* user-defined work context */

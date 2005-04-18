@@ -57,8 +57,8 @@ runex3_3:
 	   if (${DIFF} output/ex3_3.out ex3_3.tmp) then true; \
 	   else echo "Possible problem with ex3_3, diffs above"; fi; \
 	   ${RM} -f ex3_3.tmp
-TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm ex6.PETSc ex6.rm
-TESTEXAMPLES_C_X11	  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex5.PETSc ex5.rm
+TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm
+TESTEXAMPLES_C_X11	  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex5.PETSc ex5.rm  ex6.PETSc ex6.rm
 TESTEXAMPLES_FORTRAN	  = 
 TESTEXAMPLES_F90          = ex6f90.PETSc ex6f90.rm
 TESTEXAMPLES_C_X11_MPIUNI = 

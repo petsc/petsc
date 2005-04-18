@@ -203,6 +203,8 @@ PetscErrorCode CalculateElementVelocity(DA da, UserContext *user)
   ierr = DAGetElements(da, &ne, &necon);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_n.u, &u_n);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_n.v, &v_n);CHKERRQ(ierr);
+  ierr = PetscMalloc(ne*sizeof(PetscScalar),&u_phi);CHKERRQ(ierr);
+  ierr = PetscMalloc(ne*sizeof(PetscScalar),&v_phi);CHKERRQ(ierr);
   for(e = 0; e < ne; e++) {
     u_phi[e] = 0.0;
     v_phi[e] = 0.0;
@@ -213,6 +215,8 @@ PetscErrorCode CalculateElementVelocity(DA da, UserContext *user)
     u_phi[e] /= 3.0;
     v_phi[e] /= 3.0;
   }
+  ierr = PetscFree(u_phi);CHKERRQ(ierr);
+  ierr = PetscFree(v_phi);CHKERRQ(ierr);
   ierr = DARestoreElements(da, &ne, &necon);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->sol_n.u, &u_n);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->sol_n.v, &v_n);CHKERRQ(ierr);
@@ -602,18 +606,16 @@ PetscErrorCode ComputePredictor(DMMG dmmg)
 {
   DA             da   = (DA)dmmg->dm;
   UserContext   *user = (UserContext *) dmmg->user;
-  Vec            uOldLocal, uLocal;
+  Vec            uOldLocal, uLocal,uOld;
   PetscScalar   *pOld;
   PetscScalar   *p;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-#if 0
   ierr = DAGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);
   ierr = DAGetLocalVector(da, &uLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
-#endif
   ierr = VecGetArray(uOldLocal, &pOld);CHKERRQ(ierr);
   ierr = VecGetArray(uLocal,    &p);CHKERRQ(ierr);
 

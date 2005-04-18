@@ -97,7 +97,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   IS             iskeep;
   PetscReal      **K,norm;
   Mat            mat,submat = 0,*submatb;
-  const MatType  type = MATSEQBAIJ;
+  MatType        type = MATSEQBAIJ;
 
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);

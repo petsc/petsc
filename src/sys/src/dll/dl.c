@@ -204,6 +204,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char libna
     SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to locate dynamic library:\n  %s\n",libname);
   }
 
+  /* Eventually config/configure.py should determine if the system needs an executable dynamic library */
+#define PETSC_USE_NONEXECUTABLE_SO
 #if !defined(PETSC_USE_NONEXECUTABLE_SO)
   ierr  = PetscTestFile(par2,'x',&foundlibrary);CHKERRQ(ierr);
   if (!foundlibrary) {

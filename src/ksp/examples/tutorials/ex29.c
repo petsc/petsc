@@ -249,12 +249,12 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
   ierr = VecGetArray(coords, &array);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "X_COORDINATES %d double\n", mx);CHKERRQ(ierr);
   for(i = 0; i < mx; i++) {
-    ierr = PetscViewerASCIIPrintf(viewer, "%g ", array[i*2]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "%g ", PetscRealPart(array[i*2]));CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Y_COORDINATES %d double\n", my);CHKERRQ(ierr);
   for(i = 0; i < my; i++) {
-    ierr = PetscViewerASCIIPrintf(viewer, "%g ", array[i*mx*2+1]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "%g ", PetscRealPart(array[i*mx*2+1]));CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Z_COORDINATES %d double\n", 1);CHKERRQ(ierr);
@@ -272,13 +272,13 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
   if (!rank) {
     ierr = PetscMalloc((maxn+1) * sizeof(PetscScalar), &values);CHKERRQ(ierr);
     for(i = 0; i < n; i++) {
-      ierr = PetscViewerASCIIPrintf(viewer, "%g\n", array[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%g\n", PetscRealPart(array[i]));CHKERRQ(ierr);
     }
     for(p = 1; p < size; p++) {
       ierr = MPI_Recv(values, (PetscMPIInt) n, MPIU_SCALAR, p, tag, comm, &status);CHKERRQ(ierr);
       ierr = MPI_Get_count(&status, MPIU_SCALAR, &n);CHKERRQ(ierr);        
       for(i = 0; i < n; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer, "%g\n", array[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "%g\n", PetscRealPart(array[i]));CHKERRQ(ierr);
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
