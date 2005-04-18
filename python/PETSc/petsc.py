@@ -238,7 +238,7 @@ class Configure(config.base.Configure):
   def generateGuesses(self):
     if self.framework.argDB['download-petsc'] == 1:
       (name, lib, include) = self.downloadPETSc()
-      yield (name, lib, include,'\'downloaded\'')
+      yield (name, lib, include, '\'downloaded\'')
       # Since the generator has been reinvoked, the request to download PETSc did not produce a valid version of PETSc.
       # We assume that the user insists upon using this version of PETSc, hence there is no legal way to proceed.
       raise RuntimeError('Downloaded PETSc could not be used.\n')
@@ -254,12 +254,12 @@ class Configure(config.base.Configure):
       if not (len(dir) > 2 and dir[1] == ':'):
         dir = os.path.abspath(dir)
       self.dir = dir
-      yield ('User specified installation root', self.libraryGuesses(dir), self.includeGuesses(dir),dir)
+      yield ('User specified installation root', self.libraryGuesses(dir), self.includeGuesses(dir), dir)
       # Since the generator has been reinvoked, the user specified installation root did not contain a valid PETSc.
       # We assume that the user insists upon using this version of PETSc, hence there is no legal way to proceed.
       raise RuntimeError('You set a value for the PETSc directory, but '+dir+' cannot be used.\n It could be the PETSc located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
     # May not need to list anything
-    yield ('Default compiler locations', self.libraryGuesses(), [[]],'\'default\'')
+    yield ('Default compiler locations', self.libraryGuesses(), [[]], '\'default\'')
     # Try configure package directories
     dirExp = re.compile(r'(PETSC|pets)c(-.*)?')
     for packageDir in self.framework.argDB['package-dirs']:
@@ -273,11 +273,11 @@ class Configure(config.base.Configure):
         if not dirExp.match(f):
           continue
         self.dir = dir
-        yield ('Package directory installation root', self.libraryGuesses(dir), self.includeGuesses(dir),dir)
+        yield ('Package directory installation root', self.libraryGuesses(dir), self.includeGuesses(dir), dir)
     # Try /usr/local
     dir = os.path.abspath(os.path.join('/usr', 'local'))
     self.dir = dir
-    yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), self.includeGuesses(dir),dir)
+    yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), self.includeGuesses(dir), dir)
     # Try /usr/local/*petsc*
     ls = os.listdir(os.path.join('/usr','local'))
     for dir in ls:
@@ -285,7 +285,7 @@ class Configure(config.base.Configure):
         dir = os.path.join('/usr','local',dir)
         if os.path.isdir(dir):
           self.dir = dir
-          yield ('Frequent user install location (/usr/local/*petsc*)', self.libraryGuesses(dir), self.includeGuesses(dir),dir)
+          yield ('Frequent user install location (/usr/local/*petsc*)', self.libraryGuesses(dir), self.includeGuesses(dir), dir)
     # Try ~/petsc*
     ls = os.listdir(os.getenv('HOME'))
     for dir in ls:
@@ -293,12 +293,12 @@ class Configure(config.base.Configure):
         dir = os.path.join(os.getenv('HOME'),dir)
         if os.path.isdir(dir):
           self.dir = dir
-          yield ('Frequent user install location (~/*petsc*)', self.libraryGuesses(dir), self.includeGuesses(dir),dir)
+          yield ('Frequent user install location (~/*petsc*)', self.libraryGuesses(dir), self.includeGuesses(dir), dir)
     # If necessary, download PETSc
     if not self.found and self.framework.argDB['download-petsc'] == 2:
       (name, lib, include) = self.downloadPETSc()
-      yield (name, lib, include,'\'downloaded\'')
-      #raise RuntimeError('Downloaded PETSc could not be used. Please check in install in '+os.path.dirname(include)+'\n')
+      yield (name, lib, include, '\'downloaded\'')
+      raise RuntimeError('Downloaded PETSc could not be used. Please check in install in '+os.path.dirname(include)+'\n')
     return
 
   def getDir(self):
@@ -322,9 +322,9 @@ class Configure(config.base.Configure):
     functionalPETSc = []
     nonsharedPETSc  = []
 
-    for (name, libraryGuesses, includeGuesses,location) in self.generateGuesses():
-      self.framework.log.write('================================================================================\n')
-      self.framework.log.write('Checking for a functional PETSc in '+name+', location/origin '+location+'\n')
+    for (name, libraryGuesses, includeGuesses, location) in self.generateGuesses():
+      self.framework.logPrintDivider()
+      self.framework.logPrint('Checking for a functional PETSc in '+name+', location/origin '+location)
       self.lib     = None
       self.include = None
       found        = 0
@@ -340,25 +340,24 @@ class Configure(config.base.Configure):
                 break
               else:
                 self.framework.log.write('--------------------------------------------------------------------------------\n')
-                self.framework.log.write('PETSc in '+name+', location/origin  '+location+' failed checkWorkingLink test\n')
+                self.framework.logPrint('PETSc in '+name+', location/origin  '+location+' failed checkWorkingLink test')
             else:
               self.framework.log.write('--------------------------------------------------------------------------------\n')
-              self.framework.log.write('PETSc in '+name+', location/origin '+location+' failed checkInclude test with includeDir: '+includeDir+'\n')
-
+              self.framework.logPrint('PETSc in '+name+', location/origin '+location+' failed checkInclude test with includeDir: '+includeDir)
           if found:
             break
           self.petsc = None
         else:
           self.framework.log.write('--------------------------------------------------------------------------------\n')
-          self.framework.log.write('PETSc in '+name+', location/origin '+location+' failed checkLib test with libraries: '+str(libraries)+'\n')
+          self.framework.logPrint('PETSc in '+name+', location/origin '+location+' failed checkLib test with libraries: '+str(libraries))
       if not found: continue
 
       version = self.executeTest(self.configureVersion)
       if self.framework.argDB['with-petsc-shared']:
         if not self.executeTest(self.checkSharedLibrary):
-          nonsharedPETSc.append((name, self.lib, self.include, version))
           self.framework.log.write('--------------------------------------------------------------------------------\n')
-          self.framework.log.write('PETSc in '+name+', location/origin '+location+' failed checkSharedLibrary test with libraries: '+str(libraries)+'\n')
+          self.framework.logPrint('PETSc in '+name+', location/origin '+location+' failed checkSharedLibrary test with libraries: '+str(libraries))
+          nonsharedPETSc.append((name, self.lib, self.include, version))
           continue
       self.found = 1
       functionalPETSc.append((name, self.lib, self.include, version))
