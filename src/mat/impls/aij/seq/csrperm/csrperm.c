@@ -447,6 +447,48 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,MatType typ
 EXTERN_C_END
 
 
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateSeqCSRPERM"
+/*@C
+   MatCreateSeqCSRPERM - Creates a sparse matrix of type SEQCSRPERM.
+   This type inherits from AIJ, but calculates some additional permutation 
+   information that is used to allow better vectorization of some 
+   operations.  At the cost of increased storage, the AIJ formatted 
+   matrix can be copied to a format in which pieces of the matrix are 
+   stored in ELLPACK format, allowing the vectorized matrix multiply 
+   routine to use stride-1 memory accesses.  As with the AIJ type, it is 
+   important to preallocate matrix storage in order to get good assembly 
+   performance.
+   
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - MPI communicator, set to PETSC_COMM_SELF
+.  m - number of rows
+.  n - number of columns
+.  nz - number of nonzeros per row (same for all rows)
+-  nnz - array containing the number of nonzeros in the various rows 
+         (possibly different for each row) or PETSC_NULL
+
+   Output Parameter:
+.  A - the matrix 
+
+   Notes:
+   If nnz is given then nz is ignored
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqCSRPERM(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);
+  ierr = MatSetType(*A,MATSEQCSRPERM);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(*A,nz,(PetscInt*)nnz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqCSRPERM"
