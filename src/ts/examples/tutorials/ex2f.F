@@ -454,8 +454,8 @@
 !  Local variables:
       PetscScalar localptr(1),copyptr(1),sc
       PetscErrorCode ierr
-      PetscInt          i,il,localsize
-      PetscOffset      idx_c,idx_l
+      PetscInt          i,localsize
+      PetscOffset      idx_c,idx_l,il
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Get ready for local function computations
@@ -568,10 +568,10 @@
 
 !  Local variables:
       PetscScalar localptr(1),sc,v(3)
-      PetscInt         i,col(3),is,i1,i3
+      PetscInt         i,col(3),i1,i3
       PetscErrorCode ierr
       PetscInt          mstart,mend,mstarts,mends
-      PetscOffset      idx
+      PetscOffset      idx,is
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Get ready for local Jacobian computations

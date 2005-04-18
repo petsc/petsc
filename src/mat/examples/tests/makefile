@@ -933,7 +933,7 @@ runex100:
 	-@touch ex100.tmp;\
 	for np in ${NPROCS}; do \
 	  for dof in ${DOF}; do \
-	    ${MPIRUN} -np $$np ex100 -f ${DATAFILESPATH}/matrices/arco1 -dof $$dof -viewer_binary_skip_info > ex100.tmp 2>&1; \
+	    ${MPIRUN} -np $$np ./ex100 -f ${DATAFILESPATH}/matrices/arco1 -dof $$dof -viewer_binary_skip_info > ex100.tmp 2>&1; \
 	  done; \
 	done; \
 	if (${DIFF} output/ex100.out ex100.tmp) then true; \

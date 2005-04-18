@@ -345,10 +345,10 @@ runex10_9:
                     -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_rtol \
                     1.0e-15 -ksp_smonitor -trans >> ex10_9.tmp 2>&1 ; ${WIN_SLEEP} \
           for np in 2 3; do \
-	 ${MPIRUN} -np $$np ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
+	 ${MPIRUN} -np $$np ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
                     -mat_type mpibaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol \
                     1.0e-15 -ksp_smonitor >> ex10_9.tmp 2>&1 ; ${WIN_SLEEP} \
-	 ${MPIRUN} -np $$np ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_cgs_refinement_type refine_always -viewer_binary_skip_info \
+	 ${MPIRUN} -np $$np ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_cgs_refinement_type refine_always -viewer_binary_skip_info \
                     -mat_type mpibaij -matload_block_size $$bs -ksp_max_it 100 -ksp_rtol \
                     1.0e-15 -ksp_smonitor -trans >> ex10_9.tmp 2>&1 ; ${WIN_SLEEP} \
          done; done; done; 
