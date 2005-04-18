@@ -61,7 +61,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', 'AR',                      nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('Compilers', 'AR_FLAGS',                nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('Compilers', '-with-ranlib',            nargs.Arg(None, None,   'Specify ranlib'))
-    help.addArgument('Compilers', '-with-shared',            nargs.ArgBool(None, 0, 'Enable shared libraries'))
+    help.addArgument('Compilers', '-with-shared',            nargs.ArgBool(None, 1, 'Enable shared libraries'))
     help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
     return
 
