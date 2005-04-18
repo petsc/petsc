@@ -34,10 +34,13 @@ testexamples_HYPRE: ${TESTEXAMPLES_HYPRE} clean
 testexamples_X11:
 testexamples_MPE:
 testexamples_ESSL:
-testexamples_BLAS:
 testexamples_MPI:
 testexamples_BLASLAPACK:
 
+buildexamples_MPI: 
+	-@${OMAKE} testexamples_MPI TESTEXAMPLES_MPI=`echo ${TESTEXAMPLES_MPI} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_BLASLAPACK: 
+	-@${OMAKE} testexamples_BLASLAPACK TESTEXAMPLES_BLASLAPACK=`echo ${TESTEXAMPLES_BLASLAPACK} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_C: 
 	-@${OMAKE} testexamples_C TESTEXAMPLES_C=`echo ${TESTEXAMPLES_C} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_C_X11: 

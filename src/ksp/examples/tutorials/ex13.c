@@ -291,6 +291,8 @@ PetscErrorCode UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar 
   /*
     Put back the PETSc array that belongs in the vector xuserctx->x
   */
+  ierr = VecResetArray(userctx->x);CHKERRQ(ierr);
+  ierr = VecResetArray(userctx->b);CHKERRQ(ierr);
 
   return 0;
 }
