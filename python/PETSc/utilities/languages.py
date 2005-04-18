@@ -25,6 +25,7 @@ class Configure(config.base.Configure):
   def configureScalarType(self):
     '''Choose between real and complex numbers'''
     self.scalartype = self.framework.argDB['with-scalar-type'].lower()
+    self.framework.logPrint('Scalar type is '+str(self.scalartype))
     if self.scalartype == 'complex':
       self.framework.argDB['with-clanguage'] = 'Cxx'
       self.addDefine('USE_COMPLEX', '1')
@@ -41,13 +42,20 @@ class Configure(config.base.Configure):
       self.addDefine('USE_MAT_SINGLE', '1')
     elif not self.precision == 'double':
       raise RuntimeError('--with-precision must be single, double, or matsingle')
+    self.framework.logPrint('Precision is '+str(self.precision))
     return
 
   def configureCLanguage(self):
     '''Choose between C and C++ bindings'''
     self.clanguage = self.framework.argDB['with-clanguage'].upper().replace('+','x').replace('X','x')
+    # horrible, horrible hack; downloading Prometheus needs C++
+    if self.framework.argDB['download-prometheus']:
+      self.clanguage = 'Cxx'
     if not self.clanguage in ['C', 'Cxx']:
       raise RuntimeError('Invalid C language specified: '+str(self.clanguage))
+    if self.clanguage == 'C':
+      self.framework.argDB['with-cxx'] = '0'
+    self.framework.logPrint('C language is '+str(self.clanguage))
     return
 
   def retrievePackage(self, package, name, urls, packageDir):
