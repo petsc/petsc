@@ -49,6 +49,12 @@ import config.base
 import os
 import re
 
+try:
+  enumerate([0, 1])
+except NameError:
+  def enumerate(l):
+    return zip(range(len(l)), l)
+
 class Framework(config.base.Configure, script.LanguageProcessor):
   '''This needs to manage configure information in itself just as Builder manages it for configurations'''
   def __init__(self, clArgs = None, argDB = None, loadArgDB = 1):
@@ -604,12 +610,23 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       f.close()
     return
 
+  def getOptionsString(self, omitArgs = []):
+    import nargs
+    args = self.clArgs[:]
+    for arg in omitArgs:
+      args = filter(lambda a: nargs.Arg.parseArgument(a)[0] == arg, arg)
+    for a, arg in enumerate(args):
+      parts = arg.split('=')
+      if len(parts) == 2 and ' ' in parts[1]:
+        args[a] = parts[0]+'=\\"'+parts[1]+'\\"'
+    return ' '.join(args)
+
   def outputBanner(self):
     import time, sys
     self.log.write(('='*80)+'\n')
     self.log.write(('='*80)+'\n')
     self.log.write('Starting Configure Run at '+time.ctime(time.time())+'\n')
-    self.log.write('Configure Options: '+str(self.clArgs)+'\n')
+    self.log.write('Configure Options: '+self.getOptionsString()+'\n')
     self.log.write('Working directory: '+os.getcwd()+'\n')
     self.log.write('Python version:\n' + sys.version+'\n')
     self.log.write(('='*80)+'\n')
