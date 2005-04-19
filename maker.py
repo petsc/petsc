@@ -628,6 +628,7 @@ class SIDLMake(Make):
     builder.pushConfiguration('SIDL '+baseName)
     builder.pushLanguage('SIDL')
     compiler            = builder.getCompilerObject()
+    compiler.scandalDir = self.ase.scandalDir
     compiler.clients    = self.clientLanguages
     compiler.clientDirs = dict([(lang, 'client-'+lang.lower()) for lang in self.clientLanguages])
     compiler.servers    = self.serverLanguages

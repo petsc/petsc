@@ -9,6 +9,7 @@ class Compiler(script.Script):
     self.language        = 'SIDL'
     self.sourceExtension = '.sidl'
     self.implRE          = re.compile(r'^((.*)_impl\.(c|h|py)|__init__\.py)$')
+    self.scandalDir      = None
     self.clients         = []
     self.clientDirs      = {}
     self.servers         = []
@@ -202,7 +203,9 @@ class Compiler(script.Script):
     import os
 
     if not hasattr(self, 'scandal'):
-      self.scandal = self.getModule(self.argDB['SCANDAL_DIR'], 'scandal').Scandal(argDB = self.argDB)
+      if self.scandalDir is None:
+        self.scandalDir = self.argDB['SCANDAL_DIR']
+      self.scandal = self.getModule(self.scandalDir, 'scandal').Scandal(argDB = self.argDB)
       self.scandal.setup()
     return self.scandal
 

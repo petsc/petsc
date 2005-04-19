@@ -38,25 +38,27 @@ class Configure(config.base.Configure):
   def configureASELibraries(self):
     self.dir = ''
     if 'ase-dir' in self.argDB:
-      self.dir  = self.argDB['ase-dir']
+      self.dir = self.argDB['ase-dir']
     else:
-      dir = os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'ase', 'Runtime')
-      if os.path.isdir(dir):
-        self.dir = dir
+      aseDir = os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'ase', 'Runtime')
+      if os.path.isdir(aseDir):
+        self.dir = aseDir
     if not self.checkASEDir(self.dir):
       raise RuntimeError('Invalid ASE directory: '+str(self.dir))
+    self.logPrint('ASE directory is '+str(self.dir))
     self.lib = [os.path.join(self.dir, 'lib', 'lib-python-ase.'+self.setCompilers.sharedLibraryExt)]
     if not os.path.samefile(os.getcwd(), self.dir):
       for lib in self.lib:
         if not os.path.isfile(lib):
           raise RuntimeError('Invalid ASE library: '+str(lib))
+    self.logPrint('ASE libraries are '+str(self.lib))
     return
 
   def configureScandal(self):
     '''Set SCANDAL_DIR to the scandal directory for now'''
-    dir = os.path.join(os.path.dirname(self.dir), 'Compiler', 'driver', 'python')
-    if os.path.isdir(dir):
-      self.argDB['SCANDAL_DIR'] = dir
+    self.scandalDir = os.path.join(os.path.dirname(self.dir), 'Compiler', 'driver', 'python')
+    if os.path.isdir(self.scandalDir):
+      self.argDB['SCANDAL_DIR'] = self.scandalDir
     return
 
   def setOutput(self):
@@ -74,5 +76,5 @@ class Configure(config.base.Configure):
   def configure(self):
     self.executeTest(self.configureASELibraries)
     self.executeTest(self.configureScandal)
-    self.setOutput()
+    self.executeTest(self.setOutput)
     return
