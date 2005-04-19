@@ -410,6 +410,7 @@ class Configure(config.base.Configure):
     except StopIteration:
       pass
 
+    self.fincs = fincs
     self.flibs = []
     for lib in flibs:
       if 'FC_LINKER_SLFLAG' in self.framework.argDB and lib.startswith('-L'):
