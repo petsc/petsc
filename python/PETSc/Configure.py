@@ -133,7 +133,10 @@ class Configure(config.base.Configure):
     self.setCompilers.popLanguage()
     # One of 'a', 'so', 'lib', 'dll', 'dylib' (perhaps others also?) depending on the library generator and architecture
     # Note: . is not included in this macro, consistent with AR_LIB_SUFFIX
-    self.addMakeMacro('SL_LINKER_SUFFIX',self.setCompilers.sharedLibraryExt)
+    if self.setCompilers.sharedLibraryExt == self.setCompilers.AR_LIB_SUFFIX:
+      self.addMakeMacro('SL_LINKER_SUFFIX', '')
+    else:
+      self.addMakeMacro('SL_LINKER_SUFFIX', self.setCompilers.sharedLibraryExt)
     self.addMakeMacro('SL_LINKER_LIBS',self.framework.argDB['LIBS']+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs]))
 #-----------------------------------------------------------------------------------------------------
 
@@ -177,12 +180,7 @@ class Configure(config.base.Configure):
 
     import time
     self.addMakeMacro('CONFIGURE_RUN_TIME',time.ctime(time.time()))
-    args = filter(lambda a: not a.endswith('-configModules=PETSc.Configure') , self.framework.clArgs)
-    for a, arg in enumerate(args):
-      parts = arg.split('=')
-      if len(parts) == 2 and ' ' in parts[1]:
-        args[a] = parts[0]+'="'+parts[1]+'"'
-    self.addMakeMacro('CONFIGURE_OPTIONS',' '.join(args))
+    self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules']))
     return
 
   def configureInline(self):
