@@ -49,7 +49,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject h,PetscCook
   PetscFunctionReturn(0);
 }
 
-extern PetscTruth PetscMemoryCollectMaximumUsage;
+extern PetscTruth     PetscMemoryCollectMaximumUsage;
 extern PetscLogDouble PetscMemoryMaximumUsage;
 
 #undef __FUNCT__  
