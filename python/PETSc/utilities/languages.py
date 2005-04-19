@@ -93,6 +93,10 @@ class Configure(config.base.Configure):
     '''Download the Python bindings'''
     import os
     if os.path.isdir(os.path.join(self.arch.dir,'BitKeeper')):
+      if not os.path.isdir(os.path.join(self.arch.dir, 'lib')):
+        os.mkdir(os.path.join(self.arch.dir, 'lib'))
+      if not os.path.isdir(os.path.join(self.arch.dir, 'lib',self.arch.arch)):
+        os.mkdir(os.path.join(self.arch.dir, 'lib',self.arch.arch))
       try:
         self.retrievePackage('Python Bindings', 'PETScPython', 'ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz', os.path.join(self.arch.dir, 'lib',self.arch.arch))
       except:

@@ -25,7 +25,7 @@ class Configure(PETSc.package.Package):
     except:
       oldargs = ''
     if not oldargs == args:
-      self.framework.log.write('Need to configure and compile Sowing: old args = '+oldargs+' new args '+args+'\n')
+      self.framework.log.write('Need to configure and compile Sowing: old args = '+oldargs+'\n new args ='+args+'\n')
       try:
         output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:

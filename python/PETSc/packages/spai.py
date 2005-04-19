@@ -36,7 +36,7 @@ class Configure(PETSc.package.Package):
     except:
       oldargs = ''
     if not oldargs == args:
-      self.framework.log.write('Have to rebuild Spai oldargs = '+oldargs+' new args '+args+'\n')
+      self.framework.log.write('Have to rebuild Spai oldargs = '+oldargs+'\n new args ='+args+'\n')
       self.logPrintBox('Configuring and compiling Spai; this may take several minutes')
       fd = file(os.path.join(installDir,'Makefile.in'),'w')
       fd.write(args)
