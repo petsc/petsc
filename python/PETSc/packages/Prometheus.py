@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.languages         = self.framework.require('PETSc.utilties.languages',self)
+    self.languages         = self.framework.require('PETSc.utilities.languages',self)
     self.mpi               = self.framework.require('PETSc.packages.MPI',self)
     self.blasLapack        = self.framework.require('PETSc.packages.BlasLapack',self)
     self.parmetis          = self.framework.require('PETSc.packages.ParMetis',self)
