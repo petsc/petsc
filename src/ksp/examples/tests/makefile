@@ -253,7 +253,7 @@ runex11:
 	   else echo "Possible problem with ex11_1, diffs above"; fi; \
 	   ${RM} -f ex11_1.tmp
 runex12f:
-	-@${MPIRUN} -np 1 ex12f  -f ../../../mat/examples/matbinary.ex -options_left no > ex12f_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex12f  -f ../../../mat/examples/matbinary.ex -options_left no > ex12f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex12f_1.out ex12f_1.tmp) then true; \
 	   else echo "Possible problem with ex12f_1, diffs above"; fi; \
 	   ${RM} -f ex12f_1.tmp
@@ -263,7 +263,7 @@ runex13:
 	   else echo "Possible problem with ex13_1, diffs above"; fi; \
 	   ${RM} -f ex13_1.tmp
 runex16f:
-	-@${MPIRUN} -np 1 ex16f  -f ../../../mat/examples/matbinary.ex -options_left no> ex16f_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex16f  -f ../../../mat/examples/matbinary.ex -options_left no> ex16f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex16f_1.out ex16f_1.tmp) then true; \
 	   else echo "Possible problem with ex16f_1, diffs above"; fi; \
 	   ${RM} -f ex16f_1.tmp
