@@ -94,7 +94,8 @@ endif
 
 make BOPT=g PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allfortranstubs >>& $nPETSC_DIR/test.log
 
-if ("${BOPT}" == "g_complex" ||  "${BOPT}" == "O_complex") then
+egrep '^#define PETSC_HAVE_COMPLEX' $nPETSC_DIR/bmake/$PETSC_ARCH/petscconf.h  > /dev/null
+if ( "$?" = "0" ) then
   set EJOBS=""
   set RJOBS=""
 endif
