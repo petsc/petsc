@@ -47,7 +47,7 @@ class Configure(PETSc.package.Package):
     except:
       oldArgsStr = ''
     if not oldArgsStr == argsStr:
-      self.framework.log.write('Have to rebuild ParMetis oldargs = '+oldArgsStr+' new args '+argsStr+'\n')
+      self.framework.log.write('Have to rebuild ParMetis oldargs = '+oldArgsStr+'\n new args = '+argsStr+'\n')
       self.logPrintBox('Configuring and compiling ParMetis; this may take several minutes')
       try:
         import logging
