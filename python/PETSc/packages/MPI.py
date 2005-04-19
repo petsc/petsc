@@ -239,7 +239,7 @@ class Configure(PETSc.package.Package):
     except:
       oldargs = ''
     if not oldargs == args:
-      self.framework.log.write('Have to rebuild LAM oldargs = '+oldargs+' new args '+args+'\n')
+      self.framework.log.write('Have to rebuild LAM oldargs = '+oldargs+'\n new args = '+args+'\n')
       try:
         self.logPrintBox('Configuring LAM/MPI; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+lamDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
@@ -322,7 +322,7 @@ class Configure(PETSc.package.Package):
       self.framework.logPrint('Unable to find old configure arguments in '+configArgsFilename)
       oldargs = ''
     if not oldargs == args:
-      self.framework.logPrint('Have to rebuild MPICH oldargs = '+oldargs+' new args '+args)
+      self.framework.logPrint('Have to rebuild MPICH oldargs = '+oldargs+'\n new args = '+args)
       try:
         self.logPrintBox('Running configure on MPICH; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';'+envs+' ./configure '+args, timeout=900, log = self.framework.log)[0]

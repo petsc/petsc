@@ -59,7 +59,7 @@ class Configure(PETSc.package.Package):
     except:
       oldargs = ''
     if not oldargs == args:
-      self.framework.log.write('Have to rebuild UMFPACK oldargs = '+oldargs+' new args '+args+'\n')
+      self.framework.log.write('Have to rebuild UMFPACK oldargs = '+oldargs+'\n new args ='+args+'\n')
       try:
         self.logPrintBox('Compiling umfpack; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+umfpackDir+'; UMFPACK_INSTALL_DIR='+installDir+';export UMFPACK_INSTALL_DIR; cp -r UMFPACK '+self.arch.arch+'/.; cp -r AMD '+self.arch.arch+'/.; cd '+self.arch.arch+'/UMFPACK; make lib; make clean', timeout=2500, log = self.framework.log)[0]

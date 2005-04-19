@@ -97,7 +97,7 @@ class Configure(PETSc.package.Package):
     except:
       oldargs = ''
     if not oldargs == args:
-      self.framework.log.write('Have to rebuild HYPRE oldargs = '+oldargs+' new args '+args+'\n')
+      self.framework.log.write('Have to rebuild HYPRE oldargs = '+oldargs+'\n new args ='+args+'\n')
       try:
         self.logPrintBox('Configuring hypre; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';./configure '+args, timeout=900, log = self.framework.log)[0]

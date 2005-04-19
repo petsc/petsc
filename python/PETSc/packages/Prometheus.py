@@ -46,7 +46,7 @@ class Configure(PETSc.package.Package):
     except:
       oldargs = ''
     if not oldargs == args:
-      self.framework.log.write('Have to rebuild Prometheus oldargs = '+oldargs+' new args '+args+'\n')
+      self.framework.log.write('Have to rebuild Prometheus oldargs = '+oldargs+'\n new args = '+args+'\n')
       self.logPrintBox('Configuring Prometheus; this may take a minute')
       fd = file(os.path.join(installDir,'makefile.petsc'),'w')
       fd.write(args)

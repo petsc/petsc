@@ -155,7 +155,9 @@ class Package(config.base.Configure):
 
     for d in self.getSearchDirectories():
       for l in self.generateLibList(os.path.join(d,self.libdir)):
-        yield('User specified root directory '+self.PACKAGE, l, os.path.join(d,self.includedir))
+        if d: includedir = os.path.join(d,self.includedir)
+        else: includedir = ''
+        yield('User specified root directory '+self.PACKAGE, l, includedir)
 
     dir = self.checkDownload(2)
     if dir:
