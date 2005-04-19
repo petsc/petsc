@@ -287,7 +287,7 @@ class ArgDir(Arg):
     if not isinstance(value, str):
       raise TypeError('Invalid directory: '+str(value)+' for key '+str(self.key))
     value = os.path.expanduser(value)
-    if self.mustExist and not os.path.isdir(value):
+    if self.mustExist and value and not os.path.isdir(value):
       raise TypeError('Nonexistent directory: '+str(value)+' for key '+str(self.key))
     self.value = value
     return
