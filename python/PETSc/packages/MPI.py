@@ -110,7 +110,7 @@ class Configure(PETSc.package.Package):
     if self.isPOE:
       self.mpirun = os.path.join(self.arch.dir, 'bin', 'mpirun.poe')
       return
-    mpiruns = ['mpirun', 'mpiexec']
+    mpiruns = ['mpiexec', 'mpirun']
     path    = []
     if 'with-mpi-dir' in self.framework.argDB:
       path.append(os.path.join(os.path.abspath(self.framework.argDB['with-mpi-dir']), 'bin'))
@@ -393,7 +393,6 @@ class Configure(PETSc.package.Package):
     self.executeTest(self.configureMPIRUN)
     self.executeTest(self.configureConversion)
     self.executeTest(self.configureTypes)
-    self.executeTest(self.configureMPIRUN)
     self.executeTest(self.configureMissingPrototypes)      
 
 if __name__ == '__main__':
