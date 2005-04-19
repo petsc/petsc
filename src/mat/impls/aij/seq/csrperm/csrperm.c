@@ -106,6 +106,10 @@ PetscErrorCode MatDuplicate_SeqCSRPERM(Mat A, MatDuplicateOption op, Mat *M) {
   PetscFunctionBegin;
   ierr = (*csrperm->MatDuplicate_SeqAIJ)(A,op,M);CHKERRQ(ierr);
   ierr = PetscMemcpy((*M)->spptr,csrperm,sizeof(Mat_SeqCSRPERM));CHKERRQ(ierr);
+    /* I basically copied the above approach from superlu.c, but I suspect 
+     * that this is broken for the case of my matrix class.  Need to 
+     * fix this. */
+    
   PetscFunctionReturn(0);
 }
 
@@ -443,6 +447,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,MatType typ
   if(A->assembled == PETSC_TRUE) {
     ierr = SeqCSRPERM_create_perm(B);
   }
+
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQCSRPERM);CHKERRQ(ierr);
+  *newmat = B;
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
 

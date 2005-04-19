@@ -68,6 +68,7 @@ E*/
 #define MATDSCPACK         "dscpack"
 #define MATMATLAB          "matlab"
 #define MATSEQCSRPERM      "seqcsrperm"
+#define MATMPICSRPERM      "mpicsrperm"
 #define MatType const char*
 
 /* Logging support */
