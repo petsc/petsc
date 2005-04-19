@@ -152,14 +152,20 @@ class Configure(script.Script):
       self.framework.log.write('not found\n')
     return found
 
-  def getExecutable(self, names, path = [], getFullPath = 0, useDefaultPath = 0, resultName = '',setMakeMacro=1):
+  def getExecutable(self, names, path = [], getFullPath = 0, useDefaultPath = 0, resultName = '', setMakeMacro = 1):
     '''Search for an executable in the list names
        - Each name in the list is tried for each entry in the path
-       - If found, the path is stored in the variable "name", or "resultName" if given'''
+       - If found, the path is stored in the variable "name", or "resultName" if given
+       - By default, a make macro "resultName" will hold the path'''
     found = 0
     if isinstance(names, str):
       names = [names]
-    for name in names:
+    if isinstance(path, str):
+      path = path.split(':')
+    if not len(path):
+      useDefaultPath = 1
+
+    def getNames(name, resultName):
       index = name.find(' ')
       if index >= 0:
         options = name[index:]
@@ -167,35 +173,49 @@ class Configure(script.Script):
       else:
         options = ''
       if not resultName:
-        resultName = name
-      if isinstance(path, str):
-        path = path.split(':')
-      if not len(path):
-        useDefaultPath = 1
-      for dir in path:
-        if self.checkExecutable(dir, name):
-          found       = 1
+        varName = name
+      else:
+        varName = resultName
+      return name, options, varName
+
+    varName = names[0]
+    varPath = ''
+    for d in path:
+      for name in names:
+        name, options, varName = getNames(name, resultName)
+        if self.checkExecutable(d, name):
+          found = 1
           getFullPath = 1
+          varPath = d
           break
-      if useDefaultPath and not found:
-        for dir in os.environ['PATH'].split(':'):
-          if self.checkExecutable(dir, name):
-            found     = 1
+      if found: break
+    if useDefaultPath and not found:
+      for d in os.environ['PATH'].split(':'):
+        for name in names:
+          name, options, varName = getNames(name, resultName)
+          if self.checkExecutable(d, name):
+            found = 1
+            varPath = d
             break
-      if not found:
-        for dir in self.framework.argDB['search-dirs']:
-          if self.checkExecutable(dir, name):
-            found       = 1
+        if found: break
+    if not found:
+      for d in self.framework.argDB['search-dirs']:
+        for name in names:
+          name, options, varName = getNames(name, resultName)
+          if self.checkExecutable(d, name):
+            found = 1
             getFullPath = 1
+            varPath = d
             break
-      if found:
-        if getFullPath:
-          setattr(self, resultName, os.path.abspath(os.path.join(dir, name))+options)
-        else:
-          setattr(self, resultName, name+options)
-        if setMakeMacro:
-          self.addMakeMacro(resultName.upper(), getattr(self, resultName))
-        break
+        if found: break
+
+    if found:
+      if getFullPath:
+        setattr(self, varName, os.path.abspath(os.path.join(varPath, name))+options)
+      else:
+        setattr(self, varName, name+options)
+      if setMakeMacro:
+        self.addMakeMacro(varName.upper(), getattr(self, varName))
     return found
 
   def getExecutables(self, names, path = '', getFullPath = 0, useDefaultPath = 0, resultName = ''):
