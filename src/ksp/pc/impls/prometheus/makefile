@@ -2,7 +2,6 @@
 #requirespackage  'PETSC_HAVE_PROMETHEUS'
 #requiresprecision double
 #requiresscalar    real
-#requireslanguage  CXXONLY
 
 
 ALL: lib

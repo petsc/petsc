@@ -143,7 +143,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   PetscFunctionReturn(0);
 }
 
-PetscTruth PetscMemoryCollectMaximumUsage = PETSC_FALSE;
+PetscTruth     PetscMemoryCollectMaximumUsage = PETSC_FALSE;
 PetscLogDouble PetscMemoryMaximumUsage = 0;
 
 #undef __FUNCT__  

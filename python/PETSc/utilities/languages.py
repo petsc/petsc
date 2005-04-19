@@ -48,12 +48,9 @@ class Configure(config.base.Configure):
   def configureCLanguage(self):
     '''Choose between C and C++ bindings'''
     self.clanguage = self.framework.argDB['with-clanguage'].upper().replace('+','x').replace('X','x')
-    # horrible, horrible hack; downloading Prometheus needs C++
-    if self.framework.argDB['download-prometheus']:
-      self.clanguage = 'Cxx'
     if not self.clanguage in ['C', 'Cxx']:
       raise RuntimeError('Invalid C language specified: '+str(self.clanguage))
-    if self.clanguage == 'C':
+    if self.clanguage == 'C' and not self.framework.argDB['download-prometheus']:
       self.framework.argDB['with-cxx'] = '0'
     self.framework.logPrint('C language is '+str(self.clanguage))
     return
