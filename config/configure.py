@@ -15,31 +15,14 @@ if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2:
   sys.exit(4)
   
 def check_petsc_arch(opts):
-  # Check for PETSC_ARCH in the following order:
-  # 1. command-line (first occurance)
-  # 2. specified in configure_options(in script)
-  # 3. script name (if not configure.py)
-
-  useName = ''
+  # If PETSC_ARCH not specified - use script name (if not configure.py)
+  found = 0
   for name in opts:
-    if name.startswith('-PETSC_ARCH'):
-      useName = name
+    if name.find('PETSC_ARCH=') >= 0:
+      found = 1
       break
-  # look for duplicates - and remove them
-  dupnames = []
-  if useName:
-    for name in opts:
-      if name.startswith('-PETSC_ARCH') and name != useName:
-        opts.remove(name)
-        dupnames.append(name) 
-  # print warning for duplicates
-  if dupnames:
-    print '*********************************************************************************'
-    print 'Warning: The following duplicate PETSC_ARCH options are removed:', dupnames
-    print 'Warning: Using the option:', useName
-    print '*********************************************************************************'
   # If not yet specified - use the filename of script
-  if not useName:
+  if not found:
       filename = os.path.basename(sys.argv[0])
       if not filename.startswith('configure'):
         useName = '-PETSC_ARCH='+os.path.splitext(os.path.basename(sys.argv[0]))[0]
@@ -76,24 +59,25 @@ def petsc_configure(configure_options):
   print '             Configuring PETSc to compile on your system                         '
   print '================================================================================='  
 
-  sys.argv += configure_options
+  # Command line arguments take precedence (but don't destroy argv[0])
+  sys.argv = sys.argv[:1] + configure_options + sys.argv[1:]
   # check PETSC_ARCH
   check_petsc_arch(sys.argv)
 
   # support a few standard configure option types 
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
-    if name.startswith('--download'):
+    if name.find('-download-') >= 0:
       sys.argv[l] = name.lower()
-    if name.startswith('--enable'):
-      sys.argv[l] = name.replace('--enable','--with')
+    if name.find('-enable-') >= 0:
+      sys.argv[l] = name.replace('-enable-','-with-')
       if name.find('=') == -1: sys.argv[l] += '=1'
-    if name.startswith('--disable'):
-      sys.argv[l] = name.replace('--disable','--with')
+    if name.find('-disable-') >= 0:
+      sys.argv[l] = name.replace('-disable-','-with-')
       if name.find('=') == -1: sys.argv[l] += '=0'
       elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
-    if name.startswith('--without'):
-      sys.argv[l] = name.replace('--without','--with')
+    if name.find('-without-') >= 0:
+      sys.argv[l] = name.replace('-without-','-with-')
       if name.find('=') == -1: sys.argv[l] += '=0'
       elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
 
