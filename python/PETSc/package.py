@@ -270,11 +270,11 @@ class Package(config.base.Configure):
         raise RuntimeError('Did not find '+l.PACKAGE+' needed by '+self.name)
       if hasattr(l,'dlib'):    libs  += l.dlib
       if hasattr(l,'include'): incls += l.include
-    incls += self.compilers.fincs
       
     for location, lib, incl in self.generateGuesses():
       if not isinstance(lib, list): lib = [lib]
       if not isinstance(incl, list): incl = [incl]
+      incl += self.compilers.fincs
       self.framework.log.write('Checking for library in '+location+': '+str(lib)+'\n')
       if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs}):      
         self.lib = lib	
