@@ -8,6 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
+    self.languages         = self.framework.require('PETSc.utilties.languages',self)
     self.mpi               = self.framework.require('PETSc.packages.MPI',self)
     self.blasLapack        = self.framework.require('PETSc.packages.BlasLapack',self)
     self.parmetis          = self.framework.require('PETSc.packages.ParMetis',self)
@@ -33,7 +34,7 @@ class Configure(PETSc.package.Package):
     args += 'RANLIB = '+self.setCompilers.RANLIB+'\n'
     self.framework.popLanguage()
     self.framework.pushLanguage('C++')+'\n'
-    if self.framework.argDB['with-clanguage'] == 'c':
+    if self.languages.clanguage == 'C':
       args += 'CC = '+self.framework.getCompiler()+' -DPETSC_USE_EXTERN_CXX\n'    
     else:
       args += 'CC = '+self.framework.getCompiler()+'\n'    
