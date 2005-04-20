@@ -11,6 +11,7 @@ PETSC_EXTERN_CXX_BEGIN
     docs/tex/manual/manual.tex.
     docs/website/index.html.
 */
+#define PETSC_RELEASE            0
 #define PETSC_VERSION_MAJOR      2
 #define PETSC_VERSION_MINOR      2
 #define PETSC_VERSION_SUBMINOR   1
@@ -22,9 +23,15 @@ PETSC_EXTERN_CXX_BEGIN
     petsc-maint@mcs.anl.gov\n\
  http://www.mcs.anl.gov/petsc/\n"
 
-#define PetscGetVersion(version) (sprintf(*(version),"Petsc Version %d.%d.%d, Patch %d, Released ", \
+#if (PETSC_RELEASE == 1)
+#define PetscGetVersion(version) (sprintf(*(version),"Petsc Release Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
                                          PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_DATE),0)
+#else
+#define PetscGetVersion(version) (sprintf(*(version),"Petsc Development Version %d.%d.%d, Patch %d, ", \
+                                         PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
+                                         PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_DATE),0)
+#endif
 
 /*M
     PetscGetVersion - Gets the Petsc Version information in a string.
