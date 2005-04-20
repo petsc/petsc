@@ -188,6 +188,7 @@ class Configure(config.base.Configure):
                          'double': ('void d1_chk__(void) {return;}\n', '       call d1_chk()\n')}
 
     for mangler, (cfunc, ffunc) in self.manglerFuncs.items():
+      if mangler == 'double': continue
       self.framework.log.write('Testing Fortran mangling type '+mangler+' with code '+cfunc)
       if self.testMangling(cfunc, ffunc):
         self.fortranMangling = mangler
