@@ -12,7 +12,7 @@ class Configure(PETSc.package.Package):
     self.blasLapack        = self.framework.require('PETSc.packages.BlasLapack',self)
     self.parmetis          = self.framework.require('PETSc.packages.ParMetis',self)
     self.compilers         = self.framework.require('config.compilers',self)
-    self.download          = ['http://www.cs.berkeley.edu/~madams/Prometheus-1.8.1.tar.gz']
+    self.download          = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/Prometheus-1.8.1-Petsc-2.3.tar.gz']
     self.deps              = [self.parmetis,self.mpi,self.blasLapack]
     self.functions         = []
     self.includes          = []
