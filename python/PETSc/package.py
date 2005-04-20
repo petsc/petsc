@@ -132,7 +132,6 @@ class Package(config.base.Configure):
     dir = self.checkDownload(1)
     if dir:
       for l in self.generateLibList(os.path.join(dir, self.libdir)):
-        self.framework.log.write('Testing library '+str(l)+'\n')
         yield('Download '+self.PACKAGE, l, os.path.join(dir, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')
 
