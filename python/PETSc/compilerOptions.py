@@ -88,7 +88,7 @@ class compilerOptions(config.base.Configure):
   def getCxxFlags(self, compiler, bopt):
     import config.setCompilers
 
-    if compiler.endswith('mpiCC') or compiler.endswith('mpicxx'):
+    if compiler.find('mpiCC') >=0  or compiler.find('mpicxx') >=0 :
       try:
         output   = self.executeShellCommand(compiler+' -show')[0]
         compiler = output.split(' ')[0]
@@ -128,8 +128,10 @@ class compilerOptions(config.base.Configure):
     # Intel
     elif re.match(r'i[3-9]86', self.framework.host_cpu):
       # Linux Intel
-      if compiler == 'icc':
-        if bopt == 'g':
+      if config.setCompilers.Configure.isIntel(compiler):
+        if bopt == '':
+          flags.append('-wd1572')
+        elif bopt == 'g':
           flags.append('-g')
         elif bopt == 'O':
           flags.append('-O3')
