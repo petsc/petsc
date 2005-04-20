@@ -114,7 +114,8 @@ PetscErrorCode MatDuplicate_SeqCSRPERM(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 
-
+#undef __FUNCT__
+#define __FUNCT__ "SeqCSRPERM_create_perm"
 PetscErrorCode SeqCSRPERM_create_perm(Mat A)
 {
   PetscInt m;  /* Number of rows in the matrix. */
