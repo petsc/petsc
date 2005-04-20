@@ -3,7 +3,8 @@
 configure_options = [
   '--download-mpich=1',
   '--download-mpich-pm=gforker',
-  '--download-f-blas-lapack=1'
+  '--download-f-blas-lapack=1',
+  '--with-debugging=0'
   ]
 
 if __name__ == '__main__':
@@ -12,5 +13,4 @@ if __name__ == '__main__':
 
 # Extra options used for testing locally
 test_options = [
-  '--with-debugging=0',
   '--with-lang=c++']
