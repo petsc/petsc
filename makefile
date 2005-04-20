@@ -41,8 +41,8 @@ info:
 	-@echo "=========================================="
 	-@echo On `date` on `hostname`
 	-@echo Machine characteristics: `uname -a`
-	-@echo "config/configure.py run at " ${CONFIGURE_RUN_TIME}
-	-@echo "config/configure.py options " ${CONFIGURE_OPTIONS}
+	-@echo "config/configure.py run at: " ${CONFIGURE_RUN_TIME}
+	-@echo "config/configure.py options: " ${CONFIGURE_OPTIONS}
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc directory: ${PETSC_DIR}"
 	-@echo "Using PETSc arch: ${PETSC_ARCH}"
@@ -53,12 +53,11 @@ info:
 	-@grep "\#define " ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
-	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "------------------------------------------"
-	-@echo "Using C/C++ compiler: ${CC} ${COPTFLAGS} ${CPPFLAGS}"
+	-@echo "Using C/C++ compiler: ${CC} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} "
 	-@echo "C/C++ Compiler version: " `${CCV}`
 	-@if [ "${FC}" != "" ]; then \
-	   echo "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FPPFLAGS}";\
+	   echo "Using Fortran compiler: ${FC} ${FC_FLAGS} ${FFLAGS} ${FPP_FLAGS}";\
 	   echo "Fortran Compiler version: " `${FCV}`;\
          fi
 	-@echo "-----------------------------------------"
@@ -78,24 +77,18 @@ info_h:
 	-@$(RM) -f MINFO ${MINFO}
 	-@echo  "static const char *petscmachineinfo = \"  " >> MINFO
 	-@echo  "Libraries compiled on `date` on `hostname` " >> MINFO
-	-@echo  "config/configure.py run at " ${CONFIGURE_RUN_TIME} >> MINFO
-	-@echo  "config/configure.py options " ${CONFIGURE_OPTIONS} >> MINFO
 	-@echo  Machine characteristics: `uname -a` "" >> MINFO
 	-@echo  "Using PETSc directory: ${PETSC_DIR}" >> MINFO
 	-@echo  "Using PETSc arch: ${PETSC_ARCH}" >> MINFO
 	-@echo  "-----------------------------------------\"; " >> MINFO
 	-@echo  "static const char *petsccompilerinfo = \"  " >> MINFO
-	-@echo  "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS} " >> MINFO
+	-@echo  "Using C compiler: ${CC} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} " >> MINFO
 	-@echo  "C Compiler version:"  >> MINFO ; ${C_CCV} >> MINFO 2>&1 ; true
 	-@echo  "C++ Compiler version:"  >> MINFO; ${CXX_CCV} >> MINFO 2>&1 ; true
-	-@echo  "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}" >> MINFO
+	-@echo  "Using Fortran compiler: ${FC} ${FC_FLAGS} ${FFLAGS} ${FPP_FLAGS}" >> MINFO
 	-@echo  "Fortran Compiler version:" >> MINFO ; ${FCV} >> MINFO 2>&1 ; true
 	-@echo  "-----------------------------------------\"; " >> MINFO
 	-@echo  "static const char *petsccompilerflagsinfo = \"  " >> MINFO
-	-@echo  "Using PETSc flags: ${PETSCFLAGS} ${PCONF}" >> MINFO
-	-@echo  "-----------------------------------------" >> MINFO
-	-@echo  "Using configuration flags:" >> MINFO
-	-@echo  "-----------------------------------------" >> MINFO
 	-@echo  "Using include paths: ${PETSC_INCLUDE}" >> MINFO
 	-@echo  "------------------------------------------\"; " >> MINFO
 	-@echo  "static const char *petsclinkerinfo = \"  " >> MINFO
