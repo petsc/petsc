@@ -179,15 +179,14 @@ class Configure(config.base.Configure):
     return found
 
   def checkFortranNameMangling(self):
-    '''Checks Fortran name mangling, and defines HAVE_FORTRAN_UNDERSCORE, HAVE_FORTRAN_NOUNDERSCORE, HAVE_FORTRAN_CAPS, or HAVE_FORTRAN_STDCALL
-    Also checks if symbols containing and underscore append and extra underscore, and defines HAVE_FORTRAN_UNDERSCORE_UNDERSCORE if necessary'''
-    self.manglerFuncs = {'underscore': ('void d1chk_(void){return;}\n', '       call d1chk()\n'),
-                         'unchanged': ('void d1chk(void){return;}\n', '       call d1chk()\n'),
-                         'stdcall': ('void __stdcall D1CHK(void){return;}\n', '       call d1chk()\n'),
-                         'capitalize': ('void D1CHK(void){return;}\n', '       call d1chk()\n'),
-                         'double': ('void d1_chk__(void) {return;}\n', '       call d1_chk()\n')}
+    '''Checks Fortran name mangling, and defines HAVE_FORTRAN_UNDERSCORE, HAVE_FORTRAN_NOUNDERSCORE, HAVE_FORTRAN_CAPS, or HAVE_FORTRAN_STDCALL'''
+    self.manglerFuncs = {'underscore': ('void d1chk_(void);', 'void d1chk_(void){return;}\n', '       call d1chk()\n'),
+                         'unchanged': ('void d1chk(void);', 'void d1chk(void){return;}\n', '       call d1chk()\n'),
+                         'stdcall': ('void __stdcall D1CHK(void);', 'void __stdcall D1CHK(void){return;}\n', '       call d1chk()\n'),
+                         'capitalize': ('void D1CHK(void);', 'void D1CHK(void){return;}\n', '       call d1chk()\n'),
+                         'double': ('void d1_chk__(void)', 'void d1_chk__(void){return;}\n', '       call d1_chk()\n')}
 
-    for mangler, (cfunc, ffunc) in self.manglerFuncs.items():
+    for mangler, (cinc, cfunc, ffunc) in self.manglerFuncs.items():
       if mangler == 'double': continue
       self.framework.log.write('Testing Fortran mangling type '+mangler+' with code '+cfunc)
       if self.testMangling(cfunc, ffunc):
@@ -196,8 +195,11 @@ class Configure(config.base.Configure):
     else:
       raise RuntimeError('Unknown Fortran name mangling')
     self.logPrint('Fortran name mangling is '+self.fortranMangling, 4, 'compilers')
+    return
 
-    if self.testMangling(self.manglerFuncs['double'][0], self.manglerFuncs['double'][1]):
+  def checkFortranNameManglingDouble(self):
+    '''Checks if symbols containing and underscore append and extra underscore, and defines HAVE_FORTRAN_UNDERSCORE_UNDERSCORE if necessary'''
+    if self.testMangling(self.manglerFuncs['double'][1], self.manglerFuncs['double'][2]):
       self.logPrint('Fortran appends and extra underscore to names containing underscores', 4, 'compilers')
       self.fortranManglingDoubleUnderscore = 1
     else:
@@ -465,7 +467,10 @@ class Configure(config.base.Configure):
 
   def checkFortranLinkingCxx(self):
     '''Check that Fortran can be linked against C++'''
-    if not self.testMangling(self.manglerFuncs[self.fortranMangling][0], self.manglerFuncs[self.fortranMangling][1], 'Cxx'):
+    cinc, cfunc, ffunc = self.manglerFuncs[self.fortranMangling]
+    cinc = 'extern "C" '+cinc+'\n'
+    cxxCode = '\n'+'class foo{int i;};\n'
+    if not self.testMangling(cinc+cfunc+cxxCode, ffunc, 'Cxx'):
       raise RuntimeError('Fortran could not successfully link C++ objects')
     return
 
@@ -634,6 +639,7 @@ class Configure(config.base.Configure):
     if 'FC' in self.framework.argDB:
       self.executeTest(self.checkFortranTypeSizes)
       self.executeTest(self.checkFortranNameMangling)
+      self.executeTest(self.checkFortranNameManglingDouble)
       self.executeTest(self.checkFortranPreprocessor)
       self.executeTest(self.checkFortranLibraries)
       if 'CXX' in self.framework.argDB:
