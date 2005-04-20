@@ -616,9 +616,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     for arg in omitArgs:
       args = filter(lambda a: nargs.Arg.parseArgument(a)[0] == arg, arg)
     for a, arg in enumerate(args):
-      parts = arg.split('=')
-      if len(parts) == 2 and ' ' in parts[1]:
-        args[a] = parts[0]+'=\\"'+parts[1]+'\\"'
+      parts = arg.split('=',1)
+      if len(parts) == 2 and (' ' in parts[1] or '[' in parts[1]):
+        args[a] = parts[0]+'=\"'+parts[1]+'\"'
     return ' '.join(args)
 
   def outputBanner(self):
