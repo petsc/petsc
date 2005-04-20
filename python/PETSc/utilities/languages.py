@@ -90,15 +90,16 @@ class Configure(config.base.Configure):
     return
 
   def configurePythonLanguage(self):
-    '''Download the Python bindings'''
+    '''Download the Python bindings into src/python'''
     import os
-    if os.path.isdir(os.path.join(self.arch.dir,'BitKeeper')):
-      if not os.path.isdir(os.path.join(self.arch.dir, 'lib')):
-        os.mkdir(os.path.join(self.arch.dir, 'lib'))
-      if not os.path.isdir(os.path.join(self.arch.dir, 'lib',self.arch.arch)):
-        os.mkdir(os.path.join(self.arch.dir, 'lib',self.arch.arch))
+    if os.path.isdir(os.path.join(self.arch.dir, 'BitKeeper')):
+      if not os.path.isdir(os.path.join(self.arch.dir, 'src', 'python')):
+        os.mkdir(os.path.join(self.arch.dir, 'src', 'python'))
+      if os.path.isdir(os.path.join(self.arch.dir, 'src', 'python', 'PETSc')):
+        self.logPrint('Python binding source already present')
+        return
       try:
-        self.retrievePackage('Python Bindings', 'PETScPython', 'ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz', os.path.join(self.arch.dir, 'lib',self.arch.arch))
+        self.retrievePackage('Python Bindings', 'PETScPython', 'ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz', os.path.join(self.arch.dir, 'src', 'python'))
       except:
         self.logPrintBox('Warning: Unable to get the PETSc Python bindings; perhaps you are off the network.\nBuilding without Python bindings')
     return

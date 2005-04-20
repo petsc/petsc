@@ -121,9 +121,17 @@ class Make(maker.BasicMake):
 
   def setupDirectories(self, builder):
     maker.BasicMake.setupDirectories(self, builder)
-    pyDir = os.path.join(os.getcwd(), 'lib', self.configureObj.petsc.arch.arch, 'PETSc')
-    self.srcDir['C'] = pyDir
-    self.libDir = pyDir
+    self.srcDir['C'] = os.path.join(os.getcwd(), 'src', 'python', 'PETSc')
+    self.srcDir['Python'] = os.path.join(os.getcwd(), 'src', 'python', 'PETSc')
+    self.libDir = os.path.join(os.getcwd(), 'lib', self.configureObj.petsc.arch.arch, 'PETSc')
+    return
+
+  def buildLibraries(self, builder):
+    '''Should eventually have the Python compiled into the lib directory, but this would mean adding Python support in config/compile'''
+    import shutil
+    maker.BasicMake.buildLibraries(self, builder)
+    for f in self.classifySource(os.listdir(self.srcDir['Python']))['Python']:
+      shutil.copy(os.path.join(self.srcDir['Python'], f), os.path.join(self.libDir, os.path.basename(f)))
     return
 
 def lib_Base(maker):

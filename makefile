@@ -125,7 +125,7 @@ build:
 #
 # Builds the Python wrappers
 python:
-	-@if [ -d "${PETSC_DIR}/lib/${PETSC_ARCH}/PETSc" ]; then \
+	-@if [ -d "${PETSC_DIR}/src/python/PETSc" ]; then \
 	  echo "COMPILING PYTHON WRAPPERS"; \
 	  echo "========================================="; \
 	  PYTHONPATH=${PETSC_DIR}/python:${PETSC_DIR}/python/BuildSystem ./make.py ${CONFIGURE_OPTIONS} --with-fc=0 --with-cxx=0 --with-petsc-arch=${PETSC_ARCH} --with-petsc-shared=0 --ignoreCompileOutput=1; \
