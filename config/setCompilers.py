@@ -82,6 +82,19 @@ class Configure(config.base.Configure):
     return 0
   isGNU = staticmethod(isGNU)
 
+  def isIntel(compiler):
+    '''Returns true if the compiler is a Intel compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
+      output = output + error
+      if output.find('Intel Corporation') >= 0 :
+        return 1
+    except RuntimeError:
+      pass
+    return 0
+  isIntel = staticmethod(isIntel)
+
+
   def checkCompiler(self, language):
     '''Check that the given compiler is functional, and if not raise an exception'''
     self.pushLanguage(language)
