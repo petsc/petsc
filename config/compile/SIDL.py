@@ -59,7 +59,7 @@ class Compiler(script.Script):
     from sets import Set
 
     for client in self.clients:
-      cmd = [os.path.join(self.argDB['SCANDAL_DIR'], 'scandal.py')]
+      cmd = [os.path.join(self.scandalDir, 'scandal.py')]
       cmd.append('--client='+client)
       cmd.append('--clientDirs={'+client+':'+self.clientDirs[client]+'}')
       cmd.append('--includes=['+','.join(self.includes)+']')
@@ -74,7 +74,7 @@ class Compiler(script.Script):
       scandalOutputFiles = eval(self.filterShellOutput(output))
       for lang in scandalOutputFiles:
         outputFiles['Client '+lang] = scandalOutputFiles[lang]
-      cmd = [os.path.join(self.argDB['SCANDAL_DIR'], 'scandal.py')]
+      cmd = [os.path.join(self.scandalDir, 'scandal.py')]
       cmd.append('--ior=client')
       cmd.append('--clientDirs={'+client+':'+self.clientDirs[client]+'}')
       cmd.append('--includes=['+','.join(self.includes)+']')
@@ -149,7 +149,7 @@ class Compiler(script.Script):
 
     self.editServer(self.serverDirs)
     for server in self.servers:
-      cmd = [os.path.join(self.argDB['SCANDAL_DIR'], 'scandal.py')]
+      cmd = [os.path.join(self.scandalDir, 'scandal.py')]
       cmd.append('--server='+server)
       cmd.append('--serverDirs={'+server+':'+self.serverDirs[server]+'}')
       cmd.append('--includes=['+','.join(self.includes)+']')
@@ -168,7 +168,7 @@ class Compiler(script.Script):
       scandalOutputFiles = eval(self.filterShellOutput(output))
       for lang in scandalOutputFiles:
         outputFiles['Server '+lang] = scandalOutputFiles[lang]
-      cmd = [os.path.join(self.argDB['SCANDAL_DIR'], 'scandal.py')]
+      cmd = [os.path.join(self.scandalDir, 'scandal.py')]
       cmd.append('--ior=server')
       cmd.append('--serverDirs={'+server+':'+self.serverDirs[server]+'}')
       cmd.append('--includes=['+','.join(self.includes)+']')

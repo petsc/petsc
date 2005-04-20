@@ -224,7 +224,7 @@ class struct:
 
 class BasicMake(Make):
   '''A basic make template that acts much like a traditional makefile'''
-  languageNames = {'C': 'C', 'Cxx': 'Cxx', 'FC': 'fortran'}
+  languageNames = {'C': 'C', 'Cxx': 'Cxx', 'FC': 'Fortran', 'Python': 'Python'}
 
   def __init__(self, implicitRoot = 0):
     '''Setup the library and driver source descriptions'''
@@ -251,6 +251,10 @@ class BasicMake(Make):
         if not 'FC' in src:
           src['FC'] = []
         src['FC'].append(f)
+      elif ext in ['.py']:
+        if not 'Python' in src:
+          src['Python'] = []
+        src['Python'].append(f)
     return src
 
   def parseDocString(self, docstring, defaultName = None):
@@ -627,8 +631,9 @@ class SIDLMake(Make):
     self.loadConfiguration(builder, 'SIDL '+baseName)
     builder.pushConfiguration('SIDL '+baseName)
     builder.pushLanguage('SIDL')
-    compiler            = builder.getCompilerObject()
+    compiler            = builder.getLanguageProcessor().getCompilerObject(builder.language[-1])
     compiler.scandalDir = self.ase.scandalDir
+    compiler.checkSetup()
     compiler.clients    = self.clientLanguages
     compiler.clientDirs = dict([(lang, 'client-'+lang.lower()) for lang in self.clientLanguages])
     compiler.servers    = self.serverLanguages
