@@ -284,7 +284,7 @@ class Configure(config.base.Configure):
     import nargs
 
     scriptName = os.path.join(self.bmake.bmakeDir, 'configure.py')
-    args = dict([nargs.Arg.parseArgument(arg) for arg in self.framework.clArgs])
+    args = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.framework.clArgs])
     if 'configModules' in args:
       del args['configModules']
     if not 'PETSC_ARCH' in args:
@@ -295,7 +295,7 @@ class Configure(config.base.Configure):
     f.write('  import sys\n')
     f.write('  sys.path.insert(0, '+repr(os.path.join(self.framework.argDB['PETSC_DIR'], 'config'))+')\n')
     f.write('  import configure\n')
-    f.write('  configure_options = '+repr([key+'='+value for key,value in args.items()])+'\n')
+    f.write('  configure_options = '+repr(args.values())+'\n')
     f.write('  configure.petsc_configure(configure_options)\n')
     f.close()
     os.chmod(scriptName, 0775)
