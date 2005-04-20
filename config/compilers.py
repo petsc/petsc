@@ -153,73 +153,54 @@ class Configure(config.base.Configure):
       return name.upper()
     raise RuntimeError('Unknown Fortran name mangling: '+self.fortranMangling)
 
+  def testMangling(self, cfunc, ffunc, clanguage = 'C'):
+    '''Test a certain name mangling'''
+    cobj = 'confc.o'
+    found = 0
+    # Compile the C test object
+    self.pushLanguage(clanguage)
+    if not self.checkCompile(cfunc, None, cleanup = 0):
+      self.logPrint('Cannot compile C function: '+cfunc, 3, 'compilers')
+      return found
+    if not os.path.isfile(self.compilerObj):
+      self.logPrint('Cannot locate object file: '+os.path.abspath(self.compilerObj), 3, 'compilers')
+      return found
+    os.rename(self.compilerObj, cobj)
+    self.popLanguage()
+    # Link the test object against a Fortran driver
+    self.pushLanguage('FC')
+    oldLIBS = self.framework.argDB['LIBS']
+    self.framework.argDB['LIBS'] += ' '+cobj
+    found = self.checkLink(None, ffunc)
+    self.framework.argDB['LIBS'] = oldLIBS
+    self.popLanguage()
+    if os.path.isfile(cobj):
+      os.remove(cobj)
+    return found
+
   def checkFortranNameMangling(self):
     '''Checks Fortran name mangling, and defines HAVE_FORTRAN_UNDERSCORE, HAVE_FORTRAN_NOUNDERSCORE, HAVE_FORTRAN_CAPS, or HAVE_FORTRAN_STDCALL
-    Also checks weird g77 behavior, and defines HAVE_FORTRAN_UNDERSCORE_UNDERSCORE if necessary'''
-    oldLIBS = self.framework.argDB['LIBS']
+    Also checks if symbols containing and underscore append and extra underscore, and defines HAVE_FORTRAN_UNDERSCORE_UNDERSCORE if necessary'''
+    self.manglerFuncs = {'underscore': ('void d1chk_(void){return;}\n', '       call d1chk()\n'),
+                         'unchanged': ('void d1chk(void){return;}\n', '       call d1chk()\n'),
+                         'stdcall': ('void __stdcall D1CHK(void){return;}\n', '       call d1chk()\n'),
+                         'capitalize': ('void D1CHK(void){return;}\n', '       call d1chk()\n'),
+                         'double': ('void d1_chk__(void) {return;}\n', '       call d1_chk()\n')}
 
-    # Define known manglings and write tests in C
-    cobjs     = ['confc0.o','confc1.o','confc2.o','confc3.o']
-    cfuncs    = ['void d1chk_(void){return;}\n','void d1chk(void){return;}\n','void __stdcall D1CHK(void){return;}\n','void D1CHK(void){return;}\n']
-    manglers  = ['underscore','unchanged','stdcall','capitalize']
-    found     = 0
-
-    for cfunc, cobj, mangler in zip(cfuncs, cobjs, manglers):
+    for mangler, (cfunc, ffunc) in self.manglerFuncs.items():
       self.framework.log.write('Testing Fortran mangling type '+mangler+' with code '+cfunc)
-      # Compile each of the C test objects
-      self.pushLanguage('C')
-      if not self.checkCompile(cfunc,None,cleanup = 0):
-        self.logPrint('Cannot compile C function: '+cfunc, 3, 'compilers')
-        continue
-      if not os.path.isfile(self.compilerObj):
-        self.logPrint('Cannot locate object file: '+os.path.abspath(self.compilerObj), 3, 'compilers')
-        continue
-      os.rename(self.compilerObj,cobj)
-      self.popLanguage()
-
-      # Link each test object against Fortran driver.  If successful, then mangling found.
-      self.pushLanguage('FC')
-      self.framework.argDB['LIBS'] += ' '+cobj
-      if self.checkLink(None,'       call d1chk()\n'):
+      if self.testMangling(cfunc, ffunc):
         self.fortranMangling = mangler
-        self.framework.argDB['LIBS'] = oldLIBS
-        found = 1
-      self.framework.argDB['LIBS'] = oldLIBS
-      self.popLanguage()
-      if found:
         break
     else:
       raise RuntimeError('Unknown Fortran name mangling')
     self.logPrint('Fortran name mangling is '+self.fortranMangling, 4, 'compilers')
 
-    # Clean up C test objects
-    for cobj in cobjs:
-      if os.path.isfile(cobj): os.remove(cobj)
-
-    # Check double trailing underscore
-    #
-    #   Create C test object
-    self.pushLanguage('C')
-    if not self.checkCompile('void d1_chk__(void) {return;}\n',None,cleanup = 0):
-      raise RuntimeError('Cannot compile C function: double underscore test')
-    if not os.path.isfile(self.compilerObj):
-      raise RuntimeError('Cannot locate object file: '+os.path.abspath(self.compilerObj))
-    os.rename(self.compilerObj, cobjs[0])
-    self.framework.argDB['LIBS'] += ' '+cobjs[0]
-    self.popLanguage()
-
-    #   Test against driver
-    self.pushLanguage('FC')
-    if self.checkLink(None,'       call d1_chk()\n'):
+    if self.testMangling(self.manglerFuncs['double'][0], self.manglerFuncs['double'][1]):
+      self.logPrint('Fortran appends and extra underscore to names containing underscores', 4, 'compilers')
       self.fortranManglingDoubleUnderscore = 1
-      self.logPrint('Fortran has funny g77 name mangling with double underscores', 4, 'compilers')
     else:
       self.fortranManglingDoubleUnderscore = 0
-
-    #   Cleanup
-    if os.path.isfile(cobjs[0]): os.remove(cobjs[0])
-    self.framework.argDB['LIBS'] = oldLIBS
-    self.popLanguage()
     return
 
   def checkFortranPreprocessor(self):
@@ -481,6 +462,12 @@ class Configure(config.base.Configure):
     self.framework.argDB['LIBS'] = oldLibs
     return
 
+  def checkFortranLinkingCxx(self):
+    '''Check that Fortran can be linked against C++'''
+    if not self.testMangling(self.manglerFuncs[self.fortranMangling][0], self.manglerFuncs[self.fortranMangling][1], 'Cxx'):
+      raise RuntimeError('Fortran could not successfully link C++ objects')
+    return
+
   def checkFortran90(self):
     '''Determine whether the Fortran compiler handles F90'''
     self.pushLanguage('FC')
@@ -648,6 +635,8 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranNameMangling)
       self.executeTest(self.checkFortranPreprocessor)
       self.executeTest(self.checkFortranLibraries)
+      if 'CXX' in self.framework.argDB:
+        self.executeTest(self.checkFortranLinkingCxx)
       self.executeTest(self.checkFortran90)
       self.executeTest(self.checkFortran90Interface)
     self.executeTest(self.output)
