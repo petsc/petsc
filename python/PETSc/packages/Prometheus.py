@@ -11,6 +11,7 @@ class Configure(PETSc.package.Package):
     self.mpi               = self.framework.require('PETSc.packages.MPI',self)
     self.blasLapack        = self.framework.require('PETSc.packages.BlasLapack',self)
     self.parmetis          = self.framework.require('PETSc.packages.ParMetis',self)
+    self.compilers         = self.framework.require('config.compilers',self)
     self.download          = ['http://www.cs.berkeley.edu/~madams/Prometheus-1.8.1.tar.gz']
     self.deps              = [self.parmetis,self.mpi,self.blasLapack]
     self.functions         = []
@@ -18,6 +19,17 @@ class Configure(PETSc.package.Package):
     self.liblist           = [['libpromfei.a','libprometheus.a']]
     self.compilePrometheus = 0
     return
+
+  def generateLibList(self,dir):
+    '''Normally the one in package.py is used, but Prometheus requires the extra C++ library'''
+    alllibs = PETSc.package.Package.generateLibList(self,dir)
+    import config.setCompilers
+    if self.languages.clanguage == 'C':
+      self.framework.pushLanguage('C')
+      if config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
+        alllibs[0].append('-lstdc++')
+      self.framework.popLanguage()   
+    return alllibs
 
   def Install(self):
     prometheusDir = self.getDir()
@@ -33,11 +45,29 @@ class Configure(PETSc.package.Package):
     args += 'RANLIB = '+self.setCompilers.RANLIB+'\n'
     self.framework.popLanguage()
     self.framework.pushLanguage('C++')+'\n'
-    if self.framework.argDB['with-clanguage'] == 'c':
-      args += 'CC = '+self.framework.getCompiler()+' -DPETSC_USE_EXTERN_CXX\n'    
+    if self.framework.argDB['with-clanguage'] == 'C':
+      args += 'CC = '+self.framework.getCompiler()+' -DPETSC_USE_EXTERN_CXX'    
     else:
-      args += 'CC = '+self.framework.getCompiler()+'\n'    
-    args += 'PETSCFLAGS = '+self.framework.getCompilerFlags()+'\n'
+      args += 'CC = '+self.framework.getCompiler()    
+    # Instead of doing all this, we could try to have Prometheus just use the PETSc bmake
+    # files. But need to pass in USE_EXTERN_CXX flag AND have a C and C++ compiler
+    if self.compilers.fortranMangling == 'underscore':
+      args += ' -DHAVE_FORTRAN_UNDERSCORE=1'
+      if self.compilers.fortranManglingDoubleUnderscore:
+        args += ' -DHAVE_FORTRAN_UNDERSCORE_UNDERSCORE 1'
+    elif self.blasLapack.f2c:
+      args += ' -DBLASLAPACK_UNDERSCORE=1'
+    elif self.compilers.fortranMangling == 'unchanged':
+      args += ' -DHAVE_FORTRAN_NOUNDERSCORE=1'
+    elif self.compilers.fortranMangling == 'capitalize':
+      args += ' -DHAVE_FORTRAN_CAPS=1'
+    elif self.compilers.fortranMangling == 'stdcall':
+      args += ' -DHAVE_FORTRAN_STDCALL=1'
+      args += ' -DSTDCALL=__stdcall'
+      args += ' -DHAVE_FORTRAN_CAPS=1'
+      args += ' -DHAVE_FORTRAN_MIXED_STR_ARG=1'
+ 
+    args += '\nPETSCFLAGS = '+self.framework.getCompilerFlags()+'\n'
     self.framework.popLanguage()
     try:
       fd      = file(os.path.join(installDir,'makefile.petsc'))
