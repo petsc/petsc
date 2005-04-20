@@ -6,9 +6,9 @@ class compilerOptions(config.base.Configure):
   def getCFlags(self, compiler, bopt):
     import config.setCompilers
 
-    if compiler.endswith('mpicc'):
+    if compiler.find('mpicc') >=0:
       try:
-        output   = self.executeShellCommand('mpicc -show')[0]
+        output   = self.executeShellCommand(compiler + ' -show')[0]
         compiler = output.split(' ')[0]
       except:
         pass
@@ -50,7 +50,7 @@ class compilerOptions(config.base.Configure):
     # Intel
     elif re.match(r'i[3-9]86', self.framework.host_cpu):
       # Linux Intel
-      if compiler == 'icc':
+      if config.setCompilers.Configure.isIntel(compiler):
         if bopt == '':
           flags.append('-wd1572')
         elif bopt == 'g':

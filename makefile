@@ -54,7 +54,7 @@ info:
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
 	-@echo "------------------------------------------"
-	-@echo "Using C/C++ compiler: ${CC} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} "
+	-@echo "Using C/C++ compiler: ${CC} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS}"
 	-@echo "C/C++ Compiler version: " `${CCV}`
 	-@if [ "${FC}" != "" ]; then \
 	   echo "Using Fortran compiler: ${FC} ${FC_FLAGS} ${FFLAGS} ${FPP_FLAGS}";\
@@ -82,7 +82,7 @@ info_h:
 	-@echo  "Using PETSc arch: ${PETSC_ARCH}" >> MINFO
 	-@echo  "-----------------------------------------\"; " >> MINFO
 	-@echo  "static const char *petsccompilerinfo = \"  " >> MINFO
-	-@echo  "Using C compiler: ${CC} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} " >> MINFO
+	-@echo  "Using C compiler: ${CC} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} " >> MINFO
 	-@echo  "C Compiler version:"  >> MINFO ; ${C_CCV} >> MINFO 2>&1 ; true
 	-@echo  "C++ Compiler version:"  >> MINFO; ${CXX_CCV} >> MINFO 2>&1 ; true
 	-@echo  "Using Fortran compiler: ${FC} ${FC_FLAGS} ${FFLAGS} ${FPP_FLAGS}" >> MINFO
