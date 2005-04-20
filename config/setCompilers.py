@@ -12,12 +12,12 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     desc = ['Compilers:']
-    if 'CC' in self.framework.argDB and (not 'with-language' in self.framework.argDB or self.framework.argDB['with-language'].lower() == 'c'):
+    if 'CC' in self.framework.argDB:
       self.pushLanguage('C')
       desc.append('  C Compiler:         '+self.getCompiler()+' '+self.getCompilerFlags())
       if not self.getLinker() == self.getCompiler(): desc.append('  C Linker:           '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
-    if 'CXX' in self.framework.argDB and (not 'with-language' in self.framework.argDB or self.framework.argDB['with-language'].replace('+','x').lower() == 'cxx'):
+    if 'CXX' in self.framework.argDB:
       self.pushLanguage('Cxx')
       desc.append('  C++ Compiler:       '+self.getCompiler()+' '+self.getCompilerFlags())
       if not self.getLinker() == self.getCompiler(): desc.append('  C++ Linker:         '+self.getLinker()+' '+self.getLinkerFlags())
