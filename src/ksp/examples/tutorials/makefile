@@ -578,7 +578,7 @@ TESTEXAMPLES_MATLAB_ENGINE     = ex10.PETSc runex10_12  ex10.rm
 TESTEXAMPLES_17		       = ex10.PETSc runex10_11 ex10.rm
 TESTEXAMPLES_18		       = ex2.PETSc runex2_6 ex2.rm 
 TESTEXAMPLES_SPAI	       = ex10.PETSc runex10_14 ex10.rm
-TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_1 ex10.rm
+TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_18 ex10.rm
 TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
 
 include ${PETSC_DIR}/bmake/common/test

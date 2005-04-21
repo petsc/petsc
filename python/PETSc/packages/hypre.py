@@ -10,7 +10,7 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.__init__(self, framework)
     self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre.tar.gz']
+    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-1.9.0b.tar.gz']
     self.deps         = [self.mpi,self.blasLapack]
     self.functions    = ['HYPRE_IJMatrixCreate']
     self.includes     = ['HYPRE.h']
@@ -69,25 +69,24 @@ class Configure(PETSc.package.Package):
       args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
     if self.mpi.include:
-      if len(self.mpi.include) > 1:
-        raise RuntimeError("hypre assumes there is a single MPI include directory")
-      args.append('--with-mpi-include="'+self.mpi.include[0].replace('-I','')+'"')
+      # just use the first dir - and assume the subsequent one isn't necessary [relavant only on AIX?]
+      args.append('--with-MPI-include="'+self.mpi.include[0].replace('-I','')+'"')
     libdirs = []
     for l in self.mpi.lib:
       ll = os.path.dirname(l)
       libdirs.append(ll)
     libdirs = ' '.join(libdirs)
-    args.append('--with-mpi-lib-dirs="'+libdirs+'"')
+    args.append('--with-MPI-lib-dirs="'+libdirs+'"')
     libs = []
     for l in self.mpi.lib:
       ll = os.path.basename(l)
       libs.append(ll[3:-2])
     libs = ' '.join(libs)
-    args.append('--with-mpi-libs="'+libs+'"')
-    args.append('--with-babel=0')
-    args.append('--with-mli=0')    
-    args.append('--with-FEI=0')    
-    args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"')        
+    args.append('--with-MPI-libs="'+libs+'"')
+    args.append('--without-babel')
+    args.append('--without-mli')    
+    args.append('--without-FEI')
+    args.append('--without-blas')
     args = ' '.join(args)
 
     try:
