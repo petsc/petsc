@@ -49,6 +49,7 @@ class Configure(PETSc.package.Package):
       args += 'CC = '+self.framework.getCompiler()+' -DPETSC_USE_EXTERN_CXX'    
     else:
       args += 'CC = '+self.framework.getCompiler()    
+    args += ' -DPROM_HAVE_METIS'
     # Instead of doing all this, we could try to have Prometheus just use the PETSc bmake
     # files. But need to pass in USE_EXTERN_CXX flag AND have a C and C++ compiler
     if self.compilers.fortranMangling == 'underscore':
