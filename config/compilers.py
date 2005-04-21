@@ -14,6 +14,7 @@ class Configure(config.base.Configure):
     self.fincs = []
     self.flibs = []
     self.fmainlibs = []
+    self.cxxlibs = []
     return
 
   def __str__(self):
@@ -26,6 +27,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-f90-source=<file>', nargs.Arg(None, None, 'Specify the C source for the F90 interface, e.g. f90_intel.c'))
     return
 
+  # THIS SHOULD BE REWRITTEN AS checkDeclModifier()
   # checkCStaticInline & checkCxxStaticInline are pretty much the same code right now.
   # but they could be different (later) - and they also check/set different flags - hence
   # code duplication.
@@ -121,6 +123,86 @@ class Configure(config.base.Configure):
       self.logPrint('C++ has namespaces', 4, 'compilers')
     else:
       self.logPrint('C++ does not have namespaces', 4, 'compilers')
+    return
+
+  def checkCxxLibraries(self):
+    '''Determines the libraries needed to link with C++'''
+    oldFlags = self.framework.argDB['LDFLAGS']
+    self.framework.argDB['LDFLAGS'] += ' -v'
+    self.pushLanguage('Cxx')
+    (output, returnCode) = self.outputLink('', '')
+    self.framework.argDB['LDFLAGS'] = oldFlags
+    self.popLanguage()
+      
+    # Parse output
+    argIter = iter(output.split())
+    cxxlibs = []
+    lflags  = []
+    try:
+      while 1:
+        arg = argIter.next()
+        self.logPrint( 'Checking arg '+arg, 4, 'compilers')
+        # Check for full library name
+        m = re.match(r'^/.*\.a$', arg)
+        if m:
+          if not arg in lflags:
+            lflags.append(arg)
+            self.logPrint('Found full library spec: '+arg, 4, 'compilers')
+            cxxlibs.append(arg)
+          continue
+        # Check for system libraries
+        m = re.match(r'^-l(ang.*|crt0.o|crt1.o|crtbegin.o|c|gcc)$', arg)
+        if m: continue
+        # Check for special library arguments
+        m = re.match(r'^-[lLR].*$', arg)
+        if m:
+          if not arg in lflags:
+            if arg == '-lkernel32':
+              continue
+            elif arg == '-lm':
+              continue
+            else:
+              lflags.append(arg)
+            self.logPrint('Found special library: '+arg, 4, 'compilers')
+            cxxlibs.append(arg)
+          continue
+        if arg == '-rpath':
+          lib = argIter.next()
+          self.logPrint('Found -rpath library: '+lib, 4, 'compilers')
+          cxxlibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          continue
+        self.logPrint('Unknown arg '+arg, 4, 'compilers')
+    except StopIteration:
+      pass
+
+    self.cxxlibs = []
+    for lib in cxxlibs:
+      if 'CC_LINKER_SLFLAG' in self.framework.argDB and lib.startswith('-L'):
+        self.flibs.append(self.framework.argDB['CC_LINKER_SLFLAG']+lib[2:])
+      self.cxxlibs.append(lib)
+
+    self.logPrint('Libraries needed to link Cxx code with another linker: '+str(self.cxxlibs), 3, 'compilers')
+
+    self.logPrint('Check that Cxx libraries can be used from C', 4, 'compilers')
+    oldLibs = self.framework.argDB['LIBS']
+    self.framework.argDB['LIBS'] += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
+    try:
+      self.setCompilers.checkCompiler('C')
+    except RuntimeError, e:
+      self.logPrint('Cxx libraries cannot directly be used from C', 4, 'compilers')
+      self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
+    self.framework.argDB['LIBS'] = oldLibs
+
+    if 'FC' in self.framework.argDB:
+      self.logPrint('Check that Cxx libraries can be used from Fortran', 4, 'compilers')
+      oldLibs = self.framework.argDB['LIBS']
+      self.framework.argDB['LIBS'] += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
+      try:
+        self.setCompilers.checkCompiler('FC')
+      except RuntimeError, e:
+        self.logPrint('Cxx libraries cannot directly be used from Fortran', 4, 'compilers')
+        self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
+      self.framework.argDB['LIBS'] = oldLibs
     return
 
   def checkFortranTypeSizes(self):
@@ -473,7 +555,7 @@ class Configure(config.base.Configure):
     cinc, cfunc, ffunc = self.manglerFuncs[self.fortranMangling]
     cinc = 'extern "C" '+cinc+'\n'
 
-    cxxCode = 'void foo(void){d1chk_();}'
+    cxxCode = 'void foo(void){'+self.mangleFortranFunction('d1chk')+'();}'
     cxxobj = 'cxxobj.o'
     self.pushLanguage('Cxx')
     if not self.checkCompile(cinc+cxxCode, None, cleanup = 0):
@@ -486,7 +568,16 @@ class Configure(config.base.Configure):
     self.popLanguage()
 
     if self.testMangling(cinc+cfunc, ffunc, 'Cxx', extraObjs = [cxxobj]):
+      self.logPrint('Fortran can link C++ functions', 3, 'compilers')
       link = 1
+    else:
+      oldLibs = self.framework.argDB['LIBS']
+      self.framework.argDB['LIBS'] += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
+      if self.testMangling(cinc+cfunc, ffunc, 'Cxx', extraObjs = [cxxobj]):
+        self.logPrint('Fortran can link C++ functions using the C++ compiler libraries', 3, 'compilers')
+        link = 1
+      else:
+        self.framework.argDB['LIBS'] = oldLibs
     if os.path.isfile(cxxobj):
       os.remove(cxxobj)
     if not link:
@@ -653,6 +744,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
       self.executeTest(self.checkCxxStaticInline)
+      self.executeTest(self.checkCxxLibraries)
     else:
       self.isGCXX = 0
     if 'FC' in self.framework.argDB:
