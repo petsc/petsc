@@ -57,12 +57,15 @@ class ArgumentProcessor(object):
     return argDB
 
   def insertArguments(self, useEnvironment = 0):
-    '''Put arguments in from the command line and environment'''
+    '''Put arguments in from the command line and environment
+       - This will only insert command line arguments into a given RDict once'''
     if useEnvironment:
       import os
 
       self.argDB.insertArgs(os.environ)
-    self.argDB.insertArgs(self.clArgs)
+    if not hasattr(self.argDB, '_setCommandLine'):
+      self.argDB.insertArgs(self.clArgs)
+      self.argDB._setCommandLine = 1
     return
 
   def setup(self):

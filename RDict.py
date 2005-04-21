@@ -103,6 +103,7 @@ Arg class, which wraps the usual value.'''
     d = self.__dict__.copy()
     if 'parent'    in d: del d['parent']
     if 'saveTimer' in d: del d['saveTimer']
+    if '_setCommandLine' in d: del d['_setCommandLine']
     del d['packer']
     del d['unpacker']
     del d['logFile']
