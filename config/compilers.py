@@ -153,7 +153,7 @@ class Configure(config.base.Configure):
       return name.upper()
     raise RuntimeError('Unknown Fortran name mangling: '+self.fortranMangling)
 
-  def testMangling(self, cfunc, ffunc, clanguage = 'C'):
+  def testMangling(self, cfunc, ffunc, clanguage = 'C', extraObjs = []):
     '''Test a certain name mangling'''
     cobj = 'confc.o'
     found = 0
@@ -171,6 +171,8 @@ class Configure(config.base.Configure):
     self.pushLanguage('FC')
     oldLIBS = self.framework.argDB['LIBS']
     self.framework.argDB['LIBS'] += ' '+cobj
+    if extraObjs:
+      self.framework.argDB['LIBS'] += ' '+' '.join(extraObjs)
     found = self.checkLink(None, ffunc)
     self.framework.argDB['LIBS'] = oldLIBS
     self.popLanguage()
@@ -467,10 +469,27 @@ class Configure(config.base.Configure):
 
   def checkFortranLinkingCxx(self):
     '''Check that Fortran can be linked against C++'''
+    link = 0
     cinc, cfunc, ffunc = self.manglerFuncs[self.fortranMangling]
     cinc = 'extern "C" '+cinc+'\n'
-    cxxCode = '\n'+'class foo{int i;};\n'
-    if not self.testMangling(cinc+cfunc+cxxCode, ffunc, 'Cxx'):
+
+    cxxCode = 'void foo(void){d1chk_();}'
+    cxxobj = 'cxxobj.o'
+    self.pushLanguage('Cxx')
+    if not self.checkCompile(cinc+cxxCode, None, cleanup = 0):
+      self.logPrint('Cannot compile Cxx function: '+cfunc, 3, 'compilers')
+      raise RuntimeError('Fortran could not successfully link C++ objects')
+    if not os.path.isfile(self.compilerObj):
+      self.logPrint('Cannot locate object file: '+os.path.abspath(self.compilerObj), 3, 'compilers')
+      raise RuntimeError('Fortran could not successfully link C++ objects')
+    os.rename(self.compilerObj, cxxobj)
+    self.popLanguage()
+
+    if self.testMangling(cinc+cfunc, ffunc, 'Cxx', extraObjs = [cxxobj]):
+      link = 1
+    if os.path.isfile(cxxobj):
+      os.remove(cxxobj)
+    if not link:
       raise RuntimeError('Fortran could not successfully link C++ objects')
     return
 
