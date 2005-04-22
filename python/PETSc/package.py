@@ -254,6 +254,16 @@ class Package(config.base.Configure):
       os.mkdir(os.path.join(packages,Dir,self.arch.arch))
     return os.path.join(packages, Dir)
 
+  def checkPackageLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
+    oldFlags = self.compilers.CPPFLAGS
+    oldLibs  = self.framework.argDB['LIBS']
+    self.compilers.CPPFLAGS     += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.include])
+    self.framework.argDB['LIBS'] = self.libraries.toString(self.lib)+' '+self.framework.argDB['LIBS']
+    result = self.checkLink(self, includes, body, cleanup, codeBegin, codeEnd, shared)
+    self.compilers.CPPFLAGS      = oldFlags
+    self.framework.argDB['LIBS'] = oldLibs
+    return result
+
   def checkSharedLibrary(self):
     '''By default we don\'t care about checking if shared'''
     return 1
