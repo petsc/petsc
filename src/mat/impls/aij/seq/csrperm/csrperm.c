@@ -175,11 +175,16 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat A)
     rows_in_bucket[nz]++;
   }
 
-  /* Allocate space for the grouping info.  There will be at most maxnz 
-   * groups.  We allocate space for this many; that is potentially a 
-   * little wasteful, but not too much so.  Perhaps I should fix it later. */
-  ierr = PetscMalloc(maxnz*sizeof(PetscInt), &csrperm->xgroup); CHKERRQ(ierr);
-  ierr = PetscMalloc(maxnz*sizeof(PetscInt), &csrperm->nzgroup); CHKERRQ(ierr);
+  /* Allocate space for the grouping info.  There will be at most (maxnz + 1) 
+   * groups.  (It is maxnz + 1 instead of simply maxnz because there may be 
+   * rows with no nonzero elements.)  If there are (maxnz + 1) groups, 
+   * then xgroup[] must consist of (maxnz + 2) elements, since the last 
+   * element of xgroup will tell us where the (maxnz + 1)th group ends.
+   * We allocate space for the maximum number of groups; 
+   * that is potentially a little wasteful, but not too much so.  
+   * Perhaps I should fix it later. */
+  ierr = PetscMalloc((maxnz+2)*sizeof(PetscInt), &csrperm->xgroup); CHKERRQ(ierr);
+  ierr = PetscMalloc((maxnz+1)*sizeof(PetscInt), &csrperm->nzgroup); CHKERRQ(ierr);
 
   /* Second pass.  Look at what is in the buckets and create the groupings.
    * Note that it is OK to have a group of rows with no non-zero values. */
