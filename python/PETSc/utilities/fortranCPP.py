@@ -18,6 +18,10 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-fpp=<name>', nargs.Arg(None, None, 'Specify Fortran preprocessor (broken)'))
     return
 
+  def setupDependencies(self, framework):
+    self.compilers = framework.require('config.compilers', self)
+    return
+
   def configureFortranCPP(self):
     '''Handle case where Fortran cannot preprocess properly'''
     if 'FC' in self.framework.argDB:
