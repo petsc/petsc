@@ -169,7 +169,7 @@ class Configure(config.base.Configure):
 
     import time
     self.addMakeMacro('CONFIGURE_RUN_TIME',time.ctime(time.time()))
-    self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString().replace('\"','\\"'))
+    self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules']).replace('\"','\\"'))
     return
 
   def configureInline(self):
