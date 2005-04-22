@@ -38,6 +38,19 @@ class Configure(config.base.Configure):
       self.addDefine(self.getDefineName(header), found)
     return found
 
+  def checkInclude(self, incl, hfiles, otherIncludes = []):
+    '''Checks if a particular include file can be found along particular include paths'''
+    if not isinstance(hfiles, list):
+      hfiles = [hfiles]
+    for hfile in hfiles:
+      oldFlags = self.framework.argDB['CPPFLAGS']
+      self.framework.argDB['CPPFLAGS'] += ' '+' '.join([self.getIncludeArgument(inc) for inc in incl+otherIncludes])
+      found = self.checkPreprocess('#include <' +hfile+ '>\n')
+      self.framework.argDB['CPPFLAGS'] = oldFlags
+      if not found: return 0
+    self.framework.log.write('Found header files ' +str(hfiles)+ ' in '+str(incl)+'\n')
+    return 1
+
   def checkStdC(self):
     haveStdC = 0
     includes = '''
