@@ -16,6 +16,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-clanguage=<C or C++>', nargs.Arg(None, 'C', 'Specify C or C++ language'))
+    help.addArgument('PETSc', '-with-fortran', nargs.ArgBool(None, 1, 'Create and install the Fortran wrappers'))
     help.addArgument('PETSc', '-with-python', nargs.ArgBool(None, 0, 'Download and install the Python wrappers'))
     help.addArgument('PETSc', '-with-precision=<single,double,matsingle>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
     help.addArgument('PETSc', '-with-scalar-type=<real or complex>', nargs.Arg(None, 'real', 'Specify real or complex numbers'))
@@ -58,6 +59,15 @@ class Configure(config.base.Configure):
     self.framework.logPrint('C language is '+str(self.clanguage))
     return
 
+  def configureFortranLanguage(self):
+    '''Turn on Fortran bindings'''
+    if not self.framework.argDB['with-fortran']:
+      self.framework.argDB['with-fc'] = '0'
+      self.framework.logPrint('Using Fortran')
+    else:
+      self.framework.logPrint('Not using Fortran')
+    return
+
   def retrievePackage(self, package, name, urls, packageDir):
     import os
     if not isinstance(urls, list):
@@ -95,6 +105,8 @@ class Configure(config.base.Configure):
   def configurePythonLanguage(self):
     '''Download the Python bindings into src/python'''
     import os
+    if not self.framework.argDB['with-python']:
+      return
     if os.path.isdir(os.path.join(self.arch.dir, 'BitKeeper')):
       if not os.path.isdir(os.path.join(self.arch.dir, 'src', 'python')):
         os.mkdir(os.path.join(self.arch.dir, 'src', 'python'))
@@ -117,6 +129,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureScalarType)
     self.executeTest(self.configurePrecision)
     self.executeTest(self.configureCLanguage)
+    self.executeTest(self.configureFortranLanguage)
     self.executeTest(self.configurePythonLanguage)
     self.executeTest(self.configureExternC)
     return
