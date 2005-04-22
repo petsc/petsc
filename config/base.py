@@ -1,6 +1,14 @@
 '''
 config.base.Configure is the base class for all configure objects. It handles several types of interaction:
 
+Framework hooks
+---------------
+
+  The Framework will first instantiate the object and call setupDependencies(). All require()
+  calls should be made in that method.
+  
+  The Framework will then call configure(). If it succeeds, the object will be marked as configured.
+
 Generic test execution
 ----------------------
 
@@ -582,6 +590,10 @@ class Configure(script.Script):
         # check if directory exists?
         includes.append(inc[2:])
     return includes
+
+  def setupDependencies(self, framework):
+    '''All calls to the framework require() should be made here'''
+    pass
 
   def configure(self):
     pass

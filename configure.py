@@ -3,11 +3,13 @@ import config.base
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    libraries         = [('cygwin', 'log')]
-    self.setCompilers = self.framework.require('config.setCompilers', self)
-    self.libraries    = self.framework.require('config.libraries',    self)
-    self.python       = self.framework.require('config.python',       self)
-    self.libraries.libraries.extend(libraries)
+    self.libraries.libraries.extend([('cygwin', 'log')])
+    return
+
+  def setupDependencies(self, framework):
+    self.setCompilers = framework.require('config.setCompilers', self)
+    self.libraries    = framework.require('config.libraries',    self)
+    self.python       = framework.require('config.python',       self)
     return
 
   def configureCygwin(self):

@@ -7,8 +7,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.compilers    = self.framework.require('config.compilers', self)
-    self.libraries    = self.framework.require('config.libraries', self)
     self.include      = None
     self.lib          = None
     return
@@ -16,21 +14,16 @@ class Configure(config.base.Configure):
   def __str__(self):
     return ''
 
-  def getIncludeArgument(self, include):
-    '''Return the proper include line argument for the given filename
-       - If the path is empty, return it unchanged
-       - If starts with - then return unchanged
-       - Otherwise return -I<include>'''
-    if not include:
-      return ''
-    if include[0] == '-':
-      return include
-    return '-I'+include
+  def setupDependencies(self, framework):
+    self.setCompilers = framework.require('config.setCompilers', self)
+    self.headers      = framework.require('config.headers', self)
+    self.libraries    = framework.require('config.libraries', self)
+    return
 
   def checkInclude(self, includeDir):
     '''Check that Python.h is present'''
     oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '+' '.join([self.getIncludeArgument(inc) for inc in includeDir])
+    self.compilers.CPPFLAGS += ' '+' '.join([self.headers.getIncludeArgument(inc) for inc in includeDir])
     found = self.checkPreprocess('#include <Python.h>\n')
     self.compilers.CPPFLAGS = oldFlags
     return found
@@ -40,7 +33,7 @@ class Configure(config.base.Configure):
     success  = 0
     oldFlags = self.compilers.CPPFLAGS
     oldLibs  = self.framework.argDB['LIBS']
-    self.compilers.CPPFLAGS += ' '+' '.join([self.getIncludeArgument(inc) for inc in self.include])
+    self.compilers.CPPFLAGS += ' '+' '.join([self.headers.getIncludeArgument(inc) for inc in self.include])
     self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib])+' '+self.framework.argDB['LIBS']
     if self.checkLink(includes, body, cleanup, codeBegin, codeEnd, shared):
       success = 1

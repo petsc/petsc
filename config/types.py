@@ -8,13 +8,16 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.compilers    = self.framework.require('config.compilers', self)
-    self.headers      = self.framework.require('config.headers', self)
     return
 
   def setupHelp(self, help):
     import nargs
     help.addArgument('Types', '-with-endian=<big or little>', nargs.Arg(None, None, 'Are bytes stored in big or little endian?'))
+    return
+
+  def setupDependencies(self, framework):
+    self.compilers = framework.require('config.compilers', self)
+    self.headers   = framework.require('config.headers', self)
     return
 
   def check(self, typeName, defaultType = None):

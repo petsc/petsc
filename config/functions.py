@@ -6,7 +6,6 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.functions    = functions
-    self.headers      = self.framework.require('config.headers', self)
     return
 
   def getDefineName(self, funcName):
@@ -16,6 +15,10 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('Functions', '-with-memcmp-ok=<0 or 1>', nargs.ArgBool(None, 0, 'Does memcmp() work correctly?'))
     help.addArgument('Functions', '-with-bad-memcmp=<0 or 1>', nargs.ArgBool(None, 0, 'Flag set by the batch check to indicate a faulty memcmp()'))
+    return
+
+  def setupDependencies(self, framework):
+    self.headers = self.framework.require('config.headers', self)
     return
 
   def haveFunction(self, function):

@@ -51,7 +51,7 @@ class DirectedGraph(object):
     return
 
   def removeVertex(self, vertex):
-    '''Remove a vertex if already exists in the vertex list
+    '''Remove a vertex if it already exists in the vertex list
        - Also removes all associated edges'''
     if vertex is None: return
     if vertex in self.vertices:
@@ -61,6 +61,14 @@ class DirectedGraph(object):
       for v in self.vertices:
         if vertex in self.inEdges[v]:  self.inEdges[v].remove(vertex)
         if vertex in self.outEdges[v]: self.outEdges[v].remove(vertex)
+    return
+
+  def replaceVertex(self, vertex, newVertex):
+    '''Replace a vertex with newVertex if it already exists in the vertex list
+       - Also transfers all associated edges'''
+    if vertex is None or newVertex is None: return
+    self.addEdges(newVertex, self.inEdges[vertex], self.outEdges[vertex])
+    self.removeVertex(vertex)
     return
 
   def addSubgraph(self, graph):

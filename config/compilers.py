@@ -8,8 +8,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.setCompilers = self.framework.require('config.setCompilers', self)
-    self.libraries = self.framework.require('config.libraries', self)
     self.fortranMangling = 'unchanged'
     self.fincs = []
     self.flibs = []
@@ -26,6 +24,51 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-f90-header=<file>', nargs.Arg(None, None, 'Specify the C header for the F90 interface, e.g. f90_intel.h'))
     help.addArgument('Compilers', '-with-f90-source=<file>', nargs.Arg(None, None, 'Specify the C source for the F90 interface, e.g. f90_intel.c'))
     return
+
+  def setupDependencies(self, framework):
+    self.setCompilers = framework.require('config.setCompilers', self)
+    return
+
+  def getLibArgument(self, library):
+    '''Return the proper link line argument for the given filename library
+       - If the path is empty, return it unchanged
+       - If the path ends in ".lib" return it unchanged
+       - If the path ends in ".so" return it unchanged       
+       - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name>
+       - If the filename is "lib"<name>, return -l<name>
+       - If the path is absolute, return it unchanged
+       - If the filename is <dir>/<name>.so, it remains unchanged
+       - If starts with - then return unchanged
+       - Otherwise return -l<library>'''
+    if not library:
+      return ''
+    if library.startswith('${CC_LINKER_SLFLAG}'):
+      return library
+    if library.startswith('${FC_LINKER_SLFLAG}'):
+      return library
+    if library.lstrip()[0] == '-':
+      return library
+    if len(library) > 3 and library[-4:] == '.lib':
+      return library
+    if os.path.basename(library).startswith('lib'):
+      import config.libraries
+      name = config.libraries.Configure.getLibName(library)
+      if ((len(library) > 2 and library[1] == ':') or os.path.isabs(library)):
+        flagName  = self.language[-1].replace('+', 'x')+'SharedLinkerFlag'
+        flagSubst = self.language[-1].replace('+', 'x').upper()+'_LINKER_SLFLAG'
+        if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
+          return getattr(self.setCompilers, flagName)+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
+        if flagSubst in self.framework.argDB:
+          return self.framework.argDB[flagSubst]+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
+        else:
+          return '-L'+os.path.dirname(library)+' -l'+name
+      else:
+        return '-l'+name
+    if os.path.splitext(library)[1] == '.so':
+      return library
+    if os.path.isabs(library):
+      return library
+    return '-l'+library
 
   # THIS SHOULD BE REWRITTEN AS checkDeclModifier()
   # checkCStaticInline & checkCxxStaticInline are pretty much the same code right now.
@@ -185,7 +228,7 @@ class Configure(config.base.Configure):
 
     self.logPrint('Check that Cxx libraries can be used from C', 4, 'compilers')
     oldLibs = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
+    self.framework.argDB['LIBS'] += ' '+' '.join([self.getLibArgument(lib) for lib in self.cxxlibs])
     try:
       self.setCompilers.checkCompiler('C')
     except RuntimeError, e:
@@ -196,7 +239,7 @@ class Configure(config.base.Configure):
     if 'FC' in self.framework.argDB:
       self.logPrint('Check that Cxx libraries can be used from Fortran', 4, 'compilers')
       oldLibs = self.framework.argDB['LIBS']
-      self.framework.argDB['LIBS'] += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
+      self.framework.argDB['LIBS'] += ' '+' '.join([self.getLibArgument(lib) for lib in self.cxxlibs])
       try:
         self.setCompilers.checkCompiler('FC')
       except RuntimeError, e:
@@ -500,7 +543,7 @@ class Configure(config.base.Configure):
     # check that these monster libraries can be used from C
     self.logPrint('Check that Fortran libraries can be used from C', 4, 'compilers')
     oldLibs = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+    self.framework.argDB['LIBS'] += ' '+' '.join([self.getLibArgument(lib) for lib in self.flibs])
     try:
       self.setCompilers.checkCompiler('C')
     except RuntimeError, e:
@@ -508,7 +551,7 @@ class Configure(config.base.Configure):
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
       # try removing this one
       if '-lcrt2.o' in self.flibs: self.flibs.remove('-lcrt2.o')
-      self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+      self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.getLibArgument(lib) for lib in self.flibs])
       try:
         self.setCompilers.checkCompiler('C')
       except RuntimeError, e:
@@ -517,19 +560,19 @@ class Configure(config.base.Configure):
 
     # check if Intel library exists (that is not linked by default but has iargc_ in it :-(
     self.logPrint('Check for Intel PEPCF90 library', 4, 'compilers')
-    self.framework.argDB['LIBS'] = oldLibs+' -lPEPCF90 '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+    self.framework.argDB['LIBS'] = oldLibs+' -lPEPCF90 '+' '.join([self.getLibArgument(lib) for lib in self.flibs])
     try:
       self.setCompilers.checkCompiler('C')
       self.flibs = [' -lPEPCF90']+self.flibs
       self.logPrint('Intel PEPCF90 library exists', 4, 'compilers')
     except RuntimeError, e:
       self.logPrint('Intel PEPCF90 library does not exist', 4, 'compilers')
-      self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+      self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.getLibArgument(lib) for lib in self.flibs])
 
     # check these monster libraries work from C++
     if 'CXX' in self.framework.argDB:
       self.logPrint('Check that Fortran libraries can be used from C++', 4, 'compilers')
-      self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+      self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.getLibArgument(lib) for lib in self.flibs])
       try:
         self.setCompilers.checkCompiler('C++')
         self.logPrint('Fortran libraries can be used from C++', 4, 'compilers')
@@ -537,7 +580,7 @@ class Configure(config.base.Configure):
         self.logPrint(str(e), 4, 'compilers')
         # try removing this one causes grief with gnu g++ and Intel Fortran
         if '-lintrins' in self.flibs: self.flibs.remove('-lintrins')
-        self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+        self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.getLibArgument(lib) for lib in self.flibs])
         try:
           self.setCompilers.checkCompiler('C++')
         except RuntimeError, e:
@@ -572,7 +615,7 @@ class Configure(config.base.Configure):
       link = 1
     else:
       oldLibs = self.framework.argDB['LIBS']
-      self.framework.argDB['LIBS'] += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
+      self.framework.argDB['LIBS'] += ' '+' '.join([self.getLibArgument(lib) for lib in self.cxxlibs])
       if self.testMangling(cinc+cfunc, ffunc, 'Cxx', extraObjs = [cxxobj]):
         self.logPrint('Fortran can link C++ functions using the C++ compiler libraries', 3, 'compilers')
         link = 1

@@ -80,14 +80,15 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.warningRE       = re.compile('warning', re.I)
     if not nargs.Arg.findArgument('debugSections', self.clArgs):
       self.argDB['debugSections'] = ['screen']
-    self.createChildren()
     # Perhaps these initializations should just be local temporary arguments
-    self.argDB['CPPFLAGS']   = ''
+    self.argDB['CPPFLAGS']  = ''
     if not 'LDFLAGS' in self.argDB:
-      self.argDB['LDFLAGS']  = ''
-    self.batchIncludes       = []
-    self.batchBodies         = []
-    self.batchIncludeDirs    = []
+      self.argDB['LDFLAGS'] = ''
+    self.batchIncludes      = []
+    self.batchBodies        = []
+    self.batchIncludeDirs   = []
+    self.dependencies       = {}
+    self.createChildren()
     return
 
   def __getstate__(self):
@@ -216,6 +217,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         break
     if config is None:
       config = apply(type, [self], keywordArgs)
+      config.setupDependencies(self)
       self.addChild(config)
     return config
 
@@ -239,6 +241,56 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     config = self.getChild(moduleName, keywordArgs)
     self.childGraph.addEdges(depChild, [config])
     return config
+
+  ###############################################
+  # Dependency Mechanisms
+  def loadFramework(self, path):
+    import RDict
+    oldDir = os.getcwd()
+    os.chdir(path)
+    argDB = RDict.RDict()
+    os.chdir(oldDir)
+    framework = self.loadConfigure(argDB)
+    if framework is None:
+      self.logPrint('Failed to load cached configuration from '+path)
+    else:
+      self.logPrint('Loaded cached configuration from '+path)
+    return framework
+
+  def addDependency(self, dependency, depPath = None):
+    import md5
+
+    if isinstance(dependency, str):
+      framework = self.loadDependency(dependency)
+      if not framework:
+        return
+    else:
+      framework = dependency
+      if depPath:
+        dependency = depPath
+      else:
+        dependency = os.path.dirname(dependency.__file__)
+    self.dependencies[dependency] = md5.new(cPickle.dumps(framework)).hexdigest()
+    self.childGraph.addSubgraph(framework.childGraph)
+    return
+
+  def updateDependencies(self):
+    import md5
+
+    for dependency, digest in self.dependencies.items():
+      framework = self.loadDependency(dependency)
+      if digest == md5.new(cPickle.dumps(framework)).hexdigest():
+        continue
+      self.logPrint('Configure dependency from '+dependency+' has changed. Reloading...')
+      for child in framework.childGraph.vertices:
+        self.childGraph.replaceVertex(self.require(child.__module__, None), child)
+        for depChild in self.childGraph.depthFirstVisit(child, outEdges = 0):
+          if hasattr(depChild, '_configured'):
+            del depChild._configured
+        self.logPrint('  Reloaded '+child.__module__)
+    for child in self.childGraph.vertices:
+      child.setupDependencies()
+    return
 
   ###############################################
   # Filtering Mechanisms
@@ -682,13 +734,16 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def configure(self, out = None):
     '''Configure the system
-       - Must delay database initialization until children have contributed variable types'''
+       - Must delay database initialization until children have contributed variable types
+       - Any child with the "_configured" attribute will not be configured'''
     import graph
 
     self.setup()
     self.outputBanner()
     for child in graph.DirectedGraph.topologicalSort(self.childGraph):
-      child.configure()
+      if not hasattr(child, '_configured'):
+        child.configure()
+      child._configured = 1
     if self.argDB['with-batch']:
       self.configureBatch()
     self.cleanup()

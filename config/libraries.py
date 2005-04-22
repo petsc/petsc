@@ -9,63 +9,17 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.libraries    = libraries
-    self.setCompilers = self.framework.require('config.setCompilers', self)
-    self.compilers    = self.framework.require('config.compilers',    self)
-    self.headers      = self.framework.require('config.headers',      self)
-    self.headers.headers.append('dlfcn.h')
-    self.libraries.append((['dl'], 'dlopen'))
     return
 
-  def getIncludeArgument(self, include):
-    '''Return the proper include line argument for the given filename
-       - If the path is empty, return it unchanged
-       - If starts with - then return unchanged
-       - Otherwise return -I<include>'''
-    if not include:
-      return ''
-    if include[0] == '-':
-      return include
-    return '-I'+include
+  def setupDependencies(self, framework):
+    self.setCompilers = framework.require('config.setCompilers', self)
+    self.compilers    = framework.require('config.compilers',    self)
+    self.headers      = framework.require('config.headers',      self)
+    return
 
   def getLibArgument(self, library):
-    '''Return the proper link line argument for the given filename library
-       - If the path is empty, return it unchanged
-       - If the path ends in ".lib" return it unchanged
-       - If the path ends in ".so" return it unchanged       
-       - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name>
-       - If the filename is "lib"<name>, return -l<name>
-       - If the path is absolute, return it unchanged
-       - If the filename is <dir>/<name>.so, it remains unchanged
-       - If starts with - then return unchanged
-       - Otherwise return -l<library>'''
-    if not library:
-      return ''
-    if library.startswith('${CC_LINKER_SLFLAG}'):
-      return library
-    if library.startswith('${FC_LINKER_SLFLAG}'):
-      return library
-    if library.lstrip()[0] == '-':
-      return library
-    if len(library) > 3 and library[-4:] == '.lib':
-      return library
-    if os.path.basename(library).startswith('lib'):
-      name = Configure.getLibName(library)
-      if ((len(library) > 2 and library[1] == ':') or os.path.isabs(library)):
-        flagName  = self.language[-1].replace('+', 'x')+'SharedLinkerFlag'
-        flagSubst = self.language[-1].replace('+', 'x').upper()+'_LINKER_SLFLAG'
-        if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
-          return getattr(self.setCompilers, flagName)+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
-        if flagSubst in self.framework.argDB:
-          return self.framework.argDB[flagSubst]+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
-        else:
-          return '-L'+os.path.dirname(library)+' -l'+name
-      else:
-        return '-l'+name
-    if os.path.splitext(library)[1] == '.so':
-      return library
-    if os.path.isabs(library):
-      return library
-    return '-l'+library
+    '''Using the method from config.compilers'''
+    return self.compilers.getLibArgument(library)
 
   def getLibName(library):
     if os.path.basename(library).startswith('lib'):
@@ -89,6 +43,10 @@ class Configure(config.base.Configure):
       self.framework.argDB['LIBS'] += ' '+self.toString(libName)
       return 1
     return 0
+
+  def toString(self,libs):
+    '''Converts a list of libraries to a string suitable for a linker'''
+    return ' '.join([self.getLibArgument(lib) for lib in libs])
 
   def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0):
     '''Checks that the library "libName" contains "funcs", and if it does defines HAVE_LIB"libName"
@@ -141,25 +99,20 @@ class Configure(config.base.Configure):
       if not found: return 0
     return 1
 
-  def toString(self,libs):
-    '''Converts a list of libraries to a string suitable for a linker'''
-    return ' '.join([self.getLibArgument(lib) for lib in libs])
+  def checkMath(self):
+    '''Check for sin() in libm, the math library'''
+    self.math = None
+    if self.check('','sin', prototype = 'double sin(double);', call = 'sin(1.0);\n'):
+      self.math = []
+    elif self.check('m', 'sin', prototype = 'double sin(double);', call = 'sin(1.0);\n'):
+      self.math = ['libm.a']
+    return
 
-  def checkInclude(self,incl,hfiles,otherIncludes = []):
-    '''Checks if a particular include file can be found along particular include paths'''
-    if not isinstance(hfiles,list): hfiles = [hfiles]
-    for hfile in hfiles:
-      oldFlags = self.compilers.CPPFLAGS
-      self.compilers.CPPFLAGS += ' '+self.includeToString(incl+otherIncludes)
-      found = self.checkPreprocess('#include <' +hfile+ '>\n')
-      self.compilers.CPPFLAGS = oldFlags
-      if not found: return 0
-    self.framework.log.write('Found header files ' +str(hfiles)+ ' in '+str(incl)+'\n')
-    return 1
-  
-  def includeToString(self,incls):
-    '''Converts a list of includes to a string suitable for a compiler'''
-    return ' '.join([self.getIncludeArgument(inc) for inc in incls])
+  def checkDynamic(self):
+    '''Check for the header and libraries necessary for dynamic library manipulation'''
+    self.check(['dl'], 'dlopen')
+    self.headers.check('dlfcn.h')
+    return
 
   def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int', noCheckArg = 0):
     '''Determine whether a library is shared
@@ -293,19 +246,11 @@ int checkInit(void) {
       self.framework.logPrint('Library was not shared')
     return isShared
 
-  def checkMath(self):
-    '''Check for sin() in libm, the math library'''
-    self.math = None
-    if self.check('','sin', prototype = 'double sin(double);', call = 'sin(1.0);\n'):
-      self.math = []
-    elif self.check('m', 'sin', prototype = 'double sin(double);', call = 'sin(1.0);\n'):
-      self.math = ['libm.a']
-    return
-
   def configure(self):
     self.framework.argDB['LIBS'] = ''
     map(lambda args: self.executeTest(self.check, list(args)), self.libraries)
     self.executeTest(self.checkMath)
+    self.executeTest(self.checkDynamic)
     self.addArgumentSubstitution('LDFLAGS', 'LDFLAGS')
     self.addArgumentSubstitution('LIBS',    'LIBS')
     return

@@ -7,8 +7,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.setCompilers = self.framework.require('config.setCompilers', self)
-    self.libraries    = self.framework.require('config.libraries', self)
     self.include      = []
     self.lib          = None
     self.baseName     = 'ase'
@@ -21,6 +19,11 @@ class Configure(config.base.Configure):
     import nargs
 
     help.addArgument('ASE', '-ase-dir', nargs.ArgDir(None, None, 'Specify the ASE Runtime directory'))
+    return
+
+  def setupDependencies(self, framework):
+    self.setCompilers = framework.require('config.setCompilers', self)
+    self.libraries    = framework.require('config.libraries', self)
     return
 
   def checkASEDir(self, dir):

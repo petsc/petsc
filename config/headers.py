@@ -6,8 +6,22 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.headers      = headers
-    self.compilers    = self.framework.require('config.compilers', self)
     return
+
+  def setupDependencies(self, framework):
+    self.compilers = self.framework.require('config.compilers', self)
+    return
+
+  def getIncludeArgument(self, include):
+    '''Return the proper include line argument for the given filename
+       - If the path is empty, return it unchanged
+       - If starts with - then return unchanged
+       - Otherwise return -I<include>'''
+    if not include:
+      return ''
+    if include[0] == '-':
+      return include
+    return '-I'+include
 
   def getDefineName(self, header):
     return 'HAVE_'+header.upper().replace('.', '_').replace('/', '_')
