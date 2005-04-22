@@ -159,3 +159,4 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPICSRPERM(Mat A)
   
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
