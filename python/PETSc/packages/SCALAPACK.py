@@ -8,15 +8,19 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.mpi           = self.framework.require('PETSc.packages.MPI',self)
-    self.blasLapack    = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.blacs         = self.framework.require('PETSc.packages.blacs',self)
-    self.download      = ['http://www.netlib.org/scalapack/scalapack.tgz']
-    self.deps          = [self.blacs,self.mpi,self.blasLapack]
-    self.functions     = ['ssytrd']
-    self.includes      = []
-    self.libdir        = ''
-    self.liblist       = [['libscalapack.a']]
+    self.download  = ['http://www.netlib.org/scalapack/scalapack.tgz']
+    self.functions = ['ssytrd']
+    self.includes  = []
+    self.libdir    = ''
+    self.liblist   = [['libscalapack.a']]
+    return
+
+  def setupDependencies(self, framework):
+    PETSc.package.Package.setupDependencies(self, framework)
+    self.mpi        = framework.require('PETSc.packages.MPI',self)
+    self.blasLapack = framework.require('PETSc.packages.BlasLapack',self)
+    self.blacs      = framework.require('PETSc.packages.blacs',self)
+    self.deps       = [self.blacs,self.mpi,self.blasLapack]
     return
 
   def Install(self):

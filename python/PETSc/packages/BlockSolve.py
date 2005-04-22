@@ -9,9 +9,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.compilers    = self.framework.require('config.compilers',self)
-    self.libraries    = self.framework.require('config.libraries',self)
-    self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.foundBS95    = 0
     self.lib          = ''
     self.include      = []
@@ -35,6 +32,14 @@ class Configure(config.base.Configure):
     help.addArgument('BLOCKSOLVE95','-with-blocksolve95-arch=<arch>',nargs.Arg(None,None,'Indicate the BlockSolve95 arch to use'))
     return
 
+  def setupDependencies(self, framework):
+    self.compilers      = framework.require('config.compilers',self)
+    self.headers        = framework.require('config.headers',self)
+    self.libraries      = framework.require('config.libraries',self)
+    self.mpi            = framework.require('PETSc.packages.MPI',self)
+    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
+    return
+
   def generateIncludeGuesses(self):
     if 'with-blocksolve95-include' in self.framework.argDB:
       yield('User specified BLOCKSOLVE95 header location',self.framework.argDB['with-blocksolve95-include'])
@@ -48,7 +53,7 @@ class Configure(config.base.Configure):
   def checkInclude(self,bs95incl):
     '''Check that BSsparse.h is present'''
     oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.mpi.include+bs95incl])
+    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.mpi.include+bs95incl])
     found = self.checkPreprocess('#include <BSsparse.h>\n')
     self.compilers.CPPFLAGS = oldFlags
     return found
@@ -110,7 +115,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-blocksolve95']:
       if self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
-      if self.framework.argDB['with-64-bit-ints']:
+      if self.libraryOptions.integerSize == 64:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')   
       self.executeTest(self.configureLibrary)
     return

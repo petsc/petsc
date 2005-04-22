@@ -9,55 +9,6 @@ class Configure(config.base.Configure):
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
     self.defineAutoconfMacros()
-    headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
-                                            'stropts', 'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
-                                            'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
-                                            'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types','WindowsX'])
-    functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
-                 'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
-                 'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'gethostbyname',
-                 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','erf','dlerror']
-    libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
-    self.setCompilers = self.framework.require('config.setCompilers',      self)
-    self.framework.require('PETSc.utilities.arch', self.setCompilers)
-    self.languages    = self.framework.require('PETSc.utilities.languages',self.setCompilers)
-    self.debugging    = self.framework.require('PETSc.utilities.debugging',self.setCompilers)        
-    self.compilers    = self.framework.require('config.compilers',         self)
-    self.framework.require('PETSc.utilities.compilerFlags', self.compilers)
-    self.types        = self.framework.require('config.types',             self)
-    self.headers      = self.framework.require('config.headers',           self)
-    self.functions    = self.framework.require('config.functions',         self)
-    self.libraries    = self.framework.require('config.libraries',         self)
-    self.arch         = self.framework.require('PETSc.utilities.arch',     self)
-    self.bmake        = self.framework.require('PETSc.utilities.bmakeDir', self)
-    self.dynamic      = self.framework.require('PETSc.utilities.dynamicLibraries', self)        
-    self.x11          = self.framework.require('PETSc.packages.X11',       self)
-    self.compilers.headerPrefix = self.headerPrefix
-    self.types.headerPrefix     = self.headerPrefix
-    self.headers.headerPrefix   = self.headerPrefix
-    self.functions.headerPrefix = self.headerPrefix
-    self.libraries.headerPrefix = self.headerPrefix
-    self.headers.headers.extend(headersC)
-    self.functions.functions.extend(functions)
-    self.libraries.libraries.extend(libraries1)
-
-    import PETSc.packages
-    import PETSc.utilities    
-
-    for utility in os.listdir(os.path.join('python','PETSc','utilities')):
-      (utilityName, ext) = os.path.splitext(utility)
-      if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
-        utilityObj              = self.framework.require('PETSc.utilities.'+utilityName, self)
-        utilityObj.headerPrefix = self.headerPrefix
-        setattr(self, utilityName.lower(), utilityObj)
-
-    for package in os.listdir(os.path.join('python','PETSc','packages')):
-      (packageName, ext) = os.path.splitext(package)
-      if not packageName.startswith('.') and not packageName.startswith('#') and ext == '.py' and not packageName == '__init__':
-        packageObj              = self.framework.require('PETSc.packages.'+packageName, self)
-        packageObj.headerPrefix = self.headerPrefix
-        setattr(self, packageName.lower(), packageObj)
-        
     # List of packages actually found
     self.framework.packages = []
     return
@@ -70,6 +21,44 @@ class Configure(config.base.Configure):
 
     help.addArgument('PETSc', '-prefix=<path>',            nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
     help.addArgument('PETSc', '-with-default-arch=<bool>', nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
+    return
+
+  def setupDependencies(self, framework):
+    self.setCompilers  = framework.require('config.setCompilers',      self)
+    self.arch          = framework.require('PETSc.utilities.arch',     self.setCompilers)
+    self.languages     = framework.require('PETSc.utilities.languages',self.setCompilers)
+    self.debugging     = framework.require('PETSc.utilities.debugging',self.setCompilers)        
+    self.compilers     = framework.require('config.compilers',         self)
+    self.compilerFlags = framework.require('PETSc.utilities.compilerFlags', self.compilers)
+    self.types         = framework.require('config.types',             self)
+    self.headers       = framework.require('config.headers',           self)
+    self.functions     = framework.require('config.functions',         self)
+    self.libraries     = framework.require('config.libraries',         self)
+    for d in ['utilities', 'packages']:
+      for utility in os.listdir(os.path.join('python', 'PETSc', d)):
+        (utilityName, ext) = os.path.splitext(utility)
+        if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
+          utilityObj              = self.framework.require('PETSc.'+d+'.'+utilityName, self)
+          utilityObj.headerPrefix = self.headerPrefix
+          setattr(self, utilityName.lower(), utilityObj)
+
+    self.compilers.headerPrefix = self.headerPrefix
+    self.types.headerPrefix     = self.headerPrefix
+    self.headers.headerPrefix   = self.headerPrefix
+    self.functions.headerPrefix = self.headerPrefix
+    self.libraries.headerPrefix = self.headerPrefix
+    headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
+                                            'stropts', 'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
+                                            'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
+                                            'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types','WindowsX'])
+    functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
+                 'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
+                 'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'gethostbyname',
+                 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','erf','dlerror']
+    libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
+    self.headers.headers.extend(headersC)
+    self.functions.functions.extend(functions)
+    self.libraries.libraries.extend(libraries1)
     return
 
   def defineAutoconfMacros(self):
@@ -169,7 +158,7 @@ class Configure(config.base.Configure):
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
           i.include = [i.include]
-        self.addMakeMacro(i.PACKAGE+'_INCLUDE', ' '.join([self.libraries.getIncludeArgument(inc) for inc in i.include]))
+        self.addMakeMacro(i.PACKAGE+'_INCLUDE', ' '.join([self.headers.getIncludeArgument(inc) for inc in i.include]))
     self.addMakeMacro('PACKAGES_LIBS',' '.join(['${'+package.PACKAGE+'_LIB}' for package in self.framework.packages]+[self.libraries.getLibArgument(l) for l in self.libraries.math]))
     
     self.addMakeMacro('INSTALL_DIR',self.installdir)
@@ -283,7 +272,7 @@ class Configure(config.base.Configure):
     '''Output a script in the bmake directory which will reproduce the configuration'''
     import nargs
 
-    scriptName = os.path.join(self.bmake.bmakeDir, 'configure.py')
+    scriptName = os.path.join(self.bmakedir.bmakeDir, 'configure.py')
     args = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.framework.clArgs])
     if 'configModules' in args:
       del args['configModules']

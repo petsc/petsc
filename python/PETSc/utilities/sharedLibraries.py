@@ -8,8 +8,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.compilers    = self.framework.require('config.compilers',     self)
-    self.arch         = self.framework.require('PETSc.utilities.arch', self)
     self.useShared    = 0
     return
 
@@ -17,6 +15,10 @@ class Configure(config.base.Configure):
     return ''
     
   def setupHelp(self, help):
+    return
+
+  def setupDependencies(self, framework):
+    self.arch = framework.require('PETSc.utilities.arch', self)
     return
 
   def configureSharedLibraries(self):

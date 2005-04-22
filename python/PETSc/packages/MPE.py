@@ -8,7 +8,10 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.argDB        = framework.argDB
-    self.framework.require('PETSc.packages.MPI', self)
+    return
+
+  def setupDependencies(self, framework):
+    self.mpi = framework.require('PETSc.packages.MPI', self)
     return
 
   def configure(self):

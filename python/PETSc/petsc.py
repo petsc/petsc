@@ -16,8 +16,6 @@ class Configure(config.base.Configure):
     self.foundInclude = 0
     self.dir          = None
     self.petsc        = None
-    self.compilers    = self.framework.require('config.compilers', self)
-    self.libraries    = self.framework.require('config.libraries', self)
     return
 
   def __str__(self):
@@ -38,6 +36,12 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-petsc-shared=<bool>',         nargs.ArgBool(None, 1, 'Require that the PETSc library be shared'))
     help.addArgument('PETSc', '-with-petsc-arch=<arch>',           nargs.Arg(None, None, 'Specify PETSC_ARCH'))
     help.addArgument('PETSc', '-download-petsc=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, 'Install PETSc'))
+    return
+
+  def setupDependencies(self, framework):
+    self.compilers = framework.require('config.compilers', self)
+    self.headers   = framework.require('config.headers', self)
+    self.libraries = framework.require('config.libraries', self)
     return
 
   def loadPETScConfigure(self):
@@ -115,7 +119,7 @@ class Configure(config.base.Configure):
   def checkInclude(self, includeDir):
     '''Check that petsc.h is present'''
     oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in includeDir])
+    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in includeDir])
     if self.otherIncludes:
       self.compilers.CPPFLAGS += ' '+self.otherIncludes
     found = self.checkPreprocess('#include <petsc.h>\n')
@@ -126,7 +130,7 @@ class Configure(config.base.Configure):
     '''Analogous to checkLink(), but the PETSc includes and libraries are automatically provided'''
     success  = 0
     oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
+    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.include])
     if self.otherIncludes:
       self.compilers.CPPFLAGS += ' '+self.otherIncludes
     oldLibs  = self.framework.argDB['LIBS']

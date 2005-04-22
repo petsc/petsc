@@ -8,9 +8,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.compilers    = self.framework.require('config.compilers',       self)
-    self.functions    = self.framework.require('config.functions',       self)
-    self.headers      = self.framework.require('config.headers',           self)
     return
     
   def __str__(self):
@@ -18,6 +15,12 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
+    return
+
+  def setupDependencies(self, framework):
+    self.compilers = framework.require('config.compilers', self)
+    self.functions = framework.require('config.functions', self)
+    self.headers   = framework.require('config.headers', self)
     return
  
   def configureFPTrap(self):

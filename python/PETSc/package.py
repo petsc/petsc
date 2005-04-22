@@ -10,13 +10,6 @@ class Package(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSc'
     self.substPrefix  = 'PETSc'
-    self.compilers    = self.framework.require('config.compilers',self)
-    self.setCompilers = self.framework.require('config.setCompilers',self)
-    self.libraries    = self.framework.require('config.libraries',self)
-    self.languages    = self.framework.require('PETSc.utilities.languages',self)
-    self.arch         = self.framework.require('PETSc.utilities.arch',self)
-    self.functions    = self.framework.require('config.functions',self)
-    self.source       = self.framework.require('config.sourceControl',self)
     self.found        = 0
     self.lib          = []
     # this packages libraries and all those it depends on
@@ -52,6 +45,17 @@ class Package(config.base.Configure):
     self.includedir   = 'include'
     # package defaults to being required (MPI and BlasLapack)
     self.required     = 0
+    return
+
+  def setupDependencies(self, framework):
+    self.setCompilers  = self.framework.require('config.setCompilers',self)
+    self.compilers     = self.framework.require('config.compilers',self)
+    self.headers       = self.framework.require('config.headers',self)
+    self.libraries     = self.framework.require('config.libraries',self)
+    self.languages     = self.framework.require('PETSc.utilities.languages',self)
+    self.arch          = self.framework.require('PETSc.utilities.arch',self)
+    self.programs      = self.framework.require('PETSc.utilities.programs', self)
+    self.sourceControl = self.framework.require('config.sourceControl',self)
     # Need this for the with-64-bit-ints option
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
     return
@@ -171,7 +175,7 @@ class Package(config.base.Configure):
     self.framework.log.write('Downloading '+self.name+'\n')
     packages  = self.framework.argDB['with-external-packages-dir']
     
-    if hasattr(self.source,'bk'):
+    if hasattr(self.sourceControl, 'bk'):
       for url in self.download:
         if url.startswith('bk://'):
           failedmessage = 'Unable to bk clone '+self.package+'\n'+\
@@ -280,7 +284,7 @@ class Package(config.base.Configure):
       if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs}):      
         self.lib = lib	
         self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
-        if (not self.includes) or self.executeTest(self.libraries.checkInclude, [incl, self.includes],{'otherIncludes' : incls}):
+        if (not self.includes) or self.executeTest(self.headers.checkInclude, [incl, self.includes],{'otherIncludes' : incls}):
           self.include = incl
           if self.checkSharedLibrary():
             self.found   = 1

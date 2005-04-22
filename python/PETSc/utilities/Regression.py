@@ -9,12 +9,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.arch          = self.framework.require('PETSc.utilities.arch', self)
-    self.bmake         = self.framework.require('PETSc.utilities.bmakeDir', self)    
-    self.datafilespath = self.framework.require('PETSc.utilities.dataFilesPath', self)
-    self.mpi           = self.framework.require('PETSc.packages.MPI', self)
-    self.x11           = self.framework.require('PETSc.packages.X11', self)        
-    self.framework.require('config.compilers', self)
     return
 
   def __str__(self):
@@ -22,6 +16,14 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
+    return
+
+  def setupDependencies(self, framework):
+    self.arch          = framework.require('PETSc.utilities.arch', self)
+    self.bmake         = framework.require('PETSc.utilities.bmakeDir', self)    
+    self.datafilespath = framework.require('PETSc.utilities.dataFilesPath', self)
+    self.mpi           = framework.require('PETSc.packages.MPI', self)
+    self.x11           = framework.require('PETSc.packages.X11', self)        
     return
 
   def configureRegression(self):

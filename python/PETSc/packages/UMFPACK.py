@@ -8,13 +8,17 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/UMFPACKv4.3.tar.gz']
-    self.deps         = [self.blasLapack]
-    self.functions    = ['umfpack_di_report_info'] 
-    self.includes     = ['umfpack.h']
-    self.libdir       = 'UMFPACK/Lib'
-    self.includedir   = 'UMFPACK/Include'
+    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/UMFPACKv4.3.tar.gz']
+    self.functions  = ['umfpack_di_report_info'] 
+    self.includes   = ['umfpack.h']
+    self.libdir     = 'UMFPACK/Lib'
+    self.includedir = 'UMFPACK/Include'
+    return
+
+  def setupDependencies(self, framework):
+    PETSc.package.Package.setupDependencies(self, framework)
+    self.blasLapack = framework.require('PETSc.packages.BlasLapack',self)
+    self.deps       = [self.blasLapack]
     return
 
   def generateLibList(self,dir):  #dir = ~UMFPACKv4.3/UMFPACK/Lib

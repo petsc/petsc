@@ -9,9 +9,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.arch         = self.framework.require('PETSc.utilities.arch', self)
-    self.framework.require('config.setCompilers',self)
-    self.debugging    = self.framework.require('PETSc.utilities.debugging', self)
     return
 
   def __str__(self):
@@ -23,6 +20,10 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Use CTABLE hashing for certain search functions - to conserve memory'))
     help.addArgument('PETSc', '-with-fortran-kernels=<bool>',  nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
     help.addArgument('PETSc', '-with-64-bit-ints=<bool>',      nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
+    return
+
+  def setupDependencies(self, framework):
+    self.debugging = framework.require('PETSc.utilities.debugging', self)
     return
 
   def configureLibraryOptions(self):

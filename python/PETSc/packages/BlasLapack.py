@@ -12,12 +12,6 @@ class Configure(PETSc.package.Package):
     self.substPrefix  = ''
     self.argDB        = framework.argDB
     self.found        = 0
-    self.compilers    = self.framework.require('config.compilers', self)
-    self.setCompilers = self.framework.require('config.setCompilers', self)    
-    self.libraries    = self.framework.require('config.libraries', self)
-    self.arch         = self.framework.require('PETSc.utilities.arch', self)
-    self.programs     = self.framework.require('PETSc.utilities.programs', self)
-    self.framework.require('PETSc.packages.sowing', self)
     self.f2c             = 0
     self.missingRoutines = []
     self.separateBlas    = 1
@@ -34,6 +28,11 @@ class Configure(PETSc.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<lib>',                     nargs.Arg(None, None, 'Indicate the library(s) containing LAPACK'))
     help.addArgument('BLAS/LAPACK', '-download-c-blas-lapack=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Automatically install a C version of BLAS/LAPACK'))
     help.addArgument('BLAS/LAPACK', '-download-f-blas-lapack=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 2, 'Automatically install a Fortran version of BLAS/LAPACK'))
+    return
+
+  def setupDependencies(self, framework):
+    PETSc.package.Package.setupDependencies(self, framework)
+    framework.require('PETSc.packages.sowing', self)
     return
 
   def getChecksum(self,source, chunkSize = 1024*1024):

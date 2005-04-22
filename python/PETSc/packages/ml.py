@@ -8,15 +8,19 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.mpi          = self.framework.require('PETSc.packages.MPI',self)
-    self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-3.1-pre.tar.gz']
-    self.deps         = [self.mpi,self.blasLapack]
-    self.functions    = ['ML_Set_PrintLevel']
-    self.includes     = ['ml_include.h']
-    self.liblist      = [['libml.a']]
-    self.license      = 'http://software.sandia.gov/trilinos/downloads.html'
-    self.fc           = 1 # looks like trilinos requires Fortran
+    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-3.1-pre.tar.gz']
+    self.functions = ['ML_Set_PrintLevel']
+    self.includes  = ['ml_include.h']
+    self.liblist   = [['libml.a']]
+    self.license   = 'http://software.sandia.gov/trilinos/downloads.html'
+    self.fc        = 1 # looks like trilinos requires Fortran
+    return
+
+  def setupDependencies(self, framework):
+    PETSc.package.Package.setupDependencies(self, framework)
+    self.mpi        = framework.require('PETSc.packages.MPI',self)
+    self.blasLapack = framework.require('PETSc.packages.BlasLapack',self)
+    self.deps       = [self.mpi,self.blasLapack]
     return
           
   def Install(self):

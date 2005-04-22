@@ -9,7 +9,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.framework.require('config.compilers', self)
     return
 
   def __str__(self):
@@ -19,7 +18,6 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('PETSc', '-with-debugger=<gdb,dbx,etc>',   nargs.Arg(None, None, 'Debugger to use in PETSc'))
     return
-
       
   def configureDebuggers(self):
     '''Find a default debugger and determine its arguments'''

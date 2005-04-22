@@ -12,9 +12,6 @@ class Configure(config.base.Configure):
     self.headerPrefix  = ''
     self.substPrefix   = ''
     self.found         = 0
-    self.compilers     = self.framework.require('config.compilers', self)
-    self.libraries     = self.framework.require('config.libraries', self)
-    self.mpi           = self.framework.require('PETSc.packages.MPI', self)
     return
 
   def __str__(self):
@@ -34,6 +31,14 @@ class Configure(config.base.Configure):
     help.addArgument('Scotch', '-download-scotch=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, 'Automatically install Scotch'))
     return
 
+  def setupDependencies(self, framework):
+    self.compilers      = framework.require('config.compilers', self)
+    self.headers        = framework.require('config.headers', self)
+    self.libraries      = framework.require('config.libraries', self)
+    self.mpi            = framework.require('PETSc.packages.MPI', self)
+    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
+    return
+
   def checkLib(self, libraries):
     '''Check for SCOTCH_archBuild in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
@@ -45,7 +50,7 @@ class Configure(config.base.Configure):
   def checkInclude(self, includeDir):
     '''Check that scotch.h is present'''
     oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in includeDir+self.mpi.include])
+    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in includeDir+self.mpi.include])
     found = self.checkPreprocess('#include <scotch.h>\n')
     self.compilers.CPPFLAGS = oldFlags
     return found
@@ -177,7 +182,7 @@ class Configure(config.base.Configure):
     if (self.framework.argDB['with-scotch'] or self.framework.argDB['download-scotch'] == 1):
       if self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
-      if self.framework.argDB['with-64-bit-ints']:
+      if self.libraryOptions.integerSize == 64:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')        
       self.executeTest(self.configureLibrary)
       self.framework.packages.append(self)

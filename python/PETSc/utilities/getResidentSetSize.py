@@ -6,19 +6,10 @@ import re
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    self.headerPrefix  = 'PETSC'
-    self.substPrefix   = 'PETSC'
-    self.updated       = 0
-    self.strmsg        = ''
-    self.functions     = self.framework.require('config.functions',   self)
-    self.setCompilers  = self.framework.require('config.setCompilers',self)
-    self.compilers     = self.framework.require('config.compilers',   self)
-    self.types         = self.framework.require('config.types',       self)
-    self.headers       = self.framework.require('config.headers',     self)
-    self.functions.functions.append('getrusage')
-    self.functions.functions.append('sbreak')
-    self.functions.functions.append('getpagesize')
-    self.functions.functions.append('task_info')            
+    self.headerPrefix = 'PETSC'
+    self.substPrefix  = 'PETSC'
+    self.updated      = 0
+    self.strmsg       = ''
     return
 
   def __str__(self):
@@ -26,6 +17,14 @@ class Configure(config.base.Configure):
      
   def setupHelp(self, help):
     import nargs
+    return
+
+  def setupDependencies(self, framework):
+    self.functions = framework.require('config.functions', self)
+    self.functions.functions.append('getrusage')
+    self.functions.functions.append('sbreak')
+    self.functions.functions.append('getpagesize')
+    self.functions.functions.append('task_info')            
     return
 
   def configureMemorySize(self):

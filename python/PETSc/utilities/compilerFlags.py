@@ -8,9 +8,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
-    self.setCompilers = self.framework.require('config.setCompilers', self)
-    self.languages    = self.framework.require('PETSc.utilities.languages', self)
-    self.debugging    = self.framework.require('PETSc.utilities.debugging', self)
     return
 
   def __str__(self):
@@ -27,6 +24,12 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc Compiler Flags', 'FOPTFLAGS',   nargs.Arg(None, None, 'User flags for the Fortran compiler'))
     # not sure where to put this, currently gcov is handled in ../compilerOptions.py
     help.addArgument('PETSc', '-with-gcov=<bool>',          nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
+    return
+
+  def setupDependencies(self, framework):
+    self.setCompilers = framework.require('config.setCompilers', self)
+    self.languages    = framework.require('PETSc.utilities.languages', self)
+    self.debugging    = framework.require('PETSc.utilities.debugging', self)
     return
 
   def configureCompilerFlags(self):

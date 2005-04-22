@@ -9,14 +9,17 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.mpi          = self.framework.require('PETSc.packages.MPI',self)
-    self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
     self.download     = ['bk://parmetis.bkbits.net/ParMetis-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/parmetis.tar.gz']
-    self.deps         = [self.mpi,self.blasLapack]
     self.functions    = ['ParMETIS_V3_PartKway']
     self.includes     = ['parmetis.h']
     self.liblist      = [['libparmetis.a','libmetis.a']]
     self.downloadname = 'parmetis'
+    return
+
+  def setupDependencies(self, framework):
+    PETSc.package.Package.setupDependencies(self, framework)
+    self.mpi = framework.require('PETSc.packages.MPI',self)
+    self.deps = [self.mpi]
     return
 
   def Install(self):
