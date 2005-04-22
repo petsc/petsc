@@ -9,6 +9,7 @@ LOCDIR          = src/sys/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c
 EXAMPLESF       = ex3f.F
 MANSEC          = Sys
+CLEANFILES      = binaryoutput binaryoutput.info
 
 include ${PETSC_DIR}/bmake/common/base
 

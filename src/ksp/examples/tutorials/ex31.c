@@ -612,6 +612,7 @@ PetscErrorCode ComputePredictor(DMMG dmmg)
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
+  ierr = DAGetGlobalVector(da, &uOld);CHKERRQ(ierr);
   ierr = DAGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);
   ierr = DAGetLocalVector(da, &uLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
