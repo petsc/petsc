@@ -12,8 +12,6 @@ class Configure(PETSc.package.Package,config.autoconf.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.foundX11     = 0
-    self.compilers    = self.framework.require('config.compilers',    self)
-    self.make         = self.framework.require('PETSc.utilities.Make', self)
     return
 
   def __str__(self):
@@ -29,6 +27,11 @@ class Configure(PETSc.package.Package,config.autoconf.Configure):
     help.addArgument('X11', '-with-x=<bool>',                nargs.ArgBool(None, 1,   'Activate X11'))
     help.addArgument('X11', '-with-x-include=<include dir>', nargs.ArgDir(None, None, 'Specify an include directory for X11'))
     help.addArgument('X11', '-with-x-lib=<X11 lib>',         nargs.Arg(None, None,    'Specify X11 library file'))
+    return
+
+  def setupDependencies(self, framework):
+    PETSc.package.Package.setupDependencies(self, framework)
+    self.make = framework.require('PETSc.utilities.Make', self)
     return
 
   def generateGuesses(self):

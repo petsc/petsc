@@ -8,17 +8,20 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.mpi           = self.framework.require('PETSc.packages.MPI',self)
-    self.blasLapack    = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.download      = ['bk://petsc.bkbits.net/blacs-dev']
-    self.deps          = [self.mpi,self.blasLapack]
-    self.functions     = ['blacs_pinfo']
-    self.liblist       = [['libblacs.a']]
-    self.includes      = []
-    self.libdir        = ''
-    self.fc            = 1
+    self.download  = ['bk://petsc.bkbits.net/blacs-dev']
+    self.functions = ['blacs_pinfo']
+    self.liblist   = [['libblacs.a']]
+    self.includes  = []
+    self.libdir    = ''
+    self.fc        = 1
     return
 
+  def setupDependencies(self, framework):
+    PETSc.package.Package.setupDependencies(self, framework)
+    self.mpi        = framework.require('PETSc.packages.MPI',self)
+    self.blasLapack = framework.require('PETSc.packages.BlasLapack',self)
+    self.deps       = [self.mpi,self.blasLapack]
+    return
           
   def Install(self):
     # Get the BLACS directories

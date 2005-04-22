@@ -8,15 +8,18 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.mpi          = self.framework.require('PETSc.packages.MPI',self)
-    self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre.tar.gz']
-    self.deps         = [self.mpi,self.blasLapack]
-    self.functions    = ['HYPRE_IJMatrixCreate']
-    self.includes     = ['HYPRE.h']
-    self.license      = 'http://www.llnl.gov/CASC/hypre/download/hyprebeta_cur_agree.html'
+    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre.tar.gz']
+    self.functions = ['HYPRE_IJMatrixCreate']
+    self.includes  = ['HYPRE.h']
+    self.license   = 'http://www.llnl.gov/CASC/hypre/download/hyprebeta_cur_agree.html'
     return
 
+  def setupDependencies(self, framework):
+    PETSc.package.Package.setupDependencies(self, framework)
+    self.mpi        = framework.require('PETSc.packages.MPI',self)
+    self.blasLapack = framework.require('PETSc.packages.BlasLapack',self)
+    self.deps       = [self.mpi,self.blasLapack]
+    return
 
   def generateLibList(self,dir):
     '''Normally the one in package.py is used, but hypre requires the extra C++ library'''

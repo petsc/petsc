@@ -8,7 +8,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.arch         = self.framework.require('PETSc.utilities.arch',self)
     return
 
   def __str__(self):
@@ -20,6 +19,10 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-python', nargs.ArgBool(None, 0, 'Download and install the Python wrappers'))
     help.addArgument('PETSc', '-with-precision=<single,double,matsingle>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
     help.addArgument('PETSc', '-with-scalar-type=<real or complex>', nargs.Arg(None, 'real', 'Specify real or complex numbers'))
+    return
+
+  def setupDependencies(self, framework):
+    self.arch = framework.require('PETSc.utilities.arch', self)
     return
 
   def configureScalarType(self):

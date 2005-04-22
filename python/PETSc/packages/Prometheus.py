@@ -8,16 +8,19 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.languages         = self.framework.require('PETSc.utilities.languages',self)
-    self.mpi               = self.framework.require('PETSc.packages.MPI',self)
-    self.blasLapack        = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.parmetis          = self.framework.require('PETSc.packages.ParMetis',self)
     self.download          = ['http://www.cs.berkeley.edu/~madams/Prometheus-1.8.1.tar.gz']
-    self.deps              = [self.parmetis,self.mpi,self.blasLapack]
     self.functions         = []
     self.includes          = []
     self.liblist           = [['libpromfei.a','libprometheus.a']]
     self.compilePrometheus = 0
+    return
+
+  def setupDependencies(self, framework):
+    PETSc.package.Package.setupDependencies(self, framework)
+    self.mpi        = framework.require('PETSc.packages.MPI',self)
+    self.blasLapack = framework.require('PETSc.packages.BlasLapack',self)
+    self.parmetis   = framework.require('PETSc.packages.ParMetis',self)
+    self.deps       = [self.parmetis,self.mpi,self.blasLapack]
     return
 
   def Install(self):
@@ -28,7 +31,7 @@ class Configure(PETSc.package.Package):
       os.mkdir(os.path.join(installDir,'include'))            
     self.framework.pushLanguage('C')
     args  = 'C_CC = '+self.framework.getCompiler()+'\n'
-    args += 'PETSC_INCLUDE = -I'+os.path.join(self.framework.argDB['PETSC_DIR'],'bmake',self.arch.arch)+' -I'+os.path.join(self.framework.argDB['PETSC_DIR'])+' -I'+os.path.join(self.framework.argDB['PETSC_DIR'],'include')+' '+' '.join([self.libraries.getIncludeArgument(inc) for inc in self.mpi.include+self.parmetis.include])+'\n'
+    args += 'PETSC_INCLUDE = -I'+os.path.join(self.framework.argDB['PETSC_DIR'],'bmake',self.arch.arch)+' -I'+os.path.join(self.framework.argDB['PETSC_DIR'])+' -I'+os.path.join(self.framework.argDB['PETSC_DIR'],'include')+' '+' '.join([self.headers.getIncludeArgument(inc) for inc in self.mpi.include+self.parmetis.include])+'\n'
     args += 'BUILD_DIR  = '+prometheusDir+'\n'
     args += 'LIB_DIR  = $(BUILD_DIR)/lib/\n'
     args += 'RANLIB = '+self.setCompilers.RANLIB+'\n'

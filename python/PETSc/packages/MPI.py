@@ -9,7 +9,6 @@ from stat import *
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.types          = self.framework.require('config.types',     self)
     self.download_lam   = ['http://www.lam-mpi.org/download/files/lam-7.1.1.tar.gz']
     self.download_mpich = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpich2.tar.gz']
     self.functions      = ['MPI_Init','MPI_Comm_create']
@@ -45,7 +44,13 @@ class Configure(PETSc.package.Package):
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-download-mpich-machines=[machine1,machine2...]',  nargs.Arg(None, ['localhost','localhost'], 'Machines for MPI to use'))
     help.addArgument('MPI', '-download-mpich-pm=mpd or gforker',  nargs.Arg(None, 'mpd', 'Launcher for MPI processes')) 
-  
+    return
+
+  def setupDependencies(self, framework):
+    PETSc.package.Package.setupDependencies(self, framework)
+    self.types = framework.require('config.types',     self)
+    return
+
   # search many obscure locations for MPI
   def getSearchDirectories(self):
     import re
@@ -135,7 +140,7 @@ class Configure(PETSc.package.Package):
        - Some older MPI 1 implementations are missing these'''
     oldFlags = self.compilers.CPPFLAGS
     oldLibs  = self.framework.argDB['LIBS']
-    self.compilers.CPPFLAGS       += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
+    self.compilers.CPPFLAGS       += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.include])
     self.framework.argDB['LIBS']   = self.libraries.toString(self.lib)+' '+self.framework.argDB['LIBS']
 
     if self.checkLink('#include <mpi.h>\n', 'if (MPI_Comm_f2c(MPI_COMM_WORLD));\n'):
@@ -152,8 +157,8 @@ class Configure(PETSc.package.Package):
   def configureTypes(self):
     '''Checking for MPI types'''
     oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
-    self.framework.batchIncludeDirs.extend([self.libraries.getIncludeArgument(inc) for inc in self.include])
+    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.include])
+    self.framework.batchIncludeDirs.extend([self.headers.getIncludeArgument(inc) for inc in self.include])
     self.types.checkSizeof('MPI_Comm', 'mpi.h')
     if 'HAVE_MPI_FINT' in self.defines:
       self.types.checkSizeof('MPI_Fint', 'mpi.h')

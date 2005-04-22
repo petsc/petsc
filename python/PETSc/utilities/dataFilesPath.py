@@ -11,7 +11,6 @@ class Configure(config.base.Configure):
     self.updated       = 0
     self.strmsg        = ''
     self.datafilespath = ''
-    self.arch          = self.framework.require('PETSc.utilities.arch', self)
     return
 
   def __str__(self):
@@ -20,6 +19,10 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-DATAFILESPATH=directory',                 nargs.Arg(None, None, 'Specifiy location of PETSc datafiles, e.g. test matrices'))    
+    return
+
+  def setupDependencies(self, framework):
+    self.arch = framework.require('PETSc.utilities.arch', self)
     return
 
   def getDatafilespath(self):

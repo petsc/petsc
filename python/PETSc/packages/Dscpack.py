@@ -12,7 +12,6 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.found        = 0
     self.lib          = []
     self.include      = []
@@ -34,6 +33,11 @@ class Configure(PETSc.package.Package):
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
     return
 
+  def setupDependencies(self, framework):
+    PETSc.package.Package.setupDependencies(self, framework)
+    self.mpi = framework.require('PETSc.packages.MPI',self)
+    return
+
   def generateIncludeGuesses(self):
     if 'with-'+self.package in self.framework.argDB:
       if 'with-'+self.package+'-include' in self.framework.argDB:
@@ -50,7 +54,7 @@ class Configure(PETSc.package.Package):
   def checkInclude(self,incl,hfile):
     incl.extend(self.mpi.include)
     oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in incl+self.mpi.include])    
+    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in incl+self.mpi.include])    
     found = self.checkPreprocess('#include <' +hfile+ '>\n')
     self.compilers.CPPFLAGS = oldFlags
     if found:
@@ -114,7 +118,7 @@ class Configure(PETSc.package.Package):
     if self.framework.argDB['with-'+self.package]:
       if self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
-      if self.framework.argDB['with-64-bit-ints']:
+      if self.libraryOptions.integerSize == 64:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')
       self.executeTest(self.configureLibrary)
     return

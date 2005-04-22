@@ -8,14 +8,18 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.download     = ['http://crd.lbl.gov/~xiaoye/SuperLU/superlu_3.0.tar.gz']
-    self.deps         = [self.blasLapack]
-    self.functions    = ['set_default_options']
-    self.includes     = ['dsp_defs.h']
-    self.libdir       = ''
-    self.includedir   = 'SRC'
-    self.liblist      = [['superlu.a']]
+    self.download   = ['http://crd.lbl.gov/~xiaoye/SuperLU/superlu_3.0.tar.gz']
+    self.functions  = ['set_default_options']
+    self.includes   = ['dsp_defs.h']
+    self.libdir     = ''
+    self.includedir = 'SRC'
+    self.liblist    = [['superlu.a']]
+    return
+
+  def setupDependencies(self, framework):
+    PETSc.package.Package.setupDependencies(self, framework)
+    self.blasLapack = self.framework.require('PETSc.packages.BlasLapack',self)
+    self.deps       = [self.blasLapack]
     return
 
   def Install(self):

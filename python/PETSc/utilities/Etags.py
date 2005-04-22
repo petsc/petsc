@@ -9,7 +9,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.arch         = self.framework.require('PETSc.utilities.arch', self)
     return
 
   def __str__(self):
@@ -18,6 +17,10 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-etags=<bool>',            nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
+    return
+
+  def setupDependencies(self, framework):
+    self.arch = framework.require('PETSc.utilities.arch', self)
     return
 
   def configureETags(self):

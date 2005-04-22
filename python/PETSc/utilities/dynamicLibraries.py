@@ -8,11 +8,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.compilers    = self.framework.require('config.compilers', self)
-    self.headers      = self.framework.require('config.headers', self)
-    self.libraries    = self.framework.require('config.libraries', self)
-    self.arch         = self.framework.require('PETSc.utilities.arch', self)
-    self.shared       = self.framework.require('PETSc.utilities.sharedLibraries', self)
     self.useDynamic   = 0
     return
 
@@ -22,6 +17,14 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-dynamic=<bool>', nargs.ArgBool(None, 0, 'Build dynamic libraries for PETSc'))
+    return
+
+  def setupDependencies(self, framework):
+    self.compilers = framework.require('config.compilers', self)
+    self.headers   = framework.require('config.headers', self)
+    self.libraries = framework.require('config.libraries', self)
+    self.arch      = framework.require('PETSc.utilities.arch', self)
+    self.shared    = framework.require('PETSc.utilities.sharedLibraries', self)
     return
 
   def configureDynamicLibraries(self):

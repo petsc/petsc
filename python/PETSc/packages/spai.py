@@ -10,15 +10,19 @@ import os
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.mpi           = self.framework.require('PETSc.packages.MPI', self)
-    self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/spai_3.0.tar.gz']
-    self.deps         = [self.mpi,self.blasLapack]
-    self.functions    = ['bspai']
-    self.includes     = ['spai.h']
-    self.liblist      = [['libspai.a']]
+    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/spai_3.0.tar.gz']
+    self.functions = ['bspai']
+    self.includes  = ['spai.h']
+    self.liblist   = [['libspai.a']]
     # SPAI include files are in the lib directory
-    self.includedir   = 'lib'
+    self.includedir = 'lib'
+    return
+
+  def setupDependencies(self, framework):
+    PETSc.package.Package.setupDependencies(self, framework)
+    self.mpi        = framework.require('PETSc.packages.MPI',self)
+    self.blasLapack = framework.require('PETSc.packages.BlasLapack',self)
+    self.deps       = [self.mpi,self.blasLapack]
     return
 
   def Install(self):
@@ -27,7 +31,7 @@ class Configure(PETSc.package.Package):
     if not os.path.isdir(os.path.join(installDir,'lib')):
       os.mkdir(os.path.join(installDir,'lib'))      
     self.framework.pushLanguage('C')
-    args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DMPI '+self.framework.getCompilerFlags()+' '+' '.join([self.libraries.getIncludeArgument(inc) for inc in self.mpi.include])+'\n'
+    args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DMPI '+self.framework.getCompilerFlags()+' '+' '.join([self.headers.getIncludeArgument(inc) for inc in self.mpi.include])+'\n'
     self.framework.popLanguage()
     try:
       fd      = file(os.path.join(installDir,'Makefile.in'))

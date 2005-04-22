@@ -8,16 +8,19 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.compiler     = self.framework.require('config.compilers',self)
-    self.mpi          = self.framework.require('PETSc.packages.MPI',self)
-    self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.blacs        = self.framework.require('PETSc.packages.blacs',self)
-    self.scalapack    = self.framework.require('PETSc.packages.SCALAPACK',self)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_4.3.2.tar.gz']
-    self.deps         = [self.scalapack,self.blacs,self.mpi,self.blasLapack]
-    self.liblist      = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libpord.a']]
-    self.functions    = ['dmumps_c']
-    self.includes     = ['dmumps_c.h']
+    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_4.3.2.tar.gz']
+    self.liblist   = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libpord.a']]
+    self.functions = ['dmumps_c']
+    self.includes  = ['dmumps_c.h']
+    return
+
+  def setupDependencies(self, framework):
+    PETSc.package.Package.setupDependencies(self, framework)
+    self.mpi        = framework.require('PETSc.packages.MPI',self)
+    self.blasLapack = self.framework.require('PETSc.packages.BlasLapack',self)
+    self.blacs      = self.framework.require('PETSc.packages.blacs',self)
+    self.scalapack  = self.framework.require('PETSc.packages.SCALAPACK',self)
+    self.deps       = [self.scalapack,self.blacs,self.mpi,self.blasLapack]
     return
         
   def Install(self):

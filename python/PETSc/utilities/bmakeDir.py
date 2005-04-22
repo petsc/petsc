@@ -9,7 +9,6 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.arch         = self.framework.require('PETSc.utilities.arch', self)
     return
 
   def __str__(self):
@@ -17,6 +16,10 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
+    return
+
+  def setupDependencies(self, framework):
+    self.arch = framework.require('PETSc.utilities.arch', self)
     return
 
   def configureBmakeDir(self):
