@@ -329,10 +329,16 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
     /* Handle the special cases where the number of nonzeros per row 
      * in the group is either 0 or 1. */
     if(nz == 0) {
-
+      for(i=jstart; i<=jend; i++) {
+        y[iperm[i]] = 0.0;
+      }
     }
     else if(nz == 1) {
-
+      for(i=jstart; i<=jend; i++) {
+        iold = iperm[i];
+        ipos = ai[iold];
+        y[iold] = aa[ipos] * x[aj[ipos]];
+      }
     }
     /* For the general case: */
     else {
@@ -407,6 +413,177 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
 }
 
 
+/* MatMultAdd_SeqCSRPERM() calculates yy = ww + A * xx.
+ * Note that the names I used to designate the vectors differs from that 
+ * used in MatMultAdd_SeqAIJ().  I did this to keep my notation consistent 
+ * with the MatMult_SeqCSRPERM() routine, which is very similar to this one. */
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_SeqCSRPERM"
+PetscErrorCode MatMultAdd_SeqCSRPERM(Mat A,Vec xx,Vec ww,Vec yy)
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar    *x,*y,*w,*aa;
+  PetscErrorCode ierr;
+  PetscInt       m=A->m,*aj,*ai;
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
+  PetscInt       n,i,jrow,j,*ridx=PETSC_NULL;
+  PetscScalar    sum;
+  PetscTruth     usecprow=a->compressedrow.use;
+#endif
+
+  /* Variables that don't appear in MatMultAdd_SeqAIJ. */
+  Mat_SeqCSRPERM *csrperm;
+  PetscInt *iperm;  /* Points to the permutation vector. */
+  PetscInt *xgroup;
+    /* Denotes where groups of rows with same number of nonzeros 
+     * begin and end in iperm. */
+  PetscInt *nzgroup;
+  PetscInt ngroup;
+  PetscInt igroup;
+  PetscInt jstart,jend;
+    /* jstart is used in loops to denote the position in iperm where a 
+     * group starts; jend denotes the position where it ends.
+     * (jend + 1 is where the next group starts.) */
+  PetscInt iold,nz;
+  PetscInt istart,iend,isize;
+  PetscInt ipos;
+  const PetscInt NDIM = 512;
+    /* NDIM specifies how many rows at a time we should work with when 
+     * performing the vectorized mat-vec.  This depends on various factors 
+     * such as vector register length, etc., and I really need to add a 
+     * way for the user (or the library) to tune this.  I'm setting it to  
+     * 512 for now since that is what Ed D'Azevedo was using in his Fortran 
+     * routines. */
+  PetscScalar yp[NDIM];
+  PetscInt ip[NDIM];
+    /* yp[] and ip[] are treated as vector "registers" for performing 
+     * the mat-vec. */
+
+#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#pragma disjoint(*x,*y,*aa)
+#endif
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  if (yy != ww) {
+    ierr = VecGetArray(ww,&w);CHKERRQ(ierr);
+  } else {
+    w = y;
+  }
+
+  aj  = a->j;  /* aj[k] gives column index for element aa[k]. */
+  aa  = a->a;  /* Nonzero elements stored row-by-row. */
+  ai  = a->i;  /* ai[k] is the position in aa and aj where row k starts. */
+
+  /* Get the info we need about the permutations and groupings. */
+  csrperm = (Mat_SeqCSRPERM *) A->spptr;
+  iperm = csrperm->iperm;
+  ngroup = csrperm->ngroup;
+  xgroup = csrperm->xgroup;
+  nzgroup = csrperm->nzgroup;
+  
+#if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDCSRPERM)
+  fortranmultaddcsrperm_(&m,x,ii,aj,aa,y,w);
+#else
+
+  for(igroup=0; igroup<ngroup; igroup++) {
+    jstart = xgroup[igroup];
+    jend = xgroup[igroup+1] - 1;
+
+    nz = nzgroup[igroup];
+
+    /* Handle the special cases where the number of nonzeros per row 
+     * in the group is either 0 or 1. */
+    if(nz == 0) {
+      for(i=jstart; i<=jend; i++) {
+        iold = iperm[i];
+        y[iold] = w[iold];
+      }
+    }
+    else if(nz == 1) {
+      for(i=jstart; i<=jend; i++) {
+        iold = iperm[i];
+        ipos = ai[iold];
+        y[iold] = w[iold] + aa[ipos] * x[aj[ipos]];
+      }
+    }
+    /* For the general case: */
+    else {
+    
+      /* We work our way through the current group in chunks of NDIM rows 
+       * at a time. */
+
+      for(istart=jstart; istart<=jend; istart+=NDIM) {
+        /* Figure out where the chunk of 'isize' rows ends in iperm.
+         * 'isize may of course be less than NDIM for the last chunk. */
+        iend = istart + (NDIM - 1);
+        if(iend > jend) { iend = jend; }
+        isize = iend - istart + 1;
+
+        /* Initialize the yp[] array that will be used to hold part of 
+         * the permuted results vector, and figure out where in aa each 
+         * row of the chunk will begin. */
+        for(i=0; i<isize; i++) {
+          iold = iperm[istart + i];
+            /* iold is a row number from the matrix A *before* reordering. */
+          ip[i] = ai[iold];
+            /* ip[i] tells us where the ith row of the chunk begins in aa. */
+          yp[i] = w[iold];
+        }
+
+        /* If the number of zeros per row exceeds the number of rows in 
+         * the chunk, we should vectorize along nz, that is, perform the 
+         * mat-vec one row at a time as in the usual CSR case. */
+        if(nz > isize) {
+#if defined(PETSC_HAVE_CRAYC)
+#pragma _CRI preferstream
+#endif
+          for(i=0; i<isize; i++) {
+#if defined(PETSC_HAVE_CRAYC)
+#pragma _CRI prefervector
+#endif
+            for(j=0; j<nz; j++) {
+              ipos = ip[i] + j;
+              yp[i] += aa[ipos] * x[aj[ipos]];
+            }
+          }
+        }
+        /* Otherwise, there are enough rows in the chunk to make it 
+         * worthwhile to vectorize across the rows, that is, to do the 
+         * matvec by operating with "columns" of the chunk. */
+        else {
+          for(j=0; j<nz; j++) {
+            for(i=0; i<isize; i++) {
+              ipos = ip[i] + j;
+              yp[i] += aa[ipos] * x[aj[ipos]];
+            }
+          }
+        }
+
+#if defined(PETSC_HAVE_CRAYC)
+#pragma _CRI ivdep
+#endif
+        /* Put results from yp[] into non-permuted result vector y. */
+        for(i=0; i<isize; i++) {
+          y[iperm[istart+i]] = yp[i];
+        }
+      } /* End processing chunk of isize rows of a group. */
+      
+    } /* End handling matvec for chunk with nz > 1. */
+  } /* End loop over igroup. */
+
+#endif
+  ierr = PetscLogFlops(2*a->nz - m);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  if (yy != ww) {
+    ierr = VecRestoreArray(ww,&w);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
 /* MatConvert_SeqAIJ_SeqCSRPERM converts a SeqAIJ matrix into a 
  * SeqCSRPERM matrix.  This routine is called by the MatCreate_SeqCSRPERM() 
  * routine, but can also be used to convert an assembled SeqAIJ matrix 
@@ -445,9 +622,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,MatType typ
   B->ops->assemblyend = MatAssemblyEnd_SeqCSRPERM;
   B->ops->destroy = MatDestroy_SeqCSRPERM;
   B->ops->mult = MatMult_SeqCSRPERM;
-  /* B->ops->multadd = MatMultAdd_SeqCSRPERM; */
-  /* I'll add MatMultAdd and other functions once I've got MatMult 
-   * thoroughly tested. */
+  B->ops->multadd = MatMultAdd_SeqCSRPERM;
 
   /* If A has already been assembled, compute the permutation. */
   if(A->assembled == PETSC_TRUE) {
