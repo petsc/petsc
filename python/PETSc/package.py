@@ -259,7 +259,7 @@ class Package(config.base.Configure):
     oldLibs  = self.framework.argDB['LIBS']
     self.compilers.CPPFLAGS     += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.include])
     self.framework.argDB['LIBS'] = self.libraries.toString(self.lib)+' '+self.framework.argDB['LIBS']
-    result = self.checkLink(self, includes, body, cleanup, codeBegin, codeEnd, shared)
+    result = self.checkLink(includes, body, cleanup, codeBegin, codeEnd, shared)
     self.compilers.CPPFLAGS      = oldFlags
     self.framework.argDB['LIBS'] = oldLibs
     return result

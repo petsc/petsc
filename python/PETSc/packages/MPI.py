@@ -100,7 +100,7 @@ class Configure(PETSc.package.Package):
 
   def checkSharedLibrary(self):
     '''Check that the libraries for MPI are shared libraries'''
-    if self.framework.argDB['with-mpi-shared']:
+    if self.framework.argDB['with-shared'] and self.framework.argDB['with-mpi-shared']:
       return self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib)
     return 1
 
