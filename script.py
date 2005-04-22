@@ -237,6 +237,7 @@ class Script(logging.Logger):
     if argDB is None:
       argDB = self.argDB
     if not 'configureCache' in argDB:
+      self.logPrint('No cached configure in RDict')
       return None
     try:
       cache           = argDB['configureCache']

@@ -15,9 +15,9 @@ class Configure(config.base.Configure):
     return ''
 
   def setupDependencies(self, framework):
-    self.setCompilers = framework.require('config.setCompilers', self)
-    self.headers      = framework.require('config.headers', self)
-    self.libraries    = framework.require('config.libraries', self)
+    self.compilers = framework.require('config.compilers', self)
+    self.headers   = framework.require('config.headers', self)
+    self.libraries = framework.require('config.libraries', self)
     return
 
   def checkInclude(self, includeDir):
