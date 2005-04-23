@@ -17,25 +17,32 @@
 #endif
 #include "petscbt.h"
 
+#if (PETSC_SIZEOF_INT == 8)
+#define PetscInt32 short
+#else
+#define PetscInt32 int
+#endif
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscByteSwapInt"
 /*
-  PetscByteSwapInt - Swap bytes in an integer. NOT a PetscInt!
+  PetscByteSwapInt - Swap bytes in a 32 bit integer. NOT a PetscInt! Note that PETSc binary read and write
+      always store and read only 32 bit integers! (See PetscBinaryRead(), PetscBinaryWrite()).
 
 */
-PetscErrorCode PETSC_DLLEXPORT PetscByteSwapInt(int *buff,PetscInt n)
+PetscErrorCode PETSC_DLLEXPORT PetscByteSwapInt(PetscInt32 *buff,PetscInt n)
 {
-  PetscInt  i,j,tmp =0;
+  PetscInt  i,j,tmp = 0;
   PetscInt  *tptr = &tmp;                /* Need to access tmp indirectly to get */
   char      *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
                                    
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<(int) sizeof(int); i++) {
-      ptr2[i] = ptr1[sizeof(int)-1-i];
+    for (i=0; i<sizeof(PetscInt32); i++) {
+      ptr2[i] = ptr1[sizeof(PetscInt32)-1-i];
     }
     buff[j] = *tptr;
   }
@@ -153,7 +160,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
 #if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT) || !defined(PETSC_WORDS_BIGENDIAN)
   PetscErrorCode    ierr;
 #endif
-  int               maxblock = 65536,wsize,err,m = (int) n;
+  int               maxblock = 65536,wsize,err;
+  size_t            m = (int) n;
   char              *pp = (char*)p;
 #if (PETSC_SIZEOF_INT == 8) || !defined(PETSC_WORDS_BIGENDIAN) || defined(PETSC_USE_64BIT_INT)
   void              *ptmp = p; 
@@ -163,18 +171,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
   if (!n) PetscFunctionReturn(0);
 
   if (type == PETSC_INT){
-#if (PETSC_SIZEOF_INT == 8)
-    /* read them in as shorts, later stretch into ints */
-    m   *= sizeof(short);
+    m   *= sizeof(PetscInt32);
+#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT)
+    /* read them in as 32 bit ints, later stretch into ints */
     ierr = PetscMalloc(m,&pp);CHKERRQ(ierr);
     ptmp = (void*)pp;
-#elif defined(PETSC_USE_64BIT_INT)
-    /* read them in as int, later stretch into PetscInts */
-    m   *= sizeof(int);
-    ierr = PetscMalloc(m,&pp);CHKERRQ(ierr);
-    ptmp = (void*)pp;
-#else
-    m *= sizeof(int);
 #endif
   } 
   else if (type == PETSC_SCALAR)  m *= sizeof(PetscScalar);
@@ -196,34 +197,24 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
     pp += err;
   }
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
-  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}        
-  else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}        
+  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
+  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}        
+  else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}        
   else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
 #endif
 
-#if (PETSC_SIZEOF_INT == 8)
-  if (type == PETSC_INT){
-    int   *p_int = (int*)p,i;
-    short *p_short = (short *)ptmp;
-    for (i=0; i<n; i++) {
-      p_int[i] = (int)p_short[i];
-    }
-    ierr = PetscFree(ptmp);CHKERRQ(ierr);
-  }
-#elif defined(PETSC_USE_64BIT_INT)
-  if (type == PETSC_INT){
+#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT)
+  if (type == PETSC_INT) {
     PetscInt   *p_int = (PetscInt*)p,i;
-    int       *p_short = (int *)ptmp;
+    PetscInt32 *p_short = (PetscInt32 *)ptmp;
     for (i=0; i<n; i++) {
       p_int[i] = (PetscInt)p_short[i];
     }
     ierr = PetscFree(ptmp);CHKERRQ(ierr);
   }
 #endif
-
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------- */
@@ -249,7 +240,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
    are converted to the big-endian format when they are written to disk.
    Integers are stored on the file as 32 bits long, regardless of whether
    they are stored in the machine as 32 bits or 64 bits, this means the same
-   binary file may be read on any machine.
+   binary file may be read on any machine. It also means that 64 bit integers larger than
+   roughly 2 billion are TRUNCATED/WRONG when written to the file.
 
    The Buffer p should be read-write buffer, and not static data.
    This way, byte-swapping is done in-place, and then the buffer is
@@ -257,7 +249,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
    
    This routine restores the original contents of the buffer, after 
    it is written to the file. This is done by byte-swapping in-place 
-   the second time. If the flag istemp is set to 1, the second
+   the second time. If the flag istemp is set to PETSC_TRUE, the second
    byte-swapping operation is not done, thus saving some computation,
    but the buffer corrupted is corrupted.
 
@@ -269,7 +261,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
 PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
 {
   char           *pp = (char*)p;
-  int            err,maxblock,wsize,m = (int)n;
+  int            err,maxblock,wsize;
+  size_t         m = (int)n;
 #if !defined(PETSC_WORDS_BIGENDIAN) || (PETSC_SIZEOF_INT == 8) ||  defined(PETSC_USE_64BIT_INT)
   PetscErrorCode ierr;
   void           *ptmp = p; 
@@ -278,35 +271,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
   if (!n) PetscFunctionReturn(0);
-
   maxblock = 65536;
 
-
   if (type == PETSC_INT){
-#if (PETSC_SIZEOF_INT == 8)
-    int   *p_int = (int*)p,i;
-    short *p_short;
-    m       *= sizeof(short);
+    m   *= sizeof(PetscInt32);
+#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT)
+    PetscInt   *p_int = (PetscInt32*)p,i;
+    PetscInt32 *p_short;
     ierr    = PetscMalloc(m,&pp);CHKERRQ(ierr);
     ptmp    = (void*)pp;
-    p_short = (short*)pp;
+    p_short = (PetscInt32*)pp;
 
     for (i=0; i<n; i++) {
-      p_short[i] = (short) p_int[i];
+      p_short[i] = (PetscInt32) p_int[i];
     }
-#elif defined(PETSC_USE_64BIT_INT)
-    PetscInt   *p_int = (PetscInt*)p,i;
-    int        *p_short;
-    m       *= sizeof(int);
-    ierr    = PetscMalloc(m,&pp);CHKERRQ(ierr);
-    ptmp    = (void*)pp;
-    p_short = (int*)pp;
-
-    for (i=0; i<n; i++) {
-      p_short[i] = (int) p_int[i];
-    }
-#else
-    m *= sizeof(int);
+    istemp = PETSC_TRUE;
 #endif
   }
   else if (type == PETSC_SCALAR)  m *= sizeof(PetscScalar);
@@ -319,10 +298,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
+  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
+  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}          
+  else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}          
   else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
-  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}          
-  else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}          
   else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
 #endif
@@ -340,9 +319,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   if (!istemp) {
     if      (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
     else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
-    else if (type == PETSC_INT)    {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
-    else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
-    else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
+    else if (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
+    else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
+    else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
   }
 #endif
 
@@ -490,7 +469,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySeek(int fd,off_t off,PetscBinarySeekT
 #else
   SETERRQ(PETSC_ERR_SUP_SYS,"System does not have a way of seeking on a file");
 #endif
-
   PetscFunctionReturn(0);
 }
 

@@ -16,11 +16,6 @@ class compilerOptions(config.base.Configure):
     flags = []
     # GNU gcc
     if config.setCompilers.Configure.isGNU(compiler):
-      if self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
-        if bopt == '':
-          flags.append('-Wl,-multiply_defined,suppress')
-          flags.extend(['-Wl,-multiply_defined', '-Wl,suppress'])
-          flags.extend(['-force_flat_namespace', '-flat_namespace'])
       if bopt == '':
         flags.append('-Wall')
         if 'USER' in os.environ and os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','kris','balay','hzhang','petsc']:

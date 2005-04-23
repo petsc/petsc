@@ -48,7 +48,7 @@ PetscErrorCode PetscSetUseTrMalloc_Private(void)
 #define TR_FREE        0x2
 
 typedef struct _trSPACE {
-    unsigned long   size;
+    size_t          size;
     int             id;
     int             lineno;
     const char      *filename;
@@ -74,15 +74,17 @@ typedef union {
     double  v[HEADER_DOUBLES];
 } TrSPACE;
 
-static long       TRallocated    = 0,TRfrags = 0;
+static size_t     TRallocated  = 0;
+static int        TRfrags      = 0;
 static TRSPACE    *TRhead      = 0;
 static int        TRid         = 0;
 static PetscTruth TRdebugLevel = PETSC_FALSE;
-static long       TRMaxMem     = 0;
+static size_t     TRMaxMem     = 0;
 /*
       Arrays to log information on all Mallocs
 */
-static int  PetscLogMallocMax = 10000,PetscLogMalloc = -1,*PetscLogMallocLength;
+static int        PetscLogMallocMax = 10000,PetscLogMalloc = -1;
+static size_t     *PetscLogMallocLength;
 static const char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallocFunction;
 
 #undef __FUNCT__  
@@ -134,24 +136,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocValidate(int line,const char function[
       (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
       SETERRQ(PETSC_ERR_MEMC," ");
     }
-    if (head->size <=0) {
-      (*PetscErrorPrintf)("PetscMallocValidate: error detected at  %s() line %d in %s%s\n",function,line,dir,file);
-      (*PetscErrorPrintf)("Memory at address %p is corrupted\n",head);
-      (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
-      SETERRQ(PETSC_ERR_MEMC," ");
-    }
     a    = (char *)(((TrSPACE*)head) + 1);
     nend = (unsigned long *)(a + head->size);
-    if (nend[0] != COOKIE_VALUE) {
+    if (*nend != COOKIE_VALUE) {
       (*PetscErrorPrintf)("PetscMallocValidate: error detected at %s() line %d in %s%s\n",function,line,dir,file);
-      if (nend[0] == ALREADY_FREED) {
-        (*PetscErrorPrintf)("Memory [id=%d(%lx)] at address %p already freed\n",head->id,head->size,a);
+      if (*nend == ALREADY_FREED) { 
+        (*PetscErrorPrintf)("Memory [id=%d(%.0f)] at address %p already freed\n",head->id,(PetscLogDouble)head->size,a);
         SETERRQ(PETSC_ERR_MEMC," ");
       } else {
-        (*PetscErrorPrintf)("Memory [id=%d(%lx)] at address %p is corrupted (probably write past end)\n",
-	        head->id,head->size,a);
-        (*PetscErrorPrintf)("Memory originally allocated in %s() line %d in %s%s\n",head->functionname,
-                head->lineno,head->dirname,head->filename);
+        (*PetscErrorPrintf)("Memory [id=%d(%.0f)] at address %p is corrupted (probably write past end of array)\n",head->id,(PetscLogDouble)head->size,a);
+        (*PetscErrorPrintf)("Memory originally allocated in %s() line %d in %s%s\n",head->functionname,head->lineno,head->dirname,head->filename);
         SETERRQ(PETSC_ERR_MEMC," ");
       }
     }
@@ -178,10 +172,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocValidate(int line,const char function[
  */
 PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t a,int lineno,const char function[],const char filename[],const char dir[],void**result)
 {
-  TRSPACE          *head;
-  char             *inew;
-  unsigned long    *nend;
-  size_t           nsize;
+  TRSPACE        *head;
+  char           *inew;
+  size_t         nsize;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -209,8 +202,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t a,int lineno,const ch
   head->functionname = function;
   head->dirname      = dir;
   head->cookie       = COOKIE_VALUE;
-  nend               = (unsigned long *)(inew + nsize);
-  nend[0]            = COOKIE_VALUE;
+  *(unsigned long *)(inew + nsize) = COOKIE_VALUE;
 
   TRallocated += nsize;
   if (TRallocated > TRMaxMem) {
@@ -227,7 +219,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t a,int lineno,const ch
   */
   if (PetscLogMalloc > -1 && PetscLogMalloc < PetscLogMallocMax) {
     if (!PetscLogMalloc) {
-      PetscLogMallocLength    = (int*)malloc(PetscLogMallocMax*sizeof(int));
+      PetscLogMallocLength    = (size_t*)malloc(PetscLogMallocMax*sizeof(size_t));
       if (!PetscLogMallocLength) SETERRQ(PETSC_ERR_MEM," ");
       PetscLogMallocDirectory = (const char**)malloc(PetscLogMallocMax*sizeof(char**));
       if (!PetscLogMallocDirectory) SETERRQ(PETSC_ERR_MEM," ");
@@ -283,38 +275,31 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void *aa,int line,const char f
   
   if (head->cookie != COOKIE_VALUE) {
     (*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() line %d in %s%s\n",function,line,dir,file);
-    (*PetscErrorPrintf)("Block at address %p is corrupted; cannot free;\n\
-may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
+    (*PetscErrorPrintf)("Block at address %p is corrupted; cannot free;\nmay be block not allocated with PetscMalloc()\n",a);
     SETERRQ(PETSC_ERR_MEMC,"Bad location or corrupted memory");
   }
   nend = (unsigned long *)(ahead + head->size);
   if (*nend != COOKIE_VALUE) {
     if (*nend == ALREADY_FREED) {
       (*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() line %d in %s%s\n",function,line,dir,file);
-      (*PetscErrorPrintf)("Block [id=%d(%lx)] at address %p was already freed\n",
-                          head->id,head->size,a + sizeof(TrSPACE));
-      if (head->lineno > 0 && head->lineno < 5000 /* sanity check */) {
-	(*PetscErrorPrintf)("Block freed in %s() line %d in %s%s\n",head->functionname,
-                            head->lineno,head->dirname,head->filename);	
+      (*PetscErrorPrintf)("Block [id=%d(%.0f)] at address %p was already freed\n",head->id,(PetscLogDouble)head->size,a + sizeof(TrSPACE));
+      if (head->lineno > 0 && head->lineno < 50000 /* sanity check */) {
+	(*PetscErrorPrintf)("Block freed in %s() line %d in %s%s\n",head->functionname,head->lineno,head->dirname,head->filename);	
       } else {
-        (*PetscErrorPrintf)("Block allocated in %s() line %d in %s%s\n",head->functionname,
-                            -head->lineno,head->dirname,head->filename);	
+        (*PetscErrorPrintf)("Block allocated in %s() line %d in %s%s\n",head->functionname,-head->lineno,head->dirname,head->filename);	
       }
       SETERRQ(PETSC_ERR_ARG_WRONG,"Memory already freed");
     } else {
       /* Damaged tail */ 
       (*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() line %d in %s%s\n",function,line,dir,file);
-      (*PetscErrorPrintf)("Block [id=%d(%lx)] at address %p is corrupted (probably write past end)\n",
-                          head->id,head->size,a);
-      (*PetscErrorPrintf)("Block allocated in %s() line %d in %s%s\n",head->functionname,
-                          head->lineno,head->dirname,head->filename);
+      (*PetscErrorPrintf)("Block [id=%d(%.0f)] at address %p is corrupted (probably write past end of array)\n",head->id,(PetscLogDouble)head->size,a);
+      (*PetscErrorPrintf)("Block allocated in %s() line %d in %s%s\n",head->functionname,head->lineno,head->dirname,head->filename);
       SETERRQ(PETSC_ERR_MEMC,"Corrupted memory");
     }
   }
   /* Mark the location freed */
   *nend        = ALREADY_FREED; 
-  /* Save location where freed.  If we suspect the line number, mark as 
-     allocated location */
+  /* Save location where freed.  If we suspect the line number, mark as  allocated location */
   if (line > 0 && line < 50000) {
     head->lineno       = line;
     head->filename     = file;
@@ -324,7 +309,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
     head->lineno = - head->lineno;
   }
   /* zero out memory - helps to find some reuse of already freed memory */
-  ierr = PetscMemzero(aa,(size_t)(head->size));CHKERRQ(ierr);
+  ierr = PetscMemzero(aa,head->size);CHKERRQ(ierr);
   
   TRallocated -= head->size;
   TRfrags     --;
@@ -477,12 +462,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDump(FILE *fp)
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!fp) fp = stdout;
   if (TRallocated > 0) {
-    fprintf(fp,"[%d]Total space allocated %d bytes\n",rank,(int)TRallocated);
+    fprintf(fp,"[%d]Total space allocated %.0f bytes\n",rank,(PetscLogDouble)TRallocated);
   }
   head = TRhead;
   while (head) {
-    fprintf(fp,"[%2d]%d bytes %s() line %d in %s%s\n",rank,(int)head->size,
-            head->functionname,head->lineno,head->dirname,head->filename);
+    fprintf(fp,"[%2d]%.0f bytes %s() line %d in %s%s\n",rank,(PetscLogDouble)head->size,head->functionname,head->lineno,head->dirname,head->filename);
 #if defined(PETSC_USE_DEBUG)
     ierr = PetscStackPrint(&head->stack,fp);CHKERRQ(ierr);
 #endif
@@ -538,7 +522,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocSetDumpLog(void)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
 {
-  PetscInt       i,j,n,*shortlength,dummy,*perm;
+  PetscInt       i,j,n,dummy,*perm;
+  size_t         *shortlength;
   PetscMPIInt    rank,size,tag = 1212 /* very bad programming */;
   PetscTruth     match;
   const char     **shortfunction;
@@ -561,11 +546,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
   if (!fp) fp = stdout;
   ierr = PetscMemoryGetCurrentUsage(&rss);CHKERRQ(ierr);
   if (rss) {
-    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory PetscMalloc()ed %D maximum size of entire process %D\n",rank,(PetscInt)TRMaxMem,(PetscInt)rss);CHKERRQ(ierr);
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory PetscMalloc()ed %.0f maximum size of entire process %D\n",rank,(PetscLogDouble)TRMaxMem,rss);CHKERRQ(ierr);
   } else {
-    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory PetscMalloc()ed %D OS cannot compute size of entire process\n",rank,(PetscInt)TRMaxMem);CHKERRQ(ierr);
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory PetscMalloc()ed %.0f OS cannot compute size of entire process\n",rank,(PetscLogDouble)TRMaxMem);CHKERRQ(ierr);
   }
-  shortlength      = (PetscInt*)malloc(PetscLogMalloc*sizeof(PetscInt));if (!shortlength) SETERRQ(PETSC_ERR_MEM,"Out of memory");
+  shortlength      = (size_t*)malloc(PetscLogMalloc*sizeof(size_t));if (!shortlength) SETERRQ(PETSC_ERR_MEM,"Out of memory");
   shortfunction    = (const char**)malloc(PetscLogMalloc*sizeof(char *));if (!shortfunction) SETERRQ(PETSC_ERR_MEM,"Out of memory");
   shortfunction[0] = PetscLogMallocFunction[0];
   shortlength[0]   = PetscLogMallocLength[0]; 
@@ -590,7 +575,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
 
   ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Memory usage sorted by function\n",rank);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] % 10d %s()\n",rank,shortlength[perm[i]],shortfunction[perm[i]]);CHKERRQ(ierr);
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] %.0f %s()\n",rank,(PetscLogDouble)shortlength[perm[i]],shortfunction[perm[i]]);CHKERRQ(ierr);
   }
   free(perm);
   free(shortlength);
@@ -599,7 +584,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
   if (rank != size-1) {
     ierr = MPI_Send(&dummy,1,MPIU_INT,rank+1,tag,MPI_COMM_WORLD);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 } 
 
@@ -622,7 +606,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
 PetscErrorCode PETSC_DLLEXPORT PetscMallocDebug(PetscTruth level)
 {
   PetscFunctionBegin;
-
   TRdebugLevel = level;
   PetscFunctionReturn(0);
 }

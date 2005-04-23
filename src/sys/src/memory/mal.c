@@ -59,7 +59,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocAlign(size_t mem,int line,const char f
     }
   }
 #endif
-  if (!*result)  SETERRQ1(PETSC_ERR_MEM,"Memory requested %lu",(long)mem); 
+  if (!*result)  SETERRQ1(PETSC_ERR_MEM,"Memory requested %.0f",(PetscLogDouble)mem); 
   return 0;
 }
 
@@ -133,7 +133,7 @@ PetscTruth petscsetmallocvisited = PETSC_FALSE;
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscSetMalloc(PetscErrorCode (*imalloc)(size_t,int,const char[],const char[],const char[],void**),
-                   PetscErrorCode (*ifree)(void*,int,const char[],const char[],const char[]))
+                                              PetscErrorCode (*ifree)(void*,int,const char[],const char[],const char[]))
 {
   PetscFunctionBegin;
   if (petscsetmallocvisited && (imalloc != PetscTrMalloc || ifree != PetscTrFree)) SETERRQ(PETSC_ERR_SUP,"cannot call multiple times");
