@@ -666,7 +666,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     import nargs
     args = self.clArgs[:]
     for arg in omitArgs:
-      args = filter(lambda a: nargs.Arg.parseArgument(a)[0] == arg, arg)
+      args = filter(lambda a: not nargs.Arg.parseArgument(a)[0] == arg, args)
     for a, arg in enumerate(args):
       parts = arg.split('=',1)
       if len(parts) == 2 and (' ' in parts[1] or '[' in parts[1]):
