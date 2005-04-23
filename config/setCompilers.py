@@ -722,6 +722,26 @@ class Configure(config.base.Configure):
         del self.framework.argDB['LD_SHARED']
     return
 
+  def checkLinkerMac(self):
+    '''Tests some Apple Mac specific linker flags'''
+    languages = ['C']
+    if 'CXX' in self.framework.argDB:
+      languages.append('C++')
+    if 'FC' in self.framework.argDB:
+      languages.append('FC')
+    for language in languages:
+      self.pushLanguage(language)
+      for testFlag in ['-Wl,-multiply_defined,suppress','-Wl,-multiply_defined -Wl,suppress','-force_flat_namespace', '-flat_namespace']:
+        self.framework.logPrint('Trying '+language+' linker flag '+testFlag)
+        if self.checkLinkerFlag(testFlag):
+          flag = testFlag
+          break
+        else:
+          self.framework.logPrint('Rejected '+language+' linker flag '+testFlag)
+      self.popLanguage()
+      setattr(self, language.replace('+', 'x')+'SharedLinkerFlag', flag)
+    return
+
   def checkSharedLinkerPaths(self):
     '''Determine the shared linker path options
        - IRIX: -rpath
@@ -812,6 +832,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkPIC)
     self.executeTest(self.checkArchiver)
     self.executeTest(self.checkSharedLinker)
+    self.executeTest(self.checkLinkerMac)
     self.executeTest(self.checkSharedLinkerPaths)
     if self.framework.argDB['with-shared']:
       self.executeTest(self.checkLibC)
