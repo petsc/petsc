@@ -1,4 +1,4 @@
-#! /bin/csh
+#! /usr/bin/env tcsh
 # 
 # Compiles and tests PETSc in our nightly builds.
 # Run as buildtest ARCH where ARCH is one of the default PETSc archs
