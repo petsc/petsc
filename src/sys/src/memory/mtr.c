@@ -324,7 +324,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
     head->lineno = - head->lineno;
   }
   /* zero out memory - helps to find some reuse of already freed memory */
-  ierr = PetscMemzero(aa,(int)(head->size));CHKERRQ(ierr);
+  ierr = PetscMemzero(aa,(size_t)(head->size));CHKERRQ(ierr);
   
   TRallocated -= head->size;
   TRfrags     --;
