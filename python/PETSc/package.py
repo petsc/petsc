@@ -8,43 +8,44 @@ import md5
 class Package(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    self.headerPrefix = 'PETSc'
-    self.substPrefix  = 'PETSc'
-    self.found        = 0
-    self.lib          = []
+    self.headerPrefix     = 'PETSc'
+    self.substPrefix      = 'PETSc'
+    self.found            = 0
+    self.lib              = []
     # this packages libraries and all those it depends on
-    self.dlib         = []
-    self.include      = []
+    self.dlib             = []
+    self.include          = []
     if hasattr(sys.modules.get(self.__module__), '__file__'):
-      self.name       = os.path.splitext(os.path.basename(sys.modules.get(self.__module__).__file__))[0]
+      self.name           = os.path.splitext(os.path.basename(sys.modules.get(self.__module__).__file__))[0]
     else:
-      self.name       = 'DEBUGGING'
-    self.downloadname = self.name
-    self.PACKAGE      = self.name.upper()
-    self.package      = self.name.lower()
-    self.version      = ''
-    self.license      = None
+      self.name           = 'DEBUGGING'
+    self.downloadname     = self.name
+    self.PACKAGE          = self.name.upper()
+    self.package          = self.name.lower()
+    self.version          = ''
+    self.license          = None
     # ***********  these are optional items set in the particular packages file
-    self.complex      = 0   # 1 means cannot use complex
-    self.cxx          = 0   # 1 means requires C++
-    self.fc           = 0   # 1 means requires fortran
+    self.complex          = 0   # 1 means cannot use complex
+    self.cxx              = 0   # 1 means requires C++
+    self.fc               = 0   # 1 means requires fortran
+    self.requires32bitint = 1;
     # urls where bk or tarballs may be found
-    self.download     = []
+    self.download         = []
     # other packages whose dlib or include we depend on (maybe can be figured automatically)
     # usually this is the list of all the assignments in the package that use self.framework.require()
-    self.deps         = []
+    self.deps             = []
     # functions we wish to check in the libraries
-    self.functions    = []
+    self.functions        = []
     # include files we wish to check for
-    self.includes     = []
+    self.includes         = []
     # list of libraries we wish to check for (can be overwritten by providing your own generateLibraryList()
-    self.liblist      = [[]]
-    self.extraLib     = []
+    self.liblist          = [[]]
+    self.extraLib         = []
     # location of libraries and includes in packages directory tree
-    self.libdir       = 'lib'
-    self.includedir   = 'include'
+    self.libdir           = 'lib'
+    self.includedir       = 'include'
     # package defaults to being required (MPI and BlasLapack)
-    self.required     = 0
+    self.required         = 0
     return
 
   def setupDependencies(self, framework):
@@ -320,7 +321,7 @@ class Package(config.base.Configure):
     if self.framework.argDB['with-'+self.package]:
       if hasattr(self,'mpi') and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
-      if self.libraryOptions.integerSize == 64:
+      if self.libraryOptions.integerSize == 64 and self.requires32bitint:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')    
       if not self.languages.precision.lower() == 'double':
         raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')    

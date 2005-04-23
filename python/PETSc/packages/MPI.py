@@ -9,29 +9,30 @@ from stat import *
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download_lam   = ['http://www.lam-mpi.org/download/files/lam-7.1.1.tar.gz']
-    self.download_mpich = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpich2.tar.gz']
-    self.functions      = ['MPI_Init','MPI_Comm_create']
-    self.includes       = ['mpi.h']
-    self.liblist_mpich  = [['libmpich.a'],
-                           ['mpich.lib'],
-                           ['libmpich.a', 'libpmpich.a'],
-                           ['libfmpich.a','libmpich.a', 'libpmpich.a'],
-                           ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
-                           ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a']]
-    self.liblist_lam    = [['liblammpi++.a','libmpi.a','liblam.a'],
-                           ['libmpi.a','libmpi++.a'],['libmpi.a'],
-                           ['liblammpio.a','libpmpi.a','liblamf77mpi.a','libmpi.a','liblam.a'],
-                           ['liblammpio.a','libpmpi.a','liblamf90mpi.a','libmpi.a','liblam.a'],
-                           ['liblammpio.a','libpmpi.a','libmpi.a','liblam.a'],
-                           ['liblammpi++.a','libmpi.a','liblam.a'],
-                           ['libmpi.a','liblam.a']]
-    self.liblist        = [[]] + self.liblist_lam + self.liblist_mpich
+    self.download_lam     = ['http://www.lam-mpi.org/download/files/lam-7.1.1.tar.gz']
+    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpich2.tar.gz']
+    self.functions        = ['MPI_Init','MPI_Comm_create']
+    self.includes         = ['mpi.h']
+    self.liblist_mpich    = [['libmpich.a'],
+                             ['mpich.lib'],
+                             ['libmpich.a', 'libpmpich.a'],
+                             ['libfmpich.a','libmpich.a', 'libpmpich.a'],
+                             ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
+                             ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a']]
+    self.liblist_lam      = [['liblammpi++.a','libmpi.a','liblam.a'],
+                             ['libmpi.a','libmpi++.a'],['libmpi.a'],
+                             ['liblammpio.a','libpmpi.a','liblamf77mpi.a','libmpi.a','liblam.a'],
+                             ['liblammpio.a','libpmpi.a','liblamf90mpi.a','libmpi.a','liblam.a'],
+                             ['liblammpio.a','libpmpi.a','libmpi.a','liblam.a'],
+                             ['liblammpi++.a','libmpi.a','liblam.a'],
+                             ['libmpi.a','liblam.a']]
+    self.liblist          = [[]] + self.liblist_lam + self.liblist_mpich
     # defaults to --with-mpi=yes
-    self.required       = 1
-    self.complex        = 1
-    self.isPOE          = 0
-    self.usingMPIUni    = 0
+    self.required         = 1
+    self.complex          = 1
+    self.isPOE            = 0
+    self.usingMPIUni      = 0
+    self.requires32bitint = 0
     return
 
   def setupHelp(self, help):
