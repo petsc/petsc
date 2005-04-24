@@ -41,8 +41,6 @@ info:
 	-@echo "=========================================="
 	-@echo On `date` on `hostname`
 	-@echo Machine characteristics: `uname -a`
-	-@echo "config/configure.py run at: " ${CONFIGURE_RUN_TIME}
-	-@echo "config/configure.py options: " ${CONFIGURE_OPTIONS}
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc directory: ${PETSC_DIR}"
 	-@echo "Using PETSc arch: ${PETSC_ARCH}"

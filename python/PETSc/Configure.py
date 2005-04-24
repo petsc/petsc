@@ -168,9 +168,9 @@ class Configure(config.base.Configure):
       os.makedirs(os.path.join(self.framework.argDB['PETSC_DIR'],'lib'))
 
     import time
-    self.addMakeMacro('CONFIGURE_RUN_TIME',time.ctime(time.time()))
-    self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules']).replace('\"','\\"'))
+    self.addDefine('CONFIGURE_RUN_TIME','"'+time.ctime(time.time())+'"')
     self.addDefine('CONFIGURE_OPTIONS', '"'+self.framework.getOptionsString(['configModules']).replace('\"','\\"')+'"')
+    self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules']).replace('\"','\\"'))
     return
 
   def configureInline(self):
