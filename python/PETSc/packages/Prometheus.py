@@ -58,7 +58,7 @@ class Configure(PETSc.package.Package):
     if self.compilers.fortranMangling == 'underscore':
       args += ' -DHAVE_FORTRAN_UNDERSCORE=1'
       if self.compilers.fortranManglingDoubleUnderscore:
-        args += ' -DHAVE_FORTRAN_UNDERSCORE_UNDERSCORE 1'
+        args += ' -DHAVE_FORTRAN_UNDERSCORE_UNDERSCORE=1'
     elif self.blasLapack.f2c:
       args += ' -DBLASLAPACK_UNDERSCORE=1'
     elif self.compilers.fortranMangling == 'unchanged':
