@@ -583,7 +583,7 @@ PetscErrorCode MatMultTranspose_MPIAIJ(Mat A,Vec xx,Vec yy)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatIsTranspose_MPIAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth tol,PetscTruth *f)
+PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscReal tol,PetscTruth *f)
 {
   MPI_Comm       comm;
   Mat_MPIAIJ     *Aij = (Mat_MPIAIJ *) Amat->data, *Bij;
