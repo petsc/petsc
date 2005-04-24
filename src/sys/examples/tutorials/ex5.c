@@ -80,9 +80,11 @@ int main(int argc,char **argv)
   ierr = PetscBagRegisterReal  (bag,&params->pos.x2,1.9,"x2","y position");CHKERRQ(ierr);
   ierr = PetscBagRegisterEnum  (bag,&params->which, EnumeratedChoices, THAT, "choose","Express yourself by choosing among enumerated things");CHKERRQ(ierr);
 
-  /* write bag to stdio & file */
+  /* write bag to stdio & binary file */
   ierr = PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscBagView(bag,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"binaryoutput",PETSC_FILE_CREATE,&viewer);CHKERRQ(ierr);
+  ierr = PetscBagView(bag,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = PetscBagDestroy(bag);CHKERRQ(ierr);
 
   /* load bag from file & write to stdio */
