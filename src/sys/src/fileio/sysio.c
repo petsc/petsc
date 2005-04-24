@@ -41,7 +41,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapInt(PetscInt32 *buff,PetscInt n)
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<sizeof(PetscInt32); i++) {
+    for (i=0; i<(int)sizeof(PetscInt32); i++) {
       ptr2[i] = ptr1[sizeof(PetscInt32)-1-i];
     }
     buff[j] = *tptr;
@@ -160,8 +160,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
 #if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT) || !defined(PETSC_WORDS_BIGENDIAN)
   PetscErrorCode    ierr;
 #endif
-  int               maxblock = 65536,wsize,err;
-  size_t            m = (size_t) n;
+  int               wsize,err;
+  size_t            m = (size_t) n,maxblock = 65536;
   char              *pp = (char*)p;
 #if (PETSC_SIZEOF_INT == 8) || !defined(PETSC_WORDS_BIGENDIAN) || defined(PETSC_USE_64BIT_INT)
   void              *ptmp = p; 
@@ -261,8 +261,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
 PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
 {
   char           *pp = (char*)p;
-  int            err,maxblock,wsize;
-  size_t         m = (int)n;
+  int            err,wsize;
+  size_t         m = (int)n,maxblock=65536;
 #if !defined(PETSC_WORDS_BIGENDIAN) || (PETSC_SIZEOF_INT == 8) ||  defined(PETSC_USE_64BIT_INT)
   PetscErrorCode ierr;
   void           *ptmp = p; 
@@ -271,7 +271,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
   if (!n) PetscFunctionReturn(0);
-  maxblock = 65536;
 
   if (type == PETSC_INT){
     m   *= sizeof(PetscInt32);
