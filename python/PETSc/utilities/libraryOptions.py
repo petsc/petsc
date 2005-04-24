@@ -24,7 +24,7 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     self.debugging = framework.require('PETSc.utilities.debugging', self)
-    self.libraries = framework.require('config.libraries', None)
+    self.libraries = framework.require('config.libraries', self)
     return
 
   def configureLibraryOptions(self):
