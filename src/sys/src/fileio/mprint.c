@@ -522,7 +522,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
     }
     fprintf(fd,"Libraries linked from %s\n",PETSC_LIB_DIR);
     fprintf(fd,"Configure run at %s\n",CONFIGURE_RUN_TIME);
-    fprintf(fd,"Configure options %s\n",CONFIGURE_OPTIONS);
+    fprintf(fd,"Configure options %s\n",PETSC_CONFIGURE_OPTIONS);
     fprintf(fd,"--------------------------------------------\
 ---------------------------\n");
     fflush(fd);

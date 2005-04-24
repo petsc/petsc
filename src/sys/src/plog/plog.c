@@ -1630,7 +1630,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
                       (int) sizeof(short), (int) sizeof(int), (int) sizeof(long), (int) sizeof(void*));CHKERRQ(ierr);
 
   ierr = PetscFPrintf(comm, fd, "Configure run at: %s\n",CONFIGURE_RUN_TIME);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "Configure options: %s",CONFIGURE_OPTIONS);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "Configure options: %s",PETSC_CONFIGURE_OPTIONS);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "%s", petscmachineinfo);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "%s", petsccompilerinfo);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "%s", petsccompilerflagsinfo);CHKERRQ(ierr);

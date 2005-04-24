@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = -DCONFIGURE_RUN_TIME='"${CONFIGURE_RUN_TIME}"' -DCONFIGURE_OPTIONS='"${CONFIGURE_OPTIONS}"'
+CPPFLAGS  = -DCONFIGURE_RUN_TIME='"${CONFIGURE_RUN_TIME}"'
 SOURCEC	  = plog.c plogmpe.c ploginfo.c mpitr.c classLog.c stageLog.c eventLog.c
 SOURCEF	  =
 SOURCEH	  = ptime.h plog.h ../../../../include/petsclog.h
