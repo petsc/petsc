@@ -161,7 +161,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
   PetscErrorCode    ierr;
 #endif
   int               maxblock = 65536,wsize,err;
-  size_t            m = (int) n;
+  size_t            m = (size_t) n;
   char              *pp = (char*)p;
 #if (PETSC_SIZEOF_INT == 8) || !defined(PETSC_WORDS_BIGENDIAN) || defined(PETSC_USE_64BIT_INT)
   void              *ptmp = p; 
