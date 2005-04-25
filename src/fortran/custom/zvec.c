@@ -102,9 +102,9 @@ void PETSC_STDCALL vecloadintovector_(PetscViewer *viewer,Vec *vec,PetscErrorCod
   *ierr = VecLoadIntoVector(v,*vec);
 }
 
-void PETSC_STDCALL vecsetrandom_(PetscRandom *r,Vec *x,PetscErrorCode *ierr)
+void PETSC_STDCALL vecsetrandom_(Vec *x,PetscRandom *r,PetscErrorCode *ierr)
 {
-  *ierr = VecSetRandom(*r,*x);
+  *ierr = VecSetRandom(*x,*r);
 }
 void PETSC_STDCALL petscdrawtensorcontour_(PetscDraw *win,int *m,int *n,PetscReal *x,PetscReal *y,PetscReal *V,PetscErrorCode *ierr)
 {

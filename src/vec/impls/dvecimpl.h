@@ -20,7 +20,7 @@ EXTERN PetscErrorCode VecMDot_Seq(PetscInt,Vec,const Vec[],PetscScalar * PETSC_R
 EXTERN PetscErrorCode VecMTDot_Seq(PetscInt,Vec,const Vec[],PetscScalar *);
 EXTERN PetscErrorCode VecMin_Seq(Vec,PetscInt*,PetscReal *);
 EXTERN PetscErrorCode VecSet_Seq(Vec,PetscScalar);
-EXTERN PetscErrorCode VecSetRandom_Seq(PetscRandom,Vec);
+EXTERN PetscErrorCode VecSetRandom_Seq(Vec,PetscRandom);
 EXTERN PetscErrorCode VecMAXPY_Seq(Vec,PetscInt,const PetscScalar *,Vec *);
 EXTERN PetscErrorCode VecAYPX_Seq(Vec,PetscScalar,Vec);
 EXTERN PetscErrorCode VecWAXPY_Seq(Vec,PetscScalar,Vec,Vec);

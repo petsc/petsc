@@ -77,7 +77,7 @@ int main(int argc,char **args)
 
   /* Test MatMult() */ 
   for (i=0; i<IMAX; i++) {
-    ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
+    ierr = VecSetRandom(xx,rand);CHKERRQ(ierr);
     ierr = MatMult(A,xx,s1);CHKERRQ(ierr);
     ierr = MatMult(B,xx,s2);CHKERRQ(ierr);
     ierr = VecAXPY(s2,mone,s1);CHKERRQ(ierr);
@@ -89,8 +89,8 @@ int main(int argc,char **args)
 
   /* test MatMultAdd() */
   for (i=0; i<IMAX; i++) {
-    ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
-    ierr = VecSetRandom(rand,yy);CHKERRQ(ierr);
+    ierr = VecSetRandom(xx,rand);CHKERRQ(ierr);
+    ierr = VecSetRandom(yy,rand);CHKERRQ(ierr);
     ierr = MatMultAdd(A,xx,yy,s1);CHKERRQ(ierr);
     ierr = MatMultAdd(B,xx,yy,s2);CHKERRQ(ierr);
     ierr = VecAXPY(s2,mone,s1);CHKERRQ(ierr);
@@ -102,7 +102,7 @@ int main(int argc,char **args)
 
   /* Test MatMultTranspose() */
   for (i=0; i<IMAX; i++) {
-    ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
+    ierr = VecSetRandom(xx,rand);CHKERRQ(ierr);
     ierr = MatMultTranspose(A,xx,s1);CHKERRQ(ierr);
     ierr = MatMultTranspose(B,xx,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
@@ -114,8 +114,8 @@ int main(int argc,char **args)
   }
   /* Test MatMultTransposeAdd() */
   for (i=0; i<IMAX; i++) {
-    ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
-    ierr = VecSetRandom(rand,yy);CHKERRQ(ierr);
+    ierr = VecSetRandom(xx,rand);CHKERRQ(ierr);
+    ierr = VecSetRandom(yy,rand);CHKERRQ(ierr);
     ierr = MatMultTransposeAdd(A,xx,yy,s1);CHKERRQ(ierr);
     ierr = MatMultTransposeAdd(B,xx,yy,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
@@ -174,7 +174,7 @@ int main(int argc,char **args)
   
   /* See if MatMult Says both are same */ 
   for (i=0; i<IMAX; i++) {
-    ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
+    ierr = VecSetRandom(xx,rand);CHKERRQ(ierr);
     ierr = MatMult(A,xx,s1);CHKERRQ(ierr);
     ierr = MatMult(C,xx,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
@@ -190,7 +190,7 @@ int main(int argc,char **args)
   ierr = MatTranspose(A,&At);CHKERRQ(ierr);
   ierr = MatTranspose(B,&Bt);CHKERRQ(ierr);
   for (i=0; i<IMAX; i++) {
-    ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
+    ierr = VecSetRandom(xx,rand);CHKERRQ(ierr);
     ierr = MatMult(At,xx,s1);CHKERRQ(ierr);
     ierr = MatMult(Bt,xx,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);

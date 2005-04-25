@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   comm = MPI_COMM_SELF;
   
   ierr = VecCreateSeq(comm,10,&V);CHKERRQ(ierr);
-  ierr = VecSetRandom(PETSC_NULL,V);CHKERRQ(ierr);
+  ierr = VecSetRandom(V,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(V);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(V);CHKERRQ(ierr);
 

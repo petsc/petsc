@@ -175,7 +175,7 @@ int main(int argc,char **argv)
 
     norm = 0.0;
     for (i=0; i<10; i++) {
-      ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
+      ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
       ierr = MatMult(P,x,v1);CHKERRQ(ierr);  
       ierr = MatMult(A_tmp,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
       ierr = MatMult(C,x,v1);CHKERRQ(ierr);       /* v1 = C*x   */
@@ -221,7 +221,7 @@ int main(int argc,char **argv)
 
     norm = 0.0;
     for (i=0; i<10; i++) {
-      ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
+      ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
       ierr = MatMult(P,x,v1);CHKERRQ(ierr);  
       ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
 

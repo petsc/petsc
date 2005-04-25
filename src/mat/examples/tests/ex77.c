@@ -183,7 +183,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
 
-  ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
+  ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
 
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sA,x,x);CHKERRQ(ierr);
@@ -202,7 +202,7 @@ int main(int argc,char **args)
 
   /* Test MatMult(), MatMultAdd() */
   for (i=0; i<40; i++) { 
-    ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
+    ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
     ierr = MatMult(A,x,s1);CHKERRQ(ierr);
     ierr = MatMult(sA,x,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
@@ -214,8 +214,8 @@ int main(int argc,char **args)
   }  
 
   for (i=0; i<40; i++) {
-    ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
-    ierr = VecSetRandom(rdm,y);CHKERRQ(ierr);
+    ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
+    ierr = VecSetRandom(y,rdm);CHKERRQ(ierr);
     ierr = MatMultAdd(A,x,y,s1);CHKERRQ(ierr);
     ierr = MatMultAdd(sA,x,y,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);

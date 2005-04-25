@@ -45,7 +45,7 @@ int main(int argc,char **args)
   ierr = VecSetSizes(b,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
-  ierr = VecSetRandom(r,b);CHKERRQ(ierr);
+  ierr = VecSetRandom(b,r);CHKERRQ(ierr);
 
   for (i=0; i<nnz; i++) {
     fscanf(file,"%d %d %le\n",&row,&col,(double*)&val);

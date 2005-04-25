@@ -49,7 +49,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth
   
   *flg = PETSC_TRUE;
   for (k=0; k<n; k++) {
-    ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
+    ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
     ierr = MatMult(A,x,s1);CHKERRQ(ierr);
     ierr = MatMult(B,x,s2);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_INFINITY,&r2);CHKERRQ(ierr);
@@ -119,8 +119,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTr
   
   *flg = PETSC_TRUE;
   for (k=0; k<n; k++) {
-    ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
-    ierr = VecSetRandom(rctx,y);CHKERRQ(ierr);
+    ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
+    ierr = VecSetRandom(y,rctx);CHKERRQ(ierr);
     ierr = MatMultAdd(A,x,y,s1);CHKERRQ(ierr);
     ierr = MatMultAdd(B,x,y,s2);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_INFINITY,&r2);CHKERRQ(ierr);
@@ -190,7 +190,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeEqual(Mat A,Mat B,PetscInt n,P
   
   *flg = PETSC_TRUE;
   for (k=0; k<n; k++) {
-    ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
+    ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
     ierr = MatMultTranspose(A,x,s1);CHKERRQ(ierr);
     ierr = MatMultTranspose(B,x,s2);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_INFINITY,&r2);CHKERRQ(ierr);
@@ -260,8 +260,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAddEqual(Mat A,Mat B,PetscInt 
   
   *flg = PETSC_TRUE;
   for (k=0; k<n; k++) {
-    ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
-    ierr = VecSetRandom(rctx,y);CHKERRQ(ierr);
+    ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
+    ierr = VecSetRandom(y,rctx);CHKERRQ(ierr);
     ierr = MatMultTransposeAdd(A,x,y,s1);CHKERRQ(ierr);
     ierr = MatMultTransposeAdd(B,x,y,s2);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_INFINITY,&r2);CHKERRQ(ierr);
