@@ -199,7 +199,7 @@ class Configure(PETSc.package.Package):
           if lib.find('mpich') >= 0:
             raise RuntimeError('Sorry, we have not been able to figure out how to use shared libraries on the \n \
               Mac with MPICH. Either run config/configure.py with --with-shared=0 or use LAM instead of MPICH; \n\
-              for instance with --download-lam=0')
+              for instance with --download-lam=1')
     return
 
   def checkDownload(self,preOrPost):
