@@ -136,7 +136,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-random_exact_sol",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
-    ierr = VecSetRandom(rctx,u);CHKERRQ(ierr);
+    ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);
     ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
   } else {
     ierr = VecSet(u,one);CHKERRQ(ierr);

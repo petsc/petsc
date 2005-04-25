@@ -1318,7 +1318,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctioniTest1(DA da,void *w)
   PetscFunctionBegin;
   ierr = DAGetLocalVector(da,&vu);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rnd);CHKERRQ(ierr);
-  ierr = VecSetRandom(rnd,vu);CHKERRQ(ierr);
+  ierr = VecSetRandom(vu,rnd);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rnd);CHKERRQ(ierr);
 
   ierr = DAGetGlobalVector(da,&fu);CHKERRQ(ierr);

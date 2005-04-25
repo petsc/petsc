@@ -969,9 +969,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
    Collective on Vec
 
    Input Parameters:
-+  rctx - the random number context, formed by PetscRandomCreate(), or PETSC_NULL and
++  x  - the vector
+-  rctx - the random number context, formed by PetscRandomCreate(), or PETSC_NULL and
           it will create one internally.
--  x  - the vector
 
    Output Parameter:
 .  x  - the vector
@@ -979,7 +979,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
    Example of Usage:
 .vb
      PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);
-     VecSetRandom(rctx,x);
+     VecSetRandom(x,rctx);
      PetscRandomDestroy(rctx);
 .ve
 
@@ -990,15 +990,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
 
 .seealso: VecSet(), VecSetValues(), PetscRandomCreate(), PetscRandomDestroy()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(PetscRandom rctx,Vec x) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(Vec x,PetscRandom rctx) 
 {
   PetscErrorCode ierr;
   PetscRandom    randObj = PETSC_NULL;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
-  if (rctx) PetscValidHeaderSpecific(rctx,PETSC_RANDOM_COOKIE,1);
-  PetscValidType(x,2);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  if (rctx) PetscValidHeaderSpecific(rctx,PETSC_RANDOM_COOKIE,2);
+  PetscValidType(x,1);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
 
   if (!rctx) {
@@ -1009,7 +1009,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(PetscRandom rctx,Vec x)
   }
 
   ierr = PetscLogEventBegin(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->setrandom)(rctx,x);CHKERRQ(ierr);
+  ierr = (*x->ops->setrandom)(x,rctx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
   
   if (randObj) {

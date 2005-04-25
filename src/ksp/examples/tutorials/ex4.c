@@ -142,7 +142,7 @@ int main(int argc,char **args)
   ierr = VecSet(u,one);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&tmp);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
-  ierr = VecSetRandom(rctx,tmp);CHKERRQ(ierr);
+  ierr = VecSetRandom(tmp,rctx);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
   ierr = VecAXPY(u,scale,tmp);CHKERRQ(ierr);
   ierr = VecDestroy(tmp);CHKERRQ(ierr);

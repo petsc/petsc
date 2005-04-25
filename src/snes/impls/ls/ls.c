@@ -30,7 +30,7 @@ PetscErrorCode SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,Pet
     PetscScalar result;
     PetscReal   wnorm;
 
-    ierr = VecSetRandom(PETSC_NULL,W);CHKERRQ(ierr);
+    ierr = VecSetRandom(W,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecNorm(W,NORM_2,&wnorm);CHKERRQ(ierr);
     ierr = VecDuplicate(W,&work);CHKERRQ(ierr);
     ierr = MatMult(A,W,work);CHKERRQ(ierr);

@@ -574,7 +574,7 @@ PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetRandom_Seq"
-PetscErrorCode VecSetRandom_Seq(PetscRandom r,Vec xin)
+PetscErrorCode VecSetRandom_Seq(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
   PetscInt       n = xin->n,i;

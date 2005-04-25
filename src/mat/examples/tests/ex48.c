@@ -114,7 +114,7 @@ int main(int argc,char **args)
   
   /* Test MatMult(), MatMultAdd() */
   for (i=0; i<40; i++) {
-    ierr = VecSetRandom(rdm,xx);CHKERRQ(ierr);
+    ierr = VecSetRandom(xx,rdm);CHKERRQ(ierr);
     ierr = VecSet(s2,zero);CHKERRQ(ierr);
     ierr = MatMult(A,xx,s1);CHKERRQ(ierr);
     ierr = MatMultAdd(A,xx,s2,s2);CHKERRQ(ierr);
@@ -170,8 +170,8 @@ int main(int argc,char **args)
   
   /* Test MatSolveAdd() */
   for (i=0; i<10; i++) {
-    ierr = VecSetRandom(rdm,xx);CHKERRQ(ierr);
-    ierr = VecSetRandom(rdm,yy);CHKERRQ(ierr);
+    ierr = VecSetRandom(xx,rdm);CHKERRQ(ierr);
+    ierr = VecSetRandom(yy,rdm);CHKERRQ(ierr);
     ierr = MatSolveAdd(B,xx,yy,s2);CHKERRQ(ierr);
     ierr = MatSolveAdd(A,xx,yy,s1);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
@@ -184,8 +184,8 @@ int main(int argc,char **args)
   
   /* Test MatSolveAdd() when x = A'b +x */
   for (i=0; i<10; i++) {
-    ierr = VecSetRandom(rdm,xx);CHKERRQ(ierr);
-    ierr = VecSetRandom(rdm,s1);CHKERRQ(ierr);
+    ierr = VecSetRandom(xx,rdm);CHKERRQ(ierr);
+    ierr = VecSetRandom(s1,rdm);CHKERRQ(ierr);
     ierr = VecCopy(s2,s1);CHKERRQ(ierr);
     ierr = MatSolveAdd(B,xx,s2,s2);CHKERRQ(ierr);
     ierr = MatSolveAdd(A,xx,s1,s1);CHKERRQ(ierr);
@@ -199,7 +199,7 @@ int main(int argc,char **args)
   
   /* Test MatSolve() */
   for (i=0; i<10; i++) {
-    ierr = VecSetRandom(rdm,xx);CHKERRQ(ierr);
+    ierr = VecSetRandom(xx,rdm);CHKERRQ(ierr);
     ierr = MatSolve(B,xx,s2);CHKERRQ(ierr);
     ierr = MatSolve(A,xx,s1);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
@@ -213,7 +213,7 @@ int main(int argc,char **args)
   /* Test MatSolveTranspose() */
   if (bs < 8) {
     for (i=0; i<10; i++) {
-      ierr = VecSetRandom(rdm,xx);CHKERRQ(ierr);
+      ierr = VecSetRandom(xx,rdm);CHKERRQ(ierr);
       ierr = MatSolveTranspose(B,xx,s2);CHKERRQ(ierr);
       ierr = MatSolveTranspose(A,xx,s1);CHKERRQ(ierr);
       ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);

@@ -89,7 +89,7 @@ int main(int argc,char **args)
     ierr = VecDuplicate(xx,&s1);CHKERRQ(ierr);
     ierr = VecDuplicate(xx,&s2);CHKERRQ(ierr);
     for (j=0; j<3; j++) {
-      ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
+      ierr = VecSetRandom(xx,rand);CHKERRQ(ierr);
       ierr = MatMult(A,xx,s1);CHKERRQ(ierr);
       ierr = MatMult(sA,xx,s2);CHKERRQ(ierr);
       ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
@@ -153,7 +153,7 @@ int main(int argc,char **args)
     ierr = VecDuplicate(xx,&s1);CHKERRQ(ierr);
     ierr = VecDuplicate(xx,&s2);CHKERRQ(ierr);
     for (j=0; j<3; j++) {
-      ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
+      ierr = VecSetRandom(xx,rand);CHKERRQ(ierr);
       ierr = MatMult(submatA[i],xx,s1);CHKERRQ(ierr);
       ierr = MatMult(submatsA[i],xx,s2);CHKERRQ(ierr);
       ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
@@ -179,7 +179,7 @@ int main(int argc,char **args)
     ierr = VecDuplicate(xx,&s1);CHKERRQ(ierr);
     ierr = VecDuplicate(xx,&s2);CHKERRQ(ierr);
     for (j=0; j<3; j++) {
-      ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
+      ierr = VecSetRandom(xx,rand);CHKERRQ(ierr);
       ierr = MatMult(submatA[i],xx,s1);CHKERRQ(ierr);
       ierr = MatMult(submatsA[i],xx,s2);CHKERRQ(ierr);
       ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);

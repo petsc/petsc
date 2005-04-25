@@ -66,8 +66,8 @@ int main(int argc,char **args)
 
   /* Test MatDiagonalScale() */
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
-  ierr = VecSetRandom(r,x);CHKERRQ(ierr);
-  ierr = VecSetRandom(r,y);CHKERRQ(ierr);
+  ierr = VecSetRandom(x,r);CHKERRQ(ierr);
+  ierr = VecSetRandom(y,r);CHKERRQ(ierr);
 
   ierr = MatDiagonalScale(A,x,y);CHKERRQ(ierr);
   ierr = MatDiagonalScale(B,x,y);CHKERRQ(ierr);

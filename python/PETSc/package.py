@@ -46,6 +46,8 @@ class Package(config.base.Configure):
     self.includedir       = 'include'
     # package defaults to being required (MPI and BlasLapack)
     self.required         = 0
+    # package needs the system amth library
+    self.needsMath        = 0
     return
 
   def setupDependencies(self, framework):
@@ -286,6 +288,10 @@ class Package(config.base.Configure):
         raise RuntimeError('Did not find '+l.PACKAGE+' needed by '+self.name)
       if hasattr(l,'dlib'):    libs  += l.dlib
       if hasattr(l,'include'): incls += l.include
+    if self.needsMath:
+      if self.libraries.math is None:
+        raise RuntimeError('Math library not found')
+      libs += self.libraries.math
       
     for location, lib, incl in self.generateGuesses():
       if not isinstance(lib, list): lib = [lib]

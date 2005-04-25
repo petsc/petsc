@@ -48,7 +48,7 @@ int main(int argc,char **args)
     ierr = VecSet(u,pfive);CHKERRQ(ierr);
   } else {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
-    ierr = VecSetRandom(rctx,u);CHKERRQ(ierr);
+    ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);
   }
 
   /* Create and assemble matrix */

@@ -82,7 +82,7 @@ int main(int argc,char **args)
 
     norm = 0.0;
     for (i=0; i<10; i++) {
-      ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
+      ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
       ierr = MatMult(B,x,v1);CHKERRQ(ierr);  
       ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*B*x */
       ierr = MatMult(C,x,v1);CHKERRQ(ierr);   /* v1 = C*x   */
@@ -152,7 +152,7 @@ int main(int argc,char **args)
 
     norm = 0.0; 
     for (i=0; i<10; i++) {
-      ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
+      ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
       ierr = MatMult(B,x,v5);CHKERRQ(ierr);            /* v5 = B*x   */
       ierr = MatMultTranspose(P,v5,v3);CHKERRQ(ierr);  /* v3 = Pt*B*x */
       ierr = MatMult(C,x,v4);CHKERRQ(ierr);            /* v4 = C*x   */
@@ -220,7 +220,7 @@ int main(int argc,char **args)
 
     norm = 0.0;
     for (i=0; i<10; i++) {
-      ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
+      ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
       ierr = MatMult(P,x,v1);CHKERRQ(ierr);  
       ierr = MatMult(A,v1,v2);CHKERRQ(ierr);  /* v2 = A*P*x */
 

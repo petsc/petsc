@@ -154,7 +154,7 @@ int main(int argc,char **args)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
-  ierr = VecSetRandom(rdm,x);CHKERRQ(ierr);
+  ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
 
   /* Test MatReordering() on a symmetric ordering */
   ierr = PetscMalloc(mbs*sizeof(PetscInt),&ip_ptr);CHKERRQ(ierr);

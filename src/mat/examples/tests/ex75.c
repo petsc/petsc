@@ -192,7 +192,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&s2);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
-  ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
+  ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
   ierr = VecSet(u,one);CHKERRQ(ierr);
 
   /* Test MatNorm() */
@@ -270,7 +270,7 @@ int main(int argc,char **args)
 
   /* Test MatMultTranspose(), MatMultTransposeAdd() */
   for (i=0; i<10; i++) {
-    ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
+    ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
     ierr = MatMultTranspose(A,x,s1);CHKERRQ(ierr);
     ierr = MatMultTranspose(sA,x,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
@@ -282,8 +282,8 @@ int main(int argc,char **args)
     }
   }
   for (i=0; i<10; i++) {
-    ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
-    ierr = VecSetRandom(rctx,y);CHKERRQ(ierr);
+    ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
+    ierr = VecSetRandom(y,rctx);CHKERRQ(ierr);
     ierr = MatMultTransposeAdd(A,x,y,s1);CHKERRQ(ierr);
     ierr = MatMultTransposeAdd(sA,x,y,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
