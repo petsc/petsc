@@ -92,6 +92,7 @@ def main():
         'changes/2024.html',
         'changes/2028.html',
         'changes/2029.html',
+        'changes/2918-21.html',
         'changes/21.html',
         'changes/211.html',
         'changes/212.html',
@@ -99,7 +100,8 @@ def main():
         'changes/215.html',
         'changes/216.html',
         'changes/220.html',        
-        'changes/2918-21.html',
+        'changes/221.html',
+        'changes/230.html',
         'changes/index.html',
         'installation.html']
 

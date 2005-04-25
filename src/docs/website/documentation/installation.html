@@ -71,13 +71,15 @@ install) and use
 bash as the working shell. <a href="#AdditionalMicrosoftWindowsNotes">Microsoft
 Windows hints</a></li>
         <li>In the directory you wish PETSc installed: <font
- color="#ff0000">gunzip -c <a href="../download/index.html">petsc.tar.gz</a> | tar -xof -</font></li>
+ color="#ff0000">gunzip -c <a href="../download/index.html">petsc.tar.gz</a>
+| tar -xof -</font></li>
         <li><font color="#ff0000">cd petsc-2.3.0</font></li>
         <li>sh/bash shell:&nbsp;&nbsp; <font color="#ff0000">PETSC_DIR=`pwd`;
 export PETSC_DIR</font>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (note the backquote)<br>
 csh/tcsh shell:&nbsp; <font color="#ff0000">setenv PETSC_DIR `pwd`</font></li>
-        <li><font color="#ff0000">./config/configure.py</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (use --help for options)</li>
+        <li><font color="#ff0000">./config/configure.py</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(use --help for options)</li>
         <li> <font color="#ff0000">make all</font></li>
         <li><font color="#ff0000">make test</font></li>
         <li>Encounter problems?
@@ -85,7 +87,8 @@ csh/tcsh shell:&nbsp; <font color="#ff0000">setenv PETSC_DIR `pwd`</font></li>
             <li> <strong>Read the error message from
 ./config/configure.py!</strong> </li>
             <ul>
-              <li>If you get the message 'No such file or directory' try <font color="#ff0000">python config/configure.py</font></li>
+              <li>If you get the message 'No such file or directory'
+try <font color="#ff0000">python config/configure.py</font></li>
               <li><a href="#BLAS/LAPACK"> BLAS and LAPACK problems</a> </li>
               <li><a href="#MPI:"> MPI problems</a>. I <a
  href="#I%20don%27t%20want%20to%20use%20MPI:">Don't want MPI</a></li>
@@ -95,14 +98,17 @@ csh/tcsh shell:&nbsp; <font color="#ff0000">setenv PETSC_DIR `pwd`</font></li>
 bug-reporting</a> section</li>
           </ul>
         </li>
-        <li> Options for <a href="../miscellaneous/acknwldg.html#otherpackages">external packages</a> for PETSc to use</li>
-          <ul>
-              <li><font color="#ff0000">--download-package</font> OR </li>
-              <li><Font color="#ff0000">--with-package-dir=installeddirectory</font> OR </li>
-              <li><Font color="#ff0000">--with-package-include=directory &nbsp --with-package-lib=[library names with full paths] </font>
-                  use \[ and \] instead of [ and ] if using the csh or tsch shells.</li>
-          </ul>
-        </li>
+        <li> Options for <a
+ href="../miscellaneous/acknwldg.html#otherpackages">external packages</a>
+for PETSc to use</li>
+        <ul>
+          <li><font color="#ff0000">--download-package</font> OR </li>
+          <li><font color="#ff0000">--with-package-dir=installeddirectory</font>
+OR </li>
+          <li><font color="#ff0000">--with-package-include=directory
+&nbsp; --with-package-lib=[library names with full paths] </font> use
+\[ and \] instead of [ and ] if using the csh or tsch shells.</li>
+        </ul>
       </ul>
       </td>
     </tr>
@@ -116,14 +122,23 @@ bug-reporting</a> section</li>
       <ul>
         <li> Other examples may be found in config/*.py</li>
         <li>Using the bash shell, assuming BLAS,
-LAPACK, MPICH are not currently installed <font color="#551a8b">./config/configure.py</font> will download &amp;
+LAPACK, MPICH are not currently installed <font color="#551a8b">./config/configure.py</font>
+will download &amp;
 install BLAS, LAPACK, MPICH if they are not already installed on the
 system) :<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
 PETSC_DIR=/home/petsc/petsc-2.3.0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py
---download-f-blas-lapack=ifneeded --download-mpich=ifneeded<br>
+--download-f-blas-lapack=1 --download-mpich=1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make test</font></li>
+        <li>Same as above - but build Complex version of PETSc:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
+PETSC_DIR=/home/petsc/petsc-2.3.0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py
+--download-f-blas-lapack=1 --download-mpich=1 --with-scalar-type=complex<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make test</font></li>
         <li>Using the bash shell, assuming BLAS,
@@ -192,8 +207,7 @@ PETSC_ARCH. If PETSC_ARCH is not set, the configuration from the last
 time you ran <font color="#551a8b">./config/configure.py</font> will
 be used.</p>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
-to Installation Instructions</a> &nbsp;&nbsp;&nbsp;&nbsp;</b></font>
-      </p>
+to Installation Instructions</a> &nbsp;&nbsp;&nbsp;&nbsp;</b></font> </p>
       <hr>
       <h4><font color="#551a8b"><a name="Cygwin:">Cygwin</a></font> <span
  style="font-weight: 400;">&nbsp;provides UNIX tools on Microsoft
@@ -344,17 +358,14 @@ will download and install MPICH for you. </li>
         </tbody>
       </table>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
-to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font>
-      </p>
+to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font> </p>
       <hr>
       <p><font color="#551a8b"><b><a name="I don't want to use MPI:">I
 don't want to use MPI:</a></b></font> You can build (sequential) PETSc
 without an MPI.</p>
-        Run <font color="#ff0000">./config/configure.py --with-mpi=0 ....</font>
-
+Run <font color="#ff0000">./config/configure.py --with-mpi=0 ....</font>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
-to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font>
-      </p>
+to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font> </p>
       <hr>
       <h3><a name="AdditionalMicrosoftWindowsNotes"><font
  color="#551a8b">Additional
@@ -378,8 +389,7 @@ and other UNIX tools. For additional info, run
 ${PETSC_DIR}/bin/win32/win32fe without any options.</p>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
 to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font></p>
-      <hr>
-      </td>
+      <hr> </td>
 <!--##end--> </tr>
     <tr>
       <td width="100%">
