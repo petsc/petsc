@@ -726,6 +726,13 @@
 %
 %  <a name="wave"><H3><center>Wave propagation and the Helmholtz equation</center></H3>
 %
+@InProceedings{silence,
+ Author      = "J.M. and Alonso and G. Garcia and V. Hernandez and F.D. Denia and F.J. Fuenmayor",
+ TITLE       = "A parallel  computing approach for solving the Helmholtz equation in 3D domains: Application to the 
+                study of acoustic behaviour of silencers",
+ year        = 2004,
+ booktitle   = {Eurppean Congress on Computational Methods in Applied Sciences and Engineering (ECCOMAS)}
+}
 @Article{DeGersem99,
   author =       "H. De Gersem and Domenico Lahaye and S. Vandewalle and K. Hameyer",
   title  =       "Comparison of Quasi Minimal Residual and Bi-Conjugate 
@@ -918,8 +925,8 @@
 @InBook{KnepleyKatzSmith04,
   author = {Matthew~G. Knepley and Richard~F. Katz and Barry~F. Smith},
   editor = {A.~M. Bruaset and P. Bjorstad and A. Tveito},
-  title = {Numerical Solution of Partial Differential Equations},
-  chapter = {Developing a Geodynamics Simulation with PETSc},
+  booktitle = {Numerical Solution of Partial Differential Equations},
+  title= {Developing a Geodynamics Simulation with PETSc},
   publisher = {Springer-Verlag},
   year = {2004}
 }
@@ -1086,6 +1093,12 @@
  URL        = "http://www.cee.uiuc.edu/transport/publications/hammond/CMWR_2002.pdf",
  note       = "Accepted by XIV International Conference on Computational Methods in Water Resources, June 23-28, 2002, Delft, The Netherlands."
 }
+@Unpublished{sfrsm,
+  title = 	"The South Florida Regional Simulation Model and Hydrologic Simulation Engine",
+  url = 	"http://www.sfwmd.gov/org/pld/hsm/cerp_pres/hse_num.pdf",
+  note = "Simulates overland, groundwater and canal flows for south Florida. Uses
+                 PETSc for its linear solves",
+}
 %
 %  <a name="otherapps"><H3><center>Other Application Areas</center></H3>
 %
@@ -1143,13 +1156,6 @@
   year =         2002,
   volume = {179},
   pages = {426-438}
-}
-@InProceedings{silence,
- Author      = "J.M. and Alonso and G. Garcia and V. Hernandez and F.D. Denia and F.J. Fuenmayor",
- TITLE       = "A parallel  computing approach for solving the Helmholtz equation in 3D domains: Application to the 
-                study of acoustic behaviour of silencers",
- year        = 2004,
- booktitle   = {Eurppean Congress on Computational Methods in Applied Sciences and Engineering (ECCOMAS)}
 }
 @techreport{uf1,
  Author      = "Uwe Fabricius",
@@ -1301,12 +1307,6 @@
   volume = "26",
   pages = "1499-1515",
   title  =  "Solving finite difference schemes arising in trivariate option pricing"
-}
-@Unpublished{sfrsm,
-  title = 	"The South Florida Regional Simulation Model and Hydrologic Simulation Engine",
-  url = 	"http://www.sfwmd.gov/org/pld/hsm/cerp_pres/hse_num.pdf",
-  note = "Simulates overland, groundwater and canal flows for south Florida. Uses
-                 PETSc for its linear solves",
 }
 @INPROCEEDINGS{crack,
         AUTHOR = "Bruce Carter and Chuin-Shan Chen and L. Paul Chew and Nikos Chrisochoides and Guang R. Gao and

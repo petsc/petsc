@@ -14,11 +14,11 @@ class Configure(PETSc.package.Package):
     self.functions        = ['MPI_Init','MPI_Comm_create']
     self.includes         = ['mpi.h']
     self.liblist_mpich    = [['libmpich.a'],
+                             ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
+                             ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a']]
                              ['mpich.lib'],
                              ['libmpich.a', 'libpmpich.a'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a'],
-                             ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
-                             ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a']]
     self.liblist_lam      = [['liblammpi++.a','libmpi.a','liblam.a'],
                              ['libmpi.a','libmpi++.a'],['libmpi.a'],
                              ['liblammpio.a','libpmpi.a','liblamf77mpi.a','libmpi.a','liblam.a'],
