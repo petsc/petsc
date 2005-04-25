@@ -262,7 +262,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
 {
   char           *pp = (char*)p;
   int            err,wsize;
-  size_t         m = (int)n,maxblock=65536;
+  size_t         m = (size_t)n,maxblock=65536;
 #if !defined(PETSC_WORDS_BIGENDIAN) || (PETSC_SIZEOF_INT == 8) ||  defined(PETSC_USE_64BIT_INT)
   PetscErrorCode ierr;
   void           *ptmp = p; 
