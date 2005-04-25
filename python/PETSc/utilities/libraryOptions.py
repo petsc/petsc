@@ -48,7 +48,7 @@ class Configure(config.base.Configure):
       self.integerSize = 64
       self.addDefine('USE_64BIT_INT', 1)
       if self.libraries.check('libgcc.a', '__floatdidf'):
-        self.framework.argDB['LIBS'] += ' '+self.libraries.getLibArgument('libgcc.a')
+        self.framework.argDB['LIBS'] += ' '+self.libraries.getLibArgument('-lgcc_s.1')
     else:
       self.integerSize = 32
       self.addDefine('USE_32BIT_INT', 1)
