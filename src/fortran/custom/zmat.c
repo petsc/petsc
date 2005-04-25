@@ -28,6 +28,7 @@
 #define matcreateseqsbaij_               MATCREATESEQSBAIJ
 #define matcreate_                       MATCREATE
 #define matcreateshell_                  MATCREATESHELL
+#define matshellsetcontext_              MATSHELLSETCONTEXT
 #define matorderingregisterdestroy_      MATORDERINGREGISTERDESTROY
 #define matcreatempirowbs_               MATCREATEMPIROWBS
 #define matcreateseqbdiag_               MATCREATESEQBDIAG
@@ -105,6 +106,7 @@
 #define matcreateseqsbaij_               matcreateseqsbaij
 #define matcreate_                       matcreate
 #define matcreateshell_                  matcreateshell
+#define matshellsetcontext_              matshellsetcontext
 #define matorderingregisterdestroy_      matorderingregisterdestroy
 #define matgetordering_                  matgetordering
 #define matcreatempirowbs_               matcreatempirowbs
@@ -578,6 +580,10 @@ void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscI
   *ierr = MatCreateShell((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*M,*N,*ctx,mat);
   if (*ierr) return;
   *ierr = PetscMalloc(4*sizeof(void*),&((PetscObject)*mat)->fortran_func_pointers);
+}
+
+void PETSC_STDCALL   matshellsetcontext_(Mat *mat,void**ctx, int *__ierr ){
+  *__ierr = MatShellSetContext(*mat,*ctx);
 }
 
 static PetscErrorCode ourmult(Mat mat,Vec x,Vec y)
