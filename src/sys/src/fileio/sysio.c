@@ -276,7 +276,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   if (type == PETSC_INT){
     m   *= sizeof(PetscInt32);
 #if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT)
-    PetscInt   *p_int = (PetscInt32*)p,i;
+    PetscInt   *p_int = (PetscInt*)p,i;
     PetscInt32 *p_short;
     ierr    = PetscMalloc(m,&pp);CHKERRQ(ierr);
     ptmp    = (void*)pp;
