@@ -73,14 +73,14 @@ struct _p_KSP {
                                    with a particular iterative solver */
 
   /* ----------------Default work-area management -------------------- */
-  PetscInt        nwork;
-  Vec        *work;
+  PetscInt    nwork;
+  Vec         *work;
 
-  PetscInt        setupcalled;
+  PetscInt    setupcalled;
 
-  PetscInt        its;       /* number of iterations so far computed */
+  PetscInt    its;       /* number of iterations so far computed */
 
-  PetscTruth transpose_solve;    /* solve transpose system instead */
+  PetscTruth  transpose_solve;    /* solve transpose system instead */
 
   KSPNormType normtype;          /* type of norm used for convergence tests */
 

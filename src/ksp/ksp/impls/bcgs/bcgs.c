@@ -137,8 +137,9 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
    Level: beginner
 
    Notes: Reference: van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
+          See KSPBCGSL for additional stabilization
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  

@@ -10,37 +10,6 @@
 #include "bcgsl.h"
 
 
-/****************************************************
- *
- * Some memory allocation functions
- *
- ****************************************************/
-
-#undef __FUNCT__
-#define __FUNCT__ "bcgsl_cleanup_i"
-PetscErrorCode bcgsl_cleanup_i(KSP ksp)
-{
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  /* free all workspace */
-  ierr = PetscFree(ksp->work);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "bcgsl_setup_i"
-PetscErrorCode bcgsl_setup_i(KSP ksp)
-{
-  KSP_BiCGStabL  *bcgsl = (KSP_BiCGStabL *)ksp->data;
-  PetscInt            ell = bcgsl->ell;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = KSPDefaultGetWork(ksp, 6+2*ell);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_BCGSL"
 static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
@@ -328,9 +297,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   ierr = PetscFree(AYtc);CHKERRQ(ierr);
   ierr = PetscFree(MZa);CHKERRQ(ierr);
   ierr = PetscFree(MZb);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
-
 }
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -363,7 +330,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
   PetscFunctionBegin;
   if (ksp->setupcalled) {
     if ((delta<=0 && bcgsl->delta>0) || (delta>0 && bcgsl->delta<=0)) {
-      ierr = bcgsl_cleanup_i(ksp);CHKERRQ(ierr);
+      ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
       ksp->setupcalled = 0;
     }
   }
@@ -382,8 +349,7 @@ EXTERN_C_BEGIN
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate
--  uMROR - set to PETSC_TRUE when the polynomial is a convex
-   combination of an MR and an OR step.
+-  uMROR - set to PETSC_TRUE when the polynomial is a convex combination of an MR and an OR step.
 
    Options Database Keys:
 
@@ -408,7 +374,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
     /* free the data structures,
        then create them again
      */
-    ierr = bcgsl_cleanup_i(ksp);CHKERRQ(ierr);
+   ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
     bcgsl->bConvex = uMROR;
     ksp->setupcalled = 0;
   }
@@ -449,24 +415,25 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP ksp, int ell)
     bcgsl->ell = ell;
   } else if (bcgsl->ell != ell) {
     /* free the data structures, then create them again */
-    ierr = bcgsl_cleanup_i(ksp);CHKERRQ(ierr);
+   ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
+
     bcgsl->ell = ell;
     ksp->setupcalled = 0;
   }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPView_BCGSL"
 PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
 {
   KSP_BiCGStabL       *bcgsl = (KSP_BiCGStabL *)ksp->data;
   PetscErrorCode      ierr;
-  PetscTruth isascii, isstring;
+  PetscTruth          isascii, isstring;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer, PETSC_VIEWER_ASCII, &isascii);CHKERRQ(ierr);
-
   ierr = PetscTypeCompare((PetscObject)viewer, PETSC_VIEWER_STRING, &isstring);CHKERRQ(ierr);
 
   if (isascii) {
@@ -477,6 +444,7 @@ PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_BCGSL"
 PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp)
@@ -494,7 +462,7 @@ PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp)
   ierr = PetscOptionsHead("KSP BiCGStab(L) Options");CHKERRQ(ierr);
 
   /* Set number of search directions */
-  ierr = PetscOptionsInt("-ksp_bcgsl_ell", "Number of Krylov search directions", "KSPBCGSLSetEll", bcgsl->ell, &this_ell, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ksp_bcgsl_ell","Number of Krylov search directions","KSPBCGSLSetEll",bcgsl->ell,&this_ell,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = KSPBCGSLSetEll(ksp, this_ell);CHKERRQ(ierr);
   }
@@ -516,10 +484,13 @@ PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_BCGSL"
 PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
 {
+  KSP_BiCGStabL  *bcgsl = (KSP_BiCGStabL *)ksp->data;
+  PetscInt        ell = bcgsl->ell;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -529,10 +500,10 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
   } else if (ksp->pc_side == PC_RIGHT) {
     SETERRQ(PETSC_ERR_SUP, "no right preconditioning for KSPBCGSL");
   }
-
-  ierr = bcgsl_setup_i(ksp);CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork(ksp, 6+2*ell);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /*MC
      KSPBCGSL - Implements a slight variant of the Enhanced
                 BiCGStab(L) algorithm in (3) and (2).  The variation
@@ -570,7 +541,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGSL(KSP ksp)
 {
   PetscErrorCode ierr;
-  KSP_BiCGStabL *bcgsl;
+  KSP_BiCGStabL  *bcgsl;
 
   PetscFunctionBegin;
   /* allocate BiCGStab(L) context */
