@@ -15,10 +15,10 @@ class Configure(PETSc.package.Package):
     self.includes         = ['mpi.h']
     self.liblist_mpich    = [['libmpich.a'],
                              ['libmpich.a', 'libpmpich.a'],
-                             ['libfmpich.a','libmpich.a', 'libpmpich.a']]
+                             ['libfmpich.a','libmpich.a', 'libpmpich.a'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
-                             ['mpich.lib'],
+                             ['mpich.lib']]
     self.liblist_lam      = [['liblammpi++.a','libmpi.a','liblam.a'],
                              ['libmpi.a','libmpi++.a'],['libmpi.a'],
                              ['liblammpio.a','libpmpi.a','liblamf77mpi.a','libmpi.a','liblam.a'],
