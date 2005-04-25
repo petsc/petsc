@@ -95,6 +95,11 @@ PETSC_ARCH=linux-gnu is now:<br>
 -PETSC_ARCH=linux-gnu-opt<br>
           <br>
         </li>
+        <li>Python bindings added to PETSc. <br>
+&nbsp; To use, configure with: --with-python=1 ---with-shared=1<br>
+&nbsp; To build, use: 'make python' after building PETSc libraries.<br>
+&nbsp; Example in src/snes/examples/tutorials/ex1.py<br>
+        </li>
         <li>Options database keys -trmalloc[_xxx] are changed to
 -malloc[_xxx] </li>
         <li>-get_resident_set_size and -trinfo are changed to
