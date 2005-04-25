@@ -15,10 +15,10 @@ class Configure(PETSc.package.Package):
     self.includes         = ['mpi.h']
     self.liblist_mpich    = [['libmpich.a'],
                              ['libmpich.a', 'libpmpich.a'],
-                             ['libfmpich.a','libmpich.a', 'libpmpich.a']]
+                             ['libfmpich.a','libmpich.a', 'libpmpich.a'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
-                             ['mpich.lib'],
+                             ['mpich.lib']]
     self.liblist_lam      = [['liblammpi++.a','libmpi.a','liblam.a'],
                              ['libmpi.a','libmpi++.a'],['libmpi.a'],
                              ['liblammpio.a','libpmpi.a','liblamf77mpi.a','libmpi.a','liblam.a'],
@@ -199,7 +199,7 @@ class Configure(PETSc.package.Package):
           if lib.find('mpich') >= 0:
             raise RuntimeError('Sorry, we have not been able to figure out how to use shared libraries on the \n \
               Mac with MPICH. Either run config/configure.py with --with-shared=0 or use LAM instead of MPICH; \n\
-              for instance with --download-lam=0')
+              for instance with --download-lam=1')
     return
 
   def checkDownload(self,preOrPost):
