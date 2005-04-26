@@ -1,5 +1,4 @@
 !
-!
 !  Include file for Fortran use of the MG preconditioner in PETSc
 !
 #if !defined (__PETSCMG_H)
@@ -25,6 +24,7 @@
       parameter (PC_MG_V_CYCLE=1,PC_MG_W_CYCLE=2)
 
       external  PCMGDEFAULTRESIDUAL
+
 !PETSC_DEC_ATTRIBUTES(PCMGDEFAULTRESIDUAL,'_PCMGDEFAULTRESIDUAL')
 
 !

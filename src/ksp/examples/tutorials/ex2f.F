@@ -86,6 +86,7 @@
       Mat         A 
       KSP         ksp
       PetscRandom rctx
+
 !  These variables are not currently used.
 !      PC          pc
 !      PCType      ptype 
@@ -216,6 +217,7 @@
       if (flg .eq. 1) then
          call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
+
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !         Create the linear solver and set various options
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -317,6 +319,7 @@
 
       call PetscFinalize(ierr)
       end
+
 ! --------------------------------------------------------------
 !
 !  MyKSPMonitor - This is a user-defined routine for monitoring

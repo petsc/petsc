@@ -405,6 +405,7 @@
 !  Compute the 2-norm and max-norm of the error
       call VecAXPY(solution,mone,u,ierr)
       call VecNorm(solution,NORM_2,en2,ierr)
+
 !  Scale the 2-norm by the grid spacing
       en2s = dsqrt(h)*en2
       call VecNorm(solution,NORM_MAX,enmax,ierr)
@@ -470,17 +471,14 @@
       call DAGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
 
 !  Access directly the values in our local INPUT work vector
-
       call VecGetArray(u_local,localptr,idx_l,ierr) 
 
 !  Access directly the values in our local OUTPUT work vector
-
       call VecGetArray(localwork,copyptr,idx_c,ierr) 
 
       sc = one_d0/(h*h*two_d0*(one_d0+t)*(one_d0+t))
 
 !  Evaluate our function on the nodes owned by this processor
-
       call VecGetLocalSize(u_local,localsize,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -586,11 +584,9 @@
       call DAGlobalToLocalEnd(da,global_in,INSERT_VALUES,u_local,ierr)
 
 !  Get pointer to vector data
-
       call VecGetArray(u_local,localptr,idx,ierr) 
 
 !  Get starting and ending locally owned rows of the matrix
-
       call MatGetOwnershipRange(A,mstarts,mends,ierr)
       mstart = mstarts
       mend   = mends
@@ -638,7 +634,6 @@
  10   continue
 
 !  Restore vector
-
       call VecRestoreArray(u_local,localptr,idx,ierr) 
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

@@ -1,14 +1,14 @@
 !
-!
       program main
       implicit none
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscsys.h"
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscviewer.h"
+
 !
-!  This example demonstrates writing an array to a file in binary format
-!  that may be read in by PETSc's VecLoad() routine.
+!      This example demonstrates writing an array to a file in binary
+!      format that may be read in by PETSc's VecLoad() routine.
 !
        PetscInt n,i,ione
        PetscErrorCode ierr
@@ -28,30 +28,30 @@
          array(i) = i
  10    continue
 
-!   Open binary file for writing
+!      Open binary file for writing
        call PetscBinaryOpen('testfile',PETSC_FILE_CREATE,fd,ierr)
-!   Write the Vec header
+!      Write the Vec header
        call PetscBinaryWrite(fd,veccookie,ione,PETSC_INT,                    &
      &                       PETSC_FALSE,ierr)
-!   Write the array length
+!      Write the array length
        call PetscBinaryWrite(fd,n,ione,PETSC_INT,PETSC_FALSE,ierr)
-!   Write the array
+!      Write the array
        call PetscBinaryWrite(fd,array,n,PETSC_DOUBLE,PETSC_FALSE,ierr)
-!   Close the file
+!      Close the file
        call PetscBinaryClose(fd,ierr)
 
 !
-!  Open the file for reading by PETSc
+!      Open the file for reading by PETSc
 !
        call PetscViewerBinaryOpen(PETSC_COMM_SELF,'testfile',                &
      &                       PETSC_FILE_RDONLY,v,ierr)
 !
-!  Load the vector
+!      Load the vector
 !
        Call VecLoad(v,PETSC_NULL_CHARACTER,x,ierr)
        call PetscViewerDestroy(v,ierr)
 !
-!  Print the vector
+!      Print the vector
 !
        call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr)
 !

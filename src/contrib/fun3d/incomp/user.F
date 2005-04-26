@@ -36,6 +36,7 @@
 !
       return
       end
+
 !============================== Block_Initialization  ======== =======72
 !
 ! Initializes the common blocks members for turbulence model
@@ -689,6 +690,7 @@
 !
 ! Update the timing information - Added by D. K. Kaushik (1/17/97)
       xres(ntt) = tot
+!
 ! End of subroutine FORCE
 !
       return
@@ -757,7 +759,7 @@
 #define rl(i) xyzn(i,4)
 #define eptr(i,j) evec(i,j)
 #endif
-
+!
 !  If local time steping, loop over faces
 !  and calculate time step as cdt = V/(sum(|u.n| +c.area)
 !  This is time step for cfl=1. We will multiply by cfl number later
@@ -784,6 +786,7 @@
                xnorm = xnorm*area
                ynorm = ynorm*area
                znorm = znorm*area
+!
 !/*
 ! xnorm = xnormal * area of face  
 ! ynorm = ynormal * area of face  
@@ -1114,6 +1117,7 @@
        first_edge = 1
        last_edge = nedge
 #endif
+!
 ! Loop over all the faces and calculate flux 
 !
 !$omp  parallel default(shared) private(n,node1,node2,xmean,ymean,           &
@@ -1616,6 +1620,7 @@
 !
        do i = 1,nfnode
          inode   = ifnode(i)
+!
 !/*
 ! Get normal and "other" 2 vectors. Remember that fxn,fyn and fzn 
 ! has the magnitude of the face contained in it.
@@ -1857,6 +1862,7 @@
            r13(node2) = r13(node2) + (x1 - x2)*(z1 - z2)*w2
           endif
  1020 continue
+!
 !/*
 ! Now calculate ||x(:)|| = r11 by taking the square root
 ! Also divide r12 and r13 by ||x(:)||
@@ -1866,6 +1872,7 @@
         r12(i) = r12(i)/r11(i)
         r13(i) = r13(i)/r11(i)
  1030 continue
+!
 !/*
 ! Now calculate r22 and r23
 !*/
@@ -1906,6 +1913,7 @@
      &                  (-dy+dx*r12(node2)/r11(node2))
           endif
  1050 continue
+!
 !/*
 ! Now finish getting r22 and r23
 !*/
@@ -1913,6 +1921,7 @@
         r22(i) = sqrt(r22(i))
         r23(i) = r23(i)/r22(i)
  1060 continue
+!
 !/*
 ! Now all we have to do is get r33
 !*/
@@ -1956,12 +1965,14 @@
           endif
 !
  1080 continue
+!
 !/*
 ! Now just get the magnitude of r33
 !*/
       do 1090 i = 1,nnodes
         r33(i) = sqrt(r33(i))
  1090 continue
+!
 !/*
 ! Added by Dinesh Kaushik (6/27/97)
 ! The following addition changes the meaning of r11 .. r33. r44
@@ -1996,6 +2007,7 @@
            r23(i) = r23r22
            r44(i) = rmess
       enddo
+!
 ! Finished with SUMGS
 !
       return
@@ -2437,6 +2449,7 @@
      &             LocalTS,irank,nvertices)
 !     call PetscLogEventEnd(delta2_event,0,0,0,0,ierr)
   888 continue
+!
 !/*
 !   Calculate the gradients 
 !   ----Kyle seems to recommend only LSTGS for gradients,
@@ -2468,6 +2481,7 @@
           phi(i,3)=1.0d0
           phi(i,4)=1.0d0
  1002   continue
+!
 !/*
 !
 ! If not doing Newton-Krylov and iflim=1 call the Flux Limiter

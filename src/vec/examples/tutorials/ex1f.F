@@ -81,6 +81,7 @@
       call VecSetFromOptions(x,ierr)
       call VecGetType(x,name,ierr)
       print*,name
+
 !  Duplicate some work vectors (of the same format and
 !  partitioning as the initial vector).
 
