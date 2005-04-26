@@ -12,7 +12,7 @@ typedef struct _p_PetscBagItem *PetscBagItem;
 struct _p_PetscBagItem {
   PetscDataType dtype;
   PetscInt      offset;
-  size_t        msize;
+  PetscInt      msize;
   char          name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH]; 
   const char    **list;
   PetscTruth    freelist;
@@ -49,7 +49,7 @@ $
 S*/
 typedef struct {
   MPI_Comm     bagcomm;
-  size_t       bagsize;
+  PetscInt     bagsize;
   PetscInt     count;
   char         bagname[PETSC_BAG_NAME_LENGTH];
   char         baghelp[PETSC_BAG_HELP_LENGTH];
@@ -73,12 +73,16 @@ typedef struct {
   Output Parameter:
 .   bag - the bag of values
 
+   Notes:
+      The size of the A struct must be small enough to fit in a PetscInt; by default
+      PetscInt is 4 bytes. The warning about casting to a shorter length can be ignored
+      below unless your A struct is too large
 
 .seealso: PetscBag, PetscBagGetName(), PetscBagView(), PetscBagLoad()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
            PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
 M*/ 
-#define PetscBagCreate(C,A,B)  PetscNew(A,B) || ((*(B))->bagsize = sizeof(A),(*(B))->bagcomm = C,0)
+#define PetscBagCreate(C,A,B)  PetscNew(A,B) || ((*(B))->bagsize = (PetscInt)sizeof(A),(*(B))->bagcomm = C,0)
 
 extern PetscErrorCode PetscBagDestroy(PetscBag*);
 
@@ -126,7 +130,7 @@ M*/
 #define PetscBagGetName(A,B) (*(B) = A->bagname,0)
 
 extern PetscErrorCode PetscBagRegisterReal(PetscBag*,void*,PetscReal, const char*, const char*);
-extern PetscErrorCode PetscBagRegisterString(PetscBag*,void*,size_t,const char*, const char*, const char*);
+extern PetscErrorCode PetscBagRegisterString(PetscBag*,void*,PetscInt,const char*, const char*, const char*);
 extern PetscErrorCode PetscBagRegisterScalar(PetscBag*,void*,PetscScalar,const  char*,const  char*);
 extern PetscErrorCode PetscBagRegisterInt(PetscBag*,void*,PetscInt,const  char*,const  char*);
 extern PetscErrorCode PetscBagRegisterEnum(PetscBag*,void*,const  char*[],PetscEnum,const char*,const  char*);

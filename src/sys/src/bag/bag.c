@@ -165,7 +165,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag* bag,void *addr,PetscInt mdefault, c
            PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PetscBagRegisterString(PetscBag* bag,void *addr,size_t msize,const char* mdefault, const char* name, const char* help)
+PetscErrorCode PetscBagRegisterString(PetscBag* bag,void *addr,PetscInt msize,const char* mdefault, const char* name, const char* help)
 {
   PetscErrorCode ierr;
   PetscBagItem   item;
@@ -345,7 +345,7 @@ PetscErrorCode PetscBagRegisterTruth(PetscBag* bag,void *addr,PetscTruth mdefaul
   item->offset = ((char*)addr) - ((char*)bag);
   item->next   = 0;
   item->msize  = 1;
-  *(PetscInt*)addr = mdefault;
+  *(PetscTruth*)addr = mdefault;
   ierr = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -431,7 +431,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag *bag)
         PetscInt *value = (PetscInt*)(((char*)bag) + nitem->offset);
         ierr = PetscOptionsInt(name,nitem->help,"",*value,value,PETSC_NULL);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_ENUM) {
-        PetscEnum *value = (PetscInt*)(((char*)bag) + nitem->offset);                     
+        PetscEnum *value = (PetscEnum*)(((char*)bag) + nitem->offset);                     
         PetscInt  i = 0;
         while (nitem->list[i++]);
         ierr = PetscOptionsEnum(name,nitem->help,nitem->list[i-3],nitem->list,*value,value,PETSC_NULL);CHKERRQ(ierr);
@@ -563,7 +563,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag **bag)
   ierr = PetscViewerBinaryRead(view,&cookie,1,PETSC_INT);CHKERRQ(ierr);
   if (cookie != PETSC_BAG_FILE_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,"Not PetscBag next in binary file");
   ierr = PetscViewerBinaryRead(view,bagsizecount,2,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscMalloc((size_t)bagsizecount[0],bag);CHKERRQ(ierr);
+  ierr = PetscMalloc(bagsizecount[0],bag);CHKERRQ(ierr);
   ierr = PetscMemzero(*bag,bagsizecount[0]);CHKERRQ(ierr);
   (*bag)->bagsize = bagsizecount[0];
 

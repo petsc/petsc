@@ -182,7 +182,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
-  else if (type == PETSC_ENUM)    m *= sizeof(PetscTruth);
+  else if (type == PETSC_ENUM)    m *= sizeof(PetscEnum);
   else if (type == PETSC_TRUTH)   m *= sizeof(PetscTruth);
   else if (type == PETSC_LOGICAL) m  = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
@@ -291,7 +291,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
-  else if (type == PETSC_ENUM)    m *= sizeof(PetscTruth);
+  else if (type == PETSC_ENUM)    m *= sizeof(PetscEnum);
   else if (type == PETSC_TRUTH)   m *= sizeof(PetscTruth);
   else if (type == PETSC_LOGICAL) m = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");

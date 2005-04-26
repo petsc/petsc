@@ -443,8 +443,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryReadStringArray(PetscViewer view
 
   /* count number of strings */
   ierr = PetscViewerBinaryRead(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
-  /* the extra 1 is for the last location - which should be NULL */
-  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&sizes);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&sizes);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(viewer,sizes,n,PETSC_INT);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     N += sizes[i];
