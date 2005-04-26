@@ -21,7 +21,9 @@ class Configure(config.base.Configure):
   def configureMake(self):
     '''Check various things about make'''
     self.getExecutable(self.framework.argDB['with-make'], getFullPath = 1,resultName = 'make')
-    
+
+    if not hasattr(self,'make'):
+      raise RuntimeError('Could not locate the make utility on your system, make sure\n it is in your path or use --with-make=/fullpathnameofmake\n and run config/configure.py again')    
     # Check for GNU make
     haveGNUMake = 0
     try:
