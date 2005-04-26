@@ -75,10 +75,10 @@ int main(int argc,char **argv)
   ierr = PetscBagRegisterScalar(bag,&params->W,  5.0,"W","Vertical velocity, m/sec");CHKERRQ(ierr);
   ierr = PetscBagRegisterInt   (bag,&params->I,  2,"modes_x","Number of modes in x-direction");CHKERRQ(ierr);
   ierr = PetscBagRegisterTruth (bag,&params->T,  PETSC_FALSE,"do_output","Write output file (yes/no)");CHKERRQ(ierr);
-  ierr = PetscBagRegisterEnum  (bag,&params->dt, PetscDataTypes,PETSC_INT,"dt","meaningless datatype");CHKERRQ(ierr);
+  ierr = PetscBagRegisterEnum  (bag,&params->dt, PetscDataTypes,(PetscEnum)PETSC_INT,"dt","meaningless datatype");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal  (bag,&params->pos.x1,1.0,"x1","x position");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal  (bag,&params->pos.x2,1.9,"x2","y position");CHKERRQ(ierr);
-  ierr = PetscBagRegisterEnum  (bag,&params->which, EnumeratedChoices, THAT, "choose","Express yourself by choosing among enumerated things");CHKERRQ(ierr);
+  ierr = PetscBagRegisterEnum  (bag,&params->which, EnumeratedChoices, (PetscEnum)THAT, "choose","Express yourself by choosing among enumerated things");CHKERRQ(ierr);
 
   /* write bag to stdio & binary file */
   ierr = PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
