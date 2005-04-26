@@ -185,6 +185,7 @@ c     inviscid and laminar cases -- D. K. Kaushik (12/20/97)
          amut(n)    = 0.0
        enddo
       endif
+c
 c If viscous, zero out the velocity on the surface
 c and set the energy so it reflects the correct wall temp
 c
@@ -2508,6 +2509,7 @@ c
 #define phi(i,j) phiv(j,i)
 #define eptr(i,j) evec(i,j)
 #endif
+c
 c Loop over all the faces and calculate a flux 
 c
        flops = 0 
@@ -3191,6 +3193,7 @@ c
           endif
 c
  1080 continue
+c
 c /*
 c 'Now just get the magnitude of r33'
 c */
@@ -3231,6 +3234,7 @@ c r44->rmess' */
            r23(i) = r23r22
            r44(i) = rmess
       enddo
+c
 c Finished with SUMGS
 c
       return
@@ -3711,6 +3715,7 @@ c '*/
       if (ihane.eq.1)then
          write (6,*) "SPLITH not implemented"
          stop
+c
 c /*'
 c        call splith(nnodes,ncell,nedge,nsface,nvface,nfface,
 c    &               isface,ivface,ifface,grad,evec,ncolor,
@@ -3735,6 +3740,7 @@ c '*/
       else if(ihane.eq.3)then
          write (6,*) "SPLITS not implemented"
          stop
+c
 c /*'
 c        call splits(nnodes,ncell,nedge,nsface,nvface,nfface,
 c    &              isface,ivface,ifface,grad,evec,ncolor,
@@ -3745,6 +3751,7 @@ c '*/
       else if(ihane.eq.4)then
          write (6,*) "AUSM not implemented"
          stop
+c
 c /*'
 c        call ausm(nnodes,ncell,nedge,nsface,nvface,nfface,
 c    &             isface,ivface,ifface,grad,evec,ncolor,
@@ -3767,6 +3774,7 @@ c '*/
      &            sxn,syn,szn,
      &            vxn,vyn,vzn,
      &            fxn,fyn,fzn,phiv,irank,nvertices)
+c
 c /*'
 c Use ROEIO for internal flows
 c
@@ -3781,6 +3789,7 @@ c    &              x,y,z,resvec,xn,yn,zn,rl,sxn,syn,szn,vxn,vyn,vzn,
 c    &              fxn,fyn,fzn,phiv,irank,nvertices)
 c '*/
       end if
+c
 c /*'
 c        call PLogEventEnd(flux_event,0,0,0,0,ierr)
 c
@@ -3812,6 +3821,7 @@ c
       else
          call PTOE(nvertices,qvec)
       end if
+c
 c End of subroutine GETRES
 c
       return

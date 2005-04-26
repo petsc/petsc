@@ -539,6 +539,10 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DA da, UserContext *user)
       /* \tau_{yy} = 2/3 \mu(T) (2 {\partial v\over\partial y} - {\partial u\over\partial x}) */
       /* q_x       = -\kappa(T) {\partial T\over\partial x} */
       /* q_y       = -\kappa(T) {\partial T\over\partial y} */
+
+      /* above code commeted out - causing ininitialized variables. */
+      q_x =0; q_y =0;
+
       mu     = 0.0;
       kappa  = 0.0;
       tau_xx = 0.0;
