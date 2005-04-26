@@ -458,6 +458,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag *bag)
 
    Level: beginner
 
+   Warning: Currently PETSc bags saved in a binary file can only be read back
+     in on a machine of the same architecture. Let us know when this is a problem
+     and we'll fix it.
+
 .seealso: PetscBag, PetscBagSetName(), PetscBagDestroy(), PetscBagLoad()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar(), PetscBagRegisterEnum()
            PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName()
