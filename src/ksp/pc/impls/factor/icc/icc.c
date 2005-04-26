@@ -362,7 +362,10 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 .  -pc_icc_in_place - only for ICC(0) with natural ordering, reuses the space of the matrix for
                       its factorization (overwrites original matrix)
 .  -pc_icc_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
--  -pc_icc_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
+.  -pc_icc_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
+.  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
+-  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
+   is optional with PETSC_TRUE being the default
 
    Level: beginner
 
@@ -381,7 +384,7 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
            PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), 
            PCICCSetFill(), PCICCSetMatOrdering(), PCICCSetReuseOrdering(), 
-           PCICCSetLevels()
+           PCICCSetLevels(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd(),
 
 M*/
 

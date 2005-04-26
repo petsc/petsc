@@ -675,8 +675,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivotInBlocks(PC pc,PetscTruth pivot)
 .  -pc_lu_fill <fill> - Sets fill amount
 .  -pc_lu_in_place - Activates in-place factorization
 .  -pc_lu_mat_ordering_type <nd,rcm,...> - Sets ordering routine
--  -pc_lu_pivot_in_blocks <true,false> - allow pivoting within the small blocks during factorization (may increase
+.  -pc_lu_pivot_in_blocks <true,false> - allow pivoting within the small blocks during factorization (may increase
                                          stability of factorization.
+.  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
+-  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
+   is optional with PETSC_TRUE being the default
 
    Notes: Not all options work for all matrix formats
           Run with -help to see additional options for particular matrix formats or factorization
@@ -693,7 +696,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivotInBlocks(PC pc,PetscTruth pivot)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCILU, PCCHOLESKY, PCICC, PCLUSetReuseOrdering(), PCLUSetReuseFill(), PCGetFactoredMatrix(),
            PCLUSetFill(), PCLUSetUseInPlace(), PCLUSetMatOrdering(), PCFactorSetPivoting(),
-           PCLUSetPivotingInBlocks()
+           PCLUSetPivotingInBlocks(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd()
 M*/
 
 EXTERN_C_BEGIN

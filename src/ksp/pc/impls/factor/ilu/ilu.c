@@ -864,9 +864,12 @@ static PetscErrorCode PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
 .  -pc_ilu_nonzeros_along_diagonal - reorder the matrix before factorization to remove zeros from the diagonal,
                                    this decreases the chance of getting a zero pivot
 .  -pc_ilu_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
--  -pc_ilu_pivot_in_blocks - for block ILU(k) factorization, i.e. with BAIJ matrices with block size larger
+.  -pc_ilu_pivot_in_blocks - for block ILU(k) factorization, i.e. with BAIJ matrices with block size larger
                              than 1 the diagonal blocks are factored with partial pivoting (this increases the 
                              stability of the ILU factorization
+.  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
+-  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
+   is optional with PETSC_TRUE being the default
 
    Level: beginner
 
@@ -880,6 +883,7 @@ static PetscErrorCode PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
            PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), PCILUSetUseDropTolerance(),
            PCILUSetFill(), PCILUSetMatOrdering(), PCILUSetReuseOrdering(), PCILUDTSetReuseFill(),
            PCILUSetLevels(), PCILUSetUseInPlace(), PCILUSetAllowDiagonalFill(), PCILUSetPivotInBlocks(),
+           PCFactorSetShiftNonzero(),PCFactorSetShiftPd()
 
 M*/
 

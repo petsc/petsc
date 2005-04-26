@@ -551,7 +551,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetMatOrdering(PC pc,MatOrderingType
 .  -pc_cholesky_reuse_fill - Activates PCLUSetReuseFill()
 .  -pc_cholesky_fill <fill> - Sets fill amount
 .  -pc_cholesky_in_place - Activates in-place factorization
--  -pc_cholesky_mat_ordering_type <nd,rcm,...> - Sets ordering routine
+.  -pc_cholesky_mat_ordering_type <nd,rcm,...> - Sets ordering routine
+.  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
+-  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
+   is optional with PETSC_TRUE being the default
 
    Notes: Not all options work for all matrix formats
 
@@ -566,7 +569,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetMatOrdering(PC pc,MatOrderingType
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCILU, PCLU, PCICC, PCCholeskySetReuseOrdering(), PCCholeskySetReuseFill(), PCGetFactoredMatrix(),
            PCCholeskySetFill(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(),
-	   PCCholeskySetUseInPlace(), PCCholeskySetMatOrdering()
+	   PCCholeskySetUseInPlace(), PCCholeskySetMatOrdering(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd()
 
 M*/
 
