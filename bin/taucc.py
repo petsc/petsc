@@ -2,14 +2,16 @@
 #!/bin/env python
 
 # Usage:
-#  taucc -cc=gcc -pdt_parse=/../cxxparse -tau_instr=/.../tau_instrumentor COMPILE_OPTIONS
+#  taucc -cc=gcc -pdt_parse=/../cxxparse -tau_instr=/.../tau_instrumentor -tao_include_dir=/.../include -tao_lib_dir=/.../lib COMPILE_OPTIONS
 #
 #  Options: 
-#           -cc         : C/C++ compiler
-#           -pdt_parse  : pdtoolkit parser for C++
-#           -tau_instr  : TAU instrumenter
-#           -v,-verbose : verbose mode - shows the exact commands invoked
-#           -leave_tmp  : do not delete temporary files
+#           -cc              : C/C++ compiler
+#           -pdt_parse       : pdtoolkit parser for C++
+#           -tau_instr       : TAU instrumenter
+#           -tau_include_dir : TAU include dir
+#           -tau_lib_dir     : TAU library dir
+#           -v,-verbose      : verbose mode - shows the exact commands invoked
+#           -leave_tmp       : do not delete temporary files
 #
 import commands
 import sys
@@ -42,14 +44,16 @@ def main():
     if ext == '.c' or ext == '.C' or ext == '.cpp':
       if os.path.isfile(arg):
         sourcefiles.append(arg)
-      else:
-        print 'Source file not found - skipping: ' + arg
     elif argsplit[0] == '-cc':
       cc = argsplit[1]
     elif argsplit[0] == '-pdt_parse':
       pdt_parse = argsplit[1]
     elif argsplit[0] == '-tau_instr':
       tau_instr = argsplit[1]
+    elif argsplit[0] == '-tau_include_dir':
+      tau_include_dir = argsplit[1]
+    elif argsplit[0] == '-tau_lib_dir':
+      tau_lib_dir = argsplit[1]
     elif arg == '-c':
         compile = 'true'
     elif arg == '-leave_tmp':
@@ -63,26 +67,29 @@ def main():
       arg=arg.replace('"','\\"')
       arglist += ' '+arg
 
-  if compile == 'false' and sourcefiles != [] :
-    raise RuntimeError('Incorrect invocation of tool. requires option -c')
-  elif sourcefiles == []:
-    raise RuntimeError('Incorrect invocation - no source files specified')    
-  # Now Compile the sourcefiles
-  for sourcefile in sourcefiles:
-    root,ext = os.path.splitext(sourcefile)
-    pdt_file = sourcefile+ '.pdb'
-    tau_file = root +'.inst' + ext
-    obj_file = root + '.o'
-    cmd1  = pdt_parse + ' ' + sourcefile + arglist
-    cmd2  = tau_instr + ' ' + pdt_file + ' ' + sourcefile +' -o '+ tau_file
-    cmd2 += ' -c -rn PetscFunctionReturn -rv PetscFunctionReturnVoid\\(\\)'
-    cmd3  = cc + ' -c ' + tau_file + ' -o ' + obj_file + arglist
-
+  if compile == 'false':
+    srcarg=''
+    for sourcefile in sourcefiles:
+      srcarg = srcarg + ' ' + sourcefile
+    cmd1  = cc + ' ' + srcarg +' '  + arglist + ' -L' + tau_lib_dir + ' -ltau-mpi-pdt -lTauMpi-mpi-pdt -lstdc++'
     runcmd(cmd1,verbose)
-    runcmd(cmd2,verbose)
-    if leave_tmp =='false': os.remove(pdt_file)
-    runcmd(cmd3,verbose)
-    if leave_tmp =='false': os.remove(tau_file)
+  else:
+    # Now Compile the sourcefiles
+    for sourcefile in sourcefiles:
+      root,ext = os.path.splitext(sourcefile)
+      pdt_file = sourcefile+ '.pdb'
+      tau_file = root +'.inst' + ext
+      obj_file = root + '.o'
+      cmd1  = pdt_parse + ' ' + sourcefile + arglist
+      cmd2  = tau_instr + ' ' + pdt_file + ' ' + sourcefile +' -o '+ tau_file
+      cmd2 += ' -c -rn PetscFunctionReturn -rv PetscFunctionReturnVoid\\(\\)'
+      cmd3  = cc + ' -c ' + tau_file + ' -o ' + obj_file + arglist + ' -I' + tau_include_dir
+
+      runcmd(cmd1,verbose)
+      runcmd(cmd2,verbose)
+      if leave_tmp =='false': os.remove(pdt_file)
+      runcmd(cmd3,verbose)
+      if leave_tmp =='false': os.remove(tau_file)
     
 if __name__ ==  '__main__':
   try:
