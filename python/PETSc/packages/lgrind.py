@@ -9,6 +9,7 @@ class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
     self.download     = ['bk://petsc.bkbits.net/lgrind-dev']
+    self.required     = 1
     return
 
   def Install(self):
@@ -25,8 +26,11 @@ class Configure(PETSc.package.Package):
     else:
       self.framework.log.write('Did not find Lgrind executable; compiling lgrind\n')
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(lgrindDir,'source')+';make', timeout=2500, log = self.framework.log)[0]
+        self.framework.pushLanguage('C')
+        output = config.base.Configure.executeShellCommand('cd '+os.path.join(lgrindDir,'source')+';make CC='+self.framework.getCompiler(),timeout=2500,log = self.framework.log)[0]
+        self.framework.popLanguage()
       except RuntimeError, e:
+        self.framework.popLanguage()
         if self.framework.argDB['with-batch']:
           self.logPrintBox('Batch build that could not generate lgrind, you will not be able to build documentation')
           return
@@ -37,7 +41,7 @@ class Configure(PETSc.package.Package):
           lgrindexe = lgrindexe+'.exe'
           lgrind    = 'lgrind.exe'
         else: lgrind = 'lgrind'
-        output  = config.base.Configure.executeShellCommand('cp '+lgrindexe+' '+installDir, timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('mv '+lgrindexe+' '+installDir, timeout=25, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error copying lgrind executable: '+str(e))
     self.framework.actions.addArgument('lgrind', 'Install', 'Installed lgrind into '+installDir)
@@ -48,7 +52,7 @@ class Configure(PETSc.package.Package):
 
   def configure(self):
     '''Determine whether the Lgrind exist or not'''
-    if os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'BitKeeper')):
+    if os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'BitKeeper')) and self.framework.argDB['with-lgrind']:
       self.framework.log.write('BitKeeper clone of PETSc, checking for Lgrind\n')
       self.Install()
     else:
