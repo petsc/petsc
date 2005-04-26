@@ -324,6 +324,7 @@ alldoc1: chk_loc deletemanualpages chk_concepts_dir
 	-maint/helpindex.py ${PETSC_DIR} ${LOC}
 	-grep -h Polymorphic include/*.h | grep -v '#define ' | sed "s?PetscPolymorphic[a-zA-Z]*(??g" | cut -f1 -d"{" > tmppoly
 	-maint/processpoly.py ${PETSC_DIR} ${LOC}
+	-${RM} tmppoly
 
 # Builds .html versions of the source
 # html overwrites some stuff created by update-docs - hence this is done later.
