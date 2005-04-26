@@ -886,12 +886,14 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
   Vec                    x,y;
   PC_BJacobi_Singleblock *bjac;
   PC                     subpc;
+  PetscTruth             wasSetup;
 
   PetscFunctionBegin;
 
   /* set default direct solver with no Krylov method */
   if (!pc->setupcalled) {
     const char *prefix;
+    wasSetup = PETSC_FALSE;
     ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,ksp);CHKERRQ(ierr);
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
@@ -928,6 +930,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     jac->ksp[0] = ksp;
     jac->data    = (void*)bjac;
   } else {
+    wasSetup = PETSC_TRUE;
     ksp = jac->ksp[0];
     bjac = (PC_BJacobi_Singleblock *)jac->data;
   }
@@ -935,8 +938,10 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     ierr = KSPSetOperators(ksp,mat,pmat,pc->flag);CHKERRQ(ierr);
   }  else {
     ierr = KSPSetOperators(ksp,pmat,pmat,pc->flag);CHKERRQ(ierr);
-  }   
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  }
+  if (!wasSetup) {
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
