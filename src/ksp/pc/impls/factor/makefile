@@ -1,6 +1,8 @@
 
 ALL: lib
 
+CFLAGS   =
+FFLAGS   =
 SOURCEC  = factor.c
 SOURCEH  = 
 OBJSC    = factor.o

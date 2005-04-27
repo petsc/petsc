@@ -4,8 +4,10 @@
 # See also bmake/common for additional commands.
 #
 ALL: all
-LOCDIR = . 
-DIRS   = src include 
+LOCDIR	 = . 
+DIRS	 = src include 
+CFLAGS	 = 
+FFLAGS	 = 
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

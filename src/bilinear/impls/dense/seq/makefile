@@ -2,6 +2,8 @@
 
 ALL: lib
 
+CFLAGS   =
+FFLAGS   =
 SOURCEC  = dense.c
 SOURCEF  =
 SOURCEH  = ${SOURCEC:.c=.h}

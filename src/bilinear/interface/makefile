@@ -2,6 +2,8 @@
 
 ALL: lib
 
+CFLAGS   =
+FFLAGS   =
 SOURCEC  = bilinear.c bilinearreg.c bilinearserialize.c bilinearregall.c initializepackage.c dlregis.c
 SOURCEF  =
 SOURCEH  = 
