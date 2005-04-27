@@ -3826,6 +3826,7 @@ c End of subroutine GETRES
 c
       return
       end
+c
 c---------------------------------------------------------------
 c The following subroutine is from node4t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -3912,6 +3913,7 @@ c 100   format(1h ,'deg(',i6,')=',i6)
 c
       return
       end
+c
 c===================================================================
 c
 c Get the IA, JA, and IAU arrays
@@ -4045,6 +4047,7 @@ c
 c
 c===================================================================
       subroutine IREAD(unit,n,iper,arr)
+c
 c===================================================================
       integer unit, n, iper
       integer arr(n,iper)
@@ -4064,6 +4067,7 @@ c===================================================================
 c
 c===================================================================
       subroutine RREAD(unit,n,iper,arr)
+c
 c===================================================================
       integer unit, n, iper
       real arr(n,iper)

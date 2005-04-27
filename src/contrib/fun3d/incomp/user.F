@@ -1301,6 +1301,7 @@
           ti21 = -(u*phi7 + v*phi8 + w*phi9)/beta
           ti31 =  .5d0*(c-ubar)/beta
           ti41 = -.5d0*(c+ubar)/beta
+!
 ! jumps (T(inverse)*dq) 
           dv1 = (ti11*dp + phi4*du + phi5*dv + phi6*dw)/c2
           dv2 = (ti21*dp + phi7*du + phi8*dv + phi9*dw)/c2
@@ -2680,6 +2681,7 @@
 !
       return
       end
+!
 !===================================================================
 !
 ! Get the IA, JA, and IAU arrays

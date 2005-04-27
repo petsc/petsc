@@ -444,6 +444,7 @@
 ! Now do the second node
 !
        if (node2 .le. nnodes) then
+!
 ! Exchange elements in place
         do j = 1,4
          do k = 1,8
