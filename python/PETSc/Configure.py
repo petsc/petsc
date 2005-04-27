@@ -288,7 +288,10 @@ class Configure(config.base.Configure):
     f.write('  configure_options = '+repr(args.values())+'\n')
     f.write('  configure.petsc_configure(configure_options)\n')
     f.close()
-    os.chmod(scriptName, 0775)
+    try:
+      os.chmod(scriptName, 0775)
+    except OSError, e:
+      self.framework.logPrint('Unable to make reconfigure script executable:\n'+str(e))
     self.framework.actions.addArgument('PETSc', 'File creation', 'Created '+scriptName+' for automatic reconfiguration')
     return
 
