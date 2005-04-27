@@ -730,6 +730,7 @@ class Configure(config.base.Configure):
     if 'FC' in self.framework.argDB:
       languages.append('FC')
     for language in languages:
+      flag = '-L'
       self.pushLanguage(language)
       for testFlag in ['-Wl,-multiply_defined,suppress','-Wl,-multiply_defined -Wl,suppress','-force_flat_namespace', '-flat_namespace']:
         self.framework.logPrint('Trying '+language+' linker flag '+testFlag)
