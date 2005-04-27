@@ -26,6 +26,7 @@ class Configure(config.base.Configure):
     return
 
   def setupDependencies(self, framework):
+    config.base.Configure.setupDependencies(self, framework)
     self.setCompilers = framework.require('config.setCompilers', self)
     return
 
@@ -801,7 +802,15 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortran90)
       self.executeTest(self.checkFortran90Interface)
     self.executeTest(self.output)
+    self.no_configure()
+    return
+
+  def setupFrameworkCompilers(self):
     if self.framework.compilers is None:
       self.logPrint('Setting framework compilers to this module', 2, 'compilers')
       self.framework.compilers = self
+    return
+
+  def no_configure(self):
+    self.executeTest(self.setupFrameworkCompilers)
     return

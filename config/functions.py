@@ -18,6 +18,7 @@ class Configure(config.base.Configure):
     return
 
   def setupDependencies(self, framework):
+    config.base.Configure.setupDependencies(self, framework)
     self.headers = self.framework.require('config.headers', self)
     return
 

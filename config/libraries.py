@@ -12,6 +12,7 @@ class Configure(config.base.Configure):
     return
 
   def setupDependencies(self, framework):
+    config.base.Configure.setupDependencies(self, framework)
     self.setCompilers = framework.require('config.setCompilers', self)
     self.compilers    = framework.require('config.compilers',    self)
     self.headers      = framework.require('config.headers',      self)
@@ -114,7 +115,7 @@ class Configure(config.base.Configure):
     self.headers.check('dlfcn.h')
     return
 
-  def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int', noCheckArg = 0):
+  def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int', noCheckArg = 0, executor = None):
     '''Determine whether a library is shared
        - initFunction(int *argc, char *argv[]) is called to initialize some static data
        - checkFunction(int *check) is called to verify that the static data wer set properly
@@ -171,8 +172,10 @@ int checkInit(void) {
   %s isInitialized;
 
   %s
-  return (int) isInitialized;
 ''' % (boolType, checkCode)
+    if finiFunction:
+      body += '  if (isInitialized) '+finiFunction+'();\n'
+    body += '  return (int) isInitialized;\n'
     codeEnd   = '\n}\n'
     if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd, shared = 1):
       if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
@@ -198,7 +201,7 @@ int checkInit(void) {
     ''' % guard
     body = '''
   int   argc    = 1;
-  char *argv[1] = {"conftest"};
+  char *argv[1] = {(char *) "conftest"};
   void *lib;
   int (*init)(int, char **);
   int (*checkInit)(void);
@@ -231,11 +234,11 @@ int checkInit(void) {
     fprintf(stderr, "Did not link with shared library\\n");
     exit(2);
   }
-    '''
+  '''
     oldLibs = self.framework.argDB['LIBS']
     if self.haveLib('dl'):
       self.framework.argDB['LIBS'] += ' -ldl'
-    if self.checkRun(defaultIncludes, body):
+    if self.checkRun(defaultIncludes, body, executor = executor):
       isShared = 1
     self.framework.argDB['LIBS'] = oldLibs
     if os.path.isfile('lib1.so'): os.remove('lib1.so')

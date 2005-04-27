@@ -53,7 +53,7 @@ class Script(logging.Logger):
   def setup(self):
     ''' This method checks to see whether help was requested'''
     logging.Logger.setup(self)
-    if self.argDB['help'] or self.argDB['h']:
+    if self.showHelp():
       self.help.output()
       sys.exit()
     return

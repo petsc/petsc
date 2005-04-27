@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 '''
   The Framework object serves as the central control for a configure run. It
 maintains a graph of all the configure modules involved, which is also used to
@@ -217,6 +216,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         break
     if config is None:
       config = apply(type, [self], keywordArgs)
+      config.setup()
+      config.setupPackageDependencies(self)
       config.setupDependencies(self)
       self.addChild(config)
     return config
@@ -257,11 +258,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.logPrint('Loaded cached configuration from '+path)
     return framework
 
-  def addDependency(self, dependency, depPath = None):
+  def addPackageDependency(self, dependency, depPath = None):
+    import cPickle
     import md5
 
+    if not dependency:
+      return
     if isinstance(dependency, str):
-      framework = self.loadDependency(dependency)
+      framework = self.loadFramework(dependency)
       if not framework:
         return
     else:
@@ -271,25 +275,35 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       else:
         dependency = os.path.dirname(dependency.__file__)
     self.dependencies[dependency] = md5.new(cPickle.dumps(framework)).hexdigest()
-    self.childGraph.addSubgraph(framework.childGraph)
+    self.logPrint('Added configure dependency from '+dependency+'('+str(self.dependencies[dependency])+')')
+    for child in framework.childGraph.vertices:
+      child.argDB = self.argDB
+      child.setup()
+      self.childGraph.replaceVertex(self.require(child.__module__, None), child)
     return
 
-  def updateDependencies(self):
+  def updatePackageDependencies(self):
     import md5
 
     for dependency, digest in self.dependencies.items():
-      framework = self.loadDependency(dependency)
+      framework = self.loadFramework(dependency)
       if digest == md5.new(cPickle.dumps(framework)).hexdigest():
         continue
       self.logPrint('Configure dependency from '+dependency+' has changed. Reloading...')
       for child in framework.childGraph.vertices:
         self.childGraph.replaceVertex(self.require(child.__module__, None), child)
+        self.logPrint('  Reloaded '+child.__module__)
+      self.updateDependencies()
+      for child in framework.childGraph.vertices:
         for depChild in self.childGraph.depthFirstVisit(child, outEdges = 0):
           if hasattr(depChild, '_configured'):
             del depChild._configured
-        self.logPrint('  Reloaded '+child.__module__)
+        self.logPrint('  Will reconfigure subtree for '+child.__module__)
+    return
+
+  def updateDependencies(self):
     for child in self.childGraph.vertices:
-      child.setupDependencies()
+      child.setupDependencies(self)
     return
 
   ###############################################
@@ -740,16 +754,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
     self.setup()
     self.outputBanner()
+    self.updateDependencies()
     for child in graph.DirectedGraph.topologicalSort(self.childGraph):
       if not hasattr(child, '_configured'):
         child.configure()
+      else:
+        child.no_configure()
       child._configured = 1
     if self.argDB['with-batch']:
       self.configureBatch()
     self.cleanup()
     return 1
-
-if __name__ == '__main__':
-  import sys
-  framework = Framework(sys.argv[1:], loadArgDB = 0)
-  framework.configure(out = sys.stdout)

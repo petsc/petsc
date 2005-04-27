@@ -127,6 +127,9 @@ class Make(script.Script):
         self.configureMod = self.getModule(self.root, 'configure')
       self.configureObj = self.configureMod.Configure(framework)
       self.logPrint('Configure module found in '+self.configureObj.root)
+      self.configureObj.argDB = self.argDB
+      self.configureObj.setup()
+      self.configureObj.setupPackageDependencies(framework)
       self.configureObj.setupDependencies(framework)
       framework.addChild(self.configureObj)
     except ImportError, e:

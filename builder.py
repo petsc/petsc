@@ -141,15 +141,15 @@ class Builder(logging.Logger):
     self.pushConfiguration('default')
     return
 
-  def getFramework(self):
-    return self._framework
-  def setFramework(self, framework):
-    self._framework   = framework
-    self.setCompilers = framework.require('config.setCompilers', None)
-    self.compilers    = framework.require('config.compilers', None)
-    self.libraries    = framework.require('config.libraries', None)
-    return
-  framework = property(getFramework, setFramework, doc = 'The configure framework')
+  def getSetCompilers(self):
+    return self.framework.require('config.setCompilers', None)
+  setCompilers = property(getSetCompilers, doc = 'The config.setCompilers configure object')
+  def getCompilers(self):
+    return self.framework.require('config.compilers', None)
+  compilers = property(getCompilers, doc = 'The config.compilers configure object')
+  def getLibraries(self):
+    return self.framework.require('config.libraries', None)
+  libraries = property(getLibraries, doc = 'The config.libraries configure object')
 
   def setup(self):
     logging.Logger.setup(self)

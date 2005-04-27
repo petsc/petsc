@@ -823,7 +823,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    self.executeTest(self.checkInitialLibraries)
+    self.no_configure()
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
     self.executeTest(self.checkCxxCompiler)
@@ -838,4 +838,8 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-shared']:
       self.executeTest(self.checkLibC)
     self.executeTest(self.output)
+    return
+
+  def no_configure(self):
+    self.executeTest(self.checkInitialLibraries)
     return

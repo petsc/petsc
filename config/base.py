@@ -252,7 +252,7 @@ class Configure(script.Script):
     compiler.checkSetup()
     self.compilerSource = 'conftest'+compiler.sourceExtension
     self.compilerObj    = compiler.getTarget(self.compilerSource)
-    return self.framework.argDB[compiler.name]
+    return compiler.getProcessor()
 
   def getCompilerFlags(self):
     return self.framework.getCompilerObject(self.language[-1]).getFlags()
@@ -262,7 +262,7 @@ class Configure(script.Script):
     linker.checkSetup()
     self.linkerSource = 'conftest'+linker.sourceExtension
     self.linkerObj    = linker.getTarget(self.linkerSource,0)
-    return self.framework.argDB[linker.name]
+    return linker.getProcessor()
 
   def getLinkerFlags(self):
     return self.framework.getLinkerObject(self.language[-1]).getFlags()
@@ -272,7 +272,7 @@ class Configure(script.Script):
     linker.checkSetup()
     self.linkerSource = 'conftest'+linker.sourceExtension
     self.linkerObj    = linker.getTarget(self.linkerSource,1)
-    return self.framework.argDB[linker.name]
+    return linker.getProcessor()
 
   def getSharedLinkerFlags(self):
     return self.framework.getSharedLinkerObject(self.language[-1]).getFlags()
@@ -522,7 +522,7 @@ class Configure(script.Script):
       return
     raise RuntimeError('Bad linker flag: '+flag)
 
-  def outputRun(self, includes, body, cleanup = 1, defaultOutputArg = ''):
+  def outputRun(self, includes, body, cleanup = 1, defaultOutputArg = '', executor = None):
     if not self.checkLink(includes, body, cleanup = 0): return ('', 1)
     if not os.path.isfile(self.linkerObj) or not os.access(self.linkerObj, os.X_OK):
       self.framework.log.write('ERROR while running executable: '+self.linkerObj+' is not executable')
@@ -536,7 +536,10 @@ class Configure(script.Script):
       else:
         raise RuntimeError('Running executables on this system is not supported')
     cleanup = cleanup and self.framework.cleanup
-    command = './'+self.linkerObj
+    if executor:
+      command = executor+' ./'+self.linkerObj
+    else:
+      command = './'+self.linkerObj
     output  = ''
     error   = ''
     status  = 1
@@ -549,8 +552,8 @@ class Configure(script.Script):
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
     return (output+error, status)
 
-  def checkRun(self, includes = '', body = '', cleanup = 1, defaultArg = ''):
-    (output, returnCode) = self.outputRun(includes, body, cleanup, defaultArg)
+  def checkRun(self, includes = '', body = '', cleanup = 1, defaultArg = '', executor = None):
+    (output, returnCode) = self.outputRun(includes, body, cleanup, defaultArg, executor)
     return not returnCode
 
   def splitLibs(self,libArgs):
@@ -591,9 +594,16 @@ class Configure(script.Script):
         includes.append(inc[2:])
     return includes
 
-  def setupDependencies(self, framework):
-    '''All calls to the framework require() should be made here'''
+  def setupPackageDependencies(self, framework):
+    '''All calls to the framework addPackageDependency() should be made here'''
     pass
 
+  def setupDependencies(self, framework):
+    '''All calls to the framework require() should be made here'''
+    self.framework = framework
+
   def configure(self):
+    pass
+
+  def no_configure(self):
     pass
