@@ -35,6 +35,9 @@ class Configure(config.base.Configure):
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
     self.useDynamic = 0
     self.useDynamic = self.shared.useShared and self.framework.argDB['with-dynamic'] and self.headers.check('dlfcn.h')
+    if not self.useDynamic:
+      self.logPrint('Dynamic libraries - disabled')
+      return
     if not self.libraries.add('dl', ['dlopen', 'dlsym']):
       if not self.libraries.check('', ['dlopen', 'dlsym']):
         self.logPrint('The dynamic linking functions dlopen() and dlsym() were not found')
