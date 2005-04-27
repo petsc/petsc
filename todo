@@ -19,6 +19,9 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
    (Priority 0) If shared libraries is turned on, need configure test that each external package
   can go into shared library. Trouble on Mac
 
+  (Priority 0) Check for broken Windows sed. Does anyone here have this broken sed. The signal is
+               all spaces are missing from the petscmachineinfo.h declaration.
+
   -------------
   Optimizations
    ------------
