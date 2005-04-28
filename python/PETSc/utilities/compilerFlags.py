@@ -27,6 +27,7 @@ class Configure(config.base.Configure):
     return
 
   def setupDependencies(self, framework):
+    config.base.Configure.setupDependencies(self, framework)
     self.setCompilers = framework.require('config.setCompilers', self)
     self.languages    = framework.require('PETSc.utilities.languages', self)
     self.debugging    = framework.require('PETSc.utilities.debugging', self)
