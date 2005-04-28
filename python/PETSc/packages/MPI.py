@@ -41,7 +41,7 @@ class Configure(PETSc.package.Package):
     help.addArgument('MPI', '-download-lam=<no,yes,ifneeded>',    nargs.ArgFuzzyBool(None, 0, 'Download and install LAM/MPI'))
     help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Download and install MPICH-2'))
     help.addArgument('MPI', '-with-mpirun=<prog>',                nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
-    help.addArgument('MPI', '-with-mpi-shared=<bool>',            nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
+    help.addArgument('MPI', '-with-mpi-shared=<bool>',            nargs.ArgBool(None, 1, 'Require that the MPI library be shared'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-download-mpich-machines=[machine1,machine2...]',  nargs.Arg(None, ['localhost','localhost'], 'Machines for MPI to use'))
     help.addArgument('MPI', '-download-mpich-pm=mpd or gforker',  nargs.Arg(None, 'mpd', 'Launcher for MPI processes')) 
@@ -102,7 +102,7 @@ class Configure(PETSc.package.Package):
   def checkSharedLibrary(self):
     '''Check that the libraries for MPI are shared libraries'''
     if self.framework.argDB['with-shared'] and self.framework.argDB['with-mpi-shared']:
-      return self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib)
+      return self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, executor = self.mpirun)
     return 1
 
   def configureMPIRUN(self):

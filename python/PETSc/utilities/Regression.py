@@ -19,6 +19,7 @@ class Configure(config.base.Configure):
     return
 
   def setupDependencies(self, framework):
+    config.base.Configure.setupDependencies(self, framework)
     self.arch          = framework.require('PETSc.utilities.arch', self)
     self.bmake         = framework.require('PETSc.utilities.bmakeDir', self)    
     self.datafilespath = framework.require('PETSc.utilities.dataFilesPath', self)

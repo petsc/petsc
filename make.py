@@ -107,6 +107,9 @@ class OldMake(maker.Make):
 
 class Make(maker.BasicMake):
   def setupConfigure(self, framework):
+    import sys
+    sys.path.append(os.path.join(os.getcwd(), 'python'))
+    sys.path.append(os.path.join(os.getcwd(), 'python', 'BuildSystem'))
     self.configureMod = self.getModule(os.path.join(os.getcwd(), 'python', 'PETSc'), 'petsc')
     maker.BasicMake.setupConfigure(self, framework)
     framework.header = None
@@ -116,14 +119,16 @@ class Make(maker.BasicMake):
 
   def configure(self, builder):
     framework = maker.BasicMake.configure(self, builder)
+    self.arch = framework.require('PETSc.utilities.arch', None)
     self.python = framework.require('config.python', None)
+    self.mpi = framework.require('PETSc.packages.MPI', None)
     return framework
 
   def setupDirectories(self, builder):
     maker.BasicMake.setupDirectories(self, builder)
     self.srcDir['C'] = os.path.join(os.getcwd(), 'src', 'python', 'PETSc')
     self.srcDir['Python'] = os.path.join(os.getcwd(), 'src', 'python', 'PETSc')
-    self.libDir = os.path.join(os.getcwd(), 'lib', self.configureObj.petsc.arch.arch, 'PETSc')
+    self.libDir = os.path.join(os.getcwd(), 'lib', self.arch.arch, 'PETSc')
     return
 
   def buildLibraries(self, builder):
@@ -136,35 +141,35 @@ class Make(maker.BasicMake):
 
 def lib_Base(maker):
   '''Base.c'''
-  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+  return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
 def lib_PetscViewer(maker):
   '''PetscViewer.c'''
-  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+  return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
 def lib_PetscMap(maker):
   '''PetscMap.c'''
-  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+  return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
 def lib_Vec(maker):
   '''Vec.c'''
-  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+  return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
 def lib_Mat(maker):
   '''Mat.c'''
-  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+  return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
 def lib_PC(maker):
   '''PC.c'''
-  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+  return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
 def lib_KSP(maker):
   '''KSP.c'''
-  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+  return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
 def lib_SNES(maker):
   '''SNES.c'''
-  return (maker.configureObj.include+maker.configureObj.petsc.mpi.include+maker.python.include, maker.configureObj.lib+maker.configureObj.petsc.mpi.lib+maker.python.lib)
+  return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
 if __name__ == '__main__':
   Make().run()

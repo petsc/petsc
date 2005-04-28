@@ -18,6 +18,7 @@ class Configure(config.base.Configure):
     return
 
   def setupDependencies(self, framework):
+    config.base.Configure.setupDependencies(self, framework)
     self.functions = framework.require('config.functions', self)
     self.libraries = framework.require('config.libraries', self)
     return

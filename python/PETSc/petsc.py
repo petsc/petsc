@@ -1,4 +1,26 @@
 #!/usr/bin/env python
+'''
+  This is the first try for a hierarchically configured module. The idea is to
+add the configure objects from a previously executed framework into the current
+framework. However, this necessitates a reorganization of the activities in the
+module.
+
+  We must now have three distinct phases: location, construction, and testing.
+This is very similar to the current compiler checks. The construction phase is
+optional, and only necessary when the package has not been previously configured.
+The phases will necessarily interact, as an installtion must be located before
+testing, however anothe should be located if the testing fails.
+
+  We will give each installation a unique key, which is returned by the location
+method. This will allow us to identify working installations, as well as those
+that failed testing.
+
+  There is a wierd role reversal that can happen. If we look for PETSc, but
+cannot find it, it is reasonable to ask to have it automatically downloaded.
+However, in this case, rather than using the configure objects from the existing
+PETSc, we contribute objects to the PETSc which will be built.
+
+'''
 from __future__ import generators
 import user
 import config.base
@@ -6,16 +28,17 @@ import config.base
 import re
 import os
 
+class InvalidPETScError(RuntimeError):
+  pass
+
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.found        = 0
-    self.foundLib     = 0
-    self.foundInclude = 0
-    self.dir          = None
-    self.petsc        = None
+    self.location     = None
+    self.trial        = {}
+    self.working      = {}
     return
 
   def __str__(self):
@@ -32,40 +55,159 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-petsc=<bool>',                nargs.ArgBool(None, 1, 'Activate PETSc'))
+    # Location options
     help.addArgument('PETSc', '-with-petsc-dir=<root dir>',        nargs.ArgDir(None, None, 'Specify the root directory of the PETSc installation'))
-    help.addArgument('PETSc', '-with-petsc-shared=<bool>',         nargs.ArgBool(None, 1, 'Require that the PETSc library be shared'))
     help.addArgument('PETSc', '-with-petsc-arch=<arch>',           nargs.Arg(None, None, 'Specify PETSC_ARCH'))
+    # Construction options
     help.addArgument('PETSc', '-download-petsc=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, 'Install PETSc'))
+    # Testing options
+    help.addArgument('PETSc', '-with-petsc-shared=<bool>',         nargs.ArgBool(None, 1, 'Require that the PETSc library be shared'))
+    return
+
+  def setupPackageDependencies(self, framework):
+    import sys
+
+    petscConf = None
+    for (name, (petscDir, petscArch)) in self.getLocations():
+      petscPythonDir = os.path.join(petscDir, 'python')
+      sys.path.append(petscPythonDir)
+      confPath = os.path.join(petscDir, 'bmake', petscArch)
+      petscConf = framework.loadFramework(confPath)
+      if petscConf:
+        self.logPrint('Loaded PETSc-AS configuration ('+name+') from '+confPath)
+        self.location = (petscDir, petscArch)
+        self.trial[self.location] = name
+        break
+      else:
+        self.logPrint('PETSc-AS has no cached configuration in '+confPath)
+        sys.path.reverse()
+        sys.path.remove(petscPythonDir)
+        sys.path.reverse()
+    if not petscConf:
+      self.downloadPETSc()
+    framework.addPackageDependency(petscConf, confPath)
     return
 
   def setupDependencies(self, framework):
+    config.base.Configure.setupDependencies(self, framework)
     self.compilers = framework.require('config.compilers', self)
     self.headers   = framework.require('config.headers', self)
     self.libraries = framework.require('config.libraries', self)
+    self.mpi       = framework.require('PETSc.packages.MPI', self)
     return
 
-  def loadPETScConfigure(self):
-    '''Load the configure module from PETSc-AS'''
-    import RDict
-    import sys
-    confPath = os.path.join(self.dir, 'bmake', self.arch)
-    oldDir = os.getcwd()
-    os.chdir(confPath)
-    argDB = RDict.RDict()
-    os.chdir(oldDir)
-    sys.path.append(os.path.join(self.dir, 'python'))
-    framework = self.loadConfigure(argDB)
-    if framework is None:
-      raise RuntimeError('PETSc-AS has no cached configuration in '+confPath)
+  def getPETScArch(self, petscDir):
+    '''Return the allowable PETSc architectures for a given root'''
+    if 'with-petsc-arch' in self.framework.argDB:
+      yield self.framework.argDB['with-petsc-arch']
+    elif 'PETSC_ARCH' in os.environ:
+      yield os.environ['PETSC_ARCH']
     else:
-      self.logPrint('Loaded PETSc-AS configuration from '+confPath)
-    return framework.require('PETSc.Configure', None)
+      if os.path.isdir(os.path.join(petscDir, 'bmake')):
+        for d in os.listdir(os.path.join(petscDir, 'bmake')):
+          if not os.path.isdir(d):
+            continue
+          if d in ['common', 'docsonly']:
+            continue
+          yield d
+    return
+
+  def getLocations(self):
+    '''Return all allowable locations for PETSc'''
+    if hasattr(self, '_configured'):
+      key =(self.dir, self.arch)
+      yield (self.working[key], key)
+      raise InvalidPETScError('Configured PETSc is not usable')
+    if self.framework.argDB['download-petsc'] == 1:
+      yield self.downloadPETSc()
+      raise InvalidPETScError('Downloaded PETSc is not usable')
+    if 'with-petsc-dir' in self.framework.argDB:
+      petscDir = self.framework.argDB['with-petsc-dir']
+      for petscArch in self.getPETScArch(petscDir):
+        yield ('User specified installation root', (petscDir, petscArch))
+      raise InvalidPETScError('No working architecitures in '+str(petscDir))
+    elif 'PETSC_DIR' in os.environ:
+      petscDir = os.environ['PETSC_DIR']
+      for petscArch in self.getPETScArch(petscDir):
+        yield ('User specified installation root', (petscDir, petscArch))
+      raise InvalidPETScError('No working architecitures in '+str(petscDir))
+    else:
+      for petscArch in self.getPETScArch(petscDir):
+        yield ('Default compiler locations', ('', petscArch))
+      petscDirRE = re.compile(r'(PETSC|pets)c(-.*)?')
+      trialDirs = []
+      for packageDir in self.framework.argDB['package-dirs']:
+        if os.path.isdir(packageDir):
+          for d in os.listdir(packageDir):
+            if petscDirRE.match(d):
+              trialDirs.append(('Package directory installation root', os.path.join(packageDir, d)))
+      usrLocal = os.path.join('/usr', 'local')
+      if os.path.isdir(os.path.join('/usr', 'local')):
+        trialDirs.append(('Frequent user install location (/usr/local)', usrLocal))
+        for d in os.listdir(usrLocal):
+          if petscDirRE.match(d):
+            trialDirs.append(('Frequent user install location (/usr/local/'+d+')', os.path.join(usrLocal, d)))
+      if 'HOME' in os.environ and os.path.isdir(os.environ['HOME']):
+        for d in os.listdir(os.environ['HOME']):
+          if petscDirRE.match(d):
+            trialDirs.append(('Frequent user install location (~/'+d+')', os.path.join(os.environ['HOME'], d)))
+    return
+
+  def downloadPETSc(self):
+    if self.framework.argDB['download-petsc'] == 0:
+      raise RuntimeError('No functioning PETSc located')
+    # Download and build PETSc
+    #   Use only the already configured objects from this run
+    raise RuntimeError('Not implemented')
+
+  def getDir(self):
+    if self.location:
+      return self.location[0]
+    return None
+  dir = property(getDir, doc = 'The PETSc root directory')
+
+  def getArch(self):
+    if self.location:
+      return self.location[1]
+    return None
+  arch = property(getArch, doc = 'The PETSc architecture')
+
+  def getFound(self):
+    return self.location and self.location in self.working
+  found = property(getFound, doc = 'Did we find a valid PETSc installation')
+
+  def getName(self):
+    if self.location and self.location in self.working:
+      return self.working[self.location][0]
+    return None
+  name = property(getName, doc = 'The PETSc installation type')
+
+  def getInclude(self, useTrial = 0):
+    if self.location and self.location in self.working:
+      return self.working[self.location][1]
+    elif useTrial and self.location and self.location in self.trial:
+      return self.trial[self.location][1]
+    return None
+  include = property(getInclude, doc = 'The PETSc include directories')
+
+  def getLib(self, useTrial = 0):
+    if self.location and self.location in self.working:
+      return self.working[self.location][2]
+    elif useTrial and self.location and self.location in self.trial:
+      return self.trial[self.location][2]
+    return None
+  lib = property(getLib, doc = 'The PETSc libraries')
+
+  def getVersion(self):
+    if self.location and self.location in self.working:
+      return self.working[self.location][3]
+    return None
+  version = property(getVersion, doc = 'The PETSc version')
 
   def getOtherIncludes(self):
     if not hasattr(self, '_otherIncludes'):
       includes = []
-      if not self.petsc is None:
-        includes.extend(['-I'+include for include in self.petsc.mpi.include])
+      includes.extend(['-I'+include for include in self.mpi.include])
       return ' '.join(includes)
     return self._otherIncludes
   def setOtherIncludes(self, otherIncludes):
@@ -74,25 +216,13 @@ class Configure(config.base.Configure):
 
   def getOtherLibs(self):
     if not hasattr(self, '_otherLibs'):
-      libs = self.compilers.flibs
-      if not self.petsc is None:
-        libs.extend(self.petsc.mpi.lib)
+      libs = self.compilers.flibs[:]
+      libs.extend(self.mpi.lib)
       return libs
     return self._otherLibs
   def setOtherLibs(self, otherLibs):
     self._otherLibs = otherLibs
   otherLibs = property(getOtherLibs, setOtherLibs, doc = 'Libraries needed to link PETSc')
-
-  def configureArchitecture(self):
-    '''Determine the PETSc architecture'''
-    if 'with-petsc-arch' in self.framework.argDB:
-      self.arch = self.framework.argDB['with-petsc-arch']
-    elif 'PETSC_ARCH' in os.environ:
-      self.arch = os.environ['PETSC_ARCH']
-    else:
-      #HACK
-      self.arch = 'linux-gnu'
-    return
 
   def checkLib(self, libraries):
     '''Check for PETSc creation functions in libraries, which can be a list of libraries or a single library
@@ -130,11 +260,11 @@ class Configure(config.base.Configure):
     '''Analogous to checkLink(), but the PETSc includes and libraries are automatically provided'''
     success  = 0
     oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.include])
+    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.getInclude(useTrial = 1)])
     if self.otherIncludes:
       self.compilers.CPPFLAGS += ' '+self.otherIncludes
     oldLibs  = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib+self.otherLibs])+' '+self.framework.argDB['LIBS']
+    self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.getLib(useTrial = 1)+self.otherLibs])+' '+self.framework.argDB['LIBS']
     if self.checkLink(includes, body, cleanup, codeBegin, codeEnd, shared):
       success = 1
     self.compilers.CPPFLAGS = oldFlags
@@ -144,36 +274,34 @@ class Configure(config.base.Configure):
   def checkWorkingLink(self):
     '''Checking that we can link a PETSc executable'''
     if not self.checkPETScLink('#include <petsc.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time); CHKERRQ(ierr);\n'):
-      self.framework.log.write('PETSc cannot link, which indicates a problem with the PETSc installation\n')
+      self.logPrint('PETSc cannot link, which indicates a problem with the PETSc installation')
       return 0
-    self.framework.log.write('PETSc can link with C\n')
+    self.logPrint('PETSc can link with C')
       
     if 'CXX' in self.framework.argDB:
       self.pushLanguage('C++')
       self.sourceExtension = '.C'
       if not self.checkPETScLink('#define PETSC_USE_EXTERN_CXX\n#include <petsc.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time); CHKERRQ(ierr);\n'):
-        self.framework.log.write('PETSc cannot link C++ but can link C, which indicates a problem with the PETSc installation\n')
+        self.logPrint('PETSc cannot link C++ but can link C, which indicates a problem with the PETSc installation')
         self.popLanguage()
         return 0
       self.popLanguage()
-      self.framework.log.write('PETSc can link with C++\n')
+      self.logPrint('PETSc can link with C++')
     
     if 'FC' in self.framework.argDB:
       self.pushLanguage('FC')
       self.sourceExtension = '.F'
-      # HACK (?)
-      self.lib.insert(0, os.path.join(self.dir,'lib',self.arch, 'libpetscfortran.a'))
       if not self.checkPETScLink('', '          integer ierr\n          real time\n          call PetscGetTime(time, ierr)\n'):
-        self.framework.log.write('PETSc cannot link Fortran, but can link C, which indicates a problem with the PETSc installation\nRun with -with-fc=0 if you do not wish to use Fortran')
+        self.logPrint('PETSc cannot link Fortran, but can link C, which indicates a problem with the PETSc installation\nRun with -with-fc=0 if you do not wish to use Fortran')
         self.popLanguage()
         return 0
       self.popLanguage()
-      self.framework.log.write('PETSc can link with Fortran\n')
+      self.logPrint('PETSc can link with Fortran')
     return 1
 
-  def checkSharedLibrary(self):
+  def checkSharedLibrary(self, libraries):
     '''Check that the libraries for PETSc are shared libraries'''
-    return self.libraries.checkShared('#include <petsc.h>\n', 'PetscInitialize', 'PetscInitialized', 'PetscFinalize', checkLink = self.checkPETScLink, libraries = self.lib, initArgs = '&argc, &argv, 0, 0', boolType = 'PetscTruth')
+    return self.libraries.checkShared('#include <petsc.h>\n', 'PetscInitialize', 'PetscInitialized', 'PetscFinalize', checkLink = self.checkPETScLink, libraries = libraries, initArgs = '&argc, &argv, 0, 0', boolType = 'PetscTruth', executor = self.mpi.mpirun)
 
   def configureVersion(self):
     '''Determine the PETSc version'''
@@ -215,8 +343,10 @@ class Configure(config.base.Configure):
     self.logPrint('Found PETSc version (%s,%s,%s) patch %s on %s' % (majorNum, minorNum, subminorNum, patchNum, self.date))
     return '%d.%d.%d' % (majorNum, minorNum, subminorNum)
 
-  def includeGuesses(self, path):
+  def includeGuesses(self, path = None):
     '''Return all include directories present in path or its ancestors'''
+    if not path:
+      yield []
     while path:
       dir = os.path.join(path, 'include')
       if os.path.isdir(dir):
@@ -229,150 +359,60 @@ class Configure(config.base.Configure):
   def libraryGuesses(self, root = None):
     '''Return standard library name guesses for a given installation root'''
     libs = ['ts', 'snes', 'ksp', 'dm', 'mat', 'vec', '']
+    if 'FC' in self.framework.argDB:
+      libs.insert(0, 'fortran')
     if root:
-      dir = os.path.join(root, 'lib', self.arch)
-      if not os.path.isdir(dir):
+      d = os.path.join(root, 'lib', self.arch)
+      if not os.path.isdir(d):
         self.logPrint('', 3, 'petsc')
         return
-      yield [os.path.join(dir, 'libpetsc'+lib+'.a') for lib in libs]
+      yield [os.path.join(d, 'libpetsc'+lib+'.a') for lib in libs]
     else:
       yield ['libpetsc'+lib+'.a' for lib in libs]
     return
 
-  def generateGuesses(self):
-    if self.framework.argDB['download-petsc'] == 1:
-      (name, lib, include) = self.downloadPETSc()
-      yield (name, lib, include, '\'downloaded\'')
-      # Since the generator has been reinvoked, the request to download PETSc did not produce a valid version of PETSc.
-      # We assume that the user insists upon using this version of PETSc, hence there is no legal way to proceed.
-      raise RuntimeError('Downloaded PETSc could not be used.\n')
-    # Try specified installation root
-    dirs = []
-    if 'PETSC_DIR' in os.environ:
-      dirs.append(os.environ['PETSC_DIR'])
-    if 'with-petsc-dir' in self.framework.argDB:
-      dirs.append(self.framework.argDB['with-petsc-dir'])
-    for dir in dirs:
-      if dir is None:
-        continue
-      if not (len(dir) > 2 and dir[1] == ':'):
-        dir = os.path.abspath(dir)
-      self.dir = dir
-      yield ('User specified installation root', self.libraryGuesses(dir), self.includeGuesses(dir), dir)
-      # Since the generator has been reinvoked, the user specified installation root did not contain a valid PETSc.
-      # We assume that the user insists upon using this version of PETSc, hence there is no legal way to proceed.
-      raise RuntimeError('You set a value for the PETSc directory, but '+dir+' cannot be used.\n It could be the PETSc located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
-    # May not need to list anything
-    yield ('Default compiler locations', self.libraryGuesses(), [[]], '\'default\'')
-    # Try configure package directories
-    dirExp = re.compile(r'(PETSC|pets)c(-.*)?')
-    for packageDir in self.framework.argDB['package-dirs']:
-      packageDir = os.path.abspath(packageDir)
-      if not os.path.isdir(packageDir):
-        raise RuntimeError('Invalid package directory: '+packageDir)
-      for f in os.listdir(packageDir):
-        dir = os.path.join(packageDir, f)
-        if not os.path.isdir(dir):
-          continue
-        if not dirExp.match(f):
-          continue
-        self.dir = dir
-        yield ('Package directory installation root', self.libraryGuesses(dir), self.includeGuesses(dir), dir)
-    # Try /usr/local
-    dir = os.path.abspath(os.path.join('/usr', 'local'))
-    self.dir = dir
-    yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), self.includeGuesses(dir), dir)
-    # Try /usr/local/*petsc*
-    ls = os.listdir(os.path.join('/usr','local'))
-    for dir in ls:
-      if dir.find('petsc') >= 0:
-        dir = os.path.join('/usr','local',dir)
-        if os.path.isdir(dir):
-          self.dir = dir
-          yield ('Frequent user install location (/usr/local/*petsc*)', self.libraryGuesses(dir), self.includeGuesses(dir), dir)
-    # Try ~/petsc*
-    ls = os.listdir(os.getenv('HOME'))
-    for dir in ls:
-      if dir.find('petsc') >= 0:
-        dir = os.path.join(os.getenv('HOME'),dir)
-        if os.path.isdir(dir):
-          self.dir = dir
-          yield ('Frequent user install location (~/*petsc*)', self.libraryGuesses(dir), self.includeGuesses(dir), dir)
-    # If necessary, download PETSc
-    if not self.found and self.framework.argDB['download-petsc'] == 2:
-      (name, lib, include) = self.downloadPETSc()
-      yield (name, lib, include, '\'downloaded\'')
-      raise RuntimeError('Downloaded PETSc could not be used. Please check in install in '+os.path.dirname(include)+'\n')
-    return
-
-  def getDir(self):
-    '''Find the directory containing PETSc'''
-    packages  = os.path.join(self.getRoot(), 'packages')
-    if not os.path.isdir(packages):
-      os.mkdir(packages)
-      self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
-    petscDir = None
-    for dir in os.listdir(packages):
-      if dir.startswith('petsc') and os.path.isdir(os.path.join(packages, dir)):
-        petscDir = dir
-    if petscDir is None:
-      self.framework.log.write('Could not locate already downloaded PETSc\n')
-      raise RuntimeError('Error locating PETSc directory')
-    return os.path.join(packages, petscDir)
-
   def configureLibrary(self):
-    '''Find all working PETSc libraries and then choose one
+    '''Find a working PETSc
        - Right now, C++ builds are required to use PETSC_USE_EXTERN_CXX'''
-    functionalPETSc = []
-    nonsharedPETSc  = []
-
-    for (name, libraryGuesses, includeGuesses, location) in self.generateGuesses():
+    for location, name in self.trial.items():
       self.framework.logPrintDivider()
-      self.framework.logPrint('Checking for a functional PETSc in '+name+', location/origin '+location)
-      self.lib     = None
-      self.include = None
-      found        = 0
-      for libraries in libraryGuesses:
+      self.framework.logPrint('Checking for a functional PETSc in '+name+', location/origin '+str(location))
+      lib     = None
+      include = None
+      found   = 0
+      for libraries in self.libraryGuesses(location[0]):
         if self.checkLib(libraries):
-          self.lib = libraries
-          self.petsc = self.loadPETScConfigure()
-          for includeDir in includeGuesses:
+          lib = libraries
+          for includeDir in self.includeGuesses(location[0]):
             if self.checkInclude(includeDir):
-              self.include = includeDir
+              include = includeDir
+              self.trial[location] = (name, include, lib, 'Unknown')
               if self.executeTest(self.checkWorkingLink):
                 found = 1
                 break
               else:
-                self.framework.log.write('--------------------------------------------------------------------------------\n')
-                self.framework.logPrint('PETSc in '+name+', location/origin  '+location+' failed checkWorkingLink test')
+                self.framework.logPrintDivider(single = 1)
+                self.framework.logPrint('PETSc in '+name+', location/origin '+str(location)+' failed checkWorkingLink test')
             else:
-              self.framework.log.write('--------------------------------------------------------------------------------\n')
-              self.framework.logPrint('PETSc in '+name+', location/origin '+location+' failed checkInclude test with includeDir: '+includeDir)
-          if found:
-            break
-          self.petsc = None
+              self.framework.logPrintDivider(single = 1)
+              self.framework.logPrint('PETSc in '+name+', location/origin '+str(location)+' failed checkInclude test with includeDir: '+str(includeDir))
         else:
-          self.framework.log.write('--------------------------------------------------------------------------------\n')
-          self.framework.logPrint('PETSc in '+name+', location/origin '+location+' failed checkLib test with libraries: '+str(libraries))
-      if not found: continue
-
-      version = self.executeTest(self.configureVersion)
-      if self.framework.argDB['with-petsc-shared']:
-        if not self.executeTest(self.checkSharedLibrary):
-          self.framework.log.write('--------------------------------------------------------------------------------\n')
-          self.framework.logPrint('PETSc in '+name+', location/origin '+location+' failed checkSharedLibrary test with libraries: '+str(libraries))
-          nonsharedPETSc.append((name, self.lib, self.include, version))
+          self.framework.logPrintDivider(single = 1)
+          self.framework.logPrint('PETSc in '+name+', location/origin '+str(location)+' failed checkLib test with libraries: '+str(libraries))
           continue
-      self.found = 1
-      functionalPETSc.append((name, self.lib, self.include, version))
-      if not self.framework.argDB['with-alternatives']:
+        if self.framework.argDB['with-petsc-shared']:
+          if not self.executeTest(self.checkSharedLibrary, [libraries]):
+            self.framework.logPrintDivider(single = 1)
+            self.framework.logPrint('PETSc in '+name+', location/origin '+str(location)+' failed checkSharedLibrary test with libraries: '+str(libraries))
+            found = 0
+        if found:
+          break
+      if found:
+        version = self.executeTest(self.configureVersion)
+        self.working[location] = (name, include, lib, version)
         break
-    # User chooses one or take first (sort by version)
-    if self.found:
-      self.name, self.lib, self.include, self.version = functionalPETSc[0]
-      self.framework.log.write('Choose PETSc '+self.version+' in '+self.name+'\n')
-    elif len(nonsharedPETSc):
-      raise RuntimeError('Could not locate any PETSc with shared libraries')
+    if found:
+      self.logPrint('Choose PETSc '+self.version+' in '+self.name)
     else:
       raise RuntimeError('Could not locate any functional PETSc')
     return
@@ -380,27 +420,14 @@ class Configure(config.base.Configure):
   def setOutput(self):
     '''Add defines and substitutions
        - HAVE_PETSC is defined if a working PETSc is found
-       - PETSC_INCLUDE and PETSC_LIB are command line arguments for the compile and link
-       - PETSC_INCLUDE_DIR is the directory containing petsc.h
-       - PETSC_LIBRARY is the list of PETSc libraries'''
+       - PETSC_INCLUDE and PETSC_LIB are command line arguments for the compile and link'''
     if self.found:
       self.addDefine('HAVE_PETSC', 1)
-      if self.include:
-        self.addSubstitution('PETSC_INCLUDE',     ' '.join(['-I'+inc for inc in self.include]))
-        self.addSubstitution('PETSC_INCLUDE_DIR', self.include[0])
-      else:
-        self.addSubstitution('PETSC_INCLUDE',     '')
-        self.addSubstitution('PETSC_INCLUDE_DIR', '')
-      if self.lib:
-        self.addSubstitution('PETSC_LIB',     ' '.join(map(self.libraries.getLibArgument, self.lib)))
-        self.addSubstitution('PETSC_LIBRARY', self.lib)
-      else:
-        self.addSubstitution('PETSC_LIB',     '')
-        self.addSubstitution('PETSC_LIBRARY', '')
+      self.addSubstitution('PETSC_INCLUDE', ' '.join(['-I'+inc for inc in self.include]))
+      self.addSubstitution('PETSC_LIB', ' '.join(map(self.libraries.getLibArgument, self.lib)))
     return
 
   def configure(self):
-    self.executeTest(self.configureArchitecture)
     self.executeTest(self.configureLibrary)
     self.setOutput()
     return
