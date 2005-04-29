@@ -54,6 +54,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
     PetscInt *indices,n = isstride->n;
     ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISCreateGeneral(is->comm,n,indices,&tmp);CHKERRQ(ierr);
+    ierr = ISSetPermutation(tmp); CHKERRQ(ierr);
     ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISInvertPermutation(tmp,nlocal,perm);CHKERRQ(ierr);
     ierr = ISDestroy(tmp);CHKERRQ(ierr);
