@@ -217,23 +217,18 @@ install:
           if [ ! -d ${INSTALL_DIR}/bmake ]; then \
 	    ${MKDIR} ${INSTALL_DIR}/bmake ; \
           fi;\
-          cp -f bmake/adic* bmake/variables ${INSTALL_DIR}/bmake ; \
+          cp -f bmake/adic* bmake/petscconf ${INSTALL_DIR}/bmake ; \
           cp -fr bmake/common ${INSTALL_DIR}/bmake;\
           cp -fr bmake/${PETSC_ARCH} ${INSTALL_DIR}/bmake;\
           cp -fr bin ${INSTALL_DIR};\
           if [ ! -d ${INSTALL_DIR}/lib ]; then \
 	    ${MKDIR} ${INSTALL_DIR}/lib ; \
           fi;\
-          for i in lib/lib*; do \
-            if [ ! -d ${INSTALL_DIR}/$${i} ]; then \
-              ${MKDIR} ${INSTALL_DIR}/$${i};\
-            fi; \
-            if [ -d $${i}/${PETSC_ARCH} ]; then \
-              cp -fr $${i}/${PETSC_ARCH} ${INSTALL_DIR}/$${i};\
-              ${RANLIB}  ${INSTALL_DIR}/$${i}/*.a > /dev/null 2>&1 ;\
-              ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${INSTALL_DIR} shared; \
-            fi;\
-          done;\
+          if [ -d lib/${PETSC_ARCH} ]; then \
+            cp -fr lib/${PETSC_ARCH} ${INSTALL_DIR}/lib;\
+            ${RANLIB} ${INSTALL_DIR}/lib/${PETSC_ARCH}/*.a ;\
+            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${INSTALL_DIR} shared; \
+          fi;\
           echo "sh/bash: PETSC_DIR="${INSTALL_DIR}"; export PETSC_DIR";\
           echo "csh/tcsh: setenv PETSC_DIR "${INSTALL_DIR} ;\
           echo "Then do make test to verify correct install";\
