@@ -96,9 +96,11 @@ info_h:
 	-@echo  "Using Fortran linker: ${FLINKER}" >> MINFO
 	-@echo  "Using libraries: ${PETSC_LIB} \"; " >> MINFO
 	-@cat MINFO | ${SED} -e 's/\^M//g' | ${SED} -e 's/\\/\\\\/g' | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> MINFO_
-	-@cat MINFO_ | ${SED} -e 's/\//g'  > /dev/null; foobar=$$?; \
+	-@cat MINFO_ | ${SED} -e 's/\
+; foobar=$$?; \
           if [ "$$foobar" = "0" ]; then \
-	    cat MINFO_ | ${SED} -e 's/\//g' > ${MINFO}; \
+	    cat MINFO_ | ${SED} -e 's/\
+\
           else cat MINFO | ${SED} -e 's/\^M//g' | ${SED} -e 's/\\/\\\\/g' | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> ${MINFO}; \
           fi
 	-@$(RM) MINFO MINFO_
@@ -224,12 +226,9 @@ install:
           if [ ! -d ${INSTALL_DIR}/lib ]; then \
 	    ${MKDIR} ${INSTALL_DIR}/lib ; \
           fi;\
-          if [ ! -d ${INSTALL_DIR}/lib ]; then \
-            ${MKDIR} ${INSTALL_DIR}/lib;\
-          fi; \
           if [ -d lib/${PETSC_ARCH} ]; then \
             cp -fr lib/${PETSC_ARCH} ${INSTALL_DIR}/lib;\
-            ${RANLIB} ${INSTALL_DIR}/lib/*.a > /dev/null 2>&1 ;\
+            ${RANLIB} ${INSTALL_DIR}/lib/${PETSC_ARCH}/*.a ;\
             ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${INSTALL_DIR} shared; \
           fi;\
           echo "sh/bash: PETSC_DIR="${INSTALL_DIR}"; export PETSC_DIR";\
