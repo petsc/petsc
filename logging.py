@@ -210,7 +210,7 @@ class Logger(args.ArgumentProcessor):
     self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection)
     self.logPrint('      '+msg+'\n', debugSection=debugSection)
     self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection)
-    self.log.write('\n', debugLevel = debugLevel, debugSection = debugSection)
+    self.log.Print('', debugLevel = debugLevel, debugSection = debugSection)
     return
 
   def logWrite(self, msg, debugLevel = -1, debugSection = None, forceScroll = 0):
