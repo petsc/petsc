@@ -71,6 +71,11 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
 
   Configure: Look for classes in libraries instead of just functions
 
+  I like the idea of having an optional usage logging facility in
+   PetscInitialize() and PetscFinalize().  A mysql database on a server
+   somewhere sounds good. Kind of like how we use FLEXLM for licensed
+   software.
+
   ------------
   Cleaner code
   ------------
