@@ -898,6 +898,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
   da2->ops->getmatrix        = da->ops->getmatrix;
   da2->ops->getinterpolation = da->ops->getinterpolation;
   da2->ops->getcoloring      = da->ops->getcoloring;
+  da2->interptype            = da->interptype;
   
   /* copy fill information if given */
   if (da->dfill) {
