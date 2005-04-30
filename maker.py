@@ -650,6 +650,7 @@ class SIDLMake(Make):
         compiler.includeDirectories[language] = sets.Set()
       self.addDependencyIncludes(compiler, language)
       compiler.includeDirectories[language].add(os.path.join(self.getRoot(), self.getSIDLClientDirectory(builder, sidlFile, language)))
+      compiler.includeDirectories[language].add(os.path.join(self.getRoot(), self.getSIDLServerDirectory(builder, sidlFile, language)))
     compiler.disableOutput = not self.argDB['outputSIDLFiles']
     builder.popLanguage()
     builder.popConfiguration()

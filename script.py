@@ -17,12 +17,15 @@ class Script(logging.Logger):
     self.checkPython()
     logging.Logger.__init__(self, clArgs, argDB)
     self.shell = '/bin/sh'
+    self.showHelp = 1
     return
 
-  def showHelp(self):
+  def hasHelpFlag(self):
     '''Decide whether to display the help message and exit'''
     import nargs
 
+    if not self.showHelp:
+      return 0
     if nargs.Arg.findArgument('help', self.clArgs) is None and nargs.Arg.findArgument('h', self.clArgs) is None:
       return 0
     return 1
@@ -53,7 +56,7 @@ class Script(logging.Logger):
   def setup(self):
     ''' This method checks to see whether help was requested'''
     logging.Logger.setup(self)
-    if self.showHelp():
+    if self.hasHelpFlag():
       self.help.output()
       sys.exit()
     return

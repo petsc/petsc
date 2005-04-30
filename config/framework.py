@@ -170,12 +170,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if hasattr(child, 'setupHelp'): child.setupHelp(self.help)
     return argDB
 
-  def setup(self):
-    config.base.Configure.setup(self)
-    for child in self.childGraph.vertices:
-      child.setup()
-    return
-
   def cleanup(self):
     '''Performs cleanup actions
        - Log all child string methods
@@ -216,6 +210,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         break
     if config is None:
       config = apply(type, [self], keywordArgs)
+      config.showHelp = 0
       config.setup()
       config.setupPackageDependencies(self)
       config.setupDependencies(self)
@@ -278,6 +273,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.logPrint('Added configure dependency from '+dependency+'('+str(self.dependencies[dependency])+')')
     for child in framework.childGraph.vertices:
       child.argDB = self.argDB
+      child.showHelp = 0
       child.setup()
       self.childGraph.replaceVertex(self.require(child.__module__, None), child)
     return
