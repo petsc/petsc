@@ -160,7 +160,7 @@ class Logger(args.ArgumentProcessor):
        - If writeAll is true, return true
        - If debugLevel >= current level, and debugSection in current section or sections is empty, return true'''
     if not isinstance(debugLevel, int):
-      raise RuntimeError('Debug level must be an integer')
+      raise RuntimeError('Debug level must be an integer: '+str(debugLevel))
     if f is None:
       return False
     if writeAll:
@@ -208,9 +208,9 @@ class Logger(args.ArgumentProcessor):
   def logPrintBox(self,msg, debugLevel = -1, debugSection = 'screen', indent = 1, comm = None):
     self.logClear()
     self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection)
-    self.logPrint('      '+msg+'\n', debugSection=debugSection)
+    [self.logPrint('      '+line, debugLevel = debugLevel, debugSection = debugSection) for line in msg.split('\n')]
     self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection)
-    self.log.Print('', debugLevel = debugLevel, debugSection = debugSection)
+    self.logPrint('', debugLevel = debugLevel, debugSection = debugSection)
     return
 
   def logWrite(self, msg, debugLevel = -1, debugSection = None, forceScroll = 0):
@@ -325,7 +325,7 @@ class LoggerOld(object):
     import traceback
     import sys
 
-    if not isinstance(level, int): raise RuntimeError('Debug level must be an integer')
+    if not isinstance(level, int): raise RuntimeError('Debug level must be an integer: '+str(level))
     indentLevel = len(traceback.extract_stack())-5
     if not self.log is None:
       for i in range(indentLevel):

@@ -202,6 +202,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def getChild(self, moduleName, keywordArgs = {}):
     '''Returns the child matching the given module if present, and otherwise creates and appends it'''
+    self.setup()
     type   = __import__(moduleName, globals(), locals(), ['Configure']).Configure
     config = None
     for child in self.childGraph.vertices:
@@ -257,6 +258,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     import cPickle
     import md5
 
+    self.setup()
     if not dependency:
       return
     if isinstance(dependency, str):

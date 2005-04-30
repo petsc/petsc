@@ -55,7 +55,10 @@ class Script(logging.Logger):
 
   def setup(self):
     ''' This method checks to see whether help was requested'''
+    if hasattr(self, '_setup'):
+      return
     logging.Logger.setup(self)
+    self._setup = 1
     if self.hasHelpFlag():
       self.help.output()
       sys.exit()
