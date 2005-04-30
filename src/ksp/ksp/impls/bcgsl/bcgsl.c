@@ -299,7 +299,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   ierr = PetscFree(MZb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPBCGSLSetXRes"
 /*@C
@@ -337,8 +337,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
   bcgsl->delta = delta;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPBCGSLSetPol"
 /*@C
@@ -380,8 +379,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPBCGSLSetEll"
 /*@C
@@ -422,7 +420,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP ksp, int ell)
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPView_BCGSL"
@@ -559,16 +556,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGSL(KSP ksp)
 
   /* Let the user redefine the number of directions vectors */
   bcgsl->ell = 2;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp, "KSPBCGSLSetEll_C", "KSP_BCGS_SetEll", KSPBCGSLSetEll);CHKERRQ(ierr);
 
   /*Choose between a single MR step or an averaged MR/OR */
   bcgsl->bConvex = PETSC_FALSE;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp, "KSPBCGSLSetPol_C", "KSP_BCGS_SetPol", KSPBCGSLSetPol);CHKERRQ(ierr);
 
   /* Set the threshold for when exact residuals will be used */
   bcgsl->delta = 0.0;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp, "KSPBCGSLSetXRes_C", "KSP_BCGS_SetXRes", KSPBCGSLSetXRes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-#undef __FUNCT__
+
