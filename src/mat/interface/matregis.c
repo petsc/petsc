@@ -23,6 +23,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Dense(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqCSRPERM(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPICSRPERM(Mat);
 #if defined(PETSC_HAVE_SPOOLES)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJSpooles(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJSpooles(Mat);
@@ -94,13 +96,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
 #if defined(PETSC_HAVE_BLOCKSOLVE)
   ierr = MatRegisterDynamic(MATMPIROWBS,path,"MatCreate_MPIRowbs",MatCreate_MPIRowbs);CHKERRQ(ierr);
 #endif
-  ierr = MatRegisterDynamic(MATMPIAIJ,  path,"MatCreate_MPIAIJ",  MatCreate_MPIAIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQAIJ,  path,"MatCreate_SeqAIJ",  MatCreate_SeqAIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATAIJ,     path,"MatCreate_AIJ",     MatCreate_AIJ);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMPIAIJ,  path,"MatCreate_MPIAIJ",      MatCreate_MPIAIJ);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQAIJ,  path,"MatCreate_SeqAIJ",      MatCreate_SeqAIJ);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMPIAIJ,  path,"MatCreate_MPICSRPERM",  MatCreate_MPICSRPERM);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQAIJ,  path,"MatCreate_SeqCSRPERM",  MatCreate_SeqCSRPERM);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATAIJ,     path,"MatCreate_AIJ",         MatCreate_AIJ);CHKERRQ(ierr);
 
-  ierr = MatRegisterDynamic(MATMPIBAIJ,  path,"MatCreate_MPIBAIJ",  MatCreate_MPIBAIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQBAIJ,  path,"MatCreate_SeqBAIJ",  MatCreate_SeqBAIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATBAIJ,     path,"MatCreate_BAIJ",     MatCreate_BAIJ);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMPIBAIJ,  path,"MatCreate_MPIBAIJ",    MatCreate_MPIBAIJ);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQBAIJ,  path,"MatCreate_SeqBAIJ",    MatCreate_SeqBAIJ);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATBAIJ,     path,"MatCreate_BAIJ",       MatCreate_BAIJ);CHKERRQ(ierr);
 
   ierr = MatRegisterDynamic(MATMPISBAIJ,  path,"MatCreate_MPISBAIJ",  MatCreate_MPISBAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQSBAIJ,  path,"MatCreate_SeqSBAIJ",  MatCreate_SeqSBAIJ);CHKERRQ(ierr);
@@ -117,8 +121,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATSEQSBAIJSPOOLES,path,"MatCreate_SeqSBAIJSpooles",MatCreate_SeqSBAIJSpooles);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPIAIJSPOOLES,  path,"MatCreate_MPIAIJSpooles",  MatCreate_MPIAIJSpooles);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPISBAIJSPOOLES,path,"MatCreate_MPISBAIJSpooles",MatCreate_MPISBAIJSpooles);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATAIJSPOOLES,  path,"MatCreate_AIJSpooles",MatCreate_AIJSpooles);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSBAIJSPOOLES,path,"MatCreate_SBAIJSpooles",MatCreate_SBAIJSpooles);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATAIJSPOOLES,     path,"MatCreate_AIJSpooles",     MatCreate_AIJSpooles);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSBAIJSPOOLES,   path,"MatCreate_SBAIJSpooles",   MatCreate_SBAIJSpooles);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLU)
   ierr = MatRegisterDynamic(MATSUPERLU,path,"MatCreate_SuperLU",MatCreate_SuperLU);CHKERRQ(ierr);
