@@ -364,7 +364,8 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
     if (pcis->pure_neumann) {  /* does NOT zero the row; create an empty index set. The reason is that MatZeroRows() is collective. */
       ierr = MatZeroRows(pcnn->coarse_mat,0,PETSC_NULL,one);CHKERRQ(ierr);
     } else { /* here it DOES zero the row, since it's not a floating subdomain. */
-      ierr = MatZeroRows(pcnn->coarse_mat,1,&rank,one);CHKERRQ(ierr);
+      PetscInt row = (PetscInt) rank;
+      ierr = MatZeroRows(pcnn->coarse_mat,1,&row,one);CHKERRQ(ierr);
     }
   }
 
