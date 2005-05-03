@@ -11,18 +11,15 @@
   Eventually a variety of permutations may be supported.
 */
 
-
 #include "src/mat/impls/aij/seq/aij.h"
 
 typedef struct {
-  PetscInt ngroup;
+  PetscInt  ngroup;
   PetscInt *xgroup;
     /* Denotes where groups of rows with same number of nonzeros 
      * begin and end, i.e., xgroup[i] gives us the position in iperm[] 
      * where the ith group begins. */
-  PetscInt *nzgroup;
-    /* nzgroup[i] tells us how many nonzeros each row that is a member 
-     * of group i has. */
+  PetscInt *nzgroup; /*  how many nonzeros each row that is a member of group i has. */
   PetscInt *iperm;  /* The permutation vector. */
 
   /* Flag that indicates whether we need to clean up permutation 
@@ -49,20 +46,14 @@ typedef struct {
   PetscErrorCode (*AssemblyEnd_SeqAIJ)(Mat,MatAssemblyType);
   PetscErrorCode (*MatDestroy_SeqAIJ)(Mat);
   PetscErrorCode (*MatDuplicate_SeqAIJ)(Mat,MatDuplicateOption,Mat*);
-  
 } Mat_SeqCSRPERM;
-
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqCSRPERM"
 PetscErrorCode MatDestroy_SeqCSRPERM(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_SeqCSRPERM *csrperm;
-
-  csrperm = (Mat_SeqCSRPERM *) A->spptr;
+  Mat_SeqCSRPERM *csrperm = (Mat_SeqCSRPERM *) A->spptr;
 
   /* We are going to convert A back into a SEQAIJ matrix, since we are 
    * eventually going to use MatDestroy_SeqAIJ() to destroy everything 
@@ -72,7 +63,7 @@ PetscErrorCode MatDestroy_SeqCSRPERM(Mat A)
   A->ops->assemblyend = csrperm->AssemblyEnd_SeqAIJ;
     /* I suppose I don't actually need to point A->ops->assemblyend back 
      * to the right thing, but I do it anyway for completeness. */
-  A->ops->destroy = csrperm->MatDestroy_SeqAIJ;
+  A->ops->destroy   = csrperm->MatDestroy_SeqAIJ;
   A->ops->duplicate = csrperm->MatDuplicate_SeqAIJ;
 
   /* Free everything in the Mat_SeqCSRPERM data structure. */
@@ -92,69 +83,57 @@ PetscErrorCode MatDestroy_SeqCSRPERM(Mat A)
    * is only to be called when *building* a matrix.  I could be wrong, but 
    * that is how things work for the SuperLU matrix class. */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_SeqCSRPERM"
-PetscErrorCode MatDuplicate_SeqCSRPERM(Mat A, MatDuplicateOption op, Mat *M) {
+PetscErrorCode MatDuplicate_SeqCSRPERM(Mat A, MatDuplicateOption op, Mat *M) 
+{
   PetscErrorCode ierr;
   Mat_SeqCSRPERM *csrperm = (Mat_SeqCSRPERM *) A->spptr;
 
   PetscFunctionBegin;
   ierr = (*csrperm->MatDuplicate_SeqAIJ)(A,op,M);CHKERRQ(ierr);
-  ierr = PetscMemcpy((*M)->spptr,csrperm,sizeof(Mat_SeqCSRPERM));CHKERRQ(ierr);
-    /* I basically copied the above approach from superlu.c, but I suspect 
-     * that this is broken for the case of my matrix class.  Need to 
-     * fix this. */
-    
+  SETERRQ(PETSC_ERR_SUP,"Cannot duplicate CSRPERM matrices yet");    
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "SeqCSRPERM_create_perm"
 PetscErrorCode SeqCSRPERM_create_perm(Mat A)
 {
-  PetscInt m;  /* Number of rows in the matrix. */
+  PetscInt   m;  /* Number of rows in the matrix. */
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)(A)->data;
-  PetscInt *ia;
-    /* The 'ia' array from the CSR representation; points to the beginning 
-     * of each row. */
-  PetscInt maxnz; /* Maximum number of nonzeros in any row. */
-  PetscInt *rows_in_bucket;
+  PetscInt   *ia;  /* From the CSR representation; points to the beginning  of each row. */
+  PetscInt   maxnz; /* Maximum number of nonzeros in any row. */
+  PetscInt   *rows_in_bucket;
     /* To construct the permutation, we sort each row into one of maxnz 
      * buckets based on how many nonzeros are in the row. */
-  PetscInt nz;
-  PetscInt *nz_in_row;
-    /* nz_in_row[k] is the number of nonzero elements in row k. */
-  PetscInt *ipnz;
+  PetscInt   nz;
+  PetscInt   *nz_in_row;  /* the number of nonzero elements in row k. */
+  PetscInt   *ipnz;
     /* When constructing the iperm permutation vector, 
      * ipnz[nz] is used to point to the next place in the permutation vector 
      * that a row with nz nonzero elements should be placed.*/
-  Mat_SeqCSRPERM *csrperm;
+  Mat_SeqCSRPERM *csrperm = (Mat_SeqCSRPERM*) A->spptr;
     /* Points to the MATSEQCSRPERM-specific data in the matrix B. */
   PetscErrorCode ierr;
-  PetscInt i, ngroup, istart, ipos;
+  PetscInt       i, ngroup, istart, ipos;
 
   /* I really ought to put something in here to check if B is of 
    * type MATSEQCSRPERM and return an error code if it is not.
    * Come back and do this! */
    
-  m = A->m;
+  m  = A->m;
   ia = a->i;
-  csrperm = (Mat_SeqCSRPERM*) A->spptr;
    
   /* Allocate the arrays that will hold the permutation vector. */
-  ierr = PetscMalloc( m*sizeof(PetscInt), &csrperm->iperm); CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt), &csrperm->iperm); CHKERRQ(ierr);
 
   /* Allocate some temporary work arrays that will be used in 
    * calculating the permuation vector and groupings. */
-  ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &rows_in_bucket); CHKERRQ(ierr);
-  ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &ipnz); CHKERRQ(ierr);
-  ierr = PetscMalloc( m*sizeof(PetscInt), &nz_in_row); CHKERRQ(ierr); 
+  ierr = PetscMalloc((m+1)*sizeof(PetscInt), &rows_in_bucket); CHKERRQ(ierr);
+  ierr = PetscMalloc((m+1)*sizeof(PetscInt), &ipnz); CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt), &nz_in_row); CHKERRQ(ierr); 
 
   /* Now actually figure out the permutation and grouping. */
 
@@ -162,15 +141,15 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat A)
    * number of nonzeros in any row, and how many rows fall into each  
    * "bucket" of rows with same number of nonzeros. */
   maxnz = 0;
-  for(i=0; i<m; i++) {
-	  nz_in_row[i] = ia[i+1]-ia[i];
-    if(nz_in_row[i] > maxnz) maxnz = nz_in_row[i];
+  for (i=0; i<m; i++) {
+    nz_in_row[i] = ia[i+1]-ia[i];
+    if (nz_in_row[i] > maxnz) maxnz = nz_in_row[i];
   }
 
-  for(i=0; i<=maxnz; i++) {
+  for (i=0; i<=maxnz; i++) {
     rows_in_bucket[i] = 0;
   }
-  for(i=0; i<m; i++) {
+  for (i=0; i<m; i++) {
     nz = nz_in_row[i];
     rows_in_bucket[nz]++;
   }
@@ -190,8 +169,8 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat A)
    * Note that it is OK to have a group of rows with no non-zero values. */
   ngroup = 0;
   istart = 0;
-  for(i=0; i<=maxnz; i++) {
-    if(rows_in_bucket[i] > 0) {
+  for (i=0; i<=maxnz; i++) {
+    if (rows_in_bucket[i] > 0) {
       csrperm->nzgroup[ngroup] = i;
       csrperm->xgroup[ngroup] = istart;
       ngroup++;
@@ -204,11 +183,11 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat A)
 
   /* Now fill in the permutation vector iperm. */
   ipnz[0] = 0;
-  for(i=0; i<maxnz; i++) {
+  for (i=0; i<maxnz; i++) {
     ipnz[i+1] = ipnz[i] + rows_in_bucket[i];
   }
 
-  for(i=0; i<m; i++) {
+  for (i=0; i<m; i++) {
     nz = nz_in_row[i];
     ipos = ipnz[nz];
     csrperm->iperm[ipos] = i;
@@ -223,7 +202,6 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat A)
   /* Since we've allocated some memory to hold permutation info, 
    * flip the CleanUpCSRPERM flag to true. */
   csrperm->CleanUpCSRPERM = PETSC_TRUE;
-
   PetscFunctionReturn(0);
 }
 
@@ -233,11 +211,10 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat A)
 PetscErrorCode MatAssemblyEnd_SeqCSRPERM(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode ierr;
-  Mat_SeqCSRPERM *csrperm;
+  Mat_SeqCSRPERM *csrperm = (Mat_SeqCSRPERM*) A->spptr;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
 
-  csrperm = (Mat_SeqCSRPERM*) A->spptr;
-
-  if(mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
   
   /* Since a MATSEQCSRPERM matrix is really just a MATSEQAIJ with some 
    * extra information, call the AssemblyEnd routine for a MATSEQAIJ. 
@@ -247,14 +224,13 @@ PetscErrorCode MatAssemblyEnd_SeqCSRPERM(Mat A, MatAssemblyType mode)
    * the Mat_CompressedRow data structure that SeqAIJ now uses when there 
    * are many zero rows.  If the SeqAIJ assembly end routine decides to use 
    * this, this may break things.  (Don't know... haven't looked at it.) */
+  a->inode.use = 0;
   (*csrperm->AssemblyEnd_SeqAIJ)(A, mode);
 
   /* Now calculate the permutation and grouping information. */
   ierr = SeqCSRPERM_create_perm(A);
-  
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqCSRPERM"
@@ -269,9 +245,9 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
 #endif
 
   /* Variables that don't appear in MatMult_SeqAIJ. */
-  Mat_SeqCSRPERM *csrperm;
-  PetscInt *iperm;  /* Points to the permutation vector. */
-  PetscInt *xgroup;
+  Mat_SeqCSRPERM *csrperm = (Mat_SeqCSRPERM *) A->spptr;
+  PetscInt       *iperm;  /* Points to the permutation vector. */
+  PetscInt       *xgroup;
     /* Denotes where groups of rows with same number of nonzeros 
      * begin and end in iperm. */
   PetscInt *nzgroup;
@@ -292,9 +268,7 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
      * 512 for now since that is what Ed D'Azevedo was using in his Fortran 
      * routines. */
   PetscScalar yp[NDIM];
-  PetscInt ip[NDIM];
-    /* yp[] and ip[] are treated as vector "registers" for performing 
-     * the mat-vec. */
+  PetscInt    ip[NDIM]; /* yp[] and ip[] are treated as vector "registers" for performing the mat-vec. */
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*aa)
@@ -304,12 +278,11 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   aj  = a->j;    /* aj[k] gives column index for element aa[k]. */
-  aa    = a->a;  /* Nonzero elements stored row-by-row. */
-  ai   = a->i;   /* ai[k] is the position in aa and aj where row k starts. */
+  aa  = a->a;  /* Nonzero elements stored row-by-row. */
+  ai  = a->i;   /* ai[k] is the position in aa and aj where row k starts. */
 
   /* Get the info we need about the permutations and groupings. */
-  csrperm = (Mat_SeqCSRPERM *) A->spptr;
-  iperm = csrperm->iperm;
+  iperm  = csrperm->iperm;
   ngroup = csrperm->ngroup;
   xgroup = csrperm->xgroup;
   nzgroup = csrperm->nzgroup;
@@ -318,43 +291,39 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
   fortranmultcsrperm_(&m,x,ii,aj,aa,y);
 #else
 
-  for(igroup=0; igroup<ngroup; igroup++) {
+  for (igroup=0; igroup<ngroup; igroup++) {
     jstart = xgroup[igroup];
-    jend = xgroup[igroup+1] - 1;
-
-    nz = nzgroup[igroup];
+    jend   = xgroup[igroup+1] - 1;
+    nz     = nzgroup[igroup];
 
     /* Handle the special cases where the number of nonzeros per row 
      * in the group is either 0 or 1. */
-    if(nz == 0) {
-      for(i=jstart; i<=jend; i++) {
+    if (nz == 0) {
+      for (i=jstart; i<=jend; i++) {
         y[iperm[i]] = 0.0;
       }
-    }
-    else if(nz == 1) {
-      for(i=jstart; i<=jend; i++) {
+    } else if (nz == 1) {
+      for (i=jstart; i<=jend; i++) {
         iold = iperm[i];
         ipos = ai[iold];
         y[iold] = aa[ipos] * x[aj[ipos]];
       }
-    }
-    /* For the general case: */
-    else {
+    } else {
     
       /* We work our way through the current group in chunks of NDIM rows 
        * at a time. */
 
-      for(istart=jstart; istart<=jend; istart+=NDIM) {
+      for (istart=jstart; istart<=jend; istart+=NDIM) {
         /* Figure out where the chunk of 'isize' rows ends in iperm.
          * 'isize may of course be less than NDIM for the last chunk. */
         iend = istart + (NDIM - 1);
-        if(iend > jend) { iend = jend; }
+        if (iend > jend) { iend = jend; }
         isize = iend - istart + 1;
 
         /* Initialize the yp[] array that will be used to hold part of 
          * the permuted results vector, and figure out where in aa each 
          * row of the chunk will begin. */
-        for(i=0; i<isize; i++) {
+        for (i=0; i<isize; i++) {
           iold = iperm[istart + i];
             /* iold is a row number from the matrix A *before* reordering. */
           ip[i] = ai[iold];
@@ -365,25 +334,24 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
         /* If the number of zeros per row exceeds the number of rows in 
          * the chunk, we should vectorize along nz, that is, perform the 
          * mat-vec one row at a time as in the usual CSR case. */
-        if(nz > isize) {
+        if (nz > isize) {
 #if defined(PETSC_HAVE_CRAYC)
 #pragma _CRI preferstream
 #endif
-          for(i=0; i<isize; i++) {
+          for (i=0; i<isize; i++) {
 #if defined(PETSC_HAVE_CRAYC)
 #pragma _CRI prefervector
 #endif
-            for(j=0; j<nz; j++) {
+            for (j=0; j<nz; j++) {
               ipos = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
             }
           }
-        }
+        } else {
         /* Otherwise, there are enough rows in the chunk to make it 
          * worthwhile to vectorize across the rows, that is, to do the 
          * matvec by operating with "columns" of the chunk. */
-        else {
-          for(j=0; j<nz; j++) {
+          for (j=0; j<nz; j++) {
             for(i=0; i<isize; i++) {
               ipos = ip[i] + j;
               yp[i] += aa[ipos] * x[aj[ipos]];
@@ -395,14 +363,12 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
 #pragma _CRI ivdep
 #endif
         /* Put results from yp[] into non-permuted result vector y. */
-        for(i=0; i<isize; i++) {
+        for (i=0; i<isize; i++) {
           y[iperm[istart+i]] = yp[i];
         }
       } /* End processing chunk of isize rows of a group. */
-      
     } /* End handling matvec for chunk with nz > 1. */
   } /* End loop over igroup. */
-
 #endif
   ierr = PetscLogFlops(2*a->nz - m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
@@ -415,6 +381,9 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
  * Note that the names I used to designate the vectors differs from that 
  * used in MatMultAdd_SeqAIJ().  I did this to keep my notation consistent 
  * with the MatMult_SeqCSRPERM() routine, which is very similar to this one. */
+/*
+    I hate having virtually identical code for the mult and the multadd!!!
+*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqCSRPERM"
 PetscErrorCode MatMultAdd_SeqCSRPERM(Mat A,Vec xx,Vec ww,Vec yy)
@@ -607,23 +576,22 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,MatType typ
    * will want to use it later in the CSRPERM assembly end routine. 
    * Also, save a pointer to the original SeqAIJ Destroy routine, because we 
    * will want to use it in the CSRPERM destroy routine. */
-  csrperm->AssemblyEnd_SeqAIJ = A->ops->assemblyend;
-  csrperm->MatDestroy_SeqAIJ = A->ops->destroy;
+  csrperm->AssemblyEnd_SeqAIJ  = A->ops->assemblyend;
+  csrperm->MatDestroy_SeqAIJ   = A->ops->destroy;
   csrperm->MatDuplicate_SeqAIJ = A->ops->duplicate;
 
   /* Set function pointers for methods that we inherit from AIJ but 
    * override. */
-  B->ops->duplicate = MatDuplicate_SeqCSRPERM;
+  B->ops->duplicate   = MatDuplicate_SeqCSRPERM;
   B->ops->assemblyend = MatAssemblyEnd_SeqCSRPERM;
-  B->ops->destroy = MatDestroy_SeqCSRPERM;
-  B->ops->mult = MatMult_SeqCSRPERM;
-  B->ops->multadd = MatMultAdd_SeqCSRPERM;
+  B->ops->destroy     = MatDestroy_SeqCSRPERM;
+  B->ops->mult        = MatMult_SeqCSRPERM;
+  B->ops->multadd     = MatMultAdd_SeqCSRPERM;
 
   /* If A has already been assembled, compute the permutation. */
-  if(A->assembled == PETSC_TRUE) {
-    ierr = SeqCSRPERM_create_perm(B);
+  if (A->assembled == PETSC_TRUE) {
+    ierr = SeqCSRPERM_create_perm(B);CHKERRQ(ierr);
   }
-
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQCSRPERM);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
@@ -686,9 +654,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqCSRPERM(Mat A)
    * and MATSEQCSRPERM types. */
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQCSRPERM);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_SeqCSRPERM(A,MATSEQCSRPERM,MAT_REUSE_MATRIX,&A);
-  CHKERRQ(ierr);
-  
+  ierr = MatConvert_SeqAIJ_SeqCSRPERM(A,MATSEQCSRPERM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

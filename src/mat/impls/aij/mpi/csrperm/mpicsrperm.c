@@ -1,6 +1,7 @@
 #define PETSCMAT_DLL
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
+extern PetscErrorCode MatConvert_SeqAIJ_SeqCSRPERM(Mat,MatType,MatReuse,Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMPICSRPERM"
@@ -103,7 +104,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPICSRPERM(MPI_Comm comm,PetscInt m,P
   PetscFunctionReturn(0);
 }
 
-
 /* MatConvert_MPIAIJ_MPICSRPERM() converts an MPIAIJ matrix into a 
  * SeqCSRPERM matrix.  This routine is called by the MatCreate_MPICSRPERM() 
  * routine, but can also be used to convert an assembled MPIAIJ matrix 
@@ -116,15 +116,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat A,MatType typ
   /* This routine is only called to convert to MATMPICSRPERM
    * from MATMPIAIJ, so we can ignore 'MatType Type'. */
   PetscErrorCode ierr;
-  Mat B = *newmat;
-  Mat_MPIAIJ *mpimat;
-  Mat localmat_A, localmat_B;
+  Mat            B = *newmat;
+  Mat_MPIAIJ     *mpimat = (Mat_MPIAIJ *) B->data;
+  Mat            localmat_A, localmat_B;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
-  mpimat = (Mat_MPIAIJ *) B->data;
 
   /* I believe that all I need to do to convert from MPIAIJ to MPICSRPERM 
    * is to change the typename to MPICSRPERM and convert the local 
@@ -132,9 +131,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat A,MatType typ
   ierr = PetscObjectChangeTypeName( (PetscObject) B, MATMPICSRPERM);CHKERRQ(ierr);
   localmat_A = mpimat->A;
   localmat_B = mpimat->B;
-  ierr = MatConvert(localmat_A, MATSEQCSRPERM, MAT_REUSE_MATRIX, &localmat_A);CHKERRQ(ierr);
-  ierr = MatConvert(localmat_B, MATSEQCSRPERM, MAT_REUSE_MATRIX, &localmat_B);CHKERRQ(ierr);
-
+  ierr = MatConvert_SeqAIJ_SeqCSRPERM(localmat_A, MATSEQCSRPERM, MAT_REUSE_MATRIX, &localmat_A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqCSRPERM(localmat_B, MATSEQCSRPERM, MAT_REUSE_MATRIX, &localmat_B);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -154,9 +152,44 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPICSRPERM(Mat A)
    * and MATMPICSRPERM types. */
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPICSRPERM);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_MPIAIJ_MPICSRPERM(A,MATMPICSRPERM,MAT_REUSE_MATRIX,&A);
-  CHKERRQ(ierr);
-  
+  ierr = MatConvert_MPIAIJ_MPICSRPERM(A,MATMPICSRPERM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+/*MC
+   MATCSRPERM - MATCSRPERM = "CSRPERM" - A matrix type to be used for sparse matrices.
+
+   This matrix type is identical to MATSEQCSRPERM when constructed with a single process communicator,
+   and MATMPICSRPERM otherwise.  As a result, for single process communicators, 
+  MatSeqCSRPERMSetPreallocation is supported, and similarly MatMPICSRPERMSetPreallocation is supported 
+  for communicators controlling multiple processes.  It is recommended that you call both of
+  the above preallocation routines for simplicity.
+
+   Options Database Keys:
+. -mat_type csrperm - sets the matrix type to "CSRPERM" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateMPICSRPERM,MATSEQCSRPERM,MATMPICSRPERM
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_CSRPERM"
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_CSRPERM(Mat A) 
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATCSRPERM);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(A,MATSEQCSRPERM);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(A,MATMPICSRPERM);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
