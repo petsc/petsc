@@ -39,8 +39,11 @@ class Logger(args.ArgumentProcessor):
   def __getstate__(self):
     '''We do not want to pickle the default log stream'''
     d = args.ArgumentProcessor.__getstate__(self)
-    if 'log' in d and d['log'] is Logger.defaultLog:
-      del d['log']
+    if 'log' in d:
+      if d['log'] is Logger.defaultLog:
+        del d['log']
+      else:
+        d['log'] = None
     if 'out' in d:
       if d['out'] is Logger.defaultOut:
         del d['out']

@@ -12,17 +12,17 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     desc = ['Compilers:']
-    if 'CC' in self.framework.argDB:
+    if hasattr(self, 'CC'):
       self.pushLanguage('C')
       desc.append('  C Compiler:         '+self.getCompiler()+' '+self.getCompilerFlags())
       if not self.getLinker() == self.getCompiler(): desc.append('  C Linker:           '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
-    if 'CXX' in self.framework.argDB:
+    if hasattr(self, 'CXX'):
       self.pushLanguage('Cxx')
       desc.append('  C++ Compiler:       '+self.getCompiler()+' '+self.getCompilerFlags())
       if not self.getLinker() == self.getCompiler(): desc.append('  C++ Linker:         '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
-    if 'FC' in self.framework.argDB:
+    if hasattr(self, 'FC'):
       self.pushLanguage('FC')
       desc.append('  Fortran Compiler:   '+self.getCompiler()+' '+self.getCompilerFlags())
       if not self.getLinker() == self.getCompiler(): desc.append('  Fortran Linker:     '+self.getLinker()+' '+self.getLinkerFlags())
@@ -211,6 +211,7 @@ class Configure(config.base.Configure):
         if os.path.basename(self.framework.argDB['CC']) == 'mpicc':
           self.framework.logPrint(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
         del self.framework.argDB['CC']
+        del self.CC
     if not 'CC' in self.framework.argDB:
       raise RuntimeError('Could not locate a functional C compiler')
     return
@@ -357,6 +358,7 @@ class Configure(config.base.Configure):
           if os.path.basename(self.framework.argDB['CXX']) in ['mpicxx', 'mpiCC']:
             self.logPrint('  MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
           del self.framework.argDB['CXX']
+          del self.CXX
       if 'CXX' in self.framework.argDB:
         break
     return
@@ -496,6 +498,7 @@ class Configure(config.base.Configure):
         if os.path.basename(self.framework.argDB['FC']) in ['mpif90', 'mpif77']:
          self.framework.logPrint(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
         del self.framework.argDB['FC']
+        del self.FC
     return
 
   def checkFortranComments(self):

@@ -87,6 +87,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.batchBodies        = []
     self.batchIncludeDirs   = []
     self.dependencies       = {}
+    self.configureParent    = None
     self.createChildren()
     return
 
@@ -94,6 +95,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     '''We do not want to pickle the default log stream'''
     d = config.base.Configure.__getstate__(self)
     d = script.LanguageProcessor.__getstate__(self, d)
+    if 'configureParent' in d:
+      del d['configureParent']
     return d
 
   def __setstate__(self, d):
@@ -208,10 +211,21 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       if isinstance(child, type):
         config = child
         break
+    if config is None and not self.configureParent is None:
+      for child in self.configureParent.childGraph.vertices:
+        if isinstance(child, type):
+          config = child
+          config.showHelp = 0
+          config.logName  = self.logName
+          config.setup()
+          config.setupPackageDependencies(self)
+          config.setupDependencies(self)
+          self.addChild(config)
+          break
     if config is None:
       config = apply(type, [self], keywordArgs)
       config.showHelp = 0
-      config.logName  = 'configure.log'
+      config.logName  = self.logName
       config.setup()
       config.setupPackageDependencies(self)
       config.setupDependencies(self)
@@ -275,7 +289,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     for child in framework.childGraph.vertices:
       child.argDB = self.argDB
       child.showHelp = 0
-      child.logName  = 'configure.log'
+      child.logName  = self.logName
       child.setup()
       self.childGraph.replaceVertex(self.require(child.__module__, None), child)
     return
@@ -302,6 +316,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def updateDependencies(self):
     for child in self.childGraph.vertices:
       child.setupDependencies(self)
+    return
+
+  def setConfigureParent(self, parent):
+    self.configureParent = parent
     return
 
   ###############################################
