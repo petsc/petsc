@@ -304,7 +304,7 @@ class Package(config.base.Configure):
         self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
         if (not self.includes) or self.executeTest(self.headers.checkInclude, [incl, self.includes],{'otherIncludes' : incls}):
           self.include = incl
-          if self.checkSharedLibrary():
+          if self.executeTest(self.checkSharedLibrary):
             self.found   = 1
             self.dlib    = self.lib+libs
             if not hasattr(self.framework, 'packages'):
