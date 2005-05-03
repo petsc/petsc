@@ -1,8 +1,6 @@
 #define PETSCMAT_DLL
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
-extern PetscErrorCode MatConvert_SeqAIJ_SeqCSRPERM(Mat,MatType,MatReuse,Mat*);
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMPICSRPERM"
 /*@C
@@ -104,11 +102,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPICSRPERM(MPI_Comm comm,PetscInt m,P
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+extern PetscErrorCode MatConvert_SeqAIJ_SeqCSRPERM(Mat,MatType,MatReuse,Mat*);
+
 /* MatConvert_MPIAIJ_MPICSRPERM() converts an MPIAIJ matrix into a 
  * SeqCSRPERM matrix.  This routine is called by the MatCreate_MPICSRPERM() 
  * routine, but can also be used to convert an assembled MPIAIJ matrix 
  * into a SeqCSRPERM one. */
-EXTERN_C_BEGIN
+
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_MPICSRPERM"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
