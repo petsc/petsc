@@ -11,7 +11,7 @@ class Configure(config.base.Configure):
     return
 
   def __str__(self):
-    return '  Scalar type:' + self.scalartype + '\n  Clanguage: ' + self.framework.argDB['with-clanguage'] +'\n'
+    return '  Scalar type:' + self.scalartype + '\n  Clanguage: ' + self.clanguage +'\n'
     
   def setupHelp(self, help):
     import nargs
