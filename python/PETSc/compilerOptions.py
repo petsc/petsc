@@ -45,7 +45,7 @@ class compilerOptions(config.base.Configure):
     # Intel
     elif re.match(r'i[3-9]86', self.framework.host_cpu):
       # Linux Intel
-      if config.setCompilers.Configure.isIntel(compiler):
+      if config.setCompilers.Configure.isIntel(compiler) and not compiler.find('win32fe') >=0:
         if bopt == '':
           flags.append('-wd1572')
         elif bopt == 'g':
@@ -123,7 +123,7 @@ class compilerOptions(config.base.Configure):
     # Intel
     elif re.match(r'i[3-9]86', self.framework.host_cpu):
       # Linux Intel
-      if config.setCompilers.Configure.isIntel(compiler):
+      if config.setCompilers.Configure.isIntel(compiler) and not compiler.find('win32fe') >=0:
         if bopt == '':
           flags.append('-wd1572')
         elif bopt == 'g':
