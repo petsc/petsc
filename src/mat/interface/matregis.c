@@ -98,8 +98,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
 #endif
   ierr = MatRegisterDynamic(MATMPIAIJ,  path,"MatCreate_MPIAIJ",      MatCreate_MPIAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQAIJ,  path,"MatCreate_SeqAIJ",      MatCreate_SeqAIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPIAIJ,  path,"MatCreate_MPICSRPERM",  MatCreate_MPICSRPERM);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQAIJ,  path,"MatCreate_SeqCSRPERM",  MatCreate_SeqCSRPERM);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMPICSRPERM,  path,"MatCreate_MPICSRPERM",  MatCreate_MPICSRPERM);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQCSRPERM,  path,"MatCreate_SeqCSRPERM",  MatCreate_SeqCSRPERM);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATAIJ,     path,"MatCreate_AIJ",         MatCreate_AIJ);CHKERRQ(ierr);
 
   ierr = MatRegisterDynamic(MATMPIBAIJ,  path,"MatCreate_MPIBAIJ",    MatCreate_MPIBAIJ);CHKERRQ(ierr);
