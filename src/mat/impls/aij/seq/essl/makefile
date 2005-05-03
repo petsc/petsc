@@ -1,6 +1,7 @@
 
 #requirespackage  'PETSC_HAVE_ESSL'
-#requireslanguage CONLY
+#requiresscalar    real
+#requiresprecision double
 
 ALL: lib
 
