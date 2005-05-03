@@ -666,11 +666,14 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
+  def setStaticLinker(self):
+    language = self.framework.normalizeLanguage(self.language[-1])
+    return self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
+
   def generateSharedLinkerGuesses(self):
     if not self.framework.argDB['with-shared']:
       self.framework.argDB['LD_SHARED'] = ''
-      language = self.framework.normalizeLanguage(self.language[-1])
-      linker = self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
+      self.setStaticLinker()
       yield (self.AR, [], self.AR_LIB_SUFFIX)
       raise RuntimeError('Archiver failed static link check')
     if 'with-shared-ld' in self.framework.argDB:
@@ -681,10 +684,9 @@ class Configure(config.base.Configure):
     # undefined warning must also have flat_namespace
     yield ('libtool', ['-noprebind','-dynamic','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
     # Default to static linker
-    self.framework.argDB['with-shared']=0
+    self.framework.argDB['with-shared'] = 0
     self.framework.argDB['LD_SHARED'] = ''
-    language = self.framework.normalizeLanguage(self.language[-1])
-    linker = self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
+    self.setStaticLinker()
     yield (self.AR, [], self.AR_LIB_SUFFIX)
     raise RuntimeError('Archiver failed static link check')
 
@@ -826,7 +828,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    self.no_configure()
+    self.executeTest(self.checkInitialLibraries)
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
     self.executeTest(self.checkCxxCompiler)
@@ -845,4 +847,6 @@ class Configure(config.base.Configure):
 
   def no_configure(self):
     self.executeTest(self.checkInitialLibraries)
+    if self.sharedLinker == self.AR:
+      self.setStaticLinker()
     return
