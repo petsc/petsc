@@ -200,7 +200,7 @@ class compilerOptions(config.base.Configure):
         elif bopt == 'O':
           flags.extend(['-fast', '-Mnoframe'])
       # Linux Intel
-      elif compiler in ['ifc', 'ifort']:
+      if config.setCompilers.Configure.isIntel(compiler) and not compiler.find('win32fe') >=0:
         if bopt == 'g':
           flags.append('-g')
         elif bopt == 'O':
