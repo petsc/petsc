@@ -264,10 +264,8 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
   PetscScalar    *x,*y,*aa;
   PetscErrorCode ierr;
   PetscInt       m=A->m,*aj,*ai;
-#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
-  PetscInt       n,i,jrow,j,*ridx=PETSC_NULL;
-  PetscScalar    sum;
-  PetscTruth     usecprow=a->compressedrow.use;
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTCSRPERM)
+  PetscInt       i,j;
 #endif
 
   /* Variables that don't appear in MatMult_SeqAIJ. */
@@ -425,10 +423,8 @@ PetscErrorCode MatMultAdd_SeqCSRPERM(Mat A,Vec xx,Vec ww,Vec yy)
   PetscScalar    *x,*y,*w,*aa;
   PetscErrorCode ierr;
   PetscInt       m=A->m,*aj,*ai;
-#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
-  PetscInt       n,i,jrow,j,*ridx=PETSC_NULL;
-  PetscScalar    sum;
-  PetscTruth     usecprow=a->compressedrow.use;
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDCSRPERM)
+  PetscInt       i,j;
 #endif
 
   /* Variables that don't appear in MatMultAdd_SeqAIJ. */
@@ -598,7 +594,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,MatType typ
   PetscErrorCode ierr;
   Mat            B = *newmat;
   Mat_SeqCSRPERM *csrperm;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*) A->data;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
