@@ -11,7 +11,7 @@ OBJSC    = aij.o aijfact.o ij.o fdaij.o unary.o ilut.o \
 	   matmatmult.o symtranspose.o matptap.o matpapt.o
 OBJSF    = 
 LIBBASE  = libpetscmat
-DIRS     = spooles superlu umfpack essl lusol matlab
+DIRS     = spooles superlu umfpack essl lusol matlab csrperm
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/
 

@@ -264,7 +264,7 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
   PetscScalar    *x,*y,*aa;
   PetscErrorCode ierr;
   PetscInt       m=A->m,*aj,*ai;
-#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTCSRPERM)
   PetscInt       n,i,jrow,j,*ridx=PETSC_NULL;
   PetscScalar    sum;
   PetscTruth     usecprow=a->compressedrow.use;
@@ -425,7 +425,7 @@ PetscErrorCode MatMultAdd_SeqCSRPERM(Mat A,Vec xx,Vec ww,Vec yy)
   PetscScalar    *x,*y,*w,*aa;
   PetscErrorCode ierr;
   PetscInt       m=A->m,*aj,*ai;
-#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDCSRPERM)
   PetscInt       n,i,jrow,j,*ridx=PETSC_NULL;
   PetscScalar    sum;
   PetscTruth     usecprow=a->compressedrow.use;
@@ -598,8 +598,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,MatType typ
   PetscErrorCode ierr;
   Mat            B = *newmat;
   Mat_SeqCSRPERM *csrperm;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*) A->data;
-
+ 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
@@ -612,17 +611,16 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,MatType typ
    * will want to use it later in the CSRPERM assembly end routine. 
    * Also, save a pointer to the original SeqAIJ Destroy routine, because we 
    * will want to use it in the CSRPERM destroy routine. */
-  csrperm->AssemblyEnd_SeqAIJ = A->ops->assemblyend;
-  csrperm->MatDestroy_SeqAIJ = A->ops->destroy;
+  csrperm->AssemblyEnd_SeqAIJ  = A->ops->assemblyend;
+  csrperm->MatDestroy_SeqAIJ   = A->ops->destroy;
   csrperm->MatDuplicate_SeqAIJ = A->ops->duplicate;
 
-  /* Set function pointers for methods that we inherit from AIJ but 
-   * override. */
-  B->ops->duplicate = MatDuplicate_SeqCSRPERM;
+  /* Set function pointers for methods that we inherit from AIJ but override. */
+  B->ops->duplicate   = MatDuplicate_SeqCSRPERM;
   B->ops->assemblyend = MatAssemblyEnd_SeqCSRPERM;
-  B->ops->destroy = MatDestroy_SeqCSRPERM;
-  B->ops->mult = MatMult_SeqCSRPERM;
-  B->ops->multadd = MatMultAdd_SeqCSRPERM;
+  B->ops->destroy     = MatDestroy_SeqCSRPERM;
+  B->ops->mult        = MatMult_SeqCSRPERM;
+  B->ops->multadd     = MatMultAdd_SeqCSRPERM;
 
   /* If A has already been assembled, compute the permutation. */
   if(A->assembled == PETSC_TRUE) {
