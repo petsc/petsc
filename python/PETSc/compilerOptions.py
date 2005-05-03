@@ -54,20 +54,16 @@ class compilerOptions(config.base.Configure):
           flags.append('-O3')
       # Windows Intel
       elif compiler.find('win32fe icl') >= 0:
-        if bopt == '':
-          flags.append('-MT')
-        elif bopt == 'g':
-          flags.append('-Z7')
+        if bopt == 'g':
+          flags.extend(['-MT','-Z7'])
         elif bopt == 'O':
-          flags.extend(['-O3', '-QxW'])
+          flags.extend(['-MT','-O3', '-QxW'])
       # Windows Microsoft
       elif compiler.find('win32fe cl') >= 0:
-        if bopt == '':
-          flags.append('-MT')
-        elif bopt == 'g':
-          flags.append('-Z7')
+        if bopt == 'g':
+          flags.extend(['-MT','-Z7'])
         elif bopt == 'O':
-          flags.extend(['-O3', '-QxW'])
+          flags.extend(['-MT','-O3', '-QxW'])
       # Windows Borland
       elif compiler.find('win32fe bcc32') >= 0:
         if bopt == '':
@@ -133,25 +129,21 @@ class compilerOptions(config.base.Configure):
       # Windows Intel
       elif compiler.find('win32fe icl') >= 0:
         if bopt == '':
-          flags.append('-MT -GX -GR')
+          flags.append('-GX -GR')
         elif bopt in ['g']:
-          flags.append('-Z7')
+          flags.extend(['-MT','-Z7'])
         elif bopt in ['O']:
-          flags.extend(['-O3', '-QxW'])
+          flags.extend(['-MT','-O3', '-QxW'])
       # Windows Microsoft
       elif compiler.find('win32fe cl') >= 0:
         if bopt == '':
-          flags.append('-MT -GR')
+          flags.append('-GR')
           if not self.addCompilerFlag('-EHsc'):
             self.addCompilerFlag('-GX')
         elif bopt == 'g':
-          flags.append('-Z7')
+          flags.extend(['-MT','-Z7','-Zm200'])
         elif bopt == 'O':
-          flags.extend(['-O2', '-QxW'])
-        elif bopt == 'g_complex':
-          flags.extend(['-Z7', '-Zm200'])
-        elif bopt == 'O_complex':
-          flags.extend(['-O2', '-Zm200'])
+          flags.extend(['-MT','-O2','-QxW','-Zm200'])
       # Windows Borland
       elif compiler.find('win32fe bcc32') >= 0:
         if bopt == '':
@@ -229,10 +221,6 @@ class compilerOptions(config.base.Configure):
           flags.extend(['-debug:full'])
         elif bopt == 'O':
           flags.extend(['-optimize:5', '-fast'])
-        elif bopt == 'g_complex':
-          flags.extend(['-debug:full'])
-        elif bopt == 'O_complex':
-          flags.append('-optimize:4')
     # MIPS
     elif re.match(r'mips', self.framework.host_cpu):
       # MIPS Pro Fortran
