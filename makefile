@@ -74,34 +74,29 @@ info:
 #
 MINFO = ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscmachineinfo.h
 info_h:
-	-@$(RM) -f MINFO ${MINFO}
-	-@echo  "static const char *petscmachineinfo = \"  " >> MINFO
-	-@echo  "Libraries compiled on `date` on `hostname` " >> MINFO
-	-@echo  Machine characteristics: `uname -a` "" >> MINFO
-	-@echo  "Using PETSc directory: ${PETSC_DIR}" >> MINFO
-	-@echo  "Using PETSc arch: ${PETSC_ARCH}" >> MINFO
-	-@echo  "-----------------------------------------\"; " >> MINFO
-	-@echo  "static const char *petsccompilerinfo = \"  " >> MINFO
-	-@echo  "Using C compiler: ${CC} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} " >> MINFO
-	-@echo  "C Compiler version:"  >> MINFO ; ${C_CCV} >> MINFO 2>&1 ; true
-	-@echo  "C++ Compiler version:"  >> MINFO; ${CXX_CCV} >> MINFO 2>&1 ; true
-	-@echo  "Using Fortran compiler: ${FC} ${FC_FLAGS} ${FFLAGS} ${FPP_FLAGS}" >> MINFO
-	-@echo  "Fortran Compiler version:" >> MINFO ; ${FCV} >> MINFO 2>&1 ; true
-	-@echo  "-----------------------------------------\"; " >> MINFO
-	-@echo  "static const char *petsccompilerflagsinfo = \"  " >> MINFO
-	-@echo  "Using include paths: ${PETSC_INCLUDE}" >> MINFO
-	-@echo  "------------------------------------------\"; " >> MINFO
-	-@echo  "static const char *petsclinkerinfo = \"  " >> MINFO
-	-@echo  "Using C linker: ${CLINKER}" >> MINFO
-	-@echo  "Using Fortran linker: ${FLINKER}" >> MINFO
-	-@echo  "Using libraries: ${PETSC_LIB} \"; " >> MINFO
-	-@cat MINFO | ${SED} -e 's/\^M//g' | ${SED} -e 's/\\/\\\\/g' | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> MINFO_
-	-@cat MINFO_ | ${SED} -e 's/\^M//g'  > /dev/null; foobar=$$?; \
-          if [ "$$foobar" = "0" ]; then \
-	    cat MINFO_ | ${SED} -e 's/\^M//g' > ${MINFO}; \
-          else cat MINFO | ${SED} -e 's/\^M//g' | ${SED} -e 's/\\/\\\\/g' | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> ${MINFO}; \
-          fi
-	-@$(RM) MINFO MINFO_
+	-@$(RM) -f ${MINFO} MINFO
+	-@echo  "static const char *petscmachineinfo = \"\n\"" >> MINFO
+	-@echo  "\"-----------------------------------------\n\"" >> MINFO
+	-@echo  "\"Libraries compiled on `date` on `hostname` \n\"" >> MINFO
+	-@echo  "\"Machine characteristics: `uname -a` \n\"" >> MINFO
+	-@echo  "\"Using PETSc directory: ${PETSC_DIR}\n\"" >> MINFO
+	-@echo  "\"Using PETSc arch: ${PETSC_ARCH}\n\"" >> MINFO
+	-@echo  "\"-----------------------------------------\"; " >> MINFO
+	-@echo  "static const char *petsccompilerinfo = \"\n\"" >> MINFO
+	-@echo  "\"Using C compiler: ${CC} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS}\n\"" >> MINFO
+	-@echo  "\"Using Fortran compiler: ${FC} ${FC_FLAGS} ${FFLAGS} ${FPP_FLAGS}\n\"" >> MINFO
+	-@echo  "\"-----------------------------------------\"; " >> MINFO
+	-@echo  "static const char *petsccompilerflagsinfo = \"\n\"" >> MINFO
+	-@echo  "\"Using include paths: ${PETSC_INCLUDE}\n\"" >> MINFO
+	-@echo  "\"------------------------------------------\"; " >> MINFO
+	-@echo  "static const char *petsclinkerinfo = \"\n\"" >> MINFO
+	-@echo  "\"Using C linker: ${CLINKER}\n\"" >> MINFO
+	-@echo  "\"Using Fortran linker: ${FLINKER}\n\"" >> MINFO
+	-@echo  "\"Using libraries: ${PETSC_LIB} \n\"" >> MINFO
+	-@echo  "\"------------------------------------------\"; " >> MINFO
+	-@cat MINFO | ${SED} -e 's/\\ /\\\\ /g'  > ${MINFO}
+	-@ if [ -f /usr/bin/cygcheck.exe ]; then /usr/bin/dos2unix ${MINFO} 2> /dev/null; fi
+	-@$(RM) -f MINFO
 
 #
 # Builds the PETSc libraries
