@@ -627,6 +627,12 @@ EXTERN_C_END
 
    Notes:
    If nnz is given then nz is ignored
+
+   Level: intermediate
+
+.keywords: matrix, cray, sparse, parallel
+
+.seealso: MatCreate(), MatCreateMPICSRPERM(), MatSetValues()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqCSRPERM(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
 {

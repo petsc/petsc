@@ -82,6 +82,12 @@
 -  -mat_aij_oneindex - Internally use indexing starting at 1
         rather than 0.  Note that when calling MatSetValues(),
         the user still MUST index entries starting at 0!
+
+   Level: intermediate
+
+.keywords: matrix, cray, sparse, parallel
+
+.seealso: MatCreate(), MatCreateSeqCSRPERM(), MatSetValues()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPICSRPERM(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
