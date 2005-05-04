@@ -168,10 +168,16 @@ class Configure(config.base.Configure):
     if not os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'],'lib')):
       os.makedirs(os.path.join(self.framework.argDB['PETSC_DIR'],'lib'))
 
-    import time
-    self.addDefine('CONFIGURE_RUN_TIME','"'+time.ctime(time.time())+'"')
-    self.addDefine('CONFIGURE_OPTIONS', '"'+self.framework.getOptionsString(['configModules']).replace('\"','\\"')+'"')
+    # add a makefile entry for configure options
     self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules']).replace('\"','\\"'))
+    return
+
+  def dumpConfigInfo(self):
+    import time
+    fd = file(os.path.join('bmake',self.arch.arch,'petscconfiginfo.h'),'w')
+    fd.write('static const char *petscconfigureruntime = "'+time.ctime(time.time())+'";\n')
+    fd.write('static const char *petscconfigureoptions = "'+self.framework.getOptionsString(['configModules']).replace('\"','\\"')+'";\n')
+    fd.close()
     return
 
   def configureInline(self):
@@ -325,6 +331,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureGCOV)
     self.Dump()
+    self.dumpConfigInfo()
     self.framework.log.write('================================================================================\n')
     self.logClear()
     return

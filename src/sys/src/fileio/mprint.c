@@ -3,6 +3,7 @@
       Utilites routines to add simple ASCII IO capability.
 */
 #include "src/sys/src/fileio/mprint.h"
+#include "petscconfiginfo.h"
 /*
    If petsc_history is on, then all Petsc*Printf() results are saved
    if the appropriate (usually .petschistory) file.
@@ -521,8 +522,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
       fprintf(fd,"%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
     }
     fprintf(fd,"Libraries linked from %s\n",PETSC_LIB_DIR);
-    fprintf(fd,"Configure run at %s\n",PETSC_CONFIGURE_RUN_TIME);
-    fprintf(fd,"Configure options %s\n",PETSC_CONFIGURE_OPTIONS);
+    fprintf(fd,"Configure run at %s\n",petscconfigureruntime);
+    fprintf(fd,"Configure options %s\n",petscconfigureoptions);
     fprintf(fd,"--------------------------------------------\
 ---------------------------\n");
     fflush(fd);

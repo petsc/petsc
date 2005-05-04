@@ -4,6 +4,7 @@
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include "petscmachineinfo.h"
+#include "petscconfiginfo.h"
 #if defined(PETSC_HAVE_MPE)
 #include "mpe.h"
 #endif
@@ -1629,8 +1630,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   ierr = PetscFPrintf(comm, fd, "sizeof(short) %d sizeof(int) %d sizeof(long) %d sizeof(void*) %d\n",
                       (int) sizeof(short), (int) sizeof(int), (int) sizeof(long), (int) sizeof(void*));CHKERRQ(ierr);
 
-  ierr = PetscFPrintf(comm, fd, "Configure run at: %s\n",PETSC_CONFIGURE_RUN_TIME);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "Configure options: %s",PETSC_CONFIGURE_OPTIONS);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "Configure run at: %s\n",petscconfigureruntime);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "Configure options: %s",petscconfigureoptions);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "%s", petscmachineinfo);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "%s", petsccompilerinfo);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "%s", petsccompilerflagsinfo);CHKERRQ(ierr);
