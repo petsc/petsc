@@ -250,7 +250,13 @@ dimension of degrees of freedom at each point on the lattice. </li>
 "petscdmmg.h".</li>
       </ul>
       <p></p>
-      <p><span style="font-weight: bold; text-decoration: underline;">SYS:</span></p>
+      <p><span style="font-weight: bold; text-decoration: underline;">SYS:<br>
+      </span></p>
+      <ul>
+        <li>PetscSetCommWorld() removed. [one can directly do
+PETSC_COMM_WORLD = comm - before PetscInitialize()]<br>
+        </li>
+      </ul>
       <ul>
       </ul>
       <p></p>
