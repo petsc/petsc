@@ -13,6 +13,14 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 
+#define NDIM 512
+    /* NDIM specifies how many rows at a time we should work with when 
+     * performing the vectorized mat-vec.  This depends on various factors 
+     * such as vector register length, etc., and I really need to add a 
+     * way for the user (or the library) to tune this.  I'm setting it to  
+     * 512 for now since that is what Ed D'Azevedo was using in his Fortran 
+     * routines. */
+
 typedef struct {
   PetscInt  ngroup;
   PetscInt *xgroup;
@@ -260,13 +268,6 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
   PetscInt iold,nz;
   PetscInt istart,iend,isize;
   PetscInt ipos;
-  const PetscInt NDIM = 512;
-    /* NDIM specifies how many rows at a time we should work with when 
-     * performing the vectorized mat-vec.  This depends on various factors 
-     * such as vector register length, etc., and I really need to add a 
-     * way for the user (or the library) to tune this.  I'm setting it to  
-     * 512 for now since that is what Ed D'Azevedo was using in his Fortran 
-     * routines. */
   PetscScalar yp[NDIM];
   PetscInt    ip[NDIM]; /* yp[] and ip[] are treated as vector "registers" for performing the mat-vec. */
 
@@ -412,13 +413,6 @@ PetscErrorCode MatMultAdd_SeqCSRPERM(Mat A,Vec xx,Vec ww,Vec yy)
   PetscInt iold,nz;
   PetscInt istart,iend,isize;
   PetscInt ipos;
-  const PetscInt NDIM = 512;
-    /* NDIM specifies how many rows at a time we should work with when 
-     * performing the vectorized mat-vec.  This depends on various factors 
-     * such as vector register length, etc., and I really need to add a 
-     * way for the user (or the library) to tune this.  I'm setting it to  
-     * 512 for now since that is what Ed D'Azevedo was using in his Fortran 
-     * routines. */
   PetscScalar yp[NDIM];
   PetscInt ip[NDIM];
     /* yp[] and ip[] are treated as vector "registers" for performing 
