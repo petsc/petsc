@@ -187,7 +187,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec v, PetscInt n, PetscInt N)
 
    Level: advanced
 
-.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlocked(), VecGetBlockSize()
+.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlock(), VecGetBlockSize()
 
   Concepts: block size^vectors
 @*/
@@ -226,7 +226,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec v,PetscInt bs)
 
    Level: advanced
 
-.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlocked(), VecSetBlockSize()
+.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlock(), VecSetBlockSize()
 
    Concepts: vector^block size
    Concepts: block^vector
@@ -1859,7 +1859,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlocked(Vec x,PetscInt ni,const Pe
    Concepts: vector^setting values with local numbering
 
 seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
-           VecSetLocalToGlobalMappingBlocked(), VecSetValuesBlockedLocal()
+           VecSetLocalToGlobalMappingBlock(), VecSetValuesBlockedLocal()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 {
@@ -2025,7 +2025,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesLocal(Vec x,PetscInt ni,const Pets
    Concepts: vector^setting values blocked with local numbering
 
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesBlocked(), 
-           VecSetLocalToGlobalMappingBlocked()
+           VecSetLocalToGlobalMappingBlock()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora) 
 {
@@ -2038,7 +2038,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlockedLocal(Vec x,PetscInt ni,con
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
   if (!x->bmapping) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with VecSetLocalToGlobalMappingBlocked()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with VecSetLocalToGlobalMappingBlock()");
   }
   if (ni > 128) {
     ierr = PetscMalloc(ni*sizeof(PetscInt),&lix);CHKERRQ(ierr);
