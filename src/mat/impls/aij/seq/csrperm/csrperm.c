@@ -224,7 +224,7 @@ PetscErrorCode MatAssemblyEnd_SeqCSRPERM(Mat A, MatAssemblyType mode)
    * the Mat_CompressedRow data structure that SeqAIJ now uses when there 
    * are many zero rows.  If the SeqAIJ assembly end routine decides to use 
    * this, this may break things.  (Don't know... haven't looked at it.) */
-  a->inode.use = 0;
+  a->inode.use = PETSC_FALSE;
   (*csrperm->AssemblyEnd_SeqAIJ)(A, mode);
 
   /* Now calculate the permutation and grouping information. */
