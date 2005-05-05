@@ -35,6 +35,9 @@ class Configure(PETSc.package.Package):
     '''Find a Matlab installation and check if it can work with PETSc'''
     import re
 
+    if not self.framework.argDB['with-shared']:
+      raise RuntimeError('Matlab Interface requires shared library support. Please rerun with --with-shared=1\n')
+          
     versionPattern = re.compile('Version ([0-9]*.[0-9]*)')
     for matlab in self.generateGuesses():
       interpreter = os.path.join(matlab,'bin','matlab')
@@ -79,7 +82,8 @@ class Configure(PETSc.package.Package):
                 matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
               else:
                 matlab_sys = ''
-              self.lib = [self.setCompilers.CSharedLinkerFlag+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys,'-L'+os.path.join(matlab,'extern','lib',matlab_arch),'-L'+os.path.join(matlab,'bin',matlab_arch),'-leng','-lmx','-lmat','-lut'] + matlab_dl
+              matlab_sys = ':'+os.path.join(matlab,'bin',matlab_arch)+':'+os.path.join(matlab,'extern','lib',matlab_arch)
+              self.lib = [self.setCompilers.CSharedLinkerFlag+matlab_sys,'-L'+os.path.join(matlab,'bin',matlab_arch),'-L'+os.path.join(matlab,'extern','lib',matlab_arch),'-leng','-lmx','-lmat','-lut','-licudata','-licui18n','-licuuc','-lustdio'] + matlab_dl
               self.framework.packages.append(self)
               self.addMakeMacro('MATLAB_MEX',self.mex)
               self.addMakeMacro('MATLAB_CC',self.cc)
