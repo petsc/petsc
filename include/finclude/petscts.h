@@ -6,14 +6,14 @@
 
 #define TS PetscFortranAddr
 #define TSType character*(80)
-#define TSPVodeType PetscEnum
+#define TSSundialsType PetscEnum
 #define TSProblemType PetscEnum 
-#define TSPVodeGramSchmitdType PetscEnum
+#define TSSundialsGramSchmitdType PetscEnum
 
 #define TS_EULER 'euler'
 #define TS_BEULER 'beuler'
 #define TS_PSEUDO 'pseudo'
-#define TS_PVODE 'pvode'
+#define TS_SUNDIALS 'sundials'
 #define TS_CRANK_NICHOLSON 'crank-nicholson'
 #define TS_RUNGE_KUTTA 'runge-kutta'
 
@@ -26,17 +26,16 @@
       PetscEnum TS_LINEAR,TS_NONLINEAR
       parameter (TS_LINEAR = 0,TS_NONLINEAR = 1)
 !
-!  TSPvodeType
+!  TSSundialsType
 !
-      PetscEnum PVODE_ADAMS,PVODE_BDF
-      parameter (PVODE_ADAMS=0,PVODE_BDF=1)
+      PetscEnum SUNDIALS_ADAMS,SUNDIALS_BDF
+      parameter (SUNDIALS_ADAMS=0,SUNDIALS_BDF=1)
 !
-!  TSPvodeGramSchmidtType
+!  TSSundialsGramSchmidtType
 !
-      PetscEnum PVODE_MODIFIED_GS,PVODE_CLASSICAL_GS,PVODE_UNMODIFIED_GS
-
-      parameter (PVODE_MODIFIED_GS=0,PVODE_CLASSICAL_GS=1)
-      parameter (PVODE_UNMODIFIED_GS=1)
+      PetscEnum SUNDIALS_MODIFIED_GS,SUNDIALS_CLASSICAL_GS,SUNDIALS_UNMODIFIED_GS
+#define SUNDIALS_UNMODIFIED_GS SUNDIALS_CLASSICAL_GS
+      parameter (SUNDIALS_MODIFIED_GS=0,SUNDIALS_CLASSICAL_GS=1)
 !
 !  Some PETSc fortran functions that the user might pass as arguments
 !

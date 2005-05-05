@@ -12,7 +12,7 @@
 !  ------------------------------------------------------------------------
 !
 !   This program solves a time-dependent nonlinear PDE using implicit
-!   timestepping (the method of lines).  This code uses PVode to do the
+!   timestepping (the method of lines).  This code uses Sundials to do the
 !   time integration.
 !
 !   The plan is for this code to support both 1-dimensional and 
@@ -150,7 +150,7 @@
         rpar(6) = .05d0
 
 !
-!    This timestep is not used by PVode but the simple Backward Euler scheme
+!    This timestep is not used by Sundials but the simple Backward Euler scheme
 !  does need an initial time-step
 !
         dt      = .5d0*h
@@ -234,7 +234,7 @@
       call TSCreate(comm,TS_NONLINEAR,ts,ierr)
       call TSSetMonitor(ts,Monitor,PETSC_NULL,ierr)
       call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL,ierr)
-      call TSSetType(ts,TS_PVODE,ierr)
+      call TSSetType(ts,TS_SUNDIALS,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine;

@@ -5,7 +5,7 @@ EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Euler(TS);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_BEuler(TS);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Pseudo(TS);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_PVode(TS);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Rk(TS);
 EXTERN_C_END
@@ -36,8 +36,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSRegisterAll(const char path[])
   ierr = TSRegisterDynamic(TS_BEULER,          path, "TSCreate_BEuler",TSCreate_BEuler);CHKERRQ(ierr);
   ierr = TSRegisterDynamic(TS_CRANK_NICHOLSON, path, "TSCreate_CN", TSCreate_CN);CHKERRQ(ierr);
   ierr = TSRegisterDynamic(TS_PSEUDO,          path, "TSCreate_Pseudo", TSCreate_Pseudo);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_PVODE)
-  ierr = TSRegisterDynamic(TS_PVODE,           path, "TSCreate_PVode", TSCreate_PVode);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SUNDIALS)
+  ierr = TSRegisterDynamic(TS_SUNDIALS,           path, "TSCreate_Sundials", TSCreate_Sundials);CHKERRQ(ierr);
 #endif
   ierr = TSRegisterDynamic(TS_RUNGE_KUTTA,     path, "TSCreate_Rk", TSCreate_Rk);CHKERRQ(ierr);
   PetscFunctionReturn(0);

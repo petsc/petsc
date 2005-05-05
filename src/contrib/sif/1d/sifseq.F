@@ -14,7 +14,7 @@ C
 C   This program solves a time-dependent nonlinear PDE using implicit
 C   timestepping (the method of lines):
 C
-C   Uses PVode to do the time integration 
+C   Uses Sundials to do the time integration 
 C
 C  --------------------------------------------------------------------------
 
@@ -129,7 +129,7 @@ C
 C
         rpar(2) = zero_d0
 C
-C    This timestep is not used by PVode but the simple Backward Euler scheme
+C    This timestep is not used by Sundials but the simple Backward Euler scheme
 C  does need an initial time-step
 C
         dt      = h/two_d0
@@ -190,8 +190,8 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call TSCreate(comm,TS_NONLINEAR,ts,ierr)
       call TSSetMonitor(ts,Monitor,PETSC_NULL_DOUBLE,ierr)
       call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL_DOUBLE,ierr)
-      call TSSetType(ts,TS_PVODE,ierr)
-      call TSPvodeSetTolerance(ts,errabs,errrel,ierr)
+      call TSSetType(ts,TS_SUNDIALS,ierr)
+      call TSSundialsSetTolerance(ts,errabs,errrel,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create matrix data structure; set Jacobian evaluation routine;
@@ -386,7 +386,7 @@ C  Print debugging information if desired
         call ViewerPopFormat(VIEWER_STDOUT_WORLD,ierr)
       endif
 
-      call TSPVodeGetIterations(ts,nonlin,lin,ierr)
+      call TSSundialsGetIterations(ts,nonlin,lin,ierr)
 C  Print only from processor 0
       if (rank .eq. 0) then 
         write(6,100) step,time,nonlin,lin

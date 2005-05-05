@@ -73,9 +73,9 @@ class OldMake(maker.Make):
     for package in nonconfigurePackages:
       if not package+'_LIB' in self.argDB:
         self.argDB[package+'_LIB'] = ''
-    packages = ['MPE', 'BLOCKSOLVE', 'PVODE', 'PARMETIS', 'AMS', 'SPAI', 'X11', 'MATLAB', 'LUSOL', 'DSCPACK', 'RAMG',
+    packages = ['MPE', 'BLOCKSOLVE', 'PARMETIS', 'AMS', 'SPAI', 'X11', 'MATLAB', 'LUSOL', 'DSCPACK', 'RAMG',
                 'TAU', 'ADIFOR', 'SUPERLU_DIST', 'SUPERLU', 'SPOOLES', 'UMFPACK', 'TRILINOS', 'HYPRE', 'MUMPS',
-                'MATHEMATICA', 'TRIANGLE', 'PLAPACK', 'SAMG', 'PNETCDF', 'HDF4', 'CHACO', 'JOSTLE', 'PARTY', 'SCOTCH']
+                'MATHEMATICA', 'TRIANGLE', 'PLAPACK', 'SAMG', 'PNETCDF', 'HDF4', 'CHACO', 'JOSTLE', 'PARTY', 'SCOTCH', 'SANDIALS']
     return [self.argDB[package+'_LIB'] for package in packages]
 
   def buildSharedLibraries(self, builder):

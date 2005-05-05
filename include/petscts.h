@@ -31,7 +31,7 @@ E*/
 #define TS_BEULER          "beuler"
 #define TS_PSEUDO          "pseudo"
 #define TS_CRANK_NICHOLSON "crank-nicholson"
-#define TS_PVODE           "pvode"
+#define TS_SUNDIALS        "sundials"
 #define TS_RUNGE_KUTTA     "runge-kutta"
 #define TSType char*
 
@@ -189,20 +189,20 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSLGMonitor(TS,PetscInt,PetscReal,Vec,v
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSLGMonitorDestroy(PetscDrawLG);
 
 /*
-       PETSc interface to PVode
+       PETSc interface to Sundials
 */
-#define PVODE_UNMODIFIED_GS PVODE_CLASSICAL_GS
-typedef enum { PVODE_ADAMS,PVODE_BDF } TSPVodeType;
-typedef enum { PVODE_MODIFIED_GS = 0,PVODE_CLASSICAL_GS = 1 } TSPVodeGramSchmidtType;
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPVodeSetType(TS,TSPVodeType);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPVodeGetPC(TS,PC*);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPVodeSetTolerance(TS,PetscReal,PetscReal);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPVodeGetIterations(TS,PetscInt *,PetscInt *);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPVodeSetGramSchmidtType(TS,TSPVodeGramSchmidtType);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPVodeSetGMRESRestart(TS,PetscInt);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPVodeSetLinearTolerance(TS,PetscReal);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPVodeSetExactFinalTime(TS,PetscTruth);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPVodeGetParameters(TS,PetscInt *,long int*[],double*[]);
+#define SUNDIALS_UNMODIFIED_GS SUNDIALS_CLASSICAL_GS
+typedef enum { SUNDIALS_ADAMS,SUNDIALS_BDF } TSSundialsType;
+typedef enum { SUNDIALS_MODIFIED_GS = 0,SUNDIALS_CLASSICAL_GS = 1 } TSSundialsGramSchmidtType;
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetType(TS,TSSundialsType);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsGetPC(TS,PC*);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetTolerance(TS,PetscReal,PetscReal);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsGetIterations(TS,PetscInt *,PetscInt *);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetGramSchmidtType(TS,TSSundialsGramSchmidtType);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetGMRESRestart(TS,PetscInt);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetLinearTolerance(TS,PetscReal);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetExactFinalTime(TS,PetscTruth);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsGetParameters(TS,PetscInt *,long int*[],double*[]);
 
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSRKSetTolerance(TS,PetscReal);
 

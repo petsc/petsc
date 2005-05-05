@@ -2,7 +2,7 @@
 ALL: lib
 
 LOCDIR   = src/ts/impls/implicit/
-DIRS     = beuler cn pvode
+DIRS     = beuler cn sundials
 MANSEC   = TS
 
 include ${PETSC_DIR}/bmake/common/base

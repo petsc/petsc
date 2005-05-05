@@ -1,21 +1,21 @@
 
 ALL: lib
 
-#requirespackage   'PETSC_HAVE_PVODE'
+#requirespackage   'PETSC_HAVE_SUNDIALS'
 #requiresprecision double
 #requiresscalar    real
 
 CFLAGS   =
 FFLAGS   =
-CPPFLAGS = ${PVODE_INCLUDE}
-SOURCEC  = petscpvode.c
+CPPFLAGS = ${SUNDIALS_INCLUDE}
+SOURCEC  = petscsundials.c
 SOURCEF  =
-SOURCEH  = petscpvode.h
-OBJSC    = petscpvode.o
+SOURCEH  = petscsundials.h
+OBJSC    = petscsundials.o
 OBJSF    =
 LIBBASE  = libpetscts
 MANSEC   = TS
-LOCDIR   = src/ts/impls/implicit/pvode/
+LOCDIR   = src/ts/impls/implicit/sundials/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
