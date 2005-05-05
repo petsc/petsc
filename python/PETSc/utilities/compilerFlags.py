@@ -60,7 +60,7 @@ class Configure(config.base.Configure):
           else:
             versionName = language.upper()+'_VERSION'
           if self.framework.argDB[versionName] == 'Unknown':
-            self.framework.argDB[versionName]  = options.getCompilerVersion(language, self.getCompiler())
+            self.framework.argDB[versionName] = options.getCompilerVersion(language, self.getCompiler())
           self.addArgumentSubstitution(versionName, versionName)
           # Check normal compiler flags
           self.framework.argDB['REJECTED_'+flags] = []
@@ -72,10 +72,10 @@ class Configure(config.base.Configure):
           for bopt in bopts:
             for testFlag in options.getCompilerFlags(language, self.getCompiler(), bopt):
               try:
-                self.framework.logPrint('Trying '+language+' compiler flag '+testFlag+'\n')
-                self.addCompilerFlag(testFlag)
+                self.framework.logPrint('Trying '+language+' compiler flag '+testFlag)
+                self.setCompilers.addCompilerFlag(testFlag)
               except RuntimeError:
-                self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag+'\n')
+                self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag)
                 self.framework.argDB['REJECTED_'+flags].append(testFlag)
         except RuntimeError: pass
         self.popLanguage()

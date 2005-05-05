@@ -49,7 +49,8 @@ class Configure(PETSc.package.Package):
 
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
-    self.types = framework.require('config.types',     self)
+    self.compilers = framework.require('config.compilers', self)
+    self.types = framework.require('config.types', self)
     return
 
   # search many obscure locations for MPI
@@ -316,6 +317,8 @@ class Configure(PETSc.package.Package):
       self.framework.popLanguage()
     else:
       args.append('--disable-f77')
+##    if self.argDB['with-shared'] and self.compilers.isGCC:
+##      args.append('--enable-sharedlibs=gcc')
     args.append('--without-mpe')
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
     args = ' '.join(args)
