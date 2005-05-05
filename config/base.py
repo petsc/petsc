@@ -93,32 +93,32 @@ class Configure(script.Script):
   # Define and Substitution Support
   def delDefine(self, name):
     '''Designate that "name" should be deleted (never put in)  configuration header'''
-    self.framework.log.write('Deleting '+name+' in '+str(self.__module__)+'\n')
+    self.framework.logPrint('Deleting "'+name+'"')
     if name in self.defines: del self.defines[name]
     return
 
   def addMakeRule(self, name, dependencies, rule = []):
     '''Designate that "name" should be rule in the makefile header (bmake file)'''
-    self.framework.log.write('Defined make rule '+name+' with dependencies '+str(dependencies)+' and code '+str(rule)+str(self.__module__)+'\n')
+    self.framework.logPrint('Defined make rule "'+name+'" with dependencies "'+str(dependencies)+'" and code '+str(rule))
     if not isinstance(rule,list): rule = [rule]
     self.makeRules[name] = [dependencies,rule]
     return
 
   def addMakeMacro(self, name, value):
     '''Designate that "name" should be defined to "value" in the makefile header (bmake file)'''
-    self.framework.log.write('Defined make macro '+name+' to '+str(value)+' in '+str(self.__module__)+'\n')
+    self.framework.logPrint('Defined make macro "'+name+'" to "'+str(value)+'"')
     self.makeMacros[name] = value
     return
 
   def addDefine(self, name, value):
     '''Designate that "name" should be defined to "value" in the configuration header'''
-    self.framework.log.write('Defined '+name+' to '+str(value)+' in '+str(self.__module__)+'\n')
+    self.framework.logPrint('Defined "'+name+'" to "'+str(value)+'"')
     self.defines[name] = value
     return
 
   def addTypedef(self, name, value):
     '''Designate that "name" should be typedefed to "value" in the configuration header'''
-    self.framework.log.write('Typedefed '+name+' to '+str(value)+' in '+str(self.__module__)+'\n')
+    self.framework.logPrint('Typedefed "'+name+'" to "'+str(value)+'"')
     self.typedefs[value] = name
     return
 
@@ -126,7 +126,7 @@ class Configure(script.Script):
     '''Add a missing function prototype
        - The language argument defaults to "All"
        - Other language choices are C, C++, extern C'''
-    self.framework.log.write('Added prototype '+prototype+' to language '+language+' in '+str(self.__module__)+'\n')
+    self.framework.logPrint('Added prototype '+prototype+' to language '+language)
     language = language.replace('+', 'x')
     if not language in self.prototypes:
       self.prototypes[language] = []
@@ -135,13 +135,13 @@ class Configure(script.Script):
 
   def addSubstitution(self, name, value):
     '''Designate that "@name@" should be replaced by "value" in all files which experience substitution'''
-    self.framework.log.write('Substituting '+name+' with '+str(value)+' in '+str(self.__module__)+'\n')
+    self.framework.logPrint('Substituting "'+name+'" with "'+str(value)+'"')
     self.subst[name] = value
     return
 
   def addArgumentSubstitution(self, name, arg):
     '''Designate that "@name@" should be replaced by "arg" in all files which experience substitution'''
-    self.framework.log.write('Substituting '+name+' with '+str(arg)+'('+str(self.framework.argDB[arg])+') in '+str(self.__module__)+'\n')
+    self.framework.logPrint('Substituting "'+name+'" with '+str(arg)+'('+str(self.framework.argDB[arg])+')')
     self.argSubst[name] = arg
     return
 
@@ -412,38 +412,9 @@ class Configure(script.Script):
       raise RuntimeError('Unknown language: '+language)
     return flagsArg
 
-  # REDO
   def getCompilerFlagsArg(self, compilerOnly = 0):
     '''Return the name of the argument which holds the compiler flags for the current language'''
     return self.getCompilerFlagsName(self.language[-1], compilerOnly)
-
-  def checkCompilerFlag(self, flag, includes = '', body = '', compilerOnly = 0):
-    '''Determine whether the compiler accepts the given flag'''
-    flagsArg = self.getCompilerFlagsArg(compilerOnly)
-    oldFlags = self.framework.argDB[flagsArg]
-    self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
-    (output, error, status)        = self.outputCompile(includes, body)
-    output  += error
-    valid    = 1
-    # Please comment each entry and provide an example line
-    if status:
-      valid = 0
-    # Lahaye F95
-    if output.find('Invalid suboption') >= 0:
-      valid = 0
-    if output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0 or output.find('not recognized') >= 0 or output.find('ignored') >= 0 or output.find('illegal option') >= 0  or output.find('linker input file unused because linking not done') >= 0 or output.find('Unknown switch') >= 0 or output.find('PETSc Error') >= 0:
-      valid = 0
-    self.framework.argDB[flagsArg] = oldFlags
-    return valid
-
-  def addCompilerFlag(self, flag, includes = '', body = '', extraflags = '', compilerOnly = 0):
-    '''Determine whether the compiler accepts the given flag, and add it if valid'''
-    if self.checkCompilerFlag(flag+' '+extraflags, includes, body, compilerOnly):
-      flagsArg = self.getCompilerFlagsArg(compilerOnly)
-      self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
-      self.framework.log.write('Added '+self.language[-1]+' compiler flag '+flag+'\n')
-      return
-    raise RuntimeError('Bad compiler flag: '+flag)
 
   def filterLinkOutput(self, output):
     return self.framework.filterLinkOutput(output)
@@ -499,34 +470,9 @@ class Configure(script.Script):
       raise RuntimeError('Unknown language: '+language)
     return flagsArg
 
-  #REDO
   def getLinkerFlagsArg(self):
     '''Return the name of the argument which holds the linker flags for the current language'''
     return self.getLinkerFlagsName(self.language[-1])
-
-  def checkLinkerFlag(self, flag):
-    '''Determine whether the linker accepts the given flag'''
-    flagsArg = self.getLinkerFlagsArg()
-    oldFlags = self.framework.argDB[flagsArg]
-    valid    = 1
-    self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
-    (output, status)               = self.outputLink('', '')
-    if status:
-      valid = 0
-      self.framework.log.write('Rejecting linker flag '+flag+' due to nonzero status from link\n')
-    if output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or (output.find('bad ') >= 0 and output.find(' option') >= 0) or output.find('linker input file unused because linking not done') >= 0 or output.find('flag is ignored') >= 0 or output.find('Invalid option') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0:
-      valid = 0
-      self.framework.log.write('Rejecting linker flag '+flag+' due to \n'+output)
-    self.framework.argDB[flagsArg] = oldFlags
-    return valid
-
-  def addLinkerFlag(self, flag):
-    '''Determine whether the linker accepts the given flag, and add it if valid'''
-    if self.checkLinkerFlag(flag):
-      flagsArg = self.getLinkerFlagsArg()
-      self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
-      return
-    raise RuntimeError('Bad linker flag: '+flag)
 
   def outputRun(self, includes, body, cleanup = 1, defaultOutputArg = '', executor = None):
     if not self.checkLink(includes, body, cleanup = 0): return ('', 1)

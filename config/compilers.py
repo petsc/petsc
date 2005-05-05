@@ -171,7 +171,7 @@ class Configure(config.base.Configure):
     success=0
     for flag in ['', '-+', '-x cxx -tlocal', '-Kc++']:
       try:
-        self.addCompilerFlag(flag, body = 'class somename { int i; };')
+        self.setCompilers.addCompilerFlag(flag, body = 'class somename { int i; };')
         success=1
         break
       except RuntimeError:
@@ -179,7 +179,7 @@ class Configure(config.base.Configure):
     if success==0:
       for flag in ['-TP','-P']:
         try:
-          self.addCompilerFlag(flag, body = 'class somename { int i; };', compilerOnly = 1)
+          self.setCompilers.addCompilerFlag(flag, body = 'class somename { int i; };', compilerOnly = 1)
           break
         except RuntimeError:
           pass
@@ -388,7 +388,7 @@ class Configure(config.base.Configure):
         flagsArg = self.getCompilerFlagsArg()
         oldFlags = self.framework.argDB[flagsArg]
         self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+'-DPTesting'
-        self.addCompilerFlag(flag, body = '#define dummy \n           dummy\n#ifndef PTesting\n       fooey\n#endif')
+        self.setCompilers.addCompilerFlag(flag, body = '#define dummy \n           dummy\n#ifndef PTesting\n       fooey\n#endif')
         self.framework.argDB[flagsArg] = oldFlags + ' ' + flag
         self.fortranPreprocess = 1
         self.popLanguage()

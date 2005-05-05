@@ -527,6 +527,36 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
+  def checkCompilerFlag(self, flag, includes = '', body = '', compilerOnly = 0):
+    '''Determine whether the compiler accepts the given flag'''
+    flagsArg = self.getCompilerFlagsArg(compilerOnly)
+    oldFlags = getattr(self, flagsArg)
+    setattr(self, flagsArg, oldFlags+' '+flag)
+    (output, error, status) = self.outputCompile(includes, body)
+    output += error
+    valid   = 1
+    # Please comment each entry and provide an example line
+    if status:
+      valid = 0
+      self.framework.logPrint('Rejecting compiler flag '+flag+' due to nonzero status from link')
+    # Lahaye F95
+    if output.find('Invalid suboption') >= 0:
+      valid = 0
+    if output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0 or output.find('not recognized') >= 0 or output.find('ignored') >= 0 or output.find('illegal option') >= 0  or output.find('linker input file unused because linking not done') >= 0 or output.find('Unknown switch') >= 0 or output.find('PETSc Error') >= 0:
+      valid = 0
+      self.framework.logPrint('Rejecting compiler flag '+flag+' due to \n'+output)
+    setattr(self, flagsArg, oldFlags)
+    return valid
+
+  def addCompilerFlag(self, flag, includes = '', body = '', extraflags = '', compilerOnly = 0):
+    '''Determine whether the compiler accepts the given flag, and add it if valid, otherwise throw an exception'''
+    if self.checkCompilerFlag(flag+' '+extraflags, includes, body, compilerOnly):
+      flagsArg = self.getCompilerFlagsArg(compilerOnly)
+      setattr(self, flagsArg, getattr(self, flagsArg)+' '+flag)
+      self.framework.log.write('Added '+self.language[-1]+' compiler flag '+flag+'\n')
+      return
+    raise RuntimeError('Bad compiler flag: '+flag)
+
   def checkPIC(self):
     '''Determine the PIC option for each compiler
        - There needs to be a test that checks that the functionality is actually working'''
@@ -719,33 +749,56 @@ class Configure(config.base.Configure):
       self.logPrint('Checking shared linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'LD_SHARED'):
         self.framework.argDB['LD_SHARED'] = self.LD_SHARED
-        self.framework.argDB['LD_SHARED_SUFFIX'] = ext
         flagsArg = self.getLinkerFlagsArg()
         oldFlags = self.framework.argDB[flagsArg]
         goodFlags = filter(self.checkLinkerFlag, flags)
         testMethod = 'foo'
         self.framework.argDB[flagsArg] += ' '+' '.join(goodFlags)
+        self.sharedLinker = linker
+        self.sharedLibraryFlags = goodFlags
+        self.sharedLibraryExt = ext
         if self.checkLink(includes = 'int '+testMethod+'(void) {return 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
           oldLibs = self.framework.argDB['LIBS']
           self.framework.argDB['LIBS'] += ' -L. -lconftest'
           self.framework.argDB[flagsArg] = oldFlags
           # Might need to segregate shared linker flags
           if self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);'):
-            os.remove('libconftest.'+ext)
+            os.remove('libconftest.'+self.sharedLibraryExt)
             self.framework.argDB['LIBS'] = oldLibs
             self.sharedLibraries = 1
-            self.sharedLinker = linker
-            self.sharedLibraryFlags = goodFlags
-            self.sharedLibraryExt = ext
             self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
             break
           self.framework.argDB['LIBS'] = oldLibs
-          os.remove('libconftest.'+ext)
+          os.remove('libconftest.'+self.sharedLibraryExt)
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
         self.framework.argDB[flagsArg] = oldFlags
         del self.LD_SHARED
         del self.framework.argDB['LD_SHARED']
     return
+
+  def checkLinkerFlag(self, flag):
+    '''Determine whether the linker accepts the given flag'''
+    flagsArg = self.getLinkerFlagsArg()
+    oldFlags = getattr(self, flagsArg)
+    setattr(self, flagsArg, oldFlags+' '+flag)
+    (output, status) = self.outputLink('', '')
+    valid = 1
+    if status:
+      valid = 0
+      self.framework.logPrint('Rejecting linker flag '+flag+' due to nonzero status from link')
+    if output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or (output.find('bad ') >= 0 and output.find(' option') >= 0) or output.find('linker input file unused because linking not done') >= 0 or output.find('flag is ignored') >= 0 or output.find('Invalid option') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0:
+      valid = 0
+      self.framework.logPrint('Rejecting linker flag '+flag+' due to \n'+output)
+    setattr(self, flagsArg, oldFlags)
+    return valid
+
+  def addLinkerFlag(self, flag):
+    '''Determine whether the linker accepts the given flag, and add it if valid, otherwise throw an exception'''
+    if self.checkLinkerFlag(flag):
+      flagsArg = self.getLinkerFlagsArg()
+      setattr(self, flagsArg, getattr(self, flagsArg)+' '+flag)
+      return
+    raise RuntimeError('Bad linker flag: '+flag)
 
   def checkLinkerMac(self):
     '''Tests some Apple Mac specific linker flags'''
