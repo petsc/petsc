@@ -397,8 +397,8 @@ class Configure(script.Script):
     output = self.filterCompileOutput(output+'\n'+error)
     return not (returnCode or len(output))
 
-  @staticmethod
-  def getCompilerFlagsName(language, compilerOnly = 0):
+  # Should be static
+  def getCompilerFlagsName(self, language, compilerOnly = 0):
     if language == 'C':
       flagsArg = 'CFLAGS'
     elif language in ['C++', 'Cxx']:
@@ -458,8 +458,8 @@ class Configure(script.Script):
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
 
-  @staticmethod
-  def getLinkerFlagsName(language):
+  # Should be static
+  def getLinkerFlagsName(self, language):
     if language == 'C':
       flagsArg = 'LDFLAGS'
     elif language in ['C++', 'Cxx']:

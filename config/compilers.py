@@ -37,7 +37,7 @@ class Configure(config.base.Configure):
     names.update(['AR', 'RANLIB', 'LD_SHARED'])
     for language in ['C', 'C++', 'FC']:
       self.pushLanguage(language)
-      names.update([config.setCompilers.Configure.getCompilerFlagsName(language), config.setCompilers.Configure.getCompilerFlagsName(language, 1), self.getLinkerFlagsName(language)])
+      names.update([self.getCompilerFlagsName(language), self.getCompilerFlagsName(language, 1), self.getLinkerFlagsName(language)])
       self.popLanguage()
     names.update(['CPPFLAGS'])
     names.update(['AR_FLAGS', 'AR_LIB_SUFFIX'])

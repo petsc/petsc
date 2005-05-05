@@ -733,6 +733,8 @@ class Configure(config.base.Configure):
     # C compiler default
     yield (self.framework.argDB['CC'], ['-shared'], 'so')
     # Mac OSX
+    #self.framework.CC -bundle -flat_namespace -undefined suppress .so
+    #self.framework.CC -dynamiclib -flat_namespace -undefined suppress -single_module .dylib
     # undefined warning must also have flat_namespace
     yield ('libtool', ['-noprebind','-dynamic','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
     # Default to static linker
