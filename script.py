@@ -246,12 +246,13 @@ class Script(logging.Logger):
       self.logPrint('No cached configure in RDict')
       return None
     try:
-      cache           = argDB['configureCache']
-      framework       = cPickle.loads(cache)
+      cache = argDB['configureCache']
+      framework = cPickle.loads(cache)
+      framework.framework = framework
       framework.argDB = argDB
       self.logPrint('Loaded configure to cache: size '+str(len(cache)))
     except cPickle.UnpicklingError, e:
-      framework       = None
+      framework = None
       self.logPrint('Invalid cached configure: '+str(e))
     return framework
 
@@ -282,19 +283,29 @@ class OutputFiles(dict):
     return dict.__delitem__(key, value)
 
 class LanguageProcessor(args.ArgumentProcessor):
-  def __init__(self, clArgs = None, argDB = None, compilers = None, libraries = None, versionControl = None):
+  def __init__(self, clArgs = None, argDB = None, framework = None, versionControl = None):
     self.languageModule     = {}
     self.preprocessorObject = {}
     self.compilerObject     = {}
     self.linkerObject       = {}
     self.sharedLinkerObject = {}
-    self.compilers          = compilers
-    self.libraries          = libraries
+    self.framework          = framework
     self.versionControl     = versionControl
     args.ArgumentProcessor.__init__(self, clArgs, argDB)
     self.outputFiles        = OutputFiles()
     self.modulePath         = 'config.compile'
     return
+
+  def getCompilers(self):
+    if self.framework is None:
+      return
+    return self.framework.require('config.compilers', None)
+  compilers = property(getCompilers, doc = 'The config.compilers configure object')
+  def getLibraries(self):
+    if self.framework is None:
+      return
+    return self.framework.require('config.libraries', None)
+  libraries = property(getLibraries, doc = 'The config.libraries configure object')
 
   def __getstate__(self, d = None):
     '''We only want to pickle the language module names and output files. The other objects are set by configure.'''
@@ -302,7 +313,7 @@ class LanguageProcessor(args.ArgumentProcessor):
       d = args.ArgumentProcessor.__getstate__(self)
     if 'languageModule' in d:
       d['languageModule'] = dict([(lang,mod._loadName) for lang,mod in d['languageModule'].items()])
-    for member in ['preprocessorObject', 'compilerObject', 'linkerObject', 'sharedLinkerObject', 'compilers', 'libraries', 'versionControl']:
+    for member in ['preprocessorObject', 'compilerObject', 'linkerObject', 'sharedLinkerObject', 'framework']:
       del d[member]
     return d
 
@@ -315,9 +326,6 @@ class LanguageProcessor(args.ArgumentProcessor):
     self.compilerObject     = {}
     self.linkerObject       = {}
     self.sharedLinkerObject = {}
-    self.compilers          = None
-    self.libraries          = None
-    self.versionControl     = None
     return
 
   def setArgDB(self, argDB):

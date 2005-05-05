@@ -397,10 +397,8 @@ class Configure(script.Script):
     output = self.filterCompileOutput(output+'\n'+error)
     return not (returnCode or len(output))
 
-  # REDO
-  def getCompilerFlagsArg(self, compilerOnly = 0):
-    '''Return the name of the argument which holds the compiler flags for the current language'''
-    language = self.language[-1]
+  @staticmethod
+  def getCompilerFlagsName(language, compilerOnly = 0):
     if language == 'C':
       flagsArg = 'CFLAGS'
     elif language in ['C++', 'Cxx']:
@@ -413,6 +411,11 @@ class Configure(script.Script):
     else:
       raise RuntimeError('Unknown language: '+language)
     return flagsArg
+
+  # REDO
+  def getCompilerFlagsArg(self, compilerOnly = 0):
+    '''Return the name of the argument which holds the compiler flags for the current language'''
+    return self.getCompilerFlagsName(self.language[-1], compilerOnly)
 
   def checkCompilerFlag(self, flag, includes = '', body = '', compilerOnly = 0):
     '''Determine whether the compiler accepts the given flag'''
@@ -484,10 +487,8 @@ class Configure(script.Script):
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
 
-  #REDO
-  def getLinkerFlagsArg(self):
-    '''Return the name of the argument which holds the linker flags for the current language'''
-    language = self.language[-1]
+  @staticmethod
+  def getLinkerFlagsName(language):
     if language == 'C':
       flagsArg = 'LDFLAGS'
     elif language in ['C++', 'Cxx']:
@@ -497,6 +498,11 @@ class Configure(script.Script):
     else:
       raise RuntimeError('Unknown language: '+language)
     return flagsArg
+
+  #REDO
+  def getLinkerFlagsArg(self):
+    '''Return the name of the argument which holds the linker flags for the current language'''
+    return self.getLinkerFlagsName(self.language[-1])
 
   def checkLinkerFlag(self, flag):
     '''Determine whether the linker accepts the given flag'''

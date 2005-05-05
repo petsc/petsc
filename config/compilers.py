@@ -3,6 +3,11 @@ import config.base
 import re
 import os
 
+try:
+  import sets
+except ImportError:
+  import config.setsBackport
+
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -25,10 +30,31 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-f90-source=<file>', nargs.Arg(None, None, 'Specify the C source for the F90 interface, e.g. f90_intel.c'))
     return
 
+  def getDispatchNames(self):
+    '''Return all the attributes which are dispatched from config.setCompilers'''
+    names = sets.Set()
+    names.update(['CC', 'CPP', 'CXX', 'CPPCXX', 'FC'])
+    names.update(['AR', 'RANLIB', 'LD_SHARED'])
+    for language in ['C', 'C++', 'FC']:
+      self.pushLanguage(language)
+      names.update([config.setCompilers.Configure.getCompilerFlagsName(language), config.setCompilers.Configure.getCompilerFlagsName(language, 1), self.getLinkerFlagsName(language)])
+      self.popLanguage()
+    names.update(['CPPFLAGS'])
+    names.update(['AR_FLAGS', 'AR_LIB_SUFFIX'])
+    return names
+
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.setCompilers = framework.require('config.setCompilers', self)
+    self.dispatchNames = self.getDispatchNames()
     return
+
+  def __getattr__(self, name):
+    if name in self.dispatchNames:
+      return getattr(self.setCompilers, name)
+    if name == 'sharedLibraryFlags':
+      return ' '.join(getattr(self.setCompilers, name))
+    raise AttributeError('Configure attribute not found: '+name)
 
   def getLibArgument(self, library):
     '''Return the proper link line argument for the given filename library
@@ -87,6 +113,7 @@ class Configure(config.base.Configure):
     self.popLanguage()
     if self.cStaticInlineKeyword == 'static':
       self.logPrint('No C StaticInline keyword. using static function', 4, 'compilers')
+    self.addDefine('C_STATIC_INLINE', self.cStaticInlineKeyword)
     return
   def checkCxxStaticInline(self):
     '''Check for C++ keyword: static inline'''
@@ -100,6 +127,7 @@ class Configure(config.base.Configure):
     self.popLanguage()
     if self.cxxStaticInlineKeyword == 'static':
       self.logPrint('No Cxx StaticInline keyword. using static function', 4, 'compilers')
+    self.addDefine('CXX_STATIC_INLINE', self.cxxStaticInlineKeyword)
     return
 
   def checkCRestrict(self):
@@ -119,6 +147,9 @@ class Configure(config.base.Configure):
     self.popLanguage()
     if not self.restrictKeyword:
       self.logPrint('No C restrict keyword', 4, 'compilers')
+    # Define to equivalent of C99 restrict keyword, or to nothing if this is not supported.  Do not define if restrict is supported directly.
+    if not self.restrictKeyword == 'restrict':
+      self.addDefine('RESTRICT', self.restrictKeyword)
     return
 
   def checkCFormatting(self):
@@ -126,6 +157,7 @@ class Configure(config.base.Configure):
     if self.isGCC:
       self.gccFormatChecking = ('PRINTF_FORMAT_CHECK(A,B)', '__attribute__((format (printf, A, B)))')
       self.logPrint('Added gcc printf format checking', 4, 'compilers')
+      self.addDefine(self.gccFormatChecking[0], self.gccFormatChecking[1])
     else:
       self.gccFormatChecking = None
     return
@@ -165,6 +197,7 @@ class Configure(config.base.Configure):
     self.popLanguage()
     if self.cxxNamespace:
       self.logPrint('C++ has namespaces', 4, 'compilers')
+      self.addDefine('HAVE_CXX_NAMESPACE', 1)
     else:
       self.logPrint('C++ does not have namespaces', 4, 'compilers')
     return
@@ -323,6 +356,17 @@ class Configure(config.base.Configure):
     else:
       raise RuntimeError('Unknown Fortran name mangling')
     self.logPrint('Fortran name mangling is '+self.fortranMangling, 4, 'compilers')
+    if self.fortranMangling == 'underscore':
+      self.addDefine('HAVE_FORTRAN_UNDERSCORE', 1)
+    elif self.fortranMangling == 'unchanged':
+      self.addDefine('HAVE_FORTRAN_NOUNDERSCORE', 1)
+    elif self.fortranMangling == 'capitalize':
+      self.addDefine('HAVE_FORTRAN_CAPS', 1)
+    elif self.fortranMangling == 'stdcall':
+      self.addDefine('HAVE_FORTRAN_STDCALL', 1)
+      self.addDefine('STDCALL', '__stdcall')
+      self.addDefine('HAVE_FORTRAN_CAPS', 1)
+      self.addDefine('HAVE_FORTRAN_MIXED_STR_ARG', 1)
     return
 
   def checkFortranNameManglingDouble(self):
@@ -330,6 +374,7 @@ class Configure(config.base.Configure):
     if self.testMangling(self.manglerFuncs['double'][1], self.manglerFuncs['double'][2]):
       self.logPrint('Fortran appends and extra underscore to names containing underscores', 4, 'compilers')
       self.fortranManglingDoubleUnderscore = 1
+      self.addDefine('HAVE_FORTRAN_UNDERSCORE_UNDERSCORE',1)
     else:
       self.fortranManglingDoubleUnderscore = 0
     return
@@ -711,62 +756,6 @@ class Configure(config.base.Configure):
         if not os.path.isfile(sourcePath):
           raise RuntimeError('Invalid F90 source: '+str(sourcePath))
       self.f90SourcePath = sourcePath
-    return
-
-  def output(self):
-    '''Output module data as defines and substitutions'''
-    if 'CC' in self.framework.argDB:
-      self.pushLanguage('C')
-      setattr(self, 'CC', self.argDB['CC'])
-      if 'CPP' in self.framework.argDB:
-        setattr(self, 'CPP', self.argDB['CPP'])
-      setattr(self, self.getCompilerFlagsArg(), self.argDB[self.getCompilerFlagsArg()])
-      setattr(self, 'CPPFLAGS', self.argDB['CPPFLAGS'])
-      setattr(self, self.getLinkerFlagsArg(), self.argDB[self.getLinkerFlagsArg()])
-      self.popLanguage()
-      # Define to equivalent of C99 restrict keyword, or to nothing if this is not supported.  Do not define if restrict is supported directly.
-      if not self.restrictKeyword == 'restrict':
-        self.addDefine('RESTRICT', self.restrictKeyword)
-      if self.gccFormatChecking:
-        self.addDefine(self.gccFormatChecking[0], self.gccFormatChecking[1])
-      self.addDefine('C_STATIC_INLINE', self.cStaticInlineKeyword)
-    if 'CXX' in self.framework.argDB:
-      self.pushLanguage('C++')
-      setattr(self, 'CXX', self.argDB['CXX'])
-      if 'CXXCPP' in self.framework.argDB:
-        setattr(self, 'CXXCPP', self.argDB['CXXCPP'])
-      setattr(self, self.getCompilerFlagsArg(), self.argDB[self.getCompilerFlagsArg()])
-      setattr(self, self.getCompilerFlagsArg(1), self.argDB[self.getCompilerFlagsArg(1)])
-      setattr(self, self.getLinkerFlagsArg(), self.argDB[self.getLinkerFlagsArg()])
-      self.popLanguage()
-      if self.cxxNamespace:
-        self.addDefine('HAVE_CXX_NAMESPACE', 1)
-      self.addDefine('CXX_STATIC_INLINE', self.cxxStaticInlineKeyword)
-    if 'FC' in self.framework.argDB:
-      self.pushLanguage('FC')
-      setattr(self, 'FC', self.argDB['FC'])
-      setattr(self, self.getCompilerFlagsArg(), self.argDB[self.getCompilerFlagsArg()])
-      setattr(self, self.getLinkerFlagsArg(), self.argDB[self.getLinkerFlagsArg()])
-      self.popLanguage()
-      if self.fortranMangling == 'underscore':
-        self.addDefine('HAVE_FORTRAN_UNDERSCORE', 1)
-      elif self.fortranMangling == 'unchanged':
-        self.addDefine('HAVE_FORTRAN_NOUNDERSCORE', 1)
-      elif self.fortranMangling == 'capitalize':
-        self.addDefine('HAVE_FORTRAN_CAPS', 1)
-      elif self.fortranMangling == 'stdcall':
-        self.addDefine('HAVE_FORTRAN_STDCALL', 1)
-        self.addDefine('STDCALL', '__stdcall')
-        self.addDefine('HAVE_FORTRAN_CAPS', 1)
-        self.addDefine('HAVE_FORTRAN_MIXED_STR_ARG', 1)
-      if self.fortranManglingDoubleUnderscore:
-        self.addDefine('HAVE_FORTRAN_UNDERSCORE_UNDERSCORE',1)
-    self.AR = self.setCompilers.AR
-    self.AR_FLAGS = self.setCompilers.AR_FLAGS
-    self.AR_LIB_SUFFIX = self.setCompilers.AR_LIB_SUFFIX
-    self.RANLIB = self.setCompilers.RANLIB
-    self.LD_SHARED = self.setCompilers.LD_SHARED
-    self.sharedLibraryFlags = ' '.join(self.setCompilers.sharedLibraryFlags)
     if hasattr(self, 'f90HeaderPath'):
       self.addDefine('HAVE_F90_H', '"'+self.f90HeaderPath+'"')
     if hasattr(self, 'f90SourcePath'):
@@ -776,7 +765,6 @@ class Configure(config.base.Configure):
   def configure(self):
     if 'CC' in self.framework.argDB:
       import config.setCompilers
-
       self.isGCC  = config.setCompilers.Configure.isGNU(self.framework.argDB['CC'])
       self.executeTest(self.checkCRestrict)
       self.executeTest(self.checkCFormatting)
@@ -801,7 +789,6 @@ class Configure(config.base.Configure):
         self.executeTest(self.checkFortranLinkingCxx)
       self.executeTest(self.checkFortran90)
       self.executeTest(self.checkFortran90Interface)
-    self.executeTest(self.output)
     self.no_configure()
     return
 

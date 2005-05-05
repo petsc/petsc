@@ -176,7 +176,7 @@ class Builder(logging.Logger):
     if configurationName is None:
       configurationName = self.configurationName[-1]
     elif not configurationName in self.configurations:
-      self.configurations[configurationName] = script.LanguageProcessor(argDB = self.argDB, compilers = self.compilers, libraries = self.libraries, versionControl = self.versionControl)
+      self.configurations[configurationName] = script.LanguageProcessor(argDB = self.argDB, framework = self.framework, versionControl = self.versionControl)
       self.configurations[configurationName].setup()
       for language in self.framework.preprocessorObject:
         self.framework.getPreprocessorObject(language).copy(self.configurations[configurationName].getPreprocessorObject(language))
@@ -190,8 +190,7 @@ class Builder(logging.Logger):
         newObj.copy(oldObj)
         self.configurations[configurationName].setSharedLinkerObject(language, newObj)
     configuration = self.configurations[configurationName]
-    configuration.compilers      = self.compilers
-    configuration.libraries      = self.libraries
+    configuration.framework = self.framework
     configuration.versionControl = self.versionControl
     return configuration
 
@@ -213,7 +212,7 @@ class Builder(logging.Logger):
 
     cache = cPickle.dumps(self.getConfiguration(configurationName))
     self.argDB['#'+configurationName+' cache#'] = cache
-    self.logPrint('Wrote configuration '+configurationName+' to cache: size '+str(len(cache)))
+    self.logPrint('Wrote configuration '+configurationName+' to cache: size '+str(len(cache))+' in '+self.argDB.saveFilename)
     return
 
   def loadConfiguration(self, configurationName):
@@ -224,9 +223,10 @@ class Builder(logging.Logger):
 
       try:
         cache = self.argDB[loadName]
-        self.configurations[configurationName]       = cPickle.loads(cache)
+        self.configurations[configurationName] = cPickle.loads(cache)
+        self.configurations[configurationName].framework = self.framework
         self.configurations[configurationName].argDB = self.argDB
-        self.logPrint('Loaded configuration '+configurationName+' from cache: size '+str(len(cache)))
+        self.logPrint('Loaded configuration '+configurationName+' from cache: size '+str(len(cache))+' in '+self.argDB.saveFilename)
       except ValueError, e:
         if str(e) == 'insecure string pickle':
           del self.argDB[loadName]

@@ -63,11 +63,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-ranlib',            nargs.Arg(None, None,   'Specify ranlib'))
     help.addArgument('Compilers', '-with-shared',            nargs.ArgBool(None, 1, 'Enable shared libraries'))
     help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
-    return
-
-  def checkInitialLibraries(self):
-    '''Check for libraries required for all linking on an architecture'''
-    self.framework.argDB['LIBS'] = ''
+    help.addArgument('Compilers', 'sharedLibraryFlags',      nargs.Arg(None, [],   'Specify the shared library flags'))
     return
 
   def isGNU(compiler):
@@ -94,6 +90,23 @@ class Configure(config.base.Configure):
     return 0
   isIntel = staticmethod(isIntel)
 
+  def checkInitialFlags(self):
+    '''Initialize the compiler and linker flags'''
+    for language in ['C', 'C++', 'FC']:
+      self.pushLanguage(language)
+      for flagsArg in [self.getCompilerFlagsName(language), self.getCompilerFlagsName(language, 1), self.getLinkerFlagsName(language)]:
+        setattr(self, flagsArg, self.argDB[flagsArg])
+        self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
+      self.popLanguage()
+    for flagsArg in ['CPPFLAGS', 'sharedLibraryFlags']:
+      setattr(self, flagsArg, self.argDB[flagsArg])
+      self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
+    return
+
+  def checkInitialLibraries(self):
+    '''Check for libraries required for all linking on an architecture'''
+    self.framework.argDB['LIBS'] = ''
+    return
 
   def checkCompiler(self, language):
     '''Check that the given compiler is functional, and if not raise an exception'''
@@ -184,6 +197,8 @@ class Configure(config.base.Configure):
     '''Locate a functional C compiler'''
     if 'with-cc' in self.framework.argDB and self.framework.argDB['with-cc'] == '0':
       raise RuntimeError('A functional C compiler is necessary for configure')
+    self.CFLAGS = self.argDB['CFLAGS']
+    self.CPPFLAGS = self.argDB['CPPFLAGS']
     for compiler in self.generateCCompilerGuesses():
       try:
         if self.getExecutable(compiler, resultName = 'CC'):
@@ -328,6 +343,8 @@ class Configure(config.base.Configure):
       if 'CXX' in self.framework.argDB:
         del self.framework.argDB['CXX']
       return
+    self.CXXFLAGS = self.argDB['CXXFLAGS']
+    self.CXXCPPFLAGS = self.argDB['CXXCPPFLAGS']
     for compiler in self.generateCxxCompilerGuesses():
       # Determine an acceptable extensions for the C++ compiler
       for ext in ['.cc', '.cpp', '.C']:
@@ -471,6 +488,7 @@ class Configure(config.base.Configure):
       if 'FC' in self.framework.argDB:
         del self.framework.argDB['FC']
       return
+    self.FFLAGS = self.argDB['FFLAGS']
     for compiler in self.generateFortranCompilerGuesses():
       try:
         if self.getExecutable(compiler, resultName = 'FC'):
@@ -548,10 +566,14 @@ class Configure(config.base.Configure):
 
   def generateArchiverFlags(self,archiver):
     flag = ''
-    if 'AR_FLAGS' in self.framework.argDB: flag = self.framework.argDB['AR_FLAGS']
-    elif os.path.basename(archiver) == 'ar': flag = 'cr'
-    elif archiver == 'win32fe lib': flag = '-a'
-    elif archiver == 'win32fe tlib': flag = '-a -P512'
+    if 'AR_FLAGS' in self.framework.argDB:
+      flag = self.framework.argDB['AR_FLAGS']
+    elif os.path.basename(archiver) == 'ar':
+      flag = 'cr'
+    elif archiver == 'win32fe lib':
+      flag = '-a'
+    elif archiver == 'win32fe tlib':
+      flag = '-a -P512'
     return flag
   
   def generateArchiverGuesses(self):
@@ -693,7 +715,6 @@ class Configure(config.base.Configure):
   def checkSharedLinker(self):
     '''Check that the linker can produce shared libraries'''
     self.sharedLibraries = 0
-    self.framework.argDB['sharedLibraryFlags'] = ''
     for linker, flags, ext in self.generateSharedLinkerGuesses():
       self.logPrint('Checking shared linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'LD_SHARED'):
@@ -715,7 +736,6 @@ class Configure(config.base.Configure):
             self.sharedLibraries = 1
             self.sharedLinker = linker
             self.sharedLibraryFlags = goodFlags
-            self.framework.argDB['sharedLibraryFlags'] = ' '.join(self.sharedLibraryFlags)
             self.sharedLibraryExt = ext
             self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
             break
@@ -828,6 +848,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
+    self.executeTest(self.checkInitialFlags)
     self.executeTest(self.checkInitialLibraries)
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
