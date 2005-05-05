@@ -8,6 +8,7 @@ This file also deals with CAPS Fortran 77 naming convention.
 #define _BLASLAPACK_CAPS_H
 #include "petsc.h"
 PETSC_EXTERN_CXX_BEGIN
+EXTERN_C_BEGIN
 
 #if !defined(PETSC_USE_COMPLEX)
 # if defined(PETSC_USE_SINGLE) || defined(PETSC_USES_FORTRAN_SINGLE)
@@ -111,8 +112,6 @@ PETSC_EXTERN_CXX_BEGIN
 #  define LAPACKsygvx_ ZSYGVX
 # endif
 #endif
-
-EXTERN_C_BEGIN
 
 EXTERN void LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);

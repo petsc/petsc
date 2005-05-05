@@ -14,7 +14,6 @@
 #if !defined(_BLASLAPACK_CPTOFCD_H)
 #define _BLASLAPACK_CPTOFCD_H
 #include "petsc.h"
-PETSC_EXTERN_CXX_BEGIN
 
 /*
    This include file on the Cray T3D/T3E defines the interface between 
@@ -24,6 +23,8 @@ PETSC_EXTERN_CXX_BEGIN
 # include <fortran.h>
 #endif
 
+PETSC_EXTERN_CXX_BEGIN
+EXTERN_C_BEGIN
 #if !defined(PETSC_USE_COMPLEX)
 /* Real double precision without character string arguments. */
 #define LAPACKgeqrf_ DGEQRF
@@ -93,8 +94,6 @@ EXTERN void  ZSYGV(PetscBLASInt*,_fcd,_fcd,PetscBLASInt*,PetscScalar*,PetscBLASI
 EXTERN void  ZSYGVX(PetscBLASInt*,_fcd,_fcd,_fcd,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 #define BLAStrmv_    ZTRMV
 #endif
-
-EXTERN_C_BEGIN
 
 EXTERN void      LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void      LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
