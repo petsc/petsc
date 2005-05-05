@@ -22,7 +22,7 @@ PetscTruth TSRegisterAllCalled          = PETSC_FALSE;
    Notes:
    See "petsc/include/petscts.h" for available methods (for instance)
 +  TS_EULER - Euler
-.  TS_PVODE - PVODE interface
+.  TS_SUNDIALS - SUNDIALS interface
 .  TS_BEULER - Backward Euler
 -  TS_PSEUDO - Pseudo-timestepping
 

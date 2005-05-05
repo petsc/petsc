@@ -8,7 +8,7 @@
              u_y=0 at y=1
         
        This program tests the routine of computing the Jacobian by the 
-       finite difference method as well as PETSc with PVODE.
+       finite difference method as well as PETSc with SUNDIALS.
 
 */
 
@@ -44,6 +44,7 @@ PetscReal f_ini(PetscReal x,PetscReal y)
   return f;
 }
 
+/* #undef PETSC_HAVE_SUNDIALS */
 
 #define linear_no_matrix       0
 #define linear_no_time         1
@@ -69,7 +70,7 @@ int main(int argc,char **argv)
   Vec 		 x;
   Data		 data;
   PetscInt 	 mn;
-#if defined(PETSC_HAVE_PVODE)
+#if defined(PETSC_HAVE_SUNDIALS)
   PC		 pc;
   PetscViewer    viewer;
   char           pcinfo[120],tsinfo[120];
@@ -79,14 +80,15 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
  
   /* set Data */
-  data.m = 9;
-  data.n = 9;
+  data.m = 3; /* 9; */
+  data.n = 3; /* 9; */
   data.a = 1.0;
   data.epsilon = 0.1;
   data.dx = 1.0/(data.m+1.0);
   data.dy = 1.0/(data.n+1.0);
   mn = (data.m)*(data.n);
 
+  time_steps =10;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);
     
   /* set initial conditions */
@@ -99,7 +101,7 @@ int main(int argc,char **argv)
   /* make timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,tsproblem);CHKERRQ(ierr);
-  ierr = TSSetMonitor(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSSetMonitor(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
 
   dt = 0.1;
 
@@ -111,27 +113,30 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
   /* Create SNES context  */
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);
- CHKERRQ(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 
   /* setting the RHS function and the Jacobian's non-zero structutre */
   ierr = SNESSetFunction(snes,global,FormFunction,&data);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,A,A,FormJacobian,&data);CHKERRQ(ierr);
 
-  /* set TSPVodeRHSFunction and TSPVodeRHSJacobian, so PETSc will pick up the 
+  /* set TSSundialsRHSFunction and TSSundialsRHSJacobian, so PETSc will pick up the 
      RHS function from SNES and compute the Jacobian by FD */
   /*
-  ierr = TSSetRHSFunction(ts,TSPVodeSetRHSFunction,snes);CHKERRQ(ierr);
-  ierr = TSPVodeSetRHSJacobian(ts,0.0,global,&A,&A,&A_structure,snes);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,A,A,TSPVodeSetRHSJacobian,snes);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,TSSundialsSetRHSFunction,snes);CHKERRQ(ierr);
+  ierr = TSSundialsSetRHSJacobian(ts,0.0,global,&A,&A,&A_structure,snes);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,A,A,TSSundialsSetRHSJacobian,snes);CHKERRQ(ierr);
   */
   
   ierr = TSSetRHSFunction(ts,RHSFunction,&data);CHKERRQ(ierr);
   ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,&data);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&data);CHKERRQ(ierr);
 
-  /* Use PVODE */
-  ierr = TSSetType(ts,TS_PVODE);CHKERRQ(ierr);
+  /* Use SUNDIALS */
+#if defined(PETSC_HAVE_SUNDIALS)
+  ierr = TSSetType(ts,TS_SUNDIALS);CHKERRQ(ierr); 
+#else
+  ierr = TSSetType(ts,TS_EULER);CHKERRQ(ierr); 
+#endif
 
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
@@ -142,11 +147,11 @@ int main(int argc,char **argv)
 
   /* Pick up a Petsc preconditioner */
   /* one can always set method or preconditioner during the run time */
-#if defined(PETSC_HAVE_PVODE)
-  ierr = TSPVodeGetPC(ts,&pc);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SUNDIALS)
+  ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
-  ierr = TSPVodeSetType(ts,PVODE_BDF);CHKERRQ(ierr);
-  /* ierr = TSPVodeSetMethodFromOptions(ts);CHKERRQ(ierr); */
+  ierr = TSSundialsSetType(ts,SUNDIALS_BDF);CHKERRQ(ierr);
+  /* ierr = TSSundialsSetMethodFromOptions(ts);CHKERRQ(ierr); */
 #endif
 
   ierr = TSSetUp(ts);CHKERRQ(ierr);
@@ -156,23 +161,27 @@ int main(int argc,char **argv)
   ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"out.m",&viewfile);CHKERRQ(ierr); 
   ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
   ierr = VecView(global,viewfile);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewfile);CHKERRQ(ierr);
 
-#if defined(PETSC_HAVE_PVODE)
+#if defined(PETSC_HAVE_SUNDIALS)
   /* extracts the PC  from ts */
-  ierr = TSPVodeGetPC(ts,&pc);CHKERRQ(ierr);
+  ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
   ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRQ(ierr);
   ierr = TSView(ts,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRQ(ierr);
   ierr = PCView(pc,viewer);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs,%s Preconditioner,%s\n",
                      size,tsinfo,pcinfo);CHKERRQ(ierr);
-  ierr = PCDestroy(pc);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 #endif
 
   /* free the memories */
   ierr = TSDestroy(ts);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
   if (A) {ierr= MatDestroy(A);CHKERRQ(ierr);}
+  ierr = SNESDestroy(snes);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
@@ -246,6 +255,10 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRQ(ierr);
 
   ierr = PetscFree(idx);CHKERRQ(ierr);
+  ierr = ISDestroy(from);CHKERRQ(ierr);
+  ierr = ISDestroy(to);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(tmp_vec);CHKERRQ(ierr);
   return 0;
 }
 

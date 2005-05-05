@@ -278,7 +278,7 @@ int main(int argc,char **args)
 
     /*
        Tests "diagonal-scaling of preconditioned residual norm" as used 
-       by many ODE integrator codes including PVODE. Note this is different
+       by many ODE integrator codes including SUNDIALS. Note this is different
        than diagonally scaling the matrix before computing the preconditioner
     */
     ierr = PetscOptionsHasName(PETSC_NULL,"-diagonal_scale",&diagonalscale);CHKERRQ(ierr);

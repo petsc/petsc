@@ -54,7 +54,7 @@ EXTERN_C_END
 
 .keywords: RK, tolerance
 
-.seealso: TSPVodeSetTolerance()
+.seealso: TSSundialsSetTolerance()
 
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSRKSetTolerance(TS ts,PetscReal aabs)

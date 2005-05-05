@@ -37,8 +37,8 @@
 /* Define if the BlockSolve package is available */
 #undef HAVE_BLOCKSOLVE
 
-/* Define if the PVODE package is available */
-#undef HAVE_PVODE
+/* Define if the SUNDIALS package is available */
+#undef HAVE_SUNDIALS
 
 /* Define in the MPICH MPE library is available */
 #undef HAVE_MPE

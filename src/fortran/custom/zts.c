@@ -15,7 +15,7 @@
 #define tsdestroy_                           TSDESTROY
 #define tssetmonitor_                        TSSETMONITOR
 #define tssettype_                           TSSETTYPE
-#define tspvodegetiterations_                TSPVODEGETITERATIONS
+#define tssundialsgetiterations_                TSSUNDIALSGETITERATIONS
 #define tsdefaultcomputejacobian_            TSDEFAULTCOMPUTEJACOBIAN
 #define tsdefaultcomputejacobiancolor_       TSDEFAULTCOMPUTEJACOBIANCOLOR
 #define tsgetoptionsprefix_                  TSGETOPTIONSPREFIX
@@ -28,7 +28,7 @@
 #define tssetproblemtype_                    tssetproblemtype
 #define tsdefaultcomputejacobian_            tsdefaultcomputejacobian
 #define tsdefaultcomputejacobiancolor_       tsdefaultcomputejacobiancolor
-#define tspvodegetiterations_                tspvodegetiterations
+#define tssundialsgetiterations_                tssundialsgetiterations
 #define tssetrhsfunction_                    tssetrhsfunction
 #define tssetrhsmatrix_                      tssetrhsmatrix
 #define tssetrhsjacobian_                    tssetrhsjacobian
@@ -223,12 +223,12 @@ void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),PetscErrorCo
   FIXRETURNCHAR(name,len);
 }
 
-#if defined(PETSC_HAVE_PVODE)
-void PETSC_STDCALL tspvodegetiterations_(TS *ts,PetscInt *nonlin,PetscInt *lin,PetscErrorCode *ierr)
+#if defined(PETSC_HAVE_SUNDIALS)
+void PETSC_STDCALL tssundialsgetiterations_(TS *ts,PetscInt *nonlin,PetscInt *lin,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(nonlin);
   CHKFORTRANNULLINTEGER(lin);
-  *ierr = TSPVodeGetIterations(*ts,nonlin,lin);
+  *ierr = TSSundialsGetIterations(*ts,nonlin,lin);
 }
 #endif
 

@@ -58,7 +58,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 .  ts - the TS context obtained from TSCreate()
 
    Options Database Keys:
-+  -ts_type <type> - TS_EULER, TS_BEULER, TS_PVODE, TS_PSEUDO, TS_CRANK_NICHOLSON
++  -ts_type <type> - TS_EULER, TS_BEULER, TS_SUNDIALS, TS_PSEUDO, TS_CRANK_NICHOLSON
 .  -ts_max_steps maxsteps - maximum number of time-steps to take
 .  -ts_max_time time - maximum time to compute to
 .  -ts_dt dt - initial time step
