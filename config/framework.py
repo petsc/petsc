@@ -215,21 +215,21 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       for child in self.configureParent.childGraph.vertices:
         if isinstance(child, type):
           config = child
+          self.addChild(config)
           config.showHelp = 0
           config.logName  = self.logName
           config.setup()
           config.setupPackageDependencies(self)
           config.setupDependencies(self)
-          self.addChild(config)
           break
     if config is None:
       config = apply(type, [self], keywordArgs)
+      self.addChild(config)
       config.showHelp = 0
       config.logName  = self.logName
       config.setup()
       config.setupPackageDependencies(self)
       config.setupDependencies(self)
-      self.addChild(config)
     return config
 
   def createChildren(self):

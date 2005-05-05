@@ -188,3 +188,57 @@ class StaticLinker(SharedLinker):
     else:
       base += '.'+self.argDB['AR_LIB_SUFFIX']
     return base
+
+class DynamicLinker(config.compile.processor.Processor):
+  '''The C linker'''
+  def __init__(self, argDB):
+    self.compiler = Compiler(argDB)
+    self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB))
+    config.compile.processor.Processor.__init__(self, argDB, ['dynamicLinker', self.compiler.name], ['LDFLAGS', 'dynamicLibraryFlags'], '.o', None)
+    self.outputFlag = '-o'
+    self.libraries  = sets.Set()
+    return
+
+  def setArgDB(self, argDB):
+    args.ArgumentProcessor.setArgDB(self, argDB)
+    self.compiler.argDB                  = argDB
+    self.configLibraries.argDB           = argDB
+    self.configLibraries.framework.argDB = argDB
+    return
+  argDB = property(args.ArgumentProcessor.getArgDB, setArgDB, doc = 'The RDict argument database')
+
+  def copy(self, other):
+    other.compiler = self.compiler
+    other.configLibraries = self.configLibraries
+    other.outputFlag = self.outputFlag
+    other.libraries = sets.Set(self.libraries)
+    return
+
+  def getFlags(self):
+    '''Returns a string with the flags specified for running this processor.'''
+    if not hasattr(self, '_flags'):
+      flagsName = self.flagsName[:]
+      self.compiler.configCompilers = self.configCompilers
+      if self.getProcessor() == self.compiler.getProcessor():
+        flagsName.extend(self.compiler.flagsName)
+      flags = [getattr(self.configCompilers, name) for name in flagsName]
+      flags.extend(self.configCompilers.setCompilers.dynamicLibraryFlags)
+      return ' '.join(flags)
+    return self._flags
+  flags = property(getFlags, config.compile.processor.Processor.setFlags, doc = 'The flags for the executable')
+
+  def getExtraArguments(self):
+    if not hasattr(self, '_extraArguments'):
+      if not 'LIBS' in self.argDB:
+        return ''
+      return self.argDB['LIBS']
+    return self._extraArguments
+  extraArguments = property(getExtraArguments, config.compile.processor.Processor.setExtraArguments, doc = 'Optional arguments for the end of the command')
+
+  def getTarget(self, source, shared, prefix = 'lib'):
+    base, ext = os.path.splitext(source)
+    if prefix:
+      if not (len(base) > len(prefix) and base[:len(prefix)] == prefix):
+        base = prefix+base
+    base += '.'+self.configCompilers.setCompilers.dynamicLibraryExt
+    return base

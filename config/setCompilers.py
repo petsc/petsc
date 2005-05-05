@@ -58,12 +58,19 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-FC_LD=<prog>',           nargs.Arg(None, None, 'Specify the linker for Fortran only'))
     help.addArgument('Compilers', '-LDFLAGS=<string>',       nargs.Arg(None, '',   'Specify the linker options'))
     help.addArgument('Compilers', '-with-ar',                nargs.Arg(None, None,   'Specify the archiver'))
-    help.addArgument('Compilers', 'AR',                      nargs.Arg(None, None,   'Specify the archiver flags'))
-    help.addArgument('Compilers', 'AR_FLAGS',                nargs.Arg(None, None,   'Specify the archiver flags'))
+    help.addArgument('Compilers', '-AR',                     nargs.Arg(None, None,   'Specify the archiver flags'))
+    help.addArgument('Compilers', '-AR_FLAGS',               nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('Compilers', '-with-ranlib',            nargs.Arg(None, None,   'Specify ranlib'))
     help.addArgument('Compilers', '-with-shared',            nargs.ArgBool(None, 1, 'Enable shared libraries'))
     help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
-    help.addArgument('Compilers', 'sharedLibraryFlags',      nargs.Arg(None, [],   'Specify the shared library flags'))
+    help.addArgument('Compilers', '-sharedLibraryFlags',     nargs.Arg(None, [], 'Specify the shared library flags'))
+    help.addArgument('Compilers', '-with-dynamic',           nargs.ArgBool(None, 0, 'Enable dynamic libraries'))
+    return
+
+  def setupDependencies(self, framework):
+    config.base.Configure.setupDependencies(self, framework)
+    self.headers = framework.require('config.headers', None)
+    self.libraries = framework.require('config.libraries', None)
     return
 
   def isGNU(compiler):
@@ -731,12 +738,11 @@ class Configure(config.base.Configure):
     if 'with-shared-ld' in self.framework.argDB:
       yield (self.framework.argDB['with-shared-ld'], [], 'so')
     # C compiler default
-    yield (self.framework.argDB['CC'], ['-shared'], 'so')
+    yield (self.CC, ['-shared'], 'so')
     # Mac OSX
-    #self.framework.CC -bundle -flat_namespace -undefined suppress .so
-    #self.framework.CC -dynamiclib -flat_namespace -undefined suppress -single_module .dylib
     # undefined warning must also have flat_namespace
     yield ('libtool', ['-noprebind','-dynamic','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
+    #yield (self.CC, ['-dynamiclib', '-flat_namespace', '-undefined warning', '-multiply_defined suppress', '-single_module'], 'dylib')
     # Default to static linker
     self.framework.argDB['with-shared'] = 0
     self.framework.argDB['LD_SHARED'] = ''
@@ -750,20 +756,15 @@ class Configure(config.base.Configure):
     for linker, flags, ext in self.generateSharedLinkerGuesses():
       self.logPrint('Checking shared linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'LD_SHARED'):
-        self.framework.argDB['LD_SHARED'] = self.LD_SHARED
         flagsArg = self.getLinkerFlagsArg()
-        oldFlags = self.framework.argDB[flagsArg]
         goodFlags = filter(self.checkLinkerFlag, flags)
         testMethod = 'foo'
-        self.framework.argDB[flagsArg] += ' '+' '.join(goodFlags)
-        self.sharedLinker = linker
+        self.sharedLinker = self.LD_SHARED
         self.sharedLibraryFlags = goodFlags
         self.sharedLibraryExt = ext
         if self.checkLink(includes = 'int '+testMethod+'(void) {return 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
           oldLibs = self.framework.argDB['LIBS']
           self.framework.argDB['LIBS'] += ' -L. -lconftest'
-          self.framework.argDB[flagsArg] = oldFlags
-          # Might need to segregate shared linker flags
           if self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);'):
             os.remove('libconftest.'+self.sharedLibraryExt)
             self.framework.argDB['LIBS'] = oldLibs
@@ -773,9 +774,7 @@ class Configure(config.base.Configure):
           self.framework.argDB['LIBS'] = oldLibs
           os.remove('libconftest.'+self.sharedLibraryExt)
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
-        self.framework.argDB[flagsArg] = oldFlags
         del self.LD_SHARED
-        del self.framework.argDB['LD_SHARED']
     return
 
   def checkLinkerFlag(self, flag):
@@ -871,6 +870,63 @@ class Configure(config.base.Configure):
     self.logPrint('*** WARNING *** Shared linking may not function on this architecture')
     raise RuntimeError('Shared linking may not function on this architecture')
 
+  def generateDynamicLinkerGuesses(self):
+    if not self.framework.argDB['with-dynamic']:
+      return
+    if 'with-dynamic-ld' in self.framework.argDB:
+      yield (self.framework.argDB['with-dynamic-ld'], [], 'so')
+    # Shared default
+    yield (self.sharedLinker, self.sharedLibraryFlags, 'so')
+    # Mac OSX
+    yield (self.CC, ['-bundle', '-flat_namespace', '-undefined warning', '-multiply_defined suppress'], 'so')
+    raise RuntimeError('Unable to find working dynamic linker')
+
+  def checkDynamicLinker(self):
+    '''Check that the linker can produce dynamic libraries'''
+    self.dynamicLibraries = 0
+    if not self.headers.check('dlfcn.h'):
+      self.logPrint('Dynamic libraries disabled since dlfcn.h was missing')
+      return
+    if not self.libraries.add('dl', ['dlopen', 'dlsym', 'dlclose']):
+      if not self.libraries.check('', ['dlopen', 'dlsym', 'dlclose']):
+        self.logPrint('Dynamic linking disabled since functions dlopen(), dlsym(), and dlclose() were not found')
+        return
+    for linker, flags, ext in self.generateDynamicLinkerGuesses():
+      self.logPrint('Checking dynamic linker '+linker+' using flags '+str(flags))
+      if self.getExecutable(linker, resultName = 'dynamicLinker'):
+        flagsArg = self.getLinkerFlagsArg()
+        goodFlags = filter(self.checkLinkerFlag, flags)
+        self.dynamicLibraryFlags = goodFlags
+        self.dynamicLibraryExt = ext
+        testMethod = 'foo'
+        if self.checkLink(includes = 'int '+testMethod+'(void) {return 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 'dynamic'):
+          code = '''
+void *handle = dlopen("./libconftest.so", 0);
+int (*foo)(void) = (int (*)(void)) dlsym(handle, "foo");
+
+if (!foo) {
+  printf("%s\\n", dlerror());
+  return -1;
+}
+if ((*foo)()) {
+  printf("Invalid return from foo()\\n");
+  return -1;
+}
+if (dlclose(handle)) {
+  printf("Could not close library\\n");
+  return -1;
+}
+'''
+          if self.checkLink(includes = '#include<dlfcn.h>', body = code):
+            os.remove('libconftest.'+self.dynamicLibraryExt)
+            self.dynamicLibraries = 1
+            self.logPrint('Using dynamic linker '+self.dynamicLinker+' with flags '+str(self.dynamicLibraryFlags)+' and library extension '+self.dynamicLibraryExt)
+            break
+          os.remove('libconftest.'+self.dynamicLibraryExt)
+        if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
+        del self.dynamicLinker
+    return
+
   def output(self):
     '''Output module data as defines and substitutions'''
     if 'CC' in self.framework.argDB:
@@ -918,6 +974,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkSharedLinkerPaths)
     if self.framework.argDB['with-shared']:
       self.executeTest(self.checkLibC)
+    self.executeTest(self.checkDynamicLinker)
     self.executeTest(self.output)
     return
 

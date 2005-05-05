@@ -19,8 +19,45 @@ class Configure(config.base.Configure):
     return
 
   def getLibArgument(self, library):
-    '''Using the method from config.compilers'''
-    return self.compilers.getLibArgument(library)
+    '''Return the proper link line argument for the given filename library
+      - If the path is empty, return it unchanged
+      - If the path ends in ".lib" return it unchanged
+      - If the path ends in ".so" return it unchanged       
+      - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name>
+      - If the filename is "lib"<name>, return -l<name>
+      - If the path is absolute, return it unchanged
+      - If the filename is <dir>/<name>.so, it remains unchanged
+      - If starts with - then return unchanged
+      - Otherwise return -l<library>'''
+    if not library:
+      return ''
+    if library.startswith('${CC_LINKER_SLFLAG}'):
+      return library
+    if library.startswith('${FC_LINKER_SLFLAG}'):
+      return library
+    if library.lstrip()[0] == '-':
+      return library
+    if len(library) > 3 and library[-4:] == '.lib':
+      return library
+    if os.path.basename(library).startswith('lib'):
+      import config.libraries
+      name = config.libraries.Configure.getLibName(library)
+      if ((len(library) > 2 and library[1] == ':') or os.path.isabs(library)):
+        flagName  = self.language[-1].replace('+', 'x')+'SharedLinkerFlag'
+        flagSubst = self.language[-1].replace('+', 'x').upper()+'_LINKER_SLFLAG'
+        if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
+          return getattr(self.setCompilers, flagName)+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
+        if flagSubst in self.framework.argDB:
+          return self.framework.argDB[flagSubst]+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
+        else:
+          return '-L'+os.path.dirname(library)+' -l'+name
+      else:
+        return '-l'+name
+    if os.path.splitext(library)[1] == '.so':
+      return library
+    if os.path.isabs(library):
+      return library
+    return '-l'+library
 
   def getLibName(library):
     if os.path.basename(library).startswith('lib'):

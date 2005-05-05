@@ -277,6 +277,16 @@ class Configure(script.Script):
   def getSharedLinkerFlags(self):
     return self.framework.getSharedLinkerObject(self.language[-1]).getFlags()
 
+  def getDynamicLinker(self):
+    linker            = self.framework.getDynamicLinkerObject(self.language[-1])
+    linker.checkSetup()
+    self.linkerSource = 'conftest'+linker.sourceExtension
+    self.linkerObj    = linker.getTarget(self.linkerSource,1)
+    return linker.getProcessor()
+
+  def getDynamicLinkerFlags(self):
+    return self.framework.getDynamicLinkerObject(self.language[-1]).getFlags()
+
   def getPreprocessorCmd(self):
     self.getCompiler()
     preprocessor = self.framework.getPreprocessorObject(self.language[-1])
@@ -298,6 +308,12 @@ class Configure(script.Script):
   def getSharedLinkerCmd(self):
     self.getSharedLinker()
     linker = self.framework.getSharedLinkerObject(self.language[-1])
+    linker.checkSetup()
+    return linker.getCommand(self.linkerSource, self.linkerObj)
+
+  def getDynamicLinkerCmd(self):
+    self.getDynamicLinker()
+    linker = self.framework.getDynamicLinkerObject(self.language[-1])
     linker.checkSetup()
     return linker.getCommand(self.linkerSource, self.linkerObj)
 
@@ -430,7 +446,9 @@ class Configure(script.Script):
       return (out, ret)
 
     cleanup = cleanup and self.framework.cleanup
-    if shared:
+    if shared == 'dynamic':
+      cmd = self.getDynamicLinkerCmd()
+    elif shared:
       cmd = self.getSharedLinkerCmd()
     else:
       cmd = self.getLinkerCmd()

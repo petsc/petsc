@@ -284,16 +284,17 @@ class OutputFiles(dict):
 
 class LanguageProcessor(args.ArgumentProcessor):
   def __init__(self, clArgs = None, argDB = None, framework = None, versionControl = None):
-    self.languageModule     = {}
-    self.preprocessorObject = {}
-    self.compilerObject     = {}
-    self.linkerObject       = {}
-    self.sharedLinkerObject = {}
-    self.framework          = framework
-    self.versionControl     = versionControl
+    self.languageModule      = {}
+    self.preprocessorObject  = {}
+    self.compilerObject      = {}
+    self.linkerObject        = {}
+    self.sharedLinkerObject  = {}
+    self.dynamicLinkerObject = {}
+    self.framework           = framework
+    self.versionControl      = versionControl
     args.ArgumentProcessor.__init__(self, clArgs, argDB)
-    self.outputFiles        = OutputFiles()
-    self.modulePath         = 'config.compile'
+    self.outputFiles         = OutputFiles()
+    self.modulePath          = 'config.compile'
     return
 
   def getCompilers(self):
@@ -313,7 +314,7 @@ class LanguageProcessor(args.ArgumentProcessor):
       d = args.ArgumentProcessor.__getstate__(self)
     if 'languageModule' in d:
       d['languageModule'] = dict([(lang,mod._loadName) for lang,mod in d['languageModule'].items()])
-    for member in ['preprocessorObject', 'compilerObject', 'linkerObject', 'sharedLinkerObject', 'framework']:
+    for member in ['preprocessorObject', 'compilerObject', 'linkerObject', 'sharedLinkerObject', 'dynamicLinkerObject', 'framework']:
       del d[member]
     return d
 
@@ -322,10 +323,11 @@ class LanguageProcessor(args.ArgumentProcessor):
     args.ArgumentProcessor.__setstate__(self, d)
     self.__dict__.update(d)
     [self.getLanguageModule(language, moduleName) for language,moduleName in self.languageModule.items()]
-    self.preprocessorObject = {}
-    self.compilerObject     = {}
-    self.linkerObject       = {}
-    self.sharedLinkerObject = {}
+    self.preprocessorObject  = {}
+    self.compilerObject      = {}
+    self.linkerObject        = {}
+    self.sharedLinkerObject  = {}
+    self.dynamicLinkerObject = {}
     return
 
   def setArgDB(self, argDB):
@@ -342,6 +344,9 @@ class LanguageProcessor(args.ArgumentProcessor):
     for obj in self.sharedLinkerObject.values():
       if not hasattr(obj, 'argDB') or not obj.argDB == argDB:
         obj.argDB = argDB
+    for obj in self.dynamicLinkerObject.values():
+      if not hasattr(obj, 'argDB') or not obj.argDB == argDB:
+        obj.argDB = argDB
     if not self.compilers is None:
       self.compilers.argDB = argDB
       for obj in self.preprocessorObject.values():
@@ -356,12 +361,18 @@ class LanguageProcessor(args.ArgumentProcessor):
       for obj in self.sharedLinkerObject.values():
         if hasattr(obj, 'configCompilers'):
           obj.configCompilers.argDB = argDB
+      for obj in self.dynamicLinkerObject.values():
+        if hasattr(obj, 'configCompilers'):
+          obj.configCompilers.argDB = argDB
     if not self.libraries is None:
       self.libraries.argDB = argDB
       for obj in self.linkerObject.values():
         if hasattr(obj, 'configLibraries'):
           obj.configLibraries.argDB = argDB
       for obj in self.sharedLinkerObject.values():
+        if hasattr(obj, 'configLibraries'):
+          obj.configLibraries.argDB = argDB
+      for obj in self.dynamicLinkerObject.values():
         if hasattr(obj, 'configLibraries'):
           obj.configLibraries.argDB = argDB
     return
@@ -464,3 +475,21 @@ class LanguageProcessor(args.ArgumentProcessor):
     language = self.normalizeLanguage(language)
     self.sharedLinkerObject[language] = linker
     return self.getSharedLinkerObject(language)
+
+  def getDynamicLinkerObject(self, language):
+    language = self.normalizeLanguage(language)
+    if not language in self.dynamicLinkerObject:
+      self.dynamicLinkerObject[language] = self.getLanguageModule(language).DynamicLinker(self.argDB)
+      self.dynamicLinkerObject[language].setup()
+    if not self.compilers is None:
+      self.dynamicLinkerObject[language].configCompilers = self.compilers
+    if not self.libraries is None:
+      self.dynamicLinkerObject[language].configLibraries = self.libraries
+    if not self.versionControl is None:
+      self.dynamicLinkerObject[language].versionControl  = self.versionControl
+    return self.dynamicLinkerObject[language]
+
+  def setDynamicLinkerObject(self, language, linker):
+    language = self.normalizeLanguage(language)
+    self.dynamicLinkerObject[language] = linker
+    return self.getDynamicLinkerObject(language)
