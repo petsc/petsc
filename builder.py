@@ -412,6 +412,39 @@ class Builder(logging.Logger):
     command = obj.getCommand(source, target)
     return command
 
+  def getDynamicLinker(self):
+    linker = self.getLanguageProcessor().getDynamicLinkerObject(self.language[-1])
+    linker.checkSetup()
+    return linker.getProcessor()
+
+  def getDynamicLinkerFlags(self):
+    return self.getLanguageProcessor().getDynamicLinkerObject(self.language[-1]).getFlags()
+
+  def setDynamicLinkerFlags(self, flags):
+    return self.getLanguageProcessor().getDynamicLinkerObject(self.language[-1]).setFlags(flags)
+
+  def getDynamicLinkerExtraArguments(self):
+    return self.getLanguageProcessor().getDynamicLinkerObject(self.language[-1]).getExtraArguments()
+
+  def setDynamicLinkerExtraArguments(self, args):
+    return self.getLanguageProcessor().getDynamicLinkerObject(self.language[-1]).setExtraArguments(args)
+
+  def getDynamicLinkerTarget(self, source, shared, prefix = 'lib'):
+    return self.getLanguageProcessor().getDynamicLinkerObject(self.language[-1]).getTarget(source, shared, prefix)
+
+  def getDynamicLinkerObject(self):
+    compiler = self.getLanguageProcessor().getDynamicLinkerObject(self.language[-1])
+    compiler.checkSetup()
+    return compiler
+
+  def getDynamicLinkerCommand(self, source, target = None):
+    self.getLinker()
+    obj = self.getLanguageProcessor().getDynamicLinkerObject(self.language[-1])
+    if target is None:
+      target = self.getLinkerTarget(source[0], shared = 1)
+    command = obj.getCommand(source, target)
+    return command
+
   def link(self, source, target = None, shared = 0):
     def check(command, status, output, error):
       if error or status:

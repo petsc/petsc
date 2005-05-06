@@ -11,6 +11,7 @@ class Make(script.Script):
 
     if clArgs is None:
       clArgs = sys.argv[1:]
+    self.logName = 'build.log'
     script.Script.__init__(self, clArgs, RDict.RDict())
     if builder is None:
       import sourceDatabase
@@ -18,10 +19,12 @@ class Make(script.Script):
 
       self.framework = config.framework.Framework(self.clArgs+['-noOutput'], self.argDB)
       self.framework.setConfigureParent(configureParent)
+      self.framework.logName = self.logName
       self.builder   = __import__('builder').Builder(self.framework, sourceDatabase.SourceDB(self.root))
     else:
       self.builder   = builder
       self.framework = builder.framework
+      self.framework.logName = self.logName
     self.configureMod = None
     self.builder.pushLanguage('C')
     return
@@ -237,6 +240,7 @@ class BasicMake(Make):
       self.root = os.getcwd()
     Make.__init__(self)
     self.lib = {}
+    self.dylib = {}
     self.bin = {}
     return
 
@@ -307,6 +311,22 @@ class BasicMake(Make):
       self.lib[lib.name] = lib
     return
 
+  def getImplicitDynamicLibraries(self):
+    import sys
+    d = sys.modules['__main__']
+    for name in dir(d):
+      if not name.startswith('dylib_'):
+        continue
+      func = getattr(d, name)
+      lib = struct()
+      lib.name, lib.src = self.parseDocString(func.__doc__, name[4:])
+      lib.includes, lib.libs = func(self)
+      lib.configuration = name[6:]
+      self.logPrint('Found configuration '+lib.configuration+' for dynamic library '+lib.name)
+      self.logPrint('  includes '+str(lib.includes)+' libraries '+str(lib.libs))
+      self.dylib[lib.name] = lib
+    return
+
   def getImplicitExecutables(self):
     import sys
     d = sys.modules['__main__']
@@ -324,7 +344,7 @@ class BasicMake(Make):
   def setupDirectories(self, builder):
     '''Determine the directories for source includes, libraries, and binaries'''
     languages = sets.Set()
-    [languages.update(lib.src.keys()) for lib in self.lib.values()]
+    [languages.update(lib.src.keys()) for lib in self.lib.values()+self.dylib.values()]
     self.srcDir = {}
     self.includeDir = {}
     for language in languages:
@@ -354,6 +374,34 @@ class BasicMake(Make):
         else:
           self.logPrint('  Adding library '+os.path.join(self.libDir, l.name+'.'+self.setCompilers.sharedLibraryExt))
           linker.libraries.add(os.path.join(self.libDir, l.name+'.'+self.setCompilers.sharedLibraryExt))
+      linker.libraries.update(self.compilers.flibs)
+      if self.libraries.math:
+        linker.libraries.update(self.libraries.math)
+      if self.setCompilers.explicitLibc:
+        linker.libraries.update(self.setCompilers.explicitLibc)
+      builder.popConfiguration()
+    return
+
+  def setupDynamicLibraries(self, builder):
+    '''Configures the builder for dynamic libraries'''
+    for lib in self.dylib.values():
+      self.logPrint('Configuring dynamic library '+lib.name)
+      languages = sets.Set(lib.src.keys())
+      builder.pushConfiguration(lib.configuration)
+      for language in languages:
+        builder.pushLanguage(language)
+        compiler = builder.getCompilerObject()
+        self.logPrint('  Adding includes '+str(lib.includes))
+        compiler.includeDirectories.update(lib.includes)
+        builder.popLanguage()
+      linker = builder.getDynamicLinkerObject()
+      for l in lib.libs:
+        if isinstance(l, str):
+          self.logPrint('  Adding library '+str(l))
+          linker.libraries.add(l)
+        else:
+          self.logPrint('  Adding library '+os.path.join(self.libDir, l.name+'.'+self.setCompilers.dynamicLibraryExt))
+          linker.libraries.add(os.path.join(self.libDir, l.name+'.'+self.setCompilers.dynamicLibraryExt))
       linker.libraries.update(self.compilers.flibs)
       if self.libraries.math:
         linker.libraries.update(self.libraries.math)
@@ -419,6 +467,23 @@ class BasicMake(Make):
       builder.popConfiguration()
     return
 
+  def buildDynamicLibraries(self, builder):
+    '''Builds the dynamic libraries'''
+    for lib in self.dylib.values():
+      self.logPrint('Building dynamic library: '+lib.name)
+      builder.pushConfiguration(lib.configuration)
+      objects = []
+      for language in lib.src:
+        builder.pushLanguage(language)
+        sources = [os.path.join(self.srcDir, self.srcDir[language], f) for f in lib.src[language]]
+        for f in sources:
+          builder.compile([f])
+        objects.extend([self.builder.getCompilerTarget(f) for f in sources])
+        builder.popLanguage()
+        builder.link(objects, os.path.join(self.libDir, lib.name+'.'+self.setCompilers.dynamicLibraryExt), shared = 'dynamic')
+      builder.popConfiguration()
+    return
+
   def buildExecutables(self, builder):
     '''Builds the executables'''
     for bin in self.bin.values():
@@ -438,9 +503,11 @@ class BasicMake(Make):
 
   def setupBuild(self, builder):
     self.getImplicitLibraries()
+    self.getImplicitDynamicLibraries()
     self.getImplicitExecutables()
     self.executeSection(self.setupDirectories, builder)
     self.executeSection(self.setupLibraries, builder)
+    self.executeSection(self.setupDynamicLibraries, builder)
     self.executeSection(self.setupExecutables, builder)
     return
 
@@ -450,6 +517,7 @@ class BasicMake(Make):
       return
     self.executeSection(self.buildDirectories, builder)
     self.executeSection(self.buildLibraries, builder)
+    self.executeSection(self.buildDynamicLibraries, builder)
     self.executeSection(self.buildExecutables, builder)
     return
 
