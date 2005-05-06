@@ -9,6 +9,12 @@
    if the appropriate (usually .petschistory) file.
 */
 extern FILE *petsc_history;
+/*
+     Allows one to overwrite where standard out is sent. For example
+     PETSC_STDOUTPUT = fopen("/dev/ttyXX","w") will cause all standard out
+     writes to go to terminal XX; assuming you have write permission there
+*/
+FILE *PETSC_STDOUT = stdout;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFormatConvert"
@@ -68,6 +74,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *f
 #undef __FUNCT__  
 #define __FUNCT__ "PetscVFPrintf"
 /* 
+   All PETSc standard out and error messages are sent through this function; so, in theory, this can
+   can be replaced with something that does not simply write to a file. 
+
+   Note: For error messages this may be called by a process, for regular standard out it is
+   called only by process 0 of a given communicator
+
    No error handling because may be called by error handler
 */
 PetscErrorCode PETSC_DLLEXPORT PetscVFPrintf(FILE *fd,const char *format,va_list Argp)
@@ -130,11 +142,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const char 
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-    ierr = PetscVFPrintf(stdout,format,Argp);CHKERRQ(ierr);
-    fflush(stdout);
+    ierr = PetscVFPrintf(PETSC_STDOUT,format,Argp);CHKERRQ(ierr);
     if (petsc_history) {
       ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
-      fflush(petsc_history);
     }
     va_end(Argp);
   } else { /* other processors add to local queue */
@@ -195,11 +205,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,c
     va_list Argp;
     va_start(Argp,format);
     ierr = PetscVFPrintf(fp,format,Argp);CHKERRQ(ierr);
-    fflush(fp);
     queuefile = fp;
     if (petsc_history) {
       ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
-      fflush(petsc_history);
     }
     va_end(Argp);
   } else { /* other processors add to local queue */
@@ -255,20 +263,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
     if (queuefile) {
       fd = queuefile;
     } else {
-      fd = stdout;
+      fd = PETSC_STDOUT;
     }
     for (i=1; i<size; i++) {
       ierr = MPI_Recv(&n,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
       for (j=0; j<n; j++) {
         ierr = MPI_Recv(message,QUEUESTRINGSIZE,MPI_CHAR,i,tag,comm,&status);CHKERRQ(ierr);
-        fprintf(fd,"%s",message);
-        if (petsc_history) {
-          fprintf(petsc_history,"%s",message);
-        }
+        ierr = PetscFPrintf(comm,fd,"%s",message);
       }
     }
-    fflush(fd);
-    if (petsc_history) fflush(petsc_history);
     queuefile = PETSC_NULL;
   } else { /* other processors send queue to processor 0 */
     PrintfQueue next = queuebase,previous;
@@ -324,10 +327,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFPrintf(MPI_Comm comm,FILE* fd,const char fo
     va_list Argp;
     va_start(Argp,format);
     ierr = PetscVFPrintf(fd,format,Argp);CHKERRQ(ierr);
-    fflush(fd);
     if (petsc_history) {
       ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
-      fflush(petsc_history);
     }
     va_end(Argp);
   }
@@ -396,11 +397,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscPrintf(MPI_Comm comm,const char format[],...
     } else {
       nformat = (char*)format;
     }
-    ierr = PetscVFPrintf(stdout,nformat,Argp);CHKERRQ(ierr);
-    fflush(stdout);
+    ierr = PetscVFPrintf(PETSC_STDOUT,nformat,Argp);CHKERRQ(ierr);
     if (petsc_history) {
       ierr = PetscVFPrintf(petsc_history,nformat,Argp);CHKERRQ(ierr);
-      fflush(petsc_history);
     }
     va_end(Argp);
     if (sub1) {ierr = PetscFree(nformat);CHKERRQ(ierr);}
@@ -422,11 +421,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscHelpPrintfDefault(MPI_Comm comm,const char f
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-    ierr = PetscVFPrintf(stdout,format,Argp);CHKERRQ(ierr);
-    fflush(stdout);
+    ierr = PetscVFPrintf(PETSC_STDOUT,format,Argp);CHKERRQ(ierr);
     if (petsc_history) {
-      PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
-      fflush(petsc_history);
+      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
     }
     va_end(Argp);
   }
@@ -492,7 +489,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
     if (use_stderr) {
       fd = stderr;
     } else {
-      fd = stdout;
+      fd = PETSC_STDOUT;
     }
 
     /*
@@ -510,31 +507,26 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
     
     ierr = PetscGetVersion(&version);CHKERRQ(ierr);
 
-    fprintf(fd,"--------------------------------------------\
-------------------------------\n");
-    fprintf(fd,"%s\n",version);
-    fprintf(fd,"See docs/changes/index.html for recent updates.\n");
-    fprintf(fd,"See docs/faq.html for hints about trouble shooting.\n");
-    fprintf(fd,"See docs/index.html for manual pages.\n");
-    fprintf(fd,"--------------------------------------------\
----------------------------\n");
+    PetscFPrintf(PETSC_COMM_SELF,fd,"------------------------------------------------------------------------\n");
+    PetscFPrintf(PETSC_COMM_SELF,fd,"%s\n",version);
+    PetscFPrintf(PETSC_COMM_SELF,fd,"See docs/changes/index.html for recent updates.\n");
+    PetscFPrintf(PETSC_COMM_SELF,fd,"See docs/faq.html for hints about trouble shooting.\n");
+    PetscFPrintf(PETSC_COMM_SELF,fd,"See docs/index.html for manual pages.\n");
+    PetscFPrintf(PETSC_COMM_SELF,fd,"------------------------------------------------------------------------\n");
     if (PetscErrorPrintfInitializeCalled) {
-      fprintf(fd,"%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
+      PetscFPrintf(PETSC_COMM_SELF,fd,"%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
     }
-    fprintf(fd,"Libraries linked from %s\n",PETSC_LIB_DIR);
-    fprintf(fd,"Configure run at %s\n",petscconfigureruntime);
-    fprintf(fd,"Configure options %s\n",petscconfigureoptions);
-    fprintf(fd,"--------------------------------------------\
----------------------------\n");
-    fflush(fd);
+    PetscFPrintf(PETSC_COMM_SELF,fd,"Libraries linked from %s\n",PETSC_LIB_DIR);
+    PetscFPrintf(PETSC_COMM_SELF,fd,"Configure run at %s\n",petscconfigureruntime);
+    PetscFPrintf(PETSC_COMM_SELF,fd,"Configure options %s\n",petscconfigureoptions);
+    PetscFPrintf(PETSC_COMM_SELF,fd,"------------------------------------------------------------------------\n");
     InPetscErrorPrintfDefault = PETSC_FALSE;
   }
 
   if (!InPetscErrorPrintfDefault) {
+    PetscFPrintf(PETSC_COMM_SELF,fd,"[%d]PETSC ERROR: ",PetscGlobalRank);
     va_start(Argp,format);
-    fprintf(fd,"[%d]PETSC ERROR: ",PetscGlobalRank);
     PetscVFPrintf(fd,format,Argp);
-    fflush(fd);
     va_end(Argp);
   }
   return 0;

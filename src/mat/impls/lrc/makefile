@@ -3,14 +3,14 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = normm.c
+SOURCEC  = lrc.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = normm.o
+OBJSC    = lrc.o
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
-LOCDIR   = src/mat/impls/normal/
+LOCDIR   = src/mat/impls/lrc/
 MANSEC   = Mat
 
 include ${PETSC_DIR}/bmake/common/base

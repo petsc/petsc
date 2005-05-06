@@ -1,117 +1,112 @@
 #define PETSCMAT_DLL
 
 #include "src/mat/matimpl.h"          /*I "petscmat.h" I*/
+#include "src/mat/impls/dense/seq/dense.h"
 
 typedef struct {
-  Mat A;
-  Vec w;
-} Mat_Normal;
+  Mat         A,U,V;
+  Vec         work1,work2;/* Sequential (big) vectors that hold partial products */
+  PetscMPIInt nwork;      /* length of work vectors */
+} Mat_LRC;
+
+
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMult_Normal"
-PetscErrorCode MatMult_Normal(Mat N,Vec x,Vec y)
+#define __FUNCT__ "MatMult_LRC"
+PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
 {
-  Mat_Normal     *Na = (Mat_Normal*)N->data;
+  Mat_LRC        *Na = (Mat_LRC*)N->data;
   PetscErrorCode ierr;
-
+  PetscScalar    *w1,*w2;
+  
   PetscFunctionBegin;
-  ierr = MatMult(Na->A,x,Na->w);CHKERRQ(ierr);
-  ierr = MatMultTranspose(Na->A,Na->w,y);CHKERRQ(ierr);
+  ierr = MatMult(Na->A,x,y);CHKERRQ(ierr);
+
+  /* multiply the local part of V with the local part of x */
+  /* note in this call x is treated as a sequential vector  */
+  ierr = MatMultTranspose_SeqDense(Na->V,x,Na->work1);CHKERRQ(ierr);
+
+  /* Form the sum of all the local multiplies : this is work2 = V'*x =
+     sum_{all processors} work1 */
+
+  ierr = VecGetArray(Na->work1,&w1);CHKERRQ(ierr);
+  ierr = VecGetArray(Na->work2,&w2);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(w1,w2,Na->nwork,MPIU_SCALAR,PetscSum_Op,N->comm);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Na->work1,&w1);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Na->work2,&w2);CHKERRQ(ierr);
+
+  /* multiply-sub y = y  + U*work2 */
+  /* note in this call y is treated as a sequential vector  */
+  ierr = MatMultAdd_SeqDense(Na->U,Na->work2,y,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_Normal"
-PetscErrorCode MatDestroy_Normal(Mat N)
+#define __FUNCT__ "MatDestroy_LRC"
+PetscErrorCode MatDestroy_LRC(Mat N)
 {
-  Mat_Normal     *Na = (Mat_Normal*)N->data;
+  Mat_LRC        *Na = (Mat_LRC*)N->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectDereference((PetscObject)Na->A);CHKERRQ(ierr);
-  ierr = VecDestroy(Na->w);CHKERRQ(ierr);
+  ierr = PetscObjectDereference((PetscObject)Na->U);CHKERRQ(ierr);
+  ierr = PetscObjectDereference((PetscObject)Na->V);CHKERRQ(ierr);
+  ierr = VecDestroy(Na->work1);CHKERRQ(ierr);
+  ierr = VecDestroy(Na->work2);CHKERRQ(ierr);
   ierr = PetscFree(Na);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
   
-/*
-      Slow, nonscalable version
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetDiagonal_Normal"
-PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
-{
-  Mat_Normal        *Na = (Mat_Normal*)N->data;
-  Mat               A = Na->A;
-  PetscErrorCode    ierr;
-  PetscInt          i,j,rstart,rend,nnz;
-  const PetscInt    *cols;
-  PetscScalar       *diag,*work,*values;
-  const PetscScalar *mvalues;
-  PetscMap          cmap;
-
-  PetscFunctionBegin;
-  ierr = PetscMalloc(2*A->N*sizeof(PetscScalar),&diag);CHKERRQ(ierr);
-  work = diag + A->N;
-  ierr = PetscMemzero(work,A->N*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++) {
-    ierr = MatGetRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
-    for (j=0; j<nnz; j++) {
-      work[cols[j]] += mvalues[j]*mvalues[j];
-    }
-    ierr = MatRestoreRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
-  }
-  ierr = MPI_Allreduce(work,diag,A->N,MPIU_SCALAR,MPI_SUM,N->comm);CHKERRQ(ierr);
-  ierr = MatGetPetscMaps(A,PETSC_NULL,&cmap);CHKERRQ(ierr);
-  ierr = PetscMapGetLocalRange(cmap,&rstart,&rend);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&values);CHKERRQ(ierr);
-  ierr = PetscMemcpy(values,diag+rstart,(rend-rstart)*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = VecRestoreArray(v,&values);CHKERRQ(ierr);
-  ierr = PetscFree(diag);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatCreateNormal"
+#define __FUNCT__ "MatCreateLRC"
 /*@
-      MatCreateNormal - Creates a new matrix object that behaves like A'*A.
+      MatCreateLRC - Creates a new matrix object that behaves like A + U*V'
 
    Collective on Mat
 
    Input Parameter:
-.   A  - the (possibly rectangular) matrix
++   A  - the (sparse) matrix
+-   U. V - two dense rectangular (tall and skinny) matrices
 
    Output Parameter:
-.   N - the matrix that represents A'*A
+.   N - the matrix that represents A + U*V'
 
    Level: intermediate
 
-   Notes: The product A'*A is NOT actually formed! Rather the new matrix
+   Notes: The matrix A + U*V' formed! Rather the new matrix
           object performs the matrix-vector product by first multiplying by
-          A and then A'
+          A and then adding the other term
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat A,Mat *N)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateLRC(Mat A,Mat U, Mat V,Mat *N)
 {
   PetscErrorCode ierr;
   PetscInt       m,n;
-  Mat_Normal     *Na;  
+  Mat_LRC        *Na;  
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatCreate(A->comm,N);CHKERRQ(ierr);
   ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)*N,MATNORMAL);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)*N,MATLRC);CHKERRQ(ierr);
   
-  ierr      = PetscNew(Mat_Normal,&Na);CHKERRQ(ierr);
+  ierr      = PetscNew(Mat_LRC,&Na);CHKERRQ(ierr);
   Na->A     = A;
+
+  ierr      = MatDenseGetLocalMatrix(U,&Na->U);CHKERRQ(ierr);
+  ierr      = MatDenseGetLocalMatrix(V,&Na->V);CHKERRQ(ierr);
   ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  ierr      = PetscObjectReference((PetscObject)Na->U);CHKERRQ(ierr);
+  ierr      = PetscObjectReference((PetscObject)Na->V);CHKERRQ(ierr);
   (*N)->data = (void*) Na;
 
-  ierr    = VecCreateMPI(A->comm,m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);
-  (*N)->ops->destroy     = MatDestroy_Normal;
-  (*N)->ops->mult        = MatMult_Normal;
-  (*N)->ops->getdiagonal = MatGetDiagonal_Normal;
+  ierr                   = VecCreateSeq(PETSC_COMM_SELF,U->N,&Na->work1);CHKERRQ(ierr);
+  ierr                   = VecDuplicate(Na->work1,&Na->work2);CHKERRQ(ierr);
+  Na->nwork              = U->N;
+
+  (*N)->ops->destroy     = MatDestroy_LRC;
+  (*N)->ops->mult        = MatMult_LRC;
   (*N)->assembled        = PETSC_TRUE;
   (*N)->N                = A->N;
   (*N)->M                = A->N;

@@ -14,7 +14,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		   ex62.c ex64.c ex65.c ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c \
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c ex86.c ex87.c \
                    ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c ex99.c ex100.c \
-                   ex101.c
+                   ex101.c ex102.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F
 
 include ${PETSC_DIR}/bmake/common/base
@@ -376,6 +376,10 @@ ex100: ex100.o chkopts
 ex101: ex101.o chkopts
 	-${CLINKER} -o ex101 ex101.o ${PETSC_MAT_LIB}
 	${RM} ex101.o
+
+ex102: ex102.o chkopts
+	-${CLINKER} -o ex102 ex102.o ${PETSC_MAT_LIB}
+	${RM} ex102.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -953,7 +957,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PET
                                  ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm ex16.PETSc runex16 \
                                  ex16.rm ex55.PETSc runex55 runex55_2 ex55.rm ex59.PETSc runex59 runex59_2 runex59_3 \
                                  ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
-                                 ex65.rm ex66.PETSc ex66.rm ex98.PETSc runex98 ex98.rm
+                                 ex65.rm ex66.PETSc ex66.rm ex98.PETSc runex98 ex98.rm ex102.PETSc ex102.rm
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \

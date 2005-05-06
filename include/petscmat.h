@@ -52,6 +52,7 @@ E*/
 #define MATDAAD            "daad"
 #define MATMFFD            "mffd"
 #define MATNORMAL          "normal"
+#define MATLRC             "lrc"
 #define MATSEQAIJSPOOLES   "seqaijspooles"
 #define MATMPIAIJSPOOLES   "mpiaijspooles"
 #define MATSEQSBAIJSPOOLES "seqsbaijspooles"
@@ -249,6 +250,7 @@ PetscPolymorphicFunction(MatCreateShell,(PetscInt m,PetscInt n,PetscInt M,PetscI
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateAdic(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,void (*)(void),Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat,Mat*);
 PetscPolymorphicFunction(MatCreateNormal,(Mat mat),(mat,&A),Mat,A)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateLRC(Mat,Mat,Mat,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat);
 
@@ -873,6 +875,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJGetSeqBAIJ(Mat,Mat*,Mat*,Pets
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAdicSetLocalFunction(Mat,void (*)(void));
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetLDA(Mat,PetscInt);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDenseGetLocalMatrix(Mat,Mat*);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues(Mat);
