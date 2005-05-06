@@ -173,11 +173,11 @@ class Configure(config.base.Configure):
 
   def checkCxxLibraries(self):
     '''Determines the libraries needed to link with C++'''
-    oldFlags = self.framework.argDB['LDFLAGS']
-    self.framework.argDB['LDFLAGS'] += ' -v'
+    oldFlags = self.setCompilers.LDFLAGS
+    self.setCompilers.LDFLAGS += ' -v'
     self.pushLanguage('Cxx')
     (output, returnCode) = self.outputLink('', '')
-    self.framework.argDB['LDFLAGS'] = oldFlags
+    self.setCompilers.LDFLAGS = oldFlags
     self.popLanguage()
       
     # Parse output
