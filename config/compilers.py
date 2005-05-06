@@ -46,6 +46,7 @@ class Configure(config.base.Configure):
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.setCompilers = framework.require('config.setCompilers', self)
+    self.compilerFlags = framework.require('config.compilerFlags', self)
     self.libraries = framework.require('config.libraries', None)
     self.dispatchNames = self.getDispatchNames()
     return
