@@ -13,6 +13,11 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     return ''
+    
+  def setupHelp(self, help):
+    import nargs
+    help.addArgument('PETSc', '-with-petsc-dynamic', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic'))
+    return
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
@@ -22,10 +27,10 @@ class Configure(config.base.Configure):
 
   def configureDynamicLibraries(self):
     '''Checks whether dynamic libraries should be used, for which you must
-      - Specify --with-dynamic
+      - Specify --with-petsc-dynamic
       - Have found a working dynamic linker (with dlfcn.h and libdl)
     Defines PETSC_USE_DYNAMIC_LIBRARIES if they are used'''
-    self.useDynamic = self.shared.useShared and self.setCompilers.dynamicLibraries
+    self.useDynamic = self.argDB['with-petsc-dynamic'] and self.shared.useShared and self.setCompilers.dynamicLibraries
     if self.useDynamic:
       self.addDefine('USE_DYNAMIC_LIBRARIES', 1)
     else:
