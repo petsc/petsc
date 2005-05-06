@@ -188,7 +188,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag* bag,void *addr,PetscInt msize,co
   item->offset = ((char*)addr) - ((char*)bag);
   item->next   = 0;
   item->msize  = msize;
-  if (mdefault != addr) {
+  if (mdefault != (char*)addr) {
     ierr = PetscStrncpy((char*)addr,mdefault,msize-1);CHKERRQ(ierr);
   }
   if (!PetscBagInLoad) {

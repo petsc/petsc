@@ -9,6 +9,7 @@ This file is also used for the f2cblaslapack distribution.
 #define _BLASLAPACK_USCORE_H
 #include "petsc.h"
 PETSC_EXTERN_CXX_BEGIN
+EXTERN_C_BEGIN
 
 #if !defined(PETSC_USE_COMPLEX)
 # if defined(PETSC_USE_SINGLE)
@@ -85,8 +86,6 @@ PETSC_EXTERN_CXX_BEGIN
 # define LAPACKsygv_  zsygv_
 # define LAPACKsygvx_ zsygvx_
 #endif
-
-EXTERN_C_BEGIN
 
 EXTERN void LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);

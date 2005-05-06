@@ -13,6 +13,7 @@
 #define _BLASLAPACK_STDCALL_H
 #include "petsc.h"
 PETSC_EXTERN_CXX_BEGIN
+EXTERN_C_BEGIN
 
 #if !defined(PETSC_USE_COMPLEX)
 # if defined(PETSC_USES_FORTRAN_SINGLE) || defined(PETSC_USE_SINGLE)
@@ -155,8 +156,6 @@ EXTERN void PETSC_STDCALL                           ZSYGV(PetscBLASInt*,const ch
 EXTERN void PETSC_STDCALL                                                ZSYGVX(PetscBLASInt*,const char*,int,const char*,int,const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 # endif
 #endif
-
-EXTERN_C_BEGIN
 
 EXTERN void      PETSC_STDCALL LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void      PETSC_STDCALL LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);

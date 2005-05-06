@@ -8,6 +8,7 @@ This file also deals with unmangled Fortran 77 naming convention.
 #define _BLASLAPACK_C_H
 #include "petsc.h"
 PETSC_EXTERN_CXX_BEGIN
+EXTERN_C_BEGIN
 
 #if !defined(PETSC_USE_COMPLEX)
 # if defined(PETSC_USE_SINGLE)
@@ -88,8 +89,6 @@ PETSC_EXTERN_CXX_BEGIN
 # define LAPACKsygv_  zsygv
 # define LAPACKsygvx_ zsygvx
 #endif
-
-EXTERN_C_BEGIN
 
 EXTERN void LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKgetf2_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
