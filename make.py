@@ -139,35 +139,35 @@ class Make(maker.BasicMake):
       shutil.copy(os.path.join(self.srcDir['Python'], f), os.path.join(self.libDir, os.path.basename(f)))
     return
 
-def lib_Base(maker):
+def dylib_Base(maker):
   '''Base.c'''
   return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
-def lib_PetscViewer(maker):
+def dylib_PetscViewer(maker):
   '''PetscViewer.c'''
   return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
-def lib_PetscMap(maker):
+def dylib_PetscMap(maker):
   '''PetscMap.c'''
   return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
-def lib_Vec(maker):
+def dylib_Vec(maker):
   '''Vec.c'''
   return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
-def lib_Mat(maker):
+def dylib_Mat(maker):
   '''Mat.c'''
   return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
-def lib_PC(maker):
+def dylib_PC(maker):
   '''PC.c'''
   return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
-def lib_KSP(maker):
+def dylib_KSP(maker):
   '''KSP.c'''
   return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
-def lib_SNES(maker):
+def dylib_SNES(maker):
   '''SNES.c'''
   return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
