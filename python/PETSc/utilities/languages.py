@@ -30,12 +30,11 @@ class Configure(config.base.Configure):
   def configureScalarType(self):
     '''Choose between real and complex numbers'''
     self.scalartype = self.framework.argDB['with-scalar-type'].lower()
-    self.framework.logPrint('Scalar type is '+str(self.scalartype))
     if self.scalartype == 'complex':
-      self.framework.argDB['with-clanguage'] = 'Cxx'
       self.addDefine('USE_COMPLEX', '1')
     elif not self.scalartype == 'real':
       raise RuntimeError('--with-scalar-type must be real or complex')
+    self.framework.logPrint('Scalar type is '+str(self.scalartype))
     return
 
   def configurePrecision(self):
@@ -55,7 +54,9 @@ class Configure(config.base.Configure):
     self.clanguage = self.framework.argDB['with-clanguage'].upper().replace('+','x').replace('X','x')
     if not self.clanguage in ['C', 'Cxx']:
       raise RuntimeError('Invalid C language specified: '+str(self.clanguage))
-    if self.clanguage == 'C' and not ('download-prometheus' in self.framework.argDB and self.framework.argDB['download-prometheus']):
+    if self.scalartype == 'complex':
+      self.clanguage = 'Cxx'
+    if self.clanguage == 'C' and not self.framework.argDB['download-prometheus']:
       self.framework.argDB['with-cxx'] = '0'
     self.framework.logPrint('C language is '+str(self.clanguage))
     return

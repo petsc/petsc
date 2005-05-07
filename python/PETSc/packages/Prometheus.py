@@ -28,10 +28,7 @@ class Configure(PETSc.package.Package):
     alllibs = PETSc.package.Package.generateLibList(self,dir)
     import config.setCompilers
     if self.languages.clanguage == 'C':
-      self.framework.pushLanguage('C')
-      if config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
-        alllibs[0].append('-lstdc++')
-      self.framework.popLanguage()   
+      alllibs[0].extend(self.setCompilers.cxxlibs)
     return alllibs
 
   def Install(self):
@@ -48,7 +45,7 @@ class Configure(PETSc.package.Package):
     args += 'RANLIB = '+self.setCompilers.RANLIB+'\n'
     self.framework.popLanguage()
     self.framework.pushLanguage('C++')+'\n'
-    if self.framework.argDB['with-clanguage'] == 'C':
+    if self.languages.clanguage == 'C':
       args += 'CC = '+self.framework.getCompiler()+' -DPETSC_USE_EXTERN_CXX'    
     else:
       args += 'CC = '+self.framework.getCompiler()    
