@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import generators
 import user
 import config.base
 
@@ -12,11 +11,15 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     return ''
-    
+
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-debugging=<yes or no>', nargs.ArgBool(None, 1, 'Specify debugging version of libraries'))
     help.addArgument('PETSc', '-with-errorchecking=<yes or no>', nargs.ArgBool(None, 1, 'Specify error checking/exceptions in libraries'))    
+    return
+
+  def setupDependencies(self, framework):
+    config.base.Configure.setupDependencies(self, framework)
+    self.compilerFlags = framework.require('config.compilerFlags', self)
     return
 
   def configureDebugging(self):
@@ -29,12 +32,12 @@ class Configure(config.base.Configure):
                     use PETSc exceptions. All development should be done when configured using \n \
                     --with-errorchecking=1')          
 
-    self.debugging = self.framework.argDB['with-debugging']
+    self.debugging = self.compilerFlags.debugging
     if not self.debugging:
       self.logPrintBox('          WARNING! Compiling PETSc with no debugging, this should \n \
                only be done for timing and production runs. All development should \n \
                be done when configured using --with-debugging=1')
-    
+
   def configure(self):
     self.executeTest(self.configureDebugging)
     return

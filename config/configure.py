@@ -138,7 +138,7 @@ def petsc_configure(configure_options):
   if nargs.Arg.findArgument('with-shared', sys.argv[1:]) is None:
     sys.argv.append('--with-shared=0')
 
-  framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure'], loadArgDB = 0)
+  framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure','-optionsModule=PETSc.compilerOptions'], loadArgDB = 0)
   try:
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)

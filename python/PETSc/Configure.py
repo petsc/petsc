@@ -30,7 +30,6 @@ class Configure(config.base.Configure):
     self.languages     = framework.require('PETSc.utilities.languages',self.setCompilers)
     self.debugging     = framework.require('PETSc.utilities.debugging',self.setCompilers)        
     self.compilers     = framework.require('config.compilers',         self)
-    self.compilerFlags = framework.require('PETSc.utilities.compilerFlags', self.compilers)
     self.types         = framework.require('config.types',             self)
     self.headers       = framework.require('config.headers',           self)
     self.functions     = framework.require('config.functions',         self)
@@ -169,14 +168,14 @@ class Configure(config.base.Configure):
       os.makedirs(os.path.join(self.framework.argDB['PETSC_DIR'],'lib'))
 
     # add a makefile entry for configure options
-    self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules']).replace('\"','\\"'))
+    self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"'))
     return
 
   def dumpConfigInfo(self):
     import time
     fd = file(os.path.join('bmake',self.arch.arch,'petscconfiginfo.h'),'w')
     fd.write('static const char *petscconfigureruntime = "'+time.ctime(time.time())+'";\n')
-    fd.write('static const char *petscconfigureoptions = "'+self.framework.getOptionsString(['configModules']).replace('\"','\\"')+'";\n')
+    fd.write('static const char *petscconfigureoptions = "'+self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"')+'";\n')
     fd.close()
     return
 
@@ -284,6 +283,8 @@ class Configure(config.base.Configure):
     args = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.framework.clArgs])
     if 'configModules' in args:
       del args['configModules']
+    if 'optionsModule' in args:
+      del args['optionsModule']
     if not 'PETSC_ARCH' in args:
       args['PETSC_ARCH'] = self.framework.argDB['PETSC_ARCH']
     f = file(scriptName, 'w')
