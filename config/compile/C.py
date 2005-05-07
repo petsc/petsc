@@ -133,7 +133,6 @@ class SharedLinker(config.compile.processor.Processor):
         flagsName.extend(self.compiler.flagsName)
       if hasattr(self, 'configCompilers'):
         flags = [getattr(self.configCompilers, name) for name in flagsName]
-        flags.extend(self.configCompilers.setCompilers.sharedLibraryFlags)
       else:
         flags = [self.argDB[name] for name in flagsName]
       return ' '.join(flags)
@@ -222,7 +221,6 @@ class DynamicLinker(config.compile.processor.Processor):
       if self.getProcessor() == self.compiler.getProcessor():
         flagsName.extend(self.compiler.flagsName)
       flags = [getattr(self.configCompilers, name) for name in flagsName]
-      flags.extend(self.configCompilers.setCompilers.dynamicLibraryFlags)
       return ' '.join(flags)
     return self._flags
   flags = property(getFlags, config.compile.processor.Processor.setFlags, doc = 'The flags for the executable')
