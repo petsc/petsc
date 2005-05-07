@@ -164,8 +164,8 @@ class Configure(config.base.Configure):
     self.addMakeMacro('INSTALL_DIR',self.installdir)
     self.addMakeMacro('top_builddir',self.installdir)                
 
-    if not os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'],'lib')):
-      os.makedirs(os.path.join(self.framework.argDB['PETSC_DIR'],'lib'))
+    if not os.path.exists(os.path.join(self.arch.dir,'lib')):
+      os.makedirs(os.path.join(self.arch.dir,'lib'))
 
     # add a makefile entry for configure options
     self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"'))
@@ -291,7 +291,7 @@ class Configure(config.base.Configure):
     f.write('#!/usr/bin/env python\n')
     f.write('if __name__ == \'__main__\':\n')
     f.write('  import sys\n')
-    f.write('  sys.path.insert(0, '+repr(os.path.join(self.framework.argDB['PETSC_DIR'], 'config'))+')\n')
+    f.write('  sys.path.insert(0, '+repr(os.path.join(self.arch.dir, 'config'))+')\n')
     f.write('  import configure\n')
     f.write('  configure_options = '+repr(args.values())+'\n')
     f.write('  configure.petsc_configure(configure_options)\n')
@@ -308,7 +308,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['prefix']:
       self.installdir = os.path.join(self.framework.argDB['prefix'], os.path.basename(os.getcwd()))
     else:
-      self.installdir = self.framework.argDB['PETSC_DIR']
+      self.installdir = self.arch.dir
     return
 
   def configureGCOV(self):

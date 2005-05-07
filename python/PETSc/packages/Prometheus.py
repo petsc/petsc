@@ -42,7 +42,7 @@ class Configure(PETSc.package.Package):
       os.mkdir(os.path.join(installDir,'include'))            
     self.framework.pushLanguage('C')
     args  = 'C_CC = '+self.framework.getCompiler()+'\n'
-    args += 'PETSC_INCLUDE = -I'+os.path.join(self.framework.argDB['PETSC_DIR'],'bmake',self.arch.arch)+' -I'+os.path.join(self.framework.argDB['PETSC_DIR'])+' -I'+os.path.join(self.framework.argDB['PETSC_DIR'],'include')+' '+' '.join([self.headers.getIncludeArgument(inc) for inc in self.mpi.include+self.parmetis.include])+'\n'
+    args += 'PETSC_INCLUDE = -I'+os.path.join(self.arch.dir,'bmake',self.arch.arch)+' -I'+os.path.join(self.arch.dir)+' -I'+os.path.join(self.arch.dir,'include')+' '+' '.join([self.headers.getIncludeArgument(inc) for inc in self.mpi.include+self.parmetis.include])+'\n'
     args += 'BUILD_DIR  = '+prometheusDir+'\n'
     args += 'LIB_DIR  = $(BUILD_DIR)/lib/\n'
     args += 'RANLIB = '+self.setCompilers.RANLIB+'\n'
