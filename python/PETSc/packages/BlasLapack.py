@@ -68,7 +68,7 @@ class Configure(PETSc.package.Package):
 
   def checkBlas(self, blasLibrary, otherLibs, fortranMangle, routine = 'ddot'):
     '''This checks the given library for the routine, ddot by default'''
-    oldLibs = self.framework.argDB['LIBS']
+    oldLibs = self.compilers.LIBS
     prototype = ''
     call      = ''
     if fortranMangle=='stdcall':
@@ -76,11 +76,11 @@ class Configure(PETSc.package.Package):
         prototype = 'double __stdcall DDOT(int*,double*,int*,double*,int*);'
         call      = 'DDOT(0,0,0,0,0,0);'
     found   = self.libraries.check(blasLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
-    self.framework.argDB['LIBS'] = oldLibs
+    self.compilers.LIBS = oldLibs
     return found
 
   def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routines = ['dgetrs', 'dgeev']):
-    oldLibs = self.framework.argDB['LIBS']
+    oldLibs = self.compilers.LIBS
     found   = 0
     prototypes = ['','']
     calls      = ['','']
@@ -93,7 +93,7 @@ class Configure(PETSc.package.Package):
     for routine, prototype, call in zip(routines, prototypes, calls):
       found = found or self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
       if found: break
-    self.framework.argDB['LIBS'] = oldLibs
+    self.compilers.LIBS = oldLibs
     return found
 
   def checkLib(self, lapackLibrary, blasLibrary = None):
@@ -111,7 +111,6 @@ class Configure(PETSc.package.Package):
     foundBlas   = 0
     foundLapack = 0
     self.f2c    = 0
-    #mangleFunc  = 'FC' in self.framework.argDB
     mangleFunc = self.compilers.fortranMangling
     foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
     if foundBlas:
@@ -136,13 +135,13 @@ class Configure(PETSc.package.Package):
       raise RuntimeError('You cannot set both the library containing BLAS/LAPACK with --with-blas-lapack-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
 
     if self.framework.argDB['download-c-blas-lapack'] == 1:
-      if 'FC' in self.framework.argDB:
+      if hasattr(self.compilers, 'FC'):
         raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
       libdir = self.downLoadBlasLapack('f2c', 'c')
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libf2cblas.a'), os.path.join(libdir,'libf2clapack.a'), 0)
       raise RuntimeError('Could not use downloaded c-blas-lapack?')
     if self.framework.argDB['download-f-blas-lapack'] == 1:
-      if not 'FC' in self.framework.argDB:
+      if not hasattr(self.compilers, 'FC'):
         raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
       libdir = self.downLoadBlasLapack('f','f')            
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
@@ -168,13 +167,13 @@ class Configure(PETSc.package.Package):
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), os.path.join(dir, 'libmkl_def.a'), 'guide', 'pthread'], 1)
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), os.path.join(dir, 'libmkl_ipf.a'), 'guide', 'pthread'], 1)
       mkldir = dir
-      if self.framework.argDB['with-64-bit-pointers']:
+      if self.setCompilers.use64BitPointers:
         mkldir = os.path.join(mkldir, 'lib', '64')
       else:
         mkldir = os.path.join(mkldir, 'lib', '32')
       yield ('User specified MKL Linux installation root', None, [os.path.join(mkldir, 'libmkl_lapack.a'), os.path.join(mkldir, 'libmkl_def.a'), 'guide', 'pthread'], 1)
       yield ('User specified MKL Linux installation root', None, [os.path.join(mkldir, 'libmkl_lapack.a'), os.path.join(mkldir, 'libmkl_ipf.a'), 'guide', 'pthread'], 1)
-      if self.framework.argDB['with-64-bit-pointers']:
+      if self.setCompilers.use64BitPointers:
         mkldir = os.path.join(dir, 'ia64', 'lib')
       else:
         mkldir = os.path.join(dir, 'ia32', 'lib')
@@ -214,7 +213,7 @@ class Configure(PETSc.package.Package):
     # Try Microsoft Windows location
     for MKL_Version in ['MKL72','MKL70','MKL61','MKL']:
       MKL_Dir = os.path.join('/cygdrive', 'c', 'Program\\ Files', 'Intel', MKL_Version)
-      if self.framework.argDB['with-64-bit-pointers']:
+      if self.setCompilers.use64BitPointers:
         MKL_Dir = os.path.join(MKL_Dir, 'ia64', 'lib')
       else:
         MKL_Dir = os.path.join(MKL_Dir, 'ia32', 'lib')
@@ -229,12 +228,12 @@ class Configure(PETSc.package.Package):
       dir3 = os.path.join(dir1, 'libO_c++', self.arch.arch)
       yield ('PETSc location 3', os.path.join(dir3, 'libblas.a'), os.path.join(dir3, 'liblapack.a'), 1)
     if self.framework.argDB['download-c-blas-lapack'] == 2:
-      if 'FC' in self.framework.argDB:
+      if hasattr(self.compilers, 'FC'):
         raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
       libdir = self.downLoadBlasLapack('f2c', 'c')
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libf2cblas.a'), os.path.join(libdir,'libf2clapack.a'), 0)
     if self.framework.argDB['download-f-blas-lapack'] == 2:
-      if not 'FC' in self.framework.argDB:
+      if not hasattr(self.compilers, 'FC'):
         raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
       libdir = self.downLoadBlasLapack('f','f')            
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
@@ -275,14 +274,14 @@ class Configure(PETSc.package.Package):
     line = f.readline()
     while line:
       if line.startswith('CC  '):
-        cc = self.framework.argDB['CC']
+        cc = self.compilers.CC
         line = 'CC = '+cc+'\n'
       if line.startswith('COPTFLAGS '):
         self.setCompilers.pushLanguage('C')
         line = 'COPTFLAGS  = '+self.setCompilers.getCompilerFlags()+'\n'
         self.setCompilers.popLanguage()
       if line.startswith('FC  '):
-        fc = self.framework.argDB['FC']
+        fc = self.compilers.FC
         if fc.find('f90') >= 0:
           import commands
           output  = commands.getoutput(fc+' -v')
@@ -374,17 +373,17 @@ class Configure(PETSc.package.Package):
   def checkMissing(self):
     '''Check for missing LAPACK routines'''
     if self.foundLapack:
-      mangleFunc = 'FC' in self.framework.argDB and not self.f2c
+      mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
       for baseName in ['gesvd','geev','getrf','potrf','getrs','potrs']:
         if self.f2c:
           routine = 'd'+baseName+'_'
         else:
           routine = 'd'+baseName
-        oldLibs = self.framework.argDB['LIBS']
+        oldLibs = self.compilers.LIBS
         if not self.libraries.check(self.lapackLibrary, routine, otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc):
           self.missingRoutines.append(baseName)
           self.addDefine('MISSING_LAPACK_'+baseName.upper(), 1)
-        self.framework.argDB['LIBS'] = oldLibs
+        self.compilers.LIBS = oldLibs
     return
 
   def checkForRoutine(self,routine):
@@ -393,7 +392,7 @@ class Configure(PETSc.package.Package):
     if self.f2c:
       return self.libraries.check(self.dlib,routine+'_')
     else:
-      return self.libraries.check(self.dlib,routine,fortranMangle = ('FC' in self.framework.argDB))
+      return self.libraries.check(self.dlib,routine,fortranMangle = hasattr(self.compilers, 'FC'))
 
   def configure(self):
     self.executeTest(self.configureLibrary)

@@ -36,7 +36,7 @@ class Configure(PETSc.package.Package):
     args.append('--with-ccflags="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
 
-    if 'FC' in self.framework.argDB:    
+    if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
       F77env = self.framework.getCompiler()
       args.append('--with-fflags="'+self.framework.getCompilerFlags()+'"')
@@ -44,7 +44,7 @@ class Configure(PETSc.package.Package):
     else:
       F77env = ''
 
-    if 'CXX' in self.framework.argDB:    
+    if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       CXXenv = self.framework.getCompiler()
       args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+'"')

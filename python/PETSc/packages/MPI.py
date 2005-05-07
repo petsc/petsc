@@ -103,7 +103,7 @@ class Configure(PETSc.package.Package):
   def checkSharedLibrary(self):
     '''Check that the libraries for MPI are shared libraries'''
     self.executeTest(self.configureMPIRUN)
-    if self.framework.argDB['with-shared'] and self.framework.argDB['with-mpi-shared']:
+    if not self.setCompilers.staticLibraries and self.framework.argDB['with-mpi-shared']:
       return self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, executor = self.mpirun)
     return 1
 
@@ -141,9 +141,9 @@ class Configure(PETSc.package.Package):
        - Define HAVE_MPI_COMM_F2C and HAVE_MPI_COMM_C2F if they are present
        - Some older MPI 1 implementations are missing these'''
     oldFlags = self.compilers.CPPFLAGS
-    oldLibs  = self.framework.argDB['LIBS']
-    self.compilers.CPPFLAGS       += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.include])
-    self.framework.argDB['LIBS']   = self.libraries.toString(self.lib)+' '+self.framework.argDB['LIBS']
+    oldLibs  = self.compilers.LIBS
+    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.include])
+    self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
 
     if self.checkLink('#include <mpi.h>\n', 'if (MPI_Comm_f2c(MPI_COMM_WORLD));\n'):
       self.addDefine('HAVE_MPI_COMM_F2C', 1)
@@ -152,8 +152,8 @@ class Configure(PETSc.package.Package):
     if self.checkLink('#include <mpi.h>\n', 'MPI_Fint a;\n'):
       self.addDefine('HAVE_MPI_FINT', 1)
 
-    self.compilers.CPPFLAGS      = oldFlags
-    self.framework.argDB['LIBS'] = oldLibs
+    self.compilers.CPPFLAGS = oldFlags
+    self.compilers.LIBS = oldLibs
     return
 
   def configureTypes(self):
@@ -196,7 +196,7 @@ class Configure(PETSc.package.Package):
   def configureMPICHShared(self):
     '''MPICH cannot be used with shared libraries on the Mac, reject if trying'''
     if self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
-      if self.framework.argDB['with-shared']:
+      if not self.staticLibraries:
         for lib in self.lib:
           if lib.find('mpich') >= 0:
             raise RuntimeError('Sorry, we have not been able to figure out how to use shared libraries on the \n \
@@ -224,13 +224,13 @@ class Configure(PETSc.package.Package):
     self.framework.pushLanguage('C')
     args = ['--prefix='+installDir, '--with-rsh=ssh','--with-CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
     self.framework.popLanguage()
-    if 'CXX' in self.framework.argDB:
+    if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('--with-CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
     else:
       args.append('--disable-CXX')
-    if 'FC' in self.framework.argDB:
+    if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
       args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
@@ -294,13 +294,13 @@ class Configure(PETSc.package.Package):
     args = ['--prefix='+installDir]
     envs = 'CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"'
     self.framework.popLanguage()
-    if 'CXX' in self.framework.argDB:
+    if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       envs += ' CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"'
       self.framework.popLanguage()
     else:
       args.append('--disable-cxx')
-    if 'FC' in self.framework.argDB:
+    if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')      
       fc = self.framework.getCompiler()
       args.append('--disable-f90')      
@@ -317,7 +317,7 @@ class Configure(PETSc.package.Package):
       self.framework.popLanguage()
     else:
       args.append('--disable-f77')
-##    if self.argDB['with-shared'] and self.compilers.isGCC:
+##    if not self.setCompilers.staticLibraries and self.compilers.isGCC:
 ##      args.append('--enable-sharedlibs=gcc')
     args.append('--without-mpe')
     args.append('--with-pm='+self.argDB['download-mpich-pm'])

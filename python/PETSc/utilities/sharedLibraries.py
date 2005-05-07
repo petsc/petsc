@@ -20,10 +20,11 @@ class Configure(config.base.Configure):
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.arch = framework.require('PETSc.utilities.arch', self)
+    self.setCompilers = framework.require('config.setCompilers', self)
     return
 
   def configureSharedLibraries(self):
-    self.useShared = self.framework.argDB['with-shared']
+    self.useShared = not self.setCompilers.staticLibraries
     if self.useShared:
       self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase)
     else:

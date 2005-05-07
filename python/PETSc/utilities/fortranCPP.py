@@ -25,7 +25,7 @@ class Configure(config.base.Configure):
 
   def configureFortranCPP(self):
     '''Handle case where Fortran cannot preprocess properly'''
-    if 'FC' in self.framework.argDB:
+    if hasattr(self.compilers, 'FC'):
       self.addMakeRule('.f.o .f90.o','',['-${FC} -c ${FFLAGS} ${FC_FLAGS} ${FOPTFLAGS} $<'])
       self.addMakeRule('.f.a',       '',['-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FC_FLAGS} $<', \
                                          '-${AR} ${AR_FLAGS} ${LIBNAME} $*.o', \

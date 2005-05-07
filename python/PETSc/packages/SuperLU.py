@@ -44,7 +44,7 @@ class Configure(PETSc.package.Package):
     g.write('LOADER       = '+self.setCompilers.getLinker()+'\n') 
     g.write('LOADOPTS     = \n') 
     self.setCompilers.popLanguage()
-    if 'FC' in self.framework.argDB:
+    if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
       g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags()+'\n')

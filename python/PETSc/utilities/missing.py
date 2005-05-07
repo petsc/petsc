@@ -19,6 +19,7 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
+    self.compilers = framework.require('config.compilers', self)
     self.functions = framework.require('config.functions', self)
     self.libraries = framework.require('config.libraries', self)
     return
@@ -49,7 +50,7 @@ class Configure(config.base.Configure):
         # check if it can find the function
         if self.functions.check('socket',['-lsocket','-lnsl']):
           self.addDefine('HAVE_SOCKET', 1)
-          self.framework.argDB['LIBS'] += ' -lsocket -lnsl'
+          self.compilers.LIBS += ' -lsocket -lnsl'
         
       # Windows requires Ws2_32.lib for socket(), uses stdcall, and declspec prototype decoration
       if self.libraries.add('Ws2_32.lib','socket',prototype='#include <Winsock2.h>',call='socket(0,0,0);'):
@@ -81,7 +82,7 @@ class Configure(config.base.Configure):
   def configureMissingPrototypes(self):
     if not self.checkPrototype('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
       self.addPrototype('int getdomainname(char *, int);', 'C')
-    if 'CXX' in self.framework.argDB:
+    if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('C++')
       if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
         self.addPrototype('int getdomainname(char *, int);', 'extern C')

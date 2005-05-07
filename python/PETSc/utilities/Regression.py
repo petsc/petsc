@@ -23,6 +23,7 @@ class Configure(config.base.Configure):
     self.arch          = framework.require('PETSc.utilities.arch', self)
     self.bmake         = framework.require('PETSc.utilities.bmakeDir', self)    
     self.datafilespath = framework.require('PETSc.utilities.dataFilesPath', self)
+    self.compilers     = framework.require('config.compilers', self)
     self.mpi           = framework.require('PETSc.packages.MPI', self)
     self.x11           = framework.require('PETSc.packages.X11', self)        
     return
@@ -34,13 +35,13 @@ class Configure(config.base.Configure):
     ejobs = []    # Jobs that require an external package install (also cannot work with complex)
     if self.mpi.usingMPIUni:
       jobs.append('C_X11_MPIUni')
-      if 'FC' in self.framework.argDB:
+      if hasattr(self.compilers, 'FC'):
         jobs.append('Fortran_MPIuni')
     else:
       jobs.append('C')
       if self.x11.foundX11:
         jobs.append('C_X11')
-      if 'FC' in self.framework.argDB:
+      if hasattr(self.compilers, 'FC'):
         jobs.append('Fortran')
         rjobs.append('Fortran_NoComplex')
       if self.datafilespath.datafilespath:

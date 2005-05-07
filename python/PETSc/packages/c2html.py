@@ -14,7 +14,7 @@ class Configure(PETSc.package.Package):
     c2htmlDir = self.getDir()
     installDir = os.path.join(c2htmlDir, self.arch.arch)
     # Configure and Build c2html
-    args = ['--prefix='+installDir, '--with-cc='+'"'+self.framework.argDB['CC']+'"']
+    args = ['--prefix='+installDir, '--with-cc='+'"'+self.setCompilers.CC+'"']
     args = ' '.join(args)
     try:
       fd      = file(os.path.join(installDir,'config.args'))

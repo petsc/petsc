@@ -36,6 +36,7 @@ class Configure(config.base.Configure):
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.arch           = framework.require('PETSc.utilities.arch', self)
+    self.compilers      = framework.require('config.compilers', self)
     self.mpi            = framework.require('PETSc.packages.MPI', self)
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
     return
@@ -43,9 +44,9 @@ class Configure(config.base.Configure):
   def checkLib(self, libraries):
     '''Check for pjostle in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
-    oldLibs = self.framework.argDB['LIBS']
+    oldLibs = self.compilers.LIBS
     found = self.libraries.check(libraries, 'pjostle', otherLibs = self.mpi.lib + ['libm.a'])
-    self.framework.argDB['LIBS'] = oldLibs
+    self.compilers.LIBS = oldLibs
     return found
 
   def checkInclude(self, includeDir):

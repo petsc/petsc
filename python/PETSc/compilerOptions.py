@@ -17,7 +17,7 @@ class CompilerOptions(config.base.Configure):
     # GNU gcc
     if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
-        flags.append('-Wall')
+        flags.extend(['-Wall', '-Wno-long-double'])
         if 'USER' in os.environ and os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','kris','balay','hzhang','petsc']:
           flags.extend(['-Wshadow', '-Wwrite-strings'])
       elif bopt == 'g':

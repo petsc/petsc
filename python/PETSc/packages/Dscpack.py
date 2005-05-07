@@ -76,9 +76,9 @@ class Configure(PETSc.package.Package):
         
   def checkLib(self,lib,func):
     '''We may need the MPI libraries here'''
-    oldLibs = self.framework.argDB['LIBS']
+    oldLibs = self.compilers.LIBS
     found = self.libraries.check(lib,func,otherLibs=self.mpi.lib)
-    self.framework.argDB['LIBS']=oldLibs  
+    self.compilers.LIBS=oldLibs  
     if found:
       self.framework.log.write('Found function '+func+' in '+str(lib)+'\n')
     return found

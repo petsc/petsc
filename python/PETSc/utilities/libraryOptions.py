@@ -25,6 +25,7 @@ class Configure(config.base.Configure):
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.debugging = framework.require('PETSc.utilities.debugging', self)
+    self.compilers = framework.require('config.compilers', self)
     self.libraries = framework.require('config.libraries', self)
     return
 
@@ -49,7 +50,7 @@ class Configure(config.base.Configure):
       self.integerSize = 64
       self.addDefine('USE_64BIT_INT', 1)
       if self.libraries.check('-lgcc_s.1', '__floatdidf'):
-        self.framework.argDB['LIBS'] += ' '+self.libraries.getLibArgument('-lgcc_s.1')
+        self.compilers.LIBS += ' '+self.libraries.getLibArgument('-lgcc_s.1')
     else:
       self.integerSize = 32
       self.addDefine('USE_32BIT_INT', 1)

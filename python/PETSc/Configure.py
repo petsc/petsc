@@ -88,10 +88,9 @@ class Configure(config.base.Configure):
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
-    self.addMakeMacro('CC_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.libraries.toString(self.compilers.flibs))
+    self.addMakeMacro('CC_LINKER_LIBS',self.compilers.LIBS+' '+self.libraries.toString(self.compilers.flibs))
 
-    if 'FC' in self.framework.argDB:
-
+    if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       # need FPPFLAGS in config/setCompilers
       self.addMakeMacro('FPP_FLAGS',self.setCompilers.CPPFLAGS)
@@ -110,7 +109,7 @@ class Configure(config.base.Configure):
       self.setCompilers.popLanguage()
       # '' for Unix, .exe for Windows
       self.addMakeMacro('FC_LINKER_SUFFIX','')
-      self.addMakeMacro('FC_LINKER_LIBS',self.framework.argDB['LIBS']+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs]))
+      self.addMakeMacro('FC_LINKER_LIBS',self.compilers.LIBS+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs]))
     else:
       self.addMakeMacro('FC','')
 
@@ -126,7 +125,7 @@ class Configure(config.base.Configure):
       self.addMakeMacro('SL_LINKER_SUFFIX', '')
     else:
       self.addMakeMacro('SL_LINKER_SUFFIX', self.setCompilers.sharedLibraryExt)
-    self.addMakeMacro('SL_LINKER_LIBS',self.framework.argDB['LIBS']+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs]))
+    self.addMakeMacro('SL_LINKER_LIBS',self.compilers.LIBS+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs]))
 #-----------------------------------------------------------------------------------------------------
 
     # CONLY or CPP. We should change the PETSc makefiles to do this better
@@ -196,9 +195,9 @@ class Configure(config.base.Configure):
         except AttributeError:
           flag = None
         if flag is None:
-          self.framework.argDB['LIBS'] += ' -L/usr/ucblib'
+          self.compilers.LIBS += ' -L/usr/ucblib'
         else:
-          self.framework.argDB['LIBS'] += ' '+flag+'/usr/ucblib'
+          self.compilers.LIBS += ' '+flag+'/usr/ucblib'
     return
 
   def configureLinux(self):
@@ -252,7 +251,7 @@ class Configure(config.base.Configure):
     if self.checkCompile('#include <Windows.h>\n',''):
       self.addDefine('HAVE_O_BINARY',1)
 
-    if self.framework.argDB['CC'].find('win32fe') >= 0:
+    if self.compilers.CC.find('win32fe') >= 0:
       self.addDefine('PATH_SEPARATOR','\';\'')
       self.addDefine('DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'/\'')

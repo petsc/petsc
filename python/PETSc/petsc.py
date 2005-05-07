@@ -235,7 +235,7 @@ class Configure(config.base.Configure):
        - TSCreate from libpetscts
        '''
     if not isinstance(libraries, list): libraries = [libraries]
-    oldLibs = self.framework.argDB['LIBS']
+    oldLibs = self.compilers.LIBS
     found   = (self.libraries.check(libraries, 'PetscInitialize', otherLibs = self.otherLibs) and
                self.libraries.check(libraries, 'VecCreate', otherLibs = self.otherLibs) and
                self.libraries.check(libraries, 'MatCreate', otherLibs = self.otherLibs) and
@@ -243,7 +243,7 @@ class Configure(config.base.Configure):
                self.libraries.check(libraries, 'KSPCreate', otherLibs = self.otherLibs) and
                self.libraries.check(libraries, 'SNESCreate', otherLibs = self.otherLibs) and
                self.libraries.check(libraries, 'TSCreate', otherLibs = self.otherLibs))
-    self.framework.argDB['LIBS'] = oldLibs
+    self.compilers.LIBS = oldLibs
     return found
 
   def checkInclude(self, includeDir):
@@ -263,12 +263,12 @@ class Configure(config.base.Configure):
     self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.getInclude(useTrial = 1)])
     if self.otherIncludes:
       self.compilers.CPPFLAGS += ' '+self.otherIncludes
-    oldLibs  = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.getLib(useTrial = 1)+self.otherLibs])+' '+self.framework.argDB['LIBS']
+    oldLibs  = self.compilers.LIBS
+    self.compilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.getLib(useTrial = 1)+self.otherLibs])+' '+self.compilers.LIBS
     if self.checkLink(includes, body, cleanup, codeBegin, codeEnd, shared):
       success = 1
     self.compilers.CPPFLAGS = oldFlags
-    self.framework.argDB['LIBS']     = oldLibs
+    self.compilers.LIBS     = oldLibs
     return success
 
   def checkWorkingLink(self):
@@ -278,7 +278,7 @@ class Configure(config.base.Configure):
       return 0
     self.logPrint('PETSc can link with C')
       
-    if 'CXX' in self.framework.argDB:
+    if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('C++')
       self.sourceExtension = '.C'
       if not self.checkPETScLink('#define PETSC_USE_EXTERN_CXX\n#include <petsc.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time); CHKERRQ(ierr);\n'):
@@ -288,7 +288,7 @@ class Configure(config.base.Configure):
       self.popLanguage()
       self.logPrint('PETSc can link with C++')
     
-    if 'FC' in self.framework.argDB:
+    if hasattr(self.compilers, 'FC'):
       self.pushLanguage('FC')
       self.sourceExtension = '.F'
       if not self.checkPETScLink('', '          integer ierr\n          real time\n          call PetscGetTime(time, ierr)\n'):
@@ -339,7 +339,6 @@ class Configure(config.base.Configure):
       else:
         lines.append(line)
     input.close()
-    # Update the version and patchNum in argDB
     self.logPrint('Found PETSc version (%s,%s,%s) patch %s on %s' % (majorNum, minorNum, subminorNum, patchNum, self.date))
     return '%d.%d.%d' % (majorNum, minorNum, subminorNum)
 
@@ -359,7 +358,7 @@ class Configure(config.base.Configure):
   def libraryGuesses(self, root = None):
     '''Return standard library name guesses for a given installation root'''
     libs = ['ts', 'snes', 'ksp', 'dm', 'mat', 'vec', '']
-    if 'FC' in self.framework.argDB:
+    if hasattr(self.compilers, 'FC'):
       libs.insert(0, 'fortran')
     if root:
       d = os.path.join(root, 'lib', self.arch)

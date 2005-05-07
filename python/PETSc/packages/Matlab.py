@@ -35,7 +35,7 @@ class Configure(PETSc.package.Package):
     '''Find a Matlab installation and check if it can work with PETSc'''
     import re
 
-    if not self.framework.argDB['with-shared']:
+    if self.setCompilers.staticLibraries:
       raise RuntimeError('Matlab Interface requires shared library support. Please rerun with --with-shared=1\n')
           
     versionPattern = re.compile('Version ([0-9]*.[0-9]*)')

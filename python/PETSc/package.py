@@ -260,12 +260,12 @@ class Package(config.base.Configure):
 
   def checkPackageLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
     oldFlags = self.compilers.CPPFLAGS
-    oldLibs  = self.framework.argDB['LIBS']
-    self.compilers.CPPFLAGS     += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.include])
-    self.framework.argDB['LIBS'] = self.libraries.toString(self.lib)+' '+self.framework.argDB['LIBS']
+    oldLibs  = self.compilers.LIBS
+    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.include])
+    self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
     result = self.checkLink(includes, body, cleanup, codeBegin, codeEnd, shared)
-    self.compilers.CPPFLAGS      = oldFlags
-    self.framework.argDB['LIBS'] = oldLibs
+    self.compilers.CPPFLAGS = oldFlags
+    self.compilers.LIBS = oldLibs
     return result
 
   def checkSharedLibrary(self):
@@ -336,7 +336,7 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')    
       if self.cxx and not self.languages.clanguage.lower() == 'cxx':
         raise RuntimeError('Cannot use '+self.name+' without C++, run config/configure.py --with-clanguage=c++')    
-      if self.fc and not 'FC' in self.framework.argDB:
+      if self.fc and not hasattr(self.compilers, 'FC'):
         raise RuntimeError('Cannot use '+self.name+' without Fortran, run config/configure.py --with-fc')    
       self.executeTest(self.configureLibrary)
     else:

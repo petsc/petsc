@@ -44,9 +44,9 @@ class Configure(config.base.Configure):
   def checkLib(self, libraries):
     '''Check for SCOTCH_archBuild in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
-    oldLibs = self.framework.argDB['LIBS']
+    oldLibs = self.compilers.LIBS
     found   = self.libraries.check(libraries, 'SCOTCH_archBuild', otherLibs = self.mpi.lib)
-    self.framework.argDB['LIBS'] = oldLibs
+    self.compilers.LIBS = oldLibs
     return found
 
   def checkInclude(self, includeDir):

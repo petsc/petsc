@@ -34,12 +34,12 @@ class Configure(PETSc.package.Package):
     args.append('--with-ccflags="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
 
-    if 'FC' in self.framework.argDB:    
+    if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
       args.append('--with-fflags="'+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
 
-    if 'CXX' in self.framework.argDB:    
+    if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()

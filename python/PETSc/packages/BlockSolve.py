@@ -80,9 +80,9 @@ class Configure(config.base.Configure):
 
   def checkLib(self,bs95lib):
     if not isinstance(bs95lib,list): bs95lib = [bs95lib]
-    oldLibs = self.framework.argDB['LIBS']
+    oldLibs = self.compilers.LIBS
     found = self.libraries.check(bs95lib,'BSinit',otherLibs=self.mpi.lib)
-    self.framework.argDB['LIBS']=oldLibs
+    self.compilers.LIBS=oldLibs
     if found:
       self.lib    = bs95lib
       self.framework.log.write('Found functional BlockSolve95: '+str(self.lib)+'\n')

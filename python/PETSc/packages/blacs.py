@@ -93,9 +93,9 @@ class Configure(PETSc.package.Package):
     return self.getDir()
 
   def checkLib(self,lib,func,mangle,otherLibs = []):
-    oldLibs = self.framework.argDB['LIBS']
+    oldLibs = self.compilers.LIBS
     found = self.libraries.check(lib,func, otherLibs = otherLibs+self.mpi.lib+self.blasLapack.lib+self.compilers.flibs,fortranMangle=mangle)
-    self.framework.argDB['LIBS']=oldLibs
+    self.compilers.LIBS=oldLibs
     if found:
       self.framework.log.write('Found function '+str(func)+' in '+str(lib)+'\n')
     return found

@@ -164,12 +164,12 @@ acfindx:
             break
       # Check default compiler libraries
       if not foundLibrary:
-        oldLibs = self.framework.argDB['LIBS']
-        self.framework.argDB['LIBS'] += ' -l'+testLibrary
+        oldLibs = self.compilers.LIBS
+        self.compilers.LIBS += ' -l'+testLibrary
         self.pushLanguage(self.language[-1])
         if self.checkLink('', testFunction+'();\n'):
           foundLibrary = 1
-        self.framework.argDB['LIBS'] = oldLibs
+        self.compilers.LIBS = oldLibs
         self.popLanguage()
       # Check standard paths
       if not foundLibrary:
@@ -180,14 +180,14 @@ acfindx:
               libraryDir   = dir
       # Verify that library can be linked with
       if foundLibrary:
-        oldLibs = self.framework.argDB['LIBS']
+        oldLibs = self.compilers.LIBS
         if libraryDir:
-          self.framework.argDB['LIBS'] += ' -L'+libraryDir
-        self.framework.argDB['LIBS'] += ' -l'+testLibrary
+          self.compilers.LIBS += ' -L'+libraryDir
+        self.compilers.LIBS += ' -l'+testLibrary
         self.pushLanguage(self.language[-1])
         if not self.checkLink('', testFunction+'();\n'):
           foundLibrary = 0
-        self.framework.argDB['LIBS'] = oldLibs
+        self.compilers.LIBS = oldLibs
         self.popLanguage()
           
     if foundInclude and foundLibrary:

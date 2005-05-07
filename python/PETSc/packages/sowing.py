@@ -64,7 +64,7 @@ class Configure(PETSc.package.Package):
     return
 
   def buildFortranStubs(self):
-    if 'FC' in self.framework.argDB:
+    if hasattr(self.compilers, 'FC'):
       if self.framework.argDB['with-batch'] and not hasattr(self,'bfort'):
         self.logPrintBox('Batch build that could not generate bfort, skipping generating Fortran stubs\n \
                           you will need to copy them from some other system (src/fortran/auto)')
