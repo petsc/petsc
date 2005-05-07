@@ -8,6 +8,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
+    self.use64BitPointers = 0
     return
 
   def __str__(self):
@@ -74,6 +75,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
     help.addArgument('Compilers', '-sharedLibraryFlags',     nargs.Arg(None, [], 'Specify the shared library flags'))
     help.addArgument('Compilers', '-with-dynamic',           nargs.ArgBool(None, 0, 'Enable dynamic libraries'))
+    help.addArgument('Compilers', '-LIBS=<string>',          nargs.Arg(None, None, 'Specify extra libraries for all links'))
     return
 
   def setupDependencies(self, framework):
@@ -146,11 +148,10 @@ class Configure(config.base.Configure):
     for flagsArg in ['CPPFLAGS', 'sharedLibraryFlags']:
       setattr(self, flagsArg, self.argDB[flagsArg])
       self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
-    return
-
-  def checkInitialLibraries(self):
-    '''Check for libraries required for all linking on an architecture'''
-    self.framework.argDB['LIBS'] = ''
+    if 'LIBS' in self.argDB:
+      self.LIBS = self.argDB['LIBS']
+    else:
+      self.LIBS = ''
     return
 
   def checkCompiler(self, language):
@@ -250,6 +251,7 @@ class Configure(config.base.Configure):
               self.pushLanguage('C')
               try:
                 self.addCompilerFlag('-m64')
+                self.use64BitPointers = 1
               except RuntimeError, e:
                 self.logPrint('GNU 64-bit C compilation not working: '+str(e))
               self.popLanguage()
@@ -257,6 +259,7 @@ class Configure(config.base.Configure):
               self.pushLanguage('C')
               try:
                 self.addCompilerFlag('-xarch=v9')
+                self.use64BitPointers = 1
               except RuntimeError, e:
                 self.logPrint('Solaris 64-bit C compilation not working: '+str(e))
               self.popLanguage()
@@ -713,7 +716,7 @@ class Configure(config.base.Configure):
         os.remove('conf1.a')
         raise RuntimeError('Ranlib is not functional with your archiver.  Try --with-ranlib=true if ranlib is unnecessary.')
       return
-    oldLibs = self.framework.argDB['LIBS']
+    oldLibs = self.LIBS
     self.pushLanguage('C')
     for (archiver, arflags, ranlib) in self.generateArchiverGuesses():
       if not self.checkCompile('', 'int foo(int a) {\n  return a+1;\n}\n\n', cleanup = 0, codeBegin = '', codeEnd = ''):
@@ -730,7 +733,7 @@ class Configure(config.base.Configure):
           except RuntimeError, e:
             self.logPrint(str(e))
             continue
-          self.framework.argDB['LIBS'] = '-L. -lconf1'
+          self.LIBS = '-L. -lconf1'
           success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
           os.rename('libconf1.a','libconf1.lib')
           arext = 'lib'
@@ -745,7 +748,7 @@ class Configure(config.base.Configure):
     else:
       if os.path.isfile('conf1.o'):
         os.remove('conf1.o')
-      self.framework.argDB['LIBS'] = oldLibs
+      self.LIBS = oldLibs
       self.popLanguage()
       raise RuntimeError('Could not find a suitable archiver.  Use --with-ar to specify an archiver.')
     self.AR_FLAGS      = arflags
@@ -753,7 +756,7 @@ class Configure(config.base.Configure):
     self.framework.addMakeMacro('AR_FLAGS', self.AR_FLAGS)
     self.addMakeMacro('AR_LIB_SUFFIX', self.AR_LIB_SUFFIX)
     os.remove('conf1.o')
-    self.framework.argDB['LIBS'] = oldLibs
+    self.LIBS = oldLibs
     self.popLanguage()
     return
 
@@ -765,6 +768,7 @@ class Configure(config.base.Configure):
     if not self.framework.argDB['with-shared']:
       self.setStaticLinker()
       self.staticLinker = self.AR
+      self.staticLibraries = 1
       self.LDFLAGS = ''
       yield (self.AR, [], self.AR_LIB_SUFFIX)
       raise RuntimeError('Archiver failed static link check')
@@ -779,9 +783,9 @@ class Configure(config.base.Configure):
     yield ('libtool', ['-noprebind','-dynamic','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
     #yield (self.CC, ['-dynamiclib', '-flat_namespace', '-undefined warning', '-multiply_defined suppress', '-single_module'], 'dylib')
     # Default to static linker
-    self.framework.argDB['with-shared'] = 0
     self.setStaticLinker()
     self.staticLinker = self.AR
+    self.staticLibraries = 1
     self.LDFLAGS = ''
     yield (self.AR, [], self.AR_LIB_SUFFIX)
     raise RuntimeError('Archiver failed static link check')
@@ -789,6 +793,7 @@ class Configure(config.base.Configure):
   def checkSharedLinker(self):
     '''Check that the linker can produce shared libraries'''
     self.sharedLibraries = 0
+    self.staticLibraries = 0
     for linker, flags, ext in self.generateSharedLinkerGuesses():
       self.logPrint('Checking shared linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'LD_SHARED'):
@@ -799,15 +804,15 @@ class Configure(config.base.Configure):
         self.sharedLibraryFlags = goodFlags
         self.sharedLibraryExt = ext
         if self.checkLink(includes = 'int '+testMethod+'(void) {return 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
-          oldLibs = self.framework.argDB['LIBS']
-          self.framework.argDB['LIBS'] += ' -L. -lconftest'
+          oldLibs = self.LIBS
+          self.LIBS += ' -L. -lconftest'
           if self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);'):
             os.remove('libconftest.'+self.sharedLibraryExt)
-            self.framework.argDB['LIBS'] = oldLibs
+            self.LIBS = oldLibs
             self.sharedLibraries = 1
             self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
             break
-          self.framework.argDB['LIBS'] = oldLibs
+          self.LIBS = oldLibs
           os.remove('libconftest.'+self.sharedLibraryExt)
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
         del self.LD_SHARED 
@@ -841,9 +846,9 @@ class Configure(config.base.Configure):
   def checkLinkerMac(self):
     '''Tests some Apple Mac specific linker flags'''
     languages = ['C']
-    if 'CXX' in self.framework.argDB:
+    if hasattr(self, 'CXX'):
       languages.append('C++')
-    if 'FC' in self.framework.argDB:
+    if hasattr(self, 'FC'):
       languages.append('FC')
     for language in languages:
       flag = '-L'
@@ -866,9 +871,9 @@ class Configure(config.base.Configure):
        - Solaris: -R
        - FreeBSD: -Wl,-R,'''
     languages = ['C']
-    if 'CXX' in self.framework.argDB:
+    if hasattr(self, 'CXX'):
       languages.append('C++')
-    if 'FC' in self.framework.argDB:
+    if hasattr(self, 'FC'):
       languages.append('FC')
     for language in languages:
       flag = '-L'
@@ -895,21 +900,19 @@ class Configure(config.base.Configure):
       self.logPrint('Shared linking does not require an explicit libc reference')
       self.compilerDefines = tmpCompilerDefines
       return
-    oldLibs = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] += '-lc '
+    oldLibs = self.LIBS
+    self.LIBS += '-lc '
     if self.checkLink(includes = code, codeBegin = '', codeEnd = '', shared = 1):
       self.logPrint('Shared linking requires an explicit libc reference')
       self.compilerDefines = tmpCompilerDefines
       self.explicitLibc = ['libc.so']
       return
-    self.framework.argDB['LIBS'] = oldLibs
+    self.LIBS = oldLibs
     self.compilerDefines = tmpCompilerDefines
     self.logPrint('*** WARNING *** Shared linking may not function on this architecture')
     raise RuntimeError('Shared linking may not function on this architecture')
 
   def generateDynamicLinkerGuesses(self):
-    if not self.framework.argDB['with-dynamic']:
-      return
     if 'with-dynamic-ld' in self.framework.argDB:
       yield (self.framework.argDB['with-dynamic-ld'], [], 'so')
     # Shared default
@@ -924,6 +927,8 @@ class Configure(config.base.Configure):
   def checkDynamicLinker(self):
     '''Check that the linker can produce dynamic libraries'''
     self.dynamicLibraries = 0
+    if not self.framework.argDB['with-dynamic']:
+      return
     if not self.headers.check('dlfcn.h'):
       self.logPrint('Dynamic libraries disabled since dlfcn.h was missing')
       return
@@ -969,30 +974,31 @@ if (dlclose(handle)) {
 
   def output(self):
     '''Output module data as defines and substitutions'''
-    if 'CC' in self.framework.argDB:
+    if hasattr(self, 'CC'):
       self.addSubstitution('CC', self.CC)
       self.addSubstitution('CFLAGS', self.CFLAGS)
       self.addMakeMacro('CC_LINKER_SLFLAG', self.CSharedLinkerFlag)
-    if 'CPP' in self.framework.argDB:
+    if hasattr(self, 'CPP'):
       self.addSubstitution('CPP', self.CPP)
       self.addSubstitution('CPPFLAGS', self.CPPFLAGS)
-    if 'CXX' in self.framework.argDB:
+    if hasattr(self, 'CXX'):
       self.addSubstitution('CXX', self.CXX)
       self.addSubstitution('CXX_CXXFLAGS', self.CXX_CXXFLAGS)
       self.addSubstitution('CXXFLAGS', self.CXXFLAGS)
       self.addSubstitution('CXX_LINKER_SLFLAG', self.CxxSharedLinkerFlag)
     else:
       self.addSubstitution('CXX', '')
-    if 'CXXCPP' in self.framework.argDB:
+    if hasattr(self, 'CXXCPP'):
       self.addSubstitution('CXXCPP', self.CXXCPP)
-    if 'FC' in self.framework.argDB:
+    if hasattr(self, 'FC'):
       self.addSubstitution('FC', self.FC)
       self.addSubstitution('FFLAGS', self.FFLAGS)
       self.addMakeMacro('FC_LINKER_SLFLAG', self.FCSharedLinkerFlag)
     else:
       self.addSubstitution('FC', '')
     self.addSubstitution('LDFLAGS', self.LDFLAGS)
-    if hasattr(self,'sharedLibraryFlags'):
+    self.addSubstitution('LIBS', self.LIBS)
+    if hasattr(self, 'sharedLibraryFlags'):
       self.addSubstitution('SHARED_LIBRARY_FLAG', ' '.join(self.sharedLibraryFlags))
     else:
       self.addSubstitution('SHARED_LIBRARY_FLAG','')
@@ -1001,19 +1007,18 @@ if (dlclose(handle)) {
   def configure(self):
     self.executeTest(self.checkVendor)
     self.executeTest(self.checkInitialFlags)
-    self.executeTest(self.checkInitialLibraries)
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
     self.executeTest(self.checkCxxCompiler)
     self.executeTest(self.checkFortranCompiler)
-    if 'FC' in self.framework.argDB:
+    if hasattr(self, 'FC'):
       self.executeTest(self.checkFortranComments)
     self.executeTest(self.checkPIC)
     self.executeTest(self.checkArchiver)
     self.executeTest(self.checkSharedLinker)
     self.executeTest(self.checkLinkerMac)
     self.executeTest(self.checkSharedLinkerPaths)
-    if self.framework.argDB['with-shared']:
+    if not self.staticLibraries:
       self.executeTest(self.checkLibC)
     self.executeTest(self.checkDynamicLinker)
     self.executeTest(self.output)
@@ -1021,6 +1026,6 @@ if (dlclose(handle)) {
 
   def no_configure(self):
     self.executeTest(self.checkInitialLibraries)
-    if hasattr(self, 'staticLinker'):
+    if self.staticLibraries:
       self.setStaticLinker()
     return

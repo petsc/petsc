@@ -49,8 +49,15 @@ class Linker(config.compile.processor.Processor):
     self.libraries  = sets.Set()
     return
 
+  def copy(self, other):
+    other.compiler = self.compiler
+    other.configLibraries = self.configLibraries
+    other.libraries = sets.Set(self.libraries)
+    return
+
   def setArgDB(self, argDB):
     args.ArgumentProcessor.setArgDB(self, argDB)
+    self.compiler.argDB                  = argDB
     self.configLibraries.argDB           = argDB
     self.configLibraries.framework.argDB = argDB
     return
@@ -72,9 +79,7 @@ class Linker(config.compile.processor.Processor):
 
   def getExtraArguments(self):
     if not hasattr(self, '_extraArguments'):
-      if not 'LIBS' in self.argDB:
-        return ''
-      return self.argDB['LIBS']
+      return self.configCompilers.LIBS
     return self._extraArguments
   extraArguments = property(getExtraArguments, config.compile.processor.Processor.setExtraArguments, doc = 'Optional arguments for the end of the command')
 
@@ -83,8 +88,6 @@ class Linker(config.compile.processor.Processor):
     import sys
 
     base, ext = os.path.splitext(source)
-    if shared:
-      return base+'.so'
     if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
       return base+'.exe'
     return base

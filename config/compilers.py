@@ -41,6 +41,7 @@ class Configure(config.base.Configure):
       self.popLanguage()
     names.update(['CPPFLAGS'])
     names.update(['AR_FLAGS', 'AR_LIB_SUFFIX'])
+    names.update(['LIBS'])
     return names
 
   def setupDependencies(self, framework):
@@ -58,6 +59,13 @@ class Configure(config.base.Configure):
       if name in ['sharedLibraryFlags', 'dynamicLibraryFlags']:
         return ' '.join(getattr(self.setCompilers, name))
     raise AttributeError('Configure attribute not found: '+name)
+
+  def __setattr__(self, name, value):
+    if 'dispatchNames' in self.__dict__:
+      if name in self.dispatchNames:
+        setattr(self.setCompilers, name, value)
+    config.base.Configure.__setattr__(self, name, value)
+    return
 
   # THIS SHOULD BE REWRITTEN AS checkDeclModifier()
   # checkCStaticInline & checkCxxStaticInline are pretty much the same code right now.
@@ -133,7 +141,7 @@ class Configure(config.base.Configure):
 
   def checkCxxOptionalExtensions(self):
     '''Check whether the C++ compiler (IBM xlC, OSF5) need special flag for .c files which contain C++'''
-    self.pushLanguage('C++')
+    self.setCompilers.pushLanguage('C++')
     cxxObj = self.framework.getCompilerObject('C++')
     oldExt = cxxObj.sourceExtension
     cxxObj.sourceExtension = self.framework.getCompilerObject('C').sourceExtension
@@ -153,7 +161,7 @@ class Configure(config.base.Configure):
         except RuntimeError:
           pass
     cxxObj.sourceExtension = oldExt
-    self.popLanguage()
+    self.setCompilers.popLanguage()
     return
 
   def checkCxxNamespace(self):
@@ -223,32 +231,32 @@ class Configure(config.base.Configure):
 
     self.cxxlibs = []
     for lib in cxxlibs:
-      if 'CC_LINKER_SLFLAG' in self.framework.argDB and lib.startswith('-L'):
-        self.flibs.append(self.framework.argDB['CC_LINKER_SLFLAG']+lib[2:])
+      if not self.setCompilers.staticLibraries and lib.startswith('-L') and not self.setCompilers.CSharedLinkerFlag == '-L':
+        self.cxxlibs.append(self.setCompilers.CSharedLinkerFlag+lib[2:])
       self.cxxlibs.append(lib)
 
     self.logPrint('Libraries needed to link Cxx code with another linker: '+str(self.cxxlibs), 3, 'compilers')
 
     self.logPrint('Check that Cxx libraries can be used from C', 4, 'compilers')
-    oldLibs = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
+    oldLibs = self.setCompilers.LIBS
+    self.setCompilers.LIBS += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
     try:
       self.setCompilers.checkCompiler('C')
     except RuntimeError, e:
       self.logPrint('Cxx libraries cannot directly be used from C', 4, 'compilers')
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
-    self.framework.argDB['LIBS'] = oldLibs
+    self.setCompilers.LIBS = oldLibs
 
-    if 'FC' in self.framework.argDB:
+    if hasattr(self.setCompilers, 'FC'):
       self.logPrint('Check that Cxx libraries can be used from Fortran', 4, 'compilers')
-      oldLibs = self.framework.argDB['LIBS']
-      self.framework.argDB['LIBS'] += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
+      oldLibs = self.setCompilers.LIBS
+      self.setCompilers.LIBS += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
       try:
         self.setCompilers.checkCompiler('FC')
       except RuntimeError, e:
         self.logPrint('Cxx libraries cannot directly be used from Fortran', 4, 'compilers')
         self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
-      self.framework.argDB['LIBS'] = oldLibs
+      self.setCompilers.LIBS = oldLibs
     return
 
   def checkFortranTypeSizes(self):
@@ -257,11 +265,11 @@ class Configure(config.base.Configure):
     # Check whether the compiler (ifc) bitches about real*8, if so try using -w90 -w to eliminate bitch
     (output, error, returnCode) = self.outputCompile('', '      real*8 variable', 1)
     if (output+error).find('Type size specifiers are an extension to standard Fortran 95') >= 0:
-      oldFlags = self.framework.argDB['FFLAGS']
-      self.framework.argDB['FFLAGS'] += ' -w90 -w'
+      oldFlags = self.setCompilers.FFLAGS
+      self.setCompilers.FFLAGS += ' -w90 -w'
       (output, error, returnCode) = self.outputCompile('', '      real*8 variable', 1)
       if returnCode or (output+error).find('Type size specifiers are an extension to standard Fortran 95') >= 0:
-        self.framework.argDB['FFLAGS'] = oldFlags
+        self.setCompilers.FFLAGS = oldFlags
       else:
         self.logPrint('Looks like ifc compiler, adding -w90 -w flags to avoid warnings about real*8 etc', 4, 'compilers')
     self.popLanguage()
@@ -289,20 +297,22 @@ class Configure(config.base.Configure):
     self.pushLanguage(clanguage)
     if not self.checkCompile(cfunc, None, cleanup = 0):
       self.logPrint('Cannot compile C function: '+cfunc, 3, 'compilers')
+      self.popLanguage()
       return found
     if not os.path.isfile(self.compilerObj):
       self.logPrint('Cannot locate object file: '+os.path.abspath(self.compilerObj), 3, 'compilers')
+      self.popLanguage()
       return found
     os.rename(self.compilerObj, cobj)
     self.popLanguage()
     # Link the test object against a Fortran driver
     self.pushLanguage('FC')
-    oldLIBS = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] += ' '+cobj
+    oldLIBS = self.setCompilers.LIBS
+    self.setCompilers.LIBS += ' '+cobj
     if extraObjs:
-      self.framework.argDB['LIBS'] += ' '+' '.join(extraObjs)
+      self.setCompilers.LIBS += ' '+' '.join(extraObjs)
     found = self.checkLink(None, ffunc)
-    self.framework.argDB['LIBS'] = oldLIBS
+    self.setCompilers.LIBS = oldLIBS
     self.popLanguage()
     if os.path.isfile(cobj):
       os.remove(cobj)
@@ -350,22 +360,22 @@ class Configure(config.base.Configure):
 
   def checkFortranPreprocessor(self):
     '''Determine if Fortran handles preprocessing properly'''
-    self.pushLanguage('FC')
+    self.setCompilers.pushLanguage('FC')
     # Does Fortran compiler need special flag for using CPP
     for flag in ['', '-cpp', '-xpp=cpp', '-F', '-Cpp', '-fpp', '-fpp:-m']:
       try:
-        flagsArg = self.getCompilerFlagsArg()
-        oldFlags = self.framework.argDB[flagsArg]
-        self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+'-DPTesting'
+        flagsArg = self.setCompilers.getCompilerFlagsArg()
+        oldFlags = getattr(self.setCompilers, flagsArg)
+        setattr(self.setCompilers, flagsArg, oldFlags+' '+'-DPTesting')
         self.setCompilers.addCompilerFlag(flag, body = '#define dummy \n           dummy\n#ifndef PTesting\n       fooey\n#endif')
-        self.framework.argDB[flagsArg] = oldFlags + ' ' + flag
+        setattr(self.setCompilers, flagsArg, oldFlags+' '+flag)
         self.fortranPreprocess = 1
-        self.popLanguage()
+        self.setCompilers.popLanguage()
         self.logPrint('Fortran uses CPP preprocessor', 3, 'compilers')
         return
       except RuntimeError:
-        self.framework.argDB[flagsArg] = oldFlags
-    self.popLanguage()
+        setattr(self.setCompilers, flagsArg, oldFlags)
+    self.setCompilers.popLanguage()
     self.fortranPreprocess = 0
     self.logPrint('Fortran does NOT use CPP preprocessor', 3, 'compilers')
     return
@@ -392,7 +402,7 @@ class Configure(config.base.Configure):
     However, nearly all of this macro came from the OCTAVE_FLIBS macro in
     octave-2.0.13/aclocal.m4, and full credit should go to John W. Eaton
     for writing this extremely useful macro.'''
-    if not 'CC' in self.framework.argDB or not 'FC' in self.framework.argDB: 
+    if not hasattr(self.setCompilers, 'CC') or not hasattr(self.setCompilers, 'FC'): 
       return
     oldFlags = self.setCompilers.LDFLAGS
     self.setCompilers.LDFLAGS += ' -v'
@@ -539,8 +549,8 @@ class Configure(config.base.Configure):
     self.fincs = fincs
     self.flibs = []
     for lib in flibs:
-      if 'FC_LINKER_SLFLAG' in self.framework.argDB and lib.startswith('-L'):
-        self.flibs.append(self.framework.argDB['FC_LINKER_SLFLAG']+lib[2:])
+      if not self.setCompilers.staticLibraries and lib.startswith('-L') and not self.setCompilers.FCSharedLinkerFlag == '-L':
+        self.flibs.append(self.setCompilers.FCSharedLinkerFlag+lib[2:])
       self.flibs.append(lib)
     self.fmainlibs = fmainlibs
     # Append run path
@@ -557,8 +567,8 @@ class Configure(config.base.Configure):
     self.logPrint('Libraries needed to link Fortran main with the C linker: '+str(self.fmainlibs), 3, 'compilers')
     # check that these monster libraries can be used from C
     self.logPrint('Check that Fortran libraries can be used from C', 4, 'compilers')
-    oldLibs = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+    oldLibs = self.setCompilers.LIBS
+    self.setCompilers.LIBS += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
     try:
       self.setCompilers.checkCompiler('C')
     except RuntimeError, e:
@@ -566,7 +576,7 @@ class Configure(config.base.Configure):
       self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
       # try removing this one
       if '-lcrt2.o' in self.flibs: self.flibs.remove('-lcrt2.o')
-      self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+      self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
       try:
         self.setCompilers.checkCompiler('C')
       except RuntimeError, e:
@@ -575,19 +585,19 @@ class Configure(config.base.Configure):
 
     # check if Intel library exists (that is not linked by default but has iargc_ in it :-(
     self.logPrint('Check for Intel PEPCF90 library', 4, 'compilers')
-    self.framework.argDB['LIBS'] = oldLibs+' -lPEPCF90 '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+    self.setCompilers.LIBS = oldLibs+' -lPEPCF90 '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
     try:
       self.setCompilers.checkCompiler('C')
       self.flibs = [' -lPEPCF90']+self.flibs
       self.logPrint('Intel PEPCF90 library exists', 4, 'compilers')
     except RuntimeError, e:
       self.logPrint('Intel PEPCF90 library does not exist', 4, 'compilers')
-      self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+      self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
 
     # check these monster libraries work from C++
-    if 'CXX' in self.framework.argDB:
+    if hasattr(self.setCompilers, 'CXX'):
       self.logPrint('Check that Fortran libraries can be used from C++', 4, 'compilers')
-      self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+      self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
       try:
         self.setCompilers.checkCompiler('C++')
         self.logPrint('Fortran libraries can be used from C++', 4, 'compilers')
@@ -595,7 +605,7 @@ class Configure(config.base.Configure):
         self.logPrint(str(e), 4, 'compilers')
         # try removing this one causes grief with gnu g++ and Intel Fortran
         if '-lintrins' in self.flibs: self.flibs.remove('-lintrins')
-        self.framework.argDB['LIBS'] = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+        self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
         try:
           self.setCompilers.checkCompiler('C++')
         except RuntimeError, e:
@@ -604,7 +614,7 @@ class Configure(config.base.Configure):
             self.logPrint('Intel 7.1 Fortran compiler cannot be used with g++ 3.2!', 2, 'compilers')
           raise RuntimeError('Fortran libraries cannot be used with C++ compiler.\n Run with --with-fc=0 or --with-cxx=0')
 
-    self.framework.argDB['LIBS'] = oldLibs
+    self.setCompilers.LIBS = oldLibs
     return
 
   def checkFortranLinkingCxx(self):
@@ -629,13 +639,13 @@ class Configure(config.base.Configure):
       self.logPrint('Fortran can link C++ functions', 3, 'compilers')
       link = 1
     else:
-      oldLibs = self.framework.argDB['LIBS']
-      self.framework.argDB['LIBS'] += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
+      oldLibs = self.setCompilers.LIBS
+      self.setCompilers.LIBS += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
       if self.testMangling(cinc+cfunc, ffunc, 'Cxx', extraObjs = [cxxobj]):
         self.logPrint('Fortran can link C++ functions using the C++ compiler libraries', 3, 'compilers')
         link = 1
       else:
-        self.framework.argDB['LIBS'] = oldLibs
+        self.setCompilers.LIBS = oldLibs
     if os.path.isfile(cxxobj):
       os.remove(cxxobj)
     if not link:
@@ -662,42 +672,42 @@ class Configure(config.base.Configure):
   def getFortran90SourceGuesses(self):
     headerGuess = None
     sourceGuess = None
-    if self.framework.argDB['with-vendor-compilers'] and not self.framework.argDB['with-vendor-compilers'] == '0':
+    if self.setCompilers.vendor:
       if self.setCompilers.FC.startswith('win32fe'):
         headerGuess = 'f90_win32.h'
         sourceGuess = 'f90_win32.c'
-      if self.framework.argDB['with-vendor-compilers'] == 'absoft':
+      if self.setCompilers.vendor == 'absoft':
         headerGuess = 'f90_absoft.h'
         sourceGuess = 'f90_absoft.c'
-      elif self.framework.argDB['with-vendor-compilers'] == 'cray':
+      elif self.setCompilers.vendor == 'cray':
         headerGuess = 'f90_t3e.h'
         sourceGuess = 'f90_t3e.c'
         #headerGuess = 'f90_cray_x1.h'
         #sourceGuess = 'f90_cray_x1.c'
-      elif self.framework.argDB['with-vendor-compilers'] == 'dec':
+      elif self.setCompilers.vendor == 'dec':
         headerGuess = 'f90_alpha.h'
         sourceGuess = 'f90_alpha.c'
-      elif self.framework.argDB['with-vendor-compilers'] == 'hp':
+      elif self.setCompilers.vendor == 'hp':
         headerGuess = 'f90_hpux.h'
         sourceGuess = 'f90_hpux.c'
-      elif self.framework.argDB['with-vendor-compilers'] == 'ibm':
+      elif self.setCompilers.vendor == 'ibm':
         headerGuess = 'f90_rs6000.h'
         sourceGuess = 'f90_rs6000.c'
-      elif self.framework.argDB['with-vendor-compilers'] == 'intel':
+      elif self.setCompilers.vendor == 'intel':
         #headerGuess = 'f90_intel.h'
         #sourceGuess = 'f90_intel.c'
         headerGuess = 'f90_intel8.h'
         sourceGuess = 'f90_intel8.c'
-      elif self.framework.argDB['with-vendor-compilers'] == 'lahaye':
+      elif self.setCompilers.vendor == 'lahaye':
         headerGuess = 'f90_nag.h'
         sourceGuess = 'f90_nag.c'
-      elif self.framework.argDB['with-vendor-compilers'] == 'portland':
+      elif self.setCompilers.vendor == 'portland':
         headerGuess = 'f90_pgi.h'
         sourceGuess = 'f90_pgi.c'
-      elif self.framework.argDB['with-vendor-compilers'] == 'sgi':
+      elif self.setCompilers.vendor == 'sgi':
         headerGuess = 'f90_IRIX.h'
         sourceGuess = 'f90_IRIX.c'
-      elif self.framework.argDB['with-vendor-compilers'] == 'solaris':
+      elif self.setCompilers.vendor == 'solaris':
         headerGuess = 'f90_solaris.h'
         sourceGuess = 'f90_solaris.c'
     return (headerGuess, sourceGuess)
@@ -732,30 +742,30 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    if 'CC' in self.framework.argDB:
-      import config.setCompilers
-      self.isGCC  = config.setCompilers.Configure.isGNU(self.framework.argDB['CC'])
+    import config.setCompilers
+    if hasattr(self.setCompilers, 'CC'):
+      self.isGCC = config.setCompilers.Configure.isGNU(self.setCompilers.CC)
       self.executeTest(self.checkCRestrict)
       self.executeTest(self.checkCFormatting)
       self.executeTest(self.checkCStaticInline)
       self.executeTest(self.checkDynamicLoadFlag)
     else:
-      self.isGCC  = 0
-    if 'CXX' in self.framework.argDB:
-      self.isGCXX = config.setCompilers.Configure.isGNU(self.framework.argDB['CXX'])
+      self.isGCC = 0
+    if hasattr(self.setCompilers, 'CXX'):
+      self.isGCXX = config.setCompilers.Configure.isGNU(self.setCompilers.CXX)
       self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
       self.executeTest(self.checkCxxStaticInline)
       self.executeTest(self.checkCxxLibraries)
     else:
       self.isGCXX = 0
-    if 'FC' in self.framework.argDB:
+    if hasattr(self.setCompilers, 'FC'):
       self.executeTest(self.checkFortranTypeSizes)
       self.executeTest(self.checkFortranNameMangling)
       self.executeTest(self.checkFortranNameManglingDouble)
       self.executeTest(self.checkFortranPreprocessor)
       self.executeTest(self.checkFortranLibraries)
-      if 'CXX' in self.framework.argDB:
+      if hasattr(self.setCompilers, 'CXX'):
         self.executeTest(self.checkFortranLinkingCxx)
       self.executeTest(self.checkFortran90)
       self.executeTest(self.checkFortran90Interface)

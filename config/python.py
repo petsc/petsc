@@ -33,13 +33,13 @@ class Configure(config.base.Configure):
     '''Analogous to checkLink(), but the Python includes and libraries are automatically provided'''
     success  = 0
     oldFlags = self.compilers.CPPFLAGS
-    oldLibs  = self.framework.argDB['LIBS']
+    oldLibs  = self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+' '.join([self.headers.getIncludeArgument(inc) for inc in self.include])
-    self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib])+' '+self.framework.argDB['LIBS']
+    self.compilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib])+' '+self.compilers.LIBS
     if self.checkLink(includes, body, cleanup, codeBegin, codeEnd, shared):
       success = 1
     self.compilers.CPPFLAGS = oldFlags
-    self.framework.argDB['LIBS'] = oldLibs
+    self.compilers.LIBS = oldLibs
     return success
 
   def configurePythonLibraries(self):

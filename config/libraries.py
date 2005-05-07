@@ -77,8 +77,9 @@ class Configure(config.base.Configure):
        - libName may be a list of library names'''
     if not isinstance(libName, list): libName = [libName]
     if self.check(libName, funcs, libDir, otherLibs, prototype, call, fortranMangle):
-      self.logPrint('Adding '+str(libName)+' to argDB[LIBS]')
-      self.framework.argDB['LIBS'] += ' '+self.toString(libName)
+      self.logPrint('Adding '+str(libName)+' to LIBS')
+      # Note: this MUST be setCompilers since it can happen before dispatch names is made
+      self.setCompilers.LIBS += ' '+self.toString(libName)
       return 1
     return 0
 
@@ -116,12 +117,12 @@ class Configure(config.base.Configure):
       else:
         body = funcName+'()\n'
       # Setup link line
-      oldLibs = self.framework.argDB['LIBS']
+      oldLibs = self.setCompilers.LIBS
       if libDir:
         if not isinstance(libDir, list): libDir = [libDir]
         for dir in libDir:
-          self.framework.argDB['LIBS'] += ' -L'+dir
-      self.framework.argDB['LIBS'] += ' '+self.toString(libName+otherLibs)
+          self.setCompilers.LIBS += ' -L'+dir
+      self.setCompilers.LIBS += ' '+self.toString(libName+otherLibs)
       self.pushLanguage(self.language[-1])
       found = 0
       if self.checkLink(includes, body):
@@ -132,7 +133,7 @@ class Configure(config.base.Configure):
           if lib.startswith('-L'): continue
           strippedlib = os.path.splitext(os.path.basename(lib))[0]
           if strippedlib: self.addDefine(self.getDefineName(strippedlib), 1)
-      self.framework.argDB['LIBS'] = oldLibs
+      self.setCompilers.LIBS = oldLibs
       self.popLanguage()
       if not found: return 0
     return 1
@@ -169,8 +170,8 @@ class Configure(config.base.Configure):
         configObj = self
 
     # Fix these flags
-    oldFlags = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS'] += ' '+self.toString(libraries)
+    oldFlags = self.setCompilers.LIBS
+    self.setCompilers.LIBS += ' '+self.toString(libraries)
 
     # Make a library which calls initFunction(), and returns checkFunction()
     if noCheckArg:
@@ -193,7 +194,7 @@ int init(int argc,  char *argv[]) {
     codeEnd   = '\n}\n'
     if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd, shared = 1):
       if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
-      self.framework.argDB['LIBS'] = oldFlags
+      self.setCompilers.LIBS = oldFlags
       raise RuntimeError('Could not complete shared library check')
     if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
     os.rename(configObj.linkerObj, 'lib1.so')
@@ -216,13 +217,13 @@ int checkInit(void) {
     codeEnd   = '\n}\n'
     if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd, shared = 1):
       if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
-      self.framework.argDB['LIBS'] = oldFlags
+      self.setCompilers.LIBS = oldFlags
       self.framework.logPrint('Could not complete shared library check')
       return 0
     if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
     os.rename(configObj.linkerObj, 'lib2.so')
 
-    self.framework.argDB['LIBS'] = oldFlags
+    self.setCompilers.LIBS = oldFlags
 
     # Make an executable that dynamically loads and calls both libraries
     #   If the check returns true in the second library, the static data was shared
@@ -272,12 +273,12 @@ int checkInit(void) {
     exit(2);
   }
   '''
-    oldLibs = self.framework.argDB['LIBS']
+    oldLibs = self.setCompilers.LIBS
     if self.haveLib('dl'):
-      self.framework.argDB['LIBS'] += ' -ldl'
+      self.setCompilers.LIBS += ' -ldl'
     if self.checkRun(defaultIncludes, body, executor = executor):
       isShared = 1
-    self.framework.argDB['LIBS'] = oldLibs
+    self.setCompilers.LIBS = oldLibs
     if os.path.isfile('lib1.so'): os.remove('lib1.so')
     if os.path.isfile('lib2.so'): os.remove('lib2.so')
     if isShared:
@@ -287,10 +288,7 @@ int checkInit(void) {
     return isShared
 
   def configure(self):
-    self.framework.argDB['LIBS'] = ''
     map(lambda args: self.executeTest(self.check, list(args)), self.libraries)
     self.executeTest(self.checkMath)
     self.executeTest(self.checkDynamic)
-    self.addArgumentSubstitution('LDFLAGS', 'LDFLAGS')
-    self.addArgumentSubstitution('LIBS',    'LIBS')
     return

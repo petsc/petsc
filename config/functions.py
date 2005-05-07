@@ -19,6 +19,7 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
+    self.compilers = self.framework.require('config.compilers', self)
     self.headers = self.framework.require('config.headers', self)
     return
 
@@ -57,17 +58,17 @@ class Configure(config.base.Configure):
     #endif
     '''
     if libraries:
-      oldLibs = self.framework.argDB['LIBS']
+      oldLibs = self.compilers.LIBS
       if not isinstance(libraries, list):
         libraries = [libraries]
       for library in libraries:
         if not library.strip()[0] == '-':
-          self.framework.argDB['LIBS'] += ' -l'+library
+          self.compilers.LIBS += ' -l'+library
         else:
-          self.framework.argDB['LIBS'] += ' '+library
+          self.compilers.LIBS += ' '+library
     found = self.checkLink(includes, body)
     if libraries:
-      self.framework.argDB['LIBS'] = oldLibs
+      self.compilers.LIBS = oldLibs
     if found:
       self.addDefine(self.getDefineName(funcName), 1)
     return found
