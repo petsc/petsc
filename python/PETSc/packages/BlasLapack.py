@@ -242,7 +242,7 @@ class Configure(PETSc.package.Package):
 
   def downLoadBlasLapack(self, f2c, l):
     self.framework.log.write('Downloading '+l+'blaslapack\n')
-    packages = self.framework.argDB['with-external-packages-dir']
+    packages = self.arch.externalPackagesDir
     if not os.path.isdir(packages):
       os.mkdir(packages)
     if f2c == 'f2c':

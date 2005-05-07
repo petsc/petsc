@@ -43,6 +43,6 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    if self.framework.argDB['with-adic'] and self.framework.argDB['with-external-packages']:
+    if self.framework.argDB['with-adic']:
       self.executeTest(self.configureLibrary)
     return

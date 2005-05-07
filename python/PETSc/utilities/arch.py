@@ -34,9 +34,9 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', 'PETSC_DIR',                        nargs.Arg(None, None, 'The root directory of the PETSc installation'))
-    help.addArgument('PETSc', 'PETSC_ARCH',                       nargs.Arg(None, None, 'The machine architecture'))
-    help.addArgument('PETSc', '-with-external-packages-dir=<dir>',nargs.Arg(None, os.path.join('$PETSC_DIR','externalpackages'),'Location to installed downloaded packages'))
+    help.addArgument('PETSc', '-PETSC_DIR',                        nargs.Arg(None, None, 'The root directory of the PETSc installation'))
+    help.addArgument('PETSc', '-PETSC_ARCH',                       nargs.Arg(None, None, 'The configuration name'))
+    help.addArgument('PETSc', '-with-external-packages-dir=<dir>', nargs.Arg(None, None, 'Location to installed downloaded packages'))
     return
 
   def configureDirectories(self):
@@ -76,7 +76,6 @@ class Configure(config.base.Configure):
       self.logPrint(line)
     self.addMakeMacro('DIR', self.dir)
     self.addDefine('DIR', self.dir)
-    self.framework.argDB['PETSC_DIR'] = self.dir
     return
 
   def configureArchitecture(self):
@@ -129,15 +128,18 @@ Warning: Using from command-line: %s, ignoring environment: %s''' % (str(self.fr
     self.hostOsBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.framework.host_os)
     self.addDefine('ARCH', self.hostOsBase)
     self.addDefine('ARCH_NAME', '"'+self.arch+'"')
-    self.framework.argDB['PETSC_ARCH']      = self.arch
-    self.framework.argDB['PETSC_ARCH_BASE'] = self.hostOsBase
-    self.addArgumentSubstitution('ARCH', 'PETSC_ARCH')
+    self.addSubstitution('ARCH', self.arch)
     return
 
+  def configureExternalPackagesDir(self):
+    if 'with-external-packages-dir' in self.framework.argDB:
+      self.externalPackagesDir = self.framework.argDB['with-external-packages-dir']
+    else:
+      self.externalPackagesDir = os.path.join(self.dir, 'externalpackages')
+    return
 
   def configure(self):
     self.executeTest(self.configureDirectories)
     self.executeTest(self.configureArchitecture)
-    if self.framework.argDB['with-external-packages-dir'].startswith('$'):
-      self.framework.argDB['with-external-packages-dir'] = os.path.join(self.dir, 'externalpackages')
+    self.executeTest(self.configureExternalPackagesDir)
     return

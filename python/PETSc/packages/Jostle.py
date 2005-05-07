@@ -35,7 +35,8 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.mpi            = framework.require('PETSc.packages.MPI',self)
+    self.arch           = framework.require('PETSc.utilities.arch', self)
+    self.mpi            = framework.require('PETSc.packages.MPI', self)
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
     return
 
@@ -98,7 +99,7 @@ class Configure(config.base.Configure):
 
   def getDir(self):
     '''Find the directory containing Jostle'''
-    packages  = self.framework.argDB['with-external-packages-dir'] 
+    packages = self.arch.externalPackagesDir 
     if not os.path.isdir(packages):
       os.mkdir(packages)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
@@ -118,7 +119,7 @@ class Configure(config.base.Configure):
       self.framework.logPrint('Jostle already downloaded, no need to ftp')
     except RuntimeError:
       import urllib
-      packages = self.framework.argDB['with-external-packages-dir']
+      packages = self.arch.externalPackagesDir 
       try:
         self.logPrintBox('Retrieving Jostle; this may take several minutes')
         urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/jostle.tar.gz', os.path.join(packages, 'jostle.tar.gz'))

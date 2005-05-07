@@ -177,7 +177,7 @@ class Package(config.base.Configure):
   def downLoad(self):
     '''Downloads a package; using bk or ftp; opens it in the with-external-packages-dir directory'''
     self.framework.log.write('Downloading '+self.name+'\n')
-    packages  = self.framework.argDB['with-external-packages-dir']
+    packages = self.arch.externalPackagesDir
     
     if hasattr(self.sourceControl, 'bk'):
       for url in self.download:
@@ -239,7 +239,7 @@ class Package(config.base.Configure):
 
   def getDir(self, retry = 1):
     '''Find the directory containing the package'''
-    packages  = self.framework.argDB['with-external-packages-dir']
+    packages = self.arch.externalPackagesDir
     if not os.path.isdir(packages):
       os.mkdir(packages)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)

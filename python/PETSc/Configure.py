@@ -189,7 +189,7 @@ class Configure(config.base.Configure):
 
   def configureSolaris(self):
     '''Solaris specific stuff'''
-    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
+    if self.arch.hostOsBase.startswith('solaris'):
       if os.path.isdir(os.path.join('/usr','ucblib')):
         try:
           flag = getattr(self.setCompilers, self.language[-1].replace('+', 'x')+'SharedLinkerFlag')
@@ -203,7 +203,7 @@ class Configure(config.base.Configure):
 
   def configureLinux(self):
     '''Linux specific stuff'''
-    if self.framework.argDB['PETSC_ARCH_BASE'] == 'linux':
+    if self.arch.hostOsBase == 'linux':
       self.addDefine('HAVE_DOUBLE_ALIGN_MALLOC', 1)
     return
 
@@ -286,7 +286,7 @@ class Configure(config.base.Configure):
     if 'optionsModule' in args:
       del args['optionsModule']
     if not 'PETSC_ARCH' in args:
-      args['PETSC_ARCH'] = self.framework.argDB['PETSC_ARCH']
+      args['PETSC_ARCH'] = self.arch.arch
     f = file(scriptName, 'w')
     f.write('#!/usr/bin/env python\n')
     f.write('if __name__ == \'__main__\':\n')
