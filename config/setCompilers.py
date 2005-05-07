@@ -1025,7 +1025,6 @@ if (dlclose(handle)) {
     return
 
   def no_configure(self):
-    self.executeTest(self.checkInitialLibraries)
     if self.staticLibraries:
       self.setStaticLinker()
     return
