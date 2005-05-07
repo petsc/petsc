@@ -1,6 +1,6 @@
 
 #if !defined(__MPRINT_H)
-#define __PRINT_H
+#define __MPRINT_H
 
 #include "petscsys.h"             /*I    "petscsys.h"   I*/
 #include <stdarg.h>
