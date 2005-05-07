@@ -109,6 +109,12 @@ typedef int PetscInt;
 #define MPIU_INT MPI_INT
 #endif  
 
+/*
+      You can use PETSC_STDOUT as a replacement of stdout. You can also change
+    the value of PETSC_STDOUT to redirect all standard output elsewhere
+*/
+extern FILE* PETSC_STDOUT;
+
 #if !defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 /*MC
       PetscPolymorphicSubroutine - allows defining a C++ polymorphic version of 

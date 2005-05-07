@@ -4,7 +4,7 @@
    Basic functions for basic parallel dense matrices.
 */
     
-#include "src/mat/impls/dense/mpi/mpidense.h"
+#include "src/mat/impls/dense/mpi/mpidense.h"    /*I   "petscmat.h"  I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDenseGetLocalMatrix"
