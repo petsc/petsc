@@ -45,6 +45,9 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   -----------------
   New functionality
   -----------------
+
+  Add PCCreate_LRC() see MatCreateLRC()
+
   (Priority 1) Add DAVecGetArrayf90() Hmmm, thought I did this a long time ago?
 
   Support overlapping finite difference grids using DA, see src/dm/da/examples/tutorials/ex6.c
