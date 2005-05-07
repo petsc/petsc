@@ -116,7 +116,7 @@ python:
 	-@if [ -d "${PETSC_DIR}/src/python/PETSc" ]; then \
 	  echo "COMPILING PYTHON WRAPPERS"; \
 	  echo "========================================="; \
-	  ./make.py --with-petsc-arch=${PETSC_ARCH}; \
+	  PYTHONPATH=${PYTHONPATH}:${PETSC_DIR}/python/BuildSystem ./make.py --with-petsc-arch=${PETSC_ARCH}; \
 	  echo "Completed building Python wrappers"; \
 	  echo "========================================="; \
 	fi
