@@ -63,7 +63,7 @@ class Configure(config.base.Configure):
   def __setattr__(self, name, value):
     if 'dispatchNames' in self.__dict__:
       if name in self.dispatchNames:
-        setattr(self.setCompilers, name, value)
+        return setattr(self.setCompilers, name, value)
     config.base.Configure.__setattr__(self, name, value)
     return
 

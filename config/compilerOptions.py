@@ -17,7 +17,7 @@ class CompilerOptions(config.base.Configure):
     # GNU gcc
     if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
-        flags.extend(['-Wall', '-Wshadow', '-Wwrite-strings'])
+        flags.extend(['-Wall', '-Wshadow', '-Wwrite-strings', '-Wno-long-double'])
       elif bopt == 'g':
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
