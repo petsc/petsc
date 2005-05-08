@@ -631,14 +631,19 @@ class Configure(config.base.Configure):
       self.popLanguage()
     return
 
-  def generateArchiverFlags(self,archiver):
-    flag = 'cr'
+  def getArchiverFlags(self, archiver):
+    prog = os.path.basename(archiver).split(' ')[0]
+    flag = ''
     if 'AR_FLAGS' in self.framework.argDB: 
       flag = self.framework.argDB['AR_FLAGS']
-    elif archiver.find('win32fe lib') >=0:
-      flag = '-a'
-    elif archiver.find('win32fe tlib') >=0:
-      flag = '-a -P512'
+    elif prog == 'ar':
+      flag = 'cr'
+    elif prog == 'win32fe':
+      args = os.path.basename(archiver).split(' ')
+      if 'lib' in args:
+        flag = '-a'
+      elif 'tlib' in args:
+        flag = '-a -P512'
     return flag
   
   def generateArchiverGuesses(self):
@@ -661,39 +666,39 @@ class Configure(config.base.Configure):
     if 'RANLIB' in self.framework.argDB:
       envRanlib = self.framework.argDB['RANLIB']
     if defaultAr and defaultRanlib:
-      yield(defaultAr,self.generateArchiverFlags(defaultAr),defaultRanlib)
+      yield(defaultAr,self.getArchiverFlags(defaultAr),defaultRanlib)
       raise RuntimeError('The archiver set --with-ar="'+defaultAr+'" is incompatible with the ranlib set --with-ranlib="'+defaultRanlib+'".')
     if defaultAr and envRanlib:
-      yield(defaultAr,self.generateArchiverFlags(defaultAr),envRanlib)
+      yield(defaultAr,self.getArchiverFlags(defaultAr),envRanlib)
       raise RuntimeError('The archiver set --with-ar="'+defaultAr+'" is incompatible with the ranlib set (perhaps in your environment) -RANLIB="'+envRanlib+'".')
     if envAr and defaultRanlib:
-      yield(envAr,self.generateArchiverFlags(envAr),defaultRanlib)
+      yield(envAr,self.getArchiverFlags(envAr),defaultRanlib)
       raise RuntimeError('The archiver set --AR="'+envAr+'" is incompatible with the ranlib set --with-ranlib="'+defaultRanlib+'".')
     if envAr and envRanlib:
-      yield(envAr,self.generateArchiverFlags(envAr),envRanlib)
+      yield(envAr,self.getArchiverFlags(envAr),envRanlib)
       raise RuntimeError('The archiver set --AR="'+envAr+'" is incompatible with the ranlib set (perhaps in your environment) -RANLIB="'+envRanlib+'".')
     if defaultAr:
-      yield (defaultAr,self.generateArchiverFlags(defaultAr),'ranlib')
-      yield (defaultAr,self.generateArchiverFlags(defaultAr),'true')
+      yield (defaultAr,self.getArchiverFlags(defaultAr),'ranlib')
+      yield (defaultAr,self.getArchiverFlags(defaultAr),'true')
       raise RuntimeError('You set a value for --with-ar='+defaultAr+'", but '+defaultAr+' cannot be used\n')
     if envAr:
-      yield (envAr,self.generateArchiverFlags(envAr),'ranlib')
-      yield (envAr,self.generateArchiverFlags(envAr),'true')
+      yield (envAr,self.getArchiverFlags(envAr),'ranlib')
+      yield (envAr,self.getArchiverFlags(envAr),'true')
       raise RuntimeError('You set a value for -AR="'+envAr+'" (perhaps in your environment), but '+envAr+' cannot be used\n')
     if defaultRanlib:
-      yield ('ar',self.generateArchiverFlags('ar'),defaultRanlib)
-      yield ('win32fe tlib',self.generateArchiverFlags('win32fe tlib'),defaultRanlib)
-      yield ('win32fe lib',self.generateArchiverFlags('win32fe lib'),defaultRanlib)
+      yield ('ar',self.getArchiverFlags('ar'),defaultRanlib)
+      yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),defaultRanlib)
+      yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),defaultRanlib)
       raise RuntimeError('You set --with-ranlib="'+defaultRanlib+'", but '+defaultRanlib+' cannot be used\n')
     if envRanlib:
-      yield ('ar',self.generateArchiverFlags('ar'),envRanlib)
-      yield ('win32fe tlib',self.generateArchiverFlags('win32fe tlib'),envRanlib)
-      yield ('win32fe lib',self.generateArchiverFlags('win32fe lib'),envRanlib)
+      yield ('ar',self.getArchiverFlags('ar'),envRanlib)
+      yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),envRanlib)
+      yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),envRanlib)
       raise RuntimeError('You set -RANLIB="'+envRanlib+'" (perhaps in your environment), but '+defaultRanlib+' cannot be used\n')
-    yield ('ar',self.generateArchiverFlags('ar'),'ranlib')
-    yield ('ar',self.generateArchiverFlags('ar'),'true')
-    yield ('win32fe tlib',self.generateArchiverFlags('win32fe tlib'),'true')
-    yield ('win32fe lib',self.generateArchiverFlags('win32fe lib'),'true')
+    yield ('ar',self.getArchiverFlags('ar'),'ranlib')
+    yield ('ar',self.getArchiverFlags('ar'),'true')
+    yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),'true')
+    yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),'true')
     return
   
   def checkArchiver(self):
