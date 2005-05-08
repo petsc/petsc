@@ -632,14 +632,12 @@ class Configure(config.base.Configure):
     return
 
   def generateArchiverFlags(self,archiver):
-    flag = ''
-    if 'AR_FLAGS' in self.framework.argDB:
+    flag = 'cr'
+    if 'AR_FLAGS' in self.framework.argDB: 
       flag = self.framework.argDB['AR_FLAGS']
-    elif os.path.basename(archiver) == 'ar':
-      flag = 'cr'
-    elif archiver == 'win32fe lib':
+    elif archiver.find('win32fe lib') >=0:
       flag = '-a'
-    elif archiver == 'win32fe tlib':
+    elif archiver.find('win32fe tlib') >=0:
       flag = '-a -P512'
     return flag
   
