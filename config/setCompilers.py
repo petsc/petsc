@@ -551,7 +551,7 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         import os
 
-        if os.path.basename(self.framework.argDB['FC']) in ['mpif90', 'mpif77']:
+        if os.path.basename(self.FC) in ['mpif90', 'mpif77']:
          self.framework.logPrint(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
         del self.FC
     return
@@ -612,9 +612,9 @@ class Configure(config.base.Configure):
       self.framework.logPrint("Skip checking PIC options since shared libraries are turned off")
       return
     languages = ['C']
-    if 'CXX' in self.framework.argDB:
+    if hasattr(self, 'CXX'):
       languages.append('C++')
-    if 'FC' in self.framework.argDB:
+    if hasattr(self, 'FC'):
       languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
