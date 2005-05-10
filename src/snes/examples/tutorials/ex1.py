@@ -114,7 +114,7 @@ if __name__ == '__main__':
   petscConf = os.path.join(petscDir, 'bmake', 'petscconf')
   if 'PETSC_ARCH' in os.environ:
     petscArch = os.environ['PETSC_ARCH']
-  elif os.path.isfile():
+  elif os.path.isfile(petscConf):
     archRE = re.compile(r'^PETSC_ARCH=(?P<arch>[\w.\d-]+)[\s]*$');
     confFile = file(petscConf)
     for line in input.readlines():
