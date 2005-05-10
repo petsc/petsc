@@ -918,13 +918,13 @@ class Configure(config.base.Configure):
   def generateDynamicLinkerGuesses(self):
     if 'with-dynamic-ld' in self.framework.argDB:
       yield (self.framework.argDB['with-dynamic-ld'], [], 'so')
+    # Mac OSX
+    yield (self.CC, ['-bundle', '-flat_namespace', '-undefined warning', '-multiply_defined suppress'], 'so')
     # Shared default
     if hasattr(self, 'sharedLinker'):
       yield (self.sharedLinker, self.sharedLibraryFlags, 'so')
     # C Compiler default
     yield (self.CC, ['-shared'], 'so')
-    # Mac OSX
-    yield (self.CC, ['-bundle', '-flat_namespace', '-undefined warning', '-multiply_defined suppress'], 'so')
     raise RuntimeError('Unable to find working dynamic linker')
 
   def checkDynamicLinker(self):
