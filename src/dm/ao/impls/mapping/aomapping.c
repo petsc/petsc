@@ -328,8 +328,8 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
   appPerm   = allapp   + N;
   allpetsc  = appPerm  + N;
   petscPerm = allpetsc + N;
-  ierr = MPI_Allgatherv((void*)myapp,   napp, MPIU_INT, allapp,   lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv((void*)mypetsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv((void*)myapp, napp, MPIU_INT, allapp,   lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv((void*)petsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
   ierr = PetscFree(lens);CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */
