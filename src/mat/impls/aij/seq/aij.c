@@ -667,6 +667,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatConvert_seqaij_seqbaij_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatIsTranspose_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSeqAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSeqAIJSetPreallocationCSR_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatReorderForNonzeroDiagonal_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2669,6 +2670,92 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscIn
 }
 EXTERN_C_END
 
+#undef  __FUNCT__
+#define __FUNCT__  "MatSeqAIJSetPreallocationCSR"
+/*@C
+   MatSeqAIJSetPreallocationCSR - Allocates memory for a sparse sequential matrix in AIJ format.  
+
+   Input Parameters:
++  B - the matrix 
+.  i - the indices into j for the start of each row (starts with zero)
+.  j - the column indices for each row (starts with zero) these must be sorted for each row
+-  v - optional values in the matrix
+
+   Level: developer
+
+.keywords: matrix, aij, compressed row, sparse, sequential
+
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatSeqAIJSetPreallocation(), MatCreateSeqAIJ(), SeqAIJ
+@*/
+PetscErrorCode MatSeqAIJSetPreallocationCSR(Mat B,const PetscInt i[],const PetscInt j[],const PetscScalar v[])
+{
+  PetscErrorCode (*f)(Mat,const PetscInt[],const PetscInt[],const PetscScalar[]);
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(B,MAT_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqAIJSetPreallocationCSR_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(B,i,j,v);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef  __FUNCT__
+#define __FUNCT__  "MatSeqAIJSetPreallocationCSR_SeqAIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt I[],const PetscInt J[],const PetscScalar v[])
+{
+  PetscInt       i;
+  PetscInt       m,n;
+  PetscInt       nz;
+  PetscInt       *nnz, nz_max = 0;
+  PetscScalar    *values;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(B, &m, &n);CHKERRQ(ierr);
+
+  if (I[0]) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "I[0] must be 0 it is %D", I[0]);
+  }
+  ierr = PetscMalloc((m+1) * sizeof(PetscInt), &nnz);CHKERRQ(ierr);
+  for(i = 0; i < m; i++) {
+    nz     = I[i+1]- I[i];
+    nz_max = PetscMax(nz_max, nz);
+    if (nz < 0) {
+      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Local row %D has a negative number of columns %D", i, nnz);
+    }
+    nnz[i] = nz; 
+  }
+  ierr = MatSeqAIJSetPreallocation(B, 0, nnz);CHKERRQ(ierr);
+  ierr = PetscFree(nnz);CHKERRQ(ierr);
+
+  if (v) {
+    values = (PetscScalar*) v;
+  } else {
+    ierr = PetscMalloc((nz_max+1)*sizeof(PetscScalar), &values);CHKERRQ(ierr);
+    ierr = PetscMemzero(values, nz_max*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+
+  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+
+  for(i = 0; i < m; i++) {
+    nz  = I[i+1] - I[i];
+    ierr = MatSetValues_SeqAIJ(B, 1, &i, nz, J+I[i], values + (v ? I[i] : 0), INSERT_VALUES);CHKERRQ(ierr);
+  }
+
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_COLUMNS_UNSORTED);CHKERRQ(ierr);
+
+  if (!v) {
+    ierr = PetscFree(values);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 /*MC
    MATSEQAIJ - MATSEQAIJ = "seqaij" - A matrix type to be used for sequential sparse matrices, 
    based on compressed sparse row format.
@@ -2753,6 +2840,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetPreallocation_C",
                                      "MatSeqAIJSetPreallocation_SeqAIJ",
                                       MatSeqAIJSetPreallocation_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetPreallocationCSR_C",
+				     "MatSeqAIJSetPreallocationCSR_SeqAIJ",
+				      MatSeqAIJSetPreallocationCSR_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatReorderForNonzeroDiagonal_C",
                                      "MatReorderForNonzeroDiagonal_SeqAIJ",
                                       MatReorderForNonzeroDiagonal_SeqAIJ);CHKERRQ(ierr);

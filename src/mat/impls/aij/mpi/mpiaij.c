@@ -2170,9 +2170,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,cons
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_OPT_g)
-  if (I[0]) SETERRQ1(PETSC_ERR_ARG_RANGE,"I[0] must be 0 it is %D",I[0]);
-#endif
+  if (I[0]) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"I[0] must be 0 it is %D",I[0]);
   ierr  = PetscMalloc((2*m+1)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
   o_nnz = d_nnz + m;
 
@@ -2180,9 +2178,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,cons
     nnz     = I[i+1]- I[i];
     JJ      = J + I[i];
     nnz_max = PetscMax(nnz_max,nnz);
-#if defined(PETSC_OPT_g)
-    if (nnz < 0) SETERRQ1(PETSC_ERR_ARG_RANGE,"Local row %D has a negative %D number of columns",i,nnz);
-#endif
+    if (nnz < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative %D number of columns",i,nnz);
     for (j=0; j<nnz; j++) {
       if (*JJ >= cstart) break;
       JJ++;
@@ -2230,7 +2226,7 @@ EXTERN_C_END
    Collective on MPI_Comm
 
    Input Parameters:
-+  A - the matrix 
++  B - the matrix 
 .  i - the indices into j for the start of each local row (starts with zero)
 .  j - the column indices for each local row (starts with zero) these must be sorted for each row
 -  v - optional values in the matrix
