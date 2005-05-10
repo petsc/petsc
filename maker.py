@@ -319,7 +319,7 @@ class BasicMake(Make):
         continue
       func = getattr(d, name)
       lib = struct()
-      lib.name, lib.src = self.parseDocString(func.__doc__, name[4:])
+      lib.name, lib.src = self.parseDocString(func.__doc__, name[6:])
       lib.includes, lib.libs = func(self)
       lib.configuration = name[6:]
       self.logPrint('Found configuration '+lib.configuration+' for dynamic library '+lib.name)
@@ -463,7 +463,7 @@ class BasicMake(Make):
           builder.compile([f])
         objects.extend([self.builder.getCompilerTarget(f) for f in sources])
         builder.popLanguage()
-        builder.link(objects, os.path.join(self.libDir, lib.name+'.'+self.setCompilers.sharedLibraryExt), shared = 1)
+      builder.link(objects, os.path.join(self.libDir, lib.name+'.'+self.setCompilers.sharedLibraryExt), shared = 1)
       builder.popConfiguration()
     return
 
@@ -480,7 +480,7 @@ class BasicMake(Make):
           builder.compile([f])
         objects.extend([self.builder.getCompilerTarget(f) for f in sources])
         builder.popLanguage()
-        builder.link(objects, os.path.join(self.libDir, lib.name+'.'+self.setCompilers.dynamicLibraryExt), shared = 'dynamic')
+      builder.link(objects, os.path.join(self.libDir, lib.name+'.'+self.setCompilers.dynamicLibraryExt), shared = 'dynamic')
       builder.popConfiguration()
     return
 

@@ -462,19 +462,25 @@ class Builder(logging.Logger):
     config = self.getConfiguration()
     if target is None:
       if len(source) and not source[0] is None:
-        if shared:
+        if shared == 'dynamic':
+          target = self.getDynamicLinkerTarget(source[0], shared)
+        elif shared:
           target = self.getSharedLinkerTarget(source[0], shared)
         else:
           target = self.getLinkerTarget(source[0], shared)
     if not target is None and self.shouldLink(source, target):
         if callable(self.getLinkerObject()):
-          if shared:
+          if shared == 'dynamic':
+            output, error, status, outputFiles = self.getDynamicLinkerObject()(source, target)
+          elif shared:
             output, error, status, outputFiles = self.getSharedLinkerObject()(source, target)
           else:
             output, error, status, outputFiles = self.getLinkerObject()(source, target)
           check(None, status, output, error)
         else:
-          if shared:
+          if shared == 'dynamic':
+            output, error, status = script.Script.executeShellCommand(self.getDynamicLinkerCommand(source, target), checkCommand = check, log = self.log)
+          elif shared:
             output, error, status = script.Script.executeShellCommand(self.getSharedLinkerCommand(source, target), checkCommand = check, log = self.log)
           else:
             output, error, status = script.Script.executeShellCommand(self.getLinkerCommand(source, target), checkCommand = check, log = self.log)
