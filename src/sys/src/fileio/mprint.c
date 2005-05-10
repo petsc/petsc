@@ -14,7 +14,7 @@ extern FILE *petsc_history;
      PETSC_STDOUTPUT = fopen("/dev/ttyXX","w") will cause all standard out
      writes to go to terminal XX; assuming you have write permission there
 */
-FILE *PETSC_STDOUT;
+FILE *PETSC_STDOUT = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFormatConvert"
