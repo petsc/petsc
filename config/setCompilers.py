@@ -739,8 +739,8 @@ class Configure(config.base.Configure):
           self.LIBS = '-L. -lconf1'
           success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
           os.rename('libconf1.a','libconf1.lib')
-          arext = 'lib'
           if not success:
+            arext = 'lib'
             success = self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
             os.remove('libconf1.lib')
             if success:
