@@ -2681,6 +2681,8 @@ EXTERN_C_END
 .  j - the column indices for each row (starts with zero) these must be sorted for each row
 -  v - optional values in the matrix
 
+   Contributed by: Lisandro Dalchin
+
    Level: developer
 
 .keywords: matrix, aij, compressed row, sparse, sequential
