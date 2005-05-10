@@ -398,7 +398,7 @@ class Configure(PETSc.package.Package):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
     self.addExtraLibraries()
     PETSc.package.Package.configureLibrary(self)
-    self.executeTest(self.configureMPICHShared)
+    #self.executeTest(self.configureMPICHShared)
     self.executeTest(self.configureConversion)
     self.executeTest(self.configureTypes)
     self.executeTest(self.configureMissingPrototypes)      
