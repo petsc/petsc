@@ -117,7 +117,7 @@ if __name__ == '__main__':
   elif os.path.isfile(petscConf):
     archRE = re.compile(r'^PETSC_ARCH=(?P<arch>[\w.\d-]+)[\s]*$');
     confFile = file(petscConf)
-    for line in input.readlines():
+    for line in confFile.readlines():
       m = archRE.match(line)
       if m:
         petscArch = m.group('arch')
