@@ -21,3 +21,9 @@ realclean: clean
 
 tarball:
 	tar cvzf PETScPython.tar.gz -C wrappers `cd wrappers; find PETSc -name "*.c" -o -name "*.py"`
+
+getTarball:
+	wget --passive-ftp ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz .
+
+install:
+	tar xvzf PETScPython.tar.gz -C ${PETSC_DIR}/src/python

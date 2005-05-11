@@ -314,6 +314,7 @@ package PETSc {
                            KSP_DIVERGED_INDEFINITE_PC       = -8,
                            KSP_DIVERGED_NAN                 = -9,
                            KSP_DIVERGED_INDEFINITE_MAT      = -10};
+
   class KSP implements PetscObject {
     // Solve the linear system A x = b
     void solve(in Vec b, in Vec x);
@@ -348,8 +349,16 @@ package PETSc {
     bool getComputeSingularValues();
     // Set the flag for computing singular values of the reduced matrix
     void setComputeSingularValues(in bool computeSingularValues);
-
+    // Set the type of norm used to check convergence of the solver
     void setNormType(in KSPNormType normType);
+
+    // Set the function which is used to check convergence of the solver
+    //   Must be called after the KSP type has been set so put this after
+    //   a call to KSPSetType(), or KSPSetFromOptions().
+    //
+    //   Calling sequence of convergence test:
+    //     reason convergenceTest(ksp, iterationNumber, residualNorm)
+    void setConvergenceTest(in function convergenceTest);
 
     // Get the rhs
     Vec getRhs();
