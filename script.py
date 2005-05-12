@@ -258,30 +258,6 @@ class Script(logging.Logger):
 
 import args
 
-class OutputFiles(dict):
-  def __init__(self):
-    dict.__init__(self)
-    self.isChanged = 0
-    return
-
-  def __setstate__(self, d):
-    '''Mark as unchanged'''
-    self.__dict__.update(d)
-    self.isChanged = 0
-    return
-
-  def __setitem__(self, key, value):
-    '''Mark as changed, clearing any loaded values'''
-    if not self.isChanged and len(self) > 0:
-      self.clear()
-    self.isChanged = 1
-    return dict.__setitem__(self, key, value)
-
-  def __delitem__(self, key, value):
-    '''Mark as changed'''
-    self.isChanged = 1
-    return dict.__delitem__(key, value)
-
 class LanguageProcessor(args.ArgumentProcessor):
   def __init__(self, clArgs = None, argDB = None, framework = None, versionControl = None):
     self.languageModule      = {}
@@ -293,7 +269,7 @@ class LanguageProcessor(args.ArgumentProcessor):
     self.framework           = framework
     self.versionControl      = versionControl
     args.ArgumentProcessor.__init__(self, clArgs, argDB)
-    self.outputFiles         = OutputFiles()
+    self.outputFiles         = {}
     self.modulePath          = 'config.compile'
     return
 

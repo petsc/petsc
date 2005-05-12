@@ -237,6 +237,10 @@ class Builder(logging.Logger):
     return self.getConfiguration(configurationName)
 
   def updateOutputFiles(self, outputFiles, newOutputFiles):
+    '''Update current output file sets with new file sets
+       - If the current language is SIDL, outputFiles is first cleared'''
+    if self.language[-1] == 'SIDL':
+      outputFiles.clear()
     for language in newOutputFiles:
       if language in outputFiles:
         if isinstance(outputFiles[language], sets.Set) and isinstance(outputFiles[language], sets.Set):

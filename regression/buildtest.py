@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import user
-import base
+import script
 
 import os
 
@@ -17,9 +17,10 @@ class Machine (object):
     self.host = host
     return
 
-class RemoteBuild (base.Base):
+class RemoteBuild(script.Script):
+  '''DO NOT USE. I am way out of date'''
   def __init__(self, machine, clArgs = None, argDB = None):
-    base.Base.__init__(self, clArgs, argDB)
+    script.Script.__init__(self, clArgs, argDB)
     self.machine = machine
     self.host    = machine.host
     self.dir     = machine.dir
@@ -27,26 +28,20 @@ class RemoteBuild (base.Base):
     self.rcp     = machine.rcp
     return
 
-  def setupArgDB(self, argDB, clArgs):
-    '''Setup argument types, using the database created by base.Base'''
+  def setupHelp(self):
     import nargs
 
-    argDB.setType('mode',   nargs.Arg(None, 0, 'Action, e.g. build, log, ...', isTemporary = 1), forceLocal = 1)
-    argDB.setType('dryRun', nargs.ArgBool(None, 0, 'Display but do not execute commands', isTemporary = 1), forceLocal = 1)
-
-    self.argDB['mode']          = 'build'
-    self.argDB['debugLevel']    = 3
-    self.argDB['debugSections'] = []
-
-    base.Base.setupArgDB(self, argDB, clArgs)
-    return argDB
+    help = script.Script.setupHelp(self)
+    help.addArgument('RemoteBuild', 'mode',   nargs.Arg(None, 0, 'Action, e.g. build, log, ...', isTemporary = 1), forceLocal = 1)
+    help.addArgument('RemoteBuild', 'dryRun', nargs.ArgBool(None, 0, 'Display but do not execute commands', isTemporary = 1), forceLocal = 1)
+    return help
 
   def executeShellCommand(self, command, checkCommand = None):
     '''Execute a shell command returning the output, and optionally provide a custom error checker'''
     if self.argDB['dryRun']:
       print command
       return
-    return base.Base.executeShellCommand(self, command, checkCommand)
+    return script.Script.executeShellCommand(self, command, checkCommand)
 
   def clean(self):
     '''Remove all PETSc 3 files'''
