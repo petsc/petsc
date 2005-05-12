@@ -225,7 +225,7 @@ class Make(script.Script):
 try:
   import sets
 except ImportError:
-  import config.setsBackport
+  import config.setsBackport as sets
 
 class struct:
   '''Container class'''
