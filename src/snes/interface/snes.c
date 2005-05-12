@@ -1072,7 +1072,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   }
 
   if (snes->setup) {ierr = (*snes->setup)(snes);CHKERRQ(ierr);}
-  snes->setupcalled = PETSC_FALSE;
+  snes->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
