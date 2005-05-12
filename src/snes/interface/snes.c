@@ -222,7 +222,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
       snes->printreason = PETSC_TRUE;
     }
 
-    ierr = PetscOptionsName("-snes_ksp_ew_conv","Use Eisentat-Walker linear system convergence test","SNES_KSP_SetParametersEW",&snes->ksp_ewconv);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-snes_ksp_ew_conv","Use Eisentat-Walker linear system convergence test","SNES_KSP_SetParametersEW",snes->ksp_ewconv,&snes->ksp_ewconv,PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscOptionsInt("-snes_ksp_ew_version","Version 1 or 2","SNES_KSP_SetParametersEW",kctx->version,&kctx->version,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_ksp_ew_rtol0","0 <= rtol0 < 1","SNES_KSP_SetParametersEW",kctx->rtol_0,&kctx->rtol_0,0);CHKERRQ(ierr);
@@ -1072,7 +1072,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   }
 
   if (snes->setup) {ierr = (*snes->setup)(snes);CHKERRQ(ierr);}
-  snes->setupcalled = PETSC_FALSE;
+  snes->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
