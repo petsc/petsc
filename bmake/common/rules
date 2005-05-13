@@ -103,8 +103,8 @@ cleanadic:
 #    #requiresprecision double (or single)
 #
 tree: ${ACTION}
-	-@if [ "${DIRS}" != "" ]; then \
-	  for dir in ${DIRS} foo ; do \
+	-@if [ "${DIRS}" != "" -o -d "ftn" ]; then \
+	  for dir in ${DIRS} ftn foo ; do \
             if [ "$$dir" = "fortran" -a "${FC_LINKER}foo" = "foo" ]; then \
               continue;\
             fi;\
