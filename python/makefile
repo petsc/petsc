@@ -2,7 +2,7 @@
 
 PWD = /home/knepley/PETSc-dev/petsc-dev/python
 WRAPPER = ${PWD}/wrappers
-SOURCE = wrappers/PETSc/Base.c wrappers/PETSc/PetscLog.c wrappers/PETSc/PetscViewer.c wrappers/PETSc/PetscMap.c wrappers/PETSc/Vec.c wrappers/PETSc/Mat.c wrappers/PETSc/KSP.c wrappers/PETSc/PC.c wrappers/PETSc/SNES.c
+SOURCE = wrappers/PETSc/Base.c wrappers/PETSc/PetscLog.c wrappers/PETSc/PetscOptions.c wrappers/PETSc/PetscViewer.c wrappers/PETSc/PetscMap.c wrappers/PETSc/Vec.c wrappers/PETSc/Mat.c wrappers/PETSc/KSP.c wrappers/PETSc/PC.c wrappers/PETSc/SNES.c
 
 build: ${SOURCE:.c=.so}
 
