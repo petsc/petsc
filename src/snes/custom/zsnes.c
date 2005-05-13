@@ -15,6 +15,7 @@
 #define matdaadsetsnes_                  MATDAADSETSNES
 #define snesdacomputejacobian_           SNESDACOMPUTEJACOBIAN
 #define snesdacomputejacobianwithadifor_ SNESDACOMPUTEJACOBIANWITHADIFOR
+#define snesdacomputejacobianwithadic_   SNESDACOMPUTEJACOBIANWITHADIC
 #define snesdaformfunction_              SNESDAFORMFUNCTION          
 #define snesconverged_tr_                SNESCONVERGED_TR
 #define snesconverged_ls_                SNESCONVERGED_LS
@@ -64,6 +65,7 @@
 #define matdaadsetsnes_                  matdaadsetsnes
 #define snesdacomputejacobian_           snesdacomputejacobian
 #define snesdacomputejacobianwithadifor_ snesdacomputejacobianwithadifor
+#define snesdacomputejacobianwithadic_   snesdacomputejacobianwithadic
 #define snesdaformfunction_              snesdaformfunction
 #define sneslinesearchcubic_             sneslinesearchcubic     
 #define sneslinesearchquadratic_         sneslinesearchquadratic    
@@ -223,6 +225,12 @@ void PETSC_STDCALL matdaadsetsnes_(Mat *mat,SNES *snes,PetscErrorCode *ierr)
 {
   *ierr = MatDAADSetSNES(*mat,*snes);
 }
+
+void PETSC_STDCALL snesdacomputejacobianwithadic_(SNES *snes,Vec *X,Mat *J,Mat *B,MatStructure *flag,void*ptr, int *ierr )
+{
+  *ierr = SNESDAComputeJacobianWithAdic(*snes,*X,J,B,flag,ptr);
+}
+
 #endif
 
 void PETSC_STDCALL snesview_(SNES *snes,PetscViewer *viewer, PetscErrorCode *ierr)
