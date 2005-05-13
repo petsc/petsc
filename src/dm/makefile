@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = ao da usg
+DIRS     = ao da usg custom
 LOCDIR   = src/dm/
 MANSEC   = DA
 

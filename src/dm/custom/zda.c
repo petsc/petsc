@@ -1,6 +1,6 @@
 
 #include "src/dm/da/daimpl.h"
-#include "src/fortran/custom/zpetsc.h"
+#include "zpetsc.h"
 #include "petscmat.h"
 #include "petscda.h"
 

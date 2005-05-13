@@ -23,7 +23,7 @@ M*/
 .seealso:  PetscFortranAddr, PetscInt
 M*/
 
-#include "src/fortran/custom/zpetsc.h" 
+#include "zpetsc.h" 
 #include "petscsys.h"
 extern PetscTruth PetscBeganMPI;
 

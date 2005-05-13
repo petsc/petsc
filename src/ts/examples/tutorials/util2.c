@@ -7,7 +7,7 @@
 */
 #include "src/ts/tsimpl.h"
 #include "src/snes/snesimpl.h"
-#include "src/fortran/custom/zpetsc.h"
+#include "zpetsc.h"
 
 PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 PetscErrorCode RHSJacobianFD(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);

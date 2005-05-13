@@ -9,7 +9,7 @@ SOURCEH  = matimpl.h ../../include/petscmat.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscmat
-DIRS     = interface impls examples utils matfd partition order color
+DIRS     = interface impls examples utils matfd partition order color custom
 LOCDIR   = src/mat/
 MANSEC   = Mat
 
