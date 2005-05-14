@@ -309,12 +309,9 @@ PetscErrorCode FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,len,idx,&from);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,len,idx,&to);CHKERRQ(ierr);
   ierr = VecScatterCreate(globalin,from,tmp_in,to,&scatter);CHKERRQ(ierr);
-  ierr = VecScatterBegin(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);
-  
-
- CHKERRQ(ierr);
-  ierr = VecScatterEnd(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);
- CHKERRQ(ierr);
+  ierr = VecScatterBegin(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+ ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
 
   /*Extract income array */
   ierr = VecGetArray(tmp_in,&inptr);CHKERRQ(ierr);
@@ -351,13 +348,12 @@ PetscErrorCode FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
   ierr = VecRestoreArray(tmp_out,&outptr);
 
   ierr = VecScatterCreate(tmp_out,from,globalout,to,&scatter);CHKERRQ(ierr);
-  ierr = VecScatterBegin(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter
-);
- CHKERRQ(ierr);
-  ierr = VecScatterEnd(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter);
- CHKERRQ(ierr);
+  ierr = VecScatterBegin(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
  
   /* Destroy idx aand scatter */
+  ierr = VecDestroy(tmp_in);CHKERRQ(ierr);
+  ierr = VecDestroy(tmp_out);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
