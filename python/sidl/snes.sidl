@@ -16,8 +16,6 @@ package PETSc {
     void setOptionsPrefix(in string prefix);
     // Enlarge the prefix appended to options directed to this object
     void appendOptionsPrefix(in string prefix);
-    // Customize this object using command line arguments
-    void setFromOptions();
 
     // Configure the object using the PETSc options database
     void setFromOptions();
@@ -53,6 +51,20 @@ package PETSc {
     static void eventBegin(in int event);
     static void eventEnd(in int event);
     static void flops(in int flops);
+  }
+
+  class PetscOptions implements PetscObject {
+    // Determines whether a certain option is given in the database
+    static bool hasName(in string pre, in string name);
+    // Sets an option name-value pair in the options database, overriding whatever is already present
+    static void setValue(in string name, in string value);
+    // Clears an option name-value pair in the options database, overriding whatever is already present
+    static void clearValue(in string name);
+
+    static void getInt(in string pre, in string name, out int value, out bool flag);
+    static void getReal(in string pre, in string name, out double value, out bool flag);
+    static void getScalar(in string pre, in string name, out double value, out bool flag);
+    static void getTruth(in string pre, in string name, out bool value, out bool flag);
   }
 
   enum PetscConstants {PETSC_IGNORE = 0, PETSC_DECIDE = -1, PETSC_DEFAULT = -2};

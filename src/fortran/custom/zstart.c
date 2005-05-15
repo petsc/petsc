@@ -221,6 +221,9 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   *ierr = 1;
   *ierr = PetscMemzero(name,256); if (*ierr) return;
   if (PetscInitializeCalled) {*ierr = 0; return;}
+
+  /* this must be initialized in a routine, not as a constant declaration*/
+  PETSC_STDOUT = stdout;
   
   *ierr = PetscOptionsCreate(); 
   if (*ierr) return;

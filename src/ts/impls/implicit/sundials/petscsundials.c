@@ -317,7 +317,7 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PetscErrorCode ierr;
-  int            M,locsize,flag,i;
+  int            M,locsize,i;
   realtype       *tmp;
   PetscScalar    *parray;
 
@@ -424,11 +424,13 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PetscErrorCode ierr;
   char           *type;
+  char            atype[] = "Adams";
+  char            btype[] = "BDF: backward differentiation formula";
   PetscTruth     iascii,isstring;
 
   PetscFunctionBegin;
-  if (cvode->cvode_type == SUNDIALS_ADAMS) {type = "Adams";}
-  else                                  {type = "BDF: backward differentiation formula";}
+  if (cvode->cvode_type == SUNDIALS_ADAMS) {type = atype;}
+  else                                     {type = btype;}
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
