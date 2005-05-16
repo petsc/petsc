@@ -385,13 +385,14 @@ class Configure(PETSc.package.Package):
   def addExtraLibraries(self):
     '''Check for various auxiliary libraries we may need'''
     extraLib = []
-    if self.executeTest(self.libraries.check, [['rt'], 'timer_create', None, extraLib]):
-      extraLib.append('librt.a')
-    if self.executeTest(self.libraries.check, [['aio'], 'aio_read', None, extraLib]):
-      extraLib.insert(0, 'libaio.a')
-    if self.executeTest(self.libraries.check, [['nsl'], 'exit', None, extraLib]):
-      extraLib.insert(0, 'libnsl.a')
-    self.extraLib.extend(extraLib)
+    if not self.setCompilers.usedMPICompilers:
+      if self.executeTest(self.libraries.check, [['rt'], 'timer_create', None, extraLib]):
+        extraLib.append('librt.a')
+      if self.executeTest(self.libraries.check, [['aio'], 'aio_read', None, extraLib]):
+        extraLib.insert(0, 'libaio.a')
+      if self.executeTest(self.libraries.check, [['nsl'], 'exit', None, extraLib]):
+        extraLib.insert(0, 'libnsl.a')
+      self.extraLib.extend(extraLib)
     return
 
   def configureLibrary(self):
