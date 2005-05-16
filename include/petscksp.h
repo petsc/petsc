@@ -181,7 +181,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant(KSP);
 E*/
 typedef enum {KSP_GMRES_CGS_REFINE_NEVER, KSP_GMRES_CGS_REFINE_IFNEEDED, KSP_GMRES_CGS_REFINE_ALWAYS} KSPGMRESCGSRefinementType;
 extern const char *KSPGMRESCGSRefinementTypes[];
-/*M
+/*MC
     KSP_GMRES_CGS_REFINE_NEVER - Just do the classical (unmodified) Gram-Schmidt process
 
    Level: advanced
@@ -193,7 +193,7 @@ extern const char *KSPGMRESCGSRefinementTypes[];
           KSPGMRESModifiedGramSchmidtOrthogonalization()
 M*/
 
-/*M
+/*MC
     KSP_GMRES_CGS_REFINE_IFNEEDED - Do the classical (unmodified) Gram-Schmidt process and one step of 
           iterative refinement if an estimate of the orthogonality of the resulting vectors indicates
           poor orthogonality.
@@ -208,7 +208,7 @@ M*/
           KSPGMRESModifiedGramSchmidtOrthogonalization()
 M*/
 
-/*M
+/*MC
     KSP_GMRES_CGS_REFINE_NEVER - Do two steps of the classical (unmodified) Gram-Schmidt process.
 
    Level: advanced
@@ -281,7 +281,7 @@ typedef enum {KSP_NO_NORM               = 0,
               KSP_UNPRECONDITIONED_NORM = 2,
               KSP_NATURAL_NORM          = 3} KSPNormType;
 extern const char *KSPNormTypes[];
-/*M
+/*MC
     KSP_NO_NORM - Do not compute a norm during the Krylov process. This will 
           possibly save some computation but means the convergence test cannot
           be based on a norm of a residual etc.
@@ -293,7 +293,7 @@ extern const char *KSPNormTypes[];
 .seealso: KSPNormType, KSPSetNormType(), KSP_PRECONDITIONED_NORM, KSP_UNPRECONDITIONED_NORM, KSP_NATURAL_NORM
 M*/
 
-/*M
+/*MC
     KSP_PRECONDITIONED_NORM - Compute the norm of the preconditioned residual and pass that to the 
        convergence test routine.
 
@@ -302,7 +302,7 @@ M*/
 .seealso: KSPNormType, KSPSetNormType(), KSP_NO_NORM, KSP_UNPRECONDITIONED_NORM, KSP_NATURAL_NORM, KSPSetConvergenceTest()
 M*/
 
-/*M
+/*MC
     KSP_UNPRECONDITIONED_NORM - Compute the norm of the true residual (b - A*x) and pass that to the 
        convergence test routine.
 
@@ -311,7 +311,7 @@ M*/
 .seealso: KSPNormType, KSPSetNormType(), KSP_NO_NORM, KSP_PRECONDITIONED_NORM, KSP_NATURAL_NORM, KSPSetConvergenceTest()
 M*/
 
-/*M
+/*MC
     KSP_NATURAL_NORM - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the 
        convergence test routine.
 

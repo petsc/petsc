@@ -115,7 +115,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSSEIsEnabled(MPI_Comm,PetscTruth *,Pe
 E*/
 typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES} InsertMode;
 
-/*M
+/*MC
     INSERT_VALUES - Put a value into a vector or matrix, overwrites any previous value
 
     Level: beginner
@@ -126,7 +126,7 @@ typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES} InsertMode;
 
 M*/
 
-/*M
+/*MC
     ADD_VALUES - Adds a value into a vector or matrix, if there previously was no value, just puts the
                 value into that location
 
@@ -138,7 +138,7 @@ M*/
 
 M*/
 
-/*M
+/*MC
     MAX_VALUES - Puts the maximum of the scattered/gathered value and the current value into each location
 
     Level: beginner
@@ -156,7 +156,7 @@ M*/
 E*/
 typedef enum {SCATTER_FORWARD=0, SCATTER_REVERSE=1, SCATTER_FORWARD_LOCAL=2, SCATTER_REVERSE_LOCAL=3, SCATTER_LOCAL=2} ScatterMode;
 
-/*M
+/*MC
     SCATTER_FORWARD - Scatters the values as dictated by the VecScatterCreate() call
 
     Level: beginner
@@ -166,7 +166,7 @@ typedef enum {SCATTER_FORWARD=0, SCATTER_REVERSE=1, SCATTER_FORWARD_LOCAL=2, SCA
 
 M*/
 
-/*M
+/*MC
     SCATTER_REVERSE - Moves the values in the opposite direction then the directions indicated in
          in the VecScatterCreate()
 
@@ -177,7 +177,7 @@ M*/
 
 M*/
 
-/*M
+/*MC
     SCATTER_FORWARD_LOCAL - Scatters the values as dictated by the VecScatterCreate() call except NO parallel communication
        is done. Any variables that have be moved between processes are ignored
 
@@ -188,7 +188,7 @@ M*/
 
 M*/
 
-/*M
+/*MC
     SCATTER_REVERSE_LOCAL - Moves the values in the opposite direction then the directions indicated in
          in the VecScatterCreate()  except NO parallel communication
        is done. Any variables that have be moved between processes are ignored
