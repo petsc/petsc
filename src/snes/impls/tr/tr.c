@@ -19,7 +19,7 @@ PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,K
 
   PetscFunctionBegin;
   if (snes->ksp_ewconv) {
-    if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Eisenstat-Walker onvergence context not created");
+    if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Eisenstat-Walker convergence context not created");
     if (!n) {ierr = SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);CHKERRQ(ierr);}
     kctx->lresid_last = rnorm;
   }

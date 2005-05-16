@@ -764,7 +764,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart(KSP ksp, PetscInt restart)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),KSPGMRESSetRestart_C,(KSP,PetscInt),((ksp),(restart)));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ksp,KSPGMRESSetRestart_C,(KSP,PetscInt),(ksp,restart));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
