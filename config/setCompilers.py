@@ -9,6 +9,7 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.use64BitPointers = 0
+    self.usedMPICompilers = 0
     return
 
   def __str__(self):
@@ -127,6 +128,17 @@ class Configure(config.base.Configure):
     return 0
   isWindows = staticmethod(isWindows)
 
+  def useMPICompilers(self):
+    if 'with-cc' in self.argDB or 'CC' in self.argDB:
+      return 0
+    if 'with-cxx' in self.argDB or 'CXX' in self.argDB:
+      return 0
+    if 'with-fc' in self.argDB or 'FC' in self.argDB:
+      return 0
+    if 'with-mpi' in self.argDB and self.argDB['with-mpi'] and self.argDB['with-mpi-compilers'] and not self.argDB['download-mpich'] == 1 and not self.argDB['download-lam'] == 1:
+      return 1
+    return 0
+
   def checkVendor(self):
     '''Determine the compiler vendor'''
     self.vendor = self.framework.argDB['with-vendor-compilers']
@@ -193,12 +205,15 @@ class Configure(config.base.Configure):
       else:
         yield self.framework.argDB['CC']
       raise RuntimeError('C compiler you provided with -CC='+self.framework.argDB['CC']+' does not work')
-    elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(os.path.join(self.framework.argDB['with-mpi-dir'],'bin')) and self.framework.argDB['with-mpi-compilers'] and not self.framework.argDB['download-mpich'] == 1 and not self.framework.argDB['download-lam'] == 1 and self.framework.argDB['with-mpi']:
+    elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
+      self.usedMPICompilers = 1
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicc')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'hcc')
+      self.usedMPICompilers = 0
       raise RuntimeError('bin/<mpicc,hcc> you provided with -with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work')
     else:
-      if 'with-mpi' in self.framework.argDB and self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers']  and not self.framework.argDB['download-mpich'] == 1 and not self.framework.argDB['download-lam'] == 1:
+      if self.useMPICompilers():
+        self.usedMPICompilers = 1
         if Configure.isGNU('mpicc') and self.framework.argDB['with-gnu-compilers']:
           yield 'mpicc'
         if Configure.isGNU('hcc') and self.framework.argDB['with-gnu-compilers']:
@@ -211,6 +226,7 @@ class Configure(config.base.Configure):
           yield 'mpcc_r'
           yield 'mpcc'
           yield 'mpxlc'
+        self.usedMPICompilers = 0
       vendor = self.vendor
       if (not vendor) and self.framework.argDB['with-gnu-compilers']:
         yield 'gcc'
@@ -326,15 +342,18 @@ class Configure(config.base.Configure):
       else:
         yield self.framework.argDB['CXX']
       raise RuntimeError('C++ compiler you provided with -CXX='+self.framework.argDB['CXX']+' does not work')
-    elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(os.path.join(self.framework.argDB['with-mpi-dir'],'bin')) and self.framework.argDB['with-mpi-compilers']  and not self.framework.argDB['download-mpich'] == 1  and not self.framework.argDB['download-lam'] == 1 and self.framework.argDB['with-mpi']:
+    elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
+      self.usedMPICompilers = 1
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicxx')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'hcp')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpic++')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpiCC')
+      self.usedMPICompilers = 0
       if os.path.isfile(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'hcp')) or os.path.isfile(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicxx')) or os.path.isfile((os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpiCC'))):
         raise RuntimeError('bin/<mpiCC,mpicxx,hcp> you provided with -with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work\nRun with -with-cxx=0 if you wish to use this MPI and disable C++')
     else:
-      if 'with-mpi' in self.framework.argDB and self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers'] and not self.framework.argDB['download-mpich'] == 1  and not self.framework.argDB['download-lam'] == 1:
+      if self.useMPICompilers():
+        self.usedMPICompilers = 1
         if Configure.isGNU('mpicxx') and self.framework.argDB['with-gnu-compilers']:
           yield 'mpicxx'
         if not Configure.isGNU('mpicxx') and (not self.vendor is None):
@@ -350,6 +369,7 @@ class Configure(config.base.Configure):
         if not self.vendor is None:
           yield 'mpCC_r'
           yield 'mpCC'          
+        self.usedMPICompilers = 0
       vendor = self.vendor
       if (not vendor) and self.framework.argDB['with-gnu-compilers']:
         yield 'g++'
@@ -473,13 +493,16 @@ class Configure(config.base.Configure):
         yield self.framework.argDB['FC']
       yield self.framework.argDB['FC']
       raise RuntimeError('Fortran compiler you provided with -FC='+self.framework.argDB['FC']+' does not work')
-    elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(os.path.join(self.framework.argDB['with-mpi-dir'],'bin')) and self.framework.argDB['with-mpi-compilers'] and not self.framework.argDB['download-mpich'] == 1  and not self.framework.argDB['download-lam'] == 1 and self.framework.argDB['with-mpi']:
+    elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
+      self.usedMPICompilers = 1
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif90')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77')
+      self.usedMPICompilers = 0
       if os.path.isfile(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif90')) or os.path.isfile((os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77'))):
         raise RuntimeError('bin/mpif90[f77] you provided with --with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran')
     else:
-      if 'with-mpi' in self.framework.argDB and self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers'] and not self.framework.argDB['download-mpich'] == 1  and not self.framework.argDB['download-lam'] == 1:
+      if self.useMPICompilers():
+        self.usedMPICompilers = 1
         if Configure.isGNU('mpif90') and self.framework.argDB['with-gnu-compilers']:
           yield 'mpif90'
         if not Configure.isGNU('mpif90') and (not self.vendor is None):
@@ -491,6 +514,7 @@ class Configure(config.base.Configure):
         if not self.vendor is None:
           yield 'mpxlf_r'
           yield 'mpxlf'          
+        self.usedMPICompilers = 0
       vendor = self.vendor
       if (not vendor) and self.framework.argDB['with-gnu-compilers']:
         yield 'gfortran'
