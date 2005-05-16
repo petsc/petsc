@@ -10,7 +10,7 @@ OBJSC    = zdraw.o zoptions.o zplog.o zstart.o zstartf.o zsys.o zviewer.o
 OBJSF    = 
 LIBBASE  = libpetsc
 MANSEC   = Sys
-LOCDIR   = src/sys/custom/
+LOCDIR   = src/sys/ftn-custom/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

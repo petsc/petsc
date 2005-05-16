@@ -3,14 +3,14 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = zvec.c zis.c
+SOURCEC  = zksp.c zpc.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = zvec.o zis.o
+OBJSC    = zksp.o zpc.o
 OBJSF    = 
-LIBBASE  = libpetscvec
-MANSEC   = Vec
-LOCDIR   = src/vec/custom/
+LIBBASE  = libpetscksp
+MANSEC   = KSP
+LOCDIR   = src/ksp/ftn-custom/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

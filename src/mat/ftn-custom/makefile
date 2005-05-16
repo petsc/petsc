@@ -3,14 +3,14 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = zsnes.c zdmmg.c
+SOURCEC  = zmat.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = zsnes.o zdmmg.o
+OBJSC    = zmat.o
 OBJSF    = 
-LIBBASE  = libpetscsnes
-MANSEC   = SNES
-LOCDIR   = src/snes/custom/
+LIBBASE  = libpetscmat
+MANSEC   = Mat
+LOCDIR   = src/mat/ftn-custom/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

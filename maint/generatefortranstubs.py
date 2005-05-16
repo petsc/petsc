@@ -52,7 +52,7 @@ def FixDir(dir):
       if line.find('LIBBASE') >=0:
         libbase = line
       elif line.find('LOCDIR') >=0:
-        locdir = line.rstrip() + 'ftn/'
+        locdir = line.rstrip() + 'ftn-auto/'
 
     # now assemble the makefile
     outbuf =   'ALL: lib\n'
@@ -97,7 +97,7 @@ def processDir(arg,dirname,names):
     if os.path.splitext(l)[1] =='.c' or os.path.splitext(l)[1] == '.h':
       newls.append(l)
   if newls:
-    outdir = os.path.join(dirname,'ftn')
+    outdir = os.path.join(dirname,'ftn-auto')
     PrepFtnDir(outdir)
     options = ['-dir '+outdir, '-mnative', '-ansi', '-nomsgs',
                '-anyname', '-mapptr', '-mpi', '-ferr', '-ptrprefix Petsc', '-ptr64 PETSC_USE_POINTER_CONVERSION',
@@ -106,7 +106,7 @@ def processDir(arg,dirname,names):
     if status:
       raise RuntimeError('Error running bfort '+output)
     FixDir(outdir)
-  for name in ['SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn','fortran']:
+  for name in ['SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran']:
     if name in names:
       names.remove(name)
   return

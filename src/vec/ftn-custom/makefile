@@ -1,16 +1,16 @@
 
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = 
 FFLAGS   =
-SOURCEC  = zda.c zao.c zsda.c
+SOURCEC  = zvec.c zis.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = zda.o zao.o zsda.o
+OBJSC    = zvec.o zis.o
 OBJSF    = 
-LIBBASE  = libpetscdm
-MANSEC   = DA
-LOCDIR   = src/dm/custom/
+LIBBASE  = libpetscvec
+MANSEC   = Vec
+LOCDIR   = src/vec/ftn-custom/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

@@ -3,14 +3,14 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = zmat.c
+SOURCEC  = zts.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = zmat.o
+OBJSC    = zts.o
 OBJSF    = 
-LIBBASE  = libpetscmat
-MANSEC   = Mat
-LOCDIR   = src/mat/custom/
+LIBBASE  = libpetscts
+MANSEC   = TS
+LOCDIR   = src/ts/ftn-custom/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

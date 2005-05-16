@@ -3,14 +3,14 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = zksp.c zpc.c
+SOURCEC  = zsnes.c zdmmg.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = zksp.o zpc.o
+OBJSC    = zsnes.o zdmmg.o
 OBJSF    = 
-LIBBASE  = libpetscksp
-MANSEC   = KSP
-LOCDIR   = src/ksp/custom/
+LIBBASE  = libpetscsnes
+MANSEC   = SNES
+LOCDIR   = src/snes/ftn-custom/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
