@@ -158,7 +158,7 @@ int main(int argc,char **argv)
   ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
 
   ierr = TSGetSolution(ts,&global);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"out.m",&viewfile);CHKERRQ(ierr); 
+  ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"out.m",&viewfile);CHKERRQ(ierr); 
   ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
   ierr = VecView(global,viewfile);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewfile);CHKERRQ(ierr);
