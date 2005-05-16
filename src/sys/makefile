@@ -1,7 +1,7 @@
 
 ALL: lib 
 SOURCEH   = ctable.h
-DIRS      = src examples
+DIRS      = src examples ftn-custom
 LOCDIR    = src/sys/
 MANSEC    = Sys
 

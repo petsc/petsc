@@ -33,7 +33,7 @@ PETSC_EXTERN_CXX_BEGIN
                                          PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_DATE),0)
 #endif
 
-/*M
+/*MC
     PetscGetVersion - Gets the Petsc Version information in a string.
 
     Output Parameter:

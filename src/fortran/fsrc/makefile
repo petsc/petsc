@@ -10,7 +10,7 @@ SOURCEF  = somefort.F
 SOURCEH  =
 OBJSC    =
 OBJSF    = somefort.o
-LIBBASE  = libpetscfortran
+LIBBASE  = libpetsc
 MANSEC   = Sys
 LOCDIR   = src/fortran/fsrc/
 

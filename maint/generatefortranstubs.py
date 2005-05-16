@@ -31,16 +31,61 @@ def FixFile(filename):
   ff.close()
   return
 
-def FixDir(petscdir):
-  fdir  = os.path.join(petscdir, 'src', 'fortran', 'auto') 
+def FixDir(dir):
   names = []
-  for f in os.listdir(fdir):
+  for f in os.listdir(dir):
     if os.path.splitext(f)[1] == '.c':
-      FixFile(os.path.join(fdir, f))
+      FixFile(os.path.join(dir, f))
       names.append(f)
-  ff = open(os.path.join(fdir, 'makefile.src'), 'w')
-  ff.write('SOURCEC = '+' '.join(names)+'\n')
-  ff.close()
+  if not names == []:
+    mfile=os.path.abspath(os.path.join(dir,'..','makefile'))
+    try:
+      fd=open(mfile,'r')
+    except:
+      print 'Error! missing file:', mfile
+      return
+    inbuf = fd.read()
+    fd.close()
+    libbase = ""
+    locdir = ""
+    for line in inbuf.splitlines():
+      if line.find('LIBBASE') >=0:
+        libbase = line
+      elif line.find('LOCDIR') >=0:
+        locdir = line.rstrip() + 'ftn-auto/'
+
+    # now assemble the makefile
+    outbuf =   'ALL: lib\n'
+    outbuf +=  'CFLAGS   =\n'
+    outbuf +=  'FFLAGS   =\n'
+    outbuf +=  'SOURCEC  = ' +' '.join(names)+ '\n'
+    outbuf +=  'OBJSC    = ' +' '.join(names).replace('.c','.o')+ '\n'    
+    outbuf +=  'SOURCEF  =\n'
+    outbuf +=  'SOURCEH  =\n'
+    outbuf +=  'DIRS     =\n'
+    outbuf +=  libbase + '\n'
+    outbuf +=  locdir + '\n'
+    outbuf +=  'include ${PETSC_DIR}/bmake/common/base\n'
+    outbuf +=  'include ${PETSC_DIR}/bmake/common/test\n'
+    
+    ff = open(os.path.join(dir, 'makefile'), 'w')
+    ff.write(outbuf)
+    ff.close()
+
+  # if dir is empty - remove it
+  if os.path.exists(dir) and os.path.isdir(dir) and os.listdir(dir) == []:
+    os.rmdir(dir)
+  return
+
+def PrepFtnDir(dir):
+  if os.path.exists(dir) and not os.path.isdir(dir):
+    raise RuntimeError('Error - specified path is not a dir: ' + dir)
+  elif not os.path.exists(dir):
+    os.mkdir(dir)
+  else:
+    files = os.listdir(dir)
+    for file in files:
+      os.remove(os.path.join(dir,file))
   return
 
 def processDir(arg,dirname,names):
@@ -52,29 +97,24 @@ def processDir(arg,dirname,names):
     if os.path.splitext(l)[1] =='.c' or os.path.splitext(l)[1] == '.h':
       newls.append(l)
   if newls:
-    options = ['-dir '+os.path.join(petscdir, 'src', 'fortran', 'auto'), '-mnative', '-ansi', '-nomsgs',
+    outdir = os.path.join(dirname,'ftn-auto')
+    PrepFtnDir(outdir)
+    options = ['-dir '+outdir, '-mnative', '-ansi', '-nomsgs',
                '-anyname', '-mapptr', '-mpi', '-ferr', '-ptrprefix Petsc', '-ptr64 PETSC_USE_POINTER_CONVERSION',
                '-fcaps PETSC_HAVE_FORTRAN_CAPS', '-fuscore PETSC_HAVE_FORTRAN_UNDERSCORE']
     (status,output) = commands.getstatusoutput('cd '+dirname+';'+bfort+' '+' '.join(options+newls))
     if status:
       raise RuntimeError('Error running bfort '+output)
-  for name in ['SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear']:
+    FixDir(outdir)
+  for name in ['SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran']:
     if name in names:
       names.remove(name)
   return
 
 def main(bfort):
   petscdir = os.getcwd()
-  fdir     = os.path.join(petscdir, 'src', 'fortran', 'auto') 
-  files    = os.listdir(fdir)
-  for f in files:
-    if os.path.splitext(f)[1] == '.c':
-      try:
-        os.unlink(os.path.join(fdir, f))
-      except:
-        pass
-  os.path.walk(os.getcwd(), processDir, [petscdir, bfort])
-  FixDir(os.getcwd())
+  tmpdir = os.path
+  os.path.walk(petscdir, processDir, [petscdir, bfort])
   return
 #
 # The classes in this file can also be used in other python-programs by using 'import'

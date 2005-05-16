@@ -214,7 +214,7 @@ E*/
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscTruth;
 extern const char *PetscTruths[];
 
-/*M
+/*MC
     PETSC_FALSE - False value of PetscTruth
 
     Level: beginner
@@ -224,7 +224,7 @@ extern const char *PetscTruths[];
 .seealso: PetscTruth
 M*/
 
-/*M
+/*MC
     PETSC_TRUE - True value of PetscTruth
 
     Level: beginner
@@ -234,7 +234,7 @@ M*/
 .seealso: PetscTruth
 M*/
 
-/*M
+/*MC
     PETSC_YES - Alias for PETSC_TRUE
 
     Level: beginner
@@ -245,7 +245,7 @@ M*/
 M*/
 #define PETSC_YES            PETSC_TRUE
 
-/*M
+/*MC
     PETSC_NO - Alias for PETSC_FALSE
 
     Level: beginner
@@ -256,7 +256,7 @@ M*/
 M*/
 #define PETSC_NO             PETSC_FALSE
 
-/*M
+/*MC
     PETSC_NULL - standard way of passing in a null or array or pointer
 
    Level: beginner
@@ -272,7 +272,7 @@ M*/
 M*/
 #define PETSC_NULL           0
 
-/*M
+/*MC
     PETSC_DECIDE - standard way of passing in integer or floating point parameter
        where you wish PETSc to use the default.
 
@@ -283,7 +283,7 @@ M*/
 M*/
 #define PETSC_DECIDE         -1
 
-/*M
+/*MC
     PETSC_DEFAULT - standard way of passing in integer or floating point parameter
        where you wish PETSc to use the default.
 
@@ -295,7 +295,7 @@ M*/
 #define PETSC_DEFAULT        -2
 
 
-/*M
+/*MC
     PETSC_IGNORE - same as PETSC_NULL, means PETSc will ignore this argument
 
    Level: beginner
@@ -311,7 +311,7 @@ M*/
 M*/
 #define PETSC_IGNORE         PETSC_NULL
 
-/*M
+/*MC
     PETSC_DETERMINE - standard way of passing in integer or floating point parameter
        where you wish PETSc to compute the required value.
 
@@ -322,7 +322,7 @@ M*/
 M*/
 #define PETSC_DETERMINE      PETSC_DECIDE
 
-/*M
+/*MC
     PETSC_COMM_WORLD - the equivalent of the MPI_COMM_WORLD communicator which represents
            all the processs that PETSc knows about. 
 
@@ -338,7 +338,7 @@ M*/
 M*/
 extern MPI_Comm PETSC_COMM_WORLD;
 
-/*M
+/*MC
     PETSC_COMM_SELF - a duplicate of the MPI_COMM_SELF communicator which represents
            the current process
 
@@ -1401,7 +1401,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,PetscScalar[],Pet
 
 /* --------------------------------------------------------------------*/
 
-/*M
+/*MC
     size - integer variable used to contain the number of processors in
            the relevent MPI_Comm
 
@@ -1410,7 +1410,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,PetscScalar[],Pet
 .seealso: rank, comm
 M*/
 
-/*M
+/*MC
     rank - integer variable used to contain the number of this processor relative
            to all in the relevent MPI_Comm
 
@@ -1419,7 +1419,7 @@ M*/
 .seealso: size, comm
 M*/
 
-/*M
+/*MC
     comm - MPI_Comm used in the current routine or object
 
    Level: beginner
@@ -1427,7 +1427,7 @@ M*/
 .seealso: size, rank
 M*/
 
-/*M
+/*MC
     MPI_Comm - the basic object used by MPI to determine which processes are involved in a 
         communication
 
@@ -1438,7 +1438,7 @@ M*/
 .seealso: size, rank, comm, PETSC_COMM_WORLD, PETSC_COMM_SELF
 M*/
 
-/*M
+/*MC
     PetscScalar - PETSc type that represents either a double precision real number or 
        a double precision complex number if the code is configured with --with-scalar-type=complex
 
@@ -1447,7 +1447,7 @@ M*/
 .seealso: PetscReal, PassiveReal, PassiveScalar
 M*/
 
-/*M
+/*MC
     PetscReal - PETSc type that represents a double precision real number
 
    Level: beginner
@@ -1455,7 +1455,7 @@ M*/
 .seealso: PetscScalar, PassiveReal, PassiveScalar
 M*/
 
-/*M
+/*MC
     PassiveScalar - PETSc type that represents either a double precision real number or 
        a double precision complex number if the code is  code is configured with --with-scalar-type=complex
 
@@ -1467,7 +1467,7 @@ M*/
 .seealso: PetscReal, PassiveReal, PetscScalar
 M*/
 
-/*M
+/*MC
     PassiveReal - PETSc type that represents a double precision real number
 
    Level: beginner
@@ -1478,7 +1478,7 @@ M*/
 .seealso: PetscScalar, PetscReal, PassiveScalar
 M*/
 
-/*M
+/*MC
     MPIU_SCALAR - MPI datatype corresponding to PetscScalar
 
    Level: beginner

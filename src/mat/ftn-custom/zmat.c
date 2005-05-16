@@ -1,6 +1,6 @@
 
 #include "src/mat/impls/adj/mpi/mpiadj.h"
-#include "src/fortran/custom/zpetsc.h"
+#include "zpetsc.h"
 #include "petscmat.h"
 
 

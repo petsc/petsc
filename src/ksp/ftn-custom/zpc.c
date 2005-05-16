@@ -1,5 +1,5 @@
 
-#include "src/fortran/custom/zpetsc.h"
+#include "zpetsc.h"
 #include "petscksp.h"
 #include "petscmg.h"
 

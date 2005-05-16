@@ -128,7 +128,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm,const char[]
 E*/
 typedef enum {PETSC_FILE_RDONLY,PETSC_FILE_WRONLY,PETSC_FILE_CREATE} PetscViewerFileType;
 
-/*M
+/*MC
     PETSC_FILE_RDONLY - File is open to be read from only, not written to
 
     Level: beginner
@@ -138,7 +138,7 @@ typedef enum {PETSC_FILE_RDONLY,PETSC_FILE_WRONLY,PETSC_FILE_CREATE} PetscViewer
 
 M*/
 
-/*M
+/*MC
     PETSC_FILE_WRONLY - File is open to be appended to.
 
     Level: beginner
@@ -148,7 +148,7 @@ M*/
 
 M*/
 
-/*M
+/*MC
     PETSC_FILE_CREATE - Create the file, or delete it and open an empty file if it already existed
 
     Level: beginner

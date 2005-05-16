@@ -3,9 +3,8 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  =
 SOURCEF  =
-SOURCEH  = petsc.h petscsys.h \
-           petschead.h petscbag.h \
-	   petscmath.h petscbt.h petscblaslapack.h petscf90.h petscversion.h
+SOURCEH  = petsc.h petscsys.h petschead.h petscbag.h petscmath.h petscbt.h \
+ petscblaslapack.h petscf90.h petscversion.h zpetsc.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec

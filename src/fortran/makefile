@@ -1,8 +1,7 @@
 
 ALL: lib
 
-DIRS     = auto custom f90 fsrc kernels
-XDIRS    = auto
+DIRS     = f90 fsrc kernels
 LOCDIR   = src/fortran/
 MANSEC   = Sys
 
