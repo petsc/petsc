@@ -293,7 +293,7 @@ void PETSC_STDCALL petscmemorygetmaximumusage_(PetscLogDouble *foo, PetscErrorCo
   *ierr = PetscMemoryGetMaximumUsage(foo);
 }
 
-void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,PetscInt *shift,PetscErrorCode *ierr)
+void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,size_t *shift,PetscErrorCode *ierr)
 {
   *ierr = 0;
   *shift = y - x;

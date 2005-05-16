@@ -88,7 +88,7 @@ class Configure(config.base.Configure):
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
-    self.addMakeMacro('CC_LINKER_LIBS',self.compilers.LIBS+' '+self.libraries.toString(self.compilers.flibs))
+    self.addMakeMacro('CC_LINKER_LIBS',self.compilers.LIBS+' '+self.libraries.toString(self.compilers.flibs)+' '+self.libraries.toString(self.compilers.cxxlibs))
 
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
