@@ -25,5 +25,8 @@ tarball:
 getTarball:
 	wget --passive-ftp ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz .
 
+pushTarball:
+	scp PETScPython.tar.gz petsc@terra.mcs.anl.gov:/mcs/ftp/pub/petsc
+
 install:
 	tar xvzf PETScPython.tar.gz -C ${PETSC_DIR}/src/python
