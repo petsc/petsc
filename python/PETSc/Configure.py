@@ -93,6 +93,7 @@ class Configure(config.base.Configure):
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       # need FPPFLAGS in config/setCompilers
+      self.addDefine('HAVE_FORTRAN','1')
       self.addMakeMacro('FPP_FLAGS',self.setCompilers.CPPFLAGS)
     
       # compiler values

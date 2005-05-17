@@ -1,3 +1,4 @@
+#requirespackage   'PETSC_HAVE_FORTRAN'
 
 ALL: lib
 
