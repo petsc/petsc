@@ -55,7 +55,9 @@ def FixDir(dir):
         locdir = line.rstrip() + 'ftn-auto/'
 
     # now assemble the makefile
-    outbuf =   'ALL: lib\n'
+    outbuf  =  '\n'
+    outbuf +=  "#requirespackage   'PETSC_HAVE_FORTRAN'\n"
+    outbuf +=  'ALL: lib\n'
     outbuf +=  'CFLAGS   =\n'
     outbuf +=  'FFLAGS   =\n'
     outbuf +=  'SOURCEC  = ' +' '.join(names)+ '\n'
