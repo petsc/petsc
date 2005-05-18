@@ -129,11 +129,11 @@ class Configure(config.base.Configure):
   isWindows = staticmethod(isWindows)
 
   def useMPICompilers(self):
-    if 'with-cc' in self.argDB or 'CC' in self.argDB:
+    if ('with-cc' in self.argDB and self.argDB['with-cc'] != '0') or 'CC' in self.argDB:
       return 0
-    if 'with-cxx' in self.argDB or 'CXX' in self.argDB:
+    if ('with-cxx' in self.argDB and self.argDB['with-cxx'] != '0') or 'CXX' in self.argDB:
       return 0
-    if 'with-fc' in self.argDB or 'FC' in self.argDB:
+    if ('with-fc' in self.argDB and self.argDB['with-fc'] != '0') or 'FC' in self.argDB:
       return 0
     if 'with-mpi' in self.argDB and self.argDB['with-mpi'] and self.argDB['with-mpi-compilers'] and not self.argDB['download-mpich'] == 1 and not self.argDB['download-lam'] == 1:
       return 1
