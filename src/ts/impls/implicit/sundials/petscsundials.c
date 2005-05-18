@@ -157,19 +157,19 @@ void TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
   if (ierr) {
     (*PetscErrorPrintf)("TSFunction_Sundials:Could not place array. Error code %d",(int)ierr);
   }
-  ierr = VecResetArray(tmpx);
 
   ierr = VecPlaceArray(tmpy,N_VGetArrayPointer(ydot));
   if (ierr) {
     (*PetscErrorPrintf)("TSFunction_Sundials:Could not place array. Error code %d",(int)ierr);
   }
-  ierr = VecResetArray(tmpy);
 
   /* now compute the right hand side function */
   ierr = TSComputeRHSFunction(ts,t,tmpx,tmpy);
   if (ierr) {
     (*PetscErrorPrintf)("TSFunction_Sundials:Could not compute RHS function. Error code %d",(int)ierr);
   }
+  VecResetArray(tmpx); 
+  VecResetArray(tmpy);
 }
 
 /*
@@ -266,7 +266,6 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     ydata = (PetscScalar *) NV_DATA_S(cvode->y);
     /*ierr = VecPlaceArray(cvode->w1,ydata);CHKERRQ(ierr);*/
     ierr = VecGetArray(cvode->w1,&parray);CHKERRQ(ierr);
-    /*ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);*/
     ierr = PetscMemcpy(parray,ydata,locsize*sizeof(PetscScalar));
     ierr = VecRestoreArray(cvode->w1,&parray);CHKERRQ(ierr);
     ierr = VecCopy(cvode->w1,cvode->update);CHKERRQ(ierr);
