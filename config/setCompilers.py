@@ -121,7 +121,7 @@ class Configure(config.base.Configure):
     '''Returns true if the compiler is a Windows compiler'''
     if compiler in ['icl', 'cl', 'bcc32', 'ifl', 'df']:
       return 1
-    if compiler in ['ifort','f90'] and self.isCygwin():
+    if compiler in ['ifort','f90'] and Configure.isCygwin():
       return 1
     if compiler in ['lib', 'tlib']:
       return 1
