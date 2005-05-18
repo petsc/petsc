@@ -75,6 +75,7 @@ class Configure(config.base.Configure):
     
     # compiler values
     self.setCompilers.pushLanguage(self.languages.clanguage)
+    self.setCompilers.delMakeMacro('CC')
     self.addMakeMacro('CC',self.setCompilers.getCompiler())
     self.addMakeMacro('CC_FLAGS',self.setCompilers.getCompilerFlags())    
     self.setCompilers.popLanguage()
@@ -97,7 +98,6 @@ class Configure(config.base.Configure):
       self.addMakeMacro('FPP_FLAGS',self.setCompilers.CPPFLAGS)
     
       # compiler values
-      self.addMakeMacro('FC',self.setCompilers.getCompiler())
       self.addMakeMacro('FC_FLAGS',self.setCompilers.getCompilerFlags())    
       self.setCompilers.popLanguage()
       # .o or .obj 
