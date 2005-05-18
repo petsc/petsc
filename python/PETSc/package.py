@@ -28,6 +28,7 @@ class Package(config.base.Configure):
     self.complex          = 0   # 1 means cannot use complex
     self.cxx              = 0   # 1 means requires C++
     self.fc               = 0   # 1 means requires fortran
+    self.double           = 1   # 1 means requires double precision 
     self.requires32bitint = 1;
     # urls where bk or tarballs may be found
     self.download         = []
@@ -330,7 +331,7 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
       if self.libraryOptions.integerSize == 64 and self.requires32bitint:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')    
-      if not self.languages.precision.lower() == 'double':
+      if self.double and not self.languages.precision.lower() == 'double':
         raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')    
       if not self.complex and self.languages.scalartype.lower() == 'complex':
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')    
