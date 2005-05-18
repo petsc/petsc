@@ -91,12 +91,6 @@ class Configure(script.Script):
 
   #################################
   # Define and Substitution Support
-  def delDefine(self, name):
-    '''Designate that "name" should be deleted (never put in)  configuration header'''
-    self.framework.logPrint('Deleting "'+name+'"')
-    if name in self.defines: del self.defines[name]
-    return
-
   def addMakeRule(self, name, dependencies, rule = []):
     '''Designate that "name" should be rule in the makefile header (bmake file)'''
     self.framework.logPrint('Defined make rule "'+name+'" with dependencies "'+str(dependencies)+'" and code '+str(rule))
@@ -110,10 +104,22 @@ class Configure(script.Script):
     self.makeMacros[name] = value
     return
 
+  def delMakeMacro(self, name):
+    '''Designate that "name" should be deleted (never put in) configuration header'''
+    self.framework.logPrint('Deleting "'+name+'"')
+    if name in self.makeMacros: del self.makeMacros[name]
+    return
+
   def addDefine(self, name, value):
     '''Designate that "name" should be defined to "value" in the configuration header'''
     self.framework.logPrint('Defined "'+name+'" to "'+str(value)+'"')
     self.defines[name] = value
+    return
+
+  def delDefine(self, name):
+    '''Designate that "name" should be deleted (never put in)  configuration header'''
+    self.framework.logPrint('Deleting "'+name+'"')
+    if name in self.defines: del self.defines[name]
     return
 
   def addTypedef(self, name, value):
