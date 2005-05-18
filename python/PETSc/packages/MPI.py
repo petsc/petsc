@@ -29,6 +29,7 @@ class Configure(PETSc.package.Package):
     self.liblist          = [[]] + self.liblist_lam + self.liblist_mpich
     # defaults to --with-mpi=yes
     self.required         = 1
+    self.double           = 0
     self.complex          = 1
     self.isPOE            = 0
     self.usingMPIUni      = 0
