@@ -206,7 +206,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
         It is safe to ignore this warning because ptr is obtained by casting a MPI_Comm to void*
         so we know it is safe to caste it back.
     */
-    *comm_out = (MPI_Comm) ptr;
+    ierr = PetscMemcpy(comm_out,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
     if (!flg) {
       /* This communicator is not yet known to this system, so we duplicate it and set its value */
       ierr       = MPI_Comm_dup(comm_in,comm_out);CHKERRQ(ierr);
@@ -221,9 +221,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
       ierr = PetscLogInfo((0,"PetscCommDuplicate: Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval));CHKERRQ(ierr);
 
       /* save PETSc communicator inside user communicator, so we can get it next time */
-      ptr = (void*)*comm_out;
+      ierr = PetscMemcpy(&ptr,comm_out,sizeof(MPI_Comm));CHKERRQ(ierr);
       ierr       = MPI_Attr_put(comm_in,Petsc_InnerComm_keyval,ptr);CHKERRQ(ierr);
-      ptr = (void*)comm_in;
+      ierr = PetscMemcpy(&ptr,&comm_in,sizeof(MPI_Comm));CHKERRQ(ierr);
       ierr       = MPI_Attr_put(*comm_out,Petsc_OuterComm_keyval,ptr);CHKERRQ(ierr);
     } else {
       ierr = MPI_Attr_get(*comm_out,Petsc_Tag_keyval,(void**)&tagvalp,(PetscMPIInt*)&flg);CHKERRQ(ierr);
@@ -291,7 +291,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm *comm)
   ierr = MPI_Attr_get(icomm,Petsc_Tag_keyval,(void**)&tagvalp,(PetscMPIInt*)&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr  = MPI_Attr_get(icomm,Petsc_InnerComm_keyval,&ptr,(PetscMPIInt*)&flg);CHKERRQ(ierr);
-    icomm = (MPI_Comm) ptr;
+    ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
     if (!flg) {
       PetscFunctionReturn(0);
     }
@@ -304,7 +304,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm *comm)
   if (!tagvalp[1]) {
 
     ierr  = MPI_Attr_get(icomm,Petsc_OuterComm_keyval,&ptr,(PetscMPIInt*)&flg);CHKERRQ(ierr);
-    ocomm = (MPI_Comm) ptr;
+    ierr = PetscMemcpy(&ocomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
 
     if (flg) {
       ierr = MPI_Attr_delete(ocomm,Petsc_InnerComm_keyval);CHKERRQ(ierr);

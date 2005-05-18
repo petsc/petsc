@@ -189,9 +189,11 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   TS_Sundials  *cvode = (TS_Sundials*)ts->data;
   Vec          sol = ts->vec_sol;
   PetscErrorCode ierr;
-  int          i,max_steps = ts->max_steps,flag,j;
+  int          i,max_steps = ts->max_steps,flag;
   long int     its;
-  realtype     t,tout,*tmp;
+  realtype     t,tout;
+  PetscScalar  *ydata,*parray;
+  PetscInt     locsize;
   void         *mem;
 
   PetscFunctionBegin;
@@ -240,10 +242,14 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   if (flag) SETERRQ(1,"CVSpgmrSetPreconditioner() fails");
 
   tout = ts->max_time;
-  for (i=0, tout=0.1; i<max_steps; i++, tout+=0.1) {
+  ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
+  NV_LENGTH_S(cvode->y) = locsize;
+  for (i = 0; i < max_steps; i++) {
     if (ts->ptime >= ts->max_time) break;
-   
-    ierr = CVode(mem,tout,cvode->y,&t,CV_NORMAL);CHKERRQ(ierr); 
+    ierr = VecGetArray(ts->vec_sol,&ydata);CHKERRQ(ierr);
+    NV_DATA_S(cvode->y) = (realtype *)ydata;
+    ierr = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);CHKERRQ(ierr); 
+    ierr = VecRestoreArray(ts->vec_sol,&ydata);CHKERRQ(ierr);
     
     ierr = CVodeGetNumNonlinSolvIters(mem,&its);CHKERRQ(ierr);
     cvode->nonlinear_solves += its; 
@@ -257,16 +263,12 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     ts->ptime     = t; 
 
     /* copy the solution from cvode->y to cvode->update and sol */
-    PetscInt locsize;
-    PetscScalar *parray;
-    tmp = NV_DATA_S(cvode->y);
+    ydata = (PetscScalar *) NV_DATA_S(cvode->y);
+    /*ierr = VecPlaceArray(cvode->w1,ydata);CHKERRQ(ierr);*/
     ierr = VecGetArray(cvode->w1,&parray);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
-    for (j=0; j<locsize; j++){
-      parray[j] = tmp[j];
-    }
+    /*ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);*/
+    ierr = PetscMemcpy(parray,ydata,locsize*sizeof(PetscScalar));
     ierr = VecRestoreArray(cvode->w1,&parray);CHKERRQ(ierr);
-   
     ierr = VecCopy(cvode->w1,cvode->update);CHKERRQ(ierr);
     ierr = VecCopy(cvode->update,sol);CHKERRQ(ierr);
 #ifdef DEBUG_SUNDIAL   
