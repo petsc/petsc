@@ -3,6 +3,8 @@
 /*
     Provides a PETSc interface to SUNDIALS. Alan Hindmarsh's parallel ODE
     solver.
+    The interface to PVODE (old version of CVODE) was originally contributed 
+    by Liyang Xu. It has been redone by Hong Zhang and Dinesh Kaushik.
 */
 
 #include "src/ts/impls/implicit/sundials/petscsundials.h"  /*I "petscts.h" I*/    
@@ -12,7 +14,6 @@
 /*
       TSPrecond_Sundials - function that we provide to SUNDIALS to
                         evaluate the preconditioner.
-    Contributed by: Liyang Xu
 */
 #undef __FUNCT__
 #define __FUNCT__ "TSPrecond_Sundials"
@@ -26,43 +27,28 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
   PC             pc = cvode->pc;
   PetscErrorCode ierr;
   Mat            Jac = ts->B;
-  Vec            tmpy = cvode->w1;
+  Vec            yy = cvode->w1;
   PetscScalar    one = 1.0,gm;
   MatStructure   str = DIFFERENT_NONZERO_PATTERN;
-  realtype *tmp;
-  PetscInt locsize,i;
-  PetscScalar *parray;
+  PetscScalar    *y_data;
   
   PetscFunctionBegin;
-#ifdef DEBUG_SUNDIAL
-  printf(" TSPrecond ...\n");
-#endif
   /* This allows us to construct preconditioners in-place if we like */
   ierr = MatSetUnfactored(Jac);CHKERRQ(ierr);
-
+  
   /* jok - TRUE means reuse current Jacobian else recompute Jacobian */
   if (jok) {
-    /* ierr  = MatCopy(cvode->pmat,Jac,SAME_NONZERO_PATTERN);CHKERRQ(ierr); fails - will find out why */
-    ierr     = MatCopy(cvode->pmat,Jac,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr     = MatCopy(cvode->pmat,Jac,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     str      = SAME_NONZERO_PATTERN;
     *jcurPtr = FALSE;
   } else {
-    /* make PETSc vector tmpy point to SUNDIALS vector y */
-    tmp  = N_VGetArrayPointer(y);
-    ierr = VecGetArray(cvode->w1,&parray);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
-    for (i=0; i<locsize; i++){
-      parray[i] = tmp[i];
-    }
-    ierr = VecRestoreArray(cvode->w1,&parray);CHKERRQ(ierr);
-#ifdef DEBUG_SUNDIAL
-    printf(" in Precond, tmpy ...\n");
-    ierr = VecView(tmpy,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-#endif
-
+    /* make PETSc vector yy point to SUNDIALS vector y */
+    y_data = (PetscScalar *) N_VGetArrayPointer(y);
+    ierr   = VecPlaceArray(yy,y_data); CHKERRQ(ierr);
     /* compute the Jacobian */
-    ierr = TSComputeRHSJacobian(ts,ts->ptime,tmpy,&Jac,&Jac,&str);CHKERRQ(ierr);
-
+    ierr = TSComputeRHSJacobian(ts,ts->ptime,yy,&Jac,&Jac,&str);CHKERRQ(ierr);
+    ierr = VecResetArray(yy); CHKERRQ(ierr);
+    /* I will check if it is possible to avoid this copy later - Dinesh */
     /* copy the Jacobian matrix */
     if (!cvode->pmat) {
       ierr = MatDuplicate(Jac,MAT_COPY_VALUES,&cvode->pmat);CHKERRQ(ierr);
@@ -71,7 +57,7 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
     ierr = MatCopy(Jac,cvode->pmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     *jcurPtr = TRUE;
   }
-
+  
   /* construct I-gamma*Jac  */
   gm   = -_gamma;
   ierr = MatScale(Jac,gm);CHKERRQ(ierr);
@@ -84,7 +70,6 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
 /*
      TSPSolve_Sundials -  routine that we provide to Sundials that applies the preconditioner.
       
-    Contributed by: Liyang Xu
 */    
 #undef __FUNCT__
 #define __FUNCT__ "TSPSolve_Sundials"
@@ -93,88 +78,55 @@ PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,
                                  realtype _gamma,realtype delta,
                                 int lr,void *P_data,N_Vector vtemp)
 { 
-  TS          ts = (TS) P_data;
-  TS_Sundials *cvode = (TS_Sundials*)ts->data;
-  PC          pc = cvode->pc;
-  Vec         rr = cvode->w1,xx = cvode->w2;
-  PetscErrorCode ierr;
-  realtype *tmp;
-  PetscInt locsize,i;
-  PetscScalar *parray;
+  TS              ts = (TS) P_data;
+  TS_Sundials     *cvode = (TS_Sundials*)ts->data;
+  PC              pc = cvode->pc;
+  Vec             rr = cvode->w1,zz = cvode->w2;
+  PetscErrorCode  ierr;
+  PetscScalar     *r_data,*z_data;
 
   PetscFunctionBegin;
-#ifdef DEBUG_SUNDIAL
-  printf(" ... TSPSolve \n");
-#endif
-  /* Make the PETSc work vectors rr and xx point to the arrays in the SUNDIALS vectors */
-  ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
-  tmp  = N_VGetArrayPointer(r);
-  ierr = VecGetArray(rr,&parray);CHKERRQ(ierr);
-  for (i=0; i<locsize; i++){
-    parray[i] = tmp[i];
-  }
-  ierr = VecRestoreArray(rr,&parray);CHKERRQ(ierr);
-  /*
-  printf(" rr ..\n");
-  ierr = VecView(rr,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
-
-  tmp  = N_VGetArrayPointer(z);
-  ierr = VecGetArray(xx,&parray);CHKERRQ(ierr);
-  for (i=0; i<locsize; i++){
-    parray[i] = tmp[i];
-  }
-  ierr = VecRestoreArray(xx,&parray);CHKERRQ(ierr);
-  /*
-  printf(" xx ..\n");
-  ierr = VecView(xx,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
-
-  /* Solve the Px=r and put the result in xx */
-  ierr = PCApply(pc,rr,xx);CHKERRQ(ierr);
-
+  /* Make the PETSc work vectors rr and zz point to the arrays in the SUNDIALS vectors r and z respectively*/
+  r_data  = (PetscScalar *) N_VGetArrayPointer(r);
+  z_data  = (PetscScalar *) N_VGetArrayPointer(z);
+  ierr = VecPlaceArray(rr,r_data); CHKERRQ(ierr);
+  ierr = VecPlaceArray(zz,z_data); CHKERRQ(ierr);
+  /* Solve the Px=r and put the result in zz */
+  ierr = PCApply(pc,rr,zz); CHKERRQ(ierr);
+  ierr = VecResetArray(rr); CHKERRQ(ierr);
+  ierr = VecResetArray(zz); CHKERRQ(ierr);
   cvode->linear_solves++;
   PetscFunctionReturn(0);
 }
 
 /*
         TSFunction_Sundials - routine that we provide to Sundials that applies the right hand side.
-    Contributed by: Liyang Xu
 */  
 #undef __FUNCT__  
 #define __FUNCT__ "TSFunction_Sundials"
 void TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 {
-  TS        ts = (TS) ctx;
-  TS_Sundials *cvode = (TS_Sundials*)ts->data;
-  Vec       tmpx = cvode->w1,tmpy = cvode->w2;
-  PetscErrorCode ierr;
+  TS              ts = (TS) ctx;
+  TS_Sundials     *cvode = (TS_Sundials*)ts->data;
+  Vec             yy = cvode->w1,yyd = cvode->w2;
+  PetscScalar     *y_data,*ydot_data;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-#ifdef DEBUG_SUNDIAL
-  printf(" ...TSFunction \n");
-#endif
-  /* Make the PETSc work vectors tmpx and tmpy point to the arrays in the SUNDIALS vectors */
-  ierr = VecPlaceArray(tmpx,N_VGetArrayPointer(y));
-  if (ierr) {
-    (*PetscErrorPrintf)("TSFunction_Sundials:Could not place array. Error code %d",(int)ierr);
-  }
-
-  ierr = VecPlaceArray(tmpy,N_VGetArrayPointer(ydot));
-  if (ierr) {
-    (*PetscErrorPrintf)("TSFunction_Sundials:Could not place array. Error code %d",(int)ierr);
-  }
-
+  /* Make the PETSc work vectors f and fd point to the arrays in the SUNDIALS vectors y and ydot respectively*/
+  y_data     = (PetscScalar *) N_VGetArrayPointer(y);
+  ydot_data  = (PetscScalar *) N_VGetArrayPointer(ydot);
+  ierr = VecPlaceArray(yy,y_data); CHKERRQ(ierr);
+  ierr = VecPlaceArray(yyd,ydot_data); CHKERRQ(ierr);
   /* now compute the right hand side function */
-  ierr = TSComputeRHSFunction(ts,t,tmpx,tmpy);
-  if (ierr) {
-    (*PetscErrorPrintf)("TSFunction_Sundials:Could not compute RHS function. Error code %d",(int)ierr);
-  }
-  VecResetArray(tmpx); 
-  VecResetArray(tmpy);
+  ierr = TSComputeRHSFunction(ts,t,yy,yyd); CHKERRQ(ierr);
+  ierr = VecResetArray(yy); CHKERRQ(ierr);
+  ierr = VecResetArray(yyd); CHKERRQ(ierr);
+  PetscFunctionReturnVoid();
 }
 
 /*
        TSStep_Sundials_Nonlinear - Calls Sundials to integrate the ODE.
-    Contributed by: Liyang Xu
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_Sundials_Nonlinear"
@@ -192,14 +144,11 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   int          i,max_steps = ts->max_steps,flag;
   long int     its;
   realtype     t,tout;
-  PetscScalar  *ydata,*parray;
+  PetscScalar  *y_data;
   PetscInt     locsize;
   void         *mem;
 
   PetscFunctionBegin;
-#ifdef DEBUG_SUNDIAL
-  printf(" ... call TSStep_Sundials_Nonlinear\n");
-#endif
   /* 
      Call CVodeCreate to create the solver memory:
      CV_ADAMS   specifies the Adams Method
@@ -242,15 +191,12 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   if (flag) SETERRQ(1,"CVSpgmrSetPreconditioner() fails");
 
   tout = ts->max_time;
-  ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
-  NV_LENGTH_S(cvode->y) = locsize;
+  ierr = VecGetArray(ts->vec_sol,&y_data);CHKERRQ(ierr);
+  N_VSetArrayPointer((realtype *)y_data,cvode->y);
+  ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
   for (i = 0; i < max_steps; i++) {
     if (ts->ptime >= ts->max_time) break;
-    ierr = VecGetArray(ts->vec_sol,&ydata);CHKERRQ(ierr);
-    NV_DATA_S(cvode->y) = (realtype *)ydata;
     ierr = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);CHKERRQ(ierr); 
-    ierr = VecRestoreArray(ts->vec_sol,&ydata);CHKERRQ(ierr);
-    
     ierr = CVodeGetNumNonlinSolvIters(mem,&its);CHKERRQ(ierr);
     cvode->nonlinear_solves += its; 
 
@@ -263,17 +209,10 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     ts->ptime     = t; 
 
     /* copy the solution from cvode->y to cvode->update and sol */
-    ydata = (PetscScalar *) NV_DATA_S(cvode->y);
-    /*ierr = VecPlaceArray(cvode->w1,ydata);CHKERRQ(ierr);*/
-    ierr = VecGetArray(cvode->w1,&parray);CHKERRQ(ierr);
-    ierr = PetscMemcpy(parray,ydata,locsize*sizeof(PetscScalar));
-    ierr = VecRestoreArray(cvode->w1,&parray);CHKERRQ(ierr);
+    ierr = VecPlaceArray(cvode->w1,y_data); CHKERRQ(ierr);
     ierr = VecCopy(cvode->w1,cvode->update);CHKERRQ(ierr);
+    ierr = VecResetArray(cvode->w1); CHKERRQ(ierr);
     ierr = VecCopy(cvode->update,sol);CHKERRQ(ierr);
-#ifdef DEBUG_SUNDIAL   
-    printf(" in Step, sol ...\n");
-    ierr = VecView(sol,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);  
-#endif    
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr); 
     ierr = CVodeGetNumNonlinSolvIters(mem,&its);CHKERRQ(ierr);
@@ -286,7 +225,6 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   PetscFunctionReturn(0);
 }
 
-/* Contributed by: Liyang Xu */
 #undef __FUNCT__  
 #define __FUNCT__ "TSDestroy_Sundials"
 PetscErrorCode TSDestroy_Sundials(TS ts)
@@ -309,9 +247,6 @@ PetscErrorCode TSDestroy_Sundials(TS ts)
   PetscFunctionReturn(0);
 }
 
-/*
-    Contributed by: Liyang Xu
-*/
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetUp_Sundials_Nonlinear"
 PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
@@ -361,9 +296,6 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   PetscFunctionReturn(0);
 }
 
-/*
-    Contributed by: Liyang Xu
-*/
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetFromOptions_Sundials_Nonlinear"
 PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
@@ -393,9 +325,6 @@ PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
   PetscFunctionReturn(0);
 }
 
-/*
-    Contributed by: Liyang Xu
-*/
 #undef __FUNCT__  
 #define __FUNCT__ "TSPrintHelp_Sundials" 
 PetscErrorCode TSPrintHelp_Sundials(TS ts,char *p)
@@ -414,10 +343,6 @@ PetscErrorCode TSPrintHelp_Sundials(TS ts,char *p)
   PetscFunctionReturn(0);
 }
 
-/*
-
-    Contributed by: Liyang Xu
-*/
 #undef __FUNCT__  
 #define __FUNCT__ "TSView_Sundials" 
 PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
@@ -617,8 +542,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetIterations(TS ts,int *nonlin,int *
 +    ts     - the time-step context
 -    type   - one of  SUNDIALS_ADAMS or SUNDIALS_BDF
 
-    Contributed by: Liyang Xu
-
    Level: intermediate
 
 .keywords: Adams, backward differentiation formula
@@ -761,8 +684,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetGramSchmidtType(TS ts,TSSundialsGr
 .    aabs - the absolute tolerance  
 -    rel - the relative tolerance
 
-    Contributed by: Liyang Xu
-
      See the Cvode/Sundials users manual for exact details on these parameters. Essentially
     these regulate the size of the error for a SINGLE timestep.
 
@@ -801,8 +722,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetTolerance(TS ts,double aabs,double
 .    pc - the preconditioner context
 
    Level: advanced
-
-    Contributed by: Liyang Xu
 
 .seealso: TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
@@ -869,8 +788,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetExactFinalTime(TS ts,PetscTruth ft
 
     Notes: This uses its own nonlinear solver and Krylov method so PETSc SNES and KSP options do not apply
            only PETSc PC options
-
-    Contributed by: Liyang Xu
 
     Level: beginner
 
