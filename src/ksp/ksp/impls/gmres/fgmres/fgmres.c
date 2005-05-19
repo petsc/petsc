@@ -208,14 +208,10 @@ PetscErrorCode FGMREScycle(PetscInt *itcount,KSP ksp)
 
   /* scale VEC_VV (the initial residual) */
   tmp = 1.0/res_norm; ierr = VecScale(VEC_VV(0),tmp);CHKERRQ(ierr);
-
-
-
    
   /* MAIN ITERATION LOOP BEGINNING*/
   /* keep iterating until we have converged OR generated the max number
      of directions OR reached the max number of iterations for the method */ 
-  ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   while (!ksp->reason && loc_it < max_k && ksp->its < ksp->max_it) {
     KSPLogResidualHistory(ksp,res_norm);
     fgmres->it = (loc_it - 1);
