@@ -1188,7 +1188,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   PetscLogDouble fracStageTime, fracStageFlops, fracStageMess, fracStageMessLen, fracStageRed;
   PetscLogDouble min, max, tot, ratio, avg, x, y;
   PetscLogDouble minf, maxf, totf, ratf, mint, maxt, tott, ratt, ratCt, totm, totml, totr;
-  int            minCt, maxCt;
+  PetscMPIInt    minCt, maxCt;
   PetscMPIInt    size, rank;
   PetscTruth    *localStageUsed,    *stageUsed;
   PetscTruth    *localStageVisible, *stageVisible;
@@ -1226,11 +1226,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   ierr = PetscGetDate(date, 64);CHKERRQ(ierr);
   ierr = PetscGetVersion(&version);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s\n", pname, arch, hostname, size, username, date);
-                                                                                                          CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s\n", pname, arch, hostname, size, username, date); CHKERRQ(ierr);
   } else {
-    ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date);
-                                                                                                          CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date);CHKERRQ(ierr);
   }
   ierr = PetscFPrintf(comm, fd, "Using %s\n", version);CHKERRQ(ierr);
 
@@ -1367,8 +1365,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
       if (numReductions != 0.0) fracReductions = red/numReductions;      else fracReductions = 0.0;
       ierr = PetscFPrintf(comm, fd, "%2d: %15s: %6.4e %5.1f%%  %6.4e %5.1f%%  %5.3e %5.1f%%  %5.3e      %5.1f%%  %5.3e %5.1f%% \n",
                           stage, name, stageTime/size, 100.0*fracTime, flops, 100.0*fracFlops,
-                          mess, 100.0*fracMessages, avgMessLen, 100.0*fracLength, red, 100.0*fracReductions);
-                                                                                                          CHKERRQ(ierr);
+                          mess, 100.0*fracMessages, avgMessLen, 100.0*fracLength, red, 100.0*fracReductions);CHKERRQ(ierr);
     }
   }
 
@@ -1537,16 +1534,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
                             name, maxCt, ratCt, maxt, ratt, maxf, ratf, totm, totml, totr,
                             100.0*fracTime, 100.0*fracFlops, 100.0*fracMess, 100.0*fracMessLen, 100.0*fracRed,
                             100.0*fracStageTime, 100.0*fracStageFlops, 100.0*fracStageMess, 100.0*fracStageMessLen, 100.0*fracStageRed,
-                            flopr/1.0e6);
-                                                                                                          CHKERRQ(ierr);
+                            flopr/1.0e6);CHKERRQ(ierr);
       }
     }
   }
 
   /* Memory usage and object creation */
   ierr = PetscFPrintf(comm, fd,
-    "------------------------------------------------------------------------------------------------------------------------\n");
-                                                                                                          CHKERRQ(ierr);
+    "------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "\n");CHKERRQ(ierr); 
   ierr = PetscFPrintf(comm, fd, "Memory usage is given in bytes:\n\n");CHKERRQ(ierr);
 
@@ -1564,8 +1559,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
         if ((classInfo[oclass].creations > 0) || (classInfo[oclass].destructions > 0)) {
           ierr = PetscFPrintf(comm, fd, "%20s %5d          %5d  %9d     %g\n", stageLog->classLog->classInfo[oclass].name,
                               classInfo[oclass].creations, classInfo[oclass].destructions, (int) classInfo[oclass].mem,
-                              classInfo[oclass].descMem);
-                                                                                                          CHKERRQ(ierr);
+                              classInfo[oclass].descMem);CHKERRQ(ierr);
         }
       }
     } else {
@@ -1580,8 +1574,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
 
   /* Information unrelated to this particular run */
   ierr = PetscFPrintf(comm, fd,
-    "========================================================================================================================\n");
-                                                                                                          CHKERRQ(ierr);
+    "========================================================================================================================\n");CHKERRQ(ierr);
   PetscTime(y); 
   PetscTime(x);
   PetscTime(y); PetscTime(y); PetscTime(y); PetscTime(y); PetscTime(y);
