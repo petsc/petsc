@@ -44,10 +44,10 @@ class Configure(PETSc.package.Package):
       args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
 
-    (mpiDir,dummy) = os.path.split(self.mpi.lib[0])
-    (mpiDir,dummy) = os.path.split(mpiDir)
-    args.append('--with-mpi-root="'+mpiDir+'"') #better way to get mpiDir?
-
+    if self.mpi.directory:
+      args.append('--with-mpi-root="'+self.mpi.directory+'"') 
+    else:
+      raise RuntimeError("Installing Sundials requires explicit root directory of MPI\nRun config/configure.py again with the additional argument --with-mpi-dir=rootdir")
     args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"') 
     
     args = ' '.join(args)

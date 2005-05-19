@@ -47,8 +47,10 @@ class Package(config.base.Configure):
     self.includedir       = 'include'
     # package defaults to being required (MPI and BlasLapack)
     self.required         = 0
-    # package needs the system amth library
+    # package needs the system math library
     self.needsMath        = 0
+    # path of the package installation point; for example /usr/local or /home/bsmith/mpich-2.0.1
+    self.directory        = None
     return
 
   def setupDependencies(self, framework):
@@ -141,23 +143,25 @@ class Package(config.base.Configure):
     dir = self.checkDownload(1)
     if dir:
       for l in self.generateLibList(os.path.join(dir, self.libdir)):
-        yield('Download '+self.PACKAGE, l, os.path.join(dir, self.includedir))
+        yield('Download '+self.PACKAGE, dir,l, os.path.join(dir, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')
 
     if 'with-'+self.package+'-dir' in self.framework.argDB:     
       dir = self.framework.argDB['with-'+self.package+'-dir']
       for l in self.generateLibList(os.path.join(dir, self.libdir)):
-        yield('User specified root directory '+self.PACKAGE, l, os.path.join(dir,self.includedir))
+        yield('User specified root directory '+self.PACKAGE, dir,l, os.path.join(dir,self.includedir))
       raise RuntimeError('--with-'+self.package+'-dir='+self.framework.argDB['with-'+self.package+'-dir']+' did not work')
 
     if 'with-'+self.package+'-include-dir' in self.framework.argDB:
         raise RuntimeError('Use --with-'+self.package+'-include; not --with-'+self.package+'-include-dir') 
 
     if 'with-'+self.package+'-include' in self.framework.argDB and 'with-'+self.package+'-lib' in self.framework.argDB:
+      # hope that package root is one level above include directory
+      dir = os.path.dirname(self.framework.argDB['with-'+self.package+'-include'])
       libs = self.framework.argDB['with-'+self.package+'-lib']
       if not isinstance(libs, list): libs = [libs]
       libs = [os.path.abspath(l) for l in libs]
-      yield('User specified '+self.PACKAGE+' libraries', libs, os.path.abspath(self.framework.argDB['with-'+self.package+'-include']))
+      yield('User specified '+self.PACKAGE+' libraries', dir,libs, os.path.abspath(self.framework.argDB['with-'+self.package+'-include']))
       raise RuntimeError('--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])+' and \n'+\
         '--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])+' did not work') 
 
@@ -165,12 +169,12 @@ class Package(config.base.Configure):
       for l in self.generateLibList(os.path.join(d,self.libdir)):
         if d: includedir = os.path.join(d,self.includedir)
         else: includedir = ''
-        yield('User specified root directory '+self.PACKAGE, l, includedir)
+        yield('User specified root directory '+self.PACKAGE, d,l, includedir)
 
     dir = self.checkDownload(2)
     if dir:
       for l in self.generateLibList(os.path.join(dir,self.libdir)):
-        yield('Download '+self.PACKAGE, l, os.path.join(dir,self.includedir))
+        yield('Download '+self.PACKAGE, dir,l, os.path.join(dir,self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+os.path.join(self.Install(),self.arch.arch)+'\n')
 
     raise RuntimeError('You must specify a path for '+self.name+' with --with-'+self.package+'-dir=<directory>')
@@ -295,7 +299,7 @@ class Package(config.base.Configure):
         raise RuntimeError('Math library not found')
       libs += self.libraries.math
       
-    for location, lib, incl in self.generateGuesses():
+    for location, dir, lib, incl in self.generateGuesses():
       if not isinstance(lib, list): lib = [lib]
       if not isinstance(incl, list): incl = [incl]
       incl += self.compilers.fincs
@@ -310,6 +314,7 @@ class Package(config.base.Configure):
             self.dlib    = self.lib+libs
             if not hasattr(self.framework, 'packages'):
               self.framework.packages = []
+            self.directory = dir
             self.framework.packages.append(self)
             break
     if not self.found:

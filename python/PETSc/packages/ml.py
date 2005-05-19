@@ -52,9 +52,11 @@ class Configure(PETSc.package.Package):
     else:
       CXXenv = ''
   
-    (mpiDir,dummy) = os.path.split(self.mpi.lib[0])
-    (mpiDir,dummy) = os.path.split(mpiDir)
-    args.append('--with-mpi="'+mpiDir+'"') #better way to get mpiDir?
+    if self.mpi.directory:
+      args.append('--with-mpi="'+self.mpi.directory+'"') 
+    else:
+      raise RuntimeError("Installing ML requires explicit root directory of MPI\nRun config/configure.py again with the additional argument --with-mpi-dir=rootdir")
+
     libs = []
     for l in self.mpi.lib:
       ll = os.path.basename(l)
