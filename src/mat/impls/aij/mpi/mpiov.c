@@ -818,9 +818,9 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
     /* Check if the col indices are sorted */
   for (i=0; i<ismax; i++) {
     ierr = ISSorted(isrow[i],&sorted);CHKERRQ(ierr);
-    if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"ISrow is not sorted");
+    /*if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"isrow is not sorted");*/
     ierr = ISSorted(iscol[i],&sorted);CHKERRQ(ierr);
-    /*    if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted"); */
+    /*    if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"iscol is not sorted"); */
   }
 
   len    = (2*ismax+1)*(sizeof(PetscInt*)+ sizeof(PetscInt)); 
@@ -847,7 +847,8 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
     ierr   = PetscMemzero(w4,size*sizeof(PetscMPIInt));CHKERRQ(ierr); /* initialize work vector*/
     jmax   = nrow[i];
     irow_i = irow[i];
-    for (l=0,j=0; j<jmax; j++) {
+    for (j=0; j<jmax; j++) {
+      l = 0;
       row  = irow_i[j];
       while (row >= c->rowners[l+1]) l++;
       proc = l;
@@ -920,7 +921,8 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
     ierr   = PetscMemzero(ctr,size*sizeof(PetscInt));CHKERRQ(ierr);
     irow_i = irow[i];
     jmax   = nrow[i];
-    for (l=0,j=0; j<jmax; j++) {  /* parse the indices of each IS */
+    for (j=0; j<jmax; j++) {  /* parse the indices of each IS */
+      l = 0;
       row  = irow_i[j];
       while (row >= c->rowners[l+1]) l++;
       proc = l;
@@ -1038,8 +1040,9 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&s_waits3);CHKERRQ(ierr);
   {
-    PetscInt nzA,nzB,*a_i = a->i,*b_i = b->i,imark;
+    PetscInt nzA,nzB,*a_i = a->i,*b_i = b->i,lwrite;
     PetscInt *cworkA,*cworkB,cstart = c->cstart,rstart = c->rstart,*bmap = c->garray;
+    PetscInt cend = c->cend;
     PetscInt *a_j = a->j,*b_j = b->j,ctmp;
 
     for (i=0; i<nrqr; i++) {
@@ -1058,13 +1061,14 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
           /* load the column indices for this row into cols*/
           cols  = sbuf_aj_i + ct2;
           
+	  lwrite = 0;
           for (l=0; l<nzB; l++) {
-            if ((ctmp = bmap[cworkB[l]]) < cstart)  cols[l] = ctmp;
-            else break;
+            if ((ctmp = bmap[cworkB[l]]) < cstart)  cols[lwrite++] = ctmp;
           }
-          imark = l;
-          for (l=0; l<nzA; l++)   cols[imark+l] = cstart + cworkA[l];
-          for (l=imark; l<nzB; l++) cols[nzA+l] = bmap[cworkB[l]];
+          for (l=0; l<nzA; l++)   cols[lwrite++] = cstart + cworkA[l];
+          for (l=0; l<nzB; l++) {
+            if ((ctmp = bmap[cworkB[l]]) >= cend)  cols[lwrite++] = ctmp;
+          }
 
           ct2 += ncols;
         }
@@ -1083,8 +1087,9 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&s_waits4);CHKERRQ(ierr);
   {
-    PetscInt    nzA,nzB,*a_i = a->i,*b_i = b->i, *cworkB,imark;
+    PetscInt    nzA,nzB,*a_i = a->i,*b_i = b->i, *cworkB,lwrite;
     PetscInt    cstart = c->cstart,rstart = c->rstart,*bmap = c->garray;
+    PetscInt    cend = c->cend;
     PetscInt    *b_j = b->j;
     PetscScalar *vworkA,*vworkB,*a_a = a->a,*b_a = b->a;
     
@@ -1106,13 +1111,14 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
           /* load the column values for this row into vals*/
           vals  = sbuf_aa_i+ct2;
           
+	  lwrite = 0;
           for (l=0; l<nzB; l++) {
-            if ((bmap[cworkB[l]]) < cstart)  vals[l] = vworkB[l];
-            else break;
+            if ((bmap[cworkB[l]]) < cstart)  vals[lwrite++] = vworkB[l];
           }
-          imark = l;
-          for (l=0; l<nzA; l++)   vals[imark+l] = vworkA[l];
-          for (l=imark; l<nzB; l++) vals[nzA+l] = vworkB[l];
+          for (l=0; l<nzA; l++)   vals[lwrite++] = vworkA[l];
+          for (l=0; l<nzB; l++) {
+            if ((bmap[cworkB[l]]) >= cend)  vals[lwrite++] = vworkB[l];
+          }
           
           ct2 += ncols;
         }
@@ -1158,7 +1164,8 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
     cmap_i = cmap[i];
     irow_i = irow[i];
     lens_i = lens[i];
-    for (l=0,j=0; j<jmax; j++) {
+    for (j=0; j<jmax; j++) {
+      l = 0;
       row  = irow_i[j];
       while (row >= c->rowners[l+1]) l++;
       proc = l; 
@@ -1269,7 +1276,8 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
       rmap_i    = rmap[i];
       irow_i    = irow[i];
       jmax      = nrow[i];
-      for (l=0,j=0; j<jmax; j++) {
+      for (j=0; j<jmax; j++) {
+	l = 0;
         row      = irow_i[j];
         while (row >= c->rowners[l+1]) l++;
         proc = l;
