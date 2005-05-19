@@ -3151,7 +3151,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPermute(Mat mat,IS row,IS col,Mat *B)
   PetscValidPointer(B,4);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->permute) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name); 
+  if (!mat->ops->permute) SETERRQ1(PETSC_ERR_SUP,"MatPermute not available for Mat type %s",mat->type_name); 
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = (*mat->ops->permute)(mat,row,col,B);CHKERRQ(ierr);
