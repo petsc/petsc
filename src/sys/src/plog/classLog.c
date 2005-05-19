@@ -387,11 +387,14 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
   /* Record stage info */
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = StageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
-  ierr = StageLogGetClassRegLog(stageLog, &classRegLog);CHKERRQ(ierr);
-  ierr = StageLogGetClassPerfLog(stageLog, stage, &classPerfLog);CHKERRQ(ierr);
-  ierr = ClassRegLogGetClass(classRegLog, obj->cookie, &oclass);CHKERRQ(ierr);
-  classPerfLog->classInfo[oclass].destructions++;
-  classPerfLog->classInfo[oclass].mem += obj->mem;
+  if (stage != -1) {
+    /* That can happen if the log summary is output before some things are destroyed */
+    ierr = StageLogGetClassRegLog(stageLog, &classRegLog);CHKERRQ(ierr);
+    ierr = StageLogGetClassPerfLog(stageLog, stage, &classPerfLog);CHKERRQ(ierr);
+    ierr = ClassRegLogGetClass(classRegLog, obj->cookie, &oclass);CHKERRQ(ierr);
+    classPerfLog->classInfo[oclass].destructions++;
+    classPerfLog->classInfo[oclass].mem += obj->mem;
+  }
   /* Cannot Credit all ancestors with your memory because they may have already been destroyed*/
   numObjectsDestroyed++;
   /* Dynamically enlarge logging structures */
