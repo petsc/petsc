@@ -87,8 +87,8 @@ class Make(script.Script):
 
   def getPythonFile(self, mod, defaultFile = None):
     '''Get the Python source file associate with the module'''
-    if not self.configureMod is None:
-      (base, ext) = os.path.splitext(self.configureMod.__file__)
+    if not mod is None:
+      (base, ext) = os.path.splitext(mod.__file__)
       if ext == '.pyc':
         ext = '.py'
       filename = base + ext
@@ -612,6 +612,11 @@ class SIDLMake(Make):
     self.libraries = framework.require('config.libraries', None)
     self.python    = framework.require('config.python', None)
     self.ase       = framework.require('config.ase', None)
+    if self.configureObj is None:
+      if self.configureMod is None:
+        self.configureObj = framework.require('configure', None)
+      else:
+        self.configureObj = framework.require(self.configureMod.__name__, None)
     return framework
 
   def addDependency(self, url, sidlFile, make = None):
