@@ -47,7 +47,23 @@ class Configure(PETSc.package.Package):
     if self.mpi.directory:
       args.append('--with-mpi-root="'+self.mpi.directory+'"') 
     else:
-      raise RuntimeError("Installing Sundials requires explicit root directory of MPI\nRun config/configure.py again with the additional argument --with-mpi-dir=rootdir")
+      if self.mpi.include and not self.mpi.include == ['']:
+        args.append('--with-mpi-incdir="'+self.mpi.include[0]+'"')
+      else: 
+        args.append('--with-mpi-incdir="/usr/include"')  # dummy case
+
+      if self.mpi.lib:
+        args.append('--with-mpi-libdir="'+os.path.dirname(self.mpi.lib[0])+'"')
+        libs = []
+        for l in self.mpi.lib:
+          ll = os.path.basename(l)
+          libs.append(ll[3:-2])
+        libs = ' -l'.join(libs)
+        args.append('--with-mpi-libs="'+libs+'"')
+      else:
+        args.append('--with-mpi-libdir="/usr/lib"')  # dummy case
+        args.append('--with-mpi-libs="-lc"')
+
     args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"') 
     
     args = ' '.join(args)
