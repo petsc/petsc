@@ -202,9 +202,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
     /* check if this communicator has a PETSc communicator imbedded in it */
     ierr = MPI_Attr_get(comm_in,Petsc_InnerComm_keyval,&ptr,(PetscMPIInt*)&flg);CHKERRQ(ierr);
     /*
-        The next line may generate the warning: cast from pointer to integer of different size
-        It is safe to ignore this warning because ptr is obtained by casting a MPI_Comm to void*
-        so we know it is safe to caste it back.
+        We use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers
     */
     ierr = PetscMemcpy(comm_out,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
     if (!flg) {
@@ -222,9 +220,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
 
       /* save PETSc communicator inside user communicator, so we can get it next time */
       ierr = PetscMemcpy(&ptr,comm_out,sizeof(MPI_Comm));CHKERRQ(ierr);
-      ierr       = MPI_Attr_put(comm_in,Petsc_InnerComm_keyval,ptr);CHKERRQ(ierr);
+      ierr = MPI_Attr_put(comm_in,Petsc_InnerComm_keyval,ptr);CHKERRQ(ierr);
       ierr = PetscMemcpy(&ptr,&comm_in,sizeof(MPI_Comm));CHKERRQ(ierr);
-      ierr       = MPI_Attr_put(*comm_out,Petsc_OuterComm_keyval,ptr);CHKERRQ(ierr);
+      ierr = MPI_Attr_put(*comm_out,Petsc_OuterComm_keyval,ptr);CHKERRQ(ierr);
     } else {
       ierr = MPI_Attr_get(*comm_out,Petsc_Tag_keyval,(void**)&tagvalp,(PetscMPIInt*)&flg);CHKERRQ(ierr);
       if (!flg) {
@@ -291,6 +289,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm *comm)
   ierr = MPI_Attr_get(icomm,Petsc_Tag_keyval,(void**)&tagvalp,(PetscMPIInt*)&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr  = MPI_Attr_get(icomm,Petsc_InnerComm_keyval,&ptr,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    /*
+        We use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers
+    */
     ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
     if (!flg) {
       PetscFunctionReturn(0);

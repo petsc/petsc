@@ -363,8 +363,118 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   PetscFunctionReturn(0);
 }
 
+/* 
+       Contributed by Andrei Draganescu <aidraga@sandia.gov>
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetInterpolation_2D_Q0"
+PetscErrorCode DAGetInterpolation_2D_Q0(DA dac,DA daf,Mat *A)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
+  PetscInt       m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,*dnz,*onz;
+  PetscInt       row,col,i_start_ghost,j_start_ghost,cols[4],mx,m_c,my,nc,ratioi,ratioj;
+  PetscInt       i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c,col_shift,col_scale;
+  PetscMPIInt    size_c,size_f,rank_f;
+  PetscScalar    v[4];
+  Mat            mat;
+  DAPeriodicType pt;
 
-/*   dof degree of freedom per node, nonperiodic */
+  PetscFunctionBegin;
+  ierr = DAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  if (DAXPeriodic(pt)) SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in x");
+  if (DAYPeriodic(pt)) SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot handle periodic grid in y");
+  ratioi = mx/Mx;
+  ratioj = my/My;
+  if (ratioi*Mx != mx) SETERRQ(PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
+  if (ratioj*My != my) SETERRQ(PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
+  if (ratioi != 2) SETERRQ(PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 2");
+  if (ratioj != 2) SETERRQ(PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 2");
+
+  ierr = DAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+
+  ierr = DAGetCorners(dac,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+
+  /*
+     Used for handling a coarse DA that lives on 1/4 the processors of the fine DA.
+     The coarse vector is then duplicated 4 times (each time it lives on 1/4 of the 
+     processors). It's effective length is hence 4 times its normal length, this is
+     why the col_scale is multiplied by the interpolation matrix column sizes.
+     sol_shift allows each set of 1/4 processors do its own interpolation using ITS
+     copy of the coarse vector. A bit of a hack but you do better.
+
+     In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
+  */
+  ierr = MPI_Comm_size(dac->comm,&size_c);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(daf->comm,&size_f);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(daf->comm,&rank_f);CHKERRQ(ierr);
+  col_scale = size_f/size_c;
+  col_shift = Mx*My*(rank_f/size_c);
+
+  ierr = MatPreallocateInitialize(daf->comm,m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
+  for (j=j_start; j<j_start+n_f; j++) {
+    for (i=i_start; i<i_start+m_f; i++) {
+      /* convert to local "natural" numbering and then to PETSc global numbering */
+      row    = idx_f[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
+
+      i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
+      j_c = (j/ratioj);    /* coarse grid node below fine grid node */
+
+      if (j_c < j_start_ghost_c) SETERRQ3(PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+    j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
+      if (i_c < i_start_ghost_c) SETERRQ3(PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+    i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
+
+      /* 
+         Only include those interpolation points that are truly 
+         nonzero. Note this is very important for final grid lines
+         in x and y directions; since they have no right/top neighbors
+      */
+      nc = 0;
+      /* one left and below; or we are right on it */
+      col        = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
+      cols[nc++] = col_shift + idx_c[col]/dof; 
+      ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatCreate(daf->comm,&mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My);CHKERRQ(ierr);
+  ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  if (!DAXPeriodic(pt) && !DAYPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
+
+  /* loop over local fine grid nodes setting interpolation for those*/
+  for (j=j_start; j<j_start+n_f; j++) {
+    for (i=i_start; i<i_start+m_f; i++) {
+      /* convert to local "natural" numbering and then to PETSc global numbering */
+      row    = idx_f[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))]/dof;
+
+      i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
+      j_c = (j/ratioj);    /* coarse grid node below fine grid node */
+      nc = 0;
+      /* one left and below; or we are right on it */
+      col      = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
+      cols[nc] = col_shift + idx_c[col]/dof; 
+      v[nc++]  = 1.0;
+     
+      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
+    }
+  }
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
+  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  PetscLogFlops(13*m_f*n_f);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInterpolation_3D_Q1"
 PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
@@ -635,6 +745,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *sc
   } else if (dac->interptype == DA_Q0){
     if (dimc == 1){
       ierr = DAGetInterpolation_1D_Q0(dac,daf,A);CHKERRQ(ierr);
+    } if (dimc == 2){
+       ierr = DAGetInterpolation_2D_Q0(dac,daf,A);CHKERRQ(ierr);
     } else {
       SETERRQ2(PETSC_ERR_SUP,"No support for this DA dimension %D for interpolation type %d",dimc,(int)dac->interptype);
     }

@@ -5,7 +5,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/ksp/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
-                   ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex27.c ex28.c ex29.c
+                   ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex27.c ex28.c ex29.c ex32.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F
 MANSEC           = KSP
 
@@ -162,6 +162,10 @@ ex30: ex30.o  chkopts
 ex31: ex31.o  chkopts
 	-${CLINKER} -o ex31 ex31.o  ${PETSC_SNES_LIB}
 	${RM} ex31.o
+
+ex32: ex32.o  chkopts
+	-${CLINKER} -o ex32 ex32.o  ${PETSC_SNES_LIB}
+	${RM} ex32.o
 
 #----------------------------------------------------------------------------
 runex1:
@@ -549,13 +553,19 @@ runex30:
 	   else echo "Possible problem with ex30_1, diffs above"; fi; \
 	   ${RM} -f ex30_1.tmp
 
+runex32:
+	-@${MPIRUN} -np 1 ./ex32 -ksp_smonitor  > ex32_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex32_1.out ex32_1.tmp) then true; \
+	   else echo "Possible problem with ex32_1, diffs above"; fi; \
+	   ${RM} -f ex32_1.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex22.PETSc runex22 ex22.rm \
                                  ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc runex29 runex29_2 ex29.rm \
-                                 ex31.PETSc ex31.rm
+                                 ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc runex5_5 ex5.rm ex8.rm 
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
                                  ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm ex22f.PETSc runex22f \
