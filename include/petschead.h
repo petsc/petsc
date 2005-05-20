@@ -288,6 +288,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectPublishBaseEnd(PetscObject);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectStateIncrease(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectStateQuery(PetscObject,PetscInt*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetState(PetscObject,PetscInt);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataRegister(PetscInt*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataIncreaseInt(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataIncreaseIntstar(PetscObject);
