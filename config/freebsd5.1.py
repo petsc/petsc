@@ -2,7 +2,8 @@
   
 configure_options = [
   '--with-mpi-dir=/software/mpich2-1.0-rc2',
-  '--with-shared=1'
+  '--with-shared=1',
+  '--with-mpi-shared=0'
   ]
 
 if __name__ == '__main__':
