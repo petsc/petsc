@@ -111,7 +111,7 @@ class Configure(config.base.Configure):
 
   def isCygwin():
     '''Returns true if system is cygwin'''
-    (output, error, status) = self.executeShellCommand('uname -s')
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
     if not status:
       return output.lower() == 'cygwin'
     return 0
