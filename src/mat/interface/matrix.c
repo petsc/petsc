@@ -111,7 +111,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRow(Mat mat,PetscInt row,PetscInt *ncols
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatConjugate"
-/*@C  
+/*@
    MatConjugate - replaces the matrix values with their complex conjugates
 
    Collective on Mat
