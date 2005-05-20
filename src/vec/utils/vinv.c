@@ -1247,30 +1247,44 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPermute(Vec x, IS row, PetscTruth inv)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
 {
-  PetscScalar    *v1,*v2;
-  PetscErrorCode ierr;
-  PetscInt       n1,n2;
-  PetscTruth     flg1;
-
-  PetscFunctionBegin;
-  if (vec1 == vec2) {
-    *flg = PETSC_TRUE;
-  } else {
-    ierr = VecGetSize(vec1,&n1);CHKERRQ(ierr);
-    ierr = VecGetSize(vec2,&n2);CHKERRQ(ierr);
-    if (n1 != n2) {
-      flg1 = PETSC_FALSE;
-    } else {
-      ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr);
-      ierr = VecGetArray(vec2,&v2);CHKERRQ(ierr);
-      ierr = PetscMemcmp(v1,v2,n1*sizeof(PetscScalar),&flg1);CHKERRQ(ierr);
-      ierr = VecRestoreArray(vec1,&v1);CHKERRQ(ierr);
-      ierr = VecRestoreArray(vec2,&v2);CHKERRQ(ierr);
-    }
-    /* combine results from all processors */
-    ierr = MPI_Allreduce(&flg1,flg,1,MPI_INT,MPI_MIN,vec1->comm);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
+  PetscScalar    *v1,*v2; 
+  PetscErrorCode ierr; 
+  PetscInt       n1,n2,N1,N2; 
+  PetscInt       state1,state2; 
+  PetscTruth     flg1; 
+ 
+  PetscFunctionBegin; 
+  PetscValidHeaderSpecific(vec1,VEC_COOKIE,1); 
+  PetscValidHeaderSpecific(vec2,VEC_COOKIE,2); 
+  PetscValidPointer(flg,3); 
+  if (vec1 == vec2) { 
+    *flg = PETSC_TRUE; 
+  } else { 
+    ierr = VecGetSize(vec1,&N1);CHKERRQ(ierr); 
+    ierr = VecGetSize(vec2,&N2);CHKERRQ(ierr); 
+    if (N1 != N2) { 
+      flg1 = PETSC_FALSE; 
+    } else { 
+      ierr = VecGetLocalSize(vec1,&n1);CHKERRQ(ierr); 
+      ierr = VecGetLocalSize(vec2,&n2);CHKERRQ(ierr); 
+      if (n1 != n2) { 
+        flg1 = PETSC_FALSE; 
+      } else { 
+        ierr = PetscObjectStateQuery((PetscObject) vec1,&state1);CHKERRQ(ierr); 
+        ierr = PetscObjectStateQuery((PetscObject) vec2,&state2);CHKERRQ(ierr); 
+        ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr); 
+        ierr = VecGetArray(vec2,&v2);CHKERRQ(ierr); 
+        ierr = PetscMemcmp(v1,v2,n1*sizeof(PetscScalar),&flg1);CHKERRQ(ierr); 
+        ierr = VecRestoreArray(vec1,&v1);CHKERRQ(ierr); 
+        ierr = VecRestoreArray(vec2,&v2);CHKERRQ(ierr); 
+        ierr = PetscObjectSetState((PetscObject) vec1,state1);CHKERRQ(ierr); 
+        ierr = PetscObjectSetState((PetscObject) vec2,state2);CHKERRQ(ierr); 
+      } 
+    } 
+    /* combine results from all processors */ 
+    ierr = MPI_Allreduce(&flg1,flg,1,MPI_INT,MPI_MIN,vec1->comm);CHKERRQ(ierr); 
+  } 
+  PetscFunctionReturn(0); 
 }
 
 
