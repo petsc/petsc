@@ -88,7 +88,6 @@ int main(int argc,char **argv)
   data.dy = 1.0/(data.n+1.0);
   mn = (data.m)*(data.n);
 
-  time_steps =10;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);
     
   /* set initial conditions */
@@ -506,7 +505,8 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure 
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
 
-  *flag = SAME_NONZERO_PATTERN;
+  /**flag = SAME_NONZERO_PATTERN;*/
+  *flag = DIFFERENT_NONZERO_PATTERN;
   return 0;
 }
 

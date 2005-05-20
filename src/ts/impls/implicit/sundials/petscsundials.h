@@ -19,8 +19,6 @@
 EXTERN_C_BEGIN
 #include "sundialstypes.h"
 #include "cvode.h"
-#include "nvector.h"
-#include "nvector_serial.h"
 #include "nvector_parallel.h"
 #include "iterative.h" 
 #include "cvspgmr.h"

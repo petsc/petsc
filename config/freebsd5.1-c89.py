@@ -1,14 +1,14 @@
 #!/usr/bin/env python
   
 configure_options = [
-  '--with-shared=0',
   '--with-cc=gcc -std=c89',
   '--with-fc=f77',
   '--download-mpich=1',
   '--download-mpich-pm=gforker',
   '--download-hypre=1',
   '--download-superlu-dist=1',
-  '--with-shared=1'
+  '--with-shared=1',
+  '--with-mpi-shared=0'
   ]
 
 if __name__ == '__main__':

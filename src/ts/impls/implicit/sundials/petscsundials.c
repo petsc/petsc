@@ -38,8 +38,8 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
   
   /* jok - TRUE means reuse current Jacobian else recompute Jacobian */
   if (jok) {
-    ierr     = MatCopy(cvode->pmat,Jac,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    str      = SAME_NONZERO_PATTERN;
+    str      = DIFFERENT_NONZERO_PATTERN;*/
+    ierr     = MatCopy(cvode->pmat,Jac,str);CHKERRQ(ierr);
     *jcurPtr = FALSE;
   } else {
     /* make PETSc vector yy point to SUNDIALS vector y */
@@ -48,13 +48,14 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
     /* compute the Jacobian */
     ierr = TSComputeRHSJacobian(ts,ts->ptime,yy,&Jac,&Jac,&str);CHKERRQ(ierr);
     ierr = VecResetArray(yy); CHKERRQ(ierr);
-    /* I will check if it is possible to avoid this copy later - Dinesh */
     /* copy the Jacobian matrix */
     if (!cvode->pmat) {
       ierr = MatDuplicate(Jac,MAT_COPY_VALUES,&cvode->pmat);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(ts,cvode->pmat);CHKERRQ(ierr);
     }
-    ierr = MatCopy(Jac,cvode->pmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    else {
+      ierr = MatCopy(Jac,cvode->pmat,str);CHKERRQ(ierr);
+    }
     *jcurPtr = TRUE;
   }
   
@@ -145,7 +146,6 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   long int     its;
   realtype     t,tout;
   PetscScalar  *y_data;
-  PetscInt     locsize;
   void         *mem;
 
   PetscFunctionBegin;
@@ -213,12 +213,12 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     ierr = VecCopy(cvode->w1,cvode->update);CHKERRQ(ierr);
     ierr = VecResetArray(cvode->w1); CHKERRQ(ierr);
     ierr = VecCopy(cvode->update,sol);CHKERRQ(ierr);
-    ts->steps++;
-    ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr); 
     ierr = CVodeGetNumNonlinSolvIters(mem,&its);CHKERRQ(ierr);
     ts->nonlinear_its = its;
     ierr = CVSpgmrGetNumLinIters(mem, &its);
     ts->linear_its = its; 
+    ts->steps++;
+    ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr); 
   }
   *steps += ts->steps;
   *time   = t;
@@ -253,32 +253,25 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PetscErrorCode ierr;
-  int            M,locsize,i;
-  realtype       *tmp;
-  PetscScalar    *parray;
+  int            glosize,locsize,i;
+  PetscScalar    *y_data,*parray;
 
   PetscFunctionBegin;
   ierr = PCSetFromOptions(cvode->pc);CHKERRQ(ierr);
   /* get the vector size */
-  ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
+  ierr = VecGetSize(ts->vec_sol,&glosize);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
 
   /* allocate the memory for N_Vec y */
-  /* cvode->y = N_VNew_Parallel(ts->comm,locsize,M);*/ 
-  cvode->y = N_VNew_Serial(M);
+  cvode->y = N_VNew_Parallel(cvode->comm_sundials,locsize,glosize);
   if (!cvode->y) SETERRQ(1,"cvode->y is not allocated");
 
   /* initialize N_Vec y */
-#ifdef DEBUG_SUNDIAL
-  printf(" initial vec_sol ...\n");
-  ierr = VecView(ts->vec_sol,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-#endif
   ierr = VecGetArray(ts->vec_sol,&parray);CHKERRQ(ierr);
-  tmp  = NV_DATA_S(cvode->y);
-  for (i=0; i<locsize; i++) tmp[i] = parray[i];
+  y_data = (PetscScalar *) N_VGetArrayPointer(cvode->y);
+  for (i = 0; i < locsize; i++) y_data[i] = parray[i];
+  /*ierr = PetscMemcpy(y_data,parray,locsize*sizeof(PETSC_SCALAR)); CHKERRQ(ierr);*/
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
-
-  /* initialize vector update and func */
   ierr = VecDuplicate(ts->vec_sol,&cvode->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&cvode->func);CHKERRQ(ierr);  
   ierr = PetscLogObjectParent(ts,cvode->update);CHKERRQ(ierr);
@@ -289,8 +282,8 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
     allocated with zero space arrays because the actual array space is provided 
     by Sundials and set using VecPlaceArray().
   */
-  ierr = VecDuplicate(ts->vec_sol,&cvode->w1);CHKERRQ(ierr); 
-  ierr = VecDuplicate(ts->vec_sol,&cvode->w2);CHKERRQ(ierr); 
+  ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->w1);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->w2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -320,7 +313,7 @@ PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
     ierr = PetscOptionsReal("-ts_sundials_rtol","Relative tolerance for convergence","TSSundialsSetTolerance",cvode->reltol,&cvode->reltol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_sundials_linear_tolerance","Convergence tolerance for linear solve","TSSundialsSetLinearTolerance",cvode->linear_tol,&cvode->linear_tol,&flag);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_sundials_gmres_restart","Number of GMRES orthogonalization directions","TSSundialsSetGMRESRestart",cvode->restart,&cvode->restart,&flag);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-ts_sundials_not_exact_final_time","Allow SUNDIALS to stop near the final time, not exactly on it","TSSundialsSetExactFinalTime",&cvode->exact_final_time);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_sundials_exact_final_time","Allow SUNDIALS to stop near the final time, not exactly on it","TSSundialsSetExactFinalTime",&cvode->exact_final_time);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -823,7 +816,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
   cvode->restart    = 5;
   cvode->linear_tol = .05;
 
-  cvode->exact_final_time = PETSC_TRUE;
+  cvode->exact_final_time = PETSC_FALSE;
 
   ierr = MPI_Comm_dup(ts->comm,&(cvode->comm_sundials));CHKERRQ(ierr);
   /* set tolerance for Sundials */

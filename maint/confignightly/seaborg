@@ -7,3 +7,6 @@ set TAO_LOC=/scratch/scratchdirs/kaushik/tao-devel
 set SSH='ssh -P'
 set SCP='scp -q -B -o UsePrivilegedPort=no'
 set CONF=aix5.1.0.0
+if ($day == Tue || $day == Thu || $day == Sun) then
+  set CONF=aix5.1.0.0-64
+endif
