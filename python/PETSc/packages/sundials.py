@@ -61,8 +61,17 @@ class Configure(PETSc.package.Package):
       args.append('--with-mpi-libdir="/usr/lib"')  # dummy case
       args.append('--with-mpi-libs="-lc"')
 
+    args.append('--without-mpicc')
+    args.append('--without-mpif77')
+
     args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"') 
     
+    envs =  'CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"'
+    if 'FC' in self.framework.argDB:
+      self.framework.pushLanguage('FC')      
+      envs += ' FC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"'
+      self.framework.popLanguage()
+
     args = ' '.join(args)
     try:
       fd      = file(os.path.join(installDir,'config.args'))
@@ -74,7 +83,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild SUNDIALS oldargs = '+oldargs+'\n new args ='+args+'\n')
       try:
         self.logPrintBox('Configuring sundials; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+installDir+'; ../configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+installDir+';'+envs+' ../configure '+args, timeout=900, log = self.framework.log)[0]
 
       except RuntimeError, e:
         raise RuntimeError('Error running configure on SUNDIALS: '+str(e))
