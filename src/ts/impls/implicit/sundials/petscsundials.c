@@ -38,7 +38,7 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
   
   /* jok - TRUE means reuse current Jacobian else recompute Jacobian */
   if (jok) {
-    str      = DIFFERENT_NONZERO_PATTERN;*/
+    str      = DIFFERENT_NONZERO_PATTERN;
     ierr     = MatCopy(cvode->pmat,Jac,str);CHKERRQ(ierr);
     *jcurPtr = FALSE;
   } else {
@@ -117,12 +117,12 @@ void TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
   /* Make the PETSc work vectors f and fd point to the arrays in the SUNDIALS vectors y and ydot respectively*/
   y_data     = (PetscScalar *) N_VGetArrayPointer(y);
   ydot_data  = (PetscScalar *) N_VGetArrayPointer(ydot);
-  ierr = VecPlaceArray(yy,y_data); CHKERRQ(ierr);
-  ierr = VecPlaceArray(yyd,ydot_data); CHKERRQ(ierr);
+  ierr = VecPlaceArray(yy,y_data);CHKERRCONTINUE(ierr)
+  ierr = VecPlaceArray(yyd,ydot_data); CHKERRCONTINUE(ierr)
   /* now compute the right hand side function */
-  ierr = TSComputeRHSFunction(ts,t,yy,yyd); CHKERRQ(ierr);
-  ierr = VecResetArray(yy); CHKERRQ(ierr);
-  ierr = VecResetArray(yyd); CHKERRQ(ierr);
+  ierr = TSComputeRHSFunction(ts,t,yy,yyd); CHKERRCONTINUE(ierr);
+  ierr = VecResetArray(yy); CHKERRCONTINUE(ierr);
+  ierr = VecResetArray(yyd); CHKERRCONTINUE(ierr);
   PetscFunctionReturnVoid();
 }
 
