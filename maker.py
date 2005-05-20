@@ -108,7 +108,7 @@ class Make(script.Script):
     if framework.header and not os.path.isfile(framework.header):
       self.logPrint('Reconfiguring due to absence of configure header: '+str(framework.header))
       return 1
-    if not reduce(lambda x,y: x and y, [os.path.isfile(pair[1]) for pair in framework.substFiles], True):
+    if not reduce(lambda x,y: x and y, [os.path.isfile(pair[1]) for pair in framework.substFiles], 1):
       self.logPrint('Reconfiguring due to absence of configure generated files: '+str([os.path.isfile(pair[1]) for pair in framework.substFiles]))
       return 1
     if self.argDB['forceConfigure']:
