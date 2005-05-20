@@ -94,7 +94,7 @@ info_h:
 	-@echo  "\"Using Fortran linker: ${FLINKER}\__n__\"" >> MINFO
 	-@echo  "\"Using libraries: ${PETSC_LIB} \__n__\"" >> MINFO
 	-@echo  "\"------------------------------------------\"; " >> MINFO
-	-@cat MINFO | ${SED} -e 's/\\ /\\\\ /g' | {SED} -e 's/__n__/n/g' > ${MINFO}
+	-@cat MINFO | ${SED} -e 's/\\ /\\\\ /g' | ${SED} -e 's/__n__/n/g' > ${MINFO}
 	-@ if [ -f /usr/bin/cygcheck.exe ]; then /usr/bin/dos2unix ${MINFO} 2> /dev/null; fi
 	-@$(RM) -f MINFO
 
