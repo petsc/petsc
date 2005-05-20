@@ -505,7 +505,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure 
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
 
-  /**flag = SAME_NONZERO_PATTERN;*/
+  /* *flag = SAME_NONZERO_PATTERN; */
   *flag = DIFFERENT_NONZERO_PATTERN;
   return 0;
 }
