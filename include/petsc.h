@@ -6,6 +6,14 @@
 #define __PETSC_H
 /* ========================================================================== */
 /* 
+   petscconf.h is contained in bmake/${PETSC_ARCH}/petscconf.h it is 
+   found automatically by the compiler due to the -I${PETSC_DIR}/bmake/${PETSC_ARCH}
+   in the bmake/common_variables definition of PETSC_INCLUDE
+*/
+#include "petscconf.h"
+
+/* ========================================================================== */
+/* 
    This facilitates using C version of PETSc from C++
 */
 
@@ -21,14 +29,6 @@
    Current PETSc version number and release date
 */
 #include "petscversion.h"
-
-/* ========================================================================== */
-/* 
-   petscconf.h is contained in bmake/${PETSC_ARCH}/petscconf.h it is 
-   found automatically by the compiler due to the -I${PETSC_DIR}/bmake/${PETSC_ARCH}
-   in the bmake/common_variables definition of PETSC_INCLUDE
-*/
-#include "petscconf.h"
 
 /*
    Currently cannot check formatting for PETSc print statements because we have our

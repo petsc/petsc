@@ -3538,7 +3538,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray1d(Vec x,PetscInt m,PetscInt ms
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecConjugate"
-/*@C
+/*@
    VecConjugate - Conjugates a vector.
 
    Collective on Vec
