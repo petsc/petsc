@@ -238,6 +238,7 @@ class Configure(PETSc.package.Package):
     else:
       args.append('--disable-F77')
       args.append('--disable-F90')
+      args.append('--without-fc')
     args = ' '.join(args)
 
     try:
@@ -250,7 +251,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild LAM oldargs = '+oldargs+'\n new args = '+args+'\n')
       try:
         self.logPrintBox('Configuring LAM/MPI; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+lamDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+lamDir+';CXX='';export CXX; ./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on LAM/MPI: '+str(e))
       try:
@@ -376,10 +377,11 @@ class Configure(PETSc.package.Package):
         # start up MPICH's demon
         self.framework.logPrint('Starting up MPICH mpd demon needed for mpirun')
         try:
-          self.executeShellCommand('cd '+installDir+'; bin/mpdboot',timeout=25)
-        except:
-          pass
-        self.framework.logPrint('Started up MPICH mpd demon needed for mpirun')
+          output = self.executeShellCommand('cd '+installDir+'; bin/mpdboot',timeout=25)
+          self.framework.logPrint('Output from trying to run mpdboot:'+output)
+          self.framework.logPrint('Started up MPICH mpd demon needed for mpirun')
+        except RuntimeError, e:
+          self.framework.logPrint('Error trying to run mpdboot:'+e)
       self.framework.actions.addArgument('MPI', 'Install', 'Installed MPICH into '+installDir)
     return self.getDir()
 

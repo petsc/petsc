@@ -26,6 +26,9 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   Optimizations
    ------------
 
+    change mpibaij and mpisbaij to use the lastcol1,2 stuff as in mpiaij matsetvalues[blocked]
+    for faster insertion
+
     Add flag to DA that allows setting the preallocation for the matrices generated but not 
     the zero values (this option can only be used if not doing FD or AD computation of the Jacobian
     using color, so try to add error checking to prevent users from screwing up.

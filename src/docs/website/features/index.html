@@ -35,22 +35,20 @@
     </ul>
     </td>
     <td width="75%" valign="top">PETSc is intended for use in large-scale application
-    projects, and several ongoing <a href="../publications/index.html">computational science projects</a>
-    are built around the PETSc libraries. With strict attention to component interoperability,
-    PETSc facilitates the integration of independently developed application modules, which
-    often most naturally employ different coding styles and data structures. <p>PETSc is easy
+    projects, many ongoing <a href="../publications/index.html">computational science projects</a>
+    are built around the PETSc libraries. PETSc is easy
     to use for beginners. Moreover, its careful design allows advanced users to have detailed
-    control over the solution process. PETSc includes an expanding suite of parallel linear
+    control over the solution process. PETSc includes a large suite of parallel linear
     and nonlinear equation solvers that are easily used in application codes written in C,
-    C++, and Fortran. PETSc provides many of the mechanisms needed within parallel application
+    C++, Fortran and now Python. PETSc provides many of the mechanisms needed within parallel application
     codes, such as simple parallel matrix and vector assembly routines that allow the overlap
-    of communication and computation. In addition, PETSc includes growing support for
-    distributed arrays.&nbsp; Features include:</p>
+    of communication and computation. In addition, PETSc includes support for
+    parallel distributed arrays useful for finite difference methods.&nbsp; Features include:</p>
     <table border="0" width="100%">
       <tr>
         <td width="50%" valign="top"><ul>
           <li>Parallel vectors<ul>
-              <li>scatters </li>
+              <li>scatters (handles communicating ghost point information)</li>
               <li>gathers</li>
             </ul>
           </li>
@@ -72,7 +70,7 @@
           <li>Intensive error checking</li>
           <li>Portable to UNIX and Windows</li>
           <li>Over one hundred examples</li>
-          <li>PETSc is supported and will be actively enhanced for the next several years. </li>
+          <li>PETSc is supported and will be actively enhanced for many years. </li>
         </ul>
         </td>
       </tr>

@@ -52,9 +52,16 @@ please don't access these pages.<br>
       </p>
       <big><span style="font-weight: bold;">Obtaining PETSc:</span></big><br>
       <br>
-To obtain the development version of PETSc, download and install <b>BitKeeper</b>
-(free) from <a href="http://bitkeeper.com"> bitkeeper.com</a>. Using
-BitKeeper, invoke the following command to obtain PETSc. (This creates
+To obtain the development version of PETSc you have three options, 1) download and install the free
+<b>BitKeeper</b> download client, 
+2) access the nightly snapshot at ftp://info.mcs.anl.gov/pub/petsc/.petsc-dev.tar.gz or
+3) license BitKeeper (inexpensive academic licences available).</p>
+
+To use the free BitKeeper client ......</p>
+
+To use the snapshot, simply download the file and ungzip and untar it.</p>
+
+To use the licensed BitKeeper, invoke the following command to obtain PETSc. (This creates
 a local directory with the name petsc-dev)
       <ul>
         <li><font color="#800000">bk&nbsp; clone&nbsp;
@@ -65,31 +72,27 @@ For additional help on using BitKeeper you can use
         <li><font color="#800000">bk helptool</font></li>
       </ul>
 
+To update PETSc
+      <ul>
+        <li><font color="#800000">bk pull; cd python/BuildSystem; bk pull</font>(from inside the
+petsc-dev directory tree)</li>
+      </ul>
+      To modify your local copy of PETSc, you can use <font color="#800000">bk edit</font> and
+<font color="#800000">bk citool</font>, as described in <font color="#800000">bk helptool</font>. These changes
+can be shared with the PETSc community by pushing to the BkBits repository. You will need to send an SSH 1 public
+key to <a href="mailot:petsc-maint@mcs.anl.gov">petsc-maint</a> along with a description of the changes.
+
 <a href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Documentation</a>
  for the development version (updated nightly).</p>
 
+      <p align="left" style="font-weight: bold;"><big>Compiling and Using the Development Copy:</big></p>
 
 Use config/configure.py <a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html">to
 install PETSc</a>, (trouble, please contact us petsc-maint@mcs.anl.gov).</p>
 
 Subscribe to the mailing list. Send mail to majordomo@mcs.anl.gov with the message: subscribe petsc-dev</p>
 
-      <br>
-      <big style="font-weight: bold;">Updating PETSc:</big><br>
-      </br>
-      <ul>
-        <li><font color="#800000">bk pull; cd python/BuildSystem; bk pull</font>(from inside the
-petsc-dev directory tree)</li>
-      </ul>
-      <br>
-      <big style="font-weight: bold;">Contributing to PETSc:<br></big>
-      <br>
-      To modify your local copy of PETSc, you can use <font color="#800000">bk edit</font> and
-<font color="#800000">bk citool</font>, as described in <font color="#800000">bk helptool</font>. These changes
-can be shared with the PETSc community by pushing to the BkBits repository. You will need to send an SSH 1 public
-key to <a href="mailot:petsc-maint@mcs.anl.gov">petsc-maint</a> along with a description of the changes.
-      <p align="left" style="font-weight: bold;"><big>Building
-Documentation:</big></p>
+      <p align="left" style="font-weight: bold;"><big>Building Documentation:</big></p>
       <p align="left">The documentation tools are now automatically
 downloaded and installed by config/configure.py. However, as a failsafe, we
 provide them here as well.</p>

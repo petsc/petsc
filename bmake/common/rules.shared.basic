@@ -65,10 +65,11 @@ shared_libtool:
 	${LIBTOOL} --mode=link ${CLINKER} ${CFLAGS} ${CCPPFLAGS} -rpath ${INSTALL_LIB_DIR} -o ${LIBNAME}.la *.lo; \
 	${LIBTOOL} --mode=install ${PETSC_DIR}/bin/config/install-sh ${LIBNAME}.la ${INSTALL_LIB_DIR}
 
+shared_darwin8: shared_darwin7
 shared_darwin7: 
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
-        if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="-all_load ${PACKAGES_LIBS} ${EXTERNAL_LIB} ${SYS_LIB} -lgcc -lstdc++ -lm -lc"  ; fi;\
+        if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="-all_load ${PACKAGES_LIBS} ${EXTERNAL_LIB} ${SYS_LIB} -lm -lc"  ; fi;\
         if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${PETSC_SYS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PETSC_VEC_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${PETSC_MAT_LIB_BASIC}"  ; fi;\
