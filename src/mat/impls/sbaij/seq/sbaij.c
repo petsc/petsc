@@ -573,7 +573,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
       } else {
         value = v + l*(stepval+bs)*bs + k*bs;
       }
-      if (col < lastcol) low = 0; else high = nrow;
+      if (col <= lastcol) low = 0; else high = nrow;
       lastcol = col;
       while (high-low > 7) {
         t = (low+high)/2;
@@ -803,7 +803,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
         }
         
         /* move pointer bap to a(k,l) quickly and add/insert value */
-        if (col < lastcol) low = 0; high = nrow;
+        if (col <= lastcol) low = 0; high = nrow;
         lastcol = col;
         while (high-low > 7) {
           t = (low+high)/2;

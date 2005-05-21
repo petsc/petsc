@@ -37,7 +37,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
 #define CHUNKSIZE   15
 #define MatSetValues_SeqAIJ_A_Private(row,col,value,addv) \
 { \
-    if (lastcol1 > col) low1 = 0; else high1 = nrow1; \
+    if (col <= lastcol1) low1 = 0; else high1 = nrow1; \
     lastcol1 = col;\
     while (high1-low1 > 5) { \
       t = (low1+high1)/2; \
@@ -71,7 +71,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
 
 #define MatSetValues_SeqAIJ_B_Private(row,col,value,addv) \
 { \
-    if (lastcol2 > col) low2 = 0; else high2 = nrow2; \
+    if (col <= lastcol2) low2 = 0; else high2 = nrow2; \
     lastcol2 = col;\
     while (high2-low2 > 5) { \
       t = (low2+high2)/2; \

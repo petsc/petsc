@@ -1414,7 +1414,7 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat A,PetscInt m,const Pets
       } else {
         value = v + l*(stepval+bs)*bs + k*bs;
       }
-      if (col < lastcol) low = 0; else high = nrow;
+      if (col <= lastcol) low = 0; else high = nrow;
       lastcol = col;
       while (high-low > 7) {
         t = (low+high)/2;
@@ -1703,7 +1703,7 @@ PetscErrorCode MatSetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscIn
       } else {
         value = v[k + l*m];
       }
-      if (col < lastcol) low = 0; else high = nrow;
+      if (col <= lastcol) low = 0; else high = nrow;
       lastcol = col;
       while (high-low > 7) {
         t = (low+high)/2;
