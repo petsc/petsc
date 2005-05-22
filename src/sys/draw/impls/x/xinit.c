@@ -11,7 +11,7 @@
    call to XiCreateWindow .  Similarly for the Display.
 */
 
-#include "src/sys/src/draw/impls/x/ximpl.h"
+#include "src/sys/draw/impls/x/ximpl.h"
 
 EXTERN PetscErrorCode XiUniformHues(PetscDraw_X *,int);
 EXTERN PetscErrorCode Xi_wait_map(PetscDraw_X*);

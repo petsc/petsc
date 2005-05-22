@@ -4,7 +4,7 @@
         Major overhall for interactivity               11/14/97
         Reorganized                                    11/8/98
 */
-#include "src/sys/src/viewer/viewerimpl.h"   /* "petsc.h" */
+#include "src/sys/viewer/viewerimpl.h"   /* "petsc.h" */
 #include "src/ksp/pc/pcimpl.h"
 #include "src/mat/impls/aij/seq/aij.h"
 #include "mathematica.h"

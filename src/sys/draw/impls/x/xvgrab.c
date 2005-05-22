@@ -1,6 +1,6 @@
 /*$Id: xinit.c,v 1.69 2000/09/28 21:08:36 bsmith Exp $*/
 
-#include "src/sys/src/draw/impls/x/ximpl.h"
+#include "src/sys/draw/impls/x/ximpl.h"
 /*
     Gets the image from a window and stores it as a .gif file
 */

@@ -10,12 +10,12 @@ FFLAGS    =
 CPPFLAGS  = 
 SOURCEC	  = matlab.c
 SOURCEF	  =
-SOURCEH	  = ../../../../include/petscmatlab.h
+SOURCEH	  = ../../../include/petscmatlab.h
 OBJSC	  = matlab.o
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc
-LOCDIR	  = src/sys/src/objects/matlabengine/
+LOCDIR	  = src/sys/objects/matlabengine/
 DIRS      = 
 
 include ${PETSC_DIR}/bmake/common/base

@@ -4,7 +4,7 @@
     Defines the operations for the Postscript PetscDraw implementation.
 */
 
-#include "src/sys/src/draw/impls/ps/psimpl.h"         /*I  "petsc.h" I*/
+#include "src/sys/draw/impls/ps/psimpl.h"         /*I  "petsc.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawOpenPS" 

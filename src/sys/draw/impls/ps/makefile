@@ -12,7 +12,7 @@ OBJSF     =
 MANSEC    = Draw
 LIBBASE   = libpetsc
 DIRS      = 
-LOCDIR    = src/sys/src/draw/impls/ps/
+LOCDIR    = src/sys/draw/impls/ps/
 NOADIC    = true
 
 include ${PETSC_DIR}/bmake/common/base

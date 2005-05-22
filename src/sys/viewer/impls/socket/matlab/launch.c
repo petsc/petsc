@@ -7,7 +7,7 @@
 #include <errno.h>
 extern int fork();
 extern int system(const char *);
-#include "src/sys/src/viewer/impls/socket/socket.h"
+#include "src/sys/viewer/impls/socket/socket.h"
 #include "mex.h"
 #define PETSC_MEX_ERROR(a) {fprintf(stdout,"LAUNCH: %s \n",a); return ;}
 /*-----------------------------------------------------------------*/

@@ -4,7 +4,7 @@
    implementation of the graphics functionality in PETSc.
 */
 
-#include "src/sys/src/draw/drawimpl.h"
+#include "src/sys/draw/drawimpl.h"
 #include "petscsys.h"
 
 #if !defined(_PSIMPL_H)

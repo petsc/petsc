@@ -1,7 +1,7 @@
 #define PETSC_DLL
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
-#include "src/sys/src/plog/ptime.h"
+#include "src/sys/plog/ptime.h"
 #include "plog.h"
 
 StageLog PETSC_DLLEXPORT _stageLog = 0;

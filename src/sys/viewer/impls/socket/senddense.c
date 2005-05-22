@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "src/sys/src/viewer/impls/socket/socket.h"
+#include "src/sys/viewer/impls/socket/socket.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSocketPutScalar" 

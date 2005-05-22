@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
+#include "src/sys/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFormat" 

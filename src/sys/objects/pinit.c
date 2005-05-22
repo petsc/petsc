@@ -736,7 +736,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
    flag PETSC_HAVE_BROKEN_REQUEST_FREE is set (for IBM MPI implementation). See 
    src/vec/utils/vpscat.c. Due to this the memory allocated in PetscCommDuplicate()
    is never freed as it should be. Thus one may obtain messages of the form
-   [ 1] 8 bytes PetscCommDuplicate() line 645 in src/sys/src/mpiu.c indicating the
+   [ 1] 8 bytes PetscCommDuplicate() line 645 in src/sys/mpiu.c indicating the
    memory was not freed.
 
 */

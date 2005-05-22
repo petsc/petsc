@@ -7,7 +7,7 @@
    The region has 6 parameters.  These are the dimensions of the actual frame.
  */
 
-#include "src/sys/src/draw/impls/x/ximpl.h"
+#include "src/sys/draw/impls/x/ximpl.h"
 
 EXTERN PixVal XiGetColor(PetscDraw_X *,char *,int);
 

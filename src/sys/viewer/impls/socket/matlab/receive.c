@@ -14,7 +14,7 @@
 
 #include <stdio.h>
 #include "petscsys.h"
-#include "src/sys/src/viewer/impls/socket/socket.h"
+#include "src/sys/viewer/impls/socket/socket.h"
 #include "mex.h"
 EXTERN PetscErrorCode ReceiveSparseMatrix(mxArray **,int);
 EXTERN PetscErrorCode ReceiveDenseIntMatrix(mxArray **,int);

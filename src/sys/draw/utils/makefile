@@ -10,7 +10,7 @@ OBJSC    = axis.o lg.o dscatter.o hists.o zoom.o hue.o
 OBJSF    =
 LIBBASE  = libpetsc
 MANSEC   = Draw
-LOCDIR   = src/sys/src/draw/utils/
+LOCDIR   = src/sys/draw/utils/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

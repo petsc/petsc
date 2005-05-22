@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "src/sys/src/viewer/viewerimpl.h"
+#include "src/sys/viewer/viewerimpl.h"
 #include "mat.h"
 
 /*MC

@@ -3,7 +3,7 @@ CFLAGS	        =
 FFLAGS	        = 
 CPPFLAGS        =
 FPPFLAGS        =
-LOCDIR          = src/sys/src/viewer/examples/tutorials/
+LOCDIR          = src/sys/viewer/examples/tutorials/
 EXAMPLESC       = 
 MANSEC          = Viewer
 

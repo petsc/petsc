@@ -18,7 +18,7 @@
 #include <malloc.h>
 #endif
 #include "petscfix.h"
-#include "src/sys/src/plog/ptime.h"
+#include "src/sys/plog/ptime.h"
 #include "plog.h"
 
 PetscCookie PETSC_LARGEST_COOKIE = PETSC_COOKIE;

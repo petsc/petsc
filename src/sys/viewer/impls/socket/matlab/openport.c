@@ -68,7 +68,7 @@ typedef unsigned long   u_long;
 #if defined(PETSC_HAVE_WS2TCPIP_H)
 #include <Ws2tcpip.h>
 #endif
-#include "src/sys/src/viewer/impls/socket/socket.h"
+#include "src/sys/viewer/impls/socket/socket.h"
 #include "petscfix.h"
 #include "mex.h"
 

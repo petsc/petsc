@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
+#include "src/sys/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerGetSingleton" 

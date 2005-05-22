@@ -11,7 +11,7 @@ OBJSC     = ${SOURCEC:.c=.o}
 MANSEC    = Viewer
 LIBBASE   = libpetsc
 DIRS      = 
-LOCDIR    = src/sys/src/viewer/impls/mathematica/
+LOCDIR    = src/sys/viewer/impls/mathematica/
 
 include ${PETSC_DIR}/bmake/common/base
 

@@ -622,7 +622,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetValue(const char iname[],const cha
     }
   }
   if (N >= MAXOPTIONS) {
-    SETERRQ1(PETSC_ERR_PLIB,"No more room in option table, limit %d recompile \n src/sys/src/objects/options.c with larger value for MAXOPTIONS\n",MAXOPTIONS);
+    SETERRQ1(PETSC_ERR_PLIB,"No more room in option table, limit %d recompile \n src/sys/objects/options.c with larger value for MAXOPTIONS\n",MAXOPTIONS);
   }
   /* shift remaining values down 1 */
   for (i=N; i>n; i--) {
@@ -734,7 +734,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetAlias(const char inewname[],const 
   if (newname[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,"aliased must have -: Instead %s",newname);
   if (oldname[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,"aliasee must have -: Instead %s",oldname);
   if (n >= MAXALIASES) {
-    SETERRQ1(PETSC_ERR_MEM,"You have defined to many PETSc options aliases, limit %d recompile \n  src/sys/src/objects/options.c with larger value for MAXALIASES",MAXALIASES);
+    SETERRQ1(PETSC_ERR_MEM,"You have defined to many PETSc options aliases, limit %d recompile \n  src/sys/objects/options.c with larger value for MAXALIASES",MAXALIASES);
   }
 
   newname++; oldname++;

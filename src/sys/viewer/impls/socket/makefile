@@ -14,7 +14,7 @@ OBJSF     =
 MANSEC    = Viewer
 LIBBASE   = libpetsc
 DIRS      = matlab
-LOCDIR    = src/sys/src/viewer/impls/socket/
+LOCDIR    = src/sys/viewer/impls/socket/
 NOADIC    = true
 
 include ${PETSC_DIR}/bmake/common/base

@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
+#include "src/sys/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include <stdarg.h>
 #include "petscfix.h"
 

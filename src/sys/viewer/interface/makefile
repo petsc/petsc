@@ -10,7 +10,7 @@ OBJSC    = view.o flush.o viewregall.o viewreg.o viewa.o dlregispetsc.o viewers.
 OBJSF    =
 LIBBASE  = libpetsc
 MANSEC   = Viewer
-LOCDIR   = src/sys/src/viewer/interface/
+LOCDIR   = src/sys/viewer/interface/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

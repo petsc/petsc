@@ -16,7 +16,7 @@ OBJSC    = draw.o dline.o dlinew.o dlinegw.o dtext.o dtextv.o dtexts.o \
 OBJSF    =
 LIBBASE  = libpetsc
 MANSEC   = Draw
-LOCDIR   = src/sys/src/draw/interface/
+LOCDIR   = src/sys/draw/interface/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

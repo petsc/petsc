@@ -1,7 +1,7 @@
 #define PETSC_DLL
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
-#include "src/sys/src/plog/ptime.h"
+#include "src/sys/plog/ptime.h"
 #include "plog.h"
 
 /* Variables for the tracing logger */

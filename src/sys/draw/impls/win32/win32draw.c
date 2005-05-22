@@ -1,6 +1,6 @@
 #define PETSC_DLL
 #include "petsc.h"
-#include "src/sys/src/draw/drawimpl.h"
+#include "src/sys/draw/drawimpl.h"
 #include "win32draw.h"
 
 #define IDC_FOUR       109

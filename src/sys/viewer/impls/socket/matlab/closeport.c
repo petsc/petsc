@@ -20,7 +20,7 @@ typedef unsigned long   u_long;
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
-#include "src/sys/src/viewer/impls/socket/socket.h"
+#include "src/sys/viewer/impls/socket/socket.h"
 #include "mex.h"
 #define PETSC_MEX_ERROR(a) {fprintf(stdout,"CLOSEPORT: %s \n",a); return ;}
 typedef struct { int onoff; int time; } Linger;

@@ -5,7 +5,7 @@
 #if !defined(__VDRAW_H)
 #define __VDRAWL_H
 
-#include "src/sys/src/viewer/viewerimpl.h"
+#include "src/sys/viewer/viewerimpl.h"
 typedef struct {
   int            draw_max;
   PetscDraw      *draw;

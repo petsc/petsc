@@ -9,7 +9,7 @@
 */
 
 #undef __SDIR__
-#define __SDIR__ "src/sys/src/viewer/impls/socket/matlab"
+#define __SDIR__ "src/sys/viewer/impls/socket/matlab"
 
 #include <stdio.h>
 #include "petscsys.h"

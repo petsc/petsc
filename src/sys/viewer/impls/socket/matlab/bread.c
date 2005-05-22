@@ -1,12 +1,12 @@
 
 #include <stdio.h>
 #include "petscsys.h"
-#include "src/sys/src/viewer/impls/socket/socket.h"
+#include "src/sys/viewer/impls/socket/socket.h"
 #include "mex.h"
 
 
 /*
-   TAKEN from src/sys/src/fileio/sysio.c The swap byte routines are 
+   TAKEN from src/sys/fileio/sysio.c The swap byte routines are 
   included here because the Matlab programs that use this do NOT
   link to the PETSc libraries.
 */

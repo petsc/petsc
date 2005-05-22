@@ -14,7 +14,7 @@ OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc
 DIRS	  = 
-LOCDIR	  = src/sys/src/fileio/
+LOCDIR	  = src/sys/fileio/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

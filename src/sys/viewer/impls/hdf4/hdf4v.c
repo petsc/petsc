@@ -3,7 +3,7 @@
 
 #define CE do { CHKERRQ(ierr); } while (0)
 
-#include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
+#include "src/sys/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
 #if defined(PETSC_HAVE_HDF4)
 #include <mfhdf.h>
 #endif

@@ -11,7 +11,7 @@ OBJSF    =
 MANSEC   = Viewer
 LIBBASE  = libpetsc
 DIRS     = 
-LOCDIR   = src/sys/src/viewer/impls/ascii/
+LOCDIR   = src/sys/viewer/impls/ascii/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

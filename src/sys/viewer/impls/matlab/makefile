@@ -15,7 +15,7 @@ OBJSC	  = vmatlab.o
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc
-LOCDIR	  = src/sys/src/viewer/impls/matlab/
+LOCDIR	  = src/sys/viewer/impls/matlab/
 DIRS      = 
 
 include ${PETSC_DIR}/bmake/common/base

@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "src/sys/src/draw/impls/x/ximpl.h"
+#include "src/sys/draw/impls/x/ximpl.h"
 
 /*
     This routine waits until the window is actually created or destroyed

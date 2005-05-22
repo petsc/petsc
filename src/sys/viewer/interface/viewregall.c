@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
+#include "src/sys/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer);

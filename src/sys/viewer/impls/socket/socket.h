@@ -3,7 +3,7 @@
   each viewer has a different data structure.
 */
 
-#include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
+#include "src/sys/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
 #include "petscsys.h" 
 
 typedef struct {

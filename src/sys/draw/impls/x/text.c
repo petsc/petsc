@@ -5,7 +5,7 @@
    library routines access/load fonts only once
  */
 
-#include "src/sys/src/draw/impls/x/ximpl.h"
+#include "src/sys/draw/impls/x/ximpl.h"
 
 
 PetscErrorCode XiInitFonts(PetscDraw_X *);
