@@ -1,92 +1,92 @@
-c---------------------------------------------------------------
-c The following subroutines are from node2t.f in the original
-c code - D. K. Kaushik (1/17/97)
-c---------------------------------------------------------------
-c
-c
-c 2-D Navier Stokes on Unstructured Grids
-c
-c================================ SCLOCK ====================================
-c
-c  SCLOCK get the CPU time
-c
-c============================================================================
+!---------------------------------------------------------------
+! The following subroutines are from node2t.f in the original
+! code - D. K. Kaushik (1/17/97)
+!---------------------------------------------------------------
+!
+!
+! 2-D Navier Stokes on Unstructured Grids
+!
+!================================ SCLOCK ====================================
+!
+!  SCLOCK get the CPU time
+!
+!============================================================================
       subroutine SCLOCK(time)
 
-c      time = second(time)
+!      time = second(time)
       time = 1.0
 
       return
       end
 
 
-c============================== FORLINK ==============================72
-c
-c  FORLINK establishes links between FORTRAN common blocks and C
-c
-c=====================================================================72
+!============================== FORLINK ==============================72
+!
+!  FORLINK establishes links between FORTRAN common blocks and C
+!
+!=====================================================================72
       subroutine FORLINK()
 
-      common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
+      common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,         &
      &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
-      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
+      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,          &
      &             nstage,ncyct,iramp,nitfo,ncyc
       common/gmcom/gtol,icycle,nsrch,ilu0,ifcn
       common/refgeom/sref,cref,bref,xmc,ymc,zmc
 
       call CLINK(title,cfl1,gtol,refgeom)
-c
-c End of subroutine FORLINK
-c
+!
+! End of subroutine FORLINK
+!
       return
       end
 
-c============================== Block_Initialization  ================72
-c
-c Initializes the common blocks members for turbulence model
-c
-c=====================================================================72
+!============================== Block_Initialization  ================72
+!
+! Initializes the common blocks members for turbulence model
+!
+!=====================================================================72
       block data Block_Initialization
       common/turb/vkar,cmu,ce1,ce2,aplus1,aplus2,turbinf
       common/spalrt/cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
       data vkar,cmu,ce1,ce2/0.41,0.09,1.2,2.0 /
       data aplus1,aplus2,turbinf/26.0,10.0,0.1 /
       data cb1,sig,cb2,cw2,cw3/0.1355,0.66667,0.622,0.3,2.0/
-c
-c Comment out old coefficients
-c      data cv1,ct1,ct2,ct3,ct4/7.1,1.0,2.0,1.1,2.0/
-c
+!/*
+! Comment out old coefficients
+!      data cv1,ct1,ct2,ct3,ct4/7.1,1.0,2.0,1.1,2.0/
+!*/
        data cv1,ct1,ct2,ct3,ct4/7.1,1.0,2.0,1.2,0.5/
 
       end
 
-c================================== INIT =============================72
-c
-c Initializes the flow field
-c
-c=====================================================================72
+!================================== INIT =============================72
+!
+! Initializes the flow field
+!
+!=====================================================================72
       subroutine INIT(nnodes, qvec, turbre, amut,nvnode, ivnode,irank)
 
       dimension turbre(1),amut(1)
       integer ivnode(1)
 
-      common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
+      common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,         &
      &            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       common/ivals/p0,rho0,c0,u0,v0,w0,et0,h0,pt0
       common/turb/vkar,cmu,ce1,ce2,aplus1,aplus2,turbinf
       common/spalrt/cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
-      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
+      common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,          &
      &             nstage,ncyct,iramp,nitfo,ncyc
+!
+!     data vkar,cmu,ce1,ce2/0.41,0.09,1.2,2.0 /
+!     data aplus1,aplus2,turbinf/26.0,10.0,0.1 /
+!     data cb1,sig,cb2,cw2,cw3/0.1355,0.66667,0.622,0.3,2.0/
 c
-c     data vkar,cmu,ce1,ce2/0.41,0.09,1.2,2.0 /
-c     data aplus1,aplus2,turbinf/26.0,10.0,0.1 /
-c     data cb1,sig,cb2,cw2,cw3/0.1355,0.66667,0.622,0.3,2.0/
+! Comment out old coefficients
+!      data cv1,ct1,ct2,ct3,ct4/7.1,1.0,2.0,1.1,2.0/
 c
-c Comment out old coefficients
-c      data cv1,ct1,ct2,ct3,ct4/7.1,1.0,2.0,1.1,2.0/
-c
-c      data cv1,ct1,ct2,ct3,ct4/7.1,1.0,2.0,1.2,0.5/
+!      data cv1,ct1,ct2,ct3,ct4/7.1,1.0,2.0,1.2,0.5/
 c
 c
 #if defined(INTERLACING)
@@ -96,16 +96,16 @@ c
        real qvec(nnodes,5)
 #define qnode(i,j) qvec(j,i)
 #endif
-c
+!
       cw1 = cb1/vkar/vkar + (1. + cb2)/sig
       if(ivisc.gt.4)turbinf = 1.341946
-c      if(ivisc.gt.4)turbinf = 0.5
+!      if(ivisc.gt.4)turbinf = 0.5
       if(ivisc.gt.4.and.itran.eq.1)turbinf = 0.1
-c
-c Note that for Spalarts model, I use turbinf as the freestream value of
-c the dependent variable just as in the Baldwin-Barth model.
-c The constant is set so that in the freestream, nu_t=0.009 (1.341946)
-c 
+!
+! Note that for Spalarts model, I use turbinf as the freestream value of
+! the dependent variable just as in the Baldwin-Barth model.
+! The constant is set so that in the freestream, nu_t=0.009 (1.341946)
+!
       res0 = 1.0
       resc = 1.0
 c
@@ -121,36 +121,36 @@ c
       rho0  = 1.0
       c0    = 1.0
       p0    = rho0*c0*c0 / gamma
-c
-c
-c  The following u0,v0,w0 are Kyle's original (no yaw) components
-c
-c     u0 = xmach * cos( alpha/conv )
-c     v0 = xmach * sin( alpha/conv )
-c     w0 = 0.0
-c
-c  The following u0,v0,w0 are CFL3D's yawed components, based
-c  on info from Bob Biedron.  CFL3D has z "up" and y "out the
-c  span".
-c
-c     u0 = xmach*cos(alpha)*cos(beta)
-c     w0 = xmach*sin(alpha)*cos(beta)
-c     v0 = -xmach*sin(beta)
-c
-c  However, in FUN3D, we have y "up" and z "out the span".  So
-c  we think that the components should be like:
-c
-c   u0(FUN3D) =   u0(CFL3D)
-c   v0(FUN3D) =   w0(CFL3D)
-c   w0(FUN3D) = - v0(CFL3D)
-c
-c     u0 = xmach * cos(alpha/conv)*cos(yaw/conv)
-c     v0 = xmach * sin(alpha/conv)*cos(yaw/conv)
-c     w0 = xmach * sin(yaw/conv)
-c
-c  But NOW (11/4/96), Kyle wants to follow CFL3D's grid-axis
-c  convention, so let's set it up that way.
-c
+!
+!
+!  The following u0,v0,w0 are Kyle's original (no yaw) components
+!
+!     u0 = xmach * cos( alpha/conv )
+!     v0 = xmach * sin( alpha/conv )
+!     w0 = 0.0
+!
+!  The following u0,v0,w0 are CFL3D's yawed components, based
+!  on info from Bob Biedron.  CFL3D has z "up" and y "out the
+!  span".
+!
+!     u0 = xmach*cos(alpha)*cos(beta)
+!     w0 = xmach*sin(alpha)*cos(beta)
+!     v0 = -xmach*sin(beta)
+!
+!  However, in FUN3D, we have y "up" and z "out the span".  So
+!  we think that the components should be like:
+!
+!   u0(FUN3D) =   u0(CFL3D)
+!   v0(FUN3D) =   w0(CFL3D)
+!   w0(FUN3D) = - v0(CFL3D)
+!
+!     u0 = xmach * cos(alpha/conv)*cos(yaw/conv)
+!     v0 = xmach * sin(alpha/conv)*cos(yaw/conv)
+!     w0 = xmach * sin(yaw/conv)
+!
+!  But NOW (11/4/96), Kyle wants to follow CFL3D's grid-axis
+!  convention, so let's set it up that way.
+!
 #if defined(CFL3D_AXIS)    
       u0 =   xmach * cos(alpha/conv) * cos(yaw/conv)
       v0 = - xmach * sin(yaw/conv)
@@ -160,11 +160,11 @@ c
       v0 = xmach * sin( alpha/conv )
       w0 = 0.0
 #endif
-c
+!
       ei0   = p0/(( gamma - 1.0 )*rho0)
       et0   = rho0*( ei0 + 0.5*(u0*u0 + v0*v0 + w0*w0))
       h0    = (et0 + p0)/rho0
-c      pt0   = p0*(1.0 + 0.5*gm1*xmach*xmach)**3.5
+!      pt0   = p0*(1.0 + 0.5*gm1*xmach*xmach)**3.5
       pt0 = 1.0
       if (irank .eq. 0) write(10,500)rho0,c0,p0,u0,v0,
      1                               w0,ei0,et0,h0,pt0
@@ -177,40 +177,40 @@ c      pt0   = p0*(1.0 + 0.5*gm1*xmach*xmach)**3.5
          qnode(4,n) = rho0*w0
          qnode(5,n) = et0
       enddo
-c     This if statement has been introduced to save memory for
-c     inviscid and laminar cases -- D. K. Kaushik (12/20/97)
+!     This if statement has been introduced to save memory for
+!     inviscid and laminar cases -- D. K. Kaushik (12/20/97)
       if (ivisc.ge.3) then
        do n = 1,nnodes
          turbre(n)  = 0.0
          amut(n)    = 0.0
        enddo
       endif
-c
-c If viscous, zero out the velocity on the surface
-c and set the energy so it reflects the correct wall temp
-c
+!
+! If viscous, zero out the velocity on the surface
+! and set the energy so it reflects the correct wall temp
+!
       Prandtl = 0.72
       Twall = 1.0
       Twall = 1.0 + .5*sqrt(Prandtl)*gm1*xmach*xmach
-c     print *, "Just Before Viscous"
-c
+!     print *, "Just Before Viscous"
+!
       do 9010 i = 1,nvnode
-c
-c Compute the velocity normal to the surface
-c
+!
+! Compute the velocity normal to the surface
+!
         k       = ivnode(i)
-c
-c Set the velocity to zero energy according to specified wall temperature
-c
+!
+! Set the velocity to zero energy according to specified wall temperature
+!
         qnode(2,k) = 0.0
         qnode(3,k) = 0.0
         qnode(4,k) = 0.0
         qnode(5,k) = qnode(1,k)*Twall/ggm1
-c
+!
  9010 continue
-c
-c If turbulent, initialize turbre
-c
+!
+! If turbulent, initialize turbre
+!
       if (ivisc.eq.3.or.ivisc.eq.4) then
          if (irank .eq. 0) write(10,110)
          if (irank .eq. 0) write(10,120)vkar,cmu,ce1,ce2
@@ -234,7 +234,7 @@ c
             amut(n)   = fv1*turbinf
  1020    continue
       end if
-c     print *, "I am out of INIT"
+!     print *, "I am out of INIT"
  
       return
   110 format(1h ,'Parameters for turbulence model')
@@ -243,16 +243,16 @@ c     print *, "I am out of INIT"
   140 format(1h ,'k=',f10.5,' cb1=',f10.5,' sig=',f10.5,'cb2=',f10.5)
   150 format(1h ,'cw1=',f10.5,' cw2=',f10.5,' cw3=',f10.5,' cv1=',f10.5)
   160 format(1h ,'ct1=',f10.5,' ct2=',f10.5,' ct3=',f10.5,' ct4=',f10.5)
-c
-c End of subroutine INIT
-c
+!
+! End of subroutine INIT
+!
       
       end
 
 
 c================================ READR1 ====================================
 c
-c  Reads input parameters
+!  Reads input parameters
 c
 c============================================================================
       subroutine READR1(ileast, irank)
@@ -312,8 +312,8 @@ c============================================================================
 
 c================================ RDGPAR =============================72
 c
-c Reads grid parameters
-c I am using this subroutine in modified form - DKK (1/8/97)
+! Reads grid parameters
+! I am using this subroutine in modified form - DKK (1/8/97)
 c
 c=====================================================================72
       subroutine RDGPAR(nnodes,ncell,nedge,
@@ -330,19 +330,19 @@ c=====================================================================72
       character*40 filename
 
       integer unit
-c 
-c  DEBUG: to check things out
-c  
+! 
+!  DEBUG: to check things out
+!  
       nsface = 0
       nvface = 0
       nfface = 0
 c
-c  end DEBUG: to check things out
+!  end DEBUG: to check things out
 c
 
       unit =  20
 
-c     read(7,*) filename
+!     read(7,*) filename
       filename = 'uns3d.msh'
       open(unit,file=filename,form='unformatted',status='old')
       rewind unit
@@ -367,7 +367,7 @@ c     read(7,*) filename
 
 c================================ README =============================72
 c
-c Read grid 
+! Read grid 
 c
 c=====================================================================72
       subroutine README(nnodes,ncell,nedge,
@@ -399,7 +399,7 @@ c=====================================================================72
       real x(nnodes),y(nnodes),z(nnodes)
       real xn(nedge),yn(nedge),zn(nedge),ra(nedge)
 c
-c  Garbage variables
+!  Garbage variables
 c
       integer c2n(ncell,4), c2e(ncell,6)
       integer nntet(nnbound), nnpts(nnbound)
@@ -411,7 +411,7 @@ c
 
       unit = 20
 c
-c  Read Cell to Node indices
+!  Read Cell to Node indices
 c
       if (ivisc.ne.0) then
          read (unit) (c2n(j,1),j=1,ncell),(c2n(j,2),j=1,ncell),
@@ -422,7 +422,7 @@ c
       end if
 
 c
-c  Read Cell to Edge indices
+!  Read Cell to Edge indices
 c
       if (ivisc.ne.0) then
          read (unit) (c2e(j,1),j=1,ncell),(c2e(j,2),j=1,ncell),
@@ -434,101 +434,101 @@ c
      &               (idum,j=1,ncell),(idum,j=1,ncell) 
       end if
 c
-c  Read coordinates of grid points
+!  Read coordinates of grid points
 c
       read (unit) (x(i),i=1,nnodes)
       read (unit) (y(i),i=1,nnodes)
       read (unit) (z(i),i=1,nnodes)
 c
-c  Read median dual volume surrounding each node
+!  Read median dual volume surrounding each node
 c
       read (unit) (vol(i),i=1,nnodes)
 c
-c  Read node indices for each edge
+!  Read node indices for each edge
 c
       read (unit) (evec(k,1),k=1,nedge),(evec(k,2),k=1,nedge)
 c
-c  Read in unit normals of dual mesh face (from node 1 to node 2)
-c  and the area of the dual mesh face 
+!  Read in unit normals of dual mesh face (from node 1 to node 2)
+!  and the area of the dual mesh face 
 c
       read (unit) (xn(k),k=1,nedge),(yn(k),k=1,nedge),
      &            (zn(k),k=1,nedge),(ra(k),k=1,nedge)
 c
-c  Read Cell colors
+!  Read Cell colors
 c
       read (unit) (idum,i=1,nccolor)
 c
-c  Read edge colors
+!  Read edge colors
 c
       read (unit) (idum,i=1,ncolor)
 c
-c  Read solid boundary face colors
+!  Read solid boundary face colors
 c
       do i=1, nnbound
          read (unit) idum,(jdum,j=1,idum)
       end do
 c
-c  Read viscous boundary face colors
+!  Read viscous boundary face colors
 c
       do i=1, nvbound
          read (unit) idum,(jdum,j=1,idum)
       end do
 c
-c  Read boundary face colors
+!  Read boundary face colors
 c
       do i=1, nfbound
          read (unit) idum,(jdum,j=1,idum)
       end do
 c
-c  Read inviscid surface info
+!  Read inviscid surface info
 c
       read (unit) (nntet(i),i=1,nnbound)
       read (unit) (nnpts(i),i=1,nnbound)
 c
-c  Read viscous surface info
+!  Read viscous surface info
 c
       read (unit) (nvtet(i),i=1,nvbound)
       read (unit) (nvpts(i),i=1,nvbound)
 c
-c  Read far field info
+!  Read far field info
 c
       read (unit) (nftet(i),i=1,nfbound)
       read (unit) (nfpts(i),i=1,nfbound)
 c
-c  Read list of faces on inviscid boundaries
+!  Read list of faces on inviscid boundaries
 c
       read (unit) (f2ntn(i,1),i=1,nnfacet),(f2ntn(i,2),i=1,nnfacet),
      &            (f2ntn(i,3),i=1,nnfacet),(f2ntn(i,4),i=1,nnfacet)
 c
-c  Read list of faces on viscous boundaries
+!  Read list of faces on viscous boundaries
 c
       read (unit) (f2ntv(i,1),i=1,nvfacet),(f2ntv(i,2),i=1,nvfacet),
      &            (f2ntv(i,3),i=1,nvfacet),(f2ntv(i,4),i=1,nvfacet)
 c
-c  Read list of faces on far field boundaries
+!  Read list of faces on far field boundaries
 c
       read (unit) (f2ntf(i,1),i=1,nffacet),(f2ntf(i,2),i=1,nffacet),
      &            (f2ntf(i,3),i=1,nffacet),(f2ntf(i,4),i=1,nffacet)
 c
-c  Read list of info associated with nodes on each inviscid boundary
+!  Read list of info associated with nodes on each inviscid boundary
 c
       read (unit) (isnode(i),i=1,nsnode)
       read (unit) (sxn(i),i=1,nsnode),(syn(i),i=1,nsnode),
      &            (szn(i),i=1,nsnode)
 c
-c  Read list of info associated with nodes on each viscous boundary
+!  Read list of info associated with nodes on each viscous boundary
 c
       read (unit) (ivnode(i),i=1,nvnode)
       read (unit) (vxn(i),i=1,nvnode),(vyn(i),i=1,nvnode),
      &            (vzn(i),i=1,nvnode)
 c
-c  Read list of info associated with nodes on each far field boundary
+!  Read list of info associated with nodes on each far field boundary
 c
       read (unit) (ifnode(i),i=1,nfnode)
       read (unit) (fxn(i),i=1,nfnode),(fyn(i),i=1,nfnode),
      &            (fzn(i),i=1,nfnode)
 c
-c Read in the distance function
+! Read in the distance function
 c
       if (ivisc.gt.3) then
          read(unit)(slen(i),i=1,nnodes)
@@ -536,17 +536,17 @@ c
  
       close (unit)
 c
-c  End of subroutine README
+!  End of subroutine README
 c
       return
       end
 
 
-c================================ RREST ==============================72
-c
-c Reads input data for restarts 
-c
-c=====================================================================72
+!================================ RREST ==============================72
+!
+! Reads input data for restarts 
+!
+!=====================================================================72
       subroutine RREST(nnodes, qvec, turbre, amut)
 
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
@@ -576,14 +576,14 @@ c=====================================================================72
 
       return
 c
-c End of subroutine RREST
+! End of subroutine RREST
 c
       end
 
 
 c================================ WREST ==============================72
 c
-c Writes output flowfield for restarts 
+! Writes output flowfield for restarts 
 c
 c=====================================================================72
       subroutine WREST(nnodes, qvec, turbre, amut)
@@ -607,14 +607,14 @@ c=====================================================================72
 
       return
 c
-c End of subroutine WREST
+! End of subroutine WREST
 c
       end
 
 
 c================================ PLLAN ====================================
 c
-c  Writes output for plotting 
+!  Writes output for plotting 
 c
 c============================================================================
       subroutine PLLAN(nnodes,irank)
@@ -624,10 +624,10 @@ c============================================================================
       common/history/rms(3000),clw(3000),cdw(3000),cmxw(3000),
      2               cmyw(3000),cmzw(3000),cxw(3000),cyw(3000),
      3               czw(3000),xres(3000)
-c
-c Write out the residual history
-c
-c     tpnpi = (xres(ntt) - xres(1))/float(ntt*nnodes)
+!
+! Write out the residual history
+!
+!     tpnpi = (xres(ntt) - xres(1))/float(ntt*nnodes)
       tpnpi = xres(ntt)/float(ntt*nnodes)
       write(12,300) tpnpi
       ncolumn = 6
@@ -640,7 +640,7 @@ c     tpnpi = (xres(ntt) - xres(1))/float(ntt*nnodes)
       write(12,306)
       write(12,100) ntt
       do 1200 n = 1,ntt
-c        xres(n) = xres(n)/1.0e6
+!        xres(n) = xres(n)/1.0e6
          write(12,100)n,rms(n),clw(n),cdw(n),cmzw(n),xres(n)
  1200 continue
   100 format(1h ,i5,1x,e14.7,2x,e14.7,2x,e14.7,2x,e14.7,2x,e14.7)
@@ -651,18 +651,18 @@ c        xres(n) = xres(n)/1.0e6
   304 format(1h ,'   v4::c_d')
   305 format(1h ,'   v5::c_m')
   306 format(1h ,'   v6::CPU time')
-c
-c End of subroutine PLLAN
-c
+!
+! End of subroutine PLLAN
+!
       return
       end
 
 
-c================================ TECFLO =============================72
-c
-c  Writes a formatted file that contains an input file for TECPLOT
-c
-c=====================================================================72
+!================================ TECFLO =============================72
+!
+!  Writes a formatted file that contains an input file for TECPLOT
+!
+!=====================================================================72
       subroutine TECFLO(nnodes,
      &                  nnbound,
      3                  nnfacet,
@@ -671,7 +671,7 @@ c=====================================================================72
      5                  nnpts,nntet,
      6                  f2ntn,isnode,
      7                  istep,irank,iopen,iclose,ibnd)
-c
+!
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       common/ivals/p0,rho0,c0,u0,v0,w0,et0,h0,pt0
 
@@ -696,32 +696,34 @@ c
       if (iopen .eq. 1) then
        write(aaa,'(4hflow,i4.4)') istep
        open(unit=99,file=aaa,status='unknown')
-c
-c   + write tecplot header
-c
-c     write(99,'(a)') 'TITLE= "',title,'"'
-      write(99,'(a)') 'VARIABLES="X     ","Y     ","Z     ","RHO   ",    
-     1     "U     ","V     ","W     ","P/Pinf","S     ","Mach  "'  
-c
+!
+!   + write tecplot header
+!
+!     write(99,'(a)') 'TITLE= "',title,'"'
+!
+c================================== INIT =============================72
+       write(99,'(a)') 'VARIABLES="X     ","Y     ","Z     ","RHO   ",', $  
+     $      '"U     ","V     ","W     ","P/Pinf","S     ","Mach  "'  
+!
       endif
-c
+!
       call ETOP(nsnode,qvec)
 
       pinf = p0
-c
-c   + do a zone-title, so we can keep track of things
-c   + start with solid-wall boundary surfaces
-c  
+!
+!   + do a zone-title, so we can keep track of things
+!   + start with solid-wall boundary surfaces
+!  
       isp   = 1
       ist   = 1
       do 10 i=1,nnbound
-c
-c        write(c4,"(i4)") i
-c       if (i .ge.    0 .and. i .le.    9) ic = 4
-c        if (i .ge.   10 .and. i .le.   99) ic = 3
-c        if (i .ge.  100 .and. i .le.  999) ic = 2
-c        if (i .ge. 1000 .and. i .le. 9999) ic = 1
-c
+!
+!        write(c4,"(i4)") i
+!       if (i .ge.    0 .and. i .le.    9) ic = 4
+!        if (i .ge.   10 .and. i .le.   99) ic = 3
+!        if (i .ge.  100 .and. i .le.  999) ic = 2
+!        if (i .ge. 1000 .and. i .le. 9999) ic = 1
+!
         if (ibnd .eq. 1) then
           write(c4,'(3hnn.,i1.1)') i
           write(99,1000) c4,nnpts(i),nntet(i)
@@ -732,7 +734,7 @@ c
           write(c4,'(3hff.,i1.1)') i
           write(99,1000) c4,nnpts(i),nntet(i)
 	endif
-c
+!
         write(99,1010) (x(j),j=isp,isp+nnpts(i)-1)
         write(99,1010) (y(j),j=isp,isp+nnpts(i)-1)
         write(99,1010) (z(j),j=isp,isp+nnpts(i)-1)
@@ -750,42 +752,42 @@ c
      3                  (gamma*qnode(5,j)/
      4                  qnode(1,j))),
      5                  j=isp,isp+nnpts(i)-1)
-c
+!
         do 30 j=ist,ist+nntet(i)-1
-c
+!
           i1 = f2ntn(j,1) - isp + 1
           i2 = f2ntn(j,2) - isp + 1
           i3 = f2ntn(j,3) - isp + 1
-c
+!
           write(99,1020) i1,i2,i3,i3
-c
+!
    30   continue
-c
+!
         isp = isp + nnpts(i) 
         ist = ist + nntet(i)
-c
+!
    10 continue
       call PTOE(nsnode,qvec)
-c
-c     End of subroutine tecflo
-c
+!
+!     End of subroutine tecflo
+!
  1000 format('ZONE T="',a,'", I=',i6,', J=',i6,', F=FEBLOCK')
  1010 format(1P10E13.5)
  1020 format(4I10)
       if (iclose .eq. 1) then
         print *, 'Field values written to the file ',aaa
         close(99)
-c1030   format('Field values written to the file ',a)
+!1030   format('Field values written to the file ',a)
       endif
       return
       end
 
 
-c=============================== FASFLO ==============================72
-c
-c Write a FAST binary file
-c
-c=====================================================================72
+!=============================== FASFLO ==============================72
+!
+! Write a FAST binary file
+!
+!=====================================================================72
       subroutine FASFLO(nnodes,nsnode,nnfacet,isnode,f2ntn,x,y,z,qvec)
 
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
@@ -807,23 +809,23 @@ c=====================================================================72
      &           (1,i=1,nnfacet)
 
       write (15) nsnode,1,1
-c     write (15) beta,alpha,Re,time
+!     write (15) beta,alpha,Re,time
       write (15) (1.0,i=1,nsnode),
      &           ((qvec(nx,isnode(i)),nx=2,4),i=1,nsnode),
      &            (qvec(isnode(i),1),i=1,nsnode)
 
-c
-c End of subroutine FASFLO
-c
+!
+! End of subroutine FASFLO
+!
       return
       end
 
-c================================ ETOH ===============================72
-c
-c  Converts total energy to total enthalpy
-c  Also converts rhou and rhov to u and v
-c
-c=====================================================================72
+!================================ ETOH ===============================72
+!
+!  Converts total energy to total enthalpy
+!  Also converts rhou and rhov to u and v
+!
+!=====================================================================72
       subroutine ETOH(nvertices, qvec)
 
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
@@ -853,18 +855,18 @@ c=====================================================================72
       flops = flops + nvertices*14
       call PetscLogFlops(flops,ierr)
 c
-c End of subroutine ETOH
+! End of subroutine ETOH
 c
       return
       end
 
 
-c================================ HTOE ===============================72
-c
-c  Converts total enthalpy to total energy
-c  Also converts u and v back to rhou and rhov
-c
-c=====================================================================72
+!================================ HTOE ===============================72
+!
+!  Converts total enthalpy to total energy
+!  Also converts u and v back to rhou and rhov
+!
+!=====================================================================72
       subroutine HTOE(nvertices, qvec)
 
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
@@ -894,7 +896,7 @@ c=====================================================================72
       flops = flops + nvertices*13
       call PetscLogFlops(flops,ierr)
 c
-c End of subroutine HTOE
+! End of subroutine HTOE
 c
       return
       end
@@ -902,8 +904,8 @@ c
 
 c================================ ETOP ===============================72
 c
-c  Converts total energy to pressure
-c  Also converts rhou and rhov to u and v
+!  Converts total energy to pressure
+!  Also converts rhou and rhov to u and v
 c
 c=====================================================================72
       subroutine ETOP(nvertices, qvec)
@@ -935,7 +937,7 @@ c=====================================================================72
       flops = flops + nvertices*12
       call PetscLogFlops(flops,ierr)
 c
-c End of subroutine ETOP
+! End of subroutine ETOP
 c
       return
       end
@@ -943,8 +945,8 @@ c
 
 c================================ PTOE ===============================72
 c
-c  Converts pressure to total energy
-c  Also converts u and v back to rhou and rhov
+!  Converts pressure to total energy
+!  Also converts u and v back to rhou and rhov
 c
 c=====================================================================72
       subroutine PTOE(nvertices, qvec)
@@ -975,15 +977,15 @@ c=====================================================================72
       flops = flops + nvertices*12
       call PetscLogFlops(flops,ierr)
 c
-c End of subroutine PTOE
+! End of subroutine PTOE
 c
       return
       end
 
 c================================ L2NORM =============================72
 c
-c  calculates the L2 norm of the residual
-c  I have eliminated dq - D. K. Kaushik (1/23/97)
+!  calculates the L2 norm of the residual
+!  I have eliminated dq - D. K. Kaushik (1/23/97)
 c=====================================================================72
       subroutine L2NORM(res,nnodes,nnode_glo,x,y,z,vol,irank)
 #include "include/finclude/petsc.h"
@@ -997,17 +999,17 @@ c=====================================================================72
      &             nstage,ncyct,iramp,nitfo,ncyc
 
       dimension res(4,nnodes),x(1),y(1),z(1)
-c     dimension dq(nnodes,4),vol(1)
+!     dimension dq(nnodes,4),vol(1)
       dimension vol(1)
 
       integer irank, icount
       real sum, sumglo
 
 c
-c Set the flag to monitor which type of residual you want
-c iflag=0 "normal" residual
-c iflag=1 residual/volume
-c iflag=2 dq
+! Set the flag to monitor which type of residual you want
+! iflag=0 "normal" residual
+! iflag=1 residual/volume
+! iflag=2 dq
 c
       iflag = 0
  
@@ -1015,7 +1017,7 @@ c
       sum = 0.0
       rmax = 0.0
 c
-c iflag=0
+! iflag=0
 c
       if (iflag.eq.0) then
          do 1010 i = 1,nnodes
@@ -1030,7 +1032,7 @@ c
  1010    continue
       end if
 c
-c iflag=1
+! iflag=1
 c
       if (iflag.eq.1) then
          do 1020 i = 1,nnodes
@@ -1045,33 +1047,33 @@ c
  1020    continue
       end if
 c
-c iflag=2
+! iflag=2
 c
-c     if (iflag.eq.2)then
-c        do 1030 i = 1,nnodes
-c           sum = sum + dq(i,1)*dq(i,1)
-c           test = abs(dq(i,1))
-c           if (test.ge.rmax)then
-c              rmax = test
-c              xloc = x(i)
+!     if (iflag.eq.2)then
+!        do 1030 i = 1,nnodes
+!           sum = sum + dq(i,1)*dq(i,1)
+!           test = abs(dq(i,1))
+!           if (test.ge.rmax)then
+!              rmax = test
+!              xloc = x(i)
 c              yloc = y(i)
-c              zloc = z(i)
-c           end if
+!              zloc = z(i)
+!           end if
 c1030    continue
-c     end if
+!     end if
  
-c     rms(ntt) = sqrt(sum/t1)
+!     rms(ntt) = sqrt(sum/t1)
       icount = 1
       sumglo=0.0
-c     write(*,*) 'I am in L2NORM just before Reduce op'
-c     write(*,*) 'Local res. norm on processor ',irank,' is ',sqrt(sum)
+!     write(*,*) 'I am in L2NORM just before Reduce op'
+!     write(*,*) 'Local res. norm on processor ',irank,' is ',sqrt(sum)
       call MPI_ALLREDUCE(sum,sumglo,icount,
      >                   MPIU_SCALAR, MPI_SUM,
      >                   MPI_COMM_WORLD,ierr)
-c     write(*,*) 'In L2NORM - residual norm is', sqrt(sumglo)
+!     write(*,*) 'In L2NORM - residual norm is', sqrt(sumglo)
       rms(ntt) = sqrt(sumglo/t1)
 c
-c If we are ramping the cfl with SER save res0 and resc
+! If we are ramping the cfl with SER save res0 and resc
 c
       if (ntt.eq.1) res0 = rms(ntt)
       resc = rms(ntt)
@@ -1079,7 +1081,7 @@ c
       if (resc.lt.compare) resc = compare
       ratio = res0/resc
 
-c     write(6,100)ntt,rms(ntt),rmax,xloc,yloc,zloc,ratio
+!     write(6,100)ntt,rms(ntt),rmax,xloc,yloc,zloc,ratio
       if (irank .eq. 0) write(10,100)ntt,rms(ntt),rmax,
      >                 xloc,yloc,zloc,ratio
 
@@ -1087,41 +1089,41 @@ c     write(6,100)ntt,rms(ntt),rmax,xloc,yloc,zloc,ratio
      &       6(1e14.7,1x))
   202 format(1h ,2x,e14.7,2x,e14.7,2x,i6)
 c
-c End of subroutine L2NORM
+! End of subroutine L2NORM
 c
       return
       end
 
 
-c================================ FORCE  ============================72
-c
-c  Provided by Bob Biedron, inserted by Eric on 10/31/96
-c  (Note:  "history" common block has to be modified everywhere
-c   to use this routine!)
-c
-c  NOTE:  This currently ONLY DOES PRESSURE FORCES correctly.
-c         There's no guarantee on the viscous force stuff.
-c         (We think it's right though)
-c
-c   sign conventions for forces and moments:
-c     cmx....moment about x-axis through the moment center (xmc,ymc,zmc)
-c            positive value for ccw moment when viewed from +x axis
-c     cmy....moment about y-axis through the moment center (xmc,ymc,zmc)
-c            positive value for ccw moment when viewed from +y axis
-c     cmz....moment about z-axis through the moment center (xmc,ymc,zmc)
-c            positive value for ccw moment when viewed from +z axis
-c     cx.....x-component of force
-c            positive for force in +x direction
-c     cy.....y-component of force
-c            positive for force in +y direction
-c     cz.....z-component of force
-c            positive for force in +z direction
-c
-c  Modified - D. K. Kaushik (1/3/98)
-c  Orginal name of this subroutine was FORCE2.
-c  Added new parameters - clift, cdrag, cmom, irank, nvertices
-c  
-c=====================================================================72
+!================================ FORCE  ============================72
+!
+!  Provided by Bob Biedron, inserted by Eric on 10/31/96
+!  (Note:  "history" common block has to be modified everywhere
+!   to use this routine!)
+!
+!  NOTE:  This currently ONLY DOES PRESSURE FORCES correctly.
+!         There's no guarantee on the viscous force stuff.
+!         (We think it's right though)
+!
+!   sign conventions for forces and moments:
+!     cmx....moment about x-axis through the moment center (xmc,ymc,zmc)
+!            positive value for ccw moment when viewed from +x axis
+!     cmy....moment about y-axis through the moment center (xmc,ymc,zmc)
+!            positive value for ccw moment when viewed from +y axis
+!     cmz....moment about z-axis through the moment center (xmc,ymc,zmc)
+!            positive value for ccw moment when viewed from +z axis
+!     cx.....x-component of force
+!            positive for force in +x direction
+!     cy.....y-component of force
+!            positive for force in +y direction
+!     cz.....z-component of force
+!            positive for force in +z direction
+!
+!  Modified - D. K. Kaushik (1/3/98)
+!  Orginal name of this subroutine was FORCE2.
+!  Added new parameters - clift, cdrag, cmom, irank, nvertices
+!  
+!=====================================================================72
       subroutine FORCE(nnodes,nedge,
      &                 isnode,ivnode,
      &                 nnfacet,f2ntn,nnbound,
@@ -1220,10 +1222,10 @@ c
                bx = x3 - x1
                by = y3 - y1
                bz = z3 - z1
-c
-c  norm points outward, away from grid interior.
-c  norm magnitude is area of surface triangle.
-c
+!
+!  norm points outward, away from grid interior.
+!  norm magnitude is area of surface triangle.
+!
                xnorm =-0.5*(ay*bz - az*by)
                ynorm = 0.5*(ax*bz - az*bx)
                znorm =-0.5*(ax*by - ay*bx)
@@ -1465,16 +1467,16 @@ c
       call MPI_ALLREDUCE(coef_loc,coef_glo,icount,
      >                   MPIU_SCALAR, MPI_SUM,
      >                   MPI_COMM_WORLD,ierr)
-c     call MPI_ALLREDUCE(cd_loc,cd_glo,icount,
-c    >                   MPI_DOUBLE_PRECISION, MPI_SUM,
-c    >                   MPI_COMM_WORLD,ierr)
-c     call MPI_ALLREDUCE(cm_loc,cm_glo,icount,
-c    >                   MPI_DOUBLE_PRECISION, MPI_SUM,
-c    >                   MPI_COMM_WORLD,ierr)
-c
-c  Now finally let's non-dimensionalize our coefficients using
-c  our reference geometry and CFL3D's conventions
-c
+!     call MPI_ALLREDUCE(cd_loc,cd_glo,icount,
+!    >                   MPI_DOUBLE_PRECISION, MPI_SUM,
+!    >                   MPI_COMM_WORLD,ierr)
+!     call MPI_ALLREDUCE(cm_loc,cm_glo,icount,
+!    >                   MPI_DOUBLE_PRECISION, MPI_SUM,
+!    >                   MPI_COMM_WORLD,ierr)
+!
+!  Now finally let's non-dimensionalize our coefficients using
+!  our reference geometry and CFL3D's conventions
+!
        clw(ntt)  = coef_glo(1) / sref
        cdw(ntt)  = coef_glo(2) / sref
        cxw(ntt)  = coef_glo(3) / sref
@@ -1497,17 +1499,17 @@ c End of subroutine FORCE
 c
       return
       end
-c
-c================================ SKINFRIC ===========================72
-c
-c  This gets skin friction drag (and contribution to lift) for all 
-c  viscous boundaries --- modified D. K. Kaushik (1/10/98)
-c
-c=====================================================================72
+!
+!================================ SKINFRIC ===========================72
+!
+!  This gets skin friction drag (and contribution to lift) for all 
+!  viscous boundaries --- modified D. K. Kaushik (1/10/98)
+!
+!=====================================================================72
       subroutine SKINFRIC(ivnode,f2ntv,c2n,nnodes,
      &                    x,y,z,qvec,amut,nvbound,nvnode,nvfacet,ncell,
      &                    clv,cdv,vface_bit,irank,nvertices)
-c
+!
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
@@ -1515,7 +1517,7 @@ c
       common/refgeom/sref,cref,bref,xmc,ymc,zmc
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
      &             nstage,ncyct,iramp,nitfo,ncyc
-c
+!
       real clv, cdv, pi
       real x(1),y(1),z(1)
       real amut(1)
@@ -1524,10 +1526,10 @@ c
       real nz1,nz2,nz3,nz4
       real nxd, nyd, nzd
       real nxl, nyl, nzl
-c
+!
       integer ivnode(nvnode),f2ntv(nvfacet,4),vface_bit(1)
       integer c2n(ncell,4)
-c 
+! 
 #if defined(INTERLACING)
       real qvec(5,nvertices)
 #define qnode(i,j) qvec(i,j)
@@ -1535,76 +1537,76 @@ c
       real qvec(nvertices,5)
 #define qnode(i,j) qvec(j,i)
 #endif
-c
-c  Some constants
-c
+!
+!  Some constants
+!
       c43 = 4./3.
       c23 = 2./3.
       xmr = xmach / Re
       pi = acos(-1.)
       conv = 180. / pi 
-c
-c  Initialize sums
-c
+!
+!  Initialize sums
+!
       clv  = 0.0
       cdv  = 0.0
-c
-c Stuff for laminar viscosity
-c
+!
+! Stuff for laminar viscosity
+!
        Tref = 460.
        cstar = 198.6/Tref
-c
+!
       do n = 1, nvfacet
         if (vface_bit(n) .eq. 1) then
           node1 = ivnode(f2ntv(n,1))
           node2 = ivnode(f2ntv(n,2))
           node3 = ivnode(f2ntv(n,3))
-c
+!
           icell = f2ntv(n,4)
-c
+!
           node4 = c2n(icell,1) + c2n(icell,2) + c2n(icell,3)
      &          + c2n(icell,4) - node1 - node2 - node3
-c
+!
           x1 = x(node1)
           y1 = y(node1)
           z1 = z(node1)
-c
+!
           x2 = x(node2)
           y2 = y(node2)
           z2 = z(node2)
-c
+!
           x3 = x(node3)
           y3 = y(node3)
           z3 = z(node3)
-c
+!
           x4 = x(node4)
           y4 = y(node4)
           z4 = z(node4)
-c
-c   Lets get outward normals (nx_i is for the face opposite node i)
-c
+!
+!   Lets get outward normals (nx_i is for the face opposite node i)
+!
           nx1 = 0.5*((y2 - y4)*(z3 - z4) - (y3 - y4)*(z2 - z4))
           ny1 = 0.5*((z2 - z4)*(x3 - x4) - (z3 - z4)*(x2 - x4))
           nz1 = 0.5*((x2 - x4)*(y3 - y4) - (x3 - x4)*(y2 - y4))
-c
+!
           nx2 = 0.5*((y3 - y4)*(z1 - z4) - (y1 - y4)*(z3 - z4))
           ny2 = 0.5*((z3 - z4)*(x1 - x4) - (z1 - z4)*(x3 - x4))
           nz2 = 0.5*((x3 - x4)*(y1 - y4) - (x1 - x4)*(y3 - y4))
-c
+!
           nx3 = 0.5*((y1 - y4)*(z2 - z4) - (y2 - y4)*(z1 - z4))
           ny3 = 0.5*((z1 - z4)*(x2 - x4) - (z2 - z4)*(x1 - x4))
           nz3 = 0.5*((x1 - x4)*(y2 - y4) - (x2 - x4)*(y1 - y4))
-c
+!
           nx4 = -nx1 -nx2 -nx3
           ny4 = -ny1 -ny2 -ny3
           nz4 = -nz1 -nz2 -nz3
-c
-c Compute cell volume
-c
+!
+! Compute cell volume
+!
           vol = (((y2-y1)*(z3-z1) - (y3-y1)*(z2-z1))*(x4-x1)
      &          -((x2-x1)*(z3-z1) - (x3-x1)*(z2-z1))*(y4-y1)
      &          +((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1))*(z4-z1))/6.
-c
+!
  
                rho1  = qnode(1,node1)
                u1    = qnode(2,node1)/rho1
@@ -1630,104 +1632,104 @@ c
                w4    = qnode(4,node4)/rho4
                p4    = gm1*(qnode(5,node4) 
      &               - .5*rho4*(u4*u4 + v4*v4 + w4*w4))
-c
-c  Compute viscosity for the cell
-c
+!
+!  Compute viscosity for the cell
+!
           T1 = gamma*p1/rho1
           T2 = gamma*p2/rho2
           T3 = gamma*p3/rho3
           T4 = gamma*p4/rho4
-c
+!
           rmu1 = (1. + cstar)/(T1 + cstar)*T1**1.5 + amut(node1)
           rmu2 = (1. + cstar)/(T2 + cstar)*T2**1.5 + amut(node2)
           rmu3 = (1. + cstar)/(T3 + cstar)*T3**1.5 + amut(node3)
           rmu4 = (1. + cstar)/(T4 + cstar)*T4**1.5 + amut(node4)
-c
+!
           rmu = 0.25*(rmu1 + rmu2 + rmu3 + rmu4)
-c
-c  Now form gradients of velocity
-c
+!
+!  Now form gradients of velocity
+!
           const = -1.0/(3.0*vol)
-c
+!
           ux = const*((u1-u4)*nx1 + (u2-u4)*nx2 + (u3-u4)*nx3)
           uy = const*((u1-u4)*ny1 + (u2-u4)*ny2 + (u3-u4)*ny3)
           uz = const*((u1-u4)*nz1 + (u2-u4)*nz2 + (u3-u4)*nz3)
-c
+!
           vx = const*((v1-v4)*nx1 + (v2-v4)*nx2 + (v3-v4)*nx3)
           vy = const*((v1-v4)*ny1 + (v2-v4)*ny2 + (v3-v4)*ny3)
           vz = const*((v1-v4)*nz1 + (v2-v4)*nz2 + (v3-v4)*nz3)
-c
+!
           wx = const*((w1-w4)*nx1 + (w2-w4)*nx2 + (w3-w4)*nx3)
           wy = const*((w1-w4)*ny1 + (w2-w4)*ny2 + (w3-w4)*ny3)
           wz = const*((w1-w4)*nz1 + (w2-w4)*nz2 + (w3-w4)*nz3)
-c
+!
           xnorm = nx4
           ynorm = ny4
           znorm = nz4
-c
-c  Now compute components of stress vector acting on the face
-c
+!
+!  Now compute components of stress vector acting on the face
+!
           termx = xmr*rmu*(xnorm*(c43*ux - c23*(vy + wz))
      &                    +ynorm*(uy + vx)
      &                    +znorm*(uz + wx))
-c
+!
           termy = xmr*rmu*(xnorm*(uy + vx)
      &                    +ynorm*(c43*vy - c23*(ux + wz))
      &                    +znorm*(vz + wy))
-c
+!
           termz = xmr*rmu*(xnorm*(uz + wx)
      &                    +ynorm*(vz + wy)
      &                    +znorm*(c43*wz - c23*(ux + vy)))
-c
-c  Now dot the stress vector acting on the surface face with 
-c  a unit vector in the drag (lift) direction.  This is the
-c  magnitude of the friction force acting on the face in the
-c  drag (lift) direction
-c
-c  Find unit vectors in drag and lift directions
-c
+!
+!  Now dot the stress vector acting on the surface face with 
+!  a unit vector in the drag (lift) direction.  This is the
+!  magnitude of the friction force acting on the face in the
+!  drag (lift) direction
+!
+!  Find unit vectors in drag and lift directions
+!
           nxd =   cos(alpha/conv) * cos(yaw/conv)
           nyd = - sin(yaw/conv)
           nzd =   sin(alpha/conv) * cos(yaw/conv)
-c
+!
           nxl = - sin(alpha/conv)
           nyl =   0.
           nzl =   cos(alpha/conv)
-c
-c  Now do the dot product to get the force in the drag (lift) direction
-c
-c  I think the signs are right on the following two equations, but I
-c  wouldn't stake my life on it.  They've got to do with the force
-c  being on the body or on the fluid.  The way they are set right now
-c  gives the logical results (increase in Cd, decrease in Cl).
-c
+!
+!  Now do the dot product to get the force in the drag (lift) direction
+!
+!  I think the signs are right on the following two equations, but I
+!  wouldn't stake my life on it.  They've got to do with the force
+!  being on the body or on the fluid.  The way they are set right now
+!  gives the logical results (increase in Cd, decrease in Cl).
+!
           forced = - (termx*nxd + termy*nyd + termz*nzd)
           forcel = - (termx*nxl + termy*nyl + termz*nzl)
-c
-c  Now add things
-c
+!
+!  Now add things
+!
           cdv = cdv + forced
           clv = clv + forcel
         endif
-c
+!
       enddo
-c
+!
       return
       end
 
 
-c================================ DELTAT2 ============================72
-c
-c Calculate a time step for each cell
-c Note that this routine assumes conservative variables
-c
-c=====================================================================72
+!================================ DELTAT2 ============================72
+!
+! Calculate a time step for each cell
+! Note that this routine assumes conservative variables
+!
+!=====================================================================72
       subroutine DELTAT2(nnodes,nedge,qvec,cdt,
      &                  x,y,z,vol,xn,yn,zn,rl,evec,
      &                  sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
      &                  nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
      &                  irank,nvertices)
-c
+!
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -2439,13 +2441,13 @@ c
       return
       end
 
-c================================= ROE ===============================72
-c/*'
-c This routine computes the fluxes using Roe's approximate Riemann 
-c solver.
-c Remember that for this subroutine, q(5) is the pressure
-c'*/
-c=====================================================================72
+!================================= ROE ===============================72
+!
+! This routine computes the fluxes using Roe's approximate Riemann 
+! solver.
+! Remember that for this subroutine, q(5) is the pressure
+!
+!=====================================================================72
       subroutine ROE(nnodes, ncell, nedge,
      &                nsface, nvface, nfface, isface, ivface, ifface,
      &                nsnode, nvnode, nfnode, isnode, ivnode, ifnode,
@@ -3044,35 +3046,35 @@ c
 #define r44(x) rxy(x,7)
 #define eptr(i,j) evec(i,j)
 #endif
-c
-c
-c /*'Initialize all the rij to 0.0 
-c
-c     do 1000 i = 1,nnodes
-c        r11(i) = 0.0
-c        r12(i) = 0.0
-c        r13(i) = 0.0
-c        r22(i) = 0.0
-c        r23(i) = 0.0
-c        r33(i) = 0.0
-c        r44(i) = 0.0
-c1000 continue '*/
+!
+!
+!    Initialize all the rij to 0.0 
+!
+!     do 1000 i = 1,nnodes
+!        r11(i) = 0.0
+!        r12(i) = 0.0
+!        r13(i) = 0.0
+!        r22(i) = 0.0
+!        r23(i) = 0.0
+!        r33(i) = 0.0
+!        r44(i) = 0.0
+!1000 continue
       call PetscMemzero(rxy,8*7*nnodes,ierr)
-c
-c Now loop over the edges and accumulate the r's 
-c
+!
+! Now loop over the edges and accumulate the r's 
+!
       do 1020 n = 1, nedge
-c
+!
           node1 = eptr(n,1)
           node2 = eptr(n,2)
-c
+!
           x1 = x(node1)
           y1 = y(node1)
           z1 = z(node1)
           x2 = x(node2)
           y2 = y(node2)
           z2 = z(node2)
-c
+!
           dx = x2 - x1
           dy = y2 - y1
           dz = z2 - z1
@@ -3080,7 +3082,7 @@ c
           weight = 1.0/dist
           weight = 1.0
           w2 = weight*weight
-c
+!
           if (node1 .le. nnodes) then
            r11(node1) = r11(node1) + (x2 - x1)*(x2 - x1)*w2
            r12(node1) = r12(node1) + (x2 - x1)*(y2 - y1)*w2
@@ -3094,23 +3096,23 @@ c
           endif
  1020 continue
 
-! /*
-! 'Now calculate ||x|| = r11(1) by taking the square root
-! Also divide r12(1) and r13(1) by ||x||'
-! */
+!
+! Now calculate ||x|| = r11(1) by taking the square root
+! Also divide r12(1) and r13(1) by ||x||
+!
       do 1030 i = 1,nnodes
         r11(i) = sqrt(r11(i))
         r12(i) = r12(i)/r11(i)
         r13(i) = r13(i)/r11(i)
  1030 continue
-c /*
-c 'Now calculate r22(0) and r23(0)'
-c */
+!
+! Now calculate r22(0) and r23(0)
+!
       do 1050 n = 1, nedge
-c
+!
           node1 = eptr(n,1)
           node2 = eptr(n,2)
-c
+!
           x1 = x(node1)
           y1 = y(node1)
           z1 = z(node1)
