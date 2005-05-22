@@ -2,7 +2,7 @@
 /*
      Code for some of the parallel vector primatives.
 */
-#include "src/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
+#include "src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
 #if defined(PETSC_HAVE_PNETCDF)
 EXTERN_C_BEGIN
 #include "pnetcdf.h"

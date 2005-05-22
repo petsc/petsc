@@ -3,7 +3,7 @@
    Defines some vector operation functions that are shared by 
   sequential and parallel vectors.
 */
-#include "src/vec/impls/dvecimpl.h"   
+#include "src/vec/vec/impls/dvecimpl.h"   
 #include "src/inline/dot.h"
 #include "src/inline/setval.h"
 #include "src/inline/axpy.h"

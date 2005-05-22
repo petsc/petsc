@@ -5,7 +5,7 @@
 */
 
 #include "vecimpl.h" 
-#include "src/vec/impls/dvecimpl.h" 
+#include "src/vec/vec/impls/dvecimpl.h" 
 #include "petscblaslapack.h"
 
 #undef __FUNCT__  

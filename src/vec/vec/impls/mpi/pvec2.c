@@ -2,7 +2,7 @@
 /*
      Code for some of the parallel vector primatives.
 */
-#include "src/vec/impls/mpi/pvecimpl.h" 
+#include "src/vec/vec/impls/mpi/pvecimpl.h" 
 #include "src/inline/dot.h"
 #include "petscblaslapack.h"
 

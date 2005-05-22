@@ -1,8 +1,8 @@
 
 ALL: lib
 
-SOURCEH  = ../../include/vecimpl.h ../../include/petscvec.h
-DIRS     = is utils interface impls examples pf ftn-custom
+SOURCEH  = 
+DIRS     = vec is pf ftn-custom
 LOCDIR   = src/vec/
 MANSEC   = Vec
 

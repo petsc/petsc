@@ -2,7 +2,7 @@
 /*
    This file contains routines for Parallel vector operations that use shared memory
  */
-#include "src/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
+#include "src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
 
 /*
      Could not get the include files to work properly on the SGI with 
