@@ -6,7 +6,7 @@ CFLAGS	        =
 FFLAGS	        = -O2
 CPPFLAGS        =
 FPPFLAGS        =
-LOCDIR          = src/contrib/sif
+LOCDIR          = src/contrib/sif/1d/
 
 EXAMPLESC       = 
 EXAMPLESF       = sif.F

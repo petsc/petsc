@@ -3,7 +3,7 @@ CFLAGS	  =
 FFLAGS    =
 CPPFLAGS  = 
 FPPFLAGS  =
-LOCDIR    = src/ksp/examples/tests/
+LOCDIR    = src/ksp/ksp/examples/tests/
 NOADIC    = true
 EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c \
 		  ex14.c ex15.c ex17.c ex18.c ex19.c ex20.c ex24.c ex25.c ex26.c

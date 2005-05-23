@@ -10,7 +10,7 @@ OBJSC    = shvec.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/impls/shared/
+LOCDIR   = src/vec/vec/impls/shared/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

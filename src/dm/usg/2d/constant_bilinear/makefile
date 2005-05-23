@@ -20,7 +20,7 @@ SOURCEF    =
 SOURCEH    = 
 OBJSC      = 
 CLEANFILES = 
-LOCDIR     = src/usg/2d/constant_bilinear/
+LOCDIR     = src/dm/usg/2d/constant_bilinear/
 
 main: chkopts main.o appview.o appload.o
 	-$(CLINKER) -o main main.o appview.o appload.o $(PETSC_LIB)

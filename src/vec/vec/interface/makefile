@@ -10,7 +10,7 @@ OBJSC    = ${SOURCEC:.c=.o}
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/interface/
+LOCDIR   = src/vec/vec/interface/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

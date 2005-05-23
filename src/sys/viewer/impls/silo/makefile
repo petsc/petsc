@@ -11,7 +11,7 @@ OBJSC     = ${SOURCEC:.c=.o}
 MANSEC    = Viewer
 LIBBASE   = libpetsc
 DIRS      = 
-LOCDIR    = src/viewer/impls/silo/
+LOCDIR    = src/sys/viewer/impls/silo/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

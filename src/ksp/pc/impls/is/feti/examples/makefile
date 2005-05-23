@@ -11,7 +11,7 @@ CFLAGS    =
 
 ALL: main
 
-LOCDIR         = /src/sles/pc/impls/is/feti
+LOCDIR         = src/ksp/pc/impls/is/feti/examples/
 EXAMPLESC      = ex1.c
 EXAMPLESO      = ex1.o
 

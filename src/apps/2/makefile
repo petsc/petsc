@@ -20,7 +20,7 @@ SOURCEF    =
 SOURCEH    = 
 OBJSC      = 
 CLEANFILES = 
-LOCDIR     = src/apps/1/
+LOCDIR     = src/apps/2/
 
 ex1: chkopts ex1.o appview.o appload.o
 	-$(CLINKER) -o ex1 ex1.o appview.o appload.o $(PETSC_LIB)

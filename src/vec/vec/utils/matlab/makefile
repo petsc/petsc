@@ -13,7 +13,7 @@ OBJSC    = gcreatev.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/utils/matlab
+LOCDIR   = src/vec/vec/utils/matlab/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

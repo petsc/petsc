@@ -10,7 +10,7 @@ OBJSC    = pbvec.o pdvec.o pvec2.o pmap.o vmpicr.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/impls/mpi/
+LOCDIR   = src/vec/vec/impls/mpi/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

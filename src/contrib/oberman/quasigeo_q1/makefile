@@ -20,7 +20,7 @@ SOURCEF    =
 SOURCEH    = 
 OBJSC      = 
 CLEANFILES = 
-LOCDIR     =/nfs/mcs-homes37/oberman/src/biquad/
+LOCDIR     = src/contrib/oberman/quasigeo_q1/
 FILES = main.o appload.o appcreate.o appsetref.o appsetalg.o appintegrator.o functions.o appview.o 
 
 main: chkopts $(FILES)

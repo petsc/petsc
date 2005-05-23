@@ -14,7 +14,7 @@ OBJSC    = vhyp.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/impls/hypre/
+LOCDIR   = src/vec/vec/impls/hypre/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

@@ -11,7 +11,7 @@ OBJSF    =
 LIBBASE  = libpetscsles
 DIRS     = 
 MANSEC   = PC
-LOCDIR   = src/sles/pc/impls/is/feti/
+LOCDIR   = src/ksp/pc/impls/is/feti/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

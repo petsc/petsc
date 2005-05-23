@@ -20,7 +20,7 @@ SOURCEF    =
 SOURCEH    = 
 OBJSC      = 
 CLEANFILES = 
-LOCDIR     = src/usg/2d/constant_bilinear/
+LOCDIR     = src/contrib/src/burgers_vertex_based_q1/
 
 main: chkopts main.o appview.o appload.o functions.o integrator.o
 	-$(CLINKER) -o main main.o appview.o appload.o integrator.o functions.o $(PETSC_LIB)

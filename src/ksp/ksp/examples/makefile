@@ -1,7 +1,7 @@
 
 ALL:
 
-LOCDIR	 = src/ksp/examples/
+LOCDIR	 = src/ksp/ksp/examples/
 DIRS	 = tests tutorials
 
 include ${PETSC_DIR}/bmake/common/base

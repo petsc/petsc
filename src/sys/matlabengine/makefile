@@ -15,7 +15,7 @@ OBJSC	  = matlab.o
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc
-LOCDIR	  = src/sys/objects/matlabengine/
+LOCDIR	  = src/sys/matlabengine/
 DIRS      = 
 
 include ${PETSC_DIR}/bmake/common/base

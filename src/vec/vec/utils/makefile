@@ -13,7 +13,7 @@ OBJSF    =
 DIRS     = matlab
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/utils/
+LOCDIR   = src/vec/vec/utils/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
