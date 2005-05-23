@@ -318,8 +318,11 @@ class Configure(PETSc.package.Package):
       self.framework.popLanguage()
     else:
       args.append('--disable-f77')
-##    if not self.setCompilers.staticLibraries and self.compilers.isGCC:
-##      args.append('--enable-sharedlibs=gcc')
+#    if not self.setCompilers.staticLibraries and self.framework.argDB['with-mpi-shared']:
+#      if self.compilers.isGCC:
+#        args.append('--enable-sharedlibs=gcc')
+#      else:
+#        args.append('--enable-sharedlibs=libtool')
     args.append('--without-mpe')
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
     args = ' '.join(args)
