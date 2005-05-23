@@ -56,7 +56,7 @@ class Configure(config.base.Configure):
     if 'dispatchNames' in self.__dict__:
       if name in self.dispatchNames:
         return getattr(self.setCompilers, name)
-      if name in ['sharedLibraryFlags', 'dynamicLibraryFlags']:
+      if name in ['executableFlags', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
         return ' '.join(getattr(self.setCompilers, name))
     raise AttributeError('Configure attribute not found: '+name)
 

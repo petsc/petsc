@@ -68,6 +68,7 @@ class Configure(config.base.Configure):
 ##    help.addArgument('Compilers', '-FC_LD=<prog>',           nargs.Arg(None, None, 'Specify the linker for Fortran only'))
     help.addArgument('Compilers', '-LD_SHARED=<prog>',       nargs.Arg(None, None, 'Specify the shared linker'))
     help.addArgument('Compilers', '-LDFLAGS=<string>',       nargs.Arg(None, '',   'Specify the linker options'))
+    help.addArgument('Compilers', '-executableFlags',        nargs.Arg(None, [], 'Specify the executable linker flags'))
     help.addArgument('Compilers', '-with-ar',                nargs.Arg(None, None,   'Specify the archiver'))
     help.addArgument('Compilers', '-AR',                     nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('Compilers', '-AR_FLAGS',               nargs.Arg(None, None,   'Specify the archiver flags'))
@@ -76,6 +77,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
     help.addArgument('Compilers', '-sharedLibraryFlags',     nargs.Arg(None, [], 'Specify the shared library flags'))
     help.addArgument('Compilers', '-with-dynamic',           nargs.ArgBool(None, 0, 'Enable dynamic libraries'))
+    help.addArgument('Compilers', '-dynamicLibraryFlags',    nargs.Arg(None, [], 'Specify the dynamic library flags'))
     help.addArgument('Compilers', '-LIBS=<string>',          nargs.Arg(None, None, 'Specify extra libraries for all links'))
     return
 
@@ -157,7 +159,7 @@ class Configure(config.base.Configure):
         setattr(self, flagsArg, self.argDB[flagsArg])
         self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
       self.popLanguage()
-    for flagsArg in ['CPPFLAGS', 'sharedLibraryFlags']:
+    for flagsArg in ['CPPFLAGS', 'executableFlags', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
       setattr(self, flagsArg, self.argDB[flagsArg])
       self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
     if 'LIBS' in self.argDB:
@@ -858,7 +860,9 @@ class Configure(config.base.Configure):
       self.framework.logPrint('Rejecting linker flag '+flag+' due to nonzero status from link')
     if output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or (output.find('bad ') >= 0 and output.find(' option') >= 0) or output.find('linker input file unused because linking not done') >= 0 or output.find('flag is ignored') >= 0 or output.find('Invalid option') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0:
       valid = 0
-      self.framework.logPrint('Rejecting linker flag '+flag+' due to \n'+output)
+      self.framework.logPrint('Rejecting '+self.language[-1]+' linker flag '+flag+' due to \n'+output)
+    else:
+      self.framework.logPrint('Valid '+self.language[-1]+' linker flag '+flag)
     setattr(self, flagsArg, oldFlags)
     return valid
 
@@ -879,13 +883,14 @@ class Configure(config.base.Configure):
       languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
-      for testFlag in ['-Wl,-multiply_defined,suppress','-Wl,-multiply_defined -Wl,suppress','-force_flat_namespace', '-flat_namespace']:
-        self.framework.logPrint('Trying '+language+' linker flag '+testFlag)
+      for testFlag in ['-force_flat_namespace', '-flat_namespace']:
         try:
           self.addLinkerFlag(testFlag)
-          self.framework.logPrint('Accepted '+language+' linker flag '+testFlag)
         except:
-          self.framework.logPrint('Rejected '+language+' linker flag '+testFlag)
+          pass
+      for testFlag in ['-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress']:
+        if self.checkLinkerFlag(testFlag):
+          self.executableFlags.append(testFlag)
       self.popLanguage()
     return
 
