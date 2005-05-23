@@ -108,6 +108,7 @@ PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,
 void TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 {
   TS              ts = (TS) ctx;
+  MPI_Comm        comm = ts->comm;
   TS_Sundials     *cvode = (TS_Sundials*)ts->data;
   Vec             yy = cvode->w1,yyd = cvode->w2;
   PetscScalar     *y_data,*ydot_data;
@@ -117,12 +118,12 @@ void TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
   /* Make the PETSc work vectors f and fd point to the arrays in the SUNDIALS vectors y and ydot respectively*/
   y_data     = (PetscScalar *) N_VGetArrayPointer(y);
   ydot_data  = (PetscScalar *) N_VGetArrayPointer(ydot);
-  ierr = VecPlaceArray(yy,y_data);CHKERRCONTINUE(ierr)
-  ierr = VecPlaceArray(yyd,ydot_data); CHKERRCONTINUE(ierr)
+  ierr = VecPlaceArray(yy,y_data);CHKERRABORT(comm,ierr)
+  ierr = VecPlaceArray(yyd,ydot_data); CHKERRABORT(comm,ierr)
   /* now compute the right hand side function */
-  ierr = TSComputeRHSFunction(ts,t,yy,yyd); CHKERRCONTINUE(ierr);
-  ierr = VecResetArray(yy); CHKERRCONTINUE(ierr);
-  ierr = VecResetArray(yyd); CHKERRCONTINUE(ierr);
+  ierr = TSComputeRHSFunction(ts,t,yy,yyd); CHKERRABORT(comm,ierr);
+  ierr = VecResetArray(yy); CHKERRABORT(comm,ierr);
+  ierr = VecResetArray(yyd); CHKERRABORT(comm,ierr);
   PetscFunctionReturnVoid();
 }
 
