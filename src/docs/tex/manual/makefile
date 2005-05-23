@@ -10,6 +10,7 @@ MV        = mv
 CP        = cp
 RM        = rm -f
 GONULL    = > /dev/null 2>&1
+LOCDIR    = src/docs/tex/manual/
 
 # Build the entire manual as well as the intro part
 

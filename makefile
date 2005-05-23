@@ -4,7 +4,7 @@
 # See also bmake/common for additional commands.
 #
 ALL: all
-LOCDIR	 = . 
+LOCDIR	 = ./
 DIRS	 = src include 
 CFLAGS	 = 
 FFLAGS	 = 

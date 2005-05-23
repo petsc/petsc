@@ -10,6 +10,6 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = 
 DIRS     = quadratic constant_bilinear
-LOCDIR   = src/2d/
+LOCDIR   = src/dm/usg/2d/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

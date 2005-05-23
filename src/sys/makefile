@@ -1,7 +1,8 @@
 
 ALL: lib 
 SOURCEH   = ctable.h
-DIRS      = src examples ftn-custom
+DIRS      = viewer draw error dll fileio memory objects time utils plog mpiuni matlabengine f90 \
+            adic bag examples ftn-custom 
 LOCDIR    = src/sys/
 MANSEC    = Sys
 

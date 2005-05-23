@@ -28,7 +28,7 @@ PETSC_EXTERN_CXX_BEGIN
 /* 
      These are the generic error codes. These error codes are used
      many different places in the PETSc source code. The string versions are
-     at src/sys/src/error/err.c any changes here must also be made there
+     at src/sys/error/err.c any changes here must also be made there
 
 */
 #define PETSC_ERR_MEM              55   /* unable to allocate requested memory */

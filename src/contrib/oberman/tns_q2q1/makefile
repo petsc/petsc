@@ -20,7 +20,7 @@ SOURCEF    =
 SOURCEH    = 
 OBJSC      = 
 CLEANFILES = 
-LOCDIR     =/nfs/mcs-homes37/oberman/src/biquad/
+LOCDIR     = src/contrib/oberman/tns_q2q1/
 
 main: chkopts main.o appload.o appcreate.o appsetref.o appsetalg.o integrator.o functions.o appview.o 
 	-$(CLINKER) -o main main.o appview.o appload.o integrator.o appcreate.o appsetalg.o appsetref.o functions.o $(PETSC_LIB)
