@@ -1003,6 +1003,12 @@ int GetLocalOrdering(GRID *grid)
    f77GETIA(&nnodesLoc, &nedgeLoc, grid->eptr, 
              grid->ia, tmp, &rank);
    nnz = grid->ia[nnodesLoc] - 1;
+
+#if defined(BLOCKING)
+   ierr = PetscPrintf(comm,"The Jacobian has %d non-zero blocks with block size = %d\n",nnz,bs); CHKERRQ(ierr);
+#else
+   ierr = PetscPrintf(comm,"The Jacobian has %d non-zeros\n",nnz); CHKERRQ(ierr);
+#endif
    ICALLOC(nnz, &grid->ja);
    f77GETJA(&nnodesLoc, &nedgeLoc, grid->eptr, 
              grid->ia,      grid->ja,    tmp, &rank);

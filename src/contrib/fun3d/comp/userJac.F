@@ -1,26 +1,26 @@
-c---------------------------------------------------------------
-c The following subroutines are from node6t.f in the original
-c code.
-c Last Modified - D. K. Kaushik (1/24/97)
-c---------------------------------------------------------------
-c
-c=================================== FILLA ===================================
-c
-c Fill the nonzero term of the A matrix
-c   - viscous terms are not included right now
-c
-c  New version put in by Eric for David Keyes' stuff
-c   Includes complete "by hand" differentiation
-c Modified - D. K. Kaushik (1/9/98)
-c cfl is passed as a parameter
-c
-c=============================================================================
+!---------------------------------------------------------------
+! The following subroutines are from node6t.f in the original
+! code.
+! Last Modified - D. K. Kaushik (1/24/97)
+!---------------------------------------------------------------
+!
+!=================================== FILLA ===================================
+!
+! Fill the nonzero term of the A matrix
+!   - viscous terms are not included right now
+!
+!  New version put in by Eric for David Keyes' stuff
+!   Includes complete "by hand" differentiation
+! Modified - D. K. Kaushik (1/9/98)
+! cfl is passed as a parameter
+!
+!=============================================================================
       subroutine FILLA(nnodes,nedge,evec,
      1                 nsface,isface,fxn,fyn,fzn,sxn,syn,szn,
      2                 nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
      3                 qvec,A,cdt,
      4                 rl,vol,xn,yn,zn,cfl,irank,nvertices)
-c
+!
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscmat.h"
@@ -2337,85 +2337,85 @@ c
       Twall = 1.0
       Twall = 1.0 + .5*sqrt(Prandtl)*gm1*xmach*xmach
       const = twall/ggm1
-c
-c     do 1050 i = 1,nvnode
-c       inode = ivnode(i)
-c       idiag = iau(inode)
-c
-c First zero out all the ones on the row and then fill them in
-c
-c       jstart = ia(inode)
-c       jend   = ia(inode+1) - 1
-c
-c       do 1060 j = jstart,jend
-c
-c If this isn't the diagonal zero it out
-c (This way we dont disturb the row for the continuity equation
-c
-c         if(j.ne.idiag)then
-c          A(j,1,1) = 0.0
-c          A(j,1,2) = 0.0
-c          A(j,1,3) = 0.0
-c          A(j,1,4) = 0.0
-c          A(j,1,5) = 0.0
-c
-c          A(j,2,1) = 0.0
-c          A(j,2,2) = 0.0
-c          A(j,2,3) = 0.0
-c          A(j,2,4) = 0.0
-c          A(j,2,5) = 0.0
-c
-c          A(j,3,1) = 0.0
-c          A(j,3,2) = 0.0
-c          A(j,3,3) = 0.0
-c          A(j,3,4) = 0.0
-c          A(j,3,5) = 0.0
-c
-c          A(j,4,1) = 0.0
-c          A(j,4,2) = 0.0
-c          A(j,4,3) = 0.0
-c          A(j,4,4) = 0.0
-c          A(j,4,5) = 0.0
-c
-c          A(j,5,1) = 0.0
-c          A(j,5,2) = 0.0
-c          A(j,5,3) = 0.0
-c          A(j,5,4) = 0.0
-c          A(j,5,5) = 0.0
-c
-c         end if
-c1060   continue
-c
-c Now set the diagonal
-c
-c       A(idiag,2,1) = 0.0
-c       A(idiag,2,2) = 1.0
-c       A(idiag,2,3) = 0.0
-c       A(idiag,2,4) = 0.0
-c       A(idiag,2,5) = 0.0
-c
-c       A(idiag,3,1) = 0.0
-c       A(idiag,3,2) = 0.0
-c       A(idiag,3,3) = 1.0
-c       A(idiag,3,4) = 0.0
-c       A(idiag,3,5) = 0.0
-c
-c       A(idiag,4,1) = 0.0
-c       A(idiag,4,2) = 0.0
-c       A(idiag,4,3) = 0.0
-c       A(idiag,4,4) = 1.0
-c       A(idiag,4,5) = 0.0
-c
-c       A(idiag,5,1) = -const
-c       A(idiag,5,2) = 0.0
-c       A(idiag,5,3) = 0.0
-c       A(idiag,5,4) = 0.0
-c       A(idiag,5,5) = 1.0
-c
-c1050 continue
-c
-c Now do the farfield
-c
+!
+!     do 1050 i = 1,nvnode
+!       inode = ivnode(i)
+!       idiag = iau(inode)
+!
+! First zero out all the ones on the row and then fill them in
+!
+!       jstart = ia(inode)
+!       jend   = ia(inode+1) - 1
+!
+!       do 1060 j = jstart,jend
+!
+! If this isn't the diagonal zero it out
+! (This way we dont disturb the row for the continuity equation
+!
+!         if(j.ne.idiag)then
+!          A(j,1,1) = 0.0
+!          A(j,1,2) = 0.0
+!          A(j,1,3) = 0.0
+!          A(j,1,4) = 0.0
+!          A(j,1,5) = 0.0
+!
+!          A(j,2,1) = 0.0
+!          A(j,2,2) = 0.0
+!          A(j,2,3) = 0.0
+!          A(j,2,4) = 0.0
+!          A(j,2,5) = 0.0
+!
+!          A(j,3,1) = 0.0
+!          A(j,3,2) = 0.0
+!          A(j,3,3) = 0.0
+!          A(j,3,4) = 0.0
+!          A(j,3,5) = 0.0
+!
+!          A(j,4,1) = 0.0
+!          A(j,4,2) = 0.0
+!          A(j,4,3) = 0.0
+!          A(j,4,4) = 0.0
+!          A(j,4,5) = 0.0
+!
+!          A(j,5,1) = 0.0
+!          A(j,5,2) = 0.0
+!          A(j,5,3) = 0.0
+!          A(j,5,4) = 0.0
+!          A(j,5,5) = 0.0
+!
+!         end if
+!1060   continue
+!
+! Now set the diagonal
+!
+!       A(idiag,2,1) = 0.0
+!       A(idiag,2,2) = 1.0
+!       A(idiag,2,3) = 0.0
+!       A(idiag,2,4) = 0.0
+!       A(idiag,2,5) = 0.0
+!
+!       A(idiag,3,1) = 0.0
+!       A(idiag,3,2) = 0.0
+!       A(idiag,3,3) = 1.0
+!       A(idiag,3,4) = 0.0
+!       A(idiag,3,5) = 0.0
+!
+!       A(idiag,4,1) = 0.0
+!       A(idiag,4,2) = 0.0
+!       A(idiag,4,3) = 0.0
+!       A(idiag,4,4) = 1.0
+!       A(idiag,4,5) = 0.0
+!
+!       A(idiag,5,1) = -const
+!       A(idiag,5,2) = 0.0
+!       A(idiag,5,3) = 0.0
+!       A(idiag,5,4) = 0.0
+!       A(idiag,5,5) = 1.0
+!
+!1050 continue
+!
+! Now do the farfield
+!
       s0 = c0*c0/(gamma*rho0**gm1)      
       xgm1 = 1./gm1
       flops = flops + 5
