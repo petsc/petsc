@@ -358,8 +358,6 @@ class Configure(config.base.Configure):
   def libraryGuesses(self, root = None):
     '''Return standard library name guesses for a given installation root'''
     libs = ['ts', 'snes', 'ksp', 'dm', 'mat', 'vec', '']
-    if hasattr(self.compilers, 'FC'):
-      libs.insert(0, 'fortran')
     if root:
       d = os.path.join(root, 'lib', self.arch)
       if not os.path.isdir(d):
