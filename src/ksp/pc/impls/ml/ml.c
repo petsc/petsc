@@ -486,6 +486,8 @@ int PetscML_matvec(ML_Operator *ML_data,int in_length,double p[],int out_length,
   }
   ierr = VecPlaceArray(ml->y,ap);CHKERRQ(ierr);
   ierr = MatMult(Aloc,ml->x,ml->y);CHKERRQ(ierr);
+  ierr = VecResetArray(ml->x);CHKERRQ(ierr);
+  ierr = VecResetArray(ml->y);CHKERRQ(ierr);
   return 0;
 }
 
