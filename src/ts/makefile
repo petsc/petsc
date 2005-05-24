@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH  = tsimpl.h ../../include/petscts.h
-DIRS     = interface impls  examples ftn-custom
+DIRS     = interface impls  examples
 LOCDIR   = src/ts/
 MANSEC   = TS
 

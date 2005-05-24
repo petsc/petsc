@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH  = 
-DIRS     = vec is pf ftn-custom
+DIRS     = vec is pf
 LOCDIR   = src/vec/
 MANSEC   = Vec
 

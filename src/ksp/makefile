@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH  = 
-DIRS     = pc ksp utils ftn-custom
+DIRS     = pc ksp utils
 LOCDIR   = src/ksp/
 MANSEC   = KSP
 
