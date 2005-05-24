@@ -7,8 +7,7 @@ configure_options = [
   '--download-mpich-pm=gforker',
   '--download-hypre=1',
   '--download-superlu-dist=1',
-  '--with-shared=1',
-  '--with-mpi-shared=0'
+  '--with-shared=1'
   ]
 
 if __name__ == '__main__':
