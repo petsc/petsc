@@ -71,7 +71,7 @@ EXTERN_C_END
     b[n] = 0; \
   } \
 }
-#define FREECHAR(a,b) if (b) PetscFree(b);
+#define FREECHAR(a,b) if (b) PetscFreeVoid(b);
 #define FIXRETURNCHAR(a,n)
 
 #else
@@ -93,7 +93,7 @@ EXTERN_C_END
   } \
 }
 
-#define FREECHAR(a,b) if (a != b) PetscFree(b);
+#define FREECHAR(a,b) if (a != b) PetscFreeVoid(b);
 
 #define FIXRETURNCHAR(a,n) \
 { \

@@ -82,6 +82,7 @@ if ("${CONFIGURE}" == "yes") then
   /bin/rm -f configure.log*
   #remove external packages - so they get rebuilt again
   #/bin/rm -rf externalpackages
+  /bin/rm -rf externalpackages/mpich*
   # now configure
   ./config/${CONFIGURE_FILE}.py --with-no-output -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& test.log
   echo '****************************************************' >>& $nPETSC_DIR/test.log

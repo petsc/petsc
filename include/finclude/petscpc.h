@@ -36,6 +36,7 @@
 #define PCMAT 'mat'
 #define PCHYPRE 'hypre'
 #define PCFIELDSPLIT 'fieldsplit'
+#define PCML 'ml'
 
 #endif
 

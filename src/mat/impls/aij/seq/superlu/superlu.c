@@ -193,8 +193,8 @@ PetscErrorCode MatCreateNull_SuperLU(Mat A,Mat *nullMat)
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SuperLU"
-PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
+#define __FUNCT__ "MatSolve_SuperLU_Private"
+PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 {
   Mat_SuperLU    *lu = (Mat_SuperLU*)A->spptr;
   PetscScalar    *barray,*xarray;
@@ -223,7 +223,6 @@ PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
   StatInit(&stat);
 
   lu->options.Fact  = FACTORED; /* Indicate the factored form of A is supplied. */
-  lu->options.Trans = TRANS;
 #if defined(PETSC_USE_COMPLEX)
   zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
            &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
@@ -258,6 +257,32 @@ PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
     StatPrint(&stat);
   }
   StatFree(&stat);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SuperLU"
+PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
+{
+  Mat_SuperLU    *lu = (Mat_SuperLU*)A->spptr;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  lu->options.Trans = TRANS;
+  ierr = MatSolve_SuperLU_Private(A,b,x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolveTranspose_SuperLU"
+PetscErrorCode MatSolveTranspose_SuperLU(Mat A,Vec b,Vec x)
+{
+  Mat_SuperLU    *lu = (Mat_SuperLU*)A->spptr;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  lu->options.Trans = NOTRANS;
+  ierr = MatSolve_SuperLU_Private(A,b,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -368,6 +393,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
 
   B->ops->lufactornumeric = MatLUFactorNumeric_SuperLU;
   B->ops->solve           = MatSolve_SuperLU;
+  B->ops->solvetranspose  = MatSolveTranspose_SuperLU;
   B->factor               = FACTOR_LU;
   B->assembled            = PETSC_TRUE;  /* required by -ksp_view */
   

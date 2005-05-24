@@ -295,7 +295,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
 
 /* -------------------------Default -----------------------------------*/
 #else 
-struct { int code_no; const char *name; } error_codes[] = {
+struct PETSCERRORCODES { int code_no; const char *name; } error_codes[] = {
 	   { 0		,"unknown error" } 
 } ;
 EXTERN_C_BEGIN

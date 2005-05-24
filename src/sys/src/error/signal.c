@@ -340,7 +340,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPopSignalHandler(void)
   if (!sh) PetscFunctionReturn(0);
   tmp = sh;
   sh  = sh->previous;
-  PetscFree(tmp);
+  PetscFreeVoid(tmp);
   if (!sh || !sh->handler) {
 #if !defined(PETSC_MISSING_SIGALRM)
     /* signal(SIGALRM, 0); */

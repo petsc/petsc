@@ -28,14 +28,16 @@ class Configure(PETSc.package.Package):
     installDir  = os.path.join(sundialsDir, self.arch.arch)
     
     # Configure SUNDIALS 
-    args = ['--disable-examples']
-    
+    args = []
+    envs = ''
     self.framework.pushLanguage('C')
+    envs +=  'CC="'+self.framework.getCompiler()+'"'
     args.append('--with-ccflags="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
+      envs += ' F77="'+self.framework.getCompiler()+'"'
       args.append('--with-fflags="'+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
 
@@ -64,14 +66,9 @@ class Configure(PETSc.package.Package):
     args.append('--without-mpicc')
     args.append('--without-mpif77')
 
+    args.append('--disable-examples')
     args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"') 
     
-    envs =  'CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"'
-    if 'FC' in self.framework.argDB:
-      self.framework.pushLanguage('FC')      
-      envs += ' FC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"'
-      self.framework.popLanguage()
-
     args = ' '.join(args)
     try:
       fd      = file(os.path.join(installDir,'config.args'))

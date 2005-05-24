@@ -58,6 +58,7 @@ class Configure(PETSc.package.Package):
       g.write('FORTRAN      = \n')
       g.write('FFLAGS       = \n')
     g.write('CDEFS        = -DAdd_\n')
+    g.write('NOOPTS       =  -O0\n')
     g.close()
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
