@@ -54,7 +54,7 @@ PetscErrorCode AODestroy_Basic(AO ao)
 
   PetscFunctionBegin;
   ierr = PetscFree(aodebug->app);CHKERRQ(ierr);
-  PetscFree(ao->data); 
+  ierr = PetscFree(ao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
