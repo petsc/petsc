@@ -65,9 +65,9 @@ class Configure(config.base.Configure):
     '''Turn on Fortran bindings'''
     if not self.framework.argDB['with-fortran']:
       self.framework.argDB['with-fc'] = '0'
-      self.framework.logPrint('Using Fortran')
-    else:
       self.framework.logPrint('Not using Fortran')
+    else:
+      self.framework.logPrint('Using Fortran')
     return
 
   def retrievePackage(self, package, name, urls, packageDir):

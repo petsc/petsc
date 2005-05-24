@@ -105,7 +105,11 @@ class Configure(PETSc.package.Package):
     '''Check that the libraries for MPI are shared libraries'''
     self.executeTest(self.configureMPIRUN)
     if not self.setCompilers.staticLibraries and self.framework.argDB['with-mpi-shared']:
-      return self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, executor = self.mpirun)
+      if self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
+        # on Apple MPI libraries do not need to be shared to make shared PETSc libraries, nor the python bindings
+        pass
+      else:
+        return self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, executor = self.mpirun)
     return 1
 
   def configureMPIRUN(self):
@@ -239,6 +243,7 @@ class Configure(PETSc.package.Package):
       args.append('--disable-F77')
       args.append('--disable-F90')
       args.append('--without-fc')
+
     args = ' '.join(args)
 
     try:

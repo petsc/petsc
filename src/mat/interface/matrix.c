@@ -6071,7 +6071,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFactorInfoInitialize(MatFactorInfo *info)
 
    Level: intermediate
 
-.seealso: MatPtAPSymbolic(),MatPtAPNumeric(),MatMatMult()
+.seealso: MatPtAPSymbolic(), MatPtAPNumeric(), MatMatMult()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
 {
@@ -6122,7 +6122,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal f
 
    Level: intermediate
 
-.seealso: MatPtAP(),MatPtAPSymbolic(),MatMatMultNumeric()
+.seealso: MatPtAP(), MatPtAPSymbolic(), MatMatMultNumeric()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPNumeric(Mat A,Mat P,Mat C) 
 {
@@ -6177,7 +6177,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPNumeric(Mat A,Mat P,Mat C)
 
    Level: intermediate
 
-.seealso: MatPtAP(),MatPtAPNumeric(),MatMatMultSymbolic()
+.seealso: MatPtAP(), MatPtAPNumeric(), MatMatMultSymbolic()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C) 
 {
@@ -6231,7 +6231,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat
 
    Level: intermediate
 
-.seealso: MatMatMultSymbolic(),MatMatMultNumeric()
+.seealso: MatMatMultSymbolic(), MatMatMultNumeric(), MatPtAP()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
 {
@@ -6292,7 +6292,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult(Mat A,Mat B,MatReuse scall,PetscRea
 
    Level: intermediate
 
-.seealso: MatMatMult(),MatMatMultNumeric()
+.seealso: MatMatMult(), MatMatMultNumeric()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C) 
 {
@@ -6354,7 +6354,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,
 
    Level: intermediate
 
-.seealso: MatMatMult(),MatMatMultSymbolic()
+.seealso: MatMatMult(), MatMatMultSymbolic()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultNumeric(Mat A,Mat B,Mat C)
 {
@@ -6425,7 +6425,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultNumeric(Mat A,Mat B,Mat C)
 
    Level: intermediate
 
-.seealso: MatMatMultTransposeSymbolic(),MatMatMultTransposeNumeric()
+.seealso: MatMatMultTransposeSymbolic(), MatMatMultTransposeNumeric(), MatPtAP()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultTranspose(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
 {
