@@ -812,7 +812,7 @@ class Configure(config.base.Configure):
     yield (self.CC, ['-shared'], 'so')
     # Mac OSX
     # undefined warning must also have flat_namespace
-    yield ('libtool', ['-noprebind','-dynamic','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
+    yield ('libtool', ['-noprebind','-dynamic','-single_module','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
     #yield (self.CC, ['-dynamiclib', '-flat_namespace', '-undefined warning', '-multiply_defined suppress', '-single_module'], 'dylib')
     # Default to static linker
     self.setStaticLinker()
