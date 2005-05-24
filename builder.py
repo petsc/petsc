@@ -457,9 +457,14 @@ class Builder(logging.Logger):
         if error: self.logWrite('error message = {'+error+'}\n')
         self.logWrite('Source:\n'+str(source)+'\n')
         self.logWrite('Command:\n'+str(command)+'\n')
-        # This is a hack
-        if len(filter(lambda l: l.find('warning') < 0, error.split('\n'))):
-          raise LinkError(output+error)
+        # This is a hack, but a damn important one
+        if error:
+          error = error.splitlines()
+          error = filter(lambda l: l.find('warning') < 0, error)
+          # Mac bundles always have undefined environ variable
+          error = filter(lambda l: l.find('environ') < 0, error)
+          if len(error):
+            raise LinkError(output+error)
       self.shouldLink.update(source)
       return
 
