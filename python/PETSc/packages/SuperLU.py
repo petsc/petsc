@@ -50,10 +50,11 @@ class Configure(PETSc.package.Package):
       g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags()+'\n')
       self.setCompilers.popLanguage()
     else:
-      g.write('FORTRAN      = \n')
-      g.write('FFLAGS       = \n')
+      g.write('FORTRAN    = \n')
+      g.write('FFLAGS     = \n')
     g.write('CDEFS        = -DAdd_\n')
     g.write('MATLAB       =\n')
+    g.write('NOOPTS       =  -O0\n')
     g.close()
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
