@@ -735,7 +735,8 @@ class Configure(config.base.Configure):
         self.framework.logPrint('Possible ERROR while running archiver: '+output)
         if status: self.framework.logPrint('ret = '+str(status))
         if error: self.framework.logPrint('error message = {'+error+'}')
-        os.remove('conf1.o')
+        if os.path.isfile('conf1.o'):
+          os.remove('conf1.o')
         raise RuntimeError('Archiver is not functional')
       return
     def checkRanlib(command, status, output, error):
@@ -743,7 +744,8 @@ class Configure(config.base.Configure):
         self.framework.logPrint('Possible ERROR while running ranlib: '+output)
         if status: self.framework.logPrint('ret = '+str(status))
         if error: self.framework.logPrint('error message = {'+error+'}')
-        os.remove('conf1.a')
+        if os.path.isfile('libconf1.a'):
+          os.remove('libconf1.a')
         raise RuntimeError('Ranlib is not functional with your archiver.  Try --with-ranlib=true if ranlib is unnecessary.')
       return
     oldLibs = self.LIBS
