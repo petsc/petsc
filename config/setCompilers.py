@@ -721,6 +721,7 @@ class Configure(config.base.Configure):
       yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),envRanlib)
       yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),envRanlib)
       raise RuntimeError('You set -RANLIB="'+envRanlib+'" (perhaps in your environment), but '+defaultRanlib+' cannot be used\n')
+    yield ('ar',self.getArchiverFlags('ar'),'ranlib -c')
     yield ('ar',self.getArchiverFlags('ar'),'ranlib')
     yield ('ar',self.getArchiverFlags('ar'),'true')
     yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),'true')
@@ -883,12 +884,12 @@ class Configure(config.base.Configure):
       languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
-      for testFlag in ['-force_flat_namespace', '-flat_namespace']:
+      for testFlag in [ '-flat_namespace']:
         try:
           self.addLinkerFlag(testFlag)
         except:
           pass
-      for testFlag in ['-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress']:
+      for testFlag in ['-force_flat_namespace','-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress']:
         if self.checkLinkerFlag(testFlag):
           self.executableFlags.append(testFlag)
       self.popLanguage()
