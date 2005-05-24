@@ -652,6 +652,27 @@ M*/
 #define PetscFree(a)   ((a) ? ((*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__) || ((a = 0),0)) : 0)
 
 /*MC
+   PetscFreeVoid - Frees memory
+
+   Input Parameter:
+.   memory - memory to free
+
+   Synopsis:
+   void PetscFreeVoid(void *memory)
+
+   Level: beginner
+
+   Notes: This is different from PetscFree() in that no error code is returned
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc()
+
+  Concepts: memory allocation
+
+M*/
+#define PetscFreeVoid(a) ((*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__),(a) = 0)
+
+
+/*MC
    PetscFree2 - Frees 2 chunks of memory obtained with PetscMalloc2()
 
    Input Parameter:

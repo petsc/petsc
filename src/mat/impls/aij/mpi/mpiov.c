@@ -284,7 +284,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
 
     /* Determine the number of messages to expect, their lengths, from from-ids */
     ierr = PetscGatherMessageLengths(comm,nrqr,nrqs,rw1,&onodes2,&olengths2);CHKERRQ(ierr);
-    PetscFree(rw1);
+    ierr = PetscFree(rw1);CHKERRQ(ierr);
   }
   /* Now post the Irecvs corresponding to these messages */
   ierr = PetscPostIrecvInt(comm,tag2,nrqs,onodes2,olengths2,&rbuf2,&r_waits2);CHKERRQ(ierr);
