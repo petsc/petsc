@@ -173,7 +173,7 @@ class Configure(config.base.Configure):
 
     # Fix these flags
     oldFlags = self.setCompilers.LIBS
-    self.setCompilers.LIBS += ' '+self.toString(libraries)
+    self.setCompilers.LIBS = ' '+self.toString(libraries) + self.setCompilers.LIBS
 
     # Make a library which calls initFunction(), and returns checkFunction()
     if noCheckArg:
