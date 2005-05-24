@@ -210,7 +210,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateNC(MPI_Comm cm,Pet
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISLocalToGlobalMappingBlock"
-/*@C
+/*@
     ISLocalToGlobalMappingBlock - Creates a blocked index version of an 
        ISLocalToGlobalMapping that is appropriate for MatSetLocalToGlobalMappingBlock()
        and VecSetLocalToGlobalMappingBlock().

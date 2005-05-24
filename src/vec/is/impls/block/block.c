@@ -394,7 +394,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetBlockSize(IS is,PetscInt *size)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISBlock" 
-/*@C
+/*@
    ISBlock - Checks whether an index set is blocked.
 
    Not Collective

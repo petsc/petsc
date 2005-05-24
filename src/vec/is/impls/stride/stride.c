@@ -106,7 +106,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideGetInfo(IS is,PetscInt *first,PetscInt
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISStride" 
-/*@C
+/*@
    ISStride - Determines if an IS is based on a stride.
 
    Not Collective
