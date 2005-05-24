@@ -193,8 +193,8 @@ PetscErrorCode MatCreateNull_SuperLU(Mat A,Mat *nullMat)
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SuperLU"
-PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
+#define __FUNCT__ "MatSolve_SuperLU_Private"
+PetscErrorCode MatSolve_SuperLU_Private(Mat A,Vec b,Vec x)
 {
   Mat_SuperLU    *lu = (Mat_SuperLU*)A->spptr;
   PetscScalar    *barray,*xarray;
@@ -223,7 +223,6 @@ PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
   StatInit(&stat);
 
   lu->options.Fact  = FACTORED; /* Indicate the factored form of A is supplied. */
-  lu->options.Trans = TRANS;
 #if defined(PETSC_USE_COMPLEX)
   zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
            &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
@@ -262,71 +261,28 @@ PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SuperLU"
+PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
+{
+  Mat_SuperLU    *lu = (Mat_SuperLU*)A->spptr;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  lu->options.Trans = TRANS;
+  ierr = MatSolve_SuperLU_Private(A,b,x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SuperLU"
 PetscErrorCode MatSolveTranspose_SuperLU(Mat A,Vec b,Vec x)
 {
   Mat_SuperLU    *lu = (Mat_SuperLU*)A->spptr;
-  PetscScalar    *barray,*xarray;
   PetscErrorCode ierr;
-  PetscInt       info,i;
-  SuperLUStat_t  stat;
-  PetscReal      ferr,berr; 
 
   PetscFunctionBegin;
-  if ( lu->lwork == -1 ) {
-    PetscFunctionReturn(0);
-  }
-  lu->B.ncol = 1;   /* Set the number of right-hand side */
-  ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
-
-#if defined(PETSC_USE_COMPLEX)
-  ((DNformat*)lu->B.Store)->nzval = (doublecomplex*)barray;
-  ((DNformat*)lu->X.Store)->nzval = (doublecomplex*)xarray;
-#else
-  ((DNformat*)lu->B.Store)->nzval = barray;
-  ((DNformat*)lu->X.Store)->nzval = xarray;
-#endif
-
-  /* Initialize the statistics variables. */
-  StatInit(&stat);
-
-  lu->options.Fact  = FACTORED; /* Indicate the factored form of A is supplied. */
   lu->options.Trans = NOTRANS;
-#if defined(PETSC_USE_COMPLEX)
-  zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
-           &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-           &lu->mem_usage, &stat, &info);
-#else
-  dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
-           &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-           &lu->mem_usage, &stat, &info);
-#endif   
-  ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
-
-  if ( !info || info == lu->A.ncol+1 ) {
-    if ( lu->options.IterRefine ) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Iterative Refinement:\n");
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  %8s%8s%16s%16s\n", "rhs", "Steps", "FERR", "BERR");
-      for (i = 0; i < 1; ++i)
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  %8d%8d%16e%16e\n", i+1, stat.RefineSteps, ferr, berr);
-    }
-  } else if ( info > 0 ){
-    if ( lu->lwork == -1 ) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %D bytes\n", info - lu->A.ncol);
-    } else {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %D\n",info);
-    }
-  } else if (info < 0){
-    SETERRQ2(PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", info,-info);
-  }
-
-  if ( lu->options.PrintStat ) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve_SuperLU():\n");
-    StatPrint(&stat);
-  }
-  StatFree(&stat);
+  ierr = MatSolve_SuperLU_Private(A,b,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
