@@ -189,9 +189,6 @@ class Configure(config.base.Configure):
        - Any given category can be excluded'''
     import os
 
-    if 'PETSC_DIR' in self.framework.argDB:
-      self.framework.argDB['search-dirs'].append(os.path.join(self.framework.argDB['PETSC_DIR'],'bin','win32fe'))
-        
     if self.framework.argDB.has_key('with-cc'):
       if self.isWindows(self.framework.argDB['with-cc']):
         yield 'win32fe '+self.framework.argDB['with-cc']
