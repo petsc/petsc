@@ -76,6 +76,7 @@ class Configure(config.base.Configure):
       self.logPrint(line)
     self.addMakeMacro('DIR', self.dir)
     self.addDefine('DIR', self.dir)
+    self.framework.argDB['search-dirs'].append(os.path.join(self.dir, 'bin', 'win32fe'))
     return
 
   def configureArchitecture(self):
