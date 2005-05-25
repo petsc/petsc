@@ -119,6 +119,15 @@ class Configure(config.base.Configure):
     return 0
   isCygwin = staticmethod(isCygwin)
 
+  def isDarwin():
+    '''Returns true if system is Darwin/MacOSX'''
+    #replace self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
+    if not status:
+      return output.lower() == 'darwin'
+    return 0
+  isDarwin = staticmethod(isDarwin)
+
   def isWindows(compiler):
     '''Returns true if the compiler is a Windows compiler'''
     if compiler in ['icl', 'cl', 'bcc32', 'ifl', 'df']:
@@ -809,7 +818,8 @@ class Configure(config.base.Configure):
     yield (self.CC, ['-shared'], 'so')
     # Mac OSX
     # undefined warning must also have flat_namespace
-    yield ('libtool', ['-noprebind','-dynamic','-single_module','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
+    if Configure.isDarwin():
+      yield ('libtool', ['-noprebind','-dynamic','-single_module','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
     #yield (self.CC, ['-dynamiclib', '-flat_namespace', '-undefined warning', '-multiply_defined suppress', '-single_module'], 'dylib')
     # Default to static linker
     self.setStaticLinker()
@@ -946,7 +956,8 @@ class Configure(config.base.Configure):
     if 'with-dynamic-ld' in self.framework.argDB:
       yield (self.framework.argDB['with-dynamic-ld'], [], 'so')
     # Mac OSX
-    yield (self.CC, ['-bundle', '-flat_namespace', '-undefined warning', '-multiply_defined suppress'], 'so')
+    if Configure.isDarwin():
+      yield (self.CC, ['-bundle', '-flat_namespace', '-undefined warning', '-multiply_defined suppress'], 'so')
     # Shared default
     if hasattr(self, 'sharedLinker'):
       yield (self.sharedLinker, self.sharedLibraryFlags, 'so')
@@ -1046,7 +1057,8 @@ if (dlclose(handle)) {
     self.executeTest(self.checkPIC)
     self.executeTest(self.checkArchiver)
     self.executeTest(self.checkSharedLinker)
-    self.executeTest(self.checkLinkerMac)
+    if Configure.isDarwin():
+      self.executeTest(self.checkLinkerMac)
     self.executeTest(self.checkSharedLinkerPaths)
     if not self.staticLibraries:
       self.executeTest(self.checkLibC)
