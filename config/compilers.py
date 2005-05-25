@@ -308,9 +308,9 @@ class Configure(config.base.Configure):
     # Link the test object against a Fortran driver
     self.pushLanguage('FC')
     oldLIBS = self.setCompilers.LIBS
-    self.setCompilers.LIBS += ' '+cobj
+    self.setCompilers.LIBS = cobj+' '+self.setCompilers.LIBS
     if extraObjs:
-      self.setCompilers.LIBS += ' '+' '.join(extraObjs)
+      self.setCompilers.LIBS = ' '.join(extraObjs)+' '+self.setCompilers.LIBS
     found = self.checkLink(None, ffunc)
     self.setCompilers.LIBS = oldLIBS
     self.popLanguage()
