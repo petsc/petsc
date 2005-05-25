@@ -196,7 +196,7 @@ class Configure(PETSc.package.Package):
 
   def configureMPICHShared(self):
     '''MPICH cannot be used with shared libraries on the Mac, reject if trying'''
-    if self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
+    if config.setCompilers.Configure.isDarwin():
       if not self.setCompilers.staticLibraries:
         for lib in self.lib:
           if lib.find('mpich') >= 0:

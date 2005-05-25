@@ -49,7 +49,7 @@ class Configure(PETSc.package.Package):
           matlab = None
           continue
         r = float(match.group(1))
-        if self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
+        if config.setCompilers.Configure.isDarwin():
           raise RuntimeError('Sorry, we have not been able to get Matlab working with PETSc on the Mac;\n messy Matlab dynamic libraries')
         if r < 6.0:
           self.framework.log.write('WARNING:Matlab version must be at least 6; yours is '+str(r)+'\n')
