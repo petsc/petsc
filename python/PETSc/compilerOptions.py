@@ -232,7 +232,7 @@ class CompilerOptions(config.base.Configure):
         elif bopt == 'O':
           flags.extend(['-O2', '-IPA:cprop=OFF', '-OPT:IEEE_arithmetic=1'])
     # MacOSX on Apple Power PC
-    elif self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
+    elif config.setCompilers.Configure.isDarwin():
       # IBM
       if bopt == '' and (compiler.find('f90') or re.match(r'\w*xl[fF]\w*', compiler)):
         import commands
