@@ -464,7 +464,7 @@ class Builder(logging.Logger):
           # Mac bundles always have undefined environ variable
           error = filter(lambda l: l.find('environ') < 0, error)
           if len(error):
-            raise LinkError(output+error)
+            raise LinkError(output+'\n'.join(error))
       self.shouldLink.update(source)
       return
 
