@@ -280,7 +280,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreateStride" 
-/*@C
+/*@
    ISCreateStride - Creates a data structure for an index set 
    containing a list of evenly spaced integers.
 

@@ -271,7 +271,7 @@ PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
    ISCreateGeneral - Creates a data structure for an index set 
    containing a list of integers.
 

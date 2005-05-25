@@ -217,7 +217,7 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISIdentity_Block };
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreateBlock" 
-/*@C
+/*@
    ISCreateBlock - Creates a data structure for an index set containing
    a list of integers. The indices are relative to entries, not blocks. 
 
