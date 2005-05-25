@@ -239,7 +239,7 @@ class Configure(config.base.Configure):
 
     self.logPrint('Check that Cxx libraries can be used from C', 4, 'compilers')
     oldLibs = self.setCompilers.LIBS
-    self.setCompilers.LIBS += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
+    self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])+' '+self.setCompilers.LIBS
     try:
       self.setCompilers.checkCompiler('C')
     except RuntimeError, e:
@@ -250,7 +250,7 @@ class Configure(config.base.Configure):
     if hasattr(self.setCompilers, 'FC'):
       self.logPrint('Check that Cxx libraries can be used from Fortran', 4, 'compilers')
       oldLibs = self.setCompilers.LIBS
-      self.setCompilers.LIBS += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
+      self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])+' '+self.setCompilers.LIBS
       try:
         self.setCompilers.checkCompiler('FC')
       except RuntimeError, e:
@@ -568,7 +568,7 @@ class Configure(config.base.Configure):
     # check that these monster libraries can be used from C
     self.logPrint('Check that Fortran libraries can be used from C', 4, 'compilers')
     oldLibs = self.setCompilers.LIBS
-    self.setCompilers.LIBS += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+    self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])+' '+self.setCompilers.LIBS
     try:
       self.setCompilers.checkCompiler('C')
     except RuntimeError, e:
@@ -640,7 +640,7 @@ class Configure(config.base.Configure):
       link = 1
     else:
       oldLibs = self.setCompilers.LIBS
-      self.setCompilers.LIBS += ' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])
+      self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.cxxlibs])+' '+self.setCompilers.LIBS
       if self.testMangling(cinc+cfunc, ffunc, 'Cxx', extraObjs = [cxxobj]):
         self.logPrint('Fortran can link C++ functions using the C++ compiler libraries', 3, 'compilers')
         link = 1
