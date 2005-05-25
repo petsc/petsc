@@ -80,8 +80,8 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
  
   /* set Data */
-  data.m = 3; /* 9; */
-  data.n = 3; /* 9; */
+  data.m = 9; 
+  data.n = 9; 
   data.a = 1.0;
   data.epsilon = 0.1;
   data.dx = 1.0/(data.m+1.0);
