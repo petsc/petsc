@@ -6,7 +6,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDataTypeToMPIDataType"
-/*@
+/*@C
      PetscDataTypeToMPIDataType - Converts the PETSc name of a datatype to its MPI name.
 
    Not collective
