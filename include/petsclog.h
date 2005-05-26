@@ -142,11 +142,11 @@ extern PETSC_DLLEXPORT int            PETSC_DUMMY_COUNT;
    function call each time, we could leave these structures in plog.h
 */
 /* Default log */
-typedef struct _StageLog *StageLog;
+typedef struct _n_StageLog *StageLog;
 extern PETSC_DLLEXPORT StageLog _stageLog;
 
 /* A simple stack (should replace) */
-typedef struct _IntStack *IntStack;
+typedef struct _n_IntStack *IntStack;
 
 /* The structures for logging performance */
 typedef struct _EventPerfInfo {
@@ -185,30 +185,30 @@ typedef struct _EventRegInfo {
 #endif
 } EventRegInfo;
 
-typedef struct _EventRegLog *EventRegLog;
-struct _EventRegLog {
+typedef struct _n_EventRegLog *EventRegLog;
+struct _n_EventRegLog {
   int           numEvents; /* The number of registered events */
   int           maxEvents; /* The maximum number of events */
   EventRegInfo *eventInfo; /* The registration information for each event */
 };
 
-typedef struct _EventPerfLog *EventPerfLog;
-struct _EventPerfLog {
+typedef struct _n_EventPerfLog *EventPerfLog;
+struct _n_EventPerfLog {
   int            numEvents; /* The number of logging events */
   int            maxEvents; /* The maximum number of events */
   EventPerfInfo *eventInfo; /* The performance information for each event */
 };
 
 /* The structure for logging class information */
-typedef struct _ClassRegLog *ClassRegLog;
-struct _ClassRegLog {
+typedef struct _n_ClassRegLog *ClassRegLog;
+struct _n_ClassRegLog {
   int           numClasses; /* The number of classes registered */
   int           maxClasses; /* The maximum number of classes */
   ClassRegInfo *classInfo;  /* The structure for class information (cookies are monotonicly increasing) */
 };
 
-typedef struct _ClassPerfLog *ClassPerfLog;
-struct _ClassPerfLog {
+typedef struct _n_ClassPerfLog *ClassPerfLog;
+struct _n_ClassPerfLog {
   int            numClasses; /* The number of logging classes */
   int            maxClasses; /* The maximum number of classes */
   ClassPerfInfo *classInfo;  /* The structure for class information (cookies are monotonicly increasing) */
@@ -223,7 +223,7 @@ typedef struct _StageInfo {
   ClassPerfLog  classLog; /* The class information for this stage */
 } StageInfo;
 
-struct _StageLog {
+struct _n_StageLog {
   /* Size information */
   int         numStages; /* The number of registered stages */
   int         maxStages; /* The maximum number of stages */

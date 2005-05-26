@@ -534,12 +534,12 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscViewerMathematicaPutVector(PetscVi
   Concepts: parallel decomposition
 
 S*/
-        struct _p_Vecs  {PetscInt n; Vec v;};
-typedef struct _p_Vecs* Vecs;
+        struct _n_Vecs  {PetscInt n; Vec v;};
+typedef struct _n_Vecs* Vecs;
 #define VecsDestroy(x)            (VecDestroy((x)->v)         || PetscFree(x))
-#define VecsCreateSeq(comm,p,m,x) (PetscNew(struct _p_Vecs,x) || VecCreateSeq(comm,p*m,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
-#define VecsCreateSeqWithArray(comm,p,m,a,x) (PetscNew(struct _p_Vecs,x) || VecCreateSeqWithArray(comm,p*m,a,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
-#define VecsDuplicate(x,y)        (PetscNew(struct _p_Vecs,y) || VecDuplicate(x->v,&(*(y))->v) || (-1 == ((*(y))->n = (x)->n)))
+#define VecsCreateSeq(comm,p,m,x) (PetscNew(struct _n_Vecs,x) || VecCreateSeq(comm,p*m,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
+#define VecsCreateSeqWithArray(comm,p,m,a,x) (PetscNew(struct _n_Vecs,x) || VecCreateSeqWithArray(comm,p*m,a,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
+#define VecsDuplicate(x,y)        (PetscNew(struct _n_Vecs,y) || VecDuplicate(x->v,&(*(y))->v) || (-1 == ((*(y))->n = (x)->n)))
 
 
 PETSC_EXTERN_CXX_END

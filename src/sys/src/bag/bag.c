@@ -80,7 +80,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag* bag,void *addr,const char **list,P
     ierr     = PetscOptionsGetEnum(PETSC_NULL,nname,list,&mdefault,PETSC_NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(struct _p_PetscBagItem,&item);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
   item->dtype  = PETSC_ENUM;
   item->offset = ((char*)addr) - ((char*)bag);
   item->next   = 0;
@@ -131,7 +131,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag* bag,void *addr,PetscInt mdefault, c
     ierr     = PetscOptionsGetInt(PETSC_NULL,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(struct _p_PetscBagItem,&item);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
   item->dtype  = PETSC_INT;
   item->offset = ((char*)addr) - ((char*)bag);
   item->next   = 0;
@@ -183,7 +183,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag* bag,void *addr,PetscInt msize,co
     }
   }
 
-  ierr = PetscNew(struct _p_PetscBagItem,&item);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
   item->dtype  = PETSC_CHAR;
   item->offset = ((char*)addr) - ((char*)bag);
   item->next   = 0;
@@ -238,7 +238,7 @@ PetscErrorCode PetscBagRegisterReal(PetscBag* bag,void *addr,PetscReal mdefault,
     ierr     = PetscOptionsGetReal(PETSC_NULL,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(struct _p_PetscBagItem,&item);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
   item->dtype  = PETSC_REAL;
   item->offset = ((char*)addr) - ((char*)bag);
   item->next   = 0;
@@ -289,7 +289,7 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag* bag,void *addr,PetscScalar mdefa
     ierr     = PetscOptionsGetScalar(PETSC_NULL,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(struct _p_PetscBagItem,&item);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
   item->dtype  = PETSC_SCALAR;
   item->offset = ((char*)addr) - ((char*)bag);
   item->next   = 0;
@@ -340,7 +340,7 @@ PetscErrorCode PetscBagRegisterTruth(PetscBag* bag,void *addr,PetscTruth mdefaul
     ierr     = PetscOptionsGetTruth(PETSC_NULL,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(struct _p_PetscBagItem,&item);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
   item->dtype  = PETSC_TRUTH;
   item->offset = ((char*)addr) - ((char*)bag);
   item->next   = 0;

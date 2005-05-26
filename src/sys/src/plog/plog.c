@@ -2058,7 +2058,7 @@ PetscErrorCode StackCreate(IntStack *stack)
 
   PetscFunctionBegin;
   PetscValidPointer(stack,1);
-  ierr = PetscNew(struct _IntStack, &s);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_IntStack, &s);CHKERRQ(ierr);
   s->top = -1;
   s->max = 128;
   ierr = PetscMalloc(s->max * sizeof(int), &s->stack);CHKERRQ(ierr);

@@ -35,7 +35,7 @@ int PETSC_DLLEXPORT PetscADICFunctionCreate(Vec in,Vec out,int (*ad_Function)(Ve
 {
   int ierr;
  
-  *ctx = PetscNew(struct _p_PetscADICFunction); CHKPTRQ(*ctx);
+  *ctx = PetscNew(struct _n_PetscADICFunction); CHKPTRQ(*ctx);
   (*ctx)->Function              = 0;
   (*ctx)->FunctionInitialize    = 0;
   (*ctx)->ad_Function           = ad_Function;

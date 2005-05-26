@@ -595,7 +595,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogCreate(StageLog *stageLog)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _StageLog, &l);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_StageLog, &l);CHKERRQ(ierr);
   l->numStages = 0;
   l->maxStages = 10;
   l->curStage  = -1;

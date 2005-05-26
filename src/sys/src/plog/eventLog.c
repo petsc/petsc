@@ -35,7 +35,7 @@ PetscErrorCode EventRegLogCreate(EventRegLog *eventLog)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _EventRegLog, &l);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_EventRegLog, &l);CHKERRQ(ierr);
   l->numEvents   = 0;
   l->maxEvents   = 100;
   ierr = PetscMalloc(l->maxEvents * sizeof(EventRegInfo), &l->eventInfo);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ PetscErrorCode EventPerfLogCreate(EventPerfLog *eventLog)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _EventPerfLog, &l);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_EventPerfLog, &l);CHKERRQ(ierr);
   l->numEvents   = 0;
   l->maxEvents   = 100;
   ierr = PetscMalloc(l->maxEvents * sizeof(EventPerfInfo), &l->eventInfo);CHKERRQ(ierr);

@@ -397,7 +397,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscViewerSocketPutSparse_Private(PetscV
 .seealso:  PetscViewerCreate(), PetscViewerSetType(), PetscViewerType, PetscViewer, PetscViewersCreate(),
            PetscViewersGetViewer()
 S*/
-typedef struct _p_PetscViewers* PetscViewers;
+typedef struct _n_PetscViewers* PetscViewers;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewersCreate(MPI_Comm,PetscViewers*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewersDestroy(PetscViewers);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewersGetViewer(PetscViewers,int,PetscViewer*);

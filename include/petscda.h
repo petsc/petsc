@@ -173,7 +173,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASplitComm2d(MPI_Comm,PetscInt,Petsc
 .seealso:  SDACreate1d(), SDACreate2d(), SDACreate3d(), SDADestroy(), DA, SDALocalToLocalBegin(),
            SDALocalToLocalEnd(), SDAGetCorners(), SDAGetGhostCorners()
 S*/
-typedef struct _SDA* SDA;
+typedef struct _n_SDA* SDA;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscInt*,SDA*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,SDA*);
@@ -392,7 +392,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DACreatePF(DA,PF*);
 
 .seealso:  VecPackCreate(), VecPackDestroy()
 S*/
-typedef struct _p_VecPack *VecPack;
+typedef struct _p_VecPack* VecPack;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackCreate(MPI_Comm,VecPack*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackDestroy(VecPack);

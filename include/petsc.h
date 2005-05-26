@@ -979,7 +979,7 @@ typedef struct _p_PetscObject* PetscObject;
 
 .seealso:  PetscFListAdd(), PetscFListDestroy()
 S*/
-typedef struct _PetscFList *PetscFList;
+typedef struct _n_PetscFList *PetscFList;
 
 #include "petscviewer.h"
 #include "petscoptions.h"
@@ -1120,7 +1120,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTypeCompare(PetscObject,const char[],
 
 .seealso:  PetscOListAdd(), PetscOListDestroy(), PetscOListFind()
 S*/
-typedef struct _PetscOList *PetscOList;
+typedef struct _n_PetscOList *PetscOList;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOListDestroy(PetscOList *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOListFind(PetscOList,const char[],PetscObject*);
@@ -1155,7 +1155,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListGet(PetscFList,char ***,int*);
 
 .seealso:  PetscDLLibraryOpen()
 S*/
-typedef struct _PetscDLLibraryList *PetscDLLibraryList;
+typedef struct _n_PetscDLLibraryList *PetscDLLibraryList;
 extern PetscDLLibraryList DLLibrariesLoaded;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm,const char[],char *,int,PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm,const char[],void **);

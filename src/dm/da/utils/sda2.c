@@ -9,7 +9,7 @@
 
 EXTERN PetscErrorCode DALocalToLocalCreate(DA);
 
-struct _SDA {
+struct _n_SDA {
   DA  da;
   Vec gvec,lvec,Gvec;
 };
@@ -67,7 +67,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,P
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
 
-  ierr = PetscNew(struct _SDA,sda);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_SDA,sda);CHKERRQ(ierr);
   ierr = DACreate1d(comm,wrap,M,w,s,lc,&da);CHKERRQ(ierr);
   (*sda)->da = da;
 
@@ -134,7 +134,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,D
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
 
-  ierr = PetscNew(struct _SDA,sda);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_SDA,sda);CHKERRQ(ierr);
   ierr = DACreate2d(comm,wrap,stencil_type,M,N,m,n,w,s,lx,ly,&da);CHKERRQ(ierr);
   (*sda)->da = da;
 
@@ -201,7 +201,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,D
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
 
-  ierr = PetscNew(struct _SDA,sda);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_SDA,sda);CHKERRQ(ierr);
   ierr = DACreate3d(comm,wrap,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da);CHKERRQ(ierr);
   (*sda)->da = da;
 

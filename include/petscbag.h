@@ -8,8 +8,8 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_BAG_HELP_LENGTH 128
 #define PETSC_BAG_FILE_COOKIE 1211219
 
-typedef struct _p_PetscBagItem *PetscBagItem;
-struct _p_PetscBagItem {
+typedef struct _n_PetscBagItem* PetscBagItem;
+struct _n_PetscBagItem {
   PetscDataType dtype;
   PetscInt      offset;
   PetscInt      msize;

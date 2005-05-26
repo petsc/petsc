@@ -126,7 +126,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT AODataPartitionAndSetupLocal(AOData,cons
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT AODataAliasAdd(AOData,const char[],const char[]);
 
    
-typedef struct _p_AOData2dGrid *AOData2dGrid;
+typedef struct _n_AOData2dGrid* AOData2dGrid;
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOData2dGridAddNode(AOData2dGrid, PetscReal, PetscReal, PetscInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOData2dGridInput(AOData2dGrid,PetscDraw);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOData2dGridFlipCells(AOData2dGrid);

@@ -2,7 +2,7 @@
 #define __PETSCCTABLE_H
 /* Contributed by - Mark Adams */
 
-typedef struct _p_PetscTable * PetscTable;
+typedef struct _n_PetscTable* PetscTable;
 typedef PetscInt* PetscTablePosition;  
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTableCreate(const PetscInt,PetscTable*);

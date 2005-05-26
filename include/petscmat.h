@@ -1117,7 +1117,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoringPatch(Mat,PetscInt,PetscInt,
 
 .seealso:  MatFDColoringCreate()
 S*/
-typedef struct _p_MatFDColoring *MatFDColoring;
+typedef struct _p_MatFDColoring* MatFDColoring;
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat,ISColoring,MatFDColoring *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringDestroy(MatFDColoring);
@@ -1146,7 +1146,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetPerturbedColumns(MatFDC
 
 .seealso:  MatPartitioningCreate(), MatPartitioningType
 S*/
-typedef struct _p_MatPartitioning *MatPartitioning;
+typedef struct _p_MatPartitioning* MatPartitioning;
 
 /*E
     MatPartitioningType - String with the name of a PETSc matrix partitioning or the creation function

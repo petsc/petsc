@@ -226,7 +226,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt n,cons
   MPI_Status     status;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _p_ISColoring,iscoloring);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_ISColoring,iscoloring);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
   comm = (*iscoloring)->comm;
 

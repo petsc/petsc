@@ -2,7 +2,7 @@
 
 #include "petsc.h"
 
-struct _p_PetscViewers {
+struct _n_PetscViewers {
    MPI_Comm    comm;
    PetscViewer *viewer;
    int         n;
@@ -62,7 +62,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNew(struct _p_PetscViewers,v);CHKERRQ(ierr);
+  ierr         = PetscNew(struct _n_PetscViewers,v);CHKERRQ(ierr);
   (*v)->n      = 64;
   (*v)->comm   = comm;
   ierr = PetscMalloc(64*sizeof(PetscViewer),&(*v)->viewer);CHKERRQ(ierr);

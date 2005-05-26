@@ -6,7 +6,7 @@
 #include "petsc.h"
 #include "petscsys.h"
 
-struct _PetscOList {
+struct _n_PetscOList {
     char        name[256];
     PetscObject obj;
     PetscOList  next;
@@ -64,7 +64,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[],Pe
 
   /* add it to list, because it was not already there */
 
-  ierr        = PetscNew(struct _PetscOList,&olist);CHKERRQ(ierr);
+  ierr        = PetscNew(struct _n_PetscOList,&olist);CHKERRQ(ierr);
   olist->next = 0;
   olist->obj  = obj;
   ierr = PetscObjectReference(obj);CHKERRQ(ierr);
