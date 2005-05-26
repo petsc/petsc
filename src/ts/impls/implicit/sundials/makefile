@@ -8,10 +8,10 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 CPPFLAGS = ${SUNDIALS_INCLUDE}
-SOURCEC  = petscsundials.c
+SOURCEC  = sundials.c
 SOURCEF  =
-SOURCEH  = petscsundials.h
-OBJSC    = petscsundials.o
+SOURCEH  = sundials.h
+OBJSC    = sundials.o
 OBJSF    =
 LIBBASE  = libpetscts
 MANSEC   = TS

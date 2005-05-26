@@ -7,9 +7,7 @@
     by Liyang Xu. It has been redone by Hong Zhang and Dinesh Kaushik.
 */
 
-#include "src/ts/impls/implicit/sundials/petscsundials.h"  /*I "petscts.h" I*/    
-
-#undef DEBUG_SUNDIAL
+#include "src/ts/impls/implicit/sundials/sundials.h"  /*I "petscts.h" I*/    
 
 /*
       TSPrecond_Sundials - function that we provide to SUNDIALS to
@@ -38,7 +36,6 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
   
   /* jok - TRUE means reuse current Jacobian else recompute Jacobian */
   if (jok) {
-    str      = DIFFERENT_NONZERO_PATTERN;
     ierr     = MatCopy(cvode->pmat,Jac,str);CHKERRQ(ierr);
     *jcurPtr = FALSE;
   } else {
@@ -70,14 +67,13 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
 
 /*
      TSPSolve_Sundials -  routine that we provide to Sundials that applies the preconditioner.
-      
 */    
 #undef __FUNCT__
 #define __FUNCT__ "TSPSolve_Sundials"
 PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,
                                  N_Vector r,N_Vector z,
                                  realtype _gamma,realtype delta,
-                                int lr,void *P_data,N_Vector vtemp)
+                                 int lr,void *P_data,N_Vector vtemp)
 { 
   TS              ts = (TS) P_data;
   TS_Sundials     *cvode = (TS_Sundials*)ts->data;
@@ -221,6 +217,7 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr); 
   }
+  CVodeFree(mem);
   *steps += ts->steps;
   *time   = t;
   PetscFunctionReturn(0);
@@ -242,8 +239,6 @@ PetscErrorCode TSDestroy_Sundials(TS ts)
   if (cvode->w1)     {ierr = VecDestroy(cvode->w1);CHKERRQ(ierr);}
   if (cvode->w2)     {ierr = VecDestroy(cvode->w2);CHKERRQ(ierr);}
   ierr = MPI_Comm_free(&(cvode->comm_sundials));CHKERRQ(ierr);
-
-  /*  CVodeFree(mem); */
   ierr = PetscFree(cvode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
