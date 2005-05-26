@@ -410,6 +410,9 @@ class Configure(PETSc.package.Package):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
     self.addExtraLibraries()
     PETSc.package.Package.configureLibrary(self)
+    # Satish check here if the self.directory is truly the MPI root directory with mpicc underneath it
+    # if not then set it to None
+
     #self.executeTest(self.configureMPICHShared)
     self.executeTest(self.configureConversion)
     self.executeTest(self.configureTypes)
