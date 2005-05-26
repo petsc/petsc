@@ -4,7 +4,7 @@
 #if !defined(__ADPETSC_H)
 #define __ADPETSC_H
 
-struct _p_PetscADICFunction{
+struct _n_PetscADICFunction{
   MPI_Comm comm;
   int      m,n;
   Vec      din, dout;

@@ -138,7 +138,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetFromOptions(Mat);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCheckPositivity(Vec,Vec,PetscScalar*,void*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetCheckh(Mat,PetscErrorCode (*)(Vec,Vec,PetscScalar*,void*),void*);
 
-typedef struct _p_MatSNESMFCtx   *MatSNESMFCtx;
+typedef struct _p_MatSNESMFCtx* MatSNESMFCtx;
 
 #define MATSNESMF_DEFAULT "default"
 #define MATSNESMF_WP      "wp"

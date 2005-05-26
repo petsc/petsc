@@ -332,12 +332,5 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawAxis(PetscViewer,int
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawUtilitySetCmapHue(unsigned char *,unsigned char *,unsigned char *,int);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawUtilitySetGamma(PetscReal);
 
-/* Mesh management routines */
-typedef struct _p_DrawMesh* PetscDrawMesh;
-PetscErrorCode PETSC_DLLEXPORT PetscDrawMeshCreate(PetscDrawMesh *,PetscReal *,PetscReal *,PetscReal *,
-		        int,int,int,int,int,int,int,int,int,int,int,int,int,PetscReal *,int);
-PetscErrorCode PETSC_DLLEXPORT PetscDrawMeshCreateSimple(PetscDrawMesh *,PetscReal *,PetscReal *,PetscReal *,int,int,int,int,PetscReal *,int);
-PetscErrorCode PETSC_DLLEXPORT PetscDrawMeshDestroy(PetscDrawMesh *);
-
 PETSC_EXTERN_CXX_END
 #endif

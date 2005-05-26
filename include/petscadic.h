@@ -17,7 +17,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT ad_PetscFinalize(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT ad_AD_Init(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT ad_AD_Final(void);
 
-typedef struct _p_PetscADICFunction *PetscADICFunction;
+typedef struct _n_PetscADICFunction* PetscADICFunction;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscADICFunctionCreate(Vec,Vec,PetscErrorCode (*)(Vec,Vec),PetscErrorCode (*)(void **),PetscADICFunction*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscADICFunctionInitialize(PetscADICFunction);

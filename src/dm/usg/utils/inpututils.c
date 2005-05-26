@@ -466,7 +466,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOData2dGridCreate(AOData2dGrid *agrid)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscNew(struct _p_AOData2dGrid,agrid);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_AOData2dGrid,agrid);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

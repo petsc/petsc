@@ -121,7 +121,7 @@ EXTERN PetscErrorCode AODataSegmentFind_Private(AOData,const char[],const char[]
 
 #include "petscbt.h"
 
-struct _p_AOData2dGrid {
+struct _n_AOData2dGrid {
    PetscInt  cell_n, vertex_n, edge_n;
    PetscInt  cell_max, vertex_max, edge_max;
    PetscInt  *cell_vertex,*cell_edge,*cell_cell;

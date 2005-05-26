@@ -75,7 +75,7 @@ extern int        numObjectsDestroyed;
 extern PetscLogDouble PETSC_DLLEXPORT BaseTime;
 
 /* A simple stack */
-struct _IntStack {
+struct _n_IntStack {
   int  top;   /* The top of the stack */
   int  max;   /* The maximum stack size */
   int *stack; /* The storage */

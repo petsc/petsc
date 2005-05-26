@@ -186,7 +186,7 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
 #endif
 
 /* ------------------------------------------------------------------------------*/
-struct _PetscFList {
+struct _n_PetscFList {
   void        (*routine)(void);   /* the routine */
   char        *path;              /* path of link library containing routine */
   char        *name;              /* string to identify routine */
@@ -239,7 +239,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListAdd(PetscFList *fl,const char name[],co
   PetscFunctionBegin;
 
   if (!*fl) {
-    ierr           = PetscNew(struct _PetscFList,&entry);CHKERRQ(ierr);
+    ierr           = PetscNew(struct _n_PetscFList,&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
     ierr           = PetscFListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;
@@ -276,7 +276,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListAdd(PetscFList *fl,const char name[],co
       if (ne->next) ne = ne->next; else break;
     }
     /* create new entry and add to end of list */
-    ierr           = PetscNew(struct _PetscFList,&entry);CHKERRQ(ierr);
+    ierr           = PetscNew(struct _n_PetscFList,&entry);CHKERRQ(ierr);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
     ierr           = PetscFListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;

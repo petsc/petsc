@@ -161,7 +161,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm,PetscInt,ISC
 
 .seealso:  ISColoringCreate(), ISColoringGetIS(), ISColoringView(), ISColoringGetIS()
 S*/
-struct _p_ISColoring {
+struct _n_ISColoring {
   PetscInt        refct;
   PetscInt        n;                /* number of colors */
   IS              *is;              /* for each color indicates columns */
@@ -170,7 +170,7 @@ struct _p_ISColoring {
   PetscInt        N;                /* number of columns */
   ISColoringType  ctype;
 };
-typedef struct _p_ISColoring* ISColoring;
+typedef struct _n_ISColoring* ISColoring;
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm,PetscInt,const ISColoringValue[],ISColoring*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISColoringDestroy(ISColoring);

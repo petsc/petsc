@@ -48,7 +48,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
 
   ierr = PetscMalloc(nlevels*sizeof(DMMG),&p);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
-    ierr           = PetscNew(struct _p_DMMG,&p[i]);CHKERRQ(ierr);
+    ierr           = PetscNew(struct _n_DMMG,&p[i]);CHKERRQ(ierr);
     p[i]->nlevels  = nlevels - i;
     p[i]->comm     = comm;
     p[i]->user     = user;

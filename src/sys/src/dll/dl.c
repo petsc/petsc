@@ -53,7 +53,7 @@ PetscFList CCAList = 0;
 #if defined(PETSC_HAVE_DLFCN_H)
 #include <dlfcn.h>
 #endif
-struct _PetscDLLibraryList {
+struct _n_PetscDLLibraryList {
   PetscDLLibraryList next;
   void          *handle;
   char          libname[PETSC_MAX_PATH_LEN];
@@ -345,7 +345,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibraryLis
     }
     ierr = PetscDLLibraryOpen(comm,path,&handle);CHKERRQ(ierr);
 
-    ierr          = PetscNew(struct _PetscDLLibraryList,&nlist);CHKERRQ(ierr);
+    ierr          = PetscNew(struct _n_PetscDLLibraryList,&nlist);CHKERRQ(ierr);
     nlist->next   = 0;
     nlist->handle = handle;
     ierr = PetscStrcpy(nlist->libname,path);CHKERRQ(ierr);
@@ -475,7 +475,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary
 
       ierr = PetscDLLibraryOpen(comm,libname1,&handle);CHKERRQ(ierr);
 
-      ierr         = PetscNew(struct _PetscDLLibraryList,&list);CHKERRQ(ierr);
+      ierr         = PetscNew(struct _n_PetscDLLibraryList,&list);CHKERRQ(ierr);
       list->next   = 0;
       list->handle = handle;
       ierr = PetscStrcpy(list->libname,libname1);CHKERRQ(ierr);
@@ -579,7 +579,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrar
       
       ierr = PetscLogInfo((0,"PetscDLLibraryPrepend:Prepending %s to dynamic library search path\n",libname1));CHKERRQ(ierr);
 
-      ierr         = PetscNew(struct _PetscDLLibraryList,&list);CHKERRQ(ierr);
+      ierr         = PetscNew(struct _n_PetscDLLibraryList,&list);CHKERRQ(ierr);
       list->handle = handle;
       list->next   = *outlist;
       ierr = PetscStrcpy(list->libname,libname1);CHKERRQ(ierr);

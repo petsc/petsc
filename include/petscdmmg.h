@@ -16,8 +16,8 @@ PETSC_EXTERN_CXX_BEGIN
 
 .seealso:  VecPackCreate(), DA, VecPack, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES()
 S*/
-typedef struct _p_DMMG *DMMG;
-struct _p_DMMG {
+typedef struct _n_DMMG* DMMG;
+struct _n_DMMG {
   DM             dm;                   /* grid information for this level */
   Vec            x,b,r;                /* global vectors used in multigrid preconditioner for this level*/
   Mat            J;                    /* matrix on this level */
