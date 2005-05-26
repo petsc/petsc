@@ -113,7 +113,7 @@ in PETSc 2.2.1 </font></p>
 
       </b></u></p>
       <p><u><b>KSP:</b></u></p>
-        <ul> <li> Removed KSPSetRhs() and KSPSetSolution(), pass them through KSPSolve() instead</li>
+        <ul><li>Note that a relative residual tolerance now means that ||r_k|| &lt; tol*||b||</li> <li> Removed KSPSetRhs() and KSPSetSolution(), pass them through KSPSolve() instead</li>
         <li> Added KSPSetNullSpace(), KSPGetNullSpace() </li></ul>
       <p><u><b>DA:</b></u></p>
 
