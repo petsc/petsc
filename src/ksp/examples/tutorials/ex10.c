@@ -169,6 +169,9 @@ int main(int argc,char **args)
 
       /* Create a new vector b by padding the old one */
       ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+      if (m != n) {
+        SETERRQ2(PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
+      }
       ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
       ierr = VecSetSizes(tmp,m,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
