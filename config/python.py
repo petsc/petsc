@@ -2,6 +2,11 @@ import config.base
 
 import os
 
+try:
+  import sets
+except ImportError:
+  import config.setsBackport as sets
+
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -44,9 +49,8 @@ class Configure(config.base.Configure):
 
   def configurePythonLibraries(self):
     import distutils.sysconfig
-    import os
 
-    inc = [distutils.sysconfig.get_python_inc()]
+    inc = sets.Set([distutils.sysconfig.get_python_inc(), distutils.sysconfig.get_python_inc(1)])
     if not self.checkInclude(inc):
       raise RuntimeError('Unable to locate Python headers')
     self.include = inc

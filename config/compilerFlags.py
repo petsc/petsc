@@ -6,7 +6,7 @@ import os
 try:
   import sets
 except ImportError:
-  import config.setsBackport
+  import config.setsBackport as sets
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
