@@ -109,6 +109,12 @@ class Configure(config.base.Configure):
     import os
     if not self.framework.argDB['with-python']:
       return
+    if not self.framework.argDB['with-shared'] and not self.framework.argDB['with-dynamic']:
+      raise RuntimeError('Python bindings require both shared and dynamic libraries. Please add --with-shared --with-dynamic to your configure options.')
+    if not self.framework.argDB['with-shared']:
+      raise RuntimeError('Python bindings require shared libraries. Please add --with-shared to your configure options.')
+    if not self.framework.argDB['with-dynamic']:
+      raise RuntimeError('Python bindings require dynamic libraries. Please add --with-dynamic to your configure options.')
     if os.path.isdir(os.path.join(self.arch.dir, 'BitKeeper')):
       if not os.path.isdir(os.path.join(self.arch.dir, 'src', 'python')):
         os.mkdir(os.path.join(self.arch.dir, 'src', 'python'))

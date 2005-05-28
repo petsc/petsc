@@ -167,7 +167,7 @@ package PETSc {
     // Get the local storage
     array<double>:values getArray();
     // Return the local storage
-    void restoreArray(inout array<double> values);
+    void restoreArray(in array<double> values);
     // result = (self == y)
     bool equal(in Vec y);
   }
@@ -221,7 +221,7 @@ package PETSc {
     // Get the local storage
     array<double>:values getArray();
     // Return the local storage
-    void restoreArray(inout array<double> values);
+    void restoreArray(in array<double> values);
     // Begin the assembly phase
     void assemblyBegin(in MatAssemblyType assemblyType);
     // End the assembly phase

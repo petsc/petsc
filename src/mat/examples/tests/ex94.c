@@ -21,8 +21,11 @@ int main(int argc,char **args)
   char           file[4][128];
   PetscTruth     flg,preload = PETSC_TRUE;
   PetscScalar    a[10],rval,alpha,none = -1.0;
-  PetscTruth     Test_MatMatMult=PETSC_TRUE,Test_MatMatMultTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE;
+  PetscTruth     Test_MatMatMult=PETSC_TRUE,Test_MatMatMultTr=PETSC_TRUE;
   Vec            v3,v4,v5;
+  PetscInt       pm,pn,pM,pN;
+  /* this test is turned off - P might be generated incorrectly. ex96.c gives better test */
+  PetscTruth     Test_MatPtAP=PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -177,10 +180,13 @@ int main(int argc,char **args)
     PetscInt PN;
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+    /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] A: %d,%d, %d,%d\n",rank,m,n,M,N); */
+
     PN   = M/2; 
-    nzp  = 5; 
+    nzp  = PN; 
     ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr); 
-    ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,N,PN);CHKERRQ(ierr); 
+    ierr = MatSetSizes(P,m,n,N,PN);CHKERRQ(ierr); 
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);
@@ -196,7 +202,11 @@ int main(int argc,char **args)
     }
     ierr = MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-   
+
+    /* ierr = MatView(P,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+    ierr = MatGetSize(P,&pM,&pN);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(P,&pm,&pn);CHKERRQ(ierr);
+    /* ierr = PetscPrintf(PETSC_COMM_SELF," [%d] P, %d, %d, %d,%d\n",rank,pm,pn,pM,pN); */
     ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); 
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
@@ -215,7 +225,7 @@ int main(int argc,char **args)
   
     ierr = VecCreate(PETSC_COMM_WORLD,&v3);CHKERRQ(ierr);
     ierr = VecSetSizes(v3,n,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(v3);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(v3);CHKERRQ(ierr); 
     ierr = VecDuplicate(v3,&v4);CHKERRQ(ierr);
 
     norm = 0.0;
