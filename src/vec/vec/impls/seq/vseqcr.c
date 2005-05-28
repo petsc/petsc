@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreateSeq"
-/*@C
+/*@
    VecCreateSeq - Creates a standard, sequential array-style vector.
 
    Collective on MPI_Comm

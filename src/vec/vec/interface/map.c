@@ -143,7 +143,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapPrintHelp(PetscMap map)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapDestroy"
-/*@C
+/*@
    PetscMapDestroy - Destroys a map object.
 
    Not Collective
@@ -389,7 +389,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap m,PetscInt n)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapGetLocalSize"
-/*@C
+/*@
    PetscMapGetLocalSize - Gets the number of elements associated with this processor.
 
    Not Collective
@@ -442,7 +442,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap m,PetscInt N)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapGetSize"
-/*@C
+/*@
    PetscMapGetSize - Gets the total number of elements associated with this map.
 
    Not Collective
@@ -470,7 +470,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap m,PetscInt *N)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapGetLocalRange"
-/*@C
+/*@
    PetscMapGetLocalRange - Gets the local ownership range for this procesor.
 
    Not Collective

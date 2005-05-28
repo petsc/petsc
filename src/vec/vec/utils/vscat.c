@@ -1600,7 +1600,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterEnd(Vec x,Vec y,InsertMode addv,Scat
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterDestroy"
-/*@C
+/*@
    VecScatterDestroy - Destroys a scatter context created by 
    VecScatterCreate().
 
@@ -1630,7 +1630,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterDestroy(VecScatter ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCopy"
-/*@C
+/*@
    VecScatterCopy - Makes a copy of a scatter context.
 
    Collective on VecScatter

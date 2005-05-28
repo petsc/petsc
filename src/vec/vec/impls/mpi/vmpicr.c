@@ -7,7 +7,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreateMPI"
-/*@C
+/*@
    VecCreateMPI - Creates a parallel vector.
 
    Collective on MPI_Comm

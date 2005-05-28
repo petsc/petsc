@@ -1,10 +1,10 @@
 #define PETSCVEC_DLL
 
-#include "vecimpl.h"
+#include "vecimpl.h"    /*I "petscvec.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreateToAll"
-/*@C
+/*@
       VecScatterCreateToAll - Creates a scatter context that copies all 
           vector values to each processor
 
@@ -59,7 +59,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreateToZero"
-/*@C
+/*@
       VecScatterCreateToZero - Creates a scatter context that copies all 
           vector values to a vector on the zeroth processor
 

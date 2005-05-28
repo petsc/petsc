@@ -252,7 +252,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreateShared"
-/*@C
+/*@
    VecCreateShared - Creates a parallel vector that uses shared memory.
 
    Input Parameters:

@@ -281,7 +281,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateMPIWithArray(MPI_Comm comm,PetscInt n
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecGhostGetLocalForm"
-/*@C
+/*@
     VecGhostGetLocalForm - Obtains the local ghosted representation of 
     a parallel vector created with VecCreateGhost().
 
@@ -336,7 +336,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostGetLocalForm(Vec g,Vec *l)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecGhostRestoreLocalForm"
-/*@C
+/*@
     VecGhostRestoreLocalForm - Restores the local ghosted representation of 
     a parallel vector obtained with VecGhostGetLocalForm().
 
@@ -558,7 +558,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostWithArray(MPI_Comm comm,PetscInt
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreateGhost"
-/*@C
+/*@
    VecCreateGhost - Creates a parallel vector with ghost padding on each processor.
 
    Collective on MPI_Comm
@@ -724,7 +724,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm comm,Pet
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreateGhostBlock"
-/*@C
+/*@
    VecCreateGhostBlock - Creates a parallel vector with ghost padding on each processor.
         The indicing of the ghost points is done with blocks.
 

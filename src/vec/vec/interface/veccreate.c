@@ -3,7 +3,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate"
-/*@C
+/*@
   VecCreate - Creates an empty vector object. The type can then be set with VecSetType(),
   or VecSetFromOptions().
 

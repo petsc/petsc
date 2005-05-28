@@ -63,7 +63,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec v,PetscInt start,PetscScala
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecStrideNorm"
-/*@C
+/*@
    VecStrideNorm - Computes the norm of subvector of a vector defined 
    by a starting point and a stride.
 

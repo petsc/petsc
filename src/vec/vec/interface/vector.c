@@ -68,7 +68,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetFromOptions"
-/*@C
+/*@
   VecSetFromOptions - Configures the vector from the options database.
 
   Collective on Vec
@@ -963,7 +963,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetRandom"
-/*@C
+/*@
    VecSetRandom - Sets all components of a vector to random numbers.
 
    Collective on Vec
@@ -1535,7 +1535,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *m
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDuplicate"
-/*@C
+/*@
    VecDuplicate - Creates a new vector of the same type as an existing vector.
 
    Collective on Vec
@@ -1572,7 +1572,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec x,Vec *newv)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDestroy"
-/*@C
+/*@
    VecDestroy - Destroys a vector.
 
    Collective on Vec
@@ -2181,7 +2181,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyEnd(Vec vec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMTDot"
-/*@C
+/*@
    VecMTDot - Computes indefinite vector multiple dot products. 
    That is, it does NOT use the complex conjugate.
 
@@ -2234,7 +2234,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(PetscInt nv,Vec x,const Vec y[],Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMDot"
-/*@C
+/*@
    VecMDot - Computes vector multiple dot products. 
 
    Collective on Vec
@@ -2286,7 +2286,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(PetscInt nv,Vec x,const Vec y[],PetscS
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMAXPY"
-/*@C
+/*@
    VecMAXPY - Computes y = y + sum alpha[j] x[j]
 
    Collective on Vec
@@ -2783,7 +2783,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec x,PetscInt *low,Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecGetPetscMap"
-/*@C
+/*@
    VecGetPetscMap - Returns the map associated with the vector
 
    Not Collective

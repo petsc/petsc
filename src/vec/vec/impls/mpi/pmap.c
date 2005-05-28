@@ -49,7 +49,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapCreateMPI"
-/*@C
+/*@
    PetscMapCreateMPI - Creates a map object.
 
    Collective on MPI_Comm
