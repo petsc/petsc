@@ -115,7 +115,7 @@ class Configure(config.base.Configure):
     '''Returns true if system is cygwin'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
     if not status:
-      return output.lower() == 'cygwin'
+      return output.lower().strip() == 'cygwin'
     return 0
   isCygwin = staticmethod(isCygwin)
 
@@ -124,7 +124,7 @@ class Configure(config.base.Configure):
     #replace self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
     if not status:
-      return output.lower() == 'darwin'
+      return output.lower().strip() == 'darwin'
     return 0
   isDarwin = staticmethod(isDarwin)
 
