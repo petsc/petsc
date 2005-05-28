@@ -326,7 +326,10 @@ class Configure(PETSc.package.Package):
       args.append('--disable-f77')
     if not self.setCompilers.staticLibraries and self.framework.argDB['with-mpi-shared']:
       if self.compilers.isGCC:
-        args.append('--enable-sharedlibs=gcc')
+        if config.setCompilers.Configure.isDarwin():
+          args.append('--enable-sharedlibs=gcc-osx')
+        else:        
+          args.append('--enable-sharedlibs=gcc')
       else:
         args.append('--enable-sharedlibs=libtool')
     args.append('--without-mpe')

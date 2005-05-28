@@ -11,7 +11,7 @@ class Configure(PETSc.package.Package):
     self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/sundials.tar.gz']
     self.functions = ['CVSpgmr']
     self.includes  = ['sundialstypes.h']
-    self.liblist   = [['libsundials_cvode.a','libsundials_fcvode.a','libsundials_nvecserial.a','libsundials_fnvecserial.a','libsundials_nvecparallel.a','libsundials_fnvecparallel.a','libsundials_shared.a']] #currently only support CVODE
+    self.liblist   = [['libsundials_cvode.a','libsundials_nvecserial.a','libsundials_nvecparallel.a','libsundials_shared.a']] #currently only support CVODE
     self.license   = 'http://www.llnl.gov/CASC/sundials/download/download.html'
     return
 
