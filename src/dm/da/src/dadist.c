@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreateGlobalVector"
-/*@C
+/*@
    DACreateGlobalVector - Creates a parallel PETSc vector that
    may be used with the DAXXX routines.
 
@@ -51,7 +51,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateGlobalVector(DA da,Vec* g)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreateNaturalVector"
-/*@C
+/*@
    DACreateNaturalVector - Creates a parallel PETSc vector that
    will hold vector values in the natural numbering, rather than in 
    the PETSc parallel numbering associated with the DA.

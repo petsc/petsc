@@ -113,7 +113,7 @@ PetscErrorCode DAGetNatural_Private(DA da,PetscInt *outNlocal,IS *isnatural)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetAO"
-/*@C
+/*@
    DAGetAO - Gets the application ordering context for a distributed array.
 
    Collective on DA

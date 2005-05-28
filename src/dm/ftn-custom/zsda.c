@@ -5,9 +5,6 @@
 #include "petscda.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define sdadestroy_           SDADESTROY
-#define sdalocaltolocalbegin_ SDALOCALTOLOCALBEGIN
-#define sdalocaltolocalend_   SDALOCALTOLOCALEND
 #define sdacreate1d_          SDACREATE1D
 #define sdacreate2d_          SDACREATE2D
 #define sdacreate3d_          SDACREATE3D
@@ -15,9 +12,6 @@
 #define sdagetcorners_        SDAGETCORNERS
 #define sdaarrayview_         SDAARRAYVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define sdadestroy_           sdadestroy
-#define sdalocaltolocalbegin_ sdalocaltolocalbegin
-#define sdalocaltolocalend_   sdalocaltolocalend
 #define sdacreate1d_          sdacreate1d
 #define sdacreate2d_          sdacreate2d
 #define sdacreate3d_          sdacreate3d
@@ -25,8 +19,6 @@
 #define sdagetcorners_        sdagetcorners
 #define sdaarrayview_         sdaarrayview
 #endif
-
-EXTERN PetscErrorCode SDAArrayView(SDA,PetscScalar*,PetscViewer);
 
 EXTERN_C_BEGIN
 void PETSC_STDCALL sdaarrayview_(SDA *da,PetscScalar *values,PetscViewer *vin,PetscErrorCode *ierr)
@@ -56,23 +48,6 @@ void PETSC_STDCALL sdagetcorners_(SDA *da,PetscInt *x,PetscInt *y,PetscInt *z,Pe
   CHKFORTRANNULLINTEGER(n);
   CHKFORTRANNULLINTEGER(p);
   *ierr = SDAGetCorners(*da,x,y,z,m,n,p);
-}
-
-void PETSC_STDCALL sdadestroy_(SDA *sda,PetscErrorCode *ierr)
-{
-  *ierr = SDADestroy((SDA)PetscToPointer(sda));
-  PetscRmPointer(sda);
-}
-
-void PETSC_STDCALL sdalocaltolocalbegin_(SDA *sda,PetscScalar *g,InsertMode *mode,PetscScalar *l,
-                           PetscErrorCode *ierr)
-{
-  *ierr = SDALocalToLocalBegin((SDA)PetscToPointer(sda),g,*mode,l);
-}
-
-void PETSC_STDCALL sdalocaltolocalend_(SDA *sda,PetscScalar *g,InsertMode *mode,PetscScalar *l,
-                         PetscErrorCode *ierr){
-  *ierr = SDALocalToLocalEnd((SDA)PetscToPointer(sda),g,*mode,l);
 }
 
 void PETSC_STDCALL sdacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType

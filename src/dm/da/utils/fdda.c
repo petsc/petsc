@@ -50,7 +50,7 @@ static PetscErrorCode DASetBlockFills_Private(PetscInt *dfill,PetscInt w,PetscIn
 
 #undef __FUNCT__  
 #define __FUNCT__ "DASetBlockFills"
-/*@C
+/*@
     DASetBlockFills - Sets the fill pattern in each block for a multi-component problem
     of the matrix returned by DAGetMatrix().
 
@@ -99,7 +99,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt 
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetColoring" 
-/*@C
+/*@
     DAGetColoring - Gets the coloring required for computing the Jacobian via
     finite differences on a function defined using a stencil on the DA.
 

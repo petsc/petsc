@@ -48,7 +48,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreateLocalVector"
-/*@C
+/*@
    DACreateLocalVector - Creates a Seq PETSc vector that
    may be used with the DAXXX routines.
 
@@ -92,7 +92,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateLocalVector(DA da,Vec* g)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetLocalVector"
-/*@C
+/*@
    DAGetLocalVector - Gets a Seq PETSc vector that
    may be used with the DAXXX routines.
 
@@ -150,7 +150,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalVector(DA da,Vec* g)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DARestoreLocalVector"
-/*@C
+/*@
    DARestoreLocalVector - Returns a Seq PETSc vector that
      obtained from DAGetLocalVector(). Do not use with vector obtained via
      DACreateLocalVector().
@@ -195,7 +195,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreLocalVector(DA da,Vec* g)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetGlobalVector"
-/*@C
+/*@
    DAGetGlobalVector - Gets a MPI PETSc vector that
    may be used with the DAXXX routines.
 
@@ -255,7 +255,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalVector(DA da,Vec* g)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DARestoreGlobalVector"
-/*@C
+/*@
    DARestoreGlobalVector - Returns a Seq PETSc vector that
      obtained from DAGetGlobalVector(). Do not use with vector obtained via
      DACreateGlobalVector().

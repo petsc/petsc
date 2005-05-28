@@ -5,79 +5,42 @@
 #include "petscda.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define dasetblockfills_             DASETBLOCKFILLS
 #define dasetlocalfunction_          DASETLOCALFUNCTION
 #define dasetLocaladiforfunction_    DASETLOCALADIFORFUNCTION
 #define dasetlocaladiformffunction_  DASETLOCALADIFORMFFUNCTION
 #define dasetlocaljacobian_          DASETLOCALJACOBIAN
-#define dagetlocalinfo_              DAGETLOCALINFO
 #define dagetinterpolation_          DAGETINTERPOLATION
 #define dacreate1d_                  DACREATE1D
 #define dacreate3d_                  DACREATE3D
 #define dacreate2d_                  DACREATE2D
-#define dadestroy_                   DADESTROY
-#define dacreateglobalvector_        DACREATEGLOBALVECTOR
-#define dacreatenaturalvector_       DACREATENATURALVECTOR
-#define dacreatelocalvector_         DACREATELOCALVECTOR
-#define dagetlocalvector_            DAGETLOCALVECTOR
-#define dagetglobalvector_           DAGETGLOBALVECTOR
-#define darestorelocalvector_        DARESTORELOCALVECTOR
-#define darestoreglobalvector_       DARESTOREGLOBALVECTOR
 #define dagetscatter_                DAGETSCATTER
 #define dagetglobalindices_          DAGETGLOBALINDICES
 #define daview_                      DAVIEW
 #define dagetinfo_                   DAGETINFO
-#define dagetcoloring_               DAGETCOLORING
 #define dagetmatrix_                 DAGETMATRIX
-#define dagetislocaltoglobalmapping_ DAGETISLOCALTOGLOBALMAPPING
-#define dagetislocaltoglobalmappingblck_ DAGETISLOCALTOGLOBALMAPPINGBLCK
 #define daload_                      DALOAD
 #define dasetfieldname_              DASETFIELDNAME
 #define dagetfieldname_              DAGETFIELDNAME
-#define darefine_                    DAREFINE
-#define dagetao_                     DAGETAO
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define dasetblockfills_             dasetblockfills
-#define dagetlocalinfo_              dagetlocalinfo
-#define dagetlocalvector_            dagetlocalvector
-#define dagetglobalvector_           dagetglobalvector
-#define darestorelocalvector_        darestorelocalvector
-#define darestoreglobalvector_       darestoreglobalvector
 #define dagetinterpolation_          dagetinterpolation
 #define daload_                      daload
-#define dacreateglobalvector_        dacreateglobalvector
-#define dacreatenaturalvector_       dacreatenaturalvector
-#define dacreatelocalvector_         dacreatelocalvector
 #define daview_                      daview
 #define dacreate1d_                  dacreate1d
 #define dacreate3d_                  dacreate3d
 #define dacreate2d_                  dacreate2d
-#define dadestroy_                   dadestroy
 #define dagetscatter_                dagetscatter
 #define dagetglobalindices_          dagetglobalindices
 #define dagetinfo_                   dagetinfo
-#define dagetcoloring_               dagetcoloring
 #define dagetmatrix_                 dagetmatrix
-#define dagetislocaltoglobalmapping_ dagetislocaltoglobalmapping
-#define dagetislocaltoglobalmappingblck_ dagetislocaltoglobalmappingblck
 #define dasetfieldname_              dasetfieldname
 #define dagetfieldname_              dagetfieldname
-#define darefine_                    darefine
-#define dagetao_                     dagetao
 #define dasetlocalfunction_          dasetlocalfunction
 #define dasetlocaladiforfunction_       dasetlocaladiforfunction
 #define dasetlocaladiformffunction_       dasetlocaladiformffunction
 #define dasetlocaljacobian_          dasetlocaljacobian
 #endif
 
-
-
 EXTERN_C_BEGIN
-
-void PETSC_STDCALL dasetblockfills_(DA *da,PetscInt *dfill,PetscInt *ofill,PetscErrorCode *ierr)
-{
-  *ierr = DASetBlockFills(*da,dfill,ofill);
-}
 
 static void (PETSC_STDCALL *j1d)(DALocalInfo*,void*,void*,void*,PetscErrorCode*);
 static PetscErrorCode ourlj1d(DALocalInfo *info,PetscScalar *in,Mat m,void *ptr)
@@ -174,21 +137,6 @@ void PETSC_STDCALL dasetlocaljacobian_(DA *da,void (PETSC_STDCALL *jac)(DALocalI
   } else *ierr = 1;
 }
 
-void PETSC_STDCALL dagetlocalinfo_(DA *da,DALocalInfo *ao,PetscErrorCode *ierr)
-{
-  *ierr = DAGetLocalInfo(*da,ao);
-}
-
-void PETSC_STDCALL dagetao_(DA *da,AO *ao,PetscErrorCode *ierr)
-{
-  *ierr = DAGetAO(*da,ao);
-}
-
-void PETSC_STDCALL darefine_(DA *da,MPI_Comm *comm,DA *daref, PetscErrorCode *ierr)
-{
-  *ierr = DARefine(*da,(MPI_Comm)PetscToPointerComm(*comm),daref);
-}
-
 void PETSC_STDCALL dagetinterpolation_(DA *dac,DA *daf,Mat *A,Vec *scale,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(scale);
@@ -224,21 +172,6 @@ void PETSC_STDCALL daload_(PetscViewer *viewer,PetscInt *M,PetscInt *N,PetscInt 
   *ierr = DALoad(v,*M,*N,*P,da);
 }
 
-void PETSC_STDCALL dagetislocaltoglobalmapping_(DA *da,ISLocalToGlobalMapping *map,PetscErrorCode *ierr)
-{
-  *ierr = DAGetISLocalToGlobalMapping(*da,map);
-}
-
-void PETSC_STDCALL dagetislocaltoglobalmappingblck_(DA *da,ISLocalToGlobalMapping *map,PetscErrorCode *ierr)
-{
-  *ierr = DAGetISLocalToGlobalMappingBlck(*da,map);
-}
-
-void PETSC_STDCALL dagetcoloring_(DA *da,ISColoringType *ctype,ISColoring *coloring,PetscErrorCode *ierr PETSC_END_LEN(len))
-{
-  *ierr = DAGetColoring(*da,*ctype,coloring);
-}
-
 void PETSC_STDCALL dagetmatrix_(DA *da,CHAR mat_type PETSC_MIXED_LEN(len),Mat *J,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
@@ -261,52 +194,12 @@ void PETSC_STDCALL dagetglobalindices_(DA *da,PetscInt *n,PetscInt *indices,size
   *ia   = PetscIntAddressToFortran(indices,idx);
 }
 
-void PETSC_STDCALL dacreateglobalvector_(DA *da,Vec* g,PetscErrorCode *ierr)
-{
-  *ierr = DACreateGlobalVector(*da,g);
-}
-
-void PETSC_STDCALL dacreatenaturalvector_(DA *da,Vec* g,PetscErrorCode *ierr)
-{
-  *ierr = DACreateNaturalVector(*da,g);
-}
-
-void PETSC_STDCALL dacreatelocalvector_(DA *da,Vec* l,PetscErrorCode *ierr)
-{
-  *ierr = DACreateLocalVector(*da,l);
-}
-
-void PETSC_STDCALL dagetlocalvector_(DA *da,Vec* l,PetscErrorCode *ierr)
-{
-  *ierr = DAGetLocalVector(*da,l);
-}
-
-void PETSC_STDCALL dagetglobalvector_(DA *da,Vec* l,PetscErrorCode *ierr)
-{
-  *ierr = DAGetGlobalVector(*da,l);
-}
-
-void PETSC_STDCALL darestorelocalvector_(DA *da,Vec* l,PetscErrorCode *ierr)
-{
-  *ierr = DARestoreLocalVector(*da,l);
-}
-
-void PETSC_STDCALL darestoreglobalvector_(DA *da,Vec* g,PetscErrorCode *ierr)
-{
-  *ierr = DARestoreGlobalVector(*da,g);
-}
-
 void PETSC_STDCALL dagetscatter_(DA *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(ltog);
   CHKFORTRANNULLOBJECT(gtol);
   CHKFORTRANNULLOBJECT(ltol);
   *ierr = DAGetScatter(*da,ltog,gtol,ltol);
-}
-
-void PETSC_STDCALL dadestroy_(DA *da,PetscErrorCode *ierr)
-{
-  *ierr = DADestroy(*da);
 }
 
 void PETSC_STDCALL dacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType

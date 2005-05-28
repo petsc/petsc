@@ -227,7 +227,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,D
 
 #undef __FUNCT__  
 #define __FUNCT__ "SDADestroy"
-/*@C
+/*@
   SDADestroy - Destroys simple distributed array.
 
   Input parameters:
@@ -254,7 +254,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SDADestroy(SDA sda)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SDALocalToLocalBegin"
-/*@C
+/*@
    SDALocalToLocalBegin - Maps from a local representation (including 
        ghostpoints) to another where the ghostpoints in the second are
        set correctly. Must be followed by SDALocalToLocalEnd().
@@ -288,7 +288,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SDALocalToLocalBegin(SDA sda,PetscScalar *g,Ins
 
 #undef __FUNCT__  
 #define __FUNCT__ "SDALocalToLocalEnd"
-/*@C
+/*@
    SDALocalToLocalEnd - Maps from a local representation (including 
        ghostpoints) to another where the ghostpoints in the second are
        set correctly. Must be preceeded by SDALocalToLocalBegin().

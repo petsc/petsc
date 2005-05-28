@@ -838,7 +838,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAPrintHelp(DA da)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DARefine"
-/*@C
+/*@
    DARefine - Creates a new distributed array that is a refinement of a given
    distributed array.
 

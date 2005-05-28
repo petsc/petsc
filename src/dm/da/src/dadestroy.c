@@ -12,7 +12,7 @@ PetscEvent  DA_GlobalToLocal = 0, DA_LocalToGlobal = 0, DA_LocalADFunction = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "DADestroy"
-/*@C
+/*@
    DADestroy - Destroys a distributed array.
 
    Collective on DA
@@ -147,7 +147,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetISLocalToGlobalMapping"
-/*@C
+/*@
    DAGetISLocalToGlobalMapping - Accesses the local-to-global mapping in a DA.
 
    Not Collective
@@ -183,7 +183,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetISLocalToGlobalMapping(DA da,ISLocalToGlob
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetISLocalToGlobalMappingBlck"
-/*@C
+/*@
    DAGetISLocalToGlobalMappingBlck - Accesses the local-to-global mapping in a DA.
 
    Not Collective

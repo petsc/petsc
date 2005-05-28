@@ -27,7 +27,6 @@ EXTERN_C_END
 
 #define PetscToPointer(a)     (*(long *)(a))
 #define PetscFromPointer(a)        (long)(a)
-#define PetscRmPointer(a)
 
 /*  ----------------------------------------------------------------------*/
 #define PetscToPointerComm(a)        MPI_Comm_f2c(*(MPI_Fint *)(&a))
