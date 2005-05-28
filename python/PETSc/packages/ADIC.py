@@ -20,26 +20,29 @@ class Configure(config.base.Configure):
     help.addArgument('ADIC', '-with-adic-path=<path>', nargs.Arg(None, None, 'Full path of adic executable'))    
     return
 
-  def generateGuesses(self):
-    '''Generate list of possible locations of ADIC'''
+  def generateADIC(self):
+    '''Generate location of ADIC'''
     if 'with-adic-path' in self.framework.argDB:
       self.adiC = os.path.abspath(os.path.join(self.framework.argDB['with-adic-path'],'adiC'))
-      yield os.path.abspath(self.framework.argDB['with-adic-path'])
+      return os.path.abspath(self.framework.argDB['with-adic-path'])
       raise RuntimeError('You set a value for --with-adic-path, but '+self.framework.argDB['with-adic-path']+' cannot be used\n')
     if self.getExecutable('adiC', getFullPath = 1):
       # follow any symbolic link of this path
       self.adiC = os.path.realpath(self.adiC)
-      yield os.path.dirname(os.path.dirname(self.adiC))
+      return os.path.dirname(os.path.dirname(self.adiC))
+    return ''
     return
 
   def configureLibrary(self):
-    '''Find an ADIC installation and check if it can work with PETSc'''
-    for adic in self.generateGuesses():
-      self.addMakeMacro('ADIC_DEFINES', '')
+    '''Set adic make variables'''
+    self.addMakeMacro('ADIC_DEFINES', '')
+    self.addDefine('HAVE_ADIC', 1)
+    if self.generateADIC():
       self.addMakeMacro('ADIC_CC',self.adiC+' -a -d gradient')
-      self.addDefine('HAVE_ADIC', 1)
       self.foundADIC = 1
-      return
+    else: 
+      self.addMakeMacro('ADIC_CC','')
+      self.foundADIC = 0
     return
 
   def configure(self):

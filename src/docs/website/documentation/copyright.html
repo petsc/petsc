@@ -47,7 +47,14 @@
     </ul>
     </td>
     <!--##begin-->
-    <td width="75%" valign="top"><p align="center"><font size="5">COPYRIGHT NOTIFICATION</font>
+ 
+    <td width="75%" valign="top">
+   If you modify PETSc source code and wish to distributed only binary versions of your changed code
+    (which you can) you <strong>must</strong> compile PETSc with the additional flag PETSC_AVOID_GNUCOPYRIGHT_CODE
+    (add it to bmake/${PETSC_ARCH}/petscconf.h) to prevent violating the GNU copyright which covers a
+    tiny percentage of the code in the PETSc distribution.</p>
+
+   <p align="center"><font size="5">COPYRIGHT NOTIFICATION</font>
     </p>
     <p align="center"><font size="4">(C) COPYRIGHT 1995-2004 UNIVERSITY OF CHICAGO </font></p>
     <p>This program discloses material protectable under copyright laws of the United States.
