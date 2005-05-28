@@ -10,7 +10,7 @@ PetscCookie PETSCVEC_DLLEXPORT IS_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISIdentity" 
-/*@C
+/*@
    ISIdentity - Determines whether index set is the identity mapping.
 
    Collective on IS
@@ -70,7 +70,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSetIdentity(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISPermutation" 
-/*@C
+/*@
    ISPermutation - PETSC_TRUE or PETSC_FALSE depending on whether the 
    index set has been declared to be a permutation.
 
@@ -125,7 +125,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSetPermutation(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDestroy" 
-/*@C
+/*@
    ISDestroy - Destroys an index set.
 
    Collective on IS
@@ -150,7 +150,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDestroy(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISInvertPermutation" 
-/*@C
+/*@
    ISInvertPermutation - Creates a new permutation that is the inverse of 
                          a given permutation.
 
@@ -416,7 +416,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSort(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISSorted" 
-/*@C
+/*@
    ISSorted - Checks the indices to determine whether they have been sorted.
 
    Collective on IS
@@ -449,7 +449,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSorted(IS is,PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDuplicate" 
-/*@C
+/*@
    ISDuplicate - Creates a duplicate copy of an index set.
 
    Collective on IS

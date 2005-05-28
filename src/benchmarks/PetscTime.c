@@ -1,7 +1,7 @@
 
 #include "petsc.h"
 #include "petscfix.h"
-#include "src/sys/src/plog/ptime.h"
+#include "src/sys/plog/ptime.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

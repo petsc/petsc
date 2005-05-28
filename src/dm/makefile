@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = ao da usg ftn-custom
+DIRS     = ao da usg
 LOCDIR   = src/dm/
 MANSEC   = DA
 

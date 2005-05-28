@@ -6,7 +6,7 @@ CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =	 
-LOCDIR          = cumtn2 
+LOCDIR          = src/contrib/keyes/
 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

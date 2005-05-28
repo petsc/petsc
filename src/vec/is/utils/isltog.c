@@ -119,7 +119,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateIS(IS is,ISLocalTo
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISLocalToGlobalMappingCreate"
-/*@C
+/*@
     ISLocalToGlobalMappingCreate - Creates a mapping between a local (0 to n)
     ordering and a global parallel ordering.
 
@@ -210,7 +210,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateNC(MPI_Comm cm,Pet
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISLocalToGlobalMappingBlock"
-/*@C
+/*@
     ISLocalToGlobalMappingBlock - Creates a blocked index version of an 
        ISLocalToGlobalMapping that is appropriate for MatSetLocalToGlobalMappingBlock()
        and VecSetLocalToGlobalMappingBlock().

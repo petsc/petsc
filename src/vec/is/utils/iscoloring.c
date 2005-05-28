@@ -5,7 +5,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISColoringDestroy"
-/*@C
+/*@
    ISColoringDestroy - Destroys a coloring context.
 
    Collective on ISColoring
@@ -270,7 +270,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt n,cons
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISPartitioningToNumbering"
-/*@C
+/*@
     ISPartitioningToNumbering - Takes an ISPartitioning and on each processor
     generates an IS that contains a new global node number for each index based
     on the partitioing.
@@ -349,7 +349,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningToNumbering(IS part,IS *is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISPartitioningCount"
-/*@C
+/*@
     ISPartitioningCount - Takes a ISPartitioning and determines the number of 
     resulting elements on each processor
 
@@ -415,7 +415,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS part,PetscInt count[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISAllGather"
-/*@C
+/*@
     ISAllGather - Given an index set (IS) on each processor, generates a large 
     index set (same on each processor) by concatenating together each
     processors index set.

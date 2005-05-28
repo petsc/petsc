@@ -106,7 +106,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideGetInfo(IS is,PetscInt *first,PetscInt
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISStride" 
-/*@C
+/*@
    ISStride - Determines if an IS is based on a stride.
 
    Not Collective
@@ -280,7 +280,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISCreateStride" 
-/*@C
+/*@
    ISCreateStride - Creates a data structure for an index set 
    containing a list of evenly spaced integers.
 

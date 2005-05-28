@@ -101,8 +101,8 @@ def processDir(arg,dirname,names):
   if newls:
     outdir = os.path.join(dirname,'ftn-auto')
     PrepFtnDir(outdir)
-    options = ['-dir '+outdir, '-mnative', '-ansi', '-nomsgs',
-               '-anyname', '-mapptr', '-mpi', '-ferr', '-ptrprefix Petsc', '-ptr64 PETSC_USE_POINTER_CONVERSION',
+    options = ['-dir '+outdir, '-mnative', '-ansi', '-nomsgs', '-noprofile', '-anyname', '-mapptr',
+               '-mpi', '-mpi2', '-ferr', '-ptrprefix Petsc', '-ptr64 PETSC_USE_POINTER_CONVERSION',
                '-fcaps PETSC_HAVE_FORTRAN_CAPS', '-fuscore PETSC_HAVE_FORTRAN_UNDERSCORE']
     (status,output) = commands.getstatusoutput('cd '+dirname+';'+bfort+' '+' '.join(options+newls))
     if status:

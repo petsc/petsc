@@ -5,7 +5,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISEqual"
-/*@C
+/*@
    ISEqual  - Compares if two index sets have the same set of indices.
 
    Collective on IS
