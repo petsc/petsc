@@ -93,6 +93,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
      with either the task_info() command or compiler corrupting the 
      stack.
   */
+  kern_return_t          kerr;
   task_basic_info_data_t ti1,ti2;
 #elif defined(PETSC_HAVE_GETRUSAGE)
   static struct rusage   temp;
@@ -125,7 +126,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   fclose(file);
 
 #elif defined(PETSC_HAVE_TASK_INFO)
-  if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&ti,&count) != KERN_SUCCESS) SETERRQ(PETSC_ERR_LIB,"Mach system call failed");
+  if ((kerr = task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&ti,&count)) != KERN_SUCCESS) SETERRQ1(PETSC_ERR_LIB,"Mach system call failed: kern_return_t ",kerr);
   *mem = (PetscLogDouble) ti.resident_size;
   
 #elif defined(PETSC_HAVE_GETRUSAGE)
