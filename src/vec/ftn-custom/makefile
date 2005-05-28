@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = zvec.c zis.c
+SOURCEC  = zis.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = zvec.o zis.o
+OBJSC    = zis.o
 OBJSF    = 
 LIBBASE  = libpetscvec
 MANSEC   = Vec
