@@ -240,12 +240,11 @@ getmpirun:
 	epstopdf $< -o=$*.pdf
 
 .c.o .cpp.o .cc.o .C.o .ad.o: 
-	@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
+	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir;\
         fi
-	-@complex=`echo ${PETSCFLAGS} |grep PETSC_USE_COMPLEX`; \
-        if [ "${PETSC_HAVE_ADIC}" = "" ]; then \
+	-@if [ "${PETSC_HAVE_ADIC}" = "" ]; then \
           egrep PETSC_HAVE_ADIC ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h > /dev/null;\
           if [ "$$?" = 0 ]; then \
             haveadic=1; \
@@ -255,20 +254,28 @@ getmpirun:
         else \
           haveadic=1; \
         fi; \
-	if [ "$${haveadic}" = "1" -a  "foo$${complex}" = "foo" ]; then \
+	if [ "$${haveadic}" = "1" ]; then \
 	   egrep "Process adiC" $< > /dev/null ; \
               if [ "$$?" = 0 ]; then \
-                c=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
-                r=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
-                echo Running adiC on function $${r};\
-                ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
-	        echo '#include "petscda.h"' > $*.ad.c ; \
-	        echo '#include "petscsnes.h"' >> $*.ad.c ;\
-	        echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\
-                echo ${ADIC_CC}  -i ${PETSC_DIR}/bmake/adic.init $<.tmp; \
-	        ${ADIC_CC} -t -i ${PETSC_DIR}/bmake/adic.init  $<.tmp ; \
-	        cat $<.ad.tmp  >> $*.ad.c ;\
-	        ${ADIC_CC} -t -h -i ${PETSC_DIR}/bmake/adicmf.init   $<.tmp ; \
+                if [ ! -f $<.tmp1 ]; then \
+                  c=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
+                  r=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
+                  echo Running adiC on function $${r};\
+                  ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
+                  ${CP} $<.tmp1 $<.tmp2;\
+	          echo '#include "petscda.h"' > $*.ad.c ; \
+	          echo '#include "petscsnes.h"' >> $*.ad.c ;\
+	          echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\
+                  if [ "foo${ADIC_CC}" != "foo" ]; then \
+                    echo ${ADIC_CC}  -i ${PETSC_DIR}/bmake/adic.init $<.tmp1; \
+	            ${ADIC_CC} -t -i ${PETSC_DIR}/bmake/adic.init  $<.tmp1 ; \
+	            ${ADIC_CC} -t -h -i ${PETSC_DIR}/bmake/adicmf.init   $<.tmp2 ; \
+                  else \
+                    echo "You need to run the ADIC server on $<.tmp1 and $<.tmp2, then rerun make";\
+                    exit;\
+                  fi;\
+                fi;\
+	        cat $<.ad.tmp1  >> $*.ad.c ;\
 	        egrep "main\(" $< > /dev/null ; \
                 if [ "$$?" = 0 ]; then \
 		      echo "#include \"${PETSC_DIR}/src/sys/src/adic/Gradient/ad_grad.c\"" >> $*.ad.c ;\
@@ -277,7 +284,7 @@ getmpirun:
                 echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
                 echo "#define ad_GRAD_MAX 1"  >> $*.ad.c ;\
                 echo "typedef struct {double value;double  grad[1];} mfDERIV_TYPE;"  >> $*.ad.c ;\
-	        sed -e "s/DERIV_TYPE/mfDERIV_TYPE/g" $<.ad.tmp >> $*.ad.c ;\
+	        sed -e "s/DERIV_TYPE/mfDERIV_TYPE/g" $<.ad.tmp2 >> $*.ad.c ;\
 	        echo "#include \"$<\"" >> $*.ad.c ;\
 		${RM} ad_deriv.h ; \
 	        echo ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\

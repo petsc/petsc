@@ -27,7 +27,7 @@ from string import *
 from parseargs import *
 
 #
-#  Copies structs from filename to filename.tmp
+#  Copies structs from filename to filename.tmp1
     
 def setupfunctionC(filename,g = None):
         import re
@@ -41,7 +41,7 @@ def setupfunctionC(filename,g = None):
         regendif    = re.compile('#endif')
 	f = open(filename)
 	if not g:
-		newfile = filename + ".tmp"
+		newfile = filename + ".tmp1"
 		g = open(newfile,"w")
 		g.write("#include <math.h>\n")
 		g.write("#define PetscMin(a,b) (((a)<(b)) ?  (a) : (b))\n")
@@ -105,7 +105,7 @@ def setupfunctionC(filename,g = None):
         return g
 
 #
-#  Appends function functionname from filename to filename.tmp
+#  Appends function functionname from filename to filename.tmp1
 
 def getfunctionC(g,filename,functionname):
         import re
@@ -113,7 +113,7 @@ def getfunctionC(g,filename,functionname):
         g.write("/* Function "+functionname+"*/\n\n")
 	line = f.readline()
 	while line:
-		for i in split('int double PetscReal PetscScalar PassiveReal PassiveScalar'," "):
+		for i in split('int double PetscReal PetscScalar PassiveReal PassiveScalar PetscErrorCode'," "):
                   reg = re.compile('^[ ]*'+i+'[ ]*'+functionname+'[ ]*\(')
                   fl = reg.search(line)
                   if fl:
