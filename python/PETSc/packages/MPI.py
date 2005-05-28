@@ -105,7 +105,7 @@ class Configure(PETSc.package.Package):
     '''Check that the libraries for MPI are shared libraries'''
     self.executeTest(self.configureMPIRUN)
     if not self.setCompilers.staticLibraries and self.framework.argDB['with-mpi-shared']:
-      if self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
+      if config.setCompilers.Configure.isDarwin():
         # on Apple MPI libraries do not need to be shared to make shared PETSc libraries, nor the python bindings
         pass
       else:

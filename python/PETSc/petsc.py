@@ -301,7 +301,7 @@ class Configure(config.base.Configure):
 
   def checkSharedLibrary(self, libraries):
     '''Check that the libraries for PETSc are shared libraries'''
-    if self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
+    if config.setCompilers.Configure.isDarwin():
       # on Apple if you list the MPI libraries again you will generate multiply defined errors 
       # since they are already copied into the PETSc dynamic library.
       self.setOtherLibs([])
