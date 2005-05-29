@@ -411,6 +411,17 @@ for the installed TAU and PDT packages. For eg:<br>
 -tau_include_dir=/homes/petsc/soft/linux-rh73/tau-2.11.18/include
 -tau_lib_dir=/homes/petsc/soft/linux-rh73/tau-2.11.18/i386_linux/lib"</span><br>
       </p>
+      <h3><a name="PythonBindings"><font color="#551a8b">Installing the Python Bindings:</font></a></h3>
+            <p>The first step to installing the Python bindings is to add the following 3 options to your
+              configuration:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: rgb(255, 0, 0);">./config/configure --with-shared --with-dynamic
+              --with-python</span><br>
+            which will download the source for the bindings into <span style="color: rgb(0, 255, 0);">src/python</span>
+            and make sure that PETSc can build dynamic libraries for the Python modules. After building PETSc, we can
+            build the bindings using:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: rgb(255, 0, 0);">make python</span><br>
+            which will create python modules stored in <span style="color: rgb(0, 255, 0);">lib/PETSC_ARCH/PETSc</span>.
+            </p>
       <p><font color="#551a8b"><b><a
  href="installation.html#Docs:%20%20Installation">Return
 to Installation Instructions</a>&nbsp;&nbsp;&nbsp; <br>
