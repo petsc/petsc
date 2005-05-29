@@ -97,7 +97,7 @@ PetscFList KSPList = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetNormType"
-/*@C
+/*@
    KSPSetNormType - Sets the norm that is used for convergence testing.
 
    Collective on KSP
@@ -252,7 +252,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,Ma
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate"
-/*@C
+/*@
    KSPCreate - Creates the default KSP context.
 
    Collective on MPI_Comm
@@ -401,7 +401,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp, KSPType type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPRegisterDestroy"
-/*@C
+/*@
    KSPRegisterDestroy - Frees the list of KSP methods that were
    registered by KSPRegisterDynamic().
 
@@ -684,7 +684,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRegister(const char sname[],const char path
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetNullSpace"
-/*@C
+/*@
   KSPSetNullSpace - Sets the null space of the operator
 
   Collective on KSP
@@ -712,7 +712,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetNullSpace"
-/*@C
+/*@
   KSPGetNullSpace - Gets the null space of the operator
 
   Collective on KSP

@@ -739,7 +739,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESC
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGMRESSetRestart"
-/*@C
+/*@
    KSPGMRESSetRestart - Sets number of iterations at which GMRES, FGMRES and LGMRES restarts.
 
    Collective on KSP

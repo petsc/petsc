@@ -3,13 +3,7 @@
 #include "petscksp.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define kspsetnullspace_           KSPSETNULLSPACE
-#define kspgetnullspace_           KSPGETNULLSPACE
-#define kspgetresidualnorm_        KSPGETRESIDUALNORM
-#define kspgetconvergedreason_     KSPGETCONVERGEDREASON
 #define kspfgmressetmodifypc_      KSPFGMRESSETMODIFYPC
-#define kspfgmresmodifypcksp_      KSPFGMRESMODIFYPCKSP
-#define kspfgmresmodifypcnochange_ KSPFGMRESMODIFYPCNOCHANGE
 #define kspdefaultconverged_       KSPDEFAULTCONVERGED
 #define kspskipconverged_          KSPSKIPCONVERGED
 #define kspgmreskrylovmonitor_     KSPGMRESKRYLOVMONITOR
@@ -19,35 +13,20 @@
 #define ksplgmonitor_              KSPLGMONITOR
 #define ksplgtruemonitor_          KSPLGTRUEMONITOR
 #define kspsingularvaluemonitor_   KSPSINGULARVALUEMONITOR
-#define kspregisterdestroy_        KSPREGISTERDESTROY
-#define kspdestroy_                KSPDESTROY
-#define ksplgmonitordestroy_       KSPLGMONITORDESTROY
 #define ksplgmonitorcreate_        KSPLGMONITORCREATE
-#define kspgetrhs_                 KSPGETRHS
-#define kspgetsolution_            KSPGETSOLUTION
-#define kspgetpc_                  KSPGETPC
 #define kspsetmonitor_             KSPSETMONITOR
 #define kspsetconvergencetest_     KSPSETCONVERGENCETEST
-#define kspcreate_                 KSPCREATE
 #define kspsetoptionsprefix_       KSPSETOPTIONSPREFIX
 #define kspappendoptionsprefix_    KSPAPPENDOPTIONSPREFIX
 #define kspgettype_                KSPGETTYPE
-#define kspgetpreconditionerside_  KSPGETPRECONDITIONERSIDE
-#define kspbuildsolution_          KSPBUILDSOLUTION 
-#define kspbuildresidual_          KSPBUILDRESIDUAL
 #define kspsettype_                KSPSETTYPE           
 #define kspgetresidualhistory_     KSPGETRESIDUALHISTORY
 #define kspgetoptionsprefix_       KSPGETOPTIONSPREFIX
 #define kspview_                   KSPVIEW
-#define kspgmressetrestart_        KSPGMRESSETRESTART
-#define kspsetnormtype_            KSPSETNORMTYPE
+#define kspfgmresmodifypcksp_      KSPFGMRESMODIFYPCKSP
+#define kspfgmresmodifypcnochange_ KSPFGMRESMODIFYPCNOCHANGE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define kspsetnullspace_           kspsetnullspace
-#define kspgetnullspace_           kspgetnullspace
-#define kspgetconvergedreason_     kspgetconvergedreason
 #define kspfgmressetmodifypc_      kspfgmressetmodifypc
-#define kspfgmresmodifypcksp_      kspfgmresmodifypcksp
-#define kspfgmresmodifypcnochange_ kspfgmresmodifypcnochange
 #define kspdefaultconverged_       kspdefaultconverged
 #define kspskipconverged_          kspskipconverged
 #define kspsingularvaluemonitor_   kspsingularvaluemonitor
@@ -59,27 +38,16 @@
 #define ksplgtruemonitor_          ksplgtruemonitor
 #define kspgetresidualhistory_     kspgetresidualhistory
 #define kspsettype_                kspsettype
-#define kspregisterdestroy_        kspregisterdestroy
-#define kspdestroy_                kspdestroy
-#define ksplgmonitordestroy_       ksplgmonitordestroy
 #define ksplgmonitorcreate_        ksplgmonitorcreate
-#define kspgetrhs_                 kspgetrhs
-#define kspgetsolution_            kspgetsolution
-#define kspgetpc_                  kspgetpc
 #define kspsetmonitor_             kspsetmonitor
 #define kspsetconvergencetest_     kspsetconvergencetest
-#define kspcreate_                 kspcreate
 #define kspsetoptionsprefix_       kspsetoptionsprefix
 #define kspappendoptionsprefix_    kspappendoptionsprefix
 #define kspgettype_                kspgettype
-#define kspgetpreconditionerside_  kspgetpreconditionerside
-#define kspbuildsolution_          kspbuildsolution
-#define kspbuildresidual_          kspbuildresidual
 #define kspgetoptionsprefix_       kspgetoptionsprefix
 #define kspview_                   kspview
-#define kspgetresidualnorm_        kspgetresidualnorm
-#define kspgmressetrestart_        kspgmressetrestart
-#define kspsetnormtype_            kspsetnormtype
+#define kspfgmresmodifypcksp_      kspfgmresmodifypcksp
+#define kspfgmresmodifypcnochange_ kspfgmresmodifypcnochange
 #endif
 
 EXTERN_C_BEGIN
@@ -127,32 +95,6 @@ static PetscErrorCode ourmoddestroy(void* ctx)
 }
 
 EXTERN_C_BEGIN
-
-void PETSC_STDCALL kspgmressetrestart_(KSP *ksp,PetscInt *max_k, PetscErrorCode *ierr)
-{
-  *ierr = KSPGMRESSetRestart(*ksp,*max_k);
-}
-
-void PETSC_STDCALL kspgetresidualnorm_(KSP *ksp,PetscReal *rnorm,PetscErrorCode *ierr)
-{
-  *ierr = KSPGetResidualNorm(*ksp,rnorm);
-}
-
-void PETSC_STDCALL kspgetconvergedreason_(KSP *ksp,KSPConvergedReason *reason,PetscErrorCode *ierr)
-{
-  *ierr = KSPGetConvergedReason(*ksp,reason);
-}
-
-/* function */
-void PETSC_STDCALL kspsetnullspace_(KSP *ksp,MatNullSpace *sp, PetscErrorCode *ierr)
-{
-  *ierr = KSPSetNullSpace(*ksp,*sp);
-}
-
-void PETSC_STDCALL kspgetnullspace_(KSP *ksp,MatNullSpace *sp, PetscErrorCode *ierr)
-{
-  *ierr = KSPGetNullSpace(*ksp,sp);
-}
 
 void PETSC_STDCALL kspview_(KSP *ksp,PetscViewer *viewer, PetscErrorCode *ierr)
 {
@@ -204,10 +146,6 @@ void PETSC_STDCALL kspgettype_(KSP *ksp,CHAR name PETSC_MIXED_LEN(len),PetscErro
 
 }
 
-void PETSC_STDCALL kspgetpreconditionerside_(KSP *ksp,PCSide *side,PetscErrorCode *ierr){
-*ierr = KSPGetPreconditionerSide(*ksp,side);
-}
-
 void PETSC_STDCALL kspsetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),
                                         PetscErrorCode *ierr PETSC_END_LEN(len))
 {
@@ -226,10 +164,6 @@ void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(
   FIXCHAR(prefix,len,t);
   *ierr = KSPAppendOptionsPrefix(*ksp,t);
   FREECHAR(prefix,t);
-}
-
-void PETSC_STDCALL kspcreate_(MPI_Comm *comm,KSP *ksp,PetscErrorCode *ierr){
-  *ierr = KSPCreate((MPI_Comm)PetscToPointerComm(*comm),ksp);
 }
 
 void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
@@ -313,21 +247,6 @@ void PETSC_STDCALL kspsetmonitor_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,Pe
   }
 }
 
-void PETSC_STDCALL kspgetpc_(KSP *ksp,PC *B,PetscErrorCode *ierr)
-{
-  *ierr = KSPGetPC(*ksp,B);
-}
-
-void PETSC_STDCALL kspgetsolution_(KSP *ksp,Vec *v,PetscErrorCode *ierr)
-{
-  *ierr = KSPGetSolution(*ksp,v);
-}
-
-void PETSC_STDCALL kspgetrhs_(KSP *ksp,Vec *r,PetscErrorCode *ierr)
-{
-  *ierr = KSPGetRhs(*ksp,r);
-}
-
 /*
    Possible bleeds memory but cannot be helped.
 */
@@ -340,31 +259,6 @@ void PETSC_STDCALL ksplgmonitorcreate_(CHAR host PETSC_MIXED_LEN(len1),
   FIXCHAR(host,len1,t1);
   FIXCHAR(label,len2,t2);
   *ierr = KSPLGMonitorCreate(t1,t2,*x,*y,*m,*n,ctx);
-}
-
-void PETSC_STDCALL ksplgmonitordestroy_(PetscDrawLG *ctx,PetscErrorCode *ierr)
-{
-  *ierr = KSPLGMonitorDestroy(*ctx);
-}
-
-void PETSC_STDCALL kspdestroy_(KSP *ksp,PetscErrorCode *ierr)
-{
-  *ierr = KSPDestroy(*ksp);
-}
-
-void PETSC_STDCALL kspregisterdestroy_(PetscErrorCode* ierr)
-{
-  *ierr = KSPRegisterDestroy();
-}
-
-void PETSC_STDCALL kspbuildsolution_(KSP *ctx,Vec *v,Vec *V,PetscErrorCode *ierr)
-{
-  *ierr = KSPBuildSolution(*ctx,*v,V);
-}
-
-void PETSC_STDCALL kspbuildresidual_(KSP *ctx,Vec *t,Vec *v,Vec *V,PetscErrorCode *ierr)
-{
-  *ierr = KSPBuildResidual(*ctx,*t,*v,V);
 }
 
 void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
@@ -382,15 +276,8 @@ void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len
 #endif
 }
 
-void PETSC_STDCALL kspfgmresmodifypcnochange_(KSP *ksp,PetscInt *total_its,PetscInt *loc_its,PetscReal *res_norm,void* dummy,PetscErrorCode *ierr)
-{
-  *ierr = KSPFGMRESModifyPCNoChange(*ksp,*total_its,*loc_its,*res_norm,dummy);
-}
-
-void PETSC_STDCALL kspfgmresmodifypcksp_(KSP *ksp,PetscInt *total_its,PetscInt *loc_its,PetscReal *res_norm,void*dummy,PetscErrorCode *ierr)
-{
-  *ierr = KSPFGMRESModifyPCKSP(*ksp,*total_its,*loc_its,*res_norm,dummy);
-}
+extern void PETSC_STDCALL kspfgmresmodifypcnochange_(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*);
+extern void PETSC_STDCALL kspfgmresmodifypcksp_(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*);
 
 void PETSC_STDCALL kspfgmressetmodifypc_(KSP *ksp,void (PETSC_STDCALL *fcn)(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*),void* ctx,void (PETSC_STDCALL *d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
@@ -407,11 +294,6 @@ void PETSC_STDCALL kspfgmressetmodifypc_(KSP *ksp,void (PETSC_STDCALL *fcn)(KSP*
       *ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,ctx,ourmoddestroy);
     }
   }
-}
-
-void PETSC_STDCALL kspsetnormtype_(KSP *ksp,KSPNormType *type,PetscErrorCode *ierr)
-{
-  *ierr = KSPSetNormType(*ksp,*type);
 }
 
 EXTERN_C_END

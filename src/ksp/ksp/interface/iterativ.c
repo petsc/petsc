@@ -31,7 +31,7 @@ PetscErrorCode KSPDefaultFreeWork(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetResidualNorm"
-/*@C
+/*@
    KSPGetResidualNorm - Gets the last (approximate preconditioned)
    residual norm that has been computed.
  
@@ -601,7 +601,7 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetConvergedReason"
-/*@C
+/*@
    KSPGetConvergedReason - Gets the reason the KSP iteration was stopped.
 
    Not Collective

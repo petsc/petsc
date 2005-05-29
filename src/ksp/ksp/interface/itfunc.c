@@ -565,7 +565,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy"
-/*@C
+/*@
    KSPDestroy - Destroys KSP context.
 
    Collective on KSP
@@ -652,7 +652,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPreconditionerSide(KSP ksp,PCSide side)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetPreconditionerSide"
-/*@C
+/*@
     KSPGetPreconditionerSide - Gets the preconditioning side.
 
     Not Collective
@@ -1022,7 +1022,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeEigenvalues(KSP ksp,PetscTruth fl
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetRhs"
-/*@C
+/*@
    KSPGetRhs - Gets the right-hand-side vector for the linear system to
    be solved.
 
@@ -1050,7 +1050,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetRhs(KSP ksp,Vec *r)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetSolution" 
-/*@C
+/*@
    KSPGetSolution - Gets the location of the solution for the 
    linear system to be solved.  Note that this may not be where the solution
    is stored during the iterative process; see KSPBuildSolution().
@@ -1116,7 +1116,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPC(KSP ksp,PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetPC"
-/*@C
+/*@
    KSPGetPC - Returns a pointer to the preconditioner context
    set with KSPSetPC().
 
@@ -1435,7 +1435,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergenceContext(KSP ksp,void **ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPBuildSolution"
-/*@C
+/*@
    KSPBuildSolution - Builds the approximate solution in a vector provided.
    This routine is NOT commonly needed (see KSPSolve()).
 
@@ -1485,7 +1485,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildSolution(KSP ksp,Vec v,Vec *V)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPBuildResidual"
-/*@C
+/*@
    KSPBuildResidual - Builds the residual in a vector provided.
 
    Collective on KSP

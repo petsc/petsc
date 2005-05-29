@@ -75,7 +75,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMonitor(KSP ksp,PetscInt n,PetscReal rnor
  
 #undef __FUNCT__  
 #define __FUNCT__ "KSPLGMonitorDestroy"
-/*@C
+/*@
    KSPLGMonitorDestroy - Destroys a line graph context that was created 
    with KSPLGMonitorCreate().
 

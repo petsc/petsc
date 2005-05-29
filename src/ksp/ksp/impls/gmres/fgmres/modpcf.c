@@ -57,7 +57,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFGMRESModifyPCNoChange"
-/*@C
+/*@
 
   KSPFGMRESModifyPCNoChange - this is the default used by fgmres - it doesn't change the preconditioner. 
 
@@ -87,7 +87,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFGMRESModifyPCNoChange(KSP ksp,PetscInt tot
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFGMRESModifyPCKSP"
-/*@C
+/*@
 
  KSPFGMRESModifyPCKSP - modifies the attributes of the
      GMRES preconditioner.  It serves as an example (not as something 
