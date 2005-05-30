@@ -5,7 +5,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCMGDefaultResidual"
-/*@C
+/*@
    PCMGDefaultResidual - Default routine to calculate the residual.
 
    Collective on Mat and Vec
@@ -39,7 +39,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MGGetCoarseSolve"
-/*@C
+/*@
    PCMGGetCoarseSolve - Gets the solver context to be used on the coarse grid.
 
    Not Collective
@@ -183,7 +183,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MGGetSmoother"
-/*@C
+/*@
    PCMGGetSmoother - Gets the KSP context to be used as smoother for 
    both pre- and post-smoothing.  Call both PCMGGetSmootherUp() and 
    PCMGGetSmootherDown() to use different functions for pre- and 
@@ -215,7 +215,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MGGetSmootherUp"
-/*@C
+/*@
    PCMGGetSmootherUp - Gets the KSP context to be used as smoother after 
    coarse grid correction (post-smoother). 
 
@@ -262,7 +262,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCMGGetSmootherDown"
-/*@C
+/*@
    PCMGGetSmootherDown - Gets the KSP context to be used as smoother before 
    coarse grid correction (pre-smoother). 
 

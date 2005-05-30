@@ -11,7 +11,7 @@ PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNullSpaceCreate"
-/*@C
+/*@
    MatNullSpaceCreate - Creates a data structure used to project vectors 
    out of null spaces.
 

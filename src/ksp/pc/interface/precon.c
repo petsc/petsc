@@ -55,7 +55,7 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char* type[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy"
-/*@C
+/*@
    PCDestroy - Destroys PC context that was created with PCCreate().
 
    Collective on PC
@@ -261,7 +261,7 @@ static PetscErrorCode PCPublish_Petsc(PetscObject obj)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate"
-/*@C
+/*@
    PCCreate - Creates a preconditioner context.
 
    Collective on MPI_Comm
@@ -1060,7 +1060,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStr
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCGetFactoredMatrix"
-/*@C 
+/*@
    PCGetFactoredMatrix - Gets the factored matrix from the
    preconditioner context.  This routine is valid only for the LU, 
    incomplete LU, Cholesky, and incomplete Cholesky methods.

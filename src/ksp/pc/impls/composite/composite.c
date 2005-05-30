@@ -318,7 +318,7 @@ EXTERN_C_END
 /* -------------------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeSetType"
-/*@C
+/*@
    PCCompositeSetType - Sets the type of composite preconditioner.
    
    Collective on PC
@@ -349,7 +349,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetType(PC pc,PCCompositeType type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeSpecialSetAlpha"
-/*@C
+/*@
    PCCompositeSpecialSetAlpha - Sets alpha for the special composite preconditioner
      for alphaI + R + S
    
@@ -406,7 +406,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeAddPC(PC pc,PCType type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeGetPC"
-/*@C
+/*@
    PCCompositeGetPC - Gets one of the PC objects in the composite PC.
    
    Not Collective

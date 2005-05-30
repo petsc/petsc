@@ -103,7 +103,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc, PCType type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCRegisterDestroy"
-/*@C
+/*@
    PCRegisterDestroy - Frees the list of preconditioners that were
    registered by PCRegisterDynamic().
 
