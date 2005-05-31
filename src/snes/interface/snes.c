@@ -795,7 +795,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES snes,Vec x,Vec y)
   ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   if (snes->computefunction) {
     PetscStackPush("SNES user function");
+    CHKMEMQ;
     ierr = (*snes->computefunction)(snes,x,y,snes->funP);
+    CHKMEMQ;
     PetscStackPop;
     if (PetscExceptionValue(ierr)) {
       PetscErrorCode pierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(pierr);
