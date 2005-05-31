@@ -471,7 +471,7 @@ PetscErrorCode DAGetInterpolation_2D_Q0(DA dac,DA daf,Mat *A)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
-  PetscLogFlops(13*m_f*n_f);
+  ierr = PetscLogFlops(13*m_f*n_f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
