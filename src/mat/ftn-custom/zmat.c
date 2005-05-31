@@ -11,25 +11,18 @@
 #define matmpibaijgetseqbaij_            MATMPIBAIJGETSEQBAIJ
 #define matgetrowij_                     MATGETROWIJ
 #define matrestorerowij_                 MATRESTOREROWIJ
-#define matsetfromoptions_               MATSETFROMOPTIONS
-#define matcreateseqaijwitharrays_       MATCREATESEQAIJWITHARRAYS
-#define matpartitioningdestroy_          MATPARTITIONINGDESTROY
 #define matsetvalue_                     MATSETVALUE
 #define matsetvaluelocal_                MATSETVALUELOCAL
 #define matgetrow_                       MATGETROW
 #define matrestorerow_                   MATRESTOREROW
 #define matgetordering_                  MATGETORDERING
-#define matdestroy_                      MATDESTROY
 #define matcreatempiaij_                 MATCREATEMPIAIJ
 #define matcreateseqaij_                 MATCREATESEQAIJ
 #define matcreatempibaij_                MATCREATEMPIBAIJ
 #define matcreateseqbaij_                MATCREATESEQBAIJ
 #define matcreatempisbaij_               MATCREATEMPISBAIJ
 #define matcreateseqsbaij_               MATCREATESEQSBAIJ
-#define matcreate_                       MATCREATE
 #define matcreateshell_                  MATCREATESHELL
-#define matshellsetcontext_              MATSHELLSETCONTEXT
-#define matorderingregisterdestroy_      MATORDERINGREGISTERDESTROY
 #define matcreatempirowbs_               MATCREATEMPIROWBS
 #define matcreateseqbdiag_               MATCREATESEQBDIAG
 #define matcreatempibdiag_               MATCREATEMPIBDIAG
@@ -41,28 +34,19 @@
 #define matgetarray_                     MATGETARRAY
 #define matrestorearray_                 MATRESTOREARRAY
 #define matgettype_                      MATGETTYPE
-#define matgetinfo_                      MATGETINFO
 #define matshellsetoperation_            MATSHELLSETOPERATION
 #define matview_                         MATVIEW
-#define matfdcoloringcreate_             MATFDCOLORINGCREATE
-#define matfdcoloringdestroy_            MATFDCOLORINGDESTROY
 #define matfdcoloringsetfunctionsnes_    MATFDCOLORINGSETFUNCTIONSNES
 #define matfdcoloringsetfunctionts_      MATFDCOLORINGSETFUNCTIONTS
-#define matcopy_                         MATCOPY
 #define matgetsubmatrices_               MATGETSUBMATRICES
 #define matgetcoloring_                  MATGETCOLORING
 #define matpartitioningsettype_          MATPARTITIONINGSETTYPE
-#define matduplicate_                    MATDUPLICATE
 #define matzerorows_                     MATZEROROWS
 #define matzerorowsis_                   MATZEROROWSIS
 #define matzerorowslocal_                MATZEROROWSLOCAL
 #define matzerorowslocalis_              MATZEROROWSLOCALIS
 #define matpartitioningview_             MATPARTITIONINGVIEW
-#define matpartitioningcreate_           MATPARTITIONINGCREATE
-#define matpartitioningsetadjacency_     MATPARTITIONINGSETADJACENCY
-#define matpartitioningapply_            MATPARTITIONINGAPPLY
 #define matcreatempiadj_                 MATCREATEMPIADJ
-#define matsetvaluesstencil_             MATSETVALUESSTENCIL
 #define matseqaijsetpreallocation_       MATSEQAIJSETPREALLOCATION
 #define matmpiaijsetpreallocation_       MATMPIAIJSETPREALLOCATION
 #define matseqbaijsetpreallocation_      MATSEQBAIJSETPREALLOCATION
@@ -87,27 +71,20 @@
 #define matmpibaijgetseqbaij_            matmpibaijgetseqbaij          
 #define matrestorerowij_                 matrestorerowij
 #define matgetrowij_                     matgetrowij
-#define matcreateseqaijwitharrays_       matcreateseqaijwitharrays
-#define matpartitioningdestroy_          matpartitioningdestroy
 #define matpartitioningsettype_          matpartitioningsettype
 #define matsetvalue_                     matsetvalue
 #define matsetvaluelocal_                matsetvaluelocal
 #define matgetrow_                       matgetrow
 #define matrestorerow_                   matrestorerow
 #define matview_                         matview
-#define matgetinfo_                      matgetinfo
 #define matgettype_                      matgettype
-#define matdestroy_                      matdestroy
 #define matcreatempiaij_                 matcreatempiaij
 #define matcreateseqaij_                 matcreateseqaij
 #define matcreatempibaij_                matcreatempibaij
 #define matcreateseqbaij_                matcreateseqbaij
 #define matcreatempisbaij_               matcreatempisbaij
 #define matcreateseqsbaij_               matcreateseqsbaij
-#define matcreate_                       matcreate
 #define matcreateshell_                  matcreateshell
-#define matshellsetcontext_              matshellsetcontext
-#define matorderingregisterdestroy_      matorderingregisterdestroy
 #define matgetordering_                  matgetordering
 #define matcreatempirowbs_               matcreatempirowbs
 #define matcreateseqbdiag_               matcreateseqbdiag
@@ -120,25 +97,16 @@
 #define matgetarray_                     matgetarray
 #define matrestorearray_                 matrestorearray
 #define matshellsetoperation_            matshellsetoperation
-#define matfdcoloringcreate_             matfdcoloringcreate
-#define matfdcoloringdestroy_            matfdcoloringdestroy
 #define matfdcoloringsetfunctionsnes_    matfdcoloringsetfunctionsnes
 #define matfdcoloringsetfunctionts_      matfdcoloringsetfunctionts
-#define matcopy_                         matcopy
 #define matgetsubmatrices_               matgetsubmatrices
 #define matgetcoloring_                  matgetcoloring
-#define matduplicate_                    matduplicate
 #define matzerorows_                     matzerorows
 #define matzerorowsis_                   matzerorowsis
 #define matzerorowslocal_                matzerorowslocal
 #define matzerorowslocalis_              matzerorowslocalis
 #define matpartitioningview_             matpartitioningview
-#define matpartitioningcreate_           matpartitioningcreate
-#define matpartitioningsetadjacency_     matpartitioningsetadjacency
-#define matpartitioningapply_            matpartitioningapply            
 #define matcreatempiadj_                 matcreatempiadj
-#define matsetfromoptions_               matsetfromoptions
-#define matsetvaluesstencil_             matsetvaluesstencil
 #define matseqaijsetpreallocation_       matseqaijsetpreallocation
 #define matmpiaijsetpreallocation_       matmpiaijsetpreallocation
 #define matseqbaijsetpreallocation_      matseqbaijsetpreallocation
@@ -202,12 +170,6 @@ void PETSC_STDCALL matsettype_(Mat *x,CHAR type_name PETSC_MIXED_LEN(len),PetscE
   FREECHAR(type_name,t);
 }
 
-void PETSC_STDCALL matsetvaluesstencil_(Mat *mat,PetscInt *m,MatStencil *idxm,PetscInt *n,MatStencil *idxn,PetscScalar *v,InsertMode *addv,
-                                        PetscErrorCode *ierr)
-{
-  *ierr = MatSetValuesStencil(*mat,*m,idxm,*n,idxn,v,*addv);
-}
-
 void PETSC_STDCALL matmpiaijgetseqaij_(Mat *A,Mat *Ad,Mat *Ao,PetscInt *ic,size_t *iic,PetscErrorCode *ierr)
 {
   PetscInt *i;
@@ -238,16 +200,6 @@ void PETSC_STDCALL matrestorerowij_(Mat *B,PetscInt *shift,PetscTruth *sym,Petsc
   *ierr = MatRestoreRowIJ(*B,*shift,*sym,n,&IA,&JA,done);
 }
 
-void PETSC_STDCALL matsetfromoptions_(Mat *B,PetscErrorCode *ierr)
-{
-  *ierr = MatSetFromOptions(*B);
-}
-
-void PETSC_STDCALL matcreateseqaijwitharrays_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *i,PetscInt *j,PetscScalar *a,Mat *mat,PetscErrorCode *ierr)
-{
-  *ierr = MatCreateSeqAIJWithArrays((MPI_Comm)PetscToPointerComm(*comm),*m,*n,i,j,a,mat);
-}
-
 void PETSC_STDCALL matcreatempiadj_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *i,PetscInt *j,PetscInt *values,Mat *A,PetscErrorCode *ierr)
 {
   Mat_MPIAdj *adj;
@@ -256,26 +208,6 @@ void PETSC_STDCALL matcreatempiadj_(MPI_Comm *comm,PetscInt *m,PetscInt *n,Petsc
   *ierr = MatCreateMPIAdj((MPI_Comm)PetscToPointerComm(*comm),*m,*n,i,j,values,A);
   adj = (Mat_MPIAdj*)(*A)->data;
   adj->freeaij = PETSC_FALSE;
-}
-
-void PETSC_STDCALL matpartitioningdestroy_(MatPartitioning *part,PetscErrorCode *ierr)
-{
-  *ierr = MatPartitioningDestroy(*part);
-}
-
-void PETSC_STDCALL matpartitioningcreate_(MPI_Comm *comm,MatPartitioning *part, PetscErrorCode *ierr)
-{
-  *ierr = MatPartitioningCreate((MPI_Comm)PetscToPointerComm(*comm),part);
-}
-
-void PETSC_STDCALL matpartitioningapply_(MatPartitioning *part,IS *is,PetscErrorCode *ierr)
-{
-  *ierr = MatPartitioningApply(*part,is);
-}
-
-void PETSC_STDCALL matpartitioningsetadjacency_(MatPartitioning *part,Mat *mat,PetscErrorCode *ierr)
-{
-  *ierr = MatPartitioningSetAdjacency(*part,*mat);
 }
 
 void PETSC_STDCALL matpartitioningview_(MatPartitioning  *part,PetscViewer *viewer, PetscErrorCode *ierr)
@@ -305,19 +237,14 @@ void PETSC_STDCALL matgetcoloring_(Mat *mat,CHAR type PETSC_MIXED_LEN(len),ISCol
 
 void PETSC_STDCALL matsetvalue_(Mat *mat,PetscInt *i,PetscInt *j,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
 {
-  /* cannot use MatSetValue() here since that usesCHKERRQ() which has a return in it */
+  /* cannot use MatSetValue() here since that uses CHKERRQ() which has a return in it */
   *ierr = MatSetValues(*mat,1,i,1,j,va,*mode);
 }
 
 void PETSC_STDCALL matsetvaluelocal_(Mat *mat,PetscInt *i,PetscInt *j,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
 {
-  /* cannot use MatSetValueLocal() here since that usesCHKERRQ() which has a return in it */
+  /* cannot use MatSetValueLocal() here since that uses CHKERRQ() which has a return in it */
   *ierr = MatSetValuesLocal(*mat,1,i,1,j,va,*mode);
-}
-
-void PETSC_STDCALL matfdcoloringcreate_(Mat *mat,ISColoring *iscoloring,MatFDColoring *color,PetscErrorCode *ierr)
-{
-  *ierr = MatFDColoringCreate(*mat,*iscoloring,color);
 }
 
 /*
@@ -377,16 +304,6 @@ void PETSC_STDCALL matview_(Mat *mat,PetscViewer *vin,PetscErrorCode *ierr)
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = MatView(*mat,v);
-}
-
-void PETSC_STDCALL matcopy_(Mat *A,Mat *B,MatStructure *str,PetscErrorCode *ierr)
-{
-  *ierr = MatCopy(*A,*B,*str);
-}
-
-void PETSC_STDCALL matgetinfo_(Mat *mat,MatInfoType *flag,double *finfo,PetscErrorCode *ierr)
-{
-  *ierr = MatGetInfo(*mat,*flag,(MatInfo*)finfo);
 }
 
 void PETSC_STDCALL matgetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
@@ -482,11 +399,6 @@ void PETSC_STDCALL matgetordering_(Mat *mat,CHAR type PETSC_MIXED_LEN(len),IS *r
   FREECHAR(type,t);
 }
 
-void PETSC_STDCALL matorderingregisterdestroy_(PetscErrorCode *ierr)
-{
-  *ierr = MatOrderingRegisterDestroy();
-}
-
 void PETSC_STDCALL matgettype_(Mat *mm,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
@@ -508,11 +420,6 @@ void PETSC_STDCALL matgettype_(Mat *mm,CHAR name PETSC_MIXED_LEN(len),PetscError
 
 }
 
-void PETSC_STDCALL matcreate_(MPI_Comm *comm,Mat *M,PetscErrorCode *ierr)
-{
-  *ierr = MatCreate((MPI_Comm)PetscToPointerComm(*comm),M);
-}
-
 void PETSC_STDCALL matcreateseqaij_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *nz,
                            PetscInt *nnz,Mat *newmat,PetscErrorCode *ierr)
 {
@@ -532,16 +439,6 @@ void PETSC_STDCALL matcreateseqsbaij_(MPI_Comm *comm,PetscInt *bs,PetscInt *m,Pe
 {
   CHKFORTRANNULLINTEGER(nnz);
   *ierr = MatCreateSeqSBAIJ((MPI_Comm)PetscToPointerComm(*comm),*bs,*m,*n,*nz,nnz,newmat);
-}
-
-void PETSC_STDCALL matfdcoloringdestroy_(MatFDColoring *mat,PetscErrorCode *ierr)
-{
-  *ierr = MatFDColoringDestroy(*mat);
-}
-
-void PETSC_STDCALL matdestroy_(Mat *mat,PetscErrorCode *ierr)
-{
-  *ierr = MatDestroy(*mat);
 }
 
 void PETSC_STDCALL matcreatempiaij_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,
@@ -580,10 +477,6 @@ void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscI
   *ierr = MatCreateShell((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*M,*N,*ctx,mat);
   if (*ierr) return;
   *ierr = PetscMalloc(4*sizeof(void*),&((PetscObject)*mat)->fortran_func_pointers);
-}
-
-void PETSC_STDCALL   matshellsetcontext_(Mat *mat,void**ctx, int *__ierr ){
-  *__ierr = MatShellSetContext(*mat,*ctx);
 }
 
 static PetscErrorCode ourmult(Mat mat,Vec x,Vec y)
@@ -679,11 +572,6 @@ void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *isrow,IS *iscol,M
   } else {
     *ierr = MatGetSubMatrices(*mat,*n,isrow,iscol,*scall,&smat);
   }
-}
-
-void PETSC_STDCALL matduplicate_(Mat *matin,MatDuplicateOption *op,Mat *matout,PetscErrorCode *ierr)
-{
-  *ierr = MatDuplicate(*matin,*op,matout);
 }
 
 void PETSC_STDCALL matzerorows_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,PetscErrorCode *ierr)

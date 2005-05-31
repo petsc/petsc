@@ -375,7 +375,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateShell(MPI_Comm comm,PetscInt m,PetscI
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatShellSetContext"
-/*@C
+/*@
     MatShellSetContext - sets the context for a shell matrix
 
    Collective on Mat

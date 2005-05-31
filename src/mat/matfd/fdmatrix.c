@@ -361,7 +361,7 @@ PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate" 
-/*@C
+/*@
    MatFDColoringCreate - Creates a matrix coloring context for finite difference 
    computation of Jacobians.
 
@@ -416,7 +416,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscolor
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringDestroy"
-/*@C
+/*@
     MatFDColoringDestroy - Destroys a matrix coloring context that was created
     via MatFDColoringCreate().
 

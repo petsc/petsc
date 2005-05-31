@@ -558,7 +558,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatUseScaledForm(Mat mat,PetscTruth scaled)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy"
-/*@C
+/*@
    MatDestroy - Frees space taken by a matrix.
   
    Collective on Mat
@@ -706,7 +706,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValues(Mat mat,PetscInt m,const PetscInt
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesStencil"
-/*@C 
+/*@
    MatSetValuesStencil - Inserts or adds a block of values into a matrix.
      Using structured grid indexing
 
@@ -1654,7 +1654,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeConstrained(Mat mat,Vec x,Vec 
 /* ------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInfo"
-/*@C
+/*@
    MatGetInfo - Returns information about matrix storage (number of
    nonzeros, memory, etc.).
 
@@ -2690,7 +2690,7 @@ PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCopy"
-/*@C  
+/*@
    MatCopy - Copys a matrix to another matrix.
 
    Collective on Mat
@@ -2890,7 +2890,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDuplicate"
-/*@C  
+/*@
    MatDuplicate - Duplicates a matrix including the non-zero structure.
 
    Collective on Mat

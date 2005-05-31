@@ -14,7 +14,7 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate"
-/*@C
+/*@
    MatCreate - Creates a matrix where the type is determined
    from either a call to MatSetType() or from the options database
    with a call to MatSetFromOptions(). The default matrix type is
@@ -135,7 +135,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, Pet
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetFromOptions"
-/*@C
+/*@
    MatSetFromOptions - Creates a matrix where the type is determined
    from the options database. Generates a parallel MPI matrix if the
    communicator has more than one processor.  The default matrix type is

@@ -194,7 +194,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetNParts(MatPartitioning part,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningApply" 
-/*@C
+/*@
    MatPartitioningApply - Gets a partitioning for a matrix.
 
    Collective on Mat
@@ -248,7 +248,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningApply(MatPartitioning matp,IS *
  
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningSetAdjacency"
-/*@C
+/*@
    MatPartitioningSetAdjacency - Sets the adjacency graph (matrix) of the thing to be
       partitioned.
 
@@ -275,7 +275,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetAdjacency(MatPartitioning pa
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningDestroy"
-/*@C
+/*@
    MatPartitioningDestroy - Destroys the partitioning context.
 
    Collective on Partitioning
@@ -382,7 +382,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetPartitionWeights(MatPartitio
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningCreate"
-/*@C
+/*@
    MatPartitioningCreate - Creates a partitioning context.
 
    Collective on MPI_Comm

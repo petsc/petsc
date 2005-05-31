@@ -3037,7 +3037,7 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqAIJWithArrays"
-/*@C
+/*@
      MatCreateSeqAIJWithArrays - Creates an sequential AIJ matrix using matrix elements (in CSR format)
               provided by the user.
 

@@ -5,7 +5,7 @@
   sequential matrix Ordering routines.
 */
 #include "src/mat/matimpl.h"
-#include "petscsys.h"
+#include "petscmat.h"  /*I "petscmat.h" I*/
 
 PetscFList      MatOrderingList = 0;
 PetscTruth MatOrderingRegisterAllCalled = PETSC_FALSE;
@@ -112,7 +112,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegister(const char sname[],const c
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrderingRegisterDestroy"
-/*@C
+/*@
    MatOrderingRegisterDestroy - Frees the list of ordering routines.
 
    Not collective
