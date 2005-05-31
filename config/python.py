@@ -50,7 +50,7 @@ class Configure(config.base.Configure):
   def configurePythonLibraries(self):
     import distutils.sysconfig
 
-    inc = sets.Set([distutils.sysconfig.get_python_inc(), distutils.sysconfig.get_python_inc(1)])
+    inc = [distutils.sysconfig.get_python_inc(), distutils.sysconfig.get_python_inc(1)]
     if not self.checkInclude(inc):
       raise RuntimeError('Unable to locate Python headers')
     self.include = inc
