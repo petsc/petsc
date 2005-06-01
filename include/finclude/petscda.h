@@ -1,4 +1,4 @@
-!
+
 !
 !  Include file for Fortran use of the DA (distributed array) package in PETSc
 !
@@ -15,29 +15,27 @@
 
 #define DALocalInfo integer
 !
-!   DA_LOCAL_INFO_SIZE is one large than the size incase the DA is larger than an integer (on 64 bit systems)
+!   DA_LOCAL_INFO_SIZE is one large than the size incase the DA is larger than an integer (on 64 bit systems).
+!   non-int fields are not accessiable from fortran.
 !
 #define DA_LOCAL_INFO_SIZE 22
 #define DA_LOCAL_INFO_DIM 1
 #define DA_LOCAL_INFO_DOF 2
-#define DA_LOCAL_INFO_PT 4
-#define DA_LOCAL_INFO_ST 5
-#define DA_LOCAL_INFO_MX 6
-#define DA_LOCAL_INFO_MY 7
-#define DA_LOCAL_INFO_MZ 8
-#define DA_LOCAL_INFO_XS 9
-#define DA_LOCAL_INFO_YS 10
-#define DA_LOCAL_INFO_ZS 11
-#define DA_LOCAL_INFO_XM 12
-#define DA_LOCAL_INFO_YM 13
-#define DA_LOCAL_INFO_ZM 14
-#define DA_LOCAL_INFO_GXS 15
-#define DA_LOCAL_INFO_GYS 16
-#define DA_LOCAL_INFO_GZS 17
-#define DA_LOCAL_INFO_GXM 18
-#define DA_LOCAL_INFO_GYM 19
-#define DA_LOCAL_INFO_GZM 20
-#define DA_LOCAL_INFO_DA  21
+#define DA_LOCAL_INFO_MX 4
+#define DA_LOCAL_INFO_MY 5
+#define DA_LOCAL_INFO_MZ 6
+#define DA_LOCAL_INFO_XS 7
+#define DA_LOCAL_INFO_YS 8
+#define DA_LOCAL_INFO_ZS 9
+#define DA_LOCAL_INFO_XM 10
+#define DA_LOCAL_INFO_YM 11
+#define DA_LOCAL_INFO_ZM 12
+#define DA_LOCAL_INFO_GXS 13
+#define DA_LOCAL_INFO_GYS 14
+#define DA_LOCAL_INFO_GZS 15
+#define DA_LOCAL_INFO_GXM 16
+#define DA_LOCAL_INFO_GYM 17
+#define DA_LOCAL_INFO_GZM 18
 
 #define XG_RANGE in(DA_LOCAL_INFO_GXS)+1:in(DA_LOCAL_INFO_GXS)+in(DA_LOCAL_INFO_GXM)
 #define YG_RANGE in(DA_LOCAL_INFO_GYS)+1:in(DA_LOCAL_INFO_GYS)+in(DA_LOCAL_INFO_GYM)
