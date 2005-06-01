@@ -186,21 +186,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISInvertPermutation(IS is,PetscInt nlocal,IS *
   PetscFunctionReturn(0);
 }
 
-#if defined(__cplusplus)
-#undef __FUNCT__  
-#define __FUNCT__ "ISGetSizeNew" 
-PetscErrorCode PETSCVEC_DLLEXPORT ISGetSizeNew(IS is,PetscInt *size)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE,1);
-  PetscValidIntPointer(size,2);
-  ierr = is->cops->getsize(size);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
-
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetSize" 
 /*@
