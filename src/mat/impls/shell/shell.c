@@ -7,7 +7,7 @@
 */
 
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
-#include "vecimpl.h"  
+#include "private/vecimpl.h"  
 
 typedef struct {
   PetscErrorCode (*destroy)(Mat);

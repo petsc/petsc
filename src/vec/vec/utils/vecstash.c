@@ -1,6 +1,6 @@
 #define PETSCVEC_DLL
 
-#include "vecimpl.h"
+#include "private/vecimpl.h"
 
 #define DEFAULT_STASH_SIZE   100
 

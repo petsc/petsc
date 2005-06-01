@@ -1,5 +1,5 @@
 #define PETSCVEC_DLL
-#include "vecimpl.h"  /*I "petscvec.h"  I*/
+#include "private/vecimpl.h"  /*I "petscvec.h"  I*/
 
 PetscFList PetscMapList                       = PETSC_NULL;
 PetscTruth PetscMapRegisterAllCalled          = PETSC_FALSE;

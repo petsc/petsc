@@ -3,7 +3,7 @@
      Provides the interface functions for all map operations.
    These are the map functions the user calls.
 */
-#include "vecimpl.h"    /*I "petscvec.h" I*/
+#include "private/vecimpl.h"    /*I "petscvec.h" I*/
 
 /* Logging support */
 PetscCookie MAP_COOKIE = 0;

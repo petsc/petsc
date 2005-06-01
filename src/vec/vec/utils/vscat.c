@@ -6,7 +6,7 @@
 */
 
 #include "src/vec/is/isimpl.h"
-#include "vecimpl.h"                     /*I "petscvec.h" I*/
+#include "private/vecimpl.h"                     /*I "petscvec.h" I*/
 
 /* Logging support */
 PetscCookie PETSCVEC_DLLEXPORT VEC_SCATTER_COOKIE = 0;

@@ -6,7 +6,7 @@
 */
 
 #include "src/ksp/pc/pcimpl.h"        /*I "petscpc.h" I*/
-#include "vecimpl.h"  
+#include "private/vecimpl.h"  
 
 EXTERN_C_BEGIN 
 typedef struct {

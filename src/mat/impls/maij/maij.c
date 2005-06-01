@@ -19,7 +19,7 @@
 
 #include "src/mat/impls/maij/maij.h"
 #include "src/mat/utils/freespace.h"
-#include "vecimpl.h"
+#include "private/vecimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMAIJGetAIJ" 

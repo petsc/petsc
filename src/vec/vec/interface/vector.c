@@ -4,7 +4,7 @@
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
 */
-#include "vecimpl.h"    /*I "petscvec.h" I*/
+#include "private/vecimpl.h"    /*I "petscvec.h" I*/
 
 /* Logging support */
 PetscCookie PETSCVEC_DLLEXPORT VEC_COOKIE = 0;

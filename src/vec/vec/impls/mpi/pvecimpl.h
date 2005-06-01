@@ -2,7 +2,7 @@
 #ifndef __PVECIMPL
 #define __PVECIMPL
 
-#include "vecimpl.h"
+#include "private/vecimpl.h"
 #include "src/vec/vec/impls/dvecimpl.h"
 
 typedef struct {

@@ -4,7 +4,7 @@
   and sequential vectors.
 */
 
-#include "vecimpl.h" 
+#include "private/vecimpl.h" 
 #include "src/vec/vec/impls/dvecimpl.h" 
 #include "petscblaslapack.h"
 

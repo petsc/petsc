@@ -1,6 +1,6 @@
 #define PETSCVEC_DLL
 
-#include "vecimpl.h"     /*I  "vec.h"  I*/
+#include "private/vecimpl.h"     /*I  "vec.h"  I*/
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPI(Vec);

@@ -5,7 +5,7 @@
 */
 
 #include "src/dm/da/daimpl.h"      /*I  "petscda.h"   I*/
-#include "vecimpl.h" 
+#include "private/vecimpl.h" 
 
 #if defined(PETSC_HAVE_PNETCDF)
 EXTERN_C_BEGIN

@@ -1198,7 +1198,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMPIDump(FILE*);
 /*
     Defines the base data structures for all PETSc objects
 */
-#include "petschead.h"
+#include "private/petscimpl.h"
 
 /*
      Defines PETSc profiling.

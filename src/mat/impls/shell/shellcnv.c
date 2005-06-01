@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
-#include "vecimpl.h"  
+#include "private/vecimpl.h"  
   
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_Shell"
