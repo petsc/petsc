@@ -2,7 +2,7 @@
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
-#include "petscbag.h"     /*I  "petscbag.h"   I*/
+#include "bagimpl.h"     /*I  "petscbag.h"   I*/
 
 /*
    Ugly variable to indicate if we are inside a PetscBagLoad() and should not call PetscOptions....
@@ -14,7 +14,7 @@ static PetscTruth PetscBagInLoad = PETSC_FALSE;
 /*
       Adds item to the linked list in a bag
 */
-static PetscErrorCode PetscBagRegister_Private(PetscBag *bag,PetscBagItem item,const char*name,const char*help)
+static PetscErrorCode PetscBagRegister_Private(PetscBag bag,PetscBagItem item,const char*name,const char*help)
 {
   PetscErrorCode ierr;
 
@@ -50,12 +50,12 @@ static PetscErrorCode PetscBagRegister_Private(PetscBag *bag,PetscBagItem item,c
 
    Level: beginner
 
-.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad()
+.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
            PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName()
 
 @*/
-PetscErrorCode PetscBagRegisterEnum(PetscBag* bag,void *addr,const char **list,PetscEnum mdefault, const char *name, const char* help)
+PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char **list,PetscEnum mdefault, const char *name, const char* help)
 {
   PetscErrorCode ierr;
   PetscBagItem   item;
@@ -107,12 +107,12 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag* bag,void *addr,const char **list,P
 
    Level: beginner
 
-.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad()
+.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
            PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PetscBagRegisterInt(PetscBag* bag,void *addr,PetscInt mdefault, const char* name, const char* help)
+PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault, const char* name, const char* help)
 {
   PetscErrorCode ierr;
   PetscBagItem   item;
@@ -160,12 +160,12 @@ PetscErrorCode PetscBagRegisterInt(PetscBag* bag,void *addr,PetscInt mdefault, c
 
    Note: The struct should have the field char mystring[msize]; not char *mystring
 
-.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad()
+.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
            PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PetscBagRegisterString(PetscBag* bag,void *addr,PetscInt msize,const char* mdefault, const char* name, const char* help)
+PetscErrorCode PetscBagRegisterString(PetscBag bag,void *addr,PetscInt msize,const char* mdefault, const char* name, const char* help)
 {
   PetscErrorCode ierr;
   PetscBagItem   item;
@@ -214,12 +214,12 @@ PetscErrorCode PetscBagRegisterString(PetscBag* bag,void *addr,PetscInt msize,co
 
    Level: beginner
 
-.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad()
+.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
            PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PetscBagRegisterReal(PetscBag* bag,void *addr,PetscReal mdefault, const char* name, const char* help)
+PetscErrorCode PetscBagRegisterReal(PetscBag bag,void *addr,PetscReal mdefault, const char* name, const char* help)
 {
   PetscErrorCode ierr;
   PetscBagItem   item;
@@ -265,12 +265,12 @@ PetscErrorCode PetscBagRegisterReal(PetscBag* bag,void *addr,PetscReal mdefault,
 
    Level: beginner
 
-.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad()
+.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
            PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PetscBagRegisterScalar(PetscBag* bag,void *addr,PetscScalar mdefault, const char* name, const char* help)
+PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefault, const char* name, const char* help)
 {
   PetscErrorCode ierr;
   PetscBagItem   item;
@@ -316,12 +316,12 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag* bag,void *addr,PetscScalar mdefa
 
    Level: beginner
 
-.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad()
+.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
            PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PetscBagRegisterTruth(PetscBag* bag,void *addr,PetscTruth mdefault, const char* name, const char* help)
+PetscErrorCode PetscBagRegisterTruth(PetscBag bag,void *addr,PetscTruth mdefault, const char* name, const char* help)
 {
   PetscErrorCode ierr;
   PetscBagItem   item;
@@ -362,12 +362,12 @@ PetscErrorCode PetscBagRegisterTruth(PetscBag* bag,void *addr,PetscTruth mdefaul
 
    Level: beginner
 
-.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad()
+.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
            PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscBagDestroy(PetscBag *bag)
+PetscErrorCode PETSC_DLLEXPORT PetscBagDestroy(PetscBag bag)
 {
   PetscErrorCode ierr;
   PetscBagItem   nitem = bag->bagitems,item;
@@ -398,12 +398,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagDestroy(PetscBag *bag)
 
    Level: beginner
 
-.seealso: PetscBag, PetscBagSetName(), PetscBagDestroy(), PetscBagLoad()
+.seealso: PetscBag, PetscBagSetName(), PetscBagDestroy(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
            PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagView(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag *bag)
+PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag bag)
 {
   PetscErrorCode ierr;
   PetscBagItem   nitem = bag->bagitems;
@@ -462,12 +462,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag *bag)
      in on a machine of the same architecture. Let us know when this is a problem
      and we'll fix it.
 
-.seealso: PetscBag, PetscBagSetName(), PetscBagDestroy(), PetscBagLoad()
+.seealso: PetscBag, PetscBagSetName(), PetscBagDestroy(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar(), PetscBagRegisterEnum()
            PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag *bag,PetscViewer view)
+PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
 {
   PetscTruth     isascii,isbinary;
   PetscErrorCode ierr;
@@ -547,12 +547,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag *bag,PetscViewer view)
 
    Level: beginner
 
-.seealso: PetscBag, PetscBagSetName(), PetscBagDestroy(), PetscBagView()
+.seealso: PetscBag, PetscBagSetName(), PetscBagDestroy(), PetscBagView(), PetscBagGetData()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
            PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag **bag)
+PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
 {
   PetscErrorCode ierr;
   PetscTruth     isbinary,skipoptions;
@@ -614,5 +614,122 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag **bag)
     }
   }
   PetscBagInLoad = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscBagCreate"
+/*@C
+    PetscBagCreate - Create a bag of values
+
+  Collective on MPI_Comm
+
+  Level: Intermediate
+
+  Input Parameters:
++  comm - communicator to share bag
+-  C struct name - name of the C structure holding the values
+
+  Output Parameter:
+.   bag - the bag of values
+
+   Notes:
+      The size of the A struct must be small enough to fit in a PetscInt; by default
+      PetscInt is 4 bytes. The warning about casting to a shorter length can be ignored
+      below unless your A struct is too large
+
+.seealso: PetscBag, PetscBagGetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
+           PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
+           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
+@*/
+PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t size, PetscBag *bag)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  size_t tsize;
+  tsize = sizeof(struct _n_PetscBag)+size;
+  ierr = PetscMalloc(tsize,bag);CHKERRQ(ierr);
+  ierr = PetscMemzero(*bag,tsize);CHKERRQ(ierr);
+  (*bag)->bagsize = tsize;
+  (*bag)->bagcomm = comm;
+  PetscFunctionReturn(0);
+}  
+  
+#undef __FUNCT__  
+#define __FUNCT__ "PetscBagSetName"
+/*@C
+    PetscBagSetName - Sets the name of a bag of values
+
+  Not Collective
+
+  Level: Intermediate
+
+  Input Parameters:
++   bag - the bag of values
+.   name - the name assigned to the bag
+-   help - help message for bag
+
+.seealso: PetscBag, PetscBagGetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
+           PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
+           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
+@*/ 
+
+PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscStrncpy(bag->bagname,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
+  ierr = PetscStrncpy(bag->baghelp,help,PETSC_BAG_HELP_LENGTH-1);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}  
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscBagGetName"
+/*@C
+    PetscBagGetName - Gets the name of a bag of values
+
+  Not Collective
+
+  Level: Intermediate
+
+  Input Parameter:
+.   bag - the bag of values
+
+  Output Parameter:
+.   name - the name assigned to the bag
+
+.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
+           PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
+           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
+@*/ 
+PetscErrorCode PetscBagGetName(PetscBag bag, char **name)
+{
+  PetscFunctionBegin;
+  *name = bag->bagname;
+  PetscFunctionReturn(0);
+}  
+
+/*@C
+    PetscBagGetData - Gives back the user - access to memory that
+    should be used for storing user-data-structure
+
+  Not Collective
+
+  Level: Intermediate
+
+  Input Parameter:
+.   bag - the bag of values
+
+  Output Parameter:
+.   data - pointer to memory that will have user-data-structure
+
+.seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad()
+           PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
+           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
+@*/ 
+PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
+{
+  PetscFunctionBegin;
+  *data = (char*)bag + sizeof(struct _n_PetscBag);
   PetscFunctionReturn(0);
 }

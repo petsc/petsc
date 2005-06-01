@@ -27,12 +27,10 @@ typedef struct {
   PetscReal   x1,x2;
 } TwoVec;
 
-/*
-   Define a C struct that will contain my program's parameters.
-   It MUST begin with the PetscBag struct. 
+/* 
+  Define a C struct that will contain my program's parameters.
 */
 typedef struct {
-  PetscBag      bag;
   char          filename[PETSC_MAX_PATH_LEN];
   PetscReal     rho;
   PetscScalar   W;
@@ -49,7 +47,7 @@ typedef struct {
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscBag       *bag;
+  PetscBag       bag;
   Parameter      *params;
   PetscViewer    viewer;
 
@@ -65,8 +63,8 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
   /* Create an empty bag */
-  ierr   = PetscBagCreate(PETSC_COMM_WORLD,Parameter,&bag);CHKERRQ(ierr);
-  params = (Parameter*)bag;
+  ierr   = PetscBagCreate(PETSC_COMM_WORLD,sizeof(Parameter),&bag);CHKERRQ(ierr);
+  ierr   = PetscBagGetData(bag,(void **)&params);CHKERRQ(ierr);
 
   /* register variables, defaults, names, help strings */
   ierr = PetscBagSetName(bag,"ParameterBag","contains parameters for simulations of top-secret, dangerous physics");CHKERRQ(ierr);
@@ -94,7 +92,7 @@ int main(int argc,char **argv)
   ierr = PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* reuse the parameter struct */
-  params = (Parameter*)bag;
+  ierr   = PetscBagGetData(bag,(void**)&params);CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"The value of rho after loading is: %f\n",params->rho);
 
   /* clean up and exit */
