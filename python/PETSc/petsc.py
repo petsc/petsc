@@ -90,6 +90,7 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
+    self.languages = framework.require('PETSc.utilities.languages', self)
     self.compilers = framework.require('config.compilers', self)
     self.headers   = framework.require('config.headers', self)
     self.libraries = framework.require('config.libraries', self)
@@ -236,13 +237,15 @@ class Configure(config.base.Configure):
        '''
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.compilers.LIBS
-    found   = (self.libraries.check(libraries, 'PetscInitialize', otherLibs = self.otherLibs) and
-               self.libraries.check(libraries, 'VecCreate', otherLibs = self.otherLibs) and
-               self.libraries.check(libraries, 'MatCreate', otherLibs = self.otherLibs) and
-               self.libraries.check(libraries, 'DADestroy', otherLibs = self.otherLibs) and
-               self.libraries.check(libraries, 'KSPCreate', otherLibs = self.otherLibs) and
-               self.libraries.check(libraries, 'SNESCreate', otherLibs = self.otherLibs) and
-               self.libraries.check(libraries, 'TSCreate', otherLibs = self.otherLibs))
+    self.libraries.pushLanguage(self.languages.clanguage)
+    found   = (self.libraries.check(libraries, 'PetscInitializeNoArguments', otherLibs = self.otherLibs, prototype = 'int PetscInitializeNoArguments(void);') and
+               self.libraries.check(libraries, 'VecDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Vec *Vec;int VecDestroy(Vec);', call = 'VecDestroy((Vec) 0)') and
+               self.libraries.check(libraries, 'MatDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Mat *Mat;int MatDestroy(Mat);', call = 'MatDestroy((Mat) 0)') and
+               self.libraries.check(libraries, 'DADestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_DA *DA;int DADestroy(DA);', call = 'DADestroy((DA) 0)') and
+               self.libraries.check(libraries, 'KSPDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_KSP *KSP;int KSPDestroy(KSP);', call = 'KSPDestroy((KSP) 0)') and
+               self.libraries.check(libraries, 'SNESDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_SNES *SNES;int SNESDestroy(SNES);', call = 'SNESDestroy((SNES) 0)') and
+               self.libraries.check(libraries, 'TSDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_TS *TS;int TSDestroy(TS);', call = 'TSDestroy((TS) 0)'))
+    self.libraries.popLanguage()
     self.compilers.LIBS = oldLibs
     return found
 
@@ -273,12 +276,14 @@ class Configure(config.base.Configure):
 
   def checkWorkingLink(self):
     '''Checking that we can link a PETSc executable'''
-    if not self.checkPETScLink('#include <petsc.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time); CHKERRQ(ierr);\n'):
+    self.pushLanguage(self.languages.clanguage)
+    if not self.checkPETScLink('#include <petsclog.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time); CHKERRQ(ierr);\n'):
       self.logPrint('PETSc cannot link, which indicates a problem with the PETSc installation')
       return 0
-    self.logPrint('PETSc can link with C')
-      
-    if hasattr(self.compilers, 'CXX'):
+    self.logPrint('PETSc can link with '+self.languages.clanguage)
+    self.popLanguage()
+
+    if hasattr(self.compilers, 'CXX') and self.languages.clanguage == 'C':
       self.pushLanguage('C++')
       self.sourceExtension = '.C'
       if not self.checkPETScLink('#define PETSC_USE_EXTERN_CXX\n#include <petsc.h>\n', 'PetscLogDouble time;\nPetscErrorCode ierr;\n\nierr = PetscGetTime(&time); CHKERRQ(ierr);\n'):
