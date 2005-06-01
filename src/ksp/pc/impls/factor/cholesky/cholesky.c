@@ -59,8 +59,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd_Cholesky(PC pc,PetscTruth s
  
   PetscFunctionBegin;
   dir = (PC_Cholesky*)pc->data;
-  dir->info.shiftpd = shift;
-  if (shift) dir->info.shift_fraction = 0.0;
+  if (shift) {
+    dir->info.shift_fraction = 0.0;
+    dir->info.shiftpd = 1.0;
+  } else {
+    dir->info.shiftpd = 0.0;
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -590,7 +594,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
   ierr = MatFactorInfoInitialize(&dir->info);CHKERRQ(ierr);
   dir->info.fill              = 5.0;
   dir->info.shiftnz           = 0.0;
-  dir->info.shiftpd           = PETSC_FALSE;
+  dir->info.shiftpd           = 0.0; /* false */
   dir->info.shift_fraction    = 0.0;
   dir->info.pivotinblocks     = 1.0;
   dir->col                    = 0;

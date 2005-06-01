@@ -1089,7 +1089,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,MatFactorInfo *info,Mat
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa,dk,uikdi;
   PetscReal      zeropivot,rs,shiftnz;
-  PetscTruth     shiftpd;
+  PetscReal      shiftpd;
   ChShift_Ctx    sctx;
   PetscInt       newshift;
 
@@ -1240,7 +1240,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,MatFact
   PetscInt       k,jmin,*jl,*il,nexti,ili,*acol,*bcol,nz;
   MatScalar      *rtmp,*ba=b->a,*aa=a->a,dk,uikdi,*aval,*bval;
   PetscReal      zeropivot,rs,shiftnz;
-  PetscTruth     shiftpd;
+  PetscReal      shiftpd;
   ChShift_Ctx    sctx;
   PetscInt       newshift;
 

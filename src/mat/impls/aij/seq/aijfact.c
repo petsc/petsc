@@ -1059,7 +1059,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
   PetscReal      zeropivot,rs,shiftnz;
-  PetscTruth     shiftpd;
+  PetscReal      shiftpd;
   ChShift_Ctx    sctx;
   PetscInt       newshift;
 

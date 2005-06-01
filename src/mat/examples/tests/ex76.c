@@ -174,12 +174,12 @@ int main(int argc,char **args)
 
   /* initialize factinfo */
   factinfo.shiftnz   = 0.0;
-  factinfo.shiftpd   = PETSC_FALSE;
+  factinfo.shiftpd   = 0.0; /* false */
   factinfo.zeropivot = 1.e-12;
   if (TestShift == 1){
     factinfo.shiftnz = 0.1;
   } else if (TestShift == 2){
-    factinfo.shiftpd = PETSC_TRUE;
+    factinfo.shiftpd = 1.0; /* true*/
   }
   
   /* Test MatCholeskyFactor(), MatICCFactor() */

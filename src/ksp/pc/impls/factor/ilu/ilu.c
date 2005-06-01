@@ -49,8 +49,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd_ILU(PC pc,PetscTruth shift)
  
   PetscFunctionBegin;
   dir = (PC_ILU*)pc->data;
-  dir->info.shiftpd = shift;
-  if (shift) dir->info.shift_fraction = 0.0;
+  if (shift) {
+    dir->info.shift_fraction = 0.0;
+    dir->info.shiftpd = 1.0;
+  } else {
+    dir->info.shiftpd = 0.0;
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -913,7 +917,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
   ilu->info.dtcount            = PETSC_DEFAULT;
   ilu->info.dtcol              = PETSC_DEFAULT;
   ilu->info.shiftnz            = 0.0;
-  ilu->info.shiftpd            = PETSC_FALSE;
+  ilu->info.shiftpd            = 0.0; /* false */
   ilu->info.shift_fraction     = 0.0;
   ilu->info.zeropivot          = 1.e-12;
   ilu->info.pivotinblocks      = 1.0;

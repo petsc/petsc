@@ -48,8 +48,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd_ICC(PC pc,PetscTruth shift)
  
   PetscFunctionBegin;
   dir = (PC_ICC*)pc->data;
-  dir->info.shiftpd = shift;
-  if (shift) dir->info.shift_fraction = 0.0;
+  if (shift) {
+    dir->info.shift_fraction = 0.0;
+    dir->info.shiftpd = 1.0;
+  } else {
+    dir->info.shiftpd = 0.0;
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -409,7 +413,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
 
   icc->info.dtcol              = PETSC_DEFAULT;
   icc->info.shiftnz            = 0.0;
-  icc->info.shiftpd            = PETSC_TRUE;
+  icc->info.shiftpd            = 1.0; /* true */
   icc->info.shift_fraction     = 0.0;
   icc->info.zeropivot          = 1.e-12;
   pc->data	               = (void*)icc;
