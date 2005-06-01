@@ -16,6 +16,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-clanguage=<C or C++>', nargs.Arg(None, 'C', 'Specify C or C++ language'))
+    help.addArgument('PETSc', '-with-c++-support', nargs.Arg(None, 0, 'When building C, compile C++ portions of external libraries (e.g. C++)'))
     help.addArgument('PETSc', '-with-fortran', nargs.ArgBool(None, 1, 'Create and install the Fortran wrappers'))
     help.addArgument('PETSc', '-with-python', nargs.ArgBool(None, 0, 'Download and install the Python wrappers'))
     help.addArgument('PETSc', '-with-precision=<single,double,matsingle>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
@@ -56,7 +57,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Invalid C language specified: '+str(self.clanguage))
     if self.scalartype == 'complex':
       self.clanguage = 'Cxx'
-    if self.clanguage == 'C' and not self.framework.argDB['download-prometheus']:
+    if self.clanguage == 'C' and not self.framework.argDB['with-c++-support'] and not self.framework.argDB['download-prometheus']:
       self.framework.argDB['with-cxx'] = '0'
     self.framework.logPrint('C language is '+str(self.clanguage))
     return
