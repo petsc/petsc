@@ -23,18 +23,8 @@ struct _ISOps {
   PetscErrorCode (*identity)(IS,PetscTruth*);
 };
 
-#if defined(__cplusplus)
-class ISOps {
-  public:
-    int getsize(PetscInt*) {return 0;};
-};
-#endif
-
 struct _p_IS {
   PETSCHEADER(struct _ISOps);
-#if defined(__cplusplus)
-  ISOps        *cops;
-#endif
   PetscTruth   isperm;          /* if is a permutation */
   PetscInt     max,min;         /* range of possible values */
   void         *data;
