@@ -21,6 +21,7 @@ class Configure(config.base.Configure):
 
     help.addArgument('PETSc', '-prefix=<path>',            nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
     help.addArgument('PETSc', '-with-default-arch=<bool>', nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
+    help.addArgument('PETSc', '-with-large-files=<bool>',  nargs.ArgBool(None, 0, 'Allow files greater then 2 GB'))
     return
 
   def setupDependencies(self, framework):
@@ -146,6 +147,8 @@ class Configure(config.base.Configure):
     if self.functions.haveFunction('gethostbyname') and self.functions.haveFunction('socket'):
       self.addDefine('USE_SOCKET_VIEWER','1')
 
+    if self.framework.argDB['with-large-files']:
+      self.addDefine('_FILE_OFFSET_BITS','64')
 
 #-----------------------------------------------------------------------------------------------------
     # print include and lib for external packages

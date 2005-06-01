@@ -101,7 +101,9 @@ static PetscErrorCode PCSetUp_Shell(PC pc)
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
   if (shell->setup) {
+    CHKMEMQ;
     ierr  = (*shell->setup)(shell->ctx);CHKERRQ(ierr);
+    CHKMEMQ;
   }
   PetscFunctionReturn(0);
 }
@@ -116,7 +118,11 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
   if (!shell->apply) SETERRQ(PETSC_ERR_USER,"No apply() routine provided to Shell PC");
+  PetscStackPush("PCSHELL user function");
+  CHKMEMQ;
   ierr  = (*shell->apply)(shell->ctx,x,y);CHKERRQ(ierr);
+  CHKMEMQ;
+  PetscStackPop;
   PetscFunctionReturn(0);
 }
 
