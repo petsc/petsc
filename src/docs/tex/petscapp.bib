@@ -1,220 +1,6 @@
 %
 %     <H2><center>Research and Publications that make use of PETSc</center></H2>
 %
-%  <a name="packages"></a><H3><center>Software Packages that use or interface to PETSc</center></H3>
-%
-@INBOOK{JiaoLiMa99,
- author    = "Xiangmin Jiao and Xiang-Yang Li and Xiaosong Ma",
- title     = "SIFFEA:Scalable Integrated Framework for Finite Element Analysis",
- url       = "http://portal.acm.org/citation.cfm?id=646895.709725",
- booktitle = "Lecture Notes in Computer Science",
- publisher = "Springer-Verlag",
- volume    = 1732,
- year      = 1999
-}
-@article{crow1,
-   author = {C. S. Crow IV},
-   title  = "DistSolve: An Open Source Web Service for Solving Sparse Systems of Equations",
-   journal = "Hopkins Undergraduate Research Journal",
-   year    = 2003,
-   url = "http://www.jhu.edu/hurj/issue2/09D%20Crow%20DistSolve.pdf"
-}
-@Unpublished{petsc-python,
-  title = 	"PETSc for Python",
-  author = "L. Dalcin and R. Paz and M. Storti",
-  institution = "International Center for Computer Methods in Engineering",
-  url = "http://www.cimec.org.ar/python",
-  note = "Provides Python bindings for PETSc via SWIG"
-}
-@Unpublished{cfdship,
-  title = 	"CFDShip-Iowa",
-  author = "Pablo M. Carrica and Robert V. Wilson and Fred Stern",
-  institution = "University of Iowa",
-  url = "http://www.iihr.uiowa.edu/~cfdship/",
-  note = "CFDShip_iowa is a multiblock free surface flow solver that uses overset structured grids, designed for ship applications"
-}
-@Unpublished{bvw,
-  title = 	"Multiflow",
-  author = "Berend van Wachem",
-  institution = "Mechanical Engineering - Chalmers University of Technology",
-  url = "http://www.tfd.chalmers.se/\~{ }berend/page3.html",
-  note = "MultiFlow is a  curvlinear, multiblock, multiprocessor flowsolver for multiphase flows."
-}
-@Unpublished{dks2,
-  title = 	"FENA - A Finite Element Model for the North Atlantic",
-  author = "Jens Schroeter",
-  institution = "Alfred-Wegener-Institute for Polar and Marine Research",
-  url = "http://www.awi-bremerhaven.de/Modelling/INVERSE/FENAdesc/FENAdesc.html"
-}
-@Unpublished{magpar,
-   author     = "W. Scholz",
-  title = 	"Magpar: Parallel Micromagnetics Code",
-  Institution = "Vienna University of Technology",
-  url = 	"http://magnet.atp.tuwien.ac.at/scholz/magpar/"
-}
-@Misc{libMesh:sourceforge,
-  author        = {},
-  title         = {{libMesh}:a C++ framework for the numerical simulation of partial differential equations on serial and parallel platforms},
-  note          = {[Online]},
-  URL  = {http://libmesh.sourceforge.net}
-}
-@Unpublished{underworld,
-  author = "Louis Moresi",
-  title = 	"UnderWorld: A Geodynamics Modelling Code",
-  Institution = "Monash University",
-  url = 	"http://www.mcc.monash.edu/twiki/view/Codes"
-}
-@Unpublished{Snark,
-  title = 	"Snark:  A suite of software for geoscientific applications and a philosophy of scientific software development",
-  Institution = "Victorian Partnership for Advanced Computing",
-  url = 	"http://vpac.org/Snark"
-}
-@Misc{imoose:sourceforge,
-  author        = {Guido Arians and Thomas Bauer and Christian Kaehler and
-                   Wolfgang Mai and Christoph Monzel and Dirk {van Riesen} and
-                   Christoph Schlensok},
-  title         = {Innovative Modern Object-Oriented Solving Environment - {iMOOSE}},
-  note          = {[Online]},
-  URL  = {http://imoose.sourceforge.net}
-}
-@Unpublished{FoSSI,
-   author     = "Stephan Frickenhaus",
-  title = 	"FoSSI: Family of Simplified Solver Interfaces, offers scalable access to MPI-parallel
-                 solvers from CSR-matrix format frequently used in sequential/vector codes", 
-  Institution = "AWI-Bremerhaven, Germanny",
-  url = 	"http://www.awi-bremerhaven.de/InfoCenter/IT/WorkingGroups/SciComp/SSolversUG.html"
-}
-@Unpublished{fun3dweb,
-   author = "Dinesh Kaushik",
-  title = 	"PETSC-FUN3D Benchmark Page", 
-  Institution = "ODU/ANL",
-  url = 	"http://www.mcs.anl.gov/petsc-fun3d",
-  note = "CFD Benchmark of some solvers in PETSc"
-}
-@Unpublished{scirun,
-   author = "SCIRun Development Team",
-  title = 	"SCIRun", 
-  Institution = "University of Utah",
-  url = 	"http://www.sci.utah.edu/stories/2001/jul_scirun120.html",
-  note = "SCIRun now uses PETSc linear solvers"
-}
-@misc{prometheus,
-   author = "Mark F. Adams",
-  title = 	"Prometheus - A scalable unstructured finite element solver",
-  Institution = "Berkeley",
-  howpublished = "\url{http://www.cs.berkeley.edu/~madams/prometheus}",
-  url  = {http://www.cs.berkeley.edu/\~{ }madams/prometheus}
-}
-@Unpublished{Illuminator,
-   author = "Adam C. Powell, IV",
-   title  = "Illuminator Distributed Visualization Library",
-   url   = "http://lyre.mit.edu/\~{ }powell/Illuminator.html"
-}
-@unpublished{rheoplast,
-title  = "RheoPlast Phase Field Multi-Physics Code",
-author = "Adam Powell and David Dussault and Bo Zhou",
-url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
-}
-@Misc{tao-web-page,
-  title   = "{Toolkit for Advanced Optimization (TAO)} {W}eb Page",
-  author  = "Steve Benson and Lois Curfman McInnes and Jorge Mor\'{e} and Jason Sarich",
-  Institution = "Mathematics and Computer Science Division, Argonne National Laboratory",
-  url    = "http://www.mcs.anl.gov/tao",
-}
-@TechReport{tao-user-ref,
-  title   = "{Toolkit for Advanced Optimization (TAO) Users Manual}",
-  author  = "Steve Benson and Lois Curfman McInnes and Jorge Mor\'{e} and Jason Sarich",
-  Institution = "Argonne National Laboratory",
-  Year   = 2003,
-  month  = Jan,
-  Number = "ANL/MCS-TM-242 - Revision 1.5",
-  url    = "http://www.mcs.anl.gov/tao",
-}
-@Unpublished{MEFpp-web-page,
-  title       = "{MEF++} {W}eb {P}age",
-  url        =	"http://www.giref.ulaval.ca/ressources/projets/mefpp.html",
-  Institution = "Groupe Interdisiplinaire de Recherche en Elements Finis",
-  author      = "Eric Chamberland",
-  note = "A finite element code for fluid dynamics, solid mechanics, thermal and multiphysics"
-}
-@Unpublished{tipetsc-web-page,
-  title = 	"Ti-PETSc - an interface to PETSc from Titanium",
-  Institution = "Berkeley",
-  url = 	"http://www.cs.berkeley.edu/\~{ }liblit/ti-petsc"
-}
-@misc{multiphase-web-page,
-  Author = "Q. Zou",
-  title = 	"Multiphase flow with {PETSc}",
-  Institution = "LANL",
-  howpublished = "\url{http://cnls-www.lanl.gov/~qzou}",
-  url = {http://cnls-www.lanl.gov/\~{ }qzou}
-}
-@misc{electromag-web-page,
-  title = 	"{EMSolve Web} page",
-  Institution = "LLNL",
-  howpublished = "\url{http://www.llnl.gov/casc/emsolve}",
-  url = {http://www.llnl.gov/casc/emsolve},
-  author = "Daniel {White et al.}"
-}
-@Unpublished{fe-software-web-page,
-  Institution = "Kuleuven",
-  title =  "Finite element software",	
-  url = 	"http://www.esat.kuleuven.ac.be/elen/research/software-development"
-}
-@Misc{petsc-web-page,
-  author =	 {Satish Balay and Kris Buschelman and Victor Eijkhout
-                  and William~D. Gropp and Dinesh Kaushik and
-                  Matthew~G. Knepley and Lois Curfman McInnes and
-                  Barry~F. Smith and Hong Zhang},
-  title =	 {{PETS}c {W}eb page},
-  url =		 {http://www.mcs.anl.gov/petsc},
-  howpublished = {\url{http://www.mcs.anl.gov/petsc}}
-}
-@Unpublished{petsc-debian-package,
-    author = "Adam C. Powell, IV",
-    title  = "Debian package for PETSc",
-    url   = "http://lyre.mit.edu/\~{ }powell/petsc.html"
-}
-@Unpublished{cactus,
-    title  = "Cactus Website",
-    url   = "http://www.cactuscode.org/",
-    note = "Provides two interface to the PETSc solvers"
-}
-@Unpublished{PETSc-FEM,
-   author = "Mario Storti and Norberto Nigro",
-  title = 	"PETSc-FEM: A General Purpose, Parallel, Multi-Physics FEM Program",
-  Institution = "Centro Internacional de Metodos Computacionales en Ingenieria (CIMEC)",
-  url = 	"http://www.cimec.org.ar/petscfem"
-}
-@misc{fidap,
-  title = 	"FIDAP 8.5",
-  howpublished = "\url{http://www.fluent.com}",
-  url          = {http://www.fluent.com},
-  note = 	"Fluent's commercial finite element fluid code uses PETSc for parallel linear solves.",
-  key = 	"FIDAP 8.5"
-}
-@Unpublished{slepc,
-  author =       " Vicente Hern\'andez and Jos\'e E. Rom\'an and Vicent Vidal",
-  title = 	"SLEPc Homepage",
-  url = 	"http://www.grycap.upv.es/slepc/",
-  note = 	"Scalable Library for Eigenvalue Problem Computations"
-}
-@misc{deal.II,
-  title = 	"deal.II",
-  howpublished = "\url{http://www.dealii.org}",
-  url          = {http://www.dealii.org},
-  note = 	"deal.II is a C++ library targeting adaptive finite elements and error estimation. It allows PETSc linear algebra and solvers to be used underneath.",
-  key = 	"deal.II 5.0"
-}
-@misc{globalarrays,
-   author = "Jarek {Nieplocha et al.}",
-  title = 	"Global Arrays", 
-  Institution = "Pacific Northwest National Laboratories",
-  howpublished = 	"\url{http://www.emsl.pnl.gov/docs/global}",
-  url =	{http://www.emsl.pnl.gov/docs/global},
-  note = "Global arrays can use PETSc linear solvers"
-}
-%
 %  <a name="nano"><H3><center>Nano-simulations</center></H3>
 %
 @article{scholz-batra1,
@@ -1849,6 +1635,220 @@ pages   = "157--166"
   year = "2000",
   volume = "16",
   pages = "173--186"
+}
+%
+%  <a name="packages"></a><H3><center>Software Packages that use or interface to PETSc</center></H3>
+%
+@INBOOK{JiaoLiMa99,
+ author    = "Xiangmin Jiao and Xiang-Yang Li and Xiaosong Ma",
+ title     = "SIFFEA:Scalable Integrated Framework for Finite Element Analysis",
+ url       = "http://portal.acm.org/citation.cfm?id=646895.709725",
+ booktitle = "Lecture Notes in Computer Science",
+ publisher = "Springer-Verlag",
+ volume    = 1732,
+ year      = 1999
+}
+@article{crow1,
+   author = {C. S. Crow IV},
+   title  = "DistSolve: An Open Source Web Service for Solving Sparse Systems of Equations",
+   journal = "Hopkins Undergraduate Research Journal",
+   year    = 2003,
+   url = "http://www.jhu.edu/hurj/issue2/09D%20Crow%20DistSolve.pdf"
+}
+@Unpublished{petsc-python,
+  title = 	"PETSc for Python",
+  author = "L. Dalcin and R. Paz and M. Storti",
+  institution = "International Center for Computer Methods in Engineering",
+  url = "http://www.cimec.org.ar/python",
+  note = "Provides Python bindings for PETSc via SWIG"
+}
+@Unpublished{cfdship,
+  title = 	"CFDShip-Iowa",
+  author = "Pablo M. Carrica and Robert V. Wilson and Fred Stern",
+  institution = "University of Iowa",
+  url = "http://www.iihr.uiowa.edu/~cfdship/",
+  note = "CFDShip_iowa is a multiblock free surface flow solver that uses overset structured grids, designed for ship applications"
+}
+@Unpublished{bvw,
+  title = 	"Multiflow",
+  author = "Berend van Wachem",
+  institution = "Mechanical Engineering - Chalmers University of Technology",
+  url = "http://www.tfd.chalmers.se/\~{ }berend/page3.html",
+  note = "MultiFlow is a  curvlinear, multiblock, multiprocessor flowsolver for multiphase flows."
+}
+@Unpublished{dks2,
+  title = 	"FENA - A Finite Element Model for the North Atlantic",
+  author = "Jens Schroeter",
+  institution = "Alfred-Wegener-Institute for Polar and Marine Research",
+  url = "http://www.awi-bremerhaven.de/Modelling/INVERSE/FENAdesc/FENAdesc.html"
+}
+@Unpublished{magpar,
+   author     = "W. Scholz",
+  title = 	"Magpar: Parallel Micromagnetics Code",
+  Institution = "Vienna University of Technology",
+  url = 	"http://magnet.atp.tuwien.ac.at/scholz/magpar/"
+}
+@Misc{libMesh:sourceforge,
+  author        = {},
+  title         = {{libMesh}:a C++ framework for the numerical simulation of partial differential equations on serial and parallel platforms},
+  note          = {[Online]},
+  URL  = {http://libmesh.sourceforge.net}
+}
+@Unpublished{underworld,
+  author = "Louis Moresi",
+  title = 	"UnderWorld: A Geodynamics Modelling Code",
+  Institution = "Monash University",
+  url = 	"http://www.mcc.monash.edu/twiki/view/Codes"
+}
+@Unpublished{Snark,
+  title = 	"Snark:  A suite of software for geoscientific applications and a philosophy of scientific software development",
+  Institution = "Victorian Partnership for Advanced Computing",
+  url = 	"http://vpac.org/Snark"
+}
+@Misc{imoose:sourceforge,
+  author        = {Guido Arians and Thomas Bauer and Christian Kaehler and
+                   Wolfgang Mai and Christoph Monzel and Dirk {van Riesen} and
+                   Christoph Schlensok},
+  title         = {Innovative Modern Object-Oriented Solving Environment - {iMOOSE}},
+  note          = {[Online]},
+  URL  = {http://imoose.sourceforge.net}
+}
+@Unpublished{FoSSI,
+   author     = "Stephan Frickenhaus",
+  title = 	"FoSSI: Family of Simplified Solver Interfaces, offers scalable access to MPI-parallel
+                 solvers from CSR-matrix format frequently used in sequential/vector codes", 
+  Institution = "AWI-Bremerhaven, Germanny",
+  url = 	"http://www.awi-bremerhaven.de/InfoCenter/IT/WorkingGroups/SciComp/SSolversUG.html"
+}
+@Unpublished{fun3dweb,
+   author = "Dinesh Kaushik",
+  title = 	"PETSC-FUN3D Benchmark Page", 
+  Institution = "ODU/ANL",
+  url = 	"http://www.mcs.anl.gov/petsc-fun3d",
+  note = "CFD Benchmark of some solvers in PETSc"
+}
+@Unpublished{scirun,
+   author = "SCIRun Development Team",
+  title = 	"SCIRun", 
+  Institution = "University of Utah",
+  url = 	"http://www.sci.utah.edu/stories/2001/jul_scirun120.html",
+  note = "SCIRun now uses PETSc linear solvers"
+}
+@misc{prometheus,
+   author = "Mark F. Adams",
+  title = 	"Prometheus - A scalable unstructured finite element solver",
+  Institution = "Berkeley",
+  howpublished = "\url{http://www.cs.berkeley.edu/~madams/prometheus}",
+  url  = {http://www.cs.berkeley.edu/\~{ }madams/prometheus}
+}
+@Unpublished{Illuminator,
+   author = "Adam C. Powell, IV",
+   title  = "Illuminator Distributed Visualization Library",
+   url   = "http://lyre.mit.edu/\~{ }powell/Illuminator.html"
+}
+@unpublished{rheoplast,
+title  = "RheoPlast Phase Field Multi-Physics Code",
+author = "Adam Powell and David Dussault and Bo Zhou",
+url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
+}
+@Misc{tao-web-page,
+  title   = "{Toolkit for Advanced Optimization (TAO)} {W}eb Page",
+  author  = "Steve Benson and Lois Curfman McInnes and Jorge Mor\'{e} and Jason Sarich",
+  Institution = "Mathematics and Computer Science Division, Argonne National Laboratory",
+  url    = "http://www.mcs.anl.gov/tao",
+}
+@TechReport{tao-user-ref,
+  title   = "{Toolkit for Advanced Optimization (TAO) Users Manual}",
+  author  = "Steve Benson and Lois Curfman McInnes and Jorge Mor\'{e} and Jason Sarich",
+  Institution = "Argonne National Laboratory",
+  Year   = 2003,
+  month  = Jan,
+  Number = "ANL/MCS-TM-242 - Revision 1.5",
+  url    = "http://www.mcs.anl.gov/tao",
+}
+@Unpublished{MEFpp-web-page,
+  title       = "{MEF++} {W}eb {P}age",
+  url        =	"http://www.giref.ulaval.ca/ressources/projets/mefpp.html",
+  Institution = "Groupe Interdisiplinaire de Recherche en Elements Finis",
+  author      = "Eric Chamberland",
+  note = "A finite element code for fluid dynamics, solid mechanics, thermal and multiphysics"
+}
+@Unpublished{tipetsc-web-page,
+  title = 	"Ti-PETSc - an interface to PETSc from Titanium",
+  Institution = "Berkeley",
+  url = 	"http://www.cs.berkeley.edu/\~{ }liblit/ti-petsc"
+}
+@misc{multiphase-web-page,
+  Author = "Q. Zou",
+  title = 	"Multiphase flow with {PETSc}",
+  Institution = "LANL",
+  howpublished = "\url{http://cnls-www.lanl.gov/~qzou}",
+  url = {http://cnls-www.lanl.gov/\~{ }qzou}
+}
+@misc{electromag-web-page,
+  title = 	"{EMSolve Web} page",
+  Institution = "LLNL",
+  howpublished = "\url{http://www.llnl.gov/casc/emsolve}",
+  url = {http://www.llnl.gov/casc/emsolve},
+  author = "Daniel {White et al.}"
+}
+@Unpublished{fe-software-web-page,
+  Institution = "Kuleuven",
+  title =  "Finite element software",	
+  url = 	"http://www.esat.kuleuven.ac.be/elen/research/software-development"
+}
+@Misc{petsc-web-page,
+  author =	 {Satish Balay and Kris Buschelman and Victor Eijkhout
+                  and William~D. Gropp and Dinesh Kaushik and
+                  Matthew~G. Knepley and Lois Curfman McInnes and
+                  Barry~F. Smith and Hong Zhang},
+  title =	 {{PETS}c {W}eb page},
+  url =		 {http://www.mcs.anl.gov/petsc},
+  howpublished = {\url{http://www.mcs.anl.gov/petsc}}
+}
+@Unpublished{petsc-debian-package,
+    author = "Adam C. Powell, IV",
+    title  = "Debian package for PETSc",
+    url   = "http://lyre.mit.edu/\~{ }powell/petsc.html"
+}
+@Unpublished{cactus,
+    title  = "Cactus Website",
+    url   = "http://www.cactuscode.org/",
+    note = "Provides two interface to the PETSc solvers"
+}
+@Unpublished{PETSc-FEM,
+   author = "Mario Storti and Norberto Nigro",
+  title = 	"PETSc-FEM: A General Purpose, Parallel, Multi-Physics FEM Program",
+  Institution = "Centro Internacional de Metodos Computacionales en Ingenieria (CIMEC)",
+  url = 	"http://www.cimec.org.ar/petscfem"
+}
+@misc{fidap,
+  title = 	"FIDAP 8.5",
+  howpublished = "\url{http://www.fluent.com}",
+  url          = {http://www.fluent.com},
+  note = 	"Fluent's commercial finite element fluid code uses PETSc for parallel linear solves.",
+  key = 	"FIDAP 8.5"
+}
+@Unpublished{slepc,
+  author =       " Vicente Hern\'andez and Jos\'e E. Rom\'an and Vicent Vidal",
+  title = 	"SLEPc Homepage",
+  url = 	"http://www.grycap.upv.es/slepc/",
+  note = 	"Scalable Library for Eigenvalue Problem Computations"
+}
+@misc{deal.II,
+  title = 	"deal.II",
+  howpublished = "\url{http://www.dealii.org}",
+  url          = {http://www.dealii.org},
+  note = 	"deal.II is a C++ library targeting adaptive finite elements and error estimation. It allows PETSc linear algebra and solvers to be used underneath.",
+  key = 	"deal.II 5.0"
+}
+@misc{globalarrays,
+   author = "Jarek {Nieplocha et al.}",
+  title = 	"Global Arrays", 
+  Institution = "Pacific Northwest National Laboratories",
+  howpublished = 	"\url{http://www.emsl.pnl.gov/docs/global}",
+  url =	{http://www.emsl.pnl.gov/docs/global},
+  note = "Global arrays can use PETSc linear solvers"
 }
 %
 %  <a name="software"><H3><center>Software Engineering</center></H3>
