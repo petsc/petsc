@@ -99,7 +99,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
   ierr = (*ksp->converged)(ksp,0,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);  /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
 
-  i = 0;
+  i = 0; ceta = 0.;
   do {
     ksp->its = i+1;
 
