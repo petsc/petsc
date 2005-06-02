@@ -153,8 +153,7 @@
 !     accordingly.  When using distributed arrays (DAs) to create vectors,
 !     the DAs determine the problem partitioning.  We must explicitly
 !     specify the local matrix dimensions upon its creation for compatibility
-!     with the vector distribution.  Thus, the generic MatCreate() routine
-!     is NOT sufficient when working with distributed arrays.
+!     with the vector distribution.
 !
 !     Note: Here we only approximately preallocate storage space for the
 !     Jacobian.  See the users manual for a discussion of better techniques

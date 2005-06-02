@@ -67,7 +67,7 @@ int main(int argc,char **args)
   /* 
      Create parallel matrix, specifying only its global dimensions.
      When using MatCreate(), the matrix format can be specified at
-     runtime. Also, the parallel partitioning of the matrix is
+     runtime. Also, the parallel partitioning of the matrix can be
      determined by PETSc at runtime.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);

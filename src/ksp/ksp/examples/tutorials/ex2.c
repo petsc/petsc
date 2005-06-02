@@ -55,13 +55,7 @@ int main(int argc,char **args)
 
      Performance tuning note:  For problems of substantial size,
      preallocation of matrix memory is crucial for attaining good 
-     performance.  Since preallocation is not possible via the generic
-     matrix creation routine MatCreate(), we recommend for practical 
-     problems instead to use the creation routine for a particular matrix
-     format, e.g.,
-         MatCreateMPIAIJ() - parallel AIJ (compressed sparse row)
-         MatCreateMPIBAIJ() - parallel block AIJ
-     See the matrix chapter of the users manual for details.
+     performance. See the matrix chapter of the users manual for details.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);

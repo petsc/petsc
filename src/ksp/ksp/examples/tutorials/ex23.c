@@ -66,13 +66,7 @@ int main(int argc,char **args)
 
      Performance tuning note:  For problems of substantial size,
      preallocation of matrix memory is crucial for attaining good 
-     performance.  Since preallocation is not possible via the generic
-     matrix creation routine MatCreate(), we recommend for practical 
-     problems instead to use the creation routine for a particular matrix
-     format, e.g.,
-         MatCreateMPIAIJ() - sequential AIJ (compressed sparse row)
-         MatCreateMPIBAIJ() - block AIJ
-     See the matrix chapter of the users manual for details.
+     performance. See the matrix chapter of the users manual for details.
 
      We pass in nlocal as the "local" size of the matrix to force it
      to have the same parallel layout as the vector created above.
