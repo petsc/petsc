@@ -127,7 +127,10 @@ class Configure(config.base.Configure):
       self.addMakeMacro('SL_LINKER_SUFFIX', '')
     else:
       self.addMakeMacro('SL_LINKER_SUFFIX', self.setCompilers.sharedLibraryExt)
-    self.addMakeMacro('SL_LINKER_LIBS',self.compilers.LIBS+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs]))
+    if self.setCompilers.isDarwin() and self.languages.clanguage == 'Cxx':
+      self.addMakeMacro('SL_LINKER_LIBS', self.compilers.LIBS+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs])+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.cxxlibs]))
+    else:
+      self.addMakeMacro('SL_LINKER_LIBS', self.compilers.LIBS+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs]))
 #-----------------------------------------------------------------------------------------------------
 
     # CONLY or CPP. We should change the PETSc makefiles to do this better
