@@ -133,7 +133,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
 #define VecXDot(x,y,a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
 #endif
 
-  if (eigs) {e = cg->e; d = cg->d; e[0] = 0.0; b = 0.0; }
+  if (eigs) {e = cg->e; d = cg->d; e[0] = 0.0; }
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   ksp->its = 0;
@@ -176,15 +176,16 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      }
      if (!i) {
        ierr = VecCopy(Z,P);CHKERRQ(ierr);         /*     p <- z          */
+       b = 0.0;
      } else {
-         b = beta/betaold;
-         if (eigs) {
-	   if (ksp->max_it != stored_max_it) {
-	     SETERRQ(PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
-	   }
-           e[i] = sqrt(PetscAbsScalar(b))/a;  
-         }
-         ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
+       b = beta/betaold;
+       if (eigs) {
+	 if (ksp->max_it != stored_max_it) {
+	   SETERRQ(PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
+	 }
+	 e[i] = sqrt(PetscAbsScalar(b))/a;  
+       }
+       ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
      }
      betaold = beta;
      ierr = KSP_MatMult(ksp,Amat,P,Z);CHKERRQ(ierr);      /*     z <- Kp         */
