@@ -81,7 +81,10 @@ class Bootstrapper(script.Script):
     os.remove(tarball)
     oldDir = os.getcwd()
     os.chdir(os.path.join(self.baseDir, self.mapper.getRepositoryPath(url)))
-    self.vc.pull(url)
+    try:
+      self.vc.pull(url)
+    except RuntimeError, e:
+      self.logPrint('ERROR: Could not pull Compiler: '+str(e))
     os.chdir(oldDir)
     return
 
