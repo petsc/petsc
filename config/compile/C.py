@@ -161,6 +161,13 @@ class StaticLinker(SharedLinker):
       return self.configCompilers.AR_FLAGS
     return self.argDB['AR_FLAGS']
 
+  def getFlags(self):
+    '''Returns a string with the flags specified for running this processor.'''
+    if not hasattr(self, '_flags'):
+      return ''
+    return self._flags
+  flags = property(getFlags, config.compile.processor.Processor.setFlags, doc = 'The flags for the static library')
+
   def getRanlib(self):
     '''Returns the processor executable'''
     if hasattr(self, 'configCompilers'):
