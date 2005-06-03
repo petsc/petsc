@@ -133,13 +133,13 @@ int main(int argc,char **args)
      ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
      ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
   }    
+  ierr = MatZeroRows(A,4*m,rows,one);CHKERRQ(ierr);
   ierr = PetscFree(rows);CHKERRQ(ierr);
+
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr); 
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
-
-  ierr = MatZeroRows(A,4*m,rows,one);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                 Create the linear solver and set various options
