@@ -423,7 +423,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
   PetscInt       i,j,k;
   PetscReal      norm;
   PetscScalar    zero = 0.0,mone = -1.0,one = 1.0;
-  PC_MG          *mg;
+  PC_MG          **mg;
   PC             pc;
 
   PetscFunctionBegin;
@@ -435,7 +435,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
   }
 
   ierr = KSPGetPC(dmmg[level]->ksp,&pc);CHKERRQ(ierr);
-  mg   = ((PC_MG*)pc->data);
+  mg   = ((PC_MG**)pc->data);
 
   for (i=0; i<100; i++) {
 
@@ -467,7 +467,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
         for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
         ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %g\n",norm);CHKERRQ(ierr);
       }
-      ierr = MatRestrict(mg[j].restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
+      ierr = MatRestrict(mg[j]->restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
       
       /* F(R*x_fine) */
       ierr = VecScatterBegin(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
@@ -495,7 +495,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
     for (j=1; j<=level; j++) {
       /* x_fine = x_fine + R'*(x_coarse - R*x_fine) */
       ierr = VecAXPY(dmmg[j-1]->x,mone,dmmg[j-1]->b);CHKERRQ(ierr);
-      ierr = MatInterpolateAdd(mg[j].interpolate,dmmg[j-1]->x,dmmg[j]->x,dmmg[j]->x);CHKERRQ(ierr);
+      ierr = MatInterpolateAdd(mg[j]->interpolate,dmmg[j-1]->x,dmmg[j]->x,dmmg[j]->x);CHKERRQ(ierr);
 
       if (dmmg[j]->monitorall) {
         /* norm( F(x_fine) - residual_fine ) */
