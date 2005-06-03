@@ -44,6 +44,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceCreate(MPI_Comm comm,PetscTruth ha
   PetscInt       i;
 
   PetscFunctionBegin;
+  if (n) PetscValidPointer(vecs,4); 
+  for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_COOKIE,4); 
+  PetscValidPointer(SP,5); 
+ 
+  *SP = PETSC_NULL; 
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES 
+  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr); 
+#endif 
+
   ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_COOKIE,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(sp,sizeof(struct _p_MatNullSpace));CHKERRQ(ierr);
 
