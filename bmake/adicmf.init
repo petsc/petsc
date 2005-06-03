@@ -12,6 +12,9 @@
 [NO_PREFIX_FUNCTIONS]
 
 [UNEXPANDED_MACROS]
+        PetscErrorCode = "typedef int PetscErrorCode;"
+        PetscBLASInt   = "typedef int PetscBLASInt;"
+        PetscInt       = "typedef int PetscInt;"
 	PetscViewer    = "typedef int PetscViewer;"
 	Vec            = "typedef int Vec;"
 	Mat            = "typedef int Mat;"
@@ -83,3 +86,7 @@
         PetscViewer
         SNESConvergedReason
         Parameter
+        PetscErrorCode
+        PetscBLASInt
+        PetscInt
+

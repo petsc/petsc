@@ -85,3 +85,8 @@
         PetscViewer
         SNESConvergedReason
         Parameter
+        PetscErrorCode
+        PetscBLASInt
+        PetscInt
+
+
