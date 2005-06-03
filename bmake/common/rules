@@ -265,6 +265,7 @@ getmpirun:
                   ${CP} $<.tmp1 $<.tmp2;\
 	          echo '#include "petscda.h"' > $*.ad.c ; \
 	          echo '#include "petscsnes.h"' >> $*.ad.c ;\
+                  echo '#include "petscdmmg.h"' >> $*.ad.c ;\
 	          echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\
                   if [ "foo${ADIC_CC}" != "foo" ]; then \
                     echo ${ADIC_CC}  -i ${PETSC_DIR}/bmake/adic.init $<.tmp1; \
