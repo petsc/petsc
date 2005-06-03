@@ -278,8 +278,8 @@ getmpirun:
 	        cat $<.ad.tmp1  >> $*.ad.c ;\
 	        egrep "main\(" $< > /dev/null ; \
                 if [ "$$?" = 0 ]; then \
-		      echo "#include \"${PETSC_DIR}/src/sys/src/adic/Gradient/ad_grad.c\"" >> $*.ad.c ;\
-	  	      echo "#include \"${PETSC_DIR}/src/sys/src/adic/Gradient/ad_utils.c\"" >> $*.ad.c ;\
+		      echo "#include \"${PETSC_DIR}/src/sys/adic/Gradient/ad_grad.c\"" >> $*.ad.c ;\
+	  	      echo "#include \"${PETSC_DIR}/src/sys/adic/Gradient/ad_utils.c\"" >> $*.ad.c ;\
                 fi;\
                 echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
                 echo "#define ad_GRAD_MAX 1"  >> $*.ad.c ;\
