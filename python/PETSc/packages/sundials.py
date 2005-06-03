@@ -67,7 +67,7 @@ class Configure(PETSc.package.Package):
         for l in self.mpi.lib:
           ll = os.path.basename(l)
           libs.append(ll[3:-2])
-        libs = ' -l'.join(libs)
+        libs = '-l' + ' -l'.join(libs)
         args.append('--with-mpi-libs="'+libs+'"')
       else:
         args.append('--with-mpi-libdir="/usr/lib"')  # dummy case
