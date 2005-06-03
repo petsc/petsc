@@ -287,9 +287,10 @@ getmpirun:
                 echo "typedef struct {double value;double  grad[1];} mfDERIV_TYPE;"  >> $*.ad.c ;\
 	        sed -e "s/DERIV_TYPE/mfDERIV_TYPE/g" $<.ad.tmp2 >> $*.ad.c ;\
 	        echo "#include \"$<\"" >> $*.ad.c ;\
-		${RM} ad_deriv.h ; \
+		${RM} *.ad.tmp* *.c.tmp* ad_deriv.h ; \
 	        echo ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
 	        ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+		${RM} $*.ad.c ; \
               else \
 	        echo ${PETSC_COMPILE_SINGLE} $<; \
 	        ${PETSC_COMPILE_SINGLE} $<; \
