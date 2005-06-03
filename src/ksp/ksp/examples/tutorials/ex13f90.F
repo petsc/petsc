@@ -352,6 +352,9 @@
 
       call KSPSolve(ksp,b,x,ierr)
 
+      call VecResetArray(x,ierr)
+      call VecResetArray(b,ierr)
+
       return
       end
 

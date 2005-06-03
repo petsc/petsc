@@ -1,7 +1,7 @@
 
 #include "petscis.h"
 #include "petscvec.h"
-#include "petscf90.h"
+#include "src/sys/f90/f90impl.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define isgetindicesf90_           ISGETINDICESF90
