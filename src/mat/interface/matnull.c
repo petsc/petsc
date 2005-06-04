@@ -118,7 +118,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace sp)
 -  out - if this is requested (not PETSC_NULL) then this is a vector with the null space removed otherwise
          the removal is done in-place (in vec)
 
-
+   Note: The vector returned is managed by the MatNullSpace, so the user should not destroy it.
 
    Level: advanced
 
@@ -134,7 +134,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec
   Vec            l = vec;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,1); 
+  PetscValidHeaderSpecific(vec,VEC_COOKIE,2); 
+
   if (out) {
+    PetscValidPointer(out,3); 
     if (!sp->vec) {
       ierr = VecDuplicate(vec,&sp->vec);CHKERRQ(ierr);
     }
