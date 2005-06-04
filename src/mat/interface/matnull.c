@@ -44,6 +44,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceCreate(MPI_Comm comm,PetscTruth ha
   PetscInt       i;
 
   PetscFunctionBegin;
+  if (n) PetscValidPointer(vecs,4); 
+  for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_COOKIE,4); 
+  PetscValidPointer(SP,5); 
+ 
+  *SP = PETSC_NULL; 
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES 
+  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr); 
+#endif 
+
   ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_COOKIE,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(sp,sizeof(struct _p_MatNullSpace));CHKERRQ(ierr);
 
@@ -109,7 +118,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace sp)
 -  out - if this is requested (not PETSC_NULL) then this is a vector with the null space removed otherwise
          the removal is done in-place (in vec)
 
-
+   Note: The vector returned is managed by the MatNullSpace, so the user should not destroy it.
 
    Level: advanced
 
@@ -125,7 +134,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec
   Vec            l = vec;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,1); 
+  PetscValidHeaderSpecific(vec,VEC_COOKIE,2); 
+
   if (out) {
+    PetscValidPointer(out,3); 
     if (!sp->vec) {
       ierr = VecDuplicate(vec,&sp->vec);CHKERRQ(ierr);
     }
