@@ -157,8 +157,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec
 
   for (j=0; j<n; j++) {
     ierr = VecDot(l,sp->vecs[j],&sum);CHKERRQ(ierr);
-    sum  = -sum;
-    ierr = VecAXPY(l,sum,sp->vecs[j]);CHKERRQ(ierr);
+    ierr = VecAXPY(l,-sum,sp->vecs[j]);CHKERRQ(ierr);
   }
   
   PetscFunctionReturn(0);
