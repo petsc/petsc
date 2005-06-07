@@ -5,7 +5,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSDefaultComputeJacobianColor"
-/*@C
+/*@
     TSDefaultComputeJacobianColor - Computes the Jacobian using
     finite differences and coloring to exploit matrix sparsity.  
   
@@ -68,7 +68,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultComputeJacobianColor(TS ts,PetscReal t
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSDefaultComputeJacobian"
-/*
+/*@
    TSDefaultComputeJacobian - Computes the Jacobian using finite differences.
 
    Input Parameters:
@@ -90,7 +90,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultComputeJacobianColor(TS ts,PetscReal t
    Level: intermediate
 
 .seealso: TSDefaultComputeJacobianColor()
-*/
+@*/
 PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   Vec            jj1,jj2,xx2;
