@@ -1,10 +1,10 @@
 #define PETSCSNES_DLL
 
-#include "src/snes/impls/ls/ls.h"
+#include "src/snes/impls/ls/ls.h"  /*I "petscsnes.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetLineSearchParams"
-/*@C
+/*@
    SNESLineSearchSetParams - Sets the parameters associated with the line search
    routine in the Newton-based method SNESLS.
 

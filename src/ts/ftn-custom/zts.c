@@ -3,49 +3,39 @@
 #include "petscts.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define tssetproblemtype_                    TSSETPROBLEMTYPE
 #define tssetrhsfunction_                    TSSETRHSFUNCTION
 #define tssetrhsmatrix_                      TSSETRHSMATRIX
 #define tssetrhsjacobian_                    TSSETRHSJACOBIAN
 #define tscreate_                            TSCREATE
-#define tsgetsolution_                       TSGETSOLUTION
-#define tsgetsnes_                           TSGETSNES
-#define tsgetksp_                           TSGETKSP
 #define tsgettype_                           TSGETTYPE
-#define tsdestroy_                           TSDESTROY
 #define tssetmonitor_                        TSSETMONITOR
 #define tssettype_                           TSSETTYPE
-#define tssundialsgetiterations_                TSSUNDIALSGETITERATIONS
-#define tsdefaultcomputejacobian_            TSDEFAULTCOMPUTEJACOBIAN
-#define tsdefaultcomputejacobiancolor_       TSDEFAULTCOMPUTEJACOBIANCOLOR
+#define tssundialsgetiterations_             TSSUNDIALSGETITERATIONS
 #define tsgetoptionsprefix_                  TSGETOPTIONSPREFIX
-#define tsdefaultmonitor_                    TSDEFAULTMONITOR
 #define tsview_                              TSVIEW
 #define tsgetrhsjacobian_                    TSGETRHSJACOBIAN
 #define tsgetrhsmatrix_                      TSGETRHSMATRIX
 #define tssetrhsboundaryconditions_          TSSETRHSBOUNDARYCONDITIONS
+#define tsdefaultcomputejacobian_            TSDEFAULTCOMPUTEJACOBIAN
+#define tsdefaultcomputejacobiancolor_       TSDEFAULTCOMPUTEJACOBIANCOLOR
+#define tsdefaultmonitor_                    TSDEFAULTMONITOR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define tssetproblemtype_                    tssetproblemtype
-#define tsdefaultcomputejacobian_            tsdefaultcomputejacobian
-#define tsdefaultcomputejacobiancolor_       tsdefaultcomputejacobiancolor
-#define tssundialsgetiterations_                tssundialsgetiterations
+#define tssundialsgetiterations_             tssundialsgetiterations
 #define tssetrhsfunction_                    tssetrhsfunction
 #define tssetrhsmatrix_                      tssetrhsmatrix
 #define tssetrhsjacobian_                    tssetrhsjacobian
 #define tscreate_                            tscreate
-#define tsgetsolution_                       tsgetsolution
-#define tsgetsnes_                           tsgetsnes
-#define tsgetksp_                           tsgetksp
 #define tsgettype_                           tsgettype
-#define tsdestroy_                           tsdestroy
 #define tssetmonitor_                        tssetmonitor
 #define tssettype_                           tssettype
 #define tsgetoptionsprefix_                  tsgetoptionsprefix
-#define tsdefaultmonitor_                    tsdefaultmonitor
 #define tsview_                              tsview
 #define tsgetrhsjacobian_                    tsgetrhsjacobian
 #define tsgetrhsmatrix_                      tsgetrhsmatrix
 #define tssetrhsboundaryconditions_          tssetrhsboundaryconditions
+#define tsdefaultcomputejacobian_            tsdefaultcomputejacobian
+#define tsdefaultcomputejacobiancolor_       tsdefaultcomputejacobiancolor
+#define tsdefaultmonitor_                    tsdefaultmonitor
 #endif
 
 
@@ -110,11 +100,6 @@ void PETSC_STDCALL tsgetrhsjacobian_(TS *ts,Mat *J,Mat *M,void **ctx,PetscErrorC
   *ierr = TSGetRHSJacobian(*ts,J,M,ctx);
 }
 
-void PETSC_STDCALL tssetproblemtype_(TS *ts,TSProblemType *t,PetscErrorCode *ierr)
-{
-  *ierr = TSSetProblemType(*ts,*t);
-}
-
 void PETSC_STDCALL tsgetrhsmatrix_(TS *ts,Mat *J,Mat *M,void **ctx,PetscErrorCode *ierr)
 {
   *ierr = TSGetRHSMatrix(*ts,J,M,ctx);
@@ -125,18 +110,6 @@ void PETSC_STDCALL tsview_(TS *ts,PetscViewer *viewer, PetscErrorCode *ierr)
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = TSView(*ts,v);
-}
-
-/* function */
-void tsdefaultcomputejacobian_(TS *ts,PetscReal *t,Vec *xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx,PetscErrorCode *ierr)
-{
-  *ierr = TSDefaultComputeJacobian(*ts,*t,*xx1,J,B,flag,ctx);
-}
-
-/* function */
-void tsdefaultcomputejacobiancolor_(TS *ts,PetscReal *t,Vec *xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx,PetscErrorCode *ierr)
-{
-  *ierr = TSDefaultComputeJacobianColor(*ts,*t,*xx1,J,B,flag,*(MatFDColoring*)ctx);
 }
 
 void PETSC_STDCALL tssettype_(TS *ts,CHAR type PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
@@ -171,6 +144,9 @@ void PETSC_STDCALL tssetrhsmatrix_(TS *ts,Mat *A,Mat *B,PetscErrorCode (PETSC_ST
 
 /* ---------------------------------------------------------*/
 
+extern void tsdefaultcomputejacobian_(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*);
+extern void tsdefaultcomputejacobiancolor_(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*);
+
 void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,
                void*,PetscErrorCode*),void*fP,PetscErrorCode *ierr)
 {
@@ -186,25 +162,10 @@ void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL *f
   }
 }
 
-void PETSC_STDCALL tsgetsolution_(TS *ts,Vec *v,PetscErrorCode *ierr)
-{
-  *ierr = TSGetSolution(*ts,v);
-}
-
 void PETSC_STDCALL tscreate_(MPI_Comm *comm,TS *outts,PetscErrorCode *ierr)
 {
   *ierr = TSCreate((MPI_Comm)PetscToPointerComm(*comm),outts);
   *ierr = PetscMalloc(7*sizeof(void*),&((PetscObject)*outts)->fortran_func_pointers);
-}
-
-void PETSC_STDCALL tsgetsnes_(TS *ts,SNES *snes,PetscErrorCode *ierr)
-{
-  *ierr = TSGetSNES(*ts,snes);
-}
-
-void PETSC_STDCALL tsgetksp_(TS *ts,KSP *ksp,PetscErrorCode *ierr)
-{
-  *ierr = TSGetKSP(*ts,ksp);
 }
 
 void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
@@ -232,15 +193,7 @@ void PETSC_STDCALL tssundialsgetiterations_(TS *ts,PetscInt *nonlin,PetscInt *li
 }
 #endif
 
-void PETSC_STDCALL tsdestroy_(TS *ts,PetscErrorCode *ierr){
-  *ierr = TSDestroy(*ts);
-}
-
-void PETSC_STDCALL tsdefaultmonitor_(TS *ts,PetscInt *step,PetscReal *dt,Vec *x,void *ctx,PetscErrorCode *ierr)
-{
-  *ierr = TSDefaultMonitor(*ts,*step,*dt,*x,ctx);
-}
-
+extern void PETSC_STDCALL tsdefaultmonitor_(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*);
 
 void PETSC_STDCALL tssetmonitor_(TS *ts,void (PETSC_STDCALL *func)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*),void (*mctx)(void),void (PETSC_STDCALL *d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {

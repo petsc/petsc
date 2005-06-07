@@ -386,7 +386,7 @@ PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSNESMF"
-/*@C
+/*@
    MatCreateSNESMF - Creates a matrix-free matrix context for use with
    a SNES solver.  This matrix can be used as the Jacobian argument for
    the routine SNESSetJacobian().
@@ -624,7 +624,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMF"
-/*@C
+/*@
    MatCreateMF - Creates a matrix-free matrix. See also MatCreateSNESMF() 
 
    Collective on Vec

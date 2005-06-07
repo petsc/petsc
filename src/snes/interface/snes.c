@@ -511,7 +511,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberLinearIterations(SNES snes,Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESGetKSP"
-/*@C
+/*@
    SNESGetKSP - Returns the KSP context for a SNES solver.
 
    Not Collective, but if SNES object is parallel, then KSP object is parallel
@@ -553,7 +553,7 @@ static PetscErrorCode SNESPublish_Petsc(PetscObject obj)
 /* -----------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate"
-/*@C
+/*@
    SNESCreate - Creates a nonlinear solver context.
 
    Collective on MPI_Comm
@@ -1080,7 +1080,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESDestroy"
-/*@C
+/*@
    SNESDestroy - Destroys the nonlinear solver context that was created
    with SNESCreate().
 
@@ -1408,7 +1408,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceTest(SNES snes,PetscErrorCo
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESGetConvergedReason"
-/*@C
+/*@
    SNESGetConvergedReason - Gets the reason the SNES iteration was stopped.
 
    Not Collective
@@ -1784,7 +1784,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES snes,SNESType type)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESRegisterDestroy"
-/*@C
+/*@
    SNESRegisterDestroy - Frees the list of nonlinear solvers that were
    registered by SNESRegisterDynamic().
 
@@ -1837,7 +1837,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetType(SNES snes,SNESType *type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESGetSolution"
-/*@C
+/*@
    SNESGetSolution - Returns the vector where the approximate solution is
    stored.
 
@@ -1895,7 +1895,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetSolution(SNES snes,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESGetSolutionUpdate"
-/*@C
+/*@
    SNESGetSolutionUpdate - Returns the vector where the solution update is
    stored. 
 
