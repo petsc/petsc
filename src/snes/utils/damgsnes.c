@@ -4,6 +4,12 @@
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
 #include "petscdmmg.h"    /*I      "petscdmmg.h"  I*/
 
+#if defined(PETSC_HAVE_ADIC)
+extern PetscErrorCode DMMGComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode DMMGSolveFAS(DMMG*,PetscInt);
+extern PetscErrorCode DMMGComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+
+#endif
 /*
       period of -1 indicates update only on zeroth iteration of SNES
 */

@@ -1,3 +1,6 @@
+#requirespackage  'PETSC_HAVE_ADIC'
+#requiresscalar real 
+#requiresprecision double
 
 ALL: lib
 
