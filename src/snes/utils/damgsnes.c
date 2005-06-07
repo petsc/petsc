@@ -257,7 +257,7 @@ PetscErrorCode DMMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *f
 #if defined(PETSC_HAVE_ADIC)
 #undef __FUNCT__
 #define __FUNCT__ "SNESDAComputeJacobianWithAdic"
-/*@C
+/*@
     SNESDAComputeJacobianWithAdic - This is a universal Jacobian evaluation routine
     that may be used with SNESSetJacobian() as long as the user context has a DA as
     its first record and DASetLocalAdicFunction() has been called.  
