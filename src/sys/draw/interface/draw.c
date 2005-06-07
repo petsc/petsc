@@ -164,7 +164,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawAppendTitle(PetscDraw draw,const char ti
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawDestroy" 
-/*@C
+/*@
    PetscDrawDestroy - Deletes a draw context.
 
    Collective on PetscDraw
@@ -198,7 +198,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawDestroy(PetscDraw draw)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawGetPopup" 
-/*@C
+/*@
    PetscDrawGetPopup - Creates a popup window associated with a PetscDraw window.
 
    Collective on PetscDraw
