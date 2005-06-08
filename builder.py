@@ -30,8 +30,8 @@ class DependencyChecker(logging.Logger):
         raise RuntimeError('Source file not found for compile: '+str(f))
     if not target is None and not os.path.isfile(target):
       self.logPrint('Source '+str(source)+' rebuilds due to missing target '+str(target))
-      return True
-    return False
+      return 1
+    return 0
 
   def update(self, source):
     '''Update the information for source in the database'''
@@ -56,15 +56,15 @@ class MD5DependencyChecker(DependencyChecker):
        - If the checksum for source has changed, then rebuild
        - If any dependency would be rebuilt, then rebuild'''
     if DependencyChecker.__call__(self, source, target):
-      return True
+      return 1
     for f in source:
       if not f in self.sourceDB:
         self.logPrint('Source '+str(source)+' rebuilds due to file '+str(f)+' missing from database')
-        return True
+        return 1
       checksum = self.sourceDB.getChecksum(f)
       if not self.sourceDB[f][0] == checksum:
         self.logPrint('Source '+str(source)+' rebuilds due to changed checksum('+str(checksum)+') of file '+str(f))
-        return True
+        return 1
       if checked is None:
         checked = sets.Set()
       for dep in self.sourceDB[f][3]:
@@ -74,9 +74,9 @@ class MD5DependencyChecker(DependencyChecker):
           checked.add(dep)
         if self([dep], None, checked):
           self.logPrint('Source '+str(source)+' rebuilds due to rebuilt dependecy '+str(dep))
-          return True
+          return 1
     self.logPrint('Source '+str(source)+' will not be rebuilt into target '+str(target))
-    return False
+    return 0
 
 class TimeDependencyChecker(DependencyChecker):
   '''This class uses modification times to detect changes in files'''
@@ -87,19 +87,19 @@ class TimeDependencyChecker(DependencyChecker):
        - If the checksum for source has changed, then rebuild
        - If any dependency would be rebuilt, then rebuild'''
     if DependencyChecker.__call__(self, source, target):
-      return True
+      return 1
     if not target is None:
       targetModTime = self.sourceDB.getModificationTime(target)
     for f in source:
       if not f in self.sourceDB:
         self.logPrint('Source '+str(source)+' rebuilds due to file '+str(f)+' missing from database')
-        return True
+        return 1
       if self.sourceDB[f][1] < self.sourceDB.getModificationTime(f):
         self.logPrint('Source '+str(source)+' rebuilds due to changed modification time of file '+str(f))
-        return True
+        return 1
       if targetModTime < self.sourceDB.getModificationTime(f):
         self.logPrint('Source '+str(source)+' rebuilds due to later modification time of '+str(f)+' than target '+str(target))
-        return True
+        return 1
       if checked is None:
         checked = sets.Set()
       for dep in self.sourceDB[f][3]:
@@ -109,9 +109,9 @@ class TimeDependencyChecker(DependencyChecker):
           checked.add(dep)
         if self([dep], None, checked):
           self.logPrint('Source '+str(source)+' rebuilds due to rebuilt dependecy '+str(dep))
-          return True
+          return 1
     self.logPrint('Source '+str(source)+' will not be rebuilt into target '+str(target))
-    return False
+    return 0
 
   def update(self, source):
     '''Do not calculate a checksum, as it may be too expensive'''
