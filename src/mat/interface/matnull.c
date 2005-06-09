@@ -118,7 +118,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace sp)
 -  out - if this is requested (not PETSC_NULL) then this is a vector with the null space removed otherwise
          the removal is done in-place (in vec)
 
-   Note: The user is responsible for the vector returned and should destroy it.
+   Note: The user is not responsible for the vector returned and should not destroy it.
 
    Level: advanced
 
@@ -145,7 +145,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec
     *out = sp->vec;
     ierr = VecCopy(vec,*out);CHKERRQ(ierr);
     l    = *out;
-    ierr = PetscObjectReference((PetscObject) l);CHKERRQ(ierr);
   }
 
   if (sp->has_cnst) {
