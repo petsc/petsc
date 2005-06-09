@@ -15,6 +15,9 @@
 #define VecType character*(80)
 #define VecOperation PetscEnum
 
+#define MAP_SEQ 'seq'
+#define MAP_MPI 'mpi'
+
 #define VECSEQ 'seq'
 #define VECMPI 'mpi'
 #define VECFETI 'feti'
