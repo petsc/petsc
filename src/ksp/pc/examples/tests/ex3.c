@@ -16,7 +16,7 @@ int main(int argc,char **args)
   KSP            ksp;          /* KSP context */
   PetscErrorCode ierr;
   PetscInt       n = 10,i,its,col[3];
-  PetscScalar    value[3],one = 1.0,zero = 0.0;
+  PetscScalar    value[3];
   KSPType        kspname;
   PCType         pcname;
 

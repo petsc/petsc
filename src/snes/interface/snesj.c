@@ -20,8 +20,9 @@
 
    Options Database Key:
 +  -snes_fd - Activates SNESDefaultComputeJacobian()
--  -snes_test_err - Square root of function error tolerance, default square root of machine
+.  -snes_test_err - Square root of function error tolerance, default square root of machine
                     epsilon (1.e-8 in double, 3.e-4 in single)
+-  -mat_fd_type - Either wp or ds (see MATSNESMF_WP or MATSNESMF_DS)
 
    Notes:
    This routine is slow and expensive, and is not currently optimized
@@ -30,26 +31,27 @@
    in large-scale applications, It can be useful in checking the
    correctness of a user-provided Jacobian.
 
-   An alternative routine that uses coloring to explot matrix sparsity is
+   An alternative routine that uses coloring to exploit matrix sparsity is
    SNESDefaultComputeJacobianColor().
 
    Level: intermediate
 
 .keywords: SNES, finite differences, Jacobian
 
-.seealso: SNESSetJacobian(), SNESDefaultComputeJacobianColor()
+.seealso: SNESSetJacobian(), SNESDefaultComputeJacobianColor(), MatCreateSNESMF()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   Vec            j1a,j2a,x2;
   PetscErrorCode ierr;
-  PetscInt       i,N,start,end,j;
-  PetscScalar    dx,mone = -1.0,*y,scale,*xx,wscale;
+  PetscInt       i,N,start,end,j,value;
+  PetscScalar    dx,*y,scale,*xx,wscale;
   PetscReal      amax,epsilon = PETSC_SQRT_MACHINE_EPSILON;
-  PetscReal      dx_min = 1.e-16,dx_par = 1.e-1;
+  PetscReal      dx_min = 1.e-16,dx_par = 1.e-1,unorm;
   MPI_Comm       comm;
   PetscErrorCode (*eval_fct)(SNES,Vec,Vec)=0;
-  PetscTruth     assembled;
+  PetscTruth     assembled,use_wp = PETSC_TRUE,flg;
+  const char     *list[2] = {"ds","wp"};
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetReal(snes->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
@@ -71,6 +73,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,M
   ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
   ierr = (*eval_fct)(snes,x1,j1a);CHKERRQ(ierr);
 
+  ierr = PetscOptionsEList("-mat_fd_type","Algorithm to compute difference parameter","SNESDefaultComputeJacobian",list,2,"wp",&value,&flg);CHKERRQ(ierr);
+  if (flg && !value) {
+    use_wp = PETSC_FALSE;
+  }
+  if (use_wp) {
+    ierr = VecNorm(x1,NORM_2,&unorm);CHKERRQ(ierr);
+  }
   /* Compute Jacobian approximation, 1 column at a time. 
       x1 = current iterate, j1a = F(x1)
       x2 = perturbed iterate, j2a = F(x2)
@@ -79,7 +88,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,M
     ierr = VecCopy(x1,x2);CHKERRQ(ierr);
     if (i>= start && i<end) {
       ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
-      dx = xx[i-start];
+      if (use_wp) {
+        dx = 1.0 + unorm;
+      } else {
+        dx = xx[i-start];
+      }
       ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
       if (dx < dx_min && dx >= 0.0) dx = dx_par;
@@ -95,7 +108,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,M
       wscale = 0.0;
     }
     ierr = (*eval_fct)(snes,x2,j2a);CHKERRQ(ierr);
-    ierr = VecAXPY(j2a,mone,j1a);CHKERRQ(ierr);
+    ierr = VecAXPY(j2a,-1.0,j1a);CHKERRQ(ierr);
     /* Communicate scale to all processors */
     ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
     ierr = VecScale(j2a,scale);CHKERRQ(ierr);
