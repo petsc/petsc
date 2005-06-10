@@ -316,7 +316,7 @@ void PETSC_STDCALL matgetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCo
   *ierr = PetscScalarAddressToFortran((PetscObject)*mat,fa,mm,m*n,ia); if (*ierr) return;
 }
 
-void PETSC_STDCALL matrestorearray_(Mat *mat,PetscScalar *fa,PetscInt *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL matrestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscScalar          *lx;
   PetscInt                  m,n;
@@ -568,7 +568,7 @@ void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *isrow,IS *iscol,M
     for (i=0; i<*n; i++) {
       smat[i] = lsmat[i];
     }
-    PetscFree(lsmat); 
+    *ierr = PetscFree(lsmat); 
   } else {
     *ierr = MatGetSubMatrices(*mat,*n,isrow,iscol,*scall,&smat);
   }
