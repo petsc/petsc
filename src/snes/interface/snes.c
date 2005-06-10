@@ -809,8 +809,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES snes,Vec x,Vec y)
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() before SNESComputeFunction(), likely called from SNESSolve().");
   }
   if (snes->afine) {
-    PetscScalar mone = -1.0;
-    ierr = VecAXPY(y,mone,snes->afine);CHKERRQ(ierr);
+    ierr = VecAXPY(y,-1.0,snes->afine);CHKERRQ(ierr);
   }
   snes->nfuncs++;
   ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
