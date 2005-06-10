@@ -151,7 +151,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetDebuggerFromString(char *string)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscAttachDebugger" 
-/*@C
+/*@
    PetscAttachDebugger - Attaches the debugger to the running process.
 
    Not Collective

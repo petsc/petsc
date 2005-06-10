@@ -6,137 +6,75 @@
 void *PETSCNULLPOINTERADDRESS = PETSC_NULL;
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define petscpopsignalhandler_     PETSCPOPSIGNALHANDLER
-#define petscgetcputime_           PETSCGETCPUTIME
 #define petscfopen_                PETSCFOPEN
-#define petscfclose_               PETSCFCLOSE
 #define petscfprintf_              PETSCFPRINTF
 #define petscsynchronizedfprintf_  PETSCSYNCHRONIZEDFPRINTF
 #define petscprintf_               PETSCPRINTF
 #define petscsynchronizedprintf_   PETSCSYNCHRONIZEDPRINTF
-#define petscsynchronizedflush_    PETSCSYNCHRONIZEDFLUSH
 #define chkmemfortran_             CHKMEMFORTRAN
-#define petscattachdebugger_       PETSCATTACHDEBUGGER
 #define petscobjectsetname_        PETSCOBJECTSETNAME
-#define petscobjectdestroy_        PETSCOBJECTDESTROY
 #define petscobjectgetcomm_        PETSCOBJECTGETCOMM
 #define petscobjectgetname_        PETSCOBJECTGETNAME
 #define petscgetflops_             PETSCGETFLOPS
 #define petscerror_                PETSCERROR
-#define petscrandomcreate_         PETSCRANDOMCREATE
-#define petscrandomdestroy_        PETSCRANDOMDESTROY
-#define petscrandomgetvalue_       PETSCRANDOMGETVALUE
 #define petscmallocvalidate_       PETSCMALLOCVALIDATE
 #define petscrealview_             PETSCREALVIEW
 #define petscintview_              PETSCINTVIEW
-#define petscsequentialphasebegin_ PETSCSEQUENTIALPHASEBEGIN
-#define petscsequentialphaseend_   PETSCSEQUENTIALPHASEEND
 #define petsctrlog_                PETSCTRLOG
-#define petscmemcpy_               PETSCMEMCPY
 #define petscmallocdump_           PETSCMALLOCDUMP
 #define petscmallocdumplog_        PETSCMALLOCDUMPLOG
-#define petscmemzero_              PETSCMEMZERO
 #define petscbinaryopen_           PETSCBINARYOPEN
-#define petscbinaryread_           PETSCBINARYREAD
-#define petscbinarywrite_          PETSCBINARYWRITE
-#define petscbinaryclose_          PETSCBINARYCLOSE
-#define petscbinaryseek_           PETSCBINARYSEEK
 #define petscfixfilename_          PETSCFIXFILENAME
 #define petscstrncpy_              PETSCSTRNCPY
-#define petscbarrier_              PETSCBARRIER
-#define petscsynchronizedflush_    PETSCSYNCHRONIZEDFLUSH
-#define petscsplitownership_       PETSCSPLITOWNERSHIP
-#define petscsplitownershipblock_  PETSCSPLITOWNERSHIPBLOCK
-#define petscobjectgetnewtag_      PETSCOBJECTGETNEWTAG
-#define petsccommgetnewtag_        PETSCCOMMGETNEWTAG
 #define petscfptrap_               PETSCFPTRAP
 #define petscoffsetfortran_        PETSCOFFSETFORTRAN
 #define petscmatlabenginecreate_      PETSCMATLABENGINECREATE
-#define petscmatlabenginedestroy_     PETSCMATLABENGINEDESTROY
 #define petscmatlabengineevaluate_    PETSCMATLABENGINEEVALUATE
 #define petscmatlabenginegetoutput_   PETSCMATLABENGINEGETOUTPUT
 #define petscmatlabengineprintoutput_ PETSCMATLABENGINEPRINTOUTPUT
-#define petscmatlabengineput_         PETSCMATLABENGINEPUT
-#define petscmatlabengineget_         PETSCMATLABENGINEGET
 #define petscmatlabengineputarray_    PETSCMATLABENGINEPUTARRAY
 #define petscmatlabenginegetarray_    PETSCMATLABENGINEGETARRAY
 #define petscgetmemoryusage    _      PETSCGETMEMORYUSAGE
 #define petscviewerasciiprintf_       PETSCVIEWERASCIIPRINTF
 #define petscviewerasciisynchronizedprintf_       PETSCVIEWERASCIISYNCHRONIZEDPRINTF
-#define petscviewerasciisettab_       PETSCVIEWERASCIISETTAB
-#define petscviewerasciipushtab_      PETSCVIEWERASCIIPUSHTAB
-#define petscviewerasciipoptab_       PETSCVIEWERASCIIPOPTAB
-#define petscviewerasciiusetabs_      PETSCVIEWERASCIIUSETABS
 #define petscpusherrorhandler_        PETSCPUSHERRORHANDLER
-#define petscpoperrorhandler_         PETSCPOPERRORHANDLER
 #define petsctracebackerrorhandler_   PETSCTRACEBACKERRORHANDLER
 #define petscaborterrorhandler_       PETSCABORTERRORHANDLER
 #define petscignoreerrorhandler_      PETSCIGNOREERRORHANDLER
 #define petscemacsclienterrorhandler_ PETSCEMACSCLIENTERRORHANDLER
 #define petscattachdebuggererrorhandler_   PETSCATTACHDEBUGGERERRORHANDLER
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscpopsignalhandler_        petscpopsignalhandler
 #define petscfopen_                   petscfopen
-#define petscfclose_                  petscfclose
 #define petscfprintf_                 petscfprintf
 #define petscsynchronizedfprintf_     petscsynchronizedfprintf
 #define petscprintf_                  petscprintf
 #define petscsynchronizedprintf_      petscsynchronizedprintf
-#define petscsynchronizedflush_       petscsynchronizedflush
 #define petscmatlabenginecreate_      petscmatlabenginecreate
-#define petscmatlabenginedestroy_     petscmatlabenginedestroy
 #define petscmatlabengineevaluate_    petscmatlabengineevaluate
 #define petscmatlabenginegetoutput_   petscmatlabenginegetoutput
 #define petscmatlabengineprintoutput_ petscmatlabengineprintoutput
-#define petscmatlabengineput_         petscmatlabengineput
-#define petscmatlabengineget_         petscmatlabengineget
 #define petscmatlabengineputarray_    petscmatlabengineputarray
 #define petscmatlabenginegetarray_    petscmatlabenginegetarray
 #define petscoffsetfortran_        petscoffsetfortran     
 #define chkmemfortran_             chkmemfortran
-#define petscobjectgetnewtag_      petscobjectgetnewtag
-#define petsccommgetnewtag_        petsccommgetnewtag
-#define petscsplitownership_       petscsplitownership
-#define petscsplitownershipblock_  petscsplitownershipblock
-#define petscbarrier_              petscbarrier
 #define petscstrncpy_              petscstrncpy
 #define petscfixfilename_          petscfixfilename
-#define petscattachdebugger_       petscattachdebugger
 #define petscobjectsetname_        petscobjectsetname
-#define petscobjectdestroy_        petscobjectdestroy
 #define petscobjectgetcomm_        petscobjectgetcomm
 #define petscobjectgetname_        petscobjectgetname
 #define petscgetflops_             petscgetflops 
 #define petscerror_                petscerror
-#define petscrandomcreate_         petscrandomcreate
-#define petscrandomdestroy_        petscrandomdestroy
-#define petscrandomgetvalue_       petscrandomgetvalue
 #define petscmallocvalidate_       petscmallocvalidate
 #define petscrealview_             petscrealview
 #define petscintview_              petscintview
-#define petscsequentialphasebegin_ petscsequentialphasebegin
-#define petscsequentialphaseend_   petscsequentialphaseend
-#define petscmemcpy_               petscmemcpy
 #define petscmallocdump_           petscmallocdump
 #define petscmallocdumplog_        petscmallocdumplog
-#define petscmemzero_              petscmemzero
 #define petscbinaryopen_           petscbinaryopen
-#define petscbinaryread_           petscbinaryread
-#define petscbinarywrite_          petscbinarywrite
-#define petscbinaryclose_          petscbinaryclose
-#define petscbinaryseek_           petscbinaryseek
-#define petscsynchronizedflush_    petscsynchronizedflush
 #define petscfptrap_               petscfptrap
-#define petscgetcputime_           petscgetcputime
 #define petscgetmemoryusage_       petscgetmemoryusage
 #define petscviewerasciiprintf_    petscviewerasciiprintf
 #define petscviewerasciisynchronizedprintf_    petscviewerasciisynchronizedprintf
-#define petscviewerasciisettab_ petscviewerasciisettab
-#define petscviewerasciipushtab_ petscviewerasciipushtab
-#define petscviewerasciipoptab_ petscviewerasciipoptab
-#define petscviewerasciiusetabs_ petscviewerasciiusetabs
 #define petscpusherrorhandler_   petscpusherrorhandler
-#define petscpoperrorhandler_    petscpoperrorhandler
 #define petsctracebackerrorhandler_   petsctracebackerrorhandler
 #define petscaborterrorhandler_       petscaborterrorhandler
 #define petscignoreerrorhandler_      petscignoreerrorhandler
@@ -235,36 +173,6 @@ void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(int*,con
   }
 }
 
-void PETSC_STDCALL petscpopsignalhandler_(PetscErrorCode *ierr)
-{
-  *ierr = PetscPopSignalHandler();
-}
-
-void PETSC_STDCALL petscpoperrorhandler_(PetscErrorCode *ierr)
-{
-  *ierr = PetscPopErrorHandler();
-}
-
-void PETSC_STDCALL petscviewerasciisettab_(PetscViewer *viewer,PetscInt *tabs,PetscErrorCode *ierr)
-{
-  *ierr = PetscViewerASCIISetTab(*viewer,*tabs);
-}
-
-void PETSC_STDCALL petscviewerasciipushtab_(PetscViewer *viewer,PetscErrorCode *ierr)
-{
-  *ierr = PetscViewerASCIIPushTab(*viewer);
-}
-
-void PETSC_STDCALL petscviewerasciipoptab_(PetscViewer *viewer,PetscErrorCode *ierr)
-{
-  *ierr = PetscViewerASCIIPopTab(*viewer);
-}
-
-void PETSC_STDCALL petscviewerasciiusetabs_(PetscViewer *viewer,PetscTruth *flg,PetscErrorCode *ierr)
-{
-  *ierr = PetscViewerASCIIUseTabs(*viewer,*flg);
-}
-
 void PETSC_STDCALL petscviewerasciiprintf_(PetscViewer *viewer,CHAR str PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char *c1;
@@ -283,25 +191,10 @@ void PETSC_STDCALL petscviewerasciisynchronizedprintf_(PetscViewer *viewer,CHAR 
   FREECHAR(str,c1);
 }
 
-void PETSC_STDCALL petscmemorygetcurrentusage_(PetscLogDouble *foo, PetscErrorCode *ierr)
-{
-  *ierr = PetscMemoryGetCurrentUsage(foo);
-}
-
-void PETSC_STDCALL petscmemorygetmaximumusage_(PetscLogDouble *foo, PetscErrorCode *ierr)
-{
-  *ierr = PetscMemoryGetMaximumUsage(foo);
-}
-
 void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,size_t *shift,PetscErrorCode *ierr)
 {
   *ierr = 0;
   *shift = y - x;
-}
-
-void PETSC_STDCALL petscgetcputime_(PetscLogDouble *t, PetscErrorCode *ierr)
-{
-  *ierr = PetscGetCPUTime(t);
 }
 
 void PETSC_STDCALL petscfopen_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),CHAR fmode PETSC_MIXED_LEN(len2),
@@ -316,16 +209,6 @@ void PETSC_STDCALL petscfopen_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),C
   FREECHAR(fmode,c2);
 }
   
-void PETSC_STDCALL petscfclose_(MPI_Comm *comm,FILE **file,PetscErrorCode *ierr)
-{
-  *ierr = PetscFClose((MPI_Comm)PetscToPointerComm(*comm),*file);
-}
-
-void PETSC_STDCALL petscsynchronizedflush_(MPI_Comm *comm,PetscErrorCode *ierr)
-{
-  *ierr = PetscSynchronizedFlush((MPI_Comm)PetscToPointerComm(*comm));
-}
-
 void PETSC_STDCALL petscfprintf_(MPI_Comm *comm,FILE **file,CHAR fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char *c1;
@@ -360,35 +243,6 @@ void PETSC_STDCALL petscsynchronizedprintf_(MPI_Comm *comm,CHAR fname PETSC_MIXE
   FIXCHAR(fname,len1,c1);
   *ierr = PetscSynchronizedPrintf((MPI_Comm)PetscToPointerComm(*comm),c1);
   FREECHAR(fname,c1);
-}
-
-void PETSC_STDCALL petscsetfptrap_(PetscFPTrap *flag,PetscErrorCode *ierr)
-{
-  *ierr = PetscSetFPTrap(*flag);
-}
-
-void PETSC_STDCALL petscobjectgetnewtag_(PetscObject *obj,PetscMPIInt *tag,PetscErrorCode *ierr)
-{
-  *ierr = PetscObjectGetNewTag(*obj,tag);
-}
-
-void PETSC_STDCALL petsccommgetnewtag_(MPI_Comm *comm,PetscMPIInt *tag,PetscErrorCode *ierr)
-{
-  *ierr = PetscCommGetNewTag((MPI_Comm)PetscToPointerComm(*comm),tag);
-}
-
-void PETSC_STDCALL petscsplitownershipblock_(MPI_Comm *comm,PetscInt *bs,PetscInt *n,PetscInt *N,PetscErrorCode *ierr)
-{
-  *ierr = PetscSplitOwnershipBlock((MPI_Comm)PetscToPointerComm(*comm),*bs,n,N);
-}
-void PETSC_STDCALL petscsplitownership_(MPI_Comm *comm,PetscInt *n,PetscInt *N,PetscErrorCode *ierr)
-{
-  *ierr = PetscSplitOwnership((MPI_Comm)PetscToPointerComm(*comm),n,N);
-}
-
-void PETSC_STDCALL petscbarrier_(PetscObject *obj,PetscErrorCode *ierr)
-{
-  *ierr = PetscBarrier(*obj);
 }
 
 void PETSC_STDCALL petscstrncpy_(CHAR s1 PETSC_MIXED_LEN(len1),CHAR s2 PETSC_MIXED_LEN(len2),int *n,
@@ -442,32 +296,7 @@ void PETSC_STDCALL petscbinaryopen_(CHAR name PETSC_MIXED_LEN(len),PetscViewerFi
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL petscbinarywrite_(int *fd,void *p,PetscInt *n,PetscDataType *type,PetscTruth *istemp,PetscErrorCode *ierr)
-{
-  *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
-}
-
-void PETSC_STDCALL petscbinaryread_(int *fd,void *p,PetscInt *n,PetscDataType *type,PetscErrorCode *ierr)
-{
-  *ierr = PetscBinaryRead(*fd,p,*n,*type);
-}
-
-void PETSC_STDCALL petscbinaryseek_(int *fd,PetscInt *size,PetscBinarySeekType *whence,off_t *offset,PetscErrorCode *ierr)
-{
-  *ierr = PetscBinarySeek(*fd,*size,*whence,offset);
-}
-
-void PETSC_STDCALL petscbinaryclose_(int *fd,PetscErrorCode *ierr)
-{
-  *ierr = PetscBinaryClose(*fd);
-}
-
 /* ---------------------------------------------------------------------------------*/
-void PETSC_STDCALL petscmemzero_(void *a,PetscInt *n,PetscErrorCode *ierr) 
-{
-  *ierr = PetscMemzero(a,*n);
-}
-
 void PETSC_STDCALL  petscmallocdump_(PetscErrorCode *ierr)
 {
   *ierr = PetscMallocDump(stdout);
@@ -475,11 +304,6 @@ void PETSC_STDCALL  petscmallocdump_(PetscErrorCode *ierr)
 void PETSC_STDCALL petscmallocdumplog_(PetscErrorCode *ierr)
 {
   *ierr = PetscMallocDumpLog(stdout);
-}
-
-void PETSC_STDCALL petscmemcpy_(int *out,int *in,int *length,PetscErrorCode *ierr)
-{
-  *ierr = PetscMemcpy(out,in,*length);
 }
 
 /*
@@ -538,12 +362,6 @@ void PETSC_STDCALL petscmallocvalidate_(PetscErrorCode *ierr)
   *ierr = PetscMallocValidate(0,"Unknown Fortran",0,0);
 }
 
-void PETSC_STDCALL petscrandomgetvalue_(PetscRandom *r,PetscScalar *val,PetscErrorCode *ierr)
-{
-  *ierr = PetscRandomGetValue(*r,val);
-}
-
-
 void PETSC_STDCALL petscobjectgetname_(PetscObject *obj,CHAR name PETSC_MIXED_LEN(len),
                                        PetscErrorCode *ierr PETSC_END_LEN(len))
 {
@@ -560,21 +378,11 @@ void PETSC_STDCALL petscobjectgetname_(PetscObject *obj,CHAR name PETSC_MIXED_LE
 #endif
 }
 
-void PETSC_STDCALL petscobjectdestroy_(PetscObject *obj,PetscErrorCode *ierr)
-{
-  *ierr = PetscObjectDestroy(*obj);
-}
-
 void PETSC_STDCALL petscobjectgetcomm_(PetscObject *obj,int *comm,PetscErrorCode *ierr)
 {
   MPI_Comm c;
   *ierr = PetscObjectGetComm(*obj,&c);
   *(int*)comm = PetscFromPointerComm(c);
-}
-
-void PETSC_STDCALL petscattachdebugger_(PetscErrorCode *ierr)
-{
-  *ierr = PetscAttachDebugger();
 }
 
 void PETSC_STDCALL petscobjectsetname_(PetscObject *obj,CHAR name PETSC_MIXED_LEN(len),
@@ -606,16 +414,6 @@ void PETSC_STDCALL petscgetflops_(PetscLogDouble *d,PetscErrorCode *ierr)
 #endif
 }
 
-void PETSC_STDCALL petscrandomcreate_(MPI_Comm *comm,PetscRandomType *type,PetscRandom *r,PetscErrorCode *ierr)
-{
-  *ierr = PetscRandomCreate((MPI_Comm)PetscToPointerComm(*comm),*type,r);
-}
-
-void PETSC_STDCALL petscrandomdestroy_(PetscRandom *r,PetscErrorCode *ierr)
-{
-  *ierr = PetscRandomDestroy(*r);
-}
-
 void PETSC_STDCALL petscrealview_(PetscInt *n,PetscReal *d,int *viwer,PetscErrorCode *ierr)
 {
   *ierr = PetscRealView(*n,d,0);
@@ -625,16 +423,6 @@ void PETSC_STDCALL petscintview_(PetscInt *n,PetscInt *d,int *viwer,PetscErrorCo
 {
   *ierr = PetscIntView(*n,d,0);
 }
-
-void PETSC_STDCALL petscsequentialphasebegin_(MPI_Comm *comm,PetscInt *ng,PetscErrorCode *ierr){
-*ierr = PetscSequentialPhaseBegin(
-	(MPI_Comm)PetscToPointerComm(*comm),*ng);
-}
-void PETSC_STDCALL petscsequentialphaseend_(MPI_Comm *comm,PetscInt *ng,PetscErrorCode *ierr){
-*ierr = PetscSequentialPhaseEnd(
-	(MPI_Comm)PetscToPointerComm(*comm),*ng);
-}
-
 
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
 
@@ -648,11 +436,6 @@ void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m PETSC_MIXED_LE
   FREECHAR(m,ms);
 }
 
-void PETSC_STDCALL petscmatlabenginedestroy_(PetscMatlabEngine *e,PetscErrorCode *ierr)
-{
-  *ierr = PetscMatlabEngineDestroy(*e);
-}
-
 void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,CHAR m PETSC_MIXED_LEN(len),
                                               PetscErrorCode *ierr PETSC_END_LEN(len))
 {
@@ -660,16 +443,6 @@ void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,CHAR m PETSC_
   FIXCHAR(m,len,ms);
   *ierr = PetscMatlabEngineEvaluate(*e,ms);
   FREECHAR(m,ms);
-}
-
-void PETSC_STDCALL petscmatlabengineput_(PetscMatlabEngine *e,PetscObject *o,PetscErrorCode *ierr)
-{
-  *ierr = PetscMatlabEnginePut(*e,*o);
-}
-
-void PETSC_STDCALL petscmatlabengineget_(PetscMatlabEngine *e,PetscObject *o,PetscErrorCode *ierr)
-{
-  *ierr = PetscMatlabEngineGet(*e,*o);
 }
 
 void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,

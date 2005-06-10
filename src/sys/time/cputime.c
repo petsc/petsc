@@ -61,7 +61,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetCPUTime(PetscLogDouble *t)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetCPUTime"
-/*@C
+/*@
     PetscGetCPUTime - Returns the CPU time in seconds used by the process.
 
     Not Collective

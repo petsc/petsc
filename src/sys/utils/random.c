@@ -30,7 +30,7 @@ struct _p_PetscRandom {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomDestroy" 
-/*@C
+/*@
    PetscRandomDestroy - Destroys a context that has been formed by 
    PetscRandomCreate().
 
@@ -108,7 +108,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate" 
-/*@C
+/*@
    PetscRandomCreate - Creates a context for generating random numbers,
    and initializes the random-number generator.
 
@@ -173,7 +173,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandomType t
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValue"
-/*@C
+/*@
    PetscRandomGetValue - Generates a random number.  Call this after first calling
    PetscRandomCreate().
 
