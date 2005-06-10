@@ -645,8 +645,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
 PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t size, PetscBag *bag)
 {
   PetscErrorCode ierr;
-  PetscFunctionBegin;
   size_t tsize;
+
+  PetscFunctionBegin;
   tsize = sizeof(struct _n_PetscBag)+size;
   ierr = PetscMalloc(tsize,bag);CHKERRQ(ierr);
   ierr = PetscMemzero(*bag,tsize);CHKERRQ(ierr);

@@ -1,6 +1,6 @@
 
 #include "petscda.h"
-#include "petscf90.h"
+#include "src/sys/f90/f90impl.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dagetglobalindicesf90_     DAGETGLOBALINDICESF90

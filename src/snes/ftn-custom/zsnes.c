@@ -10,37 +10,24 @@
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dmmgsetsnes_                     DMMGSETSNES
-#define matcreatedaad_                   MATCREATEDAAD
-#define matregisterdaad_                 MATREGISTERDAAD
-#define matdaadsetsnes_                  MATDAADSETSNES
 #define snesdacomputejacobian_           SNESDACOMPUTEJACOBIAN
 #define snesdacomputejacobianwithadifor_ SNESDACOMPUTEJACOBIANWITHADIFOR
-#define snesdacomputejacobianwithadic_   SNESDACOMPUTEJACOBIANWITHADIC
 #define snesdaformfunction_              SNESDAFORMFUNCTION          
 #define snesconverged_tr_                SNESCONVERGED_TR
 #define snesconverged_ls_                SNESCONVERGED_LS
-#define snesgetconvergedreason_          SNESGETCONVERGEDREASON
 #define snesdefaultmonitor_              SNESDEFAULTMONITOR
 #define snesvecviewmonitor_              SNESVECVIEWMONITOR
 #define sneslgmonitor_                   SNESLGMONITOR
 #define snesvecviewupdatemonitor_        SNESVECVIEWUPDATEMONITOR
-#define snesregisterdestroy_             SNESREGISTERDESTROY
 #define snessetjacobian_                 SNESSETJACOBIAN
-#define snescreate_                      SNESCREATE
 #define snessetfunction_                 SNESSETFUNCTION
-#define snesgetksp_                      SNESGETKSP
 #define snessetmonitor_                  SNESSETMONITOR
 #define snessetconvergencetest_          SNESSETCONVERGENCETEST
-#define snesregisterdestroy_             SNESREGISTERDESTROY
-#define snesgetsolution_                 SNESGETSOLUTION
 #define snesgetsolutionupdate_           SNESGETSOLUTIONUPDATE
 #define snesgetfunction_                 SNESGETFUNCTION
-#define snesdestroy_                     SNESDESTROY
 #define snesgettype_                     SNESGETTYPE
 #define snessetoptionsprefix_            SNESSETOPTIONSPREFIX 
 #define snesappendoptionsprefix_         SNESAPPENDOPTIONSPREFIX 
-#define matcreatesnesmf_                 MATCREATESNESMF
-#define matcreatemf_                     MATCREATEMF
 #define snessettype_                     SNESSETTYPE
 #define snesgetconvergencehistory_       SNESGETCONVERGENCEHISTORY
 #define snesdefaultcomputejacobian_      SNESDEFAULTCOMPUTEJACOBIAN
@@ -49,7 +36,6 @@
 #define snesgetoptionsprefix_            SNESGETOPTIONSPREFIX
 #define snesgetjacobian_                 SNESGETJACOBIAN
 #define matsnesmfsetfunction_            MATSNESMFSETFUNCTION
-#define sneslinesearchsetparams_         SNESLINESEARCHSETPARAMS
 #define sneslinesearchgetparams_         SNESLINESEARCHGETPARAMS
 #define sneslinesearchset_               SNESLINESEARCHSET
 #define sneslinesearchsetpostcheck_      SNESLINESEARCHSETPOSTCHECK
@@ -60,46 +46,32 @@
 #define snesview_                        SNESVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmmgsetsnes_                     dmmgsetsnes
-#define matcreatedaad_                   matcreatedaad
-#define matregisterdaad_                 matregisterdaad
-#define matdaadsetsnes_                  matdaadsetsnes
 #define snesdacomputejacobian_           snesdacomputejacobian
 #define snesdacomputejacobianwithadifor_ snesdacomputejacobianwithadifor
-#define snesdacomputejacobianwithadic_   snesdacomputejacobianwithadic
 #define snesdaformfunction_              snesdaformfunction
 #define sneslinesearchcubic_             sneslinesearchcubic     
 #define sneslinesearchquadratic_         sneslinesearchquadratic    
 #define sneslinesearchno_                sneslinesearchno    
 #define sneslinesearchnonorms_           sneslinesearchnonorms    
-#define sneslinesearchsetparams_         sneslinesearchsetparams
 #define sneslinesearchgetparams_         sneslinesearchgetparams
 #define sneslinesearchset_               sneslinesearchset
 #define sneslinesearchsetpostcheck_      sneslinesearchsetpostcheck
 #define snesconverged_tr_                snesconverged_tr
 #define snesconverged_ls_                snesconverged_ls
-#define snesgetconvergedreason_          snesgetconvergedreason
 #define sneslgmonitor_                   sneslgmonitor
 #define snesdefaultmonitor_              snesdefaultmonitor
 #define snesvecviewmonitor_              snesvecviewmonitor
 #define snesvecviewupdatemonitor_        snesvecviewupdatemonitor
 #define matsnesmfsetfunction_            matsnesmfsetfunction
-#define snesregisterdestroy_             snesregisterdestroy
 #define snessetjacobian_                 snessetjacobian
-#define snescreate_                      snescreate
 #define snessetfunction_                 snessetfunction
-#define snesgetksp_                      snesgetksp
-#define snesdestroy_                     snesdestroy
 #define snessetmonitor_                  snessetmonitor
 #define snessetconvergencetest_          snessetconvergencetest
-#define snesregisterdestroy_             snesregisterdestroy
-#define snesgetsolution_                 snesgetsolution
 #define snesgetsolutionupdate_           snesgetsolutionupdate
 #define snesgetfunction_                 snesgetfunction
 #define snesgettype_                     snesgettype
 #define snessetoptionsprefix_            snessetoptionsprefix 
 #define snesappendoptionsprefix_         snesappendoptionsprefix
-#define matcreatesnesmf_                 matcreatesnesmf
-#define matcreatemf_                     matcreatemf
 #define snessettype_                     snessettype
 #define snesgetconvergencehistory_       snesgetconvergencehistory
 #define snesdefaultcomputejacobian_      snesdefaultcomputejacobian
@@ -210,44 +182,11 @@ void PETSC_STDCALL dmmgsetsnes_(DMMG **dmmg,PetscErrorCode (PETSC_STDCALL *rhs)(
 
 #endif
 
-#if defined (PETSC_HAVE_ADIC)
-void PETSC_STDCALL matregisterdaad_(PetscErrorCode *ierr)
-{
-  *ierr = MatRegisterDAAD();
-}
-
-void PETSC_STDCALL matcreatedaad_(DA *da,Mat *mat,PetscErrorCode *ierr)
-{
-  *ierr = MatCreateDAAD(*da,mat);
-}
-
-void PETSC_STDCALL matdaadsetsnes_(Mat *mat,SNES *snes,PetscErrorCode *ierr)
-{
-  *ierr = MatDAADSetSNES(*mat,*snes);
-}
-
-void PETSC_STDCALL snesdacomputejacobianwithadic_(SNES *snes,Vec *X,Mat *J,Mat *B,MatStructure *flag,void*ptr, int *ierr )
-{
-  *ierr = SNESDAComputeJacobianWithAdic(*snes,*X,J,B,flag,ptr);
-}
-
-#endif
-
 void PETSC_STDCALL snesview_(SNES *snes,PetscViewer *viewer, PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = SNESView(*snes,v);
-}
-
-void PETSC_STDCALL snesgetconvergedreason_(SNES *snes,SNESConvergedReason *r,PetscErrorCode *ierr)
-{
-  *ierr = SNESGetConvergedReason(*snes,r);
-}
-
-void PETSC_STDCALL sneslinesearchsetparams_(SNES *snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol,PetscErrorCode *ierr)
-{
-  *ierr = SNESLineSearchSetParams(*snes,*alpha,*maxstep,*steptol);
 }
 
 void PETSC_STDCALL sneslinesearchgetparams_(SNES *snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol,PetscErrorCode *ierr)
@@ -299,16 +238,6 @@ void PETSC_STDCALL snesappendoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_L
   FIXCHAR(prefix,len,t);
   *ierr = SNESAppendOptionsPrefix(*snes,t);
   FREECHAR(prefix,t);
-}
-
-void PETSC_STDCALL matcreatesnesmf_(SNES *snes,Vec *x,Mat *J,PetscErrorCode *ierr)
-{
-  *ierr = MatCreateSNESMF(*snes,*x,J);
-}
-
-void PETSC_STDCALL matcreatemf_(Vec *x,Mat *J,PetscErrorCode *ierr)
-{
-  *ierr = MatCreateMF(*x,J);
 }
 
 /* functions, hence no STDCALL */
@@ -435,32 +364,12 @@ void PETSC_STDCALL snessetconvergencetest_(SNES *snes,
 
 /*--------------------------------------------------------------------------------------------*/
 
-void PETSC_STDCALL snesgetsolution_(SNES *snes,Vec *x,PetscErrorCode *ierr)
-{
-  *ierr = SNESGetSolution(*snes,x);
-}
-
-void PETSC_STDCALL snesgetsolutionupdate_(SNES *snes,Vec *x,PetscErrorCode *ierr)
-{
-  *ierr = SNESGetSolutionUpdate(*snes,x);
-}
-
 /* the func argument is ignored */
 void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void *func,void **ctx,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(ctx);
   CHKFORTRANNULLOBJECT(r);
   *ierr = SNESGetFunction(*snes,r,PETSC_NULL,ctx);
-}
-
-void PETSC_STDCALL snesdestroy_(SNES *snes,PetscErrorCode *ierr)
-{
-  *ierr = SNESDestroy(*snes);
-}
-
-void PETSC_STDCALL snesgetksp_(SNES *snes,KSP *ksp,PetscErrorCode *ierr)
-{
-  *ierr = SNESGetKSP(*snes,ksp);
 }
 
 /* ---------------------------------------------------------*/
@@ -500,12 +409,6 @@ void PETSC_STDCALL matsnesmfsetfunction_(Mat *mat,Vec *r,void (PETSC_STDCALL *fu
 }
 /* ---------------------------------------------------------*/
 
-void PETSC_STDCALL snescreate_(MPI_Comm *comm,SNES *outsnes,PetscErrorCode *ierr){
-
-*ierr = SNESCreate((MPI_Comm)PetscToPointerComm(*comm),outsnes);
-}
-
-/* ---------------------------------------------------------*/
 /*
      snesdefaultcomputejacobian() and snesdefaultcomputejacobiancolor()
   These can be used directly from Fortran but are mostly so that 
@@ -553,11 +456,6 @@ void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL
 }
 
 /* -------------------------------------------------------------*/
-
-void PETSC_STDCALL snesregisterdestroy_(PetscErrorCode *ierr) 
-{
-  *ierr = SNESRegisterDestroy();
-}
 
 void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len),
                                 PetscErrorCode *ierr PETSC_END_LEN(len))

@@ -26,7 +26,7 @@ struct _p_DrawLG {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawLGCreate" 
-/*@C
+/*@
     PetscDrawLGCreate - Creates a line graph data structure.
 
     Collective over PetscDraw
@@ -146,7 +146,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGReset(PetscDrawLG lg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawLGDestroy" 
-/*@C
+/*@
    PetscDrawLGDestroy - Frees all space taken up by line graph data structure.
 
    Collective over PetscDrawLG
@@ -434,7 +434,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_m
  
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawLGGetAxis" 
-/*@C
+/*@
    PetscDrawLGGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
    labels, color, etc. The axis context should not be destroyed by the
@@ -466,7 +466,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawLGGetDraw" 
-/*@C
+/*@
    PetscDrawLGGetDraw - Gets the draw context associated with a line graph.
 
    Not Collective, if PetscDrawLG is parallel then PetscDraw is parallel
