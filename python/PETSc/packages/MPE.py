@@ -12,7 +12,6 @@ class Configure(PETSc.package.Package):
     self.functions = ['MPE_Log_event']
     self.includes  = ['mpe.h']
     self.liblist   = [['libmpe.a']]
-    self.license   = 'http://software.sandia.gov/trilinos/downloads.html'
     return
 
   def setupDependencies(self, framework):
