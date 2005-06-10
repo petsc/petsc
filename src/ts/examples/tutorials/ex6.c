@@ -377,7 +377,6 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
   PetscErrorCode ierr;
   PetscReal      norm_2, norm_max, dt, dttol;
   PetscTruth     flg;
-  PetscScalar    mone = -1.0;
 
   /* 
      View a graph of the current iterate
@@ -402,7 +401,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
   /*
      Compute the 2-norm and max-norm of the error
   */
-  ierr = VecAXPY(appctx->solution,mone,u);CHKERRQ(ierr);
+  ierr = VecAXPY(appctx->solution,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
   norm_2 = sqrt(appctx->h)*norm_2;
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);

@@ -13,7 +13,6 @@ PetscErrorCode PCMGFCycle_Private(PC_MG **mg)
 {
   PetscErrorCode ierr;
   PetscInt       i,l = mg[0]->levels;
-  PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
@@ -22,7 +21,7 @@ PetscErrorCode PCMGFCycle_Private(PC_MG **mg)
   }
   
   /* work our way up through the levels */
-  ierr = VecSet(mg[0]->x,zero);CHKERRQ(ierr);
+  ierr = VecSet(mg[0]->x,0.0);CHKERRQ(ierr);
   for (i=0; i<l-1; i++) {
     ierr = PCMGMCycle_Private(&mg[i],PETSC_NULL);CHKERRQ(ierr);
     ierr = MatInterpolate(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x);CHKERRQ(ierr); 
@@ -37,7 +36,6 @@ PetscErrorCode PCMGKCycle_Private(PC_MG **mg)
 {
   PetscErrorCode ierr;
   PetscInt       i,l = mg[0]->levels;
-  PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
@@ -46,7 +44,7 @@ PetscErrorCode PCMGKCycle_Private(PC_MG **mg)
   }
   
   /* work our way up through the levels */
-  ierr = VecSet(mg[0]->x,zero);CHKERRQ(ierr); 
+  ierr = VecSet(mg[0]->x,0.0);CHKERRQ(ierr); 
   for (i=0; i<l-1; i++) {
     if (mg[i]->eventsolve) {ierr = PetscLogEventBegin(mg[i]->eventsolve,0,0,0,0);CHKERRQ(ierr);}
     ierr = KSPSolve(mg[i]->smoothd,mg[i]->b,mg[i]->x);CHKERRQ(ierr);

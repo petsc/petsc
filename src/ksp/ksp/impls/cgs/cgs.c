@@ -26,7 +26,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscScalar    rho,rhoold,a,s,b,tmp,one = 1.0; 
+  PetscScalar    rho,rhoold,a,s,b;
   Vec            X,B,V,P,R,RP,T,Q,U,AUQ;
   PetscReal      dp = 0.0;
   PetscTruth     diagonalscale;
@@ -95,12 +95,11 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 
     ierr = VecDot(V,RP,&s);CHKERRQ(ierr);           /* s <- (v,rp)          */
     a = rhoold / s;                                  /* a <- rho / s         */
-    tmp = -a; 
-    ierr = VecWAXPY(Q,tmp,V,U);CHKERRQ(ierr);      /* q <- u - a v         */
-    ierr = VecWAXPY(T,one,U,Q);CHKERRQ(ierr);      /* t <- u + q           */
+    ierr = VecWAXPY(Q,-a,V,U);CHKERRQ(ierr);      /* q <- u - a v         */
+    ierr = VecWAXPY(T,1.0,U,Q);CHKERRQ(ierr);      /* t <- u + q           */
     ierr = VecAXPY(X,a,T);CHKERRQ(ierr);           /* x <- x + a (u + q)   */
     ierr = KSP_PCApplyBAorAB(ksp,T,AUQ,U);CHKERRQ(ierr);
-    ierr = VecAXPY(R,tmp,AUQ);CHKERRQ(ierr);       /* r <- r - a K (u + q) */
+    ierr = VecAXPY(R,-a,AUQ);CHKERRQ(ierr);       /* r <- r - a K (u + q) */
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);         /* rho <- (r,rp)        */
     if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);

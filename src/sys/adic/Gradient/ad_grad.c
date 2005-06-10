@@ -50,18 +50,18 @@ void ad_grad_axpy_n(int arity, void* ddz, ...)
   { 
     gradv = DERIV_grad(*grads[0]);
     alpha = alphas[0];
-    for (i = 0; i < ad_GRAD_MAX; i++) {
+    for (i = 0; i < ad_grad_size; i++) {
       z[i] = alpha*gradv[i];
     }
   }
   for (j = 1; j < arity; j++) {
     gradv = DERIV_grad(*grads[j]);
     alpha = alphas[j];
-    for (i = 0; i < ad_GRAD_MAX; i++) {
+    for (i = 0; i < ad_grad_size; i++) {
       z[i] += alpha*gradv[i];
     }
   }   
-  ierr = PetscLogFlops(2*ad_GRAD_MAX*(arity-.5));
+  ierr = PetscLogFlops(2*ad_grad_size*(arity-.5));
 }
 
 void mfad_grad_axpy_n(int arity, void* ddz, ...)

@@ -72,7 +72,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,stored_max_it,eigs;
-  PetscScalar    dpi,a = 1.0,beta,betaold = 1.0,b = 0,*e = 0,*d = 0,mone = -1.0,ma;
+  PetscScalar    dpi,a = 1.0,beta,betaold = 1.0,b = 0,*e = 0,*d = 0;
   PetscReal      dp = 0.0;
   Vec            X,B,Z,R,P,T;
   KSP_CG         *cg;
@@ -109,7 +109,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,P);CHKERRQ(ierr);
     ierr = KSP_MatMultTranspose(ksp,Amat,P,R);CHKERRQ(ierr);
-    ierr = VecAYPX(R,mone,T);CHKERRQ(ierr);
+    ierr = VecAYPX(R,-1.0,T);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(T,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
@@ -171,7 +171,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
        d[i] = sqrt(PetscAbsScalar(b))*e[i] + 1.0/a;
      }
      ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
-     ma = -a; VecAXPY(R,ma,Z);                      /*     r <- r - az     */
+     ierr = VecAXPY(R,-a,Z);CHKERRQ(ierr);                      /*     r <- r - az     */
      if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
        ierr = KSP_PCApply(ksp,R,T);CHKERRQ(ierr);
        if (transpose_pc) {

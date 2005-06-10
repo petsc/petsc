@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       i,N;
-  PetscScalar    mone = -1.0,value;
+  PetscScalar    value;
   Vec            x,y;
   IS             is1,is2;
   VecScatter     ctx = 0;
@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   }
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-  ierr = VecSet(y,mone);CHKERRQ(ierr);
+  ierr = VecSet(y,-1.0);CHKERRQ(ierr);
 
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

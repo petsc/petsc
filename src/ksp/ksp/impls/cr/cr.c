@@ -24,7 +24,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
   MatStructure   pflag;
   PetscReal      dp;
   PetscScalar    ai, bi;
-  PetscScalar    apq,btop, bbot, mone = -1.0;
+  PetscScalar    apq,btop, bbot;
   Vec            X,B,R,RT,P,AP,ART,Q;
   Mat            Amat, Pmat;
 
@@ -42,7 +42,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);     /*   R <- A*X           */
-    ierr = VecAYPX(R,mone,B);CHKERRQ(ierr);            /*   R <- B-R == B-A*X  */
+    ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr);            /*   R <- B-R == B-A*X  */
   } else { 
     ierr = VecCopy(B,R);CHKERRQ(ierr);                  /*   R <- B (X is 0)    */
   }
@@ -86,8 +86,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     ai = btop/apq;                                      /* ai = (RT,ART)/(AP,Q)  */
 
     ierr   = VecAXPY(X,ai,P);CHKERRQ(ierr);            /*   X   <- X + ai*P     */
-    ai     = -ai; 
-    ierr   = VecAXPY(RT,ai,Q);CHKERRQ(ierr);           /*   RT  <- RT - ai*Q    */
+    ierr   = VecAXPY(RT,-ai,Q);CHKERRQ(ierr);           /*   RT  <- RT - ai*Q    */
     ierr   = KSP_MatMult(ksp,Amat,RT,ART);CHKERRQ(ierr);/*   ART <-   A*RT       */
     bbot = btop;
     ierr   = VecDot(RT,ART,&btop);CHKERRQ(ierr);
@@ -104,7 +103,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     } else if (ksp->normtype == KSP_NO_NORM) {
       dp = 0.0; 
     } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
-      ierr = VecAXPY(R,ai,AP);CHKERRQ(ierr);           /*   R   <- R - ai*AP    */
+      ierr = VecAXPY(R,-ai,AP);CHKERRQ(ierr);           /*   R   <- R - ai*AP    */
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);       /*   dp <- R'*R          */
     } else {
       SETERRQ1(PETSC_ERR_SUP,"KSPNormType of %d not supported",(int)ksp->normtype);

@@ -28,7 +28,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       i;
   PetscTruth     diagonalscale;
-  PetscScalar    dpi,a=1.0,beta,betaold=1.0,b,mone=-1.0,ma; 
+  PetscScalar    dpi,a=1.0,beta,betaold=1.0,b,ma; 
   PetscReal      dp;
   Vec            X,B,Zl,Zr,Rl,Rr,Pl,Pr;
   Mat            Amat,Pmat;
@@ -51,7 +51,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,Rr);CHKERRQ(ierr);      /*   r <- b - Ax       */
-    ierr = VecAYPX(Rr,mone,B);CHKERRQ(ierr);
+    ierr = VecAYPX(Rr,-1.0,B);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(B,Rr);CHKERRQ(ierr);           /*     r <- b (x is 0) */
   }

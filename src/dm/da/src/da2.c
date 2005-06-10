@@ -1312,7 +1312,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctioniTest1(DA da,void *w)
   Vec            vu,fu,fui;
   PetscErrorCode ierr;
   PetscInt       i,n;
-  PetscScalar    *ui,mone = -1.0;
+  PetscScalar    *ui;
   PetscRandom    rnd;
   PetscReal      norm;
 
@@ -1334,7 +1334,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctioniTest1(DA da,void *w)
   }
   ierr = VecRestoreArray(fui,&ui);CHKERRQ(ierr);
 
-  ierr = VecAXPY(fui,mone,fu);CHKERRQ(ierr);
+  ierr = VecAXPY(fui,-1.0,fu);CHKERRQ(ierr);
   ierr = VecNorm(fui,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(da->comm,"Norm of difference in vectors %g\n",norm);CHKERRQ(ierr);
   ierr = VecView(fu,0);CHKERRQ(ierr);

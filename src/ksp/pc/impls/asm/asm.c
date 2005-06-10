@@ -240,7 +240,6 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
   PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
   PetscInt       i,n_local = osm->n_local,n_local_true = osm->n_local_true;
-  PetscScalar    zero = 0.0;
   ScatterMode    forward = SCATTER_FORWARD,reverse = SCATTER_REVERSE;
 
   PetscFunctionBegin;
@@ -252,7 +251,7 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
     for (i=0; i<n_local_true; i++) {
-      ierr = VecSet(osm->x[i],zero);CHKERRQ(ierr);
+      ierr = VecSet(osm->x[i],0.0);CHKERRQ(ierr);
     }
   }
   if (!(osm->type & PC_ASM_INTERPOLATE)) {
@@ -262,7 +261,7 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
   for (i=0; i<n_local; i++) {
     ierr = VecScatterBegin(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
   }
-  ierr = VecSet(y,zero);CHKERRQ(ierr);
+  ierr = VecSet(y,0.0);CHKERRQ(ierr);
   /* do the local solves */
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
@@ -287,7 +286,6 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
   PetscInt       i,n_local = osm->n_local,n_local_true = osm->n_local_true;
-  PetscScalar    zero = 0.0;
   ScatterMode    forward = SCATTER_FORWARD,reverse = SCATTER_REVERSE;
 
   PetscFunctionBegin;
@@ -302,7 +300,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
     for (i=0; i<n_local_true; i++) {
-      ierr = VecSet(osm->x[i],zero);CHKERRQ(ierr);
+      ierr = VecSet(osm->x[i],0.0);CHKERRQ(ierr);
     }
   }
   if (!(osm->type & PC_ASM_RESTRICT)) {
@@ -312,7 +310,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   for (i=0; i<n_local; i++) {
     ierr = VecScatterBegin(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
   }
-  ierr = VecSet(y,zero);CHKERRQ(ierr);
+  ierr = VecSet(y,0.0);CHKERRQ(ierr);
   /* do the local solves */
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);

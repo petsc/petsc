@@ -84,7 +84,7 @@ int DefaultComputeJacobian(int (*Function)(Vec,Vec),Vec x1,Mat J)
 {
   Vec      j1,j2,x2;
   int      i,ierr,N,start,end,j;
-  Scalar   dx, mone = -1.0,*y,scale,*xx,wscale;
+  Scalar   dx, *y,scale,*xx,wscale;
   double   amax, epsilon = 1.e-8; /* assumes double precision */
   double   dx_min = 1.e-16, dx_par = 1.e-1;
   MPI_Comm comm;
@@ -124,7 +124,7 @@ int DefaultComputeJacobian(int (*Function)(Vec,Vec),Vec x1,Mat J)
       wscale = 0.0;
     }
     ierr = (*Function)(x2,j2); CHKERRQ(ierr);
-    ierr = VecAXPY(j2,mone,j1); CHKERRQ(ierr);
+    ierr = VecAXPY(j2,-1.0,j1); CHKERRQ(ierr);
     /* Communicate scale to all processors */
 #if !defined(USE_PETSC_COMPLEX)
     ierr = MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);

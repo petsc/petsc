@@ -106,7 +106,6 @@ int main(int argc,char **argv)
   PetscInt       i;                   /* nonlinear solve iteration number */
   MatStructure   mat_flag;        /* flag indicating structure of preconditioner matrix */
   PetscTruth     no_output;           /* flag indicating whether to surpress output */
-  PetscScalar    mone = -1.0;       
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -238,7 +237,7 @@ int main(int argc,char **argv)
        Compute updated iterate
      */
     ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);       /* ynorm = || Y || */
-    ierr = VecAYPX(Y,mone,X);CHKERRQ(ierr);              /* Y <- X - Y      */
+    ierr = VecAYPX(Y,-1.0,X);CHKERRQ(ierr);              /* Y <- X - Y      */
     ierr = VecCopy(Y,X);CHKERRQ(ierr);                   /* X <- Y          */
     ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);       /* xnorm = || X || */
     if (!no_output) {

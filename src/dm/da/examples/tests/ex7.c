@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   DAStencilType  stencil_type;
   DA             da;
   Vec            local,global,local_copy;
-  PetscScalar    value,mone = -1.0;
+  PetscScalar    value;
   PetscReal      norm,work;
   PetscViewer    viewer;
   char           filename[64];
@@ -83,7 +83,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
 
-  ierr = VecAXPY(local_copy,mone,local);CHKERRQ(ierr);
+  ierr = VecAXPY(local_copy,-1.0,local);CHKERRQ(ierr);
   ierr = VecNorm(local_copy,NORM_MAX,&work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&work,&norm,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",norm);CHKERRQ(ierr);

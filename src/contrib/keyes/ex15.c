@@ -269,7 +269,6 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;
   int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym;
-  double  zero = 0.0, half = 0.5, one = 1.0;
   double  hx, hy, hxdhy, hydhx;
   double  t0, tn, ts, te, tw, an, as, ae, aw, dn, ds, de, dw, fn, fs, fe, fw;
   double  tleft, tright, beta;
@@ -342,7 +341,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
           ds = pow(as, beta);
           fs = ds*(t0 - ts);
 	} else {
- 	  fs = zero;
+ 	  fs = 0.0;
 	}
 
 	if (j < my-1) { 
@@ -351,7 +350,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
           dn = pow(an, beta);
 	  fn = dn*(tn - t0);
 	} else {
-	  fn = zero; 
+	  fn = 0.0; 
 	}
 
       } else if (i == mx-1) {
@@ -373,7 +372,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
           ds = pow(as, beta);
           fs = ds*(t0 - ts);
         } else {
-          fs = zero;
+          fs = 0.0;
         }
  
         if (j < my-1) {
@@ -382,7 +381,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
           dn = pow(an, beta);
           fn = dn*(tn - t0); 
         } else {   
-          fn = zero; 
+          fn = 0.0; 
         }
 
       } else if (j == 0) {
@@ -398,7 +397,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
         de = pow(ae, beta);
         fe = de*(te - t0);
 
-        fs = zero;
+        fs = 0.0;
 
         tn = x[row + Xm];
         an = 0.5*(t0 + tn);
@@ -423,7 +422,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
         ds = pow(as, beta);
         fs = ds*(t0 - ts);
 
-        fn = zero;
+        fn = 0.0;
 
       }
 
@@ -450,7 +449,6 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
   Mat     jac = *J;
   int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5];
   int     nloc, *ltog, grow;
-  double  zero = 0.0, half = 0.5, one = 1.0;
   double  hx, hy, hxdhy, hydhx, value;
   double  t0, tn, ts, te, tw; 
   double  dn, ds, de, dw, an, as, ae, aw, bn, bs, be, bw, gn, gs, ge, gw;

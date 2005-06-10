@@ -10,7 +10,7 @@ int main(int argc,char **argv) {
   PetscInt       pij[]={0,1,2};
   PetscInt       aij[3][3]={{0,1,2},{3,4,5},{6,7,8}};
   Mat            A,mC,C;
-  PetscScalar    none=-1.,one=1.;
+  PetscScalar    one=1.;
   PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -54,7 +54,7 @@ int main(int argc,char **argv) {
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* Perform diff of two matrices */
-  ierr = MatAXPY(C,none,mC,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
+  ierr = MatAXPY(C,-1.0,mC,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
   /* Note: We should be able to use SAME_NONZERO_PATTERN on the line above, */
   /*       but don't because this flag doesn't assist testing. */
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

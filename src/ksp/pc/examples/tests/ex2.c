@@ -17,7 +17,7 @@ int main(int argc,char **args)
   KSP            ksp;          /* KSP context */
   PetscErrorCode ierr;
   PetscInt       n = 10,i,its,col[3];
-  PetscScalar    value[3],mone = -1.0,one = 1.0,zero = 0.0;
+  PetscScalar    value[3];
   PCType         pcname;
   KSPType        kspname;
   PetscReal      norm;
@@ -28,8 +28,8 @@ int main(int argc,char **args)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&ustar);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRQ(ierr);
-  ierr = VecSet(ustar,one);CHKERRQ(ierr);
-  ierr = VecSet(u,zero);CHKERRQ(ierr);
+  ierr = VecSet(ustar,1.0);CHKERRQ(ierr);
+  ierr = VecSet(u,0.0);CHKERRQ(ierr);
 
   /* Create and assemble matrix */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&mat);CHKERRQ(ierr);
@@ -68,7 +68,7 @@ int main(int argc,char **args)
   ierr = PCGetType(pc,&pcname);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
-  ierr = VecAXPY(u,mone,ustar);CHKERRQ(ierr);
+  ierr = VecAXPY(u,-1.0,ustar);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %A Number of iterations %D\n",norm,its);

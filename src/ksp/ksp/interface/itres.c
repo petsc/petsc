@@ -38,7 +38,6 @@ $     b-Ax
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
 {
-  PetscScalar    mone = -1.0;
   MatStructure   pflag;
   Mat            Amat,Pmat;
   PetscErrorCode ierr;
@@ -53,7 +52,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,V
     /* skip right scaling since current guess already has it */
     ierr = KSP_MatMult(ksp,Amat,vsoln,vt1);CHKERRQ(ierr);
     ierr = VecCopy(vb,vt2);CHKERRQ(ierr);
-    ierr = VecAXPY(vt2,mone,vt1);CHKERRQ(ierr);
+    ierr = VecAXPY(vt2,-1.0,vt1);CHKERRQ(ierr);
     ierr = (ksp->pc_side == PC_RIGHT)?(VecCopy(vt2,vres)):(KSP_PCApply(ksp,vt2,vres));CHKERRQ(ierr);
     ierr = PCDiagonalScaleLeft(ksp->pc,vres,vres);CHKERRQ(ierr);
   } else {

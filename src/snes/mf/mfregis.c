@@ -3,7 +3,7 @@
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_Default(MatSNESMFCtx);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_DS(MatSNESMFCtx);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_WP(MatSNESMFCtx);
 EXTERN_C_END
 
@@ -28,7 +28,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFRegisterAll(const char *path)
   PetscFunctionBegin;
   MatSNESMFRegisterAllCalled = PETSC_TRUE;
 
-  ierr = MatSNESMFRegisterDynamic(MATSNESMF_DEFAULT,path,"MatSNESMFCreate_Default",MatSNESMFCreate_Default);CHKERRQ(ierr);
+  ierr = MatSNESMFRegisterDynamic(MATSNESMF_DS,path,"MatSNESMFCreate_DS",MatSNESMFCreate_DS);CHKERRQ(ierr);
   ierr = MatSNESMFRegisterDynamic(MATSNESMF_WP,path,"MatSNESMFCreate_WP",MatSNESMFCreate_WP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

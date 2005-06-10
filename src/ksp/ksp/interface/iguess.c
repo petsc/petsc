@@ -57,8 +57,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 {
   PetscErrorCode ierr;
-  int         i;
-  PetscScalar tmp;
+  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -66,8 +65,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
   PetscValidHeaderSpecific(b,VEC_COOKIE,3);  
   for (i=1; i<=itg->curl; i++) {
     ierr = VecDot(itg->btilde[i-1],b,&(itg->alpha[i-1]));CHKERRQ(ierr);
-    tmp = -itg->alpha[i-1];
-    ierr = VecAXPY(b,tmp,itg->btilde[i-1]);CHKERRQ(ierr);
+    ierr = VecAXPY(b,-itg->alpha[i-1],itg->btilde[i-1]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -118,14 +116,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
       ierr = VecDot(itg->btilde[curl],itg->btilde[i-1],itg->alpha+i-1);CHKERRQ(ierr);
     }
     for (i=1; i<=curl; i++) {
-      tmp  = -itg->alpha[i-1];
-      ierr = VecAXPY(itg->btilde[curl],tmp,itg->btilde[i-1]);CHKERRQ(ierr);
+      ierr = VecAXPY(itg->btilde[curl],-itg->alpha[i-1],itg->btilde[i-1]);CHKERRQ(ierr);
       ierr = VecAXPY(itg->xtilde[curl],itg->alpha[i-1],itg->xtilde[i-1]);CHKERRQ(ierr);
     }
-    ierr = VecNorm(itg->btilde[curl],NORM_2,&norm);CHKERRQ(ierr);
-    tmp = 1.0/norm; ierr = VecScale(itg->btilde[curl],tmp);CHKERRQ(ierr);
-    ierr = VecNorm(itg->xtilde[curl],NORM_2,&norm);CHKERRQ(ierr);
-    ierr = VecScale(itg->xtilde[curl],tmp);CHKERRQ(ierr);
+    ierr = VecNormalize(itg->btilde[curl],&norm);CHKERRQ(ierr);
+    ierr = VecNormalize(itg->xtilde[curl],&norm);CHKERRQ(ierr);
     itg->curl++;
   }
   PetscFunctionReturn(0);
