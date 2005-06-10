@@ -143,10 +143,13 @@ class Configure(config.base.Configure):
   def checkMath(self):
     '''Check for sin() in libm, the math library'''
     self.math = None
-    if self.check('','sin', prototype = 'double sin(double);', call = 'sin(1.0);\n'):
+    if self.check('', ['sin', 'floor', 'log10'], prototype = 'double sin(double);', call = 'sin(1.0);\n'):
+      self.logPrint('Math functions are linked in by default')
       self.math = []
-    elif self.check('m', 'sin', prototype = 'double sin(double);', call = 'sin(1.0);\n'):
+    elif self.check('m', ['sin', 'floor', 'log10'], prototype = 'double sin(double);', call = 'sin(1.0);\n'):
+      self.logPrint('Using libm for the math library')
       self.math = ['libm.a']
+    self.logPrint('Warning: No math library found')
     return
 
   def checkDynamic(self):
