@@ -568,7 +568,7 @@ void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *isrow,IS *iscol,M
     for (i=0; i<*n; i++) {
       smat[i] = lsmat[i];
     }
-    PetscFree(lsmat); 
+    *ierr = PetscFree(lsmat); 
   } else {
     *ierr = MatGetSubMatrices(*mat,*n,isrow,iscol,*scall,&smat);
   }
