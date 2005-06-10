@@ -197,7 +197,7 @@ void PETSC_STDCALL vecload_(PetscViewer *viewer,CHAR outtype PETSC_MIXED_LEN(len
 }
 
 /* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
-void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,PetscInt *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscInt    m;
   PetscScalar *lx;
