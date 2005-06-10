@@ -316,7 +316,7 @@ void PETSC_STDCALL matgetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCo
   *ierr = PetscScalarAddressToFortran((PetscObject)*mat,fa,mm,m*n,ia); if (*ierr) return;
 }
 
-void PETSC_STDCALL matrestorearray_(Mat *mat,PetscScalar *fa,PetscInt *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL matrestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscScalar          *lx;
   PetscInt                  m,n;

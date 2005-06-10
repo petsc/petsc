@@ -70,7 +70,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFOpen(MPI_Comm comm,const char name[],const 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFClose"
-/*@C
+/*@
     PetscFClose - Has the first processor in the communicator close a 
     file; all others do nothing.
 

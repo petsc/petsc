@@ -316,7 +316,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*routine)(
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscPopSignalHandler"
-/*@C
+/*@
    PetscPopSignalHandler - Removes the most last signal handler that was pushed.
        If no signal handlers are left on the stack it will remove the PETSc signal handler.
        (That is PETSc will no longer catch signals).

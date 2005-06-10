@@ -63,7 +63,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineCreate(MPI_Comm comm,const char 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMatlabEngineDestroy"
-/*@C
+/*@
    PetscMatlabEngineDestroy - Destroys a vector.
 
    Collective on PetscMatlabEngine
@@ -209,7 +209,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEnginePrintOutput(PetscMatlabEngine me
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMatlabEnginePut"
-/*@C
+/*@
     PetscMatlabEnginePut - Puts a Petsc object into the Matlab space. For parallel objects,
       each processors part is put in a seperate  Matlab process.
 
@@ -242,7 +242,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEnginePut(PetscMatlabEngine mengine,Pe
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMatlabEngineGet"
-/*@C
+/*@
     PetscMatlabEngineGet - Gets a variable from Matlab into a PETSc object.
 
     Collective on PetscObject
