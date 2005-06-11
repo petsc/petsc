@@ -3,7 +3,6 @@
 #include "petsc.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define petscviewerdestroy_        PETSCVIEWERDESTROY
 #define petscviewerasciiopen_      PETSCVIEWERASCIIOPEN
 #define petscviewersetformat_      PETSCVIEWERSETFORMAT
 #define petscviewerpushformat_     PETSCVIEWERPUSHFORMAT
@@ -22,7 +21,6 @@
 #define petscviewersocketputscalar_ petscviewersocketputscalar
 #define petscviewersocketputint_    petscviewersocketputint
 #define petscviewersocketputreal_   petscviewersocketputreal
-#define petscviewerdestroy_        petscviewerdestroy
 #define petscviewerasciiopen_      petscviewerasciiopen
 #define petscviewersetformat_      petscviewersetformat
 #define petscviewerpushformat_     petscviewerpushformat
@@ -137,11 +135,6 @@ void PETSC_STDCALL petscviewerpopformat_(PetscViewer *vin,PetscErrorCode *ierr)
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = PetscViewerPopFormat(v);
-}
-
-void PETSC_STDCALL petscviewerdestroy_(PetscViewer *v,PetscErrorCode *ierr)
-{
-  *ierr = PetscViewerDestroy(*v);
 }
 
 void PETSC_STDCALL petscviewerstringopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len1),PetscInt *len,PetscViewer *str,

@@ -6,7 +6,7 @@ PetscCookie PETSC_VIEWER_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy" 
-/*@C
+/*@
    PetscViewerDestroy - Destroys a PetscViewer.
 
    Collective on PetscViewer

@@ -84,7 +84,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   MFCtx_Private  *ctx;
   SNES           snes;
   PetscReal      h,norm,sum,umin,noise;
-  PetscScalar    hs,dot,mone = -1.0;
+  PetscScalar    hs,dot;
   Vec            w,U,F;
   PetscErrorCode ierr,(*eval_fct)(SNES,Vec,Vec);
   MPI_Comm       comm;
@@ -156,9 +156,8 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   hs = h;
   ierr = VecWAXPY(w,hs,a,U);CHKERRQ(ierr);
   ierr = eval_fct(snes,w,y);CHKERRQ(ierr);
-  ierr = VecAXPY(y,mone,F);CHKERRQ(ierr);
-  hs = 1.0/hs;
-  ierr = VecScale(y,hs);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,F);CHKERRQ(ierr);
+  ierr = VecScale(y,1.0/hs);CHKERRQ(ierr);
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
   ierr = PetscLogEventEnd(MATSNESMF_Mult,a,y,0,0);CHKERRQ(ierr);

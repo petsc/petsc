@@ -60,7 +60,7 @@ static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSequentialPhaseBegin" 
-/*@C
+/*@
    PetscSequentialPhaseBegin - Begins a sequential section of code.  
 
    Collective on MPI_Comm
@@ -119,7 +119,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSequentialPhaseEnd" 
-/*@C
+/*@
    PetscSequentialPhaseEnd - Ends a sequential section of code.
 
    Collective on MPI_Comm

@@ -104,7 +104,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetNewTag(PetscObject obj,PetscMPIInt 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscCommGetNewTag" 
-/*@C
+/*@
     PetscCommGetNewTag - Gets a unique new tag from a PETSc communicator. All 
     processors that share the communicator MUST call this routine EXACTLY the same
     number of times.  This tag should only be used with the current objects

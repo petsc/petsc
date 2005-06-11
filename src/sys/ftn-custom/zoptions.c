@@ -25,7 +25,6 @@ M*/
 
 #include "zpetsc.h" 
 #include "petscsys.h"
-extern PetscTruth PetscBeganMPI;
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscoptionsgettruth_            PETSCOPTIONSGETTRUTH

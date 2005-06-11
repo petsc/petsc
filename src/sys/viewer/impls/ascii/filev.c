@@ -161,7 +161,7 @@ extern FILE *petsc_history;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerASCIISetTab" 
-/*@C
+/*@
     PetscViewerASCIISetTab - Causes PetscViewer to tab in a number of times
 
     Not Collective, but only first processor in set has any effect
@@ -199,7 +199,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISetTab(PetscViewer viewer,PetscIn
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerASCIIPushTab" 
-/*@C
+/*@
     PetscViewerASCIIPushTab - Adds one more tab to the amount that PetscViewerASCIIPrintf()
      lines are tabbed.
 
@@ -237,7 +237,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPushTab(PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerASCIIPopTab" 
-/*@C
+/*@
     PetscViewerASCIIPopTab - Removes one tab from the amount that PetscViewerASCIIPrintf()
      lines are tabbed.
 
@@ -276,7 +276,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPopTab(PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerASCIIUseTabs" 
-/*@C
+/*@
     PetscViewerASCIIUseTabs - Turns on or off the use of tabs with the ASCII PetscViewer
 
     Not Collective, but only first processor in set has any effect

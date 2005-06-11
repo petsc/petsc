@@ -31,7 +31,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMemcpy"
-/*@C
+/*@
    PetscMemcpy - Copies n bytes, beginning at location b, to the space
    beginning at location a. The two memory regions CANNOT overlap, use
    PetscMemmove() in that case.
@@ -158,7 +158,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBitMemcpy(void *a,PetscInt ai,const void *b,
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMemzero"
-/*@C
+/*@
    PetscMemzero - Zeros the specified memory.
 
    Not Collective

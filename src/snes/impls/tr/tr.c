@@ -55,7 +55,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   PetscInt            maxits,i,lits;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal           rho,fnorm,gnorm,gpnorm,xnorm,delta,nrm,ynorm,norm1;
-  PetscScalar         mone = -1.0,cnorm;
+  PetscScalar         cnorm;
   KSP                 ksp;
   SNESConvergedReason reason;
   PetscTruth          conv,breakout = PETSC_FALSE;
@@ -125,7 +125,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
         ierr = PetscLogInfo((snes,"SNESSolve_TR: Direction is in Trust Region\n"));CHKERRQ(ierr);
         ynorm = nrm;
       }
-      ierr = VecAYPX(Y,mone,X);CHKERRQ(ierr);            /* Y <- X - Y */
+      ierr = VecAYPX(Y,-1.0,X);CHKERRQ(ierr);            /* Y <- X - Y */
       ierr = VecCopy(X,snes->vec_sol_update_always);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes,Y,G);CHKERRQ(ierr); /*  F(X) */
       ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);      /* gnorm <- || g || */
