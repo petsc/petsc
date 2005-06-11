@@ -10,7 +10,7 @@ class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
     self.download_lam     = ['http://www.lam-mpi.org/download/files/lam-7.1.1.tar.gz']
-    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/petsc/tmp/mpich2.tar.gz']
+    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpich2-1.0.2.tar.gz']
     self.functions        = ['MPI_Init', 'MPI_Comm_create', 'MPI_Allreduce']
     self.includes         = ['mpi.h']
     self.liblist_mpich    = [['libmpich.a'],
@@ -392,7 +392,7 @@ class Configure(PETSc.package.Package):
           self.framework.logPrint('Output from trying to run mpdboot:'+str(output))
           self.framework.logPrint('Started up MPICH mpd demon needed for mpirun')
         except RuntimeError, e:
-          self.framework.logPrint('Error trying to run mpdboot:'+e)
+          self.framework.logPrint('Error trying to run mpdboot:'+str(e))
       self.framework.actions.addArgument('MPI', 'Install', 'Installed MPICH into '+installDir)
     return self.getDir()
 

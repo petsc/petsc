@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpe2.tar.gz']
+    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpe2-1.0.2.tar.gz']
     self.functions = ['MPE_Log_event']
     self.includes  = ['mpe.h']
     self.liblist   = [['libmpe.a']]
@@ -37,15 +37,16 @@ class Configure(PETSc.package.Package):
     args.append('--disable-f77')
 
     if self.mpi.include and not self.mpi.include == ['']:
-      args.append('MPI_INC=-I"'+self.mpi.include[0]+'"')
+      args.append('MPI_INC="-I'+self.mpi.include[0]+'"')
 
     if self.mpi.lib:
+      libdir = os.path.dirname(self.mpi.lib[0])
       libs = []
       for l in self.mpi.lib:
         ll = os.path.basename(l)
         libs.append('-l'+ll[3:-2])
-        libs = ' '.join(libs) # '-lmpich -lpmpich'
-        args.append('MPI_LIBS="'+libs+'"')
+      libs = ' '.join(libs) # '-lmpich -lpmpich'
+      args.append('MPI_LIBS="'+'-L'+libdir+' '+libs+'"')
 
     args = ' '.join(args)
     
