@@ -468,19 +468,19 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
       }
       ierr = MatRestrict(mg[j]->restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
       
-      /* F(R*x_fine) */
+      /* F(RI*x_fine) */
       ierr = VecScatterBegin(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
       ierr = VecScatterEnd(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
       ierr = DMMGFormFunction(0,dmmg[j-1]->x,dmmg[j-1]->w,dmmg[j-1]);CHKERRQ(ierr);
 
-      /* residual_coarse = F(R*x_fine) + R*(residual_fine - F(x_fine)) */
+      /* residual_coarse = F(RI*x_fine) + R*(residual_fine - F(x_fine)) */
       ierr = VecAYPX(dmmg[j-1]->r,1.0,dmmg[j-1]->w);CHKERRQ(ierr);
 
-      /* save R*x_fine into b (needed when interpolating compute x back up */
+      /* save RI*x_fine into b (needed when interpolating compute x back up */
       ierr = VecCopy(dmmg[j-1]->x,dmmg[j-1]->b);CHKERRQ(ierr);
     }
 
-    for (j=0; j<dmmg[0]->presmooth; j++) {
+    for (j=0; j<dmmg[0]->coarsesmooth; j++) {
       ierr = NLFRelax_DAAD(dmmg[0]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[0]->x);CHKERRQ(ierr);
     }
     if (dmmg[0]->monitorall){ 
@@ -492,7 +492,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
     }
 
     for (j=1; j<=level; j++) {
-      /* x_fine = x_fine + R'*(x_coarse - R*x_fine) */
+      /* x_fine = x_fine + R'*(x_coarse - RI*x_fine) */
       ierr = VecAXPY(dmmg[j-1]->x,-1.0,dmmg[j-1]->b);CHKERRQ(ierr);
       ierr = MatInterpolateAdd(mg[j]->interpolate,dmmg[j-1]->x,dmmg[j]->x,dmmg[j]->x);CHKERRQ(ierr);
 
@@ -523,7 +523,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
     if (dmmg[level]->monitor){
       ierr = DMMGFormFunction(0,dmmg[level]->x,dmmg[level]->w,dmmg[level]);CHKERRQ(ierr);
       ierr = VecNorm(dmmg[level]->w,NORM_2,&norm);CHKERRQ(ierr);
-      ierr = PetscPrintf(dmmg[level]->comm,"%D FAS function norm %g\n",i,norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(dmmg[level]->comm,"%D FAS function norm %g\n",i+1,norm);CHKERRQ(ierr);
     }
   }
   theend:
