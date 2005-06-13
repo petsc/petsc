@@ -56,7 +56,7 @@ PetscErrorCode NLFNewton_DAAD(NLF A,DALocalInfo *info,MatStencil *stencil,void *
 */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_DAAD"
+#define __FUNCT__ "NLFMatRelax_DAAD"
 PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD(NLF A,MatSORType flag,int its,Vec xx)
 {
   PetscErrorCode ierr;

@@ -745,7 +745,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothDown(PC pc,PetscInt n)
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   levels = mg[0]->levels;
 
-  for (i=0; i<levels; i++) {  
+  for (i=1; i<levels; i++) {  
     /* make sure smoother up and down are different */
     ierr = PCMGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mg[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);

@@ -853,9 +853,6 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   aj  = a->j;
   aa    = a->a;
   ii   = a->i;
-#if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
-  fortranmultaij_(&m,x,ii,aj,aa,y);
-#else
   if (usecprow){ /* use compressed row format */
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
@@ -869,6 +866,9 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
       y[*ridx++] = sum;
     }
   } else { /* do not use compressed row format */
+#if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
+    fortranmultaij_(&m,x,ii,aj,aa,y);
+#else
     for (i=0; i<m; i++) {
       jrow = ii[i];
       n    = ii[i+1] - jrow;
@@ -878,8 +878,8 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
       }
       y[i] = sum;
     }
-  }
 #endif
+  }
   ierr = PetscLogFlops(2*a->nz - m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);

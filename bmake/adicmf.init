@@ -51,6 +51,7 @@
         PETSC_FALSE        = 0
         PETSC_NULL         = 0
         PETSC_IGNORE       = -1
+        PETSC_PI                 = 3.1415926535897932384626
 
 [ACTIVE_FUNCTIONS]
 
