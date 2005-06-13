@@ -14,7 +14,19 @@
 
 #include "petsc.h"
 #include "petscsys.h"        /*I "petscsys.h" I*/
+#if defined (PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
+#else
+/* maybe the protypes are missing */
+#if defined(PETSC_HAVE_DRAND48)
+EXTERN_C_BEGIN
+extern double drand48();
+extern void   srand48(long);
+EXTERN_C_END
+#else
+extern double drand48();
+#endif
+#endif
 
 PetscCookie PETSC_DLLEXPORT PETSC_RANDOM_COOKIE = 0;
 
@@ -101,10 +113,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetInterval(PetscRandom r,PetscScalar 
    a routine to enable restarts [seed48()] 
 */
 #if defined(PETSC_HAVE_DRAND48)
-EXTERN_C_BEGIN
-extern double drand48();
-extern void   srand48(long);
-EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate" 
@@ -288,8 +296,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *va
 
 #else
 /* Should put a simple, portable random number generator here? */
-
-extern double drand48();
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate" 
