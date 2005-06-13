@@ -299,11 +299,11 @@ class Configure(PETSc.package.Package):
     # Configure and Build MPICH
     self.framework.pushLanguage('C')
     args = ['--prefix='+installDir]
-    envs = 'CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"'
+    args.append('CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
-      envs += ' CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"'
+      args.append('CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
     else:
       args.append('--disable-cxx')
@@ -320,7 +320,7 @@ class Configure(PETSc.package.Package):
         if output.find('IBM') >= 0:
           fc = os.path.join(os.path.dirname(fc), 'xlf')
           self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling MPICH\n')      
-      envs += ' FC="'+fc+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"'
+      args.append('FC="'+fc+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
       self.framework.popLanguage()
     else:
       args.append('--disable-f77')
@@ -347,7 +347,7 @@ class Configure(PETSc.package.Package):
       self.framework.logPrint('Have to rebuild MPICH oldargs = '+oldargs+'\n new args = '+args)
       try:
         self.logPrintBox('Running configure on MPICH; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';'+envs+' ./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         if self.arch.hostOsBase.startswith('cygwin'):
           raise RuntimeError('Error running configure on MPICH. \n \

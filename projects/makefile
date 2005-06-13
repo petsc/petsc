@@ -3,10 +3,10 @@
 all: copyexamples unix2dos_projects
 
 copyexamples: 
-	cp -f ../src/ksp/examples/tutorials/ex2.c c/ksp/ex2/ex2.c
-	cp -f ../src/ksp/examples/tutorials/ex2.c c++/ksp/ex2/ex2.cpp
-	cp -f ../src/ksp/examples/tutorials/ex2.c complex/ksp/ex2/ex2.cpp
-	cp -f ../src/ksp/examples/tutorials/ex2f.F fortran/ksp/ex2f/ex2f.F
+	cp -f ../src/ksp/ksp/examples/tutorials/ex2.c c/ksp/ex2/ex2.c
+	cp -f ../src/ksp/ksp/examples/tutorials/ex2.c c++/ksp/ex2/ex2.cpp
+	cp -f ../src/ksp/ksp/examples/tutorials/ex2.c complex/ksp/ex2/ex2.cpp
+	cp -f ../src/ksp/ksp/examples/tutorials/ex2f.F fortran/ksp/ex2f/ex2f.F
 
 unix2dos_projects:
 	unix2dos c/ksp/ex2/ex2.dsp         c/ksp/ex2/ex2.dsw
