@@ -121,7 +121,6 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
   PetscScalar        *bv,*xv;
   HYPRE_ParVector    jbv,jxv;
   PetscScalar        *sbv,*sxv; 
-  PetscScalar        zero=0.0;
   int                hierr;
 
   PetscFunctionBegin;

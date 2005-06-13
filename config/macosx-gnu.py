@@ -5,7 +5,7 @@ configure_options = [
   '--with-shared=1',
   '--with-dynamic',
   '--download-mpich',
-  '-download-mpich-pm=forker'  
+  '-download-mpich-pm=gforker'
   ]
 
 if __name__ == '__main__':

@@ -137,6 +137,8 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFKSPMonitor(KSP,PetscInt,Petsc
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetFromOptions(Mat);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCheckPositivity(Vec,Vec,PetscScalar*,void*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetCheckh(Mat,PetscErrorCode (*)(Vec,Vec,PetscScalar*,void*),void*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFDSSetUmin(Mat,PetscReal);
+
 
 typedef struct _p_MatSNESMFCtx* MatSNESMFCtx;
 
