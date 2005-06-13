@@ -105,7 +105,7 @@ framework.log)[0]
       self.framework.log.write('Found function '+str(func)+' in '+str(lib)+'\n')
     return found
   
-  def configureLibrary(self): #almost same as package.py/configureLibrary()!
+  def configureLibraryOld(self): #almost same as package.py/configureLibrary()!
     '''Find an installation ando check if it can work with PETSc'''
     self.framework.log.write('==================================================================================\n')
     self.framework.log.write('Checking for a functional '+self.name+'\n')
