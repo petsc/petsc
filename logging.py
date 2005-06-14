@@ -147,7 +147,7 @@ class Logger(args.ArgumentProcessor):
               curses.endwin()
             except curses.error:
               self._linewidth = -1
-          except ImportError:
+          except:
             self._linewidth = -1
           LineWidth = self._linewidth
         else:
