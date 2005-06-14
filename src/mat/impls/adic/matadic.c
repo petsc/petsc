@@ -119,7 +119,7 @@ PetscErrorCode MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
   Mat_DAAD      *a = (Mat_DAAD*)A->data;
   PetscErrorCode ierr;
   int j,gtdof,nI,gI;
-  PetscScalar   *avu,*av,*ad_vustart,ad_f[2],zero = 0.0,*d,*b;
+  PetscScalar   *avu,*av,*ad_vustart,ad_f[2],*d,*b;
   Vec           localxx,dd;
   DALocalInfo   info;
   MatStencil    stencil;

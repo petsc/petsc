@@ -129,7 +129,7 @@ class Configure(PETSc.package.Package):
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed HYPRE into '+installDir)
     return self.getDir()
   
-  def configureLibrary(self):
+  def configureLibraryOld(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by hypre'''
     '''Normally you do not need to provide this method'''
     PETSc.package.Package.configureLibrary(self)

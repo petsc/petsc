@@ -8,7 +8,7 @@ OBJSC    = ${SOURCEC:.c=.o}
 SOURCEF  =
 SOURCEH  =
 DIRS     =
-LIBBASE  = libpetsdm
+LIBBASE  = libpetscdm
 LOCDIR   = src/dm/ao/impls/basic/ftn-custom/
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
