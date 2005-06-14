@@ -38,8 +38,7 @@ class Configure(PETSc.package.Package):
             'sstruct_ls',
             'sstruct_mv',
             'struct_ls',
-            'struct_mv',
-            'utilities'
+            'struct_mv'
             ]
     alllibs = []
     for l in libs:
