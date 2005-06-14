@@ -94,7 +94,7 @@ class Configure(config.base.Configure):
     if not isinstance(funcs,list): funcs = [funcs]
     if not isinstance(libName, list): libName = [libName]
     self.framework.logPrint('Checking for functions '+str(funcs)+' in library '+str(libName)+' '+str(otherLibs))
-    for funcName in funcs:
+    for f, funcName in enumerate(funcs):
       # Handle Fortran mangling
       if fortranMangle:
         funcName = self.compilers.mangleFortranFunction(funcName)
@@ -107,13 +107,19 @@ class Configure(config.base.Configure):
         #endif'''
       # Construct prototype
       if prototype:
-        includes += prototype
+        if isinstance(prototype, str):
+          includes += prototype
+        else:
+          includes += prototype[f]
       else:
         # We use char because int might match the return type of a gcc2 builtin and its argument prototype would still apply.
         includes += 'char '+funcName+'();\n'
       # Construct function call
       if call:
-        body = call
+        if isinstance(call, str):
+          body = call
+        else:
+          body = call[f]
       else:
         body = funcName+'()\n'
       # Setup link line
@@ -143,10 +149,13 @@ class Configure(config.base.Configure):
   def checkMath(self):
     '''Check for sin() in libm, the math library'''
     self.math = None
-    if self.check('', ['sin', 'floor', 'log10'], prototype = 'double sin(double);', call = 'sin(1.0);\n'):
+    funcs = ['sin', 'floor', 'log10', 'erf']
+    prototypes = ['double sin(double);', 'double floor(double);', 'double log10(double);', 'double erf(double);']
+    calls = ['sin(1.0);\n', 'floor(1.0);\n', 'log10(1.0);\n', 'erf(1.0);\n']
+    if self.check('', funcs, prototype = prototypes, call = calls):
       self.logPrint('Math functions are linked in by default')
       self.math = []
-    elif self.check('m', ['sin', 'floor', 'log10'], prototype = 'double sin(double);', call = 'sin(1.0);\n'):
+    elif self.check('m', funcs, prototype = prototypes, call = calls):
       self.logPrint('Using libm for the math library')
       self.math = ['libm.a']
     self.logPrint('Warning: No math library found')
