@@ -158,7 +158,8 @@ class Configure(config.base.Configure):
     elif self.check('m', funcs, prototype = prototypes, call = calls):
       self.logPrint('Using libm for the math library')
       self.math = ['libm.a']
-    self.logPrint('Warning: No math library found')
+    else:
+      self.logPrint('Warning: No math library found')
     return
 
   def checkDynamic(self):
