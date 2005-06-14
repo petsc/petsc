@@ -41,7 +41,7 @@ PetscErrorCode DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStru
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESDAComputeJacobianWithAdic"
-/*@C
+/*@
     SNESDAComputeJacobianWithAdic - This is a universal Jacobian evaluation routine
     that may be used with SNESSetJacobian() as long as the user context has a DA as
     its first record and DASetLocalAdicFunction() has been called.  
@@ -82,15 +82,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdic(SNES snes,Vec X
   *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
-
-EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFCreate_DAAD(NLF*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD(NLF,MatSORType,PetscInt,Vec);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFDAADSetDA_DAAD(NLF,DA);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFDAADSetCtx_DAAD(NLF,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFDAADSetResidual_DAAD(NLF,Vec);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFDAADSetNewtonIterations_DAAD(NLF,PetscInt);
-EXTERN_C_END
 
 #include "src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
 /*
