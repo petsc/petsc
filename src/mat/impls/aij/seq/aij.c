@@ -11,6 +11,33 @@
 #include "petscbt.h"
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatDiagonalSet_SeqAIJ"
+/*   only works if matrix has a full set of diagonal entries */
+PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*) Y->data;
+  PetscInt       i,*diag, m = Y->m;
+  PetscScalar    *v,*aa = aij->a;
+
+  PetscFunctionBegin;
+  ierr = MatMarkDiagonal_SeqAIJ(Y);CHKERRQ(ierr);
+  diag = aij->diag;
+  ierr = VecGetArray(D,&v);CHKERRQ(ierr);
+  if (is == INSERT_VALUES) {
+    for (i=0; i<m; i++) {
+      aa[diag[i]] = v[i];
+    }
+  } else {
+    for (i=0; i<m; i++) {
+      aa[diag[i]] += v[i];
+    }
+  }
+  ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqAIJ"
 PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *m,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
@@ -2202,7 +2229,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*45*/ MatPrintHelp_SeqAIJ,
        MatScale_SeqAIJ,
        0,
-       0,
+       MatDiagonalSet_SeqAIJ,
        MatILUDTFactor_SeqAIJ,
 /*50*/ MatSetBlockSize_SeqAIJ,
        MatGetRowIJ_SeqAIJ,
