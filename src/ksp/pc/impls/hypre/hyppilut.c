@@ -230,9 +230,6 @@ static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PC pc)
   char       *args[2];
 
   PetscFunctionBegin;
-  jac->bjilu              = PETSC_FALSE;
-  jac->levels             = 1;
-
   ierr = PetscOptionsHead("HYPRE Euclid Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_hypre_euclid_levels","Number of levels of fill ILU(k)","None",jac->levels,&jac->levels,&flag);CHKERRQ(ierr);
   if (flag) {
@@ -296,56 +293,40 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   double         tmpdbl, twodbl[2];
 
   PetscFunctionBegin;
-  /* these defaults match the hypre defaults */
-  jac->maxlevels        = 25;
-  jac->maxiter          = 1;  
-  jac->tol              = 1.e-7;
-  jac->strongthreshold  = .25;
-  jac->maxrowsum        = .9;
-  jac->coarsentype      = 6;
-  jac->measuretype      = 0;
-  jac->applyrichardson  = PETSC_FALSE;  
-  jac->gridsweeps[0]    = jac->gridsweeps[1] = jac->gridsweeps[2] = jac->gridsweeps[3]  = 1;
-  jac->relaxtype[0]     = jac->relaxtype[1]  = jac->relaxtype[2]  = 3;
-  jac->relaxtype[3]     = 9;
-  jac->relaxweight      = 1.0;
-  jac->outerrelaxweight = 1.0;
-  jac->relaxorder       = 1;
-  
   ierr = PetscOptionsHead("HYPRE BoomerAMG Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_levels","Number of levels (of grids) allowed","None",jac->maxlevels,&jac->maxlevels,&flg);CHKERRQ(ierr);
   if (flg) {
     if (jac->maxlevels < 2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of levels %d must be at least two",jac->maxlevels);
+    ierr = HYPRE_BoomerAMGSetMaxLevels(jac->hsolver,jac->maxlevels);CHKERRQ(ierr);
   }
-  ierr = HYPRE_BoomerAMGSetMaxLevels(jac->hsolver,jac->maxlevels);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_iter","Maximum iterations used","None",jac->maxiter,&jac->maxiter,&flg);CHKERRQ(ierr);
   if (flg) {
     if (jac->maxiter < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of iterations %d must be at least one",jac->maxiter);
+    ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,jac->maxiter);CHKERRQ(ierr);
   }
-  ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,jac->maxiter);CHKERRQ(ierr);
   ierr = PetscOptionsScalar("-pc_hypre_boomeramg_tol","Convergence tolerance","None",jac->tol,&jac->tol,&flg);CHKERRQ(ierr);
   if (flg) {
     if (jac->tol < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Tolerance %g must be great than or equal zero",jac->tol);
+    ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
   }
-  ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
 
   ierr = PetscOptionsScalar("-pc_hypre_boomeramg_truncfactor","Truncation factor","None",jac->truncfactor,&jac->truncfactor,&flg);CHKERRQ(ierr);
   if (flg) {
     if (jac->truncfactor < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Truncation factor %g must be great than or equal zero",jac->truncfactor);
+    ierr = HYPRE_BoomerAMGSetTruncFactor(jac->hsolver,jac->truncfactor);CHKERRQ(ierr);
   }
-  ierr = HYPRE_BoomerAMGSetTruncFactor(jac->hsolver,jac->truncfactor);CHKERRQ(ierr);
 
   ierr = PetscOptionsScalar("-pc_hypre_boomeramg_strong_threshold","Threshold for being strongly connected","None",jac->strongthreshold,&jac->strongthreshold,&flg);CHKERRQ(ierr);
   if (flg) {
     if (jac->strongthreshold < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Strong threshold %g must be great than or equal zero",jac->strongthreshold);
+    ierr = HYPRE_BoomerAMGSetStrongThreshold(jac->hsolver,jac->strongthreshold);CHKERRQ(ierr);
   }
-  ierr = HYPRE_BoomerAMGSetStrongThreshold(jac->hsolver,jac->strongthreshold);CHKERRQ(ierr);
   ierr = PetscOptionsScalar("-pc_hypre_boomeramg_max_row_sum","Maximum row sum","None",jac->maxrowsum,&jac->maxrowsum,&flg);CHKERRQ(ierr);
   if (flg) {
     if (jac->maxrowsum < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Maximum row sum %g must be greater than zero",jac->maxrowsum);
     if (jac->maxrowsum > 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Maximum row sum %g must be less than or equal one",jac->maxrowsum);
+    ierr = HYPRE_BoomerAMGSetMaxRowSum(jac->hsolver,jac->maxrowsum);CHKERRQ(ierr);
   } 
-  ierr = HYPRE_BoomerAMGSetMaxRowSum(jac->hsolver,jac->maxrowsum);CHKERRQ(ierr);
 
   /* Grid sweeps */
   ierr = PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_all","Number of sweeps for all grid levels (fine, up, and down)","None", jac->gridsweeps[0], &indx ,&flg);CHKERRQ(ierr);
@@ -454,13 +435,13 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   ierr = PetscOptionsEList("-pc_hypre_boomeramg_measure_type","Measure type","None",HYPREBoomerAMGMeasureType,2,HYPREBoomerAMGMeasureType[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     jac->measuretype = indx;
+    ierr = HYPRE_BoomerAMGSetMeasureType(jac->hsolver,jac->measuretype);CHKERRQ(ierr); 
   }
-  ierr = HYPRE_BoomerAMGSetMeasureType(jac->hsolver,jac->measuretype);CHKERRQ(ierr); 
   ierr = PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,7,HYPREBoomerAMGCoarsenType[6],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     jac->coarsentype = indx;
+    ierr = HYPRE_BoomerAMGSetCoarsenType(jac->hsolver,jac->coarsentype);CHKERRQ(ierr); 
   }
-  ierr = HYPRE_BoomerAMGSetCoarsenType(jac->hsolver,jac->coarsentype);CHKERRQ(ierr); 
   ierr = PetscOptionsTruth("-pc_hypre_boomeramg_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
   if (jac->printstatistics) {
     ierr = HYPRE_BoomerAMGSetPrintLevel(jac->hsolver,3);CHKERRQ(ierr);
@@ -544,40 +525,38 @@ static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PC pc)
   const char     *symtlist[] = {"nonsymmetric","SPD","nonsymmetric,SPD"};
 
   PetscFunctionBegin;
-  jac->nlevels     = 1;
-  jac->threshhold  = .1;
-  jac->filter      = .1;
-  jac->loadbal     = 0;
-  if (PetscLogPrintInfo) {
-    jac->logging     = (int) PETSC_TRUE;
-  } else {
-    jac->logging     = (int) PETSC_FALSE;
-  }
-  jac->ruse = (int) PETSC_FALSE;
-  jac->symt   = 0;
-
   ierr = PetscOptionsHead("HYPRE ParaSails Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_hypre_parasails_nlevels","Number of number of levels","None",jac->nlevels,&jac->nlevels,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_hypre_parasails_thresh","Threshold","None",jac->threshhold,&jac->threshhold,0);CHKERRQ(ierr);
-  ierr = HYPRE_ParaSailsSetParams(jac->hsolver,jac->threshhold,jac->nlevels);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_hypre_parasails_thresh","Threshold","None",jac->threshhold,&jac->threshhold,&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = HYPRE_ParaSailsSetParams(jac->hsolver,jac->threshhold,jac->nlevels);CHKERRQ(ierr);
+  }
 
-  ierr = PetscOptionsReal("-pc_hypre_parasails_filter","filter","None",jac->filter,&jac->filter,0);CHKERRQ(ierr);
-  ierr = HYPRE_ParaSailsSetFilter(jac->hsolver,jac->filter);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_hypre_parasails_filter","filter","None",jac->filter,&jac->filter,&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = HYPRE_ParaSailsSetFilter(jac->hsolver,jac->filter);CHKERRQ(ierr);
+  }
 
-  ierr = PetscOptionsReal("-pc_hypre_parasails_loadbal","Load balance","None",jac->loadbal,&jac->loadbal,0);CHKERRQ(ierr);
-  ierr = HYPRE_ParaSailsSetLoadbal(jac->hsolver,jac->loadbal);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_hypre_parasails_loadbal","Load balance","None",jac->loadbal,&jac->loadbal,&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = HYPRE_ParaSailsSetLoadbal(jac->hsolver,jac->loadbal);CHKERRQ(ierr);
+  }
 
-  ierr = PetscOptionsTruth("-pc_hypre_parasails_logging","Print info to screen","None",(PetscTruth)jac->logging,(PetscTruth*)&jac->logging,0);CHKERRQ(ierr);
-  ierr = HYPRE_ParaSailsSetLogging(jac->hsolver,jac->logging);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_hypre_parasails_logging","Print info to screen","None",(PetscTruth)jac->logging,(PetscTruth*)&jac->logging,&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = HYPRE_ParaSailsSetLogging(jac->hsolver,jac->logging);CHKERRQ(ierr);
+  }
 
-  ierr = PetscOptionsTruth("-pc_hypre_parasails_reuse","Reuse nonzero pattern in preconditioner","None",(PetscTruth)jac->ruse,(PetscTruth*)&jac->ruse,0);CHKERRQ(ierr);
-  ierr = HYPRE_ParaSailsSetReuse(jac->hsolver,jac->ruse);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_hypre_parasails_reuse","Reuse nonzero pattern in preconditioner","None",(PetscTruth)jac->ruse,(PetscTruth*)&jac->ruse,&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = HYPRE_ParaSailsSetReuse(jac->hsolver,jac->ruse);CHKERRQ(ierr);
+  }
 
   ierr = PetscOptionsEList("-pc_hypre_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,3,symtlist[0],&indx,&flag);CHKERRQ(ierr);
   if (flag) {
     jac->symt = indx;
+    ierr = HYPRE_ParaSailsSetSym(jac->hsolver,jac->symt);CHKERRQ(ierr);
   }
-  ierr = HYPRE_ParaSailsSetSym(jac->hsolver,jac->symt);CHKERRQ(ierr);
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -658,6 +637,24 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->destroy            = HYPRE_ParaSailsDestroy;
     jac->setup              = HYPRE_ParaSailsSetup;
     jac->solve              = HYPRE_ParaSailsSolve;
+    /* initialize */
+    jac->nlevels     = 1;
+    jac->threshhold  = .1;
+    jac->filter      = .1;
+    jac->loadbal     = 0;
+    if (PetscLogPrintInfo) {
+      jac->logging     = (int) PETSC_TRUE;
+    } else {
+      jac->logging     = (int) PETSC_FALSE;
+    }
+    jac->ruse = (int) PETSC_FALSE;
+    jac->symt   = 0;
+    ierr = HYPRE_ParaSailsSetParams(jac->hsolver,jac->threshhold,jac->nlevels);CHKERRQ(ierr);
+    ierr = HYPRE_ParaSailsSetFilter(jac->hsolver,jac->filter);CHKERRQ(ierr);
+    ierr = HYPRE_ParaSailsSetLoadbal(jac->hsolver,jac->loadbal);CHKERRQ(ierr);
+    ierr = HYPRE_ParaSailsSetLogging(jac->hsolver,jac->logging);CHKERRQ(ierr);
+    ierr = HYPRE_ParaSailsSetReuse(jac->hsolver,jac->ruse);CHKERRQ(ierr);
+    ierr = HYPRE_ParaSailsSetSym(jac->hsolver,jac->symt);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = PetscStrcmp("euclid",name,&flag);CHKERRQ(ierr);
@@ -668,6 +665,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->destroy            = HYPRE_EuclidDestroy;
     jac->setup              = HYPRE_EuclidSetup;
     jac->solve              = HYPRE_EuclidSolve;
+    /* initialization */
+    jac->bjilu              = PETSC_FALSE;
+    jac->levels             = 1;
     PetscFunctionReturn(0);
   }
   ierr = PetscStrcmp("boomeramg",name,&flag);CHKERRQ(ierr);
@@ -679,6 +679,29 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->setup               = HYPRE_BoomerAMGSetup;
     jac->solve               = HYPRE_BoomerAMGSolve;
     pc->ops->applyrichardson = PCApplyRichardson_BoomerAMG;
+    /* these defaults match the hypre defaults */
+    jac->maxlevels        = 25;
+    jac->maxiter          = 1;  
+    jac->tol              = 1.e-7;
+    jac->strongthreshold  = .25;
+    jac->maxrowsum        = .9;
+    jac->coarsentype      = 6;
+    jac->measuretype      = 0;
+    jac->applyrichardson  = PETSC_FALSE;  
+    jac->gridsweeps[0]    = jac->gridsweeps[1] = jac->gridsweeps[2] = jac->gridsweeps[3]  = 1;
+    jac->relaxtype[0]     = jac->relaxtype[1]  = jac->relaxtype[2]  = 3;
+    jac->relaxtype[3]     = 9;
+    jac->relaxweight      = 1.0;
+    jac->outerrelaxweight = 1.0;
+    jac->relaxorder       = 1;
+    ierr = HYPRE_BoomerAMGSetMaxLevels(jac->hsolver,jac->maxlevels);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,jac->maxiter);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetTruncFactor(jac->hsolver,jac->truncfactor);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetStrongThreshold(jac->hsolver,jac->strongthreshold);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetMaxRowSum(jac->hsolver,jac->maxrowsum);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetMeasureType(jac->hsolver,jac->measuretype);CHKERRQ(ierr); 
+    ierr = HYPRE_BoomerAMGSetCoarsenType(jac->hsolver,jac->coarsentype);CHKERRQ(ierr); 
     PetscFunctionReturn(0);
   }
   SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown HYPRE preconditioner %s; Choices are pilut, parasails, euclid, boomeramg",name);
