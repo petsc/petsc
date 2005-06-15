@@ -328,7 +328,9 @@ class Configure(config.base.Configure):
     self.framework.header          = 'bmake/'+self.arch.arch+'/petscconf.h'
     self.framework.cHeader         = 'bmake/'+self.arch.arch+'/petscfix.h'
     self.framework.makeMacroHeader = 'bmake/'+self.arch.arch+'/petscconf'
-    self.framework.makeRuleHeader  = 'bmake/'+self.arch.arch+'/petscrules'        
+    self.framework.makeRuleHeader  = 'bmake/'+self.arch.arch+'/petscrules'
+    if self.libraries.math is None:
+      raise RuntimeError('PETSc requires a functional math library. Please send configure.log to petsc-maint@mcs.anl.gov.')
     self.executeTest(self.configureInline)
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
