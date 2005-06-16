@@ -1106,6 +1106,30 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctioni(DA da,PetscErrorCode (*lfi)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DASetLocalFunctionib"
+/*@C
+       DASetLocalFunctionib - Caches in a DA a block local function that evaluates a single component
+
+   Collective on DA
+
+   Input Parameter:
++  da - initial distributed array
+-  lfi - the local function
+
+   Level: intermediate
+
+.keywords:  distributed array, refine
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunction()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctionib(DA da,PetscErrorCode (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  da->lfib = lfi;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "DASetLocalAdicFunction_Private"
@@ -1174,6 +1198,66 @@ PetscErrorCode DASetLocalAdicMFFunctioni_Private(DA da,PetscErrorCode (*admf_lfi
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   da->adicmf_lfi = admf_lfi;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+       DASetLocalAdicFunctionib - Caches in a DA a block local functioni computed by ADIC/ADIFOR
+
+   Collective on DA
+
+   Synopsis:
+   PetscErrorCode DASetLocalAdicFunctionib(DA da,PetscInt (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
+   
+   Input Parameter:
++  da - initial distributed array
+-  ad_lfi - the local function as computed by ADIC/ADIFOR
+
+   Level: intermediate
+
+.keywords:  distributed array, refine
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunction(),
+          DASetLocalJacobian(), DASetLocalFunctionib()
+M*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "DASetLocalAdicFunctionib_Private"
+PetscErrorCode DASetLocalAdicFunctionib_Private(DA da,PetscErrorCode (*ad_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  da->adic_lfib = ad_lfi;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+       DASetLocalAdicMFFunctionib - Caches in a DA a block local functioni computed by ADIC/ADIFOR
+
+   Collective on DA
+
+   Synopsis:
+   PetscErrorCode  DASetLocalAdicFunctionib(DA da,int (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
+   
+   Input Parameter:
++  da - initial distributed array
+-  admf_lfi - the local matrix-free function as computed by ADIC/ADIFOR
+
+   Level: intermediate
+
+.keywords:  distributed array, refine
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunction(),
+          DASetLocalJacobian(), DASetLocalFunctionib()
+M*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "DASetLocalAdicMFFunctionib_Private"
+PetscErrorCode DASetLocalAdicMFFunctionib_Private(DA da,PetscErrorCode (*admf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  da->adicmf_lfib = admf_lfi;
   PetscFunctionReturn(0);
 }
 

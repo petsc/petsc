@@ -272,8 +272,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP ksp,PetscI
 #else
     {
       PetscBLASInt lierr;
-      PetscScalar sdummy;
-      LAPACKgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&lierr);
+      PetscScalar  sdummy;
+      PetscBLASInt nb = (PetscBLASInt) n;
+      LAPACKgeev_("N","N",&nb,array,&nb,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&lierr);
       if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
     }
 #endif
