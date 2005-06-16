@@ -3,12 +3,12 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zarchf.c zstrf.c
+SOURCEC  = zerrf.c
 OBJSC    = ${SOURCEC:.c=.o}
 SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetsc
-LOCDIR   = src/sys/utils/ftn-custom/
+LOCDIR   = src/sys/error/ftn-custom/
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

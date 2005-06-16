@@ -13,6 +13,7 @@
 #define petsclogstageregister_    PETSCLOGSTAGEREGISTER
 #define petsclogclassregister_    PETSCLOGCLASSREGISTER
 #define petsclogstagepush_        PETSCLOGSTAGEPUSH
+#define petscgetflops_             PETSCGETFLOPS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petsclogprintsummary_     petsclogprintsummary
 #define petsclogallbegin_         petsclogallbegin
@@ -24,6 +25,7 @@
 #define petsclogstageregister_    petsclogstageregister
 #define petsclogclassregister_    petsclogclassregister
 #define petsclogstagepush_        petsclogstagepush
+#define petscgetflops_             petscgetflops 
 #endif
 
 EXTERN_C_BEGIN
@@ -109,5 +111,16 @@ void PETSC_STDCALL petsclogstagepush_(int *stage,PetscErrorCode *ierr){
   *ierr = PetscLogStagePush(*stage);
 #endif
 }
+
+void PETSC_STDCALL petscgetflops_(PetscLogDouble *d,PetscErrorCode *ierr)
+{
+#if defined(PETSC_USE_LOG)
+  *ierr = PetscGetFlops(d);
+#else
+  ierr = 0;
+  *d     = 0.0;
+#endif
+}
+
 
 EXTERN_C_END

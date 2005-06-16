@@ -3,7 +3,7 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zoptionsf.c
+SOURCEC  = zgcommf.c  zoptionsf.c  zpgnamef.c  zpnamef.c
 OBJSC    = ${SOURCEC:.c=.o}
 SOURCEF  =
 SOURCEH  =
