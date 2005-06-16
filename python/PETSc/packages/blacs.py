@@ -15,6 +15,7 @@ class Configure(PETSc.package.Package):
     self.fc        = 1
     # we need to check for fortran functions - hence self.functions is
     # initialized later - when self.compilers.fortranMangling is available
+    # self.functions = ['blacs_pinfo']
     return
 
   def setupDependencies(self, framework):
@@ -33,7 +34,7 @@ class Configure(PETSc.package.Package):
     elif self.compilers.fortranMangling == 'capitalize':
       self.functions = ['BLACS_PINFO']
     else:
-      self.functions = ['blacs_pinfo_']
+      self.functions = ['blacs_pinfo']
     return
           
   def Install(self):
