@@ -9,6 +9,6 @@ SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetsc
-LOCDIR   = 
+LOCDIR   = src/sys/viewer/impls/draw/ftn-custom/
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

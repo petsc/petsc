@@ -36,7 +36,7 @@ void PETSC_STDCALL petscviewerdrawopen_(MPI_Comm *comm,CHAR display PETSC_MIXED_
 
   FIXCHAR(display,len1,c1);
   FIXCHAR(title,len2,c2);
-  *ierr = PetscViewerdrawopen((MPI_Comm)PetscToPointerComm(*comm),c1,c2,*x,*y,*w,*h,v);
+  *ierr = PetscViewerDrawOpen((MPI_Comm)PetscToPointerComm(*comm),c1,c2,*x,*y,*w,*h,v);
   FREECHAR(display,c1);
   FREECHAR(title,c2);
 }
