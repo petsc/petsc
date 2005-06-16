@@ -1,8 +1,7 @@
-
 #include "zpetsc.h"
 #include "petsc.h"
 
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscviewersetformat_      PETSCVIEWERSETFORMAT
 #define petscviewerpushformat_     PETSCVIEWERPUSHFORMAT
 #define petscviewerpopformat_      PETSCVIEWERPOPFORMAT
@@ -13,8 +12,6 @@
 #endif
 
 EXTERN_C_BEGIN
-
-
 
 void PETSC_STDCALL petscviewersetformat_(PetscViewer *vin,PetscViewerFormat *format,PetscErrorCode *ierr)
 {
@@ -37,7 +34,4 @@ void PETSC_STDCALL petscviewerpopformat_(PetscViewer *vin,PetscErrorCode *ierr)
   *ierr = PetscViewerPopFormat(v);
 }
 
-
 EXTERN_C_END
-
-
