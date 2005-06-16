@@ -1,0 +1,18 @@
+#include "zpetsc.h"
+#include "petscpc.h"
+#include "petscmg.h"
+
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define pcmgsetlevels_             PCMGSETLEVELS
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define pcmgsetlevels_             pcmgsetlevels
+#endif
+
+EXTERN_C_BEGIN
+void PETSC_STDCALL pcmgsetlevels_(PC *pc,PetscInt *levels,MPI_Comm *comms, PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLINTEGER(comms);
+  *ierr = PCMGSetLevels(*pc,*levels,comms);
+}
+
+EXTERN_C_END
