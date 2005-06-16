@@ -10,6 +10,11 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.name         = 'BlockSolve'
+    self.downloadname = self.name
+    self.PACKAGE      = self.name.upper()
+    self.package      = self.name.lower()
+    self.version      = ''
+    self.license      = None
     self.foundBS95    = 0
     self.lib          = ''
     self.include      = []
