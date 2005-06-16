@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = zsnes.c zdmmg.c
+SOURCEC  = zdmmg.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = zsnes.o zdmmg.o
+OBJSC    = zdmmg.o
 OBJSF    = 
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
