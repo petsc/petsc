@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = zoptions.c zplog.c zstart.c zstartf.c zsys.c zviewer.c
+SOURCEC  = zplog.c zstart.c zstartf.c zsys.c zviewer.c zutils.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = zoptions.o zplog.o zstart.o zstartf.o zsys.o zviewer.o
+OBJSC    =  zplog.o zstart.o zstartf.o zsys.o zviewer.o zutils.o
 OBJSF    = 
 LIBBASE  = libpetsc
 MANSEC   = Sys
