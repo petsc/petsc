@@ -40,7 +40,7 @@ chkopts:
 	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} shared; \
 	  else \
 	    echo "*********************** ERROR ************************"; \
-	    echo "Unable to rebuild shared libraries; you do not have write permission."; \
+	    echo "Unable to rebuild shared libraries; yorulesu do not have write permission."; \
 	    user=`ls -l ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}  | tr -s ' ' | cut -d ' ' -f 3`; \
 	    echo "Libraries were built by user $$user; please contact him/her to have them rebuilt."; \
 	    echo "******************************************************"; \
@@ -283,21 +283,21 @@ getmpirun:
 	  	      echo "#include \"${PETSC_DIR}/src/sys/adic/Gradient/ad_utils.c\"" >> $*.ad.c ;\
                 fi;\
                 echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
-                echo "#define ad_GRAD_MAX 1"  >> $*.ad.c ;\
-                echo "typedef struct {double value;double  grad[1];} mfDERIV_TYPE;"  >> $*.ad.c ;\
+                echo "#define ad_GRAD_MAX 4"  >> $*.ad.c ;\
+                echo "typedef struct {double value;double  grad[4];} mfDERIV_TYPE;"  >> $*.ad.c ;\
 	        sed -e "s/DERIV_TYPE/mfDERIV_TYPE/g" $<.ad.tmp2 >> $*.ad.c ;\
 	        echo "#include \"$<\"" >> $*.ad.c ;\
 		${RM} *.ad.tmp* *.c.tmp* ad_deriv.h ; \
-	        echo ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-	        ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-		${RM} $*.ad.c ; \
+	        echo ${CC} -g  -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+	        ${CC} -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+		 \
               else \
 	        echo ${PETSC_COMPILE_SINGLE} $<; \
 	        ${PETSC_COMPILE_SINGLE} $<; \
               fi; \
         elif  [ -f $*.ad.c ]; then \
-          echo ${CC} -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-	  ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+          echo ${CC} -g -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+	  ${CC} dsffdsfdsfdsfds -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
         else \
 	  echo ${PETSC_COMPILE_SINGLE} $<; \
 	  ${PETSC_COMPILE_SINGLE} $<; \
