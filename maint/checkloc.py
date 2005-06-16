@@ -30,6 +30,9 @@ def processLOCDIR(arg,dirname,names):
       print 'Missing LOCDIR in: ' + mfile
       return
     loc=locdir.split('=')[1].strip()
+    if loc == '' :
+      print 'Missing value for LOCDIR in: ' + mfile
+      return
     if loc[-1] != '/':
       print 'Missing / at the end: ' + mfile
     if (os.path.join(petscdir,loc,'makefile') != mfile):
