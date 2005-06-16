@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zda.c zsda.c
+SOURCEC  = zda.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = zda.o zsda.o
+OBJSC    = zda.o
 OBJSF    = 
 LIBBASE  = libpetscdm
 MANSEC   = DA
