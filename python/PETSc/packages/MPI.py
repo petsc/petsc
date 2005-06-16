@@ -10,7 +10,7 @@ class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
     self.download_lam     = ['http://www.lam-mpi.org/download/files/lam-7.1.1.tar.gz']
-    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/petsc/tmp/mpich2.tar.gz']
+    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpich2-1.0.2.tar.gz']
     self.functions        = ['MPI_Init', 'MPI_Comm_create', 'MPI_Allreduce']
     self.includes         = ['mpi.h']
     self.liblist_mpich    = [['libmpich.a'],
@@ -18,6 +18,7 @@ class Configure(PETSc.package.Package):
                              ['libfmpich.a','libmpich.a', 'libpmpich.a'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
+                             ['mpich2.lib'],
                              ['mpich.lib']]
     self.liblist_lam      = [['liblammpi++.a','libmpi.a','liblam.a'],
                              ['libmpi.a','libmpi++.a'],['libmpi.a'],
@@ -96,6 +97,7 @@ class Configure(PETSc.package.Package):
         if os.path.isdir(dir):
           yield (dir)
     # Try MPICH install locations under Windows
+    yield(os.path.join('/cygdrive','c','Program\\ Files','MPICH2'))
     yield(os.path.join('/cygdrive','c','Program\\ Files','MPICH'))
     yield(os.path.join('/cygdrive','c','Program\\ Files','MPICH','SDK.gcc'))
     yield(os.path.join('/cygdrive','c','Program\\ Files','MPICH','SDK'))
@@ -299,11 +301,11 @@ class Configure(PETSc.package.Package):
     # Configure and Build MPICH
     self.framework.pushLanguage('C')
     args = ['--prefix='+installDir]
-    envs = 'CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"'
+    args.append('CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
-      envs += ' CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"'
+      args.append('CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
     else:
       args.append('--disable-cxx')
@@ -320,7 +322,7 @@ class Configure(PETSc.package.Package):
         if output.find('IBM') >= 0:
           fc = os.path.join(os.path.dirname(fc), 'xlf')
           self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling MPICH\n')      
-      envs += ' FC="'+fc+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"'
+      args.append('FC="'+fc+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
       self.framework.popLanguage()
     else:
       args.append('--disable-f77')
@@ -347,7 +349,7 @@ class Configure(PETSc.package.Package):
       self.framework.logPrint('Have to rebuild MPICH oldargs = '+oldargs+'\n new args = '+args)
       try:
         self.logPrintBox('Running configure on MPICH; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';'+envs+' ./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         if self.arch.hostOsBase.startswith('cygwin'):
           raise RuntimeError('Error running configure on MPICH. \n \
@@ -392,7 +394,7 @@ class Configure(PETSc.package.Package):
           self.framework.logPrint('Output from trying to run mpdboot:'+str(output))
           self.framework.logPrint('Started up MPICH mpd demon needed for mpirun')
         except RuntimeError, e:
-          self.framework.logPrint('Error trying to run mpdboot:'+e)
+          self.framework.logPrint('Error trying to run mpdboot:'+str(e))
       self.framework.actions.addArgument('MPI', 'Install', 'Installed MPICH into '+installDir)
     return self.getDir()
 

@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Vec             xx,s1,s2,yy;
   PetscErrorCode ierr;
   PetscInt        m=45,rows[2],cols[2],bs=1,i,row,col,*idx,M; 
-  PetscScalar     rval,vals1[4],vals2[4],zero=0.0;
+  PetscScalar     rval,vals1[4],vals2[4];
   PetscRandom     rdm;
   IS              is1,is2;
   PetscReal       s1norm,s2norm,rnorm,tol = 1.e-4;
@@ -115,7 +115,7 @@ int main(int argc,char **args)
   /* Test MatMult(), MatMultAdd() */
   for (i=0; i<40; i++) {
     ierr = VecSetRandom(xx,rdm);CHKERRQ(ierr);
-    ierr = VecSet(s2,zero);CHKERRQ(ierr);
+    ierr = VecSet(s2,0.0);CHKERRQ(ierr);
     ierr = MatMult(A,xx,s1);CHKERRQ(ierr);
     ierr = MatMultAdd(A,xx,s2,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);

@@ -160,7 +160,6 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
   KSP_LGMRES     *lgmres = (KSP_LGMRES *)(ksp->data);
   PetscReal      res_norm, res;             
   PetscReal      hapbnd, tt;
-  PetscScalar    zero = 0.0;
   PetscScalar    tmp;
   PetscTruth     hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
   PetscErrorCode ierr;
@@ -369,7 +368,7 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
 
  
      /* first do H+*y */
-     ierr = VecSet(AUG_TEMP,zero);CHKERRQ(ierr);
+     ierr = VecSet(AUG_TEMP,0.0);CHKERRQ(ierr);
      VecGetArray(AUG_TEMP, &avec);
      for (ii=0; ii < it_total + 1; ii++) {
         for (jj=0; jj <= ii+1; jj++) {
@@ -378,7 +377,7 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
      }
 
      /*now multiply result by V+ */
-     ierr = VecSet(VEC_TEMP,zero);
+     ierr = VecSet(VEC_TEMP,0.0);
      ierr = VecMAXPY(VEC_TEMP, it_total+1, avec, &VEC_VV(0)); /*answer is in VEC_TEMP*/
      VecRestoreArray(AUG_TEMP, &avec);
   
@@ -508,7 +507,7 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
 #define __FUNCT__ "BuildLgmresSoln"
 static PetscErrorCode BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,PetscInt it)
 {
-  PetscScalar    tt,zero = 0.0,one = 1.0;
+  PetscScalar    tt;
   PetscErrorCode ierr;
   PetscInt       ii,k,j;
   KSP_LGMRES     *lgmres = (KSP_LGMRES *)(ksp->data);
@@ -564,7 +563,7 @@ static PetscErrorCode BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP 
   }
 
   /* Accumulate the correction to the soln of the preconditioned prob. in VEC_TEMP */
-  ierr = VecSet(VEC_TEMP,zero);CHKERRQ(ierr); /* set VEC_TEMP components to 0 */
+  ierr = VecSet(VEC_TEMP,0.0);CHKERRQ(ierr); /* set VEC_TEMP components to 0 */
 
   /*LGMRES_MOD - if augmenting has happened we need to form the solution 
     using the augvecs */
@@ -597,7 +596,7 @@ static PetscErrorCode BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP 
   if (vdest != vguess) {
     ierr = VecCopy(VEC_TEMP,vdest);CHKERRQ(ierr);
   }
-  ierr = VecAXPY(vdest,one,VEC_TEMP);CHKERRQ(ierr);
+  ierr = VecAXPY(vdest,1.0,VEC_TEMP);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

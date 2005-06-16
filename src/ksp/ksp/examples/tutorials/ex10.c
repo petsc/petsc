@@ -50,7 +50,6 @@ int main(int argc,char **args)
   PetscInt       its;
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
-  PetscScalar    zero = 0.0,none = -1.0;
   PetscTruth     preload=PETSC_TRUE,diagonalscale,isSymmetric,cknorm=PETSC_FALSE,Test_MatDuplicate=PETSC_FALSE;
   PetscInt       num_numfac;
   PetscScalar    sigma;
@@ -190,7 +189,7 @@ int main(int argc,char **args)
     }
     ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
     ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
-    ierr = VecSet(x,zero);CHKERRQ(ierr);
+    ierr = VecSet(x,0.0);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                       Setup solve for system
@@ -334,7 +333,7 @@ int main(int argc,char **args)
         } else {
           ierr = MatMult(A,x,u);CHKERRQ(ierr);
         }
-        ierr = VecAXPY(u,none,b);CHKERRQ(ierr);
+        ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
         ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3D\n",its);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %A\n",norm);CHKERRQ(ierr);
@@ -360,7 +359,7 @@ int main(int argc,char **args)
     } else {
       ierr = MatMult(A,x,u);CHKERRQ(ierr);
     }
-    ierr = VecAXPY(u,none,b);CHKERRQ(ierr);
+    ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
     ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
 
     /*

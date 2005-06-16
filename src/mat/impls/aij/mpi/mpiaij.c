@@ -995,7 +995,6 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
   Mat_MPIAIJ     *mat = (Mat_MPIAIJ*)matin->data;
   PetscErrorCode ierr; 
   Vec            bb1;
-  PetscScalar    mone=-1.0;
 
   PetscFunctionBegin;
   if (its <= 0 || lits <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
@@ -1013,7 +1012,7 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
 
       /* update rhs: bb1 = bb - B*x */ 
-      ierr = VecScale(mat->lvec,mone);CHKERRQ(ierr);
+      ierr = VecScale(mat->lvec,-1.0);CHKERRQ(ierr);
       ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
 
       /* local sweep */
@@ -1030,7 +1029,7 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
 
       /* update rhs: bb1 = bb - B*x */ 
-      ierr = VecScale(mat->lvec,mone);CHKERRQ(ierr);
+      ierr = VecScale(mat->lvec,-1.0);CHKERRQ(ierr);
       ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
 
       /* local sweep */
@@ -1047,7 +1046,7 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
 
       /* update rhs: bb1 = bb - B*x */ 
-      ierr = VecScale(mat->lvec,mone);CHKERRQ(ierr);
+      ierr = VecScale(mat->lvec,-1.0);CHKERRQ(ierr);
       ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
 
       /* local sweep */
@@ -3774,6 +3773,44 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
   }
   ierr = PetscLogEventEnd(logkey_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);
   
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatGetCommunicationStructs"
+/*@C
+  MatGetCommunicationStructs - Provides access to the communication structures used in matrix-vector multiplication.
+
+  Not Collective
+
+  Input Parameters:
+. A - The matrix in mpiaij format
+
+  Output Parameter:
++ lvec - The local vector holding off-process values from the argument to a matrix-vector product
+. colmap - A map from global column index to local index into lvec
+- multScatter - A scatter from the argument of a matrix-vector product to lvec
+
+  Level: developer
+
+@*/
+#if defined (PETSC_USE_CTABLE)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetCommunicationStructs(Mat A, Vec *lvec, PetscTable *colmap, VecScatter *multScatter)
+#else
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetCommunicationStructs(Mat A, Vec *lvec, PetscInt *colmap[], VecScatter *multScatter)
+#endif
+{
+  Mat_MPIAIJ *a;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_COOKIE, 1);
+  PetscValidPointer(lvec, 2)
+  PetscValidPointer(colmap, 3)
+  PetscValidPointer(multScatter, 4)
+  a = (Mat_MPIAIJ *) A->data;
+  if (lvec) *lvec = a->lvec;
+  if (colmap) *colmap = a->colmap;
+  if (multScatter) *multScatter = a->Mvctx;
   PetscFunctionReturn(0);
 }
 

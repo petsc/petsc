@@ -27,11 +27,10 @@
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 {
   PetscErrorCode ierr;
-  PetscScalar    mone = -1.0;
 
   PetscFunctionBegin;
   ierr = MatMult(mat,x,r);CHKERRQ(ierr);
-  ierr = VecAYPX(r,mone,b);CHKERRQ(ierr);
+  ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

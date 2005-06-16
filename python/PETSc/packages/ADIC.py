@@ -26,7 +26,7 @@ class Configure(config.base.Configure):
       self.adiC = os.path.abspath(os.path.join(self.framework.argDB['with-adic-path'],'adiC'))
       return os.path.abspath(self.framework.argDB['with-adic-path'])
       raise RuntimeError('You set a value for --with-adic-path, but '+self.framework.argDB['with-adic-path']+' cannot be used\n')
-    if self.getExecutable('adiC', getFullPath = 1):
+    if self.getExecutable('adiC', getFullPath = 1,setMakeMacro=0):
       # follow any symbolic link of this path
       self.adiC = os.path.realpath(self.adiC)
       return os.path.dirname(os.path.dirname(self.adiC))

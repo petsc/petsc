@@ -787,7 +787,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetTimeStep(TS ts,PetscReal* dt)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGetSolution"
-/*@C
+/*@
    TSGetSolution - Returns the solution at the present timestep. It
    is valid to call this routine inside the function that you are evaluating
    in order to move to the new timestep. This vector not changed until
@@ -819,7 +819,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetSolution(TS ts,Vec *v)
 /* ----- Routines to initialize and destroy a timestepper ---- */
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetProblemType"
-/*@C
+/*@
   TSSetProblemType - Sets the type of problem to be solved.
 
   Not collective
@@ -919,7 +919,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetUp(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSDestroy"
-/*@C
+/*@
    TSDestroy - Destroys the timestepper context that was created
    with TSCreate().
 
@@ -960,7 +960,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDestroy(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGetSNES"
-/*@C
+/*@
    TSGetSNES - Returns the SNES (nonlinear solver) associated with 
    a TS (timestepper) context. Valid only for nonlinear problems.
 
@@ -996,7 +996,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetSNES(TS ts,SNES *snes)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGetKSP"
-/*@C
+/*@
    TSGetKSP - Returns the KSP (linear solver) associated with 
    a TS (timestepper) context.
 
@@ -1481,6 +1481,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSClearMonitor(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSDefaultMonitor"
+/*@
+   TSDefaultMonitor - Sets the Default monitor
+@*/
 PetscErrorCode TSDefaultMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
 {
   PetscErrorCode ierr;

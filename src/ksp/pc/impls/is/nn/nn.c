@@ -506,9 +506,8 @@ PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScala
     if (!flg) {
       ierr = PCNNBalancing(pc,r,vec1_B,z,vec2_B,vec3_B,(Vec)0,vec1_D,vec2_D,work_N);CHKERRQ(ierr);
     } else {
-      PetscScalar zero = 0.0;
       ierr = VecPointwiseMult(vec2_B,pcis->D,vec1_B);CHKERRQ(ierr);
-      ierr = VecSet(z,zero);CHKERRQ(ierr);
+      ierr = VecSet(z,0.0);CHKERRQ(ierr);
       ierr = VecScatterBegin(vec2_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
       ierr = VecScatterEnd  (vec2_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
     }
@@ -546,8 +545,6 @@ PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B
 {
   PetscErrorCode ierr;
   PetscInt       k;
-  PetscScalar    zero     =  0.0;
-  PetscScalar    m_one    = -1.0;
   PetscScalar    value;
   PetscScalar*   lambda;
   PC_NN*         pcnn     = (PC_NN*)(pc->data);
@@ -558,13 +555,13 @@ PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B
   if (u) { 
     if (!vec3_B) { vec3_B = u; }
     ierr = VecPointwiseMult(vec1_B,pcis->D,u);CHKERRQ(ierr);
-    ierr = VecSet(z,zero);CHKERRQ(ierr);
+    ierr = VecSet(z,0.0);CHKERRQ(ierr);
     ierr = VecScatterBegin(vec1_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
     ierr = VecScatterEnd  (vec1_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
     ierr = VecScatterBegin(z,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_B);CHKERRQ(ierr);
     ierr = VecScatterEnd  (z,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_B);CHKERRQ(ierr);
     ierr = PCISApplySchur(pc,vec2_B,vec3_B,(Vec)0,vec1_D,vec2_D);CHKERRQ(ierr);
-    ierr = VecScale(vec3_B,m_one);CHKERRQ(ierr);
+    ierr = VecScale(vec3_B,-1.0);CHKERRQ(ierr);
     ierr = VecCopy(r,z);CHKERRQ(ierr);
     ierr = VecScatterBegin(vec3_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
     ierr = VecScatterEnd  (vec3_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
@@ -588,12 +585,12 @@ PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B
     */
   }
   ierr = KSPSolve(pcnn->ksp_coarse,pcnn->coarse_b,pcnn->coarse_x);CHKERRQ(ierr);
-  if (!u) { ierr = VecScale(pcnn->coarse_x,m_one);CHKERRQ(ierr); }
+  if (!u) { ierr = VecScale(pcnn->coarse_x,-1.0);CHKERRQ(ierr); }
   ierr = VecGetArray(pcnn->coarse_x,&lambda);CHKERRQ(ierr);
   for (k=0; k<pcis->n_shared[0]; k++) { work_N[pcis->shared[0][k]] = *lambda * pcnn->DZ_IN[0][k]; }
   ierr = VecRestoreArray(pcnn->coarse_x,&lambda);CHKERRQ(ierr);
   ierr = PCISScatterArrayNToVecB(work_N,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pc);CHKERRQ(ierr);
-  ierr = VecSet(z,zero);CHKERRQ(ierr);
+  ierr = VecSet(z,0.0);CHKERRQ(ierr);
   ierr = VecScatterBegin(vec2_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
   ierr = VecScatterEnd  (vec2_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
   if (!u) {

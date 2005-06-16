@@ -155,7 +155,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   MatStructure   pflag;
   Mat            Amat,Pmat;
   Vec            W,WA,WA2,R,P,ASP,BS,X,B;
-  PetscScalar    zero = 0.0,negone = -1.0,scal,nstep,btx,xtax,beta,rntrn,step;
+  PetscScalar    scal,btx,xtax,beta,rntrn,step;
   PetscReal      ptasp,q1,q2,wtasp,bstp,rtr,xnorm,step1,step2,rnrm,p5 = 0.5;
   PetscReal      dzero = 0.0,bsnrm;
   PetscErrorCode ierr;
@@ -191,8 +191,8 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   if (side != PC_SYMMETRIC) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Requires symmetric preconditioner!");
 
   /* Initialize variables */
-  ierr = VecSet(W,zero);CHKERRQ(ierr);	/* W = 0 */
-  ierr = VecSet(X,zero);CHKERRQ(ierr);	/* X = 0 */
+  ierr = VecSet(W,0.0);CHKERRQ(ierr);	/* W = 0 */
+  ierr = VecSet(X,0.0);CHKERRQ(ierr);	/* X = 0 */
   ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   /* Compute:  BS = D^{-1} B */
@@ -210,7 +210,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 
   /* Compute the initial scaled direction and scaled residual */
   ierr = VecCopy(BS,R);CHKERRQ(ierr);
-  ierr = VecScale(R,negone);CHKERRQ(ierr);
+  ierr = VecScale(R,-1.0);CHKERRQ(ierr);
   ierr = VecCopy(R,P);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   ierr = VecDot(R,R,&crtr);CHKERRQ(ierr); rtr = PetscRealPart(crtr);
@@ -319,8 +319,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
          /* Evaluate the current step */
 
          ierr = VecCopy(X,W);CHKERRQ(ierr);	/* update interior iterate */
-         nstep = -step;
-         ierr = VecAXPY(R,nstep,ASP);CHKERRQ(ierr); /* r <- -step*asp + r */
+         ierr = VecAXPY(R,-step,ASP);CHKERRQ(ierr); /* r <- -step*asp + r */
          ierr = VecNorm(R,NORM_2,&rnrm);CHKERRQ(ierr);
 
          ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -533,7 +532,7 @@ EXTERN_C_END
 */
 static PetscErrorCode QuadraticRoots_Private(Vec s,Vec p,PetscReal *delta,PetscReal *step1,PetscReal *step2)
 { 
-  PetscReal      zero = 0.0,dsq,ptp,pts,rad,sts;
+  PetscReal      dsq,ptp,pts,rad,sts;
   PetscErrorCode ierr;
 #if defined(PETSC_USE_COMPLEX)
   PetscScalar    cptp,cpts,csts;
@@ -551,7 +550,7 @@ static PetscErrorCode QuadraticRoots_Private(Vec s,Vec p,PetscReal *delta,PetscR
 #endif
   dsq  = (*delta)*(*delta);
   rad  = sqrt((pts*pts) - ptp*(sts - dsq));
-  if (pts > zero) {
+  if (pts > 0.0) {
     *step2 = -(pts + rad)/ptp;
     *step1 = (sts - dsq)/(ptp * *step2);
   } else {

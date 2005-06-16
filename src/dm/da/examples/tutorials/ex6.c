@@ -693,7 +693,6 @@ PetscErrorCode FATest(FA fa)
   Field          **la;
   PetscInt       x,y,m,n,j,i,k,p;
   PetscMPIInt    rank;
-  PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -704,7 +703,7 @@ PetscErrorCode FATest(FA fa)
   /* fill up global vector of one region at a time with ITS logical coordinates, then update LOCAL
      vector; print local vectors to confirm they are correctly filled */
   for (j=0; j<3; j++) {
-    ierr = VecSet(g,zero);CHKERRQ(ierr);
+    ierr = VecSet(g,0.0);CHKERRQ(ierr);
     ierr = FAGetGlobalCorners(fa,j,&x,&y,&m,&n);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\nFilling global region %d, showing local results \n",j+1);CHKERRQ(ierr);
     ierr = FAGetGlobalArray(fa,g,j,&la);CHKERRQ(ierr);

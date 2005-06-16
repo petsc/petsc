@@ -27,7 +27,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   PetscInt       i,maxit;
   MatStructure   pflag;
   PetscReal      rnorm = 0.0;
-  PetscScalar    scale,mone = -1.0,dt;
+  PetscScalar    scale,dt;
   Vec            x,b,r,z;
   Mat            Amat,Pmat;
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
@@ -53,7 +53,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
     ierr = PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit);CHKERRQ(ierr);
     if (ksp->normtype != KSP_NO_NORM) {
       ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);
-      ierr = VecAYPX(r,mone,b);CHKERRQ(ierr);
+      ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
       if (ksp->normtype == KSP_UNPRECONDITIONED_NORM || ksp->pc_side == PC_RIGHT) {
         ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
       } else {
@@ -79,7 +79,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 
   if (!ksp->guess_zero) {                          /*   r <- b - A x     */
     ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);
-    ierr = VecAYPX(r,mone,b);CHKERRQ(ierr);
+    ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(b,r);CHKERRQ(ierr);
   }
@@ -113,7 +113,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
     }
    
     ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);      /*   r  <- b - Ax      */
-    ierr = VecAYPX(r,mone,b);CHKERRQ(ierr);
+    ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
   }
   if (!ksp->reason) {
     ksp->reason = KSP_DIVERGED_ITS;

@@ -34,7 +34,7 @@ int main(int argc,char **args)
   Mat            C; 
   PetscMPIInt    rank,size;
   PetscInt       i,m = 5,N,start,end,M,its;
-  PetscScalar    val,zero = 0.0,one = 1.0,none = -1.0,Ke[16],r[4];
+  PetscScalar    val,Ke[16],r[4];
   PetscReal      x,y,h,norm;
   PetscErrorCode ierr;
   PetscInt       idx[4],count,*rows;
@@ -77,8 +77,8 @@ int main(int argc,char **args)
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)b,"Right hand side");CHKERRQ(ierr);
   ierr = VecDuplicate(b,&ustar);CHKERRQ(ierr);
-  ierr = VecSet(u,zero);CHKERRQ(ierr);
-  ierr = VecSet(b,zero);CHKERRQ(ierr);
+  ierr = VecSet(u,0.0);CHKERRQ(ierr);
+  ierr = VecSet(b,0.0);CHKERRQ(ierr);
 
   /* Assemble right-hand-side vector */
   for (i=start; i<end; i++) {
@@ -113,7 +113,7 @@ int main(int argc,char **args)
      ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
      ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
   }    
-  ierr = MatZeroRows(C,4*m,rows,one);CHKERRQ(ierr);
+  ierr = MatZeroRows(C,4*m,rows,1.0);CHKERRQ(ierr);
 
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
@@ -144,7 +144,7 @@ int main(int argc,char **args)
   }
   ierr = VecAssemblyBegin(ustar);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(ustar);CHKERRQ(ierr);
-  ierr = VecAXPY(u,none,ustar);CHKERRQ(ierr);
+  ierr = VecAXPY(u,-1.0,ustar);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %D\n",norm*h,its);CHKERRQ(ierr);

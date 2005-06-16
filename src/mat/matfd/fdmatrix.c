@@ -303,6 +303,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFunction(MatFDColoring matfd,P
            of relative error in the function)
 .  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
 .  -mat_fd_coloring_freq <freq> - Sets frequency of computing a new Jacobian
+.  -mat_fd_type - "wp" or "ds" (see MATSNESMF_WP or MATSNESMF_DS)
 .  -mat_fd_coloring_view - Activates basic viewing
 .  -mat_fd_coloring_view_info - Activates viewing info
 -  -mat_fd_coloring_view_draw - Activates drawing
@@ -317,6 +318,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFunction(MatFDColoring matfd,P
 PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFromOptions(MatFDColoring matfd)
 {
   PetscErrorCode ierr;
+  PetscTruth     flg;
+  char           value[3];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
@@ -325,6 +328,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFromOptions(MatFDColoring matf
     ierr = PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_fd_coloring_freq","How often Jacobian is recomputed","MatFDColoringSetFrequency",matfd->freq,&matfd->freq,0);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-mat_fd_type","Algorithm to compute h, wp or ds","MatFDColoringCreate",matfd->htype,value,2,&flg);CHKERRQ(ierr);
+    if (flg) {
+      if (value[0] == 'w' && value[1] == 'p') matfd->htype = "wp";
+      else if (value[0] == 'd' && value[1] == 's') matfd->htype = "ds";
+      else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown finite differencing type %s",value);
+    }
     /* not used here; but so they are presented in the GUI */
     ierr = PetscOptionsName("-mat_fd_coloring_view","Print entire datastructure used for Jacobian","None",0);CHKERRQ(ierr);
     ierr = PetscOptionsName("-mat_fd_coloring_view_info","Print number of colors etc for Jacobian","None",0);CHKERRQ(ierr);
@@ -408,6 +417,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscolor
   c->usersetsrecompute = PETSC_FALSE;
   c->recompute         = PETSC_FALSE;
   c->currentcolor      = -1;
+  c->htype             = "wp";
 
   *color = c;
   ierr = PetscLogEventEnd(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
@@ -508,6 +518,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetPerturbedColumns(MatFDColoring
 
     Options Database Keys:
 +    -mat_fd_coloring_freq <freq> - Sets coloring frequency
+.    -mat_fd_type - "wp" or "ds"  (see MATSNESMF_WP or MATSNESMF_DS)
 .    -mat_fd_coloring_view - Activates basic viewing or coloring
 .    -mat_fd_coloring_view_draw - Activates drawing of coloring
 -    -mat_fd_coloring_view_info - Activates viewing of coloring info
@@ -523,9 +534,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void *))coloring->f;
   PetscErrorCode ierr;
   PetscInt       k,N,start,end,l,row,col,srow,**vscaleforrow,m1,m2;
-  PetscScalar    dx,mone = -1.0,*y,*xx,*w3_array;
+  PetscScalar    dx,*y,*xx,*w3_array;
   PetscScalar    *vscale_array;
-  PetscReal      epsilon = coloring->error_rel,umin = coloring->umin; 
+  PetscReal      epsilon = coloring->error_rel,umin = coloring->umin,unorm; 
   Vec            w1,w2,w3;
   void           *fctx = coloring->fctx;
   PetscTruth     flg;
@@ -597,6 +608,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
       ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     }
 
+    if (coloring->htype[0] == 'w') { /* tacky test; need to make systematic if we add other approaches to computing h*/
+      ierr = VecNorm(x1,NORM_2,&unorm);CHKERRQ(ierr);
+    }
+
     /* 
        Compute all the scale factors and share with other processors
     */
@@ -609,7 +624,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
       */
       for (l=0; l<coloring->ncolumns[k]; l++) {
 	col = coloring->columns[k][l];    /* column of the matrix we are probing for */
-	dx  = xx[col];
+        if (coloring->htype[0] == 'w') {
+          dx = 1.0 + unorm;
+        } else {
+  	  dx  = xx[col];
+        }
 	if (dx == 0.0) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
 	if (dx < umin && dx >= 0.0)      dx = umin;
@@ -622,7 +641,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
 	vscale_array[col] = 1.0/dx;
       }
     } 
-    vscale_array = vscale_array + start;ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+    vscale_array = vscale_array + start;
+    ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
     ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
@@ -646,7 +666,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
       */
       for (l=0; l<coloring->ncolumns[k]; l++) {
 	col = coloring->columns[k][l];    /* column of the matrix we are probing for */
-	dx  = xx[col];
+        if (coloring->htype[0] == 'w') {
+          dx = 1.0 + unorm;
+        } else {
+  	  dx  = xx[col];
+        }
 	if (dx == 0.0) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
 	if (dx < umin && dx >= 0.0)      dx = umin;
@@ -668,7 +692,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
       ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
       ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
       ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-      ierr = VecAXPY(w2,mone,w1);CHKERRQ(ierr);
+      ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr);
 
       /*
 	Loop over rows of vector, putting results into Jacobian matrix
@@ -728,7 +752,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApplyTS(Mat J,MatFDColoring color
   PetscErrorCode (*f)(void*,PetscReal,Vec,Vec,void*)=(PetscErrorCode (*)(void*,PetscReal,Vec,Vec,void *))coloring->f;
   PetscErrorCode ierr;
   PetscInt       k,N,start,end,l,row,col,srow,**vscaleforrow;
-  PetscScalar    dx,mone = -1.0,*y,*xx,*w3_array;
+  PetscScalar    dx,*y,*xx,*w3_array;
   PetscScalar    *vscale_array;
   PetscReal      epsilon = coloring->error_rel,umin = coloring->umin; 
   Vec            w1,w2,w3;
@@ -834,7 +858,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApplyTS(Mat J,MatFDColoring color
     ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = (*f)(sctx,t,w3,w2,fctx);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-    ierr = VecAXPY(w2,mone,w1);CHKERRQ(ierr);
+    ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr);
 
     /*
        Loop over rows of vector, putting results into Jacobian matrix

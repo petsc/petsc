@@ -9,7 +9,7 @@ FPPFLAGS        =
 LOCDIR          = src/contrib/keyes/
 
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 knmgcv: knmgcv.o chkopts
 	-${CLINKER} -o knmgcv knmgcv.o ${PETSC_LIB}

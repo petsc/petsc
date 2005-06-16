@@ -27,7 +27,6 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   DMMG           *dmmg;
-  PetscScalar    mone = -1.0;
   PetscReal      norm;
   DA             da;
 
@@ -43,7 +42,7 @@ int main(int argc,char **argv)
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
   ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
-  ierr = VecAXPY(DMMGGetr(dmmg),mone,DMMGGetRHS(dmmg));CHKERRQ(ierr);
+  ierr = VecAXPY(DMMGGetr(dmmg),-1.0,DMMGGetRHS(dmmg));CHKERRQ(ierr);
   ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
   /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",norm);CHKERRQ(ierr); */
 

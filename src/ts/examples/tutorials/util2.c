@@ -57,7 +57,7 @@ PetscErrorCode RHSJacobianFD(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructur
   Vec            jj1,jj2,xx2;
   PetscInt       i,N,start,end,j;
   PetscErrorCode ierr;
-  PetscScalar    dx,mone = -1.0,*y,scale,*xx,wscale;
+  PetscScalar    dx,*y,scale,*xx,wscale;
   PetscReal      amax,epsilon = 1.e-8; /* assumes PetscReal precision */
   PetscReal      dx_min = 1.e-16,dx_par = 1.e-1;
   MPI_Comm       comm;
@@ -100,7 +100,7 @@ PetscErrorCode RHSJacobianFD(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructur
       wscale = 0.0;
     }
     ierr = TSComputeRHSFunction(ts,t,xx2,jj2);CHKERRQ(ierr);
-    ierr = VecAXPY(jj2,mone,jj1);CHKERRQ(ierr);
+    ierr = VecAXPY(jj2,-1.0,jj1);CHKERRQ(ierr);
     /* Communicate scale to all processors */
     ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
     ierr = VecScale(jj2,scale);CHKERRQ(ierr);

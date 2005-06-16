@@ -55,7 +55,6 @@ int main(int argc,char **argv)
   DA             da;
   UserContext    user;
   PetscReal      norm;
-  PetscScalar    mone = -1.0;
   const char     *bcTypes[2] = {"dirichlet","neumann"};
   PetscErrorCode ierr;
   PetscInt       l,bc;
@@ -88,7 +87,7 @@ int main(int argc,char **argv)
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   
   ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
-  ierr = VecAXPY(DMMGGetRHS(dmmg),mone,DMMGGetr(dmmg));CHKERRQ(ierr);
+  ierr = VecAXPY(DMMGGetRHS(dmmg),-1.0,DMMGGetr(dmmg));CHKERRQ(ierr);
   ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
   /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",norm);CHKERRQ(ierr); */
 

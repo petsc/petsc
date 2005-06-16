@@ -67,7 +67,6 @@ int main(int argc,char **argv)
   ierr = PetscOptionsSetValue("-mg_coarse_ksp_max_it","6");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-mg_levels_ksp_max_it","3");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_mf_type","wp");CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_ls","basic");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-dmmg_jacobian_mf_fd",0);CHKERRQ(ierr);
@@ -216,7 +215,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   UserCtx        *user = (UserCtx*)dmmg->user;
   PetscErrorCode ierr;
   PetscInt       m,N;
-  PetscScalar    mone = -1.0,*w,*dw;
+  PetscScalar    *w,*dw;
   Vec            u_lambda,U,F,Uexact;
   VecPack        packer = (VecPack)dmmg->dm;
   PetscReal      norm;
@@ -237,7 +236,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = VecDuplicate(U,&Uexact);CHKERRQ(ierr);
   ierr = ExactSolution(packer,Uexact);CHKERRQ(ierr);
-  ierr = VecAXPY(Uexact,mone,U);CHKERRQ(ierr);
+  ierr = VecAXPY(Uexact,-1.0,U);CHKERRQ(ierr);
   ierr = VecPackGetAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecStrideNorm(u_lambda,0,NORM_2,&norm);CHKERRQ(ierr);
   norm = norm/sqrt(N-1.);

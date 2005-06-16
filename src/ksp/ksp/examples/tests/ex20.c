@@ -26,7 +26,7 @@ int main(int argc,char **args)
   int          i,m = 5,rank,size,N,start,end,M;
   int          ierr,idx[4];
   PetscTruth   flg;
-  PetscScalar  zero = 0.0,Ke[16], one = 1.0;
+  PetscScalar  Ke[16];
   PetscReal    h;
   Vec          u,b;
   KSP          ksp;
@@ -69,7 +69,7 @@ int main(int argc,char **args)
 
   ierr = VecSet(u,one);CHKERRQ(ierr);
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
-  ierr = VecSet(u,zero);CHKERRQ(ierr);
+  ierr = VecSet(u,0.0);CHKERRQ(ierr);
 
   /* Solve linear system */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);

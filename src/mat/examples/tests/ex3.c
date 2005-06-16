@@ -11,7 +11,7 @@ int main(int argc,char **args)
   Vec            u,x,b,e;
   PetscInt       i,n = 10,midx[3];
   PetscErrorCode ierr;
-  PetscScalar    v[3],one = 1.0,zero = 0.0,mone = -1.0;
+  PetscScalar    v[3];
   PetscReal      omega = 1.0,norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -25,8 +25,8 @@ int main(int argc,char **args)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&e);CHKERRQ(ierr);
-  ierr = VecSet(u,one);CHKERRQ(ierr);
-  ierr = VecSet(x,zero);CHKERRQ(ierr);
+  ierr = VecSet(u,1.0);CHKERRQ(ierr);
+  ierr = VecSet(x,0.0);CHKERRQ(ierr);
 
   v[0] = -1.; v[1] = 2.; v[2] = -1.;
   for (i=1; i<n-1; i++){
@@ -47,7 +47,7 @@ int main(int argc,char **args)
 
   for (i=0; i<n; i++) {
     ierr = MatRelax(C,b,omega,SOR_FORWARD_SWEEP,0.0,1,1,x);CHKERRQ(ierr);
-    ierr = VecWAXPY(e,mone,x,u);CHKERRQ(ierr);
+    ierr = VecWAXPY(e,-1.0,x,u);CHKERRQ(ierr);
     ierr = VecNorm(e,NORM_2,&norm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"2-norm of error %g\n",norm);CHKERRQ(ierr);
   }

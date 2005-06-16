@@ -9,6 +9,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
+    self.name         = 'BlockSolve'
     self.foundBS95    = 0
     self.lib          = ''
     self.include      = []

@@ -57,7 +57,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetFPTrap"
-/*@C
+/*@
    PetscSetFPTrap - Enables traps/exceptions on common floating point errors.
                     This option may not work on certain machines.
 

@@ -92,16 +92,16 @@ PetscErrorCode TSScaleShiftMatrices(TS ts,Mat A,Mat B,MatStructure str)
 {
   PetscTruth     flg;
   PetscErrorCode ierr;
-  PetscScalar    mone = -1,mdt = 1.0/ts->time_step;
+  PetscScalar    mdt = 1.0/ts->time_step;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)ts->A,MATMFFD,&flg);CHKERRQ(ierr);
   if (!flg) {
-    ierr = MatScale(ts->A,mone);CHKERRQ(ierr);
+    ierr = MatScale(ts->A,-1.0);CHKERRQ(ierr);
     ierr = MatShift(ts->A,mdt);CHKERRQ(ierr);
   }
   if (ts->B != ts->A && str != SAME_PRECONDITIONER) {
-    ierr = MatScale(ts->B,mone);CHKERRQ(ierr);
+    ierr = MatScale(ts->B,-1.0);CHKERRQ(ierr);
     ierr = MatShift(ts->B,mdt);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

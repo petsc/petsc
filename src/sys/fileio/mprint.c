@@ -227,7 +227,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,c
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSynchronizedFlush" 
-/*@C
+/*@
     PetscSynchronizedFlush - Flushes to the screen output from all processors 
     involved in previous PetscSynchronizedPrintf() calls.
 

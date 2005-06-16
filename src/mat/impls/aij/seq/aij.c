@@ -11,6 +11,33 @@
 #include "petscbt.h"
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatDiagonalSet_SeqAIJ"
+/*   only works if matrix has a full set of diagonal entries */
+PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
+{
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*) Y->data;
+  PetscInt       i,*diag, m = Y->m;
+  PetscScalar    *v,*aa = aij->a;
+
+  PetscFunctionBegin;
+  ierr = MatMarkDiagonal_SeqAIJ(Y);CHKERRQ(ierr);
+  diag = aij->diag;
+  ierr = VecGetArray(D,&v);CHKERRQ(ierr);
+  if (is == INSERT_VALUES) {
+    for (i=0; i<m; i++) {
+      aa[diag[i]] = v[i];
+    }
+  } else {
+    for (i=0; i<m; i++) {
+      aa[diag[i]] += v[i];
+    }
+  }
+  ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqAIJ"
 PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *m,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
@@ -853,9 +880,6 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   aj  = a->j;
   aa    = a->a;
   ii   = a->i;
-#if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
-  fortranmultaij_(&m,x,ii,aj,aa,y);
-#else
   if (usecprow){ /* use compressed row format */
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
@@ -869,6 +893,9 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
       y[*ridx++] = sum;
     }
   } else { /* do not use compressed row format */
+#if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
+    fortranmultaij_(&m,x,ii,aj,aa,y);
+#else
     for (i=0; i<m; i++) {
       jrow = ii[i];
       n    = ii[i+1] - jrow;
@@ -878,8 +905,8 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
       }
       y[i] = sum;
     }
-  }
 #endif
+  }
   ierr = PetscLogFlops(2*a->nz - m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
@@ -1912,7 +1939,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void *))coloring->f;
   PetscErrorCode ierr;
   PetscInt       k,N,start,end,l,row,col,srow,**vscaleforrow,m1,m2;
-  PetscScalar    dx,mone = -1.0,*y,*xx,*w3_array;
+  PetscScalar    dx,*y,*xx,*w3_array;
   PetscScalar    *vscale_array;
   PetscReal      epsilon = coloring->error_rel,umin = coloring->umin; 
   Vec            w1,w2,w3;
@@ -2037,7 +2064,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
     ierr = PetscLogEventBegin(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
     ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_FDColoringFunction,0,0,0,0);CHKERRQ(ierr);
-    ierr = VecAXPY(w2,mone,w1);CHKERRQ(ierr);
+    ierr = VecAXPY(w2,-1.0,w1);CHKERRQ(ierr);
 
     /*
        Loop over rows of vector, putting results into Jacobian matrix
@@ -2202,7 +2229,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*45*/ MatPrintHelp_SeqAIJ,
        MatScale_SeqAIJ,
        0,
-       0,
+       MatDiagonalSet_SeqAIJ,
        MatILUDTFactor_SeqAIJ,
 /*50*/ MatSetBlockSize_SeqAIJ,
        MatGetRowIJ_SeqAIJ,

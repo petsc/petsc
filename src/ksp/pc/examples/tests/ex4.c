@@ -13,7 +13,7 @@ int main(int argc,char **args)
   PC             pc;
   PetscErrorCode ierr;
   PetscInt       n = 5,i,col[3];
-  PetscScalar    value[3],zero = 0.0;
+  PetscScalar    value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -44,7 +44,7 @@ int main(int argc,char **args)
 
   value[0] = 1.0;
   for (i=0; i<n; i++) {
-    ierr = VecSet(u,zero);CHKERRQ(ierr);
+    ierr = VecSet(u,0.0);CHKERRQ(ierr);
     ierr = VecSetValues(u,1,&i,value,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(u);CHKERRQ(ierr);

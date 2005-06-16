@@ -1,6 +1,6 @@
 
 #include <stdio.h>
-#include "petscf90.h"
+#include "src/sys/f90/f90impl.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortran_routine_ FORTRAN_ROUTINE

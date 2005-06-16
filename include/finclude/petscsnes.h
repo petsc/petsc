@@ -18,7 +18,7 @@
 !
 ! MatSNESMFCtx
 ! 
-#define MATSNESMF_DEFAULT 'default'
+#define MATSNESMF_DEFAULT 'ds'
 #define MATSNESMF_WP 'wp'
 
 #endif

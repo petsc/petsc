@@ -16,7 +16,7 @@ int main(int argc,char **args)
   KSP            ksp;          /* KSP context */
   PetscErrorCode ierr;
   PetscInt       n = 10,i,its,col[3];
-  PetscScalar    value[3],one = 1.0,zero = 0.0;
+  PetscScalar    value[3];
   KSPType        kspname;
   PCType         pcname;
 
@@ -27,8 +27,8 @@ int main(int argc,char **args)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&ustar);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRQ(ierr);
-  ierr = VecSet(ustar,one);CHKERRQ(ierr);
-  ierr = VecSet(u,zero);CHKERRQ(ierr);
+  ierr = VecSet(ustar,1.0);CHKERRQ(ierr);
+  ierr = VecSet(u,0.0);CHKERRQ(ierr);
 
   /* Create and assemble matrix */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&mat);CHKERRQ(ierr);

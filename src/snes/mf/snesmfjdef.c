@@ -1,7 +1,7 @@
 #define PETSCSNES_DLL
 
 /*
-  Implements the default PETSc approach for computing the h 
+  Implements the DS PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
   Jacobian-vector products.
 
@@ -36,7 +36,7 @@
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
 /*
-      The default method has one parameter that is used to 
+      The  method has one parameter that is used to 
    "cutoff" very small values. This is stored in a data structure
    that is only visible to this file. If your method has no parameters
    it can omit this, if it has several simply reorganize the data structure.
@@ -45,12 +45,12 @@
 */
 typedef struct {
   PetscReal umin;          /* minimum allowable u'a value relative to |u|_1 */
-} MatSNESMFDefault;
+} MatSNESMF_DS;
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFCompute_Default"
+#define __FUNCT__ "MatSNESMFCompute_DS"
 /*
-   MatSNESMFCompute_Default - Standard PETSc code for computing the
+   MatSNESMFCompute_DS - Standard PETSc code for computing the
    differencing paramter (h) for use with matrix-free finite differences.
 
    Input Parameters:
@@ -63,9 +63,9 @@ typedef struct {
 .  h - the scale computed
 
 */
-static PetscErrorCode MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h,PetscTruth *zeroa)
+static PetscErrorCode MatSNESMFCompute_DS(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h,PetscTruth *zeroa)
 {
-  MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
+  MatSNESMF_DS     *hctx = (MatSNESMF_DS*)ctx->hctx;
   PetscReal        nrm,sum,umin = hctx->umin;
   PetscScalar      dot;
   PetscErrorCode   ierr;
@@ -110,9 +110,9 @@ static PetscErrorCode MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Pets
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFView_Default"
+#define __FUNCT__ "MatSNESMFView_DS"
 /*
-   MatSNESMFView_Default - Prints information about this particular 
+   MatSNESMFView_DS - Prints information about this particular 
    method for computing h. Note that this does not print the general
    information about the matrix-free method, as such info is printed
    by the calling routine.
@@ -121,9 +121,9 @@ static PetscErrorCode MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Pets
 +  ctx - the matrix free context
 -  viewer - the PETSc viewer
 */   
-static PetscErrorCode MatSNESMFView_Default(MatSNESMFCtx ctx,PetscViewer viewer)
+static PetscErrorCode MatSNESMFView_DS(MatSNESMFCtx ctx,PetscViewer viewer)
 {
-  MatSNESMFDefault *hctx = (MatSNESMFDefault *)ctx->hctx;
+  MatSNESMF_DS     *hctx = (MatSNESMF_DS *)ctx->hctx;
   PetscErrorCode   ierr;
   PetscTruth       iascii;
 
@@ -143,32 +143,32 @@ static PetscErrorCode MatSNESMFView_Default(MatSNESMFCtx ctx,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFSetFromOptions_Default"
+#define __FUNCT__ "MatSNESMFSetFromOptions_DS"
 /*
-   MatSNESMFSetFromOptions_Default - Looks in the options database for 
+   MatSNESMFSetFromOptions_DS - Looks in the options database for 
    any options appropriate for this method.
 
    Input Parameter:
 .  ctx - the matrix free context
 
 */
-static PetscErrorCode MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
+static PetscErrorCode MatSNESMFSetFromOptions_DS(MatSNESMFCtx ctx)
 {
   PetscErrorCode   ierr;
-  MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
+  MatSNESMF_DS     *hctx = (MatSNESMF_DS*)ctx->hctx;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Default matrix free parameters");CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_mf_umin","umin","MatSNESMFDefaultSetUmin",hctx->umin,&hctx->umin,0);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("Finite difference matrix free parameters");CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_mf_umin","umin","MatSNESMFDSSetUmin",hctx->umin,&hctx->umin,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFDestroy_Default"
+#define __FUNCT__ "MatSNESMFDestroy_DS"
 /*
-   MatSNESMFDestroy_Default - Frees the space allocated by 
-   MatSNESMFCreate_Default(). 
+   MatSNESMFDestroy_DS - Frees the space allocated by 
+   MatSNESMFCreate_DS(). 
 
    Input Parameter:
 .  ctx - the matrix free context
@@ -176,7 +176,7 @@ static PetscErrorCode MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
    Notes: 
    Does not free the ctx, that is handled by the calling routine
 */
-static PetscErrorCode MatSNESMFDestroy_Default(MatSNESMFCtx ctx)
+static PetscErrorCode MatSNESMFDestroy_DS(MatSNESMFCtx ctx)
 {
   PetscErrorCode ierr;
 
@@ -187,30 +187,30 @@ static PetscErrorCode MatSNESMFDestroy_Default(MatSNESMFCtx ctx)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFDefaultSetUmin_Private"
+#define __FUNCT__ "MatSNESMFDSSetUmin_Private"
 /*
    The following two routines use the PetscObjectCompose() and PetscObjectQuery()
    mechanism to allow the user to change the Umin parameter used in this method.
 */
-PetscErrorCode MatSNESMFDefaultSetUmin_Private(Mat mat,PetscReal umin)
+PetscErrorCode MatSNESMFDSSetUmin_Private(Mat mat,PetscReal umin)
 {
-  MatSNESMFCtx     ctx = (MatSNESMFCtx)mat->data;
-  MatSNESMFDefault *hctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
+  MatSNESMF_DS *hctx;
 
   PetscFunctionBegin;
   if (!ctx) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"MatSNESMFDefaultSetUmin() attached to non-shell matrix");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"MatSNESMFDSSetUmin() attached to non-shell matrix");
   }
-  hctx = (MatSNESMFDefault*)ctx->hctx;
+  hctx = (MatSNESMF_DS*)ctx->hctx;
   hctx->umin = umin;
   PetscFunctionReturn(0);
 } 
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFDefaultSetUmin"
+#define __FUNCT__ "MatSNESMFDSSetUmin"
 /*@
-    MatSNESMFDefaultSetUmin - Sets the "umin" parameter used by the default
+    MatSNESMFDSSetUmin - Sets the "umin" parameter used by the 
     PETSc routine for computing the differencing parameter, h, which is used
     for matrix-free Jacobian-vector products.
 
@@ -227,13 +227,13 @@ EXTERN_C_END
 .seealso: MatSNESMFSetFunctionError(), MatCreateSNESMF()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFDefaultSetUmin(Mat A,PetscReal umin)
+PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFDSSetUmin(Mat A,PetscReal umin)
 {
   PetscErrorCode ierr,(*f)(Mat,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESMFDefaultSetUmin_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESMFDSSetUmin_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,umin);CHKERRQ(ierr);
   }
@@ -241,12 +241,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFDefaultSetUmin(Mat A,PetscReal umin)
 }
 
 /*MC
-     MATSNESMF_DEFAULT - the default code for compute the "h" used in the finite difference
-            matrix-free matrix vector product
+     MATSNESMF_DS - the code for compute the "h" used in the finite difference
+            matrix-free matrix vector product.  This code
+        implements the strategy in Dennis and Schnabel, "Numerical Methods for Unconstrained
+        Optimization and Nonlinear Equations".
 
    Options Database Keys:
-.  -snes_mf_umin <umin> see MatSNESMFDefaultSetUmin()
-
+.  -snes_mf_umin <umin> see MatSNESMFDSSetUmin()
 
    Level: intermediate
 
@@ -262,34 +263,34 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFDefaultSetUmin(Mat A,PetscReal umin)
      error_rel = square root of relative error in function evaluation
      umin = minimum iterate parameter
 
-.seealso: MATMFFD, MatCreateMF(), MatCreateSNESMF(), MATSNESMF_WP, MatSNESMFDefaultSetUmin()
+.seealso: MATMFFD, MatCreateMF(), MatCreateSNESMF(), MATSNESMF_WP, MatSNESMFDSSetUmin()
 
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFCreate_Default"
-PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_Default(MatSNESMFCtx ctx)
+#define __FUNCT__ "MatSNESMFCreate_DS"
+PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_DS(MatSNESMFCtx ctx)
 {
-  MatSNESMFDefault *hctx;
+  MatSNESMF_DS     *hctx;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
 
   /* allocate my own private data structure */
-  ierr       = PetscNew(MatSNESMFDefault,&hctx);CHKERRQ(ierr);
+  ierr       = PetscNew(MatSNESMF_DS,&hctx);CHKERRQ(ierr);
   ctx->hctx  = (void*)hctx;
   /* set a default for my parameter */
   hctx->umin = 1.e-6;
 
   /* set the functions I am providing */
-  ctx->ops->compute        = MatSNESMFCompute_Default;
-  ctx->ops->destroy        = MatSNESMFDestroy_Default;
-  ctx->ops->view           = MatSNESMFView_Default;  
-  ctx->ops->setfromoptions = MatSNESMFSetFromOptions_Default;  
+  ctx->ops->compute        = MatSNESMFCompute_DS;
+  ctx->ops->destroy        = MatSNESMFDestroy_DS;
+  ctx->ops->view           = MatSNESMFView_DS;  
+  ctx->ops->setfromoptions = MatSNESMFSetFromOptions_DS;  
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatSNESMFDefaultSetUmin_C",
-                            "MatSNESMFDefaultSetUmin_Private",
-                             MatSNESMFDefaultSetUmin_Private);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatSNESMFDSSetUmin_C",
+                            "MatSNESMFDSSetUmin_Private",
+                             MatSNESMFDSSetUmin_Private);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

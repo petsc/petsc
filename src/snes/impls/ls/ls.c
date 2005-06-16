@@ -53,13 +53,12 @@ PetscErrorCode SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
   PetscReal      a1,a2;
   PetscErrorCode ierr;
   PetscTruth     hastranspose;
-  PetscScalar    mone = -1.0;
 
   PetscFunctionBegin;
   ierr = MatHasOperation(A,MATOP_MULT_TRANSPOSE,&hastranspose);CHKERRQ(ierr);
   if (hastranspose) {
     ierr = MatMult(A,X,W1);CHKERRQ(ierr);
-    ierr = VecAXPY(W1,mone,F);CHKERRQ(ierr);
+    ierr = VecAXPY(W1,-1.0,F);CHKERRQ(ierr);
 
     /* Compute || J^T W|| */
     ierr = MatMultTranspose(A,W1,W2);CHKERRQ(ierr);
@@ -343,7 +342,6 @@ PetscErrorCode SNESDestroy_LS(SNES snes)
 PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchNo(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag)
 {
   PetscErrorCode ierr;
-  PetscScalar    mone = -1.0;
   SNES_LS        *neP = (SNES_LS*)snes->data;
   PetscTruth     changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
 
@@ -351,12 +349,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchNo(SNES snes,void *lsctx,Vec x,
   *flag = PETSC_TRUE; 
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);         /* ynorm = || y || */
-  ierr = VecWAXPY(w,mone,y,x);CHKERRQ(ierr);            /* w <- x - y   */
+  ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
   if (neP->postcheckstep) {
    ierr = (*neP->postcheckstep)(snes,x,y,w,neP->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
   }
   if (changed_y) {
-    ierr = VecWAXPY(w,mone,y,x);CHKERRQ(ierr);            /* w <- x - y   */
+    ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
   }
   ierr = SNESComputeFunction(snes,w,g);
   if (PetscExceptionValue(ierr)) {
@@ -428,19 +426,18 @@ $     -snes_no_convergence_test -snes_max_it <its>
 PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag)
 {
   PetscErrorCode ierr;
-  PetscScalar    mone = -1.0;
   SNES_LS        *neP = (SNES_LS*)snes->data;
   PetscTruth     changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
 
   PetscFunctionBegin;
   *flag = PETSC_TRUE; 
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
-  ierr = VecWAXPY(w,mone,y,x);CHKERRQ(ierr);            /* w <- x - y      */
+  ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y      */
   if (neP->postcheckstep) {
    ierr = (*neP->postcheckstep)(snes,x,y,w,neP->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
   }
   if (changed_y) {
-    ierr = VecWAXPY(w,mone,y,x);CHKERRQ(ierr);            /* w <- x - y   */
+    ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
   }
   
   /* don't evaluate function the last time through */
@@ -508,7 +505,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
   PetscErrorCode ierr;
   PetscInt       count;
   SNES_LS        *neP = (SNES_LS*)snes->data;
-  PetscScalar    mone = -1.0,scale;
+  PetscScalar    scale;
   PetscTruth     changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -550,7 +547,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
   if (initslope == 0.0) initslope = -1.0;
 
   ierr = VecCopy(y,w);CHKERRQ(ierr);
-  ierr = VecAYPX(w,mone,x);CHKERRQ(ierr);
+  ierr = VecAYPX(w,-1.0,x);CHKERRQ(ierr);
   if (snes->nfuncs >= snes->max_funcs) {
     ierr  = PetscLogInfo((snes,"SNESLineSearchCubic:Exceeded maximum function evaluations, while checking full step length!\n"));CHKERRQ(ierr);
     *flag = PETSC_FALSE;
@@ -665,7 +662,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
   if (neP->postcheckstep && *flag) {
     ierr = (*neP->postcheckstep)(snes,x,y,w,neP->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
     if (changed_y) {
-      ierr = VecWAXPY(w,mone,y,x);CHKERRQ(ierr);
+      ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);
     }
     if (changed_y || changed_w) { /* recompute the function if the step has changed */
       ierr = SNESComputeFunction(snes,w,g);
@@ -734,7 +731,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
   PetscErrorCode ierr;
   PetscInt       count;
   SNES_LS        *neP = (SNES_LS*)snes->data;
-  PetscScalar    mone = -1.0,scale;
+  PetscScalar    scale;
   PetscTruth     changed_w = PETSC_FALSE,changed_y = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -771,7 +768,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
   if (initslope == 0.0) initslope = -1.0;
 
   ierr = VecCopy(y,w);CHKERRQ(ierr);
-  ierr = VecAYPX(w,mone,x);CHKERRQ(ierr);
+  ierr = VecAYPX(w,-1.0,x);CHKERRQ(ierr);
   if (snes->nfuncs >= snes->max_funcs) {
     ierr  = PetscLogInfo((snes,"SNESLineSearchQuadratic:Exceeded maximum function evaluations, while checking full step length!\n"));CHKERRQ(ierr);
     ierr  = VecCopy(w,y);CHKERRQ(ierr);
@@ -841,7 +838,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
   if (neP->postcheckstep) {
     ierr = (*neP->postcheckstep)(snes,x,y,w,neP->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
     if (changed_y) {
-      ierr = VecWAXPY(w,mone,y,x);CHKERRQ(ierr);
+      ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);
     }
     if (changed_y || changed_w) { /* recompute the function if the step has changed */
       ierr = SNESComputeFunction(snes,w,g);

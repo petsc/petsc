@@ -1,0 +1,14 @@
+
+#requirespackage   'PETSC_HAVE_FORTRAN'
+ALL: lib
+CFLAGS   =
+FFLAGS   =
+SOURCEC  = zfdmatrixf.c
+OBJSC    = ${SOURCEC:.c=.o}
+SOURCEF  =
+SOURCEH  =
+DIRS     =
+LIBBASE  = libpetscmat
+LOCDIR   = src/mat/matfd/ftn-custom/
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

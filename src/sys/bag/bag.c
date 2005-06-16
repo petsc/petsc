@@ -607,7 +607,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
       ierr = PetscViewerBinaryRead(view,&mdefault,1,PETSC_ENUM);CHKERRQ(ierr);
       ierr = PetscViewerBinaryReadStringArray(view,&list);CHKERRQ(ierr);
       ierr = PetscBagRegisterEnum(*bag,((char*)(*bag))+offsetdtype[0],(const char**)list,mdefault,name,help);CHKERRQ(ierr);
-      /* we callocated list in PetscViewerBinaryReadStringArray() so must free ourselves */
+      /* we malloced list in PetscViewerBinaryReadStringArray() so must free ourselves */
       nitem = (*bag)->bagitems;
       while (nitem->next) nitem = nitem->next;
       nitem->freelist = PETSC_TRUE;
@@ -645,8 +645,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
 PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t size, PetscBag *bag)
 {
   PetscErrorCode ierr;
-  PetscFunctionBegin;
   size_t tsize;
+
+  PetscFunctionBegin;
   tsize = sizeof(struct _n_PetscBag)+size;
   ierr = PetscMalloc(tsize,bag);CHKERRQ(ierr);
   ierr = PetscMemzero(*bag,tsize);CHKERRQ(ierr);

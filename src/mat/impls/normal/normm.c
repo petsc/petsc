@@ -19,6 +19,19 @@ PetscErrorCode MatMult_Normal(Mat N,Vec x,Vec y)
   ierr = MatMultTranspose(Na->A,Na->w,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+ 
+#undef __FUNCT__   
+#define __FUNCT__ "MatMultAdd_Normal" 
+PetscErrorCode MatMultAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3) 
+{ 
+  Mat_Normal     *Na = (Mat_Normal*)N->data; 
+  PetscErrorCode ierr; 
+ 
+  PetscFunctionBegin; 
+  ierr = MatMult(Na->A,v1,Na->w);CHKERRQ(ierr); 
+  ierr = MatMultTransposeAdd(Na->A,Na->w,v2,v3);CHKERRQ(ierr); 
+  PetscFunctionReturn(0); 
+} 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_Normal"
@@ -111,6 +124,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat A,Mat *N)
   ierr    = VecCreateMPI(A->comm,m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);
   (*N)->ops->destroy     = MatDestroy_Normal;
   (*N)->ops->mult        = MatMult_Normal;
+  (*N)->ops->multadd     = MatMultAdd_Normal; 
   (*N)->ops->getdiagonal = MatGetDiagonal_Normal;
   (*N)->assembled        = PETSC_TRUE;
   (*N)->N                = A->N;

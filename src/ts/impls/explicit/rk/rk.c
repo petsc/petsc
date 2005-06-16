@@ -251,11 +251,11 @@ PetscErrorCode TSRkqs(TS ts,PetscReal t,PetscReal h)
   PetscErrorCode ierr;
   PetscInt       j,l;
   PetscReal      tmp_t=t;
-  PetscScalar    null=0.0,hh=h;
+  PetscScalar    hh=h;
 
   PetscFunctionBegin;
   /* k[0]=0  */
-  ierr = VecSet(rk->k[0],null);CHKERRQ(ierr);
+  ierr = VecSet(rk->k[0],0.0);CHKERRQ(ierr);
      
   /* k[0] = derivs(t,y1) */
   ierr = TSComputeRHSFunction(ts,t,rk->y1,rk->k[0]);CHKERRQ(ierr);
@@ -264,7 +264,7 @@ PetscErrorCode TSRkqs(TS ts,PetscReal t,PetscReal h)
   for(j = 1 ; j < rk->s ; j++){
 
      /* rk->tmp = 0 */
-     ierr = VecSet(rk->tmp,null);CHKERRQ(ierr);     
+     ierr = VecSet(rk->tmp,0.0);CHKERRQ(ierr);     
 
      for(l=0;l<j;l++){
         /* tmp += a(j,l)*k[l] */
@@ -285,13 +285,13 @@ PetscErrorCode TSRkqs(TS ts,PetscReal t,PetscReal h)
      ierr = VecWAXPY(rk->tmp_y,hh,rk->tmp,rk->y1);CHKERRQ(ierr);
 
      /* rk->k[j]=0 */
-     ierr = VecSet(rk->k[j],null);CHKERRQ(ierr);
+     ierr = VecSet(rk->k[j],0.0);CHKERRQ(ierr);
      ierr = TSComputeRHSFunction(ts,tmp_t,rk->tmp_y,rk->k[j]);CHKERRQ(ierr);
   }     
 
   /* tmp=0 and tmp_y=0 */
-  ierr = VecSet(rk->tmp,null);CHKERRQ(ierr);
-  ierr = VecSet(rk->tmp_y,null);CHKERRQ(ierr);
+  ierr = VecSet(rk->tmp,0.0);CHKERRQ(ierr);
+  ierr = VecSet(rk->tmp_y,0.0);CHKERRQ(ierr);
   
   for(j = 0 ; j < rk->s ; j++){
      /* tmp=b1[j]*k[j]+tmp  */
@@ -301,12 +301,11 @@ PetscErrorCode TSRkqs(TS ts,PetscReal t,PetscReal h)
   }
 
   /* y2 = hh * tmp_y */
-  ierr = VecSet(rk->y2,null);CHKERRQ(ierr);  
+  ierr = VecSet(rk->y2,0.0);CHKERRQ(ierr);  
   ierr = VecAXPY(rk->y2,hh,rk->tmp_y);CHKERRQ(ierr);
   /* y1 = hh*tmp + y1 */
   ierr = VecAXPY(rk->y1,hh,rk->tmp);CHKERRQ(ierr);
   /* Finding difference between y1 and y2 */
-
   PetscFunctionReturn(0);
 }
 
@@ -316,7 +315,6 @@ static PetscErrorCode TSStep_Rk(TS ts,PetscInt *steps,PetscReal *ptime)
 {
   TS_Rk          *rk = (TS_Rk*)ts->data;
   PetscErrorCode ierr;
-  PetscReal      dt = 0.001; /* fixed first step guess */
   PetscReal      norm=0.0,dt_fac=0.0,fac = 0.0/*,ttmp=0.0*/;
 
   PetscFunctionBegin;
@@ -331,32 +329,32 @@ static PetscErrorCode TSStep_Rk(TS ts,PetscInt *steps,PetscReal *ptime)
        -- input
        ts        - pointer to ts
        ts->ptime - current time
-       dt        - try this timestep
+       ts->time_step        - try this timestep
        y1        - solution for this step
 
        --output
        y1        - suggested solution
        y2        - check solution (runge - kutta second permutation)
      */
-     ierr = TSRkqs(ts,ts->ptime,dt);CHKERRQ(ierr);
+     ierr = TSRkqs(ts,ts->ptime,ts->time_step);CHKERRQ(ierr);
    /* checking for maxerror */
      /* comparing difference to maxerror */
      ierr = VecNorm(rk->y2,NORM_2,&norm);CHKERRQ(ierr);
      /* modifying maxerror to satisfy this timestep */
-     rk->maxerror = rk->ferror * dt;
-     /* ierr = PetscPrintf(PETSC_COMM_WORLD,"norm err: %f maxerror: %f dt: %f",norm,rk->maxerror,dt);CHKERRQ(ierr); */
+     rk->maxerror = rk->ferror * ts->time_step;
+     /* ierr = PetscPrintf(PETSC_COMM_WORLD,"norm err: %f maxerror: %f dt: %f",norm,rk->maxerror,ts->time_step);CHKERRQ(ierr); */
 
    /* handling ok and not ok */
-     if(norm < rk->maxerror){
+     if (norm < rk->maxerror){
         /* if ok: */
         ierr=VecCopy(rk->y1,ts->vec_sol);CHKERRQ(ierr); /* saves the suggested solution to current solution */
-        ts->ptime += dt; /* storing the new current time */
+        ts->ptime += ts->time_step; /* storing the new current time */
         rk->nok++;
         fac=5.0;
         /* trying to save the vector */
        /* calling monitor */
        ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);  
-     }else{
+     } else{
         /* if not OK */
         rk->nnok++;
         fac=1.0;
@@ -371,27 +369,27 @@ static PetscErrorCode TSStep_Rk(TS ts,PetscInt *steps,PetscReal *ptime)
       */
      dt_fac = exp(log((rk->maxerror) / norm) / ((rk->p) + 1) ) * 0.9 ;
 
-     if(dt_fac > fac){
+     if (dt_fac > fac){
         /*ierr = PetscPrintf(PETSC_COMM_WORLD,"changing fac %f\n",fac);*/
         dt_fac = fac;
      }
 
-     /* computing new dt */
-     dt = dt * dt_fac;
+     /* computing new ts->time_step */
+     ts->time_step = ts->time_step * dt_fac;
 
-     if(ts->ptime+dt > ts->max_time){
-        dt = ts->max_time - ts->ptime;
+     if (ts->ptime+ts->time_step > ts->max_time){
+        ts->time_step = ts->max_time - ts->ptime;
      }
 
-     if(dt < 1e-14){
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Very small steps: %f\n",dt);CHKERRQ(ierr);
-        dt = 1e-14;
+     if (ts->time_step < 1e-14){
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Very small steps: %f\n",ts->time_step);CHKERRQ(ierr);
+        ts->time_step = 1e-14;
      }
 
      /* trying to purify h */
      /* (did not give any visible result) */
-     /* ttmp = ts->ptime + dt;
-        dt = ttmp - ts->ptime; */
+     /* ttmp = ts->ptime + ts->time_step;
+        ts->time_step = ttmp - ts->ptime; */
      
      /* counting steps */
      ts->steps++;

@@ -34,7 +34,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESModifiedGramSchmidtOrthogonalization(K
   KSP_GMRES      *gmres = (KSP_GMRES *)(ksp->data);
   PetscErrorCode ierr;
   PetscInt       j;
-  PetscScalar    *hh,*hes,tmp;
+  PetscScalar    *hh,*hes;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
@@ -46,8 +46,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESModifiedGramSchmidtOrthogonalization(K
     ierr   = VecDot(VEC_VV(it+1),VEC_VV(j),hh);CHKERRQ(ierr);
     *hes++ = *hh;
     /* vv(it+1) <- vv(it+1) - hh[it+1][j] vv(j) */
-    tmp    = - (*hh++);  
-    ierr   = VecAXPY(VEC_VV(it+1),tmp,VEC_VV(j));CHKERRQ(ierr);
+    ierr   = VecAXPY(VEC_VV(it+1),-(*hh++),VEC_VV(j));CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);

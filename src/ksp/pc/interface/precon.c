@@ -1453,8 +1453,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCComputeExplicitOperator(PC pc,Mat *mat)
   PetscInt       i,M,m,*rows,start,end;
   PetscMPIInt    size;
   MPI_Comm       comm;
-  PetscScalar    *array,zero = 0.0,one = 1.0;
-
+  PetscScalar    *array,one = 1.0;
+  
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidPointer(mat,2);
@@ -1483,7 +1483,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCComputeExplicitOperator(PC pc,Mat *mat)
 
   for (i=0; i<M; i++) {
 
-    ierr = VecSet(in,zero);CHKERRQ(ierr);
+    ierr = VecSet(in,0.0);CHKERRQ(ierr);
     ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(in);CHKERRQ(ierr);

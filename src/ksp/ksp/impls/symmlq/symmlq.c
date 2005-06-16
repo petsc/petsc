@@ -28,9 +28,9 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscScalar    alpha,malpha,beta,mbeta,ibeta,betaold,beta1,ceta = 0,ceta_oold = 0.0, ceta_old = 0.0,ceta_bar;
-  PetscScalar    c=1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,ms,rho0,rho1,rho2,rho3;
-  PetscScalar    mone = -1.0,zero = 0.0,dp = 0.0;
+  PetscScalar    alpha,beta,ibeta,betaold,beta1,ceta = 0,ceta_oold = 0.0, ceta_old = 0.0,ceta_bar;
+  PetscScalar    c=1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,rho0,rho1,rho2,rho3;
+  PetscScalar    dp = 0.0;
   PetscReal      np,s_prod;
   Vec            X,B,R,Z,U,V,W,UOLD,VOLD,Wbar;
   Mat            Amat,Pmat;
@@ -57,13 +57,13 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 
   ksp->its = 0;
 
-  ierr = VecSet(UOLD,zero);CHKERRQ(ierr);           /* u_old <- zeros;  */
+  ierr = VecSet(UOLD,0.0);CHKERRQ(ierr);           /* u_old <- zeros;  */
   ierr = VecCopy(UOLD,VOLD);CHKERRQ(ierr);          /* v_old <- u_old;  */
   ierr = VecCopy(UOLD,W);CHKERRQ(ierr);             /* w     <- u_old;  */ 
   ierr = VecCopy(UOLD,Wbar);CHKERRQ(ierr);          /* w_bar <- u_old;  */
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr); /*     r <- b - A*x */
-    ierr = VecAYPX(R,mone,B);CHKERRQ(ierr);
+    ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(B,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
@@ -108,17 +108,15 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
       ierr = VecCopy(V,VOLD);CHKERRQ(ierr);  /* v_old <- v; */     
       ierr = VecCopy(U,UOLD);CHKERRQ(ierr);  /* u_old <- u; */
      
-      ibeta = 1.0 / beta;
       ierr = VecCopy(R,V);CHKERRQ(ierr);
-      ierr = VecScale(V,ibeta);CHKERRQ(ierr); /* v <- ibeta*r; */
+      ierr = VecScale(V,1.0/beta);CHKERRQ(ierr); /* v <- ibeta*r; */
       ierr = VecCopy(Z,U);CHKERRQ(ierr);
-      ierr = VecScale(U,ibeta);CHKERRQ(ierr); /* u <- ibeta*z; */
+      ierr = VecScale(U,1.0/beta);CHKERRQ(ierr); /* u <- ibeta*z; */
 
       ierr = VecCopy(Wbar,W);CHKERRQ(ierr);
       ierr = VecScale(W,c);CHKERRQ(ierr);
       ierr = VecAXPY(W,s,U);CHKERRQ(ierr);   /* w  <- c*w_bar + s*u;    (w_k) */
-      ms = -s;
-      ierr = VecScale(Wbar,ms);CHKERRQ(ierr);
+      ierr = VecScale(Wbar,-s);CHKERRQ(ierr);
       ierr = VecAXPY(Wbar,c,U);CHKERRQ(ierr); /* w_bar <- -s*w_bar + c*u; (w_bar_(k+1)) */
       ierr = VecAXPY(X,ceta,W);CHKERRQ(ierr); /* x <- x + ceta * w;       (xL_k)  */
 
@@ -131,12 +129,10 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
     ierr = VecDot(U,R,&alpha);CHKERRQ(ierr);          /*  alpha <- u'*r;   */
     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /*      z <- B*r;    */
 
-    malpha = - alpha;
-    ierr = VecAXPY(R,malpha,V);CHKERRQ(ierr);     /*  r <- r - alpha* v;  */
-    ierr = VecAXPY(Z,malpha,U);CHKERRQ(ierr);     /*  z <- z - alpha* u;  */
-    mbeta = - beta;
-    ierr = VecAXPY(R,mbeta,VOLD);CHKERRQ(ierr);   /*  r <- r - beta * v_old; */
-    ierr = VecAXPY(Z,mbeta,UOLD);CHKERRQ(ierr);   /*  z <- z - beta * u_old; */
+    ierr = VecAXPY(R,-alpha,V);CHKERRQ(ierr);     /*  r <- r - alpha* v;  */
+    ierr = VecAXPY(Z,-alpha,U);CHKERRQ(ierr);     /*  z <- z - alpha* u;  */
+    ierr = VecAXPY(R,-beta,VOLD);CHKERRQ(ierr);   /*  r <- r - beta * v_old; */
+    ierr = VecAXPY(Z,-beta,UOLD);CHKERRQ(ierr);   /*  z <- z - beta * u_old; */
     betaold = beta;                                /* beta_k                  */
     ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);          /* dp <- r'*z;             */
     if (PetscAbsScalar(dp) < symmlq->haptol) {

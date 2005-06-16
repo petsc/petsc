@@ -5,7 +5,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSDefaultComputeJacobianColor"
-/*@C
+/*@
     TSDefaultComputeJacobianColor - Computes the Jacobian using
     finite differences and coloring to exploit matrix sparsity.  
   
@@ -68,7 +68,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultComputeJacobianColor(TS ts,PetscReal t
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSDefaultComputeJacobian"
-/*
+/*@
    TSDefaultComputeJacobian - Computes the Jacobian using finite differences.
 
    Input Parameters:
@@ -90,13 +90,13 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultComputeJacobianColor(TS ts,PetscReal t
    Level: intermediate
 
 .seealso: TSDefaultComputeJacobianColor()
-*/
+@*/
 PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   Vec            jj1,jj2,xx2;
   PetscErrorCode ierr;
   PetscInt       i,N,start,end,j;
-  PetscScalar    dx,mone = -1.0,*y,scale,*xx,wscale;
+  PetscScalar    dx,*y,scale,*xx,wscale;
   PetscReal      amax,epsilon = PETSC_SQRT_MACHINE_EPSILON;
   PetscReal      dx_min = 1.e-16,dx_par = 1.e-1;
   MPI_Comm       comm;
@@ -141,7 +141,7 @@ PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,
       wscale = 0.0;
     }
     ierr = TSComputeRHSFunction(ts,t,xx2,jj2);CHKERRQ(ierr);
-    ierr = VecAXPY(jj2,mone,jj1);CHKERRQ(ierr);
+    ierr = VecAXPY(jj2,-1.0,jj1);CHKERRQ(ierr);
     /* Communicate scale to all processors */
     ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
     ierr = VecScale(jj2,scale);CHKERRQ(ierr);

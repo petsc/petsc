@@ -57,7 +57,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectDestroy"
-/*@C
+/*@
    PetscObjectDestroy - Destroys any PetscObject, regardless of the type. 
 
    Collective on PetscObject

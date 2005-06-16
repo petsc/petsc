@@ -152,7 +152,9 @@ void PETSC_STDCALL dmmgsetdm_(DMMG **dmmg,DM *dm,PetscErrorCode *ierr)
 
 void PETSC_STDCALL dmmgview_(DMMG **dmmg,PetscViewer *viewer,PetscErrorCode *ierr)
 {
-  *ierr = DMMGView(*dmmg,*viewer);
+  PetscViewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = DMMGView(*dmmg,v);
 }
 
 void PETSC_STDCALL dmmgsolve_(DMMG **dmmg,PetscErrorCode *ierr)

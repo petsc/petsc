@@ -48,7 +48,7 @@ int main(int argc,char **args)
   /* Set up solution */
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
-  ierr = VecSet(x,zero); CHKERRA(ierr);
+  ierr = VecSet(x,0.0); CHKERRA(ierr);
 
   /* Solve system */
   ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);

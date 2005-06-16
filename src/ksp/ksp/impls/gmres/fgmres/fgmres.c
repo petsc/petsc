@@ -123,7 +123,6 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 static PetscErrorCode FGMRESResidual(KSP ksp)
 {
   KSP_FGMRES     *fgmres = (KSP_FGMRES *)(ksp->data);
-  PetscScalar    mone = -1.0;
   Mat            Amat,Pmat;
   MatStructure   pflag;
   PetscErrorCode ierr;
@@ -134,7 +133,7 @@ static PetscErrorCode FGMRESResidual(KSP ksp)
   /* put A*x into VEC_TEMP */
   ierr = MatMult(Amat,ksp->vec_sol,VEC_TEMP);CHKERRQ(ierr);
   /* now put residual (-A*x + f) into vec_vv(0) */
-  ierr = VecWAXPY(VEC_VV(0),mone,VEC_TEMP,ksp->vec_rhs);CHKERRQ(ierr);
+  ierr = VecWAXPY(VEC_VV(0),-1.0,VEC_TEMP,ksp->vec_rhs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -165,8 +164,6 @@ PetscErrorCode FGMREScycle(PetscInt *itcount,KSP ksp)
   KSP_FGMRES     *fgmres = (KSP_FGMRES *)(ksp->data);
   PetscReal      res_norm;             
   PetscReal      hapbnd,tt;
-  PetscScalar    zero = 0.0;
-  PetscScalar    tmp;
   PetscTruth     hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
   PetscErrorCode ierr;
   PetscInt       loc_it;                /* local count of # of dir. in Krylov space */ 
@@ -207,7 +204,7 @@ PetscErrorCode FGMREScycle(PetscInt *itcount,KSP ksp)
   }
 
   /* scale VEC_VV (the initial residual) */
-  tmp = 1.0/res_norm; ierr = VecScale(VEC_VV(0),tmp);CHKERRQ(ierr);
+  ierr = VecScale(VEC_VV(0),1.0/res_norm);CHKERRQ(ierr);
    
   /* MAIN ITERATION LOOP BEGINNING*/
   /* keep iterating until we have converged OR generated the max number
@@ -253,13 +250,12 @@ PetscErrorCode FGMREScycle(PetscInt *itcount,KSP ksp)
     /* RS(loc_it) contains the res_norm from the last iteration  */
     hapbnd = PetscMin(fgmres->haptol,hapbnd);
     if (tt > hapbnd) {
-        tmp = 1.0/tt; 
         /* scale new direction by its norm */
-        ierr = VecScale(VEC_VV(loc_it+1),tmp);CHKERRQ(ierr);
+        ierr = VecScale(VEC_VV(loc_it+1),1.0/tt);CHKERRQ(ierr);
     } else {
         /* This happens when the solution is exactly reached. */
         /* So there is no new direction... */
-          ierr   = VecSet(VEC_TEMP,zero);CHKERRQ(ierr); /* set VEC_TEMP to 0 */
+          ierr   = VecSet(VEC_TEMP,0.0);CHKERRQ(ierr); /* set VEC_TEMP to 0 */
           hapend = PETSC_TRUE;
     }
     /* note that for FGMRES we could get HES(loc_it+1, loc_it)  = 0 and the
@@ -431,7 +427,7 @@ PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
 #define __FUNCT__ "BuildFgmresSoln"
 static PetscErrorCode BuildFgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,PetscInt it)
 {
-  PetscScalar    tt,zero = 0.0,one = 1.0;
+  PetscScalar    tt;
   PetscErrorCode ierr;
   PetscInt       ii,k,j;
   KSP_FGMRES     *fgmres = (KSP_FGMRES *)(ksp->data);
@@ -461,15 +457,15 @@ static PetscErrorCode BuildFgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP 
 
   /* Accumulate the correction to the soln of the preconditioned prob. in 
      VEC_TEMP - note that we use the preconditioned vectors  */
-  ierr = VecSet(VEC_TEMP,zero);CHKERRQ(ierr); /* set VEC_TEMP components to 0 */
+  ierr = VecSet(VEC_TEMP,0.0);CHKERRQ(ierr); /* set VEC_TEMP components to 0 */
   ierr = VecMAXPY(VEC_TEMP,it+1,nrs,&PREVEC(0));CHKERRQ(ierr); 
 
   /* put updated solution into vdest.*/
   if (vdest != vguess) {
     ierr = VecCopy(VEC_TEMP,vdest);CHKERRQ(ierr);
-    ierr = VecAXPY(vdest,one,vguess);CHKERRQ(ierr);
+    ierr = VecAXPY(vdest,1.0,vguess);CHKERRQ(ierr);
   } else  {/* replace guess with solution */
-    ierr = VecAXPY(vdest,one,VEC_TEMP);CHKERRQ(ierr);
+    ierr = VecAXPY(vdest,1.0,VEC_TEMP);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

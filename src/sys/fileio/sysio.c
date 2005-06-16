@@ -4,8 +4,8 @@
    This file contains simple binary read/write routines.
  */
 
-#include "petsc.h"     /*I          "petsc.h"    I*/
-#include "petscsys.h"
+#include "petsc.h"
+#include "petscsys.h"     /*I          "petscsys.h"    I*/
 
 #include <errno.h>
 #include <fcntl.h>
@@ -125,7 +125,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapDouble(double *buff,PetscInt n)
 /* --------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBinaryRead"
-/*@C
+/*@
    PetscBinaryRead - Reads from a binary file.
 
    Not Collective
@@ -220,7 +220,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
 /* --------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBinaryWrite"
-/*@C
+/*@
    PetscBinaryWrite - Writes to a binary file.
 
    Not Collective
@@ -394,7 +394,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryOpen(const char name[],int type,int *f
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBinaryClose" 
-/*@C
+/*@
    PetscBinaryClose - Closes a PETSc binary file.
 
    Not Collective
@@ -416,7 +416,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryClose(int fd)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBinarySeek" 
-/*@C
+/*@
    PetscBinarySeek - Moves the file pointer on a PETSc binary file.
 
    Not Collective

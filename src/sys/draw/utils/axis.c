@@ -40,7 +40,7 @@ static PetscErrorCode PetscRint(PetscReal x,PetscReal *result)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawAxisCreate" 
-/*@C
+/*@
    PetscDrawAxisCreate - Generate the axis data structure.
 
    Collective over PetscDraw
@@ -90,7 +90,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawAxisDestroy" 
-/*@C
+/*@
     PetscDrawAxisDestroy - Frees the space used by an axis structure.
 
     Collective over PetscDrawAxis

@@ -13,7 +13,6 @@ PetscErrorCode PCMGMCycle_Private(PC_MG **mglevels,PetscTruth *converged)
   PC_MG          *mg = *mglevels,*mgc;
   PetscErrorCode ierr;
   PetscInt       cycles = mg->cycles;
-  PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
   if (converged) *converged = PETSC_FALSE;
@@ -41,7 +40,7 @@ PetscErrorCode PCMGMCycle_Private(PC_MG **mglevels,PetscTruth *converged)
 
     mgc = *(mglevels - 1);
     ierr = MatRestrict(mg->restrct,mg->r,mgc->b);CHKERRQ(ierr);
-    ierr = VecSet(mgc->x,zero);CHKERRQ(ierr);
+    ierr = VecSet(mgc->x,0.0);CHKERRQ(ierr);
     while (cycles--) {
       ierr = PCMGMCycle_Private(mglevels-1,converged);CHKERRQ(ierr); 
     }
@@ -177,7 +176,6 @@ EXTERN PetscErrorCode PCMGKCycle_Private(PC_MG**);
 static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 {
   PC_MG          **mg = (PC_MG**)pc->data;
-  PetscScalar    zero = 0.0;
   PetscErrorCode ierr;
   PetscInt       levels = mg[0]->levels;
 
@@ -191,7 +189,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
     ierr = VecDestroy(tvec);CHKERRQ(ierr);
   }
   if (mg[0]->am == PC_MG_MULTIPLICATIVE) {
-    ierr = VecSet(x,zero);CHKERRQ(ierr);
+    ierr = VecSet(x,0.0);CHKERRQ(ierr);
     ierr = PCMGMCycle_Private(mg+levels-1,PETSC_NULL);CHKERRQ(ierr);
   } 
   else if (mg[0]->am == PC_MG_ADDITIVE) {
@@ -391,6 +389,11 @@ static PetscErrorCode PCSetUp_MG(PC pc)
 #endif
     }
     for (i=0; i<n-1; i++) {
+      if (!mg[i]->b) {
+        Mat mat;
+        ierr = KSPGetOperators(mg[i]->smoothd,PETSC_NULL,&mat,PETSC_NULL);CHKERRQ(ierr);
+
+      }
       if (!mg[i]->r && i) {
         ierr = VecDuplicate(mg[i]->b,&tvec);CHKERRQ(ierr);
         ierr = PCMGSetR(pc,i,tvec);CHKERRQ(ierr);
@@ -747,7 +750,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothDown(PC pc,PetscInt n)
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   levels = mg[0]->levels;
 
-  for (i=0; i<levels; i++) {  
+  for (i=1; i<levels; i++) {  
     /* make sure smoother up and down are different */
     ierr = PCMGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mg[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);CHKERRQ(ierr);

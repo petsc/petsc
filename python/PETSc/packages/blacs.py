@@ -9,18 +9,32 @@ class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
     self.download  = ['bk://petsc.bkbits.net/blacs-dev']
-    self.functions = ['blacs_pinfo']
     self.liblist   = [['libblacs.a']]
     self.includes  = []
     self.libdir    = ''
     self.fc        = 1
+    # we need to check for fortran functions - hence self.functions is
+    # initialized later - when self.compilers.fortranMangling is available
+    # self.functions = ['blacs_pinfo']
     return
 
   def setupDependencies(self, framework):
+
     PETSc.package.Package.setupDependencies(self, framework)
     self.mpi        = framework.require('PETSc.packages.MPI',self)
     self.blasLapack = framework.require('PETSc.packages.BlasLapack',self)
     self.deps       = [self.mpi,self.blasLapack]
+    return
+
+  def setupFunctionsCheck(self):
+    if self.compilers.fortranManglingDoubleUnderscore:
+      self.functions = ['blacs_pinfo__']
+    elif self.compilers.fortranMangling == 'underscore':
+      self.functions = ['blacs_pinfo_']
+    elif self.compilers.fortranMangling == 'capitalize':
+      self.functions = ['BLACS_PINFO']
+    else:
+      self.functions = ['blacs_pinfo']
     return
           
   def Install(self):
@@ -100,7 +114,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Found function '+str(func)+' in '+str(lib)+'\n')
     return found
   
-  def configureLibrary(self): #almost same as package.py/configureLibrary()!
+  def configureLibraryOld(self): #almost same as package.py/configureLibrary()!
     '''Find an installation ando check if it can work with PETSc'''
     self.framework.log.write('==================================================================================\n')
     self.framework.log.write('Checking for a functional '+self.name+'\n')
@@ -131,11 +145,13 @@ class Configure(PETSc.package.Package):
     if not self.found:
       raise RuntimeError('Could not find a functional '+self.name+'\n')
 
+
 if __name__ == '__main__':
   import config.framework
   import sys
   framework = config.framework.Framework(sys.argv[1:])
   framework.setup()
   framework.addChild(Configure(framework))
+  self.setupFucntionsCheck()
   framework.configure()
   framework.dumpSubstitutions()
