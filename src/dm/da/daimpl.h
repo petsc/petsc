@@ -113,6 +113,9 @@ struct _p_DA {
   PetscErrorCode (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
   PetscErrorCode (*adic_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*);
   PetscErrorCode (*adicmf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*);
+  PetscErrorCode (*lfib)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
+  PetscErrorCode (*adic_lfib)(DALocalInfo*,MatStencil*,void*,void*,void*);
+  PetscErrorCode (*adicmf_lfib)(DALocalInfo*,MatStencil*,void*,void*,void*);
 
   /* this is used by DASetBlockFills() */
   PetscInt               *ofill,*dfill;

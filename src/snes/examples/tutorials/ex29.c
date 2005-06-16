@@ -164,6 +164,7 @@ int main(int argc,char **argv)
     param.eta   = 1e-3;
     param.d_e   = 0.2;
     param.rho_s = 0;
+    param.second_order = PETSC_FALSE;
 
     ierr = PetscOptionsGetReal(PETSC_NULL, "-viscosity", &param.nu,PETSC_NULL);CHKERRQ(ierr);
 
@@ -399,9 +400,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
   */
   {
     PetscReal eps = lx/ly;
-#if defined(PETSC_HAVE_ERF)
     PetscReal pert = 1e-4;
-#endif
     PetscReal k = 1.*eps;
     PetscReal gam; 
 
@@ -412,7 +411,6 @@ PetscErrorCode Initialize(DMMG *dmmg)
       yy = j * hy;
       for (i=xs-1; i<xs+xm+1; i++) {
 	xx = i * hx;
-#if defined(PETSC_HAVE_ERF)
 	if (xx < -PETSC_PI/2) {
 	  localx[j][i].phi = pert * gam / k * erf((xx + PETSC_PI) / (sqrt(2.0) * d_e)) * (-sin(k*yy));
 	} else if (xx < PETSC_PI/2) {
@@ -422,7 +420,6 @@ PetscErrorCode Initialize(DMMG *dmmg)
 	} else {
 	  localx[j][i].phi = - pert * gam / k * erf((xx - 2.*PETSC_PI) / (sqrt(2.0) * d_e)) * (-sin(k*yy));
 	}
-#endif
 #ifdef EQ
 	localx[j][i].psi = 0.;
 #else

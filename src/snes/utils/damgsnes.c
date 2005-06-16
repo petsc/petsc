@@ -684,11 +684,31 @@ PetscErrorCode DMMGSetSNESLocali_Private(DMMG *dmmg,PetscErrorCode (*functioni)(
     ierr = DASetLocalAdicMFFunctioni((DA)dmmg[i]->dm,adimf);CHKERRQ(ierr);
     ierr = MatSNESMFSetFunctioni(dmmg[i]->J,DMMGFunctioni);CHKERRQ(ierr);
     ierr = MatSNESMFSetFunctioniBase(dmmg[i]->J,DMMGFunctioniBase);CHKERRQ(ierr);    
-    ierr = DACreateLocalVector((DA)dmmg[i]->dm,&dmmg[i]->lwork1);CHKERRQ(ierr);
+    if (!dmmg[i]->lwork1) {
+      ierr = DACreateLocalVector((DA)dmmg[i]->dm,&dmmg[i]->lwork1);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetSNESLocalib_Private"
+PetscErrorCode DMMGSetSNESLocalib_Private(DMMG *dmmg,PetscErrorCode (*functioni)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode (*adi)(DALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode (*adimf)(DALocalInfo*,MatStencil*,void*,void*,void*))
+{
+  PetscErrorCode ierr;
+  PetscInt       i,nlevels = dmmg[0]->nlevels;
+
+  PetscFunctionBegin;
+  for (i=0; i<nlevels; i++) {
+    ierr = DASetLocalFunctionib((DA)dmmg[i]->dm,functioni);CHKERRQ(ierr);
+    ierr = DASetLocalAdicFunctionib((DA)dmmg[i]->dm,adi);CHKERRQ(ierr);
+    ierr = DASetLocalAdicMFFunctionib((DA)dmmg[i]->dm,adimf);CHKERRQ(ierr);
+    if (!dmmg[i]->lwork1) {
+      ierr = DACreateLocalVector((DA)dmmg[i]->dm,&dmmg[i]->lwork1);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 
 

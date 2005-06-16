@@ -389,6 +389,11 @@ static PetscErrorCode PCSetUp_MG(PC pc)
 #endif
     }
     for (i=0; i<n-1; i++) {
+      if (!mg[i]->b) {
+        Mat mat;
+        ierr = KSPGetOperators(mg[i]->smoothd,PETSC_NULL,&mat,PETSC_NULL);CHKERRQ(ierr);
+
+      }
       if (!mg[i]->r && i) {
         ierr = VecDuplicate(mg[i]->b,&tvec);CHKERRQ(ierr);
         ierr = PCMGSetR(pc,i,tvec);CHKERRQ(ierr);
