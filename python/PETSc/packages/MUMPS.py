@@ -44,7 +44,7 @@ class Configure(PETSc.package.Package):
     g.write('CC = '+self.setCompilers.getCompiler()+'\n')
     g.write('OPTC    = ' + self.setCompilers.getCompilerFlags() +'\n')
     self.setCompilers.popLanguage()
-    if not self.compiler.fortranIsF90:
+    if not self.compilers.fortranIsF90:
       raise RuntimeError('Invalid F90 compiler') 
     self.setCompilers.pushLanguage('FC') 
     g.write('FC = '+self.setCompilers.getCompiler()+'\n')
@@ -53,11 +53,11 @@ class Configure(PETSc.package.Package):
     self.setCompilers.popLanguage()
 
     # set fortran name mangling
-    if self.compiler.fortranManglingDoubleUnderscore:
+    if self.compilers.fortranManglingDoubleUnderscore:
       g.write('CDEFS   = -DAdd__\n')
-    elif self.compiler.fortranMangling == 'underscore':
+    elif self.compilers.fortranMangling == 'underscore':
       g.write('CDEFS   = -DAdd_\n')
-    elif self.compiler.fortranMangling == 'capitalize':
+    elif self.compilers.fortranMangling == 'capitalize':
       g.write('CDEFS   = -DUPPPER\n')
 
     g.write('AR      = ar vr\n')
