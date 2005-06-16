@@ -7,6 +7,7 @@
 #if defined(PETSC_HAVE_ADIC)
 extern PetscErrorCode DMMGComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode DMMGSolveFAS(DMMG*,PetscInt);
+extern PetscErrorCode DMMGSolveFAS4(DMMG*,PetscInt);
 extern PetscErrorCode DMMGComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #endif
@@ -558,7 +559,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
             ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %D\n",newton_its);CHKERRQ(ierr);
           }
         }
-	dmmg[i]->solve = DMMGSolveFAS;
+	dmmg[i]->solve = DMMGSolveFAS4;
       }
     }
   }
@@ -640,7 +641,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGFunctioni"
-static PetscErrorCode DMMGFunctioni(PetscInt i,Vec u,PetscScalar* r,void* ctx)
+PetscErrorCode DMMGFunctioni(PetscInt i,Vec u,PetscScalar* r,void* ctx)
 {
   DMMG           dmmg = (DMMG)ctx;
   Vec            U = dmmg->lwork1;
@@ -658,7 +659,7 @@ static PetscErrorCode DMMGFunctioni(PetscInt i,Vec u,PetscScalar* r,void* ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGFunctioniBase"
-static PetscErrorCode DMMGFunctioniBase(Vec u,void* ctx)
+PetscErrorCode DMMGFunctioniBase(Vec u,void* ctx)
 {
   DMMG           dmmg = (DMMG)ctx;
   Vec            U = dmmg->lwork1;
