@@ -81,7 +81,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
      (real); already at least 5N of space has been allocated */
 
   ierr = PetscMalloc(lwork*sizeof(PetscReal),&work);CHKERRQ(ierr);
-  LAPACKgeev_(&zero,R,&N,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
+  LAPACKgeev_(&zero,R,&idummy,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
   ierr = PetscFree(work);CHKERRQ(ierr);
 
   /* For now we stick with the convention of storing the real and imaginary
