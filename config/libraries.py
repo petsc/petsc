@@ -3,6 +3,12 @@ import config.base
 import os
 import re
 
+try:
+  enumerate([0, 1])
+except NameError:
+  def enumerate(l):
+    return zip(range(len(l)), l)
+
 class Configure(config.base.Configure):
   def __init__(self, framework, libraries = []):
     config.base.Configure.__init__(self, framework)
