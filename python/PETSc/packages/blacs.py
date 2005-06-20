@@ -13,9 +13,8 @@ class Configure(PETSc.package.Package):
     self.includes  = []
     self.libdir    = ''
     self.fc        = 1
-    # we need to check for fortran functions - hence self.functions is
-    # initialized later - when self.compilers.fortranMangling is available
-    # self.functions = ['blacs_pinfo']
+    self.functions = ['blacs_pinfo']
+    self.functionsFortran = 1
     return
 
   def setupDependencies(self, framework):
@@ -26,17 +25,6 @@ class Configure(PETSc.package.Package):
     self.deps       = [self.mpi,self.blasLapack]
     return
 
-  def setupFunctionsCheck(self):
-    if self.compilers.fortranManglingDoubleUnderscore:
-      self.functions = ['blacs_pinfo__']
-    elif self.compilers.fortranMangling == 'underscore':
-      self.functions = ['blacs_pinfo_']
-    elif self.compilers.fortranMangling == 'capitalize':
-      self.functions = ['BLACS_PINFO']
-    else:
-      self.functions = ['blacs_pinfo']
-    return
-          
   def Install(self):
     # Get the BLACS directories
     blacsDir   = self.getDir()
@@ -90,7 +78,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild blacs, Bmake.Inc != '+installDir+'/Bmake.Inc\n')
       try:
         self.logPrintBox('Compiling Blacs; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(blacsDir,'SRC','MPI')+';make', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(blacsDir,'SRC','MPI')+';make clean; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLACS: '+str(e))
     else:
@@ -152,6 +140,5 @@ if __name__ == '__main__':
   framework = config.framework.Framework(sys.argv[1:])
   framework.setup()
   framework.addChild(Configure(framework))
-  self.setupFucntionsCheck()
   framework.configure()
   framework.dumpSubstitutions()
