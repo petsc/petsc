@@ -137,11 +137,13 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFKSPMonitor(KSP,PetscInt,Petsc
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetFromOptions(Mat);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCheckPositivity(Vec,Vec,PetscScalar*,void*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetCheckh(Mat,PetscErrorCode (*)(Vec,Vec,PetscScalar*,void*),void*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFDSSetUmin(Mat,PetscReal);
+
 
 typedef struct _p_MatSNESMFCtx* MatSNESMFCtx;
 
-#define MATSNESMF_DEFAULT "default"
-#define MATSNESMF_WP      "wp"
+#define MATSNESMF_DS  "ds"
+#define MATSNESMF_WP  "wp"
 #define MatSNESMFType char*
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetType(Mat,const MatSNESMFType);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatSNESMFCtx));
@@ -192,7 +194,6 @@ M*/
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFRegisterAll(const char[]);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFRegisterDestroy(void);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFDefaultSetUmin(Mat,PetscReal);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFWPSetComputeNormA(Mat,PetscTruth);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFWPSetComputeNormU(Mat,PetscTruth);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatDAADSetSNES(Mat,SNES);

@@ -8,18 +8,16 @@
       h = error_rel * sqrt(1 + ||U||) / ||a||
 
       Notes:
-        1) || U || does not change between linear iterations so can be reused
-        2) In GMRES || a || == 1 and so does not need to ever be computed if you never 
-           have a restart. Unfortunately a RESTART computes a matrix vector product 
-           with ||a|| != 0 which breaks this
+        1) || U || does not change between linear iterations so is reused
+        2) In GMRES || a || == 1 and so does not need to ever be computed except at restart
+           when it is recomputed.
 
       Reference:  M. Pernice and H. F. Walker, "NITSOL: A Newton Iterative 
       Solver for Nonlinear Systems", SIAM J. Sci. Stat. Comput.", 1998, 
       vol 19, pp. 302--318.
 
    Options Database Keys:
-+   -snes_mf_compute_norma - compute the norm of a everytime see MatSNESMFWPSetComputeNormA()
--   -snes_mf_compute_normu -Compute the norm of u everytime see MatSNESMFWPSetComputeNormU()
+.   -snes_mf_compute_normu -Compute the norm of u everytime see MatSNESMFWPSetComputeNormU()
 
 
    Level: intermediate
@@ -28,13 +26,8 @@
 
    Formula used:
      F'(u)*a = [F(u+h*a) - F(u)]/h where
-     h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
-       = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   otherwise
- where
-     error_rel = square root of relative error in function evaluation
-     umin = minimum iterate parameter
 
-.seealso: MATMFFD, MatCreateMF(), MatCreateSNESMF(), MATSNESMF_DEFAULT
+.seealso: MATMFFD, MatCreateMF(), MatCreateSNESMF(), MATSNESMF_DS
 
 M*/
 
@@ -150,8 +143,6 @@ static PetscErrorCode MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Walker-Pernice options");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-snes_mf_compute_norma","Compute the norm of a","MatSNESMFWPSetComputeNormA",
-                          hctx->computenorma,&hctx->computenorma,0);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-snes_mf_compute_normu","Compute the norm of u","MatSNESMFWPSetComputeNormU",
                           hctx->computenorma,&hctx->computenorma,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -175,57 +166,6 @@ static PetscErrorCode MatSNESMFDestroy_WP(MatSNESMFCtx ctx)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscFree(ctx->hctx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFWPSetComputeNormA_P"
-PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
-{
-  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
-  MatSNESMFWP  *hctx;
-
-  PetscFunctionBegin;
-  hctx               = (MatSNESMFWP*)ctx->hctx;
-  hctx->computenorma = flag;
-  PetscFunctionReturn(0);
-} 
-EXTERN_C_END
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFWPSetComputeNormA"
-/*@
-    MatSNESMFWPSetComputeNormA - Sets whether it computes the ||a|| used by the WP
-             PETSc routine for computing h. With GMRES since the ||a|| is always
-             one, you can save communication by setting this to false.
-
-  Input Parameters:
-+   A - the matrix created with MatCreateSNESMF()
--   flag - PETSC_TRUE causes it to compute ||a||, PETSC_FALSE assumes it is 1.
-
-  Options Database Key:
-.   -snes_mf_compute_norma <true,false> - can be set false for GMRES to speed up code
-
-  Level: advanced
-
-  Notes:
-   See the manual page for MatCreateSNESMF() for a complete description of the
-   algorithm used to compute h.
-
-.seealso: MatSNESMFSetFunctionError(), MatCreateSNESMF()
-
-@*/
-PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFWPSetComputeNormA(Mat A,PetscTruth flag)
-{
-  PetscErrorCode ierr,(*f)(Mat,PetscTruth);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESMFWPSetComputeNormA_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(A,flag);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -256,12 +196,13 @@ EXTERN_C_END
 -   flag - PETSC_TRUE causes it to compute ||U||, PETSC_FALSE uses the previous value
 
   Options Database Key:
-.   -snes_mf_compute_normu <true,false> - true by default, false causes extra calculations
+.   -snes_mf_compute_normu <true,false> - true by default, false can save calculations but you 
+              must be sure that ||U|| has not changed in the mean time.
 
   Level: advanced
 
   Notes:
-   See the manual page for MatCreateSNESMF() for a complete description of the
+   See the manual page for MATSNESMF_WP for a complete description of the
    algorithm used to compute h.
 
 .seealso: MatSNESMFSetFunctionError(), MatCreateSNESMF()
@@ -310,9 +251,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_WP(MatSNESMFCtx ctx)
   ctx->ops->view           = MatSNESMFView_WP;  
   ctx->ops->setfromoptions = MatSNESMFSetFromOptions_WP;  
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatSNESMFWPSetComputeNormA_C",
-                            "MatSNESMFWPSetComputeNormA_P",
-                             MatSNESMFWPSetComputeNormA_P);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatSNESMFWPSetComputeNormU_C",
                             "MatSNESMFWPSetComputeNormU_P",
                              MatSNESMFWPSetComputeNormU_P);CHKERRQ(ierr);

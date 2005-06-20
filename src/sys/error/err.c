@@ -134,7 +134,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(i
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscPopErrorHandler" 
-/*@C
+/*@
    PetscPopErrorHandler - Removes the latest error handler that was 
    pushed with PetscPushErrorHandler().
 

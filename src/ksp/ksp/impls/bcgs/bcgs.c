@@ -22,7 +22,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscScalar    rho,rhoold,alpha,beta,omega,omegaold,d1,d2,zero = 0.0,tmp;
+  PetscScalar    rho,rhoold,alpha,beta,omega,omegaold,d1,d2;
   Vec            X,B,V,P,R,RP,T,S;
   PetscReal      dp = 0.0;
 
@@ -59,8 +59,8 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
   rhoold   = 1.0;
   alpha    = 1.0;
   omegaold = 1.0;
-  ierr = VecSet(P,zero);CHKERRQ(ierr);
-  ierr = VecSet(V,zero);CHKERRQ(ierr);
+  ierr = VecSet(P,0.0);CHKERRQ(ierr);
+  ierr = VecSet(V,0.0);CHKERRQ(ierr);
 
   i=0;
   do {
@@ -70,12 +70,12 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
       break;
     }
     beta = (rho/rhoold) * (alpha/omegaold);
-    tmp = -omegaold; VecAXPY(P,tmp,V);            /*   p <- p - w v       */
+    ierr = VecAXPY(P,-omegaold,V);CHKERRQ(ierr);         /*   p <- p - w v       */
     ierr = VecAYPX(P,beta,R);CHKERRQ(ierr);      /*   p <- r + p beta    */
     ierr = KSP_PCApplyBAorAB(ksp,P,V,T);CHKERRQ(ierr);  /*   v <- K p           */
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
-    alpha = rho / d1; tmp = -alpha;                /*   a <- rho / (v,rp)  */
-    ierr = VecWAXPY(S,tmp,V,R);CHKERRQ(ierr);      /*   s <- r - a v       */
+    alpha = rho / d1;                 /*   a <- rho / (v,rp)  */
+    ierr = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr);      /*   s <- r - a v       */
     ierr = KSP_PCApplyBAorAB(ksp,S,T,R);CHKERRQ(ierr);/*   t <- K s    */
     ierr = VecDot(S,T,&d1);CHKERRQ(ierr);
     ierr = VecDot(T,T,&d2);CHKERRQ(ierr);
@@ -100,8 +100,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
     omega = d1 / d2;                               /*   w <- (t's) / (t't) */
     ierr  = VecAXPY(X,alpha,P);CHKERRQ(ierr);     /*   x <- x + a p       */
     ierr  = VecAXPY(X,omega,S);CHKERRQ(ierr);     /*   x <- x + w s       */
-    tmp   = -omega; 
-    ierr  = VecWAXPY(R,tmp,T,S);CHKERRQ(ierr);     /*   r <- s - w t       */
+    ierr  = VecWAXPY(R,-omega,T,S);CHKERRQ(ierr);     /*   r <- s - w t       */
     if (ksp->normtype != KSP_NO_NORM) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     }

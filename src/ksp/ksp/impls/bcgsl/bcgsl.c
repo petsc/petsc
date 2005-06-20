@@ -16,7 +16,6 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 {
   KSP_BiCGStabL  *bcgsl = (KSP_BiCGStabL *) ksp->data;
   PetscScalar    alpha, beta, nu, omega, sigma;
-  PetscScalar    zero = 0;
   PetscScalar    rho0, rho1;
   PetscReal      kappa0, kappaA, kappa1;
   PetscReal      ghat, epsilon, abstol;
@@ -69,13 +68,13 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     PetscFunctionReturn(0);
   }
 
-  ierr = VecSet(VVU[0],zero);CHKERRQ(ierr);
+  ierr = VecSet(VVU[0],0.0);CHKERRQ(ierr);
   alpha = 0;
   rho0 = omega = 1;
 
   if (bcgsl->delta>0.0) {
     ierr = VecCopy(VX, VXR);CHKERRQ(ierr);
-    ierr = VecSet(VX,zero);CHKERRQ(ierr);
+    ierr = VecSet(VX,0.0);CHKERRQ(ierr);
     ierr = VecCopy(VVR[0], VB);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(ksp->vec_rhs, VB);CHKERRQ(ierr);
@@ -274,7 +273,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
         if (bUpdateX) {
           nu = 1;
           ierr = VecAXPY(VXR,nu,VX);CHKERRQ(ierr);
-          ierr = VecSet(VX,zero);CHKERRQ(ierr);
+          ierr = VecSet(VX,0.0);CHKERRQ(ierr);
           ierr = VecCopy(VVR[0], VB);CHKERRQ(ierr);
           rnmax_computed = zeta;
         }

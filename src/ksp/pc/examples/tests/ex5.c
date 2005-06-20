@@ -38,7 +38,6 @@ int main(int Argc,char **Args)
   PetscReal       e[3]; /* l_2 error,max error, residual */
   char            *shellname;
   Vec             x,solution,X[20],R[20],B[20];
-  PetscScalar     zero = 0.0;
   PC              pcmg,pc;
   PetscTruth      flg;
 
@@ -137,7 +136,7 @@ int main(int Argc,char **Args)
 
   ierr = CalculateSolution(N[0],&solution);CHKERRQ(ierr);
   ierr = CalculateRhs(B[levels-1]);CHKERRQ(ierr);
-  ierr = VecSet(X[levels-1],zero);CHKERRQ(ierr);
+  ierr = VecSet(X[levels-1],0.0);CHKERRQ(ierr);
 
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
@@ -390,12 +389,11 @@ PetscErrorCode CalculateSolution(PetscInt n,Vec *solution)
 #define __FUNCT__ "CalculateError"
 PetscErrorCode CalculateError(Vec solution,Vec u,Vec r,PetscReal *e)
 {
-  PetscScalar    mone = -1.0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecNorm(r,NORM_2,e+2);CHKERRQ(ierr);
-  ierr = VecWAXPY(r,mone,u,solution);CHKERRQ(ierr);
+  ierr = VecWAXPY(r,-1.0,u,solution);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,e);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_1,e+1);CHKERRQ(ierr);
   PetscFunctionReturn(0);

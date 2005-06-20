@@ -37,7 +37,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   PetscInt       i,M,m,*rows,start,end;
   Mat            A;
   MPI_Comm       comm;
-  PetscScalar    *array,zero = 0.0,one = 1.0;
+  PetscScalar    *array,one = 1.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -68,7 +68,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 
   for (i=0; i<M; i++) {
 
-    ierr = VecSet(in,zero);CHKERRQ(ierr);
+    ierr = VecSet(in,0.0);CHKERRQ(ierr);
     ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
@@ -175,9 +175,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP ksp,PetscI
 #if defined(PETSC_HAVE_ESSL)
   /* ESSL has a different calling sequence for dgeev() and zgeev() than standard LAPACK */
   if (!rank) {
-    PetscScalar sdummy,*cwork;
-    PetscReal   *work,*realpart;
-    PetscInt         clen,idummy,lwork,*perm,zero;
+    PetscScalar  sdummy,*cwork;
+    PetscReal    *work,*realpart;
+    PetscBLASInt clen,idummy,lwork,*perm,zero = 0;
 
 #if !defined(PETSC_USE_COMPLEX)
     clen = n;
@@ -189,7 +189,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP ksp,PetscI
     lwork  = 5*n;
     ierr   = PetscMalloc(lwork*sizeof(PetscReal),&work);CHKERRQ(ierr);
     ierr   = PetscMalloc(n*sizeof(PetscReal),&realpart);CHKERRQ(ierr);
-    zero   = 0;
     LAPACKgeev_(&zero,array,&n,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
     ierr = PetscFree(work);CHKERRQ(ierr);
 
@@ -273,8 +272,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP ksp,PetscI
 #else
     {
       PetscBLASInt lierr;
-      PetscScalar sdummy;
-      LAPACKgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&lierr);
+      PetscScalar  sdummy;
+      PetscBLASInt nb = (PetscBLASInt) n;
+      LAPACKgeev_("N","N",&nb,array,&nb,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&lierr);
       if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
     }
 #endif

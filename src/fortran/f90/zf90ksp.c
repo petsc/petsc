@@ -1,6 +1,6 @@
 
 #include "petscksp.h"
-#include "petscf90.h"
+#include "src/sys/f90/f90impl.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define kspgetresidualhistoryf90_     KSPGETRESIDUALHISTORYF90

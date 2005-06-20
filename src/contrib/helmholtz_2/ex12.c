@@ -310,7 +310,7 @@ int main(int argc,char **args)
      Check norm of residual
   */
   ierr = MatMult(A,user.phi,b2); CHKERRA(ierr);
-  ierr = VecAXPY(b2,none,b); CHKERRA(ierr);
+  ierr = VecAXPY(b2,-1.0,b); CHKERRA(ierr);
   ierr  = VecNorm(b2,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-12) 
     PetscPrintf(PETSC_COMM_WORLD,"Norm of RHS difference=%g, Iterations=%d\n",norm,its);

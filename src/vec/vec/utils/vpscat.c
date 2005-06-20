@@ -2605,7 +2605,6 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   j       = 0;
   lastidx = -1;
   for (i=0; i<nx; i++) {
-    /* if indices are NOT locally sorted, need to start search at the beginning */
     if (lastidx > (idx = inidx[i])) j = 0;
     lastidx = idx;
     for (; j<size; j++) {

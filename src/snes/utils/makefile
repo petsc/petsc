@@ -10,7 +10,7 @@ OBJSC    = damg.o damgsnes.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = DA
-DIRS     = 
+DIRS     = adutils
 EDIRS    = 
 LOCDIR   = src/snes/utils/
 

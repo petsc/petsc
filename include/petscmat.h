@@ -527,6 +527,12 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMat(Mat,MatReuse,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMatCondensed(Mat,MatReuse,IS*,IS*,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,PetscInt*,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat,Mat,MatReuse,PetscInt**,PetscScalar**,Mat*);
+#if defined (PETSC_USE_CTABLE)
+#include "petscctable.h"
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetCommunicationStructs(Mat, Vec *, PetscTable *, VecScatter *);
+#else
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetCommunicationStructs(Mat, Vec *, PetscInt *[], VecScatter *);
+#endif
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIncreaseOverlap(Mat,PetscInt,IS[],PetscInt);
 

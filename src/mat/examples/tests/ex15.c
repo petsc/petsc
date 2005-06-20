@@ -11,7 +11,7 @@ int main(int argc,char **args)
   PetscInt       i,j,m = 3,n = 3,I,J;
   PetscErrorCode ierr;
   PetscTruth     flg;
-  PetscScalar    v,mone = -1.0,one = 1.0,alpha = 2.0;
+  PetscScalar    v;
   IS             perm,iperm;
   Vec            x,u,b,y;
   PetscReal      norm;
@@ -47,13 +47,13 @@ int main(int argc,char **args)
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u);CHKERRQ(ierr);
-  ierr = VecSet(u,one);CHKERRQ(ierr);
+  ierr = VecSet(u,1.0);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(u,&y);CHKERRQ(ierr);
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
   ierr = VecCopy(b,y);CHKERRQ(ierr);
-  ierr = VecScale(y,alpha);CHKERRQ(ierr);
+  ierr = VecScale(y,2.0);CHKERRQ(ierr);
 
   ierr = MatNorm(C,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Frobenius norm of matrix %g\n",norm);CHKERRQ(ierr);
@@ -75,14 +75,14 @@ int main(int argc,char **args)
   ierr = MatSolve(C,b,x);CHKERRQ(ierr); 
   ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = VecAXPY(x,mone,u);CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRQ(ierr);
 
   /* Test MatSolveAdd */
   ierr = MatSolveAdd(C,b,y,x);CHKERRQ(ierr); 
-  ierr = VecAXPY(x,mone,y);CHKERRQ(ierr);
-  ierr = VecAXPY(x,mone,u);CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,y);CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRQ(ierr);

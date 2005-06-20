@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   KSP solver; PC pc;
   Mat A,B;
   Vec X,Y,Z;
-  PetscScalar *a,*b,*x,*y,*z,one=1,mone=-1;
+  PetscScalar *a,*b,*x,*y,*z;
   PetscReal nrm;
   PetscErrorCode ierr,size=8,lda=10, i,j;
 
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
 
   ierr = PetscMalloc(size*sizeof(PetscScalar),&x);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
-    x[i] = one;
+    x[i] = 1.0;
   }
   ierr = VecCreateSeqWithArray(MPI_COMM_SELF,size,x,&X);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
@@ -74,7 +74,7 @@ int main(int argc,char **argv)
   ierr = KSPSolve(solver,X,Y);CHKERRQ(ierr);
   ierr = KSPSetOperators(solver,B,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSolve(solver,X,Z);CHKERRQ(ierr);
-  ierr = VecAXPY(Z,mone,Y);CHKERRQ(ierr);
+  ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
   printf("Test1; error norm=%e\n",nrm);
 

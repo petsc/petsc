@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "petscf90.h"
+#include "src/sys/f90/f90impl.h"
 
 #if defined PETSC_HAVE_F90_C
 #include PETSC_HAVE_F90_C

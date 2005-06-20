@@ -9,20 +9,22 @@ class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
     self.download  = ['bk://petsc.bkbits.net/blacs-dev']
-    self.functions = ['blacs_pinfo']
     self.liblist   = [['libblacs.a']]
     self.includes  = []
     self.libdir    = ''
     self.fc        = 1
+    self.functions = ['blacs_pinfo']
+    self.functionsFortran = 1
     return
 
   def setupDependencies(self, framework):
+
     PETSc.package.Package.setupDependencies(self, framework)
     self.mpi        = framework.require('PETSc.packages.MPI',self)
     self.blasLapack = framework.require('PETSc.packages.BlasLapack',self)
     self.deps       = [self.mpi,self.blasLapack]
     return
-          
+
   def Install(self):
     # Get the BLACS directories
     blacsDir   = self.getDir()
@@ -76,7 +78,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild blacs, Bmake.Inc != '+installDir+'/Bmake.Inc\n')
       try:
         self.logPrintBox('Compiling Blacs; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(blacsDir,'SRC','MPI')+';make', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(blacsDir,'SRC','MPI')+';make clean; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLACS: '+str(e))
     else:
@@ -100,7 +102,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Found function '+str(func)+' in '+str(lib)+'\n')
     return found
   
-  def configureLibrary(self): #almost same as package.py/configureLibrary()!
+  def configureLibraryOld(self): #almost same as package.py/configureLibrary()!
     '''Find an installation ando check if it can work with PETSc'''
     self.framework.log.write('==================================================================================\n')
     self.framework.log.write('Checking for a functional '+self.name+'\n')
@@ -130,6 +132,7 @@ class Configure(PETSc.package.Package):
           break
     if not self.found:
       raise RuntimeError('Could not find a functional '+self.name+'\n')
+
 
 if __name__ == '__main__':
   import config.framework

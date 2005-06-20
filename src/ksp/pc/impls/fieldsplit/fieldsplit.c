@@ -202,7 +202,6 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink = jac->head;
-  PetscScalar       zero = 0.0,mone = -1.0;
 
   PetscFunctionBegin;
   if (jac->type == PC_COMPOSITE_ADDITIVE) {
@@ -216,7 +215,7 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
     } else {
       PetscInt    i = 0;
 
-      ierr = VecSet(y,zero);CHKERRQ(ierr);
+      ierr = VecSet(y,0.0);CHKERRQ(ierr);
       while (ilink) {
         ierr = FieldSplitSplitSolveAdd(ilink,x,y);CHKERRQ(ierr);
 	ilink = ilink->next;
@@ -228,12 +227,12 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
       ierr = VecDuplicate(x,&jac->w1);CHKERRQ(ierr);
       ierr = VecDuplicate(x,&jac->w2);CHKERRQ(ierr);
     }
-    ierr = VecSet(y,zero);CHKERRQ(ierr);
+    ierr = VecSet(y,0.0);CHKERRQ(ierr);
     ierr = FieldSplitSplitSolveAdd(ilink,x,y);CHKERRQ(ierr);
     while (ilink->next) {
       ilink = ilink->next;
       ierr = MatMult(pc->pmat,y,jac->w1);CHKERRQ(ierr);
-      ierr = VecWAXPY(jac->w2,mone,jac->w1,x);CHKERRQ(ierr);
+      ierr = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
       ierr = FieldSplitSplitSolveAdd(ilink,jac->w2,y);CHKERRQ(ierr);
     }
   }

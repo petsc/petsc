@@ -29,7 +29,6 @@ int main(int argc,char **args)
   PetscErrorCode ierr,ierrp;
   PetscInt       its,n,m;
   PetscReal      norm;
-  PetscScalar    zero = 0.0,none = -1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -110,7 +109,7 @@ int main(int argc,char **args)
     ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
     ierr = VecCreateMPI(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&Ab);CHKERRQ(ierr);
-    ierr = VecSet(x,zero);CHKERRQ(ierr);
+    ierr = VecSet(x,0.0);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                       Setup solve for system
@@ -168,7 +167,7 @@ int main(int argc,char **args)
        Check error
     */
     ierr = MatMult(A,x,u);CHKERRQ(ierr);
-    ierr = VecAXPY(u,none,b);CHKERRQ(ierr);
+    ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
     ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);

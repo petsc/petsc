@@ -2331,7 +2331,7 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
   Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
   PetscErrorCode ierr;
   PetscInt       mbs=mat->mbs,bs=matin->bs;
-  PetscScalar    mone=-1.0,*x,*b,*ptr,zero=0.0;
+  PetscScalar    *x,*b,*ptr,zero=0.0;
   Vec            bb1;
  
   PetscFunctionBegin;
@@ -2357,7 +2357,7 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
       ierr = PetscMemcpy(ptr,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
       ierr = VecRestoreArray(mat->slvec0,&ptr);CHKERRQ(ierr);  
 
-      ierr = VecScale(mat->slvec0,mone);CHKERRQ(ierr);
+      ierr = VecScale(mat->slvec0,-1.0);CHKERRQ(ierr);
 
       /* copy bb into slvec1a */
       ierr = VecGetArray(mat->slvec1,&ptr);CHKERRQ(ierr);
@@ -2392,7 +2392,6 @@ PetscErrorCode MatRelax_MPISBAIJ_2comm(Mat matin,Vec bb,PetscReal omega,MatSORTy
 {
   Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
   PetscErrorCode ierr;
-  PetscScalar    mone=-1.0;
   Vec            lvec1,bb1;
  
   PetscFunctionBegin;
@@ -2413,14 +2412,14 @@ PetscErrorCode MatRelax_MPISBAIJ_2comm(Mat matin,Vec bb,PetscReal omega,MatSORTy
    
       /* lower diagonal part: bb1 = bb - B^T*xx */
       ierr = (*mat->B->ops->multtranspose)(mat->B,xx,lvec1);CHKERRQ(ierr);
-      ierr = VecScale(lvec1,mone);CHKERRQ(ierr); 
+      ierr = VecScale(lvec1,-1.0);CHKERRQ(ierr); 
 
       ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr); 
       ierr = VecCopy(bb,bb1);CHKERRQ(ierr);
       ierr = VecScatterBegin(lvec1,bb1,ADD_VALUES,SCATTER_REVERSE,mat->Mvctx);CHKERRQ(ierr);
 
       /* upper diagonal part: bb1 = bb1 - B*x */ 
-      ierr = VecScale(mat->lvec,mone);CHKERRQ(ierr);
+      ierr = VecScale(mat->lvec,-1.0);CHKERRQ(ierr);
       ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb1,bb1);CHKERRQ(ierr);
 
       ierr = VecScatterEnd(lvec1,bb1,ADD_VALUES,SCATTER_REVERSE,mat->Mvctx);CHKERRQ(ierr); 

@@ -244,7 +244,6 @@ and the x and y components of the convective fluxes F are
 PetscErrorCode TaylorGalerkinStepI(DA da, UserContext *user)
 {
   PetscScalar     phi_dt = user->phi*user->dt;
-  PetscScalar     zero   = 0.0;
   PetscScalar    *u_n,     *v_n;
   PetscScalar    *rho_n,   *rho_u_n,   *rho_v_n;
   PetscScalar    *rho_phi, *rho_u_phi, *rho_v_phi;
@@ -260,9 +259,9 @@ PetscErrorCode TaylorGalerkinStepI(DA da, UserContext *user)
   ierr = DAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx   = 1.0 / (PetscReal)(mx-1);
   hy   = 1.0 / (PetscReal)(my-1);
-  ierr = VecSet(user->sol_phi.rho,zero);CHKERRQ(ierr);
-  ierr = VecSet(user->sol_phi.rho_u,zero);CHKERRQ(ierr);
-  ierr = VecSet(user->sol_phi.rho_v,zero);CHKERRQ(ierr);
+  ierr = VecSet(user->sol_phi.rho,0.0);CHKERRQ(ierr);
+  ierr = VecSet(user->sol_phi.rho_u,0.0);CHKERRQ(ierr);
+  ierr = VecSet(user->sol_phi.rho_v,0.0);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_n.u,       &u_n);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_n.v,       &v_n);CHKERRQ(ierr);
   ierr = VecGetArray(user->sol_n.rho,     &rho_n);CHKERRQ(ierr);
@@ -776,7 +775,6 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat jac)
 PetscErrorCode ComputeCorrector(DMMG dmmg, Vec uOld, Vec u)
 {
   DA             da   = (DA)dmmg->dm;
-  PetscScalar    zero = 0.0;
   Vec            uOldLocal, uLocal;
   PetscScalar    *cOld;
   PetscScalar    *c;
@@ -785,10 +783,10 @@ PetscErrorCode ComputeCorrector(DMMG dmmg, Vec uOld, Vec u)
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  ierr = VecSet(u,zero);CHKERRQ(ierr);
+  ierr = VecSet(u,0.0);CHKERRQ(ierr);
   ierr = DAGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);
   ierr = DAGetLocalVector(da, &uLocal);CHKERRQ(ierr);
-  ierr = VecSet(uLocal,zero);CHKERRQ(ierr);
+  ierr = VecSet(uLocal,0.0);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = VecGetArray(uOldLocal, &cOld);CHKERRQ(ierr);

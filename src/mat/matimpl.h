@@ -365,26 +365,27 @@ struct _p_MatPartitioning {
 
 struct  _p_MatFDColoring{
   PETSCHEADER(int);
-  PetscInt   M,N,m;            /* total rows, columns; local rows */
-  PetscInt   rstart;           /* first row owned by local processor */
-  PetscInt   ncolors;          /* number of colors */
-  PetscInt   *ncolumns;        /* number of local columns for a color */ 
-  PetscInt   **columns;        /* lists the local columns of each color (using global column numbering) */
-  PetscInt   *nrows;           /* number of local rows for each color */
-  PetscInt   **rows;           /* lists the local rows for each color (using the local row numbering) */
-  PetscInt   **columnsforrow;  /* lists the corresponding columns for those rows (using the global column) */ 
-  PetscReal  error_rel;        /* square root of relative error in computing function */
-  PetscReal  umin;             /* minimum allowable u'dx value */
-  PetscInt   freq;             /* frequency at which new Jacobian is computed */
-  Vec        w1,w2,w3;         /* work vectors used in computing Jacobian */
+  PetscInt       M,N,m;            /* total rows, columns; local rows */
+  PetscInt       rstart;           /* first row owned by local processor */
+  PetscInt       ncolors;          /* number of colors */
+  PetscInt       *ncolumns;        /* number of local columns for a color */ 
+  PetscInt       **columns;        /* lists the local columns of each color (using global column numbering) */
+  PetscInt       *nrows;           /* number of local rows for each color */
+  PetscInt       **rows;           /* lists the local rows for each color (using the local row numbering) */
+  PetscInt       **columnsforrow;  /* lists the corresponding columns for those rows (using the global column) */ 
+  PetscReal      error_rel;        /* square root of relative error in computing function */
+  PetscReal      umin;             /* minimum allowable u'dx value */
+  PetscInt       freq;             /* frequency at which new Jacobian is computed */
+  Vec            w1,w2,w3;         /* work vectors used in computing Jacobian */
   PetscErrorCode (*f)(void);       /* function that defines Jacobian */
-  void       *fctx;            /* optional user-defined context for use by the function f */
-  PetscInt   **vscaleforrow;   /* location in vscale for each columnsforrow[] entry */
-  Vec        vscale;           /* holds FD scaling, i.e. 1/dx for each perturbed column */
-  PetscTruth usersetsrecompute;/* user determines when Jacobian is recomputed, via MatFDColoringSetRecompute() */
-  PetscTruth recompute;        /* used with usersetrecompute to determine if Jacobian should be recomputed */
-  Vec        F;                /* current value of user provided function; can set with MatFDColoringSetF() */
-  PetscInt   currentcolor;     /* color for which function evaluation is being done now */
+  void           *fctx;            /* optional user-defined context for use by the function f */
+  PetscInt       **vscaleforrow;   /* location in vscale for each columnsforrow[] entry */
+  Vec            vscale;           /* holds FD scaling, i.e. 1/dx for each perturbed column */
+  PetscTruth     usersetsrecompute;/* user determines when Jacobian is recomputed, via MatFDColoringSetRecompute() */
+  PetscTruth     recompute;        /* used with usersetrecompute to determine if Jacobian should be recomputed */
+  Vec            F;                /* current value of user provided function; can set with MatFDColoringSetF() */
+  PetscInt       currentcolor;     /* color for which function evaluation is being done now */
+  const char     *htype;            /* "wp" or "ds" */
 };
 
 /*

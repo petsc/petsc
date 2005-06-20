@@ -7,7 +7,7 @@ PetscEvent PETSC_Barrier = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBarrier"
-/*@C
+/*@
     PetscBarrier - Blocks until this routine is executed by all
                    processors owning the object A.
 

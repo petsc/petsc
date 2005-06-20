@@ -49,6 +49,11 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   New functionality
   -----------------
 
+  Make PetscBagLoad() machine independent by requiring the user to register the
+entire bag before calling PetscBagLoad()
+
+  add GMRESR
+
   Add PCCreate_LRC() see MatCreateLRC()
 
   (Priority 1) Add DAVecGetArrayf90() Hmmm, thought I did this a long time ago?

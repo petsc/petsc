@@ -29,8 +29,8 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscScalar    alpha,malpha,beta,mbeta,ibeta,betaold,eta,c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
-  PetscScalar    rho0,rho1,irho1,rho2,mrho2,rho3,mrho3,mone = -1.0,zero = 0.0,dp = 0.0;
+  PetscScalar    alpha,beta,ibeta,betaold,eta,c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
+  PetscScalar    rho0,rho1,irho1,rho2,mrho2,rho3,mrho3,dp = 0.0;
   PetscReal      np;
   Vec            X,B,R,Z,U,V,W,UOLD,VOLD,WOLD,WOOLD;
   Mat            Amat,Pmat;
@@ -58,14 +58,14 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
   ksp->its = 0;
 
-  ierr = VecSet(UOLD,zero);CHKERRQ(ierr);          /*     u_old  <-   0   */
+  ierr = VecSet(UOLD,0.0);CHKERRQ(ierr);          /*     u_old  <-   0   */
   ierr = VecCopy(UOLD,VOLD);CHKERRQ(ierr);         /*     v_old  <-   0   */
   ierr = VecCopy(UOLD,W);CHKERRQ(ierr);            /*     w      <-   0   */
   ierr = VecCopy(UOLD,WOLD);CHKERRQ(ierr);         /*     w_old  <-   0   */
 
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr); /*     r <- b - A*x    */
-    ierr = VecAYPX(R,mone,B);CHKERRQ(ierr);
+    ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(B,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
@@ -116,12 +116,10 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
      ierr = VecDot(U,R,&alpha);CHKERRQ(ierr);          /*  alpha <- r'*u  */
      ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /*      z <- B*r   */
 
-     malpha = - alpha;
-     ierr = VecAXPY(R,malpha,V);CHKERRQ(ierr);     /*  r <- r - alpha v     */
-     ierr = VecAXPY(Z,malpha,U);CHKERRQ(ierr);     /*  z <- z - alpha u     */
-     mbeta = - beta;
-     ierr = VecAXPY(R,mbeta,VOLD);CHKERRQ(ierr);   /*  r <- r - beta v_old  */
-     ierr = VecAXPY(Z,mbeta,UOLD);CHKERRQ(ierr);   /*  z <- z - beta u_old  */
+     ierr = VecAXPY(R,-alpha,V);CHKERRQ(ierr);     /*  r <- r - alpha v     */
+     ierr = VecAXPY(Z,-alpha,U);CHKERRQ(ierr);     /*  z <- z - alpha u     */
+     ierr = VecAXPY(R,-beta,VOLD);CHKERRQ(ierr);   /*  r <- r - beta v_old  */
+     ierr = VecAXPY(Z,-beta,UOLD);CHKERRQ(ierr);   /*  z <- z - beta u_old  */
 
      betaold = beta;
 

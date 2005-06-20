@@ -19,7 +19,6 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   PetscErrorCode ierr;
   PetscInt       i;
   MatStructure   flg;
-  PetscScalar    mone = -1.0,one = 1.0;
   PetscReal      nrm,gnorm;
   SNES_Test      *neP = (SNES_Test*)snes->data;
 
@@ -37,8 +36,8 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   }
 
   for (i=0; i<3; i++) {
-    if (i == 1) {ierr = VecSet(x,mone);CHKERRQ(ierr);}
-    else if (i == 2) {ierr = VecSet(x,one);CHKERRQ(ierr);}
+    if (i == 1) {ierr = VecSet(x,-1.0);CHKERRQ(ierr);}
+    else if (i == 2) {ierr = VecSet(x,1.0);CHKERRQ(ierr);}
  
     /* compute both versions of Jacobian */
     ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);
@@ -51,7 +50,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = MatView(B,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
     }
     /* compare */
-    ierr = MatAXPY(B,mone,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatAXPY(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(B,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
     ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
     if (neP->complete_print) {

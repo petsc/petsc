@@ -140,7 +140,7 @@ int main(int argc,char **args)
   if (flg_A & flg_b & flg_u){
     ierr = VecDuplicate(u,&u_tmp);CHKERRQ(ierr); 
     ierr = MatMult(A,u,u_tmp);CHKERRQ(ierr);
-    ierr = VecAXPY(u_tmp,mone,b);CHKERRQ(ierr);
+    ierr = VecAXPY(u_tmp,-1.0,b);CHKERRQ(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
     printf("\n Accuracy of the reading data: | b - A*u |_2 : %g \n",res_norm); 
 

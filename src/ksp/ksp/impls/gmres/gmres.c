@@ -342,7 +342,7 @@ PetscErrorCode KSPDestroy_GMRES(KSP ksp)
 #define __FUNCT__ "BuildGmresSoln"
 static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,PetscInt it)
 {
-  PetscScalar    tt,zero = 0.0,one = 1.0;
+  PetscScalar    tt;
   PetscErrorCode ierr;
   PetscInt       ii,k,j;
   KSP_GMRES      *gmres = (KSP_GMRES *)(ksp->data);
@@ -371,7 +371,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
   }
 
   /* Accumulate the correction to the solution of the preconditioned problem in TEMP */
-  ierr = VecSet(VEC_TEMP,zero);CHKERRQ(ierr);
+  ierr = VecSet(VEC_TEMP,0.0);CHKERRQ(ierr);
   ierr = VecMAXPY(VEC_TEMP,it+1,nrs,&VEC_VV(0));CHKERRQ(ierr);
 
   ierr = KSPUnwindPreconditioner(ksp,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
@@ -379,7 +379,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
   if (vdest != vs) {
     ierr = VecCopy(vs,vdest);CHKERRQ(ierr);
   }
-  ierr = VecAXPY(vdest,one,VEC_TEMP);CHKERRQ(ierr);
+  ierr = VecAXPY(vdest,1.0,VEC_TEMP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*

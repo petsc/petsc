@@ -62,7 +62,7 @@ int main(int argc,char **args)
   ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
-  ierr = VecAXPY(x,mone,u);CHKERRQ(ierr);
+  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRQ(ierr);
 

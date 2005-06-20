@@ -4,9 +4,9 @@
     ADIC matrix-free matrix implementation
 */
 
-#include "src/mat/matimpl.h"   /*I   "mat.h"  I*/
-#include "petscda.h"
-#include "petscsnes.h"
+#include "src/mat/matimpl.h"
+#include "petscda.h"          /*I   "petscda.h"    I*/
+#include "petscsnes.h"        /*I   "petscsnes.h"  I*/
 #include "petscsys.h"
 EXTERN_C_BEGIN
 #include "adic/ad_utils.h"
@@ -119,7 +119,7 @@ PetscErrorCode MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
   Mat_DAAD      *a = (Mat_DAAD*)A->data;
   PetscErrorCode ierr;
   int j,gtdof,nI,gI;
-  PetscScalar   *avu,*av,*ad_vustart,ad_f[2],zero = 0.0,*d,*b;
+  PetscScalar   *avu,*av,*ad_vustart,ad_f[2],*d,*b;
   Vec           localxx,dd;
   DALocalInfo   info;
   MatStencil    stencil;
@@ -142,7 +142,7 @@ PetscErrorCode MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
 
   ierr = DAGetLocalVector(a->da,&localxx);CHKERRQ(ierr);
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-    ierr = VecSet(localxx,zero);CHKERRQ(ierr);
+    ierr = VecSet(localxx,0.0);CHKERRQ(ierr);
   } else {
     ierr = DAGlobalToLocalBegin(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
     ierr = DAGlobalToLocalEnd(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
@@ -471,7 +471,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA(Mat A,DA da)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDAADSetSNES"
-/*@C
+/*@
    MatDAADSetSNES - Tells the matrix what SNES it is using for the base U.
 
    Collective on Mat and SNES
@@ -530,7 +530,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx(Mat A,void *ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateDAAD"
-/*@C
+/*@
    MatCreateDAAD - Creates a matrix that can do matrix-vector products using a local 
    function that is differentiated with ADIFOR or ADIC.
 
@@ -560,8 +560,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateDAAD(DA da,Mat *A)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatRegisterDAAD"
+/*@
+   MatRegisterDAAD - Registers DAAD matrix type
+
+.seealso: MatCreateDAAD(), DASetLocalAdicMFFunction()
+
+@*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterDAAD(void)
 { 
   PetscErrorCode ierr;

@@ -298,7 +298,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   PetscMPIInt    rank;
   PetscTruth     flag1,flag2,viewed=PETSC_FALSE,flg;
   char           view[10];
-  PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -357,7 +356,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   }
   ierr = PCPreSolve(ksp->pc,ksp);CHKERRQ(ierr);
 
-  if (ksp->guess_zero) { ierr = VecSet(ksp->vec_sol,zero);CHKERRQ(ierr);}
+  if (ksp->guess_zero) { ierr = VecSet(ksp->vec_sol,0.0);CHKERRQ(ierr);}
   if (ksp->guess_knoll) {
     ierr            = PCApply(ksp->pc,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
     ierr            = KSP_RemoveNullSpace(ksp,ksp->vec_sol);CHKERRQ(ierr);
@@ -506,13 +505,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   if (flg) {
     Mat         A;
     Vec         t;
-    PetscScalar mone = -1.0;
     PetscReal   norm;
     if (ksp->dscale && !ksp->dscalefix) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot compute final scale with -ksp_diagonal_scale except also with -ksp_diagonal_scale_fix");
     ierr = PCGetOperators(ksp->pc,&A,0,0);CHKERRQ(ierr);
     ierr = VecDuplicate(ksp->vec_sol,&t);CHKERRQ(ierr);
     ierr = KSP_MatMult(ksp,A,ksp->vec_sol,t);CHKERRQ(ierr);
-    ierr = VecWAXPY(t,mone,t,ksp->vec_rhs);CHKERRQ(ierr);
+    ierr = VecWAXPY(t,-1.0,t,ksp->vec_rhs);CHKERRQ(ierr);
     ierr = VecNorm(t,NORM_2,&norm);CHKERRQ(ierr);
     ierr = VecDestroy(t);CHKERRQ(ierr);
     ierr = PetscPrintf(ksp->comm,"KSP final norm of residual %g\n",norm);CHKERRQ(ierr);

@@ -14,7 +14,19 @@
 
 #include "petsc.h"
 #include "petscsys.h"        /*I "petscsys.h" I*/
+#if defined (PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
+#else
+/* maybe the protypes are missing */
+#if defined(PETSC_HAVE_DRAND48)
+EXTERN_C_BEGIN
+extern double drand48();
+extern void   srand48(long);
+EXTERN_C_END
+#else
+extern double drand48();
+#endif
+#endif
 
 PetscCookie PETSC_DLLEXPORT PETSC_RANDOM_COOKIE = 0;
 
@@ -30,7 +42,7 @@ struct _p_PetscRandom {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomDestroy" 
-/*@C
+/*@
    PetscRandomDestroy - Destroys a context that has been formed by 
    PetscRandomCreate().
 
@@ -54,30 +66,59 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomDestroy(PetscRandom r)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscRandomSetInterval"
+#define __FUNCT__ "PetscRandomGetInterval"
 /*@C
-   PetscRandomSetInterval - Sets the interval over which the random numbers
+   PetscRandomGetInterval - Gets the interval over which the random numbers
    will be randomly distributed.  By default, this interval is [0,1).
 
-   Collective on PetscRandom
+   Not collective
 
    Input Parameters:
 .  r  - the random number generator context
 
-   Example of Usage:
-.vb
-      PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&r);
-      PetscRandomSetInterval(RANDOM_DEFAULT,&r);
-      PetscRandomGetValue(r,&value1);
-      PetscRandomGetValue(r,&value2);
-      PetscRandomDestroy(r);
-.ve
+   Output Parameters:
++  low - The lower bound of the interval
+-  high - The upper bound of the interval
 
    Level: intermediate
 
    Concepts: random numbers^range
 
-.seealso: PetscRandomCreate()
+.seealso: PetscRandomCreate(), PetscRandomSetInterval()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRandomGetInterval(PetscRandom r,PetscScalar *low,PetscScalar *high)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  if (low) {
+    PetscValidScalarPointer(low,2);
+    *low = r->low;
+  }
+  if (high) {
+    PetscValidScalarPointer(high,3);
+    *high = r->low+r->width;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomSetInterval"
+/*@C
+   PetscRandomSetInterval - Sets the interval over which the random numbers
+   will be randomly distributed.  By default, this interval is [0,1).
+
+   Not collective
+
+   Input Parameters:
++  r  - the random number generator context
+.  low - The lower bound of the interval
+-  high - The upper bound of the interval
+
+   Level: intermediate
+
+   Concepts: random numbers^range
+
+.seealso: PetscRandomCreate(), PetscRandomGetInterval()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar high)
 {
@@ -95,20 +136,71 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetInterval(PetscRandom r,PetscScalar 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomGetSeed"
+/*@C
+   PetscRandomGetSeed - Gets the random seed.
+
+   Not collective
+
+   Input Parameters:
+.  r - The random number generator context
+
+   Output Parameter:
+.  seed - The random seed
+
+   Level: intermediate
+
+   Concepts: random numbers^seed
+
+.seealso: PetscRandomCreate(), PetscRandomSetSeed(), PetscRandomSeed()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRandomGetSeed(PetscRandom r,unsigned long *seed)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  if (seed) {
+    PetscValidPointer(seed,2);
+    *seed = r->seed;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomSetSeed"
+/*@C
+   PetscRandomSetSeed - Sets the random seed.
+
+   Not collective
+
+   Input Parameters:
++  r  - The random number generator context
+-  seed - The random seed
+
+   Level: intermediate
+
+   Concepts: random numbers^seed
+
+.seealso: PetscRandomCreate(), PetscRandomGetSeed(), PetscRandomSeed()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRandomSetSeed(PetscRandom r,unsigned long seed)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  r->seed = seed;
+  PetscFunctionReturn(0);
+}
+
 /*
    For now we have set up using the DRAND48() generater. We need to deal 
    with other variants of random number generators. We should also add
    a routine to enable restarts [seed48()] 
 */
 #if defined(PETSC_HAVE_DRAND48)
-EXTERN_C_BEGIN
-extern double drand48();
-extern void   srand48(long);
-EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate" 
-/*@C
+/*@
    PetscRandomCreate - Creates a context for generating random numbers,
    and initializes the random-number generator.
 
@@ -161,19 +253,43 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandomType t
     SETERRQ(PETSC_ERR_SUP,"Not for this random number type");
   }
   ierr = PetscHeaderCreate(rr,_p_PetscRandom,int,PETSC_RANDOM_COOKIE,type,"random",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   rr->low   = 0.0;
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;
-  rr->seed  = 0;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  srand48(0x12345678+rank);
+  rr->seed  = 0x12345678+rank;
+  srand48(rr->seed);
   *r = rr;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscRandomGetValue"
+#define __FUNCT__ "PetscRandomSeed"
 /*@C
+   PetscRandomSeed - Seed the generator.
+
+   Not collective
+
+   Input Parameters:
+.  r - The random number generator context
+
+   Level: intermediate
+
+   Concepts: random numbers^seed
+
+.seealso: PetscRandomCreate(), PetscRandomGetSeed(), PetscRandomSetSeed()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed(PetscRandom r)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  srand48(r->seed);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomGetValue"
+/*@
    PetscRandomGetValue - Generates a random number.  Call this after first calling
    PetscRandomCreate().
 
@@ -248,13 +364,37 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandomType t
     SETERRQ(PETSC_ERR_SUP,"Not for this random number type");
   }
   ierr = PetscHeaderCreate(rr,_p_PetscRandom,int,PETSC_RANDOM_COOKIE,type,"random",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   rr->low   = 0.0;
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;
-  rr->seed  = 0;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  srand(0x12345678+rank);
+  rr->seed  = 0x12345678+rank;
+  srand(rr->seed);
   *r = rr;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomSeed"
+/*@C
+   PetscRandomSeed - Seed the generator.
+
+   Not collective
+
+   Input Parameters:
+.  r - The random number generator context
+
+   Level: intermediate
+
+   Concepts: random numbers^seed
+
+.seealso: PetscRandomCreate(), PetscRandomGetSeed(), PetscRandomSetSeed()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed(PetscRandom r)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  srand(r->seed);
   PetscFunctionReturn(0);
 }
 
@@ -289,8 +429,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *va
 #else
 /* Should put a simple, portable random number generator here? */
 
-extern double drand48();
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate" 
 PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
@@ -306,6 +444,29 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandomType t
   *r = rr;
   ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"PetscRandomCreate: Warning: Random number generator not set for machine %s; using fake random numbers.\n",arch);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomSeed"
+/*@C
+   PetscRandomSeed - Seed the generator.
+
+   Not collective
+
+   Input Parameters:
+.  r - The random number generator context
+
+   Level: intermediate
+
+   Concepts: random numbers^seed
+
+.seealso: PetscRandomCreate(), PetscRandomGetSeed(), PetscRandomSetSeed()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed(PetscRandom r)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
   PetscFunctionReturn(0);
 }
 

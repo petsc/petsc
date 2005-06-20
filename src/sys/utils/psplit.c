@@ -4,7 +4,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSplitOwnershipBlock"
-/*@C
+/*@
     PetscSplitOwnershipBlock - Given a global (or local) length determines a local 
         (or global) length via a simple formula. Splits so each processors local size
         is divisible by the block size.
@@ -51,7 +51,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSplitOwnershipBlock(MPI_Comm comm,PetscInt b
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSplitOwnership"
-/*@C
+/*@
     PetscSplitOwnership - Given a global (or local) length determines a local 
         (or global) length via a simple formula
 

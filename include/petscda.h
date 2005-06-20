@@ -309,6 +309,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAComputeJacobian1(DA,Vec,Mat,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetLocalFunction(DA,DALocalFunction1*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalFunction(DA,DALocalFunction1);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalFunctioni(DA,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalFunctionib(DA,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalJacobian(DA,DALocalFunction1);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalAdicFunction_Private(DA,DALocalFunction1);
 
@@ -355,6 +356,20 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalAdicMFFunctioni_Private(DA,Pe
 #else
 #  define DASetLocalAdicMFFunctioni(a,d) DASetLocalAdicMFFunctioni_Private(a,0)
 #endif
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalAdicFunctionib_Private(DA,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
+#if defined(PETSC_HAVE_ADIC)
+#  define DASetLocalAdicFunctionib(a,d) DASetLocalAdicFunctionib_Private(a,(PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*))d)
+#else
+#  define DASetLocalAdicFunctionib(a,d) DASetLocalAdicFunctionib_Private(a,0)
+#endif
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalAdicMFFunctionib_Private(DA,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
+#if defined(PETSC_HAVE_ADIC)
+#  define DASetLocalAdicMFFunctionib(a,d) DASetLocalAdicMFFunctionib_Private(a,(PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*))d)
+#else
+#  define DASetLocalAdicMFFunctionib(a,d) DASetLocalAdicMFFunctionib_Private(a,0)
+#endif
+
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunctioniTest1(DA,void*);
 
 #include "petscmat.h"

@@ -55,7 +55,7 @@ class Configure(config.base.Configure):
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'gethostbyname',
-                 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','erf','dlerror']
+                 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','dlerror']
     libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
@@ -328,7 +328,9 @@ class Configure(config.base.Configure):
     self.framework.header          = 'bmake/'+self.arch.arch+'/petscconf.h'
     self.framework.cHeader         = 'bmake/'+self.arch.arch+'/petscfix.h'
     self.framework.makeMacroHeader = 'bmake/'+self.arch.arch+'/petscconf'
-    self.framework.makeRuleHeader  = 'bmake/'+self.arch.arch+'/petscrules'        
+    self.framework.makeRuleHeader  = 'bmake/'+self.arch.arch+'/petscrules'
+    if self.libraries.math is None:
+      raise RuntimeError('PETSc requires a functional math library. Please send configure.log to petsc-maint@mcs.anl.gov.')
     self.executeTest(self.configureInline)
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)

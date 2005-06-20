@@ -59,7 +59,8 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
   PetscInt       n = gmres->it + 1,N = gmres->max_k + 1,lwork = 5*N;
-  PetscInt       idummy = N,i,*perm,zero;
+  PetscInt       i,*perm;
+  PetscBLASInt   zero = 0,idummy = N;
   PetscScalar    *R = gmres->Rsvd;
   PetscScalar    *cwork = R + N*N,sdummy;
   PetscReal      *work,*realpart = gmres->Dsvd ;
@@ -80,8 +81,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
      (real); already at least 5N of space has been allocated */
 
   ierr = PetscMalloc(lwork*sizeof(PetscReal),&work);CHKERRQ(ierr);
-  zero = 0;
-  LAPACKgeev_(&zero,R,&N,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
+  LAPACKgeev_(&zero,R,&idummy,cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
   ierr = PetscFree(work);CHKERRQ(ierr);
 
   /* For now we stick with the convention of storing the real and imaginary

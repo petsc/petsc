@@ -18,7 +18,7 @@ PetscEvent  MATSNESMF_Mult = 0;
     Input Parameters:
 +   mat - the "matrix-free" matrix created via MatCreateSNESMF(), or MatCreateMF()
           or MatSetType(mat,MATMFFD);
--   ftype - the type requested
+-   ftype - the type requested, either MATSNESMF_WP or MATSNESMF_DS
 
     Level: advanced
 
@@ -227,7 +227,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
 {
   MatSNESMFCtx   ctx = (MatSNESMFCtx)mat->data;
   SNES           snes;
-  PetscScalar    h,mone = -1.0;
+  PetscScalar    h;
   Vec            w,U,F;
   PetscErrorCode ierr,(*eval_fct)(SNES,Vec,Vec)=0;
   PetscTruth     zeroa;
@@ -290,9 +290,8 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     ierr = (*ctx->func)(snes,w,y,ctx->funcctx);CHKERRQ(ierr);
   }
 
-  ierr = VecAXPY(y,mone,F);CHKERRQ(ierr);
-  h    = 1.0/h;
-  ierr = VecScale(y,h);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,F);CHKERRQ(ierr);
+  ierr = VecScale(y,1.0/h);CHKERRQ(ierr);
 
   ierr = VecAXPBY(y,ctx->vshift,ctx->vscale,a);CHKERRQ(ierr);
 
@@ -386,7 +385,7 @@ PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSNESMF"
-/*@C
+/*@
    MatCreateSNESMF - Creates a matrix-free matrix context for use with
    a SNES solver.  This matrix can be used as the Jacobian argument for
    the routine SNESSetJacobian().
@@ -417,7 +416,8 @@ PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
      error_rel = square root of relative error in function evaluation
      umin = minimum iterate parameter
 .ve
-
+   (see MATSNESMF_WP or MATSNESMF_DS)
+   
    The user can set the error_rel via MatSNESMFSetFunctionError() and 
    umin via MatSNESMFDefaultSetUmin(); see the nonlinear solvers chapter
    of the users manual for details.
@@ -427,6 +427,7 @@ PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
 
    Options Database Keys:
 +  -snes_mf_err <error_rel> - Sets error_rel
++  -snes_mf_type - wp or ds (see MATSNESMF_WP or MATSNESMF_DS)
 .  -snes_mf_unim <umin> - Sets umin (for default PETSc routine that computes h only)
 -  -snes_mf_ksp_monitor - KSP monitor routine that prints differencing h
 
@@ -471,7 +472,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetBase_FD(Mat J,Vec U)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
 typedef PetscErrorCode (*FCN3)(Vec,Vec,PetscScalar*,void*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -499,7 +499,7 @@ EXTERN_C_END
 .  mat - the matrix obtained with MatCreateSNESMF()
 
    Options Database Keys:
-+  -snes_mf_type - <default,wp>
++  -snes_mf_type - wp or ds (see MATSNESMF_WP or MATSNESMF_DS)
 -  -snes_mf_err - square root of estimated relative error in function evaluation
 -  -snes_mf_period - how often h is recomputed, defaults to 1, everytime
 
@@ -624,7 +624,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMF"
-/*@C
+/*@
    MatCreateMF - Creates a matrix-free matrix. See also MatCreateSNESMF() 
 
    Collective on Vec
