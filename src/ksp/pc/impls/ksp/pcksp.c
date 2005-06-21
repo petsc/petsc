@@ -186,7 +186,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCKSPSetUseTrue(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCKSPGetKSP"
-/*@C
+/*@
    PCKSPGetKSP - Gets the KSP context for a KSP PC.
 
    Not Collective but KSP returned is parallel if PC was parallel
