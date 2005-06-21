@@ -74,6 +74,8 @@ class Configure(config.base.Configure):
       if distutils.sysconfig.get_config_var('LDFLAGS'):
         flags = distutils.sysconfig.get_config_var('LDFLAGS')+' '+flags
       self.lib.extend(self.splitLibs(flags))
+    if distutils.sysconfig.get_config_var('SYSLIBS'):
+      self.lib.extend(self.splitLibs(distutils.sysconfig.get_config_var('SYSLIBS')))
 
     if not self.libraries.checkShared('#include <Python.h>\n', 'Py_Initialize', 'Py_IsInitialized', 'Py_Finalize', checkLink = self.checkPythonLink, libraries = self.lib, initArgs = '', noCheckArg = 1):
       raise RuntimeError('Python library must be shared')
