@@ -278,6 +278,8 @@ alletags:
 
 allfortranstubs:
 	-@maint/generatefortranstubs.py ${BFORT}
+deletefortranstubs:
+	-@find . -type d -name ftn-auto | xargs rm -rf 
 #
 # These are here for the target allci and allco, and etags
 #
