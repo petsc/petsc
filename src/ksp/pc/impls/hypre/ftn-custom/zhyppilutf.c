@@ -1,7 +1,7 @@
 #include "zpetsc.h"
 #include "petscpc.h"
 
-#ifdefined (PETSC_HAVE_FORTRAN_CAPS)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define pchypresettype_            PCHYPRESETTYPE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define pchypresettype_            pchypresettype
