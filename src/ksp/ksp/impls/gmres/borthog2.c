@@ -38,14 +38,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESClassicalGramSchmidtOrthogonalization(
   KSP_GMRES      *gmres = (KSP_GMRES *)(ksp->data);
   PetscErrorCode ierr;
   PetscInt       j;
-  PetscScalar    *hh,*hes,shh[500],*lhh;
+  PetscScalar    *hh,*hes,shh[512],*lhh;
   PetscReal      hnrm, wnrm;
   PetscTruth     refine = (PetscTruth)(gmres->cgstype == KSP_GMRES_CGS_REFINE_ALWAYS);
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   /* Don't allocate small arrays */
-  if (it < 501) lhh = shh;
+  if (it < 512) lhh = shh;
   else {
     ierr = PetscMalloc((it+1) * sizeof(PetscScalar),&lhh);CHKERRQ(ierr);
   }
@@ -108,7 +108,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESClassicalGramSchmidtOrthogonalization(
     }
   }
 
-  if (it >= 501) {ierr = PetscFree(lhh);CHKERRQ(ierr);}
+  if (it >= 512) {ierr = PetscFree(lhh);CHKERRQ(ierr);}
   ierr = PetscLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
