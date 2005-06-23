@@ -20,7 +20,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   int            m,n,nz,dummy,*col=0,*row=0; /* these are fscaned so kept as int */
   PetscInt       i,col_i,row_i,*nnz,*ib,shift = 1,sizes[3],nsizes;
-  PetscScalar    val_i,*work=0,mone=-1.0;
+  PetscScalar    val_i,*work=0;
   PetscReal      res_norm,*val=0,*bval=0,*uval=0;
   FILE           *Afile,*bfile,*ufile;
   PetscViewer    view;
