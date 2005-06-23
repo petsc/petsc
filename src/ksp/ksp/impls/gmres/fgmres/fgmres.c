@@ -879,6 +879,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_FGMRES(KSP ksp)
   fgmres->sol_temp            = 0;
   fgmres->max_k               = FGMRES_DEFAULT_MAXK;
   fgmres->Rsvd                = 0;
+  fgmres->orthogwork          = 0;
   fgmres->modifypc            = KSPFGMRESModifyPCNoChange;
   fgmres->modifyctx           = PETSC_NULL;
   fgmres->modifydestroy       = PETSC_NULL;

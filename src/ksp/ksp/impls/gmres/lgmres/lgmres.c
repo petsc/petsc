@@ -976,6 +976,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LGMRES(KSP ksp)
   lgmres->max_k               = LGMRES_DEFAULT_MAXK;
   lgmres->Rsvd                = 0;
   lgmres->cgstype             = KSP_GMRES_CGS_REFINE_NEVER;
+  lgmres->orthogwork          = 0;
   /*LGMRES_MOD - new defaults */
   lgmres->aug_dim             = LGMRES_DEFAULT_AUGDIM;
   lgmres->aug_ct              = 0; /* start with no aug vectors */ 
