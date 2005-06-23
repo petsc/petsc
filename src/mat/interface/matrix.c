@@ -991,6 +991,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetStencil(Mat mat,PetscInt dim,const Petsc
    INSERT_VALUES replaces existing entries with new values
 
    Notes:
+   The m and n count the NUMBER of blocks in the row direction and column direction,
+   NOT the total number of rows/columns; for example, if the block size is 2 and 
+   you are passing in values for rows 2,3,4,5  then m would be 2 (not 4).
+
    By default the values, v, are row-oriented and unsorted. So the layout of 
    v is the same as for MatSetValues(). See MatSetOption() for other options.
 
