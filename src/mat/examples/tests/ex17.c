@@ -10,7 +10,7 @@ int main(int argc,char **args)
   Mat            C,A;
   PetscInt       i,j,m = 5,n = 5,I,J;
   PetscErrorCode ierr;
-  PetscScalar    v,five = 5.0,one = 1.0,mone = -1.0;
+  PetscScalar    v,five = 5.0,one = 1.0;
   IS             isrow,row,col;
   Vec            x,u,b;
   PetscReal      norm;

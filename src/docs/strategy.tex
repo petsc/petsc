@@ -1,0 +1,65 @@
+	The purpose of this document is to outline the current strategic thinking for development across the PETSc
+group, including auxillary projects, and perhaps overlying projects such as TAO or SLEPc. The main thrusts should
+include not only technical justifications, but application partnerships and actual/possible funding sources. We will
+organize these thrusts into sections.
+
+\section{Matrix-Free Operation}
+
+	This is a large project of several interlocking parts. However, at a high level, the goal can be seen as
+elimination of parallel sparse matrices from the nonlinear solution process.
+
+	The first step in this process is the elimination of Newton's algorithm as the outer parallel solver for the
+nonlinear algebraic problem. Barry has cleaned up the existing FAS code, and introduced a point-block version. A summer
+student from Olof Widlund's group at NYU is also working along this line. She will hopefully examine effective
+preconditioners for FAS. We expect to improve our performance from the dismal 5\% of peak numbers to somewhere around
+the STREAMS benchmark with these changes.
+
+	The next step involves better control of the mesh and discretization for common problems. FAS operates on sets
+of fully assembled matrix rows, as opposed to the common method of integrating each element at a time. Using FIAT and
+FFC, we have the ability to reorganize the computation to allow computation of one dof at a time. Here we also have the
+possibility of improving the efficiency yet again with sparser meshes supporting higher order elements.
+
+  \subsection{Parnerships}
+
+	The best test of these improvements is likely to come from the code under development by Ethan Coon at Columbia.
+
+  \subsection{Funding sources}
+
+	Hopefully our multiscale grant comes through. I would say this is also excellent for a followon SciDAC.
+
+\section{Scalability}
+
+	The idea here is to greatly increase the use of PETSc geometric multigrid, which we believe is greatly
+underutilized. To this end, we propose integrating several geometric multigrid algorithms currently in use in the
+geophysical community as PCMG implementations along the same line as the Sandia ML package.
+
+	I have sent an initial email to VPAC and Monash to initiate development of the first integration project. We
+will introduce the current St. Germaine multigrid into PETSc.
+
+  \subsection{Parnerships}
+
+	We will have strong support from CIG, and in particular Louis Moresi from Monash and Steve Quenette from VPAC.
+However we can also expect some help from Scott King at Purdue, John Baumgartner at LANL, and perhaps Marc Spiegelman at
+Columbia.
+
+  \subsection{Funding sources}
+
+	Initially all this money will be coming from CIG in the form of my support. However, it seems likely that we
+will be able to leverage work from the application partners.
+
+\section{Mesh Representation}
+
+	Dmitry and I have developed an extremely flexible and general topology representation which we call a Sieve.
+This mechanism will be integrated into the next version of PETSc. It provides a parallel unstructured mesh interface
+which will mirror DA, and allow a DMMG-like object to painlessly introduce scalable preconditioning into unstructured
+simulations like PCICE and PyLith.
+
+  \subsection{Parnerships}
+
+	We plan to use this initially in the PCICE code from Rich Martineau at INL, and PyLith from Charles Williams at
+RPI.
+
+  \subsection{Funding sources}
+
+	Right now, Rich Martineau is using some of his LDRD money for this. Dmitry hopes to receive funding for this in
+two recently submitted grants.
