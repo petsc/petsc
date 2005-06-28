@@ -76,6 +76,5 @@ if __name__ == '__main__':
     confFile.close()
   else:
     raise RuntimeError('Could not determine PETSC_ARCH')
-  #sys.path.append(os.path.join(petscDir, 'lib', petscArch))
-  sys.path.append(os.path.join(petscDir, 'python', 'wrappers'))
+  sys.path.append(os.path.join(petscDir, 'lib', petscArch))
   Ex1().run()
