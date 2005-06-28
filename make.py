@@ -146,6 +146,10 @@ def dylib_PetscViewer(maker):
   '''PetscViewer.c'''
   return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
+def dylib_PetscViewerBinary(maker):
+  '''PetscViewerBinary.c'''
+  return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
+
 def dylib_PetscMap(maker):
   '''PetscMap.c'''
   return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
