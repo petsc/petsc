@@ -44,18 +44,20 @@ class Ex1:
     return
 
   def createMatrix(self):
+    from PETSc.PetscConstants import PETSC_DECIDE
     import PETSc.Mat
 
     A = PETSc.Mat.Mat()
-    A.setSizes(-1, -1, self.m*self.n, self.m*self.n)
+    A.setSizes(PETSC_DECIDE, PETSC_DECIDE, self.m*self.n, self.m*self.n)
     A.setFromOptions()
     return A
 
   def createRhs(self):
+    from PETSc.PetscConstants import PETSC_DECIDE
     import PETSc.Vec
 
     b = PETSc.Vec.Vec()
-    b.setSizes(-1, self.m*self.n)
+    b.setSizes(PETSC_DECIDE, self.m*self.n)
     b.setFromOptions()
     return b
 
