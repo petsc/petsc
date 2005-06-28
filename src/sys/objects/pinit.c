@@ -368,7 +368,7 @@ $       call PetscInitialize(file,ierr)
 
    Concepts: initializing PETSc
    
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetescGetArgs()
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char file[],const char help[])
