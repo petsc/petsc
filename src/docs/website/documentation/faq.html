@@ -217,7 +217,8 @@
        </ul>
 Note that this simply concatenates in the 
     parallel ordering of the vector. If you are using a vector from DACreateGlobalVector() you likely want to 
-    first call DAGlobalToNaturalBegin/End() before calling VecConvertMPIToSeqAll()
+    first call DAGlobalToNaturalBegin/End() to scatter the original vector into the natural ordering in a new global
+          vector before calling VecScatterBegin/End() to scatter the natural vector onto all processes.
     </p>
     <p><strong><a name="mpi-vec-to-mpi-vec"><font color="#FF0000">How do I collect all the
     values from a parallel PETSc vector into a vector on the zeroth processor?</font></a></strong></p>
@@ -238,7 +239,8 @@ Note that this simply concatenates in the
        </ul>
 Note that this simply concatenates in the 
     parallel ordering of the vector. If you are using a vector from DACreateGlobalVector() you likely want to 
-    first call DAGlobalToNaturalBegin/End() before calling VecConvertMPIToSeqAll()
+    first call DAGlobalToNaturalBegin/End() to scatter the original vector into the natural ordering in a new global
+          vector before calling VecScatterBegin/End() to scatter the natural vector onto process 0.
     </p>
 
     <p><strong><a name="binder"><font color="#FF0000">How do I print out all of
