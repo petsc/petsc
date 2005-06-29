@@ -108,7 +108,7 @@ class OldMake(maker.Make):
 class Make(maker.BasicMake):
   def setupConfigure(self, framework):
     import sys
-    sys.path.append(os.path.join(os.getcwd(), 'python'))
+    sys.path.insert(0, os.path.join(os.getcwd(), 'python'))
     self.configureMod = self.getModule(os.path.join(os.getcwd(), 'python', 'PETSc'), 'petsc')
     maker.BasicMake.setupConfigure(self, framework)
     framework.header = None
