@@ -7,8 +7,7 @@
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD(NLF,MatSORType,PetscInt,Vec);
-EXTERN_C_END
-EXTERN_C_BEGIN
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAADb(NLF,MatSORType,PetscInt,Vec);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD4(NLF,MatSORType,PetscInt,Vec);
 EXTERN_C_END
 EXTERN PetscErrorCode DMMGFormFunction(SNES,Vec,Vec,void *);
@@ -232,7 +231,7 @@ PetscErrorCode DMMGSolveFASb(DMMG *dmmg,PetscInt level)
 
       /* Relax residual_fine - F(x_fine) = 0 */
       for (k=0; k<dmmg[j]->presmooth; k++) {
-	ierr = NLFRelax_DAADb(dmmg[j]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[j]->x);CHKERRQ(ierr);
+	ierr = NLFRelax_DAAD4(dmmg[j]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[j]->x);CHKERRQ(ierr);
       }
 
       /* R*(residual_fine - F(x_fine)) */
@@ -271,7 +270,7 @@ PetscErrorCode DMMGSolveFASb(DMMG *dmmg,PetscInt level)
     }
 
     for (j=0; j<dmmg[0]->coarsesmooth; j++) {
-      ierr = NLFRelax_DAADb(dmmg[0]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[0]->x);CHKERRQ(ierr);
+      ierr = NLFRelax_DAAD4(dmmg[0]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[0]->x);CHKERRQ(ierr);
     }
     if (dmmg[0]->monitorall){ 
       ierr = DMMGFormFunction(0,dmmg[0]->x,dmmg[0]->w,dmmg[0]);CHKERRQ(ierr);
@@ -297,7 +296,7 @@ PetscErrorCode DMMGSolveFASb(DMMG *dmmg,PetscInt level)
 
       /* Relax residual_fine - F(x_fine)  = 0 */
       for (k=0; k<dmmg[j]->postsmooth; k++) {
-	ierr = NLFRelax_DAADb(dmmg[j]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[j]->x);CHKERRQ(ierr);
+	ierr = NLFRelax_DAAD4(dmmg[j]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[j]->x);CHKERRQ(ierr);
       }
 
       if (dmmg[j]->monitorall) {
@@ -461,28 +460,6 @@ PetscErrorCode PetscADView(PetscInt N,PetscInt nc,double *ptr,PetscViewer viewer
     cptr += nlen;
   }
 
-  PetscFunctionReturn(0);
-}
-
-extern PetscErrorCode DMMGFunctioni(PetscInt,Vec,PetscScalar*,void*);
-extern PetscErrorCode DMMGFunctioniBase(Vec,void*);
-
-#undef __FUNCT__  
-#define __FUNCT__ "DMMGSetSNESLocali4_Private"
-PetscErrorCode DMMGSetSNESLocali4_Private(DMMG *dmmg,PetscErrorCode (*functioni)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode (*adi)(DALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode (*adimf)(DALocalInfo*,MatStencil*,void*,void*,void*))
-{
-  PetscErrorCode ierr;
-  PetscInt       i,nlevels = dmmg[0]->nlevels;
-
-  PetscFunctionBegin;
-  for (i=0; i<nlevels; i++) {
-    ierr = DASetLocalFunctioni((DA)dmmg[i]->dm,functioni);CHKERRQ(ierr);
-    ierr = DASetLocalAdicFunctioni((DA)dmmg[i]->dm,adi);CHKERRQ(ierr);
-    ierr = DASetLocalAdicMFFunctioni((DA)dmmg[i]->dm,adimf);CHKERRQ(ierr);
-    ierr = MatSNESMFSetFunctioni(dmmg[i]->J,DMMGFunctioni);CHKERRQ(ierr);
-    ierr = MatSNESMFSetFunctioniBase(dmmg[i]->J,DMMGFunctioniBase);CHKERRQ(ierr);    
-    ierr = DACreateLocalVector((DA)dmmg[i]->dm,&dmmg[i]->lwork1);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

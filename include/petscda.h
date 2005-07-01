@@ -300,6 +300,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetLocalInfo(DA,DALocalInfo*);
 typedef PetscErrorCode (*DALocalFunction1)(DALocalInfo*,void*,void*,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunction1(DA,Vec,Vec,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunctioni1(DA,PetscInt,Vec,PetscScalar*,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunctionib1(DA,PetscInt,Vec,PetscScalar*,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAComputeJacobian1WithAdic(DA,Vec,Mat,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAComputeJacobian1WithAdifor(DA,Vec,Mat,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAMultiplyByJacobian1WithAdic(DA,Vec,Vec,Vec,void*);

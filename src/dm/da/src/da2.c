@@ -1433,7 +1433,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctioniTest1(DA da,void *w)
 #undef __FUNCT__
 #define __FUNCT__ "DAFormFunctioni1"
 /*@
-    DAFormFunctioni1 - Evaluates a user provided function
+    DAFormFunctioni1 - Evaluates a user provided point-wise function
 
    Input Parameters:
 +    da - the DA that defines the grid
@@ -1468,6 +1468,49 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctioni1(DA da,PetscInt i,Vec vu,PetscS
   stencil.k = i/(info.xm*info.ym*info.dof);
 
   ierr = (*da->lfi)(&info,&stencil,u,vfu,w);CHKERRQ(ierr);
+
+  ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DAFormFunctionib1"
+/*@
+    DAFormFunctionib1 - Evaluates a user provided point-block function
+
+   Input Parameters:
++    da - the DA that defines the grid
+.    i - the component of the function we wish to compute (must be local)
+.    vu - input vector
+.    vfu - output value
+-    w - any user data
+
+    Notes: Does NOT do ghost updates on vu upon entry
+
+    Level: advanced
+
+.seealso: DAComputeJacobian1WithAdic()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctionib1(DA da,PetscInt i,Vec vu,PetscScalar *vfu,void *w)
+{
+  PetscErrorCode ierr;
+  void           *u;
+  DALocalInfo    info;
+  MatStencil     stencil;
+  
+  PetscFunctionBegin;
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vu,&u);CHKERRQ(ierr);
+
+  /* figure out stencil value from i */
+  stencil.c = i % info.dof;
+  if (stencil.c) SETERRQ(PETSC_ERR_ARG_WRONG,"Point-block functions can only be called for the entire block");
+  stencil.i = (i % (info.xm*info.dof))/info.dof;
+  stencil.j = (i % (info.xm*info.ym*info.dof))/(info.xm*info.dof);
+  stencil.k = i/(info.xm*info.ym*info.dof);
+
+  ierr = (*da->lfib)(&info,&stencil,u,vfu,w);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);

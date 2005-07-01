@@ -183,6 +183,8 @@ PetscErrorCode NLFNewton_DAAD(NLF A,DALocalInfo *info,MatStencil *stencil,void *
     ierr = (*A->da->adicmf_lfi)(info,stencil,ad_vu,ad_f,A->ctx);CHKERRQ(ierr);
     J    = -ad_f[1];
     f    = -ad_f[0] + residual;
+    printf("cnt %d %d f %g J %g \n",cnt,nI,f,J);
+    if (f != f) SETERRQ(1,"nan");
     ad_vustart[2*gI] =  ad_vustart[2*gI] - f/J;
   } while (--cnt > 0 && PetscAbsScalar(f) > 1.e-14);
 
@@ -196,12 +198,11 @@ PetscErrorCode NLFNewton_DAAD(NLF A,DALocalInfo *info,MatStencil *stencil,void *
 #undef __FUNCT__  
 #define __FUNCT__ "NLFNewton_DAAD4"
 PetscErrorCode NLFNewton_DAAD4(NLF A,DALocalInfo *info,MatStencil *stencil,void *ad_vu,PetscScalar *ad_vustart,int nI,int gI,PetscScalar *residual)
-//PetscErrorCode NLFNewton_DAAD4(NLF A,DALocalInfo *info,MatStencil *stencil,void *ad_vu,PetscScalar *ad_vustart,int nI,int gI,PetscScalar res1,PetscScalar res2,PetscScalar res3, PetscScalar res4)
 {
   PetscErrorCode ierr;
   PetscInt       cnt = A->newton_its;
   PetscScalar    ad_f[20], J[16],f[4], res, dd[5];
-  PetscInt       i,j;             
+  PetscInt       i;
   PetscFunctionBegin;
    
   ad_vustart[1+5*gI   ] = 1.0;
@@ -211,7 +212,7 @@ PetscErrorCode NLFNewton_DAAD4(NLF A,DALocalInfo *info,MatStencil *stencil,void 
 
   do {
     /* compute the function and Jacobian */        
-    ierr = (*A->da->adicmf_lfi)(info,stencil,ad_vu,ad_f,A->ctx);CHKERRQ(ierr);
+    ierr = (*A->da->adicmf_lfib)(info,stencil,ad_vu,ad_f,A->ctx);CHKERRQ(ierr);
    
     J[0]= -ad_f[1] ; J[1] = -ad_f[2] ; J[2]= -ad_f[3] ; J[3]= -ad_f[4] ;
     J[4]= -ad_f[6] ; J[5] = -ad_f[7] ; J[6]= -ad_f[8] ; J[7]= -ad_f[9] ;
@@ -452,7 +453,7 @@ EXTERN_C_END
 */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_DAAD4"
+#define __FUNCT__ "NLFRelax_DAAD4"
 PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD4(NLF A,MatSORType flag,int its,Vec xx)
 {
   PetscErrorCode ierr;
@@ -565,9 +566,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAADb(NLF A,MatSORType flag,int its,V
   DALocalInfo    info;
   MatStencil     stencil;
   void*          *ad_vu;
-  PetscErrorCode (*NLFNewton_DAADb)(NLF,DALocalInfo*,MatStencil*,void*,PetscScalar*,int,int,PetscScalar);
-  PetscErrorCode (*DAGetAdicMFArrayb)(DA,PetscTruth,void**,void**,PetscInt*);
-  PetscErrorCode (*DARestoreAdicMFArrayb)(DA,PetscTruth,void**,void**,PetscInt*);
+  PetscErrorCode (*NLFNewton_DAADb)(NLF,DALocalInfo*,MatStencil*,void*,PetscScalar*,int,int,PetscScalar);// = NLFNewton_DAAD4;
+  PetscErrorCode (*DAGetAdicMFArrayb)(DA,PetscTruth,void**,void**,PetscInt*);// = DAGetAdicMFArray4;
+  PetscErrorCode (*DARestoreAdicMFArrayb)(DA,PetscTruth,void**,void**,PetscInt*);// = DARestoreAdicMFArray4;
 
   PetscFunctionBegin;
   if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
