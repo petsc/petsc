@@ -52,7 +52,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
     SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPGMRES");
   } 
 
-  max_k         = gmres->max_k;
+  max_k         = gmres->max_k;  /* restart size */
   hh            = (max_k + 2) * (max_k + 1);
   hes           = (max_k + 1) * (max_k + 1);
   rs            = (max_k + 2);
@@ -88,7 +88,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   ierr = MatGetVecs(pmat,&vec,0);CHKERRQ(ierr);
   if (gmres->q_preallocate) {
     gmres->vv_allocated   = VEC_OFFSET + 2 + max_k;
-    ierr = KSPGetVecs(ksp,gmres->vv_allocated,&gmres->user_work[0]);CHKERRQ(ierr);
+    ierr = KSPGetVecs(ksp,gmres->vv_allocated,&gmres->user_work[0],0,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParents(ksp,gmres->vv_allocated,gmres->user_work[0]);CHKERRQ(ierr);
     gmres->mwork_alloc[0] = gmres->vv_allocated;
     gmres->nwork_alloc    = 1;
@@ -97,7 +97,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
     }
   } else {
     gmres->vv_allocated    = 5;
-    ierr = KSPGetVecs(ksp,5,&gmres->user_work[0]);CHKERRQ(ierr);
+    ierr = KSPGetVecs(ksp,5,&gmres->user_work[0],0,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParents(ksp,5,gmres->user_work[0]);CHKERRQ(ierr);
     gmres->mwork_alloc[0]  = 5;
     gmres->nwork_alloc     = 1;
@@ -267,13 +267,11 @@ PetscErrorCode KSPDestroy_GMRES_Internal(KSP ksp)
   /* Free the Hessenberg matrix */
   if (gmres->hh_origin) {
     ierr = PetscFree(gmres->hh_origin);CHKERRQ(ierr);
-    gmres->hh_origin = 0;
   }
 
   /* Free the pointer to user variables */
   if (gmres->vecs) {
     ierr = PetscFree(gmres->vecs);CHKERRQ(ierr);
-    gmres->vecs = 0;
   }
 
   /* free work vectors */
@@ -282,29 +280,34 @@ PetscErrorCode KSPDestroy_GMRES_Internal(KSP ksp)
   }
   if (gmres->user_work)  {
     ierr = PetscFree(gmres->user_work);CHKERRQ(ierr);
-    gmres->user_work = 0;
   }
   if (gmres->mwork_alloc) { 
     ierr = PetscFree(gmres->mwork_alloc);CHKERRQ(ierr);
-    gmres->mwork_alloc = 0;
   }
   if (gmres->nrs) {
     ierr = PetscFree(gmres->nrs);CHKERRQ(ierr);
-    gmres->nrs = 0;
   }
   if (gmres->sol_temp) {
     ierr = VecDestroy(gmres->sol_temp);CHKERRQ(ierr);
-    gmres->sol_temp = 0;
   }
   if (gmres->Rsvd) {
     ierr = PetscFree(gmres->Rsvd);CHKERRQ(ierr);
-    gmres->Rsvd = 0;
   }
   if (gmres->Dsvd) {
     ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);
-    gmres->Dsvd = 0;
   }
-
+  if (gmres->orthogwork) {
+    ierr = PetscFree(gmres->orthogwork);CHKERRQ(ierr);
+    
+  }
+  gmres->orthogwork     = 0;
+  gmres->Dsvd           = 0;
+  gmres->hh_origin      = 0;
+  gmres->vecs           = 0;
+  gmres->user_work      = 0;
+  gmres->mwork_alloc    = 0;
+  gmres->nrs            = 0;
+  gmres->sol_temp       = 0;
   gmres->nwork_alloc    = 0;
   gmres->vv_allocated   = 0;
   gmres->vecs_allocated = 0;
@@ -471,7 +474,7 @@ static PetscErrorCode GMRESGetNewVectors(KSP ksp,PetscInt it)
   if (!nalloc) PetscFunctionReturn(0);
 
   gmres->vv_allocated += nalloc;
-  ierr = KSPGetVecs(ksp,nalloc,&gmres->user_work[nwork]);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nalloc,&gmres->user_work[nwork],0,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nalloc,gmres->user_work[nwork]);CHKERRQ(ierr);
   gmres->mwork_alloc[nwork] = nalloc;
   for (k=0; k<nalloc; k++) {
@@ -657,7 +660,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_GMRES(KSP ksp,PetscInt max_
      /* free the data structures, then create them again */
      ierr = KSPDestroy_GMRES_Internal(ksp);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -874,6 +876,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GMRES(KSP ksp)
   gmres->max_k               = GMRES_DEFAULT_MAXK;
   gmres->Rsvd                = 0;
   gmres->cgstype             = KSP_GMRES_CGS_REFINE_NEVER;
+  gmres->orthogwork          = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

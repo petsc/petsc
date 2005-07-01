@@ -13,7 +13,7 @@ int main(int argc,char **args)
   MatInfo        info;
   PetscInt       i,j,m = 3,n = 3,I,J;
   PetscErrorCode ierr;
-  PetscScalar    v,mone = -1.0,one = 1.0;
+  PetscScalar    v,one = 1.0;
   IS             perm,iperm;
   Vec            x,u,b;
   PetscReal      norm;

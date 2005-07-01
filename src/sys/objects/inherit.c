@@ -585,7 +585,7 @@ PetscCookie PETSC_DLLEXPORT CONTAINER_COOKIE = 0;
 
    Level: advanced
 
-.seealso: PetscObjectContainerDestroy(), PetscObjectContainerSetPointer(), PetscObjectContainerSetPointer()
+.seealso: PetscObjectContainerDestroy(), PetscObjectContainerSetPointer(), PetscObjectContainerGetPointer()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
 {

@@ -69,7 +69,46 @@ package PETSc {
 
   enum PetscConstants {PETSC_IGNORE = 0, PETSC_DECIDE = -1, PETSC_DEFAULT = -2};
 
-  class PetscViewer implements PetscObject {
+  enum PetscViewerFormat {PETSC_VIEWER_ASCII_DEFAULT, PETSC_VIEWER_ASCII_MATLAB, PETSC_VIEWER_ASCII_MATHEMATICA,
+      PETSC_VIEWER_ASCII_IMPL, PETSC_VIEWER_ASCII_INFO, PETSC_VIEWER_ASCII_INFO_DETAIL, PETSC_VIEWER_ASCII_COMMON,
+      PETSC_VIEWER_ASCII_SYMMODU, PETSC_VIEWER_ASCII_INDEX, PETSC_VIEWER_ASCII_DENSE, PETSC_VIEWER_BINARY_DEFAULT,
+      PETSC_VIEWER_BINARY_NATIVE, PETSC_VIEWER_DRAW_BASIC, PETSC_VIEWER_DRAW_LG, PETSC_VIEWER_DRAW_CONTOUR,
+      PETSC_VIEWER_DRAW_PORTS, PETSC_VIEWER_NATIVE, PETSC_VIEWER_NOFORMAT, PETSC_VIEWER_ASCII_FACTOR_INFO};
+
+  enum PetscViewerFileType {PETSC_FILE_RDONLY, PETSC_FILE_WRONLY, PETSC_FILE_CREATE};
+
+  interface PetscViewer extends PetscObject {
+    // Get the filename associated with the viewer
+    string getFilename();
+    // Set the filename associated with the viewer
+    void setFilename(in string filename);
+    // Get the viewer file type
+    PetscViewerFileType getFileType();
+    // Set the viewer file type
+    void setFileType(in PetscViewerFileType fileType);
+    // Get the current format (top of the format stack)
+    PetscViewerFormat getFormat();
+    // Set the current format (top of the format stack)
+    void setFormat(in PetscViewerFormat format);
+    // Push a format onto the format stack
+    void pushFormat(in PetscViewerFormat format);
+    // Pop the current format from the format stack
+    void popFormat();
+    // Flush the output stream
+    void flush();
+  }
+
+  class PetscViewerBinary implements PetscViewer {
+    // Get the associated file descriptor
+    int getDescriptor();
+    // Prevent creation of a .info file
+    void skipInfo();
+    // Load options from the .info file if it exists
+    void loadInfo();
+    // Return the flag indicating whether the options databse is used when recreating objects in the file
+    bool getSkipOptions();
+    // Set the flag indicating whether the options databse is used when recreating objects in the file
+    void setSkipOptions(in bool skipOptions);
   }
 
   class PetscMap implements PetscObject {
@@ -226,6 +265,8 @@ package PETSc {
     void assemblyBegin(in MatAssemblyType assemblyType);
     // End the assembly phase
     void assemblyEnd(in MatAssemblyType assemblyType);
+    // Get a submatrix of this matrix
+    Mat getSubMatrixRaw(in array<int> rows, in array<int> cols, in int localCols, in MatReuse flag);
     // Load the matrix from a viewer
     static void load(in PetscViewer viewer, in string typename, out Mat A);
 

@@ -158,7 +158,7 @@ entire bag before calling PetscBagLoad()
    operators (http://www.math.uni-leipzig.de/~bebendorf/AHMED.html)
    Another software library on Hierarchical Matrices for Elliptic
    Differential equations (AHMED)
-   An approximate LU decomposition canbe computed in the algebra of
+   An approximate LU decomposition can be computed in the algebra of
    hierarchical matrices with almost linear time complexity and with
    the same robustness as the classical LU decomposition method.
 
@@ -195,8 +195,6 @@ entire bag before calling PetscBagLoad()
   other
   -----
  
-   Make test in compilers.py if compiler is f90 or not
-
    Get version for mpcc_r, mpCC_r, mpxlf_r, absoft F90, intel F90 (ifc and ifort), compaq F90
 
    Strip newlines from version for PG F90, Intel C/C++

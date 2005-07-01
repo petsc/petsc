@@ -38,17 +38,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESClassicalGramSchmidtOrthogonalization(
   KSP_GMRES      *gmres = (KSP_GMRES *)(ksp->data);
   PetscErrorCode ierr;
   PetscInt       j;
-  PetscScalar    *hh,*hes,shh[500],*lhh;
+  PetscScalar    *hh,*hes,*lhh;
   PetscReal      hnrm, wnrm;
   PetscTruth     refine = (PetscTruth)(gmres->cgstype == KSP_GMRES_CGS_REFINE_ALWAYS);
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
-  /* Don't allocate small arrays */
-  if (it < 501) lhh = shh;
-  else {
-    ierr = PetscMalloc((it+1) * sizeof(PetscScalar),&lhh);CHKERRQ(ierr);
+  if (!gmres->orthogwork) {
+    ierr = PetscMalloc((gmres->max_k + 2)*sizeof(PetscScalar),&gmres->orthogwork);CHKERRQ(ierr);
   }
+  lhh = gmres->orthogwork;
   
   /* update Hessenberg matrix and do unmodified Gram-Schmidt */
   hh  = HH(0,it);
@@ -107,8 +106,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESClassicalGramSchmidtOrthogonalization(
       hes[j] -= lhh[j];     /* hes += <v,vnew> */
     }
   }
-
-  if (it >= 501) {ierr = PetscFree(lhh);CHKERRQ(ierr);}
   ierr = PetscLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

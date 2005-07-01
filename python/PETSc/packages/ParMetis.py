@@ -13,7 +13,6 @@ class Configure(PETSc.package.Package):
     self.functions    = ['ParMETIS_V3_PartKway']
     self.includes     = ['parmetis.h']
     self.liblist      = [['libparmetis.a','libmetis.a']]
-    self.downloadname = 'parmetis'
     self.needsMath    = 1
     return
 

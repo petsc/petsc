@@ -519,32 +519,55 @@ PetscErrorCode KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetVecs"
-/*
-  KSPDefaultGetWork - Gets a number of work vectors.
+/*@
+  KSPGetVecs - Gets a number of work vectors.
 
   Input Parameters:
-. ksp  - iterative context
-. nw   - number of work vectors to allocate
++ ksp  - iterative context
+. rightn  - number of right work vectors
+- leftn   - number of left work vectors to allocate
 
   Output Parameter:
-.  work - the array of vectors created
++  right - the array of vectors created
+-  left - the array of left vectors
 
- */
-PetscErrorCode KSPGetVecs(KSP ksp,PetscInt nw,Vec **work)
+   Note: The right vector has as many elements as the matrix has columns. The left
+     vector has as many elements as the matrix has rows.
+
+.seealso:   MatGetVecs()
+
+@*/
+PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Vec **left)
 {
   PetscErrorCode ierr;
-  Vec vec;
+  Vec            vecr,vecl;
 
   PetscFunctionBegin;
-  if (ksp->vec_rhs) vec = ksp->vec_rhs;
-  else {
-    Mat pmat;
-    ierr = PCGetOperators(ksp->pc,0,&pmat,0);CHKERRQ(ierr);
-    ierr = MatGetVecs(pmat,&vec,0);CHKERRQ(ierr);
+  if (rightn) {
+    if (!right) SETERRQ(PETSC_ERR_ARG_INCOMP,"You asked for right vectors but did not pass a pointer to hold them");
+    if (ksp->vec_sol) vecr = ksp->vec_sol;
+    else {
+      Mat pmat;
+      ierr = PCGetOperators(ksp->pc,0,&pmat,0);CHKERRQ(ierr);
+      ierr = MatGetVecs(pmat,&vecr,0);CHKERRQ(ierr);
+    }
+    ierr = VecDuplicateVecs(vecr,rightn,right);CHKERRQ(ierr);
+    if (!ksp->vec_sol) {
+      ierr = VecDestroy(vecr);CHKERRQ(ierr);
+    }
   }
-  ierr = VecDuplicateVecs(vec,nw,work);CHKERRQ(ierr);
-  if (!ksp->vec_rhs) {
-    ierr = VecDestroy(vec);CHKERRQ(ierr);
+  if (leftn) {
+    if (!left) SETERRQ(PETSC_ERR_ARG_INCOMP,"You asked for left vectors but did not pass a pointer to hold them");
+    if (ksp->vec_rhs) vecl = ksp->vec_rhs;
+    else {
+      Mat pmat;
+      ierr = PCGetOperators(ksp->pc,0,&pmat,0);CHKERRQ(ierr);
+      ierr = MatGetVecs(pmat,0,&vecl);CHKERRQ(ierr);
+    }
+    ierr = VecDuplicateVecs(vecl,leftn,left);CHKERRQ(ierr);
+    if (!ksp->vec_rhs) {
+      ierr = VecDestroy(vecl);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -568,7 +591,7 @@ PetscErrorCode KSPDefaultGetWork(KSP ksp,PetscInt nw)
   PetscFunctionBegin;
   if (ksp->work) {ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);}
   ksp->nwork = nw;
-  ierr = KSPGetVecs(ksp,nw,&ksp->work);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nw,&ksp->work,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nw,ksp->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

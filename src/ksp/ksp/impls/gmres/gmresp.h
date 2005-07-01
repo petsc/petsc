@@ -14,6 +14,8 @@ typedef struct {
        to estimate the Singular Values of the matrix */
   PetscScalar *hh_origin,*hes_origin,*cc_origin,*ss_origin,*rs_origin;
 
+  PetscScalar *orthogwork; /* holds dot products computed in orthogonalization */
+
   /* Work space for computing eigenvalues/singular values */
   PetscReal   *Dsvd;
   PetscScalar *Rsvd;

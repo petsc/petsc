@@ -991,6 +991,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetStencil(Mat mat,PetscInt dim,const Petsc
    INSERT_VALUES replaces existing entries with new values
 
    Notes:
+   The m and n count the NUMBER of blocks in the row direction and column direction,
+   NOT the total number of rows/columns; for example, if the block size is 2 and 
+   you are passing in values for rows 2,3,4,5  then m would be 2 (not 4).
+
    By default the values, v, are row-oriented and unsorted. So the layout of 
    v is the same as for MatSetValues(). See MatSetOption() for other options.
 
@@ -1425,7 +1429,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMult(Mat mat,Vec x,Vec y)
 PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose(Mat mat,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg1, flg2; 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1442,17 +1445,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose(Mat mat,Vec x,Vec y)
 #endif
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
-  if (!mat->ops->multtranspose) SETERRQ(PETSC_ERR_SUP, "Operation not supported");
-  ierr = PetscLogEventBegin(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
   if (!mat->ops->multtranspose) SETERRQ(PETSC_ERR_SUP,"This matrix type does not have a multiply tranpose defined");
-  
-  ierr = PetscTypeCompare((PetscObject)mat,MATSEQSBAIJ,&flg1);
-  ierr = PetscTypeCompare((PetscObject)mat,MATMPISBAIJ,&flg2);
-  if (flg1 || flg2) { /* mat is in sbaij format */
-    ierr = (*mat->ops->mult)(mat,x,y);CHKERRQ(ierr); 
-  } else {
-    ierr = (*mat->ops->multtranspose)(mat,x,y);CHKERRQ(ierr);
-  }
+  ierr = PetscLogEventBegin(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->multtranspose)(mat,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5175,6 +5170,64 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,Pets
   if (!mat->ops->getsubmatrix) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->getsubmatrix)(mat,isrow,iscol,csize,cll,newmat);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)*newmat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatrixRaw"
+/*@
+    MatGetSubMatrixRaw - Gets a single submatrix on the same number of processors
+                         as the original matrix.
+
+    Collective on Mat
+
+    Input Parameters:
++   mat - the original matrix
+.   nrows - the number of rows this processor should obtain
+.   rows - rows this processor should obtain
+.   ncols - the number of columns for all processors you wish to keep
+.   cols - columns for all processors you wish to keep
+.   csize - number of columns "local" to this processor (does nothing for sequential 
+            matrices). This should match the result from VecGetLocalSize(x,...) if you 
+            plan to use the matrix in a A*x; alternatively, you can use PETSC_DECIDE
+-   cll - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+    Output Parameter:
+.   newmat - the new submatrix, of the same type as the old
+
+    Level: advanced
+
+    Notes: the iscol argument MUST be the same on each processor. You might be 
+    able to create the iscol argument with ISAllGather().
+
+      The first time this is called you should use a cll of MAT_INITIAL_MATRIX,
+   the MatGetSubMatrix() routine will create the newmat for you. Any additional calls
+   to this routine with a mat of the same nonzero structure and with a cll of MAT_REUSE_MATRIX  
+   will reuse the matrix generated the first time.
+
+    Concepts: matrices^submatrices
+
+.seealso: MatGetSubMatrices(), ISAllGather()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrixRaw(Mat mat,PetscInt nrows,const PetscInt rows[],PetscInt ncols,const PetscInt cols[],PetscInt csize,MatReuse cll,Mat *newmat)
+{
+  IS             isrow, iscol;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidIntPointer(rows,2);
+  PetscValidIntPointer(cols,3);
+  PetscValidPointer(newmat,6);
+  if (cll == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_COOKIE,6);
+  PetscValidType(mat,1);
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  ierr = ISCreateGeneralWithArray(PETSC_COMM_SELF, nrows, (PetscInt *) rows, &isrow);CHKERRQ(ierr);
+  ierr = ISCreateGeneralWithArray(PETSC_COMM_SELF, ncols, (PetscInt *) cols, &iscol);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat, isrow, iscol, csize, cll, newmat);CHKERRQ(ierr);
+  ierr = ISDestroy(isrow);CHKERRQ(ierr);
+  ierr = ISDestroy(iscol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

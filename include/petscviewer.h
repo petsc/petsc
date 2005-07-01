@@ -158,6 +158,7 @@ M*/
 
 M*/
 
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryCreate(MPI_Comm,PetscViewer*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryOpen(MPI_Comm,const char[],PetscViewerFileType,PetscViewer*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketOpen(MPI_Comm,const char[],int,PetscViewer*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerStringOpen(MPI_Comm,char[],PetscInt,PetscViewer*);
@@ -238,6 +239,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetDescriptor(PetscViewer
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetInfoPointer(PetscViewer,FILE **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryRead(PetscViewer,void*,PetscInt,PetscDataType);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryWrite(PetscViewer,void*,PetscInt,PetscDataType,PetscTruth);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFileType(PetscViewer,PetscViewerFileType*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFileType(PetscViewer,PetscViewerFileType);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerStringSPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerStringSetString(PetscViewer,char[],PetscInt);

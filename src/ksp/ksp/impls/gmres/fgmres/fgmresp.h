@@ -20,6 +20,8 @@ typedef struct {
     PetscScalar *ss_origin;   /* holds sines for rotation matrices */
     PetscScalar *rs_origin;   /* holds the right-hand-side of the Hessenberg system */
 
+    PetscScalar *orthogwork; /* holds dot products computed in orthogonalization */
+
     /* Work space for computing eigenvalues/singular values */
     PetscReal   *Dsvd;
     PetscScalar *Rsvd;

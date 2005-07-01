@@ -2125,7 +2125,7 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   {
     PetscScalar  s1,s2,s3,s4,x1,x2,x3,x4;
     MatScalar    *v;
-    PetscInt          jdx,idt,idx,nz,*vi,i,ai16;
+    PetscInt     jdx,idt,idx,nz,*vi,i,ai16;
 
   /* forward solve the lower triangular */
   idx    = 0;

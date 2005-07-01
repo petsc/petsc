@@ -111,7 +111,7 @@ void TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  /* Make the PETSc work vectors f and fd point to the arrays in the SUNDIALS vectors y and ydot respectively*/
+  /* Make the PETSc work vectors yy and yyd point to the arrays in the SUNDIALS vectors y and ydot respectively*/
   y_data     = (PetscScalar *) N_VGetArrayPointer(y);
   ydot_data  = (PetscScalar *) N_VGetArrayPointer(ydot);
   ierr = VecPlaceArray(yy,y_data);CHKERRABORT(comm,ierr)

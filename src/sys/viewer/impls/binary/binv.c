@@ -254,6 +254,31 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinaryCreate"
+/*@
+   PetscViewerBinaryCreate - Create a binary viewer.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
+.  comm - MPI communicator
+
+   Output Parameter:
+.  binv - PetscViewer for binary input/output
+
+   Level: beginner
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryCreate(MPI_Comm comm,PetscViewer *binv)
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = PetscViewerCreate(comm,binv);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*binv,PETSC_VIEWER_BINARY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryOpen" 
 /*@C
    PetscViewerBinaryOpen - Opens a file for binary input/output.
@@ -460,6 +485,41 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryReadStringArray(PetscViewer view
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscViewerGetFileType" 
+/*@C
+     PetscViewerGetFileType - Gets the type of file to be open
+
+    Collective on PetscViewer
+
+  Input Parameter:
+.  viewer - the PetscViewer; must be a binary, Matlab, hdf, or netcdf PetscViewer
+
+  Output Parameter:
+.  type - type of file
+$    PETSC_FILE_CREATE - create new file for binary output
+$    PETSC_FILE_RDONLY - open existing file for binary input
+$    PETSC_FILE_WRONLY - open existing file for binary output
+
+  Level: advanced
+
+.seealso: PetscViewerSetFileType(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFileType(PetscViewer viewer,PetscViewerFileType *type)
+{
+  PetscErrorCode ierr,(*f)(PetscViewer,PetscViewerFileType*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidPointer(type,2);
+  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerGetFileType_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(viewer,type);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFileType" 
 /*@C
      PetscViewerSetFileType - Sets the type of file to be open
@@ -475,7 +535,7 @@ $    PETSC_FILE_WRONLY - open existing file for binary output
 
   Level: advanced
 
-.seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
+.seealso: PetscViewerGetFileType(), PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFileType(PetscViewer viewer,PetscViewerFileType type)
@@ -490,6 +550,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFileType(PetscViewer viewer,PetscVi
   }
   PetscFunctionReturn(0);
 }
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerGetFileType_Binary" 
+PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFileType_Binary(PetscViewer viewer,PetscViewerFileType *type)
+{
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+
+  PetscFunctionBegin;
+  *type = vbinary->btype;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -590,7 +663,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_Binary(PetscViewer viewer,
 
   PetscFunctionBegin;
   if (type == (PetscViewerFileType) -1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerBinarySetType() before PetscViewerSetFilename()");
+    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerBinarySetFileType() before PetscViewerSetFilename()");
   }
   ierr = PetscOptionsGetTruth(viewer->prefix,"-viewer_binary_skip_info",&vbinary->skipinfo,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(viewer->prefix,"-viewer_binary_skip_options",&vbinary->skipoptions,PETSC_NULL);CHKERRQ(ierr);
