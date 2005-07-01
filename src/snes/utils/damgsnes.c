@@ -559,7 +559,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
             ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %D\n",newton_its);CHKERRQ(ierr);
           }
         }
-	dmmg[i]->solve = DMMGSolveFAS4;
+	dmmg[i]->solve = DMMGSolveFASb;
       }
     }
   }
