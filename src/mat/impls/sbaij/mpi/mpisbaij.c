@@ -980,28 +980,6 @@ PetscErrorCode MatMultAdd_MPISBAIJ_2comm(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMultTranspose_MPISBAIJ"
-PetscErrorCode MatMultTranspose_MPISBAIJ(Mat A,Vec xx,Vec yy)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatMult(A,xx,yy);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatMultTransposeAdd_MPISBAIJ"
-PetscErrorCode MatMultTransposeAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatMultAdd(A,xx,yy,zz);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-}
-
 /*
   This only works correctly for square matrices where the subblock A->A is the 
    diagonal block
@@ -1316,8 +1294,8 @@ static struct _MatOps MatOps_Values = {
        MatRestoreRow_MPISBAIJ,
        MatMult_MPISBAIJ,
 /* 4*/ MatMultAdd_MPISBAIJ,
-       MatMultTranspose_MPISBAIJ,
-       MatMultTransposeAdd_MPISBAIJ,
+       MatMult_MPISBAIJ,       /* transpose versions are same as non-transpose */
+       MatMultAdd_MPISBAIJ,
        0,
        0,
        0,

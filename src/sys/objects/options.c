@@ -84,8 +84,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtoi(const char name[],PetscInt *a)
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtod(const char name[],PetscReal *a)
 {
   PetscErrorCode ierr;
-  size_t     len;
-  PetscTruth decide,tdefault;
+  size_t         len;
+  PetscTruth     decide,tdefault;
 
   PetscFunctionBegin;
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
@@ -454,7 +454,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrint(FILE *fd)
 {
   PetscErrorCode ierr;
-  int i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   if (!fd) fd = stdout;
@@ -488,9 +488,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrint(FILE *fd)
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetAll(char *copts[])
 {
   PetscErrorCode ierr;
-  int    i;
-  size_t len = 1,lent;
-  char   *coptions;
+  PetscInt       i;
+  size_t         len = 1,lent;
+  char           *coptions;
 
   PetscFunctionBegin;
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -534,7 +534,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetAll(char *copts[])
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsDestroy(void)
 {
-  int i;
+  PetscInt i;
 
   PetscFunctionBegin;
   if (!options) PetscFunctionReturn(0);
@@ -576,12 +576,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsDestroy(void)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetValue(const char iname[],const char value[])
 {
-  size_t     len;
+  size_t         len;
   PetscErrorCode ierr;
-  int        N,n,i;
-  char       **names;
-  const char *name = (char*)iname;
-  PetscTruth gt,match;
+  PetscInt       N,n,i;
+  char           **names;
+  const char     *name = (char*)iname;
+  PetscTruth     gt,match;
 
   PetscFunctionBegin;
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -664,9 +664,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetValue(const char iname[],const cha
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsClearValue(const char iname[])
 {
   PetscErrorCode ierr;
-  int        N,n,i;
-  char       **names,*name=(char*)iname;
-  PetscTruth gt,match;
+  PetscInt       N,n,i;
+  char           **names,*name=(char*)iname;
+  PetscTruth     gt,match;
 
   PetscFunctionBegin;
   if (name[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,"Name must begin with -: Instead %s",name);
@@ -726,9 +726,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsClearValue(const char iname[])
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetAlias(const char inewname[],const char ioldname[])
 {
   PetscErrorCode ierr;
-  int    n = options->Naliases;
-  size_t len;
-  char   *newname = (char *)inewname,*oldname = (char*)ioldname;
+  PetscInt       n = options->Naliases;
+  size_t         len;
+  char           *newname = (char *)inewname,*oldname = (char*)ioldname;
 
   PetscFunctionBegin;
   if (newname[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,"aliased must have -: Instead %s",newname);
@@ -843,7 +843,7 @@ static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char n
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsReject(const char name[],const char mess[])
 {
   PetscErrorCode ierr;
-  PetscTruth flag;
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(PETSC_NULL,name,&flag);CHKERRQ(ierr);
@@ -875,6 +875,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsReject(const char name[],const char m
 
    Concepts: options database^has option name
 
+   Notes: Name cannot be simply -h
+
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -884,9 +886,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsReject(const char name[],const char m
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsHasName(const char pre[],const char name[],PetscTruth *flg)
 {
-  char       *value;
+  char           *value;
   PetscErrorCode ierr;
-  PetscTruth isfalse,flag;
+  PetscTruth     isfalse,flag;
 
   PetscFunctionBegin;
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
@@ -933,9 +935,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsHasName(const char pre[],const char n
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetInt(const char pre[],const char name[],PetscInt *ivalue,PetscTruth *flg)
 {
-  char       *value;
+  char           *value;
   PetscErrorCode ierr;
-  PetscTruth flag;
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);

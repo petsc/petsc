@@ -74,7 +74,7 @@ EXTERN_C_END
 PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int sig,void *ptr)
 {
   PetscErrorCode ierr;
-  const char  *SIGNAME[64];
+  const char     *SIGNAME[64];
 
   PetscFunctionBegin;
   SIGNAME[0]       = "Unknown signal";
@@ -192,7 +192,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int sig,void *ptr)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void* ctx)
 {
-  struct  SH *newsh;
+  struct  SH     *newsh;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

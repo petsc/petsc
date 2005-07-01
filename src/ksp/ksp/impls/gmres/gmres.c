@@ -88,7 +88,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   ierr = MatGetVecs(pmat,&vec,0);CHKERRQ(ierr);
   if (gmres->q_preallocate) {
     gmres->vv_allocated   = VEC_OFFSET + 2 + max_k;
-    ierr = KSPGetVecs(ksp,gmres->vv_allocated,&gmres->user_work[0]);CHKERRQ(ierr);
+    ierr = KSPGetVecs(ksp,gmres->vv_allocated,&gmres->user_work[0],0,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParents(ksp,gmres->vv_allocated,gmres->user_work[0]);CHKERRQ(ierr);
     gmres->mwork_alloc[0] = gmres->vv_allocated;
     gmres->nwork_alloc    = 1;
@@ -97,7 +97,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
     }
   } else {
     gmres->vv_allocated    = 5;
-    ierr = KSPGetVecs(ksp,5,&gmres->user_work[0]);CHKERRQ(ierr);
+    ierr = KSPGetVecs(ksp,5,&gmres->user_work[0],0,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParents(ksp,5,gmres->user_work[0]);CHKERRQ(ierr);
     gmres->mwork_alloc[0]  = 5;
     gmres->nwork_alloc     = 1;
@@ -474,7 +474,7 @@ static PetscErrorCode GMRESGetNewVectors(KSP ksp,PetscInt it)
   if (!nalloc) PetscFunctionReturn(0);
 
   gmres->vv_allocated += nalloc;
-  ierr = KSPGetVecs(ksp,nalloc,&gmres->user_work[nwork]);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nalloc,&gmres->user_work[nwork],0,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nalloc,gmres->user_work[nwork]);CHKERRQ(ierr);
   gmres->mwork_alloc[nwork] = nalloc;
   for (k=0; k<nalloc; k++) {

@@ -108,7 +108,7 @@ struct _p_KSP {
 	}
 
 EXTERN PetscErrorCode KSPDefaultDestroy(KSP);
-EXTERN PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**);
+EXTERN PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
 EXTERN PetscErrorCode KSPDefaultGetWork(KSP,PetscInt);
 EXTERN PetscErrorCode KSPDefaultFreeWork(KSP);
 

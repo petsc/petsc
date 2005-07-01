@@ -7,7 +7,7 @@
 typedef struct {
   PetscInt  nwork_n,nwork_m; 
   Vec       *vwork_m;  /* work vectors of length m, where the system is size m x n */
-  Vec       *vwork_n;  /* work vectors of length m */
+  Vec       *vwork_n;  /* work vectors of length n */
 } KSP_LSQR;
 
 #undef __FUNCT__  
@@ -15,7 +15,6 @@ typedef struct {
 static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscInt       nw;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
@@ -24,20 +23,15 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   }
 
   /* Get work vectors */
-  lsqr->nwork_m = nw = 2;
+  lsqr->nwork_m = 2;
   if (lsqr->vwork_m) {
     ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m);CHKERRQ(ierr);
   }
-  ierr = KSPGetVecs(ksp,nw,&lsqr->vwork_m);CHKERRQ(ierr);
-  ierr = PetscLogObjectParents(ksp,nw,lsqr->vwork_m);CHKERRQ(ierr);
-
-  lsqr->nwork_n = nw = 3;
+  lsqr->nwork_n = 3;
   if (lsqr->vwork_n) {
     ierr = VecDestroyVecs(lsqr->vwork_n,lsqr->nwork_n);CHKERRQ(ierr);
   }
-  ierr = KSPGetVecs(ksp,nw,&lsqr->vwork_n);CHKERRQ(ierr);
-  ierr = PetscLogObjectParents(ksp,nw,lsqr->vwork_n);CHKERRQ(ierr);
-
+  ierr = KSPGetVecs(ksp,lsqr->nwork_m,&lsqr->vwork_m,lsqr->nwork_n,&lsqr->vwork_n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -194,9 +188,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LSQR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(KSP_LSQR),&lsqr);CHKERRQ(ierr);
-  ierr = PetscMemzero(lsqr,sizeof(KSP_LSQR));CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_LSQR));CHKERRQ(ierr);
+  ierr = PetscNew(KSP_LSQR,&lsqr);CHKERRQ(ierr);
+  ierr = PCSetType(ksp->pc,PCNONE);CHKERRQ(ierr);
   ksp->data                      = (void*)lsqr;
   ksp->pc_side                   = PC_LEFT;
   ksp->ops->setup                = KSPSetUp_LSQR;

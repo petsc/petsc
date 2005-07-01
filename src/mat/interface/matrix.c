@@ -1429,7 +1429,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMult(Mat mat,Vec x,Vec y)
 PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose(Mat mat,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg1, flg2; 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1446,17 +1445,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose(Mat mat,Vec x,Vec y)
 #endif
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
-  if (!mat->ops->multtranspose) SETERRQ(PETSC_ERR_SUP, "Operation not supported");
-  ierr = PetscLogEventBegin(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
   if (!mat->ops->multtranspose) SETERRQ(PETSC_ERR_SUP,"This matrix type does not have a multiply tranpose defined");
-  
-  ierr = PetscTypeCompare((PetscObject)mat,MATSEQSBAIJ,&flg1);
-  ierr = PetscTypeCompare((PetscObject)mat,MATMPISBAIJ,&flg2);
-  if (flg1 || flg2) { /* mat is in sbaij format */
-    ierr = (*mat->ops->mult)(mat,x,y);CHKERRQ(ierr); 
-  } else {
-    ierr = (*mat->ops->multtranspose)(mat,x,y);CHKERRQ(ierr);
-  }
+  ierr = PetscLogEventBegin(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->multtranspose)(mat,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
