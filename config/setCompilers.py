@@ -217,6 +217,7 @@ class Configure(config.base.Configure):
       self.usedMPICompilers = 1
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicc')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'hcc')
+      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpcc_r')
       self.usedMPICompilers = 0
       raise RuntimeError('bin/<mpicc,hcc> you provided with -with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work')
     else:
@@ -356,6 +357,7 @@ class Configure(config.base.Configure):
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'hcp')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpic++')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpiCC')
+      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpCC_r')
       self.usedMPICompilers = 0
       if os.path.isfile(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'hcp')) or os.path.isfile(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicxx')) or os.path.isfile((os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpiCC'))):
         raise RuntimeError('bin/<mpiCC,mpicxx,hcp> you provided with -with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work\nRun with -with-cxx=0 if you wish to use this MPI and disable C++')
@@ -505,6 +507,9 @@ class Configure(config.base.Configure):
       self.usedMPICompilers = 1
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif90')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77')
+      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpxlf95_r')
+      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpxlf90_r')
+      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpxlf_r')
       self.usedMPICompilers = 0
       if os.path.isfile(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif90')) or os.path.isfile((os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77'))):
         raise RuntimeError('bin/mpif90[f77] you provided with --with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran')
