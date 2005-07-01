@@ -108,7 +108,7 @@ class OldMake(maker.Make):
 class Make(maker.BasicMake):
   def setupConfigure(self, framework):
     import sys
-    sys.path.append(os.path.join(os.getcwd(), 'python'))
+    sys.path.insert(0, os.path.join(os.getcwd(), 'python'))
     self.configureMod = self.getModule(os.path.join(os.getcwd(), 'python', 'PETSc'), 'petsc')
     maker.BasicMake.setupConfigure(self, framework)
     framework.header = None
@@ -144,6 +144,10 @@ def dylib_Base(maker):
 
 def dylib_PetscViewer(maker):
   '''PetscViewer.c'''
+  return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
+
+def dylib_PetscViewerBinary(maker):
+  '''PetscViewerBinary.c'''
   return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
 def dylib_PetscMap(maker):

@@ -31,6 +31,9 @@ ex2: ex2.o  chkopts
 ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o ${PETSC_SNES_LIB}
 	${RM} ex3.o
+ex4: ex4.o  chkopts
+	-${CLINKER} -o ex4 ex4.o ${PETSC_SNES_LIB}
+	${RM} ex4.o
 ex5: ex5.o chkopts
 	-${CLINKER} -o ex5 ex5.o ${PETSC_SNES_LIB}
 	${RM} ex5.o
