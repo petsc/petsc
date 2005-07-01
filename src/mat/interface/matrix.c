@@ -5179,6 +5179,64 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,Pets
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatrixRaw"
+/*@
+    MatGetSubMatrixRaw - Gets a single submatrix on the same number of processors
+                         as the original matrix.
+
+    Collective on Mat
+
+    Input Parameters:
++   mat - the original matrix
+.   nrows - the number of rows this processor should obtain
+.   rows - rows this processor should obtain
+.   ncols - the number of columns for all processors you wish to keep
+.   cols - columns for all processors you wish to keep
+.   csize - number of columns "local" to this processor (does nothing for sequential 
+            matrices). This should match the result from VecGetLocalSize(x,...) if you 
+            plan to use the matrix in a A*x; alternatively, you can use PETSC_DECIDE
+-   cll - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+    Output Parameter:
+.   newmat - the new submatrix, of the same type as the old
+
+    Level: advanced
+
+    Notes: the iscol argument MUST be the same on each processor. You might be 
+    able to create the iscol argument with ISAllGather().
+
+      The first time this is called you should use a cll of MAT_INITIAL_MATRIX,
+   the MatGetSubMatrix() routine will create the newmat for you. Any additional calls
+   to this routine with a mat of the same nonzero structure and with a cll of MAT_REUSE_MATRIX  
+   will reuse the matrix generated the first time.
+
+    Concepts: matrices^submatrices
+
+.seealso: MatGetSubMatrices(), ISAllGather()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrixRaw(Mat mat,PetscInt nrows,const PetscInt rows[],PetscInt ncols,const PetscInt cols[],PetscInt csize,MatReuse cll,Mat *newmat)
+{
+  IS             isrow, iscol;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidIntPointer(rows,2);
+  PetscValidIntPointer(cols,3);
+  PetscValidPointer(newmat,6);
+  if (cll == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_COOKIE,6);
+  PetscValidType(mat,1);
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  ierr = ISCreateGeneralWithArray(PETSC_COMM_SELF, nrows, (PetscInt *) rows, &isrow);CHKERRQ(ierr);
+  ierr = ISCreateGeneralWithArray(PETSC_COMM_SELF, ncols, (PetscInt *) cols, &iscol);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat, isrow, iscol, csize, cll, newmat);CHKERRQ(ierr);
+  ierr = ISDestroy(isrow);CHKERRQ(ierr);
+  ierr = ISDestroy(iscol);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatGetPetscMaps"
 /*@C
    MatGetPetscMaps - Returns the maps associated with the matrix.
