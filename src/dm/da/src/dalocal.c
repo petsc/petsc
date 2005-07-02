@@ -869,9 +869,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void 
 
 
 #undef __FUNCT__
-#define __FUNCT__ "DAGetAdicMFArray4"
+#define __FUNCT__ "DAGetAdicMFArrayb"
 /*@C
-     DAGetAdicMFArray - Gets an array of derivative types for a DA for matrix-free ADIC.
+     DAGetAdicMFArrayb - Gets an array of derivative types for a DA for matrix-free ADIC.
           
      Input Parameter:
 +    da - information about my local patch
@@ -894,11 +894,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void 
 .seealso: DARestoreAdicMFArray(), DAGetArray(), DAGetAdicArray()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
-  PetscInt j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
-  char *iarray_start;
+  PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
+  char           *iarray_start;
+  PetscInt       bs = da->w,bs1 = bs+1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -945,20 +946,20 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void
       void *ptr;
       itdof = xm;
 
-      ierr  = PetscMalloc(xm*2*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+      ierr  = PetscMalloc(xm*bs1*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
-      ptr   = (void*)(iarray_start - xs*2*sizeof(PetscScalar));
+      ptr   = (void*)(iarray_start - xs*bs1*sizeof(PetscScalar));
       *iptr = (void*)ptr; 
       break;}
     case 2: {
       void **ptr;
       itdof = xm*ym;
 
-      ierr  = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*5*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+      ierr  = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*bs1*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
-      ptr  = (void**)(iarray_start + xm*ym*5*sizeof(PetscScalar) - ys*sizeof(void*));
+      ptr  = (void**)(iarray_start + xm*ym*bs1*sizeof(PetscScalar) - ys*sizeof(void*));
       for(j=ys;j<ys+ym;j++) {
-        ptr[j] = iarray_start + 5*sizeof(PetscScalar)*(xm*(j-ys) - xs);
+        ptr[j] = iarray_start + bs1*sizeof(PetscScalar)*(xm*(j-ys) - xs);
       }
       *iptr = (void*)ptr; 
       break;}
@@ -966,7 +967,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void
       void ***ptr,**bptr;
       itdof = xm*ym*zm;
 
-      ierr  = PetscMalloc((zm+1)*sizeof(void **)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*2*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+      ierr  = PetscMalloc((zm+1)*sizeof(void **)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*bs1*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
       ptr  = (void***)(iarray_start + xm*ym*zm*2*sizeof(PetscScalar) - zs*sizeof(void*));
       bptr = (void**)(iarray_start + xm*ym*zm*2*sizeof(PetscScalar) + zm*sizeof(void**));
@@ -975,7 +976,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void
       }
       for (i=zs; i<zs+zm; i++) {
         for (j=ys; j<ys+ym; j++) {
-          ptr[i][j] = iarray_start + 2*sizeof(PetscScalar)*(xm*ym*(i-zs) + xm*(j-ys) - xs);
+          ptr[i][j] = iarray_start + bs1*sizeof(PetscScalar)*(xm*ym*(i-zs) + xm*(j-ys) - xs);
         }
       }
 

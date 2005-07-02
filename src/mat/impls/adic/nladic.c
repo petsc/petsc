@@ -245,23 +245,19 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAADb(NLF A,MatSORType flag,int its,V
   DALocalInfo    info;
   MatStencil     stencil;
   void*          *ad_vu;
-  PetscErrorCode (*NLFNewton_DAADb)(NLF,DALocalInfo*,MatStencil*,void*,PetscScalar*,int,int,PetscScalar*) = NLFNewton_DAAD4;
-  PetscErrorCode (*DAGetAdicMFArrayb)(DA,PetscTruth,void**,void**,PetscInt*) = DAGetAdicMFArray4;
-  PetscErrorCode (*DARestoreAdicMFArrayb)(DA,PetscTruth,void**,void**,PetscInt*) = DARestoreAdicMFArray;
+  PetscErrorCode (*NLFNewton_DAADb)(NLF,DALocalInfo*,MatStencil*,void*,PetscScalar*,int,int,PetscScalar*);
 
   PetscFunctionBegin;
   if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
   if (bs == 4) {
     NLFNewton_DAADb       = NLFNewton_DAAD4;
-    DAGetAdicMFArrayb     = DAGetAdicMFArray4;
-    DARestoreAdicMFArrayb = DARestoreAdicMFArray;
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Point block nonlinear relaxation currently not for this block size",bs);
   }
 
   ierr = DAGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
   /* get space for derivative object.  */
-  ierr = (*DAGetAdicMFArrayb)(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DAGetAdicMFArrayb(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   ierr = VecGetArray(A->residual,&residual);CHKERRQ(ierr);
 
 
@@ -324,7 +320,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAADb(NLF A,MatSORType flag,int its,V
 
   ierr = VecRestoreArray(A->residual,&residual);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(A->da,&localxx);CHKERRQ(ierr);
-  ierr = (*DARestoreAdicMFArrayb)(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DARestoreAdicMFArray(A->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

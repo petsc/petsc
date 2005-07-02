@@ -101,10 +101,6 @@ int main(int argc,char **argv)
   PreLoadBegin(PETSC_TRUE,"SetUp");
     ierr = DMMGCreate(comm,2,&user,&dmmg);CHKERRQ(ierr);
 
- ierr = PetscPrintf(comm,"mx = %d, my= %d\n",
-		       mx,my);CHKERRQ(ierr);
-
-
     /*
       Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
@@ -112,14 +108,10 @@ int main(int argc,char **argv)
     ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"mx = %d, my= %d\n",
-		       mx,my);CHKERRQ(ierr);
 
     ierr = DAGetInfo(DMMGGetDA(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"mx = %d, my= %d\n",
-		       mx,my);CHKERRQ(ierr);
-   /* 
+    /* 
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
     */
     user.lidvelocity = 1.0/(mx*my);
@@ -248,7 +240,8 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   */
   ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   return 0;
-} 
+}
+ 
 PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
  {
   AppCtx         *user = (AppCtx*)ptr;
@@ -381,10 +374,11 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr
 } 
 
 /*
-    This is an experimental function and can be safely ignored.
+    This function that evaluates the function for a single 
+    degree of freedom. It is used by the -dmmg_fas solver
 */
 PetscErrorCode FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f,void *ptr)
- {
+{
   AppCtx      *user = (AppCtx*)ptr;
   PetscInt    i,j,c;
   PassiveReal hx,hy,dhx,dhy,hxdhy,hydhx;
@@ -488,11 +482,12 @@ PetscErrorCode FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,Pet
 } 
 
 /*
-    This is an experimental function and can be safely ignored.
+    This function that evaluates the function for a single 
+    grid point. It is used by the -dmmg_fas -dmmg_fas_block solver
 */
 PetscErrorCode FormFunctionLocali4(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *ff,void *ptr)
- {
-   Field *f = (Field*)ff;
+{
+  Field       *f = (Field*)ff;
   AppCtx      *user = (AppCtx*)ptr;
   PetscInt    i,j;
   PassiveReal hx,hy,dhx,dhy,hxdhy,hydhx;
@@ -575,10 +570,6 @@ PetscErrorCode FormFunctionLocali4(DALocalInfo *info,MatStencil *st,Field **x,Pe
       (vyp*(u - x[j-1][i].omega) +
        vym*(x[j+1][i].omega - u)) * hx -
        .5 * grashof * (x[j][i+1].temp - x[j][i-1].temp) * hy; 
-    /*f->omega    = uxx + uyy + 
-      (vx*(u - x[j][i-1].omega)) * hy +
-      (vy*(u - x[j-1][i].omega)) * hx ;-
-					 .5 * grashof * (x[j][i+1].temp - x[j][i-1].temp) * hy;*/
     
     /* Temperature */
     
@@ -590,12 +581,7 @@ PetscErrorCode FormFunctionLocali4(DALocalInfo *info,MatStencil *st,Field **x,Pe
 					    vxm*(x[j][i+1].temp - u)) * hy +
 					   (vyp*(u - x[j-1][i].temp) +
 					    vym*(x[j+1][i].temp - u)) * hx);
-    /*f->temp     =  uxx + uyy  + prandtl * (
-					   (vx*(u - x[j][i-1].temp) ) * hy +
-					   (vy*(u - x[j-1][i].temp) ) * hx);*/
-    
   }
-
   PetscFunctionReturn(0);
 } 
 
