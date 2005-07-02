@@ -248,11 +248,12 @@ int main(int argc,char **argv)
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create nonlinear solver context
        
-       Process adiC(20):  AddTSTermLocal AddTSTermLocal2 FormFunctionLocal FormFunctionLocali FormFunctionLocali4
+       Process adiC(20):  AddTSTermLocal AddTSTermLocal2 FormFunctionLocal FormFunctionLocali
+       Process blockadiC(4):  FormFunctionLocali4
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = DMMGSetSNESLocal(dmmg, FormFunctionLocal, 0,ad_FormFunctionLocal, admf_FormFunctionLocal);CHKERRQ(ierr);
-    ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);
-    ierr = DMMGSetSNESLocali4(dmmg,FormFunctionLocali4,ad_FormFunctionLocali4,admf_FormFunctionLocali4);CHKERRQ(ierr);
+    ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,0,,admf_FormFunctionLocali);CHKERRQ(ierr);
+    ierr = DMMGSetSNESLocalib(dmmg,FormFunctionLocali4,0,admfb_FormFunctionLocali4);CHKERRQ(ierr);
  
     ierr = PetscPrintf(PETSC_COMM_WORLD, "finish setup!");
  
@@ -996,9 +997,9 @@ PetscErrorCode FormFunctionLocali4(DALocalInfo *info,MatStencil *st,Field **x,Pe
   Field          *f  = (Field *)ff;
   AppCtx         *user = (AppCtx*)ptr;
   TstepCtx       *tsCtx = user->tsCtx;
-  Parameters      *param = user->param;
+  Parameters     *param = user->param;
   PetscErrorCode ierr;
-  PetscInt       i,j,c;
+  PetscInt       i,j;
   PetscInt       xints,xinte,yints,yinte;
   PassiveReal    hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
   PassiveReal    de2,rhos2,nu,eta,dde2;
