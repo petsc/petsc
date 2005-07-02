@@ -7,7 +7,6 @@
 #if defined(PETSC_HAVE_ADIC)
 extern PetscErrorCode DMMGComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode DMMGSolveFAS(DMMG*,PetscInt);
-extern PetscErrorCode DMMGSolveFAS4(DMMG*,PetscInt);
 extern PetscErrorCode DMMGSolveFASb(DMMG*,PetscInt);
 extern PetscErrorCode DMMGComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 #endif
@@ -518,7 +517,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     PetscTruth flg;
     ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_fas",&flg);CHKERRQ(ierr);
     if (flg) {
-      PetscInt newton_its;
+      PetscTruth block = PETSC_FALSE;
+      PetscInt   newton_its;
       ierr = PetscOptionsHasName(0,"-dmmg_fas_view",&flg);CHKERRQ(ierr);
       for (i=0; i<nlevels; i++) {
 	ierr = NLFCreate_DAAD(&dmmg[i]->nlf);CHKERRQ(ierr);
@@ -559,7 +559,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
             ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %D\n",newton_its);CHKERRQ(ierr);
           }
         }
-	dmmg[i]->solve = DMMGSolveFASb;
+        ierr = PetscOptionsHasName(0,"-dmmg_fas_block",&block);CHKERRQ(ierr);
+        if (block) {
+          dmmg[i]->solve = DMMGSolveFASb;
+          if (flg) {
+            ierr = PetscPrintf(dmmg[i]->comm,"  using point-block smoothing\n");CHKERRQ(ierr);
+          }
+        } else {
+          dmmg[i]->solve = DMMGSolveFAS;
+        }
       }
     }
   }

@@ -13,6 +13,8 @@
 */
 #if (ad_GRAD_MAX == 1)
 #define ad_grad_axpy_n mfad_grad_axpy_n
+#elif defined(ad_grad_axpy_n)
+#undef ad_grad_axpy_n
 #endif
 
 #ifdef __cplusplus

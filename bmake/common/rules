@@ -283,9 +283,18 @@ getmpirun:
 	  	      echo "#include \"${PETSC_DIR}/src/sys/adic/Gradient/ad_utils.c\"" >> $*.ad.c ;\
                 fi;\
                 echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
-                echo "#define ad_GRAD_MAX 4"  >> $*.ad.c ;\
+                echo "#define ad_GRAD_MAX 1"  >> $*.ad.c ;\
                 echo "typedef struct {double value;double  grad[ad_GRAD_MAX];} mfDERIV_TYPE;"  >> $*.ad.c ;\
 	        sed -e "s/DERIV_TYPE/mfDERIV_TYPE/g" $<.ad.tmp2 >> $*.ad.c ;\
+                c=`grep "Process blockadiC" $< | sed -e "s?[ ]*Process blockadiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
+                r=`grep "Process blockadiC" $< | sed -e "s?[ ]*Process blockadiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
+                echo Running adiC on function $${r};\
+                ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
+                echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
+                echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\
+                ${ADIC_CC} -t -h -i ${PETSC_DIR}/bmake/adicmfb.init   $<.tmp1 ; \
+                echo "typedef struct {double value;double  grad[ad_GRAD_MAX];} mfbDERIV_TYPE;"  >> $*.ad.c ;\
+	        sed -e "s/DERIV_TYPE/mfbDERIV_TYPE/g" $<.ad.tmp1 >> $*.ad.c ;\
 	        echo "#include \"$<\"" >> $*.ad.c ;\
 		${RM} *.ad.tmp* *.c.tmp* ad_deriv.h ; \
 	        echo ${CC} -g  -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
