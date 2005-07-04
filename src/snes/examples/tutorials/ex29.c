@@ -197,7 +197,7 @@ int main(int argc,char **argv)
     tsCtx.max_steps   = 1000000;   
     tsCtx.max_time    = 1.0e+12;
     /* use for dt = min(dx,dy); multiplied by dt_ratio below */
-    tsCtx.dt          = 7*PetscMin(lx/mx,ly/my);  
+    tsCtx.dt          = PetscMin(lx/mx,ly/my);  
     tsCtx.fnorm_ratio = 1.0e+10;
     tsCtx.t           = 0;
     tsCtx.dt_out      = 10;
@@ -252,11 +252,9 @@ int main(int argc,char **argv)
        Process blockadiC(4):  FormFunctionLocali4
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = DMMGSetSNESLocal(dmmg, FormFunctionLocal, 0,ad_FormFunctionLocal, admf_FormFunctionLocal);CHKERRQ(ierr);
-    ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,0,,admf_FormFunctionLocali);CHKERRQ(ierr);
+    ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,0,admf_FormFunctionLocali);CHKERRQ(ierr);
     ierr = DMMGSetSNESLocalib(dmmg,FormFunctionLocali4,0,admfb_FormFunctionLocali4);CHKERRQ(ierr);
- 
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "finish setup!");
- 
+  
    /* attach nullspace to each level of the preconditioner */
     ierr = DMMGSetNullSpace(dmmg,PETSC_FALSE,1,CreateNullSpace);CHKERRQ(ierr);
     
@@ -283,9 +281,7 @@ int main(int argc,char **argv)
       ierr = VecView(((AppCtx*)DMMGGetUser(dmmg,param.mglevels-1))->Xold,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     }
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Get update!");
     ierr = Update(dmmg);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "finish update!");
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Free work space.  All PETSc objects should be destroyed when they
