@@ -35,8 +35,9 @@
 #define __FUNCT__ "ReadInVecs"
 PetscErrorCode ReadInVecs(mxArray *plhs[],int t,int dim,int *dims)
 {
-  int    cookie = 0,M,compx = 0,i;
-  
+  int          cookie = 0,M,i;
+  mxComplexity compx = mxREAL;
+
   /* get size of matrix */
   if (PetscBinaryRead(t,&cookie,1,PETSC_INT))   return -1;  /* finished reading file */
   if (cookie != VEC_FILE_COOKIE) PETSC_MEX_ERROR("could not read vector cookie");
@@ -55,7 +56,7 @@ PetscErrorCode ReadInVecs(mxArray *plhs[],int t,int dim,int *dims)
   }
 
   /* read in matrix */
-  if (!compx) { /* real */
+  if (compx == mxREAL) { /* real */
     if (PetscBinaryRead(t,mxGetPr(plhs[0]),M,PETSC_DOUBLE)) PETSC_MEX_ERROR("read dense matrix");
   } else { /* complex, currently not used */
     for (i=0; i<M; i++) {

@@ -1,8 +1,5 @@
 /*
-    Part of the MatlabSockettool Package. Receive a sparse matrix
-  at a socket address, called by the receive.mex4 Matlab program.
-
-        Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
+    Receive a sparse matrix at a socket address, called by the receive.mex4 Matlab program.
 
    Since this is called from Matlab it cannot be compiled with C++.
 */
@@ -15,10 +12,11 @@
 #define __FUNCT__ "ReceiveSparseMatrix"
 PetscErrorCode ReceiveSparseMatrix(mxArray *plhs[],int t)
 {
-  int    *tr,*tc,compx = 0;
-  int    *r,*c;
-  int    i,j,m,n,nnz,lnnz,jstart,jend,off = 0;
-  double *tv,*v,*diag,*vi;
+  int          *tr,*tc;
+  mxComplexity compx = mxREAL;
+  int          *r,*c;
+  int          i,j,m,n,nnz,lnnz,jstart,jend,off = 0;
+  double       *tv,*v,*diag,*vi;
 
   /* get size of matrix */
   if (PetscBinaryRead(t,&m,1,PETSC_INT))   PETSC_MEX_ERROR("reading number columns"); 
@@ -34,7 +32,7 @@ PetscErrorCode ReceiveSparseMatrix(mxArray *plhs[],int t)
   c = mxGetJc(plhs[0]);
   v = mxGetPr(plhs[0]);
   /* Matlab sparse matrix pointers start at 0 not 1 */
-  if (!compx) {
+  if (compx == mxREAL) {
     if (PetscBinaryRead(t,v,nnz,PETSC_DOUBLE)) PETSC_MEX_ERROR("reading values");
   } else {
     for (i=0; i<nnz; i++) {

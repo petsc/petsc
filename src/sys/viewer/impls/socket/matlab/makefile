@@ -15,18 +15,17 @@ speciallib:
 	-@echo "BEGINNING TO COMPILE MATLAB INTERFACE"
 	-@${OMAKE}  matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}
 	-@if [ ! -d "${PETSC_DIR}/bin/matlab" ] ; then ${MKDIR}  ${PETSC_DIR}/bin/matlab; fi
-	-@${MV} receive.mex* openport.mex* closeport.mex* launch.mex* readinvecs.mex* ${PETSC_DIR}/bin/matlab
+	-@${MV} receive.mex* openport.mex* closeport.mex* readinvecs.mex* ${PETSC_DIR}/bin/matlab
 specialfastlib: speciallib
 
-matlabcodes: receive openport closeport launch readinvecs
+matlabcodes: receive openport closeport readinvecs
 
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  = 
 SOURCEC   = 
 SOURCEF   =
-SOURCEH   = closeport.c openport.c receivedense.c launch.c receive.c  bread.c \
-            receivesparse.c closeport.m launch.m openport.m receive.m readinvecs.c
+SOURCEH   = closeport.c openport.c receivedense.c receive.c  bread.c readinvecs.c 
 OBJSC     = 
 OBJSF     =
 MANSEC    = Viewer
@@ -54,11 +53,6 @@ closeport:
 	-@${MATLAB_MEX} -g CC=${MATLAB_CC} CFLAGS='${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}' closeport.c
 	-@${RM} -f  closeport.o 
 	-@if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f closeport.mexsg64 closeport.mexsg ; fi 
-
-launch: 
-	-@${MATLAB_MEX} -g CC=${MATLAB_CC}  CFLAGS='${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}' launch.c
-	-@${RM} -f  launch.o 
-	-@if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f launch.mexsg64 launch.mexsg ; fi 
 
 readinvecs:  
 	-@${MATLAB_MEX} -g CC=${MATLAB_CC} CFLAGS='${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}' readinvecs.c bread.c

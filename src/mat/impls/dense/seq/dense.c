@@ -63,9 +63,9 @@ PetscErrorCode MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
 #define __FUNCT__ "MatScale_SeqDense"
 PetscErrorCode MatScale_SeqDense(Mat A,PetscScalar alpha)
 {
-  Mat_SeqDense *a = (Mat_SeqDense*)A->data;
-  PetscScalar  oalpha = alpha;
-  PetscBLASInt one = 1,lda = a->lda,j,nz;
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+  PetscScalar    oalpha = alpha;
+  PetscBLASInt   one = 1,lda = a->lda,j,nz;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1680,7 +1680,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetLDA(Mat B,PetscInt lda)
 
   Level: beginner
 
-.seealso: MatCreateSeqDense
+.seealso: MatCreateSeqDense()
+
 M*/
 
 EXTERN_C_BEGIN

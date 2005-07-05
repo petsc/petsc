@@ -4,23 +4,49 @@
 	 Updated by Ridhard Katz, katz@ldeo.columbia.edu 9/28/03
 */
 
-#include "petsc.h"
-#if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)
-typedef unsigned char   u_char;
-typedef unsigned short  u_short;
-typedef unsigned short  ushort;
-typedef unsigned int    u_int;
-typedef unsigned long   u_long;
-#endif
-#include <stdio.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/wait.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <fcntl.h>
+#include "petscsys.h"
 #include "src/sys/viewer/impls/socket/socket.h"
+
+#include <errno.h>
+#if defined(PETSC_HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+#include <sys/types.h>
+#include <ctype.h>
+#if defined(PETSC_HAVE_MACHINE_ENDIAN_H)
+#include <machine/endian.h>
+#endif
+#if defined(PETSC_HAVE_UNISTD_H)
+#include <unistd.h>
+#endif
+#if defined(PETSC_HAVE_SYS_SOCKET_H)
+#include <sys/socket.h>
+#endif
+#if defined(PETSC_HAVE_SYS_WAIT_H)
+#include <sys/wait.h>
+#endif
+#if defined(PETSC_HAVE_NETINET_IN_H)
+#include <netinet/in.h>
+#endif
+#if defined(PETSC_HAVE_NETDB_H)
+#include <netdb.h>
+#endif
+#if defined(PETSC_HAVE_FCNTL_H)
+#include <fcntl.h>
+#endif
+#if defined(PETSC_HAVE_STROPTS_H)
+#include <stropts.h>
+#endif
+#if defined(PETSC_HAVE_IO_H)
+#include <io.h>
+#endif
+
+EXTERN_C_BEGIN
+#if defined(PETSC_NEED_CLOSE_PROTO)
+extern int close(int);
+#endif
+EXTERN_C_END
+
 #include "mex.h"
 #define PETSC_MEX_ERROR(a) {fprintf(stdout,"CLOSEPORT: %s \n",a); return ;}
 typedef struct { int onoff; int time; } Linger;

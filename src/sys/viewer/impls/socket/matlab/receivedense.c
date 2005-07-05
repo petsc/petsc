@@ -20,7 +20,8 @@
 #define __FUNCT__ "ReceiveDenseMatrix"
 PetscErrorCode ReceiveDenseMatrix(mxArray *plhs[],int t)
 {
-  int    m,n,compx = 0,i;
+  int          m,n,i;
+  mxComplexity compx = mxREAL;
   
   /* get size of matrix */
   if (PetscBinaryRead(t,&m,1,PETSC_INT))   PETSC_MEX_ERROR("reading number columns"); 
@@ -30,7 +31,7 @@ PetscErrorCode ReceiveDenseMatrix(mxArray *plhs[],int t)
   /*allocate matrix */
   plhs[0]  = mxCreateDoubleMatrix(m,n,compx);
   /* read in matrix */
-  if (!compx) {
+  if (compx == mxREAL) {
     if (PetscBinaryRead(t,mxGetPr(plhs[0]),n*m,PETSC_DOUBLE)) PETSC_MEX_ERROR("read dense matrix");
   } else {
     for (i=0; i<n*m; i++) {
@@ -45,10 +46,10 @@ PetscErrorCode ReceiveDenseMatrix(mxArray *plhs[],int t)
 #define __FUNCT__ "ReceiveIntDenseMatrix"
 PetscErrorCode ReceiveDenseIntMatrix(mxArray *plhs[],int t)
 {
-  int            m,compx = 0,i,*array;
+  int            m,i,*array;
   double         *values;
   PetscErrorCode ierr;
-  
+
   /* get size of matrix */
   ierr = PetscBinaryRead(t,&m,1,PETSC_INT); if (ierr) PETSC_MEX_ERROR("reading number columns"); 
   
