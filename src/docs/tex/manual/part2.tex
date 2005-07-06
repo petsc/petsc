@@ -144,7 +144,7 @@ which ensures that parallel vectors are printed correctly to
 \trl{stdout}. To display the vector in an X-window, one can use the
 default X-windows viewer \trl{PETSC_VIEWER_DRAW_WORLD},
 \findex{PETSC_VIEWER_DRAW_WORLD} or one can create a viewer with the
-routine PetscViewerDrawOpenX().  A variety of viewers are discussed
+routine PetscViewerDrawOpen().  A variety of viewers are discussed
 further in Section \ref{sec_viewers}.
 
 To create a new vector of the same format as an existing vector, one uses
@@ -1664,8 +1664,8 @@ Also one can use \findex{PETSC_VIEWER_DRAW_WORLD}
 \begin{tabbing}
   MatView(Mat mat,PetscViewer viewer);
 \end{tabbing}
-where \trl{viewer} was obtained with PetscViewerDrawOpenX().
-\findex{PetscViewerDrawOpenX()} 
+where \trl{viewer} was obtained with PetscViewerDrawOpen().
+\findex{PetscViewerDrawOpen()} 
 Additional viewers \findex{MatCopy()} and options are given in the MatView() man
 page and Section~\ref{sec_viewers}.
 
@@ -6247,7 +6247,7 @@ predefined viewers:
       \trl{PETSC_VIEWER_DRAW_WORLD} \findex{PETSC_VIEWER_DRAW_WORLD} causes the 
       object to be drawn in a default X window.
 \item Passing in a viewer obtained by
-      PetscViewerDrawOpenX() causes the object to be displayed graphically.
+      PetscViewerDrawOpen() causes the object to be displayed graphically.
 \item To save an object to a file in ASCII format, the user creates
       the viewer object with the command
       \trl{PetscViewerASCIIOpen(MPI_Comm comm, char* file, PetscViewer *viewer)}.  
@@ -6619,9 +6619,9 @@ to try to provide direct interfaces.
 \subsection{Windows as PetscViewers}
 For drawing predefined PETSc objects such as matrices and vectors, one must 
 first create a viewer using the 
-command \findex{PetscViewerDrawOpenX()}
+command \findex{PetscViewerDrawOpen()}
 \begin{tabbing}
-  PetscViewerDrawOpenX(MPI\_Comm comm,char *display,char *title,int x,\\
+  PetscViewerDrawOpen(MPI\_Comm comm,char *display,char *title,int x,\\
                        int y,int w,int h,PetscViewer *viewer);
 \end{tabbing}
 This viewer may be passed to any of the \trl{XXXView()} routines.
@@ -6632,7 +6632,7 @@ command \findex{PetscViewerDrawGetDraw()}
 \end{tabbing}
 Then one can call any of the \trl{PetscDrawXXX} commands on the \trl{draw}
 object. If one obtains the \trl{draw} object in this manner, 
-one does not call the PetscDrawOpenX() command discussed below.
+one does not call the PetscDrawOpen() command discussed below.
 
 \findex{PETSC_VIEWER_DRAW_WORLD} \findex{PETSC_VIEWER_DRAW_SELF} 
 Predefined viewers, \trl{PETSC_VIEWER_DRAW_WORLD} 
@@ -6652,9 +6652,9 @@ colormap can be used via the option \trl{-draw_x_shared_colormap}.
 
 One can open a window that is not associated with a viewer directly 
 under the X11 Window System with the
-command \findex{PetscDrawOpenX()} \sindex{X windows}
+command \findex{PetscDrawOpen()} \sindex{X windows}
 \begin{tabbing}
-  PetscDrawOpenX(MPI\_Comm comm,char *display,char *title,int x,\\
+  PetscDrawOpen(MPI\_Comm comm,char *display,char *title,int x,\\
                  int y,int w,int h,PetscDraw *win);
 \end{tabbing}
 All drawing routines are done relative to the windows coordinate system 

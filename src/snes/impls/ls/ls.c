@@ -201,11 +201,10 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     ierr = VecCopy(Y,snes->vec_sol_update_always);CHKERRQ(ierr);
     ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     ierr = PetscLogInfo((snes,"SNESSolve_LS: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",fnorm,gnorm,ynorm,(int)lssucceed));CHKERRQ(ierr);
-    if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
-
     TMP = F; F = G; snes->vec_func_always = F; G = TMP;
     TMP = X; X = W; snes->vec_sol_always = X;  W = TMP;
     fnorm = gnorm;
+    if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
 
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;

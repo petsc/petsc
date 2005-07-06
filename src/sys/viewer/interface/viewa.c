@@ -47,7 +47,7 @@
    Concepts: PetscViewer^setting format
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
-          PetscViewerPushFormat(), PetscViewerPopFormat(), PetscViewerDrawOpenX(),PetscViewerSocketOpen()
+          PetscViewerPushFormat(), PetscViewerPopFormat(), PetscViewerDrawOpen(),PetscViewerSocketOpen()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
 {

@@ -167,27 +167,22 @@ void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *isrow,IS *iscol,M
 
 void PETSC_STDCALL matzerorows_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLSCALAR(diag);
   *ierr = MatZeroRows(*mat,*numRows,rows,*diag);
 }
 
 void PETSC_STDCALL matzerorowsis_(Mat *mat,IS *is,PetscScalar *diag,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLSCALAR(diag);
   *ierr = MatZeroRowsIS(*mat,*is,*diag);
 }
 
 void PETSC_STDCALL matzerorowslocal_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLSCALAR(diag);
   *ierr = MatZeroRowsLocal(*mat,*numRows,rows,*diag);
 }
 
 void PETSC_STDCALL matzerorowslocalis_(Mat *mat,IS *is,PetscScalar *diag,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLSCALAR(diag);
   *ierr = MatZeroRowsLocalIS(*mat,*is,*diag);
 }
-
 
 EXTERN_C_END
