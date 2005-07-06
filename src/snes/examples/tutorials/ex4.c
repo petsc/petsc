@@ -35,9 +35,14 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
+#include "petsc.h"
+#include "petscbag.h"
 #include "petscda.h"
 #include "petscdmmg.h"
 #include "petscsnes.h"
+#if 1
+#include <PetscSimOutput.h>
+#endif
 
 /* 
    User-defined application context - contains data needed by the 
@@ -68,7 +73,8 @@ int main(int argc,char **argv)
   SNES                   snes;                 /* nonlinear solver */
   Vec                    x,r;                  /* solution, residual vectors */
   Mat                    J;                    /* Jacobian matrix */
-  AppCtx                 user;                 /* user-defined work context */
+  AppCtx                *user;                 /* user-defined work context */
+  PetscBag               bag;
   PetscInt               its;                  /* iterations for convergence */
   SNESConvergedReason    reason;
   PetscErrorCode         ierr;
@@ -82,12 +88,16 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  user.alpha = 1.0;
-  user.lambda = 6.0;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&user.alpha,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-lambda",&user.lambda,PETSC_NULL);CHKERRQ(ierr);
-  if (user.lambda > lambda_max || user.lambda < lambda_min) {
-    SETERRQ3(1,"Lambda %g is out of range [%g, %g]", user.lambda, lambda_min, lambda_max);
+  ierr = PetscBagCreate(PETSC_COMM_WORLD, sizeof(AppCtx), &bag);CHKERRQ(ierr);
+  ierr = PetscBagGetData(bag, (void **) &user);CHKERRQ(ierr);
+  ierr = PetscBagSetName(bag, "params", "Parameters for SNES example 4");CHKERRQ(ierr);
+  ierr = PetscBagRegisterReal(bag, &user->alpha, 1.0, "alpha", "Linear coefficient");CHKERRQ(ierr);
+  ierr = PetscBagRegisterReal(bag, &user->lambda, 6.0, "lambda", "Nonlinear coefficient");CHKERRQ(ierr);
+  ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&user->alpha,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-lambda",&user->lambda,PETSC_NULL);CHKERRQ(ierr);
+  if (user->lambda > lambda_max || user->lambda < lambda_min) {
+    SETERRQ3(1,"Lambda %g is out of range [%g, %g]", user->lambda, lambda_min, lambda_max);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -99,27 +109,28 @@ int main(int argc,char **argv)
      Create distributed array (DA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
-                    1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+                    1,1,PETSC_NULL,PETSC_NULL,&user->da);CHKERRQ(ierr);
+  ierr = DASetFieldName(user->da, 0, "ooblek"); CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DA; then duplicate for remaining
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DACreateGlobalVector(user.da,&x);CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(user->da,&x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,r,SNESDAFormFunction,&user);CHKERRQ(ierr);
-  ierr = DAGetMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,J,J,SNESDAComputeJacobian,&user);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,r,SNESDAFormFunction,user);CHKERRQ(ierr);
+  ierr = DAGetMatrix(user->da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,J,SNESDAComputeJacobian,user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DASetLocalFunction(user.da,(DALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
-  ierr = DASetLocalJacobian(user.da,(DALocalFunction1)FormJacobianLocal);CHKERRQ(ierr); 
+  ierr = DASetLocalFunction(user->da,(DALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DASetLocalJacobian(user->da,(DALocalFunction1)FormJacobianLocal);CHKERRQ(ierr); 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -133,7 +144,7 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
+  ierr = FormInitialGuess(user,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
@@ -145,6 +156,21 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D, %s\n",its,SNESConvergedReasons[reason]);CHKERRQ(ierr);
 
+#if 1
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Visualize the solution
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  {
+    PetscViewer viewer;
+
+    ierr = PetscWriteOutputInitialize(PETSC_COMM_WORLD, "ex4.data", &viewer);CHKERRQ(ierr);
+    ierr = PetscWriteOutputBag(viewer, "params", bag);CHKERRQ(ierr);
+    ierr = PetscWriteOutputVecDA(viewer, "u", x, user->da);CHKERRQ(ierr);
+    ierr = PetscWriteOutputFinalize(viewer);CHKERRQ(ierr);
+  }
+
+#endif
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
@@ -153,7 +179,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(r);CHKERRQ(ierr);      
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
-  ierr = DADestroy(user.da);CHKERRQ(ierr);
+  ierr = DADestroy(user->da);CHKERRQ(ierr);
+  ierr = PetscBagDestroy(bag);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
