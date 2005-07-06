@@ -40,7 +40,7 @@ chkopts:
 	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} shared; \
 	  else \
 	    echo "*********************** ERROR ************************"; \
-	    echo "Unable to rebuild shared libraries; yorulesu do not have write permission."; \
+	    echo "Unable to rebuild shared libraries; you do not have write permission."; \
 	    user=`ls -l ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}  | tr -s ' ' | cut -d ' ' -f 3`; \
 	    echo "Libraries were built by user $$user; please contact him/her to have them rebuilt."; \
 	    echo "******************************************************"; \

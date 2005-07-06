@@ -8,8 +8,8 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_TR(SNES);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES);
 EXTERN_C_END
 
-const char *SNESConvergedReasons_Shifted[]  = {"DIVERGED_LOCAL_MIN"," ","DIVERGED_LS_FAILURE","DIVERGED_MAX_IT",
-                                               "DIVERGED_FNORM_NAN","DIVERGED_FUNCTION_COUNT","DIVERGED_FUNCTION_DOMAIN",
+const char *SNESConvergedReasons_Shifted[]  = {" "," ","DIVERGED_LOCAL_MIN"," ","DIVERGED_LS_FAILURE","DIVERGED_MAX_IT",
+                                               "DIVERGED_FNORM_NAN"," ","DIVERGED_FUNCTION_COUNT","DIVERGED_FUNCTION_DOMAIN",
                                                "CONVERGED_ITERATING"," ","CONVERGED_FNORM_ABS","CONVERGED_FNORM_RELATIVE",
                                                "CONVERGED_PNORM_RELATIVE"," "," ","CONVERGED_TR_DELTA","SNESConvergedReason","",0};
 const char **SNESConvergedReasons = SNESConvergedReasons_Shifted + 10;
