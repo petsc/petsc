@@ -38,6 +38,15 @@ def chkcygwin():
       return 0
   return 0
   
+def chkcygwinpython():
+  if os.path.exists('/usr/bin/cygcheck.exe'):
+    buf = os.popen('/usr/bin/cygcheck.exe -c python').read()
+    if buf.find('2.4') > -1:
+      return 1
+    else:
+      return 0
+  return 0
+
 def rhl9():
   try:
     file = open('/etc/redhat-release','r')
@@ -97,6 +106,13 @@ def petsc_configure(configure_options):
     print ' *** be done by running cygwin-setup, selecting "next" all the way.***'
     print '================================================================================='
     sys.exit(3)
+  # Threads don't work for cygwin & python-2.4
+  if chkcygwinpython():
+    sys.argv.append('--useThreads=0')
+    print '================================================================================='
+    print ' *** Cygwin-python-2.4 detected. Threads do not work correctly with this version ***'
+    print ' ******** Disabling thread usage for this run of config/configure.py *****'
+    print '================================================================================='
           
   # Should be run from the toplevel
   pythonDir = os.path.abspath(os.path.join('python'))
