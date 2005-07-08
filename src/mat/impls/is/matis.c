@@ -271,6 +271,38 @@ PetscErrorCode MatSetOption_IS(Mat A,MatOption op)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateIS" 
+/*@
+    MatCreateIS - Creates a "process" unassmembled matrix, it is assembled on each 
+       process but not across processes.
+
+   Input Parameters:
++     comm - MPI communicator that will share the matrix
+.     m,n,M,N - local and/or global sizes of the the left and right vector used in matrix vector products
+-     map - mapping that defines the global number for each local number
+
+   Output Parameter:
+.    A - the resulting matrix
+
+   Notes: See MATIS for more details
+          m and n are NOT related to the size of the map
+
+
+.seealso: MATIS, MatSetLocalToGlobalMapping()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateIS(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,ISLocalToGlobalMapping map,Mat *A)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(comm,A);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
+  ierr = MatSetType(*A,MATIS);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(*A,map);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
    MATIS - MATIS = "is" - A matrix type to be used for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 

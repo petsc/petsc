@@ -120,12 +120,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm comm,Mat *A)
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1); 
   if (M > 0 && m > M) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local column size %D cannot be larger than global column size %D",m,M);
   if (N > 0 && n > N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local row size %D cannot be larger than global row size %D",n,N);
-  if ((A->m >= 0 || A->M >= 0) && (A->m != m || A->M != M)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->m,A->M);
-  if ((A->n >= 0 || A->N >= 0) && (A->n != n || A->N != N)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset column sizes to %D local %D global after previously setting them to %D local %D global",n,N,A->n,A->N);
+  if (A->ops->setsizes) {
+    /* Since this will not be set until the type has been set, this will NOT be called on the initial
+       call of MatSetSizes() (which must be called BEFORE MatSetType() */
+    ierr = (*A->ops->setsizes)(A,m,n,M,N);CHKERRQ(ierr);
+  } else {
+    if ((A->m >= 0 || A->M >= 0) && (A->m != m || A->M != M)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->m,A->M);
+    if ((A->n >= 0 || A->N >= 0) && (A->n != n || A->N != N)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset column sizes to %D local %D global after previously setting them to %D local %D global",n,N,A->n,A->N);
+  }
   A->m = m;
   A->n = n;
   A->M = M;
