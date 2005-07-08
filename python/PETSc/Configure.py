@@ -28,6 +28,7 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.setCompilers  = framework.require('config.setCompilers',      self)
     self.arch          = framework.require('PETSc.utilities.arch',     self.setCompilers)
+    self.petscdir      = framework.require('PETSc.utilities.petscdir', self.setCompilers)
     self.languages     = framework.require('PETSc.utilities.languages',self.setCompilers)
     self.debugging     = framework.require('PETSc.utilities.debugging',self.setCompilers)        
     self.compilers     = framework.require('config.compilers',         self)
@@ -170,8 +171,8 @@ class Configure(config.base.Configure):
     self.addMakeMacro('INSTALL_DIR',self.installdir)
     self.addMakeMacro('top_builddir',self.installdir)                
 
-    if not os.path.exists(os.path.join(self.arch.dir,'lib')):
-      os.makedirs(os.path.join(self.arch.dir,'lib'))
+    if not os.path.exists(os.path.join(self.petscdir.dir,'lib')):
+      os.makedirs(os.path.join(self.petscdir.dir,'lib'))
 
     # add a makefile entry for configure options
     self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"'))
@@ -297,7 +298,7 @@ class Configure(config.base.Configure):
     f.write('#!/usr/bin/env python\n')
     f.write('if __name__ == \'__main__\':\n')
     f.write('  import sys\n')
-    f.write('  sys.path.insert(0, '+repr(os.path.join(self.arch.dir, 'config'))+')\n')
+    f.write('  sys.path.insert(0, '+repr(os.path.join(self.petscdir.dir, 'config'))+')\n')
     f.write('  import configure\n')
     f.write('  configure_options = '+repr(args.values())+'\n')
     f.write('  configure.petsc_configure(configure_options)\n')
@@ -314,7 +315,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['prefix']:
       self.installdir = os.path.join(self.framework.argDB['prefix'], os.path.basename(os.getcwd()))
     else:
-      self.installdir = self.arch.dir
+      self.installdir = self.petscdir.dir
     return
 
   def configureGCOV(self):
@@ -323,8 +324,8 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    if not os.path.samefile(self.arch.dir, os.getcwd()):
-      raise RuntimeError('Wrong PETSC_DIR option specified: '+str(self.arch.dir) + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
+    if not os.path.samefile(self.petscdir.dir, os.getcwd()):
+      raise RuntimeError('Wrong PETSC_DIR option specified: '+str(self.petscdir.dir) + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
     self.framework.header          = 'bmake/'+self.arch.arch+'/petscconf.h'
     self.framework.cHeader         = 'bmake/'+self.arch.arch+'/petscfix.h'
     self.framework.makeMacroHeader = 'bmake/'+self.arch.arch+'/petscconf'

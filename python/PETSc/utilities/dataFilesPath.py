@@ -23,7 +23,7 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.arch = framework.require('PETSc.utilities.arch', self)
+    self.petscdir = framework.require('PETSc.utilities.petscdir', self)
     return
 
   def getDatafilespath(self):
@@ -36,8 +36,8 @@ class Configure(config.base.Configure):
         raise RuntimeError('Path given with option -DATAFILES='+self.framework.argDB['DATAFILESPATH']+' is not a valid datafiles directory')
     elif os.path.isdir(os.path.join('/home','petsc','datafiles')) & os.path.isdir(os.path.join('/home','petsc','datafiles','matrices')):
       self.datafilespath = os.path.join('/home','petsc','datafiles')
-    elif os.path.isdir(os.path.join(self.arch.dir, '..', 'datafiles')) &  os.path.isdir(os.path.join(self.arch.dir, '..', 'datafiles', 'matrices')):
-      self.datafilespath = os.path.join(self.arch.dir, '..', 'datafiles')
+    elif os.path.isdir(os.path.join(self.petscdir.dir, '..', 'datafiles')) &  os.path.isdir(os.path.join(self.petscdir.dir, '..', 'datafiles', 'matrices')):
+      self.datafilespath = os.path.join(self.petscdir.dir, '..', 'datafiles')
     self.addMakeMacro('DATAFILESPATH',self.datafilespath)
     return
 

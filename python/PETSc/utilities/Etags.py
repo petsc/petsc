@@ -21,16 +21,16 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.arch = framework.require('PETSc.utilities.arch', self)
+    self.petscdir = framework.require('PETSc.utilities.petscdir', self)
     return
 
   def configureETags(self):
     '''Determine if etags files exist and try to create otherwise'''
-    if not os.path.exists(os.path.join(self.arch.dir, 'TAGS')):
+    if not os.path.exists(os.path.join(self.petscdir.dir, 'TAGS')):
       self.framework.log.write('WARNING: ETags files have not been created\n')
       self.framework.getExecutable('etags', getFullPath = 1)
       if hasattr(self.framework, 'etags'):
-        pd = self.arch.dir
+        pd = self.petscdir.dir
         if pd[-1]=='/': pd = pd[:-1] # etags chokes if there's a trailing /
         self.framework.log.write('           Running '+self.framework.etags+' to generate TAGS files\n')
         try:

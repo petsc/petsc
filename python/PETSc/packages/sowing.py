@@ -83,7 +83,7 @@ class Configure(PETSc.package.Package):
 
   def configure(self):
     '''Determine whether the Sowing exist or not'''
-    if os.path.exists(os.path.join(self.arch.dir, 'BitKeeper')):
+    if os.path.exists(os.path.join(self.petscdir.dir, 'BitKeeper')):
       self.framework.log.write('BitKeeper clone of PETSc, checking for Sowing\n')
       self.Install()
       self.buildFortranStubs()

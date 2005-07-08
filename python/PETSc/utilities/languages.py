@@ -25,7 +25,7 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.arch = framework.require('PETSc.utilities.arch', self)
+    self.petscdir = framework.require('PETSc.utilities.petscdir', self)
     return
 
   def configureScalarType(self):
@@ -116,14 +116,14 @@ class Configure(config.base.Configure):
       raise RuntimeError('Python bindings require shared libraries. Please add --with-shared to your configure options.')
     if not self.framework.argDB['with-dynamic']:
       raise RuntimeError('Python bindings require dynamic libraries. Please add --with-dynamic to your configure options.')
-    if os.path.isdir(os.path.join(self.arch.dir, 'BitKeeper')):
-      if not os.path.isdir(os.path.join(self.arch.dir, 'src', 'python')):
-        os.mkdir(os.path.join(self.arch.dir, 'src', 'python'))
-      if os.path.isdir(os.path.join(self.arch.dir, 'src', 'python', 'PETSc')):
+    if os.path.isdir(os.path.join(self.petscdir.dir, 'BitKeeper')):
+      if not os.path.isdir(os.path.join(self.petscdir.dir, 'src', 'python')):
+        os.mkdir(os.path.join(self.petscdir.dir, 'src', 'python'))
+      if os.path.isdir(os.path.join(self.petscdir.dir, 'src', 'python', 'PETSc')):
         self.logPrint('Python binding source already present')
         return
       try:
-        self.retrievePackage('Python Bindings', 'PETScPython', 'ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz', os.path.join(self.arch.dir, 'src', 'python'))
+        self.retrievePackage('Python Bindings', 'PETScPython', 'ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz', os.path.join(self.petscdir.dir, 'src', 'python'))
       except:
         self.logPrintBox('Warning: Unable to get the PETSc Python bindings; perhaps you are off the network.\nBuilding without Python bindings')
     return

@@ -218,8 +218,8 @@ class Configure(PETSc.package.Package):
       yield ('Microsoft Windows, Intel MKL library', None, os.path.join(MKL_Dir,'mkl_c_dll.lib'), 1)
       yield ('Microsoft Windows, Intel MKL stdcall library', None, os.path.join(MKL_Dir,'mkl_s_dll.lib'), 1)
     # Try PETSc location
-    if self.arch.dir and self.arch.arch:
-      dir1 = os.path.abspath(os.path.join(self.arch.dir, '..', 'blaslapack', 'lib'))
+    if self.petscdir.dir and self.arch.arch:
+      dir1 = os.path.abspath(os.path.join(self.petscdir.dir, '..', 'blaslapack', 'lib'))
       yield ('PETSc location 1', os.path.join(dir1, 'libblas.a'), os.path.join(dir1, 'liblapack.a'), 1)
       dir2 = os.path.join(dir1, 'libg_c++', self.arch.arch)
       yield ('PETSc location 2', os.path.join(dir2, 'libblas.a'), os.path.join(dir2, 'liblapack.a'), 1)
