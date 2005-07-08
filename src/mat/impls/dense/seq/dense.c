@@ -1442,6 +1442,23 @@ PetscErrorCode MatSetUpPreallocation_SeqDense(Mat A)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetSizes_SeqDense"
+PetscErrorCode MatSetSizes_SeqDense(Mat A,PetscInt m,PetscInt n,PetscInt M,PetscInt N)
+{
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+
+  PetscFunctionBegin;
+  /* this will not be called before lda and Nmax have been set */
+  m = PetscMax(m,M);
+  n = PetscMax(n,N);
+  if (m > a->lda) SETERRQ2(PETSC_ERR_SUP,"Cannot yet resize number rows of dense matrix larger then its initial size %d, requested %d",a->lda,(int)m);
+  if (n > a->Nmax) SETERRQ2(PETSC_ERR_SUP,"Cannot yet resize number columns of dense matrix larger then its initial size %d, requested %d",a->Nmax,(int)n);
+  A->m = A->M = m;
+  A->n = A->N = n;
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        MatGetRow_SeqDense,
@@ -1541,7 +1558,13 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 /*95*/ 0,
        0,
        0,
-       0};
+       0,
+       0,
+/*100*/0,
+       0,
+       0,
+       0,
+       MatSetSizes_SeqDense};
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqDense"
@@ -1599,7 +1622,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqDense(MPI_Comm comm,PetscInt m,Pet
    Notes:
    The data input variable is intended primarily for Fortran programmers
    who wish to allocate their own matrix memory space.  Most users should
-   set data=PETSC_NULL.
+   need not call this routine.
 
    Level: intermediate
 
@@ -1631,10 +1654,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetPreallocation_SeqDense(Mat B,Pet
   B->preallocated = PETSC_TRUE;
   b               = (Mat_SeqDense*)B->data;
   if (!data) {
-    ierr          = PetscMalloc((B->m*B->n+1)*sizeof(PetscScalar),&b->v);CHKERRQ(ierr);
-    ierr          = PetscMemzero(b->v,B->m*B->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr          = PetscMalloc((b->lda*b->Nmax+1)*sizeof(PetscScalar),&b->v);CHKERRQ(ierr);
+    ierr          = PetscMemzero(b->v,b->lda*b->Nmax*sizeof(PetscScalar));CHKERRQ(ierr);
     b->user_alloc = PETSC_FALSE;
-    ierr = PetscLogObjectMemory(B,B->n*B->m*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(B,b->lda*b->Nmax*sizeof(PetscScalar));CHKERRQ(ierr);
   } else { /* user-allocated storage */
     b->v          = data;
     b->user_alloc = PETSC_TRUE;
@@ -1661,7 +1684,7 @@ EXTERN_C_END
 
 .keywords: dense, matrix, LAPACK, BLAS
 
-.seealso: MatCreate(), MatCreateSeqDense(), MatSeqDenseSetPreallocation()
+.seealso: MatCreate(), MatCreateSeqDense(), MatSeqDenseSetPreallocation(), MatSetMaximumSize()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetLDA(Mat B,PetscInt lda)
 {
@@ -1714,6 +1737,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   b->roworiented  = PETSC_TRUE;
   b->v            = 0;
   b->lda          = B->m;
+  b->Nmax         = B->n;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqDenseSetPreallocation_C",
                                     "MatSeqDenseSetPreallocation_SeqDense",

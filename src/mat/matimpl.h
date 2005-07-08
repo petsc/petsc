@@ -140,6 +140,7 @@ struct _MatOps {
   PetscErrorCode (*ptapsymbolic_mpiaij)(Mat,Mat,PetscReal,Mat*); /* actual implememtation, A=mpiaij */
   PetscErrorCode (*ptapnumeric_mpiaij)(Mat,Mat,Mat);             /* actual implememtation, A=mpiaij */
   PetscErrorCode (*conjugate)(Mat);                              /* complex conjugate */
+  PetscErrorCode (*setsizes)(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
