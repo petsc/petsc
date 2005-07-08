@@ -81,9 +81,9 @@ Warning: Using from command-line: %s, ignoring environment: %s''' % (str(self.fr
         # use opt/debug, c/c++/complex tags.
         self.arch+= '-'+self.languages.clanguage.lower()+'-'+self.languages.scalartype
         if self.compilerFlags.debugging:
-          self.arch += '-opt'
-        else:
           self.arch += '-debug'
+        else:
+          self.arch += '-opt'
 
     self.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.arch)
     self.hostOsBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.framework.host_os)
