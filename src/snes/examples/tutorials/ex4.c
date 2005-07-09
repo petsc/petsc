@@ -50,7 +50,6 @@ T*/
    FormFunctionLocal().
 */
 typedef struct {
-   DA        da;             /* distributed array data structure */
    PetscReal alpha;          /* parameter controlling linearity */
    PetscReal lambda;         /* parameter controlling nonlinearity */
 } AppCtx;
@@ -62,7 +61,7 @@ static PetscScalar Kref[16] = { 0.666667, -0.166667, -0.333333, -0.166667,
 /* 
    User-defined routines
 */
-extern PetscErrorCode FormInitialGuess(AppCtx*,Vec);
+extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DALocalInfo*,PetscScalar**,Mat,AppCtx*);
 
@@ -70,9 +69,9 @@ extern PetscErrorCode FormJacobianLocal(DALocalInfo*,PetscScalar**,Mat,AppCtx*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
+  DMMG                  *dmmg;                 /* hierarchy manager */
+  DA                     da;
   SNES                   snes;                 /* nonlinear solver */
-  Vec                    x,r;                  /* solution, residual vectors */
-  Mat                    J;                    /* Jacobian matrix */
   AppCtx                *user;                 /* user-defined work context */
   PetscBag               bag;
   PetscInt               its;                  /* iterations for convergence */
@@ -100,42 +99,24 @@ int main(int argc,char **argv)
     SETERRQ3(1,"Lambda %g is out of range [%g, %g]", user->lambda, lambda_min, lambda_max);
   }
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create nonlinear solver context
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create multilevel DA data structure (DMMG) to manage hierarchical solvers
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = DMMGCreate(PETSC_COMM_WORLD,1,user,&dmmg);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
-                    1,1,PETSC_NULL,PETSC_NULL,&user->da);CHKERRQ(ierr);
-  ierr = DASetFieldName(user->da, 0, "ooblek"); CHKERRQ(ierr);
-
-  /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Extract global vectors from DA; then duplicate for remaining
-     vectors that are the same types
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DACreateGlobalVector(user->da,&x);CHKERRQ(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create matrix data structure; set Jacobian evaluation routine
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,r,SNESDAFormFunction,user);CHKERRQ(ierr);
-  ierr = DAGetMatrix(user->da,MATAIJ,&J);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,J,J,SNESDAComputeJacobian,user);CHKERRQ(ierr);
+                    1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DASetFieldName(da, 0, "ooblek"); CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg, (DM) da);CHKERRQ(ierr);
+  ierr = DADestroy(da);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set local function evaluation routine
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DASetLocalFunction(user->da,(DALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
-  ierr = DASetLocalJacobian(user->da,(DALocalFunction1)FormJacobianLocal);CHKERRQ(ierr); 
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Customize nonlinear solver; set runtime options
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+     Set the discretization functions
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = DMMGSetSNESLocal(dmmg, FormFunctionLocal, FormJacobianLocal, 0, 0);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess
@@ -144,12 +125,13 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess(user,x);CHKERRQ(ierr);
+  ierr = DMMGSetInitialGuess(dmmg, FormInitialGuess);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr); 
+  ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
+  snes = DMMGGetSNES(dmmg);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
 
@@ -165,7 +147,7 @@ int main(int argc,char **argv)
 
     ierr = PetscWriteOutputInitialize(PETSC_COMM_WORLD, "ex4.data", &viewer);CHKERRQ(ierr);
     ierr = PetscWriteOutputBag(viewer, "params", bag);CHKERRQ(ierr);
-    ierr = PetscWriteOutputVecDA(viewer, "u", x, user->da);CHKERRQ(ierr);
+    ierr = PetscWriteOutputVecDA(viewer, "u", DMMGGetx(dmmg), DMMGGetDA(dmmg));CHKERRQ(ierr);
     ierr = PetscWriteOutputFinalize(viewer);CHKERRQ(ierr);
   }
 
@@ -175,11 +157,7 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatDestroy(J);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(r);CHKERRQ(ierr);      
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
-  ierr = DADestroy(user->da);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscBagDestroy(bag);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -191,21 +169,23 @@ int main(int argc,char **argv)
    FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
-   user - user-defined application context
+   dmmg - The DMMG context
    X - vector
 
    Output Parameter:
    X - vector
- */
-PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
+*/
+PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 {
+  AppCtx        *user = (AppCtx *) dmmg->user;
+  DA             da = (DA) dmmg->dm;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscErrorCode ierr;
   PetscReal      lambda,temp1,temp,hx,hy;
   PetscScalar    **x;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+  ierr = DAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   lambda = user->lambda;
@@ -224,7 +204,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DAVecGetArray(user->da,X,&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,X,&x);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries (for 2-dimensional DA):
@@ -232,7 +212,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        xm, ym   - widths of local grid (no ghost points)
 
   */
-  ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -253,7 +233,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  ierr = DAVecRestoreArray(user->da,X,&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
