@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 class Ex1:
-  '''Checks that getValues() operates correctly'''
+  '''Resizes dense matrices and uses MatGetSubMatrix() and MatGetArray()'''
   def __init__(self):
     return
 
@@ -12,32 +12,46 @@ class Ex1:
     atexit.register(PETSc.Base.Base.Finalize)
     return
 
-  def createMatrix(self, M, N):
+  def createMatrices(self, m,n,M, N):
     from PETSc.PetscConstants import PETSC_DECIDE
     from PETSc.InsertMode import INSERT_VALUES
     from PETSc.MatAssemblyType import MAT_FINAL_ASSEMBLY
     import PETSc.Mat
 
+    # allocate a big matrix A, we will only use the first
+    # certain number of rows and columns, which will increase over time
     A = PETSc.Mat.Mat()
-    A.setSizes(PETSC_DECIDE, PETSC_DECIDE, M, N)
-    A.setFromOptions()
-    for row in range(M):
-      A.setValues([row], range(N), [(row*N + c)*10.0 for c in range(N)], INSERT_VALUES)
+    A.setSizes(M,N, PETSC_DECIDE, PETSC_DECIDE)
+    A.setType('seqdense')
     A.assemblyBegin(MAT_FINAL_ASSEMBLY)
     A.assemblyEnd(MAT_FINAL_ASSEMBLY)
-    return A
 
-  def run(self, M = 10, N = 10):
+    B = PETSc.Mat.Mat()
+    B.setSizes(m,n,PETSC_DECIDE,PETSC_DECIDE)
+    B.setType('seqdense')
+  
+    return A,B
+
+  def run(self, m = 5, n = 5,M = 10, N = 10):
     '''We must be careful here to create a Numeric array to pass into getValues() to avoid a copy'''
     import Numeric
+    from PETSc.MatReuse import MAT_INITIAL_MATRIX
 
     self.setup()
-    A = self.createMatrix(M, N)
-    values = Numeric.zeros((1,), 'd')
-    for i, j in zip([1, 7, 2], [9, 5, 1]):
-      A.getValues([i], [j], values)
-      if not values == [(i*N + j)*10.0]:
-        raise RuntimeError ('Invalid matrix element(%d, %d) %g should be %g' % (i, j, values[0], (i*N + j)*10.0))
+    A,B = self.createMatrices(m,n,M, N)
+
+    # only use a part of the space allocated for A
+    aa = A.getArray()
+    a = Numeric.reshape(aa,[M,N])
+    a[0,0] = 8
+    a[2,2] = 17
+    a[0,2] = -3
+    A.restoreArray(aa)
+
+    id = Numeric.array([0,2],'i')
+    C = A.getSubMatrixRaw(id,id,2,MAT_INITIAL_MATRIX)
+
+    print Numeric.reshape(C.getArray(),[2,2])
     return
 
 if __name__ == '__main__':

@@ -34,28 +34,23 @@ PetscErrorCode MatAXPY_SeqDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
 #define __FUNCT__ "MatGetInfo_SeqDense"
 PetscErrorCode MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
 {
-  Mat_SeqDense *a = (Mat_SeqDense*)A->data;
-  PetscInt     i,N = A->m*A->n,count = 0;
-  PetscScalar  *v = a->v;
+  PetscInt     N = A->m*A->n;
 
   PetscFunctionBegin;
-  for (i=0; i<N; i++) {if (*v != 0.0) count++; v++;}
-
   info->rows_global       = (double)A->m;
   info->columns_global    = (double)A->n;
   info->rows_local        = (double)A->m;
   info->columns_local     = (double)A->n;
   info->block_size        = 1.0;
   info->nz_allocated      = (double)N;
-  info->nz_used           = (double)count;
-  info->nz_unneeded       = (double)(N-count);
+  info->nz_used           = (double)N;
+  info->nz_unneeded       = (double)0;
   info->assemblies        = (double)A->num_ass;
   info->mallocs           = 0;
   info->memory            = A->mem;
   info->fill_ratio_given  = 0;
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
-
   PetscFunctionReturn(0);
 }
 
@@ -1371,7 +1366,7 @@ static PetscErrorCode MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,PetscInt 
   bv = ((Mat_SeqDense*)newmat->data)->v;
   
   for (i=0; i<ncols; i++) {
-    av = v + m*icol[i];
+    av = v + mat->lda*icol[i];
     for (j=0; j<nrows; j++) {
       *bv++ = av[irow[j]];
     }
