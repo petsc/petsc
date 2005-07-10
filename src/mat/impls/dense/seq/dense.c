@@ -1319,6 +1319,7 @@ PetscErrorCode MatGetArray_SeqDense(Mat A,PetscScalar *array[])
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
 
   PetscFunctionBegin;
+  if (mat->lda != A->m) SETERRQ(PETSC_ERR_SUP,"Cannot get array for Denses matrices with LDA different from number of rows");
   *array = mat->v;
   PetscFunctionReturn(0);
 }
@@ -1338,7 +1339,7 @@ static PetscErrorCode MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,PetscInt 
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,m = A->m,*irow,*icol,nrows,ncols;
+  PetscInt       i,j,*irow,*icol,nrows,ncols;
   PetscScalar    *av,*bv,*v = mat->v;
   Mat            newmat;
 
@@ -1352,7 +1353,10 @@ static PetscErrorCode MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,PetscInt 
   if (scall == MAT_REUSE_MATRIX) {
     PetscInt n_cols,n_rows;
     ierr = MatGetSize(*B,&n_rows,&n_cols);CHKERRQ(ierr);
-    if (n_rows != nrows || n_cols != ncols) SETERRQ(PETSC_ERR_ARG_SIZ,"Reused submatrix wrong size");
+    if (n_rows != nrows || n_cols != ncols) {
+      /* resize the result result matrix to match number of requested rows/columns */
+      ierr = MatSetSizes(*B,nrows,nrows,nrows,nrows);CHKERRQ(ierr);
+    }
     newmat = *B;
   } else {
     /* Create and fill new matrix */
@@ -1442,15 +1446,17 @@ PetscErrorCode MatSetUpPreallocation_SeqDense(Mat A)
 PetscErrorCode MatSetSizes_SeqDense(Mat A,PetscInt m,PetscInt n,PetscInt M,PetscInt N)
 {
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
-
+  PetscErrorCode ierr;
   PetscFunctionBegin;
-  /* this will not be called before lda and Nmax have been set */
+  /* this will not be called before lda, Mmax,  and Nmax have been set */
   m = PetscMax(m,M);
   n = PetscMax(n,N);
-  if (m > a->lda) SETERRQ2(PETSC_ERR_SUP,"Cannot yet resize number rows of dense matrix larger then its initial size %d, requested %d",a->lda,(int)m);
+  if (m > a->Mmax) SETERRQ2(PETSC_ERR_SUP,"Cannot yet resize number rows of dense matrix larger then its initial size %d, requested %d",a->lda,(int)m);
   if (n > a->Nmax) SETERRQ2(PETSC_ERR_SUP,"Cannot yet resize number columns of dense matrix larger then its initial size %d, requested %d",a->Nmax,(int)n);
   A->m = A->M = m;
   A->n = A->N = n;
+  if (a->changelda) a->lda = m;
+  ierr = PetscMemzero(a->v,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1684,9 +1690,12 @@ EXTERN_C_END
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetLDA(Mat B,PetscInt lda)
 {
   Mat_SeqDense *b = (Mat_SeqDense*)B->data;
+
   PetscFunctionBegin;
   if (lda < B->m) SETERRQ2(PETSC_ERR_ARG_SIZ,"LDA %D must be at least matrix dimension %D",lda,B->m);
-  b->lda = lda;
+  b->lda       = lda;
+  b->changelda = PETSC_FALSE;
+  b->Mmax      = PetscMax(b->Mmax,lda);
   PetscFunctionReturn(0);
 }
 
@@ -1732,6 +1741,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   b->roworiented  = PETSC_TRUE;
   b->v            = 0;
   b->lda          = B->m;
+  b->changelda    = PETSC_FALSE;
+  b->Mmax         = B->m;
   b->Nmax         = B->n;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqDenseSetPreallocation_C",
