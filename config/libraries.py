@@ -155,9 +155,9 @@ class Configure(config.base.Configure):
   def checkMath(self):
     '''Check for sin() in libm, the math library'''
     self.math = None
-    funcs = ['sin', 'floor', 'log10', 'erf']
-    prototypes = ['double sin(double);', 'double floor(double);', 'double log10(double);', 'double erf(double);']
-    calls = ['sin(1.0);\n', 'floor(1.0);\n', 'log10(1.0);\n', 'erf(1.0);\n']
+    funcs = ['sin', 'floor', 'log10']
+    prototypes = ['double sin(double);', 'double floor(double);', 'double log10(double);']
+    calls = ['sin(1.0);\n', 'floor(1.0);\n', 'log10(1.0);\n']
     if self.check('', funcs, prototype = prototypes, call = calls):
       self.logPrint('Math functions are linked in by default')
       self.math = []
@@ -166,6 +166,15 @@ class Configure(config.base.Configure):
       self.math = ['libm.a']
     else:
       self.logPrint('Warning: No math library found')
+    return
+
+  def checkMathErf(self):
+    '''Check for erf() in libm, the math library'''
+    if self.check(self.math, ['erf'], prototype = ['double erf(double);'], call = ['erf(1.0);\n']):
+      self.logPrint('erf() found')
+      self.addDefine('HAVE_ERF', 1)
+    else:
+      self.logPrint('Warning: erf() not found')
     return
 
   def checkDynamic(self):
@@ -311,5 +320,6 @@ int checkInit(void) {
   def configure(self):
     map(lambda args: self.executeTest(self.check, list(args)), self.libraries)
     self.executeTest(self.checkMath)
+    self.executeTest(self.checkMathErf)
     self.executeTest(self.checkDynamic)
     return
