@@ -1372,8 +1372,11 @@ PassiveScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *user)
     z = (j-0.5)*user->grid->dz;
   else /* PLATE_SLAB */
     z = (j-0.5)*user->grid->dz*param->cb; 
-
+#if defined (PETSC_HAVE_ERF)
   return erf(z*param->L/2.0/param->skt);
+#else
+  SETERRQ(1,"erf() not available on this machine");
+#endif
 }
 
 /*---------------------------------------------------------------------*/
