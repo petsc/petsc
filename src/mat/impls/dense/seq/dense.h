@@ -14,7 +14,8 @@ typedef struct {
   PetscInt     pad;               /* padding */        
   PetscBLASInt *pivots;           /* pivots in LU factorization */
   PetscBLASInt lda;               /* Lapack leading dimension of data */
-  PetscBLASInt Nmax;              /* indicates the second dimension of data */
+  PetscTruth   changelda;         /* change lda on resize? Default unless user set lda */ 
+  PetscBLASInt Mmax,Nmax;         /* indicates the largest dimensions of data possible */
   PetscTruth   user_alloc;        /* true if the user provided the dense data */
 } Mat_SeqDense;
 
