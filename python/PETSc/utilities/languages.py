@@ -116,7 +116,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Python bindings require shared libraries. Please add --with-shared to your configure options.')
     if not self.framework.argDB['with-dynamic']:
       raise RuntimeError('Python bindings require dynamic libraries. Please add --with-dynamic to your configure options.')
-    if os.path.isdir(os.path.join(self.petscdir.dir, 'BitKeeper')):
+    if os.path.isdir(os.path.join(self.petscdir.dir, 'BitKeeper')) or os.path.exists(os.path.join(self.petscdir.dir, 'BK')):
       if not os.path.isdir(os.path.join(self.petscdir.dir, 'src', 'python')):
         os.mkdir(os.path.join(self.petscdir.dir, 'src', 'python'))
       if os.path.isdir(os.path.join(self.petscdir.dir, 'src', 'python', 'PETSc')):

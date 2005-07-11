@@ -53,7 +53,7 @@ class Configure(PETSc.package.Package):
 
   def configure(self):
     '''Determine whether the Lgrind exist or not'''
-    if os.path.exists(os.path.join(self.petscdir.dir, 'BitKeeper')) and self.framework.argDB['with-lgrind']:
+    if (os.path.exists(os.path.join(self.petscdir.dir, 'BitKeeper')) or os.path.exists(os.path.join(self.petscdir.dir, 'BK'))) and self.framework.argDB['with-lgrind']:
       self.framework.log.write('BitKeeper clone of PETSc, checking for Lgrind\n')
       self.Install()
     else:
