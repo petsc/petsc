@@ -82,7 +82,7 @@ class Configure(PETSc.package.Package):
                 matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
               else:
                 matlab_sys = ''
-              matlab_sys = ':'+os.path.join(matlab,'bin',matlab_arch)+':'+os.path.join(matlab,'extern','lib',matlab_arch)
+              matlab_sys += ':'+os.path.join(matlab,'bin',matlab_arch)+':'+os.path.join(matlab,'extern','lib',matlab_arch)
               self.lib = [self.setCompilers.CSharedLinkerFlag+matlab_sys,'-L'+os.path.join(matlab,'bin',matlab_arch),'-L'+os.path.join(matlab,'extern','lib',matlab_arch),'-leng','-lmx','-lmat','-lut','-licudata','-licui18n','-licuuc','-lustdio'] + matlab_dl
               self.framework.packages.append(self)
               self.addMakeMacro('MATLAB_MEX',self.mex)
