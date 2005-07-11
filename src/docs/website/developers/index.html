@@ -52,17 +52,27 @@ please don't access these pages.<br>
       </p>
       <big><span style="font-weight: bold;">Obtaining PETSc:</span></big><br>
       <br>
-To obtain the development version of PETSc you have three options, 1) download and install the free
-<b>BitKeeper</b> download client, 
-2) access the nightly snapshot at ftp://info.mcs.anl.gov/pub/petsc/.petsc-dev.tar.gz or
-3) license BitKeeper (inexpensive academic licences available).</p>
+To obtain the development version of PETSc you have three options, 
+1) download and install the free <b>BitKeeper</b> download client, 
+2) access the nightly tarball snapshot at ftp://info.mcs.anl.gov/pub/petsc/.petsc-dev.tar.gz or
+3) license BitKeeper (inexpensive academic licences available). All three create a local directory with the name petsc-dev.
+</p>
 
-To use the free BitKeeper client ......</p>
+<strong>1) To use the free BitKeeper client </strong> Install the free client from here 
+<a href="http://www.bitkeeper.com/Hosted.Downloading.html">http://www.bitkeeper.com/Hosted.Downloading.html</a>
 
-To use the snapshot, simply download the file and ungzip and untar it.</p>
+<ul>
+<li> sfioball  bk://petsc.bkbits.net/petsc-dev petsc-dev</li>
+<li> cd petsc-dev/python</li>
+<li> rm -rf BuildSystem</li>
+<li> sfioball bk://sidl.bkbits.net/BuildSystem BuildSystem</li>
+</ul>
+To update PETSc ....</p>
 
-To use the licensed BitKeeper, invoke the following command to obtain PETSc. (This creates
-a local directory with the name petsc-dev)
+<strong>2) To use the tarball snapshot</strong>, simply download the file and ungzip and untar it. To update PETSc simply
+get a new copy of the tar file.</p>
+
+<strong>3) To use the licensed BitKeeper</strong>, invoke the following command to obtain PETSc. 
       <ul>
         <li><font color="#800000">bk&nbsp; clone&nbsp;
 bk://petsc.bkbits.net/petsc-dev</font></li>
