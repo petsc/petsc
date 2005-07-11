@@ -506,6 +506,16 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
+  def checkBrokenMpif90(self):
+    '''mpif90 from mpich1 and older c-preprocessor combinations misbehave'''
+    self.pushLanguage('FC')
+    # [if necessary] replace this with an actual test - which breaks the compile
+    if self.getCompiler().find('mpif90') >=0:
+      # should be a FPPFLAGS - not FFLAGS - but currently FPPFLAGS don't exist.
+      self.addCompilerFlag('-I.')
+    self.popLanguage()
+    return    
+
   def checkPIC(self):
     '''Determine the PIC option for each compiler
        - There needs to be a test that checks that the functionality is actually working'''
@@ -829,6 +839,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkFortranCompiler)
     if 'FC' in self.framework.argDB:
       self.executeTest(self.checkFortranComments)
+      self.executeTest(self.checkBrokenMpif90)
     self.executeTest(self.checkPIC)
     self.executeTest(self.checkArchiver)
     self.executeTest(self.checkSharedLinker)
