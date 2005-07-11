@@ -203,7 +203,7 @@ class Package(config.base.Configure):
             error  = ''
           if status:
             if output.find('ommand not found') >= 0:
-              raise RuntimeError('Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path')
+              raise RuntimeError('Unable to locate bk (Bitkeeper) to download packages; make sure bk is in your path')
             elif output.find('Cannot resolve host') >= 0:
               self.framework.log.write('Cannot bk clone:'+'\n'+output+'\n'+error+'\n')
               raise RuntimeError(failedmessage)
