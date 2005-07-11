@@ -19,6 +19,7 @@ class Configure(PETSc.package.Package):
                              ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['mpich2.lib'],
+                             ['libmpich.a','libgm.a','libpthread.a']
                              ['mpich.lib']]
     self.liblist_lam      = [['liblammpi++.a','libmpi.a','liblam.a'],
                              ['libmpi.a','libmpi++.a'],['libmpi.a'],
