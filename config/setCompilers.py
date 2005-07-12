@@ -683,7 +683,7 @@ class Configure(config.base.Configure):
     flag = ''
     if 'AR_FLAGS' in self.framework.argDB: 
       flag = self.framework.argDB['AR_FLAGS']
-    elif prog == 'ar':
+    elif prog.endswith('ar'):
       flag = 'cr'
     elif prog == 'win32fe':
       args = os.path.basename(archiver).split(' ')
