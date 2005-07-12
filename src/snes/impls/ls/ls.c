@@ -497,7 +497,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
    */
         
   PetscReal      steptol,initslope,lambdaprev,gnormprev,a,b,d,t1,t2,rellength;
-  PetscReal      maxstep,minlambda,alpha,lambda,lambdatemp,lambdaneg;
+  PetscReal      maxstep,minlambda,alpha,lambda,lambdatemp;
 #if defined(PETSC_USE_COMPLEX)
   PetscScalar    cinitslope,clambda;
 #endif
@@ -574,11 +574,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
   if (lambdatemp <= .1*lambda) lambda = .1*lambda; 
   else                         lambda = lambdatemp;
   ierr      = VecCopy(x,w);CHKERRQ(ierr);
-  lambdaneg = -lambda;
+
 #if defined(PETSC_USE_COMPLEX)
-  clambda   = lambdaneg; ierr = VecAXPY(w,clambda,y);CHKERRQ(ierr);
+  clambda   = lambda; ierr = VecAXPY(w,-clambda,y);CHKERRQ(ierr);
 #else
-  ierr      = VecAXPY(w,lambdaneg,y);CHKERRQ(ierr);
+  ierr      = VecAXPY(w,-lambda,y);CHKERRQ(ierr);
 #endif
   if (snes->nfuncs >= snes->max_funcs) {
     ierr  = PetscLogInfo((snes,"SNESLineSearchCubic:Exceeded maximum function evaluations, while attempting quadratic backtracking! %D \n"));CHKERRQ(ierr);
@@ -624,12 +624,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
     if (lambdatemp <= .1*lambda) lambda     = .1*lambda;
     else                         lambda     = lambdatemp;
     ierr      = VecCopy(x,w);CHKERRQ(ierr);
-    lambdaneg = -lambda;
 #if defined(PETSC_USE_COMPLEX)
-    clambda   = lambdaneg;
-    ierr      = VecAXPY(w,clambda,y);CHKERRQ(ierr);
+    clambda   = lambda;
+    ierr      = VecAXPY(w,-clambda,y);CHKERRQ(ierr);
 #else
-    ierr      = VecAXPY(w,lambdaneg,y);CHKERRQ(ierr);
+    ierr      = VecAXPY(w,-lambda,y);CHKERRQ(ierr);
 #endif
     if (snes->nfuncs >= snes->max_funcs) {
       ierr = PetscLogInfo((snes,"SNESLineSearchCubic:Exceeded maximum function evaluations, while looking for good step length! %D \n",count));CHKERRQ(ierr);
@@ -723,7 +722,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
         min  z(x):  R^n -> R,
      where z(x) = .5 * fnorm*fnorm,and fnorm = || f ||_2.
    */
-  PetscReal      steptol,initslope,maxstep,minlambda,alpha,lambda,lambdatemp,lambdaneg,rellength;
+  PetscReal      steptol,initslope,maxstep,minlambda,alpha,lambda,lambdatemp,rellength;
 #if defined(PETSC_USE_COMPLEX)
   PetscScalar    cinitslope,clambda;
 #endif
@@ -804,11 +803,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
     if (lambdatemp <= .1*lambda) lambda     = .1*lambda; 
     else                         lambda     = lambdatemp;
     ierr      = VecCopy(x,w);CHKERRQ(ierr);
-    lambdaneg = -lambda;
+    
 #if defined(PETSC_USE_COMPLEX)
-    clambda   = lambdaneg; ierr = VecAXPY(w,clambda,y);CHKERRQ(ierr);
+    clambda   = lambda; ierr = VecAXPY(w,-clambda,y);CHKERRQ(ierr);
 #else
-    ierr      = VecAXPY(w,lambdaneg,y);CHKERRQ(ierr);
+    ierr      = VecAXPY(w,-lambda,y);CHKERRQ(ierr);
 #endif
     if (snes->nfuncs >= snes->max_funcs) {
       ierr  = PetscLogInfo((snes,"SNESLineSearchQuadratic:Exceeded maximum function evaluations, while looking for good step length! %D \n",count));CHKERRQ(ierr);
