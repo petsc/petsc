@@ -64,6 +64,38 @@ class Configure(config.base.Configure):
     self.addMakeMacro('DIR', self.dir)
     self.addDefine('DIR', self.dir)
     self.framework.argDB['search-dirs'].append(os.path.join(self.dir, 'bin', 'win32fe'))
+
+    import sys
+
+    auxDir = None
+    searchDirs = [os.path.join(self.dir, 'config'), os.path.join(self.dir, 'bin', 'config')] + sys.path
+    for dir in searchDirs:
+      if os.path.isfile(os.path.join(dir, 'config.sub')):
+        auxDir      = dir
+        configSub   = os.path.join(auxDir, 'config.sub')
+        configGuess = os.path.join(auxDir, 'config.guess')
+        break
+    if auxDir is None:
+      raise RuntimeError('Unable to locate config.sub in '+str(searchDirs)+'.\nYour PETSc directory is incomplete.\n Get PETSc again')
+    try:
+      host   = config.base.Configure.executeShellCommand(self.shell+' '+configGuess, log = self.framework.log)[0]
+      output = config.base.Configure.executeShellCommand(self.shell+' '+configSub+' '+host, log = self.framework.log)[0]
+    except RuntimeError, e:
+      fd = open(configGuess)
+      data = fd.read()
+      fd.close()
+      if data.find('\r\n') >= 0:
+        raise RuntimeError('''It appears petsc.tar.gz is uncompressed on Windows (perhaps with Winzip)
+          and files copied over to Unix/Linux. Windows introduces LF characters which are
+          inappropriate on other systems. Please use gunzip/tar on the install machine.\n''')
+      raise RuntimeError('Unable to determine host type using '+configSub+': '+str(e))
+    m = re.match(r'^(?P<cpu>[^-]*)-(?P<vendor>[^-]*)-(?P<os>.*)$', output)
+    if not m:
+      raise RuntimeError('Unable to parse output of '+configSub+': '+output)
+    self.framework.host_cpu    = m.group('cpu')
+    self.framework.host_vendor = m.group('vendor')
+    self.framework.host_os     = m.group('os')
+
     return
 
   def configureExternalPackagesDir(self):
