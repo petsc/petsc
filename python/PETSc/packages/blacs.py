@@ -15,6 +15,7 @@ class Configure(PETSc.package.Package):
     self.fc        = 1
     self.functions = ['blacs_pinfo']
     self.functionsFortran = 1
+    self.complex   = 1
     return
 
   def setupDependencies(self, framework):

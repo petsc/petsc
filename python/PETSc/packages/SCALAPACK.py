@@ -14,6 +14,7 @@ class Configure(PETSc.package.Package):
     self.liblist   = [['libscalapack.a']]
     self.functions = ['ssytrd']
     self.functionsFortran = 1
+    self.complex   = 1
     return
 
   def setupDependencies(self, framework):

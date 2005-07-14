@@ -12,6 +12,7 @@ class Configure(PETSc.package.Package):
     self.liblist   = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libpord.a']]
     self.functions = ['dmumps_c']
     self.includes  = ['dmumps_c.h']
+    self.complex   = 1
     return
 
   def setupDependencies(self, framework):

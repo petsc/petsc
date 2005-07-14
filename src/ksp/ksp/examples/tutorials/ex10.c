@@ -47,15 +47,15 @@ int main(int argc,char **args)
   char           file[3][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscTruth     table,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,partition=PETSC_FALSE;
   PetscErrorCode ierr;
-  PetscInt       its;
+  PetscInt       its,num_numfac;
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   PetscTruth     preload=PETSC_TRUE,diagonalscale,isSymmetric,cknorm=PETSC_FALSE,Test_MatDuplicate=PETSC_FALSE;
-  PetscInt       num_numfac;
+  PetscMPIInt    rank;
   PetscScalar    sigma;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-table",&table);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-trans",&trans);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-partition",&partition);CHKERRQ(ierr);
@@ -103,9 +103,12 @@ int main(int argc,char **args)
        Load the matrix and vector; then destroy the viewer.
     */
     ierr = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);
-
-    ierr = PetscExceptionTry1(VecLoad(fd,PETSC_NULL,&b),PETSC_ERR_FILE_READ);
-    if (PetscExceptionCaught(ierr,PETSC_ERR_FILE_READ)) { /* if file contains no RHS, then use a vector of all ones */
+    if (rank){
+      ierr = PetscExceptionTry1(VecLoad(fd,PETSC_NULL,&b),PETSC_ERR_FILE_UNEXPECTED);
+    } else {
+      ierr = PetscExceptionTry1(VecLoad(fd,PETSC_NULL,&b),PETSC_ERR_FILE_READ); 
+    }   
+    if (PetscExceptionCaught(ierr,PETSC_ERR_FILE_UNEXPECTED) || PetscExceptionCaught(ierr,PETSC_ERR_FILE_READ)) { /* if file contains no RHS, then use a vector of all ones */
       PetscInt    m;
       PetscScalar one = 1.0;
       ierr = PetscLogInfo((0,"Using vector of ones for RHS\n"));CHKERRQ(ierr);
@@ -115,7 +118,6 @@ int main(int argc,char **args)
       ierr = VecSetFromOptions(b);CHKERRQ(ierr);
       ierr = VecSet(b,one);CHKERRQ(ierr);
     } else CHKERRQ(ierr); 
-
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
 
     /* Test MatDuplicate() */
