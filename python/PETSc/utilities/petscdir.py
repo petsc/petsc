@@ -23,7 +23,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-PETSC_DIR',                        nargs.Arg(None, None, 'The root directory of the PETSc installation'))
-    help.addArgument('PETSc', '-with-external-packages-dir=<dir>', nargs.Arg(None, None, 'Location to installed downloaded packages'))
+    help.addArgument('PETSc', '-with-external-packages-dir=<dir>', nargs.Arg(None, None, 'Location to install downloaded packages'))
     return
 
   def configureDirectories(self):

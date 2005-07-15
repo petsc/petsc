@@ -68,6 +68,8 @@ PetscErrorCode PCSetFromOptions_SOR(PC pc)
     if (flg) {ierr = PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);CHKERRQ(ierr);}
     ierr = PetscOptionsTruthGroup("-pc_sor_backward","use backward sweep instead of forward","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);CHKERRQ(ierr);}
+    ierr = PetscOptionsTruthGroup("-pc_sor_forward","use forward sweep","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PCSORSetSymmetric(pc,SOR_FORWARD_SWEEP);CHKERRQ(ierr);}
     ierr = PetscOptionsTruthGroup("-pc_sor_local_symmetric","use SSOR seperately on each processor","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);CHKERRQ(ierr);}
     ierr = PetscOptionsTruthGroup("-pc_sor_local_backward","use backward sweep locally","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
@@ -287,12 +289,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSORSetIterations(PC pc,PetscInt its,PetscInt
    Options Database Keys:
 +  -pc_sor_symmetric - Activates symmetric version
 .  -pc_sor_backward - Activates backward version
+.  -pc_sor_forward - Activates forward version
 .  -pc_sor_local_forward - Activates local forward version
-.  -pc_sor_local_symmetric - Activates local symmetric version
+.  -pc_sor_local_symmetric - Activates local symmetric version  (default version)
 .  -pc_sor_local_backward - Activates local backward version
 .  -pc_sor_omega <omega> - Sets omega
-.  -pc_sor_its <its> - Sets number of iterations
--  -pc_sor_lits <lits> - Sets number of local iterations
+.  -pc_sor_its <its> - Sets number of iterations   (default 1)
+-  -pc_sor_lits <lits> - Sets number of local iterations  (default 1)
 
    Level: beginner
 
@@ -326,11 +329,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SOR(PC pc)
   pc->ops->setup           = 0;
   pc->ops->view            = PCView_SOR;
   pc->ops->destroy         = PCDestroy_SOR;
-  pc->data           = (void*)jac;
-  jac->sym           = SOR_LOCAL_SYMMETRIC_SWEEP;
-  jac->omega         = 1.0;
-  jac->its           = 1;
-  jac->lits          = 1;
+  pc->data                 = (void*)jac;
+  jac->sym                 = SOR_LOCAL_SYMMETRIC_SWEEP;
+  jac->omega               = 1.0;
+  jac->its                 = 1;
+  jac->lits                = 1;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSORSetSymmetric_C","PCSORSetSymmetric_SOR",
                     PCSORSetSymmetric_SOR);CHKERRQ(ierr);
