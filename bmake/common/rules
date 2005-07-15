@@ -218,7 +218,7 @@ getmpirun:
 #
 #
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .eps .pdf
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .eps .pdf
 
 #
 #
@@ -239,7 +239,7 @@ getmpirun:
 .eps.pdf:
 	epstopdf $< -o=$*.pdf
 
-.c.o .cpp.o .cc.o .C.o .ad.o: 
+.c.o .cpp.o .cxx.o .cc.o .C.o .ad.o: 
 	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir;\
@@ -285,8 +285,8 @@ getmpirun:
                 echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
                 echo "#define ad_GRAD_MAX 1"  >> $*.ad.c ;\
                 echo "typedef struct {double value;double  grad[ad_GRAD_MAX];} mfDERIV_TYPE;"  >> $*.ad.c ;\
-	        sed -e "s/DERIV_TYPE/mfDERIV_TYPE/g" $<.ad.tmp2 >> $*.ad.c ;\
-  	        egrep "Process blockadiC" $< > /dev/null ; \
+                sed -e "s/DERIV_TYPE/mfDERIV_TYPE/g" $<.ad.tmp2 >> $*.ad.c ;\
+	        egrep "Process blockadiC" $< > /dev/null ; \
                 if [ "$$?" = 0 ]; then \
                   c=`grep "Process blockadiC" $< | sed -e "s?[ ]*Process blockadiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
                   r=`grep "Process blockadiC" $< | sed -e "s?[ ]*Process blockadiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
