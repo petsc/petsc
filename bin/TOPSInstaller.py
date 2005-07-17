@@ -47,7 +47,11 @@ __all__ = ['ynbox'
 	]
 
 import sys
-from Tkinter import *
+try:
+  from Tkinter import *
+except:
+  sys.exit('Python is NOT installed with Tkinter on this system')
+
 if TkVersion < 8.0 :
 	print "\n" * 3
 	print "*"*75
@@ -1449,6 +1453,9 @@ can also install additional packages that are used by the TOPS packages."""
            if not reply: sys.exit()
            args.append('--with-mpi-dir='+reply)
 
+        reply = ynbox('Do MPI jobs need to be submitted with a batch system?',title)
+        if reply: args.append('--with-batch=1')
+
         arch = ''
         while not arch:
            arch = enterbox("Name of this configuration",title)
@@ -1457,19 +1464,32 @@ can also install additional packages that are used by the TOPS packages."""
         reply = diropenbox("Location to compile and install packages","Location to compile and install packages")
         if not reply: sys.exit()
 
+        import os.path
+        import sys
+
+        if os.path.isfile(os.path.join(reply,'include','petsc.h')):
+               reply     = os.path.dirname(reply)             
+
+        petscroot = os.path.join(reply,'petsc-dev')
+
         args.append('--with-shared=1')
         args.append('--with-dynamic=1')
         args.append('--with-external-packages-dir='+reply)
         args = multenterbox("Configure options you have selected.", title, None, args)
         if not args: sys.exit()
     
-        import os.path
-        import sys
-        petscroot = os.path.join(reply,'petsc-dev')
+
         if not os.path.isdir(petscroot):
            print os.path.join(reply,'petsc-dev')+'does not exist'
         
-        sys.path.insert(0,os.path.join(petscroot,'config'))
-        os.chdir(petscroot)
-        import configure
-        configure.petsc_configure(args)
+        f = file(os.path.join(petscroot,'config-'+arch+'.py'), 'w')
+        f.write('#!/usr/bin/env python\n')
+        f.write('if __name__ == \'__main__\':\n')
+        f.write('  import sys\n')
+        f.write('  sys.path.insert(0, "'+os.path.join(petscroot,'config')+'")\n')
+        f.write('  import configure\n')
+        f.write('  configure_options = '+repr(args)+'\n')
+        f.write('  configure.petsc_configure(configure_options)\n')
+        f.close()
+
+        msgbox('After hitting OK run\n\n python '+ os.path.join(petscroot,'config-'+arch+'.py')+'\n\nto continue the install')
