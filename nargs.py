@@ -76,7 +76,7 @@ in order to declare the type of that option.'''
 
   def parseArgument(arg, ignoreDouble = 0):
     '''Split an argument into a (key, value) tuple, stripping off the leading dashes. Return (None, None) on failure.'''
-    if arg[0] == '-':
+    if arg and arg[0] == '-':
       start = 1
       if arg[1] == '-' and not ignoreDouble:
         start = 2
