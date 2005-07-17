@@ -1319,8 +1319,8 @@ The sequential and parallel AIJ matrix storage formats by default
 employ {\em i-nodes} (identical nodes) when possible.  We search for
 consecutive rows with the same nonzero structure, thereby reusing
 matrix information for increased efficiency.  Related options database
-keys are \trl{-mat_aij_no_inode} (do not use inodes) and \trl{
--mat_aij_inode_limit <limit>} (set inode limit (max limit=5)).
+keys are \trl{-mat_no_inode} (do not use inodes) and \trl{
+-mat_inode_limit <limit>} (set inode limit (max limit=5)).
 Note that problems with a single degree of freedom per grid node
 will automatically not use I-nodes.
 
