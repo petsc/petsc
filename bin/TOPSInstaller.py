@@ -1491,5 +1491,5 @@ can also install additional packages that are used by the TOPS packages."""
         f.write('  configure_options = '+repr(args)+'\n')
         f.write('  configure.petsc_configure(configure_options)\n')
         f.close()
-
+        os.chmod(configfile,0755)
         msgbox('After hitting OK run\n\n python '+ os.path.join(petscroot,'config-'+arch+'.py')+'\n\nto continue the install')
