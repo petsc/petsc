@@ -3810,7 +3810,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
    ROWBS matrix types
 
    MAT_DO_NOT_USE_INODES - indicates not using inode version of the code - works
-   with AIJ and ROWBS matrix types
+   with AIJ and ROWBS matrix types (database option "-mat_no_inode")
 
    Level: intermediate
 
