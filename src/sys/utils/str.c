@@ -163,8 +163,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrncpy(char s[],const char t[],size_t n)
    Not Collective
 
    Input Parameters:
-+  s - pointer to string to be added to end
--  t - string to be added to
++  s - string to be added to
+-  t - pointer to string to be added to end
 
    Level: intermediate
 
