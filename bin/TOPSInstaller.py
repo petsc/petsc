@@ -1468,10 +1468,13 @@ can also install additional packages that are used by the TOPS packages."""
         import os.path
         import sys
 
-        if os.path.isfile(os.path.join(reply,'include','petsc.h')):
-               reply     = os.path.dirname(reply)             
 
         petscroot = os.path.join(reply,'petsc-dev')
+        if os.path.isfile(os.path.join(reply,'include','petsc.h')):
+           petscroot = reply
+           reply     = os.path.dirname(reply)
+        elif not os.path.isdir(petscroot):
+           raise petscroot, 'Not Found'
 
         args.append('--with-shared=1')
         args.append('--with-dynamic=1')
