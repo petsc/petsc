@@ -123,17 +123,19 @@ static const char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallo
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscMallocValidate(int line,const char function[],const char file[],const char dir[])
 {
-  TRSPACE       *head;
+  TRSPACE       *head,*lasthead;
   char          *a;
   unsigned long *nend;
 
   PetscFunctionBegin;
-  head = TRhead;
+  head = TRhead; lasthead = NULL;
   while (head) {
     if (head->cookie != COOKIE_VALUE) {
       (*PetscErrorPrintf)("PetscMallocValidate: error detected at  %s() line %d in %s%s\n",function,line,dir,file);
       (*PetscErrorPrintf)("Memory at address %p is corrupted\n",head);
       (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
+      if (lasthead)
+	(*PetscErrorPrintf)("Last intact block allocated in %s() line %d in %s%s\n",lasthead->functionname,lasthead->lineno,lasthead->dirname,lasthead->filename);
       SETERRQ(PETSC_ERR_MEMC," ");
     }
     a    = (char *)(((TrSPACE*)head) + 1);
@@ -149,6 +151,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocValidate(int line,const char function[
         SETERRQ(PETSC_ERR_MEMC," ");
       }
     }
+    lasthead = head;
     head = head->next;
   }
   PetscFunctionReturn(0);
