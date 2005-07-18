@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 TOPS software installer. This is written using the EasyGui.py python module
 which is, for simplicity, included in this file 
@@ -1481,8 +1482,9 @@ can also install additional packages that are used by the TOPS packages."""
 
         if not os.path.isdir(petscroot):
            print os.path.join(reply,'petsc-dev')+'does not exist'
-        
-        f = file(os.path.join(petscroot,'config-'+arch+'.py'), 'w')
+
+        configfile=os.path.join(petscroot,'config-'+arch+'.py')
+        f = file(configfile, 'w')
         f.write('#!/usr/bin/env python\n')
         f.write('if __name__ == \'__main__\':\n')
         f.write('  import sys\n')
