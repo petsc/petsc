@@ -701,7 +701,7 @@ class Configure(config.base.Configure):
         #sourceGuess = 'f90_intel.c'
         headerGuess = 'f90_intel8.h'
         sourceGuess = 'f90_intel8.c'
-      elif self.setCompilers.vendor == 'lahaye':
+      elif self.setCompilers.vendor in ['lahaye', 'nag']:
         headerGuess = 'f90_nag.h'
         sourceGuess = 'f90_nag.c'
       elif self.setCompilers.vendor == 'portland':
