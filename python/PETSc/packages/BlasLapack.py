@@ -33,6 +33,7 @@ class Configure(PETSc.package.Package):
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
     framework.require('PETSc.packages.sowing', self)
+    self.libraries     = self.framework.require('config.libraries',self)
     return
 
   def getChecksum(self,source, chunkSize = 1024*1024):
@@ -138,7 +139,7 @@ class Configure(PETSc.package.Package):
       if hasattr(self.compilers, 'FC'):
         raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
       libdir = self.downLoadBlasLapack('f2c', 'c')
-      yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libf2cblas.a'), os.path.join(libdir,'libf2clapack.a'), 0)
+      yield ('Downloaded BLAS/LAPACK library', [os.path.join(libdir,'libf2cblas.a')]+self.libraries.math, os.path.join(libdir,'libf2clapack.a'), 0)
       raise RuntimeError('Could not use downloaded c-blas-lapack?')
     if self.framework.argDB['download-f-blas-lapack'] == 1:
       if not hasattr(self.compilers, 'FC'):
@@ -160,7 +161,7 @@ class Configure(PETSc.package.Package):
       if not (len(dir) > 2 and dir[1] == ':') :
         dir = os.path.abspath(dir)
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'), 1)
-      yield ('User specified installation root (F2C)', os.path.join(dir, 'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'), 1)
+      yield ('User specified installation root (F2C)', [os.path.join(dir, 'libf2cblas.a')]+self.libraries.math, os.path.join(dir, 'libf2clapack.a'), 1)
       yield ('User specified installation root', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'), 1)
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libcblas.a'),os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
@@ -229,7 +230,7 @@ class Configure(PETSc.package.Package):
       if hasattr(self.compilers, 'FC'):
         raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
       libdir = self.downLoadBlasLapack('f2c', 'c')
-      yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libf2cblas.a'), os.path.join(libdir,'libf2clapack.a'), 0)
+      yield ('Downloaded BLAS/LAPACK library', [os.path.join(libdir,'libf2cblas.a')]+self.libraries.math, os.path.join(libdir,'libf2clapack.a'), 0)
     if self.framework.argDB['download-f-blas-lapack'] == 2:
       if not hasattr(self.compilers, 'FC'):
         raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
