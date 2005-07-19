@@ -97,7 +97,7 @@ class Configure(config.base.Configure):
 
   def getDir(self):
     '''Find the directory containing Scotch'''
-    packages = self.arch.externalPackagesDir 
+    packages = self.petscdir.externalPackagesDir 
     if not os.path.isdir(packages):
       os.mkdir(packages)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
@@ -118,7 +118,7 @@ class Configure(config.base.Configure):
     except RuntimeError:
       import urllib
 
-      packages = self.arch.externalPackagesDir 
+      packages = self.petscdir.externalPackagesDir 
       try:
         self.logPrintBox('Retrieving Scotch; this may take several minutes')
         urllib.urlretrieve('http://www.labri.fr/Perso/~pelegrin/scotch/distrib/scotch_3.4.1A_i586_pc_linux2.tar.gz', os.path.join(packages, 'scotch_3.4.1A_i586_pc_linux2.tar.gz'))
