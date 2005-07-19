@@ -403,6 +403,7 @@ PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
   if (fgmres->sol_temp) {ierr = VecDestroy(fgmres->sol_temp);CHKERRQ(ierr);}
   if (fgmres->Rsvd) {ierr = PetscFree(fgmres->Rsvd);CHKERRQ(ierr);}
   if (fgmres->Dsvd) {ierr = PetscFree(fgmres->Dsvd);CHKERRQ(ierr);}
+  if (fgmres->orthogwork) { ierr = PetscFree(fgmres->orthogwork);CHKERRQ(ierr);}
   if (fgmres->modifydestroy) {
     ierr = (*fgmres->modifydestroy)(fgmres->modifyctx);CHKERRQ(ierr);
   }
