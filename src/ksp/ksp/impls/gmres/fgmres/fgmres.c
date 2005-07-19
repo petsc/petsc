@@ -706,72 +706,28 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_GMRES(KSP,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
 EXTERN_C_END
 
+EXTERN PetscErrorCode KSPDestroy_FGMRES_Internal(KSP);
+
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_FGMRES_Internal" 
 PetscErrorCode KSPDestroy_FGMRES_Internal(KSP ksp)
 {
   KSP_FGMRES     *gmres = (KSP_FGMRES*)ksp->data;
   PetscErrorCode ierr;
-  PetscInt       i;
 
   PetscFunctionBegin;
-  /* Free the Hessenberg matrix */
-  if (gmres->hh_origin) {
-    ierr = PetscFree(gmres->hh_origin);CHKERRQ(ierr);
-    gmres->hh_origin = 0;
-  }
-
-  /* Free the pointer to user variables */
-  if (gmres->vecs) {
-    ierr = PetscFree(gmres->vecs);CHKERRQ(ierr);
-    gmres->vecs = 0;
-  }
+  ierr = KSPDestroy_FGMRES_Internal(ksp);CHKERRQ(ierr);
   if (gmres->prevecs) {
     ierr = PetscFree (gmres->prevecs);CHKERRQ(ierr);
-    gmres->prevecs = 0;
-  }
-
-  /* free work vectors */
-  for (i=0; i<gmres->nwork_alloc; i++) {
-    ierr = VecDestroyVecs(gmres->user_work[i],gmres->mwork_alloc[i]);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(gmres->prevecs_user_work[i],gmres->mwork_alloc[i]);CHKERRQ(ierr);
-  }
-  if (gmres->user_work)  {
-    ierr = PetscFree(gmres->user_work);CHKERRQ(ierr);
-    gmres->user_work = 0;
   }
   if (gmres->prevecs_user_work) {
     ierr = PetscFree(gmres->prevecs_user_work);CHKERRQ(ierr);
-    gmres->prevecs_user_work = 0;
-  }
-  if (gmres->mwork_alloc) {
-    ierr = PetscFree(gmres->mwork_alloc);CHKERRQ(ierr);
-    gmres->mwork_alloc = 0;
-  }
-  if (gmres->nrs) {
-    ierr = PetscFree(gmres->nrs);CHKERRQ(ierr);
-    gmres->nrs = 0;
-  }
-  if (gmres->sol_temp) {
-    ierr = VecDestroy(gmres->sol_temp);CHKERRQ(ierr);
-    gmres->sol_temp = 0;
-  }
-  if (gmres->Rsvd) {
-    ierr = PetscFree(gmres->Rsvd);CHKERRQ(ierr);
-    gmres->Rsvd = 0;
-  }
-  if (gmres->Dsvd) {
-    ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);
-    gmres->Dsvd = 0;
   }
   if (gmres->modifydestroy) {
     ierr = (*gmres->modifydestroy)(gmres->modifyctx);CHKERRQ(ierr);
   }
-
-  gmres->vv_allocated   = 0;
-  gmres->vecs_allocated = 0;
-  gmres->sol_temp       = 0;
-  gmres->nwork_alloc    = 0;
+  gmres->prevecs           = 0;
+  gmres->prevecs_user_work = 0;
   PetscFunctionReturn(0);
 }
 
