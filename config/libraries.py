@@ -85,7 +85,7 @@ class Configure(config.base.Configure):
     if self.check(libName, funcs, libDir, otherLibs, prototype, call, fortranMangle):
       self.logPrint('Adding '+str(libName)+' to LIBS')
       # Note: this MUST be setCompilers since it can happen before dispatch names is made
-      self.setCompilers.LIBS += ' '+self.toString(libName)
+      self.setCompilers.LIBS = self.toString(libName)+' '+self.setCompilers.LIBS
       return 1
     return 0
 
