@@ -10,7 +10,7 @@ class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
     self.download_lam     = ['http://www.lam-mpi.org/download/files/lam-7.1.1.tar.gz']
-    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpich2-1.0.2.tar.gz']
+    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpich2-1.0.2p1.tar.gz']
     self.functions        = ['MPI_Init', 'MPI_Comm_create', 'MPI_Allreduce']
     self.includes         = ['mpi.h']
     self.liblist_mpich    = [['libmpich.a'],

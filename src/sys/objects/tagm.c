@@ -201,10 +201,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
     void *ptr;
     /* check if this communicator has a PETSc communicator imbedded in it */
     ierr = MPI_Attr_get(comm_in,Petsc_InnerComm_keyval,&ptr,(PetscMPIInt*)&flg);CHKERRQ(ierr);
-    /*
-        We use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers
-    */
-    ierr = PetscMemcpy(comm_out,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
     if (!flg) {
       /* This communicator is not yet known to this system, so we duplicate it and set its value */
       ierr       = MPI_Comm_dup(comm_in,comm_out);CHKERRQ(ierr);
@@ -224,6 +220,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
       ierr = PetscMemcpy(&ptr,&comm_in,sizeof(MPI_Comm));CHKERRQ(ierr);
       ierr = MPI_Attr_put(*comm_out,Petsc_OuterComm_keyval,ptr);CHKERRQ(ierr);
     } else {
+      /*
+        We use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers
+      */
+      ierr = PetscMemcpy(comm_out,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
       ierr = MPI_Attr_get(*comm_out,Petsc_Tag_keyval,(void**)&tagvalp,(PetscMPIInt*)&flg);CHKERRQ(ierr);
       if (!flg) {
         SETERRQ(PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tagvalp attribute set");
