@@ -58,6 +58,14 @@ static PetscScalar Kref[16] = { 0.666667, -0.166667, -0.333333, -0.166667,
                                -0.166667,  0.666667, -0.166667, -0.333333,
                                -0.333333, -0.166667,  0.666667, -0.166667,
                                -0.166667, -0.333333, -0.166667,  0.666667};
+
+/* These are */
+static PetscScalar quadPoints[8] = {0.211325, 0.211325,
+                                    0.788675, 0.211325,
+                                    0.788675, 0.788675,
+                                    0.211325, 0.788675};
+static PetscScalar quadWeights[4] = {0.25, 0.25, 0.25, 0.25};
+
 /* 
    User-defined routines
 */
@@ -76,6 +84,7 @@ int main(int argc,char **argv)
   PetscBag               bag;
   PetscInt               its;                  /* iterations for convergence */
   SNESConvergedReason    reason;
+  PetscTruth             drawContours;         /* flag for drawing contours */
   PetscErrorCode         ierr;
   PetscReal              lambda_max = 6.81, lambda_min = 0.0;
 
@@ -150,7 +159,10 @@ int main(int argc,char **argv)
     ierr = PetscWriteOutputVecDA(viewer, "u", DMMGGetx(dmmg), DMMGGetDA(dmmg));CHKERRQ(ierr);
     ierr = PetscWriteOutputFinalize(viewer);CHKERRQ(ierr);
   }
-
+  ierr = PetscOptionsHasName(PETSC_NULL, "-contours", &drawContours);CHKERRQ(ierr);
+  if (drawContours) {
+    ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); 
+  }
 #endif
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -251,6 +263,31 @@ PetscErrorCode nonlinearResidual(PetscReal lambda, PetscScalar u[], PetscScalar 
   r[3] += lambda*(12.0*u[0]*u[0]*u[0] + 3.0*u[1]*u[1]*u[1] + u[1]*u[1]*(6.0*u[2] + 4.0*u[3]) + 3.0*u[0]*u[0]*(3.0*u[1] + 2.0*u[2] + 8.0*u[3])
            + 3.0*u[1]*(3.0*u[2]*u[2] + 4.0*u[2]*u[3] + 3.0*u[3]*u[3]) + 12.0*(u[2]*u[2]*u[2] + 2.0*u[2]*u[2]*u[3] + 3.0*u[2]*u[3]*u[3] + 4.0*u[3]*u[3]*u[3])
            + 2.0*u[0]*(3.0*u[1]*u[1] + u[1]*(4.0*u[2] + 6.0*u[3]) + 3.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3])))/1200.0;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode nonlinearResidualBratu(PetscReal lambda, PetscScalar u[], PetscScalar r[]) {
+  PetscScalar rLocal[4] = {0.0, 0.0, 0.0, 0.0};
+  PetscScalar phi[4] = {0.0, 0.0, 0.0, 0.0};
+  PetscScalar res;
+  PetscInt q;
+
+  PetscFunctionBegin;
+  for(q = 0; q < 4; q++) {
+    phi[0] = (1.0 - quadPoints[q*2])*(1.0 - quadPoints[q*2+1]);
+    phi[1] =  quadPoints[q*2]       *(1.0 - quadPoints[q*2+1]);
+    phi[2] =  quadPoints[q*2]       * quadPoints[q*2+1];
+    phi[3] = (1.0 - quadPoints[q*2])* quadPoints[q*2+1];
+    res    = quadWeights[q]*PetscExpScalar(u[0]*phi[0]+ u[1]*phi[1] + u[2]*phi[2]+ u[3]*phi[3]);
+    rLocal[0] += phi[0]*res;
+    rLocal[1] += phi[1]*res;  
+    rLocal[2] += phi[2]*res;
+    rLocal[3] += phi[3]*res;
+  }
+  r[0] += lambda*rLocal[0];
+  r[1] += lambda*rLocal[1];
+  r[2] += lambda*rLocal[2];
+  r[3] += lambda*rLocal[3];
   PetscFunctionReturn(0);
 }
 
