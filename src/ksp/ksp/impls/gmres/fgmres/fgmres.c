@@ -706,7 +706,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart_GMRES(KSP,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,PetscInt));
 EXTERN_C_END
 
-EXTERN PetscErrorCode KSPDestroy_FGMRES_Internal(KSP);
+EXTERN PetscErrorCode KSPDestroy_GMRES_Internal(KSP);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_FGMRES_Internal" 
@@ -716,7 +716,7 @@ PetscErrorCode KSPDestroy_FGMRES_Internal(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDestroy_FGMRES_Internal(ksp);CHKERRQ(ierr);
+  ierr = KSPDestroy_GMRES_Internal(ksp);CHKERRQ(ierr);
   if (gmres->prevecs) {
     ierr = PetscFree (gmres->prevecs);CHKERRQ(ierr);
   }
