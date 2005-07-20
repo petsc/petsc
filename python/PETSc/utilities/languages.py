@@ -26,6 +26,8 @@ class Configure(config.base.Configure):
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.petscdir = framework.require('PETSc.utilities.petscdir', self)
+    if self.framework.argDB['with-python']:
+      self.python = framework.require('config.python', self)
     return
 
   def configureScalarType(self):
@@ -108,6 +110,7 @@ class Configure(config.base.Configure):
   def configurePythonLanguage(self):
     '''Download the Python bindings into src/python'''
     import os
+    self.usePython = 0
     if not self.framework.argDB['with-python']:
       return
     if not self.framework.argDB['with-shared'] and not self.framework.argDB['with-dynamic']:
@@ -116,6 +119,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Python bindings require shared libraries. Please add --with-shared to your configure options.')
     if not self.framework.argDB['with-dynamic']:
       raise RuntimeError('Python bindings require dynamic libraries. Please add --with-dynamic to your configure options.')
+    self.usePython = 1
     if os.path.isdir(os.path.join(self.petscdir.dir, 'BitKeeper')) or os.path.exists(os.path.join(self.petscdir.dir, 'BK')):
       if not os.path.isdir(os.path.join(self.petscdir.dir, 'src', 'python')):
         os.mkdir(os.path.join(self.petscdir.dir, 'src', 'python'))
