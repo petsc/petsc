@@ -91,7 +91,7 @@ class Configure(config.base.Configure):
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
-    self.addMakeMacro('CC_LINKER_LIBS',self.compilers.LIBS+' '+self.libraries.toString(self.compilers.flibs)+' '+self.libraries.toString(self.compilers.cxxlibs))
+    self.addMakeMacro('CC_LINKER_LIBS',self.libraries.toString(self.compilers.flibs)+' '+self.libraries.toString(self.compilers.cxxlibs)+' '+self.compilers.LIBS)
 
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
@@ -112,7 +112,7 @@ class Configure(config.base.Configure):
       self.setCompilers.popLanguage()
       # '' for Unix, .exe for Windows
       self.addMakeMacro('FC_LINKER_SUFFIX','')
-      self.addMakeMacro('FC_LINKER_LIBS',self.compilers.LIBS+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs]))
+      self.addMakeMacro('FC_LINKER_LIBS',' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs])+' '+self.compilers.LIBS)
     else:
       self.addMakeMacro('FC','')
 
@@ -129,9 +129,9 @@ class Configure(config.base.Configure):
     else:
       self.addMakeMacro('SL_LINKER_SUFFIX', self.setCompilers.sharedLibraryExt)
     if self.setCompilers.isDarwin() and self.languages.clanguage == 'Cxx':
-      self.addMakeMacro('SL_LINKER_LIBS', self.compilers.LIBS+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs])+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.cxxlibs]))
+      self.addMakeMacro('SL_LINKER_LIBS',' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs])+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.cxxlibs])+' '+self.compilers.LIBS)
     else:
-      self.addMakeMacro('SL_LINKER_LIBS', self.compilers.LIBS+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs]))
+      self.addMakeMacro('SL_LINKER_LIBS',' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs])+' '+ self.compilers.LIBS)
 #-----------------------------------------------------------------------------------------------------
 
     # CONLY or CPP. We should change the PETSc makefiles to do this better

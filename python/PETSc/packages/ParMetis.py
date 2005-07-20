@@ -14,6 +14,7 @@ class Configure(PETSc.package.Package):
     self.includes     = ['parmetis.h']
     self.liblist      = [['libparmetis.a','libmetis.a']]
     self.needsMath    = 1
+    self.complex      = 1
     return
 
   def setupDependencies(self, framework):
