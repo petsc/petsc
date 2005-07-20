@@ -320,7 +320,7 @@ $    PETSC_FILE_WRONLY - open existing file for binary output
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
-          PetscViewerBinaryGetInfoPointer(), PetscViewerFileType, PetscViewer, PetscBinaryViewerRead()
+          PetscViewerBinaryGetInfoPointer(), PetscViewerFileType, PetscViewer, PetscViewerBinaryRead()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscViewerFileType type,PetscViewer *binv)
 {
