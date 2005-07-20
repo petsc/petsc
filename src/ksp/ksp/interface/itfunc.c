@@ -439,7 +439,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2);CHKERRQ(ierr);
   if (flag1 || flag2) {
-    PetscInt       n,i;
+    PetscInt  n,i;
     PetscReal *r,*c;
     ierr = VecGetSize(ksp->vec_sol,&n);CHKERRQ(ierr);
     ierr = PetscMalloc(2*n*sizeof(PetscReal),&r);CHKERRQ(ierr);

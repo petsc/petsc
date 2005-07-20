@@ -30,7 +30,6 @@ shared_cygwin:
 
 shared_linux_intel:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
 	${CLINKER} -shared -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
 
 shared_irix:
@@ -44,23 +43,19 @@ shared_freebsd:
 
 shared_hpux:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
 	${LD} -b *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
 
 shared_linux:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
 	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SL_LINKER_SUFFIX} -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
 
 shared_solaris:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
 	sys_lib=`echo "${SYS_LIB}" | sed s?-Wl,-rpath?-L?g`; external_lib=`echo "${PETSC_EXTERNAL_LIB_BASIC}" | sed s?-Wl,-rpath?-L?g`;\
 	${LD}  -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} $${sys_lib} $${external_lib}
 
 shared_libtool:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
 	${AR} x ${INSTALL_LIB_DIR}/lt_${LIBNAME}.${AR_LIB_SUFFIX}; \
 	${LIBTOOL} --mode=link ${CLINKER} ${CFLAGS} ${CCPPFLAGS} -rpath ${INSTALL_LIB_DIR} -o ${LIBNAME}.la *.lo; \
 	${LIBTOOL} --mode=install ${PETSC_DIR}/bin/config/install-sh ${LIBNAME}.la ${INSTALL_LIB_DIR}
@@ -68,7 +63,6 @@ shared_libtool:
 shared_darwin8: shared_darwin7
 shared_darwin7: 
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
         if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="${PACKAGES_LIBS} ${EXTERNAL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} -lm -lc "; fi;\
         if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${PETSC_SYS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PETSC_VEC_LIB_BASIC}"  ; fi;\
@@ -79,8 +73,7 @@ shared_darwin7:
         if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
         echo gcc -dynamiclib -single_module -flat_namespace -multiply_defined suppress -undefined warning -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR} $$OTHERLIBS;\
-        gcc  -dynamiclib -single_module -flat_namespace -multiply_defined suppress -undefined warning -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR} $$OTHERLIBS;\
-	${RM} -f *
+        gcc  -dynamiclib -single_module -flat_namespace -multiply_defined suppress -undefined warning -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR} $$OTHERLIBS
 
 # This is the main target for building shared libraries. It takes the following actions
 #   a) Create 'tmp-petsc-shlib' in the library directory
@@ -90,9 +83,8 @@ shared_darwin7:
 #   e) Executes target 'shared_arch' for any out-of-date library (The library basename is passed as LIBNAME)
 #   c) Removes 'tmp-petsc-shlib'
 # The 'shared_arch' target is passed
-#   a) BOPT
-#   b) LIBNAME (the library basename)
-#   c) SHARED_LIBRARY_TMPDIR (where .o files should be manipulated)
+#   a) LIBNAME (the library basename)
+#   b) SHARED_LIBRARY_TMPDIR (where .o files should be manipulated)
 # and both the archive and shared library reside in INSTALL_LIB_DIR.
 shared: 
 	-@echo making shared libraries in ${INSTALL_LIB_DIR}; \
@@ -112,7 +104,10 @@ shared:
 	    if [ "$$flag" != "" ]; then \
             echo "building $$LIBNAME.${SL_LINKER_SUFFIX}"; \
               ${RM} -f ${INSTALL_LIB_DIR}/tmp-petsc-shlib/*; \
-	      ${OMAKE} BOPT=${BOPT} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-petsc-shlib shared_arch; \
+  	      pushd ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
+	      ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \
+              popd ;\
+	      ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-petsc-shlib shared_arch; \
 	    fi; \
 	  fi; \
 	done; \

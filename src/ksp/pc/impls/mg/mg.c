@@ -376,6 +376,11 @@ static PetscErrorCode PCSetUp_MG(PC pc)
       }
     }
     for (i=1; i<n; i++) {
+      if (!mg[i]->residual) {
+        Mat mat;
+        ierr = KSPGetOperators(mg[i]->smoothd,PETSC_NULL,&mat,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PCMGSetResidual(pc,i,PCMGDefaultResidual,mat);CHKERRQ(ierr);
+      }
       if (mg[i]->restrct && !mg[i]->interpolate) {
         ierr = PCMGSetInterpolate(pc,i,mg[i]->restrct);CHKERRQ(ierr);
       }
@@ -391,8 +396,10 @@ static PetscErrorCode PCSetUp_MG(PC pc)
     for (i=0; i<n-1; i++) {
       if (!mg[i]->b) {
         Mat mat;
+        Vec vec;
         ierr = KSPGetOperators(mg[i]->smoothd,PETSC_NULL,&mat,PETSC_NULL);CHKERRQ(ierr);
-
+        ierr = MatGetVecs(mat,&vec,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PCMGSetRhs(pc,i,vec);CHKERRQ(ierr);
       }
       if (!mg[i]->r && i) {
         ierr = VecDuplicate(mg[i]->b,&tvec);CHKERRQ(ierr);
