@@ -138,6 +138,10 @@ class Configure(config.base.Configure):
     if self.languages.clanguage == 'C': lang = 'CONLY'
     else: lang = 'CXXONLY'
     self.addMakeMacro('PETSC_LANGUAGE',lang)
+
+    if self.languages.usePython:
+      self.addMakeMacro('PYTHON_INCLUDE', ' '.join([self.headers.getIncludeArgument(inc) for inc in self.languages.python.include]))
+      self.addMakeMacro('PYTHON_LIB', ' '.join([self.libraries.getLibArgument(lib) for lib in self.languages.python.library]))
     
     # real or complex
     self.addMakeMacro('PETSC_SCALAR',self.languages.scalartype)
