@@ -9,7 +9,7 @@ Computation</title>
 <table width="775">
   <tbody>
     <tr>
-      <td width="218" valign="top">
+      <td valign="top" width="218">
       <h1><font color="#ff0000" size="7">PETSc</font></h1>
       <ul>
         <li><a href="../index.html"><strong>Home</strong></a></li>
@@ -20,11 +20,11 @@ Computation</title>
       </td>
     </tr>
     <tr>
-      <td width="771" colspan="2">
-      <hr size="4" color="#ff5b5b"> </td>
+      <td colspan="2" width="771">
+      <hr color="#ff5b5b" size="4"> </td>
     </tr>
     <tr>
-      <td width="218" valign="top">
+      <td valign="top" width="218">
       <ul>
         <li><a href="../download/index.html"><strong>Download</strong></a></li>
         <li><a href="../features/index.html"><strong>Features</strong></a></li>
@@ -43,37 +43,46 @@ projects</a></font></strong></li>
       </ul>
       <p>&nbsp;</p>
       </td>
-      <td width="549" valign="top">
-      <p align="left">&nbsp;These pages are for people interested in using the development
-copy of PETSc or contributing to the PETSc libraries. It is intended only
+      <td valign="top" width="549">
+      <p align="left">&nbsp;These pages are for people interested in
+using the development
+copy of PETSc or contributing to the PETSc libraries. It is intended
+only
 for people who are experienced with building, using and debugging
 PETSc. If you cannot use makefiles, a debugger and EMACS etags then
 please don't access these pages.<br>
       </p>
       <big><span style="font-weight: bold;">Obtaining PETSc:</span></big><br>
       <br>
-To obtain the development version of PETSc you have three options, 
-1) download and install the free <b>BitKeeper</b> download client, 
-2) access the nightly tarball snapshot at ftp://info.mcs.anl.gov/pub/petsc/.petsc-dev.tar.gz or
-3) license BitKeeper (inexpensive academic licences available). All three create a local directory with the name petsc-dev.
-</p>
-
-<strong>1) To use the free BitKeeper client </strong> Install the free client from here 
-<a href="http://www.bitkeeper.com/Hosted.Downloading.html">http://www.bitkeeper.com/Hosted.Downloading.html</a>. Make sure
+To obtain the development version of PETSc you have three options, 1)
+download and install the free <b>BitKeeper</b> download client, 2)
+access the nightly tarball snapshot at <a
+ href="ftp://info.mcs.anl.gov/pub/petsc/.petsc-dev.tar.gz">ftp://info.mcs.anl.gov/pub/petsc/.petsc-dev.tar.gz</a>
+or
+3) license BitKeeper (inexpensive academic licences available). All
+three create a local directory with the name petsc-dev.
+      <p></p>
+      <strong>1) To use the free BitKeeper client </strong> Install
+the free client from here <a
+ href="http://www.bitkeeper.com/Hosted.Downloading.html">http://www.bitkeeper.com/Hosted.Downloading.html</a>.
+Make sure
 the directory where you have compiled this code is in your path.
-
-<ul>
-<li> sfioball  bk://petsc.bkbits.net/petsc-dev petsc-dev</li>
-<li> cd petsc-dev/python</li>
-<li> rm -rf BuildSystem</li>
-<li> sfioball bk://sidl.bkbits.net/BuildSystem BuildSystem</li>
-</ul>
-To update PETSc run "update bk://petsc.bkbits.net/petsc-dev" from the petsc-dev directory</p>
-
-<strong>2) To use the tarball snapshot</strong>, simply download the file and ungzip and untar it. To update PETSc simply
-get a new copy of the tar file.</p>
-
-<strong>3) To use the licensed BitKeeper</strong>, invoke the following command to obtain PETSc. 
+      <ul>
+        <li> sfioball bk://petsc.bkbits.net/petsc-dev petsc-dev</li>
+        <li> cd petsc-dev/python</li>
+        <li> rm -rf BuildSystem</li>
+        <li> sfioball bk://sidl.bkbits.net/BuildSystem BuildSystem</li>
+      </ul>
+To update PETSc run "update bk://petsc.bkbits.net/petsc-dev" from the
+petsc-dev directory
+      <p></p>
+      <strong>2) To use the tarball snapshot</strong>, simply download <a
+ href="ftp://info.mcs.anl.gov/pub/petsc/.petsc-dev.tar.gz">ftp://info.mcs.anl.gov/pub/petsc/.petsc-dev.tar.gz</a>
+and ungzip and untar it. To update PETSc simply
+get a new copy of the tar file.
+      <p></p>
+      <strong>3) To use the licensed BitKeeper</strong>, invoke the
+following command to obtain PETSc.
       <ul>
         <li><font color="#800000">bk&nbsp; clone&nbsp;
 bk://petsc.bkbits.net/petsc-dev</font></li>
@@ -82,30 +91,38 @@ For additional help on using BitKeeper you can use
       <ul>
         <li><font color="#800000">bk helptool</font></li>
       </ul>
-
 To update PETSc
       <ul>
-        <li><font color="#800000">bk pull; cd python/BuildSystem; bk pull</font>(from inside the
+        <li><font color="#800000">bk pull; cd python/BuildSystem; bk
+pull</font>(from inside the
 petsc-dev directory tree)</li>
       </ul>
-      To modify your local copy of PETSc, you can use <font color="#800000">bk edit</font> and
-<font color="#800000">bk citool</font>, as described in <font color="#800000">bk helptool</font>. These changes
-can be shared with the PETSc community by pushing to the BkBits repository. You will need to send an SSH 1 public
-key to <a href="mailot:petsc-maint@mcs.anl.gov">petsc-maint</a> along with a description of the changes.
-
-<a href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Documentation</a>
- for the development version (updated nightly).</p>
-
-      <p align="left" style="font-weight: bold;"><big>Compiling and Using the Development Copy:</big></p>
-
-Use config/configure.py <a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html">to
-install PETSc</a>, (trouble, please contact us petsc-maint@mcs.anl.gov).</p>
-
-Subscribe to the mailing list. Send mail to majordomo@mcs.anl.gov with the message: subscribe petsc-dev</p>
-
-      <p align="left" style="font-weight: bold;"><big>Building Documentation:</big></p>
+To modify your local copy of PETSc, you can use <font color="#800000">bk
+edit</font> and
+      <font color="#800000">bk citool</font>, as described in <font
+ color="#800000">bk helptool</font>. These changes
+can be shared with the PETSc community by pushing to the BkBits
+repository. You will need to send an SSH 1 public
+key to <a href="mailot:petsc-maint@mcs.anl.gov">petsc-maint</a> along
+with a description of the changes.
+      <a
+ href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Documentation</a>
+for the development version (updated nightly).
+      <p></p>
+      <p style="font-weight: bold;" align="left"><big>Compiling and
+Using the Development Copy:</big></p>
+Use config/configure.py <a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html">to
+install PETSc</a>, (trouble, please contact us petsc-maint@mcs.anl.gov).
+      <p></p>
+Subscribe to the mailing list. Send mail to majordomo@mcs.anl.gov with
+the message: subscribe petsc-dev
+      <p></p>
+      <p style="font-weight: bold;" align="left"><big>Building
+Documentation:</big></p>
       <p align="left">The documentation tools are now automatically
-downloaded and installed by config/configure.py. However, as a failsafe, we
+downloaded and installed by config/configure.py. However, as a
+failsafe, we
 provide them here as well.</p>
       <p align="left">The following additional tools are required to
 build the PETSc documentation:</p>
@@ -146,15 +163,15 @@ time config/configure.py is invoked.<br>
       <span style="font-weight: bold;"> </span></td>
     </tr>
     <tr>
-      <td width="771" colspan="2">
-      <hr size="4" color="#ff5b5b"> </td>
+      <td colspan="2" width="771">
+      <hr color="#ff5b5b" size="4"> </td>
     </tr>
     <tr>
-      <td width="771" colspan="2"><br>
+      <td colspan="2" width="771"><br>
       </td>
     </tr>
     <tr>
-      <td width="771" colspan="2"><br>
+      <td colspan="2" width="771"><br>
       </td>
     </tr>
   </tbody>
