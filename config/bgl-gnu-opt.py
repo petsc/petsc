@@ -1,22 +1,26 @@
 #!/usr/bin/env python
-
-# This version requires modified mpicc/mpif77 scripts - that do
-# not give unresolved symbols on compiling mpi codes. The current
-# fix is to link with some additional libraries:
-# "-lc -lnss_files -lnss_dns -lresolv"
 #
-# Also the default fortran namemangling chnaged - so the usage
+# BGL has broken 'libc' dependencies. The option 'LIBS' is 
+# used to workarround this problem. Another workarround is to
+# modify mpicc/mpif77 scripts and make them link with these
+# additional libraries.
+#
+# Also the default fortran namemangling changed - so the usage
 # of iarg_()/getargc_() internal compiler symbols does not work
-# without a minor hack to zstart.c sourcefile
+# without a minor manual hack to zstart.c sourcefile
 #
 configure_options = [
-  '--with-cc=/home/balay/bin/mpicc.gnu',
-  '--with-fc=/home/balay/bin/mpif77.gnu',
+  '-LIBS=-lc -lnss_files -lnss_dns -lresolv',
+  '--with-cc=mpicc',
+  '--with-fc=mpif77',
+
   '--with-blas-lapack-dir=/home/balay/software/fblaslapack/gnu-O3',
   '--with-shared=0',
   
   '-COPTFLAGS=-O3',
   '-FOPTFLAGS=-O3',
+  '--with-debugging=0',
+  '--with-fortran-kernels=1',
   
   '--can-execute=0',
   '--sizeof_void_p=4',
