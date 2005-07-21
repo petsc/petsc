@@ -18,8 +18,7 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('PETSc', '-with-log=<bool>',              nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
     help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Use CTABLE hashing for certain search functions - to conserve memory'))
-    help.addArgument('PETSc', '-with-fortran-kernels=<bool>',  nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
-    help.addArgument('PETSc', '-with-fortran-kernels-bgl=<bool>',  nargs.ArgBool(None, 0, 'Use BGL specific Fortran for linear algebra kernels'))
+    help.addArgument('PETSc', '-with-fortran-kernels=<none,generic,bgl>',  nargs.ArgString(None, None, 'Use Fortran for linear algebra kernels'))
     help.addArgument('PETSc', '-with-64-bit-ints=<bool>',      nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
     return
 
@@ -41,19 +40,25 @@ class Configure(config.base.Configure):
     self.useCtable = self.framework.argDB['with-ctable']
     if self.useCtable:
       self.addDefine('USE_CTABLE', '1')
-        
-    if not hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-kernels']:
+
+    # If user doesn't specify this option - automatically enable bgl-kernels for IBM-bgl-crosscompilers
+    if 'with-fortran-kernels' not in self.framework.argDB and self.compilersisBGL():
+      self.useFortranKernels = 'bgl'
+    else:
+      self.useFortranKernels = self.framework.argDB['with-fortran-kernels'].lower()
+
+    if self.useFortranKernels == '1' or self.useFortranKernels == 'yes' : self.useFortranKernels = 'generic'
+    elif self.useFortranKernels == '0' or self.useFortranKernels == 'no' : self.useFortranKernels = 'none'
+
+    if not hasattr(self.compilers, 'FC') and self.useFortranKernels != 'none':
       raise RuntimeError('Cannot use fortran kernels without a Fortran compiler')
-    self.useFortranKernels = self.framework.argDB['with-fortran-kernels']
-    self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernels)
-
-    if not hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-kernels-bgl']:
-      raise RuntimeError('Cannot use BGL fortran kernels without a Fortran compiler')
-    self.useFortranKernels = self.framework.argDB['with-fortran-kernels-bgl']
-    self.useFortranKernelsBGL = self.framework.argDB['with-fortran-kernels-bgl']
-    self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernelsBGL)
-    self.addDefine('USE_FORTRAN_KERNELS_BGL', self.useFortranKernelsBGL)
-
+    if self.useFortranKernels == 'bgl':
+      self.addDefine('USE_FORTRAN_KERNELS', 1)
+      self.addDefine('USE_FORTRAN_KERNELS_BGL', 1)
+    elif self.useFortranKernels == 'generic':
+      self.addDefine('USE_FORTRAN_KERNELS', 1)
+    elif self.useFortranKernels != 'none':
+      raise RuntimeError('Unknown Fortran kernel type specified :'+self.framework.argDB['with-fortran-kernels'])
 
     if self.framework.argDB['with-64-bit-ints']:
       self.integerSize = 64

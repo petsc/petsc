@@ -21,7 +21,7 @@ configure_options = [
   '-COPTFLAGS=-qbgl -qarch=440d -qtune=440 -O3',
   '-FOPTFLAGS=-qbgl -qarch=440d -qtune=440 -O3',
   '--with-debugging=0',
-  '--with-fortran-kernels-bgl=1'
+  '--with-fortran-kernels=bgl'
 
   '--can-execute=0',
   '--sizeof_void_p=4',
