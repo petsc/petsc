@@ -7,7 +7,7 @@
 #include "include/finclude/petscdef.h"
 !
 
-      subroutine FortranSolveBAIJ4Unroll_bgl(n,x,ai,aj,adiag,a,b)
+      subroutine FortranSolveBAIJ4Unroll_BGL(n,x,ai,aj,adiag,a,b)
       implicit none
       MatScalar        a(0:*)
       PetscScalar      x(0:*),b(0:*)
@@ -96,7 +96,7 @@
 !
 !   version that calls BLAS 2 operation for each row block
 !
-      subroutine FortranSolveBAIJ4BLAS_bgl(n,x,ai,aj,adiag,a,b,w)
+      subroutine FortranSolveBAIJ4BLAS_BGL(n,x,ai,aj,adiag,a,b,w)
       implicit none
       MatScalar        a(0:*),w(0:*)
       PetscScalar      x(0:*),b(0:*)

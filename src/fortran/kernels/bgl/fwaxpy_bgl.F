@@ -4,7 +4,7 @@
 !
 #include "include/finclude/petscdef.h"
 !
-      subroutine FortranWAXPY_bgl(n,a,x,y,w)
+      subroutine FortranWAXPY_BGL(n,a,x,y,w)
       implicit none
       PetscScalar  a
       PetscScalar  x(*),y(*),w(*)

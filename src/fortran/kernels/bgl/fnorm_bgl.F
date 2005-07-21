@@ -4,7 +4,7 @@
 !
 #include "include/finclude/petscdef.h"
 !
-      subroutine FortranNormSqr_bgl(x,n,sum1)
+      subroutine FortranNormSqr_BGL(x,n,sum1)
       implicit none
       PetscScalar x(*)
       PetscReal   sum1
@@ -22,7 +22,7 @@
       end
 
 
-      subroutine FortranNormSqrUnroll_bgl(x,n,sum1)
+      subroutine FortranNormSqrUnroll_BGL(x,n,sum1)
       implicit none
       PetscScalar x(*)
       PetscReal   sum1
