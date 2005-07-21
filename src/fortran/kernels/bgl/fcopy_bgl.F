@@ -4,7 +4,7 @@
 !
 #include "include/finclude/petscdef.h"
 !
-      subroutine FortranCopy(n,x,y)
+      subroutine FortranCopy_BGL(n,x,y)
       implicit none
       PetscScalar  x(*),y(*)
       PetscInt n
@@ -18,7 +18,7 @@
       end
 
 
-      subroutine FortranZero(n,x)
+      subroutine FortranZero_BGL(n,x)
       implicit none
       PetscScalar  x(*)
       PetscInt n

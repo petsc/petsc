@@ -14,6 +14,18 @@
 
 #include "petscblaslapack.h"
 
+/* BGL kernels */
+#if defined(PETSC_USE_BGL_KERNELS)
+#define fortrancopy   fortrancopy_bgl
+#define fortranzero   fortranzero_bgl
+#define fortranmaxpy4 fortranmaxpy4_bgl
+#define fortranmaxpy3 fortranmaxpy3_bgl
+#define fortranmaxpy2 fortranmaxpy2_bgl
+#define fortranaypx   fortranaypx_bgl
+#define fortranwaxpy  fortranwaxpy_bgl
+
+#endif
+
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortrancopy_ FORTRANCOPY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)

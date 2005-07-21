@@ -4,6 +4,22 @@
 
 EXTERN_C_BEGIN
 
+/* BGL kernels */
+#if defined(PETSC_USE_BGL_KERNELS)
+#define fortranxtimesy          fortranxtimesy_bgl
+#define fortranmdot4            fortranmdot4_bgl
+#define fortranmdot3            fortranmdot3_bgl
+#define fortranmdot2            fortranmdot2_bgl
+#define fortranmdot1            fortranmdot1_bgl
+#define fortrannormsqr          fortrannormsqr_bgl
+#define fortransolvebaij4unroll fortransolvebaij4unroll_bgl
+#define fortransolvebaij4blas   fortransolvebaij4blas_bgl
+#define fortransolvebaij4       fortransolvebaij4_bgl
+
+
+#endif
+
+
 #if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortranmdot4_      FORTRANMDOT4

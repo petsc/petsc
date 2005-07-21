@@ -4,7 +4,7 @@
 !
 #include "include/finclude/petscdef.h"
 !
-      subroutine MSGemv(bs,ncols,A,x,y)
+      subroutine MSGemv_BGL(bs,ncols,A,x,y)
       implicit none
       PetscInt          bs,ncols
       MatScalar        A(bs,ncols)
@@ -48,7 +48,7 @@
       end
 
       
-      subroutine MSGemvp(bs,ncols,A,x,y)
+      subroutine MSGemvp_BGL(bs,ncols,A,x,y)
       implicit none
       PetscInt          bs,ncols
       MatScalar        A(bs,ncols)
@@ -88,7 +88,7 @@
       end
 
 
-      subroutine MSGemvm(bs,ncols,A,x,y)
+      subroutine MSGemvm_BGL(bs,ncols,A,x,y)
       implicit none
       PetscInt          bs,ncols
       MatScalar        A(bs,ncols)
@@ -127,7 +127,7 @@
       end
 
 
-      subroutine MSGemvt(bs,ncols,A,x,y)
+      subroutine MSGemvt_BGL(bs,ncols,A,x,y)
       implicit none
       PetscInt          bs,ncols
       MatScalar        A(bs,ncols)
@@ -168,7 +168,7 @@
       return 
       end
 
-      subroutine MSGemm(bs,A,B,C)
+      subroutine MSGemm_BGL(bs,A,B,C)
       implicit none
       PetscInt          bs
       MatScalar        A(bs,bs),B(bs,bs),C(bs,bs)
@@ -212,7 +212,7 @@
       end
 
 
-      subroutine MSGemmi(bs,A,C,B)
+      subroutine MSGemmi_BGL(bs,A,C,B)
       implicit none
       PetscInt          bs
       MatScalar        A(bs,bs),B(bs,bs),C(bs,bs)
