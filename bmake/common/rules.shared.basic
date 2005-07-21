@@ -104,9 +104,9 @@ shared:
 	    if [ "$$flag" != "" ]; then \
             echo "building $$LIBNAME.${SL_LINKER_SUFFIX}"; \
               ${RM} -f ${INSTALL_LIB_DIR}/tmp-petsc-shlib/*; \
-  	      pushd ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
+  	      pushd ${INSTALL_LIB_DIR}/tmp-petsc-shlib >/dev/null; \
 	      ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \
-              popd ;\
+              popd >/dev/null ;\
 	      ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-petsc-shlib shared_arch; \
 	    fi; \
 	  fi; \

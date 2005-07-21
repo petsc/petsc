@@ -864,10 +864,11 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscScalar    *x,*y,*aa;
   PetscErrorCode ierr;
   PetscInt       m=A->m,*aj,*ii;
-#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
-  PetscInt       n,i,jrow,j,*ridx=PETSC_NULL;
+  PetscInt       n,i,j,*ridx=PETSC_NULL;
   PetscScalar    sum;
   PetscTruth     usecprow=a->compressedrow.use;
+#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
+  PetscInt       jrow;
 #endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)

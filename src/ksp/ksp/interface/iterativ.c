@@ -519,7 +519,7 @@ PetscErrorCode KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetVecs"
-/*@
+/*@C
   KSPGetVecs - Gets a number of work vectors.
 
   Input Parameters:
