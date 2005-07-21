@@ -187,6 +187,12 @@ class Configure(config.base.Configure):
     (output, returnCode) = self.outputLink('', '')
     self.setCompilers.LDFLAGS = oldFlags
     self.popLanguage()
+
+    # The easiest thing to do for xlc output is to replace all the commas
+    # with spaces.  Try to only do that if the output is really from xlc,
+    # since doing that causes problems on other systems.
+    if output.find('XL_CONFIG') >= 0:
+      output = output.replace(',', ' ')
       
     # Parse output
     argIter = iter(output.split())
@@ -430,7 +436,7 @@ class Configure(config.base.Configure):
     # The easiest thing to do for xlf output is to replace all the commas
     # with spaces.  Try to only do that if the output is really from xlf,
     # since doing that causes problems on other systems.
-    if output.find('xlf') >= 0:
+    if output.find('XL_CONFIG') >= 0:
       output = output.replace(',', ' ')
     # We are only supposed to find LD_RUN_PATH on Solaris systems
     # and the run path should be absolute
