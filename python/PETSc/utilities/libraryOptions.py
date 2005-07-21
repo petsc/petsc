@@ -40,8 +40,8 @@ class Configure(config.base.Configure):
     self.useCtable = self.framework.argDB['with-ctable']
     if self.useCtable:
       self.addDefine('USE_CTABLE', '1')
-    
-    if not 'FC' in self.framework.argDB and self.framework.argDB['with-fortran-kernels']:
+        
+    if not hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-kernels']:
       raise RuntimeError('Cannot use fortran kernels without a Fortran compiler')
     self.useFortranKernels = self.framework.argDB['with-fortran-kernels']
     self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernels)
