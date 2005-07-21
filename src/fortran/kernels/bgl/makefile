@@ -8,20 +8,19 @@
 ALL: lib
 SPECIALFASTLIB = yes
 specialfastlib: lib
+#requirespackage   'PETSC_USE_BGL_KERNELS'
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = 
-SOURCEF  = fmaxpy.F fmdot.F fnorm.F fmult.F fmultadd.F fsolve.F fsolvebaij.F \
-           sgemv.F frelax.F fwaxpy.F faypx.F fcopy.F
+SOURCEC  = bgl_align.c
+SOURCEF  = fcopy_bgl.F fmdot_bgl.F fsolvebaij_bgl.F sgemv_bgl.F fmaxpy_bgl.F fnorm_bgl.F fwaxpy_bgl.F
+
 SOURCEH  = 
-OBJSC    = 
-OBJSF    = fmaxpy.o fmdot.o fnorm.o fmult.o fmultadd.o fsolve.o fsolvebaij.o \
-           sgemv.o frelax.o fwaxpy.o faypx.o fcopy.o
+OBJSC    = ${SOURCEC:.c=.o}
+OBJSF    = ${SOURCEF:.F=.o}
 LIBBASE  = libpetsc
 MANSEC   = Sys
-LOCDIR   = src/fortran/kernels/
-DIRS     = bgl
+LOCDIR   = src/fortran/kernels/bgl
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
