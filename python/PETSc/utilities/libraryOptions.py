@@ -19,6 +19,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-log=<bool>',              nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
     help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Use CTABLE hashing for certain search functions - to conserve memory'))
     help.addArgument('PETSc', '-with-fortran-kernels=<bool>',  nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
+    help.addArgument('PETSc', '-with-fortran-kernels-bgl=<bool>',  nargs.ArgBool(None, 0, 'Use BGL specific Fortran for linear algebra kernels'))
     help.addArgument('PETSc', '-with-64-bit-ints=<bool>',      nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
     return
 
@@ -45,6 +46,14 @@ class Configure(config.base.Configure):
       raise RuntimeError('Cannot use fortran kernels without a Fortran compiler')
     self.useFortranKernels = self.framework.argDB['with-fortran-kernels']
     self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernels)
+
+    if not hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-kernels-bgl']:
+      raise RuntimeError('Cannot use BGL fortran kernels without a Fortran compiler')
+    self.useFortranKernels = self.framework.argDB['with-fortran-kernels-bgl']
+    self.useFortranKernelsBGL = self.framework.argDB['with-fortran-kernels-bgl']
+    self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernelsBGL)
+    self.addDefine('USE_FORTRAN_KERNELS_BGL', self.useFortranKernelsBGL)
+
 
     if self.framework.argDB['with-64-bit-ints']:
       self.integerSize = 64
