@@ -269,7 +269,7 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 */
 
 /* BGL kernels */
-#if defined(PETSC_USE_BGL_KERNELS)
+#if defined(PETSC_USE_FORTRAN_KERNELS_BGL)
 #define msgemv  msgemv_bgl
 #define msgemvp msgemvp_bgl
 #define msgemvm msgemvm_bgl

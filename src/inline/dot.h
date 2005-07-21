@@ -5,7 +5,7 @@
 EXTERN_C_BEGIN
 
 /* BGL kernels */
-#if defined(PETSC_USE_BGL_KERNELS)
+#if defined(PETSC_USE_FORTRAN_KERNELS_BGL)
 #define fortranxtimesy          fortranxtimesy_bgl
 #define fortranmdot4            fortranmdot4_bgl
 #define fortranmdot3            fortranmdot3_bgl

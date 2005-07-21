@@ -15,7 +15,7 @@
 #include "petscblaslapack.h"
 
 /* BGL kernels */
-#if defined(PETSC_USE_BGL_KERNELS)
+#if defined(PETSC_USE_FORTRAN_KERNELS_BGL)
 #define fortrancopy   fortrancopy_bgl
 #define fortranzero   fortranzero_bgl
 #define fortranmaxpy4 fortranmaxpy4_bgl
