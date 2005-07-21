@@ -25,11 +25,11 @@ class Configure(config.base.Configure):
     '''Checks that "typeName" exists, and if not defines it to "defaultType" if given'''
     self.framework.log.write('Checking for type: '+typeName+'\n')
     include = '''
-    #include <sys/types.h>
-    #if STDC_HEADERS
-    #include <stdlib.h>
-    #include <stddef.h>
-    #endif
+#include <sys/types.h>
+#if STDC_HEADERS
+#include <stdlib.h>
+#include <stddef.h>
+#endif
     '''
     found = self.checkCompile(include,typeName+' a;')
     if not found and defaultType:
@@ -63,16 +63,16 @@ class Configure(config.base.Configure):
   def checkSignal(self):
     '''Checks the return type of signal() and defines RETSIGTYPE to that type name'''
     includes = '''
-    #include <sys/types.h>
-    #include <signal.h>
-    #ifdef signal
-    #undef signal
-    #endif
-    #ifdef __cplusplus
-    extern "C" void (*signal (int, void(*)(int)))(int);
-    #else
-    void (*signal())();
-    #endif
+#include <sys/types.h>
+#include <signal.h>
+#ifdef signal
+#undef signal
+#endif
+#ifdef __cplusplus
+extern "C" void (*signal (int, void(*)(int)))(int);
+#else
+void (*signal())();
+#endif
     '''
     if self.checkCompile(includes, ''):
       returnType = 'void'
@@ -177,16 +177,16 @@ class Configure(config.base.Configure):
       # See if sys/param.h defines the BYTE_ORDER macro
       includes = '#include <sys/types.h>\n#include <sys/param.h>\n'
       body     = '''
-      #if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
-        bogus endian macros
-      #endif
+#if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
+  bogus endian macros
+#endif
       '''
       if self.checkCompile(includes, body):
         # It does, so check whether it is defined to BIG_ENDIAN or not
         body = '''
-        #if BYTE_ORDER != BIG_ENDIAN
-          not big endian
-        #endif
+#if BYTE_ORDER != BIG_ENDIAN
+  not big endian
+#endif
         '''
         if self.checkCompile(includes, body):
           endian = 'big'
@@ -226,7 +226,13 @@ class Configure(config.base.Configure):
     '''Determines the size of type "typeName", and defines SIZEOF_"typeName" to be the size'''
     self.framework.log.write('Checking for size of type: '+typeName+'\n')
     filename = 'conftestval'
-    includes = '#include <stdlib.h>\n#include <stdio.h>\n'
+    includes = '''
+#include <sys/types.h>
+#if STDC_HEADERS
+#include <stdlib.h>
+#include <stdio.h>
+#include <stddef.h>
+#endif\n'''
     if otherInclude:
       includes += '#include <'+otherInclude+'>\n'
     body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%d\\n", sizeof('+typeName+'));\n'
@@ -246,7 +252,7 @@ class Configure(config.base.Configure):
           size = 0
         self.popLanguage()
       else:
-        self.framework.addBatchInclude(['#include <stdlib.h>', '#include <stdio.h>'])
+        self.framework.addBatchInclude(['#include <stdlib.h>', '#include <stdio.h>', '#include <sys/types.h>'])
         if otherInclude:
           self.framework.addBatchInclude('#include <'+otherInclude+'>')
         self.framework.addBatchBody('fprintf(output, "  \'--sizeof_'+typeName.replace(' ','_').replace('*','p')+'=%d\',\\n", sizeof('+typeName+'));')
@@ -260,7 +266,11 @@ class Configure(config.base.Configure):
   def checkBitsPerByte(self):
     '''Determine the nubmer of bits per byte and define BITS_PER_BYTE'''
     filename = 'conftestval'
-    includes = '#include <stdlib.h>\n#include <stdio.h>\n'
+    includes = '''
+#if STDC_HEADERS
+#include <stdlib.h>
+#include <stdio.h>
+#endif\n'''
     body     = 'FILE *f = fopen("'+filename+'", "w");\n'+'''
     char val[2];
     int i = 0;
