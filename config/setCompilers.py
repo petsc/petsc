@@ -111,13 +111,6 @@ class Configure(config.base.Configure):
     return 0
   isIntel = staticmethod(isIntel)
 
-  def isBGL(compiler):
-    '''Returns true if compiler is IBM cross compiler for BGL'''
-    # not implemented yet
-    return 0
-  isIntel = staticmethod(isBGL)
-
-
   def isCygwin():
     '''Returns true if system is cygwin'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
