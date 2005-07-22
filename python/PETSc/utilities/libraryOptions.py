@@ -29,6 +29,15 @@ class Configure(config.base.Configure):
     self.libraries = framework.require('config.libraries', self)
     return
 
+  def isBGL(self):
+    '''Returns true if compiler is IBM cross compiler for BGL'''
+    if self.libraries.check('', 'bgl_perfctr_void') and self.libraries.check('', '_xlqadd'):
+      self.logPrint('BGL/IBM detected')
+      return 1
+    else:
+      self.logPrint('BGL/IBM test failure')
+      return 0
+
   def configureLibraryOptions(self):
     '''Sets PETSC_USE_DEBUG, PETSC_USE_LOG, PETSC_USE_CTABLE and PETSC_USE_FORTRAN_KERNELS'''
     self.useLog   = self.framework.argDB['with-log']
@@ -42,10 +51,12 @@ class Configure(config.base.Configure):
       self.addDefine('USE_CTABLE', '1')
 
     # If user doesn't specify this option - automatically enable bgl-kernels for IBM-bgl-crosscompilers
-    if 'with-fortran-kernels' not in self.framework.argDB and self.compilersisBGL():
+    if 'with-fortran-kernels' not in self.framework.argDB and self.isBGL():
       self.useFortranKernels = 'bgl'
-    else:
+    elif 'with-fortran-kernels' in self.framework.argDB:
       self.useFortranKernels = self.framework.argDB['with-fortran-kernels'].lower()
+    else:
+      self.useFortranKernels = 'none'
 
     if self.useFortranKernels == '1' or self.useFortranKernels == 'yes' : self.useFortranKernels = 'generic'
     elif self.useFortranKernels == '0' or self.useFortranKernels == 'no' : self.useFortranKernels = 'none'

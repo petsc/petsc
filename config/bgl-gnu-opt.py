@@ -20,7 +20,7 @@ configure_options = [
   '-COPTFLAGS=-O3',
   '-FOPTFLAGS=-O3',
   '--with-debugging=0',
-  '--with-fortran-kernels=default',
+  '--with-fortran-kernels=generic',
   
   '--can-execute=0',
   '--sizeof_void_p=4',
