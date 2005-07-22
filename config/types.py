@@ -205,7 +205,7 @@ class Configure(config.base.Configure):
           exit(u.c[sizeof(long) - 1] == 1);
           '''
           self.pushLanguage('C')
-          if self.checkRun('stdlib.h', body, defaultArg = 'isLittleEndian'):
+          if self.checkRun('#include <stdlib.h>\n', body, defaultArg = 'isLittleEndian'):
             endian = 'little'
           else:
             endian = 'big'
