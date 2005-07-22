@@ -447,9 +447,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryClose(int fd)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_t *offset)
 {
-#if defined(PETSC_HAVE_LSEEK) || defined(PETSC_HAVE__LSEEK) 
-  int iwhence=0;
-#endif
+  int iwhence = 0;
 
   PetscFunctionBegin;
   if (whence == PETSC_BINARY_SEEK_SET) {
