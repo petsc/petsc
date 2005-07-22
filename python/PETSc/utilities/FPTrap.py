@@ -29,6 +29,7 @@ class Configure(config.base.Configure):
     if self.headers.check('sigfpe.h'):
       if self.functions.check('handle_sigfpes', libraries = 'fpe'):
         self.addDefine('HAVE_IRIX_STYLE_FPTRAP', 1)
+        self.compilers.LIBS = '-lfpe '+self.compilers.LIBS
     elif self.headers.check('fpxcp.h') and self.headers.check('fptrap.h'):
       if reduce(lambda x,y: x and y, map(self.functions.check, ['fp_sh_trap_info', 'fp_trap', 'fp_enable', 'fp_disable'])):
         self.addDefine('HAVE_RS6000_STYLE_FPTRAP', 1)
