@@ -754,6 +754,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
                 '  import configure',
                 '  configure.petsc_configure(configure_options)");']
       body.append('\\n'.join(driver))
+      body.append('\nfclose(output);\n')
 
       oldFlags = self.compilers.CPPFLAGS
       self.compilers.CPPFLAGS += ' '.join(self.batchIncludeDirs)
