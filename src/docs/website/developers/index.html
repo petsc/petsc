@@ -54,12 +54,20 @@ please don't access these pages.<br>
       </p>
       <big><span style="font-weight: bold;">Obtaining PETSc:</span></big><br>
       <br>
-To obtain the development version of PETSc you have three options, 1)
-download and install the free <b>BitKeeper</b> download client, 2)
-access the nightly tarball snapshot at <a
+To obtain the development version of PETSc you have three options<br>
+      <ol>
+        <li>&nbsp;download and install the <span
+ style="font-weight: bold;">free</span> <b>BitKeeper</b> download
+client</li>
+        <li>&nbsp;access the nightly <span style="font-weight: bold;">tarball</span>
+snapshot at <a
  href="ftp://info.mcs.anl.gov/pub/petsc/.petsc-dev.tar.gz">ftp://info.mcs.anl.gov/pub/petsc/.petsc-dev.tar.gz</a>
-or
-3) license BitKeeper (inexpensive academic licences available). All
+          <br>
+        </li>
+        <li><span style="font-weight: bold;">license BitKeeper</span>
+(inexpensive academic licences available).</li>
+      </ol>
+&nbsp;All
 three create a local directory with the name petsc-dev.
       <p></p>
       <strong>1) To use the free BitKeeper client </strong> Install
@@ -67,14 +75,19 @@ the free client from here <a
  href="http://www.bitkeeper.com/Hosted.Downloading.html">http://www.bitkeeper.com/Hosted.Downloading.html</a>.
 Make sure
 the directory where you have compiled this code is in your path.
-      <ul>
+      <ul style="color: rgb(128, 0, 0);">
         <li> sfioball bk://petsc.bkbits.net/petsc-dev petsc-dev</li>
         <li> cd petsc-dev/python</li>
         <li> rm -rf BuildSystem</li>
         <li> sfioball bk://sidl.bkbits.net/BuildSystem BuildSystem</li>
       </ul>
-To update PETSc run "update bk://petsc.bkbits.net/petsc-dev" from the
-petsc-dev directory
+To update PETSc
+      <ul style="color: rgb(128, 0, 0);">
+        <li>cd petsc-dev</li>
+        <li>update bk://petsc.bkbits.net/petsc-dev</li>
+        <li>cd python/BuildSystem</li>
+        <li>update bk://sidl.bkbits.net/BuildSystem </li>
+      </ul>
       <p></p>
       <strong>2) To use the tarball snapshot</strong>, simply download <a
  href="ftp://info.mcs.anl.gov/pub/petsc/.petsc-dev.tar.gz">ftp://info.mcs.anl.gov/pub/petsc/.petsc-dev.tar.gz</a>
@@ -91,21 +104,22 @@ For additional help on using BitKeeper you can use
       <ul>
         <li><font color="#800000">bk helptool</font></li>
       </ul>
-To update PETSc
+To update PETSc <br>
       <ul>
-        <li><font color="#800000">bk pull; cd python/BuildSystem; bk
-pull</font>(from inside the
-petsc-dev directory tree)</li>
+        <li><font color="#800000">cd petsc-dev<br>
+          </font></li>
+        <li><font color="#800000">&nbsp;bk pull</font></li>
+        <li><font color="#800000">cd python/BuildSystem</font></li>
+        <li><font color="#800000">bk
+pull</font></li>
       </ul>
 To modify your local copy of PETSc, you can use <font color="#800000">bk
-edit</font> and
-      <font color="#800000">bk citool</font>, as described in <font
- color="#800000">bk helptool</font>. These changes
+edit</font> and <font color="#800000">bk citool</font>, as described
+in <font color="#800000">bk helptool</font>. These changes
 can be shared with the PETSc community by pushing to the BkBits
 repository. You will need to send an SSH 1 public
 key to <a href="mailot:petsc-maint@mcs.anl.gov">petsc-maint</a> along
-with a description of the changes.
-      <a
+with a description of the changes. <a
  href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Documentation</a>
 for the development version (updated nightly).
       <p></p>
@@ -113,7 +127,8 @@ for the development version (updated nightly).
 Using the Development Copy:</big></p>
 Use config/configure.py <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html">to
-install PETSc</a>, (trouble, please contact us petsc-maint@mcs.anl.gov).
+install PETSc</a>, (trouble, please contact us
+petsc-maint@mcs.anl.gov).
       <p></p>
 Subscribe to the mailing list. Send mail to majordomo@mcs.anl.gov with
 the message: subscribe petsc-dev

@@ -120,7 +120,11 @@ OR </li>
       <td valign="top" width="75%">
       <h3><b>Example Usages:</b></h3>
       <ul>
-        <li> Other examples may be found in config/*.py</li>
+        <li>Examples are at <span style="font-weight: bold;">config/*.py</span>.
+We use some of these scripts locally for testing - <span
+ style="font-weight: bold;"></span>for example <span
+ style="font-weight: bold;">config/linux-gnu-amd64.py</span><br>
+        </li>
         <li>Using the bash shell, assuming BLAS,
 LAPACK, MPICH are not currently installed <font color="#551a8b">./config/configure.py</font>
 will download &amp;
@@ -204,7 +208,8 @@ in bmake/${PETSC_ARCH}. Multiple variants of PETSc libraries can be
 installed - each variant corresponding to a different PETSC_ARCH. One
 can switch between using these variants - by changing the value of
 PETSC_ARCH. If PETSC_ARCH is not set, the configuration from the last
-time you ran <font color="#551a8b">./config/configure.py</font> will
+time you ran <font style="font-weight: bold;" color="#551a8b">./config/configure.py</font>
+will
 be used.</p>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
 to Installation Instructions</a> &nbsp;&nbsp;&nbsp;&nbsp;</b></font> </p>
@@ -393,11 +398,21 @@ to Installation Instructions</a>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</b></font>
       <hr>
       <h3 style="font-weight: bold;"><a
  name="AdditionalMicrosoftWindowsNotes"><font color="#551a8b">Installing
+on IBM SP:</font></a></h3>
+      <p>To run any code compiled with MPI on IBM SP - one has to go
+through the <span style="font-weight: bold;">job scheduler</span>.&nbsp;
+Running configure on such job-scheduler only machines requires the
+additional option <span style="font-weight: bold;">'--with-batch=1'</span>.
+Alternatively check/run&nbsp; <span style="font-weight: bold;">config/aix5.1.0.0.py</span>
+for all configure options required on the SP.</p>
+      <h3 style="font-weight: bold;"><a
+ name="AdditionalMicrosoftWindowsNotes"><font color="#551a8b">Installing
 on IBM Blue Gene:</font></a></h3>
       <p>IBM Blue Gene [as of now] requires modified compiler script
 wrappers to compile PETSc-2.3.0. Please download <a
  href="ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz">ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz</a>
-and follow instructions provided in the README file.</p>
+and follow instructions provided in the <span
+ style="font-weight: bold;">README</span> file.</p>
       <h3><a name="AdditionalMicrosoftWindowsNotes"><font
  color="#551a8b">Installing with TAU Instrumentation package:</font></a></h3>
       <p><a
@@ -426,7 +441,8 @@ to add the following 3 options to your configuration:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: rgb(255, 0, 0);">./config/configure
 --with-shared --with-dynamic --with-python</span><br>
 which will download the source for the bindings into <span
- style="color: rgb(0, 255, 0);">src/python</span> and make sure that
+ style="font-weight: bold;"><span style="color: rgb(85, 26, 139);">src/python</span>
+      </span>and make sure that
 PETSc can build dynamic libraries for the Python modules. If you have
 the relase version, this download can be done manually using:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: rgb(255, 0, 0);">mkdir
@@ -440,7 +456,8 @@ PETScPython.tar.gz</span><br>
 After building PETSc, we can build the bindings using:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: rgb(255, 0, 0);">make python</span><br>
 which will create python modules stored in <span
- style="color: rgb(0, 255, 0);">lib/PETSC_ARCH/PETSc</span>. </p>
+ style="font-weight: bold;"><span style="color: rgb(85, 26, 139);">lib/PETSC_ARCH/PETSc</span>.</span>
+      </p>
       <p><font color="#551a8b"><b><a
  href="installation.html#Docs:%20%20Installation">Return
 to Installation Instructions</a>&nbsp;&nbsp;&nbsp; <br>
