@@ -169,7 +169,6 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   lu->options.Fact = FACTORED; /* The factored form of A is supplied. Local option used by this func. only.*/
 
   PStatInit(&stat);        /* Initialize the statistics variables. */
-
   if (lu->MatInputMode == GLOBAL) { 
 #if defined(PETSC_USE_COMPLEX)
     pzgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,(doublecomplex*)bptr, m, nrhs, 
@@ -189,7 +188,7 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
     if (info) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
 #endif
   }
-  if (lu->StatPrint) {
+  if (lu->options.PrintStat) {
      PStatPrint(&lu->options, &stat, &lu->grid);     /* Print the statistics. */
   }
   PStatFree(&stat);
@@ -235,7 +234,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
   
-  if (lu->StatPrint) { /* collect time for mat conversion */
+  if (lu->options.PrintStat) { /* collect time for mat conversion */
     ierr = MPI_Barrier(A->comm);CHKERRQ(ierr);
     ierr = PetscGetTime(&time0);CHKERRQ(ierr);  
   }
@@ -349,7 +348,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
 				   lu->val, lu->col, lu->row, SLU_NR_loc, SLU_D, SLU_GE);
 #endif
   }
-  if (lu->StatPrint) {
+  if (lu->options.PrintStat) {
     ierr = PetscGetTime(&time);CHKERRQ(ierr);  
     time0 = time - time0;
   }
@@ -381,7 +380,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
     ierr = MatDestroy(A_seq);CHKERRQ(ierr);
   }
 
-  if (lu->StatPrint) {
+  if (lu->options.PrintStat) {
     if (size > 1){
       ierr = MPI_Reduce(&time0,&time_max,1,MPI_DOUBLE,MPI_MAX,0,A->comm);
       ierr = MPI_Reduce(&time0,&time_min,1,MPI_DOUBLE,MPI_MIN,0,A->comm);
@@ -434,6 +433,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
 
   /* Set the input options */
   set_default_options_dist(&options);
+
   lu->MatInputMode = GLOBAL;
   ierr = MPI_Comm_dup(A->comm,&(lu->comm_superlu));CHKERRQ(ierr);
 
@@ -498,12 +498,12 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
     }
 
     if (PetscLogPrintInfo) {
-      lu->StatPrint = (PetscInt)PETSC_TRUE; 
+      options.PrintStat = YES; 
     } else {
-      lu->StatPrint = (PetscInt)PETSC_FALSE; 
+      options.PrintStat = NO;
     }
     ierr = PetscOptionsTruth("-mat_superlu_dist_statprint","Print factorization information","None",
-                              (PetscTruth)lu->StatPrint,(PetscTruth*)&lu->StatPrint,0);CHKERRQ(ierr); 
+                              (PetscTruth)options.PrintStat,(PetscTruth*)&options.PrintStat,0);CHKERRQ(ierr); 
   PetscOptionsEnd();
 
   /* Initialize the SuperLU process grid. */
@@ -513,10 +513,11 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   ScalePermstructInit(M, N, &lu->ScalePermstruct);
   LUstructInit(M, N, &lu->LUstruct); 
 
-  lu->options            = options;
+  lu->options            = options; 
   lu->flg                = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpSuperLU_Dist = PETSC_TRUE;
   *F = B;
+
   PetscFunctionReturn(0); 
 }
 
