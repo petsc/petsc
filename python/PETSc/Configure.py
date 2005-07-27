@@ -141,7 +141,7 @@ class Configure(config.base.Configure):
 
     if self.languages.usePython:
       self.addMakeMacro('PYTHON_INCLUDE', ' '.join([self.headers.getIncludeArgument(inc) for inc in self.languages.python.include]))
-      self.addMakeMacro('PYTHON_LIB', ' '.join([self.libraries.getLibArgument(lib) for lib in self.languages.python.library]))
+      self.addMakeMacro('PYTHON_LIB', ' '.join([self.libraries.getLibArgument(lib) for lib in self.languages.python.lib]))
     
     # real or complex
     self.addMakeMacro('PETSC_SCALAR',self.languages.scalartype)
