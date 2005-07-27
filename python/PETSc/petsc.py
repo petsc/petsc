@@ -76,7 +76,7 @@ class Configure(config.base.Configure):
       if petscConf:
         self.logPrint('Loaded PETSc-AS configuration ('+name+') from '+confPath)
         self.location = (petscDir, petscArch)
-        self.trial[self.location] = name
+        self.trial[self.location] = (name, petscConf.include, petscConf.lib, 'PETSc-AS '+petscArch)
         break
       else:
         self.logPrint('PETSc-AS has no cached configuration in '+confPath)
