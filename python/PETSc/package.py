@@ -343,8 +343,8 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')    
       if not self.complex and self.languages.scalartype.lower() == 'complex':
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')    
-      if self.cxx and not self.languages.clanguage.lower() == 'cxx':
-        raise RuntimeError('Cannot use '+self.name+' without C++, run config/configure.py --with-clanguage=c++')    
+      if self.cxx and not self.languages.clanguage == 'Cxx':
+        raise RuntimeError('Cannot use '+self.name+' without C++, run config/configure.py --with-clanguage=C++')    
       if self.fc and not hasattr(self.compilers, 'FC'):
         raise RuntimeError('Cannot use '+self.name+' without Fortran, run config/configure.py --with-fc')    
       self.executeTest(self.configureLibrary)
