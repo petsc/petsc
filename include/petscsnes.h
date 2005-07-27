@@ -373,7 +373,8 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPreCheck(SNES,PetscEr
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetParams(SNES,PetscReal,PetscReal,PetscReal);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchGetParams(SNES,PetscReal*,PetscReal*,PetscReal*);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESTestLocalMin(SNES snes);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESTestLocalMin(SNES);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetSolution(SNES,Vec);
 
 /* Should this routine be private? */
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);

@@ -279,7 +279,7 @@ runex9:
 	   else echo "Possible problem with ex9_1, diffs above"; fi; \
 	   ${RM} -f ex9_1.tmp
 runex10:
-	-@${MPIRUN} -np 2 ./ex10 -f0 ../../../mat/examples/matbinary.cplx.ex -ksp_gmres_cgs_refinement_type refine_always -options_left off > ex10_1.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ./ex10 -f0 ../../../../mat/examples/matbinary.cplx.ex -ksp_gmres_cgs_refinement_type refine_always -options_left off > ex10_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp

@@ -11,7 +11,7 @@ specialfastlib: lib
 #requirespackage   'PETSC_USE_FORTRAN_KERNELS_BGL'
 
 CFLAGS   =
-FFLAGS   =
+FFLAGS   = -qmaxmem=-1 -O3 -qhot -qarch=440d -qtune=440
 SOURCEC  = bgl_align.c
 SOURCEF  = fcopy_bgl.F fmdot_bgl.F fsolvebaij_bgl.F sgemv_bgl.F fmaxpy_bgl.F fnorm_bgl.F fwaxpy_bgl.F
 
