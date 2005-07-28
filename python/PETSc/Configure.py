@@ -56,7 +56,8 @@ class Configure(config.base.Configure):
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'gethostbyname',
-                 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','dlerror']
+                 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','dlerror',
+                 '_intel_fast_memcpy','_intel_fast_memset']
     libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
@@ -203,7 +204,7 @@ class Configure(config.base.Configure):
     if self.arch.hostOsBase.startswith('solaris'):
       if os.path.isdir(os.path.join('/usr','ucblib')):
         try:
-          flag = getattr(self.setCompilers, self.language[-1].replace('+', 'x')+'SharedLinkerFlag')
+          flag = getattr(self.setCompilers, self.language[-1]+'SharedLinkerFlag')
         except AttributeError:
           flag = None
         if flag is None:

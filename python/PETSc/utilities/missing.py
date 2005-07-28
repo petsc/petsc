@@ -89,9 +89,25 @@ class Configure(config.base.Configure):
       self.popLanguage()  
     return
 
+  def configureMissingIntelFastPrototypes(self):
+    if self.functions.haveFunction('_intel_fast_memcpy'):
+      self.addPrototype('#include <stddef.h> \nvoid *_intel_fast_memcpy(void *,const void *,size_t);', 'C')
+      if hasattr(self.compilers, 'CXX'):
+        self.pushLanguage('C++')
+        self.addPrototype('#include <stddef.h> \nvoid *_intel_fast_memcpy(void *,const void *,size_t);', 'extern C')
+        self.popLanguage()
+    if self.functions.haveFunction('_intel_fast_memset'):
+      self.addPrototype('#include <stddef.h> \nvoid *_intel_fast_memset(void *, int, size_t);', 'C')
+      if hasattr(self.compilers, 'CXX'):
+        self.pushLanguage('C++')
+        self.addPrototype('#include <stddef.h> \nvoid *_intel_fast_memset(void *, int, size_t);', 'extern C')
+        self.popLanguage()
+    return
+
   def configure(self):
     self.executeTest(self.configureMissingDefines)
     self.executeTest(self.configureMissingFunctions)
     self.executeTest(self.configureMissingSignals)
     self.executeTest(self.configureMissingPrototypes)
+    self.executeTest(self.configureMissingIntelFastPrototypes)
     return
