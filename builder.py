@@ -161,6 +161,7 @@ class Builder(logging.Logger):
 
   def pushLanguage(self, language):
     '''Set the current language'''
+    if language == 'C++': language = 'Cxx'
     self.language.append(language)
     return self.language[-1]
 

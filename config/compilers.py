@@ -35,7 +35,7 @@ class Configure(config.base.Configure):
     names = sets.Set()
     names.update(['CC', 'CPP', 'CXX', 'CPPCXX', 'FC'])
     names.update(['AR', 'RANLIB', 'LD_SHARED'])
-    for language in ['C', 'C++', 'FC']:
+    for language in ['C', 'Cxx', 'FC']:
       self.pushLanguage(language)
       names.update([self.getCompilerFlagsName(language), self.getCompilerFlagsName(language, 1), self.getLinkerFlagsName(language)])
       self.popLanguage()
@@ -141,8 +141,8 @@ class Configure(config.base.Configure):
 
   def checkCxxOptionalExtensions(self):
     '''Check whether the C++ compiler (IBM xlC, OSF5) need special flag for .c files which contain C++'''
-    self.setCompilers.pushLanguage('C++')
-    cxxObj = self.framework.getCompilerObject('C++')
+    self.setCompilers.pushLanguage('Cxx')
+    cxxObj = self.framework.getCompilerObject('Cxx')
     oldExt = cxxObj.sourceExtension
     cxxObj.sourceExtension = self.framework.getCompilerObject('C').sourceExtension
     success=0
@@ -608,7 +608,7 @@ class Configure(config.base.Configure):
       self.logPrint('Check that Fortran libraries can be used from C++', 4, 'compilers')
       self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
       try:
-        self.setCompilers.checkCompiler('C++')
+        self.setCompilers.checkCompiler('Cxx')
         self.logPrint('Fortran libraries can be used from C++', 4, 'compilers')
       except RuntimeError, e:
         self.logPrint(str(e), 4, 'compilers')
@@ -616,7 +616,7 @@ class Configure(config.base.Configure):
         if '-lintrins' in self.flibs: self.flibs.remove('-lintrins')
         self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
         try:
-          self.setCompilers.checkCompiler('C++')
+          self.setCompilers.checkCompiler('Cxx')
         except RuntimeError, e:
           self.logPrint(str(e), 4, 'compilers')
           if str(e).find('INTELf90_dclock') >= 0:

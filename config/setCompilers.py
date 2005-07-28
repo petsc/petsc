@@ -162,7 +162,7 @@ class Configure(config.base.Configure):
 
   def checkInitialFlags(self):
     '''Initialize the compiler and linker flags'''
-    for language in ['C', 'C++', 'FC']:
+    for language in ['C', 'Cxx', 'FC']:
       self.pushLanguage(language)
       for flagsArg in [self.getCompilerFlagsName(language), self.getCompilerFlagsName(language, 1), self.getLinkerFlagsName(language)]:
         setattr(self, flagsArg, self.argDB[flagsArg])
@@ -420,7 +420,7 @@ class Configure(config.base.Configure):
     for compiler in self.generateCxxCompilerGuesses():
       # Determine an acceptable extensions for the C++ compiler
       for ext in ['.cc', '.cpp', '.C']:
-        self.framework.getCompilerObject('C++').sourceExtension = ext
+        self.framework.getCompilerObject('Cxx').sourceExtension = ext
         try:
           if self.getExecutable(compiler, resultName = 'CXX'):
             self.checkCompiler('Cxx')
@@ -660,7 +660,7 @@ class Configure(config.base.Configure):
       return
     languages = ['C']
     if hasattr(self, 'CXX'):
-      languages.append('C++')
+      languages.append('Cxx')
     if hasattr(self, 'FC'):
       languages.append('FC')
     for language in languages:
@@ -814,7 +814,7 @@ class Configure(config.base.Configure):
     return
 
   def setStaticLinker(self):
-    language = self.framework.normalizeLanguage(self.language[-1])
+    language = self.language[-1]
     return self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
 
   def generateSharedLinkerGuesses(self):
@@ -903,7 +903,7 @@ class Configure(config.base.Configure):
     '''Tests some Apple Mac specific linker flags'''
     languages = ['C']
     if hasattr(self, 'CXX'):
-      languages.append('C++')
+      languages.append('Cxx')
     if hasattr(self, 'FC'):
       languages.append('FC')
     for language in languages:
@@ -927,7 +927,7 @@ class Configure(config.base.Configure):
        - FreeBSD: -Wl,-R,'''
     languages = ['C']
     if hasattr(self, 'CXX'):
-      languages.append('C++')
+      languages.append('Cxx')
     if hasattr(self, 'FC'):
       languages.append('FC')
     for language in languages:
@@ -941,7 +941,7 @@ class Configure(config.base.Configure):
         else:
           self.framework.logPrint('Rejected '+language+' linker flag '+testFlag)
       self.popLanguage()
-      setattr(self, language.replace('+', 'x')+'SharedLinkerFlag', flag)
+      setattr(self, language+'SharedLinkerFlag', flag)
     return
 
   def checkLibC(self):

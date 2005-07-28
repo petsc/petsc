@@ -37,7 +37,7 @@ class Configure(config.base.Configure):
     #include <assert.h>
     /* Override any gcc2 internal prototype to avoid an error. */
     '''
-    if self.language[-1] == 'C++':
+    if self.language[-1] == 'Cxx':
       includes += '''
       #ifdef __cplusplus
       extern "C"

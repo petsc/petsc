@@ -49,8 +49,8 @@ class Configure(config.base.Configure):
       import config.libraries
       name = config.libraries.Configure.getLibName(library)
       if ((len(library) > 2 and library[1] == ':') or os.path.isabs(library)):
-        flagName  = self.language[-1].replace('+', 'x')+'SharedLinkerFlag'
-        flagSubst = self.language[-1].replace('+', 'x').upper()+'_LINKER_SLFLAG'
+        flagName  = self.language[-1]+'SharedLinkerFlag'
+        flagSubst = self.language[-1].upper()+'_LINKER_SLFLAG'
         if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
           return getattr(self.setCompilers, flagName)+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
         if flagSubst in self.framework.argDB:
@@ -106,7 +106,7 @@ class Configure(config.base.Configure):
         funcName = self.compilers.mangleFortranFunction(funcName)
       includes = '/* Override any gcc2 internal prototype to avoid an error. */\n'
       # Handle C++ mangling
-      if self.language[-1] == 'C++':
+      if self.language[-1] == 'Cxx':
         includes += '''
         #ifdef __cplusplus
         extern "C"

@@ -354,14 +354,9 @@ class LanguageProcessor(args.ArgumentProcessor):
     return
   argDB = property(args.ArgumentProcessor.getArgDB, setArgDB, doc = 'The RDict argument database')
 
-  def normalizeLanguage(self, language):
-    '''Canonicalize the language name'''
-    return language.replace('+', 'x')
-
   def getLanguageModule(self, language, moduleName = None):
     '''Return the module associated with operations for a given language
        - Giving a moduleName explicitly forces a reimport'''
-    language = self.normalizeLanguage(language)
     if not language in self.languageModule or not moduleName is None:
       try:
         if moduleName is None:
@@ -385,7 +380,6 @@ class LanguageProcessor(args.ArgumentProcessor):
     return self.languageModule[language]
 
   def getPreprocessorObject(self, language):
-    language = self.normalizeLanguage(language)
     if not language in self.preprocessorObject:
       self.preprocessorObject[language] = self.getLanguageModule(language).Preprocessor(self.argDB)
       self.preprocessorObject[language].setup()
@@ -396,12 +390,10 @@ class LanguageProcessor(args.ArgumentProcessor):
     return self.preprocessorObject[language]
 
   def setPreprocessorObject(self, language, preprocessor):
-    language = self.normalizeLanguage(language)
     self.preprocessorObject[language] = preprocessor
     return self.getPreprocessorObject(language)
 
   def getCompilerObject(self, language):
-    language = self.normalizeLanguage(language)
     if not language in self.compilerObject:
       self.compilerObject[language] = self.getLanguageModule(language).Compiler(self.argDB)
       self.compilerObject[language].setup()
@@ -412,12 +404,10 @@ class LanguageProcessor(args.ArgumentProcessor):
     return self.compilerObject[language]
 
   def setCompilerObject(self, language, compiler):
-    language = self.normalizeLanguage(language)
     self.compilerObject[language] = compiler
     return self.getCompilerObject(language)
 
   def getLinkerObject(self, language):
-    language = self.normalizeLanguage(language)
     if not language in self.linkerObject:
       self.linkerObject[language] = self.getLanguageModule(language).Linker(self.argDB)
       self.linkerObject[language].setup()
@@ -430,12 +420,10 @@ class LanguageProcessor(args.ArgumentProcessor):
     return self.linkerObject[language]
 
   def setLinkerObject(self, language, linker):
-    language = self.normalizeLanguage(language)
     self.linkerObject[language] = linker
     return self.getLinkerObject(language)
 
   def getSharedLinkerObject(self, language):
-    language = self.normalizeLanguage(language)
     if not language in self.sharedLinkerObject:
       self.sharedLinkerObject[language] = self.getLanguageModule(language).SharedLinker(self.argDB)
       self.sharedLinkerObject[language].setup()
@@ -448,12 +436,10 @@ class LanguageProcessor(args.ArgumentProcessor):
     return self.sharedLinkerObject[language]
 
   def setSharedLinkerObject(self, language, linker):
-    language = self.normalizeLanguage(language)
     self.sharedLinkerObject[language] = linker
     return self.getSharedLinkerObject(language)
 
   def getDynamicLinkerObject(self, language):
-    language = self.normalizeLanguage(language)
     if not language in self.dynamicLinkerObject:
       self.dynamicLinkerObject[language] = self.getLanguageModule(language).DynamicLinker(self.argDB)
       self.dynamicLinkerObject[language].setup()
@@ -466,6 +452,5 @@ class LanguageProcessor(args.ArgumentProcessor):
     return self.dynamicLinkerObject[language]
 
   def setDynamicLinkerObject(self, language, linker):
-    language = self.normalizeLanguage(language)
     self.dynamicLinkerObject[language] = linker
     return self.getDynamicLinkerObject(language)

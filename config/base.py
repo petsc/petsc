@@ -131,7 +131,7 @@ class Configure(script.Script):
   def addPrototype(self, prototype, language = 'All'):
     '''Add a missing function prototype
        - The language argument defaults to "All"
-       - Other language choices are C, C++, extern C'''
+       - Other language choices are C, Cxx, extern C'''
     self.framework.logPrint('Added prototype '+prototype+' to language '+language)
     language = language.replace('+', 'x')
     if not language in self.prototypes:
@@ -244,6 +244,7 @@ class Configure(script.Script):
   ###############################################
   # Preprocessor, Compiler, and Linker Operations
   def pushLanguage(self, language):
+    if language == 'C++': language = 'Cxx'
     self.logPrint('Pushing language '+language)
     self.language.append(language)
     return self.language[-1]
@@ -327,7 +328,7 @@ class Configure(script.Script):
     language = self.language[-1]
     if includes and not includes[-1] == '\n':
       includes += '\n'
-    if language in ['C', 'C++', 'Cxx']:
+    if language in ['C','Cxx']:
       codeStr = ''
       if self.compilerDefines: codeStr = '#include "'+self.compilerDefines+'"\n'
       codeStr += '#include "conffix.h"\n'+includes
@@ -423,7 +424,7 @@ class Configure(script.Script):
   def getCompilerFlagsName(self, language, compilerOnly = 0):
     if language == 'C':
       flagsArg = 'CFLAGS'
-    elif language in ['C++', 'Cxx']:
+    elif language == 'Cxx':
       if compilerOnly:
         flagsArg = 'CXX_CXXFLAGS'
       else:
@@ -486,7 +487,7 @@ class Configure(script.Script):
   def getLinkerFlagsName(self, language):
     if language == 'C':
       flagsArg = 'LDFLAGS'
-    elif language in ['C++', 'Cxx']:
+    elif language == 'Cxx':
       flagsArg = 'LDFLAGS'
     elif language == 'FC':
       flagsArg = 'LDFLAGS'

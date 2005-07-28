@@ -42,7 +42,7 @@ class Configure(config.base.Configure):
   def getOptionalFlagsName(self, language, compilerOnly = 0):
     if language == 'C':
       flagsArg = 'COPTFLAGS'
-    elif language in ['C++', 'Cxx']:
+    elif language == 'Cxx':
       if compilerOnly:
         flagsArg = 'CXX_CXXOPTFLAGS'
       else:

@@ -47,7 +47,7 @@ class UsingC (base.Base):
   # Language Operations
   def getLanguageModule(self, language):
     if not language in self.languageModule:
-      moduleName = 'config.compile.'+language.replace('+', 'x')
+      moduleName = 'config.compile.'+language
       components = moduleName.split('.')
       module     = __import__(moduleName)
       for component in components[1:]:
