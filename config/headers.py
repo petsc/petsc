@@ -55,11 +55,11 @@ class Configure(config.base.Configure):
   def checkStdC(self):
     haveStdC = 0
     includes = '''
-    #include <stdlib.h>
-    #include <stdarg.h>
-    #include <string.h>
-    #include <float.h>
-    '''
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+#include <float.h>
+'''
     haveStdC = self.checkCompile(includes)
     # SunOS 4.x string.h does not declare mem*, contrary to ANSI.
     if haveStdC and not self.outputPreprocess('#include <string.h>').find('memchr'): haveStdC = 0
@@ -68,12 +68,12 @@ class Configure(config.base.Configure):
     # /bin/cc in Irix-4.0.5 gets non-ANSI ctype macros unless using -ansi.
     if haveStdC and not self.framework.argDB['with-batch']:
       includes = '''
-      #include <stdlib.h>
-      #include <ctype.h>
-      #define ISLOWER(c) (\'a\' <= (c) && (c) <= \'z\')
-      #define TOUPPER(c) (ISLOWER(c) ? \'A\' + ((c) - \'a\') : (c))
-      #define XOR(e, f) (((e) && !(f)) || (!(e) && (f)))
-      '''
+#include <stdlib.h>
+#include <ctype.h>
+#define ISLOWER(c) (\'a\' <= (c) && (c) <= \'z\')
+#define TOUPPER(c) (ISLOWER(c) ? \'A\' + ((c) - \'a\') : (c))
+#define XOR(e, f) (((e) && !(f)) || (!(e) && (f)))
+'''
       body = '''
         int i;
 
@@ -88,33 +88,33 @@ class Configure(config.base.Configure):
   def checkStat(self):
     '''Checks whether stat file-mode macros are broken, and defines STAT_MACROS_BROKEN if they are'''
     code = '''
-    #include <sys/types.h>
-    #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
-    #if defined(S_ISBLK) && defined(S_IFDIR)
-    # if S_ISBLK (S_IFDIR)
-    You lose.
-    # endif
-    #endif
+#if defined(S_ISBLK) && defined(S_IFDIR)
+# if S_ISBLK (S_IFDIR)
+  You lose.
+# endif
+#endif
 
-    #if defined(S_ISBLK) && defined(S_IFCHR)
-    # if S_ISBLK (S_IFCHR)
-    You lose.
-    # endif
-    #endif
+#if defined(S_ISBLK) && defined(S_IFCHR)
+# if S_ISBLK (S_IFCHR)
+  You lose.
+# endif
+#endif
 
-    #if defined(S_ISLNK) && defined(S_IFREG)
-    # if S_ISLNK (S_IFREG)
-    You lose.
-    # endif
-    #endif
+#if defined(S_ISLNK) && defined(S_IFREG)
+# if S_ISLNK (S_IFREG)
+  You lose.
+# endif
+#endif
 
-    #if defined(S_ISSOCK) && defined(S_IFREG)
-    # if S_ISSOCK (S_IFREG)
-    You lose.
-    # endif
-    #endif
-    '''
+#if defined(S_ISSOCK) && defined(S_IFREG)
+# if S_ISSOCK (S_IFREG)
+  You lose.
+# endif
+#endif
+'''
     if self.outputPreprocess(code).find('You lose') >= 0:
       self.addDefine('STAT_MACROS_BROKEN', 1)
       return 0
@@ -123,15 +123,15 @@ class Configure(config.base.Configure):
   def checkSysWait(self):
     '''Check for POSIX.1 compatible sys/wait.h, and defines HAVE_SYS_WAIT_H if found'''
     includes = '''
-    #include <sys/types.h>
-    #include <sys/wait.h>
-    #ifndef WEXITSTATUS
-    #define WEXITSTATUS(stat_val) ((unsigned)(stat_val) >> 8)
-    #endif
-    #ifndef WIFEXITED
-    #define WIFEXITED(stat_val) (((stat_val) & 255) == 0)
-    #endif
-    '''
+#include <sys/types.h>
+#include <sys/wait.h>
+#ifndef WEXITSTATUS
+#define WEXITSTATUS(stat_val) ((unsigned)(stat_val) >> 8)
+#endif
+#ifndef WIFEXITED
+#define WIFEXITED(stat_val) (((stat_val) & 255) == 0)
+#endif
+'''
     body = '''
     int s;
     wait (&s);

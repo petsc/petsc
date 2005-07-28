@@ -108,9 +108,10 @@ class Configure(config.base.Configure):
       # Handle C++ mangling
       if self.language[-1] == 'Cxx':
         includes += '''
-        #ifdef __cplusplus
-        extern "C"
-        #endif'''
+#ifdef __cplusplus
+extern "C"
+#endif
+'''
       # Construct prototype
       if prototype:
         if isinstance(prototype, str):
@@ -264,7 +265,7 @@ int checkInit(void) {
 #include <stdio.h>
 #include <stdlib.h>
 #ifdef %s
-  #include <dlfcn.h>
+#include <dlfcn.h>
 #endif
     ''' % guard
     body = '''

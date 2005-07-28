@@ -39,24 +39,25 @@ class Configure(config.base.Configure):
     '''
     if self.language[-1] == 'Cxx':
       includes += '''
-      #ifdef __cplusplus
-      extern "C"
-      #endif'''
+#ifdef __cplusplus
+extern "C"
+#endif
+'''
     includes += '''
-    /* We use char because int might match the return type of a gcc2
-    builtin and then its argument prototype would still apply. */
-    '''
+/* We use char because int might match the return type of a gcc2
+builtin and then its argument prototype would still apply. */
+'''
     includes += 'char '+funcName+'();\n'
     body = '''
-    /* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-    #if defined (__stub_'''+funcName+''') || defined (__stub___'''+funcName+''')
-    choke me
-    #else
-    '''+funcName+'''();
-    #endif
-    '''
+/* The GNU C library defines this for functions which it implements
+to always fail with ENOSYS.  Some functions are actually named
+something starting with __ and the normal name is an alias.  */
+#if defined (__stub_'''+funcName+''') || defined (__stub___'''+funcName+''')
+choke me
+#else
+'''+funcName+'''();
+#endif
+'''
     if libraries:
       oldLibs = self.compilers.LIBS
       if not isinstance(libraries, list):
@@ -100,18 +101,18 @@ class Configure(config.base.Configure):
     if self.defines.has_key(self.getDefineName('sysinfo')):
       map(self.headers.check, ['linux/kernel.h', 'sys/sysinfo.h', 'sys/systeminfo.h'])
       includes = '''
-      #ifdef HAVE_LINUX_KERNEL_H
-      #  include <linux/kernel.h>
-      #  include <linux/sys.h>
-      #  ifdef HAVE_SYS_SYSINFO_H
-      #    include <sys/sysinfo.h>
-      #  endif
-      #elif defined(HAVE_SYS_SYSTEMINFO_H)
-      #  include <sys/systeminfo.h>
-      #else
-      #  error "Cannot check sysinfo without special headers"
-      #endif
-      '''
+#ifdef HAVE_LINUX_KERNEL_H
+#  include <linux/kernel.h>
+#  include <linux/sys.h>
+#  ifdef HAVE_SYS_SYSINFO_H
+#    include <sys/sysinfo.h>
+#  endif
+#elif defined(HAVE_SYS_SYSTEMINFO_H)
+#  include <sys/systeminfo.h>
+#else
+#  error "Cannot check sysinfo without special headers"
+#endif
+'''
       body = 'char buf[10]; long count=10; sysinfo(1, buf, count);\n'
       if self.checkCompile(includes, body):
         self.addDefine('HAVE_SYSINFO_3ARG', 1)
