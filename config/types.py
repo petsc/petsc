@@ -108,7 +108,7 @@ void (*signal())();
   def checkFortranDReal(self):
     '''Checks whether dreal is provided in Fortran, and if not defines MISSING_DREAL'''
     self.pushLanguage('FC')
-    if not self.checkLink('', 'double precision d d = dreal(3.0)'):
+    if not self.checkLink('', '      double precision d\n      d = dreal(3.0)'):
       self.addDefine('MISSING_DREAL', 1)
     self.popLanguage()
     return
