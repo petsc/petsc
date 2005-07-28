@@ -331,6 +331,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     lines = filter(lambda s: s.find('license.dat') < 0, lines)
     # Cray XT3
     lines = filter(lambda s: s.find('INFO: catamount target') < 0, lines)
+    # Lahey/Fujitsu
+    lines = filter(lambda s: s.find('Encountered 0 errors') < 0, lines)
     output = reduce(lambda s, t: s+t, lines, '')
     return output
   
@@ -355,6 +357,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = filter(lambda s: s.find('license.dat') < 0, lines)
       # Cray XT3
       lines = filter(lambda s: s.find('INFO: catamount target') < 0, lines)
+      # Lahey/Fujitsu
+      lines = filter(lambda s: s.find('Encountered 0 errors') < 0, lines)
       output = reduce(lambda s, t: s+t, lines, '')
     return output
 
@@ -369,6 +373,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = filter(lambda s: s.find('license.dat') < 0, lines)
       # Cray XT3
       lines = filter(lambda s: s.find('INFO: catamount target') < 0, lines)
+      # Lahey/Fujitsu
+      lines = filter(lambda s: s.find('Encountered 0 errors') < 0, lines)
       output = reduce(lambda s, t: s+t, lines, '')
     return output
         
