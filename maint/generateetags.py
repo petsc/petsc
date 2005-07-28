@@ -43,7 +43,7 @@ def addFileNameTags(filename):
 def processDir(tagfile,dirname,names):
   newls = []
   for l in names:
-    if l.endswith('.py') or l.endswith('.c') or l.endswith('.F') or l.endswith('.h') or l == 'makefile':
+    if l.endswith('.py') or l.endswith('.c') or l.endswith('.F') or l.endswith('.h') or l.endswith('.tex') or l == 'makefile':
       newls.append(l)
   if newls:
     (status,output) = commands.getstatusoutput('cd '+dirname+';etags -a -o '+tagfile+' '+' '.join(newls))

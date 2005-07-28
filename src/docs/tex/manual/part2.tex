@@ -5975,17 +5975,17 @@ with memory allocation, including leaks and use of uninitialized space.
 We briefly describe these below.
 \sindex{memory leaks} \sindex{memory allocation}
 
-\findex{-trmalloc} \findex{-trmalloc_off}
+\findex{-malloc}
 \begin{itemize}
-\item The PETSc memory allocation (which collects statistics and performs
-error checking), is employed by default for codes compiled in a
-debug mode (\trl{BOPT=g}, \trl{BOPT=g_c++}, \trl{BOPT=g_complex}).
-PETSc memory allocation can be activated for other other cases, such
-as \trl{BOPT=O}, with the option \trl{-trmalloc}, while \trl{
--trmalloc_off} forces the use of conventional memory allocation for the
-\trl{BOPT=g}, \trl{BOPT=g_c++}, and \trl{BOPT=g_complex} versions.
-When running timing tests, one should use  
-the \trl{BOPT=O} version of the libraries.
+
+\item The PETSc memory allocation (which collects statistics and
+performs error checking), is employed by default for codes compiled in
+a debug-mode (configured with \trl{--with-debugging=1}).  PETSc memory
+allocation can be activated for optimixed-mode (configured with
+\trl{--with-debugging=0}) using the option \trl{-malloc}. The option
+\trl{-malloc=0} forces the use of conventional memory allocation when
+debugging is enabled.  When running timing tests, one should build
+libraries in optimized-mode.
 
 \findex{-trdump} \findex{PetscTrDump()}
 \item When the PETSc memory allocation routines are used, the option 
@@ -5997,27 +5997,17 @@ option \trl{-trdump} merely activates a call to PetscTrDump() during
 PetscFinalize(); the user can also call PetscTrDump() elsewhere
 in a program.
 
-\findex{-trmalloc_log} \findex{PetscGetResidentSetSize()}
+\findex{-malloc_log} \findex{PetscGetResidentSetSize()}
 \findex{PetscTrLog()} \findex{PetscTrLogDump()}
 \item Another useful option for use with PETSc memory allocation
-routines is \trl{-trmalloc_log}, which activates logging of all calls
+routines is \trl{-malloc_log}, which activates logging of all calls
 to malloc and reports memory usage, including all Fortran arrays.
 This option provides a more complete picture than \trl{-trdump} for
 codes that employ Fortran with hardwired arrays.  Note that the option
-\trl{-trmalloc_log} activates calls to PetscTrLog(), \trl{
+\trl{-malloc_log} activates calls to PetscTrLog(), \trl{
 PetscTrLogDump()}, and PetscGetResidentSetSize() during \trl{
 PetscFinalize()}; the user can also call these routines elsewhere in a
 program.
-
-\findex{PetscInitializeNans()} \findex{PetscInitializeLargeInts()}
-\findex{-trmalloc_nan}
-\item The option \trl{-trmalloc_nan} is useful for tracking down the
-allocated memory that is used before it has been initialized.  This
-option calls PetscInitializeNans() which marks an array as being
-uninitialized, so that if values are used for computation without
-first having been set, a floating point exception is generated.  This
-option also calls {PetscInitializeLargeInts()}; see the manual pages for
-details.  Note that so far these work only on the certain systems.
 
 \end{itemize}
 
@@ -6043,7 +6033,7 @@ overcoming them.
       memory used by given process is with the UNIX \trl{getrusage} system routine.
       Also, the PETSc option \trl{-log_summary} prints the amount of 
       memory used by the basic PETSc objects, thus providing a lower
-      bound on the memory used.  Another useful option is \trl{-trmalloc_log}
+      bound on the memory used.  Another useful option is \trl{-malloc_log}
       which reports all memory, including any Fortran arrays in an
       application code.
 \item {\bf Effects of other users}:  If other users are running

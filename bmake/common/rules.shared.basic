@@ -90,6 +90,7 @@ shared:
 	-@echo making shared libraries in ${INSTALL_LIB_DIR}; \
 	${RM} -rf ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
 	mkdir ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
+        cwd=`pwd`; \
 	for LIBNAME in ${SHLIBS}; \
 	do \
 	  if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${AR_LIB_SUFFIX}; then \
@@ -104,9 +105,9 @@ shared:
 	    if [ "$$flag" != "" ]; then \
             echo "building $$LIBNAME.${SL_LINKER_SUFFIX}"; \
               ${RM} -f ${INSTALL_LIB_DIR}/tmp-petsc-shlib/*; \
-  	      pushd ${INSTALL_LIB_DIR}/tmp-petsc-shlib >/dev/null; \
+  	      cd  ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
 	      ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \
-              popd >/dev/null ;\
+              cd $$cwd;\
 	      ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-petsc-shlib shared_arch; \
 	    fi; \
 	  fi; \
