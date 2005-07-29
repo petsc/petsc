@@ -346,8 +346,11 @@ class Package(config.base.Configure):
       if self.cxx and not self.languages.clanguage == 'Cxx':
         raise RuntimeError('Cannot use '+self.name+' without C++, run config/configure.py --with-clanguage=C++')    
       if self.fc and not hasattr(self.compilers, 'FC'):
-        raise RuntimeError('Cannot use '+self.name+' without Fortran, run config/configure.py --with-fc')    
+        raise RuntimeError('Cannot use '+self.name+' without Fortran, run config/configure.py --with-fc')
+      # If clanguage is c++, test external packages with the c++ compiler
+      self.libraries.pushLanguage(self.languages.clanguage)
       self.executeTest(self.configureLibrary)
+      self.libraries.popLanguage()
     else:
       self.executeTest(self.alternateConfigureLibrary)
     return
