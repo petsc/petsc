@@ -73,7 +73,7 @@ EXTERN PetscErrorCode MatGetSubMatrices_MPIRowbs (Mat,int,const IS[],const IS[],
 EXTERN PetscErrorCode MatGetSubMatrix_MPIRowbs (Mat,IS,IS,int,MatReuse,Mat *);
 EXTERN PetscErrorCode MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat);
 EXTERN PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat,int,const IS[],const IS[],MatReuse,Mat*);
-EXTERN PetscErrorCode MatLoad_MPIRowbs(PetscViewer,const MatType,Mat*);
+EXTERN PetscErrorCode MatLoad_MPIRowbs(PetscViewer,MatType,Mat*);
 
 #define CHKERRBS(a) {if (__BSERROR_STATUS) {(*PetscErrorPrintf)(\
         "BlockSolve95 Error Code %d\n",__BSERROR_STATUS);CHKERRQ(1);}}

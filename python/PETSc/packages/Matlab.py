@@ -90,7 +90,6 @@ class Configure(PETSc.package.Package):
           self.lib = [self.setCompilers.CSharedLinkerFlag+matlab_sys,'-L'+os.path.join(matlab,'bin',matlab_arch),'-L'+os.path.join(matlab,'extern','lib',matlab_arch),'-leng','-lmx','-lmat','-lut','-licudata','-licui18n','-licuuc','-lustdio'] + matlab_dl
           self.framework.packages.append(self)
           self.addMakeMacro('MATLAB_MEX',self.mex)
-          self.addMakeMacro('MATLAB_CC',self.cc)
           self.addMakeMacro('MATLAB_COMMAND',self.command)        
           self.found = 1
           return
