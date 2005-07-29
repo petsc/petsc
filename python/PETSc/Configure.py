@@ -73,6 +73,12 @@ class Configure(config.base.Configure):
     # eventually everything between -- should be gone
 #-----------------------------------------------------------------------------------------------------    
 
+    # Sometimes we need C compiler, even if built with C++
+    self.setCompilers.pushLanguage('C')
+    self.addMakeMacro('C_CC',self.setCompilers.getCompiler())
+    self.addMakeMacro('C_CC_FLAGS',self.setCompilers.getCompilerFlags())    
+    self.setCompilers.popLanguage()
+
     # C preprocessor values
     self.addMakeMacro('CPP_FLAGS',self.setCompilers.CPPFLAGS)
     

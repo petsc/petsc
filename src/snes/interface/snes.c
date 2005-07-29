@@ -1884,6 +1884,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetSolution(SNES snes,Vec *x)
 
    Level: intermediate
 
+   Notes: this is not normally used, rather one simply calls SNESSolve() with 
+          the appropriate solution vector.
+
 .keywords: SNES, nonlinear, set, solution
 
 .seealso: SNESGetSolution(), SNESGetFunction(), SNESGetSolutionUpdate()

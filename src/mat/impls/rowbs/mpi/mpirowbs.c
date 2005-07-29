@@ -1788,7 +1788,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIRowbs"
-PetscErrorCode MatLoad_MPIRowbs(PetscViewer viewer,const MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPIRowbs(PetscViewer viewer,MatType type,Mat *newmat)
 {
   Mat_MPIRowbs *a;
   BSspmat      *A;

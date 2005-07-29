@@ -70,7 +70,7 @@ lib:  ${SOURCE}
 #
 #  Does not work for some machines with .F fortran files.
 #
-# Builds library - fast version
+# Builds library - fast versiong
 
 libfast:  ${SOURCEC} ${SOURCEF}
 	-@if [ "${SPECIALFASTLIB}" = "yes" ] ; then \
@@ -309,7 +309,7 @@ getmpirun:
               fi; \
         elif  [ -f $*.ad.c ]; then \
           echo ${CC} -g -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-	  ${CC} dsffdsfdsfdsfds -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+	  ${CC} -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
         else \
 	  echo ${PETSC_COMPILE_SINGLE} $<; \
 	  ${PETSC_COMPILE_SINGLE} $<; \
