@@ -1,6 +1,8 @@
 !
 !
-!  Utility routine used to set some values into a Fortran common block
+!     Utility routine used to set constants into the
+!     PETSc Fortran common block
+!
 
       subroutine PetscSetCommonBlock(c1,c2)
       implicit none
