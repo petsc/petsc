@@ -566,6 +566,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateDAAD(DA da,Mat *A)
 /*@
    MatRegisterDAAD - Registers DAAD matrix type
 
+   Level: advanced
+
 .seealso: MatCreateDAAD(), DASetLocalAdicMFFunction()
 
 @*/

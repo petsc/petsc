@@ -534,6 +534,8 @@ PetscErrorCode KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
    Note: The right vector has as many elements as the matrix has columns. The left
      vector has as many elements as the matrix has rows.
 
+   Level: advanced
+
 .seealso:   MatGetVecs()
 
 @*/

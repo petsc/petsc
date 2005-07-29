@@ -285,9 +285,10 @@ PetscErrorCode MatSetOption_IS(Mat A,MatOption op)
    Output Parameter:
 .    A - the resulting matrix
 
+   Level: advanced
+
    Notes: See MATIS for more details
           m and n are NOT related to the size of the map
-
 
 .seealso: MATIS, MatSetLocalToGlobalMapping()
 @*/

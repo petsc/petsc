@@ -19,6 +19,8 @@
     Output Parameter:
 .      B - the inner matrix
 
+    Level: intermediate
+
 @*/
 PetscErrorCode MatDenseGetLocalMatrix(Mat A,Mat *B)
 {
