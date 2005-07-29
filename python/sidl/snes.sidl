@@ -206,7 +206,7 @@ package PETSc {
     // Get the local storage
     array<double>:values getArray();
     // Return the local storage
-    void restoreArray(in array<double> values);
+    void restoreArray(inout array<double> values);
     // result = (self == y)
     bool equal(in Vec y);
   }
@@ -260,13 +260,13 @@ package PETSc {
     // Get the local storage
     array<double>:values getArray();
     // Return the local storage
-    void restoreArray(in array<double> values);
+    void restoreArray(inout array<double> values);
     // Begin the assembly phase
     void assemblyBegin(in MatAssemblyType assemblyType);
     // End the assembly phase
     void assemblyEnd(in MatAssemblyType assemblyType);
     // Get a submatrix of this matrix
-    Mat getSubMatrixRaw(in array<int> rows, in array<int> cols, in int localCols, in MatReuse flag);
+    void getSubMatrixRaw(in array<int> rows, in array<int> cols, in int localCols, in MatReuse flag, inout Mat submatrix);
     // Load the matrix from a viewer
     static void load(in PetscViewer viewer, in string typename, out Mat A);
 
