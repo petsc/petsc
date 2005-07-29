@@ -33,7 +33,7 @@ shared_linux_intel:
 	${CLINKER} -shared -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
 
 shared_irix:
-	-@${C_CC} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
+	-@${CC} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
 
 shared_alpha:
 	-@${LD} -shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} >/dev/null 2>&1

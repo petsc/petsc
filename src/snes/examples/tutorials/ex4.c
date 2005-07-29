@@ -340,6 +340,8 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
   sc     = hx*hy*lambda;
   hxhy   = hx*hy; 
 
+  /* Zero the vector */
+  ierr = PetscMemzero((void *) f, info->xm*info->ym*sizeof(PetscScalar));CHKERRQ(ierr);
   /* Compute function over the locally owned part of the grid. For each
      vertex (i,j), we consider the element below:
 
@@ -411,7 +413,7 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCt
   sc     = hx*hy*lambda;
   hxhy   = hx*hy; 
 
-
+  ierr = MatZeroEntries(jac);CHKERRQ(ierr);
   /* 
      Compute entries for the locally owned part of the Jacobian.
       - Currently, all PETSc parallel matrix formats are partitioned by
