@@ -794,9 +794,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES snes,Vec x,Vec y)
 
   ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   if (snes->computefunction) {
-    if (1) {
-      ierr = VecSet(y, 0.0);CHKERRQ(ierr);
-    }
     PetscStackPush("SNES user function");
     CHKMEMQ;
     ierr = (*snes->computefunction)(snes,x,y,snes->funP);
@@ -861,9 +858,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES snes,Vec X,Mat *A,Ma
   if (!snes->computejacobian) PetscFunctionReturn(0);
   ierr = PetscLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
   *flg = DIFFERENT_NONZERO_PATTERN;
-  if (1) {
-    ierr = MatZeroEntries(*A);CHKERRQ(ierr);
-  }
   PetscStackPush("SNES user Jacobian function");
   ierr = (*snes->computejacobian)(snes,X,A,B,flg,snes->jacP);CHKERRQ(ierr);
   PetscStackPop;
