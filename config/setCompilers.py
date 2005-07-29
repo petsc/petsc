@@ -597,6 +597,7 @@ class Configure(config.base.Configure):
     self.pushLanguage('FC')
     if not self.checkCompile('! comment'):
       raise RuntimeError(self.getCompiler()+' cannot process fortran comments.')
+    self.framework.logPrint('Fortran comments can use ! in column 1')
     self.popLanguage()
     return
 
