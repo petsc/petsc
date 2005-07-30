@@ -208,7 +208,7 @@ class Configure(config.base.Configure):
   def getOtherIncludes(self):
     if not hasattr(self, '_otherIncludes'):
       includes = []
-      includes.extend(['-I'+include for include in self.mpi.include])
+      includes.extend([self.headers.getIncludeArgument(inc) for inc in self.mpi.include])
       return ' '.join(includes)
     return self._otherIncludes
   def setOtherIncludes(self, otherIncludes):
@@ -402,6 +402,10 @@ class Configure(config.base.Configure):
             else:
               self.framework.logPrintDivider(single = 1)
               self.framework.logPrint('PETSc in '+name+', location/origin '+str(location)+' failed checkInclude test with includeDir: '+str(includeDir))
+          if not found:
+            self.framework.logPrintDivider(single = 1)
+            self.framework.logPrint('PETSc in '+name+', location/origin '+str(location)+' failed checkIncludes test')
+            continue
         else:
           self.framework.logPrintDivider(single = 1)
           self.framework.logPrint('PETSc in '+name+', location/origin '+str(location)+' failed checkLib test with libraries: '+str(libraries))
@@ -429,7 +433,7 @@ class Configure(config.base.Configure):
        - PETSC_INCLUDE and PETSC_LIB are command line arguments for the compile and link'''
     if self.found:
       self.addDefine('HAVE_PETSC', 1)
-      self.addSubstitution('PETSC_INCLUDE', ' '.join(['-I'+inc for inc in self.include]))
+      self.addSubstitution('PETSC_INCLUDE', ' '.join([self.headers.getIncludeArgument(inc) for inc in self.include]))
       self.addSubstitution('PETSC_LIB', ' '.join(map(self.libraries.getLibArgument, self.lib)))
     return
 
