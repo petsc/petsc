@@ -727,8 +727,8 @@ $             PCShellSetContext(pc,ctx)
 $             PCShellSetSetUp(pc,setup);       (optional)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           MATSHELL, PCShellSetUp(), PCShellSetApply(), PCShellSetView(), 
-           PCShellSetApplyTranpose(), PCShellSetName(), PCShellSetApplyRichardson(), 
+           MATSHELL, PCShellSetSetUp(), PCShellSetApply(), PCShellSetView(), 
+           PCShellSetApplyTranspose(), PCShellSetName(), PCShellSetApplyRichardson(), 
            PCShellGetName(), PCShellSetContext(), PCShellGetContext()
 M*/
 
