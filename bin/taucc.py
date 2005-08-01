@@ -2,7 +2,7 @@
 #!/bin/env python
 
 # Usage:
-#  taucc -cc=gcc -pdt_parse=/../cxxparse -tau_instr=/.../tau_instrumentor -tao_include_dir=/.../include -tao_lib_dir=/.../lib COMPILE_OPTIONS
+#  taucc -cc=g++ -pdt_parse=/../cxxparse -tau_instr=/.../tau_instrumentor -tao_include_dir=/.../include -tao_lib_dir=/.../lib COMPILE_OPTIONS
 #
 #  Options: 
 #           -cc              : C/C++ compiler
@@ -41,7 +41,7 @@ def main():
     filename,ext = os.path.splitext(arg)
     argsplit =  arg.split('=')
     #look for sourcefiles, validate & add to a list
-    if ext == '.c' or ext == '.C' or ext == '.cpp':
+    if ext == '.c' or ext == '.C' or ext == '.cpp' or ext == '.cc' :
       if os.path.isfile(arg):
         sourcefiles.append(arg)
     elif argsplit[0] == '-cc':
@@ -71,13 +71,16 @@ def main():
     srcarg=''
     for sourcefile in sourcefiles:
       srcarg = srcarg + ' ' + sourcefile
-    cmd1  = cc + ' ' + srcarg +' '  + arglist + ' -L' + tau_lib_dir + ' -ltau-mpi-pdt -lTauMpi-mpi-pdt -lstdc++'
+    cmd1  = cc + ' ' + srcarg +' '  + arglist + ' -L' + tau_lib_dir + ' -ltau-mpi-pdt -lTauMpi-mpi-pdt'
     runcmd(cmd1,verbose)
   else:
     # Now Compile the sourcefiles
     for sourcefile in sourcefiles:
       root,ext = os.path.splitext(sourcefile)
-      pdt_file = sourcefile+ '.pdb'
+      if ext == '.cc':
+        pdt_file = root+ '.pdb'
+      else:
+        pdt_file = sourcefile+ '.pdb'
       tau_file = root +'.inst' + ext
       obj_file = root + '.o'
       cmd1  = pdt_parse + ' ' + sourcefile + arglist
