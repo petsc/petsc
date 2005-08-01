@@ -1052,6 +1052,32 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFResetHHistory(Mat J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFComputeJacobian"
+/*@
+   MatSNESMFComputeJacobian - Tells the matrix-free Jacobian object the new location at which
+       Jacobian matrix vector products will be computed at, i.e. J(x) * a.
+
+   Collective on SNES
+
+   Input Parameters:
++   snes - the nonlinear solver context
+.   x - the point at which the Jacobian vector products will be performed
+.   jac - the matrix-free Jacobian object
+.   B - either the same as jac or another matrix type (ignored)
+.   flag - not relevent for matrix-free form
+-   dummy - the user context (ignored)
+
+   Level: developer
+
+   Notes:
+     This can be passed into SNESSetJacobian() when using a completely matrix-free solver,
+     that is the B matrix is also the same matrix operator. This is used when you select
+     -snes_mf but rarely used directly by users.
+
+.seealso: MatSNESMFGetH(), MatCreateSNESMF(),
+          MatSNESMFSetHHistory(),
+          MatSNESMFKSPMonitor(), MatSNESMFSetFunctionError(), MatSNESMFCreate(), SNESSetJacobian()
+
+@*/
 PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
   PetscErrorCode ierr;
