@@ -950,7 +950,7 @@ class Configure(config.base.Configure):
     self.explicitLibc = None
     tmpCompilerDefines   = self.compilerDefines
     self.compilerDefines = ''
-    code = 'int foo(void) {extern void *malloc(int); void *chunk = malloc(31); free(chunk); return 0;}\n'
+    code = '#include <stdlib.h> \nint foo(void) {void *chunk = malloc(31); free(chunk); return 0;}\n'
     if self.checkLink(includes = code, codeBegin = '', codeEnd = '', shared = 1):
       self.logPrint('Shared linking does not require an explicit libc reference')
       self.compilerDefines = tmpCompilerDefines
