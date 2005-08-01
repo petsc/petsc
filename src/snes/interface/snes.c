@@ -914,7 +914,7 @@ $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 
 .keywords: SNES, nonlinear, set, Jacobian, matrix
 
-.seealso: KSPSetOperators(), SNESSetFunction(), , MatSNESMFComputeJacobian(), SNESDefaultComputeJacobianColor()
+.seealso: KSPSetOperators(), SNESSetFunction(), MatSNESMFComputeJacobian(), SNESDefaultComputeJacobianColor()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetJacobian(SNES snes,Mat A,Mat B,PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
