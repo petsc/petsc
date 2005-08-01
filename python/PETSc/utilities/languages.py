@@ -27,7 +27,7 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.petscdir = framework.require('PETSc.utilities.petscdir', self)
     if self.framework.argDB['with-python']:
-      self.python = framework.require('config.python', self)
+      self.python = framework.require('config.python', None)
     return
 
   def configureScalarType(self):
