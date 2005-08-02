@@ -25,7 +25,7 @@ class Package(config.base.Configure):
     self.version          = ''
     self.license          = None
     # ***********  these are optional items set in the particular packages file
-    self.complex          = 0   # 1 means cannot use complex
+    self.complex          = 0   # 0 means cannot use complex
     self.cxx              = 0   # 1 means requires C++
     self.fc               = 0   # 1 means requires fortran
     self.double           = 1   # 1 means requires double precision 
