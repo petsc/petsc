@@ -363,11 +363,13 @@ class BasicMake(Make):
       for language in languages:
         builder.pushLanguage(language)
         compiler = builder.getCompilerObject()
+        lib.includes = filter(lambda inc: inc, lib.includes)
         self.logPrint('  Adding includes '+str(lib.includes))
         compiler.includeDirectories.update(lib.includes)
         builder.popLanguage()
       linker = builder.getSharedLinkerObject()
       for l in lib.libs:
+        if not l: continue
         if isinstance(l, str):
           self.logPrint('  Adding library '+str(l))
           linker.libraries.add(l)
@@ -421,11 +423,13 @@ class BasicMake(Make):
       for language in languages:
         builder.pushLanguage(language)
         compiler = builder.getCompilerObject()
-        self.logPrint('  Adding includes '+str(lib.includes))
+        bin.includes = filter(lambda inc: inc, bin.includes)
+        self.logPrint('  Adding includes '+str(bin.includes))
         compiler.includeDirectories.update(bin.includes)
         builder.popLanguage()
       linker = builder.getLinkerObject()
       for l in bin.libs:
+        if not l: continue
         if isinstance(l, str):
           self.logPrint('  Adding library '+str(l))
           linker.libraries.add(l)
