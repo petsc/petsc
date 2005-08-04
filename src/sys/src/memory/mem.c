@@ -42,7 +42,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMemoryGetCurrentUsage"
-/*@C
+/*@
    PetscMemoryGetCurrentUsage - Returns the current resident set size (memory used)
    for the program.
 
@@ -148,7 +148,7 @@ PetscLogDouble PetscMemoryMaximumUsage = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMemoryGetMaximumUsage"
-/*@C
+/*@
    PetscMemoryGetMaximumUsage - Returns the maximum resident set size (memory used)
    for the program.
 
