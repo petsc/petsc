@@ -570,7 +570,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
   else                         lambda = lambdatemp;
 
 #if defined(PETSC_USE_COMPLEX)
-  clambda   = lambda; ierr = VecWXPY(w,-clambda,y,x);CHKERRQ(ierr);
+  clambda   = lambda; ierr = VecWAXPY(w,-clambda,y,x);CHKERRQ(ierr);
 #else
   ierr      = VecWAXPY(w,-lambda,y,x);CHKERRQ(ierr);
 #endif
