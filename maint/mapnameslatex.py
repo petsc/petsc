@@ -156,19 +156,50 @@ def t_error(t):
     
 lexer = lex.lex(optimize=1)
 if __name__ == "__main__":
+
+    #
+    # use Use LOC as PETSC_DIR [for readingin/writing relavent files]
+    #
+    try:
+        PETSC_DIR = sys.argv[1]
+    except:
+        raise RuntimeError('Insufficient arguments. Use: '+ sys.argv[0] + 'LOC')
+
+    # get the version string for this release
+    try:
+        fd = open(os.path.join(PETSC_DIR,'include','petscversion.h'))
+    except:
+        raise RuntimeError('Unable to open petscversion.h\n')
+
+    buf=fd.read()
+    fd.close()
+    try:
+        isrelease       = re.compile(' PETSC_VERSION_RELEASE[ ]*([0-9]*)').search(buf).group(1)
+        majorversion    = re.compile(' PETSC_VERSION_MAJOR[ ]*([0-9]*)').search(buf).group(1)    
+        minorversion    = re.compile(' PETSC_VERSION_MINOR[ ]*([0-9]*)').search(buf).group(1)
+        subminorversion = re.compile(' PETSC_VERSION_SUBMINOR[ ]*([0-9]*)').search(buf).group(1)
+    except:
+        raise RuntimeError('Unable to read version information from petscversion.h')
+
+    if isrelease == '0':
+        version = 'dev'
+    else:
+        version=str(majorversion)+'.'+str(minorversion)+'.'+str(subminorversion)
+    
 #
 #  Read in mapping of names to manual pages
 #
     reg = re.compile('man:\+([a-zA-Z_0-9]*)\+\+([a-zA-Z_0-9 .:]*)\+\+\+\+man\+([a-zA-Z_0-9#./:-]*)')
-    fd = open(os.path.join(os.getenv('PETSC_DIR'),'docs/manualpages','htmlmap'))
+    fd = open(os.path.join(PETSC_DIR,'docs','manualpages','htmlmap'))
     lines = fd.readlines()
+    fd.close()
     n = len(lines)
     mappedstring = { }
     mappedlink   = { }
     for i in range(0,n):
 	fl = reg.search(lines[i])
 	if not fl:
-           print 'Bad line in '+os.path.join(os.getenv('PETSC_DIR'),'docs','manualpages','htmlmap'),lines[i]
+           print 'Bad line in '+os.path.join(PETSC_DIR,'docs','manualpages','htmlmap'),lines[i]
         else:
             tofind = fl.group(1)
 #   replace all _ in tofind with \_
@@ -200,7 +231,7 @@ if __name__ == "__main__":
             if bracket == 0:
 		value = token.value
 		if mappedstring.has_key(value):
-		    value = '\\href{'+mappedlink[value]+'}{'+mappedstring[value]+'}'
+		    value = '\\href{'+'http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mappedstring[value]+'}'
             else:
 		value = token.value
 	    if token.value[0] == '}':
