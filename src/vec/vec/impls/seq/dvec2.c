@@ -891,11 +891,12 @@ PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
   Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
   PetscInt       n = xin->n,i;
-  PetscScalar    *xx = x->array,*yy;
+  PetscScalar    *xx,*yy;
   PetscReal      m = 0.0;
 
   PetscFunctionBegin;
   ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
   for(i = 0; i < n; i++) {
     if (yy[i] != 0.0) {
       m = PetscMax(PetscAbsScalar(xx[i]/yy[i]), m);
@@ -903,8 +904,8 @@ PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
       m = PetscMax(PetscAbsScalar(xx[i]), m);
     }
   }
-  ierr = MPI_Allreduce(&m,max,1,MPIU_REAL,MPI_MAX,xin->comm);CHKERRQ(ierr);
   ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&m,max,1,MPIU_REAL,MPI_MAX,xin->comm);CHKERRQ(ierr);
   ierr = PetscLogFlops(n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

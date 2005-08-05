@@ -201,6 +201,18 @@ namespace TOPS {
     /**
      * user defined non-static method.
      */
+    ::TOPS::System
+    getSystem() throw () 
+    ;
+    /**
+     * user defined non-static method.
+     */
+    void
+    solve() throw () 
+    ;
+    /**
+     * user defined non-static method.
+     */
     void
     setBlockSize (
       /* in */ int32_t bs

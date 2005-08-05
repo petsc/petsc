@@ -302,7 +302,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
-  PetscReal      two = 2.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  PetscReal      lambda,hx,hy,hxdhy,hydhx,sc;
   PetscScalar    u,uxx,uyy;
 
   PetscFunctionBegin;
@@ -322,8 +322,8 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
         f[j][i] = x[j][i];
       } else {
         u       = x[j][i];
-        uxx     = (two*u - x[j][i-1] - x[j][i+1])*hydhx;
-        uyy     = (two*u - x[j-1][i] - x[j+1][i])*hxdhy;
+        uxx     = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
+        uyy     = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy;
         f[j][i] = uxx + uyy - sc*PetscExpScalar(u);
       }
     }

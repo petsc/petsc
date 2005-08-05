@@ -249,6 +249,8 @@ M*/
 M*/
 #define CHKMEMQ {PetscErrorCode _7_ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(_7_ierr);}
 
+#define CHKMEMA {PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,__SDIR__);}
+
 #if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
 extern  PetscErrorCode __gierr;
 #define _   __gierr = 

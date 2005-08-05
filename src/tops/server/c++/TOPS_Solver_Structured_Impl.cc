@@ -12,20 +12,73 @@
 #include "TOPS_Solver_Structured_Impl.hh"
 
 // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._includes)
-// Insert-Code-Here {TOPS.Solver_Structured._includes} (additional includes or code)
+  // This code is the same as DAVecGetArray() except instead of generating
+  // raw C multidimensional arrays it gets a Babel array
+::sidl::array<double> DAVecGetArrayBabel(DA da,Vec vec)
+{
+  double *uu;
+  VecGetArray(vec,&uu);
+  PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dim,dof;
+  DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);
+  DAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
+  DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);
+  sidl::array<double> ua;
+  int lower[3],upper[3],stride[3];
+  lower[0] = gxs; lower[1] = gys; lower[2] = gzs;
+  upper[0] = gxm; upper[1] = gym; upper[2] = gzm;
+  stride[0] = 1; stride[1] = gxm; stride[2] = gxm*gym;
+  if (dim == 2) {
+    ua.borrow(uu,2,*&lower,*&upper,*&stride);
+  }
+  return ua;
+}
+
+static PetscErrorCode FormFunction(SNES snes,Vec u,Vec f,void *vdmmg)
+{
+  PetscFunctionBegin;
+  DMMG dmmg = (DMMG) vdmmg;
+  TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
+  TOPS::System system = solver->getSystem();
+
+  int mx,my,mz;
+  DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
+  solver->setDimensionX(mx);
+  solver->setDimensionY(my);
+  solver->setDimensionZ(mz);
+  sidl::array<double> ua = DAVecGetArrayBabel((DA)dmmg->dm,u);
+  sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);;
+  system.computeResidual(ua,fa);
+  VecRestoreArray(u,0);
+  VecRestoreArray(f,0);
+  PetscFunctionReturn(0);
+}
 // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._includes)
 
 // user-defined constructor.
 void TOPS::Solver_Structured_impl::_ctor() {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._ctor)
-  // Insert-Code-Here {TOPS.Solver_Structured._ctor} (constructor)
+  this->dmmg = PETSC_NULL;
+  this->da   = PETSC_NULL;
+  this->m    = PETSC_DECIDE;
+  this->n    = PETSC_DECIDE;
+  this->p    = PETSC_DECIDE;
+  this->M    = 3;
+  this->N    = 3;
+  this->P    = 3;
+  this->dim  = 2;
+  this->s    = 1;
+  this->wrap = DA_NONPERIODIC;
+  this->bs   = 1;
+  this->stencil_type = DA_STENCIL_STAR;
+  this->levels       = 3;
+  this->system       = PETSC_NULL;
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._ctor)
 }
 
 // user-defined destructor.
 void TOPS::Solver_Structured_impl::_dtor() {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._dtor)
-  // Insert-Code-Here {TOPS.Solver_Structured._dtor} (destructor)
+  if (this->dmmg) {DMMGDestroy(this->dmmg);}
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._dtor)
 }
 
@@ -48,7 +101,7 @@ TOPS::Solver_Structured_impl::setDimension (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setDimension)
-  // Insert-Code-Here {TOPS.Solver_Structured.setDimension} (setDimension method)
+  this->dim = dim;
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setDimension)
 }
 
@@ -61,7 +114,7 @@ throw ()
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getDimension)
-  // Insert-Code-Here {TOPS.Solver_Structured.getDimension} (getDimension method)
+  return this->dim;
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getDimension)
 }
 
@@ -74,7 +127,7 @@ TOPS::Solver_Structured_impl::setDimensionX (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setDimensionX)
-  // Insert-Code-Here {TOPS.Solver_Structured.setDimensionX} (setDimensionX method)
+  this->M = dim;
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setDimensionX)
 }
 
@@ -87,7 +140,7 @@ throw ()
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getDimensionX)
-  // Insert-Code-Here {TOPS.Solver_Structured.getDimensionX} (getDimensionX method)
+  return this->M;
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getDimensionX)
 }
 
@@ -100,7 +153,7 @@ TOPS::Solver_Structured_impl::setDimensionY (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setDimensionY)
-  // Insert-Code-Here {TOPS.Solver_Structured.setDimensionY} (setDimensionY method)
+  this->N = dim;
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setDimensionY)
 }
 
@@ -113,7 +166,7 @@ throw ()
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getDimensionY)
-  // Insert-Code-Here {TOPS.Solver_Structured.getDimensionY} (getDimensionY method)
+  return this->N;
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getDimensionY)
 }
 
@@ -126,7 +179,7 @@ TOPS::Solver_Structured_impl::setDimensionZ (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setDimensionZ)
-  // Insert-Code-Here {TOPS.Solver_Structured.setDimensionZ} (setDimensionZ method)
+  this->P = dim;
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setDimensionZ)
 }
 
@@ -139,7 +192,7 @@ throw ()
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getDimensionZ)
-  // Insert-Code-Here {TOPS.Solver_Structured.getDimensionZ} (getDimensionZ method)
+  return this->P;
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getDimensionZ)
 }
 
@@ -178,7 +231,7 @@ TOPS::Solver_Structured_impl::setLevels (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setLevels)
-  // Insert-Code-Here {TOPS.Solver_Structured.setLevels} (setLevels method)
+  this->levels = levels;
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setLevels)
 }
 
@@ -191,8 +244,45 @@ TOPS::Solver_Structured_impl::setSystem (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setSystem)
-  // Insert-Code-Here {TOPS.Solver_Structured.setSystem} (setSystem method)
+  this->system = system;
+  system.setSolver(this->self);
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setSystem)
+}
+
+/**
+ * Method:  getSystem[]
+ */
+::TOPS::System
+TOPS::Solver_Structured_impl::getSystem ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getSystem)
+  return this->system;
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getSystem)
+}
+
+/**
+ * Method:  solve[]
+ */
+void
+TOPS::Solver_Structured_impl::solve ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.solve)
+  PetscErrorCode ierr;
+
+  if (!this->dmmg) {
+    // create DMMG object 
+    DMMGCreate(PETSC_COMM_WORLD,this->levels,(void*)&this->self,&this->dmmg);
+    DACreate(PETSC_COMM_WORLD,this->dim,this->wrap,this->stencil_type,this->M,this->N,this->P,this->m,this->n,
+             this->p,this->bs,this->s,PETSC_NULL,PETSC_NULL,PETSC_NULL,&this->da);
+    DMMGSetDM(this->dmmg,(DM)this->da);
+    ierr = DMMGSetSNES(this->dmmg, FormFunction, 0);
+  }
+  DMMGSolve(this->dmmg);
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.solve)
 }
 
 /**

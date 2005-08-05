@@ -1499,7 +1499,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec w,Vec x,Vec y)
 #undef __FUNCT__  
 #define __FUNCT__ "VecMaxPointwiseDivide"
 /*@
-   VecMaxPointwiseDivide - Computes the maximum of the componentwise division w = abs(x/y).
+   VecMaxPointwiseDivide - Computes the maximum of the componentwise division max = max_i abs(x_i/y_i).
 
    Collective on Vec
 
@@ -1511,7 +1511,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec w,Vec x,Vec y)
 
    Level: advanced
 
-   Notes: any subset of the x, y, and w may be the same vector.
+   Notes: any subset of the x and may be the same vector.
+          if a particular y_i is zero, it is treated as 1 in the above formula
 
 .seealso: VecPointwiseDivide(), VecPointwiseMult(), VecPointwiseMax(), VecPointwiseMin(), VecPointwiseMaxAbs()
 @*/

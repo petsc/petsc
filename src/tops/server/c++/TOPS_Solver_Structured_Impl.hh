@@ -43,7 +43,7 @@
 
 
 // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._includes)
-// Insert-Code-Here {TOPS.Solver_Structured._includes} (includes or arbitrary code)
+#include "petscdmmg.h"
 // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._includes)
 
 namespace TOPS { 
@@ -63,7 +63,12 @@ namespace TOPS {
     Solver_Structured self;
 
     // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._implementation)
-    // Insert-Code-Here {TOPS.Solver_Structured._implementation} (additional details)
+    DMMG           *dmmg;
+    DA             da;
+    int            M,N,P,m,n,p,dim,s,levels,bs;
+    DAStencilType  stencil_type;
+    DAPeriodicType wrap;
+    TOPS::System   system;
     // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._implementation)
 
   private:
@@ -192,6 +197,18 @@ namespace TOPS {
     throw () 
     ;
 
+    /**
+     * user defined non-static method.
+     */
+    ::TOPS::System
+    getSystem() throw () 
+    ;
+    /**
+     * user defined non-static method.
+     */
+    void
+    solve() throw () 
+    ;
     /**
      * user defined non-static method.
      */

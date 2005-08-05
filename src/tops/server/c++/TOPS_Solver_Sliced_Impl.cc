@@ -198,6 +198,32 @@ throw ()
 }
 
 /**
+ * Method:  getSystem[]
+ */
+::TOPS::System
+TOPS::Solver_Sliced_impl::getSystem ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Sliced.getSystem)
+  // Insert-Code-Here {TOPS.Solver_Sliced.getSystem} (getSystem method)
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Sliced.getSystem)
+}
+
+/**
+ * Method:  solve[]
+ */
+void
+TOPS::Solver_Sliced_impl::solve ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Sliced.solve)
+  // Insert-Code-Here {TOPS.Solver_Sliced.solve} (solve method)
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Sliced.solve)
+}
+
+/**
  * Method:  setBlockSize[]
  */
 void
