@@ -37,7 +37,12 @@ class Configure(config.base.Configure):
     else:
       if 'PETSC_DIR' in os.environ:
         self.dir = os.environ['PETSC_DIR']
-        if not os.path.isdir(self.dir):
+        if self.dir == 'pwd':
+          raise RuntimeError('''
+The environmental variable PETSC_DIR is set incorrectly. Please use the following: [notice backquotes]
+  For sh/bash  : PETSC_DIR=`pwd`; export PETSC_DIR
+  for csh/tcsh : setenv PETSC_DIR `pwd`''')
+        elif not os.path.isdir(self.dir):
           raise RuntimeError('The environmental variable PETSC_DIR '+self.dir+' is not a directory')
       else:
         self.dir = os.getcwd()

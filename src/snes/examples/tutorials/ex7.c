@@ -1,7 +1,7 @@
-/* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
+/* Program usage:  mpirun -np <procs> ex7 [-help] [all PETSc options] */
 
 static char help[] = "Nonlinear PDE in 2d.\n\
-We solve the Lane-Emden equation in a 2D rectangular\n\
+We solve the Navier-Stokes equation in a 2D rectangular\n\
 domain, using distributed arrays (DAs) to partition the parallel grid.\n\n";
 
 /*T
@@ -14,11 +14,12 @@ T*/
 
     The Lane-Emden equation is given by the partial differential equation
   
-            -alpha*Laplacian u - lambda*u^3 = 0,  0 < x,y < 1,
+            Laplacian u - grad p = 0,  0 < x,y < 1,
+            div u                = 0
   
     with boundary conditions
    
-             u = 0  for  x = 0, x = 1, y = 0, y = 1.
+            u = 0  for  x = 0, x = 1, y = 0, y = 1.
   
     A bilinear finite element approximation is used to discretize the boundary
     value problem to obtain a nonlinear system of equations.
@@ -40,9 +41,7 @@ T*/
 #include "petscda.h"
 #include "petscdmmg.h"
 #include "petscsnes.h"
-#if 1
 #include <PetscSimOutput.h>
-#endif
 
 /* 
    User-defined application context - contains data needed by the 
@@ -54,10 +53,14 @@ typedef struct {
    PetscReal lambda;         /* parameter controlling nonlinearity */
 } AppCtx;
 
-static PetscScalar Kref[16] = { 0.666667, -0.166667, -0.333333, -0.166667,
-                               -0.166667,  0.666667, -0.166667, -0.333333,
-                               -0.333333, -0.166667,  0.666667, -0.166667,
-                               -0.166667, -0.333333, -0.166667,  0.666667};
+typedef struct {
+  PetscReal u, v, p;
+} Field;
+
+static PetscScalar laplacian[16] = { 0.666667, -0.166667, -0.333333, -0.166667,
+                                    -0.166667,  0.666667, -0.166667, -0.333333,
+                                    -0.333333, -0.166667,  0.666667, -0.166667,
+                                    -0.166667, -0.333333, -0.166667,  0.666667};
 
 /* These are */
 static PetscScalar quadPoints[8] = {0.211325, 0.211325,
@@ -70,7 +73,7 @@ static PetscScalar quadWeights[4] = {0.25, 0.25, 0.25, 0.25};
    User-defined routines
 */
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
-extern PetscErrorCode FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
+extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field**,Field**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DALocalInfo*,PetscScalar**,Mat,AppCtx*);
 
 #undef __FUNCT__
@@ -117,7 +120,7 @@ int main(int argc,char **argv)
      Create distributed array (DA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
-                    1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+                    3,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DASetFieldName(da, 0, "ooblek"); CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg, (DM) da);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
@@ -147,7 +150,6 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D, %s\n",its,SNESConvergedReasons[reason]);CHKERRQ(ierr);
 
-#if 1
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Visualize the solution
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -163,7 +165,6 @@ int main(int argc,char **argv)
   if (drawContours) {
     ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); 
   }
-#endif
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -250,6 +251,28 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode gradientResidual(Field u[], Field r[]) {
+  PetscFunctionBegin;
+  r[0].u += (-2.0*u[0].p + 2.0*u[1].p + u[2].p - u[3].p)*0.08333333;
+  r[0].v += (-2.0*u[0].p - u[1].p + u[2].p + 2.0*u[3].p)*0.08333333;
+  r[1].u += (-2.0*u[0].p + 2.0*u[1].p + u[2].p - u[3].p)*0.08333333;
+  r[1].v += (-u[0].p - 2.0*u[1].p + 2.0*u[2].p + u[3].p)*0.08333333;
+  r[2].u += (-u[0].p + u[1].p + 2.0*u[2].p - 2.0*u[3].p)*0.08333333;
+  r[2].v += (-u[0].p - 2.0*u[1].p + 2.0*u[2].p + u[3].p)*0.08333333;
+  r[3].u += (-u[0].p + u[1].p + 2.0*u[2].p - 2.0*u[3].p)*0.08333333;
+  r[3].v += (-2.0*u[0].p - u[1].p + u[2].p + 2.0*u[3].p)*0.08333333;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode divergenceResidual(Field u[], Field r[]) {
+  PetscFunctionBegin;
+  r[0].p += (-2.0*u[0].u + 2.0*u[1].u + u[2].u - u[3].u - 2.0*u[0].v - u[1].v + u[2].v + 2.0*u[3].v)*0.08333333;
+  r[1].p += (-2.0*u[0].u + 2.0*u[1].u + u[2].u - u[3].u - u[0].v - 2.0*u[1].v + 2.0*u[2].v + u[3].v)*0.08333333;
+  r[2].p += (-u[0].u + u[1].u + 2.0*u[2].u - 2.0*u[3].u - u[0].v - 2.0*u[1].v + 2.0*u[2].v + u[3].v)*0.08333333;
+  r[3].p += (-u[0].u + u[1].u + 2.0*u[2].u - 2.0*u[3].u - 2.0*u[0].v - u[1].v + u[2].v + 2.0*u[3].v)*0.08333333;
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode nonlinearResidual(PetscReal lambda, PetscScalar u[], PetscScalar r[]) {
   PetscFunctionBegin;
   r[0] += lambda*(48.0*u[0]*u[0]*u[0] + 12.0*u[1]*u[1]*u[1] + 9.0*u[0]*u[0]*(4.0*u[1] + u[2] + 4.0*u[3]) + u[1]*u[1]*(9.0*u[2] + 6.0*u[3]) + u[1]*(6.0*u[2]*u[2] + 8.0*u[2]*u[3] + 6.0*u[3]*u[3])
@@ -323,10 +346,10 @@ PetscErrorCode nonlinearJacobian(PetscReal lambda, PetscScalar u[], PetscScalar 
        Process adiC(36): FormFunctionLocal
 
  */
-PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
+PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,AppCtx *user)
 {
-  PetscScalar    uLocal[4];
-  PetscScalar    rLocal[4];
+  Field          uLocal[8];
+  Field          rLocal[8];
   PetscReal      alpha,lambda,hx,hy,hxhy,sc;
   PetscInt       i,j,k,l;
   PetscErrorCode ierr;
@@ -361,17 +384,27 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
       uLocal[2] = x[j+1][i+1];
       uLocal[3] = x[j+1][i];
       for(k = 0; k < 4; k++) {
-        rLocal[k] = 0.0;
+        rLocal[k].u = 0.0;
+        rLocal[k].v = 0.0;
+        rLocal[k].p = 0.0;
         for(l = 0; l < 4; l++) {
-          rLocal[k] += Kref[k*4 + l]*uLocal[l];
+          rLocal[k].u += laplacian[k*4 + l]*uLocal[l].u;
+          rLocal[k].v += laplacian[k*4 + l]*uLocal[l].v;
         }
-        rLocal[k] *= hxhy*alpha;
+        rLocal[k].u *= -1.0*hxhy;
+        rLocal[k].v *= -1.0*hxhy;
       }
-      ierr = nonlinearResidual(-1.0*sc, uLocal, rLocal);CHKERRQ(ierr);
-      f[j][i]     += rLocal[0];
-      f[j][i+1]   += rLocal[1];
-      f[j+1][i+1] += rLocal[2];
-      f[j+1][i]   += rLocal[3];
+      ierr = gradientResidual(uLocal, rLocal);CHKERRQ(ierr);
+      ierr = divergenceResidual(uLocal, rLocal);CHKERRQ(ierr);
+      /* ierr = nonlinearResidual(-1.0*sc, uLocal, rLocal);CHKERRQ(ierr); */
+      f[j][i].u     += rLocal[0].u;
+      f[j][i].v     += rLocal[0].v;
+      f[j][i+1].u   += rLocal[1].u;
+      f[j][i+1].v   += rLocal[1].v;
+      f[j+1][i+1].u += rLocal[2].u;
+      f[j+1][i+1].v += rLocal[2].v;
+      f[j+1][i].u   += rLocal[3].u;
+      f[j+1][i].v   += rLocal[3].v;
       if (i == 0 || j == 0) {
         f[j][i] = x[j][i];
       }

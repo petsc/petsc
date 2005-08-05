@@ -182,7 +182,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   PetscFunctionBegin;
   mg[levels-1]->b = b; 
   mg[levels-1]->x = x;
-  if (!mg[levels-1]->r && mg[0]->am != PC_MG_ADDITIVE) {
+  if (!mg[levels-1]->r && mg[0]->am != PC_MG_ADDITIVE && levels > 1) {
     Vec tvec;
     ierr = VecDuplicate(mg[levels-1]->b,&tvec);CHKERRQ(ierr);
     ierr = PCMGSetR(pc,levels-1,tvec);CHKERRQ(ierr);
