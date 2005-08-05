@@ -69,7 +69,7 @@ const char *KSPGMRESCGSRefinementTypes[]  = {"REFINE_NEVER", "REFINE_IFNEEDED", 
 const char *KSPNormTypes[]                = {"NO_NORM","PRECONDITIONED_NORM","UNPRECONDITIONED_NORM","NATURAL_NORM","KSPNormType","KSP_",0};
 const char *KSPConvergedReasons_Shifted[] = {"DIVERGED_INDEFINITE_MAT","DIVERGED_NAN","DIVERGED_INDEFINITE_PC",
 					     "DIVERGED_NONSYMMETRIC", "DIVERGED_BREAKDOWN_BICG","DIVERGED_BREAKDOWN",
-                                             "DIVERGED_DTOL","DIVERGED_ITS","DIVERGED_NULL","CONVERGED_ITERATING",
+                                             "DIVERGED_DTOL","DIVERGED_ITS","DIVERGED_NULL","","CONVERGED_ITERATING",
                                              "","CONVERGED_RTOL","CONVERGED_ATOL","CONVERGED_ITS",
                                              "CONVERGED_QCG_NEG_CURVE","CONVERGED_QCG_CONSTRAINED","CONVERGED_STEP_LENGTH",
                                              "KSPConvergedReason","KSP_",0};
