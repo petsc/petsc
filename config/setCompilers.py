@@ -75,6 +75,8 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
       output = output + error
+      if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
+        return 0
       if output.find('www.gnu.org') >= 0 or output.find('developer.apple.com') >= 0 or output.find('bugzilla.redhat.com') >= 0 or output.find('gcc.gnu.org') >= 0 or (output.find('gcc version')>=0 and not output.find('Intel(R)')>= 0):
         return 1
     except RuntimeError:
