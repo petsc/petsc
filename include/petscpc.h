@@ -311,5 +311,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetTotalBlocks(PC,PetscInt*,co
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC,PetscInt,PetscInt*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC,PCCompositeType);
 
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPrometheusSetCoordinates(PC,PetscReal*);
+
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCPC_H */

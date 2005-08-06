@@ -127,8 +127,30 @@ PetscErrorCode PCCreate_Prometheus(PC pc)
 					    "PCSetCoordinates_Prometheus",
 					    PCSetCoordinates_Prometheus);
   CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_END 
+#undef __FUNCT__
+#define __FUNCT__ "PCPrometheusSetCoordinates"
+/*@
+   PCPrometheusSetCoordinates - sets the coordinates of all the nodes
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the solver context
+-  coords - the coordinates
+
+   Level: intermediate
+
+.seealso: PCPROMETHEUS
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCPrometheusSetCoordinates(PC pc,PetscReal *coords)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTryMethod(pc,PCSetCoordinates_Prometheus_C,(PC,PetscReal*),(pc,coords));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
