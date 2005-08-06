@@ -888,7 +888,6 @@ PetscErrorCode VecPointwiseDivide_Seq(Vec win,Vec xin,Vec yin)
 #define __FUNCT__ "VecMaxPointwiseDivide_Seq"
 PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
 {
-  Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
   PetscInt       n = xin->n,i;
   PetscScalar    *xx,*yy;
