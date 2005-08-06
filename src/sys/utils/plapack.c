@@ -3,7 +3,7 @@
 #include "petsc.h"
 #ifdef PETSC_HAVE_PLAPACK
 EXTERN_C_BEGIN
-  #include "PLA.h"
+#include "PLA.h"
 EXTERN_C_END
 #endif
 

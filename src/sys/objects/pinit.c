@@ -554,7 +554,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
 #if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscViewerMathematicaFinalizePackage();CHKERRQ(ierr);
 #endif
-  ierr = PetscPLAPACKFinalizePackage();CHKERRQ(ierr);
 
   /*
      Destroy all the function registration lists created
