@@ -80,11 +80,23 @@ class Configure(config.base.Configure):
   
 
   def configureMissingPrototypes(self):
-    if not self.checkPrototype('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
+    head ='''
+#ifdef PETSC_HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef PETSC_HAVE_NETDB_H
+#include <netdb.h>
+#endif
+'''
+    code = '''
+char test[10];
+int err = getdomainname(test,10);
+'''
+    if not self.checkPrototype(head,code):
       self.addPrototype('int getdomainname(char *, int);', 'C')
     if hasattr(self.compilers, 'CXX'):
       self.pushLanguage('C++')
-      if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
+      if not self.checkLink(head,code):
         self.addPrototype('int getdomainname(char *, int);', 'extern C')
       self.popLanguage()  
     return

@@ -19,6 +19,9 @@
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
+#if defined(PETSC_HAVE_NETDB_H)
+#include <netdb.h>
+#endif
 #include "petscfix.h"
 
 #undef __FUNCT__  
