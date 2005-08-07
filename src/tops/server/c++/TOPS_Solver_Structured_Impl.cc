@@ -23,13 +23,19 @@
   DAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
   DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);
   sidl::array<double> ua;
-  int lower[3],upper[3],stride[3];
-  lower[0] = gxs; lower[1] = gys; lower[2] = gzs;
-  upper[0] = gxm; upper[1] = gym; upper[2] = gzm;
-  stride[0] = 1; stride[1] = gxm; stride[2] = gxm*gym;
-  if (dim == 2) {
-    ua.borrow(uu,2,*&lower,*&upper,*&stride);
+  int lower[4],upper[4],stride[4];
+  if (dof > 1) {
+    dim++;
+    lower[0] = 0; upper[0] = dof; stride[0] = 1;
+    lower[1] = gxs; lower[2] = gys; lower[3] = gzs;
+    upper[1] = gxm; upper[2] = gym; upper[3] = gzm;
+    stride[1] = dof; stride[2] = gxm*dof; stride[3] = gxm*gym*dof;
+  } else {
+    lower[0] = gxs; lower[1] = gys; lower[2] = gzs;
+    upper[0] = gxm; upper[1] = gym; upper[2] = gzm;
+    stride[0] = 1; stride[1] = gxm; stride[2] = gxm*gym;
   }
+  ua.borrow(uu,dim,*&lower,*&upper,*&stride);
   return ua;
 }
 
@@ -274,6 +280,7 @@ throw ()
   PetscErrorCode ierr;
 
   if (!this->dmmg) {
+    this->system.initializeOnce();
     // create DMMG object 
     DMMGCreate(PETSC_COMM_WORLD,this->levels,(void*)&this->self,&this->dmmg);
     DACreate(PETSC_COMM_WORLD,this->dim,this->wrap,this->stencil_type,this->M,this->N,this->P,this->m,this->n,
@@ -281,6 +288,7 @@ throw ()
     DMMGSetDM(this->dmmg,(DM)this->da);
     ierr = DMMGSetSNES(this->dmmg, FormFunction, 0);
   }
+  this->system.initializeEverySolve();
   DMMGSolve(this->dmmg);
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.solve)
 }
@@ -294,7 +302,7 @@ TOPS::Solver_Structured_impl::setBlockSize (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setBlockSize)
-  // Insert-Code-Here {TOPS.Solver_Structured.setBlockSize} (setBlockSize method)
+  this->bs = bs;
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setBlockSize)
 }
 
