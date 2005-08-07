@@ -9,6 +9,6 @@ SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetsc
-LOCDIR   = src/sys/memory/ftn-custom
+LOCDIR   = src/sys/memory/ftn-custom/
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

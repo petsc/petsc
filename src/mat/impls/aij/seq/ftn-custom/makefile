@@ -9,6 +9,6 @@ SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscmat
-LOCDIR   = src/mat/impls/aij/seq/ftn-custom/ 
+LOCDIR   = src/mat/impls/aij/seq/ftn-custom/
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

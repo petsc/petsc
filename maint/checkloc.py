@@ -13,7 +13,7 @@ def processLOCDIR(arg,dirname,names):
   if 'makefile' in names:
     mfile=os.path.join(dirname,'makefile')
     # exclude list
-    if mfile in [os.path.join(petscdir,'makefile'),os.path.join(petscdir,'python','makefile'),os.path.join(petscdir,'python','BuildSystem','makefile'),os.path.join(petscdir,'python','BuildSystem','docs','makefile'),os.path.join(petscdir,'projects','makefile')]:
+    if dirname.find('externalpackages') >=0 or mfile in [os.path.join(petscdir,'makefile'),os.path.join(petscdir,'python','makefile'),os.path.join(petscdir,'python','BuildSystem','makefile'),os.path.join(petscdir,'python','BuildSystem','docs','makefile'),os.path.join(petscdir,'projects','makefile')]:
       return
     try:
       fd=open(mfile,'r')
@@ -29,7 +29,9 @@ def processLOCDIR(arg,dirname,names):
     if locdir == '':
       print 'Missing LOCDIR in: ' + mfile
       return
-    loc=locdir.split('=')[1].strip()
+    loc=locdir.split('=')[1].lstrip()
+    if loc != loc.rstrip():
+      print 'Extra space at the end of LOCDIR in: ' + mfile
     if loc == '' :
       print 'Missing value for LOCDIR in: ' + mfile
       return

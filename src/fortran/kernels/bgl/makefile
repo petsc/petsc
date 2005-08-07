@@ -20,7 +20,7 @@ OBJSC    = ${SOURCEC:.c=.o}
 OBJSF    = ${SOURCEF:.F=.o}
 LIBBASE  = libpetsc
 MANSEC   = Sys
-LOCDIR   = src/fortran/kernels/bgl
+LOCDIR   = src/fortran/kernels/bgl/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
