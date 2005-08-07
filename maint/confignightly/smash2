@@ -1,0 +1,7 @@
+#! /bin/csh
+#
+set MACH=smash
+set USR=petsc
+set LOC=/sandbox/petsc/petsc-dev-2
+set TAO_LOC=/sandbox/petsc/tao-devel-2
+set CONF=linux-gnu-nagf90
