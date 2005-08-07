@@ -1,0 +1,7 @@
+
+package Ex2 version 0.0.0 {
+
+    class System implements-all TOPS.System {
+    }
+}
+
