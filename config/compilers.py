@@ -17,6 +17,7 @@ class Configure(config.base.Configure):
     self.fincs = []
     self.flibs = []
     self.fmainlibs = []
+    self.clibs = []
     self.cxxlibs = []
     return
 
@@ -120,6 +121,82 @@ class Configure(config.base.Configure):
     # Define to equivalent of C99 restrict keyword, or to nothing if this is not supported.  Do not define if restrict is supported directly.
     if not self.restrictKeyword == 'restrict':
       self.addDefine('RESTRICT', self.restrictKeyword)
+    return
+
+  def checkCLibraries(self):
+    '''Determines the libraries needed to link with C'''
+    oldFlags = self.setCompilers.LDFLAGS
+    self.setCompilers.LDFLAGS += ' -v'
+    self.pushLanguage('C')
+    (output, returnCode) = self.outputLink('', '')
+    self.setCompilers.LDFLAGS = oldFlags
+    self.popLanguage()
+
+    # The easiest thing to do for xlc output is to replace all the commas
+    # with spaces.  Try to only do that if the output is really from xlc,
+    # since doing that causes problems on other systems.
+    if output.find('XL_CONFIG') >= 0:
+      output = output.replace(',', ' ')
+      
+    # Parse output
+    argIter = iter(output.split())
+    clibs = []
+    lflags  = []
+    try:
+      while 1:
+        arg = argIter.next()
+        self.logPrint( 'Checking arg '+arg, 4, 'compilers')
+        # Check for full library name
+        m = re.match(r'^/.*\.a$', arg)
+        if m:
+          if not arg in lflags:
+            lflags.append(arg)
+            self.logPrint('Found full library spec: '+arg, 4, 'compilers')
+            clibs.append(arg)
+          continue
+        # Check for system libraries
+        m = re.match(r'^-l(ang.*|crt0.o|crt1.o|crt2.o|crtbegin.o|c|gcc)$', arg)
+        if m: continue
+        # Check for special library arguments
+        m = re.match(r'^-[lLR].*$', arg)
+        if m:
+          if not arg in lflags:
+            if arg == '-lkernel32':
+              continue
+            elif arg == '-lm':
+              continue
+            else:
+              lflags.append(arg)
+            self.logPrint('Found special library: '+arg, 4, 'compilers')
+            clibs.append(arg)
+          continue
+        if arg == '-rpath':
+          lib = argIter.next()
+          self.logPrint('Found -rpath library: '+lib, 4, 'compilers')
+          clibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          continue
+        self.logPrint('Unknown arg '+arg, 4, 'compilers')
+    except StopIteration:
+      pass
+
+    self.clibs = []
+    for lib in clibs:
+      if not self.setCompilers.staticLibraries and lib.startswith('-L') and not self.setCompilers.CSharedLinkerFlag == '-L':
+        self.clibs.append(self.setCompilers.CSharedLinkerFlag+lib[2:])
+      self.clibs.append(lib)
+
+    self.logPrint('Libraries needed to link C code with another linker: '+str(self.clibs), 3, 'compilers')
+
+    if hasattr(self.setCompilers, 'FC'):
+      self.logPrint('Check that C libraries can be used from Fortran', 4, 'compilers')
+      oldLibs = self.setCompilers.LIBS
+      self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.clibs])+' '+self.setCompilers.LIBS
+      try:
+        self.setCompilers.checkCompiler('FC')
+      except RuntimeError, e:
+        self.logPrint('C libraries cannot directly be used from Fortran', 4, 'compilers')
+        self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
+        self.setCompilers.LIBS = oldLibs
     return
 
   def checkCFormatting(self):
@@ -758,6 +835,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkCFormatting)
       self.executeTest(self.checkCStaticInline)
       self.executeTest(self.checkDynamicLoadFlag)
+      self.executeTest(self.checkCLibraries)      
     else:
       self.isGCC = 0
     if hasattr(self.setCompilers, 'CXX'):
