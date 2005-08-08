@@ -110,7 +110,6 @@ def main():
   tau_instr,tau_defs,tau_include,tau_libs,tau_cxxlibs = getTauFlags(tau_lib_dir)
   if sourcefiles != []:
     # Now Compile the sourcefiles
-    arglist += tau_defs + tau_include
     for sourcefile in sourcefiles:
       root,ext = os.path.splitext(sourcefile)
       obj_file = root + '.o'
@@ -122,10 +121,12 @@ def main():
         if ext == '.cc' or ext == '.cpp' or ext == '.cxx' or ext == '.C' : pdt_file = root+ '.pdb'
         else: pdt_file = sourcefile+ '.pdb'
       tau_file = root +'.inst' + ext
-      cmd1  = pdt_parse + ' ' + sourcefile + arglist
+      cmd1  = pdt_parse + ' ' + sourcefile + arglist + tau_defs + tau_include
+
       cmd2  = tau_instr + ' ' + pdt_file + ' ' + sourcefile +' -o '+ tau_file
       cmd2 += ' -c -rn PetscFunctionReturn -rv PetscFunctionReturnVoid\\(\\)'
-      cmd3  = cc + ' -c ' + tau_file + ' -o ' + obj_file + arglist
+      cmd3  = cc + ' -c ' + tau_file + ' -o ' + obj_file + arglist + tau_defs + tau_include
+
 
       runcmd(cmd1,verbose)
       runcmd(cmd2,verbose)
