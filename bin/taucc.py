@@ -17,6 +17,7 @@ import commands
 import sys
 import os
 import string
+import tempfile
 def runcmd(cmd,verbose):
   if verbose == 'true':
     print cmd
@@ -26,6 +27,27 @@ def runcmd(cmd,verbose):
   elif output:
     print output
 
+def getTauFlags(tau_lib_dir):
+  fd,name=tempfile.mkstemp(prefix='taucc-')
+  buf  = 'include ' + str(os.path.join(tau_lib_dir,'Makefile.tau-mpi-pdt'))
+  buf += '''
+tau_defs:
+	-@echo ${TAU_DEFS}
+'''
+  os.write(fd,buf)
+  os.close(fd)
+  cmd = 'make -f '+ name + ' tau_defs'
+  (status, output) = commands.getstatusoutput(cmd)
+  if status:
+    os.remove(name)
+    raise RuntimeError('Unable to run '+cmd+':\n'+output)
+  os.remove(name)
+  # remove unnecessary stuff from output
+  for line in output.splitlines():
+    if line.find('DTAU') >= 0:
+      return ' '+line.strip()+' '
+  return ''
+  
 def main():
 
   sourcefiles=[]
@@ -75,6 +97,7 @@ def main():
     runcmd(cmd1,verbose)
   else:
     # Now Compile the sourcefiles
+    arglist += getTauFlags(tau_lib_dir)
     for sourcefile in sourcefiles:
       root,ext = os.path.splitext(sourcefile)
       if ext == '.cc':
