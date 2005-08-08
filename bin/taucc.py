@@ -49,13 +49,11 @@ tauflags:
   tau_include=''
   tau_libs=''
   for line in output.splitlines():
-    if line.find('TAU_INSTRUMENT0R:') >= 0:  tau_instr = line.strip('TAU_INSTRUMENT0R:')
-    elif line.find('TAU_DEFS:') >= 0:  tau_defs = ' '+line.strip('TAU_DEFS:')    
-    elif line.find('TAU_INCLUDE:') >= 0: tau_include = ' '+line.strip('TAU_INCLUDE:')
-    elif line.find('TAU_LIBS:') >= 0: tau_libs = ' '+line.strip('TAU_LIBS:')
-    elif line.find('TAU_CXXLIBS:') >= 0: tau_cxxlibs = ' '+line.strip('TAU_CXXLIBS:')
-  tau_defs.strip('-DTAU_LARGEFILE')
-  tau_defs.strip('-D_LARGEFILE64_SOURC')
+    if line.find('TAU_INSTRUMENT0R:') >= 0:  tau_instr = line.replace('TAU_INSTRUMENT0R:','')
+    elif line.find('TAU_DEFS:') >= 0:  tau_defs = line.replace('TAU_DEFS:',' ')    
+    elif line.find('TAU_INCLUDE:') >= 0: tau_include = line.replace('TAU_INCLUDE:',' ')
+    elif line.find('TAU_LIBS:') >= 0: tau_libs = line.replace('TAU_LIBS:',' ')
+    elif line.find('TAU_CXXLIBS:') >= 0: tau_cxxlibs = line.replace('TAU_CXXLIBS:',' ')
   return tau_instr,tau_defs,tau_include,tau_libs,tau_cxxlibs
   
 def main():
