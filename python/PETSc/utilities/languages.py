@@ -62,6 +62,7 @@ class Configure(config.base.Configure):
     if self.clanguage == 'C' and not self.framework.argDB['with-c++-support'] and not self.framework.argDB['download-prometheus']:
       self.framework.argDB['with-cxx'] = '0'
     self.framework.logPrint('C language is '+str(self.clanguage))
+    self.addDefine('CLANGUAGE_'+self.clanguage.upper(),'1')
     return
 
   def configureFortranLanguage(self):
