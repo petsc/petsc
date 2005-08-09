@@ -33,17 +33,23 @@ class Configure(PETSc.package.Package):
     if os.path.isfile(os.path.join(plapackDir,'Make.include')):
       output  = config.base.Configure.executeShellCommand('cd '+plapackDir+'; rm -f Make.include', timeout=2500, log = self.framework.log)[0]
     g = open(os.path.join(plapackDir,'Make.include'),'w')
-    g.write('PLAPACK_ROOT = '+plapackDir+'\n')
+    g.write('PLAPACK_ROOT = '+installDir+'\n')
     g.write('MANUFACTURE  = 50\n')  #PC
     g.write('MACHINE_TYPE = 500\n')  #LINUX
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('MPILIB       = '+self.libraries.toString(self.mpi.lib)+'\n')
-    g.write('MPI_INCLUDE  = '+self.libraries.toString(self.mpi.include)+'\n') 
+    g.write('MPI_INCLUDE  = -I'+self.libraries.toString(self.mpi.include)+'\n') 
     g.write('LIB          = $(BLASLIB) $(MPILIB)\n')
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n') 
-    g.write('CFLAGS       = -I$(PLAPACK_ROOT)/INCLUDE -I$(MPI_INCLUDE) -DMACHINE_TYPE=$(MACHINE_TYPE) -DMANUFACTURE=$(MANUFACTURE) ' + self.setCompilers.getCompilerFlags() +'\n')
+    g.write('CFLAGS       = -I$(PLAPACK_ROOT)/INCLUDE $(MPI_INCLUDE) -DMACHINE_TYPE=$(MACHINE_TYPE) -DMANUFACTURE=$(MANUFACTURE) ' + self.setCompilers.getCompilerFlags() +'\n')
     self.setCompilers.popLanguage()
+    if hasattr(self.compilers, 'FC'):
+      self.setCompilers.pushLanguage('FC')
+      g.write('FC         = '+self.setCompilers.getCompiler()+'\n')
+      self.setCompilers.popLanguage()
+    g.write('LINKER       = $(CC)\n')     #required by PLAPACK's examples
+    g.write('LFLAGS       = $(CFLAGS)\n') #required by PLAPACK's examples
     g.write('AR           = '+self.setCompilers.AR+'\n')
     g.write('SED          = sed\n')
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')

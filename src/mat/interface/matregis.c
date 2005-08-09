@@ -60,6 +60,10 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DSCPACK(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Matlab(Mat);
 #endif
 EXTERN_C_END
+#if defined(PETSC_HAVE_PLAPACK)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Plapack(Mat);
+#endif
+EXTERN_C_END
   
 /*
     This is used by MatSetType() to make sure that at least one 
@@ -150,6 +154,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
 #endif
 #if defined(PETSC_HAVE_MATLAB)
   ierr = MatRegisterDynamic(MATMATLAB,path,"MatCreate_Matlab",MatCreate_Matlab);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_PLAPACK)
+  ierr = MatRegisterDynamic(MATPLAPACK,path,"MatCreate_Plapack",MatCreate_Plapack);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

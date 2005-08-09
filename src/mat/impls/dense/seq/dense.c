@@ -1406,6 +1406,22 @@ PetscErrorCode MatGetSubMatrices_SeqDense(Mat A,PetscInt n,const IS irow[],const
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyBegin_SeqDense"
+PetscErrorCode MatAssemblyBegin_SeqDense(Mat mat,MatAssemblyType mode)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyEnd_SeqDense"
+PetscErrorCode MatAssemblyEnd_SeqDense(Mat mat,MatAssemblyType mode)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatCopy_SeqDense"
 PetscErrorCode MatCopy_SeqDense(Mat A,Mat B,MatStructure str)
 {
@@ -1481,8 +1497,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        MatGetDiagonal_SeqDense,
        MatDiagonalScale_SeqDense,
        MatNorm_SeqDense,
-/*20*/ 0,
-       0,
+/*20*/ MatAssemblyBegin_SeqDense,
+       MatAssemblyEnd_SeqDense,
        0,
        MatSetOption_SeqDense,
        MatZeroEntries_SeqDense,
@@ -1750,4 +1766,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
                                      MatSeqDenseSetPreallocation_SeqDense);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
 EXTERN_C_END
