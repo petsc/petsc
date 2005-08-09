@@ -116,7 +116,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
+  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,-3,-3,PETSC_DECIDE,PETSC_DECIDE,
                     1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DASetFieldName(da, 0, "ooblek"); CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg, (DM) da);CHKERRQ(ierr);
@@ -242,6 +242,12 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
     }
   }
 
+  for(i = xs; i < xs+xm; i++) {
+    for(j = ys; j < ys+ym; j++) {
+      printf("u[%d][%d] = %g ", i, j, x[j][i]);
+    }
+    printf("\n");
+  }
   /*
      Restore vector
   */
@@ -360,12 +366,20 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
       uLocal[1] = x[j][i+1];
       uLocal[2] = x[j+1][i+1];
       uLocal[3] = x[j+1][i];
+      printf("Solution ElementVector for (%d, %d)\n", i, j);
+      for(k = 0; k < 4; k++) {
+        printf("  uLocal[%d] = %g\n", k, uLocal[k]);
+      }
       for(k = 0; k < 4; k++) {
         rLocal[k] = 0.0;
         for(l = 0; l < 4; l++) {
           rLocal[k] += Kref[k*4 + l]*uLocal[l];
         }
         rLocal[k] *= hxhy*alpha;
+      }
+      printf("Laplacian ElementVector for (%d, %d)\n", i, j);
+      for(k = 0; k < 4; k++) {
+        printf("  rLocal[%d] = %g\n", k, rLocal[k]);
       }
       ierr = nonlinearResidual(-1.0*sc, uLocal, rLocal);CHKERRQ(ierr);
       f[j][i]     += rLocal[0];
@@ -387,6 +401,12 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
     }
   }
 
+  for(i = info->xs; i < info->xs+info->xm; i++) {
+    for(j = info->ys; j < info->ys+info->ym; j++) {
+      printf("f[%d][%d] = %g ", i, j, f[j][i]);
+    }
+    printf("\n");
+  }
   ierr = PetscLogFlops(68*(info->ym-1)*(info->xm-1));CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
