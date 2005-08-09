@@ -3,6 +3,7 @@ from __future__ import generators
 import user
 import config.base
 import os
+import shutil
 import PETSc.package
 
 class Configure(PETSc.package.Package):
@@ -28,11 +29,11 @@ class Configure(PETSc.package.Package):
     # Get the PLAPACK directories
     plapackDir = self.getDir()
     installDir = os.path.join(plapackDir, self.arch.arch)
-    
     # Configure and Build PLAPACK
-    if os.path.isfile(os.path.join(plapackDir,'Make.include')):
-      output  = config.base.Configure.executeShellCommand('cd '+plapackDir+'; rm -f Make.include', timeout=2500, log = self.framework.log)[0]
-    g = open(os.path.join(plapackDir,'Make.include'),'w')
+    plapackMakefile        = os.path.join(plapackDir,'Make.include')
+    plapackInstallMakefile = os.path.join(installDir,'Make.include')
+    if os.path.isfile(plapackMakefile): os.remove(plapackMakefile)
+    g = open(plapackMakefile,'w')
     g.write('PLAPACK_ROOT = '+installDir+'\n')
     g.write('MANUFACTURE  = 50\n')  #PC
     g.write('MACHINE_TYPE = 500\n')  #LINUX
@@ -46,7 +47,8 @@ class Configure(PETSc.package.Package):
     self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
-      g.write('FC         = '+self.setCompilers.getCompiler()+'\n')
+      g.write('FC           = '+self.setCompilers.getCompiler()+'\n')
+      g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags()+'\n')
       self.setCompilers.popLanguage()
     g.write('LINKER       = $(CC)\n')     #required by PLAPACK's examples
     g.write('LFLAGS       = $(CFLAGS)\n') #required by PLAPACK's examples
@@ -57,21 +59,25 @@ class Configure(PETSc.package.Package):
     g.close()
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
-    if not os.path.isfile(os.path.join(installDir,'Make.include')) or not (self.getChecksum(os.path.join(installDir,'Make.include')) == self.getChecksum(os.path.join(plapackDir,'Make.include'))):  
-      self.framework.log.write('Have to rebuild PLAPACK, Make.include != '+installDir+'/Make.include\n')
+    if not os.path.isfile(plapackInstallMakefile) or not (self.getChecksum(plapackInstallMakefile) == self.getChecksum(plapackMakefile)):  
+      self.framework.log.write('Have to rebuild PLAPACK, Make.include != '+plapackInstallMakefile+'\n')
       try:
         self.logPrintBox('Compiling PLAPACK; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+plapackDir+';PLAPACK_INSTALL_DIR='+installDir+';export PLAPACK_INSTALL_DIR; make removeall; make; mv *.a '+os.path.join(installDir,self.libdir)+'; mkdir '+os.path.join(installDir,self.includedir)+'; cp INCLUDE/*.h '+os.path.join(installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
+        incDir = os.path.join(plapackDir,self.includedir)
+        installIncDir = os.path.join(installDir,self.includedir)
+        if os.path.isdir(installIncDir): shutil.rmtree(installIncDir)
+        shutil.copytree(incDir,installIncDir);
+        output  = config.base.Configure.executeShellCommand('cd '+plapackDir+';make removeall; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on PLAPACK: '+str(e))
-      if not os.path.isdir(os.path.join(installDir,self.libdir)):
+      if not os.path.isfile(os.path.join(installDir,'libPLAPACK.a')):
         self.framework.log.write('Error running make on PLAPACK   ******(libraries not installed)*******\n')
         self.framework.log.write('********Output of running make on PLAPACK follows *******\n')        
         self.framework.log.write(output)
         self.framework.log.write('********End of Output of running make on PLAPACK *******\n')
         raise RuntimeError('Error running make on PLAPACK, libraries not installed')
       
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(plapackDir,'Make.include')+' '+installDir, timeout=5, log = self.framework.log)[0]
+      output  = shutil.copy(plapackMakefile,plapackInstallMakefile)
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed PLAPACK into '+installDir)
     return self.getDir()
 
