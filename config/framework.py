@@ -771,7 +771,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.logClear()
       print '=================================================================================\r'
       print '    Since your compute nodes require use of a batch system or mpirun you must:   \r'
-      print ' 1) Submit ./conftest to your batch system (this will generate the file reconfigure)\r'
+      print ' 1) Submit ./conftest to 1 processor of your batch system; this will generate the file reconfigure\r'
       print ' 2) Run "python reconfigure" (to complete the configure process).                \r'
       print '=================================================================================\r'
       sys.exit(0)
