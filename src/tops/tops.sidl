@@ -1,0 +1,85 @@
+
+
+package TOPS version 0.0.0 {
+
+  // Holder for package initialization and termination, e.g. PetscInitialize()/Finalize()
+
+  class State {
+      void Initialize(in array<string,1> args);
+      void Finalize();
+  }
+
+
+  class Vector {
+      Vector        clone();
+      void          zero();
+      double        dot(in Vector y);
+      double        norm2();
+      array<double> getArray();
+      void          restoreArray();
+  }
+
+  class Matrix {
+      void   apply(in Vector x,in Vector y);
+      void   zero();
+  }
+
+  interface Solver {
+      void   setSystem(in System system);
+      System getSystem();
+      void   solve();
+
+      void   setBlockSize(in int bs);
+
+      Vector getRightHandSize(in int level);
+      Vector getSolution(in int Level);
+      void   getJacobian(in int Level,out Matrix J,out Matrix B);
+  }
+
+  //   The data in the vectors is linearly sliced into one part per process
+  class Solver_Sliced implements-all Solver {
+      void setLocalRowSize(in int m);
+      int  getLocalRowSize();
+      void setGlobalRowSize(in int M);
+      int  getGlobalRowSize();
+      void setLocalColumnSize(in int n);
+      int  getLocalColumnSize();
+      void setGlobalColumnSize(in int N);
+      int  getGlobalColumnSize();
+
+      void setGhostPoints(in array<int,1> ghosts);
+      void setPreallocation(in int d,in int od);
+      void setPreallocation[s](in array<int,1> d,in array<int,1> od);
+  }
+
+  //   The data lives on a structured grid 
+  class Solver_Structured implements-all Solver {
+      void setDimension(in int dim);
+      int  getDimension();
+      void setDimensionX(in int dim);
+      int  getDimensionX();
+      void setDimensionY(in int dim);
+      int  getDimensionY();
+      void setDimensionZ(in int dim);
+      int  getDimensionZ();
+      void setStencilWidth(in int width);
+      int  getStencilWidth();
+      void setLevels(in int levels);
+  }
+
+  // Methods provided by the user to define the numerical problem 
+  interface System {
+      void   setSolver(in Solver solver);
+
+      // Initialize the Layout object and anything that is fixed for all solves
+      void   initializeOnce();
+      // Initialize anything that changes with each solve
+      void   initializeEverySolve();
+
+      void   computeJacobian(in array<double> x ,in Matrix J,in Matrix B);
+      void   computeResidual(in array<double> x,in array<double> f);
+      void   computeRightHandSide(in array<double> b);
+      void   computeInitialGuess(in array<double> x);
+  }
+
+}

@@ -1,0 +1,45 @@
+I. Title:
+
+      Using the Scalable PETSc Solvers
+
+II. Short Course Organizer(s):
+
+      Barry Smith
+      Argonne National Laboratory
+      bsmith@mcs.anl.gov
+
+III. Associated SIAM Conference:
+
+     SIAM Parallel Processing 2006
+
+IV. Rationale
+
+V. Instructor(s):
+
+   Barry Smith, Argonne National Laboratory, is one of the two original
+   developers of PETSc. He has led the project for the past ten years.
+
+   Other PETSc developers as appropriate.
+   
+
+VI. Course Description
+
+VII. Level of the Material
+
+   60% beginner
+   30% intermediate
+   10% advanced
+
+Target Audience
+
+  Graduate students and researchers in computational science.
+
+Recommended Background
+
+   Experience with Unix and C, C++ or Fortran programming. 
+   Elementary understanding of linear algebra and partial differential equations.
+   Experience with MPI or parallel computing is not assumed.
+
+Course Outline
+
+<List topics and subtopics and include approximate time devoted to them>
