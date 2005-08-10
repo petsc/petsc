@@ -1638,7 +1638,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   A->N = M;
   A->M = M;
   A->m = m;
-  A->n = A->N;  /* each row stores all columns */
+  A->n = m;
   ierr                             = PetscMalloc((A->m+1)*sizeof(int),&a->imax);CHKERRQ(ierr);
   a->reallocs                      = 0;
 

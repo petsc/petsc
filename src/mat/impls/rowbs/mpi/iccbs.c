@@ -67,7 +67,7 @@ PetscErrorCode MatUnScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
   PetscFunctionBegin;  
   /* Unpermute and unscale the solution and RHS vectors */
   if (x) {
-    ierr = VecPointwiseMult(x,x,bsif->diag);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(v,x,bsif->diag);CHKERRQ(ierr);
     ierr = VecGetArray(v,&va);CHKERRQ(ierr);
     ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
     BSiperm_dvec(va,xa,bsif->pA->perm);CHKERRBS(0);
