@@ -14,7 +14,7 @@ T*/
 
     The Lane-Emden equation is given by the partial differential equation
   
-            Laplacian u - grad p = 0,  0 < x,y < 1,
+            Laplacian u - grad p = f,  0 < x,y < 1,
             div u                = 0
   
     with boundary conditions
@@ -219,10 +219,6 @@ PetscErrorCode ExactSolution(PetscReal x, PetscReal y, Field *u)
 /* 
    FormInitialGuess - Forms initial approximation.
 
-   /  x^2 y \
-   | -x y^2 |
-   \   2xy  /
-
    Input Parameters:
    dmmg - The DMMG context
    U - vector
@@ -273,7 +269,7 @@ PetscErrorCode FormInitialGuess(DMMG dmmg, Vec U)
   }
   for(i = xs; i < xs+xm; i++) {
     for(j = ys; j < ys+ym; j++) {
-      printf("u[%d][%d] = (%g, %g, %g) ", i, j, u[j][i].u, u[j][i].v, u[j][i].p);
+      printf("uInit[%d][%d] = (%g, %g, %g) ", i, j, u[j][i].u, u[j][i].v, u[j][i].p);
     }
     printf("\n");
   }
@@ -281,6 +277,8 @@ PetscErrorCode FormInitialGuess(DMMG dmmg, Vec U)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PrintVector"
 PetscErrorCode PrintVector(DMMG dmmg, Vec U)
 {
   DA             da = (DA) dmmg->dm;
@@ -301,6 +299,8 @@ PetscErrorCode PrintVector(DMMG dmmg, Vec U)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "gradientResidual"
 PetscErrorCode gradientResidual(Field u[], Field r[]) {
   PetscFunctionBegin;
   r[0].u += (-2.0*u[0].p + 2.0*u[1].p + u[2].p - u[3].p)*0.08333333;
@@ -314,6 +314,8 @@ PetscErrorCode gradientResidual(Field u[], Field r[]) {
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "divergenceResidual"
 PetscErrorCode divergenceResidual(Field u[], Field r[]) {
   PetscFunctionBegin;
   r[0].p += (-2.0*u[0].u + 2.0*u[1].u + u[2].u - u[3].u - 2.0*u[0].v - u[1].v + u[2].v + 2.0*u[3].v)*0.08333333;
@@ -323,6 +325,44 @@ PetscErrorCode divergenceResidual(Field u[], Field r[]) {
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "constantResidual"
+PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, PetscReal hy, Field r[])
+{
+  Field       rLocal[4] = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+  PetscScalar phi[4] = {0.0, 0.0, 0.0, 0.0};
+  PetscReal   xI = i*hx, yI = j*hy, x, y;
+  Field       res;
+  PetscInt    q, k;
+
+  PetscFunctionBegin;
+  for(q = 0; q < 4; q++) {
+    phi[0] = (1.0 - quadPoints[q*2])*(1.0 - quadPoints[q*2+1]);
+    phi[1] =  quadPoints[q*2]       *(1.0 - quadPoints[q*2+1]);
+    phi[2] =  quadPoints[q*2]       * quadPoints[q*2+1];
+    phi[3] = (1.0 - quadPoints[q*2])* quadPoints[q*2+1];
+    x      = xI + quadPoints[q*2];
+    y      = yI + quadPoints[q*2+1];
+    res.u    = lambda*quadWeights[q]*(0.0);
+    res.v    = lambda*quadWeights[q]*(0.0);
+    res.p    = lambda*quadWeights[q]*(0.0);
+    for(k = 0; k < 4; k++) {
+      rLocal[k].u += phi[k]*res.u;
+      rLocal[k].v += phi[k]*res.v;
+      rLocal[k].p += phi[k]*res.p;
+    }
+  }
+  for(k = 0; k < 4; k++) {
+    r[k].u += rLocal[k].u;
+    r[k].v += rLocal[k].v;
+    r[k].p += rLocal[k].p;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "nonlinearResidual"
 PetscErrorCode nonlinearResidual(PetscReal lambda, PetscScalar u[], PetscScalar r[]) {
   PetscFunctionBegin;
   r[0] += lambda*(48.0*u[0]*u[0]*u[0] + 12.0*u[1]*u[1]*u[1] + 9.0*u[0]*u[0]*(4.0*u[1] + u[2] + 4.0*u[3]) + u[1]*u[1]*(9.0*u[2] + 6.0*u[3]) + u[1]*(6.0*u[2]*u[2] + 8.0*u[2]*u[3] + 6.0*u[3]*u[3])
@@ -463,6 +503,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,AppCtx *u
       for(k = 0; k < 4; k++) {
         printf("  rLocal[%d] = (%g)\n", k, rLocal[k].p);
       }
+      ierr = constantResidual(-1.0, i, j, hx, hy, rLocal);CHKERRQ(ierr);
       /* ierr = nonlinearResidual(-1.0*sc, uLocal, rLocal);CHKERRQ(ierr); */
       f[j][i].u     += rLocal[0].u;
       f[j][i].v     += rLocal[0].v;
