@@ -92,6 +92,8 @@ static PetscScalar quadWeights[4] = {0.25, 0.25, 0.25, 0.25};
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field**,Field**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DALocalInfo*,Field**,Mat,AppCtx*);
+extern PetscErrorCode L_2Error(DA, Vec, double *, AppCtx *);
+extern PetscErrorCode PrintVector(DMMG, Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -166,7 +168,7 @@ int main(int argc,char **argv)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D, %s\n",its,SNESConvergedReasons[reason]);CHKERRQ(ierr);
-  ierr = L_2Error(DMMGGetDA(dmmg), DMMGGetx(dmmg), error, user);CHKERRQ(ierr);
+  ierr = L_2Error(DMMGGetDA(dmmg), DMMGGetx(dmmg), &error, user);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"L_2 error in the solution: %g\n", error);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
