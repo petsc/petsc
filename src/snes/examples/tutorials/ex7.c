@@ -202,8 +202,8 @@ PetscErrorCode ExactSolution(PetscReal x, PetscReal y, Field *u)
 {
   PetscFunctionBegin;
 #if 1
-  u->u = x - 2;
-  u->v = 0.0;
+  u->u = 0.0;
+  u->v = x - 2;
 #else
   u->u = x*x*y;
   u->v = -x*y*y;
@@ -516,7 +516,7 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info, Field **x, Mat jac, AppCtx *
 {
   Field          uLocal[4];
   PetscScalar    JLocal[144];
-  MatStencil     rows[12], cols[12], ident;
+  MatStencil     rows[12], cols[12], ident[2];
   PetscInt       rowActive[4];
   PetscInt       localRows[4];
   PetscScalar    alpha,lambda,hx,hy,hxhy,sc;
@@ -554,11 +554,13 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info, Field **x, Mat jac, AppCtx *
       ierr = PetscMemzero(JLocal, 144 * sizeof(PetscScalar));CHKERRQ(ierr);
       /* i,j */
       if (i == 0 || j == 0) {
-        ident.i = i; ident.j = j;
-        JLocal[0] = 1.0;
+        ident[0].i = i; ident[0].j = j; ident[0].c = 0;
+        ident[1].i = i; ident[1].j = j; ident[1].c = 1;
+        JLocal[0] = 1.0; JLocal[1] = 0.0;
+        JLocal[2] = 0.0; JLocal[3] = 1.0;
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(jac,2,ident,2,ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         rowActive[0] = 0;
@@ -568,11 +570,13 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info, Field **x, Mat jac, AppCtx *
       }
       /* i+1,j */
       if ((i == info->mx-2) || (j == 0)) {
-        ident.i = i+1; ident.j = j;
-        JLocal[0] = 1.0;
+        ident[0].i = i+1; ident[0].j = j; ident[0].c = 0;
+        ident[1].i = i+1; ident[1].j = j; ident[1].c = 1;
+        JLocal[0] = 1.0; JLocal[1] = 0.0;
+        JLocal[2] = 0.0; JLocal[3] = 1.0;
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(jac,2,ident,2,ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         rowActive[1] = 0;
@@ -582,11 +586,13 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info, Field **x, Mat jac, AppCtx *
       }
       /* i+1,j+1 */
       if ((i == info->mx-2) || (j == info->my-2)) {
-        ident.i = i+1; ident.j = j+1;
-        JLocal[0] = 1.0;
+        ident[0].i = i+1; ident[0].j = j+1; ident[0].c = 0;
+        ident[1].i = i+1; ident[1].j = j+1; ident[1].c = 1;
+        JLocal[0] = 1.0; JLocal[1] = 0.0;
+        JLocal[2] = 0.0; JLocal[3] = 1.0;
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(jac,2,ident,2,ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         rowActive[2] = 0;
@@ -596,11 +602,13 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info, Field **x, Mat jac, AppCtx *
       }
       /* i,j+1 */
       if ((i == 0) || (j == info->my-2)) {
-        ident.i = i; ident.j = j+1;
-        JLocal[0] = 1.0;
+        ident[0].i = i; ident[0].j = j+1; ident[0].c = 0;
+        ident[1].i = i; ident[1].j = j+1; ident[1].c = 1;
+        JLocal[0] = 1.0; JLocal[1] = 0.0;
+        JLocal[2] = 0.0; JLocal[3] = 1.0;
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(jac,2,ident,2,ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         rowActive[3] = 0;
@@ -698,6 +706,19 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info, Field **x, Mat jac, AppCtx *
         row++;
       }
 #endif
+      printf("Element matrix for (%d, %d)\n", i, j);
+      printf("   col  ");
+      for(l = 0; l < 12; l++) {
+        printf("(%d, %d, %d) ", cols[l].i, cols[l].j, cols[l].c);
+      }
+      printf("\n");
+      for(k = 0; k < numRows; k++) {
+        printf("row (%d, %d, %d): ", rows[k].i, rows[k].j, rows[k].c);
+        for(l = 0; l < 12; l++) {
+          printf("%8.6g ", JLocal[k*12 + l]);
+        }
+        printf("\n");
+      }
       ierr = MatSetValuesStencil(jac,numRows,rows,12,cols,JLocal,ADD_VALUES);CHKERRQ(ierr);
     }
   }
