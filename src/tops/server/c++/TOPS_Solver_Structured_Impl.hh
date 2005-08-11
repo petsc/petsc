@@ -44,6 +44,7 @@
 
 // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._includes)
 #include "petscdmmg.h"
+#include "TOPS_SystemComputeResidual.hh"
 // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._includes)
 
 namespace TOPS { 

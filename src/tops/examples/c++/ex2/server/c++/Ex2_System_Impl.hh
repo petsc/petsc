@@ -25,9 +25,6 @@
 #ifndef included_Ex2_System_hh
 #include "Ex2_System.hh"
 #endif
-#ifndef included_TOPS_Matrix_hh
-#include "TOPS_Matrix.hh"
-#endif
 #ifndef included_TOPS_Solver_hh
 #include "TOPS_Solver.hh"
 #endif
@@ -95,6 +92,17 @@ namespace Ex2 {
      * user defined non-static method.
      */
     void
+    computeResidual (
+      /* in */ ::sidl::array<double> x,
+      /* in */ ::sidl::array<double> f
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
     setSolver (
       /* in */ ::TOPS::Solver solver
     )
@@ -113,49 +121,6 @@ namespace Ex2 {
     void
     initializeEverySolve() throw () 
     ;
-    /**
-     * user defined non-static method.
-     */
-    void
-    computeJacobian (
-      /* in */ ::sidl::array<double> x,
-      /* in */ ::TOPS::Matrix J,
-      /* in */ ::TOPS::Matrix B
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    computeResidual (
-      /* in */ ::sidl::array<double> x,
-      /* in */ ::sidl::array<double> f
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    computeRightHandSide (
-      /* in */ ::sidl::array<double> b
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    computeInitialGuess (
-      /* in */ ::sidl::array<double> x
-    )
-    throw () 
-    ;
-
   };  // end class System_impl
 
 } // end namespace Ex2
