@@ -202,7 +202,7 @@ PetscErrorCode ExactSolution(PetscReal x, PetscReal y, Field *u)
 {
   PetscFunctionBegin;
 #if 1
-  u->u = 0.0;
+  u->u = y + 3;
   u->v = x - 2;
 #else
   u->u = x*x*y;
