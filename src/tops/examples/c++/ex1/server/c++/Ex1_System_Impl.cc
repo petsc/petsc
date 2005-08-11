@@ -40,60 +40,6 @@ void Ex1::System_impl::_load() {
 
 // user-defined non-static methods:
 /**
- * Method:  setSolver[]
- */
-void
-Ex1::System_impl::setSolver (
-  /* in */ ::TOPS::Solver solver ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(Ex1.System.setSolver)
-  this->solver = (TOPS::Solver_Structured)solver;
-  // DO-NOT-DELETE splicer.end(Ex1.System.setSolver)
-}
-
-/**
- * Method:  initializeOnce[]
- */
-void
-Ex1::System_impl::initializeOnce ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(Ex1.System.initializeOnce)
-  
-  // DO-NOT-DELETE splicer.end(Ex1.System.initializeOnce)
-}
-
-/**
- * Method:  initializeEverySolve[]
- */
-void
-Ex1::System_impl::initializeEverySolve ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(Ex1.System.initializeEverySolve)
-  // Insert-Code-Here {Ex1.System.initializeEverySolve} (initializeEverySolve method)
-  // DO-NOT-DELETE splicer.end(Ex1.System.initializeEverySolve)
-}
-
-/**
- * Method:  computeJacobian[]
- */
-void
-Ex1::System_impl::computeJacobian (
-  /* in */ ::sidl::array<double> x,
-  /* in */ ::TOPS::Matrix J,
-  /* in */ ::TOPS::Matrix B ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(Ex1.System.computeJacobian)
-  // Insert-Code-Here {Ex1.System.computeJacobian} (computeJacobian method)
-  // DO-NOT-DELETE splicer.end(Ex1.System.computeJacobian)
-}
-
-/**
  * Method:  computeResidual[]
  */
 void
@@ -141,29 +87,42 @@ throw ()
 }
 
 /**
- * Method:  computeRightHandSide[]
+ * Method:  setSolver[]
  */
 void
-Ex1::System_impl::computeRightHandSide (
-  /* in */ ::sidl::array<double> b ) 
+Ex1::System_impl::setSolver (
+  /* in */ ::TOPS::Solver solver ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(Ex1.System.computeRightHandSide)
-  // Insert-Code-Here {Ex1.System.computeRightHandSide} (computeRightHandSide method)
-  // DO-NOT-DELETE splicer.end(Ex1.System.computeRightHandSide)
+  // DO-NOT-DELETE splicer.begin(Ex1.System.setSolver)
+  this->solver = (TOPS::Solver_Structured)solver;
+  // DO-NOT-DELETE splicer.end(Ex1.System.setSolver)
 }
 
 /**
- * Method:  computeInitialGuess[]
+ * Method:  initializeOnce[]
  */
 void
-Ex1::System_impl::computeInitialGuess (
-  /* in */ ::sidl::array<double> x ) 
+Ex1::System_impl::initializeOnce ()
 throw () 
+
 {
-  // DO-NOT-DELETE splicer.begin(Ex1.System.computeInitialGuess)
-  // Insert-Code-Here {Ex1.System.computeInitialGuess} (computeInitialGuess method)
-  // DO-NOT-DELETE splicer.end(Ex1.System.computeInitialGuess)
+  // DO-NOT-DELETE splicer.begin(Ex1.System.initializeOnce)
+  
+  // DO-NOT-DELETE splicer.end(Ex1.System.initializeOnce)
+}
+
+/**
+ * Method:  initializeEverySolve[]
+ */
+void
+Ex1::System_impl::initializeEverySolve ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(Ex1.System.initializeEverySolve)
+  // Insert-Code-Here {Ex1.System.initializeEverySolve} (initializeEverySolve method)
+  // DO-NOT-DELETE splicer.end(Ex1.System.initializeEverySolve)
 }
 
 

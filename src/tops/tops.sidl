@@ -75,10 +75,21 @@ package TOPS version 0.0.0 {
       void   initializeOnce();
       // Initialize anything that changes with each solve
       void   initializeEverySolve();
+  }
 
+  interface SystemComputeJacobian {
       void   computeJacobian(in array<double> x ,in Matrix J,in Matrix B);
+  }
+
+  interface SystemComputeResidual {
       void   computeResidual(in array<double> x,in array<double> f);
+  }
+
+  interface SystemComputeRightHandSide {
       void   computeRightHandSide(in array<double> b);
+  }
+
+  interface SystemComputeInitialGuess {
       void   computeInitialGuess(in array<double> x);
   }
 

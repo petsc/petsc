@@ -53,7 +53,7 @@ static PetscErrorCode FormFunction(SNES snes,Vec u,Vec f,void *vdmmg)
   solver->setDimensionZ(mz);
   sidl::array<double> ua = DAVecGetArrayBabel((DA)dmmg->dm,u);
   sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);;
-  system.computeResidual(ua,fa);
+  ((TOPS::SystemComputeResidual)system).computeResidual(ua,fa);
   VecRestoreArray(u,0);
   VecRestoreArray(f,0);
   PetscFunctionReturn(0);
