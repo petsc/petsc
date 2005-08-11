@@ -54,7 +54,7 @@ please don't access these pages.<br>
       </p>
       <big><span style="font-weight: bold;">Obtaining PETSc:</span></big><br>
       <br>
-To obtain the development version of PETSc you have three options<br>
+To obtain the development version of PETSc you have four options<br>
       <ol>
         <li>&nbsp;download and install the <span
  style="font-weight: bold;">free</span> <b>BitKeeper</b> download
@@ -66,6 +66,9 @@ snapshot at <a
         </li>
         <li><span style="font-weight: bold;">license BitKeeper</span>
 (inexpensive academic licences available).</li>
+        <li>[<span style="color: rgb(0, 102, 0); font-weight: bold;">experimental</span>]
+obtain PETSc repostiory using darcs<br>
+        </li>
       </ol>
 &nbsp;All
 three create a local directory with the name petsc-dev.
@@ -78,7 +81,6 @@ the directory where you have compiled this code is in your path.
       <ul style="color: rgb(128, 0, 0);">
         <li> sfioball bk://petsc.bkbits.net/petsc-dev petsc-dev</li>
         <li> cd petsc-dev/python</li>
-        <li> rm -rf BuildSystem</li>
         <li> sfioball bk://sidl.bkbits.net/BuildSystem BuildSystem</li>
       </ul>
 To update PETSc
@@ -94,11 +96,16 @@ To update PETSc
 and ungzip and untar it. To update PETSc simply
 get a new copy of the tar file.
       <p></p>
-      <strong>3) To use the licensed BitKeeper</strong>, invoke the
+      <strong>3) To use the licensed <a
+ href="http://www.bitkeeper.com/">BitKeeper</a></strong>, invoke the
 following command to obtain PETSc.
       <ul>
         <li><font color="#800000">bk&nbsp; clone&nbsp;
 bk://petsc.bkbits.net/petsc-dev</font></li>
+        <li><font color="#800000">cd petsc-dev/python</font></li>
+        <li><font color="#800000">bk clone
+bk://sidl.bkbits.net/BuildSystem<br>
+          </font></li>
       </ul>
 For additional help on using BitKeeper you can use
       <ul>
@@ -121,8 +128,38 @@ repository. You will need to send an SSH 1 public
 key to <a href="mailot:petsc-maint@mcs.anl.gov">petsc-maint</a> along
 with a description of the changes. <a
  href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Documentation</a>
-for the development version (updated nightly).
-      <p></p>
+for the development version (updated nightly).<br>
+      <br>
+4) Using <a href="http://darcs.net/"><span style="font-weight: bold;">Darcs</span></a>
+obtain the PETSc repository snapshot. We export our BitKeeper
+repository into
+darcs a couple of times a day. <br>
+      <ul>
+        <li><font color="#800000">darcs get --partial
+http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev-darcs
+petsc-dev</font></li>
+        <li><font color="#800000">cd petsc-dev/python</font></li>
+        <li><font color="#800000">darcs get</font><font color="#800000">
+--partial
+http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/BuildSystem-darcs
+BuildSystem<br>
+          </font></li>
+      </ul>
+To update PETSc <br>
+      <ul>
+        <li><font color="#800000">cd petsc-dev<br>
+          </font></li>
+        <li><font color="#800000">darcs pull</font></li>
+        <li><font color="#800000">cd python/BuildSystem</font></li>
+        <li><font color="#800000">hdarcs pull</font><br>
+        </li>
+      </ul>
+      <p style="font-weight: bold;" align="left"><span
+ style="font-weight: normal;">Note: this is highly </span><span
+ style="color: rgb(0, 0, 102); font-weight: normal;">experimental</span><span
+ style="font-weight: normal;"> and useful only if a PETSc snapshot with
+revision history is necessary [and you don't have access to BitKeeper]</span><br>
+      </p>
       <p style="font-weight: bold;" align="left"><big>Compiling and
 Using the Development Copy:</big></p>
 Use config/configure.py <a
@@ -170,8 +207,8 @@ your PATH you can build the documentation with:<br>
       </big><br>
 PETSc configure relies on <a
  href="http://sidl.bkbits.net:8080/BuildSystem">BuildSystem</a> package
-which is in a different
-bitkeeper repository <b>bk://sidl.bkbits.net/BuildSystem</b>. This
+which is in a different BitKeeper repository <b>bk://sidl.bkbits.net/BuildSystem</b>.
+This
 package is automatically downloaded (into petsc-dev/python) the first
 time config/configure.py is invoked.<br>
       <br>
