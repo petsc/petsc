@@ -85,6 +85,9 @@ void TOPS::Solver_Structured_impl::_ctor() {
 void TOPS::Solver_Structured_impl::_dtor() {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._dtor)
   if (this->dmmg) {DMMGDestroy(this->dmmg);}
+  if (this->startedpetsc) {
+    PetscFinalize();
+  }
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._dtor)
 }
 
@@ -239,6 +242,36 @@ throw ()
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setLevels)
   this->levels = levels;
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setLevels)
+}
+
+/**
+ * Method:  Initialize[]
+ */
+void
+TOPS::Solver_Structured_impl::Initialize (
+  /* in */ ::sidl::array< ::std::string> args ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.Initialize)
+  PetscTruth initialized;
+  PetscInitialized(&initialized);
+  if (initialized) {
+    this->startedpetsc = 0;
+    return;
+  }
+  this->startedpetsc = 1;
+  int          argc = args.upper(0) + 1;
+  char       **argv = new char* [argc];
+  std::string  arg;
+
+  for(int i = 0; i < argc; i++) {
+    arg     = args[i];
+    argv[i] = new char [arg.length()+1];
+    arg.copy(argv[i], arg.length(), 0);
+    argv[i][arg.length()] = 0;
+  }
+  int    ierr = PetscInitialize(&argc,&argv,0,0);
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.Initialize)
 }
 
 /**

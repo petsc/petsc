@@ -185,6 +185,19 @@ throw ()
 }
 
 /**
+ * Method:  Initialize[]
+ */
+void
+TOPS::Solver_Sliced_impl::Initialize (
+  /* in */ ::sidl::array< ::std::string> args ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Sliced.Initialize)
+  // Insert-Code-Here {TOPS.Solver_Sliced.Initialize} (Initialize method)
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Sliced.Initialize)
+}
+
+/**
  * Method:  setSystem[]
  */
 void

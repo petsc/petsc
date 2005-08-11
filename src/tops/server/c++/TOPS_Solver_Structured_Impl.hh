@@ -70,6 +70,7 @@ namespace TOPS {
     DAStencilType  stencil_type;
     DAPeriodicType wrap;
     TOPS::System   system;
+    int            startedpetsc;
     // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._implementation)
 
   private:
@@ -184,6 +185,16 @@ namespace TOPS {
     void
     setLevels (
       /* in */ int32_t levels
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    Initialize (
+      /* in */ ::sidl::array< ::std::string> args
     )
     throw () 
     ;

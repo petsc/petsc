@@ -1,14 +1,5 @@
 
-
 package TOPS version 0.0.0 {
-
-  // Holder for package initialization and termination, e.g. PetscInitialize()/Finalize()
-
-  class State {
-      void Initialize(in array<string,1> args);
-      void Finalize();
-  }
-
 
   class Vector {
       Vector        clone();
@@ -25,6 +16,8 @@ package TOPS version 0.0.0 {
   }
 
   interface Solver {
+      // Pass in command line arguments to Solver
+      void   Initialize(in array<string,1> args);
       void   setSystem(in System system);
       System getSystem();
       void   solve();

@@ -192,6 +192,16 @@ namespace TOPS {
      * user defined non-static method.
      */
     void
+    Initialize (
+      /* in */ ::sidl::array< ::std::string> args
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
     setSystem (
       /* in */ ::TOPS::System system
     )
