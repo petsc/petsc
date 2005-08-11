@@ -18,7 +18,7 @@ int main(int argc,char **args)
   PetscMPIInt       rank,size;
   PetscErrorCode    ierr;
   const PetscInt    *cols1,*cols2;
-  PetscScalar       vals1[4],vals2[4],v,mone = -1.0;
+  PetscScalar       vals1[4],vals2[4],v;
   const PetscScalar *v1,*v2;
   PetscTruth        flg;
 

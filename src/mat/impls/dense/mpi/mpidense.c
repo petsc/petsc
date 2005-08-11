@@ -1279,9 +1279,8 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   ierr = MatCreate(A->comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,A->m,A->n,A->M,A->N);CHKERRQ(ierr);
   ierr = MatSetType(mat,A->type_name);CHKERRQ(ierr);
-  ierr              = PetscNew(Mat_MPIDense,&a);CHKERRQ(ierr);
-  mat->data         = (void*)a;
-  ierr              = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+  a                 = mat->data;
+  ierr              = PetscMemcpy(mat->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   mat->factor       = A->factor;
   mat->assembled    = PETSC_TRUE;
   mat->preallocated = PETSC_TRUE;
@@ -1293,7 +1292,7 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   mat->insertmode = NOT_SET_VALUES;
   a->nvec         = oldmat->nvec;
   a->donotstash   = oldmat->donotstash;
-  ierr            = PetscMalloc((a->size+1)*sizeof(PetscInt),&a->rowners);CHKERRQ(ierr);
+ 
   ierr = PetscLogObjectMemory(mat,(a->size+1)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_MPIDense));CHKERRQ(ierr);
   ierr = PetscMemcpy(a->rowners,oldmat->rowners,(a->size+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = MatStashCreate_Private(A->comm,1,&mat->stash);CHKERRQ(ierr);
