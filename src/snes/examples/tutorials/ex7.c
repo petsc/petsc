@@ -267,13 +267,8 @@ PetscErrorCode FormInitialGuess(DMMG dmmg, Vec U)
       }
     }
   }
-  for(i = xs; i < xs+xm; i++) {
-    for(j = ys; j < ys+ym; j++) {
-      printf("uInit[%d][%d] = (%g, %g, %g) ", i, j, u[j][i].u, u[j][i].v, u[j][i].p);
-    }
-    printf("\n");
-  }
   ierr = DAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  ierr = PrintVector(dmmg, U);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -289,9 +284,9 @@ PetscErrorCode PrintVector(DMMG dmmg, Vec U)
   PetscFunctionBegin;
   ierr = DAVecGetArray(da,U,&u);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  for(i = xs; i < xs+xm; i++) {
-    for(j = ys; j < ys+ym; j++) {
-      printf("u[%d][%d] = (%g, %g, %g) ", i, j, u[j][i].u, u[j][i].v, u[j][i].p);
+  for(j = ys+ym-1; j >= ys; j--) {
+    for(i = xs; i < xs+xm; i++) {
+      printf("u[%d][%d] = (%g, %g, %g) ", j, i, u[j][i].u, u[j][i].v, u[j][i].p);
     }
     printf("\n");
   }
@@ -540,9 +535,9 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,AppCtx *u
     }
   }
 
-  for(i = info->xs; i < info->xs+info->xm; i++) {
-    for(j = info->ys; j < info->ys+info->ym; j++) {
-      printf("f[%d][%d] = (%g, %g, %g) ", i, j, f[j][i].u, f[j][i].v, f[j][i].p);
+  for(j = info->ys+info->ym-1; j >= info->ys; j--) {
+    for(i = info->xs; i < info->xs+info->xm; i++) {
+      printf("f[%d][%d] = (%g, %g, %g) ", j, i, f[j][i].u, f[j][i].v, f[j][i].p);
     }
     printf("\n");
   }
@@ -797,6 +792,7 @@ PetscErrorCode L_2Error(DA da, Vec fVec, double *error, AppCtx *user)
   *error = 0.0;
   hx     = 1.0/(PetscReal)(info.mx-1);
   hy     = 1.0/(PetscReal)(info.my-1);
+  hxhy   = hx*hy;
   for (j=info.ys; j<info.ys+info.ym-1; j++) {
     for (i=info.xs; i<info.xs+info.xm-1; i++) {
       uLocal[0] = f[j][i];
@@ -811,8 +807,8 @@ PetscErrorCode L_2Error(DA da, Vec fVec, double *error, AppCtx *user)
         u.u = uLocal[0].u*phi[0]+ uLocal[1].u*phi[1] + uLocal[2].u*phi[2]+ uLocal[3].u*phi[3];
         u.v = uLocal[0].v*phi[0]+ uLocal[1].v*phi[1] + uLocal[2].v*phi[2]+ uLocal[3].v*phi[3];
         u.p = uLocal[0].p*phi[0]+ uLocal[1].p*phi[1] + uLocal[2].p*phi[2]+ uLocal[3].p*phi[3];
-        x = quadPoints[q*2] + hx*i;
-        y = quadPoints[q*2+1] + hy*j;
+        x = (quadPoints[q*2] + i)*hx;
+        y = (quadPoints[q*2+1] + j)*hy;
         ierr = ExactSolution(x, y, &uExact);CHKERRQ(ierr);
         *error += hxhy*quadWeights[q]*((u.u - uExact.u)*(u.u - uExact.u) + (u.v - uExact.v)*(u.v - uExact.v) + (u.p - uExact.p)*(u.p - uExact.p));
       }
