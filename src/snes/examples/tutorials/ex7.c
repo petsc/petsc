@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   SNESConvergedReason    reason;
   PetscTruth             drawContours;         /* flag for drawing contours */
   PetscErrorCode         ierr;
-  PetscReal              lambda_max = 6.81, lambda_min = 0.0;
+  PetscReal              lambda_max = 6.81, lambda_min = 0.0, error;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -166,6 +166,8 @@ int main(int argc,char **argv)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D, %s\n",its,SNESConvergedReasons[reason]);CHKERRQ(ierr);
+  ierr = L_2Error(DMMGGetDA(dmmg), DMMGGetx(dmmg), error, user);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"L_2 error in the solution: %g\n", error);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Visualize the solution
@@ -191,6 +193,22 @@ int main(int argc,char **argv)
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscBagDestroy(bag);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ExactSolution"
+PetscErrorCode ExactSolution(PetscReal x, PetscReal y, Field *u)
+{
+  PetscFunctionBegin;
+#if 1
+  u->u = x - 2;
+  u->v = 0.0;
+#else
+  u->u = x*x*y;
+  u->v = -x*y*y;
+  u->p = 2.0*x*y;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -240,28 +258,15 @@ PetscErrorCode FormInitialGuess(DMMG dmmg, Vec U)
       x = i*hx;
       y = j*hy;
       printf("i: %d j: %d x: %g y: %g\n", i, j, x, y);
-#if 1
       if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
         /* boundary conditions are all zero Dirichlet */
         u[j][i].u = 0.0; 
         u[j][i].v = 0.0; 
         u[j][i].p = 0.0; 
       } else {
-#endif
-#if 1
         u[j][i].u = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
         u[j][i].v = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
-#else
-        /*   /  x^2 y \
-             | -x y^2 |
-             \   2xy  / */
-        u[j][i].u = x*x*y;
-        u[j][i].v = -x*y*y;
-        u[j][i].p = 2.0*x*y;
-#endif
-#if 1
       }
-#endif
     }
   }
   for(i = xs; i < xs+xm; i++) {
@@ -393,7 +398,8 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,AppCtx *u
 {
   Field          uLocal[4];
   Field          rLocal[4];
-  PetscReal      alpha,lambda,hx,hy,hxhy,sc,coordX,coordY;
+  Field          uExact;
+  PetscReal      alpha,lambda,hx,hy,hxhy,sc;
   PetscInt       i,j,k,l;
   PetscErrorCode ierr;
 
@@ -469,52 +475,24 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,AppCtx *u
       f[j+1][i].v   += rLocal[3].v;
       f[j+1][i].p   += rLocal[3].p;
       if (i == 0 || j == 0) {
-        coordX = i*hx;
-        coordY = j*hy;
-        if (i == 0) {
-          f[j][i].u = x[j][i].u - coordX + 2;
-          f[j][i].v = x[j][i].v;
-        }
-        if (j == 0) {
-          f[j][i].u = x[j][i].u - coordX + 2;
-          f[j][i].v = x[j][i].v;
-        }
+        ierr = ExactSolution(i*hx, j*hy, &uExact);CHKERRQ(ierr);
+        f[j][i].u = x[j][i].u - uExact.u;
+        f[j][i].v = x[j][i].v - uExact.v;
       }
       if ((i == info->mx-2) || (j == 0)) {
-        coordX = (i+1)*hx;
-        coordY = j*hy;
-        if (i == info->mx-2) {
-          f[j][i+1].u = x[j][i+1].u - coordX + 2;
-          f[j][i+1].v = x[j][i+1].v;
-        }
-        if (j == 0) {
-          f[j][i+1].u = x[j][i+1].u - coordX + 2;
-          f[j][i+1].v = x[j][i+1].v;
-        }
+        ierr = ExactSolution((i+1)*hx, j*hy, &uExact);CHKERRQ(ierr);
+        f[j][i+1].u = x[j][i+1].u - uExact.u;
+        f[j][i+1].v = x[j][i+1].v - uExact.v;
       }
       if ((i == info->mx-2) || (j == info->my-2)) {
-        coordX = (i+1)*hx;
-        coordY = (j+1)*hy;
-        if (i == info->mx-2) {
-          f[j+1][i+1].u = x[j+1][i+1].u - coordX + 2;
-          f[j+1][i+1].v = x[j+1][i+1].v;
-        }
-        if (j == info->my-2) {
-          f[j+1][i+1].u = x[j+1][i+1].u - coordX + 2;
-          f[j+1][i+1].v = x[j+1][i+1].v;
-        }
+        ierr = ExactSolution((i+1)*hx, (j+1)*hy, &uExact);CHKERRQ(ierr);
+        f[j+1][i+1].u = x[j+1][i+1].u - uExact.u;
+        f[j+1][i+1].v = x[j+1][i+1].v - uExact.v;
       }
       if ((i == 0) || (j == info->my-2)) {
-        coordX = i*hx;
-        coordY = (j+1)*hy;
-        if (i == 0) {
-          f[j+1][i].u = x[j+1][i].u - coordX + 2;
-          f[j+1][i].v = x[j+1][i].v;
-        }
-        if (j == info->my-2) {
-          f[j+1][i].u = x[j+1][i].u - coordX + 2;
-          f[j+1][i].v = x[j+1][i].v;
-        }
+        ierr = ExactSolution(i*hx, (j+1)*hy, &uExact);CHKERRQ(ierr);
+        f[j+1][i].u = x[j+1][i].u - uExact.u;
+        f[j+1][i].v = x[j+1][i].v - uExact.v;
       }
     }
   }
@@ -734,11 +712,8 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info, Field **x, Mat jac, AppCtx *
 }
 
 /* Integrate the L_2 error of our solution over each face
-   /  x^2 y \
-   | -x y^2 |
-   \   2xy  /
 */
-PetscErrorCode L_2_Error(DA da, Vec fVec, double *error, AppCtx *user)
+PetscErrorCode L_2Error(DA da, Vec fVec, double *error, AppCtx *user)
 {
   DALocalInfo info;
   Vec fLocalVec;
@@ -774,9 +749,7 @@ PetscErrorCode L_2_Error(DA da, Vec fVec, double *error, AppCtx *user)
         u.p = uLocal[0].p*phi[0]+ uLocal[1].p*phi[1] + uLocal[2].p*phi[2]+ uLocal[3].p*phi[3];
         x = quadPoints[q*2] + hx*i;
         y = quadPoints[q*2+1] + hy*j;
-        uExact.u = x*x*y;
-        uExact.v = -x*y*y;
-        uExact.p = 2.0*x*y;
+        ierr = ExactSolution(x, y, &uExact);CHKERRQ(ierr);
         *error += hxhy*quadWeights[q]*((u.u - uExact.u)*(u.u - uExact.u) + (u.v - uExact.v)*(u.v - uExact.v) + (u.p - uExact.p)*(u.p - uExact.p));
       }
     }
