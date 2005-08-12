@@ -15,17 +15,18 @@ typedef struct {
   PLA_Obj        A,v,pivots;
   PLA_Template   templ;
   MPI_Datatype   datatype;
-  PetscInt       nb;
+  PetscInt       nb,ierror,rstart;
   VecScatter     ctx;
   IS             is_pla,is_petsc;
-  PetscInt       nref;
   PetscTruth     pla_solved;
+  MatStructure   flg;
+  PetscMPIInt    nprows,npcols;
 
   /* A few function pointers for inheritance */
   PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
   PetscErrorCode (*MatView)(Mat,PetscViewer);
   PetscErrorCode (*MatAssemblyEnd)(Mat,MatAssemblyType);
-  PetscErrorCode (*MatLUFactor)(Mat,IS,IS,MatFactorInfo*);
+  PetscErrorCode (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
   PetscErrorCode (*MatDestroy)(Mat);
 
   /* Flag to clean up (non-global) Plapack objects during Destroy */
@@ -49,11 +50,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Plapack_Base(Mat A,MatType type,Mat
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
   /* Reset the original function pointers */
-  B->ops->duplicate    = lu->MatDuplicate;
-  B->ops->view         = lu->MatView;
-  B->ops->assemblyend  = lu->MatAssemblyEnd;
-  B->ops->lufactor     = lu->MatLUFactor;
-  B->ops->destroy      = lu->MatDestroy;
+  B->ops->duplicate        = lu->MatDuplicate;
+  B->ops->view             = lu->MatView;
+  B->ops->assemblyend      = lu->MatAssemblyEnd;
+  B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
+  B->ops->destroy          = lu->MatDestroy;
 
   ierr = PetscFree(lu);CHKERRQ(ierr);
 
@@ -105,11 +106,10 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
   MPI_Comm       comm = A->comm;
   Mat_Plapack    *lu = (Mat_Plapack*)A->spptr;
   PetscErrorCode ierr;
-  PetscMPIInt    size;
   PetscInt       M=A->M,m=A->m,rstart;
   PetscScalar    *array;
   PetscReal      d_one = 1.0;
-  PetscMPIInt    nproc,rank;
+  PetscMPIInt    size,rank;
   PLA_Obj        x_pla = NULL;
   PetscInt       loc_m,loc_stride;
   PetscScalar    *loc_buf;
@@ -117,18 +117,17 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
   PetscInt       i,j,*idx_pla,*idx_petsc;
    
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* Create PLAPACK vector objects, then copy b into PLAPACK b */
   PLA_Mvector_create(lu->datatype,M,1,lu->templ,PLA_ALIGN_FIRST,&lu->v);  
-  ierr = MatGetOwnershipRange(A,&rstart,PETSC_NULL);CHKERRQ(ierr);
 
   /* Copy b into rhs_pla */
   PLA_API_begin();   
   PLA_Obj_API_open(lu->v);
   ierr = VecGetArray(b,&array);CHKERRQ(ierr);
-  PLA_API_axpy_vector_to_global(m,&d_one,(void *)array,1,lu->v,rstart);
+  PLA_API_axpy_vector_to_global(m,&d_one,(void *)array,1,lu->v,lu->rstart);
   ierr = VecRestoreArray(b,&array);CHKERRQ(ierr);
   PLA_Obj_API_close(lu->v);
   PLA_API_end(); 
@@ -147,8 +146,8 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
   PLA_Obj_local_buffer(lu->v, (void**)&loc_buf);
   PLA_Obj_local_stride(lu->v, &loc_stride);
   /*
-  PetscPrintf(PETSC_COMM_SELF," [%d] b - local_m %d local_stride %d, loc_buf: %g %g\n",rank,loc_m,loc_stride,loc_buf[0],loc_buf[(loc_m-1)*loc_stride]); 
-  */
+    PetscPrintf(PETSC_COMM_SELF," [%d] b - local_m %d local_stride %d, loc_buf: %g %g, nb: %d\n",rank,loc_m,loc_stride,loc_buf[0],loc_buf[(loc_m-1)*loc_stride],lu->nb); */
+  
 
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,loc_m*loc_stride,loc_buf,&loc_x);CHKERRQ(ierr);
   if (!lu->pla_solved){
@@ -185,17 +184,17 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
 }
 
 #undef __FUNCT__   
-#define __FUNCT__ "MatLUFactor_Plapack"
-PetscErrorCode MatLUFactor_Plapack(Mat A,IS row,IS col,MatFactorInfo *info)
+#define __FUNCT__ "MatLUFactorNumeric_Plapack"
+PetscErrorCode MatLUFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F)
 {
-  Mat_Plapack    *lu = (Mat_Plapack*)A->spptr;
+  Mat_Plapack    *lu = (Mat_Plapack*)(*F)->spptr;
   PetscErrorCode ierr;
   PetscInt       M=A->M,m=A->m,rstart;
   MPI_Comm       comm=A->comm,comm_2d;
   MPI_Datatype   datatype;
   PLA_Template   templ = PETSC_NULL;
-  PetscMPIInt    size,rank,nprows,npcols;
-  PetscInt       i,j,nb_alg,ierror,nb,info_pla=0;
+  PetscMPIInt    size,rank;
+  PetscInt       i,j,info_pla=0;
   PetscScalar    *array,one = 1.0;
   PLA_Obj        A_pla=NULL,pivots=NULL;
 
@@ -203,65 +202,107 @@ PetscErrorCode MatLUFactor_Plapack(Mat A,IS row,IS col,MatFactorInfo *info)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
+  /* Create PLAPACK matrix object */
+  PLA_Matrix_create(lu->datatype,M,M,lu->templ,PLA_ALIGN_FIRST,PLA_ALIGN_FIRST,&lu->A);  
+  PLA_Mvector_create(MPI_INT,M,1,lu->templ,PLA_ALIGN_FIRST,&lu->pivots);
+
+  /* Copy A into lu->A */
+  PLA_API_begin();
+  PLA_Obj_API_open(lu->A);  
+  ierr = MatGetOwnershipRange(A,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetArray(A,&array);CHKERRQ(ierr);
+  PLA_API_axpy_matrix_to_global(m,M, &one,(void *)array,m,lu->A,rstart,0); 
+  ierr = MatRestoreArray(A,&array);CHKERRQ(ierr);
+  PLA_Obj_API_close(lu->A); 
+  PLA_API_end(); 
+
+  /* Factor P A -> L U overwriting lower triangular portion of A with L, upper, U */
+  info_pla = PLA_LU(lu->A,lu->pivots);
+  if (info_pla != 0) 
+    SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot encountered at row %d from PLA_LU()",info_pla);
+
+  lu->CleanUpPlapack = PETSC_TRUE;
+  lu->rstart         = rstart;
+  
+  (*F)->ops->solve   = MatSolve_Plapack; 
+  (*F)->factor       = FACTOR_LU;
+  (*F)->assembled    = PETSC_TRUE;  /* required by -ksp_view */
+
+  lu->flg            = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
+
+/* Note the Petsc r and c permutations are ignored */
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorSymbolic_Plapack"
+PetscErrorCode MatLUFactorSymbolic_Plapack(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+{
+  Mat            B;
+  Mat_Plapack    *lu;   
+  PetscErrorCode ierr;
+  PetscInt       M=A->M,N=A->N;
+  MPI_Comm       comm=A->comm,comm_2d;
+  PetscMPIInt    size,rank;
+  PetscInt       ierror,nb;
+
+  PetscFunctionBegin;
+  /* Create the factorization matrix */
+  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->m,A->n,M,N);CHKERRQ(ierr);
+  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+
+  B->ops->lufactornumeric  = MatLUFactorNumeric_Plapack;
+  B->ops->solve            = MatSolve_Plapack;
+  B->factor                = FACTOR_LU;  
+
+  lu = (Mat_Plapack*)(B->spptr);
+
   /* Set default Plapack parameters */
-  nprows = size; npcols = 1; 
-  nb_alg = 1; ierror = 1;
-  nb     = M/size;
-  if (M - nb*size) nb++; /* without cyclic distribution */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nb",&nb,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  lu->nprows = size; lu->npcols = 1; 
+  ierror = 0;
+  lu->nb     = M/size;
+  if (M - lu->nb*size) lu->nb++; /* without cyclic distribution */
+ 
+  /* Set runtime options */
+  ierr = PetscOptionsBegin(A->comm,A->prefix,"PLAPACK Options","Mat");CHKERRQ(ierr);
+  /* Give wrong solution when both nprows and npcols are larger than 1! Enable these options when the problem is fixed */
+  /*
+  ierr = PetscOptionsInt("-mat_plapack_nprows","row dimension of 2D processor mesh","None",lu->nprows,&lu->nprows,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_plapack_npcols","column dimension of 2D processor mesh","None",lu->npcols,&lu->npcols,PETSC_NULL);CHKERRQ(ierr);
+  */
+  ierr = PetscOptionsInt("-mat_plapack_nb","block size of template vector","None",lu->nb,&lu->nb,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsInt("-mat_plapack_ckerror","error checking flags","None",ierror,&ierror,PETSC_NULL);CHKERRQ(ierr);  
+  PetscOptionsEnd(); 
+
   if ( ierror ){
     PLA_Set_error_checking(ierror,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE );
   } else {
     PLA_Set_error_checking(ierror,PETSC_FALSE,PETSC_FALSE,PETSC_FALSE );
   }
-  pla_Environ_set_nb_alg(PLA_OP_ALL_ALG,nb_alg);
+  lu->ierror = ierror;
 
   /* Create a 2D communicator */
-  PLA_Comm_1D_to_2D(comm,nprows,npcols,&comm_2d); 
+  PLA_Comm_1D_to_2D(comm,lu->nprows,lu->npcols,&comm_2d); 
 
   /* Initialize PLAPACK */
   PLA_Init(comm_2d);
 
   /* Create object distribution template */
-  PLA_Temp_create(nb, 0, &templ);
+  PLA_Temp_create(lu->nb, 0, &lu->templ);
 
-  /* Set the datatype : MPI_DOUBLE, MPI_FLOAT or MPI_DOUBLE_COMPLEX */
+
+  /* Set the datatype */
 #if defined(PETSC_USE_COMPLEX)
-  datatype = MPI_DOUBLE_COMPLEX;
+  lu->datatype = MPI_DOUBLE_COMPLEX;
 #else
-  datatype = MPI_DOUBLE;
+  lu->datatype = MPI_DOUBLE;
 #endif
 
-  /* Create PLAPACK matrix object */
-  PLA_Matrix_create(datatype,M,M,templ,PLA_ALIGN_FIRST,PLA_ALIGN_FIRST,&A_pla);  
-  PLA_Mvector_create(MPI_INT,M,1,templ,PLA_ALIGN_FIRST,&pivots);
-
-  /* Copy A into A_pla */
-  PLA_API_begin();
-  PLA_Obj_API_open(A_pla);  
-  ierr = MatGetOwnershipRange(A,&rstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetArray(A,&array);CHKERRQ(ierr);
-  PLA_API_axpy_matrix_to_global(m,M, &one,(void *)array,m,A_pla,rstart,0); 
-  ierr = MatRestoreArray(A,&array);CHKERRQ(ierr);
-  PLA_Obj_API_close(A_pla); 
-  PLA_API_end(); 
-
-  /* Factor P A -> L U overwriting lower triangular portion of A with L, upper, U */
-  info_pla = PLA_LU(A_pla,pivots);
-  if (info_pla != 0) 
-    SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot encountered at row %d from PLA_LU()",info_pla);
-
-  lu->A              = A_pla;
-  lu->pivots         = pivots;
-  lu->templ          = templ;
-  lu->datatype       = datatype;
-  lu->nb             = nb;
-  lu->CleanUpPlapack = PETSC_TRUE;
   lu->pla_solved     = PETSC_FALSE; /* MatSolve_Plapack() is called yet */
-  
-  A->ops->solve      = MatSolve_Plapack; 
-  A->factor          = FACTOR_LU;
-  A->assembled       = PETSC_TRUE;  /* required by -ksp_view */
+  lu->flg            = DIFFERENT_NONZERO_PATTERN;
+  lu->CleanUpPlapack = PETSC_TRUE;
+  *F                 = B;
   PetscFunctionReturn(0);
 }
 
@@ -274,8 +315,8 @@ PetscErrorCode MatAssemblyEnd_Plapack(Mat A,MatAssemblyType mode)
 
   PetscFunctionBegin;
   ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-  lu->MatLUFactor  = A->ops->lufactor;
-  A->ops->lufactor = MatLUFactor_Plapack;
+  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
+  A->ops->lufactorsymbolic = MatLUFactorSymbolic_Plapack;
   PetscFunctionReturn(0);
 }
 
@@ -283,34 +324,17 @@ PetscErrorCode MatAssemblyEnd_Plapack(Mat A,MatAssemblyType mode)
 #define __FUNCT__ "MatFactorInfo_Plapack"
 PetscErrorCode MatFactorInfo_Plapack(Mat A,PetscViewer viewer)
 {
-  Mat_Plapack  *lu=(Mat_Plapack*)A->spptr;
+  Mat_Plapack       *lu=(Mat_Plapack*)A->spptr;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-
   /* check if matrix is plapack type */
   if (A->ops->solve != MatSolve_Plapack) PetscFunctionReturn(0);
 
-  ierr = PetscViewerASCIIPrintf(viewer,"Plapack run parameters:\n");CHKERRQ(ierr);
-#ifdef TMP
-  ierr = PetscViewerASCIIPrintf(viewer,"  Equilibrate matrix %s \n",PetscTruths[options.Equil != NO]);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Matrix input mode %d \n",lu->MatInputMode);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Replace tiny pivots %s \n",PetscTruths[options.ReplaceTinyPivot != NO]);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Use iterative refinement %s \n",PetscTruths[options.IterRefine == DOUBLE]);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Processors in row %d col partition %d \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Row permutation %s \n",(options.RowPerm == NOROWPERM) ? "NATURAL": "LargeDiag");CHKERRQ(ierr);
-  if (options.ColPerm == NATURAL) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation NATURAL\n");CHKERRQ(ierr);
-  } else if (options.ColPerm == MMD_AT_PLUS_A) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation MMD_AT_PLUS_A\n");CHKERRQ(ierr);
-  } else if (options.ColPerm == MMD_ATA) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation MMD_ATA\n");CHKERRQ(ierr);
-  } else if (options.ColPerm == COLAMD) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation COLAMD\n");CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Unknown column permutation");
-  }
-#endif
+  ierr = PetscViewerASCIIPrintf(viewer,"PLAPACK run parameters:\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Processor mesh: nprows %d, npcols %d\n",lu->nprows, lu->npcols);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Distr. block size nb: %d \n",lu->nb);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Error checking: %d\n",lu->ierror);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -324,8 +348,7 @@ PetscErrorCode MatView_Plapack(Mat A,PetscViewer viewer)
   Mat_Plapack       *lu=(Mat_Plapack*)(A->spptr);
 
   PetscFunctionBegin;
-  ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
-  
+  /* ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr); MatView_MPIDense() crash! */ 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -356,7 +379,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Base_Plapack(Mat A,MatType type,Mat
   lu->MatDuplicate         = A->ops->duplicate;
   lu->MatView              = A->ops->view;
   lu->MatAssemblyEnd       = A->ops->assemblyend;
-  lu->MatLUFactor          = A->ops->lufactor;
+  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
   lu->MatDestroy           = A->ops->destroy;
   lu->CleanUpPlapack       = PETSC_FALSE;
 
@@ -364,7 +387,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Base_Plapack(Mat A,MatType type,Mat
   B->ops->duplicate        = MatDuplicate_Plapack;
   B->ops->view             = MatView_Plapack;
   B->ops->assemblyend      = MatAssemblyEnd_Plapack;
-  B->ops->lufactor         = MatLUFactor_Plapack;
+  B->ops->lufactorsymbolic = MatLUFactorSymbolic_Plapack;
   B->ops->destroy          = MatDestroy_Plapack;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) { 
