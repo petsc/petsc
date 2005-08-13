@@ -23,8 +23,10 @@ void PETSC_STDCALL aoview_(AO *ao,PetscViewer *viewer, PetscErrorCode *ierr)
 
 void PETSC_STDCALL aocreatebasic_(MPI_Comm *comm,PetscInt *napp,PetscInt *myapp,PetscInt *mypetsc,AO *aoout,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLINTEGER(myapp);
-  CHKFORTRANNULLINTEGER(mypetsc);
+  if (*napp) {
+    CHKFORTRANNULLINTEGER(myapp);
+    CHKFORTRANNULLINTEGER(mypetsc);
+  }
   *ierr = AOCreateBasic((MPI_Comm)PetscToPointerComm(*comm),*napp,myapp,mypetsc,aoout);
 }
 
