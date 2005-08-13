@@ -249,7 +249,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
   /*
      If mypetsc is 0 then use "natural" numbering 
   */
-  if (!mypetsc) {
+  if (napp && !mypetsc) {
     start = disp[rank];
     ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
     for (i=0; i<napp; i++) {
