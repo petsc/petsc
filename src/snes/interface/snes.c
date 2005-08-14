@@ -859,7 +859,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES snes,Vec X,Mat *A,Ma
   ierr = PetscLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
   *flg = DIFFERENT_NONZERO_PATTERN;
   PetscStackPush("SNES user Jacobian function");
+  CHKMEMQ;
   ierr = (*snes->computejacobian)(snes,X,A,B,flg,snes->jacP);CHKERRQ(ierr);
+  CHKMEMQ;
   PetscStackPop;
   ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
   /* make sure user returned a correct Jacobian and preconditioner */
