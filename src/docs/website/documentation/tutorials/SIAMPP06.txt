@@ -14,6 +14,13 @@ III. Associated SIAM Conference:
 
 IV. Rationale
 
+  Many large-scale numerical simulations require the parallel
+generation and solution of algebraic systems of equations. There are a
+large number of available algorithms and software packages for solving
+these systems. The Portable Extensible Toolkit for Scientific
+computation (PETSc) provides a common interface for many of these
+solvers.
+
 V. Instructor(s):
 
    Barry Smith, Argonne National Laboratory, is one of the two original
@@ -23,6 +30,10 @@ V. Instructor(s):
    
 
 VI. Course Description
+
+  We will teach how one defines and solves large scale linear and 
+nonlinear algebraic equations arising from the discretization of PDEs
+using PETSc.
 
 VII. Level of the Material
 
@@ -42,4 +53,18 @@ Recommended Background
 
 Course Outline
 
-<List topics and subtopics and include approximate time devoted to them>
+  All attendees should bring a laptop (with compilers)
+
+  Introductory example (15 minutes)
+    Hands-on: Installing PETSc (25 minutes)
+  Using the solvers for structured grids (15 minutes)
+  Vectors and Matrices (30 minutes)
+  Using the solvers for unstructured grids (30 minutes)
+  Available preconditioners (30 minutes)
+    Hands-on: Experimenting with preconditioners (15 minutes)
+  Available Krylov methods (15 minutes)
+    Hands-on: Experimenting with Krylov (10 minutes)
+  Multigrid methods (30 minutes)
+    Hands-on: Experimenting with multigrid (15 minutes)  
+  Working with Python (15 minutes)
+  The TOPS Solver Component (15 minutes)
