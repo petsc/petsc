@@ -1095,7 +1095,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES snes)
 {
-  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1112,11 +1111,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES snes)
   if (snes->afine) {ierr = VecDestroy(snes->afine);CHKERRQ(ierr);}
   ierr = KSPDestroy(snes->ksp);CHKERRQ(ierr);
   if (snes->vwork) {ierr = VecDestroyVecs(snes->vwork,snes->nvwork);CHKERRQ(ierr);}
-  for (i=0; i<snes->numbermonitors; i++) {
-    if (snes->monitordestroy[i]) {
-      ierr = (*snes->monitordestroy[i])(snes->monitorcontext[i]);CHKERRQ(ierr);
-    }
-  }
+  ierr = SNESClearMonitor(snes);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1359,8 +1354,16 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMonitor(SNES snes,PetscErrorCode (*fun
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESClearMonitor(SNES snes)
 {
+  PetscErrorCode ierr;
+  PetscInt       i;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  for (i=0; i<snes->numbermonitors; i++) {
+    if (snes->monitordestroy[i]) {
+      ierr = (*snes->monitordestroy[i])(snes->monitorcontext[i]);CHKERRQ(ierr);
+    }
+  }
   snes->numbermonitors = 0;
   PetscFunctionReturn(0);
 }
