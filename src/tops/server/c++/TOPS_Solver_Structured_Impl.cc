@@ -58,6 +58,23 @@ static PetscErrorCode FormFunction(SNES snes,Vec u,Vec f,void *vdmmg)
   VecRestoreArray(f,0);
   PetscFunctionReturn(0);
 }
+
+static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
+{
+  PetscFunctionBegin;
+  TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
+  TOPS::System system = solver->getSystem();
+
+  int mx,my,mz;
+  DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
+  solver->setDimensionX(mx);
+  solver->setDimensionY(my);
+  solver->setDimensionZ(mz);
+  sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);;
+  ((TOPS::SystemComputeInitialGuess)system).computeInitialGuess(fa);
+  VecRestoreArray(f,0);
+  PetscFunctionReturn(0);
+}
 // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._includes)
 
 // user-defined constructor.
@@ -319,7 +336,16 @@ throw ()
     DACreate(PETSC_COMM_WORLD,this->dim,this->wrap,this->stencil_type,this->M,this->N,this->P,this->m,this->n,
              this->p,this->bs,this->s,PETSC_NULL,PETSC_NULL,PETSC_NULL,&this->da);
     DMMGSetDM(this->dmmg,(DM)this->da);
-    ierr = DMMGSetSNES(this->dmmg, FormFunction, 0);
+    TOPS::SystemComputeResidual residual = (TOPS::SystemComputeResidual) this->system;
+    if (residual._not_nil()) {
+      ierr = DMMGSetSNES(this->dmmg, FormFunction, 0);
+    } else {
+      //      ierr = DMMGSetKSP(this->dmmg,FormRHS,FormJacobian);
+    }
+    TOPS::SystemComputeInitialGuess guess = (TOPS::SystemComputeInitialGuess) this->system;
+    if (guess._not_nil()) {
+      ierr = DMMGSetInitialGuess(this->dmmg, FormInitialGuess);
+    }
   }
   this->system.initializeEverySolve();
   DMMGSolve(this->dmmg);

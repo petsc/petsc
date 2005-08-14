@@ -213,6 +213,38 @@ throw ()
   // DO-NOT-DELETE splicer.end(Ex2.System.initializeEverySolve)
 }
 
+/**
+ * Method:  computeInitialGuess[]
+ */
+void
+Ex2::System_impl::computeInitialGuess (
+  /* in */ ::sidl::array<double> x ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(Ex2.System.computeInitialGuess)
+  /*
+     Compute initial guess over the locally owned part of the grid
+     Initial condition is motionless fluid and equilibrium temperature
+  */
+  TOPS::Solver_Structured solver = this->solver;
+  int xs = x.lower(1);      // first grid point in X and Y directions on this process
+  int ys = x.lower(2);
+  int xm = x.length(1) - 1;       // number of local grid points in X and Y directions on this process
+  int ym = x.length(2) - 1;
+  int i,j;
+  double dx  = 1.0/(solver.getDimensionX()-1);
+  double grashof = this->grashof;  
+  for (j=ys; j<ys+ym; j++) {
+    for (i=xs; i<xs+xm; i++) {
+      x.set(U,i,j,0.0);
+      x.set(V,i,j,0.0);
+      x.set(OMEGA,i,j,0.0);
+      x.set(TEMP,i,j,(grashof>0)*i*dx);
+    }
+  }
+  // DO-NOT-DELETE splicer.end(Ex2.System.computeInitialGuess)
+}
+
 
 // DO-NOT-DELETE splicer.begin(Ex2.System._misc)
 // Insert-Code-Here {Ex2.System._misc} (miscellaneous code)
