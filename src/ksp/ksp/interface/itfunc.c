@@ -580,7 +580,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -592,11 +591,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
   if (ksp->ops->destroy) {
     ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
   }
-  for (i=0; i<ksp->numbermonitors; i++) {
-    if (ksp->monitordestroy[i]) {
-      ierr = (*ksp->monitordestroy[i])(ksp->monitorcontext[i]);CHKERRQ(ierr);
-    }
-  }
+  ierr = KSPClearMonitor(ksp);CHKERRQ(ierr);
   ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
   if (ksp->truediagonal) {ierr = VecDestroy(ksp->truediagonal);CHKERRQ(ierr);}
@@ -1231,8 +1226,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetMonitor(KSP ksp,PetscErrorCode (*monitor
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPClearMonitor(KSP ksp)
 {
+  PetscErrorCode ierr;
+  PetscInt       i;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  for (i=0; i<ksp->numbermonitors; i++) {
+    if (ksp->monitordestroy[i]) {
+      ierr = (*ksp->monitordestroy[i])(ksp->monitorcontext[i]);CHKERRQ(ierr);
+    }
+  }
   ksp->numbermonitors = 0;
   PetscFunctionReturn(0);
 }
