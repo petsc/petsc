@@ -937,7 +937,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetUp(TS ts)
 PetscErrorCode PETSCTS_DLLEXPORT TSDestroy(TS ts)
 {
   PetscErrorCode ierr;
-  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -949,11 +948,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDestroy(TS ts)
   if (ts->ksp) {ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
   ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
-  for (i=0; i<ts->numbermonitors; i++) {
-    if (ts->mdestroy[i]) {
-      ierr = (*ts->mdestroy[i])(ts->monitorcontext[i]);CHKERRQ(ierr);
-    }
-  }
+  ierr = TSClearMonitor(ts);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1473,8 +1468,16 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetMonitor(TS ts,PetscErrorCode (*monitor)(TS
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSClearMonitor(TS ts)
 {
+  PetscErrorCode ierr;
+  PetscInt       i;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  for (i=0; i<ts->numbermonitors; i++) {
+    if (ts->mdestroy[i]) {
+      ierr = (*ts->mdestroy[i])(ts->monitorcontext[i]);CHKERRQ(ierr);
+    }
+  }
   ts->numbermonitors = 0;
   PetscFunctionReturn(0);
 }

@@ -121,6 +121,16 @@ namespace Ex2 {
     void
     initializeEverySolve() throw () 
     ;
+    /**
+     * user defined non-static method.
+     */
+    void
+    computeInitialGuess (
+      /* in */ ::sidl::array<double> x
+    )
+    throw () 
+    ;
+
   };  // end class System_impl
 
 } // end namespace Ex2

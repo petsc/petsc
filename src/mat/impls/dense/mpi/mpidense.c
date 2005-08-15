@@ -7,6 +7,46 @@
 #include "src/mat/impls/dense/mpi/mpidense.h"    /*I   "petscmat.h"  I*/
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorSymbolic_MPIDense"
+PetscErrorCode MatLUFactorSymbolic_MPIDense(Mat A,IS row,IS col,MatFactorInfo *info,Mat *fact)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDuplicate_MPIDense(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_MPIDense"
+PetscErrorCode MatLUFactorNumeric_MPIDense(Mat A,MatFactorInfo *info_dummy,Mat *fact)
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"No support of numerical factorization for mpidense matrix type");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorSymbolic_MPIDense"
+PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat A,IS row,IS col,MatFactorInfo *info,Mat *fact)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDuplicate_MPIDense(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_MPIDense"
+PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat A,MatFactorInfo *info_dummy,Mat *fact)
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"no support of numerical factorization for mpidense matrix type");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatDenseGetLocalMatrix"
 /*@
 
@@ -965,10 +1005,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        MatSetOption_MPIDense,
        MatZeroEntries_MPIDense,
 /*25*/ MatZeroRows_MPIDense,
-       0,
-       0,
-       0,
-       0,
+       MatLUFactorSymbolic_MPIDense,
+       MatLUFactorNumeric_MPIDense,
+       MatCholeskyFactorSymbolic_MPIDense,
+       MatCholeskyFactorNumeric_MPIDense,
 /*30*/ MatSetUpPreallocation_MPIDense,
        0,
        0,

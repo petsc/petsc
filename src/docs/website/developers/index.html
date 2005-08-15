@@ -135,12 +135,12 @@ obtain the PETSc repository snapshot. We export our BitKeeper
 repository into
 darcs a couple of times a day. <br>
       <ul>
-        <li><font color="#800000">darcs get --partial
+        <li><font color="#800000">darcs get --partial --set-scripts-executable
 http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev-darcs
 petsc-dev</font></li>
         <li><font color="#800000">cd petsc-dev/python</font></li>
         <li><font color="#800000">darcs get</font><font color="#800000">
---partial
+--partial --set-scripts-executable
 http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/BuildSystem-darcs
 BuildSystem<br>
           </font></li>
@@ -151,14 +151,14 @@ To update PETSc <br>
           </font></li>
         <li><font color="#800000">darcs pull</font></li>
         <li><font color="#800000">cd python/BuildSystem</font></li>
-        <li><font color="#800000">hdarcs pull</font><br>
+        <li><font color="#800000">darcs pull</font><br>
         </li>
       </ul>
       <p style="font-weight: bold;" align="left"><span
  style="font-weight: normal;">Note: this is highly </span><span
  style="color: rgb(0, 0, 102); font-weight: normal;">experimental</span><span
  style="font-weight: normal;"> and useful only if a PETSc snapshot with
-revision history is necessary [and you don't have access to BitKeeper]</span><br>
+revision history is necessary [and you don't have access to BitKeeper but know how to use Darcs]</span><br>
       </p>
       <p style="font-weight: bold;" align="left"><big>Compiling and
 Using the Development Copy:</big></p>
