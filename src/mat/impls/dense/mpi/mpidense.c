@@ -13,7 +13,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIDense(Mat A,IS row,IS col,MatFactorInfo *i
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDuplicate_MPIDense(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
+  ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -28,12 +28,12 @@ PetscErrorCode MatLUFactorNumeric_MPIDense(Mat A,MatFactorInfo *info_dummy,Mat *
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MPIDense"
-PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat A,IS row,IS col,MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDuplicate_MPIDense(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
+  ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
