@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+if __name__ == '__main__':
+  import sys
+  sys.path.insert(0, /Users/barrysmith/petsc-dev)
+  import configure
+  configure_options = ['--with-fortran=1', '--with-python=1', '-PETSC_ARCH=a', '--with-shared=1', '--with-dynamic=1', '--with-external-packages-dir=/Users/barrysmith', '', '', '']
+  configure.petsc_configure(configure_options)
