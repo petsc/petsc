@@ -50,9 +50,16 @@ def processDir(tagfile,dirname,names):
     if status:
       raise RuntimeError("Error running etags "+output)
 
-  for name in ['SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto']:
-    if name in names:
-      names.remove(name)
+  # One-level unique dirs
+  for exname in ['SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib']:
+    if exname in names:
+      names.remove(exname)
+  #  Multi-level unique dirs - specify from toplevel
+  for exname in ['src/python/PETSc']:
+    for name in names:
+      filename=os.path.join(dirname,name)
+      if filename.find(exname) >=0:
+        names.remove(name)
   return
 
 def main():
