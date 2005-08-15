@@ -59,7 +59,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DSCPACK(Mat);
 #if defined(PETSC_HAVE_MATLAB)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Matlab(Mat);
 #endif
-EXTERN_C_END
 #if defined(PETSC_HAVE_PLAPACK)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Plapack(Mat);
 #endif

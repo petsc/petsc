@@ -1319,7 +1319,7 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   ierr = MatCreate(A->comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,A->m,A->n,A->M,A->N);CHKERRQ(ierr);
   ierr = MatSetType(mat,A->type_name);CHKERRQ(ierr);
-  a                 = mat->data;
+  a                 = (Mat_MPIDense*)mat->data;
   ierr              = PetscMemcpy(mat->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   mat->factor       = A->factor;
   mat->assembled    = PETSC_TRUE;
