@@ -414,7 +414,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   PetscMPIInt       size;
   superlu_options_t options;
   PetscTruth        flg;
-  const char        *ptype[] = {"MMD_AT_PLUS_A","NATURAL","MMD_ATA","COLAMD"}; 
+  const char        *ptype[] = {"MMD_AT_PLUS_A","NATURAL","MMD_ATA"}; 
   const char        *prtype[] = {"LargeDiag","NATURAL"}; 
 
   PetscFunctionBegin;
@@ -479,9 +479,6 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
         break;
       case 2:
         options.ColPerm = MMD_ATA;
-        break;
-      case 3:
-        options.ColPerm = COLAMD;
         break;
       }
     }
@@ -560,8 +557,6 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation MMD_AT_PLUS_A\n");CHKERRQ(ierr);
   } else if (options.ColPerm == MMD_ATA) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation MMD_ATA\n");CHKERRQ(ierr);
-  } else if (options.ColPerm == COLAMD) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation COLAMD\n");CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Unknown column permutation");
   }
@@ -681,7 +676,7 @@ PetscErrorCode MatDuplicate_SuperLU_DIST(Mat A, MatDuplicateOption op, Mat *M) {
 . -mat_superlu_dist_matinput <0,1> - matrix input mode; 0=global, 1=distributed
 . -mat_superlu_dist_equil - equilibrate the matrix
 . -mat_superlu_dist_rowperm <LargeDiag,NATURAL> - row permutation
-. -mat_superlu_dist_colperm <MMD_AT_PLUS_A,MMD_ATA,COLAMD,NATURAL> - column permutation
+. -mat_superlu_dist_colperm <MMD_AT_PLUS_A,MMD_ATA,NATURAL> - column permutation
 . -mat_superlu_dist_replacetinypivot - replace tiny pivots
 . -mat_superlu_dist_iterrefine - use iterative refinement
 - -mat_superlu_dist_statprint - print factorization information

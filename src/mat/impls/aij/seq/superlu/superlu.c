@@ -8,11 +8,11 @@
 
 EXTERN_C_BEGIN
 #if defined(PETSC_USE_COMPLEX)
-#include "zsp_defs.h"
+#include "slu_zdefs.h"
 #else
-#include "dsp_defs.h"
+#include "slu_ddefs.h"
 #endif  
-#include "util.h"
+#include "slu_util.h"
 EXTERN_C_END
 
 typedef struct {
