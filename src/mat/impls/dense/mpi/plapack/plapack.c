@@ -12,6 +12,7 @@ EXTERN_C_BEGIN
 EXTERN_C_END 
 
 typedef struct {
+  MPI_Comm       comm_2d;
   PLA_Obj        A,pivots;
   PLA_Template   templ;
   MPI_Datatype   datatype;
@@ -110,7 +111,7 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
   PetscInt       M=A->M,m=A->m,rstart,i,j,*idx_pla,*idx_petsc,loc_m,loc_stride;
   PetscScalar    *array;
   PetscReal      one = 1.0;
-  PetscMPIInt    size,rank;
+  PetscMPIInt    size,rank,r_rank,r_nproc,c_rank,c_nproc;;
   PLA_Obj        v_pla = NULL;
   PetscScalar    *loc_buf;
   Vec            loc_x;
@@ -155,12 +156,18 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
   */
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,loc_m*loc_stride,loc_buf,&loc_x);CHKERRQ(ierr);
   if (!lu->pla_solved){
+    
+    PLA_Temp_comm_row_info(lu->templ,&lu->comm_2d,&r_rank,&r_nproc);
+    PLA_Temp_comm_col_info(lu->templ,&lu->comm_2d,&c_rank,&c_nproc);
+    /* printf(" [%d] rank: %d %d, nproc: %d %d\n",rank,r_rank,c_rank,r_nproc,c_nproc); */
+
     /* Create IS and cts for VecScatterring */
     PLA_Obj_local_length(v_pla, &loc_m);
     PLA_Obj_local_stride(v_pla, &loc_stride);
     ierr = PetscMalloc((2*loc_m+1)*sizeof(PetscInt),&idx_pla);CHKERRQ(ierr);
     idx_petsc = idx_pla + loc_m;
-    rstart = rank*lu->nb;
+
+    rstart = (r_rank*c_nproc+c_rank)*lu->nb;
     for (i=0; i<loc_m; i+=lu->nb){
       j = 0; 
       while (j < lu->nb && i+j < loc_m){
@@ -168,6 +175,7 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
       }
       rstart += size*lu->nb;
     }
+
     for (i=0; i<loc_m; i++) idx_pla[i] = i*loc_stride;
 
     ierr = ISCreateGeneral(PETSC_COMM_SELF,loc_m,idx_pla,&lu->is_pla);CHKERRQ(ierr);
@@ -193,7 +201,6 @@ PetscErrorCode MatLUFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F)
   Mat_Plapack    *lu = (Mat_Plapack*)(*F)->spptr;
   PetscErrorCode ierr;
   PetscInt       M=A->M,m=A->m,rstart;
-  MPI_Comm       comm=A->comm,comm_2d;
   MPI_Datatype   datatype;
   PetscInt       info_pla=0;
   PetscScalar    *array,one = 1.0;
@@ -238,7 +245,6 @@ PetscErrorCode MatCholeskyFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F
   Mat_Plapack    *lu = (Mat_Plapack*)(*F)->spptr;
   PetscErrorCode ierr;
   PetscInt       M=A->M,m=A->m,rstart;
-  MPI_Comm       comm=A->comm,comm_2d;
   MPI_Datatype   datatype;
   PetscInt       info_pla=0;
   PetscScalar    *array,one = 1.0;
@@ -276,8 +282,8 @@ PetscErrorCode MatCholeskyFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatFactorSymbolic_Plapack_private"
-PetscErrorCode MatFactorSymbolic_Plapack_private(Mat A,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatFactorSymbolic_Plapack_Private"
+PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *F)
 {
   Mat            B;
   Mat_Plapack    *lu;   
@@ -298,18 +304,16 @@ PetscErrorCode MatFactorSymbolic_Plapack_private(Mat A,MatFactorInfo *info,Mat *
 
   /* Set default Plapack parameters */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  lu->nprows = size; lu->npcols = 1; 
+  lu->nprows = 1; lu->npcols = size; 
   ierror = 0;
   lu->nb     = M/size;
   if (M - lu->nb*size) lu->nb++; /* without cyclic distribution */
  
   /* Set runtime options */
   ierr = PetscOptionsBegin(A->comm,A->prefix,"PLAPACK Options","Mat");CHKERRQ(ierr);
-  /* Give wrong solution when both nprows and npcols are larger than 1! Enable these options when the problem is fixed */
-  /*
   ierr = PetscOptionsInt("-mat_plapack_nprows","row dimension of 2D processor mesh","None",lu->nprows,&lu->nprows,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_plapack_npcols","column dimension of 2D processor mesh","None",lu->npcols,&lu->npcols,PETSC_NULL);CHKERRQ(ierr);
-  */
+  
   ierr = PetscOptionsInt("-mat_plapack_nb","block size of template vector","None",lu->nb,&lu->nb,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsInt("-mat_plapack_ckerror","error checking flag","None",ierror,&ierror,PETSC_NULL);CHKERRQ(ierr);  
   if (ierror){
@@ -329,6 +333,7 @@ PetscErrorCode MatFactorSymbolic_Plapack_private(Mat A,MatFactorInfo *info,Mat *
 
   /* Create a 2D communicator */
   PLA_Comm_1D_to_2D(comm,lu->nprows,lu->npcols,&comm_2d); 
+  lu->comm_2d = comm_2d;
 
   /* Initialize PLAPACK */
   PLA_Init(comm_2d);
@@ -365,7 +370,7 @@ PetscErrorCode MatLUFactorSymbolic_Plapack(Mat A,IS r,IS c,MatFactorInfo *info,M
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatFactorSymbolic_Plapack_private(A,info,F);CHKERRQ(ierr);
+  ierr = MatFactorSymbolic_Plapack_Private(A,info,F);CHKERRQ(ierr);
   (*F)->ops->lufactornumeric  = MatLUFactorNumeric_Plapack;
   (*F)->factor                = FACTOR_LU;  
   PetscFunctionReturn(0);
@@ -379,7 +384,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_Plapack(Mat A,IS perm,MatFactorInfo *in
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatFactorSymbolic_Plapack_private(A,info,F);CHKERRQ(ierr);
+  ierr = MatFactorSymbolic_Plapack_Private(A,info,F);CHKERRQ(ierr);
   (*F)->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_Plapack;
   (*F)->factor                      = FACTOR_CHOLESKY;  
   PetscFunctionReturn(0);
