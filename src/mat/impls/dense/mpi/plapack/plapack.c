@@ -15,7 +15,7 @@ typedef struct {
   PLA_Obj        A,pivots;
   PLA_Template   templ;
   MPI_Datatype   datatype;
-  PetscInt       nb,ierror,rstart;
+  PetscInt       nb,nb_alg,ierror,rstart;
   VecScatter     ctx;
   IS             is_pla,is_petsc;
   PetscTruth     pla_solved;
@@ -142,7 +142,8 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
     PLA_Trsv( PLA_UPPER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_NONUNIT_DIAG,lu->A,v_pla );
   } else { /* FACTOR_CHOLESKY */
     PLA_Trsv( PLA_LOWER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_NONUNIT_DIAG,lu->A,v_pla);
-    PLA_Trsv( PLA_LOWER_TRIANGULAR,PLA_TRANSPOSE,PLA_NONUNIT_DIAG,lu->A,v_pla);
+    PLA_Trsv( PLA_LOWER_TRIANGULAR,(lu->datatype == MPI_DOUBLE ? PLA_TRANSPOSE : PLA_CONJUGATE_TRANSPOSE),
+                                    PLA_NONUNIT_DIAG,lu->A,v_pla);
   }
 
   /* Copy PLAPACK x into Petsc vector x  */   
@@ -224,87 +225,9 @@ PetscErrorCode MatLUFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F)
 
   lu->CleanUpPlapack = PETSC_TRUE;
   lu->rstart         = rstart;
-  
-  (*F)->ops->solve   = MatSolve_Plapack; 
-  (*F)->factor       = FACTOR_LU;
-  (*F)->assembled    = PETSC_TRUE;  /* required by -ksp_view */
-
   lu->mstruct        = SAME_NONZERO_PATTERN;
-  PetscFunctionReturn(0);
-}
-
-/* Note the Petsc r and c permutations are ignored */
-#undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorSymbolic_Plapack"
-PetscErrorCode MatLUFactorSymbolic_Plapack(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
-{
-  Mat            B;
-  Mat_Plapack    *lu;   
-  PetscErrorCode ierr;
-  PetscInt       M=A->M,N=A->N;
-  MPI_Comm       comm=A->comm,comm_2d;
-  PetscMPIInt    size;
-  PetscInt       ierror;
-
-  PetscFunctionBegin;
-  /* Create the factorization matrix */
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->m,A->n,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
-
-  B->ops->lufactornumeric  = MatLUFactorNumeric_Plapack;
-  B->ops->solve            = MatSolve_Plapack;
-  B->factor                = FACTOR_LU;  
-
-  lu = (Mat_Plapack*)(B->spptr);
-
-  /* Set default Plapack parameters */
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  lu->nprows = size; lu->npcols = 1; 
-  ierror = 0;
-  lu->nb     = M/size;
-  if (M - lu->nb*size) lu->nb++; /* without cyclic distribution */
- 
-  /* Set runtime options */
-  ierr = PetscOptionsBegin(A->comm,A->prefix,"PLAPACK Options","Mat");CHKERRQ(ierr);
-  /* Give wrong solution when both nprows and npcols are larger than 1! Enable these options when the problem is fixed */
-  /*
-  ierr = PetscOptionsInt("-mat_plapack_nprows","row dimension of 2D processor mesh","None",lu->nprows,&lu->nprows,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_plapack_npcols","column dimension of 2D processor mesh","None",lu->npcols,&lu->npcols,PETSC_NULL);CHKERRQ(ierr);
-  */
-  ierr = PetscOptionsInt("-mat_plapack_nb","block size of template vector","None",lu->nb,&lu->nb,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscOptionsInt("-mat_plapack_ckerror","error checking flags","None",ierror,&ierror,PETSC_NULL);CHKERRQ(ierr);  
-  PetscOptionsEnd(); 
-
-  if ( ierror ){
-    PLA_Set_error_checking(ierror,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE );
-  } else {
-    PLA_Set_error_checking(ierror,PETSC_FALSE,PETSC_FALSE,PETSC_FALSE );
-  }
-  lu->ierror = ierror;
-
-  /* Create a 2D communicator */
-  PLA_Comm_1D_to_2D(comm,lu->nprows,lu->npcols,&comm_2d); 
-
-  /* Initialize PLAPACK */
-  PLA_Init(comm_2d);
-
-  /* Create object distribution template */
-  lu->templ = NULL;
-  PLA_Temp_create(lu->nb, 0, &lu->templ);
-
-
-  /* Set the datatype */
-#if defined(PETSC_USE_COMPLEX)
-  lu->datatype = MPI_DOUBLE_COMPLEX;
-#else
-  lu->datatype = MPI_DOUBLE;
-#endif
-
-  lu->pla_solved     = PETSC_FALSE; /* MatSolve_Plapack() is called yet */
-  lu->mstruct        = DIFFERENT_NONZERO_PATTERN;
-  lu->CleanUpPlapack = PETSC_TRUE;
-  *F                 = B;
+  
+  (*F)->assembled    = PETSC_TRUE;  /* required by -ksp_view */
   PetscFunctionReturn(0);
 }
 
@@ -323,13 +246,11 @@ PetscErrorCode MatCholeskyFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F
   PetscFunctionBegin;
   if (lu->mstruct == SAME_NONZERO_PATTERN){
     PLA_Obj_free(&lu->A);
-    PLA_Obj_free (&lu->pivots);
   }
   /* Create PLAPACK matrix object */
   lu->A      = NULL; 
   lu->pivots = NULL; 
   PLA_Matrix_create(lu->datatype,M,M,lu->templ,PLA_ALIGN_FIRST,PLA_ALIGN_FIRST,&lu->A);  
-  /* PLA_Mvector_create(MPI_INT,M,1,lu->templ,PLA_ALIGN_FIRST,&lu->pivots); */
 
   /* Copy A into lu->A */
   PLA_API_begin();
@@ -348,19 +269,15 @@ PetscErrorCode MatCholeskyFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F
 
   lu->CleanUpPlapack = PETSC_TRUE;
   lu->rstart         = rstart;
-  
-  (*F)->ops->solve   = MatSolve_Plapack; 
-  (*F)->factor       = FACTOR_CHOLESKY;
-  (*F)->assembled    = PETSC_TRUE;  /* required by -ksp_view */
-
   lu->mstruct        = SAME_NONZERO_PATTERN;
+  
+  (*F)->assembled    = PETSC_TRUE;  /* required by -ksp_view */
   PetscFunctionReturn(0);
 }
 
-/* Note the Petsc perm permutation is ignored */
 #undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactorSymbolic_Plapack"
-PetscErrorCode MatCholeskyFactorSymbolic_Plapack(Mat A,IS perm,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatFactorSymbolic_Plapack_private"
+PetscErrorCode MatFactorSymbolic_Plapack_private(Mat A,MatFactorInfo *info,Mat *F)
 {
   Mat            B;
   Mat_Plapack    *lu;   
@@ -376,10 +293,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_Plapack(Mat A,IS perm,MatFactorInfo *in
   ierr = MatSetSizes(B,A->m,A->n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
 
-  B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_Plapack;
-  B->ops->solve            = MatSolve_Plapack;
-  B->factor                = FACTOR_CHOLESKY;  
-
+  B->ops->solve = MatSolve_Plapack;
   lu = (Mat_Plapack*)(B->spptr);
 
   /* Set default Plapack parameters */
@@ -397,15 +311,21 @@ PetscErrorCode MatCholeskyFactorSymbolic_Plapack(Mat A,IS perm,MatFactorInfo *in
   ierr = PetscOptionsInt("-mat_plapack_npcols","column dimension of 2D processor mesh","None",lu->npcols,&lu->npcols,PETSC_NULL);CHKERRQ(ierr);
   */
   ierr = PetscOptionsInt("-mat_plapack_nb","block size of template vector","None",lu->nb,&lu->nb,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscOptionsInt("-mat_plapack_ckerror","error checking flags","None",ierror,&ierror,PETSC_NULL);CHKERRQ(ierr);  
-  PetscOptionsEnd(); 
-
-  if ( ierror ){
+  ierr = PetscOptionsInt("-mat_plapack_ckerror","error checking flag","None",ierror,&ierror,PETSC_NULL);CHKERRQ(ierr);  
+  if (ierror){
     PLA_Set_error_checking(ierror,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE );
   } else {
     PLA_Set_error_checking(ierror,PETSC_FALSE,PETSC_FALSE,PETSC_FALSE );
   }
   lu->ierror = ierror;
+  
+  lu->nb_alg = 0;
+  ierr = PetscOptionsInt("-mat_plapack_nb_alg","algorithmic block size","None",lu->nb_alg,&lu->nb_alg,PETSC_NULL);CHKERRQ(ierr);
+  if (lu->nb_alg){
+    pla_Environ_set_nb_alg (PLA_OP_ALL_ALG,lu->nb_alg);
+  }
+  PetscOptionsEnd(); 
+
 
   /* Create a 2D communicator */
   PLA_Comm_1D_to_2D(comm,lu->nprows,lu->npcols,&comm_2d); 
@@ -417,6 +337,11 @@ PetscErrorCode MatCholeskyFactorSymbolic_Plapack(Mat A,IS perm,MatFactorInfo *in
   lu->templ = NULL;
   PLA_Temp_create(lu->nb, 0, &lu->templ);
 
+  /* Use suggested nb_alg if it is not provided by user */
+  if (lu->nb_alg == 0){
+    PLA_Environ_nb_alg(PLA_OP_PAN_PAN,lu->templ,&lu->nb_alg);
+    pla_Environ_set_nb_alg(PLA_OP_ALL_ALG,lu->nb_alg);
+  }
 
   /* Set the datatype */
 #if defined(PETSC_USE_COMPLEX)
@@ -429,6 +354,34 @@ PetscErrorCode MatCholeskyFactorSymbolic_Plapack(Mat A,IS perm,MatFactorInfo *in
   lu->mstruct        = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpPlapack = PETSC_TRUE;
   *F                 = B;
+  PetscFunctionReturn(0);
+}
+
+/* Note the Petsc r and c permutations are ignored */
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorSymbolic_Plapack"
+PetscErrorCode MatLUFactorSymbolic_Plapack(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+{  
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatFactorSymbolic_Plapack_private(A,info,F);CHKERRQ(ierr);
+  (*F)->ops->lufactornumeric  = MatLUFactorNumeric_Plapack;
+  (*F)->factor                = FACTOR_LU;  
+  PetscFunctionReturn(0);
+}
+
+/* Note the Petsc perm permutation is ignored */
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorSymbolic_Plapack"
+PetscErrorCode MatCholeskyFactorSymbolic_Plapack(Mat A,IS perm,MatFactorInfo *info,Mat *F)
+{ 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatFactorSymbolic_Plapack_private(A,info,F);CHKERRQ(ierr);
+  (*F)->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_Plapack;
+  (*F)->factor                      = FACTOR_CHOLESKY;  
   PetscFunctionReturn(0);
 }
 
@@ -463,6 +416,7 @@ PetscErrorCode MatFactorInfo_Plapack(Mat A,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"  Processor mesh: nprows %d, npcols %d\n",lu->nprows, lu->npcols);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Distr. block size nb: %d \n",lu->nb);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Error checking: %d\n",lu->ierror);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Algorithmic block size: %d\n",lu->nb_alg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -566,13 +520,15 @@ PetscErrorCode MatDuplicate_Plapack(Mat A, MatDuplicateOption op, Mat *M)
 
   Options Database Keys:
 + -mat_type plapack - sets the matrix type to "plapack" during a call to MatSetFromOptions()
-. -mat_plapack_r <n> - number of rows in processor partition
-. -mat_plapack_c <n> - number of columns in processor partition
-- -mat_plapack_nb <n> - distribution block size
+. -mat_plapack_nprows <n> - number of rows in processor partition
+. -mat_plapack_npcols <n> - number of columns in processor partition
+. -mat_plapack_nb <n> - block size of template vector
+. -mat_plapack_nb_alg <n> - algorithmic block size
+- -mat_plapack_ckerror <n> - error checking flag
 
    Level: beginner
 
-.seealso: MATDENSE, PCLU 
+.seealso: MATDENSE, PCLU, PCCHOLESKY
 M*/
 
 EXTERN_C_BEGIN
