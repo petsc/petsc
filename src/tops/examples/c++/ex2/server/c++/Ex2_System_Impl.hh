@@ -2,12 +2,12 @@
 // File:          Ex2_System_Impl.hh
 // Symbol:        Ex2.System-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.2
+// Babel Version: 0.10.8
 // Description:   Server-side implementation for Ex2.System
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.2
+// babel-version = 0.10.8
 // 
 
 #ifndef included_Ex2_System_Impl_hh
@@ -92,17 +92,6 @@ namespace Ex2 {
      * user defined non-static method.
      */
     void
-    computeResidual (
-      /* in */ ::sidl::array<double> x,
-      /* in */ ::sidl::array<double> f
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
     setSolver (
       /* in */ ::TOPS::Solver solver
     )
@@ -121,6 +110,17 @@ namespace Ex2 {
     void
     initializeEverySolve() throw () 
     ;
+    /**
+     * user defined non-static method.
+     */
+    void
+    computeResidual (
+      /* in */ ::sidl::array<double> x,
+      /* in */ ::sidl::array<double> f
+    )
+    throw () 
+    ;
+
     /**
      * user defined non-static method.
      */
