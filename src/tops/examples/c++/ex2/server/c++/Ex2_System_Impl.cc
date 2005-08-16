@@ -2,12 +2,12 @@
 // File:          Ex2_System_Impl.cc
 // Symbol:        Ex2.System-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.2
+// Babel Version: 0.10.8
 // Description:   Server-side implementation for Ex2.System
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.2
+// babel-version = 0.10.8
 // 
 #include "Ex2_System_Impl.hh"
 
@@ -41,6 +41,45 @@ void Ex2::System_impl::_load() {
 // user-defined static methods: (none)
 
 // user-defined non-static methods:
+/**
+ * Method:  setSolver[]
+ */
+void
+Ex2::System_impl::setSolver (
+  /* in */ ::TOPS::Solver solver ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(Ex2.System.setSolver)
+  this->solver = (TOPS::Solver_Structured)solver;
+  // DO-NOT-DELETE splicer.end(Ex2.System.setSolver)
+}
+
+/**
+ * Method:  initializeOnce[]
+ */
+void
+Ex2::System_impl::initializeOnce ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(Ex2.System.initializeOnce)
+  this->solver.setBlockSize(4);
+  // DO-NOT-DELETE splicer.end(Ex2.System.initializeOnce)
+}
+
+/**
+ * Method:  initializeEverySolve[]
+ */
+void
+Ex2::System_impl::initializeEverySolve ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(Ex2.System.initializeEverySolve)
+  this->lid = 1.0/(this->solver.getDimensionX()*this->solver.getDimensionY());
+  // DO-NOT-DELETE splicer.end(Ex2.System.initializeEverySolve)
+}
+
 /**
  * Method:  computeResidual[]
  */
@@ -172,45 +211,6 @@ throw ()
   }
 
   // DO-NOT-DELETE splicer.end(Ex2.System.computeResidual)
-}
-
-/**
- * Method:  setSolver[]
- */
-void
-Ex2::System_impl::setSolver (
-  /* in */ ::TOPS::Solver solver ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(Ex2.System.setSolver)
-  this->solver = (TOPS::Solver_Structured)solver;
-  // DO-NOT-DELETE splicer.end(Ex2.System.setSolver)
-}
-
-/**
- * Method:  initializeOnce[]
- */
-void
-Ex2::System_impl::initializeOnce ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(Ex2.System.initializeOnce)
-  this->solver.setBlockSize(4);
-  // DO-NOT-DELETE splicer.end(Ex2.System.initializeOnce)
-}
-
-/**
- * Method:  initializeEverySolve[]
- */
-void
-Ex2::System_impl::initializeEverySolve ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(Ex2.System.initializeEverySolve)
-  this->lid = 1.0/(this->solver.getDimensionX()*this->solver.getDimensionY());
-  // DO-NOT-DELETE splicer.end(Ex2.System.initializeEverySolve)
 }
 
 /**

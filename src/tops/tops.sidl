@@ -30,7 +30,7 @@ package TOPS version 0.0.0 {
   }
 
   //   The data in the vectors is linearly sliced into one part per process
-  class Solver_Sliced implements-all Solver {
+  interface SolverSliced extends Solver {
       void setLocalRowSize(in int m);
       int  getLocalRowSize();
       void setGlobalRowSize(in int M);
@@ -46,7 +46,7 @@ package TOPS version 0.0.0 {
   }
 
   //   The data lives on a structured grid 
-  class Solver_Structured implements-all Solver {
+  interface SolverStructured extends Solver {
       void setDimension(in int dim);
       int  getDimension();
       void setDimensionX(in int dim);
@@ -70,6 +70,11 @@ package TOPS version 0.0.0 {
       void   initializeEverySolve();
   }
 
+  interface SystemComputeInitialGuess {
+      void   computeInitialGuess(in array<double> x);
+  }
+
+  // For nonlinear problems
   interface SystemComputeJacobian {
       void   computeJacobian(in array<double> x ,in Matrix J,in Matrix B);
   }
@@ -78,12 +83,16 @@ package TOPS version 0.0.0 {
       void   computeResidual(in array<double> x,in array<double> f);
   }
 
+  // For linear problems
+  interface SystemComputeMatrix {
+      void   computeMatrix(in Matrix J);
+  }
+
   interface SystemComputeRightHandSide {
       void   computeRightHandSide(in array<double> b);
   }
 
-  interface SystemComputeInitialGuess {
-      void   computeInitialGuess(in array<double> x);
-  }
-
+  // These are the two solvers that come with TOPS by default
+  class Solver_Sliced implements-all SolverSliced {}
+  class Solver_Structured implements-all SolverStructured {}
 }

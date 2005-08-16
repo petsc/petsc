@@ -2,12 +2,12 @@
 // File:          TOPS_Solver_Sliced_Impl.hh
 // Symbol:        TOPS.Solver_Sliced-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.2
+// Babel Version: 0.10.8
 // Description:   Server-side implementation for TOPS.Solver_Sliced
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.2
+// babel-version = 0.10.8
 // 
 
 #ifndef included_TOPS_Solver_Sliced_Impl_hh
@@ -91,6 +91,80 @@ namespace TOPS {
     static void _load();
 
   public:
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    Initialize (
+      /* in */ ::sidl::array< ::std::string> args
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    setSystem (
+      /* in */ ::TOPS::System system
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    ::TOPS::System
+    getSystem() throw () 
+    ;
+    /**
+     * user defined non-static method.
+     */
+    void
+    solve() throw () 
+    ;
+    /**
+     * user defined non-static method.
+     */
+    void
+    setBlockSize (
+      /* in */ int32_t bs
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    ::TOPS::Vector
+    getRightHandSize (
+      /* in */ int32_t level
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    ::TOPS::Vector
+    getSolution (
+      /* in */ int32_t Level
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    getJacobian (
+      /* in */ int32_t Level,
+      /* out */ ::TOPS::Matrix& J,
+      /* out */ ::TOPS::Matrix& B
+    )
+    throw () 
+    ;
 
     /**
      * user defined non-static method.
@@ -184,80 +258,6 @@ namespace TOPS {
     setPreallocation (
       /* in */ ::sidl::array<int32_t> d,
       /* in */ ::sidl::array<int32_t> od
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    Initialize (
-      /* in */ ::sidl::array< ::std::string> args
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    setSystem (
-      /* in */ ::TOPS::System system
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    ::TOPS::System
-    getSystem() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    void
-    solve() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    void
-    setBlockSize (
-      /* in */ int32_t bs
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    ::TOPS::Vector
-    getRightHandSize (
-      /* in */ int32_t level
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    ::TOPS::Vector
-    getSolution (
-      /* in */ int32_t Level
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    getJacobian (
-      /* in */ int32_t Level,
-      /* out */ ::TOPS::Matrix& J,
-      /* out */ ::TOPS::Matrix& B
     )
     throw () 
     ;
