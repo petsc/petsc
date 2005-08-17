@@ -1,7 +1,10 @@
-BABEL_HOME  = /usr/local
+BABEL_HOME  = /home/norris/cca/cca-tools-0.5.9
 BABEL_bin     = ${BABEL_HOME}/bin
 BABEL_include = ${BABEL_HOME}/include
 BABEL_lib     = ${BABEL_HOME}/lib
+
+CCA_HOME      = ${BABEL_HOME}
+CCA_REPO      = ${CCA_HOME}/share/cca-spec-babel-0_7_8-babel-0.10.8/xml
 
 LANGUAGES = python c++
 
@@ -16,7 +19,7 @@ parse-check:
 clients: 
 	for LANGUAGE in $(LANGUAGES); do \
 		echo -e "\n### Building $$LANGUAGE client library."; \
-		${BABEL_bin}/babel --suppress-timestamp -c $$LANGUAGE -o ./client/$$LANGUAGE  ${SIDLFILES} ; \
+		${BABEL_bin}/babel -R${CCA_REPO} --suppress-timestamp -c $$LANGUAGE -o ./client/$$LANGUAGE ${SIDLFILES} ; \
 		cat client/$$LANGUAGE/babel.make | sed s/\\.cc/.o/g | sed s/\\.c/.o/g > client/$$LANGUAGE/makefile; \
 		echo "include ${PETSC_DIR}/src/tops/makefile.rules" >> client/$$LANGUAGE/makefile; \
 		$(OMAKE) -C client/$$LANGUAGE LANGUAGE=$$LANGUAGE libclient-$$LANGUAGE;\
@@ -40,7 +43,7 @@ server-c++:  server/c++/makefile
 
 server/c++/makefile: ${SIDLFILES}
 	@-${BK} edit server/c++/*_Impl.cc server/c++/*_Impl.hh
-	-${BABEL_bin}/babel --suppress-timestamp --server=c++ --output-directory=./server/c++ ${SIDLFILES}
+	-${BABEL_bin}/babel -R ${CCA_REPO} --suppress-timestamp --server=c++ --output-directory=./server/c++ ${SIDLFILES}
 	@-${RM} ${REMOVEFILES}
 	echo "include ${PETSC_DIR}/src/tops/makefile.rules" > server/c++/makefile
 
