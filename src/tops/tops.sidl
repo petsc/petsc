@@ -15,7 +15,7 @@ package TOPS version 0.0.0 {
       void   zero();
   }
 
-  interface Solver {
+  interface Solver extends gov.cca.Port {
       // Pass in command line arguments to Solver
       void   Initialize(in array<string,1> args);
       void   setSystem(in System system);
@@ -70,29 +70,29 @@ package TOPS version 0.0.0 {
       void   initializeEverySolve();
   }
 
-  interface SystemComputeInitialGuess {
+  interface SystemComputeInitialGuess extends System, gov.cca.Port {
       void   computeInitialGuess(in array<double> x);
   }
 
   // For nonlinear problems
-  interface SystemComputeJacobian {
+  interface SystemComputeJacobian extends System, gov.cca.Port {
       void   computeJacobian(in array<double> x ,in Matrix J,in Matrix B);
   }
 
-  interface SystemComputeResidual {
+  interface SystemComputeResidual extends System, gov.cca.Port {
       void   computeResidual(in array<double> x,in array<double> f);
   }
 
   // For linear problems
-  interface SystemComputeMatrix {
+  interface SystemComputeMatrix extends System, gov.cca.Port {
       void   computeMatrix(in Matrix J);
   }
 
-  interface SystemComputeRightHandSide {
+  interface SystemComputeRightHandSide extends System, gov.cca.Port {
       void   computeRightHandSide(in array<double> b);
   }
 
-  // These are the two solvers that come with TOPS by default
-  class Solver_Sliced implements-all SolverSliced {}
-  class Solver_Structured implements-all SolverStructured {}
+  // These are the two solver components that come with TOPS by default
+  class Solver_Sliced implements-all SolverSliced, gov.cca.Component {}
+  class Solver_Structured implements-all SolverStructured, gov.cca.Component {}
 }
