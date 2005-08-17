@@ -87,7 +87,35 @@ Ex3::System_impl::computeMatrix (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.computeMatrix)
-  // Insert-Code-Here {Ex3.System.computeMatrix} (computeMatrix method)
+  TOPS::MatrixStructured B = (TOPS::MatrixStructured)J;
+  TOPS::Solver_Structured solver = this->solver;
+  int xs = B.lower(0);      // first grid point in X and Y directions on this process
+  int ys = B.lower(1);
+  int xm = B.length(0) - 1;       // number of local grid points in X and Y directions on this process
+  int ym = B.length(1) - 1;
+  int i,j;
+  int mx = solver.getDimensionX();
+  int my = solver.getDimensionY();
+
+  double hx     = 1.0/(double)(mx-1);
+  double hy     = 1.0/(double)(my-1);
+  double sc     = hx*hy;
+  double hxdhy  = hx/hy; 
+  double hydhx  = hy/hx;
+ 
+  /*
+     Compute function over the locally owned part of the grid
+  */
+  double one = 1.0;
+  for (j=ys; j<ys+ym; j++) {
+    for (i=xs; i<xs+xm; i++) {
+      //  if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
+        CHKMEMA;
+        B.set(i,j,sidl::array<double>::create1d(1,&one));
+        CHKMEMA;
+	//      }
+    }
+  }
   // DO-NOT-DELETE splicer.end(Ex3.System.computeMatrix)
 }
 

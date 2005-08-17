@@ -62,8 +62,24 @@ throw ()
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Matrix.zero)
-  // Insert-Code-Here {TOPS.Matrix.zero} (zero method)
+  MatZeroEntries(this->mat);
   // DO-NOT-DELETE splicer.end(TOPS.Matrix.zero)
+}
+
+/**
+ * Method:  set[D2]
+ */
+void
+TOPS::Matrix_impl::set (
+  /* in */ int32_t i,
+  /* in */ int32_t j,
+  /* in */ ::sidl::array<double> values ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Matrix.setD2)
+  double one = 1.0;
+  MatSetValues(this->mat,1,&i,1,&j,&one,INSERT_VALUES);
+  // DO-NOT-DELETE splicer.end(TOPS.Matrix.setD2)
 }
 
 

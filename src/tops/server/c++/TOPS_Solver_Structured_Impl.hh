@@ -54,6 +54,7 @@
 #include "TOPS_SystemComputeInitialGuess.hh"
 #include "TOPS_SystemComputeJacobian.hh"
 #include "TOPS_SystemComputeRightHandSide.hh"
+#include "TOPS_SystemComputeMatrix.hh"
 // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._includes)
 
 namespace TOPS { 
