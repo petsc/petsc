@@ -50,6 +50,8 @@
 
 // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._includes)
 #include "petscdmmg.h"
+
+// Includes for all uses ports
 #include "TOPS_SystemComputeResidual.hh"
 #include "TOPS_SystemComputeInitialGuess.hh"
 #include "TOPS_SystemComputeJacobian.hh"
@@ -74,13 +76,14 @@ namespace TOPS {
     Solver_Structured self;
 
     // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._implementation)
-    DMMG           *dmmg;
-    DA             da;
-    int            M,N,P,m,n,p,dim,s,levels,bs;
-    DAStencilType  stencil_type;
-    DAPeriodicType wrap;
-    TOPS::System   system;
-    int            startedpetsc;
+    DMMG               *dmmg;
+    DA                 da;
+    int                M,N,P,m,n,p,dim,s,levels,bs;
+    DAStencilType      stencil_type;
+    DAPeriodicType     wrap;
+    TOPS::System       system;
+    int                startedpetsc;
+    gov::cca::Services myServices;
     // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._implementation)
 
   private:

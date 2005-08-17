@@ -12,6 +12,7 @@
 #include "TOPS_Solver_Structured_Impl.hh"
 
 // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._includes)
+// Uses ports includes
 #include "TOPS_SystemComputeMatrix.hh"
 #include "TOPS_SystemComputeResidual.hh"
 #include "TOPS_SystemComputeInitialGuess.hh"
@@ -461,6 +462,40 @@ throw (
 ){
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setServices)
   // Insert-Code-Here {TOPS.Solver_Structured.setServices} (setServices method)
+
+  myServices = services;
+  gov::cca::TypeMap tm = services.createTypeMap();
+  if(tm._is_nil()) {
+    fprintf(stderr, "Error:: %s:%d: gov::cca::TypeMap is nil\n",
+	    __FILE__, __LINE__);
+    exit(1);
+  }
+  gov::cca::Port p = self;      //  Babel required casting
+  if(p._is_nil()) {
+    fprintf(stderr, "Error:: %s:%d: Error casting self to gov::cca::Port \n",
+	    __FILE__, __LINE__);
+    exit(1);
+  }
+  
+  // Provides port
+  services.addProvidesPort(p,
+			   "TOPS.SolverStructured",
+			   "TOPS.SolverStructured", tm);
+  
+  // Uses ports
+  services.registerUsesPort("TOPS.SystemComputeInitialGuess",
+			    "TOPS.SystemComputeInitialGuess", tm);
+
+  services.registerUsesPort("TOPS.SystemComputeMatrix",
+			    "TOPS.SystemComputeMatrix", tm);
+
+  services.registerUsesPort("TOPS.SystemComputeRightHandSide",
+			    "TOPS.SystemComputeRightHandSide", tm);
+
+  services.registerUsesPort("TOPS.SystemComputeResidual",
+			    "TOPS.SystemComputeResidual", tm);
+
+  return;
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setServices)
 }
 
