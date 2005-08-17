@@ -290,6 +290,34 @@ throw ()
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Sliced.setPreallocations)
 }
 
+/**
+ * Starts up a component presence in the calling framework.
+ * @param services the component instance's handle on the framework world.
+ * Contracts concerning Svc and setServices:
+ * 
+ * The component interaction with the CCA framework
+ * and Ports begins on the call to setServices by the framework.
+ * 
+ * This function is called exactly once for each instance created
+ * by the framework.
+ * 
+ * The argument Svc will never be nil/null.
+ * 
+ * Those uses ports which are automatically connected by the framework
+ * (so-called service-ports) may be obtained via getPort during
+ * setServices.
+ */
+void
+TOPS::Solver_Sliced_impl::setServices (
+  /* in */ ::gov::cca::Services services ) 
+throw ( 
+  ::gov::cca::CCAException
+){
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Sliced.setServices)
+  // Insert-Code-Here {TOPS.Solver_Sliced.setServices} (setServices method)
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Sliced.setServices)
+}
+
 
 // DO-NOT-DELETE splicer.begin(TOPS.Solver_Sliced._misc)
 // Insert-Code-Here {TOPS.Solver_Sliced._misc} (miscellaneous code)

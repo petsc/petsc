@@ -102,18 +102,6 @@ namespace TOPS {
     void
     zero() throw () 
     ;
-    /**
-     * user defined non-static method.
-     */
-    void
-    set (
-      /* in */ int32_t i,
-      /* in */ int32_t j,
-      /* in */ ::sidl::array<double> values
-    )
-    throw () 
-    ;
-
   };  // end class Matrix_impl
 
 } // end namespace TOPS

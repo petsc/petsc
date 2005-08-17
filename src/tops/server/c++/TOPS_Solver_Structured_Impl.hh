@@ -34,6 +34,12 @@
 #ifndef included_TOPS_Vector_hh
 #include "TOPS_Vector.hh"
 #endif
+#ifndef included_gov_cca_CCAException_hh
+#include "gov_cca_CCAException.hh"
+#endif
+#ifndef included_gov_cca_Services_hh
+#include "gov_cca_Services.hh"
+#endif
 #ifndef included_sidl_BaseInterface_hh
 #include "sidl_BaseInterface.hh"
 #endif
@@ -265,6 +271,32 @@ namespace TOPS {
     )
     throw () 
     ;
+
+
+    /**
+     * Starts up a component presence in the calling framework.
+     * @param services the component instance's handle on the framework world.
+     * Contracts concerning Svc and setServices:
+     * 
+     * The component interaction with the CCA framework
+     * and Ports begins on the call to setServices by the framework.
+     * 
+     * This function is called exactly once for each instance created
+     * by the framework.
+     * 
+     * The argument Svc will never be nil/null.
+     * 
+     * Those uses ports which are automatically connected by the framework
+     * (so-called service-ports) may be obtained via getPort during
+     * setServices.
+     */
+    void
+    setServices (
+      /* in */ ::gov::cca::Services services
+    )
+    throw ( 
+      ::gov::cca::CCAException
+    );
 
   };  // end class Solver_Structured_impl
 
