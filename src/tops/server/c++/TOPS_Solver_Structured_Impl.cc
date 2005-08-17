@@ -81,6 +81,7 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J)
   PetscFunctionBegin;
   TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
   TOPS::System system = solver->getSystem();
+  ((TOPS::SystemComputeMatrix)system).computeMatrix(0);
   PetscFunctionReturn(0);
 }
 
@@ -96,7 +97,7 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
   solver->setDimensionY(my);
   solver->setDimensionZ(mz);
   sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);;
-  ((TOPS::SystemComputeInitialGuess)system).computeInitialGuess(fa);
+  ((TOPS::SystemComputeRightHandSide)system).computeRightHandSide(fa);
   VecRestoreArray(f,0);
   PetscFunctionReturn(0);
 }
