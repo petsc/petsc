@@ -40,7 +40,7 @@
 
 
 // DO-NOT-DELETE splicer.begin(Ex3.System._includes)
-// Insert-Code-Here {Ex3.System._includes} (includes or arbitrary code)
+#include "TOPS_MatrixStructured.hh"
 // DO-NOT-DELETE splicer.end(Ex3.System._includes)
 
 namespace Ex3 { 

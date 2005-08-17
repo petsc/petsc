@@ -10,9 +10,15 @@ package TOPS version 0.0.0 {
       void          restoreArray();
   }
 
-  class Matrix {
+  interface Matrix {
       void   apply(in Vector x,in Vector y);
       void   zero();
+  }
+
+  class MatrixStructured implements-all Matrix {
+      int    lower(in int a);
+      int    length(in int a);
+      void   set[D2](in int i,in int j,in array<double,2> values);
   }
 
   interface Solver {

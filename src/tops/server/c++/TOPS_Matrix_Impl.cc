@@ -62,7 +62,7 @@ throw ()
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Matrix.zero)
-  // Insert-Code-Here {TOPS.Matrix.zero} (zero method)
+  MatZeroEntries(this->mat);
   // DO-NOT-DELETE splicer.end(TOPS.Matrix.zero)
 }
 
@@ -77,7 +77,8 @@ TOPS::Matrix_impl::set (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Matrix.setD2)
-  // Insert-Code-Here {TOPS.Matrix.setD2} (set method)
+  double one = 1.0;
+  MatSetValues(this->mat,1,&i,1,&j,&one,INSERT_VALUES);
   // DO-NOT-DELETE splicer.end(TOPS.Matrix.setD2)
 }
 
