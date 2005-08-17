@@ -37,7 +37,7 @@
 
 
 // DO-NOT-DELETE splicer.begin(TOPS.Matrix._includes)
-// Insert-Code-Here {TOPS.Matrix._includes} (includes or arbitrary code)
+#include "petscmat.h"
 // DO-NOT-DELETE splicer.end(TOPS.Matrix._includes)
 
 namespace TOPS { 
@@ -57,7 +57,7 @@ namespace TOPS {
     Matrix self;
 
     // DO-NOT-DELETE splicer.begin(TOPS.Matrix._implementation)
-    // Insert-Code-Here {TOPS.Matrix._implementation} (additional details)
+    Mat mat;
     // DO-NOT-DELETE splicer.end(TOPS.Matrix._implementation)
 
   private:
@@ -102,6 +102,18 @@ namespace TOPS {
     void
     zero() throw () 
     ;
+    /**
+     * user defined non-static method.
+     */
+    void
+    set (
+      /* in */ int32_t i,
+      /* in */ int32_t j,
+      /* in */ ::sidl::array<double> values
+    )
+    throw () 
+    ;
+
   };  // end class Matrix_impl
 
 } // end namespace TOPS

@@ -18,7 +18,7 @@
 // user-defined constructor.
 void TOPS::Matrix_impl::_ctor() {
   // DO-NOT-DELETE splicer.begin(TOPS.Matrix._ctor)
-  // Insert-Code-Here {TOPS.Matrix._ctor} (constructor)
+  this->mat = 0;
   // DO-NOT-DELETE splicer.end(TOPS.Matrix._ctor)
 }
 
@@ -64,6 +64,21 @@ throw ()
   // DO-NOT-DELETE splicer.begin(TOPS.Matrix.zero)
   // Insert-Code-Here {TOPS.Matrix.zero} (zero method)
   // DO-NOT-DELETE splicer.end(TOPS.Matrix.zero)
+}
+
+/**
+ * Method:  set[D2]
+ */
+void
+TOPS::Matrix_impl::set (
+  /* in */ int32_t i,
+  /* in */ int32_t j,
+  /* in */ ::sidl::array<double> values ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Matrix.setD2)
+  // Insert-Code-Here {TOPS.Matrix.setD2} (set method)
+  // DO-NOT-DELETE splicer.end(TOPS.Matrix.setD2)
 }
 
 

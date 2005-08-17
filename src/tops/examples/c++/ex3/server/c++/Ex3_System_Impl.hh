@@ -2,12 +2,12 @@
 // File:          Ex3_System_Impl.hh
 // Symbol:        Ex3.System-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.2
+// Babel Version: 0.10.8
 // Description:   Server-side implementation for Ex3.System
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.2
+// babel-version = 0.10.8
 // 
 
 #ifndef included_Ex3_System_Impl_hh
@@ -92,18 +92,6 @@ namespace Ex3 {
      * user defined non-static method.
      */
     void
-    computeJacobian (
-      /* in */ ::sidl::array<double> x,
-      /* in */ ::TOPS::Matrix J,
-      /* in */ ::TOPS::Matrix B
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
     setSolver (
       /* in */ ::TOPS::Solver solver
     )
@@ -122,6 +110,16 @@ namespace Ex3 {
     void
     initializeEverySolve() throw () 
     ;
+    /**
+     * user defined non-static method.
+     */
+    void
+    computeMatrix (
+      /* in */ ::TOPS::Matrix J
+    )
+    throw () 
+    ;
+
     /**
      * user defined non-static method.
      */

@@ -2,12 +2,12 @@
 // File:          Ex3_System_Impl.cc
 // Symbol:        Ex3.System-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.2
+// Babel Version: 0.10.8
 // Description:   Server-side implementation for Ex3.System
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.2
+// babel-version = 0.10.8
 // 
 #include "Ex3_System_Impl.hh"
 
@@ -39,21 +39,6 @@ void Ex3::System_impl::_load() {
 // user-defined static methods: (none)
 
 // user-defined non-static methods:
-/**
- * Method:  computeJacobian[]
- */
-void
-Ex3::System_impl::computeJacobian (
-  /* in */ ::sidl::array<double> x,
-  /* in */ ::TOPS::Matrix J,
-  /* in */ ::TOPS::Matrix B ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(Ex3.System.computeJacobian)
-  // Insert-Code-Here {Ex3.System.computeJacobian} (computeJacobian method)
-  // DO-NOT-DELETE splicer.end(Ex3.System.computeJacobian)
-}
-
 /**
  * Method:  setSolver[]
  */
@@ -91,6 +76,19 @@ throw ()
   // DO-NOT-DELETE splicer.begin(Ex3.System.initializeEverySolve)
   // Insert-Code-Here {Ex3.System.initializeEverySolve} (initializeEverySolve method)
   // DO-NOT-DELETE splicer.end(Ex3.System.initializeEverySolve)
+}
+
+/**
+ * Method:  computeMatrix[]
+ */
+void
+Ex3::System_impl::computeMatrix (
+  /* in */ ::TOPS::Matrix J ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(Ex3.System.computeMatrix)
+  // Insert-Code-Here {Ex3.System.computeMatrix} (computeMatrix method)
+  // DO-NOT-DELETE splicer.end(Ex3.System.computeMatrix)
 }
 
 /**
