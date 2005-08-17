@@ -12,6 +12,10 @@
 #include "TOPS_Solver_Structured_Impl.hh"
 
 // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._includes)
+#include "TOPS_SystemComputeMatrix.hh"
+#include "TOPS_SystemComputeResidual.hh"
+#include "TOPS_SystemComputeInitialGuess.hh"
+#include "TOPS_SystemComputeRightHandSide.hh"
   // This code is the same as DAVecGetArray() except instead of generating
   // raw C multidimensional arrays it gets a Babel array
 ::sidl::array<double> DAVecGetArrayBabel(DA da,Vec vec)

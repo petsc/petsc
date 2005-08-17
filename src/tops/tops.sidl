@@ -61,7 +61,7 @@ package TOPS version 0.0.0 {
   }
 
   // Methods provided by the user to define the numerical problem 
-  interface System {
+  interface System extends gov.cca.Port {
       void   setSolver(in Solver solver);
 
       // Initialize the Layout object and anything that is fixed for all solves
@@ -70,25 +70,25 @@ package TOPS version 0.0.0 {
       void   initializeEverySolve();
   }
 
-  interface SystemComputeInitialGuess extends System, gov.cca.Port {
+  interface SystemComputeInitialGuess extends gov.cca.Port {
       void   computeInitialGuess(in array<double> x);
   }
 
   // For nonlinear problems
-  interface SystemComputeJacobian extends System, gov.cca.Port {
+  interface SystemComputeJacobian extends gov.cca.Port {
       void   computeJacobian(in array<double> x ,in Matrix J,in Matrix B);
   }
 
-  interface SystemComputeResidual extends System, gov.cca.Port {
+  interface SystemComputeResidual extends gov.cca.Port {
       void   computeResidual(in array<double> x,in array<double> f);
   }
 
   // For linear problems
-  interface SystemComputeMatrix extends System, gov.cca.Port {
+  interface SystemComputeMatrix extends gov.cca.Port {
       void   computeMatrix(in Matrix J);
   }
 
-  interface SystemComputeRightHandSide extends System, gov.cca.Port {
+  interface SystemComputeRightHandSide extends gov.cca.Port {
       void   computeRightHandSide(in array<double> b);
   }
 

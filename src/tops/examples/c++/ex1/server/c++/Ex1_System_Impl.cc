@@ -125,6 +125,34 @@ throw ()
   // DO-NOT-DELETE splicer.end(Ex1.System.computeResidual)
 }
 
+/**
+ * Starts up a component presence in the calling framework.
+ * @param services the component instance's handle on the framework world.
+ * Contracts concerning Svc and setServices:
+ * 
+ * The component interaction with the CCA framework
+ * and Ports begins on the call to setServices by the framework.
+ * 
+ * This function is called exactly once for each instance created
+ * by the framework.
+ * 
+ * The argument Svc will never be nil/null.
+ * 
+ * Those uses ports which are automatically connected by the framework
+ * (so-called service-ports) may be obtained via getPort during
+ * setServices.
+ */
+void
+Ex1::System_impl::setServices (
+  /* in */ ::gov::cca::Services services ) 
+throw ( 
+  ::gov::cca::CCAException
+){
+  // DO-NOT-DELETE splicer.begin(Ex1.System.setServices)
+  // Insert-Code-Here {Ex1.System.setServices} (setServices method)
+  // DO-NOT-DELETE splicer.end(Ex1.System.setServices)
+}
+
 
 // DO-NOT-DELETE splicer.begin(Ex1.System._misc)
 // Insert-Code-Here {Ex1.System._misc} (miscellaneous code)
