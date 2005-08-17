@@ -66,23 +66,7 @@ throw ()
   // DO-NOT-DELETE splicer.end(TOPS.Matrix.zero)
 }
 
-/**
- * Method:  set[D2]
- */
-void
-TOPS::Matrix_impl::set (
-  /* in */ int32_t i,
-  /* in */ int32_t j,
-  /* in */ ::sidl::array<double> values ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.Matrix.setD2)
-  // Insert-Code-Here {TOPS.Matrix.setD2} (set method)
-  // DO-NOT-DELETE splicer.end(TOPS.Matrix.setD2)
-}
-
 
 // DO-NOT-DELETE splicer.begin(TOPS.Matrix._misc)
 // Insert-Code-Here {TOPS.Matrix._misc} (miscellaneous code)
 // DO-NOT-DELETE splicer.end(TOPS.Matrix._misc)
-
