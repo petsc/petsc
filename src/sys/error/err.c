@@ -51,9 +51,7 @@ static EH eh = 0;
 $     SETERRQ(number,p,mess)
 
    Notes for experienced users:
-   Use PetscPushErrorHandler() to set the desired error handler.  The
-   currently available PETSc error handlers include PetscTraceBackErrorHandler(),
-   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscStopErrorHandler()
+   Use PetscPushErrorHandler() to set the desired error handler.
 
    Concepts: emacs^going to on error
    Concepts: error handler^going to line in emacs
@@ -114,6 +112,11 @@ $    int handler(int line,char *func,char *file,char *dir,PetscErrorCode n,int p
 
    Level: intermediate
 
+   Notes:
+   The
+   currently available PETSc error handlers include PetscTraceBackErrorHandler(),
+   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscStopErrorHandler(), PetscReturnErrorHandler().
+
 .seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
 
 @*/
@@ -160,6 +163,52 @@ PetscErrorCode PETSC_DLLEXPORT PetscPopErrorHandler(void)
   PetscFunctionReturn(0);
 }
  
+#undef __FUNCT__
+#define __FUNCT__ "PetscReturnErrorHandler"
+/*@C
+  PetscReturnErrorHandler - Error handler that causes a return to the current
+  level.
+
+   Not Collective
+
+   Input Parameters:
++  line - the line number of the error (indicated by __LINE__)
+.  func - the function where error is detected (indicated by __FUNCT__)
+.  file - the file in which the error was detected (indicated by __FILE__)
+.  dir - the directory of the file (indicated by __SDIR__)
+.  mess - an error text string, usually just printed to the screen
+.  n - the generic error number
+.  p - specific error number
+-  ctx - error handler context
+
+   Level: developer
+
+   Notes:
+   Most users need not directly employ this routine and the other error 
+   handlers, but can instead use the simplified interface SETERRQ, which has 
+   the calling sequence
+$     SETERRQ(number,p,mess)
+
+   Notes for experienced users:
+   This routine is good for catching errors such as zero pivots in preconditioners
+   or breakdown of iterative methods. It is not appropriate for memory violations
+   and similar errors.
+
+   Use PetscPushErrorHandler() to set the desired error handler.  The
+   currently available PETSc error handlers include PetscTraceBackErrorHandler(),
+   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscStopErrorHandler()
+
+   Concepts: error handler
+
+.seealso:  PetscPushErrorHandler(), PetscPopErrorHandler().
+ @*/
+
+PetscErrorCode PETSC_DLLEXPORT PetscReturnErrorHandler(int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,int p,const char *mess,void *ctx)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(n);
+}
+
 static char PetscErrorBaseMessage[1024];
 /*
        The numerical values for these are defined in include/petscerror.h; any changes
