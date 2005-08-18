@@ -87,29 +87,33 @@ shared_darwin7:
 #   b) SHARED_LIBRARY_TMPDIR (where .o files should be manipulated)
 # and both the archive and shared library reside in INSTALL_LIB_DIR.
 shared: 
-	-@echo making shared libraries in ${INSTALL_LIB_DIR}; \
-	${RM} -rf ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
-	mkdir ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
-        cwd=`pwd`; \
-	for LIBNAME in ${SHLIBS}; \
-	do \
-	  if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${AR_LIB_SUFFIX}; then \
-	    if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; then \
-	      flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \
-	      if [ "$$flag" = "" ]; then \
-	        flag=`find ${INSTALL_LIB_DIR} -type f -name lt_$$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \
+	-@if [ "${BUILDSHAREDLIB}" == "no" ]; then \
+	    echo "Shared libraries disabled"; \
+	  else \
+	    echo "making shared libraries in ${INSTALL_LIB_DIR}"; \
+	    ${RM} -rf ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
+	    mkdir ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
+            cwd=`pwd`; \
+	    for LIBNAME in ${SHLIBS}; \
+	    do \
+	      if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${AR_LIB_SUFFIX}; then \
+	        if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; then \
+	          flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \
+	          if [ "$$flag" = "" ]; then \
+	            flag=`find ${INSTALL_LIB_DIR} -type f -name lt_$$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \
+	          fi; \
+	        else \
+	          flag="build"; \
+	        fi; \
+	        if [ "$$flag" != "" ]; then \
+                echo "building $$LIBNAME.${SL_LINKER_SUFFIX}"; \
+                  ${RM} -f ${INSTALL_LIB_DIR}/tmp-petsc-shlib/*; \
+	          cd  ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
+	          ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \
+                  cd $$cwd;\
+	          ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-petsc-shlib shared_arch; \
+	        fi; \
 	      fi; \
-	    else \
-	      flag="build"; \
-	    fi; \
-	    if [ "$$flag" != "" ]; then \
-            echo "building $$LIBNAME.${SL_LINKER_SUFFIX}"; \
-              ${RM} -f ${INSTALL_LIB_DIR}/tmp-petsc-shlib/*; \
-  	      cd  ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
-	      ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \
-              cd $$cwd;\
-	      ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-petsc-shlib shared_arch; \
-	    fi; \
-	  fi; \
-	done; \
-	${RM} -rf ${INSTALL_LIB_DIR}/tmp-petsc-shlib
+	    done; \
+	    ${RM} -rf ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
+	  fi

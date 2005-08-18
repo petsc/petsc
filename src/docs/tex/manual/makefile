@@ -23,8 +23,10 @@ manual.pdf: intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex ge
 	-@sed "s?hyperbaseurl?\\\hyperbaseurl{${LOC}/docs/}?g" manual.tex > manual1.tex
 	-@cat  part1.tex part2.tex | egrep '(\\label|\\chapter|\\section|\\subsection)' | ${PETSC_DIR}/maint/getpdflabels.py > anchors
 	-@cat anchors >> ${LOC}/docs/manualpages/manualpages.cit
-	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat part1.tex | ../../../../maint/mapnameslatex.py ${LOC} > part1tmp.tex
-	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat part2.tex | ../../../../maint/mapnameslatex.py ${LOC} > part2tmp.tex
+	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat part1.tex | \
+	  ../../../../maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > part1tmp.tex
+	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat part2.tex | \
+	  ../../../../maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > part2tmp.tex
 	${PDFELATEX} manual1  ${GONULL}
 	bibtex manual1 ${GONULL}
 	${PDFELATEX} manual1  ${GONULL}
