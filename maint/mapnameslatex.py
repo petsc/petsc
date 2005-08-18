@@ -162,8 +162,9 @@ if __name__ == "__main__":
     #
     try:
         PETSC_DIR = sys.argv[1]
+        htmlmapfile = sys.argv[2]
     except:
-        raise RuntimeError('Insufficient arguments. Use: '+ sys.argv[0] + 'LOC')
+        raise RuntimeError('Insufficient arguments. Use: '+ sys.argv[0] + 'PETSC_DIR htmlmap')
 
     # get the version string for this release
     try:
@@ -190,7 +191,11 @@ if __name__ == "__main__":
 #  Read in mapping of names to manual pages
 #
     reg = re.compile('man:\+([a-zA-Z_0-9]*)\+\+([a-zA-Z_0-9 .:]*)\+\+\+\+man\+([a-zA-Z_0-9#./:-]*)')
-    fd = open(os.path.join(PETSC_DIR,'docs','manualpages','htmlmap'))
+    try:
+        fd = open(os.path.join(htmlmapfile))
+    except:
+        raise RuntimeError('Unable to open htmlmap-file: '+htmlmapfile+'\n')
+            
     lines = fd.readlines()
     fd.close()
     n = len(lines)
@@ -199,7 +204,7 @@ if __name__ == "__main__":
     for i in range(0,n):
 	fl = reg.search(lines[i])
 	if not fl:
-           print 'Bad line in '+os.path.join(PETSC_DIR,'docs','manualpages','htmlmap'),lines[i]
+           print 'Bad line in '+htmlmapfile,lines[i]
         else:
             tofind = fl.group(1)
 #   replace all _ in tofind with \_
