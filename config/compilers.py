@@ -735,14 +735,16 @@ class Configure(config.base.Configure):
       if not os.path.isfile(headerPath):
         headerPath = os.path.abspath(os.path.join('src', 'sys','f90', headerGuess))
         if not os.path.isfile(headerPath):
-          raise RuntimeError('Invalid F90 header: '+str(headerPath))
+          self.logPrint('Invalid F90 header: '+str(headerPath), 2, 'compilers')
+          return
       self.f90HeaderPath = headerPath
     if sourceGuess:
       sourcePath = os.path.abspath(sourceGuess)
       if not os.path.isfile(sourcePath):
         sourcePath = os.path.abspath(os.path.join('src', 'sys','f90',sourceGuess))
         if not os.path.isfile(sourcePath):
-          raise RuntimeError('Invalid F90 source: '+str(sourcePath))
+          self.logPrint('Invalid F90 source: '+str(sourcePath), 2, 'compilers')
+          return
       self.f90SourcePath = sourcePath
     if hasattr(self, 'f90HeaderPath'):
       self.addDefine('HAVE_F90_H', '"'+self.f90HeaderPath+'"')
