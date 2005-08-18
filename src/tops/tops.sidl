@@ -15,7 +15,7 @@ package TOPS version 0.0.0 {
       void   zero();
   }
 
-  interface Solver {
+  interface Solver extends gov.cca.Port {
       // Pass in command line arguments to Solver
       void   Initialize(in array<string,1> args);
       void   setSystem(in System system);
@@ -30,7 +30,7 @@ package TOPS version 0.0.0 {
   }
 
   //   The data in the vectors is linearly sliced into one part per process
-  class Solver_Sliced implements-all Solver {
+  interface SolverSliced extends Solver {
       void setLocalRowSize(in int m);
       int  getLocalRowSize();
       void setGlobalRowSize(in int M);
@@ -46,7 +46,7 @@ package TOPS version 0.0.0 {
   }
 
   //   The data lives on a structured grid 
-  class Solver_Structured implements-all Solver {
+  interface SolverStructured extends Solver {
       void setDimension(in int dim);
       int  getDimension();
       void setDimensionX(in int dim);
@@ -61,7 +61,7 @@ package TOPS version 0.0.0 {
   }
 
   // Methods provided by the user to define the numerical problem 
-  interface System {
+  interface System extends gov.cca.Port {
       void   setSolver(in Solver solver);
 
       // Initialize the Layout object and anything that is fixed for all solves
@@ -70,20 +70,29 @@ package TOPS version 0.0.0 {
       void   initializeEverySolve();
   }
 
-  interface SystemComputeJacobian {
-      void   computeJacobian(in array<double> x ,in Matrix J,in Matrix B);
-  }
-
-  interface SystemComputeResidual {
-      void   computeResidual(in array<double> x,in array<double> f);
-  }
-
-  interface SystemComputeRightHandSide {
-      void   computeRightHandSide(in array<double> b);
-  }
-
-  interface SystemComputeInitialGuess {
+  interface SystemComputeInitialGuess extends gov.cca.Port {
       void   computeInitialGuess(in array<double> x);
   }
 
+  // For nonlinear problems
+  interface SystemComputeJacobian extends gov.cca.Port {
+      void   computeJacobian(in array<double> x ,in Matrix J,in Matrix B);
+  }
+
+  interface SystemComputeResidual extends gov.cca.Port {
+      void   computeResidual(in array<double> x,in array<double> f);
+  }
+
+  // For linear problems
+  interface SystemComputeMatrix extends gov.cca.Port {
+      void   computeMatrix(in Matrix J);
+  }
+
+  interface SystemComputeRightHandSide extends gov.cca.Port {
+      void   computeRightHandSide(in array<double> b);
+  }
+
+  // These are the two solver components that come with TOPS by default
+  class Solver_Sliced implements-all SolverSliced, gov.cca.Component {}
+  class Solver_Structured implements-all SolverStructured, gov.cca.Component {}
 }

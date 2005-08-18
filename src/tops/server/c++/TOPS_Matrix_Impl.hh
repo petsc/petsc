@@ -2,12 +2,12 @@
 // File:          TOPS_Matrix_Impl.hh
 // Symbol:        TOPS.Matrix-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.2
+// Babel Version: 0.10.8
 // Description:   Server-side implementation for TOPS.Matrix
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.2
+// babel-version = 0.10.8
 // 
 
 #ifndef included_TOPS_Matrix_Impl_hh
@@ -37,7 +37,7 @@
 
 
 // DO-NOT-DELETE splicer.begin(TOPS.Matrix._includes)
-// Insert-Code-Here {TOPS.Matrix._includes} (includes or arbitrary code)
+#include "petscmat.h"
 // DO-NOT-DELETE splicer.end(TOPS.Matrix._includes)
 
 namespace TOPS { 
@@ -57,7 +57,7 @@ namespace TOPS {
     Matrix self;
 
     // DO-NOT-DELETE splicer.begin(TOPS.Matrix._implementation)
-    // Insert-Code-Here {TOPS.Matrix._implementation} (additional details)
+    Mat mat;
     // DO-NOT-DELETE splicer.end(TOPS.Matrix._implementation)
 
   private:

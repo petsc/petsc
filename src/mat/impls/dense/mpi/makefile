@@ -9,7 +9,7 @@ SOURCEH  = mpidense.h
 OBJSC    = mpidense.o mmdense.o
 OBJSF    =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     = plapack
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/dense/mpi/
 

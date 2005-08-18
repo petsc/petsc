@@ -2,12 +2,12 @@
 // File:          Ex1_System_Impl.cc
 // Symbol:        Ex1.System-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.2
+// Babel Version: 0.10.8
 // Description:   Server-side implementation for Ex1.System
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.2
+// babel-version = 0.10.8
 // 
 #include "Ex1_System_Impl.hh"
 
@@ -39,6 +39,45 @@ void Ex1::System_impl::_load() {
 // user-defined static methods: (none)
 
 // user-defined non-static methods:
+/**
+ * Method:  setSolver[]
+ */
+void
+Ex1::System_impl::setSolver (
+  /* in */ ::TOPS::Solver solver ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(Ex1.System.setSolver)
+  this->solver = (TOPS::Solver_Structured)solver;
+  // DO-NOT-DELETE splicer.end(Ex1.System.setSolver)
+}
+
+/**
+ * Method:  initializeOnce[]
+ */
+void
+Ex1::System_impl::initializeOnce ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(Ex1.System.initializeOnce)
+  
+  // DO-NOT-DELETE splicer.end(Ex1.System.initializeOnce)
+}
+
+/**
+ * Method:  initializeEverySolve[]
+ */
+void
+Ex1::System_impl::initializeEverySolve ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(Ex1.System.initializeEverySolve)
+  // Insert-Code-Here {Ex1.System.initializeEverySolve} (initializeEverySolve method)
+  // DO-NOT-DELETE splicer.end(Ex1.System.initializeEverySolve)
+}
+
 /**
  * Method:  computeResidual[]
  */
@@ -87,42 +126,31 @@ throw ()
 }
 
 /**
- * Method:  setSolver[]
+ * Starts up a component presence in the calling framework.
+ * @param services the component instance's handle on the framework world.
+ * Contracts concerning Svc and setServices:
+ * 
+ * The component interaction with the CCA framework
+ * and Ports begins on the call to setServices by the framework.
+ * 
+ * This function is called exactly once for each instance created
+ * by the framework.
+ * 
+ * The argument Svc will never be nil/null.
+ * 
+ * Those uses ports which are automatically connected by the framework
+ * (so-called service-ports) may be obtained via getPort during
+ * setServices.
  */
 void
-Ex1::System_impl::setSolver (
-  /* in */ ::TOPS::Solver solver ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(Ex1.System.setSolver)
-  this->solver = (TOPS::Solver_Structured)solver;
-  // DO-NOT-DELETE splicer.end(Ex1.System.setSolver)
-}
-
-/**
- * Method:  initializeOnce[]
- */
-void
-Ex1::System_impl::initializeOnce ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(Ex1.System.initializeOnce)
-  
-  // DO-NOT-DELETE splicer.end(Ex1.System.initializeOnce)
-}
-
-/**
- * Method:  initializeEverySolve[]
- */
-void
-Ex1::System_impl::initializeEverySolve ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(Ex1.System.initializeEverySolve)
-  // Insert-Code-Here {Ex1.System.initializeEverySolve} (initializeEverySolve method)
-  // DO-NOT-DELETE splicer.end(Ex1.System.initializeEverySolve)
+Ex1::System_impl::setServices (
+  /* in */ ::gov::cca::Services services ) 
+throw ( 
+  ::gov::cca::CCAException
+){
+  // DO-NOT-DELETE splicer.begin(Ex1.System.setServices)
+  // Insert-Code-Here {Ex1.System.setServices} (setServices method)
+  // DO-NOT-DELETE splicer.end(Ex1.System.setServices)
 }
 
 

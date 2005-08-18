@@ -2,12 +2,12 @@
 // File:          TOPS_Vector_Impl.cc
 // Symbol:        TOPS.Vector-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.2
+// Babel Version: 0.10.8
 // Description:   Server-side implementation for TOPS.Vector
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.2
+// babel-version = 0.10.8
 // 
 #include "TOPS_Vector_Impl.hh"
 

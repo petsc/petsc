@@ -2,12 +2,12 @@
 // File:          TOPS_Solver_Structured_Impl.hh
 // Symbol:        TOPS.Solver_Structured-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.2
+// Babel Version: 0.10.8
 // Description:   Server-side implementation for TOPS.Solver_Structured
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.2
+// babel-version = 0.10.8
 // 
 
 #ifndef included_TOPS_Solver_Structured_Impl_hh
@@ -34,6 +34,12 @@
 #ifndef included_TOPS_Vector_hh
 #include "TOPS_Vector.hh"
 #endif
+#ifndef included_gov_cca_CCAException_hh
+#include "gov_cca_CCAException.hh"
+#endif
+#ifndef included_gov_cca_Services_hh
+#include "gov_cca_Services.hh"
+#endif
 #ifndef included_sidl_BaseInterface_hh
 #include "sidl_BaseInterface.hh"
 #endif
@@ -44,6 +50,8 @@
 
 // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._includes)
 #include "petscdmmg.h"
+
+// Includes for all uses ports
 #include "TOPS_SystemComputeResidual.hh"
 #include "TOPS_SystemComputeInitialGuess.hh"
 #include "TOPS_SystemComputeJacobian.hh"
@@ -67,13 +75,14 @@ namespace TOPS {
     Solver_Structured self;
 
     // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._implementation)
-    DMMG           *dmmg;
-    DA             da;
-    int            M,N,P,m,n,p,dim,s,levels,bs;
-    DAStencilType  stencil_type;
-    DAPeriodicType wrap;
-    TOPS::System   system;
-    int            startedpetsc;
+    DMMG               *dmmg;
+    DA                 da;
+    int                M,N,P,m,n,p,dim,s,levels,bs;
+    DAStencilType      stencil_type;
+    DAPeriodicType     wrap;
+    TOPS::System       system;
+    int                startedpetsc;
+    gov::cca::Services myServices;
     // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._implementation)
 
   private:
@@ -101,6 +110,80 @@ namespace TOPS {
     static void _load();
 
   public:
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    Initialize (
+      /* in */ ::sidl::array< ::std::string> args
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    setSystem (
+      /* in */ ::TOPS::System system
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    ::TOPS::System
+    getSystem() throw () 
+    ;
+    /**
+     * user defined non-static method.
+     */
+    void
+    solve() throw () 
+    ;
+    /**
+     * user defined non-static method.
+     */
+    void
+    setBlockSize (
+      /* in */ int32_t bs
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    ::TOPS::Vector
+    getRightHandSize (
+      /* in */ int32_t level
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    ::TOPS::Vector
+    getSolution (
+      /* in */ int32_t Level
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    getJacobian (
+      /* in */ int32_t Level,
+      /* out */ ::TOPS::Matrix& J,
+      /* out */ ::TOPS::Matrix& B
+    )
+    throw () 
+    ;
 
     /**
      * user defined non-static method.
@@ -192,79 +275,31 @@ namespace TOPS {
     throw () 
     ;
 
-    /**
-     * user defined non-static method.
-     */
-    void
-    Initialize (
-      /* in */ ::sidl::array< ::std::string> args
-    )
-    throw () 
-    ;
 
     /**
-     * user defined non-static method.
+     * Starts up a component presence in the calling framework.
+     * @param services the component instance's handle on the framework world.
+     * Contracts concerning Svc and setServices:
+     * 
+     * The component interaction with the CCA framework
+     * and Ports begins on the call to setServices by the framework.
+     * 
+     * This function is called exactly once for each instance created
+     * by the framework.
+     * 
+     * The argument Svc will never be nil/null.
+     * 
+     * Those uses ports which are automatically connected by the framework
+     * (so-called service-ports) may be obtained via getPort during
+     * setServices.
      */
     void
-    setSystem (
-      /* in */ ::TOPS::System system
+    setServices (
+      /* in */ ::gov::cca::Services services
     )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    ::TOPS::System
-    getSystem() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    void
-    solve() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    void
-    setBlockSize (
-      /* in */ int32_t bs
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    ::TOPS::Vector
-    getRightHandSize (
-      /* in */ int32_t level
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    ::TOPS::Vector
-    getSolution (
-      /* in */ int32_t Level
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    getJacobian (
-      /* in */ int32_t Level,
-      /* out */ ::TOPS::Matrix& J,
-      /* out */ ::TOPS::Matrix& B
-    )
-    throw () 
-    ;
+    throw ( 
+      ::gov::cca::CCAException
+    );
 
   };  // end class Solver_Structured_impl
 
