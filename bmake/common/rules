@@ -532,6 +532,8 @@ html:
           ${MKDIR} -p $${loc} ;\
           for i in ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} *_Impl.cc *_Impl.hh foo ; do\
 	    if [ -f $$i ]; then \
+	      idir=`dirname $$i`;\
+	      if [ ! -d $${loc}/$${idir} ]; ${MKDIR} -p $${loc}/$${idir}; fi ; \
               iroot=`echo $$i | sed -e "s?[a-z.]*/??g"`;\
               IROOT=`echo $${i} | sed -e s?[.][.]??g` ;\
               if [ "$${IROOT}" != "$${i}" ] ; then \
