@@ -90,11 +90,11 @@ Ex2::System_impl::computeResidual (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.computeResidual)
-  TOPS::Solver_Structured solver = this->solver;
+  TOPS::SolverStructured solver = this->solver;
   int xs = f.lower(1);      // first grid point in X and Y directions on this process
   int ys = f.lower(2);
-  int xm = f.length(1) - 1;       // number of local grid points in X and Y directions on this process
-  int ym = f.length(2) - 1;
+  int xm = f.length(1);       // number of local grid points in X and Y directions on this process
+  int ym = f.length(2);
   int i,j;
   int mx = solver.getDimensionX();
   int my = solver.getDimensionY();

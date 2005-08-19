@@ -12,7 +12,7 @@
 #include "Ex3_System_Impl.hh"
 
 // DO-NOT-DELETE splicer.begin(Ex3.System._includes)
-// Insert-Code-Here {Ex3.System._includes} (additional includes or code)
+#include "petsc.h"
 // DO-NOT-DELETE splicer.end(Ex3.System._includes)
 
 // user-defined constructor.
@@ -48,7 +48,7 @@ Ex3::System_impl::setSolver (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.setSolver)
-  // Insert-Code-Here {Ex3.System.setSolver} (setSolver method)
+  this->solver = solver;
   // DO-NOT-DELETE splicer.end(Ex3.System.setSolver)
 }
 
@@ -61,7 +61,7 @@ throw ()
 
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.initializeOnce)
-  // Insert-Code-Here {Ex3.System.initializeOnce} (initializeOnce method)
+  this->solver.setDimension(3);
   // DO-NOT-DELETE splicer.end(Ex3.System.initializeOnce)
 }
 
@@ -88,32 +88,48 @@ throw ()
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.computeMatrix)
   TOPS::MatrixStructured B = (TOPS::MatrixStructured)J;
-  TOPS::Solver_Structured solver = this->solver;
+  TOPS::SolverStructured solver = this->solver;
   int xs = B.lower(0);      // first grid point in X and Y directions on this process
   int ys = B.lower(1);
-  int xm = B.length(0) - 1;       // number of local grid points in X and Y directions on this process
-  int ym = B.length(1) - 1;
-  int i,j;
+  int zs = B.lower(2);
+  int xm = B.length(0);       // number of local grid points in X and Y directions on this process
+  int ym = B.length(1);
+  int zm = B.length(2);
+  int i,j,k;
   int mx = solver.getDimensionX();
   int my = solver.getDimensionY();
+  int mz = solver.getDimensionZ();
 
   double hx     = 1.0/(double)(mx-1);
   double hy     = 1.0/(double)(my-1);
-  double sc     = hx*hy;
-  double hxdhy  = hx/hy; 
-  double hydhx  = hy/hx;
+  double hz     = 1.0/(double)(mz-1);
+  double sc     = hx*hy*hz;
+  double hxhydhz  = hx*hy/hz; 
+  double hyhzdhx  = hy*hz/hx;
+  double hxhzdhy  = hx*hz/hy;
  
   /*
-     Compute function over the locally owned part of the grid
+     Compute part of matrix over the locally owned part of the grid
   */
-  double one = 1.0;
-  for (j=ys; j<ys+ym; j++) {
-    for (i=xs; i<xs+xm; i++) {
-      //  if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
-        CHKMEMA;
-        B.set(i,j,sidl::array<double>::create1d(1,&one));
-        CHKMEMA;
-	//      }
+  double d = 2.0*(hxhydhz + hxhzdhy + hyhzdhx);
+  sidl::array<double> dd = sidl::array<double>::create1d(1,&d);
+
+  double r[7];
+  r[0] = r[6] = -hxhydhz;
+  r[1] = r[5] = -hxhzdhy;
+  r[2] = r[4] = -hyhzdhx;
+  r[3] = 2.0*(hxhydhz + hxhzdhy + hyhzdhx);
+  sidl::array<double> rr = sidl::array<double>::create1d(7,r);
+
+  for (k=zs; k<zs+zm; k++) {
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
+	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
+          B.set(i,j,k,dd); // diagonal entry
+        } else {
+          B.set(i,j,k,rr);   // seven point stencil
+        }
+      }
     }
   }
   // DO-NOT-DELETE splicer.end(Ex3.System.computeMatrix)
@@ -128,7 +144,41 @@ Ex3::System_impl::computeRightHandSide (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.computeRightHandSide)
-  // Insert-Code-Here {Ex3.System.computeRightHandSide} (computeRightHandSide method)
+  TOPS::Solver_Structured solver = this->solver;
+  int xs = b.lower(0);      // first grid point in X and Y directions on this process
+  int ys = b.lower(1);
+  int zs = b.lower(2);
+  int xm = b.length(0);       // number of local grid points in X and Y directions on this process
+  int ym = b.length(1);
+  int zm = b.length(2);
+  int i,j,k;
+  int mx = solver.getDimensionX();
+  int my = solver.getDimensionY();
+  int mz = solver.getDimensionZ();
+
+  double hx     = 1.0/(double)(mx-1);
+  double hy     = 1.0/(double)(my-1);
+  double hz     = 1.0/(double)(mz-1);
+  double sc     = hx*hy*hz;
+ 
+  /*
+     Compute right hand side over the locally owned part of the grid
+  */
+  for (k=zs; j<zs+zm; j++) {
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
+        if (i == 0 || j == 0 || i == mx-1 || j == my-1 || k == 0 || k == mz-1) {
+	  CHKMEMA;
+          b.set(i,j,k,0.0);
+          CHKMEMA;
+        } else {
+	  CHKMEMA;
+          b.set(i,j,k,sc);
+  	  CHKMEMA;
+        }
+      }
+    }
+  }  
   // DO-NOT-DELETE splicer.end(Ex3.System.computeRightHandSide)
 }
 

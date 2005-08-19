@@ -40,7 +40,7 @@
 
 
 // DO-NOT-DELETE splicer.begin(Ex3.System._includes)
-#include "TOPS_MatrixStructured.hh"
+#include "TOPS.hh"
 // DO-NOT-DELETE splicer.end(Ex3.System._includes)
 
 namespace Ex3 { 
@@ -60,7 +60,7 @@ namespace Ex3 {
     System self;
 
     // DO-NOT-DELETE splicer.begin(Ex3.System._implementation)
-    // Insert-Code-Here {Ex3.System._implementation} (additional details)
+    TOPS::SolverStructured solver;
     // DO-NOT-DELETE splicer.end(Ex3.System._implementation)
 
   private:

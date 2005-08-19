@@ -11,7 +11,7 @@
 extern FILE *petsc_history;
 /*
      Allows one to overwrite where standard out is sent. For example
-     PETSC_STDOUTPUT = fopen("/dev/ttyXX","w") will cause all standard out
+     PETSC_STDOUT = fopen("/dev/ttyXX","w") will cause all standard out
      writes to go to terminal XX; assuming you have write permission there
 */
 FILE *PETSC_STDOUT = 0;

@@ -15,10 +15,25 @@ package TOPS version 0.0.0 {
       void   zero();
   }
 
+  // Sparse matrix interface for a structured grid problem
+  // This is modeled after the Babel/SIDL arrays interface
+  // essentially one can think of the sparse matrix as having
+  // a variable number of doubles at each grid point (while 
+  // Babel/SIDL arrays have a fixed number)
   class MatrixStructured implements-all Matrix {
+      // local ownership of grid
+      int    dimen();
       int    lower(in int a);
       int    length(in int a);
+      // set a (block) row of nonzeros
       void   set[D2](in int i,in int j,in array<double,2> values);
+      void   set[D3](in int i,in int j,in int k,in array<double,2> values);
+
+      // private methods
+      void   setdimen(in int a);
+      void   setlower(in int a,in int l);
+      void   setlength(in int a,in int l);
+      void   setMat(in opaque m);
   }
 
   interface Solver extends gov.cca.Port {
