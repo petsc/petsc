@@ -27,9 +27,10 @@ class Configure(config.base.Configure):
     self.useShared = not self.setCompilers.staticLibraries
     if self.useShared:
       self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase)
+      self.addMakeMacro('BUILDSHAREDLIB','yes')
     else:
       self.addMakeRule('shared_arch','')
-
+      self.addMakeMacro('BUILDSHAREDLIB','no')
   def configure(self):
     self.executeTest(self.configureSharedLibraries)
     return

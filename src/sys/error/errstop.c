@@ -5,7 +5,7 @@
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStopErrorHandler" 
 /*@C
-   PetscStopErrorHandler - Calls MPI_abort() and exists.
+   PetscStopErrorHandler - Calls MPI_abort() and exits.
 
    Not Collective
 

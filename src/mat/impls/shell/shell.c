@@ -422,7 +422,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetContext(Mat mat,void *ctx)
    Level: advanced
 
     Usage:
-$      extern int usermult(Mat,Vec,Vec);
+$      extern PetscErrorCode usermult(Mat,Vec,Vec);
 $      ierr = MatCreateShell(comm,m,n,M,N,ctx,&A);
 $      ierr = MatShellSetOperation(A,MATOP_MULT,(void(*)(void))usermult);
 

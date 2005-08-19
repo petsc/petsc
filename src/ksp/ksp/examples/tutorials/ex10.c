@@ -202,7 +202,7 @@ int main(int argc,char **args)
       MatPartitioning mpart;
       IS              mis,nis,isn,is;
       PetscInt        *count;
-      PetscMPIInt     rank,size;
+      PetscMPIInt     size;
       Mat             BB;
       ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
       ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
