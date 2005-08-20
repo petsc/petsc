@@ -136,6 +136,19 @@ PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmet
   PetscFunctionReturn(0); 
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesRow_SeqAIJ"
+PetscErrorCode MatSetValuesRow_SeqAIJ(Mat A,PetscInt row,const PetscScalar v[])
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscInt       *ai = a->i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;  
+  ierr = PetscMemcpy(a->a+ai[row],v,(ai[row+1]-ai[row])*sizeof(PetscScalar));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #define CHUNKSIZE   15
 
 #undef __FUNCT__  
@@ -1417,7 +1430,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,Mat *B)
   ierr = PetscFree(col);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     len    = ai[i+1]-ai[i];
-    ierr   = MatSetValues(C,len,aj,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
+    ierr   = MatSetValues_SeqAIJ(C,len,aj,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
     array += len; 
     aj    += len;
   }
@@ -2289,7 +2302,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*100*/MatPtAPNumeric_SeqAIJ_SeqAIJ,
        0,
        0,
-       MatConjugate_SeqAIJ
+       MatConjugate_SeqAIJ,
+       0,
+/*105*/MatSetValuesRow_SeqAIJ
 };
 
 EXTERN_C_BEGIN

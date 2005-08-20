@@ -352,6 +352,7 @@
       PetscEnum MATOP_PTAP_NUMERIC_SEQAIJ
       PetscEnum MATOP_PTAP_SYMBOLIC_MPIAIJ
       PetscEnum MATOP_PTAP_NUMERIC_MPIAIJ
+      PetscEnum MATOP_SET_VALUES_ROW
   
 
       parameter(MATOP_SET_VALUES=0)
@@ -457,6 +458,7 @@
       parameter(MATOP_PTAP_NUMERIC_SEQAIJ=100)
       parameter(MATOP_PTAP_SYMBOLIC_MPIAIJ=101)
       parameter(MATOP_PTAP_NUMERIC_MPIAIJ=102)
+      parameter(MATOP_SET_VALUES_ROW=105)
 !
 !  
 !

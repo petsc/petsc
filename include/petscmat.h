@@ -263,6 +263,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate(Mat);
 /* ------------------------------------------------------------*/
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRow(Mat,PetscInt,const PetscScalar[]);
 
 /*S
      MatStencil - Data structure (C struct) for storing information about a single row or
@@ -1388,7 +1389,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_PTAP_SYMBOLIC_SEQAIJ=99,
                MATOP_PTAP_NUMERIC_SEQAIJ=100,
                MATOP_PTAP_SYMBOLIC_MPIAIJ=101,
-               MATOP_PTAP_NUMERIC_MPIAIJ=102
+               MATOP_PTAP_NUMERIC_MPIAIJ=102,
+               MATOP_SET_VALUES_ROW = 105
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));

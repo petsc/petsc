@@ -705,6 +705,58 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValues(Mat mat,PetscInt m,const PetscInt
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesRow"
+/*@ 
+   MatSetValuesRow - Inserts a row (block row for BAIJ matrices) of nonzero
+        values into a matrix
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+.  row - the (block) row to set
+-  v - a logically two-dimensional array of values
+
+   Notes:
+   By the values, v, are column-oriented (for the block version) and sorted
+
+   All the nonzeros in the row must be provided
+
+   The matrix must have previously had its column indices set
+
+   Level: intermediate
+
+   Concepts: matrices^putting entries in
+
+.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
+          InsertMode, INSERT_VALUES, ADD_VALUES, MatSetValues()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRow(Mat mat,PetscInt row,const PetscScalar v[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidScalarPointer(v,2);
+#if defined(PETSC_USE_DEBUG)
+  if (mat->insertmode == ADD_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add and insert values");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+#endif
+  mat->insertmode = INSERT_VALUES;
+
+  if (mat->assembled) {
+    mat->was_assembled = PETSC_TRUE; 
+    mat->assembled     = PETSC_FALSE;
+  }
+  ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  if (!mat->ops->setvaluesrow) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  ierr = (*mat->ops->setvaluesrow)(mat,row,v);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesStencil"
 /*@
    MatSetValuesStencil - Inserts or adds a block of values into a matrix.

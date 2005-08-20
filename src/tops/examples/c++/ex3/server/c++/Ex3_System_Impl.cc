@@ -164,7 +164,7 @@ throw ()
   /*
      Compute right hand side over the locally owned part of the grid
   */
-  for (k=zs; j<zs+zm; j++) {
+  for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
         if (i == 0 || j == 0 || i == mx-1 || j == my-1 || k == 0 || k == mz-1) {
