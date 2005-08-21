@@ -40,19 +40,6 @@ void TOPS::Solver_Sliced_impl::_load() {
 
 // user-defined non-static methods:
 /**
- * Method:  Initialize[]
- */
-void
-TOPS::Solver_Sliced_impl::Initialize (
-  /* in */ ::sidl::array< ::std::string> args ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Sliced.Initialize)
-  // Insert-Code-Here {TOPS.Solver_Sliced.Initialize} (Initialize method)
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Sliced.Initialize)
-}
-
-/**
  * Method:  setSystem[]
  */
 void
@@ -76,6 +63,19 @@ throw ()
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Sliced.getSystem)
   // Insert-Code-Here {TOPS.Solver_Sliced.getSystem} (getSystem method)
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Sliced.getSystem)
+}
+
+/**
+ * Method:  Initialize[]
+ */
+void
+TOPS::Solver_Sliced_impl::Initialize (
+  /* in */ ::sidl::array< ::std::string> args ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Sliced.Initialize)
+  // Insert-Code-Here {TOPS.Solver_Sliced.Initialize} (Initialize method)
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Sliced.Initialize)
 }
 
 /**
@@ -105,25 +105,12 @@ throw ()
 }
 
 /**
- * Method:  getRightHandSize[]
- */
-::TOPS::Vector
-TOPS::Solver_Sliced_impl::getRightHandSize (
-  /* in */ int32_t level ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Sliced.getRightHandSize)
-  // Insert-Code-Here {TOPS.Solver_Sliced.getRightHandSize} (getRightHandSize method)
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Sliced.getRightHandSize)
-}
-
-/**
  * Method:  getSolution[]
  */
-::TOPS::Vector
-TOPS::Solver_Sliced_impl::getSolution (
-  /* in */ int32_t Level ) 
+::sidl::array<double>
+TOPS::Solver_Sliced_impl::getSolution ()
 throw () 
+
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Sliced.getSolution)
   // Insert-Code-Here {TOPS.Solver_Sliced.getSolution} (getSolution method)
@@ -131,18 +118,16 @@ throw ()
 }
 
 /**
- * Method:  getJacobian[]
+ * Method:  setSolution[]
  */
 void
-TOPS::Solver_Sliced_impl::getJacobian (
-  /* in */ int32_t Level,
-  /* out */ ::TOPS::Matrix& J,
-  /* out */ ::TOPS::Matrix& B ) 
+TOPS::Solver_Sliced_impl::setSolution (
+  /* in */ ::sidl::array<double> location ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Sliced.getJacobian)
-  // Insert-Code-Here {TOPS.Solver_Sliced.getJacobian} (getJacobian method)
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Sliced.getJacobian)
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Sliced.setSolution)
+  // Insert-Code-Here {TOPS.Solver_Sliced.setSolution} (setSolution method)
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Sliced.setSolution)
 }
 
 /**

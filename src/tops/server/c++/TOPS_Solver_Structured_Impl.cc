@@ -165,6 +165,33 @@ void TOPS::Solver_Structured_impl::_load() {
 
 // user-defined non-static methods:
 /**
+ * Method:  setSystem[]
+ */
+void
+TOPS::Solver_Structured_impl::setSystem (
+  /* in */ ::TOPS::System system ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setSystem)
+  this->system = system;
+  system.setSolver(this->self);
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setSystem)
+}
+
+/**
+ * Method:  getSystem[]
+ */
+::TOPS::System
+TOPS::Solver_Structured_impl::getSystem ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getSystem)
+  return this->system;
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getSystem)
+}
+
+/**
  * Method:  Initialize[]
  */
 void
@@ -192,33 +219,6 @@ throw ()
   }
   int    ierr = PetscInitialize(&argc,&argv,0,0);
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.Initialize)
-}
-
-/**
- * Method:  setSystem[]
- */
-void
-TOPS::Solver_Structured_impl::setSystem (
-  /* in */ ::TOPS::System system ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setSystem)
-  this->system = system;
-  system.setSolver(this->self);
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setSystem)
-}
-
-/**
- * Method:  getSystem[]
- */
-::TOPS::System
-TOPS::Solver_Structured_impl::getSystem ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getSystem)
-  return this->system;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getSystem)
 }
 
 /**
@@ -269,25 +269,12 @@ throw ()
 }
 
 /**
- * Method:  getRightHandSize[]
- */
-::TOPS::Vector
-TOPS::Solver_Structured_impl::getRightHandSize (
-  /* in */ int32_t level ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getRightHandSize)
-  // Insert-Code-Here {TOPS.Solver_Structured.getRightHandSize} (getRightHandSize method)
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getRightHandSize)
-}
-
-/**
  * Method:  getSolution[]
  */
-::TOPS::Vector
-TOPS::Solver_Structured_impl::getSolution (
-  /* in */ int32_t Level ) 
+::sidl::array<double>
+TOPS::Solver_Structured_impl::getSolution ()
 throw () 
+
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getSolution)
   // Insert-Code-Here {TOPS.Solver_Structured.getSolution} (getSolution method)
@@ -295,18 +282,16 @@ throw ()
 }
 
 /**
- * Method:  getJacobian[]
+ * Method:  setSolution[]
  */
 void
-TOPS::Solver_Structured_impl::getJacobian (
-  /* in */ int32_t Level,
-  /* out */ ::TOPS::Matrix& J,
-  /* out */ ::TOPS::Matrix& B ) 
+TOPS::Solver_Structured_impl::setSolution (
+  /* in */ ::sidl::array<double> location ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getJacobian)
-  // Insert-Code-Here {TOPS.Solver_Structured.getJacobian} (getJacobian method)
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getJacobian)
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setSolution)
+  // Insert-Code-Here {TOPS.Solver_Structured.setSolution} (setSolution method)
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setSolution)
 }
 
 /**

@@ -13,7 +13,7 @@ CFLAGS = -I${BABEL_include}
 SIDLFILES = ${PETSC_DIR}/src/tops/tops.sidl ${SIDL}
 
 parse-check:
-	${BABEL_bin}/babel --parse-check ${SIDLFILES}
+	${BABEL_bin}/babel -R${CCA_REPO} --parse-check ${SIDLFILES}
 
 #-------------------------------------------------------------------------------
 clients: 
