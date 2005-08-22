@@ -224,6 +224,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
   double           *berr=0;
   IS               isrow;
   PetscLogDouble   time0,time,time_min,time_max; 
+  Mat              F_diag;
 #if defined(PETSC_USE_COMPLEX)
   doublecomplex    *av, *bv; 
 #else
@@ -397,8 +398,11 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
     PStatPrint(&lu->options, &stat, &lu->grid);  /* Print the statistics. */
   }
   PStatFree(&stat);  
-  (*F)->assembled = PETSC_TRUE;
-  lu->flg         = SAME_NONZERO_PATTERN;
+
+  F_diag = ((Mat_MPIAIJ *)(*F)->data)->A;
+  F_diag->assembled = PETSC_TRUE; 
+  (*F)->assembled   = PETSC_TRUE;
+  lu->flg           = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 

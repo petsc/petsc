@@ -191,9 +191,10 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
 #endif
   InpMtx          *newA ;
   PetscScalar     *av, *bv; 
-  int             *ai, *aj, *bi,*bj, nz, *ajj, *bjj, *garray,
+  PetscInt        *ai, *aj, *bi,*bj, nz, *ajj, *bjj, *garray,
                   i,j,irow,jcol,countA,countB,jB,*row,*col,colA_start,jj;
-  int             M=A->M,m=A->m,root,nedges,tagbound,lasttag;
+  PetscInt        M=A->M,m=A->m,root,nedges,tagbound,lasttag;
+  Mat             F_diag;
   
   PetscFunctionBegin;	
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
@@ -206,6 +207,12 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
     (*F)->ops->solve   = MatSolve_MPIAIJSpooles;
     (*F)->ops->destroy = MatDestroy_MPIAIJSpooles;  
     (*F)->assembled    = PETSC_TRUE;
+    if ((*F)->factor == FACTOR_LU){
+      F_diag = ((Mat_MPIAIJ *)(*F)->data)->A;
+    } else {
+      F_diag = ((Mat_MPISBAIJ *)(*F)->data)->A;
+    }
+    F_diag->assembled  = PETSC_TRUE; 
 
     /* to be used by MatSolve() */
     lu->mtxY = DenseMtx_new();  
