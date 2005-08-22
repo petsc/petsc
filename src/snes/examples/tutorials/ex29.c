@@ -403,6 +403,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
   /*
      Compute initial solution over the locally owned part of the grid
   */
+#if defined (PETSC_HAVE_ERF)
   {
     PetscReal eps = lx/ly;
     PetscReal pert = 1e-4;
@@ -411,7 +412,6 @@ PetscErrorCode Initialize(DMMG *dmmg)
 
     if (d_e < rho_s) d_e = rho_s;
     gam = k * d_e;
-#if defined (PETSC_HAVE_ERF)
     for (j=ys-1; j<ys+ym+1; j++) {
       yy = j * hy;
       for (i=xs-1; i<xs+xm+1; i++) {
@@ -425,9 +425,6 @@ PetscErrorCode Initialize(DMMG *dmmg)
 	} else {
 	  localx[j][i].phi = - pert * gam / k * erf((xx - 2.*3.1415926) / (sqrt(2.0) * d_e)) * (-sin(k*yy));
 	}
-#else
-  SETERRQ(1,"erf() not available on this machine");
-#endif
 #ifdef EQ
 	localx[j][i].psi = 0.;
 #else
@@ -435,6 +432,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
 #endif
       }
     }
+
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
 	x[j][i].U   = Lapl(localx,phi,i,j);
@@ -444,6 +442,10 @@ PetscErrorCode Initialize(DMMG *dmmg)
       }
     }
   }
+#else
+  SETERRQ(1,"erf() not available on this machine");
+#endif
+
   /*
      Restore vector
   */
