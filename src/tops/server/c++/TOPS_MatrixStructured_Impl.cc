@@ -79,6 +79,20 @@ throw ()
 }
 
 /**
+ * Method:  set[D1]
+ */
+void
+TOPS::MatrixStructured_impl::set (
+  /* in */ int32_t i,
+  /* in */ ::sidl::array<double> values ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.MatrixStructured.setD1)
+  // Insert-Code-Here {TOPS.MatrixStructured.setD1} (set method)
+  // DO-NOT-DELETE splicer.end(TOPS.MatrixStructured.setD1)
+}
+
+/**
  * Method:  set[D2]
  */
 void
@@ -89,7 +103,12 @@ TOPS::MatrixStructured_impl::set (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.MatrixStructured.setD2)
-  // Insert-Code-Here {TOPS.MatrixStructured.setD2} (set method)
+  int I = i - this->vlower[0] + this->vlength[0]*(j - this->vlower[1]);
+  if ((values.dimen() == 1 || values.length(1) == 1) && values.length(0) == 1) {
+    MatSetValuesLocal(this->mat,1,&I,1,&I,values.first(),INSERT_VALUES);
+  } else {
+    MatSetValuesRowLocal(this->mat,I,values.first());
+  }
   // DO-NOT-DELETE splicer.end(TOPS.MatrixStructured.setD2)
 }
 
@@ -109,9 +128,32 @@ throw ()
   if ((values.dimen() == 1 || values.length(1) == 1) && values.length(0) == 1) {
     MatSetValuesLocal(this->mat,1,&I,1,&I,values.first(),INSERT_VALUES);
   } else {
-    MatSetValuesRow(this->mat,I,values.first());
+    MatSetValuesRowLocal(this->mat,I,values.first());
   }
   // DO-NOT-DELETE splicer.end(TOPS.MatrixStructured.setD3)
+}
+
+/**
+ * Method:  set[D4]
+ */
+void
+TOPS::MatrixStructured_impl::set (
+  /* in */ int32_t i,
+  /* in */ int32_t j,
+  /* in */ int32_t k,
+  /* in */ int32_t l,
+  /* in */ ::sidl::array<double> values ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.MatrixStructured.setD4)
+  int I = i - this->vlower[0] + this->vlength[0]*(j - this->vlower[1]) + this->vlength[0]*this->vlength[1]*(k - this->vlower[2]) +
+          this->vlength[0]*this->vlength[1]*this->vlength[2]*(l - vlower[3]);
+  if ((values.dimen() == 1 || values.length(1) == 1) && values.length(0) == 1) {
+    MatSetValuesLocal(this->mat,1,&I,1,&I,values.first(),INSERT_VALUES);
+  } else {
+    MatSetValuesRowLocal(this->mat,I,values.first());
+  }
+  // DO-NOT-DELETE splicer.end(TOPS.MatrixStructured.setD4)
 }
 
 /**

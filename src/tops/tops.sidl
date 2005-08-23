@@ -63,9 +63,12 @@ package TOPS version 0.0.0 {
       int    dimen();
       int    lower(in int a);
       int    length(in int a);
+
       // set a (block) row of nonzeros
+      void   set[D1](in int i,in array<double,2> values);
       void   set[D2](in int i,in int j,in array<double,2> values);
       void   set[D3](in int i,in int j,in int k,in array<double,2> values);
+      void   set[D4](in int i,in int j,in int k,in int l,in array<double,2> values);
 
       // private methods
       void   setdimen(in int a);

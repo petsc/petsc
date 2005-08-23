@@ -55,7 +55,7 @@ namespace TOPS {
     MatrixStructured self;
 
     // DO-NOT-DELETE splicer.begin(TOPS.MatrixStructured._implementation)
-    int vlength[4],vlower[4],vdimen;
+    int vlength[4],vlower[4],glength[4],vdimen;
     Mat mat;
     // DO-NOT-DELETE splicer.end(TOPS.MatrixStructured._implementation)
 
@@ -117,6 +117,17 @@ namespace TOPS {
     void
     set (
       /* in */ int32_t i,
+      /* in */ ::sidl::array<double> values
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    set (
+      /* in */ int32_t i,
       /* in */ int32_t j,
       /* in */ ::sidl::array<double> values
     )
@@ -131,6 +142,20 @@ namespace TOPS {
       /* in */ int32_t i,
       /* in */ int32_t j,
       /* in */ int32_t k,
+      /* in */ ::sidl::array<double> values
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    set (
+      /* in */ int32_t i,
+      /* in */ int32_t j,
+      /* in */ int32_t k,
+      /* in */ int32_t l,
       /* in */ ::sidl::array<double> values
     )
     throw () 

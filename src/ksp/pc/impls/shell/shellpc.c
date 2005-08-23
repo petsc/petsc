@@ -321,7 +321,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetName_Shell(PC pc,const char name[])
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  ierr  = PetscStrallocpy(name,&shell->name);CHKERRQ(ierr);
+  ierr = PetscStrfree(shell->name);CHKERRQ(ierr);    
+  ierr = PetscStrallocpy(name,&shell->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -146,8 +146,9 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
 #else
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
-  PetscInt       n = gmres->it + 1,N = gmres->max_k + 1,lwork = 5*N,idummy = N,i,*perm;
+  PetscInt       n = gmres->it + 1,N = gmres->max_k + 1,i,*perm;
   PetscScalar    *R = gmres->Rsvd,*work = R + N*N,*eigs = work + 5*N,sdummy;
+  PetscBLASInt   bn = (PetscBLASInt)n,bN = (PetscBLASInt)N,lwork = (PetscBLASInt)5*N,idummy = (PetscBLASInt)N,lierr;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
@@ -160,8 +161,8 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* compute eigenvalues */
-  LAPACKgeev_("N","N",&n,R,&N,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,gmres->Dsvd,&ierr);
-  if (ierr) SETERRQ(PETSC_ERR_LIB,"Error in LAPACK routine");
+  LAPACKgeev_("N","N",&bn,R,&bN,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,gmres->Dsvd,&lierr);
+  if (lierr) SETERRQ(PETSC_ERR_LIB,"Error in LAPACK routine");
   ierr = PetscMalloc(n*sizeof(PetscInt),&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) { perm[i] = i;}
   for (i=0; i<n; i++) { r[i]    = PetscRealPart(eigs[i]);}

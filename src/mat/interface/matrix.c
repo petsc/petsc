@@ -704,6 +704,48 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValues(Mat mat,PetscInt m,const PetscInt
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesRowLocal"
+/*@ 
+   MatSetValuesRowLocal - Inserts a row (block row for BAIJ matrices) of nonzero
+        values into a matrix
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+.  row - the (block) row to set
+-  v - a logically two-dimensional array of values
+
+   Notes:
+   By the values, v, are column-oriented (for the block version) and sorted
+
+   All the nonzeros in the row must be provided
+
+   The matrix must have previously had its column indices set
+
+   The row must belong to this process
+
+   Level: intermediate
+
+   Concepts: matrices^putting entries in
+
+.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
+          InsertMode, INSERT_VALUES, ADD_VALUES, MatSetValues(), MatSetValuesRow(), MatSetLocalToGlobalMapping()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRowLocal(Mat mat,PetscInt row,const PetscScalar v[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidScalarPointer(v,2);
+  ierr = MatSetValuesRow(mat, mat->mapping->indices[row],v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesRow"
 /*@ 
@@ -723,6 +765,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValues(Mat mat,PetscInt m,const PetscInt
    All the nonzeros in the row must be provided
 
    The matrix must have previously had its column indices set
+
+   The row must belong to this process
 
    Level: intermediate
 
