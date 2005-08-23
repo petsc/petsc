@@ -264,6 +264,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRow(Mat,PetscInt,const PetscScalar[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRowLocal(Mat,PetscInt,const PetscScalar[]);
 
 /*S
      MatStencil - Data structure (C struct) for storing information about a single row or
