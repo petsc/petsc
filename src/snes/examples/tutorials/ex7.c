@@ -204,8 +204,8 @@ PetscErrorCode ExactSolution(PetscReal x, PetscReal y, Field *u)
 {
   PetscFunctionBegin;
 #if 1
-  u->u = y + 3;
-  u->v = x - 2;
+  u->u = x + y - 2;
+  u->v = x - y + 2;
 #else
   u->u = x*x*y;
   u->v = -x*y*y;
@@ -337,8 +337,8 @@ PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, Pe
     phi[1] =  quadPoints[q*2]       *(1.0 - quadPoints[q*2+1]);
     phi[2] =  quadPoints[q*2]       * quadPoints[q*2+1];
     phi[3] = (1.0 - quadPoints[q*2])* quadPoints[q*2+1];
-    x      = xI + quadPoints[q*2];
-    y      = yI + quadPoints[q*2+1];
+    x      = xI + quadPoints[q*2]*hx;
+    y      = yI + quadPoints[q*2+1]*hy;
     res.u    = lambda*quadWeights[q]*(0.0);
     res.v    = lambda*quadWeights[q]*(0.0);
     res.p    = lambda*quadWeights[q]*(0.0);
@@ -499,6 +499,10 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,AppCtx *u
         printf("  rLocal[%d] = (%g)\n", k, rLocal[k].p);
       }
       ierr = constantResidual(-1.0, i, j, hx, hy, rLocal);CHKERRQ(ierr);
+      printf(" ElementVector for (%d, %d)\n", i, j);
+      for(k = 0; k < 4; k++) {
+        printf("  rLocal[%d] = (%g, %g)\n", k, rLocal[k].u, rLocal[k].v);
+      }
       /* ierr = nonlinearResidual(-1.0*sc, uLocal, rLocal);CHKERRQ(ierr); */
       f[j][i].u     += rLocal[0].u;
       f[j][i].v     += rLocal[0].v;
