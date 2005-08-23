@@ -111,8 +111,8 @@ class Configure(PETSc.package.Package):
       if config.setCompilers.Configure.isDarwin():
         # on Apple MPI libraries do not need to be shared to make shared PETSc libraries, nor the python bindings
         pass
-      else:
-        return self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, executor = self.mpirun)
+      elif not self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, executor = self.mpirun):
+        raise RuntimeError('Configuring PETSc with shared libraries - but MPI libraries are not shared.\nTry using the option --with-mpi-shared=0')
     return 1
 
   def configureMPIRUN(self):
