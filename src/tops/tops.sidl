@@ -1,63 +1,22 @@
 
 package TOPS version 0.0.0 {
 
-  class Vector {
-      Vector        clone();
-      void          zero();
-      double        dot(in Vector y);
-      double        norm2();
-      array<double> getArray();
-      void          restoreArray();
-  }
-
-  class Matrix {
-      void   apply(in Vector x,in Vector y);
+  interface Matrix {
       void   zero();
   }
 
   interface Solver extends gov.cca.Port {
+      void          setSystem(in System system);
+      System        getSystem();
+
       // Pass in command line arguments to Solver
-      void   Initialize(in array<string,1> args);
-      void   setSystem(in System system);
-      System getSystem();
-      void   solve();
+      void          Initialize(in array<string,1> args);
+      void          solve();
 
-      void   setBlockSize(in int bs);
+      void          setBlockSize(in int bs);
 
-      Vector getRightHandSize(in int level);
-      Vector getSolution(in int Level);
-      void   getJacobian(in int Level,out Matrix J,out Matrix B);
-  }
-
-  //   The data in the vectors is linearly sliced into one part per process
-  interface SolverSliced extends Solver {
-      void setLocalRowSize(in int m);
-      int  getLocalRowSize();
-      void setGlobalRowSize(in int M);
-      int  getGlobalRowSize();
-      void setLocalColumnSize(in int n);
-      int  getLocalColumnSize();
-      void setGlobalColumnSize(in int N);
-      int  getGlobalColumnSize();
-
-      void setGhostPoints(in array<int,1> ghosts);
-      void setPreallocation(in int d,in int od);
-      void setPreallocation[s](in array<int,1> d,in array<int,1> od);
-  }
-
-  //   The data lives on a structured grid 
-  interface SolverStructured extends Solver {
-      void setDimension(in int dim);
-      int  getDimension();
-      void setDimensionX(in int dim);
-      int  getDimensionX();
-      void setDimensionY(in int dim);
-      int  getDimensionY();
-      void setDimensionZ(in int dim);
-      int  getDimensionZ();
-      void setStencilWidth(in int width);
-      int  getStencilWidth();
-      void setLevels(in int levels);
+      array<double> getSolution();
+      void          setSolution(in array<double> location);
   }
 
   // Methods provided by the user to define the numerical problem 
@@ -90,6 +49,66 @@ package TOPS version 0.0.0 {
 
   interface SystemComputeRightHandSide extends gov.cca.Port {
       void   computeRightHandSide(in array<double> b);
+  }
+
+  //  ---------- Interfaces for system on structured grid
+
+  // Sparse matrix interface for a structured grid problem
+  // This is modeled after the Babel/SIDL arrays interface
+  // essentially one can think of the sparse matrix as having
+  // a variable number of doubles at each grid point (while 
+  // Babel/SIDL arrays have a fixed number)
+  class MatrixStructured implements-all Matrix {
+      // local ownership of grid
+      int    dimen();
+      int    lower(in int a);
+      int    length(in int a);
+
+      // set a (block) row of nonzeros
+      void   set[D1](in int i,in array<double,2> values);
+      void   set[D2](in int i,in int j,in array<double,2> values);
+      void   set[D3](in int i,in int j,in int k,in array<double,2> values);
+      void   set[D4](in int i,in int j,in int k,in int l,in array<double,2> values);
+
+      // private methods
+      void   setdimen(in int a);
+      void   setlower(in int a,in int l);
+      void   setlength(in int a,in int l);
+      void   setMat(in opaque m);
+  }
+
+
+  //   The data lives on a structured grid 
+  interface SolverStructured extends Solver {
+      void setDimension(in int dim);
+      int  getDimension();
+      void setDimensionX(in int dim);
+      int  getDimensionX();
+      void setDimensionY(in int dim);
+      int  getDimensionY();
+      void setDimensionZ(in int dim);
+      int  getDimensionZ();
+      void setStencilWidth(in int width);
+      int  getStencilWidth();
+      void setLevels(in int levels);
+  }
+
+  //  ---------- Interfaces for system on unstructured grid
+
+  //   The data in the vectors is linearly sliced into one part per process
+  interface SolverSliced extends Solver {
+      void setLocalRowSize(in int m);
+      int  getLocalRowSize();
+      void setGlobalRowSize(in int M);
+      int  getGlobalRowSize();
+      void setLocalColumnSize(in int n);
+      int  getLocalColumnSize();
+      void setGlobalColumnSize(in int N);
+      int  getGlobalColumnSize();
+
+      void setGhostPoints(in array<int,1> ghosts);
+      void setPreallocation(in int d,in int od);
+      void setPreallocation[s](in array<int,1> d,in array<int,1> od);
   }
 
   // These are the two solver components that come with TOPS by default

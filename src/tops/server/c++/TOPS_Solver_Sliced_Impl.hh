@@ -22,17 +22,11 @@
 // 
 // Includes for all method dependencies.
 // 
-#ifndef included_TOPS_Matrix_hh
-#include "TOPS_Matrix.hh"
-#endif
 #ifndef included_TOPS_Solver_Sliced_hh
 #include "TOPS_Solver_Sliced.hh"
 #endif
 #ifndef included_TOPS_System_hh
 #include "TOPS_System.hh"
-#endif
-#ifndef included_TOPS_Vector_hh
-#include "TOPS_Vector.hh"
 #endif
 #ifndef included_gov_cca_CCAException_hh
 #include "gov_cca_CCAException.hh"
@@ -102,16 +96,6 @@ namespace TOPS {
      * user defined non-static method.
      */
     void
-    Initialize (
-      /* in */ ::sidl::array< ::std::string> args
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
     setSystem (
       /* in */ ::TOPS::System system
     )
@@ -124,6 +108,16 @@ namespace TOPS {
     ::TOPS::System
     getSystem() throw () 
     ;
+    /**
+     * user defined non-static method.
+     */
+    void
+    Initialize (
+      /* in */ ::sidl::array< ::std::string> args
+    )
+    throw () 
+    ;
+
     /**
      * user defined non-static method.
      */
@@ -143,31 +137,15 @@ namespace TOPS {
     /**
      * user defined non-static method.
      */
-    ::TOPS::Vector
-    getRightHandSize (
-      /* in */ int32_t level
-    )
-    throw () 
+    ::sidl::array<double>
+    getSolution() throw () 
     ;
-
-    /**
-     * user defined non-static method.
-     */
-    ::TOPS::Vector
-    getSolution (
-      /* in */ int32_t Level
-    )
-    throw () 
-    ;
-
     /**
      * user defined non-static method.
      */
     void
-    getJacobian (
-      /* in */ int32_t Level,
-      /* out */ ::TOPS::Matrix& J,
-      /* out */ ::TOPS::Matrix& B
+    setSolution (
+      /* in */ ::sidl::array<double> location
     )
     throw () 
     ;

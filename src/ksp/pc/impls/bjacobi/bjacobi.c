@@ -325,7 +325,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiSetTotalBlocks_BJacobi(PC pc,PetscInt
 
   PetscFunctionBegin;
 
-  if (pc->setupcalled > 0) SETERRQ(PETSC_ERR_ORDER,"Cannot set number of blocks after PCSetUp()/KSPSetUp() has been called");
+  if (pc->setupcalled > 0 && jac->n!=blocks) SETERRQ(PETSC_ERR_ORDER,"Cannot alter number of blocks after PCSetUp()/KSPSetUp() has been called"); 
   jac->n = blocks;
   if (!lens) {
     jac->g_lens = 0;

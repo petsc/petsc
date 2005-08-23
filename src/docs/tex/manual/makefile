@@ -43,4 +43,6 @@ manual.pdf: intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex ge
 	${PDFELATEX} intro 
 	${MAKE} clean
 
+developers.pdf: developers.tex
+	${PDFLATEX} developers.tex
 

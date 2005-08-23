@@ -81,6 +81,16 @@ class Configure(PETSc.package.Package):
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed PLAPACK into '+installDir)
     return self.getDir()
 
+  def configureLibrary(self):
+    '''Calls the regular package configureLibrary and then does an additional test needed by PLAPACK'''
+    '''Normally you do not need to provide this method'''
+    PETSc.package.Package.configureLibrary(self)
+    # PLAPACK requires BLAS complex and single routines()
+    if not self.blasLapack.checkForRoutine('sscal') or not self.blasLapack.checkForRoutine('cscal'):
+      raise RuntimeError('PLAPACK requires the complex and single precision BLAS routines, the current BLAS libraries '+str(self.blasLapack.lib)+' does not have it\nYou need a COMPLETE install of BLAS')
+    self.framework.log.write('Found sscal() and cscal() in BLAS library as needed by PLAPACK\n')
+    return
+
 if __name__ == '__main__':
   import config.framework
   import sys

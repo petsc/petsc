@@ -346,6 +346,39 @@ allcleanhtml:
 chk_concepts_dir: chk_loc
 	@if [ ! -d "${LOC}/docs/manualpages/concepts" ]; then \
 	  echo Making directory ${LOC}/docs/manualpages/concepts for library; ${MKDIR} ${LOC}/docs/manualpages/concepts; fi
+
+###########################################################
+# targets to build distribution and update docs
+###########################################################
+
+# Creates ${HOME}/petsc.tar.gz [and petsc-lite.tar.gz]
+dist:
+	${PETSC_DIR}/maint/builddist $PETSC_DIR
+
+# This target works only if you can do 'ssh petsc@harley.mcs.anl.gov'
+web-snapshot:
+	@if [ ! -f "${HOME}/petsc.tar.gz" ]; then \
+	    echo "~/petsc.tar.gz missing! cannot update petsc-dev snapshot on www-unix"; \
+	  else \
+            echo "updating petsc-dev snapshot on www-unix"; \
+	    tmpdir=`mktemp -d -t petsc-doc.XXXXXXXX`; \
+	    cd $${tmpdir}; tar -xzf ${HOME}/petsc.tar.gz; \
+	    /usr/bin/rsync  -e ssh -az --delete $${tmpdir}/petsc/ \
+              petsc@harley.mcs.anl.gov:/nfs/www-unix/petsc/petsc-as/snapshots/petsc-dev ;\
+	    ${RM} -rf $${tmpdir} ;\
+	  fi
+
+# build the tarfile - and then update petsc-dev snapshot on www-unix
+update-web-snapshot: dist web-snapshot
+
+# This target updates website main pages
+update-web:
+	@cd ${PETSC_DIR}/src/docs; make PETSC_ARCH=docsonly PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} bib2html; \
+	/usr/bin/rsync -az -C --exclude=BitKeeper --exclude=documentation/installation.html \
+	  ${PETSC_DIR}/src/docs/website/ petsc@harley.mcs.anl.gov:/nfs/www-unix/petsc/petsc-as
+
+###########################################################
+
 #
 #  makes .lines files for all source code
 # 

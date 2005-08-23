@@ -284,6 +284,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,MatFactorInfo *info,Mat *F
   PetscInt       M=A->M,Mbs=M/lu->bs,max_mem_estimate,max_single_malloc_blk,
                  number_of_procs,i,j,next,iold,*idx,*iidx=0,*itmp;
   IS             my_cols_sorted;
+  Mat            F_diag;
 	
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
@@ -431,8 +432,10 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,MatFactorInfo *info,Mat *F
     ierr = PetscFree(my_a_nonz);CHKERRQ(ierr);
   }  
   
-  (*F)->assembled = PETSC_TRUE; 
-  lu->flg         = SAME_NONZERO_PATTERN;
+  F_diag = ((Mat_MPIBAIJ *)(*F)->data)->A;
+  F_diag->assembled = PETSC_TRUE;
+  (*F)->assembled   = PETSC_TRUE; 
+  lu->flg           = SAME_NONZERO_PATTERN;
 
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-BABEL_HOME  = /home/norris/cca/cca-tools-0.5.9
+BABEL_HOME  = /usr/local
 BABEL_bin     = ${BABEL_HOME}/bin
 BABEL_include = ${BABEL_HOME}/include
 BABEL_lib     = ${BABEL_HOME}/lib
@@ -13,7 +13,7 @@ CFLAGS = -I${BABEL_include}
 SIDLFILES = ${PETSC_DIR}/src/tops/tops.sidl ${SIDL}
 
 parse-check:
-	${BABEL_bin}/babel --parse-check ${SIDLFILES}
+	${BABEL_bin}/babel -R${CCA_REPO} --parse-check ${SIDLFILES}
 
 #-------------------------------------------------------------------------------
 clients: 

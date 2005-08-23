@@ -461,6 +461,7 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,MatFactorInfo *info,Mat *F)
   PetscErrorCode ierr;
   PetscInt       rnz,nnz,nz,i,M=A->M,*ai,*aj,icntl;
   PetscTruth     valOnly,flg;
+  Mat            F_diag;
 
   PetscFunctionBegin; 	
   if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ 
@@ -648,10 +649,16 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,MatFactorInfo *info,Mat *F)
   if (!lu->myid && lu->id.ICNTL(16) > 0){
     SETERRQ1(PETSC_ERR_LIB,"  lu->id.ICNTL(16):=%d\n",lu->id.INFOG(16)); 
   }
-  
-  (*F)->assembled  = PETSC_TRUE;
-  lu->matstruc     = SAME_NONZERO_PATTERN;
-  lu->CleanUpMUMPS = PETSC_TRUE;
+
+  if ((*F)->factor == FACTOR_LU){
+    F_diag = ((Mat_MPIAIJ *)(*F)->data)->A;
+  } else {
+    F_diag = ((Mat_MPISBAIJ *)(*F)->data)->A;
+  }
+  F_diag->assembled = PETSC_TRUE; 
+  (*F)->assembled   = PETSC_TRUE;
+  lu->matstruc      = SAME_NONZERO_PATTERN;
+  lu->CleanUpMUMPS  = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -686,8 +693,8 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat A,IS r,IS c,MatFactorInfo *info,
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SBAIJMUMPS"
 PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat A,IS r,MatFactorInfo *info,Mat *F) {
-  Mat       B;
-  Mat_MUMPS *lu;   
+  Mat            B;
+  Mat_MUMPS      *lu;   
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

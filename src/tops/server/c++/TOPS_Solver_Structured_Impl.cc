@@ -13,10 +13,6 @@
 
 // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._includes)
 // Uses ports includes
-#include "TOPS_SystemComputeMatrix.hh"
-#include "TOPS_SystemComputeResidual.hh"
-#include "TOPS_SystemComputeInitialGuess.hh"
-#include "TOPS_SystemComputeRightHandSide.hh"
   // This code is the same as DAVecGetArray() except instead of generating
   // raw C multidimensional arrays it gets a Babel array
 ::sidl::array<double> DAVecGetArrayBabel(DA da,Vec vec)
@@ -33,11 +29,11 @@
     dim++;
     lower[0] = 0; upper[0] = dof; stride[0] = 1;
     lower[1] = gxs; lower[2] = gys; lower[3] = gzs;
-    upper[1] = gxm; upper[2] = gym; upper[3] = gzm;
+    upper[1] = gxm - gxs - 1; upper[2] = gym - gys - 1; upper[3] = gzm - gzs - 1;
     stride[1] = dof; stride[2] = gxm*dof; stride[3] = gxm*gym*dof;
   } else {
     lower[0] = gxs; lower[1] = gys; lower[2] = gzs;
-    upper[0] = gxm; upper[1] = gym; upper[2] = gzm;
+    upper[0] = gxm - gxs - 1; upper[1] = gym - gys -1 ; upper[2] = gzm - gzs - 1;
     stride[0] = 1; stride[1] = gxm; stride[2] = gxm*gym;
   }
   ua.borrow(uu,dim,*&lower,*&upper,*&stride);
@@ -86,7 +82,26 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J)
   PetscFunctionBegin;
   TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
   TOPS::System system = solver->getSystem();
-  ((TOPS::SystemComputeMatrix)system).computeMatrix(0);
+  TOPS::MatrixStructured matrix = TOPS::MatrixStructured::_create();
+
+  PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dim,dof;
+  DAGetCorners((DA)dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);
+  matrix.setlength(0,xm);
+  matrix.setlength(1,ym);
+  matrix.setlength(2,zm);
+  matrix.setlower(0,xs);
+  matrix.setlower(1,ys);
+  matrix.setlower(2,zs);
+  matrix.setMat(dmmg->B);
+  int mx,my,mz;
+  DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
+  solver->setDimensionX(mx);
+  solver->setDimensionY(my);
+  solver->setDimensionZ(mz);
+
+  ((TOPS::SystemComputeMatrix)system).computeMatrix(matrix);
+  MatAssemblyBegin(dmmg->B,MAT_FINAL_ASSEMBLY);
+  MatAssemblyEnd(dmmg->B,MAT_FINAL_ASSEMBLY);
   PetscFunctionReturn(0);
 }
 
@@ -150,6 +165,33 @@ void TOPS::Solver_Structured_impl::_load() {
 
 // user-defined non-static methods:
 /**
+ * Method:  setSystem[]
+ */
+void
+TOPS::Solver_Structured_impl::setSystem (
+  /* in */ ::TOPS::System system ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setSystem)
+  this->system = system;
+  system.setSolver(this->self);
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setSystem)
+}
+
+/**
+ * Method:  getSystem[]
+ */
+::TOPS::System
+TOPS::Solver_Structured_impl::getSystem ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getSystem)
+  return this->system;
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getSystem)
+}
+
+/**
  * Method:  Initialize[]
  */
 void
@@ -177,33 +219,6 @@ throw ()
   }
   int    ierr = PetscInitialize(&argc,&argv,0,0);
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.Initialize)
-}
-
-/**
- * Method:  setSystem[]
- */
-void
-TOPS::Solver_Structured_impl::setSystem (
-  /* in */ ::TOPS::System system ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setSystem)
-  this->system = system;
-  system.setSolver(this->self);
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setSystem)
-}
-
-/**
- * Method:  getSystem[]
- */
-::TOPS::System
-TOPS::Solver_Structured_impl::getSystem ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getSystem)
-  return this->system;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getSystem)
 }
 
 /**
@@ -254,25 +269,12 @@ throw ()
 }
 
 /**
- * Method:  getRightHandSize[]
- */
-::TOPS::Vector
-TOPS::Solver_Structured_impl::getRightHandSize (
-  /* in */ int32_t level ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getRightHandSize)
-  // Insert-Code-Here {TOPS.Solver_Structured.getRightHandSize} (getRightHandSize method)
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getRightHandSize)
-}
-
-/**
  * Method:  getSolution[]
  */
-::TOPS::Vector
-TOPS::Solver_Structured_impl::getSolution (
-  /* in */ int32_t Level ) 
+::sidl::array<double>
+TOPS::Solver_Structured_impl::getSolution ()
 throw () 
+
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getSolution)
   // Insert-Code-Here {TOPS.Solver_Structured.getSolution} (getSolution method)
@@ -280,18 +282,16 @@ throw ()
 }
 
 /**
- * Method:  getJacobian[]
+ * Method:  setSolution[]
  */
 void
-TOPS::Solver_Structured_impl::getJacobian (
-  /* in */ int32_t Level,
-  /* out */ ::TOPS::Matrix& J,
-  /* out */ ::TOPS::Matrix& B ) 
+TOPS::Solver_Structured_impl::setSolution (
+  /* in */ ::sidl::array<double> location ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getJacobian)
-  // Insert-Code-Here {TOPS.Solver_Structured.getJacobian} (getJacobian method)
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getJacobian)
+  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setSolution)
+  // Insert-Code-Here {TOPS.Solver_Structured.setSolution} (setSolution method)
+  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setSolution)
 }
 
 /**
