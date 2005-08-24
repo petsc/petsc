@@ -11,6 +11,7 @@
 EXTERN_C_BEGIN 
 typedef struct {
   void           *ctx;                     /* user provided contexts for preconditioner */
+  PetscErrorCode (*destroy)(void*);
   PetscErrorCode (*setup)(void*);
   PetscErrorCode (*apply)(void*,Vec,Vec);
   PetscErrorCode (*presolve)(void*,KSP,Vec,Vec);
@@ -92,7 +93,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetContext(PC pc,void *ctx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCApply_SetUp"
+#define __FUNCT__ "PCSetUp_Shell"
 static PetscErrorCode PCSetUp_Shell(PC pc)
 {
   PC_Shell       *shell;
@@ -189,7 +190,10 @@ static PetscErrorCode PCDestroy_Shell(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (shell->name) {ierr = PetscFree(shell->name);}
+  if (shell->name) {ierr = PetscFree(shell->name);CHKERRQ(ierr);}
+  if (shell->destroy) {
+    ierr  = (*shell->destroy)(shell->ctx);CHKERRQ(ierr);
+  }
   ierr = PetscFree(shell);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -217,6 +221,20 @@ static PetscErrorCode PCView_Shell(PC pc,PetscViewer viewer)
 }
 
 /* ------------------------------------------------------------------------------*/
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetDestroy_Shell"
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetDestroy_Shell(PC pc, PetscErrorCode (*destroy)(void*))
+{
+  PC_Shell *shell;
+
+  PetscFunctionBegin;
+  shell          = (PC_Shell*)pc->data;
+  shell->destroy = destroy;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetSetUp_Shell"
@@ -357,6 +375,45 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyRichardson_Shell(PC pc,PetscErr
 EXTERN_C_END
 
 /* -------------------------------------------------------------------------------*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetDestroy"
+/*@C
+   PCShellSetDestroy - Sets routine to use to destroy the user-provided 
+   application context.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+.  destroy - the application-provided destroy routine
+
+   Calling sequence of destroy:
+.vb
+   PetscErrorCode destroy (void *ptr)
+.ve
+
+.  ptr - the application context
+
+   Level: developer
+
+.keywords: PC, shell, set, destroy, user-provided
+
+.seealso: PCShellSetApply(), PCShellSetContext()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetDestroy(PC pc,PetscErrorCode (*destroy)(void*))
+{
+  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(void*));
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetDestroy_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,destroy);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetSetUp"
@@ -766,7 +823,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Shell(PC pc)
   shell->ctx            = 0;
   shell->setup          = 0;
   shell->view           = 0;
+  shell->destroy        = 0;
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetDestroy_C","PCShellSetDestroy_Shell",
+                    PCShellSetDestroy_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetSetUp_C","PCShellSetSetUp_Shell",
                     PCShellSetSetUp_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApply_C","PCShellSetApply_Shell",
