@@ -197,9 +197,9 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyTranspose(PC,PetscErrorC
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetSetUp(PC,PetscErrorCode (*)(void*));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyRichardson(PC,PetscErrorCode (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetView(PC,PetscErrorCode (*)(void*,PetscViewer));
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT  PCShellGetContext(PC,void**);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT  PCShellSetContext(PC,void*);
-
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetDestroy(PC,PetscErrorCode (*)(void*));
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetContext(PC,void**);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetContext(PC,void*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetName(PC,const char[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetName(PC,char*[]);
 
