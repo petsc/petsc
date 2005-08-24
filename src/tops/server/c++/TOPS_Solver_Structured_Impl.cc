@@ -19,10 +19,22 @@
 {
   double *uu;
   VecGetArray(vec,&uu);
-  PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dim,dof;
+  PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dim,dof,N;
   DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);
   DAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
   DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);
+
+  /* Handle case where user passes in global vector as opposed to local */
+  VecGetLocalSize(vec,&N);
+  if (N == xm*ym*zm*dof) {
+    gxm = xm;
+    gym = ym;
+    gzm = zm;
+    gxs = xs;
+    gys = ys;
+    gzs = zs;
+  }
+
   sidl::array<double> ua;
   int lower[4],upper[4],stride[4];
   if (dof > 1) {
@@ -45,8 +57,8 @@ static PetscErrorCode FormFunction(SNES snes,Vec u,Vec f,void *vdmmg)
   PetscFunctionBegin;
   DMMG dmmg = (DMMG) vdmmg;
   TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
-  TOPS::System system = solver->getSystem();
-
+  TOPS::SystemComputeResidual system = (TOPS::SystemComputeResidual) solver->getSystem();
+  
   int mx,my,mz;
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
   solver->setDimensionX(mx);
@@ -54,7 +66,7 @@ static PetscErrorCode FormFunction(SNES snes,Vec u,Vec f,void *vdmmg)
   solver->setDimensionZ(mz);
   sidl::array<double> ua = DAVecGetArrayBabel((DA)dmmg->dm,u);
   sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);;
-  ((TOPS::SystemComputeResidual)system).computeResidual(ua,fa);
+  system.computeResidual(ua,fa);
   VecRestoreArray(u,0);
   VecRestoreArray(f,0);
   PetscFunctionReturn(0);
@@ -64,7 +76,7 @@ static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
 {
   PetscFunctionBegin;
   TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
-  TOPS::System system = solver->getSystem();
+  TOPS::SystemComputeInitialGuess system = (TOPS::SystemComputeInitialGuess) solver->getSystem();
 
   int mx,my,mz;
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
@@ -72,7 +84,7 @@ static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
   solver->setDimensionY(my);
   solver->setDimensionZ(mz);
   sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);;
-  ((TOPS::SystemComputeInitialGuess)system).computeInitialGuess(fa);
+  system.computeInitialGuess(fa);
   VecRestoreArray(f,0);
   PetscFunctionReturn(0);
 }
@@ -81,17 +93,24 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J)
 {
   PetscFunctionBegin;
   TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
-  TOPS::System system = solver->getSystem();
+  TOPS::SystemComputeMatrix system = (TOPS::SystemComputeMatrix) solver->getSystem();
   TOPS::MatrixStructured matrix = TOPS::MatrixStructured::_create();
 
   PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dim,dof;
   DAGetCorners((DA)dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);
+  DAGetGhostCorners((DA)dmmg->dm,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
   matrix.setlength(0,xm);
   matrix.setlength(1,ym);
   matrix.setlength(2,zm);
   matrix.setlower(0,xs);
   matrix.setlower(1,ys);
   matrix.setlower(2,zs);
+  matrix.setGhostLength(0,gxm);
+  matrix.setGhostLength(1,gym);
+  matrix.setGhostLength(2,gzm);
+  matrix.setGhostLower(0,gxs);
+  matrix.setGhostLower(1,gys);
+  matrix.setGhostLower(2,gzs);
   matrix.setMat(dmmg->B);
   int mx,my,mz;
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
@@ -99,7 +118,7 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J)
   solver->setDimensionY(my);
   solver->setDimensionZ(mz);
 
-  ((TOPS::SystemComputeMatrix)system).computeMatrix(matrix);
+  system.computeMatrix(matrix);
   MatAssemblyBegin(dmmg->B,MAT_FINAL_ASSEMBLY);
   MatAssemblyEnd(dmmg->B,MAT_FINAL_ASSEMBLY);
   PetscFunctionReturn(0);
@@ -109,7 +128,7 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 {
   PetscFunctionBegin;
   TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
-  TOPS::System system = solver->getSystem();
+  TOPS::SystemComputeRightHandSide system = (TOPS::SystemComputeRightHandSide) solver->getSystem();
 
   int mx,my,mz;
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
@@ -117,7 +136,7 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
   solver->setDimensionY(my);
   solver->setDimensionZ(mz);
   sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);;
-  ((TOPS::SystemComputeRightHandSide)system).computeRightHandSide(fa);
+  system.computeRightHandSide(fa);
   VecRestoreArray(f,0);
   PetscFunctionReturn(0);
 }

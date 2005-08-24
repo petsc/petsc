@@ -103,7 +103,7 @@ TOPS::MatrixStructured_impl::set (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.MatrixStructured.setD2)
-  int I = i - this->vlower[0] + this->vlength[0]*(j - this->vlower[1]);
+  int I = i - this->gghostlower[0] + this->gghostlength[0]*(j - this->gghostlower[1]);
   if ((values.dimen() == 1 || values.length(1) == 1) && values.length(0) == 1) {
     MatSetValuesLocal(this->mat,1,&I,1,&I,values.first(),INSERT_VALUES);
   } else {
@@ -124,7 +124,7 @@ TOPS::MatrixStructured_impl::set (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.MatrixStructured.setD3)
-  int I = i - this->vlower[0] + this->vlength[0]*(j - this->vlower[1]) + this->vlength[0]*this->vlength[1]*(k - this->vlower[2]);
+  int I = i - this->gghostlower[0] + this->gghostlength[0]*(j - this->gghostlower[1]) + this->gghostlength[0]*this->gghostlength[1]*(k - this->gghostlower[2]);
   if ((values.dimen() == 1 || values.length(1) == 1) && values.length(0) == 1) {
     MatSetValuesLocal(this->mat,1,&I,1,&I,values.first(),INSERT_VALUES);
   } else {
@@ -146,8 +146,8 @@ TOPS::MatrixStructured_impl::set (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.MatrixStructured.setD4)
-  int I = i - this->vlower[0] + this->vlength[0]*(j - this->vlower[1]) + this->vlength[0]*this->vlength[1]*(k - this->vlower[2]) +
-          this->vlength[0]*this->vlength[1]*this->vlength[2]*(l - vlower[3]);
+  int I = i - this->gghostlower[0] + this->gghostlength[0]*(j - this->gghostlower[1]) + this->gghostlength[0]*this->gghostlength[1]*(k - this->gghostlower[2]) +
+          this->gghostlength[0]*this->gghostlength[1]*this->gghostlength[2]*(l - gghostlower[3]);
   if ((values.dimen() == 1 || values.length(1) == 1) && values.length(0) == 1) {
     MatSetValuesLocal(this->mat,1,&I,1,&I,values.first(),INSERT_VALUES);
   } else {
@@ -208,6 +208,34 @@ throw ()
   // DO-NOT-DELETE splicer.begin(TOPS.MatrixStructured.setMat)
   this->mat = (Mat) m;
   // DO-NOT-DELETE splicer.end(TOPS.MatrixStructured.setMat)
+}
+
+/**
+ * Method:  setGhostLower[]
+ */
+void
+TOPS::MatrixStructured_impl::setGhostLower (
+  /* in */ int32_t a,
+  /* in */ int32_t b ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.MatrixStructured.setGhostLower)
+  this->gghostlower[a] = b;
+  // DO-NOT-DELETE splicer.end(TOPS.MatrixStructured.setGhostLower)
+}
+
+/**
+ * Method:  setGhostLength[]
+ */
+void
+TOPS::MatrixStructured_impl::setGhostLength (
+  /* in */ int32_t a,
+  /* in */ int32_t b ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.MatrixStructured.setGhostLength)
+  this->gghostlength[a] = b;
+  // DO-NOT-DELETE splicer.end(TOPS.MatrixStructured.setGhostLength)
 }
 
 /**

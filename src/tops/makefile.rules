@@ -6,7 +6,7 @@ BABEL_lib     = ${BABEL_HOME}/lib
 CCA_HOME      = ${BABEL_HOME}
 CCA_REPO      = ${CCA_HOME}/share/cca-spec-babel-0_7_8-babel-0.10.8/xml
 
-LANGUAGES = python c++
+LANGUAGES =  c++
 
 CFLAGS = -I${BABEL_include}
 
