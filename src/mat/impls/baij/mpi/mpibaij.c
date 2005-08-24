@@ -2073,7 +2073,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   for (i=0; i<m; i++) {
     ii   = i + rstart;
     nnz  = I[i+1]- I[i];
-    ierr = MatSetValuesBlocked_MPIBAIJ(B,1,&ii,nnz,J+I[i],values,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesBlocked_MPIBAIJ(B,1,&ii,nnz,J+I[i],values+(v ? I[i] : 0),INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
