@@ -6171,7 +6171,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat mat,Vec *right,Vec *left)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorInfoInitialize"
-/*@C
+/*@
    MatFactorInfoInitialize - Initializes a MatFactorInfo data structure
      with default values.
 
@@ -6200,7 +6200,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFactorInfoInitialize(MatFactorInfo *info)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP"
-/*@C
+/*@
    MatPtAP - Creates the matrix projection C = P^T * A * P
 
    Collective on Mat
@@ -6252,7 +6252,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal f
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPNumeric"
-/*@C
+/*@
    MatPtAPNumeric - Computes the matrix projection C = P^T * A * P
 
    Collective on Mat
@@ -6307,7 +6307,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPNumeric(Mat A,Mat P,Mat C)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPSymbolic"
-/*@C
+/*@
    MatPtAPSymbolic - Creates the (i,j) structure of the matrix projection C = P^T * A * P
 
    Collective on Mat
