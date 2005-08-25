@@ -228,7 +228,7 @@ class Configure(config.base.Configure):
     includes = '#include <stdlib.h>\n#include <stdio.h>\n'
     if otherInclude:
       includes += '#include <'+otherInclude+'>\n'
-    body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%d\\n", sizeof('+typeName+'));\n'
+    body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%lu\\n", (unsigned long)sizeof('+typeName+'));\n'
     typename = 'sizeof_'+typeName.replace(' ', '_').replace('*', 'p')
     if not typename in self.framework.argDB:
       if not self.framework.argDB['with-batch']:
