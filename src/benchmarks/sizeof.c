@@ -4,14 +4,15 @@
 */
 int main(int argc,char *args)
 {
-  fprintf(stdout,"long double : %d\n",sizeof(long double));
-  fprintf(stdout,"double      : %d\n",sizeof(double));
-  fprintf(stdout,"int         : %d\n",sizeof(int));
-  fprintf(stdout,"char        : %d\n",sizeof(char));
-  fprintf(stdout,"short       : %d\n",sizeof(short));
-  fprintf(stdout,"long        : %d\n",sizeof(long));
-  fprintf(stdout,"long long   : %d\n",sizeof(long long));
-  fprintf(stdout,"int *       : %d\n",sizeof(int*));
+  fprintf(stdout,"long double : %lu\n",(unsigned long)sizeof(long double));
+  fprintf(stdout,"double      : %lu\n",(unsigned long)sizeof(double));
+  fprintf(stdout,"int         : %lu\n",(unsigned long)sizeof(int));
+  fprintf(stdout,"char        : %lu\n",(unsigned long)sizeof(char));
+  fprintf(stdout,"short       : %lu\n",(unsigned long)sizeof(short));
+  fprintf(stdout,"long        : %lu\n",(unsigned long)sizeof(long));
+  fprintf(stdout,"long long   : %lu\n",(unsigned long)sizeof(long long));
+  fprintf(stdout,"int *       : %lu\n",(unsigned long)sizeof(int*));
+  fprintf(stdout,"size_t      : %lu\n",(unsigned long)sizeof(size_t));
 
   return 0;
 }
