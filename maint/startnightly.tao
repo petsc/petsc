@@ -4,16 +4,24 @@
 
 
 set dir=`dirname $0`
+set pdir=`dirname $dir`
 set day=`date | cut -f1 -d" "`
 
 foreach CONF ($*)
   set SSH=ssh
   set SCP=scp
   set DASHN=-n
+  set BITKEEPER=yes
   source $dir/confignightly/${CONF}
 
   echo "start TAO build at `date`:$SSH $USR@$MACH $DASHN $TAO_LOC/maint/buildtest $CONF $LOC" 
-  $SSH $USR@$MACH $DASHN "cd $TAO_LOC ; bk pull; $TAO_LOC/maint/buildtest $CONF $LOC" &
+  if ("${BITKEEPER}" == "yes") then
+    $SSH $USR@$MACH $DASHN "cd $TAO_LOC ; bk pull; $TAO_LOC/maint/buildtest $CONF $LOC" &
+  else
+    rsync -e ssh -az --delete  $pdir/../tao-devel/ $TAO_LOC
+    $SSH $USR@$MACH $DASHN "cd $TAO_LOC; $TAO_LOC/maint/buildtest $CONF $LOC" &
+  endif
+
   sleep 300 # perhaps ease the load on petsc.bkbits.net by spacing the builds
 end
 wait
