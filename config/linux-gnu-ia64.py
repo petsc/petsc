@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 configure_options = [
-  # -lg2c messes up shared libraries
-  '--with-shared=0',
-  '--with-mpi-dir=/home/petsc/soft/linux-ia64/mpich-1.2.5.2'
+  '--with-shared=1',
+  '--download-mpich=1',
+  '--download-mpich-pm=gforker'
   ]
 
 if __name__ == '__main__':
