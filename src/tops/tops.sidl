@@ -75,7 +75,10 @@ package TOPS version 0.0.0 {
       void   setlower(in int a,in int l);
       void   setlength(in int a,in int l);
       void   setMat(in opaque m);
+      void   setGhostLower(in int a,in int b);
+      void   setGhostLength(in int a,in int b);
   }
+
 
 
   //   The data lives on a structured grid 

@@ -4,16 +4,23 @@
 
 
 set dir=`dirname $0`
+set pdir=`dirname $dir`
 set day=`date | cut -f1 -d" "`
 
 foreach CONF ($*)
   set SSH=ssh
   set SCP=scp
   set DASHN=-n
+  set BITKEEPER=yes
   source $dir/confignightly/${CONF}
 
   echo "start build at `date`:$SSH $USR@$MACH $DASHN $LOC/maint/buildtest $CONF" 
-  $SSH $USR@$MACH $DASHN "cd $LOC ; bk -r unedit; bk pull; $LOC/maint/buildtest $CONF" &
+  if ("${BITKEEPER}" == "yes") then
+    $SSH $USR@$MACH $DASHN "cd $LOC ; bk -r unedit; bk pull; $LOC/maint/buildtest $CONF" &
+  else
+    rsync -e ssh -az --delete  $pdir/ ${USR}@${MACH}:${LOC}
+    $SSH $USR@$MACH $DASHN "cd $LOC; $LOC/maint/buildtest $CONF" &
+  endif
   sleep 300 # perhaps ease the load on petsc.bkbits.net by spacing the builds
 end
 wait

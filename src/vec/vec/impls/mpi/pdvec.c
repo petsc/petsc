@@ -258,7 +258,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
     ierr = PetscMalloc(2*(N+1)*sizeof(PetscReal),&xx);CHKERRQ(ierr);
     for (i=0; i<N; i++) {xx[i] = (PetscReal) i;}
     yy   = xx + N;
-    ierr = PetscMalloc(size*sizeof(int),&lens);CHKERRQ(ierr);
+    ierr = PetscMalloc(size*sizeof(PetscInt),&lens);CHKERRQ(ierr);
     for (i=0; i<size; i++) {
       lens[i] = xin->map->range[i+1] - xin->map->range[i];
     }
@@ -401,7 +401,7 @@ PetscErrorCode VecView_MPI_Socket(Vec xin,PetscViewer viewer)
   ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscMalloc((N+1)*sizeof(PetscScalar),&xx);CHKERRQ(ierr);
-    ierr = PetscMalloc(size*sizeof(int),&lens);CHKERRQ(ierr);
+    ierr = PetscMalloc(size*sizeof(PetscInt),&lens);CHKERRQ(ierr);
     for (i=0; i<size; i++) {
       lens[i] = xin->map->range[i+1] - xin->map->range[i];
     }

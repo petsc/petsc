@@ -56,6 +56,7 @@ namespace TOPS {
 
     // DO-NOT-DELETE splicer.begin(TOPS.MatrixStructured._implementation)
     int vlength[4],vlower[4],glength[4],vdimen;
+    int gghostlower[4],gghostlength[4];
     Mat mat;
     // DO-NOT-DELETE splicer.end(TOPS.MatrixStructured._implementation)
 
@@ -199,6 +200,28 @@ namespace TOPS {
     void
     setMat (
       /* in */ void* m
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    setGhostLower (
+      /* in */ int32_t a,
+      /* in */ int32_t b
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    setGhostLength (
+      /* in */ int32_t a,
+      /* in */ int32_t b
     )
     throw () 
     ;

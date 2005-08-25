@@ -103,6 +103,34 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesRow_MPIAIJ"
+PetscErrorCode MatSetValuesRow_MPIAIJ(Mat A,PetscInt row,const PetscScalar v[])
+{
+  Mat_MPIAIJ     *mat = (Mat_MPIAIJ*)A->data;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)mat->A->data,*b = (Mat_SeqAIJ*)mat->B->data;
+  PetscErrorCode ierr;
+  PetscInt       l,*garray = mat->garray,diag;
+
+  PetscFunctionBegin;  
+  /* code only works for square matrices A */
+
+  /* find size of row to the left of the diagonal part */
+  ierr = MatGetOwnershipRange(A,&diag,0);CHKERRQ(ierr);
+  row  = row - diag;
+  for (l=0; l<b->i[row+1]-b->i[row]; l++) {
+    if (garray[b->j[b->i[row]+l]] > diag) break;
+  }
+  ierr = PetscMemcpy(b->a+b->i[row],v,l*sizeof(PetscScalar));CHKERRQ(ierr);
+
+  /* diagonal part */  
+  ierr = PetscMemcpy(a->a+a->i[row],v+l,(a->i[row+1]-a->i[row])*sizeof(PetscScalar));CHKERRQ(ierr);
+
+  /* right of diagonal part */
+  ierr = PetscMemcpy(b->a+b->i[row]+l,v+l+a->i[row+1]-a->i[row],(b->i[row+1]-b->i[row]-l)*sizeof(PetscScalar));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPIAIJ"
 PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode addv)
 {
@@ -1755,7 +1783,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 /*100*/0,
        MatPtAPSymbolic_MPIAIJ_MPIAIJ,
        MatPtAPNumeric_MPIAIJ_MPIAIJ,
-       MatConjugate_MPIAIJ
+       MatConjugate_MPIAIJ,
+       0,
+/*105*/MatSetValuesRow_MPIAIJ
 };
 
 /* ----------------------------------------------------------------------------------------*/

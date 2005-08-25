@@ -1,10 +1,11 @@
 #! /bin/csh
 #
-set MACH=ksl1
-set USR=petsc
-set LOC=/sandbox/petsc/petsc-dev
-set TAO_LOC=/sandbox/petsc/tao-devel
+set MACH=tg-login.uc.teragrid.org
+set USR=balay
+set LOC=/home/balay/petsc-dev
+set TAO_LOC=/home/balay/tao-devel
 set CONF=linux-gnu-ia64
+set BITKEEPER=no
 
 if ($day == Tue || $day == Wed || $day == Thu) then
   set CONF=linux-gnu-ia64-intel
