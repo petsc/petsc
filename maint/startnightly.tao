@@ -18,7 +18,7 @@ foreach CONF ($*)
   if ("${BITKEEPER}" == "yes") then
     $SSH $USR@$MACH $DASHN "cd $TAO_LOC ; bk pull; $TAO_LOC/maint/buildtest $CONF $LOC" &
   else
-    rsync -e ssh -az --delete  $pdir/../tao-devel/ $USR@$MACH:$TAO_LOC
+    rsync -e ssh -az --delete  $pdir/../tao-devel/ ${USR}@${MACH}:${TAO_LOC}
     $SSH $USR@$MACH $DASHN "cd $TAO_LOC; $TAO_LOC/maint/buildtest $CONF $LOC" &
   endif
 
