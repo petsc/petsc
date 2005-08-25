@@ -2,8 +2,7 @@
 
 configure_options = [
   '--with-shared=1',
-  '--download-mpich=1',
-  '--download-mpich-pm=gforker'
+  '--with-mpi-dir=/home/balay/soft/mpich2-1.0.2p1-gcc'
   ]
 
 if __name__ == '__main__':

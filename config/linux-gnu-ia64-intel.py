@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-shared=1',
   '--with-gnu-compilers=0',
-  '--download-mpich=1',
-  '--download-mpich-pm=gforker',
+  '--with-mpi-dir=/home/balay/soft/mpich2-1.0.2p1-intel',
   '--download-parmetis=1'
   ]
 
