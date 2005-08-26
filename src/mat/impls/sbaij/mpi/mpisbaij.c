@@ -697,6 +697,8 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
     } else if (format == PETSC_VIEWER_ASCII_INFO) {
       ierr = PetscViewerASCIIPrintf(viewer,"  block size is %D\n",bs);CHKERRQ(ierr);
       PetscFunctionReturn(0);
+    } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
+      PetscFunctionReturn(0);
     }
   }
 
