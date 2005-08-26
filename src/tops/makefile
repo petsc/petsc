@@ -1,3 +1,6 @@
+#requirespackage   'PETSC_HAVE_BABEL'
+
+
 TLIBNAME    = libtops
 REMOVEFILES = ./server/c++/sidl*.cc
 DIRS        = server/c++ examples/c++/ex1 examples/c++/ex2 examples/c++/ex3
