@@ -21,6 +21,7 @@ struct _n_DMMG {
   DM             dm;                   /* grid information for this level */
   Vec            x,b,r;                /* global vectors used in multigrid preconditioner for this level*/
   Mat            J;                    /* matrix on this level */
+  Mat            B;
   Mat            R;                    /* restriction to next coarser level (not defined on level 0) */
   PetscInt       nlevels;              /* number of levels above this one (total number of levels on level 0)*/
   MPI_Comm       comm;
@@ -34,7 +35,6 @@ struct _n_DMMG {
   PetscTruth     matricesset;               /* User had called DMMGSetKSP() and the matrices have been computed */
 
   /* SNES only */
-  Mat            B;
   Vec            Rscale;                 /* scaling to restriction before computing Jacobian */
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);  
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);  
@@ -60,7 +60,7 @@ struct _n_DMMG {
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm,PetscInt,void*,DMMG**);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG*,PetscErrorCode (*)(DMMG,Vec),PetscErrorCode (*)(DMMG,Mat));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG*,PetscErrorCode (*)(DMMG,Vec),PetscErrorCode (*)(DMMG,Mat,Mat));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG*,PetscErrorCode (*)(SNES,Vec,Vec,void*),PetscErrorCode (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetInitialGuess(DMMG*,PetscErrorCode (*)(DMMG,Vec));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuessCurrent(DMMG,Vec);

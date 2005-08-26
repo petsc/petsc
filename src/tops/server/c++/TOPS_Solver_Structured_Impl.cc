@@ -97,12 +97,13 @@ static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FormMatrix(DMMG dmmg,Mat J)
+static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
 {
   PetscFunctionBegin;
   TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
   TOPS::SystemComputeMatrix system = (TOPS::SystemComputeMatrix) solver->getSystem();
-  TOPS::MatrixStructured matrix = TOPS::MatrixStructured::_create();
+  TOPS::MatrixStructured matrix1 = TOPS::MatrixStructured::_create();
+  TOPS::MatrixStructured matrix2 = TOPS::MatrixStructured::_create();
 
   PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dim,dof,mx,my,mz;
   DAGetCorners((DA)dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);
@@ -110,19 +111,29 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J)
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);
 #define GetImpl(A,b) (!(A)b) ? 0 : reinterpret_cast<A ## _impl*>(((A) b)._get_ior()->d_data)
 
-  TOPS::MatrixStructured_impl *imatrix = GetImpl(TOPS::MatrixStructured,matrix);
-  imatrix->vlength[0] = xm; imatrix->vlength[1] = ym; imatrix->vlength[2] = zm; 
-  imatrix->vlower[0] = xs; imatrix->vlower[1] = ys; imatrix->vlower[2] = zs; 
-  imatrix->gghostlength[0] = gxm; imatrix->gghostlength[1] = gym; imatrix->gghostlength[2] = gzm; 
-  imatrix->gghostlower[0] = gxs; imatrix->gghostlower[1] = gys; imatrix->gghostlower[2] = gzs; 
-  imatrix->mat = dmmg->B;
-  imatrix->vdimen = dof;
+  // currently no support for dof > 1
+  TOPS::MatrixStructured_impl *imatrix1 = GetImpl(TOPS::MatrixStructured,matrix1);
+  imatrix1->vlength[0] = xm; imatrix1->vlength[1] = ym; imatrix1->vlength[2] = zm; 
+  imatrix1->vlower[0] = xs; imatrix1->vlower[1] = ys; imatrix1->vlower[2] = zs; 
+  imatrix1->gghostlength[0] = gxm; imatrix1->gghostlength[1] = gym; imatrix1->gghostlength[2] = gzm; 
+  imatrix1->gghostlower[0] = gxs; imatrix1->gghostlower[1] = gys; imatrix1->gghostlower[2] = gzs; 
+  imatrix1->vdimen = dof;
+
+  TOPS::MatrixStructured_impl *imatrix2 = GetImpl(TOPS::MatrixStructured,matrix2);
+  imatrix2->vlength[0] = xm; imatrix2->vlength[1] = ym; imatrix2->vlength[2] = zm; 
+  imatrix2->vlower[0] = xs; imatrix2->vlower[1] = ys; imatrix2->vlower[2] = zs; 
+  imatrix2->gghostlength[0] = gxm; imatrix2->gghostlength[1] = gym; imatrix2->gghostlength[2] = gzm; 
+  imatrix2->gghostlower[0] = gxs; imatrix2->gghostlower[1] = gys; imatrix2->gghostlower[2] = gzs; 
+  imatrix2->vdimen = dof;
+
+  imatrix1->mat = J;
+  imatrix2->mat = B;
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
   solver->setDimensionX(mx);
   solver->setDimensionY(my);
   solver->setDimensionZ(mz);
 
-  system.computeMatrix(matrix);
+  system.computeMatrix(matrix1,matrix2);
   MatAssemblyBegin(dmmg->B,MAT_FINAL_ASSEMBLY);
   MatAssemblyEnd(dmmg->B,MAT_FINAL_ASSEMBLY);
   PetscFunctionReturn(0);

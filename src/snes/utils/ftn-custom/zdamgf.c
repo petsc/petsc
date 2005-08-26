@@ -36,10 +36,10 @@ static PetscErrorCode ourrhs(DMMG dmmg,Vec vec)
    Since DMMGSetKSP() immediately calls the matrix functions for each level we do not need to store
   the mat() function inside the DMMG object
 */
-static PetscErrorCode ourmat(DMMG dmmg,Mat mat)
+static PetscErrorCode ourmat(DMMG dmmg,Mat mat,Mat mat2)
 {
   PetscErrorCode ierr = 0;
-  (*theirmat)(&dmmg,&mat,&ierr);
+  (*theirmat)(&dmmg,&mat,&mat2,&ierr);
   return ierr;
 }
 
@@ -52,7 +52,7 @@ static PetscErrorCode ourinitialguess(DMMG dmmg,Vec vec)
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL dmmgsetksp_(DMMG **dmmg,void (PETSC_STDCALL *rhs)(DMMG*,Vec*,PetscErrorCode*),void (PETSC_STDCALL *mat)(DMMG*,Mat*,PetscErrorCode*),PetscErrorCode *ierr)
+void PETSC_STDCALL dmmgsetksp_(DMMG **dmmg,void (PETSC_STDCALL *rhs)(DMMG*,Vec*,PetscErrorCode*),void (PETSC_STDCALL *mat)(DMMG*,Mat*,Mat *,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscInt i;
   theirmat = mat;

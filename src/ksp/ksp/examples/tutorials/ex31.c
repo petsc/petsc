@@ -725,7 +725,7 @@ no matter what the shape of the triangle. The Laplacian stiffness matrix is
 
 where A is the area of the triangle, and (x_i, y_i) is its i'th vertex.
 */
-PetscErrorCode ComputeJacobian(DMMG dmmg, Mat jac)
+PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J,Mat jac)
 {
   DA             da   = (DA) dmmg->dm;
   UserContext   *user = (UserContext *) dmmg->user;

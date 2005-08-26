@@ -44,7 +44,7 @@ package TOPS version 0.0.0 {
 
   // For linear problems
   interface SystemComputeMatrix extends gov.cca.Port {
-      void   computeMatrix(in Matrix J);
+      void   computeMatrix(in Matrix J,in Matrix B);
   }
 
   interface SystemComputeRightHandSide extends gov.cca.Port {

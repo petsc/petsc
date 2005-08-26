@@ -290,7 +290,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolveKSP(DMMG *dmmg,PetscInt level)
     ierr = (*dmmg[level]->rhs)(dmmg[level],dmmg[level]->b);CHKERRQ(ierr); 
   }
   if (dmmg[level]->matricesset) {
-    ierr = KSPSetOperators(dmmg[level]->ksp,dmmg[level]->J,dmmg[level]->J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(dmmg[level]->ksp,dmmg[level]->J,dmmg[level]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     dmmg[level]->matricesset = PETSC_FALSE;
   }
   ierr = KSPSolve(dmmg[level]->ksp,dmmg[level]->b,dmmg[level]->x);CHKERRQ(ierr);
@@ -400,7 +400,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorCode (*func)(DMMG,Mat))
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorCode (*func)(DMMG,Mat,Mat))
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
@@ -412,9 +412,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
 
   if (galerkin) {
     ierr = DMGetMatrix(dmmg[nlevels-1]->dm,MATAIJ,&dmmg[nlevels-1]->B);CHKERRQ(ierr);
-    ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->B);CHKERRQ(ierr);
+    if (!dmmg[nlevels-1]->J) {
+      dmmg[nlevels-1]->J = dmmg[nlevels-1]->B;
+    }
+    ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->J,dmmg[nlevels-1]->B);CHKERRQ(ierr);
     for (i=nlevels-2; i>-1; i--) {
       ierr = MatPtAP(dmmg[i+1]->B,dmmg[i+1]->R,MAT_INITIAL_MATRIX,1.0,&dmmg[i]->B);CHKERRQ(ierr);
+      if (!dmmg[i]->J) {
+        dmmg[i]->J = dmmg[i]->B;
+      }
     }
   }
 
@@ -440,7 +446,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
   /* evalute matrix on each level */
   for (i=0; i<nlevels; i++) {
     if (!galerkin) {
-      ierr = (*func)(dmmg[i],dmmg[i]->J);CHKERRQ(ierr);
+      ierr = (*func)(dmmg[i],dmmg[i]->J,dmmg[i]->B);CHKERRQ(ierr);
     }
     dmmg[i]->matricesset = PETSC_TRUE;
   }

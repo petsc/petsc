@@ -18,7 +18,7 @@ static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 #include "petscksp.h"
 #include "petscdmmg.h"
 
-extern PetscErrorCode ComputeJacobian(DMMG,Mat);
+extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 
 #undef __FUNCT__
@@ -69,7 +69,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian"
-PetscErrorCode ComputeJacobian(DMMG dmmg,Mat jac)
+PetscErrorCode ComputeJacobian(DMMG dmmg,Mat jac,Mat B)
 {
   DA             da = (DA)dmmg->dm;
   PetscErrorCode ierr;
@@ -88,7 +88,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg,Mat jac)
         row.i = i; row.j = j; row.k = k;
 	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
           v[0] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
-	  ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+	  ierr = MatSetValuesStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
 	} else {
 	  v[0] = -HxHydHz;col[0].i = i; col[0].j = j; col[0].k = k-1;
 	  v[1] = -HxHzdHy;col[1].i = i; col[1].j = j-1; col[1].k = k;
@@ -97,13 +97,13 @@ PetscErrorCode ComputeJacobian(DMMG dmmg,Mat jac)
 	  v[4] = -HyHzdHx;col[4].i = i+1; col[4].j = j; col[4].k = k;
 	  v[5] = -HxHzdHy;col[5].i = i; col[5].j = j+1; col[5].k = k;
 	  v[6] = -HxHydHz;col[6].i = i; col[6].j = j; col[6].k = k+1;
-	  ierr = MatSetValuesStencil(jac,1,&row,7,col,v,INSERT_VALUES);CHKERRQ(ierr);
+	  ierr = MatSetValuesStencil(B,1,&row,7,col,v,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
     }
   }
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   return 0;
 }
 

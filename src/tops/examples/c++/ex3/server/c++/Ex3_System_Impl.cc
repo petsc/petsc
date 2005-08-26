@@ -83,18 +83,19 @@ throw ()
  */
 void
 Ex3::System_impl::computeMatrix (
-  /* in */ ::TOPS::Matrix J ) 
+  /* in */ ::TOPS::Matrix J,
+  /* in */ ::TOPS::Matrix B ) 
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.computeMatrix)
-  TOPS::MatrixStructured B = (TOPS::MatrixStructured)J;
+  TOPS::MatrixStructured BB = (TOPS::MatrixStructured)B;
   TOPS::SolverStructured solver = this->solver;
-  int xs = B.lower(0);      // first grid point in X and Y directions on this process
-  int ys = B.lower(1);
-  int zs = B.lower(2);
-  int xm = B.length(0);       // number of local grid points in X and Y directions on this process
-  int ym = B.length(1);
-  int zm = B.length(2);
+  int xs = BB.lower(0);      // first grid point in X and Y directions on this process
+  int ys = BB.lower(1);
+  int zs = BB.lower(2);
+  int xm = BB.length(0);       // number of local grid points in X and Y directions on this process
+  int ym = BB.length(1);
+  int zm = BB.length(2);
   int i,j,k;
   int mx = solver.getDimensionX();
   int my = solver.getDimensionY();
@@ -125,9 +126,9 @@ throw ()
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
 	if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1){
-          B.set(i,j,k,dd); // diagonal entry
+          BB.set(i,j,k,dd); // diagonal entry
         } else {
-          B.set(i,j,k,rr);   // seven point stencil
+          BB.set(i,j,k,rr);   // seven point stencil
         }
       }
     }
