@@ -6,37 +6,6 @@
 #include "src/inline/dot.h"
 #include "petscblaslapack.h"
 
-#define do_not_use_ethernet
-PetscErrorCode Ethernet_Allreduce(PetscReal *in,PetscReal *out,PetscInt n,MPI_Datatype type,MPI_Op op,MPI_Comm comm)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    rank,size;
-  PetscInt            i;
-  MPI_Status     status;
-
-
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-
-  if (rank) {
-    ierr = MPI_Recv(out,n,MPIU_REAL,rank-1,837,comm,&status);CHKERRQ(ierr);
-    for (i =0; i<n; i++) in[i] += out[i];
-  }
-  if (rank != size - 1) {
-    ierr = MPI_Send(in,n,MPIU_REAL,rank+1,837,comm);CHKERRQ(ierr);
-  }
-  if (rank == size-1) {
-    for (i=0; i<n; i++) out[i] = in[i];    
-  } else {
-    ierr = MPI_Recv(out,n,MPIU_REAL,rank+1,838,comm,&status);CHKERRQ(ierr);
-  }
-  if (rank) {
-    ierr = MPI_Send(out,n,MPIU_REAL,rank-1,838,comm);CHKERRQ(ierr);
-  }
-  return 0;
-}
-
-
 #undef __FUNCT__  
 #define __FUNCT__ "VecMDot_MPI"
 PetscErrorCode VecMDot_MPI(PetscInt nv,Vec xin,const Vec y[],PetscScalar *z)

@@ -32,6 +32,7 @@ class Configure(PETSc.package.Package,config.autoconf.Configure):
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
     self.make = framework.require('PETSc.utilities.Make', self)
+    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
     return
 
   def generateGuesses(self):
@@ -210,7 +211,7 @@ acfindx:
     return
 
   def configure(self):
-    if self.framework.argDB['with-x']:
+    if self.framework.argDB['with-x'] and self.libraryOptions.integerSize == 32:
       self.executeTest(self.configureLibrary)
     return
 
