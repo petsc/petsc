@@ -461,7 +461,7 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,MatFactorInfo *info,Mat *F)
   PetscErrorCode ierr;
   PetscInt       rnz,nnz,nz,i,M=A->M,*ai,*aj,icntl;
   PetscTruth     valOnly,flg;
-  Mat            F_diag;
+  Mat            F_diag; 
 
   PetscFunctionBegin; 	
   if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ 
@@ -650,12 +650,14 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,MatFactorInfo *info,Mat *F)
     SETERRQ1(PETSC_ERR_LIB,"  lu->id.ICNTL(16):=%d\n",lu->id.INFOG(16)); 
   }
 
-  if ((*F)->factor == FACTOR_LU){
-    F_diag = ((Mat_MPIAIJ *)(*F)->data)->A;
-  } else {
-    F_diag = ((Mat_MPISBAIJ *)(*F)->data)->A;
+  if (lu->size > 1){
+    if ((*F)->factor == FACTOR_LU){
+      F_diag = ((Mat_MPIAIJ *)(*F)->data)->A;
+    } else {
+      F_diag = ((Mat_MPISBAIJ *)(*F)->data)->A;
+    }
+    F_diag->assembled = PETSC_TRUE;
   }
-  F_diag->assembled = PETSC_TRUE; 
   (*F)->assembled   = PETSC_TRUE;
   lu->matstruc      = SAME_NONZERO_PATTERN;
   lu->CleanUpMUMPS  = PETSC_TRUE;
@@ -863,7 +865,6 @@ PetscErrorCode MatAssemblyEnd_SBAIJMUMPS(Mat A,MatAssemblyType mode)
 
   PetscFunctionBegin;
   ierr = (*mumps->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-  mumps->MatLUFactorSymbolic       = A->ops->lufactorsymbolic;
   mumps->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
   A->ops->choleskyfactorsymbolic   = MatCholeskyFactorSymbolic_SBAIJMUMPS;
   PetscFunctionReturn(0);
@@ -1015,7 +1016,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJMUMPS(Mat A) 
 {
   PetscErrorCode ierr;
-  int size;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqSBAIJ or MPISBAIJ */
@@ -1026,6 +1027,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJMUMPS(Mat A)
     ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
   } else {
     ierr   = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
+    /*  -- crash! don't know why? 
+    Mat            A_diag;
+    MPI_Comm       comm;
+    A_diag = ((Mat_MPISBAIJ *)A->data)->A;
+    ierr = PetscObjectGetComm((PetscObject)A_diag,&comm);CHKERRQ(ierr); 
+    ierr = MatConvert_SBAIJ_SBAIJMUMPS(A_diag,MATSBAIJMUMPS,MAT_REUSE_MATRIX,&A_diag);CHKERRQ(ierr);
+    
+    */
   }
   ierr = MatConvert_SBAIJ_SBAIJMUMPS(A,MATSBAIJMUMPS,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
