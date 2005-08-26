@@ -41,34 +41,41 @@
     dim++;
     lower[0] = 0; upper[0] = dof; stride[0] = 1;
     lower[1] = gxs; lower[2] = gys; lower[3] = gzs;
-    upper[1] = gxm - gxs - 1; upper[2] = gym - gys - 1; upper[3] = gzm - gzs - 1;
+    upper[1] = gxm + gxs - 1; upper[2] = gym  + gys - 1; upper[3] = gzm + gzs - 1;
     stride[1] = dof; stride[2] = gxm*dof; stride[3] = gxm*gym*dof;
   } else {
     lower[0] = gxs; lower[1] = gys; lower[2] = gzs;
-    upper[0] = gxm - gxs - 1; upper[1] = gym - gys -1 ; upper[2] = gzm - gzs - 1;
+    upper[0] = gxm +gxs - 1; upper[1] = gym + gys - 1 ; upper[2] = gzm + gzs - 1;
     stride[0] = 1; stride[1] = gxm; stride[2] = gxm*gym;
   }
   ua.borrow(uu,dim,*&lower,*&upper,*&stride);
   return ua;
 }
 
-static PetscErrorCode FormFunction(SNES snes,Vec u,Vec f,void *vdmmg)
+static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
 {
   PetscFunctionBegin;
   DMMG dmmg = (DMMG) vdmmg;
   TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
   TOPS::SystemComputeResidual system = (TOPS::SystemComputeResidual) solver->getSystem();
-  
+  DA da = (DA) dmmg->dm;
+  Vec u; 
+  DAGetLocalVector(da,&u);
+  DAGlobalToLocalBegin(da,uu,INSERT_VALUES,u);
+  DAGlobalToLocalEnd(da,uu,INSERT_VALUES,u);
+
   int mx,my,mz;
-  DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
+  DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);
   solver->setDimensionX(mx);
   solver->setDimensionY(my);
   solver->setDimensionZ(mz);
-  sidl::array<double> ua = DAVecGetArrayBabel((DA)dmmg->dm,u);
-  sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);;
+  sidl::array<double> ua = DAVecGetArrayBabel(da,u);
+  sidl::array<double> fa = DAVecGetArrayBabel(da,f);;
   system.computeResidual(ua,fa);
   VecRestoreArray(u,0);
+  DARestoreLocalVector(da,&u);
   VecRestoreArray(f,0);
+  VecView(f,0);
   PetscFunctionReturn(0);
 }
 
