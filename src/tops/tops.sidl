@@ -69,14 +69,6 @@ package TOPS version 0.0.0 {
       void   set[D2](in int i,in int j,in array<double,2> values);
       void   set[D3](in int i,in int j,in int k,in array<double,2> values);
       void   set[D4](in int i,in int j,in int k,in int l,in array<double,2> values);
-
-      // private methods
-      void   setdimen(in int a);
-      void   setlower(in int a,in int l);
-      void   setlength(in int a,in int l);
-      void   setMat(in opaque m);
-      void   setGhostLower(in int a,in int b);
-      void   setGhostLength(in int a,in int b);
   }
 
 

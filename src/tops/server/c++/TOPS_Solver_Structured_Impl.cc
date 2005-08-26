@@ -12,6 +12,7 @@
 #include "TOPS_Solver_Structured_Impl.hh"
 
 // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._includes)
+#include "TOPS_MatrixStructured_Impl.hh"
 // Uses ports includes
   // This code is the same as DAVecGetArray() except instead of generating
   // raw C multidimensional arrays it gets a Babel array
@@ -103,23 +104,19 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J)
   TOPS::SystemComputeMatrix system = (TOPS::SystemComputeMatrix) solver->getSystem();
   TOPS::MatrixStructured matrix = TOPS::MatrixStructured::_create();
 
-  PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dim,dof;
+  PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dim,dof,mx,my,mz;
   DAGetCorners((DA)dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);
   DAGetGhostCorners((DA)dmmg->dm,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
-  matrix.setlength(0,xm);
-  matrix.setlength(1,ym);
-  matrix.setlength(2,zm);
-  matrix.setlower(0,xs);
-  matrix.setlower(1,ys);
-  matrix.setlower(2,zs);
-  matrix.setGhostLength(0,gxm);
-  matrix.setGhostLength(1,gym);
-  matrix.setGhostLength(2,gzm);
-  matrix.setGhostLower(0,gxs);
-  matrix.setGhostLower(1,gys);
-  matrix.setGhostLower(2,gzs);
-  matrix.setMat(dmmg->B);
-  int mx,my,mz;
+  DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);
+#define GetImpl(A,b) (!(A)b) ? 0 : reinterpret_cast<A ## _impl*>(((A) b)._get_ior()->d_data)
+
+  TOPS::MatrixStructured_impl *imatrix = GetImpl(TOPS::MatrixStructured,matrix);
+  imatrix->vlength[0] = xm; imatrix->vlength[1] = ym; imatrix->vlength[2] = zm; 
+  imatrix->vlower[0] = xs; imatrix->vlower[1] = ys; imatrix->vlower[2] = zs; 
+  imatrix->gghostlength[0] = gxm; imatrix->gghostlength[1] = gym; imatrix->gghostlength[2] = gzm; 
+  imatrix->gghostlower[0] = gxs; imatrix->gghostlower[1] = gys; imatrix->gghostlower[2] = gzs; 
+  imatrix->mat = dmmg->B;
+  imatrix->vdimen = dof;
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
   solver->setDimensionX(mx);
   solver->setDimensionY(my);

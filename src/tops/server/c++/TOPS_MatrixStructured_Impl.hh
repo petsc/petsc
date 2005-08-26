@@ -55,7 +55,8 @@ namespace TOPS {
     MatrixStructured self;
 
     // DO-NOT-DELETE splicer.begin(TOPS.MatrixStructured._implementation)
-    int vlength[4],vlower[4],glength[4],vdimen;
+  public: // not really public, but we make it public so TOPS::Solver::Structured can access directly
+    int vlength[4],vlower[4],vdimen;
     int gghostlower[4],gghostlength[4];
     Mat mat;
     // DO-NOT-DELETE splicer.end(TOPS.MatrixStructured._implementation)
@@ -158,70 +159,6 @@ namespace TOPS {
       /* in */ int32_t k,
       /* in */ int32_t l,
       /* in */ ::sidl::array<double> values
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    setdimen (
-      /* in */ int32_t a
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    setlower (
-      /* in */ int32_t a,
-      /* in */ int32_t l
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    setlength (
-      /* in */ int32_t a,
-      /* in */ int32_t l
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    setMat (
-      /* in */ void* m
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    setGhostLower (
-      /* in */ int32_t a,
-      /* in */ int32_t b
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    setGhostLength (
-      /* in */ int32_t a,
-      /* in */ int32_t b
     )
     throw () 
     ;
