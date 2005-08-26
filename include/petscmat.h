@@ -1134,6 +1134,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat,ISColoring,MatF
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringDestroy(MatFDColoring);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringView(MatFDColoring,PetscViewer);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFunction(MatFDColoring,PetscErrorCode (*)(void),void*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetFunction(MatFDColoring,PetscErrorCode (**)(void),void**);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetParameters(MatFDColoring,PetscReal,PetscReal);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFrequency(MatFDColoring,PetscInt);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetFrequency(MatFDColoring,PetscInt*);

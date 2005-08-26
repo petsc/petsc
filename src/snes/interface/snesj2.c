@@ -40,6 +40,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobianColor(SNES snes,Vec
   PetscErrorCode ierr;
   PetscInt       freq,it;
   Vec            f;
+  PetscErrorCode (*ff)(void),(*fd)(void);
 
   PetscFunctionBegin;
   ierr = MatFDColoringGetFrequency(color,&freq);CHKERRQ(ierr);
@@ -51,8 +52,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobianColor(SNES snes,Vec
   } else {
     ierr = PetscLogInfo((color,"SNESDefaultComputeJacobianColor:Computing Jacobian, it %D, freq %D\n",it,freq));CHKERRQ(ierr);
     *flag = SAME_NONZERO_PATTERN;
-    ierr  = SNESGetFunction(snes,&f,0,0);CHKERRQ(ierr);
-    ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);
+    ierr  = SNESGetFunction(snes,&f,(PetscErrorCode (**)(SNES,Vec,Vec,void*))&ff,0);CHKERRQ(ierr);
+    ierr  = MatFDColoringGetFunction(color,&fd,PETSC_NULL);CHKERRQ(ierr);
+    if (fd == ff) { /* reuse function value computed in SNES */
+      ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);
+    }
     ierr  = MatFDColoringApply(*B,color,x1,flag,snes);CHKERRQ(ierr);
   }
   if (*J != *B) {

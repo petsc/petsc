@@ -250,6 +250,33 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetFrequency(MatFDColoring matfd,
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringGetFunction"
+/*@C
+   MatFDColoringGetFunction - Gets the function to use for computing the Jacobian.
+
+   Collective on MatFDColoring
+
+   Input Parameters:
+.  coloring - the coloring context
+
+   Output Parameters:
++  f - the function
+-  fctx - the optional user-defined function context
+
+   Level: intermediate
+
+.keywords: Mat, Jacobian, finite differences, set, function
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetFunction(MatFDColoring matfd,PetscErrorCode (**f)(void),void **fctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
+  if (f) *f = matfd->f;
+  if (fctx) *fctx = matfd->fctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringSetFunction"
 /*@C
    MatFDColoringSetFunction - Sets the function to use for computing the Jacobian.
