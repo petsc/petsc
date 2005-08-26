@@ -137,7 +137,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian"
-PetscErrorCode ComputeJacobian(DMMG dmmg, Mat jac)
+PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J,Mat jac)
 {
   DA             da = (DA) dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;

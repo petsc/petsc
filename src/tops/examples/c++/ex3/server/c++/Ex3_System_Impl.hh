@@ -115,7 +115,8 @@ namespace Ex3 {
      */
     void
     computeMatrix (
-      /* in */ ::TOPS::Matrix J
+      /* in */ ::TOPS::Matrix J,
+      /* in */ ::TOPS::Matrix B
     )
     throw () 
     ;
