@@ -231,6 +231,8 @@ class Configure(PETSc.package.Package):
     # Configure and Build LAM
     self.framework.pushLanguage('C')
     args = ['--prefix='+installDir, '--with-rsh=ssh','--with-CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
+    if not self.setCompilers.staticLibraries and self.framework.argDB['with-mpi-shared']:
+      args.append('--enable-shared')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
