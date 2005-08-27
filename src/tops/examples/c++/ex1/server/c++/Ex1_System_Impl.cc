@@ -48,7 +48,7 @@ Ex1::System_impl::setSolver (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(Ex1.System.setSolver)
-  this->solver = (TOPS::SolverStructured)solver;
+  this->solver = (TOPS::Structured::Solver)solver;
   // DO-NOT-DELETE splicer.end(Ex1.System.setSolver)
 }
 

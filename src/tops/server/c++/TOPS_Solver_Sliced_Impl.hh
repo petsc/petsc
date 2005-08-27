@@ -25,8 +25,8 @@
 #ifndef included_TOPS_Solver_Sliced_hh
 #include "TOPS_Solver_Sliced.hh"
 #endif
-#ifndef included_TOPS_System_hh
-#include "TOPS_System.hh"
+#ifndef included_TOPS_System_System_hh
+#include "TOPS_System_System.hh"
 #endif
 #ifndef included_gov_cca_CCAException_hh
 #include "gov_cca_CCAException.hh"
@@ -97,7 +97,7 @@ namespace TOPS {
      */
     void
     setSystem (
-      /* in */ ::TOPS::System system
+      /* in */ ::TOPS::System::System system
     )
     throw () 
     ;
@@ -105,7 +105,7 @@ namespace TOPS {
     /**
      * user defined non-static method.
      */
-    ::TOPS::System
+    ::TOPS::System::System
     getSystem() throw () 
     ;
     /**

@@ -25,8 +25,8 @@
 #ifndef included_TOPS_Solver_Structured_hh
 #include "TOPS_Solver_Structured.hh"
 #endif
-#ifndef included_TOPS_System_hh
-#include "TOPS_System.hh"
+#ifndef included_TOPS_System_System_hh
+#include "TOPS_System_System.hh"
 #endif
 #ifndef included_gov_cca_CCAException_hh
 #include "gov_cca_CCAException.hh"
@@ -71,7 +71,7 @@ namespace TOPS {
     int                M,N,P,m,n,p,dim,s,levels,bs;
     DAStencilType      stencil_type;
     DAPeriodicType     wrap;
-    TOPS::System       system;
+    TOPS::System::System       system;
     int                startedpetsc;
     gov::cca::Services myServices;
     // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._implementation)
@@ -107,7 +107,7 @@ namespace TOPS {
      */
     void
     setSystem (
-      /* in */ ::TOPS::System system
+      /* in */ ::TOPS::System::System system
     )
     throw () 
     ;
@@ -115,7 +115,7 @@ namespace TOPS {
     /**
      * user defined non-static method.
      */
-    ::TOPS::System
+    ::TOPS::System::System
     getSystem() throw () 
     ;
     /**

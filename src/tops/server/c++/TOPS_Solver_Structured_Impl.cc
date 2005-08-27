@@ -12,7 +12,7 @@
 #include "TOPS_Solver_Structured_Impl.hh"
 
 // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._includes)
-#include "TOPS_MatrixStructured_Impl.hh"
+#include "TOPS_Structured_Matrix_Impl.hh"
 // Uses ports includes
   // This code is the same as DAVecGetArray() except instead of generating
   // raw C multidimensional arrays it gets a Babel array
@@ -58,7 +58,7 @@ static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
   PetscFunctionBegin;
   DMMG dmmg = (DMMG) vdmmg;
   TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
-  TOPS::SystemComputeResidual system = (TOPS::SystemComputeResidual) solver->getSystem();
+  TOPS::System::Compute::Residual system = (TOPS::System::Compute::Residual) solver->getSystem();
   DA da = (DA) dmmg->dm;
   Vec u; 
   DAGetLocalVector(da,&u);
@@ -76,7 +76,6 @@ static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
   VecRestoreArray(u,0);
   DARestoreLocalVector(da,&u);
   VecRestoreArray(f,0);
-  VecView(f,0);
   PetscFunctionReturn(0);
 }
 
@@ -84,7 +83,7 @@ static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
 {
   PetscFunctionBegin;
   TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
-  TOPS::SystemComputeInitialGuess system = (TOPS::SystemComputeInitialGuess) solver->getSystem();
+  TOPS::System::Compute::InitialGuess system = (TOPS::System::Compute::InitialGuess) solver->getSystem();
 
   int mx,my,mz;
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
@@ -101,9 +100,9 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
 {
   PetscFunctionBegin;
   TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
-  TOPS::SystemComputeMatrix system = (TOPS::SystemComputeMatrix) solver->getSystem();
-  TOPS::MatrixStructured matrix1 = TOPS::MatrixStructured::_create();
-  TOPS::MatrixStructured matrix2 = TOPS::MatrixStructured::_create();
+  TOPS::System::Compute::Matrix system = (TOPS::System::Compute::Matrix) solver->getSystem();
+  TOPS::Structured::Matrix matrix1 = TOPS::Structured::Matrix::_create();
+  TOPS::Structured::Matrix matrix2 = TOPS::Structured::Matrix::_create();
 
   PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dim,dof,mx,my,mz;
   DAGetCorners((DA)dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);
@@ -112,14 +111,14 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
 #define GetImpl(A,b) (!(A)b) ? 0 : reinterpret_cast<A ## _impl*>(((A) b)._get_ior()->d_data)
 
   // currently no support for dof > 1
-  TOPS::MatrixStructured_impl *imatrix1 = GetImpl(TOPS::MatrixStructured,matrix1);
+  TOPS::Structured::Matrix_impl *imatrix1 = GetImpl(TOPS::Structured::Matrix,matrix1);
   imatrix1->vlength[0] = xm; imatrix1->vlength[1] = ym; imatrix1->vlength[2] = zm; 
   imatrix1->vlower[0] = xs; imatrix1->vlower[1] = ys; imatrix1->vlower[2] = zs; 
   imatrix1->gghostlength[0] = gxm; imatrix1->gghostlength[1] = gym; imatrix1->gghostlength[2] = gzm; 
   imatrix1->gghostlower[0] = gxs; imatrix1->gghostlower[1] = gys; imatrix1->gghostlower[2] = gzs; 
   imatrix1->vdimen = dof;
 
-  TOPS::MatrixStructured_impl *imatrix2 = GetImpl(TOPS::MatrixStructured,matrix2);
+  TOPS::Structured::Matrix_impl *imatrix2 = GetImpl(TOPS::Structured::Matrix,matrix2);
   imatrix2->vlength[0] = xm; imatrix2->vlength[1] = ym; imatrix2->vlength[2] = zm; 
   imatrix2->vlower[0] = xs; imatrix2->vlower[1] = ys; imatrix2->vlower[2] = zs; 
   imatrix2->gghostlength[0] = gxm; imatrix2->gghostlength[1] = gym; imatrix2->gghostlength[2] = gzm; 
@@ -143,7 +142,7 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 {
   PetscFunctionBegin;
   TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
-  TOPS::SystemComputeRightHandSide system = (TOPS::SystemComputeRightHandSide) solver->getSystem();
+  TOPS::System::Compute::RightHandSide system = (TOPS::System::Compute::RightHandSide) solver->getSystem();
 
   int mx,my,mz;
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
@@ -203,7 +202,7 @@ void TOPS::Solver_Structured_impl::_load() {
  */
 void
 TOPS::Solver_Structured_impl::setSystem (
-  /* in */ ::TOPS::System system ) 
+  /* in */ ::TOPS::System::System system ) 
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setSystem)
@@ -215,7 +214,7 @@ throw ()
 /**
  * Method:  getSystem[]
  */
-::TOPS::System
+::TOPS::System::System
 TOPS::Solver_Structured_impl::getSystem ()
 throw () 
 
@@ -273,13 +272,13 @@ throw ()
     DACreate(PETSC_COMM_WORLD,this->dim,this->wrap,this->stencil_type,this->M,this->N,this->P,this->m,this->n,
              this->p,this->bs,this->s,PETSC_NULL,PETSC_NULL,PETSC_NULL,&this->da);
     DMMGSetDM(this->dmmg,(DM)this->da);
-    TOPS::SystemComputeResidual residual = (TOPS::SystemComputeResidual) this->system;
+    TOPS::System::Compute::Residual residual = (TOPS::System::Compute::Residual) this->system;
     if (residual._not_nil()) {
       ierr = DMMGSetSNES(this->dmmg, FormFunction, 0);
     } else {
       ierr = DMMGSetKSP(this->dmmg,FormRightHandSide,FormMatrix);
     }
-    TOPS::SystemComputeInitialGuess guess = (TOPS::SystemComputeInitialGuess) this->system;
+    TOPS::System::Compute::InitialGuess guess = (TOPS::System::Compute::InitialGuess) this->system;
     if (guess._not_nil()) {
       ierr = DMMGSetInitialGuess(this->dmmg, FormInitialGuess);
     }
@@ -513,21 +512,21 @@ throw (
   
   // Provides port
   services.addProvidesPort(p,
-			   "TOPS.SolverStructured",
-			   "TOPS.SolverStructured", tm);
+			   "TOPS.Structured.Solver",
+			   "TOPS.Structured.Solver", tm);
   
   // Uses ports
-  services.registerUsesPort("TOPS.SystemComputeInitialGuess",
-			    "TOPS.SystemComputeInitialGuess", tm);
+  services.registerUsesPort("TOPS.System.Compute.InitialGuess",
+			    "TOPS.System.Compute.InitialGuess", tm);
 
-  services.registerUsesPort("TOPS.SystemComputeMatrix",
-			    "TOPS.SystemComputeMatrix", tm);
+  services.registerUsesPort("TOPS.System.Compute.Matrix",
+			    "TOPS.System.Compute.Matrix", tm);
 
-  services.registerUsesPort("TOPS.SystemComputeRightHandSide",
-			    "TOPS.SystemComputeRightHandSide", tm);
+  services.registerUsesPort("TOPS.System.Compute.RightHandSide",
+			    "TOPS.System.Compute.RightHandSide", tm);
 
-  services.registerUsesPort("TOPS.SystemComputeResidual",
-			    "TOPS.SystemComputeResidual", tm);
+  services.registerUsesPort("TOPS.System.Compute.Residual",
+			    "TOPS.System.Compute.Residual", tm);
 
   return;
   // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setServices)

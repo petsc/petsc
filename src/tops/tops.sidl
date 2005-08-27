@@ -6,8 +6,8 @@ package TOPS version 0.0.0 {
   }
 
   interface Solver extends gov.cca.Port {
-      void          setSystem(in System system);
-      System        getSystem();
+      void          setSystem(in System.System system);
+      System.System getSystem();
 
       // Pass in command line arguments to Solver
       void          Initialize(in array<string,1> args);
@@ -19,46 +19,52 @@ package TOPS version 0.0.0 {
       void          setSolution(in array<double> location);
   }
 
-  // Methods provided by the user to define the numerical problem 
-  interface System extends gov.cca.Port {
+  package System version 0.0.0 {
+    // Methods provided by the user to define the numerical problem 
+    interface System extends gov.cca.Port {
       void   setSolver(in Solver solver);
 
       // Initialize the Layout object and anything that is fixed for all solves
       void   initializeOnce();
       // Initialize anything that changes with each solve
       void   initializeEverySolve();
+    }
+
+    package Compute version 0.0.0 {
+      interface InitialGuess extends gov.cca.Port {
+        void   computeInitialGuess(in array<double> x);
+      }
+
+      // For nonlinear problems
+      interface Jacobian extends gov.cca.Port {
+        void   computeJacobian(in array<double> x ,in TOPS.Matrix J,in TOPS.Matrix B);
+      }
+
+      interface Residual extends gov.cca.Port {
+        void   computeResidual(in array<double> x,in array<double> f);
+      }
+
+      // For linear problems
+      interface Matrix extends gov.cca.Port {
+        void   computeMatrix(in TOPS.Matrix J,in TOPS.Matrix B);
+      }
+
+      interface RightHandSide extends gov.cca.Port {
+        void   computeRightHandSide(in array<double> b);
+      }
+    }
   }
 
-  interface SystemComputeInitialGuess extends gov.cca.Port {
-      void   computeInitialGuess(in array<double> x);
-  }
-
-  // For nonlinear problems
-  interface SystemComputeJacobian extends gov.cca.Port {
-      void   computeJacobian(in array<double> x ,in Matrix J,in Matrix B);
-  }
-
-  interface SystemComputeResidual extends gov.cca.Port {
-      void   computeResidual(in array<double> x,in array<double> f);
-  }
-
-  // For linear problems
-  interface SystemComputeMatrix extends gov.cca.Port {
-      void   computeMatrix(in Matrix J,in Matrix B);
-  }
-
-  interface SystemComputeRightHandSide extends gov.cca.Port {
-      void   computeRightHandSide(in array<double> b);
-  }
 
   //  ---------- Interfaces for system on structured grid
+  package Structured version 0.0.0 {
 
-  // Sparse matrix interface for a structured grid problem
-  // This is modeled after the Babel/SIDL arrays interface
-  // essentially one can think of the sparse matrix as having
-  // a variable number of doubles at each grid point (while 
-  // Babel/SIDL arrays have a fixed number)
-  class MatrixStructured implements-all Matrix {
+    // Sparse matrix interface for a structured grid problem
+    // This is modeled after the Babel/SIDL arrays interface
+    // essentially one can think of the sparse matrix as having
+    // a variable number of doubles at each grid point (while 
+    // Babel/SIDL arrays have a fixed number)
+    class Matrix implements-all TOPS.Matrix {
       // local ownership of grid
       int    dimen();
       int    lower(in int a);
@@ -69,12 +75,11 @@ package TOPS version 0.0.0 {
       void   set[D2](in int i,in int j,in array<double,2> values);
       void   set[D3](in int i,in int j,in int k,in array<double,2> values);
       void   set[D4](in int i,in int j,in int k,in int l,in array<double,2> values);
-  }
+    }
 
 
-
-  //   The data lives on a structured grid 
-  interface SolverStructured extends Solver {
+    //   The data lives on a structured grid 
+    interface Solver extends TOPS.Solver {
       void setDimension(in int dim);
       int  getDimension();
       void setDimensionX(in int dim);
@@ -86,12 +91,14 @@ package TOPS version 0.0.0 {
       void setStencilWidth(in int width);
       int  getStencilWidth();
       void setLevels(in int levels);
+    }
   }
 
   //  ---------- Interfaces for system on unstructured grid
 
-  //   The data in the vectors is linearly sliced into one part per process
-  interface SolverSliced extends Solver {
+  package Sliced version 0.0.0 {
+    //   The data in the vectors is linearly sliced into one part per process
+    interface Solver extends TOPS.Solver {
       void setLocalRowSize(in int m);
       int  getLocalRowSize();
       void setGlobalRowSize(in int M);
@@ -104,9 +111,10 @@ package TOPS version 0.0.0 {
       void setGhostPoints(in array<int,1> ghosts);
       void setPreallocation(in int d,in int od);
       void setPreallocation[s](in array<int,1> d,in array<int,1> od);
+    }
   }
 
   // These are the two solver components that come with TOPS by default
-  class Solver_Sliced implements-all SolverSliced, gov.cca.Component {}
-  class Solver_Structured implements-all SolverStructured, gov.cca.Component {}
+  class Solver_Sliced implements-all TOPS.Sliced.Solver, gov.cca.Component {}
+  class Solver_Structured implements-all TOPS.Structured.Solver, gov.cca.Component {}
 }

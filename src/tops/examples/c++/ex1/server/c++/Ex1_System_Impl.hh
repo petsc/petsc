@@ -63,7 +63,7 @@ namespace Ex1 {
     System self;
 
     // DO-NOT-DELETE splicer.begin(Ex1.System._implementation)
-    TOPS::SolverStructured solver;
+    TOPS::Structured::Solver solver;
     // DO-NOT-DELETE splicer.end(Ex1.System._implementation)
 
   private:

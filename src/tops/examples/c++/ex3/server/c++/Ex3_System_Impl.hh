@@ -60,7 +60,7 @@ namespace Ex3 {
     System self;
 
     // DO-NOT-DELETE splicer.begin(Ex3.System._implementation)
-    TOPS::SolverStructured solver;
+    TOPS::Structured::Solver solver;
     // DO-NOT-DELETE splicer.end(Ex3.System._implementation)
 
   private:

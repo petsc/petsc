@@ -44,7 +44,7 @@ void TOPS::Solver_Sliced_impl::_load() {
  */
 void
 TOPS::Solver_Sliced_impl::setSystem (
-  /* in */ ::TOPS::System system ) 
+  /* in */ ::TOPS::System::System system ) 
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Solver_Sliced.setSystem)
@@ -55,7 +55,7 @@ throw ()
 /**
  * Method:  getSystem[]
  */
-::TOPS::System
+::TOPS::System::System
 TOPS::Solver_Sliced_impl::getSystem ()
 throw () 
 

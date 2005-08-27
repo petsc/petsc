@@ -63,7 +63,7 @@ namespace Ex2 {
     System self;
 
     // DO-NOT-DELETE splicer.begin(Ex2.System._implementation)
-    TOPS::SolverStructured solver;
+    TOPS::Structured::Solver solver;
     double grashof;
     double prandtl;
     double lid;

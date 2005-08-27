@@ -1,7 +1,5 @@
 
 package Ex1 version 0.0.0 {
-
-    class System implements-all TOPS.System, TOPS.SystemComputeResidual, gov.cca.Component {
-    }
+  class System implements-all TOPS.System.System, TOPS.System.Compute.Residual, gov.cca.Component {}
 }
 

@@ -88,8 +88,8 @@ Ex3::System_impl::computeMatrix (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.computeMatrix)
-  TOPS::MatrixStructured BB = (TOPS::MatrixStructured)B;
-  TOPS::SolverStructured solver = this->solver;
+  TOPS::Structured::Matrix BB = (TOPS::Structured::Matrix)B;
+  TOPS::Structured::Solver solver = this->solver;
   int xs = BB.lower(0);      // first grid point in X and Y directions on this process
   int ys = BB.lower(1);
   int zs = BB.lower(2);
@@ -145,7 +145,7 @@ Ex3::System_impl::computeRightHandSide (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.computeRightHandSide)
-  TOPS::Solver_Structured solver = this->solver;
+  TOPS::Structured::Solver solver = this->solver;
   int xs = b.lower(0);      // first grid point in X and Y directions on this process
   int ys = b.lower(1);
   int zs = b.lower(2);

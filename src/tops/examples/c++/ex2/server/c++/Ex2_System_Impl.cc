@@ -50,7 +50,7 @@ Ex2::System_impl::setSolver (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.setSolver)
-  this->solver = (TOPS::Solver_Structured)solver;
+  this->solver = (TOPS::Structured::Solver)solver;
   // DO-NOT-DELETE splicer.end(Ex2.System.setSolver)
 }
 
@@ -90,7 +90,7 @@ Ex2::System_impl::computeResidual (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.computeResidual)
-  TOPS::SolverStructured solver = this->solver;
+  TOPS::Structured::Solver solver = this->solver;
   int xs = f.lower(1);      // first grid point in X and Y directions on this process
   int ys = f.lower(2);
   int xm = f.length(1);       // number of local grid points in X and Y directions on this process
@@ -226,7 +226,7 @@ throw ()
      Compute initial guess over the locally owned part of the grid
      Initial condition is motionless fluid and equilibrium temperature
   */
-  TOPS::Solver_Structured solver = this->solver;
+  TOPS::Structured::Solver solver = this->solver;
   int xs = x.lower(1);      // first grid point in X and Y directions on this process
   int ys = x.lower(2);
   int xm = x.length(1) - 1;       // number of local grid points in X and Y directions on this process
