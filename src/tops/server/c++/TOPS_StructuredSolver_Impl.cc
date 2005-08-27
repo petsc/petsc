@@ -1,17 +1,17 @@
 // 
-// File:          TOPS_Solver_Structured_Impl.cc
-// Symbol:        TOPS.Solver_Structured-v0.0.0
+// File:          TOPS_StructuredSolver_Impl.cc
+// Symbol:        TOPS.StructuredSolver-v0.0.0
 // Symbol Type:   class
 // Babel Version: 0.10.8
-// Description:   Server-side implementation for TOPS.Solver_Structured
+// Description:   Server-side implementation for TOPS.StructuredSolver
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
 // babel-version = 0.10.8
 // 
-#include "TOPS_Solver_Structured_Impl.hh"
+#include "TOPS_StructuredSolver_Impl.hh"
 
-// DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._includes)
+// DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._includes)
 #include "TOPS_Structured_Matrix_Impl.hh"
 // Uses ports includes
   // This code is the same as DAVecGetArray() except instead of generating
@@ -57,7 +57,7 @@ static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
 {
   PetscFunctionBegin;
   DMMG dmmg = (DMMG) vdmmg;
-  TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
+  TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
   TOPS::System::Compute::Residual system = (TOPS::System::Compute::Residual) solver->getSystem();
   DA da = (DA) dmmg->dm;
   Vec u; 
@@ -82,7 +82,7 @@ static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
 static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
 {
   PetscFunctionBegin;
-  TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
+  TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
   TOPS::System::Compute::InitialGuess system = (TOPS::System::Compute::InitialGuess) solver->getSystem();
 
   int mx,my,mz;
@@ -99,7 +99,7 @@ static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
 static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
 {
   PetscFunctionBegin;
-  TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
+  TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
   TOPS::System::Compute::Matrix system = (TOPS::System::Compute::Matrix) solver->getSystem();
   TOPS::Structured::Matrix matrix1 = TOPS::Structured::Matrix::_create();
   TOPS::Structured::Matrix matrix2 = TOPS::Structured::Matrix::_create();
@@ -141,7 +141,7 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
 static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 {
   PetscFunctionBegin;
-  TOPS::Solver_Structured *solver = (TOPS::Solver_Structured*) dmmg->user;
+  TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
   TOPS::System::Compute::RightHandSide system = (TOPS::System::Compute::RightHandSide) solver->getSystem();
 
   int mx,my,mz;
@@ -154,11 +154,11 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
   VecRestoreArray(f,0);
   PetscFunctionReturn(0);
 }
-// DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._includes)
+// DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._includes)
 
 // user-defined constructor.
-void TOPS::Solver_Structured_impl::_ctor() {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._ctor)
+void TOPS::StructuredSolver_impl::_ctor() {
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._ctor)
   this->dmmg = PETSC_NULL;
   this->da   = PETSC_NULL;
   this->m    = PETSC_DECIDE;
@@ -174,24 +174,24 @@ void TOPS::Solver_Structured_impl::_ctor() {
   this->stencil_type = DA_STENCIL_STAR;
   this->levels       = 3;
   this->system       = PETSC_NULL;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._ctor)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._ctor)
 }
 
 // user-defined destructor.
-void TOPS::Solver_Structured_impl::_dtor() {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._dtor)
+void TOPS::StructuredSolver_impl::_dtor() {
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._dtor)
   if (this->dmmg) {DMMGDestroy(this->dmmg);}
   if (this->startedpetsc) {
     PetscFinalize();
   }
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._dtor)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._dtor)
 }
 
 // static class initializer.
-void TOPS::Solver_Structured_impl::_load() {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._load)
-  // Insert-Code-Here {TOPS.Solver_Structured._load} (class initialization)
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._load)
+void TOPS::StructuredSolver_impl::_load() {
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._load)
+  // Insert-Code-Here {TOPS.StructuredSolver._load} (class initialization)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._load)
 }
 
 // user-defined static methods: (none)
@@ -201,38 +201,38 @@ void TOPS::Solver_Structured_impl::_load() {
  * Method:  setSystem[]
  */
 void
-TOPS::Solver_Structured_impl::setSystem (
+TOPS::StructuredSolver_impl::setSystem (
   /* in */ ::TOPS::System::System system ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setSystem)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setSystem)
   this->system = system;
   system.setSolver(this->self);
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setSystem)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setSystem)
 }
 
 /**
  * Method:  getSystem[]
  */
 ::TOPS::System::System
-TOPS::Solver_Structured_impl::getSystem ()
+TOPS::StructuredSolver_impl::getSystem ()
 throw () 
 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getSystem)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getSystem)
   return this->system;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getSystem)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getSystem)
 }
 
 /**
  * Method:  Initialize[]
  */
 void
-TOPS::Solver_Structured_impl::Initialize (
+TOPS::StructuredSolver_impl::Initialize (
   /* in */ ::sidl::array< ::std::string> args ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.Initialize)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.Initialize)
   PetscTruth initialized;
   PetscInitialized(&initialized);
   if (initialized) {
@@ -251,18 +251,18 @@ throw ()
     argv[i][arg.length()] = 0;
   }
   int    ierr = PetscInitialize(&argc,&argv,0,0);
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.Initialize)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.Initialize)
 }
 
 /**
  * Method:  solve[]
  */
 void
-TOPS::Solver_Structured_impl::solve ()
+TOPS::StructuredSolver_impl::solve ()
 throw () 
 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.solve)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.solve)
   PetscErrorCode ierr;
 
   if (!this->dmmg) {
@@ -285,189 +285,189 @@ throw ()
   }
   this->system.initializeEverySolve();
   DMMGSolve(this->dmmg);
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.solve)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.solve)
 }
 
 /**
  * Method:  setBlockSize[]
  */
 void
-TOPS::Solver_Structured_impl::setBlockSize (
+TOPS::StructuredSolver_impl::setBlockSize (
   /* in */ int32_t bs ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setBlockSize)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setBlockSize)
   this->bs = bs;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setBlockSize)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setBlockSize)
 }
 
 /**
  * Method:  getSolution[]
  */
 ::sidl::array<double>
-TOPS::Solver_Structured_impl::getSolution ()
+TOPS::StructuredSolver_impl::getSolution ()
 throw () 
 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getSolution)
-  // Insert-Code-Here {TOPS.Solver_Structured.getSolution} (getSolution method)
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getSolution)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getSolution)
+  // Insert-Code-Here {TOPS.StructuredSolver.getSolution} (getSolution method)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getSolution)
 }
 
 /**
  * Method:  setSolution[]
  */
 void
-TOPS::Solver_Structured_impl::setSolution (
+TOPS::StructuredSolver_impl::setSolution (
   /* in */ ::sidl::array<double> location ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setSolution)
-  // Insert-Code-Here {TOPS.Solver_Structured.setSolution} (setSolution method)
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setSolution)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setSolution)
+  // Insert-Code-Here {TOPS.StructuredSolver.setSolution} (setSolution method)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setSolution)
 }
 
 /**
  * Method:  setDimension[]
  */
 void
-TOPS::Solver_Structured_impl::setDimension (
+TOPS::StructuredSolver_impl::setDimension (
   /* in */ int32_t dim ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setDimension)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setDimension)
   this->dim = dim;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setDimension)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setDimension)
 }
 
 /**
  * Method:  getDimension[]
  */
 int32_t
-TOPS::Solver_Structured_impl::getDimension ()
+TOPS::StructuredSolver_impl::getDimension ()
 throw () 
 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getDimension)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getDimension)
   return this->dim;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getDimension)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getDimension)
 }
 
 /**
  * Method:  setDimensionX[]
  */
 void
-TOPS::Solver_Structured_impl::setDimensionX (
+TOPS::StructuredSolver_impl::setDimensionX (
   /* in */ int32_t dim ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setDimensionX)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setDimensionX)
   this->M = dim;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setDimensionX)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setDimensionX)
 }
 
 /**
  * Method:  getDimensionX[]
  */
 int32_t
-TOPS::Solver_Structured_impl::getDimensionX ()
+TOPS::StructuredSolver_impl::getDimensionX ()
 throw () 
 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getDimensionX)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getDimensionX)
   return this->M;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getDimensionX)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getDimensionX)
 }
 
 /**
  * Method:  setDimensionY[]
  */
 void
-TOPS::Solver_Structured_impl::setDimensionY (
+TOPS::StructuredSolver_impl::setDimensionY (
   /* in */ int32_t dim ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setDimensionY)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setDimensionY)
   this->N = dim;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setDimensionY)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setDimensionY)
 }
 
 /**
  * Method:  getDimensionY[]
  */
 int32_t
-TOPS::Solver_Structured_impl::getDimensionY ()
+TOPS::StructuredSolver_impl::getDimensionY ()
 throw () 
 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getDimensionY)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getDimensionY)
   return this->N;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getDimensionY)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getDimensionY)
 }
 
 /**
  * Method:  setDimensionZ[]
  */
 void
-TOPS::Solver_Structured_impl::setDimensionZ (
+TOPS::StructuredSolver_impl::setDimensionZ (
   /* in */ int32_t dim ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setDimensionZ)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setDimensionZ)
   this->P = dim;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setDimensionZ)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setDimensionZ)
 }
 
 /**
  * Method:  getDimensionZ[]
  */
 int32_t
-TOPS::Solver_Structured_impl::getDimensionZ ()
+TOPS::StructuredSolver_impl::getDimensionZ ()
 throw () 
 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getDimensionZ)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getDimensionZ)
   return this->P;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getDimensionZ)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getDimensionZ)
 }
 
 /**
  * Method:  setStencilWidth[]
  */
 void
-TOPS::Solver_Structured_impl::setStencilWidth (
+TOPS::StructuredSolver_impl::setStencilWidth (
   /* in */ int32_t width ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setStencilWidth)
-  // Insert-Code-Here {TOPS.Solver_Structured.setStencilWidth} (setStencilWidth method)
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setStencilWidth)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setStencilWidth)
+  // Insert-Code-Here {TOPS.StructuredSolver.setStencilWidth} (setStencilWidth method)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setStencilWidth)
 }
 
 /**
  * Method:  getStencilWidth[]
  */
 int32_t
-TOPS::Solver_Structured_impl::getStencilWidth ()
+TOPS::StructuredSolver_impl::getStencilWidth ()
 throw () 
 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.getStencilWidth)
-  // Insert-Code-Here {TOPS.Solver_Structured.getStencilWidth} (getStencilWidth method)
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.getStencilWidth)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getStencilWidth)
+  // Insert-Code-Here {TOPS.StructuredSolver.getStencilWidth} (getStencilWidth method)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getStencilWidth)
 }
 
 /**
  * Method:  setLevels[]
  */
 void
-TOPS::Solver_Structured_impl::setLevels (
+TOPS::StructuredSolver_impl::setLevels (
   /* in */ int32_t levels ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setLevels)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setLevels)
   this->levels = levels;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setLevels)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setLevels)
 }
 
 /**
@@ -488,13 +488,12 @@ throw ()
  * setServices.
  */
 void
-TOPS::Solver_Structured_impl::setServices (
+TOPS::StructuredSolver_impl::setServices (
   /* in */ ::gov::cca::Services services ) 
 throw ( 
   ::gov::cca::CCAException
 ){
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured.setServices)
-  // Insert-Code-Here {TOPS.Solver_Structured.setServices} (setServices method)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setServices)
 
   myServices = services;
   gov::cca::TypeMap tm = services.createTypeMap();
@@ -529,11 +528,11 @@ throw (
 			    "TOPS.System.Compute.Residual", tm);
 
   return;
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured.setServices)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setServices)
 }
 
 
-// DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._misc)
-// Insert-Code-Here {TOPS.Solver_Structured._misc} (miscellaneous code)
-// DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._misc)
+// DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._misc)
+// Insert-Code-Here {TOPS.StructuredSolver._misc} (miscellaneous code)
+// DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._misc)
 

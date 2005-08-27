@@ -88,7 +88,7 @@ Ex1::System_impl::computeResidual (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(Ex1.System.computeResidual)
-  TOPS::Solver_Structured solver = this->solver;
+  TOPS::Structured::Solver solver = this->solver;
   int xs = f.lower(0);      // first grid point in X and Y directions on this process
   int ys = f.lower(1);
   int xm = f.length(0);       // number of local grid points in X and Y directions on this process

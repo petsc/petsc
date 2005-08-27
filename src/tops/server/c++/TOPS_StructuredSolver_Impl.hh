@@ -1,29 +1,29 @@
 // 
-// File:          TOPS_Solver_Structured_Impl.hh
-// Symbol:        TOPS.Solver_Structured-v0.0.0
+// File:          TOPS_StructuredSolver_Impl.hh
+// Symbol:        TOPS.StructuredSolver-v0.0.0
 // Symbol Type:   class
 // Babel Version: 0.10.8
-// Description:   Server-side implementation for TOPS.Solver_Structured
+// Description:   Server-side implementation for TOPS.StructuredSolver
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
 // babel-version = 0.10.8
 // 
 
-#ifndef included_TOPS_Solver_Structured_Impl_hh
-#define included_TOPS_Solver_Structured_Impl_hh
+#ifndef included_TOPS_StructuredSolver_Impl_hh
+#define included_TOPS_StructuredSolver_Impl_hh
 
 #ifndef included_sidl_cxx_hh
 #include "sidl_cxx.hh"
 #endif
-#ifndef included_TOPS_Solver_Structured_IOR_h
-#include "TOPS_Solver_Structured_IOR.h"
+#ifndef included_TOPS_StructuredSolver_IOR_h
+#include "TOPS_StructuredSolver_IOR.h"
 #endif
 // 
 // Includes for all method dependencies.
 // 
-#ifndef included_TOPS_Solver_Structured_hh
-#include "TOPS_Solver_Structured.hh"
+#ifndef included_TOPS_StructuredSolver_hh
+#include "TOPS_StructuredSolver.hh"
 #endif
 #ifndef included_TOPS_System_System_hh
 #include "TOPS_System_System.hh"
@@ -42,30 +42,30 @@
 #endif
 
 
-// DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._includes)
+// DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._includes)
 #include "petscdmmg.h"
 
 // Includes for all uses ports
 #include "TOPS.hh"
-// DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._includes)
+// DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._includes)
 
 namespace TOPS { 
 
   /**
-   * Symbol "TOPS.Solver_Structured" (version 0.0.0)
+   * Symbol "TOPS.StructuredSolver" (version 0.0.0)
    */
-  class Solver_Structured_impl
-  // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._inherits)
-  // Insert-Code-Here {TOPS.Solver_Structured._inherits} (optional inheritance here)
-  // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._inherits)
+  class StructuredSolver_impl
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._inherits)
+  // Insert-Code-Here {TOPS.StructuredSolver._inherits} (optional inheritance here)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._inherits)
   {
 
   private:
     // Pointer back to IOR.
     // Use this to dispatch back through IOR vtable.
-    Solver_Structured self;
+    StructuredSolver self;
 
-    // DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._implementation)
+    // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._implementation)
     DMMG               *dmmg;
     DA                 da;
     int                M,N,P,m,n,p,dim,s,levels,bs;
@@ -74,25 +74,25 @@ namespace TOPS {
     TOPS::System::System       system;
     int                startedpetsc;
     gov::cca::Services myServices;
-    // DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._implementation)
+    // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._implementation)
 
   private:
     // private default constructor (required)
-    Solver_Structured_impl() 
+    StructuredSolver_impl() 
     {} 
 
   public:
     // sidl constructor (required)
     // Note: alternate Skel constructor doesn't call addref()
     // (fixes bug #275)
-    Solver_Structured_impl( struct TOPS_Solver_Structured__object * s ) : 
-      self(s,true) { _ctor(); }
+    StructuredSolver_impl( struct TOPS_StructuredSolver__object * s ) : self(s,
+      true) { _ctor(); }
 
     // user defined construction
     void _ctor();
 
     // virtual destructor (required)
-    virtual ~Solver_Structured_impl() { _dtor(); }
+    virtual ~StructuredSolver_impl() { _dtor(); }
 
     // user defined destruction
     void _dtor();
@@ -276,12 +276,12 @@ namespace TOPS {
       ::gov::cca::CCAException
     );
 
-  };  // end class Solver_Structured_impl
+  };  // end class StructuredSolver_impl
 
 } // end namespace TOPS
 
-// DO-NOT-DELETE splicer.begin(TOPS.Solver_Structured._misc)
-// Insert-Code-Here {TOPS.Solver_Structured._misc} (miscellaneous things)
-// DO-NOT-DELETE splicer.end(TOPS.Solver_Structured._misc)
+// DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._misc)
+// Insert-Code-Here {TOPS.StructuredSolver._misc} (miscellaneous things)
+// DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._misc)
 
 #endif
