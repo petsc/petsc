@@ -23,7 +23,7 @@ int MatReleaseValuesMemory_SeqAIJ(Mat mat)
   if (mat->type != MATSEQAIJ) SETERRQ(1,1,"Wrong matrix type");
 
   /* 
-     Assume that matrices with seperate allocation for i, j, and a 
+     Assume that matrices with separate allocation for i, j, and a 
      are ready to free.
   */
   if (!aij->singlemalloc) {

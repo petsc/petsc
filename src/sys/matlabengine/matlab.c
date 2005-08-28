@@ -20,7 +20,7 @@ PetscCookie MATLABENGINE_COOKIE = -1;
     Not Collective
 
     Input Parameters:
-+   comm - a seperate Matlab engine is started for each process in the communicator
++   comm - a separate Matlab engine is started for each process in the communicator
 -   machine - name of machine where Matlab engine is to be run (usually PETSC_NULL)
 
     Output Parameter:
@@ -211,7 +211,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEnginePrintOutput(PetscMatlabEngine me
 #define __FUNCT__ "PetscMatlabEnginePut"
 /*@
     PetscMatlabEnginePut - Puts a Petsc object into the Matlab space. For parallel objects,
-      each processors part is put in a seperate  Matlab process.
+      each processors part is put in a separate  Matlab process.
 
     Collective on PetscObject
 
@@ -339,7 +339,7 @@ PetscMatlabEngine PETSC_DLLEXPORT PETSC_MATLAB_ENGINE_(MPI_Comm comm)
 #define __FUNCT__ "PetscMatlabEnginePutArray"
 /*@C
     PetscMatlabEnginePutArray - Puts a Petsc object into the Matlab space. For parallel objects,
-      each processors part is put in a seperate  Matlab process.
+      each processors part is put in a separate  Matlab process.
 
     Collective on PetscObject
 

@@ -812,7 +812,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscIn
      To set options on the solvers for each block append -sub_ to all the KSP, and PC
         options database keys. For example, -sub_pc_type ilu -sub_pc_ilu_levels 1 -sub_ksp_type preonly
         
-     To set the options on the solvers seperate for each block call PCASMGetSubKSP()
+     To set the options on the solvers separate for each block call PCASMGetSubKSP()
          and set the options directly on the resulting KSP object (you can access its PC
          with KSPGetPC())
 

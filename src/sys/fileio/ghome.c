@@ -75,7 +75,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetHomeDirectory(char dir[],size_t maxlen)
 #define __FUNCT__ "PetscFixFilename"
 /*@C
     PetscFixFilename - Fixes a file name so that it is correct for both Unix and 
-    Windows by using the correct / or \ to seperate directories.
+    Windows by using the correct / or \ to separate directories.
 
    Not Collective
 

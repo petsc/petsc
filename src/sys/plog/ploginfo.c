@@ -35,7 +35,7 @@ FILE      *PetscLogInfoFile      = PETSC_NULL;
 /*@C
     PetscLogInfoAllow - Causes PetscLogInfo() messages to be printed to standard output.
 
-    Not Collective, each processor may call this seperately, but printing is only
+    Not Collective, each processor may call this separately, but printing is only
     turned on if the lowest processor number associated with the PetscObject associated
     with the call to PetscLogInfo() has called this routine.
 

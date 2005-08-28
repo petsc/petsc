@@ -107,7 +107,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetTmp(MPI_Comm comm,char *dir,size_t len)
 
       Assumes that all processors in a communicator either
        1) have a common /tmp or
-       2) each has a seperate /tmp
+       2) each has a separate /tmp
       eventually we can write a fancier one that determines which processors
       share a common /tmp.
 
@@ -238,7 +238,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
 
       Assumes that all processors in a communicator either
        1) have a common working directory or
-       2) each has a seperate working directory
+       2) each has a separate working directory
       eventually we can write a fancier one that determines which processors
       share a common working directory.
 

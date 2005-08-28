@@ -2657,7 +2657,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x
 
    Notes:
    SOR_LOCAL_FORWARD_SWEEP, SOR_LOCAL_BACKWARD_SWEEP, and
-   SOR_LOCAL_SYMMETRIC_SWEEP perform seperate independent smoothings
+   SOR_LOCAL_SYMMETRIC_SWEEP perform separate independent smoothings
    on each processor. 
 
    Application programmers will not generally use MatRelax() directly,

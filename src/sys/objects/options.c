@@ -165,7 +165,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetProgramName(const char name[])
                      included in the file
 
   Input Parameter:
-.   in_str - string that contains options seperated by blanks
+.   in_str - string that contains options separated by blanks
 
 
   Level: intermediate

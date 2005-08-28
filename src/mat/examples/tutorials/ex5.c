@@ -13,7 +13,7 @@
 
 
 /*
-   Opens a seperate file for each process and reads in ITS portion
+   Opens a separate file for each process and reads in ITS portion
   of a large parallel matrix. Only requires enough memory to store
   the processes portion of the matrix ONCE.
 

@@ -227,7 +227,7 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
 
   /*
       Plots solution on quadratic element by chopping it into four subtriangles and 
-      doing a seperate contour plot on each
+      doing a separate contour plot on each
   */
   for (i=0; i<cell_n; i++ ) {
     x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];

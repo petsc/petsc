@@ -785,7 +785,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothDown(PC pc,PetscInt n)
    Level: advanced
 
    Note: this does not set a value on the coarsest grid, since we assume that
-    there is no seperate smooth up on the coarsest grid.
+    there is no separate smooth up on the coarsest grid.
 
 .keywords: MG, smooth, up, post-smoothing, steps, multigrid
 

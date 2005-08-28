@@ -32,7 +32,7 @@
        program pauses after PetscDrawPause() has been called
        (0 is default, -1 implies until user input).
 .  -draw_x_shared_colormap - Causes PETSc to use a shared
-       colormap. By default PETSc creates a seperate color 
+       colormap. By default PETSc creates a separate color 
        for its windows, you must put the mouse into the graphics 
        window to see  the correct colors. This options forces
        PETSc to use the default colormap which will usually result

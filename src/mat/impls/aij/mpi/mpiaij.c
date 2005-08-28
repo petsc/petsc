@@ -503,7 +503,7 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
   /* actually zap the local rows */
   /*
         Zero the required rows. If the "diagonal block" of the matrix
-     is square and the user wishes to set the diagonal we use seperate
+     is square and the user wishes to set the diagonal we use separate
      code so that MatSetValues() is not called for each diagonal allocating
      new memory, thus calling lots of mallocs and slowing things down.
 

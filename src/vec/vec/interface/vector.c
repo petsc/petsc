@@ -2821,7 +2821,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetPetscMap(Vec x,PetscMap *map)
 
    Supported Options:
 +     VEC_IGNORE_OFF_PROC_ENTRIES, which causes VecSetValues() to ignore 
-      entries destined to be stored on a seperate processor. This can be used
+      entries destined to be stored on a separate processor. This can be used
       to eliminate the global reduction in the VecAssemblyXXXX() if you know 
       that you have only used VecSetValues() to set local elements
 -   VEC_TREAT_OFF_PROC_ENTRIES restores the treatment of off processor entries.

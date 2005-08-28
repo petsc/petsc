@@ -3,6 +3,34 @@ group, including auxillary projects, and perhaps overlying projects such as TAO 
 include not only technical justifications, but application partnerships and actual/possible funding sources. We will
 organize these thrusts into sections.
 
+\section{Definitions}
+
+   {\bf Stateless iterative solver} - An iterative process that, for each iteration, the algorithm depends {\bf only}
+on the current initial solution and the problem. The PCs in PETSc are stateless. The ``plain'' Newton's method in
+PETSc is stateless.
+
+   {\bf State iterative solver} - An iterative process where the algorithm depends directly on not only the current
+initial solution but additional information from previous iterations. The KSP methods in PETSc are state. Newton's method
+with lagged Jacobians or the E-W convergence test are state. Nonlinear CG and nonlinear GMES (and minimization methods
+such as l-BFGS) are state iterative solvers.
+
+   {\bf Stateless iterative solver implementation} - An implementation of a stateless iterative solver that is also 
+stateless. Almost no implementation in PETSc is stateless, for example, the ILU PC computes the factorization initially
+which is then used for each iteration. Even Jacobi extracts the diagonal initially to use later. There is a generalization
+of this where the iterations do not depend directly on previous iterations (except through the initial solution) but
+do depend on initial setup (like the construction of the ILU factors), we will call these {\bf setup state only iterative solver
+implementations}. Stateless iterative solvers are {\bf only} 
+implemented as setup state only for efficiency reasons (to prevent recomputation). 
+
+  We will call stateless iterative solvers {\bf preconditioners} and state iterative solvers {\bf accelerators} or 
+possibly Krylov methods or Krylov accelerators. Preconditioners can be viewed as ``simple'' transformations of the initial
+(nonlinear) algebraic problem that results in a new algebraic problem where simple iteration (nonlinear Richardson's method)
+may converge better. FAS is a preconditioner, nonlinear CG is an accelerator. Newton's method with a direct solver is a preconditioner but is 
+funky because the transformation depends not only on the problem but also on the current initial solution; the transformed
+problem is $ J^{-1}(x^{n}) F(x^n)$. It is interesting to note that each transformation is linear (like for all linear preconditioners).
+Newton's method with an iterative method is an accelerator.
+
+
 \section{Matrix-Free Operation}
 
 	This is a large project of several interlocking parts. However, at a high level, the goal can be seen as
@@ -11,7 +39,7 @@ elimination of parallel sparse matrices from the nonlinear solution process.
 	The first step in this process is the elimination of Newton's algorithm as the outer parallel solver for the
 nonlinear algebraic problem. Barry has cleaned up the existing FAS code, and introduced a point-block version. A summer
 student from Olof Widlund's group at NYU is also working along this line. She will hopefully examine effective
-preconditioners for FAS. We expect to improve our performance from the dismal 5\% of peak numbers to somewhere around
+{\bf accelerators}  for FAS. We expect to improve our performance from the dismal 5\% of peak numbers to somewhere around
 the STREAMS benchmark with these changes.
 
 	The next step involves better control of the mesh and discretization for common problems. FAS operates on sets

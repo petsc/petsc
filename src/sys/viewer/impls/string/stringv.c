@@ -29,7 +29,7 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
 /*@C
     PetscViewerStringSPrintf - Prints information to a PetscViewer string.
 
-    Collective on PetscViewer (Hmmm, each processor maintains a seperate string)
+    Collective on PetscViewer (Hmmm, each processor maintains a separate string)
 
     Input Parameters:
 +   v - a string PetscViewer, formed by PetscViewerStringOpen()

@@ -401,7 +401,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
       indx =  (int)PetscAbsReal(twodbl[1]); 
       ierr = hypre_BoomerAMGSetLevelRelaxWt( jac->hsolver, twodbl[0], indx);CHKERRQ(ierr); 
     } else {
-      SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Relax weight level: you must provide 2 values seperated by a comma (and no space), you provided %d",n);
+      SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Relax weight level: you must provide 2 values separated by a comma (and no space), you provided %d",n);
     }
   }
 
@@ -420,7 +420,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
       indx =  (int)PetscAbsReal(twodbl[1]); 
       ierr = hypre_BoomerAMGSetLevelOuterWt( jac->hsolver, twodbl[0], indx);CHKERRQ(ierr); 
     } else {
-      SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Relax weight outer level: You must provide 2 values seperated by a comma (and no space), you provided %d",n);
+      SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Relax weight outer level: You must provide 2 values separated by a comma (and no space), you provided %d",n);
     }
   }
 

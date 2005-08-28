@@ -125,7 +125,7 @@ class Configure(config.base.Configure):
 
     # shared library linker values
     self.setCompilers.pushLanguage(self.languages.clanguage)
-    # need to fix BuildSystem to collect these seperately
+    # need to fix BuildSystem to collect these separately
     self.addMakeMacro('SL_LINKER',self.setCompilers.getLinker())
     self.addMakeMacro('SL_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
     self.setCompilers.popLanguage()

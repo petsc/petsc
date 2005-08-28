@@ -424,7 +424,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local(Mat C,PetscInt imax,PetscB
            xdata - array of messages to be sent back
            isz1  - size of each message
 
-  For better efficiency perhaps we should malloc seperately each xdata[i],
+  For better efficiency perhaps we should malloc separately each xdata[i],
 then if a remalloc is required we need only copy the data for that one row
 rather then all previous rows as it is now where a single large chunck of 
 memory is used.

@@ -478,14 +478,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC pc,PCCompositeType type
 
 /* -------------------------------------------------------------------------------------*/
 /*MC
-   PCFIELDSPLIT - Preconditioner created by combining seperate preconditioners for individual
+   PCFIELDSPLIT - Preconditioner created by combining separate preconditioners for individual
                   fields or groups of fields
 
 
      To set options on the solvers for each block append -sub_ to all the PC
         options database keys. For example, -sub_pc_type ilu -sub_pc_ilu_levels 1
         
-     To set the options on the solvers seperate for each block call PCFieldSplitGetSubKSP()
+     To set the options on the solvers separate for each block call PCFieldSplitGetSubKSP()
          and set the options directly on the resulting KSP object
 
    Level: intermediate

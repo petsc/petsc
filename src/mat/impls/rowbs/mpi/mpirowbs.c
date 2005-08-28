@@ -843,7 +843,7 @@ static PetscErrorCode MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
 
 /*
      This does the BlockSolve portion of the matrix assembly.
-   It is provided in a seperate routine so that users can
+   It is provided in a separate routine so that users can
    operate on the matrix (using MatScale(), MatShift() etc.) after 
    the matrix has been assembled but before BlockSolve has sucked it
    in and devoured it.

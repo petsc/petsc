@@ -290,7 +290,7 @@ one may have code such as
  VecNorm(Vec x,NormType NORM\_2,double *norm2);\\
  VecNorm(Vec x,NormType NORM\_1,double *norm1);
 \end{tabbing}
-This code works fine, the problem is that it performs three seperate parallel communication
+This code works fine, the problem is that it performs three separate parallel communication
 operations. Instead one can write 
 \begin{tabbing}
  VecDotBegin(Vec x,Vec y,PetscScalar *dot);\\
@@ -3180,7 +3180,7 @@ as a null space of the constant functions. PETSc has tools to help
 solve these systems.
 
 First, one must know what the null space is and store it using an orthonormal basis 
-in an array of PETSc Vecs. (The constant functions can be handled seperately, since
+in an array of PETSc Vecs. (The constant functions can be handled separately, since
 they are such a common case). Create a MatNullSpace object with the command
 \begin{tabbing}
 MatNullSpaceCreate(MPI\_Comm,PetscTruth hasconstants,int dim,Vec *basis,MatNullSpace *nsp);

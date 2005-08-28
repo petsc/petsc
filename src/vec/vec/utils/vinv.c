@@ -648,7 +648,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec v,PetscInt *idex,PetscReal
 #define __FUNCT__ "VecStrideGatherAll"
 /*@
    VecStrideGatherAll - Gathers all the single components from a multi-component vector into
-   seperate vectors.
+   separate vectors.
 
    Collective on Vec
 
@@ -754,7 +754,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec *s,InsertMode add
 #undef __FUNCT__  
 #define __FUNCT__ "VecStrideScatterAll"
 /*@
-   VecStrideScatterAll - Scatters all the single components from seperate vectors into 
+   VecStrideScatterAll - Scatters all the single components from separate vectors into 
      a multi-component vector.
 
    Collective on Vec

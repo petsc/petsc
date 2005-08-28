@@ -17,7 +17,7 @@ PetscErrorCode PCMGACycle_Private(PC_MG **mg)
   for (i=l-1; i>0; i--) {
     ierr = MatRestrict(mg[i]->restrct,mg[i]->b,mg[i-1]->b);CHKERRQ(ierr);
   }
-  /* solve seperately on each level */
+  /* solve separately on each level */
   for (i=0; i<l; i++) {
     ierr = VecSet(mg[i]->x,0.0);CHKERRQ(ierr); 
     if (mg[i]->eventsolve) {ierr = PetscLogEventBegin(mg[i]->eventsolve,0,0,0,0);CHKERRQ(ierr);}

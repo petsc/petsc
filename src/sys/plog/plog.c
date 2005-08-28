@@ -1809,7 +1809,7 @@ PetscTruth PetscPreLoadingOn   = PETSC_FALSE;
    Input Parameter:
 +   flag - PETSC_TRUE to run twice, PETSC_FALSE to run once, may be overridden
            with command line option -preload true or -preload false
--   name - name of first stage (lines of code timed seperately with -log_summary) to
+-   name - name of first stage (lines of code timed separately with -log_summary) to
            be preloaded
 
    Synopsis:
@@ -1870,7 +1870,7 @@ M*/
 M*/
 
 /*MC
-   PreLoadStage - Start a new segment of code to be timed seperately.
+   PreLoadStage - Start a new segment of code to be timed separately.
     to get accurate timings
 
    Synopsis:

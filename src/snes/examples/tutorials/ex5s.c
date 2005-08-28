@@ -187,7 +187,7 @@ int main(int argc,char **argv)
 
   /*
      Create and set the nonzero pattern for the Jacobian: This is not done 
-     particularly efficiently. One should process the boundary nodes seperately and 
+     particularly efficiently. One should process the boundary nodes separately and 
      then use a simple loop for the interior nodes.
        Note that for this code we use the "natural" number of the nodes on the 
      grid (since that is what is good for the user provided function). In the 
