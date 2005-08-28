@@ -66,14 +66,14 @@ namespace TOPS {
     StructuredSolver self;
 
     // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._implementation)
-    DMMG               *dmmg;
-    DA                 da;
-    int                M,N,P,m,n,p,dim,s,levels,bs;
-    DAStencilType      stencil_type;
-    DAPeriodicType     wrap;
-    TOPS::System::System       system;
-    int                startedpetsc;
-    gov::cca::Services myServices;
+    DMMG                 *dmmg;
+    DA                   da;
+    int                  lengths[4],m,n,p,dim,s,levels,bs;
+    DAStencilType        stencil_type;
+    DAPeriodicType       wrap;
+    TOPS::System::System system;
+    int                  startedpetsc;
+    gov::cca::Services   myServices;
     // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._implementation)
 
   private:
@@ -163,8 +163,24 @@ namespace TOPS {
     /**
      * user defined non-static method.
      */
+    int32_t
+    dimen() throw () 
+    ;
+    /**
+     * user defined non-static method.
+     */
+    int32_t
+    length (
+      /* in */ int32_t a
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
     void
-    setDimension (
+    setDimen (
       /* in */ int32_t dim
     )
     throw () 
@@ -173,57 +189,14 @@ namespace TOPS {
     /**
      * user defined non-static method.
      */
-    int32_t
-    getDimension() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
     void
-    setDimensionX (
-      /* in */ int32_t dim
+    setLength (
+      /* in */ int32_t a,
+      /* in */ int32_t l
     )
     throw () 
     ;
 
-    /**
-     * user defined non-static method.
-     */
-    int32_t
-    getDimensionX() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    void
-    setDimensionY (
-      /* in */ int32_t dim
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    int32_t
-    getDimensionY() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    void
-    setDimensionZ (
-      /* in */ int32_t dim
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    int32_t
-    getDimensionZ() throw () 
-    ;
     /**
      * user defined non-static method.
      */

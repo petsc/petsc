@@ -79,14 +79,11 @@ package TOPS version 0.0.0 {
 
     //   The data lives on a structured grid 
     interface Solver extends TOPS.Solver {
-      void setDimension(in int dim);
-      int  getDimension();
-      void setDimensionX(in int dim);
-      int  getDimensionX();
-      void setDimensionY(in int dim);
-      int  getDimensionY();
-      void setDimensionZ(in int dim);
-      int  getDimensionZ();
+      int  dimen();
+      int  length(in int a);
+
+      void setDimen(in int dim);
+      void setLength(in int a,in int l);
       void setStencilWidth(in int width);
       int  getStencilWidth();
       void setLevels(in int levels);

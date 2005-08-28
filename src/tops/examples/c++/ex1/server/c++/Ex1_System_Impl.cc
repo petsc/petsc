@@ -94,8 +94,8 @@ throw ()
   int xm = f.length(0);       // number of local grid points in X and Y directions on this process
   int ym = f.length(1);
   int i,j;
-  int mx = solver.getDimensionX();
-  int my = solver.getDimensionY();
+  int mx = solver.length(0);
+  int my = solver.length(1);
 
   double hx     = 1.0/(double)(mx-1);
   double hy     = 1.0/(double)(my-1);

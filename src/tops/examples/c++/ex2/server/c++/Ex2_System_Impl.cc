@@ -76,7 +76,7 @@ throw ()
 
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.initializeEverySolve)
-  this->lid = 1.0/(this->solver.getDimensionX()*this->solver.getDimensionY());
+  this->lid = 1.0/(this->solver.length(0)*this->solver.length(1));
   // DO-NOT-DELETE splicer.end(Ex2.System.initializeEverySolve)
 }
 
@@ -96,8 +96,8 @@ throw ()
   int xm = f.length(1);       // number of local grid points in X and Y directions on this process
   int ym = f.length(2);
   int i,j;
-  int mx = solver.getDimensionX();
-  int my = solver.getDimensionY();
+  int mx = solver.length(0);
+  int my = solver.length(1);
 
   double hx     = 1.0/(double)(mx-1), dhx = (double)(mx-1);
   double hy     = 1.0/(double)(my-1), dhy = (double)(my-1);
@@ -232,7 +232,7 @@ throw ()
   int xm = x.length(1) - 1;       // number of local grid points in X and Y directions on this process
   int ym = x.length(2) - 1;
   int i,j;
-  double dx  = 1.0/(solver.getDimensionX()-1);
+  double dx  = 1.0/(solver.length(0)-1);
   double grashof = this->grashof;  
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {

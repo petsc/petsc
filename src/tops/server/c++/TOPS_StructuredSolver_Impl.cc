@@ -67,9 +67,9 @@ static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
 
   int mx,my,mz;
   DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);
-  solver->setDimensionX(mx);
-  solver->setDimensionY(my);
-  solver->setDimensionZ(mz);
+  solver->setLength(0,mx);
+  solver->setLength(1,my);
+  solver->setLength(2,mz);
   sidl::array<double> ua = DAVecGetArrayBabel(da,u);
   sidl::array<double> fa = DAVecGetArrayBabel(da,f);;
   system.computeResidual(ua,fa);
@@ -87,9 +87,9 @@ static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
 
   int mx,my,mz;
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
-  solver->setDimensionX(mx);
-  solver->setDimensionY(my);
-  solver->setDimensionZ(mz);
+  solver->setLength(0,mx);
+  solver->setLength(1,my);
+  solver->setLength(2,mz);
   sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);;
   system.computeInitialGuess(fa);
   VecRestoreArray(f,0);
@@ -128,9 +128,9 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   imatrix1->mat = J;
   imatrix2->mat = B;
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
-  solver->setDimensionX(mx);
-  solver->setDimensionY(my);
-  solver->setDimensionZ(mz);
+  solver->setLength(0,mx);
+  solver->setLength(1,my);
+  solver->setLength(2,mz);
 
   system.computeMatrix(matrix1,matrix2);
   MatAssemblyBegin(dmmg->B,MAT_FINAL_ASSEMBLY);
@@ -146,9 +146,9 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 
   int mx,my,mz;
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
-  solver->setDimensionX(mx);
-  solver->setDimensionY(my);
-  solver->setDimensionZ(mz);
+  solver->setLength(0,mx);
+  solver->setLength(1,my);
+  solver->setLength(2,mz);
   sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);;
   system.computeRightHandSide(fa);
   VecRestoreArray(f,0);
@@ -164,9 +164,9 @@ void TOPS::StructuredSolver_impl::_ctor() {
   this->m    = PETSC_DECIDE;
   this->n    = PETSC_DECIDE;
   this->p    = PETSC_DECIDE;
-  this->M    = 3;
-  this->N    = 3;
-  this->P    = 3;
+  this->lengths[0] = 3;
+  this->lengths[1] = 3;
+  this->lengths[2] = 3;
   this->dim  = 2;
   this->s    = 1;
   this->wrap = DA_NONPERIODIC;
@@ -269,7 +269,7 @@ throw ()
     this->system.initializeOnce();
     // create DMMG object 
     DMMGCreate(PETSC_COMM_WORLD,this->levels,(void*)&this->self,&this->dmmg);
-    DACreate(PETSC_COMM_WORLD,this->dim,this->wrap,this->stencil_type,this->M,this->N,this->P,this->m,this->n,
+    DACreate(PETSC_COMM_WORLD,this->dim,this->wrap,this->stencil_type,this->lengths[0],this->lengths[1],this->lengths[2],this->m,this->n,
              this->p,this->bs,this->s,PETSC_NULL,PETSC_NULL,PETSC_NULL,&this->da);
     DMMGSetDM(this->dmmg,(DM)this->da);
     TOPS::System::Compute::Residual residual = (TOPS::System::Compute::Residual) this->system;
@@ -328,107 +328,56 @@ throw ()
 }
 
 /**
- * Method:  setDimension[]
+ * Method:  dimen[]
+ */
+int32_t
+TOPS::StructuredSolver_impl::dimen ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.dimen)
+  return dim;
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.dimen)
+}
+
+/**
+ * Method:  length[]
+ */
+int32_t
+TOPS::StructuredSolver_impl::length (
+  /* in */ int32_t a ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.length)
+  return this->lengths[a];
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.length)
+}
+
+/**
+ * Method:  setDimen[]
  */
 void
-TOPS::StructuredSolver_impl::setDimension (
+TOPS::StructuredSolver_impl::setDimen (
   /* in */ int32_t dim ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setDimension)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setDimen)
   this->dim = dim;
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setDimension)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setDimen)
 }
 
 /**
- * Method:  getDimension[]
- */
-int32_t
-TOPS::StructuredSolver_impl::getDimension ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getDimension)
-  return this->dim;
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getDimension)
-}
-
-/**
- * Method:  setDimensionX[]
+ * Method:  setLength[]
  */
 void
-TOPS::StructuredSolver_impl::setDimensionX (
-  /* in */ int32_t dim ) 
+TOPS::StructuredSolver_impl::setLength (
+  /* in */ int32_t a,
+  /* in */ int32_t l ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setDimensionX)
-  this->M = dim;
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setDimensionX)
-}
-
-/**
- * Method:  getDimensionX[]
- */
-int32_t
-TOPS::StructuredSolver_impl::getDimensionX ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getDimensionX)
-  return this->M;
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getDimensionX)
-}
-
-/**
- * Method:  setDimensionY[]
- */
-void
-TOPS::StructuredSolver_impl::setDimensionY (
-  /* in */ int32_t dim ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setDimensionY)
-  this->N = dim;
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setDimensionY)
-}
-
-/**
- * Method:  getDimensionY[]
- */
-int32_t
-TOPS::StructuredSolver_impl::getDimensionY ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getDimensionY)
-  return this->N;
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getDimensionY)
-}
-
-/**
- * Method:  setDimensionZ[]
- */
-void
-TOPS::StructuredSolver_impl::setDimensionZ (
-  /* in */ int32_t dim ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setDimensionZ)
-  this->P = dim;
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setDimensionZ)
-}
-
-/**
- * Method:  getDimensionZ[]
- */
-int32_t
-TOPS::StructuredSolver_impl::getDimensionZ ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getDimensionZ)
-  return this->P;
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getDimensionZ)
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setLength)
+  this->lengths[a] = l;
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setLength)
 }
 
 /**

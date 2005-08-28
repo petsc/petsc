@@ -61,7 +61,7 @@ throw ()
 
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.initializeOnce)
-  this->solver.setDimension(3);
+  this->solver.setDimen(3);
   // DO-NOT-DELETE splicer.end(Ex3.System.initializeOnce)
 }
 
@@ -97,9 +97,9 @@ throw ()
   int ym = BB.length(1);
   int zm = BB.length(2);
   int i,j,k;
-  int mx = solver.getDimensionX();
-  int my = solver.getDimensionY();
-  int mz = solver.getDimensionZ();
+  int mx = solver.length(0);
+  int my = solver.length(1);
+  int mz = solver.length(2);
 
   double hx     = 1.0/(double)(mx-1);
   double hy     = 1.0/(double)(my-1);
@@ -153,9 +153,9 @@ throw ()
   int ym = b.length(1);
   int zm = b.length(2);
   int i,j,k;
-  int mx = solver.getDimensionX();
-  int my = solver.getDimensionY();
-  int mz = solver.getDimensionZ();
+  int mx = solver.length(0);
+  int my = solver.length(1);
+  int mz = solver.length(2);
 
   double hx     = 1.0/(double)(mx-1);
   double hy     = 1.0/(double)(my-1);
