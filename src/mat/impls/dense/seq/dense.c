@@ -1319,7 +1319,7 @@ PetscErrorCode MatGetArray_SeqDense(Mat A,PetscScalar *array[])
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
 
   PetscFunctionBegin;
-  if (mat->lda != A->m) SETERRQ(PETSC_ERR_SUP,"Cannot get array for Denses matrices with LDA different from number of rows");
+  if (mat->lda != A->m) SETERRQ(PETSC_ERR_SUP,"Cannot get array for Dense matrices with LDA different from number of rows");
   *array = mat->v;
   PetscFunctionReturn(0);
 }
@@ -1476,6 +1476,94 @@ PetscErrorCode MatSetSizes_SeqDense(Mat A,PetscInt m,PetscInt n,PetscInt M,Petsc
   PetscFunctionReturn(0);
 }
 
+/* ----------------------------------------------------------------*/
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMult_SeqDense_SeqDense"
+PetscErrorCode MatMatMult_SeqDense_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = MatMatMultSymbolic_SeqDense_SeqDense(A,B,fill,C);CHKERRQ(ierr);
+  }
+  ierr = MatMatMultNumeric_SeqDense_SeqDense(A,B,*C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultSymbolic_SeqDense_SeqDense"
+PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(PETSC_ERR_SUP);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultNumeric_SeqDense_SeqDense"
+PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
+{
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+  Mat_SeqDense   *b = (Mat_SeqDense*)B->data;
+  Mat_SeqDense   *c = (Mat_SeqDense*)C->data;
+  PetscBLASInt   m = (PetscBLASInt)A->m, n = (PetscBLASInt)B->n, k = (PetscBLASInt)A->n;
+  PetscScalar    _DOne=1.0,_DZero=0.0;
+  /* PetscErrorCode ierr; */
+
+  PetscFunctionBegin;
+
+  BLASgemm_("N","N",&m,&n,&k,&_DOne,a->v,&a->lda,b->v,&b->lda,&_DZero,c->v,&c->lda);
+
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultTranspose_SeqDense_SeqDense"
+PetscErrorCode MatMatMultTranspose_SeqDense_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = MatMatMultTransposeSymbolic_SeqDense_SeqDense(A,B,fill,C);CHKERRQ(ierr);
+  }
+  ierr = MatMatMultTransposeNumeric_SeqDense_SeqDense(A,B,*C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultTransposeSymbolic_SeqDense_SeqDense"
+PetscErrorCode MatMatMultTransposeSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(PETSC_ERR_SUP);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultTransposeNumeric_SeqDense_SeqDense"
+PetscErrorCode MatMatMultTransposeNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
+{
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+  Mat_SeqDense   *b = (Mat_SeqDense*)B->data;
+  Mat_SeqDense   *c = (Mat_SeqDense*)C->data;
+  PetscBLASInt   m = (PetscBLASInt)A->n, n = (PetscBLASInt)B->n, k = (PetscBLASInt)A->m;
+  PetscScalar    _DOne=1.0,_DZero=0.0;
+  /* PetscErrorCode ierr; */
+
+  PetscFunctionBegin;
+
+  BLASgemm_("T","N",&m,&n,&k,&_DOne,a->v,&a->lda,b->v,&b->lda,&_DZero,c->v,&c->lda);
+
+  PetscFunctionReturn(0);
+}
+
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        MatGetRow_SeqDense,
@@ -1566,16 +1654,16 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        0,
        0,
-       0,                                     
-/*90*/ 0,
        0,
-       0,
+/*90*/ MatMatMult_SeqDense_SeqDense,  
+       MatMatMultSymbolic_SeqDense_SeqDense,  
+       MatMatMultNumeric_SeqDense_SeqDense,   
        0,
        0,
 /*95*/ 0,
-       0,
-       0,
-       0,
+       MatMatMultTranspose_SeqDense_SeqDense,  
+       MatMatMultTransposeSymbolic_SeqDense_SeqDense,  
+       MatMatMultTransposeNumeric_SeqDense_SeqDense, 
        0,
 /*100*/0,
        0,
