@@ -75,6 +75,7 @@ static PetscScalar quadWeights[4] = {0.15902069,  0.09097931,  0.15902069,  0.09
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DALocalInfo*,PetscScalar**,Mat,AppCtx*);
+extern PetscErrorCode L_2Error(DA, Vec, double *, AppCtx *);
 extern PetscErrorCode PrintVector(DMMG, Vec);
 
 #undef __FUNCT__
@@ -90,7 +91,7 @@ int main(int argc,char **argv)
   SNESConvergedReason    reason;
   PetscTruth             drawContours;         /* flag for drawing contours */
   PetscErrorCode         ierr;
-  PetscReal              lambda_max = 6.81, lambda_min = 0.0;
+  PetscReal              lambda_max = 6.81, lambda_min = 0.0, error;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -150,6 +151,8 @@ int main(int argc,char **argv)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D, %s\n",its,SNESConvergedReasons[reason]);CHKERRQ(ierr);
+  ierr = L_2Error(DMMGGetDA(dmmg), DMMGGetx(dmmg), &error, user);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"L_2 error in the solution: %g\n", error);CHKERRQ(ierr);
 
 #if 1
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -158,7 +161,7 @@ int main(int argc,char **argv)
   {
     PetscViewer viewer;
 
-    ierr = PetscWriteOutputInitialize(PETSC_COMM_WORLD, "ex4.data", &viewer);CHKERRQ(ierr);
+    ierr = PetscWriteOutputInitialize(PETSC_COMM_WORLD, "ex8.data", &viewer);CHKERRQ(ierr);
     ierr = PetscWriteOutputBag(viewer, "params", bag);CHKERRQ(ierr);
     ierr = PetscWriteOutputVecDA(viewer, "u", DMMGGetx(dmmg), DMMGGetDA(dmmg));CHKERRQ(ierr);
     ierr = PetscWriteOutputFinalize(viewer);CHKERRQ(ierr);
@@ -669,5 +672,75 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCt
      matrix. If we do, it will generate an error.
   */
   ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "L_2Error"
+/*
+  L_2Error - Integrate the L_2 error of our solution over each face
+*/
+PetscErrorCode L_2Error(DA da, Vec fVec, double *error, AppCtx *user)
+{
+  DALocalInfo info;
+  Vec fLocalVec;
+  PetscScalar **f;
+  PetscScalar u, uExact, uLocal[4];
+  PetscScalar hx, hy, hxhy, x, y, phi[3];
+  PetscInt i, j, q;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalInfo(da, &info);CHKERRQ(ierr);
+  ierr = DAGetLocalVector(da, &fLocalVec);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,fVec, INSERT_VALUES, fLocalVec);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,fVec, INSERT_VALUES, fLocalVec);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da, fLocalVec, (void **) &f);CHKERRQ(ierr);
+
+  *error = 0.0;
+  hx     = 1.0/(PetscReal)(info.mx-1);
+  hy     = 1.0/(PetscReal)(info.my-1);
+  hxhy   = hx*hy;
+  for(j = info.ys; j < info.ys+info.ym-1; j++) {
+    for(i = info.xs; i < info.xs+info.xm-1; i++) {
+      uLocal[0] = f[j][i];
+      uLocal[1] = f[j][i+1];
+      uLocal[2] = f[j+1][i+1];
+      uLocal[3] = f[j+1][i];
+      /* Lower element */
+      for(q = 0; q < 3; q++) {
+        phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
+        phi[1] = quadPoints[q*2];
+        phi[2] = quadPoints[q*2+1];
+        u = uLocal[0]*phi[0]+ uLocal[1]*phi[1] + uLocal[3]*phi[2];
+        x = (quadPoints[q*2] + i)*hx;
+        y = (quadPoints[q*2+1] + j)*hy;
+        ierr = ExactSolution(x, y, &uExact);CHKERRQ(ierr);
+        *error += hxhy*quadWeights[q]*((u - uExact)*(u - uExact));
+      }
+      /* Upper element */
+      /*
+        The affine map from the lower to the upper is
+
+        / x_U \ = / -1  0 \ / x_L \ + / hx \
+        \ y_U /   \  0 -1 / \ y_L /   \ hy /
+       */
+      for(q = 0; q < 3; q++) {
+        phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
+        phi[1] = quadPoints[q*2];
+        phi[2] = quadPoints[q*2+1];
+        u = uLocal[0]*phi[0]+ uLocal[1]*phi[1] + uLocal[3]*phi[2];
+        x = (1.0 - quadPoints[q*2] + i)*hx;
+        y = (1.0 - quadPoints[q*2+1] + j)*hy;
+        ierr = ExactSolution(x, y, &uExact);CHKERRQ(ierr);
+        *error += hxhy*quadWeights[q]*((u - uExact)*(u - uExact));
+      }
+    }
+  }
+
+  ierr = DAVecRestoreArray(da, fLocalVec, (void **) &f);CHKERRQ(ierr);
+  /* ierr = DALocalToGlobalBegin(da,xLocalVec,xVec);CHKERRQ(ierr); */
+  /* ierr = DALocalToGlobalEnd(da,xLocalVec,xVec);CHKERRQ(ierr); */
+  ierr = DARestoreLocalVector(da, &fLocalVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
