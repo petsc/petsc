@@ -14,7 +14,7 @@ T*/
 
     The Bratu equation is given by the partial differential equation
   
-            alpha*Laplacian u - lambda*e^u = 0,  0 < x,y < 1,
+            -alpha*Laplacian u + lambda*e^u = f,  0 < x,y < 1,
   
     with boundary conditions
    
@@ -207,7 +207,7 @@ PetscErrorCode PrintVector(DMMG dmmg, Vec U)
 PetscErrorCode ExactSolution(PetscReal x, PetscReal y, PetscScalar *u)
 {
   PetscFunctionBegin;
-  *u = x;
+  *u = x*x;
   PetscFunctionReturn(0);
 }
 
@@ -294,7 +294,7 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 
 #undef __FUNCT__
 #define __FUNCT__ "constantResidual"
-PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, PetscReal hy, PetscScalar r[])
+PetscErrorCode constantResidual(PetscReal lambda, PetscTruth isLower, int i, int j, PetscReal hx, PetscReal hy, PetscScalar r[])
 {
   PetscScalar rLocal[3] = {0.0, 0.0, 0.0};
   PetscScalar phi[3] = {0.0, 0.0, 0.0};
@@ -303,19 +303,20 @@ PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, Pe
   PetscInt    q, k;
 
   PetscFunctionBegin;
-  for(q = 0; q < 4; q++) {
+  for(q = 0; q < 3; q++) {
     phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
     phi[1] = quadPoints[q*2];
     phi[2] = quadPoints[q*2+1];
+    /* These are currently wrong */
     x      = xI + quadPoints[q*2]*hx;
     y      = yI + quadPoints[q*2+1]*hy;
-    res    = quadWeights[q]*(0.0);
+    res    = quadWeights[q]*(2.0);
     for(k = 0; k < 3; k++) {
       rLocal[k] += phi[k]*res;
     }
   }
   for(k = 0; k < 3; k++) {
-    printf("  constLocal[%d] = %g\n", k, rLocal[k]);
+    printf("  constLocal[%d] = %g\n", k, lambda*hxhy*rLocal[k]);
     r[k] += lambda*hxhy*rLocal[k];
   }
   PetscFunctionReturn(0);
@@ -421,7 +422,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
       for(k = 0; k < 3; k++) {
         printf("  rLocal[%d] = %g\n", k, rLocal[k]);
       }
-      ierr = constantResidual(1.0, i, j, hx, hy, rLocal);CHKERRQ(ierr);
+      ierr = constantResidual(1.0, PETSC_TRUE, i, j, hx, hy, rLocal);CHKERRQ(ierr);
       printf("Laplacian+Constant ElementVector for (%d, %d)\n", i, j);
       for(k = 0; k < 3; k++) {
         printf("  rLocal[%d] = %g\n", k, rLocal[k]);
@@ -453,7 +454,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
       for(k = 0; k < 3; k++) {
         printf("  rLocal[%d] = %g\n", k, rLocal[k]);
       }
-      ierr = constantResidual(1.0, i, j, hx, hy, rLocal);CHKERRQ(ierr);
+      ierr = constantResidual(1.0, PETSC_TRUTH, i, j, hx, hy, rLocal);CHKERRQ(ierr);
       printf("Laplacian+Constant ElementVector for (%d, %d)\n", i, j);
       for(k = 0; k < 3; k++) {
         printf("  rLocal[%d] = %g\n", k, rLocal[k]);
