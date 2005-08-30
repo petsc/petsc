@@ -57,10 +57,10 @@ typedef struct {
   PetscReal u, v, p;
 } Field;
 
-static PetscScalar laplacian[16] = { 0.666667, -0.166667, -0.333333, -0.166667,
-                                    -0.166667,  0.666667, -0.166667, -0.333333,
-                                    -0.333333, -0.166667,  0.666667, -0.166667,
-                                    -0.166667, -0.333333, -0.166667,  0.666667};
+static PetscScalar negLaplacian[16] = { 0.666667, -0.166667, -0.333333, -0.166667,
+                                       -0.166667,  0.666667, -0.166667, -0.333333,
+                                       -0.333333, -0.166667,  0.666667, -0.166667,
+                                       -0.166667, -0.333333, -0.166667,  0.666667};
 
 static PetscScalar gradient[32] = {-1/6,  1/6,  1/12, -1/12,
                                    -1/6,  1/6,  1/12, -1/12,
@@ -204,8 +204,8 @@ PetscErrorCode ExactSolution(PetscReal x, PetscReal y, Field *u)
 {
   PetscFunctionBegin;
 #if 1
-  u->u = x + y - 2;
-  u->v = x - y + 2;
+  u->u = x*x;
+  u->v = 0.0;
 #else
   u->u = x*x*y;
   u->v = -x*y*y;
@@ -327,7 +327,7 @@ PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, Pe
 {
   Field       rLocal[4] = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
   PetscScalar phi[4] = {0.0, 0.0, 0.0, 0.0};
-  PetscReal   xI = i*hx, yI = j*hy, x, y;
+  PetscReal   xI = i*hx, yI = j*hy, hxhy = hx*hy, x, y;
   Field       res;
   PetscInt    q, k;
 
@@ -339,9 +339,9 @@ PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, Pe
     phi[3] = (1.0 - quadPoints[q*2])* quadPoints[q*2+1];
     x      = xI + quadPoints[q*2]*hx;
     y      = yI + quadPoints[q*2+1]*hy;
-    res.u    = lambda*quadWeights[q]*(0.0);
-    res.v    = lambda*quadWeights[q]*(0.0);
-    res.p    = lambda*quadWeights[q]*(0.0);
+    res.u    = quadWeights[q]*(2.0);
+    res.v    = quadWeights[q]*(0.0);
+    res.p    = quadWeights[q]*(0.0);
     for(k = 0; k < 4; k++) {
       rLocal[k].u += phi[k]*res.u;
       rLocal[k].v += phi[k]*res.v;
@@ -349,9 +349,10 @@ PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, Pe
     }
   }
   for(k = 0; k < 4; k++) {
-    r[k].u += rLocal[k].u;
-    r[k].v += rLocal[k].v;
-    r[k].p += rLocal[k].p;
+    printf("  constLocal[%d] = (%g, %g, %g)\n", k, rLocal[k].u, rLocal[k].v, rLocal[k].p);
+    r[k].u += lambda*hxhy*rLocal[k].u;
+    r[k].v += lambda*hxhy*rLocal[k].v;
+    r[k].p += lambda*hxhy*rLocal[k].p;
   }
   PetscFunctionReturn(0);
 }
@@ -478,8 +479,8 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,AppCtx *u
         rLocal[k].v = 0.0;
         rLocal[k].p = 0.0;
         for(l = 0; l < 4; l++) {
-          rLocal[k].u += laplacian[k*4 + l]*uLocal[l].u;
-          rLocal[k].v += laplacian[k*4 + l]*uLocal[l].v;
+          rLocal[k].u += negLaplacian[k*4 + l]*uLocal[l].u;
+          rLocal[k].v += negLaplacian[k*4 + l]*uLocal[l].v;
         }
         rLocal[k].u *= -1.0*hxhy;
         rLocal[k].v *= -1.0*hxhy;
@@ -498,7 +499,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,AppCtx *u
       for(k = 0; k < 4; k++) {
         printf("  rLocal[%d] = (%g)\n", k, rLocal[k].p);
       }
-      ierr = constantResidual(-1.0, i, j, hx, hy, rLocal);CHKERRQ(ierr);
+      ierr = constantResidual(1.0, i, j, hx, hy, rLocal);CHKERRQ(ierr);
       printf(" ElementVector for (%d, %d)\n", i, j);
       for(k = 0; k < 4; k++) {
         printf("  rLocal[%d] = (%g, %g)\n", k, rLocal[k].u, rLocal[k].v);
@@ -716,7 +717,7 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info, Field **x, Mat jac, AppCtx *
       for(k = 0; k < numLocalRows; k++) {
         /* u-u block */
         for(l = 0; l < 4; l++) {
-          JLocal[row*12 + l] = -hxhy*laplacian[localRows[k]*4 + l];
+          JLocal[row*12 + l] = -hxhy*negLaplacian[localRows[k]*4 + l];
         }
 #if 0
         /* u-p block */
@@ -729,7 +730,7 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info, Field **x, Mat jac, AppCtx *
       for(k = 0; k < numLocalRows; k++) {
         /* v-v block */
         for(l = 0; l < 4; l++) {
-          JLocal[row*12 + l + 4] = -hxhy*laplacian[localRows[k]*4 + l];
+          JLocal[row*12 + l + 4] = -hxhy*negLaplacian[localRows[k]*4 + l];
         }
 #if 0
         /* v-p block */

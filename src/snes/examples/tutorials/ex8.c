@@ -1,27 +1,28 @@
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
 static char help[] = "Nonlinear PDE in 2d.\n\
-We solve the Lane-Emden equation in a 2D rectangular\n\
+We solve the Bratu equation in a 2D rectangular\n\
 domain, using distributed arrays (DAs) to partition the parallel grid.\n\n";
 
 /*T
-   Concepts: SNES^parallel Lane-Emden example
+   Concepts: SNES^parallel Bratu example
    Concepts: DA^using distributed arrays;
    Processors: n
 T*/
 
 /* ------------------------------------------------------------------------
 
-    The Lane-Emden equation is given by the partial differential equation
+    The Bratu equation is given by the partial differential equation
   
-            -alpha*Laplacian u - lambda*u^3 = 0,  0 < x,y < 1,
+            alpha*Laplacian u - lambda*e^u = 0,  0 < x,y < 1,
   
     with boundary conditions
    
              u = 0  for  x = 0, x = 1, y = 0, y = 1.
   
-    A bilinear finite element approximation is used to discretize the boundary
-    value problem to obtain a nonlinear system of equations.
+    A linear finite element approximation is used to discretize the boundary
+    value problem on the two triangles which make up each rectangle in the DA
+    to obtain a nonlinear system of equations.
 
   ------------------------------------------------------------------------- */
 
@@ -54,17 +55,19 @@ typedef struct {
    PetscReal lambda;         /* parameter controlling nonlinearity */
 } AppCtx;
 
-static PetscScalar Kref[16] = { 0.666667, -0.166667, -0.333333, -0.166667,
-                               -0.166667,  0.666667, -0.166667, -0.333333,
-                               -0.333333, -0.166667,  0.666667, -0.166667,
-                               -0.166667, -0.333333, -0.166667,  0.666667};
+static PetscScalar Kref[36] = { 0.5,  0.5, -0.5,  0,  0, -0.5,
+                                0.5,  0.5, -0.5,  0,  0, -0.5,
+                               -0.5, -0.5,  0.5,  0,  0,  0.5,
+                                  0,    0,    0,  0,  0,    0,
+                                  0,    0,    0,  0,  0,    0,
+                               -0.5, -0.5,  0.5,  0,  0,  0.5};
 
 /* These are */
-static PetscScalar quadPoints[8] = {0.211325, 0.211325,
-                                    0.788675, 0.211325,
-                                    0.788675, 0.788675,
-                                    0.211325, 0.788675};
-static PetscScalar quadWeights[4] = {0.25, 0.25, 0.25, 0.25};
+static PetscScalar quadPoints[8] = {0.17855873, 0.15505103,
+                                    0.07503111, 0.64494897,
+                                    0.66639025, 0.15505103,
+                                    0.28001992, 0.64494897};
+static PetscScalar quadWeights[4] = {0.15902069,  0.09097931,  0.15902069,  0.09097931};
 
 /* 
    User-defined routines
@@ -204,7 +207,7 @@ PetscErrorCode PrintVector(DMMG dmmg, Vec U)
 PetscErrorCode ExactSolution(PetscReal x, PetscReal y, PetscScalar *u)
 {
   PetscFunctionBegin;
-  *u = x*x;
+  *u = x;
   PetscFunctionReturn(0);
 }
 
@@ -237,7 +240,7 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   hx     = 1.0/(PetscReal)(Mx-1);
   hy     = 1.0/(PetscReal)(My-1);
   if (lambda == 0.0) {
-    temp1  = 1.0;
+    temp1  = 0.0;
   } else {
     temp1  = lambda/(lambda + 1.0);
   }
@@ -293,26 +296,25 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 #define __FUNCT__ "constantResidual"
 PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, PetscReal hy, PetscScalar r[])
 {
-  PetscScalar rLocal[4] = {0.0, 0.0, 0.0};
-  PetscScalar phi[4] = {0.0, 0.0, 0.0, 0.0};
+  PetscScalar rLocal[3] = {0.0, 0.0, 0.0};
+  PetscScalar phi[3] = {0.0, 0.0, 0.0};
   PetscReal   xI = i*hx, yI = j*hy, hxhy = hx*hy, x, y;
   PetscScalar res;
   PetscInt    q, k;
 
   PetscFunctionBegin;
   for(q = 0; q < 4; q++) {
-    phi[0] = (1.0 - quadPoints[q*2])*(1.0 - quadPoints[q*2+1]);
-    phi[1] =  quadPoints[q*2]       *(1.0 - quadPoints[q*2+1]);
-    phi[2] =  quadPoints[q*2]       * quadPoints[q*2+1];
-    phi[3] = (1.0 - quadPoints[q*2])* quadPoints[q*2+1];
+    phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
+    phi[1] = quadPoints[q*2];
+    phi[2] = quadPoints[q*2+1];
     x      = xI + quadPoints[q*2]*hx;
     y      = yI + quadPoints[q*2+1]*hy;
-    res    = quadWeights[q]*(2.0);
-    for(k = 0; k < 4; k++) {
+    res    = quadWeights[q]*(0.0);
+    for(k = 0; k < 3; k++) {
       rLocal[k] += phi[k]*res;
     }
   }
-  for(k = 0; k < 4; k++) {
+  for(k = 0; k < 3; k++) {
     printf("  constLocal[%d] = %g\n", k, rLocal[k]);
     r[k] += lambda*hxhy*rLocal[k];
   }
@@ -320,67 +322,24 @@ PetscErrorCode constantResidual(PetscReal lambda, int i, int j, PetscReal hx, Pe
 }
 
 PetscErrorCode nonlinearResidual(PetscReal lambda, PetscScalar u[], PetscScalar r[]) {
-  PetscFunctionBegin;
-  r[0] += lambda*(48.0*u[0]*u[0]*u[0] + 12.0*u[1]*u[1]*u[1] + 9.0*u[0]*u[0]*(4.0*u[1] + u[2] + 4.0*u[3]) + u[1]*u[1]*(9.0*u[2] + 6.0*u[3]) + u[1]*(6.0*u[2]*u[2] + 8.0*u[2]*u[3] + 6.0*u[3]*u[3])
-           + 3.0*(u[2]*u[2]*u[2] + 2.0*u[2]*u[2]*u[3] + 3.0*u[2]*u[3]*u[3] + 4.0*u[3]*u[3]*u[3])
-           + 2.0*u[0]*(12.0*u[1]*u[1] + u[1]*(6.0*u[2] + 9.0*u[3]) + 2.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3])))/1200.0;
-  r[1] += lambda*(12.0*u[0]*u[0]*u[0] + 48.0*u[1]*u[1]*u[1] + 9.0*u[1]*u[1]*(4.0*u[2] + u[3]) + 3.0*u[0]*u[0]*(8.0*u[1] + 2.0*u[2] + 3.0*u[3])
-           + 4.0*u[1]*(6.0*u[2]*u[2] + 3.0*u[2]*u[3] + u[3]*u[3]) + 3.0*(4.0*u[2]*u[2]*u[2] + 3.0*u[2]*u[2]*u[3] + 2.0*u[2]*u[3]*u[3] + u[3]*u[3]*u[3])
-           + 2.0*u[0]*((18.0*u[1]*u[1] + 3.0*u[2]*u[2] + 4.0*u[2]*u[3] + 3.0*u[3]*u[3]) + u[1]*(9.0*u[2] + 6.0*u[3])))/1200.0;
-  r[2] += lambda*(3.0*u[0]*u[0]*u[0] + u[0]*u[0]*(6.0*u[1] + 4.0*u[2] + 6.0*u[3]) + u[0]*(9.0*u[1]*u[1] + 9.0*u[2]*u[2] + 12.0*u[2]*u[3] + 9.0*u[3]*u[3] + 4.0*u[1]*(3.0*u[2] + 2.0*u[3]))
-           + 6.0*(2.0*u[1]*u[1]*u[1] + u[1]*u[1]*(4.0*u[2] + u[3]) + u[1]*(6.0*u[2]*u[2] + 3.0*u[2]*u[3] + u[3]*u[3]) + 2.0*(4.0*u[2]*u[2]*u[2] + 3.0*u[2]*u[2]*u[3] + 2.0*u[2]*u[3]*u[3] + u[3]*u[3]*u[3])))/1200.0;
-  r[3] += lambda*(12.0*u[0]*u[0]*u[0] + 3.0*u[1]*u[1]*u[1] + u[1]*u[1]*(6.0*u[2] + 4.0*u[3]) + 3.0*u[0]*u[0]*(3.0*u[1] + 2.0*u[2] + 8.0*u[3])
-           + 3.0*u[1]*(3.0*u[2]*u[2] + 4.0*u[2]*u[3] + 3.0*u[3]*u[3]) + 12.0*(u[2]*u[2]*u[2] + 2.0*u[2]*u[2]*u[3] + 3.0*u[2]*u[3]*u[3] + 4.0*u[3]*u[3]*u[3])
-           + 2.0*u[0]*(3.0*u[1]*u[1] + u[1]*(4.0*u[2] + 6.0*u[3]) + 3.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3])))/1200.0;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode nonlinearResidualBratu(PetscReal lambda, PetscScalar u[], PetscScalar r[]) {
-  PetscScalar rLocal[4] = {0.0, 0.0, 0.0, 0.0};
-  PetscScalar phi[4] = {0.0, 0.0, 0.0, 0.0};
+  PetscScalar rLocal[3] = {0.0, 0.0, 0.0};
+  PetscScalar phi[3] = {0.0, 0.0, 0.0};
   PetscScalar res;
   PetscInt q;
 
   PetscFunctionBegin;
   for(q = 0; q < 4; q++) {
-    phi[0] = (1.0 - quadPoints[q*2])*(1.0 - quadPoints[q*2+1]);
-    phi[1] =  quadPoints[q*2]       *(1.0 - quadPoints[q*2+1]);
-    phi[2] =  quadPoints[q*2]       * quadPoints[q*2+1];
-    phi[3] = (1.0 - quadPoints[q*2])* quadPoints[q*2+1];
+    phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
+    phi[1] = quadPoints[q*2];
+    phi[2] = quadPoints[q*2+1];
     res    = quadWeights[q]*PetscExpScalar(u[0]*phi[0]+ u[1]*phi[1] + u[2]*phi[2]+ u[3]*phi[3]);
     rLocal[0] += phi[0]*res;
     rLocal[1] += phi[1]*res;  
     rLocal[2] += phi[2]*res;
-    rLocal[3] += phi[3]*res;
   }
   r[0] += lambda*rLocal[0];
   r[1] += lambda*rLocal[1];
   r[2] += lambda*rLocal[2];
-  r[3] += lambda*rLocal[3];
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode nonlinearJacobian(PetscReal lambda, PetscScalar u[], PetscScalar J[]) {
-  PetscFunctionBegin;
-  J[0]  = lambda*(72.0*u[0]*u[0] + 12.0*u[1]*u[1] + 9.0*u[0]*(4.0*u[1] + u[2] + 4.0*u[3]) + u[1]*(6.0*u[2] + 9.0*u[3]) + 2.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3]))/600.0;
-  J[1]  = lambda*(18.0*u[0]*u[0] + 18.0*u[1]*u[1] + 3.0*u[2]*u[2] + 4.0*u[2]*u[3] + 3.0*u[3]*u[3] + 3.0*u[0]*(8.0*u[1] + 2.0*u[2] + 3.0*u[3]) + u[1]*(9.0*u[2] + 6.0*u[3]))/600.0;
-  J[2]  = lambda*( 9.0*u[0]*u[0] +  9.0*u[1]*u[1] + 9.0*u[2]*u[2] + 12.0*u[2]*u[3] + 9.0*u[3]*u[3] + 4.0*u[1]*(3.0*u[2] + 2.0*u[3]) + 4.0*u[0]*(3.0*u[1] + 2.0*u[2] + 3.0*u[3]))/1200.0;
-  J[3]  = lambda*(18.0*u[0]*u[0] +  3.0*u[1]*u[1] + u[1]*(4.0*u[2] + 6.0*u[3]) + 3.0*u[0]*(3.0*u[1] + 2.0*u[2] + 8.0*u[3]) + 3.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3]))/600.0;
-
-  J[4]  = lambda*(18.0*u[0]*u[0] + 18.0*u[1]*u[1] + 3.0*u[2]*u[2] + 4.0*u[2]*u[3] + 3.0*u[3]*u[3] + 3.0*u[0]*(8.0*u[1] + 2.0*u[2] + 3.0*u[3]) + u[1]*(9.0*u[2] + 6.0*u[3]))/600.0;
-  J[5]  = lambda*(12.0*u[0]*u[0] + 72.0*u[1]*u[1] + 9.0*u[1]*(4.0*u[2] + u[3]) + u[0]*(36.0*u[1] + 9.0*u[2] + 6.0*u[3]) + 2.0*(6.0*u[2]*u[2] + 3.0*u[2]*u[3] + u[3]*u[3]))/600.0;
-  J[6]  = lambda*( 3.0*u[0]*u[0] + u[0]*(9.0*u[1] + 6.0*u[2] + 4.0*u[3]) + 3.0*(6.0*u[1]*u[1] + 6.0*u[2]*u[2] + 3.0*u[2]*u[3] + u[3]*u[3] + 2.0*u[1]*(4.0*u[2] + u[3])))/600.0;
-  J[7]  = lambda*( 9.0*u[0]*u[0] +  9.0*u[1]*u[1] + 9.0*u[2]*u[2] + 12.0*u[2]*u[3] + 9.0*u[3]*u[3] + 4.0*u[1]*(3.0*u[2] + 2.0*u[3]) + 4.0*u[0]*(3.0*u[1] + 2.0*u[2] + 3.0*u[3]))/1200.0;
-
-  J[8]  = lambda*( 9.0*u[0]*u[0] +  9.0*u[1]*u[1] + 9.0*u[2]*u[2] + 12.0*u[2]*u[3] + 9.0*u[3]*u[3] + 4.0*u[1]*(3.0*u[2] + 2.0*u[3]) + 4.0*u[0]*(3.0*u[1] + 2.0*u[2] + 3.0*u[3]))/1200.0;
-  J[9]  = lambda*( 3.0*u[0]*u[0] + u[0]*(9.0*u[1] + 6.0*u[2] + 4.0*u[3]) + 3.0*(6.0*u[1]*u[1] + 6.0*u[2]*u[2] + 3.0*u[2]*u[3] + u[3]*u[3] + 2.0*u[1]*(4.0*u[2] + u[3])))/600.0;
-  J[10] = lambda*( 2.0*u[0]*u[0] + u[0]*(6.0*u[1] + 9.0*u[2] + 6.0*u[3]) + 3.0*(4.0*u[1]*u[1] + 3.0*u[1]*(4.0*u[2] + u[3]) + 4.0*(6.0*u[2]*u[2] + 3.0*u[2]*u[3] + u[3]*u[3])))/600.0;
-  J[11] = lambda*( 3.0*u[0]*u[0] + u[0]*(4.0*u[1] + 6.0*u[2] + 9.0*u[3]) + 3.0*(u[1]*u[1] + 6.0*u[2]*u[2] + 8.0*u[2]*u[3] + 6.0*u[3]*u[3] + u[1]*(3.0*u[2] + 2.0*u[3])))/600.0;
-
-  J[12] = lambda*(18.0*u[0]*u[0] +  3.0*u[1]*u[1] + u[1]*(4.0*u[2] + 6.0*u[3]) + 3.0*u[0]*(3.0*u[1] + 2.0*u[2] + 8.0*u[3]) + 3.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3]))/600.0;
-  J[13] = lambda*( 9.0*u[0]*u[0] +  9.0*u[1]*u[1] + 9.0*u[2]*u[2] + 12.0*u[2]*u[3] + 9.0*u[3]*u[3] + 4.0*u[1]*(3.0*u[2] + 2.0*u[3]) + 4.0*u[0]*(3.0*u[1] + 2.0*u[2] + 3.0*u[3]))/1200.0;
-  J[14] = lambda*( 3.0*u[0]*u[0] + u[0]*(4.0*u[1] + 6.0*u[2] + 9.0*u[3]) + 3.0*(u[1]*u[1] + 6.0*u[2]*u[2] + 8.0*u[2]*u[3] + 6.0*u[3]*u[3] + u[1]*(3.0*u[2] + 2.0*u[3])))/600.0;
-  J[15] = lambda*(12.0*u[0]*u[0] +  2.0*u[1]*u[1] + u[1]*(6.0*u[2] + 9.0*u[3]) + 12.0*(u[2]*u[2] + 3.0*u[2]*u[3] + 6.0*u[3]*u[3]) + u[0]*(6.0*u[1] + 9.0*(u[2] + 4.0*u[3])))/600.0;
   PetscFunctionReturn(0);
 }
 
@@ -394,67 +353,120 @@ PetscErrorCode nonlinearJacobian(PetscReal lambda, PetscScalar u[], PetscScalar 
  */
 PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {
-  PetscScalar    uLocal[4];
-  PetscScalar    rLocal[4];
+  PetscScalar    uLocal[3];
+  PetscScalar    rLocal[3];
+  PetscScalar    G[4];
   PetscScalar    uExact;
-  PetscReal      alpha,lambda,hx,hy,hxhy,sc;
+  PetscReal      alpha,lambda,hx,hy,hxhy,sc,detJInv;
   PetscInt       i,j,k,l;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
-  alpha  = user->alpha;
-  lambda = user->lambda;
-  hx     = 1.0/(PetscReal)(info->mx-1);
-  hy     = 1.0/(PetscReal)(info->my-1);
-  sc     = hx*hy*lambda;
-  hxhy   = hx*hy; 
+  /* Naive Jacobian calculation:
+
+     J = / 1/hx  0   \ J^{-1} = / hx   0 \  1/|J| = hx*hy = |J^{-1}|
+         \  0   1/hy /          \  0  hy /
+   */
+  alpha   = user->alpha;
+  lambda  = user->lambda;
+  hx      = 1.0/(PetscReal)(info->mx-1);
+  hy      = 1.0/(PetscReal)(info->my-1);
+  sc      = hx*hy*lambda;
+  hxhy    = hx*hy; 
+  detJInv = hxhy;
+  G[0] = (1.0/(hx*hx)) * detJInv;
+  G[1] = 0.0;
+  G[2] = G[1];
+  G[3] = (1.0/(hy*hy)) * detJInv;
+  for(k = 0; k < 4; k++) {
+    printf("G[%d] = %g\n", k, G[k]);
+  }
 
   /* Zero the vector */
   ierr = PetscMemzero((void *) &(f[info->xs][info->ys]), info->xm*info->ym*sizeof(PetscScalar));CHKERRQ(ierr);
   /* Compute function over the locally owned part of the grid. For each
      vertex (i,j), we consider the element below:
 
-       3         2
-     i,j+1 --- i+1,j
-       |         |
-       |         |
+       2 (1)    (0)
+     i,j+1 --- i+1,j+1
+       |  \      |
+       |   \     |
+       |    \    |
+       |     \   |
+       |      \  |
       i,j  --- i+1,j
-       0         1
+       0         1 (2)
 
      and therefore we do not loop over the last vertex in each dimension.
   */
   for(j = info->ys; j < info->ys+info->ym-1; j++) {
     for(i = info->xs; i < info->xs+info->xm-1; i++) {
+      /* Lower element */
       uLocal[0] = x[j][i];
       uLocal[1] = x[j][i+1];
-      uLocal[2] = x[j+1][i+1];
-      uLocal[3] = x[j+1][i];
+      uLocal[2] = x[j+1][i];
       printf("Solution ElementVector for (%d, %d)\n", i, j);
-      for(k = 0; k < 4; k++) {
+      for(k = 0; k < 3; k++) {
         printf("  uLocal[%d] = %g\n", k, uLocal[k]);
       }
-      for(k = 0; k < 4; k++) {
+      for(k = 0; k < 3; k++) {
         rLocal[k] = 0.0;
-        for(l = 0; l < 4; l++) {
-          rLocal[k] += Kref[k*4 + l]*uLocal[l];
+        for(l = 0; l < 3; l++) {
+          rLocal[k] += (G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1])*uLocal[l];
         }
-        rLocal[k] *= hxhy*alpha;
+        rLocal[k] *= alpha;
       }
       printf("Laplacian ElementVector for (%d, %d)\n", i, j);
-      for(k = 0; k < 4; k++) {
+      for(k = 0; k < 3; k++) {
         printf("  rLocal[%d] = %g\n", k, rLocal[k]);
       }
       ierr = constantResidual(1.0, i, j, hx, hy, rLocal);CHKERRQ(ierr);
       printf("Laplacian+Constant ElementVector for (%d, %d)\n", i, j);
-      for(k = 0; k < 4; k++) {
+      for(k = 0; k < 3; k++) {
         printf("  rLocal[%d] = %g\n", k, rLocal[k]);
       }
-      ierr = nonlinearResidual(-1.0*sc, uLocal, rLocal);CHKERRQ(ierr);
-      f[j][i]     += rLocal[0];
-      f[j][i+1]   += rLocal[1];
-      f[j+1][i+1] += rLocal[2];
-      f[j+1][i]   += rLocal[3];
+      ierr = nonlinearResidual(0.0*sc, uLocal, rLocal);CHKERRQ(ierr);
+      printf("Full nonlinear ElementVector for (%d, %d)\n", i, j);
+      for(k = 0; k < 3; k++) {
+        printf("  rLocal[%d] = %g\n", k, rLocal[k]);
+      }
+      f[j][i]   += rLocal[0];
+      f[j][i+1] += rLocal[1];
+      f[j+1][i] += rLocal[2];
+      /* Upper element */
+      uLocal[0] = x[j+1][i+1];
+      uLocal[1] = x[j+1][i];
+      uLocal[2] = x[j][i+1];
+      printf("Solution ElementVector for (%d, %d)\n", i, j);
+      for(k = 0; k < 3; k++) {
+        printf("  uLocal[%d] = %g\n", k, uLocal[k]);
+      }
+      for(k = 0; k < 3; k++) {
+        rLocal[k] = 0.0;
+        for(l = 0; l < 3; l++) {
+          rLocal[k] += (G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1])*uLocal[l];
+        }
+        rLocal[k] *= alpha;
+      }
+      printf("Laplacian ElementVector for (%d, %d)\n", i, j);
+      for(k = 0; k < 3; k++) {
+        printf("  rLocal[%d] = %g\n", k, rLocal[k]);
+      }
+      ierr = constantResidual(1.0, i, j, hx, hy, rLocal);CHKERRQ(ierr);
+      printf("Laplacian+Constant ElementVector for (%d, %d)\n", i, j);
+      for(k = 0; k < 3; k++) {
+        printf("  rLocal[%d] = %g\n", k, rLocal[k]);
+      }
+      ierr = nonlinearResidual(0.0*sc, uLocal, rLocal);CHKERRQ(ierr);
+      printf("Full nonlinear ElementVector for (%d, %d)\n", i, j);
+      for(k = 0; k < 3; k++) {
+        printf("  rLocal[%d] = %g\n", k, rLocal[k]);
+      }
+      f[j+1][i+1] += rLocal[0];
+      f[j+1][i]   += rLocal[1];
+      f[j][i+1]   += rLocal[2];
+      /* Boundary conditions */
       if (i == 0 || j == 0) {
         ierr = ExactSolution(i*hx, j*hy, &uExact);CHKERRQ(ierr);
         f[j][i] = x[j][i] - uExact;
@@ -484,6 +496,11 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
   PetscFunctionReturn(0); 
 } 
 
+PetscErrorCode nonlinearJacobian(PetscReal lambda, PetscScalar u[], PetscScalar J[]) {
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
 /*
@@ -491,10 +508,12 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
 */
 PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
 {
-  PetscScalar    JLocal[16], ELocal[16], uLocal[4];
+  PetscScalar    JLocal[16], uLocal[4];
   MatStencil     rows[4], cols[4], ident;
-  PetscInt       localRows[4];
-  PetscScalar    alpha,lambda,hx,hy,hxhy,sc;
+  PetscInt       lowerRow[3] = {0, 1, 3};
+  PetscInt       upperRow[3] = {2, 3, 1};
+  PetscInt       hasLower[3], hasUpper[3], localRows[4];
+  PetscScalar    alpha,lambda,hx,hy,hxhy,detJInv,G[4],sc,one = 1.0;
   PetscInt       i,j,k,l,numRows;
   PetscErrorCode ierr;
 
@@ -505,6 +524,14 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCt
   hy     = 1.0/(PetscReal)(info->my-1);
   sc     = hx*hy*lambda;
   hxhy   = hx*hy; 
+  detJInv = hxhy;
+  G[0] = (1.0/(hx*hx)) * detJInv;
+  G[1] = 0.0;
+  G[2] = G[1];
+  G[3] = (1.0/(hy*hy)) * detJInv;
+  for(k = 0; k < 4; k++) {
+    printf("G[%d] = %g\n", k, G[k]);
+  }
 
   ierr = MatZeroEntries(jac);CHKERRQ(ierr);
   /* 
@@ -520,76 +547,111 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCt
   */
   for (j=info->ys; j<info->ys+info->ym-1; j++) {
     for (i=info->xs; i<info->xs+info->xm-1; i++) {
+      ierr = PetscMemzero(JLocal, 16 * sizeof(PetscScalar));CHKERRQ(ierr);
       numRows = 0;
+      /* Lower element */
       uLocal[0] = x[j][i];
       uLocal[1] = x[j][i+1];
       uLocal[2] = x[j+1][i+1];
       uLocal[3] = x[j+1][i];
       /* i,j */
       if (i == 0 || j == 0) {
+        hasLower[0] = 0;
         ident.i = i; ident.j = j;
-        JLocal[0] = 1.0;
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       } else {
-        localRows[numRows] = 0;
+        hasLower[0] = 1;
+        localRows[0] = numRows;
         rows[numRows].i = i; rows[numRows].j = j;
         numRows++;
       }
       cols[0].i = i; cols[0].j = j;
       /* i+1,j */
       if ((i == info->mx-2) || (j == 0)) {
+        hasLower[1] = 0;
+        hasUpper[2] = 0;
         ident.i = i+1; ident.j = j;
-        JLocal[0] = 1.0;
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       } else {
-        localRows[numRows] = 1;
+        localRows[1] = numRows;
+        hasLower[1] = 1;
+        hasUpper[2] = 1;
+        localRows[1] = numRows;
         rows[numRows].i = i+1; rows[numRows].j = j;
         numRows++;
       }
       cols[1].i = i+1; cols[1].j = j;
       /* i+1,j+1 */
       if ((i == info->mx-2) || (j == info->my-2)) {
+        hasUpper[0] = 0;
         ident.i = i+1; ident.j = j+1;
-        JLocal[0] = 1.0;
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       } else {
-        localRows[numRows] = 2;
+        hasUpper[0] = 1;
+        localRows[2] = numRows;
         rows[numRows].i = i+1; rows[numRows].j = j+1;
         numRows++;
       }
       cols[2].i = i+1; cols[2].j = j+1;
       /* i,j+1 */
       if ((i == 0) || (j == info->my-2)) {
+        hasLower[2] = 0;
+        hasUpper[1] = 0;
         ident.i = i; ident.j = j+1;
-        JLocal[0] = 1.0;
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,JLocal,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValuesStencil(jac,1,&ident,1,&ident,&one,INSERT_VALUES);CHKERRQ(ierr);
         ierr = MatAssemblyBegin(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(jac,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
       } else {
-        localRows[numRows] = 3;
+        hasLower[2] = 1;
+        hasUpper[1] = 1;
+        localRows[3] = numRows;
         rows[numRows].i = i; rows[numRows].j = j+1;
         numRows++;
       }
       cols[3].i = i; cols[3].j = j+1;
-      ierr = nonlinearJacobian(-1.0*sc, uLocal, ELocal);CHKERRQ(ierr);
-      for(k = 0; k < numRows; k++) {
-        for(l = 0; l < 4; l++) {
-          JLocal[k*4 + l] = (hxhy*alpha*Kref[localRows[k]*4 + l] + ELocal[localRows[k]*4 + l]);
+
+      /* Lower Element */
+      for(k = 0; k < 3; k++) {
+        if (!hasLower[k]) continue;
+        for(l = 0; l < 3; l++) {
+          JLocal[localRows[lowerRow[k]]*4 + lowerRow[l]] += alpha*(G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1]);
         }
+      }
+      /* Upper Element */
+      for(k = 0; k < 3; k++) {
+        if (!hasUpper[k]) continue;
+        for(l = 0; l < 3; l++) {
+          JLocal[localRows[upperRow[k]]*4 + upperRow[l]] += alpha*(G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1]);
+        }
+      }
+
+      ierr = nonlinearJacobian(-1.0*sc, uLocal, JLocal);CHKERRQ(ierr);
+      printf("Element matrix for (%d, %d)\n", i, j);
+      printf("   col  ");
+      for(l = 0; l < 4; l++) {
+        printf("(%d, %d) ", cols[l].i, cols[l].j);
+      }
+      printf("\n");
+      for(k = 0; k < numRows; k++) {
+        printf("row (%d, %d): ", rows[k].i, rows[k].j);
+        for(l = 0; l < 4; l++) {
+          printf("%8.6g ", JLocal[k*4 + l]);
+        }
+        printf("\n");
       }
       ierr = MatSetValuesStencil(jac,numRows,rows,4,cols,JLocal,ADD_VALUES);CHKERRQ(ierr);
     }
