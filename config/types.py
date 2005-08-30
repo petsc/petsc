@@ -214,7 +214,7 @@ void (*signal())();
           self.framework.addBatchBody(['{',
                                        '  union {long l; char c[sizeof(long)];} u;',
                                        '  u.l = 1;',
-                                       '  fprintf(output, " \'--with-endian=%s\',\\n", (u.c[sizeof(long) - 1] == 1) ? "little" : "big");',
+                                       '  fprintf(output, " \'--with-endian=%s\',\\n", (u.c[sizeof(long) - 1] == 1) ? "big" : "little");',
                                        '}'])
           # Dummy value
           endian = 'little'
