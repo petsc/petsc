@@ -27,7 +27,7 @@ PetscErrorCode SetSpoolesOptions(Mat A, Spooles_options *options)
   options->msgFile        = 0;
   options->tau            = 100.; 
   options->seed           = 10101;  
-  options->ordering       = 0;     /* BestOfNDandMS */
+  options->ordering       = 1;     /* MMD */
   options->maxdomainsize  = 500;
   options->maxzeros       = 1000;
   options->maxsize        = 96;   
@@ -59,8 +59,16 @@ PetscErrorCode SetSpoolesOptions(Mat A, Spooles_options *options)
         PetscPrintf(PETSC_COMM_SELF,"\n Spooles' output is written into the file 'spooles.msgFile' \n\n");
     } 
 
-    ierr = PetscOptionsEList("-mat_spooles_ordering","ordering type","None",ordertype,4,ordertype[0],&indx,&flg);CHKERRQ(ierr);
-    if (flg) {options->ordering = indx;}
+    ierr = PetscOptionsEList("-mat_spooles_ordering","ordering type","None",ordertype,4,ordertype[1],&indx,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscMPIInt rank,size;
+      options->ordering = indx;
+      ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
+      if (indx == 0 && size > 1 && !rank){
+        ierr = PetscPrintf(PETSC_COMM_SELF," Warning: Ordering BestOfNDandMS might give wrong answer, check your solution! \n");
+      }
+    }
    
     ierr = PetscOptionsInt("-mat_spooles_maxdomainsize","maxdomainsize","None",\
                            options->maxdomainsize,&options->maxdomainsize,PETSC_NULL);CHKERRQ(ierr);
