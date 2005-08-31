@@ -146,6 +146,12 @@ class Configure(config.base.Configure):
       while 1:
         arg = argIter.next()
         self.logPrint( 'Checking arg '+arg, 4, 'compilers')
+        # if options of type -L foobar
+        if arg == '-L':
+          lib = argIter.next()
+          self.logPrint('Found -L '+lib, 4, 'compilers')
+          clibs.append('-L'+lib)
+          continue
         # Check for full library name
         m = re.match(r'^/.*\.a$', arg)
         if m:
@@ -279,6 +285,12 @@ class Configure(config.base.Configure):
       while 1:
         arg = argIter.next()
         self.logPrint( 'Checking arg '+arg, 4, 'compilers')
+        # if options of type -L foobar
+        if arg == '-L':
+          lib = argIter.next()
+          self.logPrint('Found -L '+lib, 4, 'compilers')
+          clibs.append('-L'+lib)
+          continue
         # Check for full library name
         m = re.match(r'^/.*\.a$', arg)
         if m:
