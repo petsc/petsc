@@ -237,7 +237,7 @@ getmpirun:
 .fig.pdf:
 	fig2dev -L pdf $< $*.pdf
 .fig.eps:
-        fig2dev -L eps $< $*.eps
+	fig2dev -L eps $< $*.eps
 .eps.pdf:
 	epstopdf $< -o=$*.pdf
 
