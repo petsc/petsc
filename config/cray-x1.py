@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# python on cray-x1 is broken - this script is run
+# on the linux-compile-node for x1 [robin]
+
 configure_options = [
   '--with-cc=cc',
   '--with-fc=ftn',
@@ -23,7 +26,7 @@ configure_options = [
   '--sizeof_int=4',
   '--with-endian=big',
   '--bits_per_byte=8',
-  '--sizeof_MPI_Fint=4'
+  '--sizeof_MPI_Fint=4',
   '--sizeof_long_long=8',
   '--sizeof_float=4',
   '--sizeof_short=2'
