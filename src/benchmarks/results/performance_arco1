@@ -1,7 +1,6 @@
 command:
-       ./ex10 -f0 ~/matrices/medium -f1 ~/matrices/arco1 -pc_type ilu -ksp_gmres_unmodifiedgramschmidt -optionsleft -mat_type seqbaij -log_summary
-
-       mpirun -np 1 ex10 -f0 ~/matrices/medium -f1 ~/matrices/arco1 -pc_type ilu -ksp_gmres_unmodifiedgramschmidt -optionsleft -mat_baij -matload_ignore_info -matload_block_size 3 -log_summary 
+       mpirun -np 1 ./ex10 -f0 ~/datafiles/matrices/medium -f1 ~/datafiles/matrices/arco1 -pc_type ilu -ksp_gmres_unmodifiedgramschmidt -optionsleft -mat_type seqbaij -log_summary
+       mpirun -np 1 ./ex10 -f0 ~/datafiles/matrices/medium -f1 ~/datafiles/matrices/arco1 -pc_type ilu -ksp_gmres_unmodifiedgramschmidt -optionsleft -mat_type baij -matload_ignore_info -matload_block_size 3 -log_summary 
 
 PETSc Verison: 1.0.14+
 

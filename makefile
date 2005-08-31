@@ -353,7 +353,7 @@ chk_concepts_dir: chk_loc
 
 # Creates ${HOME}/petsc.tar.gz [and petsc-lite.tar.gz]
 dist:
-	${PETSC_DIR}/maint/builddist $PETSC_DIR
+	${PETSC_DIR}/maint/builddist ${PETSC_DIR}
 
 # This target works only if you can do 'ssh petsc@harley.mcs.anl.gov'
 web-snapshot:
