@@ -712,7 +712,7 @@ PetscErrorCode L_2Error(DA da, Vec fVec, double *error, AppCtx *user)
         phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
         phi[1] = quadPoints[q*2];
         phi[2] = quadPoints[q*2+1];
-        u = uLocal[0]*phi[0]+ uLocal[1]*phi[1] + uLocal[3]*phi[2];
+        u = uLocal[0]*phi[0] + uLocal[1]*phi[1] + uLocal[3]*phi[2];
         x = (quadPoints[q*2] + i)*hx;
         y = (quadPoints[q*2+1] + j)*hy;
         ierr = ExactSolution(x, y, &uExact);CHKERRQ(ierr);
@@ -729,7 +729,7 @@ PetscErrorCode L_2Error(DA da, Vec fVec, double *error, AppCtx *user)
         phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
         phi[1] = quadPoints[q*2];
         phi[2] = quadPoints[q*2+1];
-        u = uLocal[0]*phi[0]+ uLocal[1]*phi[1] + uLocal[3]*phi[2];
+        u = uLocal[2]*phi[0] + uLocal[3]*phi[1] + uLocal[1]*phi[2];
         x = (1.0 - quadPoints[q*2] + i)*hx;
         y = (1.0 - quadPoints[q*2+1] + j)*hy;
         ierr = ExactSolution(x, y, &uExact);CHKERRQ(ierr);
