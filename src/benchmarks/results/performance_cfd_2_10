@@ -1,5 +1,5 @@
 
- mpirun -np 1 ex10 -f0 ~/matrices/medium -f1 ~/matrices/cfd.2.10 -pc_type ilu -ksp_gmres_unmodifiedgramschmidt -optionsleft -matload_type seqbaij -matload_ignore_info -matload_block_size 5 -log_summary
+mpirun -np 1 ex10 -f0 ~/datafiles/matrices/medium -f1 ~/datafiles/matrices/cfd.2.10 -pc_type ilu -ksp_gmres_unmodifiedgramschmidt -optionsleft -matload_type seqbaij -matload_ignore_info -matload_block_size 5 -log_summary
 
 ************************************************************************************************************************
 ex10 on a rs6000 named quad001 with 1 processor, by petsc Wed May 20 13:43:00 1998(SP2 with Power2 Superchip, 2 memory cards)
