@@ -40,6 +40,51 @@ void TOPS::Unstructured::Matrix_impl::_load() {
 
 // user-defined non-static methods:
 /**
+ * Method:  set[Point]
+ */
+void
+TOPS::Unstructured::Matrix_impl::set (
+  /* in */ int32_t row,
+  /* in */ int32_t column,
+  /* in */ ::sidl::array<double> values ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Unstructured.Matrix.setPoint)
+  // Insert-Code-Here {TOPS.Unstructured.Matrix.setPoint} (set method)
+  // DO-NOT-DELETE splicer.end(TOPS.Unstructured.Matrix.setPoint)
+}
+
+/**
+ * Method:  set[Row]
+ */
+void
+TOPS::Unstructured::Matrix_impl::set (
+  /* in */ int32_t row,
+  /* in */ ::sidl::array<int32_t> columns,
+  /* in */ ::sidl::array<double> values ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Unstructured.Matrix.setRow)
+  // Insert-Code-Here {TOPS.Unstructured.Matrix.setRow} (set method)
+  // DO-NOT-DELETE splicer.end(TOPS.Unstructured.Matrix.setRow)
+}
+
+/**
+ * Method:  set[Column]
+ */
+void
+TOPS::Unstructured::Matrix_impl::set (
+  /* in */ ::sidl::array<int32_t> rows,
+  /* in */ int32_t column,
+  /* in */ ::sidl::array<double> values ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Unstructured.Matrix.setColumn)
+  // Insert-Code-Here {TOPS.Unstructured.Matrix.setColumn} (set method)
+  // DO-NOT-DELETE splicer.end(TOPS.Unstructured.Matrix.setColumn)
+}
+
+/**
  * Method:  set[]
  */
 void
@@ -52,6 +97,20 @@ throw ()
   // DO-NOT-DELETE splicer.begin(TOPS.Unstructured.Matrix.set)
   MatSetValuesLocal(this->mat,rows.length(0),rows.first(),columns.length(0),columns.first(),values.first(),ADD_VALUES);
   // DO-NOT-DELETE splicer.end(TOPS.Unstructured.Matrix.set)
+}
+
+/**
+ * Method:  apply[]
+ */
+void
+TOPS::Unstructured::Matrix_impl::apply (
+  /* in */ ::sidl::array<double> x,
+  /* in */ ::sidl::array<double> y ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Unstructured.Matrix.apply)
+  // Insert-Code-Here {TOPS.Unstructured.Matrix.apply} (apply method)
+  // DO-NOT-DELETE splicer.end(TOPS.Unstructured.Matrix.apply)
 }
 
 /**

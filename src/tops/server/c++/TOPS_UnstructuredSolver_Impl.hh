@@ -185,6 +185,12 @@ namespace TOPS {
     /**
      * user defined non-static method.
      */
+    ::sidl::array<int32_t>
+    getGhostPoints() throw () 
+    ;
+    /**
+     * user defined non-static method.
+     */
     void
     setPreallocation (
       /* in */ int32_t d,

@@ -173,7 +173,10 @@ throw ()
   PetscErrorCode ierr;
 
   if (!this->dmmg) {
-    this->system.initializeOnce();
+    TOPS::System::Initialize::Once once = (TOPS::System::Initialize::Once)this->system;
+    if (once._not_nil()) {    
+      once.initializeOnce();
+    }
     // create DMMG object 
     DMMGCreate(PETSC_COMM_WORLD,1,(void*)&this->self,&this->dmmg);
     DMMGSetDM(this->dmmg,(DM)this->slice);
@@ -188,7 +191,10 @@ throw ()
       ierr = DMMGSetInitialGuess(this->dmmg, FormInitialGuess);
     }
   }
-  this->system.initializeEverySolve();
+  TOPS::System::Initialize::EverySolve every = (TOPS::System::Initialize::EverySolve)this->system;
+  if (every._not_nil()) {    
+    every.initializeEverySolve();
+  }
   DMMGSolve(this->dmmg);
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.solve)
 }
@@ -269,6 +275,19 @@ throw ()
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setGhostPoints)
   SlicedSetGhosts(this->slice,this->bs,this->n,ghosts.length(0),ghosts.first());
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setGhostPoints)
+}
+
+/**
+ * Method:  getGhostPoints[]
+ */
+::sidl::array<int32_t>
+TOPS::UnstructuredSolver_impl::getGhostPoints ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getGhostPoints)
+  // Insert-Code-Here {TOPS.UnstructuredSolver.getGhostPoints} (getGhostPoints method)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getGhostPoints)
 }
 
 /**

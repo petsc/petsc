@@ -91,9 +91,56 @@ namespace TOPS {
        */
       void
       set (
+        /* in */ int32_t row,
+        /* in */ int32_t column,
+        /* in */ ::sidl::array<double> values
+      )
+      throw () 
+      ;
+
+      /**
+       * user defined non-static method.
+       */
+      void
+      set (
+        /* in */ int32_t row,
+        /* in */ ::sidl::array<int32_t> columns,
+        /* in */ ::sidl::array<double> values
+      )
+      throw () 
+      ;
+
+      /**
+       * user defined non-static method.
+       */
+      void
+      set (
+        /* in */ ::sidl::array<int32_t> rows,
+        /* in */ int32_t column,
+        /* in */ ::sidl::array<double> values
+      )
+      throw () 
+      ;
+
+      /**
+       * user defined non-static method.
+       */
+      void
+      set (
         /* in */ ::sidl::array<int32_t> rows,
         /* in */ ::sidl::array<int32_t> columns,
         /* in */ ::sidl::array<double> values
+      )
+      throw () 
+      ;
+
+      /**
+       * user defined non-static method.
+       */
+      void
+      apply (
+        /* in */ ::sidl::array<double> x,
+        /* in */ ::sidl::array<double> y
       )
       throw () 
       ;

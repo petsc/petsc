@@ -53,32 +53,6 @@ throw ()
 }
 
 /**
- * Method:  initializeOnce[]
- */
-void
-Ex1::System_impl::initializeOnce ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(Ex1.System.initializeOnce)
-  
-  // DO-NOT-DELETE splicer.end(Ex1.System.initializeOnce)
-}
-
-/**
- * Method:  initializeEverySolve[]
- */
-void
-Ex1::System_impl::initializeEverySolve ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(Ex1.System.initializeEverySolve)
-  // Insert-Code-Here {Ex1.System.initializeEverySolve} (initializeEverySolve method)
-  // DO-NOT-DELETE splicer.end(Ex1.System.initializeEverySolve)
-}
-
-/**
  * Method:  computeResidual[]
  */
 void

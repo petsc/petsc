@@ -53,32 +53,6 @@ throw ()
 }
 
 /**
- * Method:  initializeOnce[]
- */
-void
-Ex3::System_impl::initializeOnce ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(Ex3.System.initializeOnce)
-  this->solver.setDimen(3);
-  // DO-NOT-DELETE splicer.end(Ex3.System.initializeOnce)
-}
-
-/**
- * Method:  initializeEverySolve[]
- */
-void
-Ex3::System_impl::initializeEverySolve ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(Ex3.System.initializeEverySolve)
-  // Insert-Code-Here {Ex3.System.initializeEverySolve} (initializeEverySolve method)
-  // DO-NOT-DELETE splicer.end(Ex3.System.initializeEverySolve)
-}
-
-/**
  * Method:  computeMatrix[]
  */
 void
@@ -134,6 +108,19 @@ throw ()
     }
   }
   // DO-NOT-DELETE splicer.end(Ex3.System.computeMatrix)
+}
+
+/**
+ * Method:  initializeOnce[]
+ */
+void
+Ex3::System_impl::initializeOnce ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(Ex3.System.initializeOnce)
+  this->solver.setDimen(3);
+  // DO-NOT-DELETE splicer.end(Ex3.System.initializeOnce)
 }
 
 /**

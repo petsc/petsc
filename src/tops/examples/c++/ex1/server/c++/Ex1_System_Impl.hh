@@ -105,18 +105,6 @@ namespace Ex1 {
      * user defined non-static method.
      */
     void
-    initializeOnce() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    void
-    initializeEverySolve() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    void
     computeResidual (
       /* in */ ::sidl::array<double> x,
       /* in */ ::sidl::array<double> f
