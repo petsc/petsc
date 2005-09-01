@@ -95,7 +95,7 @@ package TOPS version 0.0.0 {
 
   //  ---------- Interfaces for system on unstructured grid
 
-  package Sliced version 0.0.0 {
+  package Unstructured version 0.0.0 {
 
     class Matrix implements-all TOPS.Matrix {
       // set a block of nonzeros
@@ -112,5 +112,5 @@ package TOPS version 0.0.0 {
       void setPreallocation[s](in array<int,1> d,in array<int,1> od);
     }
   }
-  class SlicedSolver implements-all TOPS.Sliced.Solver, gov.cca.Component {}
+  class UnstructuredSolver implements-all TOPS.Unstructured.Solver, gov.cca.Component {}
 }

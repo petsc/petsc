@@ -1,32 +1,32 @@
 // 
-// File:          TOPS_SlicedSolver_Impl.hh
-// Symbol:        TOPS.SlicedSolver-v0.0.0
+// File:          TOPS_UnstructuredSolver_Impl.hh
+// Symbol:        TOPS.UnstructuredSolver-v0.0.0
 // Symbol Type:   class
 // Babel Version: 0.10.8
-// Description:   Server-side implementation for TOPS.SlicedSolver
+// Description:   Server-side implementation for TOPS.UnstructuredSolver
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
 // babel-version = 0.10.8
 // 
 
-#ifndef included_TOPS_SlicedSolver_Impl_hh
-#define included_TOPS_SlicedSolver_Impl_hh
+#ifndef included_TOPS_UnstructuredSolver_Impl_hh
+#define included_TOPS_UnstructuredSolver_Impl_hh
 
 #ifndef included_sidl_cxx_hh
 #include "sidl_cxx.hh"
 #endif
-#ifndef included_TOPS_SlicedSolver_IOR_h
-#include "TOPS_SlicedSolver_IOR.h"
+#ifndef included_TOPS_UnstructuredSolver_IOR_h
+#include "TOPS_UnstructuredSolver_IOR.h"
 #endif
 // 
 // Includes for all method dependencies.
 // 
-#ifndef included_TOPS_SlicedSolver_hh
-#include "TOPS_SlicedSolver.hh"
-#endif
 #ifndef included_TOPS_System_System_hh
 #include "TOPS_System_System.hh"
+#endif
+#ifndef included_TOPS_UnstructuredSolver_hh
+#include "TOPS_UnstructuredSolver.hh"
 #endif
 #ifndef included_gov_cca_CCAException_hh
 #include "gov_cca_CCAException.hh"
@@ -42,53 +42,53 @@
 #endif
 
 
-// DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver._includes)
+// DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._includes)
 #include "TOPS.hh"
 #include "petscdmmg.h"
-// DO-NOT-DELETE splicer.end(TOPS.SlicedSolver._includes)
+// DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._includes)
 
 namespace TOPS { 
 
   /**
-   * Symbol "TOPS.SlicedSolver" (version 0.0.0)
+   * Symbol "TOPS.UnstructuredSolver" (version 0.0.0)
    */
-  class SlicedSolver_impl
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver._inherits)
-  // Insert-Code-Here {TOPS.SlicedSolver._inherits} (optional inheritance here)
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver._inherits)
+  class UnstructuredSolver_impl
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._inherits)
+  // Insert-Code-Here {TOPS.UnstructuredSolver._inherits} (optional inheritance here)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._inherits)
   {
 
   private:
     // Pointer back to IOR.
     // Use this to dispatch back through IOR vtable.
-    SlicedSolver self;
+    UnstructuredSolver self;
 
-    // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver._implementation)
+    // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._implementation)
     DMMG                 *dmmg;
     ::Sliced             slice;
     TOPS::System::System system;
     int                  startedpetsc;
     gov::cca::Services   myServices;
     int                  bs,n,Nghosted;
-    // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver._implementation)
+    // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._implementation)
 
   private:
     // private default constructor (required)
-    SlicedSolver_impl() 
+    UnstructuredSolver_impl() 
     {} 
 
   public:
     // sidl constructor (required)
     // Note: alternate Skel constructor doesn't call addref()
     // (fixes bug #275)
-    SlicedSolver_impl( struct TOPS_SlicedSolver__object * s ) : self(s,
-      true) { _ctor(); }
+    UnstructuredSolver_impl( struct TOPS_UnstructuredSolver__object * s ) : 
+      self(s,true) { _ctor(); }
 
     // user defined construction
     void _ctor();
 
     // virtual destructor (required)
-    virtual ~SlicedSolver_impl() { _dtor(); }
+    virtual ~UnstructuredSolver_impl() { _dtor(); }
 
     // user defined destruction
     void _dtor();
@@ -230,12 +230,12 @@ namespace TOPS {
       ::gov::cca::CCAException
     );
 
-  };  // end class SlicedSolver_impl
+  };  // end class UnstructuredSolver_impl
 
 } // end namespace TOPS
 
-// DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver._misc)
-// Insert-Code-Here {TOPS.SlicedSolver._misc} (miscellaneous things)
-// DO-NOT-DELETE splicer.end(TOPS.SlicedSolver._misc)
+// DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._misc)
+// Insert-Code-Here {TOPS.UnstructuredSolver._misc} (miscellaneous things)
+// DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._misc)
 
 #endif

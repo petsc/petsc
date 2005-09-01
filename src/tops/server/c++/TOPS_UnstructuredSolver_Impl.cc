@@ -1,18 +1,18 @@
 // 
-// File:          TOPS_SlicedSolver_Impl.cc
-// Symbol:        TOPS.SlicedSolver-v0.0.0
+// File:          TOPS_UnstructuredSolver_Impl.cc
+// Symbol:        TOPS.UnstructuredSolver-v0.0.0
 // Symbol Type:   class
 // Babel Version: 0.10.8
-// Description:   Server-side implementation for TOPS.SlicedSolver
+// Description:   Server-side implementation for TOPS.UnstructuredSolver
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
 // babel-version = 0.10.8
 // 
-#include "TOPS_SlicedSolver_Impl.hh"
+#include "TOPS_UnstructuredSolver_Impl.hh"
 
-// DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver._includes)
-#include "TOPS_Sliced_Matrix_Impl.hh"
+// DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._includes)
+#include "TOPS_Unstructured_Matrix_Impl.hh"
 static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
 {
   PetscFunctionBegin;
@@ -28,16 +28,16 @@ static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
 static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
 {
   PetscFunctionBegin;
-  TOPS::SlicedSolver *solver = (TOPS::SlicedSolver*) dmmg->user;
+  TOPS::UnstructuredSolver *solver = (TOPS::UnstructuredSolver*) dmmg->user;
   TOPS::System::Compute::Matrix system = (TOPS::System::Compute::Matrix) solver->getSystem();
-  TOPS::Sliced::Matrix matrix1 = TOPS::Sliced::Matrix::_create();
-  TOPS::Sliced::Matrix matrix2 = TOPS::Sliced::Matrix::_create();
+  TOPS::Unstructured::Matrix matrix1 = TOPS::Unstructured::Matrix::_create();
+  TOPS::Unstructured::Matrix matrix2 = TOPS::Unstructured::Matrix::_create();
 
 #define GetImpl(A,b) (!(A)b) ? 0 : reinterpret_cast<A ## _impl*>(((A) b)._get_ior()->d_data)
 
   // currently no support for dof > 1
-  TOPS::Sliced::Matrix_impl *imatrix1 = GetImpl(TOPS::Sliced::Matrix,matrix1);
-  TOPS::Sliced::Matrix_impl *imatrix2 = GetImpl(TOPS::Sliced::Matrix,matrix2);
+  TOPS::Unstructured::Matrix_impl *imatrix1 = GetImpl(TOPS::Unstructured::Matrix,matrix1);
+  TOPS::Unstructured::Matrix_impl *imatrix2 = GetImpl(TOPS::Unstructured::Matrix,matrix2);
   imatrix1->mat = J;
   imatrix2->mat = B;
 
@@ -54,7 +54,7 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
 static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 {
   PetscFunctionBegin;
-  TOPS::SlicedSolver *solver = (TOPS::SlicedSolver*) dmmg->user;
+  TOPS::UnstructuredSolver *solver = (TOPS::UnstructuredSolver*) dmmg->user;
   TOPS::System::Compute::RightHandSide system = (TOPS::System::Compute::RightHandSide) solver->getSystem();
   double *uu;
   Vec local;
@@ -73,31 +73,31 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
   VecGhostUpdateEnd(f,ADD_VALUES,SCATTER_REVERSE);
   PetscFunctionReturn(0);
 }
-// DO-NOT-DELETE splicer.end(TOPS.SlicedSolver._includes)
+// DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._includes)
 
 // user-defined constructor.
-void TOPS::SlicedSolver_impl::_ctor() {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver._ctor)
+void TOPS::UnstructuredSolver_impl::_ctor() {
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._ctor)
   this->dmmg = PETSC_NULL;
   this->bs   = 1;
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver._ctor)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._ctor)
 }
 
 // user-defined destructor.
-void TOPS::SlicedSolver_impl::_dtor() {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver._dtor)
+void TOPS::UnstructuredSolver_impl::_dtor() {
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._dtor)
   if (this->dmmg) {DMMGDestroy(this->dmmg);}
   if (this->startedpetsc) {
     PetscFinalize();
   }
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver._dtor)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._dtor)
 }
 
 // static class initializer.
-void TOPS::SlicedSolver_impl::_load() {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver._load)
-  // Insert-Code-Here {TOPS.SlicedSolver._load} (class initialization)
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver._load)
+void TOPS::UnstructuredSolver_impl::_load() {
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._load)
+  // Insert-Code-Here {TOPS.UnstructuredSolver._load} (class initialization)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._load)
 }
 
 // user-defined static methods: (none)
@@ -107,38 +107,38 @@ void TOPS::SlicedSolver_impl::_load() {
  * Method:  setSystem[]
  */
 void
-TOPS::SlicedSolver_impl::setSystem (
+TOPS::UnstructuredSolver_impl::setSystem (
   /* in */ ::TOPS::System::System system ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver.setSystem)
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setSystem)
   this->system = system;
   system.setSolver(this->self);
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver.setSystem)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setSystem)
 }
 
 /**
  * Method:  getSystem[]
  */
 ::TOPS::System::System
-TOPS::SlicedSolver_impl::getSystem ()
+TOPS::UnstructuredSolver_impl::getSystem ()
 throw () 
 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver.getSystem)
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getSystem)
   return this->system;
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver.getSystem)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getSystem)
 }
 
 /**
  * Method:  Initialize[]
  */
 void
-TOPS::SlicedSolver_impl::Initialize (
+TOPS::UnstructuredSolver_impl::Initialize (
   /* in */ ::sidl::array< ::std::string> args ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver.Initialize)
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.Initialize)
   PetscTruth initialized;
   PetscInitialized(&initialized);
   if (initialized) {
@@ -158,18 +158,18 @@ throw ()
   }
   int    ierr = PetscInitialize(&argc,&argv,0,0);
   SlicedCreate(PETSC_COMM_WORLD,&this->slice);
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver.Initialize)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.Initialize)
 }
 
 /**
  * Method:  solve[]
  */
 void
-TOPS::SlicedSolver_impl::solve ()
+TOPS::UnstructuredSolver_impl::solve ()
 throw () 
 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver.solve)
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.solve)
   PetscErrorCode ierr;
 
   if (!this->dmmg) {
@@ -190,113 +190,113 @@ throw ()
   }
   this->system.initializeEverySolve();
   DMMGSolve(this->dmmg);
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver.solve)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.solve)
 }
 
 /**
  * Method:  setBlockSize[]
  */
 void
-TOPS::SlicedSolver_impl::setBlockSize (
+TOPS::UnstructuredSolver_impl::setBlockSize (
   /* in */ int32_t bs ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver.setBlockSize)
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setBlockSize)
   this->bs = bs;
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver.setBlockSize)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setBlockSize)
 }
 
 /**
  * Method:  getSolution[]
  */
 ::sidl::array<double>
-TOPS::SlicedSolver_impl::getSolution ()
+TOPS::UnstructuredSolver_impl::getSolution ()
 throw () 
 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver.getSolution)
-  // Insert-Code-Here {TOPS.SlicedSolver.getSolution} (getSolution method)
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver.getSolution)
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getSolution)
+  // Insert-Code-Here {TOPS.UnstructuredSolver.getSolution} (getSolution method)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getSolution)
 }
 
 /**
  * Method:  setSolution[]
  */
 void
-TOPS::SlicedSolver_impl::setSolution (
+TOPS::UnstructuredSolver_impl::setSolution (
   /* in */ ::sidl::array<double> location ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver.setSolution)
-  // Insert-Code-Here {TOPS.SlicedSolver.setSolution} (setSolution method)
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver.setSolution)
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setSolution)
+  // Insert-Code-Here {TOPS.UnstructuredSolver.setSolution} (setSolution method)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setSolution)
 }
 
 /**
  * Method:  setLocalSize[]
  */
 void
-TOPS::SlicedSolver_impl::setLocalSize (
+TOPS::UnstructuredSolver_impl::setLocalSize (
   /* in */ int32_t m ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver.setLocalSize)
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setLocalSize)
   this->n = m;
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver.setLocalSize)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setLocalSize)
 }
 
 /**
  * Method:  getLocalSize[]
  */
 int32_t
-TOPS::SlicedSolver_impl::getLocalSize ()
+TOPS::UnstructuredSolver_impl::getLocalSize ()
 throw () 
 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver.getLocalSize)
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getLocalSize)
   return this->n;
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver.getLocalSize)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getLocalSize)
 }
 
 /**
  * Method:  setGhostPoints[]
  */
 void
-TOPS::SlicedSolver_impl::setGhostPoints (
+TOPS::UnstructuredSolver_impl::setGhostPoints (
   /* in */ ::sidl::array<int32_t> ghosts ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver.setGhostPoints)
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setGhostPoints)
   SlicedSetGhosts(this->slice,this->bs,this->n,ghosts.length(0),ghosts.first());
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver.setGhostPoints)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setGhostPoints)
 }
 
 /**
  * Method:  setPreallocation[]
  */
 void
-TOPS::SlicedSolver_impl::setPreallocation (
+TOPS::UnstructuredSolver_impl::setPreallocation (
   /* in */ int32_t d,
   /* in */ int32_t od ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver.setPreallocation)
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setPreallocation)
   SlicedSetPreallocation(this->slice,d,PETSC_NULL,od,PETSC_NULL);
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver.setPreallocation)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setPreallocation)
 }
 
 /**
  * Method:  setPreallocation[s]
  */
 void
-TOPS::SlicedSolver_impl::setPreallocation (
+TOPS::UnstructuredSolver_impl::setPreallocation (
   /* in */ ::sidl::array<int32_t> d,
   /* in */ ::sidl::array<int32_t> od ) 
 throw () 
 {
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver.setPreallocations)
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setPreallocations)
   SlicedSetPreallocation(this->slice,0,d.first(),0,od.first());
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver.setPreallocations)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setPreallocations)
 }
 
 /**
@@ -317,18 +317,18 @@ throw ()
  * setServices.
  */
 void
-TOPS::SlicedSolver_impl::setServices (
+TOPS::UnstructuredSolver_impl::setServices (
   /* in */ ::gov::cca::Services services ) 
 throw ( 
   ::gov::cca::CCAException
 ){
-  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver.setServices)
-  // Insert-Code-Here {TOPS.SlicedSolver.setServices} (setServices method)
-  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver.setServices)
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setServices)
+  // Insert-Code-Here {TOPS.UnstructuredSolver.setServices} (setServices method)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setServices)
 }
 
 
-// DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver._misc)
-// Insert-Code-Here {TOPS.SlicedSolver._misc} (miscellaneous code)
-// DO-NOT-DELETE splicer.end(TOPS.SlicedSolver._misc)
+// DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._misc)
+// Insert-Code-Here {TOPS.UnstructuredSolver._misc} (miscellaneous code)
+// DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._misc)
 
