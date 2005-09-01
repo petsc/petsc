@@ -22,7 +22,7 @@
 #endif
 
 EXTERN_C_BEGIN
-static void (PETSC_STDCALL *theirmat)(DMMG*,Mat*,PetscErrorCode*);
+static void (PETSC_STDCALL *theirmat)(DMMG*,Mat*,Mat*,PetscErrorCode*);
 EXTERN_C_END
 
 static PetscErrorCode ourrhs(DMMG dmmg,Vec vec)
