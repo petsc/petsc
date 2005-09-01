@@ -1033,6 +1033,7 @@ PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat A)
   PetscInt       *diag,*jj = a->j,i;
 
   PetscFunctionBegin;
+  if (A->m > 0 && !jj) SETERRQ(PETSC_ERR_PLIB,"Matrix has no entries therefor is missing diagonal");
   ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
   diag = a->diag;
   for (i=0; i<A->m; i++) {

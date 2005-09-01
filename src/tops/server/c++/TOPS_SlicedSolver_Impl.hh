@@ -1,29 +1,29 @@
 // 
-// File:          TOPS_StructuredSolver_Impl.hh
-// Symbol:        TOPS.StructuredSolver-v0.0.0
+// File:          TOPS_SlicedSolver_Impl.hh
+// Symbol:        TOPS.SlicedSolver-v0.0.0
 // Symbol Type:   class
 // Babel Version: 0.10.8
-// Description:   Server-side implementation for TOPS.StructuredSolver
+// Description:   Server-side implementation for TOPS.SlicedSolver
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
 // babel-version = 0.10.8
 // 
 
-#ifndef included_TOPS_StructuredSolver_Impl_hh
-#define included_TOPS_StructuredSolver_Impl_hh
+#ifndef included_TOPS_SlicedSolver_Impl_hh
+#define included_TOPS_SlicedSolver_Impl_hh
 
 #ifndef included_sidl_cxx_hh
 #include "sidl_cxx.hh"
 #endif
-#ifndef included_TOPS_StructuredSolver_IOR_h
-#include "TOPS_StructuredSolver_IOR.h"
+#ifndef included_TOPS_SlicedSolver_IOR_h
+#include "TOPS_SlicedSolver_IOR.h"
 #endif
 // 
 // Includes for all method dependencies.
 // 
-#ifndef included_TOPS_StructuredSolver_hh
-#include "TOPS_StructuredSolver.hh"
+#ifndef included_TOPS_SlicedSolver_hh
+#include "TOPS_SlicedSolver.hh"
 #endif
 #ifndef included_TOPS_System_System_hh
 #include "TOPS_System_System.hh"
@@ -42,55 +42,53 @@
 #endif
 
 
-// DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._includes)
-#include "petscdmmg.h"
+// DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver._includes)
 #include "TOPS.hh"
-// DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._includes)
+#include "petscdmmg.h"
+// DO-NOT-DELETE splicer.end(TOPS.SlicedSolver._includes)
 
 namespace TOPS { 
 
   /**
-   * Symbol "TOPS.StructuredSolver" (version 0.0.0)
+   * Symbol "TOPS.SlicedSolver" (version 0.0.0)
    */
-  class StructuredSolver_impl
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._inherits)
-  // Insert-Code-Here {TOPS.StructuredSolver._inherits} (optional inheritance here)
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._inherits)
+  class SlicedSolver_impl
+  // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver._inherits)
+  // Insert-Code-Here {TOPS.SlicedSolver._inherits} (optional inheritance here)
+  // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver._inherits)
   {
 
   private:
     // Pointer back to IOR.
     // Use this to dispatch back through IOR vtable.
-    StructuredSolver self;
+    SlicedSolver self;
 
-    // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._implementation)
+    // DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver._implementation)
     DMMG                 *dmmg;
-    DA                   da;
-    int                  lengths[4],m,n,p,dim,s,levels,bs;
-    DAStencilType        stencil_type;
-    DAPeriodicType       wrap;
+    ::Sliced             slice;
     TOPS::System::System system;
     int                  startedpetsc;
     gov::cca::Services   myServices;
-    // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._implementation)
+    int                  bs,n,Nghosted;
+    // DO-NOT-DELETE splicer.end(TOPS.SlicedSolver._implementation)
 
   private:
     // private default constructor (required)
-    StructuredSolver_impl() 
+    SlicedSolver_impl() 
     {} 
 
   public:
     // sidl constructor (required)
     // Note: alternate Skel constructor doesn't call addref()
     // (fixes bug #275)
-    StructuredSolver_impl( struct TOPS_StructuredSolver__object * s ) : self(s,
+    SlicedSolver_impl( struct TOPS_SlicedSolver__object * s ) : self(s,
       true) { _ctor(); }
 
     // user defined construction
     void _ctor();
 
     // virtual destructor (required)
-    virtual ~StructuredSolver_impl() { _dtor(); }
+    virtual ~SlicedSolver_impl() { _dtor(); }
 
     // user defined destruction
     void _dtor();
@@ -161,46 +159,9 @@ namespace TOPS {
     /**
      * user defined non-static method.
      */
-    int32_t
-    dimen() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    int32_t
-    length (
-      /* in */ int32_t a
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
     void
-    setDimen (
-      /* in */ int32_t dim
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    setLength (
-      /* in */ int32_t a,
-      /* in */ int32_t l
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    setStencilWidth (
-      /* in */ int32_t width
+    setLocalSize (
+      /* in */ int32_t m
     )
     throw () 
     ;
@@ -209,14 +170,36 @@ namespace TOPS {
      * user defined non-static method.
      */
     int32_t
-    getStencilWidth() throw () 
+    getLocalSize() throw () 
     ;
     /**
      * user defined non-static method.
      */
     void
-    setLevels (
-      /* in */ int32_t levels
+    setGhostPoints (
+      /* in */ ::sidl::array<int32_t> ghosts
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    setPreallocation (
+      /* in */ int32_t d,
+      /* in */ int32_t od
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    setPreallocation (
+      /* in */ ::sidl::array<int32_t> d,
+      /* in */ ::sidl::array<int32_t> od
     )
     throw () 
     ;
@@ -247,12 +230,12 @@ namespace TOPS {
       ::gov::cca::CCAException
     );
 
-  };  // end class StructuredSolver_impl
+  };  // end class SlicedSolver_impl
 
 } // end namespace TOPS
 
-// DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._misc)
-// Insert-Code-Here {TOPS.StructuredSolver._misc} (miscellaneous things)
-// DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._misc)
+// DO-NOT-DELETE splicer.begin(TOPS.SlicedSolver._misc)
+// Insert-Code-Here {TOPS.SlicedSolver._misc} (miscellaneous things)
+// DO-NOT-DELETE splicer.end(TOPS.SlicedSolver._misc)
 
 #endif

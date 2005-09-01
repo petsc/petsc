@@ -15,7 +15,7 @@ PETSC_EXTERN_CXX_BEGIN
 
   Concepts: distributed array
 
-.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate()
+.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate(), DM, VecPack
 S*/
 typedef struct _p_DA* DA;
 
@@ -408,7 +408,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DACreatePF(DA,PF*);
 
   Concepts: multi-component, LNKS solvers
 
-.seealso:  VecPackCreate(), VecPackDestroy()
+.seealso:  VecPackCreate(), VecPackDestroy(), DM
 S*/
 typedef struct _p_VecPack* VecPack;
 
@@ -428,6 +428,27 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackCreateGlobalVector(VecPack,Vec*)
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetGlobalIndices(VecPack,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackRefine(VecPack,MPI_Comm,VecPack*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetInterpolation(VecPack,VecPack,Mat*,Vec*);
+
+/*S
+     Slice - Abstract PETSc object that manages distributed field data for a simple unstructured matrix
+
+   Level: beginner
+
+  Concepts: distributed array
+
+.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate(), VecPackCreate(), VecPack
+S*/
+typedef struct _p_Sliced* Sliced;
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedView(Sliced,PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedCreate(MPI_Comm,Sliced*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedDestroy(Sliced);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedCreateGlobalVector(Sliced,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedGetMatrix(Sliced, MatType,Mat*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedGetGlobalIndices(Sliced,PetscInt*[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetPreallocation(Sliced,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetGhosts(Sliced,PetscInt,PetscInt,PetscInt,const PetscInt[]);
+
 
 /*S
      DM - Abstract PETSc object that manages an abstract grid object

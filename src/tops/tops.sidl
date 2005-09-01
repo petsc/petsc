@@ -1,6 +1,7 @@
 
 package TOPS version 0.0.0 {
 
+  // For passing matrix values from application to solver 
   interface Matrix {
       void   zero();
   }
@@ -95,23 +96,21 @@ package TOPS version 0.0.0 {
   //  ---------- Interfaces for system on unstructured grid
 
   package Sliced version 0.0.0 {
+
+    class Matrix implements-all TOPS.Matrix {
+      // set a block of nonzeros
+	void   set(in array<int,1> rows,in array<int,1> columns,in array<double,2> values);
+    }
+
     //   The data in the vectors is linearly sliced into one part per process
     interface Solver extends TOPS.Solver {
-      void setLocalRowSize(in int m);
-      int  getLocalRowSize();
-      void setGlobalRowSize(in int M);
-      int  getGlobalRowSize();
-      void setLocalColumnSize(in int n);
-      int  getLocalColumnSize();
-      void setGlobalColumnSize(in int N);
-      int  getGlobalColumnSize();
+      void setLocalSize(in int m);
+      int  getLocalSize();
 
       void setGhostPoints(in array<int,1> ghosts);
       void setPreallocation(in int d,in int od);
       void setPreallocation[s](in array<int,1> d,in array<int,1> od);
     }
   }
-
-  // These are the two solver components that come with TOPS by default
   class SlicedSolver implements-all TOPS.Sliced.Solver, gov.cca.Component {}
 }
