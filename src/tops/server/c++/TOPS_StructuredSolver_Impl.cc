@@ -133,8 +133,12 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   solver->setLength(2,mz);
 
   system.computeMatrix(matrix1,matrix2);
-  MatAssemblyBegin(dmmg->B,MAT_FINAL_ASSEMBLY);
-  MatAssemblyEnd(dmmg->B,MAT_FINAL_ASSEMBLY);
+  MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);
+  MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);
+  if (J != B) {
+    MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);
+    MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);
+  }
   PetscFunctionReturn(0);
 }
 
