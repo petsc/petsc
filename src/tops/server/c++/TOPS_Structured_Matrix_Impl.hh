@@ -168,6 +168,17 @@ namespace TOPS {
        * user defined non-static method.
        */
       void
+      apply (
+        /* in */ ::sidl::array<double> x,
+        /* in */ ::sidl::array<double> y
+      )
+      throw () 
+      ;
+
+      /**
+       * user defined non-static method.
+       */
+      void
       zero() throw () 
       ;
     };  // end class Matrix_impl

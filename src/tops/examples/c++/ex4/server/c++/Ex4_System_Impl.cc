@@ -53,39 +53,6 @@ throw ()
 }
 
 /**
- * Method:  initializeOnce[]
- */
-void
-Ex4::System_impl::initializeOnce ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(Ex4.System.initializeOnce)
-  this->solver.setLocalSize(this->n);
-  int rank; MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  int size; MPI_Comm_size(MPI_COMM_WORLD,&size);
-  int start = this->n*rank;
-  int cnt = 0,g[2];
-  if (rank) g[cnt++] = start-1;
-  if (rank != size-1) g[cnt++] = start+this->n;
-  this->solver.setGhostPoints(sidl::array<int>::create1d(cnt,g));
-  // DO-NOT-DELETE splicer.end(Ex4.System.initializeOnce)
-}
-
-/**
- * Method:  initializeEverySolve[]
- */
-void
-Ex4::System_impl::initializeEverySolve ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(Ex4.System.initializeEverySolve)
-  // Insert-Code-Here {Ex4.System.initializeEverySolve} (initializeEverySolve method)
-  // DO-NOT-DELETE splicer.end(Ex4.System.initializeEverySolve)
-}
-
-/**
  * Method:  computeMatrix[]
  */
 void
@@ -135,6 +102,26 @@ throw ()
 }
 
 /**
+ * Method:  initializeOnce[]
+ */
+void
+Ex4::System_impl::initializeOnce ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(Ex4.System.initializeOnce)
+  this->solver.setLocalSize(this->n);
+  int rank; MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  int size; MPI_Comm_size(MPI_COMM_WORLD,&size);
+  int start = this->n*rank;
+  int cnt = 0,g[2];
+  if (rank) g[cnt++] = start-1;
+  if (rank != size-1) g[cnt++] = start+this->n;
+  this->solver.setGhostPoints(sidl::array<int>::create1d(cnt,g));
+  // DO-NOT-DELETE splicer.end(Ex4.System.initializeOnce)
+}
+
+/**
  * Method:  computeRightHandSide[]
  */
 void
@@ -160,4 +147,3 @@ throw ()
 // DO-NOT-DELETE splicer.begin(Ex4.System._misc)
 // Insert-Code-Here {Ex4.System._misc} (miscellaneous code)
 // DO-NOT-DELETE splicer.end(Ex4.System._misc)
-

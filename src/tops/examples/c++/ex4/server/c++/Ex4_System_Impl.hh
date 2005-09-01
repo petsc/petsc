@@ -104,18 +104,6 @@ namespace Ex4 {
      * user defined non-static method.
      */
     void
-    initializeOnce() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    void
-    initializeEverySolve() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    void
     computeMatrix (
       /* in */ ::TOPS::Matrix J,
       /* in */ ::TOPS::Matrix B
@@ -123,6 +111,12 @@ namespace Ex4 {
     throw () 
     ;
 
+    /**
+     * user defined non-static method.
+     */
+    void
+    initializeOnce() throw () 
+    ;
     /**
      * user defined non-static method.
      */

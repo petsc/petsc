@@ -270,7 +270,10 @@ throw ()
   PetscErrorCode ierr;
 
   if (!this->dmmg) {
-    this->system.initializeOnce();
+    TOPS::System::Initialize::Once once = (TOPS::System::Initialize::Once)this->system;
+    if (once._not_nil()) {    
+      once.initializeOnce();
+    }
     // create DMMG object 
     DMMGCreate(PETSC_COMM_WORLD,this->levels,(void*)&this->self,&this->dmmg);
     DACreate(PETSC_COMM_WORLD,this->dim,this->wrap,this->stencil_type,this->lengths[0],this->lengths[1],this->lengths[2],this->m,this->n,
@@ -287,7 +290,10 @@ throw ()
       ierr = DMMGSetInitialGuess(this->dmmg, FormInitialGuess);
     }
   }
-  this->system.initializeEverySolve();
+  TOPS::System::Initialize::EverySolve every = (TOPS::System::Initialize::EverySolve)this->system;
+  if (every._not_nil()) {    
+    every.initializeEverySolve();
+  }
   DMMGSolve(this->dmmg);
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.solve)
 }

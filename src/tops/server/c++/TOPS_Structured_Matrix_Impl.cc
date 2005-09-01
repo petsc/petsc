@@ -157,6 +157,20 @@ throw ()
 }
 
 /**
+ * Method:  apply[]
+ */
+void
+TOPS::Structured::Matrix_impl::apply (
+  /* in */ ::sidl::array<double> x,
+  /* in */ ::sidl::array<double> y ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix.apply)
+  // Insert-Code-Here {TOPS.Structured.Matrix.apply} (apply method)
+  // DO-NOT-DELETE splicer.end(TOPS.Structured.Matrix.apply)
+}
+
+/**
  * Method:  zero[]
  */
 void
