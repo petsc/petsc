@@ -1394,7 +1394,7 @@ can also install additional packages that are used by the TOPS packages."""
         if result == "Cancel": sys.exit()
 
         options = []
-        packages = ["hypre (parallel preconditioners)","SuperLU_dist (parallel sparse direct solver)", "SuperLU","Sundials (parallel ODE integraters"]
+        packages = ["hypre (parallel preconditioners)","SuperLU_dist (parallel sparse direct solver)", "SuperLU","Sundials (parallel ODE integrators)"]
         reply = multchoicebox("Pick the optional TOPS packages to install. PETSc will \nalways be installed. \n\nNote: many of these packages are not portable\nfor all machines, hence select only the packages you truly need.",title, packages)
         for i in reply:
              i = i.lower().replace(' ','')
