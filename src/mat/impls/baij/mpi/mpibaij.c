@@ -1904,6 +1904,32 @@ PetscErrorCode MatSetUpPreallocation_MPIBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatRealPart_MPIBAIJ"
+PetscErrorCode MatRealPart_MPIBAIJ(Mat A)
+{
+  Mat_MPIBAIJ   *a = (Mat_MPIBAIJ*)A->data; 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;  
+  ierr = MatRealPart(a->A);CHKERRQ(ierr);
+  ierr = MatRealPart(a->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatImaginaryPart_MPIBAIJ"
+PetscErrorCode MatImaginaryPart_MPIBAIJ(Mat A)
+{
+  Mat_MPIBAIJ   *a = (Mat_MPIBAIJ*)A->data; 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;  
+  ierr = MatImaginaryPart(a->A);CHKERRQ(ierr);
+  ierr = MatImaginaryPart(a->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {
        MatSetValues_MPIBAIJ,
@@ -2004,7 +2030,16 @@ static struct _MatOps MatOps_Values = {
 /*95*/ 0,
        0,
        0,
-       0};
+       0,
+       0,
+/*100*/0,
+       0,
+       0,
+       0,
+       0,
+/*105*/0,
+       MatRealPart_MPIBAIJ,
+       MatImaginaryPart_MPIBAIJ};
 
 
 EXTERN_C_BEGIN

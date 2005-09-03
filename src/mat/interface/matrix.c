@@ -27,6 +27,68 @@ PetscInt    PETSCMAT_DLLEXPORT MatSetValue_Column = 0;
 PetscScalar PETSCMAT_DLLEXPORT MatSetValue_Value = 0.0;
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatRealPart"
+/*@
+   MatRealPart - Zeros out the imaginary part of the matrix
+
+   Collective on Mat
+
+   Input Parameters:
+.  mat - the matrix
+
+   Level: advanced
+
+
+.seealso: MatImaginaryPart()
+@*/
+
+PetscErrorCode PETSCMAT_DLLEXPORT MatRealPart(Mat mat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->ops->realpart) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  ierr = (*mat->ops->realpart)(mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatImaginaryPart"
+/*@
+   MatImaginaryPart - Moves the imaginary part of the matrix to the real part and zeros the imaginary part
+
+   Collective on Mat
+
+   Input Parameters:
+.  mat - the matrix
+
+   Level: advanced
+
+
+.seealso: MatRealPart()
+@*/
+
+PetscErrorCode PETSCMAT_DLLEXPORT MatImaginaryPart(Mat mat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->ops->imaginarypart) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  ierr = (*mat->ops->imaginarypart)(mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatGetRow"
 /*@C
    MatGetRow - Gets a row of a matrix.  You MUST call MatRestoreRow()

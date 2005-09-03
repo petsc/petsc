@@ -1171,6 +1171,32 @@ PetscErrorCode MatIsHermitian_SeqSBAIJ(Mat A,PetscTruth *flg)
    PetscFunctionReturn(0);
  }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatRealPart_SeqSBAIJ"
+PetscErrorCode MatRealPart_SeqSBAIJ(Mat A)
+{
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
+  PetscInt       i,nz = a->bs2*a->i[a->mbs];
+  PetscScalar    *aa = a->a;
+
+  PetscFunctionBegin;  
+  for (i=0; i<nz; i++) aa[i] = PetscRealPart(aa[i]);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatImaginaryPart_SeqSBAIJ"
+PetscErrorCode MatImaginaryPart_SeqSBAIJ(Mat A)
+{
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
+  PetscInt       i,nz = a->bs2*a->i[a->mbs];
+  PetscScalar    *aa = a->a;
+
+  PetscFunctionBegin;  
+  for (i=0; i<nz; i++) aa[i] = PetscImaginaryPart(aa[i]);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatGetRow_SeqSBAIJ,
@@ -1274,7 +1300,17 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
 /*95*/ 0,
        0,
        0,
-       0};
+       0,
+       0,
+/*100*/0,
+       0,
+       0,
+       0,
+       0,
+/*105*/0,
+       MatRealPart_SeqSBAIJ,
+       MatImaginaryPart_SeqSBAIJ
+};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

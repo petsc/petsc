@@ -1982,6 +1982,33 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatRealPart_SeqBAIJ"
+PetscErrorCode MatRealPart_SeqBAIJ(Mat A)
+{
+  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data; 
+  PetscInt       i,nz = a->bs2*a->i[a->mbs];
+  PetscScalar    *aa = a->a;
+
+  PetscFunctionBegin;  
+  for (i=0; i<nz; i++) aa[i] = PetscRealPart(aa[i]);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatImaginaryPart_SeqBAIJ"
+PetscErrorCode MatImaginaryPart_SeqBAIJ(Mat A)
+{
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data; 
+  PetscInt       i,nz = a->bs2*a->i[a->mbs];
+  PetscScalar    *aa = a->a;
+
+  PetscFunctionBegin;  
+  for (i=0; i<nz; i++) aa[i] = PetscImaginaryPart(aa[i]);
+  PetscFunctionReturn(0);
+}
+
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        MatGetRow_SeqBAIJ,
@@ -2081,7 +2108,17 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
 /*95*/ 0,
        0,
        0,
-       0};
+       0,
+       0,
+/*100*/0,
+       0,
+       0,
+       0,
+       0,
+/*105*/0,
+       MatRealPart_SeqBAIJ,
+       MatImaginaryPart_SeqBAIJ
+};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -2277,7 +2314,7 @@ EXTERN_C_END
 
   Level: beginner
 
-.seealso: MatCreateSeqBAIJ
+.Seealso: MatCreateSeqBAIJ
 M*/
 
 EXTERN_C_BEGIN

@@ -260,6 +260,9 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPrintHelp(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetPetscMaps(Mat,PetscMap*,PetscMap*);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRealPart(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatImaginaryPart(Mat);
+
 /* ------------------------------------------------------------*/
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
