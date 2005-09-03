@@ -655,6 +655,32 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatRealPart_SeqAIJ"
+PetscErrorCode MatRealPart_SeqAIJ(Mat A)
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
+  PetscInt       i,nz = a->nz;
+  PetscScalar    *aa = a->a;
+
+  PetscFunctionBegin;  
+  for (i=0; i<nz; i++) aa[i] = PetscRealPart(aa[i]);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatImaginaryPart_SeqAIJ"
+PetscErrorCode MatImaginaryPart_SeqAIJ(Mat A)
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
+  PetscInt       i,nz = a->nz;
+  PetscScalar    *aa = a->a;
+
+  PetscFunctionBegin;  
+  for (i=0; i<nz; i++) aa[i] = PetscImaginaryPart(aa[i]);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatZeroEntries_SeqAIJ"
 PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
 {
@@ -2305,7 +2331,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        MatConjugate_SeqAIJ,
        0,
-/*105*/MatSetValuesRow_SeqAIJ
+/*105*/MatSetValuesRow_SeqAIJ,
+       MatRealPart_SeqAIJ,
+       MatImaginaryPart_SeqAIJ
 };
 
 EXTERN_C_BEGIN

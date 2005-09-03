@@ -1036,6 +1036,32 @@ PetscErrorCode MatRestoreRow_MPISBAIJ(Mat mat,PetscInt row,PetscInt *nz,PetscInt
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatRealPart_MPISBAIJ"
+PetscErrorCode MatRealPart_MPISBAIJ(Mat A)
+{
+  Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data; 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;  
+  ierr = MatRealPart(a->A);CHKERRQ(ierr);
+  ierr = MatRealPart(a->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatImaginaryPart_MPISBAIJ"
+PetscErrorCode MatImaginaryPart_MPISBAIJ(Mat A)
+{
+  Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data; 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;  
+  ierr = MatImaginaryPart(a->A);CHKERRQ(ierr);
+  ierr = MatImaginaryPart(a->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatZeroEntries_MPISBAIJ"
 PetscErrorCode MatZeroEntries_MPISBAIJ(Mat A)
 {
@@ -1389,7 +1415,17 @@ static struct _MatOps MatOps_Values = {
 /*95*/ 0,
        0,
        0,
-       0};
+       0,
+       0,
+/*100*/0,
+       0,
+       0,
+       0,
+       0,
+/*105*/0,
+       MatRealPart_MPISBAIJ,
+       MatImaginaryPart_MPISBAIJ
+};
 
 
 EXTERN_C_BEGIN

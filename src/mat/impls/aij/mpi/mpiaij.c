@@ -1675,6 +1675,32 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate_MPIAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatRealPart_MPIAIJ"
+PetscErrorCode MatRealPart_MPIAIJ(Mat A)
+{
+  Mat_MPIAIJ   *a = (Mat_MPIAIJ*)A->data; 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;  
+  ierr = MatRealPart(a->A);CHKERRQ(ierr);
+  ierr = MatRealPart(a->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatImaginaryPart_MPIAIJ"
+PetscErrorCode MatImaginaryPart_MPIAIJ(Mat A)
+{
+  Mat_MPIAIJ   *a = (Mat_MPIAIJ*)A->data; 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;  
+  ierr = MatImaginaryPart(a->A);CHKERRQ(ierr);
+  ierr = MatImaginaryPart(a->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,
@@ -1785,8 +1811,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatPtAPNumeric_MPIAIJ_MPIAIJ,
        MatConjugate_MPIAIJ,
        0,
-/*105*/MatSetValuesRow_MPIAIJ
-};
+/*105*/MatSetValuesRow_MPIAIJ,
+       MatRealPart_MPIAIJ,
+       MatImaginaryPart_MPIAIJ};
 
 /* ----------------------------------------------------------------------------------------*/
 

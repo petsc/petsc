@@ -29,7 +29,7 @@ clients:
 libclient-c: 
 	-@${CC} -c ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.cc
 	-@${C_CC} -c ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.c
-	$(OMAKE)  LIBNAME=libclient-${LANGUAGE} SHARED_LIBRARY_TMPDIR=./client/${LANGUAGE} OTHERLIBS="-L${BABEL_lib} -lsidl ${SL_LINKER_LIBS} ${SYS_LIB}" shared_arch
+	$(OMAKE)  LIBNAME=libclient-${LANGUAGE} SHARED_LIBRARY_TMPDIR=. OTHERLIBS="-L${BABEL_lib} -lsidl ${SL_LINKER_LIBS} ${SYS_LIB}" shared_arch
 
 libclient-c++: libclient-c
 
