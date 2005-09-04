@@ -8,11 +8,12 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.headerPrefix = ''
-    self.substPrefix  = ''
-    self.argDB        = framework.argDB
-    self.found        = 0
+    self.headerPrefix    = ''
+    self.substPrefix     = ''
+    self.argDB           = framework.argDB
+    self.found           = 0
     self.f2c             = 0
+    self.fblaslapack     = 0
     self.missingRoutines = []
     self.separateBlas    = 1
     return
@@ -146,6 +147,7 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
       libdir = self.downLoadBlasLapack('f','f')            
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
+      self.fblaslapack = 1
       raise RuntimeError('Could not use downloaded f-blas-lapack?')
     # Try specified BLASLAPACK library
     if 'with-blas-lapack-lib' in self.framework.argDB:

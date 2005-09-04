@@ -106,37 +106,16 @@ framework.log)[0]
     if found:
       self.framework.log.write('Found function '+str(func)+' in '+str(lib)+'\n')
     return found
+
+  def configureLibrary(self):
+    '''Calls the regular package configureLibrary and then does an additional test needed by SCALAPACK'''
+    '''Normally you do not need to provide this method'''
+    # SCALAPACK requires ALL of BLAS/LAPACK
+    if self.blasLapack.f2c or self.blasLapack.fblaslapack:
+      raise RuntimeError('SCALAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with the --download-f-blas-lapack or --download-c-blas-lapack options')
+    PETSc.package.Package.configureLibrary(self)
+    return
   
-  def configureLibraryOld(self): #almost same as package.py/configureLibrary()!
-    '''Find an installation ando check if it can work with PETSc'''
-    self.framework.log.write('==================================================================================\n')
-    self.framework.log.write('Checking for a functional '+self.name+'\n')
-    foundLibrary = 0
-    foundHeader  = 0
-
-    # get any libraries and includes we depend on
-    libs         = []
-    incls        = []
-    for l in self.deps:
-      if hasattr(l,'dlib'):    libs  += l.dlib
-      if hasattr(l,self.includedir): incls += l.include
-      
-    for location, lib,incl in self.generateGuesses():
-      if not isinstance(lib, list): lib = [lib]
-      if not isinstance(incl, list): incl = [incl]
-      self.framework.log.write('Checking for library '+location+': '+str(lib)+'\n')
-      if self.executeTest(self.checkLib,[lib,self.functions,1]):     
-        self.lib = lib
-        self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
-        if (not self.includes) or self.executeTest(self.libraries.checkInclude, [incl, self.includes],{'otherIncludes' : incls}):
-          self.include = incl
-          self.found   = 1
-          self.dlib    = self.lib+libs
-          self.framework.packages.append(self) 
-          break
-    if not self.found:
-      raise RuntimeError('Could not find a functional '+self.name+'\n')
-
 if __name__ == '__main__':
   import config.framework
   import sys
