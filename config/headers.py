@@ -24,6 +24,10 @@ class Configure(config.base.Configure):
       return include
     return '-I'+include
 
+  def toString(self,includes):
+    '''Converts a list of includes to a string suitable for a compiler'''
+    return ' '.join([self.getIncludeArgument(include) for include in includes])
+
   def getDefineName(self, header):
     return 'HAVE_'+header.upper().replace('.', '_').replace('/', '_')
 
