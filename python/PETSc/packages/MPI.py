@@ -151,7 +151,7 @@ class Configure(PETSc.package.Package):
        - Some older MPI 1 implementations are missing these'''
     oldFlags = self.compilers.CPPFLAGS
     oldLibs  = self.compilers.LIBS
-    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.include])
+    self.compilers.CPPFLAGS += self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
 
     if self.checkLink('#include <mpi.h>\n', 'if (MPI_Comm_f2c(MPI_COMM_WORLD));\n'):
@@ -168,7 +168,7 @@ class Configure(PETSc.package.Package):
   def configureTypes(self):
     '''Checking for MPI types'''
     oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.include])
+    self.compilers.CPPFLAGS += self.headers.toString(self.include)
     self.framework.batchIncludeDirs.extend([self.headers.getIncludeArgument(inc) for inc in self.include])
     self.types.checkSizeof('MPI_Comm', 'mpi.h')
     if 'HAVE_MPI_FINT' in self.defines:

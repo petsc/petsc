@@ -41,7 +41,7 @@ class Configure(PETSc.package.Package):
     g.write('ARFLAGS     = '+self.setCompilers.AR_FLAGS+'\n')
     g.write('RANLIB      = '+self.setCompilers.RANLIB+'\n')
     g.write('MPI_LIBS    = '+self.libraries.toString(self.mpi.lib)+'\n') 
-    g.write('MPI_INCLUDE_DIR = -I'+self.libraries.toString(self.mpi.include)+'\n') 
+    g.write('MPI_INCLUDE_DIR = '+self.headers.toString(self.mpi.include)+'\n') 
     g.close()
     if not os.path.isdir(installDir):
       os.mkdir(installDir)

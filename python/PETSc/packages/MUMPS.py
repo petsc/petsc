@@ -64,7 +64,7 @@ class Configure(PETSc.package.Package):
     g.write('AR      = ar vr\n')
     g.write('RANLIB  = '+self.setCompilers.RANLIB+'\n') 
     g.write('SCALAP  = '+self.libraries.toString(self.scalapack.lib)+' '+self.libraries.toString(self.blacs.lib)+'\n')
-    g.write('INCPAR  = -I'+self.libraries.toString(self.mpi.include)+'\n')
+    g.write('INCPAR  = '+self.headers.toString(self.mpi.include)+'\n')
     g.write('LIBPAR  = $(SCALAP) '+self.libraries.toString(self.mpi.lib)+'\n') #PARALLE LIBRARIES USED by MUMPS
     g.write('INCSEQ  = -I../libseq\n')
     g.write('LIBSEQ  =  $(LAPACK) -L../libseq -lmpiseq\n')

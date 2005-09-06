@@ -54,7 +54,7 @@ class Configure(PETSc.package.Package):
   def checkInclude(self,incl,hfile):
     incl.extend(self.mpi.include)
     oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in incl+self.mpi.include])    
+    self.compilers.CPPFLAGS += self.headers.toString(incl)
     found = self.checkPreprocess('#include <' +hfile+ '>\n')
     self.compilers.CPPFLAGS = oldFlags
     if found:

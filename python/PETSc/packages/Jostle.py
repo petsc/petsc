@@ -53,7 +53,7 @@ class Configure(config.base.Configure):
   def checkInclude(self, includeDir):
     '''Check that jostle.h is present'''
     oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in [includeDir]+self.mpi.include])
+    self.compilers.CPPFLAGS += self.headers.toString([includeDir]+self.mpi.include)
     found = self.checkPreprocess('#include <jostle.h>\n')
     self.compilers.CPPFLAGS = oldFlags
     return found

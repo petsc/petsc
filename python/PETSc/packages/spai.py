@@ -31,7 +31,7 @@ class Configure(PETSc.package.Package):
     if not os.path.isdir(os.path.join(installDir,'lib')):
       os.mkdir(os.path.join(installDir,'lib'))      
     self.framework.pushLanguage('C')
-    args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DMPI '+self.framework.getCompilerFlags()+' '+' '.join([self.headers.getIncludeArgument(inc) for inc in self.mpi.include])+'\n'
+    args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DMPI '+self.framework.getCompilerFlags()+' '+self.headers.toString(self.mpi.include)+'\n'
     self.framework.popLanguage()
     try:
       fd      = file(os.path.join(installDir,'Makefile.in'))

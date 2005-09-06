@@ -38,7 +38,7 @@ class Configure(PETSc.package.Package):
     g.write('DSUPERLULIB  = $(DSuperLUroot)/superlu.a\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
-    g.write('IMPI         = -I'+self.libraries.toString(self.mpi.include)+'\n')
+    g.write('IMPI         = '+self.headers.toString(self.mpi.include)+'\n')
     g.write('MPILIB       = '+self.libraries.toString(self.mpi.lib)+'\n')
     g.write('SYS_LIB      = \n')
     g.write('LIBS         = $(DSUPERLULIB) $(BLASLIB) $(PERFLIB) $(MPILIB) $(SYS_LIB)\n')

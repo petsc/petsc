@@ -60,7 +60,7 @@ class Configure(config.base.Configure):
   def checkInclude(self,bs95incl):
     '''Check that BSsparse.h is present'''
     oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in self.mpi.include+bs95incl])
+    self.compilers.CPPFLAGS += self.headers.toString(bs95incl)
     found = self.checkPreprocess('#include <BSsparse.h>\n')
     self.compilers.CPPFLAGS = oldFlags
     return found

@@ -39,7 +39,7 @@ class Configure(PETSc.package.Package):
     g.write('MACHINE_TYPE = 500\n')  #LINUX
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('MPILIB       = '+self.libraries.toString(self.mpi.lib)+'\n')
-    g.write('MPI_INCLUDE  = -I'+self.libraries.toString(self.mpi.include)+'\n') 
+    g.write('MPI_INCLUDE  = '+self.headers.toString(self.mpi.include)+'\n') 
     g.write('LIB          = $(BLASLIB) $(MPILIB)\n')
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n') 
