@@ -281,17 +281,8 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
     }
   }
 
-  for(j = ys+ym-1; j >= ys; j--) {
-    for(i = xs; i < xs+xm; i++) {
-      printf("u[%d][%d] = %g ", j, i, x[j][i]);
-    }
-    printf("\n");
-  }
-  /*
-     Restore vector
-  */
   ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-
+  ierr = PrintVector(dmmg, X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -306,7 +297,7 @@ PetscErrorCode constantResidual(PetscReal lambda, PetscTruth isLower, int i, int
   PetscInt    q, k;
 
   PetscFunctionBegin;
-  for(q = 0; q < 3; q++) {
+  for(q = 0; q < 4; q++) {
     phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
     phi[1] = quadPoints[q*2];
     phi[2] = quadPoints[q*2+1];
@@ -708,7 +699,7 @@ PetscErrorCode L_2Error(DA da, Vec fVec, double *error, AppCtx *user)
       uLocal[2] = f[j+1][i+1];
       uLocal[3] = f[j+1][i];
       /* Lower element */
-      for(q = 0; q < 3; q++) {
+      for(q = 0; q < 4; q++) {
         phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
         phi[1] = quadPoints[q*2];
         phi[2] = quadPoints[q*2+1];
@@ -725,7 +716,7 @@ PetscErrorCode L_2Error(DA da, Vec fVec, double *error, AppCtx *user)
         / x_U \ = / -1  0 \ / x_L \ + / hx \
         \ y_U /   \  0 -1 / \ y_L /   \ hy /
        */
-      for(q = 0; q < 3; q++) {
+      for(q = 0; q < 4; q++) {
         phi[0] = 1.0 - quadPoints[q*2] - quadPoints[q*2+1];
         phi[1] = quadPoints[q*2];
         phi[2] = quadPoints[q*2+1];
