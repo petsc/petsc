@@ -1,4 +1,5 @@
 import config.base
+import os.path
 
 class Configure(config.base.Configure):
   def __init__(self, framework, functions = []):
@@ -63,10 +64,11 @@ choke me
       if not isinstance(libraries, list):
         libraries = [libraries]
       for library in libraries:
-        if not library.strip()[0] == '-':
-          self.compilers.LIBS += ' -l'+library
-        else:
+        root,ext=os.path.splitext(library)
+        if library.strip()[0] == '-' or ext == '.a' or ext == '.so' :
           self.compilers.LIBS += ' '+library
+        else:
+          self.compilers.LIBS += ' -l'+library
     found = self.checkLink(includes, body)
     if libraries:
       self.compilers.LIBS = oldLibs

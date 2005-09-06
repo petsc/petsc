@@ -214,7 +214,7 @@ void (*signal())();
           self.framework.addBatchBody(['{',
                                        '  union {long l; char c[sizeof(long)];} u;',
                                        '  u.l = 1;',
-                                       '  fprintf(output, " \'--with-endian=%s\',\\n", (u.c[sizeof(long) - 1] == 1) ? "little" : "big");',
+                                       '  fprintf(output, " \'--with-endian=%s\',\\n", (u.c[sizeof(long) - 1] == 1) ? "big" : "little");',
                                        '}'])
           # Dummy value
           endian = 'little'
@@ -235,7 +235,7 @@ void (*signal())();
 #endif\n'''
     if otherInclude:
       includes += '#include <'+otherInclude+'>\n'
-    body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%d\\n", sizeof('+typeName+'));\n'
+    body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%lu\\n", (unsigned long)sizeof('+typeName+'));\n'
     typename = 'sizeof_'+typeName.replace(' ', '_').replace('*', 'p')
     if not typename in self.framework.argDB:
       if not self.framework.argDB['with-batch']:
