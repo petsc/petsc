@@ -1454,6 +1454,16 @@ can also install additional packages that are used by the TOPS packages."""
            if not reply: sys.exit()
            args.append('--with-mpi-dir='+reply)
 
+        reply = ynbox('Install TOPS Solver Components?',title)
+        if reply: 
+           reply = diropenbox("Directory of Babel","Directory of Babel")
+           if not reply: sys.exit()
+           args.append('--with-babel-dir='+reply)
+           reply = diropenbox("Directory of CCafe","Directory of CCAFE")
+           if not reply: sys.exit()
+           args.append('--with-ccafe-dir='+reply)
+
+
         reply = ynbox('Do MPI jobs need to be submitted with a batch system?',title)
         if reply: args.append('--with-batch=1')
 
@@ -1470,21 +1480,28 @@ can also install additional packages that are used by the TOPS packages."""
 
 
         petscroot = os.path.join(reply,'petsc-dev')
-        if os.path.isfile(os.path.join(reply,'include','petsc.h')):
-           petscroot = reply
-           reply     = os.path.dirname(reply)
-        elif not os.path.isdir(petscroot):
-           raise petscroot, 'Not Found'
+        if not os.path.isfile(os.path.join(petscroot,'include','petsc.h')):
+          y = ynbox('Could not locate PETSc directory, should I download it?',title)
+          if not y: sys.exit()
+          # download PETSc
+          import urllib
+          try:
+            urllib.urlretrieve('ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz', os.path.join(reply,'petsc.tar.gz'))
+          except Exception, e:
+            raise RuntimeError('Unable to download PETSc')
+          import commands
+          try:
+            commands.getoutput('cd '+reply+'; gunzip petsc.tar.gz ; tar xf petsc.tar')
+          except RuntimeError, e:
+            raise RuntimeError('Error unzipping petsc.tar.gz'+str(e))
+          os.unlink(os.path.join(packages, 'petsc.tar'))
+
 
         args.append('--with-shared=1')
         args.append('--with-dynamic=1')
         args.append('--with-external-packages-dir='+reply)
         args = multenterbox("Configure options you have selected.", title, None, args)
         if not args: sys.exit()
-    
-
-        if not os.path.isdir(petscroot):
-           print os.path.join(reply,'petsc-dev')+'does not exist'
 
         configfile=os.path.join(petscroot,'config-'+arch+'.py')
         f = file(configfile, 'w')
@@ -1497,4 +1514,4 @@ can also install additional packages that are used by the TOPS packages."""
         f.write('  configure.petsc_configure(configure_options)\n')
         f.close()
         os.chmod(configfile,0755)
-        msgbox('After hitting OK run\n\n python '+ os.path.join(petscroot,'config-'+arch+'.py')+'\n\nto continue the install')
+        msgbox('After hitting OK run\n\n cd '+petscroot+'\npython config-'+arch+'.py\n\nto continue the install')

@@ -34,18 +34,19 @@ class Configure(config.base.Configure):
         raise RuntimeError('You have set -PETSC_DIR=pwd, you need to use back quotes around the pwd\n  like -PETSC_DIR=`pwd`')
       if not os.path.isdir(self.dir):
         raise RuntimeError('The value you set with -PETSC_DIR='+self.dir+' is not a directory')
-    else:
-      if 'PETSC_DIR' in os.environ:
-        self.dir = os.environ['PETSC_DIR']
-        if self.dir == 'pwd':
-          raise RuntimeError('''
+    elif 'PETSC_DIR' in os.environ:
+      self.dir = os.environ['PETSC_DIR']
+      if self.dir == 'pwd':
+        raise RuntimeError('''
 The environmental variable PETSC_DIR is set incorrectly. Please use the following: [notice backquotes]
   For sh/bash  : PETSC_DIR=`pwd`; export PETSC_DIR
   for csh/tcsh : setenv PETSC_DIR `pwd`''')
-        elif not os.path.isdir(self.dir):
-          raise RuntimeError('The environmental variable PETSC_DIR '+self.dir+' is not a directory')
-      else:
-        self.dir = os.getcwd()
+      elif not os.path.isdir(self.dir):
+        raise RuntimeError('The environmental variable PETSC_DIR '+self.dir+' is not a directory')
+    else:
+      self.dir = os.getcwd()
+    if not self.dir == os.getcwd():
+      raise RuntimeError('The environmental variable PETSC_DIR '+self.dir+' MUST be the current directory '+os.getcwd())
     if self.dir[1] == ':':
       try:
         dir = self.dir.replace('\\','/')
