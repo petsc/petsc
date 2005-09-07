@@ -1,0 +1,16 @@
+#!ccaffeine bootstrap file. 
+# ------- don't change anything ABOVE this line.-------------
+path set @PETSC_LIB_DIR@
+
+repository get-global TOPS.StructuredSolver
+repository get-global Ex1.System
+
+instantiate TOPS.StructuredSolver solver
+instantiate Ex1.System system
+
+connect solver TOPS.System.Compute.Residual system TOPS.System.Compute.Residual
+connect system TOPS.Structured.Solver solver TOPS.Structured.Solver
+
+go system DoSolve
+
+quit
