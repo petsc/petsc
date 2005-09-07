@@ -2,7 +2,7 @@
 
 LANGUAGES =  c++
 
-CFLAGS = -I${BABEL_INCLUDE}
+CFLAGS = ${BABEL_INCLUDE}
 
 SIDLFILES = ${PETSC_DIR}/src/tops/tops.sidl ${SIDL}
 

@@ -1,4 +1,4 @@
-/// 
+// 
 // File:          Ex1_System_Impl.hh
 // Symbol:        Ex1.System-v0.0.0
 // Symbol Type:   class
