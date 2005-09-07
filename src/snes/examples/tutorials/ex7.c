@@ -74,6 +74,20 @@ static PetscScalar Identity[9] = {0.0833333, 0.0416667, 0.0416667,
                                   0.0416667, 0.0833333, 0.0416667,
                                   0.0416667, 0.0416667, 0.0833333};
 
+static PetscScalar Gradient[18] = {-0.1666667, -0.1666667, -0.1666667,
+                                   -0.1666667, -0.1666667, -0.1666667,
+                                    0.1666667,  0.1666667,  0.1666667,
+                                    0.0,        0.0,        0.0,
+                                    0.0,        0.0,        0.0,
+                                    0.1666667,  0.1666667,  0.1666667};
+
+static PetscScalar Divergence[18] = {-0.1666667, 0.1666667, 0.0,
+                                     -0.1666667, 0.0,       0.1666667,
+                                     -0.1666667, 0.1666667, 0.0,
+                                     -0.1666667, 0.0,       0.1666667,
+                                     -0.1666667, 0.1666667, 0.0,
+                                     -0.1666667, 0.0,       0.1666667};
+
 /* These are */
 static PetscScalar quadPoints[8] = {0.17855873, 0.15505103,
                                     0.07503111, 0.64494897,
@@ -223,7 +237,7 @@ PetscErrorCode ExactSolution(PetscReal x, PetscReal y, Field *u)
 {
   PetscFunctionBegin;
   (*u).u = x*x;
-  (*u).v = x*x;
+  (*u).v = -2.0*x*y;
   (*u).p = 1.0;
   PetscFunctionReturn(0);
 }
@@ -285,17 +299,20 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   for (j=ys; j<ys+ym; j++) {
     temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
-
+#ifdef CHECK_SOLUTION
+      ierr = ExactSolution(i*hx, j*hy, &x[j][i]);CHKERRQ(ierr);
+#else
       if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
         /* boundary conditions are all zero Dirichlet */
         x[j][i].u = 0.0;
         x[j][i].v = 0.0;
-        x[j][i].p = 1.0;
+        x[j][i].p = 0.0;
       } else {
-        x[j][i].u = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp)); 
-        x[j][i].v = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp)); 
-        x[j][i].p = 1.0; 
+        x[j][i].u = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+        x[j][i].v = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp));
+        x[j][i].p = 1.0;
       }
+#endif
     }
   }
 
@@ -326,8 +343,8 @@ PetscErrorCode constantResidual(PetscReal lambda, PetscTruth isLower, int i, int
     x      = xI + quadPoints[q*2]*hx;
     y      = yI + quadPoints[q*2+1]*hy;
     res.u  = quadWeights[q]*(2.0);
-    res.v  = quadWeights[q]*(2.0);
-    res.p  = quadWeights[q]*(-1.0);
+    res.v  = quadWeights[q]*(0.0);
+    res.p  = quadWeights[q]*(0.0);
     for(k = 0; k < 3; k++) {
       rLocal[k].u += phi[k]*res.u;
       rLocal[k].v += phi[k]*res.v;
@@ -444,13 +461,15 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info, Field **x, Field **f, AppCtx
         rLocal[k].v = 0.0;
         rLocal[k].p = 0.0;
         for(l = 0; l < 3; l++) {
-          rLocal[k].u += (G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1])*uLocal[l].u;
-          rLocal[k].v += (G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1])*uLocal[l].v;
-          rLocal[k].p += Identity[k*3+l]*uLocal[l].p;
+          rLocal[k].u += alpha*(G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1])*uLocal[l].u;
+          rLocal[k].v += alpha*(G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1])*uLocal[l].v;
+          /* rLocal[k].p += hxhy*Identity[k*3+l]*uLocal[l].p; */
+          /* Gradient */
+          rLocal[k].u += hx*Gradient[(k*2+0)*3 + l]*uLocal[l].p;
+          rLocal[k].v += hy*Gradient[(k*2+1)*3 + l]*uLocal[l].p;
+          /* Divergence */
+          rLocal[k].p += hx*Divergence[(k*2+0)*3 + l]*uLocal[l].u + hy*Divergence[(k*2+1)*3 + l]*uLocal[l].v;
         }
-        rLocal[k].u *= alpha;
-        rLocal[k].v *= alpha;
-        rLocal[k].p *= hxhy;
       }
       printf("Lower Laplacian ElementVector for (%d, %d)\n", i, j);
       for(k = 0; k < 3; k++) {
@@ -488,13 +507,15 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info, Field **x, Field **f, AppCtx
         rLocal[k].v = 0.0;
         rLocal[k].p = 0.0;
         for(l = 0; l < 3; l++) {
-          rLocal[k].u += (G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1])*uLocal[l].u;
-          rLocal[k].v += (G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1])*uLocal[l].v;
-          rLocal[k].p += Identity[k*3+l]*uLocal[l].p;
+          rLocal[k].u += alpha*(G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1])*uLocal[l].u;
+          rLocal[k].v += alpha*(G[0]*Kref[(k*2*3 + l)*2]+G[1]*Kref[(k*2*3 + l)*2+1]+G[2]*Kref[((k*2+1)*3 + l)*2]+G[3]*Kref[((k*2+1)*3 + l)*2+1])*uLocal[l].v;
+          /* rLocal[k].p += Identity[k*3+l]*uLocal[l].p; */
+          /* Gradient */
+          rLocal[k].u += hx*Gradient[(k*2+0)*3 + l]*uLocal[l].p;
+          rLocal[k].v += hy*Gradient[(k*2+1)*3 + l]*uLocal[l].p;
+          /* Divergence */
+          rLocal[k].p += hx*Divergence[(k*2+0)*3 + l]*uLocal[l].u + hy*Divergence[(k*2+1)*3 + l]*uLocal[l].v;
         }
-        rLocal[k].u *= alpha;
-        rLocal[k].v *= alpha;
-        rLocal[k].p *= hxhy;
       }
       printf("Upper Laplacian ElementVector for (%d, %d)\n", i, j);
       for(k = 0; k < 3; k++) {
