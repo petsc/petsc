@@ -353,18 +353,20 @@ chk_concepts_dir: chk_loc
 
 # Creates ${HOME}/petsc.tar.gz [and petsc-lite.tar.gz]
 dist:
-	${PETSC_DIR}/maint/builddist ${PETSC_DIR}
+	${PETSC_DIR}/maint/builddist ${PETSC_DIR} -dev
 
 # This target works only if you can do 'ssh petsc@harley.mcs.anl.gov'
+# also copy the file over to ftp site.
 web-snapshot:
-	@if [ ! -f "${HOME}/petsc.tar.gz" ]; then \
-	    echo "~/petsc.tar.gz missing! cannot update petsc-dev snapshot on www-unix"; \
+	@if [ ! -f "${HOME}/petsc-dev.tar.gz" ]; then \
+	    echo "~/petsc-dev.tar.gz missing! cannot update petsc-dev snapshot on www-unix"; \
 	  else \
             echo "updating petsc-dev snapshot on www-unix"; \
 	    tmpdir=`mktemp -d -t petsc-doc.XXXXXXXX`; \
-	    cd $${tmpdir}; tar -xzf ${HOME}/petsc.tar.gz; \
-	    /usr/bin/rsync  -e ssh -az --delete $${tmpdir}/petsc/ \
+	    cd $${tmpdir}; tar -xzf ${HOME}/petsc-dev.tar.gz; \
+	    /usr/bin/rsync  -e ssh -az --delete $${tmpdir}/petsc-dev/ \
               petsc@harley.mcs.anl.gov:/nfs/www-unix/petsc/petsc-as/snapshots/petsc-dev ;\
+	    /bin/cp -f /home/petsc/petsc-dev.tar.gz /nfs/ftp/pub/petsc/petsc-dev.tar.gz;\
 	    ${RM} -rf $${tmpdir} ;\
 	  fi
 
