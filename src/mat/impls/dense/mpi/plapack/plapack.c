@@ -9,6 +9,7 @@
 
 EXTERN_C_BEGIN 
 #include "PLA.h"
+#include "PLA_prototypes.h"
 EXTERN_C_END 
 
 typedef struct {

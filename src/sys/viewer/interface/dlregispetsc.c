@@ -64,7 +64,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(char *path)
 #if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscPLAPACKInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
