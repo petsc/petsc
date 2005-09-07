@@ -1,4 +1,4 @@
-// 
+/// 
 // File:          Ex1_System_Impl.hh
 // Symbol:        Ex1.System-v0.0.0
 // Symbol Type:   class
@@ -64,6 +64,7 @@ namespace Ex1 {
 
     // DO-NOT-DELETE splicer.begin(Ex1.System._implementation)
     TOPS::Structured::Solver solver;
+    gov::cca::Services myServices;
     // DO-NOT-DELETE splicer.end(Ex1.System._implementation)
 
   private:
@@ -138,6 +139,16 @@ namespace Ex1 {
       ::gov::cca::CCAException
     );
 
+
+    /**
+     * Execute some encapsulated functionality on the component. 
+     * Return 0 if ok, -1 if internal error but component may be 
+     * used further, and -2 if error so severe that component cannot
+     * be further used safely.
+     */
+    int32_t
+    go() throw () 
+    ;
   };  // end class System_impl
 
 } // end namespace Ex1

@@ -12,7 +12,10 @@
 #include "Ex1_System_Impl.hh"
 
 // DO-NOT-DELETE splicer.begin(Ex1.System._includes)
+#include <iostream>
 #include "petsc.h"
+// Includes for uses ports
+#include "TOPS_Structured_Solver.hh"
 // DO-NOT-DELETE splicer.end(Ex1.System._includes)
 
 // user-defined constructor.
@@ -62,7 +65,19 @@ Ex1::System_impl::computeResidual (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(Ex1.System.computeResidual)
-  TOPS::Structured::Solver solver = this->solver;
+  TOPS::Structured::Solver solver;
+#ifdef USE_PORTS
+  solver = this->myServices.getPort("TOPS.Structured.Solver");
+  if (solver._is_nil()) {
+    std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
+	      << ": TOPS.Structured.Solver port is nil, " 
+	      << "possibly not connected." << std::endl;
+    return;
+  }
+#else
+  solver = this->solver;
+#endif
+
   int xs = f.lower(0);      // first grid point in X and Y directions on this process
   int ys = f.lower(1);
   int xm = f.length(0);       // number of local grid points in X and Y directions on this process
@@ -94,8 +109,12 @@ throw ()
         f.set(i,j,uxx + uyy - sc*exp(u));
         CHKMEMA;
       }
-    }
-  }  
+    }  }  
+
+#ifdef USE_PORTS
+  this->myServices.releasePort("TOPS.Structured.Solver");
+#endif
+
   // DO-NOT-DELETE splicer.end(Ex1.System.computeResidual)
 }
 
@@ -124,7 +143,80 @@ throw (
 ){
   // DO-NOT-DELETE splicer.begin(Ex1.System.setServices)
   // Insert-Code-Here {Ex1.System.setServices} (setServices method)
+
+  myServices = services;
+  gov::cca::TypeMap tm = services.createTypeMap();
+  if(tm._is_nil()) {
+    fprintf(stderr, "Error:: %s:%d: gov::cca::TypeMap is nil\n",
+	    __FILE__, __LINE__);
+    exit(1);
+  }
+  gov::cca::Port p = self;      //  Babel required casting
+  if(p._is_nil()) {
+    fprintf(stderr, "Error:: %s:%d: Error casting self to gov::cca::Port \n",
+	    __FILE__, __LINE__);
+    exit(1);
+  }
+  
+  // Provides ports
+  // Basic functionality
+  myServices.addProvidesPort(p,
+			   "TOPS.System",
+			   "TOPS.System", tm);
+
+  myServices.addProvidesPort(p, 
+			     "DoSolve",
+			     "gov.cca.ports.GoPort",
+			     myServices.createTypeMap());
+
+  // Residual computation
+  myServices.addProvidesPort(p,
+			   "TOPS.System.Compute.Residual",
+			   "TOPS.System.Compute.Residual", tm);
+  
+
+  // Uses ports:
+  myServices.registerUsesPort("TOPS.Structured.Solver",
+			    "TOPS.Structured.Solver", tm);
+
   // DO-NOT-DELETE splicer.end(Ex1.System.setServices)
+}
+
+/**
+ * Execute some encapsulated functionality on the component. 
+ * Return 0 if ok, -1 if internal error but component may be 
+ * used further, and -2 if error so severe that component cannot
+ * be further used safely.
+ */
+int32_t
+Ex1::System_impl::go ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(Ex1.System.go)
+  // Insert-Code-Here {Ex1.System.go} (go method)
+  
+  // Parameter port stuff here (instead of argc, argv);
+  // for now pass fake argc and argv to solver
+  int argc = 1; 
+  char *argv[1];
+  argv[0] = (char*) malloc(10*sizeof(char));
+  strcpy(argv[0],"ex1");
+
+  TOPS::Solver solver = myServices.getPort("TOPS.Structured.Solver");
+  solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
+  
+  PetscOptionsSetValue("-snes_monitor",PETSC_NULL);
+
+  // We don't need to call setSystem since it will be obtained through
+  // getPort calls
+
+  solver.solve();
+
+  myServices.releasePort("TOPS.StructuredSolver");
+
+  PetscFunctionReturn(0);
+  // DO-NOT-DELETE splicer.end(Ex1.System.go)
 }
 
 
