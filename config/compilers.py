@@ -289,7 +289,7 @@ class Configure(config.base.Configure):
         if arg == '-L':
           lib = argIter.next()
           self.logPrint('Found -L '+lib, 4, 'compilers')
-          clibs.append('-L'+lib)
+          cxxlibs.append('-L'+lib)
           continue
         # Check for full library name
         m = re.match(r'^/.*\.a$', arg)
