@@ -346,8 +346,8 @@ throw ()
   PetscErrorCode ierr;
 
 #ifdef USE_PORTS
-  if (this->system == NULL)
-    this->system = myServices.getPort("TOPS::System"...... TODO
+  //  if (this->system == NULL)
+  //  this->system = myServices.getPort("TOPS::System::Initialize::Once");
 #endif
 
   if (!this->dmmg) {

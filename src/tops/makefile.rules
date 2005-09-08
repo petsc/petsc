@@ -2,7 +2,7 @@
 
 LANGUAGES =  c++
 
-CFLAGS = ${BABEL_INCLUDE}
+CFLAGS = ${BABEL_INCLUDE} 
 
 SIDLFILES = ${PETSC_DIR}/src/tops/tops.sidl ${SIDL}
 
@@ -42,9 +42,9 @@ server/c++/makefile: ${SIDLFILES}
 	echo "include ${PETSC_DIR}/src/tops/makefile.rules" > server/c++/makefile
 
 libserver-c++.${SOSUFFIX}: 
-	${CC} -c ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++ *.cc
-	${C_CC} -c ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++  *.c
-	$(OMAKE)  LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERLIBS="-L${BABEL_LIB} -lsidl ${SL_LINKER_LIBS} ${SYS_LIB}" shared_arch
+	${CC} ${USE_PORTS} -c ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++ *.cc
+	${C_CC} ${USE_PORTS} -c ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++  *.c
+	$(OMAKE)  LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERLIBS="-L${BABEL_LIB} -lsidl ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} ${PETSC_LIB}" shared_arch
 #-------------------------------------------------------------------------------
 
 include ${PETSC_DIR}/bmake/common/base
