@@ -45,7 +45,7 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
         raise RuntimeError('The environmental variable PETSC_DIR '+self.dir+' is not a directory')
     else:
       self.dir = os.getcwd()
-    if not self.dir == os.getcwd():
+    if not os.path.realpath(self.dir) == os.path.realpath(os.getcwd()):
       raise RuntimeError('The environmental variable PETSC_DIR '+self.dir+' MUST be the current directory '+os.getcwd())
     if self.dir[1] == ':':
       try:
