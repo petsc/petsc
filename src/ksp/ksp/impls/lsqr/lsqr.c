@@ -31,7 +31,7 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   if (lsqr->vwork_n) {
     ierr = VecDestroyVecs(lsqr->vwork_n,lsqr->nwork_n);CHKERRQ(ierr);
   }
-  ierr = KSPGetVecs(ksp,lsqr->nwork_m,&lsqr->vwork_m,lsqr->nwork_n,&lsqr->vwork_n);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,lsqr->nwork_n,&lsqr->vwork_n,lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
