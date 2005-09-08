@@ -98,6 +98,7 @@ static PetscScalar quadWeights[4] = {0.15902069,  0.09097931,  0.15902069,  0.09
 /* 
    User-defined routines
 */
+extern PetscErrorCode CreateNullSpace(DMMG, Vec*);
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field**,Field**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DALocalInfo*,Field**,Mat,AppCtx*);
@@ -157,7 +158,11 @@ int main(int argc,char **argv)
      Set the discretization functions
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMMGSetSNESLocal(dmmg, FormFunctionLocal, FormJacobianLocal, 0, 0);CHKERRQ(ierr);
-  /*ierr = DMMGSetNullSpace(dmmg,PETSC_TRUE,0,PETSC_NULL);CHKERRQ(ierr);*/
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Set the problem null space
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = DMMGSetNullSpace(dmmg, PETSC_FALSE, 1, CreateNullSpace);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess
@@ -240,6 +245,31 @@ PetscErrorCode ExactSolution(PetscReal x, PetscReal y, Field *u)
   (*u).u = x;
   (*u).v = -y;
   (*u).p = 0.0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateNullSpace"
+PetscErrorCode CreateNullSpace(DMMG dmmg, Vec *nulls)
+{
+  DA             da = (DA) dmmg->dm;
+  Vec            X = nulls[0];
+  Field        **x;
+  PetscInt       xs,ys,xm,ym,i,j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DAGetCorners(da, &xs, &ys, PETSC_NULL, &xm, &ym, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da, X, &x);CHKERRQ(ierr);
+  for(j = ys; j < ys+ym; j++) {
+    for(i = xs; i < xs+xm; i++) {
+      x[j][i].u = 0.0;
+      x[j][i].v = 0.0;
+      x[j][i].p = 1.0;
+    }
+  }
+  ierr = DAVecRestoreArray(da, X, &x);CHKERRQ(ierr);
+  ierr = PrintVector(dmmg, X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
