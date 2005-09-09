@@ -272,7 +272,7 @@ PetscErrorCode MatCholeskyFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F
   /* Factor P A -> Chol */
   info_pla = PLA_Chol(PLA_LOWER_TRIANGULAR,lu->A);
   if (info_pla != 0) 
-    SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Nonpositive definite matrix detected at row %d from PLA_Chol()",info_pla);
+    SETERRQ1( PETSC_ERR_MAT_CH_ZRPVT,"Nonpositive definite matrix detected at row %d from PLA_Chol()",info_pla);
 
   lu->CleanUpPlapack = PETSC_TRUE;
   lu->rstart         = rstart;
@@ -383,8 +383,11 @@ PetscErrorCode MatLUFactorSymbolic_Plapack(Mat A,IS r,IS c,MatFactorInfo *info,M
 PetscErrorCode MatCholeskyFactorSymbolic_Plapack(Mat A,IS perm,MatFactorInfo *info,Mat *F)
 { 
   PetscErrorCode ierr;
+  PetscTruth     issymmetric,set;
 
   PetscFunctionBegin;
+  ierr = MatIsSymmetricKnown(A,&set,&issymmetric); CHKERRQ(ierr);
+  if (!set || !issymmetric) SETERRQ(PETSC_ERR_USER,"Matrix must be set as MAT_SYMMETRIC for CholeskyFactor()");
   ierr = MatFactorSymbolic_Plapack_Private(A,info,F);CHKERRQ(ierr);
   (*F)->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_Plapack;
   (*F)->factor                      = FACTOR_CHOLESKY;  
@@ -478,6 +481,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Base_Plapack(Mat A,MatType type,Mat
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_Plapack;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_Plapack;
   B->ops->destroy          = MatDestroy_Plapack;
+  
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) { 
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqdense_plapack_C",

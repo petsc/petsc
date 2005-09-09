@@ -56,10 +56,11 @@ int main(int argc,char **args)
   /* Test MatDuplicate() */
   ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr); 
 
-  /* Test Factorization */
+  /* Test LU Factorization */
   ierr = MatGetOrdering(C1,MATORDERING_NATURAL,&perm,&iperm);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(C1,perm,iperm,&info,&F);CHKERRQ(ierr);
   for (nfact = 0; nfact < 2; nfact++){
+    if (!rank) printf(" LU nfact %d\n",nfact);
     ierr = MatLUFactorNumeric(C1,&info,&F);CHKERRQ(ierr);
 
     /* Test MatSolve() */
@@ -83,6 +84,47 @@ int main(int argc,char **args)
       }
     }
   }
+  ierr = MatDestroy(C1);CHKERRQ(ierr);
+  ierr = MatDestroy(F);CHKERRQ(ierr);
+
+  /* Test Cholesky Factorization */
+  ierr = MatTranspose(C,&C1);CHKERRQ(ierr); /* C1 = C^T */
+  ierr = MatAXPY(C,1.0,C1,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* make C symmetric: C <- C + C^T */
+  ierr = MatShift(C,M);CHKERRQ(ierr);  /* make C positive definite */
+  ierr = MatDestroy(C1);CHKERRQ(ierr);
+  
+  ierr = MatSetOption(C,MAT_SYMMETRIC);CHKERRQ(ierr);
+  ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL);CHKERRQ(ierr); 
+
+  ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorSymbolic(C,perm,&info,&F);CHKERRQ(ierr);
+  for (nfact = 0; nfact < 2; nfact++){
+    if (!rank) printf(" Cholesky nfact %d\n",nfact);
+    ierr = MatCholeskyFactorNumeric(C1,&info,&F);CHKERRQ(ierr);
+
+    /* Test MatSolve() */
+    for (nsolve = 0; nsolve < 5; nsolve++){
+      ierr = VecGetArray(x,&array);CHKERRQ(ierr);
+      for (i=0; i<m; i++){
+        ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+        array[i] = rval; 
+      }
+      ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
+      ierr = VecCopy(x,u);CHKERRQ(ierr); 
+      ierr = MatMult(C,x,b);CHKERRQ(ierr);
+
+      ierr = MatSolve(F,b,x);CHKERRQ(ierr); 
+
+      /* Check the error */
+      ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);  /* u <- (-1.0)x + u */
+      ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
+      if (!rank){
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = MatDestroy(C1);CHKERRQ(ierr);
+  ierr = MatDestroy(F);CHKERRQ(ierr);
 
   /* Free data structures */
   ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
@@ -92,8 +134,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr); 
   ierr = MatDestroy(C);CHKERRQ(ierr); 
-  ierr = MatDestroy(C1);CHKERRQ(ierr);
-  ierr = MatDestroy(F);CHKERRQ(ierr);
+
 #else
   if (!rank) printf("This example needs PLAPLAPACK\n");
 #endif
