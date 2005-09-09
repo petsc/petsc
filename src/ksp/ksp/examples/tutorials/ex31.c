@@ -43,7 +43,7 @@ extern PetscErrorCode CreateStructures(DMMG);
 extern PetscErrorCode DestroyStructures(DMMG);
 extern PetscErrorCode ComputeInitialGuess(DMMG);
 extern PetscErrorCode ComputePredictor(DMMG);
-extern PetscErrorCode ComputeJacobian(DMMG,Mat);
+extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode ComputeCorrector(DMMG,Vec,Vec);
 

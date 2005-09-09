@@ -31,7 +31,7 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 #include "petscmg.h"
 #include "petscdmmg.h"
 
-extern PetscErrorCode ComputeJacobian(DMMG,Mat);
+extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode VecView_VTK(Vec, const char [], const char []);
 

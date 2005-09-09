@@ -6,7 +6,7 @@ static char help[] = "Solves 1D wave equation using multigrid.\n\n";
 #include "petscksp.h"
 #include "petscdmmg.h"
 
-extern PetscErrorCode ComputeJacobian(DMMG,Mat);
+extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode ComputeInitialSolution(DMMG*);
 
