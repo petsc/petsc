@@ -32,4 +32,11 @@ cca:
 	# Creating simple Ccaffeine script
 	@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ex1_rc.in > ex1_rc
 
-
+test-cca: cca
+	# Testing component example with Ccaffeine
+	@echo "   ${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ex1_rc > ex1_rc.log 2>1;"
+	@${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ex1_rc > ex1_rc.log 2>1; 
+	@if [ "`grep \"specific go command successful\" ex1_rc.log | wc -l`" == "1" \
+	  -a "`grep \"2 SNES Function norm \" ex1_rc.log | wc -l `" == "1" ];then \
+		echo -e "\n=== Component test passed (see ex1_rc.log).\n"; \
+	else echo -e "\n*** Component test failed (see ex1_rc.log).\n"; fi

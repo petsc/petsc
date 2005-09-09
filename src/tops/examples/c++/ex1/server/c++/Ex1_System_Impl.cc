@@ -86,6 +86,10 @@ throw ()
   int mx = solver.length(0);
   int my = solver.length(1);
 
+#ifdef USE_PORTS
+  this->myServices.releasePort("TOPS.Structured.Solver");
+#endif
+
   double hx     = 1.0/(double)(mx-1);
   double hy     = 1.0/(double)(my-1);
   double sc     = hx*hy;
@@ -109,11 +113,9 @@ throw ()
         f.set(i,j,uxx + uyy - sc*exp(u));
         CHKMEMA;
       }
-    }  }  
+    }  
+  }  
 
-#ifdef USE_PORTS
-  this->myServices.releasePort("TOPS.Structured.Solver");
-#endif
 
   // DO-NOT-DELETE splicer.end(Ex1.System.computeResidual)
 }
