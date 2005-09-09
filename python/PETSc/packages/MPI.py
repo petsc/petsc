@@ -417,7 +417,7 @@ class Configure(PETSc.package.Package):
 
   def SGIMPICheck(self):
     '''Returns true if SGI MPI is used'''
-    if self.libraries.check('', 'MPI_SGI_barrier') :
+    if self.libraries.check(self.lib, 'MPI_SGI_barrier') :
       self.logPrint('SGI MPI detected - defining MISSING_SIGTERM')
       self.addDefine('MISSING_SIGTERM', 1)
       return 1
