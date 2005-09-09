@@ -415,6 +415,16 @@ class Configure(PETSc.package.Package):
       self.extraLib.extend(extraLib)
     return
 
+  def SGIMPICheck(self):
+    '''Returns true if SGI MPI is used'''
+    if self.libraries.check('', 'MPI_SGI_barrier') :
+      self.logPrint('SGI MPI detected - defining MISSING_SIGTERM')
+      self.addDefine('MISSING_SIGTERM', 1)
+      return 1
+    else:
+      self.logPrint('SGI MPI test failure')
+      return 0
+
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
     self.addExtraLibraries()
@@ -425,7 +435,8 @@ class Configure(PETSc.package.Package):
     #self.executeTest(self.configureMPICHShared)
     self.executeTest(self.configureConversion)
     self.executeTest(self.configureTypes)
-    self.executeTest(self.configureMissingPrototypes)      
+    self.executeTest(self.configureMissingPrototypes)
+    self.executeTest(self.SGIMPICheck)
 
 if __name__ == '__main__':
   import config.framework
