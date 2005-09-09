@@ -31,12 +31,22 @@ cca:
 	@-${RM} *.cca.in
 	# Creating simple Ccaffeine script
 	@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ex1_rc.in > ex1_rc
+	@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ex1_gui_rc.in > ex1_gui_rc
 
 test-cca: cca
 	# Testing component example with Ccaffeine
-	@echo "   ${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ex1_rc > ex1_rc.log 2>1;"
-	@${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ex1_rc > ex1_rc.log 2>1; 
+	@${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ex1_rc > ex1_rc.log  2>&1 ; 
 	@if [ "`grep \"specific go command successful\" ex1_rc.log | wc -l`" == "1" \
 	  -a "`grep \"2 SNES Function norm \" ex1_rc.log | wc -l `" == "1" ];then \
 		echo -e "\n=== Component test passed (see ex1_rc.log).\n"; \
 	else echo -e "\n*** Component test failed (see ex1_rc.log).\n"; fi
+
+gui-cca: cca
+	# Run component example using Ccaffeine GUI (the output is in pOut0/pErr0)
+	@${CCAFE_HOME}/bin/gui-backend.sh --port 4242 --ccafe-rc ex1_gui_rc > .ccafe.out 2>&1 & \
+	echo -e "\nPlease wait...\n"; sleep 5; \
+	${CCAFE_HOME}/bin/gui.sh --port 4242 # --scaleFont 1.5
+
+kill-gui:
+	# Clean up after GUI 
+	@-${CCAFE_HOME}/bin/gui.sh --kill; ${CCAFE_HOME}/bin/gui-backend.sh --kill

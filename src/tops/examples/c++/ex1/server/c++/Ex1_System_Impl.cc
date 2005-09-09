@@ -166,16 +166,17 @@ throw (
 			   "TOPS.System",
 			   "TOPS.System", tm);
 
-  myServices.addProvidesPort(p, 
-			     "DoSolve",
-			     "gov.cca.ports.GoPort",
-			     myServices.createTypeMap());
-
   // Residual computation
   myServices.addProvidesPort(p,
 			   "TOPS.System.Compute.Residual",
 			   "TOPS.System.Compute.Residual", tm);
   
+
+  // GoPort (instead of main)
+  myServices.addProvidesPort(p, 
+			     "DoSolve",
+			     "gov.cca.ports.GoPort",
+			     myServices.createTypeMap());
 
   // Uses ports:
   myServices.registerUsesPort("TOPS.Structured.Solver",
