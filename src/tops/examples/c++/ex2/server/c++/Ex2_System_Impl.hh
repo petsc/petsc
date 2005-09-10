@@ -67,6 +67,7 @@ namespace Ex2 {
     double grashof;
     double prandtl;
     double lid;
+    gov::cca::Services myServices;
     // DO-NOT-DELETE splicer.end(Ex2.System._implementation)
 
   private:
@@ -163,6 +164,16 @@ namespace Ex2 {
       ::gov::cca::CCAException
     );
 
+
+    /**
+     * Execute some encapsulated functionality on the component. 
+     * Return 0 if ok, -1 if internal error but component may be 
+     * used further, and -2 if error so severe that component cannot
+     * be further used safely.
+     */
+    int32_t
+    go() throw () 
+    ;
   };  // end class System_impl
 
 } // end namespace Ex2

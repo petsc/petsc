@@ -1,0 +1,9 @@
+setSize 888 671
+setMaximum true
+setDropLocation 32 32
+pulldown Ex1.System System0
+setDropLocation 233 219
+pulldown TOPS.StructuredSolver StructuredSolver0
+connect System0 TOPS.Structured.Solver StructuredSolver0 TOPS.Structured.Solver
+go System0 DoSolve
+eof

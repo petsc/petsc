@@ -12,6 +12,7 @@
 #include "TOPS_StructuredSolver_Impl.hh"
 
 // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._includes)
+#include <iostream>
 #include "TOPS_Structured_Matrix_Impl.hh"
 // Uses ports includes
   // This code is the same as DAVecGetArray() except instead of generating
@@ -53,12 +54,26 @@
   return ua;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
 static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
 {
   PetscFunctionBegin;
   DMMG dmmg = (DMMG) vdmmg;
   TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
-  TOPS::System::Compute::Residual system = (TOPS::System::Compute::Residual) solver->getSystem();
+  TOPS::System::Compute::Residual system;
+#ifdef USE_PORTS
+  system = solver->getServices().getPort("TOPS.System.Compute.Residual");
+  if (system._is_nil()) {
+    std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
+	      << ": TOPS.System.Compute.Residual port is nil, " 
+	      << "possibly not connected." << std::endl;
+    PetscFunctionReturn(1);
+  }
+#else
+  system = (TOPS::System::Compute::Residual) solver->getSystem();
+#endif
+
   DA da = (DA) dmmg->dm;
   Vec u; 
   DAGetLocalVector(da,&u);
@@ -76,6 +91,10 @@ static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
   VecRestoreArray(u,0);
   DARestoreLocalVector(da,&u);
   VecRestoreArray(f,0);
+
+#ifdef USE_PORTS
+  solver->getServices().releasePort("TOPS.System.Compute.Residual");
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -83,16 +102,31 @@ static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
 {
   PetscFunctionBegin;
   TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
-  TOPS::System::Compute::InitialGuess system = (TOPS::System::Compute::InitialGuess) solver->getSystem();
+  TOPS::System::Compute::InitialGuess system;
+#ifdef USE_PORTS
+  system = solver->getServices().getPort("TOPS.System.Compute.InitialGuess");
+  if (system._is_nil()) {
+    std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
+	      << ": TOPS.System.Compute.InitialGuess port is nil, " 
+	      << "possibly not connected." << std::endl;
+    PetscFunctionReturn(1);
+  }
+#else
+  system = (TOPS::System::Compute::InitialGuess) solver->getSystem();
+#endif
 
   int mx,my,mz;
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
   solver->setLength(0,mx);
   solver->setLength(1,my);
   solver->setLength(2,mz);
-  sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);;
+  sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);
+
   system.computeInitialGuess(fa);
   VecRestoreArray(f,0);
+#ifdef USE_PORTS
+  solver->getServices().releasePort("TOPS.System.Compute.InitialGuess");
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -100,11 +134,12 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
 {
   PetscFunctionBegin;
   TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
-  TOPS::System::Compute::Matrix system = (TOPS::System::Compute::Matrix) solver->getSystem();
+  TOPS::System::Compute::Matrix system;
+
   TOPS::Structured::Matrix matrix1 = TOPS::Structured::Matrix::_create();
   TOPS::Structured::Matrix matrix2 = TOPS::Structured::Matrix::_create();
 
-  PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dim,dof,mx,my,mz;
+  PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dof,mx,my,mz;
   DAGetCorners((DA)dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);
   DAGetGhostCorners((DA)dmmg->dm,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);
@@ -114,15 +149,19 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   TOPS::Structured::Matrix_impl *imatrix1 = GetImpl(TOPS::Structured::Matrix,matrix1);
   imatrix1->vlength[0] = xm; imatrix1->vlength[1] = ym; imatrix1->vlength[2] = zm; 
   imatrix1->vlower[0] = xs; imatrix1->vlower[1] = ys; imatrix1->vlower[2] = zs; 
-  imatrix1->gghostlength[0] = gxm; imatrix1->gghostlength[1] = gym; imatrix1->gghostlength[2] = gzm; 
-  imatrix1->gghostlower[0] = gxs; imatrix1->gghostlower[1] = gys; imatrix1->gghostlower[2] = gzs; 
+  imatrix1->gghostlength[0] = gxm; imatrix1->gghostlength[1] = gym; 
+  imatrix1->gghostlength[2] = gzm; 
+  imatrix1->gghostlower[0] = gxs; imatrix1->gghostlower[1] = gys; 
+  imatrix1->gghostlower[2] = gzs; 
   imatrix1->vdimen = dof;
 
   TOPS::Structured::Matrix_impl *imatrix2 = GetImpl(TOPS::Structured::Matrix,matrix2);
   imatrix2->vlength[0] = xm; imatrix2->vlength[1] = ym; imatrix2->vlength[2] = zm; 
   imatrix2->vlower[0] = xs; imatrix2->vlower[1] = ys; imatrix2->vlower[2] = zs; 
-  imatrix2->gghostlength[0] = gxm; imatrix2->gghostlength[1] = gym; imatrix2->gghostlength[2] = gzm; 
-  imatrix2->gghostlower[0] = gxs; imatrix2->gghostlower[1] = gys; imatrix2->gghostlower[2] = gzs; 
+  imatrix2->gghostlength[0] = gxm; imatrix2->gghostlength[1] = gym; 
+  imatrix2->gghostlength[2] = gzm; 
+  imatrix2->gghostlower[0] = gxs; imatrix2->gghostlower[1] = gys; 
+  imatrix2->gghostlower[2] = gzs; 
   imatrix2->vdimen = dof;
 
   imatrix1->mat = J;
@@ -132,7 +171,27 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   solver->setLength(1,my);
   solver->setLength(2,mz);
 
-  system.computeMatrix(matrix1,matrix2);
+#ifdef USE_PORTS
+  system = solver->getServices().getPort("TOPS.System.Compute.Matrix");
+  if (system._is_nil()) {
+    std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
+	      << ": TOPS.System.Compute.Matrix port is nil, " 
+	      << "possibly not connected." << std::endl;
+    PetscFunctionReturn(1);
+  }
+#else
+  system = (TOPS::System::Compute::Matrix) solver->getSystem();
+#endif
+
+  // Use the port
+  if (system._not_nil()) {
+    system.computeMatrix(matrix1,matrix2);
+  }
+
+#ifdef USE_PORTS
+  solver->getServices().releasePort("TOPS.System.Compute.Matrix");
+#endif
+
   MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);
   MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);
   if (J != B) {
@@ -142,19 +201,36 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "FormRightHandSide"
 static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 {
   PetscFunctionBegin;
-  TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
-  TOPS::System::Compute::RightHandSide system = (TOPS::System::Compute::RightHandSide) solver->getSystem();
-
   int mx,my,mz;
+  TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
+  TOPS::System::Compute::RightHandSide system;
+
+#ifdef USE_PORTS
+  system = solver->getServices().getPort("TOPS.System.Compute.RightHandSide");
+#else
+  system = (TOPS::System::Compute::RightHandSide) solver->getSystem();
+#endif
+
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
   solver->setLength(0,mx);
   solver->setLength(1,my);
   solver->setLength(2,mz);
   sidl::array<double> fa = DAVecGetArrayBabel((DA)dmmg->dm,f);;
-  system.computeRightHandSide(fa);
+
+  if (system._not_nil()) {
+    system.computeRightHandSide(fa);
+  }
+
+#ifdef USE_PORTS
+  solver->getServices().releasePort("TOPS.System.Compute.RightHandSide");
+#endif
+
   VecRestoreArray(f,0);
   PetscFunctionReturn(0);
 }
@@ -163,6 +239,9 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 // user-defined constructor.
 void TOPS::StructuredSolver_impl::_ctor() {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._ctor)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::StructuredSolver_impl::_ctor()"
+
   this->dmmg = PETSC_NULL;
   this->da   = PETSC_NULL;
   this->m    = PETSC_DECIDE;
@@ -184,6 +263,9 @@ void TOPS::StructuredSolver_impl::_ctor() {
 // user-defined destructor.
 void TOPS::StructuredSolver_impl::_dtor() {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._dtor)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::StructuredSolver_impl::_dtor()"
+
   if (this->dmmg) {DMMGDestroy(this->dmmg);}
   if (this->startedpetsc) {
     PetscFinalize();
@@ -202,6 +284,23 @@ void TOPS::StructuredSolver_impl::_load() {
 
 // user-defined non-static methods:
 /**
+ * Method:  getServices[]
+ */
+::gov::cca::Services
+TOPS::StructuredSolver_impl::getServices ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getServices)
+  // Insert-Code-Here {TOPS.StructuredSolver.getServices} (getServices method)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::StructuredSolver_impl::getServices()"
+
+  return this->myServices;
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getServices)
+}
+
+/**
  * Method:  setSystem[]
  */
 void
@@ -210,6 +309,8 @@ TOPS::StructuredSolver_impl::setSystem (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setSystem)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::StructuredSolver_impl::setSystem()"
   this->system = system;
   system.setSolver(this->self);
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setSystem)
@@ -224,6 +325,8 @@ throw ()
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getSystem)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::StructuredSolver_impl::getSystem()"
   return this->system;
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getSystem)
 }
@@ -237,6 +340,8 @@ TOPS::StructuredSolver_impl::Initialize (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.Initialize)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::StructuredSolver_impl::Initialize"
   PetscTruth initialized;
   PetscInitialized(&initialized);
   if (initialized) {
@@ -254,7 +359,7 @@ throw ()
     arg.copy(argv[i], arg.length(), 0);
     argv[i][arg.length()] = 0;
   }
-  int    ierr = PetscInitialize(&argc,&argv,0,0);
+  int    ierr = PetscInitialize(&argc,&argv,0,0); 
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.Initialize)
 }
 
@@ -267,33 +372,74 @@ throw ()
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.solve)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::StructuredSolver_impl::solve()"
   PetscErrorCode ierr;
+  TOPS::System::System sys;
 
   if (!this->dmmg) {
-    TOPS::System::Initialize::Once once = (TOPS::System::Initialize::Once)this->system;
+    TOPS::System::Initialize::Once once;
+#ifdef USE_PORTS
+    once = myServices.getPort("TOPS.System.Initialize.Once");
+#else
+    once = (TOPS::System::Initialize::Once) this->system;
+#endif
     if (once._not_nil()) {    
       once.initializeOnce();
     }
+#ifdef USE_PORTS
+    myServices.releasePort("TOPS.System.Initialize.Once");
+#endif
+
     // create DMMG object 
     DMMGCreate(PETSC_COMM_WORLD,this->levels,(void*)&this->self,&this->dmmg);
-    DACreate(PETSC_COMM_WORLD,this->dim,this->wrap,this->stencil_type,this->lengths[0],this->lengths[1],this->lengths[2],this->m,this->n,
+    DACreate(PETSC_COMM_WORLD,this->dim,this->wrap,this->stencil_type,this->lengths[0],
+	     this->lengths[1],this->lengths[2],this->m,this->n,
              this->p,this->bs,this->s,PETSC_NULL,PETSC_NULL,PETSC_NULL,&this->da);
     DMMGSetDM(this->dmmg,(DM)this->da);
-    TOPS::System::Compute::Residual residual = (TOPS::System::Compute::Residual) this->system;
+
+    TOPS::System::Compute::Residual residual;
+#ifdef USE_PORTS
+    residual = myServices.getPort("TOPS.System.Compute.Residual");
+#else
+    residual = (TOPS::System::Compute::Residual) this->system;
+#endif
     if (residual._not_nil()) {
       ierr = DMMGSetSNES(this->dmmg, FormFunction, 0);
     } else {
       ierr = DMMGSetKSP(this->dmmg,FormRightHandSide,FormMatrix);
     }
-    TOPS::System::Compute::InitialGuess guess = (TOPS::System::Compute::InitialGuess) this->system;
+#ifdef USE_PORTS
+    myServices.releasePort("TOPS.System.Compute.Residual");
+#endif
+
+    TOPS::System::Compute::InitialGuess guess;
+#ifdef USE_PORTS
+    guess = myServices.getPort("TOPS.System.Compute.InitialGuess");
+#else
+    guess = (TOPS::System::Compute::InitialGuess) this->system;
+#endif
     if (guess._not_nil()) {
       ierr = DMMGSetInitialGuess(this->dmmg, FormInitialGuess);
     }
   }
-  TOPS::System::Initialize::EverySolve every = (TOPS::System::Initialize::EverySolve)this->system;
+#ifdef USE_PORTS
+  myServices.releasePort("TOPS.System.Compute.InitialGuess");
+#endif
+  
+  TOPS::System::Initialize::EverySolve every;
+#ifdef USE_PORTS
+  every = myServices.getPort("TOPS.System.Initialize.EverySolve");
+#else
+  every = (TOPS::System::Initialize::EverySolve)this->system;
+#endif
   if (every._not_nil()) {    
     every.initializeEverySolve();
   }
+#ifdef USE_PORTS
+    myServices.releasePort("TOPS.System.Initialize.EverySolve");
+#endif
+
   DMMGSolve(this->dmmg);
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.solve)
 }
@@ -474,6 +620,12 @@ throw (
 			   "TOPS.Structured.Solver", tm);
   
   // Uses ports
+  services.registerUsesPort("TOPS.System.Initialize.Once",
+			    "TOPS.System.Initialize.Once", tm);
+
+  services.registerUsesPort("TOPS.System.Initialize.EverySolve",
+			    "TOPS.System.Initialize.EverySolve", tm);
+
   services.registerUsesPort("TOPS.System.Compute.InitialGuess",
 			    "TOPS.System.Compute.InitialGuess", tm);
 
