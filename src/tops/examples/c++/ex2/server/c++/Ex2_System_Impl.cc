@@ -13,6 +13,7 @@
 
 // DO-NOT-DELETE splicer.begin(Ex2.System._includes)
 // Insert-Code-Here {Ex2.System._includes} (additional includes or code)
+#include "petsc.h"
 // DO-NOT-DELETE splicer.end(Ex2.System._includes)
 
 // user-defined constructor.
@@ -270,7 +271,95 @@ throw (
 ){
   // DO-NOT-DELETE splicer.begin(Ex2.System.setServices)
   // Insert-Code-Here {Ex2.System.setServices} (setServices method)
+#undef __FUNCT__
+#define __FUNCT__ "Ex2::System_impl::setServices"
+
+  myServices = services;
+  gov::cca::TypeMap tm = services.createTypeMap();
+  if(tm._is_nil()) {
+    fprintf(stderr, "Error:: %s:%d: gov::cca::TypeMap is nil\n",
+	    __FILE__, __LINE__);
+    exit(1);
+  }
+  gov::cca::Port p = self;      //  Babel required casting
+  if(p._is_nil()) {
+    fprintf(stderr, "Error:: %s:%d: Error casting self to gov::cca::Port \n",
+	    __FILE__, __LINE__);
+    exit(1);
+  }
+  
+  // Provides ports
+  // Basic functionality
+  myServices.addProvidesPort(p,
+			   "TOPS.System",
+			   "TOPS.System", tm);
+
+  myServices.addProvidesPort(p,
+			   "TOPS.System.Initialize.Once",
+			   "TOPS.System.Initialize.Once", tm);
+  
+  myServices.addProvidesPort(p,
+			   "TOPS.System.Initialize.EverySolve",
+			   "TOPS.System.Initialize.EverySolve", tm);
+
+  myServices.addProvidesPort(p,
+			   "TOPS.System.Compute.InitialGuess",
+			   "TOPS.System.Compute.InitialGuess", tm);
+
+  myServices.addProvidesPort(p,
+			   "TOPS.System.Compute.Residual",
+			   "TOPS.System.Compute.Residual", tm);
+
+  // GoPort (instead of main)
+  myServices.addProvidesPort(p, 
+			     "DoSolve",
+			     "gov.cca.ports.GoPort",
+			     myServices.createTypeMap());
+
+  // Uses ports:
+  myServices.registerUsesPort("TOPS.Structured.Solver",
+			      "TOPS.Structured.Solver", tm);
+
   // DO-NOT-DELETE splicer.end(Ex2.System.setServices)
+}
+
+/**
+ * Execute some encapsulated functionality on the component. 
+ * Return 0 if ok, -1 if internal error but component may be 
+ * used further, and -2 if error so severe that component cannot
+ * be further used safely.
+ */
+int32_t
+Ex2::System_impl::go ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(Ex2.System.go)
+  // Insert-Code-Here {Ex2.System.go} (go method)
+#undef __FUNCT__
+#define __FUNCT__ "Ex2::System_impl::go"
+
+  // Parameter port stuff here (instead of argc, argv);
+  // for now pass fake argc and argv to solver
+  int argc = 1; 
+  char *argv[1];
+  argv[0] = (char*) malloc(10*sizeof(char));
+  strcpy(argv[0],"ex2");
+
+  TOPS::Structured::Solver solver = myServices.getPort("TOPS.Structured.Solver");
+  this->solver = solver;
+  solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
+  
+  PetscOptionsSetValue("-ksp_monitor",PETSC_NULL);
+
+  // We don't need to call setSystem since it will be obtained through
+  // getPort calls
+
+  this->solver.solve();
+
+  myServices.releasePort("TOPS.StructuredSolver");
+
+  PetscFunctionReturn(0);  // DO-NOT-DELETE splicer.end(Ex2.System.go)
 }
 
 

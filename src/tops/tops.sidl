@@ -98,7 +98,9 @@ package TOPS version 0.0.0 {
       void setLevels(in int levels);
     }
   }
-  class StructuredSolver implements-all TOPS.Structured.Solver, gov.cca.Component {}
+  class StructuredSolver implements-all TOPS.Structured.Solver, gov.cca.Component {
+    gov.cca.Services getServices();
+  }
 
 
   //  ---------- Interfaces for system on unstructured grid
