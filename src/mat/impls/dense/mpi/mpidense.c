@@ -827,7 +827,7 @@ PetscErrorCode MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
   ierr = MatGetLocalSize(A,&s2,&s3);CHKERRQ(ierr);
   if (ll) {
     ierr = VecGetLocalSize(ll,&s2a);CHKERRQ(ierr);
-    if (s2a != s2) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector non-conforming local size");
+    if (s2a != s2) SETERRQ2(PETSC_ERR_ARG_SIZ,"Left scaling vector non-conforming local size, %d != %d.", s2a, s2);
     ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       x = l[i];
@@ -838,8 +838,8 @@ PetscErrorCode MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
     ierr = PetscLogFlops(n*m);CHKERRQ(ierr);
   }
   if (rr) {
-    ierr = VecGetSize(rr,&s3a);CHKERRQ(ierr);
-    if (s3a != s3) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vec non-conforming local size");
+    ierr = VecGetLocalSize(rr,&s3a);CHKERRQ(ierr);
+    if (s3a != s3) SETERRQ2(PETSC_ERR_ARG_SIZ,"Right scaling vec non-conforming local size, %d != %d.", s3a, s3);
     ierr = VecScatterBegin(rr,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD,mdn->Mvctx);CHKERRQ(ierr);
     ierr = VecScatterEnd(rr,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD,mdn->Mvctx);CHKERRQ(ierr);
     ierr = VecGetArray(mdn->lvec,&r);CHKERRQ(ierr);
