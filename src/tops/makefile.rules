@@ -47,6 +47,49 @@ libserver-c++.${SOSUFFIX}:
 	$(OMAKE)  LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERLIBS="-L${BABEL_LIB} -lsidl ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} ${PETSC_LIB}" shared_arch
 #-------------------------------------------------------------------------------
 
+ifeq ($(EXNUM),)
+  EXNUM=1
+endif
+cca: 
+	# Generating *.cca files
+	@${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libtops.${SL_LINKER_SUFFIX} \
+		TOPS.StructuredSolver c++ dynamic global now TOPS.StructuredSolver \
+		> libtops.${SL_LINKER_SUFFIX}.cca.in
+	@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
+		-e /"@SOSUFFIX@/ s|@SOSUFFIX@|${SL_LINKER_SUFFIX}|" \
+		libtops.${SL_LINKER_SUFFIX}.cca.in >  ${PETSC_LIB_DIR}/libtops.${SL_LINKER_SUFFIX}.cca
+	@${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libex$(EXNUM).${SL_LINKER_SUFFIX} \
+		Ex$(EXNUM).System c++ dynamic global now Ex$(EXNUM).System > libex$(EXNUM).${SL_LINKER_SUFFIX}.cca.in
+	@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
+	    	-e /"@SOSUFFIX@/ s|@SOSUFFIX@|${SL_LINKER_SUFFIX}|" \
+		libex$(EXNUM).${SL_LINKER_SUFFIX}.cca.in > ${PETSC_LIB_DIR}/libex$(EXNUM).${SL_LINKER_SUFFIX}.cca
+	@-${RM} *.cca.in
+	# Creating simple Ccaffeine script
+	@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ex$(EXNUM)_rc.in > ex$(EXNUM)_rc
+	@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ex$(EXNUM)_gui_rc.in > ex$(EXNUM)_gui_rc
+
+test-cca: cca
+	# Testing component example with Ccaffeine
+	@${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ex$(EXNUM)_rc > ex$(EXNUM)_rc.log  2>&1 ; 
+	@if [ "`grep \"specific go command successful\" ex$(EXNUM)_rc.log | wc -l`" == "1" \
+	  -a "`egrep \"1 .+ norm \" ex$(EXNUM)_rc.log | wc -l `" != "0" ];then \
+		echo -e "\n=== Component test succeeded (see ex$(EXNUM)_rc.log).\n"; \
+	else echo -e "\n*** Component test failed (see ex$(EXNUM)_rc.log).\n"; fi
+
+gui-cca: cca
+	# Run component example using Ccaffeine GUI (the output is in pOut0/pErr0)
+	@${CCAFE_HOME}/bin/gui-backend.sh --port 4242 --ccafe-rc \
+		ex$(EXNUM)_gui_rc > .ccafe.out 2>&1 & \
+	echo -e "\nPlease wait...\n"; sleep 5; \
+	${CCAFE_HOME}/bin/gui.sh --port 4242 # --scaleFont 1.5
+
+kill-gui:
+	# Clean up after GUI 
+	@-${CCAFE_HOME}/bin/gui.sh --kill; ${CCAFE_HOME}/bin/gui-backend.sh --kill
+
+#-------------------------------------------------------------------------------
+
+
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
 

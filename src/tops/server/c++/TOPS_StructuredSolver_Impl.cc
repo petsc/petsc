@@ -380,7 +380,7 @@ throw ()
   if (!this->dmmg) {
     TOPS::System::Initialize::Once once;
 #ifdef USE_PORTS
-    once = myServices.getPort("TOPS::System::Initialize::Once");
+    once = myServices.getPort("TOPS.System.Initialize.Once");
 #else
     once = (TOPS::System::Initialize::Once) this->system;
 #endif
@@ -388,7 +388,7 @@ throw ()
       once.initializeOnce();
     }
 #ifdef USE_PORTS
-    myServices.releasePort("TOPS::System::Initialize::Once");
+    myServices.releasePort("TOPS.System.Initialize.Once");
 #endif
 
     // create DMMG object 

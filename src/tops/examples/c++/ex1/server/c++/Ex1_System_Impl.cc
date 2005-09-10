@@ -65,6 +65,9 @@ Ex1::System_impl::computeResidual (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(Ex1.System.computeResidual)
+#undef __FUNCT__
+#define __FUNCT__ "Ex1::System_impl::computeResidual"
+
   TOPS::Structured::Solver solver;
 #ifdef USE_PORTS
   solver = this->myServices.getPort("TOPS.Structured.Solver");
@@ -145,6 +148,8 @@ throw (
 ){
   // DO-NOT-DELETE splicer.begin(Ex1.System.setServices)
   // Insert-Code-Here {Ex1.System.setServices} (setServices method)
+#undef __FUNCT__
+#define __FUNCT__ "Ex1::System_impl::setServices"
 
   myServices = services;
   gov::cca::TypeMap tm = services.createTypeMap();
@@ -180,7 +185,7 @@ throw (
 
   // Uses ports:
   myServices.registerUsesPort("TOPS.Structured.Solver",
-			    "TOPS.Structured.Solver", tm);
+			      "TOPS.Structured.Solver", tm);
 
   // DO-NOT-DELETE splicer.end(Ex1.System.setServices)
 }
@@ -198,6 +203,9 @@ throw ()
 {
   // DO-NOT-DELETE splicer.begin(Ex1.System.go)
   // Insert-Code-Here {Ex1.System.go} (go method)
+
+#undef __FUNCT__
+#define __FUNCT__ "Ex1::System_impl::go"
   
   // Parameter port stuff here (instead of argc, argv);
   // for now pass fake argc and argv to solver
