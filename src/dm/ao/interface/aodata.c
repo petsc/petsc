@@ -656,7 +656,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentRestoreLocalIS(AOData aodata,const
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
-  PetscValidHeaderSpecific(is,IS_COOKIE,4);
+  if (is) PetscValidHeaderSpecific(is,IS_COOKIE,4);
   ierr = (*aodata->ops->segmentrestorelocal)(aodata,name,segment,0,0,data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
