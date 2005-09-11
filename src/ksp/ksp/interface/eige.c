@@ -150,7 +150,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP ksp,PetscI
     if (!rank) {
       ierr = MatSetSizes(A,n,n,n,n);CHKERRQ(ierr);
     } else {
-      ierr = MatSetSizes(A,0,n,n,n);CHKERRQ(ierr);
+      ierr = MatSetSizes(A,0,0,n,n);CHKERRQ(ierr);
     }
     ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
     ierr = MatMPIDenseSetPreallocation(A,PETSC_NULL);
