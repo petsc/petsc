@@ -10,6 +10,29 @@
 PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE = 0;
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatNullSpaceSetFunction"
+/*@C
+   MatNullSpaceSetFunction - set a function that removes a null space from a vector
+   out of null spaces.
+
+   Collective on MatNullSpace
+
+   Input Parameters:
++  sp - the null space object
+-  remove - the function that removes the null space
+
+.keywords: PC, null space, create
+
+.seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace, MatNullSpaceCreate()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*remove)(Vec))
+{
+  PetscFunctionBegin;
+  sp->remove = remove;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatNullSpaceCreate"
 /*@C
    MatNullSpaceCreate - Creates a data structure used to project vectors 
@@ -35,7 +58,7 @@ PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE = 0;
 
 .keywords: PC, null space, create
 
-.seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace
+.seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace, MatNullSpaceSetFunction()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceCreate(MPI_Comm comm,PetscTruth has_cnst,PetscInt n,const Vec vecs[],MatNullSpace *SP)
 {
@@ -79,7 +102,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceCreate(MPI_Comm comm,PetscTruth ha
 
 .keywords: PC, null space, destroy
 
-.seealso: MatNullSpaceCreate(), MatNullSpaceRemove()
+.seealso: MatNullSpaceCreate(), MatNullSpaceRemove(), MatNullSpaceSetFunction()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace sp)
 {
@@ -115,7 +138,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace sp)
 
 .keywords: PC, null space, remove
 
-.seealso: MatNullSpaceCreate(), MatNullSpaceDestroy()
+.seealso: MatNullSpaceCreate(), MatNullSpaceDestroy(), MatNullSpaceSetFunction()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 {
@@ -146,7 +169,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec
     sum  = -sum;
     ierr = VecAXPY(l,sum,sp->vecs[j]);CHKERRQ(ierr);
   }
-  
+
+  if (sp->remove){
+    ierr = (*sp->remove)(l);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -166,7 +192,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec
 
 .keywords: PC, null space, remove
 
-.seealso: MatNullSpaceCreate(), MatNullSpaceDestroy()
+.seealso: MatNullSpaceCreate(), MatNullSpaceDestroy(), MatNullSpaceSetFunction()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat)
 {
@@ -215,6 +241,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat)
     ierr = PetscPrintf(comm,"|| A * v[%D] || = %g\n",j,nrm);CHKERRQ(ierr);
     if (nrm > 1.e-7 && flg1) {ierr = VecView(l,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
     if (nrm > 1.e-7 && flg2) {ierr = VecView(l,PETSC_VIEWER_DRAW_(comm));CHKERRQ(ierr);}
+  }
+
+  if (sp->remove){
+    SETERRQ(PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
   }
   
   PetscFunctionReturn(0);
