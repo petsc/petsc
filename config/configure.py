@@ -72,6 +72,7 @@ def petsc_configure(configure_options):
   sys.argv = sys.argv[:1] + configure_options + sys.argv[1:]
   # check PETSC_ARCH
   check_petsc_arch(sys.argv)
+  extraLogs = []
 
   # support a few standard configure option types 
   for l in range(0,len(sys.argv)):
@@ -90,14 +91,6 @@ def petsc_configure(configure_options):
       if name.find('=') == -1: sys.argv[l] += '=0'
       elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
 
-  # Disable threads on RHL9
-  if rhl9():
-    sys.argv.append('--useThreads=0')
-    print '================================================================================='
-    print ' *** RHL9 detected. Threads do not work correctly with this distribution ***'
-    print ' ******** Disabling thread usage for this run of config/configure.py *****'
-    print '================================================================================='
-
   # Check for broken cygwin
   if chkcygwin():
     print '================================================================================='
@@ -106,13 +99,24 @@ def petsc_configure(configure_options):
     print ' *** be done by running cygwin-setup, selecting "next" all the way.***'
     print '================================================================================='
     sys.exit(3)
+
+  # Disable threads on RHL9
+  if rhl9():
+    sys.argv.append('--useThreads=0')
+    extraLogs.append('''\
+================================================================================
+   *** RHL9 detected. Threads do not work correctly with this distribution ***
+    ****** Disabling thread usage for this run of config/configure.py *******
+================================================================================''')
+
   # Threads don't work for cygwin & python-2.4
   if chkcygwinpython():
     sys.argv.append('--useThreads=0')
-    print '================================================================================='
-    print ' *** Cygwin-python-2.4 detected. Threads do not work correctly with this version ***'
-    print ' ******** Disabling thread usage for this run of config/configure.py *****'
-    print '================================================================================='
+    extraLogs.append('''\
+================================================================================
+** Cygwin-python-2.4 detected. Threads do not work correctly with this version *
+ ********* Disabling thread usage for this run of config/configure.py **********
+================================================================================''')
           
   # Should be run from the toplevel
   pythonDir = os.path.abspath(os.path.join('python'))
@@ -155,6 +159,8 @@ def petsc_configure(configure_options):
     sys.argv.append('--with-shared=0')
 
   framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure','-optionsModule=PETSc.compilerOptions'], loadArgDB = 0)
+  framework.setup()
+  framework.logPrint('\n'.join(extraLogs))
   try:
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
