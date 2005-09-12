@@ -11,7 +11,7 @@ parse-check:
 
 #-------------------------------------------------------------------------------
 clients: 
-	for LANGUAGE in $(LANGUAGES); do \
+	-@for LANGUAGE in $(LANGUAGES); do \
 		echo -e "\n### Building $$LANGUAGE client library."; \
 		${BABEL} -R${CCA_REPO} --suppress-timestamp -c $$LANGUAGE -o ./client/$$LANGUAGE ${SIDLFILES} ; \
 		cat client/$$LANGUAGE/babel.make | sed s/\\.cc/.o/g | sed s/\\.c/.o/g > client/$$LANGUAGE/makefile; \
@@ -23,17 +23,17 @@ clients:
 libclient-c: 
 	-@${CC} -c ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.cc
 	-@${C_CC} -c ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.c
-	$(OMAKE)  LIBNAME=libclient-${LANGUAGE} SHARED_LIBRARY_TMPDIR=. OTHERLIBS="-L${BABEL_LIB} -lsidl ${SL_LINKER_LIBS} ${SYS_LIB}" shared_arch
+	-@$(OMAKE)  LIBNAME=libclient-${LANGUAGE} SHARED_LIBRARY_TMPDIR=. OTHERLIBS="${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB}" shared_arch
 
 libclient-c++: libclient-c
 
 
 libclient-python: 
-	python setup.py --include-dirs=${BABEL_INCLUDE} --include-dirs=${BABEL_INCLUDE}/python2.4/babel --library-dirs=${BABEL_LIB}  install   --install-purelib=./ --install-platlib=./ --install-headers=include --install-scripts=scripts --install-data=data
+	-@python setup.py --include-dirs=${BABEL_INCLUDE} --include-dirs=${BABEL_INCLUDE}/python2.4/babel --library-dirs=${BABEL_LIB_DIR}  install   --install-purelib=./ --install-platlib=./ --install-headers=include --install-scripts=scripts --install-data=data
 
 #-------------------------------------------------------------------------------
 server-c++:  server/c++/makefile
-	cd server/c++; make TLIBNAME=${TLIBNAME} libserver-c++.${SOSUFFIX}
+	-@cd server/c++; make TLIBNAME=${TLIBNAME} libserver-c++.${SOSUFFIX}
 
 server/c++/makefile: ${SIDLFILES}
 	@-${BK} edit server/c++/*_Impl.cc server/c++/*_Impl.hh
@@ -42,9 +42,9 @@ server/c++/makefile: ${SIDLFILES}
 	echo "include ${PETSC_DIR}/src/tops/makefile.rules" > server/c++/makefile
 
 libserver-c++.${SOSUFFIX}: 
-	${CC} ${USE_PORTS} -c ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++ *.cc
-	${C_CC} ${USE_PORTS} -c ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++  *.c
-	$(OMAKE)  LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERLIBS="-L${BABEL_LIB} -lsidl ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} ${PETSC_LIB}" shared_arch
+	-@${CC} ${USE_PORTS} -c ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++ *.cc
+	-@${C_CC} ${USE_PORTS} -c ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++  *.c
+	-@$(OMAKE)  LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERLIBS="${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} ${PETSC_LIB}" shared_arch
 #-------------------------------------------------------------------------------
 
 ifeq ($(EXNUM),)
@@ -71,10 +71,11 @@ cca:
 test-cca: cca
 	# Testing component example with Ccaffeine
 	@${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ex$(EXNUM)_rc > ex$(EXNUM)_rc.log  2>&1 ; 
-	@if [ "`grep \"specific go command successful\" ex$(EXNUM)_rc.log | wc -l`" == "1" \
-	  -a "`egrep \"1 .+ norm \" ex$(EXNUM)_rc.log | wc -l `" != "0" ];then \
-		echo -e "\n=== Component test succeeded (see ex$(EXNUM)_rc.log).\n"; \
-	else echo -e "\n*** Component test failed (see ex$(EXNUM)_rc.log).\n"; fi
+	@if [ "`egrep \"(specific|1 .+norm)\" ex$(EXNUM)_rc.log | wc -l`" -eq "2" ];then \
+	  echo -e "\n=== Component test succeeded (see ex$(EXNUM)_rc.log).\n"; \
+	else \
+          echo -e "\n*** Component test failed (see ex$(EXNUM)_rc.log).\n"; \
+        fi
 
 gui-cca: cca
 	# Run component example using Ccaffeine GUI (the output is in pOut0/pErr0)
