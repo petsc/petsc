@@ -398,10 +398,11 @@ struct  _p_MatFDColoring{
 */
 struct _p_MatNullSpace {
   PETSCHEADER(int);
-  PetscTruth  has_cnst;
-  PetscInt    n;
-  Vec*        vecs;
-  Vec         vec;      /* for out of place removals */
+  PetscTruth     has_cnst;
+  PetscInt       n;
+  Vec*           vecs;
+  Vec            vec;             /* for out of place removals */
+  PetscErrorCode (*remove)(Vec);  /* for user provided removal function */
 };
 
 /* 
