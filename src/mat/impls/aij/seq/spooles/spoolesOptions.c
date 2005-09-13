@@ -60,15 +60,7 @@ PetscErrorCode SetSpoolesOptions(Mat A, Spooles_options *options)
     } 
 
     ierr = PetscOptionsEList("-mat_spooles_ordering","ordering type","None",ordertype,4,ordertype[1],&indx,&flg);CHKERRQ(ierr);
-    if (flg) {
-      PetscMPIInt rank,size;
-      options->ordering = indx;
-      ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-      ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
-      if (indx == 0 && size > 1 && !rank){
-        ierr = PetscPrintf(PETSC_COMM_SELF," Warning: Ordering BestOfNDandMS might give wrong answer, check your solution! \n");
-      }
-    }
+    if (flg) options->ordering = indx;
    
     ierr = PetscOptionsInt("-mat_spooles_maxdomainsize","maxdomainsize","None",\
                            options->maxdomainsize,&options->maxdomainsize,PETSC_NULL);CHKERRQ(ierr);
