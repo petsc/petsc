@@ -123,6 +123,7 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
 
   /* Create PLAPACK vector objects, then copy b into PLAPACK b */
   PLA_Mvector_create(lu->datatype,M,1,lu->templ,PLA_ALIGN_FIRST,&v_pla);  
+  PLA_Obj_set_to_zero(v_pla);
 
   /* Copy b into rhs_pla */
   PLA_API_begin();   
@@ -214,6 +215,7 @@ PetscErrorCode MatLUFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F)
   /* Create PLAPACK matrix object */
   lu->A = NULL; lu->pivots = NULL;
   PLA_Matrix_create(lu->datatype,M,M,lu->templ,PLA_ALIGN_FIRST,PLA_ALIGN_FIRST,&lu->A);  
+  PLA_Obj_set_to_zero(lu->A);
   PLA_Mvector_create(MPI_INT,M,1,lu->templ,PLA_ALIGN_FIRST,&lu->pivots);
 
   /* Copy A into lu->A */
