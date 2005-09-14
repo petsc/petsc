@@ -20,6 +20,7 @@ class Package(config.base.Configure):
     else:
       self.name           = 'DEBUGGING'
     self.downloadname     = self.name
+    self.excludename      = []  # list of names that could be false positives for ex: SuperLU_DIST when looking for SuperLU
     self.PACKAGE          = self.name.upper()
     self.package          = self.name.lower()
     self.version          = ''
@@ -245,6 +246,13 @@ class Package(config.base.Configure):
         return
     raise RuntimeError('Unable to download '+self.package+' from locations '+str(self.download)) 
 
+  # Check is the dir matches something in the excludename list
+  def matchExcludeDir(self,dir):
+    for exdir in self.excludename:
+      if dir.startswith(exdir):
+        return 1
+    return 0
+      
   def getDir(self, retry = 1):
     '''Find the directory containing the package'''
     packages = self.petscdir.externalPackagesDir
@@ -253,7 +261,7 @@ class Package(config.base.Configure):
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
     Dir = None
     for dir in os.listdir(packages):
-      if dir.startswith(self.downloadname) and os.path.isdir(os.path.join(packages, dir)):
+      if dir.startswith(self.downloadname) and os.path.isdir(os.path.join(packages, dir)) and not self.matchExcludeDir(dir):
         Dir = dir
         break
     if Dir is None:
