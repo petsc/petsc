@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download          = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/Prometheus-1.8.1-Petsc-2.3.tar.gz']
+    self.download          = ['http://www.columbia.edu/~ma2325/Prometheus-1.8.2.tar.gz']
     self.functions         = []
     self.includes          = []
     self.liblist           = [['libpromfei.a','libprometheus.a']]
