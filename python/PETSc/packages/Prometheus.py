@@ -99,7 +99,7 @@ class Configure(PETSc.package.Package):
   def postProcess(self):
     if self.compilePrometheus:
       self.logPrintBox('Compiling Prometheus; this may take several minutes')
-      output  = config.base.Configure.executeShellCommand('cd '+self.prometheusDir+'; make prom; mv '+os.path.join('lib','lib*.a')+' '+os.path.join(self.installDir,'lib'),timeout=250, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cd '+self.prometheusDir+'; make prom PETSC_ARCH='+self.arch.arch+'; mv '+os.path.join('lib','lib*.a')+' '+os.path.join(self.installDir,'lib'),timeout=250, log = self.framework.log)[0]
       self.framework.log.write(output)
       output  = config.base.Configure.executeShellCommand('cp '+os.path.join(self.prometheusDir,'include','*.*')+' '+os.path.join(self.prometheusDir,'fei_prom','*.h')+' '+os.path.join(self.installDir,'include'),timeout=250, log = self.framework.log)[0]      
       self.framework.log.write(output)
