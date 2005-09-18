@@ -398,7 +398,7 @@ class Configure(script.Script):
         self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
       return
 
-    cleanup = cleanup and self.framework.cleanup
+    cleanup = cleanup and self.framework.doCleanup
     command = self.getCompilerCmd()
     if self.compilerDefines: self.framework.outputHeader(self.compilerDefines)
     self.framework.outputCHeader(self.compilerFixes)
@@ -452,7 +452,7 @@ class Configure(script.Script):
       self.linkerObj = ''
       return (out, ret)
 
-    cleanup = cleanup and self.framework.cleanup
+    cleanup = cleanup and self.framework.doCleanup
     if shared == 'dynamic':
       cmd = self.getDynamicLinkerCmd()
     elif shared:
@@ -512,7 +512,7 @@ class Configure(script.Script):
           raise RuntimeError('Must give a default value for '+defaultOutputArg+' since executables cannot be run')
       else:
         raise RuntimeError('Running executables on this system is not supported')
-    cleanup = cleanup and self.framework.cleanup
+    cleanup = cleanup and self.framework.doCleanup
     if executor:
       command = executor+' ./'+self.linkerObj
     else:
