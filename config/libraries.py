@@ -310,8 +310,8 @@ int checkInit(void) {
     if self.checkRun(defaultIncludes, body, executor = executor):
       isShared = 1
     self.setCompilers.LIBS = oldLibs
-    if os.path.isfile('lib1.so'): os.remove('lib1.so')
-    if os.path.isfile('lib2.so'): os.remove('lib2.so')
+    if os.path.isfile('lib1.so') and self.framework.doCleanup: os.remove('lib1.so')
+    if os.path.isfile('lib2.so') and self.framework.doCleanup: os.remove('lib2.so')
     if isShared:
       self.framework.logPrint('Library was shared')
     else:
