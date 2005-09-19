@@ -196,8 +196,6 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApply(PC,PetscErrorCode (*)(v
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyTranspose(PC,PetscErrorCode (*)(void*,Vec,Vec));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetSetUp(PC,PetscErrorCode (*)(void*));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyRichardson(PC,PetscErrorCode (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt));
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC,PetscErrorCode (*)(void*,KSP,Vec,Vec));
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC,PetscErrorCode (*)(void*,KSP,Vec,Vec));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetView(PC,PetscErrorCode (*)(void*,PetscViewer));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetDestroy(PC,PetscErrorCode (*)(void*));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetContext(PC,void**);
