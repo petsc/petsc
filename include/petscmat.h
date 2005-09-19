@@ -107,8 +107,8 @@ typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX} MatReuse;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm,Mat*);
-PetscPolymorphicFunction(MatCreate,(MPI_Comm comm,void *ctx),(comm,&A),Mat,A)
-PetscPolymorphicFunction(MatCreate,(void *ctx),(PETSC_COMM_WORLD,&A),Mat,A)
+PetscPolymorphicFunction(MatCreate,(MPI_Comm comm),(comm,&A),Mat,A)
+PetscPolymorphicFunction(MatCreate,(),(PETSC_COMM_WORLD,&A),Mat,A)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat,MatType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat);
