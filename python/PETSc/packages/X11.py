@@ -192,6 +192,7 @@ acfindx:
         self.popLanguage()
           
     if foundInclude and foundLibrary:
+      self.logPrint('Found X11 includes and libraries')
       self.foundX11  = 1
       if includeDir:
         self.include = '-I'+includeDir
@@ -208,6 +209,11 @@ acfindx:
       self.addSubstitution('X_EXTRA_LIBS', '')
       if hasattr(self.framework, 'packages'):
         self.framework.packages.append(self)
+    else:
+      if not foundInclude:
+        self.logPrint('Could not find X11 includes')
+      if not foundLibrary:
+        self.logPrint('Could not find X11 libraries')
     return
 
   def configure(self):

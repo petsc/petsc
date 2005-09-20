@@ -304,7 +304,7 @@ class Configure(config.base.Configure):
     if 'optionsModule' in args:
       del args['optionsModule']
     if not 'PETSC_ARCH' in args:
-      args['PETSC_ARCH'] = self.arch.arch
+      args['PETSC_ARCH'] = '-PETSC_ARCH='+str(self.arch.arch)
     f = file(scriptName, 'w')
     f.write('#!/usr/bin/env python\n')
     f.write('if __name__ == \'__main__\':\n')

@@ -11,6 +11,8 @@ class Configure(config.base.Configure):
     return
 
   def __str__(self):
+    if not hasattr(self, 'scalartype') or not hasattr(self, 'clanguage'):
+      return ''
     return '  Scalar type:' + self.scalartype + '\n  Clanguage: ' + self.clanguage +'\n'
     
   def setupHelp(self, help):
