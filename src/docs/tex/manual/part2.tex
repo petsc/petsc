@@ -1674,7 +1674,7 @@ page and Section~\ref{sec_viewers}.
 \begin{tabular}{ll}
 {\bf Function Name} & {\bf Operation} \\
 \hline
-MatAXPY(Mat Y,Mat X, PetscScalar a,MatStructure); & $ Y = Y + a*X $ \\
+MatAXPY(Mat Y, PetscScalar a,Mat X,MatStructure); & $ Y = Y + a*X $ \\
 MatMult(Mat A,Vec x, Vec y); & $ y = A*x $ \\
 MatMultAdd(Mat A,Vec x, Vec y,Vec z); & $ z = y + A*x $ \\
 MatMultTranspose(Mat A,Vec x, Vec y); & $ y = A^{T}*x $ \\
