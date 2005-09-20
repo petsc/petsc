@@ -155,6 +155,12 @@ PetscErrorCode MatSolve_MPIAIJSpooles(Mat A,Vec b,Vec x)
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,lu->nmycol,lu->entX,&lu->vec_spooles);CHKERRQ(ierr); 
 #else    
     ierr = VecCreateSeq(PETSC_COMM_SELF,lu->nmycol,&lu->vec_spooles);CHKERRQ(ierr);
+#endif 
+    ierr = ISCreateStride(PETSC_COMM_SELF,lu->nmycol,0,1,&lu->iden);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->nmycol,lu->rowindX,&lu->is_petsc);CHKERRQ(ierr);  
+    ierr = VecScatterCreate(lu->vec_spooles,lu->iden,x,lu->is_petsc,&lu->scat);CHKERRQ(ierr); 
+  }
+#if defined(PETSC_USE_COMPLEX)
     ierr = VecGetArray(lu->vec_spooles,&array);CHKERRQ(ierr);   
     for (irow = 0; irow < lu->nmycol; irow++){
       DenseMtx_complexEntry(lu->mtxX,irow,0,&x_real,&x_imag);
@@ -162,14 +168,8 @@ PetscErrorCode MatSolve_MPIAIJSpooles(Mat A,Vec b,Vec x)
     }
     ierr = VecRestoreArray(lu->vec_spooles,&array);CHKERRQ(ierr);
 #endif 
-    ierr = ISCreateStride(PETSC_COMM_SELF,lu->nmycol,0,1,&lu->iden);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->nmycol,lu->rowindX,&lu->is_petsc);CHKERRQ(ierr);  
-    ierr = VecScatterCreate(lu->vec_spooles,lu->iden,x,lu->is_petsc,&lu->scat);CHKERRQ(ierr); 
-  }
-
   ierr = VecScatterBegin(lu->vec_spooles,x,INSERT_VALUES,SCATTER_FORWARD,lu->scat);CHKERRQ(ierr);
   ierr = VecScatterEnd(lu->vec_spooles,x,INSERT_VALUES,SCATTER_FORWARD,lu->scat);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -275,7 +275,7 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
         val[jj++] = *bv++;
 #else
         InpMtx_inputComplexEntry(lu->mtxA,irow,jcol,PetscRealPart(*bv),PetscImaginaryPart(*bv));
-        bv++; jj++;
+        bv++; jj++;  
 #endif
         if (j==countB-1) jB = countB; 
       }
