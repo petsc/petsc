@@ -218,6 +218,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
           self.addChild(config)
           config.showHelp = 0
           config.logName  = self.logName
+          # If it was pickled with a nonstandard RDict, supply one
+          if config.argDB is None:
+            config.argDB = self.argDB
           config.setup()
           config.setupPackageDependencies(self)
           config.setupDependencies(self)
