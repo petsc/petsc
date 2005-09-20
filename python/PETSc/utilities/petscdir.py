@@ -10,6 +10,8 @@ class Configure(config.base.Configure):
     return
 
   def __str__(self):
+    if not hasattr(self, 'dir'):
+      return ''
     desc  = []
     cdir  = str(self.dir)
     envdir  = os.getenv('PETSC_DIR')

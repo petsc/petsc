@@ -10,6 +10,8 @@ class Configure(config.base.Configure):
     return
 
   def __str__(self):
+    if not hasattr(self, 'arch'):
+      return ''
     desc = ['PETSc:']
     carch = str(self.arch)
     envarch = os.getenv('PETSC_ARCH')
