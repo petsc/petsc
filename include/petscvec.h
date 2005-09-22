@@ -137,7 +137,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetFromOptions(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPrintHelp(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetUp(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDestroy(Vec);
-
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecZeroEntries(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetOptionsPrefix(Vec,const char[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAppendOptionsPrefix(Vec,const char[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetOptionsPrefix(Vec,const char*[]);
