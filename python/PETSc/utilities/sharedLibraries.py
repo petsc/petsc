@@ -26,7 +26,10 @@ class Configure(config.base.Configure):
   def configureSharedLibraries(self):
     self.useShared = not self.setCompilers.staticLibraries
     if self.useShared:
-      self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase)
+      if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
+        self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase+'gnu')
+      else:
+        self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase)
       self.addMakeMacro('BUILDSHAREDLIB','yes')
     else:
       self.addMakeRule('shared_arch','')

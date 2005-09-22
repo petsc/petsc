@@ -4,9 +4,7 @@
    These are for blocks of data, each block is indicated with a single integer.
 */
 #include "src/vec/is/isimpl.h"               /*I  "petscis.h"     I*/
-#include "petscsys.h"
-
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *);
+#include "petscvec.h"
 
 typedef struct {
   PetscInt        N,n;            /* number of blocks */

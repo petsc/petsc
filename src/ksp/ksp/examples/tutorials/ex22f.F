@@ -85,7 +85,7 @@
       end
 
     
-      subroutine ComputeJacobian(dmmg,J,jac,ierr)
+      subroutine ComputeJacobian(dmmg,JJ,jac,ierr)
       implicit none
 
 #include "include/finclude/petsc.h"
@@ -94,7 +94,7 @@
 #include "include/finclude/petscda.h"
 
       DMMG         dmmg
-      Mat          jac,J
+      Mat          jac,JJ
       PetscErrorCode    ierr
 
       DA           da
