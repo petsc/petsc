@@ -200,7 +200,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*routine)(
 
   PetscFunctionBegin;
   if (!SIGNAL_COOKIE) {
-    ierr = PetscLogClassRegister(&SIGNAL_COOKIE,"Signal");CHKERRQ(ierr);
+    /* ierr = PetscLogClassRegister(&SIGNAL_COOKIE,"Signal");CHKERRQ(ierr); */
+    SIGNAL_COOKIE = 19;
   }
   if (!SignalSet && routine) {
     /* Do not catch ABRT, CHLD, KILL */

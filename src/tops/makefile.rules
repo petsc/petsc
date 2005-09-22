@@ -23,7 +23,7 @@ clients:
 libclient-c: 
 	-@${CC} -c ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.cc
 	-@${C_CC} -c ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.c
-	-@$(OMAKE)  LIBNAME=libclient-${LANGUAGE} SHARED_LIBRARY_TMPDIR=. OTHERLIBS="${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB}" shared_arch
+	-@$(OMAKE)  LIBNAME=libclient-${LANGUAGE} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB}" shared_arch
 
 libclient-c++: libclient-c
 
@@ -44,7 +44,7 @@ server/c++/makefile: ${SIDLFILES}
 libserver-c++.${SOSUFFIX}: 
 	-@${CC} -c ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++ *.cc
 	-@${C_CC} -c ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++  *.c
-	-@$(OMAKE)  LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} ${PETSC_LIB}" shared_arch
+	-@$(OMAKE)  LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} ${PETSC_LIB}" shared_arch
 #-------------------------------------------------------------------------------
 
 ifeq ($(EXNUM),)
