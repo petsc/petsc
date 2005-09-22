@@ -18,6 +18,27 @@ PetscEvent  VEC_SetRandom = 0, VEC_ReduceArithmetic = 0, VEC_ReduceBarrier = 0, 
 PetscInt    PETSCVEC_DLLEXPORT VecSetValue_Row = 0;
 PetscScalar PETSCVEC_DLLEXPORT VecSetValue_Value = 0.0;
 
+/*@
+  VecZeroEntries - puts a 0.0 in each element of a vector
+
+  Collective on Vec
+
+  Input Parameter:
+. vec - The vector
+
+  Level: beginner
+
+.keywords: Vec, set, options, database
+.seealso: VecCreate(), VecPrintHelp(), VecSetOptionsPrefix(), VecSet(), VecSetValues()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecZeroEntries (Vec vec) 
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin; 
+  ierr = VecSet(vec,0.0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetTypeFromOptions_Private"
 /*
