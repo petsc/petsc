@@ -19,7 +19,7 @@ static char help[] = "Solves 1D variable coefficient Laplacian using multigrid.\
 #include "petscksp.h"
 #include "petscdmmg.h"
 
-extern PetscErrorCode ComputeJacobian(DMMG,Mat);
+extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 
 typedef struct {
