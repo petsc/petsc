@@ -8,6 +8,7 @@ shared_irix6: shared_irix
 shared_osf5: shared_alpha
 
 shared_solaris2: shared_solaris
+shared_solaris2_gnu: shared_solaris_gnu
 
 shared_freebsd6: shared_freebsd
 shared_freebsd5: shared_freebsd
@@ -49,10 +50,14 @@ shared_linux:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SL_LINKER_SUFFIX} -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
 
+shared_solaris_gnu:
+	-@cd ${SHARED_LIBRARY_TMPDIR}; \
+	${LD}  -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} $${sys_lib} $${external_lib}
+
 shared_solaris:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	sys_lib=`echo "${SYS_LIB}" | sed s?-Wl,-rpath?-L?g`; external_lib=`echo "${PETSC_EXTERNAL_LIB_BASIC}" | sed s?-Wl,-rpath?-L?g`;\
-	${LD}  -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} $${sys_lib} $${external_lib}
+	${C_CC} -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} $${sys_lib} $${external_lib}
 
 shared_libtool:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
