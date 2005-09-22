@@ -158,7 +158,7 @@ class Configure(config.base.Configure):
     self.vendor = self.framework.argDB['with-vendor-compilers']
     if self.framework.argDB['with-vendor-compilers'] == 'no' or self.framework.argDB['with-vendor-compilers'] == 'false':
       self.vendor = None
-    if self.framework.argDB['with-vendor-compilers'] == 'yes' or self.framework.argDB['with-vendor-compilers'] == 'true':
+    if self.framework.argDB['with-vendor-compilers'] == '1' or self.framework.argDB['with-vendor-compilers'] == 'yes' or self.framework.argDB['with-vendor-compilers'] == 'true':
       self.vendor = ''
     self.logPrint('Compiler vendor is "'+str(self.vendor)+'"')
     return
