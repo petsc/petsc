@@ -122,6 +122,15 @@ class Configure(config.base.Configure):
       return 0
   isCygwin = staticmethod(isCygwin)
 
+  def isSolaris():
+    '''Returns true if system is solaris'''
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
+    if not status and output.lower().strip().find('sunos') >= 0:
+      return 1
+    else:
+      return 0
+  isSolaris = staticmethod(isSolaris)
+
   def isDarwin():
     '''Returns true if system is Darwin/MacOSX'''
     #replace self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
