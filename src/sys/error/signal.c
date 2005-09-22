@@ -8,8 +8,10 @@
 #include "petscsys.h"
 #include "petscfix.h"     
 
+static PetscCookie SIGNAL_COOKIE = 0;
+
 struct SH {
-  int            cookie;
+  PetscCookie    cookie;
   PetscErrorCode (*handler)(int,void *);
   void           *ctx;
   struct SH*     previous;
@@ -49,6 +51,7 @@ static void PetscSignalHandler_Private(int sig)
   if (!sh || !sh->handler) {
     ierr = PetscDefaultSignalHandler(sig,(void*)0);
   } else{
+    if (sh->cookie != SIGNAL_COOKIE) SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_COR,"Signal object has been corrupted");
     ierr = (*sh->handler)(sig,sh->ctx);
   }
   if (ierr) MPI_Abort(PETSC_COMM_WORLD,0);
@@ -196,6 +199,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*routine)(
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!SIGNAL_COOKIE) {
+    ierr = PetscLogClassRegister(&SIGNAL_COOKIE,"Signal");CHKERRQ(ierr);
+  }
   if (!SignalSet && routine) {
     /* Do not catch ABRT, CHLD, KILL */
 #if !defined(PETSC_MISSING_SIGALRM)
@@ -306,10 +312,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*routine)(
     SignalSet = PETSC_FALSE;
   }
   ierr = PetscNew(struct SH,&newsh);CHKERRQ(ierr);
-  if (sh) {newsh->previous = sh;} 
+  if (sh) {
+    if (sh->cookie != SIGNAL_COOKIE) SETERRQ(PETSC_ERR_COR,"Signal object has been corrupted");
+    newsh->previous = sh;
+  } 
   else {newsh->previous = 0;}
   newsh->handler = routine;
   newsh->ctx     = ctx;
+  newsh->cookie  = SIGNAL_COOKIE;
   sh             = newsh;
   PetscFunctionReturn(0);
 }
@@ -325,8 +335,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscPushSignalHandler(PetscErrorCode (*routine)(
 
   Level: developer
 
-   Note: NO ERROR CODES RETURNED BY THIS FUNCTION
-
    Concepts: signal handler^setting
 
 .seealso: PetscPushSignalHandler()
@@ -338,6 +346,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscPopSignalHandler(void)
 
   PetscFunctionBegin;
   if (!sh) PetscFunctionReturn(0);
+  if (sh->cookie != SIGNAL_COOKIE) SETERRQ(PETSC_ERR_COR,"Signal object has been corrupted");
+
   tmp = sh;
   sh  = sh->previous;
   PetscFreeVoid(tmp);
