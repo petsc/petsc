@@ -12,24 +12,24 @@ int main(int argc,char **args)
   Vec            x;
   PetscReal      norm;
   PetscMap       map;
-#if defined(__cplusplus)
+#if defined(__cplusplus) && !defined(PETSC_USE_EXTERN_CXX)
   PetscInt       s;
   PetscMapType   t;
   PetscScalar    dot;
 #endif
 
-#if defined(__cplusplus)
+#if defined(__cplusplus) && !defined(PETSC_USE_EXTERN_CXX)
   PetscInitialize(&argc,&args);
 #else
   PetscInitialize(&argc,&args,0,0);
 #endif
 
-#if defined(__cplusplus)
+#if defined(__cplusplus) && !defined(PETSC_USE_EXTERN_CXX)
   PetscSequentialPhaseBegin();
   PetscSequentialPhaseEnd();
 #endif
 
-#if defined(__cplusplus)
+#if defined(__cplusplus) && !defined(PETSC_USE_EXTERN_CXX)
   ierr = VecCreate(&x);CHKERRQ(ierr);
 #else
   ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
@@ -37,7 +37,7 @@ int main(int argc,char **args)
   ierr = VecSetSizes(x,2,2);CHKERRQ(ierr);
   ierr = VecSetType(x,VECSEQ);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-#if defined(__cplusplus)
+#if defined(__cplusplus) && !defined(PETSC_USE_EXTERN_CXX)
   norm = VecNorm(x);
   norm = VecNorm(x,NORM_2);CHKERRQ(ierr);
   ierr = VecNormBegin(x,NORM_2);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ int main(int argc,char **args)
 #endif
   ierr = VecDestroy(x);CHKERRQ(ierr);
 
-#if defined(__cplusplus)
+#if defined(__cplusplus) && !defined(PETSC_USE_EXTERN_CXX)
   map = PetscMapCreate();
   s   = PetscMapGetLocalSize(map);
   s   = PetscMapGetSize(map);

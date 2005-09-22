@@ -1,9 +1,8 @@
 #define PETSCVEC_DLL
 
-#include "petscsys.h"   /*I "petscsys.h" I*/
+#include "petscvec.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *);
 PetscCookie PETSCVEC_DLLEXPORT IS_LTOGM_COOKIE = -1;
 
 #undef __FUNCT__  
