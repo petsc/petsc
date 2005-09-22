@@ -142,6 +142,14 @@ def dylib_Base(maker):
   '''Base.c'''
   return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
 
+def dylib_PetscLog(maker):
+  '''PetscLog.c'''
+  return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
+
+def dylib_PetscOptions(maker):
+  '''PetscOptions.c'''
+  return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
+
 def dylib_PetscViewer(maker):
   '''PetscViewer.c'''
   return (maker.configureObj.include+maker.mpi.include+maker.python.include, maker.configureObj.lib+maker.mpi.lib+maker.python.lib)
