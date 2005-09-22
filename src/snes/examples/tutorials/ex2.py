@@ -22,6 +22,21 @@ class Ex1:
     atexit.register(PETSc.Base.Base.Finalize)
     return
 
+  def setFromOptions(self):
+    import PETSc.PetscOptions
+    m, flag = PETSc.PetscOptions.PetscOptions.getInt('', '-m')
+    if flag:
+      Ex1.m = m
+    n, flag = PETSc.PetscOptions.PetscOptions.getInt('', '-n')
+    if flag:
+      Ex1.n = n
+    mylambda, flag = PETSc.PetscOptions.PetscOptions.getReal('', '-lambda')
+    if flag:
+      Ex1.mylambda = mylambda
+    if Ex1.mylambda >= 6.81 or Ex1.mylambda <= 0.0:
+      raise RuntimeError('Lambda is out of range: '+str(Ex1.mylambda))
+    return
+
   def createMatrix(self):
     from PETSc.PetscConstants import PETSC_DECIDE
     import PETSc.Mat
@@ -49,7 +64,6 @@ class Ex1:
     hy = 1.0/(n-1)
     temp1 = Ex1.mylambda/(Ex1.mylambda + 1.0)
     x = X.getArray()
-    print 'Range',start,end,'temp1',temp1
     for row in range(start, end):
       # Bottom boundary
       if row < n:
@@ -68,7 +82,6 @@ class Ex1:
         i = row/n
         j = row - (row/n)*n
         x[row] = temp1*sqrt(min(min(i, m-i-1)*hx, min(j, n-j-1)*hy))
-        print 'Initial Guess x[%d] = %g' % (row, x[row])
     X.restoreArray(x)
     X.assemblyBegin()
     X.assemblyEnd()
@@ -106,7 +119,6 @@ class Ex1:
         u      = x[row]
         uxx    = (2.0*u - x[row-1] - x[row+1])*hydhx
         uyy    = (2.0*u - x[row-n] - x[row+n])*hxdhy
-        print 'Interior',row,u,uxx,uyy
         f[row] = uxx + uyy - sc*exp(u)
     X.restoreArray(x)
     F.restoreArray(f)
@@ -167,6 +179,7 @@ class Ex1:
     import PETSc.SNES
 
     self.setup()
+    self.setFromOptions()
     snes = PETSc.SNES.SNES()
     snes.setFromOptions()
     A = self.createMatrix()
