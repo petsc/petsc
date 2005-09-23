@@ -508,7 +508,6 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGTrueMonitorCreate(MPI_Comm,const c
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGTrueMonitor(KSP,PetscInt,PetscReal,void*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGTrueMonitorDestroy(PetscDrawLG);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostPreSolve(PC,PetscErrorCode (*)(void*,KSP,Vec,Vec));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC,PetscErrorCode (*)(void*,KSP,Vec,Vec));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC,PetscErrorCode (*)(void*,KSP,Vec,Vec));
 
