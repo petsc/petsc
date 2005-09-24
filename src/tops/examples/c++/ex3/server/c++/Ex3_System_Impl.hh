@@ -31,6 +31,12 @@
 #ifndef included_TOPS_Solver_hh
 #include "TOPS_Solver.hh"
 #endif
+#ifndef included_gov_cca_CCAException_hh
+#include "gov_cca_CCAException.hh"
+#endif
+#ifndef included_gov_cca_Services_hh
+#include "gov_cca_Services.hh"
+#endif
 #ifndef included_sidl_BaseInterface_hh
 #include "sidl_BaseInterface.hh"
 #endif
@@ -61,6 +67,7 @@ namespace Ex3 {
 
     // DO-NOT-DELETE splicer.begin(Ex3.System._implementation)
     TOPS::Structured::Solver solver;
+    gov::cca::Services myServices;
     // DO-NOT-DELETE splicer.end(Ex3.System._implementation)
 
   private:
@@ -125,6 +132,42 @@ namespace Ex3 {
     throw () 
     ;
 
+
+    /**
+     * Starts up a component presence in the calling framework.
+     * @param services the component instance's handle on the framework world.
+     * Contracts concerning Svc and setServices:
+     * 
+     * The component interaction with the CCA framework
+     * and Ports begins on the call to setServices by the framework.
+     * 
+     * This function is called exactly once for each instance created
+     * by the framework.
+     * 
+     * The argument Svc will never be nil/null.
+     * 
+     * Those uses ports which are automatically connected by the framework
+     * (so-called service-ports) may be obtained via getPort during
+     * setServices.
+     */
+    void
+    setServices (
+      /* in */ ::gov::cca::Services services
+    )
+    throw ( 
+      ::gov::cca::CCAException
+    );
+
+
+    /**
+     * Execute some encapsulated functionality on the component. 
+     * Return 0 if ok, -1 if internal error but component may be 
+     * used further, and -2 if error so severe that component cannot
+     * be further used safely.
+     */
+    int32_t
+    go() throw () 
+    ;
   };  // end class System_impl
 
 } // end namespace Ex3

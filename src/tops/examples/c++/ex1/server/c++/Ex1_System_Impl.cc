@@ -14,6 +14,11 @@
 // DO-NOT-DELETE splicer.begin(Ex1.System._includes)
 #include <iostream>
 #include "petsc.h"
+#include "petscconf.h"
+#if defined(PETSC_HAVE_CCAFE)
+#  define USE_PORTS 1
+#endif
+
 // Includes for uses ports
 #include "TOPS_Structured_Solver.hh"
 // DO-NOT-DELETE splicer.end(Ex1.System._includes)

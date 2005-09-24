@@ -484,7 +484,10 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetOption(Vec,VecOption);
    Expose VecGetArray()/VecRestoreArray() to users. Allows this to work without any function
    call overhead on any 'native' Vecs.
 */
+
+PETSC_EXTERN_CXX_END
 #include "private/vecimpl.h"
+PETSC_EXTERN_CXX_BEGIN
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecContourScale(Vec,PetscReal,PetscReal);
 

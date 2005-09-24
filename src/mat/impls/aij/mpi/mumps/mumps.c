@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
 /* 
-    Provides an interface to the MUMPS_4.3.1 sparse solver
+    Provides an interface to the MUMPS sparse solver
 */
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"

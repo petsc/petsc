@@ -4,8 +4,7 @@
     start, stride and length.
 */
 #include "src/vec/is/isimpl.h"             /*I   "petscis.h"   I*/
-
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *);
+#include "petscvec.h"
 
 typedef struct {
   PetscInt N,n,first,step;

@@ -101,6 +101,12 @@ namespace TOPS {
     /**
      * user defined non-static method.
      */
+    ::gov::cca::Services
+    getServices() throw () 
+    ;
+    /**
+     * user defined non-static method.
+     */
     void
     setSystem (
       /* in */ ::TOPS::System::System system

@@ -12,8 +12,13 @@
 #include "TOPS_StructuredSolver_Impl.hh"
 
 // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._includes)
+
 #include <iostream>
 #include "TOPS_Structured_Matrix_Impl.hh"
+#include "petscconf.h"
+#if defined(PETSC_HAVE_CCAFE)
+#  define USE_PORTS 1
+#endif
 // Uses ports includes
   // This code is the same as DAVecGetArray() except instead of generating
   // raw C multidimensional arrays it gets a Babel array
@@ -599,6 +604,9 @@ throw (
   ::gov::cca::CCAException
 ){
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setServices)
+
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::StructuredSolver_impl::setServices"
 
   myServices = services;
   gov::cca::TypeMap tm = services.createTypeMap();

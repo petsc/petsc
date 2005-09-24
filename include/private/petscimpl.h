@@ -6,7 +6,6 @@
 #if !defined(_PETSCHEAD_H)
 #define _PETSCHEAD_H
 #include "petsc.h"  
-PETSC_EXTERN_CXX_BEGIN
 
 /*
    All major PETSc data structures have a common core; this is defined 
@@ -577,5 +576,4 @@ M*/
         PetscObjectComposedDataGetRealstar(obj,id,data,flag)
 #endif
 
-PETSC_EXTERN_CXX_END
 #endif /* _PETSCHEAD_H */

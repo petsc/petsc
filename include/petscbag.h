@@ -60,4 +60,5 @@ extern PetscErrorCode PetscBagSetViewer(PetscBag,PetscErrorCode (*)(PetscBag,Pet
 extern PetscErrorCode PetscBagSetLoader(PetscBag,PetscErrorCode (*)(PetscBag,PetscViewer));
 extern PetscErrorCode PetscBagSetDestroy(PetscBag,PetscErrorCode (*)(PetscBag));
 
+PETSC_EXTERN_CXX_END
 #endif
