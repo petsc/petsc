@@ -2,11 +2,11 @@
 # ------- don't change anything ABOVE this line.-------------
 path set @PETSC_LIB_DIR@/cca
 
-repository get-global TOPS.StructuredSolver
-repository get-global Ex3.System
+repository get-global TOPS.UnstructuredSolver
+repository get-global Ex4.System
 
-instantiate TOPS.StructuredSolver solver
-instantiate Ex3.System system
+instantiate TOPS.UnstructuredSolver solver
+instantiate Ex4.System system
 
 # Connect solver uses ports to the corresponding system provides ports
 connect solver TOPS.System.Initialize.Once system TOPS.System.Initialize.Once
@@ -14,7 +14,7 @@ connect solver TOPS.System.Compute.Matrix system TOPS.System.Compute.Matrix
 connect solver TOPS.System.Compute.RightHandSide system TOPS.System.Compute.RightHandSide
 
 # Connect system uses ports to the corresponding solver provides ports
-connect system TOPS.Structured.Solver solver TOPS.Structured.Solver
+connect system TOPS.Unstructured.Solver solver TOPS.Unstructured.Solver
 
 go system DoSolve
 

@@ -45,49 +45,59 @@ libserver-c++.${SOSUFFIX}:
 	-@${CC} -c ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++ *.cc
 	-@${C_CC} -c ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++  *.c
 	-@$(OMAKE)  LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} ${PETSC_LIB}" shared_arch
+	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
+	-@for i in StructuredSolver UnstructuredSolver ; do \
+	   ${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libtops.${SL_LINKER_SUFFIX} \
+		TOPS.$$i c++ dynamic global now TOPS.$$i > $$i.cca.in; \
+	   sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
+	       $$i.cca.in >  ${PETSC_LIB_DIR}/cca/$$i.cca; rm $$i.cca.in; \
+	done;
 #-------------------------------------------------------------------------------
 
 ifeq ($(EXNUM),)
   EXNUM=1
 endif
 cca: 
-	# Generating *.cca files
-	@${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libtops.${SL_LINKER_SUFFIX} \
-		TOPS.StructuredSolver c++ dynamic global now TOPS.StructuredSolver \
-		> libtops.${SL_LINKER_SUFFIX}.cca.in
-	@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
-		-e /"@SOSUFFIX@/ s|@SOSUFFIX@|${SL_LINKER_SUFFIX}|" \
-		libtops.${SL_LINKER_SUFFIX}.cca.in >  ${PETSC_LIB_DIR}/libtops.${SL_LINKER_SUFFIX}.cca
-	@${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libex$(EXNUM).${SL_LINKER_SUFFIX} \
-		Ex$(EXNUM).System c++ dynamic global now Ex$(EXNUM).System > libex$(EXNUM).${SL_LINKER_SUFFIX}.cca.in
-	@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
+	# Generating *.cca files for ex${EXNUM}
+	-@${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libex${EXNUM}.${SL_LINKER_SUFFIX} \
+		Ex${EXNUM}.System c++ dynamic global now Ex${EXNUM}.System > libex${EXNUM}.${SL_LINKER_SUFFIX}.cca.in
+	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
+	-@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
 	    	-e /"@SOSUFFIX@/ s|@SOSUFFIX@|${SL_LINKER_SUFFIX}|" \
-		libex$(EXNUM).${SL_LINKER_SUFFIX}.cca.in > ${PETSC_LIB_DIR}/libex$(EXNUM).${SL_LINKER_SUFFIX}.cca
+		libex${EXNUM}.${SL_LINKER_SUFFIX}.cca.in > ${PETSC_LIB_DIR}/cca/libex${EXNUM}.${SL_LINKER_SUFFIX}.cca
 	@-${RM} *.cca.in
 	# Creating simple Ccaffeine script
-	@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ex$(EXNUM)_rc.in > ex$(EXNUM)_rc
-	@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ex$(EXNUM)_gui_rc.in > ex$(EXNUM)_gui_rc
+	-@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ex${EXNUM}_rc.in > ex${EXNUM}_rc
+	-@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ex${EXNUM}_gui_rc.in > ex${EXNUM}_gui_rc
 
 test-cca: cca
-	# Testing component example with Ccaffeine
-	@${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ex$(EXNUM)_rc > ex$(EXNUM)_rc.log  2>&1 ; 
-	@if [ "`egrep \"(specific|1 .+norm)\" ex$(EXNUM)_rc.log | wc -l`" -ge "2" ]; then \
-	  echo -e "\n=== Component test succeeded (see ex$(EXNUM)_rc.log).\n"; \
+	# Testing component example ex${EXNUM} with Ccaffeine
+	@${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ex${EXNUM}_rc > ex${EXNUM}_rc.log  2>&1 ; 
+	@if [ "`egrep \"(specific|1 .+norm)\" ex${EXNUM}_rc.log | wc -l`" -ge "2" ]; then \
+	  echo "=== ex${EXNUM}: Component test succeeded (see ex${EXNUM}_rc.log)."; \
 	else \
-          echo -e "\n*** Component test failed (see ex$(EXNUM)_rc.log).\n"; \
+          echo "*** ex${EXNUM}: Component test failed (see ex${EXNUM}_rc.log)."; \
         fi
 
 gui-cca: cca
-	# Run component example using Ccaffeine GUI (the output is in pOut0/pErr0)
+	# Running component example ex${EXNUM} using Ccaffeine GUI (the output is in pOut0/pErr0)
 	@${CCAFE_HOME}/bin/gui-backend.sh --port 4242 --ccafe-rc \
-		ex$(EXNUM)_gui_rc > .ccafe.out 2>&1 & \
+		ex${EXNUM}_gui_rc > .ccafe.out 2>&1 & \
 	echo -e "\nPlease wait...\n"; sleep 5; \
 	${CCAFE_HOME}/bin/gui.sh --port 4242 # --scaleFont 1.5
 
 kill-gui:
-	# Clean up after GUI 
+	# Cleaning up after GUI 
 	@-${CCAFE_HOME}/bin/gui.sh --kill; ${CCAFE_HOME}/bin/gui-backend.sh --kill
 
+#-------------------------------------------------------------------------------
+
+examples: 
+	-@for dir in `ls -d examples/c++/ex*`; do \
+	  echo -e "\n### Building and testing in $$dir"; \
+	  make -C $$dir server-c++ test-cca; \
+	done
+	
 #-------------------------------------------------------------------------------
 
 
@@ -95,4 +105,4 @@ include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
 
 
-
+.PHONY: examples
