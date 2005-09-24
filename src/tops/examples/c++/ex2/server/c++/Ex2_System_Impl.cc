@@ -14,6 +14,9 @@
 // DO-NOT-DELETE splicer.begin(Ex2.System._includes)
 // Insert-Code-Here {Ex2.System._includes} (additional includes or code)
 #include "petsc.h"
+#if defined(PETSC_HAVE_CCAFE)
+#  define USE_PORTS 1
+#endif
 // DO-NOT-DELETE splicer.end(Ex2.System._includes)
 
 // user-defined constructor.

@@ -71,7 +71,7 @@ cca:
 test-cca: cca
 	# Testing component example with Ccaffeine
 	@${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ex$(EXNUM)_rc > ex$(EXNUM)_rc.log  2>&1 ; 
-	@if [ "`egrep \"(specific|1 .+norm)\" ex$(EXNUM)_rc.log | wc -l`" -eq "2" ];then \
+	@if [ "`egrep \"(specific|1 .+norm)\" ex$(EXNUM)_rc.log | wc -l`" -ge "2" ]; then \
 	  echo -e "\n=== Component test succeeded (see ex$(EXNUM)_rc.log).\n"; \
 	else \
           echo -e "\n*** Component test failed (see ex$(EXNUM)_rc.log).\n"; \
