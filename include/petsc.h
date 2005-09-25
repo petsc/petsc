@@ -85,7 +85,13 @@
 
 /*
     Defines the interface to MPI allowing the use of all MPI functions.
+
+    PETSc does not use the C++ binding of MPI at ALL. The following flag
+    makes sure the C++ bindings are not included. The C++ binds REQUIRE
+    putting mpi.h before ANY C++ include files, we cannot control this
+    with all PETSc users.
 */
+#define MPICH_SKIP_MPICXX 1
 #include "mpi.h"
 /*
     Yuck, we need to put stdio.h AFTER mpi.h for MPICH2 with C++ compiler 
