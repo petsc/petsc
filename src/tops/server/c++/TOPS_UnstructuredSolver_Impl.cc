@@ -13,6 +13,12 @@
 
 // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._includes)
 #include "TOPS_Unstructured_Matrix_Impl.hh"
+#include "petscconf.h"
+#include <iostream>
+#if defined(PETSC_HAVE_CCAFE)
+#  define USE_PORTS 1
+#endif
+
 static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
 {
   PetscFunctionBegin;
@@ -29,7 +35,7 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
 {
   PetscFunctionBegin;
   TOPS::UnstructuredSolver *solver = (TOPS::UnstructuredSolver*) dmmg->user;
-  TOPS::System::Compute::Matrix system = (TOPS::System::Compute::Matrix) solver->getSystem();
+  TOPS::System::Compute::Matrix system;
   TOPS::Unstructured::Matrix matrix1 = TOPS::Unstructured::Matrix::_create();
   TOPS::Unstructured::Matrix matrix2 = TOPS::Unstructured::Matrix::_create();
 
@@ -41,7 +47,25 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   imatrix1->mat = J;
   imatrix2->mat = B;
 
+#ifdef USE_PORTS
+  system = solver->getServices().getPort("TOPS.System.Compute.Matrix");
+  if (system._is_nil()) {
+    std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
+	      << ": TOPS.System.Compute.Matrix port is nil, " 
+	      << "possibly not connected." << std::endl;
+    PetscFunctionReturn(1);
+  }
+#else
+  system = (TOPS::System::Compute::Matrix) solver->getSystem();
+#endif
+
+  // Use the port
   system.computeMatrix(matrix1,matrix2);
+
+#ifdef USE_PORTS
+  solver->getServices().releasePort("TOPS.System.Compute.Matrix");
+#endif
+
   MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);
   MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);
   if (J != B) {
@@ -55,7 +79,7 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 {
   PetscFunctionBegin;
   TOPS::UnstructuredSolver *solver = (TOPS::UnstructuredSolver*) dmmg->user;
-  TOPS::System::Compute::RightHandSide system = (TOPS::System::Compute::RightHandSide) solver->getSystem();
+  TOPS::System::Compute::RightHandSide system;
   double *uu;
   Vec local;
   VecGhostGetLocalForm(f,&local);
@@ -66,7 +90,25 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
   int lower[4],upper[4],stride[4];
   lower[0] = 0; upper[0] = nlocal; stride[0] = 1;
   ua.borrow(uu,1,*&lower,*&upper,*&stride);
+
+#ifdef USE_PORTS
+  system = solver->getServices().getPort("TOPS.System.Compute.RightHandSide");  
+  if (system._is_nil()) {
+    std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
+	      << ": TOPS.System.Compute.RightHandSide port is nil, " 
+	      << "possibly not connected." << std::endl;
+    PetscFunctionReturn(1);
+  }
+#else
+  system = (TOPS::System::Compute::RightHandSide) solver->getSystem();
+#endif
+  // Use the port
   system.computeRightHandSide(ua);
+
+#ifdef USE_PORTS
+  solver->getServices().releasePort("TOPS.System.Compute.RightHandSide");
+#endif
+
   VecRestoreArray(local,0);
   VecGhostRestoreLocalForm(f,&local);
   VecGhostUpdateBegin(f,ADD_VALUES,SCATTER_REVERSE);
@@ -104,6 +146,23 @@ void TOPS::UnstructuredSolver_impl::_load() {
 
 // user-defined non-static methods:
 /**
+ * Method:  getServices[]
+ */
+::gov::cca::Services
+TOPS::UnstructuredSolver_impl::getServices ()
+throw () 
+
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getServices)
+  // Insert-Code-Here {TOPS.UnstructuredSolver.getServices} (getServices method)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::getServices()"
+
+  return this->myServices;
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getServices)
+}
+
+/**
  * Method:  setSystem[]
  */
 void
@@ -112,6 +171,9 @@ TOPS::UnstructuredSolver_impl::setSystem (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setSystem)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::setSystem"
+
   this->system = system;
   system.setSolver(this->self);
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setSystem)
@@ -126,6 +188,9 @@ throw ()
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getSystem)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::getSystem"
+
   return this->system;
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getSystem)
 }
@@ -139,6 +204,9 @@ TOPS::UnstructuredSolver_impl::Initialize (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.Initialize)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::Initialize"
+
   PetscTruth initialized;
   PetscInitialized(&initialized);
   if (initialized) {
@@ -170,31 +238,74 @@ throw ()
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.solve)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::solve"
+
   PetscErrorCode ierr;
 
   if (!this->dmmg) {
-    TOPS::System::Initialize::Once once = (TOPS::System::Initialize::Once)this->system;
+    TOPS::System::Initialize::Once once;
+
+#ifdef USE_PORTS
+    once = myServices.getPort("TOPS.System.Initialize.Once");
+#else
+    once = (TOPS::System::Initialize::Once)this->system;
+#endif
     if (once._not_nil()) {    
       once.initializeOnce();
     }
+#ifdef USE_PORTS
+    myServices.releasePort("TOPS.System.Initialize.Once");
+#endif
+
     // create DMMG object 
     DMMGCreate(PETSC_COMM_WORLD,1,(void*)&this->self,&this->dmmg);
     DMMGSetDM(this->dmmg,(DM)this->slice);
-    TOPS::System::Compute::Residual residual = (TOPS::System::Compute::Residual) this->system;
+    TOPS::System::Compute::Residual residual;
+
+#ifdef USE_PORTS
+    residual = myServices.getPort("TOPS.System.Compute.Residual");
+#else
+    residual = (TOPS::System::Compute::Residual) this->system;
+#endif
     if (residual._not_nil()) {
       ierr = DMMGSetSNES(this->dmmg, FormFunction, 0);
     } else {
       ierr = DMMGSetKSP(this->dmmg,FormRightHandSide,FormMatrix);
     }
-    TOPS::System::Compute::InitialGuess guess = (TOPS::System::Compute::InitialGuess) this->system;
+#ifdef USE_PORTS
+    myServices.releasePort("TOPS.System.Compute.Residual");
+#endif
+
+    TOPS::System::Compute::InitialGuess guess;
+
+#ifdef USE_PORTS
+    guess = myServices.getPort("TOPS.System.Compute.InitialGuess");
+#else
+    guess = (TOPS::System::Compute::InitialGuess) this->system;
+#endif
     if (guess._not_nil()) {
       ierr = DMMGSetInitialGuess(this->dmmg, FormInitialGuess);
     }
   }
-  TOPS::System::Initialize::EverySolve every = (TOPS::System::Initialize::EverySolve)this->system;
+#ifdef USE_PORTS
+  myServices.releasePort("TOPS.System.Compute.InitialGuess");
+#endif
+
+  TOPS::System::Initialize::EverySolve every;
+
+#ifdef USE_PORTS
+  every = myServices.getPort("TOPS.System.Initialize.EverySolve");
+#else
+  every = (TOPS::System::Initialize::EverySolve)this->system;
+#endif
   if (every._not_nil()) {    
     every.initializeEverySolve();
   }
+#ifdef USE_PORTS
+    myServices.releasePort("TOPS.System.Initialize.EverySolve");
+#endif
+
   DMMGSolve(this->dmmg);
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.solve)
 }
@@ -208,6 +319,9 @@ TOPS::UnstructuredSolver_impl::setBlockSize (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setBlockSize)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::setBlockSize"
+
   this->bs = bs;
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setBlockSize)
 }
@@ -260,6 +374,9 @@ throw ()
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getLocalSize)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::getLocalSize"
+
   return this->n;
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getLocalSize)
 }
@@ -273,6 +390,9 @@ TOPS::UnstructuredSolver_impl::setGhostPoints (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setGhostPoints)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::setGhostPoints"
+
   SlicedSetGhosts(this->slice,this->bs,this->n,ghosts.length(0),ghosts.first());
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setGhostPoints)
 }
@@ -300,6 +420,9 @@ TOPS::UnstructuredSolver_impl::setPreallocation (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setPreallocation)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::setPreallocation"
+
   SlicedSetPreallocation(this->slice,d,PETSC_NULL,od,PETSC_NULL);
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setPreallocation)
 }
@@ -314,6 +437,9 @@ TOPS::UnstructuredSolver_impl::setPreallocation (
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setPreallocations)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::setPreallocation"
+
   SlicedSetPreallocation(this->slice,0,d.first(),0,od.first());
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setPreallocations)
 }
@@ -343,6 +469,47 @@ throw (
 ){
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setServices)
   // Insert-Code-Here {TOPS.UnstructuredSolver.setServices} (setServices method)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::setServices"
+
+  myServices = services;
+  gov::cca::TypeMap tm = services.createTypeMap();
+  if(tm._is_nil()) {
+    fprintf(stderr, "Error:: %s:%d: gov::cca::TypeMap is nil\n",
+	    __FILE__, __LINE__);
+    exit(1);
+  }
+  gov::cca::Port p = self;      //  Babel required casting
+  if(p._is_nil()) {
+    fprintf(stderr, "Error:: %s:%d: Error casting self to gov::cca::Port \n",
+	    __FILE__, __LINE__);
+    exit(1);
+  }
+  
+  // Provides port
+  services.addProvidesPort(p,
+			   "TOPS.Unstructured.Solver",
+			   "TOPS.Unstructured.Solver", tm);
+  
+  // Uses ports
+  services.registerUsesPort("TOPS.System.Initialize.Once",
+			    "TOPS.System.Initialize.Once", tm);
+
+  services.registerUsesPort("TOPS.System.Initialize.EverySolve",
+			    "TOPS.System.Initialize.EverySolve", tm);
+
+  services.registerUsesPort("TOPS.System.Compute.InitialGuess",
+			    "TOPS.System.Compute.InitialGuess", tm);
+
+  services.registerUsesPort("TOPS.System.Compute.Matrix",
+			    "TOPS.System.Compute.Matrix", tm);
+
+  services.registerUsesPort("TOPS.System.Compute.RightHandSide",
+			    "TOPS.System.Compute.RightHandSide", tm);
+
+  services.registerUsesPort("TOPS.System.Compute.Residual",
+			    "TOPS.System.Compute.Residual", tm);
+
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setServices)
 }
 

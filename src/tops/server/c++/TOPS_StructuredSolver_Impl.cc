@@ -605,6 +605,9 @@ throw (
 ){
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setServices)
 
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::StructuredSolver_impl::setServices"
+
   myServices = services;
   gov::cca::TypeMap tm = services.createTypeMap();
   if(tm._is_nil()) {

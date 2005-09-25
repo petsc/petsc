@@ -108,10 +108,10 @@ package TOPS version 0.0.0 {
   package Unstructured version 0.0.0 {
 
     class Matrix implements-all TOPS.Matrix {
-	void   set[Point](in int row,in int column,in array<double> values);
-	void   set[Row](in int row,in array<int,1> columns,in array<double> values);
-	void   set[Column](in array<int,1> rows,in int column,in array<double> values);
-	void   set(in array<int,1> rows,in array<int,1> columns,in array<double> values);
+      void   set[Point](in int row,in int column,in array<double> values);
+      void   set[Row](in int row,in array<int,1> columns,in array<double> values);
+      void   set[Column](in array<int,1> rows,in int column,in array<double> values);
+      void   set(in array<int,1> rows,in array<int,1> columns,in array<double> values);
     }
 
     //   The data in the vectors is from an unstructured problem
@@ -125,5 +125,7 @@ package TOPS version 0.0.0 {
       void         setPreallocation[s](in array<int,1> d,in array<int,1> od);
     }
   }
-  class UnstructuredSolver implements-all TOPS.Unstructured.Solver, gov.cca.Component {}
+  class UnstructuredSolver implements-all TOPS.Unstructured.Solver, gov.cca.Component {    
+    gov.cca.Services getServices();
+  }
 }
