@@ -60,7 +60,9 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
 #endif
 
   // Use the port
+  CHKMEMQ;
   system.computeMatrix(matrix1,matrix2);
+  CHKMEMQ;
 
 #ifdef USE_PORTS
   solver->getServices().releasePort("TOPS.System.Compute.Matrix");
@@ -88,7 +90,7 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
   VecGetLocalSize(local,&nlocal);
   sidl::array<double> ua;
   int lower[4],upper[4],stride[4];
-  lower[0] = 0; upper[0] = nlocal; stride[0] = 1;
+  lower[0] = 0; upper[0] = nlocal-1; stride[0] = 1;
   ua.borrow(uu,1,*&lower,*&upper,*&stride);
 
 #ifdef USE_PORTS
@@ -102,8 +104,10 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 #else
   system = (TOPS::System::Compute::RightHandSide) solver->getSystem();
 #endif
+  CHKMEMQ;
   // Use the port
   system.computeRightHandSide(ua);
+  CHKMEMQ;
 
 #ifdef USE_PORTS
   solver->getServices().releasePort("TOPS.System.Compute.RightHandSide");
