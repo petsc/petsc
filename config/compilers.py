@@ -146,6 +146,15 @@ class Configure(config.base.Configure):
       while 1:
         arg = argIter.next()
         self.logPrint( 'Checking arg '+arg, 4, 'compilers')
+
+        # Intel compiler sometimes puts " " around an option like "-lsomething"
+        if arg.startswith('"') and arg.endswith('"'):
+          arg = arg[1:-1]
+        # Intel also puts several options together inside a " " so the last one
+        # has a stray " at the end
+        if arg.endswith('"') and arg[:-1].find('"') == -1:
+          arg = arg[:-1]
+        
         # if options of type -L foobar
         if arg == '-L':
           lib = argIter.next()
@@ -285,6 +294,15 @@ class Configure(config.base.Configure):
       while 1:
         arg = argIter.next()
         self.logPrint( 'Checking arg '+arg, 4, 'compilers')
+
+        # Intel compiler sometimes puts " " around an option like "-lsomething"
+        if arg.startswith('"') and arg.endswith('"'):
+          arg = arg[1:-1]
+        # Intel also puts several options together inside a " " so the last one
+        # has a stray " at the end
+        if arg.endswith('"') and arg[:-1].find('"') == -1:
+          arg = arg[:-1]
+
         # if options of type -L foobar
         if arg == '-L':
           lib = argIter.next()
