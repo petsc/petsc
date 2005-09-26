@@ -74,44 +74,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectSetState(PetscObject obj,PetscInt stat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscObjectStateIncrease"
-/*@C
-   PetscObjectStateIncrease - Increases the state of any PetscObject, 
-   regardless of the type.
-
-   Not Collective
-
-   Input Parameter:
-.  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
-         cast with a (PetscObject), for example, 
-         PetscObjectStateIncrease((PetscObject)mat);
-
-   Notes: object state is an integer which gets increased every time
-   the object is changed. By saving and later querying the object state
-   one can determine whether information about the object is still current.
-   Currently, state is maintained for Vec and Mat objects.
-
-   This routine is mostly for internal use by PETSc; a developer need only
-   call it after explicit access to an object's internals. Routines such
-   as VecSet or MatScale already call this routine. It is also called, as a 
-   precaution, in VecRestoreArray, MatRestoreRow, MatRestoreArray.
-
-   Level: developer
-
-   seealso: PetscObjectStateQuery
-
-   Concepts: state
-
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectStateIncrease(PetscObject obj)
-{
-  PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
-  obj->state++;
-  PetscFunctionReturn(0);
-}
-
 PetscInt PETSC_DLLEXPORT globalcurrentstate = 0;
 PetscInt PETSC_DLLEXPORT globalmaxstate = 10;
 PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataRegister(PetscInt *id)
