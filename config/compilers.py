@@ -638,7 +638,7 @@ class Configure(config.base.Configure):
           self.logPrint('Found -rpath library: '+lib, 4, 'compilers')
           flibs.append(self.setCompilers.CSharedLinkerFlag+lib)
           continue
-        if arg.startswith('-z'):
+        if arg.startswith('-zallextract') or arg.startswith('-zdefaultextract') or arg.startswith('-zweakextract'):
           self.framework.log.write( 'Found Solaris -z option: '+arg+'\n')
           flibs.append(arg)
           continue
