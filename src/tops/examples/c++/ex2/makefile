@@ -1,8 +1,7 @@
 
 SIDL        = ex2.sidl
-SIDLEXCLUDE = -e TOPS[a-zA-Z_]* -e gov_cca[_a-zA-Z_]*
+SIDLEXCLUDE = -e TOPS[\.a-zA-Z_]* -e gov.cca[\.a-zA-Z_]*
 TLIBNAME    = libex2
-REMOVEFILES = ./server/c++/TOPS* ./server/c++/sidl* ./server/c++/gov_cca*
 DIRS        = server/c++
 EXNUM       = 2
 

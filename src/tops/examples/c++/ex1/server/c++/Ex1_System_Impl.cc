@@ -105,16 +105,12 @@ throw ()
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
-        CHKMEMA;
         f.set(i,j,x.get(i,j));
-        CHKMEMA;
       } else {
         double u       = x.get(i,j);
         double uxx     = (2.0*u - x.get(i-1,j) - x.get(i+1,j))*hydhx;
         double uyy     = (2.0*u - x.get(i,j-1) - x.get(i,j+1))*hxdhy;
-        CHKMEMA;
         f.set(i,j,uxx + uyy - sc*exp(u));
-        CHKMEMA;
       }
     }  
   }  
