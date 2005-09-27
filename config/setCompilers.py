@@ -843,6 +843,9 @@ class Configure(config.base.Configure):
       yield (self.framework.argDB['LD_SHARED'], [], 'so')
     # C compiler default
     yield (self.CC, ['-shared'], 'so')
+    # add an entry for solaris
+    if Configure.isSolaris():
+      yield (self.CC, ['-G'], 'so')
     # Mac OSX
     # undefined warning must also have flat_namespace
     if Configure.isDarwin():
