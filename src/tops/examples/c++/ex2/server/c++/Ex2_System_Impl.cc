@@ -13,10 +13,6 @@
 
 // DO-NOT-DELETE splicer.begin(Ex2.System._includes)
 // Insert-Code-Here {Ex2.System._includes} (additional includes or code)
-#include "petsc.h"
-#if defined(PETSC_HAVE_CCAFE)
-#  define USE_PORTS 1
-#endif
 // DO-NOT-DELETE splicer.end(Ex2.System._includes)
 
 // user-defined constructor.
@@ -352,8 +348,6 @@ throw ()
   TOPS::Structured::Solver solver = myServices.getPort("TOPS.Structured.Solver");
   this->solver = solver;
   solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
-  
-  PetscOptionsSetValue("-ksp_monitor",PETSC_NULL);
 
   // We don't need to call setSystem since it will be obtained through
   // getPort calls
@@ -362,7 +356,7 @@ throw ()
 
   myServices.releasePort("TOPS.StructuredSolver");
 
-  PetscFunctionReturn(0);  // DO-NOT-DELETE splicer.end(Ex2.System.go)
+  return 0;  // DO-NOT-DELETE splicer.end(Ex2.System.go)
 }
 
 

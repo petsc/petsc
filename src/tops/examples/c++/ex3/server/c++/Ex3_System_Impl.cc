@@ -12,7 +12,6 @@
 #include "Ex3_System_Impl.hh"
 
 // DO-NOT-DELETE splicer.begin(Ex3.System._includes)
-#include "petsc.h"
 // DO-NOT-DELETE splicer.end(Ex3.System._includes)
 
 // user-defined constructor.
@@ -156,13 +155,9 @@ throw ()
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
         if (i == 0 || j == 0 || i == mx-1 || j == my-1 || k == 0 || k == mz-1) {
-	  CHKMEMA;
           b.set(i,j,k,0.0);
-          CHKMEMA;
         } else {
-	  CHKMEMA;
           b.set(i,j,k,sc);
-  	  CHKMEMA;
         }
       }
     }
@@ -272,8 +267,6 @@ throw ()
   this->solver = solver;
   solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
   
-  PetscOptionsSetValue("-ksp_monitor",PETSC_NULL);
-
   // We don't need to call setSystem since it will be obtained through
   // getPort calls
 
@@ -281,7 +274,7 @@ throw ()
 
   myServices.releasePort("TOPS.StructuredSolver");
 
-  PetscFunctionReturn(0);
+  return 0;
   // DO-NOT-DELETE splicer.end(Ex3.System.go)
 }
 

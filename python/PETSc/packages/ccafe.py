@@ -25,6 +25,7 @@ class Configure(PETSc.package.Package):
     self.addMakeMacro('CCAFE_HOME',self.framework.argDB['with-ccafe-dir'])
     self.addMakeMacro('CCAFE_VERSION',self.version)
     self.addMakeMacro('CCA_REPO','${CCAFE_HOME}/share/cca-spec-babel-0_7_8-babel-${BABEL_VERSION}/xml')
+    self.addMakeMacro('HAVE_CCA','-DHAVE_CCA')
 
 if __name__ == '__main__':
   import config.framework
