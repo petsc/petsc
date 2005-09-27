@@ -1,6 +1,6 @@
 
 SIDL        = ex1.sidl
-SIDLEXCLUDE = --exclude-external
+SIDLEXCLUDE = -e TOPS[\.a-zA-Z_]* -e gov.cca[\._a-zA-Z_]*
 TLIBNAME    = libex1
 REMOVEFILES = ./server/c++/TOPS* ./server/c++/sidl* ./server/c++/gov_cca*
 DIRS        = server/c++

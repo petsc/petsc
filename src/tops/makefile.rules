@@ -6,6 +6,8 @@ CFLAGS = ${BABEL_INCLUDE}
 
 SIDLFILES = ${PETSC_DIR}/src/tops/tops.sidl ${SIDL}
 
+TOPSCLIENT_LIB = -L${PETSC_LIB_DIR} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} -lclient-c++
+
 parse-check:
 	${BABEL} -R${CCA_REPO} --parse-check ${SIDLFILES}
 
@@ -32,19 +34,25 @@ libclient-python:
 	-@python setup.py --include-dirs=${BABEL_INCLUDE} --include-dirs=${BABEL_INCLUDE}/python2.4/babel --library-dirs=${BABEL_LIB_DIR}  install   --install-purelib=./ --install-platlib=./ --install-headers=include --install-scripts=scripts --install-data=data
 
 #-------------------------------------------------------------------------------
-server-c++:  server/c++/makefile
-	-@cd server/c++; make TLIBNAME=${TLIBNAME} libserver-c++.${SOSUFFIX}
+server-c++:  server/c++/obj/makefile
+	-@cd server/c++/obj; make TLIBNAME=${TLIBNAME} libserver-c++.${SOSUFFIX}
 
-server/c++/makefile: ${SIDLFILES}
-	@-${BK} edit server/c++/*_Impl.cc server/c++/*_Impl.hh
-	-${BABEL} -R ${CCA_REPO} --suppress-timestamp --server=c++ --output-directory=./server/c++ ${SIDLFILES}
+server/c++/obj/makefile: ${SIDLFILES}
+	-@if [ ! -d "server/c++/obj" ]; then mkdir -p server/c++/obj; fi
+	-@${BK} edit server/c++/*_Impl.cc server/c++/*_Impl.hh
+	-${BABEL} -R ${CCA_REPO} --hide-glue --exclude-external --suppress-timestamp \
+		${SIDLEXCLUDE} --server=c++ --output-directory=./server/c++ ${SIDLFILES}
 	@-${RM} ${REMOVEFILES}
-	echo "include ${PETSC_DIR}/src/tops/makefile.rules" > server/c++/makefile
+	echo "include ${PETSC_DIR}/src/tops/makefile.rules" > server/c++/obj/makefile
 
 libserver-c++.${SOSUFFIX}: 
-	-@${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++ *.cc
-	-@${C_CC} -c ${HAVE_CCA} ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++  *.c
-	-@$(OMAKE)  LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} ${PETSC_LIB}" shared_arch
+	-@${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
+		-I${PETSC_DIR}/src/tops/client/c++ -I${PETSC_DIR}/src/tops/server/c++ \
+		../*.cc ../glue/*.cc
+	-@${C_CC} -c ${HAVE_CCA} ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I../glue -I.. \
+		-I${PETSC_DIR}/src/tops/client/c++ -I${PETSC_DIR}/src/tops/server/c++  \
+		../glue/*.c
+	-@$(OMAKE) LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} -lclient-c++" shared_arch
 	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
 	-@for i in StructuredSolver UnstructuredSolver ; do \
 	   ${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libtops.${SL_LINKER_SUFFIX} \
@@ -97,7 +105,10 @@ examples:
 	  echo -e "\n### Building and testing in $$dir"; \
 	  make -C $$dir server-c++ test-cca; \
 	done
-	
+
+clean-cca:
+	-@${RM} -r server/c++/obj server/c++/glue \
+		examples/c++/ex?/server/c++/obj examples/c++/ex?/server/c++/glue
 #-------------------------------------------------------------------------------
 
 
