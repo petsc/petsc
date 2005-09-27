@@ -252,7 +252,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Actually need to ftp '+l+'blaslapack\n')
       import urllib
       try:
-        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/'+f2c+'blaslapack.tar.gz',os.path.join(packages,f2c+'blaslapack.tar.gz'))
+        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/'+f2c+'blaslapack.tar.gz',os.path.join(packages,f2c+'blaslapack.tar.gz'))
       except:
         raise RuntimeError('Error downloading '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
       try:

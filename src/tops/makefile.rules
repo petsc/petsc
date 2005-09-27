@@ -21,8 +21,8 @@ clients:
 	touch $@
 
 libclient-c: 
-	-@${CC} -c ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.cc
-	-@${C_CC} -c ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.c
+	-@${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.cc
+	-@${C_CC} -c ${HAVE_CCA} ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.c
 	-@$(OMAKE)  LIBNAME=libclient-${LANGUAGE} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB}" shared_arch
 
 libclient-c++: libclient-c
@@ -42,8 +42,8 @@ server/c++/makefile: ${SIDLFILES}
 	echo "include ${PETSC_DIR}/src/tops/makefile.rules" > server/c++/makefile
 
 libserver-c++.${SOSUFFIX}: 
-	-@${CC} -c ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++ *.cc
-	-@${C_CC} -c ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++  *.c
+	-@${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++ *.cc
+	-@${C_CC} -c ${HAVE_CCA} ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I${PETSC_DIR}/src/tops/server/c++  *.c
 	-@$(OMAKE)  LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} ${PETSC_LIB}" shared_arch
 	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
 	-@for i in StructuredSolver UnstructuredSolver ; do \

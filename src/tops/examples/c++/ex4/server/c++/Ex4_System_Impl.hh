@@ -46,6 +46,7 @@
 
 
 // DO-NOT-DELETE splicer.begin(Ex4.System._includes)
+#define MPICH_IGNORE_CXX_SEEK
 #include "mpi.h"
 #include "TOPS.hh"
 // DO-NOT-DELETE splicer.end(Ex4.System._includes)

@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz']
+    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/c2html.tar.gz']
 
   def Install(self):
     c2htmlDir = self.getDir()
