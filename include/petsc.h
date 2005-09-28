@@ -17,6 +17,10 @@
    This facilitates using C version of PETSc from C++ and 
    C++ version from C (use --with-c-support --with-language=c++ with config/configure.py)
 */
+#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX) && !defined(__cplusplus)
+#error "PETSc configured with --with-clanguage=c++ and NOT --with-c-support - it can be used only with a C++ compiler"
+#endif      
+
 
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 #define PETSC_EXTERN_CXX_BEGIN extern "C" {

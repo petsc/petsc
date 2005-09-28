@@ -25,14 +25,14 @@ PetscErrorCode MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
 {
   /* Note: This code is virtually identical to that of MatApplyPtAP_SeqAIJ_Symbolic */
   /*        and MatMatMult_SeqAIJ_SeqAIJ_Symbolic.  Perhaps they could be merged nicely. */
-  PetscErrorCode ierr;
-  FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
-  PetscInt       *ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pti,*ptj,*ptjj;
-  PetscInt       *ci,*cj,*paj,*padenserow,*pasparserow,*denserow,*sparserow;
-  PetscInt       an=A->N,am=A->M,pn=P->N,pm=P->M;
-  PetscInt       i,j,k,pnzi,arow,anzj,panzi,ptrow,ptnzj,cnzi;
-  MatScalar      *ca;
+  PetscErrorCode     ierr;
+  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
+  PetscInt           *ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pti,*ptj,*ptjj;
+  PetscInt           *ci,*cj,*paj,*padenserow,*pasparserow,*denserow,*sparserow;
+  PetscInt           an=A->N,am=A->M,pn=P->N,pm=P->M;
+  PetscInt           i,j,k,pnzi,arow,anzj,panzi,ptrow,ptnzj,cnzi;
+  MatScalar          *ca;
 
   PetscFunctionBegin;
   /* some error checking which could be moved into interface layer */
@@ -61,7 +61,7 @@ PetscErrorCode MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
 
   /* Set initial free space to be nnz(A) scaled by aspect ratio of Pt. */
   /* This should be reasonable if sparsity of PAPt is similar to that of A. */
-  ierr          = GetMoreSpace((ai[am]/pn)*pm,&free_space);
+  ierr          = PetscFreeSpaceGet((ai[am]/pn)*pm,&free_space);
   current_space = free_space;
 
   /* Determine fill for each row of C: */
@@ -101,7 +101,7 @@ PetscErrorCode MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
     /* If free space is not available, make more free space */
     /* Double the amount of total space in the list */
     if (current_space->local_remaining<cnzi) {
-      ierr = GetMoreSpace(current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(current_space->total_array_size,&current_space);CHKERRQ(ierr);
     }
 
     /* Copy data into free space, and zero out dense row */
@@ -122,7 +122,7 @@ PetscErrorCode MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
   /* Allocate space for cj, initialize cj, and */
   /* destroy list of free space and other temporary array(s) */
   ierr = PetscMalloc((ci[pm]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
-  ierr = MakeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscFree(padenserow);CHKERRQ(ierr);
     
   /* Allocate space for ca */

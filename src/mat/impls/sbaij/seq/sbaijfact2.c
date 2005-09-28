@@ -1530,19 +1530,19 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInfo *in
 #define __FUNCT__ "MatICCFactorSymbolic_SeqSBAIJ"
 PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
 {
-  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
-  Mat_SeqSBAIJ   *b;
-  Mat            B;
-  PetscErrorCode ierr;
-  PetscTruth     perm_identity;
-  PetscInt       bs=A->bs,am=a->mbs;
-  PetscInt       reallocs=0,*rip,i,*ai,*aj,*ui;
-  PetscInt       jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
-  PetscInt       nlnk,*lnk,*lnk_lvl=PETSC_NULL,ncols,*cols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
-  PetscReal      fill=info->fill,levels=info->levels;
-  FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
-  FreeSpaceList  free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
-  PetscBT        lnkbt;
+  Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data;
+  Mat_SeqSBAIJ       *b;
+  Mat                B;
+  PetscErrorCode     ierr;
+  PetscTruth         perm_identity;
+  PetscInt           bs=A->bs,am=a->mbs;
+  PetscInt           reallocs=0,*rip,i,*ai,*aj,*ui;
+  PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
+  PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,ncols,*cols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
+  PetscReal          fill=info->fill,levels=info->levels;
+  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
+  PetscBT            lnkbt;
 
   PetscFunctionBegin;
   /*  
@@ -1601,9 +1601,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
     ierr = PetscIncompleteLLCreate(am,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
 
     /* initial FreeSpace size is fill*(ai[am]+1) */
-    ierr = GetMoreSpace((PetscInt)(fill*(ai[am]+1)),&free_space);CHKERRQ(ierr);
+    ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+1)),&free_space);CHKERRQ(ierr);
     current_space = free_space;
-    ierr = GetMoreSpace((PetscInt)(fill*(ai[am]+1)),&free_space_lvl);CHKERRQ(ierr);
+    ierr = PetscFreeSpaceGet((PetscInt)(fill*(ai[am]+1)),&free_space_lvl);CHKERRQ(ierr);
     current_space_lvl = free_space_lvl;
 
     for (k=0; k<am; k++){  /* for each active row k */
@@ -1643,8 +1643,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
       if (current_space->local_remaining<nzk) {
         i = am - k + 1; /* num of unfactored rows */
         i = PetscMin(i*nzk, i*(i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
-        ierr = GetMoreSpace(i,&current_space);CHKERRQ(ierr);
-        ierr = GetMoreSpace(i,&current_space_lvl);CHKERRQ(ierr);
+        ierr = PetscFreeSpaceGet(i,&current_space);CHKERRQ(ierr);
+        ierr = PetscFreeSpaceGet(i,&current_space_lvl);CHKERRQ(ierr);
         reallocs++;
       }
 
@@ -1686,9 +1686,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
 
     /* destroy list of free space and other temporary array(s) */
     ierr = PetscMalloc((ui[am]+1)*sizeof(PetscInt),&uj);CHKERRQ(ierr);
-    ierr = MakeSpaceContiguous(&free_space,uj);CHKERRQ(ierr);
+    ierr = PetscFreeSpaceContiguous(&free_space,uj);CHKERRQ(ierr);
     ierr = PetscIncompleteLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
-    ierr = DestroySpace(free_space_lvl);CHKERRQ(ierr);
+    ierr = PetscFreeSpaceDestroy(free_space_lvl);CHKERRQ(ierr);
   } /* end of case: levels>0 || (levels=0 && !perm_identity) */
 
   /* put together the new matrix in MATSEQSBAIJ format */

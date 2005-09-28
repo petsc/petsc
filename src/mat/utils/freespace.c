@@ -3,14 +3,14 @@
 #include "src/mat/utils/freespace.h"
 
 #undef __FUNCT__
-#define __FUNCT__ "GetMoreSpace"
-PetscErrorCode GetMoreSpace(PetscInt n,FreeSpaceList *list)
+#define __FUNCT__ "PetscFreeSpaceGet"
+PetscErrorCode PetscFreeSpaceGet(PetscInt n,PetscFreeSpaceList *list)
 {
-  FreeSpaceList  a;
-  PetscErrorCode ierr;
+  PetscFreeSpaceList a;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(FreeSpace),&a);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(struct _Space),&a);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscInt),&(a->array_head));CHKERRQ(ierr);
   a->array            = a->array_head;
   a->local_remaining  = n;
@@ -29,11 +29,11 @@ PetscErrorCode GetMoreSpace(PetscInt n,FreeSpaceList *list)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MakeSpaceContiguous"
-PetscErrorCode MakeSpaceContiguous(FreeSpaceList *head,PetscInt *space) 
+#define __FUNCT__ "PetscFreeSpaceContiguous"
+PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head,PetscInt *space) 
 {
-  FreeSpaceList  a;
-  PetscErrorCode ierr;
+  PetscFreeSpaceList a;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   while ((*head)!=NULL) {
@@ -48,11 +48,11 @@ PetscErrorCode MakeSpaceContiguous(FreeSpaceList *head,PetscInt *space)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DestroySpace"
-PetscErrorCode DestroySpace(FreeSpaceList head) 
+#define __FUNCT__ "PetscFreeSpaceDestroy"
+PetscErrorCode PetscFreeSpaceDestroy(PetscFreeSpaceList head) 
 {
-  FreeSpaceList  a;
-  PetscErrorCode ierr;
+  PetscFreeSpaceList a;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   while ((head)!=NULL) {
