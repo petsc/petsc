@@ -109,7 +109,7 @@ class Configure(config.base.Configure):
       if self.language[-1] == 'Cxx':
         includes += '''
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
 '''
       # Construct prototype
@@ -121,6 +121,13 @@ extern "C"
       else:
         # We use char because int might match the return type of a gcc2 builtin and its argument prototype would still apply.
         includes += 'char '+funcName+'();\n'
+      # Handle C++ mangling
+      if self.language[-1] == 'Cxx':
+        includes += '''
+#ifdef __cplusplus
+}
+#endif
+'''
       # Construct function call
       if call:
         if isinstance(call, str):
