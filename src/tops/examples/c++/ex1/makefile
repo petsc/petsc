@@ -2,6 +2,7 @@
 SIDL        = ex1.sidl
 SIDLEXCLUDE = -e TOPS[\.a-zA-Z_]* -e gov.cca[\._a-zA-Z_]*
 TLIBNAME    = libex1
+TOPSCLIENT_LIB = -L${PETSC_LIB_DIR} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} -ltopsclient-c++
 DIRS        = server/c++
 EXNUM       = 1
 
