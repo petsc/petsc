@@ -539,13 +539,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNormBegin(Vec x,NormType ntype,PetscReal *r
 PetscErrorCode PETSCVEC_DLLEXPORT VecNormEnd(Vec x,NormType ntype,PetscReal *result) 
 {
   PetscErrorCode      ierr;
-  PetscInt            type_id;
   PetscSplitReduction *sr;
   MPI_Comm            comm;
 
   PetscFunctionBegin;
-  ierr = VecNormComposedDataID(ntype,&type_id);CHKERRQ(ierr);
-
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   
@@ -572,7 +569,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNormEnd(Vec x,NormType ntype,PetscReal *res
     result[1] = sqrt(result[1]);
   }
   if (ntype!=NORM_1_AND_2) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,type_id,result[0]);CHKERRQ(ierr);
+    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[ntype],result[0]);CHKERRQ(ierr);
   }
 
   if (sr->numopsend == sr->numopsbegin) {

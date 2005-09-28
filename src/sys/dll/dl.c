@@ -254,7 +254,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char libna
   if (!ptr) SETERRQ1(PETSC_ERR_ARG_WRONG,"Dynamic library name must have lib prefix:%s",libname);
   ierr = PetscStrchr(ptr+3,'.',&ptrp);CHKERRQ(ierr);
   if (ptrp) {
-    len = ptrp - ptr;
+    len = ptrp - ptr - 3;
   } else {
     ierr = PetscStrlen(ptr+3,&len);CHKERRQ(ierr);
   }
