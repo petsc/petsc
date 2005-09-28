@@ -252,8 +252,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   }
   ierr = (*ctx->ops->compute)(ctx,U,a,&h,&zeroa);CHKERRQ(ierr);
   if (zeroa) {
-    PetscScalar zero = 0.0;
-    ierr = VecSet(y,zero);CHKERRQ(ierr);
+    ierr = VecSet(y,0.0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 

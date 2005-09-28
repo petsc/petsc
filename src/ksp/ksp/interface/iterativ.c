@@ -505,12 +505,11 @@ PetscErrorCode KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 {
   PetscErrorCode ierr;
   MatStructure pflag;
-  Vec          T;
   Mat          Amat,Pmat;
 
   PetscFunctionBegin;
   PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);
-  ierr = KSPBuildSolution(ksp,t,&T);CHKERRQ(ierr);
+  ierr = KSPBuildSolution(ksp,t,PETSC_NULL);CHKERRQ(ierr);
   ierr = KSP_MatMult(ksp,Amat,t,v);CHKERRQ(ierr);
   ierr = VecAYPX(v,-1.0,ksp->vec_rhs);CHKERRQ(ierr);
   *V = v;

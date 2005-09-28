@@ -223,7 +223,6 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec,NormType,PetscReal *);
 PetscPolymorphicSubroutine(VecNorm,(Vec x,PetscReal *r),(x,NORM_2,r))
 PetscPolymorphicFunction(VecNorm,(Vec x,NormType t),(x,t,&r),PetscReal,r)
 PetscPolymorphicFunction(VecNorm,(Vec x),(x,NORM_2,&r),PetscReal,r)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNormComposedDataID(NormType,PetscInt*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNormalize(Vec,PetscReal *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSum(Vec,PetscScalar*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMax(Vec,PetscInt*,PetscReal *);

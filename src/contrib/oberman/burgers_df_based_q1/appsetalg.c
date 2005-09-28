@@ -119,7 +119,7 @@ PetscErrorCode SetLocalElement(AppElement *phi,double *coords)
 
   /* Could put in a flag to skip computing this when it isn't needed */
 
-  /* the image of the reference element is given by sum (coord i)*phi_i */
+  /* the image of the reference element's Gauss pts is given by sum (coord i)*phi_i */
     for(j=0;j<4;j++){ /* loop over gauss points */
       x[j] = 0; y[j] = 0;
       for(k=0;k<4;k++){
@@ -157,8 +157,7 @@ PetscErrorCode SetLocalElement(AppElement *phi,double *coords)
     for(i=0;i<4;i++){  /* loop over Gauss points */
       for(j=0;j<4;j++){ /* loop over basis functions */
         dx[4*j+i] = phi->DxValues[j][i]*Dhinv[i][0][0] +  phi->DyValues[j][i]*Dhinv[i][1][0];
-        dy[4*j+i] = phi->DxValues[j][i]*Dhinv[i][0][1] + phi->DyValues[j][i]*Dhinv
-[i][1][1];
+        dy[4*j+i] = phi->DxValues[j][i]*Dhinv[i][0][1] + phi->DyValues[j][i]*Dhinv[i][1][1];
       }
     }
 PetscFunctionReturn(0);

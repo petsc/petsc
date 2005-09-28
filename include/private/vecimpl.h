@@ -144,6 +144,8 @@ EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
 EXTERN PetscErrorCode VecDestroyVecs_Default(Vec [],PetscInt);
 EXTERN PetscErrorCode VecLoadIntoVector_Default(PetscViewer,Vec);
 
+extern PetscInt NormIds[7];  /* map from NormType to IDs used to cache/retreive values of norms */
+
 /* --------------------------------------------------------------------*/
 /*                                                                     */
 /* Defines the data structures used in the Vec Scatter operations      */
