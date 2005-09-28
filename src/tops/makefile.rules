@@ -6,8 +6,6 @@ CFLAGS = ${BABEL_INCLUDE}
 
 SIDLFILES = ${PETSC_DIR}/src/tops/tops.sidl ${SIDL}
 
-TOPSCLIENT_LIB = -L${PETSC_LIB_DIR} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} -lclient-c++
-
 parse-check:
 	${BABEL} -R${CCA_REPO} --parse-check ${SIDLFILES}
 
@@ -18,23 +16,23 @@ clients:
 		${BABEL} -R${CCA_REPO} --suppress-timestamp -c $$LANGUAGE -o ./client/$$LANGUAGE ${SIDLFILES} ; \
 		cat client/$$LANGUAGE/babel.make | sed s/\\.cc/.o/g | sed s/\\.c/.o/g > client/$$LANGUAGE/makefile; \
 		echo "include ${PETSC_DIR}/src/tops/makefile.rules" >> client/$$LANGUAGE/makefile; \
-		$(OMAKE) -C client/$$LANGUAGE LANGUAGE=$$LANGUAGE libclient-$$LANGUAGE;\
+		$(OMAKE) -C client/$$LANGUAGE LANGUAGE=$$LANGUAGE libtopsclient-$$LANGUAGE;\
 	done
 	touch $@
 
-libclient-c: 
+libtopsclient-c: 
 	-@${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.cc
 	-@${C_CC} -c ${HAVE_CCA} ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.c
-	-@$(OMAKE)  LIBNAME=libclient-${LANGUAGE} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB}" shared_arch
+	-@$(OMAKE)  LIBNAME=libtopsclient-${LANGUAGE} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB}" shared_arch
 
-libclient-c++: libclient-c
+libtopsclient-c++: libtopsclient-c
 
 
-libclient-python: 
+libtopsclient-python: 
 	-@python setup.py --include-dirs=${BABEL_INCLUDE} --include-dirs=${BABEL_INCLUDE}/python2.4/babel --library-dirs=${BABEL_LIB_DIR}  install   --install-purelib=./ --install-platlib=./ --install-headers=include --install-scripts=scripts --install-data=data
 
 #-------------------------------------------------------------------------------
-server-c++:  server/c++/obj/makefile
+server-c++:  server/c++/obj/makefile 
 	-@cd server/c++/obj; make TLIBNAME=${TLIBNAME} libserver-c++.${SOSUFFIX}
 
 server/c++/obj/makefile: ${SIDLFILES}
@@ -42,17 +40,17 @@ server/c++/obj/makefile: ${SIDLFILES}
 	-@${BK} edit server/c++/*_Impl.cc server/c++/*_Impl.hh
 	-${BABEL} -R ${CCA_REPO} --hide-glue --exclude-external --suppress-timestamp \
 		${SIDLEXCLUDE} --server=c++ --output-directory=./server/c++ ${SIDLFILES}
-	@-${RM} ${REMOVEFILES}
-	echo "include ${PETSC_DIR}/src/tops/makefile.rules" > server/c++/obj/makefile
+	@-${RM} ${REMOVEFILES} server/c++/obj/makefile
+	@-if [ ! -z "${TOPSCLIENT_LIB}" ]; then echo "TOPSCLIENT_LIB = ${TOPSCLIENT_LIB}" > server/c++/obj/makefile; fi
+	echo "include ${PETSC_DIR}/src/tops/makefile.rules" >> server/c++/obj/makefile
 
 libserver-c++.${SOSUFFIX}: 
-	-@${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
-		-I${PETSC_DIR}/src/tops/client/c++ -I${PETSC_DIR}/src/tops/server/c++ \
-		../*.cc ../glue/*.cc
-	-@${C_CC} -c ${HAVE_CCA} ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I../glue -I.. \
-		-I${PETSC_DIR}/src/tops/client/c++ -I${PETSC_DIR}/src/tops/server/c++  \
-		../glue/*.c
-	-@$(OMAKE) LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} -lclient-c++" shared_arch
+	@-${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
+	    -I${PETSC_DIR}/src/tops/client/c++ -I${PETSC_DIR}/src/tops/server/c++ \
+	    ../*.cc ../glue/*.cc
+	@-${C_CC} -c ${HAVE_CCA} ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I../glue -I.. \
+	    -I${PETSC_DIR}/src/tops/client/c++ -I${PETSC_DIR}/src/tops/server/c++ ../glue/*.c
+	-@$(OMAKE) LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} ${TOPSCLIENT_LIB}" shared_arch
 	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
 	-@for i in StructuredSolver UnstructuredSolver ; do \
 	   ${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libtops.${SL_LINKER_SUFFIX} \
