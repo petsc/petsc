@@ -305,13 +305,13 @@ throw ()
  */
 void
 TOPS::StructuredSolver_impl::setSystem (
-  /* in */ ::TOPS::System::System system ) 
+  /* in */ ::TOPS::System::System sys ) 
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setSystem)
 #undef __FUNCT__
 #define __FUNCT__ "TOPS::StructuredSolver_impl::setSystem()"
-  this->system = system;
+  this->system = sys;
   system.setSolver(this->self);
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setSystem)
 }
@@ -359,7 +359,7 @@ throw ()
     arg.copy(argv[i], arg.length(), 0);
     argv[i][arg.length()] = 0;
   }
-  int    ierr = PetscInitialize(&argc,&argv,0,0); 
+  PetscInitialize(&argc,&argv,0,0); 
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.Initialize)
 }
 
@@ -467,6 +467,7 @@ throw ()
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getSolution)
   // Insert-Code-Here {TOPS.StructuredSolver.getSolution} (getSolution method)
+  return 0;
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getSolution)
 }
 
@@ -559,6 +560,7 @@ throw ()
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getStencilWidth)
   // Insert-Code-Here {TOPS.StructuredSolver.getStencilWidth} (getStencilWidth method)
+  return 0;
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getStencilWidth)
 }
 

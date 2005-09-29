@@ -14,18 +14,18 @@ clients:
 	-@for LANGUAGE in $(LANGUAGES); do \
 		echo -e "\n### Building $$LANGUAGE client library."; \
 		${BABEL} -R${CCA_REPO} --suppress-timestamp -c $$LANGUAGE -o ./client/$$LANGUAGE ${SIDLFILES} ; \
-		cat client/$$LANGUAGE/babel.make | sed s/\\.cc/.o/g | sed s/\\.c/.o/g > client/$$LANGUAGE/makefile; \
-		echo "include ${PETSC_DIR}/src/tops/makefile.rules" >> client/$$LANGUAGE/makefile; \
+		echo "include ${PETSC_DIR}/src/tops/makefile.rules" > client/$$LANGUAGE/makefile; \
 		$(OMAKE) -C client/$$LANGUAGE LANGUAGE=$$LANGUAGE libtopsclient-$$LANGUAGE;\
 	done
 	touch $@
 
 libtopsclient-c: 
-	-@${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.cc
 	-@${C_CC} -c ${HAVE_CCA} ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.c
 	-@$(OMAKE)  LIBNAME=libtopsclient-${LANGUAGE} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB}" shared_arch
 
-libtopsclient-c++: libtopsclient-c
+libtopsclient-c++:
+	-@${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.cc
+	-@$(OMAKE)  LIBNAME=libtopsclient-${LANGUAGE} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB}" shared_arch
 
 
 libtopsclient-python: 
@@ -42,7 +42,7 @@ server/c++/obj/makefile: ${SIDLFILES}
 		${SIDLEXCLUDE} --server=c++ --output-directory=./server/c++ ${SIDLFILES}
 	@-${RM} ${REMOVEFILES} server/c++/obj/makefile
 	@-if [ ! -z "${TOPSCLIENT_LIB}" ]; then echo "TOPSCLIENT_LIB = ${TOPSCLIENT_LIB}" > server/c++/obj/makefile; fi
-	echo "include ${PETSC_DIR}/src/tops/makefile.rules" >> server/c++/obj/makefile
+	@-echo "include ${PETSC_DIR}/src/tops/makefile.rules" >> server/c++/obj/makefile
 
 libserver-c++.${SOSUFFIX}: 
 	@-${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \

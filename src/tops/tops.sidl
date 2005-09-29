@@ -8,7 +8,7 @@ package TOPS version 0.0.0 {
   }
 
   interface Solver extends gov.cca.Port {
-      void          setSystem(in System.System system);
+      void          setSystem(in System.System sys);
       System.System getSystem();
 
       // Pass in command line arguments to Solver
