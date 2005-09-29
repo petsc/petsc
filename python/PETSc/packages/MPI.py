@@ -243,7 +243,12 @@ class Configure(PETSc.package.Package):
       args.append('--disable-CXX')
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
-      args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      if self.compilers.fortranIsF90:
+        args.append('--disable-F77')
+        args.append('--with-F90="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      else:
+        args.append('--disable-F90')
+        args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
     else:
       args.append('--disable-F77')
