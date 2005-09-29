@@ -106,7 +106,12 @@ def main():
     fd=os.popen('bk changes -and:I: -r'+revq)
     revn = fd.read().splitlines()[0]
     fd.close()
-    print 'processing changeset: '+revn
+    # Don't know how to handle branch changesets
+    if len(revn.split('.')) > 2:
+      print 'Ignoring changeset  : '+revn
+      continue
+    
+    print 'Processing changeset: '+revn
     # get revi
     revi = int(revn.split('.')[1])
     # get username
