@@ -971,12 +971,13 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
       sum1 = tmp[row];
 
       for(j=nz ; j>1; j-=2){
-        i0   = vi[0];
-        i1   = vi[-1];
         vi  -=2;
+        i0   = vi[2];
+        i1   = vi[1];
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];
-        sum1 -= v1[0] * tmp0 + v1[-1] * tmp1; v1 -= 2;
+        v1   -= 2;
+        sum1 -= v1[2] * tmp0 + v1[1] * tmp1;
       }
       if (j==1){
         tmp0  = tmps[*vi--];
@@ -989,13 +990,15 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
       sum2 = tmp[row -1];
       v2   = aa + ai[row]-1;
       for (j=nz ; j>1; j-=2){
-        i0   = vi[0];
-        i1   = vi[-1];
         vi  -=2;
+        i0   = vi[2];
+        i1   = vi[1];
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];
-        sum1 -= v1[0] * tmp0 + v1[-1] * tmp1; v1 -= 2;
-        sum2 -= v2[0] * tmp0 + v2[-1] * tmp1; v2 -= 2;
+        v1   -= 2;
+        v2   -= 2;
+        sum1 -= v1[2] * tmp0 + v1[1] * tmp1;
+        sum2 -= v2[2] * tmp0 + v2[1] * tmp1;
       }
       if (j==1){
         tmp0  = tmps[*vi--];
@@ -1014,14 +1017,17 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
       v2   = aa + ai[row]-1;
       v3   = aa + ai[row -1]-1;
       for (j=nz ; j>1; j-=2){
-        i0   = vi[0];
-        i1   = vi[-1];
         vi  -=2;
+        i0   = vi[2];
+        i1   = vi[1];
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];
-        sum1 -= v1[0] * tmp0 + v1[-1] * tmp1; v1 -= 2;
-        sum2 -= v2[0] * tmp0 + v2[-1] * tmp1; v2 -= 2;
-        sum3 -= v3[0] * tmp0 + v3[-1] * tmp1; v3 -= 2;
+        v1   -= 2;
+        v2   -= 2;
+        v3   -= 2;
+        sum1 -= v1[2] * tmp0 + v1[1] * tmp1;
+        sum2 -= v2[2] * tmp0 + v2[1] * tmp1;
+        sum3 -= v3[2] * tmp0 + v3[1] * tmp1;
       }
       if (j==1){
         tmp0  = tmps[*vi--];
@@ -1047,15 +1053,19 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
       v4   = aa + ai[row -2]-1;
 
       for (j=nz ; j>1; j-=2){
-        i0   = vi[0];
-        i1   = vi[-1];
         vi  -=2;
+        i0   = vi[2];
+        i1   = vi[1];
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];
-        sum1 -= v1[0] * tmp0 + v1[-1] * tmp1; v1 -= 2;
-        sum2 -= v2[0] * tmp0 + v2[-1] * tmp1; v2 -= 2;
-        sum3 -= v3[0] * tmp0 + v3[-1] * tmp1; v3 -= 2;
-        sum4 -= v4[0] * tmp0 + v4[-1] * tmp1; v4 -= 2;
+        v1  -= 2;
+        v2  -= 2;
+        v3  -= 2; 
+        v4  -= 2;  
+        sum1 -= v1[2] * tmp0 + v1[1] * tmp1;
+        sum2 -= v2[2] * tmp0 + v2[1] * tmp1;
+        sum3 -= v3[2] * tmp0 + v3[1] * tmp1;
+        sum4 -= v4[2] * tmp0 + v4[1] * tmp1;
       }
       if (j==1){
         tmp0  = tmps[*vi--];
@@ -1087,16 +1097,21 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
       v4   = aa + ai[row -2]-1;
       v5   = aa + ai[row -3]-1;
       for (j=nz ; j>1; j-=2){
-        i0   = vi[0];
-        i1   = vi[-1];
-        vi  -=2;
+        vi  -= 2;
+        i0   = vi[2];
+        i1   = vi[1];
         tmp0 = tmps[i0];
         tmp1 = tmps[i1];
-        sum1 -= v1[0] * tmp0 + v1[-1] * tmp1; v1 -= 2;
-        sum2 -= v2[0] * tmp0 + v2[-1] * tmp1; v2 -= 2;
-        sum3 -= v3[0] * tmp0 + v3[-1] * tmp1; v3 -= 2;
-        sum4 -= v4[0] * tmp0 + v4[-1] * tmp1; v4 -= 2;
-        sum5 -= v5[0] * tmp0 + v5[-1] * tmp1; v5 -= 2;
+        v1   -= 2; 
+        v2   -= 2; 
+        v3   -= 2; 
+        v4   -= 2; 
+        v5   -= 2;
+        sum1 -= v1[2] * tmp0 + v1[1] * tmp1;
+        sum2 -= v2[2] * tmp0 + v2[1] * tmp1;
+        sum3 -= v3[2] * tmp0 + v3[1] * tmp1;
+        sum4 -= v4[2] * tmp0 + v4[1] * tmp1;
+        sum5 -= v5[2] * tmp0 + v5[1] * tmp1;
       }
       if (j==1){
         tmp0  = tmps[*vi--];

@@ -5,7 +5,7 @@
 
 typedef struct _Space *PetscFreeSpaceList;
 
-typedef struct _Space {
+struct _Space {
   PetscFreeSpaceList more_space;
   PetscInt           *array;
   PetscInt           *array_head;

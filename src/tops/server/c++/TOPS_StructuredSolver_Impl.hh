@@ -111,7 +111,7 @@ namespace TOPS {
      */
     void
     setSystem (
-      /* in */ ::TOPS::System::System system
+      /* in */ ::TOPS::System::System sys
     )
     throw () 
     ;

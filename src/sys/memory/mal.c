@@ -49,13 +49,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocAlign(size_t mem,int line,const char f
     */
     ptr = (int*)malloc(mem + 2*PETSC_MEMALIGN);
     if (ptr) {
-      shift    = (int)(((unsigned long) ptr) % PETSC_MEMALIGN);
-      shift    = (2*PETSC_MEMALIGN - shift)/sizeof(int);
-      ptr     += shift;
-      ptr[-1]  = shift + SHIFT_COOKIE ;
-      *result  = (void*)ptr;
+      shift        = (int)(((unsigned long) ptr) % PETSC_MEMALIGN);
+      shift        = (2*PETSC_MEMALIGN - shift)/sizeof(int);
+      ptr[shift-1] = shift + SHIFT_COOKIE ;
+      ptr         += shift;
+      *result      = (void*)ptr;
     } else {
-      *result  = 0;
+      *result      = 0;
     }
   }
 #endif
@@ -73,7 +73,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeAlign(void *ptr,int line,const char func
        Previous int tells us how many ints the pointer has been shifted from
     the original address provided by the system malloc().
   */
-  shift = ((int*)ptr)[-1] - SHIFT_COOKIE;   
+  shift = (*((int*)ptr)-1) - SHIFT_COOKIE;   
   if (shift > PETSC_MEMALIGN-1) return PetscError(line,func,file,dir,1,1,"Likely memory corruption in heap");
   ptr   = (void*)(((int*)ptr) - shift);
 #endif
