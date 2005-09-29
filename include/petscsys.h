@@ -26,8 +26,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscGetDisplay(char[],size_t);
 
 extern PetscCookie PETSC_DLLEXPORT PETSC_RANDOM_COOKIE;
 
-typedef enum { RANDOM_DEFAULT,RANDOM_DEFAULT_REAL,
-               RANDOM_DEFAULT_IMAGINARY } PetscRandomType;
+typedef enum {RANDOM_DEFAULT,RANDOM_DEFAULT_REAL,RANDOM_DEFAULT_IMAGINARY} PetscRandomType;
 
 /*S
      PetscRandom - Abstract PETSc object that manages generating random numbers

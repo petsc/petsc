@@ -276,10 +276,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP,PetscViewer);
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
           KSPSetConvergenceTest()
 E*/
-typedef enum {KSP_NO_NORM               = 0,
-              KSP_PRECONDITIONED_NORM   = 1,
-              KSP_UNPRECONDITIONED_NORM = 2,
-              KSP_NATURAL_NORM          = 3} KSPNormType;
+typedef enum {KSP_NO_NORM = 0,KSP_PRECONDITIONED_NORM = 1,KSP_UNPRECONDITIONED_NORM = 2,KSP_NATURAL_NORM = 3} KSPNormType;
 extern const char *KSPNormTypes[];
 /*MC
     KSP_NO_NORM - Do not compute a norm during the Krylov process. This will 
