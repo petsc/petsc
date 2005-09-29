@@ -26,8 +26,8 @@ def main():
   darcs_repo= sys.argv[2]
 
   # get absolute paths - this way - os.chdir() works
-  bk_repo = os.path.abspath(bk_repo)
-  darcs_repo = os.path.abspath(darcs_repo)
+  bk_repo = os.path.realpath(bk_repo)
+  darcs_repo = os.path.realpath(darcs_repo)
 
   # verify if bkdir exists
   if not os.path.exists(bk_repo):
@@ -75,7 +75,7 @@ def main():
   if buf == '':
     bk_cset_min = '1.0'
   else:
-    bk_cset_min = buf.splitlines()[1].strip()[2:]
+    bk_cset_min = buf.splitlines()[2].strip()
 
   if bk_cset_min == bk_cset_max:
     print 'No new changesets Quitting! Last commit:', bk_cset_min
@@ -86,8 +86,9 @@ def main():
     os.remove(log_file)
 
   # find the bk-changesets that need to be exported to darcs
+  # using -end:KEY avoids duplicate listing of TAGS [causes too much grief]
   os.chdir(bk_repo)
-  fd=os.popen('bk changes -k -f -r'+'"'+bk_cset_min+'".."'+bk_cset_max+'"')
+  fd=os.popen('bk changes -end:KEY: -f -r'+'"'+bk_cset_min+'".."'+bk_cset_max+'"')
   buf=fd.read()
   fd.close()
   revs=buf.splitlines()
@@ -103,16 +104,14 @@ def main():
     revq='"'+rev+'"'
     # get the rev-number
     fd=os.popen('bk changes -and:I: -r'+revq)
-    revn = fd.read()
+    revn = fd.read().splitlines()[0]
     fd.close()
     print 'processing changeset: '+revn
     # get revi
-    fd=os.popen('bk changes -and:L: -r'+revq)
-    revi = int(fd.read().strip())
-    fd.close()
+    revi = int(revn.split('.')[1])
     # get username
     fd=os.popen('bk changes -and:USER:@:HOST: -r'+revq)
-    auth_email=fd.read().strip()
+    auth_email=fd.read().splitlines()[0].strip()
     fd.close()
     auth_email=auth_email.replace('.(none)','')
     
@@ -120,7 +119,7 @@ def main():
     fd=os.popen('bk changes -r'+revq+' | grep -v ^ChangeSet@')
     buf=fd.read()
     fd.close()
-    msg = rev+ '\n' + buf.strip() + '\n'
+    msg = 'bk-changeset-'+revn + '\n' + rev + '\n'+ buf.strip() + '\n'
     fd=open(log_file,'w')
     fd.write(msg)
     fd.close()
@@ -134,11 +133,13 @@ def main():
     # Now remove the old files - and export the new modified files
     os.system('ls -a | grep -v _darcs | xargs rm -rf >/dev/null 2>&1')
     os.system('bk export -r'+revq+' ' + bk_repo + ' ' + darcs_repo)
-    os.system('darcs record --test -l -a -A ' + auth_email + ' --delete-logfile --logfile='+log_file)
+    os.system('darcs record --test -l -a -A ' + auth_email + ' --delete-logfile --logfile='+log_file + '> /dev/null 2>&1')
+    
     # optimize/checkpoint every 250 patches
-    if revi%250 == 0 :
-      os.system('darcs tag -A snapshot@petsc snapshot-'+revn)
-      os.system('darcs optimize --checkpoint -t snapshot-'+revn)
+    if revi%250 == 0  and revi != 0:
+      print 'checkpointing/optimizing changeset-'+ revn
+      os.system('darcs tag -A snapshot@petsc snapshot-'+revn +'> /dev/null 2>&1')
+      os.system('darcs optimize --checkpoint -t snapshot-'+revn +'> /dev/null 2>&1')
   return 0
 
 # The classes in this file can also
