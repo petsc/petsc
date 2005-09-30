@@ -18,15 +18,6 @@ PetscErrorCode MatLUFactorSymbolic_MPIDense(Mat A,IS row,IS col,MatFactorInfo *i
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_MPIDense"
-PetscErrorCode MatLUFactorNumeric_MPIDense(Mat A,MatFactorInfo *info_dummy,Mat *fact)
-{
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"No support of numerical factorization for mpidense matrix type");
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MPIDense"
 PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
 {
@@ -34,15 +25,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat A,IS perm,MatFactorInfo *i
 
   PetscFunctionBegin;
   ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactorNumeric_MPIDense"
-PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat A,MatFactorInfo *info_dummy,Mat *fact)
-{
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"no support of numerical factorization for mpidense matrix type");
   PetscFunctionReturn(0);
 }
 
@@ -1006,9 +988,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        MatZeroEntries_MPIDense,
 /*25*/ MatZeroRows_MPIDense,
        MatLUFactorSymbolic_MPIDense,
-       MatLUFactorNumeric_MPIDense,
+       0,
        MatCholeskyFactorSymbolic_MPIDense,
-       MatCholeskyFactorNumeric_MPIDense,
+       0,
 /*30*/ MatSetUpPreallocation_MPIDense,
        0,
        0,

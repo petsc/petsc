@@ -1938,16 +1938,16 @@ PetscErrorCode MatMultTransposeAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C) 
 {
   /* This routine requires testing -- but it's getting better. */
-  PetscErrorCode ierr;
-  FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
-  Mat_SeqMAIJ    *pp=(Mat_SeqMAIJ*)PP->data;
-  Mat            P=pp->AIJ;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
-  PetscInt       *pti,*ptj,*ptJ,*ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj;
-  PetscInt       *ci,*cj,*ptadenserow,*ptasparserow,*denserow,*sparserow,*ptaj;
-  PetscInt       an=A->N,am=A->M,pn=P->N,pm=P->M,ppdof=pp->dof,cn;
-  PetscInt       i,j,k,dof,pshift,ptnzi,arow,anzj,ptanzi,prow,pnzj,cnzi;
-  MatScalar      *ca;
+  PetscErrorCode     ierr;
+  PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
+  Mat_SeqMAIJ        *pp=(Mat_SeqMAIJ*)PP->data;
+  Mat                P=pp->AIJ;
+  Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
+  PetscInt           *pti,*ptj,*ptJ,*ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj;
+  PetscInt           *ci,*cj,*ptadenserow,*ptasparserow,*denserow,*sparserow,*ptaj;
+  PetscInt           an=A->N,am=A->M,pn=P->N,pm=P->M,ppdof=pp->dof,cn;
+  PetscInt           i,j,k,dof,pshift,ptnzi,arow,anzj,ptanzi,prow,pnzj,cnzi;
+  MatScalar          *ca;
 
   PetscFunctionBegin;  
   /* Start timer */
@@ -1972,7 +1972,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   /* Set initial free space to be nnz(A) scaled by aspect ratio of P. */
   /* This should be reasonable if sparsity of PtAP is similar to that of A. */
   /* Note, aspect ratio of P is the same as the aspect ratio of SeqAIJ inside P */
-  ierr          = GetMoreSpace((ai[am]/pm)*pn,&free_space);
+  ierr          = PetscFreeSpaceGet((ai[am]/pm)*pn,&free_space);
   current_space = free_space;
 
   /* Determine symbolic info for each row of C: */
@@ -2022,7 +2022,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
       /* If free space is not available, make more free space */
       /* Double the amount of total space in the list */
       if (current_space->local_remaining<cnzi) {
-        ierr = GetMoreSpace(current_space->total_array_size,&current_space);CHKERRQ(ierr);
+        ierr = PetscFreeSpaceGet(current_space->total_array_size,&current_space);CHKERRQ(ierr);
       }
 
       /* Copy data into free space, and zero out denserows */
@@ -2046,7 +2046,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   /* Allocate space for cj, initialize cj, and */
   /* destroy list of free space and other temporary array(s) */
   ierr = PetscMalloc((ci[cn]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
-  ierr = MakeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscFree(ptadenserow);CHKERRQ(ierr);
     
   /* Allocate space for ca */

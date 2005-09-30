@@ -757,7 +757,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScale (Vec x, PetscScalar alpha)
 
   for (i=0; i<4; i++) {
     if (flgs[i]) {
-      ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[i],alpha*norms[i]);CHKERRQ(ierr);
+      ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[i],PetscAbsScalar(alpha)*norms[i]);CHKERRQ(ierr);
     }
   }
 

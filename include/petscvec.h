@@ -274,6 +274,8 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMin(Vec,PetscInt,PetscInt *,Pe
 PetscPolymorphicFunction(VecStrideMin,(Vec x,PetscInt i),(x,i,PETSC_NULL,&r),PetscReal,r)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec,PetscInt,PetscScalar*);
 PetscPolymorphicScalar(VecStrideScale,(Vec x,PetscInt i,PetscScalar _t),(x,i,&_T))
+
+
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGather(Vec,PetscInt,Vec,InsertMode);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatter(Vec,PetscInt,Vec,InsertMode);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec,Vec*,InsertMode);
@@ -494,9 +496,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecContourScale(Vec,PetscReal,PetscReal
     These numbers need to match the entries in 
   the function table in vecimpl.h
 */
-typedef enum { VECOP_VIEW = 32,
-               VECOP_LOADINTOVECTOR = 38
-             } VecOperation;
+typedef enum { VECOP_VIEW = 32, VECOP_LOADINTOVECTOR = 38} VecOperation;
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec,VecOperation,void(*)(void));
 
 /*

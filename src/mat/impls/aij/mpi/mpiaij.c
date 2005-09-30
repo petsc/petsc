@@ -3110,7 +3110,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   PetscInt             nrows,*buf_s,*buf_si,*buf_si_i,**nextrow,**nextai;
   MPI_Request          *si_waits,*sj_waits,*ri_waits,*rj_waits; 
   MPI_Status           *status;
-  FreeSpaceList        free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscFreeSpaceList   free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT              lnkbt;
   Mat_Merge_SeqsToMPI  *merge;
   PetscObjectContainer container;
@@ -3258,7 +3258,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   /* initial FreeSpace size is 2*(num of local nnz(seqmat)) */
   len = 0;
   len  = ai[owners[rank+1]] - ai[owners[rank]];
-  ierr = GetMoreSpace((PetscInt)(2*len+1),&free_space);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceGet((PetscInt)(2*len+1),&free_space);CHKERRQ(ierr);
   current_space = free_space;
 
   /* determine symbolic info for each local row */
@@ -3296,7 +3296,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<bnzi) {
-      ierr = GetMoreSpace(current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(current_space->total_array_size,&current_space);CHKERRQ(ierr);
       nspacedouble++;
     }
     /* copy data into free space, then initialize lnk */
@@ -3313,7 +3313,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   ierr = PetscFree(buf_ri_k);CHKERRQ(ierr);
 
   ierr = PetscMalloc((bi[m]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
-  ierr = MakeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);
+  ierr = PetscFreeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
   /* create symbolic parallel matrix B_mpi */

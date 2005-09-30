@@ -167,7 +167,7 @@ throw ()
  */
 void
 TOPS::UnstructuredSolver_impl::setSystem (
-  /* in */ ::TOPS::System::System system ) 
+  /* in */ ::TOPS::System::System sys ) 
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setSystem)
@@ -224,7 +224,7 @@ throw ()
     arg.copy(argv[i], arg.length(), 0);
     argv[i][arg.length()] = 0;
   }
-  int    ierr = PetscInitialize(&argc,&argv,0,0);
+  PetscInitialize(&argc,&argv,0,0);
   SlicedCreate(PETSC_COMM_WORLD,&this->slice);
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.Initialize)
 }
@@ -336,6 +336,7 @@ throw ()
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getSolution)
   // Insert-Code-Here {TOPS.UnstructuredSolver.getSolution} (getSolution method)
+  return 0;
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getSolution)
 }
 
@@ -407,6 +408,7 @@ throw ()
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getGhostPoints)
   // Insert-Code-Here {TOPS.UnstructuredSolver.getGhostPoints} (getGhostPoints method)
+  return 0;
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getGhostPoints)
 }
 
