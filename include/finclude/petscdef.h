@@ -30,35 +30,33 @@
 ! PETSc double/complex variables are not affected by 
 ! compiler options like -r4,-r8, sometimes invoked 
 ! by the user. NAG compiler does not like integer*4,real*8
-!
-!
 
-
+#if defined(PETSC_MISSING_FORTRANSTAR)
+#define integer8 integer(kind=8)
+#define integer4 integer(kind=4)
+#else
+#define integer8 integer*8
+#define integer4 integer*4
+#endif
 
 #if (PETSC_SIZEOF_VOID_P == 8)
-#define PetscFortranAddr integer*8
-#define PetscOffset integer*8
-#elif defined (PETSC_MISSING_FORTRANSTAR)
-#define PetscOffset integer
-#define PetscFortranAddr integer
+#define PetscFortranAddr integer8
+#define PetscOffset integer8
 #else
-#define PetscOffset integer*4
-#define PetscFortranAddr integer*4
+#define PetscOffset integer4
+#define PetscFortranAddr integer4
 #endif
 
 #if defined(PETSC_USE_64BIT_INT)
-#define PetscInt integer*8
-#elif defined (PETSC_MISSING_FORTRANSTAR)
-#define PetscInt integer
+#define PetscInt integer8
 #else
-#define PetscInt integer*4
+#define PetscInt integer4
 #endif
 
-
 #if defined (PETSC_MISSING_FORTRANSTAR)
-#define PetscFortranFloat real
-#define PetscFortranDouble double precision
-#define PetscFortranComplex complex (KIND=SELECTED_REAL_KIND(14))
+#define PetscFortranFloat real(kind=4)
+#define PetscFortranDouble real(kind=8)
+#define PetscFortranComplex complex(kind=8)
 #define PetscChar(a) character(len = a) ::
 #else
 #define PetscFortranFloat real*4
@@ -120,9 +118,6 @@
 #else
 #define MatScalar PetscScalar
 #endif
-!
-!     Declare PETSC_NULL_OBJECT
-!
 !
 !     PetscLogDouble variables are used to contain double precision numbers
 !     that are not used in the numerical computations, but rather in logging,
