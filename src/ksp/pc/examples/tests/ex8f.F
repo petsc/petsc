@@ -156,7 +156,6 @@
       call VecDestroy(b,ierr)
       call MatDestroy(A,ierr)
 
- 200  continue
       call PetscFinalize(ierr)
       end
 

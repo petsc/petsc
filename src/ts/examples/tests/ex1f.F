@@ -365,7 +365,7 @@
 #include "ex1f.h"
       TS                ts
       PetscInt           step
-      integer ctx
+      PetscObject     ctx
       PetscErrorCode ierr
       double precision  time,lnrm_2,lnrm_max
       Vec               global
