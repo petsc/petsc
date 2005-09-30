@@ -1904,6 +1904,34 @@ PetscErrorCode MatSetUpPreallocation_MPIBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+#include "petscblaslapack.h"
+#undef __FUNCT__  
+#define __FUNCT__ "MatAXPY_MPIBAIJ"
+PetscErrorCode MatAXPY_MPIBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  Mat_MPIBAIJ    *xx=(Mat_MPIBAIJ *)X->data,*yy=(Mat_MPIBAIJ *)Y->data;
+  PetscBLASInt   bnz,one=1;
+  Mat_SeqBAIJ    *x,*y;
+
+  PetscFunctionBegin;
+  if (str == SAME_NONZERO_PATTERN) {  
+    PetscScalar alpha = a;
+    x = (Mat_SeqBAIJ *)xx->A->data;
+    y = (Mat_SeqBAIJ *)yy->A->data;
+    bnz = (PetscBLASInt)x->nz;
+    BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);    
+    x = (Mat_SeqBAIJ *)xx->B->data;
+    y = (Mat_SeqBAIJ *)yy->B->data;
+    bnz = (PetscBLASInt)x->nz;
+    BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
+  } else {
+    ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatRealPart_MPIBAIJ"
 PetscErrorCode MatRealPart_MPIBAIJ(Mat A)
@@ -1972,7 +2000,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-/*40*/ 0,
+/*40*/ MatAXPY_MPIBAIJ,
        MatGetSubMatrices_MPIBAIJ,
        MatIncreaseOverlap_MPIBAIJ,
        MatGetValues_MPIBAIJ,
