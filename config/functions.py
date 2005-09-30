@@ -147,7 +147,7 @@ choke me
     self.executeTest(self.checkMemcmp)
     self.executeTest(self.checkSysinfo)
     self.executeTest(self.checkVPrintf)
-    if 'CXX' in self.framework.argDB:
+    if hasattr(self.compilers, 'CXX'):
       self.executeTest(self.checkSignalHandlerType)
     self.executeTest(self.checkFreeReturnType)
     map(lambda function: self.executeTest(self.check, function), self.functions)

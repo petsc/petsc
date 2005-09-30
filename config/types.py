@@ -312,9 +312,9 @@ void (*signal())();
     self.executeTest(self.checkPID)
     self.executeTest(self.checkUID)
     self.executeTest(self.checkSignal)
-    if 'CXX' in self.framework.argDB:
+    if hasattr(self.compilers, 'CXX'):
       self.executeTest(self.checkComplex)
-    if 'FC' in self.framework.argDB:
+    if hasattr(self.compilers, 'FC'):
       self.executeTest(self.checkFortranStar)
       self.executeTest(self.checkFortranDReal)
     self.executeTest(self.checkConst)
