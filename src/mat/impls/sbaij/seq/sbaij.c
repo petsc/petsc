@@ -202,6 +202,9 @@ PetscErrorCode MatGetRow_SeqSBAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **
   PetscScalar    *v_i;
 
   PetscFunctionBegin;
+  if (A) SETERRQ(PETSC_ERR_SUP,"MatGetRow is not supported for SBAIJ matrix format");
+  /* The old version below either gets the upper triangle part, or too expensive.
+     We take out the support for MatGetRow_SeqSBAIJ() */
   bs  = A->bs;
   ai  = a->i;
   aj  = a->j;
@@ -1078,6 +1081,28 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetColumnIndices(Mat mat,PetscInt *
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatCopy_SeqSBAIJ"
+PetscErrorCode MatCopy_SeqSBAIJ(Mat A,Mat B,MatStructure str)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* If the two matrices have the same copy implementation, use fast copy. */
+  if (str == SAME_NONZERO_PATTERN && (A->ops->copy == B->ops->copy)) {
+    Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
+    Mat_SeqSBAIJ *b = (Mat_SeqSBAIJ*)B->data; 
+
+    if (a->i[A->m] != b->i[B->m]) {
+      SETERRQ(PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
+    }
+    ierr = PetscMemcpy(b->a,a->a,(a->i[A->m])*sizeof(PetscScalar));CHKERRQ(ierr);
+  } else {
+    ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSetUpPreallocation_SeqSBAIJ"
 PetscErrorCode MatSetUpPreallocation_SeqSBAIJ(Mat A)
 {
@@ -1242,7 +1267,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatGetSubMatrices_SeqSBAIJ,
        MatIncreaseOverlap_SeqSBAIJ,
        MatGetValues_SeqSBAIJ,
-       0,
+       MatCopy_SeqSBAIJ,
 /*45*/ MatPrintHelp_SeqSBAIJ,
        MatScale_SeqSBAIJ,
        0,

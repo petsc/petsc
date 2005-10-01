@@ -1892,6 +1892,24 @@ PetscErrorCode MatEqual_MPIBAIJ(Mat A,Mat B,PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatCopy_MPIBAIJ"
+PetscErrorCode MatCopy_MPIBAIJ(Mat A,Mat B,MatStructure str)
+{
+  PetscErrorCode ierr;
+  Mat_MPIBAIJ    *a = (Mat_MPIBAIJ *)A->data;
+  Mat_MPIBAIJ    *b = (Mat_MPIBAIJ *)B->data;
+
+  PetscFunctionBegin;
+  /* If the two matrices don't have the same copy implementation, they aren't compatible for fast copy. */
+  if ((str != SAME_NONZERO_PATTERN) || (A->ops->copy != B->ops->copy)) {
+    ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
+  } else {
+    ierr = MatCopy(a->A,b->A,str);CHKERRQ(ierr);
+    ierr = MatCopy(a->B,b->B,str);CHKERRQ(ierr);  
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpPreallocation_MPIBAIJ"
@@ -2004,7 +2022,7 @@ static struct _MatOps MatOps_Values = {
        MatGetSubMatrices_MPIBAIJ,
        MatIncreaseOverlap_MPIBAIJ,
        MatGetValues_MPIBAIJ,
-       0,
+       MatCopy_MPIBAIJ,
 /*45*/ MatPrintHelp_MPIBAIJ,
        MatScale_MPIBAIJ,
        0,

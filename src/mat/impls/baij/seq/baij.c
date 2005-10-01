@@ -1916,6 +1916,28 @@ PetscErrorCode MatGetRowMax_SeqBAIJ(Mat A,Vec v)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatCopy_SeqBAIJ"
+PetscErrorCode MatCopy_SeqBAIJ(Mat A,Mat B,MatStructure str)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* If the two matrices have the same copy implementation, use fast copy. */
+  if (str == SAME_NONZERO_PATTERN && (A->ops->copy == B->ops->copy)) {
+    Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; 
+    Mat_SeqBAIJ *b = (Mat_SeqBAIJ*)B->data; 
+
+    if (a->i[A->m] != b->i[B->m]) {
+      SETERRQ(PETSC_ERR_ARG_INCOMP,"Number of nonzeros in two matrices are different");
+    }
+    ierr = PetscMemcpy(b->a,a->a,(a->i[A->m])*sizeof(PetscScalar));CHKERRQ(ierr);
+  } else {
+    ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSetUpPreallocation_SeqBAIJ"
 PetscErrorCode MatSetUpPreallocation_SeqBAIJ(Mat A)
 {
@@ -2054,7 +2076,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        MatGetSubMatrices_SeqBAIJ,
        MatIncreaseOverlap_SeqBAIJ,
        MatGetValues_SeqBAIJ,
-       0,
+       MatCopy_SeqBAIJ,
 /*45*/ MatPrintHelp_SeqBAIJ,
        MatScale_SeqBAIJ,
        0,
