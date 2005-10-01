@@ -90,17 +90,16 @@ int main(int argc,char **argv)
     ierr = MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
     ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(tmat);CHKERRQ(ierr);
 #endif 
 #ifdef TestMatAXPY2
     Mat matB;
     alpha = 1.0;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
-    ierr = MatDuplicate(mat,MAT_COPY_VALUES,&matB);CHKERRQ(ierr);
+    ierr = MatDuplicate(mat,MAT_COPY_VALUES,&matB);CHKERRQ(ierr); 
     ierr = MatAXPY(matB,alpha,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr); 
     ierr = MatView(matB,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
     ierr = MatDestroy(matB);CHKERRQ(ierr);
-
+#ifdef TMP
     /* get matB that has nonzeros of mat in all even numbers of row and col */
     ierr = MatCreate(PETSC_COMM_WORLD,&matB);CHKERRQ(ierr);
     ierr = MatSetSizes(matB,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
@@ -127,11 +126,13 @@ int main(int argc,char **argv)
     ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     
     ierr = MatDestroy(matB);CHKERRQ(ierr);  
+#endif /* TMP */
 #endif 
   
 
   /* Free data structures */  
   if (mat)  {ierr = MatDestroy(mat);CHKERRQ(ierr);}
+  if (tmat) {ierr = MatDestroy(tmat);CHKERRQ(ierr);}
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;

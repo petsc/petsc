@@ -13,11 +13,7 @@
 
 // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._includes)
 #include "TOPS_Unstructured_Matrix_Impl.hh"
-#include "petscconf.h"
 #include <iostream>
-#if defined(PETSC_HAVE_CCAFE)
-#  define USE_PORTS 1
-#endif
 
 static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
 {
@@ -47,7 +43,7 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   imatrix1->mat = J;
   imatrix2->mat = B;
 
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   system = solver->getServices().getPort("TOPS.System.Compute.Matrix");
   if (system._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
@@ -60,9 +56,11 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
 #endif
 
   // Use the port
+  CHKMEMQ;
   system.computeMatrix(matrix1,matrix2);
+  CHKMEMQ;
 
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   solver->getServices().releasePort("TOPS.System.Compute.Matrix");
 #endif
 
@@ -88,10 +86,10 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
   VecGetLocalSize(local,&nlocal);
   sidl::array<double> ua;
   int lower[4],upper[4],stride[4];
-  lower[0] = 0; upper[0] = nlocal; stride[0] = 1;
+  lower[0] = 0; upper[0] = nlocal-1; stride[0] = 1;
   ua.borrow(uu,1,*&lower,*&upper,*&stride);
 
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   system = solver->getServices().getPort("TOPS.System.Compute.RightHandSide");  
   if (system._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
@@ -102,10 +100,12 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 #else
   system = (TOPS::System::Compute::RightHandSide) solver->getSystem();
 #endif
+  CHKMEMQ;
   // Use the port
   system.computeRightHandSide(ua);
+  CHKMEMQ;
 
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   solver->getServices().releasePort("TOPS.System.Compute.RightHandSide");
 #endif
 
@@ -167,7 +167,7 @@ throw ()
  */
 void
 TOPS::UnstructuredSolver_impl::setSystem (
-  /* in */ ::TOPS::System::System system ) 
+  /* in */ ::TOPS::System::System sys ) 
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setSystem)
@@ -224,7 +224,7 @@ throw ()
     arg.copy(argv[i], arg.length(), 0);
     argv[i][arg.length()] = 0;
   }
-  int    ierr = PetscInitialize(&argc,&argv,0,0);
+  PetscInitialize(&argc,&argv,0,0);
   SlicedCreate(PETSC_COMM_WORLD,&this->slice);
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.Initialize)
 }
@@ -246,7 +246,7 @@ throw ()
   if (!this->dmmg) {
     TOPS::System::Initialize::Once once;
 
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
     once = myServices.getPort("TOPS.System.Initialize.Once");
 #else
     once = (TOPS::System::Initialize::Once)this->system;
@@ -254,7 +254,7 @@ throw ()
     if (once._not_nil()) {    
       once.initializeOnce();
     }
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
     myServices.releasePort("TOPS.System.Initialize.Once");
 #endif
 
@@ -263,7 +263,7 @@ throw ()
     DMMGSetDM(this->dmmg,(DM)this->slice);
     TOPS::System::Compute::Residual residual;
 
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
     residual = myServices.getPort("TOPS.System.Compute.Residual");
 #else
     residual = (TOPS::System::Compute::Residual) this->system;
@@ -273,13 +273,13 @@ throw ()
     } else {
       ierr = DMMGSetKSP(this->dmmg,FormRightHandSide,FormMatrix);
     }
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
     myServices.releasePort("TOPS.System.Compute.Residual");
 #endif
 
     TOPS::System::Compute::InitialGuess guess;
 
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
     guess = myServices.getPort("TOPS.System.Compute.InitialGuess");
 #else
     guess = (TOPS::System::Compute::InitialGuess) this->system;
@@ -288,13 +288,13 @@ throw ()
       ierr = DMMGSetInitialGuess(this->dmmg, FormInitialGuess);
     }
   }
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   myServices.releasePort("TOPS.System.Compute.InitialGuess");
 #endif
 
   TOPS::System::Initialize::EverySolve every;
 
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   every = myServices.getPort("TOPS.System.Initialize.EverySolve");
 #else
   every = (TOPS::System::Initialize::EverySolve)this->system;
@@ -302,7 +302,7 @@ throw ()
   if (every._not_nil()) {    
     every.initializeEverySolve();
   }
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
     myServices.releasePort("TOPS.System.Initialize.EverySolve");
 #endif
 
@@ -336,6 +336,7 @@ throw ()
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getSolution)
   // Insert-Code-Here {TOPS.UnstructuredSolver.getSolution} (getSolution method)
+  return 0;
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getSolution)
 }
 
@@ -407,6 +408,7 @@ throw ()
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getGhostPoints)
   // Insert-Code-Here {TOPS.UnstructuredSolver.getGhostPoints} (getGhostPoints method)
+  return 0;
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getGhostPoints)
 }
 

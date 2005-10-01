@@ -15,11 +15,6 @@
 
 #include <iostream>
 #include "TOPS_Structured_Matrix_Impl.hh"
-#include "petscconf.h"
-#if defined(PETSC_HAVE_CCAFE)
-#  define USE_PORTS 1
-#endif
-// Uses ports includes
   // This code is the same as DAVecGetArray() except instead of generating
   // raw C multidimensional arrays it gets a Babel array
 ::sidl::array<double> DAVecGetArrayBabel(DA da,Vec vec)
@@ -67,7 +62,7 @@ static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
   DMMG dmmg = (DMMG) vdmmg;
   TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
   TOPS::System::Compute::Residual system;
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   system = solver->getServices().getPort("TOPS.System.Compute.Residual");
   if (system._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
@@ -97,7 +92,7 @@ static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
   DARestoreLocalVector(da,&u);
   VecRestoreArray(f,0);
 
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   solver->getServices().releasePort("TOPS.System.Compute.Residual");
 #endif
   PetscFunctionReturn(0);
@@ -108,7 +103,7 @@ static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
   PetscFunctionBegin;
   TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
   TOPS::System::Compute::InitialGuess system;
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   system = solver->getServices().getPort("TOPS.System.Compute.InitialGuess");
   if (system._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
@@ -129,7 +124,7 @@ static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
 
   system.computeInitialGuess(fa);
   VecRestoreArray(f,0);
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   solver->getServices().releasePort("TOPS.System.Compute.InitialGuess");
 #endif
   PetscFunctionReturn(0);
@@ -176,7 +171,7 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   solver->setLength(1,my);
   solver->setLength(2,mz);
 
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   system = solver->getServices().getPort("TOPS.System.Compute.Matrix");
   if (system._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
@@ -193,7 +188,7 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
     system.computeMatrix(matrix1,matrix2);
   }
 
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   solver->getServices().releasePort("TOPS.System.Compute.Matrix");
 #endif
 
@@ -216,7 +211,7 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
   TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
   TOPS::System::Compute::RightHandSide system;
 
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   system = solver->getServices().getPort("TOPS.System.Compute.RightHandSide");
 #else
   system = (TOPS::System::Compute::RightHandSide) solver->getSystem();
@@ -232,7 +227,7 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
     system.computeRightHandSide(fa);
   }
 
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   solver->getServices().releasePort("TOPS.System.Compute.RightHandSide");
 #endif
 
@@ -310,13 +305,13 @@ throw ()
  */
 void
 TOPS::StructuredSolver_impl::setSystem (
-  /* in */ ::TOPS::System::System system ) 
+  /* in */ ::TOPS::System::System sys ) 
 throw () 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setSystem)
 #undef __FUNCT__
 #define __FUNCT__ "TOPS::StructuredSolver_impl::setSystem()"
-  this->system = system;
+  this->system = sys;
   system.setSolver(this->self);
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setSystem)
 }
@@ -364,7 +359,7 @@ throw ()
     arg.copy(argv[i], arg.length(), 0);
     argv[i][arg.length()] = 0;
   }
-  int    ierr = PetscInitialize(&argc,&argv,0,0); 
+  PetscInitialize(&argc,&argv,0,0); 
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.Initialize)
 }
 
@@ -384,7 +379,7 @@ throw ()
 
   if (!this->dmmg) {
     TOPS::System::Initialize::Once once;
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
     once = myServices.getPort("TOPS.System.Initialize.Once");
 #else
     once = (TOPS::System::Initialize::Once) this->system;
@@ -392,7 +387,7 @@ throw ()
     if (once._not_nil()) {    
       once.initializeOnce();
     }
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
     myServices.releasePort("TOPS.System.Initialize.Once");
 #endif
 
@@ -404,7 +399,7 @@ throw ()
     DMMGSetDM(this->dmmg,(DM)this->da);
 
     TOPS::System::Compute::Residual residual;
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
     residual = myServices.getPort("TOPS.System.Compute.Residual");
 #else
     residual = (TOPS::System::Compute::Residual) this->system;
@@ -414,12 +409,12 @@ throw ()
     } else {
       ierr = DMMGSetKSP(this->dmmg,FormRightHandSide,FormMatrix);
     }
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
     myServices.releasePort("TOPS.System.Compute.Residual");
 #endif
 
     TOPS::System::Compute::InitialGuess guess;
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
     guess = myServices.getPort("TOPS.System.Compute.InitialGuess");
 #else
     guess = (TOPS::System::Compute::InitialGuess) this->system;
@@ -428,12 +423,12 @@ throw ()
       ierr = DMMGSetInitialGuess(this->dmmg, FormInitialGuess);
     }
   }
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   myServices.releasePort("TOPS.System.Compute.InitialGuess");
 #endif
   
   TOPS::System::Initialize::EverySolve every;
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   every = myServices.getPort("TOPS.System.Initialize.EverySolve");
 #else
   every = (TOPS::System::Initialize::EverySolve)this->system;
@@ -441,7 +436,7 @@ throw ()
   if (every._not_nil()) {    
     every.initializeEverySolve();
   }
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
     myServices.releasePort("TOPS.System.Initialize.EverySolve");
 #endif
 
@@ -472,6 +467,7 @@ throw ()
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getSolution)
   // Insert-Code-Here {TOPS.StructuredSolver.getSolution} (getSolution method)
+  return 0;
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getSolution)
 }
 
@@ -564,6 +560,7 @@ throw ()
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getStencilWidth)
   // Insert-Code-Here {TOPS.StructuredSolver.getStencilWidth} (getStencilWidth method)
+  return 0;
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getStencilWidth)
 }
 

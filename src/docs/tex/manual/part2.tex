@@ -5019,9 +5019,9 @@ duplicates \trl{v_old} to form two new vectors, \trl{v_new(1)} and \trl{v_new(2)
    call VecDestroyVecs(v\_new,2,ierr)
 \end{tabbing}
 
-\subsection{Matrix and Vector Indices}
+\subsection{Matrix, Vector and IS Indices}
 
-All matrices and vectors in PETSc use zero-based indexing, regardless
+All matrices, vectors and IS in PETSc use zero-based indexing, regardless
 of whether C or Fortran is being used.  The interface routines, such
 as MatSetValues() and VecSetValues(), always use zero
 indexing.  See Section \ref{sec_matoptions} for further details.

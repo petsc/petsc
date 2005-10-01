@@ -19,6 +19,7 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('PETSc', '-with-clanguage=<C or C++>', nargs.Arg(None, 'C', 'Specify C or C++ language'))
     help.addArgument('PETSc', '-with-c++-support', nargs.Arg(None, 0, 'When building C, compile C++ portions of external libraries (e.g. Prometheus)'))
+    help.addArgument('PETSc', '-with-c-support', nargs.Arg(None, 0, 'When building with C++, compile so may be used directly from C'))
     help.addArgument('PETSc', '-with-fortran', nargs.ArgBool(None, 1, 'Create and install the Fortran wrappers'))
     help.addArgument('PETSc', '-with-python', nargs.ArgBool(None, 0, 'Download and install the Python wrappers'))
     help.addArgument('PETSc', '-with-precision=<single,double,matsingle>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
@@ -63,6 +64,8 @@ class Configure(config.base.Configure):
       self.clanguage = 'Cxx'
     if self.clanguage == 'C' and not self.framework.argDB['with-c++-support'] and not self.framework.argDB['download-prometheus']:
       self.framework.argDB['with-cxx'] = '0'
+    if self.clanguage == 'Cxx' and self.framework.argDB['with-c-support']:
+      self.addDefine('USE_EXTERN_CXX', '1')
     self.framework.logPrint('C language is '+str(self.clanguage))
     self.addDefine('CLANGUAGE_'+self.clanguage.upper(),'1')
     return

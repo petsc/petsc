@@ -240,6 +240,11 @@ class Configure(PETSc.package.Package):
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
     return
 
+  def getSharedFlag(self,cflags):
+    for flag in ['-PIC', '-fPIC', '-KPIC']:
+      if cflags.find(flag) >=0: return flag
+    return ''
+      
   def downLoadBlasLapack(self, f2c, l):
     self.framework.log.write('Downloading '+l+'blaslapack\n')
     packages = self.petscdir.externalPackagesDir
@@ -252,7 +257,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Actually need to ftp '+l+'blaslapack\n')
       import urllib
       try:
-        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/'+f2c+'blaslapack.tar.gz',os.path.join(packages,f2c+'blaslapack.tar.gz'))
+        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/'+f2c+'blaslapack.tar.gz',os.path.join(packages,f2c+'blaslapack.tar.gz'))
       except:
         raise RuntimeError('Error downloading '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
       try:
@@ -281,6 +286,10 @@ class Configure(PETSc.package.Package):
         self.setCompilers.pushLanguage('C')
         line = 'COPTFLAGS  = '+self.setCompilers.getCompilerFlags()+'\n'
         self.setCompilers.popLanguage()
+      if line.startswith('CNOOPT'):
+        self.setCompilers.pushLanguage('C')
+        line = 'CNOOPT = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+'\n'
+        self.setCompilers.popLanguage()
       if line.startswith('FC  '):
         fc = self.compilers.FC
         if fc.find('f90') >= 0:
@@ -294,6 +303,10 @@ class Configure(PETSc.package.Package):
         self.setCompilers.pushLanguage('FC')
         line = 'FOPTFLAGS  = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n'
         self.setCompilers.popLanguage()       
+      if line.startswith('FNOOPT'):
+        self.setCompilers.pushLanguage('FC')
+        line = 'FNOOPT = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+'\n'
+        self.setCompilers.popLanguage()
       if line.startswith('AR  '):
         line = 'AR      = '+self.setCompilers.AR+'\n'
       if line.startswith('AR_FLAGS  '):
@@ -304,6 +317,7 @@ class Configure(PETSc.package.Package):
         line = 'RANLIB = '+self.setCompilers.RANLIB+'\n'
       if line.startswith('RM  '):
         line = 'RM = '+self.programs.RM+'\n'
+      
 
       if line.startswith('include'):
         line = '\n'

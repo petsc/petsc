@@ -1295,6 +1295,35 @@ PetscErrorCode MatSetUpPreallocation_MPISBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+#include "petscblaslapack.h"
+#undef __FUNCT__  
+#define __FUNCT__ "MatAXPY_MPISBAIJ"
+PetscErrorCode MatAXPY_MPISBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  Mat_MPISBAIJ   *xx=(Mat_MPISBAIJ *)X->data,*yy=(Mat_MPISBAIJ *)Y->data;
+  PetscBLASInt   bnz,one=1;
+  Mat_SeqSBAIJ   *xa,*ya;
+  Mat_SeqBAIJ    *xb,*yb;
+
+  PetscFunctionBegin;
+  if (str == SAME_NONZERO_PATTERN) {  
+    PetscScalar alpha = a;
+    xa = (Mat_SeqSBAIJ *)xx->A->data;
+    ya = (Mat_SeqSBAIJ *)yy->A->data;
+    bnz = (PetscBLASInt)xa->nz;
+    BLASaxpy_(&bnz,&alpha,xa->a,&one,ya->a,&one);    
+    xb = (Mat_SeqBAIJ *)xx->B->data;
+    yb = (Mat_SeqBAIJ *)yy->B->data;
+    bnz = (PetscBLASInt)xb->nz;
+    BLASaxpy_(&bnz,&alpha,xb->a,&one,yb->a,&one);
+  } else {
+    ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPISBAIJ"
 PetscErrorCode MatGetSubMatrices_MPISBAIJ(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
@@ -1357,7 +1386,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-/*40*/ 0,
+/*40*/ MatAXPY_MPISBAIJ,
        MatGetSubMatrices_MPISBAIJ,
        MatIncreaseOverlap_MPISBAIJ,
        MatGetValues_MPISBAIJ,

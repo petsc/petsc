@@ -957,7 +957,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesStencil(Mat mat,PetscInt m,const M
     tmp = *dxm++ - starts[0];
     for (j=0; j<dim-1; j++) {
       if ((*dxm++ - starts[j+1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
-      else                                       tmp = tmp*dims[j] + dxm[-1] - starts[j+1];
+      else                                       tmp = tmp*dims[j] + *(dxm-1) - starts[j+1];
     }
     if (mat->stencil.noc) dxm++;
     jdxm[i] = tmp;
@@ -967,7 +967,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesStencil(Mat mat,PetscInt m,const M
     tmp = *dxn++ - starts[0];
     for (j=0; j<dim-1; j++) {
       if ((*dxn++ - starts[j+1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
-      else                                       tmp = tmp*dims[j] + dxn[-1] - starts[j+1];
+      else                                       tmp = tmp*dims[j] + *(dxn-1) - starts[j+1];
     }
     if (mat->stencil.noc) dxn++;
     jdxn[i] = tmp;
@@ -1064,7 +1064,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedStencil(Mat mat,PetscInt m,
     tmp = *dxm++ - starts[0];
     for (j=0; j<sdim-1; j++) {
       if ((*dxm++ - starts[j+1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
-      else                                      tmp = tmp*dims[j] + dxm[-1] - starts[j+1];
+      else                                      tmp = tmp*dims[j] + *(dxm-1) - starts[j+1];
     }
     dxm++;
     jdxm[i] = tmp;
@@ -1074,7 +1074,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedStencil(Mat mat,PetscInt m,
     tmp = *dxn++ - starts[0];
     for (j=0; j<sdim-1; j++) {
       if ((*dxn++ - starts[j+1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
-      else                                       tmp = tmp*dims[j] + dxn[-1] - starts[j+1];
+      else                                       tmp = tmp*dims[j] + *(dxn-1) - starts[j+1];
     }
     dxn++;
     jdxn[i] = tmp;

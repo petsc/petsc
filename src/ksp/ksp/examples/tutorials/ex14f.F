@@ -513,8 +513,8 @@
       PetscInt     ltog(1)
       PetscOffset idltog,idx
       PetscErrorCode ierr
-      PetscInt nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow,i,j,row,mx,my
-      PetscInt ione,col(5),ifive
+      PetscInt nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow,i,j
+      PetscInt row,mx,my,ione,col(5),ifive
       PetscScalar two,one,lambda,v(5),hx,hy,hxdhy
       PetscScalar hydhx,sc,xx(1)
       Mat         B

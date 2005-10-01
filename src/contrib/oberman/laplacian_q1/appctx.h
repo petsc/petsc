@@ -82,24 +82,24 @@ typedef struct {
 */
 typedef struct {
   /* ********** same for all elements, i.e. for the reference element********* */
-  PetscReal RefVal[4][4];/* values of the reference interpolating functions at the Gauss pts */
-  PetscReal RefDx[4][4];
+  PetscReal RefVal[4][4];/* values of the reference interpolating (basis) functions at the Gauss pts */
+  PetscReal RefDx[4][4]; /* values of the derivatives of the reference basis functions ...*/
   PetscReal RefDy[4][4];
 
   PetscReal weights[4];  /* quadrature weights */
  
   /* **********computed for each element while computing the stiffness ******** */
 
-  PetscReal dx[4][4], dy[4][4];/* values of the local interpolating functions at the Gauss pts */
+  PetscReal dx[4][4], dy[4][4];/* values of the derivatives actual element's interpolating functions at the Gauss pts */
   PetscReal detDh[4];
 
-  PetscReal xy[8];  /* the images of the Gauss pts in the local element */
+  PetscReal xy[8];  /* the images (locations) of the Gauss pts in the actual element */
 
   PetscReal rhsresult[4];  /* results of local integrations */
   PetscReal stiffnessresult[4][4];
 
   PetscReal *coords;  /* pointer to coords of current cell */
-  PF     rhs;
+  PF        rhs;
 } AppElement;
 
 /*----------------------------------------------------

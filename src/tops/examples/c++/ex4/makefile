@@ -1,8 +1,8 @@
 
 SIDL        = ex4.sidl
-SIDLEXCLUDE = --exclude-external
+SIDLEXCLUDE = -e TOPS[\.a-zA-Z_]* -e gov.cca[\.a-zA-Z_]*
 TLIBNAME    = libex4
-REMOVEFILES = ./server/c++/TOPS* ./server/c++/sidl* ./server/c++/gov_cca*
+TOPSCLIENT_LIB = -L${PETSC_LIB_DIR} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} -ltopsclient-c++
 DIRS        = server/c++
 EXNUM       = 4
 

@@ -52,12 +52,12 @@ shared_linux:
 
 shared_solaris_gnu:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
+	sys_lib=`echo "${SYS_LIB}" | sed s?-Wl,-rpath?-L?g`; external_lib=`echo "${PETSC_EXTERNAL_LIB_BASIC}" | sed s?-Wl,-rpath?-L?g`;\
 	${LD}  -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} $${sys_lib} $${external_lib}
 
 shared_solaris:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	sys_lib=`echo "${SYS_LIB}" | sed s?-Wl,-rpath?-L?g`; external_lib=`echo "${PETSC_EXTERNAL_LIB_BASIC}" | sed s?-Wl,-rpath?-L?g`;\
-	${C_CC} -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} $${sys_lib} $${external_lib}
+	${C_CC} -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} ${SYS_LIB} ${PETSC_EXTERNAL_LIB_BASIC}
 
 shared_libtool:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \

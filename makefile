@@ -515,3 +515,24 @@ petscPython.tgz:
         allhtml allcleanhtml  allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
         start_configure configure_petsc configure_clean python
 
+getsigs:
+	-@grep "enum " include/petscsys.h include/petscvec.h > vec.sigs
+	-@grep " Vec[a-zA-Z][a-zA-Z]*(Vec," include/petscvec.h | grep EXTERN | grep -v "(\*)" | grep -v IS |grep -v VecType | sed "s/EXTERN PetscErrorCode PETSCVEC_DLLEXPORT//g" >> vec.sigs
+	-@grep "enum " include/petscmat.h | grep } > mat.sigs
+	-@grep " Mat[a-zA-Z][a-zA-Z]*(Mat," include/petscmat.h | grep EXTERN | grep -v "(\*)" | grep -v IS |grep -v MatType | sed "s/EXTERN PetscErrorCode PETSCMAT_DLLEXPORT//g" >> mat.sigs
+	-@grep "enum " include/petscpc.h | grep } > pc.sigs
+	-@grep " PC[a-zA-Z][a-zA-Z]*(PC," include/petscpc.h | grep EXTERN | grep -v "(\*)" | grep -v "(\*\*)" | grep -v IS |grep -v PCType | sed "s/EXTERN PetscErrorCode PETSCKSP_DLLEXPORT//g" >> pc.sigs
+	-@grep "enum " include/petscksp.h | grep } > ksp.sigs
+	-@grep " KSP[a-zA-Z][a-zA-Z]*(KSP," include/petscksp.h | grep EXTERN | grep -v "(\*)" | grep -v "(\*\*)" | grep -v IS |grep -v KSPType | sed "s/EXTERN PetscErrorCode PETSCKSP_DLLEXPORT//g" >> ksp.sigs
+	-@grep " SNES[a-zA-Z][a-zA-Z]*(SNES," include/petscsnes.h | grep EXTERN | grep -v "(\*)" | grep -v "(\*\*)" | grep -v IS |grep -v SNESType | sed "s/EXTERN PetscErrorCode PETSCSNES_DLLEXPORT//g" > snes.sigs
+
+
+
+
+
+
+
+
+
+
+

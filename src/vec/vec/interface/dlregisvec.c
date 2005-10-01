@@ -14,6 +14,7 @@ extern void PETSCVEC_DLLEXPORT PetscSplitReduction_Local(void*,void*,PetscMPIInt
 EXTERN_C_END
 
 const char *NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",0};
+PetscInt   NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecInitializePackage"
@@ -37,6 +38,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path)
   char              *className;
   PetscTruth        opt;
   PetscErrorCode    ierr;
+  PetscInt          i;
 
   PetscFunctionBegin;
   if (initialized) PetscFunctionReturn(0);
@@ -139,6 +141,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path)
   ierr = MPI_Op_create(PetscSplitReduction_Local,1,&PetscSplitReduction_Op);CHKERRQ(ierr);
   ierr = MPI_Op_create(VecMax_Local,2,&VecMax_Local_Op);CHKERRQ(ierr);
   ierr = MPI_Op_create(VecMin_Local,2,&VecMin_Local_Op);CHKERRQ(ierr);
+
+  /* Register the different norm types for cached norms */
+  for (i=0; i<4; i++) {
+    ierr = PetscObjectComposedDataRegister(NormIds+i);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

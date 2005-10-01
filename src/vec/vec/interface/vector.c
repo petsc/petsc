@@ -18,6 +18,27 @@ PetscEvent  VEC_SetRandom = 0, VEC_ReduceArithmetic = 0, VEC_ReduceBarrier = 0, 
 PetscInt    PETSCVEC_DLLEXPORT VecSetValue_Row = 0;
 PetscScalar PETSCVEC_DLLEXPORT VecSetValue_Value = 0.0;
 
+/*@
+  VecZeroEntries - puts a 0.0 in each element of a vector
+
+  Collective on Vec
+
+  Input Parameter:
+. vec - The vector
+
+  Level: beginner
+
+.keywords: Vec, set, options, database
+.seealso: VecCreate(), VecPrintHelp(), VecSetOptionsPrefix(), VecSet(), VecSetValues()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecZeroEntries (Vec vec) 
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin; 
+  ierr = VecSet(vec,0.0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetTypeFromOptions_Private"
 /*
@@ -495,7 +516,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec x,NormType type,PetscReal *val)
 {
   PetscTruth     flg;
   PetscErrorCode ierr;
-  PetscInt       type_id;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
@@ -506,55 +526,16 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec x,NormType type,PetscReal *val)
    * Cached data?
    */
   if (type!=NORM_1_AND_2) {
-    ierr = VecNormComposedDataID(type,&type_id);CHKERRQ(ierr);
-    ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id,*val,flg);CHKERRQ(ierr);
+    ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[type],*val,flg);CHKERRQ(ierr);
     if (flg) PetscFunctionReturn(0);
   }
-  
 
   ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
   ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
   ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
 
   if (type!=NORM_1_AND_2) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,type_id,*val);CHKERRQ(ierr);
-  }
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecNormRegisterComposedDataID"
-PetscErrorCode PETSCVEC_DLLEXPORT VecNormComposedDataID(NormType type,PetscInt *type_id)
-{
-  static PetscInt id_norm1=-1,id_norm2=-1,id_normInf=-1,id_normF=-1,id_norm12=-1;
-  PetscErrorCode  ierr;
-
-  PetscFunctionBegin;
-  switch (type) {
-  case NORM_1 :
-    if (id_norm1==-1) {
-      ierr = PetscObjectComposedDataRegister(&id_norm1);CHKERRQ(ierr);}
-    *type_id = id_norm1; break;
-  case NORM_2 :
-    if (id_norm2==-1) {
-      ierr = PetscObjectComposedDataRegister(&id_norm2);CHKERRQ(ierr);}
-    *type_id = id_norm2; break;
-  case NORM_1_AND_2 :
-    /* we don't handle this one yet */
-    if (id_norm1==-1) {
-      ierr = PetscObjectComposedDataRegister(&id_norm1);CHKERRQ(ierr);}
-    if (id_norm2==-1) {
-      ierr = PetscObjectComposedDataRegister(&id_norm2);CHKERRQ(ierr);}
-    *type_id = id_norm12; break;
-  case NORM_INFINITY :
-    if (id_normInf==-1) {
-      ierr = PetscObjectComposedDataRegister(&id_normInf);CHKERRQ(ierr);}
-    *type_id = id_normInf; break;
-  case NORM_FROBENIUS :
-    if (id_normF==-1) {
-      ierr = PetscObjectComposedDataRegister(&id_normF);CHKERRQ(ierr);}
-    *type_id = id_normF; break;
+    ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[type],*val);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -591,11 +572,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNormalize(Vec x,PetscReal *val)
   ierr = VecNorm(x,NORM_2,val);CHKERRQ(ierr);
   if (!*val) {
     ierr = PetscLogInfo((x,"VecNormalize:Vector of zero norm can not be normalized; Returning only the zero norm\n"));CHKERRQ(ierr);
-  } else {
+  } else if (*val != 1.0) {
     PetscScalar tmp = 1.0/(*val);
     ierr = VecScale(x,tmp);CHKERRQ(ierr);
   }
-
   ierr = PetscLogEventEnd(VEC_Normalize,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -753,10 +733,10 @@ $      x[i] = alpha * x[i], for i=1,...,n.
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecScale (Vec x, PetscScalar alpha)
 {
-  PetscReal      scale,norm1=0.0,norm2=0.0,normInf=0.0,normF=0.0;
-  PetscTruth     flg1,flg2,flgInf,flgF;
+  PetscReal      norms[4] = {0.0,0.0,0.0, 0.0};
+  PetscTruth     flgs[4];
   PetscErrorCode ierr;
-  PetscInt       type_id1,type_id2,type_idInf,type_idF;
+  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
@@ -768,40 +748,17 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScale (Vec x, PetscScalar alpha)
   /*
    * Update cached data
    */
-  /* see if we have cached norms */
-  /* 1 */
-  ierr = VecNormComposedDataID(NORM_1,&type_id1);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id1,norm1,flg1);CHKERRQ(ierr);
-  /* 2 */
-  ierr = VecNormComposedDataID(NORM_2,&type_id2);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id2,norm2,flg2);CHKERRQ(ierr);
-  /* inf */
-  ierr = VecNormComposedDataID(NORM_INFINITY,&type_idInf);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_idInf,normInf,flgInf);CHKERRQ(ierr);
-  /* frobenius */
-  ierr = VecNormComposedDataID(NORM_FROBENIUS,&type_idF);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_idF,normF,flgF);CHKERRQ(ierr);
+  for (i=0; i<4; i++) {
+    ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]);CHKERRQ(ierr);
+  }
 
   /* in general we consider this object touched */
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
 
-  /* however, norms can be simply updated */
-  scale = PetscAbsScalar(alpha);
-  /* 1 */
-  if (flg1) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,type_id1,scale*norm1);CHKERRQ(ierr);
-  }
-  /* 2 */
-  if (flg2) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,type_id2,scale*norm2);CHKERRQ(ierr);
-  }
-  /* inf */
-  if (flgInf) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,type_idInf,scale*normInf);CHKERRQ(ierr);
-  }
-  /* frobenius */
-  if (flgF) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,type_idF,scale*normF);CHKERRQ(ierr);
+  for (i=0; i<4; i++) {
+    if (flgs[i]) {
+      ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[i],PetscAbsScalar(alpha)*norms[i]);CHKERRQ(ierr);
+    }
   }
 
   ierr = PetscLogEventEnd(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
@@ -831,10 +788,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScale (Vec x, PetscScalar alpha)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
 {
-  PetscTruth     flg;
-  PetscReal      norm=0.0;
+  PetscTruth     flgs[4];
+  PetscReal      norms[4] = {0.0,0.0,0.0,0.0};
   PetscErrorCode ierr;
-  PetscInt       type_id;
+  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1); 
@@ -848,35 +805,20 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
   ierr = PetscLogEventBegin(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->copy)(x,y);CHKERRQ(ierr);
 
+
   /*
    * Update cached data
-   */
+  */
   /* in general we consider this object touched */
   ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
-  /* however, norms can be simply copied over */
-  /* 2 */
-  ierr = VecNormComposedDataID(NORM_2,&type_id);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)y,type_id,norm);CHKERRQ(ierr);
+
+  for (i=0; i<4; i++) {
+    ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]);CHKERRQ(ierr);
   }
-  /* 1 */
-  ierr = VecNormComposedDataID(NORM_1,&type_id);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)y,type_id,norm);CHKERRQ(ierr);
-  }
-  /* inf */
-  ierr = VecNormComposedDataID(NORM_INFINITY,&type_id);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)y,type_id,norm);CHKERRQ(ierr);
-  }
-  /* frobenius */
-  ierr = VecNormComposedDataID(NORM_FROBENIUS,&type_id);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)y,type_id,norm);CHKERRQ(ierr);
+  for (i=0; i<4; i++) {
+    if (flgs[i]) {
+      ierr = PetscObjectComposedDataSetReal((PetscObject)y,NormIds[i],norms[i]);CHKERRQ(ierr);
+    }
   }
 
   ierr = PetscLogEventEnd(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
@@ -918,7 +860,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
 {
   PetscReal      val;
   PetscErrorCode ierr;
-  PetscInt       type_id;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
@@ -942,22 +883,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
    */
   /* in general we consider this object touched */
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
-  /* however, norms can be simply set */
-  /* 1 */
-  val = PetscAbsScalar(alpha);
-  ierr = VecNormComposedDataID(NORM_1,&type_id);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataSetReal((PetscObject)x,type_id,x->N * val);CHKERRQ(ierr);
-  /* inf */
-  ierr = VecNormComposedDataID(NORM_INFINITY,&type_id);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataSetReal((PetscObject)x,type_id,val);CHKERRQ(ierr);
-  /* 2 */
-  val = sqrt((double)x->N) * val;
-  ierr = VecNormComposedDataID(NORM_2,&type_id);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataSetReal((PetscObject)x,type_id,val);CHKERRQ(ierr);
-  /* frobenius */
-  ierr = VecNormComposedDataID(NORM_FROBENIUS,&type_id);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataSetReal((PetscObject)x,type_id,val);CHKERRQ(ierr);
 
+  /* however, norms can be simply set */
+  val = PetscAbsScalar(alpha);
+  ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],x->N * val);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],val);CHKERRQ(ierr);
+  val = sqrt((double)x->N) * val;
+  ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_2],val);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_FROBENIUS],val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -1159,12 +1092,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(Vec y,PetscScalar alpha,Vec x)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
 {
-  PetscReal      norm1x=0.0,norm2x=0.0,normInfx=0.0,normFx=0.0;
-  PetscReal      norm1y=0.0,norm2y=0.0,normInfy=0.0,normFy=0.0;
-  PetscTruth     flg1x,flg2x,flgInfx,flgFx;
-  PetscTruth     flg1y,flg2y,flgInfy,flgFy;
-  PetscInt       type_id1,type_id2,type_idInf,type_idF;
+  PetscReal      normxs[4]={0.0,0.0,0.0,0.0},normys[4]={0.0,0.0,0.0,0.0};
+  PetscTruth     flgxs[4],flgys[4];
   PetscErrorCode ierr;
+  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);  
@@ -1178,62 +1109,22 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
   if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBegin(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
+  ierr = (*x->ops->swap)(x,y);CHKERRQ(ierr);
 
   /* See if we have cached norms */
-  /* 1 */
-  ierr = VecNormComposedDataID(NORM_1,&type_id1);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id1,norm1x,flg1x);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)y,type_id1,norm1y,flg1y);CHKERRQ(ierr);
-  /* 2 */
-  ierr = VecNormComposedDataID(NORM_2,&type_id2);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_id2,norm2x,flg2x);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)y,type_id2,norm2y,flg2y);CHKERRQ(ierr);
-  /* inf */
-  ierr = VecNormComposedDataID(NORM_INFINITY,&type_idInf);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_idInf,normInfx,flgInfx);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)y,type_idInf,normInfy,flgInfy);CHKERRQ(ierr);
-  /* frobenius */
-  ierr = VecNormComposedDataID(NORM_FROBENIUS,&type_idF);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)x,type_idF,normFx,flgFx);CHKERRQ(ierr);
-  ierr = PetscObjectComposedDataGetReal((PetscObject)y,type_idF,normFy,flgFy);CHKERRQ(ierr);
-
-  /* Do the actual swap */
-  ierr = (*x->ops->swap)(x,y);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)y);CHKERRQ(ierr);
-
-  /* Swap any cached norms */
-  /* 1 */
-  if (flg1x) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)y,type_id1,norm1x);CHKERRQ(ierr);
+  for (i=0; i<4; i++) {
+    ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],normxs[i],flgxs[i]);CHKERRQ(ierr);
+    ierr = PetscObjectComposedDataGetReal((PetscObject)y,NormIds[i],normys[i],flgys[i]);CHKERRQ(ierr);
   }
-  if (flg1y) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,type_id1,norm1y);CHKERRQ(ierr);
+  for (i=0; i<4; i++) {
+    if (flgxs[i]) {
+      ierr = PetscObjectComposedDataSetReal((PetscObject)y,NormIds[i],normxs[i]);CHKERRQ(ierr);
+    }
+    if (flgys[i]) {
+      ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[i],normys[i]);CHKERRQ(ierr);
+    }
   }
-  /* 2 */
-  if (flg2x) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)y,type_id2,norm2x);CHKERRQ(ierr);
-  }
-  if (flg2y) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,type_id2,norm2y);CHKERRQ(ierr);
-  }
-  /* inf */
-  if (flgInfx) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)y,type_idInf,normInfx);CHKERRQ(ierr);
-  }
-  if (flgInfy) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,type_idInf,normInfy);CHKERRQ(ierr);
-  }
-  /* frobenius */
-  if (flgFx) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)y,type_idF,normFx);CHKERRQ(ierr);
-  }
-  if (flgFy) {
-    ierr = PetscObjectComposedDataSetReal((PetscObject)x,type_idF,normFy);CHKERRQ(ierr);
-  }
-
   ierr = PetscLogEventEnd(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

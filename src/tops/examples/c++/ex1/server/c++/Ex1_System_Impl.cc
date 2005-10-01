@@ -13,11 +13,6 @@
 
 // DO-NOT-DELETE splicer.begin(Ex1.System._includes)
 #include <iostream>
-#include "petsc.h"
-#include "petscconf.h"
-#if defined(PETSC_HAVE_CCAFE)
-#  define USE_PORTS 1
-#endif
 
 // Includes for uses ports
 #include "TOPS_Structured_Solver.hh"
@@ -74,7 +69,7 @@ throw ()
 #define __FUNCT__ "Ex1::System_impl::computeResidual"
 
   TOPS::Structured::Solver solver;
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   solver = this->myServices.getPort("TOPS.Structured.Solver");
   if (solver._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
@@ -94,7 +89,7 @@ throw ()
   int mx = solver.length(0);
   int my = solver.length(1);
 
-#ifdef USE_PORTS
+#ifdef HAVE_CCA
   this->myServices.releasePort("TOPS.Structured.Solver");
 #endif
 
@@ -110,16 +105,12 @@ throw ()
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       if (i == 0 || j == 0 || i == mx-1 || j == my-1) {
-        CHKMEMA;
         f.set(i,j,x.get(i,j));
-        CHKMEMA;
       } else {
         double u       = x.get(i,j);
         double uxx     = (2.0*u - x.get(i-1,j) - x.get(i+1,j))*hydhx;
         double uyy     = (2.0*u - x.get(i,j-1) - x.get(i,j+1))*hxdhy;
-        CHKMEMA;
         f.set(i,j,uxx + uyy - sc*exp(u));
-        CHKMEMA;
       }
     }  
   }  
@@ -222,8 +213,6 @@ throw ()
   TOPS::Solver solver = myServices.getPort("TOPS.Structured.Solver");
   solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
   
-  PetscOptionsSetValue("-snes_monitor",PETSC_NULL);
-
   // We don't need to call setSystem since it will be obtained through
   // getPort calls
 
@@ -231,7 +220,7 @@ throw ()
 
   myServices.releasePort("TOPS.StructuredSolver");
 
-  PetscFunctionReturn(0);
+  return 0;
   // DO-NOT-DELETE splicer.end(Ex1.System.go)
 }
 

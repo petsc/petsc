@@ -14,12 +14,13 @@
 
 /* ========================================================================== */
 /* 
-   This facilitates using C version of PETSc from C++
+   This facilitates using C version of PETSc from C++ and 
+   C++ version from C (use --with-c-support --with-language=c++ with config/configure.py)
 */
+#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX) && !defined(__cplusplus)
+#error "PETSc configured with --with-clanguage=c++ and NOT --with-c-support - it can be used only with a C++ compiler"
+#endif      
 
-#if defined(PETSC_CLANGUAGE_CXX) && !defined(__cplusplus)
-#error "PETSc configured with clanguage=cxx - it can be used only with a C++ compiler"
-#endif
 
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 #define PETSC_EXTERN_CXX_BEGIN extern "C" {
@@ -85,7 +86,13 @@
 
 /*
     Defines the interface to MPI allowing the use of all MPI functions.
+
+    PETSc does not use the C++ binding of MPI at ALL. The following flag
+    makes sure the C++ bindings are not included. The C++ binds REQUIRE
+    putting mpi.h before ANY C++ include files, we cannot control this
+    with all PETSc users.
 */
+#define MPICH_SKIP_MPICXX 1
 #include "mpi.h"
 /*
     Yuck, we need to put stdio.h AFTER mpi.h for MPICH2 with C++ compiler 

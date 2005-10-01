@@ -110,14 +110,14 @@ Values at the gauss points of the bilinear basis functions
 
 typedef struct {
   PetscInt dorhs;     /* flag to see if we are computing rhs */
-  double Values[4][4];  /* values of reference element */
-  double DxValues[4][4]; /* for reference element */
-  double DyValues[4][4]; /* for reference element */
-  double dx[16]; /* for local element */
-  double dy[16]; /*for local element */
+  double Values[4][4];  /* values of reference element basis functions at each integration point */
+  double DxValues[4][4]; /* ....  derivative of reference element ..... */
+  double DyValues[4][4]; 
+  double dx[16]; /* values of derivative of actual element's basis functions at integration points*/
+  double dy[16]; 
   double detDh[4]; /* determinant of map from reference element to the local element */
-  double x[4];/* x coord of image of gauss point */
-  double y[4];/* y coord of image of gauss point */
+  double x[4];/* x coord of image (location in actual element) of gauss point */
+  double y[4];
 } AppElement;
 
  

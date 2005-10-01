@@ -203,7 +203,6 @@ PetscErrorCode MatLUFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F)
   Mat_Plapack    *lu = (Mat_Plapack*)(*F)->spptr;
   PetscErrorCode ierr;
   PetscInt       M=A->M,m=A->m,rstart;
-  MPI_Datatype   datatype;
   PetscInt       info_pla=0;
   PetscScalar    *array,one = 1.0;
 
@@ -248,7 +247,6 @@ PetscErrorCode MatCholeskyFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F
   Mat_Plapack    *lu = (Mat_Plapack*)(*F)->spptr;
   PetscErrorCode ierr;
   PetscInt       M=A->M,m=A->m,rstart;
-  MPI_Datatype   datatype;
   PetscInt       info_pla=0;
   PetscScalar    *array,one = 1.0;
 
@@ -438,7 +436,7 @@ PetscErrorCode MatView_Plapack(Mat A,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
-  Mat_Plapack       *lu=(Mat_Plapack*)(A->spptr);
+  /* Mat_Plapack       *lu=(Mat_Plapack*)(A->spptr); */
 
   PetscFunctionBegin;
   /* ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr); MatView_MPIDense() crash! */ 
@@ -508,7 +506,7 @@ EXTERN_C_END
 PetscErrorCode MatDuplicate_Plapack(Mat A, MatDuplicateOption op, Mat *M) 
 {
   PetscErrorCode ierr;
-  Mat_Plapack    *lu=(Mat_Plapack *)A->spptr,*lu_new;
+  Mat_Plapack    *lu=(Mat_Plapack *)A->spptr;
 
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
