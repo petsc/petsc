@@ -14,6 +14,8 @@ connect solver TOPS.System.Compute.InitialGuess system TOPS.System.Compute.Initi
 connect solver TOPS.System.Compute.Residual system TOPS.System.Compute.Residual
 connect system TOPS.Structured.Solver solver TOPS.Structured.Solver
 
+parameter solver tops_options options "-snes_monitor -ksp_monitor"
+
 go system DoSolve
 
 quit

@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include "TOPS_Structured_Matrix_Impl.hh"
+#include "TOPS_ParameterHandling.hh"  // not from SIDL
   // This code is the same as DAVecGetArray() except instead of generating
   // raw C multidimensional arrays it gets a Babel array
 ::sidl::array<double> DAVecGetArrayBabel(DA da,Vec vec)
@@ -360,6 +361,12 @@ throw ()
     argv[i][arg.length()] = 0;
   }
   PetscInitialize(&argc,&argv,0,0); 
+
+  // Process runtime parameters
+  params = myServices.getPort("tops_options");
+  std::string options = params.readConfigurationMap().getString("options","-help");
+  processTOPSOptions(options);
+
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.Initialize)
 }
 
@@ -643,12 +650,98 @@ throw (
   services.registerUsesPort("TOPS.System.Compute.Residual",
 			    "TOPS.System.Compute.Residual", tm);
 
+  // Parameter port
+  myServices.registerUsesPort("ParameterPortFactory",
+			      "gov.cca.ports.ParameterPortFactory", tm);
+
+  // Set up parameter port
+  if (this->setupParameterPort() != 0) {
+    std::cerr << "TOPS::StructuredSolver_impl::go: errors during setup of ParameterPort" << std::endl;
+  }
+
   return;
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setServices)
+}
+
+/**
+ * Inform the listener that someone is about to fetch their 
+ * typemap. The return should be true if the listener
+ * has changed the ParameterPort definitions.
+ */
+bool
+TOPS::StructuredSolver_impl::updateParameterPort (
+  /* in */ const ::std::string& portName ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.updateParameterPort)
+  // Insert-Code-Here {TOPS.StructuredSolver.updateParameterPort} (updateParameterPort method)
+
+  std::cout << "TOPS::StructuredSolver_impl::updatedParameterPort called" << std::endl;
+  // Get the runtime parameters
+  params = myServices.getPort("tops_options");
+  std::string options = params.readConfigurationMap().getString("options","-help");
+  processTOPSOptions(options);
+  return true;
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.updateParameterPort)
+}
+
+/**
+ * The component wishing to be told after a parameter is changed
+ * implements this function.
+ * @param portName the name of the port (typemap) on which the
+ * value was set.
+ * @param fieldName the name of the value in the typemap.
+ */
+void
+TOPS::StructuredSolver_impl::updatedParameterValue (
+  /* in */ const ::std::string& portName,
+  /* in */ const ::std::string& fieldName ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.updatedParameterValue)
+  // Insert-Code-Here {TOPS.StructuredSolver.updatedParameterValue} (updatedParameterValue method)
+  std::cout << "TOPS::StructuredSolver_impl::updatedParameterValue called" << std::endl;
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.updatedParameterValue)
 }
 
 
 // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._misc)
 // Insert-Code-Here {TOPS.StructuredSolver._misc} (miscellaneous code)
+int TOPS::StructuredSolver_impl::setupParameterPort() {
+
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::StructuredSolver_impl::setupParameterPort"
+
+  // First, get parameters
+  ppf = myServices.getPort("ParameterPortFactory");
+  if (ppf._is_nil()) {
+    std::cerr << "TOPS::StructuredSolver_impl::setupParameterPort: called without ParameterPortFactory connected." << std::endl;
+    return -1;
+  }
+  gov::cca::TypeMap tm = myServices.createTypeMap();
+  if (tm._is_nil()) {
+    std::cerr << "TOPS::StructuredSolver_impl::setupParameterPort: myServices.createTypeMap failed." << std::endl;
+    return -1;
+  }
+
+  ppf.initParameterData(tm, "tops_options");
+  ppf.setBatchTitle(tm, "TOPS Options");
+  ppf.addRequestString(tm, "options", "Space-separated list of TOPS options", 
+			  "Enter runtime TOPS options", "-help");
+
+  // We may want to respond to changes
+  gov::cca::ports::ParameterSetListener paramSetListener = self;
+  ppf.registerUpdatedListener(tm, paramSetListener);
+
+  // We may want to change the parameters before sharing them
+  gov::cca::ports::ParameterGetListener paramGetListener = self;
+  ppf.registerUpdater(tm, paramGetListener);
+
+  // publish the parameter port and release the parameter port factory
+  ppf.addParameterPort(tm, myServices);
+  myServices.releasePort("ParameterPortFactory");
+
+  return 0;
+}
 // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._misc)
 

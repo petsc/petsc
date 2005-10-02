@@ -105,7 +105,7 @@ examples:
 	done
 
 clean-cca:
-	-@${RM} -r server/c++/obj server/c++/glue \
+	-@${RM} -r client* server/c++/obj server/c++/glue \
 		examples/c++/ex?/server/c++/obj examples/c++/ex?/server/c++/glue
 #-------------------------------------------------------------------------------
 
