@@ -45,6 +45,8 @@
 // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._includes)
 #include "petscdmmg.h"
 #include "TOPS.hh"
+#include "gov_cca_ports_ParameterPortFactory.hh"
+#include "gov_cca_ports_ParameterPort.hh"
 // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._includes)
 
 namespace TOPS { 
@@ -64,14 +66,18 @@ namespace TOPS {
     StructuredSolver self;
 
     // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._implementation)
-    DMMG                 *dmmg;
-    DA                   da;
-    int                  lengths[4],m,n,p,dim,s,levels,bs;
-    DAStencilType        stencil_type;
-    DAPeriodicType       wrap;
-    TOPS::System::System system;
-    int                  startedpetsc;
-    gov::cca::Services   myServices;
+    DMMG                                  *dmmg;
+    DA                                    da;
+    int                                   lengths[4],m,n,p,dim,s,levels,bs;
+    DAStencilType                         stencil_type;
+    DAPeriodicType                        wrap;
+    TOPS::System::System                  system;
+    int                                   startedpetsc;
+    gov::cca::Services                    myServices;
+    gov::cca::ports::ParameterPortFactory ppf;
+    gov::cca::ports::ParameterPort        params;
+
+    int setupParameterPort();
     // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._implementation)
 
   private:
@@ -252,6 +258,35 @@ namespace TOPS {
     throw ( 
       ::gov::cca::CCAException
     );
+
+
+    /**
+     * Inform the listener that someone is about to fetch their 
+     * typemap. The return should be true if the listener
+     * has changed the ParameterPort definitions.
+     */
+    bool
+    updateParameterPort (
+      /* in */ const ::std::string& portName
+    )
+    throw () 
+    ;
+
+
+    /**
+     * The component wishing to be told after a parameter is changed
+     * implements this function.
+     * @param portName the name of the port (typemap) on which the
+     * value was set.
+     * @param fieldName the name of the value in the typemap.
+     */
+    void
+    updatedParameterValue (
+      /* in */ const ::std::string& portName,
+      /* in */ const ::std::string& fieldName
+    )
+    throw () 
+    ;
 
   };  // end class StructuredSolver_impl
 

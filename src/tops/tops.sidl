@@ -1,6 +1,13 @@
 
 package TOPS version 0.0.0 {
 
+  // Runtime option handling
+  interface Options extends gov.cca.Port {
+    void setValue(in string key, in string value);
+    bool hasName(in string key);
+    void getValue(in string key, out string value);
+  }
+ 
   // For passing matrix values from application to solver 
   interface Matrix {
       void   apply(in array<double> x,in array<double> y);
@@ -98,10 +105,9 @@ package TOPS version 0.0.0 {
       void setLevels(in int levels);
     }
   }
-  class StructuredSolver implements-all TOPS.Structured.Solver, gov.cca.Component {
+  class StructuredSolver implements-all TOPS.Structured.Solver, gov.cca.Component, gov.cca.ports.ParameterGetListener, gov.cca.ports.ParameterSetListener {
     gov.cca.Services getServices();
   }
-
 
   //  ---------- Interfaces for system on unstructured grid
 
@@ -125,7 +131,10 @@ package TOPS version 0.0.0 {
       void         setPreallocation[s](in array<int,1> d,in array<int,1> od);
     }
   }
-  class UnstructuredSolver implements-all TOPS.Unstructured.Solver, gov.cca.Component {    
+  class UnstructuredSolver implements-all TOPS.Unstructured.Solver, gov.cca.Component, gov.cca.ports.ParameterGetListener, gov.cca.ports.ParameterSetListener {    
     gov.cca.Services getServices();
   }
+
+
+
 }

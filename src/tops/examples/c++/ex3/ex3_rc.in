@@ -16,6 +16,8 @@ connect solver TOPS.System.Compute.RightHandSide system TOPS.System.Compute.Righ
 # Connect system uses ports to the corresponding solver provides ports
 connect system TOPS.Structured.Solver solver TOPS.Structured.Solver
 
+parameter solver tops_options options "-snes_monitor -ksp_monitor"
+
 go system DoSolve
 
 quit

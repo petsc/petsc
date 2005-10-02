@@ -11,6 +11,8 @@ instantiate Ex1.System system
 connect solver TOPS.System.Compute.Residual system TOPS.System.Compute.Residual
 connect system TOPS.Structured.Solver solver TOPS.Structured.Solver
 
+parameter solver tops_options options "-snes_monitor -ksp_monitor -snes_rtol 1e-11"
+
 go system DoSolve
 
 quit

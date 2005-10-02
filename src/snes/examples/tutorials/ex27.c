@@ -1,5 +1,5 @@
 
-static char help[] = "Nonlinear driven cavity with multigrid and pusedo timestepping 2d.\n\
+static char help[] = "Nonlinear driven cavity with multigrid and pseudo timestepping 2d.\n\
   \n\
 The 2D driven cavity problem is solved in a velocity-vorticity formulation.\n\
 The flow can be driven with the lid or with bouyancy or both:\n\
