@@ -449,6 +449,30 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedGetGlobalIndices(Sliced,PetscInt*
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetPreallocation(Sliced,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetGhosts(Sliced,PetscInt,PetscInt,PetscInt,const PetscInt[]);
 
+/*S
+     Mesh - Abstract PETSc object that manages distributed field data for a Sieve.
+
+   Level: beginner
+
+  Concepts: distributed array
+
+.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate(), VecPackCreate(), VecPack
+S*/
+typedef struct _p_Mesh* Mesh;
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh,PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm,Mesh*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh, MatType,Mat*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh,PetscInt*[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetPreallocation(Mesh,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetGhosts(Mesh,PetscInt,PetscInt,PetscInt,const PetscInt[]);
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetTopology(Mesh, void**);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetTopology(Mesh, void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetBoundary(Mesh, void**);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetBoundary(Mesh, void*);
 
 /*S
      DM - Abstract PETSc object that manages an abstract grid object

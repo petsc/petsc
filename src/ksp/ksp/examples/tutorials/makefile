@@ -168,6 +168,13 @@ ex32: ex32.o  chkopts
 	-${CLINKER} -o ex32 ex32.o  ${PETSC_SNES_LIB}
 	${RM} ex32.o
 
+ex33mesh.o: ex33mesh.cc
+	g++ ${PETSC_INCLUDE} -I/PETSc3/fem/ale-dev/server-cxx-ale -g -c -o ex33mesh.o ex33mesh.cc
+
+ex33: ex33.o ex33mesh.o chkopts
+	-${CLINKER} -o ex33 ex33.o ex33mesh.o -Wl,-rpath,/PETSc3/fem/ale-dev/lib -L/PETSc3/fem/ale-dev/lib -l-cxx-ale ${PETSC_SNES_LIB}
+	${RM} ex33.o
+
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ./ex1 -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
