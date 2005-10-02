@@ -182,7 +182,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateNC(MPI_Comm cm,Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(indices,3);
+  if (n) {
+    PetscValidIntPointer(indices,3);
+  }
   PetscValidPointer(mapping,4);
   *mapping = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
