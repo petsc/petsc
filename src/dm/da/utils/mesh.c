@@ -18,6 +18,7 @@ struct _p_Mesh {
   PETSCHEADER(struct _MeshOps);
   void    *topology;
   void    *boundary;
+  void    *bundle;
   Vec      globalvector;
   PetscInt bs,n,N,Nghosts,*ghosts;
   PetscInt d_nz,o_nz,*d_nnz,*o_nnz;
@@ -368,5 +369,55 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetBoundary(Mesh mesh,void *boundary)
 {
   PetscValidPointer(boundary,2);
   mesh->boundary = boundary;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetBundle"
+/*@C
+    MeshGetBundle - Gets the Sieve bundle
+
+    Not collective
+
+    Input Parameter:
+.    mesh - the mesh object
+
+    Output Parameter:
+.    bundle - the Sieve bundle
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshSetBundle()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetBundle(Mesh mesh,void **bundle)
+{
+  if (bundle) {
+    PetscValidPointer(bundle,2);
+    *bundle = mesh->bundle;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshSetBundle"
+/*@C
+    MeshSetBundle - Sets the Sieve bundle
+
+    Not collective
+
+    Input Parameters:
++    mesh - the mesh object
+-    bundle - the Sieve bundle
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshGetBundle()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetBundle(Mesh mesh,void *bundle)
+{
+  PetscValidPointer(bundle,2);
+  mesh->bundle = bundle;
   PetscFunctionReturn(0);
 }
