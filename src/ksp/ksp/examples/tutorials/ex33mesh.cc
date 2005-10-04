@@ -4,6 +4,7 @@ extern "C" {
 }
 #include <ALE/ALE.hh>
 #include <ALE/Sieve.hh>
+#include <ALE/ClosureBundle.hh>
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
@@ -175,9 +176,6 @@ static PetscInt meshIndices[24] = {
   8, 3, 5,
   4, 5, 3};
 
-static PetscInt boundaryIndices[8] = {
-  0, 1, 2, 3, 4, 5, 6, 7};
-
 #undef __FUNCT__
 #define __FUNCT__ "CreateTestMesh"
 /*
@@ -201,8 +199,9 @@ static PetscInt boundaryIndices[8] = {
 */
 extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
 {
-  ALE::Sieve *topology = new ALE::Sieve();
-  ALE::Sieve *boundary = new ALE::Sieve();
+  ALE::Sieve *topology;
+  ALE::Sieve *boundary;
+  ALE::ClosureBundle *bundle;
   MPI_Comm comm;
   PetscMPIInt rank;
   PetscErrorCode ierr;
@@ -210,9 +209,10 @@ extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  topology->setComm(comm);
+  topology = new ALE::Sieve(comm);
+  boundary = new ALE::Sieve(comm);
+  bundle = new ALE::ClosureBundle(comm);
   topology->setVerbosity(11);
-  boundary->setComm(comm);
   boundary->setVerbosity(11);
   if (rank == 0) {
     ALE::Point point;
@@ -372,8 +372,18 @@ extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
   //ALE::Stack completionStack = topology->coneCompletion(ALE::completionTypePoint, ALE::footprintTypeNone, NULL);
   ierr = MeshSetTopology(mesh, (void *) topology);CHKERRQ(ierr);
   ierr = MeshSetBoundary(mesh, (void *) boundary);CHKERRQ(ierr);
+  ierr = MeshSetBundle(mesh, (void *) bundle);CHKERRQ(ierr);
+  //
+  ALE::Obj<ALE::Point_set> stratum = topology->depthStratum(0);
+  for(ALE::Point_set::iterator s_itor = stratum->begin(); s_itor != stratum->end(); s_itor++) {
+    printf("prefix: %d index: %d\n", (*s_itor).prefix, (*s_itor).index);
+  }
   // Should use the bundle here
-  ierr = MeshSetGhosts(mesh, 1, topology->depthStratum(0).size(), 0, NULL);
+  ALE::Point_set bottom;
+  bundle->setTopology(topology);
+  bundle->setFiberDimensionByDepth(0, 1);
+  int dim = bundle->getBundleDimension(bottom);
+  ierr = MeshSetGhosts(mesh, 1, dim, 0, NULL);
   PetscFunctionReturn(0);
 }
 
@@ -384,8 +394,11 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   Mesh               mesh = (Mesh) dmmg->dm;
   UserContext       *user = (UserContext *) dmmg->user;
   ALE::Sieve        *topology;
+  ALE::ClosureBundle *bundle;
   ALE::Point_set     elements;
-  PetscInt          *elementIndices = meshIndices;
+  ALE::Point_set     empty;
+  PetscInt           numElementIndices;
+  PetscInt          *elementIndices = NULL;
   PetscReal         *coords = meshCoords;
   PetscReal          elementVec[NUM_BASIS_FUNCTIONS];
   PetscReal          Jac[4];
@@ -395,6 +408,7 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 
   PetscFunctionBegin;
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
   elements = topology->heightStratum(0);
   for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
     ALE::Point e = *element_itor;
@@ -419,11 +433,18 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     }
     printf("elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);
     /* Assembly */
-    ierr = VecSetValues(b, NUM_BASIS_FUNCTIONS, elementIndices, elementVec, ADD_VALUES);CHKERRQ(ierr);
+    ALE::Point_set elementIntervals = bundle->getBundleIndices(ALE::Point_set(e), empty);
+    PetscInt idx = 0;
+
+    if (!elementIndices) {
+      numElementIndices = bundle->getBundleDimension(e);
+      ierr = PetscMalloc(numElementIndices * sizeof(PetscInt), &elementIndices); CHKERRQ(ierr);
+    }
+    ierr = VecSetValues(b, numElementIndices, elementIndices, elementVec, ADD_VALUES);CHKERRQ(ierr);
 
     coords = coords + 6;
-    elementIndices = elementIndices + 3;
   }
+  ierr = PetscFree(elementIndices);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
@@ -460,8 +481,11 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   UserContext   *user = (UserContext *) dmmg->user;
   ALE::Sieve    *topology;
   ALE::Sieve    *boundary;
-  ALE::Point_set elements, boundaryElements;
-  PetscInt      *elementIndices = meshIndices;
+  ALE::ClosureBundle *bundle;
+  ALE::Point_set elements;
+  ALE::Point_set empty;
+  PetscInt       numElementIndices;
+  PetscInt      *elementIndices = NULL;
   PetscReal     *coords = meshCoords;
   PetscReal      elementMat[NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS];
   PetscReal      Jac[4], Jinv[4], t_der[2], b_der[2];
@@ -472,6 +496,7 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   PetscFunctionBegin;
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   ierr = MeshGetBoundary(mesh, (void **) &boundary);CHKERRQ(ierr);
+  ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
   topology->view("In ComputeJacobian");
   elements = topology->heightStratum(0);
   for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
@@ -510,26 +535,45 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
     printf("elementMat = [%g %g %g]\n             [%g %g %g]\n             [%g %g %g]\n",
            elementMat[0], elementMat[1], elementMat[2], elementMat[3], elementMat[4], elementMat[5], elementMat[6], elementMat[7], elementMat[8]);
     /* Assembly */
-    ierr = MatSetValues(jac, NUM_BASIS_FUNCTIONS, elementIndices, NUM_BASIS_FUNCTIONS, elementIndices, elementMat, ADD_VALUES);CHKERRQ(ierr);
+    ALE::Point_set elementIntervals = bundle->getBundleIndices(ALE::Point_set(e), empty);
+    PetscInt idx = 0;
+
+    if (!elementIndices) {
+      numElementIndices = bundle->getBundleDimension(e);
+      ierr = PetscMalloc(numElementIndices * sizeof(PetscInt), &elementIndices); CHKERRQ(ierr);
+    }
+    for(ALE::Point_set::iterator e_itor = elementIntervals.begin(); e_itor != elementIntervals.end(); e_itor++) {
+      for(int i = 0; i < (*e_itor).index; i++) {
+        elementIndices[idx++] = (*e_itor).prefix + i;
+      }
+    }
+    ierr = MatSetValues(jac, numElementIndices, elementIndices, numElementIndices, elementIndices, elementMat, ADD_VALUES);CHKERRQ(ierr);
 
     coords = coords + 6;
-    elementIndices = elementIndices + 3;
   }
+  ierr = PetscFree(elementIndices);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (user->bcType == DIRICHLET) {
-    ALE::Point id(0, 1);
-
     /* Zero out BC rows */
-    boundaryElements = boundary->cone(id);
-#if 0
-    boundaryIndices = getBundleIndices(bundle, boundaryElements);
-    ierr = MatZeroRows(jac, boundaryElements.size(), boundaryIndices, 1.0);CHKERRQ(ierr);
-#else
-    ALE::Point_set boundary;
-    set_intersection(boundaryElements.begin(), boundaryElements.end(), elements.begin(), elements.end(), inserter(boundary, boundary.begin()), ALE::Point::Cmp());
-    ierr = MatZeroRows(jac, boundary.size(), boundaryIndices, 1.0);CHKERRQ(ierr);
-#endif
+    ALE::Point id(0, 1);
+    ALE::Point_set boundaryElements = boundary->cone(id);
+    int numBoundaryIndices = bundle->getFiberDimension(boundaryElements);
+    ALE::Point_set boundaryIntervals = bundle->getFiberIndices(boundaryElements, empty);
+    PetscInt *boundaryIndices;
+    int b = 0;
+
+    printf("numBoundaryIndices = %d\n", numBoundaryIndices);
+    ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
+    for(ALE::Point_set::iterator b_itor = boundaryIntervals.begin(); b_itor != boundaryIntervals.end(); b_itor++) {
+      printf("  b_itor = (%d, %d)\n", (*b_itor).prefix, (*b_itor).index);
+      for(int i = 0; i < (*b_itor).index; i++) {
+        boundaryIndices[b++] = (*b_itor).prefix + i;
+        printf("boundaryIndices[%d] = %d\n", b-1, boundaryIndices[b-1]);
+      }
+    }
+    ierr = MatZeroRows(jac, numBoundaryIndices, boundaryIndices, 1.0);CHKERRQ(ierr);
+    ierr = PetscFree(boundaryIndices);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
