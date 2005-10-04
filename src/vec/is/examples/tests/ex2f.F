@@ -7,7 +7,8 @@
 #include "finclude/petscis.h"
 
       PetscErrorCode ierr
-      PetscInt  i,n,ii(1),start,stride,ssize,first
+      PetscInt  i,n,ii(1),start
+      PetscInt  stride,ssize,first
       IS          is
       PetscTruth  flag
       PetscOffset iis

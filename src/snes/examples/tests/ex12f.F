@@ -34,7 +34,8 @@
       PetscFortranAddr ctx(6)
       PetscMPIInt rank,size
       PetscErrorCode ierr
-      PetscInt N,start,end,nn,i,ii,its,i1,i0,i3
+      PetscInt N,start,end,nn,i
+      PetscInt ii,its,i1,i0,i3
       PetscTruth flg
       SNES             snes
       Mat              J
@@ -237,7 +238,8 @@
       Mat              jac,B
       PetscFortranAddr ctx(*)
       PetscTruth       flag
-      PetscInt         ii,istart,iend,i,j,n,end,start,i1
+      PetscInt  ii,istart,iend
+      PetscInt  i,j,n,end,start,i1
       PetscErrorCode ierr
       PetscMPIInt rank,size
       PetscOffset      ixx

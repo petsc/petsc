@@ -77,7 +77,7 @@
       Mat              A
       PetscTruth       flg,monitor
       PetscErrorCode ierr
-      PetscInt          time_steps_max,steps,i1
+      PetscInt  time_steps_max,steps,i1
       PetscReal dt,ftime,time_total_max
 
 !  Note: Any user-defined Fortran routines (such as RHSFunction)
@@ -244,10 +244,10 @@
       Vec     u
 
 !  Local variables:
-      PetscScalar  localptr(1),x
-      PetscInt           i,mybase,myend
+      PetscScalar localptr(1),x
+      PetscInt    i,mybase,myend
       PetscErrorCode ierr
-      PetscOffset       idx
+      PetscOffset idx
 
 !  Determine starting and ending point of each processor's range of
 !  grid values.  Note that we shift by 1 to convert from the 0-based
@@ -312,9 +312,9 @@
       PetscErrorCode          ierr
 
 !  Local variables:
-      PetscScalar  localptr(1)
-      PetscInt           i,mybase,myend
-      PetscOffset       idx
+      PetscScalar localptr(1)
+      PetscInt    i,mybase,myend
+      PetscOffset idx
 
 !  Determine starting and ending point of each processors range of
 !  grid values.  Note that we shift by 1 to convert from the 0-based
@@ -362,17 +362,17 @@
 #include "ex2f.h"
 
 !  Input/output parameters:
-      TS               ts
-      PetscInt          step
+      TS       ts
+      PetscInt step
       PetscObject dummy
       PetscReal time
-      Vec              u
-      PetscErrorCode          ierr
+      Vec      u
+      PetscErrorCode ierr
 
 !  Local variables:
       PetscScalar en2,en2s,enmax
       PetscScalar mone
-      PetscDraw             draw
+      PetscDraw   draw
 
       mone = -1.0d0
 
@@ -447,16 +447,16 @@
 #include "ex2f.h"
 
 !  Input/output parameters:
-      TS               ts
+      TS        ts
       PetscReal t
-      Vec              global_in,global_out
-      integer          dummy
+      Vec       global_in,global_out
+      integer   dummy
 
 !  Local variables:
       PetscScalar localptr(1),copyptr(1),sc
       PetscErrorCode ierr
-      PetscInt          i,localsize
-      PetscOffset      idx_c,idx_l,il
+      PetscInt    i,localsize
+      PetscOffset idx_c,idx_l,il
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Get ready for local function computations
@@ -566,10 +566,10 @@
 
 !  Local variables:
       PetscScalar localptr(1),sc,v(3)
-      PetscInt         i,col(3),i1,i3
+      PetscInt    i,col(3),i1,i3
       PetscErrorCode ierr
-      PetscInt          mstart,mend,mstarts,mends
-      PetscOffset      idx,is
+      PetscInt    mstart,mend,mstarts,mends
+      PetscOffset idx,is
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Get ready for local Jacobian computations

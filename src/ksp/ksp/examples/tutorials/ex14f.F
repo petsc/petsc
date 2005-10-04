@@ -312,9 +312,10 @@
 #include "include/finclude/petscda.h"
       PetscErrorCode    ierr
       PetscOffset      idx
-      Vec              X,localX,localF
-      PetscInt          i,j,row,mx,my, xs,ys,xm
-      PetscInt          ym,gxm,gym,gxs,gys
+      Vec       X,localX,localF
+      PetscInt  i,j,row,mx
+      PetscInt  my, xs,ys,xm
+      PetscInt  ym,gxm,gym,gxs,gys
       double precision one,lambda,temp1,temp,hx,hy
       double precision hxdhy,hydhx,sc
       PetscScalar      xx(1)
@@ -513,9 +514,13 @@
       PetscInt     ltog(1)
       PetscOffset idltog,idx
       PetscErrorCode ierr
-      PetscInt nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow,i,j
-      PetscInt row,mx,my,ione,col(5),ifive
-      PetscScalar two,one,lambda,v(5),hx,hy,hxdhy
+      PetscInt nloc,xs,ys,xm,ym
+      PetscInt gxs,gys,gxm,gym
+      PetscInt grow,i,j
+      PetscInt row,mx,my,ione
+      PetscInt col(5),ifive
+      PetscScalar two,one,lambda
+      PetscScalar v(5),hx,hy,hxdhy
       PetscScalar hydhx,sc,xx(1)
       Mat         B
       common   /mycommon/ mx,my,B,localX,localF,da

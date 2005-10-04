@@ -42,7 +42,8 @@
       PetscTruth flg
       PetscErrorCode ierr
       PetscMPIInt  rank
-      PetscScalar      one,two,three,dots(3),dot
+      PetscScalar  one,two,three
+      PetscScalar  dots(3),dot
       character*(80)   name
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

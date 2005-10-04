@@ -50,8 +50,8 @@
       PetscScalar      v,one,neg_one
       double precision norm,tol
       PetscErrorCode ierr
-      PetscInt          i,j,II,JJ,Istart,Iend,m,n,i1
-      PetscInt          its
+      PetscInt   i,j,II,JJ,Istart
+      PetscInt   Iend,m,n,i1,its
       PetscMPIInt rank
       PetscTruth user_defined_pc,flg
 

@@ -48,7 +48,8 @@
       KSP              ksp   
       PetscScalar      v,one,neg_one
       double precision norm,tol
-      PetscInt i,j,II,JJ,Istart,Iend,m,n,its,ione
+      PetscInt i,j,II,JJ,Istart
+      PetscInt Iend,m,n,its,ione
       PetscMPIInt rank
       PetscTruth flg
       PetscErrorCode ierr

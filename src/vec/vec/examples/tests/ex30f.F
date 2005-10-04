@@ -10,7 +10,8 @@
 #include "include/finclude/petscvec.h"
 
       PetscErrorCode ierr
-      PetscInt  nlocal, n, row, nlocal2,n2,eight
+      PetscInt  nlocal, n, row
+      PetscInt  nlocal2,n2,eight
       PetscMPIInt rank, size
       PetscInt from(10), to(10)
 

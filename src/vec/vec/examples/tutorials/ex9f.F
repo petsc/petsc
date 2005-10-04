@@ -28,7 +28,8 @@
 #include "include/finclude/petscvec.h"
 
       PetscMPIInt rank,size
-      PetscInt nlocal,nghost,ifrom(2),ierr,i,rstart,rend,ione
+      PetscInt nlocal,nghost,ifrom(2)
+      PetscInt ierr,i,rstart,rend,ione
       PetscTruth  flag
       PetscScalar  value,tarray(20)
       Vec          lx,gx,gxs

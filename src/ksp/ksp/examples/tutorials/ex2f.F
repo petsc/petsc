@@ -77,7 +77,8 @@
 !  See the Fortran section of the PETSc users manual for details.
 !  
       double precision  norm
-      PetscInt  i,j,II,JJ,m,n,its,Istart,Iend,ione
+      PetscInt  i,j,II,JJ,m,n,its
+      PetscInt  Istart,Iend,ione
       PetscErrorCode ierr
       PetscMPIInt     rank,size
       PetscTruth  flg

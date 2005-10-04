@@ -204,7 +204,7 @@
 #include "finclude/petscts.h"
       Vec              X
       double precision user(3)
-      PetscInt          i,j,row,mx,my
+      PetscInt  i,j,row,mx,my
       PetscErrorCode ierr
       PetscOffset      xidx
       double precision two,one,lambda
@@ -264,9 +264,10 @@
       PetscOffset       xidx,fidx
       double precision  two,one,lambda
       double precision  hx,hy,hxdhy,hydhx
-      PetscScalar       ut,ub,ul,ur,u,uxx,uyy,sc
-      PetscScalar       xx(1),ff(1)
-      PetscInt           param,lmx,lmy
+      PetscScalar  ut,ub,ul,ur,u
+      PetscScalar  uxx,uyy,sc
+      PetscScalar  xx(1),ff(1)
+      PetscInt     param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
 
       two = 2.0
@@ -323,11 +324,13 @@
       Mat              JJ,B
       MatStructure     flag
       double precision user(3),ctime
+      PetscErrorCode   ierr
       Mat              jac
-      PetscInt          i,j,row,mx,my,col(5),i1,i5
-      PetscErrorCode    ierr
-      PetscOffset      xidx
-      PetscScalar      two,one,lambda,v(5),sc,xx(1)
+      PetscOffset xidx
+      PetscInt    i,j,row,mx,my
+      PetscInt    col(5),i1,i5
+      PetscScalar two,one,lambda
+      PetscScalar v(5),sc,xx(1)
       double precision hx,hy,hxdhy,hydhx
 
       PetscInt  param,lmx,lmy

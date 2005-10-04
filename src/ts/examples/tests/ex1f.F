@@ -324,8 +324,9 @@
       Vec               sol
       integer           ctx
 
-      PetscScalar       localptr(1),ex1,ex2,sc1,sc2
-      PetscInt           i,mybase,myend
+      PetscScalar localptr(1),ex1
+      PetscScalar ex2,sc1,sc2
+      PetscInt    i,mybase,myend
       PetscErrorCode ierr
       PetscOffset       idx
 

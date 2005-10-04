@@ -98,8 +98,11 @@
       PetscErrorCode    ierr
 
       DA           da
-      PetscInt    i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,i1,i7
-      PetscScalar  v(7),Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy
+      PetscInt    i,j,k,mx,my,mz,xm
+      PetscInt    ym,zm,xs,ys,zs,i1,i7
+      PetscScalar  v(7),Hx,Hy,Hz
+      PetscScalar  HxHydHz,HyHzdHx
+      PetscScalar  HxHzdHy
       MatStencil   row(4),col(4,7)
 
       i1 = 1

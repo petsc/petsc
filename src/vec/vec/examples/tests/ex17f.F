@@ -11,7 +11,9 @@
 
       PetscErrorCode ierr
       PetscMPIInt  size,rank
-      PetscInt     n,NN,low,high,iglobal,i,ione,first,stride
+      PetscInt     n,NN,low,high
+      PetscInt     iglobal,i,ione
+      PetscInt     first,stride
       PetscScalar  value,zero
       Vec          x,y
       IS           is1,is2

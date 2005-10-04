@@ -90,8 +90,10 @@
 !
 !     Basic constants
 ! 
-      PetscFortranDouble PETSC_PI,PETSC_DEGREES_TO_RADIANS
-      PetscFortranDouble PETSC_MAX,PETSC_MIN
+      PetscFortranDouble PETSC_PI
+      PetscFortranDouble PETSC_DEGREES_TO_RADIANS
+      PetscFortranDouble PETSC_MAX
+      PetscFortranDouble PETSC_MIN
 
       parameter (PETSC_PI = 3.14159265358979323846264d0)
       parameter (PETSC_DEGREES_TO_RADIANS = 0.01745329251994d0)

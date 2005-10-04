@@ -83,7 +83,7 @@
       PetscErrorCode ierr
       PetscInt   its,N, mx,my,i5
       PetscMPIInt size,rank
-      PetscReal          lambda_max,lambda_min,lambda
+      PetscReal   lambda_max,lambda_min,lambda
       MatFDColoring      fdcoloring
       ISColoring         iscoloring
       MatStructure       str
@@ -495,7 +495,8 @@
       PetscErrorCode       ierr
 
 !  Local variables:
-      PetscScalar    two,one,hx,hy,hxdhy,hydhx,sc
+      PetscScalar    two,one,hx,hy
+      PetscScalar    hxdhy,hydhx,sc
       PetscScalar    u,uxx,uyy
       PetscInt        i,j
 
@@ -652,7 +653,8 @@
 
 !  Local variables:
       PetscInt      i,j,row,col(5),i1,i5
-      PetscScalar  two,one, hx,hy,hxdhy,hydhx,sc,v(5)
+      PetscScalar  two,one, hx,hy
+      PetscScalar  hxdhy,hydhx,sc,v(5)
 
 !  Set parameters
 

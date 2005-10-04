@@ -35,7 +35,8 @@
       Mat              A 
       Vec              x,b,u
       PC               pc
-      PetscInt  n,dim,istart,iend,i,j,jj,ii,one,zero
+      PetscInt  n,dim,istart,iend
+      PetscInt  i,j,jj,ii,one,zero
       PetscErrorCode ierr
       double precision v,h2
       external         MyResidual

@@ -51,14 +51,16 @@
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Common block data:
-      DA               da
-      Vec              localwork,solution,u_local
-      PetscInt         M
-      PetscTruth       debug
-      PetscMPIInt      size,rank
-      PetscReal        zero_d0,one_d0,two_d0,four_d0
-      MPI_Comm         comm
-      PetscReal        h
+      DA    da
+      Vec   localwork,solution
+      Vec   u_local
+      PetscInt   M
+      PetscTruth debug
+      PetscMPIInt size,rank
+      PetscReal  zero_d0,one_d0
+      PetscReal  two_d0,four_d0
+      MPI_Comm   comm
+      PetscReal  h
 
       common /params/ zero_d0,one_d0,two_d0,four_d0,h
       common /appctx/ localwork,solution,da,u_local

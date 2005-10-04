@@ -32,8 +32,8 @@
 ! by the user. NAG compiler does not like integer*4,real*8
 
 #if defined(PETSC_MISSING_FORTRANSTAR)
-#define integer8 integer(kind=8)
-#define integer4 integer(kind=4)
+#define integer8 integer(kind=selected_int_kind(10))
+#define integer4 integer(kind=selected_int_kind(5))
 #else
 #define integer8 integer*8
 #define integer4 integer*4
@@ -54,9 +54,9 @@
 #endif
 
 #if defined (PETSC_MISSING_FORTRANSTAR)
-#define PetscFortranFloat real(kind=4)
-#define PetscFortranDouble real(kind=8)
-#define PetscFortranComplex complex(kind=8)
+#define PetscFortranFloat real(kind=selected_real_kind(5))
+#define PetscFortranDouble real(kind=selected_real_kind(10))
+#define PetscFortranComplex complex(kind=selected_real_kind(10))
 #define PetscChar(a) character(len = a) ::
 #else
 #define PetscFortranFloat real*4
