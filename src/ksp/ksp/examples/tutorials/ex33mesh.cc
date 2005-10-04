@@ -140,14 +140,13 @@ static double BasisDerivatives[54] = {
 static double meshCoords[18] = {
   0.0, 0.0,
   1.0, 0.0,
-  2.0, 0.0,
-  2.0, 1.0,
-  2.0, 2.0,
-  1.0, 2.0,
-  0.0, 2.0,
   0.0, 1.0,
   1.0, 1.0,
-};
+  2.0, 0.0,
+  2.0, 1.0,
+  0.0, 2.0,
+  1.0, 2.0,
+  2.0, 2.0};
 
 static double oldMeshCoords[48] = {
   0.0, 0.0,
@@ -412,7 +411,7 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   PetscFunctionBegin;
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
-  ierr = MeshGetBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
+  ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
   elements = topology->heightStratum(0);
   for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
     ALE::Point e = *element_itor;
@@ -525,7 +524,7 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   ierr = MeshGetBoundary(mesh, (void **) &boundary);CHKERRQ(ierr);
   ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
-  ierr = MeshGetBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
+  ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
   topology->view("In ComputeJacobian");
   elements = topology->heightStratum(0);
   for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
