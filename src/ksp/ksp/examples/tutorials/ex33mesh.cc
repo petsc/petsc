@@ -542,9 +542,12 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
       numElementIndices = bundle->getBundleDimension(e);
       ierr = PetscMalloc(numElementIndices * sizeof(PetscInt), &elementIndices); CHKERRQ(ierr);
     }
+    printf("numElementIndices = %d\n", numElementIndices);
     for(ALE::Point_set::iterator e_itor = elementIntervals.begin(); e_itor != elementIntervals.end(); e_itor++) {
+      printf("  e_itor = (%d, %d)\n", (*e_itor).prefix, (*e_itor).index);
       for(int i = 0; i < (*e_itor).index; i++) {
         elementIndices[idx++] = (*e_itor).prefix + i;
+        printf("elementIndices[%d] = %d\n", idx-1, elementIndices[idx-1]);
       }
     }
     ierr = MatSetValues(jac, numElementIndices, elementIndices, numElementIndices, elementIndices, elementMat, ADD_VALUES);CHKERRQ(ierr);
