@@ -138,9 +138,9 @@ static double BasisDerivatives[54] = {
   0.5};
 
 static double meshCoords[18] = {
-  0.0, 0.0,
   1.0, 0.0,
   0.0, 1.0,
+  0.0, 0.0,
   1.0, 1.0,
   2.0, 0.0,
   2.0, 1.0,
@@ -435,7 +435,7 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     Jac[1] = 0.5*(coords[coordinateIndices[2*2+0]] - coords[coordinateIndices[0*2+0]]);
     Jac[2] = 0.5*(coords[coordinateIndices[1*2+1]] - coords[coordinateIndices[0*2+1]]);
     Jac[3] = 0.5*(coords[coordinateIndices[2*2+1]] - coords[coordinateIndices[0*2+1]]);
-    detJ = Jac[0]*Jac[3] - Jac[1]*Jac[2];
+    detJ = fabs(Jac[0]*Jac[3] - Jac[1]*Jac[2]);
     printf("J = / %g %g \\\n    \\ %g %g /\n", Jac[0], Jac[1], Jac[2], Jac[3]);
     /* Element integral */
     ierr = PetscMemzero(elementVec, NUM_BASIS_FUNCTIONS*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -549,7 +549,7 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
     Jac[1] = 0.5*(coords[coordinateIndices[2*2+0]] - coords[coordinateIndices[0*2+0]]);
     Jac[2] = 0.5*(coords[coordinateIndices[1*2+1]] - coords[coordinateIndices[0*2+1]]);
     Jac[3] = 0.5*(coords[coordinateIndices[2*2+1]] - coords[coordinateIndices[0*2+1]]);
-    detJ = Jac[0]*Jac[3] - Jac[1]*Jac[2];
+    detJ = fabs(Jac[0]*Jac[3] - Jac[1]*Jac[2]);
     detJinv = 1.0/detJ;
     Jinv[0] =  detJinv*Jac[3];
     Jinv[1] = -detJinv*Jac[1];
