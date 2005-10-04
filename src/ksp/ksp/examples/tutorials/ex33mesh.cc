@@ -433,7 +433,7 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     }
     printf("elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);
     /* Assembly */
-    ALE::Point_set elementIntervals = bundle->getBundleIndices(empty, ALE::Point_set(e));
+    ALE::Point_set elementIntervals = bundle->getBundleIndices(ALE::Point_set(e), empty);
     PetscInt idx = 0;
 
     if (!elementIndices) {
@@ -535,7 +535,7 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
     printf("elementMat = [%g %g %g]\n             [%g %g %g]\n             [%g %g %g]\n",
            elementMat[0], elementMat[1], elementMat[2], elementMat[3], elementMat[4], elementMat[5], elementMat[6], elementMat[7], elementMat[8]);
     /* Assembly */
-    ALE::Point_set elementIntervals = bundle->getBundleIndices(empty, ALE::Point_set(e));
+    ALE::Point_set elementIntervals = bundle->getBundleIndices(ALE::Point_set(e), empty);
     PetscInt idx = 0;
 
     if (!elementIndices) {
@@ -559,14 +559,17 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
     ALE::Point id(0, 1);
     ALE::Point_set boundaryElements = boundary->cone(id);
     int numBoundaryIndices = bundle->getFiberDimension(boundaryElements);
-    ALE::Point_set boundaryIntervals = bundle->getFiberIndices(empty, boundaryElements);
+    ALE::Point_set boundaryIntervals = bundle->getFiberIndices(boundaryElements, empty);
     PetscInt *boundaryIndices;
     int b = 0;
 
+    printf("numBoundaryIndices = %d\n", numBoundaryIndices);
     ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
     for(ALE::Point_set::iterator b_itor = boundaryIntervals.begin(); b_itor != boundaryIntervals.end(); b_itor++) {
+      printf("  b_itor = (%d, %d)\n", (*b_itor).prefix, (*b_itor).index);
       for(int i = 0; i < (*b_itor).index; i++) {
         boundaryIndices[b++] = (*b_itor).prefix + i;
+        printf("boundaryIndices[%d] = %d\n", b-1, boundaryIndices[b-1]);
       }
     }
     ierr = MatZeroRows(jac, numBoundaryIndices, boundaryIndices, 1.0);CHKERRQ(ierr);
