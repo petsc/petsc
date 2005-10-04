@@ -137,7 +137,19 @@ static double BasisDerivatives[54] = {
   0.0,
   0.5};
 
-static double meshCoords[48] = {
+static double meshCoords[18] = {
+  0.0, 0.0,
+  1.0, 0.0,
+  2.0, 0.0,
+  2.0, 1.0,
+  2.0, 2.0,
+  1.0, 2.0,
+  0.0, 2.0,
+  0.0, 1.0,
+  1.0, 1.0,
+};
+
+static double oldMeshCoords[48] = {
   0.0, 0.0,
   1.0, 0.0,
   0.0, 1.0,
@@ -166,16 +178,6 @@ static double meshCoords[48] = {
   1.0, 2.0,
   2.0, 1.0};
 
-static PetscInt meshIndices[24] = {
-  0, 1, 7,
-  8, 7, 1,
-  1, 2, 8,
-  3, 7, 2,
-  7, 8, 6,
-  5, 6, 8,
-  8, 3, 5,
-  4, 5, 3};
-
 #undef __FUNCT__
 #define __FUNCT__ "CreateTestMesh"
 /*
@@ -202,6 +204,7 @@ extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
   ALE::Sieve *topology;
   ALE::Sieve *boundary;
   ALE::ClosureBundle *bundle;
+  ALE::ClosureBundle *coordBundle;
   MPI_Comm comm;
   PetscMPIInt rank;
   PetscErrorCode ierr;
@@ -212,6 +215,7 @@ extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
   topology = new ALE::Sieve(comm);
   boundary = new ALE::Sieve(comm);
   bundle = new ALE::ClosureBundle(comm);
+  coordBundle = new ALE::ClosureBundle(comm);
   topology->setVerbosity(11);
   boundary->setVerbosity(11);
   if (rank == 0) {
@@ -370,20 +374,16 @@ extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
   }
   topology->view("Simple mesh topology");
   //ALE::Stack completionStack = topology->coneCompletion(ALE::completionTypePoint, ALE::footprintTypeNone, NULL);
+  bundle->setTopology(topology);
+  bundle->setFiberDimensionByDepth(0, 1);
+  coordBundle->setTopology(topology);
+  coordBundle->setFiberDimensionByDepth(0, 2);
   ierr = MeshSetTopology(mesh, (void *) topology);CHKERRQ(ierr);
   ierr = MeshSetBoundary(mesh, (void *) boundary);CHKERRQ(ierr);
   ierr = MeshSetBundle(mesh, (void *) bundle);CHKERRQ(ierr);
-  //
-  ALE::Obj<ALE::Point_set> stratum = topology->depthStratum(0);
-  for(ALE::Point_set::iterator s_itor = stratum->begin(); s_itor != stratum->end(); s_itor++) {
-    printf("prefix: %d index: %d\n", (*s_itor).prefix, (*s_itor).index);
-  }
-  // Should use the bundle here
+  ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
   ALE::Point_set bottom;
-  bundle->setTopology(topology);
-  bundle->setFiberDimensionByDepth(0, 1);
-  int dim = bundle->getBundleDimension(bottom);
-  ierr = MeshSetGhosts(mesh, 1, dim, 0, NULL);
+  ierr = MeshSetGhosts(mesh, 1, bundle->getBundleDimension(bottom), 0, NULL);
   PetscFunctionReturn(0);
 }
 
@@ -391,32 +391,51 @@ extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
 #define __FUNCT__ "ComputeRHS"
 extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 {
-  Mesh               mesh = (Mesh) dmmg->dm;
-  UserContext       *user = (UserContext *) dmmg->user;
-  ALE::Sieve        *topology;
+  Mesh                mesh = (Mesh) dmmg->dm;
+  UserContext        *user = (UserContext *) dmmg->user;
+  ALE::Sieve         *topology;
   ALE::ClosureBundle *bundle;
-  ALE::Point_set     elements;
-  ALE::Point_set     empty;
-  PetscInt           numElementIndices;
-  PetscInt          *elementIndices = NULL;
-  PetscReal         *coords = meshCoords;
-  PetscReal          elementVec[NUM_BASIS_FUNCTIONS];
-  PetscReal          Jac[4];
-  PetscReal          xi, eta, x_q, y_q, detJ, funcValue;
-  PetscInt           e, f, q;
-  PetscErrorCode     ierr;
+  ALE::ClosureBundle *coordBundle;
+  ALE::Point_set      elements;
+  ALE::Point_set      empty;
+  PetscInt            numCoordinateIndices;
+  PetscInt           *coordinateIndices = NULL;
+  PetscInt            numElementIndices;
+  PetscInt           *elementIndices = NULL;
+  PetscReal          *coords = meshCoords;
+  PetscReal           elementVec[NUM_BASIS_FUNCTIONS];
+  PetscReal           Jac[4];
+  PetscReal           xi, eta, x_q, y_q, detJ, funcValue;
+  PetscInt            e, f, q;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
+  ierr = MeshGetBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
   elements = topology->heightStratum(0);
   for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
     ALE::Point e = *element_itor;
     /* Element geometry */
-    Jac[0] = 0.5*(coords[1*2+0] - coords[0*2+0]);
-    Jac[1] = 0.5*(coords[2*2+0] - coords[0*2+0]);
-    Jac[2] = 0.5*(coords[1*2+1] - coords[0*2+1]);
-    Jac[3] = 0.5*(coords[2*2+1] - coords[0*2+1]);
+    ALE::Point_set coordinateIntervals = coordBundle->getBundleIndices(ALE::Point_set(e), empty);
+    PetscInt c = 0;
+
+    if (!coordinateIndices) {
+      numCoordinateIndices = coordBundle->getBundleDimension(e);
+      ierr = PetscMalloc(numCoordinateIndices * sizeof(PetscInt), &coordinateIndices); CHKERRQ(ierr);
+    }
+    printf("numCoordinateIndices = %d\n", numCoordinateIndices);
+    for(ALE::Point_set::iterator c_itor = coordinateIntervals.begin(); c_itor != coordinateIntervals.end(); c_itor++) {
+      printf("  c_itor = (%d, %d)\n", (*c_itor).prefix, (*c_itor).index);
+      for(int i = 0; i < (*c_itor).index; i++) {
+        coordinateIndices[c++] = (*c_itor).prefix + i;
+        printf("coordinateIndices[%d] = %d\n", c-1, coordinateIndices[c-1]);
+      }
+    }
+    Jac[0] = 0.5*(coords[coordinateIndices[1*2+0]] - coords[coordinateIndices[0*2+0]]);
+    Jac[1] = 0.5*(coords[coordinateIndices[2*2+0]] - coords[coordinateIndices[0*2+0]]);
+    Jac[2] = 0.5*(coords[coordinateIndices[1*2+1]] - coords[coordinateIndices[0*2+1]]);
+    Jac[3] = 0.5*(coords[coordinateIndices[2*2+1]] - coords[coordinateIndices[0*2+1]]);
     detJ = Jac[0]*Jac[3] - Jac[1]*Jac[2];
     printf("J = / %g %g \\\n    \\ %g %g /\n", Jac[0], Jac[1], Jac[2], Jac[3]);
     /* Element integral */
@@ -440,9 +459,15 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
       numElementIndices = bundle->getBundleDimension(e);
       ierr = PetscMalloc(numElementIndices * sizeof(PetscInt), &elementIndices); CHKERRQ(ierr);
     }
+    printf("numElementIndices = %d\n", numElementIndices);
+    for(ALE::Point_set::iterator e_itor = elementIntervals.begin(); e_itor != elementIntervals.end(); e_itor++) {
+      printf("  e_itor = (%d, %d)\n", (*e_itor).prefix, (*e_itor).index);
+      for(int i = 0; i < (*e_itor).index; i++) {
+        elementIndices[idx++] = (*e_itor).prefix + i;
+        printf("elementIndices[%d] = %d\n", idx-1, elementIndices[idx-1]);
+      }
+    }
     ierr = VecSetValues(b, numElementIndices, elementIndices, elementVec, ADD_VALUES);CHKERRQ(ierr);
-
-    coords = coords + 6;
   }
   ierr = PetscFree(elementIndices);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
@@ -477,35 +502,54 @@ PetscErrorCode ComputeRho(PetscReal x, PetscReal y, PetscScalar *rho)
 #define __FUNCT__ "ComputeJacobian"
 extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 {
-  Mesh           mesh = (Mesh) dmmg->dm;
-  UserContext   *user = (UserContext *) dmmg->user;
-  ALE::Sieve    *topology;
-  ALE::Sieve    *boundary;
+  Mesh                mesh = (Mesh) dmmg->dm;
+  UserContext        *user = (UserContext *) dmmg->user;
+  ALE::Sieve         *topology;
+  ALE::Sieve         *boundary;
   ALE::ClosureBundle *bundle;
-  ALE::Point_set elements;
-  ALE::Point_set empty;
-  PetscInt       numElementIndices;
-  PetscInt      *elementIndices = NULL;
-  PetscReal     *coords = meshCoords;
-  PetscReal      elementMat[NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS];
-  PetscReal      Jac[4], Jinv[4], t_der[2], b_der[2];
-  PetscReal      xi, eta, x_q, y_q, detJ, detJinv, rho;
-  PetscInt       e, f, g, q;
-  PetscErrorCode ierr;
+  ALE::ClosureBundle *coordBundle;
+  ALE::Point_set      elements;
+  ALE::Point_set      empty;
+  PetscInt            numCoordinateIndices;
+  PetscInt           *coordinateIndices = NULL;
+  PetscInt            numElementIndices;
+  PetscInt           *elementIndices = NULL;
+  PetscReal          *coords = meshCoords;
+  PetscReal           elementMat[NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS];
+  PetscReal           Jac[4], Jinv[4], t_der[2], b_der[2];
+  PetscReal           xi, eta, x_q, y_q, detJ, detJinv, rho;
+  PetscInt            e, f, g, q;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   ierr = MeshGetBoundary(mesh, (void **) &boundary);CHKERRQ(ierr);
   ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
+  ierr = MeshGetBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
   topology->view("In ComputeJacobian");
   elements = topology->heightStratum(0);
   for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
     ALE::Point e = *element_itor;
     /* Element geometry */
-    Jac[0] = 0.5*(coords[1*2+0] - coords[0*2+0]);
-    Jac[1] = 0.5*(coords[2*2+0] - coords[0*2+0]);
-    Jac[2] = 0.5*(coords[1*2+1] - coords[0*2+1]);
-    Jac[3] = 0.5*(coords[2*2+1] - coords[0*2+1]);
+    ALE::Point_set coordinateIntervals = coordBundle->getBundleIndices(ALE::Point_set(e), empty);
+    PetscInt c = 0;
+
+    if (!coordinateIndices) {
+      numCoordinateIndices = coordBundle->getBundleDimension(e);
+      ierr = PetscMalloc(numCoordinateIndices * sizeof(PetscInt), &coordinateIndices); CHKERRQ(ierr);
+    }
+    printf("numCoordinateIndices = %d\n", numCoordinateIndices);
+    for(ALE::Point_set::iterator c_itor = coordinateIntervals.begin(); c_itor != coordinateIntervals.end(); c_itor++) {
+      printf("  c_itor = (%d, %d)\n", (*c_itor).prefix, (*c_itor).index);
+      for(int i = 0; i < (*c_itor).index; i++) {
+        coordinateIndices[c++] = (*c_itor).prefix + i;
+        printf("coordinateIndices[%d] = %d\n", c-1, coordinateIndices[c-1]);
+      }
+    }
+    Jac[0] = 0.5*(coords[coordinateIndices[1*2+0]] - coords[coordinateIndices[0*2+0]]);
+    Jac[1] = 0.5*(coords[coordinateIndices[2*2+0]] - coords[coordinateIndices[0*2+0]]);
+    Jac[2] = 0.5*(coords[coordinateIndices[1*2+1]] - coords[coordinateIndices[0*2+1]]);
+    Jac[3] = 0.5*(coords[coordinateIndices[2*2+1]] - coords[coordinateIndices[0*2+1]]);
     detJ = Jac[0]*Jac[3] - Jac[1]*Jac[2];
     detJinv = 1.0/detJ;
     Jinv[0] =  detJinv*Jac[3];
@@ -551,8 +595,6 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
       }
     }
     ierr = MatSetValues(jac, numElementIndices, elementIndices, numElementIndices, elementIndices, elementMat, ADD_VALUES);CHKERRQ(ierr);
-
-    coords = coords + 6;
   }
   ierr = PetscFree(elementIndices);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

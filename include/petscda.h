@@ -475,6 +475,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetBoundary(Mesh, void**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetBoundary(Mesh, void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetBundle(Mesh, void**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetBundle(Mesh, void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinateBundle(Mesh, void**);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinateBundle(Mesh, void*);
 
 /*S
      DM - Abstract PETSc object that manages an abstract grid object
