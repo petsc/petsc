@@ -202,6 +202,7 @@ extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
 {
   ALE::Sieve *topology;
   ALE::Sieve *boundary;
+  ALE::Sieve *orientation;
   ALE::ClosureBundle *bundle;
   ALE::ClosureBundle *coordBundle;
   MPI_Comm comm;
@@ -213,10 +214,12 @@ extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   topology = new ALE::Sieve(comm);
   boundary = new ALE::Sieve(comm);
+  orientation = new ALE::Sieve(comm);
   bundle = new ALE::ClosureBundle(comm);
   coordBundle = new ALE::ClosureBundle(comm);
   topology->setVerbosity(11);
   boundary->setVerbosity(11);
+  orientation->setVerbosity(11);
   if (rank == 0) {
     ALE::Point point;
     ALE::Point_set cone;
@@ -326,48 +329,88 @@ extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
     cone.insert(ALE::Point(0, 9));
     cone.insert(ALE::Point(0, 10));
     topology->addCone(cone, point);
+    cone.clear();
+    cone.insert(ALE::Point(0, 24));
+    cone.insert(ALE::Point(0, 10));
+    cone.insert(point);
+    orientation->addCone(cone, point);
     point = ALE::Point(0, 1);
     cone.clear();
     cone.insert(ALE::Point(0, 8));
     cone.insert(ALE::Point(0, 12));
     cone.insert(ALE::Point(0, 11));
     topology->addCone(cone, point);
+    cone.clear();
+    cone.insert(ALE::Point(0, 32));
+    cone.insert(ALE::Point(0, 11));
+    cone.insert(point);
+    orientation->addCone(cone, point);
     point = ALE::Point(0, 2);
     cone.clear();
     cone.insert(ALE::Point(0, 13));
     cone.insert(ALE::Point(0, 12));
     cone.insert(ALE::Point(0, 14));
     topology->addCone(cone, point);
+    cone.clear();
+    cone.insert(ALE::Point(0, 25));
+    cone.insert(ALE::Point(0, 14));
+    cone.insert(point);
+    orientation->addCone(cone, point);
     point = ALE::Point(0, 3);
     cone.clear();
     cone.insert(ALE::Point(0, 13));
     cone.insert(ALE::Point(0, 16));
     cone.insert(ALE::Point(0, 15));
     topology->addCone(cone, point);
+    cone.clear();
+    cone.insert(ALE::Point(0, 27));
+    cone.insert(ALE::Point(0, 15));
+    cone.insert(point);
+    orientation->addCone(cone, point);
     point = ALE::Point(0, 4);
     cone.clear();
     cone.insert(ALE::Point(0, 17));
     cone.insert(ALE::Point(0, 18));
     cone.insert(ALE::Point(0, 11));
     topology->addCone(cone, point);
+    cone.clear();
+    cone.insert(ALE::Point(0, 31));
+    cone.insert(ALE::Point(0, 11));
+    cone.insert(point);
+    orientation->addCone(cone, point);
     point = ALE::Point(0, 5);
     cone.clear();
     cone.insert(ALE::Point(0, 17));
     cone.insert(ALE::Point(0, 20));
     cone.insert(ALE::Point(0, 19));
     topology->addCone(cone, point);
+    cone.clear();
+    cone.insert(ALE::Point(0, 29));
+    cone.insert(ALE::Point(0, 19));
+    cone.insert(point);
+    orientation->addCone(cone, point);
     point = ALE::Point(0, 6);
     cone.clear();
     cone.insert(ALE::Point(0, 21));
     cone.insert(ALE::Point(0, 20));
     cone.insert(ALE::Point(0, 15));
     topology->addCone(cone, point);
+    cone.clear();
+    cone.insert(ALE::Point(0, 32));
+    cone.insert(ALE::Point(0, 15));
+    cone.insert(point);
+    orientation->addCone(cone, point);
     point = ALE::Point(0, 7);
     cone.clear();
     cone.insert(ALE::Point(0, 21));
     cone.insert(ALE::Point(0, 23));
     cone.insert(ALE::Point(0, 22));
     topology->addCone(cone, point);
+    cone.clear();
+    cone.insert(ALE::Point(0, 28));
+    cone.insert(ALE::Point(0, 22));
+    cone.insert(point);
+    orientation->addCone(cone, point);
 
     boundary->addCone(boundaryCone, boundaryPoint);
   }
@@ -379,6 +422,7 @@ extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
   coordBundle->setFiberDimensionByDepth(0, 2);
   ierr = MeshSetTopology(mesh, (void *) topology);CHKERRQ(ierr);
   ierr = MeshSetBoundary(mesh, (void *) boundary);CHKERRQ(ierr);
+  ierr = MeshSetOrientation(mesh, (void *) orientation);CHKERRQ(ierr);
   ierr = MeshSetBundle(mesh, (void *) bundle);CHKERRQ(ierr);
   ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
   ALE::Point_set bottom;
@@ -393,6 +437,7 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   Mesh                mesh = (Mesh) dmmg->dm;
   UserContext        *user = (UserContext *) dmmg->user;
   ALE::Sieve         *topology;
+  ALE::Sieve         *orientation;
   ALE::ClosureBundle *bundle;
   ALE::ClosureBundle *coordBundle;
   ALE::Point_set      elements;
@@ -410,13 +455,14 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 
   PetscFunctionBegin;
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
   ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
   ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
   elements = topology->heightStratum(0);
   for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
     ALE::Point e = *element_itor;
     /* Element geometry */
-    ALE::Point_set coordinateIntervals = coordBundle->getBundleIndices(ALE::Point_set(e), empty);
+    ALE::Point_set coordinateIntervals = coordBundle->getClosureIndices(orientation->cone(e), empty);
     PetscInt c = 0;
 
     if (!coordinateIndices) {
@@ -451,7 +497,7 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     }
     printf("elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);
     /* Assembly */
-    ALE::Point_set elementIntervals = bundle->getBundleIndices(ALE::Point_set(e), empty);
+    ALE::Point_set elementIntervals = bundle->getClosureIndices(orientation->cone(e), empty);
     PetscInt idx = 0;
 
     if (!elementIndices) {
@@ -505,6 +551,7 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   UserContext        *user = (UserContext *) dmmg->user;
   ALE::Sieve         *topology;
   ALE::Sieve         *boundary;
+  ALE::Sieve         *orientation;
   ALE::ClosureBundle *bundle;
   ALE::ClosureBundle *coordBundle;
   ALE::Point_set      elements;
@@ -523,6 +570,7 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   PetscFunctionBegin;
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   ierr = MeshGetBoundary(mesh, (void **) &boundary);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
   ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
   ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
   topology->view("In ComputeJacobian");
@@ -530,7 +578,7 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
     ALE::Point e = *element_itor;
     /* Element geometry */
-    ALE::Point_set coordinateIntervals = coordBundle->getBundleIndices(ALE::Point_set(e), empty);
+    ALE::Point_set coordinateIntervals = coordBundle->getClosureIndices(orientation->cone(e), empty);
     PetscInt c = 0;
 
     if (!coordinateIndices) {
@@ -578,7 +626,7 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
     printf("elementMat = [%g %g %g]\n             [%g %g %g]\n             [%g %g %g]\n",
            elementMat[0], elementMat[1], elementMat[2], elementMat[3], elementMat[4], elementMat[5], elementMat[6], elementMat[7], elementMat[8]);
     /* Assembly */
-    ALE::Point_set elementIntervals = bundle->getBundleIndices(ALE::Point_set(e), empty);
+    ALE::Point_set elementIntervals = bundle->getClosureIndices(orientation->cone(e), empty);
     PetscInt idx = 0;
 
     if (!elementIndices) {

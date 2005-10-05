@@ -18,6 +18,7 @@ struct _p_Mesh {
   PETSCHEADER(struct _MeshOps);
   void    *topology;
   void    *boundary;
+  void    *orientation;
   void    *bundle;
   void    *coordBundle;
   Vec      globalvector;
@@ -470,5 +471,55 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinateBundle(Mesh mesh,void *bundle)
 {
   PetscValidPointer(bundle,2);
   mesh->coordBundle = bundle;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetOrientation"
+/*@C
+    MeshGetOrientation - Gets the orientation sieve
+
+    Not collective
+
+    Input Parameter:
+.    mesh - the mesh object
+
+    Output Parameter:
+.    bundle - the orientation sieve
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshSetOrientation()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetOrientation(Mesh mesh,void **orientation)
+{
+  if (orientation) {
+    PetscValidPointer(orientation,2);
+    *orientation = mesh->orientation;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshSetOrientation"
+/*@C
+    MeshOrientation - Sets the orientation sieve
+
+    Not collective
+
+    Input Parameters:
++    mesh - the mesh object
+-    bundle - the orientation sieve
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshGetOrientation()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetOrientation(Mesh mesh,void *orientation)
+{
+  PetscValidPointer(orientation,2);
+  mesh->orientation = orientation;
   PetscFunctionReturn(0);
 }
