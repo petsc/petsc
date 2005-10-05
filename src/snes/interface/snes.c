@@ -1867,7 +1867,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetSolution(SNES snes,Vec *x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetSolution"
-/*@C
+/*@
    SNESSetSolution - Sets the vector where the approximate solution is stored.
 
    Not Collective, but Vec is parallel if SNES is parallel
