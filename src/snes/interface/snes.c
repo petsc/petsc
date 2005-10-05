@@ -1528,7 +1528,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetConvergenceHistory(SNES snes,PetscReal
 #define __FUNCT__ "SNESSetUpdate"
 /*@C
   SNESSetUpdate - Sets the general-purpose update function called
-  at the beginning of every step of the iteration.
+  at the beginning o every iteration of the nonlinear solve. Specifically
+  it is called just before the Jacobian is "evaluated".
 
   Collective on SNES
 
@@ -1870,7 +1871,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetSolution(SNES snes,Vec *x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetSolution"
-/*@C
+/*@
    SNESSetSolution - Sets the vector where the approximate solution is stored.
 
    Not Collective, but Vec is parallel if SNES is parallel

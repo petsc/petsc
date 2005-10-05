@@ -60,35 +60,32 @@ libserver-c++.${SOSUFFIX}:
 	done;
 #-------------------------------------------------------------------------------
 
-ifeq ($(EXNUM),)
-  EXNUM=1
-endif
 cca: 
-	# Generating *.cca files for ex${EXNUM}
-	-@${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libex${EXNUM}.${SL_LINKER_SUFFIX} \
-		Ex${EXNUM}.System c++ dynamic global now Ex${EXNUM}.System > libex${EXNUM}.${SL_LINKER_SUFFIX}.cca.in
+	# Generating *.cca files for ${EXNAME}
+	-@${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/lib${EXNAME}.${SL_LINKER_SUFFIX} \
+		${EXNAME}.System c++ dynamic global now ${EXNAME}.System > lib${EXNAME}.${SL_LINKER_SUFFIX}.cca.in
 	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
 	-@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
 	    	-e /"@SOSUFFIX@/ s|@SOSUFFIX@|${SL_LINKER_SUFFIX}|" \
-		libex${EXNUM}.${SL_LINKER_SUFFIX}.cca.in > ${PETSC_LIB_DIR}/cca/libex${EXNUM}.${SL_LINKER_SUFFIX}.cca
+		lib${EXNAME}.${SL_LINKER_SUFFIX}.cca.in > ${PETSC_LIB_DIR}/cca/lib${EXNAME}.${SL_LINKER_SUFFIX}.cca
 	@-${RM} *.cca.in
 	# Creating simple Ccaffeine script
-	-@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ex${EXNUM}_rc.in > ex${EXNUM}_rc
-	-@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ex${EXNUM}_gui_rc.in > ex${EXNUM}_gui_rc
+	@-if [ -f ${EXNAME}_rc.in ]; then\
+  	  sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ${EXNAME}_rc.in > ${EXNAME}_rc ;\
+	  sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ${EXNAME}_gui_rc.in > ${EXNAME}_gui_rc; fi
 
 test-cca: cca
-	# Testing component example ex${EXNUM} with Ccaffeine
-	@${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ex${EXNUM}_rc > ex${EXNUM}_rc.log  2>&1 ; 
-	@if [ "`egrep \"(specific|1 .+norm)\" ex${EXNUM}_rc.log | wc -l`" -ge "2" ]; then \
-	  echo "=== ex${EXNUM}: Component test succeeded (see ex${EXNUM}_rc.log)."; \
+	# Testing component example ${EXNAME} with Ccaffeine
+	@${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ${EXNAME}_rc > ${EXNAME}_rc.log  2>&1 ; 
+	@if [ "`egrep \"(specific|1 .+norm)\" ${EXNAME}_rc.log | wc -l`" -ge "2" ]; then \
+	  echo "=== ${EXNAME}: Component test succeeded (see ${EXNAME}_rc.log)."; \
 	else \
-          echo "*** ex${EXNUM}: Component test failed (see ex${EXNUM}_rc.log)."; \
+          echo "*** ${EXNAME}: Component test failed (see ${EXNAME}_rc.log)."; \
         fi
 
 gui-cca: cca
-	# Running component example ex${EXNUM} using Ccaffeine GUI (the output is in pOut0/pErr0)
-	@${CCAFE_HOME}/bin/gui-backend.sh --port 4242 --ccafe-rc \
-		ex${EXNUM}_gui_rc > .ccafe.out 2>&1 & \
+	# Running component example ${EXNAME} using Ccaffeine GUI (the output is in pOut0/pErr0)
+	@${CCAFE_HOME}/bin/gui-backend.sh --port 4242 --ccafe-rc ${EXNAME}_gui_rc > .ccafe.out 2>&1 & \
 	echo -e "\nPlease wait...\n"; sleep 5; \
 	${CCAFE_HOME}/bin/gui.sh --port 4242 # --scaleFont 1.5
 

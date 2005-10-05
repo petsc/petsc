@@ -172,6 +172,90 @@ namespace TOPS {
      * user defined non-static method.
      */
     void
+    setValue (
+      /* in */ const ::std::string& key,
+      /* in */ const ::std::string& value
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    setValue (
+      /* in */ const ::std::string& key,
+      /* in */ int32_t value
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    setValue (
+      /* in */ const ::std::string& key,
+      /* in */ bool value
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    setValue (
+      /* in */ const ::std::string& key,
+      /* in */ double value
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    ::std::string
+    getValue (
+      /* in */ const ::std::string& key
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    int32_t
+    getValueInt (
+      /* in */ const ::std::string& key
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    bool
+    getValueBool (
+      /* in */ const ::std::string& key
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    double
+    getValueDouble (
+      /* in */ const ::std::string& key
+    )
+    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
     setLocalSize (
       /* in */ int32_t m
     )

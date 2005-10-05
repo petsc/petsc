@@ -996,6 +996,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck(SNES snes,PetscErr
 #define __FUNCT__ "SNESLineSearchSetPreCheck"
 /*@C
    SNESLineSearchSetPreCheck - Sets a routine to check the validity of a new direction given by the linear solve
+         before the line search is called.
 
    Input Parameters:
 +  snes - nonlinear context obtained from SNESCreate()
@@ -1027,7 +1028,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck(SNES snes,PetscErr
 
 .keywords: SNES, nonlinear, set, line search check, step check, routine
 
-.seealso: SNESLineSearchSet(), SNESLineSearchSetPostCheck()
+.seealso: SNESLineSearchSet(), SNESLineSearchSetPostCheck(), SNESSetUpdate()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPreCheck(SNES snes,PetscErrorCode (*func)(SNES,Vec,Vec,void*,PetscTruth*),void *checkctx)
 {

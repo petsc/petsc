@@ -492,6 +492,114 @@ throw ()
 }
 
 /**
+ * Method:  setValue[]
+ */
+void
+TOPS::StructuredSolver_impl::setValue (
+  /* in */ const ::std::string& key,
+  /* in */ const ::std::string& value ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setValue)
+  // Insert-Code-Here {TOPS.StructuredSolver.setValue} (setValue method)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setValue)
+}
+
+/**
+ * Method:  setValue[Int]
+ */
+void
+TOPS::StructuredSolver_impl::setValue (
+  /* in */ const ::std::string& key,
+  /* in */ int32_t value ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setValueInt)
+  // Insert-Code-Here {TOPS.StructuredSolver.setValueInt} (setValue method)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setValueInt)
+}
+
+/**
+ * Method:  setValue[Bool]
+ */
+void
+TOPS::StructuredSolver_impl::setValue (
+  /* in */ const ::std::string& key,
+  /* in */ bool value ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setValueBool)
+  // Insert-Code-Here {TOPS.StructuredSolver.setValueBool} (setValue method)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setValueBool)
+}
+
+/**
+ * Method:  setValue[Double]
+ */
+void
+TOPS::StructuredSolver_impl::setValue (
+  /* in */ const ::std::string& key,
+  /* in */ double value ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setValueDouble)
+  // Insert-Code-Here {TOPS.StructuredSolver.setValueDouble} (setValue method)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setValueDouble)
+}
+
+/**
+ * Method:  getValue[]
+ */
+::std::string
+TOPS::StructuredSolver_impl::getValue (
+  /* in */ const ::std::string& key ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getValue)
+  // Insert-Code-Here {TOPS.StructuredSolver.getValue} (getValue method)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getValue)
+}
+
+/**
+ * Method:  getValueInt[]
+ */
+int32_t
+TOPS::StructuredSolver_impl::getValueInt (
+  /* in */ const ::std::string& key ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getValueInt)
+  // Insert-Code-Here {TOPS.StructuredSolver.getValueInt} (getValueInt method)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getValueInt)
+}
+
+/**
+ * Method:  getValueBool[]
+ */
+bool
+TOPS::StructuredSolver_impl::getValueBool (
+  /* in */ const ::std::string& key ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getValueBool)
+  // Insert-Code-Here {TOPS.StructuredSolver.getValueBool} (getValueBool method)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getValueBool)
+}
+
+/**
+ * Method:  getValueDouble[]
+ */
+double
+TOPS::StructuredSolver_impl::getValueDouble (
+  /* in */ const ::std::string& key ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getValueDouble)
+  // Insert-Code-Here {TOPS.StructuredSolver.getValueDouble} (getValueDouble method)
+  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getValueDouble)
+}
+
+/**
  * Method:  dimen[]
  */
 int32_t

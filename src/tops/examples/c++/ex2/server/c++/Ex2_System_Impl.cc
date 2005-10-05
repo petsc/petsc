@@ -270,9 +270,6 @@ throw (
 ){
   // DO-NOT-DELETE splicer.begin(Ex2.System.setServices)
   // Insert-Code-Here {Ex2.System.setServices} (setServices method)
-#undef __FUNCT__
-#define __FUNCT__ "Ex2::System_impl::setServices"
-
   myServices = services;
   gov::cca::TypeMap tm = services.createTypeMap();
   if(tm._is_nil()) {
@@ -335,9 +332,6 @@ throw ()
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.go)
   // Insert-Code-Here {Ex2.System.go} (go method)
-#undef __FUNCT__
-#define __FUNCT__ "Ex2::System_impl::go"
-
   // Parameter port stuff here (instead of argc, argv);
   // for now pass fake argc and argv to solver
   int argc = 1; 
@@ -345,15 +339,9 @@ throw ()
   argv[0] = (char*) malloc(10*sizeof(char));
   strcpy(argv[0],"ex2");
 
-  TOPS::Structured::Solver solver = myServices.getPort("TOPS.Structured.Solver");
-  this->solver = solver;
-  solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
-
-  // We don't need to call setSystem since it will be obtained through
-  // getPort calls
-
+  this->solver = myServices.getPort("TOPS.Structured.Solver");
+  this->solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
   this->solver.solve();
-
   myServices.releasePort("TOPS.StructuredSolver");
 
   return 0;  // DO-NOT-DELETE splicer.end(Ex2.System.go)

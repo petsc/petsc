@@ -4,8 +4,6 @@
 #include "TOPS_ParameterHandling.hh"
 
 void processTOPSOptions(std::string options) {
-#undef __FUNCT__
-#define __FUNCT__ "Ex1::System_impl::processTOPSOptions"
   std::string key = "", val = ""; 
   bool inKey = true, inVal = false, newOption = true;
   int len = options.length();
