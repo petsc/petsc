@@ -361,6 +361,114 @@ throw ()
 }
 
 /**
+ * Method:  setValue[]
+ */
+void
+TOPS::UnstructuredSolver_impl::setValue (
+  /* in */ const ::std::string& key,
+  /* in */ const ::std::string& value ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setValue)
+  // Insert-Code-Here {TOPS.UnstructuredSolver.setValue} (setValue method)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setValue)
+}
+
+/**
+ * Method:  setValue[Int]
+ */
+void
+TOPS::UnstructuredSolver_impl::setValue (
+  /* in */ const ::std::string& key,
+  /* in */ int32_t value ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setValueInt)
+  // Insert-Code-Here {TOPS.UnstructuredSolver.setValueInt} (setValue method)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setValueInt)
+}
+
+/**
+ * Method:  setValue[Bool]
+ */
+void
+TOPS::UnstructuredSolver_impl::setValue (
+  /* in */ const ::std::string& key,
+  /* in */ bool value ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setValueBool)
+  // Insert-Code-Here {TOPS.UnstructuredSolver.setValueBool} (setValue method)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setValueBool)
+}
+
+/**
+ * Method:  setValue[Double]
+ */
+void
+TOPS::UnstructuredSolver_impl::setValue (
+  /* in */ const ::std::string& key,
+  /* in */ double value ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setValueDouble)
+  // Insert-Code-Here {TOPS.UnstructuredSolver.setValueDouble} (setValue method)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setValueDouble)
+}
+
+/**
+ * Method:  getValue[]
+ */
+::std::string
+TOPS::UnstructuredSolver_impl::getValue (
+  /* in */ const ::std::string& key ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getValue)
+  // Insert-Code-Here {TOPS.UnstructuredSolver.getValue} (getValue method)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getValue)
+}
+
+/**
+ * Method:  getValueInt[]
+ */
+int32_t
+TOPS::UnstructuredSolver_impl::getValueInt (
+  /* in */ const ::std::string& key ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getValueInt)
+  // Insert-Code-Here {TOPS.UnstructuredSolver.getValueInt} (getValueInt method)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getValueInt)
+}
+
+/**
+ * Method:  getValueBool[]
+ */
+bool
+TOPS::UnstructuredSolver_impl::getValueBool (
+  /* in */ const ::std::string& key ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getValueBool)
+  // Insert-Code-Here {TOPS.UnstructuredSolver.getValueBool} (getValueBool method)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getValueBool)
+}
+
+/**
+ * Method:  getValueDouble[]
+ */
+double
+TOPS::UnstructuredSolver_impl::getValueDouble (
+  /* in */ const ::std::string& key ) 
+throw () 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getValueDouble)
+  // Insert-Code-Here {TOPS.UnstructuredSolver.getValueDouble} (getValueDouble method)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getValueDouble)
+}
+
+/**
  * Method:  setLocalSize[]
  */
 void
