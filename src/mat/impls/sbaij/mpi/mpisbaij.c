@@ -1320,7 +1320,6 @@ PetscErrorCode MatSetUpPreallocation_MPISBAIJ(Mat A)
 PetscErrorCode MatAXPY_MPISBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
-  PetscInt       i;
   Mat_MPISBAIJ   *xx=(Mat_MPISBAIJ *)X->data,*yy=(Mat_MPISBAIJ *)Y->data;
   PetscBLASInt   bnz,one=1;
   Mat_SeqSBAIJ   *xa,*ya;
