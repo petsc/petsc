@@ -111,7 +111,7 @@ class Configure(config.base.Configure):
     # overlap even with non __restrict pointers), but I think it should be
     # okay under the circumstances where restrict is normally used.
     for kw in ['restrict', ' __restrict__', '__restrict']:
-      if self.checkCompile('', 'floater * '+kw+' x;'):
+      if self.checkCompile('', 'float * '+kw+' x;'):
         self.restrictKeyword = kw
         self.logPrint('Set C restrict keyword to '+self.restrictKeyword, 4, 'compilers')
         break
