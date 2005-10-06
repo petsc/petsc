@@ -71,7 +71,8 @@ cca:
 	@-${RM} *.cca.in
 	# Creating simple Ccaffeine script
 	@-if [ -f ${EXNAME}_rc.in ]; then\
-  	  sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ${EXNAME}_rc.in > ${EXNAME}_rc ;\
+  	  sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ${EXNAME}_rc.in > ${EXNAME}_rc ; fi
+	@-if [ -f ${EXNAME}_gui_rc.in ]; then\
 	  sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ${EXNAME}_gui_rc.in > ${EXNAME}_gui_rc; fi
 
 test-cca: cca
