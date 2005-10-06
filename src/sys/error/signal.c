@@ -124,7 +124,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int sig,void *ptr)
   SIGNAME[SIGSYS]  = "SYS";
 #endif
 #if !defined(PETSC_MISSING_SIGTERM)
-  /*SIGNAME[SIGTERM] = "Terminate";*/
+  /* SIGNAME[SIGTERM] = "Terminate"; */
 #endif
 #if !defined(PETSC_MISSING_SIGTRAP)
   SIGNAME[SIGTRAP] = "TRAP";
