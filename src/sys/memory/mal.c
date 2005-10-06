@@ -73,8 +73,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeAlign(void *ptr,int line,const char func
        Previous int tells us how many ints the pointer has been shifted from
     the original address provided by the system malloc().
   */
-  shift = (*((int*)ptr)-1) - SHIFT_COOKIE;   
+  shift = *(((int*)ptr)-1) - SHIFT_COOKIE;   
   if (shift > PETSC_MEMALIGN-1) return PetscError(line,func,file,dir,1,1,"Likely memory corruption in heap");
+  if (shift < 0) return PetscError(line,func,file,dir,1,1,"Likely memory corruption in heap");
   ptr   = (void*)(((int*)ptr) - shift);
 #endif
 
