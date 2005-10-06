@@ -436,6 +436,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   ierr = PetscStackCreate();CHKERRQ(ierr);
 #endif
 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-options_gui",&PetscOptionsPublish);CHKERRQ(ierr);
 
   /*
        Print basic help message
