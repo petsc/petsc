@@ -31,7 +31,7 @@
 ! compiler options like -r4,-r8, sometimes invoked 
 ! by the user. NAG compiler does not like integer*4,real*8
 
-#if defined(PETSC_MISSING_FORTRANSTAR)
+#if defined(PETSC_USE_FORTRANKIND)
 #define integer8 integer(kind=selected_int_kind(10))
 #define integer4 integer(kind=selected_int_kind(5))
 #else
@@ -53,7 +53,7 @@
 #define PetscInt integer4
 #endif
 
-#if defined (PETSC_MISSING_FORTRANSTAR)
+#if defined (PETSC_USE_FORTRANKIND)
 #define PetscFortranFloat real(kind=selected_real_kind(5))
 #define PetscFortranDouble real(kind=selected_real_kind(10))
 #define PetscFortranComplex complex(kind=selected_real_kind(10))
