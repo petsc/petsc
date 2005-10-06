@@ -69,12 +69,13 @@ and generates the appropriate "glue" code needed to use the TOPS Solver Componen
         f.write('include ${PETSC_DIR}/src/tops/makefile.rules\n')
         f.close()
 
+        result = buttonbox(message="Ready to generate code", title=title, choices = ["Continue"],fontSize = 20,message2="This may take several minutes.")
+
         import commands
         (status,out) = commands.getstatusoutput('cd '+app+';make server/c++/obj/makefile')
         if status:
           result = buttonbox(message="SIDL code generation failed", title=title, choices = ["Ok"],fontSize = 20,message2=out)
 
-        result = buttonbox(message="SIDL code generated", title=title, choices = ["Ok"],fontSize = 20,message2="Will now add problem specific code")
 
         # Add the common code 
         f = file(os.path.join(app,'server','c++',app+'_System_Impl.cc'),'r')
@@ -189,7 +190,7 @@ and generates the appropriate "glue" code needed to use the TOPS Solver Componen
 
         text = '''#!ccaffeine bootstrap file. 
           # ------- don't change anything ABOVE this line.-------------
-          path set '''+os.path.join(os.getenv('PETSC_DIR'),'lib',os.getenv('PETSC_ARCH'),'cca')+'''
+          path set '''+os.path.join('@PETSC_LIB_DIR@','cca')+'''
           repository get-global TOPS.StructuredSolver
           repository get-global '''+app+'''.System
           instantiate TOPS.StructuredSolver solver
@@ -204,8 +205,8 @@ and generates the appropriate "glue" code needed to use the TOPS Solver Componen
           text = text + '''connect solver TOPS.System.Compute.Residual system TOPS.System.Compute.Residual\n'''
         text = text + '''go system DoSolve
           quit'''
-        f = file(os.path.join(app,app+'_rc'),'w')
+        f = file(os.path.join(app,app+'_rc.in'),'w')
         f.write(text)
         f.close()
 
-        result = buttonbox(message="Problem specific code generated",title=title,choices = ["Ok"],fontSize = 20,message2="Now edit "+app+"/server/c++/"+app+"_System_Impl.cc")
+        result = buttonbox(message="Code generated",title=title,choices = ["Ok"],fontSize = 20,message2="Now edit "+app+"/server/c++/"+app+"_System_Impl.cc")
