@@ -105,6 +105,19 @@ void (*signal())();
     self.popLanguage()
     return
 
+# reverse of the above - but more standard thing to do for F90 compilers
+  def checkFortranKind(self):
+    '''Checks whether selected_int_kind etc work USE_FORTRANKIND'''
+    self.pushLanguage('FC')
+    body = '''
+        integer(kind=selected_int_kind(10)) i
+        real(kind=selected_real_kind(10)) d
+'''
+    if self.checkCompile('', body):
+      self.addDefine('USE_FORTRANKIND', 1)
+    self.popLanguage()
+    return
+
   def checkFortranDReal(self):
     '''Checks whether dreal is provided in Fortran, and if not defines MISSING_DREAL'''
     self.pushLanguage('FC')
@@ -315,7 +328,8 @@ void (*signal())();
     if hasattr(self.compilers, 'CXX'):
       self.executeTest(self.checkComplex)
     if hasattr(self.compilers, 'FC'):
-      self.executeTest(self.checkFortranStar)
+      #self.executeTest(self.checkFortranStar)
+      self.executeTest(self.checkFortranKind)
       self.executeTest(self.checkFortranDReal)
     self.executeTest(self.checkConst)
     self.executeTest(self.checkEndian)
