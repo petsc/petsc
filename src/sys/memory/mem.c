@@ -109,7 +109,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   if (ioctl(fd,PIOCPSINFO,&prusage) == -1) {
     SETERRQ1(PETSC_ERR_FILE_READ,"Unable to access system file %s to get memory usage data",file); 
   }
-  *mem = (double)prusage.pr_byrssize;
+  *mem = (PetscLogDouble)prusage.pr_byrssize;
   close(fd);
 
 #elif defined(PETSC_USE_SBREAK_FOR_SIZE)
@@ -122,7 +122,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
     SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",proc);
   }
   fscanf(file,"%d %d",&mm,&rss);
-  *mem = rss * (getpagesize());
+  *mem = ((PetscLogDouble)rss) * ((PetscLogDouble)getpagesize());
   fclose(file);
 
 #elif defined(PETSC_HAVE_TASK_INFO)
@@ -133,9 +133,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 
   getrusage(RUSAGE_SELF,&temp);
 #if defined(PETSC_USE_KBYTES_FOR_SIZE)
-  *mem = 1024.0 * ((double)temp.ru_maxrss);
+  *mem = 1024.0 * ((PetscLogDouble)temp.ru_maxrss);
 #else
-  *mem = ((double)getpagesize())*((double)temp.ru_maxrss);
+  *mem = ((PetscLogDouble)getpagesize())*((PetscLogDouble)temp.ru_maxrss);
 #endif
 
 #else
