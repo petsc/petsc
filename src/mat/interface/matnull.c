@@ -19,17 +19,18 @@ PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE = 0;
 
    Input Parameters:
 +  sp - the null space object
--  remove - the function that removes the null space
+.  rem - the function that removes the null space
+-  ctx - context for the remove function
 
 .keywords: PC, null space, create
 
 .seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace, MatNullSpaceCreate()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(Vec,void*))
+PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
-
-
+  sp->remove = rem;
+  sp->rmctx  = ctx;
   PetscFunctionReturn(0);
 }
 
