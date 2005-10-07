@@ -431,23 +431,6 @@ extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ComputeBlock"
-extern "C" PetscErrorCode ComputeBlock(DMMG dmmg, ALE::Point_set block)
-{
-  Mesh           mesh = (Mesh) dmmg->dm;
-  ALE::Sieve    *topology;
-  ALE::Point_set elements;
-  PetscErrorCode ierr;
-
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  elements = topology->star(block);
-  for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
-    ALE::Point e = *element_itor;
-    /* Do the integration */
-  }
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "ExpandIntervals"
 PetscErrorCode ExpandIntervals(ALE::Point_array intervals, PetscInt *indices)
 {
@@ -527,6 +510,97 @@ extern "C" PetscErrorCode ElementGeometry(ALE::ClosureBundle *coordBundle, ALE::
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ComputeRho"
+PetscErrorCode ComputeRho(PetscReal x, PetscReal y, PetscScalar *rho)
+{
+  PetscFunctionBegin;
+  if ((x > 1.0/3.0) && (x < 2.0/3.0) && (y > 1.0/3.0) && (y < 2.0/3.0)) {
+    //*rho = 100.0;
+    *rho = 1.0;
+  } else {
+    *rho = 1.0;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ComputeBlock"
+extern "C" PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
+{
+  Mesh                mesh = (Mesh) dmmg->dm;
+  UserContext        *user = (UserContext *) dmmg->user;
+  ALE::Sieve         *topology;
+  ALE::PreSieve      *orientation;
+  ALE::ClosureBundle *bundle;
+  ALE::ClosureBundle *coordBundle;
+  ALE::Point_set      elements;
+  ALE::Point_set      empty;
+  PetscInt            numElementIndices;
+  PetscInt           *elementIndices = NULL;
+  PetscScalar        *array;
+  PetscReal           v0[2];
+  PetscReal           Jac[4], Jinv[4];
+  PetscReal           elementVec[NUM_BASIS_FUNCTIONS];
+  PetscReal           linearVec[NUM_BASIS_FUNCTIONS];
+  PetscReal           field[NUM_BASIS_FUNCTIONS];
+  PetscReal           t_der[2], b_der[2];
+  PetscReal           xi, eta, x_q, y_q, detJ, rho, funcValue;
+  PetscInt            f, g, q;
+  PetscErrorCode      ierr;
+
+  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
+  ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
+  ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
+  ierr = VecGetArray(u, &array); CHKERRQ(ierr);
+  elements = topology->star(block);
+  for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
+    ALE::Point e = *element_itor;
+
+    ierr = ElementGeometry(coordBundle, orientation, e, v0, Jac, Jinv, &detJ); CHKERRQ(ierr);
+    /* Field */
+    ALE::Point_array elementIntervals = bundle->getClosureIndices(orientation->cone(e), empty);
+
+    if (!elementIndices) {
+      numElementIndices = bundle->getBundleDimension(e);
+      ierr = PetscMalloc(numElementIndices * sizeof(PetscInt), &elementIndices); CHKERRQ(ierr);
+    }
+    ierr = ExpandIntervals(elementIntervals, elementIndices); CHKERRQ(ierr);
+    for(int i = 0; i < numElementIndices; i++) {
+      printf("elementIndices[%d] = %d\n", i, elementIndices[i]);
+    }
+    for(f = 0; f < NUM_BASIS_FUNCTIONS; f++) {
+      field[f] = array[elementIndices[f]];
+    }
+    /* Do the integration */
+    ierr = PetscMemzero(elementVec, NUM_BASIS_FUNCTIONS*sizeof(PetscScalar));CHKERRQ(ierr);
+    for(q = 0; q < NUM_QUADRATURE_POINTS; q++) {
+      xi = points[q*2+0] + 1.0;
+      eta = points[q*2+1] + 1.0;
+      x_q = Jac[0]*xi + Jac[1]*eta + v0[0];
+      y_q = Jac[2]*xi + Jac[3]*eta + v0[1];
+      ierr = ComputeRho(x_q, y_q, &rho);CHKERRQ(ierr);
+      funcValue = PetscExpScalar(-(x_q*x_q)/user->nu)*PetscExpScalar(-(y_q*y_q)/user->nu);
+      for(f = 0; f < NUM_BASIS_FUNCTIONS; f++) {
+        t_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+1];
+        t_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+1];
+        for(g = 0; g < NUM_BASIS_FUNCTIONS; g++) {
+          b_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
+          b_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
+          linearVec[f] += rho*(t_der[0]*b_der[0] + t_der[1]*b_der[1])*field[g];
+        }
+        elementVec[f] += (Basis[q*NUM_BASIS_FUNCTIONS+f]*funcValue - linearVec[f])*weights[q]*detJ;
+      }
+    }
+    printf("elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);
+    /* Assembly */
+    ierr = VecSetValues(r, numElementIndices, elementIndices, elementVec, ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(u, &array); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
 extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 {
@@ -546,7 +620,7 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   PetscReal           v0[2];
   PetscReal           Jac[4];
   PetscReal           xi, eta, x_q, y_q, detJ, funcValue;
-  PetscInt            e, f, q;
+  PetscInt            f, q;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -574,7 +648,6 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     printf("elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);
     /* Assembly */
     ALE::Point_array elementIntervals = bundle->getClosureIndices(orientation->cone(e), empty);
-    PetscInt idx = 0;
 
     if (!elementIndices) {
       numElementIndices = bundle->getBundleDimension(e);
@@ -597,20 +670,6 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 
     ierr = KSPGetNullSpace(dmmg->ksp,&nullspace);CHKERRQ(ierr);
     ierr = MatNullSpaceRemove(nullspace,b,PETSC_NULL);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRho"
-PetscErrorCode ComputeRho(PetscReal x, PetscReal y, PetscScalar *rho)
-{
-  PetscFunctionBegin;
-  if ((x > 1.0/3.0) && (x < 2.0/3.0) && (y > 1.0/3.0) && (y < 2.0/3.0)) {
-    //*rho = 100.0;
-    *rho = 1.0;
-  } else {
-    *rho = 1.0;
   }
   PetscFunctionReturn(0);
 }
