@@ -184,7 +184,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec
   }
 
   if (sp->remove){
-    ierr = (*sp->remove)(l,sp->ctx);
+    ierr = (*sp->remove)(l,sp->rmctx);
   }
   PetscFunctionReturn(0);
 }
