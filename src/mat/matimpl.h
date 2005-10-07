@@ -395,8 +395,9 @@ struct _p_MatNullSpace {
   PetscTruth     has_cnst;
   PetscInt       n;
   Vec*           vecs;
-  Vec            vec;             /* for out of place removals */
-  PetscErrorCode (*remove)(Vec);  /* for user provided removal function */
+  Vec            vec;                   /* for out of place removals */
+  PetscErrorCode (*remove)(Vec,void*);  /* for user provided removal function */
+  void*          rmctx;                 /* context for remove() function */
 };
 
 /* 

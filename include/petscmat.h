@@ -1413,7 +1413,7 @@ S*/
 typedef struct _p_MatNullSpace* MatNullSpace;
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceCreate(MPI_Comm,PetscTruth,PetscInt,const Vec[],MatNullSpace*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace,PetscErrorCode (*)(Vec));
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace,PetscErrorCode (*)(Vec,void*),void*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace,Vec,Vec*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceAttach(Mat,MatNullSpace);
