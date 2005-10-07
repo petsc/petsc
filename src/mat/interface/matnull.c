@@ -25,7 +25,7 @@ PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE = 0;
 
 .seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace, MatNullSpaceCreate()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*remove)(Vec,void *ctx))
+PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*remove)(Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
   sp->remove = remove;
