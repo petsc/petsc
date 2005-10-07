@@ -432,11 +432,11 @@ extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
 
 #undef __FUNCT__
 #define __FUNCT__ "ExpandIntervals"
-PetscErrorCode ExpandIntervals(ALE::Point_array intervals, PetscInt *indices)
+PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Point_array> intervals, PetscInt *indices)
 {
   int k = 0;
 
-  for(ALE::Point_array::iterator i_itor = intervals.begin(); i_itor != intervals.end(); i_itor++) {
+  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
     for(int i = 0; i < (*i_itor).index; i++) {
       indices[k++] = (*i_itor).prefix + i;
     }
@@ -463,14 +463,17 @@ extern "C" PetscErrorCode ElementGeometry(ALE::ClosureBundle *coordBundle, ALE::
   static PetscInt  coordSize = 0;
   static PetscInt *coordinateIndices = NULL;
   ALE::Point_set   empty;
-  ALE::Point_array coordinateIntervals = coordBundle->getClosureIndices(orientation->cone(e), empty);
-  PetscInt         numCoordinateIndices = coordinateIntervals.size();
+  ALE::Obj<ALE::Point_array> coordinateIntervals = coordBundle->getClosureIndices(orientation->cone(e), empty);
+  PetscInt         numCoordinateIndices = 0;
   PetscReal       *coords = meshCoords;
   PetscReal        det, invDet;
   PetscInt         c = 0;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  for(ALE::Point_array::iterator i_itor = coordinateIntervals->begin(); i_itor != coordinateIntervals->end(); i_itor++) {
+    numCoordinateIndices += (*i_itor).index;
+  }
   if (coordSize && (coordSize != numCoordinateIndices)) {
     ierr = PetscFree(coordinateIndices); CHKERRQ(ierr);
     coordinateIndices = NULL;
@@ -479,13 +482,16 @@ extern "C" PetscErrorCode ElementGeometry(ALE::ClosureBundle *coordBundle, ALE::
     coordSize = numCoordinateIndices;
     ierr = PetscMalloc(coordSize * sizeof(PetscInt), &coordinateIndices); CHKERRQ(ierr);
   }
+  for(ALE::Point_array::iterator i_itor = coordinateIntervals->begin(); i_itor != coordinateIntervals->end(); i_itor++) {
+    printf("coordinateIndices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
+  }
   ierr = ExpandIntervals(coordinateIntervals, coordinateIndices); CHKERRQ(ierr);
   for(int i = 0; i < numCoordinateIndices; i++) {
     printf("coordinateIndices[%d] = %d\n", i, coordinateIndices[i]);
   }
   if (v0) {
     v0[0] = coords[coordinateIndices[0*2+0]];
-    v0[1] = coords[coordinateIndices[0*2+0]];
+    v0[1] = coords[coordinateIndices[0*2+1]];
   }
   if (J) {
     J[0] = 0.5*(coords[coordinateIndices[1*2+0]] - coords[coordinateIndices[0*2+0]]);
