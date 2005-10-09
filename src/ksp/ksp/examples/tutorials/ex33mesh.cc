@@ -148,34 +148,46 @@ static double meshCoords[18] = {
   1.0, 2.0,
   2.0, 2.0};
 
-static double oldMeshCoords[48] = {
+static double newMeshCoords[18] = {
   0.0, 0.0,
   1.0, 0.0,
-  0.0, 1.0,
-  1.0, 1.0,
-  0.0, 1.0,
-  1.0, 0.0,
-
-  1.0, 0.0,
   2.0, 0.0,
-  1.0, 1.0,
   2.0, 1.0,
-  1.0, 1.0,
-  2.0, 0.0,
-
-  0.0, 1.0,
-  1.0, 1.0,
-  0.0, 2.0,
-  1.0, 2.0,
-  0.0, 2.0,
-  1.0, 1.0,
-
-  1.0, 1.0,
-  2.0, 1.0,
-  1.0, 2.0,
   2.0, 2.0,
   1.0, 2.0,
-  2.0, 1.0};
+  0.0, 2.0,
+  0.0, 1.0,
+  1.0, 1.0};
+
+#undef __FUNCT__
+#define __FUNCT__ "ExpandIntervals"
+PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Point_array> intervals, PetscInt *indices)
+{
+  int k = 0;
+
+  PetscFunctionBegin;
+  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    for(int i = 0; i < (*i_itor).index; i++) {
+      indices[k++] = (*i_itor).prefix + i;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ExpandSetIntervals"
+PetscErrorCode ExpandSetIntervals(ALE::Point_set intervals, PetscInt *indices)
+{
+  int k = 0;
+
+  PetscFunctionBegin;
+  for(ALE::Point_set::iterator i_itor = intervals.begin(); i_itor != intervals.end(); i_itor++) {
+    for(int i = 0; i < (*i_itor).index; i++) {
+      indices[k++] = (*i_itor).prefix + i;
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateTestMesh"
@@ -416,56 +428,56 @@ extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
   }
   topology->view("Simple mesh topology");
   //ALE::Stack completionStack = topology->coneCompletion(ALE::completionTypePoint, ALE::footprintTypeNone, NULL);
+  /* Create orderings */
   bundle->setTopology(topology);
   bundle->setFiberDimensionByDepth(0, 1);
+  //bundle->computeGlobalIndices();
   coordBundle->setTopology(topology);
   coordBundle->setFiberDimensionByDepth(0, 2);
+  //coordBundle->computeOverlapIndices();
   ierr = MeshSetTopology(mesh, (void *) topology);CHKERRQ(ierr);
   ierr = MeshSetBoundary(mesh, (void *) boundary);CHKERRQ(ierr);
   ierr = MeshSetOrientation(mesh, (void *) orientation);CHKERRQ(ierr);
   ierr = MeshSetBundle(mesh, (void *) bundle);CHKERRQ(ierr);
   ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
-  ALE::Point_set bottom;
-  ierr = MeshSetGhosts(mesh, 1, bundle->getBundleDimension(bottom), 0, NULL);
+  /* Finish old-style DM construction */
+  ALE::Point_set empty;
+
+  ierr = MeshSetGhosts(mesh, 1, bundle->getBundleDimension(empty), 0, NULL);
+  /* Create coordinates */
+  Vec coordinates;
+  ALE::Point_set vertices = topology->depthStratum(0);
+  PetscInt indices[2];
+
+  //ierr = MeshCreateGlobalVector(mesh, &coordinates);CHKERRQ(ierr);
+  ierr  = VecCreateGhostBlock(comm,1,coordBundle->getBundleDimension(empty),PETSC_DETERMINE,0,NULL,&coordinates);CHKERRQ(ierr);
+  printf("Making coordinates\n");
+  for(ALE::Point_set::iterator vertex_itor = vertices.begin(); vertex_itor != vertices.end(); vertex_itor++) {
+    ALE::Point v = *vertex_itor;
+
+    printf("  vertex(%d, %d)\n", v.prefix, v.index);
+    ierr = ExpandSetIntervals(coordBundle->getFiberIndices(ALE::Point_set(v), empty)->cap(), indices);CHKERRQ(ierr);
+    //ierr = ExpandSetIntervals(coordBundle->getOverlapFiberIndices(v, rank).cap(), indices);CHKERRQ(ierr);
+    ierr = VecSetValues(coordinates, 2, indices, &newMeshCoords[(v.index - 24)*2], INSERT_VALUES);CHKERRQ(ierr);
+    printf("  (%d, %d) = (%g, %g)\n", indices[0], indices[1], newMeshCoords[(v.index - 24)*2], newMeshCoords[(v.index - 24)*2 + 1]);
+  }
+  ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(coordinates);CHKERRQ(ierr);
+  ierr = MeshSetCoordinates(mesh, coordinates);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ExpandIntervals"
-PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Point_array> intervals, PetscInt *indices)
-{
-  int k = 0;
-
-  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    for(int i = 0; i < (*i_itor).index; i++) {
-      indices[k++] = (*i_itor).prefix + i;
-    }
-  }
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ExpandSetIntervals"
-PetscErrorCode ExpandSetIntervals(ALE::Point_set intervals, PetscInt *indices)
-{
-  int k = 0;
-
-  for(ALE::Point_set::iterator i_itor = intervals.begin(); i_itor != intervals.end(); i_itor++) {
-    for(int i = 0; i < (*i_itor).index; i++) {
-      indices[k++] = (*i_itor).prefix + i;
-    }
-  }
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "ElementGeometry"
-extern "C" PetscErrorCode ElementGeometry(ALE::ClosureBundle *coordBundle, ALE::PreSieve *orientation, ALE::Point e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
+extern "C" PetscErrorCode ElementGeometry(ALE::ClosureBundle *coordBundle, ALE::PreSieve *orientation, PetscScalar *coords, ALE::Point e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
   static PetscInt  coordSize = 0;
   static PetscInt *coordinateIndices = NULL;
   ALE::Point_set   empty;
   ALE::Obj<ALE::Point_array> coordinateIntervals = coordBundle->getClosureIndices(orientation->cone(e), empty);
+  //ALE::Obj<ALE::Point_array> coordinateIntervals = coordBundle->getOverlapOrderedIndices(orientation->cone(e), empty);
   PetscInt         numCoordinateIndices = 0;
-  PetscReal       *coords = meshCoords;
+  //PetscScalar     *coords = meshCoords;
   PetscReal        det, invDet;
   PetscInt         c = 0;
   PetscErrorCode   ierr;
@@ -541,6 +553,8 @@ extern "C" PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set b
   ALE::ClosureBundle *coordBundle;
   ALE::Point_set      elements;
   ALE::Point_set      empty;
+  Vec                 coordinates;
+  PetscScalar        *coords;
   PetscInt            numElementIndices;
   PetscInt           *elementIndices = NULL;
   PetscScalar        *array;
@@ -558,12 +572,14 @@ extern "C" PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set b
   ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
   ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
   ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
+  ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(u, &array); CHKERRQ(ierr);
   elements = topology->star(block);
   for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
     ALE::Point e = *element_itor;
 
-    ierr = ElementGeometry(coordBundle, orientation, e, v0, Jac, Jinv, &detJ); CHKERRQ(ierr);
+    ierr = ElementGeometry(coordBundle, orientation, coords, e, v0, Jac, Jinv, &detJ); CHKERRQ(ierr);
     /* Field */
     ALE::Point_array elementIntervals = bundle->getClosureIndices(orientation->cone(e), empty);
 
@@ -602,6 +618,7 @@ extern "C" PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set b
     /* Assembly */
     ierr = VecSetValues(r, numElementIndices, elementIndices, elementVec, ADD_VALUES);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(u, &array); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -618,8 +635,8 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   ALE::ClosureBundle *coordBundle;
   ALE::Point_set      elements;
   ALE::Point_set      empty;
-  PetscInt            numCoordinateIndices;
-  PetscInt           *coordinateIndices = NULL;
+  Vec                 coordinates;
+  PetscScalar        *coords;
   PetscInt            numElementIndices;
   PetscInt           *elementIndices = NULL;
   PetscReal           elementVec[NUM_BASIS_FUNCTIONS];
@@ -634,11 +651,13 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
   ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
   ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
+  ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   elements = topology->heightStratum(0);
   for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
     ALE::Point e = *element_itor;
 
-    ierr = ElementGeometry(coordBundle, orientation, e, v0, Jac, PETSC_NULL, &detJ); CHKERRQ(ierr);
+    ierr = ElementGeometry(coordBundle, orientation, coords, e, v0, Jac, PETSC_NULL, &detJ); CHKERRQ(ierr);
     /* Element integral */
     ierr = PetscMemzero(elementVec, NUM_BASIS_FUNCTIONS*sizeof(PetscScalar));CHKERRQ(ierr);
     for(q = 0; q < NUM_QUADRATURE_POINTS; q++) {
@@ -665,6 +684,7 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     }
     ierr = VecSetValues(b, numElementIndices, elementIndices, elementVec, ADD_VALUES);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscFree(elementIndices);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
@@ -693,8 +713,8 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   ALE::ClosureBundle *coordBundle;
   ALE::Point_set      elements;
   ALE::Point_set      empty;
-  PetscInt            numCoordinateIndices;
-  PetscInt           *coordinateIndices = NULL;
+  Vec                 coordinates;
+  PetscScalar        *coords;
   PetscInt            numElementIndices;
   PetscInt           *elementIndices = NULL;
   PetscReal           v0[2];
@@ -710,12 +730,13 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
   ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
   ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
-  topology->view("In ComputeJacobian");
+  ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   elements = topology->heightStratum(0);
   for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
     ALE::Point e = *element_itor;
 
-    ierr = ElementGeometry(coordBundle, orientation, e, v0, Jac, Jinv, &detJ); CHKERRQ(ierr);
+    ierr = ElementGeometry(coordBundle, orientation, coords, e, v0, Jac, Jinv, &detJ); CHKERRQ(ierr);
     /* Element integral */
     ierr = PetscMemzero(elementMat, NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS*sizeof(PetscScalar));CHKERRQ(ierr);
     for(q = 0; q < NUM_QUADRATURE_POINTS; q++) {
@@ -750,6 +771,7 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
     }
     ierr = MatSetValues(jac, numElementIndices, elementIndices, numElementIndices, elementIndices, elementMat, ADD_VALUES);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscFree(elementIndices);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
