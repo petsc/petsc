@@ -19,7 +19,8 @@ PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE = 0;
 
    Input Parameters:
 +  sp - the null space object
--  remove - the function that removes the null space
+.  rem - the function that removes the null space
+-  ctx - context for the remove function
 
 .keywords: PC, null space, create
 
