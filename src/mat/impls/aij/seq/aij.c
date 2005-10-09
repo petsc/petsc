@@ -167,7 +167,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       if (nonew == 1) goto noinsert;
       if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix",row,col);
       MatSeqXAIJReallocateAIJ(a,1,nrow,row,col,rmax,aa,ai,aj,A->m,rp,ap,imax,nonew);
-      N = nrow++ - 1; a->nz++;
+      N = nrow++ - 1; a->nz++; high++;
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
         rp[ii+1] = rp[ii];
