@@ -1,5 +1,5 @@
 
-CFLAGS	         = 
+CFLAGS	         = -I${PETSC_DIR}/src/dm/mesh/sieve
 FFLAGS	         = 
 CPPFLAGS         =
 FPPFLAGS         =
@@ -168,11 +168,8 @@ ex32: ex32.o  chkopts
 	-${CLINKER} -o ex32 ex32.o  ${PETSC_SNES_LIB}
 	${RM} ex32.o
 
-ex33mesh.o: ex33mesh.cc
-	g++ ${PETSC_INCLUDE} -I/PETSc3/fem/ale-dev/server-cxx-ale -I/PETSc3/fem/ale-dev/server-cxx-array -g -c -o ex33mesh.o ex33mesh.cc
-
 ex33: ex33.o ex33mesh.o chkopts
-	-${CLINKER} -o ex33 ex33.o ex33mesh.o -Wl,-rpath,/PETSc3/fem/ale-dev/lib -L/PETSc3/fem/ale-dev/lib -l-cxx-array -l-cxx-ale ${PETSC_SNES_LIB}
+	-${CLINKER} -o ex33 ex33.o ex33mesh.o ${PETSC_SNES_LIB}
 	${RM} ex33.o
 
 #----------------------------------------------------------------------------

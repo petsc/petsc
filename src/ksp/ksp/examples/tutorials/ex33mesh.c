@@ -1,10 +1,8 @@
-extern "C" {
-  #include <petscda.h>
-  #include <petscdmmg.h>
-}
-#include <ALE/ALE.hh>
-#include <ALE/Sieve.hh>
-#include <ALE/ClosureBundle.hh>
+#include <petscda.h>
+#include <petscdmmg.h>
+#include <ALE.hh>
+#include <Sieve.hh>
+#include <ClosureBundle.hh>
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
@@ -270,7 +268,7 @@ PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces,
    8--17----22---10
           9
 */
-extern "C" PetscErrorCode CreateTestMesh(MPI_Comm comm, Mesh *mesh)
+PetscErrorCode CreateTestMesh(MPI_Comm comm, Mesh *mesh)
 {
   ALE::ClosureBundle *bundle = new ALE::ClosureBundle(comm);
   ALE::ClosureBundle *coordBundle = new ALE::ClosureBundle(comm);
@@ -339,7 +337,7 @@ extern "C" PetscErrorCode CreateTestMesh(MPI_Comm comm, Mesh *mesh)
 
 #undef __FUNCT__
 #define __FUNCT__ "ElementGeometry"
-extern "C" PetscErrorCode ElementGeometry(ALE::ClosureBundle *coordBundle, ALE::PreSieve *orientation, PetscScalar *coords, ALE::Point e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
+PetscErrorCode ElementGeometry(ALE::ClosureBundle *coordBundle, ALE::PreSieve *orientation, PetscScalar *coords, ALE::Point e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
   static PetscInt  coordSize = 0;
   static PetscInt *coordinateIndices = NULL;
@@ -348,7 +346,6 @@ extern "C" PetscErrorCode ElementGeometry(ALE::ClosureBundle *coordBundle, ALE::
   //ALE::Obj<ALE::Point_array> coordinateIntervals = coordBundle->getOverlapOrderedIndices(orientation->cone(e), empty);
   PetscInt         numCoordinateIndices = 0;
   PetscReal        det, invDet;
-  PetscInt         c = 0;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -412,7 +409,7 @@ PetscErrorCode ComputeRho(PetscReal x, PetscReal y, PetscScalar *rho)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeBlock"
-extern "C" PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
+PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
 {
   Mesh                mesh = (Mesh) dmmg->dm;
   UserContext        *user = (UserContext *) dmmg->user;
@@ -494,7 +491,7 @@ extern "C" PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set b
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
+PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 {
   Mesh                mesh = (Mesh) dmmg->dm;
   UserContext        *user = (UserContext *) dmmg->user;
@@ -571,7 +568,7 @@ extern "C" PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian"
-extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
+PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 {
   Mesh                mesh = (Mesh) dmmg->dm;
   UserContext        *user = (UserContext *) dmmg->user;
@@ -590,7 +587,7 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   PetscReal           elementMat[NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS];
   PetscReal           Jac[4], Jinv[4], t_der[2], b_der[2];
   PetscReal           xi, eta, x_q, y_q, detJ, rho;
-  PetscInt            e, f, g, q;
+  PetscInt            f, g, q;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -628,7 +625,6 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
            elementMat[0], elementMat[1], elementMat[2], elementMat[3], elementMat[4], elementMat[5], elementMat[6], elementMat[7], elementMat[8]);
     /* Assembly */
     ALE::Point_array elementIntervals = bundle->getClosureIndices(orientation->cone(e), empty);
-    PetscInt idx = 0;
 
     if (!elementIndices) {
       numElementIndices = bundle->getBundleDimension(e);
@@ -651,7 +647,6 @@ extern "C" PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
     int numBoundaryIndices = bundle->getFiberDimension(boundaryElements);
     ALE::Point_set boundaryIntervals = bundle->getFiberIndices(boundaryElements, empty)->cap();
     PetscInt *boundaryIndices;
-    int b = 0;
 
     ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
     ierr = ExpandSetIntervals(boundaryIntervals, boundaryIndices); CHKERRQ(ierr);

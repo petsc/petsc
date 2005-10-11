@@ -135,6 +135,8 @@ typedef int MPI_Op;
 #define MPI_SUM           0
 #define MPI_ANY_TAG     (-1)
 #define MPI_DATATYPE_NULL 0
+
+#define MPI_MAX_ERROR_STRING 2056
 /*
   Prototypes of some functions which are implemented in mpi.c
 */
