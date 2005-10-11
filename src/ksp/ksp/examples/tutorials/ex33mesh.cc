@@ -468,6 +468,134 @@ extern "C" PetscErrorCode CreateTestMesh(Mesh mesh)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "Simplicializer"
+PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces, PetscInt numVertices, PetscScalar *vertices, PetscInt numBoundaryVertices, PetscInt *boundaryVertices, Mesh *mesh)
+{
+  Mesh m;
+  ALE::Sieve *topology = new ALE::Sieve(comm);
+  ALE::Sieve *boundary = new ALE::Sieve(comm);
+  ALE::PreSieve *orientation = new ALE::PreSieve(comm);
+  ALE::ClosureBundle *coordBundle = new ALE::ClosureBundle(comm);
+  PetscInt curEdge = numFaces+numVertices;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCreate(comm, &m);CHKERRQ(ierr);
+  topology->setVerbosity(11);
+  orientation->setVerbosity(11);
+  boundary->setVerbosity(11);
+  coordBundle->setVerbosity(11);
+  for(int f = 0; f < numFaces; f++) {
+    ALE::Point face(0, f);
+    ALE::Point_set edges;
+    ALE::Point_set cellTuple;
+
+    edges.clear();
+    cellTuple.clear();
+    for(int e = 0; e < 3; e++) {
+      ALE::Point vS = ALE::Point(0, faces[f*3+e]+numFaces);
+      ALE::Point vE = ALE::Point(0, faces[f*3+((e+1)%3)]+numFaces);
+      ALE::Obj<ALE::Point_set> preEdge = topology->support(vS);
+      ALE::Point_set endpoints;
+      ALE::Point edge;
+
+      preEdge->meet(topology->support(vE));
+      if (preEdge->size() > 0) {
+        edge = *preEdge->begin();
+      } else {
+        endpoints.clear();
+        endpoints.insert(vS);
+        endpoints.insert(vE);
+        edge = ALE::Point(0, curEdge++);
+        topology->addCone(endpoints, edge);
+        printf("  depth: %d\n", topology->depth(edge));
+        printf("  depth: %d\n", topology->depth(vS));
+        printf("  depth: %d\n", topology->depth(vE));
+        printf("  maxDepth: %d\n", topology->maxDepth(endpoints));
+      }
+      edges.insert(edge);
+      if (e == 0) {
+        cellTuple.insert(vS);
+        cellTuple.insert(edge);
+      }
+    }
+    topology->addCone(edges, face);
+    cellTuple.insert(face);
+    orientation->addCone(cellTuple, face);
+  }
+  topology->view("Simplicializer topology");
+  ierr = MeshSetTopology(m, (void *) topology);CHKERRQ(ierr);
+  ierr = MeshSetOrientation(m, (void *) orientation);CHKERRQ(ierr);
+  {
+    ALE::Point_set cone;
+    ALE::Point boundaryPoint(0, 1);
+
+    /* Should also put in boundary edges */
+    for(int v = 0; v < numBoundaryVertices; v++) {
+      ALE::Point vertex = ALE::Point(0, boundaryVertices[v] + numFaces);
+
+      cone.insert(vertex);
+    }
+    boundary->addCone(cone, boundaryPoint);
+  }
+  ierr = MeshSetBoundary(m, (void *) boundary);CHKERRQ(ierr);
+  *mesh = m;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateTestMesh2"
+/*
+  CreateTestMesh - Create a simple square mesh
+
+         13
+  14--28----31---12
+    |\    |\    |
+    2 2 5 2 3 7 3
+    7  6  9  0  2
+    | 4 \ | 6 \ |
+    |    \|    \|
+  15--20-16-24---11
+    |\    |\    |
+    1 1 1 2 2 3 2
+    9  8  1  3  5
+    | 0 \ | 2 \ |
+    |    \|    \|
+   8--17----22---10
+          9
+*/
+extern "C" PetscErrorCode CreateTestMesh2(MPI_Comm comm)
+{
+  Mesh            mesh;
+  PetscInt        faces[24] = {
+    0, 1, 7,
+    8, 7, 1,
+    1, 2, 8,
+    3, 8, 2,
+    7, 8, 6,
+    5, 6, 8,
+    8, 3, 5,
+    4, 5, 3};
+  PetscScalar     vertices[18] = {
+    0.0, 0.0,
+    1.0, 0.0,
+    2.0, 0.0,
+    2.0, 1.0,
+    2.0, 2.0,
+    1.0, 2.0,
+    0.0, 2.0,
+    0.0, 1.0,
+    1.0, 1.0};
+  PetscInt        boundaryVertices[8] = {
+    0, 1, 2, 3, 4, 5, 6, 7};
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = Simplicializer(comm, 8, faces, 9, vertices, 8, boundaryVertices, &mesh);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ElementGeometry"
 extern "C" PetscErrorCode ElementGeometry(ALE::ClosureBundle *coordBundle, ALE::PreSieve *orientation, PetscScalar *coords, ALE::Point e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {

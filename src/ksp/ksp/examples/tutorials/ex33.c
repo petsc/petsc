@@ -60,6 +60,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = MeshCreate(PETSC_COMM_WORLD, &mesh);CHKERRQ(ierr);
   ierr = CreateTestMesh(mesh);CHKERRQ(ierr);
+  ierr = CreateTestMesh2(PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg, (DM) mesh);CHKERRQ(ierr);
   ierr = MeshDestroy(mesh);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {

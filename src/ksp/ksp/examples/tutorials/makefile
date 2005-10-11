@@ -567,6 +567,15 @@ runex32:
 	   else echo "Possible problem with ex32_1, diffs above"; fi; \
 	   ${RM} -f ex32_1.tmp
 
+runex33:
+	-./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor
+
+runex33_2:
+	-${MPIRUN} -np 2 ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor
+
+runex33_d:
+	-./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -start_in_debugger
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
