@@ -479,6 +479,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinateBundle(Mesh, void**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinateBundle(Mesh, void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetOrientation(Mesh, void**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetOrientation(Mesh, void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinates(Mesh, Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinates(Mesh, Vec);
 
 /*S
      DM - Abstract PETSc object that manages an abstract grid object
