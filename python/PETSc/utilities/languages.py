@@ -54,7 +54,7 @@ class Configure(config.base.Configure):
     self.clanguage = self.framework.argDB['with-clanguage'].upper().replace('+','x').replace('X','x')
     if not self.clanguage in ['C', 'Cxx']:
       raise RuntimeError('Invalid C language specified: '+str(self.clanguage))
-    if self.clanguage == 'C' and not ('download-prometheus' in self.framework.argDB and self.framework.argDB['download-prometheus']):
+    if self.clanguage == 'C' and not ('download-prometheus' in self.framework.argDB and self.framework.argDB['download-prometheus']) and not self.framework.argDB['download-hypre']:
       self.framework.argDB['with-cxx'] = '0'
     self.framework.logPrint('C language is '+str(self.clanguage))
     return
