@@ -81,11 +81,11 @@
 
       subroutine MSGemm(bs,A,B,C)
       implicit none
-      PetscInt          bs
-      MatScalar        A(bs,bs),B(bs,bs),C(bs,bs)
-      PetscScalar      sum
+      PetscInt   bs
+      MatScalar  A(bs,bs),B(bs,bs),C(bs,bs)
+      PetscScalar sum
 
-      PetscInt          i,j,k
+      PetscInt   i,j,k
 
       do 10, i=1,bs
         do 20, j=1,bs
@@ -102,11 +102,11 @@
 
       subroutine MSGemmi(bs,A,C,B)
       implicit none
-      PetscInt          bs
-      MatScalar        A(bs,bs),B(bs,bs),C(bs,bs)
-      PetscScalar      sum
+      PetscInt    bs
+      MatScalar   A(bs,bs),B(bs,bs),C(bs,bs)
+      PetscScalar sum
 
-      PetscInt          i,j,k
+      PetscInt    i,j,k
 
       do 10, i=1,bs
         do 20, j=1,bs

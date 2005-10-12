@@ -170,12 +170,12 @@
 
       subroutine MSGemm_BGL(bs,A,B,C)
       implicit none
-      PetscInt          bs
-      MatScalar        A(bs,bs),B(bs,bs),C(bs,bs)
-      PetscScalar      sum
-      PetscInt          i,j,k
+      PetscInt    bs
+      MatScalar   A(bs,bs),B(bs,bs),C(bs,bs)
+      PetscScalar sum
+      PetscInt    i,j,k
 
-      PetscScalar      bgl_size_0_precision
+      PetscScalar bgl_size_0_precision
 
       if( kind(bgl_size_0_precision) .eq. 4) then
         if(sizeof(bgl_size_0_precision) .eq. 4 ) then
@@ -214,13 +214,13 @@
 
       subroutine MSGemmi_BGL(bs,A,C,B)
       implicit none
-      PetscInt          bs
-      MatScalar        A(bs,bs),B(bs,bs),C(bs,bs)
-      PetscScalar      sum
+      PetscInt    bs
+      MatScalar   A(bs,bs),B(bs,bs),C(bs,bs)
+      PetscScalar sum
 
-      PetscInt          i,j,k
+      PetscInt    i,j,k
 
-      PetscScalar      bgl_size_0_precision
+      PetscScalar bgl_size_0_precision
 
       if( kind(bgl_size_0_precision) .eq. 4) then
         if(sizeof(bgl_size_0_precision) .eq. 4 ) then

@@ -8,11 +8,11 @@
 !
       subroutine FortranSolveAIJ(n,x,ai,aj,adiag,aa,b)
       implicit none
-      PetscScalar      x(0:*),aa(0:*),b(0:*)
-      PetscInt          n,ai(0:*),aj(0:*),adiag(0:*)
+      PetscScalar x(0:*),aa(0:*),b(0:*)
+      PetscInt    n,ai(0:*),aj(0:*),adiag(0:*)
 
-      PetscInt          i,j,jstart,jend
-      PetscScalar      sum
+      PetscInt    i,j,jstart,jend
+      PetscScalar sum
 !     
 !     Forward Solve
 !

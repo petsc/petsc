@@ -29,7 +29,8 @@
 
       subroutine FortranMDot3_BGL(x,y1,y2,y3,n,sum1,sum2,sum3)
       implicit none
-      PetscScalar  sum1,sum2,sum3,x(*),y1(*),y2(*),y3(*)
+      PetscScalar  sum1,sum2,sum3
+      PetscScalar  x(*),y1(*),y2(*),y3(*)
       PetscInt n
       PetscInt i
 
