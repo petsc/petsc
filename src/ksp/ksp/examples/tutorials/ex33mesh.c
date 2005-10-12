@@ -248,7 +248,7 @@ PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "CreateTestMesh2"
+#define __FUNCT__ "CreateTestMesh"
 /*
   CreateTestMesh - Create a simple square mesh
 

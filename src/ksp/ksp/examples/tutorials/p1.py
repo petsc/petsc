@@ -117,7 +117,10 @@ class P1(script.Script):
     stdInclude = ASE.Compiler.Cxx.Include.Include()
     stdInclude.setIdentifier('<stdlib.h>')
     source     = ASE.Compiler.Cxx.Source.Source()
-    source.setFilename(basename+'_Integration.c')
+    name       = 'Integration.c'
+    if basename:
+      name     = basename+'_'+name
+    source.setFilename(name)
     source.addChildren([stdInclude])
     source.addChildren(decls)
     source.setPurpose(ASE.Compiler.CodePurpose.SKELETON)
