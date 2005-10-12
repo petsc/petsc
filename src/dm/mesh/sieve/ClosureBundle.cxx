@@ -213,6 +213,9 @@ namespace ALE {
     if(indCone.size() > 0) {
       indexArray->push_back(*indCone.begin()); cntr++;
     }
+    if (maxDepth == 0) {
+      return indexArray;
+    }
     bool zeroIsOrdered = 0; // we are done ordering when no new elements are yielded after pivoting
     while(!zeroIsOrdered) {
       // Pivot e0 around e1 (flip) within the closure Sieve
@@ -250,7 +253,7 @@ namespace ALE {
       }
       // Take the first of the remaining elements in the flip set and make it the new pivot
       e1 = *flip1->begin();
-    }// while(!allOredered)
+    }// while(!allOrdered)
 
     // Now order the non-zero depth elements
     // First we pop the queue, since the first 0-element is not use.  
