@@ -47,7 +47,7 @@ class Configure(PETSc.package.Package):
     if 'FC' in self.framework.argDB:
       self.setCompilers.pushLanguage('FC')
       g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
-      g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags()+'\n')
+      g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n')
       self.setCompilers.popLanguage()
     else:
       g.write('FORTRAN      = \n')
