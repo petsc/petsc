@@ -68,7 +68,7 @@ class Configure(PETSc.package.Package):
       self.framework.popLanguage()
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
-      args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
       self.framework.popLanguage()
     if self.mpi.include:
       # just use the first dir - and assume the subsequent one isn't necessary [relavant only on AIX?]
