@@ -336,46 +336,65 @@ PetscErrorCode CreateTestMesh(MPI_Comm comm, Mesh *mesh)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "restrictCoordinates"
+PetscErrorCode restrictCoordinates(ALE::ClosureBundle *coordBundle, ALE::PreSieve *orientation, PetscScalar *coords, ALE::Point e, PetscScalar *array[])
+{
+  ALE::Point_set             empty;
+  ALE::Obj<ALE::Point_array> coordIntervals = coordBundle->getClosureIndices(orientation->cone(e), empty);
+  //ALE::Obj<ALE::Point_array> coordinateIntervals = coordBundle->getOverlapOrderedIndices(orientation->cone(e), empty);
+  /* This should be done by memory pooling by array size (we have a simple form below) */
+  static PetscScalar *coordValues;
+  static PetscInt     coordSize = 0;
+  static PetscInt    *coordIndices = NULL;
+  PetscInt            numCoordIndices = 0;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  for(ALE::Point_array::iterator i_itor = coordIntervals->begin(); i_itor != coordIntervals->end(); i_itor++) {
+    numCoordIndices += (*i_itor).index;
+  }
+  if (coordSize && (coordSize != numCoordIndices)) {
+    ierr = PetscFree(coordIndices); CHKERRQ(ierr);
+    coordIndices = NULL;
+    ierr = PetscFree(coordValues); CHKERRQ(ierr);
+    coordValues = NULL;
+  }
+  if (!coordIndices) {
+    coordSize = numCoordIndices;
+    ierr = PetscMalloc(coordSize * sizeof(PetscInt), &coordIndices); CHKERRQ(ierr);
+    ierr = PetscMalloc(coordSize * sizeof(PetscScalar), &coordValues); CHKERRQ(ierr);
+  }
+  for(ALE::Point_array::iterator i_itor = coordIntervals->begin(); i_itor != coordIntervals->end(); i_itor++) {
+    printf("coordIndices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
+  }
+  ierr = ExpandIntervals(coordIntervals, coordIndices); CHKERRQ(ierr);
+  for(int i = 0; i < numCoordIndices; i++) {
+    printf("coordinateIndices[%d] = %d\n", i, coordIndices[i]);
+    coordValues[i] = coords[coordIndices[i]];
+  }
+  *array = coordValues;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ElementGeometry"
 PetscErrorCode ElementGeometry(ALE::ClosureBundle *coordBundle, ALE::PreSieve *orientation, PetscScalar *coords, ALE::Point e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
-  static PetscInt  coordSize = 0;
-  static PetscInt *coordinateIndices = NULL;
-  ALE::Point_set   empty;
-  ALE::Obj<ALE::Point_array> coordinateIntervals = coordBundle->getClosureIndices(orientation->cone(e), empty);
-  //ALE::Obj<ALE::Point_array> coordinateIntervals = coordBundle->getOverlapOrderedIndices(orientation->cone(e), empty);
-  PetscInt         numCoordinateIndices = 0;
-  PetscReal        det, invDet;
-  PetscErrorCode   ierr;
+  PetscScalar   *array;
+  PetscReal      det, invDet;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for(ALE::Point_array::iterator i_itor = coordinateIntervals->begin(); i_itor != coordinateIntervals->end(); i_itor++) {
-    numCoordinateIndices += (*i_itor).index;
-  }
-  if (coordSize && (coordSize != numCoordinateIndices)) {
-    ierr = PetscFree(coordinateIndices); CHKERRQ(ierr);
-    coordinateIndices = NULL;
-  }
-  if (!coordinateIndices) {
-    coordSize = numCoordinateIndices;
-    ierr = PetscMalloc(coordSize * sizeof(PetscInt), &coordinateIndices); CHKERRQ(ierr);
-  }
-  for(ALE::Point_array::iterator i_itor = coordinateIntervals->begin(); i_itor != coordinateIntervals->end(); i_itor++) {
-    printf("coordinateIndices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
-  }
-  ierr = ExpandIntervals(coordinateIntervals, coordinateIndices); CHKERRQ(ierr);
-  for(int i = 0; i < numCoordinateIndices; i++) {
-    printf("coordinateIndices[%d] = %d\n", i, coordinateIndices[i]);
-  }
+  ierr = restrictCoordinates(coordBundle, orientation, coords, e, &array); CHKERRQ(ierr);
   if (v0) {
-    v0[0] = coords[coordinateIndices[0*2+0]];
-    v0[1] = coords[coordinateIndices[0*2+1]];
+    v0[0] = array[0*2+0];
+    v0[1] = array[0*2+1];
   }
   if (J) {
-    J[0] = 0.5*(coords[coordinateIndices[1*2+0]] - coords[coordinateIndices[0*2+0]]);
-    J[1] = 0.5*(coords[coordinateIndices[2*2+0]] - coords[coordinateIndices[0*2+0]]);
-    J[2] = 0.5*(coords[coordinateIndices[1*2+1]] - coords[coordinateIndices[0*2+1]]);
-    J[3] = 0.5*(coords[coordinateIndices[2*2+1]] - coords[coordinateIndices[0*2+1]]);
+    J[0] = 0.5*(array[1*2+0] - array[0*2+0]);
+    J[1] = 0.5*(array[2*2+0] - array[0*2+0]);
+    J[2] = 0.5*(array[1*2+1] - array[0*2+1]);
+    J[3] = 0.5*(array[2*2+1] - array[0*2+1]);
     printf("J = / %g %g \\\n    \\ %g %g /\n", J[0], J[1], J[2], J[3]);
     det = fabs(J[0]*J[3] - J[1]*J[2]);
     invDet = 1.0/det;
