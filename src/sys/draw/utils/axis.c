@@ -544,7 +544,7 @@ PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,Pe
 {
   PetscErrorCode ierr;
   int            i,power;
-  PetscReal      x,base;
+  PetscReal      x = 0.0,base;
 
   PetscFunctionBegin;
   /* patch if low == high */

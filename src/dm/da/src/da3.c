@@ -165,7 +165,7 @@ EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
           the x, y, and z coordinates, or PETSC_NULL. If non-null, these
           must be of length as m,n,p and the corresponding
           m,n, or p cannot be PETSC_DECIDE. Sum of the lx[] entries must be M, sum of
-          the ly[] must n, sum of the lz[] must be P
+          the ly[] must N, sum of the lz[] must be P
 -  s - stencil width
 
    Output Parameter:

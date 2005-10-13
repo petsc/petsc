@@ -581,7 +581,7 @@ void PETSCMAT_DLLEXPORT matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscIn
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
   PetscInt          *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,N,m = *mm,n = *nn;
   PetscInt          *ai=a->i,*ailen=a->ilen;
-  PetscInt          *aj=a->j,stepval;
+  PetscInt          *aj=a->j,stepval,lastcol = -1;
   const PetscScalar *value = v;
   MatScalar         *ap,*aa = a->a,*bap;
 
@@ -593,10 +593,12 @@ void PETSCMAT_DLLEXPORT matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscIn
     ap   = aa + 16*ai[row];
     nrow = ailen[row]; 
     low  = 0;
+    high = nrow;
     for (l=0; l<n; l++) { /* loop over added columns */
       col = in[l]; 
+      if (col <= lastcol) low = 0; else high = nrow;
+      lastcol = col;
       value = v + k*(stepval+4)*4 + l*4;
-      low = 0; high = nrow;
       while (high-low > 7) {
         t = (low+high)/2;
         if (rp[t] > col) high = t;
@@ -615,6 +617,7 @@ void PETSCMAT_DLLEXPORT matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscIn
         }
       } 
       N = nrow++ - 1; 
+      high++; /* added new column index thus must search to one higher than before */
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
         rp[ii+1] = rp[ii];
@@ -655,7 +658,7 @@ void PETSCMAT_DLLEXPORT matsetvalues4_(Mat *AA,PetscInt *mm,PetscInt *im,PetscIn
   PetscInt    *rp,k,low,high,t,ii,row,nrow,i,col,l,N,n = *nn,m = *mm;
   PetscInt    *ai=a->i,*ailen=a->ilen;
   PetscInt    *aj=a->j,brow,bcol;
-  PetscInt    ridx,cidx;
+  PetscInt    ridx,cidx,lastcol = -1;
   MatScalar   *ap,value,*aa=a->a,*bap;
   
   PetscFunctionBegin;
@@ -665,11 +668,13 @@ void PETSCMAT_DLLEXPORT matsetvalues4_(Mat *AA,PetscInt *mm,PetscInt *im,PetscIn
     ap   = aa + 16*ai[brow];
     nrow = ailen[brow]; 
     low  = 0;
+    high = nrow;
     for (l=0; l<n; l++) { /* loop over added columns */
       col = in[l]; bcol = col/4;
       ridx = row % 4; cidx = col % 4;
       value = v[l + k*n]; 
-      low = 0; high = nrow;
+      if (col <= lastcol) low = 0; else high = nrow;
+      lastcol = col;
       while (high-low > 7) {
         t = (low+high)/2;
         if (rp[t] > bcol) high = t;
@@ -684,6 +689,7 @@ void PETSCMAT_DLLEXPORT matsetvalues4_(Mat *AA,PetscInt *mm,PetscInt *im,PetscIn
         }
       } 
       N = nrow++ - 1; 
+      high++; /* added new column thus must search to one higher than before */
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
         rp[ii+1] = rp[ii];

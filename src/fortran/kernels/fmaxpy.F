@@ -6,8 +6,8 @@
 !
       subroutine FortranMAXPY4(x,a1,a2,a3,a4,y1,y2,y3,y4,n)
       implicit none
-      PetscScalar  a1,a2,a3,a4
-      PetscScalar  x(*),y1(*),y2(*),y3(*),y4(*)
+      PetscScalar a1,a2,a3,a4
+      PetscScalar x(*),y1(*),y2(*),y3(*),y4(*)
       PetscInt n
 
       PetscInt i
@@ -21,7 +21,8 @@
 
       subroutine FortranMAXPY3(x,a1,a2,a3,y1,y2,y3,n)
       implicit none
-      PetscScalar  a1,a2,a3,x(*),y1(*),y2(*),y3(*)
+      PetscScalar a1,a2,a3,x(*),y1(*),y2(*)
+      PetscScalar y3(*)
       PetscInt n
 
       PetscInt i

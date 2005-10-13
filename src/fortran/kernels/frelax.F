@@ -6,12 +6,13 @@
       subroutine FortranRelaxAIJForwardZero(n,omega,x,ai,aj,            &
      &           adiag,idiag,aa,b)
       implicit none
-      PetscScalar      x(0:*),aa(0:*),b(0:*),idiag(0:*)
-      PetscReal        omega
-      PetscInt          n,ai(0:*),aj(0:*),adiag(0:*)
+      PetscScalar x(0:*),aa(0:*),b(0:*)
+      PetscScalar idiag(0:*)
+      PetscReal   omega
+      PetscInt    n,ai(0:*),aj(0:*),adiag(0:*)
 
-      PetscInt          i,j,jstart,jend
-      PetscScalar      sum
+      PetscInt    i,j,jstart,jend
+      PetscScalar sum
 !     
 !     Forward Solve with zero initial guess
 !
@@ -34,11 +35,12 @@
       subroutine FortranRelaxAIJBackwardZero(n,omega,x,ai,aj,           &
      &                                  adiag,idiag,aa,b)
       implicit none
-      PetscScalar      x(0:*),aa(0:*),b(0:*),idiag(0:*)
-      PetscReal        omega
-      PetscInt          n,ai(0:*),aj(0:*),adiag(0:*)
+      PetscScalar x(0:*),aa(0:*),b(0:*)
+      PetscScalar idiag(0:*)
+      PetscReal omega
+      PetscInt  n,ai(0:*),aj(0:*),adiag(0:*)
 
-      PetscInt          i,j,jstart,jend
+      PetscInt i,j,jstart,jend
       PetscScalar      sum
 !
 !     Backward solve with zero initial guess
@@ -59,12 +61,12 @@
 !      
       subroutine FortranRelaxAIJForward(n,omega,x,ai,aj,adiag,aa,b)
       implicit none
-      PetscScalar      x(0:*),aa(0:*),b(0:*)
-      PetscReal        omega
-      PetscInt          n,ai(0:*),aj(0:*),adiag(0:*)
+      PetscScalar x(0:*),aa(0:*),b(0:*)
+      PetscReal   omega
+      PetscInt    n,ai(0:*),aj(0:*),adiag(0:*)
 
-      PetscInt          i,j,jstart,jend
-      PetscScalar      sum
+      PetscInt   i,j,jstart,jend
+      PetscScalar sum
 !
 !     Forward solve with non-zero initial guess
 !
