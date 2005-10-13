@@ -49,10 +49,10 @@
 !
 !   Data for problem
 !
-      TS                ts                
-      Vec               x,r              
-      Mat               J                 
-      PetscInt           its,N,i1000                
+      TS                ts
+      Vec               x,r
+      Mat               J
+      PetscInt           its,N,i1000
       PetscTruth flg
       PetscErrorCode      ierr
       double precision  param_max,param_min,dt,tmax,zero

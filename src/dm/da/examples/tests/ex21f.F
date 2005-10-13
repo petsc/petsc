@@ -17,7 +17,8 @@
       DAStencilType  stencil_type
       DA             da
       integer        sda
-      Vec            local,global,local_copy
+      Vec            local,global
+      Vec            local_copy
       PetscScalar    value,mone,in(1),out(1)
       PetscScalar    norm,work
  

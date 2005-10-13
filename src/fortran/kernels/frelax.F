@@ -6,7 +6,8 @@
       subroutine FortranRelaxAIJForwardZero(n,omega,x,ai,aj,            &
      &           adiag,idiag,aa,b)
       implicit none
-      PetscScalar x(0:*),aa(0:*),b(0:*),idiag(0:*)
+      PetscScalar x(0:*),aa(0:*)
+      PetscScalar b(0:*),idiag(0:*)
       PetscReal   omega
       PetscInt    n,ai(0:*),aj(0:*),adiag(0:*)
 
@@ -34,7 +35,8 @@
       subroutine FortranRelaxAIJBackwardZero(n,omega,x,ai,aj,           &
      &                                  adiag,idiag,aa,b)
       implicit none
-      PetscScalar x(0:*),aa(0:*),b(0:*),idiag(0:*)
+      PetscScalar x(0:*),aa(0:*)
+      PetscScalar b(0:*),idiag(0:*)
       PetscReal   omega
       PetscInt    n,ai(0:*),aj(0:*),adiag(0:*)
 

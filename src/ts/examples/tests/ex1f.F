@@ -445,7 +445,8 @@
       PetscErrorCode  ierr
       PetscInt i,localsize
       PetscOffset      ldx,cdx 
-      PetscScalar      copyptr(1),localptr(1),sc
+      PetscScalar  copyptr(1),localptr(1)
+      PetscScalar  sc
 
 !  Extract local array  
 

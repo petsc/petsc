@@ -9,7 +9,8 @@
       Subroutine FortranMAXPY4_BGL(x, a0, a1, a2, a3, y0, y1, y2, y3, n)
       implicit none
       PetscScalar  a0,a1,a2,a3
-      PetscScalar  x(*),y0(*),y1(*),y2(*),y3(*)
+      PetscScalar  x(*),y0(*)
+      PetscScalar y1(*),y2(*),y3(*)
       PetscInt n, i
 
       write(6,*) 'n=', n
@@ -28,7 +29,8 @@
 
       subroutine FortranMAXPY3_BGL(x,a0,a1,a2,y0,y1,y2,n)
       implicit none
-      PetscScalar  a0,a1,a2,x(*),y0(*),y1(*),y2(*)
+      PetscScalar  a0,a1,a2,x(*)
+      PetscScalar y0(*),y1(*),y2(*)
       PetscInt n
       PetscInt i
       call ALIGNX(16,x(1))
@@ -43,7 +45,8 @@
 
       Subroutine FortranMAXPY2_BGL(x, a0, a1, y0, y1, n)
       implicit none
-      PetscScalar  a0,a1,x(*),y0(*),y1(*)
+      PetscScalar  a0,a1,x(*)
+      PetscScalar  y0(*),y1(*)
       PetscInt n, i
       call ALIGNX(16,x(1))
       call ALIGNX(16,y0(1))
