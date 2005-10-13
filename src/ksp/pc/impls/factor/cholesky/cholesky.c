@@ -5,7 +5,7 @@
    Note: this need not be consided a preconditioner since it supplies
          a direct solver.
 */
-#include "src/ksp/pc/pcimpl.h"                /*I "petscpc.h" I*/
+#include "private/pcimpl.h"                /*I "petscpc.h" I*/
 
 typedef struct {
   Mat             fact;             /* factored matrix */

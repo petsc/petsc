@@ -18,7 +18,7 @@
 
 */
 
-#include "src/ksp/pc/pcimpl.h"        /*I "petscpc.h" I*/
+#include "private/pcimpl.h"        /*I "petscpc.h" I*/
 
 /*
     These are the SPAI include files

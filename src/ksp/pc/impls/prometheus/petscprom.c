@@ -50,7 +50,7 @@
 
     -------------------------------------------------------------------- */
 
-#include "src/ksp/pc/pcimpl.h"     /*I "petscpc.h" I*/
+#include "private/pcimpl.h"     /*I "petscpc.h" I*/
 
 EXTERN PetscErrorCode PCCreate_Prometheus_private( PC pc );
 EXTERN PetscErrorCode PCSetUp_Prometheus( PC pc );

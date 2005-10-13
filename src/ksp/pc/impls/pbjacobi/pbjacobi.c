@@ -5,7 +5,7 @@
      pcimpl.h - private include file intended for use by all preconditioners 
 */
 
-#include "src/ksp/pc/pcimpl.h"   /*I "petscpc.h" I*/
+#include "private/pcimpl.h"   /*I "petscpc.h" I*/
 
 /* 
    Private context (data structure) for the PBJacobi preconditioner.  

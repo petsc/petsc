@@ -6,7 +6,7 @@
          a direct solver.
 */
 
-#include "src/ksp/pc/pcimpl.h"                /*I "petscpc.h" I*/
+#include "private/pcimpl.h"                /*I "petscpc.h" I*/
 #include "src/ksp/pc/impls/factor/lu/lu.h"
 
 EXTERN_C_BEGIN

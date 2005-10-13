@@ -1147,7 +1147,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
    Concepts: vector^BLAS
    Concepts: BLAS
 
-.seealso: VecAXPY(), VecAYPX()
+.seealso: VecAXPY(), VecAYPX(), VecAXPBY()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
 {

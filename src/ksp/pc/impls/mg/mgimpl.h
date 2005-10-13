@@ -3,7 +3,7 @@
 */
 #if !defined(__MG_IMPL)
 #define __MG_IMPL
-#include "src/ksp/pc/pcimpl.h"
+#include "private/pcimpl.h"
 #include "petscmg.h"
 #include "petscksp.h"
 

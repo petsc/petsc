@@ -4,7 +4,7 @@
    Defines a block Jacobi preconditioner.
 */
 #include "src/mat/matimpl.h"
-#include "src/ksp/pc/pcimpl.h"              /*I "petscpc.h" I*/
+#include "private/pcimpl.h"              /*I "petscpc.h" I*/
 #include "src/ksp/pc/impls/bjacobi/bjacobi.h"
 
 static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC,Mat,Mat);

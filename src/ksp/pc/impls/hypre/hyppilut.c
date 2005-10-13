@@ -4,7 +4,7 @@
 
 */
 
-#include "src/ksp/pc/pcimpl.h"          /*I "petscpc.h" I*/
+#include "private/pcimpl.h"          /*I "petscpc.h" I*/
 EXTERN_C_BEGIN
 #include "HYPRE.h"
 #include "IJ_mv.h"

@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/pc/pcimpl.h"                /*I "petscpc.h" I*/
+#include "private/pcimpl.h"                /*I "petscpc.h" I*/
 
 /*  Options Database Keys: ???
 .  -pc_ilu_damping - add damping to diagonal to prevent zero (or very small) pivots

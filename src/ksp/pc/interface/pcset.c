@@ -3,7 +3,7 @@
     Routines to set PC methods and options.
 */
 
-#include "src/ksp/pc/pcimpl.h"      /*I "petscpc.h" I*/
+#include "private/pcimpl.h"      /*I "petscpc.h" I*/
 #include "petscsys.h"
 
 PetscTruth PCRegisterAllCalled = PETSC_FALSE;

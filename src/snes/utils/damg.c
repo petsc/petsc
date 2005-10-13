@@ -4,7 +4,7 @@
 #include "petscksp.h"           /*I "petscksp.h"  I*/
 #include "petscmg.h"            /*I "petscmg.h"   I*/
 #include "petscdmmg.h"          /*I "petscdmmg.h" I*/
-#include "src/ksp/pc/pcimpl.h"  /*I "petscpc.h"   I*/
+#include "private/pcimpl.h"  /*I "petscpc.h"   I*/
 
 /*
    Code for almost fully managing multigrid/multi-level linear solvers for DA grids

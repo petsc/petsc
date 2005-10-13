@@ -3,7 +3,7 @@
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
-#include "src/ksp/pc/pcimpl.h"            /*I "petscksp.h" I*/
+#include "private/pcimpl.h"            /*I "petscksp.h" I*/
 
 /* Logging support */
 PetscCookie PC_COOKIE = 0;

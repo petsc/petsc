@@ -8,7 +8,7 @@
 #define __PETSCSUNDIALS_H
 
 #include "src/ts/tsimpl.h"              /*I   "petscts.h"   I*/
-#include "src/ksp/pc/pcimpl.h"         /*I   "petscpc.h"   I*/
+#include "private/pcimpl.h"         /*I   "petscpc.h"   I*/
 #include "src/mat/matimpl.h"
 
 /*

@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/pc/pcimpl.h"          /*I   "petscpc.h"   I*/
+#include "private/pcimpl.h"          /*I   "petscpc.h"   I*/
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Jacobi(PC);

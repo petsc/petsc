@@ -3,7 +3,7 @@
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
-#include "src/ksp/pc/pcimpl.h"                 /*I "petscpc.h"  I*/
+#include "private/pcimpl.h"                 /*I "petscpc.h"  I*/
 #include "src/ksp/pc/impls/factor/ilu/ilu.h"
 #include "src/mat/matimpl.h"
 

@@ -1,5 +1,5 @@
 
-#include "src/ksp/pc/pcimpl.h"          
+#include "private/pcimpl.h"          
 
 #if !defined(__ICC_H)
 #define __ICC_H

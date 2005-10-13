@@ -3,7 +3,7 @@
 /* 
    Provides an interface to the ML 3.0 smoothed Aggregation 
 */
-#include "src/ksp/pc/pcimpl.h"   /*I "petscpc.h" I*/
+#include "private/pcimpl.h"   /*I "petscpc.h" I*/
 #include "src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"

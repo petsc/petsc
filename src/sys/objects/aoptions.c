@@ -26,11 +26,11 @@ struct _p_Options {
   char         *text;
   void         *data;
   void         *edata;
+  char         *man;
   int          arraylength;
   PetscTruth   set;
   OptionType   type;
   PetscOptions next;
-  char         *man;
 };
 
 static struct {
@@ -38,7 +38,7 @@ static struct {
   char            *prefix,*mprefix;  
   char            *title;
   MPI_Comm        comm;
-  PetscTruth      printhelp;
+  PetscTruth      printhelp,changedmethod;
 }                                   PetscOptionsObject;
 PetscInt                            PetscOptionsPublishCount = 0;
 
@@ -52,8 +52,9 @@ PetscErrorCode PetscOptionsBegin_Private(MPI_Comm comm,const char prefix[],const
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscOptionsObject.next = 0;
-  PetscOptionsObject.comm  = comm;
+  PetscOptionsObject.next          = 0;
+  PetscOptionsObject.comm          = comm;
+  PetscOptionsObject.changedmethod = PETSC_FALSE;
   ierr = PetscStrallocpy(prefix,&PetscOptionsObject.prefix);CHKERRQ(ierr);
   ierr = PetscStrallocpy(title,&PetscOptionsObject.title);CHKERRQ(ierr);
 
@@ -69,7 +70,7 @@ PetscErrorCode PetscOptionsBegin_Private(MPI_Comm comm,const char prefix[],const
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCreate_Private"
-static int PetscOptionsCreate_Private(const char opt[],const char text[],const char man[],PetscOptions *amsopt)
+static int PetscOptionsCreate_Private(const char opt[],const char text[],const char man[],OptionType t,PetscOptions *amsopt)
 {
   int          ierr;
   PetscOptions next;
@@ -78,11 +79,12 @@ static int PetscOptionsCreate_Private(const char opt[],const char text[],const c
   ierr             = PetscNew(struct _p_Options,amsopt);CHKERRQ(ierr);
   (*amsopt)->next  = 0;
   (*amsopt)->set   = PETSC_FALSE;
+  (*amsopt)->type  = t;
   (*amsopt)->data  = 0;
   (*amsopt)->edata = 0;
   ierr             = PetscStrallocpy(text,&(*amsopt)->text);CHKERRQ(ierr);
   ierr             = PetscStrallocpy(opt,&(*amsopt)->option);CHKERRQ(ierr);
-  ierr             = PetscStrallocpy(opt,&(*amsopt)->man);CHKERRQ(ierr);
+  ierr             = PetscStrallocpy(man,&(*amsopt)->man);CHKERRQ(ierr);
 
   if (!PetscOptionsObject.next) {
     PetscOptionsObject.next = *amsopt;
@@ -95,14 +97,101 @@ static int PetscOptionsCreate_Private(const char opt[],const char text[],const c
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsGetFromGui"
+static PetscErrorCode PetscOptionsGetFromGUI()
+{
+  PetscErrorCode ierr;
+  PetscOptions   next = PetscOptionsObject.next;
+  char           str[512];
+
+  ierr = (*PetscPrintf)(PetscOptionsObject.comm,"%s -------------------------------------------------\n",PetscOptionsObject.title);CHKERRQ(ierr);
+  while (next) {
+    switch (next->type) {
+      case OPTION_HEAD:
+        break;
+      case OPTION_INT: 
+        ierr = PetscPrintf(PetscOptionsObject.comm,"-%s%s <%d>: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option,*(int*)next->data,next->text,next->man);CHKERRQ(ierr);
+        scanf("%s\n",str);
+        if (str[0] != '\n') {
+          printf("chainginf value\n");
+        }
+        break;
+    }
+    next = next->next;
+  }    
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsEnd_Private"
 PetscErrorCode PetscOptionsEnd_Private(void)
 {
   PetscErrorCode ierr;
+  PetscOptions   last;
+  char           option[256],value[1024],tmp[32];
+  PetscInt       j;
 
   PetscFunctionBegin;
+
+  if (PetscOptionsObject.next) { 
+    ierr = PetscOptionsGetFromGUI();
+  }
+
   ierr = PetscStrfree(PetscOptionsObject.title);CHKERRQ(ierr); PetscOptionsObject.title  = 0;
   ierr = PetscStrfree(PetscOptionsObject.prefix);CHKERRQ(ierr); PetscOptionsObject.prefix = 0;
+
+  /* reset counter to -2; this updates the screen with the new options for the selected method */
+  if (PetscOptionsObject.changedmethod) PetscOptionsPublishCount = -2; 
+
+  while (PetscOptionsObject.next) { 
+    if (PetscOptionsObject.next->set) {
+      if (PetscOptionsObject.prefix) {
+        ierr = PetscStrcpy(option,"-");CHKERRQ(ierr);
+        ierr = PetscStrcat(option,PetscOptionsObject.prefix);CHKERRQ(ierr);
+        ierr = PetscStrcat(option,PetscOptionsObject.next->option+1);CHKERRQ(ierr);
+      } else {
+        ierr = PetscStrcpy(option,PetscOptionsObject.next->option);CHKERRQ(ierr);
+      }
+
+      switch (PetscOptionsObject.next->type) {
+        case OPTION_HEAD:
+          break;
+        case OPTION_INT: 
+          sprintf(value,"%d",*(PetscInt*)PetscOptionsObject.next->data);
+          break;
+        case OPTION_REAL:
+          sprintf(value,"%g",*(PetscReal*)PetscOptionsObject.next->data);
+          break;
+        case OPTION_REAL_ARRAY:
+          sprintf(value,"%g",((PetscReal*)PetscOptionsObject.next->data)[0]);
+          for (j=1; j<PetscOptionsObject.next->arraylength; j++) {
+            sprintf(tmp,"%g",((PetscReal*)PetscOptionsObject.next->data)[j]);
+            ierr = PetscStrcat(value,",");CHKERRQ(ierr);
+            ierr = PetscStrcat(value,tmp);CHKERRQ(ierr);
+          }
+          break;
+        case OPTION_LOGICAL:
+          sprintf(value,"%d",*(PetscInt*)PetscOptionsObject.next->data);
+          break;
+        case OPTION_LIST:
+          ierr = PetscStrcpy(value,*(char**)PetscOptionsObject.next->data);CHKERRQ(ierr);
+          break;
+        case OPTION_STRING: /* also handles string arrays */
+          ierr = PetscStrcpy(value,*(char**)PetscOptionsObject.next->data);CHKERRQ(ierr);
+          break;
+      }
+      ierr = PetscOptionsSetValue(option,value);CHKERRQ(ierr);
+    }
+    ierr   = PetscStrfree(PetscOptionsObject.next->text);CHKERRQ(ierr);
+    ierr   = PetscStrfree(PetscOptionsObject.next->option);CHKERRQ(ierr);
+    ierr   = PetscFree(PetscOptionsObject.next->man);CHKERRQ(ierr);
+    if (PetscOptionsObject.next->data)  {ierr = PetscFree(PetscOptionsObject.next->data);CHKERRQ(ierr);}
+    if (PetscOptionsObject.next->edata) {ierr = PetscFree(PetscOptionsObject.next->edata);CHKERRQ(ierr);}
+    last                    = PetscOptionsObject.next;
+    PetscOptionsObject.next = PetscOptionsObject.next->next;
+    ierr                    = PetscFree(last);CHKERRQ(ierr);
+  }
+  PetscOptionsObject.next = 0;
   PetscFunctionReturn(0);
 }
 
@@ -190,8 +279,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsEnum(const char opt[],const char text
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsInt(const char opt[],const char text[],const char man[],PetscInt defaultv,PetscInt *value,PetscTruth *set)
 {
   PetscErrorCode ierr;
+  PetscOptions   amsopt;
 
   PetscFunctionBegin;
+  if (PetscOptionsPublishCount == 1) {
+    ierr = PetscOptionsCreate_Private(opt,text,man,OPTION_INT,&amsopt);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscInt),&amsopt->data);CHKERRQ(ierr);
+    *(PetscInt*)amsopt->data = defaultv;
+  }
   ierr = PetscOptionsGetInt(PetscOptionsObject.prefix,opt,value,set);CHKERRQ(ierr);
   if (PetscOptionsObject.printhelp && PetscOptionsPublishCount == 1) {
     ierr = (*PetscHelpPrintf)(PetscOptionsObject.comm,"  -%s%s <%d>: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",opt+1,defaultv,text,man);CHKERRQ(ierr);

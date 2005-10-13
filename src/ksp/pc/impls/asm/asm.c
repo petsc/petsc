@@ -11,7 +11,7 @@
        n_local_true - actual number of subdomains on this processor
        n_local = maximum over all processors of n_local_true
 */
-#include "src/ksp/pc/pcimpl.h"     /*I "petscpc.h" I*/
+#include "private/pcimpl.h"     /*I "petscpc.h" I*/
 
 typedef struct {
   PetscInt   n,n_local,n_local_true;
