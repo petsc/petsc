@@ -7,7 +7,8 @@
       subroutine FortranMDot4(x,y1,y2,y3,y4,n,sum1,sum2,sum3,sum4)
       implicit none
       PetscScalar  sum1,sum2,sum3,sum4
-      PetscScalar  x(*),y1(*),y2(*),y3(*),y4(*)
+      PetscScalar  x(*),y1(*),y2(*)
+      PetscScalar  y3(*),y4(*)
       PetscInt n
 
       PetscInt i
@@ -24,7 +25,8 @@
 
       subroutine FortranMDot3(x,y1,y2,y3,n,sum1,sum2,sum3)
       implicit none
-      PetscScalar  sum1,sum2,sum3,x(*),y1(*),y2(*),y3(*)
+      PetscScalar  sum1,sum2,sum3
+      PetscScalar  x(*),y1(*),y2(*),y3(*)
       PetscInt n
 
       PetscInt i

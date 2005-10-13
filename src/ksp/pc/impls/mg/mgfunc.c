@@ -287,7 +287,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmootherDown(PC pc,PetscInt l,KSP *ksp)
 
   PetscFunctionBegin;
   /* make sure smoother up and down are different */
-  ierr = PCMGGetSmootherUp(pc,l,PETSC_NULL);CHKERRQ(ierr);
+  if (l != 0) {
+    ierr = PCMGGetSmootherUp(pc,l,PETSC_NULL);CHKERRQ(ierr);
+  }
   *ksp = mg[l]->smoothd;  
   PetscFunctionReturn(0);
 }

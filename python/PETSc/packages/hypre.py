@@ -46,12 +46,9 @@ class Configure(PETSc.package.Package):
     # Now specify -L hypre-lib-path only to the first library
     alllibs[0] = os.path.join(dir,alllibs[0])
     import config.setCompilers
-    self.framework.pushLanguage('C')
-    if config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
-      alllibs.append('-lstdc++')
-    self.framework.popLanguage()    
+    if self.languages.clanguage == 'C':
+      alllibs[0].extend(self.compilers.cxxlibs)
     return [alllibs]
-          
         
   def Install(self):
     hypreDir = self.getDir()
@@ -66,9 +63,11 @@ class Configure(PETSc.package.Package):
       self.framework.pushLanguage('Cxx')
       args.append('--with-CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
+    else:
+      raise RuntimeError('Error: Hypre requires C++ compiler. None specified')
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
-      args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
       self.framework.popLanguage()
     if self.mpi.include:
       # just use the first dir - and assume the subsequent one isn't necessary [relavant only on AIX?]

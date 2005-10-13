@@ -21,6 +21,7 @@ struct _p_Mesh {
   void    *orientation;
   void    *bundle;
   void    *coordBundle;
+  Vec      coordinates;
   Vec      globalvector;
   PetscInt bs,n,N,Nghosts,*ghosts;
   PetscInt d_nz,o_nz,*d_nnz,*o_nnz;
@@ -485,7 +486,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinateBundle(Mesh mesh,void *bundle)
 .    mesh - the mesh object
 
     Output Parameter:
-.    bundle - the orientation sieve
+.    orientation - the orientation sieve
  
     Level: advanced
 
@@ -510,7 +511,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetOrientation(Mesh mesh,void **orientation
 
     Input Parameters:
 +    mesh - the mesh object
--    bundle - the orientation sieve
+-    orientation - the orientation sieve
  
     Level: advanced
 
@@ -521,5 +522,55 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetOrientation(Mesh mesh,void *orientation)
 {
   PetscValidPointer(orientation,2);
   mesh->orientation = orientation;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetCoordinates"
+/*@C
+    MeshGetCoordinates - Gets the coordinate vector
+
+    Not collective
+
+    Input Parameter:
+.    mesh - the mesh object
+
+    Output Parameter:
+.    coordinates - the coordinate vector
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshSetCoordinates()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinates(Mesh mesh, Vec *coordinates)
+{
+  if (coordinates) {
+    PetscValidPointer(coordinates,2);
+    *coordinates = mesh->coordinates;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshSetCoordinates"
+/*@C
+    MeshCoordinates - Sets the coordinate vector
+
+    Not collective
+
+    Input Parameters:
++    mesh - the mesh object
+-    coordinates - the coordinate vector
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshGetCoordinates()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinates(Mesh mesh, Vec coordinates)
+{
+  PetscValidPointer(coordinates,2);
+  mesh->coordinates = coordinates;
   PetscFunctionReturn(0);
 }

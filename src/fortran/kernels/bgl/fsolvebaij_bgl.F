@@ -9,13 +9,13 @@
 
       subroutine FortranSolveBAIJ4Unroll_BGL(n,x,ai,aj,adiag,a,b)
       implicit none
-      MatScalar        a(0:*)
-      PetscScalar      x(0:*),b(0:*)
-      PetscInt          n,ai(0:*),aj(0:*),adiag(0:*)
+      MatScalar   a(0:*)
+      PetscScalar x(0:*),b(0:*)
+      PetscInt    n,ai(0:*),aj(0:*),adiag(0:*)
 
-      PetscInt          i,j,jstart,jend,idx,ax,jdx
-      PetscScalar      s1,s2,s3,s4
-      PetscScalar      x1,x2,x3,x4
+      PetscInt    i,j,jstart,jend,idx,ax,jdx
+      PetscScalar s1,s2,s3,s4
+      PetscScalar x1,x2,x3,x4
 !    
 !     Forward Solve
 !
@@ -98,13 +98,13 @@
 !
       subroutine FortranSolveBAIJ4BLAS_BGL(n,x,ai,aj,adiag,a,b,w)
       implicit none
-      MatScalar        a(0:*),w(0:*)
-      PetscScalar      x(0:*),b(0:*)
-      PetscInt          n,ai(0:*),aj(0:*),adiag(0:*)
+      MatScalar   a(0:*),w(0:*)
+      PetscScalar x(0:*),b(0:*)
+      PetscInt n,ai(0:*),aj(0:*),adiag(0:*)
 
-      PetscInt          i,j,jstart,jend,idx,ax,jdx,kdx
-      MatScalar        s(0:3)
-      integer          align7
+      PetscInt i,j,jstart,jend,idx,ax,jdx,kdx
+      MatScalar s(0:3)
+      integer   align7
 !     
 !     Forward Solve
 !
@@ -208,12 +208,13 @@
 !
       subroutine FortranSolveBAIJ4_bgl(n,x,ai,aj,adiag,a,b,w)
       implicit none
-      MatScalar        a(0:*)
-      PetscScalar      x(0:*),b(0:*),w(0:*)
-      PetscInt          n,ai(0:*),aj(0:*),adiag(0:*),ii,jj
+      MatScalar   a(0:*)
+      PetscScalar x(0:*),b(0:*),w(0:*)
+      PetscInt  n,ai(0:*),aj(0:*),adiag(0:*)
+      PetscInt  ii,jj,i,j
 
-      PetscInt          i,j,jstart,jend,idx,ax,jdx,kdx,nn
-      PetscScalar      s(0:3)
+      PetscInt  jstart,jend,idx,ax,jdx,kdx,nn
+      PetscScalar s(0:3)
 
 !     
 !     Forward Solve

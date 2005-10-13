@@ -50,7 +50,7 @@ class Configure(PETSc.package.Package):
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
-      g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags()+'\n')
+      g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n')
       # set fortran name mangling
       if self.compilers.fortranMangling == 'underscore':
         g.write('CDEFS   = -DAdd_\n')

@@ -44,7 +44,7 @@ class Configure(PETSc.package.Package):
     args += 'LIB_DIR  = $(BUILD_DIR)/lib/\n'
     args += 'RANLIB = '+self.setCompilers.RANLIB+'\n'
     self.framework.popLanguage()
-    self.framework.pushLanguage('C++')+'\n'
+    self.framework.pushLanguage('C++')
     if self.languages.clanguage == 'C':
       args += 'CC = '+self.framework.getCompiler()+' -DPETSC_USE_EXTERN_CXX'    
     else:

@@ -1,5 +1,5 @@
 
-CFLAGS	         = 
+CFLAGS	         = -I${PETSC_DIR}/src/dm/mesh/sieve
 FFLAGS	         = 
 CPPFLAGS         =
 FPPFLAGS         =
@@ -168,11 +168,8 @@ ex32: ex32.o  chkopts
 	-${CLINKER} -o ex32 ex32.o  ${PETSC_SNES_LIB}
 	${RM} ex32.o
 
-ex33mesh.o: ex33mesh.cc
-	g++ ${PETSC_INCLUDE} -I/PETSc3/fem/ale-dev/server-cxx-ale -I/PETSc3/fem/ale-dev/server-cxx-array -g -c -o ex33mesh.o ex33mesh.cc
-
 ex33: ex33.o ex33mesh.o chkopts
-	-${CLINKER} -o ex33 ex33.o ex33mesh.o -Wl,-rpath,/PETSc3/fem/ale-dev/lib -L/PETSc3/fem/ale-dev/lib -l-cxx-array -l-cxx-ale ${PETSC_SNES_LIB}
+	-${CLINKER} -o ex33 ex33.o ex33mesh.o ${PETSC_SNES_LIB}
 	${RM} ex33.o
 
 #----------------------------------------------------------------------------
@@ -566,6 +563,15 @@ runex32:
 	   if (${DIFF} output/ex32_1.out ex32_1.tmp) then true; \
 	   else echo "Possible problem with ex32_1, diffs above"; fi; \
 	   ${RM} -f ex32_1.tmp
+
+runex33:
+	-./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor
+
+runex33_2:
+	-${MPIRUN} -np 2 ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor
+
+runex33_d:
+	-./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -start_in_debugger
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \
