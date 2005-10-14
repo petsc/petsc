@@ -35,7 +35,7 @@ class Configure(config.base.Configure):
     '''Return all the attributes which are dispatched from config.setCompilers'''
     names = sets.Set()
     names.update(['CC', 'CPP', 'CXX', 'CPPCXX', 'FC'])
-    names.update(['AR', 'RANLIB', 'LD_SHARED'])
+    names.update(['AR', 'RANLIB', 'LD_SHARED', 'dynamicLinker'])
     for language in ['C', 'Cxx', 'FC']:
       self.pushLanguage(language)
       names.update([self.getCompilerFlagsName(language), self.getCompilerFlagsName(language, 1), self.getLinkerFlagsName(language)])

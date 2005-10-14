@@ -10,6 +10,7 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     self.use64BitPointers = 0
     self.usedMPICompilers = 0
+    self.mainLanguage = 'C'
     return
 
   def __str__(self):
@@ -841,10 +842,15 @@ class Configure(config.base.Configure):
       yield (self.framework.argDB['with-shared-ld'], [], 'so')
     if 'LD_SHARED' in self.framework.argDB:
       yield (self.framework.argDB['LD_SHARED'], [], 'so')
+    if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
+      # C++ compiler default
+      yield (self.CXX, ['-shared'], 'so')
     # C compiler default
     yield (self.CC, ['-shared'], 'so')
-    # add an entry for solaris
+    # Solaris default
     if Configure.isSolaris():
+      if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
+        yield (self.CXX, ['-G'], 'so')
       yield (self.CC, ['-G'], 'so')
     # Mac OSX
     # undefined warning must also have flat_namespace
@@ -987,10 +993,15 @@ class Configure(config.base.Configure):
       yield (self.framework.argDB['with-dynamic-ld'], [], 'so')
     # Mac OSX
     if Configure.isDarwin():
+      if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
+        yield (self.CXX, ['-bundle', '-flat_namespace', '-undefined warning', '-multiply_defined suppress'], 'so')
       yield (self.CC, ['-bundle', '-flat_namespace', '-undefined warning', '-multiply_defined suppress'], 'so')
     # Shared default
     if hasattr(self, 'sharedLinker'):
       yield (self.sharedLinker, self.sharedLibraryFlags, 'so')
+    # C++ Compiler default
+    if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
+      yield (self.CXX, ['-shared'], 'so')
     # C Compiler default
     yield (self.CC, ['-shared'], 'so')
     raise RuntimeError('Unable to find working dynamic linker')
