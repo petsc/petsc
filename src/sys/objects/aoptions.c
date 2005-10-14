@@ -135,9 +135,9 @@ PetscErrorCode PetscOptionsEnd_Private(void)
 
   PetscFunctionBegin;
 
-  if (PetscOptionsObject.next) { 
+  /*  if (PetscOptionsObject.next) { 
     ierr = PetscOptionsGetFromGUI();
-  }
+    }*/
 
   ierr = PetscStrfree(PetscOptionsObject.title);CHKERRQ(ierr); PetscOptionsObject.title  = 0;
   ierr = PetscStrfree(PetscOptionsObject.prefix);CHKERRQ(ierr); PetscOptionsObject.prefix = 0;
