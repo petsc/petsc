@@ -246,7 +246,7 @@ namespace ALE {
       if(name != NULL) {
         printf(" %s", name);
       }
-      printf(" of size %d\n", this->size());
+      printf(" of size %d\n", (int) this->size());
       for(unsigned int cntr = 0; cntr < this->size(); cntr++) {
         Point p = (*this)[cntr];
         printf("element[%d]: (%d,%d)\n", cntr++, p.prefix, p.index);
@@ -283,7 +283,7 @@ namespace ALE {
       if(name != NULL) {
         printf(" %s", name);
       }
-      printf(" of size %d\n", this->size());
+      printf(" of size %d\n", (int) this->size());
       int32_t cntr = 0;
       for(Point_set::iterator s_itor = this->begin(); s_itor != this->end(); s_itor++) {
         Point p = *s_itor;

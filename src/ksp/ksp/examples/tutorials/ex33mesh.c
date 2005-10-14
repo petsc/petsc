@@ -298,6 +298,7 @@ PetscErrorCode assembleField(ALE::ClosureBundle *bundle, ALE::PreSieve *orientat
 {
   ALE::Point_set   empty;
   ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
+  //ALE::Obj<ALE::Point_array> intervals = bundle->getOverlapOrderedIndices(orientation->cone(e), empty);
   static PetscInt  indicesSize = 0;
   static PetscInt *indices = NULL;
   PetscInt         numIndices = 0;
@@ -328,10 +329,11 @@ PetscErrorCode assembleField(ALE::ClosureBundle *bundle, ALE::PreSieve *orientat
 
 #undef __FUNCT__
 #define __FUNCT__ "assembleOperator"
-PetscErrorCode assembleOperator(ALE::ClosureBundle *bundle, ALE::PreSieve *orientation, Mat A, ALE::Point e, PetscScalar array[])
+PetscErrorCode assembleOperator(ALE::ClosureBundle *bundle, ALE::PreSieve *orientation, Mat A, ALE::Point e, PetscScalar array[], InsertMode mode)
 {
   ALE::Point_set   empty;
   ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
+  //ALE::Obj<ALE::Point_array> intervals = bundle->getOverlapOrderedIndices(orientation->cone(e), empty);
   static PetscInt  indicesSize = 0;
   static PetscInt *indices = NULL;
   PetscInt         numIndices = 0;
@@ -356,7 +358,52 @@ PetscErrorCode assembleOperator(ALE::ClosureBundle *bundle, ALE::PreSieve *orien
   for(int i = 0; i < numIndices; i++) {
     printf("indices[%d] = %d\n", i, indices[i]);
   }
-  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateMeshCoordinates"
+PetscErrorCode CreateMeshCoordinates(Mesh mesh)
+{
+  ALE::ClosureBundle      *coordBundle;
+  ALE::Sieve              *topology;
+  ALE::Sieve              *orientation;
+  ALE::Obj<ALE::Point_set> vertices;
+  ALE::Point_set           empty;
+  Vec                      coordinates;
+  MPI_Comm                 comm;
+  PetscErrorCode           ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm); CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
+  /* Create bundle */
+  coordBundle = new ALE::ClosureBundle(comm);
+  coordBundle->setTopology(topology);
+  coordBundle->setFiberDimensionByDepth(0, 2);
+  //coordBundle->computeOverlapIndices();
+  ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
+  /* Create coordinate storage */
+  //ierr = MeshCreateGlobalVector(mesh, &coordinates);CHKERRQ(ierr);
+  // Need number of ghost dof
+  // numGhosts = coordBundle->getGlobalRemoteSize();
+  PetscInt numGhosts = 0;
+  // Need all global ghost indices
+  // ghostIndices = coordBundle->getGlobalRemoteIndices().cap();
+  PetscInt *ghostIndices = NULL;
+  // Create a global ghosted vector to store a field
+  ierr  = VecCreateGhostBlock(comm,1,coordBundle->getBundleDimension(empty),PETSC_DETERMINE,numGhosts,ghostIndices,&coordinates);CHKERRQ(ierr);
+  /* Set coordinates */
+  vertices = topology->depthStratum(0);
+  for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
+    ALE::Point v = *vertex_itor;
+    ierr = assembleField(coordBundle, orientation, coordinates, v, &meshCoords[(v.index - 8)*2], INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(coordinates);CHKERRQ(ierr);
+  ierr = MeshSetCoordinates(mesh, coordinates);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -384,9 +431,7 @@ PetscErrorCode assembleOperator(ALE::ClosureBundle *bundle, ALE::PreSieve *orien
 PetscErrorCode CreateTestMesh(MPI_Comm comm, Mesh *mesh)
 {
   ALE::ClosureBundle *bundle = new ALE::ClosureBundle(comm);
-  ALE::ClosureBundle *coordBundle = new ALE::ClosureBundle(comm);
   ALE::Sieve         *topology;
-  ALE::Sieve         *orientation;
   PetscInt            faces[24] = {
     0, 1, 7,
     8, 7, 1,
@@ -412,36 +457,17 @@ PetscErrorCode CreateTestMesh(MPI_Comm comm, Mesh *mesh)
 
   PetscFunctionBegin;
   ierr = Simplicializer(comm, 8, faces, 9, vertexCoords, 8, boundaryVertices, mesh);CHKERRQ(ierr);
-  ierr = MeshGetTopology(*mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(*mesh, (void **) &orientation);CHKERRQ(ierr);
   /* Create field ordering */
+  ierr = MeshGetTopology(*mesh, (void **) &topology);CHKERRQ(ierr);
   bundle->setTopology(topology);
   bundle->setFiberDimensionByDepth(0, 1);
   //bundle->computeGlobalIndices();
   ierr = MeshSetBundle(*mesh, (void *) bundle);CHKERRQ(ierr);
   /* Finish old-style DM construction */
   ALE::Point_set empty;
-
   ierr = MeshSetGhosts(*mesh, 1, bundle->getBundleDimension(empty), 0, NULL);
   /* Create coordinates */
-  Vec coordinates;
-  ALE::Obj<ALE::Point_set> vertices = topology->depthStratum(0);
-  PetscInt indices[2];
-
-  coordBundle->setTopology(topology);
-  coordBundle->setFiberDimensionByDepth(0, 2);
-  //coordBundle->computeOverlapIndices();
-  ierr = MeshSetCoordinateBundle(*mesh, (void *) coordBundle);CHKERRQ(ierr);
-  //ierr = MeshCreateGlobalVector(*mesh, &coordinates);CHKERRQ(ierr);
-  ierr  = VecCreateGhostBlock(comm,1,coordBundle->getBundleDimension(empty),PETSC_DETERMINE,0,NULL,&coordinates);CHKERRQ(ierr);
-  printf("Making coordinates\n");
-  for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
-    ALE::Point v = *vertex_itor;
-    ierr = assembleField(coordBundle, orientation, coordinates, v, &meshCoords[(v.index - 8)*2], INSERT_VALUES);CHKERRQ(ierr);
-  }
-  ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(coordinates);CHKERRQ(ierr);
-  ierr = MeshSetCoordinates(*mesh, coordinates);CHKERRQ(ierr);
+  ierr = CreateMeshCoordinates(*mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -699,7 +725,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
     printf("elementMat = [%g %g %g]\n             [%g %g %g]\n             [%g %g %g]\n",
            elementMat[0], elementMat[1], elementMat[2], elementMat[3], elementMat[4], elementMat[5], elementMat[6], elementMat[7], elementMat[8]);
     /* Assembly */
-    ierr = assembleOperator(bundle, orientation, jac, e, elementMat); CHKERRQ(ierr);
+    ierr = assembleOperator(bundle, orientation, jac, e, elementMat, ADD_VALUES); CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscFree(elementIndices);CHKERRQ(ierr);
