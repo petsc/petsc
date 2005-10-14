@@ -180,60 +180,67 @@ PetscErrorCode ExpandSetIntervals(ALE::Point_set intervals, PetscInt *indices)
 #define __FUNCT__ "Simplicializer"
 PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces, PetscInt numVertices, PetscScalar *vertices, PetscInt numBoundaryVertices, PetscInt *boundaryVertices, Mesh *mesh)
 {
-  Mesh m;
-  ALE::Sieve *topology = new ALE::Sieve(comm);
-  ALE::Sieve *boundary = new ALE::Sieve(comm);
+  Mesh           m;
+  ALE::Sieve    *topology = new ALE::Sieve(comm);
+  ALE::Sieve    *boundary = new ALE::Sieve(comm);
   ALE::PreSieve *orientation = new ALE::PreSieve(comm);
-  PetscInt curEdge = numFaces+numVertices;
+  PetscInt       curEdge = numFaces+numVertices;
+  PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size); CHKERRQ(ierr);
   ierr = MeshCreate(comm, &m);CHKERRQ(ierr);
   topology->setVerbosity(11);
   orientation->setVerbosity(11);
   boundary->setVerbosity(11);
-  for(int f = 0; f < numFaces; f++) {
-    ALE::Point face(0, f);
-    ALE::Point_set edges;
-    ALE::Point_set cellTuple;
+  /* Create serial sieve */
+  if (rank == 0) {
+    for(int f = 0; f < numFaces; f++) {
+      ALE::Point face(0, f);
+      ALE::Point_set edges;
+      ALE::Point_set cellTuple;
 
-    edges.clear();
-    cellTuple.clear();
-    for(int e = 0; e < 3; e++) {
-      ALE::Point vS = ALE::Point(0, faces[f*3+e]+numFaces);
-      ALE::Point vE = ALE::Point(0, faces[f*3+((e+1)%3)]+numFaces);
-      ALE::Obj<ALE::Point_set> preEdge = topology->support(vS);
-      ALE::Point_set endpoints;
-      ALE::Point edge;
+      edges.clear();
+      cellTuple.clear();
+      for(int e = 0; e < 3; e++) {
+        ALE::Point vS = ALE::Point(0, faces[f*3+e]+numFaces);
+        ALE::Point vE = ALE::Point(0, faces[f*3+((e+1)%3)]+numFaces);
+        ALE::Obj<ALE::Point_set> preEdge = topology->support(vS);
+        ALE::Point_set endpoints;
+        ALE::Point edge;
 
-      preEdge->meet(topology->support(vE));
-      if (preEdge->size() > 0) {
-        edge = *preEdge->begin();
-      } else {
-        endpoints.clear();
-        endpoints.insert(vS);
-        endpoints.insert(vE);
-        edge = ALE::Point(0, curEdge++);
-        topology->addCone(endpoints, edge);
+        preEdge->meet(topology->support(vE));
+        if (preEdge->size() > 0) {
+          edge = *preEdge->begin();
+        } else {
+          endpoints.clear();
+          endpoints.insert(vS);
+          endpoints.insert(vE);
+          edge = ALE::Point(0, curEdge++);
+          topology->addCone(endpoints, edge);
+        }
+        edges.insert(edge);
+        if (e == 0) {
+          cellTuple.insert(vS);
+          cellTuple.insert(edge);
+        }
       }
-      edges.insert(edge);
-      if (e == 0) {
-        cellTuple.insert(vS);
-        cellTuple.insert(edge);
-      }
+      topology->addCone(edges, face);
+      cellTuple.insert(face);
+      orientation->addCone(cellTuple, face);
     }
-    topology->addCone(edges, face);
-    cellTuple.insert(face);
-    orientation->addCone(cellTuple, face);
+    for(int v = 0; v < numVertices; v++) {
+      ALE::Point vertex(0, v+numFaces);
+      orientation->addCone(vertex, vertex);
+    }
   }
-  for(int v = 0; v < numVertices; v++) {
-    ALE::Point vertex(0, v+numFaces);
-    orientation->addCone(vertex, vertex);
-  }
-  topology->view("Simplicializer topology");
+  topology->view("Serial Simplicializer topology");
   ierr = MeshSetTopology(m, (void *) topology);CHKERRQ(ierr);
   ierr = MeshSetOrientation(m, (void *) orientation);CHKERRQ(ierr);
-  {
+  /* Create boundary */
+  if (rank == 0) {
     ALE::Point_set cone;
     ALE::Point boundaryPoint(0, 1);
 
@@ -244,9 +251,47 @@ PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces,
       cone.insert(vertex);
     }
     boundary->addCone(cone, boundaryPoint);
+    ierr = MeshSetBoundary(m, (void *) boundary);CHKERRQ(ierr);
   }
   topology->view("Simplicializer boundary topology");
-  ierr = MeshSetBoundary(m, (void *) boundary);CHKERRQ(ierr);
+  /* Compute partition */
+  if (rank == 0) {
+    for(int p = 0; p < size; p++) {
+      ALE::Point partitionPoint(-1, p);
+      for(int f = (numFaces/size)*p + (numFaces%size > p); f < (numFaces/size)*(p+1) + (numFaces%size > p+1); f++) {
+        ALE::Point face(0, f);
+        ALE::Point_set closure = topology->closure(face);
+        topology->addCone(closure, partitionPoint);
+      }
+    }
+  } else {
+    ALE::Point partitionPoint(-1, rank);
+    topology->addBasePoint(partitionPoint);
+  }
+  topology->view("Partitioned Simplicializer topology");
+  /* Partition mesh */
+  // Cone complete to move the partitions to the other processors
+  ALE::Obj<ALE::PreSieve> completion = topology->coneCompletion(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeCone, NULL)->top();
+  completion->view("Completion");
+  // Merge in the completion
+  topology->add(completion);
+  //topology->view("Completed partition");
+  // Move the cap to the base of the partition sieve
+  ALE::Point partitionPoint(-1, rank);
+  ALE::Point_set partition = topology->cone(partitionPoint);
+  //for(ALE::Point_set::iterator p_itor = partition.begin(); p_itor != partition.end(); p_itor++) {
+  //  topology->addBasePoint(*p_itor);
+  //}
+  topology->view("Initial parallel mesh topology");
+  // Cone complete again to build the local topology
+  completion = topology->coneCompletion(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeCone, NULL)->top();
+  completion->view("Completion");
+  topology->add(completion);
+  topology->view("Completed parallel mesh topology");
+  // Restrict to the local partition
+  topology->restrictBase(partition);
+  topology->view("Restricted parallel mesh topology");
+  // Support complete to get the adjacency information
   *mesh = m;
   PetscFunctionReturn(0);
 }
@@ -394,11 +439,12 @@ PetscErrorCode CreateMeshCoordinates(Mesh mesh)
   // ghostIndices = coordBundle->getGlobalRemoteIndices().cap();
   PetscInt *ghostIndices = NULL;
   // Create a global ghosted vector to store a field
-  ierr  = VecCreateGhostBlock(comm,1,coordBundle->getBundleDimension(empty),PETSC_DETERMINE,numGhosts,ghostIndices,&coordinates);CHKERRQ(ierr);
+  ierr = VecCreateGhostBlock(comm,1,coordBundle->getBundleDimension(empty),PETSC_DETERMINE,numGhosts,ghostIndices,&coordinates);CHKERRQ(ierr);
   /* Set coordinates */
   vertices = topology->depthStratum(0);
   for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
     ALE::Point v = *vertex_itor;
+    printf("Sizeof vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
     ierr = assembleField(coordBundle, orientation, coordinates, v, &meshCoords[(v.index - 8)*2], INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);

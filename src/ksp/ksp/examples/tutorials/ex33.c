@@ -52,13 +52,19 @@ int main(int argc,char **argv)
   UserContext    user;
   PetscReal      norm;
   const char    *bcTypes[2] = {"dirichlet", "neumann"};
-  PetscErrorCode ierr;
   PetscInt       l,bc;
+  PetscTruth     flag;
+  PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = CreateTestMesh(PETSC_COMM_WORLD, &mesh);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_only", &flag);CHKERRQ(ierr);
+  if (flag) {
+    PetscFinalize();
+    PetscFunctionReturn(0);
+  }
   ierr = DMMGSetDM(dmmg, (DM) mesh);CHKERRQ(ierr);
   ierr = MeshDestroy(mesh);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {
