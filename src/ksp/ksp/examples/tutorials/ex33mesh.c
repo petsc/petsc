@@ -177,6 +177,100 @@ PetscErrorCode ExpandSetIntervals(ALE::Point_set intervals, PetscInt *indices)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ComputePreSievePartition"
+PetscErrorCode ComputePreSievePartition(ALE::Obj<ALE::PreSieve> presieve, ALE::Obj<ALE::Point_set> leaves)
+{
+  MPI_Comm       comm = presieve->getComm();
+  PetscInt       numLeaves = leaves->size();
+  PetscMPIInt    rank, size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  if (rank == 0) {
+    for(int p = 0; p < size; p++) {
+      ALE::Point partPoint(-1, p);
+      for(int l = (numLeaves/size)*p + (numLeaves%size > p); l < (numLeaves/size)*(p+1) + (numLeaves%size > p+1); l++) {
+        ALE::Point leaf(0, l);
+        ALE::Point_set cone = presieve->cone(leaf);
+        presieve->addCone(cone, partPoint);
+      }
+    }
+  } else {
+    ALE::Point partitionPoint(-1, rank);
+    presieve->addBasePoint(partitionPoint);
+  }
+  presieve->view("Partitioned presieve");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ComputeSievePartition"
+PetscErrorCode ComputeSievePartition(ALE::Obj<ALE::Sieve> sieve)
+{
+  MPI_Comm       comm = sieve->getComm();
+  PetscInt       numLeaves = sieve->leaves().size();
+  PetscMPIInt    rank, size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  if (rank == 0) {
+    for(int p = 0; p < size; p++) {
+      ALE::Point partPoint(-1, p);
+      for(int l = (numLeaves/size)*p + (numLeaves%size > p); l < (numLeaves/size)*(p+1) + (numLeaves%size > p+1); l++) {
+        ALE::Point leaf(0, l);
+        ALE::Point_set closure = sieve->closure(leaf);
+        sieve->addCone(closure, partPoint);
+      }
+    }
+  } else {
+    ALE::Point partitionPoint(-1, rank);
+    sieve->addBasePoint(partitionPoint);
+  }
+  sieve->view("Partitioned sieve");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PartitionPreSieve"
+PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve)
+{
+  MPI_Comm       comm = presieve->getComm();
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  // Cone complete to move the partitions to the other processors
+  ALE::Obj<ALE::PreSieve> completion = presieve->coneCompletion(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeCone, NULL)->top();
+  completion->view("Completion");
+  // Merge in the completion
+  presieve->add(completion);
+  //presieve->view("Completed partition");
+  // Move the cap to the base of the partition sieve
+  ALE::Point partitionPoint(-1, rank);
+  ALE::Point_set partition = presieve->cone(partitionPoint);
+  for(ALE::Point_set::iterator p_itor = partition.begin(); p_itor != partition.end(); p_itor++) {
+    ALE::Point p = *p_itor;
+    presieve->addBasePoint(p);
+  }
+  presieve->view("Initial parallel presieve");
+  // Cone complete again to build the local topology
+  completion = presieve->coneCompletion(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeCone, NULL)->top();
+  completion->view("Completion");
+  presieve->add(completion);
+  presieve->view("Completed parallel presieve");
+  // Restrict to the local partition
+  presieve->restrictBase(partition);
+  presieve->view("Restricted parallel presieve");
+  // Support complete to get the adjacency information
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "Simplicializer"
 PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces, PetscInt numVertices, PetscScalar *vertices, PetscInt numBoundaryVertices, PetscInt *boundaryVertices, Mesh *mesh)
 {
@@ -231,10 +325,6 @@ PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces,
       cellTuple.insert(face);
       orientation->addCone(cellTuple, face);
     }
-    for(int v = 0; v < numVertices; v++) {
-      ALE::Point vertex(0, v+numFaces);
-      orientation->addCone(vertex, vertex);
-    }
   }
   topology->view("Serial Simplicializer topology");
   ierr = MeshSetTopology(m, (void *) topology);CHKERRQ(ierr);
@@ -254,44 +344,15 @@ PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces,
     ierr = MeshSetBoundary(m, (void *) boundary);CHKERRQ(ierr);
   }
   topology->view("Simplicializer boundary topology");
-  /* Compute partition */
-  if (rank == 0) {
-    for(int p = 0; p < size; p++) {
-      ALE::Point partitionPoint(-1, p);
-      for(int f = (numFaces/size)*p + (numFaces%size > p); f < (numFaces/size)*(p+1) + (numFaces%size > p+1); f++) {
-        ALE::Point face(0, f);
-        ALE::Point_set closure = topology->closure(face);
-        topology->addCone(closure, partitionPoint);
-      }
-    }
-  } else {
-    ALE::Point partitionPoint(-1, rank);
-    topology->addBasePoint(partitionPoint);
+  ierr = ComputeSievePartition(topology);CHKERRQ(ierr);
+  ierr = PartitionPreSieve(topology);CHKERRQ(ierr);
+  ierr = ComputePreSievePartition(orientation, topology->leaves());CHKERRQ(ierr);
+  ierr = PartitionPreSieve(orientation);CHKERRQ(ierr);
+  ALE::Obj<ALE::Point_set> roots = topology->depthStratum(0);
+  for(ALE::Point_set::iterator vertex_itor = roots->begin(); vertex_itor != roots->end(); vertex_itor++) {
+    ALE::Point v = *vertex_itor;
+    orientation->addCone(v, v);
   }
-  topology->view("Partitioned Simplicializer topology");
-  /* Partition mesh */
-  // Cone complete to move the partitions to the other processors
-  ALE::Obj<ALE::PreSieve> completion = topology->coneCompletion(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeCone, NULL)->top();
-  completion->view("Completion");
-  // Merge in the completion
-  topology->add(completion);
-  //topology->view("Completed partition");
-  // Move the cap to the base of the partition sieve
-  ALE::Point partitionPoint(-1, rank);
-  ALE::Point_set partition = topology->cone(partitionPoint);
-  //for(ALE::Point_set::iterator p_itor = partition.begin(); p_itor != partition.end(); p_itor++) {
-  //  topology->addBasePoint(*p_itor);
-  //}
-  topology->view("Initial parallel mesh topology");
-  // Cone complete again to build the local topology
-  completion = topology->coneCompletion(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeCone, NULL)->top();
-  completion->view("Completion");
-  topology->add(completion);
-  topology->view("Completed parallel mesh topology");
-  // Restrict to the local partition
-  topology->restrictBase(partition);
-  topology->view("Restricted parallel mesh topology");
-  // Support complete to get the adjacency information
   *mesh = m;
   PetscFunctionReturn(0);
 }
