@@ -85,7 +85,9 @@ namespace ALE {
     if((obj1.comm == MPI_COMM_NULL) || (obj2.comm == MPI_COMM_NULL)){     
       throw ALE::Exception("ALE: Communicator not set");
     }
-    if(obj1.comm != obj2.comm) {
+    int result;
+    MPI_Comm_compare(obj1.comm, obj2.comm, &result);
+    if(result == MPI_UNEQUAL) {
       throw ALE::Exception("ALE: Incompatible communicators");
     }
   }// CHKCOMMS()
