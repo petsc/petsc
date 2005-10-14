@@ -10,7 +10,7 @@ namespace ALE {
     if (this->comm == comm) {
       return;
     }
-    if ((this->comm != -1) && (this->comm != comm)) {
+    if ((this->comm != MPI_COMM_NULL) && (this->comm != comm)) {
       throw ALE::Exception("Cannot reset the communicator");
     }
     PetscErrorCode ierr;
@@ -23,7 +23,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "Coaster::clear"
   Coaster& Coaster::clear(){
-    this->comm     = -1; 
+    this->comm     = MPI_COMM_NULL; 
     this->commRank = -1; 
     this->commSize = 0; 
     if(this->petscObj != NULL) {
@@ -74,7 +74,7 @@ namespace ALE {
   // A helper friend function that checks whether the communicator is set on an ALE::Coaster object,
   // and throws an exception otherwise.
   void CHKCOMM(Coaster& obj) {
-    if(obj.comm == -1){     
+    if(obj.comm == MPI_COMM_NULL){     
       throw ALE::Exception("ALE: Communicator not set");
     }
   }// CHKCOMM()
@@ -82,7 +82,7 @@ namespace ALE {
   // A helper friend function that checks whether the communicators are set on a pair of  ALE::Coaster objects,
   // that the communicators are the same, and throws an exception otherwise.
   void CHKCOMMS(Coaster& obj1, Coaster& obj2) {
-    if((obj1.comm == -1) || (obj2.comm == -1)){     
+    if((obj1.comm == MPI_COMM_NULL) || (obj2.comm == MPI_COMM_NULL)){     
       throw ALE::Exception("ALE: Communicator not set");
     }
     if(obj1.comm != obj2.comm) {

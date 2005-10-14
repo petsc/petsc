@@ -56,13 +56,26 @@ namespace ALE {
     this->__checkLock();
     if(this->baseContains(p)) {
       // IMPROVE: first decrement the support size for all points in the cone being erased
+      ALE::Obj<ALE::Point_set> cone = this->cone(p);
+
       this->_cone.erase(p);
+      if(!this->capContains(p)) {
+        // If we completely remove the point, its cone can potentially be leaves
+        for(ALE::Point_set::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
+          ALE::Point cover = *c_itor;
+
+          if (this->support(cover).size() == 0) {
+            this->_leaves.insert(cover);
+          }
+        }
+      }
     }
     // After removal from the base, any point that is still in the cap must necessarily be a root,
     // since there are no longer any arrows terminating at p.
-    // The points leaf status is not affected.
     if(this->capContains(p)) {
       this->_roots.insert(p);
+    } else {
+      this->_leaves.erase(p);
     }
     return *this;
   }// PreSieve::removeBasePoint()
@@ -1839,12 +1852,12 @@ namespace ALE {
     for (int32_t i=1; i<LessorCount; i++) { LessorOffsets[i] = LessorOffsets[i-1] + 3*LeaseSizes[i-1];} 
     
     // send the messages to the lessors
-    int32_t *Lessor_waits;
+    MPI_Request *Lessor_waits;
     if(LessorCount) {
-      ierr = PetscMalloc((LessorCount)*sizeof(MPI_Request),&Lessor_waits);  CHKERROR(ierr,"Error in PetscMalloc");
+      ierr = PetscMalloc((LessorCount)*sizeof(MPI_Request),&Lessor_waits);CHKERROR(ierr,"Error in PetscMalloc");
     }
     for (int32_t i=0; i<LessorCount; i++) {
-      ierr      = MPI_Isend(LeasedNodes+LessorOffsets[i],3*LeaseSizes[i],MPIU_INT,Lessors[i],tag1,comm,Lessor_waits+i);
+      ierr      = MPI_Isend(LeasedNodes+LessorOffsets[i],3*LeaseSizes[i],MPIU_INT,Lessors[i],tag1,comm,&Lessor_waits[i]);
       CHKERROR(ierr,"Error in MPI_Isend");
     }
     
@@ -1917,7 +1930,7 @@ namespace ALE {
     PetscMPIInt    tag2;
     ierr = PetscObjectGetNewTag(this->petscObj, &tag2); CHKERROR(ierr, "Failded on PetscObjectGetNewTag");
     for (int32_t i=0; i<LessorCount; i++) {
-      ierr = MPI_Irecv(NeighborCounts+LessorOffsets[i],3*LeaseSizes[i],MPIU_INT,Lessors[i],tag2,comm,Lessor_waits+i);
+      ierr = MPI_Irecv(NeighborCounts+LessorOffsets[i],3*LeaseSizes[i],MPIU_INT,Lessors[i],tag2,comm,&Lessor_waits[i]);
       CHKERROR(ierr,"Error in MPI_Irecv");
     }
     // pack and send messages back to renters; we need to send 3 integers per rental (2 for Point, 1 for sharer count) 
@@ -2042,7 +2055,7 @@ namespace ALE {
     int32_t lessorOffset = 0;
     for(int32_t i=0; i<LessorCount; i++) {
       if(NeighborCountsByLessor[i]) { // We expect messages from lessors with a non-zero NeighborCountsByLessor entry only
-        ierr = MPI_Irecv(Neighbors+lessorOffset,2*NeighborCountsByLessor[i],MPIU_INT,Lessors[i],tag3,comm,Lessor_waits+i);
+        ierr = MPI_Irecv(Neighbors+lessorOffset,2*NeighborCountsByLessor[i],MPIU_INT,Lessors[i],tag3,comm,&Lessor_waits[i]);
         CHKERROR(ierr,"Error in MPI_Irecv");
         lessorOffset += 2*NeighborCountsByLessor[i];
       }
