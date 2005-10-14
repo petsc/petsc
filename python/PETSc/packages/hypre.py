@@ -47,7 +47,7 @@ class Configure(PETSc.package.Package):
     alllibs[0] = os.path.join(dir,alllibs[0])
     import config.setCompilers
     if self.languages.clanguage == 'C':
-      alllibs[0].extend(self.compilers.cxxlibs)
+      alllibs.extend(self.compilers.cxxlibs)
     return [alllibs]
         
   def Install(self):
