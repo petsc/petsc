@@ -4,6 +4,8 @@
 #include <Sieve.hh>
 #endif
 
+#include <stack>
+
 namespace ALE {
   
   #undef  __FUNCT__
@@ -181,6 +183,34 @@ namespace ALE {
     }
     return *this;
   }// Sieve::removeArrow()
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "Sieve::removeBasePoint"
+  Sieve& Sieve::removeBasePoint(Point& p) {
+    this->__checkLock();
+    if(this->baseContains(p)) {
+      ALE::Obj<ALE::Point_set> base = this->cone(p);
+      std::stack<Point> stk;
+      while(1) {
+        for(ALE::Point_set::reverse_iterator base_ritor = base->rbegin(); base_ritor != base->rend(); base_ritor++) {
+          stk.push(*base_ritor);
+        }
+        if(stk.empty()) break;
+        Point cover = stk.top(); stk.pop();
+        if (!this->baseContains(cover)) {
+          if (this->_depth.capContains(cover)) {
+            this->_depth.removeCapPoint(cover);
+          }
+          if (this->_height.capContains(cover)) {
+            this->_height.removeCapPoint(cover);
+          }
+        }
+        base = this->cone(cover);
+      }
+    }
+    ALE::PreSieve::removeBasePoint(p);
+    return *this;
+  }
   
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::addBasePoint"

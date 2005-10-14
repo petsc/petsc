@@ -325,7 +325,7 @@ namespace ALE {
     // An element ss  that has been seen AND indexed has a nonzero seen[ss].index equal to its dimension.
     // If requested, we will cache the results in arrows to e.
 
-    Obj<PreSieve> indices(new PreSieve(this->getComm()));
+    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
     Point__Point   seen;
     // Traverse the closure of base in a depth-first search storing the offsets of each element ss we see during the search
     // in seen[ss].prefix.
@@ -398,7 +398,7 @@ namespace ALE {
   #define __FUNCT__ "ClosureBundle::__computeBoundaryIndices"
   Obj<PreSieve>      ClosureBundle::__computeBoundaryIndices(Point  s, Point__Point& seen, int32_t& off) {
 
-    Obj<PreSieve> indices(new PreSieve(this->getComm()));
+    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
     // Traverse the boundary of s -- the closure of s except s itself -- in a depth-first search and compute the indices for the 
     // boundary fibers.  For an already seen point ss, its offset is in seen[ss].prefix, or in 'off' for a newly seen point.
     // 'off' is updated during the calculation by accumulating the dimensions of the fibers over all newly encountered elements.

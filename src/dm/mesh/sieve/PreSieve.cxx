@@ -8,6 +8,8 @@
 #include <Stack.hh>
 #endif
 
+#include <stack>
+
 namespace ALE {
   
   #undef  __FUNCT__
@@ -64,11 +66,31 @@ namespace ALE {
         for(ALE::Point_set::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
           ALE::Point cover = *c_itor;
 
-          if (this->support(cover).size() == 0) {
+          if ((this->support(cover).size() == 0) && this->baseContains(cover)) {
             this->_leaves.insert(cover);
           }
         }
       }
+#if 0
+      ALE::Obj<ALE::Point_set> base = cone;
+      std::stack<Point> stk;
+      while(1) {
+        for(ALE::Point_set::reverse_iterator base_ritor = base->rbegin(); base_ritor != base->rend(); base_ritor++) {
+          stk.push(*base_ritor);
+        }
+        if(stk.empty()) break;
+        Point cover = stk.top(); stk.pop();
+        if (!this->baseContains(cover)) {
+          if (this->_roots.find(cover) != this->_roots.end()) {
+            this->_roots.erase(cover);
+          }
+          if (this->_leaves.find(cover) != this->_leaves.end()) {
+            this->_leaves.erase(cover);
+          }
+        }
+        base = this->cone(cover);
+      }
+#endif
     }
     // After removal from the base, any point that is still in the cap must necessarily be a root,
     // since there are no longer any arrows terminating at p.

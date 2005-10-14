@@ -43,6 +43,7 @@ namespace ALE {
     virtual Sieve&            addArrow(Point& i, Point& j);
     virtual Sieve&            removeArrow(Point& i, Point& j);
     virtual Sieve&            addBasePoint(Point& p);
+    virtual Sieve&            removeBasePoint(Point& p);
     virtual Sieve&            addCapPoint(Point& q);
     virtual Point_set         closure(Point p){Point_set pSet(p); return this->closure(pSet);};
     virtual Point_set         closure(Point_set& chain);
