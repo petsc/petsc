@@ -11,7 +11,7 @@
 
 
 /* ----------------------------------------------------------------------- */
-#define QUEUESTRINGSIZE 1024
+#define QUEUESTRINGSIZE 2048
 typedef struct _PrintfQueue *PrintfQueue;
 struct _PrintfQueue {
   char        string[QUEUESTRINGSIZE];

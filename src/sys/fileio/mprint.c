@@ -18,11 +18,11 @@ FILE *PETSC_STDOUT = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFormatConvert"
-PetscErrorCode PETSC_DLLEXPORT PetscFormatConvert(const char *format,char *newformat)
+PetscErrorCode PETSC_DLLEXPORT PetscFormatConvert(const char *format,char *newformat,PetscInt size)
 {
   PetscInt i = 0,j = 0;
 
-  while (format[i] && i < 8*1024-1) {
+  while (format[i] && i < size-1) {
     if (format[i] == '%' && format[i+1] == 'D') {
       newformat[j++] = '%';
 #if defined(PETSC_USE_32BIT_INT)
@@ -60,9 +60,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscFormatConvert(const char *format,char *newfo
 PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *format,va_list Argp)
 {
   /* no malloc since may be called by error handler */
-  char     newformat[8*1024];
+  char           newformat[8*1024];
+  size_t         length;
+  PetscErrorCode ierr;
  
-  PetscFormatConvert(format,newformat); 
+  PetscFormatConvert(format,newformat,8*1024);
+  ierr = PetscStrlen(newformat, &length);CHKERRQ(ierr);
+  if (length > len) {
+    newformat[len] = '\0';
+  }
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
   vsprintf(str,newformat,(char *)Argp);
 #else
@@ -87,7 +93,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintf(FILE *fd,const char *format,va_list
   /* no malloc since may be called by error handler */
   char     newformat[8*1024];
  
-  PetscFormatConvert(format,newformat); 
+  PetscFormatConvert(format,newformat,8*1024); 
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
   vfprintf(fd,newformat,(char *)Argp);
 #else
