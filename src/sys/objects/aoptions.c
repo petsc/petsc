@@ -113,9 +113,11 @@ static PetscErrorCode PetscOptionsGetFromGUI()
         ierr = PetscPrintf(PetscOptionsObject.comm,"-%s%s <%d>: %s (%s)\n",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option,*(int*)next->data,next->text,next->man);CHKERRQ(ierr);
         scanf("%s\n",str);
         if (str[0] != '\n') {
-          printf("chainginf value\n");
+          printf("changing value\n");
         }
         break;
+    default:
+      break;
     }
     next = next->next;
   }    
