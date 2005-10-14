@@ -2333,7 +2333,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
 /*105*/MatSetValuesRow_SeqAIJ,
        MatRealPart_SeqAIJ,
-       MatImaginaryPart_SeqAIJ
+       MatImaginaryPart_SeqAIJ,
+       0,
+       0
 };
 
 EXTERN_C_BEGIN

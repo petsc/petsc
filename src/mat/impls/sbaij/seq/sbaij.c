@@ -185,6 +185,9 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op)
   case MAT_ERROR_LOWER_TRIANGULAR:
     a->ignore_ltriangular = PETSC_FALSE;
     break;
+  case MAT_GETROW_UPPERTRIANGULAR:
+    a->getrow_utriangular = PETSC_TRUE;
+    break;
   default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
   }
@@ -202,9 +205,8 @@ PetscErrorCode MatGetRow_SeqSBAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **
   PetscScalar    *v_i;
 
   PetscFunctionBegin;
-  if (A) SETERRQ(PETSC_ERR_SUP,"MatGetRow is not supported for SBAIJ matrix format");
-  /* The old version below either gets the upper triangle part, or too expensive.
-     We take out the support for MatGetRow_SeqSBAIJ() */
+  if (A && !a->getrow_utriangular) SETERRQ(PETSC_ERR_SUP,"MatGetRow is not supported for SBAIJ matrix format. Getting the upper triangular part of row, run with -mat_getrow_uppertriangular, call MatSetOption(mat,MAT_GETROW_UPPERTRIANGULAR) or MatGetRowUpperTriangular()");
+  /* Get the upper triangular part of the row */
   bs  = A->bs;
   ai  = a->i;
   aj  = a->j;
@@ -275,6 +277,27 @@ PetscErrorCode MatRestoreRow_SeqSBAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt *
   PetscFunctionBegin;
   if (idx) {if (*idx) {ierr = PetscFree(*idx);CHKERRQ(ierr);}}
   if (v)   {if (*v)   {ierr = PetscFree(*v);CHKERRQ(ierr);}}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowUpperTriangular_SeqSBAIJ"
+PetscErrorCode MatGetRowUpperTriangular_SeqSBAIJ(Mat A)
+{
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
+
+  PetscFunctionBegin;
+  a->getrow_utriangular = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreRowUpperTriangular_SeqSBAIJ"
+PetscErrorCode MatRestoreRowUpperTriangular_SeqSBAIJ(Mat A)
+{
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
+
+  PetscFunctionBegin;
+  a->getrow_utriangular = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1014,7 +1037,8 @@ PetscErrorCode MatPrintHelp_SeqSBAIJ(Mat A)
   if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
   ierr = (*PetscHelpPrintf)(comm," Options for MATSEQSBAIJ and MATMPISBAIJ matrix formats (the defaults):\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_block_size <block_size>\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_ignore_ltriangular: Ignore lower triangular values set by user\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_ignore_lower_triangular: Ignore lower triangular values set by user\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_getrow_uppertriangular: Enable MatGetRow() for retrieving the upper triangular part of the row\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1097,7 +1121,9 @@ PetscErrorCode MatCopy_SeqSBAIJ(Mat A,Mat B,MatStructure str)
     }
     ierr = PetscMemcpy(b->a,a->a,(a->i[A->m])*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
+    ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr); 
     ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
+    ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr); 
   }
   PetscFunctionReturn(0);
 }
@@ -1164,7 +1190,9 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     }
     ierr = PetscLogInfo((0,"MatAXPY_SeqSBAIJ: ratio of nnz_s(X)/nnz_s(Y): %D/%D = %g\n",bs2*x->nz,bs2*y->nz,(PetscReal)(bs2*x->nz)/(bs2*y->nz)));CHKERRQ(ierr);
   } else {
+    ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr); 
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+    ierr = MatRestoreRowUpperTriangular(X);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1334,7 +1362,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
 /*105*/0,
        MatRealPart_SeqSBAIJ,
-       MatImaginaryPart_SeqSBAIJ
+       MatImaginaryPart_SeqSBAIJ,
+       MatGetRowUpperTriangular_SeqSBAIJ,
+       MatRestoreRowUpperTriangular_SeqSBAIJ
 };
 
 EXTERN_C_BEGIN
@@ -1603,6 +1633,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   b->ignore_ltriangular = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_ignore_lower_triangular",&flg);CHKERRQ(ierr);
   if (flg) b->ignore_ltriangular = PETSC_TRUE;
+
+  b->getrow_utriangular = PETSC_FALSE;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_getrow_uppertriangular",&flg);CHKERRQ(ierr);
+  if (flg) b->getrow_utriangular = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_SeqSBAIJ",

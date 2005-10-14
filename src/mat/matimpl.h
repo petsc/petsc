@@ -145,6 +145,9 @@ struct _MatOps {
   PetscErrorCode (*setvaluesrow)(Mat,PetscInt,const MatScalar[]);
   PetscErrorCode (*realpart)(Mat);
   PetscErrorCode (*imaginarypart)(Mat);
+  PetscErrorCode (*getrowuppertriangular)(Mat);
+  PetscErrorCode (*restorerowuppertriangular)(Mat);
+  /*106*/
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

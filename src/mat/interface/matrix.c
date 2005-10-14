@@ -246,6 +246,72 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRow(Mat mat,PetscInt row,PetscInt *n
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetRowUpperTriangular"
+/*@C
+   MatGetRowUpperTriangular - Sets a flag to enable calls to MatGetRow() for matrix in MATSBAIJ format.  
+   You should call MatRestoreRowUpperTriangular() after calling MatGetRow/MatRestoreRow() to disable the flag. 
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+
+   Notes:
+   The flag is to ensure that users are aware of MatGetRow() only provides the upper trianglular part of the row for the matrices in MATSBAIJ format.
+
+   Level: advanced
+
+   Concepts: matrices^row access
+
+.seealso: MatRestoreRowRowUpperTriangular()
+@*/
+
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowUpperTriangular(Mat mat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->ops->getrowuppertriangular) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  ierr = (*mat->ops->getrowuppertriangular)(mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreRowUpperTriangular"
+/*@C  
+   MatRestoreRowUpperTriangular - Disable calls to MatGetRow() for matrix in MATSBAIJ format.  
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+
+   Notes: 
+   This routine should be called after you have finished MatGetRow/MatRestoreRow().
+
+
+   Level: advanced
+
+.seealso:  MatGetRowUpperTriangular()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowUpperTriangular(Mat mat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (!mat->ops->restorerowuppertriangular) PetscFunctionReturn(0);
+  ierr = (*mat->ops->restorerowuppertriangular)(mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSetOptionsPrefix"
 /*@C
    MatSetOptionsPrefix - Sets the prefix used for searching for all 

@@ -11,7 +11,6 @@
 
 typedef struct {
   SEQBAIJHEADER
-
   PetscInt         *inew;        /* pointer to beginning of each row of reordered matrix */
   PetscInt         *jnew;        /* column values: jnew + i[k] is start of row k */
   MatScalar        *anew;        /* nonzero diagonal and superdiagonal elements of reordered matrix */
@@ -20,12 +19,7 @@ typedef struct {
   PetscInt         *a2anew;        /* map used for symm permutation */
   PetscTruth       permute;        /* if true, a non-trivial permutation is used for factorization */
   PetscTruth       ignore_ltriangular; /* if true, ignore the lower triangular values inserted by users */
-
-  /* carry MatFactorInfo from symbolic factor to numeric factor */
-  PetscInt         factor_levels;
-  PetscReal        factor_damping;     
-  PetscReal        factor_shift;
-  PetscReal        factor_zeropivot;
+  PetscTruth       getrow_utriangular; /* if true, MatGetRow_SeqSBAIJ() is enabled to get the upper part of the row */
 } Mat_SeqSBAIJ;
 
 EXTERN_C_BEGIN

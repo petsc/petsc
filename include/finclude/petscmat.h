@@ -459,6 +459,8 @@
       parameter(MATOP_PTAP_SYMBOLIC_MPIAIJ=101)
       parameter(MATOP_PTAP_NUMERIC_MPIAIJ=102)
       parameter(MATOP_SET_VALUES_ROW=105)
+      parameter(MATOP_GET_ROWUPPERTRIANGULAR=108)  
+      parameter(MATOP_RESTORE_ROWUPPERTRIANGULAR=109)      
 !
 !  
 !

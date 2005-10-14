@@ -366,7 +366,7 @@ typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
               MAT_NOT_STRUCTURALLY_SYMMETRIC=85,MAT_NOT_HERMITIAN=86,
               MAT_SYMMETRY_ETERNAL=87,MAT_NOT_SYMMETRY_ETERNAL=88,
               MAT_USE_COMPRESSEDROW=89,MAT_DO_NOT_USE_COMPRESSEDROW=90,
-              MAT_IGNORE_LOWER_TRIANGULAR=91,MAT_ERROR_LOWER_TRIANGULAR=92} MatOption;
+              MAT_IGNORE_LOWER_TRIANGULAR=91,MAT_ERROR_LOWER_TRIANGULAR=92,MAT_GETROW_UPPERTRIANGULAR=93} MatOption;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat,MatOption);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetType(Mat,MatType*);
 PetscPolymorphicFunction(MatGetType,(Mat mat),(mat,&t),MatType,t)
@@ -374,6 +374,8 @@ PetscPolymorphicFunction(MatGetType,(Mat mat),(mat,&t),MatType,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRow(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRow(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowUpperTriangular(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowUpperTriangular(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumn(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumn(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnVector(Mat,Vec,PetscInt);
@@ -395,6 +397,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAdd(Mat,Vec,Vec,Vec);
 PetscPolymorphicSubroutine(MatMultTransposeAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultConstrained(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeConstrained(Mat,Vec,Vec);
+
+
 
 /*E
     MatDuplicateOption - Indicates if a duplicated sparse matrix should have
@@ -1394,7 +1398,9 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_PTAP_NUMERIC_SEQAIJ=100,
                MATOP_PTAP_SYMBOLIC_MPIAIJ=101,
                MATOP_PTAP_NUMERIC_MPIAIJ=102,
-               MATOP_SET_VALUES_ROW = 105
+               MATOP_SET_VALUES_ROW = 105,
+               MATOP_GET_ROWUPPERTRIANGULAR=108,
+               MATOP_RESTORE_ROWUPPERTRIANGULAR=109
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));
