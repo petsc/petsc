@@ -329,6 +329,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   # Filtering Mechanisms
 
   def filterPreprocessOutput(self,output):
+    # Another PGI license warning, multiline so have to discard all
+    if output.find('your evaluation license will expire') > -1 and output.lower().find('error') == -1:
+      output = ''
     lines = output.splitlines()
     # PGI: Ignore warning about temporary license
     lines = filter(lambda s: s.find('license.dat') < 0, lines)
