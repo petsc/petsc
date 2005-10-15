@@ -60,15 +60,29 @@ namespace ALE {
       // IMPROVE: first decrement the support size for all points in the cone being erased
       ALE::Obj<ALE::Point_set> cone = this->cone(p);
 
-      this->_cone.erase(p);
-      if(!this->capContains(p)) {
-        // If we completely remove the point, its cone can potentially be leaves
-        for(ALE::Point_set::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
-          ALE::Point cover = *c_itor;
+      for(ALE::Point_set::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
+        ALE::Point cover = *c_itor;
 
-          if ((this->support(cover).size() == 0) && this->baseContains(cover)) {
-            this->_leaves.insert(cover);
+        // If it is not in base, we can completely remove the point
+        if (this->baseContains(cover)) {
+          this->removeArrow(cover, p);
+        } else {
+          // This needs to recurse up, but how to handle circularity?
+          if (this->_roots.find(cover) != this->_roots.end()) {
+            this->_roots.erase(cover);
           }
+          if (this->_leaves.find(cover) != this->_leaves.end()) {
+            this->_leaves.erase(cover);
+          }
+        }
+      }
+      this->_cone.erase(p);
+      if (!this->capContains(p)) {
+        if (this->_roots.find(p) != this->_roots.end()) {
+          this->_roots.erase(p);
+        }
+        if (this->_leaves.find(p) != this->_leaves.end()) {
+          this->_leaves.erase(p);
         }
       }
 #if 0

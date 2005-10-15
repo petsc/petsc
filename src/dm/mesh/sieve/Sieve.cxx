@@ -198,17 +198,17 @@ namespace ALE {
         if(stk.empty()) break;
         Point cover = stk.top(); stk.pop();
         if (!this->baseContains(cover)) {
-          if (this->_depth.capContains(cover)) {
-            this->_depth.removeCapPoint(cover);
-          }
-          if (this->_height.capContains(cover)) {
-            this->_height.removeCapPoint(cover);
-          }
+          this->__setDepth(cover, -1);
+          this->__setHeight(cover, -1);
         }
         base = this->cone(cover);
       }
     }
     ALE::PreSieve::removeBasePoint(p);
+    if (!this->capContains(p)) {
+      this->__setDepth(p, -1);
+      this->__setHeight(p, -1);
+    }
     return *this;
   }
   
@@ -343,7 +343,7 @@ namespace ALE {
     CHKCOMM(*this);
     int32_t depth;
     Point_set pSet; pSet.insert(p);
-    if(this->spaceContains(p)) {
+    if (this->_depth.capContains(p)) {
       Point_set depthSet = this->_depth.support(p);
       if(depthSet.size() == 0) {
         /* This accomdates Stacks, since spaceContains() can return true before the point is added to the Stack itself */
@@ -354,8 +354,7 @@ namespace ALE {
         Point depthPoint = *(depthSet.begin());
         depth = depthPoint.index;
       }
-    }
-    else {
+    } else {
       depth = -1;
     }
     return depth;
@@ -418,7 +417,7 @@ namespace ALE {
   int32_t Sieve::height(Point p) {
     CHKCOMM(*this);
     int32_t height;
-    if(this->spaceContains(p)) {
+    if (this->_height.capContains(p)) {
       Point_set heightSet = this->_height.support(p);
       if(heightSet.size() == 0) {
         /* This accomdates Stacks, since spaceContains() can return true before the point is added to the Stack itself */
@@ -428,8 +427,7 @@ namespace ALE {
       }
       Point heightPoint = *(heightSet.begin());
       height = heightPoint.index;
-    }
-    else {
+    } else {
       height = -1;
     }
     return height;
