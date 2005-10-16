@@ -45,6 +45,7 @@ namespace ALE {
     virtual Sieve&            addBasePoint(Point& p);
     virtual Sieve&            removeBasePoint(Point& p);
     virtual Sieve&            addCapPoint(Point& q);
+    virtual Sieve&            removeCapPoint(Point& q);
     virtual Point_set         closure(Point p){Point_set pSet(p); return this->closure(pSet);};
     virtual Point_set         closure(Point_set& chain);
     virtual Obj<Sieve>        closureSieve(Obj<Point_set> chain, Obj<Sieve> closure = Obj<Sieve>());

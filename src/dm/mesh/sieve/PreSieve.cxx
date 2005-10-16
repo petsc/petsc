@@ -56,62 +56,32 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::removeBasePoint"
   PreSieve& PreSieve::removeBasePoint(Point& p) {
     this->__checkLock();
-    if(this->baseContains(p)) {
+    if (this->baseContains(p)) {
       // IMPROVE: first decrement the support size for all points in the cone being erased
       ALE::Obj<ALE::Point_set> cone = this->cone(p);
 
       for(ALE::Point_set::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
         ALE::Point cover = *c_itor;
 
-        // If it is not in base, we can completely remove the point
-        if (this->baseContains(cover)) {
-          this->removeArrow(cover, p);
-        } else {
-          // This needs to recurse up, but how to handle circularity?
-          if (this->_roots.find(cover) != this->_roots.end()) {
-            this->_roots.erase(cover);
-          }
-          if (this->_leaves.find(cover) != this->_leaves.end()) {
-            this->_leaves.erase(cover);
+        this->removeArrow(cover, p);
+        if (this->support(cover).size() == 0) {
+          if (!this->baseContains(cover)) {
+            this->removeCapPoint(cover);
+          } else {
+            this->_cap.erase(cover);
           }
         }
       }
       this->_cone.erase(p);
-      if (!this->capContains(p)) {
-        if (this->_roots.find(p) != this->_roots.end()) {
-          this->_roots.erase(p);
-        }
+      // After removal from the base, any point that is still in the cap must necessarily be a root,
+      // since there are no longer any arrows terminating at p.
+      if(this->capContains(p)) {
+        this->_roots.insert(p);
+      } else {
         if (this->_leaves.find(p) != this->_leaves.end()) {
           this->_leaves.erase(p);
         }
       }
-#if 0
-      ALE::Obj<ALE::Point_set> base = cone;
-      std::stack<Point> stk;
-      while(1) {
-        for(ALE::Point_set::reverse_iterator base_ritor = base->rbegin(); base_ritor != base->rend(); base_ritor++) {
-          stk.push(*base_ritor);
-        }
-        if(stk.empty()) break;
-        Point cover = stk.top(); stk.pop();
-        if (!this->baseContains(cover)) {
-          if (this->_roots.find(cover) != this->_roots.end()) {
-            this->_roots.erase(cover);
-          }
-          if (this->_leaves.find(cover) != this->_leaves.end()) {
-            this->_leaves.erase(cover);
-          }
-        }
-        base = this->cone(cover);
-      }
-#endif
-    }
-    // After removal from the base, any point that is still in the cap must necessarily be a root,
-    // since there are no longer any arrows terminating at p.
-    if(this->capContains(p)) {
-      this->_roots.insert(p);
-    } else {
-      this->_leaves.erase(p);
     }
     return *this;
   }// PreSieve::removeBasePoint()
@@ -141,17 +111,29 @@ namespace ALE {
     CHKCOMM(*this);
     this->__checkLock();
     if(this->capContains(q)) {
-    // IMPROVE: keep the support size in _cap to potentially terminate the loop sooner
-      for(Point__Point_set::iterator b_itor = this->_cone.begin(); b_itor != this->_cone.end(); b_itor++) {
-        Point p = b_itor->first;
-        if(this->_cone[p].find(q) != this->_cone[p].end()) {
-          this->_cone[p].erase(q);
+      // IMPROVE: keep the support size in _cap to potentially terminate the loop sooner
+      ALE::Obj<ALE::Point_set> support = this->support(q);
+
+      for(ALE::Point_set::iterator s_itor = support->begin(); s_itor != support->end(); s_itor++) {
+        ALE::Point s = *s_itor;
+
+        this->removeArrow(q, s);
+        if (this->cone(s).size() == 0) {
+          if (!this->capContains(s)) {
+            this->removeBasePoint(s);
+          } else {
+            this->_cone.erase(s);
+          }
         }
       }
       this->_cap.erase(q);
       // After removal from the cap the point that is still in the base becomes a leaf -- no outgoing arrows.
       if(this->baseContains(q)) {
         this->_leaves.insert(q);
+      } else {
+        if (this->_roots.find(q) != this->_roots.end()) {
+          this->_roots.erase(q);
+        }
       }
     }
     return *this;
@@ -615,7 +597,7 @@ namespace ALE {
   int PreSieve::baseContains(Point point) {
     CHKCOMM(*this);
     int flag;
-    flag = (this->_cone.find(point) != this->_cone.end());
+    flag = ((this->_cone.find(point) != this->_cone.end()) && (this->_cone[point].size() > 0));
     return flag;
   }// PreSieve::baseContains()
 
@@ -1665,7 +1647,6 @@ namespace ALE {
       break;
     default:
       throw(ALE::Exception("Unknown completionType"));
-      break;
     }
     
     // Footprint presieve
@@ -1693,7 +1674,6 @@ namespace ALE {
       break;
     default:
       throw(ALE::Exception("Unknown footprint type"));
-      break;
     }
     
     // If this is a local sieve, there is no completion to be computed

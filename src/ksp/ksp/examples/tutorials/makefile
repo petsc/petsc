@@ -565,13 +565,13 @@ runex32:
 	   ${RM} -f ex32_1.tmp
 
 runex33:
-	-./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -mesh_only
+	-./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor
 
 runex33_d:
 	-./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -start_in_debugger
 
 runex33_2:
-	-${MPIRUN} -np 2 ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor
+	-${MPIRUN} -np 2 ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -mesh_only
 
 runex33_2_d:
 	-${MPIRUN} -np 2 ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -start_in_debugger -display :0.0

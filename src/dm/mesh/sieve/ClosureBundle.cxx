@@ -63,7 +63,6 @@ namespace ALE {
       break;
     default:
       throw ALE::Exception("Unknown stratum type");
-      break;
     }
     for(Point_set::iterator s_itor = stratum->begin(); s_itor != stratum->end(); s_itor++) {
       this->setFiberDimension(*s_itor,dim);

@@ -154,7 +154,7 @@ namespace ALE {
       }
       // Okay, we can proceed 
       return Obj<Y>(yObjPtr, this->refCnt);
-    };
+    }
 
     // another conversion operator
     template<class Y> Obj& operator=(const Obj<Y>& obj) {
@@ -176,7 +176,7 @@ namespace ALE {
       (*this->refCnt)++;
       this->borrowed = obj.borrowed;
       return *this;
-    };
+    }
 
 
     // dereference operators
@@ -188,7 +188,7 @@ namespace ALE {
       }
       *(this->objPtr) = *(obj.objPtr);
       return *this;
-    };
+    }
     
 
     // "peeling" (off the shell) methods

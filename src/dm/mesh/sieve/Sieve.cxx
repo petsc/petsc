@@ -188,22 +188,6 @@ namespace ALE {
   #define __FUNCT__ "Sieve::removeBasePoint"
   Sieve& Sieve::removeBasePoint(Point& p) {
     this->__checkLock();
-    if(this->baseContains(p)) {
-      ALE::Obj<ALE::Point_set> base = this->cone(p);
-      std::stack<Point> stk;
-      while(1) {
-        for(ALE::Point_set::reverse_iterator base_ritor = base->rbegin(); base_ritor != base->rend(); base_ritor++) {
-          stk.push(*base_ritor);
-        }
-        if(stk.empty()) break;
-        Point cover = stk.top(); stk.pop();
-        if (!this->baseContains(cover)) {
-          this->__setDepth(cover, -1);
-          this->__setHeight(cover, -1);
-        }
-        base = this->cone(cover);
-      }
-    }
     ALE::PreSieve::removeBasePoint(p);
     if (!this->capContains(p)) {
       this->__setDepth(p, -1);
@@ -226,6 +210,18 @@ namespace ALE {
     PreSieve::addBasePoint(p);
     return *this;
   }// Sieve::addBasePoint()
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "Sieve::removeCapPoint"
+  Sieve& Sieve::removeCapPoint(Point& q) {
+    this->__checkLock();
+    ALE::PreSieve::removeCapPoint(q);
+    if (!this->baseContains(q)) {
+      this->__setDepth(q, -1);
+      this->__setHeight(q, -1);
+    }
+    return *this;
+  }
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::addCapPoint"
@@ -547,11 +543,11 @@ namespace ALE {
       // Replace each of the cones with a cone over it, and check if either is empty; if so, return what's in meet at the moment.
       c0 = this->cone(c0);
       if(c0.size() == 0) {
-        return meet;
+        break;
       }
       c1 = this->cone(c1);
       if(c1.size() == 0) {
-        return meet;
+        break;
       }
     }// while(1)
     return meet;
@@ -661,11 +657,11 @@ namespace ALE {
       // Replace each of the chains with its support, and check if either is empty; if so, stop
       c0 = this->support(c0);
       if(c0.size() == 0) {
-        return join;
+        break;
       }
       c1 = this->support(c1);
       if(c1.size() == 0) {
-        return join;
+        break;
       }
     }// while(1)
     return join;
