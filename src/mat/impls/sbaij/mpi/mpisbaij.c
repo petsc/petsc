@@ -1016,8 +1016,82 @@ PetscErrorCode MatScale_MPISBAIJ(Mat A,PetscScalar aa)
 #define __FUNCT__ "MatGetRow_MPISBAIJ"
 PetscErrorCode MatGetRow_MPISBAIJ(Mat matin,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
+  Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
+  PetscScalar    *vworkA,*vworkB,**pvA,**pvB,*v_p;
+  PetscErrorCode ierr;
+  PetscInt       bs = matin->bs,bs2 = mat->bs2,i,*cworkA,*cworkB,**pcA,**pcB;
+  PetscInt       nztot,nzA,nzB,lrow,brstart = mat->rstart*bs,brend = mat->rend*bs;
+  PetscInt       *cmap,*idx_p,cstart = mat->cstart;
+
   PetscFunctionBegin;
-  if (matin) SETERRQ(PETSC_ERR_SUP,"MatGetRow is not supported for SBAIJ matrix format");
+  if (mat->getrowactive == PETSC_TRUE) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Already active");
+  mat->getrowactive = PETSC_TRUE;
+
+  if (!mat->rowvalues && (idx || v)) {
+    /*
+        allocate enough space to hold information from the longest row.
+    */
+    Mat_SeqSBAIJ *Aa = (Mat_SeqSBAIJ*)mat->A->data;
+    Mat_SeqBAIJ  *Ba = (Mat_SeqBAIJ*)mat->B->data; 
+    PetscInt     max = 1,mbs = mat->mbs,tmp;
+    for (i=0; i<mbs; i++) {
+      tmp = Aa->i[i+1] - Aa->i[i] + Ba->i[i+1] - Ba->i[i]; /* row length */
+      if (max < tmp) { max = tmp; }
+    }
+    ierr = PetscMalloc(max*bs2*(sizeof(PetscInt)+sizeof(PetscScalar)),&mat->rowvalues);CHKERRQ(ierr);
+    mat->rowindices = (PetscInt*)(mat->rowvalues + max*bs2);
+  }
+       
+  if (row < brstart || row >= brend) SETERRQ(PETSC_ERR_SUP,"Only local rows")
+  lrow = row - brstart;  /* local row index */
+
+  pvA = &vworkA; pcA = &cworkA; pvB = &vworkB; pcB = &cworkB;
+  if (!v)   {pvA = 0; pvB = 0;}
+  if (!idx) {pcA = 0; if (!v) pcB = 0;}
+  ierr = (*mat->A->ops->getrow)(mat->A,lrow,&nzA,pcA,pvA);CHKERRQ(ierr);
+  ierr = (*mat->B->ops->getrow)(mat->B,lrow,&nzB,pcB,pvB);CHKERRQ(ierr);
+  nztot = nzA + nzB;
+
+  cmap  = mat->garray;
+  if (v  || idx) {
+    if (nztot) {
+      /* Sort by increasing column numbers, assuming A and B already sorted */
+      PetscInt imark = -1;
+      if (v) {
+        *v = v_p = mat->rowvalues;
+        for (i=0; i<nzB; i++) {
+          if (cmap[cworkB[i]/bs] < cstart)   v_p[i] = vworkB[i];
+          else break;
+        }
+        imark = i;
+        for (i=0; i<nzA; i++)     v_p[imark+i] = vworkA[i];
+        for (i=imark; i<nzB; i++) v_p[nzA+i]   = vworkB[i];
+      }
+      if (idx) {
+        *idx = idx_p = mat->rowindices;
+        if (imark > -1) {
+          for (i=0; i<imark; i++) {
+            idx_p[i] = cmap[cworkB[i]/bs]*bs + cworkB[i]%bs;
+          }
+        } else {
+          for (i=0; i<nzB; i++) {
+            if (cmap[cworkB[i]/bs] < cstart)   
+              idx_p[i] = cmap[cworkB[i]/bs]*bs + cworkB[i]%bs ;
+            else break;
+          }
+          imark = i;
+        }
+        for (i=0; i<nzA; i++)     idx_p[imark+i] = cstart*bs + cworkA[i];
+        for (i=imark; i<nzB; i++) idx_p[nzA+i]   = cmap[cworkB[i]/bs]*bs + cworkB[i]%bs ;
+      } 
+    } else {
+      if (idx) *idx = 0;
+      if (v)   *v   = 0;
+    }
+  }
+  *nz = nztot;
+  ierr = (*mat->A->ops->restorerow)(mat->A,lrow,&nzA,pcA,pvA);CHKERRQ(ierr);
+  ierr = (*mat->B->ops->restorerow)(mat->B,lrow,&nzB,pcB,pvB);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1032,6 +1106,29 @@ PetscErrorCode MatRestoreRow_MPISBAIJ(Mat mat,PetscInt row,PetscInt *nz,PetscInt
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"MatGetRow() must be called first");
   }
   baij->getrowactive = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowUpperTriangular_MPISBAIJ"
+PetscErrorCode MatGetRowUpperTriangular_MPISBAIJ(Mat A)
+{
+  Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
+  Mat_SeqSBAIJ   *aA = (Mat_SeqSBAIJ*)a->A->data;
+
+  PetscFunctionBegin;
+  aA->getrow_utriangular = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreRowUpperTriangular_MPISBAIJ"
+PetscErrorCode MatRestoreRowUpperTriangular_MPISBAIJ(Mat A)
+{
+  Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
+  Mat_SeqSBAIJ   *aA = (Mat_SeqSBAIJ*)a->A->data;
+
+  PetscFunctionBegin;
+  aA->getrow_utriangular = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1129,6 +1226,7 @@ PetscErrorCode MatGetInfo_MPISBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op)
 {
   Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
+  Mat_SeqSBAIJ   *aA = (Mat_SeqSBAIJ*)a->A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1175,6 +1273,15 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op)
   case MAT_NOT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
   case MAT_NOT_SYMMETRY_ETERNAL:
+    break;
+  case MAT_IGNORE_LOWER_TRIANGULAR:
+    aA->ignore_ltriangular = PETSC_TRUE;
+    break;
+  case MAT_ERROR_LOWER_TRIANGULAR:
+    aA->ignore_ltriangular = PETSC_FALSE;
+    break;
+  case MAT_GETROW_UPPERTRIANGULAR:
+    aA->getrow_utriangular = PETSC_TRUE;
     break;
   default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
@@ -1295,7 +1402,9 @@ PetscErrorCode MatCopy_MPISBAIJ(Mat A,Mat B,MatStructure str)
   PetscFunctionBegin;
   /* If the two matrices don't have the same copy implementation, they aren't compatible for fast copy. */
   if ((str != SAME_NONZERO_PATTERN) || (A->ops->copy != B->ops->copy)) {
+    ierr = MatGetRowUpperTriangular(A);CHKERRQ(ierr);
     ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
+    ierr = MatRestoreRowUpperTriangular(A);CHKERRQ(ierr); 
   } else {
     ierr = MatCopy(a->A,b->A,str);CHKERRQ(ierr);
     ierr = MatCopy(a->B,b->B,str);CHKERRQ(ierr);  
@@ -1337,7 +1446,9 @@ PetscErrorCode MatAXPY_MPISBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     bnz = (PetscBLASInt)xb->nz;
     BLASaxpy_(&bnz,&alpha,xb->a,&one,yb->a,&one);
   } else {
+    ierr = MatGetRowUpperTriangular(X);CHKERRQ(ierr); 
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
+    ierr = MatRestoreRowUpperTriangular(X);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1471,7 +1582,9 @@ static struct _MatOps MatOps_Values = {
        0,
 /*105*/0,
        MatRealPart_MPISBAIJ,
-       MatImaginaryPart_MPISBAIJ
+       MatImaginaryPart_MPISBAIJ,
+       MatGetRowUpperTriangular_MPISBAIJ,
+       MatRestoreRowUpperTriangular_MPISBAIJ
 };
 
 
