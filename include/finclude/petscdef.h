@@ -47,7 +47,7 @@
 #define PetscFortranAddr integer4
 #endif
 
-#if defined(PETSC_USE_64BIT_INT)
+#if defined(PETSC_USE_64BIT_INDICES)
 #define PetscInt integer8
 #else
 #define PetscInt integer4

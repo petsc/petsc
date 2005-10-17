@@ -230,7 +230,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
   PetscTruth     isnull;
   PetscErrorCode ierr;
 
-#if defined(PETSC_USE_64BIT_INT)
+#if defined(PETSC_USE_64BIT_INDICES)
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
@@ -386,7 +386,7 @@ EXTERN_C_END
 #define __FUNCT__ "VecView_MPI_Socket"
 PetscErrorCode VecView_MPI_Socket(Vec xin,PetscViewer viewer)
 {
-#if defined(PETSC_USE_64BIT_INT)
+#if defined(PETSC_USE_64BIT_INDICES)
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"Not supported with 64 bit integers");
 #else

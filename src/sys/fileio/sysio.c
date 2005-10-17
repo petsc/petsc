@@ -157,13 +157,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapDouble(double *buff,PetscInt n)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 {
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT) || !defined(PETSC_WORDS_BIGENDIAN)
+#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES) || !defined(PETSC_WORDS_BIGENDIAN)
   PetscErrorCode    ierr;
 #endif
   int               wsize,err;
   size_t            m = (size_t) n,maxblock = 65536;
   char              *pp = (char*)p;
-#if (PETSC_SIZEOF_INT == 8) || !defined(PETSC_WORDS_BIGENDIAN) || defined(PETSC_USE_64BIT_INT)
+#if (PETSC_SIZEOF_INT == 8) || !defined(PETSC_WORDS_BIGENDIAN) || defined(PETSC_USE_64BIT_INDICES)
   void              *ptmp = p; 
 #endif
 
@@ -172,7 +172,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
 
   if (type == PETSC_INT){
     m   *= sizeof(PetscInt32);
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT)
+#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)
     /* read them in as 32 bit ints, later stretch into ints */
     ierr = PetscMalloc(m,&pp);CHKERRQ(ierr);
     ptmp = (void*)pp;
@@ -205,7 +205,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
 #endif
 
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT)
+#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)
   if (type == PETSC_INT) {
     PetscInt   *p_int = (PetscInt*)p,i;
     PetscInt32 *p_short = (PetscInt32 *)ptmp;
@@ -263,7 +263,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   char           *pp = (char*)p;
   int            err,wsize;
   size_t         m = (size_t)n,maxblock=65536;
-#if !defined(PETSC_WORDS_BIGENDIAN) || (PETSC_SIZEOF_INT == 8) ||  defined(PETSC_USE_64BIT_INT)
+#if !defined(PETSC_WORDS_BIGENDIAN) || (PETSC_SIZEOF_INT == 8) ||  defined(PETSC_USE_64BIT_INDICES)
   PetscErrorCode ierr;
   void           *ptmp = p; 
 #endif
@@ -274,7 +274,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
 
   if (type == PETSC_INT){
     m   *= sizeof(PetscInt32);
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT)
+#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)
     PetscInt   *p_int = (PetscInt*)p,i;
     PetscInt32 *p_short;
     ierr    = PetscMalloc(m,&pp);CHKERRQ(ierr);
@@ -314,7 +314,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
     pp += wsize;
   }
 
-#if !defined(PETSC_WORDS_BIGENDIAN) && !(PETSC_SIZEOF_INT == 8) && !defined(PETSC_USE_64BIT_INT)
+#if !defined(PETSC_WORDS_BIGENDIAN) && !(PETSC_SIZEOF_INT == 8) && !defined(PETSC_USE_64BIT_INDICES)
   if (!istemp) {
     if      (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
     else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
@@ -324,7 +324,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   }
 #endif
 
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT)
+#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)
   if (type == PETSC_INT){
     ierr = PetscFree(ptmp);CHKERRQ(ierr);
   }

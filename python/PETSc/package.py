@@ -67,7 +67,7 @@ class Package(config.base.Configure):
     self.petscdir      = self.framework.require('PETSc.utilities.petscdir',self)
     self.programs      = self.framework.require('PETSc.utilities.programs', self)
     self.sourceControl = self.framework.require('config.sourceControl',self)
-    # Need this for the with-64-bit-ints option
+    # Need this for the with-64-bit-indices option
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
     return
 

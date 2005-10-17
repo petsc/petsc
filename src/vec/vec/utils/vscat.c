@@ -41,7 +41,7 @@ static PetscErrorCode VecScatterCheckIndices_Private(PetscInt nmax,PetscInt n,Pe
 #define __FUNCT__ "VecScatterBegin_MPI_ToAll"
 PetscErrorCode VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-#if defined(PETSC_USE_64BIT_INT)
+#if defined(PETSC_USE_64BIT_INDICES)
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"Not implemented due to limited MPI support for extremely long gathers");
 #else 
@@ -162,7 +162,7 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode
 #define __FUNCT__ "VecScatterBegin_MPI_ToOne"
 PetscErrorCode VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
-#if defined(PETSC_USE_64BIT_INT)
+#if defined(PETSC_USE_64BIT_INDICES)
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"Not implemented due to limited MPI support for extremely long gathers");
 #else 

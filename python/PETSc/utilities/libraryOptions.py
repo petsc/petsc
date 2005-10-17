@@ -19,7 +19,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-log=<bool>',              nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
     help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Use CTABLE hashing for certain search functions - to conserve memory'))
     help.addArgument('PETSc', '-with-fortran-kernels=<none,generic,bgl>',  nargs.ArgString(None, None, 'Use Fortran for linear algebra kernels'))
-    help.addArgument('PETSc', '-with-64-bit-ints=<bool>',      nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
+    help.addArgument('PETSc', '-with-64-bit-indices=<bool>',   nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
     return
 
   def setupDependencies(self, framework):
@@ -71,9 +71,9 @@ class Configure(config.base.Configure):
     elif self.useFortranKernels != 'none':
       raise RuntimeError('Unknown Fortran kernel type specified :'+self.framework.argDB['with-fortran-kernels'])
 
-    if self.framework.argDB['with-64-bit-ints']:
+    if self.framework.argDB['with-64-bit-indices']:
       self.integerSize = 64
-      self.addDefine('USE_64BIT_INT', 1)
+      self.addDefine('USE_64BIT_INDICES', 1)
       if self.libraries.check('-lgcc_s.1', '__floatdidf'):
         self.compilers.LIBS += ' '+self.libraries.getLibArgument('-lgcc_s.1')
     else:
