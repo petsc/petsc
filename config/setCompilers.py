@@ -332,11 +332,10 @@ class Configure(config.base.Configure):
           if not self.checkPreprocess('#include <stdlib.h>\n'):
             raise RuntimeError('Cannot preprocess C with '+self.CPP+'.')
           self.popLanguage()
-          break
+          return
       except RuntimeError, e:
-        import os
-
         self.popLanguage()
+    raise RuntimeError('Cannot find a C preprocessor')
     return
 
   def generateCxxCompilerGuesses(self):
@@ -543,6 +542,7 @@ class Configure(config.base.Configure):
       vendor = self.vendor
       if (not vendor) and self.framework.argDB['with-gnu-compilers']:
         yield 'gfortran'
+        yield 'g95'
         yield 'g77'
       if not self.vendor is None:
         if vendor == 'ibm' or not vendor:
@@ -568,6 +568,7 @@ class Configure(config.base.Configure):
             yield 'f77'
       if self.framework.argDB['with-gnu-compilers']:
         yield 'gfortran'
+        yield 'g95'
         yield 'g77'
     return
 

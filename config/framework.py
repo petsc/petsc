@@ -333,6 +333,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if output.find('your evaluation license will expire') > -1 and output.lower().find('error') == -1:
       output = ''
     lines = output.splitlines()
+    # IBM: 
+    lines = filter(lambda s: not s.startswith('cc_r:'), lines)
     # PGI: Ignore warning about temporary license
     lines = filter(lambda s: s.find('license.dat') < 0, lines)
     # Cray XT3
