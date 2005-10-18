@@ -17,7 +17,6 @@ clients:
 		echo "include ${PETSC_DIR}/src/tops/makefile.rules" > client/$$LANGUAGE/makefile; \
 		$(OMAKE) -C client/$$LANGUAGE LANGUAGE=$$LANGUAGE libtopsclient-$$LANGUAGE;\
 	done
-	touch $@
 
 libtopsclient-c: 
 	-@${C_CC} -c ${HAVE_CCA} ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.c

@@ -15,7 +15,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c ex86.c ex87.c \
                    ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c ex99.c ex100.c \
                    ex101.c ex102.c ex103.c ex104.c
-EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F
+EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F
 
 include ${PETSC_DIR}/bmake/common/base
 
@@ -388,6 +388,10 @@ ex103: ex103.o chkopts
 ex104: ex104.o chkopts
 	-${CLINKER} -o ex104 ex104.o ${PETSC_MAT_LIB}
 	${RM} ex104.o
+
+ex105f: ex105f.o chkopts
+	-${CLINKER} -o ex105f ex105f.o ${PETSC_MAT_LIB}
+	${RM} ex105f.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -984,7 +988,7 @@ TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex
                                  runex76_1 runex76_2 runex76_3 ex76.rm ex77.PETSc  ex77.rm ex94.PETSc ex94.rm ex78.PETSc \
                                  ex78.rm ex96.PETSc runex96 ex96.rm ex95.PETSc runex95  ex95.rm 
 TESTEXAMPLES_FORTRAN	       = ex36f.PETSc runex36f ex36f.rm ex63f.PETSc runex63f ex63f.rm ex67f.PETSc ex67f.rm \
-                                 ex85f.PETSc runex85f ex85f.rm
+                                 ex85f.PETSc runex85f ex85f.rm ex105f.PETSc ex105f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex36f.PETSc runex36f ex36f.rm
 TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex5.PETSc runex5 \
                                  ex5.rm ex6.PETSc runex6 ex6.rm ex10.PETSc runex10 ex10.rm ex14.PETSc runex14 ex14.rm \
