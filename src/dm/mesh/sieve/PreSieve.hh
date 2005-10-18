@@ -202,7 +202,7 @@ namespace ALE {
       Point_set supp = this->nSupport(chain,1);
       return supp;
     };
-    Point_set                         support(Point& point) {
+    Point_set                         support(const Point& point) {
       CHKCOMM(*this);
       // IMPROVE: keep the support size in _cap
       Point_set supp = this->nSupport(point,1);
@@ -215,7 +215,7 @@ namespace ALE {
     };
     Obj<Point_set>                    nSupport(Obj<Point_set> chain, int32_t n);
     Point_set                         nSupport(Point_set& chain, int32_t n);
-    Point_set                         nSupport(Point& point, int32_t n) {
+    Point_set                         nSupport(const Point& point, int32_t n) {
       CHKCOMM(*this);
       // IMPROVE: keep the support size in _cap
       // Compute the point set obtained by taking the support recursively on a point in the cap

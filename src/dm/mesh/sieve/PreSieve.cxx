@@ -992,6 +992,7 @@ namespace ALE {
     // and use the remaining two parts -- two disjoined components of the symmetric difference of cones -- as the new chains.
     // The intersections at each stage are accumulated and their union is the meet.
     // The iteration stops after n steps in addition to the meet of the initial chains or sooner if at least one of the chains is empty.
+    ALE::Obj<ALE::Point_set> cone;
     Point_set meet; 
     // Check if any the initial chains may be empty, so that we don't perform spurious iterations
     if((c0.size() == 0) || (c1.size() == 0)) {
@@ -1013,11 +1014,13 @@ namespace ALE {
         }
       }// for(Point_set::iterator c_itor = c->begin(); c_itor != c->end(); c_itor++)
       // Replace each of the cones with a cone over it, and check if either is empty; if so, return what's in meet at the moment.
-      c0 = this->cone(c0);
+      cone = this->cone(c0);
+      c0.insert(cone->begin(), cone->end());
       if(c0.size() == 0) {
         return meet;
       }
-      c1 = this->cone(c1);
+      cone = this->cone(c1);
+      c1.insert(cone->begin(), cone->end());
       if(c1.size() == 0) {
         return meet;
       }
@@ -1104,6 +1107,7 @@ namespace ALE {
     // and use the remaining two parts -- two disjoined components of the symmetric difference of the supports -- as the new chains.
     // The intersections at each stage are accumulated and their union is the join.
     // The iteration stops after n steps apart from the join of the initial chains or sooner if at least one of the chains is empty.
+    ALE::Obj<ALE::Point_set> support;
     Point_set join; 
 
     // Check if any the initial chains may be empty, so that we don't perform spurious iterations
@@ -1127,11 +1131,13 @@ namespace ALE {
         }
       }// for(Point_set::iterator s_itor = s->begin(); s_itor != s->end(); s_itor++)
       // Replace each of the chains with its support, and check if either is empty; if so, stop
-      c0 = this->support(c0);
+      support = this->support(c0);
+      c0.insert(support->begin(), support->end());
       if(c0.size() == 0) {
         return join;
       }
-      c1 = this->support(c1);
+      support = this->support(c1);
+      c1.insert(support->begin(), support->end());
       if(c1.size() == 0) {
         return join;
       }
