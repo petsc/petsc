@@ -271,6 +271,96 @@ PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "BuildFaces"
+PetscErrorCode BuildFaces(int dim, std::map<int, int*> curSimplex, ALE::Point_set boundary, ALE::Point& simplex, ALE::Sieve *topology)
+{
+  ALE::Point_set faces;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  printf("  Building faces for boundary, dim %d\n", dim);
+  if (dim > 1) {
+    // Use the cone construction
+    for(ALE::Point_set::iterator b_itor = boundary.begin(); b_itor != boundary.end(); b_itor++) {
+      ALE::Point_set faceBoundary(boundary);
+      ALE::Point face;
+
+      printf("    boundary point (%d, %d)\n", (*b_itor).prefix, (*b_itor).index);
+      faceBoundary.erase(*b_itor);
+      ierr = BuildFaces(dim-1, curSimplex, faceBoundary, face, topology); CHKERRQ(ierr);
+      faces.insert(face);
+    }
+  } else {
+    printf("  Just set faces to boundary in 1d\n");
+    faces = boundary;
+  }
+  for(ALE::Point_set::iterator f_itor = faces.begin(); f_itor != faces.end(); f_itor++) {
+    printf("  face point (%d, %d)\n", (*f_itor).prefix, (*f_itor).index);
+  }
+  // We always create the toplevel, so we could shortcircuit somehow
+  // Should not have to loop here since the meet of just 2 boundary elements is an element
+  ALE::Point_set::iterator f_itor = faces.begin();
+  ALE::Point start = *f_itor;
+  f_itor++;
+  ALE::Point next = *f_itor;
+  ALE::Obj<ALE::Point_set> preElement = topology->nJoin(start, next, 1);
+
+  if (preElement->size() > 0) {
+    simplex = *preElement->begin();
+    printf("  Found old simplex (%d, %d)\n", simplex.prefix, simplex.index);
+  } else {
+    simplex = ALE::Point(0, (*curSimplex[dim])++);
+    topology->addCone(faces, simplex);
+    printf("  Added simplex (%d, %d), dim %d\n", simplex.prefix, simplex.index, dim);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "BuildTopology"
+PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices, PetscInt numVertices, PetscScalar *vertices, ALE::Sieve *topology, ALE::PreSieve *orientation)
+{
+  int            curVertex  = numSimplices;
+  int            curSimplex = 0;
+  int            newElement = numSimplices+numVertices;
+  std::map<int,int*> curElement;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  curElement[0] = &curVertex;
+  curElement[1] = &newElement;
+  curElement[2] = &curSimplex;
+  for(int s = 0; s < numSimplices; s++) {
+    ALE::Point simplex(0, s);
+    ALE::Point_set cellTuple;
+    ALE::Point_set boundary;
+
+    /* Build the simplex */
+    boundary.clear();
+    for(int b = 0; b < dim+1; b++) {
+      boundary.insert(ALE::Point(0, simplices[s*3+b]+numSimplices));
+    }    
+    ierr = BuildFaces(dim, curElement, boundary, simplex, topology); CHKERRQ(ierr);
+    /* Orient the simplex */
+    ALE::Point element = ALE::Point(0, simplices[s*3+0]+numSimplices);
+    cellTuple.clear();
+    cellTuple.insert(element);
+    for(int b = 1; b < dim+1; b++) {
+      ALE::Point next = ALE::Point(0, simplices[s*3+b]+numSimplices);
+      ALE::Obj<ALE::Point_set> join = topology->nJoin(element, next, b);
+
+      if (join->size() == 0) {
+        SETERRQ(PETSC_ERR_LIB, "Invalid join");
+      }
+      element = *join->begin();
+      cellTuple.insert(element);
+    }
+    orientation->addCone(cellTuple, simplex);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "Simplicializer"
 PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces, PetscInt numVertices, PetscScalar *vertices, PetscInt numBoundaryVertices, PetscInt *boundaryVertices, Mesh *mesh)
 {
@@ -278,7 +368,6 @@ PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces,
   ALE::Sieve    *topology = new ALE::Sieve(comm);
   ALE::Sieve    *boundary = new ALE::Sieve(comm);
   ALE::PreSieve *orientation = new ALE::PreSieve(comm);
-  PetscInt       curEdge = numFaces+numVertices;
   PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
@@ -291,42 +380,10 @@ PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces,
   boundary->setVerbosity(11);
   /* Create serial sieve */
   if (rank == 0) {
-    for(int f = 0; f < numFaces; f++) {
-      ALE::Point face(0, f);
-      ALE::Point_set edges;
-      ALE::Point_set cellTuple;
-
-      edges.clear();
-      cellTuple.clear();
-      for(int e = 0; e < 3; e++) {
-        ALE::Point vS = ALE::Point(0, faces[f*3+e]+numFaces);
-        ALE::Point vE = ALE::Point(0, faces[f*3+((e+1)%3)]+numFaces);
-        ALE::Obj<ALE::Point_set> preEdge = topology->support(vS);
-        ALE::Point_set endpoints;
-        ALE::Point edge;
-
-        preEdge->meet(topology->support(vE));
-        if (preEdge->size() > 0) {
-          edge = *preEdge->begin();
-        } else {
-          endpoints.clear();
-          endpoints.insert(vS);
-          endpoints.insert(vE);
-          edge = ALE::Point(0, curEdge++);
-          topology->addCone(endpoints, edge);
-        }
-        edges.insert(edge);
-        if (e == 0) {
-          cellTuple.insert(vS);
-          cellTuple.insert(edge);
-        }
-      }
-      topology->addCone(edges, face);
-      cellTuple.insert(face);
-      orientation->addCone(cellTuple, face);
-    }
+    ierr = BuildTopology(2,numFaces, faces, numVertices, vertices, topology, orientation);CHKERRQ(ierr);
   }
   topology->view("Serial Simplicializer topology");
+  orientation->view("Serial Simplicializer orientation");
   ierr = MeshSetTopology(m, (void *) topology);CHKERRQ(ierr);
   ierr = MeshSetOrientation(m, (void *) orientation);CHKERRQ(ierr);
   /* Create boundary */
@@ -344,10 +401,12 @@ PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces,
     ierr = MeshSetBoundary(m, (void *) boundary);CHKERRQ(ierr);
   }
   topology->view("Simplicializer boundary topology");
+  /* Partition the topology and orientation */
   ierr = ComputeSievePartition(topology);CHKERRQ(ierr);
   ierr = PartitionPreSieve(topology);CHKERRQ(ierr);
   ierr = ComputePreSievePartition(orientation, topology->leaves());CHKERRQ(ierr);
   ierr = PartitionPreSieve(orientation);CHKERRQ(ierr);
+  /* Add the trivial vertex orientation */
   ALE::Obj<ALE::Point_set> roots = topology->depthStratum(0);
   for(ALE::Point_set::iterator vertex_itor = roots->begin(); vertex_itor != roots->end(); vertex_itor++) {
     ALE::Point v = *vertex_itor;
@@ -520,19 +579,19 @@ PetscErrorCode CreateMeshCoordinates(Mesh mesh)
   CreateTestMesh - Create a simple square mesh
 
          13
-  14--28----31---12
+  14--29----31---12
     |\    |\    |
     2 2 5 2 3 7 3
-    7  6  9  0  2
+    7  6  8  0  2
     | 4 \ | 6 \ |
     |    \|    \|
   15--20-16-24---11
     |\    |\    |
     1 1 1 2 2 3 2
-    9  8  1  3  5
+    8  7  1  2  5
     | 0 \ | 2 \ |
     |    \|    \|
-   8--17----22---10
+   8--19----23---10
           9
 */
 PetscErrorCode CreateTestMesh(MPI_Comm comm, Mesh *mesh)
