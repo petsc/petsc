@@ -374,7 +374,6 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,void*),PetscErrorCode (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
   PetscInt       i,nlevels = dmmg[0]->nlevels,period = 1;
   PetscTruth     snesmonitor,mffdoperator,mffd,fdjacobian;
 #if defined(PETSC_HAVE_ADIC)
@@ -441,7 +440,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     }
     
     if (!dmmg[i]->B) {
-      ierr = MPI_Comm_size(dmmg[i]->comm,&size);CHKERRQ(ierr);
       ierr = DMGetMatrix(dmmg[i]->dm,MATAIJ,&dmmg[i]->B);CHKERRQ(ierr);
     } 
     if (!dmmg[i]->J) {

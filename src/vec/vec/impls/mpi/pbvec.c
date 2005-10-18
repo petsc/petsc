@@ -145,10 +145,9 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar arr
 {
   Vec_MPI        *s;
   PetscErrorCode ierr;
-  PetscMPIInt    size,rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(v->comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
 
   v->bops->publish   = VecPublish_MPI;

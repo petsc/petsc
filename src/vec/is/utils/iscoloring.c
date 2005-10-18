@@ -295,11 +295,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningToNumbering(IS part,IS *is)
   MPI_Comm       comm;
   PetscInt       i,*indices,np,npt,n,*starts,*sums,*lsizes,*newi;
   PetscErrorCode ierr;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* count the number of partitions, i.e., virtual processors */
   ierr = ISGetLocalSize(part,&n);CHKERRQ(ierr);
@@ -381,11 +379,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS part,PetscInt count[])
   MPI_Comm       comm;
   PetscInt            i,*indices,np,npt,n,*lsizes;
   PetscErrorCode ierr;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* count the number of partitions */
   ierr = ISGetLocalSize(part,&n);CHKERRQ(ierr);

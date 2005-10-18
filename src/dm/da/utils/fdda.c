@@ -177,7 +177,6 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,M,N,dim,s,k,nc,col;
-  PetscMPIInt            size;
   MPI_Comm               comm;
   DAPeriodicType         wrap;
   DAStencilType          st;
@@ -194,7 +193,6 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* special case as taught to us by Paul Hovland */
   if (st == DA_STENCIL_STAR && s == 1) {
@@ -253,7 +251,6 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 {
   PetscErrorCode  ierr;
   PetscInt        xs,ys,nx,ny,i,j,gxs,gys,gnx,gny,m,n,p,dim,s,k,nc,col,zs,gzs,ii,l,nz,gnz,M,N,P;
-  PetscMPIInt     size;
   MPI_Comm        comm;
   DAPeriodicType  wrap;
   DAStencilType   st;
@@ -283,7 +280,6 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* create the coloring */
   if (ctype == IS_COLORING_LOCAL) {
@@ -333,7 +329,6 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 {
   PetscErrorCode  ierr;
   PetscInt        xs,nx,i,i1,gxs,gnx,l,m,M,dim,s,nc,col;
-  PetscMPIInt     size;
   MPI_Comm        comm;
   DAPeriodicType  wrap;
   ISColoringValue *colors;
@@ -355,7 +350,6 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   ierr = DAGetCorners(da,&xs,0,0,&nx,0,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* create the coloring */
   if (ctype == IS_COLORING_LOCAL) {
