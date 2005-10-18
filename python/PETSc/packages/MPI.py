@@ -320,8 +320,11 @@ class Configure(PETSc.package.Package):
       args.append('--disable-cxx')
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')      
+      if self.compilers.fortranIsF90:
+        args.append('--disable-F77')
+      else:
+        args.append('--disable-f90')      
       fc = self.framework.getCompiler()
-      args.append('--disable-f90')      
       if self.compilers.fortranIsF90:
         try:
           output, error, status = self.executeShellCommand(fc+' -v')
@@ -335,6 +338,7 @@ class Configure(PETSc.package.Package):
       self.framework.popLanguage()
     else:
       args.append('--disable-f77')
+      args.append('--disable-f90')      
     if not self.setCompilers.staticLibraries and self.framework.argDB['with-mpi-shared']:
       if self.compilers.isGCC:
         if config.setCompilers.Configure.isDarwin():

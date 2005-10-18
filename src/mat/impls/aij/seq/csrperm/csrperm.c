@@ -236,7 +236,7 @@ PetscErrorCode MatAssemblyEnd_SeqCSRPERM(Mat A, MatAssemblyType mode)
   (*csrperm->AssemblyEnd_SeqAIJ)(A, mode);
 
   /* Now calculate the permutation and grouping information. */
-  ierr = SeqCSRPERM_create_perm(A);
+  ierr = SeqCSRPERM_create_perm(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

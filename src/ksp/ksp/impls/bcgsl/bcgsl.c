@@ -25,7 +25,6 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
   PetscInt       maxit;
   PetscInt       h, i, j, k, vi, ell;
-  PetscMPIInt    rank;
   PetscBLASInt   ldMZ,bierr;
 
   PetscErrorCode ierr;
@@ -50,8 +49,6 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   }
 
   /* Prime the iterative solver */
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-
   ierr = KSPInitialResidual(ksp, VX, VTM, VB, VVR[0], ksp->vec_rhs);CHKERRQ(ierr);
   ierr = VecNorm(VVR[0], NORM_2, &zeta0);CHKERRQ(ierr);
   rnmax_computed = zeta0;
