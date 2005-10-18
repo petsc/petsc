@@ -327,7 +327,8 @@
 
 !  Local variables:
       PetscInt  i,j
-      PetscScalar   temp1,temp,hx,hy,sc,one,hxdhy,hydhx
+      PetscScalar   hx,hy,hxdhy,hydhx
+      PetscScalar   temp1,temp,sc,one
 
 !  Set parameters
 
@@ -483,7 +484,8 @@
 
 !  Local variables:
       PetscInt  row,col(5),i,j,i1,i5
-      PetscScalar   two,one,hx,hy,hxdhy,hydhx,sc,v(5)
+      PetscScalar   hx,hy,hxdhy,hydhx
+      PetscScalar   two,one,sc,v(5)
 
 !  Set parameters
 
