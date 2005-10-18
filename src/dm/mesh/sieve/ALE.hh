@@ -230,7 +230,7 @@ namespace ALE {
     };
     class Cmp {
     public: 
-      bool operator()(const Point& p, const Point& q) {
+      const bool operator()(const Point& p, const Point& q) {
         return( (p.prefix < q.prefix) || ((p.prefix == q.prefix) && (p.index < q.index)));
       };
     };
@@ -359,7 +359,7 @@ namespace ALE {
   public:
     //
     Coaster() : petscObj(NULL) {this->clear();};
-    Coaster(MPI_Comm comm) : petscObj(NULL) {this->clear(); this->setComm(comm);};
+    Coaster(MPI_Comm c) : petscObj(NULL) {this->clear(); this->setComm(c);};
     virtual ~Coaster(){this->clear();};
     //
     virtual Coaster&          clear();

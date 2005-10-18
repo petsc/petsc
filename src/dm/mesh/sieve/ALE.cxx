@@ -6,15 +6,15 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Coaster::setComm"
-  void Coaster::setComm(MPI_Comm comm) {
-    if (this->comm == comm) {
+  void Coaster::setComm(MPI_Comm c) {
+    if (this->comm == c) {
       return;
     }
-    if ((this->comm != MPI_COMM_NULL) && (this->comm != comm)) {
+    if ((this->comm != MPI_COMM_NULL) && (this->comm != c)) {
       throw ALE::Exception("Cannot reset the communicator");
     }
     PetscErrorCode ierr;
-    this->comm = comm;
+    this->comm = c;
     ierr = MPI_Comm_rank(this->comm, &this->commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
     ierr = MPI_Comm_size(this->comm, &this->commSize); CHKERROR(ierr, "Error in MPI_Comm_rank"); 
     ierr = PetscObjectCreate(this->comm, &this->petscObj); CHKERROR(ierr, "Failed on PetscObjectCreate");

@@ -22,10 +22,10 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::setComm"
-  void Sieve::setComm(MPI_Comm comm) {
-    Coaster::setComm(comm);
-    this->_depth.setComm(comm);
-    this->_height.setComm(comm);
+  void Sieve::setComm(MPI_Comm c) {
+    Coaster::setComm(c);
+    this->_depth.setComm(c);
+    this->_height.setComm(c);
   }// Coaster::setComm()
 
 
@@ -831,13 +831,12 @@ namespace ALE {
   #define __FUNCT__ "Sieve::view"
   void Sieve::view(const char *name) {
     CHKCOMM(*this);    
-    MPI_Comm comm = this->comm;
     int32_t  rank = this->commRank;
     PetscErrorCode ierr;
     ostringstream txt;
     if(name != NULL) {
       // Print header
-      ierr = PetscPrintf(comm, "Viewing sieve %s (square brackets contain depth, height pairs)\n", name); 
+      ierr = PetscPrintf(this->comm, "Viewing sieve %s (square brackets contain depth, height pairs)\n", name); 
       CHKERROR(ierr, "Error in PetscPrintf");
     }
     // Use a string stream to accumulate output that is then submitted to PetscSynchronizedPrintf
@@ -891,9 +890,9 @@ namespace ALE {
       }
       txt  << "\n";
     }
-    ierr = PetscSynchronizedPrintf(comm, txt.str().c_str());
+    ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
     CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-    ierr = PetscSynchronizedFlush(comm);
+    ierr = PetscSynchronizedFlush(this->comm);
     CHKERROR(ierr, "Error in PetscSynchronizedFlush");
 
   }// Sieve::view()

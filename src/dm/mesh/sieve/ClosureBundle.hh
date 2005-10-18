@@ -82,7 +82,7 @@ namespace ALE {
     virtual ~ClosureBundle(){};
     void view(const char *name);
     //
-    void setComm(MPI_Comm& comm) {this->comm = comm; __reset();};
+    virtual void            setComm(MPI_Comm c) {this->comm = c; __reset();};
     //
     ClosureBundle&          setAssemblyPolicy(BundleAssemblyPolicy policy);
     bool                    getFiberIndicesCachingPolicy() {return this->_cacheFiberIndices;};

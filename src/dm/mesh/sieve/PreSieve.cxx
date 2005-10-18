@@ -1326,7 +1326,6 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::view"
   void PreSieve::view(const char *name) {
     CHKCOMM(*this);    
-    MPI_Comm comm = this->comm;
     int32_t  rank = this->commRank;
     PetscErrorCode ierr;
     ostringstream txt, hdr;
@@ -1341,7 +1340,7 @@ namespace ALE {
       hdr << name;
     } 
     // Print header
-    ierr = PetscPrintf(comm, hdr.str().c_str()); CHKERROR(ierr, "Error in PetscPrintf");
+    ierr = PetscPrintf(this->comm, hdr.str().c_str()); CHKERROR(ierr, "Error in PetscPrintf");
     // Use a string stream to accumulate output that is then submitted to PetscSynchronizedPrintf
     Point_set points = this->space();
     txt  << "[" << rank << "]: space of size " << points.size() << " : ";
@@ -1393,9 +1392,9 @@ namespace ALE {
       }
       txt  << "\n";
     }
-    ierr = PetscSynchronizedPrintf(comm, txt.str().c_str());
+    ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
     CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-    ierr = PetscSynchronizedFlush(comm);
+    ierr = PetscSynchronizedFlush(this->comm);
     CHKERROR(ierr, "Error in PetscSynchronizedFlush");
 
   }// PreSieve::view()
@@ -1509,7 +1508,6 @@ namespace ALE {
   void PreSieve::__determinePointOwners(Point_set& points, int32_t *LeaseData, std::map<Point, int32_t, Point::Cmp>& owner) {
     CHKCOMM(*this);
     PetscErrorCode ierr;
-    MPI_Comm comm = this->comm;
     int32_t  size = this->commSize;
     int32_t  rank = this->commRank;
 
@@ -1524,7 +1522,7 @@ namespace ALE {
       }
     }
     int32_t MinGlobalPrefix;
-    ierr = MPI_Allreduce(&minGlobalPrefix, &MinGlobalPrefix, 1, MPIU_INT, MPI_MIN, comm); CHKERROR(ierr, "Error in MPI_Allreduce");
+    ierr = MPI_Allreduce(&minGlobalPrefix, &MinGlobalPrefix, 1, MPIU_INT, MPI_MIN, this->comm); CHKERROR(ierr, "Error in MPI_Allreduce");
 
     int__int BaseLowerBound, BaseUpperBound; // global quantities computed from the local quantities below
     int__int BaseMaxSize;                    // the maximum size of the global base index space by global prefix
@@ -1555,9 +1553,9 @@ namespace ALE {
       // Compute global bounds
       for(int32_t d = -1; d >= MinGlobalPrefix; d--){
         int32_t lowerBound, upperBound, maxSize;
-        ierr   = MPI_Allreduce(&baseLowerBound[d],&lowerBound,1,MPIU_INT,MPI_MIN,comm); 
+        ierr   = MPI_Allreduce(&baseLowerBound[d],&lowerBound,1,MPIU_INT,MPI_MIN,this->comm); 
         CHKERROR(ierr, "Error in MPI_Allreduce");
-        ierr   = MPI_Allreduce(&baseUpperBound[d],&upperBound,1,MPIU_INT,MPI_MAX,comm); 
+        ierr   = MPI_Allreduce(&baseUpperBound[d],&upperBound,1,MPIU_INT,MPI_MAX,this->comm); 
         CHKERROR(ierr, "Error in MPI_Allreduce");
         maxSize = upperBound - lowerBound + 1;
         if(maxSize > 0) { // there are actually some indices in this global prefix
@@ -1686,7 +1684,6 @@ namespace ALE {
     }
     
     PetscErrorCode ierr;
-    MPI_Comm comm = this->comm;
     int32_t  size = this->commSize;
     int32_t  rank = this->commRank;
 
@@ -1760,15 +1757,15 @@ namespace ALE {
     
     // Now we accumulate the max lease size and the total number of renters
     int32_t MaxLeaseSize, RenterCount;
-    ierr = PetscMaxSum(comm,LeaseData,&MaxLeaseSize,&RenterCount); 
+    ierr = PetscMaxSum(this->comm,LeaseData,&MaxLeaseSize,&RenterCount); 
     CHKERROR(ierr,"Error in PetscMaxSum");
     ierr = PetscLogInfo((0,"PreSieve::__computeCompletion: Number of renters %d\n", RenterCount)); 
     CHKERROR(ierr,"Error in PetscLogInfo");
 
     if(debug) { /* -------------------------------------------------------------- */
-      ierr = PetscSynchronizedPrintf(comm, "[%d]: __computeCompletion: RenterCount = %d, MaxLeaseSize = %d\n", rank, RenterCount, MaxLeaseSize);
+      ierr = PetscSynchronizedPrintf(this->comm, "[%d]: __computeCompletion: RenterCount = %d, MaxLeaseSize = %d\n", rank, RenterCount, MaxLeaseSize);
       CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-      ierr = PetscSynchronizedFlush(comm);
+      ierr = PetscSynchronizedFlush(this->comm);
       CHKERROR(ierr, "Error in PetscSynchronizedFlush");
     } /* ----------------------------------------------------------------------- */
     
@@ -1784,7 +1781,7 @@ namespace ALE {
       ierr = PetscMalloc((RenterCount)*sizeof(MPI_Request),&Renter_waits);                CHKERROR(ierr,"Error in PetscMalloc");
     }
     for (int32_t i=0; i<RenterCount; i++) {
-      ierr = MPI_Irecv(RentedNodes+3*MaxLeaseSize*i,3*MaxLeaseSize,MPIU_INT,MPI_ANY_SOURCE,tag1,comm,Renter_waits+i);
+      ierr = MPI_Irecv(RentedNodes+3*MaxLeaseSize*i,3*MaxLeaseSize,MPIU_INT,MPI_ANY_SOURCE,tag1,this->comm,Renter_waits+i);
       CHKERROR(ierr,"Error in MPI_Irecv");
     }
     
@@ -1793,9 +1790,9 @@ namespace ALE {
     ierr = PetscLogInfo((0,"PreSieve::__computeCompletion: Number of lessors %d\n",LessorCount));
     CHKERROR(ierr,"Error in PetscLogInfo");
     if(debug) { /* -------------------------------------------------------------- */
-      ierr = PetscSynchronizedPrintf(comm, "[%d]: __computeCompletion: LessorCount = %d\n", rank, LessorCount);
+      ierr = PetscSynchronizedPrintf(this->comm, "[%d]: __computeCompletion: LessorCount = %d\n", rank, LessorCount);
       CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-      ierr = PetscSynchronizedFlush(comm);
+      ierr = PetscSynchronizedFlush(this->comm);
       CHKERROR(ierr, "Error in PetscSynchronizedFlush");
     } /* ----------------------------------------------------------------------- */
     
@@ -1826,8 +1823,8 @@ namespace ALE {
         txt << "[" << i << ", " << Lessors[i] << ", " << LeaseSizes[i] << "] ";
       }
       txt << "\n";
-      ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-      ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+      ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+      ierr = PetscSynchronizedFlush(this->comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
     }/* -----------------------------------  */
     if(debug2) { /* ----------------------------------- */
       ostringstream txt;
@@ -1838,8 +1835,8 @@ namespace ALE {
         txt << i << "-->" << j << "; ";
       }
       txt << "\n";
-      ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-      ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+      ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+      ierr = PetscSynchronizedFlush(this->comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
     }/* -----------------------------------  */
 
     
@@ -1873,7 +1870,7 @@ namespace ALE {
       ierr = PetscMalloc((LessorCount)*sizeof(MPI_Request),&Lessor_waits);CHKERROR(ierr,"Error in PetscMalloc");
     }
     for (int32_t i=0; i<LessorCount; i++) {
-      ierr      = MPI_Isend(LeasedNodes+LessorOffsets[i],3*LeaseSizes[i],MPIU_INT,Lessors[i],tag1,comm,&Lessor_waits[i]);
+      ierr      = MPI_Isend(LeasedNodes+LessorOffsets[i],3*LeaseSizes[i],MPIU_INT,Lessors[i],tag1,this->comm,&Lessor_waits[i]);
       CHKERROR(ierr,"Error in MPI_Isend");
     }
     
@@ -1921,8 +1918,8 @@ namespace ALE {
         txt << "\n";
       }
       // Now send the C-string behind txt to PetscSynchronizedPrintf
-      ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-      ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+      ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+      ierr = PetscSynchronizedFlush(this->comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
     }/* -----------------------------------  */
     
     // wait on the original sends to the lessors
@@ -1946,7 +1943,7 @@ namespace ALE {
     PetscMPIInt    tag2;
     ierr = PetscObjectGetNewTag(this->petscObj, &tag2); CHKERROR(ierr, "Failded on PetscObjectGetNewTag");
     for (int32_t i=0; i<LessorCount; i++) {
-      ierr = MPI_Irecv(NeighborCounts+LessorOffsets[i],3*LeaseSizes[i],MPIU_INT,Lessors[i],tag2,comm,&Lessor_waits[i]);
+      ierr = MPI_Irecv(NeighborCounts+LessorOffsets[i],3*LeaseSizes[i],MPIU_INT,Lessors[i],tag2,this->comm,&Lessor_waits[i]);
       CHKERROR(ierr,"Error in MPI_Irecv");
     }
     // pack and send messages back to renters; we need to send 3 integers per rental (2 for Point, 1 for sharer count) 
@@ -1958,9 +1955,9 @@ namespace ALE {
       TotalRentalCount += (*nodeRenters_itor).second.size();
     }
     if(debug2) {
-      ierr = PetscSynchronizedPrintf(comm, "[%d]: TotalRentalCount %d\n", rank, TotalRentalCount); 
+      ierr = PetscSynchronizedPrintf(this->comm, "[%d]: TotalRentalCount %d\n", rank, TotalRentalCount); 
       CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-      ierr = PetscSynchronizedFlush(comm); CHKERROR(ierr, "PetscSynchronizedFlush");
+      ierr = PetscSynchronizedFlush(this->comm); CHKERROR(ierr, "PetscSynchronizedFlush");
     }/* -----------------------------------  */
 
     // Allocate sharer counts array for all rentals
@@ -1985,7 +1982,7 @@ namespace ALE {
         SharerCounts[cntr++] = NodeRenters[node].size()-1;
       }
       // Send message to renter
-      ierr      = MPI_Isend(SharerCounts+RenterOffset,3*RenterLeaseSizes[a],MPIU_INT,Renters[a],tag2,comm,Renter_waits+a);
+      ierr      = MPI_Isend(SharerCounts+RenterOffset,3*RenterLeaseSizes[a],MPIU_INT,Renters[a],tag2,this->comm,Renter_waits+a);
       CHKERROR(ierr, "Error in MPI_Isend");
       // Offset is advanced by thrice the number of leased nodes, since we store 3 integers per leased node: Point and cone size
       RenterOffset = cntr;
@@ -2018,8 +2015,8 @@ namespace ALE {
         }
       }
       txt << "\n";
-      ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-      ierr = PetscSynchronizedFlush(comm); CHKERROR(ierr, "PetscSynchronizedFlush");
+      ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+      ierr = PetscSynchronizedFlush(this->comm); CHKERROR(ierr, "PetscSynchronizedFlush");
     }/* -----------------------------------  */
 
 
@@ -2057,8 +2054,8 @@ namespace ALE {
           txt << "[" << Lessors[i] <<","  <<  NeighborCountsByLessor[i] << "]; ";
       }
       txt << "\n";
-      ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-      ierr = PetscSynchronizedFlush(comm); CHKERROR(ierr, "PetscSynchronizedFlush");
+      ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+      ierr = PetscSynchronizedFlush(this->comm); CHKERROR(ierr, "PetscSynchronizedFlush");
     }/* -----------------------------------  */
     int32_t *Neighbors = 0;
     if(TotalNeighborCount) {
@@ -2071,7 +2068,7 @@ namespace ALE {
     int32_t lessorOffset = 0;
     for(int32_t i=0; i<LessorCount; i++) {
       if(NeighborCountsByLessor[i]) { // We expect messages from lessors with a non-zero NeighborCountsByLessor entry only
-        ierr = MPI_Irecv(Neighbors+lessorOffset,2*NeighborCountsByLessor[i],MPIU_INT,Lessors[i],tag3,comm,&Lessor_waits[i]);
+        ierr = MPI_Irecv(Neighbors+lessorOffset,2*NeighborCountsByLessor[i],MPIU_INT,Lessors[i],tag3,this->comm,&Lessor_waits[i]);
         CHKERROR(ierr,"Error in MPI_Irecv");
         lessorOffset += 2*NeighborCountsByLessor[i];
       }
@@ -2145,15 +2142,15 @@ namespace ALE {
       }// for(int32_t i = 0; i < RenterLeaseSizes[a]; i++) {
       // Send message to renter only if the segment size is positive
       if(SegmentSize > 0) {
-        ierr      = MPI_Isend(Sharers+RenterOffset,SegmentSize,MPIU_INT,Renters[a],tag3,comm,Renter_waits+a);
+        ierr      = MPI_Isend(Sharers+RenterOffset,SegmentSize,MPIU_INT,Renters[a],tag3,this->comm,Renter_waits+a);
         CHKERROR(ierr, "Error in MPI_Isend");
       }
       // Offset is advanced by the segmentSize
       RenterOffset += SegmentSize;
     }//  for(int32_t a = 0; a < RenterCount; a++) {
     if(debug) {
-      ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-      ierr = PetscSynchronizedFlush(comm); CHKERROR(ierr, "PetscSynchronizedFlush");      
+      ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+      ierr = PetscSynchronizedFlush(this->comm); CHKERROR(ierr, "PetscSynchronizedFlush");      
     }
      
     // Wait on receives from lessors with the neighbor counts
@@ -2190,8 +2187,8 @@ namespace ALE {
         }
         txt << "\n";
       }// for(int32_t i = 0; i < LessorCount; i++)
-      ierr = PetscSynchronizedPrintf(comm,txt.str().c_str());CHKERROR(ierr,"Error in PetscSynchronizedPrintf");
-      ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+      ierr = PetscSynchronizedPrintf(this->comm,txt.str().c_str());CHKERROR(ierr,"Error in PetscSynchronizedPrintf");
+      ierr = PetscSynchronizedFlush(this->comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
     }/* -----------------------------------  */
 
     // This concludes the interaction of lessors and renters, and the exchange is completed by a peer-to-peer neighbor cone swap
@@ -2262,8 +2259,8 @@ namespace ALE {
       txt3 << "NeighborConeSizeIn[" << neighbor << "]: " << NeighborConeSizeIn[neighbor] << "\n";
     }//for(std::map<int32_t, Point__int>::iterator np_itor=NeighborPointConeSizeIn.begin();np_itor!=NeighborPointConeSizeIn.end(); np_itor++)
     if(debug2) {
-      ierr = PetscSynchronizedPrintf(comm,txt3.str().c_str());CHKERROR(ierr,"Error in PetscSynchronizedPrintf");
-      ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+      ierr = PetscSynchronizedPrintf(this->comm,txt3.str().c_str());CHKERROR(ierr,"Error in PetscSynchronizedPrintf");
+      ierr = PetscSynchronizedFlush(this->comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
     }
     if(debug) {/* --------------------------------------------------------------------------------------------- */
       ostringstream txt;
@@ -2275,9 +2272,9 @@ namespace ALE {
         txt << "[" << rank << "]: __computeCompletion: size of cone from " << neighbor << ": " << coneSize << "\n";
 
       }//int__int::iterator np_itor=NeighborConeSizeIn.begin();np_itor!=NeighborConeSizeIn.end();np_itor++)
-      ierr = PetscSynchronizedPrintf(comm, txt.str().c_str());
+      ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
       CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-      ierr = PetscSynchronizedFlush(comm);
+      ierr = PetscSynchronizedFlush(this->comm);
       CHKERROR(ierr, "Error in PetscSynchronizedFlush");
     }/* --------------------------------------------------------------------------------------------- */
     // Now we can allocate a receive buffer to receive all of the remote cones from neighbors
@@ -2309,15 +2306,15 @@ namespace ALE {
     int32_t NeighborOffset = 0;
     int32_t n = 0;
     if(debug2) {
-      ierr = PetscSynchronizedPrintf(comm, "[%d]: __computeCompletion: NeighborConeSizeIn.size() = %d\n",rank, NeighborConeSizeIn.size());
+      ierr = PetscSynchronizedPrintf(this->comm, "[%d]: __computeCompletion: NeighborConeSizeIn.size() = %d\n",rank, NeighborConeSizeIn.size());
       CHKERROR(ierr, "Error in PetscSynchornizedPrintf");
-      ierr = PetscSynchronizedFlush(comm);
+      ierr = PetscSynchronizedFlush(this->comm);
       CHKERROR(ierr, "Error in PetscSynchornizedFlush");
       if(NeighborConeSizeIn.size()) {
-        ierr=PetscSynchronizedPrintf(comm, "[%d]: __computeCompletion: *NeighborConeSizeIn.begin() = (%d,%d)\n",
+        ierr=PetscSynchronizedPrintf(this->comm, "[%d]: __computeCompletion: *NeighborConeSizeIn.begin() = (%d,%d)\n",
                                      rank, (*NeighborConeSizeIn.begin()).first, (*NeighborConeSizeIn.begin()).second);
         CHKERROR(ierr, "Error in PetscSynchornizedPrintf");
-        ierr = PetscSynchronizedFlush(comm);
+        ierr = PetscSynchronizedFlush(this->comm);
         CHKERROR(ierr, "Error in PetscSynchornizedFlush");
         
       }
@@ -2326,7 +2323,7 @@ namespace ALE {
       int32_t neighbor = (*n_itor).first;
       int32_t coneSize = (*n_itor).second;
       // ASSUMPTION on Point type affects NeighborOffset and coneSize
-      ierr = MPI_Irecv(ConesIn+NeighborOffset,2*coneSize,MPIU_INT,neighbor,tag4,comm, NeighborsIn_waits+n);
+      ierr = MPI_Irecv(ConesIn+NeighborOffset,2*coneSize,MPIU_INT,neighbor,tag4,this->comm, NeighborsIn_waits+n);
       CHKERROR(ierr, "Error in MPI_Irecv");
       // ASSUMPTION on Point type affects NeighborOffset
       NeighborOffset += 2*coneSize;
@@ -2398,16 +2395,16 @@ namespace ALE {
       }//for(Point__int::iterator pConeSize_itor = (*np_itor).second.begin(); pConeSize_itor!=(*np_itor).second.end();pConeSize_itor++)
       int32_t coneSize = NeighborConeSizeOut[neighbor];
       // ASSUMPTION on Point type  affects the usage of coneSize and the calculation of Neighbor offset
-      ierr = MPI_Isend(ConesOut+NeighborOffset,2*coneSize,MPIU_INT,neighbor,tag4,comm, NeighborsOut_waits+n);
+      ierr = MPI_Isend(ConesOut+NeighborOffset,2*coneSize,MPIU_INT,neighbor,tag4,this->comm, NeighborsOut_waits+n);
       CHKERROR(ierr, "Error in MPI_Isend");
       // ASSUMPTION on Point type affects the computation of NeighborOffset -- double coneSize if Point uses up 2 ints
       NeighborOffset += 2*coneSize; // keep track of offset
       n++;  // count neighbors
     }//for(std::map<int32_t,Point__int>::iterator np_itor=NeighborPointConeSizeIn.begin();np_itor!=NeighborPointConeSizeIn.end();np_itor++){
     if(debug) {/* --------------------------------------------------------------------------------------------- */
-      ierr = PetscSynchronizedPrintf(comm, txt2.str().c_str());
+      ierr = PetscSynchronizedPrintf(this->comm, txt2.str().c_str());
       CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-      ierr = PetscSynchronizedFlush(comm);
+      ierr = PetscSynchronizedFlush(this->comm);
       CHKERROR(ierr, "Error in PetscSynchronizedFlush");
     }/* --------------------------------------------------------------------------------------------- */
 
@@ -2507,8 +2504,8 @@ namespace ALE {
         }
         txt << "\n";
       }
-      ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-      ierr = PetscSynchronizedFlush(comm); CHKERROR(ierr, "PetscSynchronizedFlush");
+      ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+      ierr = PetscSynchronizedFlush(this->comm); CHKERROR(ierr, "PetscSynchronizedFlush");
       txt << "[" << rank << "]: debug end\n";
     }/* -----------------------------------  */
 

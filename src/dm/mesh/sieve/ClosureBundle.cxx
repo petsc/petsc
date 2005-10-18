@@ -516,7 +516,6 @@ namespace ALE {
   #define __FUNCT__ "ClosureBundle::view"
   void ClosureBundle::view(const char *name) {
     CHKCOMM(*this);    
-    MPI_Comm comm = this->comm;
     PetscErrorCode ierr;
     ostringstream txt, hdr;
     hdr << "Viewing ";
@@ -525,7 +524,7 @@ namespace ALE {
     } 
     hdr << " ClosureBundle\n";
     // Print header
-    ierr = PetscPrintf(comm, hdr.str().c_str()); CHKERROR(ierr, "Error in PetscPrintf");
+    ierr = PetscPrintf(this->comm, hdr.str().c_str()); CHKERROR(ierr, "Error in PetscPrintf");
     
     this->_dimensionsToElements->view("Dimension Assignment Stack");
 
