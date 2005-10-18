@@ -358,43 +358,43 @@ PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "restrictCoordinates"
-PetscErrorCode restrictCoordinates(ALE::ClosureBundle *coordBundle, ALE::PreSieve *orientation, PetscScalar *coords, ALE::Point e, PetscScalar *array[])
+#define __FUNCT__ "restrictField"
+PetscErrorCode restrictField(ALE::ClosureBundle *bundle, ALE::PreSieve *orientation, PetscScalar *array, ALE::Point e, PetscScalar *values[])
 {
   ALE::Point_set             empty;
-  ALE::Obj<ALE::Point_array> coordIntervals = coordBundle->getClosureIndices(orientation->cone(e), empty);
-  //ALE::Obj<ALE::Point_array> coordinateIntervals = coordBundle->getOverlapOrderedIndices(orientation->cone(e), empty);
+  ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
+  //ALE::Obj<ALE::Point_array> intervals = bundle->getOverlapOrderedIndices(orientation->cone(e), empty);
   /* This should be done by memory pooling by array size (we have a simple form below) */
-  static PetscScalar *coordValues;
-  static PetscInt     coordSize = 0;
-  static PetscInt    *coordIndices = NULL;
-  PetscInt            numCoordIndices = 0;
+  static PetscScalar *vals;
+  static PetscInt     numValues = 0;
+  static PetscInt    *indices = NULL;
+  PetscInt            numIndices = 0;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  for(ALE::Point_array::iterator i_itor = coordIntervals->begin(); i_itor != coordIntervals->end(); i_itor++) {
-    numCoordIndices += (*i_itor).index;
+  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    numIndices += (*i_itor).index;
   }
-  if (coordSize && (coordSize != numCoordIndices)) {
-    ierr = PetscFree(coordIndices); CHKERRQ(ierr);
-    coordIndices = NULL;
-    ierr = PetscFree(coordValues); CHKERRQ(ierr);
-    coordValues = NULL;
+  if (numValues && (numValues != numIndices)) {
+    ierr = PetscFree(indices); CHKERRQ(ierr);
+    indices = NULL;
+    ierr = PetscFree(vals); CHKERRQ(ierr);
+    vals = NULL;
   }
-  if (!coordIndices) {
-    coordSize = numCoordIndices;
-    ierr = PetscMalloc(coordSize * sizeof(PetscInt), &coordIndices); CHKERRQ(ierr);
-    ierr = PetscMalloc(coordSize * sizeof(PetscScalar), &coordValues); CHKERRQ(ierr);
+  if (!indices) {
+    numValues = numIndices;
+    ierr = PetscMalloc(numValues * sizeof(PetscInt), &indices); CHKERRQ(ierr);
+    ierr = PetscMalloc(numValues * sizeof(PetscScalar), &vals); CHKERRQ(ierr);
   }
-  for(ALE::Point_array::iterator i_itor = coordIntervals->begin(); i_itor != coordIntervals->end(); i_itor++) {
-    printf("coordIndices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
+  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    printf("indices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
   }
-  ierr = ExpandIntervals(coordIntervals, coordIndices); CHKERRQ(ierr);
-  for(int i = 0; i < numCoordIndices; i++) {
-    printf("coordinateIndices[%d] = %d\n", i, coordIndices[i]);
-    coordValues[i] = coords[coordIndices[i]];
+  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
+  for(int i = 0; i < numIndices; i++) {
+    printf("indices[%d] = %d\n", i, indices[i]);
+    vals[i] = array[indices[i]];
   }
-  *array = coordValues;
+  *values = vals;
   PetscFunctionReturn(0);
 }
 
@@ -587,7 +587,7 @@ PetscErrorCode ElementGeometry(ALE::ClosureBundle *coordBundle, ALE::PreSieve *o
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = restrictCoordinates(coordBundle, orientation, coords, e, &array); CHKERRQ(ierr);
+  ierr = restrictField(coordBundle, orientation, coords, e, &array); CHKERRQ(ierr);
   if (v0) {
     v0[0] = array[0*2+0];
     v0[1] = array[0*2+1];
@@ -642,14 +642,12 @@ PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
   ALE::Point_set      empty;
   Vec                 coordinates;
   PetscScalar        *coords;
-  PetscInt            numElementIndices;
-  PetscInt           *elementIndices = NULL;
   PetscScalar        *array;
+  PetscScalar        *field;
   PetscReal           v0[2];
   PetscReal           Jac[4], Jinv[4];
   PetscReal           elementVec[NUM_BASIS_FUNCTIONS];
   PetscReal           linearVec[NUM_BASIS_FUNCTIONS];
-  PetscReal           field[NUM_BASIS_FUNCTIONS];
   PetscReal           t_der[2], b_der[2];
   PetscReal           xi, eta, x_q, y_q, detJ, rho, funcValue;
   PetscInt            f, g, q;
@@ -667,21 +665,8 @@ PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
     ALE::Point e = *element_itor;
 
     ierr = ElementGeometry(coordBundle, orientation, coords, e, v0, Jac, Jinv, &detJ); CHKERRQ(ierr);
-    /* Field */
-    ALE::Point_array elementIntervals = bundle->getClosureIndices(orientation->cone(e), empty);
-
-    if (!elementIndices) {
-      numElementIndices = bundle->getBundleDimension(e);
-      ierr = PetscMalloc(numElementIndices * sizeof(PetscInt), &elementIndices); CHKERRQ(ierr);
-    }
-    ierr = ExpandIntervals(elementIntervals, elementIndices); CHKERRQ(ierr);
-    for(int i = 0; i < numElementIndices; i++) {
-      printf("elementIndices[%d] = %d\n", i, elementIndices[i]);
-    }
-    for(f = 0; f < NUM_BASIS_FUNCTIONS; f++) {
-      field[f] = array[elementIndices[f]];
-    }
-    /* Do the integration */
+    ierr = restrictField(bundle, orientation, array, e, &field); CHKERRQ(ierr);
+    /* Element integral */
     ierr = PetscMemzero(elementVec, NUM_BASIS_FUNCTIONS*sizeof(PetscScalar));CHKERRQ(ierr);
     for(q = 0; q < NUM_QUADRATURE_POINTS; q++) {
       xi = points[q*2+0] + 1.0;
@@ -703,7 +688,7 @@ PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
     }
     printf("elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);
     /* Assembly */
-    ierr = VecSetValues(r, numElementIndices, elementIndices, elementVec, ADD_VALUES);CHKERRQ(ierr);
+    ierr = assembleField(bundle, orientation, r, e, elementVec, ADD_VALUES); CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(u, &array); CHKERRQ(ierr);
