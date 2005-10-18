@@ -1399,8 +1399,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_PTAP_SYMBOLIC_MPIAIJ=101,
                MATOP_PTAP_NUMERIC_MPIAIJ=102,
                MATOP_SET_VALUES_ROW = 105,
-               MATOP_GET_ROWUPPERTRIANGULAR=108,
-               MATOP_RESTORE_ROWUPPERTRIANGULAR=109
+               MATOP_GET_ROW_UTRIANGULAR=108,
+               MATOP_RESTORE_ROW_UTRIANGULAR=109
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));
