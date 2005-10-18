@@ -327,7 +327,8 @@
 
 !  Local variables:
       PetscInt  i,j
-      PetscScalar   temp1,temp,hx,hy,sc,one,hxdhy,hydhx
+      PetscScalar temp1,temp,hx,hy
+      PetscScalar sc,one,hxdhy,hydhx
 
 !  Set parameters
 
@@ -387,8 +388,9 @@
       PetscObject dummy
 
 !  Local variables:
-      PetscScalar   two,one,hx,hy,hxdhy,hydhx,sc
-      PetscScalar   u,uxx,uyy
+      PetscScalar two,one,hx,hy
+      PetscScalar hxdhy,hydhx,sc
+      PetscScalar u,uxx,uyy
       PetscInt  i,j
 
       xs     = info(DA_LOCAL_INFO_XS)+1
@@ -483,7 +485,8 @@
 
 !  Local variables:
       PetscInt  row,col(5),i,j,i1,i5
-      PetscScalar   two,one,hx,hy,hxdhy,hydhx,sc,v(5)
+      PetscScalar two,one,hx,hy,v(5)
+      PetscScalar hxdhy,hydhx,sc
 
 !  Set parameters
 
