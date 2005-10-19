@@ -278,7 +278,7 @@ PetscErrorCode BuildFaces(int dim, std::map<int, int*> curSimplex, ALE::Point_se
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  printf("  Building faces for boundary, dim %d\n", dim);
+  printf("  Building faces for boundary(%u), dim %d\n", boundary.size(), dim);
   if (dim > 1) {
     // Use the cone construction
     for(ALE::Point_set::iterator b_itor = boundary.begin(); b_itor != boundary.end(); b_itor++) {
@@ -340,18 +340,21 @@ PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices
     /* Build the simplex */
     boundary.clear();
     for(int b = 0; b < dim+1; b++) {
-      boundary.insert(ALE::Point(0, simplices[s*3+b]+numSimplices));
-    }    
+      printf("Adding boundary node (%d, %d)\n", 0, simplices[s*(dim+1)+b]+numSimplices);
+      boundary.insert(ALE::Point(0, simplices[s*(dim+1)+b]+numSimplices));
+    }
+    printf("simplex boundary size %u\n", boundary.size());
     ierr = BuildFaces(dim, curElement, boundary, simplex, topology); CHKERRQ(ierr);
     /* Orient the simplex */
-    ALE::Point element = ALE::Point(0, simplices[s*3+0]+numSimplices);
+    ALE::Point element = ALE::Point(0, simplices[s*(dim+1)+0]+numSimplices);
     cellTuple.clear();
     cellTuple.insert(element);
     for(int b = 1; b < dim+1; b++) {
-      ALE::Point next = ALE::Point(0, simplices[s*3+b]+numSimplices);
+      ALE::Point next = ALE::Point(0, simplices[s*(dim+1)+b]+numSimplices);
       ALE::Obj<ALE::Point_set> join = topology->nJoin(element, next, b);
 
       if (join->size() == 0) {
+        printf("element (%d, %d) next(%d, %d)\n", element.prefix, element.index, next.prefix, next.index);
         SETERRQ(PETSC_ERR_LIB, "Invalid join");
       }
       element = *join->begin();
@@ -653,12 +656,13 @@ PetscErrorCode CreateTestMesh3(MPI_Comm comm, Mesh *mesh)
   ALE::ClosureBundle *bundle = new ALE::ClosureBundle(comm);
   ALE::Sieve         *topology;
   PetscInt            dim = 3;
-  PetscInt            faces[20] = {
-    0, 1, 3, 4,
-    2, 3, 1, 6,
-    5, 4, 6, 1,
-    7, 6, 4, 3,
-    5, 2, 0, 7};
+  PetscInt            faces[24] = {
+    0, 1, 3, 5,
+    0, 5, 3, 4,
+    4, 5, 3, 7,
+    2, 3, 1, 5,
+    3, 2, 7, 5,
+    6, 7, 2, 5};
   PetscScalar         vertexCoords[24] = {
     0.0, 0.0, 0.0,
     1.0, 0.0, 0.0,
@@ -673,7 +677,7 @@ PetscErrorCode CreateTestMesh3(MPI_Comm comm, Mesh *mesh)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = Simplicializer(comm, dim, 5, faces, 8, vertexCoords, 8, boundaryVertices, mesh);CHKERRQ(ierr);
+  ierr = Simplicializer(comm, dim, 6, faces, 8, vertexCoords, 8, boundaryVertices, mesh);CHKERRQ(ierr);
   /* Create field ordering */
   ierr = MeshGetTopology(*mesh, (void **) &topology);CHKERRQ(ierr);
   bundle->setTopology(topology);
