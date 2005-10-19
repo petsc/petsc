@@ -199,6 +199,8 @@ namespace ALE {
       
     // We bootstrap the ordering process by ordering all vertices (depth 0) and storing them in a queue (ordered)
     Obj<std::queue<Point> > ordered(new std::queue<Point>);
+    ALE::Point_set          vertices;
+    ALE::Point_set          edges;
     // Start with the queue oredered containing dElement[0]
     ordered->push(dElement[0]);
     Point e0, e1; // these are the "work" points -- a vertex and the latest pivot
@@ -216,42 +218,25 @@ namespace ALE {
       return indexArray;
     }
     bool zeroIsOrdered = 0; // we are done ordering when no new elements are yielded after pivoting
+    vertices.insert(e0);
     while(!zeroIsOrdered) {
-      // Pivot e0 around e1 (flip) within the closure Sieve
-      Obj<Point_set> flip0 = closure->cone(e1);
-      flip0->erase(e0);
-      if(flip0->size() == 0) {
-        ostringstream ex; 
-        ex << "[" << this->getCommRank() << "]: Unable to flip down" << " (" << e0.prefix << "," << e0.index << ") ";
-        ex << "around" << " (" << e1.prefix << "," << e1.index << "): empty flip set";
-        throw Exception(ex.str().c_str());
-      }
-      // Take the first (assumed to be the only) of the remaining elements in the flip set as the next element
-      e0 = *flip0->begin();
-      // Check whether e0 is actually dElement[0], which means everything has been ordered.
-      if(e0 == dElement[0]){
-        zeroIsOrdered = 1;
-        break;
-      }
-      // Add e0 to the queue
-      ordered->push(e0);
-      // Store e0's indices in the indexArray: there should be a single interval in indices->cone(e0)
-      Point_set indCone = indices->cone(e0);
-      if(indCone.size() > 0) {
-        indexArray->push_back(*indCone.begin()); cntr++;
-      }
+      Obj<Point_set> flip  = closure->cone(closure->support(e0));
 
-      // Now flip e1 about e0
-      Obj<Point_set> flip1 = closure->support(e0);
-      flip1->erase(e1);
-      if(flip1->size() == 0) {
-        ostringstream ex; 
-        ex << "[" << this->getCommRank() << "]: Unable to flip up" << " (" << e1.prefix << "," << e1.index << ") ";
-        ex << "around" << " (" << e0.prefix << "," << e0.index << "): empty flip set";
-        throw Exception(ex.str().c_str());
+      for(ALE::Point_set::iterator f_itor = vertices.begin(); f_itor != vertices.end(); f_itor++) {
+        flip->erase(*f_itor);
       }
-      // Take the first of the remaining elements in the flip set and make it the new pivot
-      e1 = *flip1->begin();
+      if(flip->size() == 0) {
+        zeroIsOrdered = 1;
+      } else {
+        e0 = *flip->begin();
+        Obj<Point_set> indCone = indices->cone(e0);
+
+        if(indCone->size() > 0) {
+          indexArray->push_back(*indCone->begin()); cntr++;
+        }
+        vertices.insert(e0);
+        ordered->push(e0);
+      }
     }// while(!allOrdered)
 
     // Now order the non-zero depth elements
