@@ -25,15 +25,12 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   PetscScalar    *ptr;
 
   PetscFunctionBegin;
-  if (sbaij->lvec) {
-    ierr = VecDestroy(sbaij->lvec);CHKERRQ(ierr);
-    sbaij->lvec = 0;
+  if (sbaij->sMvctx) { 
+    /* This two lines should be in DisAssemble_MPISBAIJ(). Don't know why it causes crash there? */
+    ierr = VecScatterDestroy(sbaij->sMvctx);CHKERRQ(ierr);
+    sbaij->sMvctx = 0;
   }
-  if (sbaij->Mvctx) {
-    ierr = VecScatterDestroy(sbaij->Mvctx);CHKERRQ(ierr);
-    sbaij->Mvctx = 0;
-  }
-
+  
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in sbaij->B */
   ierr = PetscMalloc((Nbs+1)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
@@ -164,7 +161,6 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = VecDestroy(gvec);CHKERRQ(ierr);
   ierr = PetscFree(sgarray);CHKERRQ(ierr); 
-
   PetscFunctionReturn(0);
 }
 
@@ -188,7 +184,6 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
 #endif  
 
   PetscFunctionBegin;
-
 #if defined (PETSC_USE_CTABLE)
   /* use a table - Mark Adams */
   PetscTableCreate(B->mbs,&gid1_lid1); 
@@ -311,9 +306,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   PetscFunctionReturn(0);
 }
 
-
 /*
-     Takes the local part of an already assembled MPIBAIJ matrix
+     Takes the local part of an already assembled MPISBAIJ matrix
    and disassembles it. This is to allow new nonzeros into the matrix
    that require more communication in the matrix vector multiply. 
    Thus certain data-structures must be rebuilt.
@@ -326,15 +320,15 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
 PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
 {
   Mat_MPISBAIJ   *baij = (Mat_MPISBAIJ*)A->data;
-  Mat           B = baij->B,Bnew;
-  Mat_SeqBAIJ   *Bbaij = (Mat_SeqBAIJ*)B->data;
+  Mat            B = baij->B,Bnew;
+  Mat_SeqBAIJ    *Bbaij = (Mat_SeqBAIJ*)B->data;
   PetscErrorCode ierr;
-  PetscInt i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
-  PetscInt           k,bs=A->bs,bs2=baij->bs2,*rvals,*nz,ec,m=A->m;
-  MatScalar     *a = Bbaij->a;
-  PetscScalar   *atmp;
+  PetscInt       i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
+  PetscInt       k,bs=A->bs,bs2=baij->bs2,*rvals,*nz,ec,m=A->m;
+  MatScalar      *a = Bbaij->a;
+  PetscScalar    *atmp;
 #if defined(PETSC_USE_MAT_SINGLE)
-  PetscInt           l;
+  PetscInt       l;
 #endif
 
   PetscFunctionBegin;
@@ -343,8 +337,19 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
 #endif
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(baij->lvec,&ec);CHKERRQ(ierr); /* needed for PetscLogObjectMemory below */
-  ierr = VecDestroy(baij->lvec);CHKERRQ(ierr); baij->lvec = 0;
-  ierr = VecScatterDestroy(baij->Mvctx);CHKERRQ(ierr); baij->Mvctx = 0;
+  ierr = VecDestroy(baij->lvec);CHKERRQ(ierr); 
+  baij->lvec = 0;
+  ierr = VecScatterDestroy(baij->Mvctx);CHKERRQ(ierr); 
+  baij->Mvctx = 0;
+
+  ierr = VecDestroy(baij->slvec0);CHKERRQ(ierr);
+  ierr = VecDestroy(baij->slvec0b);CHKERRQ(ierr); 
+  baij->slvec0 = 0;
+  ierr = VecDestroy(baij->slvec1);CHKERRQ(ierr);
+  ierr = VecDestroy(baij->slvec1a);CHKERRQ(ierr);
+  ierr = VecDestroy(baij->slvec1b);CHKERRQ(ierr); 
+  baij->slvec1 = 0;
+
   if (baij->colmap) {
 #if defined (PETSC_USE_CTABLE)
     ierr = PetscTableDelete(baij->colmap); baij->colmap = 0;CHKERRQ(ierr);

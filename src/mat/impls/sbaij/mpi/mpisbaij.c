@@ -252,7 +252,13 @@ PetscErrorCode MatSetValues_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const PetscInt
     if (im[i] >= rstart_orig && im[i] < rend_orig) { /* this processor entry */
       row = im[i] - rstart_orig;              /* local row index */
       for (j=0; j<n; j++) {
-        if (im[i]/bs > in[j]/bs) continue;    /* ignore lower triangular blocks */
+        if (im[i]/bs > in[j]/bs){
+          if (a->ignore_ltriangular){
+            continue;    /* ignore lower triangular blocks */
+          } else {
+            SETERRQ(PETSC_ERR_USER,"Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR)");
+          }
+        }
         if (in[j] >= cstart_orig && in[j] < cend_orig){  /* diag entry (A) */
           col = in[j] - cstart_orig;          /* local col index */
           brow = row/bs; bcol = col/bs;
