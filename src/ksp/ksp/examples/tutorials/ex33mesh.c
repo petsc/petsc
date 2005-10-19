@@ -328,8 +328,10 @@ PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices
 
   PetscFunctionBegin;
   curElement[0] = &curVertex;
-  curElement[1] = &newElement;
-  curElement[2] = &curSimplex;
+  curElement[dim] = &curSimplex;
+  for(int d = 1; d < dim; d++) {
+    curElement[d] = &newElement;
+  }
   for(int s = 0; s < numSimplices; s++) {
     ALE::Point simplex(0, s);
     ALE::Point_set cellTuple;
@@ -362,7 +364,7 @@ PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices
 
 #undef __FUNCT__
 #define __FUNCT__ "Simplicializer"
-PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces, PetscInt numVertices, PetscScalar *vertices, PetscInt numBoundaryVertices, PetscInt *boundaryVertices, Mesh *mesh)
+PetscErrorCode Simplicializer(MPI_Comm comm, int dim, PetscInt numFaces, PetscInt *faces, PetscInt numVertices, PetscScalar *vertices, PetscInt numBoundaryVertices, PetscInt *boundaryVertices, Mesh *mesh)
 {
   Mesh           m;
   ALE::Sieve    *topology = new ALE::Sieve(comm);
@@ -380,7 +382,7 @@ PetscErrorCode Simplicializer(MPI_Comm comm, PetscInt numFaces, PetscInt *faces,
   boundary->setVerbosity(11);
   /* Create serial sieve */
   if (rank == 0) {
-    ierr = BuildTopology(2,numFaces, faces, numVertices, vertices, topology, orientation);CHKERRQ(ierr);
+    ierr = BuildTopology(dim, numFaces, faces, numVertices, vertices, topology, orientation);CHKERRQ(ierr);
   }
   topology->view("Serial Simplicializer topology");
   orientation->view("Serial Simplicializer orientation");
@@ -529,7 +531,7 @@ PetscErrorCode assembleOperator(ALE::ClosureBundle *bundle, ALE::PreSieve *orien
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateMeshCoordinates"
-PetscErrorCode CreateMeshCoordinates(Mesh mesh)
+PetscErrorCode CreateMeshCoordinates(Mesh mesh, int dim)
 {
   ALE::ClosureBundle      *coordBundle;
   ALE::Sieve              *topology;
@@ -547,7 +549,7 @@ PetscErrorCode CreateMeshCoordinates(Mesh mesh)
   /* Create bundle */
   coordBundle = new ALE::ClosureBundle(comm);
   coordBundle->setTopology(topology);
-  coordBundle->setFiberDimensionByDepth(0, 2);
+  coordBundle->setFiberDimensionByDepth(0, dim);
   //coordBundle->computeOverlapIndices();
   ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
   /* Create coordinate storage */
@@ -565,7 +567,7 @@ PetscErrorCode CreateMeshCoordinates(Mesh mesh)
   for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
     ALE::Point v = *vertex_itor;
     printf("Sizeof vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
-    ierr = assembleField(coordBundle, orientation, coordinates, v, &meshCoords[(v.index - 8)*2], INSERT_VALUES);CHKERRQ(ierr);
+    ierr = assembleField(coordBundle, orientation, coordinates, v, &meshCoords[(v.index - 8)*dim], INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(coordinates);CHKERRQ(ierr);
@@ -598,6 +600,7 @@ PetscErrorCode CreateTestMesh(MPI_Comm comm, Mesh *mesh)
 {
   ALE::ClosureBundle *bundle = new ALE::ClosureBundle(comm);
   ALE::Sieve         *topology;
+  PetscInt            dim = 2;
   PetscInt            faces[24] = {
     0, 1, 7,
     8, 7, 1,
@@ -622,7 +625,7 @@ PetscErrorCode CreateTestMesh(MPI_Comm comm, Mesh *mesh)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = Simplicializer(comm, 8, faces, 9, vertexCoords, 8, boundaryVertices, mesh);CHKERRQ(ierr);
+  ierr = Simplicializer(comm, dim, 8, faces, 9, vertexCoords, 8, boundaryVertices, mesh);CHKERRQ(ierr);
   /* Create field ordering */
   ierr = MeshGetTopology(*mesh, (void **) &topology);CHKERRQ(ierr);
   bundle->setTopology(topology);
@@ -633,7 +636,55 @@ PetscErrorCode CreateTestMesh(MPI_Comm comm, Mesh *mesh)
   ALE::Point_set empty;
   ierr = MeshSetGhosts(*mesh, 1, bundle->getBundleDimension(empty), 0, NULL);
   /* Create coordinates */
-  ierr = CreateMeshCoordinates(*mesh);CHKERRQ(ierr);
+  ierr = CreateMeshCoordinates(*mesh, dim);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateTestMesh3"
+/*
+  CreateTestMesh3 - Create a simple cubic mesh
+
+  
+
+*/
+PetscErrorCode CreateTestMesh3(MPI_Comm comm, Mesh *mesh)
+{
+  ALE::ClosureBundle *bundle = new ALE::ClosureBundle(comm);
+  ALE::Sieve         *topology;
+  PetscInt            dim = 3;
+  PetscInt            faces[20] = {
+    0, 1, 3, 4,
+    2, 3, 1, 6,
+    5, 4, 6, 1,
+    7, 6, 4, 3,
+    5, 2, 0, 7};
+  PetscScalar         vertexCoords[24] = {
+    0.0, 0.0, 0.0,
+    1.0, 0.0, 0.0,
+    1.0, 1.0, 0.0,
+    0.0, 1.0, 0.0,
+    0.0, 0.0, 1.0,
+    1.0, 0.0, 1.0,
+    1.0, 1.0, 1.0,
+    0.0, 1.0, 1.0};
+  PetscInt            boundaryVertices[8] = {
+    0, 1, 2, 3, 4, 5, 6, 7};
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = Simplicializer(comm, dim, 5, faces, 8, vertexCoords, 8, boundaryVertices, mesh);CHKERRQ(ierr);
+  /* Create field ordering */
+  ierr = MeshGetTopology(*mesh, (void **) &topology);CHKERRQ(ierr);
+  bundle->setTopology(topology);
+  bundle->setFiberDimensionByDepth(0, 1);
+  //bundle->computeGlobalIndices();
+  ierr = MeshSetBundle(*mesh, (void *) bundle);CHKERRQ(ierr);
+  /* Finish old-style DM construction */
+  ALE::Point_set empty;
+  ierr = MeshSetGhosts(*mesh, 1, bundle->getBundleDimension(empty), 0, NULL);
+  /* Create coordinates */
+  ierr = CreateMeshCoordinates(*mesh, dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

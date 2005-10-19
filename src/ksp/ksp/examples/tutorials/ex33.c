@@ -32,6 +32,7 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 #include "petscdmmg.h"
 
 extern PetscErrorCode CreateTestMesh(MPI_Comm,Mesh*);
+extern PetscErrorCode CreateTestMesh3(MPI_Comm,Mesh*);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
 extern PetscErrorCode VecView_VTK(Vec, const char [], const char []);
@@ -59,7 +60,12 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-  ierr = CreateTestMesh(PETSC_COMM_WORLD, &mesh);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh3d", &flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = CreateTestMesh3(PETSC_COMM_WORLD, &mesh);CHKERRQ(ierr);
+  } else {
+    ierr = CreateTestMesh(PETSC_COMM_WORLD, &mesh);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_only", &flag);CHKERRQ(ierr);
   if (flag) {
     PetscFinalize();
