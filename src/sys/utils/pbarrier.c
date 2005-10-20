@@ -7,7 +7,7 @@ PetscEvent PETSC_Barrier = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBarrier"
-/*@
+/*@C
     PetscBarrier - Blocks until this routine is executed by all
                    processors owning the object A.
 
@@ -19,6 +19,8 @@ PetscEvent PETSC_Barrier = 0;
 
   Notes: 
   This routine calls MPI_Barrier with the communicator of the PETSc Object "A". 
+
+  With fortran Use PETSC_NULL_OBJECT (instead of PETSC_NULL) 
 
    Concepts: barrier
 
