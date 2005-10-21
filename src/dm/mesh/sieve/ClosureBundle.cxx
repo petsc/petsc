@@ -135,6 +135,105 @@ namespace ALE {
   
 
   #undef  __FUNCT__
+  #define __FUNCT__ "ClosureBundle::_checkOrderChain"
+  ALE::int__Point ClosureBundle::_checkOrderChain(Obj<Point_set> order, int& minDepth, int& maxDepth) {
+    ALE::int__Point dElement;
+    minDepth = 0;
+    maxDepth = 0;
+
+    // A topology cell-tuple contains one element per dimension, so we order the points by depth.
+    for(Point_set::iterator ord_itor = order->begin(); ord_itor != order->end(); ord_itor++) {
+      Point e = *ord_itor;
+      int32_t depth = this->getTopology()->depth(e);
+
+      if (depth < 0) {
+        throw Exception("Invalid element: negative depth returned"); 
+      }
+      if (depth > maxDepth) {
+        maxDepth = depth;
+      }
+      if (depth < minDepth) {
+        minDepth = depth;
+      }
+      dElement[depth] = e;
+    }
+    // Verify that the chain is a "baricentric chain", i.e. it starts at depth 0
+    if(minDepth != 0) {
+      throw Exception("Invalid order chain: minimal depth is nonzero");
+    }
+    // Verify the chain has an element of every depth between 0 and maxDepth
+    // and that each element at depth d is in the cone of the element at depth d+1
+    for(int32_t d = 0; d <= maxDepth; d++) {
+      int__Point::iterator d_itor = dElement.find(d);
+
+      if(d_itor == dElement.end()){
+        ostringstream ex;
+        ex << "[" << this->getCommRank() << "]: ";
+        ex << "Missing Point at depth " << d;
+        throw Exception(ex.str().c_str());
+      }
+      if(d > 0) {
+        if(!this->getTopology()->coneContains(dElement[d], dElement[d-1])){
+          ostringstream ex;
+          ex << "[" << this->getCommRank() << "]: ";
+          ex << "point (" << dElement[d-1].prefix << ", " << dElement[d-1].index << ") at depth " << d-1 << " not in the cone of ";
+          ex << "point (" << dElement[d].prefix << ", " << dElement[d].index << ") at depth " << d;
+          throw Exception(ex.str().c_str());
+        }
+      }
+    }
+    return dElement;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "ClosureBundle::_orderElement"
+  void ClosureBundle::_orderElement(int dim, ALE::Obj<ALE::Point> element, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
+    if (elementsOrdered->find(element) != elementsOrdered->end()) return;
+    (*ordered)[dim].push(element);
+    elementsOrdered->insert(element);
+    printf("  ordered element (%d, %d) dim %d\n", element->prefix, element->index, dim);
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "ClosureBundle::_orderCell"
+  ALE::Obj<ALE::Point> ClosureBundle::_orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
+    Obj<Sieve> closure = this->getTopology()->closureSieve(Point_set((*orderChain)[dim]));
+    ALE::Point last;
+
+    printf("Ordering cell (%d, %d) dim %d\n", (*orderChain)[dim].prefix, (*orderChain)[dim].index, dim);
+    for(int d = 0; d < dim; d++) {
+      printf("  orderChain[%d] (%d, %d)\n", d, (*orderChain)[d].prefix, (*orderChain)[d].index);
+    }
+    if (dim == 1) {
+      Obj<Point_set> flip = closure->cone((*orderChain)[1]);
+
+      this->_orderElement(0, (*orderChain)[0], ordered, elementsOrdered);
+      flip->erase((*orderChain)[0]);
+      last = *flip->begin();
+      this->_orderElement(0, last, ordered, elementsOrdered);
+      this->_orderElement(1, (*orderChain)[1], ordered, elementsOrdered);
+      (*orderChain)[dim-1] = last;
+      return last;
+    }
+    do {
+      last = this->_orderCell(dim-1, orderChain, ordered, elementsOrdered);
+      printf("    last (%d, %d)\n", last.prefix, last.index);
+      Obj<Point_set> faces = closure->support(last);
+      faces->erase((*orderChain)[dim-1]);
+      if (faces->size() != 1) {
+        throw Exception("Last edge did not separate two faces");
+      }
+      last = (*orderChain)[dim-1];
+      (*orderChain)[dim-1] = *faces->begin();
+    } while(elementsOrdered->find((*orderChain)[dim-1]) == elementsOrdered->end());
+    printf("Finish ordering for cell (%d, %d)\n", (*orderChain)[dim].prefix, (*orderChain)[dim].index);
+    printf("  with last (%d, %d)\n", last.prefix, last.index);
+    (*orderChain)[dim-1] = last;
+    this->_orderElement(dim, (*orderChain)[dim], ordered, elementsOrdered);
+    return last;
+  }
+
+  #undef  __FUNCT__
   #define __FUNCT__ "ClosureBundle::getClosureIndices"
   Obj<Point_array>   ClosureBundle::getClosureIndices(Obj<Point_set> order, Obj<Point_set> base) {
     // IMPROVE:  the ordering algorithm employed here works only for 'MeshSieves' --
@@ -143,156 +242,49 @@ namespace ALE {
     //           under arrow additions.
     //           We should define class 'MeshBundle' that would take 'MeshSieves' as topology and
     //           move this method there.
-    base  = this->__validateChain(base);
-    // We expect that it contains a topology cell-tuple, so we order the points by depth.
-    int__Point dElement;
-    int32_t maxDepth = 0;
-    int32_t minDepth = 0;
-    for(Point_set::iterator ord_itor = order->begin(); ord_itor != order->end(); ord_itor++) {
-      Point e = *ord_itor;
-      int32_t depth = this->getTopology()->depth(e);
-      if(depth < 0) {
-        throw Exception("Invalid element: negative depth returned"); 
-      }
-      if(depth > maxDepth) {
-        maxDepth = depth;
-      }
-      if(depth < minDepth) {
-        minDepth = depth;
-      }
-      dElement[depth] = e;
-    } //   for(Point_set::iterator ord_itor = order->begin(); ord_itor != order->end(); ord_itor++)
+    base = this->__validateChain(base);
+    int minDepth, maxDepth;
+    ALE::int__Point dElement = this->_checkOrderChain(order, minDepth, maxDepth);
 
-    // Verify that the chain is a "baricentric chain" 
-    // Make sure it starts at depth 0
-    if(minDepth != 0) {
-      throw Exception("Invalid order chain: minimal depth is nonzero");
-    }
-    // Verify the chain has an element of every depth between 0 and maxDepth
-    // and that each element at depth d is in the cone of the element at depth d+1
-    for(int32_t d = 0; d <= maxDepth; d++) {
-      int__Point::iterator d_itor = dElement.find(d);
-      if(d_itor == dElement.end()){
-        ostringstream ex;
-        ex << "[" << this->getCommRank() << "]: ";
-        ex << "Missing Point at depth " << d;
-        throw Exception(ex.str().c_str());
-      }
-      if(d > 0) {
-        if(!this->getTopology()->coneContains(dElement[d],dElement[d-1])){
-          ostringstream ex;
-          ex << "[" << this->getCommRank() << "]: ";
-          ex << "point (" << dElement[d-1].prefix << ", " << dElement[d-1].index << ") at depth " << d-1 << " not in the cone of ";
-          ex << "point (" << dElement[d].prefix << ", " << dElement[d].index << ") at depth " << d;
-          throw Exception(ex.str().c_str());
-        }
-      }
-    }// for(int32_t d = 0; d <= maxDepth; d++) {
-
-    // Now we extract the subsieve which is the closure of the dElement[maxDepth]
+    // Extract the subsieve which is the closure of the dElement[maxDepth]
     Obj<Sieve> closure = this->getTopology()->closureSieve(Point_set(dElement[maxDepth]));
     // Compute the bundle indices over the closure of dElement[maxDepth]
     Obj<PreSieve> indices = this->getBundleIndices(Point_set(dElement[maxDepth]), base);
+    // We store the elements ordered in each dimension
+    std::map<int, std::queue<Point> > ordered;
 
-    // Now we need to order 'indices' and store the cap in an array
-    Obj<Point_array> indexArray(new Point_array);
-      
-    // We bootstrap the ordering process by ordering all vertices (depth 0) and storing them in a queue (ordered)
-    Obj<std::queue<Point> > ordered(new std::queue<Point>);
-    ALE::Point_set          vertices;
-    ALE::Point_set          edges;
-    // Start with the queue oredered containing dElement[0]
-    ordered->push(dElement[0]);
-    Point e0, e1; // these are the "work" points -- a vertex and the latest pivot
-    // The first work points are taken from dElement
-    int32_t cntr = 0;    // keep track of oredered elements
-    e0 = dElement[0];
-    e1 = dElement[1];
-
-    // Store e0's indices in the indexArray: there should be a single interval in indices->cone(e0)
-    Point_set indCone = indices->cone(e0);
-    if(indCone.size() > 0) {
-      indexArray->push_back(*indCone.begin()); cntr++;
-    }
+    // Order elements in the closure
+    printf("Ordering (%d, %d)\n", dElement[maxDepth].prefix, dElement[maxDepth].index);
     if (maxDepth == 0) {
-      return indexArray;
-    }
-    bool zeroIsOrdered = 0; // we are done ordering when no new elements are yielded after pivoting
-    vertices.insert(e0);
-    while(!zeroIsOrdered) {
-      Obj<Point_set> flip  = closure->cone(closure->support(e0));
+      ordered[0].push(dElement[0]);
+    } else if (maxDepth == 1) {
+      // I think this is not necessary
+      ALE::Point     face = dElement[1];
+      Obj<Point_set> flip = closure->cone(face);
 
-      for(ALE::Point_set::iterator f_itor = vertices.begin(); f_itor != vertices.end(); f_itor++) {
-        flip->erase(*f_itor);
-      }
-      if(flip->size() == 0) {
-        zeroIsOrdered = 1;
-      } else {
-        e0 = *flip->begin();
-        Obj<Point_set> indCone = indices->cone(e0);
+      ordered[0].push(dElement[0]);
+      flip->erase(dElement[0]);
+      ordered[0].push(*flip->begin());
+      ordered[1].push(dElement[1]);
+    } else {
+      ALE::Point_set elementsOrdered;
 
-        if(indCone->size() > 0) {
-          indexArray->push_back(*indCone->begin()); cntr++;
-        }
-        vertices.insert(e0);
-        ordered->push(e0);
-      }
-    }// while(!allOrdered)
-
-    // Now order the non-zero depth elements
-    // First we pop the queue, since the first 0-element is not use.  
-    // This is only needed once after bootstrapping.
-    ordered->pop();
-    for(int32_t d = 1; d < maxDepth; d++) {
-      e1 = dElement[d];
-      // Store e1's indices in the indexArray: there should be a single interval in indices->cone(e1)
-      Point_set indCone = indices->cone(e1);
-      if(indCone.size() > 0) {
-        indexArray->push_back(*indCone.begin()); cntr++;
-      }
-
-      // Enqueue e1 -- its popping will serve as the stopping criterion.
-      ordered->push(e1);
-      bool dIsOrdered = 0; // we are done ordering when no pivots exist.
-      while(!dIsOrdered) {
-        // Retrieve the next pivot
-        e0 = ordered->front();
-        ordered->pop();
-        // Check whether e0 == dElement[d], which means we have exhausted all pivots.
-        if(e0 == dElement[d]){
-          dIsOrdered = 1;
-          break;
-        }
-        // Pivot e1 around e0 (flip) within the closure Sieve
-        Obj<Point_set> flip1 = closure->support(e0);
-        flip1->erase(e1);
-        if(flip1->size() == 0) {
-          ostringstream ex; 
-          ex << "[" << this->getCommRank() << "]: Unable to flip up" << " (" << e1.prefix << "," << e1.index << ") ";
-          ex << "around" << " (" << e0.prefix << "," << e0.index << "): empty flip set";
-          throw Exception(ex.str().c_str());
-        }
-        // Take the first (assumed to be the only) of the remaining elements in the flip set as the next element
-        e1 = *flip1->begin();
-        // Add e1 to the queue
-        ordered->push(e1);
-        // Store e1's indices in the indexArray: there should be a single interval in indices->cone(e1)
-        Point_set indCone = indices->cone(e1);
-        if(indCone.size() > 0) {
-          indexArray->push_back(*indCone.begin()); cntr++;
-        }
-        
-      }// while(!dIsOrdered)
-    }// for(d = 1; d < maxDepth; d++) 
-    // Now we have ordered all the elements in the closure except the one at maxDepth.
-    // We add it explicitly
-    e1 = dElement[maxDepth];
-    // Store e1's indices in the indexArray: there should be a single interval in indices->cone(e1)
-    indCone = indices->cone(e1);
-    if(indCone.size() > 0) {
-      indexArray->push_back(*indCone.begin()); cntr++;
+      ALE::Obj<ALE::Point> last = this->_orderCell(maxDepth, &dElement, &ordered, elementsOrdered);
     }
 
+    // Generate indices from ordered elements
+    Obj<Point_array> indexArray(new Point_array);
+    for(int d = 0; d <= maxDepth; d++) {
+      while(!ordered[d].empty()) {
+        Obj<Point_set> indCone = indices->cone(ordered[d].front());
+
+        ordered[d].pop();
+        printf("  indices (%d, %d)\n", indCone->begin()->prefix, indCone->begin()->index);
+        if (indCone->begin()->index > 0) {
+          indexArray->push_back(*indCone->begin());
+        }
+      }
+    }
     return indexArray;
   }//ClosureBundle::getClosureIndices()
   

@@ -135,17 +135,6 @@ static double BasisDerivatives[54] = {
   0.0,
   0.5};
 
-static double meshCoords[18] = {
-  0.0, 0.0,
-  1.0, 0.0,
-  2.0, 0.0,
-  2.0, 1.0,
-  2.0, 2.0,
-  1.0, 2.0,
-  0.0, 2.0,
-  0.0, 1.0,
-  1.0, 1.0};
-
 #undef __FUNCT__
 #define __FUNCT__ "ExpandIntervals"
 PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Point_array> intervals, PetscInt *indices)
@@ -318,7 +307,7 @@ PetscErrorCode BuildFaces(int dim, std::map<int, int*> curSimplex, ALE::Point_se
 
 #undef __FUNCT__
 #define __FUNCT__ "BuildTopology"
-PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices, PetscInt numVertices, PetscScalar *vertices, ALE::Sieve *topology, ALE::PreSieve *orientation)
+PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices, PetscInt numVertices, ALE::Sieve *topology, ALE::PreSieve *orientation)
 {
   int            curVertex  = numSimplices;
   int            curSimplex = 0;
@@ -367,7 +356,7 @@ PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices
 
 #undef __FUNCT__
 #define __FUNCT__ "Simplicializer"
-PetscErrorCode Simplicializer(MPI_Comm comm, int dim, PetscInt numFaces, PetscInt *faces, PetscInt numVertices, PetscScalar *vertices, PetscInt numBoundaryVertices, PetscInt *boundaryVertices, Mesh *mesh)
+PetscErrorCode Simplicializer(MPI_Comm comm, int dim, PetscInt numFaces, PetscInt *faces, PetscInt numVertices, PetscInt numBoundaryVertices, PetscInt *boundaryVertices, Mesh *mesh)
 {
   Mesh           m;
   ALE::Sieve    *topology = new ALE::Sieve(comm);
@@ -385,7 +374,7 @@ PetscErrorCode Simplicializer(MPI_Comm comm, int dim, PetscInt numFaces, PetscIn
   boundary->setVerbosity(11);
   /* Create serial sieve */
   if (rank == 0) {
-    ierr = BuildTopology(dim, numFaces, faces, numVertices, vertices, topology, orientation);CHKERRQ(ierr);
+    ierr = BuildTopology(dim, numFaces, faces, numVertices, topology, orientation);CHKERRQ(ierr);
   }
   topology->view("Serial Simplicializer topology");
   orientation->view("Serial Simplicializer orientation");
@@ -534,7 +523,7 @@ PetscErrorCode assembleOperator(ALE::ClosureBundle *bundle, ALE::PreSieve *orien
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateMeshCoordinates"
-PetscErrorCode CreateMeshCoordinates(Mesh mesh, int dim)
+PetscErrorCode CreateMeshCoordinates(Mesh mesh, int dim, int numFaces, PetscReal coords[])
 {
   ALE::ClosureBundle      *coordBundle;
   ALE::Sieve              *topology;
@@ -570,7 +559,7 @@ PetscErrorCode CreateMeshCoordinates(Mesh mesh, int dim)
   for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
     ALE::Point v = *vertex_itor;
     printf("Sizeof vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
-    ierr = assembleField(coordBundle, orientation, coordinates, v, &meshCoords[(v.index - 8)*dim], INSERT_VALUES);CHKERRQ(ierr);
+    ierr = assembleField(coordBundle, orientation, coordinates, v, &coords[(v.index - numFaces)*dim], INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(coordinates);CHKERRQ(ierr);
@@ -628,7 +617,7 @@ PetscErrorCode CreateTestMesh(MPI_Comm comm, Mesh *mesh)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = Simplicializer(comm, dim, 8, faces, 9, vertexCoords, 8, boundaryVertices, mesh);CHKERRQ(ierr);
+  ierr = Simplicializer(comm, dim, 8, faces, 9, 8, boundaryVertices, mesh);CHKERRQ(ierr);
   /* Create field ordering */
   ierr = MeshGetTopology(*mesh, (void **) &topology);CHKERRQ(ierr);
   bundle->setTopology(topology);
@@ -639,7 +628,7 @@ PetscErrorCode CreateTestMesh(MPI_Comm comm, Mesh *mesh)
   ALE::Point_set empty;
   ierr = MeshSetGhosts(*mesh, 1, bundle->getBundleDimension(empty), 0, NULL);
   /* Create coordinates */
-  ierr = CreateMeshCoordinates(*mesh, dim);CHKERRQ(ierr);
+  ierr = CreateMeshCoordinates(*mesh, dim, 8, vertexCoords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -677,7 +666,7 @@ PetscErrorCode CreateTestMesh3(MPI_Comm comm, Mesh *mesh)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = Simplicializer(comm, dim, 6, faces, 8, vertexCoords, 8, boundaryVertices, mesh);CHKERRQ(ierr);
+  ierr = Simplicializer(comm, dim, 6, faces, 8, 8, boundaryVertices, mesh);CHKERRQ(ierr);
   /* Create field ordering */
   ierr = MeshGetTopology(*mesh, (void **) &topology);CHKERRQ(ierr);
   bundle->setTopology(topology);
@@ -688,7 +677,7 @@ PetscErrorCode CreateTestMesh3(MPI_Comm comm, Mesh *mesh)
   ALE::Point_set empty;
   ierr = MeshSetGhosts(*mesh, 1, bundle->getBundleDimension(empty), 0, NULL);
   /* Create coordinates */
-  ierr = CreateMeshCoordinates(*mesh, dim);CHKERRQ(ierr);
+  ierr = CreateMeshCoordinates(*mesh, dim, 6, vertexCoords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -696,6 +685,7 @@ PetscErrorCode CreateTestMesh3(MPI_Comm comm, Mesh *mesh)
 #define __FUNCT__ "ElementGeometry"
 PetscErrorCode ElementGeometry(ALE::ClosureBundle *coordBundle, ALE::PreSieve *orientation, PetscScalar *coords, ALE::Point e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
+  PetscInt       dim = coordBundle->getFiberDimension(*coordBundle->getTopology()->depthStratum(0).begin());
   PetscScalar   *array;
   PetscReal      det, invDet;
   PetscErrorCode ierr;
@@ -703,26 +693,82 @@ PetscErrorCode ElementGeometry(ALE::ClosureBundle *coordBundle, ALE::PreSieve *o
   PetscFunctionBegin;
   ierr = restrictField(coordBundle, orientation, coords, e, &array); CHKERRQ(ierr);
   if (v0) {
-    v0[0] = array[0*2+0];
-    v0[1] = array[0*2+1];
+    for(int d = 0; d < dim; d++) {
+      v0[d] = array[d];
+    }
   }
   if (J) {
-    J[0] = 0.5*(array[1*2+0] - array[0*2+0]);
-    J[1] = 0.5*(array[2*2+0] - array[0*2+0]);
-    J[2] = 0.5*(array[1*2+1] - array[0*2+1]);
-    J[3] = 0.5*(array[2*2+1] - array[0*2+1]);
-    printf("J = / %g %g \\\n    \\ %g %g /\n", J[0], J[1], J[2], J[3]);
-    det = fabs(J[0]*J[3] - J[1]*J[2]);
+    for(int d = 0; d < dim; d++) {
+      for(int e = 0; e < dim; e++) {
+        J[d*dim+e] = 0.5*(array[(e+1)*dim+d] - array[0*dim+d]);
+      }
+    }
+    for(int d = 0; d < dim; d++) {
+      if (d == 0) {
+        printf("J = /");
+      } else if (d == dim-1) {
+        printf("    \\");
+      } else {
+        printf("    |");
+      }
+      for(int e = 0; e < dim; e++) {
+        printf(" %g", J[d*dim+e]);
+      }
+      if (d == 0) {
+        printf(" \\\n");
+      } else if (d == dim-1) {
+        printf(" /\n");
+      } else {
+        printf(" |\n");
+      }
+    }
+    if (dim == 2) {
+      det = fabs(J[0]*J[3] - J[1]*J[2]);
+    } else if (dim == 3) {
+      det = fabs(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
+                 J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
+                 J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
+    }
     invDet = 1.0/det;
     if (detJ) {
       *detJ = det;
     }
     if (invJ) {
-      invJ[0] =  invDet*J[3];
-      invJ[1] = -invDet*J[1];
-      invJ[2] = -invDet*J[2];
-      invJ[3] =  invDet*J[0];
-      printf("Jinv = / %g %g \\\n       \\ %g %g /\n", invJ[0], invJ[1], invJ[2], invJ[3]);
+      if (dim == 2) {
+        invJ[0] =  invDet*J[3];
+        invJ[1] = -invDet*J[2];
+        invJ[2] = -invDet*J[1];
+        invJ[3] =  invDet*J[0];
+      } else if (dim == 3) {
+        invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
+        invJ[0*3+1] = invDet*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]);
+        invJ[0*3+2] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
+        invJ[1*3+0] = invDet*(J[0*3+1]*J[2*3+2] - J[0*3+2]*J[2*3+1]);
+        invJ[1*3+1] = invDet*(J[0*3+2]*J[2*3+0] - J[0*3+0]*J[2*3+2]);
+        invJ[1*3+2] = invDet*(J[0*3+0]*J[2*3+1] - J[0*3+1]*J[2*3+0]);
+        invJ[2*3+0] = invDet*(J[0*3+1]*J[1*3+2] - J[0*3+2]*J[1*3+1]);
+        invJ[2*3+1] = invDet*(J[0*3+2]*J[1*3+0] - J[0*3+0]*J[1*3+2]);
+        invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
+      }
+      for(int d = 0; d < dim; d++) {
+        if (d == 0) {
+          printf("Jinv = /");
+        } else if (d == dim-1) {
+          printf("       \\");
+        } else {
+          printf("       |");
+        }
+        for(int e = 0; e < dim; e++) {
+          printf(" %g", invJ[d*dim+e]);
+        }
+        if (d == 0) {
+          printf(" \\\n");
+        } else if (d == dim-1) {
+          printf(" /\n");
+        } else {
+          printf(" |\n");
+        }
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -754,15 +800,14 @@ PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
   ALE::ClosureBundle *coordBundle;
   ALE::Point_set      elements;
   ALE::Point_set      empty;
+  PetscInt            dim;
   Vec                 coordinates;
   PetscScalar        *coords;
   PetscScalar        *array;
   PetscScalar        *field;
-  PetscReal           v0[2];
-  PetscReal           Jac[4], Jinv[4];
   PetscReal           elementVec[NUM_BASIS_FUNCTIONS];
   PetscReal           linearVec[NUM_BASIS_FUNCTIONS];
-  PetscReal           t_der[2], b_der[2];
+  PetscReal           *v0, *Jac, *Jinv, *t_der, *b_der;
   PetscReal           xi, eta, x_q, y_q, detJ, rho, funcValue;
   PetscInt            f, g, q;
   PetscErrorCode      ierr;
@@ -774,6 +819,12 @@ PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
   ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecGetArray(u, &array); CHKERRQ(ierr);
+  dim = coordBundle->getFiberDimension(*coordBundle->getTopology()->depthStratum(0).begin());
+  ierr = PetscMalloc(dim * sizeof(PetscReal), &v0);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim * sizeof(PetscReal), &t_der);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim * sizeof(PetscReal), &b_der);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jinv);CHKERRQ(ierr);
   elements = topology->star(block);
   for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
     ALE::Point e = *element_itor;
@@ -804,6 +855,11 @@ PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
     /* Assembly */
     ierr = assembleField(bundle, orientation, r, e, elementVec, ADD_VALUES); CHKERRQ(ierr);
   }
+  ierr = PetscFree(v0);CHKERRQ(ierr);
+  ierr = PetscFree(t_der);CHKERRQ(ierr);
+  ierr = PetscFree(b_der);CHKERRQ(ierr);
+  ierr = PetscFree(Jac);CHKERRQ(ierr);
+  ierr = PetscFree(Jinv);CHKERRQ(ierr);
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = VecRestoreArray(u, &array); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -821,11 +877,11 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   ALE::ClosureBundle *coordBundle;
   ALE::Point_set      elements;
   ALE::Point_set      empty;
+  PetscInt            dim;
   Vec                 coordinates;
   PetscScalar        *coords;
   PetscReal           elementVec[NUM_BASIS_FUNCTIONS];
-  PetscReal           v0[2];
-  PetscReal           Jac[4];
+  PetscReal           *v0, *Jac;
   PetscReal           xi, eta, x_q, y_q, detJ, funcValue;
   PetscInt            f, q;
   PetscErrorCode      ierr;
@@ -837,6 +893,9 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
   ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  dim = coordBundle->getFiberDimension(*coordBundle->getTopology()->depthStratum(0).begin());
+  ierr = PetscMalloc(dim * sizeof(PetscReal), &v0);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
   elements = topology->heightStratum(0);
   for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
     ALE::Point e = *element_itor;
@@ -859,6 +918,8 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     ierr = assembleField(bundle, orientation, b, e, elementVec, ADD_VALUES); CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = PetscFree(v0);CHKERRQ(ierr);
+  ierr = PetscFree(Jac);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
@@ -886,13 +947,11 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   ALE::ClosureBundle *coordBundle;
   ALE::Point_set      elements;
   ALE::Point_set      empty;
+  PetscInt            dim;
   Vec                 coordinates;
   PetscScalar        *coords;
-  PetscInt            numElementIndices;
-  PetscInt           *elementIndices = NULL;
-  PetscReal           v0[2];
   PetscReal           elementMat[NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS];
-  PetscReal           Jac[4], Jinv[4], t_der[2], b_der[2];
+  PetscReal           *v0, *Jac, *Jinv, *t_der, *b_der;
   PetscReal           xi, eta, x_q, y_q, detJ, rho;
   PetscInt            f, g, q;
   PetscErrorCode      ierr;
@@ -905,10 +964,17 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
   ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  dim = coordBundle->getFiberDimension(*coordBundle->getTopology()->depthStratum(0).begin());
+  ierr = PetscMalloc(dim * sizeof(PetscReal), &v0);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim * sizeof(PetscReal), &t_der);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim * sizeof(PetscReal), &b_der);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jinv);CHKERRQ(ierr);
   elements = topology->heightStratum(0);
   for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
     ALE::Point e = *element_itor;
 
+    CHKMEMQ;
     ierr = ElementGeometry(coordBundle, orientation, coords, e, v0, Jac, Jinv, &detJ); CHKERRQ(ierr);
     /* Element integral */
     ierr = PetscMemzero(elementMat, NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -934,7 +1000,11 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
     ierr = assembleOperator(bundle, orientation, jac, e, elementMat, ADD_VALUES); CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = PetscFree(elementIndices);CHKERRQ(ierr);
+  ierr = PetscFree(v0);CHKERRQ(ierr);
+  ierr = PetscFree(t_der);CHKERRQ(ierr);
+  ierr = PetscFree(b_der);CHKERRQ(ierr);
+  ierr = PetscFree(Jac);CHKERRQ(ierr);
+  ierr = PetscFree(Jinv);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (user->bcType == DIRICHLET) {
@@ -947,7 +1017,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 
     ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
     ierr = ExpandSetIntervals(boundaryIntervals, boundaryIndices); CHKERRQ(ierr);
-    for(int i = 0; i < numElementIndices; i++) {
+    for(int i = 0; i < numBoundaryIndices; i++) {
       printf("boundaryIndices[%d] = %d\n", i, boundaryIndices[i]);
     }
     ierr = MatZeroRows(jac, numBoundaryIndices, boundaryIndices, 1.0);CHKERRQ(ierr);
