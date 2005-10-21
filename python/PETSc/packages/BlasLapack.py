@@ -137,17 +137,18 @@ class Configure(PETSc.package.Package):
       raise RuntimeError('You cannot set both the library containing BLAS/LAPACK with --with-blas-lapack-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
 
     if self.framework.argDB['download-c-blas-lapack'] == 1:
+      self.f2c = 1
       if hasattr(self.compilers, 'FC'):
         raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
       libdir = self.downLoadBlasLapack('f2c', 'c')
       yield ('Downloaded BLAS/LAPACK library', [os.path.join(libdir,'libf2cblas.a')]+self.libraries.math, os.path.join(libdir,'libf2clapack.a'), 0)
       raise RuntimeError('Could not use downloaded c-blas-lapack?')
     if self.framework.argDB['download-f-blas-lapack'] == 1:
+      self.fblaslapack = 1
       if not hasattr(self.compilers, 'FC'):
         raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
       libdir = self.downLoadBlasLapack('f','f')            
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
-      self.fblaslapack = 1
       raise RuntimeError('Could not use downloaded f-blas-lapack?')
     # Try specified BLASLAPACK library
     if 'with-blas-lapack-lib' in self.framework.argDB:
