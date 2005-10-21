@@ -95,7 +95,7 @@ class P1(script.Script):
     basis = element.function_space()
     dim = FIAT.shapes.dimension(basis.base.shape)
     numFunctions = ASE.Compiler.Cxx.Define.Define()
-    numFunctions.setIdentifier('NUM_BASIS_FNUCTIONS')
+    numFunctions.setIdentifier('NUM_BASIS_FUNCTIONS')
     numFunctions.setReplacementText(str(len(basis)))
     if mangle:
       basisName = name+'Basis'+str(quadrature.degree)
