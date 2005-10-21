@@ -84,6 +84,9 @@ class Configure(PETSc.package.Package):
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by PLAPACK'''
     '''Normally you do not need to provide this method'''
+    if self.blasLapack.f2c or self.blasLapack.fblaslapack:
+      raise RuntimeError('PLAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with the --download-f-blas-lapack=1 or --download-c-blas-lapack=1')
+
     PETSc.package.Package.configureLibrary(self)
     # PLAPACK requires BLAS complex and single routines()
     if not self.blasLapack.checkForRoutine('sscal') or not self.blasLapack.checkForRoutine('cscal'):
