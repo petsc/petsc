@@ -483,7 +483,7 @@ $                    natural - see KSPSetNormType()
 .    -ksp_test_null_space - tests the null space set with KSPSetNullSpace() to see if it truly is a null space
 .   -ksp_knoll - compute initial guess by applying the preconditioner to the right hand side
 .   -ksp_cancelmonitors - cancel all previous convergene monitor routines set
-.   -ksp_monitor - print residual norm at each iteration
+.   -ksp_monitor <optional filename> - print residual norm at each iteration
 .   -ksp_xmonitor - plot residual norm at each iteration
 .   -ksp_vecmonitor - plot solution at each iteration
 -   -ksp_singmonitor - monitor extremem singular values at each iteration
@@ -502,8 +502,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       indx;
-  char           type[256];
+  char           type[256], monfilename[PETSC_MAX_PATH_LEN];
   const char     *stype[] = {"none","preconditioned","unpreconditioned","natural"};
+  PetscViewer    monviewer;
+  size_t         len;
   PetscTruth     flg;
 
   PetscFunctionBegin;
@@ -594,7 +596,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     */
     ierr = PetscOptionsName("-ksp_monitor","Monitor preconditioned residual norm","KSPSetMonitor",&flg);CHKERRQ(ierr); 
     if (flg) {
-      ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(PETSC_NULL,"-ksp_monitor",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+      ierr = PetscStrlen(monfilename,&len);CHKERRQ(ierr);
+      if (len>0) {
+	ierr = PetscViewerASCIIOpen(ksp->comm,monfilename,&monviewer);CHKERRQ(ierr);
+	ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      } else {
+	ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      }
     }
     /*
       Plots the vector solution 

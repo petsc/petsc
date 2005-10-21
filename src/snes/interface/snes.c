@@ -153,7 +153,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*snesch
                                solver; hence iterations will continue until max_it
                                or some other criterion is reached. Saves expense
                                of convergence test
-.  -snes_monitor - prints residual norm at each iteration 
+.  -snes_monitor <optional filename> - prints residual norm at each iteration. if no
+                                       filename given prints to stdout
 .  -snes_vecmonitor - plots solution at each iteration
 .  -snes_vecmonitor_update - plots update to solution at each iteration 
 .  -snes_xmonitor - plots residual norm at each iteration 
@@ -189,7 +190,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
   PetscErrorCode      ierr;
   PetscInt            i;
   const char          *deft;
-  char                type[256];
+  char                type[256], monfilename[PETSC_MAX_PATH_LEN];
+  PetscViewer         monviewer;
+  size_t              len;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -237,7 +240,16 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsName("-snes_cancelmonitors","Remove all monitors","SNESClearMonitor",&flg);CHKERRQ(ierr);
     if (flg) {ierr = SNESClearMonitor(snes);CHKERRQ(ierr);}
     ierr = PetscOptionsName("-snes_monitor","Monitor norm of function","SNESDefaultMonitor",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultMonitor,0,0);CHKERRQ(ierr);}
+    if (flg) {
+      ierr = PetscOptionsGetString(PETSC_NULL,"-snes_monitor",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+      ierr = PetscStrlen(monfilename,&len);CHKERRQ(ierr);
+      if (len>0) {
+	ierr = PetscViewerASCIIOpen(snes->comm,monfilename,&monviewer);CHKERRQ(ierr);
+	ierr = SNESSetMonitor(snes,SNESDefaultMonitor,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      } else {
+	ierr = SNESSetMonitor(snes,SNESDefaultMonitor,0,0);CHKERRQ(ierr);
+      }
+    }
     ierr = PetscOptionsName("-snes_ratiomonitor","Monitor norm of function","SNESSetRatioMonitor",&flg);CHKERRQ(ierr);
     if (flg) {ierr = SNESSetRatioMonitor(snes);CHKERRQ(ierr);}
     ierr = PetscOptionsName("-snes_smonitor","Monitor norm of function (fewer digits)","SNESDefaultSMonitor",&flg);CHKERRQ(ierr);
@@ -1285,7 +1297,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLGMonitorDestroy(PetscDrawLG draw)
 +  snes - the SNES context
 .  func - monitoring routine
 .  mctx - [optional] user-defined context for private data for the 
-          monitor routine (use PETSC_NULL if no context is desitre)
+          monitor routine (use PETSC_NULL if no context is desired)
 -  monitordestroy - [optional] routine that frees monitor context
           (may be PETSC_NULL)
 
