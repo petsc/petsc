@@ -71,6 +71,7 @@ E*/
 #define MATSEQCSRPERM      "seqcsrperm"
 #define MATMPICSRPERM      "mpicsrperm"
 #define MATCSRPERM         "csrperm"
+#define MATSEQCRL          "seqcrl"
 #define MATPLAPACK         "plapack"
 #define MatType const char*
 

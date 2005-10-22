@@ -3984,3 +3984,140 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+/*
+    Special version for direct calls from Fortran 
+*/
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matsetvaluesmpiaij_ MATSETVALUESMPIAIJ
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matsetvaluesmpiaij_ matsetvaluesmpiaij
+#endif
+
+/* Change these macros so can be used in void function */
+#undef CHKERRQ
+#define CHKERRQ(ierr) CHKERRABORT(mat->comm,ierr) 
+#undef SETERRQ2
+#define SETERRQ2(ierr,b,c,d) CHKERRABORT(mat->comm,ierr) 
+#undef SETERRQ
+#define SETERRQ(ierr,b) CHKERRABORT(mat->comm,ierr) 
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "matsetvaluesmpiaij_"
+void matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[],PetscInt *mn,const PetscInt in[],const PetscScalar v[],InsertMode *maddv)
+{
+  Mat            mat = *mmat;
+  PetscInt       m = *mm, n = *mn;
+  InsertMode     addv = *maddv;
+  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
+  PetscScalar    value;
+  PetscErrorCode ierr;
+  MatPreallocated(mat);
+  if (mat->insertmode == NOT_SET_VALUES) {
+    mat->insertmode = addv;
+  }
+#if defined(PETSC_USE_DEBUG)
+  else if (mat->insertmode != addv) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
+  }
+#endif
+  { 
+  PetscInt       i,j,rstart = aij->rstart,rend = aij->rend;
+  PetscInt       cstart = aij->cstart,cend = aij->cend,row,col;
+  PetscTruth     roworiented = aij->roworiented;
+
+  /* Some Variables required in the macro */
+  Mat            A = aij->A;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
+  PetscInt       *aimax = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
+  PetscScalar    *aa = a->a;
+  PetscTruth     ignorezeroentries = (((a->ignorezeroentries)&&(addv==ADD_VALUES))?PETSC_TRUE:PETSC_FALSE); 
+  Mat            B = aij->B;
+  Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data; 
+  PetscInt       *bimax = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->m,am = aij->A->m;
+  PetscScalar    *ba = b->a;
+
+  PetscInt       *rp1,*rp2,ii,nrow1,nrow2,_i,rmax1,rmax2,N,low1,high1,low2,high2,t,lastcol1,lastcol2; 
+  PetscInt       nonew = a->nonew; 
+  PetscScalar    *ap1,*ap2;
+
+  PetscFunctionBegin;
+  for (i=0; i<m; i++) {
+    if (im[i] < 0) continue;
+#if defined(PETSC_USE_DEBUG)
+    if (im[i] >= mat->M) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->M-1);
+#endif
+    if (im[i] >= rstart && im[i] < rend) {
+      row      = im[i] - rstart;
+      lastcol1 = -1;
+      rp1      = aj + ai[row]; 
+      ap1      = aa + ai[row];
+      rmax1    = aimax[row]; 
+      nrow1    = ailen[row];  
+      low1     = 0; 
+      high1    = nrow1;
+      lastcol2 = -1;
+      rp2      = bj + bi[row]; 
+      ap2      = ba + bi[row]; 
+      rmax2    = bimax[row]; 
+      nrow2    = bilen[row];  
+      low2     = 0; 
+      high2    = nrow2;
+
+      for (j=0; j<n; j++) {
+        if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
+        if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES)) continue;
+        if (in[j] >= cstart && in[j] < cend){
+          col = in[j] - cstart;
+          MatSetValues_SeqAIJ_A_Private(row,col,value,addv);
+        } else if (in[j] < 0) continue;
+#if defined(PETSC_USE_DEBUG)
+        else if (in[j] >= mat->N) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->N-1);}
+#endif
+        else {
+          if (mat->was_assembled) {
+            if (!aij->colmap) {
+              ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
+            }
+#if defined (PETSC_USE_CTABLE)
+            ierr = PetscTableFind(aij->colmap,in[j]+1,&col);CHKERRQ(ierr);
+	    col--;
+#else
+            col = aij->colmap[in[j]] - 1;
+#endif
+            if (col < 0 && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
+              ierr = DisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
+              col =  in[j];
+              /* Reinitialize the variables required by MatSetValues_SeqAIJ_B_Private() */
+              B = aij->B;
+              b = (Mat_SeqAIJ*)B->data; 
+              bimax = b->imax; bi = b->i; bilen = b->ilen; bj = b->j;
+              rp2      = bj + bi[row]; 
+              ap2      = ba + bi[row]; 
+              rmax2    = bimax[row]; 
+              nrow2    = bilen[row];  
+              low2     = 0; 
+              high2    = nrow2;
+              bm       = aij->B->m;
+              ba = b->a;
+            }
+          } else col = in[j];
+          MatSetValues_SeqAIJ_B_Private(row,col,value,addv);
+        }
+      }
+    } else {
+      if (!aij->donotstash) {
+        if (roworiented) {
+          if (ignorezeroentries && v[i*n] == 0.0) continue;
+          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
+        } else {
+          if (ignorezeroentries && v[i] == 0.0) continue;
+          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
+        }
+      }
+    }
+  }}
+  PetscFunctionReturnVoid();
+}
+EXTERN_C_END
