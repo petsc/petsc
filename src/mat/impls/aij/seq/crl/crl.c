@@ -147,7 +147,6 @@ PetscErrorCode MatMult_SeqCRL(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecZeroEntries(yy);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
@@ -155,10 +154,16 @@ PetscErrorCode MatMult_SeqCRL(Mat A,Vec xx,Vec yy)
   fortranmultcrl_(&m,&rmax,x,y,icols,acols);
 #else
 
+  /* first column */
+  for (j=0; j<m; j++) { 
+    y[j] = acols[j]*x[icols[j]];
+  }
+
+  /* other columns */
 #if defined(PETSC_HAVE_CRAYC)
 #pragma _CRI preferstream
 #endif
-  for (i=0; i<rmax; i++) {
+  for (i=1; i<rmax; i++) {
     ii = i*m;
 #if defined(PETSC_HAVE_CRAYC)
 #pragma _CRI prefervector

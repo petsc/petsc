@@ -11,7 +11,11 @@
 
       PetscInt    i,j
 
-      do 10,i=1,rmax
+      do 5 j=1,m
+          y(j) = acols(j,1)*x(icols(j,1))
+ 5    continue
+
+      do 10,i=2,rmax
         do 20 j=1,m
           y(j) = y(j) + acols(j,i)*x(icols(j,i))
  20     continue
