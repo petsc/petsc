@@ -564,7 +564,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag
 } 
 
 /*
-    Special version for Fun3d sequential benchmark
+    Special version for direct calls from Fortran (Used in PETSc-fun3d)
 */
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvaluesblocked4_ MATSETVALUESBLOCKED4
@@ -586,6 +586,7 @@ void PETSCMAT_DLLEXPORT matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscIn
   MatScalar         *ap,*aa = a->a,*bap;
 
   PetscFunctionBegin;
+  if (A->bs != 4) SETERRABORT(A->comm,PETSC_ERR_ARG_WRONG,"Can only be called with a block size of 4");
   stepval = (n-1)*4;
   for (k=0; k<m; k++) { /* loop over added rows */
     row  = im[k]; 

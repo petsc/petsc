@@ -14,11 +14,11 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = 
 SOURCEF  = fmaxpy.F fmdot.F fnorm.F fmult.F fmultadd.F fsolve.F fsolvebaij.F \
-           sgemv.F frelax.F fwaxpy.F faypx.F fcopy.F
+           sgemv.F frelax.F fwaxpy.F faypx.F fcopy.F fmultcrl.F
 SOURCEH  = 
 OBJSC    = 
 OBJSF    = fmaxpy.o fmdot.o fnorm.o fmult.o fmultadd.o fsolve.o fsolvebaij.o \
-           sgemv.o frelax.o fwaxpy.o faypx.o fcopy.o
+           sgemv.o frelax.o fwaxpy.o faypx.o fcopy.o fmultcrl.o
 LIBBASE  = libpetsc
 MANSEC   = Sys
 LOCDIR   = src/fortran/kernels/

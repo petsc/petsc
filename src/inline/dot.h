@@ -47,6 +47,24 @@ EXTERN void fortranmdot1_(void*,void*,PetscInt*,void*);
 EXTERN void fortrannormsqr_(void*,PetscInt*,void*);
 #endif
 
+#if defined(PETSC_USE_FORTRAN_KERNEL_MULTCRL)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define fortranmultcrl_    FORTRANMULTCRL
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define fortranmultcrl_    fortranmultcrl
+#endif
+EXTERN void fortranmultcrl_(PetscInt*,PetscInt*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*);
+#endif
+
+#if defined(PETSC_USE_FORTRAN_KERNEL_MULTCSRPERM)
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define fortranmultcsrperm_    FORTRANMULTCSRPERM
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define fortranmultcsrperm_    fortranmultcsrperm
+#endif
+EXTERN void fortranmultcsrperm_(PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,PetscScalar*);
+#endif
+
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortranmultaij_    FORTRANMULTAIJ

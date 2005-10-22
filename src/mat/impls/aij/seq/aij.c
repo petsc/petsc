@@ -224,6 +224,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
   PetscFunctionReturn(0);
 } 
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_SeqAIJ"
 PetscErrorCode MatGetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],PetscScalar v[])
@@ -3271,3 +3272,102 @@ PetscErrorCode MatSetValuesAdifor_SeqAIJ(Mat A,PetscInt nl,void *advalues)
   PetscFunctionReturn(0);
 }
 
+/*
+    Special version for direct calls from Fortran 
+*/
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matsetvaluesseqaij_ MATSETVALUESSEQAIJ
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matsetvaluesseqaij_ matsetvaluesseqaij
+#endif
+
+/* Change these macros so can be used in void function */
+#undef CHKERRQ
+#define CHKERRQ(ierr) CHKERRABORT(A->comm,ierr) 
+#undef SETERRQ2
+#define SETERRQ2(ierr,b,c,d) CHKERRABORT(A->comm,ierr) 
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "matsetvaluesseqaij_"
+void PETSCMAT_DLLEXPORT matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[],InsertMode *isis)
+{
+  Mat            A = *AA;
+  PetscInt       m = *mm, n = *nn;
+  InsertMode     is = *isis;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscInt       *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N;
+  PetscInt       *imax,*ai,*ailen;
+  PetscErrorCode ierr;
+  PetscInt       *aj,nonew = a->nonew,lastcol = -1;
+  PetscScalar    *ap,value,*aa;
+  PetscTruth     ignorezeroentries = ((a->ignorezeroentries && is == ADD_VALUES) ? PETSC_TRUE:PETSC_FALSE);
+  PetscTruth     roworiented = a->roworiented;
+
+  PetscFunctionBegin;  
+  MatPreallocated(A);
+  imax = a->imax;
+  ai = a->i;
+  ailen = a->ilen;
+  aj = a->j;
+  aa = a->a;
+
+  for (k=0; k<m; k++) { /* loop over added rows */
+    row  = im[k]; 
+    if (row < 0) continue;
+#if defined(PETSC_USE_DEBUG)  
+    if (row >= A->m) SETERRABORT(A->comm,PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+#endif
+    rp   = aj + ai[row]; ap = aa + ai[row];
+    rmax = imax[row]; nrow = ailen[row]; 
+    low  = 0;
+    high = nrow;
+    for (l=0; l<n; l++) { /* loop over added columns */
+      if (in[l] < 0) continue;
+#if defined(PETSC_USE_DEBUG)  
+      if (in[l] >= A->n) SETERRABORT(A->comm,PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+#endif
+      col = in[l];
+      if (roworiented) {
+        value = v[l + k*n]; 
+      } else {
+        value = v[k + l*m];
+      }
+      if (value == 0.0 && ignorezeroentries && (is == ADD_VALUES)) continue;
+
+      if (col <= lastcol) low = 0; else high = nrow;
+      lastcol = col;
+      while (high-low > 5) {
+        t = (low+high)/2;
+        if (rp[t] > col) high = t;
+        else             low  = t;
+      }
+      for (i=low; i<high; i++) {
+        if (rp[i] > col) break;
+        if (rp[i] == col) {
+          if (is == ADD_VALUES) ap[i] += value;  
+          else                  ap[i] = value;
+          goto noinsert;
+        }
+      } 
+      if (value == 0.0 && ignorezeroentries) goto noinsert;
+      if (nonew == 1) goto noinsert;
+      if (nonew == -1) SETERRABORT(A->comm,PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix");
+      MatSeqXAIJReallocateAIJ(a,1,nrow,row,col,rmax,aa,ai,aj,A->m,rp,ap,imax,nonew);
+      N = nrow++ - 1; a->nz++; high++;
+      /* shift up all the later entries in this row */
+      for (ii=N; ii>=i; ii--) {
+        rp[ii+1] = rp[ii];
+        ap[ii+1] = ap[ii];
+      }
+      rp[i] = col; 
+      ap[i] = value; 
+      noinsert:;
+      low = i + 1;
+    }
+    ailen[row] = nrow;
+  }
+  A->same_nonzero = PETSC_FALSE;
+  PetscFunctionReturnVoid();
+} 
+EXTERN_C_END

@@ -28,7 +28,7 @@ PetscEvent PETSC_Barrier = 0;
 PetscErrorCode PETSC_DLLEXPORT PetscBarrier(PetscObject obj)
 {
   PetscErrorCode ierr;
-  MPI_Comm comm;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   if (obj) PetscValidHeader(obj,1); 
