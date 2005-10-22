@@ -151,8 +151,6 @@ PetscErrorCode MatMult_SeqCRL(Mat A,Vec xx,Vec yy)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
-
-#define PETSC_USE_FORTRAN_KERNEL_MULTCRL
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTCRL)
   fortranmultcrl_(&m,&rmax,x,y,icols,acols);
 #else
