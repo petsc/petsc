@@ -50,24 +50,33 @@ class Configure(config.base.Configure):
   def configurePythonLibraries(self):
     import distutils.sysconfig
 
+    # Check for Python headers
     inc = [distutils.sysconfig.get_python_inc(), distutils.sysconfig.get_python_inc(1)]
     if not self.checkInclude(inc):
       raise RuntimeError('Unable to locate Python headers')
     self.include = inc
-
-    lib = os.path.join(distutils.sysconfig.get_config_var('LIBDIR'), distutils.sysconfig.get_config_var('LDLIBRARY'))
-    if not os.path.isfile(lib):
-      lib = os.path.join(distutils.sysconfig.get_config_var('LIBPL'), distutils.sysconfig.get_config_var('LDLIBRARY'))
-      if not os.path.isfile(lib):
-        lib = os.path.join('/System','Library','Frameworks',distutils.sysconfig.get_config_var('LDLIBRARY'))
-        if not os.path.isfile(lib):
-          lib = os.path.join('/Library','Frameworks',distutils.sysconfig.get_config_var('LDLIBRARY'))
-          if not os.path.isfile(lib):
-            raise RuntimeError("Cannot locate Python dynamic libraries");
-        
-    ext = distutils.sysconfig.get_config_var('SO')
-    if os.path.isfile(lib.split(ext)[0]+ext): lib = lib.split(ext)[0]+ext
-
+    # Check for Python dynamic library
+    dylib = distutils.sysconfig.get_config_var('LDLIBRARY')
+    if not dylib:
+      raise RuntimeError('LDLIBRARY variable is missing from disutils database');
+    libDirs = [distutils.sysconfig.get_config_var('LIBDIR'),
+               distutils.sysconfig.get_config_var('LIBPL'),
+               os.path.join('/System', 'Library', 'Frameworks'),
+               os.path.join('/Library', 'Frameworks')]
+    lib = None
+    for libDir in libDirs:
+      if not libDir: continue
+      lib = os.path.join(libDir, dylib)
+      if os.path.isfile(lib):
+        break
+    if lib is None:
+      raise RuntimeError("Cannot locate Python dynamic libraries");
+    # Remove any version numbers from the library name
+    if distutils.sysconfig.get_config_var('SO'):
+      ext = distutils.sysconfig.get_config_var('SO')
+      if os.path.isfile(lib.split(ext)[0]+ext):
+        lib = lib.split(ext)[0]+ext
+    # Add any additional libraries needed for the link
     self.lib = [lib]
     if distutils.sysconfig.get_config_var('LIBS'):
       flags = distutils.sysconfig.get_config_var('LIBS')
@@ -76,7 +85,7 @@ class Configure(config.base.Configure):
       self.lib.extend(self.splitLibs(flags))
     if distutils.sysconfig.get_config_var('SYSLIBS'):
       self.lib.extend(self.splitLibs(distutils.sysconfig.get_config_var('SYSLIBS')))
-
+    # Verify that the Python library is a shared library
     if not self.libraries.checkShared('#include <Python.h>\n', 'Py_Initialize', 'Py_IsInitialized', 'Py_Finalize', checkLink = self.checkPythonLink, libraries = self.lib, initArgs = '', noCheckArg = 1):
       raise RuntimeError('Python library must be shared')
     return

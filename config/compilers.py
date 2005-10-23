@@ -34,7 +34,7 @@ class Configure(config.base.Configure):
   def getDispatchNames(self):
     '''Return all the attributes which are dispatched from config.setCompilers'''
     names = sets.Set()
-    names.update(['CC', 'CPP', 'CXX', 'CPPCXX', 'FC'])
+    names.update(['CC', 'CPP', 'CXX', 'CXXCPP', 'FC'])
     names.update(['AR', 'RANLIB', 'LD_SHARED', 'dynamicLinker'])
     for language in ['C', 'Cxx', 'FC']:
       self.pushLanguage(language)
