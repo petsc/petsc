@@ -1092,6 +1092,8 @@ if (dlclose(handle)) {
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
     self.executeTest(self.checkCxxCompiler)
+    if hasattr(self, 'CXX'):
+      self.executeTest(self.checkCxxPreprocessor)
     self.executeTest(self.checkFortranCompiler)
     if hasattr(self, 'FC'):
       self.executeTest(self.checkFortranComments)

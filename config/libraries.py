@@ -93,7 +93,7 @@ class Configure(config.base.Configure):
     '''Converts a list of libraries to a string suitable for a linker'''
     return ' '.join([self.getLibArgument(lib) for lib in libs])
 
-  def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0):
+  def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0, cxxMangle = 0):
     '''Checks that the library "libName" contains "funcs", and if it does defines HAVE_LIB"libName"
        - libDir may be a list of directories
        - libName may be a list of library names'''
@@ -106,7 +106,7 @@ class Configure(config.base.Configure):
         funcName = self.compilers.mangleFortranFunction(funcName)
       includes = '/* Override any gcc2 internal prototype to avoid an error. */\n'
       # Handle C++ mangling
-      if self.language[-1] == 'Cxx':
+      if self.language[-1] == 'Cxx' and not cxxMangle:
         includes += '''
 #ifdef __cplusplus
 extern "C" {
@@ -122,7 +122,7 @@ extern "C" {
         # We use char because int might match the return type of a gcc2 builtin and its argument prototype would still apply.
         includes += 'char '+funcName+'();\n'
       # Handle C++ mangling
-      if self.language[-1] == 'Cxx':
+      if self.language[-1] == 'Cxx' and not cxxMangle:
         includes += '''
 #ifdef __cplusplus
 }
