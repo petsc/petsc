@@ -482,6 +482,10 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetOrientation(Mesh, void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinates(Mesh, Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinates(Mesh, Vec);
 
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateTopology(Mesh, int, PetscInt, PetscInt, PetscInt *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateBoundary(Mesh, PetscInt, PetscInt *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateCoordinates(Mesh, PetscReal []);
+
 /*S
      DM - Abstract PETSc object that manages an abstract grid object
           
