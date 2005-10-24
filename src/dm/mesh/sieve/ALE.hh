@@ -230,7 +230,7 @@ namespace ALE {
     };
     class Cmp {
     public: 
-      const bool operator()(const Point& p, const Point& q) {
+      bool operator()(const Point& p, const Point& q) const {
         return( (p.prefix < q.prefix) || ((p.prefix == q.prefix) && (p.index < q.index)));
       };
     };

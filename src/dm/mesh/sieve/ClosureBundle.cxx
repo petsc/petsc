@@ -135,8 +135,8 @@ namespace ALE {
   
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::_checkOrderChain"
-  ALE::int__Point ClosureBundle::_checkOrderChain(Obj<Point_set> order, int& minDepth, int& maxDepth) {
+  #define __FUNCT__ "ClosureBundle::__checkOrderChain"
+  ALE::int__Point ClosureBundle::__checkOrderChain(Obj<Point_set> order, int& minDepth, int& maxDepth) {
     ALE::int__Point dElement;
     minDepth = 0;
     maxDepth = 0;
@@ -186,17 +186,17 @@ namespace ALE {
   }
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::_orderElement"
-  void ClosureBundle::_orderElement(int dim, ALE::Obj<ALE::Point> element, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
+  #define __FUNCT__ "ClosureBundle::__orderElement"
+  void ClosureBundle::__orderElement(int dim, ALE::Point element, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
     if (elementsOrdered->find(element) != elementsOrdered->end()) return;
     (*ordered)[dim].push(element);
     elementsOrdered->insert(element);
-    printf("  ordered element (%d, %d) dim %d\n", element->prefix, element->index, dim);
+    printf("  ordered element (%d, %d) dim %d\n", element.prefix, element.index, dim);
   }
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::_orderCell"
-  ALE::Obj<ALE::Point> ClosureBundle::_orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
+  #define __FUNCT__ "ClosureBundle::__orderCell"
+  ALE::Point ClosureBundle::__orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
     Obj<Sieve> closure = this->getTopology()->closureSieve(Point_set((*orderChain)[dim]));
     ALE::Point last;
 
@@ -207,16 +207,16 @@ namespace ALE {
     if (dim == 1) {
       Obj<Point_set> flip = closure->cone((*orderChain)[1]);
 
-      this->_orderElement(0, (*orderChain)[0], ordered, elementsOrdered);
+      this->__orderElement(0, (*orderChain)[0], ordered, elementsOrdered);
       flip->erase((*orderChain)[0]);
       last = *flip->begin();
-      this->_orderElement(0, last, ordered, elementsOrdered);
-      this->_orderElement(1, (*orderChain)[1], ordered, elementsOrdered);
+      this->__orderElement(0, last, ordered, elementsOrdered);
+      this->__orderElement(1, (*orderChain)[1], ordered, elementsOrdered);
       (*orderChain)[dim-1] = last;
       return last;
     }
     do {
-      last = this->_orderCell(dim-1, orderChain, ordered, elementsOrdered);
+      last = this->__orderCell(dim-1, orderChain, ordered, elementsOrdered);
       printf("    last (%d, %d)\n", last.prefix, last.index);
       Obj<Point_set> faces = closure->support(last);
       faces->erase((*orderChain)[dim-1]);
@@ -229,7 +229,7 @@ namespace ALE {
     printf("Finish ordering for cell (%d, %d)\n", (*orderChain)[dim].prefix, (*orderChain)[dim].index);
     printf("  with last (%d, %d)\n", last.prefix, last.index);
     (*orderChain)[dim-1] = last;
-    this->_orderElement(dim, (*orderChain)[dim], ordered, elementsOrdered);
+    this->__orderElement(dim, (*orderChain)[dim], ordered, elementsOrdered);
     return last;
   }
 
@@ -244,7 +244,7 @@ namespace ALE {
     //           move this method there.
     base = this->__validateChain(base);
     int minDepth, maxDepth;
-    ALE::int__Point dElement = this->_checkOrderChain(order, minDepth, maxDepth);
+    ALE::int__Point dElement = this->__checkOrderChain(order, minDepth, maxDepth);
 
     // Extract the subsieve which is the closure of the dElement[maxDepth]
     Obj<Sieve> closure = this->getTopology()->closureSieve(Point_set(dElement[maxDepth]));
@@ -269,7 +269,7 @@ namespace ALE {
     } else {
       ALE::Point_set elementsOrdered;
 
-      ALE::Obj<ALE::Point> last = this->_orderCell(maxDepth, &dElement, &ordered, elementsOrdered);
+      ALE::Point last = this->__orderCell(maxDepth, &dElement, &ordered, elementsOrdered);
     }
 
     // Generate indices from ordered elements

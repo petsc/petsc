@@ -74,9 +74,9 @@ namespace ALE {
     static const int stratumTypeDepth  = 0;
     static const int stratumTypeHeight = 1;
     ClosureBundle& __setFiberDimensionByStratum(int stratumType, int32_t stratumIndex, int32_t dim);
-    int__Point _checkOrderChain(Obj<Point_set> order, int& maxDepth, int& minDepth);
-    void _orderElement(int dim, ALE::Obj<ALE::Point> element, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
-    ALE::Obj<ALE::Point> _orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
+    int__Point __checkOrderChain(Obj<Point_set> order, int& maxDepth, int& minDepth);
+    void __orderElement(int dim, ALE::Point element, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
+    ALE::Point __orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
   public:
     // constructors/destructors
     ClosureBundle()                    : Coaster()     {__reset();};
