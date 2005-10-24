@@ -6,8 +6,9 @@
 !
       subroutine FortranMultCRL(m,rmax,x,y,icols,acols)
       implicit none
-      PetscScalar x(0:m-1),acols(m,rmax),y(m)
-      PetscInt    m,rmax,icols(m,rmax)
+      PetscInt m,rmax,icols(m,rmax)
+      PetscScalar x(0:m-1),y(m)
+      PetscScalar acols(m,rmax)
 
       PetscInt    i,j
 
