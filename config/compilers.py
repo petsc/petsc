@@ -118,9 +118,8 @@ class Configure(config.base.Configure):
     self.popLanguage()
     if not self.restrictKeyword:
       self.logPrint('No C restrict keyword', 4, 'compilers')
-    # Define to equivalent of C99 restrict keyword, or to nothing if this is not supported.  Do not define if restrict is supported directly.
-    if not self.restrictKeyword == 'restrict':
-      self.addDefine('RESTRICT', self.restrictKeyword)
+    # Define to equivalent of C99 restrict keyword, or to nothing if this is not supported.
+    self.addDefine('RESTRICT', self.restrictKeyword)
     return
 
   def checkCLibraries(self):
