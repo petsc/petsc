@@ -1343,22 +1343,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,PetscScalar[],Pet
 #include "petscmatlab.h"
 
 /*
-    C code optimization is often enhanced by telling the compiler 
-  that certain pointer arguments to functions are not aliased to 
-  to other arguments. This is not yet ANSI C standard so we define 
-  the macro "restrict" to indicate that the variable is not aliased 
-  to any other argument.
-*/
-#if defined(PETSC_HAVE_RESTRICT) && !defined(__cplusplus)
-#define restrict _Restrict
-#else
-#if defined(restrict)
-#undef restrict
-#endif
-#define restrict
-#endif
-
-/*
       Determine if some of the kernel computation routines use
    Fortran (rather than C) for the numerical calculations. On some machines
    and compilers (like complex numbers) the Fortran version of the routines
