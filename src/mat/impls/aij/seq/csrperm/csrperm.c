@@ -250,7 +250,7 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
   PetscScalar    *x,*y,*aa;
   PetscErrorCode ierr;
   PetscInt       m=A->m,*aj,*ai;
-#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTCSRPERM) && !defined(notworking)
+#if !(defined(PETSC_USE_FORTRAN_KERNEL_MULTCSRPERM) && defined(notworking))
   PetscInt       i,j;
 #endif
 
