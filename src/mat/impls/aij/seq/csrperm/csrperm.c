@@ -288,7 +288,7 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
   xgroup = csrperm->xgroup;
   nzgroup = csrperm->nzgroup;
   
-#if defined(PETSC_USE_FORTRAN_KERNEL_MULTCSRPERM)
+#if defined(PETSC_USE_FORTRAN_KERNEL_MULTCSRPERM) && defined(notworking)
   fortranmultcsrperm_(&m,x,ii,aj,aa,y);
 #else
 
