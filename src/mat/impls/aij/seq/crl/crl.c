@@ -126,6 +126,8 @@ PetscErrorCode MatAssemblyEnd_SeqCRL(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
+#include "src/inline/dot.h"
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqCRL"
 PetscErrorCode MatMult_SeqCRL(Mat A,Vec xx,Vec yy)

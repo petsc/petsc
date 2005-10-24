@@ -240,6 +240,8 @@ PetscErrorCode MatAssemblyEnd_SeqCSRPERM(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
+#include "src/inline/dot.h"
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqCSRPERM"
 PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
