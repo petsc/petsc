@@ -222,10 +222,10 @@ namespace ALE {
     int32_t index;
     Point() : prefix(0), index(0){};
     Point(int32_t p, int32_t i) : prefix(p), index(i){};
-    bool operator==(const Point& q) {
+    bool operator==(const Point& q) const {
       return ( (this->prefix == q.prefix) && (this->index == q.index) );
     };
-    bool operator!=(const Point& q) {
+    bool operator!=(const Point& q) const {
       return ( (this->prefix != q.prefix) || (this->index != q.index) );
     };
     class Cmp {

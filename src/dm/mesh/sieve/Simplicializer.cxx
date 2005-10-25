@@ -396,3 +396,141 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
   ierr = MeshSetCoordinates(mesh, coordinates);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetDimension"
+/*@C
+    MeshGetDimension - Return the topological dimension of the mesh, meaning the
+                       maximum dimension of any element.
+
+    Not collective
+
+    Input Parameter:
+.   mesh - the mesh object
+
+    Output Parameter:
+.   dimension - the topological dimension
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshGetEmbedddingDimension()
+
+@*/
+PetscErrorCode MeshGetDimension(Mesh mesh, PetscInt *dimension)
+{
+  ALE::Sieve    *topology;
+  PetscErrorCode ierr;
+
+  PetscValidIntPointer(dimension,2);
+  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  *dimension = topology->diameter();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetEmbeddingDimension"
+/*@C
+    MeshGetEmbeddingDimension - Return the dimension of the ambient space for the mesh.
+
+    Not collective
+
+    Input Parameter:
+.   mesh - the mesh object
+
+    Output Parameter:
+.   dimension - the dimension of the ambient space
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshGetDimension()
+
+@*/
+PetscErrorCode MeshGetEmbeddingDimension(Mesh mesh, PetscInt *dimension)
+{
+  ALE::Sieve         *topology;
+  ALE::ClosureBundle *coordBundle;
+  PetscErrorCode      ierr;
+
+  PetscValidIntPointer(dimension,2);
+  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
+  *dimension = coordBundle->getFiberDimension(*topology->depthStratum(0).begin());
+  PetscFunctionReturn(0);
+}
+
+ALE::Obj<ALE::Point_set> getLocal(MPI_Comm comm, ALE::Obj<ALE::Stack> spaceFootprint, ALE::Obj<ALE::Point_set> points)
+{
+  ALE::Obj<ALE::Point_set> localPoints(new ALE::Point_set);
+  ALE::Point     proc(0, spaceFootprint->getCommRank());
+
+  for(ALE::Point_set::iterator p_itor = points->begin(); p_itor != points->end(); p_itor++) {
+    if (*spaceFootprint->cone(*p_itor).begin() != proc) continue;
+    localPoints->insert(*p_itor);
+  }
+  return localPoints;
+}
+
+PetscErrorCode MeshComputeOverlap(Mesh mesh)
+{
+  ALE::Sieve    *topology;
+  ALE::Stack    *spaceFootprint;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetSpaceFootprint(mesh, (void **) &spaceFootprint);CHKERRQ(ierr);
+  if (!spaceFootprint) {
+    ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+    spaceFootprint = topology->spaceFootprint(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeSupport, NULL);
+    ierr = MeshSetSpaceFootprint(mesh, (void *) spaceFootprint);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MeshGetDimLocalSize(Mesh mesh, int dim, PetscInt *size)
+{
+  MPI_Comm       comm;
+  ALE::Sieve    *topology;
+  ALE::Stack    *spaceFootprint;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh, DA_COOKIE, 1);
+  PetscValidIntPointer(size, 3);
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+  ierr = MeshComputeOverlap(mesh);CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ierr = MeshGetSpaceFootprint(mesh, (void **) &spaceFootprint);CHKERRQ(ierr);
+  *size = getLocal(comm, *spaceFootprint, topology->depthStratum(dim))->size();
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MeshGetDimLocalRanges(Mesh mesh, int dim, PetscInt starts[])
+{
+  MPI_Comm       comm;
+  PetscInt       localSize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh, DA_COOKIE, 1);
+  PetscValidIntPointer(starts, 3);
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+  ierr = MeshGetDimLocalSize(mesh, dim, &localSize);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&localSize, 1, MPI_INT, starts, 1, MPI_INT, comm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MeshGetDimGlobalSize(Mesh mesh, int dim, PetscInt *size)
+{
+  MPI_Comm       comm;
+  PetscInt       localSize, globalSize;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh, DA_COOKIE, 1);
+  PetscValidIntPointer(size, 3);
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+  ierr = MeshGetDimLocalSize(mesh, dim, &localSize);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&localSize, &globalSize, 1, MPI_INT, MPI_SUM, comm);CHKERRQ(ierr);
+  *size = globalSize;
+  PetscFunctionReturn(0);
+}

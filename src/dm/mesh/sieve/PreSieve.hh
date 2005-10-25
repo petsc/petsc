@@ -157,7 +157,7 @@ namespace ALE {
     virtual Point_set                 roots(){return this->_roots;};
     virtual Point_set                 leaves(){return this->_leaves;};
     Obj<Point_set>                    cone(Obj<Point_set> chain) {return this->nCone(chain,1);};
-    Point_set                         cone(Point& point) {
+    Point_set                         cone(const Point& point) {
       CHKCOMM(*this);
       Point_set cone = this->nCone(point,1);
       return cone;
@@ -174,7 +174,7 @@ namespace ALE {
     int32_t                           coneSize(Point_set& chain);
     Obj<Point_set>                    nCone(Obj<Point_set> chain, int32_t n);
     Point_set                         nCone(Point_set& chain, int32_t n);
-    Point_set                         nCone(Point& point, int32_t n) {
+    Point_set                         nCone(const Point& point, int32_t n) {
       CHKCOMM(*this);
       // Compute the point set obtained by taking the cone recursively on a point in the base
       // (i.e., the set of cap points resulting after each iteration is used again as the base for the next cone computation).
@@ -202,7 +202,7 @@ namespace ALE {
       Point_set supp = this->nSupport(chain,1);
       return supp;
     };
-    Point_set                         support(const Point& point) {
+    Obj<Point_set>                    support(const Point& point) {
       CHKCOMM(*this);
       // IMPROVE: keep the support size in _cap
       Point_set supp = this->nSupport(point,1);

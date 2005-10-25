@@ -64,7 +64,7 @@ namespace ALE {
         ALE::Point cover = *c_itor;
 
         this->removeArrow(cover, p);
-        if (this->support(cover).size() == 0) {
+        if (this->support(cover)->size() == 0) {
           if (!this->baseContains(cover)) {
             this->removeCapPoint(cover);
           } else {

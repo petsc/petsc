@@ -19,6 +19,7 @@ struct _p_Mesh {
   void    *topology;
   void    *boundary;
   void    *orientation;
+  void    *spaceFootprint;
   void    *bundle;
   void    *coordBundle;
   Vec      coordinates;
@@ -182,6 +183,14 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
   ierr = PetscHeaderCreate(p,_p_Mesh,struct _MeshOps,DA_COOKIE,0,"Mesh",comm,MeshDestroy,0);CHKERRQ(ierr);
   p->ops->createglobalvector = MeshCreateGlobalVector;
   p->ops->getmatrix          = MeshGetMatrix;
+  p->topology       = PETSC_NULL;
+  p->boundary       = PETSC_NULL;
+  p->orientation    = PETSC_NULL;
+  p->spaceFootprint = PETSC_NULL;
+  p->bundle         = PETSC_NULL;
+  p->coordBundle    = PETSC_NULL;
+  p->coordinates    = PETSC_NULL;
+  p->globalvector   = PETSC_NULL;
   *mesh = p;
   PetscFunctionReturn(0);
 }
@@ -208,6 +217,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
   PetscFunctionBegin;
   if (--mesh->refct > 0) PetscFunctionReturn(0);
   if (mesh->globalvector) {ierr = VecDestroy(mesh->globalvector);CHKERRQ(ierr);}
+  if (mesh->spaceFootprint) {
+    /* delete (ALE::Stack *) p->spaceFootprint; */
+  }
   ierr = PetscHeaderDestroy(mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -572,5 +584,55 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinates(Mesh mesh, Vec coordinates)
 {
   PetscValidPointer(coordinates,2);
   mesh->coordinates = coordinates;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetSpaceFootprint"
+/*@C
+    MeshGetSpaceFootprint - Gets the stack endcoding element overlap
+
+    Not collective
+
+    Input Parameter:
+.    mesh - the mesh object
+
+    Output Parameter:
+.    spaceFootprint - the overlap stack
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshSetSpaceFootprint()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetSpaceFootprint(Mesh mesh, void **spaceFootprint)
+{
+  if (spaceFootprint) {
+    PetscValidPointer(spaceFootprint,2);
+    *spaceFootprint = mesh->spaceFootprint;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshSetSpaceFootprint"
+/*@C
+    MeshSpaceFootprint - Sets the stack endcoding element overlap
+
+    Not collective
+
+    Input Parameters:
++    mesh - the mesh object
+-    spaceFootprint - the overlap stack
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshGetSpaceFootprint()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetSpaceFootprint(Mesh mesh, void *spaceFootprint)
+{
+  PetscValidPointer(spaceFootprint,2);
+  mesh->spaceFootprint = spaceFootprint;
   PetscFunctionReturn(0);
 }

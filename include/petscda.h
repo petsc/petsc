@@ -481,10 +481,14 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetOrientation(Mesh, void**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetOrientation(Mesh, void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinates(Mesh, Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinates(Mesh, Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetSpaceFootprint(Mesh, void**);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetSpaceFootprint(Mesh, void*);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateTopology(Mesh, int, PetscInt, PetscInt, PetscInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateBoundary(Mesh, PetscInt, PetscInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateCoordinates(Mesh, PetscReal []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetDimension(Mesh, PetscInt *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetEmbeddingDimension(Mesh, PetscInt *);
 
 /*S
      DM - Abstract PETSc object that manages an abstract grid object
