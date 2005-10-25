@@ -106,7 +106,7 @@ class Configure(config.base.Configure):
     else:
       if os.path.isdir(os.path.join(petscDir, 'bmake')):
         for d in os.listdir(os.path.join(petscDir, 'bmake')):
-          if not os.path.isdir(d):
+          if not os.path.isdir(os.path.join(petscDir, 'bmake', d)):
             continue
           if d in ['common', 'docsonly', 'SCCS']:
             continue
