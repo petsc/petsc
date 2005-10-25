@@ -120,17 +120,19 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetIterationNumber(KSP ksp,PetscInt *its)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSingularValueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
-  PetscReal emin,emax,c;
+  PetscReal      emin,emax,c;
   PetscErrorCode ierr;
+  PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
   if (!ksp->calc_sings) {
-    ierr = PetscPrintf(ksp->comm,"%3D KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
   } else {
     ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
     c = emax/emin;
-    ierr = PetscPrintf(ksp->comm,"%3D KSP Residual norm %14.12e %% max %g min %g max/min %g\n",n,rnorm,emax,emin,c);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %14.12e %% max %g min %g max/min %g\n",n,rnorm,emax,emin,c);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -162,8 +164,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSingularValueMonitor(KSP ksp,PetscInt n,Pet
 PetscErrorCode PETSCKSP_DLLEXPORT KSPVecViewMonitor(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
-  Vec         x;
-  PetscViewer viewer = (PetscViewer) dummy;
+  Vec            x;
+  PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
   ierr = KSPBuildSolution(ksp,PETSC_NULL,&x);CHKERRQ(ierr);
@@ -200,7 +202,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPVecViewMonitor(KSP ksp,PetscInt its,PetscRe
 PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode ierr;
-  PetscViewer viewer = (PetscViewer) dummy;
+  PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
@@ -242,13 +244,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultMonitor(KSP ksp,PetscInt n,PetscReal
 PetscErrorCode PETSCKSP_DLLEXPORT KSPTrueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode ierr;
-  Vec          resid,work;
-  PetscReal    scnorm;
-  PC           pc;
-  Mat          A,B;
-  PetscViewer  viewer = (PetscViewer) dummy;
+  Vec            resid,work;
+  PetscReal      scnorm;
+  PC             pc;
+  Mat            A,B;
+  PetscViewer    viewer = (PetscViewer) dummy;
   
   PetscFunctionBegin;
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
   ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
   ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
 
@@ -265,7 +268,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPTrueMonitor(KSP ksp,PetscInt n,PetscReal rn
   }
   ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
   ierr = VecDestroy(work);CHKERRQ(ierr);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
   ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e true resid norm %14.12e\n",n,rnorm,scnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -282,7 +284,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPTrueMonitor(KSP ksp,PetscInt n,PetscReal rn
 PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultSMonitor(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy)
 {
   PetscErrorCode ierr;
-  PetscViewer viewer = (PetscViewer) dummy;
+  PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
@@ -504,8 +506,8 @@ PetscErrorCode KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
 PetscErrorCode KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 {
   PetscErrorCode ierr;
-  MatStructure pflag;
-  Mat          Amat,Pmat;
+  MatStructure   pflag;
+  Mat            Amat,Pmat;
 
   PetscFunctionBegin;
   PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);

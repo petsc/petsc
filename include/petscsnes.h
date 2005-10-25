@@ -201,7 +201,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatDAADSetSNES(Mat,SNES);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetType(SNES,SNESType*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMonitor(SNES,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESRatioMonitor(SNES,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetRatioMonitor(SNES);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetRatioMonitor(SNES,PetscViewer);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewMonitor(SNES,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewResidualMonitor(SNES,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewUpdateMonitor(SNES,PetscInt,PetscReal,void *);

@@ -25,6 +25,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDestroy(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   if (--viewer->refct > 0) PetscFunctionReturn(0);
 
   ierr = PetscObjectDepublish(viewer);CHKERRQ(ierr);
