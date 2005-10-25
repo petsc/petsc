@@ -192,7 +192,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
   const char          *deft;
   char                type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewer         monviewer;
-  size_t              len;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -239,21 +238,25 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
     if (flg) {snes->converged = 0;}
     ierr = PetscOptionsName("-snes_cancelmonitors","Remove all monitors","SNESClearMonitor",&flg);CHKERRQ(ierr);
     if (flg) {ierr = SNESClearMonitor(snes);CHKERRQ(ierr);}
-    ierr = PetscOptionsName("-snes_monitor","Monitor norm of function","SNESDefaultMonitor",&flg);CHKERRQ(ierr);
+
+    ierr = PetscOptionsString("-snes_monitor","Monitor norm of function","SNESSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscOptionsGetString(PETSC_NULL,"-snes_monitor",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-      ierr = PetscStrlen(monfilename,&len);CHKERRQ(ierr);
-      if (len>0) {
-	ierr = PetscViewerASCIIOpen(snes->comm,monfilename,&monviewer);CHKERRQ(ierr);
-	ierr = SNESSetMonitor(snes,SNESDefaultMonitor,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
-      } else {
-	ierr = SNESSetMonitor(snes,SNESDefaultMonitor,0,0);CHKERRQ(ierr);
-      }
+      ierr = PetscViewerASCIIOpen(snes->comm,monfilename,&monviewer);CHKERRQ(ierr);
+      ierr = SNESSetMonitor(snes,SNESDefaultMonitor,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-snes_ratiomonitor","Monitor norm of function","SNESSetRatioMonitor",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = SNESSetRatioMonitor(snes);CHKERRQ(ierr);}
-    ierr = PetscOptionsName("-snes_smonitor","Monitor norm of function (fewer digits)","SNESDefaultSMonitor",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultSMonitor,0,0);CHKERRQ(ierr);}
+
+    ierr = PetscOptionsString("-snes_ratiomonitor","Monitor ratios of norms of function","SNESSetRatioMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscViewerASCIIOpen(snes->comm,monfilename,&monviewer);CHKERRQ(ierr);
+      ierr = SNESSetRatioMonitor(snes,monviewer);CHKERRQ(ierr);
+    }
+
+    ierr = PetscOptionsString("-snes_smonitor","Monitor norm of function (fewer digits)","SNESSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscViewerASCIIOpen(snes->comm,monfilename,&monviewer);CHKERRQ(ierr);
+      ierr = SNESSetMonitor(snes,SNESDefaultSMonitor,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+    }
+
     ierr = PetscOptionsName("-snes_vecmonitor","Plot solution at each iteration","SNESVecViewMonitor",&flg);CHKERRQ(ierr);
     if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitor,0,0);CHKERRQ(ierr);}
     ierr = PetscOptionsName("-snes_vecmonitor_update","Plot correction at each iteration","SNESVecViewUpdateMonitor",&flg);CHKERRQ(ierr);
@@ -276,7 +279,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
     if (snes->setfromoptions) {
       ierr = (*snes->setfromoptions)(snes);CHKERRQ(ierr);
     }
-
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
@@ -1668,6 +1670,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   PetscTruth     flg;
+  char           filename[PETSC_MAX_PATH_LEN];
+  PetscViewer    viewer;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -1711,8 +1715,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec b,Vec x)
   CHKERRQ(ierr);
 
   ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(snes->prefix,"-snes_view",&flg);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) { ierr = SNESView(snes,PETSC_VIEWER_STDOUT_(snes->comm));CHKERRQ(ierr); }
+  ierr = PetscOptionsGetString(snes->prefix,"-snes_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg && !PetscPreLoadingOn) {
+    ierr = PetscViewerASCIIOpen(snes->comm,filename,&viewer);CHKERRQ(ierr);
+    ierr = SNESView(snes,viewer);CHKERRQ(ierr); 
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  }
+
   ierr = PetscOptionsHasName(snes->prefix,"-snes_test_local_min",&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) { ierr = SNESTestLocalMin(snes);CHKERRQ(ierr); }
   if (snes->printreason) {
