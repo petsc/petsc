@@ -298,6 +298,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   PetscMPIInt    rank;
   PetscTruth     flag1,flag2,viewed=PETSC_FALSE,flg;
   char           view[10];
+  char           filename[PETSC_MAX_PATH_LEN];
+  PetscViewer    viewer;
+
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -421,8 +424,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
         PetscDraw   draw;
         PetscDrawSP drawsp;
 
-        ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",
-                               PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);CHKERRQ(ierr);
         ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
         ierr = PetscDrawSPCreate(draw,1,&drawsp);CHKERRQ(ierr);
         for (i=0; i<neig; i++) {
@@ -496,9 +498,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }
   if (!viewed) {
-    ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(ksp->prefix,"-ksp_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg && !PetscPreLoadingOn) {
+      ierr = PetscViewerASCIIOpen(ksp->comm,filename,&viewer);CHKERRQ(ierr);
+      ierr = KSPView(ksp,viewer);CHKERRQ(ierr); 
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_final_residual",&flg);CHKERRQ(ierr);
