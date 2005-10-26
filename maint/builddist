@@ -3,8 +3,9 @@
 # This script builds the PETSc tar file distribution
 # It uses the bk rep in harley:/sandbox/petsc/petsc-dist (or asterix)
 #
-# Usage: builddist petscrepo [version]
-# example usage: builddist /sandbox/petsc/petsc-dist -2.1.2
+# Usage: builddist petscrepo
+# example usage: builddist /sandbox/petsc/petsc-dist
+# Notes: version info is automatically obtained from include/petscversion.h
 #
 #echo "------- Have you done ALL of the following?? -----------------------------"
 #echo "(0) Excluded any directories not for public release"
@@ -19,18 +20,12 @@
 # If version specified on the commandline, set the version
 echo "Starting date: `date`"
 
-if [ $# = 2 ] ; then 
+if [ $# = 1 ]; then
   petscrepo=$1
-  version=$2
-elif [ $# = 1 ]; then
-  petscrepo=$1
-  version=""
 else
-  echo 'Error: petscrepo not specified. Usge: builddist petscrepo [version]'
+  echo 'Error: petscrepo not specified. Usge: builddist petscrepo'
   exit
 fi
-
-echo "Building ~/petsc$version.tar.gz and ~/petsc-lite$version.tar.gz"
 
 # check petscrepo to be valid
 if [ ! -d $petscrepo ]; then
@@ -65,6 +60,24 @@ bk -r co -q
 cd $PETSC_DIR
 bk pull
 bk -r co -q
+
+# check petscversion.h and set the version string
+version_release=`grep '^#define PETSC_VERSION_RELEASE ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+version_major=`grep '^#define PETSC_VERSION_MAJOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+version_minor=`grep '^#define PETSC_VERSION_MINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+version_subminor=`grep '^#define PETSC_VERSION_SUBMINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+
+if  [ ${version_release} = 0 ]; then
+  version=-dev
+elif [ ${version_release} = 1 ]; then
+  version=${version_major}.${version_minor}.${version_subminor}-p${version_patch}
+else
+  echo "Unknown PETSC_VERSION_RELEASE: ${version_release}"
+  exit
+fi
+echo "Building ~/petsc-$version.tar.gz and ~/petsc-lite$version.tar.gz"
+exit
 
 # create fortran stubdocs and cleanup
 cd $PETSC_DIR
