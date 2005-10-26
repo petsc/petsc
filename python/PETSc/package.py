@@ -192,10 +192,10 @@ class Package(config.base.Configure):
     self.framework.log.write('Downloading '+self.name+'\n')
     for url in self.download:
       try:
-        retriever.genericRetrieve(url, self.petscdir.externalPackagesDir, self.downloadname):
+        retriever.genericRetrieve(url, self.petscdir.externalPackagesDir, self.downloadname)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
         return
-      except RuntimeError:
+      except RuntimeError, e:
         failureMessage.append('  Failed to download '+url+'\n'+str(e))
     failureMessage = 'Unable to download '+self.package+' from locations '+str(self.download)+'\n'+'\n'.join(failureMessage)
     raise RuntimeError(failureMessage)
