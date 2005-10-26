@@ -188,6 +188,7 @@ class Package(config.base.Configure):
     import install.retrieval
 
     retriever = install.retrieval.Retriever(self.sourceControl)
+    retriever.setup()
     failureMessage = []
     self.framework.log.write('Downloading '+self.name+'\n')
     for url in self.download:
