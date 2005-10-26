@@ -22,6 +22,8 @@ class Configure(config.base.Configure):
 
   def configureBitKeeper(self):
     '''Find the BitKeeper executable'''
+    if 'with-bk' in self.framework.argDB and self.framework.argDB['with-bk'] == '0':
+      return
     self.getExecutable(self.framework.argDB['with-bk'], resultName = 'bk')
     return
 
