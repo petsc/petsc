@@ -43,7 +43,9 @@ class Retriever(logging.Logger):
   def genericRetrieve(self, url, root, name):
     '''Fetch the gzipped tarfile indicated by url and expand it into root
        - All the logic for removing old versions, updating etc. must move'''
-    self.logPrint('Downloading '+url+' to '+os.path.join(packageDir, name))
+    import config.base
+
+    self.logPrint('Downloading '+url+' to '+os.path.join(root, name))
     archive    = name+'.tar'
     archiveZip = archive+'.gz'
     localFile  = os.path.join(root, archiveZip)
@@ -57,17 +59,17 @@ Unable to download %s
 You may be off the network. Connect to the internet and run config/configure.py again
 or put in the directory %s the uncompressed, untared file obtained
 from %s
-''' % (package, packageDir, url)
+''' % (name, root, url)
       raise RuntimeError(failureMessage)
     self.logPrint('Uncompressing '+localFile)
     try:
-      config.base.Configure.executeShellCommand('cd '+root+'; gunzip '+archiveZip, log = self.framework.log)
+      config.base.Configure.executeShellCommand('cd '+root+'; gunzip '+archiveZip, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error unzipping '+archiveZip+': '+str(e))
     localFile  = os.path.join(root, archive)
     self.logPrint('Expanding '+localFile)
     try:
-      config.base.Configure.executeShellCommand('cd '+root+'; tar -xf '+archive, log = self.framework.log)
+      config.base.Configure.executeShellCommand('cd '+root+'; tar -xf '+archive, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error doing tar -xf '+archive+': '+str(e))
     os.unlink(localFile)
