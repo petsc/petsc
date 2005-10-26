@@ -2,6 +2,8 @@
 import os
 import sys
 import commands
+# to load ~/.pythonrc.py before inserting correct BuildSystem to path
+import user
 
 
 if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2:
