@@ -92,12 +92,14 @@ class Configure(PETSc.package.Package):
           if os.path.isdir(dir):
             yield (dir)
     # Try ~/mpich*
-    ls = os.listdir(os.getenv('HOME'))
-    for dir in ls:
-      if dir.find('mpich') >= 0:
-        dir = os.path.join(os.getenv('HOME'),dir)
-        if os.path.isdir(dir):
-          yield (dir)
+    homedir = os.getenv('HOME')
+    if homedir:
+      ls = os.listdir()
+      for dir in ls:
+        if dir.find('mpich') >= 0:
+          dir = os.path.join(homedir,dir)
+          if os.path.isdir(dir):
+            yield (dir)
     # Try MPICH install locations under Windows
     yield(os.path.join('/cygdrive','c','Program\\ Files','MPICH2'))
     yield(os.path.join('/cygdrive','c','Program\\ Files','MPICH'))
@@ -394,11 +396,15 @@ class Configure(PETSc.package.Package):
       except:
         self.framework.logPrint('Unable to output configure arguments into '+configArgsFilename)
       if self.argDB['download-mpich-pm'] == 'mpd':
-        if not os.path.isfile(os.path.join(os.getenv('HOME'),'.mpd.conf')):
-          fd = open(os.path.join(os.getenv('HOME'),'.mpd.conf'),'w')
-          fd.write('secretword=mr45-j9z\n')
-          fd.close()
-          os.chmod(os.path.join(os.getenv('HOME'),'.mpd.conf'),S_IRWXU)
+        homedir = os.getenv('HOME')
+        if homedir:
+          if not os.path.isfile(os.path.join(homedir,'.mpd.conf')):
+            fd = open(os.path.join(homedir,'.mpd.conf'),'w')
+            fd.write('secretword=mr45-j9z\n')
+            fd.close()
+            os.chmod(os.path.join(homedir,'.mpd.conf'),S_IRWXU)
+        else:
+          self.logPrint('No HOME env var, so could not check for or create .mpd.conf')
 
         # start up MPICH's demon
         self.framework.logPrint('Starting up MPICH mpd demon needed for mpirun')
