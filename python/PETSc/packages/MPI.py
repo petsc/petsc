@@ -94,7 +94,7 @@ class Configure(PETSc.package.Package):
     # Try ~/mpich*
     homedir = os.getenv('HOME')
     if homedir:
-      ls = os.listdir()
+      ls = os.listdir(homedir)
       for dir in ls:
         if dir.find('mpich') >= 0:
           dir = os.path.join(homedir,dir)
