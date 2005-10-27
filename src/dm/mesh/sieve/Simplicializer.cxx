@@ -529,7 +529,7 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, FILE *f)
   dim = coordBundle->getFiberDimension(*vertices.begin());
   vertexBundle.setTopology(topology);
   vertexBundle.setFiberDimensionByDepth(0, 1);
-  numVertices = vertexBundle.getGlobalSize();
+  //FIX numVertices = vertexBundle.getGlobalSize();
   printf("POINTS %d double\n", numVertices);
   if (rank == 0) {
     for(ALE::Point_set::iterator v_itor = vertices.begin(); v_itor != vertices.end(); v_itor++) {
@@ -607,7 +607,7 @@ PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
   elementBundle.setFiberDimensionByHeight(0, 1);
   dim = topology->diameter();
   elements = topology->heightStratum(0);
-  numElements = elementBundle.getGlobalSize();
+  //FIX numElements = elementBundle.getGlobalSize();
   corners = topology->nCone(*elements.begin(), dim).size();
   if (numElements == 0) {
     ierr = PetscFPrintf(comm, f, "CELLS 0 0\n");CHKERRQ(ierr);
@@ -618,7 +618,8 @@ PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
       ierr = PetscFPrintf(comm, f, "%d ", corners);CHKERRQ(ierr);
       ALE::Point_set cone = topology->nCone(*e_itor, dim);
       for(ALE::Point_set::iterator c_itor = cone.begin(); c_itor != cone.end(); c_itor++) {
-        ALE::Point index = *vertexBundle.getGlobalFiberIndices(*c_itor, 0)->cap().begin();
+        //FIX ALE::Point index = *vertexBundle.getGlobalFiberIndices(*c_itor, 0)->cap().begin();
+        ALE::Point index;
         ierr = PetscFPrintf(comm, f, " %d", index.prefix);CHKERRQ(ierr);
       }
       ierr = PetscFPrintf(comm, f, "\n");CHKERRQ(ierr);
@@ -648,7 +649,8 @@ PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
     for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
       ALE::Point_set cone = topology->nCone(*e_itor, dim);
       for(ALE::Point_set::iterator c_itor = cone.begin(); c_itor != cone.end(); c_itor++) {
-        ALE::Point index = *vertexBundle.getGlobalFiberIndices(*c_itor, 0)->cap().begin();
+        //FIX ALE::Point index = *vertexBundle.getGlobalFiberIndices(*c_itor, 0)->cap().begin();
+        ALE::Point index;
         array[offset++] = index.prefix;
       }
     }
