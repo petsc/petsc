@@ -1343,8 +1343,8 @@ namespace ALE {
       hdr << "(locked) ";
     }
     if(name != NULL) {
-      hdr << name;
-    } 
+      hdr << "presieve '" << name << "'\n";
+    }
     // Print header
     ierr = PetscPrintf(this->comm, hdr.str().c_str()); CHKERROR(ierr, "Error in PetscPrintf");
     // Use a string stream to accumulate output that is then submitted to PetscSynchronizedPrintf

@@ -833,12 +833,20 @@ namespace ALE {
     CHKCOMM(*this);    
     int32_t  rank = this->commRank;
     PetscErrorCode ierr;
-    ostringstream txt;
-    if(name != NULL) {
-      // Print header
-      ierr = PetscPrintf(this->comm, "Viewing sieve %s (square brackets contain depth, height pairs)\n", name); 
-      CHKERROR(ierr, "Error in PetscPrintf");
+    ostringstream txt, hdr;
+    hdr << "Viewing ";
+    if(name == NULL) {
+      hdr << "a ";
     }
+    if(!this->isLocked()) {
+      hdr << "(locked) ";
+    }
+    if(name != NULL) {
+      hdr << "sieve '" << name << "' (square brackets contain depth, height pairs)\n";
+    }
+    hdr << "\n";
+    // Print header
+    ierr = PetscPrintf(this->comm, hdr.str().c_str()); CHKERROR(ierr, "Error in PetscPrintf");
     // Use a string stream to accumulate output that is then submitted to PetscSynchronizedPrintf
     Point_set points = this->space();
     txt  << "[" << rank << "]: space of size " << points.size() << " : ";
