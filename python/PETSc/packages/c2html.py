@@ -47,11 +47,11 @@ class Configure(PETSc.package.Package):
 
   def configure(self):
     '''Determine whether the c2html exist or not'''
-    if os.path.exists(os.path.join(self.petscdir.dir, 'BitKeeper'))  or os.path.exists(os.path.join(self.petscdir.dir, 'BK')):
-      self.framework.log.write('BitKeeper clone of PETSc, checking for c2html\n')
+    if self.petscdir.isClone:
+      self.framework.logPrint('PETSc clone, checking for c2html\n')
       self.Install()
     else:
-      self.framework.log.write("Not BitKeeper clone of PETSc or cross compiling, don't need c2html\n")
+      self.framework.logPrint("Not a clone of PETSc, don't need c2html\n")
     return
 
 

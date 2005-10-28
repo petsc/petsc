@@ -458,6 +458,272 @@ PetscErrorCode MeshGetEmbeddingDimension(Mesh mesh, PetscInt *dimension)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "restrictField"
+PetscErrorCode restrictField(ALE::ClosureBundle *bundle, ALE::PreSieve *orientation, PetscScalar *array, ALE::Point e, PetscScalar *values[])
+{
+  ALE::Point_set             empty;
+  ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
+  //ALE::Obj<ALE::Point_array> intervals = bundle->getOverlapOrderedIndices(orientation->cone(e), empty);
+  /* This should be done by memory pooling by array size (we have a simple form below) */
+  static PetscScalar *vals;
+  static PetscInt     numValues = 0;
+  static PetscInt    *indices = NULL;
+  PetscInt            numIndices = 0;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    numIndices += (*i_itor).index;
+  }
+  if (numValues && (numValues != numIndices)) {
+    ierr = PetscFree(indices); CHKERRQ(ierr);
+    indices = NULL;
+    ierr = PetscFree(vals); CHKERRQ(ierr);
+    vals = NULL;
+  }
+  if (!indices) {
+    numValues = numIndices;
+    ierr = PetscMalloc(numValues * sizeof(PetscInt), &indices); CHKERRQ(ierr);
+    ierr = PetscMalloc(numValues * sizeof(PetscScalar), &vals); CHKERRQ(ierr);
+  }
+  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    printf("indices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
+  }
+  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
+  for(int i = 0; i < numIndices; i++) {
+    printf("indices[%d] = %d\n", i, indices[i]);
+    vals[i] = array[indices[i]];
+  }
+  *values = vals;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WriteVTKVertices"
+PetscErrorCode WriteVTKVertices(Mesh mesh, FILE *f)
+{
+  ALE::Sieve         *topology;
+  ALE::PreSieve      *orientation;
+  ALE::ClosureBundle *coordBundle;
+  ALE::ClosureBundle  vertexBundle;
+  ALE::Point_set      vertices;
+  Vec                 coordinates;
+  PetscScalar        *coords;
+  int                 dim, numVertices;
+  PetscScalar        *array;
+  MPI_Comm            comm;
+  PetscMPIInt         rank, size;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);
+  ierr = MPI_Comm_size(comm, &size);
+  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
+  ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
+  ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  vertices = topology->depthStratum(0);
+  dim = coordBundle->getFiberDimension(*vertices.begin());
+  vertexBundle.setTopology(topology);
+  vertexBundle.setFiberDimensionByDepth(0, 1);
+  //FIX numVertices = vertexBundle.getGlobalSize();
+  printf("POINTS %d double\n", numVertices);
+  if (rank == 0) {
+    for(ALE::Point_set::iterator v_itor = vertices.begin(); v_itor != vertices.end(); v_itor++) {
+      ierr = restrictField(coordBundle, orientation, coords, *v_itor, &array);CHKERRQ(ierr);
+      for(int d = 0; d < dim; d++) {
+        if (d > 0) printf(" ");
+        fprintf(f, "%g", array[d]);
+      }
+      for(int d = dim; d < 3; d++) {
+        fprintf(f, " 0.0");
+      }
+      fprintf(f, "\n");
+    }
+    for(int p = 0; p < size; p++) {
+      MPI_Status   status;
+      PetscScalar *remoteCoords;
+      int          numLocalVertices;
+
+      ierr = MPI_Recv(&numLocalVertices, 1, MPI_INT, p, 1, comm, &status);CHKERRQ(ierr);
+      ierr = PetscMalloc(numLocalVertices*dim * sizeof(PetscScalar), &remoteCoords);CHKERRQ(ierr);
+      ierr = MPI_Recv(remoteCoords, numLocalVertices*dim, MPI_DOUBLE, 0, 1, comm, &status);CHKERRQ(ierr);
+      for(int v = 0; v < numLocalVertices; v++) {
+        for(int d = 0; d < dim; d++) {
+          if (d > 0) fprintf(f, " ");
+          fprintf(f, "%g", remoteCoords[v*dim+d]);
+        }
+        for(int d = dim; d < 3; d++) {
+          fprintf(f, " 0.0");
+        }
+        fprintf(f, "\n");
+      }
+      ierr = PetscFree(remoteCoords);CHKERRQ(ierr);
+    }
+  } else {
+    PetscScalar *array;
+    PetscScalar *vertexArray;
+    int          numLocalVertices = vertices.size(), offset = 0;
+
+    ierr = PetscMalloc(numLocalVertices*dim * sizeof(PetscScalar), &array);CHKERRQ(ierr);
+    for(ALE::Point_set::iterator v_itor = vertices.begin(); v_itor != vertices.end(); v_itor++) {
+      ierr = restrictField(coordBundle, orientation, coords, *v_itor, &vertexArray);CHKERRQ(ierr);
+      for(int c = 0; c < dim; c++) {
+        array[offset++] = vertexArray[c];
+      }
+    }
+    ierr = MPI_Send(&numLocalVertices, 1, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
+    ierr = MPI_Send(array, numLocalVertices*dim, MPI_DOUBLE, 0, 1, comm);CHKERRQ(ierr);
+    ierr = PetscFree(array);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WriteVTKElements"
+PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
+{
+  ALE::Sieve         *topology;
+  ALE::ClosureBundle  vertexBundle;
+  ALE::ClosureBundle  elementBundle;
+  ALE::Point_set      elements;
+  int                 dim, numElements, corners;
+  MPI_Comm            comm;
+  PetscMPIInt         rank, size;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);
+  ierr = MPI_Comm_size(comm, &size);
+  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  vertexBundle.setTopology(topology);
+  vertexBundle.setFiberDimensionByDepth(0, 1);
+  elementBundle.setTopology(topology);
+  elementBundle.setFiberDimensionByHeight(0, 1);
+  dim = topology->diameter();
+  elements = topology->heightStratum(0);
+  //FIX numElements = elementBundle.getGlobalSize();
+  corners = topology->nCone(*elements.begin(), dim).size();
+  if (numElements == 0) {
+    ierr = PetscFPrintf(comm, f, "CELLS 0 0\n");CHKERRQ(ierr);
+  }
+  if (rank == 0) {
+    ierr = PetscFPrintf(comm, f, "CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
+    for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
+      ierr = PetscFPrintf(comm, f, "%d ", corners);CHKERRQ(ierr);
+      ALE::Point_set cone = topology->nCone(*e_itor, dim);
+      for(ALE::Point_set::iterator c_itor = cone.begin(); c_itor != cone.end(); c_itor++) {
+        //FIX ALE::Point index = *vertexBundle.getGlobalFiberIndices(*c_itor, 0)->cap().begin();
+        ALE::Point index;
+        ierr = PetscFPrintf(comm, f, " %d", index.prefix);CHKERRQ(ierr);
+      }
+      ierr = PetscFPrintf(comm, f, "\n");CHKERRQ(ierr);
+    }
+    for(int p = 0; p < size; p++) {
+      MPI_Status  status;
+      int        *remoteVertices;
+      int         numLocalElements;
+
+      ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, comm, &status);CHKERRQ(ierr);
+      ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &remoteVertices);CHKERRQ(ierr);
+      ierr = MPI_Recv(remoteVertices, numLocalElements*corners, MPI_INT, 0, 1, comm, &status);CHKERRQ(ierr);
+      for(int e = 0; e < numLocalElements; e++) {
+        ierr = PetscFPrintf(comm, f, "%d ", corners);CHKERRQ(ierr);
+        for(int c = 0; c < corners; c++) {
+          ierr = PetscFPrintf(comm, f, " %d", remoteVertices[e*corners+c]);CHKERRQ(ierr);
+        }
+        ierr = PetscFPrintf(comm, f, "\n");CHKERRQ(ierr);
+      }
+      ierr = PetscFree(remoteVertices);CHKERRQ(ierr);
+    }
+  } else {
+    int  numLocalElements = elements.size(), offset = 0;
+    int *array;
+
+    ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &array);CHKERRQ(ierr);
+    for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
+      ALE::Point_set cone = topology->nCone(*e_itor, dim);
+      for(ALE::Point_set::iterator c_itor = cone.begin(); c_itor != cone.end(); c_itor++) {
+        //FIX ALE::Point index = *vertexBundle.getGlobalFiberIndices(*c_itor, 0)->cap().begin();
+        ALE::Point index;
+        array[offset++] = index.prefix;
+      }
+    }
+    if (offset != numLocalElements*corners) {
+      SETERRQ2(PETSC_ERR_PLIB, "Invalid number of vertices to send %d shuold be %d", offset, numLocalElements*corners);
+    }
+    ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
+    ierr = MPI_Send(array, numLocalElements*corners, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
+    ierr = PetscFree(array);CHKERRQ(ierr);
+  }
+  ierr = PetscFPrintf(comm, f, "CELL_TYPES %d\n", numElements);CHKERRQ(ierr);
+  if (corners == 3) {
+    // VTK_TRIANGLE
+    for(int e = 0; e < numElements; e++) {
+      ierr = PetscFPrintf(comm, f, "5\n");CHKERRQ(ierr);
+    }
+  } else if (corners == 4) {
+    // VTK_TETRA
+    for(int e = 0; e < numElements; e++) {
+      ierr = PetscFPrintf(comm, f, "10\n");CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode WriteVTKHeader(Mesh mesh, FILE *f)
+{
+  MPI_Comm       comm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, f, "# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, f, "Simplicial Mesh Example\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, f, "ASCII\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, f, "DATASET UNSTRUCTURED_GRID\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode CreateVTKFile(Mesh mesh, const char name[])
+{
+  FILE               *f = NULL;
+  ALE::ClosureBundle *coordBundle;
+  PetscInt            dim ,embedDim;
+  MPI_Comm            comm;
+  PetscMPIInt         rank;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  if (rank == 0) {
+    std::string fname(name);
+
+    fname += ".vtk";
+    f = fopen(fname.c_str(), "w");
+  }
+  ierr = WriteVTKHeader(mesh, f);CHKERRQ(ierr);
+  ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
+  ierr = WriteVTKVertices(mesh, f);CHKERRQ(ierr);
+  ierr = MeshGetDimension(mesh, &dim);CHKERRQ(ierr);
+  ierr = MeshGetEmbeddingDimension(mesh, &embedDim);CHKERRQ(ierr);
+  if (dim < embedDim) {
+    //ierr = WriteVTKBoundaryElements(f, mesh);CHKERRQ(ierr);
+  } else {
+    ierr = WriteVTKElements(mesh, f);CHKERRQ(ierr);
+  }
+  if (rank == 0) {
+    fclose(f);
+  }
+  PetscFunctionReturn(0);
+}
+
 ALE::Obj<ALE::Point_set> getLocal(MPI_Comm comm, ALE::Obj<ALE::Stack> spaceFootprint, ALE::Obj<ALE::Point_set> points)
 {
   ALE::Obj<ALE::Point_set> localPoints(new ALE::Point_set);

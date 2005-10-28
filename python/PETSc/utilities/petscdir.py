@@ -26,6 +26,7 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('PETSc', '-PETSC_DIR',                        nargs.Arg(None, None, 'The root directory of the PETSc installation'))
     help.addArgument('PETSc', '-with-external-packages-dir=<dir>', nargs.Arg(None, None, 'Location to install downloaded packages'))
+    help.addArgument('PETSc', '-with-installation-method=<method>', nargs.Arg(None, 'tarball', 'Method of installation, e.g. tarball, clone, etc.'))
     return
 
   def configureDirectories(self):
@@ -113,7 +114,26 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
       self.externalPackagesDir = os.path.join(self.dir, 'externalpackages')
     return
 
+  def configureInstallationMethod(self):
+    if os.path.exists(os.path.join(self.dir, 'BitKeeper')):
+      self.logPrint('This is a BitKeeper clone')
+      self.isClone = 1
+    elif os.path.exists(os.path.join(self.dir, 'BK')):
+      self.logPrint('This is a fake BitKeeper clone')
+      self.isClone = 1
+    elif os.path.exists(os.path.join(self.dir, '_darcs')):
+      self.logPrint('This is a DARCS clone')
+      self.isClone = 1
+    elif self.framework.argDB['with-installation-method'] == 'clone':
+      self.logPrint('This is a forced clone')
+      self.isClone = 1
+    else:
+      self.logPrint('This is a tarball installation')
+      self.isClone = 0
+    return
+
   def configure(self):
     self.executeTest(self.configureDirectories)
     self.executeTest(self.configureExternalPackagesDir)
+    self.executeTest(self.configureInstallationMethod)
     return
