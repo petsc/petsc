@@ -59,9 +59,8 @@ PetscErrorCode MeshView_Sieve_Ascii(Mesh mesh, PetscViewer viewer)
     ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %d dimensions:\n", dim);CHKERRQ(ierr);
     for(d = 0; d < dim; d++) {
-      ALE::ClosureBundle dBundle;
+      ALE::ClosureBundle dBundle(topology);
 
-      dBundle.setTopology(topology);
       dBundle.setFiberDimensionByDepth(d, 1);
       ierr = PetscViewerASCIIPrintf(viewer, "  %d %d-cells\n", dBundle.getGlobalSize(), d);CHKERRQ(ierr);
     }
