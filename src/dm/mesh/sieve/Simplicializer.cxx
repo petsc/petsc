@@ -373,9 +373,78 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Point_array> intervals, PetscInt *i
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "setFiberValues"
+PetscErrorCode setFiberValues(Vec b, ALE::Point e, ALE::Obj<ALE::ClosureBundle> bundle, PetscScalar array[], InsertMode mode)
+{
+  ALE::Point_set   empty;
+  ALE::Obj<ALE::Point_array> intervals = bundle->getFiberIndices(orientation->cone(e), empty);
+  static PetscInt  indicesSize = 0;
+  static PetscInt *indices = NULL;
+  PetscInt         numIndices = 0;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    numIndices += (*i_itor).index;
+  }
+  if (indicesSize && (indicesSize != numIndices)) {
+    ierr = PetscFree(indices); CHKERRQ(ierr);
+    indices = NULL;
+  }
+  if (!indices) {
+    indicesSize = numIndices;
+    ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
+  }
+  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    printf("indices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
+  }
+  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
+  for(int i = 0; i < numIndices; i++) {
+    printf("indices[%d] = %d\n", i, indices[i]);
+  }
+  ierr = VecSetValues(b, numIndices, indices, array, mode);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "setClosureValues"
+PetscErrorCode setClosureValues(Vec b, ALE::Point e, ALE::Obj<ALE::ClosureBundle> bundle, ALE::Obj<ALE::PreSieve> orientation, PetscScalar array[], InsertMode mode)
+{
+  ALE::Point_set   empty;
+  ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
+  //ALE::Obj<ALE::Point_array> intervals = bundle->getOverlapOrderedIndices(orientation->cone(e), empty);
+  static PetscInt  indicesSize = 0;
+  static PetscInt *indices = NULL;
+  PetscInt         numIndices = 0;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    numIndices += (*i_itor).index;
+  }
+  if (indicesSize && (indicesSize != numIndices)) {
+    ierr = PetscFree(indices); CHKERRQ(ierr);
+    indices = NULL;
+  }
+  if (!indices) {
+    indicesSize = numIndices;
+    ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
+  }
+  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    printf("indices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
+  }
+  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
+  for(int i = 0; i < numIndices; i++) {
+    printf("indices[%d] = %d\n", i, indices[i]);
+  }
+  ierr = VecSetValues(b, numIndices, indices, array, mode);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "assembleField"
-/* This is currently duplicated in ex33mesh.c */
-PetscErrorCode assembleField(ALE::ClosureBundle *bundle, ALE::PreSieve *orientation, Vec b, ALE::Point e, PetscScalar array[], InsertMode mode)
+/* This is currently present in ex33mesh.c, although the functionality and the calling sequences differ significantly. */
+PetscErrorCode assembleField(Vec b, ALE::Obj<ALE::ClosureBundle> bundle, ALE::Obj<ALE::PreSieve> orientation, InsertMode mode)
 {
   ALE::Point_set   empty;
   ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
@@ -431,7 +500,9 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
   coordBundle = new ALE::ClosureBundle(comm);
   coordBundle->setTopology(topology);
   coordBundle->setFiberDimensionByDepth(0, dim);
-  //coordBundle->computeOverlapIndices();
+  coordBundle->computeOverlapIndices();
+  coordBundle->getLock();  // lock the bundle so that the overlap indices do not change
+  //
   ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
   /* Create coordinate storage */
   //ierr = MeshCreateGlobalVector(mesh, &coordinates);CHKERRQ(ierr);
