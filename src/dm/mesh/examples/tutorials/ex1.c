@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-  ierr = PetscViewerSetFilename(viewer, "testMesh.vtk");CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
@@ -109,8 +109,8 @@ PetscErrorCode ReadConnectivity(MPI_Comm comm, const char *filename, PetscInt di
   if(commRank == 0) {
     ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscViewerSetFilename(viewer, filename);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
     ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
     numCells = atoi(fgets(buf, 2048, f));
     ierr = PetscMalloc(numCells*(dim+1) * sizeof(PetscInt), &verts);CHKERRQ(ierr);
@@ -157,8 +157,8 @@ PetscErrorCode ReadCoordinates(MPI_Comm comm, const char *filename, PetscInt dim
   if (commRank == 0) {
     ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscViewerSetFilename(viewer, filename);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
     ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
     numVerts = atoi(fgets(buf, 2048, f));
     ierr = PetscMalloc(numVerts*dim * sizeof(PetscScalar), &coords);CHKERRQ(ierr);

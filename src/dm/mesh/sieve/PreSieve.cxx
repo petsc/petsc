@@ -1422,7 +1422,7 @@ namespace ALE {
   #undef __FUNCT__
   #define __FUNCT__ "PreSieve::baseFootprint"
   Stack* PreSieve::baseFootprint(int completionType, int footprintType,  PreSieve *f) {
-    PreSieve ownership;
+    PreSieve ownership(this->comm);
     Point self(this->commRank, this->commRank);
     if(footprintType == footprintTypeNone) {
       return NULL;
@@ -1452,7 +1452,7 @@ namespace ALE {
   #undef __FUNCT__
   #define __FUNCT__ "PreSieve::capFootprint"
   Stack* PreSieve::capFootprint(int completionType, int footprintType,  PreSieve *f) {
-    PreSieve ownership;
+    PreSieve ownership(this->comm);
     Point self(this->commRank, this->commRank);
     if(footprintType == footprintTypeNone) {
       return NULL;
@@ -1482,7 +1482,7 @@ namespace ALE {
   #undef __FUNCT__
   #define __FUNCT__ "PreSieve::spaceFootprint"
   Stack* PreSieve::spaceFootprint(int completionType, int footprintType,  PreSieve *f) {
-    PreSieve ownership;
+    PreSieve ownership(this->comm);
     Point self(this->commRank, this->commRank);
     if(footprintType == footprintTypeNone) {
       return NULL;
