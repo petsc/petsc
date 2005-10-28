@@ -13,14 +13,14 @@ class Ex1:
     return
 
   def createViewer(self, filename, read = 1):
-    from PETSc.PetscViewerFileType import PETSC_FILE_RDONLY, PETSC_FILE_CREATE
+    from PETSc.PetscViewerFileType import FILE_MODE_READ, FILE_MODE_WRITE
     import PETSc.PetscViewerBinary
 
     viewer = PETSc.PetscViewerBinary.PetscViewerBinary()
     if read:
-      viewer.setFileType(PETSC_FILE_RDONLY)
+      viewer.setFileType(FILE_MODE_READ)
     else:
-      viewer.setFileType(PETSC_FILE_CREATE)
+      viewer.setFileType(FILE_MODE_WRITE)
     viewer.setFilename(filename)
     return viewer
 

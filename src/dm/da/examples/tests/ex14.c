@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   ierr = DASetFieldName(da,0,"First field");CHKERRQ(ierr);
   ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); 
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",PETSC_FILE_CREATE,&bviewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",FILE_MODE_WRITE,&bviewer);CHKERRQ(ierr);
   ierr = DAView(da,bviewer);CHKERRQ(ierr);
   ierr = VecView(global,bviewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(bviewer);CHKERRQ(ierr);

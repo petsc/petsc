@@ -211,7 +211,7 @@ int main(int argc,char **args)
   /*  ierr = AODataView(ao,0); */
 
   { PetscViewer binary;
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filebase,PETSC_FILE_CREATE,&binary);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filebase,FILE_MODE_WRITE,&binary);CHKERRQ(ierr);
   ierr = AODataView(ao,binary);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(binary);CHKERRQ(ierr);
   }

@@ -32,17 +32,17 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
 
   /* Load the matrix as AIJ format */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&va);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&va);CHKERRQ(ierr);
   ierr = MatLoad(va,MATSEQAIJ,&A);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(va);CHKERRQ(ierr);
 
   /* Load the matrix as BAIJ format */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&vb);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&vb);CHKERRQ(ierr);
   ierr = MatLoad(vb,MATSEQBAIJ,&B);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(vb);CHKERRQ(ierr);
 
   /* Load the matrix as BAIJ format */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&vc);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&vc);CHKERRQ(ierr);
   ierr = MatLoad(vc,MATSEQBAIJ,&C);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(vc);CHKERRQ(ierr);
 

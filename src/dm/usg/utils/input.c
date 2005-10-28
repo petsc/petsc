@@ -66,7 +66,7 @@ int main(int argc, char **argv)
   /*
       Save the grid database to a file
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"gridfile",PETSC_FILE_CREATE,&binary);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"gridfile",FILE_MODE_WRITE,&binary);CHKERRQ(ierr);
   ierr = AODataView(aodata,binary);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(binary);CHKERRQ(ierr);
 

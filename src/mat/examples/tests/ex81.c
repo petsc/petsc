@@ -40,7 +40,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-fout",hbfile,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
 
   /* Read matrix and RHS */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,bfile,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,bfile,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRQ(ierr);
   ierr = VecLoad(fd,PETSC_NULL,&x);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);

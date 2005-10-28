@@ -32,7 +32,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   if (!flag) {ierr = PetscStrcpy(filename,"gridfile");CHKERRQ(ierr);}
 
   /* Open the database and read in grid (each processor gets a portion of the grid data)*/
-  ierr = PetscViewerBinaryOpen((*appctx)->comm,filename,PETSC_FILE_RDONLY,&binary);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen((*appctx)->comm,filename,FILE_MODE_READ,&binary);CHKERRQ(ierr);
   ierr = AODataLoadBasic(binary,&(*appctx)->aodata);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(binary);CHKERRQ(ierr);
 

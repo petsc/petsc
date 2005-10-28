@@ -94,10 +94,10 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     /* 
-       Open binary file.  Note that we use PETSC_FILE_RDONLY to indicate
+       Open binary file.  Note that we use FILE_MODE_READ to indicate
        reading from this file.
     */
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],FILE_MODE_READ,&fd);CHKERRQ(ierr);
 
     /*
        Load the matrix and vector; then destroy the viewer.
@@ -136,7 +136,7 @@ int main(int argc,char **args)
       ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[2],PETSC_MAX_PATH_LEN-1,&flgB);CHKERRQ(ierr);
       if (flgB){
         /* load B to get A = A + sigma*B */
-        ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
+        ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
         ierr  = MatLoad(fd,MATAIJ,&B);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
         ierr = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- sigma*B + A */  

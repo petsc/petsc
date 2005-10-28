@@ -17,7 +17,7 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'../matbinary.ex',         &
-     &                          PETSC_FILE_RDONLY,v,ierr)
+     &                          FILE_MODE_READ,v,ierr)
 
       call MatLoad(v,MATSEQAIJ,A,ierr)
 

@@ -289,9 +289,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryCreate(MPI_Comm comm,PetscViewer
 +  comm - MPI communicator
 .  name - name of file 
 -  type - type of file
-$    PETSC_FILE_CREATE - create new file for binary output
-$    PETSC_FILE_RDONLY - open existing file for binary input
-$    PETSC_FILE_WRONLY - open existing file for binary output
+$    FILE_MODE_WRITE - create new file for binary output
+$    FILE_MODE_READ - open existing file for binary input
+$    FILE_MODE_WRITE - open existing file for binary output
 
    Output Parameter:
 .  binv - PetscViewer for binary input/output to use with the specified file
@@ -705,15 +705,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
     }
 
 #if defined(PETSC_HAVE_O_BINARY)
-    if (type == PETSC_FILE_CREATE) {
+    if (type == FILE_MODE_WRITE) {
       if ((vbinary->fdes = open(fname,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file %s for writing",fname);
       }
-    } else if (type == PETSC_FILE_RDONLY && fname) {
+    } else if (type == FILE_MODE_READ && fname) {
       if ((vbinary->fdes = open(fname,O_RDONLY|O_BINARY,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for reading",fname);
       }
-    } else if (type == PETSC_FILE_WRONLY) {
+    } else if (type == FILE_MODE_WRITE) {
       if ((vbinary->fdes = open(fname,O_WRONLY|O_BINARY,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for writing",fname);
       }

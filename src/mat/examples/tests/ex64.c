@@ -20,10 +20,10 @@ int main(int argc,char **args)
   if (size > 1) SETERRQ(1,"Can only run on one processor");
 
   /* 
-     Open binary file.  Note that we use PETSC_FILE_CREATE to indicate
+     Open binary file.  Note that we use FILE_MODE_WRITE to indicate
      writing to this file.
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"4by4",PETSC_FILE_CREATE,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"4by4",FILE_MODE_WRITE,&fd);CHKERRQ(ierr);
 
   ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,4,12,12,0,0,&A);CHKERRQ(ierr);
 

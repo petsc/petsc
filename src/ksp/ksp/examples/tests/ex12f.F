@@ -32,7 +32,7 @@
 ! Read in matrix and RHS
       call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
       print *,f
-      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,PETSC_FILE_RDONLY,  &
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,FILE_MODE_READ,  &
      &     fd,ierr)
 
       call MatLoad(fd,MATSEQAIJ,A,ierr)

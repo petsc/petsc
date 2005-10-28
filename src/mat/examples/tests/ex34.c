@@ -22,7 +22,7 @@ int main(int argc,char **args)
   /* Read matrix and RHS */
   ierr = PetscOptionsGetString(PETSC_NULL,"-fin",file,255,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(1,help);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRQ(ierr);
   ierr = VecLoad(fd,PETSC_NULL,&x);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
@@ -30,7 +30,7 @@ int main(int argc,char **args)
   /* Write matrix and vector */
   ierr = PetscOptionsGetString(PETSC_NULL,"-fout",file,255,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(1,help);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_CREATE,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_WRITE,&fd);CHKERRQ(ierr);
   ierr = MatView(A,fd);CHKERRQ(ierr);
   ierr = VecView(x,fd);CHKERRQ(ierr);
 
