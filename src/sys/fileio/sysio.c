@@ -341,7 +341,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
 
    Input Parameters:
 +  name - filename
--  type - type of binary file, on of PETSC_FILE_RDONLY, PETSC_FILE_WRONLY, PETSC_FILE_CREATE
+-  type - type of binary file, one of FILE_MODE_READ, FILE_MODE_APPEND, FILE_MODE_WRITE
 
    Output Parameter:
 .  fd - the file
@@ -355,40 +355,41 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
    big-endian format. This means the file can be accessed using PetscBinaryOpen() and
    PetscBinaryRead() and PetscBinaryWrite() on any machine.
 
-.seealso: PetscBinaryRead(), PetscBinaryWrite()
+.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscFileMode, PetscViewerFileSetMode()
+
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscBinaryOpen(const char name[],int type,int *fd)
+PetscErrorCode PETSC_DLLEXPORT PetscBinaryOpen(const char name[],PetscFileMode mode,int *fd)
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_O_BINARY) 
-  if (type == PETSC_FILE_CREATE) {
+  if (mode == FILE_MODE_WRITE) {
     if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
     }
-  } else if (type == PETSC_FILE_RDONLY) {
+  } else if (mode == FILE_MODE_READ) {
     if ((*fd = open(name,O_RDONLY|O_BINARY,0)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
     }
-  } else if (type == PETSC_FILE_WRONLY) {
+  } else if (mode == FILE_MODE_APPEND) {
     if ((*fd = open(name,O_WRONLY|O_BINARY,0)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
     }
 #else
-  if (type == PETSC_FILE_CREATE) {
+  if (mode == FILE_MODE_WRITE) {
     if ((*fd = creat(name,0666)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
     }
-  } else if (type == PETSC_FILE_RDONLY) {
+  } else if (mode == FILE_MODE_READ) {
     if ((*fd = open(name,O_RDONLY,0)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for reading: %s",name);
     }
   }
-  else if (type == PETSC_FILE_WRONLY) {
+  else if (mode == FILE_MODE_APPEND) {
     if ((*fd = open(name,O_WRONLY,0)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file for writing: %s",name);
     }
 #endif
-  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown file mode");
   PetscFunctionReturn(0);
 }
 

@@ -55,8 +55,8 @@ PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerGetFilename_VU" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFilename_VU(PetscViewer viewer, char **name)
+#define __FUNCT__ "PetscViewerFileGetName_VU" 
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileGetName_VU(PetscViewer viewer, char **name)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
@@ -68,8 +68,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerSetFilename_VU" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_VU(PetscViewer viewer, const char name[])
+#define __FUNCT__ "PetscViewerFileSetName_VU" 
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_VU(PetscViewer viewer, const char name[])
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
   char           fname[PETSC_MAX_PATH_LEN];
@@ -149,10 +149,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_VU(PetscViewer viewer)
   vu->queueBase   = PETSC_NULL;
   vu->queueLength = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject) viewer,"PetscViewerSetFilename_C", "PetscViewerSetFilename_VU",
-                                           PetscViewerSetFilename_VU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject) viewer,"PetscViewerGetFilename_C", "PetscViewerGetFilename_VU",
-                                           PetscViewerGetFilename_VU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject) viewer,"PetscViewerFileSetName_C", "PetscViewerFileSetName_VU",
+                                           PetscViewerFileSetName_VU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject) viewer,"PetscViewerFileGetName_C", "PetscViewerFileGetName_VU",
+                                           PetscViewerFileGetName_VU);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

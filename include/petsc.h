@@ -992,6 +992,25 @@ typedef struct _p_PetscObject* PetscObject;
 S*/
 typedef struct _n_PetscFList *PetscFList;
 
+/*E
+  PetscFileMode - Access mode for a file.
+
+  Level: beginner
+
+  FILE_MODE_READ - open a file at its beginning for reading
+
+  FILE_MODE_WRITE - open a file at its beginning for writing (will create if the file does not exist)
+
+  FILE_MODE_APPEND - open a file at end for writing
+
+  FILE_MODE_UPDATE -
+
+  FILE_MODE_APPEND_UPDATE -
+
+.seealso: PetscViewerFileSetMode()
+E*/
+typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE} PetscFileMode;
+
 #include "petscviewer.h"
 #include "petscoptions.h"
 

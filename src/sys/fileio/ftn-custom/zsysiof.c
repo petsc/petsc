@@ -8,7 +8,7 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL petscbinaryopen_(CHAR name PETSC_MIXED_LEN(len),PetscViewerFileType *type,int *fd,
+void PETSC_STDCALL petscbinaryopen_(CHAR name PETSC_MIXED_LEN(len),PetscFileMode *type,int *fd,
                                     PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;

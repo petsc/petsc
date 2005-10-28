@@ -6,7 +6,7 @@
 
 #define PetscViewer PetscFortranAddr
 #define PetscViewers PetscFortranAddr
-#define PetscViewerFileType PetscEnum
+#define PetscFileMode PetscEnum
 #define PetscViewerType character*(80)
 #define PetscViewerFormat PetscEnum
 
