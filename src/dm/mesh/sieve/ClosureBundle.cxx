@@ -156,9 +156,11 @@ namespace ALE {
     this->_localOverlapIndices->setBottom(this->_overlapOwnership);
     this->_localOverlapIndices->setTop(new PreSieve(this->getComm()));
     // Traverse the points in the overlapOwnership cap, compute the local indices over it and attach them using _localOverlapIndices
-    for(Point_set::iterator o_itor = this->_overlapOwnership->cap().begin(); o_itor != this->_overlapOwnership->cap().end(); o_itor++) {
+    ALE::Obj<ALE::Point_set> cap = this->_overlapOwnership->cap();
+    for(Point_set::iterator o_itor = cap->begin(); o_itor != cap->end(); o_itor++) {
       Point e = *o_itor;
       Point interval = getFiberInterval(e);
+      printf("overlap point (%d, %d)\n", e.prefix, e.index);
       this->_localOverlapIndices->top()->addArrow(interval, e);
     }
     // Now we do the completion

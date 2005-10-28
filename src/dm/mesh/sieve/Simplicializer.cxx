@@ -431,7 +431,7 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
   coordBundle = new ALE::ClosureBundle(comm);
   coordBundle->setTopology(topology);
   coordBundle->setFiberDimensionByDepth(0, dim);
-  //coordBundle->computeOverlapIndices();
+  coordBundle->computeOverlapIndices();
   ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
   /* Create coordinate storage */
   //ierr = MeshCreateGlobalVector(mesh, &coordinates);CHKERRQ(ierr);
@@ -446,6 +446,13 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
   /* Set coordinates */
   numElements = topology->heightStratum(0).size();
   vertices = topology->depthStratum(0);
+  /* Print shit */
+  for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
+    ALE::Point v = *vertex_itor;
+    ostringstream label;
+    label << "Overlap owners of vertex (" << v.prefix << "," << v.index << ")" << std::endl;
+    coordBundle->getOverlapOwners(v)->view(label.str().c_str());
+  }
   for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
     ALE::Point v = *vertex_itor;
     printf("Sizeof fiber over vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));

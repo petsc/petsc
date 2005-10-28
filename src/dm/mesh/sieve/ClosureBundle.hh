@@ -43,6 +43,9 @@ namespace ALE {
       this->_arrowsToEnds->setTop(this->_arrowsToStarts->top());
       this->_arrowsToEnds->setBottom(topology);
       //
+      this->_localOverlapIndices  = Obj<Stack>(new Stack(this->comm));
+      this->_remoteOverlapIndices = Obj<Stack>(new Stack(this->comm));
+      //
       this->__resetArrowIndices(); // this method depends on _arrowsToStarts having already been setup
       this->_cacheFiberIndices = 0;
     };
