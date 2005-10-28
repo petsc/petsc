@@ -132,7 +132,13 @@ namespace ALE {
     Obj<PreSieve> indices = this->__computeIndices(supports, base, includingBoundary);
     return indices;
   }//ClosureBundle::getBundleIndices()
-  
+
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "ClosureBundle::getGlobalSize"
+  int32_t   ClosureBundle::getGlobalSize() {
+    return 0;
+  }
 
   #undef  __FUNCT__
   #define __FUNCT__ "ClosureBundle::__checkOrderChain"

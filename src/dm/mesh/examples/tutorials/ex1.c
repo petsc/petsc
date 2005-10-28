@@ -40,15 +40,13 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 PetscErrorCode ReadConnectivity(MPI_Comm, const char *, PetscInt, PetscTruth, PetscInt *, PetscInt **);
 PetscErrorCode ReadCoordinates(MPI_Comm, const char *, PetscInt, PetscInt *, PetscScalar **);
 
-/* Create a VTK viewer */
-PetscErrorCode CreateVTKFile(Mesh mesh, const char name[]);
-
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
   Mesh           mesh;
+  PetscViewer    viewer;
   char           vertexFilename[2048];
   char           coordFilename[2048];
   PetscTruth     useZeroBase;
@@ -84,7 +82,6 @@ int main(int argc, char *argv[])
   ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
   ierr = PetscViewerSetFilename(viewer, "testMesh.vtk");CHKERRQ(ierr);
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
-  ierr = CreateVTKFile(mesh, "testMesh");CHKERRQ(ierr);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -110,7 +107,7 @@ PetscErrorCode ReadConnectivity(MPI_Comm comm, const char *filename, PetscInt di
   ierr = PetscPrintf(comm, "Reading connectivity information on proc 0 of %d procs from file %s...\n", commSize, filename);
   CHKERRQ(ierr);
   if(commRank == 0) {
-    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerASCIISetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
     ierr = PetscViewerSetFilename(viewer, filename);CHKERRQ(ierr);
@@ -131,11 +128,11 @@ PetscErrorCode ReadConnectivity(MPI_Comm comm, const char *filename, PetscInt di
       }
       cellCount++;
     }
-    ierr = PetscPrintf(comm, "  Read %d elements\n", numCells);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     *numElements = numCells;
     *vertices = verts;
-  }/* if(commRank == 0) */
+  }
+  ierr = PetscPrintf(comm, "  Read %d elements\n", numCells);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -157,8 +154,8 @@ PetscErrorCode ReadCoordinates(MPI_Comm comm, const char *filename, PetscInt dim
   ierr = MPI_Comm_rank(comm, &commRank); CHKERRQ(ierr);
 
   ierr = PetscPrintf(comm, "Reading coordinate information on proc 0 of %d procs from file %s...\n", commSize, filename); CHKERRQ(ierr);
-  if(commRank == 0) {
-    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+  if (commRank == 0) {
+    ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerASCIISetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
     ierr = PetscViewerSetFilename(viewer, filename);CHKERRQ(ierr);
@@ -176,10 +173,10 @@ PetscErrorCode ReadCoordinates(MPI_Comm comm, const char *filename, PetscInt dim
       }
       vertexCount++;
     }
-    ierr = PetscPrintf(comm, "  Read %d vertices\n", numVerts);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     *numVertices = numVerts;
     *coordinates = coords;
-  }/* if(commRank == 0 ) */
+  }
+  ierr = PetscPrintf(comm, "  Read %d vertices\n", numVerts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

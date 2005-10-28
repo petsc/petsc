@@ -28,6 +28,72 @@ struct _p_Mesh {
   PetscInt d_nz,o_nz,*d_nnz,*o_nnz;
 };
 
+#include <ClosureBundle.hh>
+PetscErrorCode WriteVTKVertices(Mesh, FILE *);
+PetscErrorCode WriteVTKElements(Mesh, FILE *);
+PetscErrorCode WriteVTKHeader(Mesh, FILE *);
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshView_Sieve_Ascii"
+PetscErrorCode MeshView_Sieve_Ascii(Mesh mesh, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_VTK) {
+    ALE::ClosureBundle *coordBundle;
+    FILE               *f;
+
+    ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
+    ierr = WriteVTKHeader(mesh, f);CHKERRQ(ierr);
+    ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
+    ierr = WriteVTKVertices(mesh, f);CHKERRQ(ierr);
+    ierr = WriteVTKElements(mesh, f);CHKERRQ(ierr);
+  } else {
+    ALE::Sieve *topology;
+    PetscInt dim, d;
+
+    ierr = MeshGetDimension(mesh, &dim);CHKERRQ(ierr);
+    ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %d dimensions:\n", dim);CHKERRQ(ierr);
+    for(d = 0; d < dim; d++) {
+      ALE::ClosureBundle dBundle;
+
+      dBundle.setTopology(topology);
+      dBundle.setFiberDimensionByDepth(d, 1);
+      ierr = PetscViewerASCIIPrintf(viewer, "  %d %d-cells\n", dBundle.getGlobalSize(), d);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshView_Sieve"
+PetscErrorCode MeshView_Sieve(Mesh mesh, PetscViewer viewer)
+{
+  PetscTruth     iascii, isbinary, isdraw;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_BINARY, &isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_DRAW, &isdraw);CHKERRQ(ierr);
+
+  if (iascii){
+    ierr = MeshView_Sieve_Ascii(mesh, viewer);CHKERRQ(ierr);
+  } else if (isbinary) {
+    SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Mesh");
+  } else if (isdraw){ 
+    SETERRQ(PETSC_ERR_SUP, "Draw viewer not implemented for Mesh");
+  } else {
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MeshGetMatrix" 
 /*@C
@@ -150,6 +216,63 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetPreallocation(Mesh mesh,PetscInt d_nz,co
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MeshView"
+/*@C
+   MeshView - Views a Mesh object. 
+
+   Collective on Mesh
+
+   Input Parameters:
++  mesh - the mesh
+-  viewer - an optional visualization context
+
+   Notes:
+   The available visualization contexts include
++     PETSC_VIEWER_STDOUT_SELF - standard output (default)
+-     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
+         output where only the first processor opens
+         the file.  All other processors send their 
+         data to the first processor to print. 
+
+   You can change the format the mesh is printed using the 
+   option PetscViewerSetFormat().
+
+   The user can open alternative visualization contexts with
++    PetscViewerASCIIOpen() - Outputs vector to a specified file
+.    PetscViewerBinaryOpen() - Outputs vector in binary to a
+         specified file; corresponding input uses MeshLoad()
+.    PetscViewerDrawOpen() - Outputs vector to an X window display
+
+   The user can call PetscViewerSetFormat() to specify the output
+   format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
+   PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
++    PETSC_VIEWER_ASCII_DEFAULT - default, prints mesh information
+-    PETSC_VIEWER_ASCII_VTK - outputs a VTK file describing the mesh
+
+   Level: beginner
+
+   Concepts: mesh^printing
+   Concepts: mesh^saving to disk
+
+.seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerBinaryOpen(),
+          MeshLoad(), PetscViewerCreate()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh, DA_COOKIE, 1);
+  PetscValidType(mesh, 1);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(mesh->comm);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
+  PetscCheckSameComm(mesh, 1, viewer, 2);
+
+  ierr = (*mesh->ops->view)(mesh, viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshCreate"
 /*@C
     MeshCreate - Creates a DM object, used to manage data for an unstructured problem
@@ -181,8 +304,12 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 #endif
 
   ierr = PetscHeaderCreate(p,_p_Mesh,struct _MeshOps,DA_COOKIE,0,"Mesh",comm,MeshDestroy,0);CHKERRQ(ierr);
+  p->ops->view               = MeshView_Sieve;
   p->ops->createglobalvector = MeshCreateGlobalVector;
   p->ops->getmatrix          = MeshGetMatrix;
+
+  ierr = PetscObjectChangeTypeName((PetscObject) p, "sieve");CHKERRQ(ierr);
+
   p->topology       = PETSC_NULL;
   p->boundary       = PETSC_NULL;
   p->orientation    = PETSC_NULL;
