@@ -16,7 +16,7 @@ ex1: ex1.o   chkopts
 
 #-----------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 2 ./ex1
+	-@${MPIRUN} -np 1 ./ex1 -use_zero_base 1 -vertex_file data/ex1conn.data -coord_file data/ex1coord.data
 
 runex3:
 	-@${MPIRUN} -np 3 ./ex3 -mat_view  > ex3_1.tmp 2>&1;   \
