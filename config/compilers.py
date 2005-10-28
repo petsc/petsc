@@ -434,12 +434,15 @@ class Configure(config.base.Configure):
     '''Checks Fortran name mangling, and defines HAVE_FORTRAN_UNDERSCORE, HAVE_FORTRAN_NOUNDERSCORE, HAVE_FORTRAN_CAPS, or HAVE_FORTRAN_STDCALL'''
     self.manglerFuncs = {'underscore': ('void d1chk_(void);', 'void d1chk_(void){return;}\n', '       call d1chk()\n'),
                          'unchanged': ('void d1chk(void);', 'void d1chk(void){return;}\n', '       call d1chk()\n'),
-                         'stdcall': ('void __stdcall D1CHK(void);', 'void __stdcall D1CHK(void){return;}\n', '       call d1chk()\n'),
                          'capitalize': ('void D1CHK(void);', 'void D1CHK(void){return;}\n', '       call d1chk()\n'),
+                         'stdcall': ('void __stdcall D1CHK(void);', 'void __stdcall D1CHK(void){return;}\n', '       call d1chk()\n'),
                          'double': ('void d1_chk__(void)', 'void d1_chk__(void){return;}\n', '       call d1_chk()\n')}
-
-    for mangler, (cinc, cfunc, ffunc) in self.manglerFuncs.items():
-      if mangler == 'double': continue
+    #some compilers silently ignore '__stdcall' directive, so do stdcall test last
+    # double test is not done here, so its not listed
+    key_list = ['underscore','unchanged','capitalize','stdcall']
+    for mangler in key_list:
+      cfunc = self.manglerFuncs[mangler][1]
+      ffunc = self.manglerFuncs[mangler][2]
       self.framework.log.write('Testing Fortran mangling type '+mangler+' with code '+cfunc)
       if self.testMangling(cfunc, ffunc):
         self.fortranMangling = mangler
