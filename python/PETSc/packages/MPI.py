@@ -174,7 +174,7 @@ class Configure(PETSc.package.Package):
     self.framework.addDefine('HAVE_MPI', 1)
     self.include = [os.path.join(self.arch.dir,'include','mpiuni')]
     if 'STDCALL' in self.compilers.defines:
-      self.include.append(' -DMPIUNI_USE_STDCALL')
+      self.framework.addDefine('MPIUNI_USE_STDCALL')
     self.lib = [os.path.join(self.arch.dir,'lib',self.arch.arch,'libmpiuni')]
     self.mpirun = '${PETSC_DIR}/bin/mpirun.uni'
     self.addMakeMacro('MPIRUN','${PETSC_DIR}/bin/mpirun.uni')
