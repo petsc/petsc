@@ -400,7 +400,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetLocalSubdomains_ASM(PC pc,PetscInt n,I
   PC_ASM *osm = (PC_ASM*)pc->data;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 0 or more blocks");
+  if (n < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 0 or more blocks");
 
   if (pc->setupcalled && n != osm->n_local_true) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PCASMSetLocalSubdomains() should be called before calling PCSetup().");
@@ -437,6 +437,7 @@ they cannot be set globally yet.");
   if (pc->setupcalled && n != osm->n_local_true) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PCASMSetTotalSubdomains() should be called before PCSetup().");
   if (!pc->setupcalled){
     osm->n_local_true = n;
+    if (!n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Each process must have at least one block: total processors %d total blocks %d",size,(int)n);
     osm->is           = 0;
   }
   PetscFunctionReturn(0);
