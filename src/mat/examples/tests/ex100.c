@@ -28,7 +28,7 @@ int main(int argc,char **args)
   /* Load aij matrix A */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_ERR_USER,"Must indicate binary file with the -f option");
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 

@@ -59,7 +59,7 @@ int main(int argc,char **args)
   fclose(file);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix complete.\n");CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,PETSC_FILE_CREATE,&view);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,FILE_MODE_WRITE,&view);CHKERRQ(ierr);
   ierr = MatView(A,view);CHKERRQ(ierr);
   ierr = VecView(b,view);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(view);CHKERRQ(ierr);

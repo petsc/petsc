@@ -60,13 +60,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_HDF4(PetscViewer viewer,co
  PetscFunctionBegin;
 
  switch (vhdf4->btype) {
- case PETSC_FILE_RDONLY:
+ case FILE_MODE_READ:
    acc = DFACC_READ;
    break;
- case PETSC_FILE_WRONLY:
+ case FILE_MODE_WRITE:
    acc = DFACC_WRITE;
  break;
- case PETSC_FILE_CREATE:
+ case FILE_MODE_WRITE:
    acc = DFACC_CREATE;
    break;
  default:

@@ -39,13 +39,13 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* Open the files; each process opens its own file */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,PETSC_FILE_RDONLY,&viewer1);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer1);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetDescriptor(viewer1,&fd1);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd1,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
 
   /* open the file twice so that later we can read entries from two different parts of the
      file at the same time. Note that due to file caching this should not impact performance */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,PETSC_FILE_RDONLY,&viewer2);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer2);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetDescriptor(viewer2,&fd2);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd2,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
 

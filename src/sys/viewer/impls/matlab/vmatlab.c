@@ -161,9 +161,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Matlab(PetscViewer viewer,
 
   /* only first processor opens file */
   if (!vmatlab->rank){
-    if (type == PETSC_FILE_RDONLY){
+    if (type == FILE_MODE_READ){
       vmatlab->ep = matOpen(name,"r");
-    } else if (type == PETSC_FILE_CREATE || type == PETSC_FILE_WRONLY) {
+    } else if (type == FILE_MODE_WRITE || type == FILE_MODE_WRITE) {
       vmatlab->ep = matOpen(name,"w");
     } else {
       SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
@@ -219,9 +219,9 @@ EXTERN_C_END
 +  comm - MPI communicator
 .  name - name of file 
 -  type - type of file
-$    PETSC_FILE_CREATE - create new file for Matlab output
-$    PETSC_FILE_RDONLY - open existing file for Matlab input
-$    PETSC_FILE_WRONLY - open existing file for Matlab output
+$    FILE_MODE_WRITE - create new file for Matlab output
+$    FILE_MODE_READ - open existing file for Matlab input
+$    FILE_MODE_WRITE - open existing file for Matlab output
 
    Output Parameter:
 .  binv - PetscViewer for Matlab input/output to use with the specified file
@@ -304,7 +304,7 @@ PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_MATLAB_(MPI_Comm comm)
       ierr = PetscStrcpy(fname,"matlaboutput.mat");
       if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     }
-    ierr = PetscViewerMatlabOpen(comm,fname,PETSC_FILE_CREATE,&viewer); 
+    ierr = PetscViewerMatlabOpen(comm,fname,FILE_MODE_WRITE,&viewer); 
     if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
     if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}

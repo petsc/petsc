@@ -404,7 +404,7 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
     PetscViewer viewer;
     char mat_file[PETSC_MAX_PATH_LEN];
     sprintf(mat_file,"mat_bin.%d",tsCtx->itstep);
-    ierr = PetscViewerBinaryOpen(MPI_COMM_WORLD,mat_file,PETSC_FILE_CREATE,&viewer);
+    ierr = PetscViewerBinaryOpen(MPI_COMM_WORLD,mat_file,FILE_MODE_WRITE,&viewer);
     ierr = MatView(pc_mat,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);
     /*ierr = MPI_Abort(MPI_COMM_WORLD,1);*/
@@ -637,7 +637,7 @@ int GetLocalOrdering(GRID *grid)
    if (!exists) { /* try uns3d.msh as the file name */
       ierr = PetscStrcpy(mesh_file,"uns3d.msh");CHKERRQ(ierr);
    }
-   ierr = PetscBinaryOpen(mesh_file,PETSC_FILE_RDONLY,&fdes);CHKERRQ(ierr);
+   ierr = PetscBinaryOpen(mesh_file,FILE_MODE_READ,&fdes);CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp,grid_param,PETSC_INT);CHKERRQ(ierr);
   grid->ncell   = tmp[0];

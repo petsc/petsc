@@ -45,11 +45,11 @@ int main(int argc,char **args)
   }
 
   PreLoadBegin(preload,"Load system");
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2*PreLoadIt],PETSC_FILE_RDONLY,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2*PreLoadIt],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatLoad(viewer,MATAIJ,&A_save);CHKERRQ(ierr); 
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2*PreLoadIt+1],PETSC_FILE_RDONLY,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2*PreLoadIt+1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatLoad(viewer,MATAIJ,&B);CHKERRQ(ierr); 
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
  

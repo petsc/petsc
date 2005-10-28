@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",filename,256,&flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(1,"Unable to open database, must run with: ex1 -f filename");
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,PETSC_FILE_RDONLY,&binary);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&binary);CHKERRQ(ierr);
   ierr = AODataLoadBasic(binary,&aodata);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(binary);CHKERRQ(ierr);
 
@@ -122,7 +122,7 @@ int main(int argc,char **argv)
 
   if (edited) {
     PetscStrcat(filename,".new");
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,PETSC_FILE_CREATE,&binary);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&binary);CHKERRQ(ierr);
     ierr = AODataView(aodata,binary);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(binary);CHKERRQ(ierr);
   }

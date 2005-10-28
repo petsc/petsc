@@ -33,7 +33,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"rect",PETSC_FILE_CREATE,&view);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"rect",FILE_MODE_WRITE,&view);CHKERRQ(ierr);
   ierr = MatView(A,view);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
 

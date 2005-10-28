@@ -23,7 +23,7 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'../matbinary.ex',         &
-     &                          PETSC_FILE_RDONLY,v,ierr)
+     &                          FILE_MODE_READ,v,ierr)
       call MatLoad(v,MATMPIAIJ,A,ierr)
       CHKERRQ(ierr)
       call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
