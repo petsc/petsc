@@ -98,7 +98,7 @@ PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputePreSievePartition"
-PetscErrorCode ComputePreSievePartition(ALE::Obj<ALE::PreSieve> presieve, ALE::Obj<ALE::Point_set> leaves)
+PetscErrorCode ComputePreSievePartition(ALE::Obj<ALE::PreSieve> presieve, ALE::Obj<ALE::Point_set> leaves, const char *name = NULL)
 {
   MPI_Comm       comm = presieve->getComm();
   PetscInt       numLeaves = leaves->size();
@@ -121,13 +121,21 @@ PetscErrorCode ComputePreSievePartition(ALE::Obj<ALE::PreSieve> presieve, ALE::O
     ALE::Point partitionPoint(-1, rank);
     presieve->addBasePoint(partitionPoint);
   }
-  presieve->view("Partitioned presieve");
+  //
+  ostringstream label1;
+  label1 << "Partition of presieve ";
+  if(name != NULL) {
+    label1 << "'" << name << "'";
+  }
+  label1 << "\n";
+  presieve->view(label1.str().c_str());
+  //
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeSievePartition"
-PetscErrorCode ComputeSievePartition(ALE::Obj<ALE::Sieve> sieve)
+PetscErrorCode ComputeSievePartition(ALE::Obj<ALE::Sieve> sieve, const char *name = NULL)
 {
   MPI_Comm       comm = sieve->getComm();
   PetscInt       numLeaves = sieve->leaves().size();
@@ -150,13 +158,21 @@ PetscErrorCode ComputeSievePartition(ALE::Obj<ALE::Sieve> sieve)
     ALE::Point partitionPoint(-1, rank);
     sieve->addBasePoint(partitionPoint);
   }
-  sieve->view("Partitioned sieve");
+  //
+  ostringstream label1;
+  label1 << "Partition of sieve ";
+  if(name != NULL) {
+    label1 << "'" << name << "'";
+  }
+  label1 << "\n";
+  sieve->view(label1.str().c_str());
+  //
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PartitionPreSieve"
-PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve, bool localize = 1)
+PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve, const char *name = NULL, bool localize = 1)
 {
   MPI_Comm       comm = presieve->getComm();
   PetscMPIInt    rank;
@@ -166,7 +182,14 @@ PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve, bool localize
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   // Cone complete to move the partitions to the other processors
   ALE::Obj<ALE::PreSieve> completion = presieve->coneCompletion(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeCone, NULL)->top();
-  completion->view("Completion");
+  //
+  ostringstream label1;
+  label1 << "Completion";
+  if(name != NULL) {
+    label1 << " of '" << name << "'";
+  }
+  completion->view(label1.str().c_str());
+  //
   // Merge in the completion
   presieve->add(completion);
   //presieve->view("Completed partition");
@@ -177,16 +200,51 @@ PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve, bool localize
     ALE::Point p = *p_itor;
     presieve->addBasePoint(p);
   }
-  presieve->view("Initial parallel presieve");
+  //
+  ostringstream label2;
+  if(name != NULL) {
+    label2 << "Initial parallel state of '" << name << "'";
+  }
+  else {
+    label2 << "Initial parallel presieve";
+  }
+  presieve->view(label2.str().c_str());
+  //
   // Cone complete again to build the local topology
   completion = presieve->coneCompletion(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeCone, NULL)->top();
-  completion->view("Completion");
+  //
+  ostringstream label3;
+  if(name != NULL) {
+    label3 << "Completion of '" << name << "'";
+  }
+  else {
+    label3 << "Completion";
+  }
+  completion->view(label3.str().c_str());
+  //
   presieve->add(completion);
-  presieve->view("Completed parallel presieve");
+  //
+  ostringstream label4;
+  if(name != NULL) {
+    label4 << "Completed parallel version of '" << name << "'";
+  }
+  else {
+    label4 << "Completed parallel presieve";
+  }
+  presieve->view(label4.str().c_str());
+  //
   // Unless explicitly prohibited, restrict to the local partition
   if(localize) {
     presieve->restrictBase(partition);
-    presieve->view("Restricted parallel presieve");
+    //
+    ostringstream label5;
+    if(name != NULL) {
+      label5 << "Localized parallel version of '" << name << "'";
+    }
+    else {
+      label5 << "Localized parallel presieve";
+    }
+    presieve->view(label5.str().c_str());
   }
   // Support complete to get the adjacency information
   PetscFunctionReturn(0);
@@ -236,10 +294,10 @@ PetscErrorCode MeshCreateTopology(Mesh mesh, int dim, PetscInt numVertices, Pets
   ierr = MeshSetTopology(mesh, (void *) topology);CHKERRQ(ierr);
   ierr = MeshSetOrientation(mesh, (void *) orientation);CHKERRQ(ierr);
   /* Partition the topology and orientation */
-  ierr = ComputeSievePartition(topology);CHKERRQ(ierr);
-  ierr = PartitionPreSieve(topology);CHKERRQ(ierr);
-  ierr = ComputePreSievePartition(orientation, topology->leaves());CHKERRQ(ierr);
-  ierr = PartitionPreSieve(orientation, 0);CHKERRQ(ierr);
+  ierr = ComputeSievePartition(topology, "Topology");CHKERRQ(ierr);
+  ierr = PartitionPreSieve(topology, "Topology", 0);CHKERRQ(ierr);
+  ierr = ComputePreSievePartition(orientation, topology->leaves(), "Orientation");CHKERRQ(ierr);
+  ierr = PartitionPreSieve(orientation, "Orientation", 0);CHKERRQ(ierr);
   /* Add the trivial vertex orientation */
   ALE::Obj<ALE::Point_set> roots = topology->depthStratum(0);
   for(ALE::Point_set::iterator vertex_itor = roots->begin(); vertex_itor != roots->end(); vertex_itor++) {
