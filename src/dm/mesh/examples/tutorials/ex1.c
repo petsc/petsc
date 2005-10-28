@@ -40,6 +40,9 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 PetscErrorCode ReadConnectivity(MPI_Comm, const char *, PetscInt, PetscTruth, PetscInt *, PetscInt **);
 PetscErrorCode ReadCoordinates(MPI_Comm, const char *, PetscInt, PetscInt *, PetscScalar **);
 
+/* Create a VTK viewer */
+PetscErrorCode CreateVTKFile(Mesh mesh, const char name[]);
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
@@ -75,6 +78,13 @@ int main(int argc, char *argv[])
   ierr = MeshCreateTopology(mesh, dim, numVertices, numElements, vertices);CHKERRQ(ierr);
   //ierr = MeshCreateBoundary(mesh, 8, boundaryVertices); CHKERRQ(ierr);
   ierr = MeshCreateCoordinates(mesh, coordinates);CHKERRQ(ierr);
+
+  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+  ierr = PetscViewerSetFilename(viewer, "testMesh.vtk");CHKERRQ(ierr);
+  ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
+  ierr = CreateVTKFile(mesh, "testMesh");CHKERRQ(ierr);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
