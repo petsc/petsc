@@ -79,7 +79,7 @@ namespace ALE {
     ALE::Point __orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
   public:
     // constructors/destructors
-    ClosureBundle()                    : Coaster()     {__reset();};
+    ClosureBundle()                    : Coaster(MPI_COMM_SELF) {__reset();};
     ClosureBundle(MPI_Comm& comm)      : Coaster(comm) {__reset();};
     ClosureBundle(Obj<Sieve> topology) : Coaster(topology->getComm()) {__reset(topology);};
     virtual ~ClosureBundle(){};

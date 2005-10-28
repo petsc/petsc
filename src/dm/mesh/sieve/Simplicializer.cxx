@@ -529,15 +529,15 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, FILE *f)
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   vertices = topology->depthStratum(0);
   dim = coordBundle->getFiberDimension(*vertices.begin());
-  vertexBundle.setTopology(topology);
+  vertexBundle = ALE::ClosureBundle(topology);
   vertexBundle.setFiberDimensionByDepth(0, 1);
-  //FIX numVertices = vertexBundle.getGlobalSize();
-  printf("POINTS %d double\n", numVertices);
+  numVertices = vertexBundle.getGlobalSize();
+  fprintf(f, "POINTS %d double\n", numVertices);
   if (rank == 0) {
     for(ALE::Point_set::iterator v_itor = vertices.begin(); v_itor != vertices.end(); v_itor++) {
       ierr = restrictField(coordBundle, orientation, coords, *v_itor, &array);CHKERRQ(ierr);
       for(int d = 0; d < dim; d++) {
-        if (d > 0) printf(" ");
+        if (d > 0) fprintf(f, " ");
         fprintf(f, "%g", array[d]);
       }
       for(int d = dim; d < 3; d++) {
@@ -545,7 +545,7 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, FILE *f)
       }
       fprintf(f, "\n");
     }
-    for(int p = 0; p < size; p++) {
+    for(int p = 1; p < size; p++) {
       MPI_Status   status;
       PetscScalar *remoteCoords;
       int          numLocalVertices;
@@ -603,17 +603,14 @@ PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
   ierr = MPI_Comm_rank(comm, &rank);
   ierr = MPI_Comm_size(comm, &size);
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  vertexBundle.setTopology(topology);
+  vertexBundle = ALE::ClosureBundle(topology);
   vertexBundle.setFiberDimensionByDepth(0, 1);
-  elementBundle.setTopology(topology);
+  elementBundle = ALE::ClosureBundle(topology);
   elementBundle.setFiberDimensionByHeight(0, 1);
   dim = topology->diameter();
   elements = topology->heightStratum(0);
-  //FIX numElements = elementBundle.getGlobalSize();
+  numElements = elementBundle.getGlobalSize();
   corners = topology->nCone(*elements.begin(), dim).size();
-  if (numElements == 0) {
-    ierr = PetscFPrintf(comm, f, "CELLS 0 0\n");CHKERRQ(ierr);
-  }
   if (rank == 0) {
     ierr = PetscFPrintf(comm, f, "CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
     for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
@@ -626,7 +623,7 @@ PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
       }
       ierr = PetscFPrintf(comm, f, "\n");CHKERRQ(ierr);
     }
-    for(int p = 0; p < size; p++) {
+    for(int p = 1; p < size; p++) {
       MPI_Status  status;
       int        *remoteVertices;
       int         numLocalElements;
