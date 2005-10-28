@@ -15,8 +15,13 @@ ex1: ex1.o   chkopts
 	${RM} -f ex1.o
 
 #-----------------------------------------------------------------
+NP = 1
+DISPLAY = :0.0
 runex1:
-	-@${MPIRUN} -np 1 ./ex1 -use_zero_base 1 -vertex_file data/ex1conn.data -coord_file data/ex1coord.data
+	-@${MPIRUN} -np ${NP} ./ex1 -use_zero_base 1 -vertex_file data/ex1conn.data -coord_file data/ex1coord.data
+
+debugex1:
+	-@${MPIRUN} -np ${NP} ./ex1 -use_zero_base 1 -vertex_file data/ex1conn.data -coord_file data/ex1coord.data -start_in_debugger -display ${DISPLAY}
 
 runex3:
 	-@${MPIRUN} -np 3 ./ex3 -mat_view  > ex3_1.tmp 2>&1;   \

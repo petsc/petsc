@@ -114,15 +114,15 @@ namespace ALE {
     void                    computeOverlapIndices(); // collective
     Obj<Point_set>          getOverlapOwners(Point e);
     Obj<PreSieve>           getOverlapFiberIndices(Point e, int32_t proc);
-    Obj<PreSieve>           getOverlapBundleIndices(Point e, int32_t proc);
-    Obj<Point_array>        getOverlapOrderedBundleIndices(Obj<Point_set> order, int32_t proc);
+    Obj<PreSieve>           getOverlapClosureIndices(Point e, int32_t proc);
+    Obj<Point_array>        getOverlapOrderedClosureIndices(Obj<Point_set> order, int32_t proc);
     // Global ordering methods
     void                    computeGlobalIndices(); // collective
     int32_t                 getGlobalSize();
     int32_t                 getGlobalOwner(Point e);
     Obj<PreSieve>           getGlobalFiberIndices(Point e);
-    Obj<PreSieve>           getGlobalBundleIndices(Point e);
-    Obj<Point_array>        getGlobalOrderedBundleIndices(Obj<Point_set> order);
+    Obj<PreSieve>           getGlobalClosureIndices(Point e);
+    Obj<Point_array>        getGlobalOrderedClosureIndices(Obj<Point_set> order);
     
   };// class ClosureBundle
 

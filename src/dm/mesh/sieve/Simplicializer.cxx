@@ -156,7 +156,7 @@ PetscErrorCode ComputeSievePartition(ALE::Obj<ALE::Sieve> sieve)
 
 #undef __FUNCT__
 #define __FUNCT__ "PartitionPreSieve"
-PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve)
+PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve, bool localize = 1)
 {
   MPI_Comm       comm = presieve->getComm();
   PetscMPIInt    rank;
@@ -183,9 +183,11 @@ PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve)
   completion->view("Completion");
   presieve->add(completion);
   presieve->view("Completed parallel presieve");
-  // Restrict to the local partition
-  presieve->restrictBase(partition);
-  presieve->view("Restricted parallel presieve");
+  // Unless explicitly prohibited, restrict to the local partition
+  if(localize) {
+    presieve->restrictBase(partition);
+    presieve->view("Restricted parallel presieve");
+  }
   // Support complete to get the adjacency information
   PetscFunctionReturn(0);
 }
@@ -237,7 +239,7 @@ PetscErrorCode MeshCreateTopology(Mesh mesh, int dim, PetscInt numVertices, Pets
   ierr = ComputeSievePartition(topology);CHKERRQ(ierr);
   ierr = PartitionPreSieve(topology);CHKERRQ(ierr);
   ierr = ComputePreSievePartition(orientation, topology->leaves());CHKERRQ(ierr);
-  ierr = PartitionPreSieve(orientation);CHKERRQ(ierr);
+  ierr = PartitionPreSieve(orientation, 0);CHKERRQ(ierr);
   /* Add the trivial vertex orientation */
   ALE::Obj<ALE::Point_set> roots = topology->depthStratum(0);
   for(ALE::Point_set::iterator vertex_itor = roots->begin(); vertex_itor != roots->end(); vertex_itor++) {
@@ -388,7 +390,7 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
   vertices = topology->depthStratum(0);
   for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
     ALE::Point v = *vertex_itor;
-    printf("Sizeof vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
+    printf("Sizeof fiber over vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
     ierr = assembleField(coordBundle, orientation, coordinates, v, &coords[(v.index - numElements)*dim], INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);

@@ -90,35 +90,42 @@ PetscErrorCode ReadConnectivity(MPI_Comm comm, const char *filename, PetscInt di
   PetscInt      *verts;
   char           buf[2048];
   PetscInt       c;
+  PetscInt       commSize, commRank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(comm, "Reading connectivity information from %s...\n", filename);CHKERRQ(ierr);
-  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-  ierr = PetscViewerSetFilename(viewer, filename);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
-  numCells = atoi(fgets(buf, 2048, f));
-  ierr = PetscMalloc(numCells*(dim+1) * sizeof(PetscInt), &verts);CHKERRQ(ierr);
-  while(fgets(buf, 2048, f) != NULL) {
-    const char *v = strtok(buf, " ");
+  ierr = MPI_Comm_size(comm, &commSize); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &commRank); CHKERRQ(ierr);
 
-    /* Ignore cell number */
-    v = strtok(NULL, " ");
-    for(c = 0; c <= dim; c++) {
-      int vertex = atoi(v);
-
-      if (!useZeroBase) vertex -= 1;
-      verts[cellCount*(dim+1)+c] = vertex;
+  ierr = PetscPrintf(comm, "Reading connectivity information on proc 0 of %d procs from file %s...\n", commSize, filename);
+  CHKERRQ(ierr);
+  if(commRank == 0) {
+    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerSetFilename(viewer, filename);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
+    numCells = atoi(fgets(buf, 2048, f));
+    ierr = PetscMalloc(numCells*(dim+1) * sizeof(PetscInt), &verts);CHKERRQ(ierr);
+    while(fgets(buf, 2048, f) != NULL) {
+      const char *v = strtok(buf, " ");
+      
+      /* Ignore cell number */
       v = strtok(NULL, " ");
+      for(c = 0; c <= dim; c++) {
+        int vertex = atoi(v);
+        
+        if (!useZeroBase) vertex -= 1;
+        verts[cellCount*(dim+1)+c] = vertex;
+        v = strtok(NULL, " ");
+      }
+      cellCount++;
     }
-    cellCount++;
-  }
-  ierr = PetscPrintf(comm, "  Read %d elements\n", numCells);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  *numElements = numCells;
-  *vertices = verts;
+    ierr = PetscPrintf(comm, "  Read %d elements\n", numCells);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    *numElements = numCells;
+    *vertices = verts;
+  }/* if(commRank == 0) */
   PetscFunctionReturn(0);
 }
 
@@ -132,31 +139,37 @@ PetscErrorCode ReadCoordinates(MPI_Comm comm, const char *filename, PetscInt dim
   PetscScalar   *coords;
   char           buf[2048];
   PetscInt       c;
+  PetscInt       commSize, commRank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(comm, "Reading coordinate information from %s...\n", filename);CHKERRQ(ierr);
-  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-  ierr = PetscViewerSetFilename(viewer, filename);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
-  numVerts = atoi(fgets(buf, 2048, f));
-  ierr = PetscMalloc(numVerts*dim * sizeof(PetscScalar), &coords);CHKERRQ(ierr);
-  while(fgets(buf, 2048, f) != NULL) {
-    const char *x = strtok(buf, " ");
+  ierr = MPI_Comm_size(comm, &commSize); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &commRank); CHKERRQ(ierr);
 
-    /* Ignore vertex number */
-    x = strtok(NULL, " ");
-    for(c = 0; c < dim; c++) {
-      coords[vertexCount*dim+c] = atof(x);
+  ierr = PetscPrintf(comm, "Reading coordinate information on proc 0 of %d procs from file %s...\n", commSize, filename); CHKERRQ(ierr);
+  if(commRank == 0) {
+    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerSetFilename(viewer, filename);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
+    numVerts = atoi(fgets(buf, 2048, f));
+    ierr = PetscMalloc(numVerts*dim * sizeof(PetscScalar), &coords);CHKERRQ(ierr);
+    while(fgets(buf, 2048, f) != NULL) {
+      const char *x = strtok(buf, " ");
+      
+      /* Ignore vertex number */
       x = strtok(NULL, " ");
+      for(c = 0; c < dim; c++) {
+        coords[vertexCount*dim+c] = atof(x);
+        x = strtok(NULL, " ");
+      }
+      vertexCount++;
     }
-    vertexCount++;
-  }
-  ierr = PetscPrintf(comm, "  Read %d vertices\n", numVerts);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  *numVertices = numVerts;
-  *coordinates = coords;
+    ierr = PetscPrintf(comm, "  Read %d vertices\n", numVerts);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    *numVertices = numVerts;
+    *coordinates = coords;
+  }/* if(commRank == 0 ) */
   PetscFunctionReturn(0);
 }
