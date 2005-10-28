@@ -17,6 +17,11 @@ namespace ALE {
     Obj<Stack>     _arrowsToEnds;
     Obj<Stack>     _arrowsToStarts;
     //
+    Obj<PreSieve>  _overlapOwnership;     // a PreSieve supporting each overlap point at its owners
+    Obj<Stack>     _localOverlapIndices;  // a stack with _overlapOwnership in the base, a discrete top contains the local indices 
+                                          // attached to the overlap points by vertical arrows
+    Obj<Stack>     _remoteOverlapIndices; // a completion stack with the remote overlap indices: completionTypeArrow, footprintTypeCone
+    //
     BundleAssemblyPolicy _assemblyPolicy;
     //
     void __reset(Obj<Sieve> topology = Obj<Sieve>()) {
@@ -104,6 +109,10 @@ namespace ALE {
     int32_t                 getFiberDimension(Obj<Point_set> ee);
     int32_t                 getBundleDimension(Obj<Point_set> ee);
     //
+    Point                   getFiberInterval(Point support) {
+      return getFiberInterval(support, Point_set());
+    };
+    Point                   getFiberInterval(Point support,  Obj<Point_set> base);
     Obj<PreSieve>           getFiberIndices(Obj<Point_set> support,  Obj<Point_set> base);
     Obj<PreSieve>           getBundleIndices(Obj<Point_set> support, Obj<Point_set> base);
     Obj<Point_array>        getClosureIndices(Obj<Point_set> order,  Obj<Point_set> base);
