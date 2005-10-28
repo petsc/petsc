@@ -111,7 +111,22 @@ namespace ALE {
     return dim;
 
   }//ClosureBundle::getBundleDimension()
-  
+
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "ClosureBundle::getFiberInterval"
+  Point   ClosureBundle::getFiberInterval(Point support, Obj<Point_set> base) {
+    base  = this->__validateChain(base);
+    Obj<PreSieve> indices = this->__computeIndices(Point_set(support), base);
+    Point interval;
+    if(indices->cap().size() == 0) {
+      interval = Point(-1,0);
+    } else {
+      interval = *(indices->cap().begin());
+    }
+    return interval;
+  }//ClosureBundle::getFiberInterval()
+
 
   #undef  __FUNCT__
   #define __FUNCT__ "ClosureBundle::getFiberIndices"
@@ -133,6 +148,35 @@ namespace ALE {
     return indices;
   }//ClosureBundle::getBundleIndices()
 
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "ClosureBundle::computeOverlapIndices"
+  void   ClosureBundle::computeOverlapIndices() {
+    this->_overlapOwnership = this->getTopology()->baseFootprint(PreSieve::completionTypePoint, PreSieve::footprintTypeCone, NULL)->left();
+    this->_localOverlapIndices->setBottom(this->_overlapOwnership);
+    this->_localOverlapIndices->setTop(new PreSieve(this->getComm()));
+    // Traverse the points in the overlapOwnership cap, compute the local indices over it and attach them using _localOverlapIndices
+    for(Point_set::iterator o_itor = this->_overlapOwnership->cap().begin(); o_itor != this->_overlapOwnership->cap().end(); o_itor++) {
+      Point e = *o_itor;
+      Point interval = getFiberInterval(e);
+      this->_localOverlapIndices->top()->addArrow(interval, e);
+    }
+    // Now we do the completion
+    this->_remoteOverlapIndices = this->_localOverlapIndices->coneCompletion(PreSieve::completionTypeArrow, PreSieve::footprintTypeCone, NULL);
+  }//ClosureBundle::computeOverlapIndices()
+  
+  #undef  __FUNCT__
+  #define __FUNCT__ "ClosureBundle::getOverlapOwners"
+  Obj<Point_set>   ClosureBundle::getOverlapOwners(Point e) {
+    return this->_overlapOwnership->support(e);
+  }//ClosureBundle::getOverlapOwners()
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "ClosureBundle::getOverlapFiberIndices"
+  Obj<PreSieve>   ClosureBundle::getOverlapFiberIndices(Point e, int32_t proc) {
+    Obj<PreSieve> indices(new PreSieve(this->getComm()));
+    return indices;
+  }//ClosureBundle::getOverlapFiberIndices()
 
   #undef  __FUNCT__
   #define __FUNCT__ "ClosureBundle::getGlobalSize"
