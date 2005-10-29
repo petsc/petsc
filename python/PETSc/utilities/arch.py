@@ -16,8 +16,9 @@ class Configure(config.base.Configure):
     carch = str(self.arch)
     envarch = os.getenv('PETSC_ARCH')
     if not carch == envarch :
-      desc.append('  **\n  ** Configure has determined that your PETSC_ARCH must be specified as:')
-      desc.append('  **  ** PETSC_ARCH: '+str(self.arch+'\n  **'))
+      desc.append('  **\n  ** Before running make your PETSC_ARCH must be specified with:')
+      desc.append('  **  ** setenv PETSC_ARCH '+str(self.arch)+' (csh/tcsh)\n'))
+      desc.append('  **  ** PETSC_ARCH='+str(self.arch)+'; export PETSC_ARCH (sh/bash)\n  **'))
     else:
       desc.append('  PETSC_ARCH: '+str(self.arch))
     return '\n'.join(desc)+'\n'

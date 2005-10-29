@@ -16,8 +16,9 @@ class Configure(config.base.Configure):
     cdir  = str(self.dir)
     envdir  = os.getenv('PETSC_DIR')
     if not cdir == envdir :
-      desc.append('  **\n  ** Configure has determined that your PETSC_DIR must be specified as:')
-      desc.append('  **  **  PETSC_DIR: '+str(self.dir+'\n  **'))
+      desc.append('  **\n  ** Before running make your PETSC_DIR must be specified with:')
+      desc.append('  **  ** setenv PETSC_DIR '+str(self.cdir)+' (csh/tcsh)\n'))
+      desc.append('  **  ** PETSC_DIR='+str(self.cdir)+'; export PETSC_DIR (sh/bash)\n  **'))
     else:
       desc.append('  PETSC_DIR: '+str(self.dir))
     return '\n'.join(desc)+'\n'
