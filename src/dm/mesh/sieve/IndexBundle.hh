@@ -1,5 +1,5 @@
-#ifndef included_ALE_ClosureBundle_hh
-#define included_ALE_ClosureBundle_hh
+#ifndef included_ALE_IndexBundle_hh
+#define included_ALE_IndexBundle_hh
 
 #ifndef  included_ALE_Stack_hh
 #include <Stack.hh>
@@ -10,7 +10,7 @@
 namespace ALE {
 
   typedef enum {INSERTION = 0, ADDITION = 1} BundleAssemblyPolicy;
-  class ClosureBundle : public Coaster {
+  class IndexBundle : public Coaster {
     int     _dirty;
     Obj<Stack>     _dimensionsToElements;
     Obj<Stack>     _indicesToArrows;
@@ -81,31 +81,31 @@ namespace ALE {
     //
     static const int stratumTypeDepth  = 0;
     static const int stratumTypeHeight = 1;
-    ClosureBundle& __setFiberDimensionByStratum(int stratumType, int32_t stratumIndex, int32_t dim);
+    IndexBundle& __setFiberDimensionByStratum(int stratumType, int32_t stratumIndex, int32_t dim);
     int__Point __checkOrderChain(Obj<Point_set> order, int& maxDepth, int& minDepth);
     void __orderElement(int dim, ALE::Point element, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
     ALE::Point __orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
   public:
     // constructors/destructors
-    ClosureBundle()                    : Coaster(MPI_COMM_SELF) {__reset();};
-    ClosureBundle(MPI_Comm& comm)      : Coaster(comm) {__reset();};
-    ClosureBundle(Obj<Sieve> topology) : Coaster(topology->getComm()) {__reset(topology);};
-    virtual ~ClosureBundle(){};
+    IndexBundle()                    : Coaster(MPI_COMM_SELF) {__reset();};
+    IndexBundle(MPI_Comm& comm)      : Coaster(comm) {__reset();};
+    IndexBundle(Obj<Sieve> topology) : Coaster(topology->getComm()) {__reset(topology);};
+    virtual ~IndexBundle(){};
     void view(const char *name);
     //
     virtual void            setComm(MPI_Comm c) {this->comm = c; __reset();};
     //
-    ClosureBundle&          setAssemblyPolicy(BundleAssemblyPolicy policy);
+    IndexBundle&          setAssemblyPolicy(BundleAssemblyPolicy policy);
     bool                    getFiberIndicesCachingPolicy() {return this->_cacheFiberIndices;};
-    ClosureBundle&          setFiberIndicesCachingPolicy(bool policy){/*cannot cache (yet)*/this->_cacheFiberIndices = 0;return *this;};
+    IndexBundle&          setFiberIndicesCachingPolicy(bool policy){/*cannot cache (yet)*/this->_cacheFiberIndices = 0;return *this;};
     BundleAssemblyPolicy    getAssemblyPolicy() {return this->_assemblyPolicy;};
-    ClosureBundle&          setTopology(Obj<Sieve> topology);
+    IndexBundle&          setTopology(Obj<Sieve> topology);
     Obj<Sieve>              getTopology(){return this->__getTopology();};
-    ClosureBundle&          setFiberDimension(Point element, int32_t d);
-    ClosureBundle&          setFiberDimensionByDepth(int32_t depth, int32_t dim){
+    IndexBundle&          setFiberDimension(Point element, int32_t d);
+    IndexBundle&          setFiberDimensionByDepth(int32_t depth, int32_t dim){
       return __setFiberDimensionByStratum(stratumTypeDepth, depth, dim);
     };
-    ClosureBundle&          setFiberDimensionByHeight(int32_t height, int32_t dim){
+    IndexBundle&          setFiberDimensionByHeight(int32_t height, int32_t dim){
       return __setFiberDimensionByStratum(stratumTypeHeight, height, dim);
     };
     // Primary methods
@@ -136,7 +136,7 @@ namespace ALE {
     Obj<PreSieve>           getGlobalClosureIndices(Point e);
     Obj<Point_array>        getGlobalOrderedClosureIndices(Obj<Point_set> order);
     
-  };// class ClosureBundle
+  };// class IndexBundle
 
 
 
