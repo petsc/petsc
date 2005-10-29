@@ -20,7 +20,7 @@ namespace ALE {
     Obj<PreSieve>  _overlapOwnership;     // a PreSieve supporting each overlap point at its owners
     Obj<Stack>     _localOverlapIndices;  // a stack with _overlapOwnership in the base, a discrete top contains the local indices 
                                           // attached to the overlap points by vertical arrows
-    Obj<Stack>     _remoteOverlapIndices; // a completion stack with the remote overlap indices: completionTypeArrow, footprintTypeCone
+    Obj<PreSieve>  _remoteOverlapIndices; // a completion stack with the remote overlap indices: completionTypeArrow, footprintTypeCone
     //
     BundleAssemblyPolicy _assemblyPolicy;
     //
@@ -44,7 +44,7 @@ namespace ALE {
       this->_arrowsToEnds->setBottom(topology);
       //
       this->_localOverlapIndices  = Obj<Stack>(new Stack(this->comm));
-      this->_remoteOverlapIndices = Obj<Stack>(new Stack(this->comm));
+      this->_remoteOverlapIndices = Obj<PreSieve>(new PreSieve(this->comm));
       //
       this->__resetArrowIndices(); // this method depends on _arrowsToStarts having already been setup
       this->_cacheFiberIndices = 0;

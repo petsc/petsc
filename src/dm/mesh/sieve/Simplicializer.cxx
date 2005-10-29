@@ -357,6 +357,16 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ExpandInterval"
+/* This is currently duplicated in ex33mesh.c */
+inline void ExpandInterval(ALE::Point interval, PetscInt indices[], PetscInt *indx)
+{
+  for(int i = 0; i < interval.index; i++) {
+    indices[(*indx)++] = interval.prefix + i;
+  }
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ExpandIntervals"
 /* This is currently duplicated in ex33mesh.c */
 PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Point_array> intervals, PetscInt *indices)
@@ -365,9 +375,7 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Point_array> intervals, PetscInt *i
 
   PetscFunctionBegin;
   for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    for(int i = 0; i < (*i_itor).index; i++) {
-      indices[k++] = (*i_itor).prefix + i;
-    }
+    ExpandInterval(*i_itor, indices, &k);
   }
   PetscFunctionReturn(0);
 }
@@ -377,14 +385,14 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Point_array> intervals, PetscInt *i
 PetscErrorCode setFiberValues(Vec b, ALE::Point e, ALE::Obj<ALE::IndexBundle> bundle, PetscScalar array[], InsertMode mode)
 {
   ALE::Point_set   ee(e), empty;
-  ALE::Obj<ALE::Point_array> intervals = bundle->getFiberIndices(ee, empty);
+  ALE::Obj<ALE::Point_set> intervals = bundle->getFiberIndices(ee, empty)->cap();
   static PetscInt  indicesSize = 0;
   static PetscInt *indices = NULL;
-  PetscInt         numIndices = 0;
+  PetscInt         numIndices = 0, i = 0;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+  for(ALE::Point_set::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
     numIndices += (*i_itor).index;
   }
   if (indicesSize && (indicesSize != numIndices)) {
@@ -395,10 +403,10 @@ PetscErrorCode setFiberValues(Vec b, ALE::Point e, ALE::Obj<ALE::IndexBundle> bu
     indicesSize = numIndices;
     ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
   }
-  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+  for(ALE::Point_set::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
     printf("indices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
   }
-  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
+  ExpandInterval(*intervals->begin(), indices, &i);
   for(int i = 0; i < numIndices; i++) {
     printf("indices[%d] = %d\n", i, indices[i]);
   }
@@ -492,6 +500,7 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
   numElements = topology->heightStratum(0).size();
   vertices = topology->depthStratum(0);
   /* Print shit */
+  printf("Making an ordering over the vertices\n===============================\n");
   for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
     ALE::Point v = *vertex_itor;
     ostringstream label;

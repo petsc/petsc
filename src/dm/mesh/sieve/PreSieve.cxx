@@ -1644,7 +1644,7 @@ namespace ALE {
       A0  = new Stack(this->getComm());
       A0->setTop(P); A0->setBottom(A);
       A1  = new Stack(this->getComm());
-      A1->setTop(A); A0->setBottom(P);
+      A1->setTop(A); A1->setBottom(P);
       AAA = new Stack(this->getComm());
       AAA->setTop(A0); AAA->setBottom(A1);
       S = AAA;

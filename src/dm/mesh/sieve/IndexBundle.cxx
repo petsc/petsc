@@ -153,33 +153,41 @@ namespace ALE {
   #define __FUNCT__ "IndexBundle::computeOverlapIndices"
   void   IndexBundle::computeOverlapIndices() {
     this->_overlapOwnership = this->getTopology()->baseFootprint(PreSieve::completionTypePoint, PreSieve::footprintTypeCone, NULL)->left();
-
     this->_overlapOwnership->view("Overlap ownership");
-
     this->_localOverlapIndices->setBottom(this->_overlapOwnership);
     this->_localOverlapIndices->setTop(new PreSieve(this->getComm()));
-    // Traverse the points in the overlapOwnership cap, compute the local indices over it and attach them using _localOverlapIndices
-    ALE::Obj<ALE::Point_set> cap = this->_overlapOwnership->cap();
-    for(Point_set::iterator o_itor = cap->begin(); o_itor != cap->end(); o_itor++) {
+    // Traverse the points in the overlapOwnership base, compute the local indices over it and attach them using _localOverlapIndices
+    ALE::Obj<ALE::Point_set> base = this->_overlapOwnership->base();
+    for(Point_set::iterator o_itor = base->begin(); o_itor != base->end(); o_itor++) {
       Point e = *o_itor;
-      Point interval = getFiberInterval(e);
+      Point interval = this->getFiberInterval(e);
       printf("overlap point (%d, %d)\n", e.prefix, e.index);
-      this->_localOverlapIndices->top()->addArrow(interval, e);
+      this->_localOverlapIndices->top()->addCapPoint(interval);
+      this->_localOverlapIndices->addCone(interval, e);
     }
+    this->_localOverlapIndices->view("Local overlap indices");
     // Now we do the completion
-    this->_remoteOverlapIndices = this->_localOverlapIndices->coneCompletion(PreSieve::completionTypeArrow, PreSieve::footprintTypeCone, NULL);
+    this->_localOverlapIndices->coneCompletion(PreSieve::completionTypeArrow, PreSieve::footprintTypeCone, this->_remoteOverlapIndices);
+    this->_remoteOverlapIndices->view("Remote overlap indices");
   }//IndexBundle::computeOverlapIndices()
   
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::getOverlapOwners"
   Obj<Point_set>   IndexBundle::getOverlapOwners(Point e) {
-    return this->_overlapOwnership->support(e);
+    return this->_overlapOwnership->cone(e);
   }//IndexBundle::getOverlapOwners()
 
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::getOverlapFiberIndices"
-  Obj<PreSieve>   IndexBundle::getOverlapFiberIndices(Point e, int32_t proc) {
+  Obj<PreSieve>   IndexBundle::getOverlapFiberIndices(Point e, int32_t rank) {
     Obj<PreSieve> indices(new PreSieve(this->getComm()));
+    if (rank == this->commRank) {
+      //ALE::Obj<ALE::Point_set> ind = this->_localOverlapIndices->cone(e);
+      ALE::Point_set ind = this->_localOverlapIndices->cone(e);
+      indices->addCone(ind, e);
+    } else {
+      throw Exception("Not supported: Remote overlap indices not done"); 
+    }
     return indices;
   }//IndexBundle::getOverlapFiberIndices()
 
