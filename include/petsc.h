@@ -1003,9 +1003,9 @@ typedef struct _n_PetscFList *PetscFList;
 
   FILE_MODE_APPEND - open a file at end for writing
 
-  FILE_MODE_UPDATE -
+  FILE_MODE_UPDATE - open a file for updating, meaning for reading and writing
 
-  FILE_MODE_APPEND_UPDATE -
+  FILE_MODE_APPEND_UPDATE - open a file for updating, meaning for reading and writing, at the end
 
 .seealso: PetscViewerFileSetMode()
 E*/
