@@ -376,8 +376,8 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Point_array> intervals, PetscInt *i
 #define __FUNCT__ "setFiberValues"
 PetscErrorCode setFiberValues(Vec b, ALE::Point e, ALE::Obj<ALE::ClosureBundle> bundle, PetscScalar array[], InsertMode mode)
 {
-  ALE::Point_set   empty;
-  ALE::Obj<ALE::Point_array> intervals = bundle->getFiberIndices(orientation->cone(e), empty);
+  ALE::Point_set   ee(e), empty;
+  ALE::Obj<ALE::Point_array> intervals = bundle->getFiberIndices(ee, empty);
   static PetscInt  indicesSize = 0;
   static PetscInt *indices = NULL;
   PetscInt         numIndices = 0;
@@ -446,34 +446,8 @@ PetscErrorCode setClosureValues(Vec b, ALE::Point e, ALE::Obj<ALE::ClosureBundle
 /* This is currently present in ex33mesh.c, although the functionality and the calling sequences differ significantly. */
 PetscErrorCode assembleField(Vec b, ALE::Obj<ALE::ClosureBundle> bundle, ALE::Obj<ALE::PreSieve> orientation, InsertMode mode)
 {
-  ALE::Point_set   empty;
-  ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
-  //ALE::Obj<ALE::Point_array> intervals = bundle->getOverlapOrderedIndices(orientation->cone(e), empty);
-  static PetscInt  indicesSize = 0;
-  static PetscInt *indices = NULL;
-  PetscInt         numIndices = 0;
-  PetscErrorCode   ierr;
-
   PetscFunctionBegin;
-  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    numIndices += (*i_itor).index;
-  }
-  if (indicesSize && (indicesSize != numIndices)) {
-    ierr = PetscFree(indices); CHKERRQ(ierr);
-    indices = NULL;
-  }
-  if (!indices) {
-    indicesSize = numIndices;
-    ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
-  }
-  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    printf("indices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
-  }
-  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
-  for(int i = 0; i < numIndices; i++) {
-    printf("indices[%d] = %d\n", i, indices[i]);
-  }
-  ierr = VecSetValues(b, numIndices, indices, array, mode);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -527,7 +501,7 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
   for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
     ALE::Point v = *vertex_itor;
     printf("Sizeof fiber over vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
-    ierr = assembleField(coordBundle, orientation, coordinates, v, &coords[(v.index - numElements)*dim], INSERT_VALUES);CHKERRQ(ierr);
+    ierr = setFiberValues(coordinates, v,coordBundle, &coords[(v.index - numElements)*dim], INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(coordinates);CHKERRQ(ierr);
