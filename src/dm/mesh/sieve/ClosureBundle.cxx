@@ -153,6 +153,9 @@ namespace ALE {
   #define __FUNCT__ "ClosureBundle::computeOverlapIndices"
   void   ClosureBundle::computeOverlapIndices() {
     this->_overlapOwnership = this->getTopology()->baseFootprint(PreSieve::completionTypePoint, PreSieve::footprintTypeCone, NULL)->left();
+
+    this->_overlapOwnership->view("Overlap ownership");
+
     this->_localOverlapIndices->setBottom(this->_overlapOwnership);
     this->_localOverlapIndices->setTop(new PreSieve(this->getComm()));
     // Traverse the points in the overlapOwnership cap, compute the local indices over it and attach them using _localOverlapIndices
