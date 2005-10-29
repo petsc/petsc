@@ -2,7 +2,7 @@
 #include <petscdmmg.h>
 #include <ALE.hh>
 #include <Sieve.hh>
-#include <ClosureBundle.hh>
+#include <IndexBundle.hh>
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
@@ -729,7 +729,7 @@ PetscErrorCode ExpandSetIntervals(ALE::Point_set intervals, PetscInt *indices)
 
 #undef __FUNCT__
 #define __FUNCT__ "restrictField"
-PetscErrorCode restrictField(ALE::ClosureBundle *bundle, ALE::PreSieve *orientation, PetscScalar *array, ALE::Point e, PetscScalar *values[])
+PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, PetscScalar *array, ALE::Point e, PetscScalar *values[])
 {
   ALE::Point_set             empty;
   ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
@@ -770,7 +770,7 @@ PetscErrorCode restrictField(ALE::ClosureBundle *bundle, ALE::PreSieve *orientat
 
 #undef __FUNCT__
 #define __FUNCT__ "assembleField"
-PetscErrorCode assembleField(ALE::ClosureBundle *bundle, ALE::PreSieve *orientation, Vec b, ALE::Point e, PetscScalar array[], InsertMode mode)
+PetscErrorCode assembleField(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, Vec b, ALE::Point e, PetscScalar array[], InsertMode mode)
 {
   ALE::Point_set   empty;
   ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
@@ -805,7 +805,7 @@ PetscErrorCode assembleField(ALE::ClosureBundle *bundle, ALE::PreSieve *orientat
 
 #undef __FUNCT__
 #define __FUNCT__ "assembleOperator"
-PetscErrorCode assembleOperator(ALE::ClosureBundle *bundle, ALE::PreSieve *orientation, Mat A, ALE::Point e, PetscScalar array[], InsertMode mode)
+PetscErrorCode assembleOperator(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, Mat A, ALE::Point e, PetscScalar array[], InsertMode mode)
 {
   ALE::Point_set   empty;
   ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
@@ -861,7 +861,7 @@ PetscErrorCode assembleOperator(ALE::ClosureBundle *bundle, ALE::PreSieve *orien
 */
 PetscErrorCode CreateTestMesh(MPI_Comm comm, Mesh *mesh)
 {
-  ALE::ClosureBundle *bundle = new ALE::ClosureBundle(comm);
+  ALE::IndexBundle *bundle = new ALE::IndexBundle(comm);
   ALE::Sieve         *topology;
   PetscInt            dim = 2;
   PetscInt            faces[24] = {
@@ -915,7 +915,7 @@ PetscErrorCode CreateTestMesh(MPI_Comm comm, Mesh *mesh)
 */
 PetscErrorCode CreateTestMesh3(MPI_Comm comm, Mesh *mesh)
 {
-  ALE::ClosureBundle *bundle = new ALE::ClosureBundle(comm);
+  ALE::IndexBundle *bundle = new ALE::IndexBundle(comm);
   ALE::Sieve         *topology;
   PetscInt            dim = 3;
   PetscInt            faces[24] = {
@@ -958,7 +958,7 @@ PetscErrorCode CreateTestMesh3(MPI_Comm comm, Mesh *mesh)
 
 #undef __FUNCT__
 #define __FUNCT__ "ElementGeometry"
-PetscErrorCode ElementGeometry(ALE::ClosureBundle *coordBundle, ALE::PreSieve *orientation, PetscScalar *coords, ALE::Point e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
+PetscErrorCode ElementGeometry(ALE::IndexBundle *coordBundle, ALE::PreSieve *orientation, PetscScalar *coords, ALE::Point e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
   PetscInt       dim = coordBundle->getFiberDimension(*coordBundle->getTopology()->depthStratum(0).begin());
   PetscScalar   *array;
@@ -1071,8 +1071,8 @@ PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
   UserContext        *user = (UserContext *) dmmg->user;
   ALE::Sieve         *topology;
   ALE::PreSieve      *orientation;
-  ALE::ClosureBundle *bundle;
-  ALE::ClosureBundle *coordBundle;
+  ALE::IndexBundle *bundle;
+  ALE::IndexBundle *coordBundle;
   ALE::Point_set      elements;
   ALE::Point_set      empty;
   PetscInt            dim;
@@ -1148,8 +1148,8 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   UserContext        *user = (UserContext *) dmmg->user;
   ALE::Sieve         *topology;
   ALE::PreSieve      *orientation;
-  ALE::ClosureBundle *bundle;
-  ALE::ClosureBundle *coordBundle;
+  ALE::IndexBundle *bundle;
+  ALE::IndexBundle *coordBundle;
   ALE::Point_set      elements;
   ALE::Point_set      empty;
   PetscInt            dim;
@@ -1218,8 +1218,8 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   ALE::Sieve         *topology;
   ALE::Sieve         *boundary;
   ALE::PreSieve      *orientation;
-  ALE::ClosureBundle *bundle;
-  ALE::ClosureBundle *coordBundle;
+  ALE::IndexBundle *bundle;
+  ALE::IndexBundle *coordBundle;
   ALE::Point_set      elements;
   ALE::Point_set      empty;
   PetscInt            dim;

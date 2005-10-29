@@ -1,5 +1,5 @@
 #include <petscda.h>
-#include <ClosureBundle.hh>
+#include <IndexBundle.hh>
 
 #undef __FUNCT__
 #define __FUNCT__ "BuildFaces"
@@ -374,7 +374,7 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Point_array> intervals, PetscInt *i
 
 #undef __FUNCT__
 #define __FUNCT__ "setFiberValues"
-PetscErrorCode setFiberValues(Vec b, ALE::Point e, ALE::Obj<ALE::ClosureBundle> bundle, PetscScalar array[], InsertMode mode)
+PetscErrorCode setFiberValues(Vec b, ALE::Point e, ALE::Obj<ALE::IndexBundle> bundle, PetscScalar array[], InsertMode mode)
 {
   ALE::Point_set   ee(e), empty;
   ALE::Obj<ALE::Point_array> intervals = bundle->getFiberIndices(ee, empty);
@@ -408,7 +408,7 @@ PetscErrorCode setFiberValues(Vec b, ALE::Point e, ALE::Obj<ALE::ClosureBundle> 
 
 #undef __FUNCT__
 #define __FUNCT__ "setClosureValues"
-PetscErrorCode setClosureValues(Vec b, ALE::Point e, ALE::Obj<ALE::ClosureBundle> bundle, ALE::Obj<ALE::PreSieve> orientation, PetscScalar array[], InsertMode mode)
+PetscErrorCode setClosureValues(Vec b, ALE::Point e, ALE::Obj<ALE::IndexBundle> bundle, ALE::Obj<ALE::PreSieve> orientation, PetscScalar array[], InsertMode mode)
 {
   ALE::Point_set   empty;
   ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
@@ -444,7 +444,7 @@ PetscErrorCode setClosureValues(Vec b, ALE::Point e, ALE::Obj<ALE::ClosureBundle
 #undef __FUNCT__
 #define __FUNCT__ "assembleField"
 /* This is currently present in ex33mesh.c, although the functionality and the calling sequences differ significantly. */
-PetscErrorCode assembleField(Vec b, ALE::Obj<ALE::ClosureBundle> bundle, ALE::Obj<ALE::PreSieve> orientation, InsertMode mode)
+PetscErrorCode assembleField(Vec b, ALE::Obj<ALE::IndexBundle> bundle, ALE::Obj<ALE::PreSieve> orientation, InsertMode mode)
 {
   PetscFunctionBegin;
 
@@ -455,7 +455,7 @@ PetscErrorCode assembleField(Vec b, ALE::Obj<ALE::ClosureBundle> bundle, ALE::Ob
 #define __FUNCT__ "MeshCreateCoordinates"
 PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
 {
-  ALE::ClosureBundle      *coordBundle;
+  ALE::IndexBundle      *coordBundle;
   ALE::Sieve              *topology;
   ALE::Sieve              *orientation;
   ALE::Obj<ALE::Point_set> vertices;
@@ -471,7 +471,7 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
   ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
   dim = topology->diameter();
   /* Create bundle */
-  coordBundle = new ALE::ClosureBundle(comm);
+  coordBundle = new ALE::IndexBundle(comm);
   coordBundle->setTopology(topology);
   coordBundle->setFiberDimensionByDepth(0, dim);
   coordBundle->computeOverlapIndices();
@@ -560,7 +560,7 @@ PetscErrorCode MeshGetDimension(Mesh mesh, PetscInt *dimension)
 PetscErrorCode MeshGetEmbeddingDimension(Mesh mesh, PetscInt *dimension)
 {
   ALE::Sieve         *topology;
-  ALE::ClosureBundle *coordBundle;
+  ALE::IndexBundle *coordBundle;
   PetscErrorCode      ierr;
 
   PetscValidIntPointer(dimension,2);
@@ -572,7 +572,7 @@ PetscErrorCode MeshGetEmbeddingDimension(Mesh mesh, PetscInt *dimension)
 
 #undef __FUNCT__
 #define __FUNCT__ "restrictField"
-PetscErrorCode restrictField(ALE::ClosureBundle *bundle, ALE::PreSieve *orientation, PetscScalar *array, ALE::Point e, PetscScalar *values[])
+PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, PetscScalar *array, ALE::Point e, PetscScalar *values[])
 {
   ALE::Point_set             empty;
   ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
@@ -617,8 +617,8 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, FILE *f)
 {
   ALE::Sieve         *topology;
   ALE::PreSieve      *orientation;
-  ALE::ClosureBundle *coordBundle;
-  ALE::ClosureBundle  vertexBundle;
+  ALE::IndexBundle *coordBundle;
+  ALE::IndexBundle  vertexBundle;
   ALE::Point_set      vertices;
   Vec                 coordinates;
   PetscScalar        *coords;
@@ -639,7 +639,7 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, FILE *f)
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
   vertices = topology->depthStratum(0);
   dim = coordBundle->getFiberDimension(*vertices.begin());
-  vertexBundle = ALE::ClosureBundle(topology);
+  vertexBundle = ALE::IndexBundle(topology);
   vertexBundle.setFiberDimensionByDepth(0, 1);
   numVertices = vertexBundle.getGlobalSize();
   fprintf(f, "POINTS %d double\n", numVertices);
@@ -700,8 +700,8 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, FILE *f)
 PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
 {
   ALE::Sieve         *topology;
-  ALE::ClosureBundle  vertexBundle;
-  ALE::ClosureBundle  elementBundle;
+  ALE::IndexBundle  vertexBundle;
+  ALE::IndexBundle  elementBundle;
   ALE::Point_set      elements;
   int                 dim, numElements, corners;
   MPI_Comm            comm;
@@ -713,9 +713,9 @@ PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
   ierr = MPI_Comm_rank(comm, &rank);
   ierr = MPI_Comm_size(comm, &size);
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  vertexBundle = ALE::ClosureBundle(topology);
+  vertexBundle = ALE::IndexBundle(topology);
   vertexBundle.setFiberDimensionByDepth(0, 1);
-  elementBundle = ALE::ClosureBundle(topology);
+  elementBundle = ALE::IndexBundle(topology);
   elementBundle.setFiberDimensionByHeight(0, 1);
   dim = topology->diameter();
   elements = topology->heightStratum(0);
@@ -802,7 +802,7 @@ PetscErrorCode WriteVTKHeader(Mesh mesh, FILE *f)
 PetscErrorCode CreateVTKFile(Mesh mesh, const char name[])
 {
   FILE               *f = NULL;
-  ALE::ClosureBundle *coordBundle;
+  ALE::IndexBundle   *coordBundle;
   PetscInt            dim ,embedDim;
   MPI_Comm            comm;
   PetscMPIInt         rank;

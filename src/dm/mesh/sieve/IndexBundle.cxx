@@ -1,7 +1,7 @@
-#define ALE_ClosureBundle_cxx
+#define ALE_IndexBundle_cxx
 
-#ifndef included_ALE_ClosureBundle_hh
-#include <ClosureBundle.hh>
+#ifndef included_ALE_IndexBundle_hh
+#include <IndexBundle.hh>
 #endif
 
 #include <stack>
@@ -10,27 +10,27 @@
 namespace ALE {
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::setAssemblyPolicy"
-  ClosureBundle&   ClosureBundle::setAssemblyPolicy(BundleAssemblyPolicy policy){
+  #define __FUNCT__ "IndexBundle::setAssemblyPolicy"
+  IndexBundle&   IndexBundle::setAssemblyPolicy(BundleAssemblyPolicy policy){
     if((policy != ADDITION) && (policy != INSERTION)) {
       throw(Exception("Invalid BundleAssemblyPolicy value"));
     }
     this->_assemblyPolicy = policy;
     return *this;
-  }//ClosureBundle::setAssemblyPolicy()
+  }//IndexBundle::setAssemblyPolicy()
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::setTopology"
-  ClosureBundle&   ClosureBundle::setTopology(Obj<Sieve> topology){
+  #define __FUNCT__ "IndexBundle::setTopology"
+  IndexBundle&   IndexBundle::setTopology(Obj<Sieve> topology){
     CHKCOMMS(*this, *topology.pointer());
     // we have to reset all other PreSieves/Stacks
     __reset(topology);
     return *this;
-  }// ClosureBundle::setTopology()
+  }// IndexBundle::setTopology()
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::setFiberDimension"
-  ClosureBundle&   ClosureBundle::setFiberDimension(Point element, int32_t d) {
+  #define __FUNCT__ "IndexBundle::setFiberDimension"
+  IndexBundle&   IndexBundle::setFiberDimension(Point element, int32_t d) {
     // Setting a fiber dimension makes the bundle dirty
     if(d < 0) {
       throw Exception("Invalid dimension");
@@ -47,11 +47,11 @@ namespace ALE {
     else {
       throw ALE::Exception("Non-existent element");
     }
-  }//ClosureBundle::setFiberDimension()
+  }//IndexBundle::setFiberDimension()
   
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::__setFiberDimensionByStratum"
-  ClosureBundle&   ClosureBundle::__setFiberDimensionByStratum(int stratumType, int32_t stratumIndex, int32_t dim) {
+  #define __FUNCT__ "IndexBundle::__setFiberDimensionByStratum"
+  IndexBundle&   IndexBundle::__setFiberDimensionByStratum(int stratumType, int32_t stratumIndex, int32_t dim) {
     Obj<Point_set> stratum;
     Obj<Sieve> topology = this->getTopology();
     switch(stratumType) {
@@ -68,11 +68,11 @@ namespace ALE {
       this->setFiberDimension(*s_itor,dim);
     }
     return *this;
-  }//ClosureBundle::__setFiberDimensionByStratum()
+  }//IndexBundle::__setFiberDimensionByStratum()
   
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::getFiberDimension"
-  int32_t   ClosureBundle::getFiberDimension(Obj<Point_set> base) {
+  #define __FUNCT__ "IndexBundle::getFiberDimension"
+  int32_t   IndexBundle::getFiberDimension(Obj<Point_set> base) {
     int32_t dim = 0;
     base = this->__validateChain(base);
     for(Point_set::iterator base_itor = base->begin(); base_itor != base->end(); base_itor++) {
@@ -93,11 +93,11 @@ namespace ALE {
     }// for(Point_set::iterator base_itor = base->begin(); base_itor != base->end(); base++) {
     return dim;
 
-  }//ClosureBundle::getFiberDimension()
+  }//IndexBundle::getFiberDimension()
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::getBundleDimension"
-  int32_t   ClosureBundle::getBundleDimension(Obj<Point_set> base) {
+  #define __FUNCT__ "IndexBundle::getBundleDimension"
+  int32_t   IndexBundle::getBundleDimension(Obj<Point_set> base) {
     int32_t dim = 0;
     base = this->__validateChain(base);
     // Traverse the closure of base and add up fiber dimensions
@@ -110,12 +110,12 @@ namespace ALE {
     }
     return dim;
 
-  }//ClosureBundle::getBundleDimension()
+  }//IndexBundle::getBundleDimension()
 
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::getFiberInterval"
-  Point   ClosureBundle::getFiberInterval(Point support, Obj<Point_set> base) {
+  #define __FUNCT__ "IndexBundle::getFiberInterval"
+  Point   IndexBundle::getFiberInterval(Point support, Obj<Point_set> base) {
     base  = this->__validateChain(base);
     Obj<PreSieve> indices = this->__computeIndices(Point_set(support), base);
     Point interval;
@@ -125,33 +125,33 @@ namespace ALE {
       interval = *(indices->cap().begin());
     }
     return interval;
-  }//ClosureBundle::getFiberInterval()
+  }//IndexBundle::getFiberInterval()
 
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::getFiberIndices"
-  Obj<PreSieve>   ClosureBundle::getFiberIndices(Obj<Point_set> supports, Obj<Point_set> base) {
+  #define __FUNCT__ "IndexBundle::getFiberIndices"
+  Obj<PreSieve>   IndexBundle::getFiberIndices(Obj<Point_set> supports, Obj<Point_set> base) {
     base  = this->__validateChain(base);
     supports = this->__validateChain(supports);
     Obj<PreSieve> indices = this->__computeIndices(supports, base);
     return indices;
-  }//ClosureBundle::getFiberIndices()
+  }//IndexBundle::getFiberIndices()
 
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::getBundleIndices"
-  Obj<PreSieve>   ClosureBundle::getBundleIndices(Obj<Point_set> supports, Obj<Point_set> base) {
+  #define __FUNCT__ "IndexBundle::getBundleIndices"
+  Obj<PreSieve>   IndexBundle::getBundleIndices(Obj<Point_set> supports, Obj<Point_set> base) {
     supports = this->__validateChain(supports);
     base  = this->__validateChain(base);
     bool includingBoundary = 1;
     Obj<PreSieve> indices = this->__computeIndices(supports, base, includingBoundary);
     return indices;
-  }//ClosureBundle::getBundleIndices()
+  }//IndexBundle::getBundleIndices()
 
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::computeOverlapIndices"
-  void   ClosureBundle::computeOverlapIndices() {
+  #define __FUNCT__ "IndexBundle::computeOverlapIndices"
+  void   IndexBundle::computeOverlapIndices() {
     this->_overlapOwnership = this->getTopology()->baseFootprint(PreSieve::completionTypePoint, PreSieve::footprintTypeCone, NULL)->left();
 
     this->_overlapOwnership->view("Overlap ownership");
@@ -168,30 +168,30 @@ namespace ALE {
     }
     // Now we do the completion
     this->_remoteOverlapIndices = this->_localOverlapIndices->coneCompletion(PreSieve::completionTypeArrow, PreSieve::footprintTypeCone, NULL);
-  }//ClosureBundle::computeOverlapIndices()
+  }//IndexBundle::computeOverlapIndices()
   
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::getOverlapOwners"
-  Obj<Point_set>   ClosureBundle::getOverlapOwners(Point e) {
+  #define __FUNCT__ "IndexBundle::getOverlapOwners"
+  Obj<Point_set>   IndexBundle::getOverlapOwners(Point e) {
     return this->_overlapOwnership->support(e);
-  }//ClosureBundle::getOverlapOwners()
+  }//IndexBundle::getOverlapOwners()
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::getOverlapFiberIndices"
-  Obj<PreSieve>   ClosureBundle::getOverlapFiberIndices(Point e, int32_t proc) {
+  #define __FUNCT__ "IndexBundle::getOverlapFiberIndices"
+  Obj<PreSieve>   IndexBundle::getOverlapFiberIndices(Point e, int32_t proc) {
     Obj<PreSieve> indices(new PreSieve(this->getComm()));
     return indices;
-  }//ClosureBundle::getOverlapFiberIndices()
+  }//IndexBundle::getOverlapFiberIndices()
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::getGlobalSize"
-  int32_t   ClosureBundle::getGlobalSize() {
+  #define __FUNCT__ "IndexBundle::getGlobalSize"
+  int32_t   IndexBundle::getGlobalSize() {
     return 0;
   }
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::__checkOrderChain"
-  ALE::int__Point ClosureBundle::__checkOrderChain(Obj<Point_set> order, int& minDepth, int& maxDepth) {
+  #define __FUNCT__ "IndexBundle::__checkOrderChain"
+  ALE::int__Point IndexBundle::__checkOrderChain(Obj<Point_set> order, int& minDepth, int& maxDepth) {
     ALE::int__Point dElement;
     minDepth = 0;
     maxDepth = 0;
@@ -241,8 +241,8 @@ namespace ALE {
   }
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::__orderElement"
-  void ClosureBundle::__orderElement(int dim, ALE::Point element, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
+  #define __FUNCT__ "IndexBundle::__orderElement"
+  void IndexBundle::__orderElement(int dim, ALE::Point element, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
     if (elementsOrdered->find(element) != elementsOrdered->end()) return;
     (*ordered)[dim].push(element);
     elementsOrdered->insert(element);
@@ -250,8 +250,8 @@ namespace ALE {
   }
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::__orderCell"
-  ALE::Point ClosureBundle::__orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
+  #define __FUNCT__ "IndexBundle::__orderCell"
+  ALE::Point IndexBundle::__orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
     Obj<Sieve> closure = this->getTopology()->closureSieve(Point_set((*orderChain)[dim]));
     ALE::Point last;
 
@@ -289,8 +289,8 @@ namespace ALE {
   }
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::getClosureIndices"
-  Obj<Point_array>   ClosureBundle::getClosureIndices(Obj<Point_set> order, Obj<Point_set> base) {
+  #define __FUNCT__ "IndexBundle::getClosureIndices"
+  Obj<Point_array>   IndexBundle::getClosureIndices(Obj<Point_set> order, Obj<Point_set> base) {
     // IMPROVE:  the ordering algorithm employed here works only for 'MeshSieves' --
     //           Sieves with the property that any pair of elements of depth d > 0 share at most
     //           one element of depth d-1.  'MeshSieve' would check that this property is preserved
@@ -341,12 +341,12 @@ namespace ALE {
       }
     }
     return indexArray;
-  }//ClosureBundle::getClosureIndices()
+  }//IndexBundle::getClosureIndices()
   
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::__computeIndices"
-  Obj<PreSieve>   ClosureBundle::__computeIndices(Obj<Point_set> supports, Obj<Point_set> base, bool includeBoundary) {
+  #define __FUNCT__ "IndexBundle::__computeIndices"
+  Obj<PreSieve>   IndexBundle::__computeIndices(Obj<Point_set> supports, Obj<Point_set> base, bool includeBoundary) {
     base  = this->__validateChain(base);
     supports = this->__validateChain(supports);
     // IMPROVE: we could make this subroutine consult cache, if base is singleton
@@ -422,12 +422,12 @@ namespace ALE {
       }// if stk is not empty
     }// while(1)     
     return indices;
-  }//ClosureBundle::__computeIndices()
+  }//IndexBundle::__computeIndices()
 
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::__computeBoundaryIndices"
-  Obj<PreSieve>      ClosureBundle::__computeBoundaryIndices(Point  s, Point__Point& seen, int32_t& off) {
+  #define __FUNCT__ "IndexBundle::__computeBoundaryIndices"
+  Obj<PreSieve>      IndexBundle::__computeBoundaryIndices(Point  s, Point__Point& seen, int32_t& off) {
 
     Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
     // Traverse the boundary of s -- the closure of s except s itself -- in a depth-first search and compute the indices for the 
@@ -482,12 +482,12 @@ namespace ALE {
       }// if stk is not empty
     }// while(1)     
     return indices;
-  }//ClosureBundle::__computeBoundaryIndices()
+  }//IndexBundle::__computeBoundaryIndices()
 
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::__getArrow"
-  Point    ClosureBundle::__getArrow(Point e1, Point e) {
+  #define __FUNCT__ "IndexBundle::__getArrow"
+  Point    IndexBundle::__getArrow(Point e1, Point e) {
     Point_set arrows = this->__getArrows()->nMeet(this->_arrowsToStarts->cone(e1),this->_arrowsToEnds->cone(e),0);
     if(arrows.size() > 1) {
       throw(Exception("Multiple arrows attached to an element pair"));
@@ -508,12 +508,12 @@ namespace ALE {
     }
     return arrow;
     
-  }// ClosureBundle::__getArrow()
+  }// IndexBundle::__getArrow()
 
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::__getArrowInterval"
-  Point    ClosureBundle::__getArrowInterval(Point e1, Point e) {
+  #define __FUNCT__ "IndexBundle::__getArrowInterval"
+  Point    IndexBundle::__getArrowInterval(Point e1, Point e) {
     // If the bundle is dirty, we reset all the indices first
     if(!this->__isClean()) {
       this->__resetArrowIndices();
@@ -528,11 +528,11 @@ namespace ALE {
       return Point(-1,0);
     }
     return *(indices->begin());
-  }// ClosureBundle::__getArrowInterval()
+  }// IndexBundle::__getArrowInterval()
 
   #undef  __FUNCT__
-  #define __FUNCT__ "ClosureBundle::__setArrowInterval"
-  void ClosureBundle::__setArrowInterval(Point e1, Point e, Point interval) {
+  #define __FUNCT__ "IndexBundle::__setArrowInterval"
+  void IndexBundle::__setArrowInterval(Point e1, Point e, Point interval) {
     // If the bundle is dirty, we reset all the indices first
     if(!this->__isClean()) {
       this->__resetArrowIndices();
@@ -542,11 +542,11 @@ namespace ALE {
     Point arrow = this->__getArrow(e1, e);
     // Now set the arrow index interval
     this->_indicesToArrows->setCone(interval, arrow);
-  }// ClosureBundle::__setArrowInterval()
+  }// IndexBundle::__setArrowInterval()
 
   #undef __FUNCT__
-  #define __FUNCT__ "ClosureBundle::view"
-  void ClosureBundle::view(const char *name) {
+  #define __FUNCT__ "IndexBundle::view"
+  void IndexBundle::view(const char *name) {
     CHKCOMM(*this);    
     PetscErrorCode ierr;
     ostringstream txt, hdr;
@@ -554,15 +554,15 @@ namespace ALE {
     if(name != NULL) {
       hdr << name;
     } 
-    hdr << " ClosureBundle\n";
+    hdr << " IndexBundle\n";
     // Print header
     ierr = PetscPrintf(this->comm, hdr.str().c_str()); CHKERROR(ierr, "Error in PetscPrintf");
     
     this->_dimensionsToElements->view("Dimension Assignment Stack");
 
-  }// ClosureBundle::view()
+  }// IndexBundle::view()
 
 
 } // namespace ALE
 
-#undef ALE_ClosureBundle_cxx
+#undef ALE_IndexBundle_cxx

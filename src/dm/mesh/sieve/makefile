@@ -6,10 +6,10 @@ ALL: lib
 CFLAGS   = -I.
 FFLAGS   =
 CPPFLAGS = 
-SOURCEC  = ALE.cxx PreSieve.cxx Sieve.cxx Stack.cxx ClosureBundle.cxx Simplicializer.cxx
+SOURCEC  = ALE.cxx PreSieve.cxx Sieve.cxx Stack.cxx IndexBundle.cxx Simplicializer.cxx
 SOURCEF  =
-SOURCEH  = ALE.hh  PreSieve.hh  Sieve.hh  Stack.hh  ClosureBundle.hh
-OBJSC    = ALE.o   PreSieve.o   Sieve.o   Stack.o   ClosureBundle.o   Simplicializer.o
+SOURCEH  = ALE.hh  PreSieve.hh  Sieve.hh  Stack.hh  IndexBundle.hh
+OBJSC    = ALE.o   PreSieve.o   Sieve.o   Stack.o   IndexBundle.o   Simplicializer.o
 OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DA
