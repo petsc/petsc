@@ -170,6 +170,12 @@ namespace ALE {
     this->_localOverlapIndices->coneCompletion(PreSieve::completionTypeArrow, PreSieve::footprintTypeCone, this->_remoteOverlapIndices);
     this->_remoteOverlapIndices->view("Remote overlap indices");
   }//IndexBundle::computeOverlapIndices()
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getOverlapSize"
+  int32_t   IndexBundle::getOverlapSize() {
+    return getFiberDimension(this->_overlapOwnership->base());
+  }
   
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::getOverlapOwners"
@@ -192,10 +198,11 @@ namespace ALE {
   }//IndexBundle::getOverlapFiberIndices()
 
   #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::getGlobalSize"
-  int32_t   IndexBundle::getGlobalSize() {
+  #define __FUNCT__ "IndexBundle::__localizePoints"
+  ALE::Obj<ALE::Point_set>   IndexBundle::__localizePoints(bool returnRemote) {
     ALE::Obj<ALE::Point_set> space = this->getTopology()->space();
-    ALE::Point_set localPoints;
+    ALE::Obj<ALE::Point_set> localPoints(new Point_set());
+    ALE::Obj<ALE::Point_set> remotePoints(new Point_set());
 
     for(ALE::Point_set::iterator e_itor = space->begin(); e_itor != space->end(); e_itor++) {
       ALE::Obj<ALE::Point_set> owners = getOverlapOwners(*e_itor);
@@ -209,13 +216,31 @@ namespace ALE {
           }
         }
       }
-      if (nonLocal) continue;
-      localPoints.insert(*e_itor);
+      if (nonLocal) {
+        remotePoints.insert(*e_itor);
+      } else {
+        localPoints.insert(*e_itor);
+      }
     }
-    int localSize = getFiberDimension(localPoints), globalSize;
+    if (returnRemote) {
+      return remotePoints;
+    }
+    return localPoints;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getGlobalSize"
+  int32_t   IndexBundle::getGlobalSize() {
+    int localSize = getFiberDimension(this->__localizePoints(false)), globalSize;
     int ierr = MPI_Allreduce(&localSize, &globalSize, 1, MPI_INT, MPI_SUM, this->comm);
     CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allreduce"));
     return globalSize;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getRemoteSize"
+  int32_t   IndexBundle::getRemoteSize() {
+    return getFiberDimension(this->__localizePoints(true));
   }
 
   #undef  __FUNCT__

@@ -85,6 +85,7 @@ namespace ALE {
     int__Point __checkOrderChain(Obj<Point_set> order, int& maxDepth, int& minDepth);
     void __orderElement(int dim, ALE::Point element, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
     ALE::Point __orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
+    ALE::Obj<ALE::Point_set> __localizePoints(bool returnRemote);
   public:
     // constructors/destructors
     IndexBundle()                    : Coaster(MPI_COMM_SELF) {__reset();};
@@ -124,6 +125,7 @@ namespace ALE {
     int32_t                 getBundleDimension(Point e){return getBundleDimension(Point_set(e));};
     // Remote ordering methods
     void                    computeOverlapIndices(); // collective
+    int32_t                 getOverlapSize();
     Obj<Point_set>          getOverlapOwners(Point e);
     Obj<PreSieve>           getOverlapFiberIndices(Point e, int32_t proc);
     Obj<PreSieve>           getOverlapClosureIndices(Point e, int32_t proc);
@@ -131,6 +133,7 @@ namespace ALE {
     // Global ordering methods
     void                    computeGlobalIndices(); // collective
     int32_t                 getGlobalSize();
+    int32_t                 getRemoteSize();
     int32_t                 getGlobalOwner(Point e);
     Obj<PreSieve>           getGlobalFiberIndices(Point e);
     Obj<PreSieve>           getGlobalClosureIndices(Point e);
