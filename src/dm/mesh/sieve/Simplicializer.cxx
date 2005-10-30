@@ -487,21 +487,24 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
   //
   ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
   /* Create coordinate storage */
-  //ierr = MeshCreateGlobalVector(mesh, &coordinates);CHKERRQ(ierr);
-  // Need number of ghost dof
-  // numGhosts = coordBundle->getGlobalRemoteSize();
-  PetscInt numGhosts = 0;
-  // Need all global ghost indices
+  int globalSize = coordBundle->getGlobalSize();
+  int ghostSize = coordBundle->getGlobalRemoteSize();
   // ghostIndices = coordBundle->getGlobalRemoteIndices().cap();
   PetscInt *ghostIndices = NULL;
+  /* Print shit */
+  printf("Making an ordering over the vertices\n===============================\n");
+  printf("  global size: %d ghostSize: %d\n", globalSize, ghostSize);
+  printf("  ghostIndices:");
+  for(int g = 0; g < ghostSize; g++) {
+    printf(" %d\n", ghostIndices[g]);
+  }
+  printf("\n");
   // Create a global ghosted vector to store a field
-  ierr = VecCreateGhostBlock(comm,1,coordBundle->getBundleDimension(empty),PETSC_DETERMINE,numGhosts,ghostIndices,&coordinates);CHKERRQ(ierr);
+  ierr = VecCreateGhostBlock(comm,1,PETSC_DETERMINE,globalSize,ghostSize,ghostIndices,&coordinates);CHKERRQ(ierr);
   /* Set coordinates */
   numElements = topology->heightStratum(0).size();
   vertices = topology->depthStratum(0);
   /* Print shit */
-  printf("Making an ordering over the vertices\n===============================\n");
-  printf("  global size: %d\n", coordBundle->getGlobalSize());
   for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
     ALE::Point v = *vertex_itor;
     ostringstream label;
