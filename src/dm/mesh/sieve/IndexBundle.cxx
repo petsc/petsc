@@ -194,7 +194,28 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::getGlobalSize"
   int32_t   IndexBundle::getGlobalSize() {
-    return 0;
+    ALE::Obj<ALE::Point_set> space = this->getTopology()->space();
+    ALE::Point_set localPoints;
+
+    for(ALE::Point_set::iterator e_itor = space->begin(); e_itor != space->end(); e_itor++) {
+      ALE::Obj<ALE::Point_set> owners = getOverlapOwners(*e_itor);
+      bool nonLocal = false;
+
+      if (owners->size()) {
+        for(ALE::Point_set::iterator o_itor = owners->begin(); o_itor != owners->end(); o_itor++) {
+          if ((*o_itor).index < this->commRank) {
+            nonLocal = true;
+            break;
+          }
+        }
+      }
+      if (nonLocal) continue;
+      localPoints.insert(*e_itor);
+    }
+    int localSize = getFiberDimension(localPoints), globalSize;
+    int ierr = MPI_Allreduce(&localSize, &globalSize, 1, MPI_INT, MPI_SUM, this->comm);
+    CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allreduce"));
+    return globalSize;
   }
 
   #undef  __FUNCT__

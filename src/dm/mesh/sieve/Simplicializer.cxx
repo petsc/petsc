@@ -501,6 +501,7 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
   vertices = topology->depthStratum(0);
   /* Print shit */
   printf("Making an ordering over the vertices\n===============================\n");
+  printf("  global size: %d\n", coordBundle->getGlobalSize());
   for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
     ALE::Point v = *vertex_itor;
     ostringstream label;
