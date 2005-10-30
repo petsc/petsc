@@ -9,7 +9,7 @@ PetscErrorCode BuildFaces(int dim, std::map<int, int*> curSimplex, ALE::Point_se
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  printf("  Building faces for boundary(%u), dim %d\n", boundary.size(), dim);
+  printf("  Building faces for boundary(%u), dim %d\n", (unsigned int) boundary.size(), dim);
   if (dim > 1) {
     // Use the cone construction
     for(ALE::Point_set::iterator b_itor = boundary.begin(); b_itor != boundary.end(); b_itor++) {
@@ -74,7 +74,7 @@ PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices
       printf("Adding boundary node (%d, %d)\n", 0, simplices[s*(dim+1)+b]+numSimplices);
       boundary.insert(ALE::Point(0, simplices[s*(dim+1)+b]+numSimplices));
     }
-    printf("simplex boundary size %u\n", boundary.size());
+    printf("simplex boundary size %u\n", (unsigned int) boundary.size());
     ierr = BuildFaces(dim, curElement, boundary, simplex, topology); CHKERRQ(ierr);
     /* Orient the simplex */
     ALE::Point element = ALE::Point(0, simplices[s*(dim+1)+0]+numSimplices);
@@ -501,6 +501,7 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
   vertices = topology->depthStratum(0);
   /* Print shit */
   printf("Making an ordering over the vertices\n===============================\n");
+  printf("  global size: %d\n", coordBundle->getGlobalSize());
   for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
     ALE::Point v = *vertex_itor;
     ostringstream label;
