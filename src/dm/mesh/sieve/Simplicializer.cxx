@@ -669,6 +669,8 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, FILE *f)
   dim = coordBundle->getFiberDimension(*vertices.begin());
   vertexBundle = ALE::IndexBundle(topology);
   vertexBundle.setFiberDimensionByDepth(0, 1);
+  vertexBundle.computeOverlapIndices();
+  vertexBundle.computeGlobalIndices();
   numVertices = vertexBundle.getGlobalSize();
   fprintf(f, "POINTS %d double\n", numVertices);
   if (rank == 0) {
@@ -743,8 +745,12 @@ PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   vertexBundle = ALE::IndexBundle(topology);
   vertexBundle.setFiberDimensionByDepth(0, 1);
+  vertexBundle.computeOverlapIndices();
+  vertexBundle.computeGlobalIndices();
   elementBundle = ALE::IndexBundle(topology);
   elementBundle.setFiberDimensionByHeight(0, 1);
+  elementBundle.computeOverlapIndices();
+  elementBundle.computeGlobalIndices();
   dim = topology->diameter();
   elements = topology->heightStratum(0);
   numElements = elementBundle.getGlobalSize();

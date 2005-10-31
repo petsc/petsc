@@ -221,7 +221,7 @@ namespace ALE {
   #define __FUNCT__ "IndexBundle::__computePointTypes"
   ALE::Obj<ALE::PreSieve>   IndexBundle::__computePointTypes() {
     ALE::Obj<ALE::Point_set> space = this->getTopology()->space();
-    ALE::Obj<ALE::PreSieve> pointTypes(new PreSieve());
+    ALE::Obj<ALE::PreSieve> pointTypes(new PreSieve(this->comm));
 
     for(ALE::Point_set::iterator e_itor = space->begin(); e_itor != space->end(); e_itor++) {
       ALE::Obj<ALE::Point_set> owners = getOverlapOwners(*e_itor);
@@ -263,7 +263,7 @@ namespace ALE {
     ALE::Obj<ALE::PreSieve> localIndices = this->getFiberIndices(localPoints, localPoints);
     int localSize = this->getFiberDimension(localPoints);
     // Make global indices
-    ALE::Obj<ALE::PreSieve> globalIndices(new PreSieve());
+    ALE::Obj<ALE::PreSieve> globalIndices(new PreSieve(this->comm));
     int *firstIndex = new int[this->commSize+1];
     int ierr = MPI_Allgather(&localSize, 1, MPI_INT, &(firstIndex[1]), 1, MPI_INT, this->comm);
     CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allgather"));
@@ -284,8 +284,9 @@ namespace ALE {
     int **recvIntervals = new int *[this->commSize];
     for(int p = 0; p < this->commSize; p++) {
       if (p == this->commRank) {
-        ierr = MPI_Irecv(NULL, 0, MPI_INT, p, 1, this->comm, &(requests[p]));
-        CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Irecv"));
+        //ierr = MPI_Irecv(NULL, 0, MPI_INT, p, 1, this->comm, &(requests[p]));
+        //CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Irecv"));
+        requests[p] = MPI_REQUEST_NULL;
         continue;
       }
       ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(-p, p));
