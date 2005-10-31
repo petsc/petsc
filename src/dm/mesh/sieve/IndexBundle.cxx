@@ -219,6 +219,13 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::__computePointTypes"
+  /*
+    This PreSieve classifies points in the topology. Marker points are in the base and topological points are in the cap.
+
+      (rank, PointType)   is covered by   topological points of that type
+      (   p, p)           is covered by   topological points leased from process p
+      (-p-1, p)           is covered by   topological points rented to process p
+  */
   ALE::Obj<ALE::PreSieve>   IndexBundle::__computePointTypes() {
     ALE::Obj<ALE::Point_set> space = this->getTopology()->space();
     ALE::Obj<ALE::PreSieve> pointTypes(new PreSieve(this->comm));
@@ -232,7 +239,7 @@ namespace ALE {
       if (owners->size()) {
         for(ALE::Point_set::iterator o_itor = owners->begin(); o_itor != owners->end(); o_itor++) {
           if ((*o_itor).index < this->commRank) {
-            typePoint = ALE::Point(-(*o_itor).prefix, (*o_itor).index);
+            typePoint = ALE::Point(-(*o_itor).prefix-1, (*o_itor).index);
 
             pointType = rentedPoint;
             pointTypes->addSupport(point, typePoint);
@@ -248,6 +255,7 @@ namespace ALE {
       pointTypes->addCone(point, typePoint);
     }
     this->_pointTypes = pointTypes;
+    pointTypes->view("Point types");
     return pointTypes;
   }
 
@@ -262,11 +270,15 @@ namespace ALE {
     ALE::Obj<ALE::Point_set> localPoints = pointTypes->cone(localTypes);
     ALE::Obj<ALE::PreSieve> localIndices = this->getFiberIndices(localPoints, localPoints);
     int localSize = this->getFiberDimension(localPoints);
+    PetscSynchronizedPrintf(this->comm, "[%d]Local size %d\n", this->commRank, localSize);
+    PetscSynchronizedFlush(this->comm);
+
     // Make global indices
     ALE::Obj<ALE::PreSieve> globalIndices(new PreSieve(this->comm));
     int *firstIndex = new int[this->commSize+1];
     int ierr = MPI_Allgather(&localSize, 1, MPI_INT, &(firstIndex[1]), 1, MPI_INT, this->comm);
     CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allgather"));
+    firstIndex[0] = 0;
     for(int p = 0; p < this->commSize; p++) {
       firstIndex[p+1] = firstIndex[p+1] + firstIndex[p];
     }
@@ -277,28 +289,38 @@ namespace ALE {
       globalIndex.prefix += firstIndex[this->commRank];
       globalIndices->addCone(globalIndex, point);
     }
+    PetscSynchronizedPrintf(this->comm, "[%d]Global size %d\n", this->commRank, firstIndex[this->commSize]);
+    PetscSynchronizedFlush(this->comm);
     delete firstIndex;
+
     // Communicate remote indices
     MPI_Request *requests = new MPI_Request[this->commSize];
     MPI_Status *statuses = new MPI_Status[this->commSize];
     int **recvIntervals = new int *[this->commSize];
     for(int p = 0; p < this->commSize; p++) {
+      int size;
       if (p == this->commRank) {
-        //ierr = MPI_Irecv(NULL, 0, MPI_INT, p, 1, this->comm, &(requests[p]));
-        //CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Irecv"));
-        requests[p] = MPI_REQUEST_NULL;
+        size = 0;
+      } else {
+        ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(-p-1, p));
+        size = rentedPoints->size()*2;
+      }
+      recvIntervals[p] = new int[size+1];
+
+      ierr = MPI_Irecv(recvIntervals[p], size, MPI_INT, p, 1, this->comm, &(requests[p]));
+      CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Irecv"));
+      PetscSynchronizedPrintf(this->comm, "[%d]  rented size %d for proc %d\n", this->commRank, size, p);
+    }
+    PetscSynchronizedFlush(this->comm);
+    for(int p = 0; p < this->commSize; p++) {
+      if (p == this->commRank) {
+        ierr = MPI_Send(&p, 0, MPI_INT, p, 1, this->comm);
+        CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Send"));
         continue;
       }
-      ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(-p, p));
-      recvIntervals[p] = new int[rentedPoints->size()*2];
-
-      ierr = MPI_Irecv(recvIntervals[p], rentedPoints->size()*2, MPI_INT, p, 1, this->comm, &(requests[p]));
-      CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Irecv"));
-    }
-    for(int p = 0; p < this->commSize; p++) {
-      if (p == this->commRank) continue;
       ALE::Obj<ALE::Point_set> leasedPoints = pointTypes->cone(ALE::Point(p, p));
-      int *intervals = new int[leasedPoints->size()*2];
+      int size = leasedPoints->size()*2;
+      int *intervals = new int[size+1];
       int i = 0;
 
       for(ALE::Point_set::iterator e_itor = leasedPoints->begin(); e_itor != leasedPoints->end(); e_itor++) {
@@ -307,14 +329,19 @@ namespace ALE {
         intervals[i++] = interval.prefix;
         intervals[i++] = interval.index;
       }
-      ierr = MPI_Send(intervals, leasedPoints->size()*2, MPI_INT, p, 1, this->comm);
+      ierr = MPI_Send(intervals, size, MPI_INT, p, 1, this->comm);
       CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Send"));
       delete intervals;
+      PetscSynchronizedPrintf(this->comm, "[%d]  leased size %d for proc %d\n", this->commRank, size, p);
     }
+    PetscSynchronizedFlush(this->comm);
     ierr = MPI_Waitall(this->commSize, requests, statuses); CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Waitall"));
     for(int p = 0; p < this->commSize; p++) {
-      if (p == this->commRank) continue;
-      ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(-p, p));
+      if (p == this->commRank) {
+        delete recvIntervals[p];
+        continue;
+      }
+      ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(-p-1, p));
       int i = 0;
 
       for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
@@ -322,6 +349,7 @@ namespace ALE {
         ALE::Point point = *e_itor;
 
         globalIndices->addCone(interval, point);
+        printf("[%d]Set global indices of (%d, %d) to (%d, %d)\n", this->commRank, point.prefix, point.index, interval.prefix, interval.index);
         i += 2;
       }
       delete recvIntervals[p];

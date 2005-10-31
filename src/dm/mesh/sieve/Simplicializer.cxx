@@ -491,20 +491,29 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
   int localSize = coordBundle->getLocalSize();
   int globalSize = coordBundle->getGlobalSize();
   ALE::Obj<ALE::PreSieve> globalIndices = coordBundle->getGlobalIndices();
+  globalIndices->view("Global Indices");
   ALE::Obj<ALE::PreSieve> pointTypes = coordBundle->getPointTypes();
   ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(coordBundle->getCommRank(), ALE::rentedPoint));
   int ghostSize = 0;
   for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
-    ALE::Point interval = *globalIndices->cone(*e_itor).begin();
+    ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
 
-    ghostSize += interval.index;
+    if (cone->size()) {
+      ALE::Point interval = *cone->begin();
+
+      ghostSize += interval.index;
+    }
   }
   int *ghostIndices = new int[ghostSize];
   int idx = 0;
   for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
-    ALE::Point interval = *globalIndices->cone(*e_itor).begin();
+    ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
 
-    ExpandInterval(interval, ghostIndices, &idx);
+    if (cone->size()) {
+      ALE::Point interval = *cone->begin();
+
+      ExpandInterval(interval, ghostIndices, &idx);
+    }
   }
   /* Print shit */
   printf("Making an ordering over the vertices\n===============================\n");
