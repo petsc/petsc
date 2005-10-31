@@ -50,6 +50,8 @@ class Configure(PETSc.package.Package):
       g.write('FC           = '+self.setCompilers.getCompiler()+'\n')
       g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags()+'\n')
       self.setCompilers.popLanguage()
+    else:
+      raise RuntimeError('PLAPACK requires Fortran to build')
     g.write('LINKER       = $(CC)\n')     #required by PLAPACK's examples
     g.write('LFLAGS       = $(CFLAGS)\n') #required by PLAPACK's examples
     g.write('AR           = '+self.setCompilers.AR+'\n')
