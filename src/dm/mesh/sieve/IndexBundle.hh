@@ -10,6 +10,8 @@
 namespace ALE {
 
   typedef enum {INSERTION = 0, ADDITION = 1} BundleAssemblyPolicy;
+  typedef enum {localPoint, leasedPoint, rentedPoint} PointType;
+
   class IndexBundle : public Coaster {
     int     _dirty;
     Obj<Stack>     _dimensionsToElements;
@@ -21,6 +23,8 @@ namespace ALE {
     Obj<Stack>     _localOverlapIndices;  // a stack with _overlapOwnership in the base, a discrete top contains the local indices 
                                           // attached to the overlap points by vertical arrows
     Obj<PreSieve>  _remoteOverlapIndices; // a completion stack with the remote overlap indices: completionTypeArrow, footprintTypeCone
+    ALE::Obj<ALE::PreSieve> _pointTypes;
+    ALE::Obj<ALE::PreSieve> _globalIndices;
     //
     BundleAssemblyPolicy _assemblyPolicy;
     //
@@ -85,7 +89,8 @@ namespace ALE {
     int__Point __checkOrderChain(Obj<Point_set> order, int& maxDepth, int& minDepth);
     void __orderElement(int dim, ALE::Point element, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
     ALE::Point __orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
-    ALE::Obj<ALE::Point_set> __localizePoints(bool returnRemote);
+    ALE::PointType __getPointType(ALE::Point point);
+    ALE::Obj<ALE::PreSieve> __computePointTypes();
   public:
     // constructors/destructors
     IndexBundle()                    : Coaster(MPI_COMM_SELF) {__reset();};
@@ -130,10 +135,13 @@ namespace ALE {
     Obj<PreSieve>           getOverlapFiberIndices(Point e, int32_t proc);
     Obj<PreSieve>           getOverlapClosureIndices(Point e, int32_t proc);
     Obj<Point_array>        getOverlapOrderedClosureIndices(Obj<Point_set> order, int32_t proc);
+    Obj<PreSieve>           getPointTypes();
     // Global ordering methods
     void                    computeGlobalIndices(); // collective
     int32_t                 getGlobalSize();
+    int32_t                 getLocalSize();
     int32_t                 getRemoteSize();
+    Obj<PreSieve>           getGlobalIndices();
     int32_t                 getGlobalOwner(Point e);
     Obj<PreSieve>           getGlobalFiberIndices(Point e);
     Obj<PreSieve>           getGlobalClosureIndices(Point e);

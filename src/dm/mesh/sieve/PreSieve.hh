@@ -38,6 +38,9 @@ namespace ALE {
     virtual PreSieve&                 removePoint(Point& p) {this->removeBasePoint(p); this->removeCapPoint(p); return *this;};
     virtual PreSieve&                 addCapPoint(Point& q);
     virtual PreSieve&                 removeCapPoint(Point& q);
+    virtual PreSieve&                 addSupport(Point& i, Obj<Point_set>& suppSet) {
+      return this->addSupport(i, suppSet);
+    }
     virtual PreSieve&                 addSupport(Point& i, Point_set& suppSet) {
       CHKCOMM(*this);
       this->__checkLock();

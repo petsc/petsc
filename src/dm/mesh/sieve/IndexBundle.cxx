@@ -198,40 +198,152 @@ namespace ALE {
   }//IndexBundle::getOverlapFiberIndices()
 
   #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::__localizePoints"
-  ALE::Obj<ALE::Point_set>   IndexBundle::__localizePoints(bool returnRemote) {
+  #define __FUNCT__ "IndexBundle::__getPointType"
+  ALE::PointType   IndexBundle::__getPointType(ALE::Point point) {
+    ALE::Obj<ALE::Point_set> owners = getOverlapOwners(point);
+    ALE::PointType pointType = localPoint;
+
+    if (owners->size()) {
+      for(ALE::Point_set::iterator o_itor = owners->begin(); o_itor != owners->end(); o_itor++) {
+        if ((*o_itor).index < this->commRank) {
+          pointType = rentedPoint;
+          break;
+        }
+      }
+      if (pointType == localPoint) {
+        pointType = leasedPoint;
+      }
+    }
+    return pointType;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::__computePointTypes"
+  ALE::Obj<ALE::PreSieve>   IndexBundle::__computePointTypes() {
     ALE::Obj<ALE::Point_set> space = this->getTopology()->space();
-    ALE::Obj<ALE::Point_set> localPoints(new Point_set());
-    ALE::Obj<ALE::Point_set> remotePoints(new Point_set());
+    ALE::Obj<ALE::PreSieve> pointTypes(new PreSieve());
 
     for(ALE::Point_set::iterator e_itor = space->begin(); e_itor != space->end(); e_itor++) {
       ALE::Obj<ALE::Point_set> owners = getOverlapOwners(*e_itor);
-      bool nonLocal = false;
+      ALE::PointType pointType = localPoint;
+      ALE::Point point = *e_itor;
+      ALE::Point typePoint;
 
       if (owners->size()) {
         for(ALE::Point_set::iterator o_itor = owners->begin(); o_itor != owners->end(); o_itor++) {
           if ((*o_itor).index < this->commRank) {
-            nonLocal = true;
+            typePoint = ALE::Point(-(*o_itor).prefix, (*o_itor).index);
+
+            pointType = rentedPoint;
+            pointTypes->addSupport(point, typePoint);
             break;
           }
         }
+        if (pointType == localPoint) {
+          pointType = leasedPoint;
+          pointTypes->addSupport(point, owners);
+        }
       }
-      if (nonLocal) {
-        remotePoints.insert(*e_itor);
-      } else {
-        localPoints.insert(*e_itor);
+      typePoint = ALE::Point(this->commRank, pointType);
+      pointTypes->addCone(point, typePoint);
+    }
+    this->_pointTypes = pointTypes;
+    return pointTypes;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::computeGlobalIndices"
+  void   IndexBundle::computeGlobalIndices() {
+    // Make local indices
+    ALE::Point_set localTypes;
+    localTypes.insert(ALE::Point(this->commRank, ALE::localPoint));
+    localTypes.insert(ALE::Point(this->commRank, ALE::leasedPoint));
+    ALE::Obj<ALE::PreSieve> pointTypes = this->__computePointTypes();
+    ALE::Obj<ALE::Point_set> localPoints = pointTypes->cone(localTypes);
+    ALE::Obj<ALE::PreSieve> localIndices = this->getFiberIndices(localPoints, localPoints);
+    int localSize = this->getFiberDimension(localPoints);
+    // Make global indices
+    ALE::Obj<ALE::PreSieve> globalIndices(new PreSieve());
+    int *firstIndex = new int[this->commSize+1];
+    int ierr = MPI_Allgather(&localSize, 1, MPI_INT, &(firstIndex[1]), 1, MPI_INT, this->comm);
+    CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allgather"));
+    for(int p = 0; p < this->commSize; p++) {
+      firstIndex[p+1] = firstIndex[p+1] + firstIndex[p];
+    }
+    for(ALE::Point_set::iterator e_itor = localPoints->begin(); e_itor != localPoints->end(); e_itor++) {
+      ALE::Point globalIndex(*localIndices->cone(*e_itor).begin());
+      ALE::Point point = *e_itor;
+
+      globalIndex.prefix += firstIndex[this->commRank];
+      globalIndices->addCone(globalIndex, point);
+    }
+    delete firstIndex;
+    // Communicate remote indices
+    MPI_Request *requests = new MPI_Request[this->commSize];
+    MPI_Status *statuses = new MPI_Status[this->commSize];
+    int **recvIntervals = new int *[this->commSize];
+    for(int p = 0; p < this->commSize; p++) {
+      if (p == this->commRank) {
+        ierr = MPI_Irecv(NULL, 0, MPI_INT, p, 1, this->comm, &(requests[p]));
+        CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Irecv"));
+        continue;
       }
+      ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(-p, p));
+      recvIntervals[p] = new int[rentedPoints->size()*2];
+
+      ierr = MPI_Irecv(recvIntervals[p], rentedPoints->size()*2, MPI_INT, p, 1, this->comm, &(requests[p]));
+      CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Irecv"));
     }
-    if (returnRemote) {
-      return remotePoints;
+    for(int p = 0; p < this->commSize; p++) {
+      if (p == this->commRank) continue;
+      ALE::Obj<ALE::Point_set> leasedPoints = pointTypes->cone(ALE::Point(p, p));
+      int *intervals = new int[leasedPoints->size()*2];
+      int i = 0;
+
+      for(ALE::Point_set::iterator e_itor = leasedPoints->begin(); e_itor != leasedPoints->end(); e_itor++) {
+        ALE::Point interval = *globalIndices->cone(*e_itor).begin();
+
+        intervals[i++] = interval.prefix;
+        intervals[i++] = interval.index;
+      }
+      ierr = MPI_Send(intervals, leasedPoints->size()*2, MPI_INT, p, 1, this->comm);
+      CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Send"));
+      delete intervals;
     }
-    return localPoints;
+    ierr = MPI_Waitall(this->commSize, requests, statuses); CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Waitall"));
+    for(int p = 0; p < this->commSize; p++) {
+      if (p == this->commRank) continue;
+      ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(-p, p));
+      int i = 0;
+
+      for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
+        ALE::Point interval(recvIntervals[p][i], recvIntervals[p][i+1]);
+        ALE::Point point = *e_itor;
+
+        globalIndices->addCone(interval, point);
+        i += 2;
+      }
+      delete recvIntervals[p];
+    }
+    delete requests;
+    delete statuses;
+    delete recvIntervals;
+    this->_globalIndices = globalIndices;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getLocalSize"
+  int32_t   IndexBundle::getLocalSize() {
+    ALE::Point_set localTypes;
+    localTypes.insert(ALE::Point(this->commRank, ALE::localPoint));
+    localTypes.insert(ALE::Point(this->commRank, ALE::leasedPoint));
+    return getFiberDimension(this->_pointTypes->cone(localTypes));
   }
 
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::getGlobalSize"
   int32_t   IndexBundle::getGlobalSize() {
-    int localSize = getFiberDimension(this->__localizePoints(false)), globalSize;
+    int localSize = getLocalSize(), globalSize;
     int ierr = MPI_Allreduce(&localSize, &globalSize, 1, MPI_INT, MPI_SUM, this->comm);
     CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allreduce"));
     return globalSize;
@@ -240,7 +352,19 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::getRemoteSize"
   int32_t   IndexBundle::getRemoteSize() {
-    return getFiberDimension(this->__localizePoints(true));
+    return getFiberDimension(this->_pointTypes->cone(ALE::Point(this->commRank, ALE::rentedPoint)));
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getPointTypes"
+  ALE::Obj<ALE::PreSieve>   IndexBundle::getPointTypes() {
+    return this->_pointTypes;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getGlobalIndices"
+  ALE::Obj<ALE::PreSieve>   IndexBundle::getGlobalIndices() {
+    return this->_globalIndices;
   }
 
   #undef  __FUNCT__
