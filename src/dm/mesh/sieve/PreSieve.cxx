@@ -14,11 +14,11 @@ namespace ALE {
   
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::PreSieve()"
-  PreSieve::PreSieve() : Coaster::Coaster(), _cone(), _cap() {};
+  PreSieve::PreSieve() : Coaster(), _cone(), _cap() {};
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::PreSieve(MPI_Comm)"
-  PreSieve::PreSieve(MPI_Comm comm) : Coaster::Coaster(comm), _cone(), _cap() {};
+  PreSieve::PreSieve(MPI_Comm comm) : Coaster(comm), _cone(), _cap() {};
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::~PreSieve"
@@ -2498,7 +2498,7 @@ namespace ALE {
       cntr = 0;
       txt << "[" << rank << "]: debug begin\n";
       txt << "[" << rank << "]: __computeCompletion: completion cone:  base of size " << C->_cone.size() << "\n";
-      for(std::map<Point,Point_set>::iterator Cbase_itor=C->_cone.begin(); Cbase_itor!=C->_cone.end(); Cbase_itor++) {
+      for(std::map<Point,Point_set,Point::Cmp>::iterator Cbase_itor=C->_cone.begin(); Cbase_itor!=C->_cone.end(); Cbase_itor++) {
         Point Cb = (*Cbase_itor).first;
         txt << "[" << rank << "]: \t(" << Cb.prefix << ", " << Cb.index << "):  ";
         Point_set CbCone = (*Cbase_itor).second;

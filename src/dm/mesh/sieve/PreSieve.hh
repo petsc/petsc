@@ -39,7 +39,7 @@ namespace ALE {
     virtual PreSieve&                 addCapPoint(Point& q);
     virtual PreSieve&                 removeCapPoint(Point& q);
     virtual PreSieve&                 addSupport(Point& i, Obj<Point_set>& suppSet) {
-      return this->addSupport(i, suppSet);
+      return this->addSupport(i, *(suppSet.objPtr));
     }
     virtual PreSieve&                 addSupport(Point& i, Point_set& suppSet) {
       CHKCOMM(*this);
