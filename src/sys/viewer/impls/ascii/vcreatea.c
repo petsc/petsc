@@ -172,7 +172,7 @@ EXTERN_C_END
 PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
 {
   PetscErrorCode    ierr;
-  PetscViewerLink   *link,*nv;
+  PetscViewerLink   *vlink,*nv;
   PetscTruth        flg,eq;
 
   PetscFunctionBegin;
@@ -181,16 +181,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm comm,const char nam
   }
 
   /* has file already been opened into a viewer */
-  ierr = MPI_Attr_get(comm,Petsc_Viewer_keyval,(void**)&link,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_keyval,(void**)&vlink,(PetscMPIInt*)&flg);CHKERRQ(ierr);
   if (flg) {
-    while (link) {
-      ierr = PetscStrcmp(name,((PetscViewer_ASCII*)(link->viewer->data))->filename,&eq);CHKERRQ(ierr);
+    while (vlink) {
+      ierr = PetscStrcmp(name,((PetscViewer_ASCII*)(vlink->viewer->data))->filename,&eq);CHKERRQ(ierr);
       if (eq) {
-        ierr = PetscObjectReference((PetscObject)link->viewer);CHKERRQ(ierr);
-        *lab = link->viewer;
+        ierr = PetscObjectReference((PetscObject)vlink->viewer);CHKERRQ(ierr);
+        *lab = vlink->viewer;
         PetscFunctionReturn(0);
       }            
-      link = link->next;
+      vlink = vlink->next;
     }
   }
 
@@ -206,10 +206,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm comm,const char nam
   if (!flg) {
     ierr = MPI_Attr_put(comm,Petsc_Viewer_keyval,nv);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Attr_get(comm,Petsc_Viewer_keyval,(void**)&link,(PetscMPIInt*)&flg);CHKERRQ(ierr);
-    if (link) {
-      while (link->next) link = link->next;
-      link->next = nv;
+    ierr = MPI_Attr_get(comm,Petsc_Viewer_keyval,(void**)&vlink,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    if (vlink) {
+      while (vlink->next) vlink = vlink->next;
+      vlink->next = nv;
     } else {
       ierr = MPI_Attr_put(comm,Petsc_Viewer_keyval,nv);CHKERRQ(ierr);
     }

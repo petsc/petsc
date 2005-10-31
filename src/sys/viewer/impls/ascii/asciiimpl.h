@@ -15,9 +15,10 @@ typedef struct {
   PetscTruth    storecompressed; 
 } PetscViewer_ASCII;
 
-struct PetscViewerLink {
+typedef struct PetscViewerLink_t PetscViewerLink;
+struct PetscViewerLink_t {
   PetscViewer            viewer;
-  struct PetscViewerLink *next;
+  struct PetscViewerLink_t *next;
 };
 
 extern PetscMPIInt Petsc_Viewer_keyval;

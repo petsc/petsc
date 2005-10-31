@@ -12,7 +12,7 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   PetscMPIInt       rank;
   PetscErrorCode    ierr;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
-  PetscViewerLink   *link;
+  PetscViewerLink   *vlink;
   PetscTruth        flg;
 
   PetscFunctionBegin;
@@ -46,19 +46,19 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelViewer,&Petsc_Viewer_keyval,(void*)0);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Attr_get(viewer->comm,Petsc_Viewer_keyval,(void**)&link,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(viewer->comm,Petsc_Viewer_keyval,(void**)&vlink,(PetscMPIInt*)&flg);CHKERRQ(ierr);
   if (flg) {
-    if (link->viewer == viewer) {
-      ierr = MPI_Attr_put(viewer->comm,Petsc_Viewer_keyval,link->next);CHKERRQ(ierr);
-      ierr = PetscFree(link);CHKERRQ(ierr);
+    if (vlink->viewer == viewer) {
+      ierr = MPI_Attr_put(viewer->comm,Petsc_Viewer_keyval,vlink->next);CHKERRQ(ierr);
+      ierr = PetscFree(vlink);CHKERRQ(ierr);
     } else {
-      while (link->next) {
-        if (link->next->viewer == viewer) {
-          PetscViewerLink *nv = link->next;
-          link->next = link->next->next;
+      while (vlink->next) {
+        if (vlink->next->viewer == viewer) {
+          PetscViewerLink *nv = vlink->next;
+          vlink->next = vlink->next->next;
           ierr = PetscFree(nv);CHKERRQ(ierr);
         }
-        link = link->next;
+        vlink = vlink->next;
       }
     }
   }
