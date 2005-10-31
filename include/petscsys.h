@@ -293,24 +293,25 @@ M*/
   Same as PetscLLAddSorted() with an additional operation:
        count the number of input indices that are no larger than 'diag'
   Input Parameters:
-    nidx      - number of input indices
     indices   - sorted interger array 
     idx_start - starting index of the list
     lnk       - linked list(an integer array) that is created
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
     diag      - index of the active row in LUFactorSymbolic
+    nzbd      - number of input indices with indices <= idx_start
   output Parameters:
     nlnk      - number of newly added indices
     lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
     bt        - updated PetscBT (bitarray) 
-    nzbd      - number of input indices that are no larger than 'diag'
+    im        - im[idx_start] =  num of entries with indices <= diag
 */
-#define PetscLLAddSortedLU(nidx,indices,idx_start,nlnk,lnk,bt,diag,nzbd,im) 0;\
+#define PetscLLAddSortedLU(indices,idx_start,nlnk,lnk,bt,diag,nzbd,im) 0;\
 {\
-  PetscInt _k,_entry,_location,_lnkdata;\
+  PetscInt _k,_entry,_location,_lnkdata,_nidx;\
   nlnk     = 0;\
   _lnkdata = idx_start;\
-  for (_k=0; _k<nidx; _k++){\
+  _nidx = im[idx_start] - nzbd; /* num of entries with idx_start < index <= diag */\
+  for (_k=0; _k<_nidx; _k++){\
     _entry = indices[_k];\
     nzbd++;\
     if ( _entry== diag) im[idx_start] = nzbd;\
