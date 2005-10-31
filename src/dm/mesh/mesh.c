@@ -28,7 +28,8 @@ struct _p_Mesh {
   PetscInt d_nz,o_nz,*d_nnz,*o_nnz;
 };
 
-#include <ClosureBundle.hh>
+#ifdef __cplusplus
+#include <IndexBundle.hh>
 PetscErrorCode WriteVTKVertices(Mesh, FILE *);
 PetscErrorCode WriteVTKElements(Mesh, FILE *);
 PetscErrorCode WriteVTKHeader(Mesh, FILE *);
@@ -43,7 +44,7 @@ PetscErrorCode MeshView_Sieve_Ascii(Mesh mesh, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_VTK) {
-    ALE::ClosureBundle *coordBundle;
+    ALE::IndexBundle *coordBundle;
     FILE               *f;
 
     ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
@@ -59,7 +60,7 @@ PetscErrorCode MeshView_Sieve_Ascii(Mesh mesh, PetscViewer viewer)
     ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %d dimensions:\n", dim);CHKERRQ(ierr);
     for(d = 0; d <= dim; d++) {
-      ALE::ClosureBundle dBundle(topology);
+      ALE::IndexBundle dBundle(topology);
 
       dBundle.setFiberDimensionByDepth(d, 1);
       ierr = PetscViewerASCIIPrintf(viewer, "  %d %d-cells\n", dBundle.getGlobalSize(), d);CHKERRQ(ierr);
@@ -68,6 +69,7 @@ PetscErrorCode MeshView_Sieve_Ascii(Mesh mesh, PetscViewer viewer)
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve"
@@ -82,7 +84,11 @@ PetscErrorCode MeshView_Sieve(Mesh mesh, PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_DRAW, &isdraw);CHKERRQ(ierr);
 
   if (iascii){
+#ifdef __cplusplus
     ierr = MeshView_Sieve_Ascii(mesh, viewer);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_ERR_SUP, "Ascii viewer not implemented for Mesh");
+#endif
   } else if (isbinary) {
     SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Mesh");
   } else if (isdraw){ 
