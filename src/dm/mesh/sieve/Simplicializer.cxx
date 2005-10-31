@@ -483,14 +483,29 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
   coordBundle->setTopology(topology);
   coordBundle->setFiberDimensionByDepth(0, dim);
   coordBundle->computeOverlapIndices();
+  coordBundle->computeGlobalIndices();
   coordBundle->getLock();  // lock the bundle so that the overlap indices do not change
   //
   ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
   /* Create coordinate storage */
+  int localSize = coordBundle->getLocalSize();
   int globalSize = coordBundle->getGlobalSize();
-  int ghostSize = coordBundle->getGlobalRemoteSize();
-  // ghostIndices = coordBundle->getGlobalRemoteIndices().cap();
-  PetscInt *ghostIndices = NULL;
+  ALE::Obj<ALE::PreSieve> globalIndices = coordBundle->getGlobalIndices();
+  ALE::Obj<ALE::PreSieve> pointTypes = coordBundle->getPointTypes();
+  ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(coordBundle->getCommRank(), ALE::rentedPoint));
+  int ghostSize = 0;
+  for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
+    ALE::Point interval = *globalIndices->cone(*e_itor).begin();
+
+    ghostSize += interval.index;
+  }
+  int *ghostIndices = new int[ghostSize];
+  int idx = 0;
+  for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
+    ALE::Point interval = *globalIndices->cone(*e_itor).begin();
+
+    ExpandInterval(interval, ghostIndices, &idx);
+  }
   /* Print shit */
   printf("Making an ordering over the vertices\n===============================\n");
   printf("  global size: %d ghostSize: %d\n", globalSize, ghostSize);
@@ -500,7 +515,7 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
   }
   printf("\n");
   // Create a global ghosted vector to store a field
-  ierr = VecCreateGhostBlock(comm,1,PETSC_DETERMINE,globalSize,ghostSize,ghostIndices,&coordinates);CHKERRQ(ierr);
+  ierr = VecCreateGhostBlock(comm,1,localSize,globalSize,ghostSize,ghostIndices,&coordinates);CHKERRQ(ierr);
   /* Set coordinates */
   numElements = topology->heightStratum(0).size();
   vertices = topology->depthStratum(0);
