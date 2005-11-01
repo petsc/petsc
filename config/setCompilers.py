@@ -305,8 +305,9 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         import os
 
+        self.logPrint('Error testing C compiler: '+str(e))
         if os.path.basename(self.CC) == 'mpicc':
-          self.framework.logPrint(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+          self.framework.logPrint(' MPI installation '+str(self.CC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
         del self.CC
     if not hasattr(self, 'CC'):
       raise RuntimeError('Could not locate a functional C compiler')
@@ -455,8 +456,9 @@ class Configure(config.base.Configure):
         except RuntimeError, e:
           import os
 
+          self.logPrint('Error testing C++ compiler: '+str(e))
           if os.path.basename(self.CXX) in ['mpicxx', 'mpiCC']:
-            self.logPrint('  MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+            self.logPrint('  MPI installation '+str(self.CXX)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
           del self.CXX
       if hasattr(self, 'CXX'):
         break
@@ -603,8 +605,9 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         import os
 
+        self.logPrint('Error testing Fortran compiler: '+str(e))
         if os.path.basename(self.FC) in ['mpif90', 'mpif77']:
-         self.framework.logPrint(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+         self.framework.logPrint(' MPI installation '+str(self.FC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
         del self.FC
     return
 
