@@ -316,12 +316,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
     while (row < i) {
       nzbd    = bdiag[row] - bi[row] + 1;
       ajtmp   = bi_ptr[row] + nzbd;
-      nnz     = im[row] - nzbd; /* num of columns with row<indices<=i */
-      im[row] = nzbd;
-      ierr = PetscLLAddSortedLU(nnz,ajtmp,row,nlnk,lnk,lnkbt,i,nzbd);CHKERRQ(ierr);
+      nnz     = im[row] - nzbd; /* num of columns with row<indices<=i ? */     
+      ierr = PetscLLAddSortedLU(nnz,ajtmp,row,nlnk,lnk,lnkbt,i,nzbd,im);CHKERRQ(ierr);
       nzi     += nlnk;
-      im[row] += nzbd;  /* update im[row]: num of cols with index<=i */ 
-
       row = lnk[row];
     }
 

@@ -302,15 +302,15 @@ M*/
     bt        - updated PetscBT (bitarray) 
     nzbd      - number of input indices that are no larger than 'diag'
 */
-#define PetscLLAddSortedLU(nidx,indices,idx_start,nlnk,lnk,bt,diag,nzbd) 0;\
+#define PetscLLAddSortedLU(nidx,indices,idx_start,nlnk,lnk,bt,diag,nzbd,im) 0;\
 {\
   PetscInt _k,_entry,_location,_lnkdata;\
   nlnk     = 0;\
   _lnkdata = idx_start;\
-  nzbd     = 0;\
   for (_k=0; _k<nidx; _k++){\
     _entry = indices[_k];\
-    if (_entry <= diag) nzbd++;\
+    nzbd++;\
+    if ( _entry== diag) im[idx_start] = nzbd;\
     if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
       /* search for insertion location */\
       do {\
