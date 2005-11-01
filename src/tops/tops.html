@@ -16,11 +16,13 @@
 
 
 
+
 <div style="text-align: center;"><big><big><span style="font-weight: bold;">TOPS Solver Component</span></big></big>
 
       
 
     <br>
+
 
 
 
@@ -44,7 +46,9 @@
 
 
 
+
 <br>
+
 
 
 
@@ -73,7 +77,9 @@ partial list may be found <a href="http://www-unix.mcs.anl.gov/petsc/petsc-as/do
 
 
 
+
 <br>
+
 
 
 
@@ -91,7 +97,9 @@ TOPS solvers may be used in three distinct ways:<br>
 
 
 
+
 <ol>
+
 
 
 
@@ -109,7 +117,9 @@ TOPS solvers may be used in three distinct ways:<br>
 
 
 
+
   <li>through a common C, C++, Fortran, Python language binding (<a href="http://www.mcs.anl.gov/petsc">PETSc</a>),</li>
+
 
 
 
@@ -127,7 +137,9 @@ TOPS solvers may be used in three distinct ways:<br>
 
 
 
+
 </ol>
+
 
 
 
@@ -145,6 +157,7 @@ For all three approaches first <a href="topsinstaller.html">download and install
 
 
 
+
 <div style="text-align: center;"><big><span style="font-weight: bold;"></span></big><br>
 
 
@@ -154,7 +167,9 @@ For all three approaches first <a href="topsinstaller.html">download and install
 
 
 
+
 </div>
+
 
 
 
@@ -173,15 +188,19 @@ component will define the algebraic system to be
 solved. <br>
 
 
+
 <br>
 
 
-The TSC and the System component can be combined using a <a href="examples/c++/ex1/ex1.cc">traditional programming language</a>, a <a href="examples/c++/ex1/Ex1_rc">component scripting language</a> or a <a href="topsccafe.html">component GUI</a> such as <a href="http://www.cca-forum.org/ccafe/">ccaffeine</a>. The TSC and the&nbsp;System component then collaborate
+
+The TSC and the System component can be combined using a <a href="examples/c++/ex1/ex1.cc">traditional programming language</a>, a <a href="examples/c++/ex1/Ex1_rc">component scripting language</a> or a component GUI&nbsp;<a href="topsccafe.html">(see demo)</a> such as <a href="http://www.cca-forum.org/ccafe/">ccaffeine</a>. The TSC and the&nbsp;System component then collaborate
 to solve one or more algebraic problems. Complex applications will likely
 also couple several additional CCA components, see the <a href="http://cca-forum.org/tutorials/">CCA tutorials</a> for more information on writing applications using CCA components. <br>
 
 
+
 <br>
+
 
 
 The <a href="topsgenerator.html">TOPS component generator</a> can be used to generate the SIDL for your problem and all the boilerplate code needed to use it as a CCA component.<br>
@@ -196,10 +215,13 @@ The <a href="topsgenerator.html">TOPS component generator</a> can be used to gen
 
 
 
+
 <br>
 
 
+
 <div style="text-align: center;"><big><big><span style="font-weight: bold;">TOPS Solver Component Tutorial</span></big></big><br>
+
 
 
 </div>
@@ -210,7 +232,9 @@ The <a href="topsgenerator.html">TOPS component generator</a> can be used to gen
 
 
 
+
 <br>
+
 
 
 
@@ -228,6 +252,7 @@ The <a href="topsgenerator.html">TOPS component generator</a> can be used to gen
 
 
 
+
   <li>Structured grids<span style="font-weight: bold;"></span></li>
 
 
@@ -237,6 +262,8 @@ The <a href="topsgenerator.html">TOPS component generator</a> can be used to gen
 
 
 
+
+  
   
   
   
@@ -246,6 +273,7 @@ The <a href="topsgenerator.html">TOPS component generator</a> can be used to gen
   
   
   <ul>
+
 
 
 
@@ -263,7 +291,9 @@ The <a href="topsgenerator.html">TOPS component generator</a> can be used to gen
 
 
 
+
     <li><a href="#Example_2:">nonlinear, multi-componen</a>t</li>
+
 
 
 
@@ -281,6 +311,8 @@ The <a href="topsgenerator.html">TOPS component generator</a> can be used to gen
 
 
 
+
+  
   
   
   
@@ -290,6 +322,7 @@ The <a href="topsgenerator.html">TOPS component generator</a> can be used to gen
   
   
   </ul>
+
 
 
 
@@ -307,6 +340,8 @@ The <a href="topsgenerator.html">TOPS component generator</a> can be used to gen
 
 
 
+
+  
   
   
   
@@ -324,6 +359,7 @@ The <a href="topsgenerator.html">TOPS component generator</a> can be used to gen
 
 
 
+
     <li>l<a href="#Example_4:">inear, single component</a></li>
 
 
@@ -333,6 +369,8 @@ The <a href="topsgenerator.html">TOPS component generator</a> can be used to gen
 
 
 
+
+  
   
   
   
@@ -350,7 +388,9 @@ The <a href="topsgenerator.html">TOPS component generator</a> can be used to gen
 
 
 
+
 </ul>
+
 
 
 
@@ -361,7 +401,9 @@ Installation:<br>
 
 
 
+
 <br>
+
 
 
 
@@ -370,9 +412,13 @@ Installation:<br>
 If you <span style="font-weight: bold;">did not use</span> the TOPSInstaller to build the TSC, then configure PETSc with <span style="font-family: monospace; color: rgb(51, 51, 255);">config/configure.py --with-shared=1
 --with-babel-dir=dir --with-ccafe-dir=dir --with-clanguage=c++</span> (any other options you desire).
 Then do <span style="font-family: monospace; color: rgb(51, 51, 255);">make all test.<br>
+
 <br>
+
 </span>To compile and run the first example: &nbsp;<span style="font-family: monospace; color: rgb(51, 51, 255);">cd&nbsp;src/tops/examples/c++/ex1</span> and do <span style="font-family: monospace; color: rgb(51, 51, 255);">make server-c++ test-cca<br>
+
 <br>
+
 </span>
 
 
@@ -387,7 +433,9 @@ Then do <span style="font-family: monospace; color: rgb(51, 51, 255);">make all 
 
 
 
+
 <br>
+
 
 
 
@@ -415,7 +463,9 @@ code consists of the SIDL definition of&nbsp;the&nbsp;System component
 
 
 
+
 <br>
+
 
 
 
@@ -441,7 +491,9 @@ package Ex1 version 0.0.0 {class System implements-all TOPS.System.System, TOPS.
 
 
 
+
 <br>
+
 
 
 
@@ -465,7 +517,9 @@ and the code that defines the nonlinear equation (in <a href="examples/c++/ex1/s
 
 
 
+
 <br>
+
 
 
 
@@ -493,7 +547,9 @@ throw (){
 
 
 
+
 <span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">// DO-NOT-DELETE splicer.begin(Ex1.System.computeResidual)</span><br style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -516,8 +572,10 @@ throw (){
 
 
 
+
 <span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">int xs = f.lower(0);            // first grid point in X and Y directions on this process
   </span><br style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -540,6 +598,7 @@ throw (){
 
 
 
+
 <span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">int xm = f.length(0);       // number of local grid points in X and Y directions on this process
   </span><br style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">
 
@@ -552,7 +611,9 @@ throw (){
 
 
 
+
 <span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">int ym = f.length(1);</span><br style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -575,8 +636,10 @@ throw (){
 
 
 
+
 <span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">int mx = solver.getDimensionX();
   </span><br style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -600,8 +663,10 @@ throw (){
 
 
 
+
 <span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">double hx     = 1.0/(double)(mx-1);
   </span><br style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -624,8 +689,10 @@ throw (){
 
 
 
+
 double sc     = hx*hy;
   <br>
+
 
 
 
@@ -648,9 +715,11 @@ double hxdhy  = hx/hy;
 
 
 
+
 double hydhx  = hy/hx;
  
   </span><br style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -675,7 +744,9 @@ double hydhx  = hy/hx;
 
 
 
+
 <span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">&nbsp; for (j=ys; j&lt;ys+ym; j++) {<br>
+
 
 
 
@@ -697,7 +768,9 @@ double hydhx  = hy/hx;
 
 
 
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (i == 0 || j == 0 || i == mx-1 || j == my-1) {<br>
+
 
 
 
@@ -719,7 +792,9 @@ double hydhx  = hy/hx;
 
 
 
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } else {<br>
+
 
 
 
@@ -741,7 +816,9 @@ double hydhx  = hy/hx;
 
 
 
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; double uxx&nbsp;&nbsp;&nbsp;&nbsp; = (2.0*u - x.get(i-1,j) - x.get(i+1,j))*hydhx;<br>
+
 
 
 
@@ -763,7 +840,9 @@ double hydhx  = hy/hx;
 
 
 
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; f.set(i,j,uxx + uyy - sc*exp(u));<br>
+
 
 
 
@@ -785,7 +864,9 @@ double hydhx  = hy/hx;
 
 
 
+
 &nbsp;&nbsp;&nbsp; }<br>
+
 
 
 
@@ -807,7 +888,9 @@ double hydhx  = hy/hx;
 
 
 
+
 &nbsp; // DO-NOT-DELETE splicer.end(Ex1.System.computeResidual)<br>
+
 
 
 
@@ -829,7 +912,9 @@ double hydhx  = hy/hx;
 
 
 
+
 <br>
+
 
 
 
@@ -847,7 +932,9 @@ double hydhx  = hy/hx;
 
 
 
+
 <br>
+
 
 
 
@@ -870,7 +957,9 @@ multicomponent PDE again solved on a structured grid.&nbsp;<br>
 
 
 
+
 First tell the Tops.Solver that it is solving a multicomponent problem with four components (in <a href="examples/c++/ex2/server/c++/Ex2_System_Impl.cc.html#Ex2.System.initializeOnce">Ex2_System_Impl.cc</a>)<br>
+
 
 
 
@@ -892,6 +981,7 @@ First tell the Tops.Solver that it is solving a multicomponent problem with four
 
 
 
+
 <span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">void ex2::system_impl::initializeOnce throw (){ </span><br style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">
 
 
@@ -903,7 +993,9 @@ First tell the Tops.Solver that it is solving a multicomponent problem with four
 
 
 
+
 <span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">//&nbsp;</span></double></double><span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">DO-NOT-DELETE splicer.begin(Ex2.System.initializeOnce)</span><br style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -926,8 +1018,10 @@ First tell the Tops.Solver that it is solving a multicomponent problem with four
 
 
 
+
 <span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">// DO-NOT-DELETE splicer.end(Ex2.System.initializeOnce)
 </span><br style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -949,7 +1043,9 @@ First tell the Tops.Solver that it is solving a multicomponent problem with four
 
 
 
+
 <br>
+
 
 
 
@@ -971,7 +1067,9 @@ First tell the Tops.Solver that it is solving a multicomponent problem with four
 
 
 
+
 <br>
+
 
 
 
@@ -994,8 +1092,10 @@ First tell the Tops.Solver that it is solving a multicomponent problem with four
 
 
 
+
 <span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">TOPS::Structured::Solver solver;
     </span><br style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -1019,6 +1119,7 @@ First tell the Tops.Solver that it is solving a multicomponent problem with four
 
 
 
+
 <span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">// DO-NOT-DELETE splicer.end(Ex2.System._implementation)
 
    </span><br style="font-style: italic;">
@@ -1032,7 +1133,9 @@ First tell the Tops.Solver that it is solving a multicomponent problem with four
 
 
 
+
 <br>
+
 
 
 
@@ -1054,7 +1157,9 @@ initialize them (</xs></ys></double></double>in <a href="examples/c++/ex2/server
 
 
 
+
 <br>
+
 
 
 
@@ -1077,7 +1182,9 @@ initialize them (</xs></ys></double></double>in <a href="examples/c++/ex2/server
 
 
 
+
 <span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">// DO-NOT-DELETE splicer.begin(Ex2.System._ctor)</span><br style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -1102,6 +1209,7 @@ initialize them (</xs></ys></double></double>in <a href="examples/c++/ex2/server
 
 
 
+
 <span style="font-style: italic; color: rgb(51, 51, 255); font-family: monospace;">// DO-NOT-DELETE splicer.end(Ex2.System._ctor)
    }</span><br>
 
@@ -1114,7 +1222,9 @@ initialize them (</xs></ys></double></double>in <a href="examples/c++/ex2/server
 
 
 
+
 <br>
+
 
 
 
@@ -1137,7 +1247,9 @@ inheriting from&nbsp;TOPS.SystemComputeInitialGuess using SIDL such as (in <a hr
 
 
 
+
 <br>
+
 
 
 
@@ -1163,7 +1275,9 @@ TOPS.System.Compute.Residual, TOPS.System.Compute.InitialGuess {}}</span><span s
 
 
 
+
 <br>
+
 
 
 
@@ -1185,7 +1299,9 @@ and providing code like (in <a href="examples/c++/ex2/server/c++/Ex2_System_Impl
 
 
 
+
 <br>
+
 
 
 
@@ -1207,7 +1323,9 @@ and providing code like (in <a href="examples/c++/ex2/server/c++/Ex2_System_Impl
 
 
 
+
 <span style="color: rgb(51, 51, 255); font-family: monospace;">&nbsp; // DO-NOT-DELETE splicer.begin(Ex2.System.computeInitialGuess)</span><br style="color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -1229,7 +1347,9 @@ and providing code like (in <a href="examples/c++/ex2/server/c++/Ex2_System_Impl
 
 
 
+
 <span style="color: rgb(51, 51, 255); font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp; Compute initial guess over the locally owned part of the grid</span><br style="color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -1251,7 +1371,9 @@ and providing code like (in <a href="examples/c++/ex2/server/c++/Ex2_System_Impl
 
 
 
+
 <span style="color: rgb(51, 51, 255); font-family: monospace;">&nbsp; */</span><br style="color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -1273,6 +1395,7 @@ and providing code like (in <a href="examples/c++/ex2/server/c++/Ex2_System_Impl
 
 
 
+
 <span style="color: rgb(51, 51, 255); font-family: monospace;">&nbsp; int xs = x.lower(1);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // first grid point in X and Y directions on this process</span><br style="color: rgb(51, 51, 255); font-family: monospace;">
 
 
@@ -1284,7 +1407,9 @@ and providing code like (in <a href="examples/c++/ex2/server/c++/Ex2_System_Impl
 
 
 
+
 <span style="color: rgb(51, 51, 255); font-family: monospace;">&nbsp; int ys = x.lower(2);</span><br style="color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -1308,7 +1433,9 @@ of local grid points in X and Y directions on this process</span><br style="colo
 
 
 
+
 <span style="color: rgb(51, 51, 255); font-family: monospace;">&nbsp; int ym = x.length(2);</span><br style="color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -1330,7 +1457,9 @@ of local grid points in X and Y directions on this process</span><br style="colo
 
 
 
+
 <span style="color: rgb(51, 51, 255); font-family: monospace;">&nbsp; double dx&nbsp; = 1.0/(solver.getDimensionX()-1);</span><br style="color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -1352,7 +1481,9 @@ of local grid points in X and Y directions on this process</span><br style="colo
 
 
 
+
 <span style="color: rgb(51, 51, 255); font-family: monospace;">&nbsp; for (j=ys; j&lt;ys+ym; j++) {</span><br style="color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -1374,7 +1505,9 @@ of local grid points in X and Y directions on this process</span><br style="colo
 
 
 
+
 <span style="color: rgb(51, 51, 255); font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x.set(U,i,j,0.0);</span><br style="color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -1396,7 +1529,9 @@ of local grid points in X and Y directions on this process</span><br style="colo
 
 
 
+
 <span style="color: rgb(51, 51, 255); font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x.set(OMEGA,i,j,0.0);</span><br style="color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -1418,7 +1553,9 @@ of local grid points in X and Y directions on this process</span><br style="colo
 
 
 
+
 <span style="color: rgb(51, 51, 255); font-family: monospace;">&nbsp;&nbsp;&nbsp; }</span><br style="color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -1440,7 +1577,9 @@ of local grid points in X and Y directions on this process</span><br style="colo
 
 
 
+
 <span style="color: rgb(51, 51, 255); font-family: monospace;">&nbsp; // DO-NOT-DELETE splicer.end(Ex2.System.computeInitialGuess)</span><br style="color: rgb(51, 51, 255); font-family: monospace;">
+
 
 
 
@@ -1462,7 +1601,9 @@ of local grid points in X and Y directions on this process</span><br style="colo
 
 
 
+
 <br>
+
 
 
 
@@ -1480,7 +1621,9 @@ of local grid points in X and Y directions on this process</span><br style="colo
 
 
 
+
 <br>
+
 
 
 
@@ -1504,7 +1647,9 @@ is (in <a href="examples/c++/ex3/ex3.sidl.html">ex3.sidl</a>)<br>
 
 
 
+
 <br>
+
 
 
 
@@ -1524,6 +1669,7 @@ is (in <a href="examples/c++/ex3/ex3.sidl.html">ex3.sidl</a>)<br>
 
 
 
+
 <br>
 
 
@@ -1533,7 +1679,9 @@ is (in <a href="examples/c++/ex3/ex3.sidl.html">ex3.sidl</a>)<br>
 
 
 
+
 </span></xs></ys></double></double>The code that defines the matrix is given by (in <a href="examples/c++/ex3/server/c++/Ex3_System_Impl.cc.html#Ex3.System.computeMatrix">Ex3_System_Impl.cc</a>)<br>
+
 
 
 
@@ -1553,7 +1701,9 @@ is (in <a href="examples/c++/ex3/ex3.sidl.html">ex3.sidl</a>)<br>
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">void Ex3::System_impl::computeMatrix (/* in */ ::TOPS::Matrix J ) throw () {</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1571,7 +1721,9 @@ is (in <a href="examples/c++/ex3/ex3.sidl.html">ex3.sidl</a>)<br>
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; TOPS::Structured::Matrix B = (TOPS::MatrixStructured)J;</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1589,7 +1741,9 @@ is (in <a href="examples/c++/ex3/ex3.sidl.html">ex3.sidl</a>)<br>
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; int xs = B.lower(0);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // first grid point in X and Y directions on this process</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1607,7 +1761,9 @@ is (in <a href="examples/c++/ex3/ex3.sidl.html">ex3.sidl</a>)<br>
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; int zs = B.lower(2);</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1627,7 +1783,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; int ym = B.length(1);</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1645,7 +1803,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; int i,j,k;</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1663,7 +1823,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; int my = solver.getDimensionY();</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1681,7 +1843,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1699,7 +1863,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; double hy&nbsp;&nbsp;&nbsp;&nbsp; = 1.0/(double)(my-1);</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1717,7 +1883,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; double sc&nbsp;&nbsp;&nbsp;&nbsp; = hx*hy*hz;</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1735,7 +1903,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; double hyhzdhx&nbsp; = hy*hz/hx;</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1753,7 +1923,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp;</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1771,7 +1943,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp;&nbsp;&nbsp;&nbsp; Compute part of matrix over the locally owned part of the grid</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1789,7 +1963,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; double d = 2.0*(hxhydhz + hxhzdhy + hyhzdhx);</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1807,7 +1983,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1825,7 +2003,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; r[0] = r[6] = -hxhydhz;</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1843,7 +2023,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; r[2] = r[4] = -hyhzdhx;</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1861,7 +2043,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; sidl::array&lt;double&gt; rr = sidl::array&lt;double&gt;::create1d(7,r);</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1879,7 +2063,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; for (k=zs; k&lt;zs+zm; k++) {</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1897,7 +2083,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for (i=xs; i&lt;xs+xm; i++) {</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1915,7 +2103,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; B.set(i,j,k,dd); // diagonal entry</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1933,7 +2123,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; B.set(i,j,k,rr);&nbsp;&nbsp; // seven point stencil</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1951,7 +2143,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1969,7 +2163,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; }</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -1987,6 +2183,7 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">}</span><br>
 
 
@@ -1996,7 +2193,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <br>
+
 
 
 
@@ -2014,7 +2213,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <br>
+
 
 
 
@@ -2032,7 +2233,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; // DO-NOT-DELETE splicer.begin(Ex3.System.computeRightHandSide)</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2050,7 +2253,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; int xs = b.lower(0);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // first grid point in X and Y directions on this process</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2068,7 +2273,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; int zs = b.lower(2);</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2088,7 +2295,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; int ym = b.length(1);</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2106,7 +2315,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; int i,j,k;</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2124,7 +2335,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; int my = solver.getDimensionY();</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2142,7 +2355,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2160,7 +2375,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; double hy&nbsp;&nbsp;&nbsp;&nbsp; = 1.0/(double)(my-1);</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2178,7 +2395,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; double sc&nbsp;&nbsp;&nbsp;&nbsp; = hx*hy*hz;</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2196,7 +2415,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; /*</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2214,7 +2435,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; */</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2232,7 +2455,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp;&nbsp;&nbsp; for (j=ys; j&lt;ys+ym; j++) {</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2250,7 +2475,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (i == 0 || j == 0 || i == mx-1 || j == my-1 || k == 0 || k == mz-1) {</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2268,7 +2495,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } else {</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2286,7 +2515,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2304,7 +2535,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp;&nbsp;&nbsp; }</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2322,7 +2555,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; // DO-NOT-DELETE splicer.end(Ex3.System.computeRightHandSide)</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2340,7 +2575,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <br>
+
 
 
 
@@ -2356,7 +2593,9 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
+
 <br>
+
 
 
 
@@ -2379,7 +2618,9 @@ small.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2397,7 +2638,9 @@ TOPS.Solver by, for example </span></span><span style="color: rgb(255, 0, 0);"><
 
 
 
+
 <span style="color: rgb(255, 0, 0);"><span style="color: rgb(0, 0, 0);"><br>
+
 
 
 
@@ -2411,7 +2654,9 @@ TOPS.Solver by, for example </span></span><span style="color: rgb(255, 0, 0);"><
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">{</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2425,7 +2670,9 @@ TOPS.Solver by, for example </span></span><span style="color: rgb(255, 0, 0);"><
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; this-&gt;solver.setLocalSize(this-&gt;n);</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2439,7 +2686,9 @@ TOPS.Solver by, for example </span></span><span style="color: rgb(255, 0, 0);"><
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; int size; MPI_Comm_rank(MPI_COMM_WORLD,&amp;size);</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2453,7 +2702,9 @@ TOPS.Solver by, for example </span></span><span style="color: rgb(255, 0, 0);"><
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; int cnt = 0,g[2];</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2467,7 +2718,9 @@ TOPS.Solver by, for example </span></span><span style="color: rgb(255, 0, 0);"><
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; if (rank == size-1) g[cnt++] = start+this-&gt;n;</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2481,7 +2734,9 @@ TOPS.Solver by, for example </span></span><span style="color: rgb(255, 0, 0);"><
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; // DO-NOT-DELETE splicer.end(Ex4.System.initializeOnce)</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2495,7 +2750,9 @@ TOPS.Solver by, for example </span></span><span style="color: rgb(255, 0, 0);"><
 
 
 
+
 <br>
+
 
 
 
@@ -2513,7 +2770,9 @@ trivial, is the one dimensional Possion problem.<br>
 
 
 
+
 <br>
+
 
 
 
@@ -2529,7 +2788,9 @@ does <span style="font-weight: bold;">not </span>to do the MPI communication dir
 
 
 
+
 <br>
+
 
 
 
@@ -2543,7 +2804,9 @@ does <span style="font-weight: bold;">not </span>to do the MPI communication dir
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">{</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2557,7 +2820,9 @@ does <span style="font-weight: bold;">not </span>to do the MPI communication dir
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; int i,nlocal = b.length(0);</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2571,7 +2836,9 @@ does <span style="font-weight: bold;">not </span>to do the MPI communication dir
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; int size; MPI_Comm_rank(MPI_COMM_WORLD,&amp;size);</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2585,7 +2852,9 @@ does <span style="font-weight: bold;">not </span>to do the MPI communication dir
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; // ghost degrees of freedom would also be computed here. Skipped here.</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2599,7 +2868,9 @@ does <span style="font-weight: bold;">not </span>to do the MPI communication dir
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; if (rank == size-1) nlocal--;</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2613,7 +2884,9 @@ does <span style="font-weight: bold;">not </span>to do the MPI communication dir
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp;&nbsp;&nbsp; b.set(i,1.0);</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2627,7 +2900,9 @@ does <span style="font-weight: bold;">not </span>to do the MPI communication dir
 
 
 
+
 <span style="font-family: monospace; color: rgb(51, 51, 255);">&nbsp; // DO-NOT-DELETE splicer.end(Ex4.System.computeRightHandSide)</span><br style="font-family: monospace; color: rgb(51, 51, 255);">
+
 
 
 
@@ -2641,7 +2916,9 @@ does <span style="font-weight: bold;">not </span>to do the MPI communication dir
 
 
 
+
 <br>
+
 
 
 
@@ -2657,7 +2934,9 @@ contribution for a single finite element is added in a single call.<br>
 
 
 
+
 <br style="font-family: monospace;">
+
 
 
 
@@ -2671,6 +2950,7 @@ contribution for a single finite element is added in a single call.<br>
 
 
 
+
 <br>
 
 
@@ -2678,7 +2958,9 @@ contribution for a single finite element is added in a single call.<br>
 
 
 
+
 </span></span><double><double><ys +ym="" j="" {="" for="" (i="xs;" i=""><xs +xm="" if="" (i="=" 0="" i="" mx-1="" |="" j="=" my-1="" f.set(i,j,x.get(i,j="" else="" u="x.get(i,j);" uxx="(2.0*u" x.get(i-1,j="" x.get(i+1,j))*hydhx="" double="" x.get(i,j-1="" x.get(i,j+1))*hxdhy="" f.set(i,j,uxx="" +="" uyy="(2.0*u" -="" sc*exp(u="" splicer.end(ex1.system.computeresidual="" }="" next="" driven="" cavity="" sidl="" identical="" example="" above="" difference="" in="" component="" implementation="" simply="" routine="" to="" tell="" the="" tops.solver="" that="" it="" is="" solving="" a="" multicomponent="" problem="" with="" four="" components="" void="" ex2::system_impl::initializeonce="" throw="" (="" {="" do-not-delete="" splicer.begin(ex2.system.initializeonce="" this=""><span style="color: rgb(255, 0, 0);"><span style="color: rgb(0, 0, 0);"><span style="font-family: monospace;"><br style="color: rgb(255, 0, 0);">
+
 
 
 
