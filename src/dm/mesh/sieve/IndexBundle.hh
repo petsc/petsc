@@ -91,6 +91,9 @@ namespace ALE {
     ALE::Point __orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
     ALE::PointType __getPointType(ALE::Point point);
     ALE::Obj<ALE::PreSieve> __computePointTypes();
+    void __postIntervalRequests(ALE::Obj<ALE::PreSieve> pointTypes, int__Point rentMarkers, MPI_Request *intervalRequests[], int **receivedIntervals[]);
+    void __sendIntervals(ALE::Obj<ALE::PreSieve> pointTypes, int__Point leaseMarkers, ALE::Obj<ALE::PreSieve> indices);
+    void __receiveIntervals(ALE::Obj<ALE::PreSieve> pointTypes, int__Point rentMarkers, MPI_Request *requests, int *recvIntervals[], ALE::Obj<ALE::PreSieve> indices);
   public:
     // constructors/destructors
     IndexBundle()                    : Coaster(MPI_COMM_SELF) {__reset();};
@@ -143,10 +146,13 @@ namespace ALE {
     int32_t                 getRemoteSize();
     Obj<PreSieve>           getGlobalIndices();
     int32_t                 getGlobalOwner(Point e);
-    Obj<PreSieve>           getGlobalFiberIndices(Point e);
+    Point                   getGlobalFiberInterval(Point support);
+    Obj<PreSieve>           getGlobalFiberIndices(Obj<Point_set> support);
     Obj<PreSieve>           getGlobalClosureIndices(Point e);
     Obj<Point_array>        getGlobalOrderedClosureIndices(Obj<Point_set> order);
-    
+    // Mapping methods
+    void                    computeMappingIndices(ALE::Obj<ALE::PreSieve> pointTypes, ALE::Obj<ALE::IndexBundle> target);
+
   };// class IndexBundle
 
 
