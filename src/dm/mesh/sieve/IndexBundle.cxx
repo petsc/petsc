@@ -260,6 +260,151 @@ namespace ALE {
   }
 
   #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::__postIntervalRequests"
+  void   IndexBundle::__postIntervalRequests(ALE::Obj<ALE::PreSieve> pointTypes, int__Point rentMarkers, MPI_Request *intervalRequests[], int **receivedIntervals[]) {
+    MPI_Request   *requests = new MPI_Request[this->commSize];
+    int          **recvIntervals = new int *[this->commSize];
+    PetscErrorCode ierr;
+
+    for(int p = 0; p < this->commSize; p++) {
+      int size;
+      if (p == this->commRank) {
+        size = 0;
+      } else {
+        ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(rentMarkers[p]);
+        size = rentedPoints->size()*2;
+      }
+      recvIntervals[p] = new int[size+1];
+
+      ierr = MPI_Irecv(recvIntervals[p], size, MPI_INT, p, 1, this->comm, &(requests[p]));
+      CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Irecv"));
+      PetscSynchronizedPrintf(this->comm, "[%d]  rented size %d for proc %d\n", this->commRank, size, p);
+    }
+    PetscSynchronizedFlush(this->comm);
+    *intervalRequests = requests;
+    *receivedIntervals = recvIntervals;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::__sendIntervals"
+  void   IndexBundle::__sendIntervals(ALE::Obj<ALE::PreSieve> pointTypes, int__Point leaseMarkers, ALE::Obj<ALE::PreSieve> indices) {
+    PetscErrorCode ierr;
+
+    for(int p = 0; p < this->commSize; p++) {
+      if (p == this->commRank) {
+        ierr = MPI_Send(&p, 0, MPI_INT, p, 1, this->comm);
+        CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Send"));
+        continue;
+      }
+      ALE::Obj<ALE::Point_set> leasedPoints = pointTypes->cone(leaseMarkers[p]);
+      int size = leasedPoints->size()*2;
+      int *intervals = new int[size+1];
+      int i = 0;
+
+      for(ALE::Point_set::iterator e_itor = leasedPoints->begin(); e_itor != leasedPoints->end(); e_itor++) {
+        ALE::Point interval = *indices->cone(*e_itor).begin();
+
+        intervals[i++] = interval.prefix;
+        intervals[i++] = interval.index;
+      }
+      ierr = MPI_Send(intervals, size, MPI_INT, p, 1, this->comm);
+      CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Send"));
+      delete intervals;
+      PetscSynchronizedPrintf(this->comm, "[%d]  leased size %d for proc %d\n", this->commRank, size, p);
+    }
+    PetscSynchronizedFlush(this->comm);
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::__receiveIntervals"
+  void   IndexBundle::__receiveIntervals(ALE::Obj<ALE::PreSieve> pointTypes, int__Point rentMarkers, MPI_Request *requests, int *recvIntervals[], ALE::Obj<ALE::PreSieve> indices) {
+    MPI_Status    *statuses = new MPI_Status[this->commSize];
+    PetscErrorCode ierr;
+
+    ierr = MPI_Waitall(this->commSize, requests, statuses); CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Waitall"));
+    for(int p = 0; p < this->commSize; p++) {
+      if (p == this->commRank) {
+        delete recvIntervals[p];
+        continue;
+      }
+      ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(-p-1, p));
+      int i = 0;
+
+      for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
+        ALE::Point interval(recvIntervals[p][i], recvIntervals[p][i+1]);
+        ALE::Point point = *e_itor;
+
+        indices->addCone(interval, point);
+        printf("[%d]Set indices of (%d, %d) to (%d, %d)\n", this->commRank, point.prefix, point.index, interval.prefix, interval.index);
+        i += 2;
+      }
+      delete recvIntervals[p];
+    }
+    delete requests;
+    delete statuses;
+    delete recvIntervals;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::computeMappingIndices"
+  /*
+    Creates a mapping (scatter) from this bundle to the target bundle
+
+    This currently uses global indices to interface with VecScatter, but could
+    use another communication structure with purely local indexing.
+  */
+  void   IndexBundle::computeMappingIndices(ALE::Obj<ALE::PreSieve> pointTypes, ALE::Obj<ALE::IndexBundle> target) {
+    // Make global source indices (local + leased)
+    ALE::Point_set sourceTypes;
+    sourceTypes.insert(ALE::Point(this->commRank, ALE::localPoint));
+    sourceTypes.insert(ALE::Point(this->commRank, ALE::leasedPoint));
+    ALE::Obj<ALE::Point_set> sourcePoints = pointTypes->cone(sourceTypes);
+    // Need to implment copy(), then use restrictBase()
+    ALE::Obj<ALE::PreSieve> sourceIndices(new ALE::PreSieve(this->comm));
+    for(ALE::Point_set::iterator e_itor = sourcePoints->begin(); e_itor != sourcePoints->end(); e_itor++) {
+      ALE::Point point = *e_itor;
+      ALE::Point_set cone = this->_globalIndices->cone(*e_itor);
+      sourceIndices->addCone(cone, point);
+    }
+    int sourceSize = this->getFiberDimension(sourcePoints);
+    PetscSynchronizedPrintf(this->comm, "[%d]Source size %d\n", this->commRank, sourceSize);
+    PetscSynchronizedFlush(this->comm);
+
+    // Make global target indices (local + rented)
+    ALE::Point_set targetTypes;
+    targetTypes.insert(ALE::Point(this->commRank, ALE::localPoint));
+    targetTypes.insert(ALE::Point(this->commRank, ALE::rentedPoint));
+    ALE::Obj<ALE::Point_set> targetPoints = pointTypes->cone(targetTypes);
+    // Need to implment copy(), then use restrictBase()
+    ALE::Obj<ALE::PreSieve> targetIndices(new ALE::PreSieve(this->comm));
+    for(ALE::Point_set::iterator e_itor = targetPoints->begin(); e_itor != targetPoints->end(); e_itor++) {
+      ALE::Point point = *e_itor;
+      ALE::Point_set cone = target->getGlobalIndices()->cone(*e_itor);
+      targetIndices->addCone(cone, point);
+    }
+    int targetSize = target->getFiberDimension(targetPoints);
+    PetscSynchronizedPrintf(this->comm, "[%d]Target size %d\n", this->commRank, targetSize);
+    PetscSynchronizedFlush(this->comm);
+
+    int__Point sourceRentMarkers, sourceLeaseMarkers;
+    MPI_Request *sourceRequests, *targetRequests;
+    int **sourceRecvIntervals, **targetRecvIntervals;
+
+    for(int p = 0; p < this->commSize; p++) {
+      sourceRentMarkers[p] = ALE::Point(-p-1, p);
+      sourceLeaseMarkers[p] = ALE::Point(p, p);
+    }
+    this->__postIntervalRequests(pointTypes, sourceRentMarkers, &sourceRequests, &sourceRecvIntervals);
+    this->__postIntervalRequests(pointTypes, sourceLeaseMarkers, &targetRequests, &targetRecvIntervals);
+    this->__sendIntervals(pointTypes, sourceLeaseMarkers, sourceIndices);
+    this->__sendIntervals(pointTypes, sourceRentMarkers, targetIndices);
+    this->__receiveIntervals(pointTypes, sourceRentMarkers, sourceRequests, sourceRecvIntervals, sourceIndices);
+    this->__receiveIntervals(pointTypes, sourceLeaseMarkers, targetRequests, targetRecvIntervals, targetIndices);
+    sourceIndices->view("Source indices");
+    targetIndices->view("Target indices");
+  }
+
+  #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::computeGlobalIndices"
   void   IndexBundle::computeGlobalIndices() {
     // Make local indices
@@ -394,6 +539,35 @@ namespace ALE {
   #define __FUNCT__ "IndexBundle::getGlobalIndices"
   ALE::Obj<ALE::PreSieve>   IndexBundle::getGlobalIndices() {
     return this->_globalIndices;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getGlobalFiberInterval"
+  Point   IndexBundle::getGlobalFiberInterval(Point support) {
+    ALE::Obj<ALE::Point_set> indices = this->_globalIndices->cone(support);
+    Point interval;
+
+    if(indices->size() == 0) {
+      interval = Point(-1,0);
+    } else {
+      interval = *(indices->begin());
+    }
+    return interval;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getGlobalFiberIndices"
+  ALE::Obj<ALE::PreSieve>   IndexBundle::getGlobalFiberIndices(Obj<Point_set> supports) {
+    supports = this->__validateChain(supports);
+    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
+
+    for(ALE::Point_set::iterator e_itor = supports->begin(); e_itor != supports->end(); e_itor++) {
+      ALE::Point point = *e_itor;
+      ALE::Point_set cone = this->_globalIndices->cone(point);
+
+      indices->addCone(cone, point);
+    }
+    return indices;
   }
 
   #undef  __FUNCT__

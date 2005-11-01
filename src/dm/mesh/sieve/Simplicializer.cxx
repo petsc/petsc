@@ -251,112 +251,6 @@ PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve, const char *n
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshCreateTopology"
-/*@C
-  MeshCreateTopology - Takes an adjacency description of a simplicial mesh FROM PROCESS 0
-                       and produces a partitioned, parallel, oriented Mesh with given topology.
-
-  Input Parameters:
-+ mesh - The PETSc mesh object
-. dim - The dimension of the mesh
-. numVertices - The number of vertices in the mesh
-. numElements - The number of (highest dimensional) elements in the mesh
-- elements - The indices of all vertices on each element
-
-  Level: developer
-
-.seealso MeshCreate(), MeshGetTopology(), MeshSetTopology()
-*/
-PetscErrorCode MeshCreateTopology(Mesh mesh, int dim, PetscInt numVertices, PetscInt numElements, PetscInt *elements)
-{
-  MPI_Comm comm;
-  PetscObjectGetComm((PetscObject) mesh, &comm);
-  ALE::Sieve    *topology = new ALE::Sieve(comm);
-  ALE::Sieve    *boundary = new ALE::Sieve(comm);
-  ALE::PreSieve *orientation = new ALE::PreSieve(comm);
-  PetscMPIInt    rank, size;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
-  PetscValidIntPointer(elements,4);
-  ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size); CHKERRQ(ierr);
-  topology->setVerbosity(11);
-  orientation->setVerbosity(11);
-  boundary->setVerbosity(11);
-  /* Create serial sieve */
-  if (rank == 0) {
-    ierr = BuildTopology(dim, numElements, elements, numVertices, topology, orientation);CHKERRQ(ierr);
-  }
-  topology->view("Serial Simplicializer topology");
-  orientation->view("Serial Simplicializer orientation");
-  ierr = MeshSetTopology(mesh, (void *) topology);CHKERRQ(ierr);
-  ierr = MeshSetOrientation(mesh, (void *) orientation);CHKERRQ(ierr);
-  /* Partition the topology and orientation */
-  ierr = ComputeSievePartition(topology, "Topology");CHKERRQ(ierr);
-  ierr = PartitionPreSieve(topology, "Topology", 0);CHKERRQ(ierr);
-  ierr = ComputePreSievePartition(orientation, topology->leaves(), "Orientation");CHKERRQ(ierr);
-  ierr = PartitionPreSieve(orientation, "Orientation", 0);CHKERRQ(ierr);
-  /* Add the trivial vertex orientation */
-  ALE::Obj<ALE::Point_set> roots = topology->depthStratum(0);
-  for(ALE::Point_set::iterator vertex_itor = roots->begin(); vertex_itor != roots->end(); vertex_itor++) {
-    ALE::Point v = *vertex_itor;
-    orientation->addCone(v, v);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshCreateBoundary"
-/*@C
-  MeshCreateBoundary - Takes a description of the mesh boundary ON PROCESS 0.
-
-  Input Parameters:
-+ mesh - The PETSc mesh object
-. numBoundaryVertices - The number of vertices in the mesh boundary
-- boundaryVertices - The indices of all boundary vertices
-
-  Level: developer
-
-.seealso MeshCreate(), MeshGetTopology(), MeshSetTopology()
-*/
-PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, PetscInt *boundaryVertices)
-{
-  MPI_Comm comm;
-  PetscObjectGetComm((PetscObject) mesh, &comm);
-  ALE::Sieve    *boundary = new ALE::Sieve(comm);
-  ALE::Sieve    *topology;
-  PetscInt       numElements;
-  PetscMPIInt    rank;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
-  PetscValidIntPointer(boundaryVertices,3);
-  ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  numElements = topology->heightStratum(0).size();
-  boundary->setVerbosity(11);
-  /* Create boundary */
-  if (rank == 0) {
-    ALE::Point_set cone;
-    ALE::Point boundaryPoint(0, 1);
-
-    /* Should also put in boundary edges */
-    for(int v = 0; v < numBoundaryVertices; v++) {
-      ALE::Point vertex = ALE::Point(0, boundaryVertices[v] + numElements);
-
-      cone.insert(vertex);
-    }
-    boundary->addCone(cone, boundaryPoint);
-    ierr = MeshSetBoundary(mesh, (void *) boundary);CHKERRQ(ierr);
-  }
-  boundary->view("Simplicializer boundary topology");
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "ExpandInterval"
 /* This is currently duplicated in ex33mesh.c */
 inline void ExpandInterval(ALE::Point interval, PetscInt indices[], PetscInt *indx)
@@ -460,8 +354,139 @@ PetscErrorCode assembleField(Vec b, ALE::Obj<ALE::IndexBundle> bundle, ALE::Obj<
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MeshCreateTopology"
+/*@C
+  MeshCreateTopology - Takes an adjacency description of a simplicial mesh FROM PROCESS 0
+                       and produces a partitioned, parallel, oriented Mesh with given topology.
+
+  Input Parameters:
++ mesh - The PETSc mesh object
+. dim - The dimension of the mesh
+. numVertices - The number of vertices in the mesh
+. numElements - The number of (highest dimensional) elements in the mesh
+- elements - The indices of all vertices on each element
+
+  Level: developer
+
+.seealso MeshCreate(), MeshGetTopology(), MeshSetTopology()
+*/
+PetscErrorCode MeshCreateTopology(Mesh mesh, int dim, PetscInt numVertices, PetscInt numElements, PetscInt *elements, PetscScalar coords[])
+{
+  MPI_Comm comm;
+  PetscObjectGetComm((PetscObject) mesh, &comm);
+  ALE::Sieve       *topology = new ALE::Sieve(comm);
+  ALE::Sieve       *boundary = new ALE::Sieve(comm);
+  ALE::PreSieve    *orientation = new ALE::PreSieve(comm);
+  ALE::IndexBundle *coordBundle = new ALE::IndexBundle(comm);
+  Vec               coordinates;
+  PetscMPIInt       rank, size;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
+  PetscValidIntPointer(elements,4);
+  ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size); CHKERRQ(ierr);
+  topology->setVerbosity(11);
+  orientation->setVerbosity(11);
+  boundary->setVerbosity(11);
+  /* Create serial sieve */
+  if (rank == 0) {
+    ierr = BuildTopology(dim, numElements, elements, numVertices, topology, orientation);CHKERRQ(ierr);
+  }
+  topology->view("Serial Simplicializer topology");
+  orientation->view("Serial Simplicializer orientation");
+  ierr = MeshSetTopology(mesh, (void *) topology);CHKERRQ(ierr);
+  ierr = MeshSetOrientation(mesh, (void *) orientation);CHKERRQ(ierr);
+  /* Create the initial coordinate bundle and storage */
+  coordBundle->setTopology(topology);
+  coordBundle->setFiberDimensionByDepth(0, dim);
+  coordBundle->computeOverlapIndices();
+  coordBundle->computeGlobalIndices();
+  coordBundle->getLock();  // lock the bundle so that the overlap indices do not change
+  ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
+  int localSize = coordBundle->getLocalSize();
+  int globalSize = coordBundle->getGlobalSize();
+  ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
+  ierr = VecSetSizes(coordinates, localSize, globalSize);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ALE::Obj<ALE::Point_set> vertices = topology->depthStratum(0);
+  for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
+    ALE::Point v = *vertex_itor;
+    printf("Sizeof fiber over vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
+    ierr = setFiberValues(coordinates, v, coordBundle, &coords[(v.index - numElements)*dim], INSERT_VALUES);CHKERRQ(ierr);
+  }
+  printf("Serial coordinates\n====================\n");
+  ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(coordinates);CHKERRQ(ierr);
+  ierr = VecView(coordinates, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MeshSetCoordinates(mesh, coordinates);CHKERRQ(ierr);
+  /* Partition the topology and orientation */
+  ierr = ComputeSievePartition(topology, "Topology");CHKERRQ(ierr);
+  ierr = PartitionPreSieve(topology, "Topology", 1);CHKERRQ(ierr);
+  ierr = ComputePreSievePartition(orientation, topology->leaves(), "Orientation");CHKERRQ(ierr);
+  ierr = PartitionPreSieve(orientation, "Orientation", 1);CHKERRQ(ierr);
+  /* Add the trivial vertex orientation */
+  ALE::Obj<ALE::Point_set> roots = topology->depthStratum(0);
+  for(ALE::Point_set::iterator vertex_itor = roots->begin(); vertex_itor != roots->end(); vertex_itor++) {
+    ALE::Point v = *vertex_itor;
+    orientation->addCone(v, v);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshCreateBoundary"
+/*@C
+  MeshCreateBoundary - Takes a description of the mesh boundary ON PROCESS 0.
+
+  Input Parameters:
++ mesh - The PETSc mesh object
+. numBoundaryVertices - The number of vertices in the mesh boundary
+- boundaryVertices - The indices of all boundary vertices
+
+  Level: developer
+
+.seealso MeshCreate(), MeshGetTopology(), MeshSetTopology()
+*/
+PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, PetscInt *boundaryVertices)
+{
+  MPI_Comm comm;
+  PetscObjectGetComm((PetscObject) mesh, &comm);
+  ALE::Sieve    *boundary = new ALE::Sieve(comm);
+  ALE::Sieve    *topology;
+  PetscInt       numElements;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
+  PetscValidIntPointer(boundaryVertices,3);
+  ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  numElements = topology->heightStratum(0).size();
+  boundary->setVerbosity(11);
+  /* Create boundary */
+  if (rank == 0) {
+    ALE::Point_set cone;
+    ALE::Point boundaryPoint(0, 1);
+
+    /* Should also put in boundary edges */
+    for(int v = 0; v < numBoundaryVertices; v++) {
+      ALE::Point vertex = ALE::Point(0, boundaryVertices[v] + numElements);
+
+      cone.insert(vertex);
+    }
+    boundary->addCone(cone, boundaryPoint);
+    ierr = MeshSetBoundary(mesh, (void *) boundary);CHKERRQ(ierr);
+  }
+  boundary->view("Simplicializer boundary topology");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MeshCreateCoordinates"
-PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
+PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscScalar coords[])
 {
   ALE::IndexBundle      *coordBundle;
   ALE::Sieve              *topology;
@@ -523,18 +548,12 @@ PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscReal coords[])
     printf(" %d\n", ghostIndices[g]);
   }
   printf("\n");
-  // Create a global ghosted vector to store a field
+  // NO: Create a global ghosted vector to store a field
   ierr = VecCreateGhostBlock(comm,1,localSize,globalSize,ghostSize,ghostIndices,&coordinates);CHKERRQ(ierr);
-  /* Set coordinates */
+  // Create a scatter from original coordinates to partitioned storage
+  // Set local coordinates
   numElements = topology->heightStratum(0).size();
   vertices = topology->depthStratum(0);
-  /* Print shit */
-  for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
-    ALE::Point v = *vertex_itor;
-    ostringstream label;
-    label << "Overlap owners of vertex (" << v.prefix << "," << v.index << ")" << std::endl;
-    coordBundle->getOverlapOwners(v)->view(label.str().c_str());
-  }
   for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
     ALE::Point v = *vertex_itor;
     printf("Sizeof fiber over vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
@@ -683,8 +702,17 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, FILE *f)
   numVertices = vertexBundle.getGlobalSize();
   fprintf(f, "POINTS %d double\n", numVertices);
   if (rank == 0) {
-    for(ALE::Point_set::iterator v_itor = vertices.begin(); v_itor != vertices.end(); v_itor++) {
-      ierr = restrictField(coordBundle, orientation, coords, *v_itor, &array);CHKERRQ(ierr);
+    ALE::Obj<ALE::PreSieve> globalIndices = coordBundle->getGlobalIndices();
+
+    for(int i = 0; i < vertexBundle.getLocalSize(); i++) {
+      ALE::Point index(i*dim, dim);
+      ALE::Obj<ALE::Point_set> support = globalIndices->support(index);
+      if (!support->size()) {
+        SETERRQ2(PETSC_ERR_PLIB, "Empty support for index (%d, %d)", index.prefix, index.index);
+      }
+      ALE::Point vertex = *support->begin();
+
+      ierr = restrictField(coordBundle, orientation, coords, vertex, &array);CHKERRQ(ierr);
       for(int d = 0; d < dim; d++) {
         if (d > 0) fprintf(f, " ");
         fprintf(f, "%g", array[d]);
@@ -770,8 +798,8 @@ PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
       ierr = PetscFPrintf(comm, f, "%d ", corners);CHKERRQ(ierr);
       ALE::Point_set cone = topology->nCone(*e_itor, dim);
       for(ALE::Point_set::iterator c_itor = cone.begin(); c_itor != cone.end(); c_itor++) {
-        //FIX ALE::Point index = *vertexBundle.getGlobalFiberIndices(*c_itor, 0)->cap().begin();
-        ALE::Point index;
+        ALE::Point index = vertexBundle.getGlobalFiberInterval(*c_itor);
+
         ierr = PetscFPrintf(comm, f, " %d", index.prefix);CHKERRQ(ierr);
       }
       ierr = PetscFPrintf(comm, f, "\n");CHKERRQ(ierr);
@@ -801,8 +829,8 @@ PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
     for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
       ALE::Point_set cone = topology->nCone(*e_itor, dim);
       for(ALE::Point_set::iterator c_itor = cone.begin(); c_itor != cone.end(); c_itor++) {
-        //FIX ALE::Point index = *vertexBundle.getGlobalFiberIndices(*c_itor, 0)->cap().begin();
-        ALE::Point index;
+        ALE::Point index = vertexBundle.getGlobalFiberInterval(*c_itor);
+
         array[offset++] = index.prefix;
       }
     }
