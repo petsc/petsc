@@ -484,9 +484,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinates(Mesh, Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetSpaceFootprint(Mesh, void**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetSpaceFootprint(Mesh, void*);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateTopology(Mesh, int, PetscInt, PetscInt, PetscInt *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateTopology(Mesh, int, PetscInt, PetscInt, PetscInt *, PetscScalar []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateBoundary(Mesh, PetscInt, PetscInt *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateCoordinates(Mesh, PetscReal []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateCoordinates(Mesh, PetscScalar []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetDimension(Mesh, PetscInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetEmbeddingDimension(Mesh, PetscInt *);
 
