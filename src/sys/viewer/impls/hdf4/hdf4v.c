@@ -11,7 +11,7 @@
 typedef struct {
  int                 sd_id;
  char                *filename;
- PetscViewerFileType btype;
+ PetscFileMode btype;
 } PetscViewer_HDF4;
 
 #undef __FUNCT__  
@@ -35,8 +35,8 @@ PetscErrorCode PetscViewerDestroy_HDF4(PetscViewer v)
 
 EXTERN_C_BEGIN 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerSetFileType_HDF4" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFileType_HDF4(PetscViewer viewer, PetscViewerFileType type)
+#define __FUNCT__ "PetscViewerFileSetType_HDF4" 
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetType_HDF4(PetscViewer viewer, PetscFileMode type)
 {
  PetscViewer_HDF4 *vhdf4 = (PetscViewer_HDF4 *)viewer->data;
  
@@ -49,8 +49,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerSetFilename_HDF4" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_HDF4(PetscViewer viewer,const char name[])
+#define __FUNCT__ "PetscViewerFileSetName_HDF4" 
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_HDF4(PetscViewer viewer,const char name[])
 {
  PetscErrorCode        ierr;
  int                   rank;
@@ -60,17 +60,17 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_HDF4(PetscViewer viewer,co
  PetscFunctionBegin;
 
  switch (vhdf4->btype) {
- case PETSC_FILE_RDONLY:
+ case FILE_MODE_READ:
    acc = DFACC_READ;
    break;
- case PETSC_FILE_WRONLY:
+ case FILE_MODE_WRITE:
    acc = DFACC_WRITE;
  break;
- case PETSC_FILE_CREATE:
+ case FILE_MODE_WRITE:
    acc = DFACC_CREATE;
    break;
  default:
-   SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerSetFileType() before PetscViewerSetFilename()");
+   SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerFileSetType() before PetscViewerFileSetName()");
  }
 
  ierr = MPI_Comm_rank(viewer->comm,&rank);CE;
@@ -100,14 +100,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_HDF4(PetscViewer v)
  v->ops->destroy    = PetscViewerDestroy_HDF4;
  v->ops->flush      = 0;
  v->iformat         = 0;
- vhdf4->btype       = (PetscViewerFileType) -1; 
+ vhdf4->btype       = (PetscFileMode) -1; 
  vhdf4->filename    = 0;
  vhdf4->sd_id       = -1;
  
- ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerSetFilename_C","PetscViewerSetFilename_HDF4",
-                                           PetscViewerSetFilename_HDF4);CE;
- ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerSetFileType_C","PetscViewerSetFileType_HDF4",
-                                           PetscViewerSetFileType_HDF4);CE;
+ ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetName_C","PetscViewerFileSetName_HDF4",
+                                           PetscViewerFileSetName_HDF4);CE;
+ ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetType_C","PetscViewerFileSetType_HDF4",
+                                           PetscViewerFileSetType_HDF4);CE;
  PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -115,15 +115,15 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerHDF4Open" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF4Open(MPI_Comm comm, const char *name, PetscViewerFileType type, PetscViewer *hdf4v)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF4Open(MPI_Comm comm, const char *name, PetscFileMode type, PetscViewer *hdf4v)
 {
  PetscErrorCode ierr;
  
  PetscFunctionBegin;
  ierr = PetscViewerCreate(comm,hdf4v);CE;
  ierr = PetscViewerSetType(*hdf4v,PETSC_VIEWER_HDF4);CE;
- ierr = PetscViewerSetFileType(*hdf4v, type);CE;
- ierr = PetscViewerSetFilename(*hdf4v, name);CE;
+ ierr = PetscViewerFileSetType(*hdf4v, type);CE;
+ ierr = PetscViewerFileSetName(*hdf4v, name);CE;
  PetscFunctionReturn(0);
 }
 

@@ -106,9 +106,9 @@ class Configure(config.base.Configure):
     else:
       if os.path.isdir(os.path.join(petscDir, 'bmake')):
         for d in os.listdir(os.path.join(petscDir, 'bmake')):
-          if not os.path.isdir(d):
+          if not os.path.isdir(os.path.join(petscDir, 'bmake', d)):
             continue
-          if d in ['common', 'docsonly']:
+          if d in ['common', 'docsonly', 'SCCS']:
             continue
           yield d
     return
@@ -238,13 +238,13 @@ class Configure(config.base.Configure):
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.compilers.LIBS
     self.libraries.pushLanguage(self.languages.clanguage)
-    found   = (self.libraries.check(libraries, 'PetscInitializeNoArguments', otherLibs = self.otherLibs, prototype = 'int PetscInitializeNoArguments(void);') and
-               self.libraries.check(libraries, 'VecDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Vec *Vec;int VecDestroy(Vec);', call = 'VecDestroy((Vec) 0)') and
-               self.libraries.check(libraries, 'MatDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Mat *Mat;int MatDestroy(Mat);', call = 'MatDestroy((Mat) 0)') and
-               self.libraries.check(libraries, 'DADestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_DA *DA;int DADestroy(DA);', call = 'DADestroy((DA) 0)') and
-               self.libraries.check(libraries, 'KSPDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_KSP *KSP;int KSPDestroy(KSP);', call = 'KSPDestroy((KSP) 0)') and
-               self.libraries.check(libraries, 'SNESDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_SNES *SNES;int SNESDestroy(SNES);', call = 'SNESDestroy((SNES) 0)') and
-               self.libraries.check(libraries, 'TSDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_TS *TS;int TSDestroy(TS);', call = 'TSDestroy((TS) 0)'))
+    found   = (self.libraries.check(libraries, 'PetscInitializeNoArguments', otherLibs = self.otherLibs, prototype = 'int PetscInitializeNoArguments(void);', cxxMangle = not self.languages.cSupport) and
+               self.libraries.check(libraries, 'VecDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Vec *Vec;int VecDestroy(Vec);', call = 'VecDestroy((Vec) 0)', cxxMangle = not self.languages.cSupport) and
+               self.libraries.check(libraries, 'MatDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_Mat *Mat;int MatDestroy(Mat);', call = 'MatDestroy((Mat) 0)', cxxMangle = not self.languages.cSupport) and
+               self.libraries.check(libraries, 'DADestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_DA *DA;int DADestroy(DA);', call = 'DADestroy((DA) 0)', cxxMangle = not self.languages.cSupport) and
+               self.libraries.check(libraries, 'KSPDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_KSP *KSP;int KSPDestroy(KSP);', call = 'KSPDestroy((KSP) 0)', cxxMangle = not self.languages.cSupport) and
+               self.libraries.check(libraries, 'SNESDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_SNES *SNES;int SNESDestroy(SNES);', call = 'SNESDestroy((SNES) 0)', cxxMangle = not self.languages.cSupport) and
+               self.libraries.check(libraries, 'TSDestroy', otherLibs = self.otherLibs, prototype = 'typedef struct _p_TS *TS;int TSDestroy(TS);', call = 'TSDestroy((TS) 0)', cxxMangle = not self.languages.cSupport))
     self.libraries.popLanguage()
     self.compilers.LIBS = oldLibs
     return found
@@ -255,7 +255,9 @@ class Configure(config.base.Configure):
     self.compilers.CPPFLAGS += ' '.join([self.headers.getIncludeArgument(inc) for inc in includeDir])
     if self.otherIncludes:
       self.compilers.CPPFLAGS += ' '+self.otherIncludes
+    self.pushLanguage(self.languages.clanguage)
     found = self.checkPreprocess('#include <petsc.h>\n')
+    self.popLanguage()
     self.compilers.CPPFLAGS = oldFlags
     return found
 
@@ -310,7 +312,10 @@ class Configure(config.base.Configure):
       # on Apple if you list the MPI libraries again you will generate multiply defined errors 
       # since they are already copied into the PETSc dynamic library.
       self.setOtherLibs([])
-    return self.libraries.checkShared('#include <petsc.h>\n', 'PetscInitialize', 'PetscInitialized', 'PetscFinalize', checkLink = self.checkPETScLink, libraries = libraries, initArgs = '&argc, &argv, 0, 0', boolType = 'PetscTruth', executor = self.mpi.mpirun)
+    self.pushLanguage(self.languages.clanguage)
+    isShared = self.libraries.checkShared('#include <petsc.h>\n', 'PetscInitialize', 'PetscInitialized', 'PetscFinalize', checkLink = self.checkPETScLink, libraries = libraries, initArgs = '&argc, &argv, 0, 0', boolType = 'PetscTruth', executor = self.mpi.mpirun)
+    self.popLanguage()
+    return isShared
 
   def configureVersion(self):
     '''Determine the PETSc version'''

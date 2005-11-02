@@ -20,7 +20,7 @@ void PETSC_STDCALL petscviewersetfilename_(PetscViewer *viewer,CHAR name PETSC_M
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   FIXCHAR(name,len,c1);
-  *ierr = PetscViewerSetFilename(v,c1);
+  *ierr = PetscViewerFileSetName(v,c1);
   FREECHAR(name,c1);
 }
 

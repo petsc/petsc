@@ -48,7 +48,7 @@ int main(int argc,char **args)
   /* input matrix C */
   if (flg_loadmat){
     /* Open binary file. */
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
 
     /* Load a baij matrix, then destroy the viewer. */
     if (size == 1){

@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 #
-# Usage bk2darcs bk-repo darcs-repo
+# Usage bk2darcs local-bk-repo local-darcs-repo
 #
 #  options:
 #    -i : create/initialize a new darcs repo
+#  example:
+#    bk2darcs.py /sandbox/petsc/petsc-dev-bk /sandbox/petsc/petsc-dev-darcs
 #
-# bk-repo is a valid bk repository
-# darcs-repo is a new location
+# local-bk-repo is a valid bk repository
+# local-darcs-repo is a new location
 
 import sys
 import os
@@ -20,7 +22,9 @@ def main():
   arg_len = len(sys.argv)
   if arg_len != 3:
     print 'Error Insufficient arguments.'
-    print 'Usage:', sys.argv[0], '[-i] bk-repo darcs-repo'
+    print 'Usage:', sys.argv[0], '[-i] local-bk-repo local-darcs-repo'
+    print 'Example:'
+    print '  bk2darcs.py /sandbox/petsc/petsc-dev-bk /sandbox/petsc/petsc-dev-darcs'
     sys.exit()
   bk_repo = sys.argv[1]
   darcs_repo= sys.argv[2]

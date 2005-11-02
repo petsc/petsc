@@ -786,7 +786,7 @@ int GetLocalOrdering(GRID *grid)
    if (!exists) { /* try uns3d.msh as the file name */
       ierr = PetscStrcpy(mesh_file,"uns3d.msh");CHKERRQ(ierr);
    }
-   ierr = PetscBinaryOpen(mesh_file,PETSC_FILE_RDONLY,&fdes);CHKERRQ(ierr);
+   ierr = PetscBinaryOpen(mesh_file,FILE_MODE_READ,&fdes);CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp,grid_param,PETSC_INT);CHKERRQ(ierr);
   grid->ncell = tmp[0];
@@ -2007,7 +2007,7 @@ int FieldOutput(GRID *grid, int timeStep)
     nnbound = grid->nnbound;
     nsnode = grid->nsnode;
     nnfacet = grid->nnfacet;
-    ierr = PetscBinaryOpen("uns3d.msh",PETSC_FILE_RDONLY, &fdes); CHKERRQ(ierr);
+    ierr = PetscBinaryOpen("uns3d.msh",FILE_MODE_READ, &fdes); CHKERRQ(ierr);
     ierr = PetscBinarySeek(fdes,solidBndPos,PETSC_BINARY_SEEK_SET,&currentPos);CHKERRQ(ierr);
     
     ICALLOC(nnbound,   &nntet);
@@ -2425,7 +2425,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
    /*printf("Restart file name is %s\n", fileName);*/
    ierr = VecGetArray(qnodeLoc, &qnode); CHKERRQ(ierr);
    printf("On Processor %d, qnode[%d] = %g\n",rank,rstart,qnode[0]);
-   ierr = PetscBinaryOpen(fileName,PETSC_FILE_CREATE,&fdes); CHKERRQ(ierr);
+   ierr = PetscBinaryOpen(fileName,FILE_MODE_WRITE,&fdes); CHKERRQ(ierr);
    ierr = MPI_Barrier(MPI_COMM_WORLD);
    ierr = PetscBinarySeek(fdes,bs*rstart*PETSC_BINARY_SCALAR_SIZE,PETSC_BINARY_SEEK_SET,&startPos);CHKERRQ(ierr);
    ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLoc,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
@@ -2449,7 +2449,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
    else
      sprintf(fileName,"flow%d.bin",timeStep);
    printf("Restart file name is %s\n", fileName); 
-   ierr = PetscBinaryOpen(fileName,PETSC_FILE_CREATE,&fdes); CHKERRQ(ierr);   
+   ierr = PetscBinaryOpen(fileName,FILE_MODE_WRITE,&fdes); CHKERRQ(ierr);   
    ierr = PetscBinaryWrite(fdes,qnode,bs*nnodesLoc,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
    /* Write the solution vector in vtk (Visualization Toolkit) format*/
    ierr = PetscOptionsHasName(PETSC_NULL,"-vtk",&flg_vtk); CHKERRQ(ierr);
@@ -2566,7 +2566,7 @@ int ReadRestartFile(GRID *grid)
   ierr = VecCreateSeq(MPI_COMM_SELF,bs*nnodesLoc,&qnodeLoc);
   if (rank == 0) {
    ierr = VecGetArray(qnodeLoc, &qnode);
-   ierr = PetscBinaryOpen("restart.bin",PETSC_FILE_RDONLY,&fdes); CHKERRQ(ierr);   
+   ierr = PetscBinaryOpen("restart.bin",FILE_MODE_READ,&fdes); CHKERRQ(ierr);   
    ierr = PetscBinaryRead(fdes,qnode,bs*nnodesLoc,PETSC_SCALAR);CHKERRQ(ierr);
    ierr = VecRestoreArray(qnodeLoc, &qnode);
   }

@@ -185,66 +185,21 @@ class Package(config.base.Configure):
 
   def downLoad(self):
     '''Downloads a package; using bk or ftp; opens it in the with-external-packages-dir directory'''
-    self.framework.log.write('Downloading '+self.name+'\n')
-    packages = self.petscdir.externalPackagesDir
-    
-    if hasattr(self.sourceControl, 'bk'):
-      for url in self.download:
-        if url.startswith('bk://'):
-          failedmessage = 'Unable to bk clone '+self.package+'\n'+\
-                   'You may be off the network. Connect to the internet and run config/configure.py again \n'+\
-                   'or from the directory externalpackages try: \n bk clone '+url+' '+self.package+\
-                   ' if that succeeds then rerun config/configure.py'
-          try:
-            self.framework.log.write('Downloading it using "bk clone '+url+' '+os.path.join(packages,self.package)+'"\n')
-            (output, error, status) = config.base.Configure.executeShellCommand('bk clone '+url+' '+os.path.join(packages,self.downloadname))
-          except RuntimeError, e:
-            status = 1
-            output = str(e)
-            error  = ''
-          if status:
-            if output.find('ommand not found') >= 0:
-              raise RuntimeError('Unable to locate bk (Bitkeeper) to download packages; make sure bk is in your path')
-            elif output.find('Cannot resolve host') >= 0:
-              self.framework.log.write('Cannot bk clone:'+'\n'+output+'\n'+error+'\n')
-              raise RuntimeError(failedmessage)
-            else:
-              # Bitkeeper ports could be blocked
-              try:
-                (output, error, status) = config.base.Configure.executeShellCommand('bk clone '+url.replace('bk://', 'http://')+' '+os.path.join(packages,self.package))
-              except RuntimeError, e:
-                status = 1
-              if status:
-                self.framework.log.write('Cannot bk clone:'+'\n'+output+'\n'+error+'\n')
-                raise RuntimeError(failedmessage)
-          self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.package+' into '+self.getDir(0))
-          return
+    import install.retrieval
 
+    retriever = install.retrieval.Retriever(self.sourceControl)
+    retriever.setup()
+    failureMessage = []
+    self.framework.log.write('Downloading '+self.name+'\n')
     for url in self.download:
-      if url.startswith('http://') or url.startswith('ftp://'):      
-        import urllib
-        tarname   = self.name+'.tar'
-        tarnamegz = tarname+'.gz'
-        self.framework.log.write('Downloading '+url+' to '+os.path.join(packages,self.package)+'\n')
-        try:
-          urllib.urlretrieve(url, os.path.join(packages,tarnamegz ))
-        except Exception, e:
-          failedmessage = 'Unable to download '+self.package+'\n'+\
-                   'You may be off the network. Connect to the internet and run config/configure.py again \n'+\
-                   'or put in the directory externalpackages the uncompressed untared file obtained \nfrom '+url+'\n'
-          raise RuntimeError(failedmessage)
-        try:
-          config.base.Configure.executeShellCommand('cd '+packages+'; gunzip '+tarnamegz, log = self.framework.log)
-        except RuntimeError, e:
-          raise RuntimeError('Error unzipping '+tarname+': '+str(e))
-        try:
-          config.base.Configure.executeShellCommand('cd '+packages+'; tar -xf '+tarname, log = self.framework.log)
-        except RuntimeError, e:
-          raise RuntimeError('Error doing tar -xf '+tarname+': '+str(e))
-        os.unlink(os.path.join(packages, tarname))
-        self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.package+' into '+self.getDir(0))
+      try:
+        retriever.genericRetrieve(url, self.petscdir.externalPackagesDir, self.downloadname)
+        self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
         return
-    raise RuntimeError('Unable to download '+self.package+' from locations '+str(self.download)) 
+      except RuntimeError, e:
+        failureMessage.append('  Failed to download '+url+'\n'+str(e))
+    failureMessage = 'Unable to download '+self.package+' from locations '+str(self.download)+'\n'+'\n'.join(failureMessage)
+    raise RuntimeError(failureMessage)
 
   # Check is the dir matches something in the excludename list
   def matchExcludeDir(self,dir):

@@ -240,6 +240,8 @@ PetscErrorCode MatAssemblyEnd_SeqCSRPERM(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
+#include "src/inline/dot.h"
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqCSRPERM"
 PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
@@ -248,7 +250,7 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
   PetscScalar    *x,*y,*aa;
   PetscErrorCode ierr;
   PetscInt       m=A->m,*aj,*ai;
-#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTCSRPERM)
+#if !(defined(PETSC_USE_FORTRAN_KERNEL_MULTCSRPERM) && defined(notworking))
   PetscInt       i,j;
 #endif
 
@@ -288,7 +290,7 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
   xgroup = csrperm->xgroup;
   nzgroup = csrperm->nzgroup;
   
-#if defined(PETSC_USE_FORTRAN_KERNEL_MULTCSRPERM)
+#if defined(PETSC_USE_FORTRAN_KERNEL_MULTCSRPERM) && defined(notworking)
   fortranmultcsrperm_(&m,x,ii,aj,aa,y);
 #else
 

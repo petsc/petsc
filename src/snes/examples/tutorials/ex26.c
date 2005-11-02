@@ -205,7 +205,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   {
     PetscViewer view_out;
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"psi.binary",PETSC_FILE_CREATE,&view_out);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"psi.binary",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
     ierr = VecView(user.psi,view_out);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(view_out);CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"psi.out",&view_out);CHKERRQ(ierr);

@@ -26,6 +26,9 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
+    if hasattr(self.setCompilers, 'FC'):
+      raise RuntimeError('SCALAPACK requires Fortran for automatic installation')
+
     # Get the SCALAPACK directories
     scalapackDir = self.getDir()
     installDir   = os.path.join(scalapackDir, self.arch.arch)

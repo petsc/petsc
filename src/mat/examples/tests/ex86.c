@@ -16,13 +16,13 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*) 0,0);
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,infile,PETSC_FILE_RDONLY,&in);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,infile,FILE_MODE_READ,&in);CHKERRQ(ierr);
   ierr = MatLoad(in,MATSEQAIJ,&inmat);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(in);CHKERRQ(ierr);
 
   ierr = MatMerge(PETSC_COMM_WORLD,inmat,PETSC_DECIDE,MAT_INITIAL_MATRIX,&outmat);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,outfile,PETSC_FILE_CREATE,&out);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,outfile,FILE_MODE_WRITE,&out);CHKERRQ(ierr);
   ierr = MatView(outmat,out);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(out);CHKERRQ(ierr);
   ierr = MatDestroy(outmat);CHKERRQ(ierr);

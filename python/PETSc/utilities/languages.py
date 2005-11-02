@@ -62,7 +62,10 @@ class Configure(config.base.Configure):
     if self.clanguage == 'C' and not self.framework.argDB['with-c++-support'] and not self.framework.argDB['download-prometheus'] and not self.framework.argDB['download-hypre']:
       self.framework.argDB['with-cxx'] = '0'
     if self.clanguage == 'Cxx' and self.framework.argDB['with-c-support']:
+      self.cSupport = 1
       self.addDefine('USE_EXTERN_CXX', '1')
+    else:
+      self.cSupport = 0
     self.framework.logPrint('C language is '+str(self.clanguage))
     self.addDefine('CLANGUAGE_'+self.clanguage.upper(),'1')
     self.framework.require('config.setCompilers', None).mainLanguage = self.clanguage

@@ -1393,6 +1393,9 @@ can also install additional packages that are used by the TOPS packages."""
 	result = buttonbox(message=message1, title="TOPS Software Installer", choices = ["Cancel", "Continue"],fontSize = 20,message2=message2)
         if result == "Cancel": sys.exit()
 
+	result = buttonbox(message='This preview version of the installer uses\nthe nightly snapshot of the development\nversion of PETSc.\n\nShould you encounter problems please send email\nto petsc-maint@mcs.anl.gov with all output\n', title="TOPS Software Installer", choices = ["Cancel", "Continue"])
+        if result == "Cancel": sys.exit()
+
         options = []
         packages = ["hypre (parallel preconditioners)","SuperLU_dist (parallel sparse direct solver)", "SuperLU","Sundials (parallel ODE integrators)"]
         reply = multchoicebox("Pick the optional TOPS packages to install. PETSc will \nalways be installed. \n\nNote: many of these packages are not portable\nfor all machines, hence select only the packages you truly need.",title, packages)
@@ -1415,6 +1418,7 @@ can also install additional packages that are used by the TOPS packages."""
 
         reply = ynbox('Compile libraries so they may be used from Fortran?',title)
         if reply: args.append( '--with-fortran=1')
+        else: args.append('--with-fc=0')
 
         reply = ynbox('Compile libraries so they may be used from Python?',title)
         if reply: 
@@ -1494,7 +1498,7 @@ can also install additional packages that are used by the TOPS packages."""
             commands.getoutput('cd '+reply+'; gunzip petsc.tar.gz ; tar xf petsc.tar')
           except RuntimeError, e:
             raise RuntimeError('Error unzipping petsc.tar.gz'+str(e))
-          os.unlink(os.path.join(packages, 'petsc.tar'))
+          os.unlink(os.path.join(reply, 'petsc.tar'))
 
 
         args.append('--with-shared=1')

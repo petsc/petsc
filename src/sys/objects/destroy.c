@@ -10,9 +10,14 @@ struct _p_Object {
   PETSCHEADER(int);
 };
 
-PetscErrorCode PetscObjectDestroy_Private(PetscObject obj)
+PetscErrorCode PetscObjectDestroy_PetscObject(PetscObject obj)
 {
-  return 0;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  if (--obj->refct > 0) PetscFunctionReturn(0);
+  ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -28,7 +33,10 @@ PetscErrorCode PetscObjectDestroy_Private(PetscObject obj)
    Output Parameter:
 .  obj - The object
 
-   Level: beginner
+   Level: developer
+
+   Notes: This is a template intended as a starting point to cut and paste with PetscObjectDestroy_PetscObject()
+          to make new object classes.
 
     Concepts: destroying object
     Concepts: freeing object
@@ -46,7 +54,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(o,_p_PetscObject,-1,PETSC_OBJECT_COOKIE,0,"PetscObject",comm,PetscObjectDestroy_Private,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(o,_p_PetscObject,-1,PETSC_OBJECT_COOKIE,0,"PetscObject",comm,PetscObjectDestroy_PetscObject,0);CHKERRQ(ierr);
   /* records not yet defined in PetscObject 
   o->data        = 0;
   o->setupcalled = 0;

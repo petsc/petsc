@@ -34,12 +34,12 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRQ(ierr);
 
   /* Read matrix and RHS */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatLoad(fd,MATMPIAIJ,&A);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   /* Read the matrix again as a sequential matrix */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&B);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
   

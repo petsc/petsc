@@ -34,14 +34,14 @@ $                xnew(:) = x;    % reshape one dimensional vector back to two di
 
 .seealso:  PETSC_VIEWER_MATLAB_(),PETSC_VIEWER_MATLAB_SELF(), PETSC_VIEWER_MATLAB_WORLD(),PetscViewerCreate(),
            PetscViewerMatlabOpen(), VecView(), DAView(), PetscViewerMatlabPutArray(), PETSC_VIEWER_BINARY,
-           PETSC_ASCII_VIEWER, DAView(), PetscViewerSetFilename(), PetscViewerSetFileType()
+           PETSC_ASCII_VIEWER, DAView(), PetscViewerFileSetName(), PetscViewerFileSetType()
 
 M*/
 
 typedef struct {
   MATFile             *ep;
   PetscMPIInt         rank;
-  PetscViewerFileType btype;
+  PetscFileMode btype;
 } PetscViewer_Matlab;
 
 #undef __FUNCT__  
@@ -132,8 +132,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabGetArray(PetscViewer mfile,int m
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerSetFileType_Matlab" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFileType_Matlab(PetscViewer viewer,PetscViewerFileType type)
+#define __FUNCT__ "PetscViewerFileSetType_Matlab" 
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetType_Matlab(PetscViewer viewer,PetscFileMode type)
 {
   PetscViewer_Matlab *vmatlab = (PetscViewer_Matlab*)viewer->data;
 
@@ -148,22 +148,22 @@ EXTERN_C_END
 */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerSetFilename_Matlab" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_Matlab(PetscViewer viewer,const char name[])
+#define __FUNCT__ "PetscViewerFileSetName_Matlab" 
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name[])
 {
   PetscViewer_Matlab  *vmatlab = (PetscViewer_Matlab*)viewer->data;
-  PetscViewerFileType type = vmatlab->btype;
+  PetscFileMode type = vmatlab->btype;
 
   PetscFunctionBegin;
-  if (type == (PetscViewerFileType) -1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerSetFileType() before PetscViewerSetFilename()");
+  if (type == (PetscFileMode) -1) {
+    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerFileSetType() before PetscViewerFileSetName()");
   }
 
   /* only first processor opens file */
   if (!vmatlab->rank){
-    if (type == PETSC_FILE_RDONLY){
+    if (type == FILE_MODE_READ){
       vmatlab->ep = matOpen(name,"r");
-    } else if (type == PETSC_FILE_CREATE || type == PETSC_FILE_WRONLY) {
+    } else if (type == FILE_MODE_WRITE || type == FILE_MODE_WRITE) {
       vmatlab->ep = matOpen(name,"w");
     } else {
       SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown file type");
@@ -197,12 +197,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Matlab(PetscViewer viewer)
   PetscFunctionBegin;
   ierr         = PetscNew(PetscViewer_Matlab,&e);CHKERRQ(ierr);
   ierr         = MPI_Comm_rank(viewer->comm,&e->rank);CHKERRQ(ierr);
-  e->btype     = (PetscViewerFileType)-1;
+  e->btype     = (PetscFileMode)-1;
   viewer->data = (void*) e;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerSetFilename_C","PetscViewerSetFilename_Matlab",
-                                     PetscViewerSetFilename_Matlab);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerSetFileType_C","PetscViewerSetFileType_Matlab",
-                                     PetscViewerSetFileType_Matlab);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C","PetscViewerFileSetName_Matlab",
+                                     PetscViewerFileSetName_Matlab);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetType_C","PetscViewerFileSetType_Matlab",
+                                     PetscViewerFileSetType_Matlab);CHKERRQ(ierr);
   viewer->ops->destroy = PetscViewerDestroy_Matlab;
   PetscFunctionReturn(0);
 }
@@ -219,9 +219,9 @@ EXTERN_C_END
 +  comm - MPI communicator
 .  name - name of file 
 -  type - type of file
-$    PETSC_FILE_CREATE - create new file for Matlab output
-$    PETSC_FILE_RDONLY - open existing file for Matlab input
-$    PETSC_FILE_WRONLY - open existing file for Matlab output
+$    FILE_MODE_WRITE - create new file for Matlab output
+$    FILE_MODE_READ - open existing file for Matlab input
+$    FILE_MODE_WRITE - open existing file for Matlab output
 
    Output Parameter:
 .  binv - PetscViewer for Matlab input/output to use with the specified file
@@ -242,15 +242,15 @@ $    PETSC_FILE_WRONLY - open existing file for Matlab output
 .seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabOpen(MPI_Comm comm,const char name[],PetscViewerFileType type,PetscViewer *binv)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabOpen(MPI_Comm comm,const char name[],PetscFileMode type,PetscViewer *binv)
 {
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,binv);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*binv,PETSC_VIEWER_MATLAB);CHKERRQ(ierr);
-  ierr = PetscViewerSetFileType(*binv,type);CHKERRQ(ierr);
-  ierr = PetscViewerSetFilename(*binv,name);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetType(*binv,type);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(*binv,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -304,7 +304,7 @@ PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_MATLAB_(MPI_Comm comm)
       ierr = PetscStrcpy(fname,"matlaboutput.mat");
       if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     }
-    ierr = PetscViewerMatlabOpen(comm,fname,PETSC_FILE_CREATE,&viewer); 
+    ierr = PetscViewerMatlabOpen(comm,fname,FILE_MODE_WRITE,&viewer); 
     if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
     if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," ");PetscFunctionReturn(0);}

@@ -208,7 +208,7 @@ static PetscErrorCode PetscDrawDestroy_PS(PetscDraw draw)
   ierr = PetscViewerASCIIPrintf(ps->ps_file,"\nshowpage\n");CHKERRQ(ierr);
   ierr = PetscOptionsHasName(draw->prefix,"-draw_ps_show",&show);CHKERRQ(ierr);
   if (show) {
-    ierr = PetscViewerGetFilename(ps->ps_file,&filename);CHKERRQ(ierr);    
+    ierr = PetscViewerFileGetName(ps->ps_file,&filename);CHKERRQ(ierr);    
     ierr = PetscStrcpy(par,"ghostview ");CHKERRQ(ierr);
     ierr = PetscStrcat(par,filename);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)    

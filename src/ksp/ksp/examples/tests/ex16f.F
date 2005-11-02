@@ -42,7 +42,7 @@
       
 ! Read in matrix and RHS
       call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
-      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,PETSC_FILE_RDONLY,            &
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,FILE_MODE_READ,            &
      &     fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f

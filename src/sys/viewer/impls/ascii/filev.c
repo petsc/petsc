@@ -1,19 +1,8 @@
 #define PETSC_DLL
 
-#include "src/sys/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
+#include "src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
 #include <stdarg.h>
-
-typedef struct {
-  FILE          *fd;
-  PetscFileMode mode;           /* The mode in which to open the file */
-  PetscInt      tab;            /* how many times text is tabbed in from left */
-  PetscInt      tab_store;      /* store tabs value while tabs are turned off */
-  PetscViewer   bviewer;        /* if PetscViewer is a singleton, this points to mother */
-  PetscViewer   sviewer;        /* if PetscViewer has a singleton, this points to singleton */
-  char          *filename;
-  PetscTruth    storecompressed; 
-} PetscViewer_ASCII;
 
 /* ----------------------------------------------------------------------*/
 #undef __FUNCT__  
@@ -23,6 +12,8 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   PetscMPIInt       rank;
   PetscErrorCode    ierr;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
+  PetscViewerLink   *vlink;
+  PetscTruth        flg;
 
   PetscFunctionBegin;
   if (vascii->sviewer) {
@@ -49,6 +40,28 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   }
   ierr = PetscStrfree(vascii->filename);CHKERRQ(ierr);
   ierr = PetscFree(vascii);CHKERRQ(ierr);
+
+  /* remove the viewer from the list in the MPI Communicator */
+  if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelViewer,&Petsc_Viewer_keyval,(void*)0);CHKERRQ(ierr);
+  }
+
+  ierr = MPI_Attr_get(viewer->comm,Petsc_Viewer_keyval,(void**)&vlink,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+  if (flg) {
+    if (vlink->viewer == viewer) {
+      ierr = MPI_Attr_put(viewer->comm,Petsc_Viewer_keyval,vlink->next);CHKERRQ(ierr);
+      ierr = PetscFree(vlink);CHKERRQ(ierr);
+    } else {
+      while (vlink->next) {
+        if (vlink->next->viewer == viewer) {
+          PetscViewerLink *nv = vlink->next;
+          vlink->next = vlink->next->next;
+          ierr = PetscFree(nv);CHKERRQ(ierr);
+        }
+        vlink = vlink->next;
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -125,14 +138,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIGetPointer(PetscViewer viewer,FIL
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerASCIISetMode"
 /*@C
-    PetscViewerASCIISetMode - Sets the mode in which to open the file.
+    PetscViewerFileSetMode - Sets the mode in which to open the file.
 
     Not Collective
 
-+   viewer - viewer context, obtained from PetscViewerASCIIOpen()
++   viewer - viewer context, obtained from PetscViewerCreate()
 -   mode   - The file mode
 
     Level: intermediate
@@ -142,9 +153,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIGetPointer(PetscViewer viewer,FIL
 
 .keywords: Viewer, file, get, pointer
 
-.seealso: PetscViewerASCIIOpen()
+.seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISetMode(PetscViewer viewer, PetscFileMode mode)
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerFileSetMode_ASCII"
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode mode)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
@@ -404,9 +418,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer viewer,const c
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerSetFilename" 
+#define __FUNCT__ "PetscViewerFileSetName" 
 /*@C
-     PetscViewerSetFilename - Sets the name of the file the PetscViewer uses.
+     PetscViewerFileSetName - Sets the name of the file the PetscViewer uses.
 
     Collective on PetscViewer
 
@@ -420,25 +434,24 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer viewer,const c
           PetscViewerASCIIGetPointer(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename(PetscViewer viewer,const char name[])
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName(PetscViewer viewer,const char name[])
 {
   PetscErrorCode ierr,(*f)(PetscViewer,const char[]);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   PetscValidCharPointer(name,2);
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerSetFilename_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerFileSetName_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,name);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerGetFilename" 
+#define __FUNCT__ "PetscViewerFileGetName" 
 /*@C
-     PetscViewerGetFilename - Gets the name of the file the PetscViewer uses.
+     PetscViewerFileGetName - Gets the name of the file the PetscViewer uses.
 
     Not Collective
 
@@ -450,16 +463,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename(PetscViewer viewer,const c
 
     Level: advanced
 
-.seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PetscViewerSetFilename()
+.seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PetscViewerFileSetName()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFilename(PetscViewer viewer,char **name)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileGetName(PetscViewer viewer,char **name)
 {
   PetscErrorCode ierr,(*f)(PetscViewer,char **);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerGetFilename_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerFileGetName_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,name);CHKERRQ(ierr);
   }
@@ -468,8 +481,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFilename(PetscViewer viewer,char **
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerGetFilename_ASCII" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFilename_ASCII(PetscViewer viewer,char **name)
+#define __FUNCT__ "PetscViewerFileGetName_ASCII" 
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileGetName_ASCII(PetscViewer viewer,char **name)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
 
@@ -479,10 +492,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFilename_ASCII(PetscViewer viewer,c
 }
 EXTERN_C_END
 
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerSetFilename_ASCII" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_ASCII(PetscViewer viewer,const char name[])
+#define __FUNCT__ "PetscViewerFileSetName_ASCII" 
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[])
 {
   PetscErrorCode    ierr;
   size_t            len;
@@ -493,7 +507,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_ASCII(PetscViewer viewer,c
 
   PetscFunctionBegin;
   if (!name) PetscFunctionReturn(0);
-
   ierr = PetscStrallocpy(name,&vascii->filename);CHKERRQ(ierr);
 
   /* Is this file to be compressed */
@@ -510,9 +523,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_ASCII(PetscViewer viewer,c
   if (!rank) {
     ierr = PetscStrcmp(name,"stderr",&isstderr);CHKERRQ(ierr);
     ierr = PetscStrcmp(name,"stdout",&isstdout);CHKERRQ(ierr);
+    /* empty filename means stdout */
+    if (name[0] == 0)  isstdout = PETSC_TRUE;
     if (isstderr)      vascii->fd = stderr;
     else if (isstdout) vascii->fd = stdout;
     else {
+
+
       ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
       switch(vascii->mode) {
       case FILE_MODE_READ:
@@ -631,7 +648,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_ASCII(PetscViewer viewer)
   viewer->ops->getsingleton     = PetscViewerGetSingleton_ASCII;
   viewer->ops->restoresingleton = PetscViewerRestoreSingleton_ASCII;
 
-  /* defaults to stdout unless set with PetscViewerSetFilename() */
+  /* defaults to stdout unless set with PetscViewerFileSetName() */
   vascii->fd             = stdout;
   vascii->mode           = FILE_MODE_WRITE;
   vascii->bviewer        = 0;
@@ -642,10 +659,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_ASCII(PetscViewer viewer)
   vascii->tab_store      = 0;
   vascii->filename       = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerSetFilename_C","PetscViewerSetFilename_ASCII",
-                                     PetscViewerSetFilename_ASCII);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerGetFilename_C","PetscViewerGetFilename_ASCII",
-                                     PetscViewerGetFilename_ASCII);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C","PetscViewerFileSetName_ASCII",
+                                     PetscViewerFileSetName_ASCII);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileGetName_C","PetscViewerFileGetName_ASCII",
+                                     PetscViewerFileGetName_ASCII);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_ASCII",
+                                     PetscViewerFileSetMode_ASCII);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

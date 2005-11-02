@@ -2904,7 +2904,7 @@ PetscErrorCode MatFileSplit(Mat A,char *outfile)
   ierr = PetscStrlen(outfile,&len);CHKERRQ(ierr);
   ierr = PetscMalloc((len+5)*sizeof(char),&name);CHKERRQ(ierr);
   sprintf(name,"%s.%d",outfile,rank);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,PETSC_FILE_CREATE,&out);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_APPEND,&out);CHKERRQ(ierr);
   ierr = PetscFree(name);
   ierr = MatView(B,out);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(out);CHKERRQ(ierr);

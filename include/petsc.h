@@ -992,6 +992,25 @@ typedef struct _p_PetscObject* PetscObject;
 S*/
 typedef struct _n_PetscFList *PetscFList;
 
+/*E
+  PetscFileMode - Access mode for a file.
+
+  Level: beginner
+
+  FILE_MODE_READ - open a file at its beginning for reading
+
+  FILE_MODE_WRITE - open a file at its beginning for writing (will create if the file does not exist)
+
+  FILE_MODE_APPEND - open a file at end for writing
+
+  FILE_MODE_UPDATE - open a file for updating, meaning for reading and writing
+
+  FILE_MODE_APPEND_UPDATE - open a file for updating, meaning for reading and writing, at the end
+
+.seealso: PetscViewerFileSetMode()
+E*/
+typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE} PetscFileMode;
+
 #include "petscviewer.h"
 #include "petscoptions.h"
 
@@ -1341,22 +1360,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,PetscScalar[],Pet
     Allows accessing Matlab Engine
 */
 #include "petscmatlab.h"
-
-/*
-    C code optimization is often enhanced by telling the compiler 
-  that certain pointer arguments to functions are not aliased to 
-  to other arguments. This is not yet ANSI C standard so we define 
-  the macro "restrict" to indicate that the variable is not aliased 
-  to any other argument.
-*/
-#if defined(PETSC_HAVE_RESTRICT) && !defined(__cplusplus)
-#define restrict _Restrict
-#else
-#if defined(restrict)
-#undef restrict
-#endif
-#define restrict
-#endif
 
 /*
       Determine if some of the kernel computation routines use

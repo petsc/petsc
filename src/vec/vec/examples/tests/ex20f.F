@@ -29,7 +29,7 @@
  10    continue
 
 !      Open binary file for writing
-       call PetscBinaryOpen('testfile',PETSC_FILE_CREATE,fd,ierr)
+       call PetscBinaryOpen('testfile',FILE_MODE_WRITE,fd,ierr)
 !      Write the Vec header
        call PetscBinaryWrite(fd,veccookie,ione,PETSC_INT,                    &
      &                       PETSC_FALSE,ierr)
@@ -44,7 +44,7 @@
 !      Open the file for reading by PETSc
 !
        call PetscViewerBinaryOpen(PETSC_COMM_SELF,'testfile',                &
-     &                       PETSC_FILE_RDONLY,v,ierr)
+     &                       FILE_MODE_READ,v,ierr)
 !
 !      Load the vector
 !

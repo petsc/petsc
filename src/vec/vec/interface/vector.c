@@ -2463,9 +2463,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, char *title)
       ierr = PetscViewerSetType(viewer, typeName);CHKERRQ(ierr);
       ierr = PetscOptionsGetString(vec->prefix, "-vec_view_file", fileName, 1024, &opt);CHKERRQ(ierr);
       if (opt) {
-        ierr = PetscViewerSetFilename(viewer, fileName);CHKERRQ(ierr);
+        ierr = PetscViewerFileSetName(viewer, fileName);CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerSetFilename(viewer, vec->name);CHKERRQ(ierr);
+        ierr = PetscViewerFileSetName(viewer, vec->name);CHKERRQ(ierr);
       }
       ierr = VecView(vec, viewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   /*
         Load the database from the file
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"dataoutput",PETSC_FILE_RDONLY,&binary);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"dataoutput",FILE_MODE_READ,&binary);CHKERRQ(ierr);
   ierr = AODataLoadBasic(binary,&aodata);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(binary);CHKERRQ(ierr);
 

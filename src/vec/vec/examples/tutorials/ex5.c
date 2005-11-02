@@ -45,7 +45,7 @@ int main(int argc,char **args)
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n");CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",PETSC_FILE_CREATE,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = VecView(u,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
@@ -61,7 +61,7 @@ int main(int argc,char **args)
   ierr = PetscLogEventRegister(&VECTOR_READ,"Read Vector",VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VECTOR_READ,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n");CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",PETSC_FILE_RDONLY,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = VecLoad(viewer,PETSC_NULL,&u);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VECTOR_READ,0,0,0,0);CHKERRQ(ierr);

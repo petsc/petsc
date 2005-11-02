@@ -5,7 +5,7 @@
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreateToAll"
 /*@
-      VecScatterCreateToAll - Creates a scatter context that copies all 
+      VecScatterCreateToAll - Creates a vector and a scatter context that copies all 
           vector values to each processor
 
   Collective
@@ -60,8 +60,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreateToZero"
 /*@
-      VecScatterCreateToZero - Creates a scatter context that copies all 
-          vector values to a vector on the zeroth processor
+      VecScatterCreateToZero - Creates an output vector and a scatter context used to 
+              copy all vector values into the output vector on the zeroth processor
 
   Collective
 

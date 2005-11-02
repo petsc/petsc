@@ -1,7 +1,7 @@
 
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = -Isieve
 FFLAGS   =
 SOURCEC  = mesh.c
 SOURCEF  = 

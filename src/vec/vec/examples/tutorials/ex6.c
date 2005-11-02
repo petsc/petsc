@@ -32,7 +32,7 @@ int main(int argc,char **args)
   }
 
   /* Open viewer for binary output */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",PETSC_FILE_CREATE,&view_out);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetDescriptor(view_out,&fd);CHKERRQ(ierr);
 
   /* Write binary output */
@@ -48,7 +48,7 @@ int main(int argc,char **args)
   /* ---------------------------------------------------------------------- */
 
   /* Open input binary viewer */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",PETSC_FILE_RDONLY,&view_in);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"input.dat",FILE_MODE_READ,&view_in);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetDescriptor(view_in,&fd);CHKERRQ(ierr);
 
   /* Create vector and get pointer to data space */

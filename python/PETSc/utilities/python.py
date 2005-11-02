@@ -23,6 +23,7 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
+    self.sourceControl = framework.require('config.sourceControl',self)
     self.petscdir = framework.require('PETSc.utilities.petscdir', self)
     if self.framework.argDB['with-python']:
       self.python = framework.require('config.python', None)
@@ -62,6 +63,31 @@ class Configure(config.base.Configure):
       self.framework.actions.addArgument(package.upper(), 'Download', 'Downloaded '+package+' into '+str(Dir))
     return
 
+  def getDownloadDir(self, name, packageDir):
+    Dir = None
+    for d in os.listdir(packageDir):
+      if d.startswith(name) and os.path.isdir(os.path.join(packageDir, d)):
+        Dir = d
+        break
+    return Dir
+
+  def retrievePackage(self, package, name, urls, packageDir):
+    import install.retrieval
+
+    retriever = install.retrieval.Retriever(self.sourceControl)
+    retriever.setup()
+    failureMessage = []
+    self.framework.log.write('Downloading '+name+'\n')
+    for url in urls:
+      try:
+        retriever.genericRetrieve(url, packageDir, name)
+        self.framework.actions.addArgument(package.upper(), 'Download', 'Downloaded '+name+' into '+str(self.getDownloadDir(name, packageDir)))
+        return
+      except RuntimeError, e:
+        failureMessage.append('  Failed to download '+url+'\n'+str(e))
+    failureMessage = 'Unable to download '+package+' from locations '+str(urls)+'\n'+'\n'.join(failureMessage)
+    raise RuntimeError(failureMessage)
+
   def configurePythonLanguage(self):
     '''Download the Python bindings into src/python'''
     import os
@@ -74,7 +100,8 @@ class Configure(config.base.Configure):
     if not self.framework.argDB['with-dynamic']:
       raise RuntimeError('Python bindings require dynamic libraries. Please add --with-dynamic to your configure options.')
     self.usePython = 1
-    if os.path.isdir(os.path.join(self.petscdir.dir, 'BitKeeper')) or os.path.exists(os.path.join(self.petscdir.dir, 'BK')):
+    if self.petscdir.isClone:
+      self.framework.logPrint('PETSc Clone, downloading Python bindings')
       if not os.path.isdir(os.path.join(self.petscdir.dir, 'src', 'python')):
         os.mkdir(os.path.join(self.petscdir.dir, 'src', 'python'))
       if os.path.isdir(os.path.join(self.petscdir.dir, 'src', 'python', 'PETSc')):
@@ -84,6 +111,8 @@ class Configure(config.base.Configure):
         self.retrievePackage('Python Bindings', 'PETScPython', 'ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz', os.path.join(self.petscdir.dir, 'src', 'python'))
       except:
         self.logPrintBox('Warning: Unable to get the PETSc Python bindings; perhaps you are off the network.\nBuilding without Python bindings')
+    else:
+      self.framework.logPrint('Not a clone of PETSc, do not need Python bindings')
     return
 
   def configure(self):

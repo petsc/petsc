@@ -1,5 +1,5 @@
-#ifndef included_ALE_ClosureBundle_hh
-#define included_ALE_ClosureBundle_hh
+#ifndef included_ALE_IndexBundle_hh
+#define included_ALE_IndexBundle_hh
 
 #ifndef  included_ALE_Stack_hh
 #include <Stack.hh>
@@ -10,12 +10,21 @@
 namespace ALE {
 
   typedef enum {INSERTION = 0, ADDITION = 1} BundleAssemblyPolicy;
-  class ClosureBundle : public Coaster {
+  typedef enum {localPoint, leasedPoint, rentedPoint} PointType;
+
+  class IndexBundle : public Coaster {
     int     _dirty;
     Obj<Stack>     _dimensionsToElements;
     Obj<Stack>     _indicesToArrows;
     Obj<Stack>     _arrowsToEnds;
     Obj<Stack>     _arrowsToStarts;
+    //
+    Obj<PreSieve>  _overlapOwnership;     // a PreSieve supporting each overlap point at its owners
+    Obj<Stack>     _localOverlapIndices;  // a stack with _overlapOwnership in the base, a discrete top contains the local indices 
+                                          // attached to the overlap points by vertical arrows
+    Obj<PreSieve>  _remoteOverlapIndices; // a completion stack with the remote overlap indices: completionTypeArrow, footprintTypeCone
+    ALE::Obj<ALE::PreSieve> _pointTypes;
+    ALE::Obj<ALE::PreSieve> _globalIndices;
     //
     BundleAssemblyPolicy _assemblyPolicy;
     //
@@ -37,6 +46,9 @@ namespace ALE {
       this->_arrowsToEnds = Obj<Stack>(new Stack(this->comm));
       this->_arrowsToEnds->setTop(this->_arrowsToStarts->top());
       this->_arrowsToEnds->setBottom(topology);
+      //
+      this->_localOverlapIndices  = Obj<Stack>(new Stack(this->comm));
+      this->_remoteOverlapIndices = Obj<PreSieve>(new PreSieve(this->comm));
       //
       this->__resetArrowIndices(); // this method depends on _arrowsToStarts having already been setup
       this->_cacheFiberIndices = 0;
@@ -63,7 +75,7 @@ namespace ALE {
     Point          __getArrow(Point e1, Point e);
     Point          __getArrowInterval(Point e1, Point e);
     void           __setArrowInterval(Point e1, Point e, Point interval);
-    Obj<PreSieve> __computeIndices(Obj<Point_set> supports, Obj<Point_set> base, bool includeBoundary = 0);
+    Obj<PreSieve> __computeIndices(Obj<Point_set> supports, Obj<Point_set> base, bool includeBoundary = 0, Obj<Point_set> exclusion = NULL);
     Obj<PreSieve> __computeBoundaryIndices(Point support, Point__Point& seen, int32_t& off);
     //
     void __markDirty(){this->_dirty = 1;};
@@ -73,38 +85,47 @@ namespace ALE {
     //
     static const int stratumTypeDepth  = 0;
     static const int stratumTypeHeight = 1;
-    ClosureBundle& __setFiberDimensionByStratum(int stratumType, int32_t stratumIndex, int32_t dim);
-    int__Point _checkOrderChain(Obj<Point_set> order, int& maxDepth, int& minDepth);
-    void _orderElement(int dim, ALE::Obj<ALE::Point> element, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
-    ALE::Obj<ALE::Point> _orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
+    IndexBundle& __setFiberDimensionByStratum(int stratumType, int32_t stratumIndex, int32_t dim);
+    int__Point __checkOrderChain(Obj<Point_set> order, int& maxDepth, int& minDepth);
+    void __orderElement(int dim, ALE::Point element, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
+    ALE::Point __orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered);
+    ALE::PointType __getPointType(ALE::Point point);
+    ALE::Obj<ALE::PreSieve> __computePointTypes();
+    void __postIntervalRequests(ALE::Obj<ALE::PreSieve> pointTypes, int__Point rentMarkers, MPI_Request *intervalRequests[], int **receivedIntervals[]);
+    void __sendIntervals(ALE::Obj<ALE::PreSieve> pointTypes, int__Point leaseMarkers, ALE::Obj<ALE::PreSieve> indices);
+    void __receiveIntervals(ALE::Obj<ALE::PreSieve> pointTypes, int__Point rentMarkers, MPI_Request *requests, int *recvIntervals[], ALE::Obj<ALE::PreSieve> indices);
   public:
     // constructors/destructors
-    ClosureBundle()                    : Coaster()     {__reset();};
-    ClosureBundle(MPI_Comm& comm)      : Coaster(comm) {__reset();};
-    ClosureBundle(Obj<Sieve> topology) : Coaster(topology->getComm()) {__reset(topology);};
-    virtual ~ClosureBundle(){};
+    IndexBundle()                    : Coaster(MPI_COMM_SELF) {__reset();};
+    IndexBundle(MPI_Comm& comm)      : Coaster(comm) {__reset();};
+    IndexBundle(Obj<Sieve> topology) : Coaster(topology->getComm()) {__reset(topology);};
+    virtual ~IndexBundle(){};
     void view(const char *name);
     //
     virtual void            setComm(MPI_Comm c) {this->comm = c; __reset();};
     //
-    ClosureBundle&          setAssemblyPolicy(BundleAssemblyPolicy policy);
+    IndexBundle&          setAssemblyPolicy(BundleAssemblyPolicy policy);
     bool                    getFiberIndicesCachingPolicy() {return this->_cacheFiberIndices;};
-    ClosureBundle&          setFiberIndicesCachingPolicy(bool policy){/*cannot cache (yet)*/this->_cacheFiberIndices = 0;return *this;};
+    IndexBundle&          setFiberIndicesCachingPolicy(bool policy){/*cannot cache (yet)*/this->_cacheFiberIndices = 0;return *this;};
     BundleAssemblyPolicy    getAssemblyPolicy() {return this->_assemblyPolicy;};
-    ClosureBundle&          setTopology(Obj<Sieve> topology);
+    IndexBundle&          setTopology(Obj<Sieve> topology);
     Obj<Sieve>              getTopology(){return this->__getTopology();};
-    ClosureBundle&          setFiberDimension(Point element, int32_t d);
-    ClosureBundle&          setFiberDimensionByDepth(int32_t depth, int32_t dim){
+    IndexBundle&          setFiberDimension(Point element, int32_t d);
+    IndexBundle&          setFiberDimensionByDepth(int32_t depth, int32_t dim){
       return __setFiberDimensionByStratum(stratumTypeDepth, depth, dim);
     };
-    ClosureBundle&          setFiberDimensionByHeight(int32_t height, int32_t dim){
+    IndexBundle&          setFiberDimensionByHeight(int32_t height, int32_t dim){
       return __setFiberDimensionByStratum(stratumTypeHeight, height, dim);
     };
     // Primary methods
     int32_t                 getFiberDimension(Obj<Point_set> ee);
     int32_t                 getBundleDimension(Obj<Point_set> ee);
     //
-    Obj<PreSieve>           getFiberIndices(Obj<Point_set> support,  Obj<Point_set> base);
+    Point                   getFiberInterval(Point support) {
+      return getFiberInterval(support, Point_set());
+    };
+    Point                   getFiberInterval(Point support,  Obj<Point_set> base);
+    Obj<PreSieve>           getFiberIndices(Obj<Point_set> support,  Obj<Point_set> base, Obj<Point_set> exclusion = NULL);
     Obj<PreSieve>           getBundleIndices(Obj<Point_set> support, Obj<Point_set> base);
     Obj<Point_array>        getClosureIndices(Obj<Point_set> order,  Obj<Point_set> base);
     // Convenience methods
@@ -112,18 +133,26 @@ namespace ALE {
     int32_t                 getBundleDimension(Point e){return getBundleDimension(Point_set(e));};
     // Remote ordering methods
     void                    computeOverlapIndices(); // collective
+    int32_t                 getOverlapSize();
     Obj<Point_set>          getOverlapOwners(Point e);
     Obj<PreSieve>           getOverlapFiberIndices(Point e, int32_t proc);
-    Obj<PreSieve>           getOverlapBundleIndices(Point e, int32_t proc);
-    Obj<PreSieve>           getOverlapOrderedIndices(Obj<Point_set> order, int32_t proc);
+    Obj<PreSieve>           getOverlapClosureIndices(Point e, int32_t proc);
+    Obj<Point_array>        getOverlapOrderedClosureIndices(Obj<Point_set> order, int32_t proc);
+    Obj<PreSieve>           getPointTypes();
     // Global ordering methods
     void                    computeGlobalIndices(); // collective
+    int32_t                 getGlobalSize();
+    int32_t                 getLocalSize();
+    int32_t                 getRemoteSize();
+    Obj<PreSieve>           getGlobalIndices();
     int32_t                 getGlobalOwner(Point e);
-    Obj<PreSieve>           getGlobalFiberIndices(Point e, int32_t proc);
-    Obj<PreSieve>           getGlobalBundleIndices(Point e, int32_t proc);
-    Obj<PreSieve>           getGlobalOrderedIndices(Obj<Point_set> order, int32_t proc);
-    
-  };// class ClosureBundle
+    Point                   getGlobalFiberInterval(Point support);
+    Obj<PreSieve>           getGlobalFiberIndices(Obj<Point_set> support);
+    Obj<PreSieve>           getGlobalClosureIndices(Point e);
+    Obj<Point_array>        getGlobalOrderedClosureIndices(Obj<Point_set> order);
+    // Mapping methods
+    Obj<Stack>              computeMappingIndices(Obj<PreSieve> pointTypes, Obj<IndexBundle> target);
+  };// class IndexBundle
 
 
 

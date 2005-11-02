@@ -45,7 +45,7 @@
 !        Now Write this matrix to a binary file
 !
          call PetscViewerBinaryOpen(PETSC_COMM_SELF,'dense.mat',           &
-     &        PETSC_FILE_CREATE,view,ierr)
+     &        FILE_MODE_WRITE,view,ierr)
          call PetscViewerSetFormat(view,PETSC_VIEWER_BINARY_NATIVE,ierr)
          call MatView(A,view,ierr)
          call PetscViewerDestroy(view,ierr)
@@ -54,7 +54,7 @@
 !        Read this matrix into a SeqDense matrix
 
          call PetscViewerBinaryOpen(PETSC_COMM_SELF,'dense.mat',            &
-     &        PETSC_FILE_RDONLY,view,ierr)
+     &        FILE_MODE_READ,view,ierr)
          call MatLoad(view,MATSEQDENSE,A,ierr)
          write (6,200)
  200     format('The Contents of SeqDense Matrix read in from file')
@@ -70,7 +70,7 @@
       call MPI_Barrier(PETSC_COMM_WORLD,ierr)
 
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'dense.mat',               &
-     &     PETSC_FILE_RDONLY,view,ierr)
+     &     FILE_MODE_READ,view,ierr)
       call MatLoad(view,MATMPIDENSE,A,ierr)
       if (rank .eq. 0) then
          write (6,300)

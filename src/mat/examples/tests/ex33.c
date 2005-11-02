@@ -45,7 +45,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetString(PETSC_NULL,"-fout",fileout,PETSC_MAX_PATH_LEN-1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,PETSC_FILE_CREATE,&view);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fileout,FILE_MODE_WRITE,&view);CHKERRQ(ierr);
   ierr = MatView(A,view);CHKERRQ(ierr);
   ierr = VecView(b,view);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(view);CHKERRQ(ierr);

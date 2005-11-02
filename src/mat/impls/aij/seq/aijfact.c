@@ -314,17 +314,12 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
     /* add pivot rows into linked list */
     row = lnk[n]; 
     while (row < i) {
-      nzbd    = bdiag[row] - bi[row] + 1;
-      ajtmp   = bi_ptr[row] + nzbd;
-      nnz     = im[row] - nzbd; /* num of columns with row<indices<=i */
-      im[row] = nzbd;
-      ierr = PetscLLAddSortedLU(nnz,ajtmp,row,nlnk,lnk,lnkbt,i,nzbd);CHKERRQ(ierr);
-      nzi     += nlnk;
-      im[row] += nzbd;  /* update im[row]: num of cols with index<=i */ 
-
-      row = lnk[row];
+      nzbd    = bdiag[row] - bi[row] + 1; /* num of entries in the row with column index <= row */
+      ajtmp   = bi_ptr[row] + nzbd; /* points to the entry next to the diagonal */   
+      ierr = PetscLLAddSortedLU(ajtmp,row,nlnk,lnk,lnkbt,i,nzbd,im);CHKERRQ(ierr);
+      nzi += nlnk;
+      row  = lnk[row];
     }
-
     bi[i+1] = bi[i] + nzi;
     im[i]   = nzi; 
 

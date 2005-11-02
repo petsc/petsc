@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
 
   PetscInitialize(&argc,&args,0,help);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",PETSC_FILE_RDONLY,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatLoad(viewer,MATMPIDENSE,&C);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

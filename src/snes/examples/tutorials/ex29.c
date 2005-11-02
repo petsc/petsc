@@ -364,7 +364,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
   ierr = PetscOptionsHasName(0,"-restart",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"binaryoutput",PETSC_FILE_RDONLY,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"binaryoutput",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = VecLoadIntoVector(viewer,dmmg[param->mglevels-1]->x);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -675,7 +675,7 @@ PetscErrorCode Update(DMMG *dmmg)
 
       ierr = PetscStrcpy(file, "matrix");CHKERRQ(ierr);
 
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, PETSC_FILE_CREATE, &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
 
       ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
 

@@ -1202,9 +1202,9 @@ PetscErrorCode DoOutput(DMMG *dmmg, PetscInt its)
 
     /* create viewer */
 #if defined(PETSC_HAVE_MATLAB)
-    ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,param->filename,PETSC_FILE_CREATE,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,param->filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 #else
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,param->filename,PETSC_FILE_CREATE,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,param->filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 #endif
 
     /* send vectors to viewer */

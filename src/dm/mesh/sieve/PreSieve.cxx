@@ -14,11 +14,11 @@ namespace ALE {
   
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::PreSieve()"
-  PreSieve::PreSieve() : Coaster::Coaster(), _cone(), _cap() {};
+  PreSieve::PreSieve() : Coaster(), _cone(), _cap() {};
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::PreSieve(MPI_Comm)"
-  PreSieve::PreSieve(MPI_Comm comm) : Coaster::Coaster(comm), _cone(), _cap() {};
+  PreSieve::PreSieve(MPI_Comm comm) : Coaster(comm), _cone(), _cap() {};
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::~PreSieve"
@@ -56,7 +56,7 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::removeBasePoint"
   PreSieve& PreSieve::removeBasePoint(Point& p) {
     this->__checkLock();
-    if (this->baseContains(p)) {
+    if (this->_cone.find(p) != this->_cone.end()) {
       // IMPROVE: first decrement the support size for all points in the cone being erased
       ALE::Obj<ALE::Point_set> cone = this->cone(p);
 
@@ -64,7 +64,7 @@ namespace ALE {
         ALE::Point cover = *c_itor;
 
         this->removeArrow(cover, p);
-        if (this->support(cover).size() == 0) {
+        if (this->support(cover)->size() == 0) {
           if (!this->baseContains(cover)) {
             this->removeCapPoint(cover);
           } else {
@@ -272,16 +272,20 @@ namespace ALE {
   PreSieve& PreSieve::restrictBase(Point_set& base) {
     this->__checkLock();
     Point_set removal;
-    for(Point__Point_set::iterator b_itor = this->_cone.begin(); b_itor != this->_cone.end(); b_itor++){
-      Point p = b_itor->first;
-      // is point p absent from base?
-      if(base.find(p) == base.end()){
-        removal.insert(p);
+    while(1) {
+      for(Point__Point_set::iterator b_itor = this->_cone.begin(); b_itor != this->_cone.end(); b_itor++){
+        Point p = b_itor->first;
+        // is point p absent from base?
+        if(base.find(p) == base.end()){
+          removal.insert(p);
+        }
       }
-    }// for(Point_set::iterator b_itor = this->_cone.begin(); b_itor != this->_cone.end(); b_itor++){
-    for(Point_set::iterator r_itor = removal.begin(); r_itor != removal.end(); r_itor++){
-      Point p = *r_itor;
-      this->removeBasePoint(p);
+      if (!removal.size()) break;
+      for(Point_set::iterator r_itor = removal.begin(); r_itor != removal.end(); r_itor++){
+        Point p = *r_itor;
+        this->removeBasePoint(p);
+      }
+      removal.clear();
     }
     return *this;
   }// PreSieve::restrictBase()
@@ -1343,8 +1347,8 @@ namespace ALE {
       hdr << "(locked) ";
     }
     if(name != NULL) {
-      hdr << name;
-    } 
+      hdr << "presieve '" << name << "'\n";
+    }
     // Print header
     ierr = PetscPrintf(this->comm, hdr.str().c_str()); CHKERROR(ierr, "Error in PetscPrintf");
     // Use a string stream to accumulate output that is then submitted to PetscSynchronizedPrintf
@@ -1422,7 +1426,7 @@ namespace ALE {
   #undef __FUNCT__
   #define __FUNCT__ "PreSieve::baseFootprint"
   Stack* PreSieve::baseFootprint(int completionType, int footprintType,  PreSieve *f) {
-    PreSieve ownership;
+    PreSieve ownership(this->comm);
     Point self(this->commRank, this->commRank);
     if(footprintType == footprintTypeNone) {
       return NULL;
@@ -1452,7 +1456,7 @@ namespace ALE {
   #undef __FUNCT__
   #define __FUNCT__ "PreSieve::capFootprint"
   Stack* PreSieve::capFootprint(int completionType, int footprintType,  PreSieve *f) {
-    PreSieve ownership;
+    PreSieve ownership(this->comm);
     Point self(this->commRank, this->commRank);
     if(footprintType == footprintTypeNone) {
       return NULL;
@@ -1482,7 +1486,7 @@ namespace ALE {
   #undef __FUNCT__
   #define __FUNCT__ "PreSieve::spaceFootprint"
   Stack* PreSieve::spaceFootprint(int completionType, int footprintType,  PreSieve *f) {
-    PreSieve ownership;
+    PreSieve ownership(this->comm);
     Point self(this->commRank, this->commRank);
     if(footprintType == footprintTypeNone) {
       return NULL;
@@ -1644,7 +1648,7 @@ namespace ALE {
       A0  = new Stack(this->getComm());
       A0->setTop(P); A0->setBottom(A);
       A1  = new Stack(this->getComm());
-      A1->setTop(A); A0->setBottom(P);
+      A1->setTop(A); A1->setBottom(P);
       AAA = new Stack(this->getComm());
       AAA->setTop(A0); AAA->setBottom(A1);
       S = AAA;
@@ -1856,8 +1860,8 @@ namespace ALE {
     }
     if(LessorCount) {
       ierr       = PetscMalloc((LessorCount)*sizeof(PetscInt),&LessorOffsets);     CHKERROR(ierr,"Error in PetscMalloc");
+      LessorOffsets[0] = 0; 
     }
-    LessorOffsets[0]  = 0; 
     for (int32_t i=1; i<LessorCount; i++) { LessorOffsets[i] = LessorOffsets[i-1] + 3*LeaseSizes[i-1];} 
     for (Point_set::iterator point_itor = points->begin(); point_itor != points->end(); point_itor++) {
       Point p = (*point_itor);
@@ -1867,7 +1871,9 @@ namespace ALE {
       LeasedNodes[LessorOffsets[ind]++] = p.index;      
       LeasedNodes[LessorOffsets[ind]++] = (*cones)[p].size();
     }
-    LessorOffsets[0]  = 0; 
+    if(LessorCount) {
+      LessorOffsets[0] = 0; 
+    }
     for (int32_t i=1; i<LessorCount; i++) { LessorOffsets[i] = LessorOffsets[i-1] + 3*LeaseSizes[i-1];} 
     
     // send the messages to the lessors
@@ -2498,7 +2504,7 @@ namespace ALE {
       cntr = 0;
       txt << "[" << rank << "]: debug begin\n";
       txt << "[" << rank << "]: __computeCompletion: completion cone:  base of size " << C->_cone.size() << "\n";
-      for(std::map<Point,Point_set>::iterator Cbase_itor=C->_cone.begin(); Cbase_itor!=C->_cone.end(); Cbase_itor++) {
+      for(std::map<Point,Point_set,Point::Cmp>::iterator Cbase_itor=C->_cone.begin(); Cbase_itor!=C->_cone.end(); Cbase_itor++) {
         Point Cb = (*Cbase_itor).first;
         txt << "[" << rank << "]: \t(" << Cb.prefix << ", " << Cb.index << "):  ";
         Point_set CbCone = (*Cbase_itor).second;

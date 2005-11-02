@@ -52,11 +52,11 @@ int main(int argc,char **argv)
 
   ierr = DACreateGlobalVector(da,&global2);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",PETSC_FILE_CREATE,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = VecView(global1,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",PETSC_FILE_RDONLY,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = VecLoadIntoVector(viewer,global2);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 

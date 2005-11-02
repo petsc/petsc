@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "petsc.h"  /*I     "petsc.h"   I*/
+#include "src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petsc.h"   I*/
 
 /* ---------------------------------------------------------------------*/
 /*
@@ -107,6 +107,25 @@ PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_STDERR_(MPI_Comm comm)
   PetscFunctionReturn(viewer);
 }
 
+PetscMPIInt Petsc_Viewer_keyval = MPI_KEYVAL_INVALID;
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "Petsc_DelViewer" 
+/*
+   Private routine to delete internal storage when a communicator is freed.
+  This is called by MPI, not by users.
+
+*/
+PetscMPIInt PETSC_DLLEXPORT Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogInfo((0,"Petsc_DelTag:Deleting viewer data in an MPI_Comm %ld\n",(long)comm));if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  PetscFunctionReturn(MPI_SUCCESS);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerASCIIOpen" 
 /*@C
@@ -152,13 +171,48 @@ PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_STDERR_(MPI_Comm comm)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
+  PetscViewerLink   *vlink,*nv;
+  PetscTruth        flg,eq;
 
   PetscFunctionBegin;
+  if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelViewer,&Petsc_Viewer_keyval,(void*)0);CHKERRQ(ierr);
+  }
+
+  /* has file already been opened into a viewer */
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_keyval,(void**)&vlink,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+  if (flg) {
+    while (vlink) {
+      ierr = PetscStrcmp(name,((PetscViewer_ASCII*)(vlink->viewer->data))->filename,&eq);CHKERRQ(ierr);
+      if (eq) {
+        ierr = PetscObjectReference((PetscObject)vlink->viewer);CHKERRQ(ierr);
+        *lab = vlink->viewer;
+        PetscFunctionReturn(0);
+      }            
+      vlink = vlink->next;
+    }
+  }
+
   ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*lab,PETSC_VIEWER_ASCII);CHKERRQ(ierr);
   if (name) {
-    ierr = PetscViewerSetFilename(*lab,name);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(*lab,name);CHKERRQ(ierr);
+  }
+  
+  /* save viewer into communicator if needed later */
+  ierr       = PetscNew(PetscViewerLink,&nv);CHKERRQ(ierr);
+  nv->viewer = *lab;
+  if (!flg) {
+    ierr = MPI_Attr_put(comm,Petsc_Viewer_keyval,nv);CHKERRQ(ierr);
+  } else {
+    ierr = MPI_Attr_get(comm,Petsc_Viewer_keyval,(void**)&vlink,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    if (vlink) {
+      while (vlink->next) vlink = vlink->next;
+      vlink->next = nv;
+    } else {
+      ierr = MPI_Attr_put(comm,Petsc_Viewer_keyval,nv);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
