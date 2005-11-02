@@ -73,9 +73,9 @@ int main(int argc, char *argv[])
   ierr = ReadCoordinates(comm, coordFilename, dim, &numVertices, &coordinates);CHKERRQ(ierr);
 
   ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
-  ierr = MeshCreateTopology(mesh, dim, numVertices, numElements, vertices, coordinates);CHKERRQ(ierr);
+  ierr = MeshCreateSeq(mesh, dim, numVertices, numElements, vertices, coordinates);CHKERRQ(ierr);
   //ierr = MeshCreateBoundary(mesh, 8, boundaryVertices); CHKERRQ(ierr);
-  //ierr = MeshCreateCoordinates(mesh, coordinates);CHKERRQ(ierr);
+  ierr = MeshDistribute(mesh);CHKERRQ(ierr);
 
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);

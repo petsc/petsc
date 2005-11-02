@@ -457,7 +457,10 @@ namespace ALE {
         diameter = pDiameter;
       }
     }
-    return diameter;
+    int globalDiameter;
+    int ierr = MPI_Allreduce(&diameter, &globalDiameter, 1, MPI_INT, MPI_SUM, this->comm);
+    CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allreduce"));
+    return globalDiameter;
   }// Sieve::diameter()
 
 
