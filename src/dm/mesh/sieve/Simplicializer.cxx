@@ -451,6 +451,7 @@ PetscErrorCode MeshCreateSeq(Mesh mesh, int dim, PetscInt numVertices, PetscInt 
   int localSize = coordBundle->getLocalSize();
   int globalSize = coordBundle->getGlobalSize();
   ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
   ierr = VecSetSizes(coordinates, localSize, globalSize);CHKERRQ(ierr);
   ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
   ALE::Obj<ALE::Point_set> vertices = topology->depthStratum(0);
@@ -546,7 +547,7 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   }
   PetscSynchronizedPrintf(comm, "\n");
   PetscSynchronizedFlush(comm);
-  ierr = VecCreateGhostBlock(comm,1,localSize,globalSize,ghostSize,ghostIndices,&coordinates);CHKERRQ(ierr);
+  ierr = VecCreateGhostBlock(comm,dim,localSize,globalSize,ghostSize,ghostIndices,&coordinates);CHKERRQ(ierr);
   /* Setup mapping to partitioned storage */
   ALE::Obj<ALE::Stack> mappingStack;
   ALE::Obj<ALE::PreSieve> sourceIndices, targetIndices;
@@ -840,7 +841,7 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "WriteVTKElements"
-PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
+PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
 {
   ALE::Sieve         *topology;
   ALE::IndexBundle  vertexBundle;
@@ -868,17 +869,17 @@ PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
   elements = topology->heightStratum(0);
   numElements = elementBundle.getGlobalSize();
   corners = topology->nCone(*elements.begin(), dim).size();
+  ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
   if (rank == 0) {
-    ierr = PetscFPrintf(comm, f, "CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
     for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
-      ierr = PetscFPrintf(comm, f, "%d ", corners);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
       ALE::Point_set cone = topology->nCone(*e_itor, dim);
       for(ALE::Point_set::iterator c_itor = cone.begin(); c_itor != cone.end(); c_itor++) {
         ALE::Point index = vertexBundle.getGlobalFiberInterval(*c_itor);
 
-        ierr = PetscFPrintf(comm, f, " %d", index.prefix);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, " %d", index.prefix);CHKERRQ(ierr);
       }
-      ierr = PetscFPrintf(comm, f, "\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     }
     for(int p = 1; p < size; p++) {
       MPI_Status  status;
@@ -889,11 +890,11 @@ PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
       ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &remoteVertices);CHKERRQ(ierr);
       ierr = MPI_Recv(remoteVertices, numLocalElements*corners, MPI_INT, 0, 1, comm, &status);CHKERRQ(ierr);
       for(int e = 0; e < numLocalElements; e++) {
-        ierr = PetscFPrintf(comm, f, "%d ", corners);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
         for(int c = 0; c < corners; c++) {
-          ierr = PetscFPrintf(comm, f, " %d", remoteVertices[e*corners+c]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, " %d", remoteVertices[e*corners+c]);CHKERRQ(ierr);
         }
-        ierr = PetscFPrintf(comm, f, "\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }
       ierr = PetscFree(remoteVertices);CHKERRQ(ierr);
     }
@@ -917,16 +918,16 @@ PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
     ierr = MPI_Send(array, numLocalElements*corners, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
     ierr = PetscFree(array);CHKERRQ(ierr);
   }
-  ierr = PetscFPrintf(comm, f, "CELL_TYPES %d\n", numElements);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "CELL_TYPES %d\n", numElements);CHKERRQ(ierr);
   if (corners == 3) {
     // VTK_TRIANGLE
     for(int e = 0; e < numElements; e++) {
-      ierr = PetscFPrintf(comm, f, "5\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "5\n");CHKERRQ(ierr);
     }
   } else if (corners == 4) {
     // VTK_TETRA
     for(int e = 0; e < numElements; e++) {
-      ierr = PetscFPrintf(comm, f, "10\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "10\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
