@@ -469,7 +469,12 @@ namespace ALE {
       int i = 0;
 
       for(ALE::Point_set::iterator e_itor = leasedPoints->begin(); e_itor != leasedPoints->end(); e_itor++) {
-        ALE::Point interval = *globalIndices->cone(*e_itor).begin();
+        ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
+        ALE::Point interval;
+
+        if (cone->size()) {
+          interval = *cone->begin();
+        }
 
         intervals[i++] = interval.prefix;
         intervals[i++] = interval.index;
