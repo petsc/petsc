@@ -479,7 +479,7 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   ALE::IndexBundle *coordBundle;
   ALE::IndexBundle *serialCoordBundle;
   ALE::PreSieve    *partitionTypes;
-  Vec               coordinates;
+  Vec               coordinates, oldCoordinates;
   MPI_Comm          comm;
   PetscMPIInt       rank;
   PetscInt          dim;
@@ -492,6 +492,7 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
   ierr = MeshGetCoordinateBundle(mesh, (void **) &serialCoordBundle);CHKERRQ(ierr);
+  ierr = MeshGetCoordinates(mesh, &oldCoordinates);CHKERRQ(ierr);
   dim = topology->diameter();
   /* Partition the topology and orientation */
   ierr = ComputeSievePartition(topology, "Topology");CHKERRQ(ierr);
@@ -527,14 +528,14 @@ PetscErrorCode MeshDistribute(Mesh mesh)
     }
   }
   int *ghostIndices = new int[ghostSize];
-  int idx = 0;
+  int ghostIdx = 0;
   for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
     ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
 
     if (cone->size()) {
       ALE::Point interval = *cone->begin();
 
-      ExpandInterval(interval, ghostIndices, &idx);
+      ExpandInterval(interval, ghostIndices, &ghostIdx);
     }
   }
   PetscPrintf(comm, "Making an ordering over the vertices\n===============================\n");
@@ -547,8 +548,42 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   PetscSynchronizedFlush(comm);
   ierr = VecCreateGhostBlock(comm,1,localSize,globalSize,ghostSize,ghostIndices,&coordinates);CHKERRQ(ierr);
   /* Setup mapping to partitioned storage */
-  serialCoordBundle->computeMappingIndices(partitionTypes, coordBundle);
+  ALE::Obj<ALE::Stack> mappingStack;
+  ALE::Obj<ALE::PreSieve> sourceIndices, targetIndices;
+  ALE::Obj<ALE::Point_set> base;
+  IS         coordIS, oldCoordIS;
+  VecScatter coordScatter;
+  PetscInt   oldLocalSize = serialCoordBundle->getLocalSize();
+  PetscInt  *oldIndices, *indices;
+  PetscInt   oldIdx = 0, idx = 0;
+
+  mappingStack = serialCoordBundle->computeMappingIndices(partitionTypes, coordBundle);
+  sourceIndices = mappingStack->top();
+  targetIndices = mappingStack->bottom();
+  base = sourceIndices->base();
   ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
+  ierr = PetscMalloc(oldLocalSize * sizeof(PetscInt), &oldIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc(oldLocalSize * sizeof(PetscInt), &indices);CHKERRQ(ierr);
+  for(ALE::Point_set::iterator e_itor = base->begin(); e_itor != base->end(); e_itor++) {
+    ALE::Point point = *e_itor;
+
+    ExpandInterval(*sourceIndices->cone(point).begin(), oldIndices, &oldIdx);
+    ExpandInterval(*targetIndices->cone(point).begin(), indices,    &idx);
+  }
+  ierr = ISCreateGeneral(comm, oldLocalSize, oldIndices, &oldCoordIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm, oldLocalSize, indices,    &coordIS);CHKERRQ(ierr);
+  ierr = PetscFree(oldIndices);CHKERRQ(ierr);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
+  ierr = VecScatterCreate(oldCoordinates, oldCoordIS, coordinates, coordIS, &coordScatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(oldCoordinates, coordinates, INSERT_VALUES, SCATTER_FORWARD, coordScatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(oldCoordinates, coordinates, INSERT_VALUES, SCATTER_FORWARD, coordScatter);CHKERRQ(ierr);
+  ierr = MeshSetCoordinates(mesh, coordinates);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(coordScatter);CHKERRQ(ierr);
+  ierr = ISDestroy(oldCoordIS);CHKERRQ(ierr);
+  ierr = ISDestroy(coordIS);CHKERRQ(ierr);
+  ierr = VecDestroy(oldCoordinates);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Parallel Coordinates\n===========================\n");CHKERRQ(ierr);
+  ierr = VecView(coordinates, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   delete serialCoordBundle;
   PetscFunctionReturn(0);
 }

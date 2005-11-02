@@ -278,6 +278,19 @@ namespace ALE {
         this->erase(q);
       }
     };
+    void subtract(Obj<Point_set> s) {
+      Point_set removal;
+      for(Point_set::iterator self_itor = this->begin(); self_itor != this->end(); self_itor++) {
+        Point p = *self_itor;
+        if(s->find(p) != s->end()){
+          removal.insert(p);
+        }
+      }
+      for(Point_set::iterator rem_itor = removal.begin(); rem_itor != removal.end(); rem_itor++) {
+        Point q = *rem_itor;
+        this->erase(q);
+      }
+    };
     void view(const char *name = NULL) {
       printf("Viewing Point_set");
       if(name != NULL) {

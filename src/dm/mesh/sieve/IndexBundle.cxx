@@ -130,10 +130,10 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::getFiberIndices"
-  Obj<PreSieve>   IndexBundle::getFiberIndices(Obj<Point_set> supports, Obj<Point_set> base) {
+  Obj<PreSieve>   IndexBundle::getFiberIndices(Obj<Point_set> supports, Obj<Point_set> base, Obj<Point_set> exclusion) {
     base  = this->__validateChain(base);
     supports = this->__validateChain(supports);
-    Obj<PreSieve> indices = this->__computeIndices(supports, base);
+    Obj<PreSieve> indices = this->__computeIndices(supports, base, false, exclusion);
     return indices;
   }//IndexBundle::getFiberIndices()
 
@@ -302,8 +302,12 @@ namespace ALE {
       int i = 0;
 
       for(ALE::Point_set::iterator e_itor = leasedPoints->begin(); e_itor != leasedPoints->end(); e_itor++) {
-        ALE::Point interval = *indices->cone(*e_itor).begin();
+        ALE::Obj<ALE::Point_set> cone = indices->cone(*e_itor);
+        ALE::Point interval(-1, 0);
 
+        if (cone->size()) {
+          interval = *cone->begin();
+        }
         intervals[i++] = interval.prefix;
         intervals[i++] = interval.index;
       }
@@ -327,7 +331,7 @@ namespace ALE {
         delete recvIntervals[p];
         continue;
       }
-      ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(-p-1, p));
+      ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(rentMarkers[p]);
       int i = 0;
 
       for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
@@ -335,11 +339,12 @@ namespace ALE {
         ALE::Point point = *e_itor;
 
         indices->addCone(interval, point);
-        printf("[%d]Set indices of (%d, %d) to (%d, %d)\n", this->commRank, point.prefix, point.index, interval.prefix, interval.index);
+        PetscSynchronizedPrintf(this->comm, "[%d]Set indices of (%d, %d) to (%d, %d)\n", this->commRank, point.prefix, point.index, interval.prefix, interval.index);
         i += 2;
       }
       delete recvIntervals[p];
     }
+    PetscSynchronizedFlush(this->comm);
     delete requests;
     delete statuses;
     delete recvIntervals;
@@ -353,14 +358,16 @@ namespace ALE {
     This currently uses global indices to interface with VecScatter, but could
     use another communication structure with purely local indexing.
   */
-  void   IndexBundle::computeMappingIndices(ALE::Obj<ALE::PreSieve> pointTypes, ALE::Obj<ALE::IndexBundle> target) {
+  ALE::Obj<ALE::Stack>   IndexBundle::computeMappingIndices(ALE::Obj<ALE::PreSieve> pointTypes, ALE::Obj<ALE::IndexBundle> target) {
     pointTypes->view("Mapping point types");
+    ALE::Obj<ALE::Stack> stack(new ALE::Stack(this->comm));
+
     // Make global source indices (local + leased)
     ALE::Point_set sourceTypes;
     sourceTypes.insert(ALE::Point(this->commRank, ALE::localPoint));
     sourceTypes.insert(ALE::Point(this->commRank, ALE::leasedPoint));
     ALE::Obj<ALE::Point_set> sourcePoints = pointTypes->cone(sourceTypes);
-    // Need to implment copy(), then use restrictBase()
+    // Need to implement copy(), then use restrictBase()
     ALE::Obj<ALE::PreSieve> sourceIndices(new ALE::PreSieve(this->comm));
     for(ALE::Point_set::iterator e_itor = sourcePoints->begin(); e_itor != sourcePoints->end(); e_itor++) {
       ALE::Point point = *e_itor;
@@ -371,21 +378,18 @@ namespace ALE {
     PetscSynchronizedPrintf(this->comm, "[%d]Source size %d\n", this->commRank, sourceSize);
     PetscSynchronizedFlush(this->comm);
 
-    // Make global target indices (local + rented)
+    // Make initial global target indices (local)
     ALE::Point_set targetTypes;
     targetTypes.insert(ALE::Point(this->commRank, ALE::localPoint));
-    targetTypes.insert(ALE::Point(this->commRank, ALE::rentedPoint));
     ALE::Obj<ALE::Point_set> targetPoints = pointTypes->cone(targetTypes);
-    // Need to implment copy(), then use restrictBase()
+    // Need to implement copy(), then use restrictBase()
+    ALE::Obj<ALE::PreSieve> targetGlobalIndices = target->getGlobalIndices();
     ALE::Obj<ALE::PreSieve> targetIndices(new ALE::PreSieve(this->comm));
     for(ALE::Point_set::iterator e_itor = targetPoints->begin(); e_itor != targetPoints->end(); e_itor++) {
       ALE::Point point = *e_itor;
-      ALE::Point_set cone = target->getGlobalIndices()->cone(*e_itor);
+      ALE::Point_set cone = targetGlobalIndices->cone(*e_itor);
       targetIndices->addCone(cone, point);
     }
-    int targetSize = target->getFiberDimension(targetPoints);
-    PetscSynchronizedPrintf(this->comm, "[%d]Target size %d\n", this->commRank, targetSize);
-    PetscSynchronizedFlush(this->comm);
 
     int__Point rentMarkers, leaseMarkers;
     MPI_Request *requests;
@@ -396,11 +400,15 @@ namespace ALE {
       leaseMarkers[p] = ALE::Point(p, p);
     }
     // Send leased stuff from source to target, Accept rented stuff at target from source
-    this->__postIntervalRequests(pointTypes, rentMarkers, &requests, &recvIntervals);
-    this->__sendIntervals(pointTypes, leaseMarkers, sourceIndices);
-    this->__receiveIntervals(pointTypes, rentMarkers, requests, recvIntervals, targetIndices);
+    this->__postIntervalRequests(pointTypes, leaseMarkers, &requests, &recvIntervals);
+    this->__sendIntervals(pointTypes, rentMarkers, targetGlobalIndices);
+    this->__receiveIntervals(pointTypes, leaseMarkers, requests, recvIntervals, targetIndices);
+
     sourceIndices->view("Source indices");
     targetIndices->view("Target indices");
+    stack->setTop(sourceIndices);
+    stack->setBottom(targetIndices);
+    return stack;
   }
 
   #undef  __FUNCT__
@@ -412,7 +420,9 @@ namespace ALE {
     localTypes.insert(ALE::Point(this->commRank, ALE::leasedPoint));
     ALE::Obj<ALE::PreSieve> pointTypes = this->__computePointTypes();
     ALE::Obj<ALE::Point_set> localPoints = pointTypes->cone(localTypes);
-    ALE::Obj<ALE::PreSieve> localIndices = this->getFiberIndices(localPoints, localPoints);
+    localPoints->view("Global local points");
+    ALE::Obj<ALE::PreSieve> localIndices = this->getFiberIndices(localPoints, localPoints, pointTypes->cone(ALE::Point(this->commRank, ALE::rentedPoint)));
+    localIndices->view("Global local indices");
     int localSize = this->getFiberDimension(localPoints);
     PetscSynchronizedPrintf(this->comm, "[%d]Local size %d\n", this->commRank, localSize);
     PetscSynchronizedFlush(this->comm);
@@ -433,8 +443,10 @@ namespace ALE {
 
       if (cone->size()) {
         globalIndex = *cone->begin();
+        PetscSynchronizedPrintf(this->comm, "[%d]   local interval (%d, %d) for point (%d, %d)\n", this->commRank, globalIndex.prefix, globalIndex.index, (*e_itor).prefix, (*e_itor).index);
+        globalIndex.prefix += firstIndex[this->commRank];
+        PetscSynchronizedPrintf(this->comm, "[%d]  global interval (%d, %d) for point (%d, %d)\n", this->commRank, globalIndex.prefix, globalIndex.index, (*e_itor).prefix, (*e_itor).index);
       }
-      globalIndex.prefix += firstIndex[this->commRank];
       globalIndices->addCone(globalIndex, point);
     }
     PetscSynchronizedPrintf(this->comm, "[%d]Global size %d\n", this->commRank, firstIndex[this->commSize]);
@@ -734,7 +746,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::__computeIndices"
-  Obj<PreSieve>   IndexBundle::__computeIndices(Obj<Point_set> supports, Obj<Point_set> base, bool includeBoundary) {
+  Obj<PreSieve>   IndexBundle::__computeIndices(Obj<Point_set> supports, Obj<Point_set> base, bool includeBoundary, Obj<Point_set> exclusion) {
     base  = this->__validateChain(base);
     supports = this->__validateChain(supports);
     // IMPROVE: we could make this subroutine consult cache, if base is singleton
@@ -805,8 +817,11 @@ namespace ALE {
         // Regardless of whether ss is in supports or not, we need to index the elements in its closure to obtain a correct off.
         // Compute the cone over ss, which will replace ss on stk at the beginning of the next iteration.
         // IMPROVE: can probably reduce runtime by putting this line inside the 'if not seen' clause'.
+        //   Also, this can break the numbering if we have given a very specific base and od not want other points numbered
         base = this->getTopology()->cone(ss);
-                
+        if (!exclusion.isNull()) {
+          base->subtract(exclusion);
+        }
       }// if stk is not empty
     }// while(1)     
     return indices;

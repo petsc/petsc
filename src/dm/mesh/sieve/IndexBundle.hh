@@ -75,7 +75,7 @@ namespace ALE {
     Point          __getArrow(Point e1, Point e);
     Point          __getArrowInterval(Point e1, Point e);
     void           __setArrowInterval(Point e1, Point e, Point interval);
-    Obj<PreSieve> __computeIndices(Obj<Point_set> supports, Obj<Point_set> base, bool includeBoundary = 0);
+    Obj<PreSieve> __computeIndices(Obj<Point_set> supports, Obj<Point_set> base, bool includeBoundary = 0, Obj<Point_set> exclusion = NULL);
     Obj<PreSieve> __computeBoundaryIndices(Point support, Point__Point& seen, int32_t& off);
     //
     void __markDirty(){this->_dirty = 1;};
@@ -125,7 +125,7 @@ namespace ALE {
       return getFiberInterval(support, Point_set());
     };
     Point                   getFiberInterval(Point support,  Obj<Point_set> base);
-    Obj<PreSieve>           getFiberIndices(Obj<Point_set> support,  Obj<Point_set> base);
+    Obj<PreSieve>           getFiberIndices(Obj<Point_set> support,  Obj<Point_set> base, Obj<Point_set> exclusion = NULL);
     Obj<PreSieve>           getBundleIndices(Obj<Point_set> support, Obj<Point_set> base);
     Obj<Point_array>        getClosureIndices(Obj<Point_set> order,  Obj<Point_set> base);
     // Convenience methods
@@ -151,8 +151,7 @@ namespace ALE {
     Obj<PreSieve>           getGlobalClosureIndices(Point e);
     Obj<Point_array>        getGlobalOrderedClosureIndices(Obj<Point_set> order);
     // Mapping methods
-    void                    computeMappingIndices(ALE::Obj<ALE::PreSieve> pointTypes, ALE::Obj<ALE::IndexBundle> target);
-
+    Obj<Stack>              computeMappingIndices(Obj<PreSieve> pointTypes, Obj<IndexBundle> target);
   };// class IndexBundle
 
 
