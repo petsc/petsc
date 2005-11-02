@@ -182,7 +182,8 @@ PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve, const char *n
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   // Cone complete to move the partitions to the other processors
-  ALE::Obj<ALE::PreSieve> completion = presieve->coneCompletion(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeCone, NULL)->top();
+  ALE::Obj<ALE::Stack> completionStack = presieve->coneCompletion(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeCone, NULL);
+  ALE::Obj<ALE::PreSieve> completion = completionStack->top();
   //
   ostringstream label1;
   label1 << "Completion";
@@ -205,13 +206,6 @@ PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve, const char *n
       if (p == rank) {
         ALE::Point point(rank, ALE::localPoint);
         pTypes->addCone(cone, point);
-      } else {
-        ALE::Point point;
-
-        point = ALE::Point(rank, ALE::leasedPoint);
-        pTypes->addCone(cone, point);
-        point = ALE::Point(p, p);
-        pTypes->addCone(cone, point);
 
         if (completion->baseContains(partitionPoint)) {
           cone = completion->cone(partitionPoint);
@@ -220,7 +214,19 @@ PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve, const char *n
         }
         point = ALE::Point(rank, ALE::rentedPoint);
         pTypes->addCone(cone, point);
-        point = ALE::Point(-p-1, p);
+        for(ALE::Point_set::iterator e_itor = cone.begin(); e_itor != cone.end(); e_itor++) {
+          ALE::Point e = *e_itor;
+          ALE::Point f = *completionStack->support(e)->begin();
+
+          point = ALE::Point(-f.index-1, f.index);
+          pTypes->addCone(e, point);
+        }
+      } else {
+        ALE::Point point;
+
+        point = ALE::Point(rank, ALE::leasedPoint);
+        pTypes->addCone(cone, point);
+        point = ALE::Point(p, p);
         pTypes->addCone(cone, point);
       }
     }
@@ -453,7 +459,7 @@ PetscErrorCode MeshCreateSeq(Mesh mesh, int dim, PetscInt numVertices, PetscInt 
     printf("Sizeof fiber over vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
     ierr = setFiberValues(coordinates, v, coordBundle, &coords[(v.index - numElements)*dim], INSERT_VALUES);CHKERRQ(ierr);
   }
-  PetscPrintf(this->comm, "Serial coordinates\n====================\n");
+  PetscPrintf(comm, "Serial coordinates\n====================\n");
   ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(coordinates);CHKERRQ(ierr);
   ierr = VecView(coordinates, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

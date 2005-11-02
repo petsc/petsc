@@ -354,6 +354,7 @@ namespace ALE {
     use another communication structure with purely local indexing.
   */
   void   IndexBundle::computeMappingIndices(ALE::Obj<ALE::PreSieve> pointTypes, ALE::Obj<ALE::IndexBundle> target) {
+    pointTypes->view("Mapping point types");
     // Make global source indices (local + leased)
     ALE::Point_set sourceTypes;
     sourceTypes.insert(ALE::Point(this->commRank, ALE::localPoint));
@@ -386,20 +387,18 @@ namespace ALE {
     PetscSynchronizedPrintf(this->comm, "[%d]Target size %d\n", this->commRank, targetSize);
     PetscSynchronizedFlush(this->comm);
 
-    int__Point sourceRentMarkers, sourceLeaseMarkers;
-    MPI_Request *sourceRequests, *targetRequests;
-    int **sourceRecvIntervals, **targetRecvIntervals;
+    int__Point rentMarkers, leaseMarkers;
+    MPI_Request *requests;
+    int **recvIntervals;
 
     for(int p = 0; p < this->commSize; p++) {
-      sourceRentMarkers[p] = ALE::Point(-p-1, p);
-      sourceLeaseMarkers[p] = ALE::Point(p, p);
+      rentMarkers[p] = ALE::Point(-p-1, p);
+      leaseMarkers[p] = ALE::Point(p, p);
     }
-    this->__postIntervalRequests(pointTypes, sourceRentMarkers, &sourceRequests, &sourceRecvIntervals);
-    this->__postIntervalRequests(pointTypes, sourceLeaseMarkers, &targetRequests, &targetRecvIntervals);
-    this->__sendIntervals(pointTypes, sourceLeaseMarkers, sourceIndices);
-    this->__sendIntervals(pointTypes, sourceRentMarkers, targetIndices);
-    this->__receiveIntervals(pointTypes, sourceRentMarkers, sourceRequests, sourceRecvIntervals, sourceIndices);
-    this->__receiveIntervals(pointTypes, sourceLeaseMarkers, targetRequests, targetRecvIntervals, targetIndices);
+    // Send leased stuff from source to target, Accept rented stuff at target from source
+    this->__postIntervalRequests(pointTypes, rentMarkers, &requests, &recvIntervals);
+    this->__sendIntervals(pointTypes, leaseMarkers, sourceIndices);
+    this->__receiveIntervals(pointTypes, rentMarkers, requests, recvIntervals, targetIndices);
     sourceIndices->view("Source indices");
     targetIndices->view("Target indices");
   }
