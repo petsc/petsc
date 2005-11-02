@@ -56,7 +56,7 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::removeBasePoint"
   PreSieve& PreSieve::removeBasePoint(Point& p) {
     this->__checkLock();
-    if (this->baseContains(p)) {
+    if (this->_cone.find(p) != this->_cone.end()) {
       // IMPROVE: first decrement the support size for all points in the cone being erased
       ALE::Obj<ALE::Point_set> cone = this->cone(p);
 
@@ -272,16 +272,20 @@ namespace ALE {
   PreSieve& PreSieve::restrictBase(Point_set& base) {
     this->__checkLock();
     Point_set removal;
-    for(Point__Point_set::iterator b_itor = this->_cone.begin(); b_itor != this->_cone.end(); b_itor++){
-      Point p = b_itor->first;
-      // is point p absent from base?
-      if(base.find(p) == base.end()){
-        removal.insert(p);
+    while(1) {
+      for(Point__Point_set::iterator b_itor = this->_cone.begin(); b_itor != this->_cone.end(); b_itor++){
+        Point p = b_itor->first;
+        // is point p absent from base?
+        if(base.find(p) == base.end()){
+          removal.insert(p);
+        }
       }
-    }// for(Point_set::iterator b_itor = this->_cone.begin(); b_itor != this->_cone.end(); b_itor++){
-    for(Point_set::iterator r_itor = removal.begin(); r_itor != removal.end(); r_itor++){
-      Point p = *r_itor;
-      this->removeBasePoint(p);
+      if (!removal.size()) break;
+      for(Point_set::iterator r_itor = removal.begin(); r_itor != removal.end(); r_itor++){
+        Point p = *r_itor;
+        this->removeBasePoint(p);
+      }
+      removal.clear();
     }
     return *this;
   }// PreSieve::restrictBase()
@@ -1856,8 +1860,8 @@ namespace ALE {
     }
     if(LessorCount) {
       ierr       = PetscMalloc((LessorCount)*sizeof(PetscInt),&LessorOffsets);     CHKERROR(ierr,"Error in PetscMalloc");
+      LessorOffsets[0] = 0; 
     }
-    LessorOffsets[0]  = 0; 
     for (int32_t i=1; i<LessorCount; i++) { LessorOffsets[i] = LessorOffsets[i-1] + 3*LeaseSizes[i-1];} 
     for (Point_set::iterator point_itor = points->begin(); point_itor != points->end(); point_itor++) {
       Point p = (*point_itor);
@@ -1867,7 +1871,9 @@ namespace ALE {
       LeasedNodes[LessorOffsets[ind]++] = p.index;      
       LeasedNodes[LessorOffsets[ind]++] = (*cones)[p].size();
     }
-    LessorOffsets[0]  = 0; 
+    if(LessorCount) {
+      LessorOffsets[0] = 0; 
+    }
     for (int32_t i=1; i<LessorCount; i++) { LessorOffsets[i] = LessorOffsets[i-1] + 3*LeaseSizes[i-1];} 
     
     // send the messages to the lessors
