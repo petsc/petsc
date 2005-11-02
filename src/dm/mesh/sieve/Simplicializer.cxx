@@ -822,96 +822,19 @@ PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientatio
 
 #undef __FUNCT__  
 #define __FUNCT__ "WriteVTKVertices"
-PetscErrorCode WriteVTKVertices(Mesh mesh, FILE *f)
+PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Sieve         *topology;
-  ALE::PreSieve      *orientation;
-  ALE::IndexBundle *coordBundle;
-  ALE::IndexBundle  vertexBundle;
-  ALE::Point_set      vertices;
-  Vec                 coordinates;
-  PetscScalar        *coords;
-  int                 dim, numVertices;
-  PetscScalar        *array;
-  MPI_Comm            comm;
-  PetscMPIInt         rank, size;
-  PetscErrorCode      ierr;
+  Vec            coordinates;
+  PetscInt       dim, numVertices;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);
-  ierr = MPI_Comm_size(comm, &size);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
+  ierr = MeshGetDimension(mesh, &dim);CHKERRQ(ierr);
   ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
-  ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
-  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  vertices = topology->depthStratum(0);
-  dim = coordBundle->getFiberDimension(*vertices.begin());
-  vertexBundle = ALE::IndexBundle(topology);
-  vertexBundle.setFiberDimensionByDepth(0, 1);
-  vertexBundle.computeOverlapIndices();
-  vertexBundle.computeGlobalIndices();
-  numVertices = vertexBundle.getGlobalSize();
-  fprintf(f, "POINTS %d double\n", numVertices);
-  if (rank == 0) {
-    ALE::Obj<ALE::PreSieve> globalIndices = coordBundle->getGlobalIndices();
-
-    for(int i = 0; i < vertexBundle.getLocalSize(); i++) {
-      ALE::Point index(i*dim, dim);
-      ALE::Obj<ALE::Point_set> support = globalIndices->support(index);
-      if (!support->size()) {
-        SETERRQ2(PETSC_ERR_PLIB, "Empty support for index (%d, %d)", index.prefix, index.index);
-      }
-      ALE::Point vertex = *support->begin();
-
-      ierr = restrictField(coordBundle, orientation, coords, vertex, &array);CHKERRQ(ierr);
-      for(int d = 0; d < dim; d++) {
-        if (d > 0) fprintf(f, " ");
-        fprintf(f, "%g", array[d]);
-      }
-      for(int d = dim; d < 3; d++) {
-        fprintf(f, " 0.0");
-      }
-      fprintf(f, "\n");
-    }
-    for(int p = 1; p < size; p++) {
-      MPI_Status   status;
-      PetscScalar *remoteCoords;
-      int          numLocalVertices;
-
-      ierr = MPI_Recv(&numLocalVertices, 1, MPI_INT, p, 1, comm, &status);CHKERRQ(ierr);
-      ierr = PetscMalloc(numLocalVertices*dim * sizeof(PetscScalar), &remoteCoords);CHKERRQ(ierr);
-      ierr = MPI_Recv(remoteCoords, numLocalVertices*dim, MPI_DOUBLE, 0, 1, comm, &status);CHKERRQ(ierr);
-      for(int v = 0; v < numLocalVertices; v++) {
-        for(int d = 0; d < dim; d++) {
-          if (d > 0) fprintf(f, " ");
-          fprintf(f, "%g", remoteCoords[v*dim+d]);
-        }
-        for(int d = dim; d < 3; d++) {
-          fprintf(f, " 0.0");
-        }
-        fprintf(f, "\n");
-      }
-      ierr = PetscFree(remoteCoords);CHKERRQ(ierr);
-    }
-  } else {
-    PetscScalar *array;
-    PetscScalar *vertexArray;
-    int          numLocalVertices = vertices.size(), offset = 0;
-
-    ierr = PetscMalloc(numLocalVertices*dim * sizeof(PetscScalar), &array);CHKERRQ(ierr);
-    for(ALE::Point_set::iterator v_itor = vertices.begin(); v_itor != vertices.end(); v_itor++) {
-      ierr = restrictField(coordBundle, orientation, coords, *v_itor, &vertexArray);CHKERRQ(ierr);
-      for(int c = 0; c < dim; c++) {
-        array[offset++] = vertexArray[c];
-      }
-    }
-    ierr = MPI_Send(&numLocalVertices, 1, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
-    ierr = MPI_Send(array, numLocalVertices*dim, MPI_DOUBLE, 0, 1, comm);CHKERRQ(ierr);
-    ierr = PetscFree(array);CHKERRQ(ierr);
-  }
-  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = VecGetSize(coordinates, &numVertices);CHKERRQ(ierr);
+  numVertices /= dim;
+  ierr = PetscViewerASCIIPrintf(viewer,"POINTS %d double\n", numVertices);CHKERRQ(ierr);
+  ierr = VecView(coordinates, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1009,51 +932,15 @@ PetscErrorCode WriteVTKElements(Mesh mesh, FILE *f)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode WriteVTKHeader(Mesh mesh, FILE *f)
+PetscErrorCode WriteVTKHeader(Mesh mesh, PetscViewer viewer)
 {
-  MPI_Comm       comm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, f, "# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, f, "Simplicial Mesh Example\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, f, "ASCII\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, f, "DATASET UNSTRUCTURED_GRID\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode CreateVTKFile(Mesh mesh, const char name[])
-{
-  FILE               *f = NULL;
-  ALE::IndexBundle   *coordBundle;
-  PetscInt            dim ,embedDim;
-  MPI_Comm            comm;
-  PetscMPIInt         rank;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  if (rank == 0) {
-    std::string fname(name);
-
-    fname += ".vtk";
-    f = fopen(fname.c_str(), "w");
-  }
-  ierr = WriteVTKHeader(mesh, f);CHKERRQ(ierr);
-  ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
-  ierr = WriteVTKVertices(mesh, f);CHKERRQ(ierr);
-  ierr = MeshGetDimension(mesh, &dim);CHKERRQ(ierr);
-  ierr = MeshGetEmbeddingDimension(mesh, &embedDim);CHKERRQ(ierr);
-  if (dim < embedDim) {
-    //ierr = WriteVTKBoundaryElements(f, mesh);CHKERRQ(ierr);
-  } else {
-    ierr = WriteVTKElements(mesh, f);CHKERRQ(ierr);
-  }
-  if (rank == 0) {
-    fclose(f);
-  }
+  ierr = PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Simplicial Mesh Example\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"ASCII\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"DATASET UNSTRUCTURED_GRID\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

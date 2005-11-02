@@ -123,6 +123,26 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",x->array[i]);CHKERRQ(ierr);
 #endif
     }
+  } else if (format == PETSC_VIEWER_ASCII_VTK) {
+    PetscInt bs;
+    PetscInt b;
+
+    ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
+    if (bs > 3) {
+      SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
+    }
+    for (i=0; i<n/bs; i++) {
+      for (b=0; b<bs; b++) {
+        if (b > 0) {
+          ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer,"%g",x->array[i*bs+b]);CHKERRQ(ierr);
+      }
+      for (b=bs; b<3; b++) {
+        ierr = PetscViewerASCIIPrintf(viewer," 0.0");CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+    }
   } else {
     for (i=0; i<n; i++) {
       if (format == PETSC_VIEWER_ASCII_INDEX) {
