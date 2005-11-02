@@ -865,8 +865,8 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
   elementBundle.setFiberDimensionByHeight(0, 1);
   elementBundle.computeOverlapIndices();
   elementBundle.computeGlobalIndices();
-  dim = topology->diameter();
   elements = topology->heightStratum(0);
+  dim = topology->depth(*elements.begin());
   numElements = elementBundle.getGlobalSize();
   corners = topology->nCone(*elements.begin(), dim).size();
   ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
@@ -888,7 +888,7 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
 
       ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, comm, &status);CHKERRQ(ierr);
       ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &remoteVertices);CHKERRQ(ierr);
-      ierr = MPI_Recv(remoteVertices, numLocalElements*corners, MPI_INT, 0, 1, comm, &status);CHKERRQ(ierr);
+      ierr = MPI_Recv(remoteVertices, numLocalElements*corners, MPI_INT, p, 1, comm, &status);CHKERRQ(ierr);
       for(int e = 0; e < numLocalElements; e++) {
         ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
         for(int c = 0; c < corners; c++) {
