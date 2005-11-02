@@ -428,9 +428,13 @@ namespace ALE {
       firstIndex[p+1] = firstIndex[p+1] + firstIndex[p];
     }
     for(ALE::Point_set::iterator e_itor = localPoints->begin(); e_itor != localPoints->end(); e_itor++) {
-      ALE::Point globalIndex(*localIndices->cone(*e_itor).begin());
+      ALE::Obj<ALE::Point_set> cone = localIndices->cone(*e_itor);
+      ALE::Point globalIndex(-1, 0);
       ALE::Point point = *e_itor;
 
+      if (cone->size()) {
+        globalIndex = *cone->begin();
+      }
       globalIndex.prefix += firstIndex[this->commRank];
       globalIndices->addCone(globalIndex, point);
     }
@@ -456,7 +460,6 @@ namespace ALE {
       CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Irecv"));
       PetscSynchronizedPrintf(this->comm, "[%d]  rented size %d for proc %d\n", this->commRank, size, p);
     }
-    PetscSynchronizedFlush(this->comm);
     for(int p = 0; p < this->commSize; p++) {
       if (p == this->commRank) {
         ierr = MPI_Send(&p, 0, MPI_INT, p, 1, this->comm);
@@ -470,7 +473,7 @@ namespace ALE {
 
       for(ALE::Point_set::iterator e_itor = leasedPoints->begin(); e_itor != leasedPoints->end(); e_itor++) {
         ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
-        ALE::Point interval;
+        ALE::Point interval(-1, 0);
 
         if (cone->size()) {
           interval = *cone->begin();
@@ -484,7 +487,6 @@ namespace ALE {
       delete intervals;
       PetscSynchronizedPrintf(this->comm, "[%d]  leased size %d for proc %d\n", this->commRank, size, p);
     }
-    PetscSynchronizedFlush(this->comm);
     ierr = MPI_Waitall(this->commSize, requests, statuses); CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Waitall"));
     for(int p = 0; p < this->commSize; p++) {
       if (p == this->commRank) {
@@ -499,11 +501,12 @@ namespace ALE {
         ALE::Point point = *e_itor;
 
         globalIndices->addCone(interval, point);
-        printf("[%d]Set global indices of (%d, %d) to (%d, %d)\n", this->commRank, point.prefix, point.index, interval.prefix, interval.index);
+        PetscSynchronizedPrintf(this->comm, "[%d]Set global indices of (%d, %d) to (%d, %d)\n", this->commRank, point.prefix, point.index, interval.prefix, interval.index);
         i += 2;
       }
       delete recvIntervals[p];
     }
+    PetscSynchronizedFlush(this->comm);
     delete requests;
     delete statuses;
     delete recvIntervals;

@@ -453,7 +453,7 @@ PetscErrorCode MeshCreateSeq(Mesh mesh, int dim, PetscInt numVertices, PetscInt 
     printf("Sizeof fiber over vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
     ierr = setFiberValues(coordinates, v, coordBundle, &coords[(v.index - numElements)*dim], INSERT_VALUES);CHKERRQ(ierr);
   }
-  printf("Serial coordinates\n====================\n");
+  PetscPrintf(this->comm, "Serial coordinates\n====================\n");
   ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(coordinates);CHKERRQ(ierr);
   ierr = VecView(coordinates, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -507,7 +507,7 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   /* Create ghosted coordinate storage */
   int localSize = coordBundle->getLocalSize();
   int globalSize = coordBundle->getGlobalSize();
-  ALE::Obj<ALE::PreSieve> globalIndices = coordBundle->getPointTypes();
+  ALE::Obj<ALE::PreSieve> globalIndices = coordBundle->getGlobalIndices();
   ALE::Obj<ALE::PreSieve> pointTypes = coordBundle->getPointTypes();
   ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(coordBundle->getCommRank(), ALE::rentedPoint));
   int ghostSize = 0;
