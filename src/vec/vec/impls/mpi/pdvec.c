@@ -116,7 +116,24 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 #endif
         }
       }          
+    } else if (format == PETSC_VIEWER_ASCII_VTK) {
+      Vec      localRep;
+      PetscInt bs;
 
+      ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
+      ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
+      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, n, xarray, &localRep);CHKERRQ(ierr);
+      ierr = VecSetBlockSize(localRep, bs);CHKERRQ(ierr);
+      ierr = VecView(localRep, viewer);CHKERRQ(ierr);
+      ierr = VecDestroy(localRep);CHKERRQ(ierr);
+      for (j=1; j<size; j++) {
+        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,xin->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);         
+        ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, n, values, &localRep);CHKERRQ(ierr);
+        ierr = VecSetBlockSize(localRep, bs);CHKERRQ(ierr);
+        ierr = VecView(localRep, viewer);CHKERRQ(ierr);
+        ierr = VecDestroy(localRep);CHKERRQ(ierr);
+      }
     } else {
       if (format != PETSC_VIEWER_ASCII_COMMON) {ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",rank);CHKERRQ(ierr);}
       cnt = 0;
