@@ -2,6 +2,7 @@
 
 
 TLIBNAME    = libtops
+LOCDIR      = src/tops/
 
 include makefile.rules
 
