@@ -98,7 +98,9 @@ int main(int argc, char *argv[])
   ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
+  ierr = MeshDestroy(mesh);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
