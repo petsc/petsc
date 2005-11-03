@@ -420,7 +420,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
         }
       }
       if (flag2 && !rank) {
-        PetscViewer viewer;
         PetscDraw   draw;
         PetscDrawSP drawsp;
 
@@ -455,7 +454,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
       }
     }
     if (flag2 && !rank) {
-      PetscViewer viewer;
       PetscDraw   draw;
       PetscDrawSP drawsp;
 

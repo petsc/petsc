@@ -85,7 +85,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int sig,void *ptr)
   SIGNAME[SIGABRT] = "Abort";
 #endif
 #if !defined(PETSC_MISSING_SIGALRM)
-  /* SIGNAME[SIGALRM] = "Alarm"; */
+  SIGNAME[SIGALRM] = "Alarm"; 
 #endif
 #if !defined(PETSC_MISSING_SIGBUS)
   SIGNAME[SIGBUS]  = "BUS: Bus Error, possibly illegal memory access";
@@ -100,22 +100,22 @@ PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int sig,void *ptr)
   SIGNAME[SIGFPE]  = "FPE: Floating Point Exception,probably divide by zero";
 #endif
 #if !defined(PETSC_MISSING_SIGHUP)
-  SIGNAME[SIGHUP]  = "Hang up";
+  SIGNAME[SIGHUP]  = "Hang up: Some other process (or the batch system) has told this process to end";
 #endif
 #if !defined(PETSC_MISSING_SIGILL)
-  SIGNAME[SIGILL]  = "Illegal instruction";
+  SIGNAME[SIGILL]  = "Illegal instruction: Likely due to memory corruption";
 #endif
 #if !defined(PETSC_MISSING_SIGINT)
-  /*  SIGNAME[SIGINT]  = "Interrupt"; */
+  SIGNAME[SIGINT]  = "Interrupt"; 
 #endif
 #if !defined(PETSC_MISSING_SIGKILL)
-  SIGNAME[SIGKILL] = "Kill";
+  SIGNAME[SIGKILL] = "Kill: Some other process (or the batch system) has told this process to end";
 #endif
 #if !defined(PETSC_MISSING_SIGPIPE)
-  SIGNAME[SIGPIPE] = "Broken Pipe";
+  SIGNAME[SIGPIPE] = "Broken Pipe: Likely while reading or writing to a socket";
 #endif
 #if !defined(PETSC_MISSING_SIGQUIT)
-  SIGNAME[SIGQUIT] = "Quit";
+  SIGNAME[SIGQUIT] = "Quit: Some other process (or the batch system) has told this process to end";
 #endif
 #if !defined(PETSC_MISSING_SIGSEGV)
   SIGNAME[SIGSEGV] = "SEGV: Segmentation Violation, probably memory access out of range";
@@ -124,7 +124,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int sig,void *ptr)
   SIGNAME[SIGSYS]  = "SYS";
 #endif
 #if !defined(PETSC_MISSING_SIGTERM)
-  /* SIGNAME[SIGTERM] = "Terminate"; */
+  SIGNAME[SIGTERM] = "Terminate: Somet process (or the batch system) has told this process to end";
 #endif
 #if !defined(PETSC_MISSING_SIGTRAP)
   SIGNAME[SIGTRAP] = "TRAP";
