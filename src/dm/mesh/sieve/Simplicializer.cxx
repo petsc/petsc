@@ -1,6 +1,8 @@
 #include <petscda.h>
 #include <IndexBundle.hh>
 
+int debug = 0;
+
 #undef __FUNCT__
 #define __FUNCT__ "BuildFaces"
 PetscErrorCode BuildFaces(int dim, std::map<int, int*> curSimplex, ALE::Point_set boundary, ALE::Point& simplex, ALE::Sieve *topology)
@@ -9,24 +11,24 @@ PetscErrorCode BuildFaces(int dim, std::map<int, int*> curSimplex, ALE::Point_se
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  printf("  Building faces for boundary(%u), dim %d\n", (unsigned int) boundary.size(), dim);
+  if (debug) {PetscPrintf(PETSC_COMM_SELF, "  Building faces for boundary(%u), dim %d\n", (unsigned int) boundary.size(), dim);}
   if (dim > 1) {
     // Use the cone construction
     for(ALE::Point_set::iterator b_itor = boundary.begin(); b_itor != boundary.end(); b_itor++) {
       ALE::Point_set faceBoundary(boundary);
       ALE::Point face;
 
-      printf("    boundary point (%d, %d)\n", (*b_itor).prefix, (*b_itor).index);
+      if (debug) {PetscPrintf(PETSC_COMM_SELF, "    boundary point (%d, %d)\n", (*b_itor).prefix, (*b_itor).index);}
       faceBoundary.erase(*b_itor);
       ierr = BuildFaces(dim-1, curSimplex, faceBoundary, face, topology); CHKERRQ(ierr);
       faces.insert(face);
     }
   } else {
-    printf("  Just set faces to boundary in 1d\n");
+    if (debug) {PetscPrintf(PETSC_COMM_SELF, "  Just set faces to boundary in 1d\n");}
     faces = boundary;
   }
   for(ALE::Point_set::iterator f_itor = faces.begin(); f_itor != faces.end(); f_itor++) {
-    printf("  face point (%d, %d)\n", (*f_itor).prefix, (*f_itor).index);
+    if (debug) {PetscPrintf(PETSC_COMM_SELF, "  face point (%d, %d)\n", (*f_itor).prefix, (*f_itor).index);}
   }
   // We always create the toplevel, so we could shortcircuit somehow
   // Should not have to loop here since the meet of just 2 boundary elements is an element
@@ -38,11 +40,11 @@ PetscErrorCode BuildFaces(int dim, std::map<int, int*> curSimplex, ALE::Point_se
 
   if (preElement->size() > 0) {
     simplex = *preElement->begin();
-    printf("  Found old simplex (%d, %d)\n", simplex.prefix, simplex.index);
+    if (debug) {PetscPrintf(PETSC_COMM_SELF, "  Found old simplex (%d, %d)\n", simplex.prefix, simplex.index);}
   } else {
     simplex = ALE::Point(0, (*curSimplex[dim])++);
     topology->addCone(faces, simplex);
-    printf("  Added simplex (%d, %d), dim %d\n", simplex.prefix, simplex.index, dim);
+    if (debug) {PetscPrintf(PETSC_COMM_SELF, "  Added simplex (%d, %d), dim %d\n", simplex.prefix, simplex.index, dim);}
   }
   PetscFunctionReturn(0);
 }
@@ -71,10 +73,10 @@ PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices
     /* Build the simplex */
     boundary.clear();
     for(int b = 0; b < dim+1; b++) {
-      printf("Adding boundary node (%d, %d)\n", 0, simplices[s*(dim+1)+b]+numSimplices);
+      if (debug) {PetscPrintf(PETSC_COMM_SELF, "Adding boundary node (%d, %d)\n", 0, simplices[s*(dim+1)+b]+numSimplices);}
       boundary.insert(ALE::Point(0, simplices[s*(dim+1)+b]+numSimplices));
     }
-    printf("simplex boundary size %u\n", (unsigned int) boundary.size());
+    if (debug) {PetscPrintf(PETSC_COMM_SELF, "simplex boundary size %u\n", (unsigned int) boundary.size());}
     ierr = BuildFaces(dim, curElement, boundary, simplex, topology); CHKERRQ(ierr);
     /* Orient the simplex */
     ALE::Point element = ALE::Point(0, simplices[s*(dim+1)+0]+numSimplices);
@@ -85,7 +87,7 @@ PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices
       ALE::Obj<ALE::Point_set> join = topology->nJoin(element, next, b);
 
       if (join->size() == 0) {
-        printf("element (%d, %d) next(%d, %d)\n", element.prefix, element.index, next.prefix, next.index);
+        PetscPrintf(PETSC_COMM_SELF, "element (%d, %d) next(%d, %d)\n", element.prefix, element.index, next.prefix, next.index);
         SETERRQ(PETSC_ERR_LIB, "Invalid join");
       }
       element = *join->begin();
@@ -121,15 +123,15 @@ PetscErrorCode ComputePreSievePartition(ALE::Obj<ALE::PreSieve> presieve, ALE::O
     ALE::Point partitionPoint(-1, rank);
     presieve->addBasePoint(partitionPoint);
   }
-  //
-  ostringstream label1;
-  label1 << "Partition of presieve ";
-  if(name != NULL) {
-    label1 << "'" << name << "'";
+  if (debug) {
+    ostringstream label1;
+    label1 << "Partition of presieve ";
+    if(name != NULL) {
+      label1 << "'" << name << "'";
+    }
+    label1 << "\n";
+    presieve->view(label1.str().c_str());
   }
-  label1 << "\n";
-  presieve->view(label1.str().c_str());
-  //
   PetscFunctionReturn(0);
 }
 
@@ -158,15 +160,15 @@ PetscErrorCode ComputeSievePartition(ALE::Obj<ALE::Sieve> sieve, const char *nam
     ALE::Point partitionPoint(-1, rank);
     sieve->addBasePoint(partitionPoint);
   }
-  //
-  ostringstream label1;
-  label1 << "Partition of sieve ";
-  if(name != NULL) {
-    label1 << "'" << name << "'";
+  if (debug) {
+    ostringstream label1;
+    label1 << "Partition of sieve ";
+    if(name != NULL) {
+      label1 << "'" << name << "'";
+    }
+    label1 << "\n";
+    sieve->view(label1.str().c_str());
   }
-  label1 << "\n";
-  sieve->view(label1.str().c_str());
-  //
   PetscFunctionReturn(0);
 }
 
@@ -184,13 +186,14 @@ PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve, const char *n
   // Cone complete to move the partitions to the other processors
   ALE::Obj<ALE::Stack> completionStack = presieve->coneCompletion(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeCone, NULL);
   ALE::Obj<ALE::PreSieve> completion = completionStack->top();
-  //
-  ostringstream label1;
-  label1 << "Completion";
-  if(name != NULL) {
-    label1 << " of '" << name << "'";
+  if (debug) {
+    ostringstream label1;
+    label1 << "Completion";
+    if(name != NULL) {
+      label1 << " of '" << name << "'";
+    }
+    completion->view(label1.str().c_str());
   }
-  completion->view(label1.str().c_str());
   // Create point type presieve
   if (pointTypes != NULL) {
     ALE::PreSieve *pTypes = new ALE::PreSieve(comm);
@@ -230,12 +233,13 @@ PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve, const char *n
         pTypes->addCone(cone, point);
       }
     }
-    pTypes->view("Partition pointTypes");
     *pointTypes = pTypes;
+    if (debug) {
+      pTypes->view("Partition pointTypes");
+    }
   }
   // Merge in the completion
   presieve->add(completion);
-  //presieve->view("Completed partition");
   // Move the cap to the base of the partition sieve
   ALE::Point partitionPoint(-1, rank);
   ALE::Point_set partition = presieve->cone(partitionPoint);
@@ -243,51 +247,48 @@ PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve, const char *n
     ALE::Point p = *p_itor;
     presieve->addBasePoint(p);
   }
-  //
-  ostringstream label2;
-  if(name != NULL) {
-    label2 << "Initial parallel state of '" << name << "'";
+  if (debug) {
+    ostringstream label2;
+    if(name != NULL) {
+      label2 << "Initial parallel state of '" << name << "'";
+    } else {
+      label2 << "Initial parallel presieve";
+    }
+    presieve->view(label2.str().c_str());
   }
-  else {
-    label2 << "Initial parallel presieve";
-  }
-  presieve->view(label2.str().c_str());
-  //
   // Cone complete again to build the local topology
   completion = presieve->coneCompletion(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeCone, NULL)->top();
-  //
-  ostringstream label3;
-  if(name != NULL) {
-    label3 << "Completion of '" << name << "'";
+  if (debug) {
+    ostringstream label3;
+    if(name != NULL) {
+      label3 << "Completion of '" << name << "'";
+    } else {
+      label3 << "Completion";
+    }
+    completion->view(label3.str().c_str());
   }
-  else {
-    label3 << "Completion";
-  }
-  completion->view(label3.str().c_str());
-  //
   presieve->add(completion);
-  //
-  ostringstream label4;
-  if(name != NULL) {
-    label4 << "Completed parallel version of '" << name << "'";
+  if (debug) {
+    ostringstream label4;
+    if(name != NULL) {
+      label4 << "Completed parallel version of '" << name << "'";
+    } else {
+      label4 << "Completed parallel presieve";
+    }
+    presieve->view(label4.str().c_str());
   }
-  else {
-    label4 << "Completed parallel presieve";
-  }
-  presieve->view(label4.str().c_str());
-  //
   // Unless explicitly prohibited, restrict to the local partition
   if(localize) {
     presieve->restrictBase(partition);
-    //
-    ostringstream label5;
-    if(name != NULL) {
-      label5 << "Localized parallel version of '" << name << "'";
+    if (debug) {
+      ostringstream label5;
+      if(name != NULL) {
+        label5 << "Localized parallel version of '" << name << "'";
+      } else {
+        label5 << "Localized parallel presieve";
+      }
+      presieve->view(label5.str().c_str());
     }
-    else {
-      label5 << "Localized parallel presieve";
-    }
-    presieve->view(label5.str().c_str());
   }
   // Support complete to get the adjacency information
   PetscFunctionReturn(0);
@@ -340,12 +341,16 @@ PetscErrorCode setFiberValues(Vec b, ALE::Point e, ALE::Obj<ALE::IndexBundle> bu
     indicesSize = numIndices;
     ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
   }
-  for(ALE::Point_set::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    printf("indices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
+  if (debug) {
+    for(ALE::Point_set::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+      printf("indices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
+    }
   }
   ExpandInterval(*intervals->begin(), indices, &i);
-  for(int i = 0; i < numIndices; i++) {
-    printf("indices[%d] = %d\n", i, indices[i]);
+  if (debug) {
+    for(int i = 0; i < numIndices; i++) {
+      printf("indices[%d] = %d\n", i, indices[i]);
+    }
   }
   ierr = VecSetValues(b, numIndices, indices, array, mode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -430,15 +435,19 @@ PetscErrorCode MeshCreateSeq(Mesh mesh, int dim, PetscInt numVertices, PetscInt 
   PetscValidIntPointer(elements,4);
   ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size); CHKERRQ(ierr);
-  topology->setVerbosity(11);
-  orientation->setVerbosity(11);
-  boundary->setVerbosity(11);
+  if (debug) {
+    topology->setVerbosity(11);
+    orientation->setVerbosity(11);
+    boundary->setVerbosity(11);
+  }
   /* Create serial sieve */
   if (rank == 0) {
     ierr = BuildTopology(dim, numElements, elements, numVertices, topology, orientation);CHKERRQ(ierr);
   }
-  topology->view("Serial Simplicializer topology");
-  orientation->view("Serial Simplicializer orientation");
+  if (debug) {
+    topology->view("Serial Simplicializer topology");
+    orientation->view("Serial Simplicializer orientation");
+  }
   ierr = MeshSetTopology(mesh, (void *) topology);CHKERRQ(ierr);
   ierr = MeshSetOrientation(mesh, (void *) orientation);CHKERRQ(ierr);
   /* Create the initial coordinate bundle and storage */
@@ -447,6 +456,9 @@ PetscErrorCode MeshCreateSeq(Mesh mesh, int dim, PetscInt numVertices, PetscInt 
   coordBundle->computeOverlapIndices();
   coordBundle->computeGlobalIndices();
   coordBundle->getLock();  // lock the bundle so that the overlap indices do not change
+  if (debug) {
+    coordBundle->setVerbosity(11);
+  }
   ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
   int localSize = coordBundle->getLocalSize();
   int globalSize = coordBundle->getGlobalSize();
@@ -457,14 +469,18 @@ PetscErrorCode MeshCreateSeq(Mesh mesh, int dim, PetscInt numVertices, PetscInt 
   ALE::Obj<ALE::Point_set> vertices = topology->depthStratum(0);
   for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
     ALE::Point v = *vertex_itor;
-    printf("Sizeof fiber over vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
+    if (debug) {
+      printf("Sizeof fiber over vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
+    }
     ierr = setFiberValues(coordinates, v, coordBundle, &coords[(v.index - numElements)*dim], INSERT_VALUES);CHKERRQ(ierr);
   }
-  PetscPrintf(comm, "Serial coordinates\n====================\n");
   ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(coordinates);CHKERRQ(ierr);
-  ierr = VecView(coordinates, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MeshSetCoordinates(mesh, coordinates);CHKERRQ(ierr);
+  if (debug) {
+    ierr = PetscPrintf(comm, "Serial coordinates\n====================\n");CHKERRQ(ierr);
+    ierr = VecView(coordinates, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -512,6 +528,9 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   coordBundle->computeOverlapIndices();
   coordBundle->computeGlobalIndices();
   coordBundle->getLock();  // lock the bundle so that the overlap indices do not change
+  if (debug) {
+    coordBundle->setVerbosity(11);
+  }
   /* Create ghosted coordinate storage */
   int localSize = coordBundle->getLocalSize();
   int globalSize = coordBundle->getGlobalSize();
@@ -539,14 +558,16 @@ PetscErrorCode MeshDistribute(Mesh mesh)
       ExpandInterval(interval, ghostIndices, &ghostIdx);
     }
   }
-  PetscPrintf(comm, "Making an ordering over the vertices\n===============================\n");
-  PetscSynchronizedPrintf(comm, "[%d]  global size: %d localSize: %d ghostSize: %d\n", rank, globalSize, localSize, ghostSize);
-  PetscSynchronizedPrintf(comm, "[%d]  ghostIndices:", rank);
-  for(int g = 0; g < ghostSize; g++) {
-    PetscSynchronizedPrintf(comm, "[%d] %d\n", rank, ghostIndices[g]);
+  if (debug) {
+    PetscPrintf(comm, "Making an ordering over the vertices\n===============================\n");
+    PetscSynchronizedPrintf(comm, "[%d]  global size: %d localSize: %d ghostSize: %d\n", rank, globalSize, localSize, ghostSize);
+    PetscSynchronizedPrintf(comm, "[%d]  ghostIndices:", rank);
+    for(int g = 0; g < ghostSize; g++) {
+      PetscSynchronizedPrintf(comm, "[%d] %d\n", rank, ghostIndices[g]);
+    }
+    PetscSynchronizedPrintf(comm, "\n");
+    PetscSynchronizedFlush(comm);
   }
-  PetscSynchronizedPrintf(comm, "\n");
-  PetscSynchronizedFlush(comm);
   ierr = VecCreateGhostBlock(comm,dim,localSize,globalSize,ghostSize,ghostIndices,&coordinates);CHKERRQ(ierr);
   /* Setup mapping to partitioned storage */
   ALE::Obj<ALE::Stack> mappingStack;
@@ -583,8 +604,10 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   ierr = ISDestroy(oldCoordIS);CHKERRQ(ierr);
   ierr = ISDestroy(coordIS);CHKERRQ(ierr);
   ierr = VecDestroy(oldCoordinates);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "Parallel Coordinates\n===========================\n");CHKERRQ(ierr);
-  ierr = VecView(coordinates, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  if (debug) {
+    ierr = PetscPrintf(comm, "Parallel Coordinates\n===========================\n");CHKERRQ(ierr);
+    ierr = VecView(coordinates, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   delete serialCoordBundle;
   PetscFunctionReturn(0);
 }
@@ -638,87 +661,6 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MeshCreateCoordinates"
-PetscErrorCode MeshCreateCoordinates(Mesh mesh, PetscScalar coords[])
-{
-  ALE::IndexBundle      *coordBundle;
-  ALE::Sieve              *topology;
-  ALE::Sieve              *orientation;
-  ALE::Obj<ALE::Point_set> vertices;
-  ALE::Point_set           empty;
-  Vec                      coordinates;
-  PetscInt                 dim, numElements;
-  MPI_Comm                 comm;
-  PetscErrorCode           ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) mesh, &comm); CHKERRQ(ierr);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
-  dim = topology->diameter();
-  /* Create bundle */
-  coordBundle = new ALE::IndexBundle(comm);
-  coordBundle->setTopology(topology);
-  coordBundle->setFiberDimensionByDepth(0, dim);
-  coordBundle->computeOverlapIndices();
-  coordBundle->computeGlobalIndices();
-  coordBundle->getLock();  // lock the bundle so that the overlap indices do not change
-  //
-  ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
-  /* Create coordinate storage */
-  int localSize = coordBundle->getLocalSize();
-  int globalSize = coordBundle->getGlobalSize();
-  ALE::Obj<ALE::PreSieve> globalIndices = coordBundle->getGlobalIndices();
-  globalIndices->view("Global Indices");
-  ALE::Obj<ALE::PreSieve> pointTypes = coordBundle->getPointTypes();
-  ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(coordBundle->getCommRank(), ALE::rentedPoint));
-  int ghostSize = 0;
-  for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
-    ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
-
-    if (cone->size()) {
-      ALE::Point interval = *cone->begin();
-
-      ghostSize += interval.index;
-    }
-  }
-  int *ghostIndices = new int[ghostSize];
-  int idx = 0;
-  for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
-    ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
-
-    if (cone->size()) {
-      ALE::Point interval = *cone->begin();
-
-      ExpandInterval(interval, ghostIndices, &idx);
-    }
-  }
-  /* Print shit */
-  printf("Making an ordering over the vertices\n===============================\n");
-  printf("  global size: %d ghostSize: %d\n", globalSize, ghostSize);
-  printf("  ghostIndices:");
-  for(int g = 0; g < ghostSize; g++) {
-    printf(" %d\n", ghostIndices[g]);
-  }
-  printf("\n");
-  // NO: Create a global ghosted vector to store a field
-  ierr = VecCreateGhostBlock(comm,1,localSize,globalSize,ghostSize,ghostIndices,&coordinates);CHKERRQ(ierr);
-  // Create a scatter from original coordinates to partitioned storage
-  // Set local coordinates
-  numElements = topology->heightStratum(0).size();
-  vertices = topology->depthStratum(0);
-  for(ALE::Point_set::iterator vertex_itor = vertices->begin(); vertex_itor != vertices->end(); vertex_itor++) {
-    ALE::Point v = *vertex_itor;
-    printf("Sizeof fiber over vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
-    ierr = setFiberValues(coordinates, v,coordBundle, &coords[(v.index - numElements)*dim], INSERT_VALUES);CHKERRQ(ierr);
-  }
-  ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(coordinates);CHKERRQ(ierr);
-  ierr = MeshSetCoordinates(mesh, coordinates);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "MeshGetDimension"
 /*@C
@@ -769,9 +711,9 @@ PetscErrorCode MeshGetDimension(Mesh mesh, PetscInt *dimension)
 @*/
 PetscErrorCode MeshGetEmbeddingDimension(Mesh mesh, PetscInt *dimension)
 {
-  ALE::Sieve         *topology;
+  ALE::Sieve       *topology;
   ALE::IndexBundle *coordBundle;
-  PetscErrorCode      ierr;
+  PetscErrorCode    ierr;
 
   PetscValidIntPointer(dimension,2);
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
@@ -843,14 +785,14 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WriteVTKElements"
 PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Sieve         *topology;
+  ALE::Sieve       *topology;
   ALE::IndexBundle  vertexBundle;
   ALE::IndexBundle  elementBundle;
-  ALE::Point_set      elements;
-  int                 dim, numElements, corners;
-  MPI_Comm            comm;
-  PetscMPIInt         rank, size;
-  PetscErrorCode      ierr;
+  ALE::Point_set    elements;
+  int               dim, numElements, corners;
+  MPI_Comm          comm;
+  PetscMPIInt       rank, size;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);

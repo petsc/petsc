@@ -153,7 +153,7 @@ namespace ALE {
   #define __FUNCT__ "IndexBundle::computeOverlapIndices"
   void   IndexBundle::computeOverlapIndices() {
     this->_overlapOwnership = this->getTopology()->baseFootprint(PreSieve::completionTypePoint, PreSieve::footprintTypeCone, NULL)->left();
-    this->_overlapOwnership->view("Overlap ownership");
+    if (this->verbosity > 10) {this->_overlapOwnership->view("Overlap ownership");}
     this->_localOverlapIndices->setBottom(this->_overlapOwnership);
     this->_localOverlapIndices->setTop(new PreSieve(this->getComm()));
     // Traverse the points in the overlapOwnership base, compute the local indices over it and attach them using _localOverlapIndices
@@ -161,14 +161,13 @@ namespace ALE {
     for(Point_set::iterator o_itor = base->begin(); o_itor != base->end(); o_itor++) {
       Point e = *o_itor;
       Point interval = this->getFiberInterval(e);
-      printf("overlap point (%d, %d)\n", e.prefix, e.index);
       this->_localOverlapIndices->top()->addCapPoint(interval);
       this->_localOverlapIndices->addCone(interval, e);
     }
-    this->_localOverlapIndices->view("Local overlap indices");
+    if (this->verbosity > 10) {this->_localOverlapIndices->view("Local overlap indices");}
     // Now we do the completion
     this->_localOverlapIndices->coneCompletion(PreSieve::completionTypeArrow, PreSieve::footprintTypeCone, this->_remoteOverlapIndices);
-    this->_remoteOverlapIndices->view("Remote overlap indices");
+    if (this->verbosity > 10) {this->_remoteOverlapIndices->view("Remote overlap indices");}
   }//IndexBundle::computeOverlapIndices()
 
   #undef  __FUNCT__
@@ -255,7 +254,7 @@ namespace ALE {
       pointTypes->addCone(point, typePoint);
     }
     this->_pointTypes = pointTypes;
-    pointTypes->view("Point types");
+    if (this->verbosity > 10) {pointTypes->view("Point types");}
     return pointTypes;
   }
 
@@ -278,7 +277,7 @@ namespace ALE {
 
       ierr = MPI_Irecv(recvIntervals[p], size, MPI_INT, p, 1, this->comm, &(requests[p]));
       CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Irecv"));
-      PetscSynchronizedPrintf(this->comm, "[%d]  rented size %d for proc %d\n", this->commRank, size, p);
+      if (this->verbosity > 10) {PetscSynchronizedPrintf(this->comm, "[%d]  rented size %d for proc %d\n", this->commRank, size, p);}
     }
     PetscSynchronizedFlush(this->comm);
     *intervalRequests = requests;
@@ -314,7 +313,7 @@ namespace ALE {
       ierr = MPI_Send(intervals, size, MPI_INT, p, 1, this->comm);
       CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Send"));
       delete intervals;
-      PetscSynchronizedPrintf(this->comm, "[%d]  leased size %d for proc %d\n", this->commRank, size, p);
+      if (this->verbosity > 10) {PetscSynchronizedPrintf(this->comm, "[%d]  leased size %d for proc %d\n", this->commRank, size, p);}
     }
     PetscSynchronizedFlush(this->comm);
   }
@@ -339,7 +338,9 @@ namespace ALE {
         ALE::Point point = *e_itor;
 
         indices->addCone(interval, point);
-        PetscSynchronizedPrintf(this->comm, "[%d]Set indices of (%d, %d) to (%d, %d)\n", this->commRank, point.prefix, point.index, interval.prefix, interval.index);
+        if (this->verbosity > 10) {
+          PetscSynchronizedPrintf(this->comm, "[%d]Set indices of (%d, %d) to (%d, %d)\n", this->commRank, point.prefix, point.index, interval.prefix, interval.index);
+        }
         i += 2;
       }
       delete recvIntervals[p];
@@ -359,7 +360,7 @@ namespace ALE {
     use another communication structure with purely local indexing.
   */
   ALE::Obj<ALE::Stack>   IndexBundle::computeMappingIndices(ALE::Obj<ALE::PreSieve> pointTypes, ALE::Obj<ALE::IndexBundle> target) {
-    pointTypes->view("Mapping point types");
+    if (this->verbosity > 10) {pointTypes->view("Mapping point types");}
     ALE::Obj<ALE::Stack> stack(new ALE::Stack(this->comm));
 
     // Make global source indices (local + leased)
@@ -375,8 +376,10 @@ namespace ALE {
       sourceIndices->addCone(cone, point);
     }
     int sourceSize = this->getFiberDimension(sourcePoints);
-    PetscSynchronizedPrintf(this->comm, "[%d]Source size %d\n", this->commRank, sourceSize);
-    PetscSynchronizedFlush(this->comm);
+    if (this->verbosity > 10) {
+      PetscSynchronizedPrintf(this->comm, "[%d]Source size %d\n", this->commRank, sourceSize);
+      PetscSynchronizedFlush(this->comm);
+    }
 
     // Make initial global target indices (local)
     ALE::Point_set targetTypes;
@@ -404,8 +407,10 @@ namespace ALE {
     this->__sendIntervals(pointTypes, rentMarkers, targetGlobalIndices);
     this->__receiveIntervals(pointTypes, leaseMarkers, requests, recvIntervals, targetIndices);
 
-    sourceIndices->view("Source indices");
-    targetIndices->view("Target indices");
+    if (this->verbosity > 10) {
+      sourceIndices->view("Source indices");
+      targetIndices->view("Target indices");
+    }
     stack->setTop(sourceIndices);
     stack->setBottom(targetIndices);
     return stack;
@@ -420,12 +425,14 @@ namespace ALE {
     localTypes.insert(ALE::Point(this->commRank, ALE::leasedPoint));
     ALE::Obj<ALE::PreSieve> pointTypes = this->__computePointTypes();
     ALE::Obj<ALE::Point_set> localPoints = pointTypes->cone(localTypes);
-    localPoints->view("Global local points");
+    if (this->verbosity > 10) {localPoints->view("Global local points");}
     ALE::Obj<ALE::PreSieve> localIndices = this->getFiberIndices(localPoints, localPoints, pointTypes->cone(ALE::Point(this->commRank, ALE::rentedPoint)));
-    localIndices->view("Global local indices");
+    if (this->verbosity > 10) {localIndices->view("Global local indices");}
     int localSize = this->getFiberDimension(localPoints);
-    PetscSynchronizedPrintf(this->comm, "[%d]Local size %d\n", this->commRank, localSize);
-    PetscSynchronizedFlush(this->comm);
+    if (this->verbosity > 10) {
+      PetscSynchronizedPrintf(this->comm, "[%d]Local size %d\n", this->commRank, localSize);
+      PetscSynchronizedFlush(this->comm);
+    }
 
     // Make global indices
     ALE::Obj<ALE::PreSieve> globalIndices(new PreSieve(this->comm));
@@ -443,14 +450,20 @@ namespace ALE {
 
       if (cone->size()) {
         globalIndex = *cone->begin();
-        PetscSynchronizedPrintf(this->comm, "[%d]   local interval (%d, %d) for point (%d, %d)\n", this->commRank, globalIndex.prefix, globalIndex.index, (*e_itor).prefix, (*e_itor).index);
+        if (this->verbosity > 10) {
+          PetscSynchronizedPrintf(this->comm, "[%d]   local interval (%d, %d) for point (%d, %d)\n", this->commRank, globalIndex.prefix, globalIndex.index, (*e_itor).prefix, (*e_itor).index);
+        }
         globalIndex.prefix += firstIndex[this->commRank];
-        PetscSynchronizedPrintf(this->comm, "[%d]  global interval (%d, %d) for point (%d, %d)\n", this->commRank, globalIndex.prefix, globalIndex.index, (*e_itor).prefix, (*e_itor).index);
+        if (this->verbosity > 10) {
+          PetscSynchronizedPrintf(this->comm, "[%d]  global interval (%d, %d) for point (%d, %d)\n", this->commRank, globalIndex.prefix, globalIndex.index, (*e_itor).prefix, (*e_itor).index);
+        }
       }
       globalIndices->addCone(globalIndex, point);
     }
-    PetscSynchronizedPrintf(this->comm, "[%d]Global size %d\n", this->commRank, firstIndex[this->commSize]);
-    PetscSynchronizedFlush(this->comm);
+    if (this->verbosity > 10) {
+      PetscSynchronizedPrintf(this->comm, "[%d]Global size %d\n", this->commRank, firstIndex[this->commSize]);
+      PetscSynchronizedFlush(this->comm);
+    }
     delete firstIndex;
 
     // Communicate remote indices
@@ -469,7 +482,7 @@ namespace ALE {
 
       ierr = MPI_Irecv(recvIntervals[p], size, MPI_INT, p, 1, this->comm, &(requests[p]));
       CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Irecv"));
-      PetscSynchronizedPrintf(this->comm, "[%d]  rented size %d for proc %d\n", this->commRank, size, p);
+      if (this->verbosity > 10) {PetscSynchronizedPrintf(this->comm, "[%d]  rented size %d for proc %d\n", this->commRank, size, p);}
     }
     for(int p = 0; p < this->commSize; p++) {
       if (p == this->commRank) {
@@ -496,7 +509,7 @@ namespace ALE {
       ierr = MPI_Send(intervals, size, MPI_INT, p, 1, this->comm);
       CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Send"));
       delete intervals;
-      PetscSynchronizedPrintf(this->comm, "[%d]  leased size %d for proc %d\n", this->commRank, size, p);
+      if (this->verbosity > 10) {PetscSynchronizedPrintf(this->comm, "[%d]  leased size %d for proc %d\n", this->commRank, size, p);}
     }
     ierr = MPI_Waitall(this->commSize, requests, statuses); CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Waitall"));
     for(int p = 0; p < this->commSize; p++) {
@@ -512,12 +525,12 @@ namespace ALE {
         ALE::Point point = *e_itor;
 
         globalIndices->addCone(interval, point);
-        PetscSynchronizedPrintf(this->comm, "[%d]Set global indices of (%d, %d) to (%d, %d)\n", this->commRank, point.prefix, point.index, interval.prefix, interval.index);
+        if (this->verbosity > 10) {PetscSynchronizedPrintf(this->comm, "[%d]Set global indices of (%d, %d) to (%d, %d)\n", this->commRank, point.prefix, point.index, interval.prefix, interval.index);}
         i += 2;
       }
       delete recvIntervals[p];
     }
-    PetscSynchronizedFlush(this->comm);
+    if (this->verbosity > 10) {PetscSynchronizedFlush(this->comm);}
     delete requests;
     delete statuses;
     delete recvIntervals;
