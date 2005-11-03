@@ -180,7 +180,7 @@ class Configure(PETSc.package.Package):
 
   def alternateConfigureLibrary(self):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
-    self.framework.addDefine('HAVE_MPI', 1)
+    self.addDefine('HAVE_MPIUNI', 1)
     self.include = [os.path.join(self.petscdir.dir,'include','mpiuni')]
     if 'STDCALL' in self.compilers.defines:
       self.framework.addDefine('MPIUNI_USE_STDCALL')

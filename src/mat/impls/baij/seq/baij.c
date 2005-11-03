@@ -2343,7 +2343,7 @@ EXTERN_C_END
 
   Level: beginner
 
-.Seealso: MatCreateSeqBAIJ
+.seealso: MatCreateSeqBAIJ()
 M*/
 
 EXTERN_C_BEGIN

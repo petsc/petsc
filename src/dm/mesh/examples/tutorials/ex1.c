@@ -39,6 +39,7 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 
 PetscErrorCode ReadConnectivity(MPI_Comm, const char *, PetscInt, PetscTruth, PetscInt *, PetscInt **);
 PetscErrorCode ReadCoordinates(MPI_Comm, const char *, PetscInt, PetscInt *, PetscScalar **);
+extern int debug;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -58,6 +59,7 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(comm, "", "Options for the inhomogeneous Poisson equation", "DMMG");
+    ierr = PetscOptionsInt("-debug", "The debugging flag", "ex1.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
     dim = 2;
     ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex1.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
     useZeroBase = PETSC_FALSE;
@@ -72,11 +74,14 @@ int main(int argc, char *argv[])
   ierr = ReadConnectivity(comm, vertexFilename, dim, useZeroBase, &numElements, &vertices);CHKERRQ(ierr);
   ierr = ReadCoordinates(comm, coordFilename, dim, &numVertices, &coordinates);CHKERRQ(ierr);
 
+  ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
   ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
   ierr = MeshCreateSeq(mesh, dim, numVertices, numElements, vertices, coordinates);CHKERRQ(ierr);
   //ierr = MeshCreateBoundary(mesh, 8, boundaryVertices); CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
   ierr = MeshDistribute(mesh);CHKERRQ(ierr);
 
+  ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);

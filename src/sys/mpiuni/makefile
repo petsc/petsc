@@ -1,3 +1,4 @@
+#requirespackage    'PETSC_HAVE_MPIUNI'
 
 ALL: lib
 

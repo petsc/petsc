@@ -40,7 +40,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscInt          i,work = xin->n,cnt,len;
-  PetscMPIInt       j,n,size,rank,tag = ((PetscObject)viewer)->tag;
+  PetscMPIInt       j,n = 0,size,rank,tag = ((PetscObject)viewer)->tag;
   MPI_Status        status;
   PetscScalar       *values,*xarray;
   const char        *name;
@@ -116,7 +116,43 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 #endif
         }
       }          
+    } else if (format == PETSC_VIEWER_ASCII_VTK) {
+      PetscInt bs, b;
 
+      ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
+      ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
+      ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
+      if (bs > 3) {
+        SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
+      }
+      for (i=0; i<n/bs; i++) {
+        for (b=0; b<bs; b++) {
+          if (b > 0) {
+            ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer,"%g",xarray[i*bs+b]);CHKERRQ(ierr);
+        }
+        for (b=bs; b<3; b++) {
+          ierr = PetscViewerASCIIPrintf(viewer," 0.0");CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+      }
+      for (j=1; j<size; j++) {
+        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,xin->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);         
+        for (i=0; i<n/bs; i++) {
+          for (b=0; b<bs; b++) {
+            if (b > 0) {
+              ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
+            }
+            ierr = PetscViewerASCIIPrintf(viewer,"%g",values[i*bs+b]);CHKERRQ(ierr);
+          }
+          for (b=bs; b<3; b++) {
+            ierr = PetscViewerASCIIPrintf(viewer," 0.0");CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+        }
+      }
     } else {
       if (format != PETSC_VIEWER_ASCII_COMMON) {ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",rank);CHKERRQ(ierr);}
       cnt = 0;

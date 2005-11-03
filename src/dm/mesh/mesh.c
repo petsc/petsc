@@ -30,9 +30,9 @@ struct _p_Mesh {
 
 #ifdef __cplusplus
 #include <IndexBundle.hh>
-PetscErrorCode WriteVTKVertices(Mesh, FILE *);
-PetscErrorCode WriteVTKElements(Mesh, FILE *);
-PetscErrorCode WriteVTKHeader(Mesh, FILE *);
+PetscErrorCode WriteVTKVertices(Mesh, PetscViewer);
+PetscErrorCode WriteVTKElements(Mesh, PetscViewer);
+PetscErrorCode WriteVTKHeader(Mesh, PetscViewer);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve_Ascii"
@@ -44,14 +44,9 @@ PetscErrorCode MeshView_Sieve_Ascii(Mesh mesh, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_VTK) {
-    ALE::IndexBundle *coordBundle;
-    FILE               *f;
-
-    ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
-    ierr = WriteVTKHeader(mesh, f);CHKERRQ(ierr);
-    ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
-    ierr = WriteVTKVertices(mesh, f);CHKERRQ(ierr);
-    ierr = WriteVTKElements(mesh, f);CHKERRQ(ierr);
+    ierr = WriteVTKHeader(mesh, viewer);CHKERRQ(ierr);
+    ierr = WriteVTKVertices(mesh, viewer);CHKERRQ(ierr);
+    ierr = WriteVTKElements(mesh, viewer);CHKERRQ(ierr);
   } else {
     ALE::Sieve *topology;
     PetscInt dim, d;
