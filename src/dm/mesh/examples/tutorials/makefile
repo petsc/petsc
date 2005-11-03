@@ -24,10 +24,13 @@ debugex1:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -vertex_file data/ex1conn1d.data -coord_file data/ex1coord1d.data -start_in_debugger -display ${DISPLAY}
 
 runex1_2:
-	-@${MPIRUN} -np ${NP} ./ex1 -use_zero_base 1 -vertex_file data/ex1conn2d.data -coord_file data/ex1coord2d.data
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -vertex_file data/ex1conn2d.data -coord_file data/ex1coord2d.data
 
 runex1_3:
-	-@${MPIRUN} -np ${NP} ./ex1 -use_zero_base 1 -vertex_file data/ex1conn3d.data -coord_file data/ex1coord3d.data
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -use_zero_base 1 -vertex_file data/ex1conn3d.data -coord_file data/ex1coord3d.data
+
+debugex1_3:
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -use_zero_base 1 -vertex_file data/ex1conn3d.data -coord_file data/ex1coord3d.data -start_in_debugger -display ${DISPLAY}
 
 runex3:
 	-@${MPIRUN} -np 3 ./ex3 -mat_view  > ex3_1.tmp 2>&1;   \
