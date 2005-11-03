@@ -26,7 +26,7 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
-    if hasattr(self.setCompilers, 'FC'):
+    if not hasattr(self.setCompilers, 'FC'):
       raise RuntimeError('SCALAPACK requires Fortran for automatic installation')
 
     # Get the SCALAPACK directories
@@ -61,13 +61,13 @@ class Configure(PETSc.package.Package):
     g.write('REDISTdir    = $(home)/REDIST\n')
     self.setCompilers.pushLanguage('FC')  
     g.write('F77          = '+self.setCompilers.getCompiler()+'\n')
-    g.write('F77FLAGS     = '+self.setCompilers.getCompilerFlags()+'\n')
+    g.write('F77FLAGS     = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')+'\n')
     g.write('F77LOADER    = '+self.setCompilers.getLinker()+'\n')      
     g.write('F77LOADFLAGS = '+self.setCompilers.getLinkerFlags()+'\n')
     self.setCompilers.popLanguage()
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CCFLAGS      = '+self.setCompilers.getCompilerFlags()+'\n')      
+    g.write('CCFLAGS      = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')+'\n')      
     g.write('CCLOADER     = '+self.setCompilers.getLinker()+'\n')
     g.write('CCLOADFLAGS  = '+self.setCompilers.getLinkerFlags()+'\n')
     self.setCompilers.popLanguage()
