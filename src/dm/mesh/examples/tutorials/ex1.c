@@ -74,11 +74,14 @@ int main(int argc, char *argv[])
   ierr = ReadConnectivity(comm, vertexFilename, dim, useZeroBase, &numElements, &vertices);CHKERRQ(ierr);
   ierr = ReadCoordinates(comm, coordFilename, dim, &numVertices, &coordinates);CHKERRQ(ierr);
 
+  ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
   ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
   ierr = MeshCreateSeq(mesh, dim, numVertices, numElements, vertices, coordinates);CHKERRQ(ierr);
   //ierr = MeshCreateBoundary(mesh, 8, boundaryVertices); CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
   ierr = MeshDistribute(mesh);CHKERRQ(ierr);
 
+  ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
