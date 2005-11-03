@@ -5007,9 +5007,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat mat,PetscInt bs)
 +   n - number of rows in the (possibly compressed) matrix
 .   ia - the row pointers
 .   ja - the column indices
--   done - PETSC_TRUE or PETSC_FALSE, indicating whether the values have been returned
+-   done - indicates if the routine actually worked and returned appropriate ia[] and ja[] arrays; callers
+           are responsible for handling the case when done == PETSC_FALSE and ia and ja are not set
 
     Level: developer
+
+    Notes: You CANNOT change any of the ia[] or ja[] values.
+
+           Use MatRestoreRowIJ() when you are finished accessing the ia[] and ja[] values
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ()
 @*/

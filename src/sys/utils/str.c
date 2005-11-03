@@ -618,7 +618,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetPetscDir(const char *dir[])
    Input Parameters:
 +   comm - MPI_Comm of processors that are processing the string
 .   a - the string to look in
-.   b - the resulting copy of a with replaced strings
+.   b - the resulting copy of a with replaced strings (b can be the same as a)
 -   len - the length of b
 
    Notes:
@@ -641,6 +641,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char a[],char
 
   PetscFunctionBegin;
   if (!a || !b) SETERRQ(PETSC_ERR_ARG_NULL,"a and b strings must be nonnull");
+  if (a == b) {
+    ierr = PetscStrallocpy(a,&a);
+
   ierr = PetscMalloc(len*sizeof(char*),&work);CHKERRQ(ierr);
 
   /* get values for replaced variables */

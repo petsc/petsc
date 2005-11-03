@@ -47,7 +47,7 @@ class Configure(PETSc.package.Package):
     g.write('OPTC    = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','') +'\n')
     self.setCompilers.popLanguage()
     if not self.compilers.fortranIsF90:
-      raise RuntimeError('Invalid F90 compiler') 
+      raise RuntimeError('Installing MUMPS requires a F90 compiler') 
     self.setCompilers.pushLanguage('FC') 
     g.write('FC = '+self.setCompilers.getCompiler()+'\n')
     g.write('FL = '+self.setCompilers.getCompiler()+'\n')
