@@ -44,14 +44,14 @@ class Configure(PETSc.package.Package):
     g.write('RM = /bin/rm -f\n')
     self.setCompilers.pushLanguage('C')
     g.write('CC = '+self.setCompilers.getCompiler()+'\n')
-    g.write('OPTC    = ' + self.setCompilers.getCompilerFlags() +'\n')
+    g.write('OPTC    = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','') +'\n')
     self.setCompilers.popLanguage()
     if not self.compilers.fortranIsF90:
       raise RuntimeError('Invalid F90 compiler') 
     self.setCompilers.pushLanguage('FC') 
     g.write('FC = '+self.setCompilers.getCompiler()+'\n')
     g.write('FL = '+self.setCompilers.getCompiler()+'\n')
-    g.write('OPTF    = ' + self.setCompilers.getCompilerFlags() +'\n')
+    g.write('OPTF    = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','') +'\n')
     self.setCompilers.popLanguage()
 
     # set fortran name mangling
