@@ -111,7 +111,7 @@ PetscErrorCode ComputePreSievePartition(ALE::Obj<ALE::PreSieve> presieve, ALE::O
   if (rank == 0) {
     for(int p = 0; p < size; p++) {
       ALE::Point partPoint(-1, p);
-      for(int l = (numLeaves/size)*p + (numLeaves%size > p); l < (numLeaves/size)*(p+1) + (numLeaves%size > p+1); l++) {
+      for(int l = (numLeaves/size)*p + PetscMin(numLeaves%size, p); l < (numLeaves/size)*(p+1) + PetscMin(numLeaves%size, p+1); l++) {
         ALE::Point leaf(0, l);
         ALE::Point_set cone = presieve->cone(leaf);
         presieve->addCone(cone, partPoint);
@@ -148,7 +148,7 @@ PetscErrorCode ComputeSievePartition(ALE::Obj<ALE::Sieve> sieve, const char *nam
   if (rank == 0) {
     for(int p = 0; p < size; p++) {
       ALE::Point partPoint(-1, p);
-      for(int l = (numLeaves/size)*p + (numLeaves%size > p); l < (numLeaves/size)*(p+1) + (numLeaves%size > p+1); l++) {
+      for(int l = (numLeaves/size)*p + PetscMin(numLeaves%size, p); l < (numLeaves/size)*(p+1) + PetscMin(numLeaves%size, p+1); l++) {
         ALE::Point leaf(0, l);
         ALE::Point_set closure = sieve->closure(leaf);
         sieve->addCone(closure, partPoint);
@@ -496,10 +496,10 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   ierr = MeshGetCoordinates(mesh, &oldCoordinates);CHKERRQ(ierr);
   dim = topology->diameter();
   /* Partition the topology and orientation */
-  ierr = ComputeSievePartition(topology, "Topology");CHKERRQ(ierr);
-  ierr = PartitionPreSieve(topology, "Topology", 1, &partitionTypes);CHKERRQ(ierr);
   ierr = ComputePreSievePartition(orientation, topology->leaves(), "Orientation");CHKERRQ(ierr);
   ierr = PartitionPreSieve(orientation, "Orientation", 1);CHKERRQ(ierr);
+  ierr = ComputeSievePartition(topology, "Topology");CHKERRQ(ierr);
+  ierr = PartitionPreSieve(topology, "Topology", 1, &partitionTypes);CHKERRQ(ierr);
   /* Add the trivial vertex orientation */
   ALE::Obj<ALE::Point_set> roots = topology->depthStratum(0);
   for(ALE::Point_set::iterator vertex_itor = roots->begin(); vertex_itor != roots->end(); vertex_itor++) {
