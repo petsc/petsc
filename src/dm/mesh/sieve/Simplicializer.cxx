@@ -919,7 +919,12 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
     ierr = PetscFree(array);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPrintf(viewer, "CELL_TYPES %d\n", numElements);CHKERRQ(ierr);
-  if (corners == 3) {
+  if (corners == 2) {
+    // VTK_LINE
+    for(int e = 0; e < numElements; e++) {
+      ierr = PetscViewerASCIIPrintf(viewer, "3\n");CHKERRQ(ierr);
+    }
+  } else if (corners == 3) {
     // VTK_TRIANGLE
     for(int e = 0; e < numElements; e++) {
       ierr = PetscViewerASCIIPrintf(viewer, "5\n");CHKERRQ(ierr);
