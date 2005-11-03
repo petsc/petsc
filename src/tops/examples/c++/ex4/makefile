@@ -1,5 +1,6 @@
 
 EXNAME      = Ex4
+CCA_PARALLEL= yes
 SIDL        = ${EXNAME}.sidl
 TLIBNAME    = lib${EXNAME}
 SIDLEXCLUDE = -e TOPS[\.a-zA-Z_]* -e gov.cca[\.a-zA-Z_]*

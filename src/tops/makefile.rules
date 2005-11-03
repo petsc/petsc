@@ -76,12 +76,17 @@ cca:
 
 test-cca: cca
 	# Testing component example ${EXNAME} with Ccaffeine
-	@${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ${EXNAME}_rc > ${EXNAME}_rc.log  2>&1 ; 
-	@if [ "`egrep \"(specific|1 .+norm)\" ${EXNAME}_rc.log | wc -l`" -ge "2" ]; then \
-	  echo "=== ${EXNAME}: Component test succeeded (see ${EXNAME}_rc.log)."; \
-	else \
-          echo "*** ${EXNAME}: Component test failed (see ${EXNAME}_rc.log)."; \
-        fi
+	@if [ -z "${CCA_PARALLEL}" ]; then \
+	  ${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ${EXNAME}_rc > ${EXNAME}_rc.log  2>&1 ; \
+	  if [ "`egrep \"(specific|1 .+norm)\" ${EXNAME}_rc.log | wc -l`" -ge "2" ]; then \
+	    echo "=== ${EXNAME}: Component test succeeded (see ${EXNAME}_rc.log)."; \
+	  else echo "*** ${EXNAME}: Component test failed (see ${EXNAME}_rc.log)."; fi; \
+        else \
+          ${CCAFE_HOME}/bin/ccafe-batch --ccafe-rc ${EXNAME}_rc > ${EXNAME}_rc.log  2>&1 ; \
+	  if [ "`egrep \"(1 .+norm)\" ${EXNAME}_rc.log | wc -l`" -ge "1" ]; then \
+	    echo "=== ${EXNAME}: Component test succeeded (see ${EXNAME}_rc.log)."; \
+	  else echo "*** ${EXNAME}: Component test failed (see ${EXNAME}_rc.log)."; fi; \
+	fi
 
 gui-cca: cca
 	# Running component example ${EXNAME} using Ccaffeine GUI (the output is in pOut0/pErr0)

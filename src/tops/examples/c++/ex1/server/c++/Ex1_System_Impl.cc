@@ -148,29 +148,24 @@ throw (
 #define __FUNCT__ "Ex1::System_impl::setServices"
 
   myServices = services;
-  gov::cca::TypeMap tm = services.createTypeMap();
-  if(tm._is_nil()) {
-    fprintf(stderr, "Error:: %s:%d: gov::cca::TypeMap is nil\n",
-	    __FILE__, __LINE__);
-    exit(1);
-  }
+
   gov::cca::Port p = self;      //  Babel required casting
   if(p._is_nil()) {
     fprintf(stderr, "Error:: %s:%d: Error casting self to gov::cca::Port \n",
 	    __FILE__, __LINE__);
-    exit(1);
+    return;
   }
   
   // Provides ports
   // Basic functionality
   myServices.addProvidesPort(p,
-			   "TOPS.System",
-			   "TOPS.System", tm);
+			   "TOPS.System.System",
+			   "TOPS.System.System", myServices.createTypeMap());
 
   // Residual computation
   myServices.addProvidesPort(p,
 			   "TOPS.System.Compute.Residual",
-			   "TOPS.System.Compute.Residual", tm);
+			   "TOPS.System.Compute.Residual", myServices.createTypeMap());
   
 
   // GoPort (instead of main)
@@ -181,7 +176,7 @@ throw (
 
   // Uses ports:
   myServices.registerUsesPort("TOPS.Structured.Solver",
-			      "TOPS.Structured.Solver", tm);
+			      "TOPS.Structured.Solver", myServices.createTypeMap());
 
   // DO-NOT-DELETE splicer.end(Ex1.System.setServices)
 }

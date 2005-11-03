@@ -271,40 +271,30 @@ throw (
   // DO-NOT-DELETE splicer.begin(Ex2.System.setServices)
   // Insert-Code-Here {Ex2.System.setServices} (setServices method)
   myServices = services;
-  gov::cca::TypeMap tm = services.createTypeMap();
-  if(tm._is_nil()) {
-    fprintf(stderr, "Error:: %s:%d: gov::cca::TypeMap is nil\n",
-	    __FILE__, __LINE__);
-    exit(1);
-  }
+
   gov::cca::Port p = self;      //  Babel required casting
   if(p._is_nil()) {
     fprintf(stderr, "Error:: %s:%d: Error casting self to gov::cca::Port \n",
 	    __FILE__, __LINE__);
-    exit(1);
+    return;
   }
   
   // Provides ports
-  // Basic functionality
-  myServices.addProvidesPort(p,
-			   "TOPS.System",
-			   "TOPS.System", tm);
-
   myServices.addProvidesPort(p,
 			   "TOPS.System.Initialize.Once",
-			   "TOPS.System.Initialize.Once", tm);
+			   "TOPS.System.Initialize.Once", myServices.createTypeMap());
   
   myServices.addProvidesPort(p,
 			   "TOPS.System.Initialize.EverySolve",
-			   "TOPS.System.Initialize.EverySolve", tm);
+			   "TOPS.System.Initialize.EverySolve", myServices.createTypeMap());
 
   myServices.addProvidesPort(p,
 			   "TOPS.System.Compute.InitialGuess",
-			   "TOPS.System.Compute.InitialGuess", tm);
+			   "TOPS.System.Compute.InitialGuess", myServices.createTypeMap());
 
   myServices.addProvidesPort(p,
 			   "TOPS.System.Compute.Residual",
-			   "TOPS.System.Compute.Residual", tm);
+			   "TOPS.System.Compute.Residual", myServices.createTypeMap());
 
   // GoPort (instead of main)
   myServices.addProvidesPort(p, 
@@ -314,7 +304,7 @@ throw (
 
   // Uses ports:
   myServices.registerUsesPort("TOPS.Structured.Solver",
-			      "TOPS.Structured.Solver", tm);
+			      "TOPS.Structured.Solver", myServices.createTypeMap());
 
   // DO-NOT-DELETE splicer.end(Ex2.System.setServices)
 }

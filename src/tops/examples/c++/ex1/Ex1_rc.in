@@ -5,8 +5,8 @@ path set @PETSC_LIB_DIR@/cca
 repository get-global TOPS.StructuredSolver
 repository get-global Ex1.System
 
-instantiate TOPS.StructuredSolver solver
 instantiate Ex1.System system
+instantiate TOPS.StructuredSolver solver
 
 connect solver TOPS.System.Compute.Residual system TOPS.System.Compute.Residual
 connect system TOPS.Structured.Solver solver TOPS.Structured.Solver

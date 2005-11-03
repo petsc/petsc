@@ -183,38 +183,33 @@ throw (
 #define __FUNCT__ "Ex4::System_impl::setServices"
 
   myServices = services;
-  gov::cca::TypeMap tm = services.createTypeMap();
-  if(tm._is_nil()) {
-    fprintf(stderr, "Error:: %s:%d: gov::cca::TypeMap is nil\n",
-	    __FILE__, __LINE__);
-    exit(1);
-  }
+
   gov::cca::Port p = self;      //  Babel required casting
   if(p._is_nil()) {
     fprintf(stderr, "Error:: %s:%d: Error casting self to gov::cca::Port \n",
 	    __FILE__, __LINE__);
-    exit(1);
+    return;
   }
   
   // Provides ports
   // Basic functionality
   myServices.addProvidesPort(p,
-			   "TOPS.System",
-			   "TOPS.System", tm);
+			   "TOPS.System.System",
+			   "TOPS.System.System", myServices.createTypeMap());
 
   // Initialization
   myServices.addProvidesPort(p,
 			   "TOPS.System.Initialize.Once",
-			   "TOPS.System.Initialize.Once", tm);
+			   "TOPS.System.Initialize.Once", myServices.createTypeMap());
   // Matrix computation
   myServices.addProvidesPort(p,
 			   "TOPS.System.Compute.Matrix",
-			   "TOPS.System.Compute.Matrix", tm);
+			   "TOPS.System.Compute.Matrix", myServices.createTypeMap());
   
   // RHS computation
   myServices.addProvidesPort(p,
 			   "TOPS.System.Compute.RightHandSide",
-			   "TOPS.System.Compute.RightHandSide", tm);
+			   "TOPS.System.Compute.RightHandSide", myServices.createTypeMap());
  
   // GoPort (instead of main)
   myServices.addProvidesPort(p, 
@@ -224,7 +219,7 @@ throw (
 
   // Uses ports:
   myServices.registerUsesPort("TOPS.Unstructured.Solver",
-			      "TOPS.Unstructured.Solver", tm);
+			      "TOPS.Unstructured.Solver", myServices.createTypeMap());
   // DO-NOT-DELETE splicer.end(Ex4.System.setServices)
 }
 

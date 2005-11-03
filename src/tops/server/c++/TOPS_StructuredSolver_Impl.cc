@@ -759,8 +759,8 @@ throw (
 			    "TOPS.System.Compute.Residual", tm);
 
   // Parameter port
-  myServices.registerUsesPort("ParameterPortFactory",
-			      "gov.cca.ports.ParameterPortFactory", tm);
+  myServices.registerUsesPort(std::string("ParameterPortFactory"),
+			      std::string("gov.cca.ports.ParameterPortFactory"), tm);
 
   // Set up parameter port
   if (this->setupParameterPort() != 0) {
