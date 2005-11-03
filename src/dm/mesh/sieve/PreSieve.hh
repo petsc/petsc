@@ -239,7 +239,7 @@ namespace ALE {
       Point_set chain; chain.insert(point);
       return this->nStar(chain,n);
     };
-    Obj<PreSieve> PreSieve::nStarPreSieve(Obj<Point_set> chain, int32_t n, Obj<PreSieve> star = Obj<PreSieve>());
+    Obj<PreSieve>                     nStarPreSieve(Obj<Point_set> chain, int32_t n, Obj<PreSieve> star = Obj<PreSieve>());
     //
     Point_set                         nMeet(Point_set c1,  Point_set c2, int32_t n);
     Point_set                         nJoin(Point_set c1, Point_set c2, int32_t n);
