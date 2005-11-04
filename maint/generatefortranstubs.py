@@ -123,4 +123,6 @@ def main(bfort):
 #
 if __name__ ==  '__main__': 
   import sys
+  if len(sys.argv) < 2:
+    sys.exit('Must give the BFORT program as the first argument')
   main(sys.argv[1])
