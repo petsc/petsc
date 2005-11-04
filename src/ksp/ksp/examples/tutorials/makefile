@@ -9,6 +9,8 @@ EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
+NP               = 1
+DISPLAY          = :0.0
 
 include ${PETSC_DIR}/bmake/common/base
 
@@ -565,16 +567,10 @@ runex32:
 	   ${RM} -f ex32_1.tmp
 
 runex33:
-	-./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor
+	-${MPIRUN} -np ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base -vertex_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1conn2d.data -coord_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1coord2d.data -debug 0
 
-runex33_d:
-	-./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -start_in_debugger
-
-runex33_2:
-	-${MPIRUN} -np 2 ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -mesh_only
-
-runex33_2_d:
-	-${MPIRUN} -np 2 ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -start_in_debugger -display :0.0
+debugex33:
+	-${MPIRUN} -np ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -start_in_debugger -display ${DISPLAY}
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \

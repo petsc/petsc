@@ -49,7 +49,7 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 #include "petscksp.h"
 #include "petscmg.h"
 #include "petscdmmg.h"
-static int debug;
+extern int debug;
 
 typedef enum {PCICE, PYLITH} FileType;
 
@@ -98,21 +98,6 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
 
-  ierr = DMMGCreate(comm,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-  ierr = ReadConnectivity(comm, fileType, vertexFilename, dim, useZeroBase, &numElements, &vertices);CHKERRQ(ierr);
-  ierr = ReadCoordinates(comm, fileType, coordFilename, dim, &numVertices, &coordinates);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
-  ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
-  ierr = MeshCreateSeq(mesh, dim, numVertices, numElements, vertices, coordinates);CHKERRQ(ierr);
-  //ierr = MeshCreateBoundary(mesh, 8, boundaryVertices); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
-  ierr = MeshDistribute(mesh);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg, (DM) mesh);CHKERRQ(ierr);
-  ierr = MeshDestroy(mesh);CHKERRQ(ierr);
-  for (l = 0; l < DMMGGetLevels(dmmg); l++) {
-    ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
-  }
-
   ierr = PetscOptionsBegin(comm, "", "Options for the inhomogeneous Poisson equation", "DMMG");
     ierr = PetscOptionsInt("-debug", "The debugging flag", "ex1.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
     dim  = 2;
@@ -132,6 +117,21 @@ int main(int argc,char **argv)
     ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
     user.bcType = (BCType)bc;
   ierr = PetscOptionsEnd();
+
+  ierr = DMMGCreate(comm,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
+  ierr = ReadConnectivity(comm, fileType, vertexFilename, dim, useZeroBase, &numElements, &vertices);CHKERRQ(ierr);
+  ierr = ReadCoordinates(comm, fileType, coordFilename, dim, &numVertices, &coordinates);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
+  ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
+  ierr = MeshCreateSeq(mesh, dim, numVertices, numElements, vertices, coordinates);CHKERRQ(ierr);
+  //ierr = MeshCreateBoundary(mesh, 8, boundaryVertices); CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
+  ierr = MeshDistribute(mesh);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg, (DM) mesh);CHKERRQ(ierr);
+  ierr = MeshDestroy(mesh);CHKERRQ(ierr);
+  for (l = 0; l < DMMGGetLevels(dmmg); l++) {
+    ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
+  }
 
   ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
   if (user.bcType == NEUMANN) {
