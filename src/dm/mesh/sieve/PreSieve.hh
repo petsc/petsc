@@ -13,7 +13,9 @@ namespace ALE {
     Point_set                  _roots;
     Point_set                  _leaves;
     Point__Point_set           _cone;
+    Point__Point_set           _support;
     Point_set                  _cap;
+    // The following two functions are used by Stack also.
     void                       __computeBaseExclusion(Point_set& base, PreSieve *s);
     void                       __computeCapExclusion(Point_set& cap, PreSieve *s);
     void                       __determinePointOwners(Point_set& points, int32_t *LeaseData, std::map<Point,int32_t,Point::Cmp>& owner);

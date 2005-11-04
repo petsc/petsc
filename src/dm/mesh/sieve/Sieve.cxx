@@ -925,37 +925,16 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::capRestriction"
-  Sieve *Sieve::capRestriction(Point_set& cap) {
+  Sieve* Sieve::capRestriction(Point_set& cap) {
     CHKCOMM(*this);
     Sieve *s = new Sieve(this->getComm());
-    for(Point__Point_set::iterator i_itor = this->_cone.begin(); i_itor != this->_cone.end(); i_itor++){
-      Point i = (*i_itor).first;
-      Point_set c;
-      // Take the intersection of this->_cone[i] with cap and store it in c
-      Point_set *c1 = &(this->_cone[i]);
-      Point_set *c2 = &cap;
-      // Make sure c1 is the smaller set, swapping the two if necessary
-      if(c2->size() < c1->size()) {
-        Point_set *tmp = c1; c1 = c2; c2 = tmp;
+    for(Point_set::iterator c_itor = cap.begin(); c_itor != cap.end(); c_itor++){
+      Point q = *c_itor;
+      // is point q present in the cap of *this?
+      if(this->_support.find(q) == this->_support.end()){
+        s->addSupport(q,this->_support[q]);
       }
-      // Iterate over c1 and compute its intersection with c2 storing the result in c
-      for(Point_set::iterator c1_itor = c1->begin(); c1_itor != c1->end(); c1_itor++) {
-        Point q = *c1_itor;
-        // Make sure p is also in c2
-        if(c2->find(q) != c2->end()) {
-          // Store q in 
-          s->_cap.insert(q);
-          c.insert(q);
-        }
-      }
-      // If c is not empty, use it as the cone over i in *s
-      if(c.size()){ // this will restrict the new base to those points of 'this's base that are covered by cap.
-        s->addCone(c,i);
-      }
-      else { // otherwise insert i as a point into the base of *s
-        s->addBasePoint(i);
-      }
-    }//for(Point_set::iterator i_itor = this->_cone.begin(); i_itor != this->_cone.end(); i_itor++)
+    }// for(Point_set::iterator c_itor = cap.begin(); c_itor != cap.end(); c_itor++){
     return s;
   }// Sieve::capRestriction()
 

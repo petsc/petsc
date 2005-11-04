@@ -14,11 +14,11 @@ namespace ALE {
   
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::PreSieve()"
-  PreSieve::PreSieve() : Coaster(), _cone(), _cap() {};
+  PreSieve::PreSieve() : Coaster(), _cone(), _support(), _cap() {};
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::PreSieve(MPI_Comm)"
-  PreSieve::PreSieve(MPI_Comm comm) : Coaster(comm), _cone(), _cap() {};
+  PreSieve::PreSieve(MPI_Comm comm) : Coaster(comm), _cone(), _support(), _cap() {};
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::~PreSieve"
@@ -30,6 +30,7 @@ namespace ALE {
   PreSieve& PreSieve::clear(){
     /* This is not what we mean by clear: Coaster::clear(); */
     this->_cone.clear();
+    this->_support.clear();
     this->_cap.clear();
     return *this;
   }// PreSieve::clear()
@@ -57,30 +58,31 @@ namespace ALE {
   PreSieve& PreSieve::removeBasePoint(Point& p) {
     this->__checkLock();
     if (this->_cone.find(p) != this->_cone.end()) {
-      // IMPROVE: first decrement the support size for all points in the cone being erased
+      // IMPROVE: use 'coneView' and iterate over it to avoid copying the set
       ALE::Obj<ALE::Point_set> cone = this->cone(p);
-
       for(ALE::Point_set::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
         ALE::Point cover = *c_itor;
 
         this->removeArrow(cover, p);
-        if (this->support(cover)->size() == 0) {
-          if (!this->baseContains(cover)) {
-            this->removeCapPoint(cover);
-          } else {
-            this->_cap.erase(cover);
-          }
-        }
+        // We should keep points unless explicitly removed, even if all of their arrows are gone.
+        // WARNING: this code below seems to be suspect
+        //         if (this->support(cover)->size() == 0) {
+        //           if (!this->baseContains(cover)) {
+        //             this->removeCapPoint(cover);
+        //           } else {
+        //             this->_cap.erase(cover);
+        //           }
+        //         }
       }
+      // Remove the cone over p
       this->_cone.erase(p);
-      // After removal from the base, any point that is still in the cap must necessarily be a root,
+      // After the removal of p  from the base, if p is still in the cap, it  must necessarily be a root,
       // since there are no longer any arrows terminating at p.
       if(this->capContains(p)) {
         this->_roots.insert(p);
       } else {
-        if (this->_leaves.find(p) != this->_leaves.end()) {
-          this->_leaves.erase(p);
-        }
+        // otherwise the point is gone from the PreSieve, and is not a root, hence it better not be a leaf either
+        this->_leaves.erase(p);
       }
     }
     return *this;
@@ -93,6 +95,7 @@ namespace ALE {
     this->__checkLock();
     // IMPROVE: keep the support size in _cap
     if(!this->capContains(q)) {
+      this->_support[q] = Point_set();
       this->_cap.insert(q);
       // This may appear counterintuitive, but upon initial addition to the cap the point is a leaf
       this->_leaves.insert(q);
@@ -111,29 +114,31 @@ namespace ALE {
     CHKCOMM(*this);
     this->__checkLock();
     if(this->capContains(q)) {
-      // IMPROVE: keep the support size in _cap to potentially terminate the loop sooner
+      // IMPROVE: use 'supportView' and iterate over that, instead of copying a set
       ALE::Obj<ALE::Point_set> support = this->support(q);
-
       for(ALE::Point_set::iterator s_itor = support->begin(); s_itor != support->end(); s_itor++) {
         ALE::Point s = *s_itor;
 
         this->removeArrow(q, s);
-        if (this->cone(s).size() == 0) {
-          if (!this->capContains(s)) {
-            this->removeBasePoint(s);
-          } else {
-            this->_cone.erase(s);
-          }
-        }
+        // We do not erase points from 'base' unless explicitly removed, even if no points terminate there
+        // WARNING: the following code looks suspicious
+        //         if (this->cone(s).size() == 0) {
+        //           if (!this->capContains(s)) {
+        //             this->removeBasePoint(s);
+        //           } else {
+        //             this->_cone.erase(s);
+        //           }
+        //         }
       }
+      // Remove the point from the cap and delete it the support under q
       this->_cap.erase(q);
+      this->_support.erase(q);
       // After removal from the cap the point that is still in the base becomes a leaf -- no outgoing arrows.
       if(this->baseContains(q)) {
         this->_leaves.insert(q);
       } else {
-        if (this->_roots.find(q) != this->_roots.end()) {
-          this->_roots.erase(q);
-        }
+        // otherwise the point is gone from the PreSieve, and is not a leaf, hence it must not be a root either
+        this->_roots.erase(q);
       }
     }
     return *this;
@@ -148,6 +153,7 @@ namespace ALE {
     this->addBasePoint(j);
     this->addCapPoint(i);
     this->_cone[j].insert(i);
+    this->_support[i].insert(j);
     this->_leaves.erase(i);
     this->_roots.erase(j);
     return *this;
@@ -158,12 +164,13 @@ namespace ALE {
   PreSieve& PreSieve::removeArrow(Point& i, Point& j) {
     CHKCOMM(*this);
     this->__checkLock();
-    // IMPROVE: keep the support size in _cap; update it here
     this->_cone[j].erase(i);
+    this->_support[i].erase(j);
     // If this was the last arrow terminating at j, it becomes a root
     if(this->coneSize(j) == 0) {
       this->_roots.insert(j);
     }
+    // If this was the last arrow emanating from i, it becomes a root
     if(this->supportSize(i) == 0) {
       this->_leaves.insert(i);
     }
@@ -271,6 +278,7 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::restrictBase"
   PreSieve& PreSieve::restrictBase(Point_set& base) {
     this->__checkLock();
+    // IMPROVE: this should be improved to do the removal 'in-place', instead of creating a potentially huge 'removal' set
     Point_set removal;
     while(1) {
       for(Point__Point_set::iterator b_itor = this->_cone.begin(); b_itor != this->_cone.end(); b_itor++){
@@ -294,6 +302,7 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::excludeBase"
   PreSieve& PreSieve::excludeBase(Point_set& base) {
     this->__checkLock();
+    // IMPROVE: this should be improved to do the removal 'in-place', instead of creating a potentially huge 'removal' set
     Point_set removal;
     for(Point__Point_set::iterator b_itor = this->_cone.begin(); b_itor != this->_cone.end(); b_itor++){
       Point p = b_itor->first;
@@ -336,6 +345,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::__computeBaseExclusion"
   void PreSieve::__computeBaseExclusion(Point_set& base, PreSieve *s) {
+    // This function is used by Stack as well
     for(Point__Point_set::iterator cone_itor = this->_cone.begin(); cone_itor != this->_cone.end(); cone_itor++){
       Point p = cone_itor->first;
       Point_set pCone = cone_itor->second;
@@ -350,14 +360,15 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::restrictCap"
   PreSieve& PreSieve::restrictCap(Point_set& cap) {
     this->__checkLock();
+    // IMPROVE: this should be improved to do the removal 'in-place', instead of creating a potentially huge 'removal' set
     Point_set removal;
-    for(Point_set::iterator c_itor = this->_cap.begin(); c_itor != this->_cap.end(); c_itor++){
-      Point q = *c_itor;
+    for(Point__Point_set::iterator c_itor = this->_support.begin(); c_itor != this->_support.end(); c_itor++){
+      Point q = c_itor->first;
       // is point q absent from cap?
       if(cap.find(q) == cap.end()){
         removal.insert(q);
       }
-    }// for(Point_set::iterator c_itor = this->_cap.begin(); c_itor != this->_cap.end(); c_itor++){
+    }// for(Point_set::iterator c_itor = this->_support.begin(); c_itor != this->_support.end(); c_itor++){
     for(Point_set::iterator r_itor = removal.begin(); r_itor != removal.end(); r_itor++){
       Point r = *r_itor;
       this->removeCapPoint(r);
@@ -369,14 +380,15 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::excludeCap"
   PreSieve& PreSieve::excludeCap(Point_set& cap) {
     this->__checkLock();
+    // IMPROVE: this should be improved to do the removal 'in-place', instead of creating a potentially huge 'removal' set
     Point_set removal;
-    for(Point_set::iterator c_itor = this->_cap.begin(); c_itor != this->_cap.end(); c_itor++){
-      Point q = *c_itor;
-      // is point q present in the cap?
+    for(Point__Point_set::iterator c_itor = this->_support.begin(); c_itor != this->_support.end(); c_itor++){
+      Point q = c_itor->first;
+      // is point q present in cap?
       if(cap.find(q) != cap.end()){
         removal.insert(q);
       }
-    }// for(Point_set::iterator c_itor = this->_cap.begin(); c_itor != this->_cap.end(); c_itor++){
+    }// for(Point_set::iterator c_itor = this->_support.begin(); c_itor != this->_support.end(); c_itor++){
     for(Point_set::iterator r_itor = removal.begin(); r_itor != removal.end(); r_itor++){
       Point r = *r_itor;
       this->removeCapPoint(r);
@@ -384,41 +396,22 @@ namespace ALE {
     return *this;
   }// PreSieve::excludeCap()
 
+
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::capRestriction"
-  PreSieve *PreSieve::capRestriction(Point_set& cap) {
+  PreSieve* PreSieve::capRestriction(Point_set& cap) {
     CHKCOMM(*this);
     PreSieve *s = new PreSieve(this->getComm());
-    for(Point__Point_set::iterator i_itor = this->_cone.begin(); i_itor != this->_cone.end(); i_itor++){
-      Point i = (*i_itor).first;
-      Point_set c;
-      // Take the intersection of this->_cone[i] with cap and store it in c
-      Point_set *c1 = &(this->_cone[i]);
-      Point_set *c2 = &cap;
-      // Make sure c1 is the smaller set, swapping the two if necessary
-      if(c2->size() < c1->size()) {
-        Point_set *tmp = c1; c1 = c2; c2 = tmp;
+    for(Point_set::iterator c_itor = cap.begin(); c_itor != cap.end(); c_itor++){
+      Point q = *c_itor;
+      // is point q present in the cap of *this?
+      if(this->_support.find(q) != this->_support.end()){
+        s->addSupport(q,this->_support[q]);
       }
-      // Iterate over c1 and compute its intersection with c2 storing the result in c
-      for(Point_set::iterator c1_itor = c1->begin(); c1_itor != c1->end(); c1_itor++) {
-        Point q = *c1_itor;
-        // Make sure q is also in c2
-        if(c2->find(q) != c2->end()) {
-          // Store q in 
-          s->_cap.insert(q);
-          c.insert(q);
-        }
-      }
-      // If c is not empty, use it as the cone over i in *s
-      if(c.size()){ // this will restrict the new base to those points of 'this's base that are covered by cap.
-        s->addCone(c,i);
-      }
-      else { // otherwise insert i as a point into the base of *s
-        s->addBasePoint(i);
-      }
-    }//for(Point_set::iterator i_itor = this->_cone.begin(); i_itor != this->_cone.end(); i_itor++)
+    }// for(Point_set::iterator c_itor = cap.begin(); c_itor != cap.end(); c_itor++){
     return s;
   }// PreSieve::capRestriction()
+
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::capExclusion"
@@ -432,27 +425,15 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::__computeCapExclusion"
   void PreSieve::__computeCapExclusion(Point_set& cap, PreSieve *s) {
-    for(Point__Point_set::iterator i_itor = this->_cone.begin(); i_itor != this->_cone.end(); i_itor++){
-      Point i = (*i_itor).first;
-      Point_set c;
-      // Take the difference of this->cone(i) and cap and store it in c
-      Point_set iCone = this->cone(i);
-      for(Point_set::iterator iCone_itor = iCone.begin(); iCone_itor != iCone.end(); iCone_itor++) {
-        Point q = *iCone_itor;
-        // Make sure q is not in cap
-        if(cap.find(q) == cap.end()) {
-          // Store q in c
-          c.insert(q);
-        }
+    // This function is used by Stack as well
+    for(Point__Point_set::iterator support_itor = this->_support.begin(); support_itor != this->_support.end(); support_itor++){
+      Point q = support_itor->first;
+      Point_set qSupport = support_itor->second;
+      // is point q absent from cap?
+      if(cap.find(q) == cap.end()){
+        s->addSupport(q,qSupport);
       }
-      // If c is not empty, use it as the cone over i in *s
-      if(c.size()){ // this will restrict the new base to those points of 'this's base that are covered by cap.
-        s->addCone(c,i);
-      }
-      else { // otherwise insert i as a point into the base of *s
-        s->addBasePoint(i);
-      }
-    }//for(Point_set::iterator i_itor = this->_cone.begin(); i_itor != this->_cone.end(); i_itor++)
+    }
   }// PreSieve::__computeCapExclusion()
 
 
@@ -566,23 +547,13 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::supportSize"
-  int32_t PreSieve::supportSize(Point_set& chain) {
+  int32_t PreSieve::supportSize(Point_set& c) {
     CHKCOMM(*this);
-    // IMPROVE: keep the support size in _cap
-    // Compute the size of the support of 'chain'.
     int32_t supportSize = 0;
-    // Traverse the PreSieve's base and for each point p in the base check whether any point of 'chain' is in the cone over p
-    for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->_cone.end(); base_itor++) {
-      Point_set& pCone = (*base_itor).second;
-      for(Point_set::iterator c_itor = chain.begin(); c_itor != chain.end(); c_itor++) {
-        Point q = *c_itor;
-        // Check whether q is in the pCone
-        if(pCone.find(q) != pCone.end()) {
-          // increment the size counter
-          supportSize++;
-        }
-      }// for(Point_set::iterator c_itor = chain.begin(); c_itor != chain.end(); c_itor++)
-    }// for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->cone.end(); base_itor++)
+    for(Point_set::iterator c_itor = c.begin(); c_itor != c.end(); c_itor++) {
+      Point q = *c_itor;
+      supportSize += this->_support[q].size();
+    }
     return supportSize;
   }// PreSieve::supportSize()
 
@@ -601,7 +572,9 @@ namespace ALE {
   int PreSieve::baseContains(Point point) {
     CHKCOMM(*this);
     int flag;
-    flag = ((this->_cone.find(point) != this->_cone.end()) && (this->_cone[point].size() > 0));
+    //flag = ((this->_cone.find(point) != this->_cone.end()) && (this->_cone[point].size() > 0));
+    // SEMANTICS: we assume that the point is in the base regardless of whether it actually has arrows terminating at it
+    flag = ((this->_cone.find(point) != this->_cone.end()));
     return flag;
   }// PreSieve::baseContains()
 
@@ -610,7 +583,9 @@ namespace ALE {
   int PreSieve::capContains(Point point) {
     CHKCOMM(*this);
     int flag;
-    flag = (this->_cap.find(point) != this->_cap.end());
+    // SEMANTICS: we assume that the point is in the cap regardless of whether it actually has arrows emanating from it
+    //flag = ((this->_support.find(point) != this->_support.end()) && (this->_support[point].size() > 0));
+    flag = ((this->_support.find(point) != this->_support.end()));
     return flag;
   }// PreSieve::capContains()
   
@@ -627,27 +602,18 @@ namespace ALE {
     return flag;
   }// PreSieve::coneContains()
 
-
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::supportContains"
   int PreSieve::supportContains(Point& q, Point point) {
     CHKCOMM(*this);
-    // IMPROVE: keep the support size in _cap
-    // Compute the size of the support of point q.
-    // Traverse the top and flip the flag if we come accross point
     int flag = 0;
-    // Traverse the PreSieve's base and for each point p in the base check whether p == point and q is in the cone over p
-    for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->_cone.end(); base_itor++) {
-      const Point& p = (*base_itor).first;
-      Point_set& pCone = (*base_itor).second;
-      // Check whether q is in the pCone
-      if((p.prefix == point.prefix && p.index == point.index) && pCone.find(q) != pCone.end()) {
-        // flip the flag
-        flag = 1;
-      }
-    }// for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->cone.end(); base_itor++)
+    Point_set& qSupport = this->_support[q];
+    if(qSupport.find(point) != qSupport.end()) {
+      flag = 1;
+    }
     return flag;
   }// PreSieve::supportContains()
+
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nCone"
@@ -699,38 +665,6 @@ namespace ALE {
   }// PreSieve::nCone()
 
 
-//   #undef  __FUNCT__
-//   #define __FUNCT__ "PreSieve::nCone"
-//   Point_set PreSieve::nCone(Point_set& chain, int32_t n) {
-//     CHKCOMM(*this);
-//     // Compute the point set obtained by taking the cone recursively on a set of points in the base
-//     // (i.e., the set of cap points resulting after each iteration is used again as the base for the next cone computation).
-//     // Note: a 0-cone is the chain itself.
-//     Point_set cone;
-//     // We use two Point_set pointers and swap them at the beginning of each iteration
-//     Point_set *top = &chain;
-//     Point_set *bottom = &cone;
-//     // If no iterations are executed, chain is returned
-//     for(int32_t i = 0; i < n; i++) {
-//       // Swap pointers and clear cap
-//       Point_set *tmp = top; top = bottom; bottom = tmp;
-//       top->clear();
-//       // Traverse the points in bottom
-//       for(Point_set::iterator b_itor = bottom->begin(); b_itor != bottom->end(); b_itor++) {
-//         Point p = *b_itor;
-//         // Traverse the points in the cone over p
-//         for(Point_set::iterator pCone_itor = this->_cone[p].begin(); pCone_itor != this->_cone[p].end(); pCone_itor++) {
-//           Point q = *pCone_itor;
-//           top->insert(q);
-//         }
-//       }
-//     }
-//     // IMPROVE: memory use can be imporoved (number of copies and alloc/dealloc reduced) 
-//     //          if pointers to Point_set are used
-//     return *top;
-//   }// PreSieve::nCone()
-
-
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nClosure"
   Obj<Point_set> PreSieve::nClosure(Obj<Point_set> chain, int32_t n) {
@@ -778,50 +712,54 @@ namespace ALE {
     return (Point_set) nClosure(Obj<Point_set>(chain), n);
   }// PreSieve::nClosure()
 
-//   #undef  __FUNCT__
-//   #define __FUNCT__ "PreSieve::nClosure"
-//   Point_set PreSieve::nClosure(Point_set& chain, int32_t n) {
-//     CHKCOMM(*this);
-//     // Compute the point set obtained by recursively accumulating the cone over all of points of a set in the base
-//     // (i.e., the set of cap points resulting after each iteration is both stored in the resulting set and 
-//     // used again as the base of a cone computation).
-//     // Note: a 0-closure is the chain itself.
-//     Point_set cone;
-//     Point_set closure = chain; // copy the initial set
-//     // We use two Point_set pointers and swap them at the beginning of each iteration
-//     Point_set *top    = &chain;
-//     Point_set *bottom = &cone;
-//     // If no iterations are executed, chain is returned
-//     for(int32_t i = 0; i < n; i++) {
-//       // Swap pointers and clear cap
-//       Point_set *tmp = top; top = bottom; bottom = tmp;
-//       top->clear();
-//       // Traverse the points in bottom
-//       for(Point_set::iterator b_itor = bottom->begin(); b_itor != bottom->end(); b_itor++) {
-//         Point p = *b_itor;
-//         // Traverse the points in the cone over p
-//         for(Point_set::iterator pCone_itor = this->_cone[p].begin(); pCone_itor != this->_cone[p].end(); pCone_itor++) {
-//           Point q = *pCone_itor;
-//           top->insert(q);
-//           closure.insert(q);
-//         }
-//       }
-//     }
-//     // IMPROVE: memory use can be imporoved (number of copies and alloc/dealloc reduced) 
-//     //          if pointers to Point_sets are used
-//     return closure;
-//   }// PreSieve::nClosure()
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "PreSieve::nClosurePreSieve"
+  Obj<PreSieve> PreSieve::nClosurePreSieve(Obj<Point_set> chain, int32_t n, Obj<PreSieve> closure) {
+    CHKCOMM(*this);
+    if(closure.isNull()) {
+      closure = Obj<PreSieve>(new PreSieve(this->comm));
+    }
+    // Compute the PreSieve obtained by carving out the PreSieve 'over' a given chain up to height n.
+    // Note: a 0-closure is a PreSieve with the chain itself in the base, an empty cap and no arrows.
+
+    Obj<Point_set> base(new Point_set);
+    Obj<Point_set> top = chain;;
+    // Initially closure contains the chain only in the base, and top contains the chain itself
+    for(Point_set::iterator c_itor = chain->begin(); c_itor != chain->end(); c_itor++) {
+      Point p = *c_itor;
+      closure->addBasePoint(p);
+    }
+    // If no iterations are executed, chain is returned
+    for(int32_t i = 0; i < n; i++) {
+      // Swap base and top
+      Obj<Point_set> tmp = top; top = base; base = tmp;
+      // Traverse the points in the base
+      for(Point_set::iterator b_itor = base->begin(); b_itor != base->end(); b_itor++) {
+        Point p = *b_itor;
+        // Compute the cone over p and add it to closure
+        // IMPROVE: memory use can be improve if nCone returned a pointer to Point_set
+        Point_set pCone = this->nCone(p,1);
+        // Add the cone to top
+        top->join(pCone);
+        // Set the cone over p in the closure
+        closure->addCone(pCone,p);
+      }
+    }
+    return closure;
+  }// PreSieve::nClosurePreSieve()
+
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nSupport"
   Obj<Point_set> PreSieve::nSupport(Obj<Point_set> chain, int32_t n) {
     CHKCOMM(*this);
-    // IMPROVE: keep the support size in _cap
-    // Compute the point set obtained by taking the support recursively on a set of points in the cap
+    // Compute the point set obtained by taking suppor recursively on a set of points in the cap
     // (i.e., the set of base points resulting after each iteration is used again as the cap for the next support computation).
     // Note: a 0-support is the chain itself.
-    // We use a pair of Point_set pointers that are swapped before each iteration
-    Obj<Point_set> bottom;
+
+    // We use two Point_set pointers and swap them at the beginning of each iteration
+    Obj<Point_set> bottom(new Point_set);
     Obj<Point_set> top(new Point_set);
     if(n == 0) {
       bottom.copy(chain);
@@ -831,92 +769,8 @@ namespace ALE {
     }
     // If no iterations are executed, chain is returned
     for(int32_t i = 0; i < n; i++) {
-      // swap pointers and clear bottom
-      Obj<Point_set> tmp = bottom; bottom = top; top = tmp;
-      // If bottom == chain, replace bottom->pointer() with another &Point_set;  this avoids having to copy *chain.
-      if(bottom == chain) {
-        bottom = Obj<Point_set>(new Point_set);
-      }
-      else {
-        bottom->clear();
-      }
-      // Traverse the top
-      for(Point_set::iterator t_itor = top->begin(); t_itor != top->end(); t_itor++) {
-        const Point& q = *t_itor;
-        // Traverse the PreSieve's base and for each point p in the base check whether q is in the cone over p
-        for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->_cone.end(); base_itor++) {
-          const Point& p = (*base_itor).first;
-          Point_set& pCone = (*base_itor).second;
-          // Check whether q is in the pCone
-          if(pCone.find(q) != pCone.end()) {
-            // add it to the bottom
-            bottom->insert(p);
-          }
-        }// for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->cone.end(); base_itor++)
-      }// for(Point_set::iterator t_itor = top->begin(); t_itor != top->end(); t_itor++) 
-    }// for(int32_t i = 0; i < n; i++)
-    return bottom;
-  }// PreSieve::nSupport()
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "PreSieve::nSupport"
-  Point_set PreSieve::nSupport(Point_set& chain, int32_t n) {
-    return (Point_set) nSupport(Obj<Point_set>(chain), n);
-  }// PreSieve::nSupport()
-
-//   #undef  __FUNCT__
-//   #define __FUNCT__ "PreSieve::nSupport"
-//   Point_set PreSieve::nSupport(Point_set& chain, int32_t n) {
-//     CHKCOMM(*this);
-//     // IMPROVE: keep the support size in _cap
-//     // Compute the point set obtained by taking the support recursively on a set of points in the cap
-//     // (i.e., the set of base points resulting after each iteration is used again as the cap for the next support computation).
-//     // Note: a 0-support is the chain itself.
-//     Point_set support;
-//     // We use a pair of Point_set pointers that are swapped before each iteration
-//     Point_set *bottom = &chain;
-//     Point_set *top    = &support;
-//     // If no iterations are executed, chain is returned
-//     for(int32_t i = 0; i < n; i++) {
-//       // swap pointers and clear base
-//       Point_set *tmp = bottom; bottom = top; top = tmp;
-//       bottom->clear();
-//       // Traverse the top
-//       for(Point_set::iterator t_itor = top->begin(); t_itor != top->end(); t_itor++) {
-//         const Point& q = *t_itor;
-//         // Traverse the PreSieve's base and for each point p in the base check whether q is in the cone over p
-//         for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->_cone.end(); base_itor++) {
-//           const Point& p = (*base_itor).first;
-//           Point_set& pCone = (*base_itor).second;
-//           // Check whether q is in the pCone
-//           if(pCone.find(q) != pCone.end()) {
-//             // add it to the bottom
-//             bottom->insert(p);
-//           }
-//         }// for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->cone.end(); base_itor++)
-//       }// for(Point_set::iterator t_itor = top->begin(); t_itor != top->end(); t_itor++) 
-//     }// for(int32_t i = 0; i < n; i++)
-//     return *bottom;
-//   }// PreSieve::nSupport()
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "PreSieve::nStar"
-  Obj<Point_set> PreSieve::nStar(Obj<Point_set> chain, int32_t n) {
-    CHKCOMM(*this);
-    // IMPROVE: keep the support size in _cap
-    // Compute the point set obtained by accumulating the recursively-computed support of a set of points in the cap
-    // (i.e., the set of base points resulting after each iteration is accumulated in the star AND used again as
-    // the cap for the next support computation).
-    // Note: a 0-star is the chain itself.
-    Obj<Point_set> star(new Point_set);
-    // If no iterations are executed, chain is returned
-    star.copy(chain);
-    // We use a pair of Point_set pointers that are swapped before each iteration
-    Obj<Point_set> top(new Point_set);
-    Obj<Point_set> bottom(chain);
-    for(int32_t i = 0; i < n; i++) {
-      // swap pointers and clear the bottom
-      Obj<Point_set> tmp = bottom; bottom = top; top = tmp;
+      // Swap pointers and clear bottom
+      Obj<Point_set> tmp = top; top = bottom; bottom = tmp;
       // If bottom == chain, replace bottom->pointer() with another &Point_set;  this avoids having to copy *chain.
       if(bottom == chain) {
         bottom = new Point_set;
@@ -924,24 +778,69 @@ namespace ALE {
       else {
         bottom->clear();
       }
-      // Traverse the top
+      // Traverse the points in top
       for(Point_set::iterator t_itor = top->begin(); t_itor != top->end(); t_itor++) {
-        const Point& q = *t_itor;
-        // Traverse 'this's base and for each point p in the base check whether q is in the cone over p
-        for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->_cone.end(); base_itor++) {
-          const Point& p = (*base_itor).first;
-          Point_set& pCone = (*base_itor).second;
-          // Check whether q is in the pCone
-          if(pCone.find(q) != pCone.end()) {
-            // add it to the bottom and the star
-            bottom->insert(p);
-            star->insert(p);
-          }
-        }// for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->cone.end(); base_itor++)
-      }// for(Point_set::iterator t_itor = top->begin(); t_itor != top->end(); t_itor++) 
-    }// for(int32_t i = 0; i < n; i++)
+        Point q = *t_itor;
+        // Traverse the points in the support under q
+        for(Point_set::iterator qSupport_itor = this->_support[q].begin(); qSupport_itor != this->_support[q].end(); qSupport_itor++) {
+          Point p = *qSupport_itor;
+          bottom->insert(p);
+        }
+      }
+    }
+    // IMPROVE: memory use can be imporoved (number of copies and alloc/dealloc reduced) 
+    //          if pointers to Point_set are used
+    return bottom;
+  }// PreSieve::nSupport()
+
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "PreSieve::nSupport"
+  Point_set PreSieve::nSupport(Point_set& chain, int32_t n) {
+    return (Point_set) nSupport(Obj<Point_set>(chain), n);
+  }// PreSieve::nSupport()
+
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "PreSieve::nStar"
+  Obj<Point_set> PreSieve::nStar(Obj<Point_set> chain, int32_t n) {
+    CHKCOMM(*this);
+    // Compute the point set obtained by recursively accumulating the support of all of points of a set in the cap
+    // (i.e., the set of base points resulting after each iteration is both stored in the resulting set and 
+    // used again as the cap of a support computation).
+    // Note: a 0-star is the chain itself.
+    Obj<Point_set> star(new Point_set);
+    // If no iterations are executed, chain is returned
+    star.copy(chain);   // copy the initial set
+    // We use two Point_set pointers and swap them at the beginning of each iteration
+    Obj<Point_set> bottom(chain);
+    Obj<Point_set> top(new Point_set);
+    for(int32_t i = 0; i < n; i++) {
+      // Swap pointers and clear bottom
+      Obj<Point_set> tmp = top; top = bottom; bottom = tmp;
+      // If bottom == chain, replace bottom->pointer() with another &Point_set;  this avoids having to copy *chain.
+      if(bottom == chain) {
+        bottom = new Point_set;
+      }
+      else {
+        bottom->clear();
+      }
+      // Traverse the points in top
+      for(Point_set::iterator t_itor = top->begin(); t_itor != top->end(); t_itor++) {
+        Point q = *t_itor;
+        // Traverse the points in the support of q
+        for(Point_set::iterator qSupport_itor = this->_support[q].begin(); qSupport_itor != this->_support[q].end(); qSupport_itor++) {
+          Point p = *qSupport_itor;
+          bottom->insert(p);
+          star->insert(p);
+        }
+      }
+    }
+    // IMPROVE: memory use can be imporoved (number of copies and alloc/dealloc reduced) 
+    //          if pointers to Point_sets are used
     return star;
   }// PreSieve::nStar()
+
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nStar"
@@ -949,44 +848,38 @@ namespace ALE {
     return (Point_set) nStar(Obj<Point_set>(chain), n);
   }// PreSieve::nStar()
 
-//   #undef  __FUNCT__
-//   #define __FUNCT__ "PreSieve::nStar"
-//   Point_set PreSieve::nStar(Point_set& chain, int32_t n) {
-//     CHKCOMM(*this);
-//     // IMPROVE: keep the support size in _cap
-//     // Compute the point set obtained by accumulating the recursively-computed support of a set of points in the cap
-//     // (i.e., the set of base points resulting after each iteration is accumulated in the star AND used again as
-//     // the cap for the next support computation).
-//     // Note: a 0-star is the chain itself.
-//     Point_set star;
-//     Point_set support;
-//     // We use a pair of Point_set pointers that are swapped before each iteration
-//     Point_set *bottom      = &chain;
-//     Point_set *top         = &support;
-//     // If no iterations are executed, chain is returned
-//     star = chain;
-//     for(int32_t i = 0; i < n; i++) {
-//       // swap pointers
-//       Point_set *tmp = bottom; bottom = top; top = tmp;
-//       top->clear();
-//       // Traverse the top
-//       for(Point_set::iterator t_itor = top->begin(); t_itor != top->end(); t_itor++) {
-//         const Point& q = *t_itor;
-//         // Traverse 'this's base and for each point p in the base check whether q is in the cone over p
-//         for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->_cone.end(); base_itor++) {
-//           const Point& p = (*base_itor).first;
-//           Point_set& pCone = (*base_itor).second;
-//           // Check whether q is in the pCone
-//           if(pCone.find(q) != pCone.end()) {
-//             // add it to the bottom and the star
-//             bottom->insert(p);
-//             star.insert(p);
-//           }
-//         }// for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->cone.end(); base_itor++)
-//       }// for(Point_set::iterator t_itor = top->begin(); t_itor != top->end(); t_itor++) 
-//     }// for(int32_t i = 0; i < n; i++)
-//     return star;
-//   }// PreSieve::nStar()
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "PreSieve::nStarPreSieve"
+  Obj<PreSieve> PreSieve::nStarPreSieve(Obj<Point_set> chain, int32_t n, Obj<PreSieve> star) {
+    CHKCOMM(*this);
+    // Compute the PreSieve obtained by accumulating intermediate kSupports (1<=k<=n) for a set of points in the cap.
+    // Note: a 0-star is the PreSieve containing the chain itself in the cap, an empty base and no arrows.
+    if(star.isNull()){
+      star = Obj<PreSieve>(new PreSieve(this->comm));
+    }
+    // We use a 'PreSieve-light' -- a map from points in the chain to the bottom-most supports computed so far.
+    Point__Point_set bottom;
+    // Initially star contains only the chain in the cap, and bottom has a singleton {q} set under each q.
+    for(Point_set::iterator c_itor = chain->begin(); c_itor != chain->end(); c_itor++) {
+      Point q = *c_itor;
+      Point_set qSet; qSet.insert(q);
+      bottom[q] = qSet;
+      Point_set emptySet;
+      star->addSupport(q,emptySet);
+    }
+    for(int32_t i = 0; i < n; i++) {
+      // Traverse the chain
+      for(Point_set::iterator c_itor = chain->begin(); c_itor != chain->end(); c_itor++) {
+        Point q = *c_itor;
+        // Compute the new bottom set as the 1-support of the current bottom set in 'this'
+        bottom[q] = this->nSupport(bottom[q],1);
+        // Add the new bottom set to the support of q in the support PreSieve
+        star->addSupport(q,bottom[q]);
+      }// for(Point_set::iterator c_itor = chain.begin(); c_itor != chain.end(); c_itor++) 
+    }// for(int32_t i = 0; i < n; i++)
+    return star;
+  }// PreSieve::nStarPreSieve()
 
 
   #undef  __FUNCT__
@@ -1242,73 +1135,6 @@ namespace ALE {
     return this;
   }// PreSieve::add()
 
-  #undef  __FUNCT__
-  #define __FUNCT__ "PreSieve::nClosurePreSieve"
-  Obj<PreSieve> PreSieve::nClosurePreSieve(Obj<Point_set> chain, int32_t n, Obj<PreSieve> closure) {
-    CHKCOMM(*this);
-    if(closure.isNull()) {
-      closure = Obj<PreSieve>(new PreSieve(this->comm));
-    }
-    // Compute the PreSieve obtained by carving out the PreSieve 'over' a given chain up to height n.
-    // Note: a 0-closure is a PreSieve with the chain itself in the base, an empty cap and no arrows.
-
-    Obj<Point_set> base(new Point_set);
-    Obj<Point_set> top = chain;;
-    // Initially closure contains the chain only in the base, and top contains the chain itself
-    for(Point_set::iterator c_itor = chain->begin(); c_itor != chain->end(); c_itor++) {
-      Point p = *c_itor;
-      closure->addBasePoint(p);
-    }
-    // If no iterations are executed, chain is returned
-    for(int32_t i = 0; i < n; i++) {
-      // Swap base and top
-      Obj<Point_set> tmp = top; top = base; base = tmp;
-      // Traverse the points in the base
-      for(Point_set::iterator b_itor = base->begin(); b_itor != base->end(); b_itor++) {
-        Point p = *b_itor;
-        // Compute the cone over p and add it to closure
-        // IMPROVE: memory use can be improve if nCone returned a pointer to Point_set
-        Point_set pCone = this->nCone(p,1);
-        // Add the cone to top
-        top->join(pCone);
-        // Set the cone over p in the closure
-        closure->addCone(pCone,p);
-      }
-    }
-    return closure;
-  }// PreSieve::nClosurePreSieve()
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "PreSieve::nStarPreSieve"
-  Obj<PreSieve> PreSieve::nStarPreSieve(Obj<Point_set> chain, int32_t n, Obj<PreSieve> star) {
-    CHKCOMM(*this);
-    // Compute the PreSieve obtained by accumulating intermediate kSupports (1<=k<=n) for a set of points in the cap.
-    // Note: a 0-star is the PreSieve containing the chain itself in the cap, an empty base and no arrows.
-    if(star.isNull()){
-      star = Obj<PreSieve>(new PreSieve(this->comm));
-    }
-    // We use a 'PreSieve-light' -- a map from points in the chain to the bottom-most supports computed so far.
-    Point__Point_set bottom;
-    // Initially star contains only the chain in the cap, and bottom has a singleton {q} set under each q.
-    for(Point_set::iterator c_itor = chain->begin(); c_itor != chain->end(); c_itor++) {
-      Point q = *c_itor;
-      Point_set qSet; qSet.insert(q);
-      bottom[q] = qSet;
-      Point_set emptySet;
-      star->addSupport(q,emptySet);
-    }
-    for(int32_t i = 0; i < n; i++) {
-      // Traverse the chain
-      for(Point_set::iterator c_itor = chain->begin(); c_itor != chain->end(); c_itor++) {
-        Point q = *c_itor;
-        // Compute the new bottom set as the 1-support of the current bottom set in 'this'
-        bottom[q] = this->nSupport(bottom[q],1);
-        // Add the new bottom set to the support of q in the support PreSieve
-        star->addSupport(q,bottom[q]);
-      }// for(Point_set::iterator c_itor = chain.begin(); c_itor != chain.end(); c_itor++) 
-    }// for(int32_t i = 0; i < n; i++)
-    return star;
-  }// PreSieve::nStarPreSieve()
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::add"
@@ -1751,12 +1577,7 @@ namespace ALE {
     }
     else if(completedSet == completedSetBase){
       points = &this->_cap;
-      cones = new Point__Point_set();
-      for(Point_set::iterator cap_itor = points->begin(); cap_itor != points->end(); cap_itor++) {
-        const Point& p = *cap_itor;
-        Point_set pSet; pSet.insert(p);
-        (*cones)[p] = this->nSupport(pSet, 1);
-      }
+      cones = &this->_support;
     }
     else {
       throw ALE::Exception("Unknown completedSet");
