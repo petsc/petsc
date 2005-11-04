@@ -459,6 +459,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::computeOverlapIndices"
   void   IndexBundle::computeOverlapIndices() {
+    this->getTopology()->view("Topology");
     this->_overlapOwnership = this->getTopology()->baseFootprint(PreSieve::completionTypePoint, PreSieve::footprintTypeCone, NULL)->left();
     if (this->verbosity > 10) {this->_overlapOwnership->view("Overlap ownership");}
     this->_localOverlapIndices->setBottom(this->_overlapOwnership);

@@ -53,6 +53,10 @@ namespace ALE {
       //
       this->__resetArrowIndices(); // this method depends on _arrowsToStarts having already been setup
       this->_cacheFiberIndices = 0;
+      //
+      _pointTypes = Obj<PreSieve>(new PreSieve(this->comm));
+      _localIndices = Obj<PreSieve>(new PreSieve(this->comm));
+      _globalIndices = Obj<PreSieve>(new PreSieve(this->comm));
     };
     //
     Obj<Sieve>     __getTopology(){return this->_dimensionsToElements->bottom();};

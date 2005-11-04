@@ -472,7 +472,9 @@ PetscErrorCode MeshCreateSeq(Mesh mesh, int dim, PetscInt numVertices, PetscInt 
     ALE::Point v = *vertex_itor;
     if (debug) {
       printf("Sizeof fiber over vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
+#if !defined(PETSC_HAVE_COMPLEX)
       for(int c = 0; c < coordBundle->getFiberDimension(v); c++) {printf("  %c: %g\n", 'x'+c, coords[(v.index - numElements)*dim+c]);}
+#endif
     }
     ierr = setFiberValues(coordinates, v, coordBundle, &coords[(v.index - numElements)*dim], INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -526,13 +528,13 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   }
   /* Create coordinate bundle */
   coordBundle = new ALE::IndexBundle(topology);
+  if (debug) {
+    coordBundle->setVerbosity(11);
+  }
   coordBundle->setFiberDimensionByDepth(0, dim);
   coordBundle->computeOverlapIndices();
   coordBundle->computeGlobalIndices();
   coordBundle->getLock();  // lock the bundle so that the overlap indices do not change
-  if (debug) {
-    coordBundle->setVerbosity(11);
-  }
   /* Create ghosted coordinate storage */
   int localSize = coordBundle->getLocalSize();
   int globalSize = coordBundle->getGlobalSize();
@@ -806,17 +808,17 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
   ierr = MPI_Comm_rank(comm, &rank);
   ierr = MPI_Comm_size(comm, &size);
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ALE::IndexBundle vertexBundle(topology);
-  vertexBundle.setFiberDimensionByDepth(0, 1);
-  vertexBundle.computeOverlapIndices();
-  vertexBundle.computeGlobalIndices();
-  ALE::IndexBundle elementBundle(topology);
-  elementBundle.setFiberDimensionByHeight(0, 1);
-  elementBundle.computeOverlapIndices();
-  elementBundle.computeGlobalIndices();
+  ALE::IndexBundle *vertexBundle = new ALE::IndexBundle(topology);
+  vertexBundle->setFiberDimensionByDepth(0, 1);
+  vertexBundle->computeOverlapIndices();
+  vertexBundle->computeGlobalIndices();
+  ALE::IndexBundle *elementBundle = new ALE::IndexBundle(topology);
+  elementBundle->setFiberDimensionByHeight(0, 1);
+  elementBundle->computeOverlapIndices();
+  elementBundle->computeGlobalIndices();
   elements = topology->heightStratum(0);
   dim = topology->depth(*elements.begin());
-  numElements = elementBundle.getGlobalSize();
+  numElements = elementBundle->getGlobalSize();
   corners = topology->nCone(*elements.begin(), dim).size();
   ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
   if (rank == 0) {
@@ -824,7 +826,7 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
       ALE::Point_set cone = topology->nCone(*e_itor, dim);
       for(ALE::Point_set::iterator c_itor = cone.begin(); c_itor != cone.end(); c_itor++) {
-        ALE::Point index = vertexBundle.getGlobalFiberInterval(*c_itor);
+        ALE::Point index = vertexBundle->getGlobalFiberInterval(*c_itor);
 
         ierr = PetscViewerASCIIPrintf(viewer, " %d", index.prefix);CHKERRQ(ierr);
       }
@@ -855,7 +857,7 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
     for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
       ALE::Point_set cone = topology->nCone(*e_itor, dim);
       for(ALE::Point_set::iterator c_itor = cone.begin(); c_itor != cone.end(); c_itor++) {
-        ALE::Point index = vertexBundle.getGlobalFiberInterval(*c_itor);
+        ALE::Point index = vertexBundle->getGlobalFiberInterval(*c_itor);
 
         array[offset++] = index.prefix;
       }
