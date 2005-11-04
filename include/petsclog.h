@@ -61,11 +61,11 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT        PetscLogMPEDump(const char[]);
 extern PetscTruth UseMPE;
 #define PETSC_LOG_EVENT_MPE_BEGIN(e) \
   ((UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ? \
-   MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_begin,0,(char*)"") : 0)
+   MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_begin,0,NULL) : 0)
 
 #define PETSC_LOG_EVENT_MPE_END(e) \
   ((UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ? \
-   MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_end,0,(char*)"") : 0)
+   MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_end,0,NULL) : 0)
 
 #else 
 #define PETSC_LOG_EVENT_MPE_BEGIN(e) 0 
