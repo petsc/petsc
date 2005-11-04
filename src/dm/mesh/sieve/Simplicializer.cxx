@@ -784,7 +784,9 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
   ierr = VecGetSize(coordinates, &numVertices);CHKERRQ(ierr);
   numVertices /= dim;
   ierr = PetscViewerASCIIPrintf(viewer,"POINTS %d double\n", numVertices);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_COORDS);CHKERRQ(ierr);
   ierr = VecView(coordinates, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

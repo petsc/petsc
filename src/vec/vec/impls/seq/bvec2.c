@@ -124,8 +124,23 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
 #endif
     }
   } else if (format == PETSC_VIEWER_ASCII_VTK) {
-    PetscInt bs;
-    PetscInt b;
+    PetscInt bs, b;
+
+    ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", n);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %d\n", bs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
+    for (i=0; i<n/bs; i++) {
+      for (b=0; b<bs; b++) {
+        if (b > 0) {
+          ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer,"%g",x->array[i*bs+b]);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+    }
+  } else if (format == PETSC_VIEWER_ASCII_VTK_COORDS) {
+    PetscInt bs, b;
 
     ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
     if (bs > 3) {

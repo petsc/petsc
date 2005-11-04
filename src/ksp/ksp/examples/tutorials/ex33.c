@@ -167,14 +167,9 @@ int main(int argc,char **argv)
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer, "poisson.vtk");CHKERRQ(ierr);
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
-  /* These have to be worked in somehow
-  ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", N);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %d\n", dof);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
-  */
-  ierr = VecView(DMMGGetRHS(dmmg), viewer);CHKERRQ(ierr);
+  //ierr = VecView(DMMGGetRHS(dmmg), viewer);CHKERRQ(ierr);
   ierr = VecView(DMMGGetx(dmmg), viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
