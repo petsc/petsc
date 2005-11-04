@@ -6510,6 +6510,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat
 
    Notes:
    C will be created and must be destroyed by the user with MatDestroy().
+   Unless scall is MAT_REUSE_MATRIX
 
    This routine is currently only implemented for pairs of AIJ matrices and classes
    which inherit from AIJ.  C will be of type MATAIJ.
