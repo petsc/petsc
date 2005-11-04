@@ -466,7 +466,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::closure"
-  Point_set Sieve::closure(Point_set& chain) {
+  Point_set Sieve::closure(Obj<Point_set> chain) {
     CHKCOMM(*this);
     Point_set closure;
     int32_t depth = this->maxDepth(chain);
