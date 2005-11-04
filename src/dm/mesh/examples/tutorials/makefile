@@ -7,6 +7,9 @@ LOCDIR          = src/dm/mesh/examples/tutorials/
 EXAMPLESC       = ex1.c
 EXAMPLESF       = 
 MANSEC          = DA
+NP              = 1
+DISPLAY         = :0.0
+EXTRA_ARGS      =
 
 include ${PETSC_DIR}/bmake/common/base
 
@@ -15,13 +18,11 @@ ex1: ex1.o   chkopts
 	${RM} -f ex1.o
 
 #-----------------------------------------------------------------
-NP = 1
-DISPLAY = :0.0
 runex1:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -vertex_file data/ex1conn1d.data -coord_file data/ex1coord1d.data
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -vertex_file data/ex1conn1d.data -coord_file data/ex1coord1d.data ${EXTRA_ARGS}
 
 debugex1:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -vertex_file data/ex1conn1d.data -coord_file data/ex1coord1d.data -start_in_debugger -display ${DISPLAY}
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -vertex_file data/ex1conn1d.data -coord_file data/ex1coord1d.data -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 runex1_2:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -vertex_file data/ex1conn2d.data -coord_file data/ex1coord2d.data

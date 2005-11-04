@@ -11,7 +11,7 @@ PetscErrorCode BuildFaces(int dim, std::map<int, int*> curSimplex, ALE::Point_se
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (debug) {PetscPrintf(PETSC_COMM_SELF, "  Building faces for boundary(%u), dim %d\n", (unsigned int) boundary.size(), dim);}
+  if (debug) {PetscPrintf(PETSC_COMM_SELF, "  Building faces for boundary(size %u), dim %d\n", (unsigned int) boundary.size(), dim);}
   if (dim > 1) {
     // Use the cone construction
     for(ALE::Point_set::iterator b_itor = boundary.begin(); b_itor != boundary.end(); b_itor++) {
@@ -76,7 +76,8 @@ PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices
       if (debug) {PetscPrintf(PETSC_COMM_SELF, "Adding boundary node (%d, %d)\n", 0, simplices[s*(dim+1)+b]+numSimplices);}
       boundary.insert(ALE::Point(0, simplices[s*(dim+1)+b]+numSimplices));
     }
-    if (debug) {PetscPrintf(PETSC_COMM_SELF, "simplex boundary size %u\n", (unsigned int) boundary.size());}
+    PetscPrintf(PETSC_COMM_SELF, "simplex %d\n", s);
+    if (debug) {PetscPrintf(PETSC_COMM_SELF, "  simplex %d boundary size %u\n", s, (unsigned int) boundary.size());}
     ierr = BuildFaces(dim, curElement, boundary, simplex, topology); CHKERRQ(ierr);
     /* Orient the simplex */
     ALE::Point element = ALE::Point(0, simplices[s*(dim+1)+0]+numSimplices);
@@ -471,6 +472,7 @@ PetscErrorCode MeshCreateSeq(Mesh mesh, int dim, PetscInt numVertices, PetscInt 
     ALE::Point v = *vertex_itor;
     if (debug) {
       printf("Sizeof fiber over vertex (%d, %d) is %d\n", v.prefix, v.index, coordBundle->getFiberDimension(v));
+      for(int c = 0; c < coordBundle->getFiberDimension(v); c++) {printf("  %c: %g\n", 'x'+c, coords[(v.index - numElements)*dim+c]);}
     }
     ierr = setFiberValues(coordinates, v, coordBundle, &coords[(v.index - numElements)*dim], INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -786,8 +788,6 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
 PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
 {
   ALE::Sieve       *topology;
-  ALE::IndexBundle  vertexBundle;
-  ALE::IndexBundle  elementBundle;
   ALE::Point_set    elements;
   int               dim, numElements, corners;
   MPI_Comm          comm;
@@ -799,11 +799,11 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
   ierr = MPI_Comm_rank(comm, &rank);
   ierr = MPI_Comm_size(comm, &size);
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  vertexBundle = ALE::IndexBundle(topology);
+  ALE::IndexBundle vertexBundle(topology);
   vertexBundle.setFiberDimensionByDepth(0, 1);
   vertexBundle.computeOverlapIndices();
   vertexBundle.computeGlobalIndices();
-  elementBundle = ALE::IndexBundle(topology);
+  ALE::IndexBundle elementBundle(topology);
   elementBundle.setFiberDimensionByHeight(0, 1);
   elementBundle.computeOverlapIndices();
   elementBundle.computeGlobalIndices();

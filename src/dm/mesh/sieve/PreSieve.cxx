@@ -781,10 +781,13 @@ namespace ALE {
       // Traverse the points in top
       for(Point_set::iterator t_itor = top->begin(); t_itor != top->end(); t_itor++) {
         Point q = *t_itor;
-        // Traverse the points in the support under q
-        for(Point_set::iterator qSupport_itor = this->_support[q].begin(); qSupport_itor != this->_support[q].end(); qSupport_itor++) {
-          Point p = *qSupport_itor;
-          bottom->insert(p);
+        // Must check since map automatically inserts missing keys
+        if (this->_support.find(q) != this->_support.end()) {
+          // Traverse the points in the support under q
+          for(Point_set::iterator qSupport_itor = this->_support[q].begin(); qSupport_itor != this->_support[q].end(); qSupport_itor++) {
+            Point p = *qSupport_itor;
+            bottom->insert(p);
+          }
         }
       }
     }
