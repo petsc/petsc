@@ -168,8 +168,8 @@ ex32: ex32.o  chkopts
 	-${CLINKER} -o ex32 ex32.o  ${PETSC_SNES_LIB}
 	${RM} ex32.o
 
-ex33: ex33.o ex33mesh.o chkopts
-	-${CLINKER} -o ex33 ex33.o ex33mesh.o ${PETSC_SNES_LIB}
+ex33: ex33.o chkopts
+	-${CLINKER} -o ex33 ex33.o ${PETSC_SNES_LIB}
 	${RM} ex33.o
 
 #----------------------------------------------------------------------------
