@@ -642,7 +642,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char a[],char
   PetscFunctionBegin;
   if (!a || !b) SETERRQ(PETSC_ERR_ARG_NULL,"a and b strings must be nonnull");
   if (a == b) {
-    ierr = PetscStrallocpy(a,&a);
+    ierr = PetscStrallocpy(a,&b);
+  }
 
   ierr = PetscMalloc(len*sizeof(char*),&work);CHKERRQ(ierr);
 

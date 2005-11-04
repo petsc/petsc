@@ -121,13 +121,18 @@ PetscErrorCode MeshView_Sieve(Mesh mesh, PetscViewer viewer)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype,Mat *J)
 {
-  PetscErrorCode         ierr;
-  PetscInt              *globals,rstart,i;
+#if 0
   ISLocalToGlobalMapping lmap;
+  PetscInt              *globals,rstart,i;
+#endif
+  PetscInt               localSize, globalSize;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
+  localSize = ((ALE::IndexBundle *) mesh->bundle)->getLocalSize();
+  globalSize = ((ALE::IndexBundle *) mesh->bundle)->getGlobalSize();
   ierr = MatCreate(mesh->comm,J);CHKERRQ(ierr);
-  ierr = MatSetSizes(*J,mesh->n,mesh->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetSizes(*J,localSize,localSize,globalSize,globalSize);CHKERRQ(ierr);
   ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
   ierr = MatSetBlockSize(*J,mesh->bs);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(*J,mesh->d_nz,mesh->d_nnz);CHKERRQ(ierr);
@@ -135,6 +140,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype,Mat *J)
   ierr = MatSeqBAIJSetPreallocation(*J,mesh->bs,mesh->d_nz,mesh->d_nnz);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(*J,mesh->bs,mesh->d_nz,mesh->d_nnz,mesh->o_nz,mesh->o_nnz);CHKERRQ(ierr);
 
+#if 0
   ierr = PetscMalloc((mesh->n+mesh->Nghosts+1)*sizeof(PetscInt),&globals);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(*J,&rstart,PETSC_NULL);CHKERRQ(ierr);
   for (i=0; i<mesh->n; i++) {
@@ -145,6 +151,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype,Mat *J)
   ierr = PetscFree(globals);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(*J,lmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(lmap);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 } 
 
