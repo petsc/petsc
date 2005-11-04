@@ -358,6 +358,16 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "ExpandInterval"
+/* This is currently duplicated in ex33mesh.c */
+inline void ExpandInterval(ALE::Point interval, PetscInt indices[], PetscInt *indx)
+{
+  for(int i = 0; i < interval.index; i++) {
+    indices[(*indx)++] = interval.prefix + i;
+  }
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateGlobalVector"
 /*@C
@@ -381,16 +391,43 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh,Vec *gvec)
 {
-  PetscErrorCode     ierr;
+  PetscErrorCode ierr;
 
 
   PetscFunctionBegin;
   if (mesh->globalvector) {
-    ierr = VecDuplicate(mesh->globalvector,gvec);CHKERRQ(ierr);
+    ierr = VecDuplicate(mesh->globalvector, gvec);CHKERRQ(ierr);
   } else {
-    ierr  = VecCreateGhostBlock(mesh->comm,mesh->bs,mesh->n,PETSC_DETERMINE,mesh->Nghosts,mesh->ghosts,&mesh->globalvector);CHKERRQ(ierr);
+    int localSize = ((ALE::IndexBundle *) mesh->bundle)->getLocalSize();
+    int globalSize = ((ALE::IndexBundle *) mesh->bundle)->getGlobalSize();
+    ALE::Obj<ALE::PreSieve> globalIndices = ((ALE::IndexBundle *) mesh->bundle)->getGlobalIndices();
+    ALE::Obj<ALE::PreSieve> pointTypes = ((ALE::IndexBundle *) mesh->bundle)->getPointTypes();
+    ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(((ALE::IndexBundle *) mesh->bundle)->getCommRank(), ALE::rentedPoint));
+    int ghostSize = 0;
+    for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
+      ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
+
+      if (cone->size()) {
+        ALE::Point interval = *cone->begin();
+
+        ghostSize += interval.index;
+      }
+    }
+    int *ghostIndices = new int[ghostSize];
+    int ghostIdx = 0;
+    for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
+      ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
+
+      if (cone->size()) {
+        ALE::Point interval = *cone->begin();
+
+        ExpandInterval(interval, ghostIndices, &ghostIdx);
+      }
+    }
+
+    ierr = VecCreateGhostBlock(mesh->comm, 1, localSize, globalSize, ghostSize, ghostIndices, &mesh->globalvector);CHKERRQ(ierr);
     *gvec = mesh->globalvector;
-    ierr = PetscObjectReference((PetscObject)*gvec);CHKERRQ(ierr); 
+    ierr = PetscObjectReference((PetscObject) *gvec);CHKERRQ(ierr); 
   }
   PetscFunctionReturn(0);
 }
