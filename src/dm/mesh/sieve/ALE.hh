@@ -257,8 +257,8 @@ namespace ALE {
 
   class Point_set : public std::set<Point, Point::Cmp > {
   public:
-    Point_set()         : std::set<Point, Point::Cmp>(){};
-    Point_set(Point& p) : std::set<Point, Point::Cmp>(){insert(p);};
+    Point_set()        : std::set<Point, Point::Cmp>(){};
+    Point_set(Point p) : std::set<Point, Point::Cmp>(){insert(p);};
     //
     void join(Obj<Point_set> s) {
       for(Point_set::iterator s_itor = s->begin(); s_itor != s->end(); s_itor++) {

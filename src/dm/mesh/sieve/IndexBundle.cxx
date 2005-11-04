@@ -112,6 +112,148 @@ namespace ALE {
 
   }//IndexBundle::getBundleDimension()
 
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::__computeIndices"
+  Obj<PreSieve>   IndexBundle::__computeIndices(Obj<Point_set> supports, Obj<Point_set> base, bool includeBoundary, Obj<Point_set> exclusion) {
+    base  = this->__validateChain(base);
+    supports = this->__validateChain(supports);
+    // IMPROVE: we could make this subroutine consult cache, if base is singleton
+    // Traverse the boundary of s -- the closure of s except s itself -- in a depth-first search and compute the indices for the 
+    // boundary fibers.  For an already seen point ss, its offset is in seen[ss].prefix, or in 'off' for a newly seen point.
+    // 'off' is updated during the calculation by accumulating the dimensions of the fibers over all newly encountered elements.
+    // An element ss  that has been seen AND indexed has a nonzero seen[ss].index equal to its dimension.
+    // If requested, we will cache the results in arrows to e.
+
+    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
+    Point__Point   seen;
+    // Traverse the closure of base in a depth-first search storing the offsets of each element ss we see during the search
+    // in seen[ss].prefix.
+    // Continue searching until we encounter s -- one of supports' points, lookup or compute s's offset and store its indices
+    // in 'indices' as well as seen[ss].
+    // If none of supports are not found in the closure of base, return an empty index set.
+
+    // To enable the depth-first order traversal without recursion, we employ a stack.
+    std::stack<Point> stk;
+    int32_t off = 0;            // keeps track of the offset within the bundle 
+
+    // We traverse the (sub)bundle over base until one of s is encountered
+    while(1) { // use 'break' to exit the loop
+
+      // First we stack base elements up on stk in the reverse order to ensure offsets 
+      // are computed in the bundle order.
+      for(Point_set::reverse_iterator base_ritor = base->rbegin(); base_ritor != base->rend(); base_ritor++) {
+        stk.push(*base_ritor);
+      }
+
+      // If the stack is empty, we are done, albeit with a negative result.
+      if(stk.empty()) { // if stk is empty
+        break;
+      }
+      else { // if stk is not empty
+        Point ss = stk.top(); stk.pop();
+        int32_t ss_dim = this->getFiberDimension(ss);
+        int32_t ss_off;
+        // If ss has already been seen, we use the stored offset.
+        if(seen.find(ss) != seen.end()){ // seen ss already
+          ss_off = seen[ss].prefix;
+        }
+        else { // not seen ss yet
+          // Compute ss_off
+          ss_off = off;
+          // Store ss_off, but ss_dim in 'seen'
+          seen[ss] = Point(ss_off, 0);
+          // off is only incremented when we encounter a not yet seen ss.
+          off += ss_dim;
+        }
+        // ss in supports ?
+        Point_set::iterator s_itor = supports->find(ss);
+        if(s_itor != supports->end()) {
+          Point s = *s_itor;
+          // If s (aka ss) has a nonzero dimension but has not been indexed yet
+          if((ss_dim > 0) && (seen[ss].index == 0)) {
+            // store ss_off, ss_dim both in indices and seen[ss]
+            Point ssPoint(ss_off, ss_dim);
+            indices->addCone(ssPoint, ss);
+            seen[ss] = Point(ss_off, ss_dim);
+          }
+          // If the boundary of s should be included in the calculation, add in the boundary indices
+          if(includeBoundary) {
+            Obj<PreSieve> boundary_indices = this->__computeBoundaryIndices(s, seen, off);
+            indices->add(boundary_indices.object());
+          }
+        } // ss in supports
+        // Regardless of whether ss is in supports or not, we need to index the elements in its closure to obtain a correct off.
+        // Compute the cone over ss, which will replace ss on stk at the beginning of the next iteration.
+        // IMPROVE: can probably reduce runtime by putting this line inside the 'if not seen' clause'.
+        //   Also, this can break the numbering if we have given a very specific base and od not want other points numbered
+        base = this->getTopology()->cone(ss);
+        if (!exclusion.isNull()) {
+          base->subtract(exclusion);
+        }
+      }// if stk is not empty
+    }// while(1)     
+    return indices;
+  }//IndexBundle::__computeIndices()
+
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::__computeBoundaryIndices"
+  Obj<PreSieve>      IndexBundle::__computeBoundaryIndices(Point  s, Point__Point& seen, int32_t& off) {
+
+    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
+    // Traverse the boundary of s -- the closure of s except s itself -- in a depth-first search and compute the indices for the 
+    // boundary fibers.  For an already seen point ss, its offset is in seen[ss].prefix, or in 'off' for a newly seen point.
+    // 'off' is updated during the calculation by accumulating the dimensions of the fibers over all newly encountered elements.
+    // An element ss  that has been seen AND indexed has a nonzero seen[ss].index equal to its dimension.
+    // If requested, we will cache the results in arrows to e.
+
+    // To enable the depth-first order traversal without recursion, we employ a stack.
+    std::stack<Point> stk;
+    // Initialize base with the cone over s
+    Obj<Point_set> base = this->getTopology()->cone(s);
+    while(1) { // use 'break' to exit the loop
+      // First we stack base elements up on stk in the reverse order to ensure that offsets 
+      // are computed in the bundle order.
+      for(Point_set::reverse_iterator base_ritor = base->rbegin(); base_ritor != base->rend(); base_ritor++) {
+        stk.push(*base_ritor);
+      }
+      // If the stack is empty, we are done.
+      if(stk.empty()) { // if stk is empty
+        break;
+      }
+      else { // if stk is not empty
+        Point   ss = stk.top(); stk.pop();
+        int32_t ss_dim = this->getFiberDimension(ss);
+        int32_t ss_off;
+        if(seen.find(ss) != seen.end()) { // already seen ss
+          // use the stored offset
+          ss_off = seen[ss].prefix;
+          if(seen[ss].index == 0) {  // but not yet indexed ss
+            seen[ss] = Point(ss_off, ss_dim);
+            if(ss_dim > 0) {
+              Point ssPoint = Point(ss_off, ss_dim);
+              indices->addCone(ssPoint, ss);
+            }
+          } // not yet indexed ss
+        } // already seen ss
+        else // not seen ss yet
+        {
+          // use the computed offset
+          ss_off = off;
+          // Mark ss as already seen and store its offset and dimension
+          seen[ss] = Point(ss_off, ss_dim);
+          if(ss_dim > 0) {
+            Point ssPoint(ss_off, ss_dim);
+            indices->addCone(ssPoint, ss);
+          }
+          off += ss_dim;
+        }    // not seen ss yet
+        base = this->getTopology()->cone(ss);
+      }// if stk is not empty
+    }// while(1)     
+    return indices;
+  }//IndexBundle::__computeBoundaryIndices()
+
 
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::getFiberInterval"
@@ -139,15 +281,180 @@ namespace ALE {
 
 
   #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::getBundleIndices"
-  Obj<PreSieve>   IndexBundle::getBundleIndices(Obj<Point_set> supports, Obj<Point_set> base) {
+  #define __FUNCT__ "IndexBundle::getClosureIndices"
+  Obj<PreSieve>   IndexBundle::getClosureIndices(Obj<Point_set> supports, Obj<Point_set> base) {
     supports = this->__validateChain(supports);
     base  = this->__validateChain(base);
     bool includingBoundary = 1;
     Obj<PreSieve> indices = this->__computeIndices(supports, base, includingBoundary);
     return indices;
-  }//IndexBundle::getBundleIndices()
+  }//IndexBundle::getClosureIndices()
 
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::__getMaxDepthElement"
+  ALE::Point IndexBundle::__getMaxDepthElement(Obj<Point_set> points) {
+    ALE::Point max(-1, 0);
+    int32_t    maxDepth = 0;
+
+    for(ALE::Point_set::iterator e_itor = points->begin(); e_itor != points->end(); e_itor++) {
+      int32_t depth = this->getTopology()->depth(*e_itor);
+
+      if (depth > maxDepth) {
+        maxDepth = depth;
+        max = *e_itor;
+      }
+    }
+    return max;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::__checkOrderChain"
+  ALE::int__Point IndexBundle::__checkOrderChain(Obj<Point_set> order, int& minDepth, int& maxDepth) {
+    ALE::int__Point dElement;
+    minDepth = 0;
+    maxDepth = 0;
+
+    // A topology cell-tuple contains one element per dimension, so we order the points by depth.
+    for(Point_set::iterator ord_itor = order->begin(); ord_itor != order->end(); ord_itor++) {
+      Point e = *ord_itor;
+      int32_t depth = this->getTopology()->depth(e);
+
+      if (depth < 0) {
+        throw Exception("Invalid element: negative depth returned"); 
+      }
+      if (depth > maxDepth) {
+        maxDepth = depth;
+      }
+      if (depth < minDepth) {
+        minDepth = depth;
+      }
+      dElement[depth] = e;
+    }
+    // Verify that the chain is a "baricentric chain", i.e. it starts at depth 0
+    if(minDepth != 0) {
+      throw Exception("Invalid order chain: minimal depth is nonzero");
+    }
+    // Verify the chain has an element of every depth between 0 and maxDepth
+    // and that each element at depth d is in the cone of the element at depth d+1
+    for(int32_t d = 0; d <= maxDepth; d++) {
+      int__Point::iterator d_itor = dElement.find(d);
+
+      if(d_itor == dElement.end()){
+        ostringstream ex;
+        ex << "[" << this->getCommRank() << "]: ";
+        ex << "Missing Point at depth " << d;
+        throw Exception(ex.str().c_str());
+      }
+      if(d > 0) {
+        if(!this->getTopology()->coneContains(dElement[d], dElement[d-1])){
+          ostringstream ex;
+          ex << "[" << this->getCommRank() << "]: ";
+          ex << "point (" << dElement[d-1].prefix << ", " << dElement[d-1].index << ") at depth " << d-1 << " not in the cone of ";
+          ex << "point (" << dElement[d].prefix << ", " << dElement[d].index << ") at depth " << d;
+          throw Exception(ex.str().c_str());
+        }
+      }
+    }
+    return dElement;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::__orderElement"
+  void IndexBundle::__orderElement(int dim, ALE::Point element, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
+    if (elementsOrdered->find(element) != elementsOrdered->end()) return;
+    (*ordered)[dim].push(element);
+    elementsOrdered->insert(element);
+    printf("  ordered element (%d, %d) dim %d\n", element.prefix, element.index, dim);
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::__orderCell"
+  ALE::Point IndexBundle::__orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
+    Obj<Sieve> closure = this->getTopology()->closureSieve(Point_set((*orderChain)[dim]));
+    ALE::Point last;
+
+    printf("Ordering cell (%d, %d) dim %d\n", (*orderChain)[dim].prefix, (*orderChain)[dim].index, dim);
+    for(int d = 0; d < dim; d++) {
+      printf("  orderChain[%d] (%d, %d)\n", d, (*orderChain)[d].prefix, (*orderChain)[d].index);
+    }
+    if (dim == 1) {
+      Obj<Point_set> flip = closure->cone((*orderChain)[1]);
+
+      this->__orderElement(0, (*orderChain)[0], ordered, elementsOrdered);
+      flip->erase((*orderChain)[0]);
+      last = *flip->begin();
+      this->__orderElement(0, last, ordered, elementsOrdered);
+      this->__orderElement(1, (*orderChain)[1], ordered, elementsOrdered);
+      (*orderChain)[dim-1] = last;
+      return last;
+    }
+    do {
+      last = this->__orderCell(dim-1, orderChain, ordered, elementsOrdered);
+      printf("    last (%d, %d)\n", last.prefix, last.index);
+      Obj<Point_set> faces = closure->support(last);
+      faces->erase((*orderChain)[dim-1]);
+      if (faces->size() != 1) {
+        throw Exception("Last edge did not separate two faces");
+      }
+      last = (*orderChain)[dim-1];
+      (*orderChain)[dim-1] = *faces->begin();
+    } while(elementsOrdered->find((*orderChain)[dim-1]) == elementsOrdered->end());
+    printf("Finish ordering for cell (%d, %d)\n", (*orderChain)[dim].prefix, (*orderChain)[dim].index);
+    printf("  with last (%d, %d)\n", last.prefix, last.index);
+    (*orderChain)[dim-1] = last;
+    this->__orderElement(dim, (*orderChain)[dim], ordered, elementsOrdered);
+    return last;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getOrderedIndices"
+  Obj<Point_array>   IndexBundle::getOrderedIndices(Obj<Point_set> order, Obj<PreSieve> indices) {
+    // IMPROVE:  the ordering algorithm employed here works only for 'MeshSieves' --
+    //           Sieves with the property that any pair of elements of depth d > 0 share at most
+    //           one element of depth d-1.  'MeshSieve' would check that this property is preserved
+    //           under arrow additions.
+    //           We should define class 'MeshBundle' that would take 'MeshSieves' as topology and
+    //           move this method there.
+    int minDepth, maxDepth;
+    ALE::int__Point dElement = this->__checkOrderChain(order, minDepth, maxDepth);
+    // We store the elements ordered in each dimension
+    std::map<int, std::queue<Point> > ordered;
+
+    // Order elements in the closure
+    printf("Ordering (%d, %d)\n", dElement[maxDepth].prefix, dElement[maxDepth].index);
+    if (maxDepth == 0) {
+      ordered[0].push(dElement[0]);
+    } else if (maxDepth == 1) {
+      // FIX: I think this is not necessary
+      ALE::Point     face = dElement[1];
+      Obj<Sieve>  closure = this->getTopology()->closureSieve(Point_set(face));
+      Obj<Point_set> flip = closure->cone(face);
+
+      ordered[0].push(dElement[0]);
+      flip->erase(dElement[0]);
+      ordered[0].push(*flip->begin());
+      ordered[1].push(dElement[1]);
+    } else {
+      ALE::Point_set elementsOrdered;
+
+      ALE::Point last = this->__orderCell(maxDepth, &dElement, &ordered, elementsOrdered);
+    }
+
+    // Generate indices from ordered elements
+    Obj<Point_array> indexArray(new Point_array);
+    for(int d = 0; d <= maxDepth; d++) {
+      while(!ordered[d].empty()) {
+        Obj<Point_set> indCone = indices->cone(ordered[d].front());
+
+        ordered[d].pop();
+        printf("  indices (%d, %d)\n", indCone->begin()->prefix, indCone->begin()->index);
+        if (indCone->begin()->index > 0) {
+          indexArray->push_back(*indCone->begin());
+        }
+      }
+    }
+    return indexArray;
+  }
 
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::computeOverlapIndices"
@@ -184,17 +491,44 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::getOverlapFiberIndices"
-  Obj<PreSieve>   IndexBundle::getOverlapFiberIndices(Point e, int32_t rank) {
+  Obj<PreSieve>   IndexBundle::getOverlapFiberIndices(Obj<Point_set> supports, int32_t rank) {
+    supports = this->__validateChain(supports);
     Obj<PreSieve> indices(new PreSieve(this->getComm()));
     if (rank == this->commRank) {
-      //ALE::Obj<ALE::Point_set> ind = this->_localOverlapIndices->cone(e);
-      ALE::Point_set ind = this->_localOverlapIndices->cone(e);
-      indices->addCone(ind, e);
+      for(ALE::Point_set::iterator e_itor = supports->begin(); e_itor != supports->end(); e_itor++) {
+        ALE::Point e = *e_itor;
+        //ALE::Obj<ALE::Point_set> ind = this->_localOverlapIndices->cone(e);
+        ALE::Point_set ind = this->_localOverlapIndices->cone(e);
+
+        indices->addCone(ind, e);
+      }
     } else {
       throw Exception("Not supported: Remote overlap indices not done"); 
     }
     return indices;
   }//IndexBundle::getOverlapFiberIndices()
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getOverlapClosureIndices"
+  Obj<PreSieve>   IndexBundle::getOverlapClosureIndices(Obj<Point_set> supports, int32_t rank) {
+    supports = this->__validateChain(supports);
+    Obj<PreSieve> indices(new PreSieve(this->getComm()));
+
+    if (rank == this->commRank) {
+      Obj<Point_set> points = this->getTopology()->closure(supports);
+
+      for(ALE::Point_set::iterator e_itor = points->begin(); e_itor != points->end(); e_itor++) {
+        ALE::Point e = *e_itor;
+        //ALE::Obj<ALE::Point_set> ind = this->_localOverlapIndices->cone(e);
+        ALE::Point_set ind = this->_localOverlapIndices->cone(e);
+
+        indices->addCone(ind, e);
+      }
+    } else {
+      throw Exception("Not supported: Remote overlap indices not done"); 
+    }
+    return indices;
+  }
 
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::__getPointType"
@@ -256,6 +590,259 @@ namespace ALE {
     this->_pointTypes = pointTypes;
     if (this->verbosity > 10) {pointTypes->view("Point types");}
     return pointTypes;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getPointTypes"
+  ALE::Obj<ALE::PreSieve>   IndexBundle::getPointTypes() {
+    return this->_pointTypes;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::computeGlobalIndices"
+  void   IndexBundle::computeGlobalIndices() {
+    // Make local indices
+    ALE::Point_set localTypes;
+    localTypes.insert(ALE::Point(this->commRank, ALE::localPoint));
+    localTypes.insert(ALE::Point(this->commRank, ALE::leasedPoint));
+    ALE::Obj<ALE::PreSieve> pointTypes = this->__computePointTypes();
+    ALE::Obj<ALE::Point_set> localPoints = pointTypes->cone(localTypes);
+    ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(this->commRank, ALE::rentedPoint));
+    if (this->verbosity > 10) {localPoints->view("Global local points");}
+    ALE::Obj<ALE::PreSieve> localIndices = this->getFiberIndices(localPoints, localPoints, rentedPoints);
+    if (this->verbosity > 10) {localIndices->view("Global local indices");}
+    int localSize = this->getFiberDimension(localPoints);
+    if (this->verbosity > 10) {
+      PetscSynchronizedPrintf(this->comm, "[%d]Local size %d\n", this->commRank, localSize);
+      PetscSynchronizedFlush(this->comm);
+    }
+
+    // Calculate global size
+    ALE::Obj<ALE::PreSieve> globalIndices(new PreSieve(this->comm));
+    int *firstIndex = new int[this->commSize+1];
+    int ierr = MPI_Allgather(&localSize, 1, MPI_INT, &(firstIndex[1]), 1, MPI_INT, this->comm);
+    CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allgather"));
+    firstIndex[0] = 0;
+    for(int p = 0; p < this->commSize; p++) {
+      firstIndex[p+1] = firstIndex[p+1] + firstIndex[p];
+    }
+
+    // Add rented points
+    for(ALE::Point_set::iterator r_itor = rentedPoints->begin(); r_itor != rentedPoints->end(); r_itor++) {
+      ALE::Point p = *r_itor;
+      int32_t dim = this->getFiberDimension(p);
+      ALE::Point interval(localSize, dim);
+
+      localIndices->addCone(interval, p);
+      localSize += dim;
+    }
+
+    // Make global indices
+    for(ALE::Point_set::iterator e_itor = localPoints->begin(); e_itor != localPoints->end(); e_itor++) {
+      ALE::Obj<ALE::Point_set> cone = localIndices->cone(*e_itor);
+      ALE::Point globalIndex(-1, 0);
+      ALE::Point point = *e_itor;
+
+      if (cone->size()) {
+        globalIndex = *cone->begin();
+        if (this->verbosity > 10) {
+          PetscSynchronizedPrintf(this->comm, "[%d]   local interval (%d, %d) for point (%d, %d)\n", this->commRank, globalIndex.prefix, globalIndex.index, (*e_itor).prefix, (*e_itor).index);
+        }
+        globalIndex.prefix += firstIndex[this->commRank];
+        if (this->verbosity > 10) {
+          PetscSynchronizedPrintf(this->comm, "[%d]  global interval (%d, %d) for point (%d, %d)\n", this->commRank, globalIndex.prefix, globalIndex.index, (*e_itor).prefix, (*e_itor).index);
+        }
+      }
+      globalIndices->addCone(globalIndex, point);
+    }
+    if (this->verbosity > 10) {
+      PetscSynchronizedPrintf(this->comm, "[%d]Global size %d\n", this->commRank, firstIndex[this->commSize]);
+      PetscSynchronizedFlush(this->comm);
+    }
+    delete firstIndex;
+
+    // FIX: Communicate remote indices
+    MPI_Request *requests = new MPI_Request[this->commSize];
+    MPI_Status *statuses = new MPI_Status[this->commSize];
+    int **recvIntervals = new int *[this->commSize];
+    for(int p = 0; p < this->commSize; p++) {
+      int size;
+      if (p == this->commRank) {
+        size = 0;
+      } else {
+        ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(-p-1, p));
+        size = rentedPoints->size()*2;
+      }
+      recvIntervals[p] = new int[size+1];
+
+      ierr = MPI_Irecv(recvIntervals[p], size, MPI_INT, p, 1, this->comm, &(requests[p]));
+      CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Irecv"));
+      if (this->verbosity > 10) {PetscSynchronizedPrintf(this->comm, "[%d]  rented size %d for proc %d\n", this->commRank, size, p);}
+    }
+    for(int p = 0; p < this->commSize; p++) {
+      if (p == this->commRank) {
+        ierr = MPI_Send(&p, 0, MPI_INT, p, 1, this->comm);
+        CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Send"));
+        continue;
+      }
+      ALE::Obj<ALE::Point_set> leasedPoints = pointTypes->cone(ALE::Point(p, p));
+      int size = leasedPoints->size()*2;
+      int *intervals = new int[size+1];
+      int i = 0;
+
+      for(ALE::Point_set::iterator e_itor = leasedPoints->begin(); e_itor != leasedPoints->end(); e_itor++) {
+        ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
+        ALE::Point interval(-1, 0);
+
+        if (cone->size()) {
+          interval = *cone->begin();
+        }
+
+        intervals[i++] = interval.prefix;
+        intervals[i++] = interval.index;
+      }
+      ierr = MPI_Send(intervals, size, MPI_INT, p, 1, this->comm);
+      CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Send"));
+      delete intervals;
+      if (this->verbosity > 10) {PetscSynchronizedPrintf(this->comm, "[%d]  leased size %d for proc %d\n", this->commRank, size, p);}
+    }
+    ierr = MPI_Waitall(this->commSize, requests, statuses); CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Waitall"));
+    for(int p = 0; p < this->commSize; p++) {
+      if (p == this->commRank) {
+        delete recvIntervals[p];
+        continue;
+      }
+      ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(-p-1, p));
+      int i = 0;
+
+      for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
+        ALE::Point interval(recvIntervals[p][i], recvIntervals[p][i+1]);
+        ALE::Point point = *e_itor;
+
+        globalIndices->addCone(interval, point);
+        if (this->verbosity > 10) {PetscSynchronizedPrintf(this->comm, "[%d]Set global indices of (%d, %d) to (%d, %d)\n", this->commRank, point.prefix, point.index, interval.prefix, interval.index);}
+        i += 2;
+      }
+      delete recvIntervals[p];
+    }
+    if (this->verbosity > 10) {PetscSynchronizedFlush(this->comm);}
+    delete requests;
+    delete statuses;
+    delete recvIntervals;
+    this->_localIndices = localIndices;
+    this->_globalIndices = globalIndices;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getLocalSize"
+  int32_t   IndexBundle::getLocalSize() {
+    ALE::Point_set localTypes;
+    localTypes.insert(ALE::Point(this->commRank, ALE::localPoint));
+    localTypes.insert(ALE::Point(this->commRank, ALE::leasedPoint));
+    return getFiberDimension(this->_pointTypes->cone(localTypes));
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getGlobalSize"
+  int32_t   IndexBundle::getGlobalSize() {
+    int localSize = getLocalSize(), globalSize;
+    int ierr = MPI_Allreduce(&localSize, &globalSize, 1, MPI_INT, MPI_SUM, this->comm);
+    CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allreduce"));
+    return globalSize;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getRemoteSize"
+  int32_t   IndexBundle::getRemoteSize() {
+    return getFiberDimension(this->_pointTypes->cone(ALE::Point(this->commRank, ALE::rentedPoint)));
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getGlobalIndices"
+  ALE::Obj<ALE::PreSieve>   IndexBundle::getGlobalIndices() {
+    return this->_globalIndices;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getLocalIndices"
+  ALE::Obj<ALE::PreSieve>   IndexBundle::getLocalIndices() {
+    return this->_localIndices;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getGlobalFiberInterval"
+  Point   IndexBundle::getGlobalFiberInterval(Point support) {
+    ALE::Obj<ALE::Point_set> indices = this->_globalIndices->cone(support);
+    Point interval;
+
+    if(indices->size() == 0) {
+      interval = Point(-1,0);
+    } else {
+      interval = *(indices->begin());
+    }
+    return interval;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getGlobalFiberIndices"
+  ALE::Obj<ALE::PreSieve>   IndexBundle::getGlobalFiberIndices(Obj<Point_set> supports) {
+    supports = this->__validateChain(supports);
+    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
+
+    for(ALE::Point_set::iterator e_itor = supports->begin(); e_itor != supports->end(); e_itor++) {
+      ALE::Point point = *e_itor;
+      ALE::Point_set cone = this->_globalIndices->cone(point);
+
+      indices->addCone(cone, point);
+    }
+    return indices;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getLocalFiberIndices"
+  ALE::Obj<ALE::PreSieve>   IndexBundle::getLocalFiberIndices(Obj<Point_set> supports) {
+    supports = this->__validateChain(supports);
+    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
+
+    for(ALE::Point_set::iterator e_itor = supports->begin(); e_itor != supports->end(); e_itor++) {
+      ALE::Point point = *e_itor;
+      ALE::Point_set cone = this->_localIndices->cone(point);
+
+      indices->addCone(cone, point);
+    }
+    return indices;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getGlobalClosureIndices"
+  ALE::Obj<ALE::PreSieve>   IndexBundle::getGlobalClosureIndices(Obj<Point_set> supports) {
+    supports = this->__validateChain(supports);
+    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
+    Obj<Point_set> points = this->getTopology()->closure(supports);
+
+    for(ALE::Point_set::iterator e_itor = points->begin(); e_itor != points->end(); e_itor++) {
+      ALE::Point point = *e_itor;
+      ALE::Point_set cone = this->_globalIndices->cone(point);
+
+      indices->addCone(cone, point);
+    }
+    return indices;
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getLocalClosureIndices"
+  ALE::Obj<ALE::PreSieve>   IndexBundle::getLocalClosureIndices(Obj<Point_set> supports) {
+    supports = this->__validateChain(supports);
+    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
+    Obj<Point_set> points = this->getTopology()->closure(supports);
+
+    for(ALE::Point_set::iterator e_itor = points->begin(); e_itor != points->end(); e_itor++) {
+      ALE::Point point = *e_itor;
+      ALE::Point_set cone = this->_localIndices->cone(point);
+
+      indices->addCone(cone, point);
+    }
+    return indices;
   }
 
   #undef  __FUNCT__
@@ -415,491 +1002,6 @@ namespace ALE {
     stack->setBottom(targetIndices);
     return stack;
   }
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::computeGlobalIndices"
-  void   IndexBundle::computeGlobalIndices() {
-    // Make local indices
-    ALE::Point_set localTypes;
-    localTypes.insert(ALE::Point(this->commRank, ALE::localPoint));
-    localTypes.insert(ALE::Point(this->commRank, ALE::leasedPoint));
-    ALE::Obj<ALE::PreSieve> pointTypes = this->__computePointTypes();
-    ALE::Obj<ALE::Point_set> localPoints = pointTypes->cone(localTypes);
-    if (this->verbosity > 10) {localPoints->view("Global local points");}
-    ALE::Obj<ALE::PreSieve> localIndices = this->getFiberIndices(localPoints, localPoints, pointTypes->cone(ALE::Point(this->commRank, ALE::rentedPoint)));
-    if (this->verbosity > 10) {localIndices->view("Global local indices");}
-    int localSize = this->getFiberDimension(localPoints);
-    if (this->verbosity > 10) {
-      PetscSynchronizedPrintf(this->comm, "[%d]Local size %d\n", this->commRank, localSize);
-      PetscSynchronizedFlush(this->comm);
-    }
-
-    // Make global indices
-    ALE::Obj<ALE::PreSieve> globalIndices(new PreSieve(this->comm));
-    int *firstIndex = new int[this->commSize+1];
-    int ierr = MPI_Allgather(&localSize, 1, MPI_INT, &(firstIndex[1]), 1, MPI_INT, this->comm);
-    CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allgather"));
-    firstIndex[0] = 0;
-    for(int p = 0; p < this->commSize; p++) {
-      firstIndex[p+1] = firstIndex[p+1] + firstIndex[p];
-    }
-    for(ALE::Point_set::iterator e_itor = localPoints->begin(); e_itor != localPoints->end(); e_itor++) {
-      ALE::Obj<ALE::Point_set> cone = localIndices->cone(*e_itor);
-      ALE::Point globalIndex(-1, 0);
-      ALE::Point point = *e_itor;
-
-      if (cone->size()) {
-        globalIndex = *cone->begin();
-        if (this->verbosity > 10) {
-          PetscSynchronizedPrintf(this->comm, "[%d]   local interval (%d, %d) for point (%d, %d)\n", this->commRank, globalIndex.prefix, globalIndex.index, (*e_itor).prefix, (*e_itor).index);
-        }
-        globalIndex.prefix += firstIndex[this->commRank];
-        if (this->verbosity > 10) {
-          PetscSynchronizedPrintf(this->comm, "[%d]  global interval (%d, %d) for point (%d, %d)\n", this->commRank, globalIndex.prefix, globalIndex.index, (*e_itor).prefix, (*e_itor).index);
-        }
-      }
-      globalIndices->addCone(globalIndex, point);
-    }
-    if (this->verbosity > 10) {
-      PetscSynchronizedPrintf(this->comm, "[%d]Global size %d\n", this->commRank, firstIndex[this->commSize]);
-      PetscSynchronizedFlush(this->comm);
-    }
-    delete firstIndex;
-
-    // Communicate remote indices
-    MPI_Request *requests = new MPI_Request[this->commSize];
-    MPI_Status *statuses = new MPI_Status[this->commSize];
-    int **recvIntervals = new int *[this->commSize];
-    for(int p = 0; p < this->commSize; p++) {
-      int size;
-      if (p == this->commRank) {
-        size = 0;
-      } else {
-        ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(-p-1, p));
-        size = rentedPoints->size()*2;
-      }
-      recvIntervals[p] = new int[size+1];
-
-      ierr = MPI_Irecv(recvIntervals[p], size, MPI_INT, p, 1, this->comm, &(requests[p]));
-      CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Irecv"));
-      if (this->verbosity > 10) {PetscSynchronizedPrintf(this->comm, "[%d]  rented size %d for proc %d\n", this->commRank, size, p);}
-    }
-    for(int p = 0; p < this->commSize; p++) {
-      if (p == this->commRank) {
-        ierr = MPI_Send(&p, 0, MPI_INT, p, 1, this->comm);
-        CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Send"));
-        continue;
-      }
-      ALE::Obj<ALE::Point_set> leasedPoints = pointTypes->cone(ALE::Point(p, p));
-      int size = leasedPoints->size()*2;
-      int *intervals = new int[size+1];
-      int i = 0;
-
-      for(ALE::Point_set::iterator e_itor = leasedPoints->begin(); e_itor != leasedPoints->end(); e_itor++) {
-        ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
-        ALE::Point interval(-1, 0);
-
-        if (cone->size()) {
-          interval = *cone->begin();
-        }
-
-        intervals[i++] = interval.prefix;
-        intervals[i++] = interval.index;
-      }
-      ierr = MPI_Send(intervals, size, MPI_INT, p, 1, this->comm);
-      CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Send"));
-      delete intervals;
-      if (this->verbosity > 10) {PetscSynchronizedPrintf(this->comm, "[%d]  leased size %d for proc %d\n", this->commRank, size, p);}
-    }
-    ierr = MPI_Waitall(this->commSize, requests, statuses); CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Waitall"));
-    for(int p = 0; p < this->commSize; p++) {
-      if (p == this->commRank) {
-        delete recvIntervals[p];
-        continue;
-      }
-      ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(-p-1, p));
-      int i = 0;
-
-      for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
-        ALE::Point interval(recvIntervals[p][i], recvIntervals[p][i+1]);
-        ALE::Point point = *e_itor;
-
-        globalIndices->addCone(interval, point);
-        if (this->verbosity > 10) {PetscSynchronizedPrintf(this->comm, "[%d]Set global indices of (%d, %d) to (%d, %d)\n", this->commRank, point.prefix, point.index, interval.prefix, interval.index);}
-        i += 2;
-      }
-      delete recvIntervals[p];
-    }
-    if (this->verbosity > 10) {PetscSynchronizedFlush(this->comm);}
-    delete requests;
-    delete statuses;
-    delete recvIntervals;
-    this->_globalIndices = globalIndices;
-  }
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::getLocalSize"
-  int32_t   IndexBundle::getLocalSize() {
-    ALE::Point_set localTypes;
-    localTypes.insert(ALE::Point(this->commRank, ALE::localPoint));
-    localTypes.insert(ALE::Point(this->commRank, ALE::leasedPoint));
-    return getFiberDimension(this->_pointTypes->cone(localTypes));
-  }
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::getGlobalSize"
-  int32_t   IndexBundle::getGlobalSize() {
-    int localSize = getLocalSize(), globalSize;
-    int ierr = MPI_Allreduce(&localSize, &globalSize, 1, MPI_INT, MPI_SUM, this->comm);
-    CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allreduce"));
-    return globalSize;
-  }
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::getRemoteSize"
-  int32_t   IndexBundle::getRemoteSize() {
-    return getFiberDimension(this->_pointTypes->cone(ALE::Point(this->commRank, ALE::rentedPoint)));
-  }
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::getPointTypes"
-  ALE::Obj<ALE::PreSieve>   IndexBundle::getPointTypes() {
-    return this->_pointTypes;
-  }
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::getGlobalIndices"
-  ALE::Obj<ALE::PreSieve>   IndexBundle::getGlobalIndices() {
-    return this->_globalIndices;
-  }
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::getGlobalFiberInterval"
-  Point   IndexBundle::getGlobalFiberInterval(Point support) {
-    ALE::Obj<ALE::Point_set> indices = this->_globalIndices->cone(support);
-    Point interval;
-
-    if(indices->size() == 0) {
-      interval = Point(-1,0);
-    } else {
-      interval = *(indices->begin());
-    }
-    return interval;
-  }
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::getGlobalFiberIndices"
-  ALE::Obj<ALE::PreSieve>   IndexBundle::getGlobalFiberIndices(Obj<Point_set> supports) {
-    supports = this->__validateChain(supports);
-    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
-
-    for(ALE::Point_set::iterator e_itor = supports->begin(); e_itor != supports->end(); e_itor++) {
-      ALE::Point point = *e_itor;
-      ALE::Point_set cone = this->_globalIndices->cone(point);
-
-      indices->addCone(cone, point);
-    }
-    return indices;
-  }
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::__checkOrderChain"
-  ALE::int__Point IndexBundle::__checkOrderChain(Obj<Point_set> order, int& minDepth, int& maxDepth) {
-    ALE::int__Point dElement;
-    minDepth = 0;
-    maxDepth = 0;
-
-    // A topology cell-tuple contains one element per dimension, so we order the points by depth.
-    for(Point_set::iterator ord_itor = order->begin(); ord_itor != order->end(); ord_itor++) {
-      Point e = *ord_itor;
-      int32_t depth = this->getTopology()->depth(e);
-
-      if (depth < 0) {
-        throw Exception("Invalid element: negative depth returned"); 
-      }
-      if (depth > maxDepth) {
-        maxDepth = depth;
-      }
-      if (depth < minDepth) {
-        minDepth = depth;
-      }
-      dElement[depth] = e;
-    }
-    // Verify that the chain is a "baricentric chain", i.e. it starts at depth 0
-    if(minDepth != 0) {
-      throw Exception("Invalid order chain: minimal depth is nonzero");
-    }
-    // Verify the chain has an element of every depth between 0 and maxDepth
-    // and that each element at depth d is in the cone of the element at depth d+1
-    for(int32_t d = 0; d <= maxDepth; d++) {
-      int__Point::iterator d_itor = dElement.find(d);
-
-      if(d_itor == dElement.end()){
-        ostringstream ex;
-        ex << "[" << this->getCommRank() << "]: ";
-        ex << "Missing Point at depth " << d;
-        throw Exception(ex.str().c_str());
-      }
-      if(d > 0) {
-        if(!this->getTopology()->coneContains(dElement[d], dElement[d-1])){
-          ostringstream ex;
-          ex << "[" << this->getCommRank() << "]: ";
-          ex << "point (" << dElement[d-1].prefix << ", " << dElement[d-1].index << ") at depth " << d-1 << " not in the cone of ";
-          ex << "point (" << dElement[d].prefix << ", " << dElement[d].index << ") at depth " << d;
-          throw Exception(ex.str().c_str());
-        }
-      }
-    }
-    return dElement;
-  }
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::__orderElement"
-  void IndexBundle::__orderElement(int dim, ALE::Point element, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
-    if (elementsOrdered->find(element) != elementsOrdered->end()) return;
-    (*ordered)[dim].push(element);
-    elementsOrdered->insert(element);
-    printf("  ordered element (%d, %d) dim %d\n", element.prefix, element.index, dim);
-  }
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::__orderCell"
-  ALE::Point IndexBundle::__orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
-    Obj<Sieve> closure = this->getTopology()->closureSieve(Point_set((*orderChain)[dim]));
-    ALE::Point last;
-
-    printf("Ordering cell (%d, %d) dim %d\n", (*orderChain)[dim].prefix, (*orderChain)[dim].index, dim);
-    for(int d = 0; d < dim; d++) {
-      printf("  orderChain[%d] (%d, %d)\n", d, (*orderChain)[d].prefix, (*orderChain)[d].index);
-    }
-    if (dim == 1) {
-      Obj<Point_set> flip = closure->cone((*orderChain)[1]);
-
-      this->__orderElement(0, (*orderChain)[0], ordered, elementsOrdered);
-      flip->erase((*orderChain)[0]);
-      last = *flip->begin();
-      this->__orderElement(0, last, ordered, elementsOrdered);
-      this->__orderElement(1, (*orderChain)[1], ordered, elementsOrdered);
-      (*orderChain)[dim-1] = last;
-      return last;
-    }
-    do {
-      last = this->__orderCell(dim-1, orderChain, ordered, elementsOrdered);
-      printf("    last (%d, %d)\n", last.prefix, last.index);
-      Obj<Point_set> faces = closure->support(last);
-      faces->erase((*orderChain)[dim-1]);
-      if (faces->size() != 1) {
-        throw Exception("Last edge did not separate two faces");
-      }
-      last = (*orderChain)[dim-1];
-      (*orderChain)[dim-1] = *faces->begin();
-    } while(elementsOrdered->find((*orderChain)[dim-1]) == elementsOrdered->end());
-    printf("Finish ordering for cell (%d, %d)\n", (*orderChain)[dim].prefix, (*orderChain)[dim].index);
-    printf("  with last (%d, %d)\n", last.prefix, last.index);
-    (*orderChain)[dim-1] = last;
-    this->__orderElement(dim, (*orderChain)[dim], ordered, elementsOrdered);
-    return last;
-  }
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::getClosureIndices"
-  Obj<Point_array>   IndexBundle::getClosureIndices(Obj<Point_set> order, Obj<Point_set> base) {
-    // IMPROVE:  the ordering algorithm employed here works only for 'MeshSieves' --
-    //           Sieves with the property that any pair of elements of depth d > 0 share at most
-    //           one element of depth d-1.  'MeshSieve' would check that this property is preserved
-    //           under arrow additions.
-    //           We should define class 'MeshBundle' that would take 'MeshSieves' as topology and
-    //           move this method there.
-    base = this->__validateChain(base);
-    int minDepth, maxDepth;
-    ALE::int__Point dElement = this->__checkOrderChain(order, minDepth, maxDepth);
-
-    // Extract the subsieve which is the closure of the dElement[maxDepth]
-    Obj<Sieve> closure = this->getTopology()->closureSieve(Point_set(dElement[maxDepth]));
-    // Compute the bundle indices over the closure of dElement[maxDepth]
-    Obj<PreSieve> indices = this->getBundleIndices(Point_set(dElement[maxDepth]), base);
-    // We store the elements ordered in each dimension
-    std::map<int, std::queue<Point> > ordered;
-
-    // Order elements in the closure
-    printf("Ordering (%d, %d)\n", dElement[maxDepth].prefix, dElement[maxDepth].index);
-    if (maxDepth == 0) {
-      ordered[0].push(dElement[0]);
-    } else if (maxDepth == 1) {
-      // I think this is not necessary
-      ALE::Point     face = dElement[1];
-      Obj<Point_set> flip = closure->cone(face);
-
-      ordered[0].push(dElement[0]);
-      flip->erase(dElement[0]);
-      ordered[0].push(*flip->begin());
-      ordered[1].push(dElement[1]);
-    } else {
-      ALE::Point_set elementsOrdered;
-
-      ALE::Point last = this->__orderCell(maxDepth, &dElement, &ordered, elementsOrdered);
-    }
-
-    // Generate indices from ordered elements
-    Obj<Point_array> indexArray(new Point_array);
-    for(int d = 0; d <= maxDepth; d++) {
-      while(!ordered[d].empty()) {
-        Obj<Point_set> indCone = indices->cone(ordered[d].front());
-
-        ordered[d].pop();
-        printf("  indices (%d, %d)\n", indCone->begin()->prefix, indCone->begin()->index);
-        if (indCone->begin()->index > 0) {
-          indexArray->push_back(*indCone->begin());
-        }
-      }
-    }
-    return indexArray;
-  }//IndexBundle::getClosureIndices()
-  
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::__computeIndices"
-  Obj<PreSieve>   IndexBundle::__computeIndices(Obj<Point_set> supports, Obj<Point_set> base, bool includeBoundary, Obj<Point_set> exclusion) {
-    base  = this->__validateChain(base);
-    supports = this->__validateChain(supports);
-    // IMPROVE: we could make this subroutine consult cache, if base is singleton
-    // Traverse the boundary of s -- the closure of s except s itself -- in a depth-first search and compute the indices for the 
-    // boundary fibers.  For an already seen point ss, its offset is in seen[ss].prefix, or in 'off' for a newly seen point.
-    // 'off' is updated during the calculation by accumulating the dimensions of the fibers over all newly encountered elements.
-    // An element ss  that has been seen AND indexed has a nonzero seen[ss].index equal to its dimension.
-    // If requested, we will cache the results in arrows to e.
-
-    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
-    Point__Point   seen;
-    // Traverse the closure of base in a depth-first search storing the offsets of each element ss we see during the search
-    // in seen[ss].prefix.
-    // Continue searching until we encounter s -- one of supports' points, lookup or compute s's offset and store its indices
-    // in 'indices' as well as seen[ss].
-    // If none of supports are not found in the closure of base, return an empty index set.
-
-    // To enable the depth-first order traversal without recursion, we employ a stack.
-    std::stack<Point> stk;
-    int32_t off = 0;            // keeps track of the offset within the bundle 
-
-    // We traverse the (sub)bundle over base until one of s is encountered
-    while(1) { // use 'break' to exit the loop
-
-      // First we stack base elements up on stk in the reverse order to ensure offsets 
-      // are computed in the bundle order.
-      for(Point_set::reverse_iterator base_ritor = base->rbegin(); base_ritor != base->rend(); base_ritor++) {
-        stk.push(*base_ritor);
-      }
-
-      // If the stack is empty, we are done, albeit with a negative result.
-      if(stk.empty()) { // if stk is empty
-        break;
-      }
-      else { // if stk is not empty
-        Point ss = stk.top(); stk.pop();
-        int32_t ss_dim = this->getFiberDimension(ss);
-        int32_t ss_off;
-        // If ss has already been seen, we use the stored offset.
-        if(seen.find(ss) != seen.end()){ // seen ss already
-          ss_off = seen[ss].prefix;
-        }
-        else { // not seen ss yet
-          // Compute ss_off
-          ss_off = off;
-          // Store ss_off, but ss_dim in 'seen'
-          seen[ss] = Point(ss_off, 0);
-          // off is only incremented when we encounter a not yet seen ss.
-          off += ss_dim;
-        }
-        // ss in supports ?
-        Point_set::iterator s_itor = supports->find(ss);
-        if(s_itor != supports->end()) {
-          Point s = *s_itor;
-          // If s (aka ss) has a nonzero dimension but has not been indexed yet
-          if((ss_dim > 0) && (seen[ss].index == 0)) {
-            // store ss_off, ss_dim both in indices and seen[ss]
-            Point ssPoint(ss_off, ss_dim);
-            indices->addCone(ssPoint, ss);
-            seen[ss] = Point(ss_off, ss_dim);
-          }
-          // If the boundary of s should be included in the calculation, add in the boundary indices
-          if(includeBoundary) {
-            Obj<PreSieve> boundary_indices = this->__computeBoundaryIndices(s, seen, off);
-            indices->add(boundary_indices.object());
-          }
-        } // ss in supports
-        // Regardless of whether ss is in supports or not, we need to index the elements in its closure to obtain a correct off.
-        // Compute the cone over ss, which will replace ss on stk at the beginning of the next iteration.
-        // IMPROVE: can probably reduce runtime by putting this line inside the 'if not seen' clause'.
-        //   Also, this can break the numbering if we have given a very specific base and od not want other points numbered
-        base = this->getTopology()->cone(ss);
-        if (!exclusion.isNull()) {
-          base->subtract(exclusion);
-        }
-      }// if stk is not empty
-    }// while(1)     
-    return indices;
-  }//IndexBundle::__computeIndices()
-
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "IndexBundle::__computeBoundaryIndices"
-  Obj<PreSieve>      IndexBundle::__computeBoundaryIndices(Point  s, Point__Point& seen, int32_t& off) {
-
-    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
-    // Traverse the boundary of s -- the closure of s except s itself -- in a depth-first search and compute the indices for the 
-    // boundary fibers.  For an already seen point ss, its offset is in seen[ss].prefix, or in 'off' for a newly seen point.
-    // 'off' is updated during the calculation by accumulating the dimensions of the fibers over all newly encountered elements.
-    // An element ss  that has been seen AND indexed has a nonzero seen[ss].index equal to its dimension.
-    // If requested, we will cache the results in arrows to e.
-
-
-    // To enable the depth-first order traversal without recursion, we employ a stack.
-    std::stack<Point> stk;
-    // Initialize base with the cone over s
-    Obj<Point_set> base = this->getTopology()->cone(s);
-    while(1) { // use 'break' to exit the loop
-      // First we stack base elements up on stk in the reverse order to ensure that offsets 
-      // are computed in the bundle order.
-      for(Point_set::reverse_iterator base_ritor = base->rbegin(); base_ritor != base->rend(); base_ritor++) {
-        stk.push(*base_ritor);
-      }
-      // If the stack is empty, we are done.
-      if(stk.empty()) { // if stk is empty
-        break;
-      }
-      else { // if stk is not empty
-        Point   ss = stk.top(); stk.pop();
-        int32_t ss_dim = this->getFiberDimension(ss);
-        int32_t ss_off;
-        if(seen.find(ss) != seen.end()) { // already seen ss
-          // use the stored offset
-          ss_off = seen[ss].prefix;
-          if(seen[ss].index == 0) {  // but not yet indexed ss
-            seen[ss] = Point(ss_off, ss_dim);
-            if(ss_dim > 0) {
-              Point ssPoint = Point(ss_off, ss_dim);
-              indices->addCone(ssPoint, ss);
-            }
-          } // not yet indexed ss
-        } // already seen ss
-        else // not seen ss yet
-        {
-          // use the computed offset
-          ss_off = off;
-          // Mark ss as already seen and store its offset and dimension
-          seen[ss] = Point(ss_off, ss_dim);
-          if(ss_dim > 0) {
-            Point ssPoint(ss_off, ss_dim);
-            indices->addCone(ssPoint, ss);
-          }
-          off += ss_dim;
-        }    // not seen ss yet
-        base = this->getTopology()->cone(ss);
-      }// if stk is not empty
-    }// while(1)     
-    return indices;
-  }//IndexBundle::__computeBoundaryIndices()
-
 
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::__getArrow"

@@ -138,6 +138,7 @@ int main(int argc,char **argv)
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   ALE::IndexBundle *fieldBundle = new ALE::IndexBundle(topology);
   fieldBundle->setFiberDimensionByDepth(0, 1);
+  fieldBundle->setVerbosity(11);
   fieldBundle->computeOverlapIndices();
   fieldBundle->computeGlobalIndices();
   ierr = MeshSetBundle(mesh, (void *) fieldBundle);CHKERRQ(ierr);
@@ -1283,8 +1284,7 @@ PetscErrorCode ExpandSetIntervals(ALE::Point_set intervals, PetscInt *indices)
 PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, PetscScalar *array, ALE::Point e, PetscScalar *values[])
 {
   ALE::Point_set             empty;
-  ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
-  //ALE::Obj<ALE::Point_array> intervals = bundle->getOverlapOrderedIndices(orientation->cone(e), empty);
+  ALE::Obj<ALE::Point_array> intervals = bundle->getLocalOrderedClosureIndices(orientation->cone(e));
   /* This should be done by memory pooling by array size (we have a simple form below) */
   static PetscScalar *vals;
   static PetscInt     numValues = 0;
@@ -1324,8 +1324,7 @@ PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientatio
 PetscErrorCode assembleField(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, Vec b, ALE::Point e, PetscScalar array[], InsertMode mode)
 {
   ALE::Point_set   empty;
-  ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
-  //ALE::Obj<ALE::Point_array> intervals = bundle->getOverlapOrderedIndices(orientation->cone(e), empty);
+  ALE::Obj<ALE::Point_array> intervals = bundle->getGlobalOrderedClosureIndices(orientation->cone(e));
   static PetscInt  indicesSize = 0;
   static PetscInt *indices = NULL;
   PetscInt         numIndices = 0;
@@ -1359,8 +1358,7 @@ PetscErrorCode assembleField(ALE::IndexBundle *bundle, ALE::PreSieve *orientatio
 PetscErrorCode assembleOperator(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, Mat A, ALE::Point e, PetscScalar array[], InsertMode mode)
 {
   ALE::Point_set   empty;
-  ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
-  //ALE::Obj<ALE::Point_array> intervals = bundle->getOverlapOrderedIndices(orientation->cone(e), empty);
+  ALE::Obj<ALE::Point_array> intervals = bundle->getGlobalOrderedClosureIndices(orientation->cone(e));
   static PetscInt  indicesSize = 0;
   static PetscInt *indices = NULL;
   PetscInt         numIndices = 0;
