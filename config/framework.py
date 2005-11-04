@@ -184,15 +184,23 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.substitute()
     if self.makeMacroHeader:
       self.outputMakeMacroHeader(self.makeMacroHeader)
+      self.log.write('**** ' + self.makeMacroHeader + ' ****\n')
+      self.outputMakeMacroHeader(self.log)
       self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeMacroHeader)
     if self.makeRuleHeader:
       self.outputMakeRuleHeader(self.makeRuleHeader)
+      self.log.write('**** ' + self.makeRuleHeader + ' ****\n')
+      self.outputMakeRuleHeader(self.log)
       self.actions.addArgument('Framework', 'File creation', 'Created makefile configure header '+self.makeMacroHeader)
     if self.header:
       self.outputHeader(self.header)
+      self.log.write('**** ' + self.header + ' ****\n')
+      self.outputHeader(self.log)
       self.actions.addArgument('Framework', 'File creation', 'Created configure header '+self.header)
     if self.cHeader:
       self.outputCHeader(self.cHeader)
+      self.log.write('**** ' + self.cHeader + ' ****\n')
+      self.outputCHeader(self.log)
       self.actions.addArgument('Framework', 'File creation', 'Created C specific configure header '+self.cHeader)
     self.log.write('\n')
     self.actions.output(self.log)
