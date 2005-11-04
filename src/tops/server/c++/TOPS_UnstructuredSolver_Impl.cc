@@ -624,6 +624,9 @@ throw (
   services.registerUsesPort("TOPS.System.Compute.RightHandSide",
 			    "TOPS.System.Compute.RightHandSide", tm);
 
+  services.registerUsesPort("TOPS.System.Compute.Jacobian",
+			    "TOPS.System.Compute.Jacobian", tm);
+
   services.registerUsesPort("TOPS.System.Compute.Residual",
 			    "TOPS.System.Compute.Residual", tm);
 
@@ -635,6 +638,8 @@ throw (
   if (this->setupParameterPort() != 0) {
     std::cerr << "TOPS::UnstructuredSolver_impl::go: errors during setup of ParameterPort" << std::endl;
   }
+
+  myServices.unregisterUsesPort("ParameterPortFactory");
 
   return;
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setServices)
