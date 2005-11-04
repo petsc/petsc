@@ -74,15 +74,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrallocpy(const char s[],char *t[])
 {
   PetscErrorCode ierr;
   size_t         len;
+  char           *tmp = 0;
 
   PetscFunctionBegin;
   if (s) {
     ierr = PetscStrlen(s,&len);CHKERRQ(ierr);
-    ierr = PetscMalloc((1+len)*sizeof(char),t);CHKERRQ(ierr);
-    ierr = PetscStrcpy(*t,s);CHKERRQ(ierr);
-  } else {
-    *t = 0;
+    ierr = PetscMalloc((1+len)*sizeof(char),&tmp);CHKERRQ(ierr);
+    ierr = PetscStrcpy(tmp,s);CHKERRQ(ierr);
   }
+  *t = tmp;
   PetscFunctionReturn(0);
 }
 
@@ -617,7 +617,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetPetscDir(const char *dir[])
 
    Input Parameters:
 +   comm - MPI_Comm of processors that are processing the string
-.   a - the string to look in
+.   aa - the string to look in
 .   b - the resulting copy of a with replaced strings (b can be the same as a)
 -   len - the length of b
 
@@ -629,22 +629,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetPetscDir(const char *dir[])
    Level: intermediate
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char a[],char b[],size_t len)
+PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],char b[],size_t len)
 {
   PetscErrorCode ierr;
   int            i = 0;
   size_t         l,l1,l2,l3;
-  char           *work,*par,*epar,env[1024],*tfree;
+  char           *work,*par,*epar,env[1024],*tfree,*a = (char*)aa;
   const char     *s[] = {"${PETSC_ARCH}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
   const char     *r[] = {PETSC_ARCH,PETSC_DIR,PETSC_LIB_DIR,0,0,0,0,0};
   PetscTruth     flag;
 
   PetscFunctionBegin;
   if (!a || !b) SETERRQ(PETSC_ERR_ARG_NULL,"a and b strings must be nonnull");
-  if (a == b) {
-    ierr = PetscStrallocpy(a,&b);
+  if (aa == b) {
+    ierr    = PetscStrallocpy(aa,(char **)&a);
   }
-
   ierr = PetscMalloc(len*sizeof(char*),&work);CHKERRQ(ierr);
 
   /* get values for replaced variables */
@@ -704,6 +703,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char a[],char
     ierr = PetscStrstr(b,"${",&par);CHKERRQ(ierr);
   }
   ierr = PetscFree(work);CHKERRQ(ierr);
+  if (aa == b) {
+    ierr = PetscFree(a);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
