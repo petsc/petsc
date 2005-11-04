@@ -630,36 +630,41 @@ PetscErrorCode MeshDistribute(Mesh mesh)
 */
 PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, PetscInt *boundaryVertices)
 {
-  MPI_Comm comm;
+  MPI_Comm       comm;
   PetscObjectGetComm((PetscObject) mesh, &comm);
   ALE::Sieve    *boundary = new ALE::Sieve(comm);
   ALE::Sieve    *topology;
   PetscInt       numElements;
-  PetscMPIInt    rank;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
   PetscValidIntPointer(boundaryVertices,3);
-  ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  numElements = topology->heightStratum(0).size();
-  boundary->setVerbosity(11);
-  /* Create boundary */
-  if (rank == 0) {
-    ALE::Point_set cone;
-    ALE::Point boundaryPoint(0, 1);
+  ALE::IndexBundle elementBundle(topology);
+  elementBundle.setFiberDimensionByHeight(0, 1);
+  elementBundle.computeOverlapIndices();
+  elementBundle.computeGlobalIndices();
+  numElements = elementBundle.getGlobalSize();
+  if (1) {
+    boundary->setVerbosity(11);
+  }
+  ALE::Point_set cone;
+  ALE::Point boundaryPoint(0, 1);
 
-    /* Should also put in boundary edges */
-    for(int v = 0; v < numBoundaryVertices; v++) {
-      ALE::Point vertex = ALE::Point(0, boundaryVertices[v] + numElements);
+  /* Should also put in boundary edges */
+  for(int v = 0; v < numBoundaryVertices; v++) {
+    ALE::Point vertex = ALE::Point(0, boundaryVertices[v] + numElements);
 
+    if (topology->baseContains(vertex)) {
       cone.insert(vertex);
     }
-    boundary->addCone(cone, boundaryPoint);
-    ierr = MeshSetBoundary(mesh, (void *) boundary);CHKERRQ(ierr);
   }
-  boundary->view("Simplicializer boundary topology");
+  boundary->addCone(cone, boundaryPoint);
+  if (1) {
+    boundary->view("Boundary topology");
+  }
+  ierr = MeshSetBoundary(mesh, (void *) boundary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

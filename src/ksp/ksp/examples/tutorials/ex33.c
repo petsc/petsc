@@ -51,10 +51,13 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 #include "petscdmmg.h"
 extern int debug;
 
+#include <IndexBundle.hh>
+
 typedef enum {PCICE, PYLITH} FileType;
 
 PetscErrorCode ReadConnectivity(MPI_Comm, FileType, const char *, PetscInt, PetscTruth, PetscInt *, PetscInt **);
 PetscErrorCode ReadCoordinates(MPI_Comm, FileType, const char *, PetscInt, PetscInt *, PetscScalar **);
+PetscErrorCode ReadBoundary(MPI_Comm, FileType, const char *, PetscTruth, PetscInt *, PetscInt **);
 PetscErrorCode ReadConnectivity_PCICE(MPI_Comm, const char *, PetscInt, PetscTruth, PetscInt *, PetscInt **);
 PetscErrorCode ReadCoordinates_PCICE(MPI_Comm, const char *, PetscInt, PetscInt *, PetscScalar **);
 PetscErrorCode ReadConnectivity_PyLith(MPI_Comm, const char *, PetscInt, PetscTruth, PetscInt *, PetscInt **);
@@ -83,50 +86,63 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   char           vertexFilename[2048];
   char           coordFilename[2048];
+  char           bcFilename[2048];
   PetscTruth     useZeroBase;
   const char    *fileTypes[2] = {"pcice", "pylith"};
   FileType       fileType;
-  PetscInt      *vertices;
+  PetscInt      *vertices, *boundaryVertices;
   PetscScalar   *coordinates;
   UserContext    user;
   PetscReal      norm;
   const char    *bcTypes[2] = {"dirichlet", "neumann"};
   PetscInt       l,bc;
-  PetscInt       dim, numVertices, numElements, ft;
+  PetscInt       dim, numVertices, numBoundaryVertices, numElements, ft;
   PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the inhomogeneous Poisson equation", "DMMG");
-    ierr = PetscOptionsInt("-debug", "The debugging flag", "ex1.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging flag", "ex33.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
     dim  = 2;
-    ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex1.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex33.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
     useZeroBase = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "ex1.c", PETSC_FALSE, &useZeroBase, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "ex33.c", PETSC_FALSE, &useZeroBase, PETSC_NULL);CHKERRQ(ierr);
     ft   = (PetscInt) PCICE;
-    ierr = PetscOptionsEList("-file_type", "Type of input files", "ex1.c", fileTypes, 2, fileTypes[0], &ft, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-file_type", "Type of input files", "ex33.c", fileTypes, 2, fileTypes[0], &ft, PETSC_NULL);CHKERRQ(ierr);
     fileType = (FileType) ft;
     ierr = PetscStrcpy(vertexFilename, "lcon.dat");CHKERRQ(ierr);
-    ierr = PetscOptionsString("-vertex_file", "The file listing the vertices of each cell", "ex1.c", "lcon.dat", vertexFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-vertex_file", "The file listing the vertices of each cell", "ex33.c", "lcon.dat", vertexFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscStrcpy(coordFilename, "nodes.dat");CHKERRQ(ierr);
-    ierr = PetscOptionsString("-coord_file", "The file listing the coordinates of each vertex", "ex1.c", "nodes.dat", coordFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-coord_file", "The file listing the coordinates of each vertex", "ex33.c", "nodes.dat", coordFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscStrcpy(bcFilename, "bc.dat");CHKERRQ(ierr);
+    ierr = PetscOptionsString("-bc_file", "The file listing the vertices on the boundary", "ex33.c", "bc.dat", bcFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
     user.nu     = 0.1;
-    ierr        = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", 0.1, &user.nu, PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex33.c", 0.1, &user.nu, PETSC_NULL);CHKERRQ(ierr);
     bc          = (PetscInt)DIRICHLET;
-    ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex33.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
     user.bcType = (BCType)bc;
   ierr = PetscOptionsEnd();
 
-  ierr = DMMGCreate(comm,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = ReadConnectivity(comm, fileType, vertexFilename, dim, useZeroBase, &numElements, &vertices);CHKERRQ(ierr);
   ierr = ReadCoordinates(comm, fileType, coordFilename, dim, &numVertices, &coordinates);CHKERRQ(ierr);
+  ierr = ReadBoundary(comm, fileType, bcFilename, useZeroBase, &numBoundaryVertices, &boundaryVertices);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
   ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
   ierr = MeshCreateSeq(mesh, dim, numVertices, numElements, vertices, coordinates);CHKERRQ(ierr);
-  //ierr = MeshCreateBoundary(mesh, 8, boundaryVertices); CHKERRQ(ierr);
+  ierr = MeshCreateBoundary(mesh, numBoundaryVertices, boundaryVertices); CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
   ierr = MeshDistribute(mesh);CHKERRQ(ierr);
+
+  ALE::Sieve *topology;
+  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ALE::IndexBundle *fieldBundle = new ALE::IndexBundle(topology);
+  fieldBundle->setFiberDimensionByDepth(0, 1);
+  fieldBundle->computeOverlapIndices();
+  fieldBundle->computeGlobalIndices();
+  ierr = MeshSetBundle(mesh, (void *) fieldBundle);CHKERRQ(ierr);
+
+  ierr = DMMGCreate(comm,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg, (DM) mesh);CHKERRQ(ierr);
   ierr = MeshDestroy(mesh);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {
@@ -277,6 +293,47 @@ PetscErrorCode ReadCoordinates(MPI_Comm comm, FileType fileType, const char *fil
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ReadBoundary"
+PetscErrorCode ReadBoundary(MPI_Comm comm, FileType fileType, const char *filename, PetscTruth useZeroBase, PetscInt *numBoundaryVertices, PetscInt **boundaryVertices)
+{
+  PetscViewer    viewer;
+  FILE          *f;
+  PetscInt       numVerts, vertexCount = 0;
+  PetscInt      *verts;
+  char           buf[2048];
+  PetscInt       commSize, commRank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm, &commSize); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &commRank); CHKERRQ(ierr);
+
+  ierr = PetscPrintf(comm, "Reading boundary information on all of %d procs from file %s...\n", commSize, filename);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
+  numVerts = atoi(fgets(buf, 2048, f));
+  ierr = PetscMalloc(numVerts * sizeof(PetscInt), &verts);CHKERRQ(ierr);
+  while(fgets(buf, 2048, f) != NULL) {
+    const char *v = strtok(buf, " ");
+    int vertex = atoi(v);
+        
+    if (!useZeroBase) vertex -= 1;
+    verts[vertexCount++] = vertex;
+  }
+  if (vertexCount != numVerts) {
+    SETERRQ2(PETSC_ERR_ARG_WRONG, "Invalid number of boundary vertices, %d shuold be %d", vertexCount, numVerts);
+  }
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  *numBoundaryVertices = numVerts;
+  *boundaryVertices = verts;
+  ierr = PetscPrintf(comm, "  Read %d boundary vertices\n", *numBoundaryVertices);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ReadConnectivity_PCICE"
 PetscErrorCode ReadConnectivity_PCICE(MPI_Comm comm, const char *filename, PetscInt dim, PetscTruth useZeroBase, PetscInt *numElements, PetscInt **vertices)
 {
@@ -293,8 +350,7 @@ PetscErrorCode ReadConnectivity_PCICE(MPI_Comm comm, const char *filename, Petsc
   ierr = MPI_Comm_size(comm, &commSize); CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &commRank); CHKERRQ(ierr);
 
-  ierr = PetscPrintf(comm, "Reading connectivity information on proc 0 of %d procs from file %s...\n", commSize, filename);
-  CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Reading connectivity information on proc 0 of %d procs from file %s...\n", commSize, filename);CHKERRQ(ierr);
   if(commRank == 0) {
     ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
@@ -342,7 +398,7 @@ PetscErrorCode ReadCoordinates_PCICE(MPI_Comm comm, const char *filename, PetscI
   ierr = MPI_Comm_size(comm, &commSize); CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &commRank); CHKERRQ(ierr);
 
-  ierr = PetscPrintf(comm, "Reading coordinate information on proc 0 of %d procs from file %s...\n", commSize, filename); CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Reading coordinate information on proc 0 of %d procs from file %s...\n", commSize, filename);CHKERRQ(ierr);
   if (commRank == 0) {
     ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
@@ -399,8 +455,7 @@ PetscErrorCode ReadConnectivity_PyLith(MPI_Comm comm, const char *filename, Pets
   if (dim != 3) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "PyLith only works in 3D");
   }
-  ierr = PetscPrintf(comm, "Reading connectivity information on proc 0 of %d procs from file %s...\n", commSize, filename);
-  CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Reading connectivity information on proc 0 of %d procs from file %s...\n", commSize, filename);CHKERRQ(ierr);
   if(commRank == 0) {
     ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
@@ -474,7 +529,7 @@ PetscErrorCode ReadCoordinates_PyLith(MPI_Comm comm, const char *filename, Petsc
   ierr = MPI_Comm_size(comm, &commSize); CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &commRank); CHKERRQ(ierr);
 
-  ierr = PetscPrintf(comm, "Reading coordinate information on proc 0 of %d procs from file %s...\n", commSize, filename); CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Reading coordinate information on proc 0 of %d procs from file %s...\n", commSize, filename);CHKERRQ(ierr);
   if (commRank == 0) {
     ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
@@ -1197,9 +1252,6 @@ static double BasisDerivatives[324] = {
   0.5};
 
 #endif
-#include <ALE.hh>
-#include <Sieve.hh>
-#include <IndexBundle.hh>
 
 #undef __FUNCT__
 #define __FUNCT__ "ExpandIntervals"
