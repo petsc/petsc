@@ -42,6 +42,12 @@ class Configure(config.base.Configure):
       self.addDefine('DBL_MAX', 1.7976931348623157e+308)
     return
 
+  def configureMissingUtypeTypedefs(self):
+    ''' Checks if u_short is undefined '''
+    if not self.checkCompile('#include <sys/types.h>\n', 'u_short foo;\n'):
+      self.addDefine('NEEDS_UTYPE_TYPEDEFS',1)
+    return
+
   def configureMissingFunctions(self):
     '''Checks for SOCKETS'''
     if not self.functions.haveFunction('socket'):
@@ -118,6 +124,7 @@ int err = getdomainname(test,10);
 
   def configure(self):
     self.executeTest(self.configureMissingDefines)
+    self.executeTest(self.configureMissingUtypeTypedefs)
     self.executeTest(self.configureMissingFunctions)
     self.executeTest(self.configureMissingSignals)
     self.executeTest(self.configureMissingPrototypes)
