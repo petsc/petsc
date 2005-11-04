@@ -12,6 +12,7 @@ foreach CONF ($*)
   source $dir/confignightly/${CONF}
 
   $SSH $USR@$MACH $DASHN "$LOC/maint/zapall" &
+  sleep 300 # If 2 invocations on the same machine - they stomp in each other
 end
 wait
 
