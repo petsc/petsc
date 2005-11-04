@@ -40,16 +40,45 @@ def addFileNameTags(filename):
   g.close()
   return
 
+def createTags(tagfile,dirname,files):
+  # error check for each parameter?
+  (status,output) = commands.getstatusoutput('cd '+dirname+';etags -a -o '+tagfile+' '+' '.join(files))
+  if status:
+    raise RuntimeError("Error running etags "+output)
+  return
+
+def endsWithSuffix(file,suffixes):
+  # returns 1 if any of the suffixes match - else return 0
+  for suffix in suffixes:
+    if file.endswith(suffix):
+      return 1
+  return 0
+
+def badWebIndex(dirname,file):
+  # checks if the file is bad index.html document [i.e not generated]
+  if file != 'index.html':
+    return 0
+  elif file == 'index.html' and dirname.find('docs/website') >=0:
+    return 0
+  else:
+    return 1
+
 def processDir(tagfile,dirname,names):
   newls = []
+  gsfx = ['.py','.c','.F','.h','.tex','.cxx','.hh','makefile']
+  hsfx = ['.html']
+  bsfx = ['.py.html','.c.html','.F.html','.h.html','.tex.html','.cxx.html','.hh.html','makefile.html']
   for l in names:
-    if l.endswith('.py') or l.endswith('.c') or l.endswith('.F') or l.endswith('.h') or l.endswith('.tex') or l == 'makefile':
+    if endsWithSuffix(l,gsfx):
       newls.append(l)
-  if newls:
-    (status,output) = commands.getstatusoutput('cd '+dirname+';etags -a -o '+tagfile+' '+' '.join(newls))
-    if status:
-      raise RuntimeError("Error running etags "+output)
+    elif endsWithSuffix(l,hsfx)  and not endsWithSuffix(l,bsfx) and not badWebIndex(dirname,l):
+      # if html - and not bad suffix - and not badWebIndex - then add to etags-list
+      newls.append(l)
+  if newls: createTags(tagfile,dirname,newls)
 
+  # exclude 'docs' but not 'src/docs'
+  if dir in names and dirname.find('src') >=0:
+    names.remove(exname)
   # One-level unique dirs
   for exname in ['SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib']:
     if exname in names:
