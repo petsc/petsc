@@ -364,7 +364,7 @@ namespace ALE {
     if (elementsOrdered->find(element) != elementsOrdered->end()) return;
     (*ordered)[dim].push(element);
     elementsOrdered->insert(element);
-    printf("  ordered element (%d, %d) dim %d\n", element.prefix, element.index, dim);
+    if (this->verbosity > 10) {printf("  ordered element (%d, %d) dim %d\n", element.prefix, element.index, dim);}
   }
 
   #undef  __FUNCT__
@@ -373,9 +373,11 @@ namespace ALE {
     Obj<Sieve> closure = this->getTopology()->closureSieve(Point_set((*orderChain)[dim]));
     ALE::Point last;
 
-    printf("Ordering cell (%d, %d) dim %d\n", (*orderChain)[dim].prefix, (*orderChain)[dim].index, dim);
-    for(int d = 0; d < dim; d++) {
-      printf("  orderChain[%d] (%d, %d)\n", d, (*orderChain)[d].prefix, (*orderChain)[d].index);
+    if (this->verbosity > 10) {
+      printf("Ordering cell (%d, %d) dim %d\n", (*orderChain)[dim].prefix, (*orderChain)[dim].index, dim);
+      for(int d = 0; d < dim; d++) {
+        printf("  orderChain[%d] (%d, %d)\n", d, (*orderChain)[d].prefix, (*orderChain)[d].index);
+      }
     }
     if (dim == 1) {
       Obj<Point_set> flip = closure->cone((*orderChain)[1]);
@@ -390,7 +392,7 @@ namespace ALE {
     }
     do {
       last = this->__orderCell(dim-1, orderChain, ordered, elementsOrdered);
-      printf("    last (%d, %d)\n", last.prefix, last.index);
+      if (this->verbosity > 10) {printf("    last (%d, %d)\n", last.prefix, last.index);}
       Obj<Point_set> faces = closure->support(last);
       faces->erase((*orderChain)[dim-1]);
       if (faces->size() != 1) {
@@ -399,8 +401,10 @@ namespace ALE {
       last = (*orderChain)[dim-1];
       (*orderChain)[dim-1] = *faces->begin();
     } while(elementsOrdered->find((*orderChain)[dim-1]) == elementsOrdered->end());
-    printf("Finish ordering for cell (%d, %d)\n", (*orderChain)[dim].prefix, (*orderChain)[dim].index);
-    printf("  with last (%d, %d)\n", last.prefix, last.index);
+    if (this->verbosity > 10) {
+      printf("Finish ordering for cell (%d, %d)\n", (*orderChain)[dim].prefix, (*orderChain)[dim].index);
+      printf("  with last (%d, %d)\n", last.prefix, last.index);
+    }
     (*orderChain)[dim-1] = last;
     this->__orderElement(dim, (*orderChain)[dim], ordered, elementsOrdered);
     return last;
@@ -421,7 +425,7 @@ namespace ALE {
     std::map<int, std::queue<Point> > ordered;
 
     // Order elements in the closure
-    printf("Ordering (%d, %d)\n", dElement[maxDepth].prefix, dElement[maxDepth].index);
+    if (this->verbosity > 10) {printf("Ordering (%d, %d)\n", dElement[maxDepth].prefix, dElement[maxDepth].index);}
     if (maxDepth == 0) {
       ordered[0].push(dElement[0]);
     } else if (maxDepth == 1) {
@@ -447,7 +451,7 @@ namespace ALE {
         Obj<Point_set> indCone = indices->cone(ordered[d].front());
 
         ordered[d].pop();
-        printf("  indices (%d, %d)\n", indCone->begin()->prefix, indCone->begin()->index);
+        if (this->verbosity > 10) {printf("  indices (%d, %d)\n", indCone->begin()->prefix, indCone->begin()->index);}
         if (indCone->begin()->index > 0) {
           indexArray->push_back(*indCone->begin());
         }

@@ -567,10 +567,10 @@ runex32:
 	   ${RM} -f ex32_1.tmp
 
 runex33:
-	-${MPIRUN} -np ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base -vertex_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1conn2d.data -coord_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1coord2d.data -bc_file data/ex33bc.data -debug 0
+	-${MPIRUN} -np ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base -vertex_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1conn2d.data -coord_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1coord2d.data -bc_file data/ex33bc.data ${EXTRA_ARGS}
 
 debugex33:
-	-${MPIRUN} -np ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base -vertex_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1conn2d.data -coord_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1coord2d.data -bc_file data/ex33bc.data -debug 0 -start_in_debugger -display ${DISPLAY}
+	-${MPIRUN} -np ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base -vertex_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1conn2d.data -coord_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1coord2d.data -bc_file data/ex33bc.data ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \
