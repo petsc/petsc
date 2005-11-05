@@ -1420,23 +1420,25 @@ PetscErrorCode ElementGeometry(ALE::IndexBundle *coordBundle, ALE::PreSieve *ori
         J[d*dim+e] = 0.5*(array[(e+1)*dim+d] - array[0*dim+d]);
       }
     }
-    for(int d = 0; d < dim; d++) {
-      if (d == 0) {
-        PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]J = /", coordBundle->getCommRank());
-      } else if (d == dim-1) {
-        PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]    \\", coordBundle->getCommRank());
-      } else {
-        PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]    |", coordBundle->getCommRank());
-      }
-      for(int e = 0; e < dim; e++) {
-        PetscSynchronizedPrintf(coordBundle->getComm(), " %g", J[d*dim+e]);
-      }
-      if (d == 0) {
-        PetscSynchronizedPrintf(coordBundle->getComm(), " \\\n");
-      } else if (d == dim-1) {
-        PetscSynchronizedPrintf(coordBundle->getComm(), " /\n");
-      } else {
-        PetscSynchronizedPrintf(coordBundle->getComm(), " |\n");
+    if (debug) {
+      for(int d = 0; d < dim; d++) {
+        if (d == 0) {
+          PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]J = /", coordBundle->getCommRank());
+        } else if (d == dim-1) {
+          PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]    \\", coordBundle->getCommRank());
+        } else {
+          PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]    |", coordBundle->getCommRank());
+        }
+        for(int e = 0; e < dim; e++) {
+          PetscSynchronizedPrintf(coordBundle->getComm(), " %g", J[d*dim+e]);
+        }
+        if (d == 0) {
+          PetscSynchronizedPrintf(coordBundle->getComm(), " \\\n");
+        } else if (d == dim-1) {
+          PetscSynchronizedPrintf(coordBundle->getComm(), " /\n");
+        } else {
+          PetscSynchronizedPrintf(coordBundle->getComm(), " |\n");
+        }
       }
     }
     if (dim == 2) {
@@ -1467,23 +1469,25 @@ PetscErrorCode ElementGeometry(ALE::IndexBundle *coordBundle, ALE::PreSieve *ori
         invJ[2*3+1] = invDet*(J[0*3+2]*J[1*3+0] - J[0*3+0]*J[1*3+2]);
         invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
       }
-      for(int d = 0; d < dim; d++) {
-        if (d == 0) {
-          PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]Jinv = /", coordBundle->getCommRank());
-        } else if (d == dim-1) {
-          PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]       \\", coordBundle->getCommRank());
-        } else {
-          PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]       |", coordBundle->getCommRank());
-        }
-        for(int e = 0; e < dim; e++) {
-          PetscSynchronizedPrintf(coordBundle->getComm(), " %g", invJ[d*dim+e]);
-        }
-        if (d == 0) {
-          PetscSynchronizedPrintf(coordBundle->getComm(), " \\\n");
-        } else if (d == dim-1) {
-          PetscSynchronizedPrintf(coordBundle->getComm(), " /\n");
-        } else {
-          PetscSynchronizedPrintf(coordBundle->getComm(), " |\n");
+      if (debug) {
+        for(int d = 0; d < dim; d++) {
+          if (d == 0) {
+            PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]Jinv = /", coordBundle->getCommRank());
+          } else if (d == dim-1) {
+            PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]       \\", coordBundle->getCommRank());
+          } else {
+            PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]       |", coordBundle->getCommRank());
+          }
+          for(int e = 0; e < dim; e++) {
+            PetscSynchronizedPrintf(coordBundle->getComm(), " %g", invJ[d*dim+e]);
+          }
+          if (d == 0) {
+            PetscSynchronizedPrintf(coordBundle->getComm(), " \\\n");
+          } else if (d == dim-1) {
+            PetscSynchronizedPrintf(coordBundle->getComm(), " /\n");
+          } else {
+            PetscSynchronizedPrintf(coordBundle->getComm(), " |\n");
+          }
         }
       }
     }
@@ -1567,7 +1571,7 @@ PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
         elementVec[f] += (Basis[q*NUM_BASIS_FUNCTIONS+f]*funcValue - linearVec[f])*weights[q]*detJ;
       }
     }
-    printf("elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);
+    if (debug) {printf("elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);}
     /* Assembly */
     ierr = assembleField(bundle, orientation, r, e, elementVec, ADD_VALUES); CHKERRQ(ierr);
   }
@@ -1630,10 +1634,10 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
         elementVec[f] += Basis[q*NUM_BASIS_FUNCTIONS+f]*funcValue*weights[q]*detJ;
       }
     }
-    PetscSynchronizedPrintf(comm, "elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);
+    if (debug) {PetscSynchronizedPrintf(comm, "elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);}
     /* Assembly */
-    ierr = assembleField(bundle, orientation, b, e, elementVec, ADD_VALUES); CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(comm);
+    ierr = assembleField(bundle, orientation, b, e, elementVec, ADD_VALUES);CHKERRQ(ierr);
+    if (debug) {ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);}
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscFree(v0);CHKERRQ(ierr);
@@ -1715,12 +1719,14 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
         }
       }
     }
-    ierr = PetscSynchronizedPrintf(comm, "[%d]elementMat = [%g %g %g]\n                [%g %g %g]\n                [%g %g %g]\n",
-                                   rank, elementMat[0], elementMat[1], elementMat[2], elementMat[3], elementMat[4],
-                                   elementMat[5], elementMat[6], elementMat[7], elementMat[8]);CHKERRQ(ierr);
+    if (debug) {
+      ierr = PetscSynchronizedPrintf(comm, "[%d]elementMat = [%g %g %g]\n                [%g %g %g]\n                [%g %g %g]\n",
+                                     rank, elementMat[0], elementMat[1], elementMat[2], elementMat[3], elementMat[4],
+                                     elementMat[5], elementMat[6], elementMat[7], elementMat[8]);CHKERRQ(ierr);
+    }
     /* Assembly */
     ierr = assembleOperator(bundle, orientation, jac, e, elementMat, ADD_VALUES);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+    if (debug) {ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);}
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscFree(v0);CHKERRQ(ierr);
