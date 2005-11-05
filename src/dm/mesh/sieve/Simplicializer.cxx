@@ -658,7 +658,7 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
   for(int v = 0; v < numBoundaryVertices; v++) {
     ALE::Point vertex = ALE::Point(0, boundaryVertices[v] + numElements);
 
-    if (topology->baseContains(vertex)) {
+    if (topology->capContains(vertex)) {
       cone.insert(vertex);
     }
   }
