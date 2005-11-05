@@ -441,8 +441,12 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::space"
   Point_set PreSieve::space() {
     CHKCOMM(*this);
-    // Take the cap and add the base to it
-    Point_set space = this->_cap;
+    // Addin both cap and base
+    Point_set space;
+
+    for(Point__Point_set::iterator cap_itor = this->_support.begin(); cap_itor != this->_support.end(); cap_itor++){
+      space.insert(cap_itor->first);
+    }
     for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->_cone.end(); base_itor++){
       space.insert(base_itor->first);
     }

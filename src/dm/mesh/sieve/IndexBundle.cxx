@@ -561,13 +561,14 @@ namespace ALE {
       (-p-1, p)           is covered by   topological points rented to process p
   */
   ALE::Obj<ALE::PreSieve>   IndexBundle::__computePointTypes() {
+    this->getTopology()->view("Pointtypes topology");
     ALE::Obj<ALE::Point_set> space = this->getTopology()->space();
     ALE::Obj<ALE::PreSieve> pointTypes(new PreSieve(this->comm));
 
     for(ALE::Point_set::iterator e_itor = space->begin(); e_itor != space->end(); e_itor++) {
-      ALE::Obj<ALE::Point_set> owners = getOverlapOwners(*e_itor);
-      ALE::PointType pointType = localPoint;
       ALE::Point point = *e_itor;
+      ALE::Obj<ALE::Point_set> owners = getOverlapOwners(point);
+      ALE::PointType pointType = localPoint;
       ALE::Point typePoint;
 
       if (owners->size()) {
@@ -660,7 +661,7 @@ namespace ALE {
       PetscSynchronizedPrintf(this->comm, "[%d]Global size %d\n", this->commRank, firstIndex[this->commSize]);
       PetscSynchronizedFlush(this->comm);
     }
-    delete firstIndex;
+    delete [] firstIndex;
 
     // FIX: Communicate remote indices
     MPI_Request *requests = new MPI_Request[this->commSize];
@@ -710,7 +711,7 @@ namespace ALE {
     ierr = MPI_Waitall(this->commSize, requests, statuses); CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Waitall"));
     for(int p = 0; p < this->commSize; p++) {
       if (p == this->commRank) {
-        delete recvIntervals[p];
+        delete [] recvIntervals[p];
         continue;
       }
       ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(-p-1, p));
@@ -727,9 +728,9 @@ namespace ALE {
       delete recvIntervals[p];
     }
     if (this->verbosity > 10) {PetscSynchronizedFlush(this->comm);}
-    delete requests;
-    delete statuses;
-    delete recvIntervals;
+    delete [] requests;
+    delete [] statuses;
+    delete [] recvIntervals;
     this->_localIndices = localIndices;
     this->_globalIndices = globalIndices;
   }
