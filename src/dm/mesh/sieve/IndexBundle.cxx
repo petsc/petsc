@@ -459,7 +459,6 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::computeOverlapIndices"
   void   IndexBundle::computeOverlapIndices() {
-    this->getTopology()->view("Topology");
     this->_overlapOwnership = this->getTopology()->baseFootprint(PreSieve::completionTypePoint, PreSieve::footprintTypeCone, NULL)->left();
     if (this->verbosity > 10) {this->_overlapOwnership->view("Overlap ownership");}
     this->_localOverlapIndices->setBottom(this->_overlapOwnership);
@@ -561,7 +560,6 @@ namespace ALE {
       (-p-1, p)           is covered by   topological points rented to process p
   */
   ALE::Obj<ALE::PreSieve>   IndexBundle::__computePointTypes() {
-    this->getTopology()->view("Pointtypes topology");
     ALE::Obj<ALE::Point_set> space = this->getTopology()->space();
     ALE::Obj<ALE::PreSieve> pointTypes(new PreSieve(this->comm));
 
