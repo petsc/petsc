@@ -33,13 +33,13 @@ namespace ALE {
     // IMPROVE: implement deep copy when internals become Obj<X>
     virtual PreSieve&                 copy(PreSieve& s){*this = s; return *this;};  
     virtual PreSieve&                 addArrow(Point& i, Point& j);
-    virtual PreSieve&                 removeArrow(Point& i, Point& j);
+    virtual PreSieve&                 removeArrow(Point& i, Point& j, bool removeSingleton = false);
     virtual PreSieve&                 addBasePoint(Point& p);
-    virtual PreSieve&                 removeBasePoint(Point& p);
+    virtual PreSieve&                 removeBasePoint(Point& p, bool removeSingleton = false);
     virtual PreSieve&                 addPoint(Point& p) {this->addBasePoint(p); this->addCapPoint(p); return *this;};
     virtual PreSieve&                 removePoint(Point& p) {this->removeBasePoint(p); this->removeCapPoint(p); return *this;};
     virtual PreSieve&                 addCapPoint(Point& q);
-    virtual PreSieve&                 removeCapPoint(Point& q);
+    virtual PreSieve&                 removeCapPoint(Point& q, bool removeSingleton = false);
     virtual PreSieve&                 addSupport(Point& i, Obj<Point_set>& suppSet) {
       return this->addSupport(i, *(suppSet.objPtr));
     }

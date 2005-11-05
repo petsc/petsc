@@ -55,7 +55,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::removeBasePoint"
-  PreSieve& PreSieve::removeBasePoint(Point& p) {
+  PreSieve& PreSieve::removeBasePoint(Point& p, bool removeSingleton) {
     this->__checkLock();
     if (this->_cone.find(p) != this->_cone.end()) {
       // IMPROVE: use 'coneView' and iterate over it to avoid copying the set
@@ -63,7 +63,7 @@ namespace ALE {
       for(ALE::Point_set::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
         ALE::Point cover = *c_itor;
 
-        this->removeArrow(cover, p);
+        this->removeArrow(cover, p, removeSingleton);
         // We should keep points unless explicitly removed, even if all of their arrows are gone.
         // WARNING: this code below seems to be suspect
         //         if (this->support(cover)->size() == 0) {
@@ -110,7 +110,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::removeCapPoint"
-  PreSieve& PreSieve::removeCapPoint(Point& q) {
+  PreSieve& PreSieve::removeCapPoint(Point& q, bool removeSingleton) {
     CHKCOMM(*this);
     this->__checkLock();
     if(this->capContains(q)) {
@@ -119,7 +119,7 @@ namespace ALE {
       for(ALE::Point_set::iterator s_itor = support->begin(); s_itor != support->end(); s_itor++) {
         ALE::Point s = *s_itor;
 
-        this->removeArrow(q, s);
+        this->removeArrow(q, s, removeSingleton);
         // We do not erase points from 'base' unless explicitly removed, even if no points terminate there
         // WARNING: the following code looks suspicious
         //         if (this->cone(s).size() == 0) {
@@ -161,18 +161,26 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::removeArrow"
-  PreSieve& PreSieve::removeArrow(Point& i, Point& j) {
+  PreSieve& PreSieve::removeArrow(Point& i, Point& j, bool removeSingleton) {
     CHKCOMM(*this);
     this->__checkLock();
     this->_cone[j].erase(i);
     this->_support[i].erase(j);
     // If this was the last arrow terminating at j, it becomes a root
     if(this->coneSize(j) == 0) {
-      this->_roots.insert(j);
+      if (removeSingleton && (this->_leaves.find(j) != this->_leaves.end())) {
+        this->removePoint(j);
+      } else {
+        this->_roots.insert(j);
+      }
     }
     // If this was the last arrow emanating from i, it becomes a root
     if(this->supportSize(i) == 0) {
-      this->_leaves.insert(i);
+      if (removeSingleton && (this->_roots.find(i) != this->_roots.end())) {
+        this->removePoint(i);
+      } else {
+        this->_leaves.insert(i);
+      }
     }
     return *this;
   }// PreSieve::removeArrow()
@@ -291,7 +299,7 @@ namespace ALE {
       if (!removal.size()) break;
       for(Point_set::iterator r_itor = removal.begin(); r_itor != removal.end(); r_itor++){
         Point p = *r_itor;
-        this->removeBasePoint(p);
+        this->removeBasePoint(p, true);
       }
       removal.clear();
     }
@@ -371,7 +379,7 @@ namespace ALE {
     }// for(Point_set::iterator c_itor = this->_support.begin(); c_itor != this->_support.end(); c_itor++){
     for(Point_set::iterator r_itor = removal.begin(); r_itor != removal.end(); r_itor++){
       Point r = *r_itor;
-      this->removeCapPoint(r);
+      this->removeCapPoint(r, true);
     }
     return *this;
   }// PreSieve::restrictCap()
@@ -543,7 +551,10 @@ namespace ALE {
     int32_t coneSize = 0;
     for(Point_set::iterator c_itor = c.begin(); c_itor != c.end(); c_itor++) {
       Point p = *c_itor;
-      coneSize += this->_cone[p].size();
+
+      if (this->_cone.find(p) != this->_cone.end()) {
+        coneSize += this->_cone[p].size();
+      }
     }
     return coneSize;
   }// PreSieve::coneSize()
@@ -598,8 +609,11 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::coneContains"
   int PreSieve::coneContains(Point& p, Point point) {
     CHKCOMM(*this);
-    int flag = 0;
+    if (this->_cone.find(p) != this->_cone.end()) {
+      return 0;
+    }
     Point_set& pCone = this->_cone[p];
+    int flag = 0;
     if(pCone.find(point) != pCone.end()) {
       flag = 1;
     }
@@ -650,10 +664,12 @@ namespace ALE {
       // Traverse the points in bottom
       for(Point_set::iterator b_itor = bottom->begin(); b_itor != bottom->end(); b_itor++) {
         Point p = *b_itor;
-        // Traverse the points in the cone over p
-        for(Point_set::iterator pCone_itor = this->_cone[p].begin(); pCone_itor != this->_cone[p].end(); pCone_itor++) {
-          Point q = *pCone_itor;
-          top->insert(q);
+        if (this->_cone.find(p) != this->_cone.end()) {
+          // Traverse the points in the cone over p
+          for(Point_set::iterator pCone_itor = this->_cone[p].begin(); pCone_itor != this->_cone[p].end(); pCone_itor++) {
+            Point q = *pCone_itor;
+            top->insert(q);
+          }
         }
       }
     }
@@ -696,11 +712,13 @@ namespace ALE {
       // Traverse the points in bottom
       for(Point_set::iterator b_itor = bottom->begin(); b_itor != bottom->end(); b_itor++) {
         Point p = *b_itor;
-        // Traverse the points in the cone over p
-        for(Point_set::iterator pCone_itor = this->_cone[p].begin(); pCone_itor != this->_cone[p].end(); pCone_itor++) {
-          Point q = *pCone_itor;
-          top->insert(q);
-          closure->insert(q);
+        if (this->_cone.find(p) != this->_cone.end()) {
+          // Traverse the points in the cone over p
+          for(Point_set::iterator pCone_itor = this->_cone[p].begin(); pCone_itor != this->_cone[p].end(); pCone_itor++) {
+            Point q = *pCone_itor;
+            top->insert(q);
+            closure->insert(q);
+          }
         }
       }
     }
@@ -1229,6 +1247,20 @@ namespace ALE {
       for(Point_set::iterator pCone_itor = this->_cone[p].begin(); pCone_itor != this->_cone[p].end(); pCone_itor++) {
         Point q = *pCone_itor;
       if(pCone_itor != this->_cone[p].begin()) {
+        txt << ", ";
+      }
+      txt  << "(" << q.prefix << ", " << q.index << ")";
+      }
+      txt  << "\n";
+    }
+    for(Point__Point_set::iterator support_itor = this->_support.begin(); support_itor != this->_support.end(); support_itor++)
+    {
+      Point p = (*support_itor).first;
+      txt  << "[" << rank << "]: support of (" << p.prefix << ", " << p.index << "):  ";
+      // Traverse the local support of p
+      for(Point_set::iterator pSupport_itor = this->_support[p].begin(); pSupport_itor != this->_support[p].end(); pSupport_itor++) {
+        Point q = *pSupport_itor;
+      if(pSupport_itor != this->_support[p].begin()) {
         txt << ", ";
       }
       txt  << "(" << q.prefix << ", " << q.index << ")";

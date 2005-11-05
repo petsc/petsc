@@ -72,7 +72,7 @@ namespace ALE {
     for(Point_set::iterator b_itor = base.begin(); b_itor != base.end(); b_itor++){
       Point p = *b_itor;
       // is point p present in the base of *this?
-      if(this->_cone.find(p) == this->_cone.end()){
+      if(this->_cone.find(p) != this->_cone.end()){
         s->addCone(this->_cone[p],p);
       }
     }// for(Point_set::iterator b_itor = base.begin(); b_itor != base.end(); b_itor++){

@@ -169,26 +169,30 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::removeArrow"
-  Sieve& Sieve::removeArrow(Point& i, Point& j) {
+  Sieve& Sieve::removeArrow(Point& i, Point& j, bool removeSingleton) {
     CHKCOMM(*this);
     this->__checkLock();
     // need to use PreSieve::removeArrow to make sure that roots and leaves are consistent
-    PreSieve::removeArrow(i,j);
+    PreSieve::removeArrow(i,j, removeSingleton);
     // now we may need to recompute the heights and depths
     if(this->_stratificationPolicy == stratificationPolicyOnMutation) {
-      // Only the points in the closure of i may have gotten their height changed, now that the path down through j is unavailable
-      __computeClosureHeights(i);
-      // Only the points in the star of j may have gotten their depth changed, now that the path up through i is unavailable
-      __computeStarDepths(j);
+      if (this->spaceContains(i)) {
+        // Only the points in the closure of i may have gotten their height changed, now that the path down through j is unavailable
+        __computeClosureHeights(i);
+      }
+      if (this->spaceContains(j)) {
+        // Only the points in the star of j may have gotten their depth changed, now that the path up through i is unavailable
+        __computeStarDepths(j);
+      }
     }
     return *this;
   }// Sieve::removeArrow()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::removeBasePoint"
-  Sieve& Sieve::removeBasePoint(Point& p) {
+  Sieve& Sieve::removeBasePoint(Point& p, bool removeSingleton) {
     this->__checkLock();
-    ALE::PreSieve::removeBasePoint(p);
+    ALE::PreSieve::removeBasePoint(p, removeSingleton);
     if (!this->capContains(p)) {
       this->__setDepth(p, -1);
       this->__setHeight(p, -1);
@@ -213,9 +217,9 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::removeCapPoint"
-  Sieve& Sieve::removeCapPoint(Point& q) {
+  Sieve& Sieve::removeCapPoint(Point& q, bool removeSingleton) {
     this->__checkLock();
-    ALE::PreSieve::removeCapPoint(q);
+    ALE::PreSieve::removeCapPoint(q, removeSingleton);
     if (!this->baseContains(q)) {
       this->__setDepth(q, -1);
       this->__setHeight(q, -1);
@@ -248,7 +252,7 @@ namespace ALE {
     int32_t hh = this->height(p);
     if(hh >= 0) { // hh < 0 implies that no height is assigned, hence there is nothing to remove
       Point hhPoint(this->commRank, hh);
-      this->_height.removeArrow(p,hhPoint);
+      this->_height.removeArrow(p,hhPoint,true);
     }
     if(h >= 0) { // h < 0 implies that no height is to be assigned
       Point hPoint(this->commRank, h);
@@ -265,7 +269,7 @@ namespace ALE {
     int32_t dd = this->depth(p);
     if(dd >= 0) { // dd < 0 implies that no depth is assigned, hence there is nothing to remove
       Point ddPoint(this->commRank, dd);
-      this->_depth.removeArrow(p,ddPoint);
+      this->_depth.removeArrow(p,ddPoint,true);
     }
     if(d >= 0) { // d < 0 implies that no depth is to be assigned
       Point dPoint(this->commRank, d);
@@ -901,11 +905,33 @@ namespace ALE {
       }
       txt  << "\n";
     }
+    for(Point__Point_set::iterator support_itor = this->_support.begin(); support_itor != this->_support.end(); support_itor++)
+    {
+      Point p = (*support_itor).first;
+      txt  << "[" << rank << "]: support of ("<<p.prefix<<", "<<p.index<<"):  ";
+      // Traverse the local support of p
+      for(Point_set::iterator pSupport_itor = this->_support[p].begin(); pSupport_itor != this->_support[p].end(); pSupport_itor++) {
+        Point q = *pSupport_itor;
+      if(pSupport_itor != this->_support[p].begin()) {
+        txt << ", ";
+      }
+      txt  << "(" << q.prefix << ", " << q.index << ")";
+      }
+      txt  << "\n";
+    }
     ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
     CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
     ierr = PetscSynchronizedFlush(this->comm);
     CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-
+    ostringstream heighthdr;
+    heighthdr << "Height of ";
+    if (name == NULL) {
+      heighthdr << "the Sieve";
+    } else {
+      heighthdr << name;
+    }
+    heighthdr << std::endl;
+    this->_height.view(heighthdr.str().c_str());
   }// Sieve::view()
   
   #undef  __FUNCT__
@@ -916,7 +942,7 @@ namespace ALE {
     for(Point_set::iterator b_itor = base.begin(); b_itor != base.end(); b_itor++){
       Point p = *b_itor;
       // is point p present in the base of *this?
-      if(this->_cone.find(p) == this->_cone.end()){
+      if(this->_cone.find(p) != this->_cone.end()){
         s->addCone(this->_cone[p],p);
       }
     }// for(Point_set::iterator b_itor = base.begin(); b_itor != base.end(); b_itor++){

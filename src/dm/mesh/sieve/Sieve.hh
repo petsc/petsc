@@ -41,11 +41,11 @@ namespace ALE {
     Sieve&                    setStratificationPolicy(StratificationPolicy policy);
     StratificationPolicy      getStratificationPolicy();
     virtual Sieve&            addArrow(Point& i, Point& j);
-    virtual Sieve&            removeArrow(Point& i, Point& j);
+    virtual Sieve&            removeArrow(Point& i, Point& j, bool removeSingleton = false);
     virtual Sieve&            addBasePoint(Point& p);
-    virtual Sieve&            removeBasePoint(Point& p);
+    virtual Sieve&            removeBasePoint(Point& p, bool removeSingleton = false);
     virtual Sieve&            addCapPoint(Point& q);
-    virtual Sieve&            removeCapPoint(Point& q);
+    virtual Sieve&            removeCapPoint(Point& q, bool removeSingleton = false);
     virtual Point_set         closure(Point p){return this->closure(Point_set(p));};
     virtual Point_set         closure(Obj<Point_set> chain);
     virtual Obj<Sieve>        closureSieve(Obj<Point_set> chain, Obj<Sieve> closure = Obj<Sieve>());
