@@ -76,7 +76,7 @@ namespace ALE {
     int      borrowed;     // indicates that the object should not be released
   public:
     // constructors
-    Obj() : objPtr((X *)NULL), refCnt((int32_t*)NULL){};               
+    Obj() : objPtr((X *)NULL), refCnt((int32_t*)NULL), borrowed(0) {};
     Obj(X x) { // such an object won't be destroyed (e.g., an object allocated on the stack)
       //this->objPtr = &x;
       this->objPtr = new X(x);
@@ -129,6 +129,9 @@ namespace ALE {
 
     // assignment operator
     Obj& operator=(const Obj& obj) {
+      if (borrowed) {
+        throw ALE::Exception("Borrowed should never be nonzero");
+      }
       if(this->objPtr == obj.objPtr) {return *this;}
       // We are letting go of objPtr, so need to check whether we are the last reference holder.
       if((this->refCnt != (int32_t *)NULL) && (--(*this->refCnt) == 0) && !this->borrowed)  {

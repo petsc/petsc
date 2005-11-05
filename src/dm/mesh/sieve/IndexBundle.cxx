@@ -916,7 +916,7 @@ namespace ALE {
     ierr = MPI_Waitall(this->commSize, requests, statuses); CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Waitall"));
     for(int p = 0; p < this->commSize; p++) {
       if (p == this->commRank) {
-        delete recvIntervals[p];
+        delete [] recvIntervals[p];
         continue;
       }
       ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(rentMarkers[p]);
@@ -935,9 +935,9 @@ namespace ALE {
       delete recvIntervals[p];
     }
     PetscSynchronizedFlush(this->comm);
-    delete requests;
-    delete statuses;
-    delete recvIntervals;
+    delete [] requests;
+    delete [] statuses;
+    delete [] recvIntervals;
   }
 
   #undef  __FUNCT__
