@@ -130,15 +130,18 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
   ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
   ierr = MeshCreateSeq(mesh, dim, numVertices, numElements, vertices, coordinates);CHKERRQ(ierr);
-  ierr = MeshCreateBoundary(mesh, numBoundaryVertices, boundaryVertices); CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
   ierr = MeshDistribute(mesh);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Creating boundary\n");CHKERRQ(ierr);
+  ierr = MeshCreateBoundary(mesh, numBoundaryVertices, boundaryVertices); CHKERRQ(ierr);
 
   ALE::Sieve *topology;
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   ALE::IndexBundle *fieldBundle = new ALE::IndexBundle(topology);
   fieldBundle->setFiberDimensionByDepth(0, 1);
-  fieldBundle->setVerbosity(11);
+  if (debug) {
+    fieldBundle->setVerbosity(11);
+  }
   fieldBundle->computeOverlapIndices();
   fieldBundle->computeGlobalIndices();
   ierr = MeshSetBundle(mesh, (void *) fieldBundle);CHKERRQ(ierr);
@@ -325,7 +328,8 @@ PetscErrorCode ReadBoundary(MPI_Comm comm, FileType fileType, const char *filena
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   *numBoundaryVertices = numVerts;
   *boundaryVertices = verts;
-  ierr = PetscPrintf(comm, "  Read %d boundary vertices\n", *numBoundaryVertices);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(comm, "[%d]  Read %d boundary vertices\n", commRank, *numBoundaryVertices);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1283,7 +1287,6 @@ PetscErrorCode ExpandSetIntervals(ALE::Point_set intervals, PetscInt *indices)
 #define __FUNCT__ "restrictField"
 PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, PetscScalar *array, ALE::Point e, PetscScalar *values[])
 {
-  ALE::Point_set             empty;
   ALE::Obj<ALE::Point_array> intervals = bundle->getLocalOrderedClosureIndices(orientation->cone(e));
   /* This should be done by memory pooling by array size (we have a simple form below) */
   static PetscScalar *vals;
@@ -1307,12 +1310,14 @@ PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientatio
     ierr = PetscMalloc(numValues * sizeof(PetscInt), &indices); CHKERRQ(ierr);
     ierr = PetscMalloc(numValues * sizeof(PetscScalar), &vals); CHKERRQ(ierr);
   }
-  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    printf("indices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
+  if (debug) {
+    for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+      printf("[%d]interval (%d, %d)\n", bundle->getCommRank(), (*i_itor).prefix, (*i_itor).index);
+    }
   }
   ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
   for(int i = 0; i < numIndices; i++) {
-    printf("indices[%d] = %d\n", i, indices[i]);
+    if (debug) {printf("[%d]indices[%d] = %d  val: %g\n", bundle->getCommRank(), i, indices[i], array[indices[i]]);}
     vals[i] = array[indices[i]];
   }
   *values = vals;
@@ -1323,7 +1328,6 @@ PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientatio
 #define __FUNCT__ "assembleField"
 PetscErrorCode assembleField(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, Vec b, ALE::Point e, PetscScalar array[], InsertMode mode)
 {
-  ALE::Point_set   empty;
   ALE::Obj<ALE::Point_array> intervals = bundle->getGlobalOrderedClosureIndices(orientation->cone(e));
   static PetscInt  indicesSize = 0;
   static PetscInt *indices = NULL;
@@ -1342,12 +1346,16 @@ PetscErrorCode assembleField(ALE::IndexBundle *bundle, ALE::PreSieve *orientatio
     indicesSize = numIndices;
     ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
   }
-  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    printf("indices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
+  if (debug) {
+    for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+      printf("[%d]interval (%d, %d)\n", bundle->getCommRank(), (*i_itor).prefix, (*i_itor).index);
+    }
   }
   ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
-  for(int i = 0; i < numIndices; i++) {
-    printf("indices[%d] = %d\n", i, indices[i]);
+  if (debug) {
+    for(int i = 0; i < numIndices; i++) {
+      printf("[%d]indices[%d] = %d\n", bundle->getCommRank(), i, indices[i]);
+    }
   }
   ierr = VecSetValues(b, numIndices, indices, array, mode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1357,7 +1365,6 @@ PetscErrorCode assembleField(ALE::IndexBundle *bundle, ALE::PreSieve *orientatio
 #define __FUNCT__ "assembleOperator"
 PetscErrorCode assembleOperator(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, Mat A, ALE::Point e, PetscScalar array[], InsertMode mode)
 {
-  ALE::Point_set   empty;
   ALE::Obj<ALE::Point_array> intervals = bundle->getGlobalOrderedClosureIndices(orientation->cone(e));
   static PetscInt  indicesSize = 0;
   static PetscInt *indices = NULL;
@@ -1376,12 +1383,16 @@ PetscErrorCode assembleOperator(ALE::IndexBundle *bundle, ALE::PreSieve *orienta
     indicesSize = numIndices;
     ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
   }
-  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    printf("indices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
+  if (debug) {
+    for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+      printf("[%d]interval (%d, %d)\n", bundle->getCommRank(), (*i_itor).prefix, (*i_itor).index);
+    }
   }
   ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
-  for(int i = 0; i < numIndices; i++) {
-    printf("indices[%d] = %d\n", i, indices[i]);
+  if (debug) {
+    for(int i = 0; i < numIndices; i++) {
+      printf("[%d]indices[%d] = %d\n", bundle->getCommRank(), i, indices[i]);
+    }
   }
   ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1411,21 +1422,21 @@ PetscErrorCode ElementGeometry(ALE::IndexBundle *coordBundle, ALE::PreSieve *ori
     }
     for(int d = 0; d < dim; d++) {
       if (d == 0) {
-        printf("J = /");
+        PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]J = /", coordBundle->getCommRank());
       } else if (d == dim-1) {
-        printf("    \\");
+        PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]    \\", coordBundle->getCommRank());
       } else {
-        printf("    |");
+        PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]    |", coordBundle->getCommRank());
       }
       for(int e = 0; e < dim; e++) {
-        printf(" %g", J[d*dim+e]);
+        PetscSynchronizedPrintf(coordBundle->getComm(), " %g", J[d*dim+e]);
       }
       if (d == 0) {
-        printf(" \\\n");
+        PetscSynchronizedPrintf(coordBundle->getComm(), " \\\n");
       } else if (d == dim-1) {
-        printf(" /\n");
+        PetscSynchronizedPrintf(coordBundle->getComm(), " /\n");
       } else {
-        printf(" |\n");
+        PetscSynchronizedPrintf(coordBundle->getComm(), " |\n");
       }
     }
     if (dim == 2) {
@@ -1458,21 +1469,21 @@ PetscErrorCode ElementGeometry(ALE::IndexBundle *coordBundle, ALE::PreSieve *ori
       }
       for(int d = 0; d < dim; d++) {
         if (d == 0) {
-          printf("Jinv = /");
+          PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]Jinv = /", coordBundle->getCommRank());
         } else if (d == dim-1) {
-          printf("       \\");
+          PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]       \\", coordBundle->getCommRank());
         } else {
-          printf("       |");
+          PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]       |", coordBundle->getCommRank());
         }
         for(int e = 0; e < dim; e++) {
-          printf(" %g", invJ[d*dim+e]);
+          PetscSynchronizedPrintf(coordBundle->getComm(), " %g", invJ[d*dim+e]);
         }
         if (d == 0) {
-          printf(" \\\n");
+          PetscSynchronizedPrintf(coordBundle->getComm(), " \\\n");
         } else if (d == dim-1) {
-          printf(" /\n");
+          PetscSynchronizedPrintf(coordBundle->getComm(), " /\n");
         } else {
-          printf(" |\n");
+          PetscSynchronizedPrintf(coordBundle->getComm(), " |\n");
         }
       }
     }
@@ -1498,25 +1509,24 @@ PetscErrorCode ComputeRho(PetscReal x, PetscReal y, PetscScalar *rho)
 #define __FUNCT__ "ComputeBlock"
 PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
 {
-  Mesh                mesh = (Mesh) dmmg->dm;
-  UserContext        *user = (UserContext *) dmmg->user;
-  ALE::Sieve         *topology;
-  ALE::PreSieve      *orientation;
+  Mesh              mesh = (Mesh) dmmg->dm;
+  UserContext      *user = (UserContext *) dmmg->user;
+  ALE::Sieve       *topology;
+  ALE::PreSieve    *orientation;
   ALE::IndexBundle *bundle;
   ALE::IndexBundle *coordBundle;
-  ALE::Point_set      elements;
-  ALE::Point_set      empty;
-  PetscInt            dim;
-  Vec                 coordinates;
-  PetscScalar        *coords;
-  PetscScalar        *array;
-  PetscScalar        *field;
-  PetscReal           elementVec[NUM_BASIS_FUNCTIONS];
-  PetscReal           linearVec[NUM_BASIS_FUNCTIONS];
-  PetscReal           *v0, *Jac, *Jinv, *t_der, *b_der;
-  PetscReal           xi, eta, x_q, y_q, detJ, rho, funcValue;
-  PetscInt            f, g, q;
-  PetscErrorCode      ierr;
+  ALE::Point_set    elements;
+  PetscInt          dim;
+  Vec               coordinates;
+  PetscScalar      *coords;
+  PetscScalar      *array;
+  PetscScalar      *field;
+  PetscReal         elementVec[NUM_BASIS_FUNCTIONS];
+  PetscReal         linearVec[NUM_BASIS_FUNCTIONS];
+  PetscReal        *v0, *Jac, *Jinv, *t_der, *b_der;
+  PetscReal         xi, eta, x_q, y_q, detJ, rho, funcValue;
+  PetscInt          f, g, q;
+  PetscErrorCode    ierr;
 
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
@@ -1577,12 +1587,12 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 {
   Mesh                mesh = (Mesh) dmmg->dm;
   UserContext        *user = (UserContext *) dmmg->user;
+  MPI_Comm            comm;
   ALE::Sieve         *topology;
   ALE::PreSieve      *orientation;
   ALE::IndexBundle *bundle;
   ALE::IndexBundle *coordBundle;
   ALE::Point_set      elements;
-  ALE::Point_set      empty;
   PetscInt            dim;
   Vec                 coordinates;
   PetscScalar        *coords;
@@ -1593,6 +1603,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
   ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
@@ -1619,9 +1630,10 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
         elementVec[f] += Basis[q*NUM_BASIS_FUNCTIONS+f]*funcValue*weights[q]*detJ;
       }
     }
-    printf("elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);
+    PetscSynchronizedPrintf(comm, "elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);
     /* Assembly */
     ierr = assembleField(bundle, orientation, b, e, elementVec, ADD_VALUES); CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(comm);
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscFree(v0);CHKERRQ(ierr);
@@ -1644,25 +1656,28 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 #define __FUNCT__ "ComputeJacobian"
 PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 {
-  Mesh                mesh = (Mesh) dmmg->dm;
-  UserContext        *user = (UserContext *) dmmg->user;
-  ALE::Sieve         *topology;
-  ALE::Sieve         *boundary;
-  ALE::PreSieve      *orientation;
+  Mesh              mesh = (Mesh) dmmg->dm;
+  UserContext      *user = (UserContext *) dmmg->user;
+  MPI_Comm          comm;
+  ALE::Sieve       *topology;
+  ALE::Sieve       *boundary;
+  ALE::PreSieve    *orientation;
   ALE::IndexBundle *bundle;
   ALE::IndexBundle *coordBundle;
-  ALE::Point_set      elements;
-  ALE::Point_set      empty;
-  PetscInt            dim;
-  Vec                 coordinates;
-  PetscScalar        *coords;
-  PetscReal           elementMat[NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS];
-  PetscReal           *v0, *Jac, *Jinv, *t_der, *b_der;
-  PetscReal           xi, eta, x_q, y_q, detJ, rho;
-  PetscInt            f, g, q;
-  PetscErrorCode      ierr;
+  ALE::Point_set    elements;
+  PetscInt          dim;
+  Vec               coordinates;
+  PetscScalar      *coords;
+  PetscReal         elementMat[NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS];
+  PetscReal        *v0, *Jac, *Jinv, *t_der, *b_der;
+  PetscReal         xi, eta, x_q, y_q, detJ, rho;
+  PetscInt          f, g, q;
+  PetscMPIInt       rank;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   ierr = MeshGetBoundary(mesh, (void **) &boundary);CHKERRQ(ierr);
   ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
@@ -1700,10 +1715,12 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
         }
       }
     }
-    printf("elementMat = [%g %g %g]\n             [%g %g %g]\n             [%g %g %g]\n",
-           elementMat[0], elementMat[1], elementMat[2], elementMat[3], elementMat[4], elementMat[5], elementMat[6], elementMat[7], elementMat[8]);
+    ierr = PetscSynchronizedPrintf(comm, "[%d]elementMat = [%g %g %g]\n                [%g %g %g]\n                [%g %g %g]\n",
+                                   rank, elementMat[0], elementMat[1], elementMat[2], elementMat[3], elementMat[4],
+                                   elementMat[5], elementMat[6], elementMat[7], elementMat[8]);CHKERRQ(ierr);
     /* Assembly */
-    ierr = assembleOperator(bundle, orientation, jac, e, elementMat, ADD_VALUES); CHKERRQ(ierr);
+    ierr = assembleOperator(bundle, orientation, jac, e, elementMat, ADD_VALUES);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = PetscFree(v0);CHKERRQ(ierr);
@@ -1718,14 +1735,17 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
     ALE::Point id(0, 1);
     ALE::Point_set boundaryElements = boundary->cone(id);
     int numBoundaryIndices = bundle->getFiberDimension(boundaryElements);
-    ALE::Point_set boundaryIntervals = bundle->getFiberIndices(boundaryElements, empty)->cap();
+    ALE::Point_set boundaryIntervals = bundle->getGlobalFiberIndices(boundaryElements)->cap();
     PetscInt *boundaryIndices;
 
     ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
     ierr = ExpandSetIntervals(boundaryIntervals, boundaryIndices); CHKERRQ(ierr);
-    for(int i = 0; i < numBoundaryIndices; i++) {
-      printf("boundaryIndices[%d] = %d\n", i, boundaryIndices[i]);
+    if (debug) {
+      for(int i = 0; i < numBoundaryIndices; i++) {
+        ierr = PetscSynchronizedPrintf(comm, "[%d]boundaryIndices[%d] = %d\n", rank, i, boundaryIndices[i]);CHKERRQ(ierr);
+      }
     }
+    ierr = PetscSynchronizedFlush(comm);
     ierr = MatZeroRows(jac, numBoundaryIndices, boundaryIndices, 1.0);CHKERRQ(ierr);
     ierr = PetscFree(boundaryIndices);CHKERRQ(ierr);
   }

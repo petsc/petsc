@@ -609,7 +609,7 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::coneContains"
   int PreSieve::coneContains(Point& p, Point point) {
     CHKCOMM(*this);
-    if (this->_cone.find(p) != this->_cone.end()) {
+    if (this->_cone.find(p) == this->_cone.end()) {
       return 0;
     }
     Point_set& pCone = this->_cone[p];

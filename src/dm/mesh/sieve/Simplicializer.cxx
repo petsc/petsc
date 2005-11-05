@@ -559,6 +559,8 @@ PetscErrorCode MeshDistribute(Mesh mesh)
     if (cone->size()) {
       ALE::Point interval = *cone->begin();
 
+      // Must insert into ghostIndices at the index given by localIndices
+      //   However, I think right now its correct because rentedPoints iterates in the same way
       ExpandInterval(interval, ghostIndices, &ghostIdx);
     }
   }
@@ -572,7 +574,8 @@ PetscErrorCode MeshDistribute(Mesh mesh)
     PetscSynchronizedPrintf(comm, "\n");
     PetscSynchronizedFlush(comm);
   }
-  ierr = VecCreateGhostBlock(comm,dim,localSize,globalSize,ghostSize,ghostIndices,&coordinates);CHKERRQ(ierr);
+  ierr = VecCreateGhost(comm, localSize, globalSize, ghostSize, ghostIndices, &coordinates);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
   /* Setup mapping to partitioned storage */
   ALE::Obj<ALE::Stack> mappingStack;
   ALE::Obj<ALE::PreSieve> sourceIndices, targetIndices;
@@ -613,6 +616,9 @@ PetscErrorCode MeshDistribute(Mesh mesh)
     ierr = VecView(coordinates, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   delete serialCoordBundle;
+  /* Communicate ghosted coordinates */
+  ierr = VecGhostUpdateBegin(coordinates, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecGhostUpdateEnd(coordinates, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -648,7 +654,7 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
   elementBundle.computeOverlapIndices();
   elementBundle.computeGlobalIndices();
   numElements = elementBundle.getGlobalSize();
-  if (1) {
+  if (debug) {
     boundary->setVerbosity(11);
   }
   ALE::Point_set cone;
@@ -658,13 +664,13 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
   for(int v = 0; v < numBoundaryVertices; v++) {
     ALE::Point vertex = ALE::Point(0, boundaryVertices[v] + numElements);
 
-    if (topology->baseContains(vertex)) {
+    if (topology->capContains(vertex)) {
       cone.insert(vertex);
     }
   }
   boundary->addCone(cone, boundaryPoint);
-  if (1) {
-    boundary->view("Boundary topology");
+  if (debug) {
+    boundary->view("Boundary sieve");
   }
   ierr = MeshSetBoundary(mesh, (void *) boundary);CHKERRQ(ierr);
   PetscFunctionReturn(0);

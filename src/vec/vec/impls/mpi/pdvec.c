@@ -147,6 +147,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
             ierr = PetscViewerASCIIPrintf(viewer,"%g",values[i*bs+b]);CHKERRQ(ierr);
 #endif
           }
+          ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
         }
       }
     } else if (format == PETSC_VIEWER_ASCII_VTK_COORDS) {
