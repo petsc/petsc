@@ -24,6 +24,9 @@ runex1:
 debugex1:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -vertex_file data/ex1conn1d.data -coord_file data/ex1coord1d.data -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
+valex1:
+	-@valgrind --tool=memcheck ./ex1 -dim 1 -use_zero_base 1 -vertex_file data/ex1conn1d.data -coord_file data/ex1coord1d.data ${EXTRA_ARGS}
+
 runex1_2:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -vertex_file data/ex1conn2d.data -coord_file data/ex1coord2d.data
 

@@ -23,9 +23,9 @@ namespace ALE {
     Obj<Stack>     _localOverlapIndices;  // a stack with _overlapOwnership in the base, a discrete top contains the local indices 
                                           // attached to the overlap points by vertical arrows
     Obj<PreSieve>  _remoteOverlapIndices; // a completion stack with the remote overlap indices: completionTypeArrow, footprintTypeCone
-    ALE::Obj<ALE::PreSieve> _pointTypes;
-    ALE::Obj<ALE::PreSieve> _localIndices;
-    ALE::Obj<ALE::PreSieve> _globalIndices;
+    Obj<PreSieve> _pointTypes;
+    Obj<PreSieve> _localIndices;
+    Obj<PreSieve> _globalIndices;
     //
     BundleAssemblyPolicy _assemblyPolicy;
     //
