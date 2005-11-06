@@ -45,6 +45,7 @@ PetscErrorCode ReadConnectivity_PCICE(MPI_Comm, const char *, PetscInt, PetscTru
 PetscErrorCode ReadCoordinates_PCICE(MPI_Comm, const char *, PetscInt, PetscInt *, PetscScalar **);
 PetscErrorCode ReadConnectivity_PyLith(MPI_Comm, const char *, PetscInt, PetscTruth, PetscInt *, PetscInt **);
 PetscErrorCode ReadCoordinates_PyLith(MPI_Comm, const char *, PetscInt, PetscInt *, PetscScalar **);
+PetscErrorCode CreatePartitionVector(Mesh, Vec *);
 extern int debug;
 
 #undef __FUNCT__
@@ -54,6 +55,7 @@ int main(int argc, char *argv[])
   MPI_Comm       comm;
   Mesh           mesh;
   PetscViewer    viewer;
+  Vec            partition;
   char           vertexFilename[2048];
   char           coordFilename[2048];
   PetscTruth     useZeroBase;
@@ -92,12 +94,17 @@ int main(int argc, char *argv[])
   ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
   ierr = MeshDistribute(mesh);CHKERRQ(ierr);
 
+  ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
+
   ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
+  ierr = VecView(partition, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
@@ -369,5 +376,41 @@ PetscErrorCode ReadCoordinates_PyLith(MPI_Comm comm, const char *filename, Petsc
     *coordinates = coords;
   }
   ierr = PetscPrintf(comm, "  Read %d vertices\n", *numVertices);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#include <IndexBundle.hh>
+extern PetscErrorCode MeshCreateVector(Mesh, ALE::IndexBundle *, int, Vec *);
+
+#undef __FUNCT__
+#define __FUNCT__ "CreatePartitionVector"
+/*
+  Creates a vector whose value is the processor rank on each element
+*/
+PetscErrorCode CreatePartitionVector(Mesh mesh, Vec *partition)
+{
+  ALE::Sieve    *topology;
+  PetscScalar   *array;
+  MPI_Comm       comm;
+  PetscMPIInt    rank;
+  PetscInt       n, i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ALE::IndexBundle elementBundle(topology);
+  elementBundle.setFiberDimensionByHeight(0, 1);
+  elementBundle.computeOverlapIndices();
+  elementBundle.computeGlobalIndices();
+  ierr = MeshCreateVector(mesh, &elementBundle, debug, partition);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*partition, 1);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(*partition, &n);CHKERRQ(ierr);
+  ierr = VecGetArray(*partition, &array);CHKERRQ(ierr);
+  for(i = 0; i < n; i++) {
+    array[i] = rank;
+  }
+  ierr = VecRestoreArray(*partition, &array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

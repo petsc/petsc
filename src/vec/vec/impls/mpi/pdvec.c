@@ -116,12 +116,19 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 #endif
         }
       }          
-    } else if (format == PETSC_VIEWER_ASCII_VTK) {
+    } else if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
       PetscInt bs, b;
 
       ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", xin->N);CHKERRQ(ierr);
+      if ((bs < 1) || (bs > 3)) {
+        SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
+      }
+      if (format == PETSC_VIEWER_ASCII_VTK) {
+        ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", xin->N);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", xin->N);CHKERRQ(ierr);
+      }
       ierr = PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %d\n", bs);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
       for (i=0; i<n/bs; i++) {
@@ -155,7 +162,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 
       ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
-      if (bs > 3) {
+      if ((bs < 1) || (bs > 3)) {
         SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
       }
       for (i=0; i<n/bs; i++) {
@@ -191,7 +198,42 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         }
       }
     } else if (format == PETSC_VIEWER_ASCII_PCICE) {
-      SETERRQ(PETSC_ERR_SUP, "");
+      PetscInt bs, b, vertexCount = 1;
+
+      ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
+      ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
+      if ((bs < 1) || (bs > 3)) {
+        SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer,"%D\n", xin->N/bs);CHKERRQ(ierr);
+      for (i=0; i<n/bs; i++) {
+        ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", vertexCount++);CHKERRQ(ierr);
+        for (b=0; b<bs; b++) {
+          if (b > 0) {
+            ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
+          }
+#if !defined(PETSC_USE_COMPLEX)
+          ierr = PetscViewerASCIIPrintf(viewer,"% 12.5E",xarray[i*bs+b]);CHKERRQ(ierr);
+#endif
+        }
+        ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+      }
+      for (j=1; j<size; j++) {
+        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,xin->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);         
+        for (i=0; i<n/bs; i++) {
+          ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", vertexCount++);CHKERRQ(ierr);
+          for (b=0; b<bs; b++) {
+            if (b > 0) {
+              ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
+            }
+#if !defined(PETSC_USE_COMPLEX)
+            ierr = PetscViewerASCIIPrintf(viewer,"% 12.5E",values[i*bs+b]);CHKERRQ(ierr);
+#endif
+          }
+          ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+        }
+      }
     } else if (format == PETSC_VIEWER_ASCII_PYLITH) {
       PetscInt bs, b, vertexCount = 1;
 
