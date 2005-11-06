@@ -1,6 +1,6 @@
 
 package Ex1 version 0.0.0 {
-  class System implements-all TOPS.System.System, TOPS.System.Compute.Residual, 
+  class System implements-all TOPS.System.Compute.Residual, 
                               gov.cca.Component, gov.cca.ports.GoPort {}
 }
 

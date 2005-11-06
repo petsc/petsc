@@ -28,9 +28,6 @@
 #ifndef included_TOPS_Matrix_hh
 #include "TOPS_Matrix.hh"
 #endif
-#ifndef included_TOPS_Solver_hh
-#include "TOPS_Solver.hh"
-#endif
 #ifndef included_gov_cca_CCAException_hh
 #include "gov_cca_CCAException.hh"
 #endif
@@ -97,16 +94,6 @@ namespace Ex4 {
     static void _load();
 
   public:
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    setSolver (
-      /* in */ ::TOPS::Solver solver
-    )
-    throw () 
-    ;
 
     /**
      * user defined non-static method.

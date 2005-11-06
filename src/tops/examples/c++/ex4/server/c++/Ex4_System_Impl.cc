@@ -40,22 +40,6 @@ void Ex4::System_impl::_load() {
 
 // user-defined non-static methods:
 /**
- * Method:  setSolver[]
- */
-void
-Ex4::System_impl::setSolver (
-  /* in */ ::TOPS::Solver solver ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(Ex4.System.setSolver)
-#undef __FUNCT__
-#define __FUNCT__ "Ex4::System_impl::setSolver"
-
-  this->solver = (TOPS::Unstructured::Solver)solver;
-  // DO-NOT-DELETE splicer.end(Ex4.System.setSolver)
-}
-
-/**
  * Method:  computeMatrix[]
  */
 void
@@ -192,11 +176,6 @@ throw (
   }
   
   // Provides ports
-  // Basic functionality
-  myServices.addProvidesPort(p,
-			   "TOPS.System.System",
-			   "TOPS.System.System", myServices.createTypeMap());
-
   // Initialization
   myServices.addProvidesPort(p,
 			   "TOPS.System.Initialize.Once",
@@ -251,9 +230,6 @@ throw ()
   this->solver = solver;
   solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
   
-  // We don't need to call setSystem since it will be obtained through
-  // getPort calls
-
   solver.solve();
 
   myServices.releasePort("TOPS.UnstructuredSolver");

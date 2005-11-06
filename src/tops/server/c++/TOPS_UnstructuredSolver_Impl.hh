@@ -22,9 +22,6 @@
 // 
 // Includes for all method dependencies.
 // 
-#ifndef included_TOPS_System_System_hh
-#include "TOPS_System_System.hh"
-#endif
 #ifndef included_TOPS_UnstructuredSolver_hh
 #include "TOPS_UnstructuredSolver.hh"
 #endif
@@ -68,7 +65,6 @@ namespace TOPS {
     // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._implementation)
     DMMG                                  *dmmg;
     ::Sliced                              slice;
-    TOPS::System::System                  system;
     int                                   startedpetsc;
     gov::cca::Services                    myServices;
     int                                   bs,n,Nghosted;
@@ -109,22 +105,6 @@ namespace TOPS {
      */
     ::gov::cca::Services
     getServices() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    void
-    setSystem (
-      /* in */ ::TOPS::System::System sys
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    ::TOPS::System::System
-    getSystem() throw () 
     ;
     /**
      * user defined non-static method.

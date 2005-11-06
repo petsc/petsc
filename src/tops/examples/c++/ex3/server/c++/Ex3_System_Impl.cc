@@ -39,19 +39,6 @@ void Ex3::System_impl::_load() {
 
 // user-defined non-static methods:
 /**
- * Method:  setSolver[]
- */
-void
-Ex3::System_impl::setSolver (
-  /* in */ ::TOPS::Solver solver ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(Ex3.System.setSolver)
-  this->solver = solver;
-  // DO-NOT-DELETE splicer.end(Ex3.System.setSolver)
-}
-
-/**
  * Method:  computeMatrix[]
  */
 void
@@ -77,7 +64,7 @@ throw ()
   double hx     = 1.0/(double)(mx-1);
   double hy     = 1.0/(double)(my-1);
   double hz     = 1.0/(double)(mz-1);
-  double sc     = hx*hy*hz;
+  //double sc     = hx*hy*hz;
   double hxhydhz  = hx*hy/hz; 
   double hyhzdhx  = hy*hz/hx;
   double hxhzdhy  = hx*hz/hy;
@@ -195,8 +182,7 @@ throw (
 
   myServices = services;
 
-  TOPS::System::System sys = self;
-  gov::cca::Port p = sys;      //  Babel required casting
+  gov::cca::Port p = self;      //  Babel required casting
   if(p._is_nil()) {
     fprintf(stderr, "Error:: %s:%d: Error casting self to gov::cca::Port \n",
 	    __FILE__, __LINE__);

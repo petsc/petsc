@@ -42,19 +42,6 @@ void Ex2::System_impl::_load() {
 
 // user-defined non-static methods:
 /**
- * Method:  setSolver[]
- */
-void
-Ex2::System_impl::setSolver (
-  /* in */ ::TOPS::Solver solver ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(Ex2.System.setSolver)
-  this->solver = (TOPS::Structured::Solver)solver;
-  // DO-NOT-DELETE splicer.end(Ex2.System.setSolver)
-}
-
-/**
  * Method:  initializeOnce[]
  */
 void

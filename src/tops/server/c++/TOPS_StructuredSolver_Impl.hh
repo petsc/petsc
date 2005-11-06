@@ -25,9 +25,6 @@
 #ifndef included_TOPS_StructuredSolver_hh
 #include "TOPS_StructuredSolver.hh"
 #endif
-#ifndef included_TOPS_System_System_hh
-#include "TOPS_System_System.hh"
-#endif
 #ifndef included_gov_cca_CCAException_hh
 #include "gov_cca_CCAException.hh"
 #endif
@@ -71,7 +68,6 @@ namespace TOPS {
     int                                   lengths[4],m,n,p,dim,s,levels,bs;
     DAStencilType                         stencil_type;
     DAPeriodicType                        wrap;
-    TOPS::System::System                  system;
     int                                   startedpetsc;
     gov::cca::Services                    myServices;
     gov::cca::ports::ParameterPortFactory ppf;
@@ -111,22 +107,6 @@ namespace TOPS {
      */
     ::gov::cca::Services
     getServices() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    void
-    setSystem (
-      /* in */ ::TOPS::System::System sys
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    ::TOPS::System::System
-    getSystem() throw () 
     ;
     /**
      * user defined non-static method.
