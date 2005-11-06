@@ -100,6 +100,18 @@ int main(int argc, char *argv[])
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
+  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+  if (fileType == PCICE) {
+    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PCICE);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "testMesh.lcon");CHKERRQ(ierr);
+  } else if (fileType == PYLITH) {
+    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "testMesh.connect");CHKERRQ(ierr);
+  }
+  ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+
   ierr = MeshDestroy(mesh);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -295,11 +307,6 @@ PetscErrorCode ReadConnectivity_PyLith(MPI_Comm comm, const char *filename, Pets
         verts[cellCount*(dim+1)+c] = vertex;
         v = strtok(NULL, " ");
       }
-      printf("cell %d: ", cellCount);
-      for(c = 0; c <= dim; c++) {
-        printf(" %d", verts[cellCount*(dim+1)+c]);
-      }
-      printf("\n");
       cellCount++;
     } while(fgets(buf, 2048, f) != NULL);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);

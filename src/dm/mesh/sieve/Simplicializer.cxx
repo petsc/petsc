@@ -73,8 +73,10 @@ PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices
     /* Build the simplex */
     boundary.clear();
     for(int b = 0; b < dim+1; b++) {
-      if (debug) {PetscPrintf(PETSC_COMM_SELF, "Adding boundary node (%d, %d)\n", 0, simplices[s*(dim+1)+b]+numSimplices);}
-      boundary.insert(ALE::Point(0, simplices[s*(dim+1)+b]+numSimplices));
+      ALE::Point vertex(0, simplices[s*(dim+1)+b]+numSimplices);
+
+      if (debug) {PetscPrintf(PETSC_COMM_SELF, "Adding boundary node (%d, %d)\n", vertex.prefix, vertex.index);}
+      boundary.insert(vertex);
     }
     PetscPrintf(PETSC_COMM_SELF, "simplex %d\n", s);
     if (debug) {PetscPrintf(PETSC_COMM_SELF, "  simplex %d boundary size %u\n", s, (unsigned int) boundary.size());}
@@ -775,135 +777,6 @@ PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientatio
     vals[i] = array[indices[i]];
   }
   *values = vals;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "WriteVTKVertices"
-PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
-{
-  Vec            coordinates;
-  PetscInt       dim, numVertices;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetDimension(mesh, &dim);CHKERRQ(ierr);
-  ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
-  ierr = VecGetSize(coordinates, &numVertices);CHKERRQ(ierr);
-  numVertices /= dim;
-  ierr = PetscViewerASCIIPrintf(viewer,"POINTS %d double\n", numVertices);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_COORDS);CHKERRQ(ierr);
-  ierr = VecView(coordinates, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "WriteVTKElements"
-PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
-{
-  ALE::Sieve       *topology;
-  ALE::Point_set    elements;
-  int               dim, numElements, corners;
-  MPI_Comm          comm;
-  PetscMPIInt       rank, size;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);
-  ierr = MPI_Comm_size(comm, &size);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ALE::IndexBundle *vertexBundle = new ALE::IndexBundle(topology);
-  vertexBundle->setFiberDimensionByDepth(0, 1);
-  vertexBundle->computeOverlapIndices();
-  vertexBundle->computeGlobalIndices();
-  ALE::IndexBundle *elementBundle = new ALE::IndexBundle(topology);
-  elementBundle->setFiberDimensionByHeight(0, 1);
-  elementBundle->computeOverlapIndices();
-  elementBundle->computeGlobalIndices();
-  elements = topology->heightStratum(0);
-  dim = topology->depth(*elements.begin());
-  numElements = elementBundle->getGlobalSize();
-  corners = topology->nCone(*elements.begin(), dim).size();
-  ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
-  if (rank == 0) {
-    for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
-      ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
-      ALE::Point_set cone = topology->nCone(*e_itor, dim);
-      for(ALE::Point_set::iterator c_itor = cone.begin(); c_itor != cone.end(); c_itor++) {
-        ALE::Point index = vertexBundle->getGlobalFiberInterval(*c_itor);
-
-        ierr = PetscViewerASCIIPrintf(viewer, " %d", index.prefix);CHKERRQ(ierr);
-      }
-      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
-    }
-    for(int p = 1; p < size; p++) {
-      MPI_Status  status;
-      int        *remoteVertices;
-      int         numLocalElements;
-
-      ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, comm, &status);CHKERRQ(ierr);
-      ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &remoteVertices);CHKERRQ(ierr);
-      ierr = MPI_Recv(remoteVertices, numLocalElements*corners, MPI_INT, p, 1, comm, &status);CHKERRQ(ierr);
-      for(int e = 0; e < numLocalElements; e++) {
-        ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
-        for(int c = 0; c < corners; c++) {
-          ierr = PetscViewerASCIIPrintf(viewer, " %d", remoteVertices[e*corners+c]);CHKERRQ(ierr);
-        }
-        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
-      }
-      ierr = PetscFree(remoteVertices);CHKERRQ(ierr);
-    }
-  } else {
-    int  numLocalElements = elements.size(), offset = 0;
-    int *array;
-
-    ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &array);CHKERRQ(ierr);
-    for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
-      ALE::Point_set cone = topology->nCone(*e_itor, dim);
-      for(ALE::Point_set::iterator c_itor = cone.begin(); c_itor != cone.end(); c_itor++) {
-        ALE::Point index = vertexBundle->getGlobalFiberInterval(*c_itor);
-
-        array[offset++] = index.prefix;
-      }
-    }
-    if (offset != numLocalElements*corners) {
-      SETERRQ2(PETSC_ERR_PLIB, "Invalid number of vertices to send %d shuold be %d", offset, numLocalElements*corners);
-    }
-    ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
-    ierr = MPI_Send(array, numLocalElements*corners, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
-    ierr = PetscFree(array);CHKERRQ(ierr);
-  }
-  ierr = PetscViewerASCIIPrintf(viewer, "CELL_TYPES %d\n", numElements);CHKERRQ(ierr);
-  if (corners == 2) {
-    // VTK_LINE
-    for(int e = 0; e < numElements; e++) {
-      ierr = PetscViewerASCIIPrintf(viewer, "3\n");CHKERRQ(ierr);
-    }
-  } else if (corners == 3) {
-    // VTK_TRIANGLE
-    for(int e = 0; e < numElements; e++) {
-      ierr = PetscViewerASCIIPrintf(viewer, "5\n");CHKERRQ(ierr);
-    }
-  } else if (corners == 4) {
-    // VTK_TETRA
-    for(int e = 0; e < numElements; e++) {
-      ierr = PetscViewerASCIIPrintf(viewer, "10\n");CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode WriteVTKHeader(Mesh mesh, PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Simplicial Mesh Example\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"ASCII\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"DATASET UNSTRUCTURED_GRID\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
