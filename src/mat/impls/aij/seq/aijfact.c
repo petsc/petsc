@@ -270,7 +270,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   PetscInt           *bi,*bj,*ajtmp;
   PetscInt           *bdiag,row,nnz,nzi,reallocs=0,nzbd,*im;
   PetscReal          f;
-  PetscInt           nlnk,*lnk,k,*cols,**bi_ptr;
+  PetscInt           nlnk,*lnk,k,**bi_ptr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT            lnkbt;
 
@@ -292,8 +292,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   nlnk = n + 1;
   ierr = PetscLLCreate(n,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((2*n+1)*sizeof(PetscInt)+n*sizeof(PetscInt**),&cols);CHKERRQ(ierr); 
-  im     = cols + n; 
+  ierr = PetscMalloc((n+1)*sizeof(PetscInt)+n*sizeof(PetscInt**),&im);CHKERRQ(ierr);  
   bi_ptr = (PetscInt**)(im + n);
 
   /* initial FreeSpace size is f*(ai[n]+1) */
@@ -365,7 +364,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   ierr = PetscMalloc((bi[n]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
   ierr = PetscFreeSpaceContiguous(&free_space,bj);CHKERRQ(ierr); 
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
-  ierr = PetscFree(cols);CHKERRQ(ierr);
+  ierr = PetscFree(im);CHKERRQ(ierr);
 
   /* put together the new matrix */
   ierr = MatCreate(A->comm,B);CHKERRQ(ierr);
