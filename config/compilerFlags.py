@@ -81,8 +81,8 @@ class Configure(config.base.Configure):
       flagsArg = self.getCompilerFlagsArg()
       try:
         self.version[language] = self.argDB[language.upper()+'_VERSION']
-        if self.version == 'Unknown':
-          self.version = options.getCompilerVersion(language, self.getCompiler())
+        if self.version[language] == 'Unknown':
+          self.version[language] = options.getCompilerVersion(language, self.setCompilers.getCompiler())
       except RuntimeError:
         pass
       try:
@@ -91,7 +91,7 @@ class Configure(config.base.Configure):
           if not bopt == '' and self.getOptionalFlagsName(language) in self.framework.argDB:
             flags = self.framework.argDB[self.getOptionalFlagsName(language)].split()
           else:
-            flags = options.getCompilerFlags(language, self.getCompiler(), bopt)
+            flags = options.getCompilerFlags(language, self.setCompilers.getCompiler(), bopt)
           for testFlag in flags:
             try:
               self.framework.logPrint('Trying '+language+' compiler flag '+testFlag)

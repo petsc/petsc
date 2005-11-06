@@ -303,4 +303,5 @@ class CompilerOptions(config.base.Configure):
           
     except RuntimeError, e:
       self.framework.log.write('Could not determine compiler version: '+str(e))
+    self.framework.log.write('getCompilerVersion: '+str(compiler)+' '+str(version)+'\n')
     return version
