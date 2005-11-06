@@ -254,6 +254,44 @@ M*/
 }
 
 /*
+  Add a permumted index set into a sorted linked list
+  Input Parameters:
+    nidx      - number of input indices
+    indices   - interger array
+    perm      - permutation of indices
+    idx_start - starting index of the list
+    lnk       - linked list(an integer array) that is created
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+  output Parameters:
+    nlnk      - number of newly added indices
+    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
+    bt        - updated PetscBT (bitarray) 
+*/
+#define PetscLLAddPerm(nidx,indices,perm,idx_start,nlnk,lnk,bt) 0;\
+{\
+  PetscInt _k,_entry,_location,_lnkdata;\
+  nlnk     = 0;\
+  _lnkdata = idx_start;\
+  for (_k=0; _k<nidx; _k++){\
+    _entry = perm[indices[_k]];\
+    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+      /* search for insertion location */\
+      /* start from the beginning if _entry < previous _entry */\
+      if (_k && _entry < _lnkdata) _lnkdata  = idx_start;\
+      do {\
+        _location = _lnkdata;\
+        _lnkdata  = lnk[_location];\
+      } while (_entry > _lnkdata);\
+      /* insertion location is found, add entry into lnk */\
+      lnk[_location] = _entry;\
+      lnk[_entry]    = _lnkdata;\
+      nlnk++;\
+      _lnkdata = _entry; /* next search starts from here if next_entry > _entry */\
+    }\
+  }\
+}
+
+/*
   Add a SORTED index set into a sorted linked list
   Input Parameters:
     nidx      - number of input indices

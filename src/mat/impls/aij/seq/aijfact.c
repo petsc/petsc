@@ -307,8 +307,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
     nnz = ai[r[i]+1] - ai[r[i]];
     if (!nnz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix");
     ajtmp = aj + ai[r[i]]; 
-    for (k=0; k<nnz; k++) cols[k] = ic[*(ajtmp+k)]; /* note: cols is not sorted when iscol!=indentity */
-    ierr = PetscLLAdd(nnz,cols,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+    ierr = PetscLLAddPerm(nnz,ajtmp,ic,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     nzi += nlnk;
 
     /* add pivot rows into linked list */
