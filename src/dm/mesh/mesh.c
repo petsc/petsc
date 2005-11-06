@@ -163,6 +163,104 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "WritePCICEVertices"
+PetscErrorCode WritePCICEVertices(Mesh mesh, PetscViewer viewer)
+{
+  Vec            coordinates;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_PCICE);CHKERRQ(ierr);
+  ierr = VecView(coordinates, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WritePCICEElements"
+PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
+{
+  ALE::Sieve    *topology;
+  ALE::PreSieve *orientation;
+  ALE::Point_set elements;
+  MPI_Comm       comm;
+  PetscMPIInt    rank, size;
+  int            dim, numElements, corners, elementCount = 1;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);
+  ierr = MPI_Comm_size(comm, &size);
+  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
+  ALE::IndexBundle vertexBundle(topology);
+  vertexBundle.setFiberDimensionByDepth(0, 1);
+  vertexBundle.computeOverlapIndices();
+  vertexBundle.computeGlobalIndices();
+  ALE::IndexBundle elementBundle(topology);
+  elementBundle.setFiberDimensionByHeight(0, 1);
+  elementBundle.computeOverlapIndices();
+  elementBundle.computeGlobalIndices();
+  elements = topology->heightStratum(0);
+  numElements = elementBundle.getGlobalSize();
+  dim = topology->depth(*elements.begin());
+  corners = topology->nCone(*elements.begin(), dim).size();
+  if (corners != dim+1) {
+    SETERRQ(PETSC_ERR_SUP, "PCICE only supports simplicies");
+  }
+  if (rank == 0) {
+    ierr = PetscViewerASCIIPrintf(viewer, "%d\n", numElements);CHKERRQ(ierr);
+    for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
+      ALE::Obj<ALE::Point_array> intervals = vertexBundle.getGlobalOrderedClosureIndices(orientation->cone(*e_itor));
+
+      ierr = PetscViewerASCIIPrintf(viewer, "%7d", elementCount++);CHKERRQ(ierr);
+      for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+        ierr = PetscViewerASCIIPrintf(viewer, " %7d", (*i_itor).prefix+1);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+    }
+    for(int p = 1; p < size; p++) {
+      MPI_Status  status;
+      int        *remoteVertices;
+      int         numLocalElements;
+
+      ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, comm, &status);CHKERRQ(ierr);
+      ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &remoteVertices);CHKERRQ(ierr);
+      ierr = MPI_Recv(remoteVertices, numLocalElements*corners, MPI_INT, p, 1, comm, &status);CHKERRQ(ierr);
+      for(int e = 0; e < numLocalElements; e++) {
+        ierr = PetscViewerASCIIPrintf(viewer, "%7d", elementCount++);CHKERRQ(ierr);
+        for(int c = 0; c < corners; c++) {
+          ierr = PetscViewerASCIIPrintf(viewer, " %7d", remoteVertices[e*corners+c]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+      }
+      ierr = PetscFree(remoteVertices);CHKERRQ(ierr);
+    }
+  } else {
+    int  numLocalElements = elements.size(), offset = 0;
+    int *array;
+
+    ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &array);CHKERRQ(ierr);
+    for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
+      ALE::Obj<ALE::Point_array> intervals = vertexBundle.getGlobalOrderedClosureIndices(orientation->cone(*e_itor));
+
+      for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+        array[offset++] = (*i_itor).prefix+1;
+      }
+    }
+    if (offset != numLocalElements*corners) {
+      SETERRQ2(PETSC_ERR_PLIB, "Invalid number of vertices to send %d shuold be %d", offset, numLocalElements*corners);
+    }
+    ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
+    ierr = MPI_Send(array, numLocalElements*corners, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
+    ierr = PetscFree(array);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "WritePyLithVertices"
 PetscErrorCode WritePyLithVertices(Mesh mesh, PetscViewer viewer)
 {
@@ -279,7 +377,23 @@ PetscErrorCode MeshView_Sieve_Ascii(Mesh mesh, PetscViewer viewer)
     ierr = WriteVTKVertices(mesh, viewer);CHKERRQ(ierr);
     ierr = WriteVTKElements(mesh, viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_PCICE) {
-    SETERRQ(PETSC_ERR_SUP, "");
+    char      *filename;
+    char       coordFilename[2048];
+    PetscTruth isConnect;
+    size_t     len;
+
+    ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
+    ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
+    ierr = PetscStrcmp(&(filename[len-5]), ".lcon", &isConnect);CHKERRQ(ierr);
+    if (!isConnect) {
+      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid element connectivity filename: %s", filename);
+    }
+    ierr = WritePCICEElements(mesh, viewer);CHKERRQ(ierr);
+    ierr = PetscStrncpy(coordFilename, filename, len-5);CHKERRQ(ierr);
+    coordFilename[len-5] = '\0';
+    ierr = PetscStrcat(coordFilename, ".nodes");CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
+    ierr = WritePCICEVertices(mesh, viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_PYLITH) {
     char      *filename;
     char       coordFilename[2048];
@@ -643,6 +757,64 @@ inline void ExpandInterval(ALE::Point interval, PetscInt indices[], PetscInt *in
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MeshCreateVector"
+/*
+  Creates a ghosted vector based upon the global ordering in the bundle.
+*/
+PetscErrorCode MeshCreateVector(Mesh mesh, ALE::IndexBundle *bundle, int debug, Vec *v)
+{
+  MPI_Comm       comm;
+  PetscMPIInt    rank = bundle->getCommRank();
+  ALE::Obj<ALE::PreSieve> pointTypes = bundle->getPointTypes();
+  ALE::Obj<ALE::PreSieve> globalIndices = bundle->getGlobalIndices();
+  ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(rank, ALE::rentedPoint));
+  PetscInt      *ghostIndices, ghostSize = 0, ghostIdx = 0;
+  PetscInt       localSize = bundle->getLocalSize();
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
+    ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
+
+    if (cone->size()) {
+      ALE::Point interval = *cone->begin();
+
+      ghostSize += interval.index;
+    }
+  }
+  ierr = PetscMalloc(ghostSize * sizeof(PetscInt), &ghostIndices);CHKERRQ(ierr);
+  for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
+    ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
+
+    if (cone->size()) {
+      ALE::Point interval = *cone->begin();
+
+      // Must insert into ghostIndices at the index given by localIndices
+      //   However, I think right now its correct because rentedPoints iterates in the same way in both methods
+      ExpandInterval(interval, ghostIndices, &ghostIdx);
+    }
+  }
+  ierr = VecCreateGhost(comm, localSize, PETSC_DETERMINE, ghostSize, ghostIndices, v);CHKERRQ(ierr);
+  if (debug) {
+    PetscInt globalSize, g;
+
+    ierr = VecGetSize(*v, &globalSize);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Making an ordering over the vertices\n===============================\n");
+    ierr = PetscSynchronizedPrintf(comm, "[%d]  global size: %d localSize: %d ghostSize: %d\n", rank, globalSize, localSize, ghostSize);CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(comm, "[%d]  ghostIndices:", rank);CHKERRQ(ierr);
+    for(g = 0; g < ghostSize; g++) {
+      ierr = PetscSynchronizedPrintf(comm, "[%d] %d\n", rank, ghostIndices[g]);CHKERRQ(ierr);
+    }
+    ierr = PetscSynchronizedPrintf(comm, "\n");CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(ghostIndices);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshCreateGlobalVector"
 /*@C
     MeshCreateGlobalVector - Creates a vector of the correct size to be gathered into 
@@ -669,40 +841,18 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh,Vec *gvec)
 
 
   PetscFunctionBegin;
+  // Turned off caching for this method so that bundle can be reset to make different vectors
+#if 0
   if (mesh->globalvector) {
     ierr = VecDuplicate(mesh->globalvector, gvec);CHKERRQ(ierr);
-  } else {
-    int localSize = ((ALE::IndexBundle *) mesh->bundle)->getLocalSize();
-    int globalSize = ((ALE::IndexBundle *) mesh->bundle)->getGlobalSize();
-    ALE::Obj<ALE::PreSieve> globalIndices = ((ALE::IndexBundle *) mesh->bundle)->getGlobalIndices();
-    ALE::Obj<ALE::PreSieve> pointTypes = ((ALE::IndexBundle *) mesh->bundle)->getPointTypes();
-    ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(((ALE::IndexBundle *) mesh->bundle)->getCommRank(), ALE::rentedPoint));
-    int ghostSize = 0;
-    for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
-      ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
-
-      if (cone->size()) {
-        ALE::Point interval = *cone->begin();
-
-        ghostSize += interval.index;
-      }
-    }
-    int *ghostIndices = new int[ghostSize];
-    int ghostIdx = 0;
-    for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
-      ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
-
-      if (cone->size()) {
-        ALE::Point interval = *cone->begin();
-
-        ExpandInterval(interval, ghostIndices, &ghostIdx);
-      }
-    }
-
-    ierr = VecCreateGhostBlock(mesh->comm, 1, localSize, globalSize, ghostSize, ghostIndices, &mesh->globalvector);CHKERRQ(ierr);
-    *gvec = mesh->globalvector;
-    ierr = PetscObjectReference((PetscObject) *gvec);CHKERRQ(ierr); 
+    PetscFunctionReturn(0);
   }
+#endif
+  ierr = MeshCreateVector(mesh, (ALE::IndexBundle *) mesh->bundle, 0, gvec);CHKERRQ(ierr);
+#if 0
+  mesh->globalvector = *gvec;
+  ierr = PetscObjectReference((PetscObject) mesh->globalvector);CHKERRQ(ierr); 
+#endif
   PetscFunctionReturn(0);
 }
 

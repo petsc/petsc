@@ -1,5 +1,5 @@
 
-CFLAGS	        =
+CFLAGS	        = -I${PETSC_DIR}/src/dm/mesh/sieve
 FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        = 

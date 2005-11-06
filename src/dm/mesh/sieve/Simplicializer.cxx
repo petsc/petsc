@@ -490,6 +490,8 @@ PetscErrorCode MeshCreateSeq(Mesh mesh, int dim, PetscInt numVertices, PetscInt 
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MeshCreateVector(Mesh, ALE::IndexBundle *, int, Vec *);
+
 #undef __FUNCT__
 #define __FUNCT__ "MeshDistribute"
 /*@
@@ -528,7 +530,7 @@ PetscErrorCode MeshDistribute(Mesh mesh)
     ALE::Point v = *vertex_itor;
     orientation->addCone(v, v);
   }
-  /* Create coordinate bundle */
+  /* Create coordinate bundle and storage */
   coordBundle = new ALE::IndexBundle(topology);
   if (debug) {
     coordBundle->setVerbosity(11);
@@ -537,46 +539,7 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   coordBundle->computeOverlapIndices();
   coordBundle->computeGlobalIndices();
   coordBundle->getLock();  // lock the bundle so that the overlap indices do not change
-  /* Create ghosted coordinate storage */
-  int localSize = coordBundle->getLocalSize();
-  int globalSize = coordBundle->getGlobalSize();
-  ALE::Obj<ALE::PreSieve> globalIndices = coordBundle->getGlobalIndices();
-  ALE::Obj<ALE::PreSieve> pointTypes = coordBundle->getPointTypes();
-  ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(coordBundle->getCommRank(), ALE::rentedPoint));
-  int ghostSize = 0;
-  for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
-    ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
-
-    if (cone->size()) {
-      ALE::Point interval = *cone->begin();
-
-      ghostSize += interval.index;
-    }
-  }
-  int *ghostIndices = new int[ghostSize];
-  int ghostIdx = 0;
-  for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
-    ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
-
-    if (cone->size()) {
-      ALE::Point interval = *cone->begin();
-
-      // Must insert into ghostIndices at the index given by localIndices
-      //   However, I think right now its correct because rentedPoints iterates in the same way
-      ExpandInterval(interval, ghostIndices, &ghostIdx);
-    }
-  }
-  if (debug) {
-    PetscPrintf(comm, "Making an ordering over the vertices\n===============================\n");
-    PetscSynchronizedPrintf(comm, "[%d]  global size: %d localSize: %d ghostSize: %d\n", rank, globalSize, localSize, ghostSize);
-    PetscSynchronizedPrintf(comm, "[%d]  ghostIndices:", rank);
-    for(int g = 0; g < ghostSize; g++) {
-      PetscSynchronizedPrintf(comm, "[%d] %d\n", rank, ghostIndices[g]);
-    }
-    PetscSynchronizedPrintf(comm, "\n");
-    PetscSynchronizedFlush(comm);
-  }
-  ierr = VecCreateGhost(comm, localSize, globalSize, ghostSize, ghostIndices, &coordinates);CHKERRQ(ierr);
+  ierr = MeshCreateVector(mesh, coordBundle, debug, &coordinates);CHKERRQ(ierr);
   ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
   /* Setup mapping to partitioned storage */
   ALE::Obj<ALE::Stack> mappingStack;
