@@ -1,6 +1,6 @@
 
 package Ex2 version 0.0.0 {
-    class System implements-all TOPS.System.System, TOPS.System.Initialize.Once, TOPS.System.Initialize.EverySolve, 
+    class System implements-all TOPS.System.Initialize.Once, TOPS.System.Initialize.EverySolve, 
                                 TOPS.System.Compute.Residual, TOPS.System.Compute.InitialGuess, 
                                 gov.cca.Component, gov.cca.ports.GoPort {}
 }

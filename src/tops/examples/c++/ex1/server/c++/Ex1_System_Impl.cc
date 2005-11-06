@@ -43,19 +43,6 @@ void Ex1::System_impl::_load() {
 
 // user-defined non-static methods:
 /**
- * Method:  setSolver[]
- */
-void
-Ex1::System_impl::setSolver (
-  /* in */ ::TOPS::Solver solver ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(Ex1.System.setSolver)
-  this->solver = (TOPS::Structured::Solver)solver;
-  // DO-NOT-DELETE splicer.end(Ex1.System.setSolver)
-}
-
-/**
  * Method:  computeResidual[]
  */
 void
@@ -157,11 +144,6 @@ throw (
   }
   
   // Provides ports
-  // Basic functionality
-  myServices.addProvidesPort(p,
-			   "TOPS.System.System",
-			   "TOPS.System.System", myServices.createTypeMap());
-
   // Residual computation
   myServices.addProvidesPort(p,
 			   "TOPS.System.Compute.Residual",

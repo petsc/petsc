@@ -8,8 +8,6 @@ package TOPS version 0.0.0 {
   }
 
   interface Solver extends gov.cca.Port {
-      void          setSystem(in System.System sys);
-      System.System getSystem();
 
       // Pass in command line arguments to Solver
       void          Initialize(in array<string,1> args);
@@ -33,9 +31,6 @@ package TOPS version 0.0.0 {
 
   // Interfaces inherited by the user to define the algebraic problem 
   package System version 0.0.0 {
-    interface System extends gov.cca.Port {
-      void   setSolver(in Solver solver);
-    }
 
     package Initialize version 0.0.0 {
       // Initialize the anything that is fixed for all solves
@@ -134,7 +129,7 @@ package TOPS version 0.0.0 {
       void         setPreallocation[s](in array<int,1> d,in array<int,1> od);
     }
   }
-  class UnstructuredSolver implements-all TOPS.Unstructured.Solver, gov.cca.Component, gov.cca.ports.ParameterGetListener, gov.cca.ports.ParameterSetListener {    
+  class UnstructuredSolver implements-all TOPS.Unstructured.Solver, gov.cca.Component, gov.cca.ports.ParameterGetListener, gov.cca.ports.ParameterSetListener {  
     gov.cca.Services getServices();
   }
 
