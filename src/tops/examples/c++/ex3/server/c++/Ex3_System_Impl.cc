@@ -12,6 +12,7 @@
 #include "Ex3_System_Impl.hh"
 
 // DO-NOT-DELETE splicer.begin(Ex3.System._includes)
+#include <iostream>
 // DO-NOT-DELETE splicer.end(Ex3.System._includes)
 
 // user-defined constructor.
@@ -242,11 +243,14 @@ throw ()
 
   TOPS::Solver solver = myServices.getPort("TOPS.Structured.Solver");
   this->solver = solver;
+  if (solver._is_nil()) {
+    std::cerr << "Error at " << __FILE__ << ":" << __LINE__ << ": TOPS.Structured.Solver port is nil, "
+              << "possibly not connected." << std::endl;
+    return 1;
+  }
+
   solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
   
-  // We don't need to call setSystem since it will be obtained through
-  // getPort calls
-
   solver.solve();
 
   myServices.releasePort("TOPS.StructuredSolver");

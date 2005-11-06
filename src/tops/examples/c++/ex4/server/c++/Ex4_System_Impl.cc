@@ -13,6 +13,7 @@
 
 // DO-NOT-DELETE splicer.begin(Ex4.System._includes)
 // Insert-Code-Here {Ex4.System._includes} (additional includes or code)
+#include <iostream>
 // DO-NOT-DELETE splicer.end(Ex4.System._includes)
 
 // user-defined constructor.
@@ -227,7 +228,13 @@ throw ()
   strcpy(argv[0],"ex4");
 
   TOPS::Solver solver = myServices.getPort("TOPS.Unstructured.Solver");
+  if (solver._is_nil()) {
+    std::cerr << "Error at " << __FILE__ << ":" << __LINE__ << ": TOPS.Structured.Solver port is nil, "
+              << "possibly not connected." << std::endl;
+    return 1;
+  }
   this->solver = solver;
+
   solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
   
   solver.solve();

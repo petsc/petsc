@@ -56,17 +56,12 @@ throw ()
 #define __FUNCT__ "Ex1::System_impl::computeResidual"
 
   TOPS::Structured::Solver solver;
-#ifdef HAVE_CCA
   solver = this->myServices.getPort("TOPS.Structured.Solver");
   if (solver._is_nil()) {
-    std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
-	      << ": TOPS.Structured.Solver port is nil, " 
+    std::cerr << "Error at " << __FILE__ << ":" << __LINE__ << ": TOPS.Structured.Solver port is nil, " 
 	      << "possibly not connected." << std::endl;
     return;
   }
-#else
-  solver = this->solver;
-#endif
 
   int xs = f.lower(0);      // first grid point in X and Y directions on this process
   int ys = f.lower(1);
@@ -76,9 +71,7 @@ throw ()
   int mx = solver.length(0);
   int my = solver.length(1);
 
-#ifdef HAVE_CCA
   this->myServices.releasePort("TOPS.Structured.Solver");
-#endif
 
   double hx     = 1.0/(double)(mx-1);
   double hy     = 1.0/(double)(my-1);
@@ -188,11 +181,14 @@ throw ()
   strcpy(argv[0],"ex1");
 
   TOPS::Solver solver = myServices.getPort("TOPS.Structured.Solver");
+  if (solver._is_nil()) {
+    std::cerr << "Error at " << __FILE__ << ":" << __LINE__ << ": TOPS.Structured.Solver port is nil, "
+              << "possibly not connected." << std::endl;
+    return 1;
+  }
+
   solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
   
-  // We don't need to call setSystem since it will be obtained through
-  // getPort calls
-
   solver.solve();
 
   myServices.releasePort("TOPS.StructuredSolver");
