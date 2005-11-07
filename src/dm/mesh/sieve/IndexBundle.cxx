@@ -371,7 +371,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::__orderCell"
   ALE::Point IndexBundle::__orderCell(int dim, int__Point *orderChain, std::map<int, std::queue<Point> > *ordered, ALE::Obj<ALE::Point_set> elementsOrdered) {
-    Obj<Sieve> closure = this->getTopology()->closureSieve(Point_set((*orderChain)[dim]));
+    Obj<Sieve> closure = this->getTopology()->closureSieve(Point_set((*orderChain)[dim]), Obj<Sieve>(new Sieve(MPI_COMM_SELF)));
     ALE::Point last;
 
     if (this->verbosity > 10) {
