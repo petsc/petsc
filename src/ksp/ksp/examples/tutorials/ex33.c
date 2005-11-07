@@ -174,6 +174,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerFileSetName(viewer, "poisson.vtk");CHKERRQ(ierr);
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
   //ierr = VecView(DMMGGetRHS(dmmg), viewer);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(DMMGGetx(dmmg), 1);CHKERRQ(ierr);
   ierr = VecView(DMMGGetx(dmmg), viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 

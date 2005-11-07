@@ -310,14 +310,15 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::__checkOrderChain"
   ALE::int__Point IndexBundle::__checkOrderChain(Obj<Point_set> order, int& minDepth, int& maxDepth) {
-    ALE::int__Point dElement;
+    Obj<Sieve> topology = this->getTopology();
+    int__Point dElement;
     minDepth = 0;
     maxDepth = 0;
 
     // A topology cell-tuple contains one element per dimension, so we order the points by depth.
     for(Point_set::iterator ord_itor = order->begin(); ord_itor != order->end(); ord_itor++) {
       Point e = *ord_itor;
-      int32_t depth = this->getTopology()->depth(e);
+      int32_t depth = topology->depth(e);
 
       if (depth < 0) {
         throw Exception("Invalid element: negative depth returned"); 
@@ -346,7 +347,7 @@ namespace ALE {
         throw Exception(ex.str().c_str());
       }
       if(d > 0) {
-        if(!this->getTopology()->coneContains(dElement[d], dElement[d-1])){
+        if(!topology->coneContains(dElement[d], dElement[d-1])){
           ostringstream ex;
           ex << "[" << this->getCommRank() << "]: ";
           ex << "point (" << dElement[d-1].prefix << ", " << dElement[d-1].index << ") at depth " << d-1 << " not in the cone of ";
@@ -379,7 +380,11 @@ namespace ALE {
         printf("  orderChain[%d] (%d, %d)\n", d, (*orderChain)[d].prefix, (*orderChain)[d].index);
       }
     }
-    if (dim == 1) {
+    if (dim == 0) {
+      last = (*orderChain)[0];
+      this->__orderElement(0, last, ordered, elementsOrdered);
+      return last;
+    } else if (dim == 1) {
       Obj<Point_set> flip = closure->cone((*orderChain)[1]);
 
       this->__orderElement(0, (*orderChain)[0], ordered, elementsOrdered);
@@ -423,26 +428,12 @@ namespace ALE {
     ALE::int__Point dElement = this->__checkOrderChain(order, minDepth, maxDepth);
     // We store the elements ordered in each dimension
     std::map<int, std::queue<Point> > ordered;
+    // Set of the elements already ordered
+    ALE::Point_set elementsOrdered;
 
     // Order elements in the closure
     if (this->verbosity > 10) {printf("Ordering (%d, %d)\n", dElement[maxDepth].prefix, dElement[maxDepth].index);}
-    if (maxDepth == 0) {
-      ordered[0].push(dElement[0]);
-    } else if (maxDepth == 1) {
-      // FIX: I think this is not necessary
-      ALE::Point     face = dElement[1];
-      Obj<Sieve>  closure = this->getTopology()->closureSieve(Point_set(face));
-      Obj<Point_set> flip = closure->cone(face);
-
-      ordered[0].push(dElement[0]);
-      flip->erase(dElement[0]);
-      ordered[0].push(*flip->begin());
-      ordered[1].push(dElement[1]);
-    } else {
-      ALE::Point_set elementsOrdered;
-
-      ALE::Point last = this->__orderCell(maxDepth, &dElement, &ordered, elementsOrdered);
-    }
+    ALE::Point last = this->__orderCell(maxDepth, &dElement, &ordered, elementsOrdered);
 
     // Generate indices from ordered elements
     Obj<Point_array> indexArray(new Point_array);

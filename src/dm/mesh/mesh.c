@@ -501,7 +501,7 @@ PetscErrorCode MeshView_Sieve_Ascii(Mesh mesh, PetscViewer viewer)
     ierr = PetscStrncpy(connectFilename, filename, len-7);CHKERRQ(ierr);
     connectFilename[len-7] = '\0';
     sprintf(localFilename, "%s%d.connect", connectFilename, rank);
-    ierr = PetscViewerCreate(comm, &connectViewer);CHKERRQ(ierr);
+    ierr = PetscViewerCreate(PETSC_COMM_SELF, &connectViewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(connectViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(connectViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(connectViewer, localFilename);CHKERRQ(ierr);
@@ -511,7 +511,7 @@ PetscErrorCode MeshView_Sieve_Ascii(Mesh mesh, PetscViewer viewer)
     ierr = PetscStrncpy(coordFilename, filename, len-7);CHKERRQ(ierr);
     coordFilename[len-7] = '\0';
     sprintf(localFilename, "%s%d.coord", coordFilename, rank);
-    ierr = PetscViewerCreate(comm, &coordViewer);CHKERRQ(ierr);
+    ierr = PetscViewerCreate(PETSC_COMM_SELF, &coordViewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(coordViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(coordViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(coordViewer, localFilename);CHKERRQ(ierr);
