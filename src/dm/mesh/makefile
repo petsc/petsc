@@ -11,7 +11,7 @@ OBJSF    =
 DIRS     = sieve
 LIBBASE  = libpetscdm
 MANSEC   = DA
-LOCDIR   = src/dm/mesh
+LOCDIR   = src/dm/mesh/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

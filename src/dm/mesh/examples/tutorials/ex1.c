@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
   FileType       fileType;
   PetscInt      *vertices;
   PetscScalar   *coordinates;
+  PetscTruth     outputLocal;
   PetscInt       dim, numVertices, numElements, ft;
   PetscErrorCode ierr;
 
@@ -81,6 +82,8 @@ int main(int argc, char *argv[])
     ierr = PetscOptionsString("-vertex_file", "The file listing the vertices of each cell", "ex1.c", "lcon.dat", vertexFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscStrcpy(coordFilename, "nodes.dat");CHKERRQ(ierr);
     ierr = PetscOptionsString("-coord_file", "The file listing the coordinates of each vertex", "ex1.c", "nodes.dat", coordFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+    outputLocal = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-output_local", "Output the local form of the mesh", "ex1.c", PETSC_FALSE, &outputLocal, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   comm = PETSC_COMM_WORLD;
 
@@ -113,7 +116,11 @@ int main(int argc, char *argv[])
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PCICE);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "testMesh.lcon");CHKERRQ(ierr);
   } else if (fileType == PYLITH) {
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
+    if (outputLocal) {
+      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH_LOCAL);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
+    }
     ierr = PetscViewerFileSetName(viewer, "testMesh.connect");CHKERRQ(ierr);
   }
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);

@@ -314,7 +314,7 @@ PetscErrorCode WritePyLithElements(Mesh mesh, PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
   if (rank == 0) {
     for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
-      ALE::Obj<ALE::Point_array> intervals = vertexBundle.getGlobalOrderedClosureIndices(orientation->cone(*e_itor));
+      ALE::Obj<ALE::Point_array> intervals = vertexBundle.getLocalOrderedClosureIndices(orientation->cone(*e_itor));
 
       // Only linear tetrahedra, 1 material, no infinite elements
       ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, 1, 0);CHKERRQ(ierr);
@@ -359,6 +359,72 @@ PetscErrorCode WritePyLithElements(Mesh mesh, PetscViewer viewer)
     ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
     ierr = MPI_Send(array, numLocalElements*corners, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
     ierr = PetscFree(array);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WritePyLithVerticesLocal"
+PetscErrorCode WritePyLithVerticesLocal(Mesh mesh, PetscViewer viewer)
+{
+  Vec            coordinates, locCoordinates;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"coord_units = km\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
+  ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
+  ierr = VecGhostGetLocalForm(coordinates, &locCoordinates);CHKERRQ(ierr);
+  ierr = VecView(locCoordinates, viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WritePyLithElementsLocal"
+PetscErrorCode WritePyLithElementsLocal(Mesh mesh, PetscViewer viewer)
+{
+  ALE::Sieve    *topology;
+  ALE::PreSieve *orientation;
+  ALE::Point_set elements;
+  MPI_Comm       comm;
+  PetscMPIInt    rank, size;
+  int            dim, corners, elementCount = 1;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);
+  ierr = MPI_Comm_size(comm, &size);
+  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
+  ALE::IndexBundle vertexBundle(topology);
+  vertexBundle.setFiberDimensionByDepth(0, 1);
+  vertexBundle.computeOverlapIndices();
+  vertexBundle.computeGlobalIndices();
+  elements = topology->heightStratum(0);
+  dim = topology->depth(*elements.begin());
+  corners = topology->nCone(*elements.begin(), dim).size();
+  if (dim != 3) {
+    SETERRQ(PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
+  }
+  if (corners != 4) {
+    SETERRQ(PETSC_ERR_SUP, "We only support linear tetrahedra for PyLith.");
+  }
+  ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"#     N ETP MAT INF     N1     N2     N3     N4     N5     N6     N7     N8\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
+  if (rank == 0) {
+    for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
+      ALE::Obj<ALE::Point_array> intervals = vertexBundle.getLocalOrderedClosureIndices(orientation->cone(*e_itor));
+
+      // Only linear tetrahedra, 1 material, no infinite elements
+      ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, 1, 0);CHKERRQ(ierr);
+      for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+        ierr = PetscViewerASCIIPrintf(viewer, " %6d", (*i_itor).prefix+1);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -412,6 +478,45 @@ PetscErrorCode MeshView_Sieve_Ascii(Mesh mesh, PetscViewer viewer)
     ierr = PetscStrcat(coordFilename, ".coord");CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
     ierr = WritePyLithVertices(mesh, viewer);CHKERRQ(ierr);
+  } else if (format == PETSC_VIEWER_ASCII_PYLITH_LOCAL) {
+    PetscViewer connectViewer, coordViewer;
+    char       *filename;
+    char        connectFilename[2048];
+    char        coordFilename[2048];
+    char        localFilename[2048];
+    PetscTruth  isConnect;
+    MPI_Comm    comm;
+    PetscMPIInt rank;
+    size_t      len;
+
+    ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+    ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
+    ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
+    ierr = PetscStrcmp(&(filename[len-8]), ".connect", &isConnect);CHKERRQ(ierr);
+    if (!isConnect) {
+      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid element connectivity filename: %s", filename);
+    }
+
+    ierr = PetscStrncpy(connectFilename, filename, len-7);CHKERRQ(ierr);
+    connectFilename[len-7] = '\0';
+    sprintf(localFilename, "%s%d.connect", connectFilename, rank);
+    ierr = PetscViewerCreate(comm, &connectViewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(connectViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(connectViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(connectViewer, localFilename);CHKERRQ(ierr);
+    ierr = WritePyLithElementsLocal(mesh, connectViewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(connectViewer);CHKERRQ(ierr);
+
+    ierr = PetscStrncpy(coordFilename, filename, len-7);CHKERRQ(ierr);
+    coordFilename[len-7] = '\0';
+    sprintf(localFilename, "%s%d.coord", coordFilename, rank);
+    ierr = PetscViewerCreate(comm, &coordViewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(coordViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(coordViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(coordViewer, localFilename);CHKERRQ(ierr);
+    ierr = WritePyLithVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(coordViewer);CHKERRQ(ierr);
   } else {
     ALE::Sieve *topology;
     PetscInt dim, d;
