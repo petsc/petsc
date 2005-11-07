@@ -19,6 +19,8 @@
 
   Level: intermediate
 
+   Note: vout may be PETSC_NULL if you do not need to have it created
+
    Usage:
 $        VecScatterCreateToAll(vin,&ctx,&vout);
 $
@@ -30,6 +32,7 @@ $        // destroy scatter context and local vector when no longer needed
 $        VecScatterDestroy(ctx);
 $        VecDestroy(vout);
 
+
 .seealso VecScatterCreate(), VecScatterCreateToZero(), VecScatterBegin(), VecScatterEnd()
 
 @*/
@@ -39,12 +42,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
   PetscErrorCode ierr;
   PetscInt       N;
   IS             is;
+  PetscTruth     tmpvout = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin,VEC_COOKIE,1);
   PetscValidType(vin,1);
   PetscValidPointer(ctx,2);
-  PetscValidPointer(vout,3);
+  if (vout) {PetscValidPointer(vout,3);}
+  else tmpvout = PETSC_TRUE;
 
   /* Create seq vec on each proc, with the same size of the original mpi vec */
   ierr = VecGetSize(vin,&N);CHKERRQ(ierr);
@@ -53,6 +58,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
   ierr = VecScatterCreate(vin,is,*vout,is,ctx);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
+  if (tmpvout) {ierr = VecDestroy(*vout);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -74,6 +80,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
           of length zero on all other processors
 
   Level: intermediate
+
+   Note: vout may be PETSC_NULL if you do not need to have it created
 
    Usage:
 $        VecScatterCreateToZero(vin,&ctx,&vout);
@@ -99,14 +107,16 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToZero(Vec vin,VecScatter *ctx
   PetscInt       N;
   PetscMPIInt    rank;
   IS             is;
+  PetscTruth     tmpvout = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin,VEC_COOKIE,1);
   PetscValidType(vin,1);
   PetscValidPointer(ctx,2);
-  PetscValidPointer(vout,3);
+  if (vout) {PetscValidPointer(vout,3);}
+  else tmpvout = PETSC_TRUE;
 
-  /* Create seq vec on each proc, with the same size of the original mpi vec */
+  /* Create vec on each proc, with the same size of the original mpi vec (all on process 0)*/
   ierr = VecGetSize(vin,&N);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(vin->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
@@ -118,6 +128,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToZero(Vec vin,VecScatter *ctx
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
   ierr = VecScatterCreate(vin,is,*vout,is,ctx);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
+  if (tmpvout) {ierr = VecDestroy(*vout);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
