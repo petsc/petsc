@@ -414,17 +414,15 @@ PetscErrorCode WritePyLithElementsLocal(Mesh mesh, PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"#     N ETP MAT INF     N1     N2     N3     N4     N5     N6     N7     N8\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-  if (rank == 0) {
-    for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
-      ALE::Obj<ALE::Point_array> intervals = vertexBundle.getLocalOrderedClosureIndices(orientation->cone(*e_itor));
+  for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
+    ALE::Obj<ALE::Point_array> intervals = vertexBundle.getLocalOrderedClosureIndices(orientation->cone(*e_itor));
 
-      // Only linear tetrahedra, 1 material, no infinite elements
-      ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, 1, 0);CHKERRQ(ierr);
-      for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-        ierr = PetscViewerASCIIPrintf(viewer, " %6d", (*i_itor).prefix+1);CHKERRQ(ierr);
-      }
-      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+    // Only linear tetrahedra, 1 material, no infinite elements
+    ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, 1, 0);CHKERRQ(ierr);
+    for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+      ierr = PetscViewerASCIIPrintf(viewer, " %6d", (*i_itor).prefix+1);CHKERRQ(ierr);
     }
+    ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -675,12 +673,15 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype,Mat *J)
   ISLocalToGlobalMapping lmap;
   PetscInt              *globals,rstart,i;
 #endif
-  PetscInt               localSize, globalSize;
+  PetscInt               localSize = 0, globalSize = 0;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
+
+#ifdef __cplusplus
   localSize = ((ALE::IndexBundle *) mesh->bundle)->getLocalSize();
   globalSize = ((ALE::IndexBundle *) mesh->bundle)->getGlobalSize();
+#endif
   ierr = MatCreate(mesh->comm,J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,localSize,localSize,globalSize,globalSize);CHKERRQ(ierr);
   ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
@@ -851,6 +852,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
   PetscFunctionReturn(0);
 }
 
+#ifdef __cplusplus
+
 #undef __FUNCT__
 #define __FUNCT__ "ExpandInterval"
 /* This is currently duplicated in ex33mesh.c */
@@ -919,6 +922,8 @@ PetscErrorCode MeshCreateVector(Mesh mesh, ALE::IndexBundle *bundle, int debug, 
   PetscFunctionReturn(0);
 }
 
+#endif
+
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateGlobalVector"
 /*@C
@@ -953,7 +958,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh,Vec *gvec)
     PetscFunctionReturn(0);
   }
 #endif
+#ifdef __cplusplus
   ierr = MeshCreateVector(mesh, (ALE::IndexBundle *) mesh->bundle, 0, gvec);CHKERRQ(ierr);
+#endif
 #if 0
   mesh->globalvector = *gvec;
   ierr = PetscObjectReference((PetscObject) mesh->globalvector);CHKERRQ(ierr); 
