@@ -27,6 +27,9 @@ debugex1:
 valex1:
 	-@valgrind --tool=memcheck ./ex1 -dim 1 -use_zero_base 1 -vertex_file data/ex1conn1d.data -coord_file data/ex1coord1d.data ${EXTRA_ARGS}
 
+runex1_pylith:
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local -vertex_file /PETSc3/geoframe/packages/lithomop/lithomop3d/examples/lintet/bm1b/bm1b.connect -coord_file /PETSc3/geoframe/packages/lithomop/lithomop3d/examples/lintet/bm1b/bm1b.coord ${EXTRA_ARGS}
+
 runex1_2:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -vertex_file data/ex1conn2d.data -coord_file data/ex1coord2d.data
 

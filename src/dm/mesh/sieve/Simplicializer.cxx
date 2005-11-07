@@ -504,7 +504,7 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   ALE::IndexBundle *coordBundle;
   ALE::IndexBundle *serialCoordBundle;
   ALE::PreSieve    *partitionTypes;
-  Vec               coordinates, oldCoordinates;
+  Vec               coordinates, oldCoordinates, locCoordinates;
   MPI_Comm          comm;
   PetscMPIInt       rank;
   PetscInt          dim;
@@ -541,6 +541,8 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   coordBundle->getLock();  // lock the bundle so that the overlap indices do not change
   ierr = MeshCreateVector(mesh, coordBundle, debug, &coordinates);CHKERRQ(ierr);
   ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
+  ierr = VecGhostGetLocalForm(coordinates, &locCoordinates);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(locCoordinates, dim);CHKERRQ(ierr);
   /* Setup mapping to partitioned storage */
   ALE::Obj<ALE::Stack> mappingStack;
   ALE::Obj<ALE::PreSieve> sourceIndices, targetIndices;
