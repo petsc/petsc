@@ -114,12 +114,11 @@ class Package(config.base.Configure):
     alllibs = []
     for libSet in self.liblist:
       libs = []
-      for library in libSet:
-        if not self.libdir == dir:
-          fullLib = os.path.join(dir, library)
-        else:
-          fullLib = library
-        libs.append(fullLib)
+      # add full path only to the first library in the list
+      if not self.libdir == dir and libSet != []:
+        libs.append(os.path.join(dir, libSet[0]))
+      for library in libSet[1:]:
+        libs.append(library)
       libs.extend(self.extraLib)
       alllibs.append(libs)
     return alllibs

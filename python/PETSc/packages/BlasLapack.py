@@ -118,8 +118,10 @@ class Configure(PETSc.package.Package):
     if foundBlas:
       foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
     else:
+      self.framework.log.write('Checking cblaslapack name-mangling\n')
       foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'ddot_')
       if foundBlas:
+        self.framework.log.write('Found cblaslapack\n')
         foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['dgetrs_', 'dgeev_'])
         if foundLapack:
           self.f2c = 1
