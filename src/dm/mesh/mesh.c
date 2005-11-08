@@ -951,7 +951,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh,Vec *gvec)
 
 
   PetscFunctionBegin;
-  // Turned off caching for this method so that bundle can be reset to make different vectors
+  /* Turned off caching for this method so that bundle can be reset to make different vectors */
 #if 0
   if (mesh->globalvector) {
     ierr = VecDuplicate(mesh->globalvector, gvec);CHKERRQ(ierr);
