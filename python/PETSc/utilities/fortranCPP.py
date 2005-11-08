@@ -27,7 +27,7 @@ class Configure(config.base.Configure):
     '''Handle case where Fortran cannot preprocess properly'''
     if hasattr(self.compilers, 'FC'):
       self.addMakeRule('.f.o .f90.o','',['-${FC} -c ${FFLAGS} ${FC_FLAGS} ${FOPTFLAGS} $<'])
-      self.addMakeRule('.f.a',       '',['-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FC_FLAGS} $<', \
+      self.addMakeRule('.f.a',       '',['-${FC} -c ${FFLAGS} ${FC_FLAGS} ${FOPTFLAGS} $<', \
                                          '-${AR} ${AR_FLAGS} ${LIBNAME} $*.o', \
                                          '-${RM} $*.o'])
 
@@ -39,19 +39,19 @@ class Configure(config.base.Configure):
         # Fortran does NOT handle CPP macros 
         self.addMakeRule('.F.o .F90.o','',['-@${RM} __$*.F __$*.c',\
                                            '-@${GREP} -v "^!" $*.F > __$*.c',\
-                                           '-${CC} ${FPP_FLAGS} -E '+TRADITIONAL_CPP+' ${FC_INCLUDES}  __$*.c | ${GREP} -v \'^ *#\' > __$*.F',\
+                                           '-${CC} ${FCPPFLAGS} -E '+TRADITIONAL_CPP+' __$*.c | ${GREP} -v \'^ *#\' > __$*.F',\
                                            '-${FC} -c ${FFLAGS} ${FC_FLAGS} __$*.F -o $*.o',\
                                            '-if [ "${SKIP_RM}" != "yes" ] ;then  ${RM} __$*.F __$*.c ; fi'])
         self.addMakeRule('.F.a',       '',['-@${RM} __$*.F __$*.c',\
                                            '-@${GREP} -v "^!" $*.F > __$*.c',\
-                                           '-${CC} ${FPP_FLAGS} -E '+TRADITIONAL_CPP+' ${FC_INCLUDES}  __$*.c | ${GREP} -v \'^ *#\' > __$*.F',\
+                                           '-${CC} ${FCPPFLAGS} -E '+TRADITIONAL_CPP+' __$*.c | ${GREP} -v \'^ *#\' > __$*.F',\
                                            '-${FC} -c ${FFLAGS} ${FC_FLAGS} __$*.F -o $*.o',\
                                            '-${AR} cr ${LIBNAME} $*.o',\
                                            '-${RM} __$*.F __$*.c'])
       else:
         # Fortran handles CPP macros correctly
-        self.addMakeRule('.F.o .F90.o','',['-${FC} -c ${FFLAGS} ${FC_FLAGS} ${FC_INCLUDES} ${FPP_FLAGS} $<'])
-        self.addMakeRule('.F.a','',       ['-${FC} -c ${FC_INCLUDES} ${FFLAGS} ${FC_FLAGS} ${FPP_FLAGS} $<',\
+        self.addMakeRule('.F.o .F90.o','',['-${FC} -c ${FFLAGS} ${FC_FLAGS} ${FCPPFLAGS} $<'])
+        self.addMakeRule('.F.a','',       ['-${FC} -c ${FFLAGS} ${FC_FLAGS} ${FCPPFLAGS} $<',\
                                            '-${AR} ${AR_FLAGS} ${LIBNAME} $*.o',\
                                            '-${RM} $*.o'])
 
