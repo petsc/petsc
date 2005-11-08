@@ -1458,8 +1458,8 @@ can also install additional packages that are used by the TOPS packages."""
            if not reply: sys.exit()
            args.append('--with-mpi-dir='+reply)
 
-        reply = ynbox('Install TOPS Solver Components?',title)
-        if reply: 
+        reply = buttonbox('Install TOPS Solver Components?',title,['Yes','No'],message2="You must have CCAFE and BABEL\n already installed to use them.")
+        if reply == 'Yes': 
            reply = diropenbox("Directory of Babel","Directory of Babel")
            if not reply: sys.exit()
            args.append('--with-babel-dir='+reply)
