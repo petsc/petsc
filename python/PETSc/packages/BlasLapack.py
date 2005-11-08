@@ -76,7 +76,7 @@ class Configure(PETSc.package.Package):
     if fortranMangle=='stdcall':
       if routine=='ddot':
         prototype = 'double __stdcall DDOT(int*,double*,int*,double*,int*);'
-        call      = 'DDOT(0,0,0,0,0,0);'
+        call      = 'DDOT(0,0,0,0,0);'
     found   = self.libraries.check(blasLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
     self.compilers.LIBS = oldLibs
     return found
@@ -89,7 +89,7 @@ class Configure(PETSc.package.Package):
     if fortranMangle=='stdcall':
       if routines == ['dgetrs','dgeev']:
         prototypes = ['void __stdcall DGETRS(char*,int,int*,int*,double*,int*,int*,double*,int*,int*);',
-                      'void __stdcall DGEEV(char*,int,char*,int,int*,double*,int*,PetscReal*,PetscReal*,double*,int*,double*,int*,double*,int*,int*);']
+                      'void __stdcall DGEEV(char*,int,char*,int,int*,double*,int*,double*,double*,double*,int*,double*,int*,double*,int*,int*);']
         calls      = ['DGETRS(0,0,0,0,0,0,0,0,0,0);',
                       'DGEEV(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);']
     for routine, prototype, call in zip(routines, prototypes, calls):
