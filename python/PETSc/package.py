@@ -118,7 +118,11 @@ class Package(config.base.Configure):
       if not self.libdir == dir and libSet != []:
         libs.append(os.path.join(dir, libSet[0]))
       for library in libSet[1:]:
-        libs.append(library)
+        # if the library name doesn't start with lib - then add the fullpath
+        if library.startswith('lib') or self.libdir == dir:
+          libs.append(library)
+        else:
+          libs.append(os.path.join(dir, library))
       libs.extend(self.extraLib)
       alllibs.append(libs)
     return alllibs

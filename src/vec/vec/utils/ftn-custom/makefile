@@ -3,8 +3,8 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zveciof.c  zvscatf.c
-OBJSC    = zveciof.o  zvscatf.o
+SOURCEC  = zveciof.c  zvscatf.c zvecmpitoseqf.c
+OBJSC    = zveciof.o  zvscatf.o zvecmpitoseqf.o
 SOURCEF  =
 SOURCEH  =
 DIRS     =
