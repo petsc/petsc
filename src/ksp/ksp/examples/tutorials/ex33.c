@@ -57,11 +57,7 @@ typedef enum {PCICE, PYLITH} FileType;
 
 PetscErrorCode ReadConnectivity(MPI_Comm, FileType, const char *, PetscInt, PetscTruth, PetscInt *, PetscInt **);
 PetscErrorCode ReadCoordinates(MPI_Comm, FileType, const char *, PetscInt, PetscInt *, PetscScalar **);
-PetscErrorCode ReadBoundary(MPI_Comm, FileType, const char *, PetscTruth, PetscInt *, PetscInt **);
-PetscErrorCode ReadConnectivity_PCICE(MPI_Comm, const char *, PetscInt, PetscTruth, PetscInt *, PetscInt **);
-PetscErrorCode ReadCoordinates_PCICE(MPI_Comm, const char *, PetscInt, PetscInt *, PetscScalar **);
-PetscErrorCode ReadConnectivity_PyLith(MPI_Comm, const char *, PetscInt, PetscTruth, PetscInt *, PetscInt **);
-PetscErrorCode ReadCoordinates_PyLith(MPI_Comm, const char *, PetscInt, PetscInt *, PetscScalar **);
+PetscErrorCode ReadBoundary(MPI_Comm, FileType, const char *, PetscTruth, PetscInt *, PetscInt *, PetscInt **, PetscScalar **);
 
 extern PetscErrorCode CreateTestMesh(MPI_Comm,Mesh*);
 extern PetscErrorCode CreateTestMesh3(MPI_Comm,Mesh*);
@@ -91,12 +87,12 @@ int main(int argc,char **argv)
   const char    *fileTypes[2] = {"pcice", "pylith"};
   FileType       fileType;
   PetscInt      *vertices, *boundaryVertices;
-  PetscScalar   *coordinates;
+  PetscScalar   *coordinates, *boundaryValues;
   UserContext    user;
   PetscReal      norm;
   const char    *bcTypes[2] = {"dirichlet", "neumann"};
   PetscInt       l,bc;
-  PetscInt       dim, numVertices, numBoundaryVertices, numElements, ft;
+  PetscInt       dim, numVertices, numBoundaryVertices, numBoundaryComponents, numElements, ft;
   PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -126,14 +122,14 @@ int main(int argc,char **argv)
 
   ierr = ReadConnectivity(comm, fileType, vertexFilename, dim, useZeroBase, &numElements, &vertices);CHKERRQ(ierr);
   ierr = ReadCoordinates(comm, fileType, coordFilename, dim, &numVertices, &coordinates);CHKERRQ(ierr);
-  ierr = ReadBoundary(comm, fileType, bcFilename, useZeroBase, &numBoundaryVertices, &boundaryVertices);CHKERRQ(ierr);
+  ierr = ReadBoundary(comm, fileType, bcFilename, useZeroBase, &numBoundaryVertices, &numBoundaryComponents, &boundaryVertices, &boundaryValues);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
   ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
   ierr = MeshCreateSeq(mesh, dim, numVertices, numElements, vertices, coordinates);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
   ierr = MeshDistribute(mesh);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "Creating boundary\n");CHKERRQ(ierr);
-  ierr = MeshCreateBoundary(mesh, numBoundaryVertices, boundaryVertices); CHKERRQ(ierr);
+  ierr = MeshCreateBoundary(mesh, numBoundaryVertices, numBoundaryComponents, boundaryVertices, boundaryValues); CHKERRQ(ierr);
 
   ALE::Sieve *topology;
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
@@ -267,72 +263,6 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
 
 #include <stdlib.h>
 #include <string.h>
-
-#undef __FUNCT__
-#define __FUNCT__ "ReadConnectivity"
-PetscErrorCode ReadConnectivity(MPI_Comm comm, FileType fileType, const char *filename, PetscInt dim, PetscTruth useZeroBase, PetscInt *numElements, PetscInt **vertices)
-{
-  if (fileType == PCICE) {
-    return ReadConnectivity_PCICE(comm, filename, dim, useZeroBase, numElements, vertices);
-  } else if (fileType == PYLITH) {
-    return ReadConnectivity_PyLith(comm, filename, dim, useZeroBase, numElements, vertices);
-  }
-  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Unknown input file type: %d", fileType);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ReadCoordinates"
-PetscErrorCode ReadCoordinates(MPI_Comm comm, FileType fileType, const char *filename, PetscInt dim, PetscInt *numVertices, PetscScalar **coordinates)
-{
-  if (fileType == PCICE) {
-    return ReadCoordinates_PCICE(comm, filename, dim, numVertices, coordinates);
-  } else if (fileType == PYLITH) {
-    return ReadCoordinates_PyLith(comm, filename, dim, numVertices, coordinates);
-  }
-  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Unknown input file type: %d", fileType);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ReadBoundary"
-PetscErrorCode ReadBoundary(MPI_Comm comm, FileType fileType, const char *filename, PetscTruth useZeroBase, PetscInt *numBoundaryVertices, PetscInt **boundaryVertices)
-{
-  PetscViewer    viewer;
-  FILE          *f;
-  PetscInt       numVerts, vertexCount = 0;
-  PetscInt      *verts;
-  char           buf[2048];
-  PetscInt       commSize, commRank;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm, &commSize); CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &commRank); CHKERRQ(ierr);
-
-  ierr = PetscPrintf(comm, "Reading boundary information on all of %d procs from file %s...\n", commSize, filename);CHKERRQ(ierr);
-  ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
-  numVerts = atoi(fgets(buf, 2048, f));
-  ierr = PetscMalloc(numVerts * sizeof(PetscInt), &verts);CHKERRQ(ierr);
-  while(fgets(buf, 2048, f) != NULL) {
-    const char *v = strtok(buf, " ");
-    int vertex = atoi(v);
-        
-    if (!useZeroBase) vertex -= 1;
-    verts[vertexCount++] = vertex;
-  }
-  if (vertexCount != numVerts) {
-    SETERRQ2(PETSC_ERR_ARG_WRONG, "Invalid number of boundary vertices, %d shuold be %d", vertexCount, numVerts);
-  }
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  *numBoundaryVertices = numVerts;
-  *boundaryVertices = verts;
-  ierr = PetscSynchronizedPrintf(comm, "[%d]  Read %d boundary vertices\n", commRank, *numBoundaryVertices);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "ReadConnectivity_PCICE"
@@ -566,6 +496,178 @@ PetscErrorCode ReadCoordinates_PyLith(MPI_Comm comm, const char *filename, Petsc
   }
   ierr = PetscPrintf(comm, "  Read %d vertices\n", *numVertices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ReadBoundary_PCICE"
+PetscErrorCode ReadBoundary_PCICE(MPI_Comm comm, FileType fileType, const char *filename, PetscTruth useZeroBase, PetscInt *numBoundaryVertices, PetscInt *numBoundaryComponents, PetscInt **boundaryVertices, PetscScalar **boundaryValues)
+{
+  PetscViewer    viewer;
+  FILE          *f;
+  PetscInt       numVerts, vertexCount = 0;
+  PetscInt       numComp = 1;
+  PetscInt      *verts;
+  PetscScalar   *values;
+  char           buf[2048];
+  PetscInt       commSize, commRank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm, &commSize); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &commRank); CHKERRQ(ierr);
+
+  ierr = PetscPrintf(comm, "Reading boundary information on all of %d procs from file %s...\n", commSize, filename);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
+  numVerts = atoi(fgets(buf, 2048, f));
+  ierr = PetscMalloc(numVerts*(numComp+1) * sizeof(PetscInt), &verts);CHKERRQ(ierr);
+  ierr = PetscMalloc(numVerts*numComp * sizeof(PetscScalar), &values);CHKERRQ(ierr);
+  while(fgets(buf, 2048, f) != NULL) {
+    const char *v = strtok(buf, " ");
+    int vertex = atoi(v);
+        
+    if (!useZeroBase) vertex -= 1;
+    verts[vertexCount*(numComp+1)+0] = vertex;
+    v = strtok(NULL, " ");
+    verts[vertexCount*(numComp+1)+1] = atoi(v);
+    v = strtok(NULL, " ");
+    values[vertexCount*numComp+0] = atof(v);
+    vertexCount++;
+  }
+  if (vertexCount != numVerts) {
+    SETERRQ2(PETSC_ERR_ARG_WRONG, "Invalid number of boundary vertices, %d shuold be %d", vertexCount, numVerts);
+  }
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  *numBoundaryVertices = numVerts;
+  *numBoundaryComponents = numComp;
+  *boundaryVertices = verts;
+  *boundaryValues   = values;
+  ierr = PetscSynchronizedPrintf(comm, "[%d]  Read %d boundary vertices\n", commRank, *numBoundaryVertices);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ReadBoundary_PyLith"
+PetscErrorCode ReadBoundary_PyLith(MPI_Comm comm, FileType fileType, const char *filename, PetscTruth useZeroBase, PetscInt *numBoundaryVertices, PetscInt *numBoundaryComponents, PetscInt **boundaryVertices, PetscScalar **boundaryValues)
+{
+  PetscViewer    viewer;
+  FILE          *f;
+  PetscInt       maxVerts= 1024, vertexCount = 0;
+  PetscInt       numComp = 3;
+  PetscInt      *verts;
+  PetscScalar   *values;
+  char           buf[2048];
+  PetscInt       commSize, commRank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm, &commSize); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &commRank); CHKERRQ(ierr);
+
+  ierr = PetscPrintf(comm, "Reading boundary information on all of %d procs from file %s...\n", commSize, filename);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
+  /* Ignore comments */
+  IgnoreComments_PyLith(buf, 2048, f);
+  /* Ignore displacement units */
+  fgets(buf, 2048, f);
+  /* Ignore velocity units */
+  fgets(buf, 2048, f);
+  /* Ignore force units */
+  fgets(buf, 2048, f);
+  ierr = PetscMalloc(maxVerts*(numComp+1) * sizeof(PetscInt),    &verts);CHKERRQ(ierr);
+  ierr = PetscMalloc(maxVerts*numComp * sizeof(PetscScalar), &values);CHKERRQ(ierr);
+  do {
+    const char *v = strtok(buf, " ");
+    int vertex = atoi(v);
+        
+    if (!useZeroBase) vertex -= 1;
+    if (vertexCount == maxVerts) {
+      PetscInt *vtmp;
+      PetscScalar *ctmp;
+
+      vtmp = verts;
+      ierr = PetscMalloc(maxVerts*2*(numComp+1) * sizeof(PetscInt), &verts);CHKERRQ(ierr);
+      ierr = PetscMemcpy(verts, vtmp, maxVerts*(numComp+1) * sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscFree(vtmp);CHKERRQ(ierr);
+      ctmp = values;
+      ierr = PetscMalloc(maxVerts*2*numComp * sizeof(PetscScalar), &values);CHKERRQ(ierr);
+      ierr = PetscMemcpy(values, ctmp, maxVerts*numComp * sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscFree(ctmp);CHKERRQ(ierr);
+      maxVerts *= 2;
+    }
+    verts[vertexCount*(numComp+1)+0] = vertex;
+    /* X boundary condition*/
+    v = strtok(NULL, " ");
+    verts[vertexCount*(numComp+1)+1] = atoi(v);
+    /* Y boundary condition*/
+    v = strtok(NULL, " ");
+    verts[vertexCount*(numComp+1)+2] = atoi(v);
+    /* Z boundary condition*/
+    v = strtok(NULL, " ");
+    verts[vertexCount*(numComp+1)+3] = atoi(v);
+    /* X boundary value */
+    v = strtok(NULL, " ");
+    values[vertexCount*numComp+0] = atof(v);
+    /* Y boundary value */
+    v = strtok(NULL, " ");
+    values[vertexCount*numComp+1] = atof(v);
+    /* Z boundary value */
+    v = strtok(NULL, " ");
+    values[vertexCount*numComp+2] = atof(v);
+    vertexCount++;
+  } while(fgets(buf, 2048, f) != NULL);
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  *numBoundaryVertices = vertexCount;
+  *numBoundaryComponents = numComp;
+  *boundaryVertices = verts;
+  *boundaryValues   = values;
+  ierr = PetscSynchronizedPrintf(comm, "[%d]  Read %d boundary vertices\n", commRank, *numBoundaryVertices);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ReadConnectivity"
+PetscErrorCode ReadConnectivity(MPI_Comm comm, FileType fileType, const char *filename, PetscInt dim, PetscTruth useZeroBase, PetscInt *numElements, PetscInt **vertices)
+{
+  if (fileType == PCICE) {
+    return ReadConnectivity_PCICE(comm, filename, dim, useZeroBase, numElements, vertices);
+  } else if (fileType == PYLITH) {
+    return ReadConnectivity_PyLith(comm, filename, dim, useZeroBase, numElements, vertices);
+  }
+  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Unknown input file type: %d", fileType);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ReadCoordinates"
+PetscErrorCode ReadCoordinates(MPI_Comm comm, FileType fileType, const char *filename, PetscInt dim, PetscInt *numVertices, PetscScalar **coordinates)
+{
+  if (fileType == PCICE) {
+    return ReadCoordinates_PCICE(comm, filename, dim, numVertices, coordinates);
+  } else if (fileType == PYLITH) {
+    return ReadCoordinates_PyLith(comm, filename, dim, numVertices, coordinates);
+  }
+  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Unknown input file type: %d", fileType);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ReadBoundary"
+PetscErrorCode ReadBoundary(MPI_Comm comm, FileType fileType, const char *filename, PetscTruth useZeroBase, PetscInt *numBoundaryVertices, PetscInt *numBoundaryComponents, PetscInt **boundaryVertices, PetscScalar **boundaryValues)
+{
+  if (fileType == PCICE) {
+    return ReadBoundary_PCICE(comm, fileType, filename, useZeroBase, numBoundaryVertices, numBoundaryComponents, boundaryVertices, boundaryValues);
+  } else if (fileType == PYLITH) {
+    return ReadBoundary_PyLith(comm, fileType, filename, useZeroBase, numBoundaryVertices, numBoundaryComponents, boundaryVertices, boundaryValues);
+  }
+  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Unknown input file type: %d", fileType);
 }
 
 #ifndef MESH_3D
