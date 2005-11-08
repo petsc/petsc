@@ -76,7 +76,7 @@ class Configure(PETSc.package.Package):
     if fortranMangle=='stdcall':
       if routine=='ddot':
         prototype = 'double __stdcall DDOT(int*,double*,int*,double*,int*);'
-        call      = 'DDOT(0,0,0,0,0,0);'
+        call      = 'DDOT(0,0,0,0,0);'
     found   = self.libraries.check(blasLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle, prototype = prototype, call = call)
     self.compilers.LIBS = oldLibs
     return found
