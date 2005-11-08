@@ -479,26 +479,15 @@ PetscErrorCode MeshView_Sieve_Ascii(Mesh mesh, PetscViewer viewer)
   } else if (format == PETSC_VIEWER_ASCII_PYLITH_LOCAL) {
     PetscViewer connectViewer, coordViewer;
     char       *filename;
-    char        connectFilename[2048];
-    char        coordFilename[2048];
     char        localFilename[2048];
-    PetscTruth  isConnect;
     MPI_Comm    comm;
     PetscMPIInt rank;
-    size_t      len;
 
     ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
     ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
-    ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-    ierr = PetscStrcmp(&(filename[len-8]), ".connect", &isConnect);CHKERRQ(ierr);
-    if (!isConnect) {
-      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid element connectivity filename: %s", filename);
-    }
 
-    ierr = PetscStrncpy(connectFilename, filename, len-7);CHKERRQ(ierr);
-    connectFilename[len-7] = '\0';
-    sprintf(localFilename, "%s%d.connect", connectFilename, rank);
+    sprintf(localFilename, "%s.%d.connect", filename, rank);
     ierr = PetscViewerCreate(PETSC_COMM_SELF, &connectViewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(connectViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(connectViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
@@ -506,9 +495,7 @@ PetscErrorCode MeshView_Sieve_Ascii(Mesh mesh, PetscViewer viewer)
     ierr = WritePyLithElementsLocal(mesh, connectViewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(connectViewer);CHKERRQ(ierr);
 
-    ierr = PetscStrncpy(coordFilename, filename, len-7);CHKERRQ(ierr);
-    coordFilename[len-7] = '\0';
-    sprintf(localFilename, "%s%d.coord", coordFilename, rank);
+    sprintf(localFilename, "%s.%d.coord", filename, rank);
     ierr = PetscViewerCreate(PETSC_COMM_SELF, &coordViewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(coordViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(coordViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
@@ -1502,11 +1489,6 @@ PetscErrorCode ReadConnectivity_PyLith(MPI_Comm comm, const char *filename, Pets
         verts[cellCount*(dim+1)+c] = vertex;
         v = strtok(NULL, " ");
       }
-      printf("cell %d: ", cellCount);
-      for(c = 0; c <= dim; c++) {
-        printf(" %d", verts[cellCount*(dim+1)+c]);
-      }
-      printf("\n");
       cellCount++;
     } while(fgets(buf, 2048, f) != NULL);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
