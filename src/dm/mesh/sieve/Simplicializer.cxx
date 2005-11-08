@@ -603,7 +603,7 @@ PetscErrorCode MeshDistribute(Mesh mesh)
 
 .seealso MeshCreate(), MeshGetTopology(), MeshSetTopology()
 */
-PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, PetscInt *boundaryVertices)
+PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, PetscInt numBoundaryComponents, PetscInt *boundaryVertices, PetscScalar *boundaryValues)
 {
   MPI_Comm       comm;
   PetscObjectGetComm((PetscObject) mesh, &comm);
@@ -624,18 +624,15 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
   if (debug) {
     boundary->setVerbosity(11);
   }
-  ALE::Point_set cone;
-  ALE::Point boundaryPoint(0, 1);
-
   /* Should also put in boundary edges */
   for(int v = 0; v < numBoundaryVertices; v++) {
-    ALE::Point vertex = ALE::Point(0, boundaryVertices[v] + numElements);
+    ALE::Point vertex = ALE::Point(0, boundaryVertices[v*(numBoundaryComponents+1)] + numElements);
+    ALE::Point boundaryPoint(0, boundaryVertices[v*(numBoundaryComponents+1)+1]);
 
     if (topology->capContains(vertex)) {
-      cone.insert(vertex);
+      boundary->addCone(vertex, boundaryPoint);
     }
   }
-  boundary->addCone(cone, boundaryPoint);
   if (debug) {
     boundary->view("Boundary sieve");
   }

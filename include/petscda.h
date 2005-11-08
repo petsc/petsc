@@ -489,7 +489,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDistribute(Mesh);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetDimension(Mesh, PetscInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetEmbeddingDimension(Mesh, PetscInt *);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateBoundary(Mesh, PetscInt, PetscInt *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateBoundary(Mesh, PetscInt, PetscInt, PetscInt [], PetscScalar []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateCoordinates(Mesh, PetscScalar []);
 
 /*S
