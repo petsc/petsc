@@ -41,6 +41,7 @@ class Configure(PETSc.package.Package):
       logging.Logger.defaultLog = file(os.path.join(parmetisDir, 'build.log'), 'w')
       make = self.getModule(parmetisDir, 'make').Make(configureParent = cPickle.loads(cPickle.dumps(self.framework)))
       make.prefix = installDir
+      make.builder.argDB['ignoreCompileOutput'] = 1
       make.run()
       logging.Logger.defaultLog = oldLog
       os.chdir(oldDir)
