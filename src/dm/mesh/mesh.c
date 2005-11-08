@@ -1343,3 +1343,307 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetSpaceFootprint(Mesh mesh, void *spaceFoo
   mesh->spaceFootprint = spaceFootprint;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "ReadConnectivity_PCICE"
+PetscErrorCode ReadConnectivity_PCICE(MPI_Comm comm, const char *filename, PetscInt dim, PetscTruth useZeroBase, PetscInt *numElements, PetscInt **vertices)
+{
+  PetscViewer    viewer;
+  FILE          *f;
+  PetscInt       numCells, cellCount = 0;
+  PetscInt      *verts;
+  char           buf[2048];
+  PetscInt       c;
+  PetscInt       commSize, commRank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm, &commSize); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &commRank); CHKERRQ(ierr);
+
+  if(commRank == 0) {
+    ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
+    numCells = atoi(fgets(buf, 2048, f));
+    ierr = PetscMalloc(numCells*(dim+1) * sizeof(PetscInt), &verts);CHKERRQ(ierr);
+    while(fgets(buf, 2048, f) != NULL) {
+      const char *v = strtok(buf, " ");
+      
+      /* Ignore cell number */
+      v = strtok(NULL, " ");
+      for(c = 0; c <= dim; c++) {
+        int vertex = atoi(v);
+        
+        if (!useZeroBase) vertex -= 1;
+        verts[cellCount*(dim+1)+c] = vertex;
+        v = strtok(NULL, " ");
+      }
+      cellCount++;
+    }
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    *numElements = numCells;
+    *vertices = verts;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ReadCoordinates_PCICE"
+PetscErrorCode ReadCoordinates_PCICE(MPI_Comm comm, const char *filename, PetscInt dim, PetscInt *numVertices, PetscScalar **coordinates)
+{
+  PetscViewer    viewer;
+  FILE          *f;
+  PetscInt       numVerts, vertexCount = 0;
+  PetscScalar   *coords;
+  char           buf[2048];
+  PetscInt       c;
+  PetscInt       commSize, commRank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm, &commSize); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &commRank); CHKERRQ(ierr);
+
+  if (commRank == 0) {
+    ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
+    numVerts = atoi(fgets(buf, 2048, f));
+    ierr = PetscMalloc(numVerts*dim * sizeof(PetscScalar), &coords);CHKERRQ(ierr);
+    while(fgets(buf, 2048, f) != NULL) {
+      const char *x = strtok(buf, " ");
+      
+      /* Ignore vertex number */
+      x = strtok(NULL, " ");
+      for(c = 0; c < dim; c++) {
+        coords[vertexCount*dim+c] = atof(x);
+        x = strtok(NULL, " ");
+      }
+      vertexCount++;
+    }
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    *numVertices = numVerts;
+    *coordinates = coords;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "IgnoreComments_PyLith"
+PetscErrorCode IgnoreComments_PyLith(char *buf, PetscInt bufSize, FILE *f)
+{
+  PetscFunctionBegin;
+  while((fgets(buf, bufSize, f) != NULL) && (buf[0] == '#')) {}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ReadConnectivity_PyLith"
+PetscErrorCode ReadConnectivity_PyLith(MPI_Comm comm, const char *filename, PetscInt dim, PetscTruth useZeroBase, PetscInt *numElements, PetscInt **vertices)
+{
+  PetscViewer    viewer;
+  FILE          *f;
+  PetscInt       maxCells = 1024, cellCount = 0;
+  PetscInt      *verts;
+  char           buf[2048];
+  PetscInt       c;
+  PetscInt       commSize, commRank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm, &commSize); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &commRank); CHKERRQ(ierr);
+  if (dim != 3) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "PyLith only works in 3D");
+  }
+  if(commRank == 0) {
+    ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
+    /* Ignore comments */
+    IgnoreComments_PyLith(buf, 2048, f);
+    ierr = PetscMalloc(maxCells*(dim+1) * sizeof(PetscInt), &verts);CHKERRQ(ierr);
+    do {
+      const char *v = strtok(buf, " ");
+      int         elementType;
+
+      if (cellCount == maxCells) {
+        PetscInt *vtmp;
+
+        vtmp = verts;
+        ierr = PetscMalloc(maxCells*2*(dim+1) * sizeof(PetscInt), &verts);CHKERRQ(ierr);
+        ierr = PetscMemcpy(verts, vtmp, maxCells*(dim+1) * sizeof(PetscInt));CHKERRQ(ierr);
+        ierr = PetscFree(vtmp);CHKERRQ(ierr);
+        maxCells *= 2;
+      }
+      /* Ignore cell number */
+      v = strtok(NULL, " ");
+      /* Verify element type is linear tetrahedron */
+      elementType = atoi(v);
+      if (elementType != 5) {
+        SETERRQ(PETSC_ERR_ARG_WRONG, "We only accept linear tetrahedra right now");
+      }
+      v = strtok(NULL, " ");
+      /* Ignore material type */
+      v = strtok(NULL, " ");
+      /* Ignore infinite domain element code */
+      v = strtok(NULL, " ");
+      for(c = 0; c <= dim; c++) {
+        int vertex = atoi(v);
+        
+        if (!useZeroBase) vertex -= 1;
+        verts[cellCount*(dim+1)+c] = vertex;
+        v = strtok(NULL, " ");
+      }
+      printf("cell %d: ", cellCount);
+      for(c = 0; c <= dim; c++) {
+        printf(" %d", verts[cellCount*(dim+1)+c]);
+      }
+      printf("\n");
+      cellCount++;
+    } while(fgets(buf, 2048, f) != NULL);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    *numElements = cellCount;
+    *vertices = verts;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ReadCoordinates_PyLith"
+PetscErrorCode ReadCoordinates_PyLith(MPI_Comm comm, const char *filename, PetscInt dim, PetscInt *numVertices, PetscScalar **coordinates)
+{
+  PetscViewer    viewer;
+  FILE          *f;
+  PetscInt       maxVerts = 1024, vertexCount = 0;
+  PetscScalar   *coords;
+  char           buf[2048];
+  PetscInt       c;
+  PetscInt       commSize, commRank;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm, &commSize); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &commRank); CHKERRQ(ierr);
+  if (commRank == 0) {
+    ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetPointer(viewer, &f);CHKERRQ(ierr);
+    /* Ignore comments and units line */
+    IgnoreComments_PyLith(buf, 2048, f);
+    ierr = PetscMalloc(maxVerts*dim * sizeof(PetscScalar), &coords);CHKERRQ(ierr);
+    while(fgets(buf, 2048, f) != NULL) {
+      const char *x = strtok(buf, " ");
+
+      if (vertexCount == maxVerts) {
+        PetscScalar *ctmp;
+
+        ctmp = coords;
+        ierr = PetscMalloc(maxVerts*2*dim * sizeof(PetscScalar), &coords);CHKERRQ(ierr);
+        ierr = PetscMemcpy(coords, ctmp, maxVerts*dim * sizeof(PetscScalar));CHKERRQ(ierr);
+        ierr = PetscFree(ctmp);CHKERRQ(ierr);
+        maxVerts *= 2;
+      }
+      /* Ignore vertex number */
+      x = strtok(NULL, " ");
+      for(c = 0; c < dim; c++) {
+        coords[vertexCount*dim+c] = atof(x);
+        x = strtok(NULL, " ");
+      }
+      vertexCount++;
+    }
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    *numVertices = vertexCount;
+    *coordinates = coords;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshCreatePyLith"
+/*@C
+  MeshCreatePyLith - Create a mesh from a set of PyLith mesh files.
+
+  Collective on Mesh
+
+  Input Parameters:
++ comm - The communicator
+- baseFilename - The base name for all mesh files
+
+  Output Parameter:
+. mesh - the mesh object
+
+  Level: intermediate
+
+.seealso MeshCreate(), MeshPopulate(), MeshCreatePCICE()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePyLith(MPI_Comm comm, const char baseFilename[], Mesh *mesh)
+{
+  PetscInt       dim = 3;
+  PetscTruth     useZeroBase = PETSC_FALSE;
+  char           filename[2048];
+  PetscInt      *vertices;
+  PetscScalar   *coordinates;
+  PetscInt       numElements, numVertices;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
+  ierr = PetscStrcpy(filename, baseFilename);CHKERRQ(ierr);
+  ierr = PetscStrcat(filename, ".connect");CHKERRQ(ierr);
+  ierr = ReadConnectivity_PyLith(comm, filename, dim, useZeroBase, &numElements, &vertices);CHKERRQ(ierr);
+  ierr = PetscStrcpy(filename, baseFilename);CHKERRQ(ierr);
+  ierr = PetscStrcat(filename, ".coord");CHKERRQ(ierr);
+  ierr = ReadCoordinates_PyLith(comm, filename, dim, &numVertices, &coordinates);CHKERRQ(ierr);
+  ierr = MeshPopulate(*mesh, dim, numVertices, numElements, vertices, coordinates);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshCreatePCICE"
+/*@C
+  MeshCreatePCICE - Create a mesh from a set of PCICE mesh files.
+
+  Collective on Mesh
+
+  Input Parameters:
++ comm - The communicator
+. baseFilename - The base name for all mesh files
+. dim - The mesh dimension
+- useZeroBase - Start numbering from 0
+
+  Output Parameter:
+. mesh - the mesh object
+
+  Level: intermediate
+
+.seealso MeshCreate(), MeshPopulate(), MeshCreatePyLith()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePCICE(MPI_Comm comm, const char baseFilename[], PetscInt dim, PetscTruth useZeroBase, Mesh *mesh)
+{
+  char           filename[2048];
+  PetscInt      *vertices;
+  PetscScalar   *coordinates;
+  PetscInt       numElements, numVertices;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
+  ierr = PetscStrcpy(filename, baseFilename);CHKERRQ(ierr);
+  ierr = PetscStrcat(filename, ".lcon");CHKERRQ(ierr);
+  ierr = ReadConnectivity_PCICE(comm, filename, dim, useZeroBase, &numElements, &vertices);CHKERRQ(ierr);
+  ierr = PetscStrcpy(filename, baseFilename);CHKERRQ(ierr);
+  ierr = PetscStrcat(filename, ".nodes");CHKERRQ(ierr);
+  ierr = ReadCoordinates_PCICE(comm, filename, dim, &numVertices, &coordinates);CHKERRQ(ierr);
+  ierr = MeshPopulate(*mesh, dim, numVertices, numElements, vertices, coordinates);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
