@@ -105,6 +105,7 @@ int main(int argc, char *argv[])
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
+  ierr = PetscPrintf(comm, "Creating original format mesh file\n");CHKERRQ(ierr);
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
   if (fileType == PCICE) {
@@ -113,10 +114,18 @@ int main(int argc, char *argv[])
   } else if (fileType == PYLITH) {
     if (outputLocal) {
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH_LOCAL);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+      ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, "testMesh"), PETSC_ERR_FILE_OPEN);
+      if (PetscExceptionValue(ierr)) {
+        /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
+      } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
+        ierr = 0;
+      } 
+      CHKERRQ(ierr);
     } else {
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(viewer, "testMesh.connect");CHKERRQ(ierr);
     }
-    ierr = PetscViewerFileSetName(viewer, "testMesh.connect");CHKERRQ(ierr);
   }
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);

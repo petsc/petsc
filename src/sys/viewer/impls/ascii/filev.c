@@ -21,7 +21,7 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   }
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank && vascii->fd != stderr && vascii->fd != stdout) {
-    fclose(vascii->fd);
+    if (vascii->fd) fclose(vascii->fd);
     if (vascii->storecompressed) {
       char par[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
       FILE *fp;
