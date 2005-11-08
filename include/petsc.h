@@ -106,12 +106,58 @@
     All PETSc C functions return this error code, it is the final argument of
    all Fortran subroutines
 */
+
+/*MC
+    PetscErrorCode - datatype used for return error code from all PETSc functions
+
+    Level: beginner
+
+.seealso: CHKERRQ, SETERRQ
+M*/
 typedef int PetscErrorCode;
+/*MC
+    PetscCookie - a unique id used to identify PETSc objects
+
+    Level: advanced
+M*/
 typedef int PetscCookie;
+/*MC
+    PetscEvent - id used to identify PETSc or user events - primarily for logging
+
+    Level: intermediate
+
+.seealso: PetscLogEventRegister, PetscLogEventBegin PetscLogEventEnd
+M*/
 typedef int PetscEvent;
+/*MC
+    PetscBLASInt - datatype used to represent 'int' parameters to blas functions.
+
+    Level: intermediate
+M*/
 typedef int PetscBLASInt;
+/*MC
+    PetscMPIInt - datatype used to represent 'int' parameters to MPI functions.
+
+    Level: intermediate
+M*/
 typedef int PetscMPIInt;
+/*MC
+    PetscEnum - datatype used to pass enum types within PETSc functions.
+
+    Level: intermediate
+
+.seealso: PetscOptionsGetEnum, PetscOptionsEnum, PetscBagRegisterEnum
+M*/
 typedef enum { ENUM_DUMMY } PetscEnum;
+/*MC
+    PetscInt - PETSc type that represents integer - used primarily to
+      represent size of objects. Its size can be configured with the option
+      --with-64-bit-indices - to be either 32bit or 64bit [default 32 bit ints]
+
+   Level: intermediate
+
+.seealso: PetscScalar, VecSetSizes
+M*/
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef long long PetscInt;
 #define MPIU_INT MPI_LONG_LONG_INT
