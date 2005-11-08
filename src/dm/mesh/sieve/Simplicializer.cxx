@@ -405,10 +405,10 @@ PetscErrorCode assembleField(Vec b, ALE::Obj<ALE::IndexBundle> bundle, ALE::Obj<
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshCreateSeq"
+#define __FUNCT__ "MeshPopulate"
 /*@C
-  MeshCreateSeq - Takes an adjacency description of a simplicial mesh FROM PROCESS 0
-                  and produces a partitioned, parallel, oriented Mesh with given topology.
+  MeshPopulate - Takes an adjacency description of a simplicial mesh FROM PROCESS 0
+                 and produces a partitioned, parallel, oriented Mesh with given topology.
 
   Input Parameters:
 + mesh - The PETSc mesh object
@@ -421,7 +421,7 @@ PetscErrorCode assembleField(Vec b, ALE::Obj<ALE::IndexBundle> bundle, ALE::Obj<
 
 .seealso MeshCreate(), MeshGetTopology(), MeshSetTopology()
 */
-PetscErrorCode MeshCreateSeq(Mesh mesh, int dim, PetscInt numVertices, PetscInt numElements, PetscInt *elements, PetscScalar coords[])
+PetscErrorCode MeshPopulate(Mesh mesh, int dim, PetscInt numVertices, PetscInt numElements, PetscInt *elements, PetscScalar coords[])
 {
   MPI_Comm comm;
   PetscObjectGetComm((PetscObject) mesh, &comm);

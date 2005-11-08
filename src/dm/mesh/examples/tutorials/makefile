@@ -19,25 +19,22 @@ ex1: ex1.o   chkopts
 
 #-----------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -vertex_file data/ex1conn1d.data -coord_file data/ex1coord1d.data ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
 
 debugex1:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -vertex_file data/ex1conn1d.data -coord_file data/ex1coord1d.data -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 valex1:
-	-@valgrind --tool=memcheck ./ex1 -dim 1 -use_zero_base 1 -vertex_file data/ex1conn1d.data -coord_file data/ex1coord1d.data ${EXTRA_ARGS}
+	-@valgrind --tool=memcheck ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
 
 runex1_pylith:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local -vertex_file /PETSc3/geoframe/packages/lithomop/lithomop3d/examples/lintet/bm1b/bm1b.connect -coord_file /PETSc3/geoframe/packages/lithomop/lithomop3d/examples/lintet/bm1b/bm1b.coord ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local -base_file /PETSc3/geoframe/packages/lithomop/lithomop3d/examples/lintet/bm1b/bm1b ${EXTRA_ARGS}
 
 runex1_2:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -vertex_file data/ex1conn2d.data -coord_file data/ex1coord2d.data
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d
 
 runex1_3:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -use_zero_base 1 -vertex_file data/ex1conn3d.data -coord_file data/ex1coord3d.data
-
-debugex1_3:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -use_zero_base 1 -vertex_file data/ex1conn3d.data -coord_file data/ex1coord3d.data -start_in_debugger -display ${DISPLAY}
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -use_zero_base 1 -base_file data/ex1_3d
 
 runex3:
 	-@${MPIRUN} -np 3 ./ex3 -mat_view  > ex3_1.tmp 2>&1;   \

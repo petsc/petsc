@@ -484,13 +484,15 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinates(Mesh, Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetSpaceFootprint(Mesh, void**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetSpaceFootprint(Mesh, void*);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateSeq(Mesh, int, PetscInt, PetscInt, PetscInt *, PetscScalar []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshPopulate(Mesh, int, PetscInt, PetscInt, PetscInt *, PetscScalar []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDistribute(Mesh);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetDimension(Mesh, PetscInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetEmbeddingDimension(Mesh, PetscInt *);
-
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateBoundary(Mesh, PetscInt, PetscInt, PetscInt [], PetscScalar []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateCoordinates(Mesh, PetscScalar []);
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePCICE(MPI_Comm, const char [], PetscInt, PetscTruth, Mesh *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePyLith(MPI_Comm, const char [], Mesh *);
 
 /*S
      DM - Abstract PETSc object that manages an abstract grid object
