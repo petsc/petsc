@@ -26,6 +26,50 @@ class Configure(config.base.Configure):
     self.libraries = framework.require('config.libraries', self)
     return
 
+  def configureDisutils(self):
+    '''Check that disutils is functional, and can return the required config vars'''
+    try:
+      try:
+        import distutils.sysconfig
+      except ImportError, e:
+        self.framework.logPrint('Error importing distutils: '+str(e))
+        raise RuntimeError('Python is not fully installed. Please consult your packing system.')
+
+      try:
+        distutils.sysconfig.get_python_inc()
+        distutils.sysconfig.get_python_inc(1)
+      except DistutilsPlatformError, e:
+        self.framework.logPrint('Error finding Python include directories: '+str(e))
+        raise RuntimeError('Python is not fully installed. Please consult your packing system.')
+
+      try:
+        distutils.sysconfig.get_config_var('LDFLAGS')
+        distutils.sysconfig.get_config_var('LIBS')
+        distutils.sysconfig.get_config_var('SYSLIBS')
+      except DistutilsPlatformError, e:
+        self.framework.logPrint('Error finding Python libraries: '+str(e))
+        raise RuntimeError('Python is not fully installed. Please consult your packing system.')
+
+      try:
+        distutils.sysconfig.get_config_var('LIBDIR')
+        distutils.sysconfig.get_config_var('LIBPL')
+        distutils.sysconfig.get_config_var('LDLIBRARY')
+        distutils.sysconfig.get_config_var('SO')
+      except DistutilsPlatformError, e:
+        self.framework.logPrint('Error finding Python shared library: '+str(e))
+        raise RuntimeError('Python is not fully installed. Please consult your packing system.')
+
+      try:
+        distutils.sysconfig.get_config_var('BINDIR')
+        distutils.sysconfig.get_config_var('PYTHON')
+      except DistutilsPlatformError, e:
+        self.framework.logPrint('Error finding Python executable: '+str(e))
+        raise RuntimeError('Python is not fully installed. Please consult your packing system.')
+    except Exception, e:
+      self.framework.logPrint('I do not know what went wrong: '+str(e))
+      raise RuntimeError('Python is not fully installed. Please consult your packing system.')
+    return
+
   def checkInclude(self, includeDir):
     '''Check that Python.h is present'''
     oldFlags = self.compilers.CPPFLAGS
@@ -110,6 +154,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
+    self.executeTest(self.configureDisutils)
     self.executeTest(self.configurePythonLibraries)
     self.setOutput()
     return
