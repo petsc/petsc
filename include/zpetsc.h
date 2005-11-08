@@ -108,11 +108,8 @@ EXTERN_C_END
 #define FORTRANNULLSCALAR(a)   (((void*)a) == PETSC_NULL_SCALAR_Fortran)
 #define FORTRANNULLDOUBLE(a)   (((void*)a) == PETSC_NULL_DOUBLE_Fortran)
 #define FORTRANNULLREAL(a)     (((void*)a) == PETSC_NULL_REAL_Fortran)
-
-#define FORTRANNULLOBJECT FORTRANNULLINTEGER
-
+#define FORTRANNULLOBJECT(a)   (((void*)a) == PETSC_NULL_OBJECT_Fortran)
 #define FORTRANNULLFUNCTION(a) (((void(*)(void))a) == PETSC_NULL_FUNCTION_Fortran)
-
 
 
 #define CHKFORTRANNULLINTEGER(a)  \
