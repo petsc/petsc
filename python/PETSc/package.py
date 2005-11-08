@@ -186,7 +186,7 @@ class Package(config.base.Configure):
     '''Downloads a package; using bk or ftp; opens it in the with-external-packages-dir directory'''
     import install.retrieval
 
-    retriever = install.retrieval.Retriever(self.sourceControl)
+    retriever = install.retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
     retriever.setup()
     failureMessage = []
     self.framework.log.write('Downloading '+self.name+'\n')
