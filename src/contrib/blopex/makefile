@@ -1,3 +1,4 @@
+#requirespackage    'PETSC_HAVE_BLOPEX'
 
 DIRS     = petsc-interface 
 LOCDIR   = src/contrib/blopex/
