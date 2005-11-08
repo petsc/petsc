@@ -54,7 +54,7 @@
 
 EXTERN PetscErrorCode PCCreate_Prometheus_private( PC pc );
 EXTERN PetscErrorCode PCSetUp_Prometheus( PC pc );
-EXTERN PetscErrorCode PCPrometheusSetCoordinates_Prometheus( PC pc, PetscReal *coords );
+EXTERN PetscErrorCode PCSetCoordinates_Prometheus( PC pc, PetscReal *coords );
 EXTERN PetscErrorCode PCSetFromOptions_Prometheus(PC pc);
 EXTERN PetscErrorCode PCSetUp_Prometheus_Symmetric(PC pc);
 EXTERN PetscErrorCode PCSetUp_Prometheus_NonSymmetric(PC pc);
@@ -123,18 +123,18 @@ PetscErrorCode PCCreate_Prometheus(PC pc)
   pc->ops->applysymmetricleft  = 0;/* PCApplySymmetricLeftOrRight_Prometheus; */
   pc->ops->applysymmetricright = 0;/* PCApplySymmetricLeftOrRight_Prometheus; */
   ierr = PetscObjectComposeFunctionDynamic( (PetscObject)pc,
-					    "PCPrometheusSetCoordinates_C",
-					    "PCPrometheusSetCoordinates_Prometheus",
-					    PCPrometheusSetCoordinates_Prometheus);
+					    "PCSetCoordinates_C",
+					    "PCSetCoordinates_Prometheus",
+					    PCSetCoordinates_Prometheus);
   CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_END 
 #undef __FUNCT__
-#define __FUNCT__ "PCPrometheusSetCoordinates"
+#define __FUNCT__ "PCSetCoordinates"
 /*@
-   PCPrometheusSetCoordinates - sets the coordinates of all the nodes
+   PCSetCoordinates - sets the coordinates of all the nodes on the local process
 
    Collective on PC
 
@@ -154,11 +154,11 @@ EXTERN_C_END
 
 .seealso: PCPROMETHEUS
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCPrometheusSetCoordinates(PC pc,PetscReal *coords)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSetCoordinates(PC pc,PetscReal *coords)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(pc,PCPrometheusSetCoordinates_C,(PC,PetscReal*),(pc,coords));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,PCSetCoordinates_C,(PC,PetscReal*),(pc,coords));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

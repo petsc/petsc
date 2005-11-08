@@ -10,47 +10,32 @@
   CRL stands for constant row length (that is the same number of columns
   is kept (padded with zeros) for each row of the sparse matrix.
 */
-
-#include "src/mat/impls/aij/seq/aij.h"
-
-typedef struct {
-  PetscInt    ncols;    /* number of columns in each row */
-  PetscInt    *icols;   /* columns of nonzeros, stored one column at a time */ 
-  PetscScalar *acols;   /* values of nonzeros, stored as icols */
-
-  /* We need to keep a pointer to MatAssemblyEnd_SeqAIJ because we 
-   * actually want to call this function from within the 
-   * MatAssemblyEnd_SeqCRL function.  Similarly, we also need 
-   * MatDestroy_SeqAIJ and MatDuplicate_SeqAIJ. */
-  PetscErrorCode (*AssemblyEnd_SeqAIJ)(Mat,MatAssemblyType);
-  PetscErrorCode (*MatDestroy_SeqAIJ)(Mat);
-  PetscErrorCode (*MatDuplicate_SeqAIJ)(Mat,MatDuplicateOption,Mat*);
-} Mat_SeqCRL;
+#include "src/mat/impls/aij/seq/crl/crl.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqCRL"
 PetscErrorCode MatDestroy_SeqCRL(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_SeqCRL     *crl = (Mat_SeqCRL *) A->spptr;
+  Mat_CRL        *crl = (Mat_CRL *) A->spptr;
 
   /* We are going to convert A back into a SEQAIJ matrix, since we are 
-   * eventually going to use MatDestroy_SeqAIJ() to destroy everything 
+   * eventually going to use MatDestroy() to destroy everything 
    * that is not specific to CRL.
    * In preparation for this, reset the operations pointers in A to 
    * their SeqAIJ versions. */
-  A->ops->assemblyend = crl->AssemblyEnd_SeqAIJ;
-  A->ops->destroy     = crl->MatDestroy_SeqAIJ;
-  A->ops->duplicate   = crl->MatDuplicate_SeqAIJ;
+  A->ops->assemblyend = crl->AssemblyEnd;
+  A->ops->destroy     = crl->MatDestroy;
+  A->ops->duplicate   = crl->MatDuplicate;
 
-  /* Free everything in the Mat_SeqCRL data structure. */
+  /* Free everything in the Mat_CRL data structure. */
   if (crl->icols) {
     ierr = PetscFree2(crl->acols,crl->icols);CHKERRQ(ierr);
   }
-  /* Free the Mat_SeqCRL struct itself. */
+  /* Free the Mat_CRL struct itself. */
   ierr = PetscFree(crl);CHKERRQ(ierr);
 
-  /* Change the type of A back to SEQAIJ and use MatDestroy_SeqAIJ() 
+  /* Change the type of A back to SEQAIJ and use MatDestroy() 
    * to destroy everything that remains. */
   ierr = PetscObjectChangeTypeName( (PetscObject)A, MATSEQAIJ);CHKERRQ(ierr);
   /* Note that I don't call MatSetType().  I believe this is because that 
@@ -59,13 +44,13 @@ PetscErrorCode MatDestroy_SeqCRL(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDuplicate_SeqCRL(Mat A, MatDuplicateOption op, Mat *M) 
+PetscErrorCode MatDuplicate_CRL(Mat A, MatDuplicateOption op, Mat *M) 
 {
   PetscErrorCode ierr;
-  Mat_SeqCRL     *crl = (Mat_SeqCRL *) A->spptr;
+  Mat_CRL        *crl = (Mat_CRL *) A->spptr;
 
   PetscFunctionBegin;
-  ierr = (*crl->MatDuplicate_SeqAIJ)(A,op,M);CHKERRQ(ierr);
+  ierr = (*crl->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   SETERRQ(PETSC_ERR_SUP,"Cannot duplicate CRL matrices yet");    
   PetscFunctionReturn(0);
 }
@@ -75,7 +60,7 @@ PetscErrorCode MatDuplicate_SeqCRL(Mat A, MatDuplicateOption op, Mat *M)
 PetscErrorCode SeqCRL_create_crl(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)(A)->data;
-  Mat_SeqCRL     *crl = (Mat_SeqCRL*) A->spptr;
+  Mat_CRL        *crl = (Mat_CRL*) A->spptr;
   PetscInt       m = A->m;  /* Number of rows in the matrix. */
   PetscInt       *aj = a->j;  /* From the CSR representation; points to the beginning  of each row. */
   PetscInt       i, j,rmax = a->rmax,*icols, *ilen = a->ilen;
@@ -83,6 +68,9 @@ PetscErrorCode SeqCRL_create_crl(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  crl->nz   = a->nz;
+  crl->m    = A->m;
+  crl->rmax = rmax;
   ierr  = PetscMalloc2(rmax*m,PetscScalar,&crl->acols,rmax*m,PetscInt,&crl->icols);CHKERRQ(ierr);
   acols = crl->acols;
   icols = crl->icols;
@@ -105,9 +93,10 @@ PetscErrorCode SeqCRL_create_crl(Mat A)
 PetscErrorCode MatAssemblyEnd_SeqCRL(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode ierr;
-  Mat_SeqCRL     *crl = (Mat_SeqCRL*) A->spptr;
+  Mat_CRL        *crl = (Mat_CRL*) A->spptr;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
 
+  PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
   
   /* Since a MATSEQCRL matrix is really just a MATSEQAIJ with some 
@@ -119,7 +108,7 @@ PetscErrorCode MatAssemblyEnd_SeqCRL(Mat A, MatAssemblyType mode)
    * are many zero rows.  If the SeqAIJ assembly end routine decides to use 
    * this, this may break things.  (Don't know... haven't looked at it.) */
   a->inode.use = PETSC_FALSE;
-  (*crl->AssemblyEnd_SeqAIJ)(A, mode);
+  (*crl->AssemblyEnd)(A, mode);
 
   /* Now calculate the permutation and grouping information. */
   ierr = SeqCRL_create_crl(A);CHKERRQ(ierr);
@@ -129,13 +118,12 @@ PetscErrorCode MatAssemblyEnd_SeqCRL(Mat A, MatAssemblyType mode)
 #include "src/inline/dot.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMult_SeqCRL"
-PetscErrorCode MatMult_SeqCRL(Mat A,Vec xx,Vec yy)
+#define __FUNCT__ "MatMult_CRL"
+PetscErrorCode MatMult_CRL(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ *)(A)->data;
-  Mat_SeqCRL     *crl = (Mat_SeqCRL*) A->spptr;
-  PetscInt       m = A->m;  /* Number of rows in the matrix. */
-  PetscInt       rmax = a->rmax,*icols = crl->icols;
+  Mat_CRL        *crl = (Mat_CRL*) A->spptr;
+  PetscInt       m = crl->m;  /* Number of rows in the matrix. */
+  PetscInt       rmax = crl->rmax,*icols = crl->icols;
   PetscScalar    *acols = crl->acols;
   PetscErrorCode ierr;
   PetscScalar    *x,*y;
@@ -149,6 +137,13 @@ PetscErrorCode MatMult_SeqCRL(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
+  if (crl->xscat) {
+    ierr = VecCopy(xx,crl->xwork);CHKERRQ(ierr);
+    /* get remote values needed for local part of multiply */
+    ierr = VecScatterBegin(xx,crl->fwork,INSERT_VALUES,SCATTER_FORWARD,crl->xscat);CHKERRQ(ierr);
+    xx = crl->xwork;
+  };
+
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
 
@@ -179,7 +174,7 @@ PetscErrorCode MatMult_SeqCRL(Mat A,Vec xx,Vec yy)
 #endif
 
 #endif
-  ierr = PetscLogFlops(2*a->nz - m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(crl->nz - m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -199,30 +194,30 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat A,MatType type,Ma
    * from MATSEQAIJ, so we can ignore 'MatType Type'. */
   PetscErrorCode ierr;
   Mat            B = *newmat;
-  Mat_SeqCRL     *crl;
+  Mat_CRL        *crl;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_SeqCRL,&crl);CHKERRQ(ierr);
+  ierr = PetscNew(Mat_CRL,&crl);CHKERRQ(ierr);
   B->spptr = (void *) crl;
 
   /* Save a pointer to the original SeqAIJ assembly end routine, because we 
    * will want to use it later in the CRL assembly end routine. 
    * Also, save a pointer to the original SeqAIJ Destroy routine, because we 
    * will want to use it in the CRL destroy routine. */
-  crl->AssemblyEnd_SeqAIJ  = A->ops->assemblyend;
-  crl->MatDestroy_SeqAIJ   = A->ops->destroy;
-  crl->MatDuplicate_SeqAIJ = A->ops->duplicate;
+  crl->AssemblyEnd  = A->ops->assemblyend;
+  crl->MatDestroy   = A->ops->destroy;
+  crl->MatDuplicate = A->ops->duplicate;
 
   /* Set function pointers for methods that we inherit from AIJ but 
    * override. */
-  B->ops->duplicate   = MatDuplicate_SeqCRL;
+  B->ops->duplicate   = MatDuplicate_CRL;
   B->ops->assemblyend = MatAssemblyEnd_SeqCRL;
   B->ops->destroy     = MatDestroy_SeqCRL;
-  B->ops->mult        = MatMult_SeqCRL;
+  B->ops->mult        = MatMult_CRL;
 
   /* If A has already been assembled, compute the permutation. */
   if (A->assembled == PETSC_TRUE) {

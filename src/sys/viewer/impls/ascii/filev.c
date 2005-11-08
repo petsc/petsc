@@ -52,7 +52,7 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
       ierr = MPI_Attr_put(viewer->comm,Petsc_Viewer_keyval,vlink->next);CHKERRQ(ierr);
       ierr = PetscFree(vlink);CHKERRQ(ierr);
     } else {
-      while (vlink->next) {
+      while (vlink && vlink->next) {
         if (vlink->next->viewer == viewer) {
           PetscViewerLink *nv = vlink->next;
           vlink->next = vlink->next->next;
