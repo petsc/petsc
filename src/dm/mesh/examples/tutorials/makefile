@@ -28,7 +28,7 @@ valex1:
 	-@valgrind --tool=memcheck ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
 
 runex1_pylith:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local -base_file /PETSc3/geoframe/packages/lithomop/lithomop3d/examples/lintet/bm1b/bm1b ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file /PETSc3/geoframe/packages/lithomop/lithomop3d/examples/lintet/bm1b/bm1b ${EXTRA_ARGS}
 
 runex1_2:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d

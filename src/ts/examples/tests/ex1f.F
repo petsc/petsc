@@ -439,14 +439,14 @@
 #include "ex1f.h"
       TS               ts
       double precision t
-      Vec              globalin,globalout
-      PetscObject      ctx
-      Vec              local
+      Vec globalin,globalout
+      PetscObject ctx
+      Vec local
       PetscErrorCode  ierr
       PetscInt i,localsize
-      PetscOffset      ldx,cdx 
-      PetscScalar  copyptr(1),localptr(1)
-      PetscScalar  sc
+      PetscOffset ldx,cdx 
+      PetscScalar copyptr(1),localptr(1)
+      PetscScalar sc
 
 !  Extract local array  
 
