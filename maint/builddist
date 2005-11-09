@@ -68,6 +68,10 @@ version_minor=`grep '^#define PETSC_VERSION_MINOR ' include/petscversion.h |tr -
 version_subminor=`grep '^#define PETSC_VERSION_SUBMINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 
+#generated a couple of more values
+version_patch_date=`date`
+version_bk=`bk changes -k -r+`
+
 if  [ ${version_release} = 0 ]; then
   version=-dev
 elif [ ${version_release} = 1 ]; then
@@ -108,8 +112,16 @@ cd $tmpdir/petsc$version
 /bin/mv bmake/common/rules bmake/common/rules.bak
 /bin/grep -v 'chmod' bmake/common/rules.bak > bmake/common/rules
 /bin/rm -f  bmake/common/rules.bak
+
+#add in PETSC_VERSION_PATCH_DATE and PETSC_VERSION_BK
+/bin/mv include/petscversion.h include/petscversion.h.bak
+cat include/petscversion.h.bak | \
+  sed -e "s/#define PETSC_VERSION_PATCH_DATE.*/#define PETSC_VERSION_PATCH_DATE \"${version_patch_date}\"/" | \
+  sed -e "s/#define PETSC_VERSION_BK.*/#define PETSC_VERSION_BK         \"${version_bk}\"/" > include/petscversion.h
+/bin/rm include/petscversion.h.bak
+
 # just to be sure
-/bin/rm -rf configure.log* RDict.* lib
+/bin/rm -rf configure.log* RDict.* lib RESYNC PENDING
 # eliminate .html files in src/contrib
 /usr/bin/find src/contrib -type f -name "*.html" -exec /bin/rm -f {} \;
 # eliminate .pyc files if any

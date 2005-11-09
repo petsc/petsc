@@ -18,6 +18,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_VERSION_PATCH      41
 #define PETSC_VERSION_DATE       "April, 26, 2005"
 #define PETSC_VERSION_PATCH_DATE "November, 1, 2005"
+#define PETSC_VERSION_BK         "unknown"
 #define PETSC_AUTHOR_INFO        "\
        The PETSc Team\n\
     petsc-maint@mcs.anl.gov\n\
@@ -26,11 +27,13 @@ PETSC_EXTERN_CXX_BEGIN
 #if (PETSC_VERSION_RELEASE == 1)
 #define PetscGetVersion(version) (sprintf(*(version),"Petsc Release Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
-                                         PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_DATE),0)
+                                         PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_PATCH_DATE), \
+                                         PetscStrcat(*(version),"\nBK revision: "),PetscStrcat(*(version),PETSC_VERSION_BK),0)
 #else
 #define PetscGetVersion(version) (sprintf(*(version),"Petsc Development Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
-                                         PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_DATE),0)
+                                         PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_PATCH_DATE), \
+                                         PetscStrcat(*(version),"\nBK revision: "),PetscStrcat(*(version),PETSC_VERSION_BK),0)
 #endif
 
 /*MC
