@@ -58,7 +58,7 @@ PetscErrorCode MPICRL_create_crl(Mat A)
   PetscInt       m = A->m;  /* Number of rows in the matrix. */
   PetscInt       *aj = Aij->j,*bj = Bij->j;  /* From the CSR representation; points to the beginning  of each row. */
   PetscInt       i, j,rmax = 0,*icols, *ailen = Aij->ilen, *bilen = Bij->ilen;
-  PetscScalar    *aa = Aij->a,*ba = Bij->a,*acols;
+  PetscScalar    *aa = Aij->a,*ba = Bij->a,*acols,*array;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
