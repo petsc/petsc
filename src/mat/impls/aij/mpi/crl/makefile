@@ -2,10 +2,10 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = crl.c
+SOURCEC  = mcrl.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = crl.o
+OBJSC    = mcrl.o
 OBJSF    = 
 LIBBASE  = libpetscmat
 DIRS     = 

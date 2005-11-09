@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = -DPETSC_LIB_DIR='"${PETSC_LIB_DIR}"'
+CPPFLAGS  = -DPETSC_LIB_DIR='"${INSTALL_DIR}/lib/${PETSC_ARCH}"'
 SOURCEC	  = gcomm.c   gtype.c   olist.c    pname.c  tagm.c \
             destroy.c gcookie.c inherit.c options.c pgname.c prefix.c init.c \
 	    pinit.c ptype.c state.c aoptions.c

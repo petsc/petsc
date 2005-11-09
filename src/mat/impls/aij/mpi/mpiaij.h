@@ -88,6 +88,9 @@ EXTERN PetscErrorCode MatSetValues_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt
 EXTERN PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat);
 EXTERN PetscErrorCode PetscObjectContainerDestroy_Mat_MatMatMultMPI(void*);
 
+EXTERN_C_BEGIN
+EXTERN PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
+EXTERN_C_END
 
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
 EXTERN PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,MatFactorInfo*,Mat*);

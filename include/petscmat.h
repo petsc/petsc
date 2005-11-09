@@ -256,6 +256,9 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat,Mat*);
 PetscPolymorphicFunction(MatCreateNormal,(Mat mat),(mat,&A),Mat,A)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateLRC(Mat,Mat,Mat,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,ISLocalToGlobalMapping,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPICRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
+
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat);
 

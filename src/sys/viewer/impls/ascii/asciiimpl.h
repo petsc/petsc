@@ -17,7 +17,7 @@ typedef struct {
 
 typedef struct PetscViewerLink_t PetscViewerLink;
 struct PetscViewerLink_t {
-  PetscViewer            viewer;
+  PetscViewer              viewer;
   struct PetscViewerLink_t *next;
 };
 
