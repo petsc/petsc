@@ -27,6 +27,7 @@ class Configure(config.base.Configure):
     self.debugging = framework.require('PETSc.utilities.debugging', self)
     self.compilers = framework.require('config.compilers', self)
     self.libraries = framework.require('config.libraries', self)
+    self.languages = framework.require('PETSc.utilities.languages', self)
     return
 
   def isBGL(self):
@@ -55,7 +56,7 @@ class Configure(config.base.Configure):
       self.useFortranKernels = 'bgl'
     elif 'with-fortran-kernels' in self.framework.argDB:
       self.useFortranKernels = self.framework.argDB['with-fortran-kernels'].lower()
-    elif self.framework.argDB['with-precision'].lower() == 'matsingle':
+    elif self.languages.precision == 'matsingle':
       self.logPrint('Enabling fortran kernels automatically due to matsingle option')
       self.useFortranKernels = 'generic'
     else:
