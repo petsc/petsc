@@ -55,6 +55,9 @@ class Configure(config.base.Configure):
       self.useFortranKernels = 'bgl'
     elif 'with-fortran-kernels' in self.framework.argDB:
       self.useFortranKernels = self.framework.argDB['with-fortran-kernels'].lower()
+    elif self.framework.argDB['with-precision'].lower() == 'matsingle':
+      self.logPrint('Enabling fortran kernels automatically due to matsingle option')
+      self.useFortranKernels = 'generic'
     else:
       self.useFortranKernels = 'none'
 
