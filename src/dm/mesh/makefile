@@ -1,3 +1,4 @@
+#requireslanguage CXXONLY
 
 ALL: lib
 
