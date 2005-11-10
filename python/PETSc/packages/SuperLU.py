@@ -14,7 +14,7 @@ class Configure(PETSc.package.Package):
     self.includes   = ['slu_ddefs.h']
     self.libdir     = ''
     self.includedir = 'SRC'
-    self.liblist    = [['superlu.a']]
+    self.liblist    = [['libsuperlu.a']]
     self.complex    = 1
     self.excludename = ['SuperLU_DIST']
     return
@@ -35,7 +35,7 @@ class Configure(PETSc.package.Package):
       output  = config.base.Configure.executeShellCommand('cd '+superluDir+'; rm -f make.inc', timeout=2500, log = self.framework.log)[0]
     g = open(os.path.join(superluDir,'make.inc'),'w')
     g.write('TMGLIB       = tmglib.a\n')
-    g.write('SUPERLULIB   = superlu.a\n')
+    g.write('SUPERLULIB   = libsuperlu.a\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('ARCH         = '+self.setCompilers.AR+'\n')
@@ -76,7 +76,7 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
     else:
       self.framework.log.write('Do NOT need to compile SuperLU downloaded libraries\n')  
-    if not os.path.isfile(os.path.join(installDir,self.libdir,'superlu.a')):
+    if not os.path.isfile(os.path.join(installDir,self.libdir,'libsuperlu.a')):
         self.framework.log.write('Error running make on SUPERLU   ******(libraries not installed)*******\n')
         self.framework.log.write('********Output of running make on SUPERLU follows *******\n')        
         self.framework.log.write(output)
