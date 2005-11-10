@@ -13,7 +13,7 @@ class Configure(PETSc.package.Package):
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
     self.libdir     = ''
-    self.liblist    = [['superlu.a']]
+    self.liblist    = [['libsuperlu_dist.a']]
     self.includedir = 'SRC'
     self.complex    = 1
     return
@@ -35,7 +35,7 @@ class Configure(PETSc.package.Package):
       output  = config.base.Configure.executeShellCommand('cd '+superluDir+'; rm -f make.inc', timeout=2500, log = self.framework.log)[0]
     g = open(os.path.join(superluDir,'make.inc'),'w')
     g.write('DSuperLUroot = '+superluDir+'\n')
-    g.write('DSUPERLULIB  = $(DSuperLUroot)/superlu.a\n')
+    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist.a\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('IMPI         = '+self.headers.toString(self.mpi.include)+'\n')
