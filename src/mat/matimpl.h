@@ -147,7 +147,8 @@ struct _MatOps {
   PetscErrorCode (*imaginarypart)(Mat);
   PetscErrorCode (*getrowuppertriangular)(Mat);
   PetscErrorCode (*restorerowuppertriangular)(Mat);
-  /*106*/
+  /*110*/
+  PetscErrorCode (*matsolve)(Mat,Mat,Mat);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

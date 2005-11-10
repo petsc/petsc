@@ -403,8 +403,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAdd(Mat,Vec,Vec,Vec);
 PetscPolymorphicSubroutine(MatMultTransposeAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultConstrained(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeConstrained(Mat,Vec,Vec);
-
-
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat,Mat,Mat);
 
 /*E
     MatDuplicateOption - Indicates if a duplicated sparse matrix should have
@@ -1406,7 +1405,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_PTAP_NUMERIC_MPIAIJ=102,
                MATOP_SET_VALUES_ROW = 105,
                MATOP_GET_ROW_UTRIANGULAR=108,
-               MATOP_RESTORE_ROW_UTRIANGULAR=109
+               MATOP_RESTORE_ROW_UTRIANGULAR=109,
+               MATOP_MATSOLVE=110
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));

@@ -355,8 +355,8 @@
       PetscEnum MATOP_SET_VALUES_ROW
       PetscEnum MATOP_GET_ROW_UTRIANGULAR
       PetscEnum MATOP_RESTORE_ROW_UTRIANGULAR
+      PetscEnum MATOP_MATSOLVE
   
-
       parameter(MATOP_SET_VALUES=0)
       parameter(MATOP_GET_ROW=1)
       parameter(MATOP_RESTORE_ROW=2)
@@ -462,7 +462,8 @@
       parameter(MATOP_PTAP_NUMERIC_MPIAIJ=102)
       parameter(MATOP_SET_VALUES_ROW=105)
       parameter(MATOP_GET_ROW_UTRIANGULAR=108)  
-      parameter(MATOP_RESTORE_ROW_UTRIANGULAR=109)      
+      parameter(MATOP_RESTORE_ROW_UTRIANGULAR=109) 
+      parameter(MATOP_MATSOLVE=110)
 !
 !  
 !

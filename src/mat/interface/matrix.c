@@ -10,7 +10,7 @@
 /* Logging support */
 PetscCookie PETSCMAT_DLLEXPORT MAT_COOKIE = 0;
 PetscEvent  MAT_Mult = 0, MAT_Mults = 0, MAT_MultConstrained = 0, MAT_MultAdd = 0, MAT_MultTranspose = 0;
-PetscEvent  MAT_MultTransposeConstrained = 0, MAT_MultTransposeAdd = 0, MAT_Solve = 0, MAT_Solves = 0, MAT_SolveAdd = 0, MAT_SolveTranspose = 0;
+PetscEvent  MAT_MultTransposeConstrained = 0, MAT_MultTransposeAdd = 0, MAT_Solve = 0, MAT_Solves = 0, MAT_SolveAdd = 0, MAT_SolveTranspose = 0, MAT_MatSolve = 0;
 PetscEvent  MAT_SolveTransposeAdd = 0, MAT_Relax = 0, MAT_ForwardSolve = 0, MAT_BackwardSolve = 0, MAT_LUFactor = 0, MAT_LUFactorSymbolic = 0;
 PetscEvent  MAT_LUFactorNumeric = 0, MAT_CholeskyFactor = 0, MAT_CholeskyFactorSymbolic = 0, MAT_CholeskyFactorNumeric = 0, MAT_ILUFactor = 0;
 PetscEvent  MAT_ILUFactorSymbolic = 0, MAT_ICCFactorSymbolic = 0, MAT_Copy = 0, MAT_Convert = 0, MAT_Scale = 0, MAT_AssemblyBegin = 0;
@@ -2435,6 +2435,63 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolve(Mat mat,Vec b,Vec x)
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatSolve"
+/*@
+   MatMatSolve - Solves A X = B, given a factored matrix.
+
+   Collective on Mat 
+
+   Input Parameters:
++  mat - the factored matrix
+-  b - the right-hand-side vector
+
+   Output Parameter:
+.  x - the result vector
+
+   Notes:
+   The vectors b and x cannot be the same.  I.e., one cannot
+   call MatMatSolve(A,x,x).
+
+   Notes:
+   Most users should employ the simplified KSP interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., KSPCreate().
+
+   Level: developer
+
+   Concepts: matrices^triangular solves
+
+.seealso: MatMatSolveAdd(), MatMatSolveTranspose(), MatMatSolveTransposeAdd()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat A,Mat B,Mat X)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
+  PetscValidHeaderSpecific(B,MAT_COOKIE,2); 
+  PetscValidHeaderSpecific(X,MAT_COOKIE,3);
+  PetscCheckSameComm(A,1,B,2);
+  PetscCheckSameComm(A,1,X,3);
+  if (X == B) SETERRQ(PETSC_ERR_ARG_IDN,"X and B must be different matrices");
+  if (!A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
+  if (A->N != X->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat A,Mat X: global dim %D %D",A->N,X->M);
+  if (A->M != B->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim %D %D",A->M,B->M);
+  if (A->m != B->m) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D",A->m,B->m); 
+  if (!A->M && !A->N) PetscFunctionReturn(0);
+  if (!A->ops->matsolve) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",A->type_name);
+  ierr = MatPreallocated(A);CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(MAT_MatSolve,A,B,X,0);CHKERRQ(ierr);
+  ierr = (*A->ops->matsolve)(A,B,X);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatSolve,A,B,X,0);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)X);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatForwardSolve"

@@ -623,6 +623,60 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatSolve_SeqAIJ"
+PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  IS             iscol = a->col,isrow = a->row;
+  PetscErrorCode ierr;
+  PetscInt       *r,*c,i, n = A->m,*vi,*ai = a->i,*aj = a->j;
+  PetscInt       nz,*rout,*cout,neq; 
+  PetscScalar    *x,*b,*tmp,*tmps,*aa = a->a,sum,*v; 
+
+  PetscFunctionBegin;
+  if (!n) PetscFunctionReturn(0);
+
+  ierr = MatGetArray(B,&b);CHKERRQ(ierr); 
+  ierr = MatGetArray(X,&x);CHKERRQ(ierr);
+  
+  tmp  = a->solve_work;
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
+
+  for (neq=0; neq<n; neq++){
+    /* forward solve the lower triangular */
+    tmp[0] = b[r[0]];
+    tmps   = tmp;
+    for (i=1; i<n; i++) {
+      v   = aa + ai[i] ;
+      vi  = aj + ai[i] ;
+      nz  = a->diag[i] - ai[i];
+      sum = b[r[i]];
+      SPARSEDENSEMDOT(sum,tmps,v,vi,nz); 
+      tmp[i] = sum;
+    }
+    /* backward solve the upper triangular */
+    for (i=n-1; i>=0; i--){
+      v   = aa + a->diag[i] + 1;
+      vi  = aj + a->diag[i] + 1;
+      nz  = ai[i+1] - a->diag[i] - 1;
+      sum = tmp[i];
+      SPARSEDENSEMDOT(sum,tmps,v,vi,nz); 
+      x[c[i]] = tmp[i] = sum*aa[a->diag[i]];
+    }
+
+    b += n;
+    x += n;
+  }
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = MatRestoreArray(B,&b);CHKERRQ(ierr); 
+  ierr = MatRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(n*(2*a->nz - n));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}  
+
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering"
