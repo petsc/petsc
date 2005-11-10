@@ -541,6 +541,10 @@ class Configure(config.base.Configure):
       loc2 = output.find(' -lpgf90rtl -lpgftnrtl')
       if loc2 >= -1:
         output = output[0:loc] + ' -lpgf90rtl -lpgftnrtl' + output[loc:]
+    elif output.find(' -lpgf90rtl') >= 0:
+      # somehow doing this hacky thing appears to get rid of error with undefined __hpf_exit
+      self.logPrint('Removing -lpgf90rtl from library list')
+      output = output.replace(' -lpgf90rtl','')
         
     # The easiest thing to do for xlf output is to replace all the commas
     # with spaces.  Try to only do that if the output is really from xlf,
