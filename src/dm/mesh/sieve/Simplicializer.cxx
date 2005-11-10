@@ -599,18 +599,24 @@ PetscErrorCode MeshDistribute(Mesh mesh)
 . numBoundaryVertices - The number of vertices in the mesh boundary
 - boundaryVertices - The indices of all boundary vertices
 
+  Output Parameters:
++ boundaryBundle - A numbering for the boundary values
+- boundaryVec - The vector of boundary values
+
   Level: developer
 
 .seealso MeshCreate(), MeshGetTopology(), MeshSetTopology()
 */
-PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, PetscInt numBoundaryComponents, PetscInt *boundaryVertices, PetscScalar *boundaryValues)
+PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, PetscInt numBoundaryComponents, PetscInt *boundaryVertices, PetscScalar *boundaryValues, void **boundaryBundle, Vec *boundaryVec)
 {
-  MPI_Comm       comm;
+  MPI_Comm          comm;
   PetscObjectGetComm((PetscObject) mesh, &comm);
-  ALE::Sieve    *boundary = new ALE::Sieve(comm);
-  ALE::Sieve    *topology;
-  PetscInt       numElements;
-  PetscErrorCode ierr;
+  ALE::Sieve       *boundary = new ALE::Sieve(comm);
+  ALE::Sieve       *topology;
+  ALE::IndexBundle *bdBundle;
+  PetscScalar      *values;
+  PetscInt          numElements;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
@@ -625,18 +631,41 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
     boundary->setVerbosity(11);
   }
   /* Should also put in boundary edges */
-  for(int v = 0; v < numBoundaryVertices; v++) {
+  bdBundle = new ALE::IndexBundle(topology);
+  for(int v = numBoundaryVertices-1; v >= 0; v--) {
     ALE::Point vertex = ALE::Point(0, boundaryVertices[v*(numBoundaryComponents+1)] + numElements);
-    ALE::Point boundaryPoint(0, boundaryVertices[v*(numBoundaryComponents+1)+1]);
 
-    if (topology->capContains(vertex)) {
-      boundary->addCone(vertex, boundaryPoint);
+    if (topology->capContains(vertex) && !boundary->capContains(vertex)) {
+      bdBundle->setFiberDimension(vertex, numBoundaryComponents);
+      for(int c = 0; c < numBoundaryComponents; c++) {
+        ALE::Point boundaryPoint(c, boundaryVertices[v*(numBoundaryComponents+1)+c+1]);
+
+        boundary->addCone(vertex, boundaryPoint);
+      }
     }
   }
   if (debug) {
     boundary->view("Boundary sieve");
   }
-  ierr = MeshSetBoundary(mesh, (void *) boundary);CHKERRQ(ierr);
+  if (boundaryVec) {
+    ierr = VecCreate(PETSC_COMM_SELF, boundaryVec);CHKERRQ(ierr);
+    ierr = VecSetSizes(*boundaryVec, bdBundle->getFiberDimension(topology->depthStratum(0)), PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetFromOptions(*boundaryVec);CHKERRQ(ierr);
+    ierr = VecGetArray(*boundaryVec, &values);CHKERRQ(ierr);
+    for(int v = 0; v < numBoundaryVertices; v++) {
+      ALE::Point vertex = ALE::Point(0, boundaryVertices[v*(numBoundaryComponents+1)] + numElements);
+      ALE::Point interval = bdBundle->getFiberInterval(vertex);
+
+      for(int c = 0; c < numBoundaryComponents; c++) {
+        values[interval.prefix+c] = boundaryValues[v*numBoundaryComponents+c];
+      }
+    }
+    ierr = VecRestoreArray(*boundaryVec, &values);CHKERRQ(ierr);
+    ierr = MeshSetBoundary(mesh, (void *) boundary);CHKERRQ(ierr);
+  }
+  if (boundaryBundle) {
+    *boundaryBundle = bdBundle;
+  }
   PetscFunctionReturn(0);
 }
 
