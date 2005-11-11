@@ -48,7 +48,7 @@ class Configure(PETSc.package.Package):
     help.addArgument('MPI', '-with-mpi-shared=<bool>',            nargs.ArgBool(None, 1, 'Require that the MPI library be shared'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-download-mpich-machines=[machine1,machine2...]',  nargs.Arg(None, ['localhost','localhost'], 'Machines for MPI to use'))
-    help.addArgument('MPI', '-download-mpich-pm=mpd or gforker',  nargs.Arg(None, 'mpd', 'Launcher for MPI processes')) 
+    help.addArgument('MPI', '-download-mpich-pm=gforker or mpd',  nargs.Arg(None, 'gforker', 'Launcher for MPI processes')) 
     return
 
   def setupDependencies(self, framework):
