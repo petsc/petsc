@@ -294,7 +294,7 @@ namespace ALE {
   #define __FUNCT__ "IndexBundle::__getMaxDepthElement"
   ALE::Point IndexBundle::__getMaxDepthElement(Obj<Point_set> points) {
     ALE::Point max(-1, 0);
-    int32_t    maxDepth = 0;
+    int32_t    maxDepth = -1;
 
     for(ALE::Point_set::iterator e_itor = points->begin(); e_itor != points->end(); e_itor++) {
       int32_t depth = this->getTopology()->depth(*e_itor);
