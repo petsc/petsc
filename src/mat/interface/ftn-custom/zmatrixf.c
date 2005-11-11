@@ -16,6 +16,7 @@
 #define matzerorowsis_                   MATZEROROWSIS
 #define matzerorowslocal_                MATZEROROWSLOCAL
 #define matzerorowslocalis_              MATZEROROWSLOCALIS
+#define matsetoptionsprefix_             MATSETOPTIONSPREFIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matgetrowij_                     matgetrowij
 #define matrestorerowij_                 matrestorerowij
@@ -31,6 +32,7 @@
 #define matzerorowsis_                   matzerorowsis
 #define matzerorowslocal_                matzerorowslocal
 #define matzerorowslocalis_              matzerorowslocalis
+#define matsetoptionsprefix_             matsetoptionsprefix
 #endif
 
 EXTERN_C_BEGIN
@@ -184,5 +186,17 @@ void PETSC_STDCALL matzerorowslocalis_(Mat *mat,IS *is,PetscScalar *diag,PetscEr
 {
   *ierr = MatZeroRowsLocalIS(*mat,*is,*diag);
 }
+
+
+void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,CHAR prefix PETSC_MIXED_LEN(len),
+                                        PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(prefix,len,t);
+  *ierr = MatSetOptionsPrefix(*mat,t);
+  FREECHAR(prefix,t);
+}
+
 
 EXTERN_C_END
