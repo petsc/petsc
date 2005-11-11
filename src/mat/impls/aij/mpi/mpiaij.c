@@ -2336,7 +2336,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAIJSetPreallocationCSR"
-/*@C
+/*@
    MatMPIAIJSetPreallocationCSR - Allocates memory for a sparse parallel matrix in AIJ format
    (the default parallel PETSc format).  
 
