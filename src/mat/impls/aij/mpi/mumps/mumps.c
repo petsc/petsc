@@ -170,7 +170,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MUMPS_Base(Mat A,MatType type,MatRe
   B->ops->choleskyfactorsymbolic = mumps->MatCholeskyFactorSymbolic;
   B->ops->destroy                = mumps->MatDestroy;
 
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",(FCNVOID)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",(PetscVoidFunction)&f);CHKERRQ(ierr);
   if (f) {
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C","",(FCNVOID)mumps->MatPreallocate);CHKERRQ(ierr);
   }
@@ -474,7 +474,7 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,MatFactorInfo *info,Mat *F)
     lua->myid = lu->myid; lua->size = lu->size;
     lu->id.job = JOB_INIT; 
     ierr = MPI_Comm_dup(A->comm,&(lu->comm_mumps));CHKERRQ(ierr);
-    lu->id.comm_fortran = lu->comm_mumps;
+    lu->id.comm_fortran = PetscFromPointerComm(lu->comm_mumps);
 
     /* Set mumps options */
     ierr = PetscOptionsBegin(A->comm,A->prefix,"MUMPS Options","Mat");CHKERRQ(ierr);
@@ -928,7 +928,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SBAIJ_SBAIJMUMPS(Mat A,MatType newt
                                              "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
   } else {
   /* I really don't like needing to know the tag: MatMPISBAIJSetPreallocation_C */
-    ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
+    ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",(PetscVoidFunction)&f);CHKERRQ(ierr);
     if (f) { /* This case should always be true when this routine is called */
       mumps->MatPreallocate = (PetscErrorCode (*)(Mat,int,int,int*,int,int*))f;
       ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPISBAIJSetPreallocation_C",
