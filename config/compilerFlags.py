@@ -89,7 +89,8 @@ class Configure(config.base.Configure):
         self.rejected[language] = []
         for bopt in bopts:
           if not bopt == '' and self.getOptionalFlagsName(language) in self.framework.argDB:
-            flags = self.framework.argDB[self.getOptionalFlagsName(language)].split()
+            # treat user supplied optons as single option - as it coud include options separated by spaces '-tp k8-64'
+            flags = [self.framework.argDB[self.getOptionalFlagsName(language))]
           else:
             flags = options.getCompilerFlags(language, self.setCompilers.getCompiler(), bopt)
           for testFlag in flags:
