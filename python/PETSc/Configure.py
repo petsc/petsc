@@ -93,7 +93,8 @@ class Configure(config.base.Configure):
 
     # executable linker values
     self.setCompilers.pushLanguage(self.languages.clanguage)
-    self.addMakeMacro('CC_LINKER',self.setCompilers.getLinker())
+    cc_linker = self.setCompilers.getLinker()
+    self.addMakeMacro('CC_LINKER',cc_linker)
     self.addMakeMacro('CC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
@@ -114,7 +115,12 @@ class Configure(config.base.Configure):
 
       # executable linker values
       self.setCompilers.pushLanguage('FC')
-      self.addMakeMacro('FC_LINKER',self.setCompilers.getLinker())
+      # Cannot have NAG f90 as the linker - so use cc_linker as fc_linker
+      fc_linker = self.setCompilers.getLinker()
+      if config.setCompilers.Configure.isNAG(fc_linker):
+        self.addMakeMacro('FC_LINKER',cc_linker)
+      else:
+        self.addMakeMacro('FC_LINKER',fc_linker)
       self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       self.setCompilers.popLanguage()
       # '' for Unix, .exe for Windows
