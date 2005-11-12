@@ -3,6 +3,10 @@ import config.base
 
 import os
 
+# not sure how to handle this with 'self' so its outside the class
+def noCheck(command, status, output, error):
+  return
+
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -87,6 +91,18 @@ class Configure(config.base.Configure):
     self.headers = framework.require('config.headers', None)
     self.libraries = framework.require('config.libraries', None)
     return
+
+  def isNAG(compiler):
+    '''Returns true if the compiler is a NAG F90 compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V',checkCommand = noCheck)
+      output = output + error
+      if output.find('NAGWare Fortran') >= 0 or output.find('The Numerical Algorithms Group Ltd') >= 0:
+        return 1
+    except RuntimeError:
+      pass
+    return 0
+  isNAG = staticmethod(isNAG)
 
   def isGNU(compiler):
     '''Returns true if the compiler is a GNU compiler'''

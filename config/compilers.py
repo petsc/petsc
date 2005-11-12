@@ -519,9 +519,12 @@ class Configure(config.base.Configure):
     for writing this extremely useful macro.'''
     if not hasattr(self.setCompilers, 'CC') or not hasattr(self.setCompilers, 'FC'): 
       return
-    oldFlags = self.setCompilers.LDFLAGS
-    self.setCompilers.LDFLAGS += ' -v'
     self.pushLanguage('FC')
+    oldFlags = self.setCompilers.LDFLAGS
+    if config.setCompilers.Configure.isNAG(self.getCompiler()):
+      self.setCompilers.LDFLAGS += ' --verbose'
+    else:
+      self.setCompilers.LDFLAGS += ' -v'
     (output, returnCode) = self.outputLink('', '')
     self.setCompilers.LDFLAGS = oldFlags
     self.popLanguage()
@@ -669,6 +672,8 @@ class Configure(config.base.Configure):
               founddir = 1
           if founddir:
             continue
+        if arg.find('quickfit.o')>=0:
+          flibs.append(arg)
         self.logPrint('Unknown arg '+arg, 4, 'compilers')
     except StopIteration:
       pass
