@@ -141,6 +141,7 @@ PetscErrorCode MatMult_CRL(Mat A,Vec xx,Vec yy)
     ierr = VecCopy(xx,crl->xwork);CHKERRQ(ierr);
     /* get remote values needed for local part of multiply */
     ierr = VecScatterBegin(xx,crl->fwork,INSERT_VALUES,SCATTER_FORWARD,crl->xscat);CHKERRQ(ierr);
+    ierr = VecScatterEnd(xx,crl->fwork,INSERT_VALUES,SCATTER_FORWARD,crl->xscat);CHKERRQ(ierr);
     xx = crl->xwork;
   };
 

@@ -66,7 +66,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
-  /* For the first stab we make an array as long as the number of columns */
+  /* Make an array as long as the number of columns */
   /* mark those columns that are in aij->B */
   ierr = PetscMalloc((N+1)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   ierr = PetscMemzero(indices,N*sizeof(PetscInt));CHKERRQ(ierr);
