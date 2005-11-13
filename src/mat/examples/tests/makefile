@@ -390,7 +390,7 @@ ex104: ex104.o chkopts
 	${RM} ex104.o
 
 ex105f: ex105f.o chkopts
-	-${CLINKER} -o ex105f ex105f.o ${PETSC_MAT_LIB}
+	-${FLINKER} -o ex105f ex105f.o ${PETSC_MAT_LIB}
 	${RM} ex105f.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3

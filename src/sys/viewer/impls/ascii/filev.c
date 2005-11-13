@@ -49,7 +49,9 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   ierr = MPI_Attr_get(viewer->comm,Petsc_Viewer_keyval,(void**)&vlink,(PetscMPIInt*)&flg);CHKERRQ(ierr);
   if (flg) {
     if (vlink->viewer == viewer) {
-      ierr = MPI_Attr_put(viewer->comm,Petsc_Viewer_keyval,vlink->next);CHKERRQ(ierr);
+      if (vlink->next) { /* do not insert NULL */
+        ierr = MPI_Attr_put(viewer->comm,Petsc_Viewer_keyval,vlink->next);CHKERRQ(ierr);
+      }
       ierr = PetscFree(vlink);CHKERRQ(ierr);
     } else {
       while (vlink && vlink->next) {
