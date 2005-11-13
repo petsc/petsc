@@ -24,6 +24,8 @@ PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE = 0;
 
 .keywords: PC, null space, create
 
+.level: advanced
+
 .seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace, MatNullSpaceCreate()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(Vec,void*),void *ctx)

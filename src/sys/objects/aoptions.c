@@ -98,7 +98,7 @@ static int PetscOptionsCreate_Private(const char opt[],const char text[],const c
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsGetFromGui"
-static PetscErrorCode PetscOptionsGetFromGUI()
+PetscErrorCode PetscOptionsGetFromGUI()
 {
   PetscErrorCode ierr;
   PetscOptions   next = PetscOptionsObject.next;

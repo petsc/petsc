@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/impls/aij/mpi/mpiaij.h"
+#include "src/mat/impls/aij/mpi/mpiaij.h"   /*I "petscmat.h" I*/
 #include "src/inline/spops.h"
 
 /* 
