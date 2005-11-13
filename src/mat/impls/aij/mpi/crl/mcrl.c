@@ -36,6 +36,15 @@ PetscErrorCode MatDestroy_MPICRL(Mat A)
   if (crl->icols) {
     ierr = PetscFree2(crl->acols,crl->icols);CHKERRQ(ierr);
   }
+  if (crl->fwork) {
+    ierr = VecDestroy(crl->fwork);CHKERRQ(ierr);
+  }
+  if (crl->xwork) {
+    ierr = VecDestroy(crl->xwork);CHKERRQ(ierr);
+  }
+  if (crl->array) {
+    ierr = PetscFree(crl->array);CHKERRQ(ierr);
+  }
   /* Free the Mat_CRL struct itself. */
   ierr = PetscFree(crl);CHKERRQ(ierr);
 
@@ -93,6 +102,7 @@ PetscErrorCode MPICRL_create_crl(Mat A)
   /* xwork array is actually Bij->n+nd long, but we define xwork this length so can copy into it */
   ierr = VecCreateMPIWithArray(A->comm,nd,PETSC_DECIDE,array,&crl->xwork);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->B->n,array+nd,&crl->fwork);CHKERRQ(ierr);
+  crl->array = array;
   crl->xscat = a->Mvctx;
   PetscFunctionReturn(0);
 }
