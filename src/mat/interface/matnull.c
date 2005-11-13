@@ -22,9 +22,9 @@ PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE = 0;
 .  rem - the function that removes the null space
 -  ctx - context for the remove function
 
-.keywords: PC, null space, create
+   Level: advanced
 
-.level: advanced
+.keywords: PC, null space, create
 
 .seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace, MatNullSpaceCreate()
 @*/
