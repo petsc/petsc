@@ -9,7 +9,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.name         = 'BlockSolve'
+    self.name         = 'BlockSolve95'
     self.downloadname = self.name
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
@@ -119,7 +119,10 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    if self.framework.argDB['with-blocksolve95']:
+    if 'with-'+self.package+'-dir' in self.framework.argDB or 'with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB:
+      self.framework.argDB['with-'+self.package] = 1
+
+    if self.framework.argDB['with-'+self.package]:
       if self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
       if self.libraryOptions.integerSize == 64:
