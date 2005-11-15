@@ -66,8 +66,9 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
   } else {
     SETERRQ(PETSC_ERR_ARG_NULL,"Container does not exit");
   }
+  A->ops->destroy = mult->MatDestroy;
   ierr = PetscObjectCompose((PetscObject)A,"Mat_MatMatMultMPI",0);CHKERRQ(ierr);
-  ierr = (*mult->MatDestroy)(A);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
