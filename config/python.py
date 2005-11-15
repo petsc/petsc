@@ -27,13 +27,13 @@ class Configure(config.base.Configure):
     return
 
   def configureDisutils(self):
-    '''Check that disutils is functional, and can return the required config vars'''
+    '''Check that disutils.sysconfig is functional, and can return the required config vars'''
     try:
       try:
         import distutils.sysconfig
       except ImportError, e:
-        self.framework.logPrint('Error importing distutils: '+str(e))
-        raise RuntimeError('Python is not fully installed. Please consult your packing system.')
+        self.framework.logPrint('Error importing distutils.sysconfig: '+str(e))
+        raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
 
       try:
         distutils.sysconfig.get_python_inc()
