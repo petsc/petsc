@@ -110,14 +110,31 @@ void PETSC_STDCALL petscerror_(int *number,int *p,CHAR message PETSC_MIXED_LEN(l
   FREECHAR(message,t1);
 }
 
-void PETSC_STDCALL petscrealview_(PetscInt *n,PetscReal *d,int *viwer,PetscErrorCode *ierr)
+void PETSC_STDCALL petscrealview_(PetscInt *n,PetscReal *d,PetscViewer *viwer,PetscErrorCode *ierr)
 {
-  *ierr = PetscRealView(*n,d,0);
+  PetscViewer v;
+  PetscPatchDefaultViewers_Fortran(viwer,v);
+  *ierr = PetscRealView(*n,d,v);
 }
 
-void PETSC_STDCALL petscintview_(PetscInt *n,PetscInt *d,int *viwer,PetscErrorCode *ierr)
+void PETSC_STDCALL petscintview_(PetscInt *n,PetscInt *d,PetscViewer *viwer,PetscErrorCode *ierr)
 {
-  *ierr = PetscIntView(*n,d,0);
+  PetscViewer v;
+  PetscPatchDefaultViewers_Fortran(viwer,v);
+  *ierr = PetscIntView(*n,d,v);
+}
+
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define petscscalarview_             PETSCSCALARVIEW
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define petscscalarview_             petscscalarview
+#endif
+
+void PETSC_STDCALL petscscalarview_(PetscInt *n,PetscScalar *d,PetscViewer *viwer,PetscErrorCode *ierr)
+{
+  PetscViewer v;
+  PetscPatchDefaultViewers_Fortran(viwer,v);
+  *ierr = PetscScalarView(*n,d,v);
 }
 
 EXTERN_C_END
