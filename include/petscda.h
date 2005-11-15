@@ -490,6 +490,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetDimension(Mesh, PetscInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetEmbeddingDimension(Mesh, PetscInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateBoundary(Mesh, PetscInt, PetscInt, PetscInt [], PetscScalar [], void **, Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateCoordinates(Mesh, PetscScalar []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT restrictVector(Vec, Vec, InsertMode);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleVector(Vec, Vec, InsertMode);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleMatrix(Mat, PetscInt, PetscScalar [], InsertMode);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePCICE(MPI_Comm, const char [], PetscInt, PetscTruth, Mesh *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePyLith(MPI_Comm, const char [], Mesh *);

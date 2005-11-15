@@ -1331,6 +1331,105 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetSpaceFootprint(Mesh mesh, void *spaceFoo
   PetscFunctionReturn(0);
 }
 
+EXTERN PetscErrorCode assembleFullField(VecScatter, Vec, Vec, InsertMode);
+
+#undef __FUNCT__
+#define __FUNCT__ "restrictVector"
+/*@
+  restrictVector - Insert values from a global vector into a local ghosted vector
+
+  Collective on g
+
+  Input Parameters:
++ g - The global vector
+. l - The local vector
+- mode - either ADD_VALUES or INSERT_VALUES, where
+   ADD_VALUES adds values to any existing entries, and
+   INSERT_VALUES replaces existing entries with new values
+
+   Level: beginner
+
+.seealso: MatSetOption()
+@*/
+PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
+{
+  VecScatter     injection;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
+  ierr = VecScatterBegin(g, l, mode, SCATTER_REVERSE, injection);
+  ierr = VecScatterEnd(g, l, mode, SCATTER_REVERSE, injection);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "assembleVector"
+/*@
+  assembleVector - Insert values from a local ghosted vector into a global vector
+
+  Collective on g
+
+  Input Parameters:
++ g - The global vector
+. l - The local vector
+- mode - either ADD_VALUES or INSERT_VALUES, where
+   ADD_VALUES adds values to any existing entries, and
+   INSERT_VALUES replaces existing entries with new values
+
+   Level: beginner
+
+.seealso: MatSetOption()
+@*/
+PetscErrorCode assembleVector(Vec g, Vec l, InsertMode mode)
+{
+  VecScatter     injection;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
+  ierr = VecScatterBegin(l, g, mode, SCATTER_FORWARD, injection);
+  ierr = VecScatterEnd(l, g, mode, SCATTER_FORWARD, injection);
+  PetscFunctionReturn(0);
+}
+
+EXTERN PetscErrorCode assembleOperator(ALE::IndexBundle *, ALE::PreSieve *, Mat, ALE::Point, PetscScalar[], InsertMode);
+
+#undef __FUNCT__
+#define __FUNCT__ "assembleMatrix"
+/*@
+  assembleMatrix - Insert values into a matrix
+
+  Collective on A
+
+  Input Parameters:
++ A - the matrix
+. e - The element number
+. v - The values
+- mode - either ADD_VALUES or INSERT_VALUES, where
+   ADD_VALUES adds values to any existing entries, and
+   INSERT_VALUES replaces existing entries with new values
+
+   Level: beginner
+
+.seealso: MatSetOption()
+@*/
+PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mode)
+{
+  ALE::IndexBundle    *bundle;
+  ALE::PreSieve       *orientation;
+  PetscObjectContainer bundleObj, orientationObj;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject) A, "bundle", (PetscObject *) &bundleObj);CHKERRQ(ierr);
+  ierr = PetscObjectContainerGetPointer(bundleObj, (void **) &bundle);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) A, "ordering", (PetscObject *) &orientationObj);CHKERRQ(ierr);
+  ierr = PetscObjectContainerGetPointer(orientationObj, (void **) &orientation);CHKERRQ(ierr);
+  ierr = assembleOperator(bundle, orientation, A, ALE::Point(0, e), v, mode);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "ReadConnectivity_PCICE"
 PetscErrorCode ReadConnectivity_PCICE(MPI_Comm comm, const char *filename, PetscInt dim, PetscTruth useZeroBase, PetscInt *numElements, PetscInt **vertices)

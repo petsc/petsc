@@ -322,6 +322,61 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Point_array> intervals, PetscInt *i
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MeshComputeGlobalScatter"
+PetscErrorCode MeshComputeGlobalScatter(ALE::Sieve *topology, ALE::IndexBundle *bundle, VecScatter *injection)
+{
+  VecScatter               sc;
+  ALE::Obj<ALE::PreSieve>  globalIndices;
+  ALE::Obj<ALE::PreSieve>  localIndices;
+  ALE::Obj<ALE::Point_set> points;
+  Vec                      l, g;
+  IS                       localIS, globalIS;
+  PetscInt                *localIdx, *globalIdx;
+  PetscInt                 localSize, remoteSize, lcntr = 0, gcntr = 0;
+  PetscErrorCode           ierr;
+
+  PetscFunctionBegin;
+  //ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  //ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
+  localSize = bundle->getLocalSize();
+  remoteSize = bundle->getRemoteSize();
+  ierr = VecCreateSeq(PETSC_COMM_SELF, localSize+remoteSize, &l);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD, localSize, PETSC_DETERMINE, &g);CHKERRQ(ierr);
+  ierr = PetscMalloc((localSize+remoteSize) * sizeof(PetscInt), &localIdx);CHKERRQ(ierr);
+  ierr = PetscMalloc((localSize+remoteSize) * sizeof(PetscInt), &globalIdx);CHKERRQ(ierr);
+  localIndices  = bundle->getLocalIndices();
+  globalIndices = bundle->getGlobalIndices();
+  points = globalIndices->base();
+  for(ALE::Point_set::iterator p_itor = points->begin(); p_itor != points->end(); p_itor++) {
+    ALE::Point p = *p_itor;
+    ALE::Point_set lCone = localIndices->cone(p);
+    ALE::Point_set gCone = globalIndices->cone(p);
+
+    if (lCone.size()) {
+      ExpandInterval(*(lCone.begin()), localIdx, &lcntr);
+    }
+    if (gCone.size()) {
+      ExpandInterval(*(gCone.begin()), globalIdx, &gcntr);
+    }
+    if (lcntr != gcntr) {
+      SETERRQ2(PETSC_ERR_PLIB, "Inconsistent numbering, %d != %d", lcntr, gcntr);
+    }
+  }
+  if (lcntr != localSize+remoteSize) {
+    SETERRQ2(PETSC_ERR_PLIB, "Inconsistent numbering, %d should be %d", lcntr, localSize+remoteSize);
+  }
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize+remoteSize, localIdx, &localIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize+remoteSize, globalIdx, &globalIS);CHKERRQ(ierr);
+  ierr = PetscFree(localIdx);CHKERRQ(ierr);
+  ierr = PetscFree(globalIdx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(l, localIS, g, globalIS, &sc);CHKERRQ(ierr);
+  ierr = ISDestroy(localIS);CHKERRQ(ierr);
+  ierr = ISDestroy(globalIS);CHKERRQ(ierr);
+  *injection = sc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "setFiberValues"
 PetscErrorCode setFiberValues(Vec b, ALE::Point e, ALE::Obj<ALE::IndexBundle> bundle, PetscScalar array[], InsertMode mode)
 {
@@ -396,11 +451,75 @@ PetscErrorCode setClosureValues(Vec b, ALE::Point e, ALE::Obj<ALE::IndexBundle> 
 
 #undef __FUNCT__
 #define __FUNCT__ "assembleField"
-/* This is currently present in ex33mesh.c, although the functionality and the calling sequences differ significantly. */
-PetscErrorCode assembleField(Vec b, ALE::Obj<ALE::IndexBundle> bundle, ALE::Obj<ALE::PreSieve> orientation, InsertMode mode)
+PetscErrorCode assembleField(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, Vec b, ALE::Point e, PetscScalar array[], InsertMode mode)
 {
-  PetscFunctionBegin;
+  ALE::Obj<ALE::Point_array> intervals = bundle->getGlobalOrderedClosureIndices(orientation->cone(e));
+  static PetscInt  indicesSize = 0;
+  static PetscInt *indices = NULL;
+  PetscInt         numIndices = 0;
+  PetscErrorCode   ierr;
 
+  PetscFunctionBegin;
+  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    numIndices += (*i_itor).index;
+  }
+  if (indicesSize && (indicesSize != numIndices)) {
+    ierr = PetscFree(indices); CHKERRQ(ierr);
+    indices = NULL;
+  }
+  if (!indices) {
+    indicesSize = numIndices;
+    ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
+  }
+  if (debug) {
+    for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+      printf("[%d]interval (%d, %d)\n", bundle->getCommRank(), (*i_itor).prefix, (*i_itor).index);
+    }
+  }
+  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
+  if (debug) {
+    for(int i = 0; i < numIndices; i++) {
+      printf("[%d]indices[%d] = %d\n", bundle->getCommRank(), i, indices[i]);
+    }
+  }
+  ierr = VecSetValues(b, numIndices, indices, array, mode);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "assembleOperator"
+PetscErrorCode assembleOperator(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, Mat A, ALE::Point e, PetscScalar array[], InsertMode mode)
+{
+  ALE::Obj<ALE::Point_array> intervals = bundle->getGlobalOrderedClosureIndices(orientation->cone(e));
+  static PetscInt  indicesSize = 0;
+  static PetscInt *indices = NULL;
+  PetscInt         numIndices = 0;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    numIndices += (*i_itor).index;
+  }
+  if (indicesSize && (indicesSize != numIndices)) {
+    ierr = PetscFree(indices); CHKERRQ(ierr);
+    indices = NULL;
+  }
+  if (!indices) {
+    indicesSize = numIndices;
+    ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
+  }
+  if (debug) {
+    for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+      printf("[%d]interval (%d, %d)\n", bundle->getCommRank(), (*i_itor).prefix, (*i_itor).index);
+    }
+  }
+  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
+  if (debug) {
+    for(int i = 0; i < numIndices; i++) {
+      printf("[%d]indices[%d] = %d\n", bundle->getCommRank(), i, indices[i]);
+    }
+  }
+  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -421,7 +540,7 @@ PetscErrorCode assembleField(Vec b, ALE::Obj<ALE::IndexBundle> bundle, ALE::Obj<
 
 .seealso MeshCreate(), MeshGetTopology(), MeshSetTopology()
 */
-PetscErrorCode MeshPopulate(Mesh mesh, int dim, PetscInt numVertices, PetscInt numElements, PetscInt *elements, PetscScalar coords[])
+PetscErrorCode MeshPopulate(Mesh mesh, int dim, PetscInt numVertices, PetscInt numElements, PetscInt elements[], PetscScalar coords[])
 {
   MPI_Comm comm;
   PetscObjectGetComm((PetscObject) mesh, &comm);
@@ -435,7 +554,6 @@ PetscErrorCode MeshPopulate(Mesh mesh, int dim, PetscInt numVertices, PetscInt n
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
-  PetscValidIntPointer(elements,4);
   ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size); CHKERRQ(ierr);
   if (debug) {
@@ -445,6 +563,8 @@ PetscErrorCode MeshPopulate(Mesh mesh, int dim, PetscInt numVertices, PetscInt n
   }
   /* Create serial sieve */
   if (rank == 0) {
+    PetscValidIntPointer(elements,5);
+    PetscValidScalarPointer(coords,6);
     ierr = BuildTopology(dim, numElements, elements, numVertices, topology, orientation);CHKERRQ(ierr);
   }
   if (debug) {
