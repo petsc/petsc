@@ -60,7 +60,8 @@ Warning: Using from command-line: %s, ignoring environment: %s''' % (str(self.fr
           self.arch += '-debug'
         else:
           self.arch += '-opt'
-
+    if self.arch.find('/') >= 0 or self.arch.find('\') >= 0:
+      raise RuntimeError('PETSC_ARCH should not contain path characters, but you have specified: '+str(self.arch))
     self.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.arch)
     self.hostOsBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.framework.host_os)
     self.addDefine('ARCH', self.hostOsBase)
