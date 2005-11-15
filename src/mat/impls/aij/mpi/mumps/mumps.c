@@ -460,7 +460,7 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,MatFactorInfo *info,Mat *F)
   Mat_MUMPS      *lu =(Mat_MUMPS*)(*F)->spptr; 
   Mat_MUMPS      *lua=(Mat_MUMPS*)(A)->spptr; 
   PetscErrorCode ierr;
-  PetscInt       rnz,nnz,nz,i,M=A->M,*ai,*aj,icntl;
+  PetscInt       rnz,nnz,nz=0,i,M=A->M,*ai,*aj,icntl;
   PetscTruth     valOnly,flg;
   Mat            F_diag; 
 
