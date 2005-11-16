@@ -224,7 +224,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
   double           *berr=0;
   IS               isrow;
   PetscLogDouble   time0,time,time_min,time_max; 
-  Mat              F_diag;
+  Mat              F_diag=PETSC_NULL;
 #if defined(PETSC_USE_COMPLEX)
   doublecomplex    *av, *bv; 
 #else
@@ -258,7 +258,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
 #if defined(PETSC_USE_COMPLEX)
       zallocateA_dist(N, aa->nz, &lu->val, &lu->col, &lu->row);
 #else
-      dallocateA_dist(N, aa->nz, &lu->val, &lu->col, &lu->row);
+      dallocateA_dist(N, aa->nz, &lu->val, &lu->col, &lu->row); 
 #endif
     } else { /* successive numeric factorization, sparsity pattern is reused. */
       Destroy_CompCol_Matrix_dist(&lu->A_sup); 
@@ -398,9 +398,10 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
     PStatPrint(&lu->options, &stat, &lu->grid);  /* Print the statistics. */
   }
   PStatFree(&stat);  
-
-  F_diag = ((Mat_MPIAIJ *)(*F)->data)->A;
-  F_diag->assembled = PETSC_TRUE; 
+  if (size > 1){
+    F_diag = ((Mat_MPIAIJ *)(*F)->data)->A;
+    F_diag->assembled = PETSC_TRUE; 
+  }
   (*F)->assembled   = PETSC_TRUE;
   lu->flg           = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
