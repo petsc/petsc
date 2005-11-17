@@ -614,12 +614,12 @@ namespace ALE {
 
     // Calculate global size
     ALE::Obj<ALE::PreSieve> globalIndices(new PreSieve(this->comm));
-    int *firstIndex = new int[this->commSize+1];
-    int ierr = MPI_Allgather(&localSize, 1, MPI_INT, &(firstIndex[1]), 1, MPI_INT, this->comm);
+    this->_firstGlobalIndex = new int[this->commSize+1];
+    int ierr = MPI_Allgather(&localSize, 1, MPI_INT, &(this->_firstGlobalIndex[1]), 1, MPI_INT, this->comm);
     CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allgather"));
-    firstIndex[0] = 0;
+    this->_firstGlobalIndex[0] = 0;
     for(int p = 0; p < this->commSize; p++) {
-      firstIndex[p+1] = firstIndex[p+1] + firstIndex[p];
+      this->_firstGlobalIndex[p+1] = this->_firstGlobalIndex[p+1] + this->_firstGlobalIndex[p];
     }
 
     // Add rented points
@@ -643,7 +643,7 @@ namespace ALE {
         if (this->verbosity > 10) {
           PetscSynchronizedPrintf(this->comm, "[%d]   local interval (%d, %d) for point (%d, %d)\n", this->commRank, globalIndex.prefix, globalIndex.index, (*e_itor).prefix, (*e_itor).index);
         }
-        globalIndex.prefix += firstIndex[this->commRank];
+        globalIndex.prefix += this->_firstGlobalIndex[this->commRank];
         if (this->verbosity > 10) {
           PetscSynchronizedPrintf(this->comm, "[%d]  global interval (%d, %d) for point (%d, %d)\n", this->commRank, globalIndex.prefix, globalIndex.index, (*e_itor).prefix, (*e_itor).index);
         }
@@ -651,10 +651,9 @@ namespace ALE {
       globalIndices->addCone(globalIndex, point);
     }
     if (this->verbosity > 10) {
-      PetscSynchronizedPrintf(this->comm, "[%d]Global size %d\n", this->commRank, firstIndex[this->commSize]);
+      PetscSynchronizedPrintf(this->comm, "[%d]Global size %d\n", this->commRank, this->_firstGlobalIndex[this->commSize]);
       PetscSynchronizedFlush(this->comm);
     }
-    delete [] firstIndex;
 
     // FIX: Communicate remote indices
     MPI_Request *requests = new MPI_Request[this->commSize];
@@ -735,6 +734,12 @@ namespace ALE {
     localTypes.insert(ALE::Point(this->commRank, ALE::localPoint));
     localTypes.insert(ALE::Point(this->commRank, ALE::leasedPoint));
     return getFiberDimension(this->_pointTypes->cone(localTypes));
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "IndexBundle::getLocalSizes"
+  int*   IndexBundle::getLocalSizes() {
+    return this->_firstGlobalIndex;
   }
 
   #undef  __FUNCT__

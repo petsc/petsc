@@ -1190,7 +1190,7 @@ namespace ALE {
     int32_t  rank = this->commRank;
     PetscErrorCode ierr;
     ostringstream txt, hdr;
-    hdr << "Viewing ";
+    hdr << "[" << rank << "]:Viewing ";
     if(name == NULL) {
       hdr << "a ";
     }
@@ -1201,7 +1201,7 @@ namespace ALE {
       hdr << "presieve '" << name << "'\n";
     }
     // Print header
-    ierr = PetscPrintf(this->comm, hdr.str().c_str()); CHKERROR(ierr, "Error in PetscPrintf");
+    ierr = PetscSynchronizedPrintf(this->comm, hdr.str().c_str()); CHKERROR(ierr, "Error in PetscPrintf");
     // Use a string stream to accumulate output that is then submitted to PetscSynchronizedPrintf
     Point_set points = this->space();
     txt  << "[" << rank << "]: space of size " << points.size() << " : ";
@@ -1253,6 +1253,7 @@ namespace ALE {
       }
       txt  << "\n";
     }
+#if 0
     for(Point__Point_set::iterator support_itor = this->_support.begin(); support_itor != this->_support.end(); support_itor++)
     {
       Point p = (*support_itor).first;
@@ -1267,6 +1268,7 @@ namespace ALE {
       }
       txt  << "\n";
     }
+#endif
     ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
     CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
     ierr = PetscSynchronizedFlush(this->comm);

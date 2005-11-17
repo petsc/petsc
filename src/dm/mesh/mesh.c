@@ -21,6 +21,7 @@ struct _p_Mesh {
   void    *orientation;
   void    *spaceFootprint;
   void    *bundle;
+  void    *elementBundle;
   void    *coordBundle;
   Vec      coordinates;
   Vec      globalvector;
@@ -70,6 +71,7 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
 PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
 {
   ALE::Sieve       *topology;
+  ALE::IndexBundle *elementBundle;
   ALE::Point_set    elements;
   int               dim, numElements, corners;
   MPI_Comm          comm;
@@ -81,14 +83,11 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
   ierr = MPI_Comm_rank(comm, &rank);
   ierr = MPI_Comm_size(comm, &size);
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ierr = MeshGetElementBundle(mesh, (void **) &elementBundle);CHKERRQ(ierr);
   ALE::IndexBundle *vertexBundle = new ALE::IndexBundle(topology);
   vertexBundle->setFiberDimensionByDepth(0, 1);
   vertexBundle->computeOverlapIndices();
   vertexBundle->computeGlobalIndices();
-  ALE::IndexBundle *elementBundle = new ALE::IndexBundle(topology);
-  elementBundle->setFiberDimensionByHeight(0, 1);
-  elementBundle->computeOverlapIndices();
-  elementBundle->computeGlobalIndices();
   elements = topology->heightStratum(0);
   dim = topology->depth(*elements.begin());
   numElements = elementBundle->getGlobalSize();
@@ -181,13 +180,14 @@ PetscErrorCode WritePCICEVertices(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WritePCICEElements"
 PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Sieve    *topology;
-  ALE::PreSieve *orientation;
-  ALE::Point_set elements;
-  MPI_Comm       comm;
-  PetscMPIInt    rank, size;
-  int            dim, numElements, corners, elementCount = 1;
-  PetscErrorCode ierr;
+  ALE::Sieve       *topology;
+  ALE::PreSieve    *orientation;
+  ALE::IndexBundle *elementBundle;
+  ALE::Point_set    elements;
+  MPI_Comm          comm;
+  PetscMPIInt       rank, size;
+  int               dim, numElements, corners, elementCount = 1;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
@@ -195,16 +195,13 @@ PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
   ierr = MPI_Comm_size(comm, &size);
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
+  ierr = MeshGetElementBundle(mesh, (void **) &elementBundle);CHKERRQ(ierr);
   ALE::IndexBundle vertexBundle(topology);
   vertexBundle.setFiberDimensionByDepth(0, 1);
   vertexBundle.computeOverlapIndices();
   vertexBundle.computeGlobalIndices();
-  ALE::IndexBundle elementBundle(topology);
-  elementBundle.setFiberDimensionByHeight(0, 1);
-  elementBundle.computeOverlapIndices();
-  elementBundle.computeGlobalIndices();
   elements = topology->heightStratum(0);
-  numElements = elementBundle.getGlobalSize();
+  numElements = elementBundle->getGlobalSize();
   dim = topology->depth(*elements.begin());
   corners = topology->nCone(*elements.begin(), dim).size();
   if (corners != dim+1) {
@@ -1132,6 +1129,56 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetBundle(Mesh mesh,void *bundle)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MeshGetElementBundle"
+/*@C
+    MeshGetElementBundle - Gets the element bundle
+
+    Not collective
+
+    Input Parameter:
+.    mesh - the mesh object
+
+    Output Parameter:
+.    bundle - the element bundle
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshSetElementBundle()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetElementBundle(Mesh mesh,void **bundle)
+{
+  if (bundle) {
+    PetscValidPointer(bundle,2);
+    *bundle = mesh->elementBundle;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshSetElementBundle"
+/*@C
+    MeshSetElementBundle - Sets the element bundle
+
+    Not collective
+
+    Input Parameters:
++    mesh - the mesh object
+-    bundle - the element bundle
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshGetElementBundle()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetElementBundle(Mesh mesh,void *bundle)
+{
+  PetscValidPointer(bundle,2);
+  mesh->elementBundle = bundle;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshGetCoordinateBundle"
 /*@C
     MeshGetCoordinateBundle - Gets the coordinate bundle
@@ -1416,17 +1463,20 @@ EXTERN PetscErrorCode assembleOperator(ALE::IndexBundle *, ALE::PreSieve *, Mat,
 @*/
 PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mode)
 {
-  ALE::IndexBundle    *bundle;
-  ALE::PreSieve       *orientation;
-  PetscObjectContainer bundleObj, orientationObj;
-  PetscErrorCode       ierr;
+  Mesh              mesh;
+  ALE::PreSieve    *orientation;
+  ALE::IndexBundle *elementBundle;
+  ALE::IndexBundle *bundle;
+  PetscInt          firstElement;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject) A, "bundle", (PetscObject *) &bundleObj);CHKERRQ(ierr);
-  ierr = PetscObjectContainerGetPointer(bundleObj, (void **) &bundle);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) A, "ordering", (PetscObject *) &orientationObj);CHKERRQ(ierr);
-  ierr = PetscObjectContainerGetPointer(orientationObj, (void **) &orientation);CHKERRQ(ierr);
-  ierr = assembleOperator(bundle, orientation, A, ALE::Point(0, e), v, mode);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
+  ierr = MeshGetElementBundle(mesh, (void **) &elementBundle);CHKERRQ(ierr);
+  ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
+  firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
+  ierr = assembleOperator(bundle, orientation, A, ALE::Point(0, e + firstElement), v, mode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
