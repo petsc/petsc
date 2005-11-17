@@ -16,7 +16,7 @@ ex1: ex1.o  chkopts
 	${RM} ex1.o
 
 ex1f: ex1f.o  chkopts
-	-${FLINKER} -o ex1f ex1f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
+	-${FLINKER} -o ex1f ex1f.o ${PETSC_SNES_LIB}
 	${RM} ex1f.o
 
 ex2: ex2.o  chkopts
@@ -52,7 +52,7 @@ ex9: ex9.o  chkopts
 	${RM} ex9.o
 
 ex10: ex10.o  chkopts
-	-${FLINKER} -o ex10 ex10.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
+	-${FLINKER} -o ex10 ex10.o ${PETSC_SNES_LIB}
 	${RM} ex10.o
 
 ex11: ex11.o  chkopts
@@ -60,7 +60,7 @@ ex11: ex11.o  chkopts
 	${RM} ex11.o
 
 ex12f: ex12f.o  chkopts
-	-${FLINKER} -o ex12f ex12f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
+	-${FLINKER} -o ex12f ex12f.o ${PETSC_SNES_LIB}
 	${RM} ex12f.o
 
 ex13: ex13.o  chkopts
@@ -68,7 +68,7 @@ ex13: ex13.o  chkopts
 	${RM} ex13.o
 
 ex14: ex14.o  chkopts
-	-${FLINKER} -o ex14 ex14.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
+	-${FLINKER} -o ex14 ex14.o ${PETSC_SNES_LIB}
 	${RM} ex14.o
 #--------------------------------------------------------------------------
 runex1:

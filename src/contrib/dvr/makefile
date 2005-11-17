@@ -15,7 +15,7 @@ include ${PETSC_DIR}/bmake/common/base
 
 
 dvr: $(DVR_OBJSF) chkopts
-	-${FLINKER} -o dvr $(DVR_OBJSF) ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${FLINKER} -o dvr $(DVR_OBJSF) ${PETSC_VEC_LIB}
 	${RM} -f dvr.o
 
 

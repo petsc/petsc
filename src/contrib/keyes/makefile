@@ -47,11 +47,11 @@ ex11: ex11.o  chkopts
 	${RM} ex11.o
 
 ex15: ex15.o  chkopts
-	-${CLINKER} -o ex15 ex15.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
+	-${CLINKER} -o ex15 ex15.o  ${PETSC_SNES_LIB}
 	${RM} ex15.o
 
 ex17: ex17.o  chkopts
-	-${CLINKER} -o ex17 ex17.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
+	-${CLINKER} -o ex17 ex17.o  ${PETSC_SNES_LIB}
 	${RM} ex17.o
 
 runex11s:

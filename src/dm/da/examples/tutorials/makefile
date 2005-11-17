@@ -35,7 +35,7 @@ ex6: ex6.o   chkopts
 	${RM} -f ex6.o
 
 ex6f90: ex6f90.o   chkopts
-	-${FLINKER} -o ex6f90 ex6f90.o  ${PETSC_FORTRAN_LIB} ${PETSC_DM_LIB}
+	-${FLINKER} -o ex6f90 ex6f90.o  ${PETSC_DM_LIB}
 	${RM} -f ex6f90.o
 #-----------------------------------------------------------------
 runex1:

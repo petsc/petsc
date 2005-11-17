@@ -28,10 +28,10 @@ include $(PETSC_DIR)/bmake/common/base
 include $(PETSC_DIR)/bmake/common/test
 
 flow: flow.o $(FLOW_OBJSF) chkopts
-	-$(CLINKER) -o flow flow.o $(FLOW_OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_SNES_LIB)
+	-$(CLINKER) -o flow flow.o $(FLOW_OBJSF) $(PETSC_SNES_LIB)
 
 puns3d: puns3d.a.o
-	$(FLINKER) -o puns3d puns3d.a.o $(PETSC_FORTRAN_LIB) $(PETSC_DM_LIB)
+	$(FLINKER) -o puns3d puns3d.a.o $(PETSC_DM_LIB)
 
 runflow1:
 	-@${MPIRUN} -np 1 ./flow -options_file ${DATAFILESPATH}/fun3dgrid/petsc.opt -mesh ${DATAFILESPATH}/fun3dgrid/uns3d.msh -partition ${DATAFILESPATH}/fun3dgrid/part_vec.part.1 | grep clift | tail -1 > runflow1.tmp 2>&1;   \

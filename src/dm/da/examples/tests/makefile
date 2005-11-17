@@ -92,7 +92,7 @@ ex20: ex20.o   chkopts
 	${RM} -f ex20.o
 
 ex21f: ex21f.o  chkopts
-	-${FLINKER} -o ex21f ex21f.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex21f ex21f.o  ${PETSC_LIB}
 	${RM} -f ex21f.o
 
 ex22: ex22.o   chkopts

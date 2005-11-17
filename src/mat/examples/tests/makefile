@@ -84,7 +84,7 @@ ex16: ex16.o chkopts
 	${RM} ex16.o
 
 ex16f90: ex16f90.o chkopts
-	-${FLINKER} -o ex16f90 ex16f90.o  ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	-${FLINKER} -o ex16f90 ex16f90.o ${PETSC_MAT_LIB}
 	${RM} ex16f90.o
 
 ex17: ex17.o chkopts
@@ -148,7 +148,7 @@ ex35: ex35.o chkopts
 	${RM} ex35.o
 
 ex36f: ex36f.o chkopts
-	-${FLINKER} -o ex36f ex36f.o ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	-${FLINKER} -o ex36f ex36f.o ${PETSC_MAT_LIB}
 	${RM} ex36f.o
 
 ex37: ex37.o chkopts
@@ -236,7 +236,7 @@ ex58: ex58.o chkopts
 	${RM} ex58.o
 
 ex58f: ex58f.o chkopts
-	-${FLINKER} -o ex58f ex58f.o  ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	-${FLINKER} -o ex58f ex58f.o ${PETSC_MAT_LIB}
 	${RM} ex58f.o
 
 ex59: ex59.o chkopts
@@ -256,7 +256,7 @@ ex62: ex62.o chkopts
 	${RM} ex62.o
 
 ex63f: ex63f.o chkopts
-	-${FLINKER} -o ex63f ex63f.o ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	-${FLINKER} -o ex63f ex63f.o ${PETSC_MAT_LIB}
 	${RM} ex63f.o
 
 ex64: ex64.o chkopts
@@ -272,7 +272,7 @@ ex66: ex66.o chkopts
 	${RM} ex66.o
 
 ex67f: ex67f.o chkopts
-	-${FLINKER} -o ex67f ex67f.o  ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	-${FLINKER} -o ex67f ex67f.o ${PETSC_MAT_LIB}
 	${RM} ex67f.o
 
 ex68: ex68.o chkopts
@@ -323,10 +323,10 @@ ex81: ex81.o chkopts
 	${RM} ex81.o
 
 ex79f: ex79f.o chkopts
-	-${FLINKER} -o ex79f ex79f.o  ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	-${FLINKER} -o ex79f ex79f.o ${PETSC_MAT_LIB}
 	${RM} ex79f.o
 ex85f: ex85f.o chkopts
-	-${FLINKER} -o ex85f ex85f.o  ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	-${FLINKER} -o ex85f ex85f.o ${PETSC_MAT_LIB}
 	${RM} ex85f.o
 
 ex86: ex86.o chkopts
@@ -366,11 +366,11 @@ ex98: ex98.o chkopts
 	${RM} ex98.o
 
 ex99: ex99.o chkopts
-	-${CLINKER} -o ex99 ex99.o ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	-${CLINKER} -o ex99 ex99.o ${PETSC_MAT_LIB}
 	${RM} ex99.o
 
 ex100: ex100.o chkopts
-	-${CLINKER} -o ex100 ex100.o ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	-${CLINKER} -o ex100 ex100.o ${PETSC_MAT_LIB}
 	${RM} ex100.o
 
 ex101: ex101.o chkopts

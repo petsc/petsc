@@ -19,11 +19,11 @@ ex1e: ex1e.o  chkopts
 	${RM} -f ex1e.o
 
 ex1f: ex1f.o  chkopts
-	-${FLINKER} -o ex1f ex1f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${FLINKER} -o ex1f ex1f.o ${PETSC_VEC_LIB}
 	${RM} -f ex1f.o
 
 ex1f90: ex1f90.o  chkopts
-	-${FLINKER} -o ex1f90 ex1f90.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${FLINKER} -o ex1f90 ex1f90.o ${PETSC_VEC_LIB}
 	${RM} -f ex1f90.o
 
 ex2: ex2.o  chkopts
@@ -31,7 +31,7 @@ ex2: ex2.o  chkopts
 	${RM} -f ex2.o
 
 ex2f: ex2f.o  chkopts
-	-${FLINKER} -o ex2f ex2f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${FLINKER} -o ex2f ex2f.o ${PETSC_VEC_LIB}
 	${RM} -f ex2f.o
 
 ex3: ex3.o  chkopts
@@ -39,7 +39,7 @@ ex3: ex3.o  chkopts
 	${RM} -f ex3.o
 
 ex3f: ex3f.o  chkopts
-	-${FLINKER} -o ex3f ex3f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${FLINKER} -o ex3f ex3f.o ${PETSC_VEC_LIB}
 	${RM} -f ex3f.o
 
 ex4: ex4.o  chkopts
@@ -47,11 +47,11 @@ ex4: ex4.o  chkopts
 	${RM} -f ex4.o
 
 ex4f: ex4f.o  chkopts
-	-${FLINKER} -o ex4f ex4f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${FLINKER} -o ex4f ex4f.o ${PETSC_VEC_LIB}
 	${RM} -f ex4f.o
 
 ex4f90: ex4f90.o  chkopts
-	-${FLINKER} -o ex4f90 ex4f90.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${FLINKER} -o ex4f90 ex4f90.o ${PETSC_VEC_LIB}
 	${RM} -f ex4f90.o
 
 ex5: ex5.o  chkopts
@@ -63,7 +63,7 @@ ex6: ex6.o  chkopts
 	${RM} -f ex6.o
 
 ex7: ex7.o ex7f.o chkopts
-	-${CLINKER} -o ex7 ex7.o ex7f.o ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB} 
+	-${CLINKER} -o ex7 ex7.o ex7f.o ${PETSC_VEC_LIB} 
 	${RM} -f ex7.o ex7f.o
 
 ex8: ex8.o  chkopts
@@ -75,7 +75,7 @@ ex9: ex9.o  chkopts
 	${RM} -f ex9.o
 
 ex9f: ex9f.o  chkopts
-	-${FLINKER} -o ex9f ex9f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${FLINKER} -o ex9f ex9f.o ${PETSC_VEC_LIB}
 	${RM} -f ex9f.o
 
 ex10: ex10.o  chkopts
@@ -87,7 +87,7 @@ ex11: ex11.o  chkopts
 	${RM} -f ex11.o
 
 ex11f: ex11f.o  chkopts
-	-${FLINKER} -o ex11f ex11f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${FLINKER} -o ex11f ex11f.o ${PETSC_VEC_LIB}
 	${RM} -f ex11f.o
 
 ex12: ex12.o  chkopts
@@ -99,7 +99,7 @@ ex13: ex13.o  chkopts
 	${RM} -f ex13.o
 
 ex14f: ex14f.o  chkopts
-	-${FLINKER} -o ex14f ex14f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${FLINKER} -o ex14f ex14f.o ${PETSC_VEC_LIB}
 	${RM} -f ex14f.o
 
 ex15: ex15.o  chkopts

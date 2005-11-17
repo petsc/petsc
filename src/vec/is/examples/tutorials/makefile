@@ -14,11 +14,11 @@ ex1: ex1.o chkopts
 	${RM} -f ex1.o
 
 ex1f: ex1f.o chkopts
-	-${FLINKER} -o ex1f ex1f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${FLINKER} -o ex1f ex1f.o ${PETSC_VEC_LIB}
 	${RM} -f ex1f.o
 
 ex1f90: ex1f90.o chkopts
-	-${FLINKER} -o ex1f90 ex1f90.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${FLINKER} -o ex1f90 ex1f90.o ${PETSC_VEC_LIB}
 	${RM} -f ex1f90.o
 
 ex2: ex2.o chkopts
@@ -26,7 +26,7 @@ ex2: ex2.o chkopts
 	${RM} -f ex2.o
 
 ex2f: ex2f.o chkopts
-	-${FLINKER} -o ex2f ex2f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${FLINKER} -o ex2f ex2f.o ${PETSC_VEC_LIB}
 	${RM} -f ex2f.o
 
 ex3: ex3.o  chkopts
@@ -34,7 +34,7 @@ ex3: ex3.o  chkopts
 	${RM} -f ex3.o
 
 ex3f90: ex3f90.o chkopts
-	-${FLINKER} -o ex3f90 ex3f90.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	-${FLINKER} -o ex3f90 ex3f90.o ${PETSC_VEC_LIB}
 	${RM} -f ex3f90.o
 
 ex4: ex4.o  chkopts

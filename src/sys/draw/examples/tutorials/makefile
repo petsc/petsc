@@ -27,7 +27,7 @@ ex4: ex4.o  chkopts
 	${RM} -f ex4.o
 
 ex5: ex5.o  chkopts
-	-${FLINKER} -o ex5 ex5.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex5 ex5.o  ${PETSC_LIB}
 	${RM} -f ex5.o
 
 ex6: ex6.o  chkopts

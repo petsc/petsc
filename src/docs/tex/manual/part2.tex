@@ -5044,13 +5044,9 @@ of the Fortran program \trl{ex3.F} with the actions \trl{make} \trl{BOPT=g} \trl
 \trl{make} \trl{runex3}, respectively. The compilation command is restated below:
 \begin{tabbing}
    ex3: ex3.o \\
-   \trl{      -${FLINKER}} -o ex3 ex3.o  \trl{${PETSC_FORTRAN_LIB}} \trl{${PETSC_LIB}}\\
+   \trl{      -${FLINKER}} -o ex3 ex3.o \trl{${PETSC_LIB}}\\
    \trl{       ${RM}} ex3.o
 \end{tabbing}
-Note that the PETSc Fortran interface library, given by 
-\trl{${PETSC_FORTRAN_LIB}}, {\em must}  \findex{PETSC_FORTRAN_LIB} precede
-the base PETSc libraries, given by \trl{${PETSC_LIB}}, \findex{PETSC_LIB}
-on the link line.
 
 \subsection{Routines with Different Fortran Interfaces}
 \label{sec_fortran_exceptions}
@@ -6967,7 +6963,7 @@ controls the generation of several example programs.
         -${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
         ${RM} ex2.o
    ex3: ex3.o 
-        -${FLINKER} -o ex3 ex3.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+        -${FLINKER} -o ex3 ex3.o  ${PETSC_LIB}
         ${RM} ex3.o
    ex4: ex4.o 
         -${CLINKER} -o ex4 ex4.o  ${PETSC_LIB}
@@ -7021,8 +7017,6 @@ as follows:
              needed by users).
 \item[PETSC\_LIB] all of the base PETSc libraries.
              \findex{PETSC_LIB}
-\item[PETSC\_FORTRAN\_LIB] the PETSc Fortran interface 
-             library. \findex{PETSC_FORTRAN_LIB}
 \end{itemize}
 Note that the PETSc example programs are divided into several
 categories, which currently include: 

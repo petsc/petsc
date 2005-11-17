@@ -14,6 +14,6 @@ EXAMPLESF       = sif.F
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 sif: sif.o chkopts
-	-${FLINKER} -o sif sif.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o sif sif.o  ${PETSC_LIB}
 	${RM} sif.o 
 

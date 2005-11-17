@@ -23,7 +23,7 @@ ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB}
 	${RM} ex1.o
 ex1f: ex1f.o  chkopts
-	-${FLINKER} -o ex1f ex1f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
+	-${FLINKER} -o ex1f ex1f.o ${PETSC_SNES_LIB}
 	${RM} ex1f.o
 ex2: ex2.o  chkopts
 	-${CLINKER} -o ex2 ex2.o ${PETSC_SNES_LIB}
@@ -38,7 +38,7 @@ ex5: ex5.o chkopts
 	-${CLINKER} -o ex5 ex5.o ${PETSC_SNES_LIB}
 	${RM} ex5.o
 ex5f: ex5f.o  chkopts
-	-${FLINKER} -o ex5f ex5f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
+	-${FLINKER} -o ex5f ex5f.o ${PETSC_SNES_LIB}
 	${RM} ex5f.o
 #
 #  The SGI parallelizing compiler generates incorrect code by treating 
@@ -54,7 +54,7 @@ ex5s: chkopts
 	-${CLINKER} -mp -o ex5s ex5s_tmp.o ex5fs.o ${PETSC_SNES_LIB}
 	${RM} ex5s.o
 ex5f90: ex5f90.o  chkopts
-	-${FLINKER} -o ex5f90 ex5f90.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
+	-${FLINKER} -o ex5f90 ex5f90.o ${PETSC_SNES_LIB}
 	${RM} ex5f90.o
 ex6: ex6.o  chkopts
 	-${CLINKER} -o ex6 ex6.o ${PETSC_SNES_LIB}

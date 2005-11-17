@@ -16,7 +16,7 @@ ex1: ex1.o  chkopts
 	${RM} ex1.o
 
 ex1f: ex1f.o  chkopts
-	-${FLINKER} -o ex1f ex1f.o  ${PETSC_FORTRAN_LIB} ${PETSC_TS_LIB}
+	-${FLINKER} -o ex1f ex1f.o  ${PETSC_TS_LIB}
 	${RM} ex1f.o
 
 ex2: ex2.o  chkopts
@@ -60,7 +60,7 @@ ex11: ex11.o  chkopts
 	${RM} ex11.o
 
 ex12: ex12.o  chkopts
-	-${FLINKER} -o ex12 ex12.o ${PETSC_FORTRAN_LIB} ${PETSC_TS_LIB}
+	-${FLINKER} -o ex12 ex12.o ${PETSC_TS_LIB}
 	${RM} ex12.o
 #----------------------------------------------------------------------------------
 runex1:

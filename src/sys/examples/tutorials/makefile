@@ -26,7 +26,7 @@ ex3: ex3.o   chkopts
 	${RM} -f ex3.o
 
 ex3f: ex3f.o   chkopts
-	-${FLINKER} -o ex3f ex3f.o  ${PETSC_FORTRAN_LIB} ${PETSC_SYS_LIB}
+	-${FLINKER} -o ex3f ex3f.o  ${PETSC_SYS_LIB}
 	${RM} -f ex3f.o
 
 ex4: ex4.o   chkopts

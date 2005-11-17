@@ -39,7 +39,7 @@ ex7: ex7.o   chkopts
 	${RM} ex7.o
 
 ex8f: ex8f.o   chkopts
-	-${FLINKER} -o ex8f ex8f.o ${PETSC_FORTRAN_LIB} ${PETSC_KSP_LIB}
+	-${FLINKER} -o ex8f ex8f.o ${PETSC_KSP_LIB}
 	${RM} ex8f.o
 
 #------------------------------------------------------------------

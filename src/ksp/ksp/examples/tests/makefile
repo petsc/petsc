@@ -57,11 +57,11 @@ ex11: ex11.o  chkopts
 	${RM} ex11.o
 
 ex12f: ex12f.o  chkopts
-	-${FLINKER} -o ex12f ex12f.o  ${PETSC_FORTRAN_LIB} ${PETSC_KSP_LIB}
+	-${FLINKER} -o ex12f ex12f.o  ${PETSC_KSP_LIB}
 	${RM} ex12f.o
 
 ex5f: ex5f.o  chkopts
-	-${FLINKER} -o ex5f ex5f.o  ${PETSC_FORTRAN_LIB} ${PETSC_KSP_LIB}
+	-${FLINKER} -o ex5f ex5f.o  ${PETSC_KSP_LIB}
 	${RM} ex5f.o
 
 ex13: ex13.o  chkopts
@@ -77,7 +77,7 @@ ex15: ex15.o  chkopts
 	${RM} ex15.o
 
 ex16f: ex16f.o  chkopts
-	-${FLINKER} -o ex16f ex16f.o  ${PETSC_FORTRAN_LIB} ${PETSC_KSP_LIB}
+	-${FLINKER} -o ex16f ex16f.o  ${PETSC_KSP_LIB}
 	${RM} ex16f.o
 
 ex17: ex17.o  chkopts

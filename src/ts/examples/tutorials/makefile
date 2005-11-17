@@ -16,7 +16,7 @@ ex1: ex1.o  chkopts
 	${RM} ex1.o
 
 ex1f: ex1f.o  chkopts
-	-${FLINKER} -o ex1f ex1f.o ${PETSC_FORTRAN_LIB} ${PETSC_TS_LIB}
+	-${FLINKER} -o ex1f ex1f.o  ${PETSC_TS_LIB}
 	${RM} ex1f.o
 
 ex2: ex2.o util2.o chkopts
@@ -24,7 +24,7 @@ ex2: ex2.o util2.o chkopts
 	${RM} ex2.o util2.o
 
 ex2f: ex2f.o util2.o chkopts
-	-${FLINKER} -o ex2f ex2f.o util2.o ${PETSC_FORTRAN_LIB} ${PETSC_TS_LIB}
+	-${FLINKER} -o ex2f ex2f.o util2.o  ${PETSC_TS_LIB}
 	${RM} ex2f.o util2.o
 
 ex3: ex3.o  chkopts
