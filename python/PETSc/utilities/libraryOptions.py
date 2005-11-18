@@ -17,6 +17,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-log=<bool>',              nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
+    help.addArgument('PETSc', '-with-verbose=<bool>',          nargs.ArgBool(None, 1, 'Activate verbose logging code in PETSc'))
     help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Use CTABLE hashing for certain search functions - to conserve memory'))
     help.addArgument('PETSc', '-with-fortran-kernels=<none,generic,bgl>',  nargs.ArgString(None, None, 'Use Fortran for linear algebra kernels'))
     help.addArgument('PETSc', '-with-64-bit-indices=<bool>',   nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
@@ -40,12 +41,15 @@ class Configure(config.base.Configure):
       return 0
 
   def configureLibraryOptions(self):
-    '''Sets PETSC_USE_DEBUG, PETSC_USE_LOG, PETSC_USE_CTABLE and PETSC_USE_FORTRAN_KERNELS'''
+    '''Sets PETSC_USE_DEBUG, PETSC_USE_VERBOSE, PETSC_USE_LOG, PETSC_USE_CTABLE and PETSC_USE_FORTRAN_KERNELS'''
     self.useLog   = self.framework.argDB['with-log']
     self.addDefine('USE_LOG',   self.useLog)
 
     if self.debugging.debugging:
       self.addDefine('USE_DEBUG', '1')
+
+    self.useVerbose   = self.framework.argDB['with-verbose']
+    self.addDefine('USE_VERBOSE',   self.useVerbose)
 
     self.useCtable = self.framework.argDB['with-ctable']
     if self.useCtable:

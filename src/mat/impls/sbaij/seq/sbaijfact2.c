@@ -1407,7 +1407,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInfo *in
     }
   } 
   
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
     ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af));CHKERRQ(ierr);
@@ -1670,7 +1670,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
       ui[k+1] = ui[k] + nzk;  
     } 
 
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
     if (ai[am] != 0) {
       PetscReal af = ((PetscReal)ui[am])/((PetscReal)ai[am]);
       ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,fill,af));CHKERRQ(ierr);

@@ -3229,7 +3229,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
     ierr = PetscFree(fill);CHKERRQ(ierr);
     ierr = PetscFree(im);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
     {
       PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
       ierr = PetscLogInfo((A,"MatILUFactorSymbolic_SeqBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocate,f,af));CHKERRQ(ierr);

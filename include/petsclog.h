@@ -24,7 +24,7 @@ extern PetscLogDouble PETSC_DLLEXPORT _TotalFlops;
 
 /* General logging of information; different from event logging */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogInfo_Private(void*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
-#if defined(PETSC_USE_LOG)
+#if defined(PETSC_USE_VERBOSE)
 #define PetscLogInfo(A)      PetscLogInfo_Private A
 #else 
 #define PetscLogInfo(A)      0

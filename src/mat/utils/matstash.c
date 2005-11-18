@@ -525,7 +525,7 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
       ierr = MPI_Isend(svalues+bs2*startv[i],bs2*nlengths[i],MPIU_MATSCALAR,i,tag2,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
   ierr = PetscLogInfo((0,"MatStashScatterBegin_Private: No of messages: %d \n",nsends));CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     if (nprocs[i]) {

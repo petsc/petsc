@@ -345,7 +345,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
     current_space->local_used      += nzi;
     current_space->local_remaining -= nzi;
   }
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
   if (ai[n] != 0) {
     PetscReal af = ((PetscReal)bi[n])/((PetscReal)ai[n]);
     ierr = PetscLogInfo((A,"MatLUFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af));CHKERRQ(ierr);
@@ -1040,7 +1040,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   ierr = PetscFreeSpaceDestroy(free_space_lvl);CHKERRQ(ierr); 
   ierr = PetscFree(bj_ptr);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
   {
     PetscReal af = ((PetscReal)bi[n])/((PetscReal)ai[n]);
     ierr = PetscLogInfo((A,"MatILUFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af));CHKERRQ(ierr);
@@ -1355,7 +1355,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
       ui[k+1] = ui[k] + nzk;  
     } 
 
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
     if (ai[am] != 0) {
       PetscReal af = (PetscReal)ui[am]/((PetscReal)ai[am]);
       ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,fill,af));CHKERRQ(ierr);
@@ -1534,7 +1534,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
     ui[k+1] = ui[k] + nzk;  
   } 
 
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
   if (ai[am] != 0) {
     PetscReal af = (PetscReal)(ui[am])/((PetscReal)ai[am]);
     ierr = PetscLogInfo((A,"MatCholeskyFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,fill,af));CHKERRQ(ierr);

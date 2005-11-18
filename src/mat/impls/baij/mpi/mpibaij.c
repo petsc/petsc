@@ -859,7 +859,7 @@ PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
   PetscInt       *HT,key;
   MatScalar      **HD;
   PetscReal      tmp;
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
   PetscInt       ct=0,max=0;
 #endif
 
@@ -894,13 +894,13 @@ PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
           HT[(h1+k)%size] = key;
           HD[(h1+k)%size] = a->a + j*bs2;
           break;
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
         } else {
           ct++;
 #endif
         }
       }
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
       if (k> max) max = k;
 #endif
     }
@@ -917,20 +917,20 @@ PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
           HT[(h1+k)%size] = key;
           HD[(h1+k)%size] = b->a + j*bs2;
           break;
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
         } else {
           ct++;
 #endif
         }
       }
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
       if (k> max) max = k;
 #endif
     }
   }
   
   /* Print Summary */
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
   for (i=0,j=0; i<size; i++) {
     if (HT[i]) {j++;}
   }
@@ -1051,7 +1051,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(baij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->B,mode);CHKERRQ(ierr);
   
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_VERBOSE)
   if (baij->ht && mode== MAT_FINAL_ASSEMBLY) {
     ierr = PetscLogInfo((0,"MatAssemblyEnd_MPIBAIJ:Average Hash Table Search in MatSetValues = %5.2f\n",((PetscReal)baij->ht_total_ct)/baij->ht_insert_ct));CHKERRQ(ierr);
     baij->ht_total_ct  = 0;
