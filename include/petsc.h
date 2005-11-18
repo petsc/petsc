@@ -950,7 +950,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMallocSetDumpLog(void);
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2,
               PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_LOGICAL = 7,PETSC_ENUM = 8,PETSC_TRUTH=9, PETSC_LONG_DOUBLE} PetscDataType;
+              PETSC_CHAR = 6,PETSC_LOGICAL = 7,PETSC_ENUM = 8,PETSC_TRUTH=9, PETSC_LONG_DOUBLE = 10} PetscDataType;
 extern const char *PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)

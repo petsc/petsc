@@ -32,7 +32,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Spooles_Base(Mat A,MatType type,Mat
 
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
   if (f) {
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C","",(FCNVOID)lu->MatPreallocate);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C","",(PetscVoidFunction)lu->MatPreallocate);CHKERRQ(ierr);
   }
   ierr = PetscFree(lu);CHKERRQ(ierr);
 
