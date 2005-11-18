@@ -31,7 +31,7 @@ MPI_Comm PETSC_COMM_WORLD = 0;
 const char *PetscTruths[]    = {"FALSE","TRUE","PetscTruth","PETSC_",0};
 const char *PetscDataTypes[] = {"INT", "DOUBLE", "COMPLEX",
                                 "LONG","SHORT",  "FLOAT",
-                                "CHAR","LOGICAL","ENUM","TRUTH","PetscDataType","PETSC_",0};
+                                "CHAR","LOGICAL","ENUM","TRUTH","LONGDOUBLE","PetscDataType","PETSC_",0};
 
 /*
        Checks the options database for initializations related to the 

@@ -181,7 +181,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_DSCPACK_Base(Mat A,const MatType ty
   B->ops->destroy                = lu->MatDestroy;
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
   if (f) {
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIBAIJSetPreallocation_C","",(FCNVOID)lu->MatPreallocate);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIBAIJSetPreallocation_C","",(PetscVoidFunction)lu->MatPreallocate);CHKERRQ(ierr);
   }
   ierr = PetscFree(lu);CHKERRQ(ierr); 
 

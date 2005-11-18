@@ -61,7 +61,7 @@ void PETSC_STDCALL dmmgsetksp_(DMMG **dmmg,void (PETSC_STDCALL *rhs)(DMMG*,Vec*,
     Save the fortran rhs function in the DM on each level; ourrhs() pulls it out when needed
   */
   for (i=0; i<(**dmmg)->nlevels; i++) {
-    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[0] = (FCNVOID)rhs;
+    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[0] = (PetscVoidFunction)rhs;
   }
 }
 
@@ -76,7 +76,7 @@ void PETSC_STDCALL dmmgsetinitialguess_(DMMG **dmmg,void (PETSC_STDCALL *initial
     Save the fortran initial guess function in the DM on each level; ourinitialguess() pulls it out when needed
   */
   for (i=0; i<(**dmmg)->nlevels; i++) {
-    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[1] = (FCNVOID)initialguess;
+    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[1] = (PetscVoidFunction)initialguess;
   }
 }
 
@@ -86,7 +86,7 @@ void PETSC_STDCALL dmmgsetdm_(DMMG **dmmg,DM *dm,PetscErrorCode *ierr)
   *ierr = DMMGSetDM(*dmmg,*dm);if (*ierr) return;
   /* loop over the levels added a place to hang the function pointers in the DM for each level*/
   for (i=0; i<(**dmmg)->nlevels; i++) {
-    *ierr = PetscMalloc(4*sizeof(FCNVOID),&((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers);if (*ierr) return;
+    *ierr = PetscMalloc(4*sizeof(PetscVoidFunction),&((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers);if (*ierr) return;
   }
 }
 

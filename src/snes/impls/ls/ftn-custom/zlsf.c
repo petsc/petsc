@@ -97,13 +97,13 @@ void sneslinesearchnonorms_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,V
 
 void PETSC_STDCALL sneslinesearchset_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscTruth*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
-  if ((FCNVOID)f == (FCNVOID)sneslinesearchcubic_) {
+  if ((PetscVoidFunction)f == (PetscVoidFunction)sneslinesearchcubic_) {
     *ierr = SNESLineSearchSet(*snes,SNESLineSearchCubic,ctx);
-  } else if ((FCNVOID)f == (FCNVOID)sneslinesearchquadratic_) {
+  } else if ((PetscVoidFunction)f == (PetscVoidFunction)sneslinesearchquadratic_) {
     *ierr = SNESLineSearchSet(*snes,SNESLineSearchQuadratic,ctx);
-  } else if ((FCNVOID)f == (FCNVOID)sneslinesearchno_) {
+  } else if ((PetscVoidFunction)f == (PetscVoidFunction)sneslinesearchno_) {
     *ierr = SNESLineSearchSet(*snes,SNESLineSearchNo,ctx);
-  } else if ((FCNVOID)f == (FCNVOID)sneslinesearchnonorms_) {
+  } else if ((PetscVoidFunction)f == (PetscVoidFunction)sneslinesearchnonorms_) {
     *ierr = SNESLineSearchSet(*snes,SNESLineSearchNoNorms,ctx);
   } else {
     f73 = f;

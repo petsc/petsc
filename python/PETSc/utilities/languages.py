@@ -21,7 +21,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-c++-support', nargs.Arg(None, 0, 'When building C, compile C++ portions of external libraries (e.g. Prometheus)'))
     help.addArgument('PETSc', '-with-c-support', nargs.Arg(None, 0, 'When building with C++, compile so may be used directly from C'))
     help.addArgument('PETSc', '-with-fortran', nargs.ArgBool(None, 1, 'Create and install the Fortran wrappers'))
-    help.addArgument('PETSc', '-with-precision=<single,double,matsingle>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
+    help.addArgument('PETSc', '-with-precision=<single,double,,longdouble,matsingle>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
     help.addArgument('PETSc', '-with-scalar-type=<real or complex>', nargs.Arg(None, 'real', 'Specify real or complex numbers'))
     return
 
@@ -47,6 +47,8 @@ class Configure(config.base.Configure):
       self.addDefine('USE_SINGLE', '1')
     elif self.precision == 'matsingle':
       self.addDefine('USE_MAT_SINGLE', '1')
+    elif self.precision == 'longdouble':
+      self.addDefine('USE_LONG_DOUBLE', '1')
     elif not self.precision == 'double':
       raise RuntimeError('--with-precision must be single, double, or matsingle')
     self.framework.logPrint('Precision is '+str(self.precision))

@@ -109,6 +109,7 @@ extern int MPIUNI_Memcpy(void*,const void*,int);
 #define MPI_Datatype        int
 #define MPI_FLOAT           sizeof(float)
 #define MPI_DOUBLE          sizeof(double)
+#define MPI_LONG_DOUBLE     sizeof(long double)
 #define MPI_CHAR            sizeof(char)
 #define MPI_BYTE            sizeof(char)
 #define MPI_INT             sizeof(int)

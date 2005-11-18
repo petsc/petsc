@@ -135,13 +135,13 @@ void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL
             MatStructure*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(ctx);
-  if ((FCNVOID)func == (FCNVOID)snesdefaultcomputejacobian_) {
+  if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultcomputejacobian_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobian,ctx);
-  } else if ((FCNVOID)func == (FCNVOID)snesdefaultcomputejacobiancolor_) {
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultcomputejacobiancolor_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobianColor,*(MatFDColoring*)ctx);
-  } else if ((FCNVOID)func == (FCNVOID)snesdacomputejacobianwithadifor_) {
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesdacomputejacobianwithadifor_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDAComputeJacobianWithAdifor,ctx);
-  } else if ((FCNVOID)func == (FCNVOID)snesdacomputejacobian_) {
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesdacomputejacobian_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDAComputeJacobian,ctx);
   } else {
     f3 = func;
@@ -200,7 +200,7 @@ void PETSC_STDCALL snessetfunction_(SNES *snes,Vec *r,void (PETSC_STDCALL *func)
 {
   CHKFORTRANNULLOBJECT(ctx);
   f2 = func;
-  if ((FCNVOID)func == (FCNVOID)snesdaformfunction_) {
+  if ((PetscVoidFunction)func == (PetscVoidFunction)snesdaformfunction_) {
     *ierr = SNESSetFunction(*snes,*r,SNESDAFormFunction,ctx);
   } else {
     *ierr = SNESSetFunction(*snes,*r,oursnesfunction,ctx);
@@ -235,9 +235,9 @@ void PETSC_STDCALL snessetconvergencetest_(SNES *snes,
        void *cctx,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(cctx);
-  if ((FCNVOID)func == (FCNVOID)snesconverged_ls_){
+  if ((PetscVoidFunction)func == (PetscVoidFunction)snesconverged_ls_){
     *ierr = SNESSetConvergenceTest(*snes,SNESConverged_LS,0);
-  } else if ((FCNVOID)func == (FCNVOID)snesconverged_tr_){
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesconverged_tr_){
     *ierr = SNESSetConvergenceTest(*snes,SNESConverged_TR,0);
   } else {
     f8 = func;
@@ -325,13 +325,13 @@ void PETSC_STDCALL snessetmonitor_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,P
                     void *mctx,void (PETSC_STDCALL *mondestroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(mctx);
-  if ((FCNVOID)func == (FCNVOID)snesdefaultmonitor_) {
+  if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultmonitor_) {
     *ierr = SNESSetMonitor(*snes,SNESDefaultMonitor,0,0);
-  } else if ((FCNVOID)func == (FCNVOID)snesvecviewmonitor_) {
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesvecviewmonitor_) {
     *ierr = SNESSetMonitor(*snes,SNESVecViewMonitor,0,0);
-  } else if ((FCNVOID)func == (FCNVOID)snesvecviewupdatemonitor_) {
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesvecviewupdatemonitor_) {
     *ierr = SNESSetMonitor(*snes,SNESVecViewUpdateMonitor,0,0);
-  } else if ((FCNVOID)func == (FCNVOID)sneslgmonitor_) {
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)sneslgmonitor_) {
     *ierr = SNESSetMonitor(*snes,SNESLGMonitor,0,0);
   } else {
     f7 = func;

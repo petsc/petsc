@@ -23,11 +23,11 @@ typedef struct {
   HYPRE_IJMatrix     ij;
   HYPRE_IJVector     b,x;
 
-  PetscErrorCode (*destroy)(HYPRE_Solver);
-  PetscErrorCode (*solve)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
-  PetscErrorCode (*setup)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
+  PetscErrorCode     (*destroy)(HYPRE_Solver);
+  PetscErrorCode     (*solve)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
+  PetscErrorCode     (*setup)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
   
-  MPI_Comm          comm_hypre;
+  MPI_Comm           comm_hypre;
 
   /* options for pilut and BoomerAMG*/
   int                maxiter;
@@ -192,9 +192,9 @@ static PetscErrorCode PCSetFromOptions_HYPRE_Pilut(PC pc)
 #define __FUNCT__ "PCView_HYPRE_Pilut"
 static PetscErrorCode PCView_HYPRE_Pilut(PC pc,PetscViewer viewer)
 {
-  PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
+  PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth  iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -224,10 +224,10 @@ static PetscErrorCode PCView_HYPRE_Pilut(PC pc,PetscViewer viewer)
 #define __FUNCT__ "PCSetFromOptions_HYPRE_Euclid"
 static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PC pc)
 {
-  PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
+  PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth flag;
-  char       *args[2];
+  PetscTruth     flag;
+  char           *args[2];
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("HYPRE Euclid Options");CHKERRQ(ierr);
@@ -260,9 +260,9 @@ static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PC pc)
 #define __FUNCT__ "PCView_HYPRE_Euclid"
 static PetscErrorCode PCView_HYPRE_Euclid(PC pc,PetscViewer viewer)
 {
-  PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
+  PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth  iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -475,9 +475,9 @@ static PetscErrorCode PCApplyRichardson_BoomerAMG(PC pc,Vec b,Vec y,Vec w,PetscR
 #define __FUNCT__ "PCView_HYPRE_BoomerAMG"
 static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
 {
-  PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
+  PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth  iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -777,7 +777,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType(PC pc,const char name[])
      PCHYPRE - Allows you to use the matrix element based preconditioners in the LLNL package hypre
 
    Options Database Keys:
-+   -pc_hypre_type - One of pilut, parasails, boomerAMG, euclid
++   -pc_hypre_type - One of pilut, parasails, boomeramg, euclid
 -   Too many others to list, run with -pc_type hypre -pc_hypre_type XXX -help to see options for the XXX
           preconditioner
  
