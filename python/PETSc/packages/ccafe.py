@@ -32,6 +32,8 @@ class Configure(PETSc.package.Package):
     except RuntimeError, e:
       raise RuntimeError('Error when attempting to determine ccafe cca-spec-babel version')
 
+    self.specpkg = config.base.Configure.executeShellCommand(self.ccaspec_config + ' --var CCASPEC_PKG_NAME')[0].rstrip()
+    
     self.babel = config.base.Configure.executeShellCommand(self.ccaspec_config + ' --var CCASPEC_BABEL_BABEL')[0].rstrip()
     if not self.getExecutable(self.babel, resultName = 'babel'):
       raise RuntimeError('Located Babel library and include file but could not find babel executable')
@@ -61,12 +63,13 @@ class Configure(PETSc.package.Package):
 
     self.addMakeMacro('CCAFE_HOME',self.framework.argDB['with-ccafe-dir'])
     self.addMakeMacro('CCAFE_CONFIG', self.ccafe_config)
-    self.addMakeMacro('CCAFE_VERSION',self.version)
-    self.addMakeMacro('CCASPEC_VERSION', config.base.Configure.executeShellCommand(self.ccaspec_config + ' -var CCASPEC_VERSION')[0].rstrip())
+    self.addMakeMacro('CCAFE_VERSION', self.version)
+    self.addMakeMacro('CCASPEC_CONFIG', self.ccaspec_config)
+    self.addMakeMacro('CCASPEC_VERSION', config.base.Configure.executeShellCommand(self.ccaspec_config + ' --var CCASPEC_VERSION')[0].rstrip())
     self.addMakeMacro('CCASPEC_BABEL_BABEL',  self.babel)
-    self.addMakeMacro('CCASPEC_BABEL_VERSION',  config.base.Configure.executeShellCommand(self.ccaspec_config + ' -var CCASPEC_BABEL_VERSION')[0].rstrip())
+    self.addMakeMacro('CCASPEC_BABEL_VERSION',  config.base.Configure.executeShellCommand(self.ccaspec_config + ' --var CCASPEC_BABEL_VERSION')[0].rstrip())
     self.addMakeMacro('BABEL_CONFIG', self.babel_config)
-    self.addMakeMacro('CCA_REPO','${CCAFE_HOME}/share/cca-spec-babel-${CCASPEC_VERSION}-babel-${BABEL_VERSION}/xml')
+    self.addMakeMacro('CCA_REPO','${CCAFE_HOME}/share/' + self.specpkg + '/xml')
     self.addMakeMacro('HAVE_CCA','-DHAVE_CCA')
     return
 

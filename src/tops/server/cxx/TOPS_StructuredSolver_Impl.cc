@@ -735,6 +735,10 @@ throw ()
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.updatedParameterValue)
   // Insert-Code-Here {TOPS.StructuredSolver.updatedParameterValue} (updatedParameterValue method)
   std::cout << "TOPS::StructuredSolver_impl::updatedParameterValue called" << std::endl;
+  int ierr = PetscInitializeVoid();
+  params = myServices.getPort("tops_options");
+  std::string options = params.readConfigurationMap().getString("options","-help");
+  processTOPSOptions(options);
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.updatedParameterValue)
 }
 
