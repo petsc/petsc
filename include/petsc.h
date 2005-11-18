@@ -21,6 +21,12 @@
 #error "PETSc configured with --with-clanguage=c++ and NOT --with-c-support - it can be used only with a C++ compiler"
 #endif      
 
+/* 
+   Allows standard Unix binary IO to access files larger than 2 gigabytes
+   on some systems. This is made the default so that users won't suddenly
+   get stuck with things suddenly not working. 
+*/
+#define __USE_FILE_OFFSET64
 
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 #define PETSC_EXTERN_CXX_BEGIN extern "C" {
@@ -944,7 +950,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMallocSetDumpLog(void);
 E*/
 typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2,
               PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
-              PETSC_CHAR = 6,PETSC_LOGICAL = 7,PETSC_ENUM = 8,PETSC_TRUTH=9} PetscDataType;
+              PETSC_CHAR = 6,PETSC_LOGICAL = 7,PETSC_ENUM = 8,PETSC_TRUTH=9, PETSC_LONG_DOUBLE} PetscDataType;
 extern const char *PetscDataTypes[];
 
 #if defined(PETSC_USE_COMPLEX)
@@ -952,12 +958,16 @@ extern const char *PetscDataTypes[];
 #else
 #if defined(PETSC_USE_SINGLE)
 #define PETSC_SCALAR PETSC_FLOAT
+#elif defined(PETSC_USE_LONG_DOUBLE)
+#define PETSC_SCALAR PETSC_LONG_DOUBLE
 #else
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif
 #endif
 #if defined(PETSC_USE_SINGLE)
 #define PETSC_REAL PETSC_FLOAT
+#elif defined(PETSC_USE_LONG_DOUBLE)
+#define PETSC_REAL PETSC_LONG_DOUBLE
 #else
 #define PETSC_REAL PETSC_DOUBLE
 #endif
@@ -1088,7 +1098,15 @@ EXTERN PetscErrorCode PetscInitializeFortran(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int*,char ***);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEnd(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(char *); 
-typedef void (**PetscVoidFunction)(void);
+
+/*
+     These are so that in extern C code we can caste function pointers to non-extern C
+   function pointers. Since the regular C++ code expects its function pointers to be 
+   C++.
+*/
+typedef void (**PetscVoidStarFunction)(void);
+typedef void (*PetscVoidFunction)(void); 
+typedef PetscErrorCode (*PetscErrorCodeFunction)(void); 
 
 /*
    PetscTryMethod - Queries an object for a method, if it exists then calls it.
@@ -1096,12 +1114,12 @@ typedef void (**PetscVoidFunction)(void);
 */
 #define  PetscTryMethod(obj,A,B,C) \
   0;{ PetscErrorCode (*f)B, __ierr; \
-    __ierr = PetscObjectQueryFunction((PetscObject)obj,#A,(PetscVoidFunction)&f);CHKERRQ(__ierr); \
+    __ierr = PetscObjectQueryFunction((PetscObject)obj,#A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
   }
 #define  PetscUseMethod(obj,A,B,C) \
   0;{ PetscErrorCode (*f)B, __ierr; \
-    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidFunction)&f);CHKERRQ(__ierr); \
+    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
     else {SETERRQ1(PETSC_ERR_SUP,"Cannot locate function %s in object",A);} \
   }
@@ -1129,8 +1147,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposeFunction(PetscObject,con
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetFromOptions(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetUp(PetscObject);
 
-typedef void (*FCNVOID)(void); /* cast in next macro should never be extern C */
-typedef PetscErrorCode (*FCNINTVOID)(void); /* used in casts to make sure they are not extern C */
 /*MC
    PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object. 
                        
@@ -1169,7 +1185,7 @@ M*/
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,0)
 #else
-#define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,(FCNVOID)(d))
+#define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,(PetscVoidFunction)(d))
 #endif
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectQueryFunction(PetscObject,const char[],void (**)(void));
