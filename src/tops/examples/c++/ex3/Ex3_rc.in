@@ -20,4 +20,7 @@ parameter solver tops_options options "-snes_monitor -ksp_monitor"
 
 go system DoSolve
 
+parameter solver tops_options options "-snes_view -mat_view"
+go system DoSolve
+
 quit
