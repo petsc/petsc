@@ -621,6 +621,7 @@ PetscErrorCode MeshDistribute(Mesh mesh)
 {
   ALE::Sieve       *topology;
   ALE::PreSieve    *orientation;
+  ALE::IndexBundle *elementBundle;
   ALE::IndexBundle *coordBundle;
   ALE::IndexBundle *serialCoordBundle;
   ALE::PreSieve    *partitionTypes;
@@ -650,6 +651,16 @@ PetscErrorCode MeshDistribute(Mesh mesh)
     ALE::Point v = *vertex_itor;
     orientation->addCone(v, v);
   }
+  /* Create element bundle */
+  elementBundle = new ALE::IndexBundle(topology);
+  if (debug) {
+    elementBundle->setVerbosity(11);
+  }
+  elementBundle->setFiberDimensionByHeight(0, 1);
+  elementBundle->computeOverlapIndices();
+  elementBundle->computeGlobalIndices();
+  elementBundle->getLock();  // lock the bundle so that the overlap indices do not change
+  ierr = MeshSetElementBundle(mesh, (void *) elementBundle);CHKERRQ(ierr);
   /* Create coordinate bundle and storage */
   coordBundle = new ALE::IndexBundle(topology);
   if (debug) {
@@ -733,6 +744,7 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
   PetscObjectGetComm((PetscObject) mesh, &comm);
   ALE::Sieve       *boundary = new ALE::Sieve(comm);
   ALE::Sieve       *topology;
+  ALE::IndexBundle *elementBundle;
   ALE::IndexBundle *bdBundle;
   PetscScalar      *values;
   PetscInt          numElements;
@@ -742,11 +754,8 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
   PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
   PetscValidIntPointer(boundaryVertices,3);
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ALE::IndexBundle elementBundle(topology);
-  elementBundle.setFiberDimensionByHeight(0, 1);
-  elementBundle.computeOverlapIndices();
-  elementBundle.computeGlobalIndices();
-  numElements = elementBundle.getGlobalSize();
+  ierr = MeshGetElementBundle(mesh, (void **) &elementBundle);CHKERRQ(ierr);
+  numElements = elementBundle->getGlobalSize();
   if (debug) {
     boundary->setVerbosity(11);
   }

@@ -853,7 +853,7 @@ namespace ALE {
     }
     hdr << "\n";
     // Print header
-    ierr = PetscPrintf(this->comm, hdr.str().c_str()); CHKERROR(ierr, "Error in PetscPrintf");
+    ierr = PetscSynchronizedPrintf(this->comm, hdr.str().c_str()); CHKERROR(ierr, "Error in PetscPrintf");
     // Use a string stream to accumulate output that is then submitted to PetscSynchronizedPrintf
     Point_set points = this->space();
     txt  << "[" << rank << "]: space of size " << points.size() << " : ";
@@ -923,6 +923,7 @@ namespace ALE {
     CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
     ierr = PetscSynchronizedFlush(this->comm);
     CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+#if 0
     ostringstream heighthdr;
     heighthdr << "Height of ";
     if (name == NULL) {
@@ -932,6 +933,7 @@ namespace ALE {
     }
     heighthdr << std::endl;
     this->_height.view(heighthdr.str().c_str());
+#endif
   }// Sieve::view()
   
   #undef  __FUNCT__

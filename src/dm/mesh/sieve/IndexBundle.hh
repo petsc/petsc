@@ -26,6 +26,7 @@ namespace ALE {
     Obj<PreSieve> _pointTypes;
     Obj<PreSieve> _localIndices;
     Obj<PreSieve> _globalIndices;
+    int *_firstGlobalIndex;
     //
     BundleAssemblyPolicy _assemblyPolicy;
     //
@@ -158,6 +159,7 @@ namespace ALE {
     void                    computeGlobalIndices(); // collective
     int32_t                 getGlobalSize();
     int32_t                 getLocalSize();
+    int*                    getLocalSizes();
     int32_t                 getRemoteSize();
     Obj<PreSieve>           getGlobalIndices();
     Obj<PreSieve>           getLocalIndices();
