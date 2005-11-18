@@ -6,7 +6,7 @@ LOCDIR      = src/tops/
 
 include makefile.rules
 
-libfast: clients server-c++
+libfast: clients server-cxx
 
 
 

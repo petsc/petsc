@@ -1,6 +1,13 @@
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
+# Override the LANGUAGES variable settings below to reduce the 
+# number of languages for which clients are generated; the 
+# normal setting is all languages supported by Babel
+LANGUAGES = $(CCASPEC_BABEL_LANGUAGES)
 
-LANGUAGES =  c++
+CCASPEC_VARS = $(shell ${CCASPEC_CONFIG} --var CCASPEC_MAKEINCL)
+include ${CCASPEC_VARS}
 
 CFLAGS = ${BABEL_INCLUDE} 
 
@@ -10,72 +17,91 @@ parse-check:
 	${BABEL} -R${CCA_REPO} --parse-check ${SIDLFILES}
 
 #-------------------------------------------------------------------------------
-clients: 
-	-@for LANGUAGE in $(LANGUAGES); do \
-		echo -e "\n### Building $$LANGUAGE client library."; \
-		${BABEL} -R${CCA_REPO} --suppress-timestamp -c $$LANGUAGE -o ./client/$$LANGUAGE ${SIDLFILES} ; \
-		echo "include ${PETSC_DIR}/src/tops/makefile.rules" > client/$$LANGUAGE/makefile; \
-		$(OMAKE) -C client/$$LANGUAGE LANGUAGE=$$LANGUAGE libtopsclient-$$LANGUAGE;\
-	done
+# Client targets
 
-libtopsclient-c: 
-	-@${C_CC} -c ${HAVE_CCA} ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.c
-	-@$(OMAKE)  LIBNAME=libtopsclient-${LANGUAGE} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB}" shared_arch
+MYPREFIX = $(shell pwd)
+SIDL_PACKAGES = $(basename $(notdir ${SIDLFILES} ) )
+SIDL_PACKAGES_TARGETS = $(addprefix ., $(SIDL_PACKAGES))
+LIBTOOL=$(CCASPEC_BABEL_BABEL_LIBTOOL)
 
-libtopsclient-c++:
-	-@${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  *.cc
-	-@$(OMAKE)  LIBNAME=libtopsclient-${LANGUAGE} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB}" shared_arch
+XML_REP = -R$(CCASPEC_BABEL_XML_REPOSITORY)
 
+clients: $(SIDL_PACKAGES_TARGETS)
 
-libtopsclient-python: 
-	-@python setup.py --include-dirs=${BABEL_INCLUDE} --include-dirs=${BABEL_INCLUDE}/python2.4/babel --library-dirs=${BABEL_LIB_DIR}  install   --install-purelib=./ --install-platlib=./ --install-headers=include --install-scripts=scripts --install-data=data
+$(SIDL_PACKAGES_TARGETS): 
+	@for LANGUAGE in $(LANGUAGES); do \
+		echo -e "\n### Building $$LANGUAGE client library for $(@:.%=%)."; \
+		if [ ! -d client ] ; then mkdir client; fi; \
+		if [ $$LANGUAGE == python ] ; then \
+			$(BABEL) -c $$LANGUAGE $(XML_REP) -E --suppress-timestamp $(SIDLFILES) -o client/python; \
+		elif [ $$LANGUAGE == java ] ; then \
+			$(BABEL) -c $$LANGUAGE $(XML_REP) -E --suppress-timestamp $(SIDLFILES) -o client/java; \
+		else \
+			$(BABEL) -c $$LANGUAGE $(XML_REP) -E -l --suppress-timestamp $(SIDLFILES) -o client; \
+		fi; \
+		$(SH) ./utils/generateClientMakefile.sh ${CCAFE_CONFIG} topsclient client ${PETSC_DIR} $$LANGUAGE;  \
+		$(MAKE) -C client/$$LANGUAGE .lib ; \
+	done;
+	@touch $@
+
+client-clean:
+	-@$(RM) -r client  $(SIDL_PACKAGES_TARGETS)
+
+client-distclean: client-clean
+	-@$(RM) -r .repository .sidl .lib .\#* *~ lib include
+
+client-debug:
+	@echo $(SIDL_PACKAGES)
+	@echo $(SIDL_PACKAGES_TARGETS)
 
 #-------------------------------------------------------------------------------
-server-c++:  server/c++/obj/makefile 
-	-@cd server/c++/obj; make TLIBNAME=${TLIBNAME} libserver-c++.${SOSUFFIX}
+server-cxx:  server/cxx/obj/makefile 
+	-@cd server/cxx/obj; make TLIBNAME=${TLIBNAME} libserver-cxx.${SOSUFFIX}
 
-server/c++/obj/makefile: ${SIDLFILES}
-	-@if [ ! -d "server/c++/obj" ]; then mkdir -p server/c++/obj; fi
-	-@${BK} edit server/c++/*_Impl.cc server/c++/*_Impl.hh
+server/cxx/obj/makefile: ${SIDLFILES}
+	-@if [ ! -d "server/cxx/obj" ]; then mkdir -p server/cxx/obj; fi
+	-@${BK} edit server/cxx/*_Impl.cc server/cxx/*_Impl.hh
 	-${BABEL} -R ${CCA_REPO} --hide-glue --exclude-external --suppress-timestamp \
-		${SIDLEXCLUDE} --server=c++ --output-directory=./server/c++ ${SIDLFILES}
-	@-${RM} ${REMOVEFILES} server/c++/obj/makefile
-	@-if [ ! -z "${TOPSCLIENT_LIB}" ]; then echo "TOPSCLIENT_LIB = ${TOPSCLIENT_LIB}" > server/c++/obj/makefile; fi
-	@-echo "include ${PETSC_DIR}/src/tops/makefile.rules" >> server/c++/obj/makefile
+		${SIDLEXCLUDE} --server=cxx --output-directory=./server/cxx ${SIDLFILES}
+	@-${RM} ${REMOVEFILES} server/cxx/obj/makefile
+	@-if [ ! -z "${TOPSCLIENT_LIB}" ]; then echo "TOPSCLIENT_LIB = ${TOPSCLIENT_LIB}" > server/cxx/obj/makefile; fi
+	@-echo "include ${PETSC_DIR}/src/tops/makefile.rules" >> server/cxx/obj/makefile
 
-libserver-c++.${SOSUFFIX}: 
-	@-${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
-	    -I${PETSC_DIR}/src/tops/client/c++ -I${PETSC_DIR}/src/tops/server/c++ \
+libserver-cxx.${SOSUFFIX}: 
+	-@${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
+	    -I${PETSC_DIR}/include/tops \
+			$(CCASPEC_BABEL_CXXFLAGS) -I$(CCASPEC_BABEL_includedir) \
+      -I$(CCASPEC_BABEL_includedir)/cxx -I$(CCASPEC_pkgincludedir)/cxx \
 	    ../*.cc ../glue/*.cc
-	@-${C_CC} -c ${HAVE_CCA} ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -I../glue -I.. \
-	    -I${PETSC_DIR}/src/tops/client/c++ -I${PETSC_DIR}/src/tops/server/c++ ../glue/*.c
-	-@$(OMAKE) LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR} ${TOPSCLIENT_LIB}" shared_arch
+	-@${C_CC} -c ${HAVE_CCA} ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} \
+			-I${PETSC_DIR}/include/tops -I../glue ../glue/*.c
+	-@$(OMAKE) LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}/tops ${TOPSCLIENT_LIB}" shared_arch
 	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
 	-@for i in StructuredSolver UnstructuredSolver ; do \
 	   ${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libtops.${SL_LINKER_SUFFIX} \
-		TOPS.$$i c++ dynamic global now TOPS.$$i > $$i.cca.in; \
+		TOPS.$$i cxx dynamic global now TOPS.$$i > $$i.cca.in; \
 	   sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
 	       $$i.cca.in >  ${PETSC_LIB_DIR}/cca/$$i.cca; rm $$i.cca.in; \
 	done;
 #-------------------------------------------------------------------------------
 
 cca: 
-	# Generating *.cca files for ${EXNAME}
+	-@echo "Generating *.cca files for ${EXNAME}"
 	-@${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/lib${EXNAME}.${SL_LINKER_SUFFIX} \
-		${EXNAME}.System c++ dynamic global now ${EXNAME}.System > lib${EXNAME}.${SL_LINKER_SUFFIX}.cca.in
+		${EXNAME}.System cxx dynamic global now ${EXNAME}.System > lib${EXNAME}.${SL_LINKER_SUFFIX}.cca.in
 	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
 	-@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
 	    	-e /"@SOSUFFIX@/ s|@SOSUFFIX@|${SL_LINKER_SUFFIX}|" \
 		lib${EXNAME}.${SL_LINKER_SUFFIX}.cca.in > ${PETSC_LIB_DIR}/cca/lib${EXNAME}.${SL_LINKER_SUFFIX}.cca
 	@-${RM} *.cca.in
-	# Creating simple Ccaffeine script
+	-@echo "Creating simple Ccaffeine script"
 	@-if [ -f ${EXNAME}_rc.in ]; then\
-  	  sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ${EXNAME}_rc.in > ${EXNAME}_rc ; fi
+	  sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ${EXNAME}_rc.in > ${EXNAME}_rc ; fi
 	@-if [ -f ${EXNAME}_gui_rc.in ]; then\
 	  sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ${EXNAME}_gui_rc.in > ${EXNAME}_gui_rc; fi
 
 test-cca: cca
-	# Testing component example ${EXNAME} with Ccaffeine
+	@-echo "Testing component example ${EXNAME} with Ccaffeine"
 	@if [ -z "${CCA_PARALLEL}" ]; then \
 	  ${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ${EXNAME}_rc > ${EXNAME}_rc.log  2>&1 ; \
 	  if [ "`egrep \"(specific|1 .+norm)\" ${EXNAME}_rc.log | wc -l`" -ge "2" ]; then \
@@ -89,31 +115,29 @@ test-cca: cca
 	fi
 
 gui-cca: cca
-	# Running component example ${EXNAME} using Ccaffeine GUI (the output is in pOut0/pErr0)
+	@-echo "Running component example ${EXNAME} using Ccaffeine GUI (the output is in pOut0/pErr0)"
 	@${CCAFE_HOME}/bin/gui-backend.sh --port 4242 --ccafe-rc ${EXNAME}_gui_rc > .ccafe.out 2>&1 & \
 	echo -e "\nPlease wait...\n"; sleep 5; \
 	${CCAFE_HOME}/bin/gui.sh --port 4242 # --scaleFont 1.5
 
 kill-gui:
-	# Cleaning up after GUI 
+	@-echo "Cleaning up after GUI"
 	@-${CCAFE_HOME}/bin/gui.sh --kill; ${CCAFE_HOME}/bin/gui-backend.sh --kill
 
 #-------------------------------------------------------------------------------
 
 examples: 
-	-@for dir in `ls -d examples/c++/ex*`; do \
+	-@for dir in `ls -d examples/cxx/ex*`; do \
 	  echo -e "\n### Building and testing in $$dir"; \
-	  make -C $$dir server-c++ test-cca; \
+	  make -C $$dir server-cxx test-cca; \
 	done
 
-clean-cca:
-	-@${RM} -r client* server/c++/obj server/c++/glue \
-		examples/c++/ex?/server/c++/obj examples/c++/ex?/server/c++/glue
+clean-cca: client-clean
+	-@${RM} -r server/cxx/obj server/cxx/glue \
+		examples/cxx/ex?/server/cxx/obj examples/cxx/ex?/server/cxx/glue 
 #-------------------------------------------------------------------------------
 
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
 
 
 .PHONY: examples
