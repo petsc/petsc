@@ -2,12 +2,12 @@
 // File:          TOPS_StructuredSolver_Impl.hh
 // Symbol:        TOPS.StructuredSolver-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.8
+// Babel Version: 0.10.12
 // Description:   Server-side implementation for TOPS.StructuredSolver
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.8
+// babel-version = 0.10.12
 // 
 
 #ifndef included_TOPS_StructuredSolver_Impl_hh

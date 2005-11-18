@@ -1,0 +1,170 @@
+# Make sure CCAFE_CONFIG is set to the location of the ccafe-config
+# executable, specifying the full path name if needed.
+
+# --------------- Do not modify below this line -----------------
+
+CLIENT_TOP_DIR= @PWD@
+CLIENT_NAME   = @CLIENT_NAME@
+LANGUAGE      = @LANGUAGE@
+CCA_SPEC_VARS = @CCA_SPEC_VARS@
+MYPREFIX      = @PREFIX@
+
+# enable various levels of noise by makeing HIDE_COMPILE/HIDE_LIBTOOL empty
+HIDE_LIBTOOL=@
+HIDE_COMPILE=--quiet
+
+PKG_NAME = $(shell echo $(CLIENT_NAME) | sed -e 's/Port//')
+
+include babel.make 	# default for clients
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
+include $(CCA_SPEC_VARS)
+
+# A TMP variable to be used for compiling F90 files
+TMP := $(shell echo $$$$)
+
+# Location of CCA spec headers (in include/)  and library (in lib/) files
+CCA_SPEC_CLIENTS = $(CCASPEC_INSTALL_DIR)
+
+RANLIB = ranlib
+PYTHON = $(CCASPEC_BABEL_PYTHON)
+PYTHON_VER = python$(CCASPEC_BABEL_PYTHON_VERSION)
+CLIENT_LIB = lib$(CLIENT_NAME)-$(LANGUAGE).la
+LIBTOOL=$(CCASPEC_BABEL_BABEL_LIBTOOL)
+
+ifeq ($(PREFIX),) 
+  PREFIX = $(PETSC_DIR)
+endif
+
+# The following variables extract configuration information from the 
+# installed CCA specification (with Babel support)
+CXX = $(CCASPEC_BABEL_CXX)
+CXXFLAGS := $(CXXFLAGS) $(CCASPEC_BABEL_CXXFLAGS) \
+	-I$(CCASPEC_BABEL_includedir)/cxx \
+	-I$(CCASPEC_pkgincludedir)/cxx
+
+CC = $(CCASPEC_BABEL_CC)
+CFLAGS := $(CFLAGS) $(CCASPEC_BABEL_CFLAGS) 
+
+F90 = $(CCASPEC_BABEL_F90)
+F90FLAGS := $(FCFLAGS) $(F90FLAGS) $(CCASPEC_BABEL_F90FLAGS) \
+	$(CCASPEC_BABEL_F90MFLAG)$(CCASPEC_BABEL_includedir)/f90 \
+	$(CCASPEC_BABEL_F90MFLAG)$(CCASPEC_BABEL_includedir) \
+	$(CCASPEC_BABEL_F90MFLAG)$(CCASPEC_pkgincludedir)/f90 \
+	$(CCASPEC_BABEL_F90MFLAG)$(PORT_DIR)/include $(USER_F90FLAGS)
+
+
+INCLUDES = -I$(CCASPEC_BABEL_includedir)/$(LANGUAGE) \
+	-I$(CCASPEC_BABEL_includedir)/ \
+	-I$(CCASPEC_pkgincludedir)/$(LANGUAGE) $(JAVAINC)
+
+ifeq ($(LANGUAGE),java)
+	JAVA_INC = $(shell $(CCASPEC_BABEL_BABEL_CONFIG) --query-var=JNI_INCLUDES)
+	INCLUDES += $(JAVA_INC)
+	JAVASRCS = $(shell find . -name '*.java')
+	JAVA_CP= -classpath $(CCASPEC_LIB_L_DIR)/cca-spec.jar:$(CCASPEC_BABEL_libdir)/sidl-$(CCASPEC_BABEL_VERSION).jar:$(CCASPEC_BABEL_libdir)/sidlstub_$(strip $(CCASPEC_BABEL_VERSION)).jar:.
+endif
+
+LIBS := $(LIBS) -R$(CCASPEC_BABEL_libdir) -L$(CCASPEC_BABEL_libdir) -lsidl
+
+%.lo : %.c
+	$(HIDE_LIBTOOL)$(LIBTOOL) --mode=compile --tag=CXX $(HIDE_COMPILE) \
+		$(CC) -g $(CFLAGS) \
+		$(INCLUDES) -I$(CCA_SPEC_CLIENTS)/c \
+		-c $< -o $(<:.c=.lo)
+
+%.lo: %.cc	
+	$(HIDE_LIBTOOL)$(LIBTOOL) --mode=compile --tag=CXX $(HIDE_COMPILE) \
+		$(CXX) -g $(CXXFLAGS) \
+		$(INCLUDES) -I$(CCA_SPEC_CLIENTS)/cxx \
+		-c $< -o $(<:.cc=.lo)
+
+%.lo: %.F90	
+	@-cp $(@:.lo=.F90) $(@:.lo=.f90.$(TMP)) # for case-insensitive systems
+	$(HIDE_LIBTOOL)$(CPP) -traditional-cpp -P -x c $(INCLUDES) -o $(@:.lo=.tmp) $< 
+	@-sed -e 's/^#pragma.*$$//' < $(@:.lo=.tmp) > $(@:.lo=.f90)
+	$(HIDE_LIBTOOL)$(LIBTOOL) --mode=compile --tag=FC  $(HIDE_COMPILE)\
+		$(F90) $(F90FLAGS) $(INCLUDES) $(F90MODINCLUDE) -c -o $@ $(@:.lo=.f90)
+	$(HIDE_LIBTOOL)$(RM) $(@:.lo=.f90) $(@:.lo=.tmp)
+	@-mv $(@:.lo=.f90.$(TMP)) $(@:.lo=.F90) # for case-insensitive systems
+
+
+# Get source names (use sed to filter out result when no files match)
+CSRC_FILES := $(shell echo *.c | sed -e 's/\*\.c//') 
+CXXSRC_FILES := $(shell echo *.cc | sed -e 's/\*\.cc//') 
+F90SRC_FILES := $(TYPEMODULESRCS) $(ARRAYMODULESRCS) $(STUBMODULESRCS) 
+
+OBJS = $(CSRC_FILES:.c=.lo) $(CXXSRC_FILES:.cc=.lo) $(F90SRC_FILES:.F90=.lo)
+
+ifeq ($(LANGUAGE),f90)
+	LIBS := $(LIBS) $(CCASPEC_BABEL_F90LIBS)
+endif
+
+ifeq ($(LANGUAGE),python)
+	INCLUDES := $(INCLUDES) -I$(CCASPEC_BABEL_PYTHONINC) \
+   -I$(CCASPEC_BABEL_includedir)/$(PYTHON_VER)/babel \
+   -I$(CCASPEC_pkgincludedir)/$(PYTHON_VER)/babel
+	LIBS += -R$(CCASPEC_BABEL_LIBS) -L$(CCASPEC_BABEL_LIBS) \
+		-lcca-$(LANGUAGE) 
+endif
+
+all: .lib
+
+x:
+	@echo $(SAWIT)
+
+.lib: $(CLIENT_LIB)
+	@touch $@
+
+# this probably needs an if for fortran still.
+$(CLIENT_LIB): $(OBJS)
+	@if [ "xx$(LANGUAGE)" == "xxpython" ]; then \
+	   $(PYTHON) setup.py build_ext --inplace \
+	   --include-dirs=$(CCASPEC_pkgincludedir)/$(PYTHON_VER)/babel \
+	   --include-dirs=$(CCASPEC_pkgincludedir)/c \
+	   --include-dirs=$(CCASPEC_BABEL_includedir)/$(PYTHON_VER)/babel \
+	   --include-dirs=$(CCASPEC_BABEL_includedir) \
+	   --include-dirs=$(CCASPEC_BABEL_PYTHONINC) \
+	   --library-dirs=$(CCASPEC_BABEL_libdir); \
+	   $(PYTHON) setup.py install_headers \
+	   --install-dir=$(PETSC_DIR)/include/tops/$(PYTHON_VER)/babel \
+	   --force; \
+	   $(PYTHON) setup.py install_lib \
+	   --install-dir=$(PETSC_LIB_DIR)/tops/$(PYTHON_VER)/site-packages \
+	   --library-dirs=$(CCASPEC_BABEL_libdir) \
+	   --force; \
+	else \
+	   if [ ! -d $(PETSC_LIB_DIR)/tops/$(LANGUAGE) ]; then mkdir -p $(PETSC_LIB_DIR)/tops/$(LANGUAGE); fi;\
+      if [ "$(LANGUAGE)" == "java" ]; then \
+	      $(CCASPEC_BABEL_JAVAC) $(JAVA_CP) $(JAVASRCS); \
+	   fi ; \
+	   $(LIBTOOL) --mode=link --tag=CXX $(HIDE_COMPILE) \
+	      $(CXX) $(INCLUDES) \
+	      $(OBJS) -o $@ \
+	      -rpath $(PETSC_LIB_DIR)/tops/$(LANGUAGE) $(LIBS) ;\
+	      $(LIBTOOL) --mode=install $(HIDE_COMPILE) cp $@ $(PETSC_LIB_DIR)/tops/$(LANGUAGE);\
+	      $(LIBTOOL) --mode=finish $(HIDE_COMPILE) $(PETSC_LIB_DIR)/tops/$(LANGUAGE);\
+	fi ; 
+	@if [ ! -d $(PETSC_DIR)/include/tops ]; then mkdir -p $(PETSC_DIR)/include/tops; fi;
+	@cp *.h* $(PETSC_DIR)/include/tops
+	@-if [ "$(LANGUAGE)" == "f90" ]; then cp *.mod $(PETSC_DIR)/include/tops; fi
+	@if [ "$(LANGUAGE)" == "f77" ]; then \
+        for f in `find . -name '*.inc'`; do \
+          cp -f $f $(PETSC_DIR)/include/tops ; \
+        done; \
+	fi
+	@if [ "$(LANGUAGE)" == "java" ]; then \
+	   classes=`find . -name '*.class'` && \
+	   dirs=`for i in \`echo $$classes\` ; do dirname $$i; done` && \
+	   dirsunique=`echo $$dirs | sed -e 's/ /\n/g' | sort -u` && \
+	   for dir in $$dirsunique; do \
+	      mkdir -p $(PETSC_LIB_DIR)/tops/$(LANGUAGE)/$$dir ;\
+	      cp -f $$dir/*.class  $(PETSC_LIB_DIR)/tops/$(LANGUAGE)/$$dir ;\
+	   done;\
+	fi;
+
+client-clean:
+	$(HIDE_LIBTOOL)$(LIBTOOL) --mode=clean $(HIDE_COMPILE) $(RM) *.lo $(CLIENT_LIB) .lib
+	@- if [ "$(LANGUAGE)" == "python" ]; then \
+	   $(PYTHON) setup.py clean --all;\
+	fi;

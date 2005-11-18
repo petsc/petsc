@@ -2,12 +2,12 @@
 // File:          Ex4_System_Impl.hh
 // Symbol:        Ex4.System-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.8
+// Babel Version: 0.10.12
 // Description:   Server-side implementation for Ex4.System
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.8
+// babel-version = 0.10.12
 // 
 
 #ifndef included_Ex4_System_Impl_hh
