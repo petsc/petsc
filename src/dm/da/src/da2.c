@@ -368,7 +368,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   for (i=0; i<(rank % m); i++) {
     xs += lx[i];
   }
-#if defined(PETSC_USE_DEBUGGING)
+#if defined(PETSC_USE_DEBUG)
   left = xs;
   for (i=(rank % m); i<m; i++) {
     left += lx[i];
@@ -394,7 +394,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   for (i=0; i<(rank/m); i++) {
     ys += ly[i];
   }
-#if defined(PETSC_USE_DEBUGGING)
+#if defined(PETSC_USE_DEBUG)
   left = ys;
   for (i=(rank/m); i<n; i++) {
     left += ly[i];
