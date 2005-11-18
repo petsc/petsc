@@ -5065,7 +5065,7 @@ The following functions are not supported in Fortran:
 \begin{tabbing}
  PetscFClose(), PetscFOpen(), PetscFPrintf(), PetscPrintf()\\
  PetscPopErrorHandler(), PetscPushErrorHandler()\\
- PetscLogInfo()\\
+ PetscVerboseInfo()\\
  PetscSetDebugger()\\
  VecGetArrays(), VecRestoreArrays()\\
  PetscViewerASCIIGetPointer(), PetscViewerBinaryGetDescriptor()\\
@@ -5678,7 +5678,7 @@ in MPE logging.
 Users can activate the printing of verbose information about
 algorithms, data structures, etc. to the screen by using the option \trl{
 -log_info} \findex{-log_info} or by calling \trl{
-PetscLogInfoAllow(PETSC_TRUE)}. \findex{PetscLogInfoAllow()}
+PetscVerboseInfoAllow(PETSC_TRUE)}. \findex{PetscVerboseInfoAllow()}
 Such logging, which is used throughout the PETSc libraries,
 can aid the user in understanding algorithms and 
 tuning program performance.  For example, as discussed in
@@ -5687,27 +5687,27 @@ printing of information about memory allocation during
 matrix assembly.
 
 Application programmers can employ this logging as well, by
-using the routine \findex{PetscLogInfo()}
+using the routine \findex{PetscVerboseInfo()}
 \begin{tabbing}
-   PetscLogInfo(void* obj,char *message,...)
+   PetscVerboseInfo(void* obj,char *message,...)
 \end{tabbing}
 where \trl{obj} is the PETSc object associated most closely with
 the logging statement, \trl{message}.
 For example, in the line search Newton methods, we use a statement such as
 \begin{tabbing}
-   PetscLogInfo(snes,\trl{"Cubically determined step, lambda %g\n"},lambda);
+   PetscVerboseInfo(snes,\trl{"Cubically determined step, lambda %g\n"},lambda);
 \end{tabbing}
 
 One can selectively turn off informative messages about any of the 
 basic PETSc objects (e.g., Mat, SNES) with the command
 \begin{tabbing}
-   PetscLogInfoDeactivateClass(int object\_cookie)
+   PetscVerboseInfoDeactivateClass(int object\_cookie)
 \end{tabbing}
-where \findex{PetscLogInfoDeactivateClass()} \findex{PetscLogInfoActivateClass()}
+where \findex{PetscVerboseInfoDeactivateClass()} \findex{PetscVerboseInfoActivateClass()}
 \trl{object_cookie} is one of \trl{MAT_COOKIE}, \trl{SNES_COOKIE}, etc.
 Messages can be reactivated with the command
 \begin{tabbing}
-   PetscLogInfoActivateClass(int object\_cookie)
+   PetscVerboseInfoActivateClass(int object\_cookie)
 \end{tabbing}
 Such deactivation can be useful when one wishes to view information
 about higher-level PETSc libraries (e.g., TS and SNES) without 

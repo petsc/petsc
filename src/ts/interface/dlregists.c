@@ -41,7 +41,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSInitializePackage(const char path[]) {
   if (opt) {
     ierr = PetscStrstr(logList, "ts", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(TS_COOKIE);CHKERRQ(ierr);
+      ierr = PetscVerboseInfoDeactivateClass(TS_COOKIE);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */

@@ -71,7 +71,7 @@ PetscErrorCode MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
   for (i=0; i<a->nd; i++) {
     if (!a->diag[i]) {a->mainbd = i; break;}
   }
-  ierr = PetscLogInfo((A,"MatAssemblyEnd_SeqBDiag:Number diagonals %D,memory used %D, block size %D\n",a->nd,a->maxnz,A->bs));CHKERRQ(ierr);
+  ierr = PetscVerboseInfo((A,"MatAssemblyEnd_SeqBDiag:Number diagonals %D,memory used %D, block size %D\n",a->nd,a->maxnz,A->bs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -110,7 +110,7 @@ PetscErrorCode MatSetOption_SeqBDiag(Mat A,MatOption op)
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_USE_HASH_TABLE:
-    ierr = PetscLogInfo((A,"MatSetOption_SeqBDiag:Option ignored\n"));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatSetOption_SeqBDiag:Option ignored\n"));CHKERRQ(ierr);
     break;
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
@@ -746,7 +746,7 @@ PetscErrorCode MatLoad_SeqBDiag(PetscViewer viewer, MatType type,Mat *A)
   extra_rows = bs - M + bs*(M/bs);
   if (extra_rows == bs) extra_rows = 0;
   if (extra_rows) {
-    ierr = PetscLogInfo((0,"MatLoad_SeqBDiag:Padding loaded matrix to match blocksize\n"));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((0,"MatLoad_SeqBDiag:Padding loaded matrix to match blocksize\n"));CHKERRQ(ierr);
   }
 
   /* read row lengths */

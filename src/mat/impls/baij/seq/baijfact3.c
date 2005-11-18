@@ -116,12 +116,12 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
 #if defined(PETSC_USE_VERBOSE)
   if (ai[n] != 0) {
     PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
-    ierr = PetscLogInfo((A,"MatLUFactorSymbolic_SeqBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af));CHKERRQ(ierr);
-    ierr = PetscLogInfo((A,"MatLUFactorSymbolic_SeqBAIJ:Run with -pc_lu_fill %g or use \n",af));CHKERRQ(ierr);
-    ierr = PetscLogInfo((A,"MatLUFactorSymbolic_SeqBAIJ:PCLUSetFill(pc,%g);\n",af));CHKERRQ(ierr);
-    ierr = PetscLogInfo((A,"MatLUFactorSymbolic_SeqBAIJ:for best performance.\n"));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatLUFactorSymbolic_SeqBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatLUFactorSymbolic_SeqBAIJ:Run with -pc_lu_fill %g or use \n",af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatLUFactorSymbolic_SeqBAIJ:PCLUSetFill(pc,%g);\n",af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatLUFactorSymbolic_SeqBAIJ:for best performance.\n"));CHKERRQ(ierr);
   } else {
-    ierr = PetscLogInfo((A,"MatLUFactorSymbolic_SeqBAIJ:Empty matrix.\n"));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatLUFactorSymbolic_SeqBAIJ:Empty matrix.\n"));CHKERRQ(ierr);
   }
 #endif
 

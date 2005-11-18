@@ -1410,12 +1410,12 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInfo *in
 #if defined(PETSC_USE_VERBOSE)
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
-    ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af));CHKERRQ(ierr);
-    ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Run with -pc_icc_fill %g or use \n",af));CHKERRQ(ierr);
-    ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:PCICCSetFill(pc,%g);\n",af));CHKERRQ(ierr);
-    ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:for best performance.\n"));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Run with -pc_icc_fill %g or use \n",af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:PCICCSetFill(pc,%g);\n",af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:for best performance.\n"));CHKERRQ(ierr);
   } else {
-    ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Empty matrix.\n"));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Empty matrix.\n"));CHKERRQ(ierr);
   }
 #endif
 
@@ -1474,49 +1474,49 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInfo *in
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering;
         (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_1_NaturalOrdering;
         (*B)->ops->solves                = MatSolves_SeqSBAIJ_1;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJl:Using special in-place natural ordering factor and solve BS=1\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJl:Using special in-place natural ordering factor and solve BS=1\n"));CHKERRQ(ierr);
         break;
       case 2:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_2_NaturalOrdering;
         (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_2_NaturalOrdering;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=2\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=2\n"));CHKERRQ(ierr);
         break;
       case 3:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_3_NaturalOrdering;
         (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_3_NaturalOrdering;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:sing special in-place natural ordering factor and solve BS=3\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:sing special in-place natural ordering factor and solve BS=3\n"));CHKERRQ(ierr);
         break; 
       case 4:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_4_NaturalOrdering;
         (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_4_NaturalOrdering;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=4\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=4\n"));CHKERRQ(ierr);
         break;
       case 5:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_5_NaturalOrdering;
         (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_5_NaturalOrdering;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=5\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=5\n"));CHKERRQ(ierr);
         break;
       case 6: 
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_6_NaturalOrdering;
         (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_6_NaturalOrdering;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=6\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=6\n"));CHKERRQ(ierr);
         break; 
       case 7:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_7_NaturalOrdering;
         (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_7_NaturalOrdering;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=7\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=7\n"));CHKERRQ(ierr);
       break; 
       default:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering; 
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_N_NaturalOrdering;
         (*B)->ops->solvetranspose        = MatSolve_SeqSBAIJ_N_NaturalOrdering;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS>7\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS>7\n"));CHKERRQ(ierr);
       break; 
     }
   }
@@ -1673,11 +1673,11 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
 #if defined(PETSC_USE_VERBOSE)
     if (ai[am] != 0) {
       PetscReal af = ((PetscReal)ui[am])/((PetscReal)ai[am]);
-      ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,fill,af));CHKERRQ(ierr);
-      ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqAIJ:Run with -pc_cholesky_fill %g or use \n",af));CHKERRQ(ierr);
-      ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqAIJ:PCCholeskySetFill(pc,%g) for best performance.\n",af));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,fill,af));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqAIJ:Run with -pc_cholesky_fill %g or use \n",af));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqAIJ:PCCholeskySetFill(pc,%g) for best performance.\n",af));CHKERRQ(ierr);
     } else {
-      ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqAIJ:Empty matrix.\n"));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqAIJ:Empty matrix.\n"));CHKERRQ(ierr);
     }
 #endif
 
@@ -1733,49 +1733,49 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
         B->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering;
         B->ops->solvetranspose        = MatSolve_SeqSBAIJ_1_NaturalOrdering; 
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJl:Using special in-place natural ordering factor and solve BS=1\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJl:Using special in-place natural ordering factor and solve BS=1\n"));CHKERRQ(ierr);
         break;
       case 2:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;
         B->ops->solve                 = MatSolve_SeqSBAIJ_2_NaturalOrdering;
         B->ops->solvetranspose        = MatSolve_SeqSBAIJ_2_NaturalOrdering;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=2\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=2\n"));CHKERRQ(ierr);
         break;
       case 3:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering;
         B->ops->solve                 = MatSolve_SeqSBAIJ_3_NaturalOrdering;
         B->ops->solvetranspose        = MatSolve_SeqSBAIJ_3_NaturalOrdering;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:sing special in-place natural ordering factor and solve BS=3\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:sing special in-place natural ordering factor and solve BS=3\n"));CHKERRQ(ierr);
         break; 
       case 4:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering;
         B->ops->solve                 = MatSolve_SeqSBAIJ_4_NaturalOrdering;
         B->ops->solvetranspose        = MatSolve_SeqSBAIJ_4_NaturalOrdering;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=4\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=4\n"));CHKERRQ(ierr);
         break;
       case 5:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering;
         B->ops->solve                 = MatSolve_SeqSBAIJ_5_NaturalOrdering;
         B->ops->solvetranspose        = MatSolve_SeqSBAIJ_5_NaturalOrdering;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=5\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=5\n"));CHKERRQ(ierr);
         break;
       case 6: 
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering;
         B->ops->solve                 = MatSolve_SeqSBAIJ_6_NaturalOrdering;
         B->ops->solvetranspose        = MatSolve_SeqSBAIJ_6_NaturalOrdering;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=6\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=6\n"));CHKERRQ(ierr);
         break; 
       case 7:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering;
         B->ops->solve                 = MatSolve_SeqSBAIJ_7_NaturalOrdering;
         B->ops->solvetranspose        = MatSolve_SeqSBAIJ_7_NaturalOrdering;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=7\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=7\n"));CHKERRQ(ierr);
       break; 
       default:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering; 
         B->ops->solve                 = MatSolve_SeqSBAIJ_N_NaturalOrdering;
         B->ops->solvetranspose        = MatSolve_SeqSBAIJ_N_NaturalOrdering;
-        ierr = PetscLogInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS>7\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS>7\n"));CHKERRQ(ierr);
       break; 
     }
   }

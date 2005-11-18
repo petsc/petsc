@@ -98,15 +98,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path)
   if (opt) {
     ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
+      ierr = PetscVerboseInfoDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
     }
     ierr = PetscStrstr(logList, "map", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(MAP_COOKIE);CHKERRQ(ierr);
+      ierr = PetscVerboseInfoDeactivateClass(MAP_COOKIE);CHKERRQ(ierr);
     }
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
+      ierr = PetscVerboseInfoDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */

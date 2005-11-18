@@ -45,7 +45,7 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogInfo((pc,"PCApplyRichardson_SOR: Warning, convergence critera ignored, using %D iterations\n",its));CHKERRQ(ierr);
+  ierr = PetscVerboseInfo((pc,"PCApplyRichardson_SOR: Warning, convergence critera ignored, using %D iterations\n",its));CHKERRQ(ierr);
   its  = its*jac->its;
   ierr = MatRelax(pc->pmat,b,jac->omega,(MatSORType)jac->sym,0.0,its,jac->lits,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);

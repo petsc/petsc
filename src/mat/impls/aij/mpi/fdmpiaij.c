@@ -80,7 +80,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     ierr = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,mat->comm);CHKERRQ(ierr);
     nctot = 0; for (j=0; j<size; j++) {nctot += ncolsonproc[j];}
     if (!nctot) {
-      ierr = PetscLogInfo(((PetscObject)mat,"MatFDColoringCreate_MPIAIJ: Coloring of matrix has some unneeded colors with no corresponding rows\n"));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo(((PetscObject)mat,"MatFDColoringCreate_MPIAIJ: Coloring of matrix has some unneeded colors with no corresponding rows\n"));CHKERRQ(ierr);
     }
 
     disp[0] = 0;

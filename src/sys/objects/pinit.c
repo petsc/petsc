@@ -476,9 +476,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
      Initialize all the default viewers
   */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscLogInfo((0,"PetscInitialize:PETSc successfully started: number of processors = %d\n",size));CHKERRQ(ierr);
+  ierr = PetscVerboseInfo((0,"PetscInitialize:PETSc successfully started: number of processors = %d\n",size));CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
-  ierr = PetscLogInfo((0,"PetscInitialize:Running on machine: %s\n",hostname));CHKERRQ(ierr);
+  ierr = PetscVerboseInfo((0,"PetscInitialize:Running on machine: %s\n",hostname));CHKERRQ(ierr);
 
   ierr = PetscOptionsCheckInitial_Components();CHKERRQ(ierr);
 
@@ -658,7 +658,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     petsc_history = 0;
   }
 
-  ierr = PetscLogInfoAllow(PETSC_FALSE,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscVerboseInfoAllow(PETSC_FALSE,PETSC_NULL);CHKERRQ(ierr);
 
   /*
        Free all the registered create functions, such as KSPList, VecList, SNESList, etc
@@ -723,7 +723,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   ierr = MPI_Op_free(&PetscADMax_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscADMin_Op);CHKERRQ(ierr);
 
-  ierr = PetscLogInfo((0,"PetscFinalize:PETSc successfully ended!\n"));CHKERRQ(ierr);
+  ierr = PetscVerboseInfo((0,"PetscFinalize:PETSc successfully ended!\n"));CHKERRQ(ierr);
   if (PetscBeganMPI) {
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }

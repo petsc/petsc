@@ -49,11 +49,11 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultComputeJacobianColor(TS ts,PetscReal t
     ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
     if ((freq > 1) && ((it % freq) != 1)) {
-      ierr = PetscLogInfo((color,"TSDefaultComputeJacobianColor:Skipping Jacobian, it %D, freq %D\n",it,freq));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((color,"TSDefaultComputeJacobianColor:Skipping Jacobian, it %D, freq %D\n",it,freq));CHKERRQ(ierr);
       *flag = SAME_PRECONDITIONER;
       goto end;
     } else {
-      ierr = PetscLogInfo((color,"TSDefaultComputeJacobianColor:Computing Jacobian, it %D, freq %D\n",it,freq));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((color,"TSDefaultComputeJacobianColor:Computing Jacobian, it %D, freq %D\n",it,freq));CHKERRQ(ierr);
       *flag = SAME_NONZERO_PATTERN;
     }
   }

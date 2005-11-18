@@ -800,7 +800,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventSetActiveAll(PetscEvent event, Petsc
   Level: developer
 
 .keywords: log, event, activate, class
-.seealso: PetscLogInfoActivate(),PetscLogInfo(),PetscLogInfoAllow(),PetscLogEventDeactivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
+.seealso: PetscVerboseInfoActivate(),PetscVerboseInfo(),PetscVerboseInfoAllow(),PetscLogEventDeactivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscCookie cookie) 
 {
@@ -828,7 +828,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscCookie cookie)
   Level: developer
 
 .keywords: log, event, deactivate, class
-.seealso: PetscLogInfoActivate(),PetscLogInfo(),PetscLogInfoAllow(),PetscLogEventActivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
+.seealso: PetscVerboseInfoActivate(),PetscVerboseInfo(),PetscVerboseInfoAllow(),PetscLogEventActivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscCookie cookie)
 {

@@ -32,12 +32,12 @@ PetscErrorCode Mat_CheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pet
     if (!A->same_nonzero){
       ierr = PetscFree(compressedrow->i);CHKERRQ(ierr); 
       compressedrow->rindex = PETSC_NULL;
-      ierr = PetscLogInfo((A,"Mat_CheckCompressedRow: Mat structure might be changed. Free memory and recheck.\n"));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((A,"Mat_CheckCompressedRow: Mat structure might be changed. Free memory and recheck.\n"));CHKERRQ(ierr);
     } else if (compressedrow->i == PETSC_NULL) {
       /* Don't know why this occures. For safe, recheck. */
-      ierr = PetscLogInfo((A,"Mat_CheckCompressedRow: compressedrow.checked, but compressedrow.i==null. Recheck.\n"));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((A,"Mat_CheckCompressedRow: compressedrow.checked, but compressedrow.i==null. Recheck.\n"));CHKERRQ(ierr);
     } else { /* use compressedrow, checked, A->same_nonzero = PETSC_TRUE. Skip check */
-      ierr = PetscLogInfo((A,"Mat_CheckCompressedRow: Skip check. m: %d, n: %d,M: %d, N: %d,nrows: %d, ii: %p, type: %s\n",A->m,A->n,A->M,A->N,compressedrow->nrows,compressedrow->i,A->type_name));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((A,"Mat_CheckCompressedRow: Skip check. m: %d, n: %d,M: %d, N: %d,nrows: %d, ii: %p, type: %s\n",A->m,A->n,A->M,A->N,compressedrow->nrows,compressedrow->i,A->type_name));CHKERRQ(ierr);
       PetscFunctionReturn(0); 
     }
   }
@@ -52,10 +52,10 @@ PetscErrorCode Mat_CheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pet
   /* if a large number of zero rows is found, use compressedrow data structure */
   if (nrows < ratio*mbs) {
     compressedrow->use = PETSC_FALSE; 
-    ierr = PetscLogInfo((A,"Mat_CheckCompressedRow: Found the ratio (num_zerorows %d)/(num_localrows %d) < %g. Do not use CompressedRow routines.\n",nrows,mbs,ratio));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"Mat_CheckCompressedRow: Found the ratio (num_zerorows %d)/(num_localrows %d) < %g. Do not use CompressedRow routines.\n",nrows,mbs,ratio));CHKERRQ(ierr);
   } else {
     compressedrow->use = PETSC_TRUE; 
-    ierr = PetscLogInfo((A,"Mat_CheckCompressedRow: Found the ratio (num_zerorows %d)/(num_localrows %d) > %g. Use CompressedRow routines.\n",nrows,mbs,ratio));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"Mat_CheckCompressedRow: Found the ratio (num_zerorows %d)/(num_localrows %d) > %g. Use CompressedRow routines.\n",nrows,mbs,ratio));CHKERRQ(ierr);
 
     /* set compressed row format */
     nrows = mbs - nrows; /* num of non-zero rows */
