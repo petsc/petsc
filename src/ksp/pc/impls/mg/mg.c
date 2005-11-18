@@ -30,9 +30,9 @@ PetscErrorCode PCMGMCycle_Private(PC_MG **mglevels,PetscTruth *converged)
       if (rnorm <= mg->ttol) {
         *converged = PETSC_TRUE;
         if (rnorm < mg->abstol) {
-          ierr = PetscLogInfo((0,"PCMGMCycle_Private:Linear solver has converged. Residual norm %g is less than absolute tolerance %g\n",rnorm,mg->abstol));CHKERRQ(ierr);
+          ierr = PetscVerboseInfo((0,"PCMGMCycle_Private:Linear solver has converged. Residual norm %g is less than absolute tolerance %g\n",rnorm,mg->abstol));CHKERRQ(ierr);
         } else {
-          ierr = PetscLogInfo((0,"PCMGMCycle_Private:Linear solver has converged. Residual norm %g is less than relative tolerance times initial residual norm %g\n",rnorm,mg->ttol));CHKERRQ(ierr);
+          ierr = PetscVerboseInfo((0,"PCMGMCycle_Private:Linear solver has converged. Residual norm %g is less than relative tolerance times initial residual norm %g\n",rnorm,mg->ttol));CHKERRQ(ierr);
         }
         PetscFunctionReturn(0);
       }
@@ -419,7 +419,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
      the PC matrices between solves PCMG will continue to use first set provided */
   ierr = KSPGetOperators(mg[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
   if (!dA  && !dB) {
-    ierr = PetscLogInfo((pc,"PCSetUp_MG: Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n"));
+    ierr = PetscVerboseInfo((pc,"PCSetUp_MG: Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n"));
     ierr = KSPSetOperators(mg[n-1]->smoothd,pc->mat,pc->pmat,uflag);CHKERRQ(ierr);
   }
 

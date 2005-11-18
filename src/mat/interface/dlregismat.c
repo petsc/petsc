@@ -97,7 +97,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *path)
   if (opt) {
     ierr = PetscStrstr(logList, "mat", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(MAT_COOKIE);CHKERRQ(ierr);
+      ierr = PetscVerboseInfoDeactivateClass(MAT_COOKIE);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */

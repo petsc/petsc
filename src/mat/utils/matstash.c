@@ -526,10 +526,10 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
     }
   }
 #if defined(PETSC_USE_VERBOSE)
-  ierr = PetscLogInfo((0,"MatStashScatterBegin_Private: No of messages: %d \n",nsends));CHKERRQ(ierr);
+  ierr = PetscVerboseInfo((0,"MatStashScatterBegin_Private: No of messages: %d \n",nsends));CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     if (nprocs[i]) {
-      ierr = PetscLogInfo((0,"MatStashScatterBegin_Private: Mesg_to: %d: size: %d \n",i,nlengths[i]*bs2*sizeof(MatScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((0,"MatStashScatterBegin_Private: Mesg_to: %d: size: %d \n",i,nlengths[i]*bs2*sizeof(MatScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
     }
   }
 #endif

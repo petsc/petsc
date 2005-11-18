@@ -353,12 +353,12 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
 
   *ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
   if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Getting MPI_Comm_size()");return;}
-  *ierr = PetscLogInfo((0,"PetscInitialize(Fortran):PETSc successfully started: procs %d\n",size));
-  if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Calling PetscLogInfo()");return;}
+  *ierr = PetscVerboseInfo((0,"PetscInitialize(Fortran):PETSc successfully started: procs %d\n",size));
+  if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Calling PetscVerboseInfo()");return;}
   *ierr = PetscGetHostName(hostname,64);
   if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Getting hostname");return;}
-  *ierr = PetscLogInfo((0,"Running on machine: %s\n",hostname));
-  if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Calling PetscLogInfo()");return;}  
+  *ierr = PetscVerboseInfo((0,"Running on machine: %s\n",hostname));
+  if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Calling PetscVerboseInfo()");return;}  
   *ierr = PetscOptionsCheckInitial_Components(); 
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options");return;}
 }

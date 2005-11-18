@@ -49,7 +49,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(char *path)
   if (opt) {
     ierr = PetscStrstr(logList, "null", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(0);CHKERRQ(ierr);
+      ierr = PetscVerboseInfoDeactivateClass(0);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */

@@ -43,11 +43,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
   if (opt) {
     ierr = PetscStrstr(logList, "ao", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(AO_COOKIE);CHKERRQ(ierr);
+      ierr = PetscVerboseInfoDeactivateClass(AO_COOKIE);CHKERRQ(ierr);
     }
     ierr = PetscStrstr(logList, "da", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(DA_COOKIE);CHKERRQ(ierr);
+      ierr = PetscVerboseInfoDeactivateClass(DA_COOKIE);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */

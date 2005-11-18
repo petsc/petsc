@@ -577,7 +577,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   if (coloring->usersetsrecompute) {
     if (!coloring->recompute) {
       *flag = SAME_PRECONDITIONER;
-      ierr = PetscLogInfo((J,"MatFDColoringApply:Skipping Jacobian, since user called MatFDColorSetRecompute()\n"));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((J,"MatFDColoringApply:Skipping Jacobian, since user called MatFDColorSetRecompute()\n"));CHKERRQ(ierr);
       PetscFunctionReturn(0);
     } else {
       coloring->recompute = PETSC_FALSE;
@@ -602,7 +602,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
     ierr = MatSetUnfactored(J);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscLogInfo((coloring,"MatFDColoringApply: Not calling MatZeroEntries()\n"));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((coloring,"MatFDColoringApply: Not calling MatZeroEntries()\n"));CHKERRQ(ierr);
     } else {
       PetscTruth assembled;
       ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
@@ -805,7 +805,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApplyTS(Mat J,MatFDColoring color
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscLogInfo((coloring,"MatFDColoringApply: Not calling MatZeroEntries()\n"));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((coloring,"MatFDColoringApply: Not calling MatZeroEntries()\n"));CHKERRQ(ierr);
   } else {
     PetscTruth assembled;
     ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);

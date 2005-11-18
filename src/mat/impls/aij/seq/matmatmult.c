@@ -106,7 +106,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   c->nonew    = 0;
 
   if (nspacedouble){
-    ierr = PetscLogInfo(((PetscObject)(*C),"MatMatMultSymbolic_SeqAIJ_SeqAIJ: nspacedouble:%D, nnz(A):%D, nnz(B):%D, fill:%g, nnz(C):%D\n",nspacedouble,ai[am],bi[bm],fill,ci[am]));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo(((PetscObject)(*C),"MatMatMultSymbolic_SeqAIJ_SeqAIJ: nspacedouble:%D, nnz(A):%D, nnz(B):%D, fill:%g, nnz(C):%D\n",nspacedouble,ai[am],bi[bm],fill,ci[am]));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -1070,7 +1070,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetMaximumUsage(PetscLogDouble 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMemorySetGetMaximumUsage(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMemoryShowUsage(PetscViewer,const char[]);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogInfoAllow(PetscTruth,const char []);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfoAllow(PetscTruth,const char []);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetTime(PetscLogDouble*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetCPUTime(PetscLogDouble*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSleep(int);
