@@ -1688,7 +1688,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   BSctx_set_err(bspinfo,1);CHKERRBS(0);  /* BS error checking */
 #endif
   BSctx_set_rt(bspinfo,1);CHKERRBS(0);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-log_info",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-verbose_info",&flg1);CHKERRQ(ierr);
   if (flg1) {
     BSctx_set_pr(bspinfo,1);CHKERRBS(0);
   }

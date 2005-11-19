@@ -277,7 +277,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogAllBegin(void)
 
   PetscLogTraceBegin() allows tracing of all PETSc calls, which is useful
   to determine where a program is hanging without running in the 
-  debugger.  Can be used in conjunction with the -log_info option. 
+  debugger.  Can be used in conjunction with the -verbose_info option. 
 
   Level: intermediate
 

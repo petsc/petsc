@@ -44,7 +44,7 @@ FILE      *PetscVerboseInfoFile      = PETSC_NULL;
 -   filename - optional name of file to write output to (defaults to stdout)
 
     Options Database Key:
-.   -log_info [optional filename] - Activates PetscVerboseInfoAllow()
+.   -verbose_info [optional filename] - Activates PetscVerboseInfoAllow()
 
     Level: advanced
 
@@ -144,7 +144,7 @@ extern FILE *petsc_history;
 #define __FUNCT__ "PetscVerboseInfo"
 /*@C
     PetscVerboseInfo - Logs informative data, which is printed to standard output
-    or a file when the option -log_info <file> is specified.
+    or a file when the option -verbose_info <file> is specified.
 
     Collective over PetscObject argument
 
@@ -156,7 +156,7 @@ extern FILE *petsc_history;
 -   message - logging message, using standard "printf" format
 
     Options Database Key:
-$    -log_info : activates printing of PetscVerboseInfo() messages 
+$    -verbose_info : activates printing of PetscVerboseInfo() messages 
 
     Level: intermediate
 

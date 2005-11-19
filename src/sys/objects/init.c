@@ -391,10 +391,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
       ierr = PetscLogOpenHistoryFile(0,&petsc_history);CHKERRQ(ierr);
     }
   }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-log_info",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-verbose_info",&flg1);CHKERRQ(ierr);
   if (flg1) { 
     char logname[PETSC_MAX_PATH_LEN]; logname[0] = 0;
-    ierr = PetscOptionsGetString(PETSC_NULL,"-log_info",logname,250,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-verbose_info",logname,250,&flg1);CHKERRQ(ierr);
     if (logname[0]) {
       PetscVerboseInfoAllow(PETSC_TRUE,logname); 
     } else {
@@ -481,7 +481,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
 #if defined(PETSC_HAVE_MPE)
     ierr = (*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through upshot\n");CHKERRQ(ierr);
 #endif
-    ierr = (*PetscHelpPrintf)(comm," -log_info <optional filename>: print informative messages about the calculations\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -verbose_info <optional filename>: print informative messages about the calculations\n");CHKERRQ(ierr);
 #endif
     ierr = (*PetscHelpPrintf)(comm," -v: prints PETSc version number and release date\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n");CHKERRQ(ierr);
@@ -494,7 +494,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     ierr = PetscSleep(si);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-log_info_exclude",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-verbose_info_exclude",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   ierr = PetscStrstr(mname,"null",&f);CHKERRQ(ierr);
   if (f) {
     ierr = PetscVerboseInfoDeactivateClass(PETSC_NULL);CHKERRQ(ierr);
