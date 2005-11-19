@@ -4,8 +4,6 @@
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
-PetscCookie PETSC_OBJECT_COOKIE = 0;
-
 struct _p_Object {
   PETSCHEADER(int);
 };

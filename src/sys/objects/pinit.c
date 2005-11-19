@@ -33,6 +33,9 @@ const char *PetscDataTypes[] = {"INT", "DOUBLE", "COMPLEX",
                                 "LONG","SHORT",  "FLOAT",
                                 "CHAR","LOGICAL","ENUM","TRUTH","PetscDataType","PETSC_",0};
 
+PetscCookie PETSC_LARGEST_COOKIE = PETSC_COOKIE;
+PetscCookie PETSC_OBJECT_COOKIE = 0;
+
 /*
        Checks the options database for initializations related to the 
     PETSc components

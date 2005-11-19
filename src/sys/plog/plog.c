@@ -21,7 +21,6 @@
 #include "src/sys/plog/ptime.h"
 #include "plog.h"
 
-PetscCookie PETSC_LARGEST_COOKIE = PETSC_COOKIE;
 PetscEvent  PETSC_LARGEST_EVENT  = PETSC_EVENT;
 
 #if defined(PETSC_USE_LOG)

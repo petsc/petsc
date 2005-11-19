@@ -6,13 +6,7 @@
 #define __PetscLog_H
 #include "petsc.h"  
 PETSC_EXTERN_CXX_BEGIN
-/*
-  Each PETSc object class has it's own cookie (internal integer in the 
-  data structure used for error checking). These are all defined by an offset 
-  from the lowest one, PETSC_COOKIE.
-*/
-#define PETSC_COOKIE 1211211
-extern PetscCookie PETSC_LARGEST_COOKIE;
+
 #define PETSC_EVENT  1311311
 extern PetscEvent PETSC_LARGEST_EVENT;
 
