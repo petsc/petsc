@@ -6,7 +6,9 @@
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
 
+#if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);
+#endif
 
 /* -----------------------------------------------------------------------------------------*/
 
@@ -467,7 +469,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr); 
 
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
+#if defined(PETSC_USE_LOG)
   ierr = PetscLogBegin_Private();CHKERRQ(ierr);
+#endif
 
   /*
      Load the dynamic libraries (on machines that support them), this registers all
