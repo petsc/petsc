@@ -1798,9 +1798,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogGetStageLog(StageLog *stageLog)
 .keywords: log, flops, floating point operations
 M*/
 
-PetscTruth PetscPreLoadingUsed = PETSC_FALSE;
-PetscTruth PetscPreLoadingOn   = PETSC_FALSE;
-
 /*MC
    PreLoadBegin - Begin a segment of code that may be preloaded (run twice)
     to get accurate timings

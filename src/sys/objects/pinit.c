@@ -38,6 +38,9 @@ const char *PetscDataTypes[] = {"INT", "DOUBLE", "COMPLEX",
 PetscCookie PETSC_LARGEST_COOKIE = PETSC_COOKIE;
 PetscCookie PETSC_OBJECT_COOKIE = 0;
 
+PetscTruth PetscPreLoadingUsed = PETSC_FALSE;
+PetscTruth PetscPreLoadingOn   = PETSC_FALSE;
+
 /*
        Checks the options database for initializations related to the 
     PETSc components

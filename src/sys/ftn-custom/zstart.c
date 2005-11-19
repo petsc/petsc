@@ -115,7 +115,9 @@ EXTERN_C_END
 EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscOptionsCheckInitial_Private(void);
 EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscOptionsCheckInitial_Components(void);
 EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscInitialize_DynamicLibraries(void);
+#if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscLogBegin_Private(void);
+#endif
 
 /*
     Reads in Fortran command line argments and sends them to 
@@ -343,8 +345,10 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Freeing args");return;}
   *ierr = PetscOptionsCheckInitial_Private(); 
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options");return;}
+#if defined (PETSC_USE_LOG)
   *ierr = PetscLogBegin_Private();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: intializing logging");return;}
+#endif
   *ierr = PetscInitialize_DynamicLibraries(); 
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Initializing dynamic libraries");return;}
 

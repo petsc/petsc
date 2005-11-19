@@ -608,4 +608,8 @@ M*/
         PetscObjectComposedDataGetRealstar(obj,id,data,flag)
 #endif
 
+/* some vars for logging */
+extern PETSC_DLLEXPORT PetscTruth PetscPreLoadingUsed;       /* true if we are or have done preloading */
+extern PETSC_DLLEXPORT PetscTruth PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
+
 #endif /* _PETSCHEAD_H */

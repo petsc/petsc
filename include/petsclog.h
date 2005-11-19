@@ -401,9 +401,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject,const char
 
 #endif   /* PETSC_USE_LOG */
 
-extern PETSC_DLLEXPORT PetscTruth PetscPreLoadingUsed;       /* true if we are or have done preloading */
-extern PETSC_DLLEXPORT PetscTruth PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
-
 #define PreLoadBegin(flag,name) \
 {\
   PetscTruth PreLoading = flag;\
