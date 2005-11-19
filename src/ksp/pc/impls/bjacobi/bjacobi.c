@@ -1018,8 +1018,9 @@ PetscErrorCode PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
   PetscScalar           *xin,*yin;
   static PetscTruth     flag = PETSC_TRUE;
+#if defined (PETSC_USE_LOG)
   static PetscEvent     SUBKspSolve;
-
+#endif
   PetscFunctionBegin;
   if (flag) {
     ierr = PetscLogEventRegister(&SUBKspSolve,"SubKspSolve",KSP_COOKIE);CHKERRQ(ierr);
@@ -1061,7 +1062,9 @@ PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
   PetscScalar           *xin,*yin;
   static PetscTruth     flag = PETSC_TRUE;
+#if defined (PETSC_USE_LOG)
   static PetscEvent     SUBKspSolve;
+#endif
 
   PetscFunctionBegin;
   if (flag) {

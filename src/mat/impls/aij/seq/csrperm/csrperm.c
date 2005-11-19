@@ -249,7 +249,7 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscScalar    *x,*y,*aa;
   PetscErrorCode ierr;
-  PetscInt       m=A->m,*aj,*ai;
+  PetscInt       *aj,*ai;
 #if !(defined(PETSC_USE_FORTRAN_KERNEL_MULTCSRPERM) && defined(notworking))
   PetscInt       i,j;
 #endif
@@ -373,7 +373,7 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
     } /* End handling matvec for chunk with nz > 1. */
   } /* End loop over igroup. */
 #endif
-  ierr = PetscLogFlops(2*a->nz - m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - A->m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -394,7 +394,7 @@ PetscErrorCode MatMultAdd_SeqCSRPERM(Mat A,Vec xx,Vec ww,Vec yy)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscScalar    *x,*y,*w,*aa;
   PetscErrorCode ierr;
-  PetscInt       m=A->m,*aj,*ai;
+  PetscInt       *aj,*ai;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDCSRPERM)
   PetscInt       i,j;
 #endif
@@ -535,7 +535,7 @@ PetscErrorCode MatMultAdd_SeqCSRPERM(Mat A,Vec xx,Vec ww,Vec yy)
   } /* End loop over igroup. */
 
 #endif
-  ierr = PetscLogFlops(2*a->nz - m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - A->m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (yy != ww) {

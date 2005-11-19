@@ -41,7 +41,6 @@ const char *PetscDataTypes[] = {"INT", "DOUBLE", "COMPLEX",
 #define __FUNCT__ "PetscOptionsCheckInitial_Components"
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Components(void)
 {
-  MPI_Comm   comm = PETSC_COMM_WORLD;
   PetscTruth flg1;
   PetscErrorCode ierr;
 
@@ -49,6 +48,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Components(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
   if (flg1) {
 #if defined (PETSC_USE_LOG)
+    MPI_Comm   comm = PETSC_COMM_WORLD;
     ierr = (*PetscHelpPrintf)(comm,"------Additional PETSc component options--------\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log_summary_exclude: <vec,mat,pc.ksp,snes>\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -verbose_info_exclude: <null,vec,mat,pc,ksp,snes,ts>\n");CHKERRQ(ierr);
