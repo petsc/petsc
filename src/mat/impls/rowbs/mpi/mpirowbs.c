@@ -1688,10 +1688,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   BSctx_set_err(bspinfo,1);CHKERRBS(0);  /* BS error checking */
 #endif
   BSctx_set_rt(bspinfo,1);CHKERRBS(0);
+#if defined PETSC_USE_VERBOSE)
   ierr = PetscOptionsHasName(PETSC_NULL,"-verbose_info",&flg1);CHKERRQ(ierr);
   if (flg1) {
     BSctx_set_pr(bspinfo,1);CHKERRBS(0);
   }
+#endif
   ierr = PetscOptionsHasName(PETSC_NULL,"-pc_ilu_factorpointwise",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-pc_icc_factorpointwise",&flg2);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_rowbs_no_inode",&flg3);CHKERRQ(ierr);
