@@ -7,6 +7,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
+    self.isPetsc      = 1
     return
 
   def __str__(self):
@@ -50,7 +51,7 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
         raise RuntimeError('The environmental variable PETSC_DIR '+self.dir+' is not a directory')
     else:
       self.dir = os.getcwd()
-    if not os.path.realpath(self.dir) == os.path.realpath(os.getcwd()):
+    if self.isPetsc and not os.path.realpath(self.dir) == os.path.realpath(os.getcwd()):
       raise RuntimeError('The environmental variable PETSC_DIR '+self.dir+' MUST be the current directory '+os.getcwd())
     if self.dir[1] == ':':
       try:

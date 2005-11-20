@@ -27,7 +27,6 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.petscdir = framework.require('PETSc.utilities.petscdir', self)
     return
 
   def configureScalarType(self):
@@ -52,6 +51,13 @@ class Configure(config.base.Configure):
     self.framework.logPrint('Precision is '+str(self.precision))
     return
 
+  def packagesHaveCxx(self):
+    if 'download-prometheus' in self.framework.argDB and self.framework.argDB['download-prometheus']:
+      return 1
+    if 'download-hypre' in self.framework.argDB and self.framework.argDB['download-hypre']:
+      return 1
+    return 0
+
   def configureCLanguage(self):
     '''Choose between C and C++ bindings'''
     self.clanguage = self.framework.argDB['with-clanguage'].upper().replace('+','x').replace('X','x')
@@ -59,7 +65,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Invalid C language specified: '+str(self.clanguage))
     if self.scalartype == 'complex':
       self.clanguage = 'Cxx'
-    if self.clanguage == 'C' and not self.framework.argDB['with-c++-support'] and not self.framework.argDB['download-prometheus'] and not self.framework.argDB['download-hypre']:
+    if self.clanguage == 'C' and not self.framework.argDB['with-c++-support'] and not self.packagesHaveCxx():
       self.framework.argDB['with-cxx'] = '0'
       self.framework.logPrint('Turning off C++ support')
     if self.clanguage == 'Cxx' and self.framework.argDB['with-c-support']:
