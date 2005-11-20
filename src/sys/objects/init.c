@@ -381,16 +381,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   /*
         Setup profiling and logging
   */
-#if defined(PETSC_USE_LOG)
-  mname[0] = 0;
-  ierr = PetscOptionsGetString(PETSC_NULL,"-log_history",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    if (mname[0]) {
-      ierr = PetscLogOpenHistoryFile(mname,&petsc_history);CHKERRQ(ierr);
-    } else {
-      ierr = PetscLogOpenHistoryFile(0,&petsc_history);CHKERRQ(ierr);
-    }
-  }
+#if defined (PETSC_USE_VERBOSE)
   ierr = PetscOptionsHasName(PETSC_NULL,"-verbose_info",&flg1);CHKERRQ(ierr);
   if (flg1) { 
     char logname[PETSC_MAX_PATH_LEN]; logname[0] = 0;
@@ -399,6 +390,17 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
       PetscVerboseInfoAllow(PETSC_TRUE,logname); 
     } else {
       PetscVerboseInfoAllow(PETSC_TRUE,PETSC_NULL); 
+    }
+  }
+#endif
+#if defined(PETSC_USE_LOG)
+  mname[0] = 0;
+  ierr = PetscOptionsGetString(PETSC_NULL,"-log_history",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    if (mname[0]) {
+      ierr = PetscLogOpenHistoryFile(mname,&petsc_history);CHKERRQ(ierr);
+    } else {
+      ierr = PetscLogOpenHistoryFile(0,&petsc_history);CHKERRQ(ierr);
     }
   }
 #if defined(PETSC_HAVE_MPE)
