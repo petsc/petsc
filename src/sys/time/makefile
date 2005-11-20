@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-SOURCEC	  = cputime.c fdate.c nt_time.c rs6000_time.c
+SOURCEC	  = cputime.c fdate.c nt_time.c rs6000_time.c ptime.c
 SOURCEF	  =
-SOURCEH	  = 
-OBJSC	  = cputime.o fdate.o nt_time.o rs6000_time.o
+SOURCEH	  = ptime.h
+OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc

@@ -398,6 +398,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject,const char
 #define StageLogSetVisible(stageLog, stage, visible) 0
 #define StageLogGetVisible(stageLog, stage, visible) 0
 #define StageLogGetStage(stageLog, name, stage)      0
+#define PetscLogStageGetId(a,b)                      (*(b)=0,0)
+#define PetscLogStageSetActive(a,b)                  0
 
 #endif   /* PETSC_USE_LOG */
 

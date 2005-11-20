@@ -43,7 +43,7 @@ int main(int argc,char **args)
   PetscTruth     flg;
   PetscScalar    v;
   PetscMPIInt    rank,size;
-#if defined (PETSC_USE_LOG
+#if defined (PETSC_USE_LOG)
   int            stages[3];
 #endif
 
@@ -345,7 +345,7 @@ int main(int argc,char **args)
     /* 
        Conclude profiling stage #2
     */
-    PetscLogStagePop();
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
   /* -------------------------------------------------------------- 
                        End of linear solver loop

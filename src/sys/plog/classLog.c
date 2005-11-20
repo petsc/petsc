@@ -1,7 +1,7 @@
 #define PETSC_DLL
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
-#include "src/sys/plog/ptime.h"
+#include "src/sys/time/ptime.h"
 #include "plog.h"
 
 /*----------------------------------------------- Creation Functions -------------------------------------------------*/
