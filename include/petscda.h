@@ -498,6 +498,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleMatrix(Mat, PetscInt, PetscScala
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePCICE(MPI_Comm, const char [], PetscInt, PetscTruth, Mesh *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePyLith(MPI_Comm, const char [], Mesh *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGenerate(Mesh, Mesh *);
 
 /*S
      DM - Abstract PETSc object that manages an abstract grid object

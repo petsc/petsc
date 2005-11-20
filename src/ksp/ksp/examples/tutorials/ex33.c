@@ -60,6 +60,9 @@ PetscErrorCode ReadBoundary(MPI_Comm, FileType, const char *, PetscTruth, PetscI
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
 
+extern PetscErrorCode assembleField(ALE::IndexBundle *, ALE::PreSieve *, Vec, ALE::Point, PetscScalar [], InsertMode);
+extern PetscErrorCode assembleOperator(ALE::IndexBundle *, ALE::PreSieve *, Mat, ALE::Point, PetscScalar [], InsertMode);
+
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
 typedef struct {
@@ -125,8 +128,10 @@ int main(int argc,char **argv)
 
   ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
   ierr = MeshDistribute(mesh);CHKERRQ(ierr);
+  ALE::IndexBundle *boundaryBundle;
+  Vec               boundaryVec;
   ierr = PetscPrintf(comm, "Creating boundary\n");CHKERRQ(ierr);
-  ierr = MeshCreateBoundary(mesh, numBoundaryVertices, numBoundaryComponents, boundaryVertices, boundaryValues); CHKERRQ(ierr);
+  ierr = MeshCreateBoundary(mesh, numBoundaryVertices, numBoundaryComponents, boundaryVertices, boundaryValues, (void **) &boundaryBundle, &boundaryVec); CHKERRQ(ierr);
 
   ALE::IndexBundle *fieldBundle = new ALE::IndexBundle(topology);
   fieldBundle->setFiberDimensionByDepth(0, 1);
@@ -172,88 +177,6 @@ int main(int argc,char **argv)
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "VecView_VTK"
-PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
-{
-  MPI_Comm           comm;
-  DA                 da;
-  Vec                coords;
-  PetscViewer        viewer;
-  PetscScalar       *array, *values;
-  PetscInt           n, N, maxn, mx, my, dof;
-  PetscInt           i, p;
-  MPI_Status         status;
-  PetscMPIInt        rank, size, tag;
-  PetscErrorCode     ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) x, &comm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIOpen(comm, filename, &viewer);CHKERRQ(ierr);
-
-  ierr = VecGetSize(x, &N); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x, &n); CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) x, "DA", (PetscObject *) &da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
-
-  ierr = DAGetInfo(da, 0, &mx, &my, 0,0,0,0, &dof,0,0,0);CHKERRQ(ierr);
-
-  ierr = PetscViewerASCIIPrintf(viewer, "# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Inhomogeneous Poisson Equation with %s boundary conditions\n", bcName);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "ASCII\n");CHKERRQ(ierr);
-  /* get coordinates of nodes */
-  ierr = DAGetCoordinates(da, &coords);CHKERRQ(ierr);
-  if (!coords) {
-    ierr = DASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0);CHKERRQ(ierr);
-    ierr = DAGetCoordinates(da, &coords);CHKERRQ(ierr);
-  }
-  ierr = PetscViewerASCIIPrintf(viewer, "DATASET RECTILINEAR_GRID\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "DIMENSIONS %d %d %d\n", mx, my, 1);CHKERRQ(ierr);
-  ierr = VecGetArray(coords, &array);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "X_COORDINATES %d double\n", mx);CHKERRQ(ierr);
-  for(i = 0; i < mx; i++) {
-    ierr = PetscViewerASCIIPrintf(viewer, "%g ", PetscRealPart(array[i*2]));CHKERRQ(ierr);
-  }
-  ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Y_COORDINATES %d double\n", my);CHKERRQ(ierr);
-  for(i = 0; i < my; i++) {
-    ierr = PetscViewerASCIIPrintf(viewer, "%g ", PetscRealPart(array[i*mx*2+1]));CHKERRQ(ierr);
-  }
-  ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "Z_COORDINATES %d double\n", 1);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "%g\n", 0.0);CHKERRQ(ierr);
-  ierr = VecRestoreArray(coords, &array);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", N);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %d\n", dof);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
-  ierr = VecGetArray(x, &array);CHKERRQ(ierr);
-  /* Determine maximum message to arrive */
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&n, &maxn, 1, MPIU_INT, MPI_MAX, 0, comm);CHKERRQ(ierr);
-  tag  = ((PetscObject) viewer)->tag;
-  if (!rank) {
-    ierr = PetscMalloc((maxn+1) * sizeof(PetscScalar), &values);CHKERRQ(ierr);
-    for(i = 0; i < n; i++) {
-      ierr = PetscViewerASCIIPrintf(viewer, "%g\n", PetscRealPart(array[i]));CHKERRQ(ierr);
-    }
-    for(p = 1; p < size; p++) {
-      ierr = MPI_Recv(values, (PetscMPIInt) n, MPIU_SCALAR, p, tag, comm, &status);CHKERRQ(ierr);
-      ierr = MPI_Get_count(&status, MPIU_SCALAR, &n);CHKERRQ(ierr);        
-      for(i = 0; i < n; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer, "%g\n", PetscRealPart(array[i]));CHKERRQ(ierr);
-      }
-    }
-    ierr = PetscFree(values);CHKERRQ(ierr);
-  } else {
-    ierr = MPI_Send(array, n, MPIU_SCALAR, 0, tag, comm);CHKERRQ(ierr);
-  }
-  ierr = VecRestoreArray(x, &array);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
 }
 
 #include <stdlib.h>
@@ -1539,6 +1462,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   ierr = PetscFree(Jinv);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  bundle->getGlobalIndices()->view("Global indices");
   if (user->bcType == DIRICHLET) {
     /* Zero out BC rows */
     ALE::Point id(0, 1);

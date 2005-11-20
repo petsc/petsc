@@ -1477,6 +1477,174 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
   firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
   ierr = assembleOperator(bundle, orientation, A, ALE::Point(0, e + firstElement), v, mode);CHKERRQ(ierr);
+  if (e == 0) {
+    bundle->getGlobalIndices()->view("Global indices");
+  }
+  PetscFunctionReturn(0);
+}
+
+#ifdef PETSC_HAVE_TRIANGLE
+
+#include <triangle.h>
+
+PetscErrorCode initGeneratorInput(struct triangulateio *inputCtx)
+{
+  PetscFunctionBegin;
+  inputCtx->numberofpoints = 0;
+  inputCtx->numberofpointattributes = 0;
+  inputCtx->pointlist = NULL;
+  inputCtx->pointattributelist = NULL;
+  inputCtx->pointmarkerlist = NULL;
+  inputCtx->numberofsegments = 0;
+  inputCtx->segmentlist = NULL;
+  inputCtx->segmentmarkerlist = NULL;
+  inputCtx->numberofholes = 0;
+  inputCtx->holelist = NULL;
+  inputCtx->numberofregions = 0;
+  inputCtx->regionlist = NULL;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode initGeneratorOutput(struct triangulateio *outputCtx)
+{
+  PetscFunctionBegin;
+  outputCtx->pointlist = NULL;
+  outputCtx->pointattributelist = NULL;
+  outputCtx->pointmarkerlist = NULL;
+  outputCtx->trianglelist = NULL;
+  outputCtx->triangleattributelist = NULL;
+  outputCtx->neighborlist = NULL;
+  outputCtx->segmentlist = NULL;
+  outputCtx->segmentmarkerlist = NULL;
+  outputCtx->edgelist = NULL;
+  outputCtx->edgemarkerlist = NULL;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode destroyGeneratorOutput(struct triangulateio *outputCtx)
+{
+  PetscFunctionBegin;
+  free(outputCtx->pointmarkerlist);
+  free(outputCtx->edgelist);
+  free(outputCtx->edgemarkerlist);
+  free(outputCtx->trianglelist);
+  free(outputCtx->neighborlist);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshGenerate_Triangle"
+PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
+{
+  Mesh                 m;
+  ALE::Sieve          *bdTopology;
+  ALE::PreSieve       *bdOrientation;
+  struct triangulateio in;
+  struct triangulateio out;
+  PetscMPIInt          rank;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCreate(boundary->comm, &m);CHKERRQ(ierr);
+  ierr = MeshGetTopology(boundary, (void **) &bdTopology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(boundary, (void **) &bdOrientation);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(boundary->comm, &rank);CHKERRQ(ierr);
+  ierr = initGeneratorInput(&in);CHKERRQ(ierr);
+  ierr = initGeneratorOutput(&out);CHKERRQ(ierr);
+  if (rank == 0) {
+    ALE::Obj<ALE::Point_set> vertices = bdTopology->depthStratum(0);
+    ALE::Obj<ALE::Point_set> edges = bdTopology->depthStratum(1);
+    PetscInt                 dim = 2;
+    const char              *args = "pqenzQ";
+    PetscTruth               createConvexHull = PETSC_FALSE;
+
+    in.numberofpoints = vertices->size();
+    if (in.numberofpoints > 0) {
+      ALE::IndexBundle *coordBundle;
+      Vec               coordinates;
+      PetscScalar      *coords;
+
+      ierr = MeshGetCoordinateBundle(boundary, (void **) &coordBundle);CHKERRQ(ierr);
+      ierr = MeshGetCoordinates(boundary, &coordinates);CHKERRQ(ierr);
+      ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+      ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);CHKERRQ(ierr);
+      ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRQ(ierr);
+      for(ALE::Point_set::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
+        ALE::Point   interval = coordBundle->getFiberInterval(*v_itor);
+        PetscScalar *array;
+
+        ierr = restrictField(coordBundle, bdOrientation, coords, *v_itor, &array); CHKERRQ(ierr);
+        for(d = 0; d < interval.index; d++) {
+          in.pointlist[interval.prefix * dim + d] = array[d];
+        }
+        /* These get set from the boundary sieve */
+        in.pointmarkerlist[interval.prefix] = 0;
+      }
+      ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+    }
+
+    in.numberofsegments = edges->size;
+    if (in.numberofsegments > 0) {
+      ALE::IndexBundle *elementBundle;
+
+      ierr = MeshGetElementBundle(boundary, (void **) &elementBundle);CHKERRQ(ierr);
+      ierr = PetscMalloc(in.numberofsegments * dim * sizeof(int), &in.segmentlist);CHKERRQ(ierr);
+      ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRQ(ierr);
+      for(ALE::Point_set::iterator e_itor = edges->begin(); e_itor != edges->end(); e_itor++) {
+        ALE::Point               edge = *e_itor;
+        ALE::Point               interval = elementBundle->getFiberInterval(edge);
+        ALE::Obj<ALE::Point_set> cone = topology->cone(edge);
+        PetscInt p = 0;
+        
+        for(ALE::Point_set::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
+          in.segmentlist[interval.prefix * 2 + (p++)] = (*c_itor).index;
+        }
+        /* These get set from the boundary sieve */
+        in.segmentmarkerlist[interval.prefix] = 0;
+      }
+    }
+    in.numberofholes = 0;
+    if (in.numberofholes > 0) {
+      ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);CHKERRQ(ierr);
+    }
+    if (createConvexHull) {
+      char    *newArgs;
+      PetscInt len;
+
+      ierr = PetscStrlen(args, &len);CHKERRQ(ierr);
+      ierr = PetscMalloc((strlen(args) + 2) * sizeof(char), &newArgs);CHKERRQ(ierr);
+      ierr = PetscStrcpy(newArgs, args);CHKERRQ(ierr);
+      ierr = PetscStrcat(newArgs, "c");CHKERRQ(ierr);
+      args = (const char *) newArgs;
+    }
+    triangulate((char *) args, &in, &out, NULL);
+    if (createConvexHull) {
+      ierr = PetscFree((char *) args);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(in.pointlist);CHKERRQ(ierr);
+    ierr = PetscFree(in.pointmarkerlist);CHKERRQ(ierr);
+    ierr = PetscFree(in.segmentlist);CHKERRQ(ierr);
+    ierr = PetscFree(in.segmentmarkerlist);CHKERRQ(ierr);
+  }
+  ierr = MeshPopulate(m, dim, out.numberofpoints, out.numberoftriangles, out.trianglelist, out.pointlist);CHKERRQ(ierr);
+  /* Need to make boundary */
+  ierr = destroyGeneratorOutput(&out);CHKERRQ(ierr);
+  *mesh = m;
+  PetscFunctionReturn(0);
+}
+
+#endif
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshGenerate"
+PetscErrorCode MeshGenerate(Mesh boundary, Mesh *mesh)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+#ifdef PETSC_HAVE_TRIANGLE
+  ierr = MeshGenerate_Triangle(boundary, mesh);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

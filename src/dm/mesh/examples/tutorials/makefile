@@ -17,6 +17,10 @@ ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_DM_LIB}
 	${RM} -f ex1.o
 
+ex2: ex2.o   chkopts
+	-${CLINKER} -o ex2 ex2.o  ${PETSC_DM_LIB}
+	${RM} -f ex2.o
+
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
@@ -35,6 +39,9 @@ runex1_2:
 
 runex1_3:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -use_zero_base 1 -base_file data/ex1_3d
+
+runex2:
+	-@${MPIRUN} -np ${NP} ./ex2 -dim 2 ${EXTRA_ARGS}
 
 runex3:
 	-@${MPIRUN} -np 3 ./ex3 -mat_view  > ex3_1.tmp 2>&1;   \

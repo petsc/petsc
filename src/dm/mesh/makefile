@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = -Isieve
+CFLAGS   = -Isieve ${TRIANGLE_INCLUDE}
 FFLAGS   =
 SOURCEC  = mesh.c
 SOURCEF  = 

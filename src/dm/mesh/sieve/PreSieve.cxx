@@ -1214,6 +1214,8 @@ namespace ALE {
       txt  << "(" << p.prefix << ", " << p.index << ")";
     }
     txt  << "\n";
+    ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
+    txt.clear();
     //
     points = this->cap();
     txt  << "[" << rank << "]: cap   of size " << points.size() << " : ";
@@ -1226,6 +1228,8 @@ namespace ALE {
       txt  << "(" << p.prefix << ", " << p.index << ")";
     }
     txt  << "\n";
+    ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
+    txt.clear();
     //
     points = this->base();
     txt  << "[" << rank << "]: base  of size " << points.size() << " : ";
@@ -1238,6 +1242,8 @@ namespace ALE {
       txt  << "(" << p.prefix << ", " << p.index << ")";
     }
     txt  << "\n";
+    ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
+    txt.clear();
     //
     for(Point__Point_set::iterator cone_itor = this->_cone.begin(); cone_itor != this->_cone.end(); cone_itor++)
     {
