@@ -26,7 +26,9 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   int            i,imax=10000,icount;
+#if defined (PETSC_USE_LOG)
   PetscEvent     USER_EVENT;
+#endif
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
