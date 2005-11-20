@@ -124,7 +124,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   }
   if (useblockis) {
     PetscInt *ga,bs = mat->bs,iec = ec/bs;
-    ierr = PetscLogInfo((mat,"MatSetUpMultiply_MPIAIJ: Using block index set to define scatter\n"));
+    ierr = PetscVerboseInfo((mat,"MatSetUpMultiply_MPIAIJ: Using block index set to define scatter\n"));
     ierr = PetscMalloc((ec/mat->bs)*sizeof(PetscInt),&ga);CHKERRQ(ierr);
     for (i=0; i<iec; i++) ga[i] = garray[i*bs];
     ierr = ISCreateBlock(mat->comm,bs,iec,ga,&from);CHKERRQ(ierr);

@@ -358,7 +358,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandomType t
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  ierr = PetscLogInfo((0,"PetscRandomCreate: using rand(). not as efficinet as dran48\n"));CHKERRQ(ierr);
+  ierr = PetscVerboseInfo((0,"PetscRandomCreate: using rand(). not as efficinet as dran48\n"));CHKERRQ(ierr);
   *r = 0;
   if (type != RANDOM_DEFAULT && type != RANDOM_DEFAULT_REAL && type != RANDOM_DEFAULT_IMAGINARY) {
     SETERRQ(PETSC_ERR_SUP,"Not for this random number type");

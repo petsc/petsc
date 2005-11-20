@@ -62,14 +62,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DA da,DADirection dir,Pets
   ierr = PetscMalloc2(size,PetscInt,&owners,size,PetscMPIInt,&ranks);CHKERRQ(ierr);
   ierr = MPI_Allgather(&flag,1,MPIU_INT,owners,1,MPIU_INT,da->comm);CHKERRQ(ierr);
   ict  = 0;
-  ierr = PetscLogInfo((da,"DAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir));CHKERRQ(ierr);
+  ierr = PetscVerboseInfo((da,"DAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir));CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     if (owners[i]) {
       ranks[ict] = i; ict++;
-      ierr = PetscLogInfo((da,"%D ",i));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((da,"%D ",i));CHKERRQ(ierr);
     }
   }
-  ierr = PetscLogInfo((da,"\n"));CHKERRQ(ierr);
+  ierr = PetscVerboseInfo((da,"\n"));CHKERRQ(ierr);
   ierr = MPI_Comm_group(da->comm,&group);CHKERRQ(ierr);
   ierr = MPI_Group_incl(group,ict,ranks,&subgroup);CHKERRQ(ierr);
   ierr = MPI_Comm_create(da->comm,subgroup,comm);CHKERRQ(ierr);

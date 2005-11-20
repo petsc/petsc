@@ -57,11 +57,15 @@ typedef std::complex<double> PetscScalar;
 #else
 #  if defined(PETSC_USE_SINGLE)
 #    define MPIU_SCALAR           MPI_FLOAT
+#  elif defined(PETSC_USE_LONG_DOUBLE)
+#    define MPIU_SCALAR           MPI_LONG_DOUBLE
 #  else
 #    define MPIU_SCALAR           MPI_DOUBLE
 #  endif
 #  if defined(PETSC_USE_MAT_SINGLE) || defined(PETSC_USE_SINGLE)
 #    define MPIU_MATSCALAR        MPI_FLOAT
+#  elif defined(PETSC_USE_LONG_DOUBLE)
+#    define MPIU_MATSCALAR        MPI_LONG_DOUBLE
 #  else
 #    define MPIU_MATSCALAR        MPI_DOUBLE
 #  endif
@@ -77,6 +81,8 @@ typedef std::complex<double> PetscScalar;
 
 #  if defined(PETSC_USE_SINGLE)
   typedef float PetscScalar;
+#  elif defined(PETSC_USE_LONG_DOUBLE)
+  typedef long double PetscScalar;
 #  else
   typedef double PetscScalar;
 #  endif
@@ -84,6 +90,8 @@ typedef std::complex<double> PetscScalar;
 
 #if defined(PETSC_USE_SINGLE)
 #  define MPIU_REAL   MPI_FLOAT
+#elif defined(PETSC_USE_LONG_DOUBLE)
+#  define MPIU_REAL   MPI_LONG_DOUBLE
 #else
 #  define MPIU_REAL   MPI_DOUBLE
 #endif
@@ -105,19 +113,22 @@ typedef float MatScalar;
 typedef PetscScalar MatScalar;
 #endif
 
-#if defined(PETSC_USE_COMPLEX)
-typedef double MatReal;
-#elif defined(PETSC_USE_MAT_SINGLE) || defined(PETSC_USE_SINGLE)
-typedef float MatReal;
-#else
-typedef double MatReal;
-#endif
-
 #if defined(PETSC_USE_SINGLE)
   typedef float PetscReal;
+#elif defined(PETSC_USE_LONG_DOUBLE)
+  typedef long double PetscReal;
 #else 
   typedef double PetscReal;
 #endif
+
+#if defined(PETSC_USE_COMPLEX)
+typedef PetscReal MatReal;
+#elif defined(PETSC_USE_MAT_SINGLE) || defined(PETSC_USE_SINGLE)
+typedef float MatReal;
+#else
+typedef PetscReal MatReal;
+#endif
+
 
 /* --------------------------------------------------------------------------*/
 
@@ -125,7 +136,7 @@ typedef double MatReal;
    Certain objects may be created using either single
   or double precision.
 */
-typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE } PetscScalarPrecision;
+typedef enum { PETSC_SCALAR_DOUBLE,PETSC_SCALAR_SINGLE, PETSC_SCALAR_LONG_DOUBLE } PetscScalarPrecision;
 
 /* PETSC_i is the imaginary number, i */
 extern  PetscScalar PETSC_DLLEXPORT PETSC_i;

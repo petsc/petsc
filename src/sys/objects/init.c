@@ -396,9 +396,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     char logname[PETSC_MAX_PATH_LEN]; logname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-log_info",logname,250,&flg1);CHKERRQ(ierr);
     if (logname[0]) {
-      PetscLogInfoAllow(PETSC_TRUE,logname); 
+      PetscVerboseInfoAllow(PETSC_TRUE,logname); 
     } else {
-      PetscLogInfoAllow(PETSC_TRUE,PETSC_NULL); 
+      PetscVerboseInfoAllow(PETSC_TRUE,PETSC_NULL); 
     }
   }
 #if defined(PETSC_HAVE_MPE)
@@ -497,7 +497,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_info_exclude",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   ierr = PetscStrstr(mname,"null",&f);CHKERRQ(ierr);
   if (f) {
-    ierr = PetscLogInfoDeactivateClass(PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscVerboseInfoDeactivateClass(PETSC_NULL);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

@@ -43,7 +43,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[]) {
   if (opt) {
     ierr = PetscStrstr(logList, "snes", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
+      ierr = PetscVerboseInfoDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */

@@ -24,12 +24,12 @@ extern void PETSC_STDCALL pcmgdefaultresidual_(Mat*,Vec*,Vec*,Vec*,PetscErrorCod
 void PETSC_STDCALL pcmgsetresidual_(PC *pc,PetscInt *l,PetscErrorCode (*residual)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*),Mat *mat, PetscErrorCode *ierr)
 {
   MVVVV rr;
-  if ((FCNVOID)residual == (FCNVOID)pcmgdefaultresidual_) rr = PCMGDefaultResidual;
+  if ((PetscVoidFunction)residual == (PetscVoidFunction)pcmgdefaultresidual_) rr = PCMGDefaultResidual;
   else {
     if (!((PetscObject)*mat)->fortran_func_pointers) {
       *ierr = PetscMalloc(1*sizeof(void*),&((PetscObject)*mat)->fortran_func_pointers);
     }
-    ((PetscObject)*mat)->fortran_func_pointers[0] = (FCNVOID)residual;
+    ((PetscObject)*mat)->fortran_func_pointers[0] = (PetscVoidFunction)residual;
     rr = ourresidualfunction;
   }
   *ierr = PCMGSetResidual(*pc,*l,rr,*mat);

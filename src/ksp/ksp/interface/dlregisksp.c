@@ -50,7 +50,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) {
   if (opt) {
     ierr = PetscStrstr(logList, "pc", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(PC_COOKIE);CHKERRQ(ierr);
+      ierr = PetscVerboseInfoDeactivateClass(PC_COOKIE);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */
@@ -113,7 +113,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitializePackage(const char path[]) {
   if (opt) {
     ierr = PetscStrstr(logList, "ksp", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(KSP_COOKIE);CHKERRQ(ierr);
+      ierr = PetscVerboseInfoDeactivateClass(KSP_COOKIE);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */

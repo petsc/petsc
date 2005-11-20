@@ -953,9 +953,9 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   ierr = VecStashScatterBegin_Private(&xin->stash,owners);CHKERRQ(ierr);
   ierr = VecStashScatterBegin_Private(&xin->bstash,bowners);CHKERRQ(ierr);
   ierr = VecStashGetInfo_Private(&xin->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  ierr = PetscLogInfo((0,"VecAssemblyBegin_MPI:Stash has %D entries, uses %D mallocs.\n",nstash,reallocs));CHKERRQ(ierr);
+  ierr = PetscVerboseInfo((0,"VecAssemblyBegin_MPI:Stash has %D entries, uses %D mallocs.\n",nstash,reallocs));CHKERRQ(ierr);
   ierr = VecStashGetInfo_Private(&xin->bstash,&nstash,&reallocs);CHKERRQ(ierr);
-  ierr = PetscLogInfo((0,"VecAssemblyBegin_MPI:Block-Stash has %D entries, uses %D mallocs.\n",nstash,reallocs));CHKERRQ(ierr);
+  ierr = PetscVerboseInfo((0,"VecAssemblyBegin_MPI:Block-Stash has %D entries, uses %D mallocs.\n",nstash,reallocs));CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

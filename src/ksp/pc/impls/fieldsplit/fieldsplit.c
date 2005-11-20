@@ -76,7 +76,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsGetTruth(pc->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (!ilink || flg) { 
-    ierr = PetscLogInfo((pc,"PCFieldSplitSetDefaults: Using default splitting of fields\n"));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((pc,"PCFieldSplitSetDefaults: Using default splitting of fields\n"));CHKERRQ(ierr);
     if (jac->bs <= 0) {
       ierr   = MatGetBlockSize(pc->pmat,&jac->bs);CHKERRQ(ierr);
     }

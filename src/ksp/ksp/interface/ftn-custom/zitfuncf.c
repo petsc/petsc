@@ -123,19 +123,19 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL kspsetmonitor_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,PetscInt*,PetscReal*,void*,PetscErrorCode*),
                     void *mctx,void (PETSC_STDCALL *monitordestroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  if ((FCNVOID)monitor == (FCNVOID)kspdefaultmonitor_) {
+  if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspdefaultmonitor_) {
     *ierr = KSPSetMonitor(*ksp,KSPDefaultMonitor,0,0);
-  } else if ((FCNVOID)monitor == (FCNVOID)ksplgmonitor_) {
+  } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)ksplgmonitor_) {
     *ierr = KSPSetMonitor(*ksp,KSPLGMonitor,0,0);
-  } else if ((FCNVOID)monitor == (FCNVOID)ksplgtruemonitor_) {
+  } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)ksplgtruemonitor_) {
     *ierr = KSPSetMonitor(*ksp,KSPLGTrueMonitor,0,0);
-  } else if ((FCNVOID)monitor == (FCNVOID)kspvecviewmonitor_) {
+  } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspvecviewmonitor_) {
     *ierr = KSPSetMonitor(*ksp,KSPVecViewMonitor,0,0);
-  } else if ((FCNVOID)monitor == (FCNVOID)ksptruemonitor_) {
+  } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)ksptruemonitor_) {
     *ierr = KSPSetMonitor(*ksp,KSPTrueMonitor,0,0);
-  } else if ((FCNVOID)monitor == (FCNVOID)kspsingularvaluemonitor_) {
+  } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspsingularvaluemonitor_) {
     *ierr = KSPSetMonitor(*ksp,KSPSingularValueMonitor,0,0);
-  } else if ((FCNVOID)monitor == (FCNVOID)kspgmreskrylovmonitor_) {
+  } else if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspgmreskrylovmonitor_) {
     *ierr = KSPSetMonitor(*ksp,KSPGMRESKrylovMonitor,0,0);
   } else {
     f1  = monitor;
@@ -151,9 +151,9 @@ void PETSC_STDCALL kspsetmonitor_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,Pe
 void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
       void (PETSC_STDCALL *converge)(KSP*,PetscInt*,PetscReal*,KSPConvergedReason*,void*,PetscErrorCode*),void *cctx,PetscErrorCode *ierr)
 {
-  if ((FCNVOID)converge == (FCNVOID)kspdefaultconverged_) {
+  if ((PetscVoidFunction)converge == (PetscVoidFunction)kspdefaultconverged_) {
     *ierr = KSPSetConvergenceTest(*ksp,KSPDefaultConverged,0);
-  } else if ((FCNVOID)converge == (FCNVOID)kspskipconverged_) {
+  } else if ((PetscVoidFunction)converge == (PetscVoidFunction)kspskipconverged_) {
     *ierr = KSPSetConvergenceTest(*ksp,KSPSkipConverged,0);
   } else {
     f2 = converge;

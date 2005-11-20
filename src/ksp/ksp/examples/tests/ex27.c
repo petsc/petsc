@@ -45,7 +45,7 @@ int main(int argc,char **args)
     /* if file contains no RHS, then use a vector of all ones */
     PetscInt    m;
     PetscScalar one = 1.0;
-    ierr = PetscLogInfo((0,"Using vector of ones for RHS\n"));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((0,"Using vector of ones for RHS\n"));CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
     ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);

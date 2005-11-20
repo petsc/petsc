@@ -830,11 +830,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
   ctx->beginandendtogether = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_merge",&ctx->beginandendtogether);CHKERRQ(ierr);
   if (ctx->beginandendtogether) {
-    ierr = PetscLogInfo((ctx,"VecScatterCreate:Using combined (merged) vector scatter begin and end\n"));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((ctx,"VecScatterCreate:Using combined (merged) vector scatter begin and end\n"));CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_packtogether",&ctx->packtogether);CHKERRQ(ierr);
   if (ctx->packtogether) {
-    ierr = PetscLogInfo((ctx,"VecScatterCreate:Pack all messages before sending\n"));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((ctx,"VecScatterCreate:Pack all messages before sending\n"));CHKERRQ(ierr);
   }
 
   ierr = VecGetLocalSize(xin,&ctx->from_n);CHKERRQ(ierr);
@@ -915,7 +915,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ctx->end          = 0; 
       ctx->destroy      = VecScatterDestroy_SGtoSG;
       ctx->copy         = VecScatterCopy_SGToSG;
-      ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: sequential vector general scatter\n"));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((xin,"VecScatterCreate:Special case: sequential vector general scatter\n"));CHKERRQ(ierr);
       goto functionend;
     } else if (ix->type == IS_STRIDE &&  iy->type == IS_STRIDE){
       PetscInt               nx,ny,to_first,to_step,from_first,from_step;
@@ -942,7 +942,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ctx->end          = 0; 
       ctx->destroy      = VecScatterDestroy_SStoSS;
       ctx->copy         = VecScatterCopy_SStoSS;
-      ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: sequential vector stride to stride\n"));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((xin,"VecScatterCreate:Special case: sequential vector stride to stride\n"));CHKERRQ(ierr);
       goto functionend; 
     } else if (ix->type == IS_GENERAL && iy->type == IS_STRIDE){
       PetscInt               nx,ny,*idx,first,step;
@@ -972,7 +972,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ctx->copy      = VecScatterCopy_SGToSS;
       to9->type      = VEC_SCATTER_SEQ_STRIDE; 
       from9->type    = VEC_SCATTER_SEQ_GENERAL;
-      ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: sequential vector general to stride\n"));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((xin,"VecScatterCreate:Special case: sequential vector general to stride\n"));CHKERRQ(ierr);
       goto functionend;
     } else if (ix->type == IS_STRIDE && iy->type == IS_GENERAL){
       PetscInt               nx,ny,*idy,first,step;
@@ -1003,7 +1003,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ctx->copy       = 0;
       to10->type      = VEC_SCATTER_SEQ_GENERAL; 
       from10->type    = VEC_SCATTER_SEQ_STRIDE; 
-      ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: sequential vector stride to general\n"));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((xin,"VecScatterCreate:Special case: sequential vector stride to general\n"));CHKERRQ(ierr);
       goto functionend;
     } else {
       PetscInt               nx,ny,*idx,*idy;
@@ -1034,7 +1034,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         ctx->end          = 0;  
         ctx->destroy      = VecScatterDestroy_SStoSS;
         ctx->copy         = VecScatterCopy_SStoSS;
-        ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: sequential copy\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((xin,"VecScatterCreate:Special case: sequential copy\n"));CHKERRQ(ierr);
         goto functionend;
       }
 
@@ -1062,7 +1062,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ctx->copy         = VecScatterCopy_SGToSG;
       ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
-      ierr = PetscLogInfo((xin,"VecScatterCreate:Sequential vector scatter with block indices\n"));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((xin,"VecScatterCreate:Sequential vector scatter with block indices\n"));CHKERRQ(ierr);
       goto functionend;
     }
   }
@@ -1104,7 +1104,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         ctx->end            = 0; 
         ctx->destroy        = VecScatterDestroy_SStoSS;
         ctx->copy           = VecScatterCopy_SStoSS;
-        ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: processors only getting local values\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((xin,"VecScatterCreate:Special case: processors only getting local values\n"));CHKERRQ(ierr);
         goto functionend;
       }
     } else {
@@ -1153,7 +1153,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         ctx->end          = 0;
         ctx->destroy      = VecScatterDestroy_MPI_ToAll;
         ctx->copy         = VecScatterCopy_MPI_ToAll;
-        ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: all processors get entire parallel vector\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((xin,"VecScatterCreate:Special case: all processors get entire parallel vector\n"));CHKERRQ(ierr);
         goto functionend;
       }
     } else {
@@ -1209,7 +1209,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         ctx->end          = 0;
         ctx->destroy      = VecScatterDestroy_MPI_ToAll;
         ctx->copy         = VecScatterCopy_MPI_ToAll;
-        ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: processor zero gets entire parallel vector, rest get none\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((xin,"VecScatterCreate:Special case: processor zero gets entire parallel vector, rest get none\n"));CHKERRQ(ierr);
         goto functionend;
       }
     } else {
@@ -1234,7 +1234,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
           ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
           ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
           ierr = ISBlockRestoreIndices(iy,&idy);CHKERRQ(ierr);
-          ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: blocked indices\n"));CHKERRQ(ierr);
+          ierr = PetscVerboseInfo((xin,"VecScatterCreate:Special case: blocked indices\n"));CHKERRQ(ierr);
           goto functionend;
         }
       /* special case block to stride */
@@ -1256,7 +1256,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
           ierr = VecScatterCreate_PtoS(nx,idx,nx,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
           ierr = PetscFree(idy);CHKERRQ(ierr);
           ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
-          ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: blocked indices to stride\n"));CHKERRQ(ierr);
+          ierr = PetscVerboseInfo((xin,"VecScatterCreate:Special case: blocked indices to stride\n"));CHKERRQ(ierr);
           goto functionend;
         }
       }
@@ -1272,7 +1272,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,yin,1,ctx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
-      ierr = PetscLogInfo((xin,"VecScatterCreate:General case: MPI to Seq\n"));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((xin,"VecScatterCreate:General case: MPI to Seq\n"));CHKERRQ(ierr);
       goto functionend;
     }
   }
@@ -1312,7 +1312,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         ctx->end          = 0;  
         ctx->destroy      = VecScatterDestroy_SStoSS;
         ctx->copy         = VecScatterCopy_SStoSS;
-        ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: sequential stride to MPI stride\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((xin,"VecScatterCreate:Special case: sequential stride to MPI stride\n"));CHKERRQ(ierr);
         goto functionend;
       }
     } else {
@@ -1336,7 +1336,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         ierr = VecScatterCreate_StoP(nx,idx,nx,idy,yin,bsx,ctx);CHKERRQ(ierr);
         ierr = PetscFree(idy);CHKERRQ(ierr);
         ierr = ISBlockRestoreIndices(ix,&idx);CHKERRQ(ierr);
-        ierr = PetscLogInfo((xin,"VecScatterCreate:Special case: Blocked indices to stride\n"));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((xin,"VecScatterCreate:Special case: Blocked indices to stride\n"));CHKERRQ(ierr);
         goto functionend;
       }
     }
@@ -1352,7 +1352,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ierr = VecScatterCreate_StoP(nx,idx,ny,idy,yin,1,ctx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(ix,&idx);CHKERRQ(ierr);
       ierr = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
-      ierr = PetscLogInfo((xin,"VecScatterCreate:General case: Seq to MPI\n"));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((xin,"VecScatterCreate:General case: Seq to MPI\n"));CHKERRQ(ierr);
       goto functionend;
     }
   }
@@ -1368,7 +1368,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
     ierr    = VecScatterCreate_PtoP(nx,idx,ny,idy,xin,yin,ctx);CHKERRQ(ierr);
     ierr    = ISRestoreIndices(ix,&idx);CHKERRQ(ierr); 
     ierr    = ISRestoreIndices(iy,&idy);CHKERRQ(ierr);
-    ierr    = PetscLogInfo((xin,"VecScatterCreate:General case: MPI to MPI\n"));CHKERRQ(ierr);
+    ierr    = PetscVerboseInfo((xin,"VecScatterCreate:General case: MPI to MPI\n"));CHKERRQ(ierr);
     goto functionend;
   }
 
