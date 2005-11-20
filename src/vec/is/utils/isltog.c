@@ -3,7 +3,7 @@
 #include "petscvec.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
 
-PetscCookie PETSCVEC_DLLEXPORT IS_LTOGM_COOKIE = 0;
+PetscCookie PETSCVEC_DLLEXPORT IS_LTOGM_COOKIE = -1;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISLocalToGlobalMappingGetSize"

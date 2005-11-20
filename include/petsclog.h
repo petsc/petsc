@@ -345,7 +345,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, Eve
 
 #define PetscLogEventActivateClass(a)   0
 #define PetscLogEventDeactivateClass(a) 0
-#define PetscLogClassRegister(a,b)      0
+#define PetscLogClassRegister(a,b)      PetscCookieRegister(a)
 #define PetscLogEventSetActiveAll(a,b)  0
 
 #define _PetscLogPLB                        0

@@ -35,15 +35,24 @@ const char *PetscDataTypes[] = {"INT", "DOUBLE", "COMPLEX",
                                 "LONG","SHORT",  "FLOAT",
                                 "CHAR","LOGICAL","ENUM","TRUTH","PetscDataType","PETSC_",0};
 
-#if defined (PETSC_USE_LOG)
 PetscCookie PETSC_LARGEST_COOKIE = PETSC_COOKIE;
-#else
-PetscCookie PETSC_LARGEST_COOKIE = 0;
-#endif
 PetscCookie PETSC_OBJECT_COOKIE = 0;
 
 PetscTruth PetscPreLoadingUsed = PETSC_FALSE;
 PetscTruth PetscPreLoadingOn   = PETSC_FALSE;
+
+PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(PetscCookie *cookie)
+{
+  if (*cookie == PETSC_DECIDE || *cookie == PETSC_NULL) {
+    *cookie = ++PETSC_LARGEST_COOKIE;
+  } else if (*cookie > 0) {
+    /* Need to check here for montonicity and insert if necessary */
+    return 0;
+  } else {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid suggested cookie %d", (int)*cookie);
+  }
+  return 0;
+}
 
 /*
        Checks the options database for initializations related to the 

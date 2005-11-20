@@ -1064,13 +1064,10 @@ typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDAT
 #include "petscviewer.h"
 #include "petscoptions.h"
 
-#if defined (PETSC_USE_LOG)
 #define PETSC_COOKIE 1211211
-#else
-#define PETSC_COOKIE 0
-#endif
 extern PETSC_DLLEXPORT PetscCookie PETSC_LARGEST_COOKIE;
 extern PETSC_DLLEXPORT PetscCookie PETSC_OBJECT_COOKIE;
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(PetscCookie *);
 
 /*
    Routines that get memory usage information from the OS
