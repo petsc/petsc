@@ -3147,7 +3147,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec vec,VecOperation op, void 
      The block-stash is used for values set with VecSetValuesBlocked() while
      the stash is used for values set with VecSetValues()
 
-     Run with the option -log_info and look for output of the form
+     Run with the option -verbose_info and look for output of the form
      VecAssemblyBegin_MPIXXX:Stash has MM entries, uses nn mallocs.
      to determine the appropriate value, MM, to use for size and 
      VecAssemblyBegin_MPIXXX:Block-Stash has BMM entries, uses nn mallocs.

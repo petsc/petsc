@@ -17,7 +17,9 @@ int main(int argc,char **args)
   PetscScalar    v;
   Vec            u;
   PetscViewer    viewer;
+#if defined(PETSC_USE_LOG)
   PetscEvent     VECTOR_GENERATE,VECTOR_READ;
+#endif
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

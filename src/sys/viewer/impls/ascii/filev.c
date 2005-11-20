@@ -566,7 +566,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_ASCII(PetscViewer viewer,c
       if (!vascii->fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open PetscViewer file: %s",fname);
     }
   }
+#if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)viewer,"File: %s",name);
+#endif
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

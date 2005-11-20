@@ -93,7 +93,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *path)
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-verbose_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "mat", &className);CHKERRQ(ierr);
     if (className) {

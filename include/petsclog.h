@@ -6,13 +6,7 @@
 #define __PetscLog_H
 #include "petsc.h"  
 PETSC_EXTERN_CXX_BEGIN
-/*
-  Each PETSc object class has it's own cookie (internal integer in the 
-  data structure used for error checking). These are all defined by an offset 
-  from the lowest one, PETSC_COOKIE.
-*/
-#define PETSC_COOKIE 1211211
-extern PetscCookie PETSC_LARGEST_COOKIE;
+
 #define PETSC_EVENT  1311311
 extern PetscEvent PETSC_LARGEST_EVENT;
 
@@ -351,6 +345,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, Eve
 
 #define PetscLogEventActivateClass(a)   0
 #define PetscLogEventDeactivateClass(a) 0
+#define PetscLogClassRegister(a,b)      PetscCookieRegister(a)
+#define PetscLogEventSetActiveAll(a,b)  0
 
 #define _PetscLogPLB                        0
 #define _PetscLogPLE                        0
@@ -402,11 +398,10 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject,const char
 #define StageLogSetVisible(stageLog, stage, visible) 0
 #define StageLogGetVisible(stageLog, stage, visible) 0
 #define StageLogGetStage(stageLog, name, stage)      0
+#define PetscLogStageGetId(a,b)                      (*(b)=0,0)
+#define PetscLogStageSetActive(a,b)                  0
 
 #endif   /* PETSC_USE_LOG */
-
-extern PETSC_DLLEXPORT PetscTruth PetscPreLoadingUsed;       /* true if we are or have done preloading */
-extern PETSC_DLLEXPORT PetscTruth PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
 
 #define PreLoadBegin(flag,name) \
 {\

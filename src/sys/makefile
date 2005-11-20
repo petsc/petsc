@@ -2,7 +2,7 @@
 ALL: lib 
 SOURCEH   = ctable.h
 DIRS      = viewer draw error dll fileio memory objects time utils plog mpiuni matlabengine f90 \
-            adic bag examples 
+            adic bag examples verbose
 LOCDIR    = src/sys/
 MANSEC    = Sys
 

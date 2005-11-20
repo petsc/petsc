@@ -40,10 +40,12 @@ int main(int argc,char **args)
   PetscInt       ldim,low,high,iglobal,Istart,Iend,Istart2,Iend2;
   PetscInt       I,J,i,j,m = 3,n = 2,its,t;
   PetscErrorCode ierr;
-  int            stages[3];
   PetscTruth     flg;
   PetscScalar    v;
   PetscMPIInt    rank,size;
+#if defined (PETSC_USE_LOG)
+  int            stages[3];
+#endif
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -343,7 +345,7 @@ int main(int argc,char **args)
     /* 
        Conclude profiling stage #2
     */
-    PetscLogStagePop();
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
   /* -------------------------------------------------------------- 
                        End of linear solver loop

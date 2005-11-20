@@ -46,7 +46,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) {
   ierr = PetscLogEventRegister(&PC_ApplySymmetricRight,     "PCApplySymmRight", PC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&PC_ModifySubMatrices,       "PCModifySubMatri", PC_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-verbose_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "pc", &className);CHKERRQ(ierr);
     if (className) {
@@ -109,7 +109,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitializePackage(const char path[]) {
   ierr = PetscLogEventRegister(&KSP_SetUp,                  "KSPSetup",         KSP_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&KSP_Solve,                  "KSPSolve",         KSP_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-verbose_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "ksp", &className);CHKERRQ(ierr);
     if (className) {

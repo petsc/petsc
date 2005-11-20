@@ -1,7 +1,7 @@
 #define PETSC_DLL
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
-#include "src/sys/plog/ptime.h"
+#include "src/sys/time/ptime.h"
 #include "plog.h"
 
 /*----------------------------------------------- Creation Functions -------------------------------------------------*/
@@ -247,15 +247,8 @@ PetscErrorCode ClassRegLogRegister(ClassRegLog classLog, const char cname[], Pet
   }
   ierr = PetscStrallocpy(cname, &str);CHKERRQ(ierr);
   classLog->classInfo[c].name     = str;
-  if (*cookie == PETSC_DECIDE) {
-    classLog->classInfo[c].cookie = ++PETSC_LARGEST_COOKIE;
-  } else if (*cookie >= 0) {
-    classLog->classInfo[c].cookie = *cookie;
-    /* Need to check here for montonicity and insert if necessary */
-  } else {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid suggested cookie %d", (int)*cookie);
-  }
-  *cookie = classLog->classInfo[c].cookie;
+  ierr = PetscCookieRegister(cookie);CHKERRQ(ierr);
+  classLog->classInfo[c].cookie = *cookie;
   PetscFunctionReturn(0);
 }
 

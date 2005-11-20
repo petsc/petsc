@@ -122,7 +122,11 @@
 M*/
 typedef int PetscErrorCode;
 /*MC
-    PetscCookie - a unique id used to identify PETSc objects
+
+    PetscCookie - A unique id used to identify each PETSc object.
+         (internal integer in the data structure used for error
+         checking). These are all defined by an offset from the lowest
+         one, PETSC_COOKIE.
 
     Level: advanced
 M*/
@@ -1070,7 +1074,10 @@ typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDAT
 #include "petscviewer.h"
 #include "petscoptions.h"
 
+#define PETSC_COOKIE 1211211
+extern PETSC_DLLEXPORT PetscCookie PETSC_LARGEST_COOKIE;
 extern PETSC_DLLEXPORT PetscCookie PETSC_OBJECT_COOKIE;
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(PetscCookie *);
 
 /*
    Routines that get memory usage information from the OS

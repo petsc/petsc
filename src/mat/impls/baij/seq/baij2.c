@@ -1151,9 +1151,11 @@ PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatMultTranspose_SeqBAIJ"
 PetscErrorCode MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar    zero = 0.0;
   PetscErrorCode ierr;
+#if defined (PETSC_USE_LOG)
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
+#endif
 
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);

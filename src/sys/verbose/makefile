@@ -3,15 +3,16 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-SOURCEC	  = cputime.c fdate.c nt_time.c rs6000_time.c ptime.c
+CPPFLAGS  =
+SOURCEC	  = verboseinfo.c
 SOURCEF	  =
-SOURCEH	  = ptime.h
+SOURCEH	  = 
 OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
-MANSEC	  = Sys
+MANSEC	  = Profiling
 LIBBASE	  = libpetsc
 DIRS	  = 
-LOCDIR	  = src/sys/time/
+LOCDIR	  = src/sys/verbose/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

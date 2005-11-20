@@ -1,12 +1,13 @@
+#requirespackage    'PETSC_USE_LOG'
 
 ALL: lib 
 
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
-SOURCEC	  = plog.c plogmpe.c ploginfo.c mpitr.c classLog.c stageLog.c eventLog.c
+SOURCEC	  = plog.c plogmpe.c classLog.c stageLog.c eventLog.c
 SOURCEF	  =
-SOURCEH	  = ptime.h plog.h ../../../include/petsclog.h
+SOURCEH	  = plog.h ../../../include/petsclog.h
 OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
 MANSEC	  = Profiling

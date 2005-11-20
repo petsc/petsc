@@ -6,7 +6,9 @@
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
 
+#if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);
+#endif
 
 /* -----------------------------------------------------------------------------------------*/
 
@@ -33,6 +35,25 @@ const char *PetscDataTypes[] = {"INT", "DOUBLE", "COMPLEX",
                                 "LONG","SHORT",  "FLOAT",
                                 "CHAR","LOGICAL","ENUM","TRUTH","LONGDOUBLE","PetscDataType","PETSC_",0};
 
+PetscCookie PETSC_LARGEST_COOKIE = PETSC_COOKIE;
+PetscCookie PETSC_OBJECT_COOKIE = 0;
+
+PetscTruth PetscPreLoadingUsed = PETSC_FALSE;
+PetscTruth PetscPreLoadingOn   = PETSC_FALSE;
+
+PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(PetscCookie *cookie)
+{
+  if (*cookie == PETSC_DECIDE || *cookie == PETSC_NULL) {
+    *cookie = ++PETSC_LARGEST_COOKIE;
+  } else if (*cookie > 0) {
+    /* Need to check here for montonicity and insert if necessary */
+    return 0;
+  } else {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid suggested cookie %d", (int)*cookie);
+  }
+  return 0;
+}
+
 /*
        Checks the options database for initializations related to the 
     PETSc components
@@ -41,7 +62,6 @@ const char *PetscDataTypes[] = {"INT", "DOUBLE", "COMPLEX",
 #define __FUNCT__ "PetscOptionsCheckInitial_Components"
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Components(void)
 {
-  MPI_Comm   comm = PETSC_COMM_WORLD;
   PetscTruth flg1;
   PetscErrorCode ierr;
 
@@ -49,9 +69,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Components(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
   if (flg1) {
 #if defined (PETSC_USE_LOG)
+    MPI_Comm   comm = PETSC_COMM_WORLD;
     ierr = (*PetscHelpPrintf)(comm,"------Additional PETSc component options--------\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log_summary_exclude: <vec,mat,pc.ksp,snes>\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -log_info_exclude: <null,vec,mat,pc,ksp,snes,ts>\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -verbose_info_exclude: <null,vec,mat,pc,ksp,snes,ts>\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");CHKERRQ(ierr);
 #endif
   }
@@ -335,8 +356,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
 +  -log_trace [filename] - Print traces of all PETSc calls
         to the screen (useful to determine where a program
         hangs without running in the debugger).  See PetscLogTraceBegin().
-.  -log_info <optional filename> - Prints verbose information to the screen
--  -log_info_exclude <null,vec,mat,pc,ksp,snes,ts> - Excludes some of the verbose messages
+.  -verbose_info <optional filename> - Prints verbose information to the screen
+-  -verbose_info_exclude <null,vec,mat,pc,ksp,snes,ts> - Excludes some of the verbose messages
 
    Environmental Variables:
 +   PETSC_TMP - alternative tmp directory
@@ -464,7 +485,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr); 
 
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
+#if defined(PETSC_USE_LOG)
   ierr = PetscLogBegin_Private();CHKERRQ(ierr);
+#endif
 
   /*
      Load the dynamic libraries (on machines that support them), this registers all

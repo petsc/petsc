@@ -96,7 +96,9 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+#if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)A,"Rows=%D, NZ=%D",A->m,a->nz);
+#endif
   ierr = MatSeqXAIJFreeAIJ(a->singlemalloc,&a->a,&a->j,&a->i);CHKERRQ(ierr);
   if (a->row) {
     ierr = ISDestroy(a->row);CHKERRQ(ierr);
