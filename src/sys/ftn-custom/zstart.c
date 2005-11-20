@@ -23,6 +23,7 @@ extern PETSC_DLL_IMPORT PetscTruth PetscBeganMPI;
 #define iargc_                        IARGC
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
+#define petscgetommoncomm_            PETSCGETCOMMONCOMM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitialize_              petscinitialize
 #define petscfinalize_                petscfinalize
@@ -30,6 +31,7 @@ extern PETSC_DLL_IMPORT PetscTruth PetscBeganMPI;
 #define mpi_init_                     mpi_init
 #define iargc_                        iargc
 #define getarg_                       getarg
+#define petscgetcommoncomm_           petscgetcommoncomm
 #endif
 
 #if defined(PETSC_HAVE_NAGF90)
@@ -71,6 +73,7 @@ extern PETSC_DLL_IMPORT PetscTruth PetscBeganMPI;
 
 EXTERN_C_BEGIN
 extern void PETSC_STDCALL mpi_init_(int*);
+extern void PETSC_STDCALL petscgetcommoncomm_(PetscMPIInt*);
 
 /*
      Different Fortran compilers handle command lines in different ways
@@ -219,6 +222,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   int         flag,argc = 0;
   PetscMPIInt size;
   char        **args = 0,*t1,name[256],hostname[64];
+  PetscMPIInt f_petsc_comm_world;
   
   *ierr = 1;
   *ierr = PetscMemzero(name,256); if (*ierr) return;
@@ -263,11 +267,13 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   *ierr = PetscSetProgramName(name);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Calling PetscSetProgramName()");return;}
 
+  /* check if PETSC_COMM_WORLD is initialized by the user in fortran */
+    petscgetcommoncomm_(&f_petsc_comm_world);
   MPI_Initialized(&flag);
   if (!flag) {
     PetscMPIInt mierr;
 
-    if (PETSC_COMM_WORLD) {(*PetscErrorPrintf)("You cannot set PETSC_COMM_WORLD if you have not initialized MPI first");return;}
+    if (f_petsc_comm_world) {(*PetscErrorPrintf)("You cannot set PETSC_COMM_WORLD if you have not initialized MPI first\n");return;}
     /* MPI requires calling Fortran mpi_init() if main program is Fortran */
     mpi_init_(&mierr);
     if (mierr) {
@@ -276,8 +282,10 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
       return;
     }
     PetscBeganMPI    = PETSC_TRUE;
-  }
-  if (!PETSC_COMM_WORLD) {
+  } 
+  if (f_petsc_comm_world) { /* User called MPI_INITIALIZE() and changed PETSC_COMM_WORLD */
+    PETSC_COMM_WORLD = PetscToPointerComm(f_petsc_comm_world);
+  } else {
     PETSC_COMM_WORLD = MPI_COMM_WORLD;
   }
   PetscInitializeCalled = PETSC_TRUE;

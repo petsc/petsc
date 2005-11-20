@@ -22,3 +22,12 @@
       return
       end
 
+      subroutine PetscGetCommonCOMM(c1)
+      implicit none
+#include      "../../../include/finclude/petsc.h"
+      data   PETSC_COMM_WORLD /0/
+      integer c1
+
+      c1 = PETSC_COMM_WORLD
+      return
+      end
