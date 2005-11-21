@@ -468,7 +468,7 @@ class Configure(PETSc.package.Package):
     self.executeTest(self.configureTypes)
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.SGIMPICheck)
-    # self.executeTest(self.FortranMPICheck)
+    self.executeTest(self.FortranMPICheck)
 
 if __name__ == '__main__':
   import config.framework
