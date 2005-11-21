@@ -245,6 +245,7 @@ class Configure(config.base.Configure):
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicc')
+      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpcc')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'hcc')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpcc_r')
       self.usedMPICompilers = 0
@@ -541,6 +542,8 @@ class Configure(config.base.Configure):
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpxlf95_r')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpxlf90_r')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpxlf_r')
+      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpf90')
+      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpf77')
       self.usedMPICompilers = 0
       if os.path.isfile(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif90')) or os.path.isfile((os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77'))):
         raise RuntimeError('bin/mpif90[f77] you provided with --with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work\nRun with --with-fc=0 if you wish to use this MPI and disable Fortran')
@@ -558,6 +561,8 @@ class Configure(config.base.Configure):
         if not self.vendor is None:
           yield 'mpxlf_r'
           yield 'mpxlf'          
+          yield 'mpf90'
+          yield 'mpf77'
         self.usedMPICompilers = 0
       vendor = self.vendor
       if (not vendor) and self.framework.argDB['with-gnu-compilers']:
