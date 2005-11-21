@@ -224,7 +224,7 @@ int main(int argc,char **argv)
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",
+  ierr = PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %G, avg. error (max norm) = %G\n",
               appctx.norm_2/steps,appctx.norm_max/steps);CHKERRQ(ierr);
   ierr = TSView(ts,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 

@@ -92,7 +92,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESClassicalGramSchmidtOrthogonalization(
     ierr = VecNorm(VEC_VV(it+1),NORM_2, &wnrm);CHKERRQ(ierr);
     if (wnrm < 1.0286 * hnrm) {
       refine = PETSC_TRUE;
-      ierr = PetscVerboseInfo((ksp,"KSPGMRESClassicalGramSchmidtOrthogonalization:Performing iterative refinement wnorm %g hnorm %g\n",wnrm,hnrm));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((ksp,"KSPGMRESClassicalGramSchmidtOrthogonalization:Performing iterative refinement wnorm %G hnorm %G\n",wnrm,hnrm));CHKERRQ(ierr);
     }
   }
 

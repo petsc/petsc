@@ -43,7 +43,7 @@
 
 /*
    Currently cannot check formatting for PETSc print statements because we have our
-   own format %D
+   own format %D and %G
 */
 #undef  PETSC_PRINTF_FORMAT_CHECK
 #define PETSC_PRINTF_FORMAT_CHECK(a,b)

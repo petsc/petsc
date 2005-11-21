@@ -170,7 +170,7 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
      ierr = PetscViewerASCIIPrintf(viewer,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
-     ierr = PetscViewerASCIIPrintf(viewer,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
+     ierr = PetscViewerASCIIPrintf(viewer,"    err=%G (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
      if (!ctx->type_name) {
        ierr = PetscViewerASCIIPrintf(viewer,"    The compute h routine has not yet been set\n");CHKERRQ(ierr);
      } else {
@@ -263,7 +263,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   /* keep a record of the current differencing parameter h */  
   ctx->currenth = h;
 #if defined(PETSC_USE_COMPLEX)
-  ierr = PetscVerboseInfo((mat,"MatMult_MFFD:Current differencing parameter: %g + %g i\n",PetscRealPart(h),PetscImaginaryPart(h)));CHKERRQ(ierr);
+  ierr = PetscVerboseInfo((mat,"MatMult_MFFD:Current differencing parameter: %G + %G i\n",PetscRealPart(h),PetscImaginaryPart(h)));CHKERRQ(ierr);
 #else
   ierr = PetscVerboseInfo((mat,"MatMult_MFFD:Current differencing parameter: %15.12e\n",h));CHKERRQ(ierr);
 #endif
@@ -745,10 +745,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFKSPMonitor(KSP ksp,PetscInt n,PetscR
 
   if (n > 0 || nonzeroinitialguess) {
 #if defined(PETSC_USE_COMPLEX)
-    ierr = PetscPrintf(comm,"%D KSP Residual norm %14.12e h %g + %g i\n",n,rnorm,
+    ierr = PetscPrintf(comm,"%D KSP Residual norm %14.12e h %G + %G i\n",n,rnorm,
                 PetscRealPart(ctx->currenth),PetscImaginaryPart(ctx->currenth));CHKERRQ(ierr);
 #else
-    ierr = PetscPrintf(comm,"%D KSP Residual norm %14.12e h %g \n",n,rnorm,ctx->currenth);CHKERRQ(ierr); 
+    ierr = PetscPrintf(comm,"%D KSP Residual norm %14.12e h %G \n",n,rnorm,ctx->currenth);CHKERRQ(ierr); 
 #endif
   } else {
     ierr = PetscPrintf(comm,"%D KSP Residual norm %14.12e\n",n,rnorm);CHKERRQ(ierr); 
@@ -1201,7 +1201,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCheckPositivity(Vec U,Vec a,PetscSca
   ierr = VecRestoreArray(a,&a_vec);CHKERRQ(ierr);
   ierr = PetscGlobalMin(&minval,&val,comm);CHKERRQ(ierr);
   if (val <= PetscAbsScalar(*h)) {
-    ierr = PetscVerboseInfo((U,"MatSNESMFCheckPositivity: Scaling back h from %g to %g\n",PetscRealPart(*h),.99*val));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((U,"MatSNESMFCheckPositivity: Scaling back h from %G to %G\n",PetscRealPart(*h),.99*val));CHKERRQ(ierr);
     if (PetscRealPart(*h) > 0.0) *h =  0.99*val;
     else                         *h = -0.99*val;
   }

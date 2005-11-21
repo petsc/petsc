@@ -291,11 +291,19 @@ class Configure(PETSc.package.Package):
         line = 'CC = '+cc+'\n'
       if line.startswith('COPTFLAGS '):
         self.setCompilers.pushLanguage('C')
-        line = 'COPTFLAGS  = '+self.setCompilers.getCompilerFlags()+'\n'
+        line = 'COPTFLAGS  = '+self.setCompilers.getCompilerFlags()
+        if self.languages.precision == 'longdouble':
+          line += ' -DDOUBLE=double -DLONG=long\n'
+        else:
+          line += ' -DDOUBLE=double -DLONG=""\n'
         self.setCompilers.popLanguage()
       if line.startswith('CNOOPT'):
         self.setCompilers.pushLanguage('C')
-        line = 'CNOOPT = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+'\n'
+        line = 'CNOOPT = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())
+        if self.languages.precision == 'longdouble':
+          line += ' -DDOUBLE=double -DLONG=long\n'
+        else:
+          line += ' -DDOUBLE=double -DLONG=""\n'
         self.setCompilers.popLanguage()
       if line.startswith('FC  '):
         fc = self.compilers.FC
@@ -420,6 +428,8 @@ class Configure(PETSc.package.Package):
     self.executeTest(self.configureLibrary)
     self.executeTest(self.checkESSL)
     self.executeTest(self.checkMissing)
+    if self.languages.precision == 'longdouble' and not self.f2c:
+      raise RuntimeError('Need to use --download-c-blas-lapack when using --with-precision=longdouble')
     return
 
 if __name__ == '__main__':

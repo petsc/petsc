@@ -177,7 +177,7 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
     hapbnd  = PetscAbsScalar(tt / *GRS(it));
     if (hapbnd > gmres->haptol) hapbnd = gmres->haptol;
     if (tt < hapbnd) {
-      ierr = PetscVerboseInfo((ksp,"GMREScycle:Detected happy breakdown, current hapbnd = %g tt = %g\n",hapbnd,tt));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((ksp,"GMREScycle:Detected happy breakdown, current hapbnd = %G tt = %G\n",hapbnd,tt));CHKERRQ(ierr);
       hapend = PETSC_TRUE;
     }
     ierr = GMRESUpdateHessenberg(ksp,it,hapend,&res);CHKERRQ(ierr);
@@ -195,7 +195,7 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        SETERRQ1(0,"You reached the happy break down, but convergence was not indicated. Residual norm = %g",res);
+        SETERRQ1(0,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res);
       }
       break;
     }
@@ -360,7 +360,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
     }
     PetscFunctionReturn(0);
   }
-  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %D GRS(it) = %g",it,PetscAbsScalar(*GRS(it)));
+  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));
   if (*HH(it,it) != 0.0) {
     nrs[it] = *GRS(it) / *HH(it,it);
   } else {
@@ -543,7 +543,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
   }
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: restart=%D, using %s\n",gmres->max_k,cstr);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: happy breakdown tolerance %g\n",gmres->haptol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: happy breakdown tolerance %G\n",gmres->haptol);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"%s restart %D",cstr,gmres->max_k);CHKERRQ(ierr);
   } else {

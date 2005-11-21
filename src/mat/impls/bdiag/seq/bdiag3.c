@@ -532,13 +532,13 @@ PetscErrorCode MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
             if (dv[j] != zero) {
 #if defined(PETSC_USE_COMPLEX)
               if (PetscImaginaryPart(dv[j]) != 0.0) {
-                ierr = PetscViewerASCIIPrintf(viewer,"A[ %D , %D ] = %g + %g i\n",
+                ierr = PetscViewerASCIIPrintf(viewer,"A[ %D , %D ] = %G + %G i\n",
                                          j,j-diag,PetscRealPart(dv[j]),PetscImaginaryPart(dv[j]));CHKERRQ(ierr);
               } else {
-                ierr = PetscViewerASCIIPrintf(viewer,"A[ %D , %D ] = %g\n",j,j-diag,PetscRealPart(dv[j]));CHKERRQ(ierr);
+                ierr = PetscViewerASCIIPrintf(viewer,"A[ %D , %D ] = %G\n",j,j-diag,PetscRealPart(dv[j]));CHKERRQ(ierr);
               }
 #else
-              ierr = PetscViewerASCIIPrintf(viewer,"A[ %D , %D ] = %g\n",j,j-diag,dv[j]);CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer,"A[ %D , %D ] = %G\n",j,j-diag,dv[j]);CHKERRQ(ierr);
 #endif
             }
           }
@@ -614,12 +614,12 @@ PetscErrorCode MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
       for (j=0; j<nz; j++) {
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(val[j]) != 0.0 && PetscRealPart(val[j]) != 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i) ",col[j],PetscRealPart(val[j]),PetscImaginaryPart(val[j]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i) ",col[j],PetscRealPart(val[j]),PetscImaginaryPart(val[j]));CHKERRQ(ierr);
         } else if (PetscRealPart(val[j]) != 0.0) {
-	  ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",col[j],PetscRealPart(val[j]));CHKERRQ(ierr);
+	  ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",col[j],PetscRealPart(val[j]));CHKERRQ(ierr);
         }
 #else
-        if (val[j] != 0.0) {ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",col[j],val[j]);CHKERRQ(ierr);}
+        if (val[j] != 0.0) {ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",col[j],val[j]);CHKERRQ(ierr);}
 #endif
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);

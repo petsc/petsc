@@ -238,7 +238,7 @@ int main(int argc,char **argv)
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"avg. error (2 norm) = %G, avg. error (max norm) = %G\n",
               appctx.norm_2/steps,appctx.norm_max/steps);CHKERRQ(ierr);
   ierr = TSView(ts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -430,7 +430,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
      PetscPrintf() causes only the first processor in this 
      communicator to print the timestep information.
   */
-  ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %g, 2-norm error = %g, max norm error = %g\n",
+  ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %G, 2-norm error = %G, max norm error = %G\n",
               step,time,norm_2,norm_max);CHKERRQ(ierr);
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;

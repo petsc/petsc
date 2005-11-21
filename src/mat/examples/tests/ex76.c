@@ -205,7 +205,7 @@ int main(int argc,char **args)
       /* Check the error */
       ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-      if (displ>0){ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %d, error: %g\n", lvl,norm2);}
+      if (displ>0){ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %d, error: %G\n", lvl,norm2);}
       err[i++] = norm2;
     } 
   } 
@@ -232,7 +232,7 @@ int main(int argc,char **args)
       /* Check the error */
       ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-      if (displ>0){ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %d, error: %g\n", lvl,norm2);}
+      if (displ>0){ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %d, error: %G\n", lvl,norm2);}
       err[i++] = norm2;
     } 
   }
@@ -267,9 +267,9 @@ int main(int argc,char **args)
     /* Check the error */
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-    if (displ>0){ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %d, error: %g\n", lvl,norm2); }
+    if (displ>0){ierr = PetscPrintf(PETSC_COMM_SELF,"  lvl: %d, error: %G\n", lvl,norm2); }
     err[i] -= norm2;
-    if (err[i] > tol) SETERRQ2(PETSC_ERR_USER," level: %d, err: %g\n", lvl,err[i]); 
+    if (err[i] > tol) SETERRQ2(PETSC_ERR_USER," level: %d, err: %G\n", lvl,err[i]); 
   } 
 
   ierr = ISDestroy(perm);CHKERRQ(ierr);

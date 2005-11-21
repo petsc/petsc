@@ -34,7 +34,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,Pe
   PetscScalar    *coors;
 
   PetscFunctionBegin;
-  if (xmax <= xmin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %g %g",xmin,xmax);
+  if (xmax <= xmin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %G %G",xmin,xmax);
 
   ierr = DAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&periodic,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&istart,&jstart,&kstart,&isize,&jsize,&ksize);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,Pe
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 2) {
-    if (ymax <= ymin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %g %g",ymin,ymax);
+    if (ymax <= ymin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
     ierr = VecCreateMPI(PETSC_COMM_WORLD,2*isize*jsize,PETSC_DETERMINE,&xcoor);CHKERRQ(ierr);
     ierr = VecSetBlockSize(xcoor,2);CHKERRQ(ierr);
     if (DAXPeriodic(periodic)) hx = (xmax-xmin)/(M);
@@ -66,8 +66,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,Pe
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 3) {
-    if (ymax <= ymin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %g %g",ymin,ymax);
-    if (zmax <= zmin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %g %g",zmin,zmax);
+    if (ymax <= ymin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
+    if (zmax <= zmin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %G %G",zmin,zmax);
     ierr = VecCreateMPI(PETSC_COMM_WORLD,3*isize*jsize*ksize,PETSC_DETERMINE,&xcoor);CHKERRQ(ierr);
     ierr = VecSetBlockSize(xcoor,3);CHKERRQ(ierr);
     if (DAXPeriodic(periodic)) hx = (xmax-xmin)/(M);

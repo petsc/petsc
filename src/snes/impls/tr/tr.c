@@ -25,15 +25,15 @@ PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,K
   }
   ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
   if (*reason) {
-    ierr = PetscVerboseInfo((snes,"SNES_TR_KSPConverged_Private: regular convergence test KSP iterations=%D, rnorm=%g\n",n,rnorm));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((snes,"SNES_TR_KSPConverged_Private: regular convergence test KSP iterations=%D, rnorm=%G\n",n,rnorm));CHKERRQ(ierr);
   }
 
   /* Determine norm of solution */
   ierr = KSPBuildSolution(ksp,0,&x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&nrm);CHKERRQ(ierr);
   if (nrm >= neP->delta) {
-    ierr = PetscVerboseInfo((snes,"SNES_TR_KSPConverged_Private: KSP iterations=%D, rnorm=%g\n",n,rnorm));CHKERRQ(ierr);
-    ierr = PetscVerboseInfo((snes,"SNES_TR_KSPConverged_Private: Ending linear iteration early, delta=%g, length=%g\n",neP->delta,nrm));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((snes,"SNES_TR_KSPConverged_Private: KSP iterations=%D, rnorm=%G\n",n,rnorm));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((snes,"SNES_TR_KSPConverged_Private: Ending linear iteration early, delta=%G, length=%G\n",neP->delta,nrm));CHKERRQ(ierr);
     *reason = KSP_CONVERGED_STEP_LENGTH;
   }
   PetscFunctionReturn(0);
@@ -116,7 +116,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
         nrm = delta/nrm;
         gpnorm = (1.0 - nrm)*fnorm;
         cnorm = nrm;
-        ierr = PetscVerboseInfo((snes,"SNESSolve_TR: Scaling direction by %g\n",nrm));CHKERRQ(ierr);
+        ierr = PetscVerboseInfo((snes,"SNESSolve_TR: Scaling direction by %G\n",nrm));CHKERRQ(ierr);
         ierr = VecScale(Y,cnorm);CHKERRQ(ierr);
         nrm = gpnorm;
         ynorm = delta;
@@ -136,8 +136,8 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
       if      (rho < neP->mu)  delta *= neP->delta1;
       else if (rho < neP->eta) delta *= neP->delta2;
       else                     delta *= neP->delta3;
-      ierr = PetscVerboseInfo((snes,"SNESSolve_TR: fnorm=%g, gnorm=%g, ynorm=%g\n",fnorm,gnorm,ynorm));CHKERRQ(ierr);
-      ierr = PetscVerboseInfo((snes,"SNESSolve_TR: gpred=%g, rho=%g, delta=%g\n",gpnorm,rho,delta));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((snes,"SNESSolve_TR: fnorm=%G, gnorm=%G, ynorm=%G\n",fnorm,gnorm,ynorm));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((snes,"SNESSolve_TR: gpred=%G, rho=%G, delta=%G\n",gpnorm,rho,delta));CHKERRQ(ierr);
       neP->delta = delta;
       if (rho > neP->sigma) break;
       ierr = PetscVerboseInfo((snes,"SNESSolve_TR: Trying again in smaller region\n"));CHKERRQ(ierr);
@@ -254,8 +254,8 @@ static PetscErrorCode SNESView_TR(SNES snes,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",tr->delta0,tr->delta1,tr->delta2,tr->delta3);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  mu=%G, eta=%G, sigma=%G\n",tr->mu,tr->eta,tr->sigma);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  delta0=%G, delta1=%G, delta2=%G, delta3=%G\n",tr->delta0,tr->delta1,tr->delta2,tr->delta3);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for SNES EQ TR",((PetscObject)viewer)->type_name);
   }
@@ -316,7 +316,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_TR(SNES snes,PetscReal xnorm,Pe
     ierr = PetscVerboseInfo((snes,"SNESConverged_TR:Failed to converged, function norm is NaN\n"));CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FNORM_NAN;
   } else if (neP->delta < xnorm * snes->deltatol) {
-    ierr = PetscVerboseInfo((snes,"SNESConverged_TR: Converged due to trust region param %g<%g*%g\n",neP->delta,xnorm,snes->deltatol));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((snes,"SNESConverged_TR: Converged due to trust region param %G<%G*%G\n",neP->delta,xnorm,snes->deltatol));CHKERRQ(ierr);
     *reason = SNES_CONVERGED_TR_DELTA;
   } else if (neP->itflag) {
     ierr = SNESConverged_LS(snes,xnorm,pnorm,fnorm,reason,dummy);CHKERRQ(ierr);

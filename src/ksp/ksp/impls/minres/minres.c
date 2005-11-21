@@ -74,7 +74,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
   if (PetscAbsScalar(dp) < minres->haptol) {
-    ierr = PetscVerboseInfo((ksp,"KSPSolve_MINRES:Detected happy breakdown %g tolerance %g\n",PetscAbsScalar(dp),minres->haptol));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((ksp,"KSPSolve_MINRES:Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),minres->haptol));CHKERRQ(ierr);
     dp = PetscAbsScalar(dp); /* tiny number, can't use 0.0, cause divided by below */
     if (dp == 0.0) {
       ksp->reason = KSP_CONVERGED_ATOL;
@@ -125,7 +125,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
      ierr = VecDot(R,Z,&dp);CHKERRQ(ierr); 
      if (PetscAbsScalar(dp) < minres->haptol) {
-       ierr = PetscVerboseInfo((ksp,"KSPSolve_MINRES:Detected happy breakdown %g tolerance %g\n",PetscAbsScalar(dp),minres->haptol));CHKERRQ(ierr);
+       ierr = PetscVerboseInfo((ksp,"KSPSolve_MINRES:Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),minres->haptol));CHKERRQ(ierr);
        dp = PetscAbsScalar(dp); /* tiny number, can we use 0.0? */
      }
 

@@ -131,7 +131,7 @@ PetscInt main(PetscInt argc,char **args)
       ierr = MatDestroy(A_sp);CHKERRQ(ierr);
 
       ratio = (PetscReal)nzeros[0]/sbaij->nz;
-      ierr = PetscPrintf(PETSC_COMM_SELF," %d matrix entries < %e, ratio %g of %d nonzeros\n",nzeros[0],tols[0],ratio,sbaij->nz);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF," %d matrix entries < %e, ratio %G of %d nonzeros\n",nzeros[0],tols[0],ratio,sbaij->nz);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF," %d matrix entries < %e\n",nzeros[1],tols[1]);CHKERRQ(ierr);
     }
 
@@ -176,7 +176,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscOptionsHasName(PETSC_NULL, "-eig_view", &flg);CHKERRQ(ierr);
     if (flg){
       printf(" %d evals: \n",nevs);
-      for (i=0; i<nevs; i++) printf("%d  %g\n",i+il,evals[i]); 
+      for (i=0; i<nevs; i++) printf("%d  %G\n",i+il,evals[i]); 
     }
 
     /* Check residuals and orthogonality */
@@ -266,12 +266,12 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,
 #ifdef DEBUG_CkEigenSolutions
         if (dot > tols[1] ) {
           ierr = VecNorm(evec[i],NORM_INFINITY,&norm);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %g, norm: %g\n",i,j,dot,norm);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %G, norm: %G\n",i,j,dot,norm);
         } 
 #endif
       } /* for (j=i; j<nev_loc; j++) */
     } 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j*B*x_i) - delta_ji|: %g\n",dot_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j*B*x_i) - delta_ji|: %G\n",dot_max);
 
   case 1: 
     norm_max = 0.0;
@@ -291,7 +291,7 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,
 #endif
     }
     
-      ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", norm_max);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %G\n", norm_max);
     
    break;
   default:

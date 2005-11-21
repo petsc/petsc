@@ -27,8 +27,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPChebychevSetEigenvalues_Chebychev(KSP ksp,P
   KSP_Chebychev *chebychevP = (KSP_Chebychev*)ksp->data;
 
   PetscFunctionBegin;
-  if (emax <= emin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Maximum eigenvalue must be larger than minimum: max %g min %g",emax,emin);
-  if (emax*emin <= 0.0) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Both eigenvalues must be of the same sign: max %g min %g",emax,emin);
+  if (emax <= emin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Maximum eigenvalue must be larger than minimum: max %g min %G",emax,emin);
+  if (emax*emin <= 0.0) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Both eigenvalues must be of the same sign: max %G min %G",emax,emin);
   chebychevP->emax = emax;
   chebychevP->emin = emin;
   PetscFunctionReturn(0);
@@ -207,7 +207,7 @@ PetscErrorCode KSPView_Chebychev(KSP ksp,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Chebychev: eigenvalue estimates:  min = %g, max = %g\n",cheb->emin,cheb->emax);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Chebychev: eigenvalue estimates:  min = %G, max = %G\n",cheb->emin,cheb->emax);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for KSP Chebychev",((PetscObject)viewer)->type_name);
   }

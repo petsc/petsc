@@ -1142,17 +1142,17 @@ static PetscErrorCode MatView_SeqBAIJ_ASCII(Mat A,PetscViewer viewer)
           for (l=0; l<bs; l++) {
 #if defined(PETSC_USE_COMPLEX)
             if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) > 0.0 && PetscRealPart(a->a[bs2*k + l*bs + j]) != 0.0) {
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %gi) ",bs*a->j[k]+l,
+              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %Gi) ",bs*a->j[k]+l,
                       PetscRealPart(a->a[bs2*k + l*bs + j]),PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             } else if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) < 0.0 && PetscRealPart(a->a[bs2*k + l*bs + j]) != 0.0) {
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %gi) ",bs*a->j[k]+l,
+              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G - %Gi) ",bs*a->j[k]+l,
                       PetscRealPart(a->a[bs2*k + l*bs + j]),-PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             } else if (PetscRealPart(a->a[bs2*k + l*bs + j]) != 0.0) {
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",bs*a->j[k]+l,PetscRealPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,PetscRealPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             }
 #else
             if (a->a[bs2*k + l*bs + j] != 0.0) {
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);CHKERRQ(ierr);
             }
 #endif
           }
@@ -1170,16 +1170,16 @@ static PetscErrorCode MatView_SeqBAIJ_ASCII(Mat A,PetscViewer viewer)
           for (l=0; l<bs; l++) {
 #if defined(PETSC_USE_COMPLEX)
             if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) > 0.0) {
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i) ",bs*a->j[k]+l,
+              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i) ",bs*a->j[k]+l,
                 PetscRealPart(a->a[bs2*k + l*bs + j]),PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             } else if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) < 0.0) {
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %g - %g i) ",bs*a->j[k]+l,
+              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G - %G i) ",bs*a->j[k]+l,
                 PetscRealPart(a->a[bs2*k + l*bs + j]),-PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             } else {
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",bs*a->j[k]+l,PetscRealPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,PetscRealPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             }
 #else
-            ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);CHKERRQ(ierr);
 #endif
           }
         }
@@ -1911,7 +1911,7 @@ PetscErrorCode MatGetRowMax_SeqBAIJ(Mat A,Vec v)
         for (krow=0; krow<bs; krow++){         
           atmp = PetscAbsScalar(*aa); aa++;         
           row = brow + krow;    /* row index */
-          /* printf("val[%d,%d]: %g\n",row,bcol+kcol,atmp); */
+          /* printf("val[%d,%d]: %G\n",row,bcol+kcol,atmp); */
           if (PetscAbsScalar(x[row]) < atmp) x[row] = atmp;
         }
       }
@@ -2004,7 +2004,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
         j++; 
       }
     }
-    ierr = PetscVerboseInfo((0,"MatAXPY_SeqBAIJ: ratio of nnz(X)/nnz(Y): %D/%D = %g\n",bs2*x->nz,bs2*y->nz,(PetscReal)(bs2*x->nz)/(bs2*y->nz)));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((0,"MatAXPY_SeqBAIJ: ratio of nnz(X)/nnz(Y): %D/%D = %G\n",bs2*x->nz,bs2*y->nz,(PetscReal)(bs2*x->nz)/(bs2*y->nz)));CHKERRQ(ierr);
   } else {
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
   }

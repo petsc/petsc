@@ -348,7 +348,7 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
     } else {
         ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %D levels of fill\n",(PetscInt)icc->info.levels);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  ICC: max fill ratio allocated %g\n",icc->info.fill);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  ICC: max fill ratio allocated %G\n",icc->info.fill);CHKERRQ(ierr);
     if (icc->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using Manteuffel shift\n");CHKERRQ(ierr);}
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," lvls=%D",(PetscInt)icc->info.levels);CHKERRQ(ierr);CHKERRQ(ierr);

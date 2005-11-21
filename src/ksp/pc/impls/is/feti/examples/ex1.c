@@ -178,7 +178,7 @@ int main(int argc, char ** argv)
 	PetscMalloc(maxsize*sizeof(PetscScalar),&real);
 	PetscMalloc(maxsize*sizeof(PetscScalar),&im);
 	KSPComputeEigenvalues(ksp,maxsize,real,im,&n_eig);
-	PetscPrintf(PETSC_COMM_WORLD,"\nEstimated condition:%g %.3g %.3g",cond(real,im,n_eig,&max,&min),max,min);
+	PetscPrintf(PETSC_COMM_WORLD,"\nEstimated condition:%G %.3g %.3g",cond(real,im,n_eig,&max,&min),max,min);
     }
 
     SLESDestroy(sles); 

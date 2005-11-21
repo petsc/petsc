@@ -84,7 +84,7 @@ PetscErrorCode SeqCRL_create_crl(Mat A)
       icols[j*m+i] = (j) ? icols[(j-1)*m+i] : 0;  /* handle case where row is EMPTY */
     }
   }
-  ierr = PetscVerboseInfo((A,"SeqCRL_create_crl: Percentage of 0's introduced for vectorized multiply %g. Rmax= %d\n",1.0-((double)a->nz)/((double)(rmax*m)),rmax));
+  ierr = PetscVerboseInfo((A,"SeqCRL_create_crl: Percentage of 0's introduced for vectorized multiply %G. Rmax= %D\n",1.0-((double)a->nz)/((double)(rmax*m)),rmax));
   PetscFunctionReturn(0);
 }
 

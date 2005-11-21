@@ -164,7 +164,7 @@ static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",lu->ordering);CHKERRQ(ierr);
     if (lu->fact) {
       ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"    Cholesky nonzeros %g\n",info.nz_used);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"    Cholesky nonzeros %G\n",info.nz_used);CHKERRQ(ierr);
       ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_FACTOR_INFO);CHKERRQ(ierr);
       ierr = MatView(lu->fact,viewer);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);

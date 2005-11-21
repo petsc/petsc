@@ -490,7 +490,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
     } else {
       var = 0.0;
     }
-    PetscPrintf(hist->comm, "Mean: %g  Var: %g\n", mean, var);
+    PetscPrintf(hist->comm, "Mean: %G  Var: %G\n", mean, var);
     PetscPrintf(hist->comm, "Total: %d\n", numValues);
   }
   PetscFunctionReturn(0);

@@ -185,7 +185,7 @@ int main(int argc,char **args)
     ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");CHKERRQ(ierr);
     for (i=0; i<3; i++){
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"x[%D] = %g + %g i\n",i,PetscRealPart(xa[i]),PetscImaginaryPart(xa[i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"x[%D] = %G + %G i\n",i,PetscRealPart(xa[i]),PetscImaginaryPart(xa[i]));CHKERRQ(ierr);
   }
     ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   }

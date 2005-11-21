@@ -206,7 +206,7 @@ static PetscErrorCode PCView_HYPRE_Pilut(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE Pilut: default maximum number of iterations \n");CHKERRQ(ierr);
     }
     if (jac->tol != PETSC_DEFAULT) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE Pilut: drop tolerance %g\n",jac->tol);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE Pilut: drop tolerance %G\n",jac->tol);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE Pilut: default drop tolerance \n");CHKERRQ(ierr);
     }
@@ -306,25 +306,25 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   }
   ierr = PetscOptionsScalar("-pc_hypre_boomeramg_tol","Convergence tolerance","None",jac->tol,&jac->tol,&flg);CHKERRQ(ierr);
   if (flg) {
-    if (jac->tol < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Tolerance %g must be great than or equal zero",jac->tol);
+    if (jac->tol < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Tolerance %G must be great than or equal zero",jac->tol);
     ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsScalar("-pc_hypre_boomeramg_truncfactor","Truncation factor","None",jac->truncfactor,&jac->truncfactor,&flg);CHKERRQ(ierr);
   if (flg) {
-    if (jac->truncfactor < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Truncation factor %g must be great than or equal zero",jac->truncfactor);
+    if (jac->truncfactor < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Truncation factor %G must be great than or equal zero",jac->truncfactor);
     ierr = HYPRE_BoomerAMGSetTruncFactor(jac->hsolver,jac->truncfactor);CHKERRQ(ierr);
   }
 
   ierr = PetscOptionsScalar("-pc_hypre_boomeramg_strong_threshold","Threshold for being strongly connected","None",jac->strongthreshold,&jac->strongthreshold,&flg);CHKERRQ(ierr);
   if (flg) {
-    if (jac->strongthreshold < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Strong threshold %g must be great than or equal zero",jac->strongthreshold);
+    if (jac->strongthreshold < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Strong threshold %G must be great than or equal zero",jac->strongthreshold);
     ierr = HYPRE_BoomerAMGSetStrongThreshold(jac->hsolver,jac->strongthreshold);CHKERRQ(ierr);
   }
   ierr = PetscOptionsScalar("-pc_hypre_boomeramg_max_row_sum","Maximum row sum","None",jac->maxrowsum,&jac->maxrowsum,&flg);CHKERRQ(ierr);
   if (flg) {
-    if (jac->maxrowsum < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Maximum row sum %g must be greater than zero",jac->maxrowsum);
-    if (jac->maxrowsum > 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Maximum row sum %g must be less than or equal one",jac->maxrowsum);
+    if (jac->maxrowsum < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Maximum row sum %G must be greater than zero",jac->maxrowsum);
+    if (jac->maxrowsum > 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Maximum row sum %G must be less than or equal one",jac->maxrowsum);
     ierr = HYPRE_BoomerAMGSetMaxRowSum(jac->hsolver,jac->maxrowsum);CHKERRQ(ierr);
   } 
 
@@ -485,9 +485,9 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG preconditioning\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum number of levels %d\n",jac->maxlevels);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum number of iterations %d\n",jac->maxiter);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Convergence tolerance %g\n",jac->tol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Threshold for strong coupling %g\n",jac->strongthreshold);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum row sums %g\n",jac->maxrowsum);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Convergence tolerance %G\n",jac->tol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Threshold for strong coupling %G\n",jac->strongthreshold);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum row sums %G\n",jac->maxrowsum);CHKERRQ(ierr);
 
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Sweeps on fine grid %d\n",jac->gridsweeps[0]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Sweeps down         %d\n",jac->gridsweeps[1]);CHKERRQ(ierr);
@@ -499,8 +499,8 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax up            %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[2]]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax on coarse     %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[3]]);CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax weight  (all)      %g\n",jac->relaxweight);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Outer relax weight (all) %g\n",jac->outerrelaxweight);CHKERRQ(ierr); 
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax weight  (all)      %G\n",jac->relaxweight);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Outer relax weight (all) %G\n",jac->outerrelaxweight);CHKERRQ(ierr); 
 
     if (jac->relaxorder) {
       ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Using CF-relaxation\n");CHKERRQ(ierr);
@@ -576,9 +576,9 @@ static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails preconditioning\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails: nlevels %d\n",jac->nlevels);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails: threshold %g\n",jac->threshhold);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails: filter %g\n",jac->filter);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails: load balance %g\n",jac->loadbal);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails: threshold %G\n",jac->threshhold);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails: filter %G\n",jac->filter);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails: load balance %G\n",jac->loadbal);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails: reuse nonzero structure %s\n",PetscTruths[jac->ruse]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE ParaSails: print info to screen %s\n",PetscTruths[jac->logging]);CHKERRQ(ierr);
     if (!jac->symt) {

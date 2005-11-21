@@ -198,7 +198,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESDAFormFunction(snes,user.psi,user.r,(void*)&user);CHKERRQ(ierr);
   ierr = VecNorm(user.r,NORM_MAX,&fnorm);CHKERRQ(ierr); 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D fnorm %g\n",its,fnorm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D fnorm %G\n",its,fnorm);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
      Output the solution vector
@@ -302,7 +302,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
       ierr = VecMax(Y,PETSC_NULL,&user->psi_bdy);CHKERRQ(ierr);
       ierr = SNESDAFormFunction(PETSC_NULL,Y,user->r,(void*)user);CHKERRQ(ierr);
       ierr = VecNorm(user->r,NORM_2,&fnorm);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"In initial guess: psi_bdy = %f, fnorm = %g.\n",user->psi_bdy,fnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"In initial guess: psi_bdy = %f, fnorm = %G.\n",user->psi_bdy,fnorm);CHKERRQ(ierr);
       ierr = VecCopy(Y,X);CHKERRQ(ierr);
       ierr = VecDestroy(Y);CHKERRQ(ierr); 
     }
@@ -406,7 +406,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   imin = 0; imax = Mx-1;
   ierr = VecMin(X,&imin,&psi_0);CHKERRQ(ierr);
   ierr = VecMax(X,&imax,&psi_a);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"psi_0(%D)=%g, psi_a(%D)=%g.\n",imin,psi_0,imax,psi_a);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"psi_0(%D)=%G, psi_a(%D)=%G.\n",imin,psi_0,imax,psi_a);CHKERRQ(ierr);
 
   /*
      Scatter ghost points to local vector, using the 2-step process

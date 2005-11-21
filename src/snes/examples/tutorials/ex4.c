@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&user->alpha,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-lambda",&user->lambda,PETSC_NULL);CHKERRQ(ierr);
   if (user->lambda > lambda_max || user->lambda < lambda_min) {
-    SETERRQ3(1,"Lambda %g is out of range [%g, %g]", user->lambda, lambda_min, lambda_max);
+    SETERRQ3(1,"Lambda %G is out of range [%G, %G]", user->lambda, lambda_min, lambda_max);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -191,7 +191,7 @@ PetscErrorCode PrintVector(DMMG dmmg, Vec U)
   ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
   for(j = ys+ym-1; j >= ys; j--) {
     for(i = xs; i < xs+xm; i++) {
-      printf("u[%d][%d] = %g ", j, i, u[j][i]);
+      printf("u[%d][%d] = %G ", j, i, u[j][i]);
     }
     printf("\n");
   }

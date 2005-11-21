@@ -10,7 +10,7 @@ int CreateError(PetscReal x)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   x = 1.0/x;
-  ierr = PetscPrintf(PETSC_COMM_SELF,"x = %g\n",x);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"x = %G\n",x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

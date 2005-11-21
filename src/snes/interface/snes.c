@@ -74,7 +74,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES snes,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%D, maximum function evaluations=%D\n",snes->max_its,snes->max_funcs);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%g, absolute=%g, solution=%g\n",
+    ierr = PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%G, absolute=%G, solution=%G\n",
                  snes->rtol,snes->abstol,snes->xtol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",snes->linear_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of function evaluations=%D\n",snes->nfuncs);CHKERRQ(ierr);
@@ -82,8 +82,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES snes,PetscViewer viewer)
       kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
       if (kctx) {
         ierr = PetscViewerASCIIPrintf(viewer,"  Eisenstat-Walker computation of KSP relative tolerance (version %D)\n",kctx->version);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"    rtol_0=%g, rtol_max=%g, threshold=%g\n",kctx->rtol_0,kctx->rtol_max,kctx->threshold);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"    gamma=%g, alpha=%g, alpha2=%g\n",kctx->gamma,kctx->alpha,kctx->alpha2);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    rtol_0=%G, rtol_max=%G, threshold=%G\n",kctx->rtol_0,kctx->rtol_max,kctx->threshold);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    gamma=%G, alpha=%G, alpha2=%G\n",kctx->gamma,kctx->alpha,kctx->alpha2);CHKERRQ(ierr);
       }
     }
   } else if (isstring) {
@@ -1034,7 +1034,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
     ierr = MatDestroy(J);CHKERRQ(ierr);
   }
 
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
+#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE) && !defined(PETSC_USE_LONG_DOUBLE)
   ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_operator2",&flg);CHKERRQ(ierr); 
   if (flg) {
     Mat J;

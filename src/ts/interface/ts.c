@@ -592,7 +592,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSView(TS ts,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum steps=%D\n",ts->max_steps);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%g\n",ts->max_time);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%G\n",ts->max_time);CHKERRQ(ierr);
     if (ts->problem_type == TS_NONLINEAR) {
       ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%D\n",ts->nonlinear_its);CHKERRQ(ierr);
     }
@@ -1481,7 +1481,7 @@ PetscErrorCode TSDefaultMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ts->comm);
-  ierr = PetscViewerASCIIPrintf(viewer,"timestep %D dt %g time %g\n",step,ts->time_step,ptime);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"timestep %D dt %G time %G\n",step,ts->time_step,ptime);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -293,7 +293,7 @@ PetscErrorCode UpdateSolution(DMMG *dmmg, AppCtx *user, PetscInt *nits)
 
     /* continuation method on viscosity cutoff */
     for (param->continuation=0.0; ; param->continuation+=cont_incr) { 
-      if (!q) PetscPrintf(PETSC_COMM_WORLD," Continuation parameter = %g\n", param->continuation);
+      if (!q) PetscPrintf(PETSC_COMM_WORLD," Continuation parameter = %G\n", param->continuation);
 
       /* solve the non-linear system */
       ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
@@ -1037,14 +1037,14 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
     PetscPrintf(PETSC_COMM_WORLD,"                   %s\n",&(date[0]));
 
     PetscPrintf(PETSC_COMM_WORLD,"Domain: \n");
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Width = %g km,         Depth = %g km\n",param->width,param->depth);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Slab dip = %g degrees,  Slab velocity = %g cm/yr\n",param->slab_dip*180.0/PI,param->slab_velocity);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Width = %G km,         Depth = %G km\n",param->width,param->depth);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Slab dip = %G degrees,  Slab velocity = %G cm/yr\n",param->slab_dip*180.0/PI,param->slab_velocity);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Lid depth = %5.2f km,   Fault depth = %5.2f km\n",param->lid_depth*param->L,param->fault_depth*param->L);CHKERRQ(ierr);
 
     PetscPrintf(PETSC_COMM_WORLD,"\nGrid: \n");
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %D, %D       [dx,dz] = %g, %g km\n",grid->ni,grid->nj,grid->dx*param->L,grid->dz*param->L);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %D, %D       [dx,dz] = %G, %G km\n",grid->ni,grid->nj,grid->dx*param->L,grid->dz*param->L);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  jlid = %3D              jfault = %3D \n",grid->jlid,grid->jfault);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Pe = %g\n",param->peclet);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Pe = %G\n",param->peclet);CHKERRQ(ierr);
 
     PetscPrintf(PETSC_COMM_WORLD,"\nRheology:");
     if (param->ivisc==VISC_CONST) {
@@ -1053,13 +1053,13 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 	ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Pressure and Velocity prescribed! \n");CHKERRQ(ierr);
     } else if (param->ivisc==VISC_DIFN) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Diffusion Creep (T-Dependent Newtonian) \n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",param->eta0,param->visc_cutoff*param->eta0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %G--%G Pa-sec \n",param->eta0,param->visc_cutoff*param->eta0);CHKERRQ(ierr);
     } else if (param->ivisc==VISC_DISL ) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Dislocation Creep (T-Dependent Non-Newtonian) \n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",param->eta0,param->visc_cutoff*param->eta0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %G--%G Pa-sec \n",param->eta0,param->visc_cutoff*param->eta0);CHKERRQ(ierr);
     } else if (param->ivisc==VISC_FULL ) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Full Rheology \n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %g--%g Pa-sec \n",param->eta0,param->visc_cutoff*param->eta0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"                          Viscosity range: %G--%G Pa-sec \n",param->eta0,param->visc_cutoff*param->eta0);CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"                 Invalid! \n");CHKERRQ(ierr);
       ierr_out=1;

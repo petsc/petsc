@@ -154,7 +154,7 @@ int main(int argc,char **argv)
   ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
   ierr = VecAXPY(DMMGGetr(dmmg),-1.0,DMMGGetRHS(dmmg));CHKERRQ(ierr);
   ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Residual norm %g\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"Residual norm %G\n",norm);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(DMMGGetx(dmmg));CHKERRQ(ierr);
   ierr = VecAssemblyEnd(DMMGGetx(dmmg));CHKERRQ(ierr);
 
@@ -214,16 +214,16 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
   ierr = VecGetArray(coords, &array);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "X_COORDINATES %d double\n", mx);CHKERRQ(ierr);
   for(i = 0; i < mx; i++) {
-    ierr = PetscViewerASCIIPrintf(viewer, "%g ", PetscRealPart(array[i*2]));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "%G ", PetscRealPart(array[i*2]));CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Y_COORDINATES %d double\n", my);CHKERRQ(ierr);
   for(i = 0; i < my; i++) {
-    ierr = PetscViewerASCIIPrintf(viewer, "%g ", PetscRealPart(array[i*mx*2+1]));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "%G ", PetscRealPart(array[i*mx*2+1]));CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Z_COORDINATES %d double\n", 1);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "%g\n", 0.0);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "%G\n", 0.0);CHKERRQ(ierr);
   ierr = VecRestoreArray(coords, &array);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", N);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %d\n", dof);CHKERRQ(ierr);
@@ -237,13 +237,13 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
   if (!rank) {
     ierr = PetscMalloc((maxn+1) * sizeof(PetscScalar), &values);CHKERRQ(ierr);
     for(i = 0; i < n; i++) {
-      ierr = PetscViewerASCIIPrintf(viewer, "%g\n", PetscRealPart(array[i]));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%G\n", PetscRealPart(array[i]));CHKERRQ(ierr);
     }
     for(p = 1; p < size; p++) {
       ierr = MPI_Recv(values, (PetscMPIInt) n, MPIU_SCALAR, p, tag, comm, &status);CHKERRQ(ierr);
       ierr = MPI_Get_count(&status, MPIU_SCALAR, &n);CHKERRQ(ierr);        
       for(i = 0; i < n; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer, "%g\n", PetscRealPart(array[i]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "%G\n", PetscRealPart(array[i]));CHKERRQ(ierr);
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
@@ -1194,7 +1194,7 @@ PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientatio
   }
   ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
   for(int i = 0; i < numIndices; i++) {
-    if (debug) {printf("[%d]indices[%d] = %d  val: %g\n", bundle->getCommRank(), i, indices[i], array[indices[i]]);}
+    if (debug) {printf("[%d]indices[%d] = %d  val: %G\n", bundle->getCommRank(), i, indices[i], array[indices[i]]);}
     vals[i] = array[indices[i]];
   }
   *values = vals;
@@ -1233,7 +1233,7 @@ PetscErrorCode ElementGeometry(ALE::IndexBundle *coordBundle, ALE::PreSieve *ori
           PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]    |", coordBundle->getCommRank());
         }
         for(int e = 0; e < dim; e++) {
-          PetscSynchronizedPrintf(coordBundle->getComm(), " %g", J[d*dim+e]);
+          PetscSynchronizedPrintf(coordBundle->getComm(), " %G", J[d*dim+e]);
         }
         if (d == 0) {
           PetscSynchronizedPrintf(coordBundle->getComm(), " \\\n");
@@ -1282,7 +1282,7 @@ PetscErrorCode ElementGeometry(ALE::IndexBundle *coordBundle, ALE::PreSieve *ori
             PetscSynchronizedPrintf(coordBundle->getComm(), "[%d]       |", coordBundle->getCommRank());
           }
           for(int e = 0; e < dim; e++) {
-            PetscSynchronizedPrintf(coordBundle->getComm(), " %g", invJ[d*dim+e]);
+            PetscSynchronizedPrintf(coordBundle->getComm(), " %G", invJ[d*dim+e]);
           }
           if (d == 0) {
             PetscSynchronizedPrintf(coordBundle->getComm(), " \\\n");
@@ -1374,7 +1374,7 @@ PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
         elementVec[f] += (Basis[q*NUM_BASIS_FUNCTIONS+f]*funcValue - linearVec[f])*weights[q]*detJ;
       }
     }
-    if (debug) {printf("elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);}
+    if (debug) {printf("elementVec = [%G %G %G]\n", elementVec[0], elementVec[1], elementVec[2]);}
     /* Assembly */
     ierr = assembleField(bundle, orientation, r, e, elementVec, ADD_VALUES); CHKERRQ(ierr);
   }
@@ -1437,7 +1437,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
         elementVec[f] += Basis[q*NUM_BASIS_FUNCTIONS+f]*funcValue*weights[q]*detJ;
       }
     }
-    if (debug) {PetscSynchronizedPrintf(comm, "elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);}
+    if (debug) {PetscSynchronizedPrintf(comm, "elementVec = [%G %G %G]\n", elementVec[0], elementVec[1], elementVec[2]);}
     /* Assembly */
     ierr = assembleField(bundle, orientation, b, e, elementVec, ADD_VALUES);CHKERRQ(ierr);
     if (debug) {ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);}
@@ -1523,7 +1523,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
       }
     }
     if (debug) {
-      ierr = PetscSynchronizedPrintf(comm, "[%d]elementMat = [%g %g %g]\n                [%g %g %g]\n                [%g %g %g]\n",
+      ierr = PetscSynchronizedPrintf(comm, "[%d]elementMat = [%G %G %G]\n                [%G %G %G]\n                [%G %G %G]\n",
                                      rank, elementMat[0], elementMat[1], elementMat[2], elementMat[3], elementMat[4],
                                      elementMat[5], elementMat[6], elementMat[7], elementMat[8]);CHKERRQ(ierr);
     }

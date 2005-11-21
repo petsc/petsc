@@ -31,7 +31,7 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
       ierr = VecGetArray(da->coordinates,&coors);CHKERRQ(ierr);
       ierr = VecGetLocalSize(da->coordinates,&last);CHKERRQ(ierr);
       last = last - 3;
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Lower left corner %g %g %g : Upper right %g %g %g\n",
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Lower left corner %G %G %G : Upper right %G %G %G\n",
                coors[0],coors[1],coors[2],coors[last],coors[last+1],coors[last+2]);CHKERRQ(ierr);
       ierr = VecRestoreArray(da->coordinates,&coors);CHKERRQ(ierr);
     }
