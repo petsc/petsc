@@ -104,7 +104,10 @@ class Configure(config.base.Configure):
       # Handle Fortran mangling
       if fortranMangle:
         funcName = self.compilers.mangleFortranFunction(funcName)
-      includes = '/* Override any gcc2 internal prototype to avoid an error. */\n'
+      if self.language[-1] == 'FC':
+        includes = ''
+      else:
+        includes = '/* Override any gcc2 internal prototype to avoid an error. */\n'
       # Handle C++ mangling
       if self.language[-1] == 'Cxx' and not cxxMangle:
         includes += '''
@@ -113,14 +116,15 @@ extern "C" {
 #endif
 '''
       # Construct prototype
-      if prototype:
-        if isinstance(prototype, str):
-          includes += prototype
+      if not self.language[-1] == 'FC':
+        if prototype:
+          if isinstance(prototype, str):
+            includes += prototype
+          else:
+            includes += prototype[f]
         else:
-          includes += prototype[f]
-      else:
-        # We use char because int might match the return type of a gcc2 builtin and its argument prototype would still apply.
-        includes += 'char '+funcName+'();\n'
+          # We use char because int might match the return type of a gcc2 builtin and its argument prototype would still apply.
+          includes += 'char '+funcName+'();\n'
       # Handle C++ mangling
       if self.language[-1] == 'Cxx' and not cxxMangle:
         includes += '''
