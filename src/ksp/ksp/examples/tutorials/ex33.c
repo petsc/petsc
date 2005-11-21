@@ -60,6 +60,7 @@ PetscErrorCode ReadBoundary(MPI_Comm, FileType, const char *, PetscTruth, PetscI
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
 
+extern PetscErrorCode restrictField(ALE::IndexBundle *, ALE::PreSieve *, PetscScalar *, ALE::Point, PetscScalar *[]);
 extern PetscErrorCode assembleField(ALE::IndexBundle *, ALE::PreSieve *, Vec, ALE::Point, PetscScalar [], InsertMode);
 extern PetscErrorCode assembleOperator(ALE::IndexBundle *, ALE::PreSieve *, Mat, ALE::Point, PetscScalar [], InsertMode);
 
@@ -1054,21 +1055,6 @@ static double BasisDerivatives[324] = {
 #endif
 
 #undef __FUNCT__
-#define __FUNCT__ "ExpandIntervals"
-PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Point_array> intervals, PetscInt *indices)
-{
-  int k = 0;
-
-  PetscFunctionBegin;
-  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    for(int i = 0; i < (*i_itor).index; i++) {
-      indices[k++] = (*i_itor).prefix + i;
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "ExpandSetIntervals"
 PetscErrorCode ExpandSetIntervals(ALE::Point_set intervals, PetscInt *indices)
 {
@@ -1080,47 +1066,6 @@ PetscErrorCode ExpandSetIntervals(ALE::Point_set intervals, PetscInt *indices)
       indices[k++] = (*i_itor).prefix + i;
     }
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "restrictField"
-PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, PetscScalar *array, ALE::Point e, PetscScalar *values[])
-{
-  ALE::Obj<ALE::Point_array> intervals = bundle->getLocalOrderedClosureIndices(orientation->cone(e));
-  /* This should be done by memory pooling by array size (we have a simple form below) */
-  static PetscScalar *vals;
-  static PetscInt     numValues = 0;
-  static PetscInt    *indices = NULL;
-  PetscInt            numIndices = 0;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    numIndices += (*i_itor).index;
-  }
-  if (numValues && (numValues != numIndices)) {
-    ierr = PetscFree(indices); CHKERRQ(ierr);
-    indices = NULL;
-    ierr = PetscFree(vals); CHKERRQ(ierr);
-    vals = NULL;
-  }
-  if (!indices) {
-    numValues = numIndices;
-    ierr = PetscMalloc(numValues * sizeof(PetscInt), &indices); CHKERRQ(ierr);
-    ierr = PetscMalloc(numValues * sizeof(PetscScalar), &vals); CHKERRQ(ierr);
-  }
-  if (debug) {
-    for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-      printf("[%d]interval (%d, %d)\n", bundle->getCommRank(), (*i_itor).prefix, (*i_itor).index);
-    }
-  }
-  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
-  for(int i = 0; i < numIndices; i++) {
-    if (debug) {printf("[%d]indices[%d] = %d  val: %g\n", bundle->getCommRank(), i, indices[i], array[indices[i]]);}
-    vals[i] = array[indices[i]];
-  }
-  *values = vals;
   PetscFunctionReturn(0);
 }
 
