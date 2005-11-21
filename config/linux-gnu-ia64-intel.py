@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-gnu-compilers=0',
+  '--with-vendor-compilers=intel',
   '--with-mpi-dir=/home/balay/soft/mpich2-1.0.2p1-intel',
   '--download-parmetis=1'
   ]
