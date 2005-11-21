@@ -450,6 +450,47 @@ PetscErrorCode setClosureValues(Vec b, ALE::Point e, ALE::Obj<ALE::IndexBundle> 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "restrictField"
+PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, PetscScalar *array, ALE::Point e, PetscScalar *values[])
+{
+  ALE::Obj<ALE::Point_array> intervals = bundle->getLocalOrderedClosureIndices(orientation->cone(e));
+  /* This should be done by memory pooling by array size (we have a simple form below) */
+  static PetscScalar *vals;
+  static PetscInt     numValues = 0;
+  static PetscInt    *indices = NULL;
+  PetscInt            numIndices = 0;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    numIndices += (*i_itor).index;
+  }
+  if (numValues && (numValues != numIndices)) {
+    ierr = PetscFree(indices); CHKERRQ(ierr);
+    indices = NULL;
+    ierr = PetscFree(vals); CHKERRQ(ierr);
+    vals = NULL;
+  }
+  if (!indices) {
+    numValues = numIndices;
+    ierr = PetscMalloc(numValues * sizeof(PetscInt), &indices); CHKERRQ(ierr);
+    ierr = PetscMalloc(numValues * sizeof(PetscScalar), &vals); CHKERRQ(ierr);
+  }
+  if (debug) {
+    for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+      printf("[%d]interval (%d, %d)\n", bundle->getCommRank(), (*i_itor).prefix, (*i_itor).index);
+    }
+  }
+  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
+  for(int i = 0; i < numIndices; i++) {
+    if (debug) {printf("[%d]indices[%d] = %d  val: %g\n", bundle->getCommRank(), i, indices[i], array[indices[i]]);}
+    vals[i] = array[indices[i]];
+  }
+  *values = vals;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "assembleField"
 PetscErrorCode assembleField(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, Vec b, ALE::Point e, PetscScalar array[], InsertMode mode)
 {
@@ -856,47 +897,6 @@ PetscErrorCode MeshGetEmbeddingDimension(Mesh mesh, PetscInt *dimension)
   ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
   ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
   *dimension = coordBundle->getFiberDimension(*topology->depthStratum(0).begin());
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "restrictField"
-PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, PetscScalar *array, ALE::Point e, PetscScalar *values[])
-{
-  ALE::Point_set             empty;
-  ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);
-  //ALE::Obj<ALE::Point_array> intervals = bundle->getOverlapOrderedIndices(orientation->cone(e), empty);
-  /* This should be done by memory pooling by array size (we have a simple form below) */
-  static PetscScalar *vals;
-  static PetscInt     numValues = 0;
-  static PetscInt    *indices = NULL;
-  PetscInt            numIndices = 0;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    numIndices += (*i_itor).index;
-  }
-  if (numValues && (numValues != numIndices)) {
-    ierr = PetscFree(indices); CHKERRQ(ierr);
-    indices = NULL;
-    ierr = PetscFree(vals); CHKERRQ(ierr);
-    vals = NULL;
-  }
-  if (!indices) {
-    numValues = numIndices;
-    ierr = PetscMalloc(numValues * sizeof(PetscInt), &indices); CHKERRQ(ierr);
-    ierr = PetscMalloc(numValues * sizeof(PetscScalar), &vals); CHKERRQ(ierr);
-  }
-  for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    printf("indices (%d, %d)\n", (*i_itor).prefix, (*i_itor).index);
-  }
-  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
-  for(int i = 0; i < numIndices; i++) {
-    printf("indices[%d] = %d\n", i, indices[i]);
-    vals[i] = array[indices[i]];
-  }
-  *values = vals;
   PetscFunctionReturn(0);
 }
 
