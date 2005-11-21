@@ -107,10 +107,11 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *mesh)
                                   0.0, 2.0,
                                   0.0, 1.0,
                                   1.0, 1.0};
-  PetscInt          embedDim = 2;
+  ALE::Sieve       *boundary = new ALE::Sieve(comm);
   ALE::Point_set    cone;
   ALE::Point        vertices[9];
   ALE::Point        edge;
+  PetscInt          embedDim = 2;
   PetscMPIInt       rank;
   PetscErrorCode    ierr;
 
@@ -118,7 +119,7 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *mesh)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
   ierr = MeshCreate(comm, &m);CHKERRQ(ierr);
-  ierr = MeshSetTopology(m, (void *) topology);CHKERRQ(ierr);
+  /* Create topology and ordering */
   for(int v = 0; v < 9; v++) {
     ALE::Point vertex(0, v);
 
@@ -174,13 +175,14 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *mesh)
   cone.insert(edge);
   orientation->addCone(cone, edge);
   cone.clear();
+  ierr = MeshSetTopology(m, (void *) topology);CHKERRQ(ierr);
   ierr = MeshSetOrientation(m, (void *) orientation);CHKERRQ(ierr);
-  topology->view("Boundary topology");
-  orientation->view("Boundary orientation");
+  /* Create element numbering */
   elementBundle->setFiberDimensionByHeight(0, 1);
   elementBundle->computeOverlapIndices();
   elementBundle->computeGlobalIndices();
   ierr = MeshSetElementBundle(m, (void *) elementBundle);CHKERRQ(ierr);
+  /* Create vertex coordinates */
   coordBundle->setFiberDimensionByDepth(0, embedDim);
   coordBundle->computeOverlapIndices();
   coordBundle->computeGlobalIndices();
@@ -199,6 +201,16 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *mesh)
   ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(coordinates);CHKERRQ(ierr);
   ierr = MeshSetCoordinates(m, coordinates);CHKERRQ(ierr);
+  /* Create boundary conditions */
+  for(int v = 0; v < 8; v++) {
+    cone.insert(ALE::Point(0, v));
+  }
+  for(int e = 9; e < 17; e++) {
+    cone.insert(ALE::Point(0, e));
+  }
+  ALE::Point boundaryPoint(-1, 1);
+  boundary->addCone(cone, boundaryPoint);
+  ierr = MeshSetBoundary(m, (void *) boundary);CHKERRQ(ierr);
   *mesh = m;
   PetscFunctionReturn(0);
 }

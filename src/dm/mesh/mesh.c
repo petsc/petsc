@@ -18,6 +18,7 @@ struct _p_Mesh {
   PETSCHEADER(struct _MeshOps);
   void    *topology;
   void    *boundary;
+  void    *boundaryBundle;
   void    *orientation;
   void    *spaceFootprint;
   void    *bundle;
@@ -797,9 +798,11 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 
   p->topology       = PETSC_NULL;
   p->boundary       = PETSC_NULL;
+  p->boundaryBundle = PETSC_NULL;
   p->orientation    = PETSC_NULL;
   p->spaceFootprint = PETSC_NULL;
   p->bundle         = PETSC_NULL;
+  p->elementBundle  = PETSC_NULL;
   p->coordBundle    = PETSC_NULL;
   p->coordinates    = PETSC_NULL;
   p->globalvector   = PETSC_NULL;
@@ -1075,6 +1078,56 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetBoundary(Mesh mesh,void *boundary)
 {
   PetscValidPointer(boundary,2);
   mesh->boundary = boundary;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetBoundaryBundle"
+/*@C
+    MeshGetBoundaryBundle - Gets the Sieve boundary bundle
+
+    Not collective
+
+    Input Parameter:
+.    mesh - the mesh object
+
+    Output Parameter:
+.    bundle - the Sieve boundary bundle
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshSetBoundaryBundle()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetBoundaryBundle(Mesh mesh,void **bundle)
+{
+  if (bundle) {
+    PetscValidPointer(bundle,2);
+    *bundle = mesh->boundaryBundle;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshSetBoundaryBundle"
+/*@C
+    MeshSetBoundaryBundle - Sets the Sieve boundary bundle
+
+    Not collective
+
+    Input Parameters:
++    mesh - the mesh object
+-    bundle - the Sieve boundary bundle
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshGetBoundaryBundle()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetBoundaryBundle(Mesh mesh,void *bundle)
+{
+  PetscValidPointer(bundle,2);
+  mesh->boundaryBundle = bundle;
   PetscFunctionReturn(0);
 }
 
@@ -1554,12 +1607,16 @@ PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
   ierr = MPI_Comm_rank(boundary->comm, &rank);CHKERRQ(ierr);
   ierr = initGeneratorInput(&in);CHKERRQ(ierr);
   ierr = initGeneratorOutput(&out);CHKERRQ(ierr);
+  ALE::IndexBundle vertexBundle(bdTopology);
+  vertexBundle.setFiberDimensionByDepth(0, 1);
   if (rank == 0) {
+    ALE::Sieve              *bdSieve;
     ALE::Obj<ALE::Point_set> vertices = bdTopology->depthStratum(0);
     ALE::Obj<ALE::Point_set> edges = bdTopology->depthStratum(1);
     char                    *args = (char *) "pqenzQ";
     PetscTruth               createConvexHull = PETSC_FALSE;
 
+    ierr = MeshGetBoundary(boundary, (void **) &bdSieve);CHKERRQ(ierr);
     in.numberofpoints = vertices->size();
     if (in.numberofpoints > 0) {
       ALE::IndexBundle *coordBundle;
@@ -1572,15 +1629,24 @@ PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
       ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);CHKERRQ(ierr);
       ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRQ(ierr);
       for(ALE::Point_set::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
-        ALE::Point   interval = coordBundle->getFiberInterval(*v_itor);
-        PetscScalar *array;
+        ALE::Point     vertex(*v_itor);
+        ALE::Point     interval;
+        ALE::Point_set support;
+        PetscScalar   *array;
 
-        ierr = restrictField(coordBundle, bdOrientation, coords, *v_itor, &array); CHKERRQ(ierr);
+        interval = coordBundle->getFiberInterval(vertex);
+        ierr = restrictField(coordBundle, bdOrientation, coords, vertex, &array); CHKERRQ(ierr);
         for(int d = 0; d < interval.index; d++) {
           in.pointlist[interval.prefix + d] = array[d];
         }
-        /* These get set from the boundary sieve */
-        in.pointmarkerlist[interval.prefix/dim] = 0;
+
+        interval = vertexBundle.getFiberInterval(vertex);
+        support  = bdSieve->support(vertex);
+        if (support.size()) {
+          in.pointmarkerlist[interval.prefix] = support.begin()->index;
+        } else {
+          in.pointmarkerlist[interval.prefix] = 0;
+        }
       }
       ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
     }
@@ -1590,19 +1656,25 @@ PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
       ALE::IndexBundle *bdElementBundle;
 
       ierr = MeshGetElementBundle(boundary, (void **) &bdElementBundle);CHKERRQ(ierr);
-      ierr = PetscMalloc(in.numberofsegments * dim * sizeof(int), &in.segmentlist);CHKERRQ(ierr);
+      ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRQ(ierr);
       ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRQ(ierr);
       for(ALE::Point_set::iterator e_itor = edges->begin(); e_itor != edges->end(); e_itor++) {
         ALE::Point               edge = *e_itor;
         ALE::Point               interval = bdElementBundle->getFiberInterval(edge);
         ALE::Obj<ALE::Point_set> cone = bdTopology->cone(edge);
-        PetscInt p = 0;
+        ALE::Point_set           support;
+        PetscInt                 p = 0;
         
         for(ALE::Point_set::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
           in.segmentlist[interval.prefix * 2 + (p++)] = (*c_itor).index;
         }
-        /* These get set from the boundary sieve */
-        in.segmentmarkerlist[interval.prefix] = 0;
+
+        support = bdSieve->support(edge);
+        if (support.size()) {
+          in.segmentmarkerlist[interval.prefix] = support.begin()->index;
+        } else {
+          in.segmentmarkerlist[interval.prefix] = 0;
+        }
       }
     }
     in.numberofholes = 0;

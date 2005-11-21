@@ -814,6 +814,7 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
       }
     }
   }
+  ierr = MeshSetBoundary(mesh, (void *) boundary);CHKERRQ(ierr);
   if (debug) {
     boundary->view("Boundary sieve");
   }
@@ -831,7 +832,6 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
       }
     }
     ierr = VecRestoreArray(*boundaryVec, &values);CHKERRQ(ierr);
-    ierr = MeshSetBoundary(mesh, (void *) boundary);CHKERRQ(ierr);
   }
   if (boundaryBundle) {
     *boundaryBundle = bdBundle;
