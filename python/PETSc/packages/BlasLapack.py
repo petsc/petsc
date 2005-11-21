@@ -277,8 +277,10 @@ class Configure(PETSc.package.Package):
         line = 'CC = '+cc+'\n'
       if line.startswith('COPTFLAGS '):
         self.setCompilers.pushLanguage('C')
-        line = 'COPTFLAGS  = '+self.setCompilers.getCompilerFlags()+'\n'
+        line = 'COPTFLAGS  = -DDOUBLE=double -DLONG=long '+self.setCompilers.getCompilerFlags()+'\n'
         self.setCompilers.popLanguage()
+      if line.startswith('CNOOPT'):
+        line = 'CNOOPT = -O0 -DDOUBLE=double -DLONG=""\n'
       if line.startswith('FC  '):
         fc = self.framework.argDB['FC']
         if fc.find('f90') >= 0:
