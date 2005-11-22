@@ -255,11 +255,11 @@ namespace ALE {
     static const int                  footprintTypeNone           = 0;                 
     static const int                  footprintTypeCone           = 1;                 
     static const int                  footprintTypeSupport        = 2;                 
-    virtual Stack*                    coneCompletion(   int completionType, int footprintType, PreSieve *c);
-    virtual Stack*                    supportCompletion(int completionType, int footprintType, PreSieve *c);
-    virtual Stack*                    baseFootprint( int completionType, int footprintType,  PreSieve *f);
-    virtual Stack*                    capFootprint(  int completionType, int footprintType,  PreSieve *f);
-    virtual Stack*                    spaceFootprint(int completionType, int footprintType,  PreSieve *f);
+    virtual Stack*                    coneCompletion(   const int completionType, const int footprintType, PreSieve *c = NULL);
+    virtual Stack*                    supportCompletion(const int completionType, const int footprintType, PreSieve *c = NULL);
+    virtual Stack*                    baseFootprint( int completionType, int footprintType,  PreSieve *f = NULL);
+    virtual Stack*                    capFootprint(  int completionType, int footprintType,  PreSieve *f = NULL);
+    virtual Stack*                    spaceFootprint(int completionType, int footprintType,  PreSieve *f = NULL);
   };
 
   
