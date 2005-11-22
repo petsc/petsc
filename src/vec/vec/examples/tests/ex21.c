@@ -33,9 +33,9 @@ int main(int argc,char **argv)
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = VecMax(x,&idx,&value);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %D\n",value,idx);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %G index %D\n",value,idx);CHKERRQ(ierr);
   ierr = VecMin(x,&idx,&value);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %D\n",value,idx);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %G index %D\n",value,idx);CHKERRQ(ierr);
 
   ierr = VecDestroy(x);CHKERRQ(ierr);
 

@@ -44,7 +44,6 @@ int main(int argc,char **args)
   ierr = MatMult(C,u,x);CHKERRQ(ierr);
   ierr = VecAXPY(x,-1.0,b);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  printf("Norm of residual %g\n",norm);
 
   ierr = KSPDestroy(ksp);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);

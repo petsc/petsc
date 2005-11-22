@@ -44,6 +44,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscFormatConvert(const char *format,char *newfo
       newformat[j++] = 'd';
 #endif
       i += 3;
+    } else if (format[i] == '%' && format[i+1] == 'G') {
+      newformat[j++] = '%';
+#if !defined(PETSC_USE_LONG_DOUBLE)
+      newformat[j++] = 'g';
+#else
+      newformat[j++] = 'L';
+      newformat[j++] = 'g';
+#endif
+      i += 2;
     }else {
       newformat[j++] = format[i++];
     }

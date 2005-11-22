@@ -194,15 +194,15 @@ int main(int argc,char **argv)
     ierr = PetscTypeCompare((PetscObject)ts,"euler",&iseuler);CHKERRQ(ierr);
     if (iseuler) {
       if (!PETSC_NEAR(appctx.norm_2/steps,0.00257244,1.e-4)) {
-        fprintf(stdout,"Error in Euler method: 2-norm %g expecting: 0.00257244\n",appctx.norm_2/steps);
+        fprintf(stdout,"Error in Euler method: 2-norm %G expecting: 0.00257244\n",appctx.norm_2/steps);
       }
     } else {
       if (!PETSC_NEAR(appctx.norm_2/steps,0.00506174,1.e-4)) {
-        fprintf(stdout,"Error in %s method: 2-norm %g expecting: 0.00506174\n",tsinfo,appctx.norm_2/steps);
+        fprintf(stdout,"Error in %s method: 2-norm %G expecting: 0.00506174\n",tsinfo,appctx.norm_2/steps);
       }
     }
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D Procs Avg. error 2 norm %g max norm %g %s\n",
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D Procs Avg. error 2 norm %G max norm %G %s\n",
                 size,appctx.norm_2/steps,appctx.norm_max/steps,tsinfo);CHKERRQ(ierr);
   }
 
@@ -289,7 +289,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal ltime,Vec global,void *ctx)
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   if (!appctx->nox) {
-    ierr = PetscPrintf(comm,"timestep %D time %g norm of error %g %g\n",step,ltime,norm_2,norm_max);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"timestep %D time %G norm of error %G %G\n",step,ltime,norm_2,norm_max);CHKERRQ(ierr);
   }
 
   appctx->norm_2   += norm_2;

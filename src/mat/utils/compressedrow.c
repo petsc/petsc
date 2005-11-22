@@ -52,10 +52,10 @@ PetscErrorCode Mat_CheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pet
   /* if a large number of zero rows is found, use compressedrow data structure */
   if (nrows < ratio*mbs) {
     compressedrow->use = PETSC_FALSE; 
-    ierr = PetscVerboseInfo((A,"Mat_CheckCompressedRow: Found the ratio (num_zerorows %d)/(num_localrows %d) < %g. Do not use CompressedRow routines.\n",nrows,mbs,ratio));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"Mat_CheckCompressedRow: Found the ratio (num_zerorows %d)/(num_localrows %d) < %G. Do not use CompressedRow routines.\n",nrows,mbs,ratio));CHKERRQ(ierr);
   } else {
     compressedrow->use = PETSC_TRUE; 
-    ierr = PetscVerboseInfo((A,"Mat_CheckCompressedRow: Found the ratio (num_zerorows %d)/(num_localrows %d) > %g. Use CompressedRow routines.\n",nrows,mbs,ratio));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"Mat_CheckCompressedRow: Found the ratio (num_zerorows %d)/(num_localrows %d) > %G. Use CompressedRow routines.\n",nrows,mbs,ratio));CHKERRQ(ierr);
 
     /* set compressed row format */
     nrows = mbs - nrows; /* num of non-zero rows */

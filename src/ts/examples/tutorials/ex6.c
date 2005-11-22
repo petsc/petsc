@@ -230,7 +230,7 @@ int main(int argc,char **argv)
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",
+  PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %G, avg. error (max norm) = %G\n",
               appctx.norm_2/steps,appctx.norm_max/steps);
   ierr = TSView(ts,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
@@ -407,7 +407,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal crtime,Vec u,void *ctx)
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  printf("Timestep %d: step size = %g, time = %g, 2-norm error = %g, max norm error = %g\n",
+  printf("Timestep %d: step size = %G, time = %G, 2-norm error = %G, max norm error = %G\n",
          (int)step,dt,crtime,norm_2,norm_max);
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;

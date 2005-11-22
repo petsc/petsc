@@ -23,7 +23,7 @@ PetscErrorCode SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,Pet
     /* Compute || J^T F|| */
     ierr = MatMultTranspose(A,F,W);CHKERRQ(ierr);
     ierr = VecNorm(W,NORM_2,&a1);CHKERRQ(ierr);
-    ierr = PetscVerboseInfo((0,"SNESSolve_LS: || J^T F|| %g near zero implies found a local minimum\n",a1/fnorm));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((0,"SNESSolve_LS: || J^T F|| %G near zero implies found a local minimum\n",a1/fnorm));CHKERRQ(ierr);
     if (a1/fnorm < 1.e-4) *ismin = PETSC_TRUE;
   } else {
     Vec         work;
@@ -37,7 +37,7 @@ PetscErrorCode SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,Pet
     ierr = VecDot(F,work,&result);CHKERRQ(ierr);
     ierr = VecDestroy(work);CHKERRQ(ierr);
     a1   = PetscAbsScalar(result)/(fnorm*wnorm);
-    ierr = PetscVerboseInfo((0,"SNESSolve_LS: (F^T J random)/(|| F ||*||random|| %g near zero implies found a local minimum\n",a1));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((0,"SNESSolve_LS: (F^T J random)/(|| F ||*||random|| %G near zero implies found a local minimum\n",a1));CHKERRQ(ierr);
     if (a1 < 1.e-4) *ismin = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
@@ -65,7 +65,7 @@ PetscErrorCode SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
     ierr = VecNorm(W1,NORM_2,&a1);CHKERRQ(ierr);
     ierr = VecNorm(W2,NORM_2,&a2);CHKERRQ(ierr);
     if (a1) {
-      ierr = PetscVerboseInfo((0,"SNESSolve_LS: ||J^T(F-Ax)||/||F-AX|| %g near zero implies inconsistent rhs\n",a2/a1));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((0,"SNESSolve_LS: ||J^T(F-Ax)||/||F-AX|| %G near zero implies inconsistent rhs\n",a2/a1));CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -525,7 +525,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
   }
   if (*ynorm > maxstep) {	/* Step too big, so scale back */
     scale = maxstep/(*ynorm);
-    ierr = PetscVerboseInfo((snes,"SNESLineSearchCubic: Scaling step by %g old ynorm %g\n",PetscRealPart(scale),*ynorm));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((snes,"SNESLineSearchCubic: Scaling step by %G old ynorm %G\n",PetscRealPart(scale),*ynorm));CHKERRQ(ierr);
     ierr = VecScale(y,scale);CHKERRQ(ierr);
     *ynorm = maxstep;
   }
@@ -783,7 +783,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
   while (PETSC_TRUE) {
     if (lambda <= minlambda) { /* bad luck; use full step */
       ierr = PetscVerboseInfo((snes,"SNESLineSearchQuadratic:Unable to find good step length! %D \n",count));CHKERRQ(ierr);
-      ierr = PetscVerboseInfo((snes,"SNESLineSearchQuadratic:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",fnorm,*gnorm,*ynorm,lambda,initslope));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((snes,"SNESLineSearchQuadratic:fnorm=%G, gnorm=%G, ynorm=%G, lambda=%G, initial slope=%G\n",fnorm,*gnorm,*ynorm,lambda,initslope));CHKERRQ(ierr);
       ierr = VecCopy(x,w);CHKERRQ(ierr);
       *flag = PETSC_FALSE;
       break;
@@ -813,7 +813,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
     if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*alpha*initslope) { /* sufficient reduction */
-      ierr = PetscVerboseInfo((snes,"SNESLineSearchQuadratic:Quadratically determined step, lambda=%g\n",lambda));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((snes,"SNESLineSearchQuadratic:Quadratically determined step, lambda=%G\n",lambda));CHKERRQ(ierr);
       break;
     }
     count++;
@@ -1086,9 +1086,9 @@ static PetscErrorCode SNESPrintHelp_LS(SNES snes,char *p)
   PetscFunctionBegin;
   (*PetscHelpPrintf)(snes->comm," method SNES_LS (ls) for systems of nonlinear equations:\n");
   (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls [cubic,quadratic,basic,basicnonorms,...]\n",p);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls_alpha <alpha> (default %g)\n",p,ls->alpha);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls_maxstep <max> (default %g)\n",p,ls->maxstep);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls_steptol <tol> (default %g)\n",p,ls->steptol);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls_alpha <alpha> (default %G)\n",p,ls->alpha);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls_maxstep <max> (default %G)\n",p,ls->maxstep);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls_steptol <tol> (default %G)\n",p,ls->steptol);
   PetscFunctionReturn(0);
 }
 
@@ -1118,7 +1118,7 @@ static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
     else if (ls->LineSearch == SNESLineSearchCubic)     cstr = "SNESLineSearchCubic";
     else                                                cstr = "unknown";
     ierr = PetscViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  alpha=%g, maxstep=%g, steptol=%g\n",ls->alpha,ls->maxstep,ls->steptol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  alpha=%G, maxstep=%G, steptol=%G\n",ls->alpha,ls->maxstep,ls->steptol);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for SNES EQ LS",((PetscObject)viewer)->type_name);
   }

@@ -277,7 +277,7 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
        tmp = 1.0/tt; 
        ierr = VecScale(VEC_VV(loc_it+1),tmp);CHKERRQ(ierr); /* scale new direction by its norm */
     } else {
-       ierr = PetscVerboseInfo((ksp,"GMREScycle:Detected happy breakdown, current hapbnd = %g tt = %g\n",hapbnd,tt));CHKERRQ(ierr);
+       ierr = PetscVerboseInfo((ksp,"GMREScycle:Detected happy breakdown, current hapbnd = %G tt = %G\n",hapbnd,tt));CHKERRQ(ierr);
        hapend = PETSC_TRUE;
     }
 
@@ -299,7 +299,7 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        SETERRQ1(0,"You reached the happy break down,but convergence was not indicated. Residual norm = %g",res);
+        SETERRQ1(0,"You reached the happy break down,but convergence was not indicated. Residual norm = %G",res);
       }
       break;
     }
@@ -547,7 +547,7 @@ static PetscErrorCode BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP 
  
   /* solve the upper triangular system - GRS is the right side and HH is 
      the upper triangular matrix  - put soln in nrs */
-  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %D GRS(it) = %g",it,PetscAbsScalar(*GRS(it)));
+  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));
   if (*HH(it,it) != 0.0) {
      nrs[it] = *GRS(it) / *HH(it,it);
   } else {

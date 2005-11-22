@@ -51,7 +51,7 @@ static PetscReal  rgb[3][256];
 static PetscTruth rgbfilled = PETSC_FALSE;
 
 #define PSSetColor(ps,c)   (((c) == ps->currentcolor) ? 0 : \
-(ps->currentcolor = (c),PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g %g setrgbcolor\n",rgb[0][c],rgb[1][c],rgb[2][c])))
+(ps->currentcolor = (c),PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G %G setrgbcolor\n",rgb[0][c],rgb[1][c],rgb[2][c])))
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawPoint_PS" 
@@ -64,7 +64,7 @@ static PetscErrorCode PetscDrawPoint_PS(PetscDraw draw,PetscReal x,PetscReal  y,
   PetscFunctionBegin;
   xx = XTRANS(draw,x);  yy = YTRANS(draw,y);
   ierr = PSSetColor(ps,c);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g moveto %g %g lineto stroke\n",xx,yy,xx+1,yy);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G moveto %G %G lineto stroke\n",xx,yy,xx+1,yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -80,7 +80,7 @@ static PetscErrorCode PetscDrawLine_PS(PetscDraw draw,PetscReal xl,PetscReal yl,
   x1 = XTRANS(draw,xl);   x2  = XTRANS(draw,xr); 
   y_1 = YTRANS(draw,yl);   y2  = YTRANS(draw,yr); 
   ierr = PSSetColor(ps,c);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g moveto %g %g lineto stroke\n",x1,y_1,x2,y2);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G moveto %G %G lineto stroke\n",x1,y_1,x2,y2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -95,7 +95,7 @@ static PetscErrorCode PetscDrawStringSetSize_PS(PetscDraw draw,PetscReal x,Petsc
   PetscFunctionBegin;
   w = (int)((WIDTH)*x*(draw->port_xr - draw->port_xl)/(draw->coor_xr - draw->coor_xl));
   h = (int)((HEIGHT)*y*(draw->port_yr - draw->port_yl)/(draw->coor_yr - draw->coor_yl));
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"/Helvetica-normal findfont %g scalefont setfont\n",(w+h)/2.0);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"/Helvetica-normal findfont %G scalefont setfont\n",(w+h)/2.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -123,7 +123,7 @@ static PetscErrorCode PetscDrawString_PS(PetscDraw draw,PetscReal x,PetscReal  y
   ierr = PSSetColor(ps,c);CHKERRQ(ierr);
   x1 = XTRANS(draw,x);
   y_1 = YTRANS(draw,y);
-  ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g moveto (%s) show\n",x1,y_1,chrs);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G moveto (%s) show\n",x1,y_1,chrs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -139,7 +139,7 @@ static PetscErrorCode PetscDrawStringVertical_PS(PetscDraw draw,PetscReal x,Pets
   ierr = PSSetColor(ps,c);CHKERRQ(ierr);
   x1 = XTRANS(draw,x);
   y_1 = YTRANS(draw,y);
-  ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"gsave %g %g moveto 90 rotate (%s) show grestore\n",x1,y_1,chrs);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"gsave %G %G moveto 90 rotate (%s) show grestore\n",x1,y_1,chrs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -164,7 +164,7 @@ static PetscErrorCode PetscDrawTriangle_PS(PetscDraw draw,PetscReal X1,PetscReal
 
   if (c1 == c2 && c2 == c3) {
     ierr = PSSetColor(ps,c1);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g moveto %g %g lineto %g %g lineto fill\n",x1,y_1,x2,y2,x3,y3);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G moveto %G %G lineto %G %G lineto fill\n",x1,y_1,x2,y2,x3,y3);CHKERRQ(ierr);
   } else {
     ierr = PetscDrawInterpolatedTriangle_PS(ps,x1,y_1,c1,x2,y2,c2,x3,y3,c3);CHKERRQ(ierr);
   }
@@ -191,7 +191,7 @@ static PetscErrorCode PetscDrawRectangle_PS(PetscDraw draw,PetscReal X1,PetscRea
   y4   = YTRANS(draw,Y2); 
 
   ierr = PSSetColor(ps,(c1+c2+c3+c4)/4);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g moveto %g %g lineto %g %g lineto %g %g lineto %g %g lineto fill\n",x1,y_1,x2,y2,x3,y3,x4,y4,x1,y_1);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G moveto %G %G lineto %G %G lineto %G %G lineto %G %G lineto fill\n",x1,y_1,x2,y2,x3,y3,x4,y4,x1,y_1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -520,19 +520,19 @@ static PetscErrorCode PetscDrawInterpolatedTriangle_PS(PetscDraw_PS* ps,PetscRea
     if (rx > lx) {
       for (xx=lx; xx<=rx; xx++) {
         c = (int)(((xx-lx) * (rc_lc)) / (rx_lx) + lc);
-        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g %g c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",xx,y,xx+1,y);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G %G c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G m %G %G l\n",xx,y,xx+1,y);CHKERRQ(ierr);
       }
     } else if (rx < lx) {
       for (xx=lx; xx>=rx; xx--) {
         c = (int)(((xx-lx) * (rc_lc)) / (rx_lx) + lc);
-        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g %g c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",xx,y,xx+1,y);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G %G c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G m %G %G l\n",xx,y,xx+1,y);CHKERRQ(ierr);
       }
     } else {
       c = (int)lc;
-      ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g %g c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",lx,y,lx+1,y);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G %G c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G m %G %G l\n",lx,y,lx+1,y);CHKERRQ(ierr);
     }
   }
 
@@ -570,19 +570,19 @@ static PetscErrorCode PetscDrawInterpolatedTriangle_PS(PetscDraw_PS* ps,PetscRea
     if (rx > lx) {
       for (xx=lx; xx<=rx; xx++) {
         c = (int)(((xx-lx) * (rc_lc)) / (rx_lx) + lc);
-        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g %g c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",xx,y,xx+1,y);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G %G c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G m %G %G l\n",xx,y,xx+1,y);CHKERRQ(ierr);
       }
     } else if (rx < lx) {
       for (xx=lx; xx>=rx; xx--) {
         c = (int)(((xx-lx) * (rc_lc)) / (rx_lx) + lc);
-        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g %g c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",xx,y,xx+1,y);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G %G c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G m %G %G l\n",xx,y,xx+1,y);CHKERRQ(ierr);
       }
     } else {
       c = (int)lc;
-      ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g %g c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%g %g m %g %g l\n",lx,y,lx+1,y);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G %G c\n",rgb[0][c],rgb[1][c],rgb[2][c]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"%G %G m %G %G l\n",lx,y,lx+1,y);CHKERRQ(ierr);
     }
   }
   ierr = PetscViewerASCIISynchronizedPrintf(ps->ps_file,"grestore\n");CHKERRQ(ierr);

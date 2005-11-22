@@ -132,7 +132,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSingularValueMonitor(KSP ksp,PetscInt n,Pet
   } else {
     ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
     c = emax/emin;
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %14.12e %% max %g min %g max/min %g\n",n,rnorm,emax,emin,c);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %14.12e %% max %G min %G max/min %G\n",n,rnorm,emax,emin,c);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -290,7 +290,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultSMonitor(KSP ksp,PetscInt its,PetscR
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
 
   if (fnorm > 1.e-9) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %g \n",its,fnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %G \n",its,fnorm);CHKERRQ(ierr);
   } else if (fnorm > 1.e-11){
     ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %5.3e \n",its,fnorm);CHKERRQ(ierr);
   } else {
@@ -425,14 +425,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
     *reason = KSP_DIVERGED_NAN;
   } else if (rnorm <= ksp->ttol) {
     if (rnorm < ksp->abstol) {
-      ierr = PetscVerboseInfo((ksp,"KSPDefaultConverged:Linear solver has converged. Residual norm %g is less than absolute tolerance %g at iteration %D\n",rnorm,ksp->abstol,n));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((ksp,"KSPDefaultConverged:Linear solver has converged. Residual norm %G is less than absolute tolerance %G at iteration %D\n",rnorm,ksp->abstol,n));CHKERRQ(ierr);
       *reason = KSP_CONVERGED_ATOL;
     } else {
-      ierr = PetscVerboseInfo((ksp,"KSPDefaultConverged:Linear solver has converged. Residual norm %g is less than relative tolerance %g times initial right hand side norm %g at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((ksp,"KSPDefaultConverged:Linear solver has converged. Residual norm %G is less than relative tolerance %G times initial right hand side norm %G at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n));CHKERRQ(ierr);
       *reason = KSP_CONVERGED_RTOL;
     }
   } else if (rnorm >= ksp->divtol*ksp->rnorm0) {
-    ierr = PetscVerboseInfo((ksp,"KSPDefaultConverged:Linear solver is diverging. Initial right hand size norm %g, current residual norm %g at iteration %D\n",ksp->rnorm0,rnorm,n));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((ksp,"KSPDefaultConverged:Linear solver is diverging. Initial right hand size norm %G, current residual norm %G at iteration %D\n",ksp->rnorm0,rnorm,n));CHKERRQ(ierr);
     *reason = KSP_DIVERGED_DTOL;
   }
   PetscFunctionReturn(0);

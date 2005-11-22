@@ -158,7 +158,7 @@ static PetscErrorCode PCView_SPAI(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {  
     ierr = PetscViewerASCIIPrintf(viewer,"    SPAI preconditioner\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"    epsilon %g\n",   ispai->epsilon);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"    epsilon %G\n",   ispai->epsilon);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    nbsteps %d\n",   ispai->nbsteps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    max %d\n",       ispai->max);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    maxnew %d\n",    ispai->maxnew);CHKERRQ(ierr);

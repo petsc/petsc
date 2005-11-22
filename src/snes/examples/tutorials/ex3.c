@@ -197,7 +197,7 @@ int main(int argc,char **argv)
      the option -snes_view
   */
   ierr = SNESGetTolerances(snes,&abstol,&rtol,&stol,&maxit,&maxf);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%D, maxf=%D\n",abstol,rtol,stol,maxit,maxf);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"atol=%G, rtol=%G, stol=%G, maxit=%D, maxf=%D\n",abstol,rtol,stol,maxit,maxf);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:
@@ -486,7 +486,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
   Vec            x;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"iter = %D,SNES Function norm %g\n",its,fnorm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"iter = %D,SNES Function norm %G\n",its,fnorm);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -555,7 +555,7 @@ PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscTruth
   /* iteration 1 indicates we are working on the second iteration */
   if (iter > 0) {
     da   = user->da;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration %D with tolerance %g\n",iter,check->tolerance);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration %D with tolerance %G\n",iter,check->tolerance);CHKERRQ(ierr);
 
     /* Access local array data */
     ierr = DAVecGetArray(da,check->last_step,&xa_last);CHKERRQ(ierr);
@@ -574,7 +574,7 @@ PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscTruth
         tmp        = xa[i];
         xa[i]      = (xa[i] + xa_last[i])/2.0;
         *changed_x = PETSC_TRUE;
-        ierr       = PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %D: x=%g, x_last=%g, diff=%g, x_new=%g\n",
+        ierr       = PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %D: x=%G, x_last=%G, diff=%G, x_new=%G\n",
                                 i,PetscAbsScalar(tmp),PetscAbsScalar(xa_last[i]),rdiff,PetscAbsScalar(xa[i]));CHKERRQ(ierr);
       }
     }

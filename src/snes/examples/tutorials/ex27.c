@@ -207,7 +207,7 @@ int main(int argc,char **argv)
     ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
     ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);
     
-    ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",
+    ierr = PetscPrintf(comm,"lid velocity = %G, prandtl # = %G, grashof # = %G\n",
 		       param.lidvelocity,param.prandtl,param.grashof);CHKERRQ(ierr);
     
     
@@ -311,7 +311,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
   ierr = SNESComputeFunction(snes,tsCtx->Xold,tsCtx->func);
   ierr = VecNorm(tsCtx->func,NORM_2,&tsCtx->fnorm_ini);CHKERRQ(ierr);
   tsCtx->ires = 1;
-  PetscPrintf(PETSC_COMM_WORLD,"Initial function norm is %g\n",tsCtx->fnorm_ini);*/
+  PetscPrintf(PETSC_COMM_WORLD,"Initial function norm is %G\n",tsCtx->fnorm_ini);*/
   return 0;
 } 
 /* ------------------------------------------------------------------- */
@@ -680,9 +680,9 @@ PetscErrorCode Update(DMMG *dmmg)
     
     ierr = ComputeTimeStep(snes,((AppCtx*)dmmg[param->mglevels-1]->user));CHKERRQ(ierr);
     if (print_flag) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"At Time Step %D cfl = %g and fnorm = %g\n",
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"At Time Step %D cfl = %G and fnorm = %G\n",
 			 tsCtx->itstep,tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Wall clock time needed %g seconds for %D time steps\n",
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Wall clock time needed %G seconds for %D time steps\n",
 			 cpuloc,tsCtx->itstep);CHKERRQ(ierr);    
     }
     fratio = tsCtx->fnorm_ini/tsCtx->fnorm;
@@ -691,9 +691,9 @@ PetscErrorCode Update(DMMG *dmmg)
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   } /* End of time step loop */
   
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Total wall clock time needed %g seconds for %D time steps\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Total wall clock time needed %G seconds for %D time steps\n",
 		     cpuloc,tsCtx->itstep);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"cfl = %g fnorm = %g\n",tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"cfl = %G fnorm = %G\n",tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
   if (user->param->PreLoading) {
     tsCtx->fnorm_ini = 0.0;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Preloading done ...\n");CHKERRQ(ierr);
@@ -707,7 +707,7 @@ PetscErrorCode Update(DMMG *dmmg)
     ierr = VecDuplicate(xx,&yy);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes,xx,yy);
     ierr = VecNorm(yy,NORM_2,&fnorm1);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"fnorm = %g, fnorm1 = %g\n",fnorm,fnorm1);
+    PetscPrintf(PETSC_COMM_WORLD,"fnorm = %G, fnorm1 = %G\n",fnorm,fnorm1);
     
   }
   */

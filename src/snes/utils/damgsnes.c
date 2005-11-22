@@ -548,7 +548,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
         if (flg) {
           if (i == 0) {
             ierr = PetscPrintf(dmmg[i]->comm,"FAS Solver Parameters\n");CHKERRQ(ierr);
-            ierr = PetscPrintf(dmmg[i]->comm,"  rtol %g atol %g\n",dmmg[i]->rtol,dmmg[i]->abstol);CHKERRQ(ierr);
+            ierr = PetscPrintf(dmmg[i]->comm,"  rtol %G atol %G\n",dmmg[i]->rtol,dmmg[i]->abstol);CHKERRQ(ierr);
 	    ierr = PetscPrintf(dmmg[i]->comm,"             coarsesmooths %D\n",dmmg[i]->coarsesmooth);CHKERRQ(ierr);
             ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %D\n",newton_its);CHKERRQ(ierr);
           } else {

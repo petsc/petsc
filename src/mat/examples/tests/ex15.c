@@ -56,11 +56,11 @@ int main(int argc,char **args)
   ierr = VecScale(y,2.0);CHKERRQ(ierr);
 
   ierr = MatNorm(C,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Frobenius norm of matrix %g\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Frobenius norm of matrix %G\n",norm);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"One  norm of matrix %g\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"One  norm of matrix %G\n",norm);CHKERRQ(ierr);
   ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Infinity norm of matrix %g\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Infinity norm of matrix %G\n",norm);CHKERRQ(ierr);
 
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
   info.fill      = 2.0;

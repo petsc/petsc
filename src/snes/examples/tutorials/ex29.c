@@ -261,12 +261,12 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD, "finish setupNull!");
 
     if (PreLoading) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "# viscosity = %g, resistivity = %g, "
-			 "skin_depth # = %g, larmor_radius # = %g\n",
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "# viscosity = %G, resistivity = %G, "
+			 "skin_depth # = %G, larmor_radius # = %G\n",
 			 param.nu, param.eta, param.d_e, param.rho_s);CHKERRQ(ierr);
       ierr = DAGetInfo(DMMGGetDA(dmmg),0,&m,&n,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Problem size %D by %D\n",m,n);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"dx %g dy %g dt %g ratio dt/min(dx,dy) %g\n",lx/mx,ly/my,tsCtx.dt,dt_ratio);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"dx %G dy %G dt %G ratio dt/min(dx,dy) %G\n",lx/mx,ly/my,tsCtx.dt,dt_ratio);CHKERRQ(ierr);
     }
 
     
@@ -330,7 +330,7 @@ PetscErrorCode Gnuplot(DA da, Vec X, double mtime)
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
       ierr = PetscFPrintf(PETSC_COMM_WORLD, f,
-                          "%D %D %g %g %g %g %g %g\n",
+                          "%D %D %G %G %G %G %G %G\n",
                           i, j, 0.0, 0.0,
                           PetscAbsScalar(x[j][i].U), PetscAbsScalar(x[j][i].F), 
                           PetscAbsScalar(x[j][i].phi), PetscAbsScalar(x[j][i].psi));CHKERRQ(ierr);
@@ -496,7 +496,7 @@ PetscErrorCode ComputeMaxima(DA da, Vec X, PetscReal t)
   ierr = PetscObjectGetComm((PetscObject)da, &comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(norm, gnorm, 4, MPI_DOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
 
-  ierr = PetscFPrintf(PETSC_COMM_WORLD, stderr,"%g\t%g\t%g\t%g\t%g\n",t, gnorm[0], gnorm[1], gnorm[2], gnorm[3]);CHKERRQ(ierr);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD, stderr,"%G\t%G\t%G\t%G\t%G\n",t, gnorm[0], gnorm[1], gnorm[2], gnorm[3]);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -696,7 +696,7 @@ PetscErrorCode Update(DMMG *dmmg)
     if (tsCtx->dump_time > 0.0 && tsCtx->t >= tsCtx->dump_time) {
       Vec v = DMMGGetx(dmmg);
       ierr = VecView(v,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
-      SETERRQ1(1,"Saved solution at time %g",tsCtx->t);
+      SETERRQ1(1,"Saved solution at time %G",tsCtx->t);
     }
 
     if (ts_monitor)
@@ -711,8 +711,8 @@ PetscErrorCode Update(DMMG *dmmg)
         SETERRQ(1, "unable to find a newton step");
 
       ierr = PetscPrintf(PETSC_COMM_WORLD,
-                         "time step = %D, time = %g, number of nonlinear steps = %D, "
-                         "number of linear steps = %D, norm of the function = %g\n",
+                         "time step = %D, time = %G, number of nonlinear steps = %D, "
+                         "number of linear steps = %D, norm of the function = %G\n",
 			 tsCtx->itstep + 1, tsCtx->t, its, lits, PetscAbsScalar(tsCtx->fnorm));CHKERRQ(ierr);
 
       /* send solution over to Matlab, to be visualized (using ex29.m) */
@@ -739,7 +739,7 @@ PetscErrorCode Update(DMMG *dmmg)
 #ifdef HAVE_DA_HDF
           char fname[PETSC_MAX_PATH_LEN];
 
-          sprintf(fname, "out-%g.hdf", tsCtx->t);
+          sprintf(fname, "out-%G.hdf", tsCtx->t);
           ierr = DAVecHDFOutput(DMMGGetDA(dmmg), DMMGGetx(dmmg), fname);CHKERRQ(ierr);
 #else
 /*
@@ -755,7 +755,7 @@ PetscErrorCode Update(DMMG *dmmg)
  
   if (!param->PreLoading){ 
     ierr = SNESGetFunctionNorm(snes,&tsCtx->fnorm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "timesteps %D fnorm = %g\n",
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "timesteps %D fnorm = %G\n",
 		       tsCtx->itstep, PetscAbsScalar(tsCtx->fnorm));CHKERRQ(ierr);
   }
 

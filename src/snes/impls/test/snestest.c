@@ -59,7 +59,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
       ierr = MatView(A,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
     }
-    ierr = PetscPrintf(snes->comm,"Norm of matrix ratio %g difference %g\n",nrm/gnorm,nrm);CHKERRQ(ierr);
+    ierr = PetscPrintf(snes->comm,"Norm of matrix ratio %G difference %G\n",nrm/gnorm,nrm);CHKERRQ(ierr);
   }
   ierr = MatDestroy(B);CHKERRQ(ierr);
   /*

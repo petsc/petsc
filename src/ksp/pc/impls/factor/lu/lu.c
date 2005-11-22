@@ -187,11 +187,11 @@ static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
     if (lu->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"  LU: in-place factorization\n");CHKERRQ(ierr);}
     else             {ierr = PetscViewerASCIIPrintf(viewer,"  LU: out-of-place factorization\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",lu->ordering);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  LU: tolerance for zero pivot %g\n",lu->info.zeropivot);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  LU: tolerance for zero pivot %G\n",lu->info.zeropivot);CHKERRQ(ierr);
     if (lu->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  LU: using Manteuffel shift\n");CHKERRQ(ierr);}
     if (lu->fact) {
       ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"    LU nonzeros %g\n",info.nz_used);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"    LU nonzeros %G\n",info.nz_used);CHKERRQ(ierr);
       ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_FACTOR_INFO);CHKERRQ(ierr);
       ierr = MatView(lu->fact,viewer);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
@@ -363,7 +363,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivoting_LU(PC pc,PetscReal dtcol)
   PC_LU *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Column pivot tolerance is %g must be between 0 and 1",dtcol);
+  if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Column pivot tolerance is %G must be between 0 and 1",dtcol);
   dir->info.dtcol = dtcol;
   PetscFunctionReturn(0);
 }

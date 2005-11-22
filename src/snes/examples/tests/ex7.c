@@ -191,7 +191,7 @@ PetscErrorCode  Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *dummy)
   MPI_Comm       comm;
 
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,stdout,"iter = %D, SNES Function norm %g \n",its,fnorm);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,stdout,"iter = %D, SNES Function norm %G \n",its,fnorm);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
   return 0;

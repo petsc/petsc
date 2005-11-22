@@ -59,7 +59,7 @@ int main(int argc,char **args)
 
   ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %G\n",norm);CHKERRQ(ierr);
 
   ierr = ISDestroy(row);CHKERRQ(ierr);
   ierr = ISDestroy(col);CHKERRQ(ierr);

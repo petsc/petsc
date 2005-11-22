@@ -725,7 +725,7 @@ PetscErrorCode FATest(FA fa)
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n[%d] Local array for region %d \n",rank,p+1);CHKERRQ(ierr);
       for (k=y+n-1; k>=y; k--) { /* print in reverse order to match diagram in paper */
         for (i=x; i<x+m; i++) {
-          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"(%g,%g) ",la[k][i].X,la[k][i].Y);CHKERRQ(ierr);
+          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"(%G,%G) ",la[k][i].X,la[k][i].Y);CHKERRQ(ierr);
         }
         ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
       }

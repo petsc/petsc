@@ -140,7 +140,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
 
       if (dmmg[j]->monitorall) {
         for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
-        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %g\n",norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %G\n",norm);CHKERRQ(ierr);
       }
       ierr = MatRestrict(mg[j]->restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
       
@@ -164,7 +164,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
       ierr = VecAXPY(dmmg[0]->w,-1.0,dmmg[0]->r);CHKERRQ(ierr);
       ierr = VecNorm(dmmg[0]->w,NORM_2,&norm);CHKERRQ(ierr);
       for (k=0; k<level+1; k++) {ierr = PetscPrintf(dmmg[0]->comm,"  ");CHKERRQ(ierr);}
-      ierr = PetscPrintf(dmmg[0]->comm,"FAS coarse grid function norm %g\n",norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(dmmg[0]->comm,"FAS coarse grid function norm %G\n",norm);CHKERRQ(ierr);
     }
 
     for (j=1; j<=level; j++) {
@@ -178,7 +178,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
 	ierr = VecAXPY(dmmg[j]->w,-1.0,dmmg[j]->r);CHKERRQ(ierr);
         ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
         for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
-        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %g\n",norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %G\n",norm);CHKERRQ(ierr);
       }
 
       /* Relax residual_fine - F(x_fine)  = 0 */
@@ -192,14 +192,14 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
 	ierr = VecAXPY(dmmg[j]->w,-1.0,dmmg[j]->r);CHKERRQ(ierr);
         ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
         for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
-        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %g\n",norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %G\n",norm);CHKERRQ(ierr);
       }
     }
 
     if (dmmg[level]->monitor){
       ierr = DMMGFormFunction(0,dmmg[level]->x,dmmg[level]->w,dmmg[level]);CHKERRQ(ierr);
       ierr = VecNorm(dmmg[level]->w,NORM_2,&norm);CHKERRQ(ierr);
-      ierr = PetscPrintf(dmmg[level]->comm,"%D FAS function norm %g\n",i+1,norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(dmmg[level]->comm,"%D FAS function norm %G\n",i+1,norm);CHKERRQ(ierr);
     }
   }
   theend:
@@ -258,7 +258,7 @@ PetscErrorCode DMMGSolveFASb(DMMG *dmmg,PetscInt level)
 
       if (dmmg[j]->monitorall) {
         for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
-        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %g\n",norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %G\n",norm);CHKERRQ(ierr);
       }
       ierr = MatRestrict(mg[j]->restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
       
@@ -282,7 +282,7 @@ PetscErrorCode DMMGSolveFASb(DMMG *dmmg,PetscInt level)
       ierr = VecAXPY(dmmg[0]->w,-1.0,dmmg[0]->r);CHKERRQ(ierr);
       ierr = VecNorm(dmmg[0]->w,NORM_2,&norm);CHKERRQ(ierr);
       for (k=0; k<level+1; k++) {ierr = PetscPrintf(dmmg[0]->comm,"  ");CHKERRQ(ierr);}
-      ierr = PetscPrintf(dmmg[0]->comm,"FAS coarse grid function norm %g\n",norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(dmmg[0]->comm,"FAS coarse grid function norm %G\n",norm);CHKERRQ(ierr);
     }
 
     for (j=1; j<=level; j++) {
@@ -296,7 +296,7 @@ PetscErrorCode DMMGSolveFASb(DMMG *dmmg,PetscInt level)
 	ierr = VecAXPY(dmmg[j]->w,-1.0,dmmg[j]->r);CHKERRQ(ierr);
         ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
         for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
-        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %g\n",norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %G\n",norm);CHKERRQ(ierr);
       }
 
       /* Relax residual_fine - F(x_fine)  = 0 */
@@ -310,14 +310,14 @@ PetscErrorCode DMMGSolveFASb(DMMG *dmmg,PetscInt level)
 	ierr = VecAXPY(dmmg[j]->w,-1.0,dmmg[j]->r);CHKERRQ(ierr);
         ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
         for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
-        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %g\n",norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %G\n",norm);CHKERRQ(ierr);
       }
     }
 
     if (dmmg[level]->monitor){
       ierr = DMMGFormFunction(0,dmmg[level]->x,dmmg[level]->w,dmmg[level]);CHKERRQ(ierr);
       ierr = VecNorm(dmmg[level]->w,NORM_2,&norm);CHKERRQ(ierr);
-      ierr = PetscPrintf(dmmg[level]->comm,"%D FAS function norm %g\n",i+1,norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(dmmg[level]->comm,"%D FAS function norm %G\n",i+1,norm);CHKERRQ(ierr);
     }
   }
   theend:
@@ -339,10 +339,10 @@ PetscErrorCode PetscADView(PetscInt N,PetscInt nc,double *ptr,PetscViewer viewer
 
   PetscFunctionBegin;
   for (i=0; i<N; i++) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Element %D value %g derivatives: ",i,*(double*)cptr);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Element %D value %G derivatives: ",i,*(double*)cptr);CHKERRQ(ierr);
     values = PetscADGetGradArray(cptr);
     for (j=0; j<nc; j++) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"%g ",*values++);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"%G ",*values++);CHKERRQ(ierr);
     }
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
     cptr += nlen;

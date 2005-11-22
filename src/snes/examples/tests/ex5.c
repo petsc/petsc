@@ -104,7 +104,7 @@ int main(int argc,char **argv)
   if (user.param2 >= bratu_kappa_max || user.param2 < bratu_kappa_min) {
     SETERRQ(1,"Kappa is out of range");
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving the Bratu problem with lambda=%g, kappa=%g\n",user.param,user.param2);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving the Bratu problem with lambda=%G, kappa=%G\n",user.param,user.param2);CHKERRQ(ierr);
 
   N = user.mx*user.my;
 

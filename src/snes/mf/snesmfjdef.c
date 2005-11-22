@@ -104,7 +104,7 @@ static PetscErrorCode MatSNESMFCompute_DS(MatSNESMFCtx ctx,Vec U,Vec a,PetscScal
   } else {
     *h = ctx->currenth;
   }
-  if (*h != *h) SETERRQ3(PETSC_ERR_PLIB,"Differencing parameter is not a number sum = %g dot = %g norm = %g",sum,PetscRealPart(dot),nrm);
+  if (*h != *h) SETERRQ3(PETSC_ERR_PLIB,"Differencing parameter is not a number sum = %G dot = %G norm = %G",sum,PetscRealPart(dot),nrm);
   ctx->count++;
   PetscFunctionReturn(0);
 } 
@@ -135,7 +135,7 @@ static PetscErrorCode MatSNESMFView_DS(MatSNESMFCtx ctx,PetscViewer viewer)
   */
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr); 
+    ierr = PetscViewerASCIIPrintf(viewer,"    umin=%G (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr); 
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this SNES matrix free matrix",((PetscObject)viewer)->type_name);
   }    

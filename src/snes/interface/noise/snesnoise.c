@@ -158,9 +158,9 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
     if (info == 2) {ierr = PetscFPrintf(comm,fp,"%s\n","Noise not detected; h is too small");CHKERRQ(ierr);}
     if (info == 3) {ierr = PetscFPrintf(comm,fp,"%s\n","Noise not detected; h is too large");CHKERRQ(ierr);}
     if (info == 4) {ierr = PetscFPrintf(comm,fp,"%s\n","Noise detected, but unreliable hopt");CHKERRQ(ierr);}
-    ierr = PetscFPrintf(comm,fp,"Approximate epsfcn %g  %g  %g  %g  %g  %g\n",
+    ierr = PetscFPrintf(comm,fp,"Approximate epsfcn %G  %G  %G  %G  %G  %G\n",
         eps[0],eps[1],eps[2],eps[3],eps[4],eps[5]);CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fp,"h = %g, fnoise = %g, fder2 = %g, rerrf = %g, hopt = %g\n\n",
+    ierr = PetscFPrintf(comm,fp,"h = %G, fnoise = %G, fder2 = %G, rerrf = %G, hopt = %G\n\n",
             h, *fnoise, fder2, rerrf, *hopt);CHKERRQ(ierr);
 
     /* Save fnoise and fder2. */
@@ -189,18 +189,18 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
   theend:
 
   if (*fnoise < neP->fnoise_min) {
-    ierr = PetscFPrintf(comm,fp,"Resetting fnoise: fnoise1 = %g, fnoise_min = %g\n",*fnoise,neP->fnoise_min);CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fp,"Resetting fnoise: fnoise1 = %G, fnoise_min = %G\n",*fnoise,neP->fnoise_min);CHKERRQ(ierr);
     *fnoise = neP->fnoise_min;
     neP->fnoise_resets++;
   }
   if (*hopt < neP->hopt_min) {
-    ierr = PetscFPrintf(comm,fp,"Resetting hopt: hopt1 = %g, hopt_min = %g\n",*hopt,neP->hopt_min);CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fp,"Resetting hopt: hopt1 = %G, hopt_min = %G\n",*hopt,neP->hopt_min);CHKERRQ(ierr);
     *hopt = neP->hopt_min;
     neP->hopt_resets++;
   }
 
   ierr = PetscFPrintf(comm,fp,"Errors in derivative:\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"f = %g, fnoise = %g, fder2 = %g, hopt = %g\n",f,*fnoise,fder2,*hopt);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fp,"f = %G, fnoise = %G, fder2 = %G, hopt = %G\n",f,*fnoise,fder2,*hopt);CHKERRQ(ierr);
 
   /* For now, compute h **each** MV Mult!! */
   /*
@@ -212,7 +212,7 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
   }
   */
   fcount = neP->function_count - fcount;
-  ierr = PetscVerboseInfo((snes,"DiffParameterCompute_More: fct_now = %D, fct_cum = %D, rerrf=%g, sqrt(noise)=%g, h_more=%g\n",
+  ierr = PetscVerboseInfo((snes,"DiffParameterCompute_More: fct_now = %D, fct_cum = %D, rerrf=%G, sqrt(noise)=%G, h_more=%G\n",
            fcount,neP->function_count,rerrf,sqrt(*fnoise),*hopt));CHKERRQ(ierr);
 
 
@@ -291,7 +291,7 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
     ierr = VecAXPY(yy2,alpha,yy1);CHKERRQ(ierr);
     ierr = VecNorm(yy2,NORM_2,&enorm);CHKERRQ(ierr);
     enorm = enorm/yy1n;
-    ierr = PetscFPrintf(comm,stdout,"h = %g: relative error = %g\n",h,enorm);CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,stdout,"h = %G: relative error = %G\n",h,enorm);CHKERRQ(ierr);
     h *= 10.0;
   }
   PetscFunctionReturn(0);
@@ -307,7 +307,7 @@ PetscErrorCode MyMonitor(SNES snes,PetscInt its,double fnorm,void *dummy)
   PetscFunctionBegin;
   ierr = SNESGetNumberLinearIterations(snes,&lin_its);CHKERRQ(ierr);
   lin_its_total += lin_its;
-  ierr = PetscPrintf(snes->comm, "iter = %D, SNES Function norm = %g, lin_its = %D, total_lin_its = %D\n",its,fnorm,lin_its,lin_its_total);CHKERRQ(ierr);
+  ierr = PetscPrintf(snes->comm, "iter = %D, SNES Function norm = %G, lin_its = %D, total_lin_its = %D\n",its,fnorm,lin_its,lin_its_total);CHKERRQ(ierr);
 
   ierr = SNESUnSetMatrixFreeParameter(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);

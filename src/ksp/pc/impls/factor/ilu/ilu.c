@@ -689,16 +689,16 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (ilu->usedt) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: drop tolerance %g\n",ilu->info.dt);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: drop tolerance %G\n",ilu->info.dt);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  ILU: max nonzeros per row %D\n",(PetscInt)ilu->info.dtcount);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: column permutation tolerance %g\n",ilu->info.dtcol);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: column permutation tolerance %G\n",ilu->info.dtcol);CHKERRQ(ierr);
     } else if (ilu->info.levels == 1) {
         ierr = PetscViewerASCIIPrintf(viewer,"  ILU: %D level of fill\n",(PetscInt)ilu->info.levels);CHKERRQ(ierr);
     } else {
         ierr = PetscViewerASCIIPrintf(viewer,"  ILU: %D levels of fill\n",(PetscInt)ilu->info.levels);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  ILU: max fill ratio allocated %g\n",ilu->info.fill);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  ILU: tolerance for zero pivot %g\n",ilu->info.zeropivot);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  ILU: max fill ratio allocated %G\n",ilu->info.fill);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  ILU: tolerance for zero pivot %G\n",ilu->info.zeropivot);CHKERRQ(ierr);
     if (ilu->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using Manteuffel shift\n");CHKERRQ(ierr);}
     if (ilu->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"       in-place factorization\n");CHKERRQ(ierr);}
     else              {ierr = PetscViewerASCIIPrintf(viewer,"       out-of-place factorization\n");CHKERRQ(ierr);}

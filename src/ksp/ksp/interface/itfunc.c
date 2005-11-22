@@ -415,8 +415,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
       if (flag1) {
         ierr = PetscPrintf(ksp->comm,"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
         for (i=0; i<neig; i++) {
-          if (c[i] >= 0.0) {ierr = PetscPrintf(ksp->comm,"%g + %gi\n",r[i],c[i]);CHKERRQ(ierr);}
-          else             {ierr = PetscPrintf(ksp->comm,"%g - %gi\n",r[i],-c[i]);CHKERRQ(ierr);}
+          if (c[i] >= 0.0) {ierr = PetscPrintf(ksp->comm,"%G + %Gi\n",r[i],c[i]);CHKERRQ(ierr);}
+          else             {ierr = PetscPrintf(ksp->comm,"%G - %Gi\n",r[i],-c[i]);CHKERRQ(ierr);}
         }
       }
       if (flag2 && !rank) {
@@ -449,8 +449,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     if (flag1) {
       ierr = PetscPrintf(ksp->comm,"Explicitly computed eigenvalues\n");CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        if (c[i] >= 0.0) {ierr = PetscPrintf(ksp->comm,"%g + %gi\n",r[i],c[i]);CHKERRQ(ierr);}
-        else             {ierr = PetscPrintf(ksp->comm,"%g - %gi\n",r[i],-c[i]);CHKERRQ(ierr);}
+        if (c[i] >= 0.0) {ierr = PetscPrintf(ksp->comm,"%G + %Gi\n",r[i],c[i]);CHKERRQ(ierr);}
+        else             {ierr = PetscPrintf(ksp->comm,"%G - %Gi\n",r[i],-c[i]);CHKERRQ(ierr);}
       }
     }
     if (flag2 && !rank) {
@@ -515,7 +515,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecWAXPY(t,-1.0,t,ksp->vec_rhs);CHKERRQ(ierr);
     ierr = VecNorm(t,NORM_2,&norm);CHKERRQ(ierr);
     ierr = VecDestroy(t);CHKERRQ(ierr);
-    ierr = PetscPrintf(ksp->comm,"KSP final norm of residual %g\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(ksp->comm,"KSP final norm of residual %G\n",norm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

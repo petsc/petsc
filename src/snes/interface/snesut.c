@@ -187,7 +187,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESRatioMonitor(SNES snes,PetscInt its,Petsc
     ierr = PetscViewerASCIIPrintf(ctx->viewer,"%3D SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
   } else {
     PetscReal ratio = fgnorm/history[its-1];
-    ierr = PetscViewerASCIIPrintf(ctx->viewer,"%3D SNES Function norm %14.12e %g \n",its,fgnorm,ratio);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(ctx->viewer,"%3D SNES Function norm %14.12e %G \n",its,fgnorm,ratio);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -267,7 +267,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultSMonitor(SNES snes,PetscInt its,Pe
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(snes->comm);
   if (fgnorm > 1.e-9) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %g \n",its,fgnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %G \n",its,fgnorm);CHKERRQ(ierr);
   } else if (fgnorm > 1.e-11){
     ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %5.3e \n",its,fgnorm);CHKERRQ(ierr);
   } else {
@@ -323,13 +323,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_LS(SNES snes,PetscReal xnorm,Pe
     ierr = PetscVerboseInfo((snes,"SNESConverged_LS:Failed to converged, function norm is NaN\n"));CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FNORM_NAN;
   } else if (fnorm <= snes->ttol) {
-    ierr = PetscVerboseInfo((snes,"SNESConverged_LS:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((snes,"SNESConverged_LS:Converged due to function norm %G < %G (relative tolerance)\n",fnorm,snes->ttol));CHKERRQ(ierr);
     *reason = SNES_CONVERGED_FNORM_RELATIVE;
   } else if (fnorm < snes->abstol) {
-    ierr = PetscVerboseInfo((snes,"SNESConverged_LS:Converged due to function norm %g < %g\n",fnorm,snes->abstol));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((snes,"SNESConverged_LS:Converged due to function norm %G < %G\n",fnorm,snes->abstol));CHKERRQ(ierr);
     *reason = SNES_CONVERGED_FNORM_ABS;
   } else if (pnorm < snes->xtol*xnorm) {
-    ierr = PetscVerboseInfo((snes,"SNESConverged_LS:Converged due to small update length: %g < %g * %g\n",pnorm,snes->xtol,xnorm));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((snes,"SNESConverged_LS:Converged due to small update length: %G < %G * %G\n",pnorm,snes->xtol,xnorm));CHKERRQ(ierr);
     *reason = SNES_CONVERGED_PNORM_RELATIVE;
   } else if (snes->nfuncs >= snes->max_funcs) {
     ierr = PetscVerboseInfo((snes,"SNESConverged_LS:Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs));CHKERRQ(ierr);
@@ -422,19 +422,19 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetParametersEW(SNES snes,PetscInt v
   if (alpha2 != PETSC_DEFAULT)    kctx->alpha2    = alpha2;
   if (threshold != PETSC_DEFAULT) kctx->threshold = threshold;
   if (kctx->rtol_0 < 0.0 || kctx->rtol_0 >= 1.0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_0 < 1.0: %g",kctx->rtol_0);
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_0 < 1.0: %G",kctx->rtol_0);
   }
   if (kctx->rtol_max < 0.0 || kctx->rtol_max >= 1.0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_max (%g) < 1.0\n",kctx->rtol_max);
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_max (%G) < 1.0\n",kctx->rtol_max);
   }
   if (kctx->threshold <= 0.0 || kctx->threshold >= 1.0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 < threshold (%g) < 1.0\n",kctx->threshold);
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 < threshold (%G) < 1.0\n",kctx->threshold);
   }
   if (kctx->gamma < 0.0 || kctx->gamma > 1.0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= gamma (%g) <= 1.0\n",kctx->gamma);
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= gamma (%G) <= 1.0\n",kctx->gamma);
   }
   if (kctx->alpha <= 1.0 || kctx->alpha > 2.0) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"1.0 < alpha (%g) <= 2.0\n",kctx->alpha);
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"1.0 < alpha (%G) <= 2.0\n",kctx->alpha);
   }
   if (kctx->version != 1 && kctx->version !=2) {
     SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1 and 2 are supported: %D",kctx->version);
@@ -468,7 +468,7 @@ PetscErrorCode SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
   }
   rtol = PetscMin(rtol,kctx->rtol_max);
   kctx->rtol_last = rtol;
-  ierr = PetscVerboseInfo((snes,"SNES_KSP_EW_ComputeRelativeTolerance_Private: iter %D, Eisenstat-Walker (version %D) KSP rtol = %g\n",snes->iter,kctx->version,rtol));CHKERRQ(ierr);
+  ierr = PetscVerboseInfo((snes,"SNES_KSP_EW_ComputeRelativeTolerance_Private: iter %D, Eisenstat-Walker (version %D) KSP rtol = %G\n",snes->iter,kctx->version,rtol));CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,rtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   kctx->norm_last = snes->norm;
   PetscFunctionReturn(0);
@@ -488,7 +488,7 @@ PetscErrorCode SNES_KSP_EW_Converged_Private(KSP ksp,PetscInt n,PetscReal rnorm,
   ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
   kctx->lresid_last = rnorm;
   if (*reason) {
-    ierr = PetscVerboseInfo((snes,"SNES_KSP_EW_Converged_Private: KSP iterations=%D, rnorm=%g\n",n,rnorm));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((snes,"SNES_KSP_EW_Converged_Private: KSP iterations=%D, rnorm=%G\n",n,rnorm));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -50,9 +50,9 @@ int main(int argc,char **args)
     ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"[%d] get row %D: ",rank,i);CHKERRQ(ierr);
     for (j=0; j<nz; j++) {
 #if defined(PETSC_USE_COMPLEX)
-      ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%D %g  ",idx[j],PetscRealPart(values[j]));CHKERRQ(ierr);
+      ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%D %G  ",idx[j],PetscRealPart(values[j]));CHKERRQ(ierr);
 #else
-      ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%D %g  ",idx[j],values[j]);CHKERRQ(ierr);
+      ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%D %G  ",idx[j],values[j]);CHKERRQ(ierr);
 #endif
     }
     ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"\n");CHKERRQ(ierr);

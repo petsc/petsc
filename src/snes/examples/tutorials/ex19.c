@@ -142,7 +142,7 @@ int main(int argc,char **argv)
     ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,0,admf_FormFunctionLocali);CHKERRQ(ierr);
     ierr = DMMGSetSNESLocalib(dmmg,FormFunctionLocali4,0,admfb_FormFunctionLocali4);CHKERRQ(ierr);
 
-    ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",
+    ierr = PetscPrintf(comm,"lid velocity = %G, prandtl # = %G, grashof # = %G\n",
 		       user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
 
 

@@ -1313,7 +1313,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g, inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
+          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G, inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
         }
         break;
       
@@ -1390,7 +1390,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           if (newshift == 1){
             goto endofwhile; /* sctx.shift_amount is updated */
           } else if (newshift == -1){
-            SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
+            SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
           }
         }
  
@@ -1416,7 +1416,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
+          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
         }
         sctx.pv = 1.0/rtmp2[row+1]; 
         sctx.rs = rsum[1];
@@ -1424,7 +1424,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D",row+1,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
+          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D",row+1,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
         }
         break;
 
@@ -1500,7 +1500,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           if (newshift == 1){
             goto endofwhile;
           } else if (newshift == -1){
-            SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
+            SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
           }
 
           mul2 = (*pc2)/(*pc1);
@@ -1529,7 +1529,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           if (newshift == 1){
             goto endofwhile;
           } else if (newshift == -1){
-            SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
+            SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
           }
           mul3 = (*pc3)/(*pc2);
           *pc3 = mul3;
@@ -1569,7 +1569,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
+          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
         }
         sctx.pv = 1.0/rtmp2[row+1];
         sctx.rs = rsum[1];
@@ -1577,7 +1577,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D, 2nd row",row+1,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
+          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D, 2nd row",row+1,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
         }
         sctx.pv = 1.0/rtmp3[row+2];
         sctx.rs = rsum[2];
@@ -1585,7 +1585,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D, 3rd row",row+2,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
+          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D, 3rd row",row+2,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
         }
         break;
       default:
@@ -1604,9 +1604,9 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   C->assembled   = PETSC_TRUE;
   if (sctx.nshift) {
     if (info->shiftnz) {
-      ierr = PetscVerboseInfo((0,"MatLUFactorNumeric_Inode: number of shift_nz tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((0,"MatLUFactorNumeric_Inode: number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount));CHKERRQ(ierr);
     } else if (info->shiftpd) {
-      ierr = PetscVerboseInfo((0,"MatLUFactorNumeric_Inode: number of shift_pd tries %D, shift_amount %g, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((0,"MatLUFactorNumeric_Inode: number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top));CHKERRQ(ierr);
     }
   }
   ierr = PetscLogFlops(C->n);CHKERRQ(ierr);

@@ -174,7 +174,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
   ierr = MatView(*newmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatNorm(*newmat,NORM_1,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix 1 norm = %g\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix 1 norm = %G\n",norm);CHKERRQ(ierr);
 
   return 0;
 }

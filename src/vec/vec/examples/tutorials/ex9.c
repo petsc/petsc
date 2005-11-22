@@ -107,7 +107,7 @@ int main(int argc,char **argv)
   */
   ierr = VecGetArray(lx,&array);CHKERRQ(ierr);
   for (i=0; i<nlocal+nghost; i++) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%D %g\n",i,PetscRealPart(array[i]));CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%D %G\n",i,PetscRealPart(array[i]));CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(lx,&array);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);

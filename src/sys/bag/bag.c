@@ -233,7 +233,7 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag,void *addr,PetscReal mdefault, 
     ierr     = PetscStrncat(nname,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
     ierr     = PetscOptionsHasName(PETSC_NULL,"-help",&printhelp);CHKERRQ(ierr);
     if (printhelp) {
-      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  %s <%g>: %s \n",nname,mdefault,help);CHKERRQ(ierr);
+      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  %s <%G>: %s \n",nname,mdefault,help);CHKERRQ(ierr);
     }
     ierr     = PetscOptionsGetReal(PETSC_NULL,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
   }
@@ -284,7 +284,7 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefau
     ierr     = PetscStrncat(nname,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
     ierr     = PetscOptionsHasName(PETSC_NULL,"-help",&printhelp);CHKERRQ(ierr);
     if (printhelp) {
-      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  %s <%g + %gi>: %s \n",nname,PetscRealPart(mdefault),PetscImaginaryPart(mdefault),help);CHKERRQ(ierr);
+      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  %s <%G + %Gi>: %s \n",nname,PetscRealPart(mdefault),PetscImaginaryPart(mdefault),help);CHKERRQ(ierr);
     }
     ierr     = PetscOptionsGetScalar(PETSC_NULL,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
   }
@@ -484,13 +484,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
         ierr = PetscViewerASCIIPrintf(view,"  %s = %s; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_REAL) {
         PetscReal value = *(PetscReal*)(((char*)bag) + nitem->offset);
-        ierr = PetscViewerASCIIPrintf(view,"  %s = %g; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(view,"  %s = %G; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_SCALAR) {
         PetscScalar value = *(PetscScalar*)(((char*)bag) + nitem->offset);
 #if defined(PETSC_USE_COMPLEX)
-        ierr = PetscViewerASCIIPrintf(view,"  %s = %g + %gi; %s\n",nitem->name,PetscRealPart(value),PetscImaginaryPart(value),nitem->help);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(view,"  %s = %G + %Gi; %s\n",nitem->name,PetscRealPart(value),PetscImaginaryPart(value),nitem->help);CHKERRQ(ierr);
 #else
-        ierr = PetscViewerASCIIPrintf(view,"  %s = %g; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(view,"  %s = %G; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
 #endif
       } else if (nitem->dtype == PETSC_INT) {
         PetscInt value = *(PetscInt*)(((char*)bag) + nitem->offset);

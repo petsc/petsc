@@ -1410,9 +1410,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInfo *in
 #if defined(PETSC_USE_VERBOSE)
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
-    ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,f,af));CHKERRQ(ierr);
-    ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Run with -pc_icc_fill %g or use \n",af));CHKERRQ(ierr);
-    ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:PCICCSetFill(pc,%g);\n",af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %G needed %G\n",reallocs,f,af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Run with -pc_icc_fill %G or use \n",af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:PCICCSetFill(pc,%G);\n",af));CHKERRQ(ierr);
     ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:for best performance.\n"));CHKERRQ(ierr);
   } else {
     ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqSBAIJ:Empty matrix.\n"));CHKERRQ(ierr);
@@ -1673,9 +1673,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
 #if defined(PETSC_USE_VERBOSE)
     if (ai[am] != 0) {
       PetscReal af = ((PetscReal)ui[am])/((PetscReal)ai[am]);
-      ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",reallocs,fill,af));CHKERRQ(ierr);
-      ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqAIJ:Run with -pc_cholesky_fill %g or use \n",af));CHKERRQ(ierr);
-      ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqAIJ:PCCholeskySetFill(pc,%g) for best performance.\n",af));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqAIJ:Run with -pc_cholesky_fill %G or use \n",af));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqAIJ:PCCholeskySetFill(pc,%G) for best performance.\n",af));CHKERRQ(ierr);
     } else {
       ierr = PetscVerboseInfo((A,"MatICCFactorSymbolic_SeqAIJ:Empty matrix.\n"));CHKERRQ(ierr);
     }
