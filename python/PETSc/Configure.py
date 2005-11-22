@@ -298,7 +298,7 @@ class Configure(config.base.Configure):
   def configureInstall(self):
     '''Setup the directories for installation'''
     if self.framework.argDB['prefix']:
-      self.installdir = os.path.join(self.framework.argDB['prefix'], os.path.basename(os.getcwd()))
+      self.installdir = self.framework.argDB['prefix']
     else:
       self.installdir = self.framework.argDB['PETSC_DIR']
     return
