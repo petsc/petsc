@@ -30,8 +30,9 @@ class Configure(config.base.Configure):
       - Specify --with-petsc-dynamic
       - Have found a working dynamic linker (with dlfcn.h and libdl)
     Defines PETSC_USE_DYNAMIC_LIBRARIES if they are used'''
-    self.useDynamic = self.argDB['with-petsc-dynamic'] and self.shared.useShared and self.setCompilers.dynamicLibraries
-    if self.useDynamic:
+    if self.argDB['with-petsc-dynamic']:
+      if not self.shared.useShared and not self.setCompilers.dynamicLibraries:
+        raise RuntimeError('--with-petsc-dynamic=1 requires the options --with-shared=1 --with-dynamic=1. Perhaps these options are not specified?')
       self.addDefine('USE_DYNAMIC_LIBRARIES', 1)
     else:
       self.logPrint('Dynamic libraries - disabled')

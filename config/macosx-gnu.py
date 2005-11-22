@@ -3,7 +3,8 @@
 configure_options = [
   '--with-python',
   '--with-shared=1',
-  '--with-dynamic',
+  '--with-dynamic=1',
+  '--with-petsc-dynamic=1',
   '--download-mpich',
   '-download-mpich-pm=gforker'
   ]

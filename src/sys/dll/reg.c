@@ -56,7 +56,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,${PETSC_LIB_DIR});CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetsc");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
@@ -65,63 +65,63 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
     SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library %s \n You cannot move the dynamic libraries!\n or remove USE_DYNAMIC_LIBRARIES from ${PETSC_DIR}/bmake/$PETSC_ARCH/petscconf.h\n and rebuild libraries before moving",libs);
   }
 
-  ierr = PetscStrcpy(libs,${PETSC_LIB_DIR});CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscvec");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,${PETSC_LIB_DIR});CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscmat");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,${PETSC_LIB_DIR});CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscdm");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,${PETSC_LIB_DIR});CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscksp");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,${PETSC_LIB_DIR});CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscsnes");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,${PETSC_LIB_DIR});CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscts");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,${PETSC_LIB_DIR});CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscdm");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,${PETSC_LIB_DIR});CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscmesh");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,${PETSC_LIB_DIR});CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscgrid");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {

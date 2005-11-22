@@ -1264,6 +1264,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm,PetscDLLibr
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibraryList);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrintPath(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryGetInfo(void*,const char[],const char *[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibraryList *,const char[]);
 
 /*
     Mechanism for translating PETSc object representations between languages
