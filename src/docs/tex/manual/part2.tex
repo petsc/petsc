@@ -287,6 +287,7 @@ to share the same communication (thus improving parallel efficiency). For exampl
 one may have code such as 
 \begin{tabbing}
  VecDot(Vec x,Vec y,PetscScalar *dot);\\
+ VecMDot(Vec x,PetscInt nv, Vec y[],PetscScalar *dot);\\
  VecNorm(Vec x,NormType NORM\_2,double *norm2);\\
  VecNorm(Vec x,NormType NORM\_1,double *norm1);
 \end{tabbing}
@@ -294,21 +295,25 @@ This code works fine, the problem is that it performs three separate parallel co
 operations. Instead one can write 
 \begin{tabbing}
  VecDotBegin(Vec x,Vec y,PetscScalar *dot);\\
+ VecMDotBegin(Vec x, PetscInt nv,Vec y[],PetscScalar *dot);\\
  VecNormBegin(Vec x,NormType NORM\_2,double *norm2);\\
  VecNormBegin(Vec x,NormType NORM\_1,double *norm1);\\
  VecDotEnd(Vec x,Vec y,PetscScalar *dot);\\
+ VecMDotEnd(Vec x, PetscInt nv,Vec y[],PetscScalar *dot);\\
  VecNormEnd(Vec x,NormType NORM\_2,double *norm2);\\
  VecNormEnd(Vec x,NormType NORM\_1,double *norm1);
 \end{tabbing}
-With this code, \findex{VecDotBegin()} \findex{VecDotEnd()} \findex{VecNormBegin()} 
+With this code, \findex{VecDotBegin()} \findex{VecDotEnd()}  
+\findex{VecMDotBegin()} \findex{VecMDotEnd()}  \findex{VecNormBegin()} 
 the \findex{VecNormEnd()} communication is delayed until the first call to 
 \trl{VecxxxEnd()} at which 
 a single MPI reduction is used to communicate all the required values. It is required that the
 calls to the \trl{VecxxxEnd()} are performed in the same order as the calls to the 
 \trl{VecxxxBegin()}; however if you mistakenly make the calls in the wrong order PETSc
 will generate an error,
-informing you of this. There are two additional routines VecTDotBegin() and 
-VecTDotEnd(). \findex{VecTDotBegin()} \findex{VecTDotEnd()}
+informing you of this. There are additional routines VecTDotBegin() and 
+VecTDotEnd(), VecMTDotBegin(), VecMTDotEnd(). \findex{VecTDotBegin()} \findex{VecTDotEnd()}
+\findex{VecMTDotBegin()} \findex{VecMTDotEnd()}
 
 Note: these routines use only MPI 1 functionality; so they do not allow you to overlap 
 computation and communication (assuming no threads are spawned within a MPI process). 
