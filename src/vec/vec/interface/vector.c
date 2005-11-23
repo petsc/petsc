@@ -2080,8 +2080,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyEnd(Vec vec)
    Collective on Vec
 
    Input Parameters:
-+  nv - number of vectors
-.  x - one vector
++  x - one vector
+.  nv - number of vectors
 -  y - array of vectors.  Note that vectors are pointers
 
    Output Parameter:
@@ -2132,8 +2132,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(Vec x,PetscInt nv,const Vec y[],Petsc
    Collective on Vec
 
    Input Parameters:
-+  nv - number of vectors
-.  x - one vector
++  x - one vector
+.  nv - number of vectors
 -  y - array of vectors. 
 
    Output Parameter:

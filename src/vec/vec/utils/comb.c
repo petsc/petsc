@@ -591,6 +591,23 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNormEnd(Vec x,NormType ntype,PetscReal *res
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMDotBegin"
+/*@
+   VecMDotBegin - Starts a split phase multiple dot product computation.
+
+   Input Parameters:
++   x - the first vector
+.   nv - number of vectors
+.   y - array of vectors
+-   result - where the result will go (can be PETSC_NULL)
+
+   Level: advanced
+
+   Notes:
+   Each call to VecMDotBegin() should be paired with a call to VecMDotEnd().
+
+seealso: VecMDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+         VecTDotBegin(), VecTDotEnd(), VecMTDotBegin(), VecMTDotEnd()
+@*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar *result) 
 {
   PetscErrorCode      ierr;
@@ -621,6 +638,26 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDotBegin(Vec x,PetscInt nv,const Vec y[],P
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMDotEnd"
+/*@
+   VecMDotEnd - Ends a split phase multiple dot product computation.
+
+   Input Parameters:
++   x - the first vector (can be PETSC_NULL)
+.   nv - number of vectors
+-   y - array of vectors (can be PETSC_NULL)
+
+   Output Parameters:
+.   result - where the result will go
+
+   Level: advanced
+
+   Notes:
+   Each call to VecMDotBegin() should be paired with a call to VecMDotEnd().
+
+seealso: VecMDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+         VecTDotBegin(),VecTDotEnd(), VecMTDotBegin(), VecMTDotEnd()
+
+@*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar *result) 
 {
   PetscErrorCode      ierr;
@@ -663,6 +700,24 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDotEnd(Vec x,PetscInt nv,const Vec y[],Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMTDotBegin"
+/*@
+   VecMTDotBegin - Starts a split phase transpose multiple dot product computation.
+
+   Input Parameters:
++  x - the first vector
+.  nv - number of vectors
+.  y - array of  vectors
+-  result - where the result will go (can be PETSC_NULL)
+
+   Level: advanced
+
+   Notes:
+   Each call to VecMTDotBegin() should be paired with a call to VecMTDotEnd().
+
+seealso: VecMTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+         VecDotBegin(), VecDotEnd(), VecMDotBegin(), VecMDotEnd()
+
+@*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar *result) 
 {
   PetscErrorCode      ierr;
@@ -693,6 +748,25 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMTDotEnd"
+/*@
+   VecMTDotEnd - Ends a split phase transpose multiple dot product computation.
+
+   Input Parameters:
++  x - the first vector (can be PETSC_NULL)
+.  nv - number of vectors
+-  y - array of  vectors (can be PETSC_NULL)
+
+   Output Parameters
+.  result - where the result will go
+
+   Level: advanced
+
+   Notes:
+   Each call to VecTDotBegin() should be paired with a call to VecTDotEnd().
+
+seealso: VecMTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
+         VecDotBegin(), VecDotEnd(), VecMDotBegin(), VecMdotEnd()
+@*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar *result) 
 {
   PetscErrorCode ierr;
