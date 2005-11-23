@@ -597,6 +597,8 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecDot_Seq,
             VecTDot_Seq,
             VecNorm_Seq,
+            VecMDot_Seq,
+            VecMTDot_Seq,
             VecLoadIntoVector_Default,
             VecReciprocal_Default,
             0, /* VecViewNative */

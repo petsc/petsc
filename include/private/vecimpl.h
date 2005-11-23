@@ -66,6 +66,8 @@ struct _VecOps {
   PetscErrorCode (*dot_local)(Vec,Vec,PetscScalar*);
   PetscErrorCode (*tdot_local)(Vec,Vec,PetscScalar*);
   PetscErrorCode (*norm_local)(Vec,NormType,PetscReal*);
+  PetscErrorCode (*mdot_local)(PetscInt,Vec,const Vec[],PetscScalar*);
+  PetscErrorCode (*mtdot_local)(PetscInt,Vec,const Vec[],PetscScalar*);
   PetscErrorCode (*loadintovector)(PetscViewer,Vec);
   PetscErrorCode (*reciprocal)(Vec);
   PetscErrorCode (*viewnative)(Vec,PetscViewer);

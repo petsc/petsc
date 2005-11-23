@@ -478,6 +478,12 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNormEnd(Vec,NormType,PetscReal *);
 PetscPolymorphicFunction(VecNormEnd,(Vec x,NormType t),(x,t,&s),PetscReal,s)
 PetscPolymorphicFunction(VecNormEnd,(Vec x),(x,NORM_2,&s),PetscReal,s)
 
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMDotBegin(PetscInt,Vec,const Vec[],PetscScalar *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMDotEnd(PetscInt,Vec,const Vec[],PetscScalar *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotBegin(PetscInt,Vec,const Vec[],PetscScalar *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotEnd(PetscInt,Vec,const Vec[],PetscScalar *);
+
+
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_TREAT_OFF_PROC_ENTRIES} VecOption;
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetOption(Vec,VecOption);
 
