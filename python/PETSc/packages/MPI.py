@@ -446,6 +446,8 @@ class Configure(PETSc.package.Package):
       return 0
     # Fortran compiler is being used - so make sure mpif.h exists
     self.libraries.pushLanguage('FC')
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += self.headers.toString(self.include)
     self.framework.log.write('Checking for header mpif.h\n')
     if not self.libraries.check(self.lib,'', call = '       include \'mpif.h\''):
         raise RuntimeError('Fortran error! mpif.h could not be located at: '+str(self.include))
@@ -453,6 +455,7 @@ class Configure(PETSc.package.Package):
     self.framework.log.write('Checking for fortran mpi_init()\n')
     if not self.libraries.check(self.lib,'', call = '       include \'mpif.h\'\n       integer ierr\n       call mpi_init(ierr)'):
       raise RuntimeError('Fortran error! mpi_init() could not be located!')
+    self.compilers.CPPFLAGS = oldFlags
     self.libraries.popLanguage()
     return 0
 
