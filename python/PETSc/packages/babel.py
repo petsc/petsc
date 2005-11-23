@@ -16,7 +16,6 @@ class Configure(PETSc.package.Package):
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
     self.shared     = framework.require('PETSc.utilities.sharedLibraries',self)
-    self.dynamic    = framework.require('PETSc.utilities.dynamicLibraries',self)
     self.languages  = framework.require('PETSc.utilities.languages',self)
     return
 
