@@ -125,7 +125,6 @@ PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
     ierr = MatConvert_SuperLU_DIST_Base(A,MATMPIAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -253,14 +252,9 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
       aa =  (Mat_SeqAIJ*)A->data;
     }
 
-    /* Allocate storage, then convert Petsc NR matrix to SuperLU_DIST NC */
-    if (lu->flg == DIFFERENT_NONZERO_PATTERN) {/* first numeric factorization */
-#if defined(PETSC_USE_COMPLEX)
-      zallocateA_dist(N, aa->nz, &lu->val, &lu->col, &lu->row);
-#else
-      dallocateA_dist(N, aa->nz, &lu->val, &lu->col, &lu->row); 
-#endif
-    } else { /* successive numeric factorization, sparsity pattern is reused. */
+    /* Convert Petsc NR matrix to SuperLU_DIST NC. 
+       Note: memories of lu->val, col and row are allocated by CompRow_to_CompCol_dist()! */
+    if (lu->flg == SAME_NONZERO_PATTERN) {/* successive numeric factorization, sparsity pattern is reused. */
       Destroy_CompCol_Matrix_dist(&lu->A_sup); 
       Destroy_LU(N, &lu->grid, &lu->LUstruct); 
       lu->options.Fact = SamePattern; 
