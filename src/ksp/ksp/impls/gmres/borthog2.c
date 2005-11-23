@@ -63,7 +63,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESClassicalGramSchmidtOrthogonalization(
      This is really a matrix-vector product, with the matrix stored
      as pointer to rows 
   */
-  ierr = VecMDot(it+1,VEC_VV(it+1),&(VEC_VV(0)),lhh);CHKERRQ(ierr); /* <v,vnew> */
+  ierr = VecMDot(VEC_VV(it+1),it+1,&(VEC_VV(0)),lhh);CHKERRQ(ierr); /* <v,vnew> */
   for (j=0; j<=it; j++) {
     lhh[j] = - lhh[j];
   }
@@ -97,7 +97,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESClassicalGramSchmidtOrthogonalization(
   }
 
   if (refine) {
-    ierr = VecMDot(it+1,VEC_VV(it+1),&(VEC_VV(0)),lhh);CHKERRQ(ierr); /* <v,vnew> */
+    ierr = VecMDot(VEC_VV(it+1),it+1,&(VEC_VV(0)),lhh);CHKERRQ(ierr); /* <v,vnew> */
     for (j=0; j<=it; j++) lhh[j] = - lhh[j];
     ierr = VecMAXPY(VEC_VV(it+1),it+1,lhh,&VEC_VV(0));CHKERRQ(ierr);
     /* note lhh[j] is -<v,vnew> , hence the subtraction */

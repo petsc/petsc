@@ -85,7 +85,7 @@ int main(int argc,char **argv)
      Demonstrate various basic vector routines.
   */
   ierr = VecDot(x,x,&dot);CHKERRQ(ierr);
-  ierr = VecMDot(3,x,z,dots);CHKERRQ(ierr);
+  ierr = VecMDot(x,3,z,dots);CHKERRQ(ierr);
 
   /* 
      Note: If using a complex numbers version of PETSc, then

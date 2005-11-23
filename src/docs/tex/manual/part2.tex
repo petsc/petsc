@@ -214,8 +214,8 @@ VecCopy(Vec x, Vec y); & $ y = x $ \\
 VecSwap(Vec x, Vec y); & $ y = x $ while $ x = y$ \\
 VecPointwiseMult(Vec w,Vec x,Vec y); & $ w_{i} = x_{i}*y_{i} $ \\
 VecPointwiseDivide(Vec w,Vec x,Vec y); & $ w_{i} = x_{i}/y_{i} $ \\
-VecMDot(int n,Vec x, Vec y[],PetscScalar *r); & $ r[i] = \bar{x}'*y[i]$ \\
-VecMTDot(int n,Vec x, Vec y[],PetscScalar *r); & $ r[i] = x'*y[i]$ \\
+VecMDot(Vec x,int n,Vec y[],PetscScalar *r); & $ r[i] = \bar{x}'*y[i]$ \\
+VecMTDot(Vec x,int n,Vec y[],PetscScalar *r); & $ r[i] = x'*y[i]$ \\
 VecMAXPY(Vec y,int n, PetscScalar *a, Vec x[]); \hspace{1cm} & $ y = y + \sum_i a_{i}*x[i] $ \\
 VecMax(Vec x,  int *idx, double *r); & $ r = \max x_{i}$ \\
 VecMin(Vec x,  int *idx, double *r); & $ r = \min x_{i}$ \\

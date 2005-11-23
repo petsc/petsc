@@ -107,7 +107,7 @@
 !  Demonstrate various basic vector routines.
 
       call VecDot(x,x,dot,ierr)
-      call VecMDot(ithree,x,z,dots,ierr)
+      call VecMDot(x,ithree,z,dots,ierr)
 
 !  Note: If using a complex numbers version of PETSc, then
 !  PETSC_USE_COMPLEX is defined in the makefiles; otherwise,

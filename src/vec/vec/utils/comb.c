@@ -591,7 +591,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNormEnd(Vec x,NormType ntype,PetscReal *res
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMDotBegin"
-PetscErrorCode PETSCVEC_DLLEXPORT VecMDotBegin(PetscInt nv,Vec x,const Vec y[],PetscScalar *result) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar *result) 
 {
   PetscErrorCode      ierr;
   PetscSplitReduction *sr;
@@ -613,7 +613,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDotBegin(PetscInt nv,Vec x,const Vec y[],P
   }
   if (!x->ops->mdot_local) SETERRQ(PETSC_ERR_SUP,"Vector does not suppport local mdots");
   ierr = PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->mdot_local)(nv,x,y,sr->lvalues+sr->numopsbegin);CHKERRQ(ierr);
+  ierr = (*x->ops->mdot_local)(x,nv,y,sr->lvalues+sr->numopsbegin);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   sr->numopsbegin += nv;
   PetscFunctionReturn(0);
@@ -621,7 +621,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDotBegin(PetscInt nv,Vec x,const Vec y[],P
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMDotEnd"
-PetscErrorCode PETSCVEC_DLLEXPORT VecMDotEnd(PetscInt nv,Vec x,const Vec y[],PetscScalar *result) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar *result) 
 {
   PetscErrorCode      ierr;
   PetscSplitReduction *sr;
@@ -663,7 +663,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDotEnd(PetscInt nv,Vec x,const Vec y[],Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMTDotBegin"
-PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotBegin(PetscInt nv,Vec x,const Vec y[],PetscScalar *result) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar *result) 
 {
   PetscErrorCode      ierr;
   PetscSplitReduction *sr;
@@ -685,7 +685,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotBegin(PetscInt nv,Vec x,const Vec y[],
   }
   if (!x->ops->mtdot_local) SETERRQ(PETSC_ERR_SUP,"Vector does not suppport local mdots");
   ierr = PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->mdot_local)(nv,x,y,sr->lvalues+sr->numopsbegin);CHKERRQ(ierr);
+  ierr = (*x->ops->mdot_local)(x,nv,y,sr->lvalues+sr->numopsbegin);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   sr->numopsbegin += nv;
   PetscFunctionReturn(0);
@@ -693,7 +693,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotBegin(PetscInt nv,Vec x,const Vec y[],
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMTDotEnd"
-PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotEnd(PetscInt nv,Vec x,const Vec y[],PetscScalar *result) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar *result) 
 {
   PetscErrorCode ierr;
 
@@ -701,6 +701,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotEnd(PetscInt nv,Vec x,const Vec y[],Pe
   /*
       MTDotEnd() is the same as MDotEnd() so reuse the code
   */
-  ierr = VecMDotEnd(nv,x,y,result);CHKERRQ(ierr);
+  ierr = VecMDotEnd(x,nv,y,result);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMDot_MPI"
-PetscErrorCode VecMDot_MPI(PetscInt nv,Vec xin,const Vec y[],PetscScalar *z)
+PetscErrorCode VecMDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 {
   PetscScalar awork[128],*work = awork;
   PetscErrorCode ierr;
@@ -17,7 +17,7 @@ PetscErrorCode VecMDot_MPI(PetscInt nv,Vec xin,const Vec y[],PetscScalar *z)
   if (nv > 128) {
     ierr = PetscMalloc(nv*sizeof(PetscScalar),&work);CHKERRQ(ierr);
   }
-  ierr = VecMDot_Seq(nv,xin,y,work);CHKERRQ(ierr);
+  ierr = VecMDot_Seq(xin,nv,y,work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
   if (nv > 128) {
     ierr = PetscFree(work);CHKERRQ(ierr);
@@ -27,7 +27,7 @@ PetscErrorCode VecMDot_MPI(PetscInt nv,Vec xin,const Vec y[],PetscScalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMTDot_MPI"
-PetscErrorCode VecMTDot_MPI(PetscInt nv,Vec xin,const Vec y[],PetscScalar *z)
+PetscErrorCode VecMTDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
 {
   PetscScalar awork[128],*work = awork;
   PetscErrorCode ierr;
@@ -36,7 +36,7 @@ PetscErrorCode VecMTDot_MPI(PetscInt nv,Vec xin,const Vec y[],PetscScalar *z)
   if (nv > 128) {
     ierr = PetscMalloc(nv*sizeof(PetscScalar),&work);CHKERRQ(ierr);
   }
-  ierr = VecMTDot_Seq(nv,xin,y,work);CHKERRQ(ierr);
+  ierr = VecMTDot_Seq(xin,nv,y,work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
   if (nv > 128) {
     ierr = PetscFree(work);CHKERRQ(ierr);

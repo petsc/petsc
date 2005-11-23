@@ -19,8 +19,8 @@ typedef struct {
 } Vec_MPI;
 
 EXTERN PetscErrorCode VecNorm_Seq(Vec,NormType,PetscReal *work);
-EXTERN PetscErrorCode VecMDot_MPI(PetscInt,Vec,const Vec[],PetscScalar *);
-EXTERN PetscErrorCode VecMTDot_MPI(PetscInt,Vec,const Vec[],PetscScalar *);
+EXTERN PetscErrorCode VecMDot_MPI(Vec,PetscInt,const Vec[],PetscScalar *);
+EXTERN PetscErrorCode VecMTDot_MPI(Vec,PetscInt,const Vec[],PetscScalar *);
 EXTERN PetscErrorCode VecNorm_MPI(Vec,NormType,PetscReal *);
 EXTERN PetscErrorCode VecMax_MPI(Vec,PetscInt *,PetscReal *);
 EXTERN PetscErrorCode VecMin_MPI(Vec,PetscInt *,PetscReal *);

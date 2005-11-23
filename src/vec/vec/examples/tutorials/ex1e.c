@@ -93,7 +93,7 @@ _ VecSet(z[2],three);___
      Demonstrate various basic vector routines.
   */
 _ VecDot(x,x,&dot);___
-_ VecMDot(3,x,z,dots);___
+_ VecMDot(x,3,z,dots);___
 
   /* 
      Note: If using a complex numbers version of PETSc, then

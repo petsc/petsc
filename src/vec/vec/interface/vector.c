@@ -2103,7 +2103,7 @@ $      val = (x,y) = y^H x,
 
 .seealso: VecMDot(), VecTDot()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(PetscInt nv,Vec x,const Vec y[],PetscScalar *val)
+PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(Vec x,PetscInt nv,const Vec y[],PetscScalar *val)
 {
   PetscErrorCode ierr;
 
@@ -2119,7 +2119,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(PetscInt nv,Vec x,const Vec y[],Petsc
   if (x->n != (*y)->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBegin(VEC_MTDot,x,*y,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->mtdot)(nv,x,y,val);CHKERRQ(ierr);
+  ierr = (*x->ops->mtdot)(x,nv,y,val);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_MTDot,x,*y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2155,7 +2155,7 @@ $     val = (x,y) = y^T x,
 
 .seealso: VecMTDot(), VecDot()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(PetscInt nv,Vec x,const Vec y[],PetscScalar *val)
+PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar *val)
 {
   PetscErrorCode ierr;
 
@@ -2171,7 +2171,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(PetscInt nv,Vec x,const Vec y[],PetscS
   if (x->n != (*y)->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,x->comm);CHKERRQ(ierr);
-  ierr = (*x->ops->mdot)(nv,x,y,val);CHKERRQ(ierr);
+  ierr = (*x->ops->mdot)(x,nv,y,val);CHKERRQ(ierr);
   ierr = PetscLogEventBarrierEnd(VEC_MDotBarrier,x,*y,0,0,x->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
