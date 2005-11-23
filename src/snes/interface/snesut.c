@@ -288,7 +288,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultSMonitor(SNES snes,PetscInt its,Pe
 +  snes - the SNES context
 .  xnorm - 2-norm of current iterate
 .  pnorm - 2-norm of current step 
-.  fnorm - 2-norm of function
+.  fnorm - 2-norm of function at current iterate
 -  dummy - unused context
 
    Output Parameter:

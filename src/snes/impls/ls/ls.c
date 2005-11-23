@@ -689,8 +689,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
 -  fnorm - 2-norm of f
 
    Output Parameters:
-+  g - residual evaluated at new iterate y
-.  w - new iterate 
++  g - residual evaluated at new iterate w
+.  w - new iterate (x + alpha*y)
 .  gnorm - 2-norm of g
 .  ynorm - 2-norm of search length
 -  flag - PETSC_TRUE if line search succeeds; PETSC_FALSE on failure.
