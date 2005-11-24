@@ -22,6 +22,7 @@ struct _p_Mesh {
   void    *orientation;
   void    *spaceFootprint;
   void    *bundle;
+  void    *vertexBundle;
   void    *elementBundle;
   void    *coordBundle;
   Vec      coordinates;
@@ -1182,6 +1183,56 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetBundle(Mesh mesh,void *bundle)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MeshGetVertexBundle"
+/*@C
+    MeshGetVertexBundle - Gets the vertex bundle
+
+    Not collective
+
+    Input Parameter:
+.    mesh - the mesh object
+
+    Output Parameter:
+.    bundle - the vertex bundle
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshSetVertexBundle()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexBundle(Mesh mesh,void **bundle)
+{
+  if (bundle) {
+    PetscValidPointer(bundle,2);
+    *bundle = mesh->vertexBundle;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshSetVertexBundle"
+/*@C
+    MeshSetVertexBundle - Sets the vertex bundle
+
+    Not collective
+
+    Input Parameters:
++    mesh - the mesh object
+-    bundle - the vertex bundle
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshGetVertexBundle()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetVertexBundle(Mesh mesh,void *bundle)
+{
+  PetscValidPointer(bundle,2);
+  mesh->vertexBundle = bundle;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshGetElementBundle"
 /*@C
     MeshGetElementBundle - Gets the element bundle
@@ -1551,6 +1602,7 @@ PetscErrorCode initGeneratorInput(struct triangulateio *inputCtx)
   inputCtx->numberofsegments = 0;
   inputCtx->segmentlist = NULL;
   inputCtx->segmentmarkerlist = NULL;
+  inputCtx->numberoftriangleattributes = 0;
   inputCtx->numberofholes = 0;
   inputCtx->holelist = NULL;
   inputCtx->numberofregions = 0;
@@ -1630,11 +1682,10 @@ PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
       ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRQ(ierr);
       for(ALE::Point_set::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
         ALE::Point     vertex(*v_itor);
-        ALE::Point     interval;
+        ALE::Point     interval = coordBundle->getFiberInterval(vertex);
         ALE::Point_set support;
         PetscScalar   *array;
 
-        interval = coordBundle->getFiberInterval(vertex);
         ierr = restrictField(coordBundle, bdOrientation, coords, vertex, &array); CHKERRQ(ierr);
         for(int d = 0; d < interval.index; d++) {
           in.pointlist[interval.prefix + d] = array[d];
@@ -1701,9 +1752,213 @@ PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
     ierr = PetscFree(in.segmentmarkerlist);CHKERRQ(ierr);
   }
   ierr = MeshPopulate(m, dim, out.numberofpoints, out.numberoftriangles, out.trianglelist, out.pointlist);CHKERRQ(ierr);
+  if (rank == 0) {
+    ALE::Sieve *boundary = new ALE::Sieve(m->comm);
+    ALE::Sieve *topology;
+
+    ierr = MeshGetTopology(m, (void **) &topology);CHKERRQ(ierr);
+    for(int v = 0; v < out.numberofpoints; v++) {
+      if (out.pointmarkerlist[v]) {
+        ALE::Point boundaryPoint(-1, out.pointmarkerlist[v]);
+        ALE::Point point(0, v + out.numberoftriangles);
+
+        boundary->addCone(point, boundaryPoint);
+      }
+    }
+    for(int e = 0; e < out.numberofedges; e++) {
+      if (out.edgemarkerlist[e]) {
+        ALE::Point     boundaryPoint(-1, out.edgemarkerlist[e]);
+        ALE::Point     endpointA(0, out.edgelist[e*2+0] + out.numberoftriangles);
+        ALE::Point     endpointB(0, out.edgelist[e*2+1] + out.numberoftriangles);
+        ALE::Point_set supportA = topology->support(endpointA);
+        ALE::Point_set supportB = topology->support(endpointB);
+        supportA.meet(supportB);
+        ALE::Point     edge = *(supportA.begin());
+
+        boundary->addCone(edge, boundaryPoint);
+      }
+    }
+    ierr = MeshSetBoundary(m, (void *) boundary);CHKERRQ(ierr);
+  }
+  ierr = destroyGeneratorOutput(&out);CHKERRQ(ierr);
+  *mesh = m;
+  PetscFunctionReturn(0);
+}
+
+extern PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve>, const char *, bool localize, ALE::PreSieve **);
+extern PetscErrorCode MeshCreateMapping(Mesh, ALE::IndexBundle *, ALE::PreSieve *, ALE::IndexBundle *, VecScatter *);
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshRefine_Triangle"
+PetscErrorCode MeshRefine_Triangle(Mesh oldMesh, PetscReal maxArea, /*CoSieve*/ Vec maxAreas, Mesh *mesh)
+{
+  Mesh                 m, serialMesh;
+  ALE::Sieve          *serialTopology;
+  ALE::PreSieve       *serialOrientation;
+  ALE::Sieve          *serialBoundary;
+  ALE::IndexBundle    *elementBundle, *serialElementBundle, *serialVertexBundle;
+  ALE::IndexBundle    *serialCoordBundle;
+  ALE::PreSieve       *partitionTypes;
+  Vec                  serialCoordinates;
+  PetscScalar         *coords;
+  struct triangulateio in;
+  struct triangulateio out;
+  PetscReal            maxElementArea, *areas;
+  PetscInt             numElements;
+  PetscInt             dim = 2;
+  PetscMPIInt          rank;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCreate(oldMesh->comm, &m);CHKERRQ(ierr);
+  ierr = MeshGetElementBundle(oldMesh, (void **) &elementBundle);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(oldMesh->comm, &rank);CHKERRQ(ierr);
+  ierr = initGeneratorInput(&in);CHKERRQ(ierr);
+  ierr = initGeneratorOutput(&out);CHKERRQ(ierr);
+  ierr = MeshUnify(oldMesh, &serialMesh);CHKERRQ(ierr);
+  ierr = MeshGetTopology(serialMesh, (void **) &serialTopology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(serialMesh, (void **) &serialOrientation);CHKERRQ(ierr);
+  ierr = MeshGetBoundary(serialMesh, (void **) &serialBoundary);CHKERRQ(ierr);
+  ierr = MeshGetVertexBundle(serialMesh, (void **) &serialVertexBundle);CHKERRQ(ierr);
+  ierr = MeshGetElementBundle(serialMesh, (void **) &serialElementBundle);CHKERRQ(ierr);
+  ierr = MeshGetCoordinateBundle(serialMesh, (void **) &serialCoordBundle);CHKERRQ(ierr);
+  ierr = MeshGetCoordinates(serialMesh, &serialCoordinates);CHKERRQ(ierr);
+
+  numElements = elementBundle->getGlobalSize();
+  if (maxArea > 0.0) {
+    maxElementArea = maxArea;
+  } else {
+    /* TODO: Should be the volume of the bounding box */
+    maxElementArea = 1.0;
+  }
+  if (rank == 0) {
+    ierr = PetscMalloc(numElements * sizeof(double), &areas);CHKERRQ(ierr);
+    in.trianglearealist = areas;
+  }
+  if (maxAreas) {
+    Vec        locAreas;
+    VecScatter areaScatter;
+
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, numElements, areas, &locAreas);CHKERRQ(ierr);
+    ierr = MeshCreateMapping(oldMesh, elementBundle, partitionTypes, serialElementBundle, &areaScatter);CHKERRQ(ierr);
+    ierr = VecScatterBegin(maxAreas, locAreas, INSERT_VALUES, SCATTER_FORWARD, areaScatter);CHKERRQ(ierr);
+    ierr = VecScatterEnd(maxAreas, locAreas, INSERT_VALUES, SCATTER_FORWARD, areaScatter);CHKERRQ(ierr);
+    ierr = VecDestroy(locAreas);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(areaScatter);CHKERRQ(ierr);
+  } else {
+    if (rank == 0) {
+      for(int e = 0; e < numElements; e++) {
+        areas[e] = maxElementArea;
+      }
+    }
+  }
+
+  if (rank == 0) {
+    ALE::Obj<ALE::Point_set> vertices = serialTopology->depthStratum(0);
+    ALE::Obj<ALE::Point_set> edges = serialTopology->depthStratum(1);
+    ALE::Obj<ALE::Point_set> faces = serialTopology->heightStratum(0);
+    ALE::Obj<ALE::Point_set> boundaries = serialBoundary->base();
+    char                    *args = (char *) "pqenzQ";
+    char                    *newArgs;
+    size_t                   len;
+    int                      f = 0;
+
+    in.numberofpoints = vertices->size();
+    ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);CHKERRQ(ierr);
+    ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRQ(ierr);
+    ierr = VecGetArray(serialCoordinates, &coords);CHKERRQ(ierr);
+    for(ALE::Point_set::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
+      ALE::Point     vertex(*v_itor);
+      ALE::Point     interval = serialCoordBundle->getFiberInterval(vertex);
+      ALE::Point_set support;
+      PetscScalar   *array;
+
+      ierr = restrictField(serialCoordBundle, serialOrientation, coords, vertex, &array); CHKERRQ(ierr);
+      for(int d = 0; d < interval.index; d++) {
+        in.pointlist[interval.prefix + d] = array[d];
+      }
+
+      interval = serialVertexBundle->getFiberInterval(vertex);
+      support  = serialBoundary->support(vertex);
+      if (support.size()) {
+        in.pointmarkerlist[interval.prefix] = support.begin()->index;
+      } else {
+        in.pointmarkerlist[interval.prefix] = 0;
+      }
+    }
+    ierr = VecRestoreArray(serialCoordinates, &coords);CHKERRQ(ierr);
+
+    in.numberofcorners = 3;
+    in.numberoftriangles = faces->size();
+    ierr = PetscMalloc(in.numberoftriangles * in.numberofcorners * sizeof(int), &in.trianglelist);CHKERRQ(ierr);
+    for(ALE::Point_set::iterator f_itor = faces->begin(); f_itor != faces->end(); f_itor++) {
+      ALE::Obj<ALE::Point_array> intervals = serialVertexBundle->getGlobalOrderedClosureIndices(serialOrientation->cone(*f_itor));
+      int                        v = 0;
+
+      for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+        in.trianglelist[f * in.numberofcorners + v++] = i_itor->prefix;
+      }
+      f++;
+    }
+
+    in.numberofsegments = 0;
+    for(ALE::Point_set::iterator b_itor = boundaries->begin(); b_itor != boundaries->end(); b_itor++) {
+      ALE::Point_set segments = serialBoundary->cone(*b_itor);
+
+      /* Should be done with a fibration instead */
+      segments.meet(edges);
+      in.numberofsegments += segments.size();
+    }
+    if (in.numberofsegments > 0) {
+      ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRQ(ierr);
+      ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRQ(ierr);
+      for(ALE::Point_set::iterator b_itor = boundaries->begin(); b_itor != boundaries->end(); b_itor++) {
+        ALE::Point_set segments = serialBoundary->cone(*b_itor);
+
+        /* Should be done with a fibration instead */
+        segments.meet(edges);
+        for(ALE::Point_set::iterator s_itor = segments.begin(); s_itor != segments.end(); s_itor++) {
+          ALE::Point               segment = *s_itor;
+          ALE::Point               interval = serialElementBundle->getFiberInterval(segment);
+          ALE::Obj<ALE::Point_set> cone = serialTopology->cone(segment);
+          PetscInt                 p = 0;
+        
+          for(ALE::Point_set::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
+            in.segmentlist[interval.prefix * 2 + (p++)] = (*c_itor).index;
+          }
+          in.segmentmarkerlist[interval.prefix] = b_itor->index;
+        }
+      }
+    }
+
+    in.numberofholes = 0;
+    if (in.numberofholes > 0) {
+      ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);CHKERRQ(ierr);
+    }
+    ierr = PetscStrlen(args, &len);CHKERRQ(ierr);
+    ierr = PetscMalloc((strlen(args) + 4) * sizeof(char), &newArgs);CHKERRQ(ierr);
+    ierr = PetscStrcpy(newArgs, args);CHKERRQ(ierr);
+    ierr = PetscStrcat(newArgs, "pra");CHKERRQ(ierr);
+    triangulate((char *) newArgs, &in, &out, NULL);
+    ierr = PetscFree(newArgs);CHKERRQ(ierr);
+    ierr = PetscFree(in.pointlist);CHKERRQ(ierr);
+    ierr = PetscFree(in.pointmarkerlist);CHKERRQ(ierr);
+    ierr = PetscFree(in.segmentlist);CHKERRQ(ierr);
+    ierr = PetscFree(in.segmentmarkerlist);CHKERRQ(ierr);
+  }
+  ierr = MeshPopulate(m, dim, out.numberofpoints, out.numberoftriangles, out.trianglelist, out.pointlist);CHKERRQ(ierr);
+  ierr = MeshDistribute(m);CHKERRQ(ierr);
   /* Need to make boundary */
   ierr = destroyGeneratorOutput(&out);CHKERRQ(ierr);
   *mesh = m;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshCoarsen_Triangle"
+PetscErrorCode MeshCoarsen_Triangle(Mesh mesh, PetscReal minArea, /*CoSieve*/ Vec minAreas, Mesh *coarseMesh)
+{
+  PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
@@ -1718,6 +1973,32 @@ PetscErrorCode MeshGenerate(Mesh boundary, Mesh *mesh)
   PetscFunctionBegin;
 #ifdef PETSC_HAVE_TRIANGLE
   ierr = MeshGenerate_Triangle(boundary, mesh);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshRefine"
+PetscErrorCode MeshRefine(Mesh mesh, PetscReal maxArea, /*CoSieve*/ Vec maxAreas, Mesh *refinedMesh)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+#ifdef PETSC_HAVE_TRIANGLE
+  ierr = MeshRefine_Triangle(mesh, maxArea, maxAreas, refinedMesh);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshCoarsen"
+PetscErrorCode MeshCoarsen(Mesh mesh, PetscReal minArea, /*CoSieve*/ Vec minAreas, Mesh *coarseMesh)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+#ifdef PETSC_HAVE_TRIANGLE
+  ierr = MeshCoarsen_Triangle(mesh, minArea, minAreas, coarseMesh);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
