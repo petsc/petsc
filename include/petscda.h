@@ -477,6 +477,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetBoundaryBundle(Mesh, void**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetBoundaryBundle(Mesh, void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetBundle(Mesh, void**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetBundle(Mesh, void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexBundle(Mesh, void**);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetVertexBundle(Mesh, void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetElementBundle(Mesh, void**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetElementBundle(Mesh, void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinateBundle(Mesh, void**);
@@ -490,6 +492,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetSpaceFootprint(Mesh, void*);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshPopulate(Mesh, int, PetscInt, PetscInt, PetscInt *, PetscScalar []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDistribute(Mesh);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshUnify(Mesh, Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetDimension(Mesh, PetscInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetEmbeddingDimension(Mesh, PetscInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateBoundary(Mesh, PetscInt, PetscInt, PetscInt [], PetscScalar [], void **, Vec *);
@@ -501,6 +504,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleMatrix(Mat, PetscInt, PetscScala
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePCICE(MPI_Comm, const char [], PetscInt, PetscTruth, Mesh *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePyLith(MPI_Comm, const char [], Mesh *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGenerate(Mesh, Mesh *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRefine(Mesh, PetscReal, /*CoSieve*/ Vec, Mesh *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCoarsen(Mesh, PetscReal, /*CoSieve*/ Vec, Mesh *);
 
 /*S
      DM - Abstract PETSc object that manages an abstract grid object

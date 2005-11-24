@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
   Vec            partition;
   PetscViewer    viewer;
   PetscInt       dim;
+  PetscReal      refinementLimit;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -44,6 +45,8 @@ int main(int argc, char *argv[])
     ierr = PetscOptionsInt("-debug", "The debugging flag", "ex2.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
     dim  = 2;
     ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex2.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
+    refinementLimit = 0.0;
+    ierr = PetscOptionsReal("-refinement_limit", "The area of the largest trianglei the mesh", "ex2.c", 1.0, &refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   comm = PETSC_COMM_WORLD;
 
@@ -58,6 +61,14 @@ int main(int argc, char *argv[])
   ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
   ierr = MeshDistribute(mesh);CHKERRQ(ierr);
   ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
+
+  if (refinementLimit > 0.0) {
+    Mesh refinedMesh;
+
+    ierr = PetscPrintf(comm, "Refining mesh\n");CHKERRQ(ierr);
+    ierr = MeshRefine(mesh, refinementLimit, PETSC_NULL, &refinedMesh);CHKERRQ(ierr);
+    mesh = refinedMesh;
+  }
 
   ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
