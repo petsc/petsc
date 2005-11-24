@@ -80,7 +80,7 @@ def processDir(tagfile,dirname,names):
   if dir in names and dirname.find('src') >=0:
     names.remove(exname)
   # One-level unique dirs
-  for exname in ['SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib']:
+  for exname in ['SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','bmake','bin','maint']:
     if exname in names:
       names.remove(exname)
   #  Multi-level unique dirs - specify from toplevel
@@ -91,11 +91,26 @@ def processDir(tagfile,dirname,names):
         names.remove(name)
   return
 
+def processFiles(dirname,tagfile):
+  # list files that can't be done with global match [as above] with complete paths
+  import glob
+  files= []
+  lists=['bmake/adic*','bmake/common/*','bin/*','bin/*','maint/*','maint/confignightly/*']
+
+  for glist in lists:
+    gfiles = glob.glob(glist)
+    for file in gfiles:
+      if not (file.endswith('pyc') or file.endswith('/SCCS')):
+        files.append(file)
+  if files: createTags(tagfile,dirname,files)
+  return
+
 def main():
   try: os.unlink('TAGS')
   except: pass
   tagfile = os.path.join(os.getcwd(),'ETAGS')
   os.path.walk(os.getcwd(),processDir,tagfile)
+  processFiles(os.getcwd(),tagfile)
   addFileNameTags(tagfile)
   try: os.unlink('ETAGS')
   except: pass
