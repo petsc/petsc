@@ -108,8 +108,8 @@ cleanadic:
 #    #requiresprecision double (or single)
 #
 tree: ${ACTION}
-	-@if [ "${DIRS}" != "" -o -d "ftn-auto" -o -d "ftn-custom" ]; then \
-	  for dir in ${DIRS} ftn-auto ftn-custom foo ; do \
+	-@if [ "${DIRS}" != "" -o -d "ftn-auto" -o -d "ftn-custom" -o -d "f90-custom" ]; then \
+	  for dir in ${DIRS} ftn-auto ftn-custom f90-custom foo ; do \
             if [ "$$dir" = "fortran" -a "${FC_LINKER}foo" = "foo" ]; then \
               continue;\
             fi;\
