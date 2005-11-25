@@ -514,7 +514,12 @@ using the Finite Integration Technique (FIT)",
 %
 %  <a name="geosciences"><H3><center>Geosciences</center></H3>
 %
-
+@InProceedings{mqrs2003,
+  author = "Roland Masson and Philippe Quandalle and Stephane Requena and Robert Scheichl",
+  year   = "2003",
+  title  = "Parallel Preconditioning for Sedimentary Basin Simulations",
+  booktitle = "Large-Scale Scientific Computing: 4th International Conference, LSSC 2003, Sozopol, Bulgaria, June 4-8, 2003"
+}
 @InProceedings{lichtner1,
   author = "Chuan Lu and Peter C. Lichtner",
   year   = "2005",
@@ -668,15 +673,6 @@ pages = {185--191}
 %characteristics over thousands of square miles. PETSc has been used
 %for a variety of these simulations.
 %
-@InProceedings{anton-krassimir-lscc,
- Author      =  {Anton Antonov and Krassimir Georgiev and Emilia Komsalova and Zahari Zlatev},
- TITLE       =   "Comparison of Two Local Refinement Methods for Large Scale Air Pollution Simulations",
- booktitle   = "Large-Scale Scientific Computing: 4th International Conference, LSSC 2003",
- volume = "2907",
- year = 2003,
- publisher = "Springer-Verlag",
- url = "http://www.springerlink.com/app/home/contribution.asp?wasp=65dfaebc36f6453d9120b8f9f86fecc5&referrer=parent&backto=issue,32,55;journal,618,2072;linkingpublicationresults,1:105633,1"
-}
 @INPROCEEDINGS{htfc2003,
  AUTHOR=    "L. Hluchy and V.D. Tran and D.Froehlich and W.Castaings",
  TITLE=     "Methods and Experiences For Parallelizing Flood Models",
@@ -706,6 +702,27 @@ pages = {185--191}
                  PETSc for its linear solves"
 }
 % <td width="100%" colspan="2"><hr size="4" color="#FF5B5B"> </td>
+@inproceedings{Bart_Omar:SC05,
+  AUTHOR = {Volkan Ak{\c c}elik and George Biros and Andrei Dr{\u{a}}g{\u{a}}nescu and Omar Ghattas
+           and Judith~C. Hill and Gart~G. van Bloem\en Waanders},
+ TITLE = {Dynamic data driven inversion for terascale simulations: real-time indentification of airborne contaminants},
+ BOOKTITLE = {Proceedings of SC2005},
+ ORGANIZATION = {IEEE/ACM},
+ ADDRESS = {Seattle, WA},
+ YEAR  ={2005},
+ MONTH = {November},
+ url = "http://www.cs.cmu.edu/~oghattas/papers/sc05-inverse.pdf",
+ Lab = "SNL"
+}
+@InProceedings{anton-krassimir-lscc,
+ Author      =  {Anton Antonov and Krassimir Georgiev and Emilia Komsalova and Zahari Zlatev},
+ TITLE       =   "Comparison of Two Local Refinement Methods for Large Scale Air Pollution Simulations",
+ booktitle   = "Large-Scale Scientific Computing: 4th International Conference, LSSC 2003",
+ volume = "2907",
+ year = 2003,
+ publisher = "Springer-Verlag",
+ url = "http://www.springerlink.com/app/home/contribution.asp?wasp=65dfaebc36f6453d9120b8f9f86fecc5&referrer=parent&backto=issue,32,55;journal,618,2072;linkingpublicationresults,1:105633,1"
+}
 @INPROCEEDINGS{aa2001,
  AUTHOR=    "Anton Antonov",
  TITLE=     "Object-Oriented Framework for Large Scale Air Pollution Modeling",
@@ -1412,6 +1429,32 @@ title =     {Finite-difference lattice Boltzmann model with flux limiters for li
 %
 %  <a name="otherapps"><H3><center>Other Application Areas</center></H3>
 %
+@INPROCEEDINGS{wid2005,
+        AUTHOR = "Alexander I. Bobenko and Peter Schrader",
+        TITLE     = "Discrete Willmore Flow",
+        BOOKTITLE = "Eurographics Symposium on Geometry Processing",
+        url       = "http://www.math.tu-berlin.de/~bobenko/Papers/Willmore.pdf",
+        YEAR      = "2005",
+        editor = "M. Desbrun and H. Pottmann"
+} 
+@article{stj2003,
+author  = "A. Scascighini and A. Troxler and R. Jeltsch",
+journal = "International Journal for Numerical Methods in Fluids",
+volume  = 41,
+issue = 4,
+title   = "A numerical method for inverse design based on the inverse Euler equations",
+year    = 2003,
+pages   = "339--355",
+url = "http://www3.interscience.wiley.com/cgi-bin/abstract/102521480/ABSTRACT"
+}
+@PhdThesis{AS2001,
+  author =       {ANDREA SCASCIGHINI},
+  title =        {A Numerical Method for the Design of Internal Flow Configurations Based on 
+                  the Inverse Euler Equations},
+  school =       {SWISS FEDERAL INSTITUTE OF TECHNOLOGY, ZURICH},
+  year =         {2001},
+  url = {http://www.sam.math.ethz.ch/~andrea/}
+}
 @article{hb2005,
 author  = "E. McKay Hyde and Oscar P. Bruno",
 journal = "Journal of Computational Physics",
@@ -1467,6 +1510,15 @@ pages   = "395-401"
  YEAR=      "2005",
  BOOKTITLE= "Proceedings of the 5th International Conference on Linux Clusters",
  url = "http://www.linuxclustersinstitute.org/Linux-HPC-Revolution/Archive/PDF05/28-Fettig_J.pdf"
+}
+@techreport{
+ Author      = "Dmitriy V. Melnikov and Philippe Matagne and Jean-Pierre Leburton and
+                D.G. Austing and G. Yu and S. Tarucha and John Fettig and Nahil Sobh",
+ TITLE       = "Spin configurations in circular and rectangular vertical quantum dots in a magnetic
+                 field: Three-dimensional self-consistent simulation"
+ year        = 2005,
+ Number      = "Arxiv preprint cond-mat/0506585",
+ URL        = "http://arxiv.org/pdf/cond-mat/0506585"
 }
 @INPROCEEDINGS{richard-smedley-03,
  AUTHOR=    "Richard P. Smedley-Stevenson",
@@ -1625,12 +1677,26 @@ pages   = "157--166"
  year        = 2003,
  booktitle   = "Abstracts of the Electrochemical Society 204th meeting"
 }
+@INPROCEEDINGS{crack2,
+        AUTHOR = "Erin Lesulauro and Anthony R. Ingraffea and Gerd Heber and Paul A. Wawrzynek",
+        TITLE     = "A multiscale modeling approach to crack initiation in metallic polycrystals",
+        BOOKTITLE = "44th AIAA/ASME/ASCE/AHS/ASC Structures, Structural Dynamics, and Materials Conference",
+        url       = "http://md1.csa.com/partners/viewrecord.php?requester=gs&collection=TRD&recid=A0325099AH",
+        YEAR      = "2003"
+} 
 @techreport{hdams1,
  Author      = "Gerd Heber and Andrew J. Dolgert and Maxirn Alt and Karen A. Mazurkiewicz and Lynd Stringer",
  TITLE       = "Fracture Mechanics on the Intel Itanium Architecture",
  year        = 2001,
  INSTITUTION = "Intel Corporation",
  URL        = "http://cedar.intel.com/media/pdf/scs/cptconitanium.pdf"
+}
+@inproceedings{ihwi,
+ Author      = "E. Iesulauro and G. Heber and P. A. Wawrzynek and A. R. Ingraffea",
+ TITLE       = "Modeling of 3D Metallic Polycrystals and Simulation of Crack Initiation",
+ booktitle = "International Conference ON Computational Engineering & Sciences"
+ year = 2002,
+ URL        = "http://www.cfg.cornell.edu/~erin/erin/ices02_iesulauro.pdf"
 }
 @INPROCEEDINGS{crack,
         AUTHOR = "Bruce Carter and Chuin-Shan Chen and L. Paul Chew and Nikos Chrisochoides and Guang R. Gao and
@@ -2441,6 +2507,21 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
 %
 %  <a name="algorithm"><H3><center>Algorithm design and analysis</center></H3>
 %
+@Article{dt,
+  author =       "Matthew F. Dixon  and C. J. Kenneth Tan",
+  title  =       "Using Distributed Computers to Deterministically Approximate Higher Dimensional Convection Diffusion Equations",
+  journal =      "The Journal of Supercomputing",
+  year =         "2004",
+  pages = "235--253",
+  volume = 28,
+  url         = "http://www.springerlink.com/(nekina45nmdgrib5izizn3ip)/app/home/contribution.asp?referrer=parent&backto=issue,8,8;journal,20,73;linkingpublicationresults,1:100302,1"
+}
+@phdthesis{hwang2004,
+   author = {Feng-Nan Hwang},
+   title  = "Some Parallel Linear and Nonlinear Schwarz Methods with Applications in Computational Fluid Dynamics",
+   school = {University of Colorado at Boulder},
+   year   = 2004
+}
 @phdthesis{baker,
    author = {{A. H.} Baker},
    title  = "On improving the performance of the linear solver restarted {GMRES}",
@@ -2809,7 +2890,15 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
   title="Nonlinearly preconditioned inexact Newton algorithms",
   journal="SIAM J. Sci. Comput.",
   notes="to appear"
-}                                    
+}
+@article{c04,
+  author="Feng-Nan Hwang and X.-C. Cai
+  url="http://amath.colorado.edu/student/hwangf/papers/one-level-aspin.pdf",
+  title="A parallel nonlinear additive Schwarz preconditioned inexact Newton algorithm for incompressible
+       Navier-Stokes equations",
+  journal="Journal of Computational Physics",
+  year = 2004
+}                                           
 @InProceedings{Adams-01, 
   author =   {Mark F. Adams}, 
   title =   {A Distributed Memory Unstructured {G}auss-{S}eidel Algorithm for Multigrid Smoothers}, 
