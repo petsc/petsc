@@ -22,6 +22,16 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dAccess(F90Array2d*,void**);
 EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dDestroy(F90Array2d*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dGetNextRecord(F90Array2d*,void**);
 
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array3dCreate(void*,PetscDataType,int,int,int,int,int,int,F90Array3d*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array3dAccess(F90Array3d*,void**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array3dDestroy(F90Array3d*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array3dGetNextRecord(F90Array3d*,void**);
+
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array4dCreate(void*,PetscDataType,int,int,int,int,int,int,int,int,F90Array4d*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array4dAccess(F90Array4d*,void**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array4dDestroy(F90Array4d*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array4dGetNextRecord(F90Array4d*,void**);
+
 /* 
 EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dGetInfo(F90Array1d*,PetscDataType*,int*,int*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dGetInfo(F90Array2d*,PetscDataType*,int*,int*,int*,int*);

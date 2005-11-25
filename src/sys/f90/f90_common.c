@@ -80,4 +80,67 @@ PetscErrorCode PETSC_DLLEXPORT F90Array2dGetNextRecord(F90Array2d *ptr,void **ne
 }
 /*-------------------------------------------------------------*/
 
+#undef __FUNCT__  
+#define __FUNCT__ "F90Array3dAccess"
+PetscErrorCode PETSC_DLLEXPORT F90Array3dAccess(F90Array3d *ptr,void **array)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(ptr,1);
+  PetscValidPointer(array,2);
+  *array = ptr->addr;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "F90Array3dDestroy"
+PetscErrorCode PETSC_DLLEXPORT F90Array3dDestroy(F90Array3d *ptr)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(ptr,1);
+  ptr->addr = (Pointer)0;
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "F90Array1dGetNextRecord"
+PetscErrorCode PETSC_DLLEXPORT F90Array3dGetNextRecord(F90Array3d *ptr,void **next)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(ptr,1);
+  PetscValidPointer(next,2);
+  *next = (void*)(ptr + 1);
+  PetscFunctionReturn(0);
+}
+/*-------------------------------------------------------------*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "F90Array4dAccess"
+PetscErrorCode PETSC_DLLEXPORT F90Array4dAccess(F90Array4d *ptr,void **array)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(ptr,1);
+  PetscValidPointer(array,2);
+  *array = ptr->addr;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "F90Array4dDestroy"
+PetscErrorCode PETSC_DLLEXPORT F90Array4dDestroy(F90Array4d *ptr)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(ptr,1);
+  ptr->addr = (Pointer)0;
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "F90Array1dGetNextRecord"
+PetscErrorCode PETSC_DLLEXPORT F90Array4dGetNextRecord(F90Array4d *ptr,void **next)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(ptr,1);
+  PetscValidPointer(next,2);
+  *next = (void*)(ptr + 1);
+  PetscFunctionReturn(0);
+}
+/*-------------------------------------------------------------*/
 #endif
