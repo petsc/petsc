@@ -3,8 +3,8 @@
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.
 */
-#include <signal.h>
 #include "petsc.h"             /*I   "petsc.h"   I*/
+#include <signal.h>
 #include "petscsys.h"
 #include "petscfix.h"     
 
