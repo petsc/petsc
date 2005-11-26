@@ -191,13 +191,96 @@ using the Finite Integration Technique (FIT)",
    year    = 2004,
    url     = {http://www.copernicus.org/URSI/ars/ARS_2_1/309.pdf}
 }
+@InProceedings{dbl2,
+  author =       "Enzo A. Dari and Mariano I. Cantero and Raul A. Feijoo",
+  title =        "Computational arterial flow modeling using a parallel Navier-Stokes solver",
+  booktitle =    "ECCOMAS2000",
+  year =         "2000",
+  url = "http://146.134.8.133/Feijoo/CModComplexos/Conferencias/ECCOMAS2000/Darie/eccomas.html"
+}
+@Unpublished{cell,
+  title = {Parallel Simulation Engines for Whole-Cell Models},
+  author = {Markus Schwehm and Nils Gehlenborg and Hendrik Post and Amelie Stein and Kirstin Weber},
+  note = {Poster at Second International Conference on Systems Biology (ICSB) 2001},
+  url = {http://www.icsb2001.org/Posters/110_schwehm2.pdf},
+  institution = {University of Tubingen, ZBIT - Zentrum fur Bioinformatik Tubingen},
+  year = 2001
+}
 % <td width="100%" colspan="2"><hr size="4" color="#FF5B5B"> </td>
+%Treating fractures of the hip and spine is a major medical cost.
+%Understanding bone mechanical properties and how they may lead to
+%fractures is thus an important medical research activity. PETSc and
+%Prometheus have been used for extremely large scale finite element
+%simulation of the solid mechanics of a portion of a human spine by a
+%team of doctors and computational scientists. This computation was 
+%a winner of a Gordon Bell Special Prize at SC2004 and ran scalably
+%with over 4000 processors.
+%
+%Mark Adams currently is funded under SciDAC TOPS by David Keyes
+%at Columbia, he also spent time at Sandia and Berkeley labs.
+%
+@Inproceedings{Adams-04, 
+  author =   {M. F. Adams and Harun H. Bayraktar and Tony M. Keaveny and Panayiotis Papadopoulos},
+  title =   {Ultrascalable Implicit Finite Element Analyses in Solid Mechanics with over a Half a Billion Degrees of Freedom},
+  note =   {Winner of Gordon Bell Special Prize at SC2004: Large scale trabecular bone finite element modeling},
+  booktitle = {Proceedings of SC04},
+  url = {http://www.sc-conference.org/sc2004/schedule/pdfs/pap111.pdf},
+ Lab = {LBL}
+} 
+@InProceedings{Adams-03b,
+   author =   {Adams, M.~F. and Bayraktar, H.H. and Keaveny, T.M. and  Papadopoulos, P.},
+   title =   {Applications of Algebraic Multigrid to Large-Scale Finite Element Analysis of Whole Bone Micro-Mechanics on the IBM SP},
+   booktitle = {ACM/IEEE Proceedings of SC2003: High Performance Networking and Computing},
+   year = {2003},
+ Lab = {LBL}
+}
+@inproceedings{oghattas2002,
+   author = "Volkan Akcelik and George Biros and Omar Ghattas",
+   title  = "Parallel Multiscale Gauss-Newton-Krylov Methods For Inverse Wave Propagation",
+   booktitle = "Procceedings of SC2002",
+   url    ="http://www-2.cs.cmu.edu/\~{ }oghattas/papers/sc2002.pdf",
+   note = "Winner of SC2002 Best Paper. A parallel algorithm for inverse problems
+           governed by time-dependent PDEs, and scalability results for an inverse
+           wave propagation problem of determining the material field of an acoustic
+           medium. Using the algorithm, they solved a synthetic inverse wave
+           propagation problem though a pelvic bone geometry involving 2.1 million
+           inversion parameters in 3 hours on 256 processors.",
+   year = "2002"
+}
+%  <a name="biology:cardiology">
+% <center> <td width="100%" colspan="2"><hr size="4" color="#FF5B5B"> </td>
+% <img style="width: 274px; height: 200px;" alt=""
+% src="images/heart.jpg">
+% <img style="width: 350px; height: 250px;" alt=""
+% src="images/pump.jpg"></center></p>
+%
 % Arrhythmias are disorders of the regular rhythmic beating of the
 % heart; they are the cause of the majority of sudden cardiac
 % deaths. The heart beat is controlled by electrical signals moving
 % through the heart. PETSc has been used by several research groups to
 % simulate the electronic behavior of the heart in an attempt to more
 % fully understand the developments of arrhthmias.
+@inproceedings{oghattas2000,
+   author = "J. Antaki and G. Belloch and O. Ghattas and I. Malcevic 
+             and G. Miller and N. Walkington",
+   title  = "A Parallel Dynamic-Mesh Lagrangian Method for Simulation of Flows with Dynamic
+             Interfaces",
+   booktitle = "Procceedings of SC2000",
+   url    ="http://www.cs.cmu.edu/\~{ }oghattas/papers/sc2000/sc2000.pdf",
+   note = "Blood flow modeling at the microscale including effects on individual blood cells,
+             for designing heart assist pumps, etc.",
+   year = "2000"
+}
+@INPROCEEDINGS{pft2005,
+  AUTHOR  = "Luca F. Pavarino and Piero Colli Franzone and Bruno Taccardi",
+  TITLE   = "Monodomain Simulations of Excitation and Recovery in Cardiac Blocks
+              with Intramural Heterogeneity",
+  BOOKTITLE = "Functional Imaging and modeling of the Heart (FIMH05)",
+  PAGES   = "267--277",
+  EDITORS = "A. Frangi et al.",
+  PUBLISHER = "Springer, Lecture Notes in Computer Science (LNCS), v. 3504",
+  YEAR    = "2005"
+}
 @phdthesis{Griffith05,
    author = {Boyce Griffith},
    title  = {Simulating the blood-muscle-valve mechanics of the heart by an adaptive and parallel
@@ -286,34 +369,7 @@ using the Finite Integration Technique (FIT)",
    pages = "261 - 277",
    url = "http://www3.interscience.wiley.com/cgi-bin/abstract/107632540/ABSTRACT"
 }
-% <td width="100%" colspan="2"><hr size="4" color="#FF5B5B"> </td>
-%Treating fractures of the hip and spine is a major medical cost.
-%Understanding bone mechanical properties and how they may lead to
-%fractures is thus an important medical research activity. PETSc and
-%Prometheus have been used for extremely large scale finite element
-%simulation of the solid mechanics of a portion of a human spine by a
-%team of doctors and computational scientists. This computation was 
-%a winner of a Gordon Bell Special Prize at SC2004 and ran scalably
-%with over 4000 processors.
-%
-%Mark Adams currently is funded under SciDAC TOPS by David Keyes
-%at Columbia, he also spent time at Sandia and Berkeley labs.
-%
-@Inproceedings{Adams-04, 
-  author =   {M. F. Adams and Harun H. Bayraktar and Tony M. Keaveny and Panayiotis Papadopoulos},
-  title =   {Ultrascalable Implicit Finite Element Analyses in Solid Mechanics with over a Half a Billion Degrees of Freedom},
-  note =   {Winner of Gordon Bell Special Prize at SC2004: Large scale trabecular bone finite element modeling},
-  booktitle = {Proceedings of SC04},
-  url = {http://www.sc-conference.org/sc2004/schedule/pdfs/pap111.pdf},
- Lab = {LBL}
-} 
-@InProceedings{Adams-03b,
-   author =   {Adams, M.~F. and Bayraktar, H.H. and Keaveny, T.M. and  Papadopoulos, P.},
-   title =   {Applications of Algebraic Multigrid to Large-Scale Finite Element Analysis of Whole Bone Micro-Mechanics on the IBM SP},
-   booktitle = {ACM/IEEE Proceedings of SC2003: High Performance Networking and Computing},
-   year = {2003},
- Lab = {LBL}
-}
+%  <a name="biology:imagingandsurgery>
 % <td width="100%" colspan="2"><hr size="4" color="#FF5B5B"> </td>
 @article{ogdb2004,
    author = "A.A. Oberai and N.H. Gokhale and M.M. Doyley and J.C.Bamber",
@@ -396,46 +452,6 @@ using the Finite Integration Technique (FIT)",
    booktitle = "Procceedings of SC2000",
    url    ="http://www.sc2000.org/techpapr/papers/pap.pap230.pdf",
    year = 2000
-}
-@inproceedings{oghattas2002,
-   author = "Volkan Akcelik and George Biros and Omar Ghattas",
-   title  = "Parallel Multiscale Gauss-Newton-Krylov Methods For Inverse Wave Propagation",
-   booktitle = "Procceedings of SC2002",
-   url    ="http://www-2.cs.cmu.edu/\~{ }oghattas/papers/sc2002.pdf",
-   note = "Winner of SC2002 Best Paper. A parallel algorithm for inverse problems
-           governed by time-dependent PDEs, and scalability results for an inverse
-           wave propagation problem of determining the material field of an acoustic
-           medium. Using the algorithm, they solved a synthetic inverse wave
-           propagation problem though a pelvic bone geometry involving 2.1 million
-           inversion parameters in 3 hours on 256 processors.",
-   year = "2002"
-}
-% <td width="100%" colspan="2"><hr size="4" color="#FF5B5B"> </td>
-@InProceedings{dbl2,
-  author =       "Enzo A. Dari and Mariano I. Cantero and Raul A. Feijoo",
-  title =        "Computational arterial flow modeling using a parallel Navier-Stokes solver",
-  booktitle =    "ECCOMAS2000",
-  year =         "2000",
-  url = "http://146.134.8.133/Feijoo/CModComplexos/Conferencias/ECCOMAS2000/Darie/eccomas.html"
-}
-@inproceedings{oghattas2000,
-   author = "J. Antaki and G. Belloch and O. Ghattas and I. Malcevic 
-             and G. Miller and N. Walkington",
-   title  = "A Parallel Dynamic-Mesh Lagrangian Method for Simulation of Flows with Dynamic
-             Interfaces",
-   booktitle = "Procceedings of SC2000",
-   url    ="http://www.cs.cmu.edu/\~{ }oghattas/papers/sc2000/sc2000.pdf",
-   note = "Blood flow modeling at the microscale including effects on individual blood cells,
-             for designing heart assist pumps, etc.",
-   year = "2000"
-}
-@Unpublished{cell,
-  title = {Parallel Simulation Engines for Whole-Cell Models},
-  author = {Markus Schwehm and Nils Gehlenborg and Hendrik Post and Amelie Stein and Kirstin Weber},
-  note = {Poster at Second International Conference on Systems Biology (ICSB) 2001},
-  url = {http://www.icsb2001.org/Posters/110_schwehm2.pdf},
-  institution = {University of Tubingen, ZBIT - Zentrum fur Bioinformatik Tubingen},
-  year = 2001
 }
 %
 %  <a name="fusion"><H3><center>Fusion</center></H3>
