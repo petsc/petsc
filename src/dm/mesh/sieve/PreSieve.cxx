@@ -1189,7 +1189,7 @@ namespace ALE {
     CHKCOMM(*this);    
     int32_t  rank = this->commRank;
     PetscErrorCode ierr;
-    ostringstream txt, hdr;
+    ostringstream txt1, txt2, txt3, txt4, hdr;
     hdr << "[" << rank << "]:Viewing ";
     if(name == NULL) {
       hdr << "a ";
@@ -1204,78 +1204,75 @@ namespace ALE {
     ierr = PetscSynchronizedPrintf(this->comm, hdr.str().c_str()); CHKERROR(ierr, "Error in PetscPrintf");
     // Use a string stream to accumulate output that is then submitted to PetscSynchronizedPrintf
     Point_set points = this->space();
-    txt  << "[" << rank << "]: space of size " << points.size() << " : ";
+    txt1  << "[" << rank << "]: space of size " << points.size() << " : ";
     for(Point_set::iterator p_itor = points.begin(); p_itor != points.end(); p_itor++)
     {
       Point p = (*p_itor);
       if(p_itor != points.begin()) {
-        txt << ", ";
+        txt1 << ", ";
       }
-      txt  << "(" << p.prefix << ", " << p.index << ")";
+      txt1  << "(" << p.prefix << ", " << p.index << ")";
     }
-    txt  << "\n";
-    ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
-    txt.clear();
+    txt1  << "\n";
+    ierr = PetscSynchronizedPrintf(this->comm, txt1.str().c_str());
     //
     points = this->cap();
-    txt  << "[" << rank << "]: cap   of size " << points.size() << " : ";
+    txt2  << "[" << rank << "]: cap   of size " << points.size() << " : ";
     for(Point_set::iterator p_itor = points.begin(); p_itor != points.end(); p_itor++)
     {
       Point p = (*p_itor);
       if(p_itor != points.begin()) {
-        txt << ", ";
+        txt2 << ", ";
       }
-      txt  << "(" << p.prefix << ", " << p.index << ")";
+      txt2  << "(" << p.prefix << ", " << p.index << ")";
     }
-    txt  << "\n";
-    ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
-    txt.clear();
+    txt2  << "\n";
+    ierr = PetscSynchronizedPrintf(this->comm, txt2.str().c_str());
     //
     points = this->base();
-    txt  << "[" << rank << "]: base  of size " << points.size() << " : ";
+    txt3  << "[" << rank << "]: base  of size " << points.size() << " : ";
     for(Point_set::iterator p_itor = points.begin(); p_itor != points.end(); p_itor++)
     {
       Point p = (*p_itor);
       if(p_itor != points.begin()) {
-        txt << ", ";
+        txt3 << ", ";
       }
-      txt  << "(" << p.prefix << ", " << p.index << ")";
+      txt3  << "(" << p.prefix << ", " << p.index << ")";
     }
-    txt  << "\n";
-    ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
-    txt.clear();
+    txt3  << "\n";
+    ierr = PetscSynchronizedPrintf(this->comm, txt3.str().c_str());
     //
     for(Point__Point_set::iterator cone_itor = this->_cone.begin(); cone_itor != this->_cone.end(); cone_itor++)
     {
       Point p = (*cone_itor).first;
-      txt  << "[" << rank << "]: cone over (" << p.prefix << ", " << p.index << "):  ";
+      txt4  << "[" << rank << "]: cone over (" << p.prefix << ", " << p.index << "):  ";
       // Traverse the local cone over p
       for(Point_set::iterator pCone_itor = this->_cone[p].begin(); pCone_itor != this->_cone[p].end(); pCone_itor++) {
         Point q = *pCone_itor;
       if(pCone_itor != this->_cone[p].begin()) {
-        txt << ", ";
+        txt4 << ", ";
       }
-      txt  << "(" << q.prefix << ", " << q.index << ")";
+      txt4  << "(" << q.prefix << ", " << q.index << ")";
       }
-      txt  << "\n";
+      txt4  << "\n";
     }
 #if 0
     for(Point__Point_set::iterator support_itor = this->_support.begin(); support_itor != this->_support.end(); support_itor++)
     {
       Point p = (*support_itor).first;
-      txt  << "[" << rank << "]: support of (" << p.prefix << ", " << p.index << "):  ";
+      txt4  << "[" << rank << "]: support of (" << p.prefix << ", " << p.index << "):  ";
       // Traverse the local support of p
       for(Point_set::iterator pSupport_itor = this->_support[p].begin(); pSupport_itor != this->_support[p].end(); pSupport_itor++) {
         Point q = *pSupport_itor;
       if(pSupport_itor != this->_support[p].begin()) {
-        txt << ", ";
+        txt4 << ", ";
       }
-      txt  << "(" << q.prefix << ", " << q.index << ")";
+      txt4  << "(" << q.prefix << ", " << q.index << ")";
       }
-      txt  << "\n";
+      txt4  << "\n";
     }
 #endif
-    ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
+    ierr = PetscSynchronizedPrintf(this->comm, txt4.str().c_str());
     CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
     ierr = PetscSynchronizedFlush(this->comm);
     CHKERROR(ierr, "Error in PetscSynchronizedFlush");

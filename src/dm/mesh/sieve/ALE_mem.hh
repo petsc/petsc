@@ -78,9 +78,9 @@ namespace ALE {
   template <class _T>
   void logged_allocator<_T>::__log_initialize() {
     // Get a new cookie based on _T's typeid name
-    type_info& id = typeid(_T);
+    const std::type_info& id = typeid(_T);
     PetscErrorCode ierr = PetscLogClassRegister(&logged_allocator::_cookie, id.name()); 
-    CHKERRQ(ierr);
+    CHKERROR(ierr, "Could not register logging cookie");
     // Register the basic allocator methods' invocations as events
     logged_allocator::__log_event_register("allocate", &logged_allocator::_allocate_event);
     logged_allocator::__log_event_register("deallocate", &logged_allocator::_deallocate_event);
@@ -93,70 +93,70 @@ namespace ALE {
 
   template <class _T> 
   void logged_allocator<_T>::__log_event_register(const char *event_name, PetscEvent *event_ptr){
-    std::type_info& id = typeid(_T);
+    const std::type_info& id = typeid(_T);
     ostringstream txt;
     txt << id.name() << ": " << event_name;
     PetscErrorCode ierr = PetscLogEventRegister(event_ptr, txt.str().c_str(), logged_allocator::_cookie);
-    CHKERRQ(ierr);
+    CHKERROR(ierr, "Could not register logging event");
   }
 
   template <class _T>
   _T*  logged_allocator<_T>::allocate(size_type _n) {
     PetscErrorCode ierr;
-    ierr = PetscLogEventBegin(logged_allocator::_allocate_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(logged_allocator::_allocate_event, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
     _T* _p = allocator<_T>::allocate(_n);
-    ierr = PetscLogEventEND(logged_allocator::_allocate_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(logged_allocator::_allocate_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
     return _p;
   }
 
   template <class _T>
   void logged_allocator<_T>::deallocate(_T* _p, size_type _n) {
     PetscErrorCode ierr;
-    ierr = PetscLogEventBegin(logged_allocator::_deallocate_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(logged_allocator::_deallocate_event, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
     allocator<_T>::deallocate(_p, _n);
-    ierr = PetscLogEventEND(logged_allocator::_deallocate_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(logged_allocator::_deallocate_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
   }
 
   template <class _T>
   void logged_allocator<_T>::construct(_T* _p, const _T& _val) {
     PetscErrorCode ierr;
-    ierr = PetscLogEventBegin(logged_allocator::_construct_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(logged_allocator::_construct_event, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
     allocator<_T>::construct(_p, _val);
-    ierr = PetscLogEventEND(logged_allocator::_construct_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(logged_allocator::_construct_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
   }
 
   template <class _T>
   void logged_allocator<_T>::destroy(_T* _p) {
     PetscErrorCode ierr;
-    ierr = PetscLogEventBegin(logged_allocator::_destroy_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(logged_allocator::_destroy_event, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
     allocator<_T>::destroy(_p);
-    ierr = PetscLogEventEND(logged_allocator::_destroy_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(logged_allocator::_destroy_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
   }
 
   template <class _T>
   _T* logged_allocator<_T>::create() {
     PetscErrorCode ierr;
-    ierr = PetscLogEventBegin(logged_allocator::_create_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(logged_allocator::_create_event, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
     _T* _p = allocator<_T>::create();
-    ierr = PetscLogEventEND(logged_allocator::_create_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(logged_allocator::_create_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
     return _p;
   }
 
   template <class _T>
   _T* logged_allocator<_T>::create(const _T& _val) {
     PetscErrorCode ierr;
-    ierr = PetscLogEventBegin(logged_allocator::_create_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(logged_allocator::_create_event, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
     _T* _p = allocator<_T>::create(_val);
-    ierr = PetscLogEventEND(logged_allocator::_create_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(logged_allocator::_create_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
     return _p;
   }
 
   template <class _T>
   void logged_allocator<_T>::del(_T* _p) {
     PetscErrorCode ierr;
-    ierr = PetscLogEventBegin(logged_allocator::_del_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(logged_allocator::_del_event, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
     allocator<_T>::del(_p);
-    ierr = PetscLogEventEND(logged_allocator::_del_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(logged_allocator::_del_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
   }
 
 
