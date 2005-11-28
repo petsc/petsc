@@ -24,7 +24,7 @@ namespace ALE {
         return( (p.prefix < q.prefix) || ((p.prefix == q.prefix) && (p.index < q.index)));
       };
     };
-    typedef logged_allocator<Point> allocator;
+    typedef allocator<Point> allocator;
   };
 
   class Point_array : public std::vector<Point, Point::allocator > {
