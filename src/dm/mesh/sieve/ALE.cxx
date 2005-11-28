@@ -137,6 +137,7 @@ namespace ALE {
     }
     return fmt;
   }// ERRORMSG()
+
 }
 
 #undef ALE_ALE_cxx

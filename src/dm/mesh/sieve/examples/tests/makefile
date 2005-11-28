@@ -57,4 +57,8 @@ TESTEXAMPLES_C_COMPLEX	  =
 TESTEXAMPLES_C_NOCOMPLEX  = 
 TESTEXAMPLES_13		  = 
 
+
+testclean: clean
+	${RM} test1 test2
+
 include ${PETSC_DIR}/bmake/common/test

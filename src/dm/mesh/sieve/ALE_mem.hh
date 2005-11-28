@@ -1,0 +1,324 @@
+#ifndef included_ALE_mem_hh
+#define included_ALE_mem_hh
+// This should be included indirectly -- only by including ALE.hh
+
+
+#include <memory>
+#include <typeinfo>
+#include <petsc.h>
+
+namespace ALE {
+
+// For the moment we define this manually; belongs in configure.
+#define ALE_MEM_LOG 1
+#if (ALE_MEM_LOG == 1)
+  // General allocator; use it when no logging is necessary
+  template <class _T>
+  class allocator : public std::allocator<_T> {
+  public:
+    _T* create();
+    _T* create(const _T& val);
+    void del(_T* p);
+  };
+  
+  template <class _T> 
+  _T* allocator<_T>::create(const _T& val) {
+    // First, allocate space for a single object
+    _T* p = allocator::allocate(1);
+    // Construct an object in the provided space using the provided initial value
+    allocator::construct(p,  val);
+  }
+
+  template <class _T> 
+  _T* allocator<_T>::create() {
+    // First, allocate space for a single object
+    _T* p = allocator::allocate(1);
+    // Construct an object in the provided space using the default initial value
+    allocator::construct(p, _T());
+  }
+
+  template <class _T> 
+  void allocator<_T>::del(_T* _p) {
+    destroy(_p);
+    deallocate(_p, 1);
+  }
+
+
+  // An allocator all of whose events (allocation, deallocation, new, delete) are logged using PetscLogging facilities.
+  template <class _T>
+  class logged_allocator : public allocator<_T> {
+  private:
+    static PetscCookie _cookie;
+    static int         _allocate_event;
+    static int         _deallocate_event;
+    static int         _construct_event;
+    static int         _destroy_event;
+    static int         _create_event;
+    static int         _del_event;
+    static void __log_initialize();
+    static void __log_event_register(const char *event_name, PetscEvent *event_ptr);
+  public:
+    typedef typename allocator<_T>::size_type size_type;
+    logged_allocator()                            : allocator<_T>()  {__log_initialize();};    
+    logged_allocator(const logged_allocator& a)   : allocator<_T>(a) {__log_initialize();};
+    template <class _TT> 
+    logged_allocator(const allocator<_TT>& b)     : allocator<_T>(b) {__log_initialize();};
+    ~logged_allocator() {};
+
+    _T*  allocate(size_type _n);
+    void deallocate(_T*  _p, size_type _n);
+    void construct(_T* _p, const _T& _val);
+    void destroy(_T* _p);
+    _T*  create();
+    _T*  create(const _T& _val);
+    void del(_T*  _p);    
+  };
+
+  
+  template <class _T>
+  void logged_allocator<_T>::__log_initialize() {
+    // Get a new cookie based on _T's typeid name
+    type_info& id = typeid(_T);
+    PetscErrorCode ierr = PetscLogClassRegister(&logged_allocator::_cookie, id.name()); 
+    CHKERRQ(ierr);
+    // Register the basic allocator methods' invocations as events
+    logged_allocator::__log_event_register("allocate", &logged_allocator::_allocate_event);
+    logged_allocator::__log_event_register("deallocate", &logged_allocator::_deallocate_event);
+    logged_allocator::__log_event_register("construct", &logged_allocator::_construct_event);
+    logged_allocator::__log_event_register("destroy", &logged_allocator::_destroy_event);
+    logged_allocator::__log_event_register("create", &logged_allocator::_create_event);
+    logged_allocator::__log_event_register("del", &logged_allocator::_del_event);
+  }
+
+
+  template <class _T> 
+  void logged_allocator<_T>::__log_event_register(const char *event_name, PetscEvent *event_ptr){
+    std::type_info& id = typeid(_T);
+    ostringstream txt;
+    txt << id.name() << ": " << event_name;
+    PetscErrorCode ierr = PetscLogEventRegister(event_ptr, txt.str().c_str(), logged_allocator::_cookie);
+    CHKERRQ(ierr);
+  }
+
+  template <class _T>
+  _T*  logged_allocator<_T>::allocate(size_type _n) {
+    PetscErrorCode ierr;
+    ierr = PetscLogEventBegin(logged_allocator::_allocate_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    _T* _p = allocator<_T>::allocate(_n);
+    ierr = PetscLogEventEND(logged_allocator::_allocate_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    return _p;
+  }
+
+  template <class _T>
+  void logged_allocator<_T>::deallocate(_T* _p, size_type _n) {
+    PetscErrorCode ierr;
+    ierr = PetscLogEventBegin(logged_allocator::_deallocate_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    allocator<_T>::deallocate(_p, _n);
+    ierr = PetscLogEventEND(logged_allocator::_deallocate_event, 0, 0, 0, 0); CHKERRQ(ierr);
+  }
+
+  template <class _T>
+  void logged_allocator<_T>::construct(_T* _p, const _T& _val) {
+    PetscErrorCode ierr;
+    ierr = PetscLogEventBegin(logged_allocator::_construct_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    allocator<_T>::construct(_p, _val);
+    ierr = PetscLogEventEND(logged_allocator::_construct_event, 0, 0, 0, 0); CHKERRQ(ierr);
+  }
+
+  template <class _T>
+  void logged_allocator<_T>::destroy(_T* _p) {
+    PetscErrorCode ierr;
+    ierr = PetscLogEventBegin(logged_allocator::_destroy_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    allocator<_T>::destroy(_p);
+    ierr = PetscLogEventEND(logged_allocator::_destroy_event, 0, 0, 0, 0); CHKERRQ(ierr);
+  }
+
+  template <class _T>
+  _T* logged_allocator<_T>::create() {
+    PetscErrorCode ierr;
+    ierr = PetscLogEventBegin(logged_allocator::_create_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    _T* _p = allocator<_T>::create();
+    ierr = PetscLogEventEND(logged_allocator::_create_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    return _p;
+  }
+
+  template <class _T>
+  _T* logged_allocator<_T>::create(const _T& _val) {
+    PetscErrorCode ierr;
+    ierr = PetscLogEventBegin(logged_allocator::_create_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    _T* _p = allocator<_T>::create(_val);
+    ierr = PetscLogEventEND(logged_allocator::_create_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    return _p;
+  }
+
+  template <class _T>
+  void logged_allocator<_T>::del(_T* _p) {
+    PetscErrorCode ierr;
+    ierr = PetscLogEventBegin(logged_allocator::_del_event, 0, 0, 0, 0); CHKERRQ(ierr);
+    allocator<_T>::del(_p);
+    ierr = PetscLogEventEND(logged_allocator::_del_event, 0, 0, 0, 0); CHKERRQ(ierr);
+  }
+
+
+#else
+  template <class _T>
+  class logged_allocator : public allocator<_T> {};
+#endif
+  
+
+  class BadCast : public Exception {
+  public:
+    BadCast(const char  *msg)   : Exception(msg) {};
+    BadCast(const BadCast& e)   : Exception(e) {};
+  };
+
+  template<class X> 
+  class Obj {
+  public:
+    X*       objPtr;       // object pointer
+    int32_t *refCnt;       // reference count
+    int      borrowed;     // indicates that the object should not be released
+  public:
+    // constructors
+    Obj() : objPtr((X *)NULL), refCnt((int32_t*)NULL), borrowed(0) {};
+    Obj(X x) { // such an object won't be destroyed (e.g., an object allocated on the stack)
+      //this->objPtr = &x;
+      this->objPtr = new X(x);
+      this->borrowed=0; 
+      refCnt = new int(1);
+    };
+    Obj(X *xx){// such an object will be destroyed by calling 'delete' on its pointer (e.g., pointer obtained with new)
+      this->objPtr = xx; 
+      this->borrowed=0;
+      refCnt = new int(1);
+    }
+
+    Obj(X *xx, int32_t *refCnt) {
+      this->objPtr = xx;
+      this->borrowed=0;
+      this->refCnt = refCnt;
+      (*this->refCnt)++;
+    };
+
+    Obj(const Obj& obj) {
+      //// We disallow constructors from borrowed objects, to prevent their being returned from function calls.
+      //if(obj.borrowed) {
+      //  throw Exception("Cannot clone a borrowed object");
+      //}
+      this->objPtr = obj.objPtr;
+      this->refCnt = obj.refCnt;
+      (*this->refCnt)++;
+      this->borrowed = obj.borrowed;
+    };
+    
+    // check whether Obj points to a NULL object
+    int isNull() {
+      return (this->objPtr == NULL);
+    };
+
+    // assertion that throws an exception if objPtr is/isn't null
+    void assertNull(bool flag) {
+      if(this->isNull() != flag){
+        throw(Exception("Null assertion failed"));
+      }
+    };
+
+    // comparison operators
+    int operator==(const Obj& obj) {
+      return (this->objPtr == obj.objPtr);
+    };
+    int operator!=(const Obj& obj) {
+      return (this->objPtr != obj.objPtr);
+    };
+
+    // assignment operator
+    Obj& operator=(const Obj& obj) {
+      if (borrowed) {
+        throw ALE::Exception("Borrowed should never be nonzero");
+      }
+      if(this->objPtr == obj.objPtr) {return *this;}
+      // We are letting go of objPtr, so need to check whether we are the last reference holder.
+      if((this->refCnt != (int32_t *)NULL) && (--(*this->refCnt) == 0) && !this->borrowed)  {
+        delete this->objPtr;
+        delete this->refCnt;
+      }
+      this->objPtr = obj.objPtr;
+      this->refCnt = obj.refCnt;
+      if(this->refCnt!= NULL) {
+        (*this->refCnt)++;
+      }
+      this->borrowed = obj.borrowed;
+      return *this;
+    };
+
+    // conversion operator
+    template<class Y> operator Obj<Y>() {
+      // We attempt to cast X* objPtr to Y* using dynamic_cast
+      Y* yObjPtr = dynamic_cast<Y*>(this->objPtr);
+      // If the cast failed, throw an exception
+      if(yObjPtr == NULL) {
+        throw ALE::Exception("Bad cast Obj<X> --> Obj<Y>");
+      }
+      // Okay, we can proceed 
+      return Obj<Y>(yObjPtr, this->refCnt);
+    }
+
+    // another conversion operator
+    template<class Y> Obj& operator=(const Obj<Y>& obj) {
+      // We attempt to cast Y* obj.objPtr to X* using dynamic_cast
+      X* xObjPtr = dynamic_cast<X*>(obj.objPtr);
+      // If the cast failed, throw an exception
+      if(xObjPtr == NULL) {
+        throw BadCast("Bad cast Obj<Y> --> Obj<X>");
+      }
+      // Okay, we can proceed with the assignment
+      if(this->objPtr == obj.objPtr) {return *this;}
+      // We are letting go of objPtr, so need to check whether we are the last reference holder.
+      if((this->refCnt != (int32_t *)NULL) && (--(*this->refCnt) == 0) ) {
+        delete this->objPtr;
+        delete this->refCnt;
+      }
+      this->objPtr = xObjPtr;
+      this->refCnt = obj.refCnt;
+      (*this->refCnt)++;
+      this->borrowed = obj.borrowed;
+      return *this;
+    }
+
+
+    // dereference operators
+    X*   operator->() {return objPtr;};
+    //
+    template<class Y> Obj& copy(Obj<Y>& obj) {
+      if(this->isNull() || obj.isNull()) {
+        throw(Exception("Copying to or from a null Obj"));
+      }
+      *(this->objPtr) = *(obj.objPtr);
+      return *this;
+    }
+    
+
+    // "peeling" (off the shell) methods
+    X* ptr()      {return objPtr;};
+    X* pointer()  {return objPtr;};
+    operator X*() {return this->pointer();};
+    X  obj()      {assertNull(0); return *objPtr;};
+    X  object()   {assertNull(0); return *objPtr;};
+    X operator*() {assertNull(0); return *objPtr;};
+    operator X()  {return this->object();};
+    
+
+    // destructor
+    ~Obj(){
+      if((this->refCnt != (int32_t *)NULL) && (--(this->refCnt) == 0) && !this->borrowed) {  
+        delete objPtr; 
+        delete refCnt;
+      }
+    };
+    
+  };// class Obj<X>
+
+
+} // namespace ALE
+
+#endif
