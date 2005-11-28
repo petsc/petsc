@@ -1,12 +1,12 @@
 
-#requirespackage  'PETSC_HAVE_BLOCKSOLVE'
+#requirespackage  'PETSC_HAVE_BLOCKSOLVE95'
 #requiresscalar real 
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-CPPFLAGS = ${BLOCKSOLVE_INCLUDE}
+CPPFLAGS = ${BLOCKSOLVE95_INCLUDE}
 SOURCEC  = mpirowbs.c cholbs.c iccbs.c
 SOURCEF  =
 SOURCEH  = mpirowbs.h

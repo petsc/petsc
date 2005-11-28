@@ -10,6 +10,7 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.name         = 'BlockSolve95'
+    self.complex      = 1
     self.downloadname = self.name
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
