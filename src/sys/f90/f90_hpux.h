@@ -16,7 +16,7 @@ typedef struct {
 #define F90_1D_ID  257
 #define F90_2D_ID  513
 #define F90_3D_ID  769
-#define F90_4D_1D  1025
+#define F90_4D_ID  1025
 #define F90_COOKIE 443
 
 /*

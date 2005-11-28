@@ -82,8 +82,9 @@ PetscErrorCode PETSC_DLLEXPORT F90Array3dCreate(void *array,PetscDataType type,P
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
 #define __FUNCT__ "F90Array4dCreate"
-PetscErrorCode PETSC_DLLEXPORT F90Array4dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,PetscInt start3,PetscInt len3,PetscInt start4,PetscInt len4,F90Array3d *ptr)
+PetscErrorCode PETSC_DLLEXPORT F90Array4dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,PetscInt start3,PetscInt len3,PetscInt start4,PetscInt len4,F90Array4d *ptr)
 {
   PetscErrorCode ierr;
   PetscInt size;
