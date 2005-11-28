@@ -1583,6 +1583,7 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   ierr = assembleOperator(bundle, orientation, A, ALE::Point(0, e + firstElement), v, mode);CHKERRQ(ierr);
   if (e == 0) {
     bundle->getGlobalIndices()->view("Global indices");
+    bundle->getLocalIndices()->view("Local indices");
   }
   PetscFunctionReturn(0);
 }
