@@ -1968,8 +1968,9 @@ PetscErrorCode MeshCoarsen_Triangle(Mesh mesh, PetscReal minArea, /*CoSieve*/ Ve
 #define __FUNCT__ "MeshGenerate"
 PetscErrorCode MeshGenerate(Mesh boundary, Mesh *mesh)
 {
+#ifdef PETSC_HAVE_TRIANGLE
   PetscErrorCode ierr;
-
+#endif
   PetscFunctionBegin;
 #ifdef PETSC_HAVE_TRIANGLE
   ierr = MeshGenerate_Triangle(boundary, mesh);CHKERRQ(ierr);
@@ -1981,7 +1982,9 @@ PetscErrorCode MeshGenerate(Mesh boundary, Mesh *mesh)
 #define __FUNCT__ "MeshRefine"
 PetscErrorCode MeshRefine(Mesh mesh, PetscReal maxArea, /*CoSieve*/ Vec maxAreas, Mesh *refinedMesh)
 {
+#ifdef PETSC_HAVE_TRIANGLE
   PetscErrorCode ierr;
+#endif
 
   PetscFunctionBegin;
 #ifdef PETSC_HAVE_TRIANGLE
@@ -1994,8 +1997,9 @@ PetscErrorCode MeshRefine(Mesh mesh, PetscReal maxArea, /*CoSieve*/ Vec maxAreas
 #define __FUNCT__ "MeshCoarsen"
 PetscErrorCode MeshCoarsen(Mesh mesh, PetscReal minArea, /*CoSieve*/ Vec minAreas, Mesh *coarseMesh)
 {
+#ifdef PETSC_HAVE_TRIANGLE
   PetscErrorCode ierr;
-
+#endif
   PetscFunctionBegin;
 #ifdef PETSC_HAVE_TRIANGLE
   ierr = MeshCoarsen_Triangle(mesh, minArea, minAreas, coarseMesh);CHKERRQ(ierr);

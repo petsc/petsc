@@ -9,14 +9,22 @@
 
 namespace ALE {
 
-// For the moment we define this manually; belongs in configure.
-  // General allocator; use it when no logging is necessary
+  // General allocator; use it when no logging is necessary; create/del methods act as new/delete.
   template <class _T>
   class constructor_allocator : public std::allocator<_T> {
   public:
+    constructor_allocator()                                    : std::allocator<_T>()  {};    
+    constructor_allocator(const constructor_allocator& a)      : std::allocator<_T>(a) {};
+    template <class _TT> 
+    constructor_allocator(const constructor_allocator<_TT>& aa): std::allocator<_T>(aa){};
+    ~constructor_allocator() {};
+
     _T* create();
     _T* create(const _T& val);
     void del(_T* p);
+    // conversion typedef
+    template <class _TT>
+    struct rebind { typedef constructor_allocator<_TT> other;};
   };
   
   template <class _T> 
@@ -61,7 +69,7 @@ namespace ALE {
     logged_allocator()                                   : constructor_allocator<_T>()  {__log_initialize();};    
     logged_allocator(const logged_allocator& a)          : constructor_allocator<_T>(a) {__log_initialize();};
     template <class _TT> 
-    logged_allocator(const logged_allocator<_TT>& b)     : constructor_allocator<_T>(b) {__log_initialize();};
+    logged_allocator(const logged_allocator<_TT>& aa)    : constructor_allocator<_T>(aa){__log_initialize();};
     ~logged_allocator() {};
 
     _T*  allocate(size_type _n);
@@ -71,6 +79,9 @@ namespace ALE {
     _T*  create();
     _T*  create(const _T& _val);
     void del(_T*  _p);    
+    // conversion typedef
+    template <class _TT>
+    struct rebind { typedef logged_allocator<_TT> other;};
   };
 
   
@@ -160,13 +171,8 @@ namespace ALE {
     ierr = PetscLogEventEnd(logged_allocator::_del_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
   }
 
-
-  // The default allocator<_T> can be derived either from the constructor_allocator<_T> (not logged),
-  // or from the logged_allocator<_T>.  This should be determined at configure time and selected using #ifdef.
-  // For now we hardwire it.
-  template <class _T> 
-  class allocator : public logged_allocator<_T> {};
-
+  // This should be inside an #ifdef clause and controlled through configure.
+#define ALE_ALLOCATOR logged_allocator
 
   class BadCast : public Exception {
   public:

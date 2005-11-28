@@ -24,7 +24,9 @@ namespace ALE {
         return( (p.prefix < q.prefix) || ((p.prefix == q.prefix) && (p.index < q.index)));
       };
     };
-    typedef allocator<Point> allocator;
+    // This uses the ALE_ALLOCATOR macro defined in ALE_mem.hh.  With some effort this can probably be achieved using templates
+    // and adaptors, but it (adaptors) seems like a rather awkward way of doing things, at least as is allowed by C++ at the moment.
+    typedef ALE_ALLOCATOR<Point> allocator;
   };
 
   class Point_array : public std::vector<Point, Point::allocator > {
