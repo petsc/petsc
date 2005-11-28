@@ -3262,20 +3262,20 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStashView(Vec v,PetscViewer viewer)
    Output Parameter:
 .  a - location to put pointer to the array
 
-   Level: beginner
+   Level: developer
 
   Notes:
    For a vector obtained from DACreateLocalVector() mstart and nstart are likely
    obtained from the corner indices obtained from DAGetGhostCorners() while for
    DACreateGlobalVector() they are the corner indices from DAGetCorners(). In both cases
-   the arguments from DAGet[Ghost}Corners() are reversed in the call to VecGetArray2d().
+   the arguments from DAGet[Ghost]Corners() are reversed in the call to VecGetArray2d().
    
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
    Concepts: vector^accessing local values as 2d array
 
 .seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
-          VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
+          VecRestoreArray2d(), DAVecGetArray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
           VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray2d(Vec x,PetscInt m,PetscInt n,PetscInt mstart,PetscInt nstart,PetscScalar **a[])
@@ -3313,7 +3313,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray2d(Vec x,PetscInt m,PetscInt n,Pets
 .  nstart - first index in the second coordinate direction (often 0)
 -  a - location of pointer to array obtained from VecGetArray2d()
 
-   Level: beginner
+   Level: developer
 
    Notes:
    For regular PETSc vectors this routine does not involve any copies. For
@@ -3359,7 +3359,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArray2d(Vec x,PetscInt m,PetscInt n,
    Output Parameter:
 .  a - location to put pointer to the array
 
-   Level: beginner
+   Level: developer
 
   Notes:
    For a vector obtained from DACreateLocalVector() mstart are likely
@@ -3401,7 +3401,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray1d(Vec x,PetscInt m,PetscInt mstart
 .  mstart - first index you will use in first coordinate direction (often 0)
 -  a - location of pointer to array obtained from VecGetArray21()
 
-   Level: beginner
+   Level: developer
 
    Notes:
    For regular PETSc vectors this routine does not involve any copies. For
@@ -3482,13 +3482,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecConjugate(Vec x)
    Output Parameter:
 .  a - location to put pointer to the array
 
-   Level: beginner
+   Level: developer
 
   Notes:
    For a vector obtained from DACreateLocalVector() mstart, nstart, and pstart are likely
    obtained from the corner indices obtained from DAGetGhostCorners() while for
    DACreateGlobalVector() they are the corner indices from DAGetCorners(). In both cases
-   the arguments from DAGet[Ghost}Corners() are reversed in the call to VecGetArray3d().
+   the arguments from DAGet[Ghost]Corners() are reversed in the call to VecGetArray3d().
    
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
@@ -3541,7 +3541,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetArray3d(Vec x,PetscInt m,PetscInt n,Pets
 .  pstart - first index in the third coordinate direction (often 0)
 -  a - location of pointer to array obtained from VecGetArray3d()
 
-   Level: beginner
+   Level: developer
 
    Notes:
    For regular PETSc vectors this routine does not involve any copies. For
