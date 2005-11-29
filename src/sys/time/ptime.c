@@ -1,5 +1,5 @@
 #include "petsc.h" 
-#include "src/sys/time/ptime.h"
+#include "petsctime.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetTime"
@@ -14,6 +14,8 @@
 
    Usage: 
 .vb
+      #include "petsctime.h"
+
       PetscLogDouble v1,v2,elapsed_time;
       ierr = PetscGetTime(&v1);CHKERR(ierr);
       .... perform some calculation ...
@@ -22,6 +24,8 @@
 .ve
 
    Notes:
+   Requires explicitly including "petsctime.h"
+
    Since the PETSc libraries incorporate timing of phases and operations, 
    PetscGetTime() is intended only for timing of application codes.  
    The options database commands -log, -log_summary, and -log_all activate

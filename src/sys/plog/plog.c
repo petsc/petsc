@@ -3,7 +3,7 @@
       PETSc code to log object creation and destruction and PETSc events.
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
-#include "src/sys/time/ptime.h"
+#include "petsctime.h"
 #include "petscmachineinfo.h"
 #include "petscconfiginfo.h"
 #if defined(PETSC_HAVE_MPE)
