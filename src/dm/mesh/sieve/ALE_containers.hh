@@ -118,7 +118,7 @@ namespace ALE {
   typedef std::set<int_pair> int_pair_set;
   typedef std::map<int32_t, int32_t> int__int;
   typedef std::map<int32_t, int_set> int__int_set;
- 
+
 
 } // namespace ALE
 

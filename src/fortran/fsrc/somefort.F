@@ -25,9 +25,20 @@
       subroutine PetscGetCommonCOMM(c1)
       implicit none
 #include      "../../../include/finclude/petsc.h"
-      data   PETSC_COMM_WORLD /0/
       integer c1
 
       c1 = PETSC_COMM_WORLD
       return
+      end
+
+      block data PetscCommInit
+      implicit none
+!
+!     this code is duplicated - because including finclude/petsc.h here
+!     gives compile errors.
+!
+      MPI_Comm PETSC_COMM_WORLD,PETSC_COMM_SELF
+      common /petscfortran7/ PETSC_COMM_WORLD,PETSC_COMM_SELF
+      data   PETSC_COMM_WORLD /0/
+      data   PETSC_COMM_SELF /0/
       end

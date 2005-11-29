@@ -100,7 +100,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
 
   ierr = MatRegisterDynamic(MATIS,      path,"MatCreate_IS",      MatCreate_IS);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSHELL,   path,"MatCreate_Shell",   MatCreate_Shell);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_BLOCKSOLVE)
+#if defined(PETSC_HAVE_BLOCKSOLVE95)
   ierr = MatRegisterDynamic(MATMPIROWBS,path,"MatCreate_MPIRowbs",MatCreate_MPIRowbs);CHKERRQ(ierr);
 #endif
   ierr = MatRegisterDynamic(MATMPIAIJ,  path,"MatCreate_MPIAIJ",      MatCreate_MPIAIJ);CHKERRQ(ierr);
