@@ -514,7 +514,7 @@ PetscErrorCode assembleField(ALE::IndexBundle *bundle, ALE::PreSieve *orientatio
   }
   if (debug) {
     for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-      printf("[%d]interval (%d, %d)\n", bundle->getCommRank(), (*i_itor).prefix, (*i_itor).index);
+      printf("[%d]Element (%d, %d) interval (%d, %d)\n", bundle->getCommRank(), e.prefix, e.index, (*i_itor).prefix, (*i_itor).index);
     }
   }
   ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
@@ -953,7 +953,8 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
       ALE::Point vertex = ALE::Point(0, boundaryVertices[v*(numBoundaryComponents+1)] + numElements);
       ALE::Point interval = bdBundle->getFiberInterval(vertex);
 
-      for(int c = 0; c < numBoundaryComponents; c++) {
+      /* This excludes points with no conditions */
+      for(int c = 0; c < interval.index; c++) {
         values[interval.prefix+c] = boundaryValues[v*numBoundaryComponents+c];
       }
     }
