@@ -102,7 +102,6 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultSolutionBC(TS, Vec, void *);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultPreStep(TS);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultUpdate(TS, PetscReal, PetscReal *);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultPostStep(TS);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetIdentity(TS, PetscErrorCode (*)(TS, double, Mat *, void *));
 
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPseudoSetTimeStep(TS,PetscErrorCode(*)(TS,PetscReal*,void*),void*);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPseudoDefaultTimeStep(TS,PetscReal*,void*);
