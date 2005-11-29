@@ -149,35 +149,46 @@ int Petsc_MPI_Finalize(void)
 
 /* -------------------     Fortran versions of several routines ------------------ */
 
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define mpi_init_             MPI_INIT
+#define mpi_finalize_         MPI_FINALIZE
+#define mpi_comm_size_        MPI_COMM_SIZE
+#define mpi_comm_rank_        MPI_COMM_RANK
+#define mpi_abort_            MPI_ABORT
+#define mpi_allreduce_        MPI_ALLREDUCE
+#define mpi_barrier_          MPI_BARRIER
+#define mpi_bcast_            MPI_BCAST
+#define mpi_gather_           MPI_GATHER
+#define mpi_allgather_        MPI_ALLGATHER
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define mpi_init_             mpi_init
+#define mpi_finalize_         mpi_finalize
+#define mpi_comm_size_        mpi_comm_size
+#define mpi_comm_rank_        mpi_comm_rank
+#define mpi_abort_            mpi_abort
+#define mpi_allreduce_        mpi_allreduce
+#define mpi_barrier_          mpi_barrier
+#define mpi_bcast_            mpi_bcast
+#define mpi_gather_           mpi_gather
+#define mpi_allgather_        mpi_allgather
+#endif
 
-/******mpi_init*******/
-void MPIUNI_STDCALL  mpi_init(int *ierr)
-{
-  MPI_was_initialized = 1;
-  *ierr = MPI_SUCCESS;
-}
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+#define mpi_init_             mpi_init__
+#define mpi_finalize_         mpi_finalize__
+#define mpi_comm_size_        mpi_comm_size__
+#define mpi_comm_rank_        mpi_comm_rank__
+#define mpi_abort_            mpi_abort__
+#define mpi_allreduce_        mpi_allreduce__
+#define mpi_barrier_          mpi_barrier__
+#define mpi_bcast_            mpi_bcast__
+#define mpi_gather_           mpi_gather__
+#define mpi_allgather_        mpi_allgather__
+#endif
 
 void MPIUNI_STDCALL  mpi_init_(int *ierr)
 {
   MPI_was_initialized = 1;
-  *ierr = MPI_SUCCESS;
-}
-
-void MPIUNI_STDCALL  mpi_init__(int *ierr)
-{
-  MPI_was_initialized = 1;
-  *ierr = MPI_SUCCESS;
-}
-
-void MPIUNI_STDCALL  MPI_INIT(int *ierr)
-{
-  MPI_was_initialized = 1;
-  *ierr = MPI_SUCCESS;
-}
-
-/******mpi_finalize*******/
-void MPIUNI_STDCALL  mpi_finalize(int *ierr)
-{
   *ierr = MPI_SUCCESS;
 }
 
@@ -186,46 +197,10 @@ void MPIUNI_STDCALL  mpi_finalize_(int *ierr)
   *ierr = MPI_SUCCESS;
 }
 
-void MPIUNI_STDCALL  mpi_finalize__(int *ierr)
-{
-  *ierr = MPI_SUCCESS;
-}
-
-void MPIUNI_STDCALL  MPI_FINALIZE(int *ierr)
-{
-  *ierr = MPI_SUCCESS;
-}
-
-/******mpi_comm_size*******/
-void MPIUNI_STDCALL mpi_comm_size(MPI_Comm *comm,int *size,int *ierr) 
-{
-  *size = 1;
-  *ierr = 0;
-}
-
 void MPIUNI_STDCALL mpi_comm_size_(MPI_Comm *comm,int *size,int *ierr) 
 {
   *size = 1;
   *ierr = 0;
-}
-
-void MPIUNI_STDCALL mpi_comm_size__(MPI_Comm *comm,int *size,int *ierr) 
-{
-  *size = 1;
-  *ierr = 0;
-}
-
-void MPIUNI_STDCALL MPI_COMM_SIZE(MPI_Comm *comm,int *size,int *ierr) 
-{
-  *size = 1;
-  *ierr = 0;
-}
-
-/******mpi_comm_rank*******/
-void MPIUNI_STDCALL mpi_comm_rank(MPI_Comm *comm,int *rank,int *ierr)
-{
-  *rank=0;
-  *ierr=MPI_SUCCESS;
 }
 
 void MPIUNI_STDCALL mpi_comm_rank_(MPI_Comm *comm,int *rank,int *ierr)
@@ -234,78 +209,39 @@ void MPIUNI_STDCALL mpi_comm_rank_(MPI_Comm *comm,int *rank,int *ierr)
   *ierr=MPI_SUCCESS;
 }
 
-void MPIUNI_STDCALL mpi_comm_rank__(MPI_Comm *comm,int *rank,int *ierr)
-{
-  *rank=0;
-  *ierr=MPI_SUCCESS;
-}
-
-void MPIUNI_STDCALL MPI_COMM_RANK(MPI_Comm *comm,int *rank,int *ierr)
-{
-  *rank=0;
-  *ierr=MPI_SUCCESS;
-}
-
-/*******mpi_abort******/
-void MPIUNI_STDCALL mpi_abort(MPI_Comm *comm,int *errorcode,int *ierr) 
-{
-  abort();
-  *ierr = MPI_SUCCESS;
-}
-
 void MPIUNI_STDCALL mpi_abort_(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
   abort();
   *ierr = MPI_SUCCESS;
 }
 
-void MPIUNI_STDCALL mpi_abort__(MPI_Comm *comm,int *errorcode,int *ierr) 
-{
-  abort();
-  *ierr = MPI_SUCCESS;
-}
-
-void MPIUNI_STDCALL MPI_ABORT(MPI_Comm *comm,int *errorcode,int *ierr) 
-{
-  abort();
-  *ierr = MPI_SUCCESS;
-}
-/*******mpi_allreduce******/
-void MPIUNI_STDCALL mpi_allreduce(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr) 
-{
-  MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
-  *ierr = MPI_SUCCESS;
-} 
 void MPIUNI_STDCALL mpi_allreduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr) 
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
-void MPIUNI_STDCALL mpi_allreduce__(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr) 
-{
-  MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
-  *ierr = MPI_SUCCESS;
-} 
-void MPIUNI_STDCALL MPI_ALLREDUCE(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr) 
-{
-  MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
-  *ierr = MPI_SUCCESS;
-} 
 
-void MPIUNI_STDCALL mpi_barrier(MPI_Comm *comm,int *ierr)
-{
-  *ierr = MPI_SUCCESS;
-}
 void MPIUNI_STDCALL mpi_barrier_(MPI_Comm *comm,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
-void MPIUNI_STDCALL mpi_barrier__(MPI_Comm *comm,int *ierr)
+
+void MPIUNI_STDCALL mpi_bcast_(void *buf,int *count,int *datatype,int *root,int *comm,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
-void MPIUNI_STDCALL MPI_BARRIER(MPI_Comm *comm,int *ierr)
+
+
+void MPIUNI_STDCALL mpi_gather_(void *sendbuf,int *scount,int *sdatatype, void* recvbuf, int* rcount, int* rdatatype, int *root,int *comm,int *ierr)
 {
+  MPIUNI_Memcpy(recvbuf,sendbuf,(*scount)*MPIUNI_DATASIZE[*sdatatype]);
+  *ierr = MPI_SUCCESS;
+}
+
+
+void MPIUNI_STDCALL mpi_allgather_(void *sendbuf,int *scount,int *sdatatype, void* recvbuf, int* rcount, int* rdatatype,int *comm,int *ierr)
+{
+  MPIUNI_Memcpy(recvbuf,sendbuf,(*scount)*MPIUNI_DATASIZE[*sdatatype]);
   *ierr = MPI_SUCCESS;
 }
 
