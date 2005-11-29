@@ -233,30 +233,22 @@ class Configure(PETSc.package.Package):
     installDir = os.path.join(lamDir, self.arch.arch)
     # Configure and Build LAM
     self.framework.pushLanguage('C')
-    args = ['--prefix='+installDir, '--with-rsh=ssh','--with-CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
+    args = ['--prefix='+installDir, '--with-rsh=ssh','CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
     if not self.setCompilers.staticLibraries and self.framework.argDB['with-mpi-shared']:
       args.append('--enable-shared')
     self.framework.popLanguage()
+    # c++ can't be disabled with LAM
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
-      args.append('--with-CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      args.append('CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
-    else:
-      args.append('--disable-CXX')
+    # no separate F90 options for LAM
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
-      if self.compilers.fortranIsF90:
-        args.append('--disable-F77')
-        args.append('--with-F90="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
-      else:
-        args.append('--disable-F90')
-        args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      args.append('FC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
     else:
-      args.append('--disable-F77')
-      args.append('--disable-F90')
       args.append('--without-fc')
-
     args = ' '.join(args)
 
     try:
@@ -322,10 +314,6 @@ class Configure(PETSc.package.Package):
       args.append('--disable-cxx')
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')      
-      if self.compilers.fortranIsF90:
-        args.append('--disable-F77')
-      else:
-        args.append('--disable-f90')      
       fc = self.framework.getCompiler()
       if self.compilers.fortranIsF90:
         try:
@@ -335,7 +323,11 @@ class Configure(PETSc.package.Package):
           output = ''
         if output.find('IBM') >= 0:
           fc = os.path.join(os.path.dirname(fc), 'xlf')
-          self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling MPICH\n')      
+          self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling MPICH\n')
+        # now set F90
+        args.append('F90="'+fc+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
+      else:
+        args.append('--disable-f90')
       args.append('FC="'+fc+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
       self.framework.popLanguage()
     else:
