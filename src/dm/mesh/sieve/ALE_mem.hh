@@ -84,6 +84,20 @@ namespace ALE {
     struct rebind { typedef logged_allocator<_TT> other;};
   };
 
+  template <class _T>
+  PetscCookie logged_allocator<_T>::_cookie(0);
+  template <class _T>
+  int logged_allocator<_T>::_allocate_event(0);
+  template <class _T>
+  int logged_allocator<_T>::_deallocate_event(0);
+  template <class _T>
+  int logged_allocator<_T>::_construct_event(0);
+  template <class _T>
+  int logged_allocator<_T>::_destroy_event(0);
+  template <class _T>
+  int logged_allocator<_T>::_create_event(0);
+  template <class _T>
+  int logged_allocator<_T>::_del_event(0);
   
   template <class _T>
   void logged_allocator<_T>::__log_initialize() {
