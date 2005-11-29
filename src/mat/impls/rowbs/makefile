@@ -1,5 +1,5 @@
 
-#requirespackage  'PETSC_HAVE_BLOCKSOLVE'
+#requirespackage  'PETSC_HAVE_BLOCKSOLVE95'
 #requiresscalar real 
 
 ALL: lib

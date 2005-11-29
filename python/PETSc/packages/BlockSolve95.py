@@ -110,7 +110,6 @@ class Configure(config.base.Configure):
         if self.executeTest(self.checkInclude,[bs95incl]):
           self.framework.log.write('Found BlockSolve95 header file BSsparse.h: '+str(bs95incl)+'\n')
           self.include = bs95incl
-          self.addDefine('HAVE_BLOCKSOLVE',1)
           self.framework.packages.append(self)
           self.foundBS95 = 1
           return
