@@ -18,7 +18,8 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.setupDependencies(self, framework)
     self.mpi        = framework.require('PETSc.packages.MPI',self)
     self.blasLapack = framework.require('PETSc.packages.BlasLapack',self)
-    self.deps       = [self.mpi,self.blasLapack]
+    self.blopex     = framework.require('PETSc.packages.blopex',self)
+    self.deps       = [self.mpi,self.blasLapack,self.blopex]   
     return
 
   def generateLibList(self,dir):
