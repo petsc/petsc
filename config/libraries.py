@@ -237,7 +237,7 @@ int init(int argc,  char *argv[]) {
     if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd, shared = 1):
       if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
       self.setCompilers.LIBS = oldFlags
-      raise RuntimeError('Could not complete shared library check')
+      raise RuntimeError('Could not complete shared library check\nCould not create a shared library using the currently configured shared linker.\nSuggest running with --with-shared=0 if you do not need shared libraries. Otherwise send configure.log to petsc-maint@mcs.anl.gov')
     if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
     os.rename(configObj.linkerObj, 'lib1.so')
 
@@ -260,7 +260,7 @@ int checkInit(void) {
     if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd, shared = 1):
       if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
       self.setCompilers.LIBS = oldFlags
-      self.framework.logPrint('Could not complete shared library check')
+      raise RuntimeError('Could not complete shared library check\nCould not create a shared library using the currently configured shared linker.\nSuggest running with --with-shared=0 if you do not need shared libraries. Otherwise send configure.log to petsc-maint@mcs.anl.gov')
       return 0
     if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
     os.rename(configObj.linkerObj, 'lib2.so')
