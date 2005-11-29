@@ -55,6 +55,7 @@ namespace ALE {
   template <class _T>
   class logged_allocator : public constructor_allocator<_T> {
   private:
+    static bool        _log_initialized;
     static PetscCookie _cookie;
     static int         _allocate_event;
     static int         _deallocate_event;
@@ -84,20 +85,39 @@ namespace ALE {
     struct rebind { typedef logged_allocator<_TT> other;};
   };
 
+  template <class _T>
+  bool logged_allocator<_T>::_log_initialized(false);
+  template <class _T>
+  PetscCookie logged_allocator<_T>::_cookie(0);
+  template <class _T>
+  int logged_allocator<_T>::_allocate_event(0);
+  template <class _T>
+  int logged_allocator<_T>::_deallocate_event(0);
+  template <class _T>
+  int logged_allocator<_T>::_construct_event(0);
+  template <class _T>
+  int logged_allocator<_T>::_destroy_event(0);
+  template <class _T>
+  int logged_allocator<_T>::_create_event(0);
+  template <class _T>
+  int logged_allocator<_T>::_del_event(0);
   
   template <class _T>
   void logged_allocator<_T>::__log_initialize() {
-    // Get a new cookie based on _T's typeid name
-    const std::type_info& id = typeid(_T);
-    PetscErrorCode ierr = PetscLogClassRegister(&logged_allocator::_cookie, id.name()); 
-    CHKERROR(ierr, "PetscLogClassRegister failed");
-    // Register the basic allocator methods' invocations as events
-    logged_allocator::__log_event_register("allocate", &logged_allocator::_allocate_event);
-    logged_allocator::__log_event_register("deallocate", &logged_allocator::_deallocate_event);
-    logged_allocator::__log_event_register("construct", &logged_allocator::_construct_event);
-    logged_allocator::__log_event_register("destroy", &logged_allocator::_destroy_event);
-    logged_allocator::__log_event_register("create", &logged_allocator::_create_event);
-    logged_allocator::__log_event_register("del", &logged_allocator::_del_event);
+    if(!logged_allocator::_log_initialized) {
+      // Get a new cookie based on _T's typeid name
+      const std::type_info& id = typeid(_T);
+      PetscErrorCode ierr = PetscLogClassRegister(&logged_allocator::_cookie, id.name()); 
+      CHKERROR(ierr, "PetscLogClassRegister failed");
+      // Register the basic allocator methods' invocations as events
+      logged_allocator::__log_event_register("allocate", &logged_allocator::_allocate_event);
+      logged_allocator::__log_event_register("deallocate", &logged_allocator::_deallocate_event);
+      logged_allocator::__log_event_register("construct", &logged_allocator::_construct_event);
+      logged_allocator::__log_event_register("destroy", &logged_allocator::_destroy_event);
+      logged_allocator::__log_event_register("create", &logged_allocator::_create_event);
+      logged_allocator::__log_event_register("del", &logged_allocator::_del_event);
+      logged_allocator::_log_initialized = true;
+    }
   }
 
 
