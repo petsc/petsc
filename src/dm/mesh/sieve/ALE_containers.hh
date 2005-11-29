@@ -2,7 +2,16 @@
 #define included_ALE_containers_hh
 // This should be included indirectly -- only by including ALE.hh
 
+#include <map>
+#include <set>
+#include <vector>
+
+#ifndef  included_ALE_exception_hh
+#include <ALE_exception.hh>
+#endif
+#ifndef  included_ALE_mem_hh
 #include <ALE_mem.hh>
+#endif
 
 namespace ALE {
 

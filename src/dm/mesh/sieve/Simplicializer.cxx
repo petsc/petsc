@@ -520,7 +520,7 @@ PetscErrorCode assembleField(ALE::IndexBundle *bundle, ALE::PreSieve *orientatio
   ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
   if (debug) {
     for(int i = 0; i < numIndices; i++) {
-      printf("[%d]indices[%d] = %d\n", bundle->getCommRank(), i, indices[i]);
+      printf("[%d]indices[%d] = %d with value %g\n", bundle->getCommRank(), i, indices[i], array[i]);
     }
   }
   ierr = VecSetValues(b, numIndices, indices, array, mode);CHKERRQ(ierr);

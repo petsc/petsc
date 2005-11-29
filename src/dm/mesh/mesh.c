@@ -1515,9 +1515,9 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "assembleVector"
+#define __FUNCT__ "assembleVectorComplete"
 /*@
-  assembleVector - Insert values from a local ghosted vector into a global vector
+  assembleVectorComplete - Insert values from a local ghosted vector into a global vector
 
   Collective on g
 
@@ -1532,7 +1532,7 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
 
 .seealso: MatSetOption()
 @*/
-PetscErrorCode assembleVector(Vec g, Vec l, InsertMode mode)
+PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
 {
   VecScatter     injection;
   PetscErrorCode ierr;
@@ -1541,6 +1541,49 @@ PetscErrorCode assembleVector(Vec g, Vec l, InsertMode mode)
   ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
   ierr = VecScatterBegin(l, g, mode, SCATTER_FORWARD, injection);
   ierr = VecScatterEnd(l, g, mode, SCATTER_FORWARD, injection);
+  PetscFunctionReturn(0);
+}
+
+extern int debug;
+PetscErrorCode assembleField(ALE::IndexBundle *, ALE::PreSieve *, Vec, ALE::Point, PetscScalar[], InsertMode);
+
+#undef __FUNCT__
+#define __FUNCT__ "assembleVector"
+/*@
+  assembleVector - Insert values into a vector
+
+  Collective on A
+
+  Input Parameters:
++ b - the vector
+. e - The element number
+. v - The values
+- mode - either ADD_VALUES or INSERT_VALUES, where
+   ADD_VALUES adds values to any existing entries, and
+   INSERT_VALUES replaces existing entries with new values
+
+   Level: beginner
+
+.seealso: VecSetOption()
+@*/
+PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mode)
+{
+  Mesh              mesh;
+  ALE::PreSieve    *orientation;
+  ALE::IndexBundle *elementBundle;
+  ALE::IndexBundle *bundle;
+  PetscInt          firstElement;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject) b, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
+  ierr = MeshGetElementBundle(mesh, (void **) &elementBundle);CHKERRQ(ierr);
+  ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
+  firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
+  debug = 1;
+  ierr = assembleField(bundle, orientation, b, ALE::Point(0, e + firstElement), v, mode);CHKERRQ(ierr);
+  debug = 0;
   PetscFunctionReturn(0);
 }
 
