@@ -130,7 +130,11 @@ class Configure(config.base.Configure):
     if distutils.sysconfig.get_config_var('SYSLIBS'):
       self.lib.extend(self.splitLibs(distutils.sysconfig.get_config_var('SYSLIBS')))
     # Verify that the Python library is a shared library
-    if not self.libraries.checkShared('#include <Python.h>\n', 'Py_Initialize', 'Py_IsInitialized', 'Py_Finalize', checkLink = self.checkPythonLink, libraries = self.lib, initArgs = '', noCheckArg = 1):
+    try:
+      shared = self.libraries.checkShared('#include <Python.h>\n', 'Py_Initialize', 'Py_IsInitialized', 'Py_Finalize', checkLink = self.checkPythonLink, libraries = self.lib, initArgs = '', noCheckArg = 1)
+    except RuntimeError, e:
+      raise RuntimeError('Python shared library check failed, probably due to inability to link Python libraries or a bad interaction with the shared linker.\nSuggest running with --with-python=0 if you do not need Python. Otherwise send configure.log to petsc-maint@mcs.anl.gov')
+    if not shared:
       raise RuntimeError('Python library must be shared')
     return
 
