@@ -21,7 +21,8 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.setupDependencies(self, framework)
     self.mpi        = framework.require('PETSc.packages.MPI',self)
     self.blasLapack = framework.require('PETSc.packages.BlasLapack',self)
-    self.deps       = [self.mpi,self.blasLapack]
+    self.hypre      = framework.require('PETSc.packages.hypre',self)
+    self.deps       = [self.mpi,self.blasLapack,self.hypre]
     return
 
   def Install(self):
