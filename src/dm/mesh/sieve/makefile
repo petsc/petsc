@@ -5,7 +5,7 @@ ALL: lib
 
 CFLAGS   = -I.
 FFLAGS   =
-CPPFLAGS = 
+CPPFLAGS = -DALE_HAVE_CXX_ABI -DALE_USE_LOGGING
 SOURCEC  = ALE.cxx PreSieve.cxx Sieve.cxx Stack.cxx IndexBundle.cxx Simplicializer.cxx
 SOURCEF  =
 SOURCEH  = ALE.hh  PreSieve.hh  Sieve.hh  Stack.hh  IndexBundle.hh
