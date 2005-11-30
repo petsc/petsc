@@ -385,28 +385,41 @@ namespace ALE {
   // Destructor
   template <class X>
   Obj<X>::~Obj(){
+#ifdef ALE_USE_DEBUGGING
+    const char *id_name;
+    const std::type_info& id = typeid(X);
 #ifdef ALE_HAVE_CXX_ABI
     int status;
-    const std::type_info& id = typeid(X);
     char *id_name_demangled = abi::__cxa_demangle(id.name(), NULL, NULL, &status);
-    printf("Calling destructor for Obj<%s>", id_name_demangled);
+    id_name = id_name_demangled;
+#else 
+    id_name = id.name();
+#endif
+    printf("Calling destructor for Obj<%s>", id_name);
     if (!this->refCnt) {
       printf(" with no refCnt\n");
     } else {
       printf(" with refCnt %d\n", *this->refCnt);
     }
+#ifdef ALE_HAVE_CXX_ABI
+    free(id_name_demangled);
+#endif
 #endif
     if (this->refCnt != NULL) {
       (*this->refCnt)--;
       if (*this->refCnt == 0) {  
         // If  allocator has been used to create an objPtr, as indicated by 'sz', we use the allocator to delete objPtr, using 'sz'.
         if(this->sz != 0) {
+#ifdef ALE_USE_DEBUGGING
           printf("  Calling deallocator on %p with size %d\n", this->objPtr, this->sz);
+#endif
           this->allocator.del(this->objPtr, this->sz);
           this->sz = 0;
         }
         else { // otherwise we use 'delete'
+#ifdef ALE_USE_DEBUGGING
           printf("  Calling delete on %p\n", this->objPtr);
+#endif
           delete this->objPtr;
         }
         // refCnt is always created/delete using the int_allocator.
