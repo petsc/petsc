@@ -14,7 +14,6 @@ namespace ALE {
     Point_set                  _leaves;
     Point__Point_set           _cone;
     Point__Point_set           _support;
-    Point_set                  _cap;
     // The following two functions are used by Stack also.
     void                       __computeBaseExclusion(Point_set& base, PreSieve *s);
     void                       __computeCapExclusion(Point_set& cap, PreSieve *s);
@@ -48,7 +47,6 @@ namespace ALE {
       this->__checkLock();
       // Add i to the cap in case the supp set is empty and no addArrow are executed
       this->addCapPoint(i);
-      // IMPROVE: keep the support size in _cap
       for(Point_set::iterator supp_itor = suppSet.begin(); supp_itor != suppSet.end(); supp_itor++) {
         Point j = (*supp_itor);
         this->addArrow(i,j);
@@ -60,7 +58,6 @@ namespace ALE {
       this->__checkLock();
       // Add i to the cap in case the supp set is empty and no addArrow are executed
       this->addCapPoint(i);
-      // IMPROVE: keep the support size in _cap
       this->addArrow(i,supp);
       return *this;
     };
@@ -93,7 +90,6 @@ namespace ALE {
       this->__checkLock();
       // Add j to the base in case coneSet is empty and no addArrow are executed
       this->addBasePoint(j);
-      // IMPROVE: keep the support size in _cap
       for(Point_set::iterator cone_itor = coneSet.begin(); cone_itor != coneSet.end(); cone_itor++) {
         Point i = (*cone_itor);
         this->addArrow(i,j);
@@ -105,7 +101,6 @@ namespace ALE {
       this->__checkLock();
       // Add j to the base in case coneSet is empty and no addArrow are executed
       this->addBasePoint(j);
-      // IMPROVE: keep the support size in _cap
       this->addArrow(cone,j);
       return *this;
     };
@@ -203,13 +198,11 @@ namespace ALE {
     Obj<Point_set>                    support(Obj<Point_set> chain) {return this->nSupport(chain,1);};
     Point_set                         support(Point_set& chain) {
       CHKCOMM(*this);
-      // IMPROVE: keep the support size in _cap
       Point_set supp = this->nSupport(chain,1);
       return supp;
     };
     Obj<Point_set>                    support(const Point& point) {
       CHKCOMM(*this);
-      // IMPROVE: keep the support size in _cap
       Point_set supp = this->nSupport(point,1);
       return supp;
     };
@@ -222,7 +215,6 @@ namespace ALE {
     Point_set                         nSupport(Point_set& chain, int32_t n);
     Point_set                         nSupport(const Point& point, int32_t n) {
       CHKCOMM(*this);
-      // IMPROVE: keep the support size in _cap
       // Compute the point set obtained by taking the support recursively on a point in the cap
       // (i.e., the set of base points resulting after each iteration is used again as the cap for the next support computation).
       // Note: a 0-support is the point itself.
@@ -233,7 +225,6 @@ namespace ALE {
     Point_set                         nStar(Point_set& chain, int32_t n);
     Point_set                         nStar(Point& point, int32_t n) {
       CHKCOMM(*this);
-      // IMPROVE: keep the support size in _cap
       // Compute the point set obtained by accumulating the recursively-computed support of a  point in the cap
       // (i.e., the set of base points resulting after each iteration is accumulated in the star AND used again as
       // the cap for the next support computation).
