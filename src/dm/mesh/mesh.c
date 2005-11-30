@@ -1544,7 +1544,6 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
   PetscFunctionReturn(0);
 }
 
-extern int debug;
 PetscErrorCode assembleField(ALE::IndexBundle *, ALE::PreSieve *, Vec, ALE::Point, PetscScalar[], InsertMode);
 
 #undef __FUNCT__
@@ -1581,9 +1580,7 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
   ierr = MeshGetElementBundle(mesh, (void **) &elementBundle);CHKERRQ(ierr);
   ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
   firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
-  debug = 1;
   ierr = assembleField(bundle, orientation, b, ALE::Point(0, e + firstElement), v, mode);CHKERRQ(ierr);
-  debug = 0;
   PetscFunctionReturn(0);
 }
 
@@ -2018,6 +2015,8 @@ PetscErrorCode MeshGenerate(Mesh boundary, Mesh *mesh)
   PetscFunctionBegin;
 #ifdef PETSC_HAVE_TRIANGLE
   ierr = MeshGenerate_Triangle(boundary, mesh);CHKERRQ(ierr);
+#else
+  SETERRQ(PETSC_ERR_SUP, "Mesh generation currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
   PetscFunctionReturn(0);
 }
@@ -2033,6 +2032,8 @@ PetscErrorCode MeshRefine(Mesh mesh, PetscReal maxArea, /*CoSieve*/ Vec maxAreas
   PetscFunctionBegin;
 #ifdef PETSC_HAVE_TRIANGLE
   ierr = MeshRefine_Triangle(mesh, maxArea, maxAreas, refinedMesh);CHKERRQ(ierr);
+#else
+  SETERRQ(PETSC_ERR_SUP, "Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
   PetscFunctionReturn(0);
 }
@@ -2047,6 +2048,8 @@ PetscErrorCode MeshCoarsen(Mesh mesh, PetscReal minArea, /*CoSieve*/ Vec minArea
   PetscFunctionBegin;
 #ifdef PETSC_HAVE_TRIANGLE
   ierr = MeshCoarsen_Triangle(mesh, minArea, minAreas, coarseMesh);CHKERRQ(ierr);
+#else
+  SETERRQ(PETSC_ERR_SUP, "Mesh coarsening currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
   PetscFunctionReturn(0);
 }
