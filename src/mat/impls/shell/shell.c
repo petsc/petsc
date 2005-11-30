@@ -349,7 +349,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat A)
   b->multtranspose = 0;
   b->getdiagonal   = 0;
   A->assembled     = PETSC_TRUE;
-  A->preallocated  = PETSC_TRUE;
+  A->preallocated  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
