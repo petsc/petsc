@@ -14,11 +14,11 @@ namespace ALE {
   
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::PreSieve()"
-  PreSieve::PreSieve() : Coaster(), _cone(), _support(), _cap() {};
+  PreSieve::PreSieve() : Coaster(), _cone(), _support() {};
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::PreSieve(MPI_Comm)"
-  PreSieve::PreSieve(MPI_Comm comm) : Coaster(comm), _cone(), _support(), _cap() {};
+  PreSieve::PreSieve(MPI_Comm comm) : Coaster(comm), _cone(), _support() {};
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::~PreSieve"
@@ -31,7 +31,6 @@ namespace ALE {
     /* This is not what we mean by clear: Coaster::clear(); */
     this->_cone.clear();
     this->_support.clear();
-    this->_cap.clear();
     return *this;
   }// PreSieve::clear()
   
@@ -64,15 +63,6 @@ namespace ALE {
         ALE::Point cover = *c_itor;
 
         this->removeArrow(cover, p, removeSingleton);
-        // We should keep points unless explicitly removed, even if all of their arrows are gone.
-        // WARNING: this code below seems to be suspect
-        //         if (this->support(cover)->size() == 0) {
-        //           if (!this->baseContains(cover)) {
-        //             this->removeCapPoint(cover);
-        //           } else {
-        //             this->_cap.erase(cover);
-        //           }
-        //         }
       }
       // Remove the cone over p
       this->_cone.erase(p);
@@ -93,10 +83,8 @@ namespace ALE {
   PreSieve& PreSieve::addCapPoint(Point& q) {
     CHKCOMM(*this);
     this->__checkLock();
-    // IMPROVE: keep the support size in _cap
     if(!this->capContains(q)) {
       this->_support[q] = Point_set();
-      this->_cap.insert(q);
       // This may appear counterintuitive, but upon initial addition to the cap the point is a leaf
       this->_leaves.insert(q);
       // If the point is not in the base, it is also a root.  It may be a root while being in the base as well,
@@ -131,7 +119,6 @@ namespace ALE {
         //         }
       }
       // Remove the point from the cap and delete it the support under q
-      this->_cap.erase(q);
       this->_support.erase(q);
       // After removal from the cap the point that is still in the base becomes a leaf -- no outgoing arrows.
       if(this->baseContains(q)) {
@@ -149,7 +136,6 @@ namespace ALE {
   PreSieve& PreSieve::addArrow(Point& i, Point& j) {
     CHKCOMM(*this);
     this->__checkLock();
-    // IMPROVE: keep the support size in _cap
     this->addBasePoint(j);
     this->addCapPoint(i);
     this->_cone[j].insert(i);
@@ -236,8 +222,8 @@ namespace ALE {
       }// for(Point_set::iterator pCone_itor = this->_cone[p].begin(); pCone_itor != this->_cone[p].end(); pCone_itor++)
     }// for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->_cone.end(); base_itor++)
     // We use the cap of s for C
-    for(Point_set::iterator cap_itor = s._cap.begin(); cap_itor != s._cap.end(); cap_itor++) {
-      Point q = *cap_itor;
+    for(Point__Point_set::iterator cap_itor = s._support.begin(); cap_itor != s._support.end(); cap_itor++) {
+      Point q = (*cap_itor).first;
       C.addCapPoint(q);
     }
     // Now C to *this
@@ -273,8 +259,8 @@ namespace ALE {
       }// for(Point_set::iterator pCone_itor = s._cone[p].begin(); pCone_itor != s._cone[p].end(); pCone_itor++)
     }// for(Point__Point_set::iterator base_itor = s._cone.begin(); base_itor != s._cone.end(); base_itor++)
     // We use the cap of *this for C
-    for(Point_set::iterator cap_itor = this->_cap.begin(); cap_itor != this->_cap.end(); cap_itor++) {
-      Point q = *cap_itor;
+    for(Point__Point_set::iterator cap_itor = this->_support.begin(); cap_itor != this->_support.end(); cap_itor++) {
+      Point q = (*cap_itor).first;
       ss.addCapPoint(q);
     }
     // Now replace the guts of *this with those of ss
@@ -477,7 +463,11 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::cap"
   Point_set PreSieve::cap() {
     CHKCOMM(*this);
-    return this->_cap;
+    Point_set cap;
+    for(Point__Point_set::iterator support_itor = this->_support.begin(); support_itor != this->_support.end(); support_itor++) {
+      cap.insert((*support_itor).first);
+    }
+    return cap;
   }// PreSieve::cap()
 
 
@@ -527,7 +517,7 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::capSize"
   int32_t PreSieve::capSize() {
     CHKCOMM(*this);
-    return this->_cap.size();
+    return this->_support.size();
   }// PreSieve::capSize()
 
   #undef  __FUNCT__
@@ -1153,8 +1143,8 @@ namespace ALE {
       this->addCone(pCone, p);
     }
     // Make sure all of the cap of s is added (some cap points have no arrows).
-    for(Point_set::iterator cap_itor = s._cap.begin(); cap_itor != s._cap.end(); cap_itor++) {
-      Point q = *cap_itor;
+    for(Point__Point_set::iterator cap_itor = s._support.begin(); cap_itor != s._support.end(); cap_itor++) {
+      Point q = cap_itor->first;
       this->addCapPoint(q);
     }
     return this;
@@ -1175,8 +1165,8 @@ namespace ALE {
       this->addCone(pCone, p);
     }
     // Make sure all of the cap of s is added (some cap points have no arrows).
-    for(Point_set::iterator cap_itor = s->_cap.begin(); cap_itor != s->_cap.end(); cap_itor++) {
-      Point q = *cap_itor;
+    for(Point__Point_set::iterator cap_itor = s->_support.begin(); cap_itor != s->_support.end(); cap_itor++) {
+      Point q = cap_itor->first;
       this->addCapPoint(q);
     }
     return *this;
@@ -1620,7 +1610,8 @@ namespace ALE {
       cones  = &this->_cone;
     }
     else if(completedSet == completedSetBase){
-      points = &this->_cap;
+      points = new Point_set();
+      *points = this->cap();
       cones = &this->_support;
     }
     else {
