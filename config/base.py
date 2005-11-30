@@ -525,8 +525,16 @@ class Configure(script.Script):
       (output, error, status) = Configure.executeShellCommand(command, log = self.framework.log)
     except RuntimeError, e:
       self.framework.log.write('ERROR while running executable: '+str(e)+'\n')
-    if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
-    if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
+    if os.path.isfile(self.compilerObj): 
+      try:
+        os.remove(self.compilerObj)
+      except RuntimeError, e:
+        self.framework.log.write('ERROR while removing object file: '+str(e)+'\n')
+    if cleanup and os.path.isfile(self.linkerObj): 
+      try:
+        os.remove(self.linkerObj)
+      except RuntimeError, e:
+        self.framework.log.write('ERROR while removing executable file: '+str(e)+'\n')
     return (output+error, status)
 
   def checkRun(self, includes = '', body = '', cleanup = 1, defaultArg = '', executor = None):
