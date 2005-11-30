@@ -30,6 +30,7 @@ namespace ALE {
     //
     Coaster() : petscObj(NULL) {this->clear();};
     Coaster(MPI_Comm c) : petscObj(NULL) {this->clear(); this->setComm(c);};
+    Coaster(const Coaster& coaster);
     virtual ~Coaster(){this->clear();};
     //
     virtual Coaster&          clear();
