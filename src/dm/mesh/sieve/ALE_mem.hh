@@ -344,6 +344,7 @@ namespace ALE {
 
 
   // Constructors 
+  // New reference
   template <class X>
   Obj<X>::Obj(X x) { 
     // allocate and copy object
@@ -355,6 +356,7 @@ namespace ALE {
     //this->sz = 0;
   }
   
+  // Stolen reference
   template <class X>
   Obj<X>::Obj(X *xx){// such an object will be destroyed by calling 'delete' on its pointer 
                      // (e.g., we assume the pointer was obtained with new)
@@ -383,17 +385,33 @@ namespace ALE {
   // Destructor
   template <class X>
   Obj<X>::~Obj(){
-    if((this->refCnt != (int32_t *)NULL) && (--(this->refCnt) == 0)) {  
-      // If  allocator has been used to create an objPtr, as indicated by 'sz', we use the allocator to delete objPtr, using 'sz'.
-      if(this->sz != 0) {
-        this->allocator.del(this->objPtr, this->sz);
-        this->sz = 0;
+#ifdef ALE_HAVE_CXX_ABI
+    int status;
+    const std::type_info& id = typeid(X);
+    char *id_name_demangled = abi::__cxa_demangle(id.name(), NULL, NULL, &status);
+    printf("Calling destructor for Obj<%s>", id_name_demangled);
+    if (!this->refCnt) {
+      printf(" with no refCnt\n");
+    } else {
+      printf(" with refCnt %d\n", *this->refCnt);
+    }
+#endif
+    if (this->refCnt != NULL) {
+      (*this->refCnt)--;
+      if (*this->refCnt == 0) {  
+        // If  allocator has been used to create an objPtr, as indicated by 'sz', we use the allocator to delete objPtr, using 'sz'.
+        if(this->sz != 0) {
+          printf("  Calling deallocator on %p with size %d\n", this->objPtr, this->sz);
+          this->allocator.del(this->objPtr, this->sz);
+          this->sz = 0;
+        }
+        else { // otherwise we use 'delete'
+          printf("  Calling delete on %p\n", this->objPtr);
+          delete this->objPtr;
+        }
+        // refCnt is always created/delete using the int_allocator.
+        this->int_allocator.del(this->refCnt);
       }
-      else { // otherwise we use 'delete'
-        delete this->objPtr;
-      }
-      // refCnt is always created/delete using the int_allocator.
-      this->int_allocator.del(this->refCnt);
     }
   }
 
