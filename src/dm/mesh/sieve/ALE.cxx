@@ -5,6 +5,21 @@
 namespace ALE {
 
   #undef  __FUNCT__
+  #define __FUNCT__ "Coaster::Coaster"
+  Coaster::Coaster(const Coaster &c) {
+    this->comm       = c.comm;
+    this->commRank   = c.commRank;
+    this->commSize   = c.commSize;
+    this->verbosity  = c.verbosity;
+    this->_lock      = 0;
+    if(this->petscObj != NULL) {
+      PetscErrorCode ierr;
+      ierr = PetscObjectReference(this->petscObj); CHKERROR(ierr, "Failed on PetscObjectReference");
+    }
+  }// Coaster::Coaster()
+
+
+  #undef  __FUNCT__
   #define __FUNCT__ "Coaster::setComm"
   void Coaster::setComm(MPI_Comm c) {
     if (this->comm == c) {
