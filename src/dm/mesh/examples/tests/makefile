@@ -1,6 +1,6 @@
 CFLAGS	        = -I${PETSC_DIR}/src/dm/mesh/sieve
 FFLAGS	        =
-CPPFLAGS        = -DALE_USE_LOGGING -DALE_HAVE_CXX_ABI
+CPPFLAGS        = -DALE_USE_LOGGING -DALE_HAVE_CXX_ABI# -DALE_USE_DEBUGGING
 FPPFLAGS        = 
 LOCDIR          = src/dm/mesh/examples/tutorials/
 EXAMPLESC       = ex0.c ex1.c
