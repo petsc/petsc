@@ -68,6 +68,7 @@ namespace ALE {
   template <class _T>
   typename polymorphic_allocator<_T>::Alloc polymorphic_allocator<_T>::alloc;
 
+  //IMPORTANT: allocator 'sz' calculation takes place here
   template <class _T>
   typename polymorphic_allocator<_T>::size_type polymorphic_allocator<_T>::sz = 
     (typename polymorphic_allocator<_T>::size_type)(ceil(sizeof(_T)/sizeof(char)));
@@ -84,7 +85,7 @@ namespace ALE {
   template <class _T>
   void polymorphic_allocator<_T>::del(_T* _p) {
     _p->~_T();
-    this->_alloc.deallocate((char*)_p, sz);
+    this->_alloc.deallocate((char*)_p, polymorphic_allocator<_T>::sz);
   }
 
   template <class _T> template <class _TT>
@@ -127,6 +128,7 @@ namespace ALE {
 
     _T*  create(const _T& _val = _T());
     void del(_T*  _p);    
+    template <class _TT> void del(_TT* _p, size_type _sz);
   };
 
   template <class _T, bool _O>
@@ -249,6 +251,13 @@ namespace ALE {
     LogEventEnd(logged_allocator::_del_event);
   }
 
+  template <class _T, bool _O> template <class _TT>
+  void logged_allocator<_T, _O>::del(_TT* _p, size_type _sz) {
+    LogEventBegin(logged_allocator::_del_event);
+    polymorphic_allocator<_T>::del(_p, _sz);
+    LogEventEnd(logged_allocator::_del_event);
+  }
+
 #ifdef ALE_USE_LOGGING
 #define ALE_ALLOCATOR logged_allocator
 #else
@@ -273,33 +282,34 @@ namespace ALE {
   public:
     // Types 
 #ifdef ALE_USE_LOGGING
-    typedef logged_allocator<X,true>   Allocator;
-    typedef logged_allocator<int>      Allocator_int;
+    typedef logged_allocator<X,true>      Allocator;
+    typedef logged_allocator<int>         Allocator_int;
 #else
-    typedef polymorphic_allocator<X>   Allocator;
-    typedef polymorphic_allocator<int> Allocator_int;
+    typedef polymorphic_allocator<X>      Allocator;
+    typedef polymorphic_allocator<int>    Allocator_int;
 #endif
+    typedef typename Allocator::size_type size_type;
   public:
     // These are intended to be private
-    X*       objPtr;         // object pointer
-    int32_t *refCnt;         // reference count
-    bool     allocator_used; // indicates that the object was allocated using create<X>, and should be released using del<X>.
     // allocators
-    Allocator_int      int_allocator;
-    Allocator          allocator;
+    Allocator_int          int_allocator;
+    Allocator              allocator;
+    //
+    X*                     objPtr; // object pointer
+    int32_t*               refCnt; // reference count
+    size_type              sz;     // Size of underlying object (universal units) allocated with an allocator; indicates allocator use.
     // Constructor; this can be made private, if we move operator Obj<Y> outside this class definition and make it a friend.
-    Obj(X *xx, int32_t *refCnt, bool allocator_used);
+    Obj(X *xx, int32_t *refCnt, size_type sz);
   public:
     // Constructors & a destructor
-    Obj() : objPtr((X *)NULL), refCnt((int32_t*)NULL), allocator_used(false) {};
+    Obj() : objPtr((X *)NULL), refCnt((int32_t*)NULL), sz(0) {};
     Obj(X x);
     Obj(X *xx);
     Obj(const Obj& obj);
     ~Obj();
 
     // "Factory" methods
-    Obj& create(){return Obj(X());};
-    Obj& create(const X& x){return Obj(X(x));};
+    Obj& create(const X& x = X());
 
     // predicates & assertions
     bool isNull() {return (this->objPtr == NULL);};
@@ -341,25 +351,25 @@ namespace ALE {
     //this->objPtr = new X(x);
     refCnt = Obj<X>::int_allocator.create(1);
     //this->refCnt = new int(1);
-    this->allocator_used = true;
-    //this->allocator_used = false;
+    this->sz = Obj<X>::Allocator::sz;
+    //this->sz = 0;
   }
   
   template <class X>
   Obj<X>::Obj(X *xx){// such an object will be destroyed by calling 'delete' on its pointer 
                      // (e.g., we assume the pointer was obtained with new)
     this->objPtr = xx; 
-    refCnt = Obj<X>::int_allocator.create(1);
-    //refCnt   = new int(1);
-    allocator_used = false;
+    this->refCnt = this->int_allocator.create(1);
+    //this->refCnt   = new int(1);
+    this->sz = 0;
   }
   
   template <class X>
-  Obj<X>::Obj(X *xx, int32_t *refCnt, bool allocator_used) {  // This is intended to be private.
+  Obj<X>::Obj(X *xx, int32_t *refCnt, size_type sz) {  // This is intended to be private.
     this->objPtr = xx;
     this->refCnt = refCnt;  // we assume that all refCnt pointers are obtained using an int_allocator
     (*this->refCnt)++;
-    this->allocator_used = allocator_used;
+    this->sz = sz;
   }
   
   template <class X>
@@ -367,25 +377,36 @@ namespace ALE {
     this->objPtr = obj.objPtr;
     this->refCnt = obj.refCnt;
     (*this->refCnt)++;
-    this->allocator_used = obj.allocator_used;
+    this->sz = obj.sz;
   }
 
   // Destructor
   template <class X>
   Obj<X>::~Obj(){
     if((this->refCnt != (int32_t *)NULL) && (--(this->refCnt) == 0)) {  
-      // If  allocator has been used to create an objPtr, we use it to delete it as well.
-      if(this->allocator_used) {
-        Obj<X>::allocator.del(objPtr);
+      // If  allocator has been used to create an objPtr, as indicated by 'sz', we use the allocator to delete objPtr, using 'sz'.
+      if(this->sz != 0) {
+        this->allocator.del(this->objPtr, this->sz);
+        this->sz = 0;
       }
       else { // otherwise we use 'delete'
-        delete objPtr;
+        delete this->objPtr;
       }
       // refCnt is always created/delete using the int_allocator.
-      Obj<X>::int_allocator.del(refCnt);
+      this->int_allocator.del(this->refCnt);
     }
   }
 
+  template <class X>
+  Obj<X>& Obj<X>::create(const X& x) {
+    // Destroy the old state
+    this->~Obj<X>();
+    // Create the new state
+    this->objPtr = this->allocator.create(x); 
+    this->refCnt = this->int_allocator.create(1);
+    this->sz     = this->allocator.sz;
+    return *this;
+  }
 
   // assignment operator
   template <class X>
@@ -399,7 +420,7 @@ namespace ALE {
     if(this->refCnt!= NULL) {
       (*this->refCnt)++;
     }
-    this->allocator_used = obj.allocator_used;
+    this->sz = sz;
     return *this;
   }
 
@@ -413,8 +434,7 @@ namespace ALE {
       throw ALE::Exception("Bad cast Obj<X> --> Obj<Y>");
     }
     // Okay, we can proceed 
-    // TROUBLE: potentially a different allocator was used to allocate *yObjPtr.
-    return Obj<Y>(yObjPtr, this->refCnt, this->allocator_used);
+    return Obj<Y>(yObjPtr, this->refCnt, this->sz);
   }
 
   // assignment-conversion operator
@@ -431,11 +451,10 @@ namespace ALE {
     // Destroy 'this' Obj -- it will properly release the underlying object if the reference count is exhausted.
     this->~Obj<X>();
     // Now copy the data from obj.
-    // TROUBLE: potentially a different allocator was used to allocate *xObjPtr.
     this->objPtr = xObjPtr;
     this->refCnt = obj.refCnt;
     (*this->refCnt)++;
-    this->allocator_used = obj.allocator_used;
+    this->sz = obj.sz;
     return *this;
   }
  

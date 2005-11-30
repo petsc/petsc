@@ -1,9 +1,9 @@
 CFLAGS	        = -I${PETSC_DIR}/src/dm/mesh/sieve
 FFLAGS	        =
-CPPFLAGS        =
+CPPFLAGS        = -DALE_USE_LOGGING -DALE_HAVE_CXX_ABI
 FPPFLAGS        = 
 LOCDIR          = src/dm/mesh/examples/tutorials/
-EXAMPLESC       = ex1.c
+EXAMPLESC       = ex0.c ex1.c
 EXAMPLESF       = 
 MANSEC          = DA
 NP              = 1
@@ -12,9 +12,23 @@ EXTRA_ARGS      =
 
 include ${PETSC_DIR}/bmake/common/base
 
+ex0: ex0.o chkopts
+	-${CLINKER} -o ex0 ex0.o ${PETSC_DM_LIB}
+	${RM} -f ex0.o
+
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_DM_LIB}
 	${RM} -f ex1.o
+
+#-----------------------------------------------------------------
+runex0:
+	-@${MPIRUN} -np ${NP} ./ex0 -log_summary ${EXTRA_ARGS}
+
+debugex0:
+	-@${MPIRUN} -np ${NP} ./ex0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+
+valex0:
+	-@valgrind --tool=memcheck ./ex0 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex1:
