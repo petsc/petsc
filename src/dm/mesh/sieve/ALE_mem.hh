@@ -6,6 +6,7 @@
 #include <memory>
 #include <typeinfo>
 #include <petsc.h>
+#include <ALE_log.hh>
 
 #ifdef ALE_HAVE_CXX_ABI
 #include <cxxabi.h>
@@ -13,64 +14,90 @@
 
 namespace ALE {
 
-  // General allocator; use it when no logging is necessary; create/del methods act as new/delete.
+  // This allocator implements create and del methods, that act roughly as new and delete in that they invoke a constructor/destructor
+  // in addition to memory allocation/deallocation.
+  // An additional (and potentially dangerous) feature allows an object of any type to be deleted so long as its size has been provided.
   template <class _T>
-  class constructor_allocator {
-  public:
-    typedef typename std::allocator<_T> Allocator; 
+  class polymorphic_allocator {
   private:
-    Allocator _allocator; // The underlying allocator
+    static std::allocator<char>& _alloc;           // The underlying universal allocator shared by ALL polymorphic_allocators
   public:
-    typedef typename Allocator::size_type       size_type;
-    typedef typename Allocator::difference_type difference_type;
-    typedef typename Allocator::pointer         pointer;
-    typedef typename Allocator::const_pointer   const_pointer;
-    typedef typename Allocator::reference       reference;
-    typedef typename Allocator::const_reference const_reference;
-    typedef typename Allocator::value_type      value_type;
+    typedef typename std::allocator<_T> Alloc;
+    // A specific allocator -- alloc -- of type Alloc is used to define the correct types and implement methods
+    // that do not allocate/deallocate memory themselves -- the universal _alloc is used for that (and only that).
+    // The relative size sz is used to calculate the amount of memory to request from _alloc to satisfy a request to alloc.
+    typedef typename Alloc::size_type       size_type;
+    typedef typename Alloc::difference_type difference_type;
+    typedef typename Alloc::pointer         pointer;
+    typedef typename Alloc::const_pointer   const_pointer;
+    typedef typename Alloc::reference       reference;
+    typedef typename Alloc::const_reference const_reference;
+    typedef typename Alloc::value_type      value_type;
 
-    constructor_allocator()                                    {};    
-    constructor_allocator(const constructor_allocator& a)      {};
+    static Alloc alloc;                            // The underlying specific allocator
+    static typename Alloc::size_type sz;           // The size of _T universal units of char
+
+    polymorphic_allocator()                                    {};    
+    polymorphic_allocator(const polymorphic_allocator& a)      {};
     template <class _TT> 
-    constructor_allocator(const constructor_allocator<_TT>& aa){};
-    ~constructor_allocator() {};
+    polymorphic_allocator(const polymorphic_allocator<_TT>& aa){};
+    ~polymorphic_allocator() {};
 
     // Reproducing the standard allocator interface
-    pointer       address(reference _x) const          { return _allocator.address(_x); };
-    const_pointer address(const_reference _x) const    { return _allocator.address(_x); };
-    _T*           allocate(size_type _n)               { return _allocator.allocate(_n);};
-    void          deallocate(pointer _p, size_type _n) { _allocator.deallocate(_p, _n); };
-    void          construct(pointer _p, const _T& _val){ _allocator.construct(_p, _val);};
-    void          destroy(pointer _p)                  { _allocator.destroy(_p);        };
-    size_type     max_size() const                     { return _allocator.max_size();  };
+    pointer       address(reference _x) const          { return alloc.address(_x);                      };
+    const_pointer address(const_reference _x) const    { return alloc.address(_x);                      };
+    _T*           allocate(size_type _n)               { return (_T*)_alloc.allocate(_n*sz);            };
+    void          deallocate(pointer _p, size_type _n) { _alloc.deallocate((char*)_p, _n*sz);           };
+    void          construct(pointer _p, const _T& _val){ alloc.construct(_p, _val);                     };
+    void          destroy(pointer _p)                  { alloc.destroy(_p);                             };
+    size_type     max_size() const                     { return (size_type)floor(_alloc.max_size()/sz); };
     // conversion typedef
     template <class _TT>
-    struct rebind { typedef constructor_allocator<_TT> other;};
-
-    _T* create(const _T& _val = _T());
+    struct rebind { typedef polymorphic_allocator<_TT> other;};
+    
+    _T*  create(const _T& _val = _T());
     void del(_T* _p);
+    template<class _TT> void del(_TT* _p, size_type _sz);
   };
 
+  static std::allocator<char> _alloc;
+
+  template <class _T>
+  std::allocator<char>& polymorphic_allocator<_T>::_alloc = _alloc;
+
+  template <class _T>
+  typename polymorphic_allocator<_T>::Alloc polymorphic_allocator<_T>::alloc;
+
+  template <class _T>
+  typename polymorphic_allocator<_T>::size_type polymorphic_allocator<_T>::sz = 
+    (typename polymorphic_allocator<_T>::size_type)(ceil(sizeof(_T)/sizeof(char)));
+
   template <class _T> 
-  _T* constructor_allocator<_T>::create(const _T& _val) {
+  _T* polymorphic_allocator<_T>::create(const _T& _val) {
     // First, allocate space for a single object
-    _T* _p = this->_allocator.allocate(1);
+    _T* _p = (_T*)this->_alloc.allocate(sz);
     // Construct an object in the provided space using the provided initial value
-    this->_allocator.construct(_p,  _val);
+    this->alloc.construct(_p,  _val);
     return _p;
   }
 
-  template <class _T> 
-  void constructor_allocator<_T>::del(_T* _p) {
-    this->_allocator.destroy(_p);
-    this->_allocator.deallocate(_p, 1);
+  template <class _T>
+  void polymorphic_allocator<_T>::del(_T* _p) {
+    _p->~_T();
+    this->_alloc.deallocate((char*)_p, sz);
+  }
+
+  template <class _T> template <class _TT>
+  void polymorphic_allocator<_T>::del(_TT* _p, size_type _sz) {
+    _p->~_TT();
+    this->_alloc.deallocate((char*)_p, _sz);
   }
 
 
-
   // An allocator all of whose events (allocation, deallocation, new, delete) are logged using PetscLogging facilities.
-  template <class _T>
-  class logged_allocator : public constructor_allocator<_T> {
+  // _O is true if this is an Obj allocator (that's the intended use, anyhow).
+  template <class _T, bool _O = false>
+  class logged_allocator : public polymorphic_allocator<_T> {
   private:
     static bool        _log_initialized;
     static PetscCookie _cookie;
@@ -83,11 +110,11 @@ namespace ALE {
     static void __log_initialize();
     static void __log_event_register(const char *class_name, const char *event_name, PetscEvent *event_ptr);
   public:
-    typedef typename constructor_allocator<_T>::size_type size_type;
-    logged_allocator()                                   : constructor_allocator<_T>()  {__log_initialize();};    
-    logged_allocator(const logged_allocator& a)          : constructor_allocator<_T>(a) {__log_initialize();};
+    typedef typename polymorphic_allocator<_T>::size_type size_type;
+    logged_allocator()                                   : polymorphic_allocator<_T>()  {__log_initialize();};    
+    logged_allocator(const logged_allocator& a)          : polymorphic_allocator<_T>(a) {__log_initialize();};
     template <class _TT> 
-    logged_allocator(const logged_allocator<_TT>& aa)    : constructor_allocator<_T>(aa){__log_initialize();};
+    logged_allocator(const logged_allocator<_TT>& aa)    : polymorphic_allocator<_T>(aa){__log_initialize();};
     ~logged_allocator() {};
     // conversion typedef
     template <class _TT>
@@ -102,25 +129,25 @@ namespace ALE {
     void del(_T*  _p);    
   };
 
-  template <class _T>
-  bool logged_allocator<_T>::_log_initialized(false);
-  template <class _T>
-  PetscCookie logged_allocator<_T>::_cookie(0);
-  template <class _T>
-  int logged_allocator<_T>::_allocate_event(0);
-  template <class _T>
-  int logged_allocator<_T>::_deallocate_event(0);
-  template <class _T>
-  int logged_allocator<_T>::_construct_event(0);
-  template <class _T>
-  int logged_allocator<_T>::_destroy_event(0);
-  template <class _T>
-  int logged_allocator<_T>::_create_event(0);
-  template <class _T>
-  int logged_allocator<_T>::_del_event(0);
+  template <class _T, bool _O>
+  bool logged_allocator<_T, _O>::_log_initialized(false);
+  template <class _T, bool _O>
+  PetscCookie logged_allocator<_T,_O>::_cookie(0);
+  template <class _T, bool _O>
+  int logged_allocator<_T, _O>::_allocate_event(0);
+  template <class _T, bool _O>
+  int logged_allocator<_T, _O>::_deallocate_event(0);
+  template <class _T, bool _O>
+  int logged_allocator<_T, _O>::_construct_event(0);
+  template <class _T, bool _O>
+  int logged_allocator<_T, _O>::_destroy_event(0);
+  template <class _T, bool _O>
+  int logged_allocator<_T, _O>::_create_event(0);
+  template <class _T, bool _O>
+  int logged_allocator<_T, _O>::_del_event(0);
   
-  template <class _T>
-  void logged_allocator<_T>::__log_initialize() {
+  template <class _T, bool _O>
+  void logged_allocator<_T, _O>::__log_initialize() {
     if(!logged_allocator::_log_initialized) {
       // Get a new cookie based on _T's typeid name
       const std::type_info& id = typeid(_T);
@@ -162,71 +189,70 @@ namespace ALE {
   }
 
 
-  template <class _T> 
-  void logged_allocator<_T>::__log_event_register(const char *class_name, const char *event_name, PetscEvent *event_ptr){
+  template <class _T, bool _O> 
+  void logged_allocator<_T, _O>::__log_event_register(const char *class_name, const char *event_name, PetscEvent *event_ptr){
     // This routine assumes a cookie has been obtained.
     ostringstream txt;
-    txt << class_name << ": " << event_name;
-    PetscErrorCode ierr = PetscLogEventRegister(event_ptr, txt.str().c_str(), logged_allocator::_cookie);
-    CHKERROR(ierr, "PetscLogEventRegister failed");
+    if(_O) {
+      txt << "Obj<";
+    }
+    txt << class_name;
+    if(_O) {
+      txt << ">";
+    }
+    txt << ": " << event_name;
+    LogEventRegister(event_ptr, txt.str().c_str(), logged_allocator::_cookie);
   }
 
-  template <class _T>
-  _T*  logged_allocator<_T>::allocate(size_type _n) {
-    PetscErrorCode ierr;
-    ierr = PetscLogEventBegin(logged_allocator::_allocate_event, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
-    _T* _p = constructor_allocator<_T>::allocate(_n);
-    //ierr = PetscPrintf(PETSC_COMM_WORLD, "logged_allocator: allocate called\n"); CHKERROR(ierr, "PetscPrintf failed");
-    ierr = PetscLogEventEnd(logged_allocator::_allocate_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
+  template <class _T, bool _O>
+  _T*  logged_allocator<_T, _O>::allocate(size_type _n) {
+    LogEventBegin(logged_allocator::_allocate_event); 
+    _T* _p = polymorphic_allocator<_T>::allocate(_n);
+    LogEventEnd(logged_allocator::_allocate_event); 
     return _p;
   }
-
-  template <class _T>
-  void logged_allocator<_T>::deallocate(_T* _p, size_type _n) {
-    PetscErrorCode ierr;
-    ierr = PetscLogEventBegin(logged_allocator::_deallocate_event, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
-    constructor_allocator<_T>::deallocate(_p, _n);
-    //ierr = PetscPrintf(PETSC_COMM_WORLD, "logged_allocator: deallocate called\n"); CHKERROR(ierr, "PetscPrintf failed");
-    ierr = PetscLogEventEnd(logged_allocator::_deallocate_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
+  
+  template <class _T, bool _O>
+  void logged_allocator<_T, _O>::deallocate(_T* _p, size_type _n) {
+    LogEventBegin(logged_allocator::_deallocate_event);
+    polymorphic_allocator<_T>::deallocate(_p, _n);
+    LogEventEnd(logged_allocator::_deallocate_event);
   }
-
-  template <class _T>
-  void logged_allocator<_T>::construct(_T* _p, const _T& _val) {
-    PetscErrorCode ierr;
-    ierr = PetscLogEventBegin(logged_allocator::_construct_event, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
-    constructor_allocator<_T>::construct(_p, _val);
-    ierr = PetscLogEventEnd(logged_allocator::_construct_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
+  
+  template <class _T, bool _O>
+  void logged_allocator<_T, _O>::construct(_T* _p, const _T& _val) {
+    LogEventBegin(logged_allocator::_construct_event);
+    polymorphic_allocator<_T>::construct(_p, _val);
+    LogEventEnd(logged_allocator::_construct_event);
   }
-
-  template <class _T>
-  void logged_allocator<_T>::destroy(_T* _p) {
-    PetscErrorCode ierr;
-    ierr = PetscLogEventBegin(logged_allocator::_destroy_event, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
-    constructor_allocator<_T>::destroy(_p);
-    ierr = PetscLogEventEnd(logged_allocator::_destroy_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
+  
+  template <class _T, bool _O>
+  void logged_allocator<_T, _O>::destroy(_T* _p) {
+    LogEventBegin(logged_allocator::_destroy_event);
+    polymorphic_allocator<_T>::destroy(_p);
+    LogEventEnd(logged_allocator::_destroy_event);
   }
-
-  template <class _T>
-  _T* logged_allocator<_T>::create(const _T& _val) {
+  
+  template <class _T, bool _O>
+  _T* logged_allocator<_T, _O>::create(const _T& _val) {
     PetscErrorCode ierr;
     ierr = PetscLogEventBegin(logged_allocator::_create_event, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
-    _T* _p = constructor_allocator<_T>::create(_val);
+    _T* _p = polymorphic_allocator<_T>::create(_val);
     ierr = PetscLogEventEnd(logged_allocator::_create_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
     return _p;
   }
 
-  template <class _T>
-  void logged_allocator<_T>::del(_T* _p) {
-    PetscErrorCode ierr;
-    ierr = PetscLogEventBegin(logged_allocator::_del_event, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
-    constructor_allocator<_T>::del(_p);
-    ierr = PetscLogEventEnd(logged_allocator::_del_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
+  template <class _T, bool _O>
+  void logged_allocator<_T, _O>::del(_T* _p) {
+    LogEventBegin(logged_allocator::_del_event);
+    polymorphic_allocator<_T>::del(_p);
+    LogEventEnd(logged_allocator::_del_event);
   }
 
 #ifdef ALE_USE_LOGGING
 #define ALE_ALLOCATOR logged_allocator
 #else
-#define ALE_ALLOCATOR constructor_allocator
+#define ALE_ALLOCATOR polymorphic_allocator
 #endif
 
   //
@@ -246,8 +272,13 @@ namespace ALE {
   class Obj {
   public:
     // Types 
-    typedef ALE_ALLOCATOR<X>   Allocator;
-    typedef ALE_ALLOCATOR<int> Allocator_int;
+#ifdef ALE_USE_LOGGING
+    typedef logged_allocator<X,true>   Allocator;
+    typedef logged_allocator<int>      Allocator_int;
+#else
+    typedef polymorphic_allocator<X>   Allocator;
+    typedef polymorphic_allocator<int> Allocator_int;
+#endif
   public:
     // These are intended to be private
     X*       objPtr;         // object pointer

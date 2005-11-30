@@ -138,6 +138,30 @@ namespace ALE {
     return fmt;
   }// ERRORMSG()
 
+  //
+  // Logging helper functions
+  //
+  #undef  __FUNCT__
+  #define __FUNCT__ "LogEventRegister"
+  void LogEventRegister(PetscEvent *event_ptr, const char *event_name, PetscCookie cookie){
+    PetscErrorCode ierr = PetscLogEventRegister(event_ptr, event_name, cookie);
+    CHKERROR(ierr, "PetscLogEventRegister failed");
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "LogEventBegin"
+  void LogEventBegin(int e){
+    PetscErrorCode ierr;
+    ierr = PetscLogEventBegin(e, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
+  }//LogEventBegin()
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "LogEventEnd"
+  void LogEventEnd(int e){
+    PetscErrorCode ierr;
+    ierr = PetscLogEventEnd(e, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
+  }//LogEventEnd()
+
 }
 
 #undef ALE_ALE_cxx
