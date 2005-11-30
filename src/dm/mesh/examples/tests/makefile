@@ -35,7 +35,7 @@ runex1:
 	-@${MPIRUN} -np ${NP} ./ex1 -log_summary ${EXTRA_ARGS}
 
 debugex1:
-	-@${MPIRUN} -np ${NP} ./ex1 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./ex1 -log_summary ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 valex1:
 	-@valgrind --tool=memcheck ./ex1 ${EXTRA_ARGS}
