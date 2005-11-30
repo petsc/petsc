@@ -330,7 +330,10 @@ class Configure(config.base.Configure):
             else:
               lflags.append(arg)
             self.logPrint('Found special library: '+arg, 4, 'compilers')
-            cxxlibs.append(arg)
+            if arg in self.clibs:
+              self.logPrint('Library already in C list so skipping in C++')
+            else:
+              cxxlibs.append(arg)
           continue
         if arg == '-rpath':
           lib = argIter.next()
