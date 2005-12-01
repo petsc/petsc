@@ -304,16 +304,16 @@ getmpirun:
                 fi;\
 	        echo "#include \"$<\"" >> $*.ad.c ;\
 		${RM} *.ad.tmp* *.c.tmp* ad_deriv.h ; \
-	        echo ${CC} -g  -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-	        ${CC} -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+	        echo ${PCC} -g  -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+	        ${PCC} -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
 		 \
               else \
 	        echo ${PETSC_COMPILE_SINGLE} $<; \
 	        ${PETSC_COMPILE_SINGLE} $<; \
               fi; \
         elif  [ -f $*.ad.c ]; then \
-          echo ${CC} -g -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-	  ${CC} -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+          echo ${PCC} -g -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+	  ${PCC} -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
         else \
 	  echo ${PETSC_COMPILE_SINGLE} $<; \
 	  ${PETSC_COMPILE_SINGLE} $<; \
@@ -621,7 +621,7 @@ adic2:
 
 adiclib:
 	-@if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
-          ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${ADIC_INCLUDE} *.ad.c ; \
+          ${PCC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${ADIC_INCLUDE} *.ad.c ; \
         fi; fi
 	-@if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
           ${AR} ${AR_FLAGS} ${INSTALL_LIB_DIR}/${LIBBASE}.a *.ad.o ; \
@@ -631,7 +631,7 @@ adiclib:
 
 adiclib2:
 	-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
-          ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${ADIC_INCLUDE} *.ad.c ; \
+          ${PCC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${ADIC_INCLUDE} *.ad.c ; \
         fi; fi
 	-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
           ${AR} ${AR_FLAGS} ${INSTALL_LIB_DIR}/${LIBBASE}.a *.ad.o ; \

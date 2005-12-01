@@ -75,8 +75,7 @@ class Configure(config.base.Configure):
 
     # Sometimes we need C compiler, even if built with C++
     self.setCompilers.pushLanguage('C')
-    self.addMakeMacro('C_CC',self.setCompilers.getCompiler())
-    self.addMakeMacro('C_CC_FLAGS',self.setCompilers.getCompilerFlags())    
+    self.addMakeMacro('CC_FLAGS',self.setCompilers.getCompilerFlags())    
     self.setCompilers.popLanguage()
 
     # C preprocessor values
@@ -84,9 +83,8 @@ class Configure(config.base.Configure):
     
     # compiler values
     self.setCompilers.pushLanguage(self.languages.clanguage)
-    self.setCompilers.delMakeMacro('CC')
-    self.addMakeMacro('CC',self.setCompilers.getCompiler())
-    self.addMakeMacro('CC_FLAGS',self.setCompilers.getCompilerFlags())    
+    self.addMakeMacro('PCC',self.setCompilers.getCompiler())
+    self.addMakeMacro('PCC_FLAGS',self.setCompilers.getCompilerFlags())    
     self.setCompilers.popLanguage()
     # .o or .obj 
     self.addMakeMacro('CC_SUFFIX','o')
