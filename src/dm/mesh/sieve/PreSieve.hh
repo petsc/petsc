@@ -1,8 +1,8 @@
 #ifndef included_ALE_PreSieve_hh
 #define included_ALE_PreSieve_hh
 
-#ifndef  included_ALE_ALE_hh
-#include <ALE.hh>
+#ifndef  included_ALE_Coaster_hh
+#include <Coaster.hh>
 #endif
 
 namespace ALE {
