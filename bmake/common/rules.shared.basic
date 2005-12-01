@@ -34,7 +34,7 @@ shared_linux_intel:
 	${CLINKER} -shared -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
 
 shared_irix:
-	-@${CC} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
+	-@${PCC} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
 
 shared_alpha:
 	-@${LD} -shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} >/dev/null 2>&1
@@ -57,7 +57,7 @@ shared_solaris_gnu:
 
 shared_solaris:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
-	${C_CC} -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} ${SYS_LIB} ${PETSC_EXTERNAL_LIB_BASIC}
+	${CC} -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} ${SYS_LIB} ${PETSC_EXTERNAL_LIB_BASIC}
 
 shared_libtool:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
@@ -79,8 +79,8 @@ shared_darwin7:
         if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libslepc" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\
-        echo ${C_CC} -dynamiclib -single_module -flat_namespace -multiply_defined suppress -undefined warning -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR} ${OTHERSHAREDLIBS} $$OTHERLIBS;\
-        ${C_CC}  -dynamiclib -single_module -flat_namespace -multiply_defined suppress -undefined warning -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR}  ${OTHERSHAREDLIBS} ${SL_LINKER_LIBS} $$OTHERLIBS
+        echo ${CC} -dynamiclib -single_module -flat_namespace -multiply_defined suppress -undefined warning -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR} ${OTHERSHAREDLIBS} $$OTHERLIBS;\
+        ${CC}  -dynamiclib -single_module -flat_namespace -multiply_defined suppress -undefined warning -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR}  ${OTHERSHAREDLIBS} ${SL_LINKER_LIBS} $$OTHERLIBS
 
 # This is the main target for building shared libraries. It takes the following actions
 #   a) Create 'tmp-petsc-shlib' in the library directory

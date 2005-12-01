@@ -55,7 +55,7 @@ info:
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
 	-@echo "------------------------------------------"
-	-@echo "Using C/C++ compiler: ${CC} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS}"
+	-@echo "Using C/C++ compiler: ${PCC} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS}"
 	-@echo "C/C++ Compiler version: " `${CCV}`
 	-@if [ "${FC}" != "" ]; then \
 	   echo "Using Fortran compiler: ${FC} ${FC_FLAGS} ${FFLAGS} ${FPP_FLAGS}";\
@@ -84,7 +84,7 @@ info_h:
 	-@echo  "\"Using PETSc arch: ${PETSC_ARCH}\__n__\"" >> MINFO
 	-@echo  "\"-----------------------------------------\"; " >> MINFO
 	-@echo  "static const char *petsccompilerinfo = \"\__n__\"" >> MINFO
-	-@echo  "\"Using C compiler: ${CC} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS}\__n__\"" >> MINFO
+	-@echo  "\"Using C compiler: ${PCC} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS}\__n__\"" >> MINFO
 	-@echo  "\"Using Fortran compiler: ${FC} ${FC_FLAGS} ${FFLAGS} ${FPP_FLAGS}\__n__\"" >> MINFO
 	-@echo  "\"-----------------------------------------\"; " >> MINFO
 	-@echo  "static const char *petsccompilerflagsinfo = \"\__n__\"" >> MINFO
@@ -412,7 +412,7 @@ alladic:
 
 alladiclib:
 	-@echo "Beginning to compile ADIC libraries in all directories"
-	-@echo "Using compiler: ${CC} ${COPTFLAGS}"
+	-@echo "Using compiler: ${PCC} ${COPTFLAGS}"
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "-----------------------------------------"
