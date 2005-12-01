@@ -195,7 +195,7 @@ namespace ALE {
     // This routine assumes a cookie has been obtained.
     ostringstream txt;
     if(_O) {
-      txt << "Obj:";
+      txt << "Obj: ";
     }
     txt << class_name;
     txt << ": " << event_name;
@@ -298,7 +298,7 @@ namespace ALE {
   public:
     // Constructors & a destructor
     Obj() : objPtr((X *)NULL), refCnt((int32_t*)NULL), sz(0) {};
-    Obj(X x);
+    Obj(const X& x);
     Obj(X *xx);
     Obj(const Obj& obj);
     ~Obj();
@@ -341,7 +341,7 @@ namespace ALE {
   // Constructors 
   // New reference
   template <class X>
-  Obj<X>::Obj(X x) { 
+  Obj<X>::Obj(const X& x) { 
     this->create(x);
   }
   
