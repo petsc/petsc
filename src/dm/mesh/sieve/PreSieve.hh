@@ -5,6 +5,8 @@
 #include <Coaster.hh>
 #endif
 
+#include <map>
+
 namespace ALE {
 
   class Stack;
@@ -21,6 +23,9 @@ namespace ALE {
     static const int           completedSetCap             = 0;
     static const int           completedSetBase            = 1;
     Stack *__computeCompletion(int32_t completedSet, int32_t completionType, int32_t footprintType, PreSieve *c);
+    //
+    static std::map<std::string, int> _log_stage;  // a map from stage names to stage numbers
+
   public:
     // 
     PreSieve();
@@ -253,7 +258,40 @@ namespace ALE {
     virtual Stack*                    spaceFootprint(int completionType, int footprintType,  PreSieve *f = NULL);
   };
 
-  
 } // namespace ALE
+
+// Helper macros that push and pop log stages bracketing method invocations.
+// These depend on the __FUNCT__ macro being declared correctly -- as the qualified method name (e.g., PreSieve::cone).
+// Every ALE_PRESIEVE_LOG_STAGE_BEGIN must be matched by a corresponding ALE_PRESIEVE_LOG_STAGE_END.
+// For proper logging, these macro calls must be placed outside of all code in a function, including variable declaration,
+// except return value declaration and the actual return statement. This might require some code rearrangement.
+// In particular, returns from inside the block bracketed by the macros will break the stage stack.
+#if (defined ALE_USE_LOGGING) && (defined ALE_LOGGING_USE_STAGES)
+#define ALE_PRESIEVE_LOG_STAGE_BEGIN                                                    \
+  {                                                                                     \
+    std::string stage_name(__FUNCT__);                                                  \
+    int stage;                                                                          \
+    if(ALE::PreSieve::_log_stage.find(stage_name) == ALE::PreSieve::_log_stage.end()) { \
+      stage = LogStageRegister(__FUNCT__);                                              \
+      ALE::PreSieve::_log_stage[stage_name] = stage;                                    \
+    }                                                                                   \
+    else {                                                                              \
+      stage = ALE::PreSieve::_log_stage[stage_name];                                    \
+    }                                                                                   \
+    LogStagePush(stage);                                                                \
+  }                                                                                     \
+  {                                                                               
+#define ALE_PRESIEVE_LOG_STAGE_END                                                      \
+  }                                                                                     \
+  {                                                                                     \
+    std::string stage_name(__FUNCT__);                                                  \
+    int stage = ALE::PreSieve::_log_stage[stage_name];                                  \
+    LogStagePop(stage);                                                                 \
+  }                                                                                     
+#else
+#define ALE_PRESIEVE_LOG_STAGE_BEGIN {}
+#define ALE_PRESIEVE_LOG_STAGE_BEGIN {}
+#endif
+
 
 #endif

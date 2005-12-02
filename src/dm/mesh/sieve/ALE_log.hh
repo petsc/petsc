@@ -7,15 +7,15 @@ namespace ALE {
   typedef PetscCookie LogCookie;
   typedef PetscEvent  LogEvent;
 
-  void LogCookieRegister(const char *name, LogCookie *cookie);
+  LogCookie LogCookieRegister(const char *name);
 
-  void LogStageRegister(const char *name, int *stage);
-  void LogStagePush(int stage);
-  void LogStagePop(int stage);
+  int       LogStageRegister(const char *name);
+  void      LogStagePush(int stage);
+  void      LogStagePop(int stage);
 
-  void LogEventRegister(LogCookie cookie, const char* event_name, LogEvent *event_ptr);
-  void LogEventBegin(int e);
-  void LogEventEnd(int e);
+  LogEvent  LogEventRegister(LogCookie cookie, const char* event_name);
+  void      LogEventBegin(int e);
+  void      LogEventEnd(int e);
 
 } // namespace ALE
 

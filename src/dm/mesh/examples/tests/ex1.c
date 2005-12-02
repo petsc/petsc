@@ -15,6 +15,7 @@ PetscErrorCode PreSieveConeTest(MPI_Comm comm)
 
   PetscFunctionBegin;
   topology->addCone(vertexA, edge);
+  topology->addCone(vertexB, edge);
   PetscFunctionReturn(0);
 }
 

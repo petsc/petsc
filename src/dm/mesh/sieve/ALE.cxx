@@ -60,16 +60,20 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "LogCookieRegister"
-  void LogCookieRegister(const char *name, LogCookie *cookie){
-    PetscErrorCode ierr = PetscLogClassRegister(cookie, name);
+  LogCookie LogCookieRegister(const char *name){
+    LogCookie cookie;
+    PetscErrorCode ierr = PetscLogClassRegister(&cookie, name);
     CHKERROR(ierr, "PetscLogClassRegister failed");
+    return cookie;
   }
 
   #undef  __FUNCT__
   #define __FUNCT__ "LogStageRegister"
-  void LogEventRegister(const char *name, int *stage){
-    PetscErrorCode ierr = PetscLogStageRegister(stage, name);
+  int LogStageRegister(const char *name){
+    int stage;
+    PetscErrorCode ierr = PetscLogStageRegister(&stage, name);
     CHKERROR(ierr, "PetscLogStageRegister failed");
+    return stage;
   }
 
   #undef  __FUNCT__
@@ -89,9 +93,11 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "LogEventRegister"
-  void LogEventRegister(LogCookie cookie, const char *event_name, LogEvent *event_ptr){
-    PetscErrorCode ierr = PetscLogEventRegister(event_ptr, event_name, cookie);
+  LogEvent LogEventRegister(LogCookie cookie, const char *event_name){
+    LogEvent event;
+    PetscErrorCode ierr = PetscLogEventRegister(&event, event_name, cookie);
     CHKERROR(ierr, "PetscLogEventRegister failed");
+    return event;
   }
 
   #undef  __FUNCT__

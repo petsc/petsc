@@ -109,7 +109,7 @@ namespace ALE {
     static int         _create_event;
     static int         _del_event;
     static void __log_initialize();
-    static void __log_event_register(const char *class_name, const char *event_name, LogEvent *event_ptr);
+    static LogEvent __log_event_register(const char *class_name, const char *event_name);
   public:
     typedef typename polymorphic_allocator<_T>::size_type size_type;
     logged_allocator()                                   : polymorphic_allocator<_T>()  {__log_initialize();};    
@@ -172,14 +172,14 @@ namespace ALE {
       id_name = id.name();
 #endif
       // Use id_name to register a cookie and events.
-      LogCookieRegister(id_name, &logged_allocator::_cookie); 
+      logged_allocator::_cookie = LogCookieRegister(id_name); 
       // Register the basic allocator methods' invocations as events; use the mangled class name.
-      logged_allocator::__log_event_register(id_name, "allocate", &logged_allocator::_allocate_event);
-      logged_allocator::__log_event_register(id_name, "deallocate", &logged_allocator::_deallocate_event);
-      logged_allocator::__log_event_register(id_name, "construct", &logged_allocator::_construct_event);
-      logged_allocator::__log_event_register(id_name, "destroy", &logged_allocator::_destroy_event);
-      logged_allocator::__log_event_register(id_name, "create", &logged_allocator::_create_event);
-      logged_allocator::__log_event_register(id_name, "del", &logged_allocator::_del_event);
+      logged_allocator::_allocate_event = logged_allocator::__log_event_register(id_name, "allocate");
+      logged_allocator::_deallocate_event = logged_allocator::__log_event_register(id_name, "deallocate");
+      logged_allocator::_construct_event = logged_allocator::__log_event_register(id_name, "construct");
+      logged_allocator::_destroy_event = logged_allocator::__log_event_register(id_name, "destroy");
+      logged_allocator::_create_event = logged_allocator::__log_event_register(id_name, "create");
+      logged_allocator::_del_event = logged_allocator::__log_event_register(id_name, "del");
 #ifdef ALE_HAVE_CXX_ABI
       // Free the name malloc'ed by __cxa_demangle
       free(id_name_demangled);
@@ -191,7 +191,7 @@ namespace ALE {
 
 
   template <class _T, bool _O> 
-  void logged_allocator<_T, _O>::__log_event_register(const char *class_name, const char *event_name, LogEvent *event_ptr){
+  LogEvent logged_allocator<_T, _O>::__log_event_register(const char *class_name, const char *event_name){
     // This routine assumes a cookie has been obtained.
     ostringstream txt;
     if(_O) {
@@ -199,7 +199,7 @@ namespace ALE {
     }
     txt << class_name;
     txt << ": " << event_name;
-    LogEventRegister(logged_allocator::_cookie, txt.str().c_str(), event_ptr);
+    return LogEventRegister(logged_allocator::_cookie, txt.str().c_str());
   }
 
   template <class _T, bool _O>
