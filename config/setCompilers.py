@@ -130,6 +130,18 @@ class Configure(config.base.Configure):
     return 0
   isIntel = staticmethod(isIntel)
 
+  def isCray(compiler):
+    '''Returns true if the compiler is a Cray compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V')
+      output = output + error
+      if output.find('Cray Standard C') >= 0 or output.find('Cray C++') >= 0 or output.find('Cray Fortran') >= 0:
+        return 1
+    except RuntimeError:
+      pass
+    return 0
+  isCray = staticmethod(isCray)
+  
   def isCygwin():
     '''Returns true if system is cygwin'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
