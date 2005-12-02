@@ -3,7 +3,6 @@
 configure_options = [
   '--with-cc=gcc',
   '--with-fc=g95',
-  '--with-fc=0',
   '--with-python',
   '--with-shared=1',
   '--with-dynamic=1',
