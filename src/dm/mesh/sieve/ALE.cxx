@@ -58,6 +58,8 @@ namespace ALE {
   // Logging helper functions
   //
 
+  static std::map<std::string, int> _log_stage;  // a map from stage names to stage numbers
+
   #undef  __FUNCT__
   #define __FUNCT__ "LogCookieRegister"
   LogCookie LogCookieRegister(const char *name){
@@ -71,8 +73,16 @@ namespace ALE {
   #define __FUNCT__ "LogStageRegister"
   int LogStageRegister(const char *name){
     int stage;
-    PetscErrorCode ierr = PetscLogStageRegister(&stage, name);
-    CHKERROR(ierr, "PetscLogStageRegister failed");
+    std::string stage_name(name);
+    if(_log_stage.find(stage_name) == _log_stage.end()) {    
+      // stage by that name not yet registered, so we register it and store its registration number.
+      PetscErrorCode ierr = PetscLogStageRegister(&stage, name); CHKERROR(ierr, "PetscLogStageRegister failed");
+      _log_stage[stage_name] = stage;                   
+    }                                                        
+    else {                                                   
+      // stage by that name already registered, so we retrieve its registration number.
+      stage = _log_stage[stage_name];                   
+    }                                                        
     return stage;
   }
 

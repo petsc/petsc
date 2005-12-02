@@ -13,8 +13,6 @@
 
 namespace ALE {
 
-  std::map<std::string, int> ALE::PreSieve::_log_stage;
-
   
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::PreSieve()"
@@ -138,7 +136,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::addArrow"
   PreSieve& PreSieve::addArrow(Point& i, Point& j) {
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
     this->addBasePoint(j);
@@ -147,14 +145,14 @@ namespace ALE {
     this->_support[i].insert(j);
     this->_leaves.erase(i);
     this->_roots.erase(j);
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return *this;
   }// PreSieve::addArrow()
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::removeArrow"
   PreSieve& PreSieve::removeArrow(Point& i, Point& j, bool removeSingleton) {
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
     this->_cone[j].erase(i);
@@ -175,7 +173,7 @@ namespace ALE {
         this->_leaves.insert(i);
       }
     }
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return *this;
   }// PreSieve::removeArrow()
 
@@ -443,7 +441,7 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::space"
   Point_set PreSieve::space() {
     Point_set space;
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     // Adding both cap and base
 
@@ -453,7 +451,7 @@ namespace ALE {
     for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->_cone.end(); base_itor++){
       space.insert(base_itor->first);
     }
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return space;
   }// PreSieve::space()
 
@@ -462,12 +460,12 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::base"
   Point_set PreSieve::base() {
     Point_set base;
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     for(Point__Point_set::iterator cone_itor = this->_cone.begin(); cone_itor != this->_cone.end(); cone_itor++) {
       base.insert((*cone_itor).first);
     }
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return base;
   }// PreSieve::base()
 
@@ -475,12 +473,12 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::cap"
   Point_set PreSieve::cap() {
     Point_set cap;
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     for(Point__Point_set::iterator support_itor = this->_support.begin(); support_itor != this->_support.end(); support_itor++) {
       cap.insert((*support_itor).first);
     }
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return cap;
   }// PreSieve::cap()
 
@@ -641,7 +639,7 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::nCone"
   Obj<Point_set> PreSieve::nCone(Obj<Point_set> chain, int32_t n) {
     Obj<Point_set> top(new Point_set);
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     // Compute the point set obtained by taking the cone recursively on a set of points in the base
     // (i.e., the set of cap points resulting after each iteration is used again as the base for the next cone computation).
@@ -680,7 +678,7 @@ namespace ALE {
     }
     // IMPROVE: memory use can be imporoved (number of copies and alloc/dealloc reduced) 
     //          if pointers to Point_set are used
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return top;
   }// PreSieve::nCone()
 
@@ -695,7 +693,7 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::nClosure"
   Obj<Point_set> PreSieve::nClosure(Obj<Point_set> chain, int32_t n) {
     Obj<Point_set> closure(new Point_set);
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     // Compute the point set obtained by recursively accumulating the cone over all of points of a set in the base
     // (i.e., the set of cap points resulting after each iteration is both stored in the resulting set and 
@@ -732,7 +730,7 @@ namespace ALE {
     }
     // IMPROVE: memory use can be imporoved (number of copies and alloc/dealloc reduced) 
     //          if pointers to Point_sets are used
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return closure;
   }// PreSieve::nClosure()
 
@@ -747,7 +745,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nClosurePreSieve"
   Obj<PreSieve> PreSieve::nClosurePreSieve(Obj<Point_set> chain, int32_t n, Obj<PreSieve> closure) {
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     if(closure.isNull()) {
       closure = Obj<PreSieve>(new PreSieve(this->comm));
@@ -778,7 +776,7 @@ namespace ALE {
         closure->addCone(pCone,p);
       }
     }
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return closure;
   }// PreSieve::nClosurePreSieve()
 
@@ -787,7 +785,7 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::nSupport"
   Obj<Point_set> PreSieve::nSupport(Obj<Point_set> chain, int32_t n) {
     Obj<Point_set> bottom(new Point_set);
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     // Compute the point set obtained by taking suppor recursively on a set of points in the cap
     // (i.e., the set of base points resulting after each iteration is used again as the cap for the next support computation).
@@ -827,7 +825,7 @@ namespace ALE {
     }
     // IMPROVE: memory use can be imporoved (number of copies and alloc/dealloc reduced) 
     //          if pointers to Point_set are used
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return bottom;
   }// PreSieve::nSupport()
 
@@ -843,7 +841,7 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::nStar"
   Obj<Point_set> PreSieve::nStar(Obj<Point_set> chain, int32_t n) {
     Obj<Point_set> star(new Point_set);
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     // Compute the point set obtained by recursively accumulating the support of all of points of a set in the cap
     // (i.e., the set of base points resulting after each iteration is both stored in the resulting set and 
@@ -878,7 +876,7 @@ namespace ALE {
     }
     // IMPROVE: memory use can be imporoved (number of copies and alloc/dealloc reduced) 
     //          if pointers to Point_sets are used
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return star;
   }// PreSieve::nStar()
 
@@ -893,7 +891,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nStarPreSieve"
   Obj<PreSieve> PreSieve::nStarPreSieve(Obj<Point_set> chain, int32_t n, Obj<PreSieve> star) {
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     // Compute the PreSieve obtained by accumulating intermediate kSupports (1<=k<=n) for a set of points in the cap.
     // Note: a 0-star is the PreSieve containing the chain itself in the cap, an empty base and no arrows.
@@ -920,7 +918,7 @@ namespace ALE {
         star->addSupport(q,bottom[q]);
       }// for(Point_set::iterator c_itor = chain.begin(); c_itor != chain.end(); c_itor++) 
     }// for(int32_t i = 0; i < n; i++)
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return star;
   }// PreSieve::nStarPreSieve()
 
@@ -929,7 +927,7 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::nMeet"
   Point_set PreSieve::nMeet(Point_set c0, Point_set c1, int32_t n) {
     Point_set meet; 
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     // The strategy is to compute the intersection of cones over the chains, remove the intersection 
     // and use the remaining two parts -- two disjoined components of the symmetric difference of cones -- as the new chains.
     // The intersections at each stage are accumulated and their union is the meet.
@@ -970,7 +968,7 @@ namespace ALE {
         }
       }// for(int32_t i = 0; i <= n; i++) 
     }// nonzero sizes
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return meet;
   }// PreSieve::nMeet()
 
@@ -1050,7 +1048,7 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::nJoin"
   Point_set PreSieve::nJoin(Point_set c0, Point_set c1, int32_t n) {
     Point_set join; 
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     // The strategy is to compute the intersection of the supports of the two chains, remove the intersection 
     // and use the remaining two parts -- two disjoined components of the symmetric difference of the supports -- as the new chains.
     // The intersections at each stage are accumulated and their union is the join.
@@ -1093,7 +1091,7 @@ namespace ALE {
       }// for(int32_t i = 0; i <= n; i++) 
     }// nonzero sizes
     return join;
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
   }// PreSieve::nJoin()
 
 
@@ -1172,7 +1170,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::add"
   PreSieve *PreSieve::add(PreSieve& s) {
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMMS(*this,s);
     this->__checkLock();
     // Add the points and arrows of s to those of 'this'
@@ -1187,7 +1185,7 @@ namespace ALE {
       Point q = cap_itor->first;
       this->addCapPoint(q);
     }
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return this;
   }// PreSieve::add()
 
@@ -1195,7 +1193,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::add"
   PreSieve& PreSieve::add(Obj<PreSieve> s) {
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     // IMPROVE:  do something about CHKCOMMS so that I can use Obj<PreSieve> to do the checking.
     //CHKCOMMS(*this,s.object());
     this->__checkLock();
@@ -1211,7 +1209,7 @@ namespace ALE {
       Point q = cap_itor->first;
       this->addCapPoint(q);
     }
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return *this;
   }// PreSieve::add()
 
@@ -1318,9 +1316,9 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::coneCompletion"
   Stack* PreSieve::coneCompletion(int completionType, int footprintType, PreSieve *c) {
     Stack *s;
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     s = this->__computeCompletion(completedSetCap, completionType, footprintType, c);
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return s;
   }// PreSieve::coneCompletion()
 
@@ -1328,9 +1326,9 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::supportCompletion"
   Stack* PreSieve::supportCompletion(int completionType, int footprintType, PreSieve *c) {
     Stack *s;
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     s = this->__computeCompletion(completedSetBase, completionType, footprintType, c);
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
     return s;
   }// PreSieve::supportCompletion()
 
@@ -1427,7 +1425,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::__determinePointOwners"
   void PreSieve::__determinePointOwners(Point_set& points, int32_t *LeaseData, std::map<Point, int32_t, Point::Cmp>& owner) {
-    ALE_PRESIEVE_LOG_STAGE_BEGIN;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     PetscErrorCode ierr;
     int32_t  size = this->commSize;
@@ -1523,7 +1521,7 @@ namespace ALE {
       LeaseData[2*proc+1] = 1;                 // processor owns at least one of ours (i.e., the number of leases from proc is 1)
       LeaseData[2*proc]++;                     // count of how many we lease from proc
     }
-    ALE_PRESIEVE_LOG_STAGE_END;
+    ALE_LOG_STAGE_END;
   }// PreSieve::__determinePointOwners()
 
   #undef  __FUNCT__
