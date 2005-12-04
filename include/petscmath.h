@@ -59,6 +59,8 @@ typedef std::complex<double> PetscScalar;
 #    define MPIU_SCALAR           MPI_FLOAT
 #  elif defined(PETSC_USE_LONG_DOUBLE)
 #    define MPIU_SCALAR           MPI_LONG_DOUBLE
+#  elif defined(PETSC_INT)
+#    define MPIU_INT              MPI_INT
 #  else
 #    define MPIU_SCALAR           MPI_DOUBLE
 #  endif
@@ -66,6 +68,8 @@ typedef std::complex<double> PetscScalar;
 #    define MPIU_MATSCALAR        MPI_FLOAT
 #  elif defined(PETSC_USE_LONG_DOUBLE)
 #    define MPIU_MATSCALAR        MPI_LONG_DOUBLE
+#  elif defined(PETSC_USE_INT)
+#    define MPIU_MATSCALAR        MPI_INT
 #  else
 #    define MPIU_MATSCALAR        MPI_DOUBLE
 #  endif
@@ -83,6 +87,8 @@ typedef std::complex<double> PetscScalar;
   typedef float PetscScalar;
 #  elif defined(PETSC_USE_LONG_DOUBLE)
   typedef long double PetscScalar;
+#  elif defined(PETSC_USE_INT)
+  typedef int PetscScalar;
 #  else
   typedef double PetscScalar;
 #  endif
@@ -92,6 +98,8 @@ typedef std::complex<double> PetscScalar;
 #  define MPIU_REAL   MPI_FLOAT
 #elif defined(PETSC_USE_LONG_DOUBLE)
 #  define MPIU_REAL   MPI_LONG_DOUBLE
+#elif defined(PETSC_USE_INT)
+#  define MPIU_REAL   MPI_INT
 #else
 #  define MPIU_REAL   MPI_DOUBLE
 #endif
@@ -117,6 +125,8 @@ typedef PetscScalar MatScalar;
   typedef float PetscReal;
 #elif defined(PETSC_USE_LONG_DOUBLE)
   typedef long double PetscReal;
+#elif defined(PETSC_USE_INT)
+  typedef int PetscReal;
 #else 
   typedef double PetscReal;
 #endif
@@ -234,7 +244,7 @@ M*/
 
 /* ----------------------------------------------------------------------------*/
 /*
-     Basic constants
+     Basic constants - These should be done much better
 */
 #define PETSC_PI                 3.14159265358979323846264
 #define PETSC_DEGREES_TO_RADIANS 0.01745329251994
@@ -247,6 +257,12 @@ M*/
 #  define PETSC_MACHINE_EPSILON         1.e-7
 #  define PETSC_SQRT_MACHINE_EPSILON    3.e-4
 #  define PETSC_SMALL                   1.e-5
+#elif defined(PETSC_USE_INT)
+#  define PETSC_MAX                     PETSC_MAX_INT
+#  define PETSC_MIN                     PETSC_MIN_INT
+#  define PETSC_MACHINE_EPSILON         1
+#  define PETSC_SQRT_MACHINE_EPSILON    1
+#  define PETSC_SMALL                   0
 #else
 #  define PETSC_MAX                     1.e300
 #  define PETSC_MIN                    -1.e300

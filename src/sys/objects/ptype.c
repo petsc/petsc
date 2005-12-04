@@ -69,6 +69,8 @@ typedef enum {PETSC_INT_SIZE = sizeof(PetscInt),PETSC_DOUBLE_SIZE = sizeof(doubl
 #define PETSC_REAL_SIZE PETSC_FLOAT_SIZE
 #elif defined(PETSC_USE_LONG_DOUBLE)
 #define PETSC_REAL_SIZE PETSC_LONG_DOUBLE_SIZE
+#elif defined(PETSC_USE_INT)
+#define PETSC_REAL_SIZE PETSC_INT_SIZE
 #else
 #define PETSC_REAL_SIZE PETSC_DOUBLE_SIZE
 #endif

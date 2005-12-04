@@ -34,7 +34,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Mat(PC);
 #if defined(PETSC_HAVE_HYPRE)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_HYPRE(PC);
 #endif
-#if !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE) && !defined(PETSC_USE_LONG_DOUBLE)
+#if !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE) && !defined(PETSC_USE_LONG_DOUBLE) && !defined(PETSC_USE_INT)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC);
 #endif
 #if defined(PETSC_HAVE_PROMETHEUS)
@@ -98,7 +98,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterAll(const char path[])
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PCRegisterDynamic(PCHYPRE        ,path,"PCCreate_HYPRE",PCCreate_HYPRE);CHKERRQ(ierr);
 #endif
-#if !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE) && !defined(PETSC_USE_LONG_DOUBLE)
+#if !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE) && !defined(PETSC_USE_LONG_DOUBLE) && !defined(PETSC_USE_INT)
   ierr = PCRegisterDynamic(PCTFS         ,path,"PCCreate_TFS",PCCreate_TFS);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PROMETHEUS)

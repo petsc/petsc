@@ -326,7 +326,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
       } else {
         var = 0.0;
       }
-      sprintf(title,  "Mean: %g  Var: %g", mean, var);
+      sprintf(title,  "Mean: %g  Var: %g", (double)mean, (double)var);
       sprintf(xlabel, "Total: %d", numValues);
       ierr  = PetscDrawAxisSetLabels(hist->axis, title, xlabel, PETSC_NULL);CHKERRQ(ierr);
     }
@@ -379,7 +379,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
       } else {
         var = 0.0;
       }
-      sprintf(title, "Mean: %g  Var: %g", mean, var);
+      sprintf(title, "Mean: %g  Var: %g", (double)mean, (double)var);
       sprintf(xlabel, "Total: %d", numValues);
       ierr  = PetscDrawAxisSetLabels(hist->axis, title, xlabel, PETSC_NULL);CHKERRQ(ierr);
     }

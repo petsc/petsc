@@ -111,6 +111,10 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     */
     ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
     ierr = MatGetSubMatrices(pc->pmat,1,&isl,&isl,reuse,&red->pmats);CHKERRQ(ierr);
+    int rank; MPI_Comm_rank(comm,&rank);
+    if (rank == 0) {
+      MatView(*red->pmats,PETSC_VIEWER_BINARY_(PETSC_COMM_SELF));
+    }
     ierr = ISDestroy(isl);CHKERRQ(ierr);
 
     /* tell sequential PC its operators */
