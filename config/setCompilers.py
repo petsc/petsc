@@ -55,6 +55,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-vendor-compilers=<vendor>', nargs.Arg(None, '', 'Try to use vendor compilers (no argument all vendors, 0 no vendors)'))
     help.addArgument('Compilers', '-with-64-bit-pointers=<bool>',    nargs.ArgBool(None, 0, 'Use 64 bit compilers and libraries (currently need to specify vendor)'))
 
+    help.addArgument('Compilers', '-with-large-file-io=<bool>', nargs.ArgBool(None, 1, 'Allow IO with files greater then 2 GB'))
     help.addArgument('Compilers', '-CPP=<prog>',            nargs.Arg(None, None, 'Specify the C preprocessor'))
     help.addArgument('Compilers', '-CPPFLAGS=<string>',     nargs.Arg(None, '',   'Specify the C preprocessor options'))
     help.addArgument('Compilers', '-CXXPP=<prog>',          nargs.Arg(None, None, 'Specify the C++ preprocessor'))
@@ -658,7 +659,7 @@ class Configure(config.base.Configure):
     # [if necessary] replace this with an actual test - which breaks the compile
     if self.getCompiler().find('mpif90') >=0:
       # should be a FPPFLAGS - not FFLAGS - but currently FPPFLAGS don't exist.
-      self.addCompilerFlag('-I.')
+      self.addCompilerFlag('-I.',compilerOnly=1)
     self.popLanguage()
     return    
 
@@ -729,6 +730,22 @@ class Configure(config.base.Configure):
           break
         except RuntimeError:
           self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag)
+      self.popLanguage()
+    return
+
+  def checkLargeFileIO(self):
+    # check for large file support with 64bit offset
+    if not self.framework.argDB['with-large-file-io']:
+      return
+    languages = ['C']
+    if hasattr(self, 'CXX'):
+      languages.append('Cxx')
+    for language in languages:
+      self.pushLanguage(language)
+      try:
+        self.addCompilerFlag('-D__USE_FILE_OFFSET64',compilerOnly=1)
+      except RuntimeError, e:
+        self.logPrint('Rejected ' +language+ ' flag -D__USE_FILE_OFFSET64')
       self.popLanguage()
     return
 
@@ -1131,6 +1148,7 @@ if (dlclose(handle)) {
       self.executeTest(self.checkFortranComments)
       self.executeTest(self.checkBrokenMpif90)
     self.executeTest(self.checkPIC)
+    self.executeTest(self.checkLargeFileIO)
     self.executeTest(self.checkArchiver)
     self.executeTest(self.checkSharedLinker)
     if Configure.isDarwin():
