@@ -784,7 +784,9 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nSupport"
   Obj<Point_set> PreSieve::nSupport(Obj<Point_set> chain, int32_t n) {
-    Obj<Point_set> bottom(new Point_set);
+    Obj<Point_set> top;
+    Obj<Point_set> bottom;
+
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     // Compute the point set obtained by taking suppor recursively on a set of points in the cap
@@ -792,11 +794,11 @@ namespace ALE {
     // Note: a 0-support is the chain itself.
 
     // We use two Point_set pointers and swap them at the beginning of each iteration
-    Obj<Point_set> top(new Point_set);
+    top.create(Point_set());
+    bottom.create(Point_set());
     if(n == 0) {
       bottom.copy(chain);
-    }
-    else {
+    } else {
       bottom = chain;
     }
     // If no iterations are executed, chain is returned
@@ -805,9 +807,8 @@ namespace ALE {
       Obj<Point_set> tmp = top; top = bottom; bottom = tmp;
       // If bottom == chain, replace bottom->pointer() with another &Point_set;  this avoids having to copy *chain.
       if(bottom == chain) {
-        bottom = new Point_set;
-      }
-      else {
+        bottom.create(Point_set());
+      } else {
         bottom->clear();
       }
       // Traverse the points in top
