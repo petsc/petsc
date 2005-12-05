@@ -350,14 +350,23 @@ namespace ALE {
   template <class X>
   Obj<X>::Obj(X *xx){// such an object will be destroyed by calling 'delete' on its pointer 
                      // (e.g., we assume the pointer was obtained with new)
-    this->objPtr = xx; 
-    this->refCnt = this->int_allocator.create(1);
-    //this->refCnt   = new int(1);
-    this->sz = 0;
+    if (xx) {
+      this->objPtr = xx; 
+      this->refCnt = this->int_allocator.create(1);
+      //this->refCnt   = new int(1);
+      this->sz = 0;
+    } else {
+      this->objPtr = NULL; 
+      this->refCnt = NULL;
+      this->sz = 0;
+    }
   }
   
   template <class X>
   Obj<X>::Obj(X *xx, int32_t *refCnt, size_type sz) {  // This is intended to be private.
+    if (!xx) {
+      throw ALE::Exception("Making an Obj with a NULL objPtr");
+    }
     this->objPtr = xx;
     this->refCnt = refCnt;  // we assume that all refCnt pointers are obtained using an int_allocator
     (*this->refCnt)++;
@@ -397,7 +406,7 @@ namespace ALE {
 #endif
     if (this->refCnt != NULL) {
       (*this->refCnt)--;
-      if (*this->refCnt == 0) {  
+      if (*this->refCnt == 0) {
         // If  allocator has been used to create an objPtr, as indicated by 'sz', we use the allocator to delete objPtr, using 'sz'.
         if(this->sz != 0) {
 #ifdef ALE_USE_DEBUGGING
@@ -410,6 +419,9 @@ namespace ALE {
 #ifdef ALE_USE_DEBUGGING
           printf("  Calling delete on %p\n", this->objPtr);
 #endif
+          if (!this->objPtr) {
+            throw ALE::Exception("Trying to free NULL pointer");
+          }
           delete this->objPtr;
         }
         // refCnt is always created/delete using the int_allocator.

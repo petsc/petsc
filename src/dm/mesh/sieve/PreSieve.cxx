@@ -1072,7 +1072,7 @@ namespace ALE {
           if(ss->find(*s_itor)!= ss->end()) {
             join.insert(*s_itor);
             ss->erase(*s_itor);
-            s->erase(s_itor);
+            s->erase(*s_itor);
           }
         }// for(Point_set::iterator s_itor = s->begin(); s_itor != s->end(); s_itor++)
         // Replace each of the chains with its support, and check if either is empty; if so, stop
