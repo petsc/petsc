@@ -23,6 +23,7 @@ PetscErrorCode MemTest()
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
+  PetscTruth     memTest;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -30,10 +31,12 @@ int main(int argc, char *argv[])
   
   MPI_Comm  comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "Options for ALE memory management and logging testing", "Mesh");
-    //PetscTruth memTest = PETSC_TRUE;
-    // ierr = PetscOptionsTruth("-mem_test", "Perform the mem test", "ex0.c", PETSC_TRUE, &memTest, PETSC_NULL);CHKERRQ(ierr);
+    memTest = PETSC_TRUE;
+    ierr = PetscOptionsTruth("-mem_test", "Perform the mem test", "ex0.c", PETSC_TRUE, &memTest, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
-  ierr = MemTest();CHKERRQ(ierr);
+  if (memTest) {
+    ierr = MemTest();CHKERRQ(ierr);
+  }
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

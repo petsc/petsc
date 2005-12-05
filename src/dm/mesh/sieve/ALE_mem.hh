@@ -341,7 +341,8 @@ namespace ALE {
   // Constructors 
   // New reference
   template <class X>
-  Obj<X>::Obj(const X& x) { 
+  Obj<X>::Obj(const X& x) {
+    this->refCnt = NULL;
     this->create(x);
   }
   
