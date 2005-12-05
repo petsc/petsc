@@ -12,6 +12,7 @@ namespace ALE {
     this->commSize   = c.commSize;
     this->verbosity  = c.verbosity;
     this->_lock      = 0;
+    this->petscObj   = c.petscObj;
     if(this->petscObj != NULL) {
       PetscErrorCode ierr;
       ierr = PetscObjectReference(this->petscObj); CHKERROR(ierr, "Failed on PetscObjectReference");

@@ -32,32 +32,32 @@ namespace ALE {
     //
     void __reset(Obj<Sieve> topology = Obj<Sieve>()) {
       if(topology.isNull()) {
-        topology = Obj<Sieve>(new Sieve(this->comm));
+        topology = Obj<Sieve>(Sieve(this->comm));
       }
       //
       this->_assemblyPolicy       = INSERTION;
       //
-      this->_dimensionsToElements = Obj<Stack>(new Stack(this->comm));
-      this->_dimensionsToElements->setTop(Obj<PreSieve>(new PreSieve(this->comm)));
+      this->_dimensionsToElements = Obj<Stack>(Stack(this->comm));
+      this->_dimensionsToElements->setTop(Obj<PreSieve>(PreSieve(this->comm)));
       this->_dimensionsToElements->setBottom(topology);
       //
-      this->_arrowsToStarts = Obj<Stack>(new Stack(this->comm));
-      this->_arrowsToStarts->setTop(Obj<PreSieve>(new PreSieve(this->comm)));
+      this->_arrowsToStarts = Obj<Stack>(Stack(this->comm));
+      this->_arrowsToStarts->setTop(Obj<PreSieve>(PreSieve(this->comm)));
       this->_arrowsToStarts->setBottom(topology);
       //
-      this->_arrowsToEnds = Obj<Stack>(new Stack(this->comm));
+      this->_arrowsToEnds = Obj<Stack>(Stack(this->comm));
       this->_arrowsToEnds->setTop(this->_arrowsToStarts->top());
       this->_arrowsToEnds->setBottom(topology);
       //
-      this->_localOverlapIndices  = Obj<Stack>(new Stack(this->comm));
-      this->_remoteOverlapIndices = Obj<PreSieve>(new PreSieve(this->comm));
+      this->_localOverlapIndices  = Obj<Stack>(Stack(this->comm));
+      this->_remoteOverlapIndices = Obj<PreSieve>(PreSieve(this->comm));
       //
       this->__resetArrowIndices(); // this method depends on _arrowsToStarts having already been setup
       this->_cacheFiberIndices = 0;
       //
-      _pointTypes = Obj<PreSieve>(new PreSieve(this->comm));
-      _localIndices = Obj<PreSieve>(new PreSieve(this->comm));
-      _globalIndices = Obj<PreSieve>(new PreSieve(this->comm));
+      _pointTypes = Obj<PreSieve>(PreSieve(this->comm));
+      _localIndices = Obj<PreSieve>(PreSieve(this->comm));
+      _globalIndices = Obj<PreSieve>(PreSieve(this->comm));
     };
     //
     Obj<Sieve>     __getTopology(){return this->_dimensionsToElements->bottom();};

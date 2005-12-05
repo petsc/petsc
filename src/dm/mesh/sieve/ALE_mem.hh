@@ -371,14 +371,22 @@ namespace ALE {
     this->refCnt = refCnt;  // we assume that all refCnt pointers are obtained using an int_allocator
     (*this->refCnt)++;
     this->sz = sz;
+    if (!this->sz) {
+      throw ALE::Exception("Making an Obj with zero size");
+    }
   }
   
   template <class X>
   Obj<X>::Obj(const Obj& obj) {
     this->objPtr = obj.objPtr;
     this->refCnt = obj.refCnt;
-    (*this->refCnt)++;
+    if (obj.refCnt) {
+      (*this->refCnt)++;
+    }
     this->sz = obj.sz;
+    if (!this->sz) {
+      throw ALE::Exception("Making an Obj with zero size");
+    }
   }
 
   // Destructor
@@ -438,6 +446,9 @@ namespace ALE {
     this->objPtr = this->allocator.create(x); 
     this->refCnt = this->int_allocator.create(1);
     this->sz     = this->allocator.sz;
+    if (!this->sz) {
+      throw ALE::Exception("Making an Obj with zero size");
+    }
     return *this;
   }
 

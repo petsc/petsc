@@ -2,7 +2,7 @@ ALL: lib
 
 CFLAGS   = -I.
 FFLAGS   =
-CPPFLAGS = -DALE_HAVE_CXX_ABI -DALE_USE_LOGGING -DALE_LOGGING_USE_STAGES #-DALE_USE_DEBUGGING
+CPPFLAGS = -DALE_HAVE_CXX_ABI -DALE_USE_LOGGING -DALE_LOGGING_USE_STAGES -DALE_USE_DEBUGGING
 SOURCEC  = ALE.cxx Coaster.cxx PreSieve.cxx Sieve.cxx Stack.cxx IndexBundle.cxx Simplicializer.cxx
 SOURCEF  =
 SOURCEH  = ALE.hh  Coaster.hh  PreSieve.hh  Sieve.hh  Stack.hh  IndexBundle.hh
