@@ -103,10 +103,10 @@ PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputePreSievePartition"
-PetscErrorCode ComputePreSievePartition(ALE::Obj<ALE::PreSieve> presieve, ALE::Obj<ALE::Point_set> leaves, const char *name = NULL)
+PetscErrorCode ComputePreSievePartition(ALE::PreSieve* presieve, ALE::Point_set leaves, const char *name = NULL)
 {
   MPI_Comm       comm = presieve->getComm();
-  PetscInt       numLeaves = leaves->size();
+  PetscInt       numLeaves = leaves.size();
   PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
@@ -140,7 +140,7 @@ PetscErrorCode ComputePreSievePartition(ALE::Obj<ALE::PreSieve> presieve, ALE::O
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeSievePartition"
-PetscErrorCode ComputeSievePartition(ALE::Obj<ALE::Sieve> sieve, const char *name = NULL)
+PetscErrorCode ComputeSievePartition(ALE::Sieve* sieve, const char *name = NULL)
 {
   MPI_Comm       comm = sieve->getComm();
   PetscInt       numLeaves = sieve->leaves().size();
@@ -177,7 +177,7 @@ PetscErrorCode ComputeSievePartition(ALE::Obj<ALE::Sieve> sieve, const char *nam
 
 #undef __FUNCT__
 #define __FUNCT__ "PartitionPreSieve"
-PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve> presieve, const char *name = NULL, bool localize = 1, ALE::PreSieve **pointTypes = NULL)
+PetscErrorCode PartitionPreSieve(ALE::PreSieve* presieve, const char *name = NULL, bool localize = 1, ALE::PreSieve **pointTypes = NULL)
 {
   MPI_Comm       comm = presieve->getComm();
   PetscMPIInt    rank, size;
@@ -378,7 +378,7 @@ PetscErrorCode MeshComputeGlobalScatter(ALE::Sieve *topology, ALE::IndexBundle *
 
 #undef __FUNCT__
 #define __FUNCT__ "setFiberValues"
-PetscErrorCode setFiberValues(Vec b, ALE::Point e, ALE::Obj<ALE::IndexBundle> bundle, PetscScalar array[], InsertMode mode)
+PetscErrorCode setFiberValues(Vec b, ALE::Point e, ALE::IndexBundle* bundle, PetscScalar array[], InsertMode mode)
 {
   ALE::Point_set   ee(e), empty;
   ALE::Obj<ALE::Point_set> intervals = bundle->getFiberIndices(ee, empty)->cap();
@@ -416,7 +416,7 @@ PetscErrorCode setFiberValues(Vec b, ALE::Point e, ALE::Obj<ALE::IndexBundle> bu
 
 #undef __FUNCT__
 #define __FUNCT__ "setClosureValues"
-PetscErrorCode setClosureValues(Vec b, ALE::Point e, ALE::Obj<ALE::IndexBundle> bundle, ALE::Obj<ALE::PreSieve> orientation, PetscScalar array[], InsertMode mode)
+PetscErrorCode setClosureValues(Vec b, ALE::Point e, ALE::IndexBundle* bundle, ALE::PreSieve* orientation, PetscScalar array[], InsertMode mode)
 {
   ALE::Point_set   empty;
   ALE::Obj<ALE::Point_array> intervals = bundle->getClosureIndices(orientation->cone(e), empty);

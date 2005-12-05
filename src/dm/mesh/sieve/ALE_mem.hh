@@ -481,7 +481,9 @@ namespace ALE {
   Obj<X>::operator Obj<Y> const() {
     // We attempt to cast X* objPtr to Y* using dynamic_
 #ifdef ALE_USE_DEBUGGING
-    printf("Obj<X>::operator Obj<Y>: attempting a dynamic_cast on objPtr %p\n", this->objPtr);
+    if(ALE::getVerbosity() > 1) {
+      printf("Obj<X>::operator Obj<Y>: attempting a dynamic_cast on objPtr %p\n", this->objPtr);
+    }
 #endif
     Y* yObjPtr = dynamic_cast<Y*>(this->objPtr);
     // If the cast failed, throw an exception
