@@ -588,7 +588,7 @@ PetscErrorCode MeshPopulate(Mesh mesh, int dim, PetscInt numVertices, PetscInt n
   ALE::Sieve       *topology = new ALE::Sieve(comm);
   ALE::Sieve       *boundary = new ALE::Sieve(comm);
   ALE::PreSieve    *orientation = new ALE::PreSieve(comm);
-  ALE::IndexBundle *coordBundle = new ALE::IndexBundle(comm);
+  ALE::Obj<ALE::IndexBundle> coordBundle(new ALE::IndexBundle(comm));
   Vec               coordinates;
   PetscMPIInt       rank, size;
   PetscErrorCode    ierr;
@@ -711,8 +711,7 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   ALE::Sieve       *topology;
   ALE::PreSieve    *orientation;
   ALE::IndexBundle *elementBundle;
-  ALE::IndexBundle *coordBundle;
-  ALE::IndexBundle *serialCoordBundle;
+  ALE::Obj<ALE::IndexBundle> serialCoordBundle;
   ALE::PreSieve    *partitionTypes;
   Vec               coordinates, oldCoordinates, locCoordinates;
   MPI_Comm          comm;
@@ -751,7 +750,7 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   elementBundle->getLock();  // lock the bundle so that the overlap indices do not change
   ierr = MeshSetElementBundle(mesh, (void *) elementBundle);CHKERRQ(ierr);
   /* Create coordinate bundle and storage */
-  coordBundle = new ALE::IndexBundle(topology);
+  ALE::Obj<ALE::IndexBundle> coordBundle(new ALE::IndexBundle(topology));
   if (debug) {
     coordBundle->setVerbosity(11);
   }
@@ -793,7 +792,7 @@ PetscErrorCode MeshUnify(Mesh mesh, Mesh *serialMesh)
 {
   ALE::Sieve       *topology;
   ALE::PreSieve    *orientation;
-  ALE::IndexBundle *coordBundle;
+  ALE::Obj<ALE::IndexBundle> coordBundle;
   ALE::PreSieve    *partitionTypes;
   ALE::Sieve       *boundary;
   Vec               serialCoordinates, coordinates;
@@ -868,7 +867,7 @@ PetscErrorCode MeshUnify(Mesh mesh, Mesh *serialMesh)
   serialElementBundle->getLock();  // lock the bundle so that the overlap indices do not change
   ierr = MeshSetElementBundle(*serialMesh, (void *) serialElementBundle);CHKERRQ(ierr);
   /* Create coordinate bundle and storage */
-  ALE::IndexBundle *serialCoordBundle = new ALE::IndexBundle(serialTopology);
+  ALE::Obj<ALE::IndexBundle> serialCoordBundle(new ALE::IndexBundle(serialTopology));
   serialCoordBundle->setFiberDimensionByDepth(0, dim);
   serialCoordBundle->computeOverlapIndices();
   serialCoordBundle->computeGlobalIndices();
@@ -1017,7 +1016,7 @@ PetscErrorCode MeshGetDimension(Mesh mesh, PetscInt *dimension)
 PetscErrorCode MeshGetEmbeddingDimension(Mesh mesh, PetscInt *dimension)
 {
   ALE::Sieve       *topology;
-  ALE::IndexBundle *coordBundle;
+  ALE::Obj<ALE::IndexBundle> coordBundle;
   PetscErrorCode    ierr;
 
   PetscValidIntPointer(dimension,2);
