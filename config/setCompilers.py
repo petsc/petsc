@@ -81,7 +81,6 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-pic',               nargs.ArgBool(None, 1, 'Compile with -fPIC or equivalent flag if possible'))
     help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
     help.addArgument('Compilers', '-sharedLibraryFlags',     nargs.Arg(None, [], 'Specify the shared library flags'))
-    help.addArgument('Compilers', '-with-dynamic',           nargs.ArgBool(None, 0, 'Enable dynamic libraries'))
     help.addArgument('Compilers', '-dynamicLibraryFlags',    nargs.Arg(None, [], 'Specify the dynamic library flags'))
     help.addArgument('Compilers', '-LIBS=<string>',          nargs.Arg(None, None, 'Specify extra libraries for all links'))
     return
@@ -1044,8 +1043,6 @@ class Configure(config.base.Configure):
   def checkDynamicLinker(self):
     '''Check that the linker can produce dynamic libraries'''
     self.dynamicLibraries = 0
-    if not self.framework.argDB['with-dynamic']:
-      return
     if not self.headers.check('dlfcn.h'):
       self.logPrint('Dynamic libraries disabled since dlfcn.h was missing')
       return
