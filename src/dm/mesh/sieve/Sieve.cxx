@@ -207,8 +207,8 @@ namespace ALE {
     this->__checkLock();
     // If the point is absent from the Sieve, after insertion it will have zero height/depth
     if(!(this->spaceContains(p))) {
-        this->__setDepth(p,0);
-        this->__setHeight(p,0);
+      this->__setDepth(p,0);
+      this->__setHeight(p,0);
     }
     // We must use PreSieve methods to make sure roots and leaves are maintained consistently
     PreSieve::addBasePoint(p);
@@ -342,7 +342,6 @@ namespace ALE {
   int32_t Sieve::depth(Point p) {
     CHKCOMM(*this);
     int32_t depth;
-    Point_set pSet; pSet.insert(p);
     if (this->_depth.capContains(p)) {
       Point_set depthSet = this->_depth.support(p);
       if(depthSet.size() == 0) {
