@@ -29,7 +29,7 @@ PetscErrorCode SieveConeTest(MPI_Comm comm)
 
   PetscFunctionBegin;
   topology.create(ALE::Sieve(comm));
-  //topology->addCone(vertexA, edge);
+  topology->addCone(vertexA, edge);
   PetscFunctionReturn(0);
 }
 
