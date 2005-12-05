@@ -2005,19 +2005,183 @@ PetscErrorCode MeshCoarsen_Triangle(Mesh mesh, PetscReal minArea, /*CoSieve*/ Ve
 
 #endif
 
+#ifdef PETSC_HAVE_TETGEN
+
+#include <tetgen.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshGenerate_TetGen"
+PetscErrorCode MeshGenerate_TetGen(Mesh boundary, Mesh *mesh)
+{
+  Mesh                 m;
+  ALE::Sieve          *bdTopology;
+  ALE::PreSieve       *bdOrientation;
+  tetgenio             in;
+  tetgenio             out;
+  PetscInt             dim = 3;
+  PetscMPIInt          rank;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCreate(boundary->comm, &m);CHKERRQ(ierr);
+  ierr = MeshGetTopology(boundary, (void **) &bdTopology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(boundary, (void **) &bdOrientation);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(boundary->comm, &rank);CHKERRQ(ierr);
+  ALE::IndexBundle vertexBundle(bdTopology);
+  vertexBundle.setFiberDimensionByDepth(0, 1);
+  if (rank == 0) {
+    ALE::Sieve              *bdSieve;
+    ALE::Obj<ALE::Point_set> vertices = bdTopology->depthStratum(0);
+    ALE::Obj<ALE::Point_set> facets = bdTopology->depthStratum(2);
+    std::string              args = "pqenzQ";
+    PetscTruth               createConvexHull = PETSC_FALSE;
+
+    ierr = MeshGetBoundary(boundary, (void **) &bdSieve);CHKERRQ(ierr);
+    in.numberofpoints = vertices->size();
+    if (in.numberofpoints > 0) {
+      ALE::IndexBundle *coordBundle;
+      Vec               coordinates;
+      PetscScalar      *coords;
+
+      ierr = MeshGetCoordinateBundle(boundary, (void **) &coordBundle);CHKERRQ(ierr);
+      ierr = MeshGetCoordinates(boundary, &coordinates);CHKERRQ(ierr);
+      ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+      in.pointlist       = new double[in.numberofpoints*dim];
+      in.pointmarkerlist = new int[in.numberofpoints];
+      for(ALE::Point_set::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
+        ALE::Point     vertex(*v_itor);
+        ALE::Point     interval = coordBundle->getFiberInterval(vertex);
+        ALE::Point_set support;
+        PetscScalar   *array;
+
+        ierr = restrictField(coordBundle, bdOrientation, coords, vertex, &array); CHKERRQ(ierr);
+        for(int d = 0; d < interval.index; d++) {
+          in.pointlist[interval.prefix + d] = array[d];
+        }
+
+        interval = vertexBundle.getFiberInterval(vertex);
+        support  = bdSieve->support(vertex);
+        if (support.size()) {
+          in.pointmarkerlist[interval.prefix] = support.begin()->index;
+        } else {
+          in.pointmarkerlist[interval.prefix] = 0;
+        }
+      }
+    }
+
+    in.numberoffacets = facets->size();
+    if (in.numberoffacets > 0) {
+      ALE::IndexBundle *bdElementBundle;
+
+      ierr = MeshGetElementBundle(boundary, (void **) &bdElementBundle);CHKERRQ(ierr);
+      in.facetlist       = new tetgenio::facet[in.numberoffacets];
+      in.facetmarkerlist = new int[in.numberoffacets];
+      for(ALE::Point_set::iterator f_itor = facets->begin(); f_itor != facets->end(); f_itor++) {
+        ALE::Point               facet = *f_itor;
+        ALE::Point               interval = bdElementBundle->getFiberInterval(facet);
+        ALE::Obj<ALE::Point_set> cone = bdTopology->nCone(facet, 2);
+        ALE::Point_set           support;
+        tetgenio::polygon       *poly;
+        PetscInt                 c = 0;
+
+        in.facetlist[interval.prefix].numberofpolygons = 1;
+        in.facetlist[interval.prefix].polygonlist = new tetgenio::polygon[in.facetlist[interval.prefix].numberofpolygons];
+        in.facetlist[interval.prefix].numberofholes = 0;
+        in.facetlist[interval.prefix].holelist = NULL;
+
+        poly = in.facetlist[interval.prefix].polygonlist;
+        poly->numberofvertices = cone->size();
+        poly->vertexlist = new int[poly->numberofvertices];
+        for(ALE::Point_set::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
+          poly->vertexlist[c++] = (*c_itor).index;
+        }
+
+        support = bdSieve->support(facet);
+        if (support.size()) {
+          in.facetmarkerlist[interval.prefix] = support.begin()->index;
+        } else {
+          in.facetmarkerlist[interval.prefix] = 0;
+        }
+      }
+    }
+    in.numberofholes = 0;
+    if (createConvexHull) args += "c";
+    tetrahedralize((char *) args.c_str(), &in, &out);
+  }
+  ierr = MeshPopulate(m, dim, out.numberofpoints, out.numberoftetrahedra, out.tetrahedronlist, out.pointlist);CHKERRQ(ierr);
+  if (rank == 0) {
+    ALE::Sieve *boundary = new ALE::Sieve(m->comm);
+    ALE::Sieve *topology;
+
+    ierr = MeshGetTopology(m, (void **) &topology);CHKERRQ(ierr);
+    /* Create boundary */
+    for(int v = 0; v < out.numberofpoints; v++) {
+      if (out.pointmarkerlist[v]) {
+        ALE::Point boundaryPoint(-1, out.pointmarkerlist[v]);
+        ALE::Point point(0, v + out.numberoftriangles);
+
+        boundary->addCone(point, boundaryPoint);
+      }
+    }
+    for(int e = 0; e < out.numberofedges; e++) {
+      if (out.edgemarkerlist[e]) {
+        ALE::Point     boundaryPoint(-1, out.edgemarkerlist[e]);
+        ALE::Point     endpointA(0, out.edgelist[e*2+0] + out.numberoftriangles);
+        ALE::Point     endpointB(0, out.edgelist[e*2+1] + out.numberoftriangles);
+        ALE::Point_set supportA = topology->support(endpointA);
+        ALE::Point_set supportB = topology->support(endpointB);
+        supportA.meet(supportB);
+        ALE::Point     edge = *(supportA.begin());
+
+        boundary->addCone(edge, boundaryPoint);
+      }
+    }
+    for(int f = 0; f < out.numberoffaces; f++) {
+      if (out.facemarkerlist[f]) {
+        ALE::Point     boundaryPoint(-1, out.trifacemarkerlist[f]);
+        ALE::Point     cornerA(0, out.trifacelist[f*3+0] + out.numberoftrifaces);
+        ALE::Point     cornerB(0, out.trifacelist[f*3+1] + out.numberoftrifaces);
+        ALE::Point     cornerC(0, out.trifacelist[f*3+1] + out.numberoftrifaces);
+        ALE::Point_set supportA = topology->support(cornerA);
+        ALE::Point_set supportB = topology->support(cornerB);
+        ALE::Point_set supportC = topology->support(cornerC);
+        supportA.meet(supportB);
+        supportA.meet(supportC);
+        ALE::Point     face = *(supportA.begin());
+
+        boundary->addCone(face, boundaryPoint);
+      }
+    }
+    ierr = MeshSetBoundary(m, (void *) boundary);CHKERRQ(ierr);
+  }
+  *mesh = m;
+  PetscFunctionReturn(0);
+}
+
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "MeshGenerate"
 PetscErrorCode MeshGenerate(Mesh boundary, Mesh *mesh)
 {
-#ifdef PETSC_HAVE_TRIANGLE
+  PetscInt       dim;
   PetscErrorCode ierr;
-#endif
+
   PetscFunctionBegin;
+  ierr = MeshGetDimension(boundary, &dim);CHKERRQ(ierr);
+  if (dim == 1) {
 #ifdef PETSC_HAVE_TRIANGLE
-  ierr = MeshGenerate_Triangle(boundary, mesh);CHKERRQ(ierr);
+    ierr = MeshGenerate_Triangle(boundary, mesh);CHKERRQ(ierr);
 #else
-  SETERRQ(PETSC_ERR_SUP, "Mesh generation currently requires Triangle to be installed. Use --download-triangle during configure.");
+    SETERRQ(PETSC_ERR_SUP, "Mesh generation currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
+  } else if (dim == 2) {
+#ifdef PETSC_HAVE_TETGEN
+    ierr = MeshGenerate_TetGen(boundary, mesh);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_ERR_SUP, "Mesh generation currently requires TetGen to be installed. Use --download-tetgen during configure.");
+#endif
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2025,16 +2189,24 @@ PetscErrorCode MeshGenerate(Mesh boundary, Mesh *mesh)
 #define __FUNCT__ "MeshRefine"
 PetscErrorCode MeshRefine(Mesh mesh, PetscReal maxArea, /*CoSieve*/ Vec maxAreas, Mesh *refinedMesh)
 {
-#ifdef PETSC_HAVE_TRIANGLE
+  PetscInt       dim;
   PetscErrorCode ierr;
-#endif
 
   PetscFunctionBegin;
+  ierr = MeshGetDimension(mesh, &dim);CHKERRQ(ierr);
+  if (dim == 2) {
 #ifdef PETSC_HAVE_TRIANGLE
-  ierr = MeshRefine_Triangle(mesh, maxArea, maxAreas, refinedMesh);CHKERRQ(ierr);
+    ierr = MeshRefine_Triangle(mesh, maxArea, maxAreas, refinedMesh);CHKERRQ(ierr);
 #else
-  SETERRQ(PETSC_ERR_SUP, "Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
+    SETERRQ(PETSC_ERR_SUP, "Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
+  } else if (dim == 3) {
+#ifdef PETSC_HAVE_TETGEN
+    ierr = MeshRefine_TetGen(boundary, mesh);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_ERR_SUP, "Mesh refinement currently requires TetGen to be installed. Use --download-tetgen during configure.");
+#endif
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2042,15 +2214,24 @@ PetscErrorCode MeshRefine(Mesh mesh, PetscReal maxArea, /*CoSieve*/ Vec maxAreas
 #define __FUNCT__ "MeshCoarsen"
 PetscErrorCode MeshCoarsen(Mesh mesh, PetscReal minArea, /*CoSieve*/ Vec minAreas, Mesh *coarseMesh)
 {
-#ifdef PETSC_HAVE_TRIANGLE
+  PetscInt       dim;
   PetscErrorCode ierr;
-#endif
+
   PetscFunctionBegin;
+  ierr = MeshGetDimension(mesh, &dim);CHKERRQ(ierr);
+  if (dim == 2) {
 #ifdef PETSC_HAVE_TRIANGLE
-  ierr = MeshCoarsen_Triangle(mesh, minArea, minAreas, coarseMesh);CHKERRQ(ierr);
+    ierr = MeshCoarsen_Triangle(mesh, minArea, minAreas, coarseMesh);CHKERRQ(ierr);
 #else
-  SETERRQ(PETSC_ERR_SUP, "Mesh coarsening currently requires Triangle to be installed. Use --download-triangle during configure.");
+    SETERRQ(PETSC_ERR_SUP, "Mesh coarsening currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
+  } else if (dim == 3) {
+#ifdef PETSC_HAVE_TETGEN
+    ierr = MeshCoarsen_TetGen(boundary, mesh);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_ERR_SUP, "Mesh refinement currently requires TetGen to be installed. Use --download-tetgen during configure.");
+#endif
+  }
   PetscFunctionReturn(0);
 }
 
