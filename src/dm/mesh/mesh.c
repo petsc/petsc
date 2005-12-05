@@ -1712,7 +1712,7 @@ PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
     ierr = MeshGetBoundary(boundary, (void **) &bdSieve);CHKERRQ(ierr);
     in.numberofpoints = vertices->size();
     if (in.numberofpoints > 0) {
-      ALE::IndexBundle *coordBundle;
+      ALE::Obj<ALE::IndexBundle> coordBundle;
       Vec               coordinates;
       PetscScalar      *coords;
 
@@ -1838,7 +1838,7 @@ PetscErrorCode MeshRefine_Triangle(Mesh oldMesh, PetscReal maxArea, /*CoSieve*/ 
   ALE::PreSieve       *serialOrientation;
   ALE::Sieve          *serialBoundary;
   ALE::IndexBundle    *elementBundle, *serialElementBundle, *serialVertexBundle;
-  ALE::IndexBundle    *serialCoordBundle;
+  ALE::Obj<ALE::IndexBundle> serialCoordBundle;
   ALE::PreSieve       *partitionTypes;
   Vec                  serialCoordinates;
   PetscScalar         *coords;
@@ -2039,7 +2039,7 @@ PetscErrorCode MeshGenerate_TetGen(Mesh boundary, Mesh *mesh)
     ierr = MeshGetBoundary(boundary, (void **) &bdSieve);CHKERRQ(ierr);
     in.numberofpoints = vertices->size();
     if (in.numberofpoints > 0) {
-      ALE::IndexBundle *coordBundle;
+      ALE::Obj<ALE::IndexBundle> coordBundle;
       Vec               coordinates;
       PetscScalar      *coords;
 
@@ -2427,7 +2427,9 @@ PetscErrorCode ReadCoordinates_PyLith(MPI_Comm comm, const char *filename, Petsc
     /* Ignore comments and units line */
     IgnoreComments_PyLith(buf, 2048, f);
     ierr = PetscMalloc(maxVerts*dim * sizeof(PetscScalar), &coords);CHKERRQ(ierr);
-    while(fgets(buf, 2048, f) != NULL) {
+    /* Ignore comments */
+    IgnoreComments_PyLith(buf, 2048, f);
+    do {
       const char *x = strtok(buf, " ");
 
       if (vertexCount == maxVerts) {
@@ -2446,7 +2448,7 @@ PetscErrorCode ReadCoordinates_PyLith(MPI_Comm comm, const char *filename, Petsc
         x = strtok(NULL, " ");
       }
       vertexCount++;
-    }
+    } while(fgets(buf, 2048, f) != NULL);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     *numVertices = vertexCount;
     *coordinates = coords;
