@@ -91,13 +91,13 @@ class Configure(config.base.Configure):
 
     # executable linker values
     self.setCompilers.pushLanguage(self.languages.clanguage)
-    cc_linker = self.setCompilers.getLinker()
-    self.addMakeMacro('CC_LINKER',cc_linker)
-    self.addMakeMacro('CC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
+    pcc_linker = self.setCompilers.getLinker()
+    self.addMakeMacro('PCC_LINKER',pcc_linker)
+    self.addMakeMacro('PCC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
-    self.addMakeMacro('CC_LINKER_LIBS',self.libraries.toString(self.compilers.flibs)+' '+self.libraries.toString(self.compilers.cxxlibs)+' '+self.compilers.LIBS)
+    self.addMakeMacro('PCC_LINKER_LIBS',self.libraries.toString(self.compilers.flibs)+' '+self.libraries.toString(self.compilers.cxxlibs)+' '+self.compilers.LIBS)
 
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
@@ -113,10 +113,10 @@ class Configure(config.base.Configure):
 
       # executable linker values
       self.setCompilers.pushLanguage('FC')
-      # Cannot have NAG f90 as the linker - so use cc_linker as fc_linker
+      # Cannot have NAG f90 as the linker - so use pcc_linker as fc_linker
       fc_linker = self.setCompilers.getLinker()
       if config.setCompilers.Configure.isNAG(fc_linker):
-        self.addMakeMacro('FC_LINKER',cc_linker)
+        self.addMakeMacro('FC_LINKER',pcc_linker)
       else:
         self.addMakeMacro('FC_LINKER',fc_linker)
       self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
