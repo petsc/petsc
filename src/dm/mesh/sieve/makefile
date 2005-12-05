@@ -1,7 +1,4 @@
-
 ALL: lib
-
-#requireslanguage CXXONLY
 
 CFLAGS   = -I.
 FFLAGS   =
