@@ -88,6 +88,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::addArrow"
   Sieve& Sieve::addArrow(Point& i, Point& j) {
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
     // Check whether the arrow addition would violate the addition policy.
@@ -163,6 +164,7 @@ namespace ALE {
         this->__computeClosureHeights(i);
       }
     }
+    ALE_LOG_STAGE_END;    
     return *this;
   }// Sieve::addArrow()
 
@@ -170,6 +172,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::removeArrow"
   Sieve& Sieve::removeArrow(Point& i, Point& j, bool removeSingleton) {
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
     // need to use PreSieve::removeArrow to make sure that roots and leaves are consistent
@@ -185,24 +188,28 @@ namespace ALE {
         __computeStarDepths(j);
       }
     }
+    ALE_LOG_STAGE_END;
     return *this;
   }// Sieve::removeArrow()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::removeBasePoint"
   Sieve& Sieve::removeBasePoint(Point& p, bool removeSingleton) {
+    ALE_LOG_STAGE_BEGIN;
     this->__checkLock();
     ALE::PreSieve::removeBasePoint(p, removeSingleton);
     if (!this->capContains(p)) {
       this->__setDepth(p, -1);
       this->__setHeight(p, -1);
     }
+    ALE_LOG_STAGE_END;
     return *this;
   }
   
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::addBasePoint"
   Sieve& Sieve::addBasePoint(Point& p) {
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
     // If the point is absent from the Sieve, after insertion it will have zero height/depth
@@ -212,24 +219,28 @@ namespace ALE {
     }
     // We must use PreSieve methods to make sure roots and leaves are maintained consistently
     PreSieve::addBasePoint(p);
+    ALE_LOG_STAGE_END;
     return *this;
   }// Sieve::addBasePoint()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::removeCapPoint"
   Sieve& Sieve::removeCapPoint(Point& q, bool removeSingleton) {
+    ALE_LOG_STAGE_BEGIN;
     this->__checkLock();
     ALE::PreSieve::removeCapPoint(q, removeSingleton);
     if (!this->baseContains(q)) {
       this->__setDepth(q, -1);
       this->__setHeight(q, -1);
     }
+    ALE_LOG_STAGE_END;
     return *this;
   }
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::addCapPoint"
   Sieve& Sieve::addCapPoint(Point& p) {
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
     // If the point is absent from the Sieve, after insertion it will have zero height/depth
@@ -239,6 +250,7 @@ namespace ALE {
     }
     // We must use PreSieve methods to make sure roots and leaves are maintained consistently
     PreSieve::addCapPoint(p);
+    ALE_LOG_STAGE_END;
     return *this;
   }// Sieve::addCapPoint()
 
@@ -246,6 +258,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::__setHeight"
   void Sieve::__setHeight(Point p, int32_t h){
+    ALE_LOG_STAGE_BEGIN;
     // ASSUMPTION, WARNING: this uses the structure of PreSieve in an essential way
     // We assume that _height is a PreSieve with the points of this in the cap, 
     // and the points of the form (this->commRank, height) in the base.
@@ -258,11 +271,13 @@ namespace ALE {
       Point hPoint(this->commRank, h);
       this->_height.addArrow(p,hPoint); 
     }
+    ALE_LOG_STAGE_END;
   }// Sieve::__setHeight()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::__setDepth"
   void Sieve::__setDepth(Point p, int32_t d){
+    ALE_LOG_STAGE_BEGIN;
     // ASSUMPTION, WARNING: this uses the structure of PreSieve in an essential way
     // We assume that _depth is a PreSieve with the points of this in the cap, 
     // and the points of the form (this->commRank, depth) in the base.
@@ -275,11 +290,13 @@ namespace ALE {
       Point dPoint(this->commRank, d);
       this->_depth.addArrow(p,dPoint); 
     }
+    ALE_LOG_STAGE_END;
   }// Sieve::__setDepth()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::__computeClosureHeights"
   void Sieve::__computeClosureHeights(Obj<Point_set> points) {
+    ALE_LOG_STAGE_BEGIN;
     // points contains points for the current height computation;
     // mpoints keeps track of 'modified' points identified at the current stage, 
     // and through which recursion propagates
@@ -305,11 +322,13 @@ namespace ALE {
       points = this->cone(mpoints);
       this->__computeClosureHeights(points);
     }
+    ALE_LOG_STAGE_END;
   }//Sieve::__computeClosureHeights()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::__computeStarDepths"
   void Sieve::__computeStarDepths(Obj<Point_set> points) {
+    ALE_LOG_STAGE_BEGIN;
     // points contains points for the current depth computation;
     // mpoints keeps track of 'modified' points identified at the current stage, 
     // and through which recursion propagates
@@ -335,13 +354,15 @@ namespace ALE {
       points = this->support(mpoints);
       this->__computeStarDepths(points);
     }
+    ALE_LOG_STAGE_END;
   }//Sieve::__computeStarDepths()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::depth"
   int32_t Sieve::depth(Point p) {
-    CHKCOMM(*this);
     int32_t depth;
+    ALE_LOG_STAGE_BEGIN;
+    CHKCOMM(*this);
     if (this->_depth.capContains(p)) {
       Point_set depthSet = this->_depth.support(p);
       if(depthSet.size() == 0) {
@@ -356,6 +377,7 @@ namespace ALE {
     } else {
       depth = -1;
     }
+    ALE_LOG_STAGE_END;
     return depth;
   }// Sieve::depth()
 
@@ -414,13 +436,14 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::height"
   int32_t Sieve::height(Point p) {
-    CHKCOMM(*this);
     int32_t height;
+    ALE_LOG_STAGE_BEGIN;
+    CHKCOMM(*this);
     if (this->_height.capContains(p)) {
       Point_set heightSet = this->_height.support(p);
       if(heightSet.size() == 0) {
         /* This accomdates Stacks, since spaceContains() can return true before the point is added to the Stack itself */
-        return -1;
+        height = -1;
       } else if(heightSet.size() > 1) {
         throw ALE::Exception("Non-singleton heightSet");
       }
@@ -429,30 +452,35 @@ namespace ALE {
     } else {
       height = -1;
     }
+    ALE_LOG_STAGE_END;
     return height;
   }// Sieve::height()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::diameter"
   int32_t Sieve::diameter(Point p) {
-    CHKCOMM(*this);
     int32_t diameter;
+    ALE_LOG_STAGE_BEGIN;
+    CHKCOMM(*this);
     if(this->spaceContains(p)) {
       diameter = this->depth(p) + this->height(p);
     }
     else {
       diameter = -1;
     }
+    ALE_LOG_STAGE_END;
     return diameter;
   }// Sieve::diameter(Point)
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::diameter"
   int32_t Sieve::diameter() {
+    int globalDiameter;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
+    int32_t diameter = 0;
     // IMPROVE: PreSieve::space() should return an iterator instead
     Point_set space = this->space();
-    int32_t diameter = 0;
     for(Point_set::iterator s_itor = space.begin(); s_itor != space.end(); s_itor++) {
       Point p = *s_itor;
       int32_t pDiameter = this->diameter(p);
@@ -460,9 +488,9 @@ namespace ALE {
         diameter = pDiameter;
       }
     }
-    int globalDiameter;
     int ierr = MPI_Allreduce(&diameter, &globalDiameter, 1, MPI_INT, MPI_MAX, this->comm);
     CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allreduce"));
+    ALE_LOG_STAGE_END;
     return globalDiameter;
   }// Sieve::diameter()
 
@@ -470,18 +498,21 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::closure"
   Point_set Sieve::closure(Obj<Point_set> chain) {
-    CHKCOMM(*this);
     Point_set closure;
+    ALE_LOG_STAGE_BEGIN;
+    CHKCOMM(*this);
     int32_t depth = this->maxDepth(chain);
     if(depth >= 0) {
       closure = this->nClosure(chain,depth);
     }
+    ALE_LOG_STAGE_END;
     return closure;
   }// Sieve::closure()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::closureSieve"
   Obj<Sieve> Sieve::closureSieve(Obj<Point_set> chain, Obj<Sieve> closure) {
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     if(closure.isNull()) {
       closure = Obj<Sieve>(new Sieve(this->getComm()));
@@ -490,24 +521,28 @@ namespace ALE {
     if(depth >= 0) {
       this->nClosurePreSieve(chain,depth,closure);
     }
+    ALE_LOG_STAGE_END;
     return closure;
   }// Sieve::closureSieve()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::star"
   Point_set Sieve::star(Point_set& chain) {
-    CHKCOMM(*this);
     Point_set star;
+    ALE_LOG_STAGE_BEGIN;
+    CHKCOMM(*this);
     int32_t height = this->maxHeight(chain);
     if(height >= 0) {
       star = this->nStar(chain,height);
     }
+    ALE_LOG_STAGE_END;
     return star;
   }// Sieve::star()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::starSieve"
   Obj<Sieve> Sieve::starSieve(Obj<Point_set> chain, Obj<Sieve> star) {
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     if(star.isNull()) {
       star = Obj<Sieve>(new Sieve(this->getComm()));
@@ -516,6 +551,7 @@ namespace ALE {
     if(height >= 0) {
       this->nStarPreSieve(chain,height,star);
     }
+    ALE_LOG_STAGE_END;
     return star;
   }// Sieve::starSieve()
 
@@ -527,10 +563,12 @@ namespace ALE {
     // The intersections at each stage are accumulated and their union is the meet.
     // The iteration stops when at least one of the chains is empty.
     Point_set meet; 
+    ALE_LOG_STAGE_BEGIN;
     // Check if any the initial chains may be empty, so that we don't perform spurious iterations
     if((c0.size() == 0) || (c1.size() == 0)) {
-      return meet;
+      // return meet;
     }
+    else {
     while(1) {
       Point_set *c  = &c0;
       Point_set *cc = &c1;
@@ -556,6 +594,8 @@ namespace ALE {
         break;
       }
     }// while(1)
+    }
+    ALE_LOG_STAGE_END;
     return meet;
   }// Sieve::meet()
 
@@ -639,12 +679,12 @@ namespace ALE {
     // The intersections at each stage are accumulated and their union is the join.
     // The iteration stops when at least one of the chains is empty.
     Point_set join; 
-
+    ALE_LOG_STAGE_BEGIN;
     // Check if any the initial chains may be empty, so that we don't perform spurious iterations
     if((c0.size() == 0) || (c1.size() == 0)) {
-      return join;
+      //return join;
     }
-
+    else{
     while(1) {
       Point_set *s  = &c0;
       Point_set *ss = &c1;
@@ -670,6 +710,8 @@ namespace ALE {
         break;
       }
     }// while(1)
+    }
+    ALE_LOG_STAGE_END;
     return join;
   }// Sieve::join()
 
@@ -680,7 +722,6 @@ namespace ALE {
     // The strategy is the same as in join, except it is performed on an array of chains/supps--one per point in chain--simultaneously.
     // This may be faster than applying 'join' recursively, since intersections may become empty faster.
     Point_set joins;
-
     // Populate the 'supps' map, while checking if any of the initial supports may be empty, 
     // so that we don't perform spurious iterations.  At the same time determine the supp of the smallest size.
     Point__Point_set supps;
@@ -752,7 +793,9 @@ namespace ALE {
     // Compute the roots (nodes with empty cones over them) from which chain is reacheable.
     // The strategy is to examine each node in the current chain, replace it by its cone, if the latter is non-empty,
     // or remove the node from the chain, if it is a root, while saving it in the roots set.
-    Point_set roots, cone;
+    Point_set roots;
+    ALE_LOG_STAGE_BEGIN;
+    Point_set cone;
     Point_set *c  = &chain;
     Point_set *cc = &cone;
     int stop = 0;
@@ -777,6 +820,7 @@ namespace ALE {
       // swap c and cc
       Point_set *tmp = c; c = cc; cc = tmp;
     }// while(!stop)
+    ALE_LOG_STAGE_END;
     return roots;
   }// Sieve::roots()
 
@@ -786,7 +830,9 @@ namespace ALE {
     // Compute the leaves (nodes with empty supports) reacheable from chain.
     // The strategy is to examine each node in the current chain, replace it by its support, if the latter is non-empty,
     // or remove the node from the chain, if it is a leaf, while saving it in the leaves set.
-    Point_set leaves, supp;
+    Point_set leaves;
+    ALE_LOG_STAGE_BEGIN;
+    Point_set supp;
     Point_set *c  = &chain;
     Point_set *cc = &supp;
     int stop = 0;
@@ -811,6 +857,7 @@ namespace ALE {
       // swap c and cc
       Point_set *tmp = c; c = cc; cc = tmp;
     }// while(!stop)
+    ALE_LOG_STAGE_END;
     return leaves;
   }// Sieve::leaves()
 
@@ -818,18 +865,24 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::depthStratum"
   Point_set Sieve::depthStratum(int32_t depth) {
+    Point_set stratum;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     Point depthPoint; depthPoint.prefix = this->commRank; depthPoint.index = depth;
-    Point_set stratum = this->_depth.cone(depthPoint);
+    stratum = this->_depth.cone(depthPoint);
+    ALE_LOG_STAGE_END;
     return stratum;
   }// Sieve::depthStratum()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::heightStratum"
   Point_set Sieve::heightStratum(int32_t height) {
+    Point_set stratum;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     Point heightPoint; heightPoint.prefix = this->commRank; heightPoint.index = height;
-    Point_set stratum = this->_height.cone(heightPoint);
+    stratum = this->_height.cone(heightPoint);
+    ALE_LOG_STAGE_END;
     return stratum;
   }// Sieve::heightStratum()
 
@@ -938,8 +991,10 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::baseRestriction"
   Sieve* Sieve::baseRestriction(Point_set& base) {
+    Sieve *s;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
-    Sieve *s = new Sieve(this->getComm());
+    s = new Sieve(this->getComm());
     for(Point_set::iterator b_itor = base.begin(); b_itor != base.end(); b_itor++){
       Point p = *b_itor;
       // is point p present in the base of *this?
@@ -947,14 +1002,17 @@ namespace ALE {
         s->addCone(this->_cone[p],p);
       }
     }// for(Point_set::iterator b_itor = base.begin(); b_itor != base.end(); b_itor++){
+    ALE_LOG_STAGE_END;
     return s;
   }// Sieve::baseRestriction()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::capRestriction"
   Sieve* Sieve::capRestriction(Point_set& cap) {
+    Sieve *s;
+    ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
-    Sieve *s = new Sieve(this->getComm());
+    s = new Sieve(this->getComm());
     for(Point_set::iterator c_itor = cap.begin(); c_itor != cap.end(); c_itor++){
       Point q = *c_itor;
       // is point q present in the cap of *this?
@@ -962,6 +1020,7 @@ namespace ALE {
         s->addSupport(q,this->_support[q]);
       }
     }// for(Point_set::iterator c_itor = cap.begin(); c_itor != cap.end(); c_itor++){
+    ALE_LOG_STAGE_END;
     return s;
   }// Sieve::capRestriction()
 

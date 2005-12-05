@@ -564,7 +564,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::supportSize"
-  int32_t PreSieve::supportSize(Point_set& c) {
+  int32_t PreSieve::supportSize(const Point_set& c) {
     CHKCOMM(*this);
     int32_t supportSize = 0;
     for(Point_set::iterator c_itor = c.begin(); c_itor != c.end(); c_itor++) {
@@ -691,7 +691,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nClosure"
-  Obj<Point_set> PreSieve::nClosure(Obj<Point_set> chain, int32_t n) {
+  Obj<Point_set> PreSieve::nClosure(const Obj<Point_set>& chain, int32_t n) {
     Obj<Point_set> closure(new Point_set);
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
@@ -737,7 +737,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nClosure"
-  Point_set PreSieve::nClosure(Point_set& chain, int32_t n) {
+  Point_set PreSieve::nClosure(const Point_set& chain, int32_t n) {
     return (Point_set) nClosure(Obj<Point_set>(chain), n);
   }// PreSieve::nClosure()
 
@@ -783,7 +783,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nSupport"
-  Obj<Point_set> PreSieve::nSupport(Obj<Point_set> chain, int32_t n) {
+  Obj<Point_set> PreSieve::nSupport(const Obj<Point_set>& chain, int32_t n) {
     Obj<Point_set> top;
     Obj<Point_set> bottom;
 
@@ -833,14 +833,14 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nSupport"
-  Point_set PreSieve::nSupport(Point_set& chain, int32_t n) {
+  Point_set PreSieve::nSupport(const Point_set& chain, int32_t n) {
     return (Point_set) nSupport(Obj<Point_set>(chain), n);
   }// PreSieve::nSupport()
 
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nStar"
-  Obj<Point_set> PreSieve::nStar(Obj<Point_set> chain, int32_t n) {
+  Obj<Point_set> PreSieve::nStar(const Obj<Point_set>& chain, int32_t n) {
     Obj<Point_set> star(new Point_set);
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
@@ -884,7 +884,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nStar"
-  Point_set PreSieve::nStar(Point_set& chain, int32_t n) {
+  Point_set PreSieve::nStar(const Point_set& chain, int32_t n) {
     return (Point_set) nStar(Obj<Point_set>(chain), n);
   }// PreSieve::nStar()
 
@@ -1091,8 +1091,8 @@ namespace ALE {
         }
       }// for(int32_t i = 0; i <= n; i++) 
     }// nonzero sizes
-    return join;
     ALE_LOG_STAGE_END;
+    return join;
   }// PreSieve::nJoin()
 
 
