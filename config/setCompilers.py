@@ -78,7 +78,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-AR',                     nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('Compilers', '-AR_FLAGS',               nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('Compilers', '-with-ranlib',            nargs.Arg(None, None,   'Specify ranlib'))
-    help.addArgument('Compilers', '-with-shared',            nargs.ArgBool(None, 1, 'Enable shared libraries'))
+    help.addArgument('Compilers', '-with-pic',               nargs.ArgBool(None, 1, 'Compile with -fPIC or equivalent flag if possible'))
     help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
     help.addArgument('Compilers', '-sharedLibraryFlags',     nargs.Arg(None, [], 'Specify the shared library flags'))
     help.addArgument('Compilers', '-with-dynamic',           nargs.ArgBool(None, 0, 'Enable dynamic libraries'))
@@ -704,11 +704,12 @@ class Configure(config.base.Configure):
     # Borland compiler accepts -PIC as -P, which means compile as C++ code,
     # Using this will force compilation, not linking when used as a link flag!!!
     # Since this is not what we intend with -PIC, just kick out if using borland.
+    self.usePIC=0
     if self.CC.find('bcc32') >= 0:
       self.framework.logPrint("Skip checking PIC options since we have a Borland compiler")
       return
-    if not self.framework.argDB['with-shared']:
-      self.framework.logPrint("Skip checking PIC options since shared libraries are turned off")
+    if not self.framework.argDB['with-pic']:
+      self.framework.logPrint("Skip checking PIC options on user request")
       return
     languages = ['C']
     if hasattr(self, 'CXX'):
@@ -723,7 +724,9 @@ class Configure(config.base.Configure):
           if not self.checkLinkerFlag(testFlag):
             self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag+' because linker cannot handle it')
             continue
+          self.framework.logPrint('Adding '+language+' compiler flag '+testFlag)
           self.addCompilerFlag(testFlag, compilerOnly = 1)
+          self.isPIC = 1
           break
         except RuntimeError:
           self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag)
@@ -870,13 +873,6 @@ class Configure(config.base.Configure):
     return self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
 
   def generateSharedLinkerGuesses(self):
-    if not self.framework.argDB['with-shared']:
-      self.setStaticLinker()
-      self.staticLinker = self.AR
-      self.staticLibraries = 1
-      self.LDFLAGS = ''
-      yield (self.AR, [], self.AR_LIB_SUFFIX)
-      raise RuntimeError('Archiver failed static link check')
     if 'with-shared-ld' in self.framework.argDB:
       yield (self.framework.argDB['with-shared-ld'], [], 'so')
     if 'LD_SHARED' in self.framework.argDB:
