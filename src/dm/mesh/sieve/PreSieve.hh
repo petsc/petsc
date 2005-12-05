@@ -1,9 +1,11 @@
 #ifndef included_ALE_PreSieve_hh
 #define included_ALE_PreSieve_hh
 
-#ifndef  included_ALE_ALE_hh
-#include <ALE.hh>
+#ifndef  included_ALE_Coaster_hh
+#include <Coaster.hh>
 #endif
+
+#include <map>
 
 namespace ALE {
 
@@ -21,6 +23,7 @@ namespace ALE {
     static const int           completedSetCap             = 0;
     static const int           completedSetBase            = 1;
     Stack *__computeCompletion(int32_t completedSet, int32_t completionType, int32_t footprintType, PreSieve *c);
+
   public:
     // 
     PreSieve();
@@ -253,7 +256,8 @@ namespace ALE {
     virtual Stack*                    spaceFootprint(int completionType, int footprintType,  PreSieve *f = NULL);
   };
 
-  
 } // namespace ALE
+
+
 
 #endif

@@ -166,9 +166,9 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J,Mat jac)
   for (j=ys; j<ys+ym; j++){
     for(i=xs; i<xs+xm; i++){
       row.i = i; row.j = j;
+      ierr = ComputeRho(i, j, mx, my, &rho);CHKERRQ(ierr);
       if (i==0 || j==0 || i==mx-1 || j==my-1) {
-       ierr = ComputeRho(i, j, mx, my, &rho);CHKERRQ(ierr);
-       if (user->bcType == DIRICHLET) {
+        if (user->bcType == DIRICHLET) {
            v[0] = 2.0*rho*(HxdHy + HydHx);
           ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
         } else if (user->bcType == NEUMANN) {

@@ -95,13 +95,13 @@ namespace ALE {
   }
 
 
-  // An allocator all of whose events (allocation, deallocation, new, delete) are logged using PetscLogging facilities.
+  // An allocator all of whose events (allocation, deallocation, new, delete) are logged using ALE_log facilities.
   // _O is true if this is an Obj allocator (that's the intended use, anyhow).
   template <class _T, bool _O = false>
   class logged_allocator : public polymorphic_allocator<_T> {
   private:
     static bool        _log_initialized;
-    static PetscCookie _cookie;
+    static LogCookie   _cookie;
     static int         _allocate_event;
     static int         _deallocate_event;
     static int         _construct_event;
@@ -109,7 +109,7 @@ namespace ALE {
     static int         _create_event;
     static int         _del_event;
     static void __log_initialize();
-    static void __log_event_register(const char *class_name, const char *event_name, PetscEvent *event_ptr);
+    static LogEvent __log_event_register(const char *class_name, const char *event_name);
   public:
     typedef typename polymorphic_allocator<_T>::size_type size_type;
     logged_allocator()                                   : polymorphic_allocator<_T>()  {__log_initialize();};    
@@ -134,7 +134,7 @@ namespace ALE {
   template <class _T, bool _O>
   bool logged_allocator<_T, _O>::_log_initialized(false);
   template <class _T, bool _O>
-  PetscCookie logged_allocator<_T,_O>::_cookie(0);
+  LogCookie logged_allocator<_T,_O>::_cookie(0);
   template <class _T, bool _O>
   int logged_allocator<_T, _O>::_allocate_event(0);
   template <class _T, bool _O>
@@ -172,15 +172,14 @@ namespace ALE {
       id_name = id.name();
 #endif
       // Use id_name to register a cookie and events.
-      PetscErrorCode ierr = PetscLogClassRegister(&logged_allocator::_cookie, id_name); 
-      CHKERROR(ierr, "PetscLogClassRegister failed");
+      logged_allocator::_cookie = LogCookieRegister(id_name); 
       // Register the basic allocator methods' invocations as events; use the mangled class name.
-      logged_allocator::__log_event_register(id_name, "allocate", &logged_allocator::_allocate_event);
-      logged_allocator::__log_event_register(id_name, "deallocate", &logged_allocator::_deallocate_event);
-      logged_allocator::__log_event_register(id_name, "construct", &logged_allocator::_construct_event);
-      logged_allocator::__log_event_register(id_name, "destroy", &logged_allocator::_destroy_event);
-      logged_allocator::__log_event_register(id_name, "create", &logged_allocator::_create_event);
-      logged_allocator::__log_event_register(id_name, "del", &logged_allocator::_del_event);
+      logged_allocator::_allocate_event = logged_allocator::__log_event_register(id_name, "allocate");
+      logged_allocator::_deallocate_event = logged_allocator::__log_event_register(id_name, "deallocate");
+      logged_allocator::_construct_event = logged_allocator::__log_event_register(id_name, "construct");
+      logged_allocator::_destroy_event = logged_allocator::__log_event_register(id_name, "destroy");
+      logged_allocator::_create_event = logged_allocator::__log_event_register(id_name, "create");
+      logged_allocator::_del_event = logged_allocator::__log_event_register(id_name, "del");
 #ifdef ALE_HAVE_CXX_ABI
       // Free the name malloc'ed by __cxa_demangle
       free(id_name_demangled);
@@ -192,18 +191,15 @@ namespace ALE {
 
 
   template <class _T, bool _O> 
-  void logged_allocator<_T, _O>::__log_event_register(const char *class_name, const char *event_name, PetscEvent *event_ptr){
+  LogEvent logged_allocator<_T, _O>::__log_event_register(const char *class_name, const char *event_name){
     // This routine assumes a cookie has been obtained.
     ostringstream txt;
     if(_O) {
-      txt << "Obj<";
+      txt << "Obj: ";
     }
     txt << class_name;
-    if(_O) {
-      txt << ">";
-    }
     txt << ": " << event_name;
-    LogEventRegister(event_ptr, txt.str().c_str(), logged_allocator::_cookie);
+    return LogEventRegister(logged_allocator::_cookie, txt.str().c_str());
   }
 
   template <class _T, bool _O>
@@ -237,10 +233,9 @@ namespace ALE {
   
   template <class _T, bool _O>
   _T* logged_allocator<_T, _O>::create(const _T& _val) {
-    PetscErrorCode ierr;
-    ierr = PetscLogEventBegin(logged_allocator::_create_event, 0, 0, 0, 0); CHKERROR(ierr, "Event begin failed");
+    LogEventBegin(logged_allocator::_create_event); 
     _T* _p = polymorphic_allocator<_T>::create(_val);
-    ierr = PetscLogEventEnd(logged_allocator::_create_event, 0, 0, 0, 0); CHKERROR(ierr, "Event end failed");
+    LogEventEnd(logged_allocator::_create_event);
     return _p;
   }
 
@@ -283,7 +278,7 @@ namespace ALE {
     // Types 
 #ifdef ALE_USE_LOGGING
     typedef logged_allocator<X,true>      Allocator;
-    typedef logged_allocator<int>         Allocator_int;
+    typedef logged_allocator<int,true>    Allocator_int;
 #else
     typedef polymorphic_allocator<X>      Allocator;
     typedef polymorphic_allocator<int>    Allocator_int;
@@ -303,7 +298,7 @@ namespace ALE {
   public:
     // Constructors & a destructor
     Obj() : objPtr((X *)NULL), refCnt((int32_t*)NULL), sz(0) {};
-    Obj(X x);
+    Obj(const X& x);
     Obj(X *xx);
     Obj(const Obj& obj);
     ~Obj();
@@ -346,14 +341,8 @@ namespace ALE {
   // Constructors 
   // New reference
   template <class X>
-  Obj<X>::Obj(X x) { 
-    // allocate and copy object
-    this->objPtr = Obj<X>::allocator.create(x);
-    //this->objPtr = new X(x);
-    refCnt = Obj<X>::int_allocator.create(1);
-    //this->refCnt = new int(1);
-    this->sz = Obj<X>::Allocator::sz;
-    //this->sz = 0;
+  Obj<X>::Obj(const X& x) { 
+    this->create(x);
   }
   
   // Stolen reference

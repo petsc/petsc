@@ -117,8 +117,11 @@ struct _p_DA {
   PetscErrorCode (*adic_lfib)(DALocalInfo*,MatStencil*,void*,void*,void*);
   PetscErrorCode (*adicmf_lfib)(DALocalInfo*,MatStencil*,void*,void*,void*);
 
-  /* this is used by DASetBlockFills() */
+  /* used by DASetBlockFills() */
   PetscInt               *ofill,*dfill;
+
+  /* used by DASetMatPreallocateOnly() */
+  PetscTruth             prealloc_only;
 };
 
 /*

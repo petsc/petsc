@@ -4,4 +4,4 @@ set MACH=icrunch
 set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev
 set TAO_LOC=/sandbox/petsc/tao-devel
-set CONF=macosx-ibm
+set CONF=macosx-gnu

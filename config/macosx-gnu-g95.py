@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-fc=0',
+  '--with-cc=gcc',
+  '--with-fc=g95',
   '--with-python',
   '--with-shared=1',
   '--with-dynamic=1',
