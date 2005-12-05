@@ -398,7 +398,7 @@ PetscPolymorphicSubroutine(MatMultAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose(Mat,Mat,PetscReal,PetscTruth*);
 PetscPolymorphicFunction(MatIsTranspose,(Mat A,Mat B,PetscReal tol),(A,B,tol,&t),PetscTruth,t)
-PetscPolymorphicFunction(MatIsTranspose,(Mat A,Mat B),(A,B,0.0,&t),PetscTruth,t)
+PetscPolymorphicFunction(MatIsTranspose,(Mat A,Mat B),(A,B,0,&t),PetscTruth,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAdd(Mat,Vec,Vec,Vec);
 PetscPolymorphicSubroutine(MatMultTransposeAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultConstrained(Mat,Vec,Vec);
@@ -448,7 +448,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCopy(Mat,Mat,MatStructure);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat,PetscViewer);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetric(Mat,PetscReal,PetscTruth*);
 PetscPolymorphicFunction(MatIsSymmetric,(Mat A,PetscReal tol),(A,tol,&t),PetscTruth,t)
-PetscPolymorphicFunction(MatIsSymmetric,(Mat A),(A,0.0,&t),PetscTruth,t)
+PetscPolymorphicFunction(MatIsSymmetric,(Mat A),(A,0,&t),PetscTruth,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsStructurallySymmetric(Mat,PetscTruth*);
 PetscPolymorphicFunction(MatIsStructurallySymmetric,(Mat A),(A,&t),PetscTruth,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitian(Mat,PetscTruth*);
