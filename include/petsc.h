@@ -957,6 +957,8 @@ extern const char *PetscDataTypes[];
 #define PETSC_SCALAR PETSC_FLOAT
 #elif defined(PETSC_USE_LONG_DOUBLE)
 #define PETSC_SCALAR PETSC_LONG_DOUBLE
+#elif defined(PETSC_USE_INT)
+#define PETSC_SCALAR PETSC_INT
 #else
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif
@@ -965,6 +967,8 @@ extern const char *PetscDataTypes[];
 #define PETSC_REAL PETSC_FLOAT
 #elif defined(PETSC_USE_LONG_DOUBLE)
 #define PETSC_REAL PETSC_LONG_DOUBLE
+#elif defined(PETSC_USE_INT)
+#define PETSC_REAL PETSC_INT
 #else
 #define PETSC_REAL PETSC_DOUBLE
 #endif

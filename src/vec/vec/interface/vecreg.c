@@ -21,7 +21,7 @@ PetscTruth VecRegisterAllCalled          = PETSC_FALSE;
                      of available types
 
   Notes:
-  See "petsc/include/vec.h" for available vector types (for instance, VECSEQ, VECMPI, or VECSHARED).
+  See "petsc/include/petscvec.h" for available vector types (for instance, VECSEQ, VECMPI, or VECSHARED).
 
   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the same type as an existing vector.
 

@@ -1614,10 +1614,18 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
 #else
   ierr = PetscFPrintf(comm, fd, "Compiled without FORTRAN kernels\n");CHKERRQ(ierr);
 #endif
+#if defined(PETSC_USE_SINGLE)
+  ierr = PetscFPrintf(comm, fd, "Compiled with single precision PetscScalar and PetscReal\n");CHKERRQ(ierr);
+#elif defined(PETSC_USE_LONGDOUBLE)
+  ierr = PetscFPrintf(comm, fd, "Compiled with long double precision PetscScalar and PetscReal\n");CHKERRQ(ierr);
+#elif defined(PETSC_USE_INT)
+  ierr = PetscFPrintf(comm, fd, "Compiled with int PetscScalar and PetscReal\n");CHKERRQ(ierr);
+#endif
+
 #if defined(PETSC_USE_MAT_SINGLE)
   ierr = PetscFPrintf(comm, fd, "Compiled with single precision matrices\n");CHKERRQ(ierr);
 #else
-  ierr = PetscFPrintf(comm, fd, "Compiled with double precision matrices (default)\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "Compiled with full precision matrices (default)\n");CHKERRQ(ierr);
 #endif
   ierr = PetscFPrintf(comm, fd, "sizeof(short) %d sizeof(int) %d sizeof(long) %d sizeof(void*) %d sizeof(PetscScalar) %d\n",
                       (int) sizeof(short), (int) sizeof(int), (int) sizeof(long), (int) sizeof(void*),(int) sizeof(PetscScalar));CHKERRQ(ierr);
