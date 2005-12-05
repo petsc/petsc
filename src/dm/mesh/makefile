@@ -1,3 +1,4 @@
+#requirespackage   'PETSC_USE_SIEVE'
 #requireslanguage CXXONLY
 
 ALL: lib
