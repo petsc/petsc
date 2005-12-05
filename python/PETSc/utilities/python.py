@@ -25,6 +25,7 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.sourceControl = framework.require('config.sourceControl',self)
     self.petscdir = framework.require('PETSc.utilities.petscdir', self)
+    self.setCompilers = framework.require('config.setCompilers', self)
     if self.framework.argDB['with-python']:
       self.python = framework.require('config.python', None)
     return
@@ -93,12 +94,10 @@ class Configure(config.base.Configure):
     import os
     if not self.framework.argDB['with-python']:
       return
-    if not self.framework.argDB['with-shared'] and not self.framework.argDB['with-dynamic']:
-      raise RuntimeError('Python bindings require both shared and dynamic libraries. Please add --with-shared --with-dynamic to your configure options.')
-    if not self.framework.argDB['with-shared']:
-      raise RuntimeError('Python bindings require shared libraries. Please add --with-shared to your configure options.')
-    if not self.framework.argDB['with-dynamic']:
-      raise RuntimeError('Python bindings require dynamic libraries. Please add --with-dynamic to your configure options.')
+    if not self.setCompilers.sharedLibraries:
+      raise RuntimeError('Python bindings require shared librarary support. This test failed for the specified compilers')
+    if not self.setCompilers.dynamicLibraries:
+      raise RuntimeError('Python bindings require dynamic library support. This test failed for the specified compilers')
     self.usePython = 1
     if self.petscdir.isClone:
       self.framework.logPrint('PETSc Clone, downloading Python bindings')
