@@ -404,11 +404,13 @@ namespace ALE {
 #else 
     id_name = id.name();
 #endif
-    printf("Calling destructor for Obj<%s>", id_name);
-    if (!this->refCnt) {
-      printf(" with no refCnt\n");
-    } else {
-      printf(" with refCnt %d\n", *this->refCnt);
+    if(ALE::getVerbosity() > 3) {
+      printf("~Obj<X>: Calling destructor for Obj<%s>", id_name);
+      if (!this->refCnt) {
+        printf(" with no refCnt\n");
+      } else {
+        printf(" with refCnt %d\n", *this->refCnt);
+      }
     }
 #ifdef ALE_HAVE_CXX_ABI
     free(id_name_demangled);
@@ -420,14 +422,18 @@ namespace ALE {
         // If  allocator has been used to create an objPtr, as indicated by 'sz', we use the allocator to delete objPtr, using 'sz'.
         if(this->sz != 0) {
 #ifdef ALE_USE_DEBUGGING
-          printf("  Calling deallocator on %p with size %d\n", this->objPtr, this->sz);
+          if(ALE::getVerbosity() > 3) {
+            printf("  Calling deallocator on %p with size %d\n", this->objPtr, this->sz);
+          }
 #endif
           this->allocator.del(this->objPtr, this->sz);
           this->sz = 0;
         }
         else { // otherwise we use 'delete'
 #ifdef ALE_USE_DEBUGGING
-          printf("  Calling delete on %p\n", this->objPtr);
+          if(ALE::getVerbosity() > 3) {
+            printf("  Calling delete on %p\n", this->objPtr);
+          }
 #endif
           if (!this->objPtr) {
             throw ALE::Exception("Trying to free NULL pointer");
@@ -449,7 +455,7 @@ namespace ALE {
     this->refCnt = this->int_allocator.create(1);
     this->sz     = this->allocator.sz;
     if (!this->sz) {
-      throw ALE::Exception("Making an Obj with zero size");
+      throw ALE::Exception("Making an Obj with zero size obtained from allocator");
     }
     return *this;
   }
@@ -473,7 +479,10 @@ namespace ALE {
   // conversion operator, preserves 'this'
   template<class X> template<class Y> 
   Obj<X>::operator Obj<Y> const() {
-    // We attempt to cast X* objPtr to Y* using dynamic_cast
+    // We attempt to cast X* objPtr to Y* using dynamic_
+#ifdef ALE_USE_DEBUGGING
+    printf("Obj<X>::operator Obj<Y>: attempting a dynamic_cast on objPtr %p\n", this->objPtr);
+#endif
     Y* yObjPtr = dynamic_cast<Y*>(this->objPtr);
     // If the cast failed, throw an exception
     if(yObjPtr == NULL) {

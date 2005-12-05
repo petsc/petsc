@@ -3,6 +3,13 @@
 #include <ALE.hh>
 
 namespace ALE {
+  //
+  // Package-wide verbosity
+  //
+  static int verbosity = 0;
+
+  int  getVerbosity() {return ALE::verbosity;};
+  void setVerbosity(const int& verbosity) {ALE::verbosity = verbosity;};
 
   //
   //  Memory handling stuff (ALE_mem.hh).

@@ -59,6 +59,7 @@ int main(int argc, char *argv[])
   FileType       fileType;
   PetscTruth     outputLocal;
   PetscInt       dim, ft;
+  int            verbosity;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -77,7 +78,14 @@ int main(int argc, char *argv[])
     outputLocal = PETSC_FALSE;
     ierr = PetscOptionsTruth("-output_local", "Output the local form of the mesh", "ex1.c", PETSC_FALSE, &outputLocal, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
+  ierr = PetscOptionsBegin(comm, "", "Debugging options", "ALE");
+    verbosity = 0;
+    ierr = PetscOptionsInt("-verbosity", "Verbosity level", "ex1.c", 0, &verbosity, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd(); 
   comm = PETSC_COMM_WORLD;
+
+  /* Set ALE package-wide verbosity; will not affect Coaster descendants that carry their own verbosity */
+  ALE::setVerbosity(verbosity);
 
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
   if (fileType == PCICE) {

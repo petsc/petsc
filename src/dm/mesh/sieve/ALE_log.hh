@@ -4,6 +4,9 @@
 #include <petsc.h>
 
 namespace ALE {
+  int  getVerbosity();
+  void setVerbosity(const int& verbosity);
+
   typedef PetscCookie LogCookie;
   typedef PetscEvent  LogEvent;
 
