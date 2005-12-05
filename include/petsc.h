@@ -21,13 +21,6 @@
 #error "PETSc configured with --with-clanguage=c++ and NOT --with-c-support - it can be used only with a C++ compiler"
 #endif      
 
-/* 
-   Allows standard Unix binary IO to access files larger than 2 gigabytes
-   on some systems. This is made the default so that users won't suddenly
-   get stuck with things suddenly not working. 
-*/
-#define __USE_FILE_OFFSET64
-
 #if defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 #define PETSC_EXTERN_CXX_BEGIN extern "C" {
 #define PETSC_EXTERN_CXX_END  }
