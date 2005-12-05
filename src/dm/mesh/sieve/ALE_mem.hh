@@ -365,17 +365,17 @@ namespace ALE {
   }
   
   template <class X>
-  Obj<X>::Obj(X *xx, int32_t *refCnt, size_type sz) {  // This is intended to be private.
-    if (!xx) {
+  Obj<X>::Obj(X *_xx, int32_t *_refCnt, size_type _sz) {  // This is intended to be private.
+    if (!_xx) {
       throw ALE::Exception("Making an Obj with a NULL objPtr");
     }
-    this->objPtr = xx;
-    this->refCnt = refCnt;  // we assume that all refCnt pointers are obtained using an int_allocator
+    this->objPtr = _xx;
+    this->refCnt = _refCnt;  // we assume that all refCnt pointers are obtained using an int_allocator
     (*this->refCnt)++;
-    this->sz = sz;
-    if (!this->sz) {
-      throw ALE::Exception("Making an Obj with zero size");
-    }
+    this->sz = _sz;
+    //if (!this->sz) {
+    //  throw ALE::Exception("Making an Obj with zero size");
+    //}
   }
   
   template <class X>
@@ -386,9 +386,9 @@ namespace ALE {
       (*this->refCnt)++;
     }
     this->sz = obj.sz;
-    if (!this->sz) {
-      throw ALE::Exception("Making an Obj with zero size");
-    }
+    //if (!this->sz) {
+    //  throw ALE::Exception("Making an Obj with zero size");
+    //}
   }
 
   // Destructor
