@@ -31,6 +31,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::setFiberDimension"
   IndexBundle&   IndexBundle::setFiberDimension(Point element, int32_t d) {
+    ALE_LOG_STAGE_BEGIN;
     // Setting a fiber dimension makes the bundle dirty
     if(d < 0) {
       throw Exception("Invalid dimension");
@@ -42,16 +43,19 @@ namespace ALE {
       // add a single arrow from dim to the element in the dimensionsToElements Stack
       this->_dimensionsToElements->setCone(dim, element);
       this->__markDirty();
-      return *this;
+      //return *this;
     }
     else {
       throw ALE::Exception("Non-existent element");
     }
+    ALE_LOG_STAGE_END;
+    return *this;
   }//IndexBundle::setFiberDimension()
   
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::__setFiberDimensionByStratum"
   IndexBundle&   IndexBundle::__setFiberDimensionByStratum(int stratumType, int32_t stratumIndex, int32_t dim) {
+    ALE_LOG_STAGE_BEGIN;
     Obj<Point_set> stratum;
     Obj<Sieve> topology = this->getTopology();
     switch(stratumType) {
@@ -67,6 +71,7 @@ namespace ALE {
     for(Point_set::iterator s_itor = stratum->begin(); s_itor != stratum->end(); s_itor++) {
       this->setFiberDimension(*s_itor,dim);
     }
+    ALE_LOG_STAGE_END;
     return *this;
   }//IndexBundle::__setFiberDimensionByStratum()
   
@@ -74,6 +79,7 @@ namespace ALE {
   #define __FUNCT__ "IndexBundle::getFiberDimension"
   int32_t   IndexBundle::getFiberDimension(Obj<Point_set> base) {
     int32_t dim = 0;
+    ALE_LOG_STAGE_BEGIN;
     base = this->__validateChain(base);
     for(Point_set::iterator base_itor = base->begin(); base_itor != base->end(); base_itor++) {
       Point e = *base_itor;
@@ -91,6 +97,7 @@ namespace ALE {
         dim += dimPoint.index;
       }
     }// for(Point_set::iterator base_itor = base->begin(); base_itor != base->end(); base++) {
+    ALE_LOG_STAGE_END;
     return dim;
 
   }//IndexBundle::getFiberDimension()
@@ -99,6 +106,7 @@ namespace ALE {
   #define __FUNCT__ "IndexBundle::getBundleDimension"
   int32_t   IndexBundle::getBundleDimension(Obj<Point_set> base) {
     int32_t dim = 0;
+    ALE_LOG_STAGE_BEGIN;
     base = this->__validateChain(base);
     // Traverse the closure of base and add up fiber dimensions
     while(base->size() > 0){
@@ -108,6 +116,7 @@ namespace ALE {
       }
       base = this->getTopology()->cone(base);
     }
+    ALE_LOG_STAGE_END;
     return dim;
 
   }//IndexBundle::getBundleDimension()
@@ -115,6 +124,8 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::__computeIndices"
   Obj<PreSieve>   IndexBundle::__computeIndices(Obj<Point_set> supports, Obj<Point_set> base, bool includeBoundary, Obj<Point_set> exclusion) {
+    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
+    ALE_LOG_STAGE_BEGIN;
     base  = this->__validateChain(base);
     supports = this->__validateChain(supports);
     // IMPROVE: we could make this subroutine consult cache, if base is singleton
@@ -124,7 +135,6 @@ namespace ALE {
     // An element ss  that has been seen AND indexed has a nonzero seen[ss].index equal to its dimension.
     // If requested, we will cache the results in arrows to e.
 
-    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
     Point__Point   seen;
     // Traverse the closure of base in a depth-first search storing the offsets of each element ss we see during the search
     // in seen[ss].prefix.
@@ -192,6 +202,7 @@ namespace ALE {
         }
       }// if stk is not empty
     }// while(1)     
+    ALE_LOG_STAGE_END;
     return indices;
   }//IndexBundle::__computeIndices()
 
@@ -201,6 +212,7 @@ namespace ALE {
   Obj<PreSieve>      IndexBundle::__computeBoundaryIndices(Point  s, Point__Point& seen, int32_t& off) {
 
     Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
+    ALE_LOG_STAGE_BEGIN;
     // Traverse the boundary of s -- the closure of s except s itself -- in a depth-first search and compute the indices for the 
     // boundary fibers.  For an already seen point ss, its offset is in seen[ss].prefix, or in 'off' for a newly seen point.
     // 'off' is updated during the calculation by accumulating the dimensions of the fibers over all newly encountered elements.
@@ -251,6 +263,7 @@ namespace ALE {
         base = this->getTopology()->cone(ss);
       }// if stk is not empty
     }// while(1)     
+    ALE_LOG_STAGE_END;
     return indices;
   }//IndexBundle::__computeBoundaryIndices()
 
@@ -258,14 +271,16 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::getFiberInterval"
   Point   IndexBundle::getFiberInterval(Point support, Obj<Point_set> base) {
+    Point interval;
+    ALE_LOG_STAGE_BEGIN;
     base  = this->__validateChain(base);
     Obj<PreSieve> indices = this->__computeIndices(Point_set(support), base);
-    Point interval;
     if(indices->cap().size() == 0) {
       interval = Point(-1,0);
     } else {
       interval = *(indices->cap().begin());
     }
+    ALE_LOG_STAGE_END;
     return interval;
   }//IndexBundle::getFiberInterval()
 
@@ -273,9 +288,12 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::getFiberIndices"
   Obj<PreSieve>   IndexBundle::getFiberIndices(Obj<Point_set> supports, Obj<Point_set> base, Obj<Point_set> exclusion) {
+    Obj<PreSieve> indices;
+    ALE_LOG_STAGE_BEGIN;
     base  = this->__validateChain(base);
     supports = this->__validateChain(supports);
-    Obj<PreSieve> indices = this->__computeIndices(supports, base, false, exclusion);
+    indices = this->__computeIndices(supports, base, false, exclusion);
+    ALE_LOG_STAGE_END;
     return indices;
   }//IndexBundle::getFiberIndices()
 

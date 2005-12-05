@@ -14,13 +14,20 @@
 
 namespace ALE {
 
+  // This UNIVERSAL allocator class is static and provides allocation/deallocation services to all allocators defined below.
+  class universal_allocator {
+  public: 
+    typedef std::size_t size_type;
+    static char*     allocate(const size_type& sz);
+    static void      deallocate(char *p, const size_type& sz);
+    static size_type max_size();
+  };
+
   // This allocator implements create and del methods, that act roughly as new and delete in that they invoke a constructor/destructor
   // in addition to memory allocation/deallocation.
   // An additional (and potentially dangerous) feature allows an object of any type to be deleted so long as its size has been provided.
   template <class _T>
   class polymorphic_allocator {
-  private:
-    static std::allocator<char>& _alloc;           // The underlying universal allocator shared by ALL polymorphic_allocators
   public:
     typedef typename std::allocator<_T> Alloc;
     // A specific allocator -- alloc -- of type Alloc is used to define the correct types and implement methods
@@ -44,13 +51,13 @@ namespace ALE {
     ~polymorphic_allocator() {};
 
     // Reproducing the standard allocator interface
-    pointer       address(reference _x) const          { return alloc.address(_x);                      };
-    const_pointer address(const_reference _x) const    { return alloc.address(_x);                      };
-    _T*           allocate(size_type _n)               { return (_T*)_alloc.allocate(_n*sz);            };
-    void          deallocate(pointer _p, size_type _n) { _alloc.deallocate((char*)_p, _n*sz);           };
-    void          construct(pointer _p, const _T& _val){ alloc.construct(_p, _val);                     };
-    void          destroy(pointer _p)                  { alloc.destroy(_p);                             };
-    size_type     max_size() const                     { return (size_type)floor(_alloc.max_size()/sz); };
+    pointer       address(reference _x) const          { return alloc.address(_x);                                    };
+    const_pointer address(const_reference _x) const    { return alloc.address(_x);                                    };
+    _T*           allocate(size_type _n)               { return (_T*)universal_allocator::allocate(_n*sz);            };
+    void          deallocate(pointer _p, size_type _n) { universal_allocator::deallocate((char*)_p, _n*sz);           };
+    void          construct(pointer _p, const _T& _val){ alloc.construct(_p, _val);                                   };
+    void          destroy(pointer _p)                  { alloc.destroy(_p);                                           };
+    size_type     max_size() const                     { return (size_type)floor(universal_allocator::max_size()/sz); };
     // conversion typedef
     template <class _TT>
     struct rebind { typedef polymorphic_allocator<_TT> other;};
@@ -59,11 +66,6 @@ namespace ALE {
     void del(_T* _p);
     template<class _TT> void del(_TT* _p, size_type _sz);
   };
-
-  static std::allocator<char> _alloc;
-
-  template <class _T>
-  std::allocator<char>& polymorphic_allocator<_T>::_alloc = _alloc;
 
   template <class _T>
   typename polymorphic_allocator<_T>::Alloc polymorphic_allocator<_T>::alloc;
@@ -76,7 +78,7 @@ namespace ALE {
   template <class _T> 
   _T* polymorphic_allocator<_T>::create(const _T& _val) {
     // First, allocate space for a single object
-    _T* _p = (_T*)this->_alloc.allocate(sz);
+    _T* _p = (_T*)universal_allocator::allocate(sz);
     // Construct an object in the provided space using the provided initial value
     this->alloc.construct(_p,  _val);
     return _p;
@@ -85,13 +87,13 @@ namespace ALE {
   template <class _T>
   void polymorphic_allocator<_T>::del(_T* _p) {
     _p->~_T();
-    this->_alloc.deallocate((char*)_p, polymorphic_allocator<_T>::sz);
+    universal_allocator::deallocate((char*)_p, polymorphic_allocator<_T>::sz);
   }
 
   template <class _T> template <class _TT>
   void polymorphic_allocator<_T>::del(_TT* _p, size_type _sz) {
     _p->~_TT();
-    this->_alloc.deallocate((char*)_p, _sz);
+    universal_allocator::deallocate((char*)_p, _sz);
   }
 
 
@@ -307,8 +309,8 @@ namespace ALE {
     Obj& create(const X& x = X());
 
     // predicates & assertions
-    bool isNull() {return (this->objPtr == NULL);};
-    void assertNull(bool flag) { if(this->isNull() != flag){ throw(Exception("Null assertion failed"));}};
+    bool isNull() const {return (this->objPtr == NULL);};
+    void assertNull(bool flag) const { if(this->isNull() != flag){ throw(Exception("Null assertion failed"));}};
 
     // comparison operators
     bool operator==(const Obj& obj) { return (this->objPtr == obj.objPtr);};
@@ -326,7 +328,7 @@ namespace ALE {
     operator X*() {return objPtr;};
     X operator*() {assertNull(false); return *objPtr;};
     operator X()  {assertNull(false); return *objPtr;};
-    template<class Y> Obj& copy(Obj<Y>& obj); // this operator will copy the underlying objects: USE WITH CAUTION
+    template<class Y> Obj& copy(const Obj<Y>& obj); // this operator will copy the underlying objects: USE WITH CAUTION
     
 
     // depricated methods/operators
@@ -441,7 +443,7 @@ namespace ALE {
     if(this->refCnt!= NULL) {
       (*this->refCnt)++;
     }
-    this->sz = sz;
+    this->sz = obj.sz;
     return *this;
   }
 
@@ -481,7 +483,7 @@ namespace ALE {
  
   // copy operator (USE WITH CAUTION)
   template<class X> template<class Y> 
-  Obj<X>& Obj<X>::copy(Obj<Y>& obj) {
+  Obj<X>& Obj<X>::copy(const Obj<Y>& obj) {
     if(this->isNull() || obj.isNull()) {
       throw(Exception("Copying to or from a null Obj"));
     }

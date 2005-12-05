@@ -5,7 +5,29 @@
 namespace ALE {
 
   //
-  // Error/exception handling helper functions.
+  //  Memory handling stuff (ALE_mem.hh).
+  // 
+  
+  // static instance of a standard char allocator;  this is the only allocator used by ALE; 
+  // it is defined here -- in an .cxx file -- to ensure that exactly one copy exists;
+  // its services are presented through a static interface defined in universal_allocator.
+
+  std::allocator<char> _alloc;
+
+  char *universal_allocator::allocate(const universal_allocator::size_type& sz) {
+    return _alloc.allocate(sz);
+  }
+
+  void universal_allocator::deallocate(char *p, const universal_allocator::size_type& sz) {
+    return _alloc.deallocate(p,sz);
+  }
+
+  universal_allocator::size_type universal_allocator::max_size() {
+    return _alloc.max_size();
+  }
+
+  //
+  // Error/exception handling helper functions (ALE_exception.hh).
   //
 
   // A helper function that throws an ALE::Exception with a message identifying the function that returned the given error code, 

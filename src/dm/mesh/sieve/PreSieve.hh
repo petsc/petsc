@@ -33,7 +33,7 @@ namespace ALE {
     virtual void                      view(const char *name);
     //----------------------------------------------------------------------
     // IMPROVE: implement deep copy when internals become Obj<X>
-    virtual PreSieve&                 copy(PreSieve& s){*this = s; return *this;};  
+    virtual PreSieve&                 copy(const PreSieve& s){*this = s; return *this;};  
     virtual PreSieve&                 addArrow(Point& i, Point& j);
     virtual PreSieve&                 removeArrow(Point& i, Point& j, bool removeSingleton = false);
     virtual PreSieve&                 addBasePoint(Point& p);
@@ -185,9 +185,9 @@ namespace ALE {
       Point_set chain; chain.insert(point);
       return this->nCone(chain,n);
     };
-    Obj<Point_set>                    nClosure(Obj<Point_set> chain, int32_t n);
-    Point_set                         nClosure(Point_set& chain, int32_t n);
-    Point_set                         nClosure(Point& point, int32_t n) {
+    Obj<Point_set>                    nClosure(const Obj<Point_set>& chain, int32_t n);
+    Point_set                         nClosure(const Point_set& chain, int32_t n);
+    Point_set                         nClosure(const Point& point, int32_t n) {
       CHKCOMM(*this);
       // Compute the point set obtained by recursively accumulating the cone over a point in the base
       // (i.e., the set of cap points resulting after each iteration is both stored in the resulting set and 
@@ -198,8 +198,8 @@ namespace ALE {
     };
     Obj<PreSieve>                     nClosurePreSieve(Obj<Point_set> chain, int32_t n, Obj<PreSieve> closure = Obj<PreSieve>());
     //
-    Obj<Point_set>                    support(Obj<Point_set> chain) {return this->nSupport(chain,1);};
-    Point_set                         support(Point_set& chain) {
+    Obj<Point_set>                    support(const Obj<Point_set>& chain) {return this->nSupport(chain,1);};
+    Point_set                         support(const Point_set& chain) {
       CHKCOMM(*this);
       Point_set supp = this->nSupport(chain,1);
       return supp;
@@ -209,13 +209,13 @@ namespace ALE {
       Point_set supp = this->nSupport(point,1);
       return supp;
     };
-    int32_t                           supportSize(Point_set& chain);
-    int32_t                           supportSize(Point& p) {
+    int32_t                           supportSize(const Point_set& chain);
+    int32_t                           supportSize(const Point& p) {
       Point_set pSet; pSet.insert(p);
       return supportSize(pSet);
     };
-    Obj<Point_set>                    nSupport(Obj<Point_set> chain, int32_t n);
-    Point_set                         nSupport(Point_set& chain, int32_t n);
+    Obj<Point_set>                    nSupport(const Obj<Point_set>& chain, int32_t n);
+    Point_set                         nSupport(const Point_set& chain, int32_t n);
     Point_set                         nSupport(const Point& point, int32_t n) {
       CHKCOMM(*this);
       // Compute the point set obtained by taking the support recursively on a point in the cap
@@ -224,9 +224,9 @@ namespace ALE {
       Point_set chain; chain.insert(point);
       return this->nSupport(chain,n);
     };
-    Obj<Point_set>                    nStar(Obj<Point_set> chain, int32_t n);
-    Point_set                         nStar(Point_set& chain, int32_t n);
-    Point_set                         nStar(Point& point, int32_t n) {
+    Obj<Point_set>                    nStar(const Obj<Point_set>& chain, int32_t n);
+    Point_set                         nStar(const Point_set& chain, int32_t n);
+    Point_set                         nStar(const Point& point, int32_t n) {
       CHKCOMM(*this);
       // Compute the point set obtained by accumulating the recursively-computed support of a  point in the cap
       // (i.e., the set of base points resulting after each iteration is accumulated in the star AND used again as
