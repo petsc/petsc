@@ -158,6 +158,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIGetPointer(PetscViewer viewer,FIL
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen()
 @*/
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFileSetMode_ASCII"
 PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetMode_ASCII(PetscViewer viewer, PetscFileMode mode)
@@ -168,6 +169,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetMode_ASCII(PetscViewer viewer, 
   vascii->mode = mode;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /*
    If petsc_history is on, then all Petsc*Printf() results are saved
