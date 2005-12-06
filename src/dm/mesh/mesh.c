@@ -14,17 +14,19 @@ struct _MeshOps {
   PetscErrorCode (*refine)(Mesh,MPI_Comm,Mesh*);
 };
 
+#include <IndexBundle.hh>
+
 struct _p_Mesh {
   PETSCHEADER(struct _MeshOps);
-  void    *topology;
-  void    *boundary;
-  void    *boundaryBundle;
-  void    *orientation;
-  void    *spaceFootprint;
-  void    *bundle;
-  void    *vertexBundle;
-  void    *elementBundle;
-  void    *coordBundle;
+  ALE::Obj<ALE::Sieve>       topology;
+  ALE::Obj<ALE::Sieve>       boundary;
+  ALE::Obj<ALE::IndexBundle> boundaryBundle;
+  ALE::Obj<ALE::PreSieve>    orientation;
+  ALE::Obj<ALE::Stack>       spaceFootprint;
+  ALE::Obj<ALE::IndexBundle> bundle;
+  ALE::Obj<ALE::IndexBundle> vertexBundle;
+  ALE::Obj<ALE::IndexBundle> elementBundle;
+  ALE::Obj<ALE::IndexBundle> coordBundle;
   Vec      coordinates;
   Vec      globalvector;
   PetscInt bs,n,N,Nghosts,*ghosts;
@@ -32,7 +34,6 @@ struct _p_Mesh {
 };
 
 #ifdef __cplusplus
-#include <IndexBundle.hh>
 
 #undef __FUNCT__  
 #define __FUNCT__ "WriteVTKHeader"
@@ -72,8 +73,9 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WriteVTKElements"
 PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Sieve       *topology;
-  ALE::IndexBundle *elementBundle;
+  ALE::Obj<ALE::Sieve>       topology;
+  ALE::Obj<ALE::IndexBundle> elementBundle;
+  ALE::Obj<ALE::IndexBundle> vertexBundle;
   ALE::Point_set    elements;
   int               dim, numElements, corners;
   MPI_Comm          comm;
@@ -84,9 +86,9 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);
   ierr = MPI_Comm_size(comm, &size);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetElementBundle(mesh, (void **) &elementBundle);CHKERRQ(ierr);
-  ALE::IndexBundle *vertexBundle = new ALE::IndexBundle(topology);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
+  ierr = MeshGetElementBundle(mesh, &elementBundle);CHKERRQ(ierr);
+  vertexBundle = ALE::IndexBundle(topology);
   vertexBundle->setFiberDimensionByDepth(0, 1);
   vertexBundle->computeOverlapIndices();
   vertexBundle->computeGlobalIndices();
@@ -182,9 +184,9 @@ PetscErrorCode WritePCICEVertices(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WritePCICEElements"
 PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Sieve       *topology;
-  ALE::PreSieve    *orientation;
-  ALE::IndexBundle *elementBundle;
+  ALE::Obj<ALE::Sieve>       topology;
+  ALE::Obj<ALE::PreSieve>    orientation;
+  ALE::Obj<ALE::IndexBundle> elementBundle;
   ALE::Point_set    elements;
   MPI_Comm          comm;
   PetscMPIInt       rank, size;
@@ -195,9 +197,9 @@ PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);
   ierr = MPI_Comm_size(comm, &size);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
-  ierr = MeshGetElementBundle(mesh, (void **) &elementBundle);CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, &orientation);CHKERRQ(ierr);
+  ierr = MeshGetElementBundle(mesh, &elementBundle);CHKERRQ(ierr);
   ALE::IndexBundle vertexBundle(topology);
   vertexBundle.setFiberDimensionByDepth(0, 1);
   vertexBundle.computeOverlapIndices();
@@ -281,8 +283,8 @@ PetscErrorCode WritePyLithVertices(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WritePyLithElements"
 PetscErrorCode WritePyLithElements(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Sieve    *topology;
-  ALE::PreSieve *orientation;
+  ALE::Obj<ALE::Sieve>    topology;
+  ALE::Obj<ALE::PreSieve> orientation;
   ALE::Point_set elements;
   MPI_Comm       comm;
   PetscMPIInt    rank, size;
@@ -293,8 +295,8 @@ PetscErrorCode WritePyLithElements(Mesh mesh, PetscViewer viewer)
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);
   ierr = MPI_Comm_size(comm, &size);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, &orientation);CHKERRQ(ierr);
   ALE::IndexBundle vertexBundle(topology);
   vertexBundle.setFiberDimensionByDepth(0, 1);
   vertexBundle.computeOverlapIndices();
@@ -383,8 +385,8 @@ PetscErrorCode WritePyLithVerticesLocal(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WritePyLithElementsLocal"
 PetscErrorCode WritePyLithElementsLocal(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Sieve    *topology;
-  ALE::PreSieve *orientation;
+  ALE::Obj<ALE::Sieve>    topology;
+  ALE::Obj<ALE::PreSieve> orientation;
   ALE::Point_set elements;
   MPI_Comm       comm;
   PetscMPIInt    rank, size;
@@ -395,8 +397,8 @@ PetscErrorCode WritePyLithElementsLocal(Mesh mesh, PetscViewer viewer)
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);
   ierr = MPI_Comm_size(comm, &size);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, &orientation);CHKERRQ(ierr);
   ALE::IndexBundle vertexBundle(topology);
   vertexBundle.setFiberDimensionByDepth(0, 1);
   vertexBundle.computeOverlapIndices();
@@ -502,11 +504,11 @@ PetscErrorCode MeshView_Sieve_Ascii(Mesh mesh, PetscViewer viewer)
     ierr = WritePyLithVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(coordViewer);CHKERRQ(ierr);
   } else {
-    ALE::Sieve *topology;
+    ALE::Obj<ALE::Sieve> topology;
     PetscInt dim, d;
 
     ierr = MeshGetDimension(mesh, &dim);CHKERRQ(ierr);
-    ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+    ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %d dimensions:\n", dim);CHKERRQ(ierr);
     for(d = 0; d <= dim; d++) {
       ALE::IndexBundle dBundle(topology);
@@ -1000,7 +1002,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 .seealso MeshCreate(), MeshSetTopology()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetTopology(Mesh mesh,void **topology)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetTopology(Mesh mesh, ALE::Obj<ALE::Sieve> *topology)
 {
   if (topology) {
     PetscValidPointer(topology,2);
@@ -1025,9 +1027,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetTopology(Mesh mesh,void **topology)
 .seealso MeshCreate(), MeshGetTopology()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetTopology(Mesh mesh,void *topology)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetTopology(Mesh mesh, ALE::Obj<ALE::Sieve> topology)
 {
-  PetscValidPointer(topology,2);
   mesh->topology = topology;
   PetscFunctionReturn(0);
 }
@@ -1050,7 +1051,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetTopology(Mesh mesh,void *topology)
 .seealso MeshCreate(), MeshSetBoundary()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetBoundary(Mesh mesh,void **boundary)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetBoundary(Mesh mesh, ALE::Obj<ALE::Sieve> *boundary)
 {
   if (boundary) {
     PetscValidPointer(boundary,2);
@@ -1075,9 +1076,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetBoundary(Mesh mesh,void **boundary)
 .seealso MeshCreate(), MeshGetBoundary()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetBoundary(Mesh mesh,void *boundary)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetBoundary(Mesh mesh, ALE::Obj<ALE::Sieve> boundary)
 {
-  PetscValidPointer(boundary,2);
   mesh->boundary = boundary;
   PetscFunctionReturn(0);
 }
@@ -1100,7 +1100,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetBoundary(Mesh mesh,void *boundary)
 .seealso MeshCreate(), MeshSetBoundaryBundle()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetBoundaryBundle(Mesh mesh,void **bundle)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetBoundaryBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> *bundle)
 {
   if (bundle) {
     PetscValidPointer(bundle,2);
@@ -1125,9 +1125,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetBoundaryBundle(Mesh mesh,void **bundle)
 .seealso MeshCreate(), MeshGetBoundaryBundle()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetBoundaryBundle(Mesh mesh,void *bundle)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetBoundaryBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> bundle)
 {
-  PetscValidPointer(bundle,2);
   mesh->boundaryBundle = bundle;
   PetscFunctionReturn(0);
 }
@@ -1150,7 +1149,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetBoundaryBundle(Mesh mesh,void *bundle)
 .seealso MeshCreate(), MeshSetBundle()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetBundle(Mesh mesh,void **bundle)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> *bundle)
 {
   if (bundle) {
     PetscValidPointer(bundle,2);
@@ -1175,9 +1174,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetBundle(Mesh mesh,void **bundle)
 .seealso MeshCreate(), MeshGetBundle()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetBundle(Mesh mesh,void *bundle)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> bundle)
 {
-  PetscValidPointer(bundle,2);
   mesh->bundle = bundle;
   PetscFunctionReturn(0);
 }
@@ -1200,7 +1198,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetBundle(Mesh mesh,void *bundle)
 .seealso MeshCreate(), MeshSetVertexBundle()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexBundle(Mesh mesh,void **bundle)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> *bundle)
 {
   if (bundle) {
     PetscValidPointer(bundle,2);
@@ -1225,9 +1223,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexBundle(Mesh mesh,void **bundle)
 .seealso MeshCreate(), MeshGetVertexBundle()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetVertexBundle(Mesh mesh,void *bundle)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetVertexBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> bundle)
 {
-  PetscValidPointer(bundle,2);
   mesh->vertexBundle = bundle;
   PetscFunctionReturn(0);
 }
@@ -1250,7 +1247,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetVertexBundle(Mesh mesh,void *bundle)
 .seealso MeshCreate(), MeshSetElementBundle()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetElementBundle(Mesh mesh,void **bundle)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetElementBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> *bundle)
 {
   if (bundle) {
     PetscValidPointer(bundle,2);
@@ -1275,9 +1272,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetElementBundle(Mesh mesh,void **bundle)
 .seealso MeshCreate(), MeshGetElementBundle()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetElementBundle(Mesh mesh,void *bundle)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetElementBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> bundle)
 {
-  PetscValidPointer(bundle,2);
   mesh->elementBundle = bundle;
   PetscFunctionReturn(0);
 }
@@ -1300,7 +1296,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetElementBundle(Mesh mesh,void *bundle)
 .seealso MeshCreate(), MeshSetCoordinateBundle()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinateBundle(Mesh mesh,void **bundle)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinateBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> *bundle)
 {
   if (bundle) {
     PetscValidPointer(bundle,2);
@@ -1325,9 +1321,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinateBundle(Mesh mesh,void **bundle
 .seealso MeshCreate(), MeshGetCoordinateBundle()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinateBundle(Mesh mesh,void *bundle)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinateBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> bundle)
 {
-  PetscValidPointer(bundle,2);
   mesh->coordBundle = bundle;
   PetscFunctionReturn(0);
 }
@@ -1350,7 +1345,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinateBundle(Mesh mesh,void *bundle)
 .seealso MeshCreate(), MeshSetOrientation()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetOrientation(Mesh mesh,void **orientation)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetOrientation(Mesh mesh,ALE::Obj<ALE::PreSieve> *orientation)
 {
   if (orientation) {
     PetscValidPointer(orientation,2);
@@ -1375,9 +1370,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetOrientation(Mesh mesh,void **orientation
 .seealso MeshCreate(), MeshGetOrientation()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetOrientation(Mesh mesh,void *orientation)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetOrientation(Mesh mesh,ALE::Obj<ALE::PreSieve> orientation)
 {
-  PetscValidPointer(orientation,2);
   mesh->orientation = orientation;
   PetscFunctionReturn(0);
 }
@@ -1450,7 +1444,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinates(Mesh mesh, Vec coordinates)
 .seealso MeshCreate(), MeshSetSpaceFootprint()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetSpaceFootprint(Mesh mesh, void **spaceFootprint)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetSpaceFootprint(Mesh mesh, ALE::Obj<ALE::Stack> *spaceFootprint)
 {
   if (spaceFootprint) {
     PetscValidPointer(spaceFootprint,2);
@@ -1475,9 +1469,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetSpaceFootprint(Mesh mesh, void **spaceFo
 .seealso MeshCreate(), MeshGetSpaceFootprint()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetSpaceFootprint(Mesh mesh, void *spaceFootprint)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetSpaceFootprint(Mesh mesh, ALE::Obj<ALE::Stack> spaceFootprint)
 {
-  PetscValidPointer(spaceFootprint,2);
   mesh->spaceFootprint = spaceFootprint;
   PetscFunctionReturn(0);
 }
@@ -1568,17 +1561,17 @@ PetscErrorCode assembleField(ALE::IndexBundle *, ALE::PreSieve *, Vec, ALE::Poin
 PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mode)
 {
   Mesh              mesh;
-  ALE::PreSieve    *orientation;
-  ALE::IndexBundle *elementBundle;
-  ALE::IndexBundle *bundle;
+  ALE::Obj<ALE::PreSieve>    orientation;
+  ALE::Obj<ALE::IndexBundle> elementBundle;
+  ALE::Obj<ALE::IndexBundle> bundle;
   PetscInt          firstElement;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject) b, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
-  ierr = MeshGetElementBundle(mesh, (void **) &elementBundle);CHKERRQ(ierr);
-  ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, &orientation);CHKERRQ(ierr);
+  ierr = MeshGetElementBundle(mesh, &elementBundle);CHKERRQ(ierr);
+  ierr = MeshGetBundle(mesh, &bundle);CHKERRQ(ierr);
   firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
   ierr = assembleField(bundle, orientation, b, ALE::Point(0, e + firstElement), v, mode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1608,17 +1601,17 @@ EXTERN PetscErrorCode assembleOperator(ALE::IndexBundle *, ALE::PreSieve *, Mat,
 PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mode)
 {
   Mesh              mesh;
-  ALE::PreSieve    *orientation;
-  ALE::IndexBundle *elementBundle;
-  ALE::IndexBundle *bundle;
+  ALE::Obj<ALE::PreSieve>    orientation;
+  ALE::Obj<ALE::IndexBundle> elementBundle;
+  ALE::Obj<ALE::IndexBundle> bundle;
   PetscInt          firstElement;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
-  ierr = MeshGetElementBundle(mesh, (void **) &elementBundle);CHKERRQ(ierr);
-  ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, &orientation);CHKERRQ(ierr);
+  ierr = MeshGetElementBundle(mesh, &elementBundle);CHKERRQ(ierr);
+  ierr = MeshGetBundle(mesh, &bundle);CHKERRQ(ierr);
   firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
   ierr = assembleOperator(bundle, orientation, A, ALE::Point(0, e + firstElement), v, mode);CHKERRQ(ierr);
   if (e == 0) {
@@ -1685,8 +1678,8 @@ extern PetscErrorCode restrictField(ALE::IndexBundle *, ALE::PreSieve *, PetscSc
 PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
 {
   Mesh                 m;
-  ALE::Sieve          *bdTopology;
-  ALE::PreSieve       *bdOrientation;
+  ALE::Obj<ALE::Sieve>    bdTopology;
+  ALE::Obj<ALE::PreSieve> bdOrientation;
   struct triangulateio in;
   struct triangulateio out;
   PetscInt             dim = 2;
@@ -1695,28 +1688,28 @@ PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
 
   PetscFunctionBegin;
   ierr = MeshCreate(boundary->comm, &m);CHKERRQ(ierr);
-  ierr = MeshGetTopology(boundary, (void **) &bdTopology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(boundary, (void **) &bdOrientation);CHKERRQ(ierr);
+  ierr = MeshGetTopology(boundary, &bdTopology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(boundary, &bdOrientation);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(boundary->comm, &rank);CHKERRQ(ierr);
   ierr = initGeneratorInput(&in);CHKERRQ(ierr);
   ierr = initGeneratorOutput(&out);CHKERRQ(ierr);
   ALE::IndexBundle vertexBundle(bdTopology);
   vertexBundle.setFiberDimensionByDepth(0, 1);
   if (rank == 0) {
-    ALE::Sieve              *bdSieve;
+    ALE::Obj<ALE::Sieve>     bdSieve;
     ALE::Obj<ALE::Point_set> vertices = bdTopology->depthStratum(0);
     ALE::Obj<ALE::Point_set> edges = bdTopology->depthStratum(1);
     char                    *args = (char *) "pqenzQ";
     PetscTruth               createConvexHull = PETSC_FALSE;
 
-    ierr = MeshGetBoundary(boundary, (void **) &bdSieve);CHKERRQ(ierr);
+    ierr = MeshGetBoundary(boundary, &bdSieve);CHKERRQ(ierr);
     in.numberofpoints = vertices->size();
     if (in.numberofpoints > 0) {
       ALE::Obj<ALE::IndexBundle> coordBundle;
       Vec               coordinates;
       PetscScalar      *coords;
 
-      ierr = MeshGetCoordinateBundle(boundary, (void **) &coordBundle);CHKERRQ(ierr);
+      ierr = MeshGetCoordinateBundle(boundary, &coordBundle);CHKERRQ(ierr);
       ierr = MeshGetCoordinates(boundary, &coordinates);CHKERRQ(ierr);
       ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
       ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);CHKERRQ(ierr);
@@ -1745,9 +1738,9 @@ PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
 
     in.numberofsegments = edges->size();
     if (in.numberofsegments > 0) {
-      ALE::IndexBundle *bdElementBundle;
+      ALE::Obj<ALE::IndexBundle> bdElementBundle;
 
-      ierr = MeshGetElementBundle(boundary, (void **) &bdElementBundle);CHKERRQ(ierr);
+      ierr = MeshGetElementBundle(boundary, &bdElementBundle);CHKERRQ(ierr);
       ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRQ(ierr);
       ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRQ(ierr);
       for(ALE::Point_set::iterator e_itor = edges->begin(); e_itor != edges->end(); e_itor++) {
@@ -1794,10 +1787,10 @@ PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
   }
   ierr = MeshPopulate(m, dim, out.numberofpoints, out.numberoftriangles, out.trianglelist, out.pointlist);CHKERRQ(ierr);
   if (rank == 0) {
-    ALE::Sieve *boundary = new ALE::Sieve(m->comm);
-    ALE::Sieve *topology;
+    ALE::Obj<ALE::Sieve> boundary(ALE::Sieve(m->comm));
+    ALE::Obj<ALE::Sieve> topology;
 
-    ierr = MeshGetTopology(m, (void **) &topology);CHKERRQ(ierr);
+    ierr = MeshGetTopology(m, &topology);CHKERRQ(ierr);
     for(int v = 0; v < out.numberofpoints; v++) {
       if (out.pointmarkerlist[v]) {
         ALE::Point boundaryPoint(-1, out.pointmarkerlist[v]);
@@ -1819,7 +1812,7 @@ PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
         boundary->addCone(edge, boundaryPoint);
       }
     }
-    ierr = MeshSetBoundary(m, (void *) boundary);CHKERRQ(ierr);
+    ierr = MeshSetBoundary(m, boundary);CHKERRQ(ierr);
   }
   ierr = destroyGeneratorOutput(&out);CHKERRQ(ierr);
   *mesh = m;
@@ -1827,19 +1820,21 @@ PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
 }
 
 extern PetscErrorCode PartitionPreSieve(ALE::Obj<ALE::PreSieve>, const char *, bool localize, ALE::PreSieve **);
-extern PetscErrorCode MeshCreateMapping(Mesh, ALE::IndexBundle *, ALE::PreSieve *, ALE::IndexBundle *, VecScatter *);
+extern PetscErrorCode MeshCreateMapping(Mesh, ALE::Obj<ALE::IndexBundle>, ALE::Obj<ALE::PreSieve>, ALE::Obj<ALE::IndexBundle>, VecScatter *);
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshRefine_Triangle"
 PetscErrorCode MeshRefine_Triangle(Mesh oldMesh, PetscReal maxArea, /*CoSieve*/ Vec maxAreas, Mesh *mesh)
 {
   Mesh                 m, serialMesh;
-  ALE::Sieve          *serialTopology;
-  ALE::PreSieve       *serialOrientation;
-  ALE::Sieve          *serialBoundary;
-  ALE::IndexBundle    *elementBundle, *serialElementBundle, *serialVertexBundle;
+  ALE::Obj<ALE::Sieve>       serialTopology;
+  ALE::Obj<ALE::PreSieve>    serialOrientation;
+  ALE::Obj<ALE::Sieve>       serialBoundary;
+  ALE::Obj<ALE::IndexBundle> elementBundle;
+  ALE::Obj<ALE::IndexBundle> serialElementBundle;
+  ALE::Obj<ALE::IndexBundle> serialVertexBundle;
   ALE::Obj<ALE::IndexBundle> serialCoordBundle;
-  ALE::PreSieve       *partitionTypes;
+  ALE::Obj<ALE::PreSieve>    partitionTypes;
   Vec                  serialCoordinates;
   PetscScalar         *coords;
   struct triangulateio in;
@@ -1852,17 +1847,17 @@ PetscErrorCode MeshRefine_Triangle(Mesh oldMesh, PetscReal maxArea, /*CoSieve*/ 
 
   PetscFunctionBegin;
   ierr = MeshCreate(oldMesh->comm, &m);CHKERRQ(ierr);
-  ierr = MeshGetElementBundle(oldMesh, (void **) &elementBundle);CHKERRQ(ierr);
+  ierr = MeshGetElementBundle(oldMesh, &elementBundle);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(oldMesh->comm, &rank);CHKERRQ(ierr);
   ierr = initGeneratorInput(&in);CHKERRQ(ierr);
   ierr = initGeneratorOutput(&out);CHKERRQ(ierr);
   ierr = MeshUnify(oldMesh, &serialMesh);CHKERRQ(ierr);
-  ierr = MeshGetTopology(serialMesh, (void **) &serialTopology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(serialMesh, (void **) &serialOrientation);CHKERRQ(ierr);
-  ierr = MeshGetBoundary(serialMesh, (void **) &serialBoundary);CHKERRQ(ierr);
-  ierr = MeshGetVertexBundle(serialMesh, (void **) &serialVertexBundle);CHKERRQ(ierr);
-  ierr = MeshGetElementBundle(serialMesh, (void **) &serialElementBundle);CHKERRQ(ierr);
-  ierr = MeshGetCoordinateBundle(serialMesh, (void **) &serialCoordBundle);CHKERRQ(ierr);
+  ierr = MeshGetTopology(serialMesh, &serialTopology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(serialMesh, &serialOrientation);CHKERRQ(ierr);
+  ierr = MeshGetBoundary(serialMesh, &serialBoundary);CHKERRQ(ierr);
+  ierr = MeshGetVertexBundle(serialMesh, &serialVertexBundle);CHKERRQ(ierr);
+  ierr = MeshGetElementBundle(serialMesh, &serialElementBundle);CHKERRQ(ierr);
+  ierr = MeshGetCoordinateBundle(serialMesh, &serialCoordBundle);CHKERRQ(ierr);
   ierr = MeshGetCoordinates(serialMesh, &serialCoordinates);CHKERRQ(ierr);
 
   numElements = elementBundle->getGlobalSize();
@@ -2014,8 +2009,8 @@ PetscErrorCode MeshCoarsen_Triangle(Mesh mesh, PetscReal minArea, /*CoSieve*/ Ve
 PetscErrorCode MeshGenerate_TetGen(Mesh boundary, Mesh *mesh)
 {
   Mesh                 m;
-  ALE::Sieve          *bdTopology;
-  ALE::PreSieve       *bdOrientation;
+  ALE::Obj<ALE::Sieve>    bdTopology;
+  ALE::Obj<ALE::PreSieve> bdOrientation;
   tetgenio             in;
   tetgenio             out;
   PetscInt             dim = 3;
@@ -2030,7 +2025,7 @@ PetscErrorCode MeshGenerate_TetGen(Mesh boundary, Mesh *mesh)
   ALE::IndexBundle vertexBundle(bdTopology);
   vertexBundle.setFiberDimensionByDepth(0, 1);
   if (rank == 0) {
-    ALE::Sieve              *bdSieve;
+    ALE::Obj<ALE::Sieve>     bdSieve;
     ALE::Obj<ALE::Point_set> vertices = bdTopology->depthStratum(0);
     ALE::Obj<ALE::Point_set> facets = bdTopology->depthStratum(2);
     std::string              args = "pqenzQ";
@@ -2071,7 +2066,7 @@ PetscErrorCode MeshGenerate_TetGen(Mesh boundary, Mesh *mesh)
 
     in.numberoffacets = facets->size();
     if (in.numberoffacets > 0) {
-      ALE::IndexBundle *bdElementBundle;
+      ALE::Obj<ALE::IndexBundle> bdElementBundle;
 
       ierr = MeshGetElementBundle(boundary, (void **) &bdElementBundle);CHKERRQ(ierr);
       in.facetlist       = new tetgenio::facet[in.numberoffacets];
@@ -2110,8 +2105,8 @@ PetscErrorCode MeshGenerate_TetGen(Mesh boundary, Mesh *mesh)
   }
   ierr = MeshPopulate(m, dim, out.numberofpoints, out.numberoftetrahedra, out.tetrahedronlist, out.pointlist);CHKERRQ(ierr);
   if (rank == 0) {
-    ALE::Sieve *boundary = new ALE::Sieve(m->comm);
-    ALE::Sieve *topology;
+    ALE::Obj<ALE::Sieve> boundary(ALE::Sieve(m->comm));
+    ALE::Obj<ALE::Sieve> topology;
 
     ierr = MeshGetTopology(m, (void **) &topology);CHKERRQ(ierr);
     /* Create boundary */

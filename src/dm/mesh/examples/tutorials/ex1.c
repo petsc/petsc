@@ -93,8 +93,8 @@ int main(int argc, char *argv[])
   } else if (fileType == PYLITH) {
     ierr = MeshCreatePyLith(comm, baseFilename, &mesh);CHKERRQ(ierr);
   }
-  ALE::Sieve *topology;
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ALE::Obj<ALE::Sieve> topology;
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0).size());CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0).size());CHKERRQ(ierr);
 
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 */
 PetscErrorCode CreatePartitionVector(Mesh mesh, Vec *partition)
 {
-  ALE::Sieve    *topology;
+  ALE::Obj<ALE::Sieve> topology;
   PetscScalar   *array;
   MPI_Comm       comm;
   PetscMPIInt    rank;
@@ -160,7 +160,7 @@ PetscErrorCode CreatePartitionVector(Mesh mesh, Vec *partition)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
   ALE::IndexBundle elementBundle(topology);
   elementBundle.setFiberDimensionByHeight(0, 1);
   elementBundle.computeOverlapIndices();

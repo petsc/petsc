@@ -177,7 +177,7 @@ PetscErrorCode ComputeSievePartition(ALE::Sieve* sieve, const char *name = NULL)
 
 #undef __FUNCT__
 #define __FUNCT__ "PartitionPreSieve"
-PetscErrorCode PartitionPreSieve(ALE::PreSieve* presieve, const char *name = NULL, bool localize = 1, ALE::PreSieve **pointTypes = NULL)
+PetscErrorCode PartitionPreSieve(ALE::PreSieve* presieve, const char *name = NULL, bool localize = 1, ALE::Obj<ALE::PreSieve> *pointTypes = NULL)
 {
   MPI_Comm       comm = presieve->getComm();
   PetscMPIInt    rank, size;
@@ -199,7 +199,7 @@ PetscErrorCode PartitionPreSieve(ALE::PreSieve* presieve, const char *name = NUL
   }
   // Create point type presieve
   if (pointTypes != NULL) {
-    ALE::PreSieve *pTypes = new ALE::PreSieve(comm);
+    ALE::Obj<ALE::PreSieve> pTypes = ALE::PreSieve(comm);
 
     for(int p = 0; p < size; p++) {
       ALE::Point partitionPoint(-1, p);
@@ -323,7 +323,7 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Point_array> intervals, PetscInt *i
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshComputeGlobalScatter"
-PetscErrorCode MeshComputeGlobalScatter(ALE::Sieve *topology, ALE::IndexBundle *bundle, VecScatter *injection)
+PetscErrorCode MeshComputeGlobalScatter(ALE::Obj<ALE::IndexBundle> bundle, VecScatter *injection)
 {
   VecScatter               sc;
   ALE::Obj<ALE::PreSieve>  globalIndices;
@@ -336,8 +336,6 @@ PetscErrorCode MeshComputeGlobalScatter(ALE::Sieve *topology, ALE::IndexBundle *
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  //ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  //ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
   localSize = bundle->getLocalSize();
   remoteSize = bundle->getRemoteSize();
   ierr = VecCreateSeq(PETSC_COMM_SELF, localSize+remoteSize, &l);CHKERRQ(ierr);
@@ -585,10 +583,10 @@ PetscErrorCode MeshPopulate(Mesh mesh, int dim, PetscInt numVertices, PetscInt n
 {
   MPI_Comm comm;
   PetscObjectGetComm((PetscObject) mesh, &comm);
-  ALE::Sieve       *topology = new ALE::Sieve(comm);
-  ALE::Sieve       *boundary = new ALE::Sieve(comm);
-  ALE::PreSieve    *orientation = new ALE::PreSieve(comm);
-  ALE::Obj<ALE::IndexBundle> coordBundle(new ALE::IndexBundle(comm));
+  ALE::Obj<ALE::Sieve>       topology = ALE::Sieve(comm);
+  ALE::Obj<ALE::Sieve>       boundary = ALE::Sieve(comm);
+  ALE::Obj<ALE::PreSieve>    orientation = ALE::PreSieve(comm);
+  ALE::Obj<ALE::IndexBundle> coordBundle = ALE::IndexBundle(comm);
   Vec               coordinates;
   PetscMPIInt       rank, size;
   PetscErrorCode    ierr;
@@ -612,8 +610,8 @@ PetscErrorCode MeshPopulate(Mesh mesh, int dim, PetscInt numVertices, PetscInt n
     topology->view("Serial Simplicializer topology");
     orientation->view("Serial Simplicializer orientation");
   }
-  ierr = MeshSetTopology(mesh, (void *) topology);CHKERRQ(ierr);
-  ierr = MeshSetOrientation(mesh, (void *) orientation);CHKERRQ(ierr);
+  ierr = MeshSetTopology(mesh, topology);CHKERRQ(ierr);
+  ierr = MeshSetOrientation(mesh, orientation);CHKERRQ(ierr);
   /* Create the initial coordinate bundle and storage */
   coordBundle->setTopology(topology);
   coordBundle->setFiberDimensionByDepth(0, dim);
@@ -623,7 +621,7 @@ PetscErrorCode MeshPopulate(Mesh mesh, int dim, PetscInt numVertices, PetscInt n
   if (debug) {
     coordBundle->setVerbosity(11);
   }
-  ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
+  ierr = MeshSetCoordinateBundle(mesh, coordBundle);CHKERRQ(ierr);
   int localSize = coordBundle->getLocalSize();
   int globalSize = coordBundle->getGlobalSize();
   ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
@@ -655,7 +653,7 @@ extern PetscErrorCode MeshCreateVector(Mesh, ALE::IndexBundle *, int, Vec *);
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateMapping"
-PetscErrorCode MeshCreateMapping(Mesh mesh, ALE::IndexBundle *sourceBundle, ALE::PreSieve *pointTypes, ALE::IndexBundle *targetBundle, VecScatter *scatter)
+PetscErrorCode MeshCreateMapping(Mesh mesh, ALE::Obj<ALE::IndexBundle> sourceBundle, ALE::Obj<ALE::PreSieve> pointTypes, ALE::Obj<ALE::IndexBundle> targetBundle, VecScatter *scatter)
 {
   ALE::Obj<ALE::Stack>     mappingStack;
   ALE::Obj<ALE::PreSieve>  sourceIndices, targetIndices;
@@ -708,11 +706,11 @@ PetscErrorCode MeshCreateMapping(Mesh mesh, ALE::IndexBundle *sourceBundle, ALE:
 */
 PetscErrorCode MeshDistribute(Mesh mesh)
 {
-  ALE::Sieve       *topology;
-  ALE::PreSieve    *orientation;
-  ALE::IndexBundle *elementBundle;
+  ALE::Obj<ALE::Sieve>       topology;
+  ALE::Obj<ALE::PreSieve>    orientation;
+  ALE::Obj<ALE::IndexBundle> elementBundle;
   ALE::Obj<ALE::IndexBundle> serialCoordBundle;
-  ALE::PreSieve    *partitionTypes;
+  ALE::Obj<ALE::PreSieve>    partitionTypes;
   Vec               coordinates, oldCoordinates, locCoordinates;
   MPI_Comm          comm;
   PetscMPIInt       rank;
@@ -723,9 +721,9 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
-  ierr = MeshGetCoordinateBundle(mesh, (void **) &serialCoordBundle);CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, &orientation);CHKERRQ(ierr);
+  ierr = MeshGetCoordinateBundle(mesh, &serialCoordBundle);CHKERRQ(ierr);
   ierr = MeshGetCoordinates(mesh, &oldCoordinates);CHKERRQ(ierr);
   dim = topology->diameter();
   /* Partition the topology and orientation */
@@ -740,7 +738,7 @@ PetscErrorCode MeshDistribute(Mesh mesh)
     orientation->addCone(v, v);
   }
   /* Create element bundle */
-  elementBundle = new ALE::IndexBundle(topology);
+  elementBundle = ALE::IndexBundle(topology);
   if (debug) {
     elementBundle->setVerbosity(11);
   }
@@ -748,9 +746,9 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   elementBundle->computeOverlapIndices();
   elementBundle->computeGlobalIndices();
   elementBundle->getLock();  // lock the bundle so that the overlap indices do not change
-  ierr = MeshSetElementBundle(mesh, (void *) elementBundle);CHKERRQ(ierr);
+  ierr = MeshSetElementBundle(mesh, elementBundle);CHKERRQ(ierr);
   /* Create coordinate bundle and storage */
-  ALE::Obj<ALE::IndexBundle> coordBundle(new ALE::IndexBundle(topology));
+  ALE::Obj<ALE::IndexBundle> coordBundle = ALE::IndexBundle(topology);
   if (debug) {
     coordBundle->setVerbosity(11);
   }
@@ -765,7 +763,7 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   /* Setup mapping to partitioned storage */
   VecScatter coordScatter;
 
-  ierr = MeshSetCoordinateBundle(mesh, (void *) coordBundle);CHKERRQ(ierr);
+  ierr = MeshSetCoordinateBundle(mesh, coordBundle);CHKERRQ(ierr);
   ierr = MeshCreateMapping(mesh, serialCoordBundle, partitionTypes, coordBundle, &coordScatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(oldCoordinates, coordinates, INSERT_VALUES, SCATTER_FORWARD, coordScatter);CHKERRQ(ierr);
   ierr = VecScatterEnd(oldCoordinates, coordinates, INSERT_VALUES, SCATTER_FORWARD, coordScatter);CHKERRQ(ierr);
@@ -776,7 +774,6 @@ PetscErrorCode MeshDistribute(Mesh mesh)
     ierr = PetscPrintf(comm, "Parallel Coordinates\n===========================\n");CHKERRQ(ierr);
     ierr = VecView(coordinates, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  delete serialCoordBundle;
   /* Communicate ghosted coordinates */
   ierr = VecGhostUpdateBegin(coordinates, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGhostUpdateEnd(coordinates, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
@@ -790,11 +787,11 @@ PetscErrorCode MeshDistribute(Mesh mesh)
 */
 PetscErrorCode MeshUnify(Mesh mesh, Mesh *serialMesh)
 {
-  ALE::Sieve       *topology;
-  ALE::PreSieve    *orientation;
+  ALE::Obj<ALE::Sieve>       topology;
+  ALE::Obj<ALE::PreSieve>    orientation;
   ALE::Obj<ALE::IndexBundle> coordBundle;
-  ALE::PreSieve    *partitionTypes;
-  ALE::Sieve       *boundary;
+  ALE::Obj<ALE::PreSieve>    partitionTypes;
+  ALE::Obj<ALE::Sieve>       boundary;
   Vec               serialCoordinates, coordinates;
   MPI_Comm          comm;
   PetscMPIInt       rank;
@@ -805,14 +802,14 @@ PetscErrorCode MeshUnify(Mesh mesh, Mesh *serialMesh)
   PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
-  ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, &orientation);CHKERRQ(ierr);
+  ierr = MeshGetCoordinateBundle(mesh, &coordBundle);CHKERRQ(ierr);
   ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
   dim = topology->diameter();
   /* Unify the topology and orientation */
-  ALE::Sieve    *serialTopology = new ALE::Sieve(PETSC_COMM_SELF);
-  ALE::PreSieve *serialOrientation = new ALE::PreSieve(PETSC_COMM_SELF);
+  ALE::Obj<ALE::Sieve>    serialTopology(ALE::Sieve(PETSC_COMM_SELF));
+  ALE::Obj<ALE::PreSieve> serialOrientation(ALE::PreSieve(PETSC_COMM_SELF));
   ALE::Point_set space = topology->space();
   ALE::Point_set base = topology->base();
   ALE::Point_set orderSpace = orientation->space();
@@ -836,10 +833,10 @@ PetscErrorCode MeshUnify(Mesh mesh, Mesh *serialMesh)
     serialTopology->addCone(cone, point);
   }
   ierr = PartitionPreSieve(serialTopology, "Serial Topology", 1, &partitionTypes);CHKERRQ(ierr);
-  ierr = MeshSetTopology(*serialMesh, (void *) serialTopology);CHKERRQ(ierr);
-  ierr = MeshSetOrientation(*serialMesh, (void *) serialOrientation);CHKERRQ(ierr);
+  ierr = MeshSetTopology(*serialMesh, serialTopology);CHKERRQ(ierr);
+  ierr = MeshSetOrientation(*serialMesh, serialOrientation);CHKERRQ(ierr);
   /* Unify boundary */
-  ierr = MeshGetBoundary(mesh, (void **) &boundary);CHKERRQ(ierr);
+  ierr = MeshGetBoundary(mesh, &boundary);CHKERRQ(ierr);
   ALE::Sieve    *serialBoundary = new ALE::Sieve(PETSC_COMM_SELF);
   ALE::Point_set boundarySpace = boundary->space();
   ALE::Point_set boundaryBase = boundary->base();
@@ -851,30 +848,30 @@ PetscErrorCode MeshUnify(Mesh mesh, Mesh *serialMesh)
     serialBoundary->addCone(cone, point);
   }
   ierr = PartitionPreSieve(serialBoundary, "Serial Boundary", 1);CHKERRQ(ierr);
-  ierr = MeshSetBoundary(*serialMesh, (void *) serialBoundary);CHKERRQ(ierr);
+  ierr = MeshSetBoundary(*serialMesh, serialBoundary);CHKERRQ(ierr);
   /* Create vertex bundle */
-  ALE::IndexBundle *serialVertexBundle = new ALE::IndexBundle(serialTopology);
+  ALE::Obj<ALE::IndexBundle> serialVertexBundle = ALE::IndexBundle(serialTopology);
   serialVertexBundle->setFiberDimensionByDepth(0, 1);
   serialVertexBundle->computeOverlapIndices();
   serialVertexBundle->computeGlobalIndices();
   serialVertexBundle->getLock();  // lock the bundle so that the overlap indices do not change
-  ierr = MeshSetVertexBundle(*serialMesh, (void *) serialVertexBundle);CHKERRQ(ierr);
+  ierr = MeshSetVertexBundle(*serialMesh, serialVertexBundle);CHKERRQ(ierr);
   /* Create element bundle */
-  ALE::IndexBundle *serialElementBundle = new ALE::IndexBundle(serialTopology);
+  ALE::Obj<ALE::IndexBundle> serialElementBundle = ALE::IndexBundle(serialTopology);
   serialElementBundle->setFiberDimensionByHeight(0, 1);
   serialElementBundle->computeOverlapIndices();
   serialElementBundle->computeGlobalIndices();
   serialElementBundle->getLock();  // lock the bundle so that the overlap indices do not change
-  ierr = MeshSetElementBundle(*serialMesh, (void *) serialElementBundle);CHKERRQ(ierr);
+  ierr = MeshSetElementBundle(*serialMesh, serialElementBundle);CHKERRQ(ierr);
   /* Create coordinate bundle and storage */
-  ALE::Obj<ALE::IndexBundle> serialCoordBundle(new ALE::IndexBundle(serialTopology));
+  ALE::Obj<ALE::IndexBundle> serialCoordBundle = ALE::IndexBundle(serialTopology);
   serialCoordBundle->setFiberDimensionByDepth(0, dim);
   serialCoordBundle->computeOverlapIndices();
   serialCoordBundle->computeGlobalIndices();
   serialCoordBundle->getLock();  // lock the bundle so that the overlap indices do not change
   ierr = MeshCreateVector(*serialMesh, serialCoordBundle, debug, &serialCoordinates);CHKERRQ(ierr);
   ierr = VecSetBlockSize(serialCoordinates, dim);CHKERRQ(ierr);
-  ierr = MeshSetCoordinateBundle(*serialMesh, (void *) serialCoordBundle);CHKERRQ(ierr);
+  ierr = MeshSetCoordinateBundle(*serialMesh, serialCoordBundle);CHKERRQ(ierr);
   /* Setup mapping to unified storage */
   VecScatter coordScatter;
 
@@ -904,14 +901,13 @@ PetscErrorCode MeshUnify(Mesh mesh, Mesh *serialMesh)
 
 .seealso MeshCreate(), MeshGetTopology(), MeshSetTopology()
 */
-PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, PetscInt numBoundaryComponents, PetscInt *boundaryVertices, PetscScalar *boundaryValues, void **boundaryBundle, Vec *boundaryVec)
+PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, PetscInt numBoundaryComponents, PetscInt *boundaryVertices, PetscScalar *boundaryValues, ALE::Obj<ALE::IndexBundle> *boundaryBundle, Vec *boundaryVec)
 {
   MPI_Comm          comm;
   PetscObjectGetComm((PetscObject) mesh, &comm);
-  ALE::Sieve       *boundary = new ALE::Sieve(comm);
-  ALE::Sieve       *topology;
-  ALE::IndexBundle *elementBundle;
-  ALE::IndexBundle *bdBundle;
+  ALE::Obj<ALE::Sieve>       boundary = ALE::Sieve(comm);
+  ALE::Obj<ALE::Sieve>       topology;
+  ALE::Obj<ALE::IndexBundle> elementBundle;
   PetscScalar      *values;
   PetscInt          numElements;
   PetscErrorCode    ierr;
@@ -919,14 +915,14 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
   PetscValidIntPointer(boundaryVertices,3);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetElementBundle(mesh, (void **) &elementBundle);CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
+  ierr = MeshGetElementBundle(mesh, &elementBundle);CHKERRQ(ierr);
   numElements = elementBundle->getGlobalSize();
   if (debug) {
     boundary->setVerbosity(11);
   }
   /* Should also put in boundary edges */
-  bdBundle = new ALE::IndexBundle(topology);
+  ALE::Obj<ALE::IndexBundle> bdBundle = ALE::IndexBundle(topology);
   for(int v = numBoundaryVertices-1; v >= 0; v--) {
     ALE::Point vertex = ALE::Point(0, boundaryVertices[v*(numBoundaryComponents+1)] + numElements);
 
@@ -939,7 +935,7 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
       }
     }
   }
-  ierr = MeshSetBoundary(mesh, (void *) boundary);CHKERRQ(ierr);
+  ierr = MeshSetBoundary(mesh, boundary);CHKERRQ(ierr);
   if (debug) {
     boundary->view("Boundary sieve");
   }
@@ -986,11 +982,11 @@ PetscErrorCode MeshCreateBoundary(Mesh mesh, PetscInt numBoundaryVertices, Petsc
 @*/
 PetscErrorCode MeshGetDimension(Mesh mesh, PetscInt *dimension)
 {
-  ALE::Sieve    *topology;
-  PetscErrorCode ierr;
+  ALE::Obj<ALE::Sieve> topology;
+  PetscErrorCode       ierr;
 
   PetscValidIntPointer(dimension,2);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
   *dimension = topology->diameter();
   PetscFunctionReturn(0);
 }
@@ -1015,13 +1011,13 @@ PetscErrorCode MeshGetDimension(Mesh mesh, PetscInt *dimension)
 @*/
 PetscErrorCode MeshGetEmbeddingDimension(Mesh mesh, PetscInt *dimension)
 {
-  ALE::Sieve       *topology;
+  ALE::Obj<ALE::Sieve>       topology;
   ALE::Obj<ALE::IndexBundle> coordBundle;
   PetscErrorCode    ierr;
 
   PetscValidIntPointer(dimension,2);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
+  ierr = MeshGetCoordinateBundle(mesh, &coordBundle);CHKERRQ(ierr);
   *dimension = coordBundle->getFiberDimension(*topology->depthStratum(0).begin());
   PetscFunctionReturn(0);
 }
@@ -1040,34 +1036,34 @@ ALE::Obj<ALE::Point_set> getLocal(MPI_Comm comm, ALE::Obj<ALE::Stack> spaceFootp
 
 PetscErrorCode MeshComputeOverlap(Mesh mesh)
 {
-  ALE::Sieve    *topology;
-  ALE::Stack    *spaceFootprint;
-  PetscErrorCode ierr;
+  ALE::Obj<ALE::Sieve> topology;
+  ALE::Obj<ALE::Stack> spaceFootprint;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetSpaceFootprint(mesh, (void **) &spaceFootprint);CHKERRQ(ierr);
+  ierr = MeshGetSpaceFootprint(mesh, &spaceFootprint);CHKERRQ(ierr);
   if (!spaceFootprint) {
-    ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+    ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
     spaceFootprint = topology->spaceFootprint(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeSupport, NULL);
-    ierr = MeshSetSpaceFootprint(mesh, (void *) spaceFootprint);CHKERRQ(ierr);
+    ierr = MeshSetSpaceFootprint(mesh, spaceFootprint);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MeshGetDimLocalSize(Mesh mesh, int dim, PetscInt *size)
 {
-  MPI_Comm       comm;
-  ALE::Sieve    *topology;
-  ALE::Stack    *spaceFootprint;
-  PetscErrorCode ierr;
+  MPI_Comm             comm;
+  ALE::Obj<ALE::Sieve> topology;
+  ALE::Obj<ALE::Stack> spaceFootprint;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, DA_COOKIE, 1);
   PetscValidIntPointer(size, 3);
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = MeshComputeOverlap(mesh);CHKERRQ(ierr);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetSpaceFootprint(mesh, (void **) &spaceFootprint);CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
+  ierr = MeshGetSpaceFootprint(mesh, &spaceFootprint);CHKERRQ(ierr);
   *size = getLocal(comm, *spaceFootprint, topology->depthStratum(dim))->size();
   PetscFunctionReturn(0);
 }
