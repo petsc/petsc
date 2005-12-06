@@ -789,7 +789,7 @@ namespace ALE {
 
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
-    // Compute the point set obtained by taking suppor recursively on a set of points in the cap
+    // Compute the point set obtained by taking support recursively on a set of points in the cap
     // (i.e., the set of base points resulting after each iteration is used again as the cap for the next support computation).
     // Note: a 0-support is the chain itself.
 
@@ -824,7 +824,7 @@ namespace ALE {
         }
       }
     }
-    // IMPROVE: memory use can be imporoved (number of copies and alloc/dealloc reduced) 
+    // IMPROVE: memory use can be improved (number of copies and alloc/dealloc reduced) 
     //          if pointers to Point_set are used
     ALE_LOG_STAGE_END;
     return bottom;

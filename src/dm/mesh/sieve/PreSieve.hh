@@ -204,26 +204,18 @@ namespace ALE {
       Point_set supp = this->nSupport(chain,1);
       return supp;
     };
-    Obj<Point_set>                    support(const Point& point) {
-      CHKCOMM(*this);
-      Point_set supp = this->nSupport(point,1);
-      return supp;
-    };
+    Obj<Point_set>                    support(const Point& point) {return this->nSupport(point,1);};
     int32_t                           supportSize(const Point_set& chain);
     int32_t                           supportSize(const Point& p) {
       Point_set pSet; pSet.insert(p);
       return supportSize(pSet);
     };
+    // Compute the point set obtained by taking the support recursively on a point in the cap
+    // (i.e., the set of base points resulting after each iteration is used again as the cap for the next support computation).
+    // Note: a 0-support is the point itself.
     Obj<Point_set>                    nSupport(const Obj<Point_set>& chain, int32_t n);
     Point_set                         nSupport(const Point_set& chain, int32_t n);
-    Point_set                         nSupport(const Point& point, int32_t n) {
-      CHKCOMM(*this);
-      // Compute the point set obtained by taking the support recursively on a point in the cap
-      // (i.e., the set of base points resulting after each iteration is used again as the cap for the next support computation).
-      // Note: a 0-support is the point itself.
-      Point_set chain; chain.insert(point);
-      return this->nSupport(chain,n);
-    };
+    Obj<Point_set>                    nSupport(const Point& point, int32_t n) {return this->nSupport(Point_set(point),n);};
     Obj<Point_set>                    nStar(const Obj<Point_set>& chain, int32_t n);
     Point_set                         nStar(const Point_set& chain, int32_t n);
     Point_set                         nStar(const Point& point, int32_t n) {

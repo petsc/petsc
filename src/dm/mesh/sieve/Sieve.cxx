@@ -363,16 +363,16 @@ namespace ALE {
     int32_t depth;
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
+    // Do we need this check?
     if (this->_depth.capContains(p)) {
-      Point_set depthSet = this->_depth.support(p);
-      if(depthSet.size() == 0) {
+      ALE::Obj<Point_set> depthSet = this->_depth.support(p);
+      if(depthSet->size() == 0) {
         /* This accomdates Stacks, since spaceContains() can return true before the point is added to the Stack itself */
         depth =  -1;
-      } else if(depthSet.size() > 1) {
+      } else if(depthSet->size() > 1) {
         throw ALE::Exception("Non-singleton depthSet");
       } else {
-        Point depthPoint = *(depthSet.begin());
-        depth = depthPoint.index;
+        depth = depthSet->begin()->index;
       }
     } else {
       depth = -1;

@@ -16,10 +16,8 @@ T*/
 
 static char help[] = "Generates, partitions, and outputs an unstructured mesh.\n\n";
 
-#include "petscda.h"
+#include "petscmesh.h"
 #include "petscviewer.h"
-
-#include <IndexBundle.hh>
 
 PetscErrorCode assembleField(ALE::Obj<ALE::IndexBundle>, ALE::Obj<ALE::PreSieve>, Vec, ALE::Point, PetscScalar[], InsertMode);
 
