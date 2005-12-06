@@ -60,7 +60,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild MPE oldargs = '+oldargs+'\n new args ='+args+'\n')
       try:
         self.logPrintBox('Configuring mpe; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+mpeDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+mpeDir+';./configure '+args, timeout=2000, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on MPE: '+str(e))
       # Build MPE

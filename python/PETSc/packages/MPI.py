@@ -261,7 +261,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild LAM oldargs = '+oldargs+'\n new args = '+args+'\n')
       try:
         self.logPrintBox('Configuring LAM/MPI; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+lamDir+';CXX='';export CXX; ./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+lamDir+';CXX='';export CXX; ./configure '+args, timeout=1500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on LAM/MPI: '+str(e))
       try:
@@ -356,7 +356,7 @@ class Configure(PETSc.package.Package):
       self.framework.logPrint('Have to rebuild MPICH oldargs = '+oldargs+'\n new args = '+args)
       try:
         self.logPrintBox('Running configure on MPICH; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=2000, log = self.framework.log)[0]
       except RuntimeError, e:
         if self.arch.hostOsBase.startswith('cygwin'):
           raise RuntimeError('Error running configure on MPICH. \n \
