@@ -21,7 +21,7 @@ static char help[] = "Generates, partitions, and outputs an unstructured mesh.\n
 
 #include <IndexBundle.hh>
 
-PetscErrorCode assembleField(ALE::IndexBundle *, ALE::PreSieve *, Vec, ALE::Point, PetscScalar[], InsertMode);
+PetscErrorCode assembleField(ALE::Obj<ALE::IndexBundle>, ALE::Obj<ALE::PreSieve>, Vec, ALE::Point, PetscScalar[], InsertMode);
 
 extern int debug;
 PetscErrorCode CreateMeshBoundary(MPI_Comm, Mesh *);
@@ -53,8 +53,8 @@ int main(int argc, char *argv[])
   ierr = PetscPrintf(comm, "Generating mesh\n");CHKERRQ(ierr);
   ierr = CreateMeshBoundary(comm, &meshBoundary);CHKERRQ(ierr);
   ierr = MeshGenerate(meshBoundary, &mesh);CHKERRQ(ierr);
-  ALE::Sieve *topology;
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ALE::Obj<ALE::Sieve> topology;
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0).size());CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0).size());CHKERRQ(ierr);
 
@@ -103,11 +103,12 @@ int main(int argc, char *argv[])
 */
 PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *mesh)
 {
+  ALE::Obj<ALE::Sieve>       topology = ALE::Sieve(comm);
+  ALE::Obj<ALE::PreSieve>    orientation = ALE::PreSieve(comm);
+  ALE::Obj<ALE::IndexBundle> elementBundle = ALE::IndexBundle(topology);
+  ALE::Obj<ALE::IndexBundle> coordBundle = ALE::IndexBundle(topology);
+  ALE::Obj<ALE::Sieve>       boundary = ALE::Sieve(comm);
   Mesh              m;
-  ALE::Sieve       *topology = new ALE::Sieve(comm);
-  ALE::PreSieve    *orientation = new ALE::PreSieve(comm);
-  ALE::IndexBundle *elementBundle = new ALE::IndexBundle(topology);
-  ALE::IndexBundle *coordBundle = new ALE::IndexBundle(topology);
   Vec               coordinates;
   PetscScalar       coords[18] = {0.0, 0.0,
                                   1.0, 0.0,
@@ -118,7 +119,6 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *mesh)
                                   0.0, 2.0,
                                   0.0, 1.0,
                                   1.0, 1.0};
-  ALE::Sieve       *boundary = new ALE::Sieve(comm);
   ALE::Point_set    cone;
   ALE::Point        vertices[9];
   ALE::Point        edge;
@@ -186,18 +186,18 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *mesh)
   cone.insert(edge);
   orientation->addCone(cone, edge);
   cone.clear();
-  ierr = MeshSetTopology(m, (void *) topology);CHKERRQ(ierr);
-  ierr = MeshSetOrientation(m, (void *) orientation);CHKERRQ(ierr);
+  ierr = MeshSetTopology(m, topology);CHKERRQ(ierr);
+  ierr = MeshSetOrientation(m, orientation);CHKERRQ(ierr);
   /* Create element numbering */
   elementBundle->setFiberDimensionByHeight(0, 1);
   elementBundle->computeOverlapIndices();
   elementBundle->computeGlobalIndices();
-  ierr = MeshSetElementBundle(m, (void *) elementBundle);CHKERRQ(ierr);
+  ierr = MeshSetElementBundle(m, elementBundle);CHKERRQ(ierr);
   /* Create vertex coordinates */
   coordBundle->setFiberDimensionByDepth(0, embedDim);
   coordBundle->computeOverlapIndices();
   coordBundle->computeGlobalIndices();
-  ierr = MeshSetCoordinateBundle(m, (void *) coordBundle);CHKERRQ(ierr);
+  ierr = MeshSetCoordinateBundle(m, coordBundle);CHKERRQ(ierr);
   int localSize = coordBundle->getLocalSize();
   int globalSize = coordBundle->getGlobalSize();
   ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
@@ -221,7 +221,7 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *mesh)
   }
   ALE::Point boundaryPoint(-1, 1);
   boundary->addCone(cone, boundaryPoint);
-  ierr = MeshSetBoundary(m, (void *) boundary);CHKERRQ(ierr);
+  ierr = MeshSetBoundary(m, boundary);CHKERRQ(ierr);
   *mesh = m;
   PetscFunctionReturn(0);
 }
@@ -235,7 +235,7 @@ extern PetscErrorCode MeshCreateVector(Mesh, ALE::IndexBundle *, int, Vec *);
 */
 PetscErrorCode CreatePartitionVector(Mesh mesh, Vec *partition)
 {
-  ALE::Sieve    *topology;
+  ALE::Obj<ALE::Sieve> topology;
   PetscScalar   *array;
   MPI_Comm       comm;
   PetscMPIInt    rank;
@@ -245,7 +245,7 @@ PetscErrorCode CreatePartitionVector(Mesh mesh, Vec *partition)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
   ALE::IndexBundle elementBundle(topology);
   elementBundle.setFiberDimensionByHeight(0, 1);
   elementBundle.computeOverlapIndices();

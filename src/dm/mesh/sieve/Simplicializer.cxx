@@ -449,7 +449,7 @@ PetscErrorCode setClosureValues(Vec b, ALE::Point e, ALE::IndexBundle* bundle, A
 
 #undef __FUNCT__
 #define __FUNCT__ "restrictField"
-PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, PetscScalar *array, ALE::Point e, PetscScalar *values[])
+PetscErrorCode restrictField(ALE::Obj<ALE::IndexBundle> bundle, ALE::Obj<ALE::PreSieve> orientation, PetscScalar *array, ALE::Point e, PetscScalar *values[])
 {
   ALE::Obj<ALE::Point_array> intervals = bundle->getLocalOrderedClosureIndices(orientation->cone(e));
   /* This should be done by memory pooling by array size (we have a simple form below) */
@@ -490,7 +490,7 @@ PetscErrorCode restrictField(ALE::IndexBundle *bundle, ALE::PreSieve *orientatio
 
 #undef __FUNCT__
 #define __FUNCT__ "assembleField"
-PetscErrorCode assembleField(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, Vec b, ALE::Point e, PetscScalar array[], InsertMode mode)
+PetscErrorCode assembleField(ALE::Obj<ALE::IndexBundle> bundle, ALE::Obj<ALE::PreSieve> orientation, Vec b, ALE::Point e, PetscScalar array[], InsertMode mode)
 {
   ALE::Obj<ALE::Point_array> intervals = bundle->getGlobalOrderedClosureIndices(orientation->cone(e));
   static PetscInt  indicesSize = 0;
@@ -527,7 +527,7 @@ PetscErrorCode assembleField(ALE::IndexBundle *bundle, ALE::PreSieve *orientatio
 
 #undef __FUNCT__
 #define __FUNCT__ "assembleOperator"
-PetscErrorCode assembleOperator(ALE::IndexBundle *bundle, ALE::PreSieve *orientation, Mat A, ALE::Point e, PetscScalar array[], InsertMode mode)
+PetscErrorCode assembleOperator(ALE::Obj<ALE::IndexBundle> bundle, ALE::Obj<ALE::PreSieve> orientation, Mat A, ALE::Point e, PetscScalar array[], InsertMode mode)
 {
   ALE::Obj<ALE::Point_array> intervals = bundle->getGlobalOrderedClosureIndices(orientation->cone(e));
   static PetscInt  indicesSize = 0;

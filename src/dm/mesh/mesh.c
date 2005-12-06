@@ -1537,7 +1537,7 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode assembleField(ALE::IndexBundle *, ALE::PreSieve *, Vec, ALE::Point, PetscScalar[], InsertMode);
+PetscErrorCode assembleField(ALE::Obj<ALE::IndexBundle>, ALE::Obj<ALE::PreSieve>, Vec, ALE::Point, PetscScalar[], InsertMode);
 
 #undef __FUNCT__
 #define __FUNCT__ "assembleVector"
@@ -1577,7 +1577,7 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode assembleOperator(ALE::IndexBundle *, ALE::PreSieve *, Mat, ALE::Point, PetscScalar[], InsertMode);
+EXTERN PetscErrorCode assembleOperator(ALE::Obj<ALE::IndexBundle>, ALE::Obj<ALE::PreSieve>, Mat, ALE::Point, PetscScalar[], InsertMode);
 
 #undef __FUNCT__
 #define __FUNCT__ "assembleMatrix"
@@ -1671,7 +1671,7 @@ PetscErrorCode destroyGeneratorOutput(struct triangulateio *outputCtx)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode restrictField(ALE::IndexBundle *, ALE::PreSieve *, PetscScalar *, ALE::Point, PetscScalar *[]);
+extern PetscErrorCode restrictField(ALE::Obj<ALE::IndexBundle>, ALE::Obj<ALE::PreSieve>, PetscScalar *, ALE::Point, PetscScalar *[]);
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshGenerate_Triangle"
@@ -1831,8 +1831,8 @@ PetscErrorCode MeshRefine_Triangle(Mesh oldMesh, PetscReal maxArea, /*CoSieve*/ 
   ALE::Obj<ALE::PreSieve>    serialOrientation;
   ALE::Obj<ALE::Sieve>       serialBoundary;
   ALE::Obj<ALE::IndexBundle> elementBundle;
-  ALE::Obj<ALE::IndexBundle> serialElementBundle;
   ALE::Obj<ALE::IndexBundle> serialVertexBundle;
+  ALE::Obj<ALE::IndexBundle> serialElementBundle;
   ALE::Obj<ALE::IndexBundle> serialCoordBundle;
   ALE::Obj<ALE::PreSieve>    partitionTypes;
   Vec                  serialCoordinates;
@@ -1856,7 +1856,7 @@ PetscErrorCode MeshRefine_Triangle(Mesh oldMesh, PetscReal maxArea, /*CoSieve*/ 
   ierr = MeshGetOrientation(serialMesh, &serialOrientation);CHKERRQ(ierr);
   ierr = MeshGetBoundary(serialMesh, &serialBoundary);CHKERRQ(ierr);
   ierr = MeshGetVertexBundle(serialMesh, &serialVertexBundle);CHKERRQ(ierr);
-  ierr = MeshGetElementBundle(serialMesh, &serialElementBundle);CHKERRQ(ierr);
+  ierr = MeshGetVertexBundle(serialMesh, &serialElementBundle);CHKERRQ(ierr);
   ierr = MeshGetCoordinateBundle(serialMesh, &serialCoordBundle);CHKERRQ(ierr);
   ierr = MeshGetCoordinates(serialMesh, &serialCoordinates);CHKERRQ(ierr);
 
@@ -1937,13 +1937,17 @@ PetscErrorCode MeshRefine_Triangle(Mesh oldMesh, PetscReal maxArea, /*CoSieve*/ 
       f++;
     }
 
+    ALE::Obj<ALE::IndexBundle> serialSegmentBundle = ALE::IndexBundle(serialTopology);
     in.numberofsegments = 0;
     for(ALE::Point_set::iterator b_itor = boundaries->begin(); b_itor != boundaries->end(); b_itor++) {
-      ALE::Point_set segments = serialBoundary->cone(*b_itor);
+      ALE::Obj<ALE::Point_set> segments = serialBoundary->cone(*b_itor);
 
       /* Should be done with a fibration instead */
-      segments.meet(edges);
-      in.numberofsegments += segments.size();
+      segments->meet(edges);
+      in.numberofsegments += segments->size();
+      for(ALE::Point_set::iterator s_itor = segments->begin(); s_itor != segments->end(); s_itor++) {
+        serialSegmentBundle->setFiberDimension(*s_itor, 1);
+      }
     }
     if (in.numberofsegments > 0) {
       ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRQ(ierr);
@@ -1955,12 +1959,14 @@ PetscErrorCode MeshRefine_Triangle(Mesh oldMesh, PetscReal maxArea, /*CoSieve*/ 
         segments.meet(edges);
         for(ALE::Point_set::iterator s_itor = segments.begin(); s_itor != segments.end(); s_itor++) {
           ALE::Point               segment = *s_itor;
-          ALE::Point               interval = serialElementBundle->getFiberInterval(segment);
+          ALE::Point               interval = serialSegmentBundle->getFiberInterval(segment);
           ALE::Obj<ALE::Point_set> cone = serialTopology->cone(segment);
           PetscInt                 p = 0;
         
           for(ALE::Point_set::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
-            in.segmentlist[interval.prefix * 2 + (p++)] = (*c_itor).index;
+            ALE::Point vertexInterval = serialVertexBundle->getFiberInterval(*c_itor);
+
+            in.segmentlist[interval.prefix * 2 + (p++)] = vertexInterval.prefix;
           }
           in.segmentmarkerlist[interval.prefix] = b_itor->index;
         }
