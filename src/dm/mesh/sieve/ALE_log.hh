@@ -33,15 +33,15 @@ namespace ALE {
 #if (defined ALE_USE_LOGGING) && (defined ALE_LOGGING_USE_STAGES)
 #define ALE_LOG_STAGE_BEGIN                                                             \
   {                                                                                     \
-    int stage = LogStageRegister(__FUNCT__);                                            \
-    LogStagePush(stage);                                                                \
+    int stage = ALE::LogStageRegister(__FUNCT__);                       \
+    ALE::LogStagePush(stage);                                           \
   }                                                                                     \
   {                                                                               
 #define ALE_LOG_STAGE_END                                                               \
   }                                                                                     \
   {                                                                                     \
-    int stage = LogStageRegister(__FUNCT__);                                            \
-    LogStagePop(stage);                                                                 \
+    int stage = ALE::LogStageRegister(__FUNCT__);                       \
+    ALE::LogStagePop(stage);                                            \
   }                                                                                     
 #else
 #define ALE_LOG_STAGE_BEGIN {}

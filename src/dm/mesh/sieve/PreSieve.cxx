@@ -38,7 +38,7 @@ namespace ALE {
   
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::addBasePoint"
-  PreSieve& PreSieve::addBasePoint(Point& p) {
+  PreSieve& PreSieve::addBasePoint(const Point& p) {
     this->__checkLock();
     if(!this->baseContains(p)) {
       this->_cone[p] = Point_set();
@@ -56,7 +56,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::removeBasePoint"
-  PreSieve& PreSieve::removeBasePoint(Point& p, bool removeSingleton) {
+  PreSieve& PreSieve::removeBasePoint(const Point& p, bool removeSingleton) {
     this->__checkLock();
     if (this->_cone.find(p) != this->_cone.end()) {
       // IMPROVE: use 'coneView' and iterate over it to avoid copying the set
@@ -82,7 +82,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::addCapPoint"
-  PreSieve& PreSieve::addCapPoint(Point& q) {
+  PreSieve& PreSieve::addCapPoint(const Point& q) {
     CHKCOMM(*this);
     this->__checkLock();
     if(!this->capContains(q)) {
@@ -100,7 +100,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::removeCapPoint"
-  PreSieve& PreSieve::removeCapPoint(Point& q, bool removeSingleton) {
+  PreSieve& PreSieve::removeCapPoint(const Point& q, bool removeSingleton) {
     CHKCOMM(*this);
     this->__checkLock();
     if(this->capContains(q)) {
@@ -135,7 +135,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::addArrow"
-  PreSieve& PreSieve::addArrow(Point& i, Point& j) {
+  PreSieve& PreSieve::addArrow(const Point& i, const Point& j) {
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
@@ -151,7 +151,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::removeArrow"
-  PreSieve& PreSieve::removeArrow(Point& i, Point& j, bool removeSingleton) {
+  PreSieve& PreSieve::removeArrow(const Point& i, const Point& j, bool removeSingleton) {
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
@@ -597,9 +597,9 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::capContains"
-  int PreSieve::capContains(Point point) {
+  bool PreSieve::capContains(const Point& point) {
     CHKCOMM(*this);
-    int flag;
+    bool flag;
     // SEMANTICS: we assume that the point is in the cap regardless of whether it actually has arrows emanating from it
     //flag = ((this->_support.find(point) != this->_support.end()) && (this->_support[point].size() > 0));
     flag = ((this->_support.find(point) != this->_support.end()));
@@ -634,6 +634,53 @@ namespace ALE {
     return flag;
   }// PreSieve::supportContains()
 
+  #undef  __FUNCT__
+  #define __FUNCT__ "PreSieve::addCone"
+  void PreSieve::addCone(const Point& cone, const Point& j) {
+    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
+
+    LogEventBegin(e);
+    CHKCOMM(*this);
+    this->__checkLock();
+    // Add j to the base in case coneSet is empty and no addArrow are executed
+    this->addBasePoint(j);
+    this->addArrow(cone, j);
+    LogEventEnd(e);
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "PreSieve::addCone"
+  void PreSieve::addCone(Obj<Point_set> coneSet, const Point& j) {
+    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
+
+    LogEventBegin(e);
+    CHKCOMM(*this);
+    this->__checkLock();
+    // Add j to the base in case coneSet is empty and no addArrow are executed
+    this->addBasePoint(j);
+    for(Point_set::iterator cone_itor = coneSet->begin(); cone_itor != coneSet->end(); cone_itor++) {
+      this->addArrow(*cone_itor, j);
+    }
+    LogEventEnd(e);
+  }
+
+  #undef  __FUNCT__
+  #define __FUNCT__ "PreSieve::cone"
+  Obj<Point_set> PreSieve::cone(const Point& point) {
+    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
+    static Obj<Point_set> c;
+
+    ALE_LOG_STAGE_BEGIN;
+    LogEventBegin(e);
+    if (this->_cone.find(point) != this->_cone.end()) {
+      c = this->_cone[point];
+    } else {
+      c = Point_set();
+    }
+    LogEventEnd(e);
+    ALE_LOG_STAGE_END;
+    return c;
+  }
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nCone"
@@ -682,17 +729,11 @@ namespace ALE {
     return top;
   }// PreSieve::nCone()
 
-  #undef  __FUNCT__
-  #define __FUNCT__ "PreSieve::nCone"
-  Point_set PreSieve::nCone(Point_set& chain, int32_t n) {
-    return (Point_set) nCone(Obj<Point_set>(chain), n);
-  }// PreSieve::nCone()
-
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nClosure"
-  Obj<Point_set> PreSieve::nClosure(const Obj<Point_set>& chain, int32_t n) {
-    Obj<Point_set> closure(new Point_set);
+  Obj<Point_set> PreSieve::nClosure(Obj<Point_set> chain, int32_t n) {
+    Obj<Point_set> closure = Point_set();
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     // Compute the point set obtained by recursively accumulating the cone over all of points of a set in the base
@@ -704,7 +745,7 @@ namespace ALE {
     closure.copy(chain);   // copy the initial set
     // We use two Point_set pointers and swap them at the beginning of each iteration
     Obj<Point_set> top(chain);
-    Obj<Point_set> bottom(new Point_set);
+    Obj<Point_set> bottom = Point_set();
     for(int32_t i = 0; i < n; i++) {
       // Swap pointers and clear top
       Obj<Point_set> tmp = top; top = bottom; bottom = tmp;
@@ -717,13 +758,11 @@ namespace ALE {
       }
       // Traverse the points in bottom
       for(Point_set::iterator b_itor = bottom->begin(); b_itor != bottom->end(); b_itor++) {
-        Point p = *b_itor;
-        if (this->_cone.find(p) != this->_cone.end()) {
+        if (this->_cone.find(*b_itor) != this->_cone.end()) {
           // Traverse the points in the cone over p
-          for(Point_set::iterator pCone_itor = this->_cone[p].begin(); pCone_itor != this->_cone[p].end(); pCone_itor++) {
-            Point q = *pCone_itor;
-            top->insert(q);
-            closure->insert(q);
+          for(Point_set::iterator pCone_itor = this->_cone[*b_itor].begin(); pCone_itor != this->_cone[*b_itor].end(); pCone_itor++) {
+            top->insert(*pCone_itor);
+            closure->insert(*pCone_itor);
           }
         }
       }
@@ -732,13 +771,6 @@ namespace ALE {
     //          if pointers to Point_sets are used
     ALE_LOG_STAGE_END;
     return closure;
-  }// PreSieve::nClosure()
-
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "PreSieve::nClosure"
-  Point_set PreSieve::nClosure(const Point_set& chain, int32_t n) {
-    return (Point_set) nClosure(Obj<Point_set>(chain), n);
   }// PreSieve::nClosure()
 
 
@@ -780,6 +812,23 @@ namespace ALE {
     return closure;
   }// PreSieve::nClosurePreSieve()
 
+  #undef  __FUNCT__
+  #define __FUNCT__ "PreSieve::support"
+  Obj<Point_set> PreSieve::support(const Point& point) {
+    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
+    static Obj<Point_set> s;
+
+    ALE_LOG_STAGE_BEGIN;
+    LogEventBegin(e);
+    if (this->_support.find(point) != this->_support.end()) {
+      s = this->_support[point];
+    } else {
+      s = Point_set();
+    }
+    LogEventEnd(e);
+    ALE_LOG_STAGE_END;
+    return s;
+  }
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nSupport"
@@ -829,14 +878,6 @@ namespace ALE {
     ALE_LOG_STAGE_END;
     return bottom;
   }// PreSieve::nSupport()
-
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "PreSieve::nSupport"
-  Point_set PreSieve::nSupport(const Point_set& chain, int32_t n) {
-    return (Point_set) nSupport(Obj<Point_set>(chain), n);
-  }// PreSieve::nSupport()
-
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nStar"

@@ -10,11 +10,11 @@ namespace ALE {
   
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::Sieve()"
-  Sieve::Sieve() : PreSieve(),_depth(),_height(),_additionPolicy(additionPolicyAcyclic), _stratificationPolicy(stratificationPolicyOnMutation)  {};
+  Sieve::Sieve() : PreSieve(),_additionPolicy(additionPolicyAcyclic), _stratificationPolicy(stratificationPolicyOnMutation)  {};
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::Sieve(MPI_Comm)"
-  Sieve::Sieve(MPI_Comm comm) : PreSieve(comm), _depth(comm), _height(comm), _additionPolicy(additionPolicyAcyclic), _stratificationPolicy(stratificationPolicyOnMutation) {};
+  Sieve::Sieve(MPI_Comm comm) : PreSieve(comm), _additionPolicy(additionPolicyAcyclic), _stratificationPolicy(stratificationPolicyOnMutation) {};
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::~Sieve"
@@ -24,8 +24,6 @@ namespace ALE {
   #define __FUNCT__ "Sieve::setComm"
   void Sieve::setComm(MPI_Comm c) {
     Coaster::setComm(c);
-    this->_depth.setComm(c);
-    this->_height.setComm(c);
   }// Coaster::setComm()
 
 
@@ -87,7 +85,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::addArrow"
-  Sieve& Sieve::addArrow(Point& i, Point& j) {
+  Sieve& Sieve::addArrow(const Point& i, const Point& j) {
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
@@ -171,7 +169,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::removeArrow"
-  Sieve& Sieve::removeArrow(Point& i, Point& j, bool removeSingleton) {
+  Sieve& Sieve::removeArrow(const Point& i, const Point& j, bool removeSingleton) {
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
@@ -194,7 +192,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::removeBasePoint"
-  Sieve& Sieve::removeBasePoint(Point& p, bool removeSingleton) {
+  Sieve& Sieve::removeBasePoint(const Point& p, bool removeSingleton) {
     ALE_LOG_STAGE_BEGIN;
     this->__checkLock();
     ALE::PreSieve::removeBasePoint(p, removeSingleton);
@@ -208,7 +206,7 @@ namespace ALE {
   
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::addBasePoint"
-  Sieve& Sieve::addBasePoint(Point& p) {
+  Sieve& Sieve::addBasePoint(const Point& p) {
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
@@ -225,7 +223,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::removeCapPoint"
-  Sieve& Sieve::removeCapPoint(Point& q, bool removeSingleton) {
+  Sieve& Sieve::removeCapPoint(const Point& q, bool removeSingleton) {
     ALE_LOG_STAGE_BEGIN;
     this->__checkLock();
     ALE::PreSieve::removeCapPoint(q, removeSingleton);
@@ -239,7 +237,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::addCapPoint"
-  Sieve& Sieve::addCapPoint(Point& p) {
+  Sieve& Sieve::addCapPoint(const Point& p) {
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
@@ -259,18 +257,7 @@ namespace ALE {
   #define __FUNCT__ "Sieve::__setHeight"
   void Sieve::__setHeight(Point p, int32_t h){
     ALE_LOG_STAGE_BEGIN;
-    // ASSUMPTION, WARNING: this uses the structure of PreSieve in an essential way
-    // We assume that _height is a PreSieve with the points of this in the cap, 
-    // and the points of the form (this->commRank, height) in the base.
-    int32_t hh = this->height(p);
-    if(hh >= 0) { // hh < 0 implies that no height is assigned, hence there is nothing to remove
-      Point hhPoint(this->commRank, hh);
-      this->_height.removeArrow(p,hhPoint,true);
-    }
-    if(h >= 0) { // h < 0 implies that no height is to be assigned
-      Point hPoint(this->commRank, h);
-      this->_height.addArrow(p,hPoint); 
-    }
+    this->_height[p] = h;
     ALE_LOG_STAGE_END;
   }// Sieve::__setHeight()
 
@@ -278,105 +265,91 @@ namespace ALE {
   #define __FUNCT__ "Sieve::__setDepth"
   void Sieve::__setDepth(Point p, int32_t d){
     ALE_LOG_STAGE_BEGIN;
-    // ASSUMPTION, WARNING: this uses the structure of PreSieve in an essential way
-    // We assume that _depth is a PreSieve with the points of this in the cap, 
-    // and the points of the form (this->commRank, depth) in the base.
-    int32_t dd = this->depth(p);
-    if(dd >= 0) { // dd < 0 implies that no depth is assigned, hence there is nothing to remove
-      Point ddPoint(this->commRank, dd);
-      this->_depth.removeArrow(p,ddPoint,true);
-    }
-    if(d >= 0) { // d < 0 implies that no depth is to be assigned
-      Point dPoint(this->commRank, d);
-      this->_depth.addArrow(p,dPoint); 
-    }
+    this->_depth[p] = d;
     ALE_LOG_STAGE_END;
   }// Sieve::__setDepth()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::__computeClosureHeights"
   void Sieve::__computeClosureHeights(Obj<Point_set> points) {
+    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
+
     ALE_LOG_STAGE_BEGIN;
+    LogEventBegin(e);
     // points contains points for the current height computation;
     // mpoints keeps track of 'modified' points identified at the current stage, 
     // and through which recursion propagates
-    Obj<Point_set> mpoints(new Point_set);
+    Obj<Point_set> mpoints = Point_set();
 
     for(Point_set::iterator p_itor = points->begin(); p_itor != points->end(); p_itor++) {
-      Point p = *p_itor;
       // retrieve the current height of p
-      int32_t h0 = this->height(p);
+      int32_t h0 = this->height(*p_itor);
       // compute the max height of the points in the support of p
-      Point_set pSupp = this->support(p);
-      int32_t h = this->maxHeight(pSupp);
-      // the height is h + 1
-      int32_t h1 = h + 1;
+      int32_t maxH = this->maxHeight(this->support(*p_itor));
+      // the height is maxH + 1
+      int32_t h1 = maxH + 1;
       // if h0 differs from h1, set the height of p to h1 and add p to mpoints -- its height has been modified
       if(h1 != h0) {
-        this->__setHeight(p,h1);
-        mpoints->insert(p);
+        this->__setHeight(*p_itor,h1);
+        mpoints->insert(*p_itor);
       }
     }
     // if the mpoints set is not empty, we recursively call __computeClosureHeights on points = cone(mpoints)
     if(mpoints->size() > 0) {
-      points = this->cone(mpoints);
-      this->__computeClosureHeights(points);
+      this->__computeClosureHeights(this->cone(mpoints));
     }
+    LogEventEnd(e);
     ALE_LOG_STAGE_END;
   }//Sieve::__computeClosureHeights()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::__computeStarDepths"
   void Sieve::__computeStarDepths(Obj<Point_set> points) {
+    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
+
     ALE_LOG_STAGE_BEGIN;
+    LogEventBegin(e);
     // points contains points for the current depth computation;
     // mpoints keeps track of 'modified' points identified at the current stage, 
     // and through which recursion propagates
-    Obj<Point_set> mpoints(new Point_set);
+    Obj<Point_set> mpoints = Point_set();
 
     for(Point_set::iterator p_itor = points->begin(); p_itor != points->end(); p_itor++) {
-      Point p = *p_itor;
       // retrieve the current depth of p
-      int32_t d0 = this->depth(p);
+      int32_t d0 = this->depth(*p_itor);
       // compute the max depth of the points in the cone over p
-      Point_set pCone = this->cone(p);
-      int32_t d = this->maxDepth(pCone);
-      // the new depth is d + 1
-      int32_t d1 = d + 1;
+      int32_t maxD = this->maxDepth(this->cone(*p_itor));
+      // the new depth is maxD + 1
+      int32_t d1 = maxD + 1;
       // if d0 differs from d1, set the depth of p to d1 and add p to mpoints -- its depth has been modified
       if(d1 != d0) {
-        this->__setDepth(p,d1);
-        mpoints->insert(p);
+        this->__setDepth(*p_itor,d1);
+        mpoints->insert(*p_itor);
       }
     }
     // if the mpoints set is not empty, we recursively call __computeStarDepths on points = support(mpoints)
     if(mpoints->size() > 0) {
-      points = this->support(mpoints);
-      this->__computeStarDepths(points);
+      this->__computeStarDepths(this->support(mpoints));
     }
+    LogEventEnd(e);
     ALE_LOG_STAGE_END;
   }//Sieve::__computeStarDepths()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::depth"
-  int32_t Sieve::depth(Point p) {
+  int32_t Sieve::depth(const Point& p) {
+    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
     int32_t depth;
     ALE_LOG_STAGE_BEGIN;
+    LogEventBegin(e);
     CHKCOMM(*this);
-    // Do we need this check?
-    if (this->_depth.capContains(p)) {
-      ALE::Obj<Point_set> depthSet = this->_depth.support(p);
-      if(depthSet->size() == 0) {
-        /* This accomdates Stacks, since spaceContains() can return true before the point is added to the Stack itself */
-        depth =  -1;
-      } else if(depthSet->size() > 1) {
-        throw ALE::Exception("Non-singleton depthSet");
-      } else {
-        depth = depthSet->begin()->index;
-      }
+    if(this->_depth.find(p) != this->_depth.end()) {
+      depth = this->_depth[p];
     } else {
-      depth = -1;
+      /* This accomdates Stacks, since spaceContains() can return true before the point is added to the Stack itself */
+      depth =  -1;
     }
+    LogEventEnd(e);
     ALE_LOG_STAGE_END;
     return depth;
   }// Sieve::depth()
@@ -439,18 +412,11 @@ namespace ALE {
     int32_t height;
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
-    if (this->_height.capContains(p)) {
-      Point_set heightSet = this->_height.support(p);
-      if(heightSet.size() == 0) {
-        /* This accomdates Stacks, since spaceContains() can return true before the point is added to the Stack itself */
-        height = -1;
-      } else if(heightSet.size() > 1) {
-        throw ALE::Exception("Non-singleton heightSet");
-      }
-      Point heightPoint = *(heightSet.begin());
-      height = heightPoint.index;
+    if(this->_height.find(p) != this->_height.end()) {
+      height = this->_height[p];
     } else {
-      height = -1;
+      /* This accomdates Stacks, since spaceContains() can return true before the point is added to the Stack itself */
+      height =  -1;
     }
     ALE_LOG_STAGE_END;
     return height;
@@ -497,14 +463,18 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::closure"
-  Point_set Sieve::closure(Obj<Point_set> chain) {
-    Point_set closure;
+  Obj<Point_set> Sieve::closure(Obj<Point_set> chain) {
+    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
+    Obj<Point_set> closure = Point_set();
+
     ALE_LOG_STAGE_BEGIN;
+    LogEventBegin(e);
     CHKCOMM(*this);
     int32_t depth = this->maxDepth(chain);
     if(depth >= 0) {
-      closure = this->nClosure(chain,depth);
+      closure = this->nClosure(chain, depth);
     }
+    LogEventEnd(e);
     ALE_LOG_STAGE_END;
     return closure;
   }// Sieve::closure()
@@ -868,8 +838,11 @@ namespace ALE {
     Point_set stratum;
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
-    Point depthPoint; depthPoint.prefix = this->commRank; depthPoint.index = depth;
-    stratum = this->_depth.cone(depthPoint);
+    for(Point__int::iterator d_itor = this->_depth.begin(); d_itor != this->_depth.end(); d_itor++) {
+      if (d_itor->second == depth) {
+        stratum.insert(d_itor->first);
+      }
+    }
     ALE_LOG_STAGE_END;
     return stratum;
   }// Sieve::depthStratum()
@@ -880,8 +853,11 @@ namespace ALE {
     Point_set stratum;
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
-    Point heightPoint; heightPoint.prefix = this->commRank; heightPoint.index = height;
-    stratum = this->_height.cone(heightPoint);
+    for(Point__int::iterator h_itor = this->_height.begin(); h_itor != this->_height.end(); h_itor++) {
+      if (h_itor->second == height) {
+        stratum.insert(h_itor->first);
+      }
+    }
     ALE_LOG_STAGE_END;
     return stratum;
   }// Sieve::heightStratum()

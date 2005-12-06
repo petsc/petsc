@@ -14,8 +14,8 @@ namespace ALE {
     typedef enum {additionPolicyAcyclic = 0, additionPolicyStratified} AdditionPolicy;
     typedef enum {stratificationPolicyOnLocking = 0, stratificationPolicyOnMutation} StratificationPolicy;
   protected:
-    PreSieve                     _depth;
-    PreSieve                     _height;
+    Point__int                   _depth;
+    Point__int                   _height;
     inline void                  __setHeight(Point p,int32_t h);       
     inline void                  __setDepth(Point p,int32_t d);       
     void                         __computeStarDepths(Point p){
@@ -40,14 +40,14 @@ namespace ALE {
     AdditionPolicy            getAdditionPolicy();
     Sieve&                    setStratificationPolicy(StratificationPolicy policy);
     StratificationPolicy      getStratificationPolicy();
-    virtual Sieve&            addArrow(Point& i, Point& j);
-    virtual Sieve&            removeArrow(Point& i, Point& j, bool removeSingleton = false);
-    virtual Sieve&            addBasePoint(Point& p);
-    virtual Sieve&            removeBasePoint(Point& p, bool removeSingleton = false);
-    virtual Sieve&            addCapPoint(Point& q);
-    virtual Sieve&            removeCapPoint(Point& q, bool removeSingleton = false);
-    virtual Point_set         closure(Point p){return this->closure(Point_set(p));};
-    virtual Point_set         closure(Obj<Point_set> chain);
+    virtual Sieve&            addArrow(const Point& i, const Point& j);
+    virtual Sieve&            removeArrow(const Point& i, const Point& j, bool removeSingleton = false);
+    virtual Sieve&            addBasePoint(const Point& p);
+    virtual Sieve&            removeBasePoint(const Point& p, bool removeSingleton = false);
+    virtual Sieve&            addCapPoint(const Point& q);
+    virtual Sieve&            removeCapPoint(const Point& q, bool removeSingleton = false);
+    virtual Obj<Point_set>    closure(const Point& p){return this->closure(Obj<Point_set>(Point_set(p)));};
+    virtual Obj<Point_set>    closure(Obj<Point_set> chain);
     virtual Obj<Sieve>        closureSieve(Obj<Point_set> chain, Obj<Sieve> closure = Obj<Sieve>());
     virtual Point_set         star(Point p){Point_set pSet(p); return star(pSet);};
     virtual Point_set         star(Point_set& chain);
@@ -68,7 +68,7 @@ namespace ALE {
     virtual Point_set         roots(Point point){Point_set pSet; pSet.insert(point); return this->roots(pSet);};
     virtual Point_set         leaves(Point_set chain);
     virtual Point_set         leaves(Point point){Point_set pSet; pSet.insert(point); return this->leaves(pSet);};
-    virtual int32_t           depth(Point p);
+    virtual int32_t           depth(const Point& p);
     virtual int32_t           height(Point p);
     virtual int32_t           maxDepth(Point_set &points);
     virtual int32_t           maxDepth(Obj<Point_set> points);
