@@ -1005,7 +1005,8 @@ class Configure(config.base.Configure):
     for language in languages:
       flag = '-L'
       self.pushLanguage(language)
-      for testFlag in ['-Wl,-rpath,', '-rpath ', '-R', '-Wl,-R,']:
+      # test '-R' before '-rpath' as sun compilers [c,fortran] don't give proper errors with wrong options.
+      for testFlag in ['-Wl,-rpath,', '-R', '-rpath ' , '-Wl,-R,']:
         self.framework.logPrint('Trying '+language+' linker flag '+testFlag)
         if self.checkLinkerFlag(testFlag+os.path.abspath(os.getcwd())):
           flag = testFlag
