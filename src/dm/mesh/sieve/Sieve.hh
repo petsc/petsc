@@ -14,8 +14,8 @@ namespace ALE {
     typedef enum {additionPolicyAcyclic = 0, additionPolicyStratified} AdditionPolicy;
     typedef enum {stratificationPolicyOnLocking = 0, stratificationPolicyOnMutation} StratificationPolicy;
   protected:
-    PreSieve                     _depth;
-    PreSieve                     _height;
+    Point__int                   _depth;
+    Point__int                   _height;
     inline void                  __setHeight(Point p,int32_t h);       
     inline void                  __setDepth(Point p,int32_t d);       
     void                         __computeStarDepths(Point p){
@@ -68,7 +68,7 @@ namespace ALE {
     virtual Point_set         roots(Point point){Point_set pSet; pSet.insert(point); return this->roots(pSet);};
     virtual Point_set         leaves(Point_set chain);
     virtual Point_set         leaves(Point point){Point_set pSet; pSet.insert(point); return this->leaves(pSet);};
-    virtual int32_t           depth(Point p);
+    virtual int32_t           depth(const Point& p);
     virtual int32_t           height(Point p);
     virtual int32_t           maxDepth(Point_set &points);
     virtual int32_t           maxDepth(Obj<Point_set> points);

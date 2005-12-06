@@ -394,28 +394,28 @@ namespace ALE {
   // Destructor
   template <class X>
   Obj<X>::~Obj(){
-#ifdef ALE_USE_DEBUGGING
-    const char *id_name;
-    const std::type_info& id = typeid(X);
-#ifdef ALE_HAVE_CXX_ABI
-    int status;
-    char *id_name_demangled = abi::__cxa_demangle(id.name(), NULL, NULL, &status);
-    id_name = id_name_demangled;
-#else 
-    id_name = id.name();
-#endif
     if(ALE::getVerbosity() > 3) {
+#ifdef ALE_USE_DEBUGGING
+      const char *id_name;
+      const std::type_info& id = typeid(X);
+#ifdef ALE_HAVE_CXX_ABI
+      int status;
+      char *id_name_demangled = abi::__cxa_demangle(id.name(), NULL, NULL, &status);
+      id_name = id_name_demangled;
+#else 
+      id_name = id.name();
+#endif
       printf("~Obj<X>: Calling destructor for Obj<%s>", id_name);
       if (!this->refCnt) {
         printf(" with no refCnt\n");
       } else {
         printf(" with refCnt %d\n", *this->refCnt);
       }
-    }
 #ifdef ALE_HAVE_CXX_ABI
-    free(id_name_demangled);
+      free(id_name_demangled);
 #endif
 #endif
+    }
     if (this->refCnt != NULL) {
       (*this->refCnt)--;
       if (*this->refCnt == 0) {

@@ -154,37 +154,25 @@ namespace ALE {
     virtual PreSieve*                 capExclusion(Point_set& cap);
     virtual int                       spaceContains(Point point);
     virtual int                       baseContains(Point point);
-    virtual int                       capContains(Point point);
+    virtual bool                      capContains(const Point& point);
     virtual int                       coneContains(Point& p, Point point);
     virtual int                       supportContains(Point& q, Point point);
     virtual Point_set                 roots(){return this->_roots;};
     virtual Point_set                 leaves(){return this->_leaves;};
     Obj<Point_set>                    cone(Obj<Point_set> chain) {return this->nCone(chain,1);};
-    Point_set                         cone(const Point& point) {
-      CHKCOMM(*this);
-      Point_set cone = this->nCone(point,1);
-      return cone;
-    };
-    Point_set                         cone(Point_set& chain) {
-      CHKCOMM(*this);
-      Point_set cone = this->nCone(chain,1);
-      return cone;
-    };
+    Point_set                         cone(Point_set& chain) {return this->nCone(chain,1);};
+    Obj<Point_set>                    cone(const Point& point);
     int32_t                           coneSize(Point& p) {
       Point_set pSet; pSet.insert(p);
       return coneSize(pSet);
     };
     int32_t                           coneSize(Point_set& chain);
+    // Compute the point set obtained by taking the cone recursively on a point in the base
+    // (i.e., the set of cap points resulting after each iteration is used again as the base for the next cone computation).
+    // Note: a 0-cone is the point itself.
     Obj<Point_set>                    nCone(Obj<Point_set> chain, int32_t n);
-    Point_set                         nCone(Point_set& chain, int32_t n);
-    Point_set                         nCone(const Point& point, int32_t n) {
-      CHKCOMM(*this);
-      // Compute the point set obtained by taking the cone recursively on a point in the base
-      // (i.e., the set of cap points resulting after each iteration is used again as the base for the next cone computation).
-      // Note: a 0-cone is the point itself.
-      Point_set chain; chain.insert(point);
-      return this->nCone(chain,n);
-    };
+    Point_set                         nCone(Point_set& chain, int32_t n) {return this->nCone(Obj<Point_set>(chain),n);};
+    Obj<Point_set>                    nCone(const Point& point, int32_t n) {return this->nCone(Obj<Point_set>(Point_set(point)),n);};
     Obj<Point_set>                    nClosure(const Obj<Point_set>& chain, int32_t n);
     Point_set                         nClosure(const Point_set& chain, int32_t n);
     Point_set                         nClosure(const Point& point, int32_t n) {
@@ -199,12 +187,8 @@ namespace ALE {
     Obj<PreSieve>                     nClosurePreSieve(Obj<Point_set> chain, int32_t n, Obj<PreSieve> closure = Obj<PreSieve>());
     //
     Obj<Point_set>                    support(const Obj<Point_set>& chain) {return this->nSupport(chain,1);};
-    Point_set                         support(const Point_set& chain) {
-      CHKCOMM(*this);
-      Point_set supp = this->nSupport(chain,1);
-      return supp;
-    };
-    Obj<Point_set>                    support(const Point& point) {return this->nSupport(point,1);};
+    Point_set                         support(const Point_set& chain) {return this->nSupport(chain,1);};
+    Obj<Point_set>                    support(const Point& point);
     int32_t                           supportSize(const Point_set& chain);
     int32_t                           supportSize(const Point& p) {
       Point_set pSet; pSet.insert(p);

@@ -597,9 +597,9 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::capContains"
-  int PreSieve::capContains(Point point) {
+  bool PreSieve::capContains(const Point& point) {
     CHKCOMM(*this);
-    int flag;
+    bool flag;
     // SEMANTICS: we assume that the point is in the cap regardless of whether it actually has arrows emanating from it
     //flag = ((this->_support.find(point) != this->_support.end()) && (this->_support[point].size() > 0));
     flag = ((this->_support.find(point) != this->_support.end()));
@@ -634,6 +634,23 @@ namespace ALE {
     return flag;
   }// PreSieve::supportContains()
 
+  #undef  __FUNCT__
+  #define __FUNCT__ "PreSieve::cone"
+  Obj<Point_set> PreSieve::cone(const Point& point) {
+    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
+    static Obj<Point_set> c;
+
+    ALE_LOG_STAGE_BEGIN;
+    LogEventBegin(e);
+    if (this->_cone.find(point) != this->_cone.end()) {
+      c = this->_cone[point];
+    } else {
+      c = Point_set();
+    }
+    LogEventEnd(e);
+    ALE_LOG_STAGE_END;
+    return c;
+  }
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nCone"
@@ -680,12 +697,6 @@ namespace ALE {
     //          if pointers to Point_set are used
     ALE_LOG_STAGE_END;
     return top;
-  }// PreSieve::nCone()
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "PreSieve::nCone"
-  Point_set PreSieve::nCone(Point_set& chain, int32_t n) {
-    return (Point_set) nCone(Obj<Point_set>(chain), n);
   }// PreSieve::nCone()
 
 
@@ -780,6 +791,23 @@ namespace ALE {
     return closure;
   }// PreSieve::nClosurePreSieve()
 
+  #undef  __FUNCT__
+  #define __FUNCT__ "PreSieve::support"
+  Obj<Point_set> PreSieve::support(const Point& point) {
+    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
+    static Obj<Point_set> s;
+
+    ALE_LOG_STAGE_BEGIN;
+    LogEventBegin(e);
+    if (this->_support.find(point) != this->_support.end()) {
+      s = this->_support[point];
+    } else {
+      s = Point_set();
+    }
+    LogEventEnd(e);
+    ALE_LOG_STAGE_END;
+    return s;
+  }
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nSupport"

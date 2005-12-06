@@ -1027,7 +1027,7 @@ ALE::Obj<ALE::Point_set> getLocal(MPI_Comm comm, ALE::Obj<ALE::Stack> spaceFootp
   ALE::Point     proc(0, spaceFootprint->getCommRank());
 
   for(ALE::Point_set::iterator p_itor = points->begin(); p_itor != points->end(); p_itor++) {
-    if (*spaceFootprint->cone(*p_itor).begin() != proc) continue;
+    if (*spaceFootprint->cone(*p_itor)->begin() != proc) continue;
     localPoints->insert(*p_itor);
   }
   return localPoints;

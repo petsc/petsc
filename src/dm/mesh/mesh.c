@@ -95,7 +95,7 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
   elements = topology->heightStratum(0);
   dim = topology->depth(*elements.begin());
   numElements = elementBundle->getGlobalSize();
-  corners = topology->nCone(*elements.begin(), dim).size();
+  corners = topology->nCone(*elements.begin(), dim)->size();
   ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
   if (rank == 0) {
     for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
@@ -207,7 +207,7 @@ PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
   elements = topology->heightStratum(0);
   numElements = elementBundle->getGlobalSize();
   dim = topology->depth(*elements.begin());
-  corners = topology->nCone(*elements.begin(), dim).size();
+  corners = topology->nCone(*elements.begin(), dim)->size();
   if (corners != dim+1) {
     SETERRQ(PETSC_ERR_SUP, "PCICE only supports simplicies");
   }
@@ -303,7 +303,7 @@ PetscErrorCode WritePyLithElements(Mesh mesh, PetscViewer viewer)
   vertexBundle.computeGlobalIndices();
   elements = topology->heightStratum(0);
   dim = topology->depth(*elements.begin());
-  corners = topology->nCone(*elements.begin(), dim).size();
+  corners = topology->nCone(*elements.begin(), dim)->size();
   if (dim != 3) {
     SETERRQ(PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
   }
@@ -405,7 +405,7 @@ PetscErrorCode WritePyLithElementsLocal(Mesh mesh, PetscViewer viewer)
   vertexBundle.computeGlobalIndices();
   elements = topology->heightStratum(0);
   dim = topology->depth(*elements.begin());
-  corners = topology->nCone(*elements.begin(), dim).size();
+  corners = topology->nCone(*elements.begin(), dim)->size();
   if (dim != 3) {
     SETERRQ(PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
   }
