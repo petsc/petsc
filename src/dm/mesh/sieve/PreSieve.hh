@@ -214,8 +214,8 @@ namespace ALE {
     // (i.e., the set of base points resulting after each iteration is used again as the cap for the next support computation).
     // Note: a 0-support is the point itself.
     Obj<Point_set>                    nSupport(const Obj<Point_set>& chain, int32_t n);
-    Point_set                         nSupport(const Point_set& chain, int32_t n);
-    Obj<Point_set>                    nSupport(const Point& point, int32_t n) {return this->nSupport(Point_set(point),n);};
+    Point_set                         nSupport(const Point_set& chain, int32_t n) {return this->nSupport(Obj<Point_set>(chain),n);};
+    Obj<Point_set>                    nSupport(const Point& point, int32_t n) {return this->nSupport(Obj<Point_set>(Point_set(point)),n);};
     Obj<Point_set>                    nStar(const Obj<Point_set>& chain, int32_t n);
     Point_set                         nStar(const Point_set& chain, int32_t n);
     Point_set                         nStar(const Point& point, int32_t n) {

@@ -830,14 +830,6 @@ namespace ALE {
     return bottom;
   }// PreSieve::nSupport()
 
-
-  #undef  __FUNCT__
-  #define __FUNCT__ "PreSieve::nSupport"
-  Point_set PreSieve::nSupport(const Point_set& chain, int32_t n) {
-    return (Point_set) nSupport(Obj<Point_set>(chain), n);
-  }// PreSieve::nSupport()
-
-
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::nStar"
   Obj<Point_set> PreSieve::nStar(const Obj<Point_set>& chain, int32_t n) {
