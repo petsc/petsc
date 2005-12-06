@@ -1056,7 +1056,7 @@ class Configure(config.base.Configure):
       yield (self.CXX, ['-shared'], 'so')
     # C Compiler default
     yield (self.CC, ['-shared'], 'so')
-    raise RuntimeError('Unable to find working dynamic linker')
+    self.logPrint('Unable to find working dynamic linker')
 
   def checkDynamicLinker(self):
     '''Check that the linker can produce dynamic libraries'''
