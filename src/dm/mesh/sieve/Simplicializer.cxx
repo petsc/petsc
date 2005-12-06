@@ -52,6 +52,7 @@ PetscErrorCode BuildFaces(int dim, std::map<int, int*> curSimplex, ALE::Point_se
 #define __FUNCT__ "BuildTopology"
 PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices, PetscInt numVertices, ALE::Sieve *topology, ALE::PreSieve *orientation)
 {
+  static ALE::LogEvent e    = ALE::LogEventRegister(PETSC_COOKIE, __FUNCT__);
   int            curVertex  = numSimplices;
   int            curSimplex = 0;
   int            newElement = numSimplices+numVertices;
@@ -59,6 +60,7 @@ PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ALE::LogEventBegin(e);
   curElement[0] = &curVertex;
   curElement[dim] = &curSimplex;
   for(int d = 1; d < dim; d++) {
@@ -97,6 +99,7 @@ PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices
     }
     orientation->addCone(cellTuple, simplex);
   }
+  ALE::LogEventEnd(e);
   PetscFunctionReturn(0);
 }
 
@@ -104,12 +107,14 @@ PetscErrorCode BuildTopology(int dim, PetscInt numSimplices, PetscInt *simplices
 #define __FUNCT__ "ComputePreSievePartition"
 PetscErrorCode ComputePreSievePartition(ALE::PreSieve* presieve, ALE::Point_set leaves, const char *name = NULL)
 {
+  static ALE::LogEvent e = ALE::LogEventRegister(PETSC_COOKIE, __FUNCT__);
   MPI_Comm       comm = presieve->getComm();
   PetscInt       numLeaves = leaves.size();
   PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ALE::LogEventBegin(e);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (rank == 0) {
@@ -134,6 +139,7 @@ PetscErrorCode ComputePreSievePartition(ALE::PreSieve* presieve, ALE::Point_set 
     label1 << "\n";
     presieve->view(label1.str().c_str());
   }
+  ALE::LogEventEnd(e);
   PetscFunctionReturn(0);
 }
 
@@ -141,21 +147,22 @@ PetscErrorCode ComputePreSievePartition(ALE::PreSieve* presieve, ALE::Point_set 
 #define __FUNCT__ "ComputeSievePartition"
 PetscErrorCode ComputeSievePartition(ALE::Sieve* sieve, const char *name = NULL)
 {
+  static ALE::LogEvent e = ALE::LogEventRegister(PETSC_COOKIE, __FUNCT__);
   MPI_Comm       comm = sieve->getComm();
   PetscInt       numLeaves = sieve->leaves().size();
   PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ALE_LOG_STAGE_BEGIN;
+  ALE::LogEventBegin(e);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (rank == 0) {
     for(int p = 0; p < size; p++) {
       ALE::Point partPoint(-1, p);
       for(int l = (numLeaves/size)*p + PetscMin(numLeaves%size, p); l < (numLeaves/size)*(p+1) + PetscMin(numLeaves%size, p+1); l++) {
-        ALE::Point leaf(0, l);
-        ALE::Point_set closure = sieve->closure(leaf);
-        sieve->addCone(closure, partPoint);
+        sieve->addCone(sieve->closure(ALE::Point(0, l)), partPoint);
       }
     }
   } else {
@@ -171,6 +178,8 @@ PetscErrorCode ComputeSievePartition(ALE::Sieve* sieve, const char *name = NULL)
     label1 << "\n";
     sieve->view(label1.str().c_str());
   }
+  ALE::LogEventEnd(e);
+  ALE_LOG_STAGE_END;
   PetscFunctionReturn(0);
 }
 
@@ -178,11 +187,13 @@ PetscErrorCode ComputeSievePartition(ALE::Sieve* sieve, const char *name = NULL)
 #define __FUNCT__ "PartitionPreSieve"
 PetscErrorCode PartitionPreSieve(ALE::PreSieve* presieve, const char *name = NULL, bool localize = 1, ALE::Obj<ALE::PreSieve> *pointTypes = NULL)
 {
+  static ALE::LogEvent e = ALE::LogEventRegister(PETSC_COOKIE, __FUNCT__);
   MPI_Comm       comm = presieve->getComm();
   PetscMPIInt    rank, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ALE::LogEventBegin(e);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   // Cone complete to move the partitions to the other processors
@@ -293,6 +304,7 @@ PetscErrorCode PartitionPreSieve(ALE::PreSieve* presieve, const char *name = NUL
     }
   }
   // Support complete to get the adjacency information
+  ALE::LogEventEnd(e);
   PetscFunctionReturn(0);
 }
 
@@ -562,55 +574,21 @@ PetscErrorCode assembleOperator(ALE::Obj<ALE::IndexBundle> bundle, ALE::Obj<ALE:
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshPopulate"
-/*@C
-  MeshPopulate - Takes an adjacency description of a simplicial mesh FROM PROCESS 0
-                 and produces a partitioned, parallel, oriented Mesh with given topology.
-
-  Input Parameters:
-+ mesh - The PETSc mesh object
-. dim - The dimension of the mesh
-. numVertices - The number of vertices in the mesh
-. numElements - The number of (highest dimensional) elements in the mesh
-- elements - The indices of all vertices on each element
-
-  Level: developer
-
-.seealso MeshCreate(), MeshGetTopology(), MeshSetTopology()
-*/
-PetscErrorCode MeshPopulate(Mesh mesh, int dim, PetscInt numVertices, PetscInt numElements, PetscInt elements[], PetscScalar coords[])
+#define __FUNCT__ "createSerialCoordinates"
+PetscErrorCode createSerialCoordinates(Mesh mesh, int dim, int numElements, PetscScalar coords[])
 {
-  MPI_Comm comm;
+  static ALE::LogEvent       e = ALE::LogEventRegister(PETSC_COOKIE, __FUNCT__);
+  MPI_Comm                   comm;
   PetscObjectGetComm((PetscObject) mesh, &comm);
-  ALE::Obj<ALE::Sieve>       topology = ALE::Sieve(comm);
-  ALE::Obj<ALE::Sieve>       boundary = ALE::Sieve(comm);
-  ALE::Obj<ALE::PreSieve>    orientation = ALE::PreSieve(comm);
-  ALE::Obj<ALE::IndexBundle> coordBundle = ALE::IndexBundle(comm);
-  Vec               coordinates;
-  PetscMPIInt       rank, size;
-  PetscErrorCode    ierr;
+  Vec                        coordinates;
+  PetscErrorCode             ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
-  ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size); CHKERRQ(ierr);
-  if (debug) {
-    topology->setVerbosity(11);
-    orientation->setVerbosity(11);
-    boundary->setVerbosity(11);
-  }
-  /* Create serial sieve */
-  if (rank == 0) {
-    PetscValidIntPointer(elements,5);
-    PetscValidScalarPointer(coords,6);
-    ierr = BuildTopology(dim, numElements, elements, numVertices, topology, orientation);CHKERRQ(ierr);
-  }
-  if (debug) {
-    topology->view("Serial Simplicializer topology");
-    orientation->view("Serial Simplicializer orientation");
-  }
-  ierr = MeshSetTopology(mesh, topology);CHKERRQ(ierr);
-  ierr = MeshSetOrientation(mesh, orientation);CHKERRQ(ierr);
+  ALE_LOG_STAGE_BEGIN;
+  ALE::Obj<ALE::IndexBundle> coordBundle = ALE::IndexBundle(comm);
+  ALE::Obj<ALE::Sieve>       topology;
+  ALE::LogEventBegin(e);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
   /* Create the initial coordinate bundle and storage */
   coordBundle->setTopology(topology);
   coordBundle->setFiberDimensionByDepth(0, dim);
@@ -645,10 +623,116 @@ PetscErrorCode MeshPopulate(Mesh mesh, int dim, PetscInt numVertices, PetscInt n
     ierr = PetscPrintf(comm, "Serial coordinates\n====================\n");CHKERRQ(ierr);
     ierr = VecView(coordinates, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
+  ALE::LogEventEnd(e);
+  ALE_LOG_STAGE_END;
   PetscFunctionReturn(0);
 }
 
 extern PetscErrorCode MeshCreateVector(Mesh, ALE::IndexBundle *, int, Vec *);
+extern PetscErrorCode MeshCreateMapping(Mesh, ALE::Obj<ALE::IndexBundle>, ALE::Obj<ALE::PreSieve>, ALE::Obj<ALE::IndexBundle>, VecScatter *);
+
+#undef __FUNCT__
+#define __FUNCT__ "createParallelCoordinates"
+PetscErrorCode createParallelCoordinates(Mesh mesh, int dim, ALE::Obj<ALE::PreSieve> partitionTypes)
+{
+  static ALE::LogEvent       e = ALE::LogEventRegister(PETSC_COOKIE, __FUNCT__);
+  ALE::Obj<ALE::Sieve>       topology;
+  ALE::Obj<ALE::IndexBundle> coordBundle;
+  ALE::Obj<ALE::IndexBundle> serialCoordBundle;
+  Vec                        coordinates, oldCoordinates, locCoordinates;
+  VecScatter                 coordScatter;
+  PetscErrorCode             ierr;
+
+  PetscFunctionBegin;
+  ALE::LogEventBegin(e);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
+  ierr = MeshGetCoordinateBundle(mesh, &serialCoordBundle);CHKERRQ(ierr);
+  ierr = MeshGetCoordinates(mesh, &oldCoordinates);CHKERRQ(ierr);
+  /* Create coordinate bundle */
+  coordBundle = ALE::IndexBundle(topology);
+  if (debug) {
+    coordBundle->setVerbosity(11);
+  }
+  coordBundle->setFiberDimensionByDepth(0, dim);
+  coordBundle->computeOverlapIndices();
+  coordBundle->computeGlobalIndices();
+  coordBundle->getLock();  // lock the bundle so that the overlap indices do not change
+  ierr = MeshCreateVector(mesh, coordBundle, debug, &coordinates);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
+  ierr = VecGhostGetLocalForm(coordinates, &locCoordinates);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(locCoordinates, dim);CHKERRQ(ierr);
+  ierr = MeshSetCoordinateBundle(mesh, coordBundle);CHKERRQ(ierr);
+  /* Setup mapping to partitioned storage */
+  ierr = MeshCreateMapping(mesh, serialCoordBundle, partitionTypes, coordBundle, &coordScatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(oldCoordinates, coordinates, INSERT_VALUES, SCATTER_FORWARD, coordScatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(oldCoordinates, coordinates, INSERT_VALUES, SCATTER_FORWARD, coordScatter);CHKERRQ(ierr);
+  ierr = MeshSetCoordinates(mesh, coordinates);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(coordScatter);CHKERRQ(ierr);
+  ierr = VecDestroy(oldCoordinates);CHKERRQ(ierr);
+  if (debug) {
+    MPI_Comm comm;
+    ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Parallel Coordinates\n===========================\n");CHKERRQ(ierr);
+    ierr = VecView(coordinates, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+  /* Communicate ghosted coordinates */
+  ierr = VecGhostUpdateBegin(coordinates, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecGhostUpdateEnd(coordinates, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ALE::LogEventEnd(e);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshPopulate"
+/*@C
+  MeshPopulate - Takes an adjacency description of a simplicial mesh FROM PROCESS 0
+                 and produces a partitioned, parallel, oriented Mesh with given topology.
+
+  Input Parameters:
++ mesh - The PETSc mesh object
+. dim - The dimension of the mesh
+. numVertices - The number of vertices in the mesh
+. numElements - The number of (highest dimensional) elements in the mesh
+- elements - The indices of all vertices on each element
+
+  Level: developer
+
+.seealso MeshCreate(), MeshGetTopology(), MeshSetTopology()
+*/
+PetscErrorCode MeshPopulate(Mesh mesh, int dim, PetscInt numVertices, PetscInt numElements, PetscInt elements[], PetscScalar coords[])
+{
+  MPI_Comm comm;
+  PetscObjectGetComm((PetscObject) mesh, &comm);
+  ALE::Obj<ALE::Sieve>       topology = ALE::Sieve(comm);
+  ALE::Obj<ALE::Sieve>       boundary = ALE::Sieve(comm);
+  ALE::Obj<ALE::PreSieve>    orientation = ALE::PreSieve(comm);
+  PetscMPIInt       rank, size;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
+  ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size); CHKERRQ(ierr);
+  if (debug) {
+    topology->setVerbosity(11);
+    orientation->setVerbosity(11);
+    boundary->setVerbosity(11);
+  }
+  /* Create serial sieve */
+  if (rank == 0) {
+    PetscValidIntPointer(elements,5);
+    PetscValidScalarPointer(coords,6);
+    ierr = BuildTopology(dim, numElements, elements, numVertices, topology, orientation);CHKERRQ(ierr);
+  }
+  if (debug) {
+    topology->view("Serial Simplicializer topology");
+    orientation->view("Serial Simplicializer orientation");
+  }
+  ierr = MeshSetTopology(mesh, topology);CHKERRQ(ierr);
+  ierr = MeshSetOrientation(mesh, orientation);CHKERRQ(ierr);
+  ierr = createSerialCoordinates(mesh, dim, numElements, coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateMapping"
@@ -708,13 +792,11 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   ALE::Obj<ALE::Sieve>       topology;
   ALE::Obj<ALE::PreSieve>    orientation;
   ALE::Obj<ALE::IndexBundle> elementBundle;
-  ALE::Obj<ALE::IndexBundle> serialCoordBundle;
   ALE::Obj<ALE::PreSieve>    partitionTypes;
-  Vec               coordinates, oldCoordinates, locCoordinates;
-  MPI_Comm          comm;
-  PetscMPIInt       rank;
-  PetscInt          dim;
-  PetscErrorCode    ierr;
+  MPI_Comm                   comm;
+  PetscMPIInt                rank;
+  PetscInt                   dim;
+  PetscErrorCode             ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
@@ -722,8 +804,6 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
   ierr = MeshGetOrientation(mesh, &orientation);CHKERRQ(ierr);
-  ierr = MeshGetCoordinateBundle(mesh, &serialCoordBundle);CHKERRQ(ierr);
-  ierr = MeshGetCoordinates(mesh, &oldCoordinates);CHKERRQ(ierr);
   dim = topology->diameter();
   /* Partition the topology and orientation */
   ierr = ComputePreSievePartition(orientation, topology->leaves(), "Orientation");CHKERRQ(ierr);
@@ -746,36 +826,7 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   elementBundle->computeGlobalIndices();
   elementBundle->getLock();  // lock the bundle so that the overlap indices do not change
   ierr = MeshSetElementBundle(mesh, elementBundle);CHKERRQ(ierr);
-  /* Create coordinate bundle and storage */
-  ALE::Obj<ALE::IndexBundle> coordBundle = ALE::IndexBundle(topology);
-  if (debug) {
-    coordBundle->setVerbosity(11);
-  }
-  coordBundle->setFiberDimensionByDepth(0, dim);
-  coordBundle->computeOverlapIndices();
-  coordBundle->computeGlobalIndices();
-  coordBundle->getLock();  // lock the bundle so that the overlap indices do not change
-  ierr = MeshCreateVector(mesh, coordBundle, debug, &coordinates);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
-  ierr = VecGhostGetLocalForm(coordinates, &locCoordinates);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(locCoordinates, dim);CHKERRQ(ierr);
-  /* Setup mapping to partitioned storage */
-  VecScatter coordScatter;
-
-  ierr = MeshSetCoordinateBundle(mesh, coordBundle);CHKERRQ(ierr);
-  ierr = MeshCreateMapping(mesh, serialCoordBundle, partitionTypes, coordBundle, &coordScatter);CHKERRQ(ierr);
-  ierr = VecScatterBegin(oldCoordinates, coordinates, INSERT_VALUES, SCATTER_FORWARD, coordScatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(oldCoordinates, coordinates, INSERT_VALUES, SCATTER_FORWARD, coordScatter);CHKERRQ(ierr);
-  ierr = MeshSetCoordinates(mesh, coordinates);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(coordScatter);CHKERRQ(ierr);
-  ierr = VecDestroy(oldCoordinates);CHKERRQ(ierr);
-  if (debug) {
-    ierr = PetscPrintf(comm, "Parallel Coordinates\n===========================\n");CHKERRQ(ierr);
-    ierr = VecView(coordinates, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
-  /* Communicate ghosted coordinates */
-  ierr = VecGhostUpdateBegin(coordinates, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecGhostUpdateEnd(coordinates, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = createParallelCoordinates(mesh, dim, partitionTypes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

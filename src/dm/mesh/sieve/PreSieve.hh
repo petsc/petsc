@@ -34,14 +34,14 @@ namespace ALE {
     //----------------------------------------------------------------------
     // IMPROVE: implement deep copy when internals become Obj<X>
     virtual PreSieve&                 copy(const PreSieve& s){*this = s; return *this;};  
-    virtual PreSieve&                 addArrow(Point& i, Point& j);
-    virtual PreSieve&                 removeArrow(Point& i, Point& j, bool removeSingleton = false);
-    virtual PreSieve&                 addBasePoint(Point& p);
-    virtual PreSieve&                 removeBasePoint(Point& p, bool removeSingleton = false);
-    virtual PreSieve&                 addPoint(Point& p) {this->addBasePoint(p); this->addCapPoint(p); return *this;};
-    virtual PreSieve&                 removePoint(Point& p) {this->removeBasePoint(p); this->removeCapPoint(p); return *this;};
-    virtual PreSieve&                 addCapPoint(Point& q);
-    virtual PreSieve&                 removeCapPoint(Point& q, bool removeSingleton = false);
+    virtual PreSieve&                 addArrow(const Point& i, const Point& j);
+    virtual PreSieve&                 removeArrow(const Point& i, const Point& j, bool removeSingleton = false);
+    virtual PreSieve&                 addBasePoint(const Point& p);
+    virtual PreSieve&                 removeBasePoint(const Point& p, bool removeSingleton = false);
+    virtual PreSieve&                 addPoint(const Point& p) {this->addBasePoint(p); this->addCapPoint(p); return *this;};
+    virtual PreSieve&                 removePoint(const Point& p) {this->removeBasePoint(p); this->removeCapPoint(p); return *this;};
+    virtual PreSieve&                 addCapPoint(const Point& q);
+    virtual PreSieve&                 removeCapPoint(const Point& q, bool removeSingleton = false);
     virtual PreSieve&                 addSupport(Point& i, Obj<Point_set>& suppSet) {
       return this->addSupport(i, *(suppSet.objPtr));
     }
@@ -88,25 +88,8 @@ namespace ALE {
       this->addSupport(i,s);
       return *this;
     };
-    virtual PreSieve&                 addCone(Point_set& coneSet, Point& j) {
-      CHKCOMM(*this);
-      this->__checkLock();
-      // Add j to the base in case coneSet is empty and no addArrow are executed
-      this->addBasePoint(j);
-      for(Point_set::iterator cone_itor = coneSet.begin(); cone_itor != coneSet.end(); cone_itor++) {
-        Point i = (*cone_itor);
-        this->addArrow(i,j);
-      }
-      return *this;
-    };
-    virtual PreSieve&                 addCone(Point& cone, Point& j) {
-      CHKCOMM(*this);
-      this->__checkLock();
-      // Add j to the base in case coneSet is empty and no addArrow are executed
-      this->addBasePoint(j);
-      this->addArrow(cone,j);
-      return *this;
-    };
+    virtual void                      addCone(Obj<Point_set> coneSet, const Point& j);
+    virtual void                      addCone(const Point& cone, const Point& j);
     virtual PreSieve&                 setCone(Point_set& coneSet, Point& j) {
       CHKCOMM(*this);
       this->__checkLock();
@@ -162,7 +145,7 @@ namespace ALE {
     Obj<Point_set>                    cone(Obj<Point_set> chain) {return this->nCone(chain,1);};
     Point_set                         cone(Point_set& chain) {return this->nCone(chain,1);};
     Obj<Point_set>                    cone(const Point& point);
-    int32_t                           coneSize(Point& p) {
+    int32_t                           coneSize(const Point& p) {
       Point_set pSet; pSet.insert(p);
       return coneSize(pSet);
     };
@@ -173,17 +156,8 @@ namespace ALE {
     Obj<Point_set>                    nCone(Obj<Point_set> chain, int32_t n);
     Point_set                         nCone(Point_set& chain, int32_t n) {return this->nCone(Obj<Point_set>(chain),n);};
     Obj<Point_set>                    nCone(const Point& point, int32_t n) {return this->nCone(Obj<Point_set>(Point_set(point)),n);};
-    Obj<Point_set>                    nClosure(const Obj<Point_set>& chain, int32_t n);
-    Point_set                         nClosure(const Point_set& chain, int32_t n);
-    Point_set                         nClosure(const Point& point, int32_t n) {
-      CHKCOMM(*this);
-      // Compute the point set obtained by recursively accumulating the cone over a point in the base
-      // (i.e., the set of cap points resulting after each iteration is both stored in the resulting set and 
-      // used again as the base of a cone computation).
-      // Note: a 0-closure is the point itself.
-      Point_set chain; chain.insert(point);
-      return this->nClosure(chain,n);
-    };
+    Obj<Point_set>                    nClosure(Obj<Point_set> chain, int32_t n);
+    Obj<Point_set>                    nClosure(const Point& point, int32_t n) {return this->nClosure(Obj<Point_set>(Point_set(point)),n);};
     Obj<PreSieve>                     nClosurePreSieve(Obj<Point_set> chain, int32_t n, Obj<PreSieve> closure = Obj<PreSieve>());
     //
     Obj<Point_set>                    support(const Obj<Point_set>& chain) {return this->nSupport(chain,1);};

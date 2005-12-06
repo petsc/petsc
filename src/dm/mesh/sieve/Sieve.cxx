@@ -85,7 +85,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::addArrow"
-  Sieve& Sieve::addArrow(Point& i, Point& j) {
+  Sieve& Sieve::addArrow(const Point& i, const Point& j) {
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
@@ -169,7 +169,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::removeArrow"
-  Sieve& Sieve::removeArrow(Point& i, Point& j, bool removeSingleton) {
+  Sieve& Sieve::removeArrow(const Point& i, const Point& j, bool removeSingleton) {
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
@@ -192,7 +192,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::removeBasePoint"
-  Sieve& Sieve::removeBasePoint(Point& p, bool removeSingleton) {
+  Sieve& Sieve::removeBasePoint(const Point& p, bool removeSingleton) {
     ALE_LOG_STAGE_BEGIN;
     this->__checkLock();
     ALE::PreSieve::removeBasePoint(p, removeSingleton);
@@ -206,7 +206,7 @@ namespace ALE {
   
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::addBasePoint"
-  Sieve& Sieve::addBasePoint(Point& p) {
+  Sieve& Sieve::addBasePoint(const Point& p) {
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
@@ -223,7 +223,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::removeCapPoint"
-  Sieve& Sieve::removeCapPoint(Point& q, bool removeSingleton) {
+  Sieve& Sieve::removeCapPoint(const Point& q, bool removeSingleton) {
     ALE_LOG_STAGE_BEGIN;
     this->__checkLock();
     ALE::PreSieve::removeCapPoint(q, removeSingleton);
@@ -237,7 +237,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::addCapPoint"
-  Sieve& Sieve::addCapPoint(Point& p) {
+  Sieve& Sieve::addCapPoint(const Point& p) {
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     this->__checkLock();
@@ -463,14 +463,18 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::closure"
-  Point_set Sieve::closure(Obj<Point_set> chain) {
-    Point_set closure;
+  Obj<Point_set> Sieve::closure(Obj<Point_set> chain) {
+    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
+    Obj<Point_set> closure = Point_set();
+
     ALE_LOG_STAGE_BEGIN;
+    LogEventBegin(e);
     CHKCOMM(*this);
     int32_t depth = this->maxDepth(chain);
     if(depth >= 0) {
-      closure = this->nClosure(chain,depth);
+      closure = this->nClosure(chain, depth);
     }
+    LogEventEnd(e);
     ALE_LOG_STAGE_END;
     return closure;
   }// Sieve::closure()

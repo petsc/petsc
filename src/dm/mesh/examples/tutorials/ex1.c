@@ -32,12 +32,11 @@ the rank of the process owning each cell.
 
 static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 
-#include "petscda.h"
+#include "petscmesh.h"
 #include "petscviewer.h"
 #include <stdlib.h>
 #include <string.h>
 
-#include <IndexBundle.hh>
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(Mesh, ALE::IndexBundle *, int, Vec *);
 
 typedef enum {PCICE, PYLITH} FileType;
