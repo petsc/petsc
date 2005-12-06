@@ -1,6 +1,6 @@
 #define PETSCDM_DLL
  
-#include "petscda.h"     /*I      "petscda.h"     I*/
+#include "petscmesh.h"   /*I      "petscmesh.h"   I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
 
 
