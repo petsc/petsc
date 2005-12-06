@@ -743,9 +743,10 @@ class Configure(config.base.Configure):
     for language in languages:
       self.pushLanguage(language)
       try:
-        self.addCompilerFlag('-D__USE_FILE_OFFSET64',compilerOnly=1)
+        self.checkCompile('#include <unistd.h>','#ifndef _LFS64_LARGEFILE \n#error no largefile defines \n#endif')
+        self.addCompilerFlag('-D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64',compilerOnly=1)
       except RuntimeError, e:
-        self.logPrint('Rejected ' +language+ ' flag -D__USE_FILE_OFFSET64')
+        self.logPrint('Rejected ' +language+ ' flags -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64')
       self.popLanguage()
     return
 
