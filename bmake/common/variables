@@ -50,7 +50,7 @@ LIBNAME    = ${INSTALL_LIB_DIR}/${LIBBASE}.${AR_LIB_SUFFIX}
 SOURCE     = ${SOURCEC} ${SOURCEF}
 OBJS       = ${OBJSC} ${OBJSF}
 
-CLINKER = ${CC_LINKER} ${CC_LINKER_FLAGS}
+CLINKER = ${PCC_LINKER} ${PCC_LINKER_FLAGS}
 FLINKER = ${FC_LINKER} ${FC_LINKER_FLAGS}
 #
 # Defines all libraries needed for using linear and nonlinear solvers, 
@@ -58,7 +58,7 @@ FLINKER = ${FC_LINKER} ${FC_LINKER_FLAGS}
 # The order of listing these libraries is important!
 #
 
-PETSC_EXTERNAL_LIB_BASIC = ${EXTERNAL_LIB} ${PACKAGES_LIBS} ${CC_LINKER_LIBS}
+PETSC_EXTERNAL_LIB_BASIC = ${EXTERNAL_LIB} ${PACKAGES_LIBS} ${PCC_LINKER_LIBS}
 PETSC_SYS_LIB_BASIC      = -lpetsc 
 PETSC_VEC_LIB_BASIC      = -lpetscvec ${PETSC_SYS_LIB_BASIC}
 PETSC_MAT_LIB_BASIC      = -lpetscmat ${PETSC_VEC_LIB_BASIC}

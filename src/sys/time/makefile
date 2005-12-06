@@ -5,7 +5,7 @@ CFLAGS    =
 FFLAGS    =
 SOURCEC	  = cputime.c fdate.c nt_time.c rs6000_time.c ptime.c
 SOURCEF	  =
-SOURCEH	  = ptime.h
+SOURCEH	  =
 OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
 MANSEC	  = Sys

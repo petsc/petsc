@@ -21,7 +21,6 @@ class Configure(config.base.Configure):
 
     help.addArgument('PETSc', '-prefix=<path>',            nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
     help.addArgument('PETSc', '-with-default-arch=<bool>', nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
-    help.addArgument('PETSc', '-with-large-file-io=<bool>',nargs.ArgBool(None, 1, 'Allow IO with files greater then 2 GB'))
     return
 
   def setupDependencies(self, framework):
@@ -91,13 +90,13 @@ class Configure(config.base.Configure):
 
     # executable linker values
     self.setCompilers.pushLanguage(self.languages.clanguage)
-    cc_linker = self.setCompilers.getLinker()
-    self.addMakeMacro('CC_LINKER',cc_linker)
-    self.addMakeMacro('CC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
+    pcc_linker = self.setCompilers.getLinker()
+    self.addMakeMacro('PCC_LINKER',pcc_linker)
+    self.addMakeMacro('PCC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
-    self.addMakeMacro('CC_LINKER_LIBS',self.libraries.toString(self.compilers.flibs)+' '+self.libraries.toString(self.compilers.cxxlibs)+' '+self.compilers.LIBS)
+    self.addMakeMacro('PCC_LINKER_LIBS',self.libraries.toString(self.compilers.flibs)+' '+self.libraries.toString(self.compilers.cxxlibs)+' '+self.compilers.LIBS)
 
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
@@ -113,10 +112,10 @@ class Configure(config.base.Configure):
 
       # executable linker values
       self.setCompilers.pushLanguage('FC')
-      # Cannot have NAG f90 as the linker - so use cc_linker as fc_linker
+      # Cannot have NAG f90 as the linker - so use pcc_linker as fc_linker
       fc_linker = self.setCompilers.getLinker()
       if config.setCompilers.Configure.isNAG(fc_linker):
-        self.addMakeMacro('FC_LINKER',cc_linker)
+        self.addMakeMacro('FC_LINKER',pcc_linker)
       else:
         self.addMakeMacro('FC_LINKER',fc_linker)
       self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
@@ -169,9 +168,6 @@ class Configure(config.base.Configure):
 #-----------------------------------------------------------------------------------------------------
     if self.functions.haveFunction('gethostbyname') and self.functions.haveFunction('socket'):
       self.addDefine('USE_SOCKET_VIEWER','1')
-
-    if self.framework.argDB['with-large-file-io']:
-      self.framework.addDefine('__USE_FILE_OFFSET64',1)
 
 #-----------------------------------------------------------------------------------------------------
     # print include and lib for external packages

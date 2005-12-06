@@ -28,8 +28,8 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-petsc-shared-libraries', nargs.ArgBool(None, 1, 'Make PETSc libraries shared'))
-    help.addArgument('PETSc', '-with-petsc-dynamic-libraries', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic'))
+    help.addArgument('PETSc', '-with-shared', nargs.ArgBool(None, 1, 'Make PETSc libraries shared'))
+    help.addArgument('PETSc', '-with-dynamic', nargs.ArgBool(None, 0, 'Make PETSc libraries dynamic'))
     return
 
   def setupDependencies(self, framework):
@@ -39,7 +39,7 @@ class Configure(config.base.Configure):
     return
 
   def configureSharedLibraries(self):
-    self.useShared = (self.argDB['with-petsc-dynamic-libraries'] or self.argDB['with-petsc-shared-libraries']) and not self.setCompilers.staticLibraries
+    self.useShared = (self.argDB['with-dynamic'] or self.argDB['with-shared']) and not self.setCompilers.staticLibraries
     if self.useShared:
       if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
         self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase+'gnu')
@@ -52,10 +52,10 @@ class Configure(config.base.Configure):
 
   def configureDynamicLibraries(self):
     '''Checks whether dynamic libraries should be used, for which you must
-      - Specify --with-petsc-dynamic-libraries
+      - Specify --with-dynamic
       - Have found a working dynamic linker (with dlfcn.h and libdl)
     Defines PETSC_USE_DYNAMIC_LIBRARIES if they are used'''
-    self.useDynamic = self.argDB['with-petsc-dynamic-libraries'] and self.useShared and self.setCompilers.dynamicLibraries
+    self.useDynamic = self.argDB['with-dynamic'] and self.useShared and self.setCompilers.dynamicLibraries
     if self.useDynamic:
       self.addDefine('USE_DYNAMIC_LIBRARIES', 1)
     else:
