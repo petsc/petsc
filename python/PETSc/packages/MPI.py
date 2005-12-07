@@ -332,7 +332,7 @@ class Configure(PETSc.package.Package):
         args.append('F90="'+fc+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
       else:
         args.append('--disable-f90')
-      args.append('FC="'+fc+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
+      args.append('F77="'+fc+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
       self.framework.popLanguage()
     else:
       args.append('--disable-f77')
