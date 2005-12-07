@@ -39,6 +39,14 @@ class Configure(config.base.Configure):
           haveGNUMake = 1
       except RuntimeError, e:
         self.framework.log.write('Make check failed: '+str(e)+'\n')
+    # mac has fat binaries where 'string' check fails
+    if not haveGNUMake:
+      try:
+        (output, error, status) = config.base.Configure.executeShellCommand(self.make+' -v dummy-foobar', log = self.framework.log)
+        if not status and output.find('GNU Make') >= 0:
+          haveGNUMake = 1
+      except RuntimeError, e:
+        self.framework.log.write('Make check failed: '+str(e)+'\n')
         
     # Setup make flags
     self.flags = ''
