@@ -336,8 +336,8 @@ class Configure(PETSc.package.Package):
       self.framework.popLanguage()
     else:
       args.append('--disable-f77')
-      args.append('--disable-f90')      
-    if not self.framework.argDB['with-shared'] and self.framework.argDB['with-mpi-shared']:
+      args.append('--disable-f90')
+    if self.framework.argDB['with-shared'] and self.framework.argDB['with-mpi-shared']:
       if self.setCompilers.staticLibraries:
         raise RuntimeError('Configuring PETSc with shared libraries - but the system/compilers do not support this')
       if self.compilers.isGCC:
