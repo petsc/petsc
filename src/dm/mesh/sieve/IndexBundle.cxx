@@ -1007,7 +1007,8 @@ namespace ALE {
       rentMarkers[p] = ALE::Point(-p-1, p);
       leaseMarkers[p] = ALE::Point(p, p);
     }
-    // Send leased stuff from source to target, Accept rented stuff at target from source
+
+    // Send leased indices from source to target, Accept rented indices at target from source
     this->__postIntervalRequests(pointTypes, leaseMarkers, &requests, &recvIntervals);
     this->__sendIntervals(pointTypes, rentMarkers, targetGlobalIndices);
     this->__receiveIntervals(pointTypes, leaseMarkers, requests, recvIntervals, targetIndices);
