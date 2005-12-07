@@ -52,6 +52,7 @@ typedef struct {
   PetscCookie    cookie;                                        \
   PetscOps       *bops;                                         \
   ObjectOps      *ops;                                          \
+  PetscDataType  precision;                                     \
   MPI_Comm       comm;                                          \
   PetscInt       type;                                          \
   PetscLogDouble flops,time,mem;                                \

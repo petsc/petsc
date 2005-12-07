@@ -6,11 +6,6 @@
 */
 #include "private/vecimpl.h"    /*I "petscvec.h" I*/
 
-
-/* ugly globals for VecSetValue() and VecSetValueLocal() */
-PetscInt    PETSCVEC_DLLEXPORT VecSetValue_Row = 0;
-PetscScalar PETSCVEC_DLLEXPORT VecSetValue_Value = 0.0;
-
 #undef __FUNCT__  
 #define __FUNCT__ "VecMaxPointwiseDivide"
 /*@
