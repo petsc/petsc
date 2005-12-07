@@ -15,128 +15,95 @@
 
 namespace ALE {
 
-  class point {
+  namespace def {
+    //
+    // This is a set of abstract classes describing an interface to point containers.
+    //
+
+    // Basic object
+    class point {
+    public:
+      int32_t prefix, index;
+    };
+    
+    // point_iterator interface
+    class point_iterator {
+      virtual ~point_iterator() = 0;
+      //
+      virtual void                  operator++();
+      virtual void                  operator++(int);
+      virtual bool                  operator==(const point_iterator& itor);
+      virtual bool                  operator!=(const point_iterator& itor);
+      virtual const point&          operator*()  = 0;
+    };
+
+    // const_point_sequence interface:
+    // a constant sequence of (not necesserily unique) points delineated by begin() & end() iterators; can be traversed linearly
+    class const_point_sequence {
+      typedef point_iterator iterator;
+      virtual ~const_point_sequence() = 0;
+      //
+      virtual point_iterator& begin();
+      virtual point_iterator& end();
+      virtual std::size_t     size();
+    };
+
+    // const_point_collection interface:
+    // a constant collection no particular order; can queried for containment of a given point
+    class const_point_collection {
+      virtual ~const_point_collection() = 0;
+      //
+      virtual bool contains(const point& p);
+    };
+
+    // point_set interface:
+    // extends const_point_sequence & const_point_collection and allows point addition and removal
+    class point_set : public const_point_sequence, const_point_collection {
+      // conversion constructors
+      point_set(const const_point_sequence&);
+      point_set(const Obj<const_point_sequence>&);
+      point_set(const const_point_collection&);
+      point_set(const Obj<const_point_collection>&);
+      // destructor
+      virtual ~point_set();
+      // mutating methods
+      virtual void insert(const point& p);                     // post: contains(p) == true 
+      virtual void remove(const point& p);                     // post: contains(p) == false
+      virtual void add(const const_point_sequence& s);         // post: contains points from s and '*this before the call'
+      virtual void add(const const_point_collection& s);       // post: contains points from s and '*this before the call'
+      virtual void intersect(const const_point_sequence& s);   // post: contains points common to s and '*this before the call'
+      virtual void intersect(const const_point_collection& s); // post: contains points common to s and '*this before the call'
+      virtual void subtract(const const_point_sequence&  s);   // post: contains points of '*this before call' that are not in s
+      virtual void subtract(const const_point_collection&  s); // post: contains points of '*this before call' that are not in s
+    };
+    
+  } // namespace def
+
+  class Point {
   public:
-    typedef ALE_ALLOCATOR<point> allocator;
-    int32_t prefix;
-    int32_t index;
-    point() : prefix(0), index(0){};
-    point(const int32_t& p, const int32_t& i) : prefix(p), index(i){};
-    bool operator==(const point& q) const {
+    int32_t prefix, index;
+    typedef ALE_ALLOCATOR<Point> allocator;
+    Point() : prefix(0), index(0){};
+    Point(const int32_t& p, const int32_t& i) : prefix(p), index(i){};
+    //Point(const Point& q) : prefix(q.prefix), index(q.index) {};
+    bool operator==(const Point& q) const {
       return ( (this->prefix == q.prefix) && (this->index == q.index) );
     };
-    bool operator!=(const point& q) const {
+    bool operator!=(const Point& q) const {
       return ( (this->prefix != q.prefix) || (this->index != q.index) );
     };
     class less_than {
     public: 
-      bool operator()(const point& p, const point& q) const {
+      bool operator()(const Point& p, const Point& q) const {
         return( (p.prefix < q.prefix) || ((p.prefix == q.prefix) && (p.index < q.index)));
       };
     };
     typedef less_than Cmp;
   };
   
-  namespace def {
-    //
-    // This is a set of abstract classes describing an interface to point sets.
-    //
-    
-    // const_point_iterator 
-    class const_point_iterator {
-      virtual ~const_point_iterator();
-      virtual void          operator++() = 0;
-      virtual void          operator++(int) = 0;
-      virtual bool          operator==(const const_point_iterator& itor) = 0;
-      virtual bool          operator!=(const const_point_iterator& itor) = 0;
-      virtual const point&  operator*()  = 0;
-    };
 
-    // const_point_interval
-    class const_point_interval {
-      typedef const_point_iterator iterator;
-      virtual ~const_point_interval();
-      virtual const_point_iterator& begin() = 0;
-      virtual const_point_iterator& end()   = 0;
-      virtual std::size_t           size()  = 0;
-    };
 
-    // const_point_set is a sequence of points in no particular a priori order delineated by the begin() & end() iterators
-    class const_point_set : public const_point_interval {
-      virtual ~const_point_set();
-      virtual bool                 contains(const point& p) = 0;
-      virtual void                 view(const char*name) = 0;
-    };
 
-    // point_set extends const_point_set to allow point addition and removal
-    class point_set : public const_point_set {
-      // copy constructor
-      point_set(const const_point_set& s);
-      // destructor
-      virtual ~point_set();
-      // mutating methods
-      virtual void   insert(const point& p) = 0;              // postcondition: contains(p) == true 
-      virtual void   remove(const point& p) = 0;              // postcondition: contains(p) == false
-      virtual void   add(const const_point_set& s) = 0;       // postcondition: contains points from s and *this before the call.
-      virtual void   intersect(const const_point_set& s) = 0; // postcondition: contains points common to s and *this before the call.
-      virtual void   subtract(const const_point_set&  s) = 0; // postcondition: contains points of *this before call that are not in s.
-    };
-    
-  } // namespace def
-
-  namespace future {
-    //
-    // algorithms on point sets
-    //
-
-    // join == 'union'; cannot use 'union' directly as it is a C/C++ reserved word
-    template<bool future_is_here>
-    Obj<ALE::def::point_set> join(const ALE::def::const_point_set& s1, const ALE::def::const_point_set& s2){
-      Obj<ALE::def::point_set> _s(s1);
-      for(ALE::def::point_set::iterator s2_itor = s2.begin(); s2_itor != s2.end(); s2_itor++) {
-        _s->insert(*s2_itor);
-      }
-      return _s;
-    }; // join()
-
-    // meet == 'intersection'
-    template<bool future_is_here>
-    Obj<ALE::def::point_set> meet(const ALE::def::const_point_set& s1, const ALE::def::const_point_set& s2){
-      Obj<ALE::def::point_set> _s(ALE::def::point_set());
-      ALE::def::const_point_set& ss1, ss2;
-      // Iterate over the smaller set
-      if(s1.size() < s2.size()) {
-        ss1 = s1;
-        ss2 = s2;
-      }
-      else
-      {
-        ss1 = s2;
-        ss2 = s1;
-      }
-      for(ALE::def::point_set::iterator ss1_itor = ss1.begin(); ss1_itor != ss1.end(); ss1_itor++) {
-        if(ss2.contains(*ss1_itor)) {
-          _s->insert(*ss1_itor);
-        }
-      }
-      return _s;
-    }; // meet()
-
-    // diff == 'difference' == 's1\s2'
-    template<bool future_is_here>
-    Obj<ALE::def::point_set> diff(const ALE::def::const_point_set& s1, const ALE::def::const_point_set& s2){
-      Obj<ALE::def::point_set> _s(ALE::def::point_set());
-      for(ALE::def::const_point_set::iterator s1_itor = s1.begin(); s1_itor != s1.end(); s1_itor++) {
-        if(!s2.contains(*s1_itor)) {
-          _s->insert(*s1_itor);
-        }
-      }
-      return _s;
-    }; // diff()
-
-  } // namespace future
-
-  typedef point Point;
   class Point_array : public std::vector<Point, Point::allocator > {
   public:
     Point_array()             : std::vector<Point, Point::allocator >(){};

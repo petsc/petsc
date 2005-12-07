@@ -209,6 +209,13 @@ PetscErrorCode PartitionPreSieve(ALE::PreSieve* presieve, const char *name = NUL
   }
   // Create point type presieve
   if (pointTypes != NULL) {
+    // Point types are as follows:
+    //
+    //   (rank, 0): Local point,  not shared with other processes
+    //   (rank, 1): Leased point, owned but shared with other processes
+    //     (otherRank, otherRank):    point leased to process otherRank
+    //   (rank, 2): Rented point, not owned and shared with other processes
+    //     (-otherRank-1, otherRank): point rented from process otherRank
     ALE::Obj<ALE::PreSieve> pTypes = ALE::PreSieve(comm);
 
     for(int p = 0; p < size; p++) {
@@ -719,6 +726,7 @@ PetscErrorCode MeshPopulate(Mesh mesh, int dim, PetscInt numVertices, PetscInt n
     boundary->setVerbosity(11);
   }
   /* Create serial sieve */
+  topology->setStratificationPolicy(ALE::Sieve::stratificationPolicyOnLocking);
   if (rank == 0) {
     PetscValidIntPointer(elements,5);
     PetscValidScalarPointer(coords,6);
@@ -728,6 +736,9 @@ PetscErrorCode MeshPopulate(Mesh mesh, int dim, PetscInt numVertices, PetscInt n
     topology->view("Serial Simplicializer topology");
     orientation->view("Serial Simplicializer orientation");
   }
+  topology->getLock();
+  topology->releaseLock();
+  topology->setStratificationPolicy(ALE::Sieve::stratificationPolicyOnMutation);
   ierr = MeshSetTopology(mesh, topology);CHKERRQ(ierr);
   ierr = MeshSetOrientation(mesh, orientation);CHKERRQ(ierr);
   ierr = createSerialCoordinates(mesh, dim, numElements, coords);CHKERRQ(ierr);
@@ -752,22 +763,37 @@ PetscErrorCode MeshCreateMapping(Mesh mesh, ALE::Obj<ALE::IndexBundle> sourceBun
   mappingStack  = sourceBundle->computeMappingIndices(pointTypes, targetBundle);
   sourceIndices = mappingStack->top();
   targetIndices = mappingStack->bottom();
+  base = sourceIndices->base();
+#if 1
+  locSourceSize = 0;
+  for(ALE::Point_set::iterator e_itor = base->begin(); e_itor != base->end(); e_itor++) {
+    ALE::Obj<ALE::Point_set> sourceCone = sourceIndices->cone(*e_itor);
+    ALE::Obj<ALE::Point_set> targetCone = targetIndices->cone(*e_itor);
+
+    if (sourceCone->size() && targetCone->size()) {
+      if (sourceCone->begin()->index != targetCone->begin()->index) {
+        SETERRQ2(PETSC_ERR_PLIB, "Mismatch in index sizes %d and %d", sourceCone->begin()->index, targetCone->begin()->index);
+      }
+      locSourceSize += sourceCone->begin()->index;
+    }
+  }
+#endif
   ierr = PetscMalloc(locSourceSize * sizeof(PetscInt), &fromIndices);CHKERRQ(ierr);
   ierr = PetscMalloc(locSourceSize * sizeof(PetscInt), &toIndices);CHKERRQ(ierr);
-  base = sourceIndices->base();
   for(ALE::Point_set::iterator e_itor = base->begin(); e_itor != base->end(); e_itor++) {
-    ALE::Point               point = *e_itor;
-    ALE::Obj<ALE::Point_set> sourceCone = sourceIndices->cone(point);
-    ALE::Obj<ALE::Point_set> targetCone = targetIndices->cone(point);
+    ALE::Obj<ALE::Point_set> sourceCone = sourceIndices->cone(*e_itor);
+    ALE::Obj<ALE::Point_set> targetCone = targetIndices->cone(*e_itor);
 
     if (sourceCone->size() && targetCone->size()) {
       ExpandInterval(*sourceCone->begin(), fromIndices, &fromIdx);
       ExpandInterval(*targetCone->begin(), toIndices,   &toIdx);
     }
   }
+#if 0
   if ((fromIdx != locSourceSize) || (toIdx != locSourceSize)) {
     SETERRQ3(PETSC_ERR_PLIB, "Invalid index sizes %d, %d should be %d", fromIdx, toIdx, locSourceSize);
   }
+#endif
   ierr = ISCreateGeneral(PETSC_COMM_SELF, locSourceSize, fromIndices, &fromIS);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, locSourceSize, toIndices,   &toIS);CHKERRQ(ierr);
   ierr = PetscFree(fromIndices);CHKERRQ(ierr);
@@ -805,11 +831,15 @@ PetscErrorCode MeshDistribute(Mesh mesh)
   ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
   ierr = MeshGetOrientation(mesh, &orientation);CHKERRQ(ierr);
   dim = topology->diameter();
+  topology->setStratificationPolicy(ALE::Sieve::stratificationPolicyOnLocking);
   /* Partition the topology and orientation */
   ierr = ComputePreSievePartition(orientation, topology->leaves(), "Orientation");CHKERRQ(ierr);
   ierr = PartitionPreSieve(orientation, "Orientation", 1);CHKERRQ(ierr);
   ierr = ComputeSievePartition(topology, "Topology");CHKERRQ(ierr);
   ierr = PartitionPreSieve(topology, "Topology", 1, &partitionTypes);CHKERRQ(ierr);
+  topology->getLock();
+  topology->releaseLock();
+  topology->setStratificationPolicy(ALE::Sieve::stratificationPolicyOnMutation);
   /* Add the trivial vertex orientation */
   ALE::Obj<ALE::Point_set> roots = topology->depthStratum(0);
   for(ALE::Point_set::iterator vertex_itor = roots->begin(); vertex_itor != roots->end(); vertex_itor++) {
@@ -852,50 +882,38 @@ PetscErrorCode MeshUnify(Mesh mesh, Mesh *serialMesh)
   PetscValidHeaderSpecific(mesh,DA_COOKIE,1);
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, &orientation);CHKERRQ(ierr);
   ierr = MeshGetCoordinateBundle(mesh, &coordBundle);CHKERRQ(ierr);
   ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
-  dim = topology->diameter();
   /* Unify the topology and orientation */
-  ALE::Obj<ALE::Sieve>    serialTopology(ALE::Sieve(PETSC_COMM_SELF));
-  ALE::Obj<ALE::PreSieve> serialOrientation(ALE::PreSieve(PETSC_COMM_SELF));
-  ALE::Point_set space = topology->space();
-  ALE::Point_set base = topology->base();
-  ALE::Point_set orderSpace = orientation->space();
-  ALE::Point_set orderBase = orientation->base();
-  ALE::Point     partition(-1, 0);
+  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
+  ierr = MeshGetOrientation(mesh, &orientation);CHKERRQ(ierr);
+  ALE::Obj<ALE::Sieve>     serialTopology = ALE::Sieve(comm);
+  ALE::Obj<ALE::PreSieve>  serialOrientation = ALE::PreSieve(comm);
+  ALE::Obj<ALE::Point_set> base = topology->base();
+  ALE::Obj<ALE::Point_set> orientationBase = orientation->base();
+  ALE::Point               partition(-1, 0);
 
-  ierr = MeshCreate(PETSC_COMM_SELF, serialMesh);CHKERRQ(ierr);
-  serialOrientation->addCone(orderSpace, partition);
-  for(ALE::Point_set::iterator b_itor = orderBase.begin(); b_itor != orderBase.end(); b_itor++) {
-    ALE::Point     point = *b_itor;
-    ALE::Point_set cone = orientation->cone(point);
-
-    serialOrientation->addCone(cone, point);
+  ierr = MeshCreate(comm, serialMesh);CHKERRQ(ierr);
+  serialOrientation->addCone(orientation->space(), partition);
+  for(ALE::Point_set::iterator b_itor = orientationBase->begin(); b_itor != orientationBase->end(); b_itor++) {
+    serialOrientation->addCone(orientation->cone(*b_itor), *b_itor);
   }
   ierr = PartitionPreSieve(serialOrientation, "Serial Orientation", 1);CHKERRQ(ierr);
-  serialTopology->addCone(space, partition);
-  for(ALE::Point_set::iterator b_itor = base.begin(); b_itor != base.end(); b_itor++) {
-    ALE::Point     point = *b_itor;
-    ALE::Point_set cone = topology->cone(point);
-
-    serialTopology->addCone(cone, point);
+  serialTopology->addCone(topology->space(), partition);
+  for(ALE::Point_set::iterator b_itor = base->begin(); b_itor != base->end(); b_itor++) {
+    serialTopology->addCone(topology->cone(*b_itor), *b_itor);
   }
   ierr = PartitionPreSieve(serialTopology, "Serial Topology", 1, &partitionTypes);CHKERRQ(ierr);
   ierr = MeshSetTopology(*serialMesh, serialTopology);CHKERRQ(ierr);
   ierr = MeshSetOrientation(*serialMesh, serialOrientation);CHKERRQ(ierr);
   /* Unify boundary */
   ierr = MeshGetBoundary(mesh, &boundary);CHKERRQ(ierr);
-  ALE::Sieve    *serialBoundary = new ALE::Sieve(PETSC_COMM_SELF);
-  ALE::Point_set boundarySpace = boundary->space();
-  ALE::Point_set boundaryBase = boundary->base();
-  serialBoundary->addCone(boundarySpace, partition);
-  for(ALE::Point_set::iterator b_itor = boundaryBase.begin(); b_itor != boundaryBase.end(); b_itor++) {
-    ALE::Point     point = *b_itor;
-    ALE::Point_set cone = boundary->cone(point);
+  ALE::Obj<ALE::Sieve> serialBoundary = ALE::Sieve(comm);
+  ALE::Obj<ALE::Point_set> boundaryBase = boundary->base();
 
-    serialBoundary->addCone(cone, point);
+  serialBoundary->addCone(boundary->space(), partition);
+  for(ALE::Point_set::iterator b_itor = boundaryBase->begin(); b_itor != boundaryBase->end(); b_itor++) {
+    serialBoundary->addCone(boundary->cone(*b_itor), *b_itor);
   }
   ierr = PartitionPreSieve(serialBoundary, "Serial Boundary", 1);CHKERRQ(ierr);
   ierr = MeshSetBoundary(*serialMesh, serialBoundary);CHKERRQ(ierr);
@@ -915,6 +933,7 @@ PetscErrorCode MeshUnify(Mesh mesh, Mesh *serialMesh)
   ierr = MeshSetElementBundle(*serialMesh, serialElementBundle);CHKERRQ(ierr);
   /* Create coordinate bundle and storage */
   ALE::Obj<ALE::IndexBundle> serialCoordBundle = ALE::IndexBundle(serialTopology);
+  dim = topology->diameter();
   serialCoordBundle->setFiberDimensionByDepth(0, dim);
   serialCoordBundle->computeOverlapIndices();
   serialCoordBundle->computeGlobalIndices();

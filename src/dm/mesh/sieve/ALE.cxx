@@ -87,7 +87,7 @@ namespace ALE {
   // Logging helper functions
   //
 
-  static std::map<std::string, int> _log_stage;  // a map from stage names to stage numbers
+  static std::map<std::string, LogStage> _log_stage;  // a map from stage names to stage numbers
 
   #undef  __FUNCT__
   #define __FUNCT__ "LogCookieRegister"
@@ -100,7 +100,7 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "LogStageRegister"
-  int LogStageRegister(const char *name){
+  LogStage LogStageRegister(const char *name){
     int stage;
     std::string stage_name(name);
     if(_log_stage.find(stage_name) == _log_stage.end()) {    
@@ -130,7 +130,7 @@ namespace ALE {
     ierr = PetscLogStagePop(); CHKERROR(ierr, "PetscLogStagePop failed");
   }//LogStagePop()
 
-  static std::map<std::string, int> _log_event;  // a map from event names to event numbers
+  static std::map<std::string, LogEvent> _log_event;  // a map from event names to event numbers
 
   #undef  __FUNCT__
   #define __FUNCT__ "LogEventRegister"
@@ -150,15 +150,21 @@ namespace ALE {
   }
 
   #undef  __FUNCT__
+  #define __FUNCT__ "LogEventRegister"
+  LogEvent LogEventRegister(const char *name){
+    return LogEventRegister(PETSC_COOKIE, name);
+  }
+
+  #undef  __FUNCT__
   #define __FUNCT__ "LogEventBegin"
-  void LogEventBegin(int e){
+  void LogEventBegin(LogEvent e){
     PetscErrorCode ierr;
     ierr = PetscLogEventBegin(e, 0, 0, 0, 0); CHKERROR(ierr, "PetscLogEventBegin failed");
   }//LogEventBegin()
 
   #undef  __FUNCT__
   #define __FUNCT__ "LogEventEnd"
-  void LogEventEnd(int e){
+  void LogEventEnd(LogEvent e){
     PetscErrorCode ierr;
     ierr = PetscLogEventEnd(e, 0, 0, 0, 0); CHKERROR(ierr, "PetscLogEventEnd failed");
   }//LogEventEnd()

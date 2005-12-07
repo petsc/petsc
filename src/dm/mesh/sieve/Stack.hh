@@ -51,8 +51,8 @@ namespace ALE {
     // Point removal methods act only on the inherited (PreSieve) part of Stack, so they are inherited
     // Inherited arrow manipulation methods (add/removeArrow, add/setCone/Support, etc)
     // rely on addBasePoint/addCapPoint, so no need to redefine those.
-    Point_set                 space();
-    int32_t                   spaceSize(){return this->space().size();};
+    Obj<Point_set>            space();
+    int32_t                   spaceSize(){return this->space()->size();};
     int32_t                   baseSize(){return this->_bottom->spaceSize();};
     Point_set                 base() {return this->_bottom->space();};
     int32_t                   capSize(){return this->_top->spaceSize();};

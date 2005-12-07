@@ -169,18 +169,18 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "Stack::space()"
-  Point_set          Stack::space() {
+  Obj<Point_set>     Stack::space() {
     // Take the union of the top and bottom spaces
-    Point_set top = this->_top->space();
-    Point_set bottom = this->_bottom->space();
-    Point_set *s = &top, *ss = &bottom, *tmp;
-    // Make s the smallest set to limit the iteration loop
-    if(ss->size() < s->size()) {tmp = s; s = ss; ss = tmp;}
-    for(Point_set::iterator s_itor = s->begin(); s_itor != s->end(); s_itor++) {
-      Point p = *s_itor;
-      ss->insert(p);
+    Obj<Point_set> top = this->_top->space();
+    Obj<Point_set> bottom = this->_bottom->space();
+    Obj<Point_set> tmp;
+
+    // Make top the smallest set to limit the iteration loop
+    if(bottom->size() < top->size()) {tmp = top; top = bottom; bottom = tmp;}
+    for(Point_set::iterator t_itor = top->begin(); t_itor != top->end(); t_itor++) {
+      bottom->insert(*t_itor);
     }
-    return *ss;
+    return bottom;
   }// Stack::space()
 
   
