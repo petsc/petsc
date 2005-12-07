@@ -124,7 +124,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::__computeIndices"
   Obj<PreSieve>   IndexBundle::__computeIndices(Obj<Point_set> supports, Obj<Point_set> base, bool includeBoundary, Obj<Point_set> exclusion) {
-    Obj<PreSieve> indices(new PreSieve(MPI_COMM_SELF));
+    Obj<PreSieve> indices = PreSieve(MPI_COMM_SELF);
     ALE_LOG_STAGE_BEGIN;
     base  = this->__validateChain(base);
     supports = this->__validateChain(supports);
@@ -273,7 +273,6 @@ namespace ALE {
   Point   IndexBundle::getFiberInterval(Point support, Obj<Point_set> base) {
     Point interval;
     ALE_LOG_STAGE_BEGIN;
-    base  = this->__validateChain(base);
     Obj<PreSieve> indices = this->__computeIndices(Point_set(support), base);
     if(indices->cap().size() == 0) {
       interval = Point(-1,0);
@@ -290,8 +289,6 @@ namespace ALE {
   Obj<PreSieve>   IndexBundle::getFiberIndices(Obj<Point_set> supports, Obj<Point_set> base, Obj<Point_set> exclusion) {
     Obj<PreSieve> indices;
     ALE_LOG_STAGE_BEGIN;
-    base  = this->__validateChain(base);
-    supports = this->__validateChain(supports);
     indices = this->__computeIndices(supports, base, false, exclusion);
     ALE_LOG_STAGE_END;
     return indices;
@@ -301,9 +298,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::getClosureIndices"
   Obj<PreSieve>   IndexBundle::getClosureIndices(Obj<Point_set> supports, Obj<Point_set> base) {
-    supports = this->__validateChain(supports);
-    base  = this->__validateChain(base);
-    bool includingBoundary = 1;
+    bool includingBoundary = true;
     Obj<PreSieve> indices = this->__computeIndices(supports, base, includingBoundary);
     return indices;
   }//IndexBundle::getClosureIndices()
