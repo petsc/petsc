@@ -114,7 +114,7 @@ namespace ALE {
       this->addCone(i,j);
       return *this;
     };
-    virtual Point_set                 space();
+    virtual Obj<Point_set>            space();
     virtual int32_t                   spaceSize();
     virtual int32_t                   *spaceSizes();
     virtual int32_t                   baseSize();

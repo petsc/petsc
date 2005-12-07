@@ -44,8 +44,8 @@ namespace ALE {
     this->_lock++;
     PetscErrorCode ierr = MPI_Barrier(this->getComm()); CHKERROR(ierr, "Error in MPI_Barrier");
     if(this->_stratificationPolicy == stratificationPolicyOnLocking) {
-      this->__computeClosureHeights(this->_leaves);
-      this->__computeStarDepths(this->_roots);
+      this->__computeClosureHeights(this->cone(this->_leaves));
+      this->__computeStarDepths(this->support(this->_roots));
     }
     return *this;
   };

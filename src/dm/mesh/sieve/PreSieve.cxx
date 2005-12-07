@@ -439,17 +439,17 @@ namespace ALE {
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::space"
-  Point_set PreSieve::space() {
-    Point_set space;
+  Obj<Point_set> PreSieve::space() {
+    Obj<Point_set> space = Point_set();
     ALE_LOG_STAGE_BEGIN;
     CHKCOMM(*this);
     // Adding both cap and base
 
     for(Point__Point_set::iterator cap_itor = this->_support.begin(); cap_itor != this->_support.end(); cap_itor++){
-      space.insert(cap_itor->first);
+      space->insert(cap_itor->first);
     }
     for(Point__Point_set::iterator base_itor = this->_cone.begin(); base_itor != this->_cone.end(); base_itor++){
-      space.insert(base_itor->first);
+      space->insert(base_itor->first);
     }
     ALE_LOG_STAGE_END;
     return space;
@@ -487,7 +487,7 @@ namespace ALE {
   #define __FUNCT__ "PreSieve::spaceSize"
   int32_t PreSieve::spaceSize() {
     CHKCOMM(*this);
-    return this->space().size();
+    return this->space()->size();
   }// PreSieve::spaceSize()
 
 
@@ -496,7 +496,7 @@ namespace ALE {
   int32_t *PreSieve::spaceSizes() {
     CHKCOMM(*this);
     // Allocate array of size commSize
-    int32_t spaceSize = this->space().size();
+    int32_t spaceSize = this->space()->size();
     int32_t *spaceSizes;
     PetscErrorCode ierr;
     spaceSizes = (int32_t *) malloc(sizeof(int32_t)*this->commSize);

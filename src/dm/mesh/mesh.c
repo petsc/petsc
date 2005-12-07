@@ -1786,22 +1786,22 @@ PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
     ierr = PetscFree(in.segmentmarkerlist);CHKERRQ(ierr);
   }
   ierr = MeshPopulate(m, dim, out.numberofpoints, out.numberoftriangles, out.trianglelist, out.pointlist);CHKERRQ(ierr);
+  ALE::Obj<ALE::Sieve> newBoundary(ALE::Sieve(m->comm));
   if (rank == 0) {
-    ALE::Obj<ALE::Sieve> boundary(ALE::Sieve(m->comm));
     ALE::Obj<ALE::Sieve> topology;
 
     ierr = MeshGetTopology(m, &topology);CHKERRQ(ierr);
     for(int v = 0; v < out.numberofpoints; v++) {
       if (out.pointmarkerlist[v]) {
-        ALE::Point boundaryPoint(-1, out.pointmarkerlist[v]);
+        ALE::Point newBoundaryPoint(-1, out.pointmarkerlist[v]);
         ALE::Point point(0, v + out.numberoftriangles);
 
-        boundary->addCone(point, boundaryPoint);
+        newBoundary->addCone(point, newBoundaryPoint);
       }
     }
     for(int e = 0; e < out.numberofedges; e++) {
       if (out.edgemarkerlist[e]) {
-        ALE::Point     boundaryPoint(-1, out.edgemarkerlist[e]);
+        ALE::Point     newBoundaryPoint(-1, out.edgemarkerlist[e]);
         ALE::Point     endpointA(0, out.edgelist[e*2+0] + out.numberoftriangles);
         ALE::Point     endpointB(0, out.edgelist[e*2+1] + out.numberoftriangles);
         ALE::Point_set supportA = topology->support(endpointA);
@@ -1809,11 +1809,11 @@ PetscErrorCode MeshGenerate_Triangle(Mesh boundary, Mesh *mesh)
         supportA.meet(supportB);
         ALE::Point     edge = *(supportA.begin());
 
-        boundary->addCone(edge, boundaryPoint);
+        newBoundary->addCone(edge, newBoundaryPoint);
       }
     }
-    ierr = MeshSetBoundary(m, boundary);CHKERRQ(ierr);
   }
+  ierr = MeshSetBoundary(m, newBoundary);CHKERRQ(ierr);
   ierr = destroyGeneratorOutput(&out);CHKERRQ(ierr);
   *mesh = m;
   PetscFunctionReturn(0);
@@ -1891,12 +1891,7 @@ PetscErrorCode MeshRefine_Triangle(Mesh oldMesh, PetscReal maxArea, /*CoSieve*/ 
 
   if (rank == 0) {
     ALE::Obj<ALE::Point_set> vertices = serialTopology->depthStratum(0);
-    ALE::Obj<ALE::Point_set> edges = serialTopology->depthStratum(1);
     ALE::Obj<ALE::Point_set> faces = serialTopology->heightStratum(0);
-    ALE::Obj<ALE::Point_set> boundaries = serialBoundary->base();
-    char                    *args = (char *) "pqenzQ";
-    char                    *newArgs;
-    size_t                   len;
     int                      f = 0;
 
     in.numberofpoints = vertices->size();
@@ -1936,8 +1931,16 @@ PetscErrorCode MeshRefine_Triangle(Mesh oldMesh, PetscReal maxArea, /*CoSieve*/ 
       }
       f++;
     }
+  }
 
-    ALE::Obj<ALE::IndexBundle> serialSegmentBundle = ALE::IndexBundle(serialTopology);
+  ALE::Obj<ALE::IndexBundle> serialSegmentBundle = ALE::IndexBundle(serialTopology);
+  if (rank == 0) {
+    ALE::Obj<ALE::Point_set> edges = serialTopology->depthStratum(1);
+    ALE::Obj<ALE::Point_set> boundaries = serialBoundary->base();
+    char                    *args = (char *) "pqenzQ";
+    char                    *newArgs;
+    size_t                   len;
+
     in.numberofsegments = 0;
     for(ALE::Point_set::iterator b_itor = boundaries->begin(); b_itor != boundaries->end(); b_itor++) {
       ALE::Obj<ALE::Point_set> segments = serialBoundary->cone(*b_itor);
