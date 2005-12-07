@@ -1523,7 +1523,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecValid(Vec v,PetscTruth *flg)
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
-   The first character of all runtime options is AUTOVECICALLY the hyphen.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
 
    Level: advanced
 
@@ -1555,7 +1555,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOptionsPrefix(Vec v,const char prefix[])
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
-   The first character of all runtime options is AUTOVECICALLY the hyphen.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
 
    Level: advanced
 
