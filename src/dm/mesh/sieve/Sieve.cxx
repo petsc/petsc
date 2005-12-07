@@ -90,60 +90,63 @@ namespace ALE {
     CHKCOMM(*this);
     this->__checkLock();
     // Check whether the arrow addition would violate the addition policy.
-    Point_set iSet, jSet, iClosure, jStar;
-    int32_t iDepth, jDepth;
-    ostringstream txt;
-    switch(this->_additionPolicy) {
-    case additionPolicyAcyclic:
-      if (i == j) {
-        ostringstream ex;
-        ex << "[" << this->getCommRank() << "]: ";
-        ex << "Attempted arrow insertion (" << i.prefix << ", " << i.index << ") --> (" << j.prefix << ", " << j.index << ") ";
-        ex << "would lead to a cycle";
-        //throw Exception("Attempted arrow insertion would lead to a cycle");
-        throw Exception(ex.str().c_str());
-      };
-      //jSet.insert(j);
-      //iSet.insert(i);
-      
-      jStar = this->star(j);
-      iClosure = this->closure(i);
-      if((jStar.find(i) != jStar.end()) || (iClosure.find(j) != iClosure.end())) {
-        printf("Adding (%d, %d)-->(%d, %d)\n", i.prefix, i.index, j.prefix, j.index);
-        if (jStar.find(i) != jStar.end()) {
-          printf("Head found in tail star\n");
+    // This can be done only if the heights and depths are up-to-date, which means 'stratificationPolycyOnMutation'.
+    if(this->_stratificationPolicy == stratificationPolicyOnMutation) {      
+      Point_set iSet, jSet, iClosure, jStar;
+      int32_t iDepth, jDepth;
+      ostringstream txt;
+      switch(this->_additionPolicy) {
+      case additionPolicyAcyclic:
+        if (i == j) {
+          ostringstream ex;
+          ex << "[" << this->getCommRank() << "]: ";
+          ex << "Attempted arrow insertion (" << i.prefix << ", " << i.index << ") --> (" << j.prefix << ", " << j.index << ") ";
+          ex << "would lead to a cycle";
+          //throw Exception("Attempted arrow insertion would lead to a cycle");
+          throw Exception(ex.str().c_str());
+        };
+        //jSet.insert(j);
+        //iSet.insert(i);
+        
+        jStar = this->star(j);
+        iClosure = this->closure(i);
+        if((jStar.find(i) != jStar.end()) || (iClosure.find(j) != iClosure.end())) {
+          printf("Adding (%d, %d)-->(%d, %d)\n", i.prefix, i.index, j.prefix, j.index);
+          if (jStar.find(i) != jStar.end()) {
+            printf("Head found in tail star\n");
+          }
+          if (iClosure.find(j) != iClosure.end()) {
+            printf("Tail found in head closure\n");
+          }
+          ostringstream ex;
+          ex << "[" << this->getCommRank() << "]: ";
+          ex << "Attempted arrow insertion (" << i.prefix << ", " << i.index << ") --> (" << j.prefix << ", " << j.index << ") ";
+          ex << "would lead to a cycle";
+          //throw Exception("Attempted arrow insertion would lead to a cycle");
+          throw Exception(ex.str().c_str());
         }
-        if (iClosure.find(j) != iClosure.end()) {
-          printf("Tail found in head closure\n");
+        break;
+      case additionPolicyStratified:
+        iDepth = this->depth(i);
+        jDepth = this->depth(j);
+        // Recall that iDepth < 0 means i is not in the Sieve; likewise for jDepth
+        if( (iDepth >= 0) && (jDepth >= 0) && (iDepth >= jDepth) ){
+          ostringstream ex;
+          ex << "[" << this->getCommRank() << "]: ";
+          ex << "Attempted arrow insertion would violate stratification";
+          //throw Exception("Attempted arrow insertion would violate stratification");
+          throw Exception(ex.str().c_str());
         }
+        break;
+      default:
         ostringstream ex;
         ex << "[" << this->getCommRank() << "]: ";
-        ex << "Attempted arrow insertion (" << i.prefix << ", " << i.index << ") --> (" << j.prefix << ", " << j.index << ") ";
-        ex << "would lead to a cycle";
-        //throw Exception("Attempted arrow insertion would lead to a cycle");
-        throw Exception(ex.str().c_str());
-      }
-      break;
-    case additionPolicyStratified:
-      iDepth = this->depth(i);
-      jDepth = this->depth(j);
-      // Recall that iDepth < 0 means i is not in the Sieve; likewise for jDepth
-      if( (iDepth >= 0) && (jDepth >= 0) && (iDepth >= jDepth) ){
-        ostringstream ex;
-        ex << "[" << this->getCommRank() << "]: ";
-        ex << "Attempted arrow insertion would violate stratification";
-        //throw Exception("Attempted arrow insertion would violate stratification");
-        throw Exception(ex.str().c_str());
-      }
-      break;
-    default:
-      ostringstream ex;
-      ex << "[" << this->getCommRank() << "]: ";
-      ex << "Unknown addition policy";
-      throw Exception("Unknown addition policy");
-      //throw Exception(ex.str().c_str());
-    }// switch(this->_additionPolicy)
-    
+        ex << "Unknown addition policy";
+        throw Exception("Unknown addition policy");
+        //throw Exception(ex.str().c_str());
+      }// switch(this->_additionPolicy)
+    }// if(this->_stratificationPolicy == stratificationPolicyOnMutation)
+
     // Now add the points
     this->addCapPoint(i);
     this->addBasePoint(j);
