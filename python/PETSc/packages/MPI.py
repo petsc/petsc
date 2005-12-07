@@ -111,7 +111,7 @@ class Configure(PETSc.package.Package):
     '''Check that the libraries for MPI are shared libraries'''
     self.executeTest(self.configureMPIRUN)
     if self.framework.argDB['with-shared'] and self.framework.argDB['with-mpi-shared']:
-      if not self.setCompilers.sharedLibraries:
+      if self.setCompilers.staticLibraries:
         raise RuntimeError('Configuring PETSc with shared libraries - but the system/compilers do not support this')
       if config.setCompilers.Configure.isDarwin():
         # on Apple MPI libraries do not need to be shared to make shared PETSc libraries, nor the python bindings
@@ -236,7 +236,9 @@ class Configure(PETSc.package.Package):
     # Configure and Build LAM
     self.framework.pushLanguage('C')
     args = ['--prefix='+installDir, '--with-rsh=ssh','CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
-    if not self.setCompilers.staticLibraries and self.framework.argDB['with-mpi-shared']:
+    if self.framework.argDB['with-shared'] and self.framework.argDB['with-mpi-shared']:
+      if self.setCompilers.staticLibraries:
+        raise RuntimeError('Configuring PETSc with shared libraries - but the system/compilers do not support this')
       args.append('--enable-shared')
     self.framework.popLanguage()
     # c++ can't be disabled with LAM
@@ -335,7 +337,9 @@ class Configure(PETSc.package.Package):
     else:
       args.append('--disable-f77')
       args.append('--disable-f90')      
-    if not self.setCompilers.staticLibraries and self.framework.argDB['with-mpi-shared']:
+    if not self.framework.argDB['with-shared'] and self.framework.argDB['with-mpi-shared']:
+      if self.setCompilers.staticLibraries:
+        raise RuntimeError('Configuring PETSc with shared libraries - but the system/compilers do not support this')
       if self.compilers.isGCC:
         if config.setCompilers.Configure.isDarwin():
           args.append('--enable-sharedlibs=gcc-osx')
