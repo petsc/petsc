@@ -220,8 +220,12 @@ class Configure(PETSc.package.Package):
   def checkDownload(self,preOrPost):
     '''Check if we should download LAM or MPICH'''
     if self.framework.argDB['download-lam'] == preOrPost:
+      if config.setCompilers.Configure.isCygwin():
+        raise RuntimeError('Sorry, cannot download-install LAM on Windows. Sugest installing windows version of MPICH manually')
       return os.path.abspath(os.path.join(self.InstallLAM(),self.arch.arch))
     if self.framework.argDB['download-mpich'] == preOrPost:
+      if config.setCompilers.Configure.isCygwin():
+        raise RuntimeError('Sorry, cannot download-install MPICH on Windows. Sugest installing windows version of MPICH manually')
       return os.path.abspath(os.path.join(self.InstallMPICH(),self.arch.arch))
     return None
 
