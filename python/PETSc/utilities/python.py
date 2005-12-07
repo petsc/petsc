@@ -26,6 +26,7 @@ class Configure(config.base.Configure):
     self.sourceControl = framework.require('config.sourceControl',self)
     self.petscdir = framework.require('PETSc.utilities.petscdir', self)
     self.setCompilers = framework.require('config.setCompilers', self)
+    self.MPI = framework.require('PETSc.packages.MPI', self)
     if self.framework.argDB['with-python']:
       self.python = framework.require('config.python', None)
     return
@@ -98,6 +99,8 @@ class Configure(config.base.Configure):
       raise RuntimeError('Python bindings require shared librarary support. This test failed for the specified compilers')
     if not self.setCompilers.dynamicLibraries:
       raise RuntimeError('Python bindings require dynamic library support. This test failed for the specified compilers')
+    if not self.MPI.shared and not config.setCompilers.Configure.isDarwin():
+      raise RuntimeError('Python bindings require shared MPI library support')
     self.usePython = 1
     if self.petscdir.isClone:
       self.framework.logPrint('PETSc Clone, downloading Python bindings')

@@ -5,8 +5,7 @@ configure_options = [
   '--with-blocksolve95=1',
   '--with-blocksolve95-include=/home/petsc/soft/BlockSolve95',
   '--with-blocksolve95-lib=/home/petsc/soft/BlockSolve95/lib/libO/freebsd/libBS95.a',
-  '--with-shared=1',
-  '--with-mpi-shared=0'
+  '--with-shared=1'
   ]
 
 if __name__ == '__main__':

@@ -278,16 +278,14 @@ class Package(config.base.Configure):
         self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
         if (not self.includes) or self.executeTest(self.headers.checkInclude, [incl, self.includes],{'otherIncludes' : incls}):
           self.include = incl
-          if self.executeTest(self.checkSharedLibrary):
-            self.found   = 1
-            self.dlib    = self.lib+libs
-            if not hasattr(self.framework, 'packages'):
-              self.framework.packages = []
-            self.directory = dir
-            self.framework.packages.append(self)
-            break
-    if not self.found:
-      raise RuntimeError('Could not find a functional '+self.name+'\n')
+          self.found   = 1
+          self.dlib    = self.lib+libs
+          if not hasattr(self.framework, 'packages'):
+            self.framework.packages = []
+          self.directory = dir
+          self.framework.packages.append(self)
+          return
+    raise RuntimeError('Could not find a functional '+self.name+'\n')
 
   def alternateConfigureLibrary(self):
     '''Called if --with-packagename=0; does nothing by default'''
@@ -316,6 +314,7 @@ class Package(config.base.Configure):
       # If clanguage is c++, test external packages with the c++ compiler
       self.libraries.pushLanguage(self.languages.clanguage)
       self.executeTest(self.configureLibrary)
+      self.executeTest(self.checkSharedLibrary)
       self.libraries.popLanguage()
     else:
       self.executeTest(self.alternateConfigureLibrary)

@@ -45,7 +45,6 @@ class Configure(PETSc.package.Package):
     help.addArgument('MPI', '-download-lam=<no,yes,ifneeded>',    nargs.ArgFuzzyBool(None, 0, 'Download and install LAM/MPI'))
     help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Download and install MPICH-2'))
     help.addArgument('MPI', '-with-mpirun=<prog>',                nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
-    help.addArgument('MPI', '-with-mpi-shared=<bool>',            nargs.ArgBool(None, 1, 'Require that the MPI library be shared'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-download-mpich-machines=[machine1,machine2...]',  nargs.Arg(None, ['localhost','localhost'], 'Machines for MPI to use'))
     help.addArgument('MPI', '-download-mpich-pm=gforker or mpd',  nargs.Arg(None, 'gforker', 'Launcher for MPI processes')) 
@@ -110,15 +109,8 @@ class Configure(PETSc.package.Package):
   def checkSharedLibrary(self):
     '''Check that the libraries for MPI are shared libraries'''
     self.executeTest(self.configureMPIRUN)
-    if self.framework.argDB['with-shared'] and self.framework.argDB['with-mpi-shared']:
-      if self.setCompilers.staticLibraries:
-        raise RuntimeError('Configuring PETSc with shared libraries - but the system/compilers do not support this')
-      if config.setCompilers.Configure.isDarwin():
-        # on Apple MPI libraries do not need to be shared to make shared PETSc libraries, nor the python bindings
-        pass
-      elif not self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, executor = self.mpirun):
-        raise RuntimeError('Configuring PETSc with shared libraries - but MPI libraries are not shared.\nTry using the option --with-mpi-shared=0')
-    return 1
+    self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, executor = self.mpirun)
+    return
 
   def configureMPIRUN(self):
     '''Checking for mpirun'''
@@ -240,7 +232,7 @@ class Configure(PETSc.package.Package):
     # Configure and Build LAM
     self.framework.pushLanguage('C')
     args = ['--prefix='+installDir, '--with-rsh=ssh','CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
-    if self.framework.argDB['with-shared'] and self.framework.argDB['with-mpi-shared']:
+    if self.framework.argDB['with-shared']:
       if self.setCompilers.staticLibraries:
         raise RuntimeError('Configuring PETSc with shared libraries - but the system/compilers do not support this')
       args.append('--enable-shared')
@@ -341,7 +333,7 @@ class Configure(PETSc.package.Package):
     else:
       args.append('--disable-f77')
       args.append('--disable-f90')
-    if self.framework.argDB['with-shared'] and self.framework.argDB['with-mpi-shared']:
+    if self.framework.argDB['with-shared']:
       if self.setCompilers.staticLibraries:
         raise RuntimeError('Configuring PETSc with shared libraries - but the system/compilers do not support this')
       if self.compilers.isGCC:

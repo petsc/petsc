@@ -2,7 +2,6 @@
 
 configure_options = [
   '--with-shared=1',
-  '--with-mpi-shared=0',
   '--with-mpi-dir=/soft/apps/packages/mpich-gm-1.2.6..13b-intel-8.1-2',
   '--with-blas-lapack-dir=/soft/com/packages/mkl_7.2/mkl72/lib/32',
   
