@@ -4,7 +4,8 @@ include ${PETSC_DIR}/bmake/common/test
 # Override the LANGUAGES variable settings below to reduce the 
 # number of languages for which clients are generated; the 
 # normal setting is all languages supported by Babel
-LANGUAGES = $(CCASPEC_BABEL_LANGUAGES)
+#LANGUAGES = $(CCASPEC_BABEL_LANGUAGES)
+LANGUAGES = cxx
 
 CCASPEC_VARS = $(shell ${CCASPEC_CONFIG} --var CCASPEC_MAKEINCL)
 include ${CCASPEC_VARS}
@@ -68,12 +69,12 @@ server/cxx/obj/makefile: ${SIDLFILES}
 	@-echo "include ${PETSC_DIR}/src/tops/makefile.rules" >> server/cxx/obj/makefile
 
 libserver-cxx.${SOSUFFIX}: 
-	-@${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
+	-@${PCC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
 	    -I${PETSC_DIR}/include/tops \
 			$(CCASPEC_BABEL_CXXFLAGS) -I$(CCASPEC_BABEL_includedir) \
       -I$(CCASPEC_BABEL_includedir)/cxx -I$(CCASPEC_pkgincludedir)/cxx \
 	    ../*.cc ../glue/*.cc
-	-@${C_CC} -c ${HAVE_CCA} ${C_CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} \
+	-@${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} \
 			-I${PETSC_DIR}/include/tops -I../glue ../glue/*.c
 	-@$(OMAKE) LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}/tops ${TOPSCLIENT_LIB}" shared_arch
 	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi

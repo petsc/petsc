@@ -57,7 +57,7 @@ class Configure(PETSc.package.Package):
     '''Normally you do not need to provide this method'''
 
     self.miscSetup()
-    self.babel      = self.framework.require('PETSc.packages.babel', self)
+    self.babelpackage      = self.framework.require('PETSc.packages.babel', self)
     
     PETSc.package.Package.configureLibrary(self)
 
