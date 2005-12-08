@@ -629,6 +629,7 @@ static PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   PetscFunctionBegin;
   ierr = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   ierr = PetscNew(Vec_Seq,&s);CHKERRQ(ierr);
+  v->precision       = PETSC_SCALAR;
   v->data            = (void*)s;
   v->bops->publish   = VecPublish_Seq;
   v->n               = PetscMax(v->n,v->N); 

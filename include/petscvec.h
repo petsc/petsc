@@ -318,7 +318,7 @@ extern PETSCVEC_DLLEXPORT PetscScalar VecSetValue_Value;
 
 .seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(), VecSetValueLocal()
 M*/
-#define VecSetValue(v,i,va,mode) ((VecSetValue_Row = i,VecSetValue_Value = va,0) || VecSetValues(v,1,&VecSetValue_Row,&VecSetValue_Value,mode))
+PETSC_STATIC_INLINE PetscErrorCode VecSetValue(Vec v,PetscInt i,PetscScalar va,InsertMode mode) {return VecSetValues(v,1,&i,&va,mode);}
 
 /*MC
    VecSetValueLocal - Set a single entry into a vector using the local numbering
