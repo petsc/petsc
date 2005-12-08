@@ -264,7 +264,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPTrueMonitor(KSP ksp,PetscInt n,PetscReal rn
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
   if (A == B) {
-    ierr = MatUnScaleSystem(A,PETSC_NULL,work);CHKERRQ(ierr);
+    ierr = MatUnScaleSystem(A,work,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
   ierr = VecDestroy(work);CHKERRQ(ierr);

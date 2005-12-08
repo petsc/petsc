@@ -26,7 +26,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScaleSystem_MPIRowbs"
-PetscErrorCode MatScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
+PetscErrorCode MatScaleSystem_MPIRowbs(Mat mat,Vec rhs,Vec x)
 {
   Mat_MPIRowbs *bsif  = (Mat_MPIRowbs*)mat->data;
   Vec          v = bsif->xwork;
@@ -57,7 +57,7 @@ PetscErrorCode MatScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatUnScaleSystem_MPIRowbs"
-PetscErrorCode MatUnScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
+PetscErrorCode MatUnScaleSystem_MPIRowbs(Mat mat,Vec rhs,Vec x)
 {
   Mat_MPIRowbs *bsif  = (Mat_MPIRowbs*)mat->data;
   Vec          v = bsif->xwork;

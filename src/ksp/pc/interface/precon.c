@@ -1241,7 +1241,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPreSolve(PC pc,KSP ksp)
   */  
   ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
   if (A == B) {
-    ierr = MatScaleSystem(pc->mat,x,rhs);CHKERRQ(ierr);
+    ierr = MatScaleSystem(pc->mat,rhs,x);CHKERRQ(ierr);
     ierr = MatUseScaledForm(pc->mat,PETSC_TRUE);CHKERRQ(ierr);
   }
 
@@ -1302,7 +1302,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPostSolve(PC pc,KSP ksp)
   */  
   ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
   if (A == B) {
-    ierr = MatUnScaleSystem(pc->mat,x,rhs);CHKERRQ(ierr);
+    ierr = MatUnScaleSystem(pc->mat,rhs,x);CHKERRQ(ierr);
     ierr = MatUseScaledForm(pc->mat,PETSC_FALSE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

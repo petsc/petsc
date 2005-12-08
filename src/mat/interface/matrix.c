@@ -570,8 +570,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
 
    Input Parameter:
 +  mat - the matrix
-.  x - solution vector (or PETSC_NULL)
--  b - right hand side vector (or PETSC_NULL)
+.  b - right hand side vector (or PETSC_NULL)
+-  x - solution vector (or PETSC_NULL)
 
 
    Notes: 
@@ -588,7 +588,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
 
 .seealso: MatUseScaledForm(), MatUnScaleSystem()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatScaleSystem(Mat mat,Vec x,Vec b)
+PetscErrorCode PETSCMAT_DLLEXPORT MatScaleSystem(Mat mat,Vec b,Vec x)
 {
   PetscErrorCode ierr;
 
@@ -600,7 +600,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScaleSystem(Mat mat,Vec x,Vec b)
   if (b) {PetscValidHeaderSpecific(b,VEC_COOKIE,3);PetscCheckSameComm(mat,1,b,3);}
 
   if (mat->ops->scalesystem) {
-    ierr = (*mat->ops->scalesystem)(mat,x,b);CHKERRQ(ierr);
+    ierr = (*mat->ops->scalesystem)(mat,b,x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -615,8 +615,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScaleSystem(Mat mat,Vec x,Vec b)
 
    Input Parameter:
 +  mat - the matrix
-.  x - solution vector (or PETSC_NULL)
--  b - right hand side vector (or PETSC_NULL)
+.  b - right hand side vector (or PETSC_NULL)
+-  x - solution vector (or PETSC_NULL)
 
 
    Notes: 
@@ -631,7 +631,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScaleSystem(Mat mat,Vec x,Vec b)
 
 .seealso: MatUseScaledForm(), MatScaleSystem()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatUnScaleSystem(Mat mat,Vec x,Vec b)
+PetscErrorCode PETSCMAT_DLLEXPORT MatUnScaleSystem(Mat mat,Vec b,Vec x)
 {
   PetscErrorCode ierr;
 
@@ -642,7 +642,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatUnScaleSystem(Mat mat,Vec x,Vec b)
   if (x) {PetscValidHeaderSpecific(x,VEC_COOKIE,2);PetscCheckSameComm(mat,1,x,2);}
   if (b) {PetscValidHeaderSpecific(b,VEC_COOKIE,3);PetscCheckSameComm(mat,1,b,3);}
   if (mat->ops->unscalesystem) {
-    ierr = (*mat->ops->unscalesystem)(mat,x,b);CHKERRQ(ierr);
+    ierr = (*mat->ops->unscalesystem)(mat,b,x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
