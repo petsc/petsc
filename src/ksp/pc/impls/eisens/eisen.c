@@ -46,7 +46,7 @@ static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCPreSolve_Eisenstat"
-static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
+static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscTruth     nonzero;
@@ -80,7 +80,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCPostSolve_Eisenstat"
-static PetscErrorCode PCPostSolve_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
+static PetscErrorCode PCPostSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscErrorCode ierr;

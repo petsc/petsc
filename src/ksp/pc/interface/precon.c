@@ -1246,7 +1246,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPreSolve(PC pc,KSP ksp)
   }
 
   if (pc->ops->presolve) {
-    ierr = (*pc->ops->presolve)(pc,ksp,x,rhs);CHKERRQ(ierr);
+    ierr = (*pc->ops->presolve)(pc,ksp,rhs,x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1292,7 +1292,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPostSolve(PC pc,KSP ksp)
   ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
   ierr = KSPGetRhs(ksp,&rhs);CHKERRQ(ierr);
   if (pc->ops->postsolve) {
-    ierr =  (*pc->ops->postsolve)(pc,ksp,x,rhs);CHKERRQ(ierr);
+    ierr =  (*pc->ops->postsolve)(pc,ksp,rhs,x);CHKERRQ(ierr);
   }
 
   /*
