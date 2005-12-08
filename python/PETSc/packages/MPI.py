@@ -111,9 +111,9 @@ class Configure(PETSc.package.Package):
     self.executeTest(self.configureMPIRUN)
     try:
       self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, executor = self.mpirun)
-      except RuntimeError, e:
-        self.shared = 0
-        self.framework.logPrint('e')
+    except RuntimeError, e:
+      self.shared = 0
+      self.framework.logPrint('e')
     return
 
   def configureMPIRUN(self):
