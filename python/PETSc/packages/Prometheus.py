@@ -37,18 +37,12 @@ class Configure(PETSc.package.Package):
     if not os.path.isdir(os.path.join(installDir,'lib')):
       os.mkdir(os.path.join(installDir,'lib'))
       os.mkdir(os.path.join(installDir,'include'))            
-    self.framework.pushLanguage('C')
-    args  = 'C_CC = '+self.framework.getCompiler()+'\n'
-    args += 'PETSC_INCLUDE = -I'+os.path.join(self.petscdir.dir,'bmake',self.arch.arch)+' -I'+os.path.join(self.petscdir.dir)+' -I'+os.path.join(self.petscdir.dir,'include')+' '+self.headers.toString(self.mpi.include+self.parmetis.include)+'\n'
+    args = 'PETSC_INCLUDE = -I'+os.path.join(self.petscdir.dir,'bmake',self.arch.arch)+' -I'+os.path.join(self.petscdir.dir)+' -I'+os.path.join(self.petscdir.dir,'include')+' '+self.headers.toString(self.mpi.include+self.parmetis.include)+'\n'
     args += 'BUILD_DIR  = '+prometheusDir+'\n'
     args += 'LIB_DIR  = $(BUILD_DIR)/lib/\n'
     args += 'RANLIB = '+self.setCompilers.RANLIB+'\n'
-    self.framework.popLanguage()
     self.framework.pushLanguage('C++')
-    if self.languages.clanguage == 'C':
-      args += 'CC = '+self.framework.getCompiler()+' -DPETSC_USE_EXTERN_CXX'    
-    else:
-      args += 'CC = '+self.framework.getCompiler()    
+    args += 'CXX = '+self.framework.getCompiler()
     args += ' -DPROM_HAVE_METIS'
     # Instead of doing all this, we could try to have Prometheus just use the PETSc bmake
     # files. But need to pass in USE_EXTERN_CXX flag AND have a C and C++ compiler
