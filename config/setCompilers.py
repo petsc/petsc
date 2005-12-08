@@ -1041,7 +1041,8 @@ class Configure(config.base.Configure):
     self.LIBS = oldLibs
     self.compilerDefines = tmpCompilerDefines
     self.logPrint('*** WARNING *** Shared linking may not function on this architecture')
-    raise RuntimeError('Shared linking may not function on this architecture')
+    self.staticLibrary=1
+    self.sharedLibrary=0
 
   def generateDynamicLinkerGuesses(self):
     if 'with-dynamic-ld' in self.framework.argDB:
