@@ -34,7 +34,7 @@ $                xnew(:) = x;    % reshape one dimensional vector back to two di
 
 .seealso:  PETSC_VIEWER_MATLAB_(),PETSC_VIEWER_MATLAB_SELF(), PETSC_VIEWER_MATLAB_WORLD(),PetscViewerCreate(),
            PetscViewerMatlabOpen(), VecView(), DAView(), PetscViewerMatlabPutArray(), PETSC_VIEWER_BINARY,
-           PETSC_ASCII_VIEWER, DAView(), PetscViewerFileSetName(), PetscViewerFileSetType()
+           PETSC_ASCII_VIEWER, DAView(), PetscViewerFileSetName(), PetscViewerFileSetMode()
 
 M*/
 
@@ -132,8 +132,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabGetArray(PetscViewer mfile,int m
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFileSetType_Matlab" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetType_Matlab(PetscViewer viewer,PetscFileMode type)
+#define __FUNCT__ "PetscViewerFileSetMode_Matlab" 
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetMode_Matlab(PetscViewer viewer,PetscFileMode type)
 {
   PetscViewer_Matlab *vmatlab = (PetscViewer_Matlab*)viewer->data;
 
@@ -156,7 +156,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Matlab(PetscViewer viewer,
 
   PetscFunctionBegin;
   if (type == (PetscFileMode) -1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerFileSetType() before PetscViewerFileSetName()");
+    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   }
 
   /* only first processor opens file */
@@ -201,8 +201,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Matlab(PetscViewer viewer)
   viewer->data = (void*) e;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C","PetscViewerFileSetName_Matlab",
                                      PetscViewerFileSetName_Matlab);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetType_C","PetscViewerFileSetType_Matlab",
-                                     PetscViewerFileSetType_Matlab);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_Matlab",
+                                     PetscViewerFileSetMode_Matlab);CHKERRQ(ierr);
   viewer->ops->destroy = PetscViewerDestroy_Matlab;
   PetscFunctionReturn(0);
 }
@@ -249,7 +249,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabOpen(MPI_Comm comm,const char na
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,binv);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*binv,PETSC_VIEWER_MATLAB);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetType(*binv,type);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(*binv,type);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(*binv,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

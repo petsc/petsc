@@ -52,9 +52,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Netcdf(PetscViewer v)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetName_C",
                                     "PetscViewerFileSetName_Netcdf",
                                      PetscViewerFileSetName_Netcdf);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetType_C",
-                                    "PetscViewerFileSetType_Netcdf",
-                                     PetscViewerFileSetType_Netcdf);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetMode_C",
+                                    "PetscViewerFileSetMode_Netcdf",
+                                     PetscViewerFileSetMode_Netcdf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -73,8 +73,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerNetcdfGetID(PetscViewer viewer,int *nc
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerFileSetType_Netcdf" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetType_Netcdf(PetscViewer viewer,PetscFileMode type)
+#define __FUNCT__ "PetscViewerFileSetMode_Netcdf" 
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetMode_Netcdf(PetscViewer viewer,PetscFileMode type)
 {
   PetscViewer_Netcdf *vnetcdf = (PetscViewer_Netcdf*)viewer->data;
 
@@ -94,7 +94,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerNetcdfOpen(MPI_Comm comm,const char na
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*viewer,PETSC_VIEWER_NETCDF);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetType(*viewer,type);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(*viewer,type);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(*viewer,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -120,7 +120,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Netcdf(PetscViewer viewer,
     ierr = PetscStrallocpy(name,&vnetcdf->filename);CHKERRQ(ierr);
   }
   if (type == (PetscFileMode) -1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerFileSetType() before PetscViewerFileSetName()");
+    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   } else if (type == FILE_MODE_READ) {
     ierr = ncmpi_open(comm,vnetcdf->filename,0,MPI_INFO_NULL,&vnetcdf->ncid);CHKERRQ(ierr);
   } else if (type == FILE_MODE_WRITE) {
