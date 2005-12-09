@@ -290,7 +290,7 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       ncid,xstart,xdim_num=1;
-  PetscInt       i,j,len,dim,m,n,p,dof,swidth,M,N,P;
+  PetscInt       dim,m,n,p,dof,swidth,M,N,P;
   PetscInt       xin_dim,xin_id,xin_n,xin_N,xyz_dim,xyz_id,xyz_n,xyz_N;
   PetscInt       *lx,*ly,*lz;
   PetscScalar    *xarray;
@@ -303,7 +303,7 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
-  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,,"Vector not generated from a DA");
+  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
   ierr = DAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
 
   /* create the appropriate DA to map the coordinates to natural ordering */
@@ -343,12 +343,12 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   /* store the vector */
   ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const size_t*)&xstart,(const size_t*)&xin_n,xarray);CHKERRQ(ierr);
+  ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const MPI_Offset*)&xstart,(const MPI_Offset*)&xin_n,xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
   /* store the coordinate vector */
   ierr = VecGetArray(xyz,&xarray);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xyz,&xstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr = ncmpi_put_vara_double_all(ncid,xyz_id,(const size_t*)&xstart,(const size_t*)&xyz_n,xarray);CHKERRQ(ierr);
+  ierr = ncmpi_put_vara_double_all(ncid,xyz_id,(const MPI_Offset*)&xstart,(const MPI_Offset*)&xyz_n,xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(xyz,&xarray);CHKERRQ(ierr);
   /* destroy the vectors and da */
   ierr = VecDestroy(natural);CHKERRQ(ierr);

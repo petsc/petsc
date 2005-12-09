@@ -20,7 +20,6 @@ PetscErrorCode PetscViewerDestroy_Netcdf(PetscViewer v)
 {
   PetscViewer_Netcdf *vnetcdf = (PetscViewer_Netcdf*)v->data;
   PetscErrorCode     ierr;
-  int                rank;
 
   PetscFunctionBegin;
   if (vnetcdf->ncid) {
@@ -30,35 +29,6 @@ PetscErrorCode PetscViewerDestroy_Netcdf(PetscViewer v)
   ierr = PetscFree(vnetcdf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerCreate_Netcdf" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Netcdf(PetscViewer v)
-{  
-  PetscErrorCode     ierr;
-  PetscViewer_Netcdf *vnetcdf;
-
-  PetscFunctionBegin;
-  ierr               = PetscNew(PetscViewer_Netcdf,&vnetcdf);CHKERRQ(ierr);
-  v->data            = (void*)vnetcdf;
-  v->ops->destroy    = PetscViewerDestroy_Netcdf;
-  v->ops->flush      = 0;
-  v->iformat         = 0;
-  vnetcdf->ncid      = -1;
-  vnetcdf->nctype    = (PetscFileMode) -1; 
-  vnetcdf->filename  = 0;
-
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetName_C",
-                                    "PetscViewerFileSetName_Netcdf",
-                                     PetscViewerFileSetName_Netcdf);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetMode_C",
-                                    "PetscViewerFileSetMode_Netcdf",
-                                     PetscViewerFileSetMode_Netcdf);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerNetcdfGetID" 
@@ -104,13 +74,12 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscViewerFileSetName_Netcdf" 
 PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Netcdf(PetscViewer viewer,const char name[])
 {
-  int                 rank;
   PetscErrorCode      ierr;
   PetscViewer_Netcdf  *vnetcdf = (PetscViewer_Netcdf*)viewer->data;
   PetscFileMode type = vnetcdf->nctype;
   MPI_Comm            comm = viewer->comm;
   PetscTruth          flg;
-  char                fname[PETSC_MAX_PATH_LEN],*gz;
+  char                fname[PETSC_MAX_PATH_LEN];
   
   PetscFunctionBegin;
   ierr = PetscOptionsGetString(PETSC_NULL,"-netcdf_viewer_name",fname,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -132,3 +101,32 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Netcdf(PetscViewer viewer,
 }
 
 EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerCreate_Netcdf" 
+PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Netcdf(PetscViewer v)
+{  
+  PetscErrorCode     ierr;
+  PetscViewer_Netcdf *vnetcdf;
+
+  PetscFunctionBegin;
+  ierr               = PetscNew(PetscViewer_Netcdf,&vnetcdf);CHKERRQ(ierr);
+  v->data            = (void*)vnetcdf;
+  v->ops->destroy    = PetscViewerDestroy_Netcdf;
+  v->ops->flush      = 0;
+  v->iformat         = 0;
+  vnetcdf->ncid      = -1;
+  vnetcdf->nctype    = (PetscFileMode) -1; 
+  vnetcdf->filename  = 0;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetName_C",
+                                    "PetscViewerFileSetName_Netcdf",
+                                     PetscViewerFileSetName_Netcdf);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetMode_C",
+                                    "PetscViewerFileSetMode_Netcdf",
+                                     PetscViewerFileSetMode_Netcdf);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
