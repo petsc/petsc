@@ -66,9 +66,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_HDF4(PetscViewer viewer,co
  case FILE_MODE_WRITE:
    acc = DFACC_WRITE;
  break;
- case FILE_MODE_WRITE:
-   acc = DFACC_CREATE;
-   break;
  default:
    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
  }

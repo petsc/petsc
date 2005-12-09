@@ -616,7 +616,6 @@ PetscErrorCode VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 {
   PetscErrorCode ierr;
   int         n = xin->n,ncid,xdim,xdim_num=1,xin_id,xstart;
-  MPI_Comm    comm = xin->comm;  
   PetscScalar *xarray;
 
   PetscFunctionBegin;
