@@ -175,7 +175,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag
 
   PETSc communicators are just regular MPI communicators that keep track of which 
   tags have been used to prevent tag conflict. If you pass a non-PETSc communicator into
-  a PETSc creation routine it will be duplicated for use in the object.
+  a PETSc creation routine it will attach a private communicator for use in the objects communications.
 
   Level: developer
 

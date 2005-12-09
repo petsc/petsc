@@ -98,8 +98,8 @@ int Petsc_MPI_Attr_delete(MPI_Comm comm,int keyval)
 int Petsc_MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
 {
   if (!keyval) Keyval_setup();
-  *flag                  = attr[keyval].active;
-  *(int **)attribute_val = (int*)attr[keyval].attribute_val;
+  *flag                   = attr[keyval].active;
+  *(void **)attribute_val = attr[keyval].attribute_val;
   return MPI_SUCCESS;
 }
 

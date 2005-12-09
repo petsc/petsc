@@ -365,7 +365,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
       ierr = KSPSetFromOptions(mg[i]->smoothd);CHKERRQ(ierr);
     }
     for (i=1; i<n; i++) {
-      if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
+      if (mg[i]->smoothu && (mg[i]->smoothu != mg[i]->smoothd)) {
         if (monitor) {
           ierr = PetscObjectGetComm((PetscObject)mg[i]->smoothu,&comm);CHKERRQ(ierr);
           ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
@@ -437,7 +437,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
     } else {
       for (i=n-2; i>-1; i--) {
         ierr = KSPGetOperators(mg[i]->smoothd,0,&B,0);CHKERRQ(ierr);
-        ierr = MatPtAP(dB,mg[i]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
+        ierr = MatPtAP(dB,mg[i+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
         ierr = KSPSetOperators(mg[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
         dB   = B;
       }
