@@ -336,8 +336,7 @@ PetscErrorCode VecView_Seq_Netcdf(Vec xin,PetscViewer v)
 {
   PetscErrorCode ierr;
   int            n = xin->n,ncid,xdim,xdim_num=1,xin_id,xstart=0;
-  MPI_Comm       comm = xin->comm;  
-  PetscScalar    *values,*xarray;
+  PetscScalar    *xarray;
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
@@ -352,7 +351,7 @@ PetscErrorCode VecView_Seq_Netcdf(Vec xin,PetscViewer v)
   ierr = ncmpi_enddef(ncid);CHKERRQ(ierr);
   /* store the vector */
   ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const size_t*)&xstart,(const size_t*)&n,xarray);CHKERRQ(ierr);
+  ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const MPI_Offset*)&xstart,(const MPI_Offset*)&n,xarray);CHKERRQ(ierr);
 #else 
     PetscPrintf(PETSC_COMM_WORLD,"NetCDF viewer not supported for complex numbers\n");
 #endif

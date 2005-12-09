@@ -139,15 +139,12 @@ PetscErrorCode VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscInt       i,N,n,bs;
+  PetscInt       N,n,bs;
   PetscInt       ncid,start;
   Vec            vec;
   PetscScalar    *avec;
   MPI_Comm       comm;
-  MPI_Request    request;
-  MPI_Status     status;
-  PetscMap       map;
-  PetscTruth     isnetcdf,flag;
+  PetscTruth     flag;
   char           name[NC_MAX_NAME];
 
   PetscFunctionBegin;
@@ -155,7 +152,7 @@ PetscErrorCode VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = PetscViewerNetcdfGetID(viewer,&ncid);CHKERRQ(ierr);
-  ierr = ncmpi_inq_dim(ncid,0,name,(size_t*)&N);CHKERRQ(ierr); /* N gets the global vector size */
+  ierr = ncmpi_inq_dim(ncid,0,name,(MPI_Offset*)&N);CHKERRQ(ierr); /* N gets the global vector size */
   ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
   ierr = VecSetSizes(vec,PETSC_DECIDE,N);CHKERRQ(ierr);
   if (!rank) {
@@ -168,7 +165,7 @@ PetscErrorCode VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(vec,&start,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
-  ierr = ncmpi_get_vara_double_all(ncid,0,(const size_t*)&start,(const size_t*)&n,(double *)avec);CHKERRQ(ierr);
+  ierr = ncmpi_get_vara_double_all(ncid,0,(const MPI_Offset*)&start,(const MPI_Offset*)&n,(double *)avec);CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);
   *newvec = vec;
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
@@ -307,14 +304,11 @@ PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscInt       i,N,rows,n,bs;
+  PetscInt       N,rows,n,bs;
   PetscInt       ncid,start;
   PetscScalar    *avec;
   MPI_Comm       comm;
-  MPI_Request    request;
-  MPI_Status     status;
-  PetscMap       map;
-  PetscTruth     isnetcdf,flag;
+  PetscTruth     flag;
   char           name[NC_MAX_NAME];
 
   PetscFunctionBegin;
@@ -322,7 +316,7 @@ PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = PetscViewerNetcdfGetID(viewer,&ncid);CHKERRQ(ierr);
-  ierr = ncmpi_inq_dim(ncid,0,name,(size_t*)&N);CHKERRQ(ierr); /* N gets the global vector size */
+  ierr = ncmpi_inq_dim(ncid,0,name,(MPI_Offset*)&N);CHKERRQ(ierr); /* N gets the global vector size */
   if (!rank) {
     ierr = VecGetSize(vec,&rows);CHKERRQ(ierr);
     if (N != rows) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Vector in file different length then input vector");
@@ -335,7 +329,7 @@ PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(vec,&start,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
-  ierr = ncmpi_get_vara_double_all(ncid,0,(const size_t*)&start,(const size_t*)&n,(double *)avec);CHKERRQ(ierr);
+  ierr = ncmpi_get_vara_double_all(ncid,0,(const MPI_Offset*)&start,(const MPI_Offset*)&n,(double *)avec);CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
