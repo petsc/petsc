@@ -174,8 +174,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm comm,const char nam
   PetscErrorCode    ierr;
   PetscViewerLink   *vlink,*nv;
   PetscTruth        flg,eq;
+  size_t            len;
 
   PetscFunctionBegin;
+  ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
+  if (!len) {
+    *lab = PETSC_VIEWER_STDOUT_(comm);
+    ierr = PetscObjectReference((PetscObject)*lab);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelViewer,&Petsc_Viewer_keyval,(void*)0);CHKERRQ(ierr);
   }
