@@ -42,7 +42,7 @@ namespace ALE {
 
 #define ALE_LOG_STAGE_START                                 \
   {                                                         \
-    ALE::LogEvent stage = ALE::LogStageRegister(__FUNCT__); \
+    ALE::LogStage stage = ALE::LogStageRegister(__FUNCT__); \
     ALE::LogStagePush(stage);                               \
   }                                                     
 
@@ -54,6 +54,17 @@ namespace ALE {
 
 #define ALE_LOG_STAGE_BEGIN    ALE_LOG_STAGE_START  {
 #define ALE_LOG_STAGE_END      } ALE_LOG_STAGE_FINISH 
+
+#else
+
+#define ALE_LOG_STAGE_START  {}
+#define ALE_LOG_STAGE_FINISH {}
+#define ALE_LOG_STAGE_BEGIN  {}
+#define ALE_LOG_STAGE_END  {}
+
+#endif
+
+#if (defined ALE_USE_LOGGING) && (defined ALE_LOGGING_USE_EVENTS)
 
 #define ALE_LOG_EVENT_BEGIN                                 \
   {                                                         \
@@ -69,14 +80,9 @@ namespace ALE {
 
 #else
 
-#define ALE_LOG_STAGE_START  {}
-#define ALE_LOG_STAGE_FINISH {}
-#define ALE_LOG_STAGE_BEGIN  {}
-#define ALE_LOG_STAGE_BEGIN  {}
 #define ALE_LOG_EVENT_BEGIN  {}
 #define ALE_LOG_EVENT_END    {}
 
 #endif
-
 
 #endif

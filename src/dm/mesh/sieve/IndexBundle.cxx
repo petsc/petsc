@@ -467,6 +467,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::computeOverlapIndices"
   void   IndexBundle::computeOverlapIndices() {
+    ALE_LOG_EVENT_BEGIN
     this->_overlapOwnership = this->getTopology()->baseFootprint(PreSieve::completionTypePoint, PreSieve::footprintTypeCone, NULL)->left();
     if (this->verbosity > 10) {this->_overlapOwnership->view("Overlap ownership");}
     this->_localOverlapIndices->setBottom(this->_overlapOwnership);
@@ -483,6 +484,7 @@ namespace ALE {
     // Now we do the completion
     this->_localOverlapIndices->coneCompletion(PreSieve::completionTypeArrow, PreSieve::footprintTypeCone, this->_remoteOverlapIndices);
     if (this->verbosity > 10) {this->_remoteOverlapIndices->view("Remote overlap indices");}
+    ALE_LOG_EVENT_END
   }//IndexBundle::computeOverlapIndices()
 
   #undef  __FUNCT__
@@ -609,6 +611,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "IndexBundle::computeGlobalIndices"
   void   IndexBundle::computeGlobalIndices() {
+    ALE_LOG_EVENT_BEGIN
     // Make local indices
     ALE::Point_set localTypes;
     localTypes.insert(ALE::Point(this->commRank, ALE::localPoint));
@@ -738,6 +741,7 @@ namespace ALE {
     delete [] recvIntervals;
     this->_localIndices = localIndices;
     this->_globalIndices = globalIndices;
+    ALE_LOG_EVENT_END
   }
 
   #undef  __FUNCT__

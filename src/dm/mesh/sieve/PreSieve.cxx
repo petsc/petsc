@@ -637,23 +637,19 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::addCone"
   void PreSieve::addCone(const Point& cone, const Point& j) {
-    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
-
-    LogEventBegin(e);
+    ALE_LOG_EVENT_BEGIN
     CHKCOMM(*this);
     this->__checkLock();
     // Add j to the base in case coneSet is empty and no addArrow are executed
     this->addBasePoint(j);
     this->addArrow(cone, j);
-    LogEventEnd(e);
+    ALE_LOG_EVENT_END
   }
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::addCone"
   void PreSieve::addCone(Obj<Point_set> coneSet, const Point& j) {
-    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
-
-    LogEventBegin(e);
+    ALE_LOG_EVENT_BEGIN
     CHKCOMM(*this);
     this->__checkLock();
     // Add j to the base in case coneSet is empty and no addArrow are executed
@@ -661,23 +657,22 @@ namespace ALE {
     for(Point_set::iterator cone_itor = coneSet->begin(); cone_itor != coneSet->end(); cone_itor++) {
       this->addArrow(*cone_itor, j);
     }
-    LogEventEnd(e);
+    ALE_LOG_EVENT_END
   }
 
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::cone"
   Obj<Point_set> PreSieve::cone(const Point& point) {
-    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
     static Obj<Point_set> c;
 
     ALE_LOG_STAGE_BEGIN;
-    LogEventBegin(e);
+    ALE_LOG_EVENT_BEGIN
     if (this->_cone.find(point) != this->_cone.end()) {
       c = this->_cone[point];
     } else {
       c = Point_set();
     }
-    LogEventEnd(e);
+    ALE_LOG_EVENT_END
     ALE_LOG_STAGE_END;
     return c;
   }
@@ -815,17 +810,16 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "PreSieve::support"
   Obj<Point_set> PreSieve::support(const Point& point) {
-    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
     static Obj<Point_set> s;
 
     ALE_LOG_STAGE_BEGIN;
-    LogEventBegin(e);
+    ALE_LOG_EVENT_BEGIN
     if (this->_support.find(point) != this->_support.end()) {
       s = this->_support[point];
     } else {
       s = Point_set();
     }
-    LogEventEnd(e);
+    ALE_LOG_EVENT_END
     ALE_LOG_STAGE_END;
     return s;
   }

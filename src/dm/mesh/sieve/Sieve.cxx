@@ -275,10 +275,8 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::__computeClosureHeights"
   void Sieve::__computeClosureHeights(Obj<Point_set> points) {
-    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
-
     ALE_LOG_STAGE_BEGIN;
-    LogEventBegin(e);
+    ALE_LOG_EVENT_BEGIN
     // points contains points for the current height computation;
     // mpoints keeps track of 'modified' points identified at the current stage, 
     // and through which recursion propagates
@@ -301,17 +299,15 @@ namespace ALE {
     if(mpoints->size() > 0) {
       this->__computeClosureHeights(this->cone(mpoints));
     }
-    LogEventEnd(e);
+    ALE_LOG_EVENT_END
     ALE_LOG_STAGE_END;
   }//Sieve::__computeClosureHeights()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::__computeStarDepths"
   void Sieve::__computeStarDepths(Obj<Point_set> points) {
-    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
-
     ALE_LOG_STAGE_BEGIN;
-    LogEventBegin(e);
+    ALE_LOG_EVENT_BEGIN
     // points contains points for the current depth computation;
     // mpoints keeps track of 'modified' points identified at the current stage, 
     // and through which recursion propagates
@@ -334,17 +330,17 @@ namespace ALE {
     if(mpoints->size() > 0) {
       this->__computeStarDepths(this->support(mpoints));
     }
-    LogEventEnd(e);
+    ALE_LOG_EVENT_END
     ALE_LOG_STAGE_END;
   }//Sieve::__computeStarDepths()
 
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::depth"
   int32_t Sieve::depth(const Point& p) {
-    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
     int32_t depth;
+
     ALE_LOG_STAGE_BEGIN;
-    LogEventBegin(e);
+    ALE_LOG_EVENT_BEGIN
     CHKCOMM(*this);
     if(this->_depth.find(p) != this->_depth.end()) {
       depth = this->_depth[p];
@@ -352,7 +348,7 @@ namespace ALE {
       /* This accomdates Stacks, since spaceContains() can return true before the point is added to the Stack itself */
       depth =  -1;
     }
-    LogEventEnd(e);
+    ALE_LOG_EVENT_END
     ALE_LOG_STAGE_END;
     return depth;
   }// Sieve::depth()
@@ -467,17 +463,16 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "Sieve::closure"
   Obj<Point_set> Sieve::closure(Obj<Point_set> chain) {
-    static LogEvent e = LogEventRegister(PETSC_COOKIE, __FUNCT__);
     Obj<Point_set> closure = Point_set();
 
     ALE_LOG_STAGE_BEGIN;
-    LogEventBegin(e);
+    ALE_LOG_EVENT_BEGIN
     CHKCOMM(*this);
     int32_t depth = this->maxDepth(chain);
     if(depth >= 0) {
       closure = this->nClosure(chain, depth);
     }
-    LogEventEnd(e);
+    ALE_LOG_EVENT_END
     ALE_LOG_STAGE_END;
     return closure;
   }// Sieve::closure()

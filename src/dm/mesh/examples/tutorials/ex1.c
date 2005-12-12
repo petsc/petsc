@@ -86,21 +86,29 @@ int main(int argc, char *argv[])
   /* Set ALE package-wide verbosity; will not affect Coaster descendants that carry their own verbosity */
   ALE::setVerbosity(verbosity);
 
+  ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
+  ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
   if (fileType == PCICE) {
     ierr = MeshCreatePCICE(comm, baseFilename, dim, useZeroBase, &mesh);CHKERRQ(ierr);
   } else if (fileType == PYLITH) {
     ierr = MeshCreatePyLith(comm, baseFilename, &mesh);CHKERRQ(ierr);
   }
+  ALE::LogStagePop(stage);
   ALE::Obj<ALE::Sieve> topology;
   ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0).size());CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0).size());CHKERRQ(ierr);
 
+  stage = ALE::LogStageRegister("MeshDistribution");
+  ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
   ierr = MeshDistribute(mesh);CHKERRQ(ierr);
   ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
+  ALE::LogStagePop(stage);
 
+  stage = ALE::LogStageRegister("MeshOutput");
+  ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
   ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
@@ -136,6 +144,7 @@ int main(int argc, char *argv[])
   }
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ALE::LogStagePop(stage);
 
   ierr = MeshDestroy(mesh);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
@@ -157,6 +166,7 @@ PetscErrorCode CreatePartitionVector(Mesh mesh, Vec *partition)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ALE_LOG_EVENT_BEGIN
   ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
@@ -172,5 +182,6 @@ PetscErrorCode CreatePartitionVector(Mesh mesh, Vec *partition)
     array[i] = rank;
   }
   ierr = VecRestoreArray(*partition, &array);CHKERRQ(ierr);
+  ALE_LOG_EVENT_END
   PetscFunctionReturn(0);
 }

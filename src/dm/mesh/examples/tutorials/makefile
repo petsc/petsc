@@ -1,7 +1,7 @@
 
 CFLAGS	        = -I${PETSC_DIR}/src/dm/mesh/sieve
 FFLAGS	        =
-CPPFLAGS        = -DALE_USE_LOGGING -DALE_HAVE_CXX_ABI -DALE_USE_DEBUGGING
+CPPFLAGS        = -DALE_USE_LOGGING -DALE_LOGGING_USE_EVENTS -DALE_HAVE_CXX_ABI -DALE_USE_DEBUGGING
 FPPFLAGS        = 
 LOCDIR          = src/dm/mesh/examples/tutorials/
 EXAMPLESC       = ex1.c
@@ -38,10 +38,10 @@ debugex1_pylith:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file /PETSc3/geoframe/packages/lithomop/lithomop3d/examples/lintet/bm1b/bm1b -start_in_debugger ${EXTRA_ARGS}
 
 runex1_2:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}
 
 runex1_3:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -use_zero_base 1 -base_file data/ex1_3d
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -use_zero_base 1 -base_file data/ex1_3d ${EXTRA_ARGS}
 
 runex2:
 	-@${MPIRUN} -np ${NP} ./ex2 -dim 2 ${EXTRA_ARGS}
