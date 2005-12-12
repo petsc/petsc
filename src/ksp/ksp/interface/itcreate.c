@@ -209,6 +209,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatS
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (Amat) PetscValidHeaderSpecific(Amat,MAT_COOKIE,2);
   if (Pmat) PetscValidHeaderSpecific(Pmat,MAT_COOKIE,3);
+  if (Amat) PetscCheckSameComm(ksp,1,Amat,2);
+  if (Pmat) PetscCheckSameComm(ksp,1,Pmat,3);
   ierr = PCSetOperators(ksp->pc,Amat,Pmat,flag);CHKERRQ(ierr);
   if (ksp->setupcalled > 1) ksp->setupcalled = 1;  /* so that next solve call will call setup */
   PetscFunctionReturn(0);

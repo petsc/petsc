@@ -41,7 +41,7 @@ class Configure(config.base.Configure):
                                            '-@${GREP} -v "^!" $*.F > __$*.c',\
                                            '-${CC} ${FCPPFLAGS} -E '+TRADITIONAL_CPP+' __$*.c | ${GREP} -v \'^ *#\' > __$*.F',\
                                            '-${FC} -c ${FFLAGS} ${FC_FLAGS} __$*.F -o $*.o',\
-                                           '-if [ "${SKIP_RM}" != "yes" ] ;then  ${RM} __$*.F __$*.c ; fi'])
+                                           '-@if [ "${SKIP_RM}" != "yes" ] ;then  ${RM} __$*.F __$*.c ; fi'])
         self.addMakeRule('.F.a',       '',['-@${RM} __$*.F __$*.c',\
                                            '-@${GREP} -v "^!" $*.F > __$*.c',\
                                            '-${CC} ${FCPPFLAGS} -E '+TRADITIONAL_CPP+' __$*.c | ${GREP} -v \'^ *#\' > __$*.F',\

@@ -1000,6 +1000,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStru
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (Amat) PetscValidHeaderSpecific(Amat,MAT_COOKIE,2);
   if (Pmat) PetscValidHeaderSpecific(Pmat,MAT_COOKIE,3);
+  if (Amat) PetscCheckSameComm(pc,1,Amat,2);
+  if (Pmat) PetscCheckSameComm(pc,1,Pmat,3);
 
   /*
       BlockSolve95 cannot use default BJacobi preconditioning

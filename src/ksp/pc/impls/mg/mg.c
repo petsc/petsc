@@ -695,8 +695,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCycles(PC pc,PetscInt n)
    Collective on PC
 
    Input Parameters:
-+  pc - the multigrid context 
--  n - the number of cycles
+.  pc - the multigrid context 
 
    Options Database Key:
 $  -pc_mg_galerkin
@@ -704,6 +703,8 @@ $  -pc_mg_galerkin
    Level: intermediate
 
 .keywords: MG, set, Galerkin
+
+.seealso: PCMGGetGalerkin()
 
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetGalerkin(PC pc)
@@ -720,6 +721,42 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetGalerkin(PC pc)
   for (i=0; i<levels; i++) {  
     mg[i]->galerkin = PETSC_TRUE;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCMGGetGalerkin"
+/*@
+   PCMGGetGalerkin - Checks if Galerkin multigrid is being used, i.e.
+      A_i-1 = r_i * A_i * r_i^t
+
+   Not Collective
+
+   Input Parameter:
+.  pc - the multigrid context 
+
+   Output Parameter:
+.  gelerkin - PETSC_TRUE or PETSC_FALSE
+
+   Options Database Key:
+$  -pc_mg_galerkin
+
+   Level: intermediate
+
+.keywords: MG, set, Galerkin
+
+.seealso: PCMGSetGalerkin()
+
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetGalerkin(PC pc,PetscTruth *galerkin)
+{ 
+  PC_MG    **mg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  mg     = (PC_MG**)pc->data;
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  *galerkin = mg[0]->galerkin;
   PetscFunctionReturn(0);
 }
 
