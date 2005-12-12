@@ -342,11 +342,16 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
 
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
+    if (dmmg[0]->galerkin) {
+      ierr = PCMGSetGalerkin(pc);CHKERRQ(ierr);
+    }
 
     /* set solvers for each level */
     for (i=0; i<nlevels; i++) {
       ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr);
-      ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      if (i == nlevels-1 || !dmmg[0]->galerkin) {
+        ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      }
       if (i < nlevels-1) { /* don't set for finest level, they are set in PCApply_MG()*/
 	ierr = PCMGSetX(pc,i,dmmg[i]->x);CHKERRQ(ierr); 
 	ierr = PCMGSetRhs(pc,i,dmmg[i]->b);CHKERRQ(ierr); 

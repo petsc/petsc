@@ -59,20 +59,13 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
+    PetscTruth galerkin;
 
+    ierr = PCMGGetGalerkin(pc,&galerkin);CHKERRQ(ierr);
     ierr = PCMGGetSmoother(pc,nlevels-1,&lksp);CHKERRQ(ierr);
     ierr = KSPSetOperators(lksp,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->B,*flag);CHKERRQ(ierr);
 
-    if (dmmg[0]->galerkin) {
-      for (i=nlevels-2; i>-1; i--) {
-        PetscTruth JeqB = (PetscTruth)( dmmg[i]->B == dmmg[i]->J);
-        ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr);
-        ierr = MatPtAP(dmmg[i+1]->B,dmmg[i+1]->R,MAT_INITIAL_MATRIX,1.0,&dmmg[i]->B);CHKERRQ(ierr);
-        if (JeqB) dmmg[i]->J = dmmg[i]->B;
-	ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr);
-	ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,*flag);CHKERRQ(ierr);
-      }   
-    } else {
+    if (!galerkin) {
       for (i=nlevels-1; i>0; i--) {
 	if (!dmmg[i-1]->w) {
 	  ierr = VecDuplicate(dmmg[i-1]->x,&dmmg[i-1]->w);CHKERRQ(ierr);
