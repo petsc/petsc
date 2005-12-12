@@ -16,7 +16,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       i,m,n,j,idxn[10],M,N,nzp;
-  PetscReal      norm,norm_tmp,tol=1.e-10,fill=4.0;
+  PetscReal      norm,norm_tmp,tol=1.e-8,fill=4.0;
   PetscRandom    rdm;
   char           file[4][128];
   PetscTruth     flg,preload = PETSC_TRUE;
@@ -24,8 +24,7 @@ int main(int argc,char **args)
   PetscTruth     Test_MatMatMult=PETSC_TRUE,Test_MatMatMultTr=PETSC_TRUE;
   Vec            v3,v4,v5;
   PetscInt       pm,pn,pM,pN;
-  /* this test is turned off - P might be generated incorrectly. ex96.c gives better test */
-  PetscTruth     Test_MatPtAP=PETSC_FALSE;
+  PetscTruth     Test_MatPtAP=PETSC_TRUE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -108,7 +107,7 @@ int main(int argc,char **args)
     PetscInt PN;
     ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
     PN   = M/2;
-    nzp  = 5;
+    nzp  = 5; /* num of nonzeros in each row of P */
     ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr); 
     ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,M,PN);CHKERRQ(ierr); 
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
@@ -184,9 +183,9 @@ int main(int argc,char **args)
     /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] A: %d,%d, %d,%d\n",rank,m,n,M,N); */
 
     PN   = M/2; 
-    nzp  = PN; 
+    nzp  = (PetscInt)(0.1*PN); /* num of nozeros in each row of P */
     ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr); 
-    ierr = MatSetSizes(P,m,n,N,PN);CHKERRQ(ierr); 
+    ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,N,PN);CHKERRQ(ierr); 
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(P,nzp,PETSC_NULL,nzp,PETSC_NULL);CHKERRQ(ierr);
