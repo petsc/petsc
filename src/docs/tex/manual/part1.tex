@@ -169,15 +169,11 @@ directory.  For example, under the UNIX C shell a command of the form
 \end{tabbing}
  can be placed in the user's \trl{
 .cshrc} file.  In addition, the user must set the environmental
-variable {\trl{PETSC_ARCH}} to specify the architecture (e.g., rs6000,
-solaris, IRIX, etc.)  on which PETSc is being used.  The utility
- \trl{${PETSC_DIR}/bin/petscarch} can be used for this purpose.  For example,
-\begin{tabbing}
-   setenv PETSC\_ARCH `\$PETSC\_DIR/bin/petscarch`
-\end{tabbing}
-can be placed in a \trl{.cshrc} file.  Thus, even if several machines of different
-types share the same filesystem, \trl{PETSC_ARCH} will be set correctly
-when logging into any of them. 
+variable {\trl{PETSC_ARCH}} to specify the architecture. Note that
+{\trl{PETSC_ARCH}} is just a name selected by the installer to refer to
+the libraries compiled for a particular set of compiler options and 
+machine type. Using different {\trl{PETSC_ARCH}} allows one to manage
+several different sets of libraries easily.
 
 All PETSc programs use the MPI (Message Passing Interface) standard
 for message-passing communication \cite{MPI-final}.  Thus, to execute

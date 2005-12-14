@@ -1,309 +1,549 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
-
 <head>
-<title>PETSc: Docs:&nbsp;&nbsp; FAQ</title>
+
+  <title>PETSc: Docs:&nbsp;&nbsp; FAQ</title>
 </head>
 
-<body  bgcolor="#D5EAFF">
+
+
+<body bgcolor="#d5eaff">
+
 
 <table width="100%">
-  <tr>
-    <td width="25%" valign="top"><h1><font color="#FF0000" size="7">PETSc</font></h1>
-    <ul>
+
+  <tbody>
+    <tr>
+
+    <td valign="top" width="25%">
+      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+
+    
+      <ul>
+
       <li><a href="../index.html"><strong>Home</strong></a></li>
-    </ul>
+
+    
+      </ul>
+
     </td>
+
     <td width="75%">
     <!--##begin-->
-    <h1>Docs:&nbsp; FAQ</h1>
+    
+      <h1>Docs:&nbsp; FAQ</h1>
+
     <!--##end-->
     </td>
+
   </tr>
+
   <tr>
-    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+
+    <td colspan="2" width="100%">
+      <hr color="#ff5b5b" size="4">
     </td>
+
   </tr>
+
   <tr>
-    <td width="25%" valign="top"><ul>
+
+    <td valign="top" width="25%">
+      <ul>
+
       <li><a href="../download/index.html"><strong>Download</strong></a></li>
+
       <li><a href="../features/index.html"><strong>Features</strong></a></li>
-      <li><a href="index.html"><strong>Documentation</strong></a><ul>
+
+      <li><a href="index.html"><strong>Documentation</strong></a>
+          <ul>
+
           <li><a href="index.html#Manual"><strong>Manual pages and Users Manual</strong></a></li>
+
           <li><a href="referencing.html"><strong>Referencing&nbsp; PETSc</strong></a></li>
+
           <li><a href="tutorials/index.html"><strong>Tutorials</strong></a></li>
+
           <li><strong><a href="installation.html">Installation</a> </strong></li>
+
           <li><strong><a href="changes/index.html">Changes</a></strong></li>
+
           <li><strong><a href="troubleshooting.html">Troubleshooting</a></strong></li>
+
           <li><strong><a href="bugreporting.html">Bug Reporting</a></strong></li>
+
           <li><strong><a href="codemanagement.html">Code Management</a></strong></li>
-          <li><strong><font color="#FF0000">FAQ</font> </strong></li>
+
+          <li><strong><font color="#ff0000">FAQ</font> </strong></li>
+
           <li><strong><a href="copyright.html">Copyright</a> </strong></li>
-        </ul>
+
+        
+          </ul>
+
       </li>
+
       <li><a href="../publications/index.html"><strong>Applications/Publications</strong></a></li>
+
       <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-    </ul>
+
+    
+      </ul>
+
     </td>
-    <td width="75%" valign="top">
+
+    <td valign="top" width="75%">
     <!--##begin-->
-    <h4><a href="faq.html#General">General</a></h4>
-    <menu>
+    
+      <h4><a href="faq.html#General">General</a></h4>
+
+    
+      <menu>
       <li><a href="faq.html#bug-reports">Where should I send PETSc bug reports and questions?</a></li>
+
       <li><a href="faq.html#petsc-mailing-list">How can I subscribe to the PETSc users mailing
         list</a>?</li>
+
       <li><a href="faq.html#why-c">Why is PETSc programmed in C, instead of Fortran or C++?</a> </li>
+
       <li><a href="faq.html#logging-overhead">Does all the PETSc error checking and logging reduce
         PETSc's efficiency?</a></li>
+
       <li><a href="faq.html#work-efficiently">How do such a small group of people manage to write
         and maintain such a large and marvelous package as PETSc?</a></li>
+
       <li><a href="#mg-log">How do I know the amount of time spent on each level of the solver in multigrid (PCType of PCMG)
         -pc_type mg.</a></li>
+
       <li><a href="#mpi-vec-to-seq-vec">How do I collect all the values from a parallel PETSc
         vector into a sequential vector on each processor?</a></li>
+
       <li><a href="#mpi-vec-to-mpi-vec">How do I collect all the values from a parallel PETSc
         vector into a vector on the zeroth (or any particular) processor?</a></li>
+
       <li><a href="#binder">How do I print out all the PETSc manual pages to put
         into a binder?</a></li>
+
     </menu>
-    <p>&nbsp;</p>
-    <h4><a href="faq.html#Installation">Installation</a></h4>
-    <menu>
+
+    
+      <p>&nbsp;</p>
+
+    
+      <h4><a href="faq.html#Installation">Installation</a></h4>
+
+    
+      <menu>
       <li><a href="faq.html#already-installed">How do I begin using PETSc if the software has
         already been completely built and installed by someone else?</a></li>
+
       <li><a href="faq.html#reduce-disk-space">The PETSc distribution is SO large. How can I
         reduce my disk space usage?</a></li>
+
       <li><a href="faq.html#petsc-uni">I want to use PETSc only for uniprocessor programs. Must I
         still install and use a version of MPI?</a></li>
+
       <li><a href="faq.html#no-x">Can I install PETSc to not use X windows (either under Unix or
         Windows with gcc, the gnu compiler)?</a></li>
+
       <li><a href="faq.html#use-mpi">Why do you use MPI?</a></li>
-      <li><a href="#use-blocksolve">How do I install PETSc using BlockSolve, and
-        use it in my code?</a><br>
-      </li>
+
+      
     </menu>
-    <p><a href="#usage"><b>Usage</b></a></p>
-    <ul>
-      <li><a href="#hypre">I want to use hypre boomerAMG without GMRES but when I run -pc_type hypre -pc_hypre_type boomeramg -ksp_type preonly I don't get a very accurate answer!</a></li>
+
+    
+      <p><a href="#usage"><b>Usage</b></a></p>
+
+    
+      <ul>
+
+      <li><a href="#hypre">I want to use hypre boomerAMG without GMRES
+but when I run -pc_type hypre -pc_hypre_type boomeramg -ksp_type
+preonly I don't get a very accurate answer!</a></li>
+
       <li><a href="#nosaij">You have AIJ and BAIJ matrix formats, and SBAIJ for symmetric storage, how come no SAIJ?</a></li>
+
       <li><a href="#domaindecomposition">How do I use PETSc for domain decomposition?</a></li>
+
       <li><a href="#blocks">Can I create BAIJ matrices with different size blocks for different block rows?</a></li>
-    </ul>
-    <h4><a href="faq.html#Execution">Execution</a></h4>
-    <menu>
+
+    
+      </ul>
+
+    
+      <h4><a href="faq.html#Execution">Execution</a></h4>
+
+    
+      <menu>
       <li><a href="faq.html#long-link-time">PETSc executables are SO big and take SO long to link.</a></li>
+
       <li><a href="faq.html#petsc-options">PETSc has so many options for my program that it is
         hard to keep them straight.</a></li>
+
       <li><a href="faq.html#petsc-log-info">PETSc automatically handles many of the details in
         parallel PDE solvers. How can I understand what is really happening within my program? </a></li>
+
       <li><a href="faq.html#efficient-assembly">Assembling large sparse matrices takes a long
         time. What can I do make this process faster?</a></li>
+
       <li><a href="faq.html#log-summary">How can I generate performance summaries with
         PETSc?</a></li>
+
       <li><a href="faq.html#parallel-roundoff">Why do I get different answers on a different numbers of processors?</a></li>
+
     </menu>
-    <h4><a href="faq.html#Debugging">Debugging</a></h4>
-    <menu>
+
+    
+      <h4><a href="faq.html#Debugging">Debugging</a></h4>
+
+    
+      <menu>
       <li><a href="faq.html#debug-ibmfortran">How do I turn off PETSc signal handling so I can use the -C option on xlF?</a></li>
+
       <li><a href="faq.html#debug-cray">How do I debug on the Cray T3D/T3E?</a></li>
+
       <li><a href="faq.html#start_in_debugger-doesnotwork">How do I debug if -start_in_debugger
         does not work on my machine?</a></li>
+
       <li><a href="faq.html#debug-hang">How can I see where my code is hanging?</a></li>
+
       <li><a href="faq.html#debug-inspect">How can I inspect Vec and Mat values when in the debugger?</a></li>
+
     </menu>
-    <h4><a href="faq.html#Shared Libraries">Shared Libraries</a></h4>
-    <menu>
+
+    
+      <h4><a href="faq.html#Shared%20Libraries">Shared Libraries</a></h4>
+
+    
+      <menu>
       <li><a href="faq.html#install-shared">Can I install PETSc libraries as shared libraries?</a></li>
+
       <li><a href="faq.html#why-use-shared">Why should I use shared libraries?</a></li>
-      <li><a href="faq.html#delete-shared">How do I delete the shared libraries?</a></li>
+
+      
       <li><a href="faq.html#link-shared">How do I link to the PETSc shared libraries?</a></li>
-      <li><a href="faq.html#error-running-shared">When running my program, I encounter an error
-        saying &quot;petsc shared libraries not found</a>&quot;.</li>
-      <li><a href="faq.html#dylibpath">What the purpose of the DYLIBPATH variable in the file
-        ${PETSC_DIR}/bmake/${PETSC_ARCH}/packages</a>?</li>
       <li><a href="faq.html#link-regular-lib">What if I want to link to the regular .a library
         files?</a></li>
+
       <li><a href="faq.html#move-shared-exec">What do I do if I want to move my executable to a
         different machine?</a></li>
+
       <li><a href="#dynamic-shared">What is the deal with dynamic libraries (and difference with shared
         libraries)</a></li>
+
     </menu>
-    <hr>
+
+    
+      <hr>
 
 
-    <h3><a name="General">General</a></h3>
-    <p><strong><a name="bug-reports"><font color="#FF0000">Where should I send PETSc bug
+    
+      <h3><a name="General">General</a></h3>
+
+    
+      <p><strong><a name="bug-reports"><font color="#ff0000">Where should I send PETSc bug
     reports and questions?</font></a> </strong></p>
-    <p>Send all maintenance requests to the PETSc developers via the email address <a href="mailto:petsc-maint@mcs.anl.gov">petsc-maint@mcs.anl.gov</a> . Also, see the file <a href="bugreporting.html">bugreporting. html</a></p>
-    <p><a name="petsc-mailing-list"><strong><font color="#FF0000">How can I subscribe to the
+
+    
+      <p>Send all maintenance requests to the PETSc developers via the email address <a href="mailto:petsc-maint@mcs.anl.gov">petsc-maint@mcs.anl.gov</a> . Also, see the file <a href="bugreporting.html">bugreporting. html</a></p>
+
+    
+      <p><a name="petsc-mailing-list"><strong><font color="#ff0000">How can I subscribe to the
     PETSc users mailing list?</font></strong> </a></p>
-    <p>You can join the PETSc announcement list by sending email to <a href="mailto:majordomo@mcs.anl.gov">majordomo@mcs.anl.gov</a> with the message,
-    &quot;subscribe petsc-announce&quot;. We will update users regarding new releases, changes,
+
+    
+      <p>You can join the PETSc announcement list by sending email to <a href="mailto:majordomo@mcs.anl.gov">majordomo@mcs.anl.gov</a> with the message,
+    "subscribe petsc-announce". We will update users regarding new releases, changes,
     etc. through this mailing list. </p>
-    <p><strong><a name="why-c"><font color="#FF0000">Why is PETSc programmed in C, instead of
+
+    
+      <p><strong><a name="why-c"><font color="#ff0000">Why is PETSc programmed in C, instead of
     Fortran or C++?</font> </a></strong></p>
-    <p>C enables us to build data structures for storing sparse matrices, solver information,
+
+    
+      <p>C enables us to build data structures for storing sparse matrices, solver information,
     etc. in ways that Fortran simply does not allow. ANSI C is a complete standard that all
     modern C compilers support. The language is identical on all machines. C++ is still
     evolving and compilers on different machines are not identical. Using C function pointers
     to provide data encapsulation and polymorphism allows us to get many of the advantages of
     C++ without using such a large and more complicated language. It would be natural and
     reasonable to have coded PETSc in C++; we opted to use C instead. </p>
-    <p><strong><a name="logging-overhead"><font color="#FF0000">Does all the PETSc error
+
+    
+      <p><strong><a name="logging-overhead"><font color="#ff0000">Does all the PETSc error
     checking and logging reduce PETSc's efficiency? </font></a></strong></p>
-    <p>Actually the impact is quite small. But if it really concerns you to get the absolute
-    fastest rate you can, then edit the file ${PETSC_DIR}/bmake/${PETSC_ARCH}/base.O and
-    remove -DPETSC_DEBUG and -DPETSC_LOG. Then recompile the package. We do not recommend this
-    unless you have a complete running code that is well tested, and you do not plan to alter
-    it. Our measurements never indicate more then a 3 to 5% difference in performance with all
-    error checking and profiling compiled out of PETSc. </p>
-    <p><strong><font color="#FF0000"><a name="work-efficiently">How do such a small group of
+
+    
+      <p>No, </p>
+
+    
+      <p><strong><font color="#ff0000"><a name="work-efficiently">How do such a small group of
     people manage to write and maintain such a large and marvelous package as PETSc?</a> </font></strong></p>
-    <p>a) We work very efficiently. <ol>
+
+    
+      <p>a) We work very efficiently. </p>
+      <ol>
+
       <li>We use Emacs for all editing; the etags feature makes navigating and changing our source
         code very easy. </li>
+
       <li>Our manual pages are generated automatically from formatted comments in the code, thus
         alleviating the need for creating and maintaining manual pages. </li>
+
       <li>We employ automatic nightly tests of PETSc on several different machine architectures.
         This process helps us to discover problems the day after we have introduced them rather
         than weeks or months later. </li>
-    </ol>
-    <p>b) We are very careful in our design (and are constantly revising our design) to make
+
+    
+      </ol>
+
+    
+      <p>b) We are very careful in our design (and are constantly revising our design) to make
     the package easy to use, write, and maintain. </p>
-    <p>c) We are willing to do the grunt work of going through all the code regularly to make
+
+    
+      <p>c) We are willing to do the grunt work of going through all the code regularly to make
     sure that <u><strong>all</strong></u> code conforms to our interface design. We will <u><strong>never</strong></u>
     keep in a bad design decision simply because changing it will require a lot of editing; we
     do a lot of editing. </p>
-    <p>d) We constantly seek out and experiment with new design ideas; we retain the the
+
+    
+      <p>d) We constantly seek out and experiment with new design ideas; we retain the the
     useful ones and discard the rest. All of these decisions are based on <u><strong>practicality</strong></u>.
     </p>
-    <p>e) Function and variable names are chosen to be very consistent throughout the
+
+    
+      <p>e) Function and variable names are chosen to be very consistent throughout the
     software. Even the rules about capitalization are designed to make it easy to figure out
     the name of a particular object or routine. Our memories are terrible, so careful
     consistent naming puts less stress on our limited human RAM. </p>
-    <p>f) The PETSc directory tree is carefully designed to make it easy to move throughout
+
+    
+      <p>f) The PETSc directory tree is carefully designed to make it easy to move throughout
     the entire package. </p>
-    <p>g) Our bug reporting system, based on email to <a href="mailto:petsc-maint@mcs.anl.gov">petsc-maint@mcs.anl.gov</a>,
+
+    
+      <p>g) Our bug reporting system, based on email to <a href="mailto:petsc-maint@mcs.anl.gov">petsc-maint@mcs.anl.gov</a>,
     makes it very simple to keep track of what bugs have been found and fixed. In addition,
     the bug report system retains an archive of all reported problems and fixes, so it is easy
     to refind fixes to previously discovered problems. </p>
-    <p>h) We contain the complexity of PETSc by using object-oriented programming techniques
+
+    
+      <p>h) We contain the complexity of PETSc by using object-oriented programming techniques
     including data encapsulation (this is why your program cannot, for example, look directly
     at what is inside the object Mat) and polymorphism (you call MatMult() regardless of
     whether your matrix is dense, sparse, parallel or sequential; you don't call a different
     routine for each format).</p>
-    <p>i) We try to provide the functionality requested by our users.</p>
-    <p>j) We never sleep. </p>
 
-    <p><strong><a name="mg-log"><font color="#FF0000">How do I know the amount of time spent on each
+    
+      <p>i) We try to provide the functionality requested by our users.</p>
+
+    
+      <p>j) We never sleep. </p>
+
+
+    
+      <p><strong><a name="mg-log"><font color="#ff0000">How do I know the amount of time spent on each
     level of the multigrid solver/preconditioner?</font></a></strong></p>
-    <p>Run with -log_summary and -pc_mg_log</p>
 
-    <p><strong><a name="mpi-vec-to-seq-vec"><font color="#FF0000">How do I collect all the
+    
+      <p>Run with -log_summary and -pc_mg_log</p>
+
+
+    
+      <p><strong><a name="mpi-vec-to-seq-vec"><font color="#ff0000">How do I collect all the
     values from a parallel PETSc vector into a sequential vector on each processor?</font></a></strong></p>
-    <p>
-       <ul><li> Create the scatter context that will do the communication </li>
-                <li> <a href="manualpages/Vec/VecScatterCreateToAll.html"><strong>VecScatterCreateToAll</strong></a>(v,&ctx,&w);</li>
-           </ul>
+
+    
+      <p>
+       </p>
+      <ul>
+        <li> Create the scatter context that will do the communication </li>
+
+                <li> <a href="manualpages/Vec/VecScatterCreateToAll.html"><strong>VecScatterCreateToAll</strong></a>(v,&amp;ctx,&amp;w);</li>
+
+           
+      </ul>
+
             <li> Actually do the communication; this can be done repeatedly as needed</li>
-           <ul> 
+
+           
+      <ul>
+ 
            <li> <a href="manualpages/Vec/VecScatterBegin.html"><strong>VecScatterBegin</strong></a>(v,w,INSERT_VALUES,SCATTER_FORWARD,ctx);</li>
+
            <li> <a href="manualpages/Vec/VecScatterEnd.html"><strong>VecScatterEnd</strong></a>(v,w,INSERT_VALUES,SCATTER_FORWARD,ctx);</li>
-           </ul>
+
+           
+      </ul>
+
             <li> Remember to free the scatter context when no longer needed</li>
-           <ul> 
+
+           
+      <ul>
+ 
            <li> <a href="manualpages/Vec/VecScatterDestroy.html"><strong>VecScatterDestroy</strong></a>(ctx);</li>
-           </ul>
-       </ul>
+
+           
+      </ul>
+
+       
 Note that this simply concatenates in the 
     parallel ordering of the vector. If you are using a vector from DACreateGlobalVector() you likely want to 
     first call DAGlobalToNaturalBegin/End() to scatter the original vector into the natural ordering in a new global
           vector before calling VecScatterBegin/End() to scatter the natural vector onto all processes.
-    </p>
-    <p><strong><a name="mpi-vec-to-mpi-vec"><font color="#FF0000">How do I collect all the
+    
+      <p></p>
+
+    
+      <p><strong><a name="mpi-vec-to-mpi-vec"><font color="#ff0000">How do I collect all the
     values from a parallel PETSc vector into a vector on the zeroth processor?</font></a></strong></p>
-    <p>
-       <ul><li> Create the scatter context that will do the communication </li>
-           <ul>
-                <li> <a href="manualpages/Vec/VecScatterCreateToZero.html"><strong>VecScatterCreateToZero</strong></a>(v,&ctx,&w);</li>
-           </ul>
+
+    
+      <p>
+       </p>
+      <ul>
+        <li> Create the scatter context that will do the communication </li>
+
+           
+        <ul>
+
+                <li> <a href="manualpages/Vec/VecScatterCreateToZero.html"><strong>VecScatterCreateToZero</strong></a>(v,&amp;ctx,&amp;w);</li>
+
+           
+        </ul>
+
             <li> Actually do the communication; this can be done repeatedly as needed</li>
-           <ul> 
+
+           
+        <ul>
+ 
            <li> <a href="manualpages/Vec/VecScatterBegin.html"><strong>VecScatterBegin</strong></a>(v,w,INSERT_VALUES,SCATTER_FORWARD,ctx);</li>
+
            <li> <a href="manualpages/Vec/VecScatterEnd.html"><strong>VecScatterEnd</strong></a>(v,w,INSERT_VALUES,SCATTER_FORWARD,ctx);</li>
-           </ul>
+
+           
+        </ul>
+
             <li> Remember to free the scatter context when no longer needed</li>
-           <ul> 
+
+           
+        <ul>
+ 
            <li> <a href="manualpages/Vec/VecScatterDestroy.html"><strong>VecScatterDestroy</strong></a>(ctx);</li>
-           </ul>
-       </ul>
+
+           
+        </ul>
+
+       
+      </ul>
+
 Note that this simply concatenates in the 
     parallel ordering of the vector. If you are using a vector from DACreateGlobalVector() you likely want to 
     first call DAGlobalToNaturalBegin/End() to scatter the original vector into the natural ordering in a new global
           vector before calling VecScatterBegin/End() to scatter the natural vector onto process 0.
+    
+      <p></p>
+
+
+    
+      <p><strong><a name="binder"><font color="#ff0000">How do I print out all of
+    the PETSc manual pages to put into a binder?</font></a></strong></p>
+
+    
+      <p>Obtain the software tool <a href="http://www.tdb.uu.se/%7Ejan/html2ps.html">html2ps</a>
+    and write a script that runs through all the manualpages and prints them<br>
+
+    to a postscript printer. Something like (for Unix csh/tcsh)<br>
+
+    <br>
+
+  foreach i (~/petsc/docs/manualpages/*/*.html)<br>
+
+ html2ps $i | lpr -Plw3<br>
+
+ end<br>
+
     </p>
 
-    <p><strong><a name="binder"><font color="#FF0000">How do I print out all of
-    the PETSc manual pages to put into a binder?</font></a></strong></p>
-    <p>Obtain the software tool <a href="http://www.tdb.uu.se/~jan/html2ps.html">html2ps</a>
-    and write a script that runs through all the manualpages and prints them<br>
-    to a postscript printer. Something like (for Unix csh/tcsh)<br>
-    <br>
-  foreach i (~/petsc/docs/manualpages/*/*.html)<br>
- html2ps $i | lpr -Plw3<br>
- end<br>
-    </p>
-    <p>&nbsp;</p>
-    <hr>
-    <h3><a name="Installation">Installation</a></h3>
-    <p><strong><a name="already-installed"><font color="#FF0000">How do I begin using PETSc if
+    
+      <p>&nbsp;</p>
+
+    
+      <hr>
+    
+      <h3><a name="Installation">Installation</a></h3>
+
+    
+      <p><strong><a name="already-installed"><font color="#ff0000">How do I begin using PETSc if
     the software has already been completely built and installed by someone else?</font> </a></strong></p>
-    <p>Assuming that the PETSc libraries have been successfully built for a particular
+
+    
+      <p>Assuming that the PETSc libraries have been successfully built for a particular
     architecture and level of optimization, a new user must merely: </p>
-    <p>a) Set the environmental variable PETSC_DIR to the full path of the PETSc home
+
+    
+      <p>a) Set the environmental variable PETSC_DIR to the full path of the PETSc home
     directory (for example, /home/username/petsc). </p>
-    <p>b) Set the environmental variable PETSC_ARCH, which indicates the architecture on which
-    PETSc will be used. For example, use &quot;setenv PETSC_ARCH sun4&quot;. More generally,
-    the command &quot;setenv PETSC_ARCH `$PETSC_DIR/bin/petscarch`&quot; can be placed in a
-    .cshrc file if using the csh or tcsh shell. Thus, even if several machines of different
-    types share the same filesystem, PETSC_ARCH will be set correctly when logging into any of
-    them. </p>
-    <p>c) Begin by copying one of the many PETSc examples (in, for example,
+
+    
+      <p>b) Set the environmental variable PETSC_ARCH, which indicates
+the configuration on which PETSc will be used.&nbsp; Note that the
+PETSC_ARCH is simply a name the installer used when installing the
+libraries. There many be several on a single system, like mylinux-g for
+the debug versions of the library and mylinux-O for the optimized
+version, or petscdebug for the debug version &nbsp;and petscopt for the
+optimized version. </p>
+
+    
+      <p>c) Begin by copying one of the many PETSc examples (in, for example,
     petsc/src/ksp/examples/tutorials) and its corresponding makefile. </p>
-    <p>d) See the introductory section of the PETSc users manual for tips on documentation. </p>
-    <p><a name="reduce-disk-space"><strong><font color="#FF0000">The PETSc distribution is SO
+
+    
+      <p>d) See the introductory section of the PETSc users manual for tips on documentation. </p>
+
+    
+      <p><a name="reduce-disk-space"><strong><font color="#ff0000">The PETSc distribution is SO
     large. How can I reduce my disk space usage?</font> </strong></a></p>
-    <p>a) The directory ${PETSC_DIR}/docs contains a set of HTML manual pages in for use with
+
+    
+      <p>a) The directory ${PETSC_DIR}/docs contains a set of HTML manual pages in for use with
     a browser. You can delete these pages to save about .8 Mbyte of space. </p>
-    <p>b) The PETSc users manual is provided in PostScript and HTML formats in
+
+    
+      <p>b) The PETSc users manual is provided in PostScript and HTML formats in
     ${PETSC_DIR}/docs/manual.ps and ${PETSC_DIR}/docs/manual.html, respectively. Each requires
     several hundred kilobytes of space. You can delete either version that you do not need. </p>
-    <p>c) The PETSc test suite contains sample output for many of the examples. These are
+
+    
+      <p>c) The PETSc test suite contains sample output for many of the examples. These are
     contained in the PETSc directories ${PETSC_DIR}/src/*/examples/tutorials/output and
     ${PETSC_DIR}/src/*/examples/tests/output. Once you have run the test examples, you may
     remove all of these directories to save about 300 Kbytes of disk space. </p>
-    <p>d) The debugging versions (BOPT=g) of the libraries are larger than the optimized
+
+    
+      <p>d) The debugging versions (BOPT=g) of the libraries are larger than the optimized
     versions (BOPT=O). In a pinch you can work with BOPT=O, although we do not recommend it
     generally because finding bugs is much easier with the BOPT=g version. </p>
-    <p>e) you can delete bin/demos and bin/bitmaps </p>
-    <p><strong><font color="#FF0000"><a name="petsc-uni">I want to use PETSc only for
+
+    
+      <p>e) you can delete bin/demos and bin/bitmaps </p>
+
+    
+      <p><strong><font color="#ff0000"><a name="petsc-uni">I want to use PETSc only for
     uniprocessor programs. Must I still install and use a version of MPI</a>?</font> </strong></p>
-    <p>For those using PETSc as a sequential library, the software can be compiled and run
-    without using an implementation of MPI. To do this, edit the file ${PETSC_DIR}/bmake/${PETSC_ARCH}/packages and change the lines that define the location
-    of MPI to </p>
-    <p>MPI_LIB = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a <br>
-    MPI_INCLUDE = -I${PETSC_DIR}/include/mpiuni <br>
-    MPIRUN = ${PETSC_DIR}/bin/mpirun.uni </p>
-    <p>If you compile PETSc as such, you will be able to run PETSc ONLY on one processor.
-    Also, you will be able to run the program directly, without using the mpirun command. </p>
-    <p><strong><a name="no-x"><font color="#FF0000">Can I install PETSc to not use X windows
+Run config/configure.py with the option --with-mpi=0<br>
+      <p><strong><a name="no-x"><font color="#ff0000">Can I install PETSc to not use X windows
     (either under Unix or Windows with gcc, the gnu compiler)?</font></a></strong></p>
-    <p>Yes. Edit the file <em>bmake/${PETSC_ARCH}/petscconf.h</em> and remove the line<br>
-    <strong>#define HAVE_X11</strong><br>
-    then edit <em>bmake/${PETSC_ARCH}/packages </em>and remove the lines starting with <br>
-    <strong>X11_</strong></p>
-    <p><strong><font color="#FF0000"><a name="use-mpi">Why do you use MPI</a>? </font></strong></p>
-    <p>MPI is the message-passing standard. Because it is a standard, it will not change over
+
+    
+      <p>Yes. Run config/configure.py with the additional flag --with-x=0</p>
+
+    
+      <p><strong><font color="#ff0000"><a name="use-mpi">Why do you use MPI</a>? </font></strong></p>
+
+    
+      <p>MPI is the message-passing standard. Because it is a standard, it will not change over
     time; thus, we do not have to change PETSc every time the provider of the message-passing
     system decides to make an interface change. MPI was carefully designed by experts from
     industry, academia, and government labs to provide the highest quality performance and
@@ -315,245 +555,337 @@ Note that this simply concatenates in the
     does not have to rely on the technical skills of one particular group to provide the
     message-passing libraries. Today, MPI is the only practical, portable approach to writing
     efficient parallel numerical software. </p>
-    <p><strong><font color="#FF0000"><a name="use-blocksolve">How do I install PETSc using
-    BlockSolve, and use it in my code?</a></font></strong></p>
-    <p> First, you must install BlockSolve package.&nbsp; Then edit the bmake/${PETSC_ARCH}/packages
-    file, and specify the following variables with the correct paths:
+      <p>&nbsp;
 
-</p>
-    <p>BLOCKSOLVE_INCLUDE     = -I/home/petsc/software/BlockSolve95/include<br>
-    BLOCKSOLVE_LIB         = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95<br>
-    PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE<br>
+      </p>
 
-</p>
-    <p>Now to use BlockSolve, on can use MatType MATMPIROWBS&nbsp; (with
-    MatCreate() ) or use MatCreateMPIRowbs(). The preconditioners that work with
-    BlockSolve are PCILU and PCICC
+    
+      <hr>
 
-</p>
-    <p>&nbsp;
+    
+      <h3><a name="Using">Using</a></h3>
 
-</p>
-    <hr>
 
-    <h3><a name="Using">Using</a></h3>
+    
+      <p>&nbsp;<strong><a name="hypre"><font color="#ff0000">I want to
+use hypre boomerAMG without GMRES but when I run -pc_type hypre
+-pc_hypre_type boomeramg -ksp_type preonly I don't get a very accurate
+answer!</font></a></strong>
 
-    <p>&nbsp;<strong><a name="hypre"><font color="#FF0000">I want to use hypre boomerAMG without GMRES but when I run -pc_type hypre -pc_hypre_type boomeramg -ksp_type preonly I don't get a very accurate answer!</font></a></strong>
-
-   </p> You should run with -ksp_type richardson to have PETSc run several V or W cycles. -ksp_type of preonly causes boomerAMG to 
+   </p>
+ You should run with -ksp_type richardson to have PETSc run several V or W cycles. -ksp_type of preonly causes boomerAMG to 
 use only one V/W cycle. You can control how many cycles are used in a single application of the boomerAMG preconditioner with
 -pc_hypre_boomeramg_max_iter <it> (the default is 1). You can also control the tolerance boomerAMG uses to decide if to stop 
 before max_iter with -pc_hypre_boomeramg_tol <tol> (the default is 1.e-7). Run with -ksp_view to see all the hypre options used and 
 -help | grep boomeramg to see all the command line options.
 
-    <p>&nbsp;<strong><a name="nosaij"><font color="#FF0000">You have AIJ and BAIJ matrix formats, and SBAIJ for symmetric
+    </tol></it>
+      <p>&nbsp;<strong><a name="nosaij"><font color="#ff0000">You have AIJ and BAIJ matrix formats, and SBAIJ for symmetric
             storage, how come no SAIJ</font></a></strong>
 
-</p>
-    Just for historical reasons, the SBAIJ format with blocksize one is just as efficient as an SAIJ would be</p>
+      </p>
 
-    <p>&nbsp;<strong><a name="long-link-time"><font color="#FF0000">How do I use
-    P</font></a></strong><strong><a name="domaindecomposition"><font color="#FF0000">ETSc
+    Just for historical reasons, the SBAIJ format with blocksize one is just as efficient as an SAIJ would be
+      <p></p>
+
+
+    
+      <p>&nbsp;<strong><a name="long-link-time"><font color="#ff0000">How do I use
+    P</font></a></strong><strong><a name="domaindecomposition"><font color="#ff0000">ETSc
     for Domain Decomposition?</font></a></strong>
 
-</p>
-    <p>PETSc includes Additive Schwarz methods in the suite of preconditioners. These may be activated with the runtime option&nbsp;<br>
+      </p>
+
+    
+      <p>PETSc includes Additive Schwarz methods in the suite of preconditioners. These may be activated with the runtime option&nbsp;<br>
+
     <i>-pc_type asm.</i>&nbsp;<br>
+
     Various other options may be set, including the degree of overlap<br>
-    <i>   -pc_asm_overlap &lt;number></i><br>
+
+    <i>   -pc_asm_overlap &lt;number&gt;</i><br>
+
     the type of restriction/extension&nbsp;<br>
+
     <i>-pc_asm_type [basic,restrict,interpolate,none] </i> - Sets ASM type and several others.  You may see the available ASM options by using<br>
+
     <i>   -pc_type asm -help</i><br>
+
     Also, see the procedural interfaces in the manual pages, with names <b>PCASMxxxx()</b><br>
+
     and check the index of the users manual for <b>PCASMxxx</b>().<br>
+
     <br>
-    Note that Paulo Goldfeld contributed a preconditioner "nn",  a version of your Neumann-Neumann balancing preconditioner; this may be activated
-    via<br>
+Note that Paulo Goldfeld contributed a preconditioner "nn", a version
+of your Neumann-Neumann balancing preconditioner; this may be activated
+via<br>
+
     <i>   -pc_type nn</i><br>
+
     The program petsc/src/contrib/oberman/laplacian_ql contains an example of its use.<br>
 
-</p>
-    <hr>
 
-    <p>&nbsp;<strong><a name="blocks"><font color="#FF0000">Can I create BAIJ matrices with different size
+      </p>
+
+    
+      <hr>
+
+    
+      <p>&nbsp;<strong><a name="blocks"><font color="#ff0000">Can I create BAIJ matrices with different size
     blocks for different block rows?</font></a></strong></p>
+
 
     Sorry, this is not possible, the BAIJ format only supports a single fixed block size on the entire matrix.
     But the AIJ format automatically searches for matching rows and thus still takes advantage of the natural
     blocks in your matrix to obtain good performance. Unfortunately you cannot use the MatSetValuesBlocked().
 
-    <hr>
-    <h3><a name="Execution">Execution</a></h3>
-    <p><strong><a name="long-link-time"><font color="#FF0000">PETSc executables are SO big and
+    
+      <hr>
+    
+      <h3><a name="Execution">Execution</a></h3>
+
+    
+      <p><strong><a name="long-link-time"><font color="#ff0000">PETSc executables are SO big and
     take SO long to link</font>.</a></strong></p>
-    <p>We find this annoying as well. On most machines PETSc now uses shared libraries by
+
+    
+      <p>We find this annoying as well. On most machines PETSc now uses shared libraries by
     default, so executables should be much smaller. Also, if you have room, compiling and
     linking PETSc on your machine's /tmp disk or similar local disk, rather than over the
     network will be much faster. </p>
-    <p><a name="petsc-options"><strong><font color="#FF0000">PETSc has so many options for my
+
+    
+      <p><a name="petsc-options"><strong><font color="#ff0000">PETSc has so many options for my
     program that it is hard to keep them straight.</font></strong> </a></p>
-    <p>Running the PETSc program with the option -help will print of many of the options. To
+
+    
+      <p>Running the PETSc program with the option -help will print of many of the options. To
     print the options that have been specified within a program, employ -optionsleft to print
     any options that the user specified but were not actually used by the program and all
     options used; this is helpful for detecting typo errors. </p>
-    <p><strong><a name="petsc-log-info"><font color="#FF0000">PETSc automatically handles many
+
+    
+      <p><strong><a name="petsc-log-info"><font color="#ff0000">PETSc automatically handles many
     of the details in parallel PDE solvers. How can I understand what is really happening
     within my program?</font> </a></strong></p>
-    <p>You can use the option -verbose_info to get more details about the solution process. The
+
+    
+      <p>You can use the option -verbose_info to get more details about the solution process. The
     option -log_summary provides details about the distribution of time spent in the various
     phases of the solution process. You can use ${PETSC_DIR}/bin/petscview, which is a Tk/Tcl
     utility that provides high-level visualization of the computations within a PETSc program.
     This tool illustrates the changing relationships among objects during program execution in
     the form of a dynamic icon tree.</p>
-    <p><strong><a name="efficient-assembly"><font color="#FF0000">Assembling large sparse
+
+    
+      <p><strong><a name="efficient-assembly"><font color="#ff0000">Assembling large sparse
     matrices takes a long time. What can I do make this process faster?</font> </a></strong></p>
-    <p>See the Performance chapter of the users manual for many tips on this.</p>
-    <p>a) Preallocate enough space for the sparse matrix. For example, rather than calling
+
+    
+      <p>See the Performance chapter of the users manual for many tips on this.</p>
+
+    
+      <p>a) Preallocate enough space for the sparse matrix. For example, rather than calling
     MatCreateSeqAIJ(comm,n,n,0,PETSC_NULL,&amp;mat); call
     MatCreateSeqAIJ(comm,n,n,rowmax,PETSC_NULL,&amp;mat); where rowmax is the maximum number
     of nonzeros expected per row. Or if you know the number of nonzeros per row, you can pass
     this information in instead of the PETSC_NULL argument. See the&nbsp; manual pages for
     each of the MatCreateXXX() routines.</p>
-    <p>b) Insert blocks of values into the matrix, rather than individual components.&nbsp;</p>
-    <p><strong><a name="log-summary"><font color="#FF0000">How can I generate performance
+
+    
+      <p>b) Insert blocks of values into the matrix, rather than individual components.&nbsp;</p>
+
+    
+      <p><strong><a name="log-summary"><font color="#ff0000">How can I generate performance
     summaries with PETSc?</font> </a></strong></p>
-    <p>Firstly, to generate PETSc timing and flop logging, the compiler flag -DPETSC_LOG
-    (which is the default) must be specified in the file
-    petsc/bmake/${PETSC_ARCH}/base.${BOPT} Then use these options at runtime: -log_summary
-    -optionsleft See the Performance chapter of the users manual for information on
+
+    
+      <p>Use these options at runtime: -log_summary. See the Performance chapter of the users manual for information on
     interpreting the summary data. If using the PETSc (non)linear solvers, one can also
     specify -snes_view or -ksp_view for a printout of solver info. Only the highest level
     PETSc object used needs to specify the view option. </p>
-    <p><strong><a name="parallel-roundoff"><font color="#FF0000">Why do I get different answers
+
+    
+      <p><strong><a name="parallel-roundoff"><font color="#ff0000">Why do I get different answers
     on a different numbers of processors?</font> </a></strong></p>
-    <p>Most commonly, you are using a preconditioner which behaves differently based upon the
+
+    
+      <p>Most commonly, you are using a preconditioner which behaves differently based upon the
     number of processors, such as Block-Jacobi which is the PETSc default. However, since
     computations are reordered in parallel, small roundoff errors will still be present with
     identical mathematical formulations. If you set a tighter linear solver tolerance (using
     -ksp_rtol), the differences will decrease.</p>
-    <hr>
 
-    <h3><a name="Debugging">Debugging</a></h3>
+    
+      <hr>
 
-    <p><a name="debug-ibm"><font color="#FF0000"><strong>How do I turn off PETSc signal handling so I can use the -C option on xlF?</strong>
+    
+      <h3><a name="Debugging">Debugging</a></h3>
+
+
+    
+      <p><a name="debug-ibm"><font color="#ff0000"><strong>How do I turn off PETSc signal handling so I can use the -C option on xlF?</strong>
     </font></a></p>
-    <p>Immediately after calling PetscInitialize() call PetscPopSignalHandler()</p>
-    <p>Some Fortran compilers including the IBM xlf, xlF etc compilers have a compile option (-C for IBM's) that causes 
+
+    
+      <p>Immediately after calling PetscInitialize() call PetscPopSignalHandler()</p>
+
+    
+      <p>Some Fortran compilers including the IBM xlf, xlF etc compilers have a compile option (-C for IBM's) that causes 
        all array access in Fortran to be checked that they are in-bounds. This is a great feature but does require that
        the array dimensions be set explicitly, not with a *.</p>
 
-    <p><a name="debug-cray"><font color="#FF0000"><strong>How do I debug on the Cray T3D/T3E?</strong>
+
+    
+      <p><a name="debug-cray"><font color="#ff0000"><strong>How do I debug on the Cray T3D/T3E?</strong>
     </font></a></p>
-    <p>Use TotalView. First, link your program with the additional option -Xn where n is the
+
+    
+      <p>Use TotalView. First, link your program with the additional option -Xn where n is the
     number of processors to use when debugging. Then run totalview programname -a your
     arguments The -a is used to distinguish between totalview arguments and yours. </p>
-    <p><strong><a name="start_in_debugger-doesnotwork"><font color="#FF0000">How do I debug if
+
+    
+      <p><strong><a name="start_in_debugger-doesnotwork"><font color="#ff0000">How do I debug if
     -start_in_debugger does not work on my machine?</font> </a></strong></p>
-    <p>For a uniprocessor job, ex1, with MPICH using ch_p4 as the underlying communication
+
+    
+      <p>For a uniprocessor job, ex1, with MPICH using ch_p4 as the underlying communication
     layer, the procedure is: </p>
-    <p>- Create a dummy file with the text &quot;local 0&quot; - </p>
-    <p>- Start the debugger directly: gdb ex1 </p>
-    <p>- Run with a command such as: run -p4pg dummy </p>
-    <p>With MPICH using shmem as the underlying communication layer, the procedure is: </p>
-    <p>- dbx ex1 - run -np 3 (other petsc options) . </p>
-    <p><a name="debug-hang"><font color="#FF0000"><strong>How do I see where my code is hanging?</strong>
+
+    
+      <p>- Create a dummy file with the text "local 0" - </p>
+
+    
+      <p>- Start the debugger directly: gdb ex1 </p>
+
+    
+      <p>- Run with a command such as: run -p4pg dummy </p>
+
+    
+      <p>With MPICH using shmem as the underlying communication layer, the procedure is: </p>
+
+    
+      <p>- dbx ex1 - run -np 3 (other petsc options) . </p>
+
+    
+      <p><a name="debug-hang"><font color="#ff0000"><strong>How do I see where my code is hanging?</strong>
     </font></a></p>
-    <p>You can use the -start_in_debugger option to start all processes in the debugger (each
+
+    
+      <p>You can use the -start_in_debugger option to start all processes in the debugger (each
     will come up in its own xterm). Then use cont (for continue) in each xterm. Once you are sure
     that the program is hanging, hit control-c in each xterm and then use 'where' to print a stack
     trace for each process.</p>
-    <p><a name="debug-inspect"><font color="#FF0000"><strong>How can I inspect Vec and Mat values when in the debugger?</strong>
+
+    
+      <p><a name="debug-inspect"><font color="#ff0000"><strong>How can I inspect Vec and Mat values when in the debugger?</strong>
     </font></a></p>
-    <p>I will illustrate this with gdb, but it should be similar on other debuggers. You can look at
+
+    
+      <p>I will illustrate this with gdb, but it should be similar on other debuggers. You can look at
     local Vec values directly by obtaining the array. For a Vec v, we can print all local values using</p>
-    <p>(gdb) p ((Vec_Seq*) v->data)->array[0]@v->n</p>
-    <p>However, this becomes much more complicated for a matrix. Therefore, it is advisable to use the
+
+    
+      <p>(gdb) p ((Vec_Seq*) v-&gt;data)-&gt;array[0]@v-&gt;n</p>
+
+    
+      <p>However, this becomes much more complicated for a matrix. Therefore, it is advisable to use the
     default viewer to look at the object. For a Vec v and a Mat m, this would be</p>
-    <p>(gdb) call VecView(v, 0)</p>
-    <p>(gdb) call MatView(m, 0)</p>
-    <p>or with a communicator other than MPI_COMM_WORLD,</p>
-    <p>(gdb) call MatView(m, PETSC_VIEWER_STDOUT_(m->comm))</p>
-    <hr>
-    <h3><a name="Shared Libraries">Shared Libraries</a></h3>
-    <p><font color="#FF0000"><strong><a name="install-shared">Can I install PETSc libraries as
+
+    
+      <p>(gdb) call VecView(v, 0)</p>
+
+    
+      <p>(gdb) call MatView(m, 0)</p>
+
+    
+      <p>or with a communicator other than MPI_COMM_WORLD,</p>
+
+    
+      <p>(gdb) call MatView(m, PETSC_VIEWER_STDOUT_(m-&gt;comm))</p>
+
+    
+      <hr>
+    
+      <h3><a name="Shared Libraries">Shared Libraries</a></h3>
+
+    
+      <p><font color="#ff0000"><strong><a name="install-shared">Can I install PETSc libraries as
     shared libraries</a>?</strong></font></p>
-    <p>Yes. The PETSc installation process installs the regular libraries and builds the
-    shared libraries from these regular libraries. The shared libraries are placed in the same
-    location as the regular libraries location.</p>
-    <p>If you wish to rebuild/update the shared libraries, you can invoke the following
-    command from any directory in the PETSc source:<br>
-    &nbsp;&nbsp;&nbsp; <em>make BOPT=O shared</em></p>
-    <p><a name="why-use-shared"><strong><font color="#FF0000">Why should I use shared
+
+    
+      <p>Yes.&nbsp;<span style="font-style: italic;">Use the config/configure.py option --with-shared</span></p>
+      <p><a name="why-use-shared"><strong><font color="#ff0000">Why should I use shared
     libraries?</font></strong></a></p>
-    <p>When you link to shared libraries, the function symbols from the shared libraries are
+
+    
+      <p>When you link to shared libraries, the function symbols from the shared libraries are
     not copied in the executable. This way the size of the executable is considerably smaller
     than when using regular libraries. This helps in a couple of ways: <br>
+
     &nbsp;&nbsp;&nbsp; 1) saves disk space when more than one executable is created, and
     &nbsp; <br>
+
     &nbsp;&nbsp;&nbsp; 2) improves the compile time immensly, because the compiler has to
     write a much smaller file (executable) to the disk.</p>
-    <p><a name="delete-shared"><font color="#FF0000"><strong>How do I delete the shared
-    libraries?</strong></font></a></p>
-    <p>You can delete the shared libraries by invoking the following command from any
-    directory in the PETSc source:<br>
-    &nbsp;&nbsp;&nbsp;&nbsp; <em>make BOPT=O deleteshared</em></p>
-    <p><font color="#FF0000"><strong><a name="link-shared">How do I link to the PETSc shared
+      <p><font color="#ff0000"><strong><a name="link-shared">How do I link to the PETSc shared
     libraries</a>?</strong></font></p>
-    <p>By default, the compiler should pick up the shared libraries instead of the regular
+
+    
+      <p>By default, the compiler should pick up the shared libraries instead of the regular
     ones. Nothing special should be done for this.</p>
-    <p><font color="#FF0000"><strong><a name="error-running-shared">When running my program, I
-    encounter an error saying &quot;petsc shared libraries not found</a>&quot;.</strong></font></p>
-    <p>By default, PETSc adds the path to the shared libraries to the executable by using
-    options supported by the linker. This problem might occur if the linker flag does not work
-    properly or if&nbsp; the path to the shared libraries is different when running the
-    executable (for example, if the executable is run on a different machine where the file
-    system is mounted differently, and the path to the shared libraries is different). One way
-    to fix this problem is to add this new path to the <em>DYLIBPATH</em> variable in the file
-    ${PETSC_DIR}/bmake/${PETSC_ARCH/packages.&nbsp; Another fix&nbsp; is to add this path to
-    the <em>LD_LIBRARY_PATH</em> enviornmental variable.</p>
-    <p><a name="dylibpath"><font color="#FF0000"><strong>What is the purpose of the DYLIBPATH
-    variable in the file ${PETSC_DIR}/bmake/${PETSC_ARCH}/packages?</strong></font></a></p>
-    <p>This makefile variable is used to specify any paths to any other shared libaries used
-    by PETSc (or the application), where these shared libraries are NOT present in the system
-    default paths in which the dynamic linker searches. These paths are added into the
-    executable and are avilable to the dynamic linker at runtime. An example where this is
-    useful is if the compiler&nbsp; is installed in a non-standard location, and some of the
-    compiler libraries are installed as shared libraries. Multiple paths can be specified in
-    the C_DYLIBPATH variable as follows:<br>
-    &nbsp;&nbsp;&nbsp;&nbsp; C_DYLIBPATH&nbsp; = ${CLINKER_SLFLAG}:path1 ${CLINKER_SLFLAG}:path2</p>
-    <p><font color="#FF0000"><strong><a name="link-regular-lib">What If I want to link to the
+      <p><font color="#ff0000"><strong><a name="link-regular-lib">What If I want to link to the
     regular .a library files</a>?</strong></font></p>
-    <p>The simplest way to do this is first to delete the PETSc shared libraries, and then to
-    rebuild your executable. Some compilers do provide a flag indicating that the linker
-    should not look for shared libraries. For example, <em>gcc</em> has the flag <em>-static</em>
-    to indicate only static libraries should be used. But this may not work on all machines,
-    since some of the usual system/compiler/other libraries are distributed only as shared
-    libraries, and using the <em>-static</em> flag avoids these libraries so that the compiler
-    will fail to create the executable.</p>
-    <p><a name="move-shared-exec"><font color="#FF0000"><strong>What do I do if I want to move
+
+    
+      <p>You must run config/configure.py without the option
+--with-shared (you can use a different PETSC_ARCH for this build so you
+can easily switch between the two).</p>
+
+    
+      <p><a name="move-shared-exec"><font color="#ff0000"><strong>What do I do if I want to move
     my executable to a different machine?</strong></font></a></p>
-    <p>You would also need to have access to the shared libraries on this new machine. The
+
+    
+      <p>You would also need to have access to the shared libraries on this new machine. The
     other alternative is to build the exeutable without shared libraries by first deleting the
-    shared libraries, and then creating the executable.&nbsp;<p><a name="dynamic-shared"><font color="#FF0000"><strong>What
+    shared libraries, and then creating the executable.&nbsp;</p>
+      <p><a name="dynamic-shared"><font color="#ff0000"><strong>What
     is the deal with dynamic libraries (and difference between shared libraries)</strong></font></a></p>
-    <p>PETSc libraries are installed as dynamic libraries when the flag PETSC_USE_DYNAMIC_LIBRARIES
-    is defined in bmake/${PETSC_ARCH}/petscconf.h. The difference with this -
-    from shared libraries - is the way the libraries are used. From the program
-    the library is loaded using dlopen() - and the functions are searched using
-    dlsymm(). This separates the resolution of function names from link-time to
-    run-time - i.e when dlopen()/dlsymm() are called.<p>When using Dynamic
+
+    
+      <p>PETSc libraries are installed as dynamic libraries when the
+config/configure.py flag --with-dynamic is used. The difference with
+this - from shared libraries - is the way the libraries are used. From
+the program the library is loaded using dlopen() - and the functions
+are searched using dlsymm(). This separates the resolution of function
+names from link-time to run-time - i.e when dlopen()/dlsymm() are
+called.</p>
+      <p>When using Dynamic
     libraries - PETSc libraries cannot be moved to a different location after
     they are built. 
-    <p>&nbsp;
-    <p>
+    </p>
+      <p>&nbsp;
+    </p>
+      <p>
     
     <!--##end-->
-    </td>
+    </p>
+      </td>
+
   </tr>
+
   <tr>
-    <td width="100%" colspan="2"><hr size="4" color="#FF5B5B">
+
+    <td colspan="2" width="100%">
+      <hr color="#ff5b5b" size="4">
     </td>
+
   </tr>
+
+  </tbody>
 </table>
+
 </body>
 </html>
