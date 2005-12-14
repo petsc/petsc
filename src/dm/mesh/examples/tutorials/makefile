@@ -52,6 +52,9 @@ valex2:
 debugex2:
 	-@${MPIRUN} -np ${NP} ./ex2 -dim 2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
+runex2_3:
+	-@${MPIRUN} -np ${NP} ./ex2 -dim 3 ${EXTRA_ARGS}
+
 runex3:
 	-@${MPIRUN} -np 3 ./ex3 -mat_view  > ex3_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \

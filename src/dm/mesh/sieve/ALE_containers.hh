@@ -28,6 +28,7 @@ namespace ALE {
     
     // point_iterator interface
     class point_iterator {
+    public:
       virtual ~point_iterator() = 0;
       //
       virtual void                  operator++();
@@ -40,8 +41,9 @@ namespace ALE {
     // const_point_sequence interface:
     // a constant sequence of (not necesserily unique) points delineated by begin() & end() iterators; can be traversed linearly
     class const_point_sequence {
+    public:
       typedef point_iterator iterator;
-      virtual ~const_point_sequence() = 0;
+      virtual ~const_point_sequence();
       //
       virtual point_iterator& begin();
       virtual point_iterator& end();
@@ -51,14 +53,24 @@ namespace ALE {
     // const_point_collection interface:
     // a constant collection no particular order; can queried for containment of a given point
     class const_point_collection {
-      virtual ~const_point_collection() = 0;
+    public:
+      virtual ~const_point_collection();
       //
       virtual bool contains(const point& p);
     };
 
+    // const_point_set interface:
+    // unites const_point_sequence & const_point_collection
+    class const_point_set : public const_point_sequence, public const_point_collection {
+    public:
+      // destructor
+      virtual ~const_point_set();
+    };
+
     // point_set interface:
-    // extends const_point_sequence & const_point_collection and allows point addition and removal
-    class point_set : public const_point_sequence, const_point_collection {
+    // extends const_point_set and allows point addition and removal
+    class point_set : public const_point_set {
+    public:
       // conversion constructors
       point_set(const const_point_sequence&);
       point_set(const Obj<const_point_sequence>&);
@@ -77,6 +89,19 @@ namespace ALE {
       virtual void subtract(const const_point_collection&  s); // post: contains points of '*this before call' that are not in s
     };
     
+    template<int level>
+    class Bundle {
+      // destructor
+      virtual ~Bundle();
+    public:
+      // 
+      Bundle<level-1> cone(const point& p);
+    };
+
+    template<>
+    class Bundle<0> {
+      const_point_sequence cone(const point& p);
+    };
   } // namespace def
 
   class Point {

@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
 
   ierr = PetscPrintf(comm, "Generating mesh\n");CHKERRQ(ierr);
-  ierr = CreateMeshBoundary(comm, &meshBoundary);CHKERRQ(ierr);
+  ierr = CreateMeshBoundary(comm, dim, &meshBoundary);CHKERRQ(ierr);
   ierr = MeshGenerate(meshBoundary, &mesh);CHKERRQ(ierr);
   ALE::Obj<ALE::Sieve> topology;
   ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
@@ -99,11 +99,41 @@ int main(int argc, char *argv[])
   |     |     |
   0--9--1--10-2
 */
-PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *mesh)
+PetscErrorCode CreateMeshBoundary(MPI_Comm comm, int dim, Mesh *mesh)
 {
-  ALE::Obj<ALE::Sieve>       topology = ALE::Sieve(comm);
-  ALE::Obj<ALE::PreSieve>    orientation = ALE::PreSieve(comm);
-  ALE::Obj<ALE::Sieve>       boundary = ALE::Sieve(comm);
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (dim == 2) {
+    ierr = CreateSquareBoundary(comm, mesh);
+  } else if (dim == 3) {
+    ierr = CreateCubeBoundary(comm, mesh);
+  } else {
+    SETERRQ1("No boundary for dimension %d", dim);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateSquareBoundary"
+/*
+  Simple square boundary:
+
+  6--14-5--13-4
+  |     |     |
+  15   19    12
+  |     |     |
+  7--20-8--18-3
+  |     |     |
+  16   17    11
+  |     |     |
+  0--9--1--10-2
+*/
+PetscErrorCode CreateSquareBoundary(MPI_Comm comm, Mesh *mesh)
+{
+  ALE::Obj<ALE::Sieve>    topology = ALE::Sieve(comm);
+  ALE::Obj<ALE::PreSieve> orientation = ALE::PreSieve(comm);
+  ALE::Obj<ALE::Sieve>    boundary = ALE::Sieve(comm);
   Mesh              m;
   Vec               coordinates;
   PetscScalar       coords[18] = {0.0, 0.0,
@@ -182,6 +212,181 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *mesh)
     cone.insert(vertices[7]);
     cone.insert(edge);
     orientation->addCone(cone, edge);
+    cone.clear();
+  }
+  ierr = MeshSetTopology(m, topology);CHKERRQ(ierr);
+  ierr = MeshSetOrientation(m, orientation);CHKERRQ(ierr);
+  /* Create element numbering */
+  ALE::Obj<ALE::IndexBundle> elementBundle = ALE::IndexBundle(topology);
+  if (rank == 0) {
+    elementBundle->setFiberDimensionByHeight(0, 1);
+  }
+  elementBundle->computeOverlapIndices();
+  elementBundle->computeGlobalIndices();
+  ierr = MeshSetElementBundle(m, elementBundle);CHKERRQ(ierr);
+  /* Create vertex coordinates */
+  ALE::Obj<ALE::IndexBundle> coordBundle = ALE::IndexBundle(topology);
+  if (rank == 0) {
+    coordBundle->setFiberDimensionByDepth(0, embedDim);
+  }
+  coordBundle->computeOverlapIndices();
+  coordBundle->computeGlobalIndices();
+  ierr = MeshSetCoordinateBundle(m, coordBundle);CHKERRQ(ierr);
+  /* Store coordinates */
+  int localSize = 0, globalSize = 0;
+
+  ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
+  if (rank == 0) {
+    localSize = coordBundle->getLocalSize();
+  }
+  globalSize = coordBundle->getGlobalSize();
+  ierr = VecSetBlockSize(coordinates, embedDim);CHKERRQ(ierr);
+  ierr = VecSetSizes(coordinates, localSize, globalSize);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
+  ALE::Obj<ALE::Point_set> vertexPoints = topology->depthStratum(0);
+  for(ALE::Point_set::iterator vertex_itor = vertexPoints->begin(); vertex_itor != vertexPoints->end(); vertex_itor++) {
+    ALE::Point v = *vertex_itor;
+    ierr = assembleField(coordBundle, orientation, coordinates, v, &coords[v.index*embedDim], INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(coordinates);CHKERRQ(ierr);
+  ierr = MeshSetCoordinates(m, coordinates);CHKERRQ(ierr);
+  /* Create boundary conditions */
+  if (rank == 0) {
+    for(int v = 0; v < 8; v++) {
+      cone.insert(ALE::Point(0, v));
+    }
+    for(int e = 9; e < 17; e++) {
+      cone.insert(ALE::Point(0, e));
+    }
+    ALE::Point boundaryPoint(-1, 1);
+    boundary->addCone(cone, boundaryPoint);
+  }
+  ierr = MeshSetBoundary(m, boundary);CHKERRQ(ierr);
+  *mesh = m;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateCubeBoundary"
+/*
+  Simple cube boundary:
+
+      7-----6
+     /|    /|
+    3-----2 |
+    | |   | |
+    | 4---|-5
+    |/    |/
+    0-----1
+*/
+PetscErrorCode CreateCubeBoundary(MPI_Comm comm, Mesh *mesh)
+{
+  ALE::Obj<ALE::Sieve>    topology = ALE::Sieve(comm);
+  ALE::Obj<ALE::PreSieve> orientation = ALE::PreSieve(comm);
+  ALE::Obj<ALE::Sieve>    boundary = ALE::Sieve(comm);
+  Mesh              m;
+  Vec               coordinates;
+  PetscScalar       coords[24] = {0.0, 0.0, 0.0,
+                                  1.0, 0.0, 0.0,
+                                  1.0, 1.0, 0.0,
+                                  0.0, 1.0, 0.0,
+                                  0.0, 0.0, 1.0,
+                                  1.0, 0.0, 1.0,
+                                  1.0, 1.0, 1.0,
+                                  0.0, 1.0, 1.0};
+  ALE::Point_set    cone;
+  ALE::Point        vertices[8];
+  ALE::Point        edges[18];
+  ALE::Point        edge;
+  PetscInt          embedDim = 3;
+  PetscMPIInt       rank, size;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MeshCreate(comm, &m);CHKERRQ(ierr);
+  if (rank == 0) {
+    /* Create topology and ordering */
+    for(int v = 0; v < 8; v++) {
+      ALE::Point vertex(0, v);
+
+      vertices[v] = vertex;
+      cone.insert(vertex);
+      orientation->addCone(cone, vertex);
+      cone.clear();
+    }
+    for(int e = 8; e < 12; e++) {
+      edge = ALE::Point(0, e);
+      edges[e-8] = edge;
+      cone.insert(vertices[e-8]);
+      cone.insert(vertices[(e-8)%4]);
+      topology->addCone(cone, edge);
+      cone.clear();
+/*       cone.insert(vertices[e-8]); */
+/*       cone.insert(edge); */
+/*       orientation->addCone(cone, edge); */
+/*       cone.clear(); */
+    }
+    for(int e = 12; e < 16; e++) {
+      edge = ALE::Point(0, e);
+      edges[e-8] = edge;
+      cone.insert(vertices[e-12+4]);
+      cone.insert(vertices[(e-12)%4+4]);
+      topology->addCone(cone, edge);
+      cone.clear();
+    }
+    for(int e = 16; e < 20; e++) {
+      edge = ALE::Point(0, e);
+      edges[e-8] = edge;
+      cone.insert(vertices[e-16]);
+      cone.insert(vertices[e-16+4]);
+      topology->addCone(cone, edge);
+      cone.clear();
+    }
+    edge = ALE::Point(0, 20);
+    edges[12] = edge;
+    cone.insert(vertices[1]);
+    cone.insert(vertices[3]);
+    topology->addCone(cone, edge);
+    cone.clear();
+    edge = ALE::Point(0, 21);
+    edges[13] = edge;
+    cone.insert(vertices[5]);
+    cone.insert(vertices[2]);
+    topology->addCone(cone, edge);
+    cone.clear();
+    edge = ALE::Point(0, 22);
+    edges[14] = edge;
+    cone.insert(vertices[4]);
+    cone.insert(vertices[6]);
+    topology->addCone(cone, edge);
+    cone.clear();
+    edge = ALE::Point(0, 23);
+    edges[15] = edge;
+    cone.insert(vertices[0]);
+    cone.insert(vertices[7]);
+    topology->addCone(cone, edge);
+    cone.clear();
+    edge = ALE::Point(0, 24);
+    edges[16] = edge;
+    cone.insert(vertices[0]);
+    cone.insert(vertices[5]);
+    topology->addCone(cone, edge);
+    cone.clear();
+    edge = ALE::Point(0, 25);
+    edges[17] = edge;
+    cone.insert(vertices[2]);
+    cone.insert(vertices[7]);
+    topology->addCone(cone, edge);
+    cone.clear();
+
+    face = ALE::Point(0, 26);
+    cone.insert(vertices[2]);
+    cone.insert(vertices[7]);
+    cone.insert(vertices[7]);
+    topology->addCone(cone, edge);
     cone.clear();
   }
   ierr = MeshSetTopology(m, topology);CHKERRQ(ierr);
