@@ -77,49 +77,44 @@ namespace ALE {
     };
     
     //
-    // Sieve:  
-    //      contains a set of points and a set of arrows between them (at most one arrow between any two points);
-    //      -- 'cone','support','closure','star','meet','join' are as in the Paper
-    //      -- each point has a 'height', 'depth' 
-    //         - height and depth are not necessarily maintained up-to-date, unless 'stratification' is on (get/setStratification);
-    //         - stratification can be computed on demand by 'stratify';
-    //         - height and depth (up-to-date or not) allow to retrieve points in strata via 'isodepth/isoheight'
-    //      -- each point has a set of 'colors' of template type 'Color' attached to it
-    //         - colors are added using 'addColor'
-    //         - colors are retrieved using 'colors'
+    // Sifter:  
     //
     template <typename Color>
-    class Sieve {
-      Obj<const_sequence<Point> > cone(const Obj<const_sequence<Point> >& p); 
-      Obj<const_sequence<Point> > support(const Obj<const_sequence<Point> >& p); 
+    class Sifter {
+      Obj<const_sequence<Color> > cone(const Obj<const_sequence<Point> >& p); 
+      Obj<const_sequence<Color> > nCone(const Obj<const_sequence<Point> >& p, const int& n); 
+      Obj<const_sequence<Color> > support(const Obj<const_sequence<Point> >& p); 
+      Obj<const_sequence<Color> > nSupport(const Obj<const_sequence<Point> >& p, const int& n); 
       //
-      Obj<const_sequence<Point> > closure(const Obj<const_sequence<Point> >& p); 
-      Obj<const_sequence<Point> > star(const Obj<const_sequence<Point> >& p); 
+      Obj<const_sequence<Color> > closure(const Obj<const_sequence<Point> >& p); 
+      Obj<const_sequence<Color> > nClosure(const Obj<const_sequence<Point> >& p, const int& n); 
+      Obj<const_sequence<Color> > star(const Obj<const_sequence<Point> >& p); 
+      Obj<const_sequence<Color> > nStar(const Obj<const_sequence<Point> >& p, const int& n); 
       //
-      Obj<const_sequence<Point> > meet(const Point& p, const Point& q);
-      Obj<const_sequence<Point> > meet(const const_sequence<Point>& pp);
-      Obj<const_sequence<Point> > join(const Point& p, const Point& q);
-      Obj<const_sequence<Point> > join(const const_sequence<Point>& pp);
+      Obj<const_sequence<Color> > meet(const const_sequence<Point>& pp);
+      Obj<const_sequence<Color> > nMeet(const const_sequence<Point>& pp, const int& n);
+      Obj<const_sequence<Color> > join(const const_sequence<Point>& pp);
+      Obj<const_sequence<Color> > nJoin(const const_sequence<Point>& pp, const int& n);
 
-      Point depth(const Point& p);
-      Point height(const Point& p);
+      int depth(const Point& p);
+      int height(const Point& p);
+      int diameter(const Point& p);
+      int diameter();
+      
       //
-      Obj<const_sequence<Point> > isodepth(const Point& p, const int& depth);
-      Obj<const_sequence<Point> > isoheight(const Point& p, const int& height);
+      Obj<const_sequence<Point> > depthStratum(const int& depth);
+      Obj<const_sequence<Point> > heightStratum(const int& height);
       //
       void                        setStratification(bool on);
       bool                        getStratification();
       void                        stratify();
 
-      void                        addColor(const Point& p, const Color& color);
-      void                        addColor(const Point& p, const Obj<const_sequence<Color> >& colors);
-      Obj<const_sequence<Color> > colors(const Point& p);
-      Obj<const_sequence<Color> > colors(const Obj<const_sequence<Point> >& points);
+      void                        addColor(const Obj<const_sequence<Color> >& colors, const Point& p);
+      void                        addCone(const Obj<const_sequence<Point> >& points,  const Point& p);
 
-      // Completion follows.
-      void                        coneCompletion(const Sieve<Point>& base_itinerary);   // prescribes cones    to be exchanged
-      void                        supportCompletion(const Sieve<Point>& cap_itinerary); // prescribes supports to be exchanged
-    }
+      void                        add(const Obj<Sifter<Color> >& sifter);  // pointwise addition of fibers
+      Sifter<Color>               completion(const Sifter<Point>& base);   // prescribes fibers to be exchanged
+    };
 
   } // namespace def
 
