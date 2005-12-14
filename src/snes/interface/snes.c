@@ -1056,7 +1056,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
 
     ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
-    ierr = PetscVerboseInfo((snes,"SNESSetUp: Setting default matrix-free operator and preconditioner routines\n"));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((snes,"SNESSetUp: Setting default matrix-free operator and preconditioner routines;\nThat is no preconditioner is being used.\n"));CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,MatSNESMFComputeJacobian,snes->funP);CHKERRQ(ierr);
     ierr = MatDestroy(J);CHKERRQ(ierr);
 
