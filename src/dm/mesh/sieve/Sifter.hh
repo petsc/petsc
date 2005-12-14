@@ -20,100 +20,105 @@ namespace ALE {
       int32_t prefix, index;
     };
     
-    // point_iterator interface
-    class point_iterator {
-      virtual ~point_iterator() = 0;
+    // iterator interface
+    template <typename Color>
+    class const_iterator {
+      virtual ~iterator() = 0;
       //
       virtual void                  operator++();
       virtual void                  operator++(int);
-      virtual bool                  operator==(const point_iterator& itor);
-      virtual bool                  operator!=(const point_iterator& itor);
-      virtual const Point&          operator*()  = 0;
+      virtual bool                  operator==(const iterator& itor);
+      virtual bool                  operator!=(const iterator& itor);
+      virtual const Color&          operator*()  = 0;
     };
 
-    // const_point_sequence interface:
-    // a constant sequence of (not necesserily unique) points delineated by begin() & end() iterators; can be traversed linearly
-    class const_point_sequence {
-      typedef point_iterator iterator;
-      virtual ~const_point_sequence() = 0;
+    // const_sequence interface:
+    // a constant sequence of (not necesserily unique) colors delineated by begin() & end() iterators; can be traversed linearly
+    template <typename Color>
+    class const_sequence {
+      typedef const_iterator iterator;
+      virtual ~const_sequence() = 0;
       //
-      virtual point_iterator& begin();
-      virtual point_iterator& end();
+      virtual const_iterator& begin();
+      virtual const_iterator& end();
       virtual std::size_t     size();
     };
 
-    // const_point_collection interface:
-    // a constant collection no particular order; can queried for containment of a given point
-    class const_point_collection {
-      virtual ~const_point_collection() = 0;
+    // const_collection interface:
+    // a constant collection no particular order; can queried for containment of a given color
+    class const_collection {
+      virtual ~const_collection() = 0;
       //
-      virtual bool contains(const point& p);
+      virtual bool contains(const Color& p);
     };
 
-    // point_set interface:
-    // extends const_point_sequence & const_point_collection and allows point addition and removal
-    class point_set : public const_point_sequence, const_point_collection {
-      // conversion constructors
-      point_set(const const_point_sequence&);
-      point_set(const Obj<const_point_sequence>&);
-      point_set(const const_point_collection&);
-      point_set(const Obj<const_point_collection>&);
+    // const_set interface
+    // combines const_sequence & const_collection interfaces
+    template <typename Color>
+    class const_set : public const_sequence<Color>, public const_collection<Color> {
+      virtual ~const_set();
+    };
+
+    // set interface:
+    // extends const_set interface to allows point addition and removal
+    template <typename Color>
+    class set : public const_set<Color> {
       // destructor
-      virtual ~point_set();
+      virtual ~set();
       // mutating methods
-      virtual void insert(const Point& p);                     // post: contains(p) == true 
-      virtual void remove(const Point& p);                     // post: contains(p) == false
-      virtual void add(const const_point_sequence& s);         // post: contains points from s and '*this before the call'
-      virtual void add(const const_point_collection& s);       // post: contains points from s and '*this before the call'
-      virtual void intersect(const const_point_sequence& s);   // post: contains points common to s and '*this before the call'
-      virtual void intersect(const const_point_collection& s); // post: contains points common to s and '*this before the call'
-      virtual void subtract(const const_point_sequence&  s);   // post: contains points of '*this before call' that are not in s
-      virtual void subtract(const const_point_collection&  s); // post: contains points of '*this before call' that are not in s
+      virtual void insert(const Color& p);                     // post: contains(p) == true 
+      virtual void remove(const Color& p);                     // post: contains(p) == false
+      virtual void add(const const_sequence& s);               // post: contains colors from s and '*this before the call'
+      virtual void add(const const_collection& s);             // post: contains colors from s and '*this before the call'
+      virtual void intersect(const const_sequence& s);         // post: contains colors common to s and '*this before the call'
+      virtual void intersect(const const_collection& s);       // post: contains colors common to s and '*this before the call'
+      virtual void subtract(const const_sequence&  s);         // post: contains colors of '*this before call' that are not in s
+      virtual void subtract(const const_collection&  s);       // post: contains colors of '*this before call' that are not in s
     };
     
     //
     // Sieve:  
     //      contains a set of points and a set of arrows between them (at most one arrow between any two points);
     //      -- 'cone','support','closure','star','meet','join' are as in the Paper
-    //      -- each point has a 'height', 'depth' and a unique 'marker' (or 'color'), which is another 'point';
-    //         a point is 'colored' or examined as to its color by 'set/getColor';
-    //         all points of a given color are retrieved by 'isocolor'
-    //      -- height and depth are not necessarily maintained up-to-date, unless 'stratification' is on (get/setStratification);
-    //         stratification can be computed on demand by 'stratify';
-    //         height and depth (up-to-date or not) allow to retrieve points in strata via 'isodepth/height' ("structural" color)
+    //      -- each point has a 'height', 'depth' 
+    //         - height and depth are not necessarily maintained up-to-date, unless 'stratification' is on (get/setStratification);
+    //         - stratification can be computed on demand by 'stratify';
+    //         - height and depth (up-to-date or not) allow to retrieve points in strata via 'isodepth/isoheight'
+    //      -- each point has a set of 'colors' of template type 'Color' attached to it
+    //         - colors are added using 'addColor'
+    //         - colors are retrieved using 'colors'
     //
+    template <typename Color>
     class Sieve {
-      Obj<const_point_sequence> cone(const Point& p); 
-      Obj<const_point_sequence> cone(const Obj<const_point_sequence>& p); 
-      Obj<const_point_sequence> support(const Point& p); 
-      Obj<const_point_sequence> support(const Obj<const_point_sequence>& p); 
+      Obj<const_sequence<Point> > cone(const Obj<const_sequence<Point> >& p); 
+      Obj<const_sequence<Point> > support(const Obj<const_sequence<Point> >& p); 
       //
-      Obj<const_point_sequence> closure(const Point& p); 
-      Obj<const_point_sequence> closure(const Obj<const_point_sequence>& p); 
-      Obj<const_point_sequence> star(const Point& p); 
-      Obj<const_point_sequence> star(const Obj<const_point_sequence>& p); 
+      Obj<const_sequence<Point> > closure(const Obj<const_sequence<Point> >& p); 
+      Obj<const_sequence<Point> > star(const Obj<const_sequence<Point> >& p); 
       //
-      Obj<const_point_sequence> meet(const Point& p, const Point& q);
-      Obj<const_point_sequence> meet(const const_point_sequence& pp);
-      Obj<const_point_sequence> join(const Point& p, const Point& q);
-      Obj<const_point_sequence> join(const const_point_sequence& pp);
+      Obj<const_sequence<Point> > meet(const Point& p, const Point& q);
+      Obj<const_sequence<Point> > meet(const const_sequence<Point>& pp);
+      Obj<const_sequence<Point> > join(const Point& p, const Point& q);
+      Obj<const_sequence<Point> > join(const const_sequence<Point>& pp);
 
       Point depth(const Point& p);
       Point height(const Point& p);
       //
-      Obj<const_point_sequence> isodepth(const Point& p, const int& depth);
-      Obj<const_point_sequence> isoheight(const Point& p, const int& height);
+      Obj<const_sequence<Point> > isodepth(const Point& p, const int& depth);
+      Obj<const_sequence<Point> > isoheight(const Point& p, const int& height);
       //
-      void  setColor(const Point& p, const Point& color);
-      Point getColor(const Point& p);
-      //
-      Obj<const_point_sequence> isocolor(const Point& color);
+      void                        setStratification(bool on);
+      bool                        getStratification();
+      void                        stratify();
 
-      void setStratification(bool on);
-      bool getStratification();
-      void stratify();
+      void                        addColor(const Point& p, const Color& color);
+      void                        addColor(const Point& p, const Obj<const_sequence<Color> >& colors);
+      Obj<const_sequence<Color> > colors(const Point& p);
+      Obj<const_sequence<Color> > colors(const Obj<const_sequence<Point> >& points);
 
       // Completion follows.
+      void                        coneCompletion(const Sieve<Point>& base_itinerary);   // prescribes cones    to be exchanged
+      void                        supportCompletion(const Sieve<Point>& cap_itinerary); // prescribes supports to be exchanged
     }
 
   } // namespace def
