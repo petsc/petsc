@@ -126,9 +126,9 @@ a function is invalid. In Fortran this may be caused by forgeting to
 list an argument in the call, especially the final ierr. Otherwise it
 is usually caused by memory corruption; that is somewhere the code is
 writing out of array bounds. To track this down rerun the debug version
-of the code with the option -trdebug. Occasionally the
+of the code with the option -malloc_debug. Occasionally the
 code may crash only with the optimized version, in that case
-run the optimized version with -malloc_. If you determine the problem
+run the optimized version with -malloc_debug. If you determine the problem
 is from memory corruption you can put the macro MEMCHKQ in the code
 near the crash to determine exactly what line is causing the problem. </font></p>
 
@@ -167,8 +167,6 @@ that generates the matrix. </font></p>
 
 make: Warning: Can't find `../../bmake/': <br>
 
-/Users/barrysmith/petsc-dev/bmake/common/variables:176:
-/Users/barrysmith/petsc-dev/bmake//variables: No such file or directory</font>
     <p><font color="#ff0000"><strong>Problem: </strong></font>You
 have not set the variable PETSC_ARCH to the architecture of your
 machine (e.g., sun4, rs6000). </p>
@@ -176,7 +174,7 @@ machine (e.g., sun4, rs6000). </p>
     <p><font color="#ff0000"><strong>Cure: </strong></font>Include
 in your .cshrc file some code to set it automatically. Or remember to
 include the PETSC_ARCH in the
-command line every time you use make. For instance, make BOPT=g
+command line every time you use make. For instance,
 PETSC_ARCH=sun4 example4 </p>
 
   </li>
@@ -213,7 +211,7 @@ PETSC_DIR = ../../petsc rather than PETSC_DIR =
 
   </li>
 
-  <li><font color="#ff0000"><strong>Symptom: </strong></font><font face="Terminal">alder&gt; make BOPT=g <br>
+  <li><font color="#ff0000"><strong>Symptom: </strong></font><font face="Terminal">alder&gt; make <br>
 
 ex1 f77 -g -o ex1 ex1.o affine2d.o \ ../../libs/libsg/sun4/domain.a
 ../../libs/libsg/sun4/Xtools.a ../../libs/libsg/sun4/tools.a
@@ -652,66 +650,8 @@ handle this automatically. </li>
 
   </li>
 
-  <li><font color="#ff0000"><strong>Symptom:</strong>
-    </font>Error
-when running petsc example <br>
 
-    <strong>fire &gt;&gt;mpirun ex11<br>
-
-ld.so.1: /XXXXX/petsc/src/sles/examples/tutorials/ex11: fatal: <br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libcomplex.so.5:
-can't open file:
-errno=2 </strong>
-    <p><font color="#ff0000"><strong>Problem: </strong></font>This
-happens when a shared library is used instead of the regular
-library, (when the -l option is used, shared version of the library is
-used if present) but the location of this library is not
-known to the shared library loader ld.so. </p>
-
-    <p><font color="#ff0000"><strong>Cure:</strong></font>
-You can
-do either of the following: &nbsp; <br>
-
-1. Add the path where the library is located to the environmental
-variable LD_LIBRARY_PATH. Assuming that this library is located
-in /opt/SUNWspro/lib, you can do: <br>
-
-    <strong>setenv LD_LIBRARY_PATH /opt/SUNWspro/lib:/lib</strong>&nbsp;<br>
-
-Note: For parallel jobs you have to make sure that all processes
-started see this variable, so it should be set in your .cshrc
-file</p>
-
-    <p>2. On some machines (e.g., solaris, IRIX, IRIX64), you can
-set this path in the variable DYLIBPATH in <strong>${PETSC_DIR}/bmake/${PETSC_ARCH}/packages</strong>
-as:&nbsp; <br>
-
-    <strong>DYLIBPATH = /opt/SUNWspro/lib </strong></p>
-
-    <p>On Solaris the library can often be found in <strong>/opt/SUNWspro/SC4.2/lib</strong>
-or <strong>/opt/SUNWspro/SC4.4/lib </strong>etc</p>
-
-  </li>
-
-  <li><font color="#ff0000"><strong>Symptom:</strong>
-    </font>ld64:
-ERROR 33: Unresolved text symbol "MPIR_ToPointer" -- 1st
-referenced by /d$ &gt; ld64: ERROR 33: Unresolved text symbol
-"MPIR_FromPointer" -- 1st referenced by $ &gt; ld64: INFO 60:
-Output
-file removed because of error. or When first compiled the fortran
-libraries give this error: &gt; &gt; Error zsys.c: line 114
-MPI_Comm incompatible with (void*) parameter. &gt;n*(int*)comm
-= PetscFromPointerComm(c);
-    <p><font color="#ff0000"><strong>Cure: </strong></font>Make
-sure
-that the file bmake/$PETSC_ARCH/packages on the line MPI_INCLUDE
-has -DUSES_INT_MPI_COMM if it is not there add it and rerun
-make BOPT=g (or O etc) fortran. </p>
-
-  </li>
-
+ 
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>[0]
 PETSC ERROR: MatAssemblyBegin() line 1858 in
@@ -727,36 +667,6 @@ routines.</p>
 
   </li>
 
-  <li><font color="#ff0000"><strong>Symptom:</strong>
-    </font>Error
-while running PETSc examples on IBM SP using IBM's MPI
-    <p>exec(): 0509-036 Cannot load program ex1 because of the
-following errors:<br>
-
-0509-023 Symbol pm_exit_value in /usr/lpp/ppe.poe/lib/libmpi.a is not
-defined.<br>
-
-0509-023 Symbol pm_exit_value in /usr/lpp/ppe.poe/lib/libmpi.a is not
-defined.<br>
-
-0509-022 Cannot load library libvtd.a[dynamic.o]. <br>
-
-0509-026 System error: Cannot run a file that does not have a valid
-format.</p>
-
-    <p><font color="#ff0000"><strong>Problem: </strong></font>This
-problem occurs when the version of libc.a on your system is
-different than the verison of libc.a used to build IBM's MPI.
-For more information on this problem refer to 'IBM AIX PE: Hitchhikers
-Guide'.</p>
-
-    <p><font color="#ff0000"><strong>Cure: </strong></font>edit
-bmake/rs6000/packages and add the following to the variable
-EXTERNAL_LIB <br>
-
-EXTERNAL_LIB = /usr/lpp/ppe.poe/lib/libc.a /usr/lpp/ppe.poe/lib/libc_r.a</p>
-
-  </li>
 
   <li><strong><font color="#ff0000">Symptom:</font></strong>
 Error
