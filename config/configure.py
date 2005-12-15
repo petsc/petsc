@@ -27,7 +27,7 @@ def check_petsc_arch(opts):
   if not found:
       filename = os.path.basename(sys.argv[0])
       if not filename.startswith('configure') and not filename.startswith('reconfigure'):
-        useName = '-PETSC_ARCH='+os.path.splitext(os.path.basename(sys.argv[0]))[0]
+        useName = 'PETSC_ARCH='+os.path.splitext(os.path.basename(sys.argv[0]))[0]
         opts.append(useName)
   return
 
@@ -79,17 +79,17 @@ def petsc_configure(configure_options):
   # support a few standard configure option types 
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
-    if name.find('-download-') >= 0:
+    if name.find('download-') >= 0:
       sys.argv[l] = name.lower()
-    if name.find('-enable-') >= 0:
-      sys.argv[l] = name.replace('-enable-','-with-')
+    if name.find('enable-') >= 0:
+      sys.argv[l] = name.replace('enable-','with-')
       if name.find('=') == -1: sys.argv[l] += '=1'
-    if name.find('-disable-') >= 0:
-      sys.argv[l] = name.replace('-disable-','-with-')
+    if name.find('disable-') >= 0:
+      sys.argv[l] = name.replace('disable-','with-')
       if name.find('=') == -1: sys.argv[l] += '=0'
       elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
-    if name.find('-without-') >= 0:
-      sys.argv[l] = name.replace('-without-','-with-')
+    if name.find('without-') >= 0:
+      sys.argv[l] = name.replace('without-','with-')
       if name.find('=') == -1: sys.argv[l] += '=0'
       elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
 
@@ -160,7 +160,7 @@ def petsc_configure(configure_options):
   if nargs.Arg.findArgument('with-shared', sys.argv[1:]) is None:
     sys.argv.append('--with-shared=0')
 
-  framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure','-optionsModule=PETSc.compilerOptions'], loadArgDB = 0)
+  framework = config.framework.Framework(sys.argv[1:]+['--configModules=PETSc.Configure','--optionsModule=PETSc.compilerOptions'], loadArgDB = 0)
   framework.setup()
   framework.logPrint('\n'.join(extraLogs))
   try:
