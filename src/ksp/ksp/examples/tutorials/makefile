@@ -314,7 +314,7 @@ runex10_5:
 	   else echo "Possible problem with ex10_5, diffs above"; fi; \
 	   ${RM} -f ex10_5.tmp
 runex10_6:
-	-@${MPIRUN} -np 1 ./ex10 -pc_ilu_levels 2 -pc_ilu_fill 1.73 -ksp_gmres_cgs_refinement_type refine_always \
+	-@${MPIRUN} -np 1 ./ex10 -pc_ilu_levels 2 -pc_factor_fill 1.73 -ksp_gmres_cgs_refinement_type refine_always \
 	   -f0 ${DATAFILESPATH}/matrices/fem1 > ex10_6.tmp 2>&1; \
 	   if (${DIFF} output/ex10_6.out ex10_6.tmp) then true; \
 	   else echo "Possible problem with ex10_6, diffs above"; fi; \

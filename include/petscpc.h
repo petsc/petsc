@@ -211,7 +211,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetMatOrdering(PC,MatOrderingType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetReuseOrdering(PC,PetscTruth);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetReuseFill(PC,PetscTruth);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetUseInPlace(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetFill(PC,PetscReal);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill(PC,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivoting(PC,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivotInBlocks(PC,PetscTruth);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUReorderForNonzeroDiagonal(PC,PetscReal);
@@ -220,12 +220,10 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetMatOrdering(PC,MatOrdering
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetReuseOrdering(PC,PetscTruth);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetReuseFill(PC,PetscTruth);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetUseInPlace(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetFill(PC,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetPivotInBlocks(PC,PetscTruth);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetMatOrdering(PC,MatOrderingType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseInPlace(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetFill(PC,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetLevels(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetReuseOrdering(PC,PetscTruth);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,PetscInt);
@@ -235,7 +233,6 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetPivotInBlocks(PC,PetscTruth);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUReorderForNonzeroDiagonal(PC,PetscReal);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetMatOrdering(PC,MatOrderingType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetFill(PC,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetLevels(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetPivotInBlocks(PC,PetscTruth);
 

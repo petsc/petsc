@@ -2992,7 +2992,7 @@ For example, to set the first sub preconditioners to use ILU(1)
 \begin{tabbing}
    PC subpc;\\
   PCCompositeGetPC(pc,0,\&subpc);\\
-  PCILUSetFill(subpc,1);
+  PCFactorSetFill(subpc,1);
 \end{tabbing}
 \findex{PCCompositeGetPC()}
 
@@ -3005,7 +3005,7 @@ while \trl{-pc_composite_type} \trl{additive} the additive version. Using the tr
 preconditioner is obtained with the option \trl{-pc_composite_true}. 
 \findex{-pc_composite_true} One sets options for the subpreconditioners with the 
 extra prefix \trl{-sub_N_} where \trl{N} is the number of the subpreconditioner.
-For example, \trl{-sub_0_pc_ilu_fill} \trl{0}.
+For example, \trl{-sub_0_pc_ifactor_fill} \trl{0}.
 
 
 PETSc also allows a preconditioner to be a complete linear solver. This is 
@@ -5850,13 +5850,13 @@ The symbolic factorization phase will then print information such as
 \end{tabbing}
 This indicates that the user should have used a fill estimate factor of
 about 2.17 (instead of 1) to prevent the 12 required mallocs and copies.
-The command line option  \findex{-pc_ilu_fill} \findex{-pc_lu_fill}
+The command line option  \findex{-pc_factor_fill} \findex{-pc_factor_fill}
 \begin{tabbing}
     -pc\_ilu\_fill 2.17
 \end{tabbing}
 will cause PETSc to preallocate the correct amount of space for incomplete
 (ILU) factorization.  The corresponding option for direct (LU) factorization
-is \trl{-pc_lu_fill} \trl{<fill_amount\trl{>}}.
+is \trl{-pc_factor_fill} \trl{<fill_amount\trl{>}}.
 
 \subsection{PetscMalloc() Calls}
 Users should employ a reasonable number of PetscMalloc() calls in their codes.

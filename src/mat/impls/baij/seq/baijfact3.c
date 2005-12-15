@@ -117,8 +117,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   if (ai[n] != 0) {
     PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
     ierr = PetscVerboseInfo((A,"MatLUFactorSymbolic_SeqBAIJ:Reallocs %D Fill ratio:given %G needed %G\n",reallocs,f,af));CHKERRQ(ierr);
-    ierr = PetscVerboseInfo((A,"MatLUFactorSymbolic_SeqBAIJ:Run with -pc_lu_fill %G or use \n",af));CHKERRQ(ierr);
-    ierr = PetscVerboseInfo((A,"MatLUFactorSymbolic_SeqBAIJ:PCLUSetFill(pc,%G);\n",af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatLUFactorSymbolic_SeqBAIJ:Run with -pc_factor_fill %G or use \n",af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatLUFactorSymbolic_SeqBAIJ:PCFactorSetFill(pc,%G);\n",af));CHKERRQ(ierr);
     ierr = PetscVerboseInfo((A,"MatLUFactorSymbolic_SeqBAIJ:for best performance.\n"));CHKERRQ(ierr);
   } else {
     ierr = PetscVerboseInfo((A,"MatLUFactorSymbolic_SeqBAIJ:Empty matrix.\n"));CHKERRQ(ierr);

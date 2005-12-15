@@ -75,8 +75,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCICCSetFill_ICC"
-PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetFill_ICC(PC pc,PetscReal fill)
+#define __FUNCT__ "PCFactorSetFill_ICC"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill_ICC(PC pc,PetscReal fill)
 {
   PC_ICC *dir;
 
@@ -165,47 +165,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetLevels(PC pc,PetscInt levels)
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetLevels_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,levels);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCICCSetFill"
-/*@
-   PCICCSetFill - Indicate the amount of fill you expect in the factored matrix,
-   where fill = number nonzeros in factor/number nonzeros in original matrix.
-
-   Collective on PC
-
-   Input Parameters:
-+  pc - the preconditioner context
--  fill - amount of expected fill
-
-   Options Database Key:
-$  -pc_icc_fill <fill>
-
-   Note:
-   For sparse matrix factorizations it is difficult to predict how much 
-   fill to expect. By running with the option -verbose_info PETSc will print the 
-   actual amount of fill used; allowing you to set the value accurately for
-   future runs. But default PETSc uses a value of 1.0
-
-   Level: intermediate
-
-.keywords: PC, set, factorization, direct, fill
-
-.seealso: PCLUSetFill()
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetFill(PC pc,PetscReal fill)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscReal);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less than 1.0");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetFill_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,fill);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
@@ -308,7 +267,7 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHead("ICC Options");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_icc_levels","levels of fill","PCICCSetLevels",icc->info.levels,&icc->info.levels,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-pc_icc_fill","Expected fill in factorization","PCICCSetFill",icc->info.fill,&icc->info.fill,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_fill","Expected fill in factorization","PCFactorSetFill",icc->info.fill,&icc->info.fill,&flg);CHKERRQ(ierr);
     ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
     ierr = PetscOptionsList("-pc_icc_mat_ordering_type","Reorder to reduce nonzeros in ICC","PCICCSetMatOrdering",ordlist,icc->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -365,7 +324,7 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 +  -pc_icc_levels <k> - number of levels of fill for ICC(k)
 .  -pc_icc_in_place - only for ICC(0) with natural ordering, reuses the space of the matrix for
                       its factorization (overwrites original matrix)
-.  -pc_icc_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
+.  -pc_factor_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
 .  -pc_icc_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
 .  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
 -  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
@@ -387,7 +346,7 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
            PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), 
-           PCICCSetFill(), PCICCSetMatOrdering(), PCICCSetReuseOrdering(), 
+           PCFactorSetFill(), PCICCSetMatOrdering(), PCICCSetReuseOrdering(), 
            PCICCSetLevels(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd(),
 
 M*/
@@ -436,8 +395,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetLevels_C","PCICCSetLevels_ICC",
                     PCICCSetLevels_ICC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetFill_C","PCICCSetFill_ICC",
-                    PCICCSetFill_ICC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_ICC",
+                    PCFactorSetFill_ICC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetMatOrdering_C","PCICCSetMatOrdering_ICC",
                     PCICCSetMatOrdering_ICC);CHKERRQ(ierr);
   PetscFunctionReturn(0);

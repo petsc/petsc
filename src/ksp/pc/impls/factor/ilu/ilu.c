@@ -116,8 +116,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCILUSetFill_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetFill_ILU(PC pc,PetscReal fill)
+#define __FUNCT__ "PCFactorSetFill_ILU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill_ILU(PC pc,PetscReal fill)
 {
   PC_ILU *dir;
 
@@ -272,47 +272,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseDropTolerance(PC pc,PetscReal dt,Pe
   } 
   PetscFunctionReturn(0);
 }  
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCILUSetFill"
-/*@
-   PCILUSetFill - Indicate the amount of fill you expect in the factored matrix,
-   where fill = number nonzeros in factor/number nonzeros in original matrix.
-
-   Collective on PC
-
-   Input Parameters:
-+  pc - the preconditioner context
--  fill - amount of expected fill
-
-   Options Database Key:
-$  -pc_ilu_fill <fill>
-
-   Note:
-   For sparse matrix factorizations it is difficult to predict how much 
-   fill to expect. By running with the option -verbose_info PETSc will print the 
-   actual amount of fill used; allowing you to set the value accurately for
-   future runs. But default PETSc uses a value of 1.0
-
-   Level: intermediate
-
-.keywords: PC, set, factorization, direct, fill
-
-.seealso: PCLUSetFill()
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetFill(PC pc,PetscReal fill)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscReal);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less than 1.0");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetFill_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,fill);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetMatOrdering"
@@ -545,7 +504,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseInPlace(PC pc)
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: PCILUSetFill(), MatReorderForNonzeroDiagonal()
+.seealso: PCFactorSetFill(), MatReorderForNonzeroDiagonal()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCILUReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 {
@@ -654,7 +613,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     if (flg) {
       ierr = PCILUSetUseDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_ilu_fill","Expected fill in factorization","PCILUSetFill",ilu->info.fill,&ilu->info.fill,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_fill","Expected fill in factorization","PCFactorSetFill",ilu->info.fill,&ilu->info.fill,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_ilu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCILUReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
     if (flg) {
       tol = PETSC_DECIDE;
@@ -864,7 +823,7 @@ static PetscErrorCode PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
 .  -pc_ilu_diagonal_fill - fill in a zero diagonal even if levels of fill indicate it wouldn't be fill
 .  -pc_ilu_reuse_ordering - reuse ordering of factorized matrix from previous factorization
 .  -pc_ilu_use_drop_tolerance <dt,dtcol,maxrowcount> - use Saad's drop tolerance ILUdt
-.  -pc_ilu_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
+.  -pc_factor_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
 .  -pc_ilu_nonzeros_along_diagonal - reorder the matrix before factorization to remove zeros from the diagonal,
                                    this decreases the chance of getting a zero pivot
 .  -pc_ilu_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
@@ -885,7 +844,7 @@ static PetscErrorCode PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
            PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), PCILUSetUseDropTolerance(),
-           PCILUSetFill(), PCILUSetMatOrdering(), PCILUSetReuseOrdering(), PCILUDTSetReuseFill(),
+           PCFactorSetFill(), PCILUSetMatOrdering(), PCILUSetReuseOrdering(), PCILUDTSetReuseFill(),
            PCILUSetLevels(), PCILUSetUseInPlace(), PCILUSetAllowDiagonalFill(), PCILUSetPivotInBlocks(),
            PCFactorSetShiftNonzero(),PCFactorSetShiftPd()
 
@@ -943,8 +902,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetUseDropTolerance_C","PCILUSetUseDropTolerance_ILU",
                     PCILUSetUseDropTolerance_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetFill_C","PCILUSetFill_ILU",
-                    PCILUSetFill_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_ILU",
+                    PCFactorSetFill_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetMatOrdering_C","PCILUSetMatOrdering_ILU",
                     PCILUSetMatOrdering_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetReuseOrdering_C","PCILUSetReuseOrdering_ILU",
