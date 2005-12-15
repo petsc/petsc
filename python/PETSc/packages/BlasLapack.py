@@ -397,14 +397,18 @@ class Configure(PETSc.package.Package):
         blib = glob.glob('/usr/lib/libblas.*')
         if blib != [] and not (os.path.isfile('/usr/lib/libblas.so') or os.path.isfile('/usr/lib/libblas.a')):
           raise RuntimeError('Incomplete BLAS install? Perhaps blas package is installed - but blas-dev/blas-devel is required.')
-        raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate the library containing BLAS.\n Or --download-c-blas-lapack=1 or --download-f-blas-lapack=1 to have one automatically downloaded and installed\n')
+        if hasattr(self.compilers, 'FC'): C = 'f'
+        else: C = 'c'
+        raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate the library containing BLAS.\n Or --download-'+C+'-blas-lapack=1 to have one automatically downloaded and installed\n')
       if not self.foundLapack:
         # check for split blas/blas-dev packages
         import glob
         llib = glob.glob('/usr/lib/liblapack.*')
         if llib != [] and not (os.path.isfile('/usr/lib/liblapack.so') or os.path.isfile('/usr/lib/liblapack.a')):
           raise RuntimeError('Incomplete LAPACK install? Perhaps lapack package is installed - but lapack-dev/lapack-devel is required.')
-        raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate the library containing LAPACK.\n Or --download-c-blas-lapack=1 or --download-f-blas-lapack=1 to have one automatically downloaded and installed\n')
+        if hasattr(self.compilers, 'FC'): C = 'f'
+        else: C = 'c'
+        raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate the library containing LAPACK.\n Or --download-'+C+'-blas-lapack=1 to have one automatically downloaded and installed\n')
     self.found = 1
     return
 
