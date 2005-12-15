@@ -654,7 +654,7 @@ PetscErrorCode VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
   N  = X->N / bs;
   n  = X->n / bs;
 
-  // For now, always convert to float
+  /* For now, always convert to float */
   ierr = PetscMalloc(N * sizeof(float), &xf);CHKERRQ(ierr);
   ierr = PetscMalloc(n * sizeof(float), &xlf);CHKERRQ(ierr);
 
