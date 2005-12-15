@@ -55,7 +55,6 @@ popd
 set DATAFILESPATH=/home/petsc/datafiles
 set NICE=''
 set TEST='testexamples_'
-set BOPT=g
 # possibly overwrite the values above
 if (${#argv} >= 1 && -f ${nPETSC_DIR}/config/${ARCH}) then
   source ${nPETSC_DIR}/config/${ARCH}
@@ -63,21 +62,13 @@ endif
 
 setenv PETSC_DIR $nPETSC_DIR
 set PETSC_ARCH=${ARCH}
-if (${#argv} >= 1 && -f ${nPETSC_DIR}/config/${ARCH}.py) then
-  set CONFIGURE='yes'
-  set CONFIGURE_FILE=$PETSC_ARCH
-else if (${#argv} == 1 && -f ${nPETSC_DIR}/bmake/${ARCH}/variables && ! -f ${nPETSC_DIR}/bmake/${ARCH}/configure.py) then
-  # this is a non-configure PETSC_ARCH
-  set CONFIGURE='no'
-else
-  set CONFIGURE='yes'
-  set CONFIGURE_FILE='configure'
+set CONFIGURE='yes'
+set CONFIGURE_FILE=$PETSC_ARCH
 endif
 echo "Performing buildtest on " $MACH "with arch " $PETSC_ARCH " at " $nPETSC_DIR
 
 
 # Run Configure
-if ("${CONFIGURE}" == "yes") then
   #remove old logs
   /bin/rm -f configure.log*
   #remove external packages - so they get rebuilt again
@@ -89,13 +80,8 @@ if ("${CONFIGURE}" == "yes") then
   set JOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/jobs`
   set RJOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/rjobs`
   tar cf buildoutput.tar configure.log bmake/$PETSC_ARCH/*
-else
-  #  Get the list of packages installed on the machine
-  set JOBS='C C_X11 Fortran'
-  set EJOBS=`grep PETSC_HAVE_ $nPETSC_DIR/bmake/$PETSC_ARCH/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
-endif
 
-make BOPT=g PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allfortranstubs >>& $nPETSC_DIR/test.log
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allfortranstubs >>& $nPETSC_DIR/test.log
 
 egrep '^#define PETSC_HAVE_COMPLEX' $nPETSC_DIR/bmake/$PETSC_ARCH/petscconf.h  > /dev/null
 if ("$?" == "0") then
@@ -103,27 +89,27 @@ if ("$?" == "0") then
   set RJOBS=""
 endif
 
-make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT all test >>& test.log
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all test >>& test.log
 echo '****************************************************' >>& test.log
-echo "Finished Build on $MACH $PETSC_ARCH $BOPT `date`" >>& test.log
+echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& test.log
 tar rf buildoutput.tar test.log
 #
 #
 # Run examples
 rm -f examples.log
-echo "Build on $MACH $PETSC_ARCH  $BOPT `date` " > examples.log
+echo "Build on $MACH $PETSC_ARCH  `date` " > examples.log
 foreach j ($JOBS $EJOBS $RJOBS)
-  $NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree |& grep -v 'up to date' >>& examples.log
+  $NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree |& grep -v 'up to date' >>& examples.log
   echo '******************************************************' >>& $nPETSC_DIR/examples.log
 end
 
 set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/bmake/$PETSC_ARCH/petscconf.h`
 if ( "${GCOV}" != "" ) then
-  $NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT allgcov  >>& examples.log
+  $NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allgcov  >>& examples.log
   tar -cfz gcov.tar.gz /tmp/gcov
 endif
 
-echo "Finished Build on $MACH $PETSC_ARCH $BOPT `date`" >>& $nPETSC_DIR/examples.log
+echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& $nPETSC_DIR/examples.log
 echo 'X******************************************************X' >>& $nPETSC_DIR/examples.log
 tar rf buildoutput.tar examples.log
 

@@ -87,7 +87,7 @@ compile complicated application codes portably, quickly, and easily.</li>
         <li>If an application generates lots of .o files, store them in
 libraries (.a files), with         names that indicate the type of
 machine and optimization levels. For example, PETSc's         libraries
-are stored in the directory ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/.
+are stored in the directory ${PETSC_DIR}/lib/${PETSC_ARCH}/.
 Thus,         when switching to another machine that shares the same
 file system, one does not have to         remember to delete a bunch of
 .o files and edit makefiles accordingly. </li>
@@ -149,7 +149,8 @@ process in a separate debugger; this is not the same as using a
 parallel     debugger, but in most cases it is not so bad. The PETSc,
 the run-time options     -start_in_debugger [-display xdisplay:0] will
 open separate windows and debuggers for each     process. You should
-debug using the BOPT=g versions of the libraries.</p>
+debug using the debugging versions of the libraries (run config/configure.py with the
+additional option --with-debugging=1 (the default).</p>
       <p>It really pays to learn how to use a debugger; you will end up
 writing more interesting     and far more ambitious codes&nbsp; once it
 is easy for you to track down problems in the     codes.</p>

@@ -14,5 +14,5 @@ shift
 dir=$1
 shift
 echo "petscmpirun -np $np $*"
-rsh $machine "cd $pdir/$dir ; setenv BOPT g; setenv PETSC_DIR $pdir ; setenv PETSC_ARCH $arch; petscmpirun -np $np $* -error_output_stderr"
+rsh $machine "cd $pdir/$dir ; setenv PETSC_DIR $pdir ; setenv PETSC_ARCH $arch; petscmpirun -np $np $* -error_output_stderr"
 
