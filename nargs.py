@@ -76,16 +76,17 @@ in order to declare the type of that option.'''
 
   def parseArgument(arg, ignoreDouble = 0):
     '''Split an argument into a (key, value) tuple, stripping off the leading dashes. Return (None, None) on failure.'''
+    start = 0
     if arg and arg[0] == '-':
       start = 1
       if arg[1] == '-' and not ignoreDouble:
         start = 2
-      if arg.find('=') >= 0:
-        (key, value) = arg[start:].split('=', 1)
-      else:
-        (key, value) = (arg[start:], '1')
-      return (key, Arg.parseValue(value))
-    return (None, None)
+    if arg.find('=') >= 0:
+      (key, value) = arg[start:].split('=', 1)
+    else:
+      (key, value) = (arg[start:], '1')
+    return (key, Arg.parseValue(value))
+
   parseArgument = staticmethod(parseArgument)
 
   def findArgument(key, argList):
