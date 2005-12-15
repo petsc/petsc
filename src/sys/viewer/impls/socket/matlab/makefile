@@ -5,9 +5,7 @@
 #requiresprecision  double
 #
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects
-# in Matlab. You cannot use a complex numbers. If mex fails 
-# in compiling these files and you are using the gcc compiler then try 
-# removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/${PETSC_ARCH}/variables
+# in Matlab. You cannot use a complex numbers.
 #
 SPECIALLIB     = yes
 SPECIALFASTLIB = yes

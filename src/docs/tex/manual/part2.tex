@@ -3212,28 +3212,8 @@ prevent the zero pivot. A good choice for the \trl{damping} factor is 1.e-10.
 \label{sec_externalsol}
 
 PETSc interfaces to several external linear solvers (see Acknowledgments).
-To use these solvers, one needs to do the followings.
-
-\begin{enumerate}
-\item Install the external software.
-\item Enable using the external software from PETSc by editing \trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/packages}.
-   For example, to use SuperLU, one would specify the following variables with the appropriate paths:
-%\begin{figure}[H]
-{\footnotesize
-\begin{verbatim}                       
-SUPERLU_LIB        = /home/petsc/software/SuperLU/superlu_linux_gcc_pgf90.a 
-SUPERLU_INCLUDE    = -I/home/petsc/software/SuperLU/SRC            
-PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU        
-\end{verbatim}
-}
-%\nobreak
-%\label{fig_package}
-%\end{figure}               
-It should be clear that SUPERLU\_LIB specifies the compiler command to link with the SuperLU libraries, and 
-similarly SUPERLU\_INCLUDE specifies the compiler command to augment the Include search path to find SuperLU
-header files.  The third essential detail, PETSC\_HAVE\_SUPERLU informs our make system to perform builds
-in the directories that include the SuperLU interface, and sets the flag -DPETSC\_HAVE\_SUPERLU for conditional
-inclusion within various source files.
+To use these solvers, one needs to run config/configure.py with the additional options
+\trl{--download-packagename=1}
 
 \item Build the PETSc libraries.
 \item Use the runtime option: \trl{-mat_type <mattype>} \trl{-ksp_type preonly} \trl{-pc_type <pctype>}.
@@ -5045,7 +5025,7 @@ the test is assumed to be written in Fortran.
 
 Figure \ref{fig_make1} shows a sample makefile that can be used for
 PETSc programs.  In this makefile, one can compile and run a debugging version
-of the Fortran program \trl{ex3.F} with the actions \trl{make} \trl{BOPT=g} \trl{ex3} and
+of the Fortran program \trl{ex3.F} with the actions \trl{make}  \trl{ex3} and
 \trl{make} \trl{runex3}, respectively. The compilation command is restated below:
 \begin{tabbing}
    ex3: ex3.o \\
@@ -5173,14 +5153,11 @@ application codes and tips for accurate profiling.
 \label{sec_profbasic}
 \sindex{profiling} \sindex{logging} \sindex{timing} 
 
-If an application code and the PETSc libraries have been compiled with
-the \trl{-DPETSC_USE_LOG} flag (which is the default for all versions),
+If an application code and the PETSc libraries have been configured with
+\trl{--with-debugging=1}, the default
 then various kinds of profiling of code between calls to \trl{
-PetscInitialize()} and PetscFinalize() can be \findex{PETSC_USE_LOG}
-activated at runtime.  Note that the flag \trl{-DPETSC_USE_LOG} can be
-specified for an installation of PETSc in the file \trl{
-${PETSC_DIR}/bmake/${PETSC_ARCH}/variables}, as discussed in
-Section~\ref{sec_makeflags}.  The profiling options include the following:
+PetscInitialize()} and PetscFinalize() can be 
+activated at runtime.  The profiling options include the following:
 \findex{-log_summary} \findex{-verbose_info}
 \findex{-log_trace}
 \begin{itemize}
@@ -5484,14 +5461,6 @@ creates a logfile of events appropriate for viewing with {\em Upshot}.
 The user can either use the default logging file, \trl{mpe.log}, or
 specify an optional name via \trl{logfile}.  
 
-To use this logging option, the user may employ any implementation of
-MPI (not necessarily MPICH), but must build and link the MPE part of
-the MPICH.  The user must compile the PETSc library with the \trl{
--DPETSC_HAVE_MPE} flag, which is {\em not} activated by default. The user
-can turn on MPE logging by specifying \trl{-DPETSC_HAVE_MPE} in the \trl{
-PCONF} variable within \trl{
-${PETSC_DIR}/bmake/${PETSC_ARCH}/packages} and (re)compiling all
-of PETSc.
 
 By default, not all PETSc events are logged with MPE. For example,
 since MatSetValues() may be called thousands of times in a program,
@@ -5805,17 +5774,10 @@ evaluating the performance of PETSc application codes.
 \section{Compiler Options}
 \sindex{compiler options}
 
-Code compiled with the \trl{BOPT=O} option generally runs two to three times
-faster than that compiled with \trl{BOPT=g}, so we recommend using one
-of the optimized versions of code (\trl{BOPT=O}, \trl{BOPT=O_c++}, or
-\trl{BOPT=O_complex}) when evaluating performance.
 
-The user can specify alternative compiler options instead of
-the defaults set in the PETSc distribution.  One can set
-the compiler options for a particular architecture
-(\trl{PETSC_ARCH}) and \trl{BOPT} by editing the file
-\trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/variables}.
-Section~\ref{sec_custom} gives details.
+Code configured with \trl{--with-debugging=0} 
+faster than that the default debugging version, so we recommend using one
+of the optimized versions of code when evaluating performance.
 
 \section{Profiling}
 \sindex{profiling} \sindex{logging} \sindex{timing}
@@ -6522,10 +6484,8 @@ the PETSc libraries in which the basic ``scalar'' datatype, given in
 PETSc codes by \trl{PetscScalar}, is defined as \trl{complex} (or \trl{
 complex<double>} for machines using templated complex class
 libraries).  To work with complex numbers,
-the user should compile the PETSc libraries (including the Fortran
-interface library) and the application code with
-\trl{BOPT=[g_complex,O_complex]} for debugging, optimized,
-and profiling versions, respectively.  The file \trl{${PETSC_DIR}/src/docs/website/documentation/installation.html}
+the user should run config/configure.py with the additional option \trl{--with-scalar-type=complex}.
+The file \trl{${PETSC_DIR}/src/docs/website/documentation/installation.html}
 provides detailed instructions for installing PETSc.
 
 
@@ -6543,9 +6503,9 @@ the default C++ code.
 Recall that each variant of the PETSc libraries is stored in a
 different directory, given by
 \begin{tabbing}
-  \trl{${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}},
+  \trl{${PETSC_DIR}/lib/${PETSC_ARCH}},
 \end{tabbing}
-according to the architecture and \trl{BOPT} optimization variable. Thus, the
+according to the architecture.. Thus, the
 libraries for complex
 numbers are maintained separately from those for real
 numbers.  When using any of the complex numbers versions of PETSc,
@@ -6796,9 +6756,8 @@ can easily be modified to serve specialized needs.
 \subsection{Disabling Graphics at Compile Time}
 
 \sindex{graphics, disabling}
-To disable all x-window-based graphics, edit the file
-\trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/packages} and comment the variable
-\trl{PETSC_DHAVE_X11}.  Then (re)compile the PETSc libraries.
+To disable all x-window-based graphics, run config/configure.py with the
+additional option --with-x=0
 
 
 %----------------------------------------------------------------------
@@ -6812,23 +6771,19 @@ key to managing our code portability across a wide variety of UNIX and Windows s
 
 To make a program named \trl{ex1}, one may use the command
 \begin{tabbing}
-   make BOPT=[g,O] PETSC\_ARCH=arch  ex1
+   make PETSC\_ARCH=arch  ex1
 \end{tabbing}
-which will compile a debugging, optimized, or profiling version
-of the example and automatically link the appropriate libraries.  The
+which will compile the 
+example and automatically link the appropriate libraries.  The
 architecture, \trl{arch}, is one of \trl{solaris, rs6000, IRIX,
 hpux}, etc. Note
 that when using command line options with make (as illustrated above),
 one must {\em not} place spaces on either side of the ``='' signs.
-The variables \trl{BOPT} and 
+The variable
 \trl{PETSC_ARCH} can also be set as environmental
 variables.  Although PETSc is written in C, it can be compiled with a 
 C++ compiler.  For many C++ users this may be the preferred route. To compile
-with the C++ compiler, one should use the option \trl{BOPT=g_c++} or 
-\trl{BOPT=O_c++}.  \sindex{C++}
-The options \trl{BOPT=g_complex} and \trl{BOPT=O_complex}
-will create C versions that use complex double-precision numbers. 
-\sindex{complex numbers}
+with the C++ compiler, one should use the config/configure.py option \trl{--with-clanguage=c++}. \sindex{C++}
 
 \subsection{Makefile Commands} \label{sec_common}
 
@@ -6853,7 +6808,7 @@ within a directory and all of its subdirectories.  The action is specified
 by \trl{ACTION=[action]}, where \trl{action} is one of the basic commands
 listed above. For example, if the command
 \begin{tabbing}
-   make BOPT=g ACTION=lib tree
+   make ACTION=lib tree
 \end{tabbing}
 were executed from the directory \trl{${PETSC_DIR}/src/ksp/ksp},
 the debugging library for all Krylov subspace solvers would be built.
@@ -7011,7 +6966,7 @@ as follows:
 \item[CLINKER, FLINKER] the C and Fortran linkers. 
 \item[RM] the remove command for deleting files.
 \item[EXAMPLES\_1] examples that will be built with
-             \trl{make BOPT=[g,O] examples} (see Section~\ref{sec_common})
+             \trl{make examples} (see Section~\ref{sec_common})
 \item[RUNEXAMPLES\_1] examples that will be run with
              \trl{make} \trl{runexamples} (see Section~\ref{sec_common})
 \item[EXAMPLESC] all C examples that will be checked in/out of RCS

@@ -190,7 +190,7 @@ PETSc also comes with a script
 \begin{tabbing}
    \${PETSC\_DIR}/bin/petscmpirun -np 8 ./petsc\_program\_name petsc\_options
 \end{tabbing}
-that uses the information set in \trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/packages} to 
+that uses the information set in \trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf} to 
 automatically use the correct \trl{mpirun} for your configuration.
 
 All PETSc-compliant programs support the use of the \trl{-h}
@@ -205,10 +205,10 @@ running any PETSc program with the option \trl{-help}.
 \item \trl{-log_summary} - summarize the program's performance
 \item \trl{-fp_trap} - stop on floating-point exceptions; \findex{-fp_trap}
       for example divide by zero
-\item \trl{-trdump} - enable memory tracing; dump list of unfreed memory 
+\item \trl{-malloc_dump} - enable memory tracing; dump list of unfreed memory 
       at conclusion \findex{-trdump} of the run
-\item \trl{-malloc} - enable memory tracing (by default this is 
-      activated for versions of PETSc using BOPT=g*)
+\item \trl{-malloc_debug} - enable memory tracing (by default this is 
+      activated for debugging versions)
 \item \trl{-start_in_debugger} \trl{[noxterm,gdb,dbx,xxgdb]} \trl{[-display name]} 
      - start all processes in debugger \findex{-start_in_debugger} \sindex{debugger}
 \item \trl{-on_error_attach_debugger}  \trl{[noxterm,gdb,dbx,xxgdb]}
@@ -465,7 +465,7 @@ details regarding error checking when using the PETSc Fortran interface.
    PETSC ERROR:   too large an object or bleeding by not properly\\
    PETSC ERROR:   destroying unneeded objects.\\
    PETSC ERROR:   Try running with -trdump for more information.\\ 
-   PETSC ERROR: MatCreate() line 99 in src/mat/utils/gcreate.c  \\
+   PETSC ERROR: MatSetType() line 99 in src/mat/utils/gcreate.c  \\
    PETSC ERROR: main() line 71 in src/ksp/ksp/examples/tutorials/ex3.c\\  
    MPI Abort by user Aborting program !\\
    Aborting program! \\
@@ -476,7 +476,7 @@ details regarding error checking when using the PETSc Fortran interface.
 \label{fig_traceback}
 \end{figure}
 
-When running the debug (BOPT=g compiled) version of the PETSc libraries, it
+When running the debug version of the PETSc libraries, it
 does a great deal of checking for memory corruption (writing outside of 
 array bounds etc). The macros \trl{CHKMEMQ} can be called 
 anywhere in the code to check the current status of the memory for corruption.
@@ -548,7 +548,7 @@ given in the file \href{troubleshooting.html}{\${PETSC\_DIR}/docs/troubleshootin
 \begin{figure}[H]
 {\small
 \begin{tabbing}
-   eagle: make BOPT=g ex2\\
+   eagle: make ex2\\
    gcc  -pipe -c  -I../../../  -I../../..//include   \\
        -I/usr/local/mpi/include  -I../../..//src -g \\
        -DPETSC\_USE\_DEBUG -DPETSC\_MALLOC -DPETSC\_USE\_LOG ex1.c\\
@@ -722,15 +722,15 @@ The root directory of PETSc contains the following directories:
  \subitem - \trl{manualpages} (on-line manual pages).
 \item \trl{bin} - Utilities and short scripts for use with PETSc, including
  \begin{itemize}
- \item \trl{petsarch} (utility for setting \trl{PETSC_ARCH} environmental variable),
+ \item \trl{petscmpirun} (utility for setting running MPI jobs),
  \end{itemize}
 
 \item \trl{bmake} - Base PETSc makefile directory.  Includes subdirectories
-                    for various architectures.
+                    for various configurations.
 \item \trl{include} - All include files for PETSc that are visible to the user.
 \item \trl{include/finclude}    - PETSc include files for Fortran programmers using 
                                   the .F suffix (recommended).
-\item \trl{include/pinclude}    - Private PETSc include files that should {\em not} 
+\item \trl{include/private}    - Private PETSc include files that should {\em not} 
                                   be used by application programmers.
 \item \trl{src} - The source code for all PETSc libraries, which
                   currently includes

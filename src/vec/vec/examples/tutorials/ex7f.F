@@ -30,8 +30,6 @@
        call ex7c(vec,comm,ierr)
 !
 !     IO from the fortran routines may cause all kinds of
-!     grief while linking. *_SYS_LIB in PETSC_ARCH/variables is supporsed
-!     to take care of it. 
 !
  100   format ('[',i1,']',' Calling VecView from Fortran')
        write(6,100) rank
