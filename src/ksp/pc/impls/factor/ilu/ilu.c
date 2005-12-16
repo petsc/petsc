@@ -10,6 +10,20 @@
 /* ------------------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetReuseFill_ILU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill_ILU(PC pc,PetscTruth flag)
+{
+  PC_ILU *lu;
+  
+  PetscFunctionBegin;
+  lu = (PC_ILU*)pc->data;
+  lu->reusefill = flag;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetZeroPivot_ILU"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot_ILU(PC pc,PetscReal z)
 {
@@ -61,8 +75,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCILUReorderForNonzeroDiagonal_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUReorderForNonzeroDiagonal_ILU(PC pc,PetscReal z)
+#define __FUNCT__ "PCFactorReorderForNonzeroDiagonal_ILU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal_ILU(PC pc,PetscReal z)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
 
@@ -93,8 +107,8 @@ PetscErrorCode PCDestroy_ILU_Internal(PC pc)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCILUSetUseDropTolerance_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
+#define __FUNCT__ "PCFactorSetUseDropTolerance_ILU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,PetscInt dtcount)
 {
   PC_ILU         *ilu;
   PetscErrorCode ierr;
@@ -130,8 +144,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCILUSetMatOrdering_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetMatOrdering_ILU(PC pc,MatOrderingType ordering)
+#define __FUNCT__ "PCFactorSetMatOrdering_ILU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrdering_ILU(PC pc,MatOrderingType ordering)
 {
   PC_ILU         *dir = (PC_ILU*)pc->data;
   PetscErrorCode ierr;
@@ -157,8 +171,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCILUSetReuseOrdering_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetReuseOrdering_ILU(PC pc,PetscTruth flag)
+#define __FUNCT__ "PCFactorSetReuseOrdering_ILU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering_ILU(PC pc,PetscTruth flag)
 {
   PC_ILU *ilu;
 
@@ -171,23 +185,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCILUDTSetReuseFill_ILUDT"
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUDTSetReuseFill_ILUDT(PC pc,PetscTruth flag)
-{
-  PC_ILU *ilu;
-
-  PetscFunctionBegin;
-  ilu = (PC_ILU*)pc->data;
-  ilu->reusefill = flag;
-  if (flag) SETERRQ(PETSC_ERR_SUP,"Not yet supported");
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCILUSetLevels_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetLevels_ILU(PC pc,PetscInt levels)
+#define __FUNCT__ "PCFactorSetLevels_ILU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels_ILU(PC pc,PetscInt levels)
 {
   PC_ILU         *ilu;
   PetscErrorCode ierr;
@@ -209,8 +208,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCILUSetUseInPlace_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseInPlace_ILU(PC pc)
+#define __FUNCT__ "PCFactorSetUseInPlace_ILU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace_ILU(PC pc)
 {
   PC_ILU *dir;
 
@@ -223,8 +222,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCILUSetAllowDiagonalFill"
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetAllowDiagonalFill_ILU(PC pc)
+#define __FUNCT__ "PCFactorSetAllowDiagonalFill"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill_ILU(PC pc)
 {
   PC_ILU *dir;
 
@@ -236,9 +235,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetAllowDiagonalFill_ILU(PC pc)
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCILUSetUseDropTolerance"
+#define __FUNCT__ "PCFactorSetUseDropTolerance"
 /*@
-   PCILUSetUseDropTolerance - The preconditioner will use an ILU 
+   PCFactorSetUseDropTolerance - The preconditioner will use an ILU 
    based on a drop tolerance.
 
    Collective on PC
@@ -251,7 +250,7 @@ EXTERN_C_END
                  depends on the number of nonzeros in row of original matrix
 
    Options Database Key:
-.  -pc_ilu_use_drop_tolerance <dt,dtcol,maxrowcount> - Sets drop tolerance
+.  -pc_factor_use_drop_tolerance <dt,dtcol,maxrowcount> - Sets drop tolerance
 
    Level: intermediate
 
@@ -260,13 +259,13 @@ EXTERN_C_END
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt maxrowcount)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt maxrowcount)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal,PetscReal,PetscInt);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetUseDropTolerance_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetUseDropTolerance_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,dt,dtcol,maxrowcount);CHKERRQ(ierr);
   } 
@@ -274,115 +273,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseDropTolerance(PC pc,PetscReal dt,Pe
 }  
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCILUSetMatOrdering"
-/*@C
-    PCILUSetMatOrdering - Sets the ordering routine (to reduce fill) to 
-    be used in the ILU factorization.
-
-    Collective on PC
-
-    Input Parameters:
-+   pc - the preconditioner context
--   ordering - the matrix ordering name, for example, MATORDERING_ND or MATORDERING_RCM
-
-    Options Database Key:
-.   -pc_ilu_mat_ordering_type <nd,rcm,...> - Sets ordering routine
-
-    Level: intermediate
-
-    Notes: natural ordering is used by default
-
-.seealso: PCLUSetMatOrdering()
-
-.keywords: PC, ILU, set, matrix, reordering
-
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetMatOrdering(PC pc,MatOrderingType ordering)
-{
-  PetscErrorCode ierr,(*f)(PC,MatOrderingType);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetMatOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,ordering);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCILUSetReuseOrdering"
+#define __FUNCT__ "PCFactorSetLevels"
 /*@
-   PCILUSetReuseOrdering - When similar matrices are factored, this
-   causes the ordering computed in the first factor to be used for all
-   following factors; applies to both fill and drop tolerance ILUs.
-
-   Collective on PC
-
-   Input Parameters:
-+  pc - the preconditioner context
--  flag - PETSC_TRUE to reuse else PETSC_FALSE
-
-   Options Database Key:
-.  -pc_ilu_reuse_ordering - Activate PCILUSetReuseOrdering()
-
-   Level: intermediate
-
-.keywords: PC, levels, reordering, factorization, incomplete, ILU
-
-.seealso: PCILUDTSetReuseFill(), PCLUSetReuseOrdering(), PCLUSetReuseFill()
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetReuseOrdering(PC pc,PetscTruth flag)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscTruth);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetReuseOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,flag);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCILUDTSetReuseFill"
-/*@
-   PCILUDTSetReuseFill - When matrices with same nonzero structure are ILUDT factored,
-   this causes later ones to use the fill computed in the initial factorization.
-
-   Collective on PC
-
-   Input Parameters:
-+  pc - the preconditioner context
--  flag - PETSC_TRUE to reuse else PETSC_FALSE
-
-   Options Database Key:
-.  -pc_iludt_reuse_fill - Activates PCILUDTSetReuseFill()
-
-   Level: intermediate
-
-.keywords: PC, levels, reordering, factorization, incomplete, ILU
-
-.seealso: PCILUSetReuseOrdering(), PCLUSetReuseOrdering(), PCLUSetReuseFill()
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUDTSetReuseFill(PC pc,PetscTruth flag)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscTruth);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUDTSetReuseFill_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,flag);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCILUSetLevels"
-/*@
-   PCILUSetLevels - Sets the number of levels of fill to use.
+   PCFactorSetLevels - Sets the number of levels of fill to use.
 
    Collective on PC
 
@@ -391,20 +284,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCILUDTSetReuseFill(PC pc,PetscTruth flag)
 -  levels - number of levels of fill
 
    Options Database Key:
-.  -pc_ilu_levels <levels> - Sets fill level
+.  -pc_factor_levels <levels> - Sets fill level
 
    Level: intermediate
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetLevels(PC pc,PetscInt levels)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels(PC pc,PetscInt levels)
 {
   PetscErrorCode ierr,(*f)(PC,PetscInt);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (levels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"negative levels");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetLevels_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetLevels_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,levels);CHKERRQ(ierr);
   } 
@@ -412,9 +305,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetLevels(PC pc,PetscInt levels)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCILUSetAllowDiagonalFill"
+#define __FUNCT__ "PCFactorSetAllowDiagonalFill"
 /*@
-   PCILUSetAllowDiagonalFill - Causes all diagonal matrix entries to be 
+   PCFactorSetAllowDiagonalFill - Causes all diagonal matrix entries to be 
    treated as level 0 fill even if there is no non-zero location.
 
    Collective on PC
@@ -423,7 +316,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetLevels(PC pc,PetscInt levels)
 +  pc - the preconditioner context
 
    Options Database Key:
-.  -pc_ilu_diagonal_fill
+.  -pc_factor_diagonal_fill
 
    Notes:
    Does not apply with 0 fill.
@@ -432,120 +325,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetLevels(PC pc,PetscInt levels)
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetAllowDiagonalFill(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill(PC pc)
 {
   PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetAllowDiagonalFill_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetAllowDiagonalFill_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCILUSetUseInPlace"
-/*@
-   PCILUSetUseInPlace - Tells the system to do an in-place incomplete factorization.
-   Collective on PC
-
-   Input Parameters:
-.  pc - the preconditioner context
-
-   Options Database Key:
-.  -pc_ilu_in_place - Activates in-place factorization
-
-   Notes:
-   PCILUSetUseInPlace() is intended for use with matrix-free variants of
-   Krylov methods, or when a different matrices are employed for the linear
-   system and preconditioner, or with ASM preconditioning.  Do NOT use 
-   this option if the linear system
-   matrix also serves as the preconditioning matrix, since the factored
-   matrix would then overwrite the original matrix. 
-
-   Only works well with ILU(0).
-
-   Level: intermediate
-
-.keywords: PC, set, factorization, inplace, in-place, ILU
-
-.seealso:  PCLUSetUseInPlace()
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseInPlace(PC pc)
-{
-  PetscErrorCode ierr,(*f)(PC);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetUseInPlace_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCILUReorderForNonzeroDiagonal"
-/*@
-   PCILUReorderForNonzeroDiagonal - reorders rows/columns of matrix to remove zeros from diagonal
-
-   Collective on PC
-   
-   Input Parameters:
-+  pc - the preconditioner context
--  tol - diagonal entries smaller than this in absolute value are considered zero
-
-   Options Database Key:
-.  -pc_lu_nonzeros_along_diagonal
-
-   Level: intermediate
-
-.keywords: PC, set, factorization, direct, fill
-
-.seealso: PCFactorSetFill(), MatReorderForNonzeroDiagonal()
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscReal);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUReorderForNonzeroDiagonal_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,rtol);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCILUSetPivotInBlocks"
-/*@
-    PCILUSetPivotInBlocks - Determines if pivoting is done while factoring each block
-      with BAIJ or SBAIJ matrices
-
-    Collective on PC
-
-    Input Parameters:
-+   pc - the preconditioner context
--   pivot - PETSC_TRUE or PETSC_FALSE
-
-    Options Database Key:
-.   -pc_ilu_pivot_in_blocks <true,false>
-
-    Level: intermediate
-
-.seealso: PCIILUSetMatOrdering(), PCILUSetPivoting()
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetPivotInBlocks(PC pc,PetscTruth pivot)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscTruth);
-
-  PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetPivotInBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,pivot);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
@@ -554,8 +342,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetPivotInBlocks(PC pc,PetscTruth pivot)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCILUSetPivotInBlocks_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetPivotInBlocks_ILU(PC pc,PetscTruth pivot)
+#define __FUNCT__ "PCFactorSetPivotInBlocks_ILU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks_ILU(PC pc,PetscTruth pivot)
 {
   PC_ILU *dir = (PC_ILU*)pc->data;
 
@@ -581,13 +369,13 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHead("ILU Options");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-pc_ilu_levels","levels of fill","PCILUSetLevels",(PetscInt)ilu->info.levels,&itmp,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_factor_levels","levels of fill","PCFactorSetLevels",(PetscInt)ilu->info.levels,&itmp,&flg);CHKERRQ(ierr);
     if (flg) ilu->info.levels = itmp;
-    ierr = PetscOptionsName("-pc_ilu_in_place","do factorization in place","PCILUSetUseInPlace",&ilu->inplace);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-pc_ilu_diagonal_fill","Allow fill into empty diagonal entry","PCILUSetAllowDiagonalFill",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_in_place","do factorization in place","PCFactorSetUseInPlace",&ilu->inplace);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_diagonal_fill","Allow fill into empty diagonal entry","PCFactorSetAllowDiagonalFill",&flg);CHKERRQ(ierr);
     ilu->info.diagonal_fill = (double) flg;
-    ierr = PetscOptionsName("-pc_iludt_reuse_fill","Reuse fill from previous ILUdt","PCILUDTSetReuseFill",&ilu->reusefill);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-pc_ilu_reuse_ordering","Reuse previous reordering","PCILUSetReuseOrdering",&ilu->reuseordering);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_reuse_fill","Reuse fill ratio from previous factorization","PCFactorSetReuseFill",&ilu->reusefill);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_reuse_ordering","Reuse previous reordering","PCFactorSetReuseOrdering",&ilu->reuseordering);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -609,27 +397,27 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     dt[0] = ilu->info.dt;
     dt[1] = ilu->info.dtcol;
     dt[2] = ilu->info.dtcount;
-    ierr = PetscOptionsRealArray("-pc_ilu_use_drop_tolerance","<dt,dtcol,maxrowcount>","PCILUSetUseDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsRealArray("-pc_factor_use_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetUseDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCILUSetUseDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
+      ierr = PCFactorSetUseDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_factor_fill","Expected fill in factorization","PCFactorSetFill",ilu->info.fill,&ilu->info.fill,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-pc_ilu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCILUReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
     if (flg) {
       tol = PETSC_DECIDE;
-      ierr = PetscOptionsReal("-pc_ilu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCILUReorderForNonzeroDiagonal",ilu->nonzerosalongdiagonaltol,&tol,0);CHKERRQ(ierr);
-      ierr = PCILUReorderForNonzeroDiagonal(pc,tol);CHKERRQ(ierr);
+      ierr = PetscOptionsReal("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",ilu->nonzerosalongdiagonaltol,&tol,0);CHKERRQ(ierr);
+      ierr = PCFactorReorderForNonzeroDiagonal(pc,tol);CHKERRQ(ierr);
     }
 
     ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pc_ilu_mat_ordering_type","Reorder to reduce nonzeros in ILU","PCILUSetMatOrdering",ordlist,ilu->ordering,tname,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reorder to reduce nonzeros in ILU","PCFactorSetMatOrdering",ordlist,ilu->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCILUSetMatOrdering(pc,tname);CHKERRQ(ierr);
+      ierr = PCFactorSetMatOrdering(pc,tname);CHKERRQ(ierr);
     }
     flg = ilu->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_ilu_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCILUSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-pc_factor_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCFactorSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
     if (set) {
-      ierr = PCILUSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
+      ierr = PCFactorSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -817,17 +605,17 @@ static PetscErrorCode PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
      PCILU - Incomplete factorization preconditioners.
 
    Options Database Keys:
-+  -pc_ilu_levels <k> - number of levels of fill for ILU(k)
-.  -pc_ilu_in_place - only for ILU(0) with natural ordering, reuses the space of the matrix for
++  -pc_factor_levels <k> - number of levels of fill for ILU(k)
+.  -pc_factor_in_place - only for ILU(0) with natural ordering, reuses the space of the matrix for
                       its factorization (overwrites original matrix)
-.  -pc_ilu_diagonal_fill - fill in a zero diagonal even if levels of fill indicate it wouldn't be fill
-.  -pc_ilu_reuse_ordering - reuse ordering of factorized matrix from previous factorization
-.  -pc_ilu_use_drop_tolerance <dt,dtcol,maxrowcount> - use Saad's drop tolerance ILUdt
+.  -pc_factor_diagonal_fill - fill in a zero diagonal even if levels of fill indicate it wouldn't be fill
+.  -pc_factor_reuse_ordering - reuse ordering of factorized matrix from previous factorization
+.  -pc_factor_use_drop_tolerance <dt,dtcol,maxrowcount> - use Saad's drop tolerance ILUdt
 .  -pc_factor_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
-.  -pc_ilu_nonzeros_along_diagonal - reorder the matrix before factorization to remove zeros from the diagonal,
+.  -pc_factor_nonzeros_along_diagonal - reorder the matrix before factorization to remove zeros from the diagonal,
                                    this decreases the chance of getting a zero pivot
-.  -pc_ilu_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
-.  -pc_ilu_pivot_in_blocks - for block ILU(k) factorization, i.e. with BAIJ matrices with block size larger
+.  -pc_factor_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
+.  -pc_factor_pivot_in_blocks - for block ILU(k) factorization, i.e. with BAIJ matrices with block size larger
                              than 1 the diagonal blocks are factored with partial pivoting (this increases the 
                              stability of the ILU factorization
 .  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
@@ -843,9 +631,9 @@ static PetscErrorCode PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
           For BAIJ matrices this implements a point block ILU
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
-           PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), PCILUSetUseDropTolerance(),
-           PCFactorSetFill(), PCILUSetMatOrdering(), PCILUSetReuseOrdering(), PCILUDTSetReuseFill(),
-           PCILUSetLevels(), PCILUSetUseInPlace(), PCILUSetAllowDiagonalFill(), PCILUSetPivotInBlocks(),
+           PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), PCFactorSetUseDropTolerance(),
+           PCFactorSetFill(), PCFactorSetMatOrdering(), PCFactorSetReuseOrdering(),
+           PCFactorSetLevels(), PCFactorSetUseInPlace(), PCFactorSetAllowDiagonalFill(), PCFactorSetPivotInBlocks(),
            PCFactorSetShiftNonzero(),PCFactorSetShiftPd()
 
 M*/
@@ -900,26 +688,26 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_ILU",
                     PCFactorSetShiftPd_ILU);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetUseDropTolerance_C","PCILUSetUseDropTolerance_ILU",
-                    PCILUSetUseDropTolerance_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetUseDropTolerance_C","PCFactorSetUseDropTolerance_ILU",
+                    PCFactorSetUseDropTolerance_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_ILU",
                     PCFactorSetFill_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetMatOrdering_C","PCILUSetMatOrdering_ILU",
-                    PCILUSetMatOrdering_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetReuseOrdering_C","PCILUSetReuseOrdering_ILU",
-                    PCILUSetReuseOrdering_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUDTSetReuseFill_C","PCILUDTSetReuseFill_ILUDT",
-                    PCILUDTSetReuseFill_ILUDT);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetLevels_C","PCILUSetLevels_ILU",
-                    PCILUSetLevels_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetUseInPlace_C","PCILUSetUseInPlace_ILU",
-                    PCILUSetUseInPlace_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetAllowDiagonalFill_C","PCILUSetAllowDiagonalFill_ILU",
-                    PCILUSetAllowDiagonalFill_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetPivotInBlocks_C","PCILUSetPivotInBlocks_ILU",
-                    PCILUSetPivotInBlocks_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUReorderForNonzeroDiagonal_C","PCILUReorderForNonzeroDiagonal_ILU",
-                    PCILUReorderForNonzeroDiagonal_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrdering_C","PCFactorSetMatOrdering_ILU",
+                    PCFactorSetMatOrdering_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetReuseOrdering_C","PCFactorSetReuseOrdering_ILU",
+                    PCFactorSetReuseOrdering_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetReuseFill_C","PCFactorSetReuseFill_ILU",
+                    PCFactorSetReuseFill_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetLevels_C","PCFactorSetLevels_ILU",
+                    PCFactorSetLevels_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetUseInPlace_C","PCFactorSetUseInPlace_ILU",
+                    PCFactorSetUseInPlace_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetAllowDiagonalFill_C","PCFactorSetAllowDiagonalFill_ILU",
+                    PCFactorSetAllowDiagonalFill_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetPivotInBlocks_C","PCFactorSetPivotInBlocks_ILU",
+                    PCFactorSetPivotInBlocks_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorReorderForNonzeroDiagonal_C","PCFactorReorderForNonzeroDiagonal_ILU",
+                    PCFactorReorderForNonzeroDiagonal_ILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

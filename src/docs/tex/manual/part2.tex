@@ -2117,8 +2117,8 @@ PETSc interfaces (see Section~\ref{sec_externalsol})) one may use the options
 By default, if a direct solver is used, the factorization is {\em not} done 
 in-place. This approach prevents the user from the unexpected surprise
 of having a corrupted matrix after a linear solve. The routine 
-PCLUSetUseInPlace(), discussed below, causes factorization to 
-be done in-place. \findex{PCLUSetUseInPlace()} 
+PCFactorSetUseInPlace(), discussed below, causes factorization to 
+be done in-place. \findex{PCFactorSetUseInPlace()} 
 
 \section{Solving Successive Linear Systems}
 
@@ -2559,46 +2559,45 @@ just a few in the sections below.
 
 Some of the options for ILU preconditioner are 
 \begin{tabbing}
-  PCILUSetLevels(PC pc,int levels);\\
-  PCILCCSetLevels(PC pc,int levels);\\
-  PCILUSetReuseOrdering(PC pc,PetscTruth flag);\\
-  PCILUSetUseDropTolerance(PC pc,double dt,double dtcol,int dtcount);\\
-  PCILUDTSetReuseFill(PC pc,PetscTruth flag);\\
-  PCILUSetUseInPlace(PC pc); \\
-  PCILUSetAllowDiagonalFill(PC pc);
+  PCFactorSetLevels(PC pc,int levels);\\
+  PCFactorSetReuseOrdering(PC pc,PetscTruth flag);\\
+  PCFactorSetUseDropTolerance(PC pc,double dt,double dtcol,int dtcount);\\
+  PCFactorSetReuseFill(PC pc,PetscTruth flag);\\
+  PCFactorSetUseInPlace(PC pc); \\
+  PCFactorSetAllowDiagonalFill(PC pc);
 \end{tabbing}
-\findex{PCILUSetLevels()} \findex{PCILUSetReuseOrdering()}
-\findex{PCILUSetUseDropTolerance()} \findex{PCILUDTSetReuseFill()}
-\findex{PCILUSetUseInPlace()} \findex{PCILUSetAllowDiagonalFill()}
+\findex{PCFactorSetLevels()} \findex{PCFactorSetReuseOrdering()}
+\findex{PCFactorSetUseDropTolerance()} \findex{PCFactorSetReuseFill()}
+\findex{PCFactorSetUseInPlace()} \findex{PCFactorSetAllowDiagonalFill()}
 
 When repeatedly solving linear systems with the same KSP
 context, one can reuse some information  computed
 during the first linear solve.
-In particular, PCILUSetReuseOrdering() causes the ordering  (for example, set with 
-\trl{-pc_ilu_ordering_type} \trl{order}) computed in the first factorization to be reused
+In particular, PCFactorSetReuseOrdering() causes the ordering  (for example, set with 
+\trl{-pc_factor_ordering_type} \trl{order}) computed in the first factorization to be reused
 for later factorizations. \sindex{orderings} 
-The \trl{ PCILUDTSetReuseFill()} causes the 
+The \trl{ PCFactorDTSetReuseFill()} causes the 
 fill computed during the first drop tolerance factorization to be reused
-in later factorizations. PCILUSetUseInPlace() is often used with 
+in later factorizations. PCFactorSetUseInPlace() is often used with 
 \trl{PCASM} or \trl{PCBJACOBI} when zero fill is used, since it reuses the 
 matrix space to store the incomplete factorization it saves memory and 
 copying time. Note that in-place factorization is not appropriate with 
 any ordering besides natural and cannot be used with the drop tolerance
 factorization. These options may be set in the database with 
 \begin{tabbing}
-   \trl{-pc_ilu_levels <levels>}\\
-   \trl{-pc_ilu_reuse_ordering}\\
-   \trl{-pc_ilu_use_drop_tolerance <dt>,<dtcol>,<dtcount>}\\
-   \trl{-pc_ilu_reuse_fill}\\
-   \trl{-pc_ilu_in_place}\\
-   \trl{-pc_ilu_nonzeros_along_diagonal}\\
-   \trl{-pc_ilu_diagonal_fill
+   \trl{-pc_factor_levels <levels>}\\
+   \trl{-pc_factor_reuse_ordering}\\
+   \trl{-pc_factor_use_drop_tolerance <dt>,<dtcol>,<dtcount>}\\
+   \trl{-pc_factor_reuse_fill}\\
+   \trl{-pc_factor_in_place}\\
+   \trl{-pc_factor_nonzeros_along_diagonal}\\
+   \trl{-pc_factor_diagonal_fill
 }
 \end{tabbing}
-\findex{-pc_ilu_levels} \findex{-pc_ilu_reuse_ordering}
-\findex{-pc_ilu_use_drop_tolerance} \findex{-pc_ilu_reuse_fill}
-\findex{-pc_ilu_in_place} \findex{-pc_ilu_nonzeros_along_diagonal}
-\findex{-pc_ilu_diagonal_fill}
+\findex{-pc_factor_levels} \findex{-pc_factor_reuse_ordering}
+\findex{-pc_factor_use_drop_tolerance} \findex{-pc_factor_reuse_fill}
+\findex{-pc_factor_in_place} \findex{-pc_factor_nonzeros_along_diagonal}
+\findex{-pc_factor_diagonal_fill}
 
 See Section~\ref{sec_symbolfactor} for information on preallocation
 of memory for anticipated fill during factorization.
@@ -2746,17 +2745,17 @@ sets the SSOR relaxation coefficient, \trl{omega}, as discussed above.
 
 The LU preconditioner provides several options.  The first, given by
 the \sindex{direct solver}
-command \findex{PCLUSetUseInPlace()} \sindex{in-place solvers}
+command \findex{PCFactorSetUseInPlace()} \sindex{in-place solvers}
 \begin{tabbing}
-  PCLUSetUseInPlace(PC pc);
+  PCFactorSetUseInPlace(PC pc);
 \end{tabbing}
 causes the factorization to be performed in-place and hence
 destroys the original matrix.  The options database variant of
-this command is \trl{-pc_lu_in_place}. \findex{-pc_lu_in_place}
+this command is \trl{-pc_factor_in_place}. \findex{-pc_factor_in_place}
 Another direct preconditioner option is selecting the ordering
-of equations with the command \findex{-pc_lu_ordering_type} \sindex{orderings}
+of equations with the command \findex{-pc_factor_ordering_type} \sindex{orderings}
 \begin{tabbing}
-   \trl{-pc_lu_ordering_type <ordering>}
+   \trl{-pc_factor_ordering_type <ordering>}
 \end{tabbing}
 The possible orderings are
 \begin{itemize}
@@ -2769,11 +2768,11 @@ The possible orderings are
 \findex{MATORDERING_NATURAL} \findex{MATORDERING_ND} \findex{MATORDERING_1WD}
 \findex{MATORDERING_RCM} \findex{MATORDERING_QMD} \sindex{nested dissection}
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
-\sindex{quotient minimum degree} \findex{-pc_lu_ordering_type}
+\sindex{quotient minimum degree} \findex{-pc_factor_ordering_type}
 These orderings can also be set through the options database by specifying 
-one of the following:  \trl{-pc_lu_ordering_type} \trl{natural}, \trl{-pc_lu_ordering_type}
-\trl{nd}, \trl{-pc_lu_ordering_type} \trl{1wd}, \trl{-pc_lu_ordering_type} \trl{rcm},
-\trl{-pc_lu_ordering_type} \trl{qmd}.
+one of the following:  \trl{-pc_factor_ordering_type} \trl{natural}, \trl{-pc_factor_ordering_type}
+\trl{nd}, \trl{-pc_factor_ordering_type} \trl{1wd}, \trl{-pc_factor_ordering_type} \trl{rcm},
+\trl{-pc_factor_ordering_type} \trl{qmd}.
 In addition, see 
 \break MatGetOrdering(), discussed in Section~\ref{sec_matfactor}.
 
@@ -2781,7 +2780,7 @@ The sparse LU factorization provided in PETSc does not perform pivoting for
 numerical stability (since they are designed to preserve nonzero 
 structure), thus occasionally a LU factorization will fail with a zero 
 pivot when, in fact, the matrix is non-singular. The option
-\trl{-pc_lu_nonzeros_along_diagonal <tol>} \findex{-pc_lu_nonzeros_along_diagonal}
+\trl{-pc_factor_nonzeros_along_diagonal <tol>} \findex{-pc_factor_nonzeros_along_diagonal}
 will often help eliminate the zero pivot, by preprocessing the the 
 column ordering to remove small values from the diagonal. Here, \trl{tol}
 is an optional tolerance to decide if a value is nonzero; by default it
@@ -3202,8 +3201,8 @@ The PETSc solvers will now handle the null space during the solution process.
 
 \emph{But} if one chooses a direct solver (or an incomplete factorization)
 it may still detect a zero pivot. \sindex{zero pivot}
-You can run with the additional options \trl{-pc_lu_damping <dampingfactor>} 
-\findex{-pc_lu_damping} or \trl{-pc_ilu_damping <dampingfactor>} \findex{-pc_ilu_damping} to 
+You can run with the additional options \trl{-pc_factor_shift_nonzero <dampingfactor>} 
+\findex{-pc_factor_shift_nonzero} or \trl{-pc_factor_shift_nonzero <dampingfactor>} \findex{-pc_factor_sshift_nonzero} to 
 prevent the zero pivot. A good choice for the \trl{damping} factor is 1.e-10.
 \sindex{damping}
 
@@ -7098,13 +7097,13 @@ The currently available alternatives for the ordering \trl{type} are
 \item \trl{MATORDERING_QMD} - Quotient Minimum Degree
 \end{itemize}
 These orderings can also be set through the options database by specifying 
-one of the following:  \trl{-pc_lu_ordering_type} \trl{natural}, \trl{-pc_lu_ordering_type} \trl{nd}, 
-\trl{-pc_lu_ordering_type} \trl{1wd}, \trl{-pc_lu_ordering_type} \trl{rcm}, \trl{-pc_lu_ordering_type}
+one of the following:  \trl{-pc_factor_ordering_type} \trl{natural}, \trl{-pc_factor_ordering_type} \trl{nd}, 
+\trl{-pc_factor_ordering_type} \trl{1wd}, \trl{-pc_factor_ordering_type} \trl{rcm}, \trl{-pc_factor_ordering_type}
 \trl{qmd}.
 \findex{MATORDERING_NATURAL} \findex{MATORDERING_ND} \findex{MATORDERING_1WD}
 \findex{MATORDERING_RCM} \findex{MATORDERING_QMD} \sindex{nested dissection}
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
-\sindex{quotient minimum degree} \findex{-pc_lu_ordering_type}
+\sindex{quotient minimum degree} \findex{-pc_factor_ordering_type}
 
 Certain matrix formats may support only a subset of these; more options may 
 be added. Check the manual pages for up-to-date information. All of these orderings are 
@@ -7135,7 +7134,7 @@ directory for examples on how the reordering routines may be written.
 
 Once the reordering routine has been registered,
 it can be selected for use at runtime with the
-command line option \trl{-pc_lu_ordering_type} \trl{sname}.  If reordering directly,
+command line option \trl{-pc_factor_ordering_type} \trl{sname}.  If reordering directly,
 the user should provide the \trl{name} as the second input argument of
 MatGetOrdering().
 
@@ -7208,9 +7207,8 @@ values are detected and corrected for, a nonsymmetric
 permutation of the rows and columns will result. This is not guaranteed to work, 
 but may help if one was simply unlucky in the original ordering.
 \findex{MatReorderForNonzeroDiagonal()} When using the KSP solver interface
-the options \trl{-pc_ilu_nonzeros_along_diagonal <tol>} \findex{-pc_ilu_nonzeros_along_diagonal}
-and \findex{-pc_lu_nonzeros_along_diagonal}
-\trl{-pc_lu_nonzeros_along_diagonal <tol>} may be used.  Here, \trl{tol}
+the option \trl{-pc_factor_nonzeros_along_diagonal <tol>} \findex{-pc_factor_nonzeros_along_diagonal}
+may be used.  Here, \trl{tol}
 is an optional tolerance to decide if a value is nonzero; by default it
 is $ 1.e-10.$ 
 

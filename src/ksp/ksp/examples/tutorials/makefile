@@ -415,8 +415,8 @@ runex10_19:
 	-@touch ex10_19aij.tmp
 	-@touch ex10_19sbaij.tmp
 	-@for levels in ${LEVELS}; do \
-	${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_icc_levels $$levels >> ex10_19aij.tmp 2>&1; \
-	 ${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_icc_levels $$levels -matload_type seqsbaij >> ex10_19sbaij.tmp 2>&1; \
+	${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_factor_levels $$levels >> ex10_19aij.tmp 2>&1; \
+	 ${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_factor_levels $$levels -matload_type seqsbaij >> ex10_19sbaij.tmp 2>&1; \
 	done; 
 	-@if (${DIFF} ex10_19aij.tmp ex10_19sbaij.tmp) then true; \
 	   else echo "Possible problem with ex10_19, diffs above"; fi; \

@@ -60,8 +60,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCICCSetMatOrdering_ICC"
-PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetMatOrdering_ICC(PC pc,MatOrderingType ordering)
+#define __FUNCT__ "PCFactorSetMatOrdering_ICC"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrdering_ICC(PC pc,MatOrderingType ordering)
 {
   PC_ICC         *dir = (PC_ICC*)pc->data;
   PetscErrorCode ierr;
@@ -89,8 +89,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCICCSetLevels_ICC"
-PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetLevels_ICC(PC pc,PetscInt levels)
+#define __FUNCT__ "PCFactorSetLevels_ICC"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels_ICC(PC pc,PetscInt levels)
 {
   PC_ICC *icc;
 
@@ -100,74 +100,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetLevels_ICC(PC pc,PetscInt levels)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCICCSetMatOrdering"
-/*@
-    PCICCSetMatOrdering - Sets the ordering routine (to reduce fill) to 
-    be used it the ICC factorization.
-
-    Collective on PC
-
-    Input Parameters:
-+   pc - the preconditioner context
--   ordering - the matrix ordering name, for example, MATORDERING_ND or MATORDERING_RCM
-
-    Options Database Key:
-.   -pc_icc_mat_ordering_type <nd,rcm,...> - Sets ordering routine
-
-    Level: intermediate
-
-.seealso: PCLUSetMatOrdering()
-
-.keywords: PC, ICC, set, matrix, reordering
-
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetMatOrdering(PC pc,MatOrderingType ordering)
-{
-  PetscErrorCode ierr,(*f)(PC,MatOrderingType);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetMatOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,ordering);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCICCSetLevels"
-/*@
-   PCICCSetLevels - Sets the number of levels of fill to use.
-
-   Collective on PC
-
-   Input Parameters:
-+  pc - the preconditioner context
--  levels - number of levels of fill
-
-   Options Database Key:
-.  -pc_icc_levels <levels> - Sets fill level
-
-   Level: intermediate
-
-   Concepts: ICC^setting levels of fill
-
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetLevels(PC pc,PetscInt levels)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscInt);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  if (levels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"negative levels");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetLevels_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,levels);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetup_ICC"
@@ -266,19 +198,19 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHead("ICC Options");CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-pc_icc_levels","levels of fill","PCICCSetLevels",icc->info.levels,&icc->info.levels,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_levels","levels of fill","PCFactorSetLevels",icc->info.levels,&icc->info.levels,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_factor_fill","Expected fill in factorization","PCFactorSetFill",icc->info.fill,&icc->info.fill,&flg);CHKERRQ(ierr);
     ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pc_icc_mat_ordering_type","Reorder to reduce nonzeros in ICC","PCICCSetMatOrdering",ordlist,icc->ordering,tname,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reorder to reduce nonzeros in ICC","PCFactorSetMatOrdering",ordlist,icc->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCICCSetMatOrdering(pc,tname);CHKERRQ(ierr);
+      ierr = PCFactorSetMatOrdering(pc,tname);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetShiftNonzero(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",icc->info.shiftnz,&icc->info.shiftnz,0);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCICCSetShift",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShift",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetShiftPd(pc,PETSC_TRUE);CHKERRQ(ierr);
     } else {
@@ -321,11 +253,11 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
      PCICC - Incomplete Cholesky factorization preconditioners.
 
    Options Database Keys:
-+  -pc_icc_levels <k> - number of levels of fill for ICC(k)
-.  -pc_icc_in_place - only for ICC(0) with natural ordering, reuses the space of the matrix for
++  -pc_factor_levels <k> - number of levels of fill for ICC(k)
+.  -pc_factor_in_place - only for ICC(0) with natural ordering, reuses the space of the matrix for
                       its factorization (overwrites original matrix)
 .  -pc_factor_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
-.  -pc_icc_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
+.  -pc_factor_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
 .  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
 -  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
    is optional with PETSC_TRUE being the default
@@ -340,14 +272,14 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 
           The Manteuffel shift is only implemented for matrices with block size 1
 
-          By default, the Manteuffel is applied (for matrices with block size 1). Call PCICCSetShift(pc,PETSC_FALSE);
+          By default, the Manteuffel is applied (for matrices with block size 1). Call PCFactorSetShiftPd(pc,PETSC_FALSE);
           to turn off the shift.
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
            PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), 
-           PCFactorSetFill(), PCICCSetMatOrdering(), PCICCSetReuseOrdering(), 
-           PCICCSetLevels(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd(),
+           PCFactorSetFill(), PCFactorSetMatOrdering(), PCFactorSetReuseOrdering(), 
+           PCFactorSetLevels(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd(),
 
 M*/
 
@@ -393,12 +325,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_ICC",
                     PCFactorSetShiftPd_ICC);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetLevels_C","PCICCSetLevels_ICC",
-                    PCICCSetLevels_ICC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetLevels_C","PCFactorSetLevels_ICC",
+                    PCFactorSetLevels_ICC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_ICC",
                     PCFactorSetFill_ICC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetMatOrdering_C","PCICCSetMatOrdering_ICC",
-                    PCICCSetMatOrdering_ICC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrdering_C","PCFactorSetMatOrdering_ICC",
+                    PCFactorSetMatOrdering_ICC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

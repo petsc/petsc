@@ -458,7 +458,7 @@ M*/
 
    Level: beginner
 
-     Notes: This can happen with the PCICC preconditioner, use -pc_icc_shift to force 
+     Notes: This can happen with the PCICC preconditioner, use -pc_factor_shift_positive_definite to force 
   the PCICC preconditioner to generate a positive definite preconditioner
 
 .seealso:  KSPSolve(), KSPGetConvergedReason(), KSPConvergedReason, KSPSetTolerances()

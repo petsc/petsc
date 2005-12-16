@@ -223,7 +223,7 @@ PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,M
   ierr = PetscOptionsReal("-mat_umfpack_irstep","Control[UMFPACK_IRSTEP]","None",lu->Control[UMFPACK_IRSTEP],&lu->Control[UMFPACK_IRSTEP],PETSC_NULL);CHKERRQ(ierr);
   
   /* use Petsc mat ordering (note: size is for the transpose, and PETSc r = Umfpack perm_c) */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-pc_lu_mat_ordering_type",&lu->PetscMatOdering);CHKERRQ(ierr);  
+  ierr = PetscOptionsHasName(PETSC_NULL,"-pc_factor_mat_ordering_type",&lu->PetscMatOdering);CHKERRQ(ierr);  
   if (lu->PetscMatOdering) {
     ierr = ISGetIndices(r,&ra);CHKERRQ(ierr);
     ierr = PetscMalloc(A->m*sizeof(int),&lu->perm_c);CHKERRQ(ierr);  

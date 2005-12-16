@@ -538,7 +538,7 @@ EXTERN_C_END
 
 .keywords: PC, set, factorization, direct, inplace, in-place, ASM
 
-.seealso: PCILUSetUseInPlace(), PCLUSetUseInPlace ()
+.seealso: PCFactorSetUseInPlace()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetUseInPlace(PC pc)
 {
