@@ -934,7 +934,7 @@ class Configure(config.base.Configure):
         self.sharedLibraryExt = ext
         # using printf appears to correctly identify non-pic code on X86_64
         if self.checkLink(includes = '#include <stdio.h>\nint '+testMethod+'(void) {printf("hello");\nreturn 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
-            oldLibs = self.LIBS
+          oldLibs = self.LIBS
           self.LIBS += ' -L. -lconftest'
           if self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);'):
             os.remove('libconftest.'+self.sharedLibraryExt)
