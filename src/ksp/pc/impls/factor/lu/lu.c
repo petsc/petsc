@@ -62,8 +62,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUReorderForNonzeroDiagonal_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUReorderForNonzeroDiagonal_LU(PC pc,PetscReal z)
+#define __FUNCT__ "PCFactorReorderForNonzeroDiagonal_LU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal_LU(PC pc,PetscReal z)
 {
   PC_LU *lu = (PC_LU*)pc->data;
 
@@ -80,8 +80,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetReuseOrdering_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetReuseOrdering_LU(PC pc,PetscTruth flag)
+#define __FUNCT__ "PCFactorSetReuseOrdering_LU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering_LU(PC pc,PetscTruth flag)
 {
   PC_LU *lu;
 
@@ -94,8 +94,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetReuseFill_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetReuseFill_LU(PC pc,PetscTruth flag)
+#define __FUNCT__ "PCFactorSetReuseFill_LU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill_LU(PC pc,PetscTruth flag)
 {
   PC_LU *lu;
 
@@ -120,11 +120,11 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHead("LU options");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-pc_lu_in_place","Form LU in the same memory as the matrix","PCLUSetUseInPlace",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_in_place","Form LU in the same memory as the matrix","PCFactorSetUseInPlace",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCLUSetUseInPlace(pc);CHKERRQ(ierr);
+      ierr = PCFactorSetUseInPlace(pc);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_lu_fill","Expected non-zeros in LU/non-zeros in matrix","PCLUSetFill",lu->info.fill,&lu->info.fill,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_fill","Expected non-zeros in LU/non-zeros in matrix","PCFactorSetFill",lu->info.fill,&lu->info.fill,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -137,34 +137,34 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
     }
     ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",lu->info.zeropivot,&lu->info.zeropivot,0);CHKERRQ(ierr);
 
-    ierr = PetscOptionsName("-pc_lu_reuse_fill","Use fill from previous factorization","PCLUSetReuseFill",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCLUSetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PCFactorSetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-pc_lu_reuse_ordering","Reuse ordering from previous factorization","PCLUSetReuseOrdering",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_reuse_ordering","Reuse ordering from previous factorization","PCFactorSetReuseOrdering",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCLUSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PCFactorSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
     }
 
     ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pc_lu_mat_ordering_type","Reordering to reduce nonzeros in LU","PCLUSetMatOrdering",ordlist,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in LU","PCFactorSetMatOrdering",ordlist,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCLUSetMatOrdering(pc,tname);CHKERRQ(ierr);
+      ierr = PCFactorSetMatOrdering(pc,tname);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsName("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCLUReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
     if (flg) {
       tol = PETSC_DECIDE;
-      ierr = PetscOptionsReal("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCLUReorderForNonzeroDiagonal",lu->nonzerosalongdiagonaltol,&tol,0);CHKERRQ(ierr);
-      ierr = PCLUReorderForNonzeroDiagonal(pc,tol);CHKERRQ(ierr);
+      ierr = PetscOptionsReal("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",lu->nonzerosalongdiagonaltol,&tol,0);CHKERRQ(ierr);
+      ierr = PCFactorReorderForNonzeroDiagonal(pc,tol);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsReal("-pc_lu_pivoting","Pivoting tolerance (used only for some factorization)","PCLUSetPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_pivoting","Pivoting tolerance (used only for some factorization)","PCFactorSetPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
 
     flg = lu->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
-    ierr = PetscOptionsTruth("-pc_lu_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCLUSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-pc_factor_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCFactorSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
     if (set) {
-      ierr = PCLUSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
+      ierr = PCFactorSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -323,8 +323,8 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetFill_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetFill_LU(PC pc,PetscReal fill)
+#define __FUNCT__ "PCFactorSetFill_LU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill_LU(PC pc,PetscReal fill)
 {
   PC_LU *dir;
 
@@ -337,8 +337,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetUseInPlace_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetUseInPlace_LU(PC pc)
+#define __FUNCT__ "PCFactorSetUseInPlace_LU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace_LU(PC pc)
 {
   PC_LU *dir;
 
@@ -351,8 +351,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetMatOrdering_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetMatOrdering_LU(PC pc,MatOrderingType ordering)
+#define __FUNCT__ "PCFactorSetMatOrdering_LU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrdering_LU(PC pc,MatOrderingType ordering)
 {
   PC_LU          *dir = (PC_LU*)pc->data;
   PetscErrorCode ierr;
@@ -366,8 +366,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetPivoting_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivoting_LU(PC pc,PetscReal dtcol)
+#define __FUNCT__ "PCFactorSetPivoting_LU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivoting_LU(PC pc,PetscReal dtcol)
 {
   PC_LU *dir = (PC_LU*)pc->data;
 
@@ -380,8 +380,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetPivotInBlocks_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivotInBlocks_LU(PC pc,PetscTruth pivot)
+#define __FUNCT__ "PCFactorSetPivotInBlocks_LU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks_LU(PC pc,PetscTruth pivot)
 {
   PC_LU *dir = (PC_LU*)pc->data;
 
@@ -394,9 +394,9 @@ EXTERN_C_END
 /* -----------------------------------------------------------------------------------*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUReorderForNonzeroDiagonal"
+#define __FUNCT__ "PCFactorReorderForNonzeroDiagonal"
 /*@
-   PCLUReorderForNonzeroDiagonal - reorders rows/columns of matrix to remove zeros from diagonal
+   PCFactorReorderForNonzeroDiagonal - reorders rows/columns of matrix to remove zeros from diagonal
 
    Collective on PC
    
@@ -405,21 +405,21 @@ EXTERN_C_END
 -  tol - diagonal entries smaller than this in absolute value are considered zero
 
    Options Database Key:
-.  -pc_lu_nonzeros_along_diagonal
+.  -pc_factor_nonzeros_along_diagonal
 
    Level: intermediate
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: PCLUSetFill(), PCFactorSetShiftNonzero(), PCFactorSetZeroPivot(), MatReorderForNonzeroDiagonal()
+.seealso: PCFactorSetFill(), PCFactorSetShiftNonzero(), PCFactorSetZeroPivot(), MatReorderForNonzeroDiagonal()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUReorderForNonzeroDiagonal_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorReorderForNonzeroDiagonal_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,rtol);CHKERRQ(ierr);
   } 
@@ -427,78 +427,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUReorderForNonzeroDiagonal(PC pc,PetscReal 
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetReuseOrdering"
+#define __FUNCT__ "PCFactorSetFill"
 /*@
-   PCLUSetReuseOrdering - When similar matrices are factored, this
-   causes the ordering computed in the first factor to be used for all
-   following factors; applies to both fill and drop tolerance LUs.
-
-   Collective on PC
-
-   Input Parameters:
-+  pc - the preconditioner context
--  flag - PETSC_TRUE to reuse else PETSC_FALSE
-
-   Options Database Key:
-.  -pc_lu_reuse_ordering - Activate PCLUSetReuseOrdering()
-
-   Level: intermediate
-
-.keywords: PC, levels, reordering, factorization, incomplete, LU
-
-.seealso: PCLUSetReuseFill(), PCILUSetReuseOrdering(), PCILUDTSetReuseFill()
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetReuseOrdering(PC pc,PetscTruth flag)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscTruth);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetReuseOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,flag);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCLUSetReuseFill"
-/*@
-   PCLUSetReuseFill - When matrices with same nonzero structure are LU factored,
-   this causes later ones to use the fill computed in the initial factorization.
-
-   Collective on PC
-
-   Input Parameters:
-+  pc - the preconditioner context
--  flag - PETSC_TRUE to reuse else PETSC_FALSE
-
-   Options Database Key:
-.  -pc_lu_reuse_fill - Activates PCLUSetReuseFill()
-
-   Level: intermediate
-
-.keywords: PC, levels, reordering, factorization, incomplete, LU
-
-.seealso: PCILUSetReuseOrdering(), PCLUSetReuseOrdering(), PCILUDTSetReuseFill()
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetReuseFill(PC pc,PetscTruth flag)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscTruth);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetReuseFill_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,flag);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCLUSetFill"
-/*@
-   PCLUSetFill - Indicate the amount of fill you expect in the factored matrix,
+   PCFactorSetFill - Indicate the amount of fill you expect in the factored matrix,
    fill = number nonzeros in factor/number nonzeros in original matrix.
 
    Collective on PC
@@ -508,7 +439,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetReuseFill(PC pc,PetscTruth flag)
 -  fill - amount of expected fill
 
    Options Database Key:
-.  -pc_lu_fill <fill> - Sets fill amount
+.  -pc_factor_fill <fill> - Sets fill amount
 
    Level: intermediate
 
@@ -520,16 +451,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetReuseFill(PC pc,PetscTruth flag)
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: PCILUSetFill()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetFill(PC pc,PetscReal fill)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill(PC pc,PetscReal fill)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less then 1.0");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetFill_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetFill_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,fill);CHKERRQ(ierr);
   } 
@@ -537,9 +467,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetFill(PC pc,PetscReal fill)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetUseInPlace"
+#define __FUNCT__ "PCFactorSetUseInPlace"
 /*@
-   PCLUSetUseInPlace - Tells the system to do an in-place factorization.
+   PCFactorSetUseInPlace - Tells the system to do an in-place factorization.
    For dense matrices, this enables the solution of much larger problems. 
    For sparse matrices the factorization cannot be done truly in-place 
    so this does not save memory during the factorization, but after the matrix
@@ -552,10 +482,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetFill(PC pc,PetscReal fill)
 .  pc - the preconditioner context
 
    Options Database Key:
-.  -pc_lu_in_place - Activates in-place factorization
+.  -pc_factor_in_place - Activates in-place factorization
 
    Notes:
-   PCLUSetUseInplace() can only be used with the KSP method KSPPREONLY or when 
+   PCFactorSetUseInplace() can only be used with the KSP method KSPPREONLY or when 
    a different matrix is provided for the multiply and the preconditioner in 
    a call to KSPSetOperators().
    This is because the Krylov space methods require an application of the 
@@ -568,13 +498,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetFill(PC pc,PetscReal fill)
 
 .seealso: PCILUSetUseInPlace()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetUseInPlace(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace(PC pc)
 {
   PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetUseInPlace_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetUseInPlace_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
@@ -582,9 +512,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetUseInPlace(PC pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetMatOrdering"
+#define __FUNCT__ "PCFactorSetMatOrdering"
 /*@C
-    PCLUSetMatOrdering - Sets the ordering routine (to reduce fill) to 
+    PCFactorSetMatOrdering - Sets the ordering routine (to reduce fill) to 
     be used in the LU factorization.
 
     Collective on PC
@@ -594,7 +524,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetUseInPlace(PC pc)
 -   ordering - the matrix ordering name, for example, MATORDERING_ND or MATORDERING_RCM
 
     Options Database Key:
-.   -pc_lu_mat_ordering_type <nd,rcm,...> - Sets ordering routine
+.   -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 
     Level: intermediate
 
@@ -602,12 +532,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetUseInPlace(PC pc)
 
 .seealso: PCILUSetMatOrdering()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetMatOrdering(PC pc,MatOrderingType ordering)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrdering(PC pc,MatOrderingType ordering)
 {
   PetscErrorCode ierr,(*f)(PC,MatOrderingType);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetMatOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetMatOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
   } 
@@ -615,9 +545,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetMatOrdering(PC pc,MatOrderingType order
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetPivoting"
+#define __FUNCT__ "PCFactorSetPivoting"
 /*@
-    PCLUSetPivoting - Determines when pivoting is done during LU. 
+    PCFactorSetPivoting - Determines when pivoting is done during LU. 
       For PETSc dense matrices column pivoting is always done, for PETSc sparse matrices
       it is never done. For the Matlab and SuperLU factorization this is used.
 
@@ -628,18 +558,18 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetMatOrdering(PC pc,MatOrderingType order
 -   dtcol - 0.0 implies no pivoting, 1.0 complete pivoting (slower, requires more memory but more stable)
 
     Options Database Key:
-.   -pc_lu_pivoting <dtcol>
+.   -pc_factor_pivoting <dtcol>
 
     Level: intermediate
 
-.seealso: PCILUSetMatOrdering(), PCLUSetPivotInBlocks()
+.seealso: PCILUSetMatOrdering(), PCFactorSetPivotInBlocks()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivoting(PC pc,PetscReal dtcol)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivoting(PC pc,PetscReal dtcol)
 {
   PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetPivoting_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetPivoting_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,dtcol);CHKERRQ(ierr);
   } 
@@ -647,9 +577,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivoting(PC pc,PetscReal dtcol)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetPivotInBlocks"
+#define __FUNCT__ "PCFactorSetPivotInBlocks"
 /*@
-    PCLUSetPivotInBlocks - Determines if pivoting is done while factoring each block
+    PCFactorSetPivotInBlocks - Determines if pivoting is done while factoring each block
       with BAIJ or SBAIJ matrices
 
     Collective on PC
@@ -659,18 +589,18 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivoting(PC pc,PetscReal dtcol)
 -   pivot - PETSC_TRUE or PETSC_FALSE
 
     Options Database Key:
-.   -pc_lu_pivot_in_blocks <true,false>
+.   -pc_factor_pivot_in_blocks <true,false>
 
     Level: intermediate
 
-.seealso: PCILUSetMatOrdering(), PCLUSetPivoting()
+.seealso: PCILUSetMatOrdering(), PCFactorSetPivoting()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivotInBlocks(PC pc,PetscTruth pivot)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks(PC pc,PetscTruth pivot)
 {
   PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetPivotInBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetPivotInBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,pivot);CHKERRQ(ierr);
   } 
@@ -683,12 +613,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivotInBlocks(PC pc,PetscTruth pivot)
    PCLU - Uses a direct solver, based on LU factorization, as a preconditioner
 
    Options Database Keys:
-+  -pc_lu_reuse_ordering - Activate PCLUSetReuseOrdering()
-.  -pc_lu_reuse_fill - Activates PCLUSetReuseFill()
-.  -pc_lu_fill <fill> - Sets fill amount
-.  -pc_lu_in_place - Activates in-place factorization
-.  -pc_lu_mat_ordering_type <nd,rcm,...> - Sets ordering routine
-.  -pc_lu_pivot_in_blocks <true,false> - allow pivoting within the small blocks during factorization (may increase
++  -pc_factor_reuse_ordering - Activate PCFactorSetReuseOrdering()
+.  -pc_factor_reuse_fill - Activates PCFactorSetReuseFill()
+.  -pc_factor_fill <fill> - Sets fill amount
+.  -pc_factor_in_place - Activates in-place factorization
+.  -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine
+.  -pc_factor_pivot_in_blocks <true,false> - allow pivoting within the small blocks during factorization (may increase
                                          stability of factorization.
 .  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
 -  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
@@ -707,9 +637,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivotInBlocks(PC pc,PetscTruth pivot)
           KSPSetType(ksp,KSPPREONLY) for the Krylov method
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCILU, PCCHOLESKY, PCICC, PCLUSetReuseOrdering(), PCLUSetReuseFill(), PCGetFactoredMatrix(),
-           PCLUSetFill(), PCLUSetUseInPlace(), PCLUSetMatOrdering(), PCFactorSetPivoting(),
-           PCLUSetPivotingInBlocks(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd()
+           PCILU, PCCHOLESKY, PCICC, PCFactorSetReuseOrdering(), PCFactorSetReuseFill(), PCGetFactoredMatrix(),
+           PCFactorSetFill(), PCFactorSetUseInPlace(), PCFactorSetMatOrdering(), PCFactorSetPivoting(),
+           PCFactorSetPivotingInBlocks(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd()
 M*/
 
 EXTERN_C_BEGIN
@@ -765,22 +695,22 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_LU",
                     PCFactorSetShiftPd_LU);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetFill_C","PCLUSetFill_LU",
-                    PCLUSetFill_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetUseInPlace_C","PCLUSetUseInPlace_LU",
-                    PCLUSetUseInPlace_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetMatOrdering_C","PCLUSetMatOrdering_LU",
-                    PCLUSetMatOrdering_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetReuseOrdering_C","PCLUSetReuseOrdering_LU",
-                    PCLUSetReuseOrdering_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetReuseFill_C","PCLUSetReuseFill_LU",
-                    PCLUSetReuseFill_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetPivoting_C","PCLUSetPivoting_LU",
-                    PCLUSetPivoting_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetPivotInBlocks_C","PCLUSetPivotInBlocks_LU",
-                    PCLUSetPivotInBlocks_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUReorderForNonzeroDiagonal_C","PCLUReorderForNonzeroDiagonal_LU",
-                    PCLUReorderForNonzeroDiagonal_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_LU",
+                    PCFactorSetFill_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetUseInPlace_C","PCFactorSetUseInPlace_LU",
+                    PCFactorSetUseInPlace_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrdering_C","PCFactorSetMatOrdering_LU",
+                    PCFactorSetMatOrdering_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetReuseOrdering_C","PCFactorSetReuseOrdering_LU",
+                    PCFactorSetReuseOrdering_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetReuseFill_C","PCFactorSetReuseFill_LU",
+                    PCFactorSetReuseFill_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetPivoting_C","PCFactorSetPivoting_LU",
+                    PCFactorSetPivoting_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetPivotInBlocks_C","PCFactorSetPivotInBlocks_LU",
+                    PCFactorSetPivotInBlocks_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorReorderForNonzeroDiagonal_C","PCFactorReorderForNonzeroDiagonal_LU",
+                    PCFactorReorderForNonzeroDiagonal_LU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

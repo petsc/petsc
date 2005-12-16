@@ -165,8 +165,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInf
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
     ierr = PetscVerboseInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %G needed %G\n",reallocs,f,af));CHKERRQ(ierr);
-    ierr = PetscVerboseInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_cholesky_fill %G or use \n",af));CHKERRQ(ierr);
-    ierr = PetscVerboseInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCCholeskySetFill(pc,%G);\n",af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_factor_fill %G or use \n",af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCFactorSetFill(pc,%G);\n",af));CHKERRQ(ierr);
     ierr = PetscVerboseInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:for best performance.\n"));CHKERRQ(ierr);
   } else {
     ierr = PetscVerboseInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Empty matrix.\n"));CHKERRQ(ierr);
@@ -390,8 +390,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)ui[mbs])/((PetscReal)ai[mbs]);
     ierr = PetscVerboseInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af));CHKERRQ(ierr);
-    ierr = PetscVerboseInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_cholesky_fill %G or use \n",af));CHKERRQ(ierr);
-    ierr = PetscVerboseInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCCholeskySetFill(pc,%G) for best performance.\n",af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_factor_fill %G or use \n",af));CHKERRQ(ierr);
+    ierr = PetscVerboseInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCFactorSetFill(pc,%G) for best performance.\n",af));CHKERRQ(ierr);
   } else {
     ierr = PetscVerboseInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Empty matrix.\n"));CHKERRQ(ierr);
   }

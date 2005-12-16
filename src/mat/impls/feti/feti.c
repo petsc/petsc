@@ -723,8 +723,8 @@ int MatFetiSolveLocal(Mat A)
 
 	KSPSetType(ksp,KSPPREONLY); 
 	PCSetType(pc,PCLU);              
-	PCLUSetUseInPlace(pc);           
-	PCLUSetMatOrdering(pc,MATORDERING_NATURAL); /* MATORDERING_RCM, MATORDERING_QMD, MATORDERING_ND */
+	PCFactorSetUseInPlace(pc);           
+	PCFactorSetMatOrdering(pc,MATORDERING_NATURAL); /* MATORDERING_RCM, MATORDERING_QMD, MATORDERING_ND */
 
 	KSPSetTolerances(ksp,1e-7,1e-50,1e+5,10000); 
 	SLESAppendOptionsPrefix(*sles,"local_");    /* uses options with prefix -local_ */
@@ -1084,7 +1084,7 @@ int MatFetiConvertScc2Seq(Mat A) /* only internal use; anyway takes a generic Ma
 
     KSPSetType(ksp,KSPPREONLY); 
     PCSetType(pc,PCLU);  
-    PCLUSetDamping(pc,1e-9); 
+    PCFactorSetDamping(pc,1e-9); 
 
 #if 0
     KSPSetType(ksp,KSPCG); 

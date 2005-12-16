@@ -3220,7 +3220,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
       /* make sure row has diagonal entry */
       if (ajnew[ainew[prow]+dloc[prow]] != prow) {
 	SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
-    try running with -pc_ilu_nonzeros_along_diagonal or -pc_ilu_diagonal_fill",prow);
+    try running with -pc_factor_nonzeros_along_diagonal or -pc_factor_diagonal_fill",prow);
       }
     }
     ierr = PetscFree(ajfill);CHKERRQ(ierr);
@@ -3233,8 +3233,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
     {
       PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
       ierr = PetscVerboseInfo((A,"MatILUFactorSymbolic_SeqBAIJ:Reallocs %D Fill ratio:given %G needed %G\n",reallocate,f,af));CHKERRQ(ierr);
-      ierr = PetscVerboseInfo((A,"MatILUFactorSymbolic_SeqBAIJ:Run with -pc_ilu_fill %G or use \n",af));CHKERRQ(ierr);
-      ierr = PetscVerboseInfo((A,"MatILUFactorSymbolic_SeqBAIJ:PCILUSetFill(pc,%G);\n",af));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((A,"MatILUFactorSymbolic_SeqBAIJ:Run with -pc_factor_fill %G or use \n",af));CHKERRQ(ierr);
+      ierr = PetscVerboseInfo((A,"MatILUFactorSymbolic_SeqBAIJ:PCFactorSetFill(pc,%G);\n",af));CHKERRQ(ierr);
       ierr = PetscVerboseInfo((A,"MatILUFactorSymbolic_SeqBAIJ:for best performance.\n"));CHKERRQ(ierr);
       if (diagonal_fill) {
 	ierr = PetscVerboseInfo((A,"MatILUFactorSymbolic_SeqBAIJ:Detected and replaced %D missing diagonals\n",dcount));CHKERRQ(ierr);

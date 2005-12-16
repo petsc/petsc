@@ -166,7 +166,7 @@ $      MATORDERING_QMD - Quotient Minimum Degree
    Notes:
       This DOES NOT actually reorder the matrix; it merely returns two index sets
    that define a reordering. This is usually not used directly, rather use the 
-   options PCLUSetMatOrdering() or PCILUSetMatOrdering().
+   options PCFactorSetMatOrdering()
 
    The user can define additional orderings; see MatOrderingRegisterDynamic().
 
@@ -175,7 +175,7 @@ $      MATORDERING_QMD - Quotient Minimum Degree
            One-way Dissection, Cholesky, Reverse Cuthill-McKee, 
            Quotient Minimum Degree
 
-.seealso:   MatOrderingRegisterDynamic(), PCLUSetMatOrdering(), PCILUSetMatOrdering()
+.seealso:   MatOrderingRegisterDynamic(), PCFactorSetMatOrdering()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *cperm)
 {

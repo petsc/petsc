@@ -1,5 +1,5 @@
 /*
- * Test file for the PCILUSetShift routine or -pc_shift option.
+ * Test file for the PCFactorSetShiftPd routine or -pc_factor_shift_positive_definite option.
  * The test matrix is the example from Kershaw's paper [J.Comp.Phys 1978]
  * of a positive definite matrix for which ILU(0) will give a negative pivot.
  * This means that the CG method will break down; the Manteuffel shift
@@ -8,7 +8,7 @@
  * Run the executable twice:
  * 1/ without options: the iterative method diverges because of an
  *    indefinite preconditioner
- * 2/ with -pc_ilu_shift option (or comment in the PCILUSetShift line below):
+ * 2/ with -pc_factor_shift_positive_definite option (or comment in the PCFactorSetShiftPd line below):
  *    the method will now successfully converge.
  *
  * Contributed by Victor Eijkhout 2003.
@@ -84,7 +84,7 @@ int main(int argc,char **argv)
    * or use the -pc_ilu_shift option */
   ierr = KSPGetPC(solver,&prec);CHKERRQ(ierr);
   ierr = PCSetType(prec,PCILU);CHKERRQ(ierr);
-  /*  ierr = PCILUSetShift(prec,PETSC_TRUE);CHKERRQ(ierr); */
+  /*  ierr = PCFactorSetShiftPd(prec,PETSC_TRUE);CHKERRQ(ierr); */
 
   ierr = KSPSetFromOptions(solver);CHKERRQ(ierr);
   ierr = KSPSetUp(solver);CHKERRQ(ierr);
