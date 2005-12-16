@@ -5287,13 +5287,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoringPatch(Mat mat,PetscInt n,PetscInt n
    Note that one can specify in-place ILU(0) factorization by calling 
 .vb
      PCType(pc,PCILU);
-     PCILUSeUseInPlace(pc);
+     PCFactorSeUseInPlace(pc);
 .ve
-   or by using the options -pc_type ilu -pc_ilu_in_place
+   or by using the options -pc_type ilu -pc_factor_in_place
 
    In-place factorization ILU(0) can also be used as a local
    solver for the blocks within the block Jacobi or additive Schwarz
-   methods (runtime option: -sub_pc_ilu_in_place).  See the discussion 
+   methods (runtime option: -sub_pc_factor_in_place).  See the discussion 
    of these preconditioners in the users manual for details on setting
    local solver options.
 
@@ -5303,7 +5303,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoringPatch(Mat mat,PetscInt n,PetscInt n
 
    Level: developer
 
-.seealso: PCILUSetUseInPlace(), PCLUSetUseInPlace()
+.seealso: PCFactorSetUseInPlace()
 
    Concepts: matrices^unfactored
 

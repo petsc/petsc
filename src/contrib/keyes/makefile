@@ -132,7 +132,7 @@ runex15a:
 	-coarse_redundant_pc_type lu \
 	-fine_ksp_type richardson \
 	-fine_ksp_max_it 1 -fine_pc_type asm \
-	-mg_levels_sub_pc_ilu_levels 1 \
+	-mg_levels_sub_pc_factor_levels 1 \
 	-pc_mg_type multiplicative \
 	-snes_rtol 1.0e-5 -ksp_rtol 5.0e-3 \
 	-ratio 4 -log_summary \

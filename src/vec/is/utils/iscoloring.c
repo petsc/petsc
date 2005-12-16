@@ -121,7 +121,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring iscoloring,PetscInt
 
 #if defined(PETSC_USE_DEBUG)
       for (i=0; i<n; i++) {
-        if (colors[i] >= (ISColoringValue) nc) {
+        if (((PetscInt)colors[i]) >= nc) {
           SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Coloring is our of range index %d value %d number colors %d",(int)i,(int)colors[i],(int)nc);
         }
       }

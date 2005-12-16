@@ -966,8 +966,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegister(const char[],const 
    Then, your partitioner can be chosen with the procedural interface via
 $     MatOrderingSetType(part,"my_order)
    or at runtime via the option
-$     -pc_ilu_mat_ordering_type my_order
-$     -pc_lu_mat_ordering_type my_order
+$     -pc_factor_mat_ordering_type my_order
 
    ${PETSC_ARCH} occuring in pathname will be replaced with appropriate values.
 
@@ -989,7 +988,7 @@ extern PetscFList MatOrderingList;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 
 /*S 
-   MatFactorInfo - Data based into the matrix factorization routines
+   MatFactorInfo - Data passed into the matrix factorization routines
 
    In Fortran these are simply double precision arrays of size MAT_FACTORINFO_SIZE
 

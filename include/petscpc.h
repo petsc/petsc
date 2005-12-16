@@ -207,37 +207,19 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot(PC,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero(PC,PetscReal); 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd(PC,PetscTruth); 
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetMatOrdering(PC,MatOrderingType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetReuseOrdering(PC,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetReuseFill(PC,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetUseInPlace(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetFill(PC,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivoting(PC,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUSetPivotInBlocks(PC,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCLUReorderForNonzeroDiagonal(PC,PetscReal);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetMatOrdering(PC,MatOrderingType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetReuseOrdering(PC,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetReuseFill(PC,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetUseInPlace(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetFill(PC,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCholeskySetPivotInBlocks(PC,PetscTruth);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill(PC,PetscReal);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivoting(PC,PetscReal);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal(PC,PetscReal);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetMatOrdering(PC,MatOrderingType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseInPlace(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetFill(PC,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetLevels(PC,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetReuseOrdering(PC,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUDTSetReuseFill(PC,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetAllowDiagonalFill(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUSetPivotInBlocks(PC,PetscTruth);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCILUReorderForNonzeroDiagonal(PC,PetscReal);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrdering(PC,MatOrderingType);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering(PC,PetscTruth);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill(PC,PetscTruth);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks(PC,PetscTruth);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetMatOrdering(PC,MatOrderingType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetFill(PC,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetLevels(PC,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCICCSetPivotInBlocks(PC,PetscTruth);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels(PC,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance(PC,PetscReal,PetscReal,PetscInt);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetLocalSubdomains(PC,PetscInt,IS[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetTotalSubdomains(PC,PetscInt,IS[]);

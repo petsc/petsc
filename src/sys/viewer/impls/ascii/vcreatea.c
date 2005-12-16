@@ -198,6 +198,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm comm,const char nam
       if (eq) {
         ierr = PetscObjectReference((PetscObject)vlink->viewer);CHKERRQ(ierr);
         *lab = vlink->viewer;
+        ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }            
       vlink = vlink->next;
