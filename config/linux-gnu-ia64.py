@@ -2,7 +2,7 @@
 
 configure_options = [
   '--with-shared=1',
-  '--with-mpi-dir=/home/balay/soft/mpich2-1.0.2p1-gcc'
+  '--with-mpi-dir=/home/balay/soft/mpich2-1.0.3-gcc'
   ]
 
 if __name__ == '__main__':
