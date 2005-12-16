@@ -112,8 +112,10 @@ class Configure(PETSc.package.Package):
     try:
       self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, executor = self.mpirun)
     except RuntimeError, e:
+      if self.framework.argDB['with-shared']:
+        raise RuntimeError('PETSc shared libraries cannot be built using MPI provided.\nEither rebuild PETSc with --with-shared=0 or rebuild MPI with shared library support')
+      self.framework.logPrint('MPI libraries cannot be used with shared libraries')
       self.shared = 0
-      self.framework.logPrint('e')
     return
 
   def configureMPIRUN(self):
