@@ -62,7 +62,7 @@ namespace ALE {
     template <typename Data>
     class const_sequence {
     public:
-      typedef const_iterator<Data> iterator;
+      typedef const const_iterator<Data> iterator;
       virtual ~const_sequence() = 0;
       //
       virtual const_iterator<Data>& begin();
@@ -203,9 +203,9 @@ namespace ALE {
       Obj<const_sequence<Data> > nJoin(const const_sequence<Data>& pp, const int& n);
       Obj<const_sequence<Data> > nJoin(const const_sequence<Data>& pp, const int& n, const Color& color);
       // Manipulation
-      void                       addArrow(const Data& p,  const Data& q);
-      void                       addArrow(const Data& p,  const Data& q, const Color& color);
-      void                       setColor(const Data& p,  const Data& q, const Color& color);
+      void                       addArrow(const Data& p, const Data& q);
+      void                       addArrow(const Data& p, const Data& q, const Color& color);
+      void                       setColor(const Data& p, const Data& q, const Color& color);
       void                       addCone(const Obj<const_sequence<Data> >& points,  const Data& p);
       void                       addSupport(const Data& p,const Obj<const_sequence<Data> >& points);
       void                       add(const Obj<Sieve<Data,Color> >& sieve);
