@@ -133,7 +133,7 @@ extern PETSC_DLLEXPORT int            PETSC_DUMMY_COUNT;
 
 /* We must make these structures available if we are to access the event
    activation flags in the PetscLogEventBegin/End() macros. If we forced a
-   function call each time, we could leave these structures in plog.h
+   function call each time, we could make these private.
 */
 /* Default log */
 typedef struct _n_StageLog *StageLog;
@@ -268,6 +268,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetClassPerfLog(StageLog, int, Cla
 EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
 
 /*
+     These are used internally in the PETSc routines to keep a count of MPI messages and 
+   their sizes.
+
      This does not work for MPI-Uni because our include/mpiuni/mpi.h file
    uses macros to defined the MPI operations. 
 

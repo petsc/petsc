@@ -20,7 +20,7 @@
   If PetscLogPrintInfo is zero, no info messages are printed. 
   If PetscLogPrintInfoNull is zero, no info messages associated with a null object are printed.
 
-  If PetscVerboseInfoFlags[OBJECT_COOKIE - PETSC_COOKIE] is zero, no messages related
+  If PetscVerboseInfoFlags[OBJECT_COOKIE - PETSC_SMALLEST_COOKIE] is zero, no messages related
   to that object are printed. OBJECT_COOKIE is, for example, MAT_COOKIE.
 */
 PetscTruth PETSC_DLLEXPORT PetscLogPrintInfo     = PETSC_FALSE;
@@ -100,7 +100,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfoDeactivateClass(int objclass)
     PetscLogPrintInfoNull = PETSC_FALSE;
     PetscFunctionReturn(0); 
   }
-  PetscVerboseInfoFlags[objclass - PETSC_COOKIE - 1] = 0;
+  PetscVerboseInfoFlags[objclass - PETSC_SMALLEST_COOKIE - 1] = 0;
   PetscFunctionReturn(0);
 }
 
@@ -128,7 +128,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfoActivateClass(int objclass)
   if (!objclass) {
     PetscLogPrintInfoNull = PETSC_TRUE;
   } else {
-    PetscVerboseInfoFlags[objclass - PETSC_COOKIE - 1] = 1;
+    PetscVerboseInfoFlags[objclass - PETSC_SMALLEST_COOKIE - 1] = 1;
   }
   PetscFunctionReturn(0);
 }
@@ -189,7 +189,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfo_Private(void *vobj, const char m
   PetscValidCharPointer(message,2);
   if (!PetscLogPrintInfo) PetscFunctionReturn(0);
   if ((!PetscLogPrintInfoNull) && !vobj) PetscFunctionReturn(0);
-  if (obj && !PetscVerboseInfoFlags[obj->cookie - PETSC_COOKIE - 1]) PetscFunctionReturn(0);
+  if (obj && !PetscVerboseInfoFlags[obj->cookie - PETSC_SMALLEST_COOKIE - 1]) PetscFunctionReturn(0);
   if (!obj) {
     rank = 0;
   } else {

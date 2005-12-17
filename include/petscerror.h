@@ -1,5 +1,5 @@
 /*
-    Contains all error handling code for PETSc.
+    Contains all error handling interfaces for PETSc.
 */
 #if !defined(__PETSCERROR_H)
 #define __PETSCERROR_H
@@ -11,7 +11,8 @@ PETSC_EXTERN_CXX_BEGIN
    in printing error messages. Each makefile has an entry 
    LOCDIR	  =  thedirectory
    and bmake/common_variables includes in CCPPFLAGS -D__SDIR__='"${LOCDIR}"'
-   which is a flag passed to the C/C++ compilers.
+   which is a flag passed to the C/C++ compilers. This declaration below
+   is only needed if some code is compiled without the -D__SDIR__
 */
 #if !defined(__SDIR__)
 #define __SDIR__ "unknowndirectory/"
@@ -19,7 +20,8 @@ PETSC_EXTERN_CXX_BEGIN
 
 /*
    Defines the function where the compiled source is located; used 
-   in printing error messages.
+   in printing error messages. This is defined here in case the user
+   does not declare it.
 */
 #if !defined(__FUNCT__)
 #define __FUNCT__ "User provided function"
@@ -174,6 +176,8 @@ M*/
    Notes:
     Once the error handler is called the calling function is then returned from with the given error code.
 
+    There are also versions for 4, 5, 6 and 7 arguments.
+
    Experienced users can set the error handler with PetscPushErrorHandler().
 
    Concepts: error^setting condition
@@ -241,6 +245,8 @@ M*/
     Once the error handler is called the calling function is then returned from with the given error code.
 
     By defaults prints location where memory that is corrupted was allocated.
+
+    Use CHKMEMA for functions that return void
 
    Concepts: memory corruption
 
@@ -360,6 +366,11 @@ extern PetscErrorCode PetscExceptionTmp;
 #define PetscExceptionTry1(a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : (PetscExceptionTmp = a , PetscExceptionPop(b),PetscExceptionTmp)
 
 #else
+
+/* 
+    These are defined to be empty for when error checking is turned off, with config/configure.py --with-errorchecking=0
+*/
+
 #define SETERRQ(n,s) ;
 #define SETERRQ1(n,s,a1) ;
 #define SETERRQ2(n,s,a1,a2) ;

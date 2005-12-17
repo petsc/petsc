@@ -155,7 +155,7 @@ valid
     SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object: Parameter # %d",arg);     \
   } else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {                           \
       SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg);         \
-  } else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||                                \
+  } else if (((PetscObject)(h))->cookie < PETSC_SMALLEST_COOKIE ||                                \
       ((PetscObject)(h))->cookie > PETSC_LARGEST_COOKIE) {                               \
       SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Invalid type of object: Parameter # %d",arg);      \
   }}
@@ -208,7 +208,7 @@ valid
   {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Object");}        \
   if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {      \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"Object already free");       \
-  } else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||           \
+  } else if (((PetscObject)(h))->cookie < PETSC_SMALLEST_COOKIE ||           \
       ((PetscObject)(h))->cookie > PETSC_LARGEST_COOKIE) {          \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"Invalid type of object");            \
   }}

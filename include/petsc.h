@@ -8,14 +8,14 @@
 /* 
    petscconf.h is contained in bmake/${PETSC_ARCH}/petscconf.h it is 
    found automatically by the compiler due to the -I${PETSC_DIR}/bmake/${PETSC_ARCH}
-   in the bmake/common_variables definition of PETSC_INCLUDE
+   in the bmake/common/variables definition of PETSC_INCLUDE
 */
 #include "petscconf.h"
 
 /* ========================================================================== */
 /* 
    This facilitates using C version of PETSc from C++ and 
-   C++ version from C (use --with-c-support --with-language=c++ with config/configure.py)
+   C++ version from C. Use --with-c-support --with-clanguage=c++ with config/configure.py for the latter)
 */
 #if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX) && !defined(__cplusplus)
 #error "PETSc configured with --with-clanguage=c++ and NOT --with-c-support - it can be used only with a C++ compiler"
@@ -87,7 +87,7 @@
     Defines the interface to MPI allowing the use of all MPI functions.
 
     PETSc does not use the C++ binding of MPI at ALL. The following flag
-    makes sure the C++ bindings are not included. The C++ binds REQUIRE
+    makes sure the C++ bindings are not included. The C++ bindings REQUIRE
     putting mpi.h before ANY C++ include files, we cannot control this
     with all PETSc users.
 */
@@ -101,11 +101,6 @@
 */
 #include <stdio.h>
 
-/*
-    All PETSc C functions return this error code, it is the final argument of
-   all Fortran subroutines
-*/
-
 /*MC
     PetscErrorCode - datatype used for return error code from all PETSc functions
 
@@ -114,16 +109,18 @@
 .seealso: CHKERRQ, SETERRQ
 M*/
 typedef int PetscErrorCode;
+
 /*MC
 
     PetscCookie - A unique id used to identify each PETSc object.
          (internal integer in the data structure used for error
          checking). These are all defined by an offset from the lowest
-         one, PETSC_COOKIE.
+         one, PETSC_SMALLEST_COOKIE.
 
     Level: advanced
 M*/
 typedef int PetscCookie;
+
 /*MC
     PetscEvent - id used to identify PETSc or user events - primarily for logging
 
@@ -132,18 +129,21 @@ typedef int PetscCookie;
 .seealso: PetscLogEventRegister, PetscLogEventBegin PetscLogEventEnd
 M*/
 typedef int PetscEvent;
+
 /*MC
     PetscBLASInt - datatype used to represent 'int' parameters to blas functions.
 
     Level: intermediate
 M*/
 typedef int PetscBLASInt;
+
 /*MC
     PetscMPIInt - datatype used to represent 'int' parameters to MPI functions.
 
     Level: intermediate
 M*/
 typedef int PetscMPIInt;
+
 /*MC
     PetscEnum - datatype used to pass enum types within PETSc functions.
 
@@ -152,6 +152,7 @@ typedef int PetscMPIInt;
 .seealso: PetscOptionsGetEnum, PetscOptionsEnum, PetscBagRegisterEnum
 M*/
 typedef enum { ENUM_DUMMY } PetscEnum;
+
 /*MC
     PetscInt - PETSc type that represents integer - used primarily to
       represent size of objects. Its size can be configured with the option
@@ -256,7 +257,7 @@ M*/
 #include "petscmath.h"
 
 /*
-    Declare extern C stuff after incuding external header files
+    Declare extern C stuff after including external header files
 */
 
 PETSC_EXTERN_CXX_BEGIN
@@ -677,10 +678,10 @@ M*/
 #endif
 
 /*MC
-   PetscNew - Allocates memory of a particular type, Zeros the memory!
+   PetscNew - Allocates memory of a particular type, zeros the memory!
 
    Input Parameter:
-. type - structure name of space to be allocated. Memory of size sizeof(type) is allocated
+.  type - structure name of space to be allocated. Memory of size sizeof(type) is allocated
 
    Output Parameter:
 .  result - memory allocated
@@ -710,7 +711,7 @@ M*/
 
    Notes: Memory must have been obtained with PetscNew() or PetscMalloc()
 
-.seealso: PetscNew(), PetscMalloc()
+.seealso: PetscNew(), PetscMalloc(), PetscFreeVoid()
 
   Concepts: memory allocation
 
@@ -897,7 +898,7 @@ M*/
 
    Level: developer
 
-   Notes: Memory must have been obtained with PetscMalloc6()
+   Notes: Memory must have been obtained with PetscMalloc7()
 
 .seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4(), PetscMalloc5(), PetscMalloc6(),
           PetscMalloc7()
@@ -931,8 +932,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMallocSetDumpLog(void);
 
 /*
     Variable type where we stash PETSc object pointers in Fortran.
-    Assumes that sizeof(long) == sizeof(void*)which is true on 
-    all machines that we know.
+    Assumes that sizeof(long) == sizeof(void*) which is true on 
+    all machines that we know. If this is not the case you should change
+    the long below to something appropriate
 */     
 #define PetscFortranAddr   long
 
@@ -945,8 +947,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMallocSetDumpLog(void);
           PetscDataTypeGetSize()
 
 E*/
-typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2,
-              PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
+typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2, PETSC_LONG = 3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
               PETSC_CHAR = 6,PETSC_LOGICAL = 7,PETSC_ENUM = 8,PETSC_TRUTH=9, PETSC_LONG_DOUBLE = 10} PetscDataType;
 extern const char *PetscDataTypes[];
 
@@ -1004,6 +1005,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrrstr(const char[],const char[],c
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrallocpy(const char[],char *[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrreplace(MPI_Comm,const char[],char[],size_t);
 #define      PetscStrfree(a) ((a) ? PetscFree(a) : 0) 
+
 /*S
     PetscToken - 'Token' used for managing tokenizing strings
 
@@ -1071,7 +1073,7 @@ typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDAT
 #include "petscviewer.h"
 #include "petscoptions.h"
 
-#define PETSC_COOKIE 1211211
+#define PETSC_SMALLEST_COOKIE 1211211
 extern PETSC_DLLEXPORT PetscCookie PETSC_LARGEST_COOKIE;
 extern PETSC_DLLEXPORT PetscCookie PETSC_OBJECT_COOKIE;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(PetscCookie *);
@@ -1143,13 +1145,13 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectReference(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetReference(PetscObject,PetscInt*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectDereference(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetNewTag(PetscObject,PetscMPIInt *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectView(PetscObject,PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectCompose(PetscObject,const char[],PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectQuery(PetscObject,const char[],PetscObject *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposeFunction(PetscObject,const char[],const char[],void (*)(void));
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetFromOptions(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetUp(PetscObject);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
 
 /*MC
    PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object. 
@@ -1175,7 +1177,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetUp(PetscObject);
    Mat, Vec, KSP, SNES, etc.) or any user-provided object. 
 
    The composed function must be wrapped in a EXTERN_C_BEGIN/END for this to
-   work in C++/complex with dynamic link libraries (PETSC_USE_DYNAMIC_LIBRARIES)
+   work in C++/complex with dynamic link libraries (config/configure.py options --with-shared --with-dynamic)
    enabled.
 
    Concepts: objects^composing functions
@@ -1247,7 +1249,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListGet(PetscFList,char ***,int*);
 
    Level: advanced
 
-   PETSC_USE_DYNAMIC_LIBRARIES must be defined in petscconf.h to use dynamic libraries
+   --with-shared --with-dynamic must be used with config/configure.py to use dynamic libraries
 
 .seealso:  PetscDLLibraryOpen()
 S*/
@@ -1262,15 +1264,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibraryList);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrintPath(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryGetInfo(void*,const char[],const char *[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibraryList *,const char[]);
-
-/*
-    Mechanism for translating PETSc object representations between languages
-    Not currently used.
-*/
-typedef enum {PETSC_LANGUAGE_C,PETSC_LANGUAGE_CXX} PetscLanguage;
-#define PETSC_LANGUAGE_F77 PETSC_LANGUAGE_C
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposeLanguage(PetscObject,PetscLanguage,void *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **);
 
 /*
      Useful utility routines
@@ -1399,6 +1392,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStartJava(MPI_Comm,const char[],cons
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscGetPetscDir(const char*[]);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscPopUpSelect(MPI_Comm,char*,char*,int,char**,int*);
+
 /*S
      PetscObjectContainer - Simple PETSc object that contains a pointer to any required data
 
@@ -1432,8 +1426,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,PetscScalar[],Pet
       Determine if some of the kernel computation routines use
    Fortran (rather than C) for the numerical calculations. On some machines
    and compilers (like complex numbers) the Fortran version of the routines
-   is faster than the C/C++ versions. The flag PETSC_USE_FORTRAN_KERNELS  
-   would be set in the petscconf.h file
+   is faster than the C/C++ versions. The flag --with-fortran-kernels
+   should be used with config/configure.py to turn these on.
 */
 #if defined(PETSC_USE_FORTRAN_KERNELS)
 
@@ -1550,8 +1544,9 @@ M*/
 M*/
 
 /*MC
-    PetscScalar - PETSc type that represents either a double precision real number or 
-       a double precision complex number if the code is configured with --with-scalar-type=complex
+    PetscScalar - PETSc type that represents either a double precision real number,  
+       a double precision complex number, a single precision real number, a long double or an int
+       if the code is configured with --with-scalar-type=complex,float,longdouble,int
 
    Level: beginner
 
@@ -1559,7 +1554,7 @@ M*/
 M*/
 
 /*MC
-    PetscReal - PETSc type that represents a double precision real number
+    PetscReal - PETSc type that represents a real number version of PetscScalar
 
    Level: beginner
 
@@ -1567,9 +1562,7 @@ M*/
 M*/
 
 /*MC
-    PassiveScalar - PETSc type that represents either a double precision real number or 
-       a double precision complex number if the code is  code is configured with --with-scalar-type=complex
-
+    PassiveScalar - PETSc type that represents a PetscScalar
    Level: beginner
 
     This is the same as a PetscScalar except in code that is automatically differentiated it is
@@ -1579,7 +1572,7 @@ M*/
 M*/
 
 /*MC
-    PassiveReal - PETSc type that represents a double precision real number
+    PassiveReal - PETSc type that represents a PetscReal
 
    Level: beginner
 

@@ -35,7 +35,7 @@ const char *PetscDataTypes[] = {"INT", "DOUBLE", "COMPLEX",
                                 "LONG","SHORT",  "FLOAT",
                                 "CHAR","LOGICAL","ENUM","TRUTH","LONGDOUBLE","PetscDataType","PETSC_",0};
 
-PetscCookie PETSC_LARGEST_COOKIE = PETSC_COOKIE;
+PetscCookie PETSC_LARGEST_COOKIE = PETSC_SMALLEST_COOKIE;
 PetscCookie PETSC_OBJECT_COOKIE = 0;
 
 PetscTruth PetscPreLoadingUsed = PETSC_FALSE;

@@ -14,15 +14,15 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetProgramName(const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDate(char[],size_t);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortInt(PetscInt,PetscInt[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSortIntWithPermutation(PetscInt,const PetscInt[],PetscInt[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSortStrWithPermutation(PetscInt,const char*[],PetscInt[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSortIntWithArray(PetscInt,PetscInt[],PetscInt[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSortIntWithScalarArray(PetscInt,PetscInt[],PetscScalar[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSortReal(PetscInt,PetscReal[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSortRealWithPermutation(PetscInt,const PetscReal[],PetscInt[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithPermutation(PetscInt,const PetscInt[],PetscInt[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortStrWithPermutation(PetscInt,const char*[],PetscInt[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithArray(PetscInt,PetscInt[],PetscInt[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithScalarArray(PetscInt,PetscInt[],PetscScalar[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortReal(PetscInt,PetscReal[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortRealWithPermutation(PetscInt,const PetscReal[],PetscInt[]);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSetDisplay(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscGetDisplay(char[],size_t);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetDisplay(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDisplay(char[],size_t);
 
 extern PetscCookie PETSC_DLLEXPORT PETSC_RANDOM_COOKIE;
 
@@ -106,7 +106,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPostIrecvScalar(MPI_Comm,PetscMPIInt,
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSSEIsEnabled(MPI_Comm,PetscTruth *,PetscTruth *);
 
-/* Parallel communication routines */
 /*E
   InsertMode - Whether entries are inserted or added into vectors or matrices
 
@@ -217,7 +216,7 @@ M*/
   (PetscMalloc(nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt) || (lnk[idx_start] = lnk_max,0))
 
 /*
-  Add a index set into a sorted linked list
+  Add an index set into a sorted linked list
   Input Parameters:
     nidx      - number of input indices
     indices   - interger array
@@ -254,7 +253,7 @@ M*/
 }
 
 /*
-  Add a permumted index set into a sorted linked list
+  Add a permuted index set into a sorted linked list
   Input Parameters:
     nidx      - number of input indices
     indices   - interger array
@@ -665,8 +664,7 @@ M*/
 /*
   Free memories used by the list
 */
-#define PetscIncompleteLLDestroy(lnk,bt) \
-  (PetscFree(lnk) || PetscBTDestroy(bt) || (0))
+#define PetscIncompleteLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(bt))
 
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCSYS_H */

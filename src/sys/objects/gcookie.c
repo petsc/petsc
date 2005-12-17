@@ -53,7 +53,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectExists(PetscObject obj,PetscTruth *exi
   PetscFunctionBegin;
   *exists = PETSC_FALSE;
   if (!obj) PetscFunctionReturn(0);
-  if (obj->cookie >= PETSC_COOKIE && obj->cookie <= PETSC_LARGEST_COOKIE) *exists = PETSC_TRUE;
+  if (obj->cookie >= PETSC_SMALLEST_COOKIE && obj->cookie <= PETSC_LARGEST_COOKIE) *exists = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
