@@ -43,9 +43,7 @@ typedef struct {
    PetscErrorCode (*query)(PetscObject,const char[],PetscObject *);
    PetscErrorCode (*composefunction)(PetscObject,const char[],const char[],void (*)(void));
    PetscErrorCode (*queryfunction)(PetscObject,const char[],void (**)(void));
-   PetscErrorCode (*composelanguage)(PetscObject,PetscLanguage,void *);
-   PetscErrorCode (*querylanguage)(PetscObject,PetscLanguage,void **);
-   PetscErrorCode (*publish)(PetscObject);
+      PetscErrorCode (*publish)(PetscObject);
 } PetscOps;
 
 #define PETSCHEADER(ObjectOps)                                  \
