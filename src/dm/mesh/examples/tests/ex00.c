@@ -64,25 +64,20 @@ PetscErrorCode ArrowTest()
 #define __FUNCT__ "ConeTest"
 PetscErrorCode ConeTest()
 {
-  ALE::Obj<ALE::def::Sieve<ALE::def::Point,int> > sieve;
+  ALE::Obj<ALE::def::Sieve<ALE::def::Point,int> > sieve = ALE::def::Sieve<ALE::def::Point,int>();
 
   PetscFunctionBegin;
-  ALE::def::PointSequence ps(ALE::def::Point(0,-1));
-  for(ALE::def::PointSequence::iterator iter = ps.begin(); iter != ps.end(); ++iter) {
-    std::cout << *iter << std::endl;
-  }
-
   for(int j = 0; j < 1; ++j) {
     ALE::def::Point base(0, j);
+    ALE::Obj<std::set<ALE::def::Point> > inCone = std::set<ALE::def::Point>();
 
     for(int i = 1; i < 4; ++i) {
-      ALE::def::Point point(0, i);
-
-      sieve->addCone(ALE::Obj<ALE::def::const_sequence<ALE::def::Point> >(ALE::def::PointSequence(point)), base);
+      inCone->insert(ALE::def::Point(0, i));
     }
+    sieve->addCone(inCone, base);
 
-    ALE::Obj<ALE::def::const_sequence<ALE::def::Point> > cone = sieve->cone(ALE::def::PointSequence(base));
-    for(ALE::def::PointSequence::iterator iter = cone->begin(); iter != cone->end(); ++iter) {
+    ALE::Obj<ALE::def::Sieve<ALE::def::Point,int>::coneSequence> outCone = sieve->cone(base);
+    for(ALE::def::Sieve<ALE::def::Point,int>::coneSequence::iterator iter = outCone->begin(); iter != outCone->end(); ++iter) {
       std::cout << *iter << std::endl;
     }
   }

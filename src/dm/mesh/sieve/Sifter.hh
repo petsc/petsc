@@ -52,8 +52,8 @@ namespace ALE {
       //
       virtual void                  operator++() {std::cout << "Faux preincrement" << std::endl;};
       virtual void                  operator++(int) {std::cout << "Faux postincrement" << std::endl;};
-      virtual bool                  operator==(const const_iterator& itor) const {return false;};
-      virtual bool                  operator!=(const const_iterator& itor) const {std::cout << "Faux !=" << std::endl;return false;};
+      virtual bool                  operator==(const const_iterator<Data>& itor) const {return false;};
+      virtual bool                  operator!=(const const_iterator<Data>& itor) const {std::cout << "Faux !=" << std::endl;return false;};
       virtual const Data&           operator*() const {return Data();};
     };
 
@@ -110,8 +110,9 @@ namespace ALE {
     class PointIterator : public const_iterator<Point> {
     public:
       Point *point;
-      PointIterator(const Point *p) : point((Point *) p) {};
+      PointIterator(const Point *p) : point((Point *) p) {std::cout << "Created PointIterator" << std::endl;};
       virtual ~PointIterator() {};
+      // Assignment
       //
       virtual void                  operator++() {
         std::cout << "Before preincrement: " << this->point << std::endl;
@@ -187,45 +188,45 @@ namespace ALE {
             ::boost::multi_index::tag<color>,  BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>
         >
       > ArrowSet;
-
-      class coneIterator : public const_iterator<Data> {
-      public:
-        //const ArrowSet::index<target>::type::iterator arrowIter;
-        typename boost::multi_index::index<ArrowSet,target>::type::iterator arrowIter;
-        coneIterator(typename boost::multi_index::index<ArrowSet,target>::type::iterator& iter) : arrowIter(iter) {};
-        coneIterator(const typename boost::multi_index::index<ArrowSet,target>::type::iterator& iter) {
-          this->arrowIter = typename boost::multi_index::index<ArrowSet,target>::type::iterator(iter);
-        };
-        virtual ~coneIterator() {};
-        //
-        virtual void                  operator++() {++this->arrowIter;};
-        virtual void                  operator++(int n) {++this->arrowIter;};
-        virtual bool                  operator==(const const_iterator<Data>& itor) const {
-          return this->arrowIter == dynamic_cast<const coneIterator&>(itor).arrowIter;};
-        virtual bool                  operator!=(const const_iterator<Data>& itor) const {
-          return this->arrowIter != dynamic_cast<const coneIterator&>(itor).arrowIter;};
-        virtual const Data&           operator*() const {return this->arrowIter->source;};
-      };
-
-      class coneSequence : public const_sequence<Data> {
-        const typename ::boost::multi_index::index<ArrowSet,target>::type& coneIndex;
-        const Point& key;
-      public:
-        coneSequence(const typename ::boost::multi_index::index<ArrowSet,target>::type& cone, const Point& p) : coneIndex(cone), key(p) {};
-        virtual ~coneSequence() {};
-        virtual const_iterator<Data> begin() {return coneIterator(this->coneIndex.lower_bound(key));};
-        virtual const_iterator<Data> end()   {return coneIterator(this->coneIndex.upper_bound(key));};
-        virtual std::size_t          size()  {return sizeof(Point);};
-      };
       //
       ArrowSet        arrows;
       std::set<Color> colors;
     public:
+      class coneSequence {
+        const typename ::boost::multi_index::index<ArrowSet,target>::type& coneIndex;
+        const Data key;
+      public:
+        class iterator {
+        public:
+          typename boost::multi_index::index<ArrowSet,target>::type::iterator arrowIter;
+
+          iterator(const typename boost::multi_index::index<ArrowSet,target>::type::iterator& iter) {
+            this->arrowIter = typename boost::multi_index::index<ArrowSet,target>::type::iterator(iter);
+          };
+          virtual ~iterator() {};
+          //
+          virtual iterator    operator++() {++this->arrowIter; return *this;};
+          virtual iterator    operator++(int n) {iterator tmp(this->arrowIter); ++this->arrowIter; return tmp;};
+          virtual bool        operator==(const iterator& itor) const {return this->arrowIter == itor.arrowIter;};
+          virtual bool        operator!=(const iterator& itor) const {return this->arrowIter != itor.arrowIter;};
+          virtual const Data& operator*() const {return this->arrowIter->source;};
+        };
+
+        coneSequence(const typename ::boost::multi_index::index<ArrowSet,target>::type& cone, const Point& p) : coneIndex(cone), key(p) {};
+        virtual ~coneSequence() {};
+        virtual iterator    begin() {return iterator(this->coneIndex.lower_bound(key));};
+        virtual iterator    end()   {return iterator(this->coneIndex.upper_bound(key));};
+        virtual std::size_t size()  {return this->coneIndex.count(key);};
+      };
+
       Sieve() {};
       // The basic Sieve interface
-      Obj<const_sequence<Data> > cone(const Obj<const_sequence<Data> >& p) {
+      Obj<coneSequence> cone(const Point& p) {
+        return coneSequence(::boost::multi_index::get<target>(this->arrows), p);
+      }
+      template<class InputSequence> Obj<coneSequence> cone(const Obj<InputSequence>& points) {
         //FIX: return coneSequence(this->arrows.get<2>(), p);
-        return coneSequence(::boost::multi_index::get<target>(this->arrows), *p->begin());
+        return coneSequence(::boost::multi_index::get<target>(this->arrows), *points->begin());
       };
       Obj<const_sequence<Data> > cone(const Obj<const_sequence<Data> >& p, const Color& color);
       Obj<const_sequence<Data> > nCone(const Obj<const_sequence<Data> >& p, const int& n);
@@ -257,13 +258,23 @@ namespace ALE {
         this->arrows.insert(SieveArrow(p, q, Color()));
         std::cout << "Added " << SieveArrow(p, q, Color());
       };
-      void                       addArrow(const Data& p, const Data& q, const Color& color);
+      void                       addArrow(const Data& p, const Data& q, const Color& color) {
+        this->arrows.insert(SieveArrow(p, q, color));
+        std::cout << "Added " << SieveArrow(p, q, color);
+      };
       void                       setColor(const Data& p, const Data& q, const Color& color);
-      void                       addCone(const Obj<const_sequence<Data> >& points,  const Data& p){
+      template<class InputSequence> void addCone(const Obj<InputSequence >& points, const Data& p) {
         std::cout << "Adding a cone " << std::endl;
-        for(typename const_sequence<Data>::iterator iter = points->begin(); iter != points->end(); ++iter) {
+        for(typename InputSequence::iterator iter = points->begin(); iter != points->end(); ++iter) {
           std::cout << "Adding arrow from " << *iter << " to " << p << std::endl;
           this->addArrow(*iter, p);
+        }
+      };
+      template<class InputSequence> void addCone(const Obj<InputSequence >& points, const Data& p, const Color& color){
+        std::cout << "Adding a cone " << std::endl;
+        for(typename InputSequence::iterator iter = points->begin(); iter != points->end(); ++iter) {
+          std::cout << "Adding arrow from " << *iter << " to " << p << "(" << color << ")" << std::endl;
+          this->addArrow(*iter, p, color);
         }
       };
       void                       addSupport(const Data& p,const Obj<const_sequence<Data> >& points);
