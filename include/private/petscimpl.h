@@ -34,8 +34,6 @@
       querylanguage()   - obtain the object's representation in a different language
 */
 
-typedef enum {PETSC_LANGUAGE_C, PETSC_LANGAUGE_CXX, PETSC_LANGUAGE_F77} PetscLanguage;
-
 typedef struct {
    PetscErrorCode (*getcomm)(PetscObject,MPI_Comm *);
    PetscErrorCode (*view)(PetscObject,PetscViewer);

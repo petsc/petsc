@@ -1266,14 +1266,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryGetInfo(void*,const char[],c
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibraryList *,const char[]);
 
 /*
-    Mechanism for translating PETSc object representations between languages
-*/
-typedef enum {PETSC_LANGUAGE_C,PETSC_LANGUAGE_CXX} PetscLanguage;
-#define PETSC_LANGUAGE_F77 PETSC_LANGUAGE_C
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectComposeLanguage(PetscObject,PetscLanguage,void *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **);
-
-/*
      Useful utility routines
 */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*);
