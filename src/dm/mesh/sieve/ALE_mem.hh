@@ -322,7 +322,7 @@ namespace ALE {
     template <class Y> Obj& operator=(const Obj<Y>& obj);
 
     // dereference operators
-    X*   operator->() {return objPtr;};
+    X*   operator->() const {return objPtr;};
     
     // "exposure" methods: expose the underlying object or object pointer
     operator X*() {return objPtr;};
@@ -488,7 +488,20 @@ namespace ALE {
     Y* yObjPtr = dynamic_cast<Y*>(this->objPtr);
     // If the cast failed, throw an exception
     if(yObjPtr == NULL) {
-      throw ALE::Exception("Bad cast Obj<X> --> Obj<Y>");
+#ifdef ALE_HAVE_CXX_ABI 
+      int status;
+      const char *Xname = abi::__cxa_demangle(typeid(X).name(), NULL, NULL, &status);
+      const char *Yname = abi::__cxa_demangle(typeid(Y).name(), NULL, NULL, &status);
+#else
+      const char *Xname = typeid(X).name();
+      const char *Yname = typeid(Y).name();
+#endif
+      std::string msg("Bad cast Obj<");
+      msg += Xname;
+      msg += "> --> Obj<";
+      msg += Yname;
+      msg += ">";
+      throw BadCast(msg.c_str());
     }
     // Okay, we can proceed 
     return Obj<Y>(yObjPtr, this->refCnt, this->sz);
@@ -501,7 +514,20 @@ namespace ALE {
     X* xObjPtr = dynamic_cast<X*>(obj.objPtr);
     // If the cast failed, throw an exception
     if(xObjPtr == NULL) {
-      throw BadCast("Bad cast Obj<Y> --> Obj<X>");
+#ifdef ALE_HAVE_CXX_ABI 
+      int status;
+      const char *Xname = abi::__cxa_demangle(typeid(X).name(), NULL, NULL, &status);
+      const char *Yname = abi::__cxa_demangle(typeid(Y).name(), NULL, NULL, &status);
+#else
+      const char *Xname = typeid(X).name();
+      const char *Yname = typeid(Y).name();
+#endif
+      std::string msg("Bad assignment cast Obj<");
+      msg += Yname;
+      msg += "> --> Obj<";
+      msg += Xname;
+      msg += ">";
+      throw BadCast(msg.c_str());
     }
     // Okay, we can proceed with the assignment
     if(this->objPtr == obj.objPtr) {return *this;}

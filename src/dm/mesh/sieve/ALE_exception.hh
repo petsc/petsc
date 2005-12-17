@@ -13,6 +13,11 @@ namespace ALE {
     Exception(const char *msg)    {this->_msg = msg;};
     //Exception(const Exception& e) {this->_msg = e._msg;};
     const char *message() const   {return this->_msg;};
+    // Printing
+    friend std::ostream& operator<<(std::ostream& os, const Exception& e) {
+      os << "ERROR: " << e.message() << std::endl;
+      return os;
+    };
   };
 
   // A helper function that throws an ALE::Exception with a message identifying the function that returned the given error code, 
