@@ -222,7 +222,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetAllowDiagonalFill"
+#define __FUNCT__ "PCFactorSetAllowDiagonalFill_ILU"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill_ILU(PC pc)
 {
   PC_ILU *dir;
