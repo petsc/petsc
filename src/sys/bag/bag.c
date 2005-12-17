@@ -52,7 +52,7 @@ static PetscErrorCode PetscBagRegister_Private(PetscBag bag,PetscBagItem item,co
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName()
 
 @*/
 PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char **list,PetscEnum mdefault, const char *name, const char* help)
@@ -109,7 +109,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char **list,Pe
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
 PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault, const char* name, const char* help)
@@ -162,7 +162,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault, co
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
+           PetscBagSetFromOptions(),PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
 PetscErrorCode PetscBagRegisterString(PetscBag bag,void *addr,PetscInt msize,const char* mdefault, const char* name, const char* help)
@@ -216,7 +216,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag,void *addr,PetscInt msize,con
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
 PetscErrorCode PetscBagRegisterReal(PetscBag bag,void *addr,PetscReal mdefault, const char* name, const char* help)
@@ -267,7 +267,7 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag,void *addr,PetscReal mdefault, 
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
 PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefault, const char* name, const char* help)
@@ -318,7 +318,7 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefau
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
 PetscErrorCode PetscBagRegisterTruth(PetscBag bag,void *addr,PetscTruth mdefault, const char* name, const char* help)
@@ -364,7 +364,7 @@ PetscErrorCode PetscBagRegisterTruth(PetscBag bag,void *addr,PetscTruth mdefault
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBagDestroy(PetscBag bag)
@@ -400,7 +400,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagDestroy(PetscBag bag)
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagDestroy(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagView(), PetscBagRegisterEnum()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagView(), PetscBagRegisterEnum()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag bag)
@@ -464,7 +464,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag bag)
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagDestroy(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar(), PetscBagRegisterEnum()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
@@ -549,7 +549,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagDestroy(), PetscBagView(), PetscBagGetData()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
@@ -640,7 +640,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
 
 .seealso: PetscBag, PetscBagGetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
 @*/
 PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t size, PetscBag *bag)
 {
@@ -672,7 +672,7 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t size, PetscBag *bag)
 
 .seealso: PetscBag, PetscBagGetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
 @*/ 
 
 PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
@@ -701,7 +701,7 @@ PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad(), PetscBagGetData()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
 @*/ 
 PetscErrorCode PetscBagGetName(PetscBag bag, char **name)
 {
@@ -726,7 +726,7 @@ PetscErrorCode PetscBagGetName(PetscBag bag, char **name)
 
 .seealso: PetscBag, PetscBagSetName(), PetscBagView(), PetscBagLoad()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
-           PetscBagSetFromOptions(), PetscBagRegisterVec(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
 @*/ 
 PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
 {

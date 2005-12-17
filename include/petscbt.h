@@ -1,6 +1,11 @@
-/*    
+#if !defined(__PETSCBT_H)
+#define __PETSCBT_H
+PETSC_EXTERN_CXX_BEGIN
 
-          BT - Bit array objects: used to compactly store logical arrays of variables.
+/*S
+     PetscBT - PETSc bitarrays
+
+     Level: advanced
 
      PetscBTCreate(m,bt)        - creates a bit array with enough room to hold m values
      PetscBTDestroy(bt)         - destroys the bit array
@@ -12,8 +17,6 @@
      PetscBTLength(m)           - returns number of bytes in array with m bits
      PetscBTView(m,bt,viewer)   - prints all the entries in a bit array
 
-    These routines do not currently have manual pages.
-
     The are all implemented as macros with the trivial data structure for efficiency.
 
     These are not thread safe since they use a few global variables.
@@ -22,21 +25,6 @@
     PetcBTLookupSet(), PetscBTLength() cause error checking would cost hundreds more cycles then
     the operation.
 
-*/
-#if !defined(__PETSCBT_H)
-#define __PETSCBT_H
-PETSC_EXTERN_CXX_BEGIN
-
-/*S
-     PetscBT - PETSc bitarrays
-
-   Level: advanced
-
-   Notes: the PetscBT routines do not currently have manual pages. See include/petscbt.h for 
-          documentation
-
-.seealso:  PetscBTCreate(), PetscBTDestroy(), PetscBTMemzero(), PetscBTSet(), PetscBTClear(),
-           PetscBTLookup(), PetscBTLookupSet(), PetscBTLength(), PetscBTView()
 S*/
 typedef char* PetscBT;
 

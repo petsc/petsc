@@ -283,17 +283,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalSum(PetscScalar*,PetscScalar*,M
   timing etc.
 */
 typedef double PetscLogDouble;
-/*
-      Once PETSc is compiling with a ADIC enhanced version of MPI
-   we will create a new MPI_Datatype for the inactive double variables.
-*/
-#if defined(AD_DERIV_H)
-/* extern  MPI_Datatype  MPIU_PETSCLOGDOUBLE; */
-#else
-#if !defined(_petsc_mpi_uni)
 #define MPIU_PETSCLOGDOUBLE MPI_DOUBLE
-#endif
-#endif
 
 #define PassiveReal   PetscReal
 #define PassiveScalar PetscScalar

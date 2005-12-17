@@ -152,7 +152,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "LogEventRegister"
   LogEvent LogEventRegister(const char *name){
-    return LogEventRegister(PETSC_COOKIE, name);
+    return LogEventRegister(PETSC_SMALLEST_COOKIE, name);
   }
 
   #undef  __FUNCT__
