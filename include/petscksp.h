@@ -51,7 +51,6 @@ E*/
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE;
-extern PetscEvent    KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm,KSP *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP,KSPType);

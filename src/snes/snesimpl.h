@@ -138,4 +138,7 @@ PetscErrorCode SNES_KSP_EW_Converged_Private(KSP,PetscInt,PetscReal,KSPConverged
 PetscErrorCode SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES,KSP);
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
+extern PetscEvent    SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
+extern PetscEvent    MATSNESMF_Mult;
+
 #endif

@@ -10,9 +10,6 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_EVENT  1311311
 extern PetscEvent PETSC_LARGEST_EVENT;
 
-/* Events for the Petsc standard library */
-extern PetscEvent PETSC_DLLEXPORT PETSC_Barrier;
-
 /* Global flop counter */
 extern PetscLogDouble PETSC_DLLEXPORT _TotalFlops;
 

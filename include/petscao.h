@@ -24,7 +24,6 @@ typedef struct _p_AO* AO;
 
 /* Logging support */
 extern PetscCookie PETSCDM_DLLEXPORT AO_COOKIE, AODATA_COOKIE;
-extern PetscEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char[]);
 

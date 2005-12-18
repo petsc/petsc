@@ -65,8 +65,6 @@ E*/
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT PC_COOKIE;
-extern PetscEvent  PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
-extern PetscEvent  PC_ApplySymmetricRight, PC_ModifySubMatrices;
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right

@@ -1,7 +1,7 @@
 #define PETSCDM_DLL
 
-#include "petscao.h"
-#include "petscda.h"
+#include "src/dm/ao/aoimpl.h"
+#include "src/dm/da/daimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMInitializePackage"

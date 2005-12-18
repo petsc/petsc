@@ -93,7 +93,6 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DARestoreElements(DA,PetscInt *,const P
 typedef enum { DA_X,DA_Y,DA_Z } DADirection;
 
 extern PetscCookie PETSCDM_DLLEXPORT DA_COOKIE;
-extern PetscEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate1d(MPI_Comm,DAPeriodicType,PetscInt,PetscInt,PetscInt,PetscInt*,DA *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,DA *);

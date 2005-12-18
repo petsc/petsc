@@ -1,6 +1,7 @@
 #define PETSCKSP_DLL
 
-#include "petscksp.h"
+#include "include/private/pcimpl.h"
+#include "src/ksp/ksp/kspimpl.h"
 
 
 const char *PCSides[]          = {"LEFT","RIGHT","SYMMETRIC","PCSide","PC_",0};

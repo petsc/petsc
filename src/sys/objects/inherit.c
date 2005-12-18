@@ -43,8 +43,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject h,PetscCook
   h->bops->query            = PetscObjectQuery_Petsc;
   h->bops->composefunction  = PetscObjectComposeFunction_Petsc;
   h->bops->queryfunction    = PetscObjectQueryFunction_Petsc;
-  h->bops->querylanguage    = PetscObjectQueryLanguage_Petsc;
-  h->bops->composelanguage  = PetscObjectComposeLanguage_Petsc;
   ierr = PetscCommDuplicate(comm,&h->comm,&h->tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -229,38 +227,6 @@ PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObj
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectComposeLanguage_Petsc"
-PetscErrorCode PetscObjectComposeLanguage_Petsc(PetscObject obj,PetscLanguage lang,void *vob)
-{
-  PetscFunctionBegin;
-  if (lang == PETSC_LANGUAGE_CXX) {
-    obj->cpp = vob;
-  } else {
-    SETERRQ(PETSC_ERR_SUP,"No support for this language yet");
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscObjectQueryLanguage_Petsc"
-PetscErrorCode PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob)
-{
-  PetscFunctionBegin;
-  if (lang == PETSC_LANGUAGE_C) {
-    *vob = (void*)obj;
-  } else if (lang == PETSC_LANGUAGE_CXX) {
-    if (obj->cpp) {
-      *vob = obj->cpp;
-    } else {
-      SETERRQ(PETSC_ERR_SUP,"No C++ wrapper generated");
-    }
-  } else {
-    SETERRQ(PETSC_ERR_SUP,"No support for this language yet");
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "PetscObjectComposeFunction_Petsc"
 PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
 {
@@ -361,63 +327,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectQuery(PetscObject obj,const char name[
   ierr = (*obj->bops->query)(obj,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscObjectQueryLanguage"
-/*@C
-   PetscObjectQueryLanguage - Returns a language specific interface to the given object
-                       
-   Not Collective
-
-   Input Parameters:
-+  obj - the PETSc object
-         Thus must be cast with a (PetscObject), for example, 
-         PetscObjectCompose((PetscObject)mat,...);
--  lang - one of PETSC_LANGUAGE_C, PETSC_LANGUAGE_F77, PETSC_LANGUAGE_CXX
-
-   Output Parameter:
-.  ptr - the language specific interface
-
-   Level: developer
-
-.seealso: PetscObjectQuery()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectQueryLanguage(PetscObject obj,PetscLanguage lang,void **ptr)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = (*obj->bops->querylanguage)(obj,lang,ptr);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscObjectComposeLanguage"
-/*@C
-   PetscObjectComposeLanguage - Sets a language specific interface to the given object
-                       
-   Not Collective
-
-   Input Parameters:
-+  obj - the PETSc object
-         Thus must be cast with a (PetscObject), for example, 
-         PetscObjectCompose((PetscObject)mat,...);
-.  lang - one of PETSC_LANGUAGE_C, PETSC_LANGUAGE_F77, PETSC_LANGUAGE_CXX
--  ptr - the language specific interface
-
-   Level: developer
-
-.seealso: PetscObjectQuery()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectComposeLanguage(PetscObject obj,PetscLanguage lang,void *ptr)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = (*obj->bops->composelanguage)(obj,lang,ptr);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectComposeFunction"
