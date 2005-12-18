@@ -10,8 +10,6 @@ EXTERN PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObj
 EXTERN PetscErrorCode PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject *);
 EXTERN PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject,const char[],const char[],void (*)(void));
 EXTERN PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],void (**)(void));
-EXTERN PetscErrorCode PetscObjectComposeLanguage_Petsc(PetscObject,PetscLanguage,void *);
-EXTERN PetscErrorCode PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,void **);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscHeaderCreate_Private"
