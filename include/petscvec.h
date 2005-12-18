@@ -114,11 +114,6 @@ E*/
 #define    VEC_FILE_COOKIE 1211214
 extern PETSCVEC_DLLEXPORT PetscCookie VEC_COOKIE;
 extern PETSCVEC_DLLEXPORT PetscCookie VEC_SCATTER_COOKIE;
-extern PetscEvent    VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot;
-extern PetscEvent    VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY;
-extern PetscEvent    VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
-extern PetscEvent    VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
-extern PetscEvent    VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier;
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *);
 

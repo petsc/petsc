@@ -238,14 +238,6 @@ EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode VecStashScatterBegin_Private(VecStash*,PetscInt*);
 EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,PetscInt**,PetscScalar**,PetscInt*);
 
-/* 
-   The following are implemented as macros to avoid the function
-   call overhead.
-
-   extern VecStashValue_Private(VecStash*,int,PetscScalar);
-   extern VecStashValuesBlocked_Private(VecStash*,int,PetscScalar*);
-*/
-
 /*
   VecStashValue_Private - inserts a single value into the stash.
 
@@ -287,6 +279,12 @@ EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,Pets
 }
 
 EXTERN PetscErrorCode VecReciprocal_Default(Vec);
+
+extern PetscEvent    VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot;
+extern PetscEvent    VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY;
+extern PetscEvent    VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
+extern PetscEvent    VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
+extern PetscEvent    VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier;
 
 #if defined(PETSC_HAVE_MATLAB)
 EXTERN_C_BEGIN

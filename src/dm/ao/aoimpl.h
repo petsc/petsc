@@ -131,5 +131,7 @@ struct _n_AOData2dGrid {
    PetscBT   vertex_boundary;
 };
 
+extern PetscEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
+
 
 #endif

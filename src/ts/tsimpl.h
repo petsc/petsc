@@ -89,4 +89,6 @@ EXTERN PetscErrorCode TSMonitor(TS,PetscInt,PetscReal,Vec);
 EXTERN PetscErrorCode TSComputeRHSBoundaryConditions(TS,PetscReal,Vec);
 EXTERN PetscErrorCode TSScaleShiftMatrices(TS,Mat,Mat,MatStructure);
 
+extern PetscEvent    TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
+
 #endif

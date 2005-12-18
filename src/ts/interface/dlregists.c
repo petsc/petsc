@@ -1,6 +1,6 @@
 #define PETSCTS_DLL
 
-#include "petscts.h"
+#include "tsimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSInitializePackage"

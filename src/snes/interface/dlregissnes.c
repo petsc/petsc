@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
 
-#include "petscsnes.h"
+#include "src/snes/snesimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESInitializePackage"

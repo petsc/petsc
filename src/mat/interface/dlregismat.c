@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "petscmat.h"
+#include "src/mat/matimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatInitializePackage"
@@ -118,7 +118,7 @@ EXTERN_C_BEGIN
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
-  This one registers all the TS methods that are in the basic PETSc Matrix library.
+  This one registers all the matrix methods that are in the basic PETSc Matrix library.
 
   Input Parameter:
   path - library path

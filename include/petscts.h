@@ -46,7 +46,6 @@ typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
 /* Logging support */
 extern PetscCookie PETSCTS_DLLEXPORT TS_COOKIE;
-extern PetscEvent    TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSInitializePackage(const char[]);
 
