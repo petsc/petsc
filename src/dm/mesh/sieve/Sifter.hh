@@ -43,112 +43,6 @@ namespace ALE {
         return os;
       };
     };
-    
-    // iterator interface
-    template <typename Data>
-    class const_iterator {
-    public:
-      virtual ~const_iterator() {};
-      //
-      virtual void                  operator++() {std::cout << "Faux preincrement" << std::endl;};
-      virtual void                  operator++(int) {std::cout << "Faux postincrement" << std::endl;};
-      virtual bool                  operator==(const const_iterator<Data>& itor) const {return false;};
-      virtual bool                  operator!=(const const_iterator<Data>& itor) const {std::cout << "Faux !=" << std::endl;return false;};
-      virtual const Data&           operator*() const {return Data();};
-    };
-
-    // const_sequence interface:
-    // a constant sequence of (not necesserily unique) colors delineated by begin() & end() iterators; can be traversed linearly
-    template <typename Data>
-    class const_sequence {
-    public:
-      typedef const_iterator<Data> iterator;
-      virtual ~const_sequence() {};
-      //
-      virtual const_iterator<Data> begin() {std::cout << "Faux iteration start" << std::endl; };
-      virtual const_iterator<Data> end() {std::cout << "Faux iteration end" << std::endl; };
-      virtual std::size_t          size() {return -1;};
-    };
-
-    // const_collection interface:
-    // a constant collection no particular order; can queried for containment of a given color
-    template <typename Data>
-    class const_collection {
-      virtual ~const_collection() = 0;
-      //
-      virtual bool contains(const Data& p);
-    };
-
-    // const_set interface
-    // combines const_sequence & const_collection interfaces
-    template <typename Data>
-    class const_set : public const_sequence<Data>, public const_collection<Data> {
-      virtual ~const_set();
-    };
-
-    // set interface:
-    // extends const_set interface to allows point addition and removal
-    template <typename Data>
-    class set : public const_set<Data> {
-      const std::set<Data>& delegate;
-    public:
-      set() {this->delegate = new std::set<Data>;};
-      set(const std::set<Data>& delegate) {this->delegate = delegate;};
-      // destructor
-      virtual ~set() {delete this->delegate;};
-      // mutating methods
-      virtual void insert(const Data& p);                            // post: contains(p) == true 
-      virtual void remove(const Data& p);                            // post: contains(p) == false
-      virtual void add(const const_sequence<Data>& s);               // post: contains colors from s and '*this before the call'
-      virtual void add(const const_collection<Data>& s);             // post: contains colors from s and '*this before the call'
-      virtual void intersect(const const_sequence<Data>& s);         // post: contains colors common to s and '*this before the call'
-      virtual void intersect(const const_collection<Data>& s);       // post: contains colors common to s and '*this before the call'
-      virtual void subtract(const const_sequence<Data>&  s);         // post: contains colors of '*this before call' that are not in s
-      virtual void subtract(const const_collection<Data>&  s);       // post: contains colors of '*this before call' that are not in s
-    };
-
-    class PointIterator : public const_iterator<Point> {
-    public:
-      Point *point;
-      PointIterator(const Point *p) : point((Point *) p) {std::cout << "Created PointIterator" << std::endl;};
-      virtual ~PointIterator() {};
-      // Assignment
-      //
-      virtual void                  operator++() {
-        std::cout << "Before preincrement: " << this->point << std::endl;
-        ++this->point;
-        std::cout << "After preincrement: " << this->point << std::endl;
-      };
-      virtual void                  operator++(int n) {
-        std::cout << "Before postincrement: " << this->point << std::endl;
-        ++this->point;
-        std::cout << "After postincrement: " << this->point << std::endl;
-      };
-      virtual bool                  operator==(const const_iterator<Point>& itor) const {
-        return point == dynamic_cast<const PointIterator&>(itor).point;};
-      virtual bool                  operator!=(const const_iterator<Point>& itor) const {
-        std::cout << "Comparing " << point << " with " << dynamic_cast<const PointIterator&>(itor).point << std::endl;
-        return point != dynamic_cast<const PointIterator&>(itor).point;};
-      virtual const Point&          operator*() const {return *point;};
-    };
-
-    class PointSequence : public const_sequence<Point> {
-      const Point& point;
-    public:
-      typedef PointIterator iterator;
-      PointSequence(const Point& p) : point(p) {std::cout << "Made PointSequence from " << p << std::endl;};
-      virtual ~PointSequence() {};
-      virtual const_iterator<Point> begin() {
-        PointIterator iter = PointIterator(&point);
-        std::cout << "Iteration start: " << iter.point << std::endl;
-        return iter;};
-      virtual const_iterator<Point> end() {
-        PointIterator iter = PointIterator(&point);
-        ++iter;
-        std::cout << "Iteration end: " << iter.point << std::endl;
-        return iter;};
-      virtual std::size_t           size() {return sizeof(Point);};
-    };
 
     template <typename Color>
     struct Arrow {
@@ -219,6 +113,33 @@ namespace ALE {
         virtual std::size_t size()  {return this->coneIndex.count(key);};
       };
 
+      class supportSequence {
+        const typename ::boost::multi_index::index<ArrowSet,target>::type& supportIndex;
+        const Data key;
+      public:
+        class iterator {
+        public:
+          typename boost::multi_index::index<ArrowSet,target>::type::iterator arrowIter;
+
+          iterator(const typename boost::multi_index::index<ArrowSet,target>::type::iterator& iter) {
+            this->arrowIter = typename boost::multi_index::index<ArrowSet,target>::type::iterator(iter);
+          };
+          virtual ~iterator() {};
+          //
+          virtual iterator    operator++() {++this->arrowIter; return *this;};
+          virtual iterator    operator++(int n) {iterator tmp(this->arrowIter); ++this->arrowIter; return tmp;};
+          virtual bool        operator==(const iterator& itor) const {return this->arrowIter == itor.arrowIter;};
+          virtual bool        operator!=(const iterator& itor) const {return this->arrowIter != itor.arrowIter;};
+          virtual const Data& operator*() const {return this->arrowIter->source;};
+        };
+
+        coneSequence(const typename ::boost::multi_index::index<ArrowSet,target>::type& support, const Point& p) : supportIndex(support), key(p) {};
+        virtual ~coneSequence() {};
+        virtual iterator    begin() {return iterator(this->supportIndex.lower_bound(key));};
+        virtual iterator    end()   {return iterator(this->supportIndex.upper_bound(key));};
+        virtual std::size_t size()  {return this->supportIndex.count(key);};
+      };
+
       Sieve() {};
       // The basic Sieve interface
       Obj<coneSequence> cone(const Point& p) {
@@ -228,47 +149,41 @@ namespace ALE {
         //FIX: return coneSequence(this->arrows.get<2>(), p);
         return coneSequence(::boost::multi_index::get<target>(this->arrows), *points->begin());
       };
-      Obj<const_sequence<Data> > cone(const Obj<const_sequence<Data> >& p, const Color& color);
-      Obj<const_sequence<Data> > nCone(const Obj<const_sequence<Data> >& p, const int& n);
-      Obj<const_sequence<Data> > nCone(const Obj<const_sequence<Data> >& p, const int& n, const Color& color);
-      Obj<const_sequence<Data> > support(const Obj<const_sequence<Data> >& p);
-      Obj<const_sequence<Data> > support(const Obj<const_sequence<Data> >& p, const Color& color);
-      Obj<const_sequence<Data> > nSupport(const Obj<const_sequence<Data> >& p, const int& n);
-      Obj<const_sequence<Data> > nSupport(const Obj<const_sequence<Data> >& p, const int& n, const Color& color);
+      template<class InputSequence> Obj<coneSequence> cone(const Obj<InputSequence>& p, const Color& color);
+      template<class InputSequence> Obj<coneSequence> nCone(const Obj<InputSequence>& p, const int& n);
+      template<class InputSequence> Obj<coneSequence> nCone(const Obj<InputSequence>& p, const int& n, const Color& color);
+      template<class InputSequence> Obj<supportSequence> support(const Obj<InputSequence>& p);
+      template<class InputSequence> Obj<supportSequence> support(const Obj<InputSequence>& p, const Color& color);
+      template<class InputSequence> Obj<supportSequence> nSupport(const Obj<InputSequence>& p, const int& n);
+      template<class InputSequence> Obj<supportSequence> nSupport(const Obj<InputSequence>& p, const int& n, const Color& color);
       // Iterated versions
-      Obj<const_sequence<Data> > closure(const Obj<const_sequence<Data> >& p);
-      Obj<const_sequence<Data> > closure(const Obj<const_sequence<Data> >& p, const int& n, const Color& color);
-      Obj<const_sequence<Data> > nClosure(const Obj<const_sequence<Data> >& p, const int& n);
-      Obj<const_sequence<Data> > nClosure(const Obj<const_sequence<Data> >& p, const int& n, const int& n, const Color& color);
-      Obj<const_sequence<Data> > star(const Obj<const_sequence<Data> >& p);
-      Obj<const_sequence<Data> > star(const Obj<const_sequence<Data> >& p, const int& n, const Color& color);
-      Obj<const_sequence<Data> > nStar(const Obj<const_sequence<Data> >& p, const int& n);
-      Obj<const_sequence<Data> > nStar(const Obj<const_sequence<Data> >& p, const int& n, const int& n, const Color& color);
+      template<class InputSequence> Obj<coneSequence> closure(const Obj<InputSequence>& p);
+      template<class InputSequence> Obj<coneSequence> closure(const Obj<InputSequence>& p, const int& n, const Color& color);
+      template<class InputSequence> Obj<coneSequence> nClosure(const Obj<InputSequence>& p, const int& n);
+      template<class InputSequence> Obj<coneSequence> nClosure(const Obj<InputSequence>& p, const int& n, const Color& color);
+      template<class InputSequence> Obj<supportSequence> star(const Obj<InputSequence>& p);
+      template<class InputSequence> Obj<supportSequence> star(const Obj<InputSequence>& p, const int& n, const Color& color);
+      template<class InputSequence> Obj<supportSequence> nStar(const Obj<InputSequence>& p, const int& n);
+      template<class InputSequence> Obj<supportSequence> nStar(const Obj<InputSequence>& p, const int& n, const Color& color);
       // Lattice methods
-      Obj<const_sequence<Data> > meet(const const_sequence<Data>& pp);
-      Obj<const_sequence<Data> > meet(const const_sequence<Data>& pp, const Color& color);
-      Obj<const_sequence<Data> > nMeet(const const_sequence<Data>& pp, const int& n);
-      Obj<const_sequence<Data> > nMeet(const const_sequence<Data>& pp, const int& n, const Color& color);
-      Obj<const_sequence<Data> > join(const const_sequence<Data>& pp);
-      Obj<const_sequence<Data> > join(const const_sequence<Data>& pp, const Color& color);
-      Obj<const_sequence<Data> > nJoin(const const_sequence<Data>& pp, const int& n);
-      Obj<const_sequence<Data> > nJoin(const const_sequence<Data>& pp, const int& n, const Color& color);
+      template<class InputSequence> Obj<coneSequence> meet(const Obj<InputSequence>& pp);
+      template<class InputSequence> Obj<coneSequence> meet(const Obj<InputSequence>& pp, const Color& color);
+      template<class InputSequence> Obj<coneSequence> nMeet(const Obj<InputSequence>& pp, const int& n);
+      template<class InputSequence> Obj<coneSequence> nMeet(const Obj<InputSequence>& pp, const int& n, const Color& color);
+      template<class InputSequence> Obj<supportSequence> join(const Obj<InputSequence>& pp);
+      template<class InputSequence> Obj<supportSequence> join(const Obj<InputSequence>& pp, const Color& color);
+      template<class InputSequence> Obj<supportSequence> nJoin(const Obj<InputSequence>& pp, const int& n);
+      template<class InputSequence> Obj<supportSequence> nJoin(const Obj<InputSequence>& pp, const int& n, const Color& color);
       // Manipulation
-      void                       addArrow(const Data& p, const Data& q) {
-        this->arrows.insert(SieveArrow(p, q, Color()));
-        std::cout << "Added " << SieveArrow(p, q, Color());
+      void addArrow(const Data& p, const Data& q) {
+        this->addArrow(p, q, Color());
       };
-      void                       addArrow(const Data& p, const Data& q, const Color& color) {
+      void addArrow(const Data& p, const Data& q, const Color& color) {
         this->arrows.insert(SieveArrow(p, q, color));
         std::cout << "Added " << SieveArrow(p, q, color);
       };
-      void                       setColor(const Data& p, const Data& q, const Color& color);
       template<class InputSequence> void addCone(const Obj<InputSequence >& points, const Data& p) {
-        std::cout << "Adding a cone " << std::endl;
-        for(typename InputSequence::iterator iter = points->begin(); iter != points->end(); ++iter) {
-          std::cout << "Adding arrow from " << *iter << " to " << p << std::endl;
-          this->addArrow(*iter, p);
-        }
+        this->addCone(points, p, Color());
       };
       template<class InputSequence> void addCone(const Obj<InputSequence >& points, const Data& p, const Color& color){
         std::cout << "Adding a cone " << std::endl;
@@ -277,8 +192,23 @@ namespace ALE {
           this->addArrow(*iter, p, color);
         }
       };
-      void                       addSupport(const Data& p,const Obj<const_sequence<Data> >& points);
-      void                       add(const Obj<Sieve<Data,Color> >& sieve);
+      template<class InputSequence> void addSupport(const Data& p, const Obj<InputSequence >& points) {
+        this->addSupport(p, points, Color());
+      };
+      template<class InputSequence> void addSupport(const Data& p, const Obj<InputSequence >& points, const Color& color) {
+        std::cout << "Adding a support " << std::endl;
+        for(typename InputSequence::iterator iter = points->begin(); iter != points->end(); ++iter) {
+          std::cout << "Adding arrow from " << p << " to " << *iter << std::endl;
+          this->addArrow(p, *iter, color);
+        }
+      };
+      void add(const Obj<Sieve<Data,Color> >& sieve) {
+        const typename ::boost::multi_index::index<ArrowSet,target>::type& cones = ::boost::multi_index::get<target>(sieve.arrows);
+
+        for(::boost::multi_index::index<ArrowSet,target>::type::iterator iter = cones.begin(); iter != cones.end(); ++iter) {
+          this->addArrow(*iter);
+        }
+      };
       // Parallelism
       Obj<std::map<Point, Sieve<Data,Color> > > completion(const Sieve<Data,Color>& base);
       // These methods are meaningful only for acyclic sieves
@@ -286,11 +216,11 @@ namespace ALE {
       int height(const Data& p);
       int diameter(const Data& p);
       int diameter();
-      Obj<const_sequence<Data> > depthStratum(const int& depth);
-      Obj<const_sequence<Data> > heightStratum(const int& height);
-      void                       setStratification(bool on);
-      bool                       getStratification();
-      void                       stratify();
+      Obj<coneSequence> depthStratum(const int& depth);
+      Obj<coneSequence> heightStratum(const int& height);
+      void              setStratification(bool on);
+      bool              getStratification();
+      void              stratify();
     };
 
     //
@@ -299,8 +229,8 @@ namespace ALE {
     //
     template <typename Data, typename Value>
     class CoSieve {
-      const Value *restrict(const Data& support, const const_sequence<Data>& chain);
-      void         assemble(const Data& support, const const_sequence<Data>& chain, const Value values[]);
+      template<class InputSequence> const Value *restrict(const Data& support, const Obj<InputSequence>& chain);
+      template<class InputSequence> void         assemble(const Data& support, const Obj<InputSequence>& chain, const Value values[]);
 
       // \rho
       //     This needs some sort of policy argument
@@ -308,10 +238,10 @@ namespace ALE {
 
       // Refine the support chain
       void refine();
-      void refine(const const_sequence<Data>& chain);
+      template<class InputSequence> void refine(const Obj<InputSequence>& chain);
       // Coarsen the support chain
       void coarsen();
-      void coarsen(const const_sequence<Data>& chain);
+      template<class InputSequence> void coarsen(const Obj<InputSequence>& chain);
     };
   } // namespace def
 
