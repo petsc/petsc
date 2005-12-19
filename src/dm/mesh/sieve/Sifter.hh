@@ -148,15 +148,17 @@ namespace ALE {
       };
 
       class supportSequence {
-        const typename ::boost::multi_index::index<ArrowSet,source>::type& supportIndex;
+        const typename ::boost::multi_index::index<ArrowSet,sourceColor>::type& supportIndex;
         const Data key;
+        const Color color;
+        const bool useColor;
       public:
         class iterator {
         public:
-          typename boost::multi_index::index<ArrowSet,source>::type::iterator arrowIter;
+          typename boost::multi_index::index<ArrowSet,sourceColor>::type::iterator arrowIter;
 
-          iterator(const typename boost::multi_index::index<ArrowSet,source>::type::iterator& iter) {
-            this->arrowIter = typename boost::multi_index::index<ArrowSet,source>::type::iterator(iter);
+          iterator(const typename boost::multi_index::index<ArrowSet,sourceColor>::type::iterator& iter) {
+            this->arrowIter = typename boost::multi_index::index<ArrowSet,sourceColor>::type::iterator(iter);
           };
           virtual ~iterator() {};
           //
@@ -167,11 +169,30 @@ namespace ALE {
           virtual const Data& operator*() const {return this->arrowIter->target;};
         };
 
-        supportSequence(const typename ::boost::multi_index::index<ArrowSet,source>::type& support, const Point& p) : supportIndex(support), key(p) {};
+        supportSequence(const typename ::boost::multi_index::index<ArrowSet,sourceColor>::type& support, const Point& p) : supportIndex(support), key(p), color(Color()), useColor(0) {};
+        supportSequence(const typename ::boost::multi_index::index<ArrowSet,sourceColor>::type& support, const Point& p, const Color& c) : supportIndex(support), key(p), color(c), useColor(1) {};
         virtual ~supportSequence() {};
-        virtual iterator    begin() {return iterator(this->supportIndex.lower_bound(key));};
-        virtual iterator    end()   {return iterator(this->supportIndex.upper_bound(key));};
-        virtual std::size_t size()  {return this->supportIndex.count(key);};
+        virtual iterator    begin() {
+          if (useColor) {
+            return iterator(this->coneIndex.lower_bound(::boost::make_tuple(key,color)));
+          } else {
+            return iterator(this->coneIndex.lower_bound(::boost::make_tuple(key)));
+          }
+        };
+        virtual iterator    end()   {
+          if (useColor) {
+            return iterator(this->coneIndex.upper_bound(::boost::make_tuple(key,color)));
+          } else {
+            return iterator(this->coneIndex.upper_bound(::boost::make_tuple(key)));
+          }
+        };
+        virtual std::size_t size()  {
+          if (useColor) {
+            return this->coneIndex.count(::boost::make_tuple(key,color));
+          } else {
+            return this->coneIndex.count(::boost::make_tuple(key));
+          }
+        };
       };
 
       Sieve() {};
@@ -196,12 +217,17 @@ namespace ALE {
       template<class InputSequence> Obj<coneSequence> nCone(const Obj<InputSequence>& p, const int& n);
       template<class InputSequence> Obj<coneSequence> nCone(const Obj<InputSequence>& p, const int& n, const Color& color);
       Obj<supportSequence> support(const Point& p) {
-        return supportSequence(::boost::multi_index::get<source>(this->arrows), p);
+        return supportSequence(::boost::multi_index::get<sourceColor>(this->arrows), p);
       };
       template<class InputSequence> Obj<supportSequence> support(const Obj<InputSequence>& points) {
-        return supportSequence(::boost::multi_index::get<source>(this->arrows), *points->begin());
+        return supportSequence(::boost::multi_index::get<sourceColor>(this->arrows), *points->begin());
       };
-      template<class InputSequence> Obj<supportSequence> support(const Obj<InputSequence>& p, const Color& color);
+      Obj<supportSequence> support(const Point& p, const Color& color) {
+        return supportSequence(::boost::multi_index::get<sourceColor>(this->arrows), p, color);
+      };
+      template<class InputSequence> Obj<supportSequence> support(const Obj<InputSequence>& points, const Color& color) {
+        return supportSequence(::boost::multi_index::get<sourceColor>(this->arrows), *points->begin(), color);
+      };
       template<class InputSequence> Obj<supportSequence> nSupport(const Obj<InputSequence>& p, const int& n);
       template<class InputSequence> Obj<supportSequence> nSupport(const Obj<InputSequence>& p, const int& n, const Color& color);
       // Iterated versions
