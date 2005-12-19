@@ -133,8 +133,8 @@ namespace ALE {
           virtual const Data& operator*() const {return this->arrowIter->source;};
         };
 
-        coneSequence(const typename ::boost::multi_index::index<ArrowSet,target>::type& support, const Point& p) : supportIndex(support), key(p) {};
-        virtual ~coneSequence() {};
+        supportSequence(const typename ::boost::multi_index::index<ArrowSet,target>::type& support, const Point& p) : supportIndex(support), key(p) {};
+        virtual ~supportSequence() {};
         virtual iterator    begin() {return iterator(this->supportIndex.lower_bound(key));};
         virtual iterator    end()   {return iterator(this->supportIndex.upper_bound(key));};
         virtual std::size_t size()  {return this->supportIndex.count(key);};
@@ -205,7 +205,7 @@ namespace ALE {
       void add(const Obj<Sieve<Data,Color> >& sieve) {
         const typename ::boost::multi_index::index<ArrowSet,target>::type& cones = ::boost::multi_index::get<target>(sieve.arrows);
 
-        for(::boost::multi_index::index<ArrowSet,target>::type::iterator iter = cones.begin(); iter != cones.end(); ++iter) {
+        for(typename ::boost::multi_index::index<ArrowSet,target>::type::iterator iter = cones.begin(); iter != cones.end(); ++iter) {
           this->addArrow(*iter);
         }
       };

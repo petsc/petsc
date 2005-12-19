@@ -71,7 +71,7 @@ PetscErrorCode ConeTest()
     ALE::def::Point base(0, j);
     ALE::Obj<std::set<ALE::def::Point> > inCone = std::set<ALE::def::Point>();
 
-    for(int i = 1; i < 4; ++i) {
+    for(int i = 1; i < 5000; ++i) {
       inCone->insert(ALE::def::Point(0, i));
     }
     sieve->addCone(inCone, base);
