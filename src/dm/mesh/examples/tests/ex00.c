@@ -81,6 +81,27 @@ PetscErrorCode ConeTest()
       std::cout << *iter << std::endl;
     }
   }
+  sieve->clear();
+
+  for(int j = 0; j < 1; ++j) {
+    ALE::def::Point base(0, j);
+    ALE::Obj<std::set<ALE::def::Point> > inCone = std::set<ALE::def::Point>();
+
+    for(int c = 1; c < 3; ++c) {
+      for(int i = 1; i < 4; ++i) {
+        inCone->insert(ALE::def::Point(0, i));
+      }
+      sieve->addCone(inCone, base, c);
+      inCone->clear();
+    }
+
+    for(int c = 1; c < 3; ++c) {
+      ALE::Obj<ALE::def::Sieve<ALE::def::Point,int>::coneSequence> outCone = sieve->cone(base, c);
+      for(ALE::def::Sieve<ALE::def::Point,int>::coneSequence::iterator iter = outCone->begin(); iter != outCone->end(); ++iter) {
+        std::cout << "Color " << c << ": " << *iter << std::endl;
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 

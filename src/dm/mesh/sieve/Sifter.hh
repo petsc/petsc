@@ -4,6 +4,7 @@
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/composite_key.hpp>
 #include <iostream>
 
 // ALE extensions
@@ -70,16 +71,28 @@ namespace ALE {
       struct source{};
       struct target{};
       struct color{};
+      struct sourceColor{};
+      struct targetColor{};
       typedef Arrow<Color> SieveArrow;
       typedef ::boost::multi_index::multi_index_container<
         SieveArrow,
         ::boost::multi_index::indexed_by<
           ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<source>,  BOOST_MULTI_INDEX_MEMBER(SieveArrow,Point,source)>,
+            ::boost::multi_index::tag<source>, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Point,source)>,
           ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<target>,  BOOST_MULTI_INDEX_MEMBER(SieveArrow,Point,target)>,
+            ::boost::multi_index::tag<target>, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Point,target)>,
           ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<color>,  BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>
+            ::boost::multi_index::tag<color>,  BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>,
+          ::boost::multi_index::ordered_non_unique<
+            ::boost::multi_index::tag<sourceColor>,
+            ::boost::multi_index::composite_key<
+              SieveArrow, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Point,source), BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>
+          >,
+          ::boost::multi_index::ordered_non_unique<
+            ::boost::multi_index::tag<targetColor>,
+            ::boost::multi_index::composite_key<
+              SieveArrow, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Point,target), BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>
+          >
         >
       > ArrowSet;
       //
@@ -87,15 +100,17 @@ namespace ALE {
       std::set<Color> colors;
     public:
       class coneSequence {
-        const typename ::boost::multi_index::index<ArrowSet,target>::type& coneIndex;
+        const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& coneIndex;
         const Data key;
+        const Color color;
+        const bool useColor;
       public:
         class iterator {
         public:
-          typename boost::multi_index::index<ArrowSet,target>::type::iterator arrowIter;
+          typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator arrowIter;
 
-          iterator(const typename boost::multi_index::index<ArrowSet,target>::type::iterator& iter) {
-            this->arrowIter = typename boost::multi_index::index<ArrowSet,target>::type::iterator(iter);
+          iterator(const typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator& iter) {
+            this->arrowIter = typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator(iter);
           };
           virtual ~iterator() {};
           //
@@ -106,23 +121,42 @@ namespace ALE {
           virtual const Data& operator*() const {return this->arrowIter->source;};
         };
 
-        coneSequence(const typename ::boost::multi_index::index<ArrowSet,target>::type& cone, const Point& p) : coneIndex(cone), key(p) {};
+        coneSequence(const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const Point& p) : coneIndex(cone), key(p), color(Color()), useColor(0) {};
+        coneSequence(const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const Point& p, const Color& c) : coneIndex(cone), key(p), color(c), useColor(1) {};
         virtual ~coneSequence() {};
-        virtual iterator    begin() {return iterator(this->coneIndex.lower_bound(key));};
-        virtual iterator    end()   {return iterator(this->coneIndex.upper_bound(key));};
-        virtual std::size_t size()  {return this->coneIndex.count(key);};
+        virtual iterator    begin() {
+          if (useColor) {
+            return iterator(this->coneIndex.lower_bound(::boost::make_tuple(key,color)));
+          } else {
+            return iterator(this->coneIndex.lower_bound(::boost::make_tuple(key)));
+          }
+        };
+        virtual iterator    end()   {
+          if (useColor) {
+            return iterator(this->coneIndex.upper_bound(::boost::make_tuple(key,color)));
+          } else {
+            return iterator(this->coneIndex.upper_bound(::boost::make_tuple(key)));
+          }
+        };
+        virtual std::size_t size()  {
+          if (useColor) {
+            return this->coneIndex.count(::boost::make_tuple(key,color));
+          } else {
+            return this->coneIndex.count(::boost::make_tuple(key));
+          }
+        };
       };
 
       class supportSequence {
-        const typename ::boost::multi_index::index<ArrowSet,target>::type& supportIndex;
+        const typename ::boost::multi_index::index<ArrowSet,source>::type& supportIndex;
         const Data key;
       public:
         class iterator {
         public:
-          typename boost::multi_index::index<ArrowSet,target>::type::iterator arrowIter;
+          typename boost::multi_index::index<ArrowSet,source>::type::iterator arrowIter;
 
-          iterator(const typename boost::multi_index::index<ArrowSet,target>::type::iterator& iter) {
-            this->arrowIter = typename boost::multi_index::index<ArrowSet,target>::type::iterator(iter);
+          iterator(const typename boost::multi_index::index<ArrowSet,source>::type::iterator& iter) {
+            this->arrowIter = typename boost::multi_index::index<ArrowSet,source>::type::iterator(iter);
           };
           virtual ~iterator() {};
           //
@@ -130,10 +164,10 @@ namespace ALE {
           virtual iterator    operator++(int n) {iterator tmp(this->arrowIter); ++this->arrowIter; return tmp;};
           virtual bool        operator==(const iterator& itor) const {return this->arrowIter == itor.arrowIter;};
           virtual bool        operator!=(const iterator& itor) const {return this->arrowIter != itor.arrowIter;};
-          virtual const Data& operator*() const {return this->arrowIter->source;};
+          virtual const Data& operator*() const {return this->arrowIter->target;};
         };
 
-        supportSequence(const typename ::boost::multi_index::index<ArrowSet,target>::type& support, const Point& p) : supportIndex(support), key(p) {};
+        supportSequence(const typename ::boost::multi_index::index<ArrowSet,source>::type& support, const Point& p) : supportIndex(support), key(p) {};
         virtual ~supportSequence() {};
         virtual iterator    begin() {return iterator(this->supportIndex.lower_bound(key));};
         virtual iterator    end()   {return iterator(this->supportIndex.upper_bound(key));};
@@ -142,17 +176,31 @@ namespace ALE {
 
       Sieve() {};
       // The basic Sieve interface
+      void clear() {
+        this->arrows.clear();
+      };
       Obj<coneSequence> cone(const Point& p) {
-        return coneSequence(::boost::multi_index::get<target>(this->arrows), p);
+        return coneSequence(::boost::multi_index::get<targetColor>(this->arrows), p);
       }
       template<class InputSequence> Obj<coneSequence> cone(const Obj<InputSequence>& points) {
-        //FIX: return coneSequence(this->arrows.get<2>(), p);
-        return coneSequence(::boost::multi_index::get<target>(this->arrows), *points->begin());
+        //FIX: for more than one point
+        return coneSequence(::boost::multi_index::get<targetColor>(this->arrows), *points->begin());
       };
-      template<class InputSequence> Obj<coneSequence> cone(const Obj<InputSequence>& p, const Color& color);
+      Obj<coneSequence> cone(const Point& p, const Color& color) {
+        return coneSequence(::boost::multi_index::get<targetColor>(this->arrows), p, color);
+      }
+      template<class InputSequence> Obj<coneSequence> cone(const Obj<InputSequence>& points, const Color& color) {
+        //FIX: for more than one point
+        return coneSequence(::boost::multi_index::get<targetColor>(this->arrows), *points->begin(), color);
+      };
       template<class InputSequence> Obj<coneSequence> nCone(const Obj<InputSequence>& p, const int& n);
       template<class InputSequence> Obj<coneSequence> nCone(const Obj<InputSequence>& p, const int& n, const Color& color);
-      template<class InputSequence> Obj<supportSequence> support(const Obj<InputSequence>& p);
+      Obj<supportSequence> support(const Point& p) {
+        return supportSequence(::boost::multi_index::get<source>(this->arrows), p);
+      };
+      template<class InputSequence> Obj<supportSequence> support(const Obj<InputSequence>& points) {
+        return supportSequence(::boost::multi_index::get<source>(this->arrows), *points->begin());
+      };
       template<class InputSequence> Obj<supportSequence> support(const Obj<InputSequence>& p, const Color& color);
       template<class InputSequence> Obj<supportSequence> nSupport(const Obj<InputSequence>& p, const int& n);
       template<class InputSequence> Obj<supportSequence> nSupport(const Obj<InputSequence>& p, const int& n, const Color& color);
