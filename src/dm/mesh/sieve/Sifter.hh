@@ -44,6 +44,7 @@ namespace ALE {
         return os;
       };
     };
+    typedef std::set<Point> PointSet;
 
     template <typename Color>
     struct Arrow {
@@ -99,6 +100,37 @@ namespace ALE {
       ArrowSet        arrows;
       std::set<Color> colors;
     public:
+      class baseSequence {
+        const typename ::boost::multi_index::index<ArrowSet,target>::type& baseIndex;
+      public:
+        class iterator {
+        public:
+          typedef std::input_iterator_tag iterator_category;
+          typedef Data  value_type;
+          typedef int   difference_type;
+          typedef Data* pointer;
+          typedef Data& reference;
+          typename boost::multi_index::index<ArrowSet,target>::type::iterator arrowIter;
+
+          iterator(const typename boost::multi_index::index<ArrowSet,target>::type::iterator& iter) {
+            this->arrowIter = typename boost::multi_index::index<ArrowSet,target>::type::iterator(iter);
+          };
+          virtual ~iterator() {};
+          //
+          virtual iterator    operator++() {++this->arrowIter; return *this;};
+          virtual iterator    operator++(int n) {iterator tmp(this->arrowIter); ++this->arrowIter; return tmp;};
+          virtual bool        operator==(const iterator& itor) const {return this->arrowIter == itor.arrowIter;};
+          virtual bool        operator!=(const iterator& itor) const {return this->arrowIter != itor.arrowIter;};
+          virtual const Data& operator*() const {return this->arrowIter->target;};
+        };
+
+        baseSequence(const typename ::boost::multi_index::index<ArrowSet,target>::type& base) : baseIndex(base) {};
+        virtual ~baseSequence() {};
+        virtual iterator    begin() {return iterator(this->baseIndex.begin());};
+        virtual iterator    end()   {return iterator(this->baseIndex.end());};
+        virtual std::size_t size()  {return this->baseIndex.size();};
+      };
+
       class coneSequence {
         const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& coneIndex;
         const Data key;
@@ -203,33 +235,81 @@ namespace ALE {
       Obj<coneSequence> cone(const Point& p) {
         return coneSequence(::boost::multi_index::get<targetColor>(this->arrows), p);
       }
-      template<class InputSequence> Obj<coneSequence> cone(const Obj<InputSequence>& points) {
-        //FIX: for more than one point
-        return coneSequence(::boost::multi_index::get<targetColor>(this->arrows), *points->begin());
+      template<class InputSequence> Obj<PointSet> cone(const Obj<InputSequence>& points) {
+        return this->nCone(points, 1);
       };
       Obj<coneSequence> cone(const Point& p, const Color& color) {
         return coneSequence(::boost::multi_index::get<targetColor>(this->arrows), p, color);
       }
-      template<class InputSequence> Obj<coneSequence> cone(const Obj<InputSequence>& points, const Color& color) {
-        //FIX: for more than one point
-        return coneSequence(::boost::multi_index::get<targetColor>(this->arrows), *points->begin(), color);
+      template<class InputSequence> Obj<PointSet> cone(const Obj<InputSequence>& points, const Color& color) {
+        return this->nCone(points, 1, color);
       };
-      template<class InputSequence> Obj<coneSequence> nCone(const Obj<InputSequence>& p, const int& n);
-      template<class InputSequence> Obj<coneSequence> nCone(const Obj<InputSequence>& p, const int& n, const Color& color);
+      template<class InputSequence> Obj<PointSet> nCone(const Obj<InputSequence>& points, const int& n) {
+        return this->nCone(points, n, Color(), false);
+      };
+      template<class InputSequence> Obj<PointSet> nCone(const Obj<InputSequence>& points, const int& n, const Color& color, bool useColor = true) {
+        Obj<PointSet> cone = PointSet();
+        Obj<PointSet> base = PointSet();
+
+        cone->insert(points->begin(), points->end());
+        for(int i = 0; i < n; ++i) {
+          Obj<PointSet> tmp = cone; cone = base; base = tmp;
+
+          cone->clear();
+          for(PointSet::iterator b_itor = base->begin(); b_itor != base->end(); ++b_itor) {
+            Obj<coneSequence> pCone;
+
+            if (useColor) {
+              pCone = this->cone(*b_itor, color);
+            } else {
+              pCone = this->cone(*b_itor);
+            }
+            for(typename coneSequence::iterator pCone_itor = pCone->begin(); pCone_itor != pCone->end(); ++pCone_itor) {
+              cone->insert(*pCone_itor);
+            }
+          }
+        }
+        return cone;
+      };
       Obj<supportSequence> support(const Point& p) {
         return supportSequence(::boost::multi_index::get<sourceColor>(this->arrows), p);
       };
       template<class InputSequence> Obj<supportSequence> support(const Obj<InputSequence>& points) {
-        return supportSequence(::boost::multi_index::get<sourceColor>(this->arrows), *points->begin());
+        return this->nSupport(points, 1);
       };
       Obj<supportSequence> support(const Point& p, const Color& color) {
         return supportSequence(::boost::multi_index::get<sourceColor>(this->arrows), p, color);
       };
       template<class InputSequence> Obj<supportSequence> support(const Obj<InputSequence>& points, const Color& color) {
-        return supportSequence(::boost::multi_index::get<sourceColor>(this->arrows), *points->begin(), color);
+        return this->nSupport(points, 1, color);
       };
-      template<class InputSequence> Obj<supportSequence> nSupport(const Obj<InputSequence>& p, const int& n);
-      template<class InputSequence> Obj<supportSequence> nSupport(const Obj<InputSequence>& p, const int& n, const Color& color);
+      template<class InputSequence> Obj<supportSequence> nSupport(const Obj<InputSequence>& points, const int& n) {
+        return this->nSupport(points, n, Color(), false);
+      };
+      template<class InputSequence> Obj<supportSequence> nSupport(const Obj<InputSequence>& points, const int& n, const Color& color, bool useColor = true) {
+        Obj<PointSet> support = PointSet();
+        Obj<PointSet> cap = PointSet();
+
+        support->insert(points->begin(), points->end());
+        for(int i = 0; i < n; ++i) {
+          Obj<PointSet> tmp = support; support = cap; cap = tmp;
+
+          support->clear();
+          for(PointSet::iterator c_itor = cap->begin(); c_itor != cap->end(); ++c_itor) {
+            Obj<supportSequence> pSupport;
+
+            if (useColor) {
+              pSupport = this->support(*c_itor, color);
+            } else {
+              pSupport = this->support(*c_itor);
+            }
+            for(typename supportSequence::iterator pSupport_itor = pSupport->begin(); pSupport_itor != pSupport->end(); ++pSupport_itor) {
+              support->insert(*pSupport_itor);
+            }
+          }
+        }
+        return support;
+      };
       // Iterated versions
       template<class InputSequence> Obj<coneSequence> closure(const Obj<InputSequence>& p);
       template<class InputSequence> Obj<coneSequence> closure(const Obj<InputSequence>& p, const int& n, const Color& color);
@@ -285,6 +365,11 @@ namespace ALE {
       };
       // Parallelism
       Obj<std::map<Point, Sieve<Data,Color> > > completion(const Sieve<Data,Color>& base);
+      // Views
+      Obj<baseSequence> base() {
+        // Could probably use height 0
+        return baseSequence(::boost::multi_index::get<target>(this->arrows));
+      };
       // These methods are meaningful only for acyclic sieves
       int depth(const Data& p);
       int height(const Data& p);

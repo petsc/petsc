@@ -67,6 +67,7 @@ PetscErrorCode ConeTest()
   ALE::Obj<ALE::def::Sieve<ALE::def::Point,int> > sieve = ALE::def::Sieve<ALE::def::Point,int>();
 
   PetscFunctionBegin;
+  // Test cone of a point
   for(int j = 0; j < 1; ++j) {
     ALE::def::Point base(0, j);
     ALE::Obj<std::set<ALE::def::Point> > inCone = std::set<ALE::def::Point>();
@@ -82,7 +83,7 @@ PetscErrorCode ConeTest()
     }
   }
   sieve->clear();
-
+  // Test colored cone of a point
   for(int j = 0; j < 1; ++j) {
     ALE::def::Point base(0, j);
     ALE::Obj<std::set<ALE::def::Point> > inCone = std::set<ALE::def::Point>();
@@ -102,6 +103,23 @@ PetscErrorCode ConeTest()
       }
     }
   }
+  sieve->clear();
+  // Test cone of a point set
+  for(int j = 1; j < 6; ++j) {
+    ALE::def::Point base(0, j);
+    ALE::Obj<std::set<ALE::def::Point> > inCone = std::set<ALE::def::Point>();
+
+    for(int i = 1; i < 4; ++i) {
+      inCone->insert(ALE::def::Point(j, i));
+    }
+    sieve->addCone(inCone, base);
+  }
+
+  ALE::Obj<ALE::def::PointSet> outCone = sieve->cone(sieve->base());
+  for(ALE::def::PointSet::iterator iter = outCone->begin(); iter != outCone->end(); ++iter) {
+    std::cout << *iter << std::endl;
+  }
+  sieve->clear();
   PetscFunctionReturn(0);
 }
 
