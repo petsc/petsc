@@ -620,7 +620,7 @@ class Configure(config.base.Configure):
         # AIX does this for MPI and perhaps other things
         m = re.match(r'^-I.*$', arg)
         if m:
-          inc = arg
+          inc = arg.replace('-I','')
           self.logPrint('Found special include: '+inc, 4, 'compilers')
           fincs.append(inc)
           continue
