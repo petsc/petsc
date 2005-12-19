@@ -71,7 +71,8 @@ class Configure(PETSc.package.Package):
       self.framework.popLanguage()
     if self.mpi.include:
       # just use the first dir - and assume the subsequent one isn't necessary [relavant only on AIX?]
-      args.append('--with-MPI-include="'+self.mpi.include[0].replace('-I','')+'"')
+      print 'using: ' + '--with-MPI-include="'+self.mpi.include[0]+'"'
+      args.append('--with-MPI-include="'+self.mpi.include[0]+'"')
     libdirs = []
     for l in self.mpi.lib:
       ll = os.path.dirname(l)

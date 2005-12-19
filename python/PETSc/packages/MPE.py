@@ -35,10 +35,8 @@ class Configure(PETSc.package.Package):
     self.framework.popLanguage()
 
     args.append('--disable-f77')
-
-    if self.mpi.include and not self.mpi.include == ['']:
-      args.append('MPI_INC="-I'+self.mpi.include[0]+'"')
-
+    if self.mpi.include:
+      args.append('MPI_INC="'+self.headers.toString(self.mpi.include)+'"')
     if self.mpi.lib:
       libdir = os.path.dirname(self.mpi.lib[0])
       libs = []

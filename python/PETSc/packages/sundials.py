@@ -56,7 +56,7 @@ class Configure(PETSc.package.Package):
         args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+'"')
         self.framework.popLanguage()
 
-      if self.mpi.include and not self.mpi.include == ['']:
+      if self.mpi.include:
         args.append('--with-mpi-incdir="'+self.mpi.include[0]+'"')
       else: 
         args.append('--with-mpi-incdir="/usr/include"')  # dummy case

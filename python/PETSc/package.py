@@ -269,8 +269,10 @@ class Package(config.base.Configure):
       libs += self.libraries.math
       
     for location, dir, lib, incl in self.generateGuesses():
-      if not isinstance(lib, list): lib = [lib]
-      if not isinstance(incl, list): incl = [incl]
+      if lib == '': lib = []
+      elif not isinstance(lib, list): lib = [lib]
+      if incl == '': incl = []
+      elif not isinstance(incl, list): incl = [incl]
       incl += self.compilers.fincs
       self.framework.log.write('Checking for library in '+location+': '+str(lib)+'\n')
       if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran}):
