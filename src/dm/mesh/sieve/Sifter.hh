@@ -264,9 +264,7 @@ namespace ALE {
             } else {
               pCone = this->cone(*b_itor);
             }
-            for(typename coneSequence::iterator pCone_itor = pCone->begin(); pCone_itor != pCone->end(); ++pCone_itor) {
-              cone->insert(*pCone_itor);
-            }
+            cone->insert(pCone->begin(), pCone->end());
           }
         }
         return cone;
@@ -303,22 +301,120 @@ namespace ALE {
             } else {
               pSupport = this->support(*c_itor);
             }
-            for(typename supportSequence::iterator pSupport_itor = pSupport->begin(); pSupport_itor != pSupport->end(); ++pSupport_itor) {
-              support->insert(*pSupport_itor);
-            }
+            support->insert(pSupport->begin(), pSupport->end());
           }
         }
         return support;
       };
       // Iterated versions
-      template<class InputSequence> Obj<coneSequence> closure(const Obj<InputSequence>& p);
-      template<class InputSequence> Obj<coneSequence> closure(const Obj<InputSequence>& p, const int& n, const Color& color);
-      template<class InputSequence> Obj<coneSequence> nClosure(const Obj<InputSequence>& p, const int& n);
-      template<class InputSequence> Obj<coneSequence> nClosure(const Obj<InputSequence>& p, const int& n, const Color& color);
-      template<class InputSequence> Obj<supportSequence> star(const Obj<InputSequence>& p);
-      template<class InputSequence> Obj<supportSequence> star(const Obj<InputSequence>& p, const int& n, const Color& color);
-      template<class InputSequence> Obj<supportSequence> nStar(const Obj<InputSequence>& p, const int& n);
-      template<class InputSequence> Obj<supportSequence> nStar(const Obj<InputSequence>& p, const int& n, const Color& color);
+      Obj<PointSet> closure(const Point& p) {
+        return nClosure(p, this->depth());
+      };
+      Obj<PointSet> closure(const Point& p, const Color& color) {
+        return nClosure(p, this->depth(), color);
+      };
+      template<class InputSequence> Obj<PointSet> closure(const Obj<InputSequence>& points) {
+        return nClosure(points, this->depth());
+      };
+      template<class InputSequence> Obj<PointSet> closure(const Obj<InputSequence>& points, const Color& color) {
+        return nClosure(points, this->depth(), color);
+      };
+      Obj<PointSet> nClosure(const Point& p, const int& n) {
+        return this->nClosure(p, n, Color(), false);
+      };
+      Obj<PointSet> nClosure(const Point& p, const int& n, const Color& color, bool useColor = true) {
+        Obj<PointSet> cone = PointSet();
+
+        cone->insert(p);
+        return this->__nClosure(cone, n, color, useColor);
+      };
+      template<class InputSequence> Obj<PointSet> nClosure(const Obj<InputSequence>& points, const int& n) {
+        return this->nClosure(points, n, Color(), false);
+      };
+      template<class InputSequence> Obj<PointSet> nClosure(const Obj<InputSequence>& points, const int& n, const Color& color, bool useColor = true) {
+        Obj<PointSet> cone = PointSet();
+
+        cone->insert(points->begin(), points->end());
+        return this->__nClosure(cone, n, color, useColor);
+      }
+    private:
+      template<class InputSequence> Obj<PointSet> __nClosure(Obj<InputSequence>& cone, const int& n, const Color& color, bool useColor) {
+        Obj<PointSet> base = PointSet();
+        Obj<PointSet> closure = PointSet();
+
+        for(int i = 0; i < n; ++i) {
+          Obj<PointSet> tmp = cone; cone = base; base = tmp;
+
+          cone->clear();
+          for(PointSet::iterator b_itor = base->begin(); b_itor != base->end(); ++b_itor) {
+            Obj<coneSequence> pCone;
+
+            if (useColor) {
+              pCone = this->cone(*b_itor, color);
+            } else {
+              pCone = this->cone(*b_itor);
+            }
+            cone->insert(pCone->begin(), pCone->end());
+            closure->insert(pCone->begin(), pCone->end());
+          }
+        }
+        return closure;
+      };
+    public:
+      Obj<PointSet> star(const Point& p) {
+        return nStar(p, this->height());
+      };
+      Obj<PointSet> star(const Point& p, const Color& color) {
+        return nStar(p, this->depth(), color);
+      };
+      template<class InputSequence> Obj<PointSet> star(const Obj<InputSequence>& points) {
+        return nStar(points, this->height());
+      };
+      template<class InputSequence> Obj<PointSet> star(const Obj<InputSequence>& points, const Color& color) {
+        return nStar(points, this->height(), color);
+      };
+      Obj<PointSet> nStar(const Point& p, const int& n) {
+        return this->nStar(p, n, Color(), false);
+      };
+      Obj<PointSet> nStar(const Point& p, const int& n, const Color& color, bool useColor = true) {
+        Obj<PointSet> support = PointSet();
+
+        support->insert(p);
+        return this->__nStar(support, n, color, useColor);
+      };
+      template<class InputSequence> Obj<PointSet> nStar(const Obj<InputSequence>& points, const int& n) {
+        return this->nStar(points, n, Color(), false);
+      };
+      template<class InputSequence> Obj<PointSet> nStar(const Obj<InputSequence>& points, const int& n, const Color& color, bool useColor = true) {
+        Obj<PointSet> support = PointSet();
+
+        support->insert(points->begin(), points->end());
+        return this->__nStar(cone, n, color, useColor);
+      };
+    private:
+      template<class InputSequence> Obj<PointSet> __nStar(Obj<InputSequence>& support, const int& n, const Color& color, bool useColor) {
+        Obj<PointSet> cap = PointSet();
+        Obj<PointSet> star = PointSet();
+
+        for(int i = 0; i < n; ++i) {
+          Obj<PointSet> tmp = support; support = base; base = tmp;
+
+          support->clear();
+          for(PointSet::iterator b_itor = base->begin(); b_itor != base->end(); ++b_itor) {
+            Obj<supportSequence> pSupport;
+
+            if (useColor) {
+              pSupport = this->support(*b_itor, color);
+            } else {
+              pSupport = this->support(*b_itor);
+            }
+            support->insert(pSupport->begin(), pSupport->end());
+            star->insert(pSupport->begin(), pSupport->end());
+          }
+        }
+        return star;
+      };
+    public:
       // Lattice methods
       template<class InputSequence> Obj<coneSequence> meet(const Obj<InputSequence>& pp);
       template<class InputSequence> Obj<coneSequence> meet(const Obj<InputSequence>& pp, const Color& color);
@@ -370,11 +466,13 @@ namespace ALE {
         // Could probably use height 0
         return baseSequence(::boost::multi_index::get<target>(this->arrows));
       };
-      // These methods are meaningful only for acyclic sieves
+      // Structural methods
+      int depth();
       int depth(const Data& p);
+      int height();
       int height(const Data& p);
-      int diameter(const Data& p);
       int diameter();
+      int diameter(const Data& p);
       Obj<coneSequence> depthStratum(const int& depth);
       Obj<coneSequence> heightStratum(const int& height);
       void              setStratification(bool on);
