@@ -79,26 +79,54 @@ namespace ALE {
         SieveArrow,
         ::boost::multi_index::indexed_by<
           ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<source>, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Point,source)>,
+            ::boost::multi_index::tag<source>, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Data,source)>,
           ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<target>, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Point,target)>,
+            ::boost::multi_index::tag<target>, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Data,target)>,
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<color>,  BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>,
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<sourceColor>,
             ::boost::multi_index::composite_key<
-              SieveArrow, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Point,source), BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>
+              SieveArrow, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Data,source), BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>
           >,
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<targetColor>,
             ::boost::multi_index::composite_key<
-              SieveArrow, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Point,target), BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>
+              SieveArrow, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Data,target), BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>
           >
         >
       > ArrowSet;
-      //
-      ArrowSet        arrows;
-      std::set<Color> colors;
+      ArrowSet arrows;
+
+      struct point {};
+      struct depth {};
+      struct height {};
+      struct StratumPoint {
+        Data  point;
+        Color color;
+        int   depth;
+        int   height;
+      };
+      typedef ::boost::multi_index::multi_index_container<
+        StratumPoint,
+        ::boost::multi_index::indexed_by<
+          ::boost::multi_index::ordered_unique<
+            ::boost::multi_index::tag<point>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,Data,point)>,
+          ::boost::multi_index::ordered_non_unique<
+            ::boost::multi_index::tag<color>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,Color,color)>,
+          ::boost::multi_index::ordered_non_unique<
+            ::boost::multi_index::tag<depth>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,int,depth)>,
+          ::boost::multi_index::ordered_non_unique<
+          ::boost::multi_index::tag<height>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,int,height)>
+        >
+      > StratumSet;
+      StratumSet strata;
+      bool       stratification; 
+      int        maxDepth;
+      int        maxHeight;
+      int        sieveDiameter;
+      std::set<Point> _roots;
+      std::set<Point> _leaves;
     public:
       class baseSequence {
         const typename ::boost::multi_index::index<ArrowSet,target>::type& baseIndex;
@@ -153,8 +181,8 @@ namespace ALE {
           virtual const Data& operator*() const {return this->arrowIter->source;};
         };
 
-        coneSequence(const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const Point& p) : coneIndex(cone), key(p), color(Color()), useColor(0) {};
-        coneSequence(const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const Point& p, const Color& c) : coneIndex(cone), key(p), color(c), useColor(1) {};
+        coneSequence(const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const Data& p) : coneIndex(cone), key(p), color(Color()), useColor(0) {};
+        coneSequence(const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const Data& p, const Color& c) : coneIndex(cone), key(p), color(c), useColor(1) {};
         virtual ~coneSequence() {};
         virtual iterator    begin() {
           if (useColor) {
@@ -201,8 +229,8 @@ namespace ALE {
           virtual const Data& operator*() const {return this->arrowIter->target;};
         };
 
-        supportSequence(const typename ::boost::multi_index::index<ArrowSet,sourceColor>::type& support, const Point& p) : supportIndex(support), key(p), color(Color()), useColor(0) {};
-        supportSequence(const typename ::boost::multi_index::index<ArrowSet,sourceColor>::type& support, const Point& p, const Color& c) : supportIndex(support), key(p), color(c), useColor(1) {};
+        supportSequence(const typename ::boost::multi_index::index<ArrowSet,sourceColor>::type& support, const Data& p) : supportIndex(support), key(p), color(Color()), useColor(0) {};
+        supportSequence(const typename ::boost::multi_index::index<ArrowSet,sourceColor>::type& support, const Data& p, const Color& c) : supportIndex(support), key(p), color(c), useColor(1) {};
         virtual ~supportSequence() {};
         virtual iterator    begin() {
           if (useColor) {
@@ -227,18 +255,82 @@ namespace ALE {
         };
       };
 
-      Sieve() {};
+      class depthSequence {
+        const typename ::boost::multi_index::index<StratumSet,depth>::type& depthIndex;
+        const int d;
+      public:
+        class iterator {
+        public:
+          typedef std::input_iterator_tag iterator_category;
+          typedef Data  value_type;
+          typedef int   difference_type;
+          typedef Data* pointer;
+          typedef Data& reference;
+          typename boost::multi_index::index<StratumSet,target>::type::iterator arrowIter;
+
+          iterator(const typename boost::multi_index::index<StratumSet,target>::type::iterator& iter) {
+            this->arrowIter = typename boost::multi_index::index<StratumSet,target>::type::iterator(iter);
+          };
+          virtual ~iterator() {};
+          //
+          virtual iterator    operator++() {++this->arrowIter; return *this;};
+          virtual iterator    operator++(int n) {iterator tmp(this->arrowIter); ++this->arrowIter; return tmp;};
+          virtual bool        operator==(const iterator& itor) const {return this->arrowIter == itor.arrowIter;};
+          virtual bool        operator!=(const iterator& itor) const {return this->arrowIter != itor.arrowIter;};
+          virtual const Data& operator*() const {return this->arrowIter->target;};
+        };
+
+        depthSequence(const typename ::boost::multi_index::index<StratumSet,target>::type& depth, const int d) : depthIndex(depth), d(d) {};
+        virtual ~depthSequence() {};
+        virtual iterator    begin() {return iterator(this->depthIndex.lower_bound(d));};
+        virtual iterator    end()   {return iterator(this->depthIndex.upper_bound(d));};
+        virtual std::size_t size()  {return this->depthIndex.count(d);};
+      };
+
+      class heightSequence {
+        const typename ::boost::multi_index::index<StratumSet,height>::type& heightIndex;
+        const int h;
+      public:
+        class iterator {
+        public:
+          typedef std::input_iterator_tag iterator_category;
+          typedef Data  value_type;
+          typedef int   difference_type;
+          typedef Data* pointer;
+          typedef Data& reference;
+          typename boost::multi_index::index<StratumSet,target>::type::iterator arrowIter;
+
+          iterator(const typename boost::multi_index::index<StratumSet,target>::type::iterator& iter) {
+            this->arrowIter = typename boost::multi_index::index<StratumSet,target>::type::iterator(iter);
+          };
+          virtual ~iterator() {};
+          //
+          virtual iterator    operator++() {++this->arrowIter; return *this;};
+          virtual iterator    operator++(int n) {iterator tmp(this->arrowIter); ++this->arrowIter; return tmp;};
+          virtual bool        operator==(const iterator& itor) const {return this->arrowIter == itor.arrowIter;};
+          virtual bool        operator!=(const iterator& itor) const {return this->arrowIter != itor.arrowIter;};
+          virtual const Data& operator*() const {return this->arrowIter->target;};
+        };
+
+        heightSequence(const typename ::boost::multi_index::index<StratumSet,target>::type& height, const int h) : heightIndex(height), h(h) {};
+        virtual ~heightSequence() {};
+        virtual iterator    begin() {return iterator(this->heightIndex.lower_bound(h));};
+        virtual iterator    end()   {return iterator(this->heightIndex.upper_bound(h));};
+        virtual std::size_t size()  {return this->heightIndex.count(h);};
+      };
+
+      Sieve() : stratification(false), maxDepth(-1), maxHeight(-1), sieveDiameter(-1) {};
       // The basic Sieve interface
       void clear() {
         this->arrows.clear();
       };
-      Obj<coneSequence> cone(const Point& p) {
+      Obj<coneSequence> cone(const Data& p) {
         return coneSequence(::boost::multi_index::get<targetColor>(this->arrows), p);
       }
       template<class InputSequence> Obj<PointSet> cone(const Obj<InputSequence>& points) {
         return this->nCone(points, 1);
       };
-      Obj<coneSequence> cone(const Point& p, const Color& color) {
+      Obj<coneSequence> cone(const Data& p, const Color& color) {
         return coneSequence(::boost::multi_index::get<targetColor>(this->arrows), p, color);
       }
       template<class InputSequence> Obj<PointSet> cone(const Obj<InputSequence>& points, const Color& color) {
@@ -269,13 +361,13 @@ namespace ALE {
         }
         return cone;
       };
-      Obj<supportSequence> support(const Point& p) {
+      Obj<supportSequence> support(const Data& p) {
         return supportSequence(::boost::multi_index::get<sourceColor>(this->arrows), p);
       };
       template<class InputSequence> Obj<supportSequence> support(const Obj<InputSequence>& points) {
         return this->nSupport(points, 1);
       };
-      Obj<supportSequence> support(const Point& p, const Color& color) {
+      Obj<supportSequence> support(const Data& p, const Color& color) {
         return supportSequence(::boost::multi_index::get<sourceColor>(this->arrows), p, color);
       };
       template<class InputSequence> Obj<supportSequence> support(const Obj<InputSequence>& points, const Color& color) {
@@ -307,10 +399,10 @@ namespace ALE {
         return support;
       };
       // Iterated versions
-      Obj<PointSet> closure(const Point& p) {
+      Obj<PointSet> closure(const Data& p) {
         return nClosure(p, this->depth());
       };
-      Obj<PointSet> closure(const Point& p, const Color& color) {
+      Obj<PointSet> closure(const Data& p, const Color& color) {
         return nClosure(p, this->depth(), color);
       };
       template<class InputSequence> Obj<PointSet> closure(const Obj<InputSequence>& points) {
@@ -319,10 +411,10 @@ namespace ALE {
       template<class InputSequence> Obj<PointSet> closure(const Obj<InputSequence>& points, const Color& color) {
         return nClosure(points, this->depth(), color);
       };
-      Obj<PointSet> nClosure(const Point& p, const int& n) {
+      Obj<PointSet> nClosure(const Data& p, const int& n) {
         return this->nClosure(p, n, Color(), false);
       };
-      Obj<PointSet> nClosure(const Point& p, const int& n, const Color& color, bool useColor = true) {
+      Obj<PointSet> nClosure(const Data& p, const int& n, const Color& color, bool useColor = true) {
         Obj<PointSet> cone = PointSet();
 
         cone->insert(p);
@@ -361,10 +453,10 @@ namespace ALE {
         return closure;
       };
     public:
-      Obj<PointSet> star(const Point& p) {
+      Obj<PointSet> star(const Data& p) {
         return nStar(p, this->height());
       };
-      Obj<PointSet> star(const Point& p, const Color& color) {
+      Obj<PointSet> star(const Data& p, const Color& color) {
         return nStar(p, this->depth(), color);
       };
       template<class InputSequence> Obj<PointSet> star(const Obj<InputSequence>& points) {
@@ -373,10 +465,10 @@ namespace ALE {
       template<class InputSequence> Obj<PointSet> star(const Obj<InputSequence>& points, const Color& color) {
         return nStar(points, this->height(), color);
       };
-      Obj<PointSet> nStar(const Point& p, const int& n) {
+      Obj<PointSet> nStar(const Data& p, const int& n) {
         return this->nStar(p, n, Color(), false);
       };
-      Obj<PointSet> nStar(const Point& p, const int& n, const Color& color, bool useColor = true) {
+      Obj<PointSet> nStar(const Data& p, const int& n, const Color& color, bool useColor = true) {
         Obj<PointSet> support = PointSet();
 
         support->insert(p);
@@ -460,24 +552,102 @@ namespace ALE {
         }
       };
       // Parallelism
-      Obj<std::map<Point, Sieve<Data,Color> > > completion(const Sieve<Data,Color>& base);
+      Obj<std::map<Data, Sieve<Data,Color> > > completion(const Sieve<Data,Color>& base);
       // Views
       Obj<baseSequence> base() {
         // Could probably use height 0
         return baseSequence(::boost::multi_index::get<target>(this->arrows));
       };
       // Structural methods
-      int depth();
-      int depth(const Data& p);
-      int height();
-      int height(const Data& p);
-      int diameter();
-      int diameter(const Data& p);
-      Obj<coneSequence> depthStratum(const int& depth);
-      Obj<coneSequence> heightStratum(const int& height);
-      void              setStratification(bool on);
-      bool              getStratification();
-      void              stratify();
+      int depth() {return this->maxDepth;};
+      int depth(const Data& p) {
+        return ::boost::multi_index::get<point>(this->strata).find(p)->depth;
+      };
+      int height() {return this->maxHeight;};
+      int height(const Data& p) {
+        return ::boost::multi_index::get<point>(this->strata).find(p)->height;
+      };
+      int diameter() {
+        int globalDiameter;
+        int ierr = MPI_Allreduce(&this->sieveDiameter, &globalDiameter, 1, MPI_INT, MPI_MAX, this->comm);
+        CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allreduce"));
+        ALE_LOG_STAGE_END;
+        return globalDiameter;
+      };
+      int diameter(const Data& p) {
+        return this->depth(p) + this->height(p);
+      };
+      Obj<depthSequence> depthStratum(const int& d) {
+        return depthSequence(::boost::multi_index::get<depth>(this->strata), d);
+      };
+      Obj<heightSequence> heightStratum(const int& h) {
+        return heightSequence(::boost::multi_index::get<height>(this->strata), h);
+      };
+      void setStratification(bool doStratify) {this->stratification = doStratify;};
+      bool getStratification() {return this->stratification;};
+      void stratify() {
+        // FIX: We would like to avoid the copy here with cone() and support()
+        this->__computeClosureHeights(this->cone(this->_leaves));
+        this->__computeStarDepths(this->support(this->_roots));
+      };
+    private:
+      void __computeRootsAndLeaves() {
+        const typename ::boost::multi_index::index<ArrowSet,target>::type& cones = ::boost::multi_index::get<target>(this->arrows);
+        const typename ::boost::multi_index::index<ArrowSet,source>::type& supports = ::boost::multi_index::get<source>(this->arrows);
+
+        this->_roots.clear();
+        for(typename ::boost::multi_index::index<ArrowSet,source>::type::iterator s_iter = supports.begin(); s_iter != supports.end(); ++s_iter) {
+          if (cones.find(s_iter->source) == cones.end()) {
+            this->_roots.insert(s_iter->source);
+          }
+        }
+
+        this->_leavas.clear();
+        for(typename ::boost::multi_index::index<ArrowSet,target>::type::iterator c_iter = cones.begin(); c_iter != cones.end(); ++c_iter) {
+          if (supports.find(c_iter->target) == supports.end()) {
+            this->_leaves.insert(c_iter->target);
+          }
+        }
+      };
+
+      template<class InputSequence> void __computeClosureHeights(const Obj<InputSequence>& points) {
+        const typename ::boost::multi_index::index<StratumSet,point>::type& index = ::boost::multi_index::get<point>(this->strata);
+        Obj<PointSet> modifiedPoints = PointSet();
+
+        for(typename InputSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
+          // Compute the max height of the points in the support of p, and add 1
+          int h0 = this->height(*p_itor);
+          int h1 = this->height(this->support(*p_itor)) + 1;
+          if(h1 != h0) {
+            index->find(*p_itor)->height = h1;
+            modifiedPoints->insert(*p_itor);
+          }
+        }
+        // FIX: We would like to avoid the copy here with cone()
+        if(modifiedPoints->size() > 0) {
+          this->__computeClosureHeights(this->cone(modifiedPoints));
+        }
+      };
+
+      template<class InputSequence> void __computeStarDepths(const Obj<PointSet>& points) {
+        const typename ::boost::multi_index::index<StratumSet,point>::type& index = ::boost::multi_index::get<point>(this->strata);
+        Obj<PointSet> modifiedPoints = PointSet();
+
+        for(typename InputSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
+          // Compute the max depth of the points in the support of p, and add 1
+          int d0 = this->depth(*p_itor);
+          int d1 = this->maxDepth(this->cone(*p_itor)) + 1;
+          if(d1 != d0) {
+            index->find(*p_itor)->depth = d1;
+            modifiedPoints->insert(*p_itor);
+          }
+        }
+        // FIX: We would like to avoid the copy here with cone()
+        if(modifiedPoints->size() > 0) {
+          this->__computeStarDepths(this->support(modifiedPoints));
+        }
+      };
+    public:
     };
 
     //
