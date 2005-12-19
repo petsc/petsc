@@ -36,8 +36,12 @@ class Configure(PETSc.package.Package):
     g.write('LPORDDIR   = ../PORD/lib/\n')
     g.write('IPORD      = -I../PORD/include/\n')
     g.write('LPORD      = -L$(LPORDDIR) -lpord\n')
-    g.write('ORDERINGSF = -Dpord\n')
-    g.write('ORDERINGSC = $(ORDERINGSF)\n')
+    g.write('ORDERINGSC = -Dpord\n')
+    # assume AIX if fortranPreprocess=0
+    if self.compilers.fortranPreprocess:
+      g.write('ORDERINGSF = -Dpord\n')
+    else:
+      g.write('ORDERINGSF = -WF,-Dpord\n')
     g.write('LORDERINGS = $(LMETIS) $(LPORD) $(LSCOTCH)\n')
     g.write('IORDERINGS = $(IMETIS) $(IPORD) $(ISCOTCH)\n')
     g.write('RM = /bin/rm -f\n')
