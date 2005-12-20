@@ -3211,11 +3211,14 @@ prevent the zero pivot. A good choice for the \trl{damping} factor is 1.e-10.
 \label{sec_externalsol}
 
 PETSc interfaces to several external linear solvers (see Acknowledgments).
-To use these solvers, one needs to run config/configure.py with the additional options
-\trl{--download-packagename=1}
+To use these solvers, one needs to:
 
+\begin{enumerate}
+\item Run config/configure.py with the additional options \trl{--download-packagename=1}. 
+For eg: \trl{--download-superlu_dist=1}
 \item Build the PETSc libraries.
-\item Use the runtime option: \trl{-mat_type <mattype>} \trl{-ksp_type preonly} \trl{-pc_type <pctype>}.
+\item Use the runtime option: \trl{-mat_type <mattype>} \trl{-ksp_type preonly} \trl{-pc_type <pctype>}. 
+For eg: \trl{-mat_type superlu_dist} \trl{-ksp_type preonly} \trl{-pc_type lu}
 \end{enumerate}
 
 \begin{table}[H]

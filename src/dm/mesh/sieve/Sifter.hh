@@ -26,7 +26,7 @@ namespace ALE {
       int32_t prefix, index;
       // Constructors
       Point() : prefix(0), index(0){};
-      Point(const int32_t& p, const int32_t& i) : prefix(p), index(i){};
+      Point(int p, int i) : prefix(p), index(i){};
       Point(const Point& p) : prefix(p.prefix), index(p.index){};
       // Comparisons
       bool operator==(const Point& q) const {
@@ -94,18 +94,24 @@ namespace ALE {
             ::boost::multi_index::composite_key<
               SieveArrow, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Data,target), BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>
           >
-        >
+        >,
+        ALE_ALLOCATOR<SieveArrow>
       > ArrowSet;
       ArrowSet arrows;
 
-      struct point {};
-      struct depth {};
-      struct height {};
+      struct point{};
+      struct depthTag{};
+      struct heightTag{};
+      struct indegree{};
+      struct outdegree{};
       struct StratumPoint {
         Data  point;
-        Color color;
         int   depth;
         int   height;
+        int   indegree;
+        int   outdegree;
+
+        StratumPoint() : depth(-1), height(-1), indegree(0), outdegree(0) {};
       };
       typedef ::boost::multi_index::multi_index_container<
         StratumPoint,
@@ -113,23 +119,24 @@ namespace ALE {
           ::boost::multi_index::ordered_unique<
             ::boost::multi_index::tag<point>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,Data,point)>,
           ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<color>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,Color,color)>,
+            ::boost::multi_index::tag<depthTag>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,int,depth)>,
           ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<depth>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,int,depth)>,
+            ::boost::multi_index::tag<heightTag>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,int,height)>,
           ::boost::multi_index::ordered_non_unique<
-          ::boost::multi_index::tag<height>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,int,height)>
-        >
+            ::boost::multi_index::tag<indegree>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,int,indegree)>,
+          ::boost::multi_index::ordered_non_unique<
+            ::boost::multi_index::tag<outdegree>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,int,outdegree)>
+        >,
+        ALE_ALLOCATOR<StratumPoint>
       > StratumSet;
       StratumSet strata;
       bool       stratification; 
       int        maxDepth;
       int        maxHeight;
       int        sieveDiameter;
-      std::set<Point> _roots;
-      std::set<Point> _leaves;
     public:
       class baseSequence {
-        const typename ::boost::multi_index::index<ArrowSet,target>::type& baseIndex;
+        const typename ::boost::multi_index::index<StratumSet,indegree>::type& baseIndex;
       public:
         class iterator {
         public:
@@ -138,25 +145,87 @@ namespace ALE {
           typedef int   difference_type;
           typedef Data* pointer;
           typedef Data& reference;
-          typename boost::multi_index::index<ArrowSet,target>::type::iterator arrowIter;
+          typename boost::multi_index::index<StratumSet,indegree>::type::iterator pointIter;
 
-          iterator(const typename boost::multi_index::index<ArrowSet,target>::type::iterator& iter) {
-            this->arrowIter = typename boost::multi_index::index<ArrowSet,target>::type::iterator(iter);
+          iterator(const typename boost::multi_index::index<StratumSet,indegree>::type::iterator& iter) {
+            this->pointIter = typename boost::multi_index::index<StratumSet,indegree>::type::iterator(iter);
           };
           virtual ~iterator() {};
           //
-          virtual iterator    operator++() {++this->arrowIter; return *this;};
-          virtual iterator    operator++(int n) {iterator tmp(this->arrowIter); ++this->arrowIter; return tmp;};
-          virtual bool        operator==(const iterator& itor) const {return this->arrowIter == itor.arrowIter;};
-          virtual bool        operator!=(const iterator& itor) const {return this->arrowIter != itor.arrowIter;};
-          virtual const Data& operator*() const {return this->arrowIter->target;};
+          virtual iterator    operator++() {++this->pointIter; return *this;};
+          virtual iterator    operator++(int n) {iterator tmp(this->pointIter); ++this->pointIter; return tmp;};
+          virtual bool        operator==(const iterator& itor) const {return this->pointIter == itor.pointIter;};
+          virtual bool        operator!=(const iterator& itor) const {return this->pointIter != itor.pointIter;};
+          virtual const Data& operator*() const {return *this->pointIter;};
         };
 
-        baseSequence(const typename ::boost::multi_index::index<ArrowSet,target>::type& base) : baseIndex(base) {};
+        baseSequence(const typename ::boost::multi_index::index<StratumSet,indegree>::type& base) : baseIndex(base) {};
         virtual ~baseSequence() {};
-        virtual iterator    begin() {return iterator(this->baseIndex.begin());};
+        virtual iterator    begin() {return iterator(this->baseIndex.upper_bound(0));};
         virtual iterator    end()   {return iterator(this->baseIndex.end());};
-        virtual std::size_t size()  {return this->baseIndex.size();};
+        virtual std::size_t size()  {return -1;};
+      };
+
+      class rootSequence {
+        const typename ::boost::multi_index::index<StratumSet,indegree>::type& rootIndex;
+      public:
+        class iterator {
+        public:
+          typedef std::input_iterator_tag iterator_category;
+          typedef Data  value_type;
+          typedef int   difference_type;
+          typedef Data* pointer;
+          typedef Data& reference;
+          typename boost::multi_index::index<StratumSet,indegree>::type::iterator pointIter;
+
+          iterator(const typename boost::multi_index::index<StratumSet,indegree>::type::iterator& iter) {
+            this->pointIter = typename boost::multi_index::index<StratumSet,indegree>::type::iterator(iter);
+          };
+          virtual ~iterator() {};
+          //
+          virtual iterator    operator++() {++this->pointIter; return *this;};
+          virtual iterator    operator++(int n) {iterator tmp(this->pointIter); ++this->pointIter; return tmp;};
+          virtual bool        operator==(const iterator& itor) const {return this->pointIter == itor.pointIter;};
+          virtual bool        operator!=(const iterator& itor) const {return this->pointIter != itor.pointIter;};
+          virtual const Data& operator*() const {return *this->pointIter;};
+        };
+
+        rootSequence(const typename ::boost::multi_index::index<StratumSet,indegree>::type& root) : rootIndex(root) {};
+        virtual ~rootSequence() {};
+        virtual iterator    begin() {return iterator(this->rootIndex.lower_bound(0));};
+        virtual iterator    end()   {return iterator(this->rootIndex.upper_bound(0));};
+        virtual std::size_t size()  {return this->rootIndex.count(0);};
+      };
+
+      class leafSequence {
+        const typename ::boost::multi_index::index<StratumSet,outdegree>::type& leafIndex;
+      public:
+        class iterator {
+        public:
+          typedef std::input_iterator_tag iterator_category;
+          typedef Data  value_type;
+          typedef int   difference_type;
+          typedef Data* pointer;
+          typedef Data& reference;
+          typename boost::multi_index::index<StratumSet,outdegree>::type::iterator pointIter;
+
+          iterator(const typename boost::multi_index::index<StratumSet,outdegree>::type::iterator& iter) {
+            this->pointIter = typename boost::multi_index::index<StratumSet,outdegree>::type::iterator(iter);
+          };
+          virtual ~iterator() {};
+          //
+          virtual iterator    operator++() {++this->pointIter; return *this;};
+          virtual iterator    operator++(int n) {iterator tmp(this->pointIter); ++this->pointIter; return tmp;};
+          virtual bool        operator==(const iterator& itor) const {return this->pointIter == itor.pointIter;};
+          virtual bool        operator!=(const iterator& itor) const {return this->pointIter != itor.pointIter;};
+          virtual const Data& operator*() const {return *this->pointIter;};
+        };
+
+        leafSequence(const typename ::boost::multi_index::index<StratumSet,outdegree>::type& leaf) : leafIndex(leaf) {};
+        virtual ~leafSequence() {};
+        virtual iterator    begin() {return iterator(this->leafIndex.lower_bound(0));};
+        virtual iterator    end()   {return iterator(this->leafIndex.upper_bound(0));};
+        virtual std::size_t size()  {return this->leafIndex.count(0);};
       };
 
       class coneSequence {
@@ -234,29 +303,29 @@ namespace ALE {
         virtual ~supportSequence() {};
         virtual iterator    begin() {
           if (useColor) {
-            return iterator(this->coneIndex.lower_bound(::boost::make_tuple(key,color)));
+            return iterator(this->supportIndex.lower_bound(::boost::make_tuple(key,color)));
           } else {
-            return iterator(this->coneIndex.lower_bound(::boost::make_tuple(key)));
+            return iterator(this->supportIndex.lower_bound(::boost::make_tuple(key)));
           }
         };
         virtual iterator    end()   {
           if (useColor) {
-            return iterator(this->coneIndex.upper_bound(::boost::make_tuple(key,color)));
+            return iterator(this->supportIndex.upper_bound(::boost::make_tuple(key,color)));
           } else {
-            return iterator(this->coneIndex.upper_bound(::boost::make_tuple(key)));
+            return iterator(this->supportIndex.upper_bound(::boost::make_tuple(key)));
           }
         };
         virtual std::size_t size()  {
           if (useColor) {
-            return this->coneIndex.count(::boost::make_tuple(key,color));
+            return this->supportIndex.count(::boost::make_tuple(key,color));
           } else {
-            return this->coneIndex.count(::boost::make_tuple(key));
+            return this->supportIndex.count(::boost::make_tuple(key));
           }
         };
       };
 
       class depthSequence {
-        const typename ::boost::multi_index::index<StratumSet,depth>::type& depthIndex;
+        const typename ::boost::multi_index::index<StratumSet,depthTag>::type& depthIndex;
         const int d;
       public:
         class iterator {
@@ -266,21 +335,21 @@ namespace ALE {
           typedef int   difference_type;
           typedef Data* pointer;
           typedef Data& reference;
-          typename boost::multi_index::index<StratumSet,target>::type::iterator arrowIter;
+          typename boost::multi_index::index<StratumSet,depthTag>::type::iterator pointIter;
 
-          iterator(const typename boost::multi_index::index<StratumSet,target>::type::iterator& iter) {
-            this->arrowIter = typename boost::multi_index::index<StratumSet,target>::type::iterator(iter);
+          iterator(const typename boost::multi_index::index<StratumSet,depthTag>::type::iterator& iter) {
+            this->pointIter = typename boost::multi_index::index<StratumSet,depthTag>::type::iterator(iter);
           };
           virtual ~iterator() {};
           //
-          virtual iterator    operator++() {++this->arrowIter; return *this;};
-          virtual iterator    operator++(int n) {iterator tmp(this->arrowIter); ++this->arrowIter; return tmp;};
-          virtual bool        operator==(const iterator& itor) const {return this->arrowIter == itor.arrowIter;};
-          virtual bool        operator!=(const iterator& itor) const {return this->arrowIter != itor.arrowIter;};
-          virtual const Data& operator*() const {return this->arrowIter->target;};
+          virtual iterator    operator++() {++this->pointIter; return *this;};
+          virtual iterator    operator++(int n) {iterator tmp(this->pointIter); ++this->pointIter; return tmp;};
+          virtual bool        operator==(const iterator& itor) const {return this->pointIter == itor.pointIter;};
+          virtual bool        operator!=(const iterator& itor) const {return this->pointIter != itor.pointIter;};
+          virtual const Data& operator*() const {return this->pointIter->point;};
         };
 
-        depthSequence(const typename ::boost::multi_index::index<StratumSet,target>::type& depth, const int d) : depthIndex(depth), d(d) {};
+        depthSequence(const typename ::boost::multi_index::index<StratumSet,depthTag>::type& depthIndex, const int d) : depthIndex(depthIndex), d(d) {};
         virtual ~depthSequence() {};
         virtual iterator    begin() {return iterator(this->depthIndex.lower_bound(d));};
         virtual iterator    end()   {return iterator(this->depthIndex.upper_bound(d));};
@@ -288,7 +357,7 @@ namespace ALE {
       };
 
       class heightSequence {
-        const typename ::boost::multi_index::index<StratumSet,height>::type& heightIndex;
+        const typename ::boost::multi_index::index<StratumSet,heightTag>::type& heightIndex;
         const int h;
       public:
         class iterator {
@@ -298,21 +367,21 @@ namespace ALE {
           typedef int   difference_type;
           typedef Data* pointer;
           typedef Data& reference;
-          typename boost::multi_index::index<StratumSet,target>::type::iterator arrowIter;
+          typename boost::multi_index::index<StratumSet,heightTag>::type::iterator pointIter;
 
-          iterator(const typename boost::multi_index::index<StratumSet,target>::type::iterator& iter) {
-            this->arrowIter = typename boost::multi_index::index<StratumSet,target>::type::iterator(iter);
+          iterator(const typename boost::multi_index::index<StratumSet,heightTag>::type::iterator& iter) {
+            this->pointIter = typename boost::multi_index::index<StratumSet,heightTag>::type::iterator(iter);
           };
           virtual ~iterator() {};
           //
-          virtual iterator    operator++() {++this->arrowIter; return *this;};
-          virtual iterator    operator++(int n) {iterator tmp(this->arrowIter); ++this->arrowIter; return tmp;};
-          virtual bool        operator==(const iterator& itor) const {return this->arrowIter == itor.arrowIter;};
-          virtual bool        operator!=(const iterator& itor) const {return this->arrowIter != itor.arrowIter;};
-          virtual const Data& operator*() const {return this->arrowIter->target;};
+          virtual iterator    operator++() {++this->pointIter; return *this;};
+          virtual iterator    operator++(int n) {iterator tmp(this->pointIter); ++this->pointIter; return tmp;};
+          virtual bool        operator==(const iterator& itor) const {return this->pointIter == itor.pointIter;};
+          virtual bool        operator!=(const iterator& itor) const {return this->pointIter != itor.pointIter;};
+          virtual const Data& operator*() const {return this->pointIter->point;};
         };
 
-        heightSequence(const typename ::boost::multi_index::index<StratumSet,target>::type& height, const int h) : heightIndex(height), h(h) {};
+        heightSequence(const typename ::boost::multi_index::index<StratumSet,heightTag>::type& height, const int h) : heightIndex(height), h(h) {};
         virtual ~heightSequence() {};
         virtual iterator    begin() {return iterator(this->heightIndex.lower_bound(h));};
         virtual iterator    end()   {return iterator(this->heightIndex.upper_bound(h));};
@@ -323,6 +392,7 @@ namespace ALE {
       // The basic Sieve interface
       void clear() {
         this->arrows.clear();
+        this->stata.clear();
       };
       Obj<coneSequence> cone(const Data& p) {
         return coneSequence(::boost::multi_index::get<targetColor>(this->arrows), p);
@@ -336,10 +406,10 @@ namespace ALE {
       template<class InputSequence> Obj<PointSet> cone(const Obj<InputSequence>& points, const Color& color) {
         return this->nCone(points, 1, color);
       };
-      template<class InputSequence> Obj<PointSet> nCone(const Obj<InputSequence>& points, const int& n) {
+      template<class InputSequence> Obj<PointSet> nCone(const Obj<InputSequence>& points, int n) {
         return this->nCone(points, n, Color(), false);
       };
-      template<class InputSequence> Obj<PointSet> nCone(const Obj<InputSequence>& points, const int& n, const Color& color, bool useColor = true) {
+      template<class InputSequence> Obj<PointSet> nCone(const Obj<InputSequence>& points, int n, const Color& color, bool useColor = true) {
         Obj<PointSet> cone = PointSet();
         Obj<PointSet> base = PointSet();
 
@@ -364,19 +434,19 @@ namespace ALE {
       Obj<supportSequence> support(const Data& p) {
         return supportSequence(::boost::multi_index::get<sourceColor>(this->arrows), p);
       };
-      template<class InputSequence> Obj<supportSequence> support(const Obj<InputSequence>& points) {
+      template<class InputSequence> Obj<PointSet> support(const Obj<InputSequence>& points) {
         return this->nSupport(points, 1);
       };
       Obj<supportSequence> support(const Data& p, const Color& color) {
         return supportSequence(::boost::multi_index::get<sourceColor>(this->arrows), p, color);
       };
-      template<class InputSequence> Obj<supportSequence> support(const Obj<InputSequence>& points, const Color& color) {
+      template<class InputSequence> Obj<PointSet> support(const Obj<InputSequence>& points, const Color& color) {
         return this->nSupport(points, 1, color);
       };
-      template<class InputSequence> Obj<supportSequence> nSupport(const Obj<InputSequence>& points, const int& n) {
+      template<class InputSequence> Obj<PointSet> nSupport(const Obj<InputSequence>& points, int n) {
         return this->nSupport(points, n, Color(), false);
       };
-      template<class InputSequence> Obj<supportSequence> nSupport(const Obj<InputSequence>& points, const int& n, const Color& color, bool useColor = true) {
+      template<class InputSequence> Obj<PointSet> nSupport(const Obj<InputSequence>& points, int n, const Color& color, bool useColor = true) {
         Obj<PointSet> support = PointSet();
         Obj<PointSet> cap = PointSet();
 
@@ -411,26 +481,26 @@ namespace ALE {
       template<class InputSequence> Obj<PointSet> closure(const Obj<InputSequence>& points, const Color& color) {
         return nClosure(points, this->depth(), color);
       };
-      Obj<PointSet> nClosure(const Data& p, const int& n) {
+      Obj<PointSet> nClosure(const Data& p, int n) {
         return this->nClosure(p, n, Color(), false);
       };
-      Obj<PointSet> nClosure(const Data& p, const int& n, const Color& color, bool useColor = true) {
+      Obj<PointSet> nClosure(const Data& p, int n, const Color& color, bool useColor = true) {
         Obj<PointSet> cone = PointSet();
 
         cone->insert(p);
         return this->__nClosure(cone, n, color, useColor);
       };
-      template<class InputSequence> Obj<PointSet> nClosure(const Obj<InputSequence>& points, const int& n) {
+      template<class InputSequence> Obj<PointSet> nClosure(const Obj<InputSequence>& points, int n) {
         return this->nClosure(points, n, Color(), false);
       };
-      template<class InputSequence> Obj<PointSet> nClosure(const Obj<InputSequence>& points, const int& n, const Color& color, bool useColor = true) {
+      template<class InputSequence> Obj<PointSet> nClosure(const Obj<InputSequence>& points, int n, const Color& color, bool useColor = true) {
         Obj<PointSet> cone = PointSet();
 
         cone->insert(points->begin(), points->end());
         return this->__nClosure(cone, n, color, useColor);
       }
     private:
-      template<class InputSequence> Obj<PointSet> __nClosure(Obj<InputSequence>& cone, const int& n, const Color& color, bool useColor) {
+      template<class InputSequence> Obj<PointSet> __nClosure(Obj<InputSequence>& cone, int n, const Color& color, bool useColor) {
         Obj<PointSet> base = PointSet();
         Obj<PointSet> closure = PointSet();
 
@@ -465,26 +535,26 @@ namespace ALE {
       template<class InputSequence> Obj<PointSet> star(const Obj<InputSequence>& points, const Color& color) {
         return nStar(points, this->height(), color);
       };
-      Obj<PointSet> nStar(const Data& p, const int& n) {
+      Obj<PointSet> nStar(const Data& p, int n) {
         return this->nStar(p, n, Color(), false);
       };
-      Obj<PointSet> nStar(const Data& p, const int& n, const Color& color, bool useColor = true) {
+      Obj<PointSet> nStar(const Data& p, int n, const Color& color, bool useColor = true) {
         Obj<PointSet> support = PointSet();
 
         support->insert(p);
         return this->__nStar(support, n, color, useColor);
       };
-      template<class InputSequence> Obj<PointSet> nStar(const Obj<InputSequence>& points, const int& n) {
+      template<class InputSequence> Obj<PointSet> nStar(const Obj<InputSequence>& points, int n) {
         return this->nStar(points, n, Color(), false);
       };
-      template<class InputSequence> Obj<PointSet> nStar(const Obj<InputSequence>& points, const int& n, const Color& color, bool useColor = true) {
+      template<class InputSequence> Obj<PointSet> nStar(const Obj<InputSequence>& points, int n, const Color& color, bool useColor = true) {
         Obj<PointSet> support = PointSet();
 
         support->insert(points->begin(), points->end());
         return this->__nStar(cone, n, color, useColor);
       };
     private:
-      template<class InputSequence> Obj<PointSet> __nStar(Obj<InputSequence>& support, const int& n, const Color& color, bool useColor) {
+      template<class InputSequence> Obj<PointSet> __nStar(Obj<InputSequence>& support, int n, const Color& color, bool useColor) {
         Obj<PointSet> cap = PointSet();
         Obj<PointSet> star = PointSet();
 
@@ -508,14 +578,130 @@ namespace ALE {
       };
     public:
       // Lattice methods
-      template<class InputSequence> Obj<coneSequence> meet(const Obj<InputSequence>& pp);
-      template<class InputSequence> Obj<coneSequence> meet(const Obj<InputSequence>& pp, const Color& color);
-      template<class InputSequence> Obj<coneSequence> nMeet(const Obj<InputSequence>& pp, const int& n);
-      template<class InputSequence> Obj<coneSequence> nMeet(const Obj<InputSequence>& pp, const int& n, const Color& color);
-      template<class InputSequence> Obj<supportSequence> join(const Obj<InputSequence>& pp);
-      template<class InputSequence> Obj<supportSequence> join(const Obj<InputSequence>& pp, const Color& color);
-      template<class InputSequence> Obj<supportSequence> nJoin(const Obj<InputSequence>& pp, const int& n);
-      template<class InputSequence> Obj<supportSequence> nJoin(const Obj<InputSequence>& pp, const int& n, const Color& color);
+      Obj<PointSet> meet(const Data& p, const Data& q) {
+        return nMeet(p, q, this->depth());
+      };
+      Obj<PointSet> meet(const Data& p, const Data& q, const Color& color) {
+        return nMeet(p, q, this->depth(), color);
+      };
+      template<class InputSequence> Obj<PointSet> meet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1) {
+        return nMeet(chain0, chain1, this->depth());
+      };
+      template<class InputSequence> Obj<PointSet> meet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, const Color& color) {
+        return nMeet(chain0, chain1, this->depth(), color);
+      };
+      Obj<PointSet> nMeet(const Data& p, const Data& q, int n) {
+        return nMeet(p, q, n, Color(), false);
+      };
+      Obj<PointSet> nMeet(const Data& p, const Data& q, int n, const Color& color, bool useColor = true) {
+        Obj<PointSet> chain0 = PointSet();
+        Obj<PointSet> chain1 = PointSet();
+
+        chain0->insert(p);
+        chain1->insert(q);
+        return this->nMeet(chain0, chain1, n, color, useColor);
+      };
+      template<class InputSequence> Obj<PointSet> nMeet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n) {
+        return this->nMeet(chain0, chain1, n, Color(), false);
+      };
+      template<class InputSequence> Obj<PointSet> nMeet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n, const Color& color, bool useColor = true) {
+        // The strategy is to compute the intersection of cones over the chains, remove the intersection 
+        // and use the remaining two parts -- two disjoined components of the symmetric difference of cones -- as the new chains.
+        // The intersections at each stage are accumulated and their union is the meet.
+        // The iteration stops after n steps in addition to the meet of the initial chains or sooner if at least one of the chains is empty.
+        Obj<PointSet> meet = PointSet(); 
+        Obj<PointSet> cone;
+
+        if((chain0->size() != 0) && (chain1->size() != 0)) {
+          for(int i = 0; i <= n; ++i) {
+            // Compute the intersection of chains and put it in meet at the same time removing it from c and cc
+            //std::set_intersection(chain0->begin(), chain0->end(), chain1->begin(), chain1->end(), std::insert_iterator<PointSet>(meet, meet->begin()));
+            //chain0->erase(meet->begin(), meet->end());
+            //chain1->erase(meet->begin(), meet->end());
+            for(typename InputSequence::iterator iter = chain0->begin(); iter != chain0->end(); ++iter) {
+              if (chain1->find(*iter) != chain1->end()) {
+                meet->insert(*iter);
+                chain0->erase(*iter);
+                chain1->erase(*iter);
+              }
+            }
+            // Replace each of the cones with a cone over it, and check if either is empty; if so, return what's in meet at the moment.
+            cone = this->cone(chain0);
+            chain0->insert(cone->begin(), cone->end());
+            if(chain0->size() == 0) {
+              break;
+            }
+            cone = this->cone(chain1);
+            chain1->insert(cone->begin(), cone->end());
+            if(chain1->size() == 0) {
+              break;
+            }
+          }
+        }
+        return meet;
+      };
+      Obj<PointSet> join(const Data& p, const Data& q) {
+        return nJoin(p, q, this->depth());
+      };
+      Obj<PointSet> join(const Data& p, const Data& q, const Color& color) {
+        return nJoin(p, q, this->depth(), color);
+      };
+      template<class InputSequence> Obj<PointSet> join(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1) {
+        return nJoin(chain0, chain1, this->depth());
+      };
+      template<class InputSequence> Obj<PointSet> join(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, const Color& color) {
+        return nJoin(chain0, chain1, this->depth(), color);
+      };
+      Obj<PointSet> nJoin(const Data& p, const Data& q, int n) {
+        return nJoin(p, q, n, Color(), false);
+      };
+      Obj<PointSet> nJoin(const Data& p, const Data& q, int n, const Color& color, bool useColor = true) {
+        Obj<PointSet> chain0 = PointSet();
+        Obj<PointSet> chain1 = PointSet();
+
+        chain0->insert(p);
+        chain1->insert(q);
+        return this->nJoin(chain0, chain1, n, color, useColor);
+      };
+      template<class InputSequence> Obj<PointSet> nJoin(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n) {
+        return this->nJoin(chain0, chain1, n, Color(), false);
+      };
+      template<class InputSequence> Obj<PointSet> nJoin(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n, const Color& color, bool useColor = true) {
+        // The strategy is to compute the intersection of supports over the chains, remove the intersection 
+        // and use the remaining two parts -- two disjoined components of the symmetric difference of supports -- as the new chains.
+        // The intersections at each stage are accumulated and their union is the join.
+        // The iteration stops after n steps in addition to the join of the initial chains or sooner if at least one of the chains is empty.
+        Obj<PointSet> join = PointSet(); 
+        Obj<PointSet> support;
+
+        if((chain0->size() != 0) && (chain1->size() != 0)) {
+          for(int i = 0; i <= n; ++i) {
+            // Compute the intersection of chains and put it in meet at the same time removing it from c and cc
+            //std::set_intersection(chain0->begin(), chain0->end(), chain1->begin(), chain1->end(), std::insert_iterator<PointSet>(join.obj(), join->begin()));
+            //chain0->erase(join->begin(), join->end());
+            //chain1->erase(join->begin(), join->end());
+            for(typename InputSequence::iterator iter = chain0->begin(); iter != chain0->end(); ++iter) {
+              if (chain1->find(*iter) != chain1->end()) {
+                join->insert(*iter);
+                chain0->erase(*iter);
+                chain1->erase(*iter);
+              }
+            }
+            // Replace each of the cones with a cone over it, and check if either is empty; if so, return what's in meet at the moment.
+            support = this->cone(chain0);
+            chain0->insert(support->begin(), support->end());
+            if(chain0->size() == 0) {
+              break;
+            }
+            support = this->cone(chain1);
+            chain1->insert(support->begin(), support->end());
+            if(chain1->size() == 0) {
+              break;
+            }
+          }
+        }
+        return join;
+      };
       // Manipulation
       void addArrow(const Data& p, const Data& q) {
         this->addArrow(p, q, Color());
@@ -555,17 +741,40 @@ namespace ALE {
       Obj<std::map<Data, Sieve<Data,Color> > > completion(const Sieve<Data,Color>& base);
       // Views
       Obj<baseSequence> base() {
-        // Could probably use height 0
-        return baseSequence(::boost::multi_index::get<target>(this->arrows));
+        return baseSequence(::boost::multi_index::get<indegree>(this->strata));
+      };
+      Obj<rootSequence> roots() {
+        return rootSequence(::boost::multi_index::get<indegree>(this->strata));
+      };
+      Obj<leafSequence> leaves() {
+        return leafSequence(::boost::multi_index::get<outdegree>(this->strata));
       };
       // Structural methods
       int depth() {return this->maxDepth;};
       int depth(const Data& p) {
         return ::boost::multi_index::get<point>(this->strata).find(p)->depth;
       };
+      template<typename InputSequence> int depth(const Obj<InputSequence>& points) {
+        const typename ::boost::multi_index::index<StratumSet,point>::type& index = ::boost::multi_index::get<point>(this->strata);
+        int maxDepth = -1;
+
+        for(typename InputSequence::iterator iter = points->begin(); iter != points->end(); ++iter) {
+          maxDepth = std::max(maxDepth, index.find(*iter)->depth);
+        }
+        return maxDepth;
+      };
       int height() {return this->maxHeight;};
       int height(const Data& p) {
         return ::boost::multi_index::get<point>(this->strata).find(p)->height;
+      };
+      template<typename InputSequence> int height(const Obj<InputSequence>& points) {
+        const typename ::boost::multi_index::index<StratumSet,point>::type& index = ::boost::multi_index::get<point>(this->strata);
+        int maxHeight = -1;
+
+        for(typename InputSequence::iterator iter = points->begin(); iter != points->end(); ++iter) {
+          maxHeight = std::max(maxHeight, index.find(*iter)->height);
+        }
+        return maxHeight;
       };
       int diameter() {
         int globalDiameter;
@@ -577,41 +786,71 @@ namespace ALE {
       int diameter(const Data& p) {
         return this->depth(p) + this->height(p);
       };
-      Obj<depthSequence> depthStratum(const int& d) {
-        return depthSequence(::boost::multi_index::get<depth>(this->strata), d);
+      Obj<depthSequence> depthStratum(int d) {
+        return depthSequence(::boost::multi_index::get<depthTag>(this->strata), d);
       };
-      Obj<heightSequence> heightStratum(const int& h) {
-        return heightSequence(::boost::multi_index::get<height>(this->strata), h);
+      Obj<heightSequence> heightStratum(int h) {
+        return heightSequence(::boost::multi_index::get<heightTag>(this->strata), h);
       };
       void setStratification(bool doStratify) {this->stratification = doStratify;};
       bool getStratification() {return this->stratification;};
       void stratify() {
+        this->strate.clear();
+        this->__computeDegrees();
         // FIX: We would like to avoid the copy here with cone() and support()
-        this->__computeClosureHeights(this->cone(this->_leaves));
-        this->__computeStarDepths(this->support(this->_roots));
+        this->__computeClosureHeights(this->cone(this->leaves()));
+        this->__computeStarDepths(this->support(this->roots()));
       };
     private:
-      void __computeRootsAndLeaves() {
+      struct changeOutdegree {
+        changeOutdegree(int newOutdegree) : newOutdegree(newOutdegree) {};
+
+        void operator()(StratumPoint& p) {
+          p.outdegree = newOutdegree;
+        }
+      private:
+        int newOutdegree;
+      };
+      void __computeDegrees() {
         const typename ::boost::multi_index::index<ArrowSet,target>::type& cones = ::boost::multi_index::get<target>(this->arrows);
         const typename ::boost::multi_index::index<ArrowSet,source>::type& supports = ::boost::multi_index::get<source>(this->arrows);
 
-        this->_roots.clear();
-        for(typename ::boost::multi_index::index<ArrowSet,source>::type::iterator s_iter = supports.begin(); s_iter != supports.end(); ++s_iter) {
-          if (cones.find(s_iter->source) == cones.end()) {
-            this->_roots.insert(s_iter->source);
-          }
+        for(typename ::boost::multi_index::index<ArrowSet,target>::type::iterator c_iter = cones.begin(); c_iter != cones.end(); ++c_iter) {
+          StratumPoint p;
+
+          p.point    = c_iter->target;
+          p.indegree = cones.count(*c_iter);
+          this->strata.insert(p);
         }
 
-        this->_leavas.clear();
-        for(typename ::boost::multi_index::index<ArrowSet,target>::type::iterator c_iter = cones.begin(); c_iter != cones.end(); ++c_iter) {
-          if (supports.find(c_iter->target) == supports.end()) {
-            this->_leaves.insert(c_iter->target);
+        const typename ::boost::multi_index::index<StratumSet,point>::type& points = ::boost::multi_index::get<point>(this->strata);
+
+        for(typename ::boost::multi_index::index<ArrowSet,source>::type::iterator s_iter = supports.begin(); s_iter != supports.end(); ++s_iter) {
+          if (points.find(*s_iter) != points.end()) {
+            typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = points.find(*s_iter);
+
+            points.modify(i, changeOutdegree(supports.count(*s_iter)));
+          } else {
+            StratumPoint p;
+
+            p.point     = s_iter->target;
+            p.outdegree = supports.count(*s_iter);
+            this->strata.insert(p);
           }
         }
       };
 
+      struct changeHeight {
+        changeHeight(int newHeight) : newHeight(newHeight) {};
+
+        void operator()(StratumPoint& p) {
+          p.height = newHeight;
+        }
+      private:
+        int newHeight;
+      };
       template<class InputSequence> void __computeClosureHeights(const Obj<InputSequence>& points) {
-        const typename ::boost::multi_index::index<StratumSet,point>::type& index = ::boost::multi_index::get<point>(this->strata);
+        typename ::boost::multi_index::index<StratumSet,point>::type& index = ::boost::multi_index::get<point>(this->strata);
         Obj<PointSet> modifiedPoints = PointSet();
 
         for(typename InputSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
@@ -619,7 +858,8 @@ namespace ALE {
           int h0 = this->height(*p_itor);
           int h1 = this->height(this->support(*p_itor)) + 1;
           if(h1 != h0) {
-            index->find(*p_itor)->height = h1;
+            typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = index.find(*p_itor);
+            index.modify(i, changeHeight(h1));
             modifiedPoints->insert(*p_itor);
           }
         }
@@ -629,16 +869,25 @@ namespace ALE {
         }
       };
 
-      template<class InputSequence> void __computeStarDepths(const Obj<PointSet>& points) {
-        const typename ::boost::multi_index::index<StratumSet,point>::type& index = ::boost::multi_index::get<point>(this->strata);
+      struct changeDepth {
+        changeDepth(int newDepth) : newDepth(newDepth) {};
+
+        void operator()(StratumPoint& p) {
+          p.depth = newDepth;
+        }
+      private:
+        int newDepth;
+      };
+      template<class InputSequence> void __computeStarDepths(const Obj<InputSequence>& points) {
+        typename ::boost::multi_index::index<StratumSet,point>::type& index = ::boost::multi_index::get<point>(this->strata);
         Obj<PointSet> modifiedPoints = PointSet();
 
         for(typename InputSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
           // Compute the max depth of the points in the support of p, and add 1
           int d0 = this->depth(*p_itor);
-          int d1 = this->maxDepth(this->cone(*p_itor)) + 1;
+          int d1 = this->depth(this->cone(*p_itor)) + 1;
           if(d1 != d0) {
-            index->find(*p_itor)->depth = d1;
+            index.modify(index.find(*p_itor), changeDepth(d1));
             modifiedPoints->insert(*p_itor);
           }
         }
@@ -650,29 +899,7 @@ namespace ALE {
     public:
     };
 
-    //
-    // CoSieve:
-    //   Value is the type of function space (PreSheaf?) for fibers over the mesh
-    //
-    template <typename Data, typename Value>
-    class CoSieve {
-      template<class InputSequence> const Value *restrict(const Data& support, const Obj<InputSequence>& chain);
-      template<class InputSequence> void         assemble(const Data& support, const Obj<InputSequence>& chain, const Value values[]);
-
-      // \rho
-      //     This needs some sort of policy argument
-      void reduce();
-
-      // Refine the support chain
-      void refine();
-      template<class InputSequence> void refine(const Obj<InputSequence>& chain);
-      // Coarsen the support chain
-      void coarsen();
-      template<class InputSequence> void coarsen(const Obj<InputSequence>& chain);
-    };
   } // namespace def
-
-
 
 } // namespace ALE
 
