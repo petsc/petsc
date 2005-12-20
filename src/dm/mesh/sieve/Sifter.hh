@@ -94,7 +94,8 @@ namespace ALE {
             ::boost::multi_index::composite_key<
               SieveArrow, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Data,target), BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>
           >
-        >
+        >,
+        ALE_ALLOCATOR<SieveArrow>
       > ArrowSet;
       ArrowSet arrows;
 
@@ -118,7 +119,8 @@ namespace ALE {
             ::boost::multi_index::tag<depth>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,int,depth)>,
           ::boost::multi_index::ordered_non_unique<
           ::boost::multi_index::tag<height>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,int,height)>
-        >
+        >,
+        ALE_ALLOCATOR<StratumPoint>
       > StratumSet;
       StratumSet strata;
       bool       stratification; 
@@ -650,26 +652,6 @@ namespace ALE {
     public:
     };
 
-    //
-    // CoSieve:
-    //   Value is the type of function space (PreSheaf?) for fibers over the mesh
-    //
-    template <typename Data, typename Value>
-    class CoSieve {
-      template<class InputSequence> const Value *restrict(const Data& support, const Obj<InputSequence>& chain);
-      template<class InputSequence> void         assemble(const Data& support, const Obj<InputSequence>& chain, const Value values[]);
-
-      // \rho
-      //     This needs some sort of policy argument
-      void reduce();
-
-      // Refine the support chain
-      void refine();
-      template<class InputSequence> void refine(const Obj<InputSequence>& chain);
-      // Coarsen the support chain
-      void coarsen();
-      template<class InputSequence> void coarsen(const Obj<InputSequence>& chain);
-    };
   } // namespace def
 
 
