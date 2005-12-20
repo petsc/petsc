@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+# using gfortran from http://gcc.gnu.org/wiki/GFortranBinariesMacOS
 configure_options = [
-  '--with-fc=0',
+  'CC=gcc',
+  'FC=gfortran',
   '--with-python',
   '--with-shared=1',
   '--with-dynamic=1',
