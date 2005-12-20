@@ -417,9 +417,9 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoo
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) isapp, &comm);CHKERRQ(ierr);
-  ierr = ISGetSize(isapp, &napp);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isapp, &napp);CHKERRQ(ierr);
   if (ispetsc) {
-    ierr = ISGetSize(ispetsc, &npetsc);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(ispetsc, &npetsc);CHKERRQ(ierr);
     if (napp != npetsc) SETERRQ(PETSC_ERR_ARG_SIZ, "Local IS lengths must match");
     ierr = ISGetIndices(ispetsc, &mypetsc);CHKERRQ(ierr);
   } else {
