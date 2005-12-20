@@ -122,7 +122,6 @@ extern int MPIUNI_Memcpy(void*,const void*,int);
 #define MPI_UNSIGNED_LONG   sizeof(unsigned long)
 #define MPI_COMPLEX         2*sizeof(float)
 #define MPI_DOUBLE_COMPLEX  2*sizeof(double)
-#define MPIU_PETSCLOGDOUBLE sizeof(PetscLogDouble)
 #define MPI_FLOAT_INT       (sizeof(float) + sizeof(int))
 #define MPI_DOUBLE_INT      (sizeof(double) + sizeof(int))
 #define MPI_LONG_INT        (sizeof(long) + sizeof(int))
