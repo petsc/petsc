@@ -297,6 +297,10 @@ class Package(config.base.Configure):
     '''Determines if the package should be configured for, then calls the configure'''
     if self.download and self.framework.argDB['download-'+self.package]:
       self.framework.argDB['with-'+self.package] = 1
+
+    if 'with-'+self.package+'-dir' in self.framework.argDB and ('with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB):
+      raise RuntimeError('Use either --with-'+self.package+'-dir or --with-'+self.package+'-lib and --with-'+self.package+'-include Not both!')
+
     if 'with-'+self.package+'-dir' in self.framework.argDB or 'with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
       
