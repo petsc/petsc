@@ -160,10 +160,11 @@ def petsc_configure(configure_options):
   if nargs.Arg.findArgument('with-shared', sys.argv[1:]) is None:
     sys.argv.append('--with-shared=0')
 
-  framework = config.framework.Framework(sys.argv[1:]+['--configModules=PETSc.Configure','--optionsModule=PETSc.compilerOptions'], loadArgDB = 0)
-  framework.setup()
-  framework.logPrint('\n'.join(extraLogs))
+  framework = None
   try:
+    framework = config.framework.Framework(sys.argv[1:]+['--configModules=PETSc.Configure','--optionsModule=PETSc.compilerOptions'], loadArgDB = 0)
+    framework.setup()
+    framework.logPrint('\n'.join(extraLogs))
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
     framework.argDB['configureCache'] = cPickle.dumps(framework)
@@ -181,7 +182,7 @@ def petsc_configure(configure_options):
     +'---------------------------------------------------------------------------------------\n'  \
     +emsg+'*********************************************************************************\n'
     se = ''
-  except TypeError, e:
+  except (TypeError, ValueError), e:
     emsg = str(e)
     if not emsg.endswith('\n'): emsg += '\n'
     msg ='*********************************************************************************\n'\
@@ -210,19 +211,20 @@ def petsc_configure(configure_options):
     +'*********************************************************************************\n'
     se  = str(e)
 
-  framework.logClear()
   print msg
-  if hasattr(framework, 'log'):
-    import traceback
-    framework.log.write(msg+se)
-    traceback.print_tb(sys.exc_info()[2], file = framework.log)
-    if os.path.isfile(framework.logName+'.bkp'):
-      framework.logPrintDivider()
-      framework.logPrintBox('Previous configure logs below', debugSection = None)
-      f = file(framework.logName+'.bkp')
-      framework.log.write(f.read())
-      f.close()
-    sys.exit(1)
+  if not framework is None:
+    framework.logClear()
+    if hasattr(framework, 'log'):
+      import traceback
+      framework.log.write(msg+se)
+      traceback.print_tb(sys.exc_info()[2], file = framework.log)
+      if os.path.isfile(framework.logName+'.bkp'):
+        framework.logPrintDivider()
+        framework.logPrintBox('Previous configure logs below', debugSection = None)
+        f = file(framework.logName+'.bkp')
+        framework.log.write(f.read())
+        f.close()
+      sys.exit(1)
 
 if __name__ == '__main__':
   petsc_configure([])
