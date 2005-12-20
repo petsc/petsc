@@ -23,7 +23,7 @@ extern PETSC_DLL_IMPORT PetscTruth PetscBeganMPI;
 #define iargc_                        IARGC
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
-#define petscgetommoncomm_            PETSCGETCOMMONCOMM
+#define petscgetcommoncomm_           PETSCGETCOMMONCOMM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitialize_              petscinitialize
 #define petscfinalize_                petscfinalize
