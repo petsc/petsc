@@ -892,6 +892,13 @@ class Configure(config.base.Configure):
     return self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
 
   def generateSharedLinkerGuesses(self):
+    if not self.framework.argDB['with-pic']:
+      self.setStaticLinker()
+      self.staticLinker = self.AR
+      self.staticLibraries = 1
+      self.LDFLAGS = ''
+      yield (self.AR, [], self.AR_LIB_SUFFIX)
+      raise RuntimeError('Archiver failed static link check')
     if 'with-shared-ld' in self.framework.argDB:
       yield (self.framework.argDB['with-shared-ld'], [], 'so')
     if 'LD_SHARED' in self.framework.argDB:
