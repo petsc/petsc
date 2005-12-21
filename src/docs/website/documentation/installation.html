@@ -62,18 +62,28 @@ PETSc</strong></a></li>
       </ul>
       </td>
       <td valign="top" width="75%"><!--##begin-->
+      <h3>&nbsp; Quick instructions:</h3>
+&nbsp; Invoke the following commands from the toplevel PETSc directory
+[using bash shell]&nbsp; <br>
+      <div style="margin-left: 40px;"><font color="#ff0000">export
+PETSC_DIR=`pwd`</font><br>
+      </div>
+      <div style="margin-left: 40px;"><font color="#ff0000">./config/configure.py
+--with-cc=gcc --with-fc=g77 --download-f-blas-lapack=1
+--download-mpich=1</font><br>
+      </div>
+      <div style="margin-left: 40px;"><font color="#ff0000">make all
+test</font></div>
+      <h3>&nbsp; Detailed instructions:</h3>
       <ul>
-        <li><a name="(Windows only)">(Microsoft Windows only)</a> <a
- href="#Cygwin:">Install the cygwin</a> package (including <font
- color="#ff1a8b">make, patch, python, rebase</font><!--cygwin link has this info: duplicate-->
-modules; run <strong>/bin/rebaseall </strong> after the Cygwin
-install) and use
-bash as the working shell. <a href="#AdditionalMicrosoftWindowsNotes">Microsoft
-Windows hints</a></li>
+        <li><a name="(Windows only)">(MS Windows only) Install</a> <a
+ href="#Cygwin:">cygwin</a> package (including <font color="#ff1a8b">make,
+python </font>modules<strong></strong>) and use cygwin shell.<br>
+        </li>
         <li>In the directory you wish PETSc installed: <font
- color="#ff0000">gunzip -c <a href="../download/index.html">petsc.tar.gz</a>
+ color="#ff0000">gunzip -c <a href="../download/index.html">petsc-2.3.0.tar.gz</a>
 | tar -xof -</font></li>
-        <li><font color="#ff0000">cd petsc-2.3.0</font></li>
+        <li><font color="#ff0000">cd petsc-2.3.1</font></li>
         <li>sh/bash shell:&nbsp;&nbsp; <font color="#ff0000">PETSC_DIR=`pwd`;
 export PETSC_DIR</font>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (note the backquote)<br>
@@ -102,12 +112,9 @@ bug-reporting</a> section</li>
  href="../miscellaneous/acknwldg.html#otherpackages">external packages</a>
 for PETSc to use</li>
         <ul>
-          <li><font color="#ff0000">--download-package</font> OR </li>
-          <li><font color="#ff0000">--with-package-dir=installeddirectory</font>
-OR </li>
-          <li><font color="#ff0000">--with-package-include=directory
-&nbsp; --with-package-lib=[library names with full paths] </font> use
-\[ and \] instead of [ and ] if using the csh or tsch shells.</li>
+          <li><font color="#ff0000">--download-package</font> for eg: <span
+ style="color: rgb(255, 0, 0);">--download-mpich</span><br>
+          </li>
         </ul>
       </ul>
       </td>
@@ -131,7 +138,7 @@ will download &amp;
 install BLAS, LAPACK, MPICH if they are not already installed on the
 system) :<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-2.3.0<br>
+PETSC_DIR=/home/petsc/petsc-2.3.1<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py
 --download-f-blas-lapack=1 --download-mpich=1<br>
@@ -139,7 +146,7 @@ PETSC_DIR=/home/petsc/petsc-2.3.0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make test</font></li>
         <li>Same as above - but build Complex version of PETSc:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-2.3.0<br>
+PETSC_DIR=/home/petsc/petsc-2.3.1<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py
 --download-f-blas-lapack=1 --download-mpich=1 --with-scalar-type=complex<br>
@@ -148,7 +155,7 @@ PETSC_DIR=/home/petsc/petsc-2.3.0<br>
         <li>Using the bash shell, assuming BLAS,
 LAPACK, MPICH software are installed at the specified locations:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-2.3.0<br>
+PETSC_DIR=/home/petsc/petsc-2.3.1<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py
 --with-blas-lapack-dir=/usr/local/lib --with-mpi-dir=/usr/local/mpich<br>
@@ -158,7 +165,7 @@ PETSC_DIR=/home/petsc/petsc-2.3.0<br>
         <li>Using tcsh shell, install PETSc with default BLAS and
 LAPACK and no MPI:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">setenv
-PETSC_DIR /home/petsc/petsc-2.3.0<br>
+PETSC_DIR /home/petsc/petsc-2.3.1<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py
 --with-mpi=0<br>
@@ -222,20 +229,18 @@ packages</span></h4>
       <ul>
         <li> <span style="font-weight: 400;"><font color="#ff0000">make</font></span>
         </li>
-        <li> <span style="font-weight: 400;"><font color="#ff0000">patch</font></span>
-        </li>
         <li> <span style="font-weight: 400;"><font color="#ff0000">python</font></span>
         </li>
-        <li> <span style="font-weight: 400;"><font color="#ff0000">rebase</font></span>
-        </li>
       </ul>
-Run /bin/rebaseall after install and use bash as the working shell.
       <h4><span style="font-weight: 400;">Cygwin also has GNU
 compilers ( <font color="#ff1a8b">gcc, g++, g77</font>) which can be
 used&nbsp; if Microsoft, Intel, or Borland Group compilers are not
 available</span></h4>
-      <p>Note: To insure success of rebaseall - make sure there are no
-other cygwin processes (except bash) are running like ssh or sshd etc.</p>
+      <p>Note: Previously we recommanded doing 'rebaseall' to avoid
+python problems. However 'rebaseall' has its own problems - so if there
+any python issues, the current recommendation is to reinstall cygwin
+from scratch.<br>
+      </p>
       <table style="border-collapse: collapse;" id="AutoNumber1"
  border="1" bordercolor="#111111" cellpadding="0" cellspacing="0"
  width="72%">
@@ -375,10 +380,26 @@ to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font> </p>
       <h3><a name="AdditionalMicrosoftWindowsNotes"><font
  color="#551a8b">Additional
 Microsoft Windows Notes:</font></a></h3>
-      <p><font color="#551a8b"><b>Project Files:</b> </font>We provide
-default project files that work with Microsoft Visual Studio. They
-are located at ${PETSC_DIR}/projects. Be sure to build the libraries
-that correspond to the project configuration you are using. </p>
+      <p><font color="#551a8b"><b>Configure</b></font><font
+ color="#551a8b"><b>:</b> </font>--download-package option does not
+work with many external packages [for eg: mpich]</p>
+      <p><font color="#551a8b"><b>Project</b></font><font
+ color="#551a8b"><b> Files:</b> </font>We provide
+templates for Microsoft Visual Studio project files at
+${PETSC_DIR}/projects. These do not work by default. If you need to use
+project files:<br>
+      </p>
+      <ul>
+        <li>try compiling the example from make file - for eg: <br>
+cd src/ksp/ksp/examples/tutorials<br>
+make ex2</li>
+        <li>if the above works - then make sure all the compiler/linker
+options used by make are also present in the project file.</li>
+        <li>if errors - redo the above step. [if all the options are
+correctly specified - then the example should compile from MSDev.<br>
+        </li>
+      </ul>
+      <p> </p>
       <p><b><font color="#551a8b">Debugger:&nbsp; </font></b>Running
 PETSc probrams with -start_in_debugger is not supported on this
 platform, so debuggers will need to be initiated manually. Make sure
@@ -409,7 +430,7 @@ for all configure options required on the SP.</p>
  name="AdditionalMicrosoftWindowsNotes"><font color="#551a8b">Installing
 on IBM Blue Gene:</font></a></h3>
       <p>IBM Blue Gene [as of now] requires modified compiler script
-wrappers to compile PETSc-2.3.0. Please download <a
+wrappers to compile PETSc-2.3.1. Please download <a
  href="ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz">ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz</a>
 and follow instructions provided in the <span
  style="font-weight: bold;">README</span> file.</p>
