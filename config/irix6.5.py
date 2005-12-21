@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# ******* Currently not tested **********
+
 configure_options = [
   '--with-cc=cc -n32',
   '--with-fc=f90 -n32',
@@ -17,6 +19,3 @@ configure_options = [
 if __name__ == '__main__':
   import configure
   configure.petsc_configure(configure_options)
-
-# Extra options used for testing locally
-test_options = []

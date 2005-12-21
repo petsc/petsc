@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# ******* Currently not tested **********
+
 configure_options = [
   '--download-mpich=1',
   '--download-mpich-pm=gforker',  
@@ -12,8 +14,3 @@ configure_options = [
 if __name__ == '__main__':
   import configure
   configure.petsc_configure(configure_options)
-
-# Extra options used for testing locally
-test_options = []
-
-

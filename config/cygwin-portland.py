@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# ******* Currently not tested **********
+
 configure_options = [
   '--with-vendor-compilers=portland',
   # C++ compiler does not appear to be distributed with the trial version, maybe there is one?
@@ -15,6 +17,3 @@ configure_options = [
 if __name__ == '__main__':
   import configure
   configure.petsc_configure(configure_options)
-
-# Extra options used for testing locally
-test_options = []

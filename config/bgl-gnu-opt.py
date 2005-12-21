@@ -22,7 +22,7 @@ configure_options = [
   '--with-debugging=0',
   '--with-fortran-kernels=generic',
   
-  '--can-execute=0',
+  '--with-batch=1',
   '--sizeof_void_p=4',
   '--sizeof_short=2',
   '--sizeof_int=4',

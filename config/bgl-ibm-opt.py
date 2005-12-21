@@ -25,7 +25,7 @@ configure_options = [
   # the following option gets automatically enabled on BGL/with IBM compilers.
   # '--with-fortran-kernels=bgl'
 
-  '--can-execute=0',
+  '--with-batch=1',
   '--sizeof_void_p=4',
   '--sizeof_short=2',
   '--sizeof_int=4',

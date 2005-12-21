@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# Force parmetis to not build sharedlibs on IA64 by using --with-pic=0
+# [as it doesn't explicitly check if mpich libraries are built with
+# -fPIC flag
+
 configure_options = [
   '--with-vendor-compilers=intel',
   '--with-mpi-dir=/home/balay/soft/mpich2-1.0.3-intel',
@@ -10,6 +14,3 @@ configure_options = [
 if __name__ == '__main__':
   import configure
   configure.petsc_configure(configure_options)
-
-# Extra options used for testing locally
-test_options = []
