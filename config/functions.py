@@ -78,11 +78,13 @@ choke me
 
   def checkMemcmp(self):
     '''Check for 8-bit clean memcmp'''
+    if self.framework.argDB['with-bad-memcmp']:
+      raise RuntimeError('Failed to find 8-bit clean memcmp(). Cannot proceed')
     if self.framework.argDB['with-memcmp-ok']:
       return
     if not self.framework.argDB['with-batch']:
       if not self.checkRun('#include <string.h>\nvoid exit(int);\n\n', 'char c0 = 0x40;\nchar c1 = (char) 0x80;\nchar c2 = (char) 0x81;\nexit(memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1);\n'):
-        raise RuntimeError('Failed to find 8-bit clean memcmp()')
+        raise RuntimeError('Failed to find 8-bit clean memcmp(). Cannot proceed.')
     else:
       self.framework.addBatchInclude('#include <string.h>')
       self.framework.addBatchBody(['{',
