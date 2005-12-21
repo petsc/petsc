@@ -883,14 +883,11 @@ namespace ALE {
         typename ::boost::multi_index::index<StratumSet,point>::type& index = ::boost::multi_index::get<point>(this->strata);
         Obj<PointSet> modifiedPoints = PointSet();
 
-        std::cout << "Calculating heights:" << std::endl;
         for(typename InputSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
           // Compute the max height of the points in the support of p, and add 1
           int h0 = this->height(*p_itor);
           int h1 = this->height(this->support(*p_itor)) + 1;
-          std::cout << "  " << *p_itor << " h0: " << h0 << " h1: " << h1 << std::endl;
           if(h1 != h0) {
-            std::cout << "  changing height to " << h1 << std::endl;
             typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = index.find(*p_itor);
             index.modify(i, changeHeight(h1));
             modifiedPoints->insert(*p_itor);
@@ -938,9 +935,10 @@ namespace ALE {
       Sieve<Point,int> orientation;
       MPI_Comm         comm;
       int              dim;
+      int              debug;
 
     public:
-      Mesh(MPI_Comm c, int dimension) : comm(c), dim(dimension) {};
+      Mesh(MPI_Comm c, int dimension) : comm(c), dim(dimension), debug(0) {};
 
       Obj<Sieve<Point,int> > getTopology() {return this->topology;};
       Obj<Sieve<Point,int> > getOrientation() {return this->orientation;};

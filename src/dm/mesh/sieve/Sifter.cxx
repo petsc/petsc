@@ -7,7 +7,7 @@ namespace ALE {
     void Mesh::buildFaces(int dim, std::map<int, int*> *curSimplex, Obj<PointSet> boundary, Point& simplex) {
       Obj<PointSet> faces = PointSet();
 
-      std::cout << "  Building faces for boundary(size " << boundary->size() << "), dim " << dim << std::endl;
+      if (debug) {std::cout << "  Building faces for boundary(size " << boundary->size() << "), dim " << dim << std::endl;}
       if (dim > 1) {
         // Use the cone construction
         for(PointSet::iterator b_itor = boundary->begin(); b_itor != boundary->end(); ++b_itor) {
@@ -15,17 +15,19 @@ namespace ALE {
           Point         face;
 
           faceBoundary.copy(boundary);
-          std::cout << "    boundary point " << *b_itor << std::endl;
+          if (debug) {std::cout << "    boundary point " << *b_itor << std::endl;}
           faceBoundary->erase(*b_itor);
           this->buildFaces(dim-1, curSimplex, faceBoundary, face);
           faces->insert(face);
         }
       } else {
-        std::cout << "  Just set faces to boundary in 1d" << std::endl;
+        if (debug) {std::cout << "  Just set faces to boundary in 1d" << std::endl;}
         faces = boundary;
       }
-      for(PointSet::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
-        std::cout << "  face point " << *f_itor << std::endl;
+      if (debug) {
+        for(PointSet::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
+          std::cout << "  face point " << *f_itor << std::endl;
+        }
       }
       // We always create the toplevel, so we could shortcircuit somehow
       // Should not have to loop here since the meet of just 2 boundary elements is an element
@@ -37,11 +39,11 @@ namespace ALE {
 
       if (preElement->size() > 0) {
         simplex = *preElement->begin();
-        std::cout << "  Found old simplex " << simplex << std::endl;
+        if (debug) {std::cout << "  Found old simplex " << simplex << std::endl;}
       } else {
         simplex = Point(0, (*(*curSimplex)[dim])++);
         this->topology.addCone(faces, simplex);
-        std::cout << "  Added simplex " << simplex << " dim " << dim << std::endl;
+        if (debug) {std::cout << "  Added simplex " << simplex << " dim " << dim << std::endl;}
       }
     };
 
@@ -71,7 +73,7 @@ namespace ALE {
         for(int b = 0; b < dim+1; b++) {
           Point vertex(0, simplices[s*(dim+1)+b]+numSimplices);
 
-          std::cout << "Adding boundary node " << vertex << std::endl;
+          if (debug) {std::cout << "Adding boundary node " << vertex << std::endl;}
           boundary->insert(vertex);
         }
         std::cout << "simplex " << s << " boundary size " << boundary->size() << std::endl;
@@ -99,20 +101,11 @@ namespace ALE {
       PetscMPIInt rank;
 
       MPI_Comm_rank(this->comm, &rank);
-      //         if (debug) {
-      //           topology->setVerbosity(11);
-      //           orientation->setVerbosity(11);
-      //           boundary->setVerbosity(11);
-      //         }
       /* Create serial sieve */
       this->topology.setStratification(false);
       if (rank == 0) {
         this->buildTopology(numSimplices, simplices, numVertices);
       }
-      //         if (debug) {
-      //           topology->view("Serial Simplicializer topology");
-      //           orientation->view("Serial Simplicializer orientation");
-      //         }
       this->topology.stratify();
       this->topology.setStratification(true);
       //createSerialCoordinates(numElements, coords);
