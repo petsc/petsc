@@ -14,7 +14,7 @@ configure_options = [
   '--with-cc=mpicc',
   '--with-fc=mpif77',
 
-  '--with-blas-lapack-dir=/home/balay/software/fblaslapack/gnu-O3',
+  '--download-f-blas-lapack=1',
   '--with-shared=0',
   
   '-COPTFLAGS=-O3',
@@ -23,6 +23,7 @@ configure_options = [
   '--with-fortran-kernels=generic',
   
   '--with-batch=1',
+  '--with-memcmp-ok',
   '--sizeof_void_p=4',
   '--sizeof_short=2',
   '--sizeof_int=4',
