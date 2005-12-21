@@ -32,6 +32,7 @@ the rank of the process owning each cell.
 
 static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 
+#include <Sifter.hh>
 #include "petscmesh.h"
 #include "petscviewer.h"
 #include <stdlib.h>
@@ -49,9 +50,9 @@ extern int debug;
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  Mesh           mesh;
-  PetscViewer    viewer;
-  Vec            partition;
+  //Mesh           mesh;
+  //PetscViewer    viewer;
+  //Vec            partition;
   char           baseFilename[2048];
   PetscTruth     useZeroBase;
   const char    *fileTypes[2] = {"pcice", "pylith"};
@@ -83,23 +84,28 @@ int main(int argc, char *argv[])
   ierr = PetscOptionsEnd(); 
   comm = PETSC_COMM_WORLD;
 
+  ALE::Obj<ALE::def::Mesh> mesh;
+
   /* Set ALE package-wide verbosity; will not affect Coaster descendants that carry their own verbosity */
   ALE::setVerbosity(verbosity);
 
-  ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
-  ALE::LogStagePush(stage);
-  ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
-  if (fileType == PCICE) {
-    ierr = MeshCreatePCICE(comm, baseFilename, dim, useZeroBase, &mesh);CHKERRQ(ierr);
-  } else if (fileType == PYLITH) {
-    ierr = MeshCreatePyLith(comm, baseFilename, &mesh);CHKERRQ(ierr);
+  try {
+    ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
+    ALE::LogStagePush(stage);
+    ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
+    if (fileType == PCICE) {
+      mesh = ALE::def::PCICEBuilder::create(comm, baseFilename, dim, useZeroBase);
+    } else if (fileType == PYLITH) {
+      mesh = ALE::def::PyLithBuilder::create(comm, baseFilename);
+    }
+    ALE::LogStagePop(stage);
+    ALE::Obj<ALE::def::Sieve<ALE::def::Point,int> > topology = mesh->getTopology();
+    ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
+  } catch (ALE::Exception e) {
+    std::cout << e << std::endl;
   }
-  ALE::LogStagePop(stage);
-  ALE::Obj<ALE::Sieve> topology;
-  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0).size());CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0).size());CHKERRQ(ierr);
-
+#if 0
   stage = ALE::LogStageRegister("MeshDistribution");
   ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
@@ -147,6 +153,7 @@ int main(int argc, char *argv[])
   ALE::LogStagePop(stage);
 
   ierr = MeshDestroy(mesh);CHKERRQ(ierr);
+#endif
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

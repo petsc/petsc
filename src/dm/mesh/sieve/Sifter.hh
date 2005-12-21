@@ -68,6 +68,8 @@ namespace ALE {
     //
     template <typename Data, typename Color>
     class Sieve {
+      typedef Color color_type;
+      typedef Data  point_type;
       // tags for accessing the corresponding indices of employee_set
       struct source{};
       struct target{};
@@ -111,7 +113,13 @@ namespace ALE {
         int   indegree;
         int   outdegree;
 
-        StratumPoint() : depth(-1), height(-1), indegree(0), outdegree(0) {};
+        StratumPoint() : depth(0), height(0), indegree(0), outdegree(0) {};
+        StratumPoint(const Data& p) : point(p), depth(0), height(0), indegree(0), outdegree(0) {};
+        // Printing
+        friend std::ostream& operator<<(std::ostream& os, const StratumPoint& p) {
+          os << "[" << p.point << ", "<< p.depth << ", "<< p.height << ", "<< p.indegree << ", "<< p.outdegree << "]";
+          return os;
+        };
       };
       typedef ::boost::multi_index::multi_index_container<
         StratumPoint,
@@ -156,7 +164,7 @@ namespace ALE {
           virtual iterator    operator++(int n) {iterator tmp(this->pointIter); ++this->pointIter; return tmp;};
           virtual bool        operator==(const iterator& itor) const {return this->pointIter == itor.pointIter;};
           virtual bool        operator!=(const iterator& itor) const {return this->pointIter != itor.pointIter;};
-          virtual const Data& operator*() const {return *this->pointIter;};
+          virtual const Data& operator*() const {return this->pointIter->point;};
         };
 
         baseSequence(const typename ::boost::multi_index::index<StratumSet,indegree>::type& base) : baseIndex(base) {};
@@ -187,7 +195,7 @@ namespace ALE {
           virtual iterator    operator++(int n) {iterator tmp(this->pointIter); ++this->pointIter; return tmp;};
           virtual bool        operator==(const iterator& itor) const {return this->pointIter == itor.pointIter;};
           virtual bool        operator!=(const iterator& itor) const {return this->pointIter != itor.pointIter;};
-          virtual const Data& operator*() const {return *this->pointIter;};
+          virtual const Data& operator*() const {return this->pointIter->point;};
         };
 
         rootSequence(const typename ::boost::multi_index::index<StratumSet,indegree>::type& root) : rootIndex(root) {};
@@ -218,7 +226,7 @@ namespace ALE {
           virtual iterator    operator++(int n) {iterator tmp(this->pointIter); ++this->pointIter; return tmp;};
           virtual bool        operator==(const iterator& itor) const {return this->pointIter == itor.pointIter;};
           virtual bool        operator!=(const iterator& itor) const {return this->pointIter != itor.pointIter;};
-          virtual const Data& operator*() const {return *this->pointIter;};
+          virtual const Data& operator*() const {return this->pointIter->point;};
         };
 
         leafSequence(const typename ::boost::multi_index::index<StratumSet,outdegree>::type& leaf) : leafIndex(leaf) {};
@@ -392,7 +400,7 @@ namespace ALE {
       // The basic Sieve interface
       void clear() {
         this->arrows.clear();
-        this->stata.clear();
+        this->strata.clear();
       };
       Obj<coneSequence> cone(const Data& p) {
         return coneSequence(::boost::multi_index::get<targetColor>(this->arrows), p);
@@ -687,13 +695,13 @@ namespace ALE {
                 chain1->erase(*iter);
               }
             }
-            // Replace each of the cones with a cone over it, and check if either is empty; if so, return what's in meet at the moment.
-            support = this->cone(chain0);
+            // Replace each of the supports with the support over it, and check if either is empty; if so, return what's in join at the moment.
+            support = this->support(chain0);
             chain0->insert(support->begin(), support->end());
             if(chain0->size() == 0) {
               break;
             }
-            support = this->cone(chain1);
+            support = this->support(chain1);
             chain1->insert(support->begin(), support->end());
             if(chain1->size() == 0) {
               break;
@@ -703,6 +711,9 @@ namespace ALE {
         return join;
       };
       // Manipulation
+      void addPoint(const Data& p) {
+        this->strata(StratumPoint(p));
+      };
       void addArrow(const Data& p, const Data& q) {
         this->addArrow(p, q, Color());
       };
@@ -795,13 +806,27 @@ namespace ALE {
       void setStratification(bool doStratify) {this->stratification = doStratify;};
       bool getStratification() {return this->stratification;};
       void stratify() {
-        this->strate.clear();
         this->__computeDegrees();
         // FIX: We would like to avoid the copy here with cone() and support()
         this->__computeClosureHeights(this->cone(this->leaves()));
         this->__computeStarDepths(this->support(this->roots()));
+
+        const typename ::boost::multi_index::index<StratumSet,point>::type& points = ::boost::multi_index::get<point>(this->strata);
+
+        for(typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = points.begin(); i != points.end(); i++) {
+          std::cout << *i << std::endl;
+        }
       };
     private:
+      struct changeIndegree {
+        changeIndegree(int newIndegree) : newIndegree(newIndegree) {};
+
+        void operator()(StratumPoint& p) {
+          p.indegree = newIndegree;
+        }
+      private:
+        int newIndegree;
+      };
       struct changeOutdegree {
         changeOutdegree(int newOutdegree) : newOutdegree(newOutdegree) {};
 
@@ -814,27 +839,32 @@ namespace ALE {
       void __computeDegrees() {
         const typename ::boost::multi_index::index<ArrowSet,target>::type& cones = ::boost::multi_index::get<target>(this->arrows);
         const typename ::boost::multi_index::index<ArrowSet,source>::type& supports = ::boost::multi_index::get<source>(this->arrows);
+        typename ::boost::multi_index::index<StratumSet,point>::type& points = ::boost::multi_index::get<point>(this->strata);
 
         for(typename ::boost::multi_index::index<ArrowSet,target>::type::iterator c_iter = cones.begin(); c_iter != cones.end(); ++c_iter) {
-          StratumPoint p;
+          if (points.find(c_iter->target) != points.end()) {
+            typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = points.find(c_iter->target);
 
-          p.point    = c_iter->target;
-          p.indegree = cones.count(*c_iter);
-          this->strata.insert(p);
-        }
-
-        const typename ::boost::multi_index::index<StratumSet,point>::type& points = ::boost::multi_index::get<point>(this->strata);
-
-        for(typename ::boost::multi_index::index<ArrowSet,source>::type::iterator s_iter = supports.begin(); s_iter != supports.end(); ++s_iter) {
-          if (points.find(*s_iter) != points.end()) {
-            typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = points.find(*s_iter);
-
-            points.modify(i, changeOutdegree(supports.count(*s_iter)));
+            points.modify(i, changeIndegree(cones.count(c_iter->target)));
           } else {
             StratumPoint p;
 
-            p.point     = s_iter->target;
-            p.outdegree = supports.count(*s_iter);
+            p.point    = c_iter->target;
+            p.indegree = cones.count(c_iter->target);
+            this->strata.insert(p);
+          }
+        }
+
+        for(typename ::boost::multi_index::index<ArrowSet,source>::type::iterator s_iter = supports.begin(); s_iter != supports.end(); ++s_iter) {
+          if (points.find(s_iter->source) != points.end()) {
+            typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = points.find(s_iter->source);
+
+            points.modify(i, changeOutdegree(supports.count(s_iter->source)));
+          } else {
+            StratumPoint p;
+
+            p.point     = s_iter->source;
+            p.outdegree = supports.count(s_iter->source);
             this->strata.insert(p);
           }
         }
@@ -853,11 +883,14 @@ namespace ALE {
         typename ::boost::multi_index::index<StratumSet,point>::type& index = ::boost::multi_index::get<point>(this->strata);
         Obj<PointSet> modifiedPoints = PointSet();
 
+        std::cout << "Calculating heights:" << std::endl;
         for(typename InputSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
           // Compute the max height of the points in the support of p, and add 1
           int h0 = this->height(*p_itor);
           int h1 = this->height(this->support(*p_itor)) + 1;
+          std::cout << "  " << *p_itor << " h0: " << h0 << " h1: " << h1 << std::endl;
           if(h1 != h0) {
+            std::cout << "  changing height to " << h1 << std::endl;
             typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = index.find(*p_itor);
             index.modify(i, changeHeight(h1));
             modifiedPoints->insert(*p_itor);
@@ -899,6 +932,70 @@ namespace ALE {
     public:
     };
 
+    // A computational mesh
+    class Mesh {
+      Sieve<Point,int> topology;
+      Sieve<Point,int> orientation;
+      MPI_Comm         comm;
+      int              dim;
+
+    public:
+      Mesh(MPI_Comm c, int dimension) : comm(c), dim(dimension) {};
+
+      Obj<Sieve<Point,int> > getTopology() {return this->topology;};
+      Obj<Sieve<Point,int> > getOrientation() {return this->orientation;};
+
+      void buildFaces(int dim, std::map<int, int*> *curSimplex, Obj<PointSet> boundary, Point& simplex);
+      void buildTopology(int numSimplices, int simplices[], int numVertices);
+      void populate(int numSimplices, int simplices[], int numVertices, double coords[]);
+    };
+
+    // Creation
+    class PyLithBuilder {
+      static inline void ignoreComments(char *buf, PetscInt bufSize, FILE *f) {
+        while((fgets(buf, bufSize, f) != NULL) && (buf[0] == '#')) {}
+      };
+
+      static void readConnectivity(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numElements, int *vertices[]);
+      static void readCoordinates(MPI_Comm comm, const std::string& filename, int dim, int& numVertices, double *coordinates[]);
+    public:
+      PyLithBuilder() {};
+      virtual ~PyLithBuilder() {};
+
+      static Obj<Mesh> create(MPI_Comm comm, const std::string& baseFilename) {
+        int       dim = 3;
+        bool      useZeroBase = false;
+        Obj<Mesh> mesh = Mesh(comm, dim);
+        int      *vertices;
+        double   *coordinates;
+        int       numElements, numVertices;
+
+        readConnectivity(comm, baseFilename+".connect", dim, useZeroBase, numElements, &vertices);
+        readCoordinates(comm, baseFilename+".coord", dim, numVertices, &coordinates);
+        mesh->populate(numElements, vertices, numVertices, coordinates);
+        return mesh;
+      };
+    };
+
+    class PCICEBuilder {
+      static void readConnectivity(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numElements, int *vertices[]);
+      static void readCoordinates(MPI_Comm comm, const std::string& filename, int dim, int& numVertices, double *coordinates[]);
+    public:
+      PCICEBuilder() {};
+      virtual ~PCICEBuilder() {};
+
+      static Obj<Mesh> create(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false) {
+        Obj<Mesh> mesh = Mesh(comm, dim);
+        int      *vertices;
+        double   *coordinates;
+        int       numElements, numVertices;
+
+        readConnectivity(comm, baseFilename+".lcon", dim, useZeroBase, numElements, &vertices);
+        readCoordinates(comm, baseFilename+".nodes", dim, numVertices, &coordinates);
+        mesh->populate(numElements, vertices, numVertices, coordinates);
+        return mesh;
+      };
+    };
   } // namespace def
 
 } // namespace ALE

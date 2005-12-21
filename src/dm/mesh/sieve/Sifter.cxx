@@ -118,7 +118,7 @@ namespace ALE {
       //createSerialCoordinates(numElements, coords);
     };
 
-    void PyLithBuilder::readConnectivityPyLith(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numElements, int *vertices[]) {
+    void PyLithBuilder::readConnectivity(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numElements, int *vertices[]) {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       maxCells = 1024, cellCount = 0;
@@ -128,7 +128,7 @@ namespace ALE {
       PetscInt       commRank;
       PetscErrorCode ierr;
 
-      MPI_Comm_rank(comm, &commRank);
+      ierr = MPI_Comm_rank(comm, &commRank);
       if (dim != 3) {
         throw ALE::Exception("PyLith only works in 3D");
       }
@@ -139,7 +139,7 @@ namespace ALE {
       ierr = PetscViewerFileSetName(viewer, filename.c_str());
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
       /* Ignore comments */
-      this->ignoreCommentsPyLith(buf, 2048, f);
+      ignoreComments(buf, 2048, f);
       ierr = PetscMalloc(maxCells*(dim+1) * sizeof(PetscInt), &verts);
       do {
         const char *v = strtok(buf, " ");
@@ -180,7 +180,7 @@ namespace ALE {
       *vertices = verts;
     };
 
-    void PyLithBuilder::readCoordinatesPyLith(MPI_Comm comm, const std::string& filename, int dim, int& numVertices, double *coordinates[]) {
+    void PyLithBuilder::readCoordinates(MPI_Comm comm, const std::string& filename, int dim, int& numVertices, double *coordinates[]) {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       maxVerts = 1024, vertexCount = 0;
@@ -198,10 +198,10 @@ namespace ALE {
         ierr = PetscViewerFileSetName(viewer, filename.c_str());
         ierr = PetscViewerASCIIGetPointer(viewer, &f);
         /* Ignore comments and units line */
-        this->ignoreCommentsPyLith(buf, 2048, f);
+        ignoreComments(buf, 2048, f);
         ierr = PetscMalloc(maxVerts*dim * sizeof(PetscScalar), &coords);
         /* Ignore comments */
-        this->ignoreCommentsPyLith(buf, 2048, f);
+        ignoreComments(buf, 2048, f);
         do {
           const char *x = strtok(buf, " ");
 
@@ -228,18 +228,79 @@ namespace ALE {
       }
     };
 
-    Obj<Mesh> PyLithBuilder::createPyLith(MPI_Comm comm, const std::string& baseFilename) {
-      int       dim = 3;
-      bool      useZeroBase = false;
-      Obj<Mesh> mesh = Mesh(comm, dim);
-      int      *vertices;
-      double   *coordinates;
-      int       numElements, numVertices;
+    void PCICEBuilder::readConnectivity(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numElements, int *vertices[]) {
+      PetscViewer    viewer;
+      FILE          *f;
+      PetscInt       numCells, cellCount = 0;
+      PetscInt      *verts;
+      char           buf[2048];
+      PetscInt       c;
+      PetscInt       commRank;
+      PetscErrorCode ierr;
 
-      this->readConnectivityPyLith(comm, baseFilename+".connect", dim, useZeroBase, numElements, &vertices);
-      this->readCoordinatesPyLith(comm, baseFilename+".coord", dim, numVertices, &coordinates);
-      mesh->populate(numElements, vertices, numVertices, coordinates);
-      return mesh;
+      ierr = MPI_Comm_rank(comm, &commRank);
+
+      if (commRank != 0) return;
+      ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
+      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
+      ierr = PetscViewerFileSetName(viewer, filename.c_str());
+      ierr = PetscViewerASCIIGetPointer(viewer, &f);
+      numCells = atoi(fgets(buf, 2048, f));
+      ierr = PetscMalloc(numCells*(dim+1) * sizeof(PetscInt), &verts);
+      while(fgets(buf, 2048, f) != NULL) {
+        const char *v = strtok(buf, " ");
+      
+        /* Ignore cell number */
+        v = strtok(NULL, " ");
+        for(c = 0; c <= dim; c++) {
+          int vertex = atoi(v);
+        
+          if (!useZeroBase) vertex -= 1;
+          verts[cellCount*(dim+1)+c] = vertex;
+          v = strtok(NULL, " ");
+        }
+        cellCount++;
+      }
+      ierr = PetscViewerDestroy(viewer);
+      numElements = numCells;
+      *vertices = verts;
+    };
+
+    void PCICEBuilder::readCoordinates(MPI_Comm comm, const std::string& filename, int dim, int& numVertices, double *coordinates[]) {
+      PetscViewer    viewer;
+      FILE          *f;
+      PetscInt       numVerts, vertexCount = 0;
+      PetscScalar   *coords;
+      char           buf[2048];
+      PetscInt       c;
+      PetscInt       commRank;
+      PetscErrorCode ierr;
+
+      ierr = MPI_Comm_rank(comm, &commRank);
+
+      if (commRank != 0) return;
+      ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
+      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
+      ierr = PetscViewerFileSetName(viewer, filename.c_str());
+      ierr = PetscViewerASCIIGetPointer(viewer, &f);
+      numVerts = atoi(fgets(buf, 2048, f));
+      ierr = PetscMalloc(numVerts*dim * sizeof(PetscScalar), &coords);
+      while(fgets(buf, 2048, f) != NULL) {
+        const char *x = strtok(buf, " ");
+      
+        /* Ignore vertex number */
+        x = strtok(NULL, " ");
+        for(c = 0; c < dim; c++) {
+          coords[vertexCount*dim+c] = atof(x);
+          x = strtok(NULL, " ");
+        }
+        vertexCount++;
+      }
+      ierr = PetscViewerDestroy(viewer);
+      numVertices = numVerts;
+      *coordinates = coords;
     };
   }
 }
