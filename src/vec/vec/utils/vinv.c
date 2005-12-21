@@ -211,6 +211,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMax(Vec v,PetscInt start,PetscInt *id
   if (!n) {
     max = PETSC_MIN;
   } else {
+    id  = 0;
 #if defined(PETSC_USE_COMPLEX)
     max = PetscRealPart(x[0]);
 #else
@@ -304,6 +305,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMin(Vec v,PetscInt start,PetscInt *id
   if (!n) {
     min = PETSC_MAX;
   } else {
+    id = 0;
 #if defined(PETSC_USE_COMPLEX)
     min = PetscRealPart(x[0]);
 #else
