@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# Notes:
+#   --with-batch=1 is required for IBM MPI. However all batch test values are specified.
+#   64 bit compilers/tools are specified for eg, with option: --with-cc='mpcc -q64'.
+
 configure_options = [
   '--with-batch=1',
   '--with-memcmp-ok',
@@ -23,7 +27,3 @@ configure_options = [
 if __name__ == '__main__':
   import configure
   configure.petsc_configure(configure_options)
-
-# Extra options used for testing locally
-test_options = []
-      

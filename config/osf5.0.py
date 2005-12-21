@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# ******* Currently not tested **********
+
 configure_options = [
   '--with-gnu-compilers=0',
   '--with-mpi-include=/home/petsc/software/mpich-1.2.2.3/alpha/include',
@@ -12,6 +14,3 @@ configure_options = [
 if __name__ == '__main__':
   import configure
   configure.petsc_configure(configure_options)
-
-# Extra options used for testing locally
-test_options = []

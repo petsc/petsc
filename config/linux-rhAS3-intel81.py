@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# Build PETSc on jazz cluster, with intel compilers
+
 configure_options = [
   '--with-shared=1',
   '--with-mpi-dir=/soft/apps/packages/mpich-gm-1.2.6..13b-intel-8.1-2',
@@ -21,6 +23,3 @@ configure_options = [
 if __name__ == '__main__':
   import configure
   configure.petsc_configure(configure_options)
-
-# Extra options used for testing locally
-test_options = []

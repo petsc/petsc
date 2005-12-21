@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-# using gfortran from http://gcc.gnu.org/wiki/GFortranBinariesMacOS
+# using gfortran from http://gcc.gnu.org/wiki/GFortranBinariesMacOS on Mac OSX 10.4
+
 configure_options = [
   'CC=gcc',
   'FC=gfortran',
@@ -14,8 +15,3 @@ configure_options = [
 if __name__ == '__main__':
   import configure
   configure.petsc_configure(configure_options)
-
-# Extra options used for testing locally
-test_options = []
-
-

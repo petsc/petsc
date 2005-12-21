@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+# Test c89 std code compliance
   
 configure_options = [
   '--with-cc=gcc -std=c89',
@@ -13,6 +15,3 @@ configure_options = [
 if __name__ == '__main__':
   import configure
   configure.petsc_configure(configure_options)
-
-# Extra options used for testing locally
-test_options = []

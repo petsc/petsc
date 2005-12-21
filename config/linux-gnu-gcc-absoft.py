@@ -1,5 +1,7 @@
 #!/home/petsc/soft/linux-debian_sarge/python-2.2/bin/python
 
+# Test python-2.2 compliance [minimal python version required by PETSc configure]
+
 configure_options = [
   '--with-cc=gcc',
   '--with-fc=f90',
@@ -16,6 +18,3 @@ configure_options = [
 if __name__ == '__main__':
     import configure
     configure.petsc_configure(configure_options)
-
-# Extra options used for testing locally
-test_options = []
