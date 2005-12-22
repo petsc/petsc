@@ -14,6 +14,7 @@ class Configure(PETSc.package.Package):
     self.libdir     = ''
     self.liblist    = [['superlu.a']]
     self.includedir = 'SRC'
+    self.complex    = 1
     return
 
   def setupDependencies(self, framework):

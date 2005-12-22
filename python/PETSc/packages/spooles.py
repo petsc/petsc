@@ -14,6 +14,7 @@ class Configure(PETSc.package.Package):
     self.liblist    = [[os.path.join('MPI','src','spoolesMPI.a'),'spooles.a']]
     self.libdir     = ''
     self.includedir = ''
+    self.complex    = 1
     return
 
   def setupDependencies(self, framework):
