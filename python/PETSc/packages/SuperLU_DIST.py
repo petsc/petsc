@@ -53,11 +53,18 @@ class Configure(PETSc.package.Package):
       self.setCompilers.pushLanguage('FC')
       g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
       g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n')
+      # set fortran name mangling
+      if self.compilers.fortranMangling == 'underscore':
+        g.write('CDEFS   = -DAdd_\n')
+      elif self.compilers.fortranMangling == 'capitalize':
+        g.write('CDEFS   = -DUpCase\n')
+      else:
+        g.write('CDEFS   = -DNoChange\n')
       self.setCompilers.popLanguage()
     else:
       g.write('FORTRAN      = \n')
       g.write('FFLAGS       = \n')
-    g.write('CDEFS        = -DAdd_\n')
+    g.write('NOOPTS       =  -O0\n')
     g.close()
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
