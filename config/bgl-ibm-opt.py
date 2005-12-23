@@ -15,7 +15,7 @@ configure_options = [
   '--with-cc=mpxlc',
   '--with-fc=mpxlf',
 
-  '--with-blas-lapack-dir=/home/balay/software/fblaslapack/ibm-O3',
+  '--download-f-blas-lapack=1',
   '--with-shared=0',
   
   '-COPTFLAGS=-qbgl -qarch=440 -qtune=440 -O3',
@@ -26,6 +26,7 @@ configure_options = [
   # '--with-fortran-kernels=bgl'
 
   '--with-batch=1',
+  '--with-memcmp-ok',
   '--sizeof_void_p=4',
   '--sizeof_short=2',
   '--sizeof_int=4',

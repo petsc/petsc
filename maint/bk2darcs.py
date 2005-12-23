@@ -97,7 +97,7 @@ def main():
   fd.close()
   revs=buf.splitlines()
 
-
+  if revs: lastrev = revs[-1]
   #now process each revision [ignore the first]
   for rev in revs:
     # rev  - basic string
@@ -145,7 +145,7 @@ def main():
     os.system('darcs record --test -l -a -A ' + auth_email + ' --delete-logfile --logfile='+log_file + '> /dev/null 2>&1')
     
     # optimize/checkpoint every 250 patches
-    if revi%250 == 0  and revi != 0:
+    if revi%250 == 0  and revi != 0 and rev != lastrev:
       print 'checkpointing/optimizing changeset-'+ revn
       os.system('darcs tag -A snapshot@petsc snapshot-'+revn +'> /dev/null 2>&1')
       os.system('darcs optimize --checkpoint -t snapshot-'+revn +'> /dev/null 2>&1')

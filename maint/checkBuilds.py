@@ -31,30 +31,16 @@ class BuildChecker(script.Script):
     return help
 
   compilers = {'aix5.1.0.0':           ['ibm'],
-               'cygwin':               ['gcc'],
                'cygwin-borland':       ['win32fe', 'borland'],
                'cygwin-ms':            ['win32fe', 'ms'],
-               'freebsd5.1':           ['gcc'],
-               'freebsd5.1-c89':       ['gcc'],
-               'linux':                ['gcc'],
-               'linux-gnu':            ['gcc'],
-               'linux-gnu-amd64':      ['gcc'],
                'linux-gnu-gcc-absoft': ['gcc', 'absoftF90'],
                'linux-gnu-gcc-ifc':    ['gcc', 'intelF90'],
                'linux-gnu-gcc-pgf90':  ['gcc', 'pgF90'],
-               'linux-gnu-ia64':       ['gcc'],
                'linux-gnu-ia64-intel': ['intel', 'intelF90'],
                'linux-rhAS3-intel81' : ['intel', 'intelF90'],
-               'linux-gnu-uni':        ['gcc'],
-               'linux-gnu-valgrind':   ['gcc'],
-               'linux-gnu-alpha':      ['gcc'],
-               'linux-mcs':            ['gcc'],
-               'macosx-gnu':           ['gcc'],
                'macosx-ibm':           ['ibm'],
-               'macosx-nagf90':        ['gcc'],
                'osf5.0':               ['mipsUltrix'],
                'solaris2.9':           ['solaris'],
-               'solaris-gnu':          ['gcc'],
                'solaris2.9-lam':       ['solaris'],
                'solaris-uni':          ['solaris'],
                # Untested architectures
@@ -164,7 +150,8 @@ class BuildChecker(script.Script):
     elif arch in self.argDB['archCompilers']:
       compilers = self.argDB['archCompilers'][arch]
     else:
-      raise RuntimeError('No compilers for architecture '+arch)
+      # default to gnu
+      compilers = ['gcc']
     try:
       # Why doesn't Python have a fucking flatten
       regExps = map(re.compile, self.flatten([self.compileErrorRE[compiler] for compiler in compilers]))
