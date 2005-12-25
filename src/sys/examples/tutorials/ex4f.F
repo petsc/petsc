@@ -56,5 +56,4 @@
 !     Since we initialized MPI, we must call MPI_Finalize()
 
       call  MPI_Finalize(ierr)
-      return
       end

@@ -10,7 +10,8 @@
 #
 set day=`date | cut -f1 -d" "`
 #
-set nPETSC_DIR=`pwd`
+# on cygwin - tcsh gives funky paths - so reset it to normal bash one so 'chkpetsc_dir' doesn't complain
+set nPETSC_DIR=`pwd | sed s~/cygdrive/h~~`
 if ( ! -f ${nPETSC_DIR}/include/petsc.h ) then
   set maintdir=`dirname $0`
   set nPETSC_DIR=`dirname $maintdir`
