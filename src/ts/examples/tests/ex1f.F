@@ -322,7 +322,7 @@
 
       double precision  t
       Vec               sol
-      integer           ctx
+      PetscObject       ctx
 
       PetscScalar localptr(1),ex1
       PetscScalar ex2,sc1,sc2
