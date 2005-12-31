@@ -46,13 +46,13 @@ namespace ALE {
     };
     typedef std::set<Point> PointSet;
 
-    template <typename Color>
+    template <typename Source_, typename Target_, typename Color_>
     struct Arrow {
-      Point source;
-      Point target;
-      Color color;
+      Source_ source;
+      Target_ target;
+      Color_ color;
 
-      Arrow(Point s, Point t, Color c) : source(s), target(t), color(c) {};
+      Arrow(Source_ s, Target_ t, Color_ c) : source(s), target(t), color(c) {};
       friend std::ostream& operator<<(std::ostream& os, const Arrow& a) {
         os << a.source << " --" << a.color << "--> " << a.target << std::endl;
         return os;
@@ -68,36 +68,38 @@ namespace ALE {
     //
     template <typename Data, typename Color>
     class Sieve {
+    public:
       typedef Color color_type;
       typedef Data  point_type;
+    private:
       // tags for accessing the corresponding indices of employee_set
       struct source{};
       struct target{};
       struct color{};
       struct sourceColor{};
       struct targetColor{};
-      typedef Arrow<Color> SieveArrow;
+      typedef Arrow<Point,Point,Color> Arrow_;
       typedef ::boost::multi_index::multi_index_container<
-        SieveArrow,
+        Arrow_,
         ::boost::multi_index::indexed_by<
           ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<source>, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Data,source)>,
+            ::boost::multi_index::tag<source>, BOOST_MULTI_INDEX_MEMBER(Arrow_,Data,source)>,
           ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<target>, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Data,target)>,
+            ::boost::multi_index::tag<target>, BOOST_MULTI_INDEX_MEMBER(Arrow_,Data,target)>,
           ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<color>,  BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>,
+            ::boost::multi_index::tag<color>,  BOOST_MULTI_INDEX_MEMBER(Arrow_,Color,color)>,
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<sourceColor>,
             ::boost::multi_index::composite_key<
-              SieveArrow, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Data,source), BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>
+              Arrow_, BOOST_MULTI_INDEX_MEMBER(Arrow_,Data,source), BOOST_MULTI_INDEX_MEMBER(Arrow_,Color,color)>
           >,
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<targetColor>,
             ::boost::multi_index::composite_key<
-              SieveArrow, BOOST_MULTI_INDEX_MEMBER(SieveArrow,Data,target), BOOST_MULTI_INDEX_MEMBER(SieveArrow,Color,color)>
+              Arrow_, BOOST_MULTI_INDEX_MEMBER(Arrow_,Data,target), BOOST_MULTI_INDEX_MEMBER(Arrow_,Color,color)>
           >
         >,
-        ALE_ALLOCATOR<SieveArrow>
+        ALE_ALLOCATOR<Arrow_>
       > ArrowSet;
       ArrowSet arrows;
 
@@ -141,7 +143,7 @@ namespace ALE {
       bool       stratification; 
       int        maxDepth;
       int        maxHeight;
-      int        sieveDiameter;
+      int        graphDiameter;
     public:
       class baseSequence {
         const typename ::boost::multi_index::index<StratumSet,indegree>::type& baseIndex;
@@ -396,7 +398,7 @@ namespace ALE {
         virtual std::size_t size()  {return this->heightIndex.count(h);};
       };
 
-      Sieve() : stratification(false), maxDepth(-1), maxHeight(-1), sieveDiameter(-1) {};
+      Sieve() : stratification(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
       // The basic Sieve interface
       void clear() {
         this->arrows.clear();
@@ -718,8 +720,8 @@ namespace ALE {
         this->addArrow(p, q, Color());
       };
       void addArrow(const Data& p, const Data& q, const Color& color) {
-        this->arrows.insert(SieveArrow(p, q, color));
-        std::cout << "Added " << SieveArrow(p, q, color);
+        this->arrows.insert(Arrow_(p, q, color));
+        std::cout << "Added " << Arrow_(p, q, color);
       };
       template<class InputSequence> void addCone(const Obj<InputSequence >& points, const Data& p) {
         this->addCone(points, p, Color());
@@ -789,7 +791,7 @@ namespace ALE {
       };
       int diameter() {
         int globalDiameter;
-        int ierr = MPI_Allreduce(&this->sieveDiameter, &globalDiameter, 1, MPI_INT, MPI_MAX, this->comm);
+        int ierr = MPI_Allreduce(&this->graphDiameter, &globalDiameter, 1, MPI_INT, MPI_MAX, this->comm);
         CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allreduce"));
         ALE_LOG_STAGE_END;
         return globalDiameter;
@@ -927,72 +929,6 @@ namespace ALE {
         }
       };
     public:
-    };
-
-    // A computational mesh
-    class Mesh {
-      Sieve<Point,int> topology;
-      Sieve<Point,int> orientation;
-      MPI_Comm         comm;
-      int              dim;
-      int              debug;
-
-    public:
-      Mesh(MPI_Comm c, int dimension) : comm(c), dim(dimension), debug(0) {};
-
-      Obj<Sieve<Point,int> > getTopology() {return this->topology;};
-      Obj<Sieve<Point,int> > getOrientation() {return this->orientation;};
-
-      void buildFaces(int dim, std::map<int, int*> *curSimplex, Obj<PointSet> boundary, Point& simplex);
-      void buildTopology(int numSimplices, int simplices[], int numVertices);
-      void populate(int numSimplices, int simplices[], int numVertices, double coords[]);
-    };
-
-    // Creation
-    class PyLithBuilder {
-      static inline void ignoreComments(char *buf, PetscInt bufSize, FILE *f) {
-        while((fgets(buf, bufSize, f) != NULL) && (buf[0] == '#')) {}
-      };
-
-      static void readConnectivity(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numElements, int *vertices[]);
-      static void readCoordinates(MPI_Comm comm, const std::string& filename, int dim, int& numVertices, double *coordinates[]);
-    public:
-      PyLithBuilder() {};
-      virtual ~PyLithBuilder() {};
-
-      static Obj<Mesh> create(MPI_Comm comm, const std::string& baseFilename) {
-        int       dim = 3;
-        bool      useZeroBase = false;
-        Obj<Mesh> mesh = Mesh(comm, dim);
-        int      *vertices;
-        double   *coordinates;
-        int       numElements, numVertices;
-
-        readConnectivity(comm, baseFilename+".connect", dim, useZeroBase, numElements, &vertices);
-        readCoordinates(comm, baseFilename+".coord", dim, numVertices, &coordinates);
-        mesh->populate(numElements, vertices, numVertices, coordinates);
-        return mesh;
-      };
-    };
-
-    class PCICEBuilder {
-      static void readConnectivity(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numElements, int *vertices[]);
-      static void readCoordinates(MPI_Comm comm, const std::string& filename, int dim, int& numVertices, double *coordinates[]);
-    public:
-      PCICEBuilder() {};
-      virtual ~PCICEBuilder() {};
-
-      static Obj<Mesh> create(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false) {
-        Obj<Mesh> mesh = Mesh(comm, dim);
-        int      *vertices;
-        double   *coordinates;
-        int       numElements, numVertices;
-
-        readConnectivity(comm, baseFilename+".lcon", dim, useZeroBase, numElements, &vertices);
-        readCoordinates(comm, baseFilename+".nodes", dim, numVertices, &coordinates);
-        mesh->populate(numElements, vertices, numVertices, coordinates);
-        return mesh;
-      };
     };
   } // namespace def
 

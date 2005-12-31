@@ -32,7 +32,7 @@ the rank of the process owning each cell.
 
 static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 
-#include <Sifter.hh>
+#include <Mesh.hh>
 #include "petscmesh.h"
 #include "petscviewer.h"
 #include <stdlib.h>
