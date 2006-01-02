@@ -130,7 +130,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *
 -   dm2 - the second, coarser DM object
 
     Output Parameter:
-.   mat - the injection
+.   ctx - the injection
 
     Level: developer
 
