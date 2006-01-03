@@ -310,12 +310,40 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectPublishBaseEnd(PetscObject);
 
    Level: developer
 
-   seealso: PetscObjectStateQuery
+   seealso: PetscObjectStateQuery, PetscObjectStateDecrease
 
    Concepts: state
 
 M*/
 #define PetscObjectStateIncrease(obj) ((obj)->state++,0)
+
+/*MC
+   PetscObjectStateDecrease - Decreases the state of any PetscObject, 
+   regardless of the type.
+
+   Synopsis:
+   PetscErrorCode PetscObjectStateDecrease(PetscObject obj)
+
+   Not Collective
+
+   Input Parameter:
+.  obj - any PETSc object, for example a Vec, Mat or KSP. This must be
+         cast with a (PetscObject), for example, 
+         PetscObjectStateIncrease((PetscObject)mat);
+
+   Notes: object state is an integer which gets increased every time
+   the object is changed. By saving and later querying the object state
+   one can determine whether information about the object is still current.
+   Currently, state is maintained for Vec and Mat objects.
+
+   Level: developer
+
+   seealso: PetscObjectStateQuery, PetscObjectStateIncrease
+
+   Concepts: state
+
+M*/
+#define PetscObjectStateDecrease(obj) ((obj)->state--,0)
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectStateQuery(PetscObject,PetscInt*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetState(PetscObject,PetscInt);
