@@ -190,8 +190,25 @@ namespace ALE {
           //
           virtual iterator    operator++() {++this->arrowIter; return *this;};
           virtual iterator    operator++(int n) {iterator tmp(this->arrowIter); ++this->arrowIter; return tmp;};
+          virtual iterator    operator--() {--this->arrowIter; return *this;};
+          virtual iterator    operator--(int n) {iterator tmp(this->arrowIter); --this->arrowIter; return tmp;};
           virtual bool        operator==(const iterator& itor) const {return this->arrowIter == itor.arrowIter;};
           virtual bool        operator!=(const iterator& itor) const {return this->arrowIter != itor.arrowIter;};
+          virtual const source_type& operator*() const {return this->arrowIter->source;};
+        };
+        class reverse_iterator {
+        public:
+          typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator arrowIter;
+
+          reverse_iterator(const typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator& iter) {
+            this->arrowIter = typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator(iter);
+          };
+          virtual ~reverse_iterator() {};
+          //
+          virtual reverse_iterator operator++() {--this->arrowIter; return *this;};
+          virtual reverse_iterator operator++(int n) {reverse_iterator tmp(this->arrowIter); --this->arrowIter; return tmp;};
+          virtual bool             operator==(const reverse_iterator& itor) const {return this->arrowIter == itor.arrowIter;};
+          virtual bool             operator!=(const reverse_iterator& itor) const {return this->arrowIter != itor.arrowIter;};
           virtual const source_type& operator*() const {return this->arrowIter->source;};
         };
 
@@ -210,6 +227,22 @@ namespace ALE {
             return iterator(this->coneIndex.upper_bound(::boost::make_tuple(key,color)));
           } else {
             return iterator(this->coneIndex.upper_bound(::boost::make_tuple(key)));
+          }
+        };
+        virtual reverse_iterator rbegin() {
+          if (useColor) {
+            return reverse_iterator(--this->coneIndex.upper_bound(::boost::make_tuple(key,color)));
+          } else {
+            return reverse_iterator(--this->coneIndex.upper_bound(::boost::make_tuple(key)));
+          }
+        };
+        virtual reverse_iterator rend()   {
+          typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator i;
+
+          if (useColor) {
+            return reverse_iterator(--this->coneIndex.lower_bound(::boost::make_tuple(key,color)));
+          } else {
+            return reverse_iterator(--this->coneIndex.lower_bound(::boost::make_tuple(key)));
           }
         };
         virtual std::size_t size()  {
@@ -329,27 +362,144 @@ namespace ALE {
         this->arrows.clear();
         this->strata.clear();
       };
-      void addArrow(const source_type& p, const target_type& q);
-      void addArrow(const source_type& p, const target_type& q, const color_type& color);
+      void addArrow(const source_type& p, const target_type& q) {
+        this->addArrow(p, q, color_type());
+      };
+      void addArrow(const source_type& p, const target_type& q, const color_type& color) {
+        this->arrows.insert(Arrow_(p, q, color));
+        //std::cout << "Added " << Arrow_(p, q, color);
+      };
+      void addCone(const source_type& source, const target_type& target){
+        this->addArrow(source, target);
+      };
       template<class sourceInputSequence> 
-      void addCone(const Obj<sourceInputSequence>& sources, const target_type& target);
+      void addCone(const Obj<sourceInputSequence>& sources, const target_type& target) {
+        this->addCone(sources, target, color_type());
+      };
+      void addCone(const source_type& source, const target_type& target, const color_type& color) {
+        this->addArrow(source, target, color);
+      };
       template<class sourceInputSequence> 
-      void addCone(const Obj<sourceInputSequence>& sources, const target_type& target, const color_type& color);
+      void addCone(const Obj<sourceInputSequence>& sources, const target_type& target, const color_type& color) {
+        std::cout << "Adding a cone " << std::endl;
+        for(typename sourceInputSequence::iterator iter = sources->begin(); iter != sources->end(); ++iter) {
+          std::cout << "Adding arrow from " << *iter << " to " << target << "(" << color << ")" << std::endl;
+          this->addArrow(*iter, target, color);
+        }
+      };
       template<class targetInputSequence> 
       void addSupport(const source_type& source, const Obj<targetInputSequence >& targets);
       template<class targetInputSequence> 
       void addSupport(const source_type& source, const Obj<targetInputSequence >& targets, const color_type& color);
       void add(const Obj<BiGraph<source_type, target_type, color_type> >& bigraph);
+    private:
+      struct changeSource {
+        changeSource(source_type newSource) : newSource(newSource) {};
+
+        void operator()(Arrow_& p) {
+          p.source = newSource;
+        }
+      private:
+        source_type newSource;
+      };
+    public:
       void replaceSource(const source_type& s, const source_type& new_s) {
         typename ::boost::multi_index::index<ArrowSet,source>::type& index = ::boost::multi_index::get<source>(this->arrows);
         typename ::boost::multi_index::index<ArrowSet,source>::type::iterator i = index.find(s);
-        index.replace(i, new_s);
+        if (i != index.end()) {
+          index.modify(i, changeSource(new_s));
+        } else {
+          std::cout << "ERROR: Could not replace source " << s << " with " << new_s << std::endl;
+        }
       };
+    private:
+      struct changeTarget {
+        changeTarget(target_type newTarget) : newTarget(newTarget) {};
+
+        void operator()(Arrow_& p) {
+          p.target = newTarget;
+        }
+      private:
+        target_type newTarget;
+      };
+    public:
       void replaceTarget(const target_type& t, const target_type& new_t) {
         typename ::boost::multi_index::index<ArrowSet,target>::type& index = ::boost::multi_index::get<target>(this->arrows);
         typename ::boost::multi_index::index<ArrowSet,target>::type::iterator i = index.find(t);
-        index.replace(i, new_t);
+        if (i != index.end()) {
+          index.modify(i, changeTarget(new_t));
+        } else {
+          std::cout << "ERROR: Could not replace target " << t << " with " << new_t << std::endl;
+        }
       };
+      void replaceSourceOfTarget(const target_type& t, const target_type& new_s) {
+        typename ::boost::multi_index::index<ArrowSet,target>::type& index = ::boost::multi_index::get<target>(this->arrows);
+        typename ::boost::multi_index::index<ArrowSet,target>::type::iterator i = index.find(t);
+        if (i != index.end()) {
+          index.modify(i, changeSource(new_s));
+        } else {
+          std::cout << "ERROR: Could not replace source of target" << t << " with " << new_s << std::endl;
+        }
+      }
+      // Structural methods
+      void stratify() {
+        this->__computeDegrees();
+      }
+    private:
+      struct changeIndegree {
+        changeIndegree(int newIndegree) : newIndegree(newIndegree) {};
+
+        void operator()(StratumPoint& p) {
+          p.indegree = newIndegree;
+        }
+      private:
+        int newIndegree;
+      };
+      struct changeOutdegree {
+        changeOutdegree(int newOutdegree) : newOutdegree(newOutdegree) {};
+
+        void operator()(StratumPoint& p) {
+          p.outdegree = newOutdegree;
+        }
+      private:
+        int newOutdegree;
+      };
+      void __computeDegrees() {
+        const typename ::boost::multi_index::index<ArrowSet,target>::type& cones = ::boost::multi_index::get<target>(this->arrows);
+        const typename ::boost::multi_index::index<ArrowSet,source>::type& supports = ::boost::multi_index::get<source>(this->arrows);
+        typename ::boost::multi_index::index<StratumSet,point>::type& points = ::boost::multi_index::get<point>(this->strata);
+
+        for(typename ::boost::multi_index::index<ArrowSet,target>::type::iterator c_iter = cones.begin(); c_iter != cones.end(); ++c_iter) {
+          if (points.find(c_iter->target) != points.end()) {
+            typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = points.find(c_iter->target);
+
+            points.modify(i, changeIndegree(cones.count(c_iter->target)));
+          } else {
+            StratumPoint p;
+
+            p.point    = c_iter->target;
+            p.indegree = cones.count(c_iter->target);
+            this->strata.insert(p);
+          }
+        }
+
+#if 0
+        for(typename ::boost::multi_index::index<ArrowSet,source>::type::iterator s_iter = supports.begin(); s_iter != supports.end(); ++s_iter) {
+          if (points.find(s_iter->source) != points.end()) {
+            typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = points.find(s_iter->source);
+
+            points.modify(i, changeOutdegree(supports.count(s_iter->source)));
+          } else {
+            StratumPoint p;
+
+            p.point     = s_iter->source;
+            p.outdegree = supports.count(s_iter->source);
+            this->strata.insert(p);
+          }
+        }
+#endif
+      };
+    public:
       // Parallelism
       // Compute the cone completion and return it in a separate BiGraph with arrows labeled by completion_color_type colors.
       Obj<completion_type> coneCompletion();
@@ -389,12 +539,13 @@ namespace ALE {
       // Attachment of fiber dimension intervals to Sieve points
       //   fields are encoded by colors, which double as the field ordering index
       //   colors (<patch_type, int>) order the indices (index_type, usually an interval) over a point (Sieve::point_type).
-      typedef BiGraph<index_type, typename Sieve::point_type, std::pair<patch_type, int> > indices_type;
+      typedef std::pair<patch_type, int> index_color;
+      typedef BiGraph<index_type, typename Sieve::point_type, index_color> indices_type;
     private:
       indices_type _indices; 
     private:
       // Holds values for each patch
-      std::set<patch_type, value_type *> _storage;
+      std::map<patch_type, value_type *> _storage;
 
       void __clear() {
         Obj<typename patches_type::baseSequence> patches = this->_patches.base();
@@ -408,24 +559,25 @@ namespace ALE {
       };
     public:
       //     Topology Manipulation
-      void           setTopology(const Obj<Sieve>& topology) {this->topology = topology;};
-      Obj<Sieve>     getTopology() {return this->topology;};
+      void           setTopology(const Obj<Sieve>& topology) {this->_topology = topology;};
+      Obj<Sieve>     getTopology() {return this->_topology;};
       //     Patch manipulation
     private:
       template <typename InputSequence>
-      void order(InputSequence base, std::map<typename Sieve::point_type, typename Sieve::point_type>& seen, int& offset) {
+      void order(const patch_type& patch, Obj<InputSequence> base, std::map<typename Sieve::point_type, typename Sieve::point_type>& seen, int& offset) {
         // To enable the depth-first order traversal without recursion, we employ a stack.
         std::stack<typename Sieve::point_type> stk;
 
         // We traverse the sub-bundle over base
         for(typename InputSequence::reverse_iterator b_ritor = base->rbegin(); b_ritor != base->rend(); ++b_ritor) {
+          std::cout << "Init Pushing " << *b_ritor << " on stack" << std::endl;
           stk.push(*b_ritor);
         }
         while(1) {
           if (stk.empty()) break;
 
           typename Sieve::point_type p = stk.top(); stk.pop();
-          int p_dim = this->getFiberDimension(p);
+          int p_dim = this->getIndexDimension(patch, p);
           int p_off;
 
           if(seen.find(p) != seen.end()){
@@ -434,25 +586,31 @@ namespace ALE {
           } else {
             // The offset is only incremented when we encounter a point not yet seen
             p_off   = offset;
-            seen[p] = Sieve::point_type(p_off, 0);
+            seen[p] = typename Sieve::point_type(p_off, 0);
             offset += p_dim;
           }
+          std::cout << "  Point " << p << " with dimension " << p_dim << " and offset " << p_off << std::endl;
 
           Obj<typename Sieve::coneSequence> cone = this->getTopology()->cone(p);
-          Point_set::iterator      s_itor = base->find(p);
-          if (s_itor != base->end()) {
-            // If s (aka p) has a nonzero dimension but has not been indexed yet
-            if((p_dim > 0) && (seen[p].index == 0)) {
-              typename Sieve::point_type newIndex(p_off, p_dim);
+          for(typename InputSequence::iterator s_itor = base->begin(); s_itor != base->end(); ++s_itor) {
+            // I THINK THIS IS ALWAYS TRUE NOW
+            if (*s_itor == p) {
+              std::cout << "  Found p in base" << std::endl;
+              // If s (aka p) has a nonzero dimension but has not been indexed yet
+              if((p_dim > 0) && (seen[p].index == 0)) {
+                typename Sieve::point_type newIndex(p_off, p_dim);
 
-              seen[p] = newIndex;
-              this->_indices.replaceSource(p, newIndex);
+                seen[p] = newIndex;
+                this->_indices.replaceSourceOfTarget(p, newIndex);
+                std::cout << "    Assigned new index " << newIndex << std::endl;
+              }
+              std::cout << "  now ordering cone" << std::endl;
+              for(typename Sieve::coneSequence::iterator p_itor = cone->begin(); p_itor != cone->end(); ++p_itor) {
+                std::cout << "  cone point " << *p_itor << std::endl;
+              }
+              this->order(patch, cone, seen, offset);
+              break;
             }
-            this->order(cone, seen, offset);
-          }
-
-          for(typename Sieve::coneSequence::reverse_iterator p_ritor = cone->rbegin(); p_ritor != cone->rend(); ++p_ritor) {
-            stk.push(*p_ritor);
           }
         }
       };
@@ -461,11 +619,13 @@ namespace ALE {
         std::map<typename Sieve::point_type, typename Sieve::point_type> seen;
         int                                            offset = 0;
 
-        this->order(this->getPatch(patch), seen, offset);
+        std::cout << "Ordering patch " << patch << std::endl;
+        this->order(patch, this->getPatch(patch), seen, offset);
 
         if (this->_storage.find(patch) != this->_storage.end()) {
           delete [] this->_storage[patch];
         }
+        std::cout << "Allocated patch " << patch << " of size " << offset << std::endl;
         this->_storage[patch] = new value_type[offset];
       };
     public:
@@ -474,46 +634,74 @@ namespace ALE {
       template<typename pointInputSequence>
       void                            setPatch(const Obj<pointInputSequence>& points, const patch_type& patch) {
         this->_patches.addCone(points, patch);
-        this->allocateAndOrderPatch(patch);
+        this->_patches.stratify();
       };
       // This retrieves the Sieve::point_type points attached to a given patch
       Obj<typename patches_type::coneSequence> getPatch(const patch_type& patch) {
         return this->_patches.cone(patch);
       };
       //     Index manipulation
+      void orderPatches() {
+        Obj<typename patches_type::baseSequence> base = this->_patches.base();
+
+        for(typename patches_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          this->allocateAndOrderPatch(*b_iter);
+        }
+      };
       // These attach index_type indices of a given color to a Sieve::point_type point
-      template<typename indexInputSequence>
-      void  addIndices(const Obj<indexInputSequence>& indices, typename Sieve::color_type index_color, const typename Sieve::point_type& p) {
-        this->_indices.addCone(indices, p);
+      void  addIndices(const patch_type& patch, const index_type& indx, typename Sieve::color_type color, const typename Sieve::point_type& p) {
+        this->_indices.addCone(indx, p, index_color(patch, color));
       };
       template<typename indexInputSequence>
-      void  setIndices(const Obj<indexInputSequence>& indices, typename Sieve::color_type index_color, const typename Sieve::point_type& p) {
-        this->_indices.setCone(indices, p);
+      void  addIndices(const patch_type& patch, const Obj<indexInputSequence>& indices, typename Sieve::color_type color, const typename Sieve::point_type& p) {
+        this->_indices.addCone(indices, p, index_color(patch, color));
+      };
+      template<typename indexInputSequence>
+      void  setIndices(const patch_type& patch, const Obj<indexInputSequence>& indices, typename Sieve::color_type color, const typename Sieve::point_type& p) {
+        this->_indices.setCone(indices, p, index_color(patch, color));
       };
       // This retrieves the index_type indices of a given color attached to a Sieve::point_type point
-      Obj<typename indices_type::coneSequence> getIndices(const typename Sieve::point_type& p) {
+      Obj<typename indices_type::coneSequence> getIndices(const patch_type& patch, const typename Sieve::point_type& p) {
         return this->_indices.cone(p);
+      };
+      int getIndexDimension(const patch_type& patch, const typename Sieve::point_type& p) {
+        Obj<typename indices_type::coneSequence> cone = this->_indices.cone(p);
+        int dim = 0;
+
+        std::cout << "  getting dimension of " << p << " in patch " << patch << std::endl;
+        for(typename indices_type::coneSequence::iterator iter = cone->begin(); iter != cone->end(); ++iter) {
+          std::cout << "    adding " << *iter << std::endl;
+          dim += (*iter).index;
+        }
+        return dim;
       };
       // Attach indexDim indices to each element of a certain depth in the topology
       void setIndexDimensionByDepth(int depth, int indexDim) {
-        this->setIndexDimensionByDepth(depth, Sieve::color_type(), indexDim);
+        this->setIndexDimensionByDepth(depth, typename Sieve::color_type(), indexDim);
       }
-      void setIndexDimensionByDepth(int depth, typename Sieve::color_type index_color, int indexDim) {
+      void setIndexDimensionByDepth(int depth, typename Sieve::color_type color, int indexDim) {
+        Obj<typename patches_type::baseSequence> base = this->_patches.base();
         Obj<typename Sieve::depthSequence> stratum = this->getTopology()->depthStratum(depth);
 
-        for(typename Sieve::depthSequence::iterator iter = stratum.begin(); iter != stratum.end(); ++iter) {
-          this->addIndices(Sieve::point_type(-1, indexDim), index_color, *iter);
+        std::cout << "Setting all points of depth " << depth << " to have dimension " << indexDim << std::endl;
+        for(typename patches_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          std::cout << "  traversing patch " << *b_iter << std::endl;
+          for(typename Sieve::depthSequence::iterator iter = stratum->begin(); iter != stratum->end(); ++iter) {
+            std::cout << "  setting dimension of " << *iter << " to " << indexDim << std::endl;
+            this->addIndices(*b_iter, typename Sieve::point_type(-1, indexDim), color, *iter);
+          }
         }
       };
       // Insert values into the specified patch
       void update(const patch_type& patch, const typename Sieve::point_type& p, value_type values[]) {
-        Obj<typename indices_type::coneSequence> indices = this->getIndices(p);
+        Obj<typename indices_type::coneSequence> indices = this->getIndices(patch, p);
 
         for(typename indices_type::coneSequence::iterator ind = indices->begin(); ind != indices->end(); ++ind) {
-          int offset = ind->prefix;
+          int offset = (*ind).prefix;
 
-          for(int i = 0; i < ind->index; ++i) {
-            this->_storage[offset+i] = values[i];
+          for(int i = 0; i < (*ind).index; ++i) {
+            std::cout << "Set a[" << offset+i << "] = " << values[i] << " on patch " << patch << std::endl;
+            this->_storage[patch][offset+i] = values[i];
           }
         }
       }

@@ -100,13 +100,14 @@ namespace ALE {
     void Mesh::createSerialCoordinates(int numElements, double coords[]) {
       int dim = this->dim;
 
-      this->coordinates->setIndexDimensionByDepth(0, dim);
-      this->coordinates->setPatch(this->topology->base(), 0);
-      Obj<Sieve::depthSequence> vertices = this->topology->depthStratum(0);
-      for(Sieve::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
-        std::cout << "Sizeof fiber over vertex (" << v_itor->prefix << ", " << v_itor->index << ") is " <<
-          this->coordinates->getIndices(*v_itor)->begin()->index << std::endl;
-        this->coordinates->update(0, *v_itor, &coords[(v_itor->index - numElements)*dim]);
+      this->coordinates.setTopology(this->topology);
+      this->coordinates.setPatch(this->topology.base(), 0);
+      this->coordinates.setIndexDimensionByDepth(0, dim);
+      this->coordinates.orderPatches();
+      Obj<Sieve<Point,int>::depthSequence> vertices = this->topology.depthStratum(0);
+      for(Sieve<Point,int>::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
+        std::cout << "Fiber index over vertex " << *v_itor << " is " << *this->coordinates.getIndices(0, *v_itor)->begin() << std::endl;
+        this->coordinates.update(0, *v_itor, &coords[((*v_itor).index - numElements)*dim]);
       }
     };
 
@@ -121,7 +122,7 @@ namespace ALE {
       }
       this->topology.stratify();
       this->topology.setStratification(true);
-      this->createSerialCoordinates(numElements, coords);
+      this->createSerialCoordinates(numSimplices, coords);
     };
 
     void PyLithBuilder::readConnectivity(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numElements, int *vertices[]) {

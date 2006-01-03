@@ -57,6 +57,10 @@ namespace ALE {
         os << a.source << " --" << a.color << "--> " << a.target << std::endl;
         return os;
       }
+      friend std::ostream& operator<<(std::ostream& os, const std::pair<int, int>& p) {
+        os << "(" << p.first << "," << p.second << ")";
+        return os;
+      }
     };
 
     //
@@ -255,9 +259,26 @@ namespace ALE {
           //
           virtual iterator    operator++() {++this->arrowIter; return *this;};
           virtual iterator    operator++(int n) {iterator tmp(this->arrowIter); ++this->arrowIter; return tmp;};
+          virtual iterator    operator--() {--this->arrowIter; return *this;};
+          virtual iterator    operator--(int n) {iterator tmp(this->arrowIter); --this->arrowIter; return tmp;};
           virtual bool        operator==(const iterator& itor) const {return this->arrowIter == itor.arrowIter;};
           virtual bool        operator!=(const iterator& itor) const {return this->arrowIter != itor.arrowIter;};
           virtual const Data& operator*() const {return this->arrowIter->source;};
+        };
+        class reverse_iterator {
+        public:
+          typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator arrowIter;
+
+          reverse_iterator(const typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator& iter) {
+            this->arrowIter = typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator(iter);
+          };
+          virtual ~reverse_iterator() {};
+          //
+          virtual reverse_iterator operator++() {--this->arrowIter; return *this;};
+          virtual reverse_iterator operator++(int n) {reverse_iterator tmp(this->arrowIter); --this->arrowIter; return tmp;};
+          virtual bool             operator==(const reverse_iterator& itor) const {return this->arrowIter == itor.arrowIter;};
+          virtual bool             operator!=(const reverse_iterator& itor) const {return this->arrowIter != itor.arrowIter;};
+          virtual const Data&      operator*() const {return this->arrowIter->source;};
         };
 
         coneSequence(const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const Data& p) : coneIndex(cone), key(p), color(Color()), useColor(0) {};
@@ -275,6 +296,22 @@ namespace ALE {
             return iterator(this->coneIndex.upper_bound(::boost::make_tuple(key,color)));
           } else {
             return iterator(this->coneIndex.upper_bound(::boost::make_tuple(key)));
+          }
+        };
+        virtual reverse_iterator rbegin() {
+          if (useColor) {
+            return reverse_iterator(--this->coneIndex.upper_bound(::boost::make_tuple(key,color)));
+          } else {
+            return reverse_iterator(--this->coneIndex.upper_bound(::boost::make_tuple(key)));
+          }
+        };
+        virtual reverse_iterator rend()   {
+          typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator i;
+
+          if (useColor) {
+            return reverse_iterator(--this->coneIndex.lower_bound(::boost::make_tuple(key,color)));
+          } else {
+            return reverse_iterator(--this->coneIndex.lower_bound(::boost::make_tuple(key)));
           }
         };
         virtual std::size_t size()  {
