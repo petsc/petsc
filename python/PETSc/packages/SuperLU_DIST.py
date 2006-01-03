@@ -12,7 +12,7 @@ class Configure(PETSc.package.Package):
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
     self.libdir     = ''
-    self.liblist    = [['libsuperlu_dist.a']]
+    self.liblist    = [['libsuperlu_dist_2.0.a']]
     self.includedir = 'SRC'
     self.complex    = 1
     return
@@ -34,7 +34,7 @@ class Configure(PETSc.package.Package):
       output  = config.base.Configure.executeShellCommand('cd '+superluDir+'; rm -f make.inc', timeout=2500, log = self.framework.log)[0]
     g = open(os.path.join(superluDir,'make.inc'),'w')
     g.write('DSuperLUroot = '+superluDir+'\n')
-    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist.a\n')
+    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_2.0.a\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('IMPI         = '+self.headers.toString(self.mpi.include)+'\n')
@@ -76,7 +76,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+superluDir+';SUPERLU_DIST_INSTALL_DIR='+installDir+';export SUPERLU_DIST_INSTALL_DIR; make clean; make lib; mv *.a '+os.path.join(installDir,self.libdir)+'; mkdir '+os.path.join(installDir,self.includedir)+'; cp SRC/*.h '+os.path.join(installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU_DIST: '+str(e))
-      if not os.path.isdir(os.path.join(installDir,self.libdir)):
+      if not os.path.isfile(os.path.join(installDir,self.libdir,'libsuperlu_dist_2.0.a')):
         self.framework.log.write('Error running make on SUPERLU_DIST   ******(libraries not installed)*******\n')
         self.framework.log.write('********Output of running make on SUPERLU_DIST follows *******\n')        
         self.framework.log.write(output)
