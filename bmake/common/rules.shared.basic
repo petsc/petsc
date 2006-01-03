@@ -15,6 +15,11 @@ shared_freebsd5: shared_freebsd
 shared_freebsd4: shared_freebsd
 shared_freebsd3: shared_freebsd
 
+shared_kfreebsd5: shared_kfreebsd
+shared_kfreebsd6: shared_kfreebsd
+
+shared_kfreebsd: shared_linux
+
 shared_aix3:
 shared_aix4:
 shared_aix5:
