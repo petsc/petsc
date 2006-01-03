@@ -247,8 +247,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('C compiler you provided with -with-cc='+self.framework.argDB['with-cc']+' does not work')
     elif self.framework.argDB.has_key('CC'):
       if 'CC' in os.environ and os.environ['CC'] == self.framework.argDB['CC']:
-        self.startLine()
-        print '\n*****WARNING: Using C compiler '+self.framework.argDB['CC']+' from environmental variable CC****\nAre you sure this is what you want? If not, unset that environmental variable and run configure again'
+        self.logPrintBox('\n*****WARNING: Using C compiler '+self.framework.argDB['CC']+' from environmental variable CC****\nAre you sure this is what you want? If not, unset that environmental variable and run configure again')
       if self.isWindows(self.framework.argDB['CC']):
         yield 'win32fe '+self.framework.argDB['CC']
       else:
@@ -387,8 +386,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('C++ compiler you provided with -with-cxx='+self.framework.argDB['with-cxx']+' does not work')
     elif self.framework.argDB.has_key('CXX'):
       if 'CXX' in os.environ and os.environ['CXX'] == self.framework.argDB['CXX']:
-        self.startLine()
-        print '\n*****WARNING: Using C++ compiler '+self.framework.argDB['CXX']+' from environmental variable CXX****\nAre you sure this is what you want? If not, unset that environmental variable and run configure again'
+        self.logPrintBox('\n*****WARNING: Using C++ compiler '+self.framework.argDB['CXX']+' from environmental variable CXX****\nAre you sure this is what you want? If not, unset that environmental variable and run configure again')
       if self.isWindows(self.framework.argDB['CXX']):
         yield 'win32fe '+self.framework.argDB['CXX']
       else:
@@ -539,8 +537,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Fortran compiler you provided with --with-fc='+self.framework.argDB['with-fc']+' does not work')
     elif self.framework.argDB.has_key('FC'):
       if 'FC' in os.environ and os.environ['FC'] == self.framework.argDB['FC']:
-        self.startLine()
-        print '\n*****WARNING: Using Fortran compiler '+self.framework.argDB['FC']+' from environmental variable FC****\nAre you sure this is what you want? If not, unset that environmental variable and run configure again'
+        self.logPrintBox('\n*****WARNING: Using Fortran compiler '+self.framework.argDB['FC']+' from environmental variable FC****\nAre you sure this is what you want? If not, unset that environmental variable and run configure again')
       if self.isWindows(self.framework.argDB['FC']):
         yield 'win32fe '+self.framework.argDB['FC']
       else:

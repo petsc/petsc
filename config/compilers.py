@@ -202,7 +202,7 @@ class Configure(config.base.Configure):
               continue
             else:
               lflags.append(arg)
-            self.logPrint('Found special library: '+arg, 4, 'compilers')
+            self.logPrint('Found library or library directory: '+arg, 4, 'compilers')
             clibs.append(arg)
           continue
         if arg == '-rpath':
@@ -350,7 +350,7 @@ class Configure(config.base.Configure):
               continue
             else:
               lflags.append(arg)
-            self.logPrint('Found special library: '+arg, 4, 'compilers')
+            self.logPrint('Found library or library directory: '+arg, 4, 'compilers')
             if arg in self.clibs:
               self.logPrint('Library already in C list so skipping in C++')
             else:
@@ -621,7 +621,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-I.*$', arg)
         if m:
           inc = arg.replace('-I','')
-          self.logPrint('Found special include: '+inc, 4, 'compilers')
+          self.logPrint('Found include directory: '+inc, 4, 'compilers')
           fincs.append(inc)
           continue
         # Check for ???
@@ -663,7 +663,7 @@ class Configure(config.base.Configure):
               continue
             else:
               lflags.append(arg)
-            self.logPrint('Found special library: '+arg, 4, 'compilers')
+            self.logPrint('Found library or library directory: '+arg, 4, 'compilers')
             flibs.append(arg)
           continue
         if arg == '-rpath':
