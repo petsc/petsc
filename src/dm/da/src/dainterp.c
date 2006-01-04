@@ -385,7 +385,7 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
   PetscFunctionBegin;
   ierr = DAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
-  if (mx == My) {
+  if (mx == Mx) {
     ratioi = 1;
   } else if (DAXPeriodic(pt)){
     ratioi = mx/Mx;
