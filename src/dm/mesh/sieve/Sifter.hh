@@ -453,14 +453,28 @@ namespace ALE {
       template<class InputSequence> Obj<PointSet> cone(const Obj<InputSequence>& points, const Color& color) {
         return this->nCone(points, 1, color);
       };
+      Obj<PointSet> nCone(const Data& p, int n) {
+        return this->nCone(p, n, Color(), false);
+      };
+      Obj<PointSet> nCone(const Data& p, int n, const Color& color, bool useColor = true) {
+        Obj<PointSet> cone = PointSet();
+
+        cone->insert(p);
+        return this->__nCone(cone, n, color, useColor);
+      };
       template<class InputSequence> Obj<PointSet> nCone(const Obj<InputSequence>& points, int n) {
         return this->nCone(points, n, Color(), false);
       };
       template<class InputSequence> Obj<PointSet> nCone(const Obj<InputSequence>& points, int n, const Color& color, bool useColor = true) {
         Obj<PointSet> cone = PointSet();
-        Obj<PointSet> base = PointSet();
 
         cone->insert(points->begin(), points->end());
+        return this->__nCone(cone, n, color, useColor);
+      };
+    private:
+      template<class InputSequence> Obj<PointSet> __nCone(Obj<InputSequence>& cone, int n, const Color& color, bool useColor) {
+        Obj<PointSet> base = PointSet();
+
         for(int i = 0; i < n; ++i) {
           Obj<PointSet> tmp = cone; cone = base; base = tmp;
 

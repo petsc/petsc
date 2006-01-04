@@ -661,6 +661,9 @@ namespace ALE {
         this->_indices.setCone(indices, p, index_color(patch, color));
       };
       // This retrieves the index_type indices of a given color attached to a Sieve::point_type point
+      const index_type getIndex(const patch_type& patch, const typename Sieve::point_type& p) {
+        return *this->_indices.cone(p)->begin();
+      };
       Obj<typename indices_type::coneSequence> getIndices(const patch_type& patch, const typename Sieve::point_type& p) {
         return this->_indices.cone(p);
       };
@@ -692,6 +695,21 @@ namespace ALE {
           }
         }
       };
+      const value_type *restrict(const patch_type& patch) {
+        return this->_storage[patch];
+      };
+      const value_type *restrict(const patch_type& patch, const typename Sieve::point_type& p) {
+        Obj<typename indices_type::coneSequence> indices = this->getIndices(patch, p);
+
+        if (indices->size() != 1) {
+          throw ALE::Exception("Invalid indices for requested point");
+        }
+        return &(this->_storage[patch][(*indices->begin()).prefix]);
+      }
+      template<typename InputSequence>
+      const value_type *restrict(const patch_type& patch, const InputSequence& pointSequence) {
+        throw ALE::Exception("Not implemented");
+      };
       // Insert values into the specified patch
       void update(const patch_type& patch, const typename Sieve::point_type& p, value_type values[]) {
         Obj<typename indices_type::coneSequence> indices = this->getIndices(patch, p);
@@ -707,7 +725,7 @@ namespace ALE {
       }
       template<typename InputSequence>
       void update(const patch_type& patch, const InputSequence& pointSequence, value_type values[]) {
-        
+        throw ALE::Exception("Not implemented");
       };
     public:
       //      Reduction types

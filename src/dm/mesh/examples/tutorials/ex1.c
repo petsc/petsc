@@ -39,6 +39,7 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 #include <string.h>
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(Mesh, ALE::IndexBundle *, int, Vec *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_New(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewer);
 
 typedef enum {PCICE, PYLITH} FileType;
 
@@ -50,8 +51,7 @@ extern int debug;
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  //Mesh           mesh;
-  //PetscViewer    viewer;
+  PetscViewer    viewer;
   //Vec            partition;
   char           baseFilename[2048];
   PetscTruth     useZeroBase;
@@ -102,58 +102,58 @@ int main(int argc, char *argv[])
     ALE::Obj<ALE::def::Sieve<ALE::def::Point,int> > topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
+#if 0
+    stage = ALE::LogStageRegister("MeshDistribution");
+    ALE::LogStagePush(stage);
+    ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
+    ierr = MeshDistribute(mesh);CHKERRQ(ierr);
+    ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
+    ALE::LogStagePop(stage);
+#endif
+
+    stage = ALE::LogStageRegister("MeshOutput");
+    ALE::LogStagePush(stage);
+    ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
+    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
+    ierr = MeshView_Sieve_New(mesh, viewer);CHKERRQ(ierr);
+    //ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
+    //ierr = VecView(partition, viewer);CHKERRQ(ierr);
+    //ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+
+#if 0
+    ierr = PetscPrintf(comm, "Creating original format mesh file\n");CHKERRQ(ierr);
+    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    if (fileType == PCICE) {
+      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PCICE);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(viewer, "testMesh.lcon");CHKERRQ(ierr);
+    } else if (fileType == PYLITH) {
+      if (outputLocal) {
+        ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH_LOCAL);CHKERRQ(ierr);
+        ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+        ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, "testMesh"), PETSC_ERR_FILE_OPEN);
+        if (PetscExceptionValue(ierr)) {
+          /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
+        } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
+          ierr = 0;
+        } 
+        CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
+        ierr = PetscViewerFileSetName(viewer, "testMesh.connect");CHKERRQ(ierr);
+      }
+    }
+    ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+#endif
+    ALE::LogStagePop(stage);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }
-#if 0
-  stage = ALE::LogStageRegister("MeshDistribution");
-  ALE::LogStagePush(stage);
-  ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
-  ierr = MeshDistribute(mesh);CHKERRQ(ierr);
-  ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
-  ALE::LogStagePop(stage);
-
-  stage = ALE::LogStageRegister("MeshOutput");
-  ALE::LogStagePush(stage);
-  ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
-  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
-  ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
-  ierr = VecView(partition, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-
-  ierr = PetscPrintf(comm, "Creating original format mesh file\n");CHKERRQ(ierr);
-  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-  if (fileType == PCICE) {
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PCICE);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "testMesh.lcon");CHKERRQ(ierr);
-  } else if (fileType == PYLITH) {
-    if (outputLocal) {
-      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH_LOCAL);CHKERRQ(ierr);
-      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-      ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, "testMesh"), PETSC_ERR_FILE_OPEN);
-      if (PetscExceptionValue(ierr)) {
-        /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
-      } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
-        ierr = 0;
-      } 
-      CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
-      ierr = PetscViewerFileSetName(viewer, "testMesh.connect");CHKERRQ(ierr);
-    }
-  }
-  ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  ALE::LogStagePop(stage);
-
-  ierr = MeshDestroy(mesh);CHKERRQ(ierr);
-#endif
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

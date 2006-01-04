@@ -3,7 +3,7 @@
 
 ALL: lib
 
-CFLAGS   = -Isieve ${TRIANGLE_INCLUDE}
+CFLAGS   = -Isieve -I/PETSc3/ArX-2.2.4/src/boost/ ${TRIANGLE_INCLUDE}
 FFLAGS   =
 SOURCEC  = mesh.c
 SOURCEF  = 

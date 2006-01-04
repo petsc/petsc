@@ -3,6 +3,7 @@
 */
 #if !defined(__PETSCMESH_H)
 #define __PETSCMESH_H
+#include <Mesh.hh>
 #include "petscda.h"
 
 /*S
