@@ -15,9 +15,9 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_VERSION_MAJOR      2
 #define PETSC_VERSION_MINOR      3
 #define PETSC_VERSION_SUBMINOR   0
-#define PETSC_VERSION_PATCH      43
+#define PETSC_VERSION_PATCH      44
 #define PETSC_VERSION_DATE       "April, 26, 2005"
-#define PETSC_VERSION_PATCH_DATE "December, 21, 2005"
+#define PETSC_VERSION_PATCH_DATE "January, 5, 2006"
 #define PETSC_AUTHOR_INFO        "\
        The PETSc Team\n\
     petsc-maint@mcs.anl.gov\n\
