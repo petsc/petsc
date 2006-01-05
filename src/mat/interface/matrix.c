@@ -6306,7 +6306,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatStashGetInfo(Mat mat,PetscInt *nstash,Petsc
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = MatStashGetInfo_Private(&mat->stash,nstash,reallocs);CHKERRQ(ierr);
-  ierr = MatStashGetInfo_Private(&mat->bstash,nstash,reallocs);CHKERRQ(ierr);
+  ierr = MatStashGetInfo_Private(&mat->bstash,bnstash,breallocs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
