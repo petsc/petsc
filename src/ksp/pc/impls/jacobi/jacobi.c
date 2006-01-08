@@ -161,7 +161,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
     ierr = VecRestoreArray(diagsqrt,&x);CHKERRQ(ierr);
   }
   if (zeroflag) {
-    ierr = PetscVerboseInfo((pc,"PCSetUp_Jacobi:Zero detected in diagonal of matrix, using 1 at those locations\n"));CHKERRQ(ierr);
+    ierr = PetscInfo((pc,"PCSetUp_Jacobi:Zero detected in diagonal of matrix, using 1 at those locations\n"));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

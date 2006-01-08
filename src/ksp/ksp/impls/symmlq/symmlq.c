@@ -71,7 +71,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
   ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /* z  <- B*r       */
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);             /* dp = r'*z;      */
   if (PetscAbsScalar(dp) < symmlq->haptol) {
-    ierr = PetscVerboseInfo((ksp,"KSPSolve_SYMMLQ:Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),symmlq->haptol));CHKERRQ(ierr);
+    ierr = PetscInfo((ksp,"KSPSolve_SYMMLQ:Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),symmlq->haptol));CHKERRQ(ierr);
     dp = 0.0;
   }
 
@@ -136,7 +136,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
     betaold = beta;                                /* beta_k                  */
     ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);          /* dp <- r'*z;             */
     if (PetscAbsScalar(dp) < symmlq->haptol) {
-      ierr = PetscVerboseInfo((ksp,"KSPSolve_SYMMLQ:Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),symmlq->haptol));CHKERRQ(ierr);
+      ierr = PetscInfo((ksp,"KSPSolve_SYMMLQ:Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),symmlq->haptol));CHKERRQ(ierr);
       dp = 0.0;
     }
 

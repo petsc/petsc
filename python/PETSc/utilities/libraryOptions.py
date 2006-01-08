@@ -17,7 +17,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-log=<bool>',              nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
-    help.addArgument('PETSc', '-with-verbose=<bool>',          nargs.ArgBool(None, 1, 'Activate verbose logging code in PETSc'))
+    help.addArgument('PETSc', '-with-info=<bool>',             nargs.ArgBool(None, 1, 'Activate PetscInfo() (i.e. -info)  code in PETSc'))
     help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Activate CTABLE hashing for certain search functions - to conserve memory'))
     help.addArgument('PETSc', '-with-sieve=<bool>',            nargs.ArgBool(None, 0, 'Activate SIEVE mesh functionality[requires cxx]'))
     help.addArgument('PETSc', '-with-fortran-kernels=<none,generic,bgl>',  nargs.ArgString(None, None, 'Use Fortran for linear algebra kernels'))
@@ -42,15 +42,15 @@ class Configure(config.base.Configure):
       return 0
 
   def configureLibraryOptions(self):
-    '''Sets PETSC_USE_DEBUG, PETSC_USE_VERBOSE, PETSC_USE_LOG, PETSC_USE_CTABLE and PETSC_USE_FORTRAN_KERNELS'''
+    '''Sets PETSC_USE_DEBUG, PETSC_USE_INFO, PETSC_USE_LOG, PETSC_USE_CTABLE and PETSC_USE_FORTRAN_KERNELS'''
     self.useLog   = self.framework.argDB['with-log']
     self.addDefine('USE_LOG',   self.useLog)
 
     if self.debugging.debugging:
       self.addDefine('USE_DEBUG', '1')
 
-    self.useVerbose   = self.framework.argDB['with-verbose']
-    self.addDefine('USE_VERBOSE',   self.useVerbose)
+    self.useInfo   = self.framework.argDB['with-info']
+    self.addDefine('USE_INFO',   self.useInfo)
 
     self.useCtable = self.framework.argDB['with-ctable']
     if self.useCtable:

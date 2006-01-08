@@ -1604,9 +1604,9 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   C->assembled   = PETSC_TRUE;
   if (sctx.nshift) {
     if (info->shiftnz) {
-      ierr = PetscVerboseInfo((0,"MatLUFactorNumeric_Inode: number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount));CHKERRQ(ierr);
+      ierr = PetscInfo((0,"MatLUFactorNumeric_Inode: number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount));CHKERRQ(ierr);
     } else if (info->shiftpd) {
-      ierr = PetscVerboseInfo((0,"MatLUFactorNumeric_Inode: number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top));CHKERRQ(ierr);
+      ierr = PetscInfo((0,"MatLUFactorNumeric_Inode: number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top));CHKERRQ(ierr);
     }
   }
   ierr = PetscLogFlops(C->n);CHKERRQ(ierr);
@@ -1675,11 +1675,11 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
   a->inode.checked = PETSC_TRUE;
 
   /* Notes: We set a->inode.limit=5 in MatCreate_Inode(). */
-  if (!a->inode.use) {ierr = PetscVerboseInfo((A,"Mat_CheckInode: Not using Inode routines due to MatSetOption(MAT_DO_NOT_USE_INODES\n"));CHKERRQ(ierr); PetscFunctionReturn(0);}
+  if (!a->inode.use) {ierr = PetscInfo((A,"Mat_CheckInode: Not using Inode routines due to MatSetOption(MAT_DO_NOT_USE_INODES\n"));CHKERRQ(ierr); PetscFunctionReturn(0);}
   ierr = PetscOptionsHasName(A->prefix,"-mat_no_inode",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PetscVerboseInfo((A,"Mat_CheckInode: Not using Inode routines due to -mat_no_inode\n"));CHKERRQ(ierr);PetscFunctionReturn(0);}
+  if (flg) {ierr = PetscInfo((A,"Mat_CheckInode: Not using Inode routines due to -mat_no_inode\n"));CHKERRQ(ierr);PetscFunctionReturn(0);}
   ierr = PetscOptionsHasName(A->prefix,"-mat_no_unroll",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PetscVerboseInfo((A,"Mat_CheckInode: Not using Inode routines due to -mat_no_unroll\n"));CHKERRQ(ierr);PetscFunctionReturn(0);}
+  if (flg) {ierr = PetscInfo((A,"Mat_CheckInode: Not using Inode routines due to -mat_no_unroll\n"));CHKERRQ(ierr);PetscFunctionReturn(0);}
   ierr = PetscOptionsGetInt(A->prefix,"-mat_inode_limit",&a->inode.limit,PETSC_NULL);CHKERRQ(ierr);
   if (a->inode.limit > a->inode.max_limit) a->inode.limit = a->inode.max_limit;
   m = A->m;    
@@ -1710,7 +1710,7 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
     a->inode.node_count     = 0;
     a->inode.size           = PETSC_NULL;
     a->inode.use            = PETSC_FALSE;
-    ierr = PetscVerboseInfo((A,"Mat_CheckInode: Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m));CHKERRQ(ierr);
+    ierr = PetscInfo((A,"Mat_CheckInode: Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m));CHKERRQ(ierr);
   } else {
     A->ops->mult            = MatMult_Inode;
     A->ops->multadd         = MatMultAdd_Inode;
@@ -1723,7 +1723,7 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
     A->ops->coloringpatch   = MatColoringPatch_Inode;
     a->inode.node_count     = node_count;
     a->inode.size           = ns;
-    ierr = PetscVerboseInfo((A,"Mat_CheckInode: Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit));CHKERRQ(ierr);
+    ierr = PetscInfo((A,"Mat_CheckInode: Found %D nodes of %D. Limit used: %D. Using Inode routines\n",node_count,m,a->inode.limit));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -49,7 +49,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
   if (dmmg[nlevels-1]->updatejacobian && ShouldUpdate(nlevels,it)) {
     ierr = (*DMMGGetFine(dmmg)->computejacobian)(snes,X,J,B,flag,DMMGGetFine(dmmg));CHKERRQ(ierr);
   } else {
-    ierr = PetscVerboseInfo((0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %D frequence %D level %D\n",it,dmmg[nlevels-1]->updatejacobianperiod,nlevels-1));CHKERRQ(ierr);
+    ierr = PetscInfo((0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %D frequence %D level %D\n",it,dmmg[nlevels-1]->updatejacobianperiod,nlevels-1));CHKERRQ(ierr);
     *flag = SAME_PRECONDITIONER;
   }
   ierr = MatSNESMFSetBase(DMMGGetFine(dmmg)->J,X);CHKERRQ(ierr);
@@ -83,7 +83,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
 	  ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,&flg,dmmg[i-1]);CHKERRQ(ierr);
 	  flg = SAME_NONZERO_PATTERN;
 	} else {
-	  ierr = PetscVerboseInfo((0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %D frequence %D level %D\n",it,dmmg[i-1]->updatejacobianperiod,i-1));CHKERRQ(ierr);
+	  ierr = PetscInfo((0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %D frequence %D level %D\n",it,dmmg[i-1]->updatejacobianperiod,i-1));CHKERRQ(ierr);
 	  flg = SAME_PRECONDITIONER;
 	}
 	ierr = PCMGGetSmoother(pc,i-1,&lksp);CHKERRQ(ierr);

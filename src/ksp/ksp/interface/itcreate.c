@@ -136,7 +136,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->normtype = normtype;
   if (normtype == KSP_NO_NORM) {
-    ierr = PetscVerboseInfo((ksp,"KSPSetNormType:Warning seting KSPNormType to skip computing the norm\n\
+    ierr = PetscInfo((ksp,"KSPSetNormType:Warning seting KSPNormType to skip computing the norm\n\
   make sure you set the KSP convergence test to KSPSkipConvergence\n"));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -94,19 +94,19 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path)
   ierr = PetscLogEventSetActiveAll(VEC_ScatterBarrier, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_ReduceBarrier, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-verbose_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscVerboseInfoDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
     }
     ierr = PetscStrstr(logList, "map", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscVerboseInfoDeactivateClass(MAP_COOKIE);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(MAP_COOKIE);CHKERRQ(ierr);
     }
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscVerboseInfoDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */

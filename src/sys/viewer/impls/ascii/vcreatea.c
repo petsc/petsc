@@ -121,7 +121,7 @@ PetscMPIInt PETSC_DLLEXPORT Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,voi
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscVerboseInfo((0,"Petsc_DelTag:Deleting viewer data in an MPI_Comm %ld\n",(long)comm));if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = PetscInfo((0,"Petsc_DelTag:Deleting viewer data in an MPI_Comm %ld\n",(long)comm));if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
 EXTERN_C_END

@@ -640,9 +640,9 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
     ierr = PetscLogObjectMemory(A,-(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
     a->diag = 0;
   } 
-  ierr = PetscVerboseInfo((A,"MatAssemblyEnd_SeqAIJ:Matrix size: %D X %D; storage space: %D unneeded,%D used\n",m,A->n,fshift,a->nz));CHKERRQ(ierr);
-  ierr = PetscVerboseInfo((A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues() is %D\n",a->reallocs));CHKERRQ(ierr);
-  ierr = PetscVerboseInfo((A,"MatAssemblyEnd_SeqAIJ:Maximum nonzeros in any row is %D\n",rmax));CHKERRQ(ierr);
+  ierr = PetscInfo((A,"MatAssemblyEnd_SeqAIJ:Matrix size: %D X %D; storage space: %D unneeded,%D used\n",m,A->n,fshift,a->nz));CHKERRQ(ierr);
+  ierr = PetscInfo((A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues() is %D\n",a->reallocs));CHKERRQ(ierr);
+  ierr = PetscInfo((A,"MatAssemblyEnd_SeqAIJ:Maximum nonzeros in any row is %D\n",rmax));CHKERRQ(ierr);
   a->reallocs          = 0;
   A->info.nz_unneeded  = (double)fshift;
   a->rmax              = rmax;
@@ -797,7 +797,7 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op)
     case MAT_YES_NEW_DIAGONALS:
     case MAT_IGNORE_OFF_PROC_ENTRIES:
     case MAT_USE_HASH_TABLE:
-      ierr = PetscVerboseInfo((A,"MatSetOption_SeqAIJ:Option ignored\n"));CHKERRQ(ierr);
+      ierr = PetscInfo((A,"MatSetOption_SeqAIJ:Option ignored\n"));CHKERRQ(ierr);
       break;
     case MAT_NO_NEW_DIAGONALS:
       SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
@@ -2002,7 +2002,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(coloring->prefix,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscVerboseInfo((coloring,"MatFDColoringApply_SeqAIJ: Not calling MatZeroEntries()\n"));CHKERRQ(ierr);
+    ierr = PetscInfo((coloring,"MatFDColoringApply_SeqAIJ: Not calling MatZeroEntries()\n"));CHKERRQ(ierr);
   } else {
     PetscTruth assembled;
     ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
@@ -2153,7 +2153,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
       y->XtoY = X;
     }
     for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += a*(x->a[i]); 
-    ierr = PetscVerboseInfo((0,"MatAXPY_SeqAIJ: ratio of nnz(X)/nnz(Y): %d/%d = %G\n",x->nz,y->nz,(PetscReal)(x->nz)/y->nz));CHKERRQ(ierr);
+    ierr = PetscInfo((0,"MatAXPY_SeqAIJ: ratio of nnz(X)/nnz(Y): %d/%d = %G\n",x->nz,y->nz,(PetscReal)(x->nz)/y->nz));CHKERRQ(ierr);
   } else {
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
   }

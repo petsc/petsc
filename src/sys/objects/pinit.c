@@ -72,7 +72,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Components(void)
     MPI_Comm   comm = PETSC_COMM_WORLD;
     ierr = (*PetscHelpPrintf)(comm,"------Additional PETSc component options--------\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log_summary_exclude: <vec,mat,pc.ksp,snes>\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -verbose_info_exclude: <null,vec,mat,pc,ksp,snes,ts>\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -info_exclude: <null,vec,mat,pc,ksp,snes,ts>\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");CHKERRQ(ierr);
 #endif
   }
@@ -356,8 +356,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
 +  -log_trace [filename] - Print traces of all PETSc calls
         to the screen (useful to determine where a program
         hangs without running in the debugger).  See PetscLogTraceBegin().
-.  -verbose_info <optional filename> - Prints verbose information to the screen
--  -verbose_info_exclude <null,vec,mat,pc,ksp,snes,ts> - Excludes some of the verbose messages
+.  -info <optional filename> - Prints verbose information to the screen
+-  -info_exclude <null,vec,mat,pc,ksp,snes,ts> - Excludes some of the verbose messages
 
    Environmental Variables:
 +   PETSC_TMP - alternative tmp directory
@@ -499,9 +499,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
      Initialize all the default viewers
   */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscVerboseInfo((0,"PetscInitialize:PETSc successfully started: number of processors = %d\n",size));CHKERRQ(ierr);
+  ierr = PetscInfo((0,"PetscInitialize:PETSc successfully started: number of processors = %d\n",size));CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
-  ierr = PetscVerboseInfo((0,"PetscInitialize:Running on machine: %s\n",hostname));CHKERRQ(ierr);
+  ierr = PetscInfo((0,"PetscInitialize:Running on machine: %s\n",hostname));CHKERRQ(ierr);
 
   ierr = PetscOptionsCheckInitial_Components();CHKERRQ(ierr);
 
@@ -681,7 +681,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     petsc_history = 0;
   }
 
-  ierr = PetscVerboseInfoAllow(PETSC_FALSE,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscInfoAllow(PETSC_FALSE,PETSC_NULL);CHKERRQ(ierr);
 
   /*
        Free all the registered create functions, such as KSPList, VecList, SNESList, etc
@@ -746,7 +746,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   ierr = MPI_Op_free(&PetscADMax_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscADMin_Op);CHKERRQ(ierr);
 
-  ierr = PetscVerboseInfo((0,"PetscFinalize:PETSc successfully ended!\n"));CHKERRQ(ierr);
+  ierr = PetscInfo((0,"PetscFinalize:PETSc successfully ended!\n"));CHKERRQ(ierr);
   if (PetscBeganMPI) {
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }

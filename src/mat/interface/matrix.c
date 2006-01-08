@@ -1899,7 +1899,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeConstrained(Mat mat,Vec x,Vec 
    is provided (such as the fill ratio, number of mallocs during
    factorization, etc.).  Much of this info is printed to STDOUT
    when using the runtime options 
-$       -verbose_info -mat_view_info
+$       -info -mat_view_info
 
    Example for C/C++ Users:
    See the file ${PETSC_DIR}/include/petscmat.h for a complete list of
@@ -2019,7 +2019,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactor(Mat mat,IS row,IS col,MatFactor
 -  info - options for factorization, includes 
 $          fill - expected fill as ratio of original fill.
 $          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
-$                   Run with the option -verbose_info to determine an optimal value to use
+$                   Run with the option -info to determine an optimal value to use
 
    Notes:
    Most users should employ the simplified KSP interface for linear solvers
@@ -2127,7 +2127,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUFactor(Mat mat,IS row,IS col,MatFactorIn
 -  info - options for factorization, includes 
 $          fill - expected fill as ratio of original fill.
 $          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
-$                   Run with the option -verbose_info to determine an optimal value to use
+$                   Run with the option -info to determine an optimal value to use
 
    Output Parameter:
 .  fact - new matrix that has been symbolically factored
@@ -2285,7 +2285,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactor(Mat mat,IS perm,MatFactorInf
 -  info - options for factorization, includes 
 $          fill - expected fill as ratio of original fill.
 $          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
-$                   Run with the option -verbose_info to determine an optimal value to use
+$                   Run with the option -info to determine an optimal value to use
 
    Output Parameter:
 .  fact - the factored matrix
@@ -5586,7 +5586,7 @@ PetscErrorCode MatGetPetscMaps_Petsc(Mat mat,PetscMap *rmap,PetscMap *cmap)
      The block-stash is used for values set with MatSetValuesBlocked() while
      the stash is used for values set with MatSetValues()
 
-     Run with the option -verbose_info and look for output of the form
+     Run with the option -info and look for output of the form
      MatAssemblyBegin_MPIXXX:Stash has MM entries, uses nn mallocs.
      to determine the appropriate value, MM, to use for size and 
      MatAssemblyBegin_MPIXXX:Block-Stash has BMM entries, uses nn mallocs.

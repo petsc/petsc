@@ -39,15 +39,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
   ierr = PetscLogEventRegister(&DA_LocalToGlobal,      "DALocalToGlobal",      DA_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&DA_LocalADFunction,    "DALocalADFunc",        DA_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-verbose_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "ao", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscVerboseInfoDeactivateClass(AO_COOKIE);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(AO_COOKIE);CHKERRQ(ierr);
     }
     ierr = PetscStrstr(logList, "da", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscVerboseInfoDeactivateClass(DA_COOKIE);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(DA_COOKIE);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */

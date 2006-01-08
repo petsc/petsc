@@ -96,7 +96,7 @@ PetscErrorCode MPICRL_create_crl(Mat A)
       icols[j*m+i] = (j) ? icols[(j-1)*m+i] : 0;  /* handle case where row is EMPTY */
     }
   }
-  ierr = PetscVerboseInfo((A,"MPICRL_create_crl: Percentage of 0's introduced for vectorized multiply %g\n",1.0-((double)(crl->nz))/((double)(rmax*m))));
+  ierr = PetscInfo((A,"MPICRL_create_crl: Percentage of 0's introduced for vectorized multiply %g\n",1.0-((double)(crl->nz))/((double)(rmax*m))));
 
   ierr = PetscMalloc((a->B->n+nd)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   /* xwork array is actually B->n+nd long, but we define xwork this length so can copy into it */

@@ -199,7 +199,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNormalize(Vec x,PetscReal *val)
   ierr = PetscLogEventBegin(VEC_Normalize,x,0,0,0);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,val);CHKERRQ(ierr);
   if (!*val) {
-    ierr = PetscVerboseInfo((x,"VecNormalize:Vector of zero norm can not be normalized; Returning only the zero norm\n"));CHKERRQ(ierr);
+    ierr = PetscInfo((x,"VecNormalize:Vector of zero norm can not be normalized; Returning only the zero norm\n"));CHKERRQ(ierr);
   } else if (*val != 1.0) {
     PetscScalar tmp = 1.0/(*val);
     ierr = VecScale(x,tmp);CHKERRQ(ierr);

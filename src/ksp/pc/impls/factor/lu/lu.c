@@ -445,7 +445,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal(PC pc,PetscR
 
    Note:
    For sparse matrix factorizations it is difficult to predict how much 
-   fill to expect. By running with the option -verbose_info PETSc will print the 
+   fill to expect. By running with the option -info PETSc will print the 
    actual amount of fill used; allowing you to set the value accurately for
    future runs. Default PETSc uses a value of 5.0
 

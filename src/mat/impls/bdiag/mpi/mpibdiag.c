@@ -87,7 +87,7 @@ PetscErrorCode MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   mat->insertmode = addv; /* in case this processor had no cache */
   ierr = MatStashScatterBegin_Private(&mat->stash,mbd->rowners);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  ierr = PetscVerboseInfo((0,"MatAssemblyBegin_MPIBDiag:Stash has %D entries,uses %D mallocs.\n",nstash,reallocs));CHKERRQ(ierr);
+  ierr = PetscInfo((0,"MatAssemblyBegin_MPIBDiag:Stash has %D entries,uses %D mallocs.\n",nstash,reallocs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -590,7 +590,7 @@ PetscErrorCode MatSetOption_MPIBDiag(Mat A,MatOption op)
   case MAT_ROWS_UNSORTED:
   case MAT_COLUMNS_SORTED:
   case MAT_COLUMNS_UNSORTED:
-    ierr = PetscVerboseInfo((A,"MatSetOption_MPIBDiag:Option ignored\n"));CHKERRQ(ierr);
+    ierr = PetscInfo((A,"MatSetOption_MPIBDiag:Option ignored\n"));CHKERRQ(ierr);
     break;
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
@@ -1281,7 +1281,7 @@ PetscErrorCode MatLoad_MPIBDiag(PetscViewer viewer, MatType type,Mat *newmat)
   if (extra_rows == bs) extra_rows = 0;
   else                  Mbs++;
   if (extra_rows && !rank) {
-    ierr = PetscVerboseInfo((0,"MatLoad_MPIBDiag:Padding loaded matrix to match blocksize\n"));CHKERRQ(ierr);
+    ierr = PetscInfo((0,"MatLoad_MPIBDiag:Padding loaded matrix to match blocksize\n"));CHKERRQ(ierr);
   }
 
   /* determine ownership of all rows */

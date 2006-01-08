@@ -1,6 +1,6 @@
 #define PETSC_DLL
 /*
-      PetscVerboseInfo() is contained in a different file from the other profiling to 
+      PetscInfo() is contained in a different file from the other profiling to 
    allow it to be replaced at link time by an alternative routine.
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -16,44 +16,44 @@
 #include "petscfix.h"
 
 /*
-  The next three variables determine which, if any, PetscVerboseInfo() calls are used.
+  The next three variables determine which, if any, PetscInfo() calls are used.
   If PetscLogPrintInfo is zero, no info messages are printed. 
   If PetscLogPrintInfoNull is zero, no info messages associated with a null object are printed.
 
-  If PetscVerboseInfoFlags[OBJECT_COOKIE - PETSC_SMALLEST_COOKIE] is zero, no messages related
+  If PetscInfoFlags[OBJECT_COOKIE - PETSC_SMALLEST_COOKIE] is zero, no messages related
   to that object are printed. OBJECT_COOKIE is, for example, MAT_COOKIE.
 */
 PetscTruth PETSC_DLLEXPORT PetscLogPrintInfo     = PETSC_FALSE;
 PetscTruth PETSC_DLLEXPORT PetscLogPrintInfoNull = PETSC_FALSE;
-int        PetscVerboseInfoFlags[]   = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+int        PetscInfoFlags[]   = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                     1,1,1,1,1,1,1,1,1,1,1,1};
-FILE      *PetscVerboseInfoFile      = PETSC_NULL;
+FILE      *PetscInfoFile      = PETSC_NULL;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscVerboseInfoAllow"
+#define __FUNCT__ "PetscInfoAllow"
 /*@C
-    PetscVerboseInfoAllow - Causes PetscVerboseInfo() messages to be printed to standard output.
+    PetscInfoAllow - Causes PetscInfo() messages to be printed to standard output.
 
     Not Collective, each processor may call this separately, but printing is only
     turned on if the lowest processor number associated with the PetscObject associated
-    with the call to PetscVerboseInfo() has called this routine.
+    with the call to PetscInfo() has called this routine.
 
     Input Parameter:
 +   flag - PETSC_TRUE or PETSC_FALSE
 -   filename - optional name of file to write output to (defaults to stdout)
 
     Options Database Key:
-.   -verbose_info [optional filename] - Activates PetscVerboseInfoAllow()
+.   -info [optional filename] - Activates PetscInfoAllow()
 
     Level: advanced
 
    Concepts: debugging^detailed runtime information
    Concepts: dumping detailed runtime information
 
-.seealso: PetscVerboseInfo()
+.seealso: PetscInfo()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfoAllow(PetscTruth flag, const char filename[])
+PetscErrorCode PETSC_DLLEXPORT PetscInfoAllow(PetscTruth flag, const char filename[])
 {
   char           fname[PETSC_MAX_PATH_LEN], tname[5];
   PetscMPIInt    rank;
@@ -65,10 +65,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfoAllow(PetscTruth flag, const char
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
     sprintf(tname, ".%d", rank);
     ierr = PetscStrcat(fname, tname);CHKERRQ(ierr);
-    ierr = PetscFOpen(MPI_COMM_SELF, fname, "w", &PetscVerboseInfoFile);CHKERRQ(ierr);
-    if (!PetscVerboseInfoFile) SETERRQ1(PETSC_ERR_FILE_OPEN, "Cannot open requested file for writing: %s",fname);
+    ierr = PetscFOpen(MPI_COMM_SELF, fname, "w", &PetscInfoFile);CHKERRQ(ierr);
+    if (!PetscInfoFile) SETERRQ1(PETSC_ERR_FILE_OPEN, "Cannot open requested file for writing: %s",fname);
   } else if (flag) {
-    PetscVerboseInfoFile = stdout;
+    PetscInfoFile = stdout;
   }
   PetscLogPrintInfo     = flag;
   PetscLogPrintInfoNull = flag;
@@ -76,9 +76,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfoAllow(PetscTruth flag, const char
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscVerboseInfoDeactivateClass"
+#define __FUNCT__ "PetscInfoDeactivateClass"
 /*@
-  PetscVerboseInfoDeactivateClass - Deactivates PlogInfo() messages for a PETSc object class.
+  PetscInfoDeactivateClass - Deactivates PlogInfo() messages for a PETSc object class.
 
   Not Collective
 
@@ -91,23 +91,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfoAllow(PetscTruth flag, const char
   Level: developer
 
 .keywords: allow, information, printing, monitoring
-.seealso: PetscVerboseInfoActivateClass(), PetscVerboseInfo(), PetscVerboseInfoAllow()
+.seealso: PetscInfoActivateClass(), PetscInfo(), PetscInfoAllow()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfoDeactivateClass(int objclass)
+PetscErrorCode PETSC_DLLEXPORT PetscInfoDeactivateClass(int objclass)
 {
   PetscFunctionBegin;
   if (!objclass) {
     PetscLogPrintInfoNull = PETSC_FALSE;
     PetscFunctionReturn(0); 
   }
-  PetscVerboseInfoFlags[objclass - PETSC_SMALLEST_COOKIE - 1] = 0;
+  PetscInfoFlags[objclass - PETSC_SMALLEST_COOKIE - 1] = 0;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscVerboseInfoActivateClass"
+#define __FUNCT__ "PetscInfoActivateClass"
 /*@
-  PetscVerboseInfoActivateClass - Activates PlogInfo() messages for a PETSc object class.
+  PetscInfoActivateClass - Activates PlogInfo() messages for a PETSc object class.
 
   Not Collective
 
@@ -120,43 +120,43 @@ PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfoDeactivateClass(int objclass)
   Level: developer
 
 .keywords: allow, information, printing, monitoring
-.seealso: PetscVerboseInfoDeactivateClass(), PetscVerboseInfo(), PetscVerboseInfoAllow()
+.seealso: PetscInfoDeactivateClass(), PetscInfo(), PetscInfoAllow()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfoActivateClass(int objclass)
+PetscErrorCode PETSC_DLLEXPORT PetscInfoActivateClass(int objclass)
 {
   PetscFunctionBegin;
   if (!objclass) {
     PetscLogPrintInfoNull = PETSC_TRUE;
   } else {
-    PetscVerboseInfoFlags[objclass - PETSC_SMALLEST_COOKIE - 1] = 1;
+    PetscInfoFlags[objclass - PETSC_SMALLEST_COOKIE - 1] = 1;
   }
   PetscFunctionReturn(0);
 }
 
 /*
-   If the option -log_history was used, then all printed PetscVerboseInfo() 
+   If the option -log_history was used, then all printed PetscInfo() 
   messages are also printed to the history file, called by default
   .petschistory in ones home directory.
 */
 extern FILE *petsc_history;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscVerboseInfo"
+#define __FUNCT__ "PetscInfo"
 /*@C
-    PetscVerboseInfo - Logs informative data, which is printed to standard output
-    or a file when the option -verbose_info <file> is specified.
+    PetscInfo - Logs informative data, which is printed to standard output
+    or a file when the option -info <file> is specified.
 
     Collective over PetscObject argument
 
    Synopsis:
-       PetscErrorCode PetscVerboseInfo((void *vobj, const char message[], ...))  
+       PetscErrorCode PetscInfo((void *vobj, const char message[], ...))  
 
     Input Parameter:
 +   vobj - object most closely associated with the logging statement
 -   message - logging message, using standard "printf" format
 
     Options Database Key:
-$    -verbose_info : activates printing of PetscVerboseInfo() messages 
+$    -info : activates printing of PetscInfo() messages 
 
     Level: intermediate
 
@@ -168,14 +168,14 @@ $    -verbose_info : activates printing of PetscVerboseInfo() messages
 $
 $     Mat A
 $     double alpha
-$     PetscVerboseInfo((A,"Matrix uses parameter alpha=%g\n",alpha));
+$     PetscInfo((A,"Matrix uses parameter alpha=%g\n",alpha));
 $
 
    Concepts: runtime information
 
-.seealso: PetscVerboseInfoAllow()
+.seealso: PetscInfoAllow()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfo_Private(void *vobj, const char message[], ...)  
+PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(void *vobj, const char message[], ...)  
 {
   va_list        Argp;
   PetscMPIInt    rank,urank;
@@ -189,7 +189,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfo_Private(void *vobj, const char m
   PetscValidCharPointer(message,2);
   if (!PetscLogPrintInfo) PetscFunctionReturn(0);
   if ((!PetscLogPrintInfoNull) && !vobj) PetscFunctionReturn(0);
-  if (obj && !PetscVerboseInfoFlags[obj->cookie - PETSC_SMALLEST_COOKIE - 1]) PetscFunctionReturn(0);
+  if (obj && !PetscInfoFlags[obj->cookie - PETSC_SMALLEST_COOKIE - 1]) PetscFunctionReturn(0);
   if (!obj) {
     rank = 0;
   } else {
@@ -202,8 +202,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfo_Private(void *vobj, const char m
   sprintf(string, "[%d]", urank); 
   ierr = PetscStrlen(string, &len);CHKERRQ(ierr);
   ierr = PetscVSNPrintf(string+len, 8*1024-len,message, Argp);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,PetscVerboseInfoFile, "%s", string);CHKERRQ(ierr);
-  fflush(PetscVerboseInfoFile);
+  ierr = PetscFPrintf(PETSC_COMM_SELF,PetscInfoFile, "%s", string);CHKERRQ(ierr);
+  fflush(PetscInfoFile);
   if (petsc_history) {
     PetscVFPrintf(petsc_history, message, Argp);CHKERRQ(ierr);
   }

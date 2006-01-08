@@ -14,15 +14,15 @@ extern PetscEvent PETSC_LARGEST_EVENT;
 extern PetscLogDouble PETSC_DLLEXPORT _TotalFlops;
 
 /* General logging of information; different from event logging */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfo_Private(void*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
-#if defined(PETSC_USE_VERBOSE)
-#define PetscVerboseInfo(A)      PetscVerboseInfo_Private A
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(void*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+#if defined(PETSC_USE_INFO)
+#define PetscInfo(A)      PetscInfo_Private A
 #else 
-#define PetscVerboseInfo(A)      0
+#define PetscInfo(A)      0
 #endif
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfoDeactivateClass(PetscCookie);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscVerboseInfoActivateClass(PetscCookie);
-extern PetscTruth     PETSC_DLLEXPORT PetscLogPrintInfo;  /* if true, indicates PetscVerboseInfo() is turned on */
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoDeactivateClass(PetscCookie);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoActivateClass(PetscCookie);
+extern PetscTruth     PETSC_DLLEXPORT PetscLogPrintInfo;  /* if true, indicates PetscInfo() is turned on */
 
 #if defined(PETSC_USE_LOG)  /* --- Logging is turned on --------------------------------*/
 

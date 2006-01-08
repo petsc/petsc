@@ -276,7 +276,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogAllBegin(void)
 
   PetscLogTraceBegin() allows tracing of all PETSc calls, which is useful
   to determine where a program is hanging without running in the 
-  debugger.  Can be used in conjunction with the -verbose_info option. 
+  debugger.  Can be used in conjunction with the -info option. 
 
   Level: intermediate
 
@@ -799,7 +799,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventSetActiveAll(PetscEvent event, Petsc
   Level: developer
 
 .keywords: log, event, activate, class
-.seealso: PetscVerboseInfoActivate(),PetscVerboseInfo(),PetscVerboseInfoAllow(),PetscLogEventDeactivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
+.seealso: PetscInfoActivate(),PetscInfo(),PetscInfoAllow(),PetscLogEventDeactivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscCookie cookie) 
 {
@@ -827,7 +827,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscCookie cookie)
   Level: developer
 
 .keywords: log, event, deactivate, class
-.seealso: PetscVerboseInfoActivate(),PetscVerboseInfo(),PetscVerboseInfoAllow(),PetscLogEventActivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
+.seealso: PetscInfoActivate(),PetscInfo(),PetscInfoAllow(),PetscLogEventActivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscCookie cookie)
 {

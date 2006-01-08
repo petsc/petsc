@@ -1406,7 +1406,7 @@ For (vertex-based) finite element type calculations, an analogous procedure is a
       in matrix via MatSetValues().\\
   \end{tabbing}
 
-The \trl{-verbose_info} \findex{-verbose_info} option causes the routines
+The \trl{-info} \findex{-info} option causes the routines
 MatAssemblyBegin() and MatAssemblyEnd() to print
 information about the success of the preallocation.  Consider the
 following example for the MATSEQAIJ matrix format:
@@ -1557,7 +1557,7 @@ Also, the user need not preallocate exactly the correct amount of
 space; as long as a sufficiently close estimate is given, the high
 efficiency for matrix assembly will remain.  
 
-As described above, the option \trl{-verbose_info} \findex{-verbose_info}
+As described above, the option \trl{-info} \findex{-info}
 will print information about the success of preallocation during
 matrix assembly.  For the MATMPIAIJ format, PETSc will also list
 the number of elements owned by on each process that were generated
@@ -5052,7 +5052,7 @@ The following functions are not supported in Fortran:
 \begin{tabbing}
  PetscFClose(), PetscFOpen(), PetscFPrintf(), PetscPrintf()\\
  PetscPopErrorHandler(), PetscPushErrorHandler()\\
- PetscVerboseInfo()\\
+ PetscInfo()\\
  PetscSetDebugger()\\
  VecGetArrays(), VecRestoreArrays()\\
  PetscViewerASCIIGetPointer(), PetscViewerBinaryGetDescriptor()\\
@@ -5160,20 +5160,20 @@ If an application code and the PETSc libraries have been configured with
 then various kinds of profiling of code between calls to \trl{
 PetscInitialize()} and PetscFinalize() can be 
 activated at runtime.  The profiling options include the following:
-\findex{-log_summary} \findex{-verbose_info}
+\findex{-log_summary} \findex{-info}
 \findex{-log_trace}
 \begin{itemize}
 \item \trl{-log_summary} - Prints an ASCII version of performance data
      at program's conclusion. These statistics are comprehensive and concise
      and require little overhead; thus, \trl{-log_summary} is intended as
      the primary means of monitoring the performance of PETSc codes.
-\item \trl{-verbose_info [infofile]} - Prints verbose information about code to
+\item \trl{-info [infofile]} - Prints verbose information about code to
      stdout or an optional file. This option provides details about algorithms,
      data structures, etc. Since the overhead of printing such output slows a
      code, this option should not be used when evaluating a program's performance.
 \item \trl{-log_trace [logfile]} - Traces the beginning and ending of all
      PETSc events.  This option, which can be used in conjunction with 
-     \trl{-verbose_info}, is useful to see where a program is hanging
+     \trl{-info}, is useful to see where a program is hanging
      without running in the debugger.  
 \end{itemize}
  As discussed in Section~\ref{sec_mpelogs},
@@ -5653,42 +5653,42 @@ in MPE logging.
 
 Users can activate the printing of verbose information about
 algorithms, data structures, etc. to the screen by using the option \trl{
--verbose_info} \findex{-verbose_info} or by calling \trl{
-PetscVerboseInfoAllow(PETSC_TRUE)}. \findex{PetscVerboseInfoAllow()}
+-info} \findex{-info} or by calling \trl{
+PetscInfoAllow(PETSC_TRUE)}. \findex{PetscInfoAllow()}
 Such logging, which is used throughout the PETSc libraries,
 can aid the user in understanding algorithms and 
 tuning program performance.  For example, as discussed in
-Section~\ref{sec_matsparse}, \trl{-verbose_info} activates the
+Section~\ref{sec_matsparse}, \trl{-info} activates the
 printing of information about memory allocation during
 matrix assembly.
 
 Application programmers can employ this logging as well, by
-using the routine \findex{PetscVerboseInfo()}
+using the routine \findex{PetscInfo()}
 \begin{tabbing}
-   PetscVerboseInfo(void* obj,char *message,...)
+   PetscInfo(void* obj,char *message,...)
 \end{tabbing}
 where \trl{obj} is the PETSc object associated most closely with
 the logging statement, \trl{message}.
 For example, in the line search Newton methods, we use a statement such as
 \begin{tabbing}
-   PetscVerboseInfo(snes,\trl{"Cubically determined step, lambda %g\n"},lambda);
+   PetscInfo(snes,\trl{"Cubically determined step, lambda %g\n"},lambda);
 \end{tabbing}
 
 One can selectively turn off informative messages about any of the 
 basic PETSc objects (e.g., Mat, SNES) with the command
 \begin{tabbing}
-   PetscVerboseInfoDeactivateClass(int object\_cookie)
+   PetscInfoDeactivateClass(int object\_cookie)
 \end{tabbing}
-where \findex{PetscVerboseInfoDeactivateClass()} \findex{PetscVerboseInfoActivateClass()}
+where \findex{PetscInfoDeactivateClass()} \findex{PetscInfoActivateClass()}
 \trl{object_cookie} is one of \trl{MAT_COOKIE}, \trl{SNES_COOKIE}, etc.
 Messages can be reactivated with the command
 \begin{tabbing}
-   PetscVerboseInfoActivateClass(int object\_cookie)
+   PetscInfoActivateClass(int object\_cookie)
 \end{tabbing}
 Such deactivation can be useful when one wishes to view information
 about higher-level PETSc libraries (e.g., TS and SNES) without 
 seeing all lower level data as well (e.g., Mat).  One can deactivate
-events at runtime for matrix and linear solver libraries via \trl{-verbose_info [no_mat, no_ksp]}.
+events at runtime for matrix and linear solver libraries via \trl{-info [no_mat, no_ksp]}.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \section{Time}
@@ -5845,7 +5845,7 @@ MatILUInfo structure \findex{MatILUInfo}
 when calling MatLUFactorSymbolic() or MatILUFactorSymbolic()
 can reduce greatly the number of mallocs and copies required, and thus
 greatly improve the performance of the factorization.  One way to
-determine a good value for f is to run a program with the option \trl{-verbose_info}.
+determine a good value for f is to run a program with the option \trl{-info}.
 The symbolic factorization phase will then print information such as
 \begin{tabbing}
    Info:MatILUFactorSymbolic\_AIJ:Realloc 12 Fill ratio:given 1 needed 2.16423
@@ -5903,7 +5903,7 @@ what is best for a given problem and customize the solvers accordingly.
      used for a particular solver.
 \item Run the code with the option \trl{-help} for a list of the available 
      runtime commands.
-\item Use the option \trl{-verbose_info} to print details about the solvers' operation.
+\item Use the option \trl{-info} to print details about the solvers' operation.
 \item Use the PETSc monitoring discussed in Chapter~\ref{ch_profiling}
      to evaluate the performance of various numerical methods.
 \end{itemize}

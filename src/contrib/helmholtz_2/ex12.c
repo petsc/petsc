@@ -359,7 +359,7 @@ int main(int argc,char **args)
    Additional formats are also available.
 
    Preallocation of matrix memory is crucial for fast matrix assembly!!
-   See the users manual for details.  Use the option -verbose_info to print
+   See the users manual for details.  Use the option -info to print
    info about matrix memory allocation.
  */
 int UserMatrixCreate1(Atassi *user,Mat *mat)

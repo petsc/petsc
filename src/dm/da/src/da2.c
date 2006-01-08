@@ -1047,7 +1047,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt
     ierr = MPI_Comm_create(comm,sub_group,outcomm);CHKERRQ(ierr);
     ierr = MPI_Group_free(&entire_group);CHKERRQ(ierr);
     ierr = MPI_Group_free(&sub_group);CHKERRQ(ierr);
-    ierr = PetscVerboseInfo((0,"DASplitComm2d:Creating redundant coarse problems of size %d\n",csize));CHKERRQ(ierr);
+    ierr = PetscInfo((0,"DASplitComm2d:Creating redundant coarse problems of size %d\n",csize));CHKERRQ(ierr);
   } else {
     *outcomm = comm;
   }

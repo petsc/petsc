@@ -53,7 +53,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
   ierr = VecDot(RT,ART,&btop);CHKERRQ(ierr);          /*   (RT,ART)           */
   if (PetscAbsScalar(btop) < 0.0) {
     ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
-    ierr = PetscVerboseInfo((ksp,"KSPSolve_CR:diverging due to indefinite or negative definite matrix\n"));CHKERRQ(ierr);
+    ierr = PetscInfo((ksp,"KSPSolve_CR:diverging due to indefinite or negative definite matrix\n"));CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
     
@@ -80,7 +80,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     ierr   = VecDot(AP,Q,&apq);CHKERRQ(ierr);  
     if (PetscAbsScalar(apq) <= 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr = PetscVerboseInfo((ksp,"KSPSolve_CR:diverging due to indefinite or negative definite PC\n"));CHKERRQ(ierr);
+      ierr = PetscInfo((ksp,"KSPSolve_CR:diverging due to indefinite or negative definite PC\n"));CHKERRQ(ierr);
       break;
     }
     ai = btop/apq;                                      /* ai = (RT,ART)/(AP,Q)  */
@@ -92,7 +92,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     ierr   = VecDot(RT,ART,&btop);CHKERRQ(ierr);
     if (PetscAbsScalar(btop) < 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
-      ierr = PetscVerboseInfo((ksp,"KSPSolve_CR:diverging due to indefinite or negative definite matrix\n"));CHKERRQ(ierr);
+      ierr = PetscInfo((ksp,"KSPSolve_CR:diverging due to indefinite or negative definite matrix\n"));CHKERRQ(ierr);
       break;
     }
 
