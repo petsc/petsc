@@ -492,6 +492,16 @@ namespace ALE {
         }
         return cone;
       };
+    public:
+      bool coneContains(const Data& p, const Data& q) {
+        //FIX: Shouldn't we just be able to query an arrow?
+        Obj<coneSequence> cone = this->cone(p);
+
+        for(typename coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); c_iter++) {
+          if (*c_iter == q) return true;
+        }
+        return false;
+      }
       Obj<supportSequence> support(const Data& p) {
         return supportSequence(::boost::multi_index::get<sourceColor>(this->arrows), p);
       };
@@ -579,6 +589,60 @@ namespace ALE {
             }
             cone->insert(pCone->begin(), pCone->end());
             closure->insert(pCone->begin(), pCone->end());
+          }
+        }
+        return closure;
+      };
+    public:
+      Obj<Sieve<Data,Color> > closureSieve(const Data& p) {
+        return nClosureSieve(p, this->depth());
+      };
+      Obj<Sieve<Data,Color> > closureSieve(const Data& p, const Color& color) {
+        return nClosureSieve(p, this->depth(), color);
+      };
+      template<class InputSequence> Obj<Sieve<Data,Color> > closureSieve(const Obj<InputSequence>& points) {
+        return nClosureSieve(points, this->depth());
+      };
+      template<class InputSequence> Obj<Sieve<Data,Color> > closureSieve(const Obj<InputSequence>& points, const Color& color) {
+        return nClosureSieve(points, this->depth(), color);
+      };
+      Obj<Sieve<Data,Color> > nClosureSieve(const Data& p, int n) {
+        return this->nClosureSieve(p, n, Color(), false);
+      };
+      Obj<Sieve<Data,Color> > nClosureSieve(const Data& p, int n, const Color& color, bool useColor = true) {
+        Obj<PointSet> cone = PointSet();
+
+        cone->insert(p);
+        return this->__nClosureSieve(cone, n, color, useColor);
+      };
+      template<class InputSequence> Obj<Sieve<Data,Color> > nClosureSieve(const Obj<InputSequence>& points, int n) {
+        return this->nClosureSieve(points, n, Color(), false);
+      };
+      template<class InputSequence> Obj<Sieve<Data,Color> > nClosureSieve(const Obj<InputSequence>& points, int n, const Color& color, bool useColor = true) {
+        Obj<PointSet> cone = PointSet();
+
+        cone->insert(points->begin(), points->end());
+        return this->__nClosureSieve(cone, n, color, useColor);
+      }
+    private:
+      template<class InputSequence> Obj<Sieve<Data,Color> > __nClosureSieve(Obj<InputSequence>& cone, int n, const Color& color, bool useColor) {
+        Obj<PointSet> base = PointSet();
+        Obj<Sieve<Data,Color> > closure = Sieve<Data,Color>();
+
+        for(int i = 0; i < n; ++i) {
+          Obj<PointSet> tmp = cone; cone = base; base = tmp;
+
+          cone->clear();
+          for(PointSet::iterator b_itor = base->begin(); b_itor != base->end(); ++b_itor) {
+            Obj<coneSequence> pCone;
+
+            if (useColor) {
+              pCone = this->cone(*b_itor, color);
+            } else {
+              pCone = this->cone(*b_itor);
+            }
+            cone->insert(pCone->begin(), pCone->end());
+            closure->addCone(pCone, *b_itor);
           }
         }
         return closure;

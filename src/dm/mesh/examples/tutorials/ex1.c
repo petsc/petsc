@@ -124,7 +124,6 @@ int main(int argc, char *argv[])
     //ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
-#if 0
     ierr = PetscPrintf(comm, "Creating original format mesh file\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
@@ -147,9 +146,8 @@ int main(int argc, char *argv[])
         ierr = PetscViewerFileSetName(viewer, "testMesh.connect");CHKERRQ(ierr);
       }
     }
-    ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
+    ierr = MeshView_Sieve_New(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-#endif
     ALE::LogStagePop(stage);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;

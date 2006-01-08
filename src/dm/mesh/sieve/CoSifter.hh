@@ -5,6 +5,7 @@
 #include <Sifter.hh>
 #endif
 #include <stack>
+#include <queue>
 
 // Dmitry's explanation:
 //
@@ -526,6 +527,8 @@ namespace ALE {
       typedef Value_ value_type;
       typedef Patch_ patch_type;
       typedef Index_ index_type;
+      typedef std::vector<index_type> IndexArray;
+      typedef std::map<typename Sieve::point_type, index_type> IndexMap;
     private:
       // Base topology
       Obj<Sieve>   _topology;
@@ -666,6 +669,153 @@ namespace ALE {
       };
       Obj<typename indices_type::coneSequence> getIndices(const patch_type& patch, const typename Sieve::point_type& p) {
         return this->_indices.cone(p);
+      };
+      template<typename pointSequence>
+      Obj<IndexMap> getIndices(const patch_type& patch, Obj<pointSequence> points) {
+        Obj<IndexMap> indices = IndexMap();
+
+        for(typename pointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+          (*indices)[*p_iter] = *this->getIndices(patch, *p_iter)->begin();
+        }
+        return indices;
+      }
+    private:
+      template<typename orderSequence>
+      std::map<int, typename Sieve::point_type> __checkOrderChain(Obj<orderSequence> order, int& minDepth, int& maxDepth) {
+        Obj<Sieve> topology = this->getTopology();
+        std::map<int, typename Sieve::point_type> dElement;
+        minDepth = 0;
+        maxDepth = 0;
+
+        // A topology cell-tuple contains one element per dimension, so we order the points by depth.
+        for(typename orderSequence::iterator ord_itor = order->begin(); ord_itor != order->end(); ord_itor++) {
+          int depth = topology->depth(*ord_itor);
+
+          if (depth < 0) {
+            throw Exception("Invalid element: negative depth returned"); 
+          }
+          if (depth > maxDepth) {
+            maxDepth = depth;
+          }
+          if (depth < minDepth) {
+            minDepth = depth;
+          }
+          dElement[depth] = *ord_itor;
+        }
+        // Verify that the chain is a "baricentric chain", i.e. it starts at depth 0
+        //   and has an element of every depth between 0 and maxDepth
+        //   and that each element at depth d is in the cone of the element at depth d+1
+        if(minDepth != 0) {
+          throw Exception("Invalid order chain: minimal depth is nonzero");
+        }
+        for(int d = 0; d <= maxDepth; d++) {
+          typename std::map<int, typename Sieve::point_type>::iterator d_itor = dElement.find(d);
+
+          if(d_itor == dElement.end()){
+            ostringstream ex;
+            //FIX: ex << "[" << this->getCommRank() << "]: " << "Missing Point at depth " << d;
+            ex << "Missing Point at depth " << d;
+            throw ALE::Exception(ex.str().c_str());
+          }
+          if(d > 0) {
+            if(!topology->coneContains(dElement[d], dElement[d-1])){
+              ostringstream ex;
+              // FIX: ex << "[" << this->getCommRank() << "]: ";
+              ex << "point (" << dElement[d-1].prefix << ", " << dElement[d-1].index << ") at depth " << d-1 << " not in the cone of ";
+              ex << "point (" << dElement[d].prefix << ", " << dElement[d].index << ") at depth " << d;
+              throw ALE::Exception(ex.str().c_str());
+            }
+          }
+        }
+        return dElement;
+      };
+      void __orderElement(int dim, typename Sieve::point_type element, std::map<int, std::queue<index_type> >& ordered, ALE::Obj<ALE::def::PointSet> elementsOrdered) {
+        if (elementsOrdered->find(element) != elementsOrdered->end()) return;
+        ordered[dim].push(element);
+        elementsOrdered->insert(element);
+        std::cout << "  ordered element " << element << " dim " << dim << std::endl;
+      };
+      typename Sieve::point_type __orderCell(int dim, std::map<int, typename Sieve::point_type>& orderChain, std::map<int, std::queue<index_type> >& ordered, Obj<PointSet> elementsOrdered) {
+        typename Sieve::point_type last;
+
+        std::cout << "Ordering cell " << orderChain[dim] << " dim " << dim << std::endl;
+        for(int d = 0; d < dim; d++) {
+          std::cout << "  orderChain["<<d<<"] " << orderChain[d] << std::endl;
+        }
+        if (dim == 0) {
+          last = orderChain[0];
+          this->__orderElement(0, last, ordered, elementsOrdered);
+          return last;
+        } else if (dim == 1) {
+          Obj<typename Sieve::coneSequence> flip = this->_topology->cone(orderChain[1]);
+          bool found = false;
+
+          if (flip->size() != 2) throw ALE::Exception("Last edge did not separate two faces");
+          for(typename Sieve::coneSequence::iterator c_iter = flip->begin(); c_iter != flip->end(); ++c_iter) {
+            if (*c_iter != orderChain[dim-1]) {
+              last = *c_iter;
+              found = true;
+              break;
+            }
+          }
+          if (!found) throw ALE::Exception("Inconsistent edge separation");
+          this->__orderElement(0, orderChain[0], ordered, elementsOrdered);
+          this->__orderElement(0, last, ordered, elementsOrdered);
+          this->__orderElement(1, orderChain[1], ordered, elementsOrdered);
+          orderChain[dim-1] = last;
+          return last;
+        }
+        Obj<Sieve> closure = this->_topology->closureSieve(orderChain[dim]);
+        do {
+          last = this->__orderCell(dim-1, orderChain, ordered, elementsOrdered);
+          std::cout << "    last " << last << std::endl;
+          Obj<typename Sieve::supportSequence> faces = closure->support(last);
+          bool found = false;
+
+          if (faces->size() != 2) throw ALE::Exception("Last edge did not separate two faces");
+          for(typename Sieve::supportSequence::iterator s_iter = faces->begin(); s_iter != faces->end(); ++s_iter) {
+            if (*s_iter != orderChain[dim-1]) {
+              last = orderChain[dim-1];
+              orderChain[dim-1] = *s_iter;
+              found = true;
+              break;
+            }
+          }
+          if (!found) throw ALE::Exception("Inconsistent edge separation");
+        } while(elementsOrdered->find(orderChain[dim-1]) == elementsOrdered->end());
+        std::cout << "Finish ordering for cell " << orderChain[dim] << std::endl;
+        std::cout << "  with last " << last << std::endl;
+        orderChain[dim-1] = last;
+        this->__orderElement(dim, orderChain[dim], ordered, elementsOrdered);
+        return last;
+      };
+    public:
+      template<typename orderSequence>
+      Obj<IndexArray> getOrderedIndices(const patch_type& patch, Obj<orderSequence> order) {
+        // We store the elements ordered in each dimension
+        std::map<int, std::queue<index_type> > ordered;
+        // Set of the elements already ordered
+        Obj<PointSet> elementsOrdered = PointSet();
+        Obj<IndexArray> indexArray = IndexArray();
+        int minDepth, maxDepth;
+
+        std::map<int, typename Sieve::point_type> dElement = this->__checkOrderChain(order, minDepth, maxDepth);
+        std::cout << "Ordering " << dElement[maxDepth] << std::endl;
+        // Could share the closure between these methods
+        Obj<IndexMap> indices = this->getIndices(patch, this->_topology->closure(dElement[maxDepth]));
+        typename Sieve::point_type last = this->__orderCell(maxDepth, dElement, ordered, elementsOrdered);
+        for(int d = minDepth; d <= maxDepth; d++) {
+          while(!ordered[d].empty()) {
+            index_type ind = (*indices)[ordered[d].front()];
+
+            ordered[d].pop();
+            std::cout << "  indices " << ind << std::endl;
+            if (ind.index > 0) {
+              indexArray->push_back(ind);
+            }
+          }
+        }
+        return indexArray;
       };
       int getIndexDimension(const patch_type& patch, const typename Sieve::point_type& p) {
         Obj<typename indices_type::coneSequence> cone = this->_indices.cone(p);
