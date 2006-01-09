@@ -436,6 +436,24 @@ namespace ALE {
       };
 
       Sieve() : stratification(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
+      // Printing
+      friend std::ostream& operator<<(std::ostream& os, Obj<Sieve<Data,Color> > s) {
+        os << *s;
+        return os;
+      }
+      friend std::ostream& operator<<(std::ostream& os, Sieve<Data,Color>& s) {
+        Obj<baseSequence> base = s.base();
+
+        for(typename baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          Obj<coneSequence> cone = s.cone(*b_iter);
+
+          os << "Base point " << *b_iter << " with cone:" << std::endl;
+          for(typename coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+            os << "  " << *c_iter << std::endl;
+          }
+        }
+        return os;
+      };
       // The basic Sieve interface
       void clear() {
         this->arrows.clear();
@@ -629,9 +647,11 @@ namespace ALE {
         Obj<PointSet> base = PointSet();
         Obj<Sieve<Data,Color> > closure = Sieve<Data,Color>();
 
+        std::cout << "nClosure " << n << std::endl;
         for(int i = 0; i < n; ++i) {
           Obj<PointSet> tmp = cone; cone = base; base = tmp;
 
+          std::cout << "  level " << i << std::endl;
           cone->clear();
           for(PointSet::iterator b_itor = base->begin(); b_itor != base->end(); ++b_itor) {
             Obj<coneSequence> pCone;
@@ -642,6 +662,7 @@ namespace ALE {
               pCone = this->cone(*b_itor);
             }
             cone->insert(pCone->begin(), pCone->end());
+            std::cout << "  adding cone for " << *b_itor << std::endl;
             closure->addCone(pCone, *b_itor);
           }
         }
@@ -1007,6 +1028,7 @@ namespace ALE {
           if(h1 != h0) {
             typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = index.find(*p_itor);
             index.modify(i, changeHeight(h1));
+            if (h1 > this->maxHeight) this->maxHeight = h1;
             modifiedPoints->insert(*p_itor);
           }
         }
@@ -1035,6 +1057,7 @@ namespace ALE {
           int d1 = this->depth(this->cone(*p_itor)) + 1;
           if(d1 != d0) {
             index.modify(index.find(*p_itor), changeDepth(d1));
+            if (d1 > this->maxDepth) this->maxDepth = d1;
             modifiedPoints->insert(*p_itor);
           }
         }

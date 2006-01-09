@@ -467,7 +467,9 @@ namespace ALE {
       };
       void __computeDegrees() {
         const typename ::boost::multi_index::index<ArrowSet,target>::type& cones = ::boost::multi_index::get<target>(this->arrows);
+#if 0
         const typename ::boost::multi_index::index<ArrowSet,source>::type& supports = ::boost::multi_index::get<source>(this->arrows);
+#endif
         typename ::boost::multi_index::index<StratumSet,point>::type& points = ::boost::multi_index::get<point>(this->strata);
 
         for(typename ::boost::multi_index::index<ArrowSet,target>::type::iterator c_iter = cones.begin(); c_iter != cones.end(); ++c_iter) {
@@ -647,6 +649,7 @@ namespace ALE {
       void orderPatches() {
         Obj<typename patches_type::baseSequence> base = this->_patches.base();
 
+        this->_indices.stratify();
         for(typename patches_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
           this->allocateAndOrderPatch(*b_iter);
         }
@@ -674,8 +677,24 @@ namespace ALE {
       Obj<IndexMap> getIndices(const patch_type& patch, Obj<pointSequence> points) {
         Obj<IndexMap> indices = IndexMap();
 
+            std::cout << "Getting indices from" << std::endl;
+            Obj<typename indices_type::baseSequence> base = this->_indices.base();
+
+            for(typename indices_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+              Obj<typename indices_type::coneSequence> cone = this->_indices.cone(*b_iter);
+
+              std::cout << "Base point " << *b_iter << " with cone:" << std::endl;
+              for(typename indices_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+                std::cout << "  " << *c_iter << std::endl;
+              }
+            }
         for(typename pointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
-          (*indices)[*p_iter] = *this->getIndices(patch, *p_iter)->begin();
+          Obj<typename indices_type::coneSequence> ind = this->getIndices(patch, *p_iter);
+
+          if (ind->begin() != ind->end()) {
+            (*indices)[*p_iter] = *ind->begin();
+            std::cout << "Got indices " << (*indices)[*p_iter] << " for " << *p_iter << std::endl;
+          }
         }
         return indices;
       }
@@ -750,7 +769,7 @@ namespace ALE {
           Obj<typename Sieve::coneSequence> flip = this->_topology->cone(orderChain[1]);
           bool found = false;
 
-          if (flip->size() != 2) throw ALE::Exception("Last edge did not separate two faces");
+          if (flip->size() != 2) throw ALE::Exception("Last 1d edge did not separate two faces");
           for(typename Sieve::coneSequence::iterator c_iter = flip->begin(); c_iter != flip->end(); ++c_iter) {
             if (*c_iter != orderChain[dim-1]) {
               last = *c_iter;
@@ -772,7 +791,24 @@ namespace ALE {
           Obj<typename Sieve::supportSequence> faces = closure->support(last);
           bool found = false;
 
-          if (faces->size() != 2) throw ALE::Exception("Last edge did not separate two faces");
+          if (faces->size() != 2) {
+            //std::cout << "Closure:" << std::endl << closure;
+            std::cout << "Closure:" << std::endl;
+            Obj<typename Sieve::baseSequence> base = closure->base();
+
+            for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+              Obj<typename Sieve::coneSequence> cone = closure->cone(*b_iter);
+
+              std::cout << "Base point " << *b_iter << " with cone:" << std::endl;
+              for(typename Sieve::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+                std::cout << "  " << *c_iter << std::endl;
+              }
+            }
+            for(typename Sieve::supportSequence::iterator s_iter = faces->begin(); s_iter != faces->end(); ++s_iter) {
+              std::cout << "    support point " << *s_iter << std::endl;
+            }
+            throw ALE::Exception("Last edge did not separate two faces");
+          }
           for(typename Sieve::supportSequence::iterator s_iter = faces->begin(); s_iter != faces->end(); ++s_iter) {
             if (*s_iter != orderChain[dim-1]) {
               last = orderChain[dim-1];
