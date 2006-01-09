@@ -75,6 +75,7 @@ namespace ALE {
     public:
       typedef Color color_type;
       typedef Data  point_type;
+      int debug;
     private:
       // tags for accessing the corresponding indices of employee_set
       struct source{};
@@ -435,7 +436,7 @@ namespace ALE {
         virtual std::size_t size()  {return this->heightIndex.count(h);};
       };
 
-      Sieve() : stratification(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
+      Sieve() : debug(0), stratification(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
       // Printing
       friend std::ostream& operator<<(std::ostream& os, Obj<Sieve<Data,Color> > s) {
         os << *s;
@@ -647,11 +648,9 @@ namespace ALE {
         Obj<PointSet> base = PointSet();
         Obj<Sieve<Data,Color> > closure = Sieve<Data,Color>();
 
-        std::cout << "nClosure " << n << std::endl;
         for(int i = 0; i < n; ++i) {
           Obj<PointSet> tmp = cone; cone = base; base = tmp;
 
-          std::cout << "  level " << i << std::endl;
           cone->clear();
           for(PointSet::iterator b_itor = base->begin(); b_itor != base->end(); ++b_itor) {
             Obj<coneSequence> pCone;
@@ -662,7 +661,6 @@ namespace ALE {
               pCone = this->cone(*b_itor);
             }
             cone->insert(pCone->begin(), pCone->end());
-            std::cout << "  adding cone for " << *b_itor << std::endl;
             closure->addCone(pCone, *b_itor);
           }
         }
@@ -857,15 +855,15 @@ namespace ALE {
       };
       void addArrow(const Data& p, const Data& q, const Color& color) {
         this->arrows.insert(Arrow_(p, q, color));
-        std::cout << "Added " << Arrow_(p, q, color);
+        if (debug) {std::cout << "Added " << Arrow_(p, q, color);}
       };
       template<class InputSequence> void addCone(const Obj<InputSequence >& points, const Data& p) {
         this->addCone(points, p, Color());
       };
       template<class InputSequence> void addCone(const Obj<InputSequence >& points, const Data& p, const Color& color){
-        std::cout << "Adding a cone " << std::endl;
+        if (debug) {std::cout << "Adding a cone " << std::endl;}
         for(typename InputSequence::iterator iter = points->begin(); iter != points->end(); ++iter) {
-          std::cout << "Adding arrow from " << *iter << " to " << p << "(" << color << ")" << std::endl;
+          if (debug) {std::cout << "Adding arrow from " << *iter << " to " << p << "(" << color << ")" << std::endl;}
           this->addArrow(*iter, p, color);
         }
       };
@@ -873,9 +871,9 @@ namespace ALE {
         this->addSupport(p, points, Color());
       };
       template<class InputSequence> void addSupport(const Data& p, const Obj<InputSequence >& points, const Color& color) {
-        std::cout << "Adding a support " << std::endl;
+        if (debug) {std::cout << "Adding a support " << std::endl;}
         for(typename InputSequence::iterator iter = points->begin(); iter != points->end(); ++iter) {
-          std::cout << "Adding arrow from " << p << " to " << *iter << std::endl;
+          if (debug) {std::cout << "Adding arrow from " << p << " to " << *iter << std::endl;}
           this->addArrow(p, *iter, color);
         }
       };
@@ -949,10 +947,11 @@ namespace ALE {
         this->__computeClosureHeights(this->cone(this->leaves()));
         this->__computeStarDepths(this->support(this->roots()));
 
-        const typename ::boost::multi_index::index<StratumSet,point>::type& points = ::boost::multi_index::get<point>(this->strata);
-
-        for(typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = points.begin(); i != points.end(); i++) {
-          std::cout << *i << std::endl;
+        if (debug) {
+          const typename ::boost::multi_index::index<StratumSet,point>::type& points = ::boost::multi_index::get<point>(this->strata);
+          for(typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = points.begin(); i != points.end(); i++) {
+            std::cout << *i << std::endl;
+          }
         }
       };
     private:

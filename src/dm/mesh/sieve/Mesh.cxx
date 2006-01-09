@@ -7,7 +7,7 @@ namespace ALE {
     void Mesh::buildFaces(int dim, std::map<int, int*> *curSimplex, Obj<PointSet> boundary, Point& simplex) {
       Obj<PointSet> faces = PointSet();
 
-      if (debug) {std::cout << "  Building faces for boundary(size " << boundary->size() << "), dim " << dim << std::endl;}
+      if (debug > 1) {std::cout << "  Building faces for boundary(size " << boundary->size() << "), dim " << dim << std::endl;}
       if (dim > 1) {
         // Use the cone construction
         for(PointSet::iterator b_itor = boundary->begin(); b_itor != boundary->end(); ++b_itor) {
@@ -15,16 +15,16 @@ namespace ALE {
           Point         face;
 
           faceBoundary.copy(boundary);
-          if (debug) {std::cout << "    boundary point " << *b_itor << std::endl;}
+          if (debug > 1) {std::cout << "    boundary point " << *b_itor << std::endl;}
           faceBoundary->erase(*b_itor);
           this->buildFaces(dim-1, curSimplex, faceBoundary, face);
           faces->insert(face);
         }
       } else {
-        if (debug) {std::cout << "  Just set faces to boundary in 1d" << std::endl;}
+        if (debug > 1) {std::cout << "  Just set faces to boundary in 1d" << std::endl;}
         faces = boundary;
       }
-      if (debug) {
+      if (debug > 1) {
         for(PointSet::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
           std::cout << "  face point " << *f_itor << std::endl;
         }
@@ -39,11 +39,11 @@ namespace ALE {
 
       if (preElement->size() > 0) {
         simplex = *preElement->begin();
-        if (debug) {std::cout << "  Found old simplex " << simplex << std::endl;}
+        if (debug > 1) {std::cout << "  Found old simplex " << simplex << std::endl;}
       } else {
         simplex = Point(0, (*(*curSimplex)[dim])++);
         this->topology.addCone(faces, simplex);
-        if (debug) {std::cout << "  Added simplex " << simplex << " dim " << dim << std::endl;}
+        if (debug > 1) {std::cout << "  Added simplex " << simplex << " dim " << dim << std::endl;}
       }
     };
 
@@ -73,10 +73,10 @@ namespace ALE {
         for(int b = 0; b < dim+1; b++) {
           Point vertex(0, simplices[s*(dim+1)+b]+numSimplices);
 
-          if (debug) {std::cout << "Adding boundary node " << vertex << std::endl;}
+          if (debug > 1) {std::cout << "Adding boundary node " << vertex << std::endl;}
           boundary->insert(vertex);
         }
-        std::cout << "simplex " << s << " boundary size " << boundary->size() << std::endl;
+        if (debug) {std::cout << "simplex " << s << " boundary size " << boundary->size() << std::endl;}
         this->buildFaces(this->dim, &curElement, boundary, simplex);
         // Orient the simplex
         Point element(0, simplices[s*(dim+1)+0]+numSimplices);
@@ -87,7 +87,7 @@ namespace ALE {
           Obj<PointSet> join = this->topology.nJoin(element, next, b);
 
           if (join->size() == 0) {
-            std::cout << "element " << element << " next " << next << std::endl;
+            if (debug) {std::cout << "element " << element << " next " << next << std::endl;}
             throw ALE::Exception("Invalid join");
           }
           element =  *join->begin();
@@ -100,13 +100,14 @@ namespace ALE {
     void Mesh::createSerialCoordinates(int numElements, double coords[]) {
       int dim = this->dim;
 
+      this->topology.debug = this->debug;
       this->coordinates.setTopology(this->topology);
       this->coordinates.setPatch(this->topology.base(), 0);
       this->coordinates.setIndexDimensionByDepth(0, dim);
       this->coordinates.orderPatches();
       Obj<Sieve<Point,int>::depthSequence> vertices = this->topology.depthStratum(0);
       for(Sieve<Point,int>::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
-        std::cout << "Fiber index over vertex " << *v_itor << " is " << *this->coordinates.getIndices(0, *v_itor)->begin() << std::endl;
+        if (debug) {std::cout << "Fiber index over vertex " << *v_itor << " is " << *this->coordinates.getIndices(0, *v_itor)->begin() << std::endl;}
         this->coordinates.update(0, *v_itor, &coords[((*v_itor).index - numElements)*dim]);
       }
     };
@@ -116,6 +117,7 @@ namespace ALE {
 
       MPI_Comm_rank(this->comm, &rank);
       /* Create serial sieve */
+      this->topology.debug = this->debug;
       this->topology.setStratification(false);
       if (rank == 0) {
         this->buildTopology(numSimplices, simplices, numVertices);

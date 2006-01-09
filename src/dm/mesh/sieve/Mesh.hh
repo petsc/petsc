@@ -14,15 +14,15 @@ namespace ALE {
       typedef Sieve<Point,int> sieve_type;
       typedef CoSieve<sieve_type, int, Point, double> coordinate_type;
       typedef CoSieve<sieve_type, int, Point, int> bundle_type;
+      int debug;
     private:
       sieve_type      topology;
       sieve_type      orientation;
       coordinate_type coordinates;
       MPI_Comm        comm;
       int             dim;
-      int             debug;
     public:
-      Mesh(MPI_Comm c, int dimension) : comm(c), dim(dimension), debug(0) {};
+      Mesh(MPI_Comm c, int dimension) : debug(0), comm(c), dim(dimension) {};
 
       MPI_Comm             getComm() {return this->comm;};
       Obj<sieve_type>      getTopology() {return this->topology;};
@@ -48,7 +48,7 @@ namespace ALE {
       PyLithBuilder() {};
       virtual ~PyLithBuilder() {};
 
-      static Obj<Mesh> create(MPI_Comm comm, const std::string& baseFilename) {
+      static Obj<Mesh> create(MPI_Comm comm, const std::string& baseFilename, int debug = 0) {
         int       dim = 3;
         bool      useZeroBase = false;
         Obj<Mesh> mesh = Mesh(comm, dim);
@@ -56,6 +56,7 @@ namespace ALE {
         double   *coordinates;
         int       numElements, numVertices;
 
+        mesh->debug = debug;
         readConnectivity(comm, baseFilename+".connect", dim, useZeroBase, numElements, &vertices);
         readCoordinates(comm, baseFilename+".coord", dim, numVertices, &coordinates);
         mesh->populate(numElements, vertices, numVertices, coordinates);
@@ -70,12 +71,13 @@ namespace ALE {
       PCICEBuilder() {};
       virtual ~PCICEBuilder() {};
 
-      static Obj<Mesh> create(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false) {
+      static Obj<Mesh> create(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, int debug = 0) {
         Obj<Mesh> mesh = Mesh(comm, dim);
         int      *vertices;
         double   *coordinates;
         int       numElements, numVertices;
 
+        mesh->debug = debug;
         readConnectivity(comm, baseFilename+".lcon", dim, useZeroBase, numElements, &vertices);
         readCoordinates(comm, baseFilename+".nodes", dim, numVertices, &coordinates);
         mesh->populate(numElements, vertices, numVertices, coordinates);
