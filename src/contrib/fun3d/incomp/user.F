@@ -17,7 +17,8 @@
 
       implicit none
 #include "include/finclude/petscdef.h"
-      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha
+      PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       PetscScalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,                        &
@@ -45,8 +46,10 @@
       block data Block_Initialization
       implicit none
 #include "include/finclude/petscdef.h"
-      PetscScalar vkar,cmu,ce1,ce2,aplus1,aplus2,turbinf
-      PetscScalar cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
+      PetscScalar vkar,cmu,ce1,ce2
+      PetscScalar aplus1,aplus2,turbinf
+      PetscScalar cb1,sig,cb2,cw1,cw2
+      PetscScalar cw3,cv1,ct1,ct2,ct3,ct4
       common/turb/vkar,cmu,ce1,ce2,aplus1,aplus2,turbinf
       common/spalrt/cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
       data vkar,cmu,ce1,ce2/0.41,0.09,1.2,2.0 /
@@ -72,12 +75,15 @@
 #include "include/finclude/petscdef.h"
       PetscScalar  turbre(1),amut(1)
       integer ivnode(1),nnodes,nvnode,irank
-      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha
+      PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       PetscScalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
       PetscScalar  p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      PetscScalar  vkar,cmu,ce1,ce2,aplus1,aplus2,turbinf
-      PetscScalar  cb1,sig,cb2,cw1,cw2,cw3,cv1,ct1,ct2,ct3,ct4
+      PetscScalar  vkar,cmu,ce1,ce2
+      PetscScalar  aplus1,aplus2,turbinf
+      PetscScalar  cb1,sig,cb2,cw1,cw2,cw3
+      PetscScalar  cv1,ct1,ct2,ct3,ct4
       PetscScalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,                          &
      &        nstage,ncyct,iramp,nitfo
@@ -210,7 +216,8 @@
 
       implicit none
 #include "include/finclude/petscdef.h"
-      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha
+      PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       PetscScalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,                                &
@@ -329,7 +336,7 @@
         write(13,1010) (1.0                 ,j=isp,isp+nnpts(i)-1)
         write(13,1010) (q(2,isnode(j))      ,j=isp,isp+nnpts(i)-1)
         write(13,1010) (q(3,isnode(j))      ,j=isp,isp+nnpts(i)-1)
-        write(13,1010) (q(4,isnode(j))      ,j=isp,isp+nnpts(i)-1)           
+        write(13,1010) (q(4,isnode(j))      ,j=isp,isp+nnpts(i)-1)
         write(13,1010) (q(1,isnode(j))/pinf ,j=isp,isp+nnpts(i)-1)
  
         do 30 j=ist,ist+nntet(i)-1
@@ -364,7 +371,7 @@
         write(13,1010) (1.0                 ,j=isp,isp+nvpts(i)-1)
         write(13,1010) (q(2,ivnode(j))      ,j=isp,isp+nvpts(i)-1)
         write(13,1010) (q(3,ivnode(j))      ,j=isp,isp+nvpts(i)-1)
-        write(13,1010) (q(4,ivnode(j))      ,j=isp,isp+nvpts(i)-1)           
+        write(13,1010) (q(4,ivnode(j))      ,j=isp,isp+nvpts(i)-1)
         write(13,1010) (q(1,ivnode(j))/pinf ,j=isp,isp+nvpts(i)-1)
  
         do 90 j=ist,ist+nvtet(i)-1
@@ -393,7 +400,7 @@
   
          write(13,1000) "ff." // c4(ic:4),nfpts(i),nftet(i)
   
-         write(13,1010) (x(ifnode(j))        ,j=isp,isp+nfpts(i)-1)         
+         write(13,1010) (x(ifnode(j))        ,j=isp,isp+nfpts(i)-1)
          write(13,1010) (y(ifnode(j))        ,j=isp,isp+nfpts(i)-1)
          write(13,1010) (z(ifnode(j))        ,j=isp,isp+nfpts(i)-1)
          write(13,1010) (1.0                 ,j=isp,isp+nfpts(i)-1)
@@ -442,7 +449,8 @@
      &                 clift, cdrag, cmom,irank,nvertices)
       implicit none      
 #include "include/finclude/petsc.h"
-      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha
+      PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       PetscScalar gamma,gm1,gp1,gm1g,gp1g,ggm1
       PetscScalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
@@ -463,16 +471,17 @@
       integer sface_bit(nnfacet), vface_bit(nvfacet)
 
       PetscScalar clift, cdrag, cmom
-      PetscScalar clloc,cdloc,cmloc,clglo,cdglo,cmglo
+      PetscScalar clloc,cdloc,cmloc
+      PetscScalar clglo,cdglo,cmglo
       PetscScalar cl_ghost, cd_ghost, cm_ghost
       PetscScalar coef_loc(3), coef_glo(3)
-      PetscScalar pi,conv,csa,sna,xr,yr,zr,                                  &
-     &       x1,y1,z1,x2,y2,z2,x3,y3,z3,xmid,ymid,zmid,                 &
-     &       p1,p2,p3,u1,u2,u3,v1,v2,v3,                                &
-     &       w1,w2,w3,                                                  &
-     &       ax,ay,az,bx,by,bz,                                         &
-     &       xnorm,ynorm,znorm,                                         &
-     &       dcx,dcy,dcz,cp,press
+      PetscScalar pi,conv,csa,sna,xr,yr,zr
+      PetscScalar x1,y1,z1,x2,y2,z2,x3,y3
+      PetscScalar z3,xmid,ymid,zmid
+      PetscScalar p1,p2,p3,u1,u2,u3,v1,v2,v3
+      PetscScalar w1,w2,w3,ax,ay,az,bx,by,bz
+      PetscScalar xnorm,ynorm,znorm
+      PetscScalar dcx,dcy,dcz,cp,press
       integer icount,n,node1,node2,node3,ierr
       
 #if defined(INTERLACING)
@@ -713,7 +722,8 @@
 !
       implicit none      
 #include "include/finclude/petscdef.h"
-      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha
+      PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       PetscScalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
       common/info/title,beta,alpha,Re,dt,tot,res0,resc,                  &
@@ -728,7 +738,8 @@
       integer isnode(1),ivnode(1),ifnode(1)
       integer n,i,node1,node2,inode
       integer flops,ierr
-      PetscScalar xnorm,ynorm,znorm,area,u1,v1,w1,u2,v2,w2,u,v,c,w
+      PetscScalar xnorm,ynorm,znorm,area
+      PetscScalar u1,v1,w1,u2,v2,w2,u,v,c,w
       PetscScalar ubar,Vn,term
 #if defined(INTERLACING)
       PetscScalar qvec(4,nvertices)
@@ -964,12 +975,13 @@
 #endif  
       implicit none      
 #include "include/finclude/petsc.h"
-      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha
+      PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       PetscScalar  gamma,gm1,gp1,gm1g,gp1g,ggm1
       PetscScalar  p0,rho0,c0,u0,v0,w0,et0,h0,pt0
-      PetscScalar  rms(1001),clw(1001),cdw(1001),                                    &
-     &        cmw(1001),xres(1001)
+      PetscScalar  rms(1001),clw(1001),cdw(1001)
+      PetscScalar  cmw(1001),xres(1001)
       PetscScalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,                                &
      &        nstage,ncyct,iramp,nitfo
@@ -997,20 +1009,30 @@
       integer f2ntf(nffacet,4)
       integer i,n,node1,node2,node3,inode      
       integer flops,ierr,first_edge,last_edge
-      PetscScalar  xmean,ymean,zmean,xnorm,ynorm,znorm
-      PetscScalar  rlen,area,dot,size
-      PetscScalar  X1,Y1,Z1,X2,Y2,Z2,X3,Y3,Z3,p1,p2,p3
-      PetscScalar  rx,ry,rz,pL,uL,wL,vL,pR,uR,vR,wR
-      PetscScalar  ubarL,ubarR,ubar,p,u,v,w,c,c2,c20
+      PetscScalar  xmean,ymean,zmean,xnorm,ynorm
+      PetscScalar  znorm,rlen,area,dot,size
+      PetscScalar  X1,Y1,Z1,X2,Y2,Z2,X3,Y3,Z3
+      PetscScalar  p1,p2,p3
+      PetscScalar  rx,ry,rz,pL,uL,wL,vL
+      PetscScalar  pR,uR,vR,wR
+      PetscScalar  ubarL,ubarR,ubar,p,u,v,w,c
+      PetscScalar  c2,c20
       PetscScalar  ubar0,pi,ui,vi,wi,unorm
-      PetscScalar  phi1,phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9
-      PetscScalar  eig1,eig2,eig3,eig4,dp,du,dv,dw
-      PetscScalar  ti11,ti21,ti31,ti41,dv1,dv2,dv3,dv4
-      PetscScalar  r11,r21,r31,r41,r12,r22,r32,r42
-      PetscScalar  r13,r23,r33,r43,r14,r24,r34,r44
+      PetscScalar  phi1,phi2,phi3,phi4,phi5
+      PetscScalar  phi6,phi7,phi8,phi9
+      PetscScalar  eig1,eig2,eig3,eig4
+      PetscScalar  dp,du,dv,dw
+      PetscScalar  ti11,ti21,ti31,ti41
+      PetscScalar  dv1,dv2,dv3,dv4
+      PetscScalar  r11,r21,r31,r41
+      PetscScalar  r12,r22,r32,r42
+      PetscScalar  r13,r23,r33,r43
+      PetscScalar  r14,r24,r34,r44
       PetscScalar  t1,t2,t3,t4
-      PetscScalar  t11,t21,t31,t41,t12,t22,t32,t42
-      PetscScalar  t13,t23,t33,t43,t14,t24,t34,t44
+      PetscScalar  t11,t21,t31,t41
+      PetscScalar  t12,t22,t32,t42
+      PetscScalar  t13,t23,t33,t43
+      PetscScalar  t14,t24,t34,t44
       PetscScalar  fluxp1,fluxp2,fluxp3,fluxp4
       PetscScalar  fluxm1,fluxm2,fluxm3,fluxm4
       PetscScalar  res1,res2,res3,res4
@@ -1811,7 +1833,8 @@
 #define eptr(i,j) evec(i,j)
 #endif
       integer i,n,node1,node2,ierr
-      PetscScalar x1,y1,z1,x2,y2,z2,dx,dy,dz,dist,weight,w2,w11,w22,w33
+      PetscScalar x1,y1,z1,x2,y2,z2,dx,dy,dz
+      PetscScalar dist,weight,w2,w11,w22,w33
       PetscScalar r12r11,r13r11,r23r22,rmess
 
 !
@@ -2074,7 +2097,8 @@
 #define r44(i) rxy(i,7)
 #define eptr(i,j) evec(i,j)
 #endif
-      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha
+      PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       PetscScalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,                          &
@@ -2370,7 +2394,8 @@
       integer f2ntv(nvfacet,4)
       integer f2ntf(nffacet,4)
 !
-      PetscScalar us(nbface,3,4),vs(nbface,3,4),as(nbface,3,4)
+      PetscScalar us(nbface,3,4),vs(nbface,3,4)
+      PetscScalar as(nbface,3,4)
       PetscScalar sxn(1),syn(1),szn(1)
       PetscScalar vxn(1),vyn(1),vzn(1)
       PetscScalar fxn(1),fyn(1),fzn(1)
@@ -2387,7 +2412,8 @@
       PetscScalar amut(nnodes)
 !
       integer i
-      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha
+      PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       PetscScalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,                             &
