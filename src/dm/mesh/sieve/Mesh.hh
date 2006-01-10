@@ -19,6 +19,7 @@ namespace ALE {
       sieve_type      topology;
       sieve_type      orientation;
       coordinate_type coordinates;
+      coordinate_type boundary;
       MPI_Comm        comm;
       int             dim;
     public:
@@ -29,10 +30,12 @@ namespace ALE {
       Obj<sieve_type>      getOrientation() {return this->orientation;};
       int                  getDimension() {return this->dim;};
       Obj<coordinate_type> getCoordinates() {return this->coordinates;};
+      Obj<coordinate_type> getBoundary() {return this->boundary;};
 
       void buildFaces(int dim, std::map<int, int*> *curSimplex, Obj<PointSet> boundary, Point& simplex);
       void buildTopology(int numSimplices, int simplices[], int numVertices);
       void createSerialCoordinates(int numElements, double coords[]);
+      void createBoundary(int numBoundaryVertices, int numBoundaryComponents, int boundaryVertices[], double boundaryValues[]);
       void populate(int numSimplices, int simplices[], int numVertices, double coords[]);
     };
 

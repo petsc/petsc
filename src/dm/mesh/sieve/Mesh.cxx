@@ -112,6 +112,36 @@ namespace ALE {
       }
     };
 
+    // I think that the boundary shuold be marked in the Sieve
+    //   It could be done with point markers like depth/height, but is that right?
+    // Should also put in boundary edges
+    void Mesh::createBoundary(int numBoundaryVertices, int numBoundaryComponents, int boundaryVertices[], double boundaryValues[]) {
+      //FIX: Need to globalize
+      int numElements = this->topology.heightStratum(0)->size();
+
+      this->boundary.debug = this->debug;
+      this->boundary.setTopology(this->topology);
+      this->boundary.setPatch(this->topology.base(), 0);
+      // Reverse order allows newer conditions to override older, as required by PyLith
+      for(int v = numBoundaryVertices-1; v >= 0; v--) {
+        sieve_type::point_type vertex(0, boundaryVertices[v*(numBoundaryComponents+1)] + numElements);
+
+        if (this->boundary.getIndexDimension(0, vertex) == 0) {
+          for(int c = 0; c < numBoundaryComponents; c++) {
+            if (boundaryVertices[v*(numBoundaryComponents+1)+c+1]) {
+              this->boundary.setIndexDimension(0, vertex, c+1, 1);
+            }
+          }
+        }
+      }
+      this->boundary.orderPatches();
+      for(int v = 0; v < numBoundaryVertices; v++) {
+        ALE::Point vertex = ALE::Point(0, boundaryVertices[v*(numBoundaryComponents+1)] + numElements);
+
+        this->boundary.update(0, vertex, &boundaryValues[v*numBoundaryComponents]);
+      }
+    }
+
     void Mesh::populate(int numSimplices, int simplices[], int numVertices, double coords[]) {
       PetscMPIInt rank;
 

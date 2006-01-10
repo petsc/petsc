@@ -57,10 +57,6 @@ namespace ALE {
         os << a.source << " --" << a.color << "--> " << a.target << std::endl;
         return os;
       }
-      friend std::ostream& operator<<(std::ostream& os, const std::pair<int, int>& p) {
-        os << "(" << p.first << "," << p.second << ")";
-        return os;
-      }
     };
 
     //
@@ -178,6 +174,36 @@ namespace ALE {
         virtual ~baseSequence() {};
         virtual iterator    begin() {return iterator(this->baseIndex.upper_bound(0));};
         virtual iterator    end()   {return iterator(this->baseIndex.end());};
+        virtual std::size_t size()  {return -1;};
+      };
+      class capSequence {
+        const typename ::boost::multi_index::index<StratumSet,outdegree>::type& capIndex;
+      public:
+        class iterator {
+        public:
+          typedef std::input_iterator_tag iterator_category;
+          typedef Data  value_type;
+          typedef int   difference_type;
+          typedef Data* pointer;
+          typedef Data& reference;
+          typename boost::multi_index::index<StratumSet,outdegree>::type::iterator pointIter;
+
+          iterator(const typename boost::multi_index::index<StratumSet,outdegree>::type::iterator& iter) {
+            this->pointIter = typename boost::multi_index::index<StratumSet,outdegree>::type::iterator(iter);
+          };
+          virtual ~iterator() {};
+          //
+          virtual iterator    operator++() {++this->pointIter; return *this;};
+          virtual iterator    operator++(int n) {iterator tmp(this->pointIter); ++this->pointIter; return tmp;};
+          virtual bool        operator==(const iterator& itor) const {return this->pointIter == itor.pointIter;};
+          virtual bool        operator!=(const iterator& itor) const {return this->pointIter != itor.pointIter;};
+          virtual const Data& operator*() const {return this->pointIter->point;};
+        };
+
+        capSequence(const typename ::boost::multi_index::index<StratumSet,outdegree>::type& cap) : capIndex(cap) {};
+        virtual ~capSequence() {};
+        virtual iterator    begin() {return iterator(this->capIndex.upper_bound(0));};
+        virtual iterator    end()   {return iterator(this->capIndex.end());};
         virtual std::size_t size()  {return -1;};
       };
 
@@ -889,6 +915,9 @@ namespace ALE {
       // Views
       Obj<baseSequence> base() {
         return baseSequence(::boost::multi_index::get<indegree>(this->strata));
+      };
+      Obj<capSequence> cap() {
+        return capSequence(::boost::multi_index::get<outdegree>(this->strata));
       };
       Obj<rootSequence> roots() {
         return rootSequence(::boost::multi_index::get<indegree>(this->strata));

@@ -390,6 +390,34 @@ namespace ALE {
           this->addArrow(*iter, target, color);
         }
       };
+    private:
+      void __clearCone(const target_type& p, const color_type& color, bool useColor) {
+        typename ::boost::multi_index::index<ArrowSet,targetColor>::type& coneIndex = ::boost::multi_index::get<targetColor>(this->arrows);
+        if (useColor) {
+          coneIndex.erase(coneIndex.lower_bound(::boost::make_tuple(p,color)), coneIndex.upper_bound(::boost::make_tuple(p,color)));
+        } else {
+          coneIndex.erase(coneIndex.lower_bound(::boost::make_tuple(p)),       coneIndex.upper_bound(::boost::make_tuple(p)));
+        }
+      }
+    public:
+      void setCone(const source_type& source, const target_type& target){
+        this->__clearCone(target, color_type(), false);
+        this->addCone(source, target);
+      };
+      template<class sourceInputSequence> 
+      void setCone(const Obj<sourceInputSequence>& sources, const target_type& target) {
+        this->__clearCone(target, color_type(), false);
+        this->addCone(sources, target, color_type());
+      };
+      void setCone(const source_type& source, const target_type& target, const color_type& color) {
+        this->__clearCone(target, color, true);
+        this->addCone(source, target, color);
+      };
+      template<class sourceInputSequence> 
+      void setCone(const Obj<sourceInputSequence>& sources, const target_type& target, const color_type& color) {
+        this->__clearCone(target, color, true);
+        this->addCone(sources, target, color);
+      };
       template<class targetInputSequence> 
       void addSupport(const source_type& source, const Obj<targetInputSequence >& targets);
       template<class targetInputSequence> 
@@ -547,12 +575,13 @@ namespace ALE {
       // Attachment of fiber dimension intervals to Sieve points
       //   fields are encoded by colors, which double as the field ordering index
       //   colors (<patch_type, int>) order the indices (index_type, usually an interval) over a point (Sieve::point_type).
-      typedef std::pair<patch_type, int> index_color;
+      typedef std::pair<patch_type, typename Sieve::color_type> index_color;
       typedef BiGraph<index_type, typename Sieve::point_type, index_color> indices_type;
     private:
       indices_type _indices; 
     private:
-      // Holds values for each patch
+      // Holds size and values for each patch
+      std::map<patch_type, int>          _storageSize;
       std::map<patch_type, value_type *> _storage;
 
       void __clear() {
@@ -564,6 +593,7 @@ namespace ALE {
         this->_patches.clear();
         this->_indices.clear();
         this->_storage.clear();
+        this->_storageSize.clear();
       };
     public:
       CoSieve() : debug(0) {};
@@ -632,6 +662,7 @@ namespace ALE {
         }
         if (debug) {std::cout << "Allocated patch " << patch << " of size " << offset << std::endl;}
         this->_storage[patch] = new value_type[offset];
+        this->_storageSize[patch] = offset;
       };
     public:
       // This attaches Sieve::point_type points to a patch in the order prescribed by the sequence; 
@@ -661,6 +692,9 @@ namespace ALE {
       template<typename indexInputSequence>
       void  addIndices(const patch_type& patch, const Obj<indexInputSequence>& indices, typename Sieve::color_type color, const typename Sieve::point_type& p) {
         this->_indices.addCone(indices, p, index_color(patch, color));
+      };
+      void  setIndices(const patch_type& patch, const index_type& indices, typename Sieve::color_type color, const typename Sieve::point_type& p) {
+        this->_indices.setCone(indices, p, index_color(patch, color));
       };
       template<typename indexInputSequence>
       void  setIndices(const patch_type& patch, const Obj<indexInputSequence>& indices, typename Sieve::color_type color, const typename Sieve::point_type& p) {
@@ -846,6 +880,9 @@ namespace ALE {
         }
         return indexArray;
       };
+      int getIndexDimension(const patch_type& patch) {
+        return this->_storageSize[patch];
+      }
       int getIndexDimension(const patch_type& patch, const typename Sieve::point_type& p) {
         Obj<typename indices_type::coneSequence> cone = this->_indices.cone(p);
         int dim = 0;
@@ -856,6 +893,22 @@ namespace ALE {
         if (debug) {std::cout << "  getting dimension " << dim << " of " << p << " in patch " << patch << std::endl;}
         return dim;
       };
+      int getIndexDimension(const patch_type& patch, const typename Sieve::point_type& p, typename Sieve::color_type color) {
+        Obj<typename indices_type::coneSequence> cone = this->_indices.cone(p, index_color(patch, color));
+        int dim = 0;
+
+        for(typename indices_type::coneSequence::iterator iter = cone->begin(); iter != cone->end(); ++iter) {
+          dim += (*iter).index;
+        }
+        if (debug) {std::cout << "  getting dimension " << dim << " of " << p << "(" << color << ") in patch " << patch << std::endl;}
+        return dim;
+      };
+      void setIndexDimension(const patch_type& patch, const typename Sieve::point_type& p, int indexDim) {
+        this->setIndexDimension(patch, p, typename Sieve::color_type(), indexDim);
+      }
+      void setIndexDimension(const patch_type& patch, const typename Sieve::point_type& p, typename Sieve::color_type color, int indexDim) {
+        this->setIndices(patch, typename Sieve::point_type(-1, indexDim), color, p);
+      }
       // Attach indexDim indices to each element of a certain depth in the topology
       void setIndexDimensionByDepth(int depth, int indexDim) {
         this->setIndexDimensionByDepth(depth, typename Sieve::color_type(), indexDim);
@@ -869,7 +922,7 @@ namespace ALE {
           if (debug) {std::cout << "  traversing patch " << *b_iter << std::endl;}
           for(typename Sieve::depthSequence::iterator iter = stratum->begin(); iter != stratum->end(); ++iter) {
             if (debug) {std::cout << "  setting dimension of " << *iter << " to " << indexDim << std::endl;}
-            this->addIndices(*b_iter, typename Sieve::point_type(-1, indexDim), color, *iter);
+            this->setIndexDimension(*b_iter, *iter, color, indexDim);
           }
         }
       };
