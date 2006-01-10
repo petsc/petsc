@@ -128,7 +128,7 @@ class Configure(PETSc.package.Package):
     if self.isPOE:
       self.mpirun = os.path.join(self.petscdir.dir, 'bin', 'mpirun.poe')
       return
-    mpiruns = ['mpiexec', 'mpirun']
+    mpiruns = ['mpiexec -np 1', 'mpirun -np 1', 'mpiexec', 'mpirun']
     path    = []
     if 'with-mpi-dir' in self.framework.argDB:
       path.append(os.path.join(os.path.abspath(self.framework.argDB['with-mpi-dir']), 'bin'))

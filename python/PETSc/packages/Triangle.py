@@ -1,4 +1,5 @@
 import PETSc.package
+import os
 
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
