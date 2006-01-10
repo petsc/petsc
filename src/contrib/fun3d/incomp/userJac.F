@@ -64,7 +64,8 @@
       MatStructure flag
 
 !     integer ia(1),ja(1),iau(1),fhelp(nedge,2)
-      PetscScalar  title(20),beta,alpha,Re,dt,tot,res0,resc
+      PetscScalar  title(20),beta,alpha
+      PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       PetscScalar gamma,gm1,gp1,gm1g,gp1g,ggm1
       PetscScalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
@@ -86,23 +87,31 @@
       PetscScalar pR,uR,vR,wR,ubarR,c2R,cR
       PetscScalar pi,ui,vi,wi,unorm,c20,ubar0
       PetscScalar prp,uru,vrv,wrw
-      PetscScalar p,u,v,w,ubar,c2,c,eig1,eig2,eig3,eig4,eigeps
-      PetscScalar phi1,phi2,phi3,phi4,phi5,phi6,phi7,phi8,phi9
+      PetscScalar p,u,v,w,ubar,c2,c
+      PetscScalar eig1,eig2,eig3,eig4,eigeps
+      PetscScalar phi1,phi2,phi3,phi4,phi5
+      PetscScalar phi6,phi7,phi8,phi9
       PetscScalar rhs1,rhs1p,rhs1u,rhs1v,rhs1w
       PetscScalar rhs2,rhs2p,rhs2u,rhs2v,rhs2w
       PetscScalar rhs3,rhs3p,rhs3u,rhs3v,rhs3w
-      PetscScalar rhs4,rhs4p,rhs4u,rhs4v,rhs4w,c2inv
+      PetscScalar rhs4,rhs4p,rhs4u,rhs4v,rhs4w
+      PetscScalar c2inv
       PetscScalar y11,y21,y31,y41,y12,y22,y32,y42
       PetscScalar y13,y23,y33,y43,y14,y24,y34,y44
       PetscScalar t11,t21,t31,t41,t12,t22,t32,t42
       PetscScalar t13,t23,t33,t43,t14,t24,t34,t44
-      PetscScalar ti11,ti21,ti31,ti41,ti12,ti22,ti32,ti42
-      PetscScalar ti13,ti23,ti33,ti43,ti14,ti24,ti34,ti44
+      PetscScalar ti11,ti21,ti31,ti41
+      PetscScalar ti12,ti22,ti32,ti42
+      PetscScalar ti13,ti23,ti33,ti43
+      PetscScalar ti14,ti24,ti34,ti44
       PetscScalar a11,a21,a31,a41,a12,a22,a32,a42
       PetscScalar a13,a23,a33,a43,a14,a24,a34,a44
-      PetscScalar pb,pbp,pbu,pbv,pbw,ub,ubp,ubu,ubv,ubw
-      PetscScalar vb,vbp,vbu,vbv,vbw,wb,wbp,wbu,wbv,wbw
-      PetscScalar unormb,unormbp,unormbu,unormbv,unormbw
+      PetscScalar pb,pbp,pbu,pbv,pbw
+      PetscScalar ub,ubp,ubu,ubv,ubw
+      PetscScalar vb,vbp,vbu,vbv,vbw
+      PetscScalar wb,wbp,wbu,wbv,wbw
+      PetscScalar unormb,unormbp,unormbu
+      PetscScalar unormbv,unormbw
      
 
 ! 
