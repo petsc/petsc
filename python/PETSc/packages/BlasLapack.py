@@ -268,7 +268,7 @@ class Configure(PETSc.package.Package):
     self.framework.log.write('Downloading blaslapack from netlib\n')
 
     self.setCompilers.pushLanguage('FC')
-      if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker()):
+    if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker()):
       raise RuntimeError('Cannot compile netlib LAPACK with NAG compiler - install blas/lapack compiled with g77 instead')
     self.setCompilers.popLanguage()
     if self.languages.precision == 'int':
