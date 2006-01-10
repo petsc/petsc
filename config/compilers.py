@@ -30,8 +30,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('Compilers', '-with-f90-header=<file>', nargs.Arg(None, None, 'Specify the C header for the F90 interface, e.g. f90_intel.h'))
-    help.addArgument('Compilers', '-with-f90-source=<file>', nargs.Arg(None, None, 'Specify the C source for the F90 interface, e.g. f90_intel.c'))
+    help.addArgument('Compilers', '-with-f90-interface=<type>', nargs.Arg(None, None, 'Specify  compiler type for eg: intel8,solaris,rs6000,IRIX,win32,absoft,t3e,dec,cray_x1,hpux'))
     return
 
   def getDispatchNames(self):
@@ -829,77 +828,63 @@ class Configure(config.base.Configure):
     return str
 
   def getFortran90SourceGuesses(self):
-    headerGuess = None
-    sourceGuess = None
+    f90Guess = None
     if self.setCompilers.vendor:
       if self.setCompilers.FC.startswith('win32fe'):
-        headerGuess = 'f90_win32.h'
-        sourceGuess = 'f90_win32.c'
-      if self.setCompilers.vendor == 'absoft':
-        headerGuess = 'f90_absoft.h'
-        sourceGuess = 'f90_absoft.c'
+        f90Guess = 'win32'
+      elif self.setCompilers.vendor == 'absoft':
+        f90Guess = 'absoft'
       elif self.setCompilers.vendor == 'cray':
-        headerGuess = 'f90_t3e.h'
-        sourceGuess = 'f90_t3e.c'
-        #headerGuess = 'f90_cray_x1.h'
-        #sourceGuess = 'f90_cray_x1.c'
+        f90Guess = 't3e'
+        #f90Guess = 'cray_x1'
       elif self.setCompilers.vendor == 'dec':
-        headerGuess = 'f90_alpha.h'
-        sourceGuess = 'f90_alpha.c'
+        f90Guess = 'alpha'
       elif self.setCompilers.vendor == 'hp':
-        headerGuess = 'f90_hpux.h'
-        sourceGuess = 'f90_hpux.c'
+        f90Guess = 'hpux'
       elif self.setCompilers.vendor == 'ibm':
-        headerGuess = 'f90_rs6000.h'
-        sourceGuess = 'f90_rs6000.c'
+        f90Guess = 'rs6000'
       elif self.setCompilers.vendor == 'intel':
         #headerGuess = 'f90_intel.h'
-        #sourceGuess = 'f90_intel.c'
-        headerGuess = 'f90_intel8.h'
-        sourceGuess = 'f90_intel8.c'
+        f90Guess = 'intel8'
       elif self.setCompilers.vendor in ['lahaye', 'nag']:
-        headerGuess = 'f90_nag.h'
-        sourceGuess = 'f90_nag.c'
+        f90Guess = 'nag'
       elif self.setCompilers.vendor == 'portland':
-        headerGuess = 'f90_pgi.h'
-        sourceGuess = 'f90_pgi.c'
+        f90Guess = 'pgi'
       elif self.setCompilers.vendor == 'sgi':
-        headerGuess = 'f90_IRIX.h'
-        sourceGuess = 'f90_IRIX.c'
+        f90Guess = 'IRIX'
       elif self.setCompilers.vendor == 'solaris':
-        headerGuess = 'f90_solaris.h'
-        sourceGuess = 'f90_solaris.c'
-    return (headerGuess, sourceGuess)
+        f90Guess = 'solaris'
+    return f90Guess
 
   def checkFortran90Interface(self):
     '''Check for custom F90 interfaces, such as that provided by PETSc'''
     if not self.fortranIsF90:
       return
-    (headerGuess, sourceGuess) = self.getFortran90SourceGuesses()
-    if 'with-f90-header' in self.framework.argDB:
-      headerGuess = self.stripquotes(self.framework.argDB['with-f90-header'])
-    if 'with-f90-source' in self.framework.argDB:
-      sourceGuess = self.stripquotes(self.framework.argDB['with-f90-source'])
-    if headerGuess:
-      headerPath = os.path.abspath(headerGuess)
-      if not os.path.isfile(headerPath):
-        headerPath = os.path.abspath(os.path.join('src', 'sys','f90', headerGuess))
-        if not os.path.isfile(headerPath):
-          self.logPrint('Invalid F90 header: '+str(headerPath), 2, 'compilers')
-          return
+    f90Guess = self.getFortran90SourceGuesses()
+    if 'with-f90-interface' in self.framework.argDB:
+      f90Guess = self.stripquotes(self.framework.argDB['with-f90-interface'])
+
+    if not f90Guess :
+      return
+
+    headerPath = os.path.abspath(os.path.join('src', 'sys','f90', 'f90_'+f90Guess+'.h'))
+    sourcePath = os.path.abspath(os.path.join('src', 'sys','f90','f90_'+f90Guess+'.c'))
+
+    if os.path.isfile(headerPath):
       self.f90HeaderPath = headerPath
-    if sourceGuess:
-      sourcePath = os.path.abspath(sourceGuess)
-      if not os.path.isfile(sourcePath):
-        sourcePath = os.path.abspath(os.path.join('src', 'sys','f90',sourceGuess))
-        if not os.path.isfile(sourcePath):
-          self.logPrint('Invalid F90 source: '+str(sourcePath), 2, 'compilers')
-          return
+    else:
+      self.logPrint('Invalid F90 header: '+str(headerPath), 2, 'compilers')
+      
+    if os.path.isfile(sourcePath):
       self.f90SourcePath = sourcePath
-    if hasattr(self, 'f90HeaderPath'):
+    else:
+      self.logPrint('Invalid F90 source: '+str(sourcePath), 2, 'compilers')
+      
+    if hasattr(self, 'f90HeaderPath') and hasattr(self, 'f90SourcePath'):
       self.addDefine('HAVE_F90_H', '"'+self.f90HeaderPath+'"')
-    if hasattr(self, 'f90SourcePath'):
       self.addDefine('HAVE_F90_C', '"'+self.f90SourcePath+'"')
+    else:
+      raise RuntimeError('Perhaps incorrect with-f90-interface specified. Could not confiure f90 interface for : '+f90Guess)      
     return
 
   def configure(self):

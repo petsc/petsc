@@ -183,7 +183,7 @@ void (*signal())();
     return
 
   def checkEndian(self):
-    '''If the machine is bgi endian, defines WORDS_BIGENDIAN'''
+    '''If the machine is big endian, defines WORDS_BIGENDIAN'''
     if 'with-endian' in self.framework.argDB:
       endian = self.framework.argDB['with-endian']
     else:
