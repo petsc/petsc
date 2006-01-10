@@ -913,8 +913,8 @@ class Configure(config.base.Configure):
     # Mac OSX
     # undefined warning must also have flat_namespace
     if Configure.isDarwin():
-      yield ('libtool', ['-noprebind','-dynamic','-single_module','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
-    #yield (self.CC, ['-dynamiclib', '-flat_namespace', '-undefined warning', '-multiply_defined suppress', '-single_module'], 'dylib')
+      #yield ('libtool', ['-noprebind','-dynamic','-single_module','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
+      yield (self.CC, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
     # Default to static linker
     self.setStaticLinker()
     self.staticLinker = self.AR
@@ -988,12 +988,7 @@ class Configure(config.base.Configure):
       languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
-      for testFlag in [ '-flat_namespace']:
-        try:
-          self.addLinkerFlag(testFlag)
-        except:
-          pass
-      for testFlag in ['-force_flat_namespace','-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress']:
+      for testFlag in ['-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress']:
         if self.checkLinkerFlag(testFlag):
           self.executableFlags.append(testFlag)
       self.popLanguage()
@@ -1055,8 +1050,8 @@ class Configure(config.base.Configure):
     # Mac OSX
     if Configure.isDarwin():
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
-        yield (self.CXX, ['-bundle', '-flat_namespace', '-undefined warning', '-multiply_defined suppress'], 'so')
-      yield (self.CC, ['-bundle', '-flat_namespace', '-undefined warning', '-multiply_defined suppress'], 'so')
+        yield (self.CXX, ['-bundle', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'so')
+      yield (self.CC, ['-bundle', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'so')
     # Shared default
     if hasattr(self, 'sharedLinker'):
       yield (self.sharedLinker, self.sharedLibraryFlags, 'so')
