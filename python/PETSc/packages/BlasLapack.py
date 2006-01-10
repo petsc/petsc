@@ -267,6 +267,10 @@ class Configure(PETSc.package.Package):
   def downLoadNetlibBlasLapack(self):
     self.framework.log.write('Downloading blaslapack from netlib\n')
 
+    self.setCompilers.pushLanguage('FC')
+      if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker()):
+      raise RuntimeError('Cannot compile netlib LAPACK with NAG compiler - install blas/lapack compiled with g77 instead')
+    self.setCompilers.popLanguage()
     if self.languages.precision == 'int':
       raise RuntimeError('Error netlib LAPACK does not support precision=int - use f-blas-lapack instead')
     packages = self.petscdir.externalPackagesDir
@@ -339,6 +343,11 @@ class Configure(PETSc.package.Package):
       os.mkdir(packages)
     if f2c == 'f2c':
       self.f2c = 1
+    if f2c == 'f':
+      self.setCompilers.pushLanguage('FC')
+      if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker()):
+        raise RuntimeError('Cannot compile fortran blaslapack with NAG compiler - install blas/lapack compiled with g77 instead')
+      self.setCompilers.popLanguage()
     libdir = os.path.join(packages,f2c+'blaslapack',self.arch.arch)
     if not os.path.isdir(os.path.join(packages,f2c+'blaslapack')):
       self.framework.log.write('Actually need to ftp '+l+'blaslapack\n')
