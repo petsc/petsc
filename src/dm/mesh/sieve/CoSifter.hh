@@ -474,6 +474,7 @@ namespace ALE {
       }
       // Structural methods
       void stratify() {
+        std::cout << "Stratifying" << std::endl;
         this->__computeDegrees();
       }
     private:
@@ -577,6 +578,10 @@ namespace ALE {
       //   colors (<patch_type, int>) order the indices (index_type, usually an interval) over a point (Sieve::point_type).
       typedef std::pair<patch_type, typename Sieve::color_type> index_color;
       typedef BiGraph<index_type, typename Sieve::point_type, index_color> indices_type;
+      friend std::ostream& operator<<(std::ostream& os, const index_color& c) {
+        os << c.first << ","<< c.second;
+        return os;
+      };
     private:
       indices_type _indices; 
     private:
@@ -667,8 +672,8 @@ namespace ALE {
     public:
       // This attaches Sieve::point_type points to a patch in the order prescribed by the sequence; 
       // care must be taken not to assign duplicates (or should it?)
-      template<typename pointInputSequence>
-      void                            setPatch(const Obj<pointInputSequence>& points, const patch_type& patch) {
+      template<typename pointSequence>
+      void                            setPatch(const Obj<pointSequence>& points, const patch_type& patch) {
         this->_patches.addCone(points, patch);
         this->_patches.stratify();
       };

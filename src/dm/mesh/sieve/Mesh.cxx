@@ -100,14 +100,19 @@ namespace ALE {
     void Mesh::createSerialCoordinates(int numElements, double coords[]) {
       int dim = this->dim;
 
+      std::cout << "Creating coordinates" << std::endl;
       this->topology.debug = this->debug;
       this->coordinates.setTopology(this->topology);
-      this->coordinates.setPatch(this->topology.base(), 0);
+      std::cout << "  setting patch" << std::endl;
+      this->coordinates.setPatch(this->topology.leaves(), 0);
+      std::cout << "  setting index dimensions" << std::endl;
       this->coordinates.setIndexDimensionByDepth(0, dim);
+      std::cout << "  ordering patches" << std::endl;
       this->coordinates.orderPatches();
+      std::cout << "  setting coordinates" << std::endl;
       Obj<Sieve<Point,int>::depthSequence> vertices = this->topology.depthStratum(0);
       for(Sieve<Point,int>::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
-        if (debug) {std::cout << "Fiber index over vertex " << *v_itor << " is " << *this->coordinates.getIndices(0, *v_itor)->begin() << std::endl;}
+        if ((*v_itor).index%100 == 0) {std::cout << "Fiber index over vertex " << *v_itor << " is " << *this->coordinates.getIndices(0, *v_itor)->begin() << std::endl;}
         this->coordinates.update(0, *v_itor, &coords[((*v_itor).index - numElements)*dim]);
       }
     };
@@ -121,7 +126,7 @@ namespace ALE {
 
       this->boundary.debug = this->debug;
       this->boundary.setTopology(this->topology);
-      this->boundary.setPatch(this->topology.base(), 0);
+      this->boundary.setPatch(this->topology.leaves(), 0);
       // Reverse order allows newer conditions to override older, as required by PyLith
       for(int v = numBoundaryVertices-1; v >= 0; v--) {
         sieve_type::point_type vertex(0, boundaryVertices[v*(numBoundaryComponents+1)] + numElements);
@@ -154,7 +159,9 @@ namespace ALE {
       }
       this->topology.stratify();
       this->topology.setStratification(true);
+      std::cout << "Before coordinates" << std::endl;
       this->createSerialCoordinates(numSimplices, coords);
+      std::cout << "After coordinates" << std::endl;
     };
 
     void PyLithBuilder::readConnectivity(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numElements, int *vertices[]) {
