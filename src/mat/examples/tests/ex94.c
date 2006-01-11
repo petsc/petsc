@@ -15,12 +15,12 @@ int main(int argc,char **args)
   PetscViewer    viewer;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
-  PetscInt       i,m,n,j,idxn[100],M,N,nzp;
+  PetscInt       i,m,n,j,*idxn,M,N,nzp;
   PetscReal      norm,norm_tmp,tol=1.e-8,fill=4.0;
   PetscRandom    rdm;
   char           file[4][128];
   PetscTruth     flg,preload = PETSC_TRUE;
-  PetscScalar    a[100],rval,alpha,none = -1.0;
+  PetscScalar    *a,rval,alpha,none = -1.0;
   PetscTruth     Test_MatMatMult=PETSC_TRUE,Test_MatMatMultTr=PETSC_TRUE;
   Vec            v3,v4,v5;
   PetscInt       pm,pn,pM,pN;
@@ -51,6 +51,11 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2*PreLoadIt+1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatLoad(viewer,MATAIJ,&B);CHKERRQ(ierr); 
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+
+  ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
+  nzp  = (PetscInt)(0.1*M);
+  ierr = PetscMalloc((nzp+1)*(sizeof(PetscInt)+sizeof(PetscScalar)),&idxn);CHKERRQ(ierr);
+  a    = (PetscScalar*)(idxn + nzp);              
  
   /* Create vectors v1 and v2 that are compatible with A_save */
   ierr = VecCreate(PETSC_COMM_WORLD,&v1);CHKERRQ(ierr);
@@ -105,7 +110,7 @@ int main(int argc,char **args)
   if (size>1) Test_MatMatMultTr = PETSC_FALSE;
   if (Test_MatMatMultTr){
     PetscInt PN;
-    ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
+    /* ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr); */
     PN   = M/2;
     nzp  = 5; /* num of nonzeros in each row of P */
     ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr); 
@@ -255,6 +260,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(v1);CHKERRQ(ierr);
   ierr = VecDestroy(v2);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+  ierr = PetscFree(idxn);CHKERRQ(ierr);
   
   ierr = MatDestroy(A_save);CHKERRQ(ierr);
   ierr = MatDestroy(B);CHKERRQ(ierr);
