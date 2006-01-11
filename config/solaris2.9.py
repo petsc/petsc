@@ -3,8 +3,7 @@
 configure_options = [
   '--with-cc=cc',
   '--with-fc=f90',
-  '--with-f90-header=f90_solaris.h',
-  '--with-f90-source=f90_solaris.c',
+  '--with-f90-interface=solaris',
   '--download-mpich=1'
   ]
 

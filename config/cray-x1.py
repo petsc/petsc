@@ -14,8 +14,7 @@ configure_options = [
   
   '--with-fortran-kernels=generic',
   '--with-blas-lapack-lib=sci',
-  '--with-f90-header=f90_cray_x1.h',
-  '--with-f90-source=f90_cray_x1.c',
+  '--with-f90-interface=cray_x1',
   
   '--with-batch=1',
   '--sizeof_void_p=8',

@@ -8,8 +8,7 @@ configure_options = [
   '--with-cxx=CC -64',
   '-ignoreWarnings',
   '-LDFLAGS=-Wl,-woff,84,-woff,85,-woff,113',
-  '--with-f90-header=90_IRIX.h',
-  '--with-f90-source=f90_IRIX.c',
+  '--with-f90-interface=IRIX',
   '--with-mpirun=mpirun'
   ]
 
