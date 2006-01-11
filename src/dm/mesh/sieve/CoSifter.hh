@@ -937,10 +937,28 @@ namespace ALE {
       const value_type *restrict(const patch_type& patch, const typename Sieve::point_type& p) {
         Obj<typename indices_type::coneSequence> indices = this->getIndices(patch, p);
 
-        if (indices->size() != 1) {
-          throw ALE::Exception("Invalid indices for requested point");
+        if (indices->size() == 1) {
+          return &(this->_storage[patch][(*indices->begin()).prefix]);
+        } else {
+          static value_type *values     = NULL;
+          static int         valuesSize = -1;
+          int                size = 0;
+          int                i = 0;
+
+          for(typename indices_type::coneSequence::iterator i_iter = indices->begin(); i_iter != indices->end(); ++i_iter) {
+            size += (*i_iter).index;
+          }
+          if (size != valuesSize) {
+            if (values) delete [] values;
+            values = new value_type[size];
+          }
+          for(typename indices_type::coneSequence::iterator i_iter = indices->begin(); i_iter != indices->end(); ++i_iter) {
+            for(int ind = (*i_iter).prefix; ind < (*i_iter).prefix + (*i_iter).index; ind++) {
+              values[i++] = ind;
+            }
+          }
+          return values;
         }
-        return &(this->_storage[patch][(*indices->begin()).prefix]);
       }
       template<typename InputSequence>
       const value_type *restrict(const patch_type& patch, const InputSequence& pointSequence) {

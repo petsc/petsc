@@ -141,7 +141,7 @@ namespace ALE {
       }
       this->boundary.orderPatches();
       for(int v = 0; v < numBoundaryVertices; v++) {
-        ALE::Point vertex = ALE::Point(0, boundaryVertices[v*(numBoundaryComponents+1)] + numElements);
+        sieve_type::point_type vertex(0, boundaryVertices[v*(numBoundaryComponents+1)] + numElements);
 
         this->boundary.update(0, vertex, &boundaryValues[v*numBoundaryComponents]);
       }
