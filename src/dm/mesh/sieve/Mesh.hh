@@ -20,6 +20,7 @@ namespace ALE {
       sieve_type      orientation;
       coordinate_type coordinates;
       coordinate_type boundary;
+      std::map<std::string, Obj<coordinate_type> > fields;
       MPI_Comm        comm;
       int             dim;
     public:
@@ -31,6 +32,9 @@ namespace ALE {
       int                  getDimension() {return this->dim;};
       Obj<coordinate_type> getCoordinates() {return this->coordinates;};
       Obj<coordinate_type> getBoundary() {return this->boundary;};
+      Obj<coordinate_type> getField() {return this->fields.begin()->second;};
+      Obj<coordinate_type> getField(const std::string& name) {return this->fields[name];};
+      void                 setField(const std::string& name, const Obj<coordinate_type>& field) {this->fields[name] = field;};
 
       void buildFaces(int dim, std::map<int, int*> *curSimplex, Obj<PointSet> boundary, Point& simplex);
       void buildTopology(int numSimplices, int simplices[], int numVertices);

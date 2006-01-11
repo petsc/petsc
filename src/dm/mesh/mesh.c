@@ -97,7 +97,7 @@ PetscErrorCode WriteVTKElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewe
   ierr = MPI_Comm_size(comm, &size);
   // Need to globalize indices (that is what we might use the value ints for)
   vertexBundle.setTopology(topology);
-  vertexBundle.setPatch(topology->base(), 0);
+  vertexBundle.setPatch(topology->leaves(), 0);
   vertexBundle.setIndexDimensionByDepth(0, 1);
   vertexBundle.orderPatches();
   ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
@@ -222,7 +222,7 @@ PetscErrorCode WritePCICEElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer vie
   ierr = MPI_Comm_size(comm, &size);
   // Need to globalize indices (that is what we might use the value ints for)
   vertexBundle.setTopology(topology);
-  vertexBundle.setPatch(topology->base(), 0);
+  vertexBundle.setPatch(topology->leaves(), 0);
   vertexBundle.setIndexDimensionByDepth(0, 1);
   vertexBundle.orderPatches();
   if (corners != dim+1) {
@@ -337,7 +337,7 @@ PetscErrorCode WritePyLithElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer vi
   ierr = MPI_Comm_size(comm, &size);
   // Need to globalize indices (that is what we might use the value ints for)
   vertexBundle.setTopology(topology);
-  vertexBundle.setPatch(topology->base(), 0);
+  vertexBundle.setPatch(topology->leaves(), 0);
   vertexBundle.setIndexDimensionByDepth(0, 1);
   vertexBundle.orderPatches();
   if (dim != 3) {
@@ -903,12 +903,33 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
 
 #undef __FUNCT__
 #define __FUNCT__ "ExpandInterval"
-/* This is currently duplicated in ex33mesh.c */
 inline void ExpandInterval(ALE::Point interval, PetscInt indices[], PetscInt *indx)
 {
   for(int i = 0; i < interval.index; i++) {
     indices[(*indx)++] = interval.prefix + i;
   }
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ExpandInterval_New"
+inline void ExpandInterval_New(ALE::def::Point interval, PetscInt indices[], PetscInt *indx)
+{
+  for(int i = 0; i < interval.index; i++) {
+    indices[(*indx)++] = interval.prefix + i;
+  }
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ExpandIntervals"
+PetscErrorCode ExpandIntervals(ALE::Obj<ALE::def::Mesh::bundle_type::IndexArray> intervals, PetscInt *indices)
+{
+  int k = 0;
+
+  PetscFunctionBegin;
+  for(ALE::def::Mesh::bundle_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    ExpandInterval_New(*i_itor, indices, &k);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -1561,6 +1582,11 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
   ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
   ierr = VecScatterBegin(g, l, mode, SCATTER_REVERSE, injection);
   ierr = VecScatterEnd(g, l, mode, SCATTER_REVERSE, injection);
+  if (mode == INSERT_VALUES) {
+    ierr = VecCopy(g, l);CHKERRQ(ierr);
+  } else {
+    ierr = VecAXPY(l, 1.0, g);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1584,13 +1610,18 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
 @*/
 PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
 {
-  VecScatter     injection;
+  //VecScatter     injection;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
-  ierr = VecScatterBegin(l, g, mode, SCATTER_FORWARD, injection);
-  ierr = VecScatterEnd(l, g, mode, SCATTER_FORWARD, injection);
+  //ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
+  //ierr = VecScatterBegin(l, g, mode, SCATTER_FORWARD, injection);CHKERRQ(ierr);
+  //ierr = VecScatterEnd(l, g, mode, SCATTER_FORWARD, injection);CHKERRQ(ierr);
+  if (mode == INSERT_VALUES) {
+    ierr = VecCopy(l, g);CHKERRQ(ierr);
+  } else {
+    ierr = VecAXPY(g, 1.0, l);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1634,7 +1665,36 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode assembleOperator(ALE::Obj<ALE::IndexBundle>, ALE::Obj<ALE::PreSieve>, Mat, ALE::Point, PetscScalar[], InsertMode);
+PetscErrorCode assembleOperator_New(Mat A, ALE::Obj<ALE::def::Mesh::coordinate_type> field, ALE::Obj<ALE::def::Mesh::sieve_type> orientation, ALE::def::Mesh::sieve_type::point_type e, PetscScalar array[], InsertMode mode)
+{
+  ALE::Obj<ALE::def::Mesh::bundle_type::IndexArray> intervals = field->getOrderedIndices(0, orientation->cone(e));
+  static PetscInt  indicesSize = 0;
+  static PetscInt *indices = NULL;
+  PetscInt         numIndices = 0;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  for(ALE::def::Mesh::bundle_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    numIndices += (*i_itor).index;
+  }
+  if (indicesSize && (indicesSize != numIndices)) {
+    ierr = PetscFree(indices); CHKERRQ(ierr);
+    indices = NULL;
+  }
+  if (!indices) {
+    indicesSize = numIndices;
+    ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
+  }
+  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
+  if (1) {
+    for(int i = 0; i < numIndices; i++) {
+      //printf("[%d]indices[%d] = %d\n", mesh->getCommRank(), i, indices[i]);
+      printf("[%d]indices[%d] = %d\n", 0, i, indices[i]);
+    }
+  }
+  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "assembleMatrix"
@@ -1657,24 +1717,18 @@ EXTERN PetscErrorCode assembleOperator(ALE::Obj<ALE::IndexBundle>, ALE::Obj<ALE:
 @*/
 PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mode)
 {
-  Mesh              mesh;
-  ALE::Obj<ALE::PreSieve>    orientation;
-  ALE::Obj<ALE::IndexBundle> elementBundle;
-  ALE::Obj<ALE::IndexBundle> bundle;
-  PetscInt          firstElement;
-  PetscErrorCode    ierr;
+  PetscObjectContainer c;
+  void                *ptr;
+  int                  firstElement = 0;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, &orientation);CHKERRQ(ierr);
-  ierr = MeshGetElementBundle(mesh, &elementBundle);CHKERRQ(ierr);
-  ierr = MeshGetBundle(mesh, &bundle);CHKERRQ(ierr);
-  firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
-  ierr = assembleOperator(bundle, orientation, A, ALE::Point(0, e + firstElement), v, mode);CHKERRQ(ierr);
-  if (e == 0) {
-    bundle->getGlobalIndices()->view("Global indices");
-    bundle->getLocalIndices()->view("Local indices");
-  }
+  ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &c);CHKERRQ(ierr);
+  ierr = PetscObjectContainerGetPointer(c, (void **) &ptr);CHKERRQ(ierr);
+  ALE::Obj<ALE::def::Mesh> mesh((ALE::def::Mesh *) ptr);
+  // Need to globalize
+  // firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
+  ierr = assembleOperator_New(A, mesh->getField(), mesh->getOrientation(), ALE::def::Mesh::sieve_type::point_type(0, e + firstElement), v, mode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
