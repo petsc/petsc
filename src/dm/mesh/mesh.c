@@ -88,18 +88,13 @@ PetscErrorCode WriteVTKElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewe
   // FIX: Needs to be global
   int               numElements = elements->size();
   int               corners = topology->nCone(*elements->begin(), dim)->size();
-  ALE::def::Mesh::bundle_type vertexBundle;
+  ALE::Obj<ALE::def::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
   PetscMPIInt       rank, size;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);
   ierr = MPI_Comm_size(comm, &size);
-  // Need to globalize indices (that is what we might use the value ints for)
-  vertexBundle.setTopology(topology);
-  vertexBundle.setPatch(topology->leaves(), 0);
-  vertexBundle.setIndexDimensionByDepth(0, 1);
-  vertexBundle.orderPatches();
   ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
   if (rank == 0) {
     for(ALE::def::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
@@ -107,7 +102,7 @@ PetscErrorCode WriteVTKElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewe
 
       ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
       for(ALE::def::PointSet::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
-        ierr = PetscViewerASCIIPrintf(viewer, " %d", vertexBundle.getIndex(0, *c_itor).prefix);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, " %d", vertexBundle->getIndex(0, *c_itor).prefix);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     }
@@ -209,7 +204,7 @@ PetscErrorCode WritePCICEElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer vie
   ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
   ALE::Obj<ALE::def::Mesh::sieve_type> orientation = mesh->getOrientation();
   ALE::Obj<ALE::def::Mesh::sieve_type::heightSequence> elements = topology->heightStratum(0);
-  ALE::def::Mesh::bundle_type vertexBundle;
+  ALE::Obj<ALE::def::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
   // FIX: Needs to be global
   int               numElements = elements->size();
   int               corners = topology->nCone(*elements->begin(), dim)->size();
@@ -220,11 +215,6 @@ PetscErrorCode WritePCICEElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer vie
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);
   ierr = MPI_Comm_size(comm, &size);
-  // Need to globalize indices (that is what we might use the value ints for)
-  vertexBundle.setTopology(topology);
-  vertexBundle.setPatch(topology->leaves(), 0);
-  vertexBundle.setIndexDimensionByDepth(0, 1);
-  vertexBundle.orderPatches();
   if (corners != dim+1) {
     SETERRQ(PETSC_ERR_SUP, "PCICE only supports simplicies");
   }
@@ -232,7 +222,7 @@ PetscErrorCode WritePCICEElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer vie
     ierr = PetscViewerASCIIPrintf(viewer, "%d\n", numElements);CHKERRQ(ierr);
     for(ALE::def::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
       // FIX: Need to globalize
-      ALE::Obj<ALE::def::Mesh::bundle_type::IndexArray> intervals = vertexBundle.getOrderedIndices(0, orientation->cone(*e_itor));
+      ALE::Obj<ALE::def::Mesh::bundle_type::IndexArray> intervals = vertexBundle->getOrderedIndices(0, orientation->cone(*e_itor));
 
       ierr = PetscViewerASCIIPrintf(viewer, "%7d", elementCount++);CHKERRQ(ierr);
       for(ALE::def::Mesh::bundle_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
@@ -325,7 +315,7 @@ PetscErrorCode WritePyLithElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer vi
   ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
   ALE::Obj<ALE::def::Mesh::sieve_type> orientation = mesh->getOrientation();
   ALE::Obj<ALE::def::Mesh::sieve_type::heightSequence> elements = topology->heightStratum(0);
-  ALE::def::Mesh::bundle_type vertexBundle;
+  ALE::Obj<ALE::def::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
   // FIX: Needs to be global
   int               corners = topology->nCone(*elements->begin(), dim)->size();
   PetscMPIInt       rank, size;
@@ -335,11 +325,6 @@ PetscErrorCode WritePyLithElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer vi
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);
   ierr = MPI_Comm_size(comm, &size);
-  // Need to globalize indices (that is what we might use the value ints for)
-  vertexBundle.setTopology(topology);
-  vertexBundle.setPatch(topology->leaves(), 0);
-  vertexBundle.setIndexDimensionByDepth(0, 1);
-  vertexBundle.orderPatches();
   if (dim != 3) {
     SETERRQ(PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
   }
@@ -352,7 +337,7 @@ PetscErrorCode WritePyLithElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer vi
   if (rank == 0) {
     for(ALE::def::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
       // FIX: Need to globalize
-      ALE::Obj<ALE::def::Mesh::bundle_type::IndexArray> intervals = vertexBundle.getOrderedIndices(0, orientation->cone(*e_itor));
+      ALE::Obj<ALE::def::Mesh::bundle_type::IndexArray> intervals = vertexBundle->getOrderedIndices(0, orientation->cone(*e_itor));
 
       // Only linear tetrahedra, 1 material, no infinite elements
       ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, 1, 0);CHKERRQ(ierr);

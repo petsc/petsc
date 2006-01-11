@@ -21,6 +21,7 @@ namespace ALE {
       coordinate_type coordinates;
       coordinate_type boundary;
       std::map<std::string, Obj<coordinate_type> > fields;
+      std::map<int, Obj<bundle_type> > bundles;
       MPI_Comm        comm;
       int             dim;
     public:
@@ -35,6 +36,19 @@ namespace ALE {
       Obj<coordinate_type> getField() {return this->fields.begin()->second;};
       Obj<coordinate_type> getField(const std::string& name) {return this->fields[name];};
       void                 setField(const std::string& name, const Obj<coordinate_type>& field) {this->fields[name] = field;};
+      Obj<bundle_type>     getBundle(const int dim) {
+        if (this->bundles.find(dim) == this->bundles.end()) {
+          Obj<ALE::def::Mesh::bundle_type> vertexBundle = ALE::def::Mesh::bundle_type();
+
+          // Need to globalize indices (that is what we might use the value ints for)
+          vertexBundle->setTopology(this->topology);
+          vertexBundle->setPatch(this->topology.leaves(), 0);
+          vertexBundle->setIndexDimensionByDepth(dim, 1);
+          vertexBundle->orderPatches();
+          this->bundles[dim] = vertexBundle;
+        }
+        return this->bundles[dim];
+      }
 
       void buildFaces(int dim, std::map<int, int*> *curSimplex, Obj<PointSet> boundary, Point& simplex);
       void buildTopology(int numSimplices, int simplices[], int numVertices);
