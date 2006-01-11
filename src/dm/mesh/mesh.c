@@ -486,23 +486,28 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer v
     ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
     ierr = WritePCICEVertices(mesh, viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_PYLITH) {
-    char      *filename;
-    char       coordFilename[2048];
-    PetscTruth isConnect;
-    size_t     len;
+    char *filename;
+    char  connectFilename[2048];
+    char  coordFilename[2048];
 
     ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
-    ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-    ierr = PetscStrcmp(&(filename[len-8]), ".connect", &isConnect);CHKERRQ(ierr);
-    if (!isConnect) {
-      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid element connectivity filename: %s", filename);
-    }
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_WRITE);CHKERRQ(ierr);
+    ierr = PetscStrcpy(connectFilename, filename);CHKERRQ(ierr);
+    ierr = PetscStrcat(connectFilename, ".connect");CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, connectFilename);CHKERRQ(ierr);
     ierr = WritePyLithElements(mesh, viewer);CHKERRQ(ierr);
-    ierr = PetscStrncpy(coordFilename, filename, len-8);CHKERRQ(ierr);
-    coordFilename[len-8] = '\0';
+    ierr = PetscStrcpy(coordFilename, filename);CHKERRQ(ierr);
     ierr = PetscStrcat(coordFilename, ".coord");CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
     ierr = WritePyLithVertices(mesh, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+    ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename), PETSC_ERR_FILE_OPEN);
+    if (PetscExceptionValue(ierr)) {
+      /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
+    } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
+      ierr = 0;
+    } 
+    CHKERRQ(ierr);
 #if 0
   } else if (format == PETSC_VIEWER_ASCII_PYLITH_LOCAL) {
     PetscViewer connectViewer, coordViewer;
@@ -1661,6 +1666,10 @@ PetscErrorCode assembleOperator_New(Mat A, ALE::Obj<ALE::def::Mesh::coordinate_t
   PetscFunctionBegin;
   for(ALE::def::Mesh::bundle_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
     numIndices += (*i_itor).index;
+    if (0) {
+      //printf("[%d]interval (%d, %d)\n", mesh->getCommRank(), (*i_itor).prefix, (*i_itor).index);
+      printf("[%d]interval (%d, %d)\n", 0, (*i_itor).prefix, (*i_itor).index);
+    }
   }
   if (indicesSize && (indicesSize != numIndices)) {
     ierr = PetscFree(indices); CHKERRQ(ierr);
@@ -1671,7 +1680,7 @@ PetscErrorCode assembleOperator_New(Mat A, ALE::Obj<ALE::def::Mesh::coordinate_t
     ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
   }
   ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
-  if (1) {
+  if (0) {
     for(int i = 0; i < numIndices; i++) {
       //printf("[%d]indices[%d] = %d\n", mesh->getCommRank(), i, indices[i]);
       printf("[%d]indices[%d] = %d\n", 0, i, indices[i]);
@@ -1703,17 +1712,20 @@ PetscErrorCode assembleOperator_New(Mat A, ALE::Obj<ALE::def::Mesh::coordinate_t
 PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mode)
 {
   PetscObjectContainer c;
-  void                *ptr;
+  ALE::def::Mesh      *mesh;
   int                  firstElement = 0;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &c);CHKERRQ(ierr);
-  ierr = PetscObjectContainerGetPointer(c, (void **) &ptr);CHKERRQ(ierr);
-  ALE::Obj<ALE::def::Mesh> mesh((ALE::def::Mesh *) ptr);
+  ierr = PetscObjectContainerGetPointer(c, (void **) &mesh);CHKERRQ(ierr);
   // Need to globalize
   // firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
-  ierr = assembleOperator_New(A, mesh->getField(), mesh->getOrientation(), ALE::def::Mesh::sieve_type::point_type(0, e + firstElement), v, mode);CHKERRQ(ierr);
+  try {
+    ierr = assembleOperator_New(A, mesh->getField(), mesh->getOrientation(), ALE::def::Mesh::sieve_type::point_type(0, e + firstElement), v, mode);CHKERRQ(ierr);
+  } catch (ALE::Exception e) {
+    std::cout << e << std::endl;
+  }
   PetscFunctionReturn(0);
 }
 
