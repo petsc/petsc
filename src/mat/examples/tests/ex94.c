@@ -15,12 +15,12 @@ int main(int argc,char **args)
   PetscViewer    viewer;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
-  PetscInt       i,m,n,j,idxn[10],M,N,nzp;
+  PetscInt       i,m,n,j,idxn[100],M,N,nzp;
   PetscReal      norm,norm_tmp,tol=1.e-8,fill=4.0;
   PetscRandom    rdm;
   char           file[4][128];
   PetscTruth     flg,preload = PETSC_TRUE;
-  PetscScalar    a[10],rval,alpha,none = -1.0;
+  PetscScalar    a[100],rval,alpha,none = -1.0;
   PetscTruth     Test_MatMatMult=PETSC_TRUE,Test_MatMatMultTr=PETSC_TRUE;
   Vec            v3,v4,v5;
   PetscInt       pm,pn,pM,pN;
