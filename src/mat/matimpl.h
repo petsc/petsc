@@ -172,7 +172,7 @@ EXTERN PetscErrorCode MatPtAP_Basic(Mat,Mat,MatReuse,PetscReal,Mat*);
   belong to another processor. During the assembly phase the stashed 
   values are moved to the correct processor and 
 */
-
+#include "src/mat/utils/matstashspace.h"
 typedef struct {
   PetscInt      nmax;                   /* maximum stash size */
   PetscInt      umax;                   /* user specified max-size */
@@ -183,6 +183,7 @@ typedef struct {
   PetscInt      *idx;                   /* global row numbers in stash */
   PetscInt      *idy;                   /* global column numbers in stash */
   MatScalar     *array;                 /* array to hold stashed values */
+  PetscMatStashSpace space_head,space;
   /* The following variables are used for communication */
   MPI_Comm      comm;
   PetscMPIInt   size,rank;

@@ -235,7 +235,7 @@ class Package(config.base.Configure):
   def checkPackageLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
     oldFlags = self.compilers.CPPFLAGS
     oldLibs  = self.compilers.LIBS
-    self.compilers.CPPFLAGS += self.headers.toString(self.include)
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
     result = self.checkLink(includes, body, cleanup, codeBegin, codeEnd, shared)
     self.compilers.CPPFLAGS = oldFlags

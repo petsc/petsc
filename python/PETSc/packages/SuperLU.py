@@ -89,15 +89,18 @@ class Configure(PETSc.package.Package):
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by SuperLU'''
     '''Normally you do not need to provide this method'''
-    PETSc.package.Package.configureLibrary(self)
+    PETSc.package.Package.configureLibrary(self) 
+    if self.blasLapack.f2c or self.blasLapack.fblaslapack:
+      raise RuntimeError('SuperLU requires a COMPLETE BLAS and LAPACK, it cannot be used with the --download-f-blas-lapack=1 or --download-c-blas-lapack=1 \nUse --download-netlib-blas-lapack option instead.')
+
     # SuperLU requires slamch() & dlamch() LAPACK routines and PETSc version of superlu
     # have the internal versions disabled in favour of generic blas/lapack
     if not self.blasLapack.checkForRoutine('slamch'): 
-      raise RuntimeError('SuperLU requires the LAPACK routine slamch(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nIf you are using the IBM ESSL library, it does not contain this function. After installing a complete copy of lapack\n You can run config/configure.py with --with-blas-lib=libessl.a --with-lapack-lib=/usr/local/lib/liblapack.a')
+      raise RuntimeError('SuperLU requires the LAPACK routine slamch(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-netlib-blas-lapack=1 option \nIf you are using the IBM ESSL library, it does not contain this function. After installing a complete copy of lapack\n You can run config/configure.py with --with-blas-lib=libessl.a --with-lapack-lib=/usr/local/lib/liblapack.a')
     self.framework.log.write('Found slamch() in Lapack library as needed by SuperLU\n')
 
     if not self.blasLapack.checkForRoutine('dlamch'): 
-      raise RuntimeError('SuperLU requires the LAPACK routine dlamch(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nIf you are using the IBM ESSL library, it does not contain this function. After installing a complete copy of lapack\n You can run config/configure.py with --with-blas-lib=libessl.a --with-lapack-lib=/usr/local/lib/liblapack.a')
+      raise RuntimeError('SuperLU requires the LAPACK routine dlamch(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-netlib-blas-lapack=1 option \nIf you are using the IBM ESSL library, it does not contain this function. After installing a complete copy of lapack\n You can run config/configure.py with --with-blas-lib=libessl.a --with-lapack-lib=/usr/local/lib/liblapack.a')
     self.framework.log.write('Found dlamch() in Lapack library as needed by SuperLU\n')
     return
   

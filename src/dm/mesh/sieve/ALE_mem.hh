@@ -326,7 +326,7 @@ namespace ALE {
     
     // "exposure" methods: expose the underlying object or object pointer
     operator X*() {return objPtr;};
-    X operator*() {assertNull(false); return *objPtr;};
+    X& operator*() {assertNull(false); return *objPtr;};
     operator X()  {assertNull(false); return *objPtr;};
     template<class Y> Obj& copy(const Obj<Y>& obj); // this operator will copy the underlying objects: USE WITH CAUTION
     
@@ -423,7 +423,7 @@ namespace ALE {
         if(this->sz != 0) {
 #ifdef ALE_USE_DEBUGGING
           if(ALE::getVerbosity() > 3) {
-            printf("  Calling deallocator on %p with size %d\n", this->objPtr, this->sz);
+            printf("  Calling deallocator on %p with size %d\n", this->objPtr, (int) this->sz);
           }
 #endif
           this->allocator.del(this->objPtr, this->sz);

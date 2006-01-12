@@ -43,8 +43,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_New(ALE::Obj<ALE::def::Me
 
 typedef enum {PCICE, PYLITH} FileType;
 
-PetscErrorCode CreatePartitionVector(Mesh, Vec *);
-extern int debug;
+PetscErrorCode CreatePartitionVector(Mesh, int, Vec *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -60,11 +59,13 @@ int main(int argc, char *argv[])
   PetscTruth     outputLocal;
   PetscInt       dim, ft;
   int            verbosity;
+  int            debug;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(comm, "", "Options for mesh loading", "DMMG");
+    debug = 0;
     ierr = PetscOptionsInt("-debug", "The debugging flag", "ex1.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
     dim  = 2;
     ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex1.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
@@ -94,9 +95,9 @@ int main(int argc, char *argv[])
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
     if (fileType == PCICE) {
-      mesh = ALE::def::PCICEBuilder::create(comm, baseFilename, dim, useZeroBase);
+      mesh = ALE::def::PCICEBuilder::create(comm, baseFilename, dim, useZeroBase, debug);
     } else if (fileType == PYLITH) {
-      mesh = ALE::def::PyLithBuilder::create(comm, baseFilename);
+      mesh = ALE::def::PyLithBuilder::create(comm, baseFilename, debug);
     }
     ALE::LogStagePop(stage);
     ALE::Obj<ALE::def::Sieve<ALE::def::Point,int> > topology = mesh->getTopology();
@@ -107,7 +108,7 @@ int main(int argc, char *argv[])
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
     ierr = MeshDistribute(mesh);CHKERRQ(ierr);
-    ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
+    ierr = CreatePartitionVector(mesh, debug, &partition);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
 #endif
 
@@ -124,7 +125,6 @@ int main(int argc, char *argv[])
     //ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
-#if 0
     ierr = PetscPrintf(comm, "Creating original format mesh file\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
@@ -144,12 +144,18 @@ int main(int argc, char *argv[])
         CHKERRQ(ierr);
       } else {
         ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
-        ierr = PetscViewerFileSetName(viewer, "testMesh.connect");CHKERRQ(ierr);
+        ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
+        ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, "testMesh"), PETSC_ERR_FILE_OPEN);
+        if (PetscExceptionValue(ierr)) {
+          /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
+        } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
+          ierr = 0;
+        } 
+        CHKERRQ(ierr);
       }
     }
-    ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
+    ierr = MeshView_Sieve_New(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-#endif
     ALE::LogStagePop(stage);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
@@ -163,7 +169,7 @@ int main(int argc, char *argv[])
 /*
   Creates a vector whose value is the processor rank on each element
 */
-PetscErrorCode CreatePartitionVector(Mesh mesh, Vec *partition)
+PetscErrorCode CreatePartitionVector(Mesh mesh, int debug, Vec *partition)
 {
   ALE::Obj<ALE::Sieve> topology;
   PetscScalar   *array;

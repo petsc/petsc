@@ -115,7 +115,7 @@ framework.log)[0]
     '''Normally you do not need to provide this method'''
     # SCALAPACK requires ALL of BLAS/LAPACK
     if self.blasLapack.f2c or self.blasLapack.fblaslapack:
-      raise RuntimeError('SCALAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with the --download-f-blas-lapack or --download-c-blas-lapack options')
+      raise RuntimeError('SCALAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with the --download-f-blas-lapack or --download-c-blas-lapack options \nUse --download-netlib-blas-lapack option instead.')
     PETSc.package.Package.configureLibrary(self)
     return
   
