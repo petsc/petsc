@@ -14,7 +14,6 @@ struct _MatStashSpace {
   PetscInt           local_remaining;
 };
 
-/* EXTERN PetscErrorCode PetscMatStashSpaceCreate(MatStash *,PetscInt,PetscMatStashSpace *); */
 EXTERN PetscErrorCode PetscMatStashSpaceGet(PetscInt,PetscInt,PetscMatStashSpace *);
 EXTERN PetscErrorCode PetscMatStashSpaceContiguous(PetscInt,PetscMatStashSpace *,PetscScalar *,PetscInt *,PetscInt *);
 EXTERN PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace);
