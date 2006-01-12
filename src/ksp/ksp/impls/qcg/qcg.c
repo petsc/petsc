@@ -272,9 +272,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
        pcgP->ltsnrm = pcgP->delta;                       /* convergence in direction of */
        ksp->reason  = KSP_CONVERGED_QCG_NEG_CURVE;  /* negative curvature */
        if (!i) {
-         ierr = PetscInfo((ksp,"KSPSolve_QCG: negative curvature: delta=%G\n",pcgP->delta));CHKERRQ(ierr);
+         ierr = PetscInfo1(ksp,"negative curvature: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
        } else {
-         ierr = PetscInfo((ksp,"KSPSolve_QCG: negative curvature: step1=%G, step2=%G, delta=%G\n",step1,step2,pcgP->delta));CHKERRQ(ierr);
+         ierr = PetscInfo3(ksp,"negative curvature: step1=%G, step2=%G, delta=%G\n",step1,step2,pcgP->delta);CHKERRQ(ierr);
        }
          
     } else {
@@ -309,9 +309,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
          pcgP->ltsnrm = pcgP->delta;
          ksp->reason  = KSP_CONVERGED_QCG_CONSTRAINED;	/* convergence along constrained step */
          if (!i) {
-           ierr = PetscInfo((ksp,"KSPSolve_QCG: constrained step: delta=%G\n",pcgP->delta));CHKERRQ(ierr);
+           ierr = PetscInfo1(ksp,"constrained step: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
          } else {
-           ierr = PetscInfo((ksp,"KSPSolve_QCG: constrained step: step1=%G, step2=%G, delta=%G\n",step1,step2,pcgP->delta));CHKERRQ(ierr);
+           ierr = PetscInfo3(ksp,"constrained step: step1=%G, step2=%G, delta=%G\n",step1,step2,pcgP->delta);CHKERRQ(ierr);
          }
 
        } else {
@@ -330,9 +330,9 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
          ierr = (*ksp->converged)(ksp,i+1,rnrm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
          if (ksp->reason) {                 /* convergence for */
 #if defined(PETSC_USE_COMPLEX)               
-           ierr = PetscInfo((ksp,"KSPSolve_QCG: truncated step: step=%G, rnrm=%G, delta=%G\n",PetscRealPart(step),rnrm,pcgP->delta));CHKERRQ(ierr);
+           ierr = PetscInfo3(ksp,"truncated step: step=%G, rnrm=%G, delta=%G\n",PetscRealPart(step),rnrm,pcgP->delta);CHKERRQ(ierr);
 #else
-           ierr = PetscInfo((ksp,"KSPSolve_QCG: truncated step: step=%G, rnrm=%G, delta=%G\n",step,rnrm,pcgP->delta));CHKERRQ(ierr);
+           ierr = PetscInfo3(ksp,"truncated step: step=%G, rnrm=%G, delta=%G\n",step,rnrm,pcgP->delta);CHKERRQ(ierr);
 #endif
          }
       }

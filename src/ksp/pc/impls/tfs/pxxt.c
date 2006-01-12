@@ -268,7 +268,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat A,IS r,IS c,MatFactorInfo *inf
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInfo((0,"MatLUFactorSymbolic_MPIAIJ_TFS:Using TFS for MPIAIJ LU factorization and solves\n"));CHKERRQ(ierr);
+  ierr = PetscInfo(0,"Using TFS for MPIAIJ LU factorization and solves\n");CHKERRQ(ierr);
   if (A->symmetric) {
     ierr = MatLUFactorSymbolic_MPIAIJ_XXT(A,r,c,info,F);CHKERRQ(ierr);
   } else {

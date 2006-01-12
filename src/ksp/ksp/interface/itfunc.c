@@ -222,7 +222,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
       }
       ierr = VecRestoreArray(ksp->diagonal,&xx);CHKERRQ(ierr);
       if (zeroflag) {
-	ierr = PetscInfo((ksp,"KSPSetUp:Zero detected in diagonal of matrix, using 1 at those locations\n"));CHKERRQ(ierr);
+	ierr = PetscInfo(ksp,"Zero detected in diagonal of matrix, using 1 at those locations\n");CHKERRQ(ierr);
       }
       ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
       ksp->dscalefix2 = PETSC_FALSE;

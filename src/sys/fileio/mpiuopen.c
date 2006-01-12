@@ -59,7 +59,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFOpen(MPI_Comm comm,const char name[],const 
     } else {
       ierr = PetscStrreplace(PETSC_COMM_SELF,name,tname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
       ierr = PetscFixFilename(tname,fname);CHKERRQ(ierr);
-      ierr = PetscInfo((0,"PetscFOpen:Opening file %s\n",fname));CHKERRQ(ierr);
+      ierr = PetscInfo1(0,"Opening file %s\n",fname);CHKERRQ(ierr);
       fd   = fopen(fname,mode);
       if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open file %s\n",fname);
     }
@@ -203,7 +203,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPOpen(MPI_Comm comm,const char machine[],con
     
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscInfo((0,"PetscPOpen:Running command :%s\n",commandt));CHKERRQ(ierr);
+    ierr = PetscInfo1(0,"Running command :%s\n",commandt);CHKERRQ(ierr);
     if (!(fd = popen(commandt,mode))) {
        SETERRQ1(PETSC_ERR_LIB,"Cannot run command %s",commandt);
     }

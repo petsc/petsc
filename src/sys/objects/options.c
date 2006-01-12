@@ -346,7 +346,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
 	ierr = PetscOptionsInsertFile(pfile);CHKERRQ(ierr);
       }
     } else {
-      ierr = PetscInfo((0,"PetscOptionsInsert:Unable to determine home directory; skipping loading ~/.petscrc\n"));CHKERRQ(ierr);
+      ierr = PetscInfo(0,"Unable to determine home directory; skipping loading ~/.petscrc\n");CHKERRQ(ierr);
     }
   }
 

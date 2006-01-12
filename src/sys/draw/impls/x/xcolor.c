@@ -111,8 +111,7 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
     }
   }
   ierr = PetscFree(red);CHKERRQ(ierr);
-  ierr = PetscInfo((0,"PetscDrawSetUpColormap_Shared:Successfully allocated colors\n"));CHKERRQ(ierr);
-
+  ierr = PetscInfo(0,"Successfully allocated colors\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -193,7 +192,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
     }
   }
   ierr = PetscFree(red);CHKERRQ(ierr);
-  ierr = PetscInfo((0,"PetscDrawSetUpColormap_Private:Successfully allocated colors\n"));CHKERRQ(ierr);
+  ierr = PetscInfo(0,"Successfully allocated colors\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

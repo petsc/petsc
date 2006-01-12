@@ -205,7 +205,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLs(MPI_Comm comm,const char libname[],char *
     ierr  = PetscStrlen(found,&len);CHKERRQ(ierr);
     f     = fgets(found+len,tlen-len,fp);
   }
-  if (*flg) {ierr = PetscInfo((0,"PetscLS:ls on %s gives \n%s\n",libname,found));CHKERRQ(ierr);}
+  if (*flg) {ierr = PetscInfo2(0,"ls on %s gives \n%s\n",libname,found);CHKERRQ(ierr);}
 #if defined(PETSC_HAVE_POPEN)
   ierr   = PetscPClose(comm,fp);CHKERRQ(ierr);
 #else

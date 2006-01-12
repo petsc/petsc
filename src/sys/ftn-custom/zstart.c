@@ -365,11 +365,11 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
 
   *ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
   if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Getting MPI_Comm_size()");return;}
-  *ierr = PetscInfo((0,"PetscInitialize(Fortran):PETSc successfully started: procs %d\n",size));
+  *ierr = PetscInfo1(0,"(Fortran):PETSc successfully started: procs %d\n",size);
   if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Calling PetscInfo()");return;}
   *ierr = PetscGetHostName(hostname,64);
   if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Getting hostname");return;}
-  *ierr = PetscInfo((0,"Running on machine: %s\n",hostname));
+  *ierr = PetscInfo1(0,"Running on machine: %s\n",hostname);
   if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Calling PetscInfo()");return;}  
   *ierr = PetscOptionsCheckInitial_Components(); 
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options");return;}

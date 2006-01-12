@@ -264,7 +264,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt n,cons
   if (flg) {
     ierr = ISColoringView(*iscoloring,PETSC_VIEWER_STDOUT_((*iscoloring)->comm));CHKERRQ(ierr);
   }
-  ierr = PetscInfo((0,"ISColoringCreate: Number of colors %d\n",nc));CHKERRQ(ierr);
+  ierr = PetscInfo1(0,"Number of colors %d\n",nc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

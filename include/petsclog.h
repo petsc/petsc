@@ -14,11 +14,25 @@ extern PetscEvent PETSC_LARGEST_EVENT;
 extern PetscLogDouble PETSC_DLLEXPORT _TotalFlops;
 
 /* General logging of information; different from event logging */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(void*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char[],void*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(3,4);
 #if defined(PETSC_USE_INFO)
-#define PetscInfo(A)      PetscInfo_Private A
+#define PetscInfo(A,S)                       PetscInfo_Private(__FUNCT__,A,S)
+#define PetscInfo1(A,S,a1)                   PetscInfo_Private(__FUNCT__,A,S,a1)
+#define PetscInfo2(A,S,a1,a2)                PetscInfo_Private(__FUNCT__,A,S,a1,a2)
+#define PetscInfo3(A,S,a1,a2,a3)             PetscInfo_Private(__FUNCT__,A,S,a1,a2,a3)
+#define PetscInfo4(A,S,a1,a2,a3,a4)          PetscInfo_Private(__FUNCT__,A,S,a1,a2,a3,a4)
+#define PetscInfo5(A,S,a1,a2,a3,a4,a5)       PetscInfo_Private(__FUNCT__,A,S,a1,a2,a3,a4,a5)
+#define PetscInfo6(A,S,a1,a2,a3,a4,a5,a6)    PetscInfo_Private(__FUNCT__,A,S,a1,a2,a3,a4,a5,a6)
+#define PetscInfo7(A,S,a1,a2,a3,a4,a5,a6,a7) PetscInfo_Private(__FUNCT__,A,S,a1,a2,a3,a4,a5,a6,a7)
 #else 
-#define PetscInfo(A)      0
+#define PetscInfo(A,S)                       0
+#define PetscInfo1(A,S,a1)                   0
+#define PetscInfo2(A,S,a1,a2)                0
+#define PetscInfo3(A,S,a1,a2,a3)             0
+#define PetscInfo4(A,S,a1,a2,a3,a4)          0
+#define PetscInfo5(A,S,a1,a2,a3,a4,a5)       0
+#define PetscInfo6(A,S,a1,a2,a3,a4,a5,a6)    0
+#define PetscInfo7(A,S,a1,a2,a3,a4,a5,a6,a7) 0
 #endif
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoDeactivateClass(PetscCookie);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfoActivateClass(PetscCookie);

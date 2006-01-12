@@ -102,7 +102,7 @@ PetscErrorCode MatSetOption_MPIAdj(Mat A,MatOption op)
   case MAT_NOT_SYMMETRY_ETERNAL:
     break;
   default:
-    ierr = PetscInfo((A,"MatSetOption_MPIAdj:Option ignored\n"));CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Option ignored\n");CHKERRQ(ierr);
     break;
   }
   PetscFunctionReturn(0);

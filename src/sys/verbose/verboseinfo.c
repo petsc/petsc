@@ -149,7 +149,7 @@ extern FILE *petsc_history;
     Collective over PetscObject argument
 
    Synopsis:
-       PetscErrorCode PetscInfo((void *vobj, const char message[], ...))  
+       PetscErrorCode PetscInfo(void *vobj, const char message[], ...))  
 
     Input Parameter:
 +   vobj - object most closely associated with the logging statement
@@ -168,14 +168,14 @@ $    -info : activates printing of PetscInfo() messages
 $
 $     Mat A
 $     double alpha
-$     PetscInfo((A,"Matrix uses parameter alpha=%g\n",alpha));
+$     PetscInfo1(A,"Matrix uses parameter alpha=%g\n",alpha);
 $
 
    Concepts: runtime information
 
 .seealso: PetscInfoAllow()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(void *vobj, const char message[], ...)  
+PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char func[],void *vobj, const char message[], ...)  
 {
   va_list        Argp;
   PetscMPIInt    rank,urank;
@@ -199,7 +199,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(void *vobj, const char message[
 
   ierr = MPI_Comm_rank(MPI_COMM_WORLD, &urank);CHKERRQ(ierr);
   va_start(Argp, message);
-  sprintf(string, "[%d]", urank); 
+  sprintf(string, "[%d] %s", urank,func); 
   ierr = PetscStrlen(string, &len);CHKERRQ(ierr);
   ierr = PetscVSNPrintf(string+len, 8*1024-len,message, Argp);
   ierr = PetscFPrintf(PETSC_COMM_SELF,PetscInfoFile, "%s", string);CHKERRQ(ierr);

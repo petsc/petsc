@@ -399,9 +399,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat 
   ierr = PetscLogFlops(C->m);CHKERRQ(ierr);
   if (sctx.nshift){
     if (shiftnz) {
-      ierr = PetscInfo((0,"MatCholeskyFactorNumeric_SeqBAIJ_1: number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount));CHKERRQ(ierr);
+      ierr = PetscInfo2(0,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     } else if (shiftpd) {
-      ierr = PetscInfo((0,"MatCholeskyFactorNumeric_SeqBAIJ_1: number of shiftpd tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount));CHKERRQ(ierr);
+      ierr = PetscInfo2(0,"number of shiftpd tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -534,9 +534,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat A,MatFacto
   ierr = PetscLogFlops(C->m);CHKERRQ(ierr);
     if (sctx.nshift){
     if (shiftnz) {
-      ierr = PetscInfo((0,"MatCholeskyFactorNumeric_SeqBAIJ_1_NaturalOrdering: number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount));CHKERRQ(ierr);
+      ierr = PetscInfo2(0,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     } else if (shiftpd) {
-      ierr = PetscInfo((0,"MatCholeskyFactorNumeric_SeqBAIJ_1_NaturalOrdering: number of shiftpd tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount));CHKERRQ(ierr);
+      ierr = PetscInfo2(0,"number of shiftpd tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -708,11 +708,11 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *info,Ma
 #if defined(PETSC_USE_INFO)
   if (ai[am] != 0) {
     PetscReal af = ((PetscReal)(2*ui[am]-am))/((PetscReal)ai[am]);
-    ierr = PetscInfo((A,"MatICCFactorSymbolic_SeqBAIJ:Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af));CHKERRQ(ierr);
-    ierr = PetscInfo((A,"MatICCFactorSymbolic_SeqBAIJ:Run with -pc_factor_fill %G or use \n",af));CHKERRQ(ierr);
-    ierr = PetscInfo((A,"MatICCFactorSymbolic_SeqBAIJ:PCFactorSetFill(pc,%G) for best performance.\n",af));CHKERRQ(ierr);
+    ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G) for best performance.\n",af);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo((A,"MatICCFactorSymbolic_SeqBAIJ:Empty matrix.\n"));CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
   }
 #endif
 
@@ -897,11 +897,11 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *in
 #if defined(PETSC_USE_INFO)
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)ui[mbs])/((PetscReal)ai[mbs]);
-    ierr = PetscInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af));CHKERRQ(ierr);
-    ierr = PetscInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_factor_fill %G or use \n",af));CHKERRQ(ierr);
-    ierr = PetscInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCFactorSetFill(pc,%G) for best performance.\n",af));CHKERRQ(ierr);
+    ierr = PetscInfo3(A,"Reallocs %D Fill ratio:given %G needed %G\n",reallocs,fill,af);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G) for best performance.\n",af);CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo((A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Empty matrix.\n"));CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Empty matrix.\n");CHKERRQ(ierr);
   }
 #endif
 

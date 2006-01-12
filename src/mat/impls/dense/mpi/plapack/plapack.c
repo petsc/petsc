@@ -494,7 +494,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Base_Plapack(Mat A,MatType type,Mat
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_plapack_mpidense_C",
                                              "MatConvert_Plapack_Base",MatConvert_Plapack_Base);CHKERRQ(ierr);
   }   
-  ierr = PetscInfo((0,"MatConvert_Base_Plapack:Using Plapack for dense LU factorization and solves.\n"));CHKERRQ(ierr); 
+  ierr = PetscInfo(0,"Using Plapack for dense LU factorization and solves.\n");CHKERRQ(ierr); 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATPLAPACK);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);

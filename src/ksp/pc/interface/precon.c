@@ -776,14 +776,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetUp(PC pc)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
 
   if (pc->setupcalled > 1) {
-    ierr = PetscInfo((pc,"PCSetUp:Setting PC with identical preconditioner\n"));CHKERRQ(ierr);
+    ierr = PetscInfo(pc,"Setting PC with identical preconditioner\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } else if (!pc->setupcalled) {
-    ierr = PetscInfo((pc,"PCSetUp:Setting up new PC\n"));CHKERRQ(ierr);
+    ierr = PetscInfo(pc,"Setting up new PC\n");CHKERRQ(ierr);
   } else if (pc->flag == SAME_NONZERO_PATTERN) {
-    ierr = PetscInfo((pc,"PCSetUp:Setting up PC with same nonzero pattern\n"));CHKERRQ(ierr);
+    ierr = PetscInfo(pc,"Setting up PC with same nonzero pattern\n");CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo((pc,"PCSetUp:Setting up PC with different nonzero pattern\n"));CHKERRQ(ierr);
+    ierr = PetscInfo(pc,"Setting up PC with different nonzero pattern\n");CHKERRQ(ierr);
   }
 
   ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
@@ -1012,7 +1012,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStru
       ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&isbjacobi);CHKERRQ(ierr);
       if (isbjacobi) {
         ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
-        ierr = PetscInfo((pc,"PCSetOperators:Switching default PC to PCILU since BS95 doesn't support PCBJACOBI\n"));CHKERRQ(ierr);
+        ierr = PetscInfo(pc,"Switching default PC to PCILU since BS95 doesn't support PCBJACOBI\n");CHKERRQ(ierr);
       }
     }
   }

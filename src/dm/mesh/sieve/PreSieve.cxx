@@ -1712,7 +1712,7 @@ namespace ALE {
     int32_t MaxLeaseSize, RenterCount;
     ierr = PetscMaxSum(this->comm,LeaseData,&MaxLeaseSize,&RenterCount); 
     CHKERROR(ierr,"Error in PetscMaxSum");
-    ierr = PetscInfo((0,"PreSieve::__computeCompletion: Number of renters %d\n", RenterCount)); 
+    ierr = PetscInfo1(0,"PreSieve::__computeCompletion: Number of renters %d\n", RenterCount); 
     CHKERROR(ierr,"Error in PetscInfo");
 
     if(debug) { /* -------------------------------------------------------------- */
@@ -1740,7 +1740,7 @@ namespace ALE {
     
     int32_t LessorCount;
     LessorCount = 0; for (int32_t i=0; i<size; i++) LessorCount += LeaseData[2*i+1];
-    ierr = PetscInfo((0,"PreSieve::__computeCompletion: Number of lessors %d\n",LessorCount));
+    ierr = PetscInfo1(0,"PreSieve::__computeCompletion: Number of lessors %d\n",LessorCount);
     CHKERROR(ierr,"Error in PetscInfo");
     if(debug) { /* -------------------------------------------------------------- */
       ierr = PetscSynchronizedPrintf(this->comm, "[%d]: __computeCompletion: LessorCount = %d\n", rank, LessorCount);

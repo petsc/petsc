@@ -907,7 +907,7 @@ PetscErrorCode MatSetOption_SeqBAIJ(Mat A,MatOption op)
   case MAT_YES_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
-    ierr = PetscInfo((A,"MatSetOption_SeqBAIJ:Option ignored\n"));CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Option ignored\n");CHKERRQ(ierr);
     break;
   case MAT_NO_NEW_DIAGONALS:
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
@@ -1546,9 +1546,9 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
     ierr = PetscLogObjectMemory(A,-(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
     a->diag = 0;
   } 
-  ierr = PetscInfo((A,"MatAssemblyEnd_SeqBAIJ:Matrix size: %D X %D, block size %D; storage space: %D unneeded, %D used\n",m,A->n,A->bs,fshift*bs2,a->nz*bs2));CHKERRQ(ierr);
-  ierr = PetscInfo((A,"MatAssemblyEnd_SeqBAIJ:Number of mallocs during MatSetValues is %D\n",a->reallocs));CHKERRQ(ierr);
-  ierr = PetscInfo((A,"MatAssemblyEnd_SeqBAIJ:Most nonzeros blocks in any row is %D\n",rmax));CHKERRQ(ierr);
+  ierr = PetscInfo5(A,"Matrix size: %D X %D, block size %D; storage space: %D unneeded, %D used\n",m,A->n,A->bs,fshift*bs2,a->nz*bs2);CHKERRQ(ierr);
+  ierr = PetscInfo1(A,"Number of mallocs during MatSetValues is %D\n",a->reallocs);CHKERRQ(ierr);
+  ierr = PetscInfo1(A,"Most nonzeros blocks in any row is %D\n",rmax);CHKERRQ(ierr);
   a->reallocs          = 0;
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
 
@@ -2004,7 +2004,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
         j++; 
       }
     }
-    ierr = PetscInfo((0,"MatAXPY_SeqBAIJ: ratio of nnz(X)/nnz(Y): %D/%D = %G\n",bs2*x->nz,bs2*y->nz,(PetscReal)(bs2*x->nz)/(bs2*y->nz)));CHKERRQ(ierr);
+    ierr = PetscInfo3(0,"ratio of nnz(X)/nnz(Y): %D/%D = %G\n",bs2*x->nz,bs2*y->nz,(PetscReal)(bs2*x->nz)/(bs2*y->nz));CHKERRQ(ierr);
   } else {
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
   }
@@ -2546,7 +2546,7 @@ PetscErrorCode MatLoad_SeqBAIJ(PetscViewer viewer, MatType type,Mat *A)
   if (extra_rows == bs) extra_rows = 0;
   else                  mbs++;
   if (extra_rows) {
-    ierr = PetscInfo((0,"MatLoad_SeqBAIJ:Padding loaded matrix to match blocksize\n"));CHKERRQ(ierr);
+    ierr = PetscInfo(0,"Padding loaded matrix to match blocksize\n");CHKERRQ(ierr);
   }
 
   /* read in row lengths */

@@ -98,7 +98,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetHostName(char name[],size_t nlen)
             if (!flag) {
               ierr = PetscStrcmp(name + ll - 4,".mil",&flag);CHKERRQ(ierr);
               if (!flag) {
-                ierr = PetscInfo((0,"PetscGetHostName:Rejecting domainname, likely is NIS %s\n",name));CHKERRQ(ierr);
+                ierr = PetscInfo1(0,"Rejecting domainname, likely is NIS %s\n",name);CHKERRQ(ierr);
                 name[l-1] = 0;
               }
             }

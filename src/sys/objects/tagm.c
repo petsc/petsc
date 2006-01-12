@@ -41,7 +41,7 @@ PetscMPIInt PETSC_DLLEXPORT Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInfo((0,"Petsc_DelTag:Deleting tag data in an MPI_Comm %ld\n",(long)comm));if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = PetscInfo1(0,"Deleting tag data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   ierr = PetscFree(attr_val);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
@@ -62,7 +62,7 @@ PetscMPIInt PETSC_DLLEXPORT Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void*
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInfo((0,"Petsc_DelComm:Deleting PETSc communicator imbedded in a user MPI_Comm %ld\n",(long)comm));if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = PetscInfo1(0,"Deleting PETSc communicator imbedded in a user MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   /* actually don't delete anything because we cannot increase the reference count of the communicator anyways */
   PetscFunctionReturn(MPI_SUCCESS);
 }
@@ -145,7 +145,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag
   if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
 
   if (tagvalp[0] < 1) {
-    ierr = PetscInfo((0,"PetscCommGetNewTag:Out of tags for object, starting to recycle. Comm reference count %d\n",tagvalp[1]));CHKERRQ(ierr);
+    ierr = PetscInfo1(0,"Out of tags for object, starting to recycle. Comm reference count %d\n",tagvalp[1]);CHKERRQ(ierr);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(PetscMPIInt*)&flg);CHKERRQ(ierr);
     if (!flg) {
       SETERRQ(PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
@@ -212,7 +212,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
       tagvalp[0] = *maxval;
       tagvalp[1] = 0;
       ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval,tagvalp);CHKERRQ(ierr);
-      ierr = PetscInfo((0,"PetscCommDuplicate: Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval));CHKERRQ(ierr);
+      ierr = PetscInfo3(0,"Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval);CHKERRQ(ierr);
 
       /* save PETSc communicator inside user communicator, so we can get it next time */
       ierr = PetscMemcpy(&ptr,comm_out,sizeof(MPI_Comm));CHKERRQ(ierr);
@@ -228,7 +228,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
       if (!flg) {
         SETERRQ(PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tagvalp attribute set");
       }
-      ierr = PetscInfo((0,"PetscCommDuplicate: Using internal PETSc communicator %ld %ld\n",(long)comm_in,(long)*comm_out));CHKERRQ(ierr);
+      ierr = PetscInfo2(0,"Using internal PETSc communicator %ld %ld\n",(long)comm_in,(long)*comm_out);CHKERRQ(ierr);
     }
   } else {
 #if defined(PETSC_USE_DEBUG)
@@ -242,7 +242,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
   }
 
   if (tagvalp[0] < 1) {
-    ierr = PetscInfo((0,"PetscCommDuplicate:Out of tags for object, starting to recycle. Comm reference count %d\n",tagvalp[1]));CHKERRQ(ierr);
+    ierr = PetscInfo1(0,"Out of tags for object, starting to recycle. Comm reference count %d\n",tagvalp[1]);CHKERRQ(ierr);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(PetscMPIInt*)&flg);CHKERRQ(ierr);
     if (!flg) {
       SETERRQ(PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
@@ -311,7 +311,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm *comm)
       ierr = MPI_Attr_delete(ocomm,Petsc_InnerComm_keyval);CHKERRQ(ierr);
     }
 
-    ierr = PetscInfo((0,"PetscCommDestroy:Deleting MPI_Comm %ld\n",(long)icomm));CHKERRQ(ierr);
+    ierr = PetscInfo1(0,"Deleting MPI_Comm %ld\n",(long)icomm);CHKERRQ(ierr);
     ierr = MPI_Comm_free(&icomm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

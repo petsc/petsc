@@ -499,9 +499,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
      Initialize all the default viewers
   */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = PetscInfo((0,"PetscInitialize:PETSc successfully started: number of processors = %d\n",size));CHKERRQ(ierr);
+  ierr = PetscInfo1(0,"PETSc successfully started: number of processors = %d\n",size);CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
-  ierr = PetscInfo((0,"PetscInitialize:Running on machine: %s\n",hostname));CHKERRQ(ierr);
+  ierr = PetscInfo1(0,"Running on machine: %s\n",hostname);CHKERRQ(ierr);
 
   ierr = PetscOptionsCheckInitial_Components();CHKERRQ(ierr);
 
@@ -746,7 +746,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   ierr = MPI_Op_free(&PetscADMax_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscADMin_Op);CHKERRQ(ierr);
 
-  ierr = PetscInfo((0,"PetscFinalize:PETSc successfully ended!\n"));CHKERRQ(ierr);
+  ierr = PetscInfo(0,"PETSc successfully ended!\n");CHKERRQ(ierr);
   if (PetscBeganMPI) {
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }

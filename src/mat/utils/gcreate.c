@@ -225,7 +225,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetUpPreallocation(Mat B)
 
   PetscFunctionBegin;
   if (B->ops->setuppreallocation) {
-    ierr = PetscInfo((B,"MatSetUpPreallocation: Warning not preallocating matrix storage\n"));CHKERRQ(ierr);
+    ierr = PetscInfo(B,"Warning not preallocating matrix storage\n");CHKERRQ(ierr);
     ierr = (*B->ops->setuppreallocation)(B);CHKERRQ(ierr);
     B->ops->setuppreallocation = 0;
   }
