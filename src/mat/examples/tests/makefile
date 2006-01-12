@@ -694,6 +694,30 @@ runex51:
 	  else echo "Possible problem with ex51_1, diffs above"; fi; \
 	  ${RM} -f ex51_1.tmp ex51_12.tmp
 
+runex52_1:
+	-@${MPIRUN} -np 3 ./ex52 -mat_block_size 2 -test_setvaluesblocked > ex52_1.tmp 2>&1;\
+	if (${DIFF} output/ex52_1.out ex52_1.tmp) then true; \
+	else echo "Possible problem with ex52_1, diffs above"; fi; \
+	${RM} -f ex52_1.tmp
+
+runex52_2:
+	-@${MPIRUN} -np 3 ./ex52 -mat_block_size 2 -test_setvaluesblocked -column_oriented > ex52_2.tmp 2>&1;\
+	if (${DIFF} output/ex52_2.out ex52_2.tmp) then true; \
+	else echo "Possible problem with ex52_2, diffs above"; fi; \
+	${RM} -f ex52_2.tmp
+
+runex52_3:
+	-@${MPIRUN} -np 3 ./ex52 -mat_block_size 1 -test_setvaluesblocked > ex52_3.tmp 2>&1;\
+	if (${DIFF} output/ex52_3.out ex52_3.tmp) then true; \
+	else echo "Possible problem with ex52_3, diffs above"; fi; \
+	${RM} -f ex52_3.tmp
+
+runex52_4:
+	-@${MPIRUN} -np 3 ./ex52 -mat_block_size 1 -test_setvaluesblocked -column_oriented > ex52_4.tmp 2>&1;\
+	if (${DIFF} output/ex52_4.out ex52_4.tmp) then true; \
+	else echo "Possible problem with ex52_4, diffs above"; fi; \
+	${RM} -f ex52_4.tmp
+
 runex53:
 	-@${MPIRUN} -np 3 ./ex53 -matload_block_size 1 -f ${DATAFILESPATH}/matrices/small > ex53_1.tmp 2>&1;\
 	${MPIRUN} -np 3 ./ex53 -matload_block_size 2 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
@@ -979,7 +1003,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PET
                                  ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm ex16.PETSc runex16 \
                                  ex16.rm ex55.PETSc runex55 runex55_2 ex55.rm ex59.PETSc runex59 runex59_2 runex59_3 \
                                  ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
-                                 ex65.rm ex66.PETSc ex66.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102 ex102.rm
+                                 ex65.rm ex66.PETSc ex66.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102 ex102.rm\
+                                 ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \
