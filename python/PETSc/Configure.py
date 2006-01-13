@@ -205,8 +205,10 @@ class Configure(config.base.Configure):
     '''Get a generic inline keyword, depending on the language'''
     if self.languages.clanguage == 'C':
       self.addDefine('STATIC_INLINE', self.compilers.cStaticInlineKeyword)
+      self.addDefine('RESTRICT', self.compilers.cRestrict)
     elif self.languages.clanguage == 'Cxx':
       self.addDefine('STATIC_INLINE', self.compilers.cxxStaticInlineKeyword)
+      self.addDefine('RESTRICT', self.compilers.cxxRestrict)
     return
 
   def configureSolaris(self):
