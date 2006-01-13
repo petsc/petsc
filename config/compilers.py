@@ -22,6 +22,8 @@ class Configure(config.base.Configure):
     self.fmainlibs = []
     self.clibs = []
     self.cxxlibs = []
+    self.cRestrict = ' '
+    self.cxxRestrict = ' '
     return
 
   def __str__(self):
@@ -121,10 +123,9 @@ class Configure(config.base.Configure):
     self.addDefine('CXX_STATIC_INLINE', self.cxxStaticInlineKeyword)
     return
 
-  def checkCRestrict(self):
-    '''Check for the C restrict keyword'''
-    self.restrictKeyword = ' '
-    self.pushLanguage('C')
+  def checkRestrict(self,language):
+    '''Check for the C/CXX restrict keyword'''
+    self.pushLanguage(language)
     # Try the official restrict keyword, then gcc's __restrict__, then
     # SGI's __restrict.  __restrict has slightly different semantics than
     # restrict (it's a bit stronger, in that __restrict pointers can't
@@ -132,14 +133,21 @@ class Configure(config.base.Configure):
     # okay under the circumstances where restrict is normally used.
     for kw in ['restrict', ' __restrict__', '__restrict']:
       if self.checkCompile('', 'float * '+kw+' x;'):
-        self.restrictKeyword = kw
-        self.logPrint('Set C restrict keyword to '+self.restrictKeyword, 4, 'compilers')
-        break
+        if language.lower() == 'c':
+          self.cRestrict = kw
+        elif language.lower() == 'cxx':
+          self.cxxRestrict = kw
+        else:
+          raise RuntimeError('Unknown Language :' + str(language))
+        self.logPrint('Set '+str(language)+' restrict keyword to '+kw, 4, 'compilers')
+        # Define to equivalent of C99 restrict keyword, or to nothing if this is not supported.
+        self.addDefine(language.upper()+'_RESTRICT', kw)
+        self.popLanguage()
+        return
+    # did not find restrict 
+    self.addDefine(language.upper()+'_RESTRICT', ' ')
+    self.logPrint('No '+str(language)+' restrict keyword', 4, 'compilers')
     self.popLanguage()
-    if not self.restrictKeyword:
-      self.logPrint('No C restrict keyword', 4, 'compilers')
-    # Define to equivalent of C99 restrict keyword, or to nothing if this is not supported.
-    self.addDefine('RESTRICT', self.restrictKeyword)
     return
 
   def checkCLibraries(self):
@@ -891,7 +899,7 @@ class Configure(config.base.Configure):
     import config.setCompilers
     if hasattr(self.setCompilers, 'CC'):
       self.isGCC = config.setCompilers.Configure.isGNU(self.setCompilers.CC)
-      self.executeTest(self.checkCRestrict)
+      self.executeTest(self.checkRestrict,['C'])
       self.executeTest(self.checkCFormatting)
       self.executeTest(self.checkCStaticInline)
       self.executeTest(self.checkDynamicLoadFlag)
@@ -900,6 +908,7 @@ class Configure(config.base.Configure):
       self.isGCC = 0
     if hasattr(self.setCompilers, 'CXX'):
       self.isGCXX = config.setCompilers.Configure.isGNU(self.setCompilers.CXX)
+      self.executeTest(self.checkRestrict,['Cxx'])
       self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
       self.executeTest(self.checkCxxStaticInline)
