@@ -8,6 +8,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
+    self.sizes = {}
     return
 
   def setupHelp(self, help):
@@ -273,6 +274,7 @@ void (*signal())();
         size = 4
     else:
       size = self.framework.argDB[typename]
+    self.sizes[typename] = size
     self.addDefine(typename.upper(), size)
     return size
 
@@ -316,6 +318,7 @@ void (*signal())();
       # dummy value
       bits = 8
 
+    self.bits_per_byte = bits
     self.addDefine('BITS_PER_BYTE', bits)
     return
 
@@ -333,7 +336,7 @@ void (*signal())();
       self.executeTest(self.checkFortranDReal)
     self.executeTest(self.checkConst)
     self.executeTest(self.checkEndian)
-    map(lambda type: self.executeTest(self.checkSizeof, type), ['void *', 'short', 'int', 'long', 'long long', 'float', 'double'])
+    map(lambda type: self.executeTest(self.checkSizeof, type), ['char','void *', 'short', 'int', 'long', 'long long', 'float', 'double'])
     self.executeTest(self.checkBitsPerByte)
 
 
