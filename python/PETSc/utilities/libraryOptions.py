@@ -22,6 +22,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-sieve=<bool>',            nargs.ArgBool(None, 0, 'Activate SIEVE mesh functionality[requires cxx]'))
     help.addArgument('PETSc', '-with-fortran-kernels=<none,generic,bgl>',  nargs.ArgString(None, None, 'Use Fortran for linear algebra kernels'))
     help.addArgument('PETSc', '-with-64-bit-indices=<bool>',   nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
+    help.addArgument('PETSc', '-with-is-color-value-type=<char,short>',nargs.ArgString(None, 'char', 'char, short can store 256, 65536 colors'))
     return
 
   def setupDependencies(self, framework):
@@ -29,6 +30,7 @@ class Configure(config.base.Configure):
     self.debugging = framework.require('PETSc.utilities.debugging', self)
     self.compilers = framework.require('config.compilers', self)
     self.libraries = framework.require('config.libraries', self)
+    self.types     = framework.require('config.types', self)
     self.languages = framework.require('PETSc.utilities.languages', self)
     return
 
@@ -94,7 +96,26 @@ class Configure(config.base.Configure):
       self.addDefine('USE_32BIT_INT', 1)
     return
 
+  def configureISColorValueType(self):
+    '''Sets PETSC_IS_COLOR_VALUE_TYPE, MPIU_COLORING_VALUE, IS_COLORING_MAX required by ISColor'''
+    import math
+    
+    self.isColorValueType  = self.framework.argDB['with-is-color-value-type']
+    if self.isColorValueType != 'char' and self.isColorValueType != 'short':
+      raise RuntimeError('Incorrect --with-is-color-value-type value specified. Can be either char or short. Specified value is :'+self.isColorValueType)
+    if self.isColorValueType == 'char':
+      max = int(math.pow(2,self.types.sizes['sizeof_char']*self.types.bits_per_byte))-1
+      mpi_type = 'MPI_UNSIGNED_CHAR'
+    else:
+      max = int(math.pow(2,self.types.sizes['sizeof_short']*self.types.bits_per_byte))-1
+      mpi_type = 'MPI_UNSIGNED_SHORT'
 
+    self.framework.addDefine('MPIU_COLORING_VALUE',mpi_type)
+    self.framework.addDefine('IS_COLORING_MAX',max)
+    self.addDefine('IS_COLOR_VALUE_TYPE', self.isColorValueType)
+    return
+  
   def configure(self):
     self.executeTest(self.configureLibraryOptions)
+    self.executeTest(self.configureISColorValueType)
     return

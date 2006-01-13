@@ -142,10 +142,7 @@ $   IS_COLORING_GHOSTED - includes colors for ghost points
 .seealso: DAGetColoring()
 E*/
 typedef enum {IS_COLORING_LOCAL,IS_COLORING_GHOSTED} ISColoringType;
-
-#define MPIU_COLORING_VALUE MPI_UNSIGNED_CHAR
-#define IS_COLORING_MAX     255
-typedef unsigned char ISColoringValue;
+typedef unsigned PETSC_IS_COLOR_VALUE_TYPE ISColoringValue;
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm,PetscInt,ISColoringValue*,PetscInt*,ISColoringValue*[]);
 
 /*S
