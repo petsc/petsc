@@ -1412,8 +1412,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetContext(Mat,void*);
 #define MATRIX_BINARY_FORMAT_DENSE -1
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIRowbsGetColor(Mat,ISColoring *);
-
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatISGetLocalMat(Mat,Mat*);
 
 /*S
