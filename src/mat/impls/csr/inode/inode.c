@@ -1651,7 +1651,7 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt nin,PetscInt ncolors,ISCo
     newcolor[i] = colorused[newcolor[i]];
   }
   ierr = PetscFree(colorused);CHKERRQ(ierr);
-  ierr = ISColoringCreate(mat->comm,n,newcolor,iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(mat->comm,n,ncolors,newcolor,iscoloring);CHKERRQ(ierr);
   ierr = PetscFree(coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -20,7 +20,7 @@ void PETSC_STDCALL iscoloringview_(ISColoring *iscoloring,PetscViewer *viewer,Pe
 
 
 
-void PETSC_STDCALL iscoloringcreate_(MPI_Comm *comm,PetscInt *n,PetscInt *colors,ISColoring *iscoloring,PetscErrorCode *ierr)
+void PETSC_STDCALL iscoloringcreate_(MPI_Comm *comm,PetscInt *n,PetscInt *ncolors,PetscInt *colors,ISColoring *iscoloring,PetscErrorCode *ierr)
 {
   ISColoringValue *color;
   PetscInt             i;
@@ -38,7 +38,7 @@ void PETSC_STDCALL iscoloringcreate_(MPI_Comm *comm,PetscInt *n,PetscInt *colors
     }
     color[i] = (ISColoringValue)colors[i];
   }
-  *ierr = ISColoringCreate((MPI_Comm)PetscToPointerComm(*comm),*n,color,iscoloring);
+  *ierr = ISColoringCreate((MPI_Comm)PetscToPointerComm(*comm),*n,*ncolors,color,iscoloring);
 }
 
 EXTERN_C_END

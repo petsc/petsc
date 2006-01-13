@@ -3212,7 +3212,7 @@ PetscErrorCode MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
       colors[i] = coloring->colors[larray[i]];
     }
     ierr = PetscFree(larray);CHKERRQ(ierr);
-    ierr = ISColoringCreate(PETSC_COMM_SELF,A->n,colors,&ocoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(PETSC_COMM_SELF,A->n,coloring->n,colors,&ocoloring);CHKERRQ(ierr);
     a->coloring = ocoloring;
   }
   PetscFunctionReturn(0);

@@ -169,7 +169,7 @@ struct _n_ISColoring {
 };
 typedef struct _n_ISColoring* ISColoring;
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm,PetscInt,const ISColoringValue[],ISColoring*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm,PetscInt,PetscInt,const ISColoringValue[],ISColoring*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISColoringDestroy(ISColoring);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISColoringView(ISColoring,PetscViewer);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring,PetscInt*,IS*[]);

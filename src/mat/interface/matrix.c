@@ -5237,6 +5237,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumnIJ(Mat mat,PetscInt shift,Pets
     Input Parameters:
 +   mat - the matrix
 .   n   - number of colors
+.   ncolors - max color value
 -   colorarray - array indicating color for each column
 
     Output Parameters:
@@ -5259,7 +5260,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoringPatch(Mat mat,PetscInt n,PetscInt n
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   if (!mat->ops->coloringpatch){
-    ierr = ISColoringCreate(mat->comm,n,colorarray,iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(mat->comm,n,ncolors,colorarray,iscoloring);CHKERRQ(ierr);
   } else {
     ierr = (*mat->ops->coloringpatch)(mat,n,ncolors,colorarray,iscoloring);CHKERRQ(ierr);
   }

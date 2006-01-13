@@ -202,6 +202,7 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,M,N,dim,s,k,nc,col;
+  PetscInt               ncolors;
   MPI_Comm               comm;
   DAPeriodicType         wrap;
   DAStencilType          st;
@@ -243,7 +244,8 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	    }
 	  }
 	}
-	ierr = ISColoringCreate(comm,nc*nx*ny,colors,&da->localcoloring);CHKERRQ(ierr);
+        ncolors = (nc-1) + nc*(col-1) + col*(col-1);
+	ierr = ISColoringCreate(comm,nc*nx*ny,ncolors,colors,&da->localcoloring);CHKERRQ(ierr);
       }
       *coloring = da->localcoloring;
     } else if (ctype == IS_COLORING_GHOSTED) {
@@ -258,7 +260,8 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	    }
 	  }
 	}
-	ierr = ISColoringCreate(comm,nc*gnx*gny,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+        ncolors = (nc-1) + nc*(col -1) + col*(col-1);
+	ierr = ISColoringCreate(comm,nc*gnx*gny,ncolors,colors,&da->ghostedcoloring);CHKERRQ(ierr);
 	ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
       *coloring = da->ghostedcoloring;
@@ -276,6 +279,7 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 {
   PetscErrorCode  ierr;
   PetscInt        xs,ys,nx,ny,i,j,gxs,gys,gnx,gny,m,n,p,dim,s,k,nc,col,zs,gzs,ii,l,nz,gnz,M,N,P;
+  PetscInt        ncolors;
   MPI_Comm        comm;
   DAPeriodicType  wrap;
   DAStencilType   st;
@@ -320,7 +324,8 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
           }
         }
       }
-      ierr = ISColoringCreate(comm,nc*nx*ny*nz,colors,&da->localcoloring);CHKERRQ(ierr);
+      ncolors = (nc-1) + nc*(col-1) + col*(col-1)+ col*col*(col-1);
+      ierr = ISColoringCreate(comm,nc*nx*ny*nz,ncolors,colors,&da->localcoloring);CHKERRQ(ierr);
     }
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
@@ -337,7 +342,8 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
           }
         }
       }
-      ierr = ISColoringCreate(comm,nc*gnx*gny*gnz,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+      ncolors = (nc-1) + nc*(col-1) + col*(col-1)+ col*col*(col-1);
+      ierr = ISColoringCreate(comm,nc*gnx*gny*gnz,ncolors,colors,&da->ghostedcoloring);CHKERRQ(ierr);
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
@@ -354,6 +360,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 {
   PetscErrorCode  ierr;
   PetscInt        xs,nx,i,i1,gxs,gnx,l,m,M,dim,s,nc,col;
+  PetscInt        ncolors;
   MPI_Comm        comm;
   DAPeriodicType  wrap;
   ISColoringValue *colors;
@@ -386,7 +393,8 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
           colors[i1++] = l + nc*(i % col);
         }
       }
-      ierr = ISColoringCreate(comm,nc*nx,colors,&da->localcoloring);CHKERRQ(ierr);
+      ncolors = (nc-1) + nc*(col-1);
+      ierr = ISColoringCreate(comm,nc*nx,ncolors,colors,&da->localcoloring);CHKERRQ(ierr);
     }
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
@@ -399,7 +407,8 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
           colors[i1++] = l + nc*(SetInRange(i,m) % col);
         }
       }
-      ierr = ISColoringCreate(comm,nc*gnx,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+      ncolors = (nc-1) + nc*(col-1);
+      ierr = ISColoringCreate(comm,nc*gnx,ncolors,colors,&da->ghostedcoloring);CHKERRQ(ierr);
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
@@ -414,6 +423,7 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
 {
   PetscErrorCode  ierr;
   PetscInt        xs,ys,nx,ny,i,j,ii,gxs,gys,gnx,gny,m,n,dim,s,k,nc;
+  PetscInt        ncolors;
   MPI_Comm        comm;
   DAPeriodicType  wrap;
   ISColoringValue *colors;
@@ -450,7 +460,8 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
 	  }
 	}
       }
-      ierr = ISColoringCreate(comm,nc*nx*ny,colors,&da->localcoloring);CHKERRQ(ierr);
+      ncolors = (nc-1) + nc*4;
+      ierr = ISColoringCreate(comm,nc*nx*ny,ncolors,colors,&da->localcoloring);CHKERRQ(ierr);
     }
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
@@ -464,7 +475,8 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
 	  }
 	}
       }
-      ierr = ISColoringCreate(comm,nc*gnx*gny,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+      ncolors = (nc-1) + nc*4;
+      ierr = ISColoringCreate(comm,nc*gnx*gny,ncolors,colors,&da->ghostedcoloring);CHKERRQ(ierr);
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;

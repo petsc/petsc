@@ -199,6 +199,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringRestoreIS(ISColoring iscoloring,IS *
     Input Parameters:
 +   comm - communicator for the processors creating the coloring
 .   n - number of nodes on this processor
+.   ncolors - max color value
 -   colors - array containing the colors for this processor, color
              numbers begin at 0. In C/C++ this array must have been obtained with PetscMalloc()
              and should NOT be freed (The ISColoringDestroy() will free it).
@@ -216,7 +217,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringRestoreIS(ISColoring iscoloring,IS *
 .seealso: MatColoringCreate(), ISColoringView(), ISColoringDestroy(), ISColoringSetType()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt n,const ISColoringValue colors[],ISColoring *iscoloring)
+PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt n,PetscInt ncolors,const ISColoringValue colors[],ISColoring *iscoloring)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag;
@@ -226,6 +227,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt n,cons
   MPI_Status     status;
 
   PetscFunctionBegin;
+  if (ncolors != PETSC_DECIDE && ncolors > IS_COLORING_MAX) {
+    if (ncolors > 65535) {
+      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Max color value exeeds 65535 limit. This number is unrealistic. Perhaps a bug in code? Current max: %d user rewuested: %d",IS_COLORING_MAX,ncolors);
+    } else {
+      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Max color value exeeds limit. Perhaps rebuild PETSc with --with-is-color-value-type=short? Current max: %d user rewuested: %d",IS_COLORING_MAX,ncolors);
+    }
+  }
   ierr = PetscNew(struct _n_ISColoring,iscoloring);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
   comm = (*iscoloring)->comm;
