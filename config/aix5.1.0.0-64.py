@@ -8,6 +8,7 @@ configure_options = [
   '--with-batch=1',
   '--with-memcmp-ok',
   '--sizeof_void_p=8',
+  '--sizeof_char=1',
   '--sizeof_short=2',
   '--sizeof_int=4',
   '--sizeof_long=8',

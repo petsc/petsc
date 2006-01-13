@@ -18,6 +18,7 @@ configure_options = [
   
   '--with-batch=1',
   '--sizeof_void_p=8',
+  '--sizeof_char=1',
   '--with-memcmp-ok',
   '--sizeof_long=8',
   '--sizeof_MPI_Comm=4',
