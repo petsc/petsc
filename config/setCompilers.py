@@ -1009,7 +1009,8 @@ class Configure(config.base.Configure):
       flag = '-L'
       self.pushLanguage(language)
       # test '-R' before '-rpath' as sun compilers [c,fortran] don't give proper errors with wrong options.
-      for testFlag in ['-Wl,-rpath,', '-R', '-rpath ' , '-Wl,-R,']:
+      # test '-R' before '-Wl,-rpath' as sun cc on linux accepts -Wl,-rpath, but sun f90, CC do not.
+      for testFlag in ['-R','-Wl,-rpath,', '-rpath ' , '-Wl,-R,']:
         self.framework.logPrint('Trying '+language+' linker flag '+testFlag)
         if self.checkLinkerFlag(testFlag+os.path.abspath(os.getcwd())):
           flag = testFlag
