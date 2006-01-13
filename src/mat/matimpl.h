@@ -179,11 +179,8 @@ typedef struct {
   PetscInt      oldnmax;                /* the nmax value used previously */
   PetscInt      n;                      /* stash size */
   PetscInt      bs;                     /* block size of the stash */
-  PetscInt      reallocs;               /* preserve the no of mallocs invoked */           
-  PetscInt      *idx;                   /* global row numbers in stash */
-  PetscInt      *idy;                   /* global column numbers in stash */
-  MatScalar     *array;                 /* array to hold stashed values */
-  PetscMatStashSpace space_head,space;
+  PetscInt      reallocs;               /* preserve the no of mallocs invoked */    
+  PetscMatStashSpace space_head,space;  /* linked list to hold stashed global row/column numbers and matrix values */
   /* The following variables are used for communication */
   MPI_Comm      comm;
   PetscMPIInt   size,rank;

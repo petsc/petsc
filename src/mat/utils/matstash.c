@@ -2,7 +2,7 @@
 
 #include "src/mat/matimpl.h"
 #include "src/mat/utils/matstashspace.h"
-#undef MV
+
 /*
        The input to the stash is ALWAYS in MatScalar precision, and the 
     internal storage and output is also in MatScalar.
@@ -59,11 +59,6 @@ PetscErrorCode MatStashCreate_Private(MPI_Comm comm,PetscInt bs,MatStash *stash)
   stash->oldnmax  = 0;
   stash->n        = 0;
   stash->reallocs = -1;
-#ifdef MV
-  stash->idx      = 0;
-  stash->idy      = 0;
-  stash->array    = 0;
-#endif
   stash->space_head = 0;
   stash->space      = 0;
 
@@ -90,12 +85,6 @@ PetscErrorCode MatStashDestroy_Private(MatStash *stash)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifdef MV
-  if (stash->array) {
-    ierr = PetscFree(stash->array);CHKERRQ(ierr);
-    stash->array = 0;
-  }
-#endif
   if (stash->space_head){
     ierr = PetscMatStashSpaceDestroy(stash->space_head);CHKERRQ(ierr);
     stash->space_head = 0;
@@ -116,8 +105,8 @@ PetscErrorCode MatStashDestroy_Private(MatStash *stash)
 PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
 { 
   PetscErrorCode ierr;
-  int         nsends=stash->nsends,bs2,oldnmax;
-  MPI_Status  *send_status;
+  PetscInt       nsends=stash->nsends,bs2,oldnmax;
+  MPI_Status     *send_status;
 
   PetscFunctionBegin;
   /* wait on sends */
@@ -140,14 +129,6 @@ PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
   stash->n          = 0;
   stash->reallocs   = -1;
   stash->nprocessed = 0;
-#ifdef MV
-  if (stash->array) {
-    ierr         = PetscFree(stash->array);CHKERRQ(ierr);
-    stash->array = 0;
-    stash->idx   = 0;
-    stash->idy   = 0;
-  }
-#endif
   if (stash->space_head){
     ierr = PetscMatStashSpaceDestroy(stash->space_head);CHKERRQ(ierr);
     stash->space_head = 0;
@@ -176,7 +157,6 @@ PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
     ierr = PetscFree(stash->nprocs);CHKERRQ(ierr);
     stash->nprocs = 0;
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -203,7 +183,6 @@ PetscErrorCode MatStashGetInfo_Private(MatStash *stash,PetscInt *nstash,PetscInt
   }
   PetscFunctionReturn(0);
 }
-
 
 /* 
    MatStashSetInitialSize_Private - Sets the initial size of the stash
@@ -238,8 +217,7 @@ PetscErrorCode MatStashSetInitialSize_Private(MatStash *stash,PetscInt max)
 static PetscErrorCode MatStashExpand_Private(MatStash *stash,PetscInt incr)
 { 
   PetscErrorCode ierr;
-  PetscInt       *n_idx,*n_idy,newnmax,bs2= stash->bs*stash->bs;
-  MatScalar      *n_array;
+  PetscInt       newnmax,bs2= stash->bs*stash->bs; 
 
   PetscFunctionBegin;
   /* allocate a larger stash */ 
@@ -259,25 +237,8 @@ static PetscErrorCode MatStashExpand_Private(MatStash *stash,PetscInt incr)
   } else {
     ierr = PetscMatStashSpaceGet(bs2,newnmax,&stash->space);CHKERRQ(ierr);
   }
-#ifdef MV
-  PetscMPIInt rank;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  printf("[%d] MatStashExpand ends, incr %d, space %p, space->val %p\n",rank,incr,stash->space,(stash->space)->val);
-#endif 
-#ifdef MV
-  ierr  = PetscMalloc((newnmax)*(2*sizeof(PetscInt)+bs2*sizeof(MatScalar)),&n_array);CHKERRQ(ierr);
-  n_idx = (PetscInt*)(n_array + bs2*newnmax);
-  n_idy = (PetscInt*)(n_idx + newnmax);
-  ierr  = PetscMemcpy(n_array,stash->array,bs2*stash->nmax*sizeof(MatScalar));CHKERRQ(ierr);
-  ierr  = PetscMemcpy(n_idx,stash->idx,stash->nmax*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr  = PetscMemcpy(n_idy,stash->idy,stash->nmax*sizeof(PetscInt));CHKERRQ(ierr);
-  if (stash->array) {ierr = PetscFree(stash->array);CHKERRQ(ierr);}
-  stash->array   = n_array; 
-  stash->idx     = n_idx; 
-  stash->idy     = n_idy;
-#endif /* MV */
   stash->reallocs++;
-  stash->nmax    = newnmax;
+  stash->nmax = newnmax;
   PetscFunctionReturn(0);
 }
 /*
@@ -301,35 +262,19 @@ PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n
   PetscMatStashSpace space=stash->space;
 
   PetscFunctionBegin;
-#ifdef MV
-  PetscMPIInt rank;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-#endif
   /* Check and see if we have sufficient memory */
   if (!space || space->local_remaining < n){
     ierr = MatStashExpand_Private(stash,n);CHKERRQ(ierr);
   }
   space = stash->space;
-#ifdef MV
-  if (rank == 1){
-    printf(" [%d] MatStashValuesRow, local_remaining %d, n %d\n",rank,space->local_remaining,n);
-  }
-  /* printf("space %p, stash %d values, local_used %d\n",space,n,space->local_used); */
-#endif
-  k = space->local_used;
+  k     = space->local_used;
   for (i=0; i<n; i++) {
     space->idx[k] = row;
     space->idy[k] = idxn[i];
     space->val[k] = values[i];
     k++;
-#ifdef MV
-    stash->idx[stash->n]   = row;
-    stash->idy[stash->n]   = idxn[i];
-    stash->array[stash->n] = values[i];
-#endif
-    stash->n++;
   }
-  /* stash->n               += n; */
+  stash->n               += n; 
   space->local_used      += n;
   space->local_remaining -= n;
   PetscFunctionReturn(0);
@@ -369,14 +314,8 @@ PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n
     space->idy[k] = idxn[i]; 
     space->val[k] = values[i*stepval]; 
     k++;
-#ifdef MV
-    stash->idx[stash->n]   = row;
-    stash->idy[stash->n]   = idxn[i];
-    stash->array[stash->n] = values[i*stepval];
-#endif
-    stash->n++;
   }
-  /* stash->n               += n; */
+  stash->n               += n; 
   space->local_used      += n;
   space->local_remaining -= n;
   PetscFunctionReturn(0);
@@ -404,10 +343,10 @@ PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n
 #define __FUNCT__ "MatStashValuesRowBlocked_Private"
 PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const MatScalar values[],PetscInt rmax,PetscInt cmax,PetscInt idx)
 {
-  PetscErrorCode  ierr;
-  PetscInt        i,j,k,bs2,bs=stash->bs,l; 
-  const MatScalar *vals;
-  MatScalar       *array;
+  PetscErrorCode     ierr;
+  PetscInt           i,j,k,bs2,bs=stash->bs,l; 
+  const MatScalar    *vals;
+  MatScalar          *array;
   PetscMatStashSpace space=stash->space;
 
   PetscFunctionBegin;
@@ -431,22 +370,8 @@ PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash,PetscInt row,Pet
       vals  += cmax*bs;
     }
     l++;
-#ifdef MV
-    stash->idx[stash->n]   = row;
-    stash->idy[stash->n] = idxn[i];
-    /* Now copy over the block of values. Store the values column oriented.
-       This enables inserting multiple blocks belonging to a row with a single
-       funtion call */
-    array = stash->array + bs2*stash->n;
-    vals  = values + idx*bs2*n + bs*i;
-    for (j=0; j<bs; j++) {
-      for (k=0; k<bs; k++) {array[k*bs] = vals[k];}
-      array += 1;
-      vals  += cmax*bs;
-    }
-#endif
-    stash->n++;
   }
+  stash->n               += n;
   space->local_used      += n;
   space->local_remaining -= n;
   PetscFunctionReturn(0);
@@ -500,22 +425,9 @@ PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash,PetscInt row,Pet
       array += bs;
       vals  += rmax*bs;
     }
-#ifdef MV
-    stash->idx[stash->n]   = row;
-    stash->idy[stash->n] = idxn[i];
-    /* Now copy over the block of values. Store the values column oriented.
-     This enables inserting multiple blocks belonging to a row with a single
-     funtion call */
-    array = stash->array + bs2*stash->n;
-    vals  = values + idx*bs + bs2*rmax*i;
-    for (j=0; j<bs; j++) {
-      for (k=0; k<bs; k++) {array[k] = vals[k];}
-      array += bs;
-      vals  += rmax*bs;
-    }
-#endif
-    stash->n++;
+    l++;
   }
+  stash->n               += n;
   space->local_used      += n;
   space->local_remaining -= n;
   PetscFunctionReturn(0);
@@ -547,40 +459,12 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
   MPI_Comm       comm = stash->comm;
   MPI_Request    *send_waits,*recv_waits,*recv_waits1,*recv_waits2;
   PetscMPIInt    *nprocs,*nlengths,nreceives;
-  PetscInt       *idx_ptr,*idy,n=stash->n;
-  MatScalar      *val;
-  PetscMatStashSpace space,space_next,space_head=stash->space_head;
+  PetscInt       *sp_idx,*sp_idy; 
+  MatScalar      *sp_val;
+  PetscMatStashSpace space,space_next;
 
   PetscFunctionBegin;
   bs2 = stash->bs*stash->bs;
-#ifdef MV
-  PetscMPIInt rank;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr); 
-#endif
-
-#ifdef MV
-  /* Copy values of space into val, idx, idy, and destroy space */
-  ierr = PetscMalloc((n+1)*(bs2*sizeof(MatScalar)+2*sizeof(PetscInt)),&val);CHKERRQ(ierr);
-  idx_ptr = (PetscInt*)(val + bs2*n);
-  idy     = (PetscInt*)(idx_ptr + n);
-  ierr = PetscMatStashSpaceContiguous(bs2,&stash->space_head,val,idx_ptr,idy);CHKERRQ(ierr);
-  /* printf("[%d] Before and after SpaceContiguous, space->head %p/%p\n",rank,space_head,stash->space_head); */
-  ierr = PetscFree(val);CHKERRQ(ierr);
-#endif
-#ifdef MV
-  printf("[%d] compare array with val ...\n",rank);
-  PetscScalar *array,*valtmp;
-  for (i=0; i<stash->n; i++){
-    array = stash->array +i*bs2;
-    valtmp = val+i*bs2;
-    for (j=0; j<bs2; j++){
-      if (*array != *valtmp) SETERRQ3(PETSC_ERR_ARG_SIZ, "%d, array %g != val %g",i,*array,*valtmp); 
-      array++; valtmp++;
-    }
-    if (stash->idx[i] != idx_ptr[i]) SETERRQ3(PETSC_ERR_ARG_SIZ, "%d, array %d != idx %d",i,stash->idx[i],idx_ptr[i]); 
-    if (stash->idy[i] != idy[i]) SETERRQ3(PETSC_ERR_ARG_SIZ, "%d, array %d != idy %d",i,stash->idy[i],idy[i]);  
-  } 
-#endif
   
   /*  first count number of contributors to each processor */
   ierr  = PetscMalloc(2*size*sizeof(PetscMPIInt),&nprocs);CHKERRQ(ierr);
@@ -590,13 +474,13 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
   nlengths = nprocs+size;
   i = j    = 0;
   lastidx  = -1; 
-  space    = space_head;
+  space    = stash->space_head;
   while (space != PETSC_NULL){
     space_next = space->next;
+    sp_idx     = space->idx;
     for (l=0; l<space->local_used; l++){
-      idx=space->idx[l];   
       /* if indices are NOT locally sorted, need to start search at the beginning */
-      if (lastidx > idx) j = 0; /* idx = stash->idx[i] */
+      if (lastidx > (idx = sp_idx[l])) j = 0; 
       lastidx = idx;
       for (; j<size; j++) {
         if (idx >= owners[j] && idx < owners[j+1]) {
@@ -643,22 +527,25 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
   } 
   
   i     = 0;
-  space = space_head;
+  space = stash->space_head;
   while (space != PETSC_NULL){
     space_next = space->next;
+    sp_idx = space->idx;
+    sp_idy = space->idy;
+    sp_val = space->val;
     for (l=0; l<space->local_used; l++){
       j = owner[i];
       if (bs2 == 1) {
-        svalues[startv[j]] = space->val[l];       /* = stash->array[i]; */
+        svalues[startv[j]] = sp_val[l];       
       } else {
-        PetscInt       k;
+        PetscInt  k;
         MatScalar *buf1,*buf2;
         buf1 = svalues+bs2*startv[j];
-        buf2 = space->val + bs2*i;                      /* stash->array+bs2*i; */ 
+        buf2 = space->val + bs2*i;                      
         for (k=0; k<bs2; k++){ buf1[k] = buf2[k]; }
       }
-      sindices[starti[j]]             = space->idx[l]; /* stash->idx[i]; */
-      sindices[starti[j]+nlengths[j]] = space->idy[l]; /* stash->idy[i]; */
+      sindices[starti[j]]             = sp_idx[l]; 
+      sindices[starti[j]+nlengths[j]] = sp_idy[l]; 
       startv[j]++;
       starti[j]++;
       i++;
@@ -686,7 +573,7 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
   ierr = PetscFree(startv);CHKERRQ(ierr);
   /* This memory is reused in scatter end  for a different purpose*/
   for (i=0; i<2*size; i++) nprocs[i] = -1;
-  stash->nprocs      = nprocs;
+  stash->nprocs = nprocs;
   
   /* recv_waits need to be contiguous for MatStashScatterGetMesg_Private() */
   ierr  = PetscMalloc((nreceives+1)*2*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);

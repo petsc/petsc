@@ -30,13 +30,7 @@ PetscErrorCode PetscMatStashSpaceGet(PetscInt bs2,PetscInt n,PetscMatStashSpace 
     a->total_space_size = (*space)->total_space_size; 
   }
   a->total_space_size += n;
-  *space              = a;
-  /* printf(" 2. total_space_size : %d\n",a->total_space_size); */
-  /*
-  PetscMPIInt rank;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  printf("[%d] MatStashSpaceCreate space %p, next %p, total_space_size: %d, space->val %p\n",rank,*space,(*space)->next,(*space)->total_space_size,(*space)->val);
-  */
+  *space               = a;
   PetscFunctionReturn(0);
 }
 
@@ -74,9 +68,9 @@ PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace space)
 
   PetscFunctionBegin;
   while (space != PETSC_NULL){
-    a    = space->next;
-    ierr = PetscFree(space->space_head);CHKERRQ(ierr);
-    ierr = PetscFree(space);CHKERRQ(ierr);
+    a     = space->next;
+    ierr  = PetscFree(space->space_head);CHKERRQ(ierr);
+    ierr  = PetscFree(space);CHKERRQ(ierr);
     space = a;
   }
   PetscFunctionReturn(0);
