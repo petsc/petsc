@@ -88,6 +88,7 @@ PetscErrorCode MatStashDestroy_Private(MatStash *stash)
   if (stash->space_head){
     ierr = PetscMatStashSpaceDestroy(stash->space_head);CHKERRQ(ierr);
     stash->space_head = 0;
+    stash->space      = 0;
   }
   PetscFunctionReturn(0);
 }
@@ -132,6 +133,7 @@ PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
   if (stash->space_head){
     ierr = PetscMatStashSpaceDestroy(stash->space_head);CHKERRQ(ierr);
     stash->space_head = 0;
+    stash->space      = 0;
   }
   if (stash->send_waits) {
     ierr = PetscFree(stash->send_waits);CHKERRQ(ierr);
