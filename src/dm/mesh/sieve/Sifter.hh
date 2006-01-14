@@ -956,7 +956,6 @@ namespace ALE {
         int globalDiameter;
         int ierr = MPI_Allreduce(&this->graphDiameter, &globalDiameter, 1, MPI_INT, MPI_MAX, this->comm);
         CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allreduce"));
-        ALE_LOG_STAGE_END;
         return globalDiameter;
       };
       int diameter(const Data& p) {
@@ -970,7 +969,10 @@ namespace ALE {
       };
       void setStratification(bool doStratify) {this->stratification = doStratify;};
       bool getStratification() {return this->stratification;};
+      #undef __FUNCT__
+      #define __FUNCT__ "Sieve::stratify"
       void stratify() {
+        ALE_LOG_EVENT_BEGIN;
         this->__computeDegrees();
         // FIX: We would like to avoid the copy here with cone() and support()
         this->__computeClosureHeights(this->cone(this->leaves()));
@@ -982,6 +984,7 @@ namespace ALE {
             std::cout << *i << std::endl;
           }
         }
+        ALE_LOG_EVENT_END;
       };
     private:
       struct changeIndegree {

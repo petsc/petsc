@@ -473,9 +473,13 @@ namespace ALE {
         }
       }
       // Structural methods
+      #undef __FUNCT__
+      #define __FUNCT__ "BiGraph::stratify"
       void stratify() {
+        ALE_LOG_EVENT_BEGIN;
         std::cout << "Stratifying" << std::endl;
         this->__computeDegrees();
+        ALE_LOG_EVENT_END;
       }
     private:
       struct changeIndegree {
@@ -682,13 +686,17 @@ namespace ALE {
         return this->_patches.cone(patch);
       };
       //     Index manipulation
+      #undef __FUNCT__
+      #define __FUNCT__ "CoSieve::orderPatches"
       void orderPatches() {
+        ALE_LOG_EVENT_BEGIN;
         Obj<typename patches_type::baseSequence> base = this->_patches.base();
 
         this->_indices.stratify();
         for(typename patches_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
           this->allocateAndOrderPatch(*b_iter);
         }
+        ALE_LOG_EVENT_END;
       };
       // These attach index_type indices of a given color to a Sieve::point_type point
       void  addIndices(const patch_type& patch, const index_type& indx, typename Sieve::color_type color, const typename Sieve::point_type& p) {
@@ -918,7 +926,10 @@ namespace ALE {
       void setIndexDimensionByDepth(int depth, int indexDim) {
         this->setIndexDimensionByDepth(depth, typename Sieve::color_type(), indexDim);
       }
+      #undef __FUNCT__
+      #define __FUNCT__ "CoSieve::setIndexDimensionByDepth"
       void setIndexDimensionByDepth(int depth, typename Sieve::color_type color, int indexDim) {
+        ALE_LOG_EVENT_BEGIN;
         Obj<typename patches_type::baseSequence> base = this->_patches.base();
         Obj<typename Sieve::depthSequence> stratum = this->getTopology()->depthStratum(depth);
 
@@ -930,6 +941,7 @@ namespace ALE {
             this->setIndexDimension(*b_iter, *iter, color, indexDim);
           }
         }
+        ALE_LOG_EVENT_END;
       };
       const value_type *restrict(const patch_type& patch) {
         return this->_storage[patch];
