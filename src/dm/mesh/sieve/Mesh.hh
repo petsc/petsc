@@ -41,6 +41,7 @@ namespace ALE {
           Obj<ALE::def::Mesh::bundle_type> vertexBundle = ALE::def::Mesh::bundle_type();
 
           // Need to globalize indices (that is what we might use the value ints for)
+          std::cout << "Creating new bundle for dim " << dim << std::endl;
           vertexBundle->setTopology(this->topology);
           vertexBundle->setPatch(this->topology.leaves(), 0);
           vertexBundle->setIndexDimensionByDepth(dim, 1);
@@ -92,11 +93,14 @@ namespace ALE {
           if (debug > 1) {std::cout << "  Added simplex " << simplex << " dim " << dim << std::endl;}
         }
       };
+      #undef __FUNCT__
+      #define __FUNCT__ "Mesh::buildTopology"
       // Build a topology from a connectivity description
       //   (0, 0)            ... (0, numSimplices-1):  dim-dimensional simplices
       //   (0, numSimplices) ... (0, numVertices):     vertices
       // The other simplices are numbered as they are requested
       void buildTopology(int numSimplices, int simplices[], int numVertices) {
+        ALE_LOG_EVENT_BEGIN;
         // Create a map from dimension to the current element number for that dimension
         std::map<int,int*> curElement = std::map<int,int*>();
         int                curSimplex = 0;
@@ -140,10 +144,14 @@ namespace ALE {
           }
           this->orientation.addCone(cellTuple, simplex);
         }
+        ALE_LOG_EVENT_END;
       };
+      #undef __FUNCT__
+      #define __FUNCT__ "Mesh::createSerialCoordinates"
       void createSerialCoordinates(int numElements, double coords[]) {
         int dim = this->dim;
 
+        ALE_LOG_EVENT_BEGIN;
         std::cout << "Creating coordinates" << std::endl;
         this->topology.debug = this->debug;
         this->coordinates.setTopology(this->topology);
@@ -159,6 +167,7 @@ namespace ALE {
           if ((*v_itor).index%100 == 0) {std::cout << "Fiber index over vertex " << *v_itor << " is " << *this->coordinates.getIndices(0, *v_itor)->begin() << std::endl;}
           this->coordinates.update(0, *v_itor, &coords[((*v_itor).index - numElements)*dim]);
         }
+        ALE_LOG_EVENT_END;
       };
       // I think that the boundary shuold be marked in the Sieve
       //   It could be done with point markers like depth/height, but is that right?
