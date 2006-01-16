@@ -274,7 +274,7 @@ void (*signal())();
         size = 4
     else:
       size = self.framework.argDB[typename]
-    self.sizes[typename] = size
+    self.sizes[typename] = int(size)
     self.addDefine(typename.upper(), size)
     return size
 
@@ -318,7 +318,7 @@ void (*signal())();
       # dummy value
       bits = 8
 
-    self.bits_per_byte = bits
+    self.bits_per_byte = int(bits)
     self.addDefine('BITS_PER_BYTE', bits)
     return
 
