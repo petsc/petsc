@@ -1091,7 +1091,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*z = 0,*xb,*work,*workt,*y,*zarray;
+  PetscScalar    *x,*z = 0,*xb,*work,*workt,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
   PetscInt       mbs,i,*idx,*ii,bs=A->bs,j,n,bs2=a->bs2;
@@ -1099,13 +1099,9 @@ PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   PetscTruth     usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
+  ierr = VecCopy(yy,zz);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&zarray);CHKERRQ(ierr);
-  if (zz != yy) { 
-    ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-    ierr = PetscMemcpy(zarray,y,yy->n*sizeof(PetscScalar));CHKERRQ(ierr); 
-    ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  }
 
   idx = a->j;
   v   = a->a;

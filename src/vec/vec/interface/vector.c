@@ -287,8 +287,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMax(Vec w,Vec x,Vec y)
   PetscValidType(y,3);
   PetscCheckSameTypeAndComm(x,2,y,3);
   PetscCheckSameTypeAndComm(y,3,w,1);
-  if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
-  if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->map.N != y->map.N || x->map.N != w->map.N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->map.n != y->map.n || x->map.n != w->map.n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = (*w->ops->pointwisemax)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
@@ -331,8 +331,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMin(Vec w,Vec x,Vec y)
   PetscValidType(y,3);
   PetscCheckSameTypeAndComm(x,2,y,3);
   PetscCheckSameTypeAndComm(y,3,w,1);
-  if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
-  if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->map.N != y->map.N || x->map.N != w->map.N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->map.n != y->map.n || x->map.n != w->map.n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = (*w->ops->pointwisemin)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
@@ -373,8 +373,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMaxAbs(Vec w,Vec x,Vec y)
   PetscValidType(y,3);
   PetscCheckSameTypeAndComm(x,2,y,3);
   PetscCheckSameTypeAndComm(y,3,w,1);
-  if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
-  if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->map.N != y->map.N || x->map.N != w->map.N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->map.n != y->map.n || x->map.n != w->map.n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = (*w->ops->pointwisemaxabs)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
@@ -415,8 +415,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec w,Vec x,Vec y)
   PetscValidType(y,3);
   PetscCheckSameTypeAndComm(x,2,y,3);
   PetscCheckSameTypeAndComm(y,3,w,1);
-  if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
-  if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->map.N != y->map.N || x->map.N != w->map.N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->map.n != y->map.n || x->map.n != w->map.n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = (*w->ops->pointwisedivide)(w,x,y);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
@@ -1143,8 +1143,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec w, Vec x,Vec y)
   PetscValidType(y,3);
   PetscCheckSameTypeAndComm(x,2,y,3);
   PetscCheckSameTypeAndComm(y,3,w,1);
-  if (x->N != y->N || x->N != w->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
-  if (x->n != y->n || x->n != w->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->map.N != y->map.N || x->map.N != w->map.N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->map.n != y->map.n || x->map.n != w->map.n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBegin(VEC_PointwiseMult,x,y,w,0);CHKERRQ(ierr);
   ierr = (*w->ops->pointwisemult)(w,x,y);CHKERRQ(ierr);
@@ -1378,9 +1378,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec v, PetscInt n, PetscInt N)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_COOKIE,1); 
   if (N > 0 && n > N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local size %D cannot be larger than global size %D",n,N);
-  if ((v->n >= 0 || v->N >= 0) && (v->n != n || v->N != N)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset vector sizes to %D local %D global after previously setting them to %D local %D global",n,N,v->n,v->N);
-  v->n = n;
-  v->N = N;
+  if ((v->map.n >= 0 || v->map.N >= 0) && (v->map.n != n || v->map.N != N)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset vector sizes to %D local %D global after previously setting them to %D local %D global",n,N,v->map.n,v->map.N);
+  v->map.n = n;
+  v->map.N = N;
   PetscFunctionReturn(0);
 }
 
@@ -1410,13 +1410,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec v,PetscInt bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1); 
   if (bs <= 0) bs = 1;
-  if (bs == v->bs) PetscFunctionReturn(0);
-  if (v->bs != -1) SETERRQ2(PETSC_ERR_ARG_WRONGSTATE,"Cannot reset blocksize. Current size %D new %D",v->bs,bs);
-  if (v->N != -1 && v->N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %D %D",v->N,bs);
-  if (v->n != -1 && v->n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %D %D\n\
-   Try setting blocksize before setting the vector type",v->n,bs);
+  if (bs == v->map.bs) PetscFunctionReturn(0);
+  if (v->map.bs != -1) SETERRQ2(PETSC_ERR_ARG_WRONGSTATE,"Cannot reset blocksize. Current size %D new %D",v->map.bs,bs);
+  if (v->map.N != -1 && v->map.N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %D %D",v->map.N,bs);
+  if (v->map.n != -1 && v->map.n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %D %D\n\
+   Try setting blocksize before setting the vector type",v->map.n,bs);
   
-  v->bs        = bs;
+  v->map.bs        = bs;
   v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */
   PetscFunctionReturn(0);
 }
@@ -1451,7 +1451,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetBlockSize(Vec v,PetscInt *bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1); 
   PetscValidIntPointer(bs,2);
-  *bs = v->bs;
+  *bs = v->map.bs;
   PetscFunctionReturn(0);
 }
 
@@ -1649,8 +1649,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCopy(Vec x,Vec y)
   PetscValidType(x,1);
   PetscValidType(y,2);
   PetscCheckSameComm(x,1,y,2);
-  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
-  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x == y) PetscFunctionReturn(0);
+  if (x->map.N != y->map.N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->map.n != y->map.n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBegin(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->copy)(x,y);CHKERRQ(ierr);
@@ -1705,8 +1706,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
   PetscCheckSameTypeAndComm(x,1,y,2);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   if (y->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  if (x->N != y->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
-  if (x->n != y->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->map.N != y->map.N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
+  if (x->map.n != y->map.n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
   ierr = PetscLogEventBegin(VEC_Swap,x,y,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->swap)(x,y);CHKERRQ(ierr);

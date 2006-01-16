@@ -94,21 +94,22 @@ int main(int argc,char **args)
 
      U and V are stored as PETSc MPIDENSE (parallel) dense matrices with their rows partitioned the
      same way as x and y are partitioned
+
+     Note: this routine directly access the Vec and Mat data-structures
 */
 PetscErrorCode LowRankUpdate(Mat U,Mat V,Vec x,Vec y,Vec work1,Vec work2,PetscInt nwork)
 {
   Mat            Ulocal = ((Mat_MPIDense*)U->data)->A;
   Mat            Vlocal = ((Mat_MPIDense*)V->data)->A;
-  PetscInt       Nsave = x->N;
+  PetscInt       Nsave = x->map.N;
   PetscErrorCode ierr;
   PetscScalar    *w1,*w2;
 
   PetscFunctionBegin;
-
   /* First multiply the local part of U with the local part of x */
-  x->N = x->n; /* this tricks the silly error checking in MatMultTranspose();*/
+  x->map.N = x->map.n; /* this tricks the silly error checking in MatMultTranspose();*/
   ierr = MatMultTranspose(Ulocal,x,work1);CHKERRQ(ierr);/* note in this call x is treated as a sequential vector  */
-  x->N = Nsave;
+  x->map.N = Nsave;
 
   /* Form the sum of all the local multiplies : this is work2 = U'*x = sum_{all processors} work1 */
   ierr = VecGetArray(work1,&w1);CHKERRQ(ierr);
@@ -118,9 +119,9 @@ PetscErrorCode LowRankUpdate(Mat U,Mat V,Vec x,Vec y,Vec work1,Vec work2,PetscIn
   ierr = VecRestoreArray(work2,&w2);CHKERRQ(ierr);
 
   /* multiply y = V*work2 */
-  y->N = y->n; /* this tricks the silly error checking in MatMult() */
+  y->map.N = y->map.n; /* this tricks the silly error checking in MatMult() */
   ierr = MatMult(Vlocal,work2,y);CHKERRQ(ierr);/* note in this call y is treated as a sequential vector  */
-  y->N = Nsave;
+  y->map.N = Nsave;
 
   PetscFunctionReturn(0);
 }

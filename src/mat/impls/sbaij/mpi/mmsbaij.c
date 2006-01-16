@@ -100,7 +100,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = VecDuplicate(sbaij->slvec0,&sbaij->slvec1);CHKERRQ(ierr);
   ierr = VecGetSize(sbaij->slvec0,&vec_size);CHKERRQ(ierr);
 
-  owners = sbaij->slvec0->map.range;
+  sowners = sbaij->slvec0->map.range;
  
   /* x index in the IS sfrom */
   for (i=0; i<ec; i++) { 

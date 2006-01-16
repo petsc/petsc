@@ -115,8 +115,6 @@ struct _p_Vec {
   PETSCHEADER(struct _VecOps);
   PetscMap               map;
   void                   *data;     /* implementation-specific data */
-  PetscInt               N,n;      /* global, local vector size */
-  PetscInt               bs;
   ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */
   PetscTruth             array_gotten;

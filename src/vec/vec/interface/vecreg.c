@@ -41,7 +41,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, VecType method)
   ierr = PetscTypeCompare((PetscObject) vec, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (vec->n < 0 && vec->N < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call VecSetSizes() first");
+  if (vec->map.n < 0 && vec->map.N < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call VecSetSizes() first");
 
   /* Get the function pointers for the vector requested */
   if (!VecRegisterAllCalled) {

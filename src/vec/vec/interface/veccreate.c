@@ -44,9 +44,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate(MPI_Comm comm, Vec *vec)
 
   v->map.range    = PETSC_NULL;
   v->data         = PETSC_NULL;
-  v->n            = -1;
-  v->N            = -1;
-  v->bs           = -1;
+  v->map.n        = -1;
+  v->map.N        = -1;
+  v->map.bs       = -1;
   v->mapping      = PETSC_NULL;
   v->bmapping     = PETSC_NULL;
   v->array_gotten = PETSC_FALSE;

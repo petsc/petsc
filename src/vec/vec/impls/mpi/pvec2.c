@@ -52,7 +52,7 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
   PetscReal      sum,work = 0.0;
   PetscScalar    *xx = x->array;
   PetscErrorCode ierr;
-  PetscInt       n = xin->n;
+  PetscInt       n = xin->map.n;
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
@@ -82,7 +82,7 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 #endif
     ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPI_SUM,xin->comm);CHKERRQ(ierr);
     *z = sqrt(sum);
-    ierr = PetscLogFlops(2*xin->n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(2*xin->map.n);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     /* Find the local part */
     ierr = VecNorm_Seq(xin,NORM_1,&work);CHKERRQ(ierr);
