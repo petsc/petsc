@@ -118,6 +118,20 @@ class Configure(config.base.Configure):
     return 0
   isGNU = staticmethod(isGNU)
 
+  def isSUN(compiler):
+    '''Returns true if the compiler is a SUN compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V')
+      output = output + error
+      if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
+        return 0
+      if output.find(' Sun ') >= 0:
+        return 1
+    except RuntimeError:
+      pass
+    return 0
+  isSUN = staticmethod(isSUN)
+
   def isIntel(compiler):
     '''Returns true if the compiler is a Intel compiler'''
     try:
@@ -1009,8 +1023,11 @@ class Configure(config.base.Configure):
       flag = '-L'
       self.pushLanguage(language)
       # test '-R' before '-rpath' as sun compilers [c,fortran] don't give proper errors with wrong options.
-      # test '-R' before '-Wl,-rpath' as sun cc on linux accepts -Wl,-rpath, but sun f90, CC do not.
-      for testFlag in ['-R','-Wl,-rpath,', '-rpath ' , '-Wl,-R,']:
+      testFlags = ['-Wl,-rpath,', '-R','-rpath ' , '-Wl,-R,']
+      # test '-R' before '-Wl,-rpath' for SUN compilers [as cc on linux accepts -Wl,-rpath, but  f90 & CC do not.
+      if self.isSUN(self.framework.getCompiler()):
+        testFlags.insert(0,'-R')
+      for testFlag in testFlags:
         self.framework.logPrint('Trying '+language+' linker flag '+testFlag)
         if self.checkLinkerFlag(testFlag+os.path.abspath(os.getcwd())):
           flag = testFlag
