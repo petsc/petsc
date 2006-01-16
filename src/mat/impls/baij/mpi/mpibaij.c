@@ -2040,7 +2040,7 @@ static struct _MatOps MatOps_Values = {
 /*60*/ 0,
        MatDestroy_MPIBAIJ,
        MatView_MPIBAIJ,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -2228,8 +2228,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,Petsc
   
   ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->m,&B->M);CHKERRQ(ierr);
   ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->n,&B->N);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
 
   b = (Mat_MPIBAIJ*)B->data;
   B->bs  = bs;

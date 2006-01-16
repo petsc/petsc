@@ -251,9 +251,6 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
 
-  ierr = PetscMapDestroy(A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapDestroy(A->cmap);CHKERRQ(ierr);
-
   /* save the parts of A we need */
   Abops = A->bops;
   Aops  = A->ops;
@@ -266,6 +263,8 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
     ierr = PetscFree(C->spptr);CHKERRQ(ierr);
     C->spptr = PETSC_NULL;
   }
+  ierr = PetscFree(A->rmap.range);CHKERRQ(ierr);
+  ierr = PetscFree(A->cmap.range);CHKERRQ(ierr);
 
   /* copy C over to A */
   ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
@@ -296,8 +295,8 @@ PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy_Private((PetscObject)A);CHKERRQ(ierr);
-  ierr = PetscMapDestroy(A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapDestroy(A->cmap);CHKERRQ(ierr);
+  ierr = PetscFree(A->rmap.range);CHKERRQ(ierr);
+  ierr = PetscFree(A->cmap.range);CHKERRQ(ierr);
 
   /* copy C over to A */
   if (C) {

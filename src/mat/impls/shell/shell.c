@@ -270,7 +270,7 @@ static struct _MatOps MatOps_Values = {0,
 /*60*/ 0,
        MatDestroy_Shell,
        0,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -337,8 +337,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat A)
   ierr = PetscSplitOwnership(A->comm,&A->m,&A->M);CHKERRQ(ierr);
   ierr = PetscSplitOwnership(A->comm,&A->n,&A->N);CHKERRQ(ierr);
 
-  ierr = PetscMapCreateMPI(A->comm,A->m,A->M,&A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(A->comm,A->n,A->N,&A->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(A->comm,A->m,A->M,&A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(A->comm,A->n,A->N,&A->cmap);CHKERRQ(ierr);
 
   b->ctx           = 0;
   b->scale         = PETSC_FALSE;

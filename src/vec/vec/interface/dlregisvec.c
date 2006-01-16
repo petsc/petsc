@@ -45,12 +45,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path)
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&IS_COOKIE,          "Index Set");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&MAP_COOKIE,         "Map");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&VEC_COOKIE,         "Vec");CHKERRQ(ierr);
+    ierr = PetscLogClassRegister(&VEC_COOKIE,         "Vec");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&VEC_SCATTER_COOKIE, "Vec Scatter");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&PF_COOKIE,          "PointFunction");CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = PetscMapRegisterAll(path);CHKERRQ(ierr);
   ierr = VecRegisterAll(path);CHKERRQ(ierr);
   ierr = PFRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
@@ -100,10 +98,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path)
     if (className) {
       ierr = PetscInfoDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
     }
-    ierr = PetscStrstr(logList, "map", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(MAP_COOKIE);CHKERRQ(ierr);
-    }
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscInfoDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
@@ -115,10 +109,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path)
     ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogEventDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
-    }
-    ierr = PetscStrstr(logList, "map", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(MAP_COOKIE);CHKERRQ(ierr);
     }
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {

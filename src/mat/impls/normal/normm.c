@@ -61,7 +61,6 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
   const PetscInt    *cols;
   PetscScalar       *diag,*work,*values;
   const PetscScalar *mvalues;
-  PetscMap          cmap;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(2*A->N*sizeof(PetscScalar),&diag);CHKERRQ(ierr);
@@ -76,8 +75,8 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
     ierr = MatRestoreRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
   }
   ierr = MPI_Allreduce(work,diag,A->N,MPIU_SCALAR,MPI_SUM,N->comm);CHKERRQ(ierr);
-  ierr = MatGetPetscMaps(A,PETSC_NULL,&cmap);CHKERRQ(ierr);
-  ierr = PetscMapGetLocalRange(cmap,&rstart,&rend);CHKERRQ(ierr);
+  rstart = N->cmap.rstart;
+  rend   = N->cmap.rend;
   ierr = VecGetArray(v,&values);CHKERRQ(ierr);
   ierr = PetscMemcpy(values,diag+rstart,(rend-rstart)*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&values);CHKERRQ(ierr);

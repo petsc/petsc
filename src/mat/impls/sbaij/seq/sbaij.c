@@ -1315,7 +1315,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
 /*60*/ MatGetSubMatrix_SeqSBAIJ,
        0,
        0,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -1611,8 +1611,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   b->reallocs         = 0;
   b->saved_values     = 0;
   
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
   
   b->sorted           = PETSC_FALSE;
   b->roworiented      = PETSC_TRUE;

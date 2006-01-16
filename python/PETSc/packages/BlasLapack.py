@@ -274,7 +274,7 @@ class Configure(PETSc.package.Package):
       raise RuntimeError('Cannot compile netlib LAPACK with NAG compiler - install blas/lapack compiled with g77 instead')
     self.setCompilers.popLanguage()
     if self.languages.precision == 'int':
-      raise RuntimeError('Error netlib LAPACK does not support precision=int - use f-blas-lapack instead')
+      raise RuntimeError('Error netlib LAPACK does not support precision=int - use c-blas-lapack instead')
     packages = self.petscdir.externalPackagesDir
     if not os.path.isdir(packages):
       os.mkdir(packages)

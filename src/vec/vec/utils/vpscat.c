@@ -2585,7 +2585,6 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   MPI_Comm               comm;
   MPI_Request            *send_waits,*recv_waits;
   MPI_Status             recv_status,*send_status;
-  PetscMap               map;
 #if defined(PETSC_DEBUG)
   PetscTruth             found = PETSC_FALSE;
 #endif
@@ -2595,8 +2594,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = VecGetPetscMap(xin,&map);CHKERRQ(ierr);
-  ierr = PetscMapGetGlobalRange(map,&owners);CHKERRQ(ierr);
+  owners = xin->map.range;
   ierr = VecGetSize(yin,&lengthy);CHKERRQ(ierr);
 
   /*  first count number of contributors to each processor */
@@ -2888,7 +2886,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
 PetscErrorCode VecScatterCreate_StoP(PetscInt nx,PetscInt *inidx,PetscInt ny,PetscInt *inidy,Vec yin,PetscInt bs,VecScatter ctx)
 {
   VecScatter_MPI_General *from,*to;
-  PetscInt               *source,nprocslocal,*lens,*owners = yin->map->range;
+  PetscInt               *source,nprocslocal,*lens,*owners = yin->map.range;
   PetscMPIInt            rank = yin->stash.rank,size = yin->stash.size,tag,imdex,n;
   PetscErrorCode         ierr;
   PetscInt               *lowner,*start;
@@ -3133,7 +3131,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag,imdex,n;
-  PetscInt       *lens,*owners = xin->map->range;
+  PetscInt       *lens,*owners = xin->map.range;
   PetscInt       *nprocs,i,j,idx,nsends,nrecvs,*local_inidx,*local_inidy;
   PetscInt       *owner,*starts,count,slen;
   PetscInt       *rvalues,*svalues,base,nmax,*values,lastidx;

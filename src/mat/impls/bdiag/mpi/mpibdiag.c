@@ -788,7 +788,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
 /*60*/ 0,
        MatDestroy_MPIBDiag,
        MatView_MPIBDiag,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -890,8 +890,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,Pet
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
 
 
   b          = (Mat_MPIBDiag*)B->data;CHKERRQ(ierr);

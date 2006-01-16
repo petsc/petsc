@@ -426,8 +426,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DAAD(Mat B)
   B->data = (void*)b;
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->m,B->m,&B.rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->n,B->n,&B.cmap);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATDAAD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSNESMFSetBase_C","MatSNESMFSetBase_AD",MatSNESMFSetBase_AD);CHKERRQ(ierr);

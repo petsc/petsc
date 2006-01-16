@@ -715,13 +715,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat A)
   if (A->bmapping) {
     ierr = ISLocalToGlobalMappingDestroy(A->bmapping);CHKERRQ(ierr);
   }
-  if (A->rmap) {
-    ierr = PetscMapDestroy(A->rmap);CHKERRQ(ierr);
-  }
-  if (A->cmap) {
-    ierr = PetscMapDestroy(A->cmap);CHKERRQ(ierr);
-  }
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  if (A->rmap.range) {
+    ierr = PetscFree(A->rmap.range);CHKERRQ(ierr);
+  }
+  if (A->cmap.range) {
+    ierr = PetscFree(A->cmap.range);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3214,18 +3214,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat mat,MatDuplicateOption op,Mat
   if (mat->bmapping) {
     ierr = MatSetLocalToGlobalMappingBlock(B,mat->bmapping);CHKERRQ(ierr);
   }
-  if (mat->rmap){
-    if (!B->rmap){
-      ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-    }
-    ierr = PetscMemcpy(B->rmap,mat->rmap,sizeof(PetscMap));CHKERRQ(ierr);
-  }
-  if (mat->cmap){
-    if (!B->cmap){
-      ierr = PetscMapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
-    }
-    ierr = PetscMemcpy(B->cmap,mat->cmap,sizeof(PetscMap));CHKERRQ(ierr);
-  }
+  ierr = PetscMapCopy(mat->comm,&mat->rmap,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCopy(mat->comm,&mat->cmap,&B->cmap);CHKERRQ(ierr);
+  
   ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -4524,7 +4515,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat mat,PetscInt *m,Petsc
   if (m) PetscValidIntPointer(m,2);
   if (n) PetscValidIntPointer(n,3);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  ierr = PetscMapGetLocalRange(mat->rmap,m,n);CHKERRQ(ierr);
+  *m = mat->rmap.rstart;
+  *n = mat->rmap.rend;
   PetscFunctionReturn(0);
 }
 
@@ -5516,50 +5508,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrixRaw(Mat mat,PetscInt nrows,cons
   ierr = MatGetSubMatrix(mat, isrow, iscol, csize, cll, newmat);CHKERRQ(ierr);
   ierr = ISDestroy(isrow);CHKERRQ(ierr);
   ierr = ISDestroy(iscol);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetPetscMaps"
-/*@C
-   MatGetPetscMaps - Returns the maps associated with the matrix.
-
-   Not Collective
-
-   Input Parameter:
-.  mat - the matrix
-
-   Output Parameters:
-+  rmap - the row (right) map
--  cmap - the column (left) map  
-
-   Level: developer
-
-   Concepts: maps^getting from matrix
-
-@*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetPetscMaps(Mat mat,PetscMap *rmap,PetscMap *cmap)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidType(mat,1);
-  ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  ierr = (*mat->ops->getmaps)(mat,rmap,cmap);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-      Version that works for all PETSc matrices
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetPetscMaps_Petsc"
-PetscErrorCode MatGetPetscMaps_Petsc(Mat mat,PetscMap *rmap,PetscMap *cmap)
-{
-  PetscFunctionBegin;
-  if (rmap) *rmap = mat->rmap;
-  if (cmap) *cmap = mat->cmap;
   PetscFunctionReturn(0);
 }
 

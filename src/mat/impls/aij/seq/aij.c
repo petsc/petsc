@@ -2286,7 +2286,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*60*/ 0,
        MatDestroy_SeqAIJ,
        MatView_SeqAIJ,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -2872,8 +2872,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   b->icol             = 0;
   b->reallocs         = 0;
  
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
 
   b->sorted            = PETSC_FALSE;
   b->ignorezeroentries = PETSC_FALSE;
@@ -3014,7 +3014,6 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     c->compressedrow.rindex = PETSC_NULL;
   }
   C->same_nonzero = A->same_nonzero;
-
   ierr = MatDuplicate_Inode(A,cpvalues,&C);CHKERRQ(ierr);
 
   *B = C;

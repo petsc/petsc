@@ -1544,7 +1544,7 @@ static struct _MatOps MatOps_Values = {
 /*60*/ 0,
        0,
        0,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -1636,8 +1636,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,Pet
   B->preallocated = PETSC_TRUE;
   ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->m,&B->M);CHKERRQ(ierr);
   ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->n,&B->N);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
 
   b   = (Mat_MPISBAIJ*)B->data;
   mbs = B->m/bs;

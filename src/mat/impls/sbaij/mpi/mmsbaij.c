@@ -21,7 +21,6 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   Vec            gvec;
   PetscMPIInt    rank=sbaij->rank,lsize,size=sbaij->size; 
   PetscInt       *owners=sbaij->rowners,*sowners,*ec_owner,k; 
-  PetscMap       vecmap;
   PetscScalar    *ptr;
 
   PetscFunctionBegin;
@@ -101,8 +100,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = VecDuplicate(sbaij->slvec0,&sbaij->slvec1);CHKERRQ(ierr);
   ierr = VecGetSize(sbaij->slvec0,&vec_size);CHKERRQ(ierr);
 
-  ierr = VecGetPetscMap(sbaij->slvec0,&vecmap);CHKERRQ(ierr);   
-  ierr = PetscMapGetGlobalRange(vecmap,&sowners);CHKERRQ(ierr); 
+  owners = sbaij->slvec0->map.range;
  
   /* x index in the IS sfrom */
   for (i=0; i<ec; i++) { 

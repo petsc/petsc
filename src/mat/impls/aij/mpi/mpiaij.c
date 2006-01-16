@@ -768,7 +768,7 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
     ierr = PetscBinaryWrite(fd,header,4,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
     /* get largest number of rows any processor has */
     rlen = mat->m;
-    ierr = PetscMapGetGlobalRange(mat->rmap,&range);CHKERRQ(ierr);
+    range = mat->rmap.range;
     for (i=1; i<size; i++) {
       rlen = PetscMax(rlen,range[i+1] - range[i]);
     }
@@ -1765,7 +1765,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 /*60*/ MatGetSubMatrix_MPIAIJ,
        MatDestroy_MPIAIJ,
        MatView_MPIAIJ,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -2812,30 +2812,16 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge(MPI_Comm comm,Mat inmat,PetscInt n,Ma
   PetscInt       m,N,i,rstart,nnz,I,*dnz,*onz;
   PetscInt       *indx;
   PetscScalar    *values;
-  PetscMap       columnmap,rowmap;
 
   PetscFunctionBegin;
-    ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
-  /*
-  PetscMPIInt       rank;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF," [%d] inmat m=%d, n=%d, N=%d\n",rank,m,n,N);
-  */
+  ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX){ 
     /* count nonzeros in each row, for diagonal and off diagonal portion of matrix */
     if (n == PETSC_DECIDE){ 
-      ierr = PetscMapCreate(comm,&columnmap);CHKERRQ(ierr);
-      ierr = PetscMapSetSize(columnmap,N);CHKERRQ(ierr);
-      ierr = PetscMapSetType(columnmap,MAP_MPI);CHKERRQ(ierr);
-      ierr = PetscMapGetLocalSize(columnmap,&n);CHKERRQ(ierr);
-      ierr = PetscMapDestroy(columnmap);CHKERRQ(ierr);
+      ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
     } 
-
-    ierr = PetscMapCreate(comm,&rowmap);CHKERRQ(ierr);
-    ierr = PetscMapSetLocalSize(rowmap,m);CHKERRQ(ierr);
-    ierr = PetscMapSetType(rowmap,MAP_MPI);CHKERRQ(ierr);
-    ierr = PetscMapGetLocalRange(rowmap,&rstart,0);CHKERRQ(ierr);
-    ierr = PetscMapDestroy(rowmap);CHKERRQ(ierr);
+    ierr = MPI_Scan(&m, &rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    rstart -= m;
 
     ierr = MatPreallocateInitialize(comm,m,n,dnz,onz);CHKERRQ(ierr);
     for (i=0;i<m;i++) {
@@ -2932,7 +2918,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
     ierr = PetscFree(merge->bj);CHKERRQ(ierr);
     ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr); 
     ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
-    ierr = PetscMapDestroy(merge->rowmap);CHKERRQ(ierr);
     if (merge->coi){ierr = PetscFree(merge->coi);CHKERRQ(ierr);}
     if (merge->coj){ierr = PetscFree(merge->coj);CHKERRQ(ierr);}
     if (merge->owners_co){ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);}
@@ -3010,12 +2995,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
   buf_rj = merge->buf_rj;
 
   ierr   = PetscMalloc(size*sizeof(MPI_Status),&status);CHKERRQ(ierr);
-  ierr   = PetscMapGetGlobalRange(merge->rowmap,&owners);CHKERRQ(ierr);
+  owners = merge->rowmap.range;
   len_s  = merge->len_s;
 
   /* send and recv matrix values */
   /*-----------------------------*/
-  ierr = PetscObjectGetNewTag((PetscObject)merge->rowmap,&taga);CHKERRQ(ierr);
+  ierr = PetscObjectGetNewTag((PetscObject)mpimat,&taga);CHKERRQ(ierr);
   ierr = PetscPostIrecvScalar(comm,taga,merge->nrecv,merge->id_r,merge->len_r,&abuf_r,&r_waits);CHKERRQ(ierr);
 
   ierr = PetscMalloc((merge->nsend+1)*sizeof(MPI_Request),&s_waits);CHKERRQ(ierr);
@@ -3048,7 +3033,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
   }
 
   /* set values of ba */
-  ierr = PetscMapGetLocalSize(merge->rowmap,&m);CHKERRQ(ierr);
+  m = merge->rowmap.n;
   for (i=0; i<m; i++) {
     arow = owners[rank] + i; 
     bj_i = bj+bi[i];  /* col indices of the i-th row of mpimat */
@@ -3131,18 +3116,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
 
   /* determine row ownership */
   /*---------------------------------------------------------*/
-  ierr = PetscMapCreate(comm,&merge->rowmap);CHKERRQ(ierr);
-  if (m == PETSC_DECIDE) {
-    ierr = PetscMapSetSize(merge->rowmap,M);CHKERRQ(ierr);
-  } else {
-    ierr = PetscMapSetLocalSize(merge->rowmap,m);CHKERRQ(ierr); 
-  } 
-  ierr = PetscMapSetType(merge->rowmap,MAP_MPI);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(comm,m,M,&merge->rowmap);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&len_si);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&merge->len_s);CHKERRQ(ierr);
   
-  if (m == PETSC_DECIDE) {ierr = PetscMapGetLocalSize(merge->rowmap,&m);CHKERRQ(ierr); }
-  ierr = PetscMapGetGlobalRange(merge->rowmap,&owners);CHKERRQ(ierr);
+  m      = merge->rowmap.n;
+  M      = merge->rowmap.N;
+  owners = merge->rowmap.range;
 
   /* determine the number of messages to send, their lengths */
   /*---------------------------------------------------------*/
@@ -3176,7 +3156,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
 
   /* post the Irecv of j-structure */
   /*-------------------------------*/
-  ierr = PetscObjectGetNewTag((PetscObject)merge->rowmap,&tagj);CHKERRQ(ierr);
+  ierr = PetscObjectGetNewTag((PetscObject)mpimat,&tagj);CHKERRQ(ierr);
   ierr = PetscPostIrecvInt(comm,tagj,merge->nrecv,merge->id_r,merge->len_r,&buf_rj,&rj_waits);CHKERRQ(ierr);
 
   /* post the Isend of j-structure */
@@ -3198,7 +3178,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   
   /* send and recv i-structure */
   /*---------------------------*/  
-  ierr = PetscObjectGetNewTag((PetscObject)merge->rowmap,&tagi);CHKERRQ(ierr);
+  ierr = PetscObjectGetNewTag((PetscObject)merge,&tagi);CHKERRQ(ierr);
   ierr = PetscPostIrecvInt(comm,tagi,merge->nrecv,merge->id_r,len_ri,&buf_ri,&ri_waits);CHKERRQ(ierr);
     
   ierr = PetscMalloc((len+1)*sizeof(PetscInt),&buf_s);CHKERRQ(ierr); 
@@ -3912,8 +3892,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
   ierr = PetscMalloc(2*(b->size+2)*sizeof(PetscInt),&b->rowners);CHKERRQ(ierr);

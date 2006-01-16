@@ -91,7 +91,7 @@ struct _MatOps {
   PetscErrorCode (*getsubmatrix)(Mat,IS,IS,PetscInt,MatReuse,Mat*);
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*view)(Mat,PetscViewer);
-  PetscErrorCode (*getmaps)(Mat,PetscMap*,PetscMap*);
+  PetscErrorCode (*dummy)();
   PetscErrorCode (*usescaledform)(Mat,PetscTruth);
   /*65*/
   PetscErrorCode (*scalesystem)(Mat,Vec,Vec);
@@ -161,7 +161,7 @@ struct _MatOps {
 EXTERN PetscErrorCode MatConvert_Basic(Mat, MatType,MatReuse,Mat*);
 EXTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
 EXTERN PetscErrorCode MatView_Private(Mat);
-EXTERN PetscErrorCode MatGetPetscMaps_Petsc(Mat,PetscMap *,PetscMap *);
+
 EXTERN PetscErrorCode MatHeaderCopy(Mat,Mat);
 EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat);
 EXTERN PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);

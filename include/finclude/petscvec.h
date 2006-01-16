@@ -7,16 +7,12 @@
 
 #define Vec PetscFortranAddr
 #define VecScatter PetscFortranAddr
-#define PetscMap PetscFortranAddr
 #define NormType PetscEnum
 #define InsertMode PetscEnum
 #define ScatterMode PetscEnum 
 #define VecOption PetscEnum
 #define VecType character*(80)
 #define VecOperation PetscEnum
-
-#define MAP_SEQ 'seq'
-#define MAP_MPI 'mpi'
 
 #define VECSEQ 'seq'
 #define VECMPI 'mpi'

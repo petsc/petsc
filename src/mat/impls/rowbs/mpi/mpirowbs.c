@@ -1534,7 +1534,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
 /*60*/ MatGetSubMatrix_MPIRowbs,
        MatDestroy_MPIRowbs,
        MatView_MPIRowbs,
-       MatGetPetscMaps_Petsc,
+       0,
        MatUseScaledForm_MPIRowbs,
 /*65*/ MatScaleSystem_MPIRowbs,
        MatUnScaleSystem_MPIRowbs,
@@ -1644,8 +1644,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = PetscMapCreateMPI(comm,m,M,&A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(comm,m,M,&A->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(comm,m,M,&A.rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(comm,m,M,&A.cmap);CHKERRQ(ierr);
 
   /* build local table of row ownerships */
   ierr          = PetscMalloc((a->size+2)*sizeof(int),&a->rowners);CHKERRQ(ierr);

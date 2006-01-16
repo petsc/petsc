@@ -493,8 +493,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDestroy(Vec v)
   if (v->bmapping) {
     ierr = ISLocalToGlobalMappingDestroy(v->bmapping);CHKERRQ(ierr);
   }
-  if (v->map) {
-    ierr = PetscMapDestroy(v->map);CHKERRQ(ierr);
+  if (v->map.range) {
+    ierr = PetscFree(v->map.range);CHKERRQ(ierr);
   }
   ierr = PetscHeaderDestroy(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -807,40 +807,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetLocalSize(Vec x,PetscInt *size)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec x,PetscInt *low,PetscInt *high)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidType(x,1);
   if (low) PetscValidIntPointer(low,2);
   if (high) PetscValidIntPointer(high,3);
-  ierr = PetscMapGetLocalRange(x->map,low,high);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "VecGetPetscMap"
-/*@
-   VecGetPetscMap - Returns the map associated with the vector
-
-   Not Collective
-
-   Input Parameter:
-.  x - the vector
-
-   Output Parameters:
-.  map - the map
-
-   Level: developer
-
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecGetPetscMap(Vec x,PetscMap *map)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
-  PetscValidPointer(map,2);
-  PetscValidType(x,1);
-  *map = x->map;
+  if (low)  *low  = x->map.rstart;
+  if (high) *high = x->map.rend;
   PetscFunctionReturn(0);
 }
 

@@ -416,10 +416,10 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
     yy   = xx + N;
     ierr = PetscMalloc(size*sizeof(PetscInt),&lens);CHKERRQ(ierr);
     for (i=0; i<size; i++) {
-      lens[i] = xin->map->range[i+1] - xin->map->range[i];
+      lens[i] = xin->map.range[i+1] - xin->map.range[i];
     }
 #if !defined(PETSC_USE_COMPLEX)
-    ierr = MPI_Gatherv(xarray,xin->n,MPIU_REAL,yy,lens,xin->map->range,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(xarray,xin->n,MPIU_REAL,yy,lens,xin->map.range,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
 #else
     {
       PetscReal *xr;
@@ -559,9 +559,9 @@ PetscErrorCode VecView_MPI_Socket(Vec xin,PetscViewer viewer)
     ierr = PetscMalloc((N+1)*sizeof(PetscScalar),&xx);CHKERRQ(ierr);
     ierr = PetscMalloc(size*sizeof(PetscInt),&lens);CHKERRQ(ierr);
     for (i=0; i<size; i++) {
-      lens[i] = xin->map->range[i+1] - xin->map->range[i];
+      lens[i] = xin->map.range[i+1] - xin->map.range[i];
     }
-    ierr = MPI_Gatherv(xarray,xin->n,MPIU_SCALAR,xx,lens,xin->map->range,MPIU_SCALAR,0,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(xarray,xin->n,MPIU_SCALAR,xx,lens,xin->map.range,MPIU_SCALAR,0,xin->comm);CHKERRQ(ierr);
     ierr = PetscFree(lens);CHKERRQ(ierr);
     ierr = PetscViewerSocketPutScalar(viewer,N,1,xx);CHKERRQ(ierr);
     ierr = PetscFree(xx);CHKERRQ(ierr);
@@ -795,7 +795,7 @@ PetscErrorCode VecGetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
 {
   Vec_MPI     *x = (Vec_MPI *)xin->data;
   PetscScalar *xx = x->array;
-  PetscInt    i,tmp,start = xin->map->range[xin->stash.rank];
+  PetscInt    i,tmp,start = xin->map.range[xin->stash.rank];
 
   PetscFunctionBegin;
   for (i=0; i<ni; i++) {
@@ -814,7 +814,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank = xin->stash.rank;
-  PetscInt       *owners = xin->map->range,start = owners[rank];
+  PetscInt       *owners = xin->map.range,start = owners[rank];
   PetscInt       end = owners[rank+1],i,row;
   PetscScalar    *xx;
 
@@ -863,7 +863,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
 PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar yin[],InsertMode addv)
 {
   PetscMPIInt    rank = xin->stash.rank;
-  PetscInt       *owners = xin->map->range,start = owners[rank];
+  PetscInt       *owners = xin->map.range,start = owners[rank];
   PetscErrorCode ierr;
   PetscInt       end = owners[rank+1],i,row,bs = xin->bs,j;
   PetscScalar    *xx,*y = (PetscScalar*)yin;
@@ -924,7 +924,7 @@ to make sure we never malloc an empty one.
 PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
 {
   PetscErrorCode ierr;
-  PetscInt       *owners = xin->map->range,*bowners,i,bs,nstash,reallocs;
+  PetscInt       *owners = xin->map.range,*bowners,i,bs,nstash,reallocs;
   PetscMPIInt    size;
   InsertMode     addv;
   MPI_Comm       comm = xin->comm;
@@ -971,7 +971,7 @@ PetscErrorCode VecAssemblyEnd_MPI(Vec vec)
   PetscFunctionBegin;
   if (!vec->stash.donotstash) {
     ierr = VecGetArray(vec,&xarray);CHKERRQ(ierr); 
-    base = vec->map->range[vec->stash.rank];
+    base = vec->map.range[vec->stash.rank];
     bs   = vec->bs;
 
     /* Process the stash */

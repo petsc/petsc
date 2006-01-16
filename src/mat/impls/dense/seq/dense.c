@@ -1636,7 +1636,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 /*60*/ 0,
        MatDestroy_SeqDense,
        MatView_SeqDense,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -1846,8 +1846,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   ierr = PetscLogObjectMemory(B,sizeof(struct _p_Mat));CHKERRQ(ierr);
   B->data         = (void*)b;
 
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
 
   b->pivots       = 0;
   b->roworiented  = PETSC_TRUE;

@@ -1024,7 +1024,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
 /*60*/ MatGetSubMatrix_MPIDense,
        MatDestroy_MPIDense,
        MatView_MPIDense,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -1122,8 +1122,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat mat)
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = PetscMapCreateMPI(mat->comm,mat->m,mat->M,&mat->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(mat->comm,mat->n,mat->N,&mat->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(mat->comm,mat->m,mat->M,&mat->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(mat->comm,mat->n,mat->N,&mat->cmap);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
   ierr       = PetscMalloc(2*(a->size+2)*sizeof(PetscInt),&a->rowners);CHKERRQ(ierr);

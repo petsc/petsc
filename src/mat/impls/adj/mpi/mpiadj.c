@@ -300,7 +300,7 @@ static struct _MatOps MatOps_Values = {0,
 /*60*/ 0,
        MatDestroy_MPIAdj,
        MatView_MPIAdj,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -414,9 +414,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat B)
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
   /* we don't know the "local columns" so just use the row information :-(*/
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
 
   ierr = PetscMalloc((size+1)*sizeof(PetscInt),&b->rowners);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(B,(size+2)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAdj));CHKERRQ(ierr);

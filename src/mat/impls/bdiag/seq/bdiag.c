@@ -464,7 +464,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBDiag_N,
 /*60*/ 0,
        MatDestroy_SeqBDiag,
        MatView_SeqBDiag,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -827,8 +827,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBDiag(Mat B)
   B->factor       = 0;
   B->mapping      = 0;
 
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
 
   b->ndim   = 0;
   b->mainbd = -1;

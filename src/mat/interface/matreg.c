@@ -60,14 +60,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, MatType matype)
       mat->preallocated = PETSC_FALSE;
     }
 
-    if (mat->rmap) {
-      ierr = PetscMapDestroy(mat->rmap);CHKERRQ(ierr);
-      mat->rmap = 0;
-    }
-    if (mat->cmap) {
-      ierr = PetscMapDestroy(mat->cmap);CHKERRQ(ierr);
-      mat->cmap = 0;
-    }
     /* create the new data structure */
     ierr = (*r)(mat);CHKERRQ(ierr);
     ierr = PetscObjectChangeTypeName((PetscObject)mat,matype);CHKERRQ(ierr);
