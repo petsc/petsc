@@ -14,7 +14,6 @@ class Configure(PETSc.package.Package):
     self.found           = 0
     self.f2c             = 0
     self.fblaslapack     = 0
-    self.netlibblaslapack= 0
     self.missingRoutines = []
     self.separateBlas    = 1
     return
@@ -30,7 +29,6 @@ class Configure(PETSc.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<lib>',                     nargs.Arg(None, None, 'Indicate the library(s) containing LAPACK'))
     help.addArgument('BLAS/LAPACK', '-download-c-blas-lapack=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Automatically install a C version of BLAS/LAPACK'))
     help.addArgument('BLAS/LAPACK', '-download-f-blas-lapack=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-download-netlib-blas-lapack=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Automatically install the complete/netlib Fortran version of BLAS/LAPACK'))
     return
 
   def setupDependencies(self, framework):
@@ -154,13 +152,6 @@ class Configure(PETSc.package.Package):
       libdir = self.downLoadBlasLapack('f','f')            
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
       raise RuntimeError('Could not use downloaded f-blas-lapack?')
-    if self.framework.argDB['download-netlib-blas-lapack'] == 1:
-      self.netlibblaslapack = 1
-      if not hasattr(self.compilers, 'FC'):
-        raise RuntimeError('Cannot request netlib-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
-      libdir = self.downLoadNetlibBlasLapack()            
-      yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libblas.a'), os.path.join(libdir,'liblapack.a'), 1)
-      raise RuntimeError('Could not use downloaded netlib-blas-lapack?')
     # Try specified BLASLAPACK library
     if 'with-blas-lapack-lib' in self.framework.argDB:
       yield ('User specified BLAS/LAPACK library', None, self.framework.argDB['with-blas-lapack-lib'], 1)
@@ -254,90 +245,13 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
       libdir = self.downLoadBlasLapack('f','f')            
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
-    if self.framework.argDB['download-netlib-blas-lapack'] == 2:
-      if not hasattr(self.compilers, 'FC'):
-        raise RuntimeError('Cannot request netlib-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
-      libdir = self.downLoadNetlibBlasLapack()            
-      yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libblas.a'), os.path.join(libdir,'liblapack.a'), 1)
     return
 
   def getSharedFlag(self,cflags):
     for flag in ['-PIC', '-fPIC', '-KPIC']:
       if cflags.find(flag) >=0: return flag
     return ''
-      
-  def downLoadNetlibBlasLapack(self):
-    self.framework.log.write('Downloading blaslapack from netlib\n')
 
-    self.setCompilers.pushLanguage('FC')
-    if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker()):
-      raise RuntimeError('Cannot compile netlib LAPACK with NAG compiler - install blas/lapack compiled with g77 instead')
-    self.setCompilers.popLanguage()
-    if self.languages.precision == 'int':
-      raise RuntimeError('Error netlib LAPACK does not support precision=int - use f-blas-lapack instead')
-    packages = self.petscdir.externalPackagesDir
-    if not os.path.isdir(packages):
-      os.mkdir(packages)
-    libdir = os.path.join(packages,'LAPACK',self.arch.arch)
-    if not os.path.isdir(os.path.join(packages,'LAPACK')):
-      self.framework.log.write('Actually need to ftp LAPACK from netlib\n')
-      import urllib
-      try:
-        urllib.urlretrieve('http://www.netlib.org/lapack/lapack.tgz',os.path.join(packages,'lapack.tar.gz'))
-      except:
-        raise RuntimeError('Error downloading LAPACK from netlib requested with -with-netlib-blas-lapack option')
-      try:
-        self.executeShellCommand('cd '+packages+'; gunzip lapack.tar.gz', log = self.framework.log, timeout = 360.0)
-      except:
-        raise RuntimeError('Error unzipping lapack.tar.gz requested with -with-netlib-blas-lapack option')
-      try:
-        self.executeShellCommand('cd '+packages+'; tar -xf lapack.tar', log = self.framework.log, timeout = 360.0)
-      except:
-        raise RuntimeError('Error doing tar -xf lapack.tar requested with -with-download-netlib-blas-lapack option')
-      os.unlink(os.path.join(packages,'lapack.tar'))
-      self.framework.actions.addArgument('BLAS/LAPACK', 'Download', 'Downloaded Netlib lapack into '+os.path.dirname(libdir))
-    else:
-      self.framework.log.write('Found netlib blaslapack, do not need to download\n')
-    if not os.path.isdir(libdir):
-      os.mkdir(libdir)
-    blasDir = os.path.join(packages,'LAPACK')
-    g = open(os.path.join(blasDir,'make.inc'),'w')
-    g.write('SHELL     = /bin/sh\n')
-    g.write('BLASLIB   = ../../libblas.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
-    g.write('LAPACKLIB = liblapack.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
-    g.write('\n')
-    
-    self.setCompilers.pushLanguage('FC')
-    g.write('FORTRAN   = '+self.compilers.FC+'\n')
-    g.write('OPTS      = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n')
-    g.write('DRVOPTS   = $(OPTS)\n')
-    g.write('NOOPT     = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+'\n')
-    self.setCompilers.popLanguage()
-    
-    g.write('ARCH      = '+self.setCompilers.AR+'\n')
-    g.write('ARCHFLAGS = '+self.setCompilers.AR_FLAGS+'\n')
-    g.write('RANLIB    = '+self.setCompilers.RANLIB+'\n')
-
-    g.close()
-                
-    if os.path.isfile(os.path.join(libdir,'make.inc')) and (self.getChecksum(os.path.join(libdir,'make.inc')) == self.getChecksum(os.path.join(blasDir,'make.inc'))):
-      self.framework.log.write('Do not need to compile netlib lapack, already compiled\n')
-      return libdir
-    try:
-      self.logPrintBox('Compiling Netlib LAPACK; this may take several minutes')
-      output  = config.base.Configure.executeShellCommand('cd '+blasDir+'; make cleanlib; rm -f libblas.a liblapack.a; make blaslib lapacklib', timeout=1600, log = self.framework.log)[0]
-    except RuntimeError, e:
-      raise RuntimeError('Error running make on LAPACK'+str(e))
-    try:
-      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f libblas.'+self.setCompilers.AR_LIB_SUFFIX+' liblapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+self.arch.arch, timeout=30, log = self.framework.log)[0]
-    except RuntimeError, e:
-      raise RuntimeError('Error moving LAPACK libraries: '+str(e))
-    try:
-      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';cp -f make.inc '+self.arch.arch, timeout=30, log = self.framework.log)[0]
-    except RuntimeError, e:
-      pass
-    return libdir
-  
   def downLoadBlasLapack(self, f2c, l):
     self.framework.log.write('Downloading '+l+'blaslapack\n')
     packages = self.petscdir.externalPackagesDir

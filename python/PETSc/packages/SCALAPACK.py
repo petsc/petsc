@@ -114,8 +114,8 @@ framework.log)[0]
     '''Calls the regular package configureLibrary and then does an additional test needed by SCALAPACK'''
     '''Normally you do not need to provide this method'''
     # SCALAPACK requires ALL of BLAS/LAPACK
-    if self.blasLapack.f2c or self.blasLapack.fblaslapack:
-      raise RuntimeError('SCALAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with the --download-f-blas-lapack or --download-c-blas-lapack options \nUse --download-netlib-blas-lapack option instead.')
+    if self.blasLapack.f2c:
+      raise RuntimeError('SCALAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with the --download-c-blas-lapack\nUse --download-f-blas-lapack option instead.')
     PETSc.package.Package.configureLibrary(self)
     return
   

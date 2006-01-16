@@ -90,8 +90,8 @@ class Configure(PETSc.package.Package):
     '''Calls the regular package configureLibrary and then does an additional test needed by SuperLU'''
     '''Normally you do not need to provide this method'''
     PETSc.package.Package.configureLibrary(self) 
-    if self.blasLapack.f2c or self.blasLapack.fblaslapack:
-      raise RuntimeError('SuperLU requires a COMPLETE BLAS and LAPACK, it cannot be used with the --download-f-blas-lapack=1 or --download-c-blas-lapack=1 \nUse --download-netlib-blas-lapack option instead.')
+    if self.blasLapack.f2c:
+      raise RuntimeError('SuperLU requires a COMPLETE BLAS and LAPACK, it cannot be used with or --download-c-blas-lapack=1 \nUse --download-f-blas-lapack option instead.')
 
     # SuperLU requires slamch() & dlamch() LAPACK routines and PETSc version of superlu
     # have the internal versions disabled in favour of generic blas/lapack
