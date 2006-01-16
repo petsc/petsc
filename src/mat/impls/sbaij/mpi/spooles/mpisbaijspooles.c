@@ -119,6 +119,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation_MPISBAIJSpooles(Ma
 }
 EXTERN_C_END
 
+/* make sun CC happy */
+static void  (*f)(void);
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPISBAIJ_MPISBAIJSpooles"
@@ -129,7 +132,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,MatT
   PetscErrorCode ierr;
   Mat         B=*newmat;
   Mat_Spooles *lu;
-  void        (*f)(void);
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {

@@ -7,6 +7,9 @@
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 
+/* make sun CC happy */
+static void (*f)(void);
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Spooles_Base"
@@ -16,7 +19,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Spooles_Base(Mat A,MatType type,Mat
   PetscErrorCode ierr;
   Mat            B=*newmat;
   Mat_Spooles    *lu=(Mat_Spooles*)A->spptr;
-  void           (*f)(void);
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
