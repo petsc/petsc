@@ -714,7 +714,7 @@ namespace ALE {
         this->_indices.setCone(indices, p, index_color(patch, color));
       };
       // This retrieves the index_type indices of a given color attached to a Sieve::point_type point
-      const index_type getIndex(const patch_type& patch, const typename Sieve::point_type& p) {
+      const index_type& getIndex(const patch_type& patch, const typename Sieve::point_type& p) {
         return *this->_indices.cone(p)->begin();
       };
       Obj<typename indices_type::coneSequence> getIndices(const patch_type& patch, const typename Sieve::point_type& p) {
@@ -826,6 +826,7 @@ namespace ALE {
         do {
           last = this->__orderCell(dim-1, orderChain, ordered, elementsOrdered);
           if (debug) {std::cout << "    last " << last << std::endl;}
+          //FIX: We could make a support() which is relative to a closure instead of using closureSieve()
           Obj<typename Sieve::supportSequence> faces = closure->support(last);
           bool found = false;
 
@@ -869,7 +870,7 @@ namespace ALE {
       template<typename orderSequence>
       Obj<IndexArray> getOrderedIndices(const patch_type& patch, Obj<orderSequence> order) {
         // We store the elements ordered in each dimension
-        std::map<int, std::queue<index_type> > ordered;
+        std::map<int, std::queue<typename Sieve::point_type> > ordered;
         // Set of the elements already ordered
         Obj<PointSet> elementsOrdered = PointSet();
         Obj<IndexArray> indexArray = IndexArray();

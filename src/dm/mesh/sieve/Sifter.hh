@@ -71,6 +71,7 @@ namespace ALE {
     public:
       typedef Color color_type;
       typedef Data  point_type;
+      typedef int   marker_type;
       int debug;
     private:
       // tags for accessing the corresponding indices of employee_set
@@ -109,18 +110,20 @@ namespace ALE {
       struct heightTag{};
       struct indegree{};
       struct outdegree{};
+      struct marker{};
       struct StratumPoint {
         Data  point;
         int   depth;
         int   height;
         int   indegree;
         int   outdegree;
+        marker_type marker;
 
-        StratumPoint() : depth(0), height(0), indegree(0), outdegree(0) {};
-        StratumPoint(const Data& p) : point(p), depth(0), height(0), indegree(0), outdegree(0) {};
+        StratumPoint() : depth(0), height(0), indegree(0), outdegree(0), marker(marker_type()) {};
+        StratumPoint(const Data& p) : point(p), depth(0), height(0), indegree(0), outdegree(0), marker(marker_type()) {};
         // Printing
         friend std::ostream& operator<<(std::ostream& os, const StratumPoint& p) {
-          os << "[" << p.point << ", "<< p.depth << ", "<< p.height << ", "<< p.indegree << ", "<< p.outdegree << "]";
+          os << "[" << p.point << ", "<< p.depth << ", "<< p.height << ", "<< p.indegree << ", "<< p.outdegree << ", " << p.marker << "]";
           return os;
         };
       };
@@ -136,7 +139,9 @@ namespace ALE {
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<indegree>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,int,indegree)>,
           ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<outdegree>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,int,outdegree)>
+            ::boost::multi_index::tag<outdegree>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,int,outdegree)>,
+          ::boost::multi_index::ordered_non_unique<
+            ::boost::multi_index::tag<marker>, BOOST_MULTI_INDEX_MEMBER(StratumPoint,marker_type,marker)>
         >,
         ALE_ALLOCATOR<StratumPoint>
       > StratumSet;
@@ -421,6 +426,7 @@ namespace ALE {
           virtual bool        operator==(const iterator& itor) const {return this->pointIter == itor.pointIter;};
           virtual bool        operator!=(const iterator& itor) const {return this->pointIter != itor.pointIter;};
           virtual const Data& operator*() const {return this->pointIter->point;};
+          marker_type         getMarker() const {return this->pointIter->marker;};
         };
 
         depthSequence(const typename ::boost::multi_index::index<StratumSet,depthTag>::type& depthIndex, const int d) : depthIndex(depthIndex), d(d) {};
@@ -460,6 +466,38 @@ namespace ALE {
         virtual iterator    begin() {return iterator(this->heightIndex.lower_bound(h));};
         virtual iterator    end()   {return iterator(this->heightIndex.upper_bound(h));};
         virtual std::size_t size()  {return this->heightIndex.count(h);};
+      };
+
+      class markerSequence {
+        const typename ::boost::multi_index::index<StratumSet,marker>::type& markerIndex;
+        const marker_type m;
+      public:
+        class iterator {
+        public:
+          typedef std::input_iterator_tag iterator_category;
+          typedef Data  value_type;
+          typedef int   difference_type;
+          typedef Data* pointer;
+          typedef Data& reference;
+          typename boost::multi_index::index<StratumSet,marker>::type::iterator pointIter;
+
+          iterator(const typename boost::multi_index::index<StratumSet,marker>::type::iterator& iter) {
+            this->pointIter = typename boost::multi_index::index<StratumSet,marker>::type::iterator(iter);
+          };
+          virtual ~iterator() {};
+          //
+          virtual iterator    operator++() {++this->pointIter; return *this;};
+          virtual iterator    operator++(int n) {iterator tmp(this->pointIter); ++this->pointIter; return tmp;};
+          virtual bool        operator==(const iterator& itor) const {return this->pointIter == itor.pointIter;};
+          virtual bool        operator!=(const iterator& itor) const {return this->pointIter != itor.pointIter;};
+          virtual const Data& operator*() const {return this->pointIter->point;};
+        };
+
+        markerSequence(const typename ::boost::multi_index::index<StratumSet,marker>::type& marker, const int m) : markerIndex(marker), m(m) {};
+        virtual ~markerSequence() {};
+        virtual iterator    begin() {return iterator(this->markerIndex.lower_bound(m));};
+        virtual iterator    end()   {return iterator(this->markerIndex.upper_bound(m));};
+        virtual std::size_t size()  {return this->markerIndex.count(m);};
       };
 
       Sieve() : debug(0), stratification(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
@@ -967,6 +1005,9 @@ namespace ALE {
       Obj<heightSequence> heightStratum(int h) {
         return heightSequence(::boost::multi_index::get<heightTag>(this->strata), h);
       };
+      Obj<markerSequence> markerStratum(int m) {
+        return markerSequence(::boost::multi_index::get<marker>(this->strata), m);
+      };
       void setStratification(bool doStratify) {this->stratification = doStratify;};
       bool getStratification() {return this->stratification;};
       #undef __FUNCT__
@@ -1097,7 +1138,30 @@ namespace ALE {
           this->__computeStarDepths(this->support(modifiedPoints));
         }
       };
+      struct changeMarker {
+        changeMarker(int newMarker) : newMarker(newMarker) {};
+
+        void operator()(StratumPoint& p) {
+          p.marker = newMarker;
+        }
+      private:
+        marker_type newMarker;
+      };
     public:
+      void setMarker(const point_type& p, const marker_type& marker) {
+        typename ::boost::multi_index::index<StratumSet,point>::type& index = ::boost::multi_index::get<point>(this->strata);
+        typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = index.find(p);
+        index.modify(i, changeMarker(marker));
+      };
+      template<class InputSequence> void setMarker(const Obj<InputSequence>& points, const marker_type& marker) {
+        typename ::boost::multi_index::index<StratumSet,point>::type& index = ::boost::multi_index::get<point>(this->strata);
+        changeMarker changer(marker);
+
+        for(typename InputSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
+          typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = index.find(*p_itor);
+          index.modify(i, changer);
+        }
+      };
     };
   } // namespace def
 
