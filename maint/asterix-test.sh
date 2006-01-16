@@ -16,7 +16,6 @@ make PETSC_ARCH=asterix-prometheus all test
 ./config/asterix-intel.py --with-debugging=0 -PETSC_ARCH=asterix-intel-opt --download-spooles=1 --download-superlu=1 \
 --download-superlu_dist=1 --download-hypre=1 --download-spai=1 --download-blacs=1 --download-scalapack=1 \
 --download-mumps=1 --download-mpe=1 --download-sundials=1
-
 make PETSC_ARCH=asterix-intel-opt all test
 ./config/asterix-intel.py --with-clanguage=cxx -PETSC_ARCH=asterix-intel-cxx
 make PETSC_ARCH=asterix-intel-cxx all test
@@ -35,6 +34,13 @@ make PETSC_ARCH=asterix-tops all test
 make PETSC_ARCH=asterix-sun all test
 ./config/asterix-sun.py --with-shared=1 --with-dynamic=1 -PETSC_ARCH=asterix-sun-dynamic
 make PETSC_ARCH=asterix-sun-dynamic all test
+./config/asterix-sun.py --with-clanguage=cxx -PETSC_ARCH=asterix-sun-cxx  --with-debugging=0 \
+--download-f-blaslapack=1 --download-spooles=1 --download-superlu=1 \
+--download-superlu_dist=1 --download-hypre=1 --download-spai=1 --download-blacs=1 --download-scalapack=1 \
+--download-mumps=1 --download-mpe=1 --download-sundials=1
+make PETSC_ARCH=asterix-sun-cxx all test
+./config/asterix-sun.py --with-shared=1 --with-dynamic=1 --with-scalar-type=complex -PETSC_ARCH=asterix-sun-complex-dynamic
+make PETSC_ARCH=asterix-sun-complex-dynamic all test
 
 # basic gcc4 tests
 ./config/asterix-gcc4.py

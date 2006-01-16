@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-mpi-dir=/home/balay/soft/asterix-sun/mpich2-1.0.3',
+  '--with-mpi-dir=/home/balay/soft/linux-fc-sun/mpich2-1.0.3',
   '--with-shared=1',
   '--with-debugging=0',
   '--with-vendor-compilers=solaris'
