@@ -71,6 +71,8 @@ int main(int argc, char *argv[])
       ierr = PetscPrintf(comm, "Refining mesh\n");CHKERRQ(ierr);
       mesh = ALE::def::Generator::refine(mesh, refinementLimit);
       ALE::LogStagePop(stage);
+      ierr = PetscPrintf(comm, "  Read %d elements\n", mesh->getTopology()->heightStratum(0)->size());CHKERRQ(ierr);
+      ierr = PetscPrintf(comm, "  Read %d vertices\n", mesh->getTopology()->depthStratum(0)->size());CHKERRQ(ierr);
     }
     //ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
 
