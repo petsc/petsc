@@ -499,8 +499,8 @@ namespace ALE {
         initInput_Triangle(&in);
         initOutput_Triangle(&out);
         if (rank == 0) {
-          std::string    args("pqenzQ");
-          bool           createConvexHull = false;
+          std::string args("pqenzQ");
+          bool        createConvexHull = false;
           Obj<Mesh::sieve_type::depthSequence> vertices = bdTopology->depthStratum(0);
           Obj<Mesh::bundle_type>               vertexBundle = boundary->getBundle(0);
 
@@ -606,9 +606,126 @@ namespace ALE {
     private:
 #ifdef PETSC_HAVE_TRIANGLE
       static Obj<Mesh> refine_Triangle(Obj<Mesh> mesh, double maxAreas[]) {
-        int       dim = 2;
-        Obj<Mesh> fineMesh = Mesh(mesh->getComm(), dim);
-        return fineMesh;
+        struct triangulateio in;
+        struct triangulateio out;
+        int                  dim = 2;
+        Obj<Mesh>            m = Mesh(mesh->getComm(), dim);
+        // FIX: Need to globalize
+        PetscInt             numElements = mesh->getTopology()->heightStratum(0)->size();
+        PetscMPIInt          rank;
+        PetscErrorCode       ierr;
+
+        ierr = MPI_Comm_rank(mesh->getComm(), &rank);
+        initInput_Triangle(&in);
+        initOutput_Triangle(&out);
+        if (rank == 0) {
+          ierr = PetscMalloc(numElements * sizeof(double), &in.trianglearealist);
+        }
+        {
+          // Scatter in local area constraints
+#ifdef PARALLEL
+          Vec        locAreas;
+          VecScatter areaScatter;
+
+          ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, numElements, areas, &locAreas);CHKERRQ(ierr);
+          ierr = MeshCreateMapping(oldMesh, elementBundle, partitionTypes, serialElementBundle, &areaScatter);CHKERRQ(ierr);
+          ierr = VecScatterBegin(maxAreas, locAreas, INSERT_VALUES, SCATTER_FORWARD, areaScatter);CHKERRQ(ierr);
+          ierr = VecScatterEnd(maxAreas, locAreas, INSERT_VALUES, SCATTER_FORWARD, areaScatter);CHKERRQ(ierr);
+          ierr = VecDestroy(locAreas);CHKERRQ(ierr);
+          ierr = VecScatterDestroy(areaScatter);CHKERRQ(ierr);
+#else
+          for(int i = 0; i < numElements; i++) {
+            in.trianglearealist[i] = maxAreas[i];
+          }
+#endif
+        }
+
+#ifdef PARALLEL
+        Obj<Mesh> serialMesh = this->unify(mesh);
+#else
+        Obj<Mesh> serialMesh = mesh;
+#endif
+        Obj<Mesh::sieve_type> serialTopology = serialMesh->getTopology();
+        Obj<Mesh::sieve_type> serialOrientation = serialMesh->getOrientation();
+
+        if (rank == 0) {
+          std::string args("pqenzQra");
+          Obj<Mesh::sieve_type::heightSequence> faces = serialTopology->heightStratum(0);
+          Obj<Mesh::sieve_type::depthSequence>  vertices = serialTopology->depthStratum(0);
+          Obj<Mesh::bundle_type>                vertexBundle = serialMesh->getBundle(0);
+          Obj<Mesh::coordinate_type>            coordinates = serialMesh->getCoordinates();
+          int                                   f = 0;
+
+          in.numberofpoints = vertices->size();
+          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
+          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+          for(Mesh::sieve_type::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
+            const Mesh::coordinate_type::index_type& interval = coordinates->getIndex(0, *v_itor);
+            const Mesh::coordinate_type::value_type *array = coordinates->restrict(0, *v_itor);
+
+            for(int d = 0; d < interval.index; d++) {
+              in.pointlist[interval.prefix + d] = array[d];
+            }
+            const Mesh::coordinate_type::index_type& vInterval = vertexBundle->getIndex(0, *v_itor);
+            in.pointmarkerlist[vInterval.prefix] = v_itor.getMarker();
+          }
+
+          in.numberofcorners = 3;
+          in.numberoftriangles = faces->size();
+          ierr = PetscMalloc(in.numberoftriangles * in.numberofcorners * sizeof(int), &in.trianglelist);
+          for(Mesh::sieve_type::heightSequence::iterator f_itor = faces->begin(); f_itor != faces->end(); f_itor++) {
+            Obj<Mesh::coordinate_type::IndexArray> intervals = vertexBundle->getOrderedIndices(0, serialOrientation->cone(*f_itor));
+            int                                    v = 0;
+
+            for(Mesh::coordinate_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+              in.trianglelist[f * in.numberofcorners + v++] = i_itor->prefix;
+            }
+            f++;
+          }
+
+          Obj<Mesh::sieve_type::depthMarkerSequence> segments = serialTopology->depthStratum(1, 1);
+          Obj<Mesh::bundle_type> segmentBundle = Mesh::bundle_type();
+
+          segmentBundle->setTopology(serialTopology);
+          segmentBundle->setPatch(segments, 0);
+          segmentBundle->setIndexDimensionByDepth(1, 1);
+          segmentBundle->orderPatches();
+          in.numberofsegments = segments->size();
+          if (in.numberofsegments > 0) {
+            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
+            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+            for(Mesh::sieve_type::depthMarkerSequence::iterator s_itor = segments->begin(); s_itor != segments->end(); s_itor++) {
+              const Mesh::coordinate_type::index_type& interval = segmentBundle->getIndex(0, *s_itor);
+              Obj<Mesh::sieve_type::coneSequence>      cone = serialTopology->cone(*s_itor);
+              int                                      p = 0;
+        
+              for(Mesh::sieve_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
+                const Mesh::coordinate_type::index_type& vInterval = vertexBundle->getIndex(0, *c_itor);
+
+                in.segmentlist[interval.prefix * 2 + (p++)] = vInterval.prefix;
+              }
+              in.segmentmarkerlist[interval.prefix] = s_itor.getMarker();
+            }
+          }
+
+          in.numberofholes = 0;
+          if (in.numberofholes > 0) {
+            ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);
+          }
+          triangulate((char *) args.c_str(), &in, &out, NULL);
+          ierr = PetscFree(in.trianglearealist);
+          ierr = PetscFree(in.pointlist);
+          ierr = PetscFree(in.pointmarkerlist);
+          ierr = PetscFree(in.segmentlist);
+          ierr = PetscFree(in.segmentmarkerlist);
+        }
+        m->populate(out.numberoftriangles, out.trianglelist, out.numberofpoints, out.pointlist);
+        //m->distribute(m);
+
+        // Need to make boundary
+
+        finiOutput_Triangle(&out);
+        return m;
       };
 #endif
     public:
@@ -633,14 +750,14 @@ namespace ALE {
 #else
           throw ALE::Exception("Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
-        } else if (dim == 2) {
+        } else if (dim == 3) {
 #ifdef PETSC_HAVE_TETGEN
           refinedMesh = refine_TetGen(mesh);
 #else
           throw ALE::Exception("Mesh generation currently requires TetGen to be installed. Use --download-tetgen during configure.");
 #endif
         }
-        return mesh;
+        return refinedMesh;
       };
     };
   } // namespace def
