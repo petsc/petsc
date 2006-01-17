@@ -87,9 +87,6 @@ int main(int argc, char *argv[])
 
   ALE::Obj<ALE::def::Mesh> mesh;
 
-  /* Set ALE package-wide verbosity; will not affect Coaster descendants that carry their own verbosity */
-  ALE::setVerbosity(verbosity);
-
   try {
     ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
     ALE::LogStagePush(stage);
@@ -100,7 +97,7 @@ int main(int argc, char *argv[])
       mesh = ALE::def::PyLithBuilder::create(comm, baseFilename, debug);
     }
     ALE::LogStagePop(stage);
-    ALE::Obj<ALE::def::Sieve<ALE::def::Point,int> > topology = mesh->getTopology();
+    ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
 #if 0

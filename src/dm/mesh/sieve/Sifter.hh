@@ -1012,14 +1012,14 @@ namespace ALE {
       bool getStratification() {return this->stratification;};
       #undef __FUNCT__
       #define __FUNCT__ "Sieve::stratify"
-      void stratify() {
+      void stratify(bool show = false) {
         ALE_LOG_EVENT_BEGIN;
         this->__computeDegrees();
         // FIX: We would like to avoid the copy here with cone() and support()
         this->__computeClosureHeights(this->cone(this->leaves()));
         this->__computeStarDepths(this->support(this->roots()));
 
-        if (debug) {
+        if (debug || show) {
           const typename ::boost::multi_index::index<StratumSet,point>::type& points = ::boost::multi_index::get<point>(this->strata);
           for(typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = points.begin(); i != points.end(); i++) {
             std::cout << *i << std::endl;
@@ -1151,7 +1151,9 @@ namespace ALE {
       void setMarker(const point_type& p, const marker_type& marker) {
         typename ::boost::multi_index::index<StratumSet,point>::type& index = ::boost::multi_index::get<point>(this->strata);
         typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = index.find(p);
-        index.modify(i, changeMarker(marker));
+        if (i != index.end()) {
+          index.modify(i, changeMarker(marker));
+        }
       };
       template<class InputSequence> void setMarker(const Obj<InputSequence>& points, const marker_type& marker) {
         typename ::boost::multi_index::index<StratumSet,point>::type& index = ::boost::multi_index::get<point>(this->strata);
@@ -1159,7 +1161,9 @@ namespace ALE {
 
         for(typename InputSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
           typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = index.find(*p_itor);
-          index.modify(i, changer);
+          if (i != index.end()) {
+            index.modify(i, changer);
+          }
         }
       };
     };

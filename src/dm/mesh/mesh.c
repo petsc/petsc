@@ -1569,9 +1569,9 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
-  ierr = VecScatterBegin(g, l, mode, SCATTER_REVERSE, injection);
-  ierr = VecScatterEnd(g, l, mode, SCATTER_REVERSE, injection);
+  //ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
+  //ierr = VecScatterBegin(g, l, mode, SCATTER_REVERSE, injection);
+  //ierr = VecScatterEnd(g, l, mode, SCATTER_REVERSE, injection);
   if (mode == INSERT_VALUES) {
     ierr = VecCopy(g, l);CHKERRQ(ierr);
   } else {
