@@ -369,6 +369,10 @@ EXTERN PetscInt       PETSC_DLLEXPORT globalmaxstate;
 .  id - the identifier for the data
 -  data - the data to  be attached
 
+   Notes
+   The data identifier can best be determined through a call to
+   PetscObjectComposedDataRegister()
+
    Level: developer
 M*/
 #define PetscObjectComposedDataSetInt(obj,id,data)                                      \
@@ -411,6 +415,10 @@ M*/
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
+
+   Notes
+   The data identifier can best be determined through a call to
+   PetscObjectComposedDataRegister()
 
    Level: developer
 M*/
@@ -456,6 +464,10 @@ M*/
 .  id - the identifier for the data
 -  data - the data to  be attached
 
+   Notes
+   The data identifier can best be determined through a call to
+   PetscObjectComposedDataRegister()
+
    Level: developer
 M*/
 #define PetscObjectComposedDataSetReal(obj,id,data)                                       \
@@ -498,6 +510,10 @@ M*/
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
+
+   Notes
+   The data identifier can best be determined through a call to
+   PetscObjectComposedDataRegister()
 
    Level: developer
 M*/
@@ -542,6 +558,10 @@ M*/
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
+
+   Notes
+   The data identifier can best be determined through a call to
+   PetscObjectComposedDataRegister()
 
    Level: developer
 M*/
@@ -594,6 +614,10 @@ M*/
 +  obj - the object to which data is to be attached
 .  id - the identifier for the data
 -  data - the data to  be attached
+
+   Notes
+   The data identifier can best be determined through a call to
+   PetscObjectComposedDataRegister()
 
    Level: developer
 M*/

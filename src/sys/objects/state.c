@@ -76,6 +76,20 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectSetState(PetscObject obj,PetscInt stat
 
 PetscInt PETSC_DLLEXPORT globalcurrentstate = 0;
 PetscInt PETSC_DLLEXPORT globalmaxstate = 10;
+/*@C
+   PetscObjectComposedDataRegister - Get an available id for 
+   composed data
+
+   Not Collective
+
+   Output parameter:
+.  id - an identifier under which data can be stored
+
+   Level: developer
+
+   seealso: PetscObjectComposedDataSetInt
+
+@*/
 PetscErrorCode PETSC_DLLEXPORT PetscObjectComposedDataRegister(PetscInt *id)
 {
   PetscFunctionBegin;
