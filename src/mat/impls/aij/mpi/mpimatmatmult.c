@@ -73,6 +73,26 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatDuplicate_MPIAIJ_MatMatMult"
+PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat *M) {
+  PetscErrorCode       ierr;
+  Mat_MatMatMultMPI    *mult; 
+  PetscObjectContainer container;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)A,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
+  if (container) {
+    ierr  = PetscObjectContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
+  } else {
+    SETERRQ(PETSC_ERR_PLIB,"Container does not exit");
+  }
+  ierr = (*mult->MatDuplicate)(A,op,M);CHKERRQ(ierr);
+  (*M)->ops->destroy   = mult->MatDestroy;   /* =MatDestroy_MPIAIJ, *M doesn't duplicate A's container! */
+  (*M)->ops->duplicate = mult->MatDuplicate; /* =MatDuplicate_ MPIAIJ */
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ"
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
@@ -109,9 +129,11 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
   ierr = PetscObjectContainerSetPointer(container,mult);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)(*C),"Mat_MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
   ierr = PetscObjectContainerSetUserDestroy(container,PetscObjectContainerDestroy_Mat_MatMatMultMPI);CHKERRQ(ierr);
-  mult->MatDestroy = (*C)->ops->destroy;
+  mult->MatDestroy   = (*C)->ops->destroy;
+  mult->MatDuplicate = (*C)->ops->duplicate;
 
-  (*C)->ops->destroy  = MatDestroy_MPIAIJ_MatMatMult; 
+  (*C)->ops->destroy   = MatDestroy_MPIAIJ_MatMatMult; 
+  (*C)->ops->duplicate = MatDuplicate_MPIAIJ_MatMatMult;
   PetscFunctionReturn(0);
 }
 

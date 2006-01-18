@@ -1,4 +1,4 @@
-static char help[] = "Testing Matrix-Matrix multiplication for SeqAIJ matrices.\n\n";
+static char help[] = "Test sequential MatMatMult() and MatPtAP() for AIJ matrices.\n\n";
 
 #include "petscmat.h"
 

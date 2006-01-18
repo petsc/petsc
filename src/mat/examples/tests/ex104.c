@@ -1,4 +1,4 @@
-static char help[] = "Testing Matrix-Matrix multiplication for SeqDense matrices.\n\n";
+static char help[] = "Test MatMatMult(), MatMatMultTranspose() for SeqDense matrices.\n\n";
 
 #include "petscmat.h"
 
@@ -12,8 +12,11 @@ int main(int argc,char **argv) {
   PetscRandom    r;
   PetscTruth     equal;
   PetscReal      fill = 1.0;
+  PetscMPIInt    size;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(PETSC_ERR_SUP,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
