@@ -1565,7 +1565,7 @@ EXTERN PetscErrorCode assembleFullField(VecScatter, Vec, Vec, InsertMode);
 @*/
 PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
 {
-  VecScatter     injection;
+  //VecScatter     injection;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1763,8 +1763,8 @@ PetscErrorCode MeshRefine_Triangle(Mesh oldMesh, PetscReal maxArea, /*CoSieve*/ 
   ierr = MeshCreate(oldMesh->comm, &m);CHKERRQ(ierr);
   ierr = MeshGetElementBundle(oldMesh, &elementBundle);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(oldMesh->comm, &rank);CHKERRQ(ierr);
-  ierr = initGeneratorInput(&in);CHKERRQ(ierr);
-  ierr = initGeneratorOutput(&out);CHKERRQ(ierr);
+  //ierr = initGeneratorInput(&in);CHKERRQ(ierr);
+  //ierr = initGeneratorOutput(&out);CHKERRQ(ierr);
   ierr = MeshUnify(oldMesh, &serialMesh);CHKERRQ(ierr);
   ierr = MeshGetTopology(serialMesh, &serialTopology);CHKERRQ(ierr);
   ierr = MeshGetOrientation(serialMesh, &serialOrientation);CHKERRQ(ierr);
@@ -1818,7 +1818,7 @@ PetscErrorCode MeshRefine_Triangle(Mesh oldMesh, PetscReal maxArea, /*CoSieve*/ 
       ALE::Point_set support;
       PetscScalar   *array;
 
-      ierr = restrictField(serialCoordBundle, serialOrientation, coords, vertex, &array); CHKERRQ(ierr);
+      //ierr = restrictField(serialCoordBundle, serialOrientation, coords, vertex, &array); CHKERRQ(ierr);
       for(int d = 0; d < interval.index; d++) {
         in.pointlist[interval.prefix + d] = array[d];
       }
@@ -1908,7 +1908,7 @@ PetscErrorCode MeshRefine_Triangle(Mesh oldMesh, PetscReal maxArea, /*CoSieve*/ 
   ierr = MeshPopulate(m, dim, out.numberofpoints, out.numberoftriangles, out.trianglelist, out.pointlist);CHKERRQ(ierr);
   ierr = MeshDistribute(m);CHKERRQ(ierr);
   /* Need to make boundary */
-  ierr = destroyGeneratorOutput(&out);CHKERRQ(ierr);
+  //ierr = destroyGeneratorOutput(&out);CHKERRQ(ierr);
   *mesh = m;
   PetscFunctionReturn(0);
 }
@@ -2088,11 +2088,7 @@ PetscErrorCode MeshGenerate(Mesh boundary, Mesh *mesh)
   PetscFunctionBegin;
   ierr = MeshGetDimension(boundary, &dim);CHKERRQ(ierr);
   if (dim == 1) {
-#ifdef PETSC_HAVE_TRIANGLE
-    ierr = MeshGenerate_Triangle(boundary, mesh);CHKERRQ(ierr);
-#else
     SETERRQ(PETSC_ERR_SUP, "Mesh generation currently requires Triangle to be installed. Use --download-triangle during configure.");
-#endif
   } else if (dim == 2) {
 #ifdef PETSC_HAVE_TETGEN
     ierr = MeshGenerate_TetGen(boundary, mesh);CHKERRQ(ierr);

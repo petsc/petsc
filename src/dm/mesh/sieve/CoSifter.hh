@@ -43,24 +43,26 @@ namespace ALE {
       typedef Value_ value_type;
       typedef Patch_ patch_type;
       typedef Index_ index_type;
+      typedef typename Sieve::point_type point_type;
+      typedef std::vector<point_type> PointArray;
       typedef std::vector<index_type> IndexArray;
-      typedef std::map<typename Sieve::point_type, index_type> IndexMap;
+      typedef std::map<point_type, index_type> IndexMap;
       int debug;
     private:
       // Base topology
       Obj<Sieve>   _topology;
     public:
       // Breakdown of the base Sieve into patches
-      //   the colors (int) order the points (Sieve::point_type) over a patch (patch_type).
-      typedef BiGraph<typename Sieve::point_type, patch_type, int> patches_type;
+      //   the colors (int) order the points (point_type) over a patch (patch_type).
+      typedef BiGraph<point_type, patch_type, int> patches_type;
     private:
       patches_type _patches; 
     public:
       // Attachment of fiber dimension intervals to Sieve points
       //   fields are encoded by colors, which double as the field ordering index
-      //   colors (<patch_type, int>) order the indices (index_type, usually an interval) over a point (Sieve::point_type).
+      //   colors (<patch_type, int>) order the indices (index_type, usually an interval) over a point (point_type).
       typedef std::pair<patch_type, typename Sieve::color_type> index_color;
-      typedef BiGraph<index_type, typename Sieve::point_type, index_color> indices_type;
+      typedef BiGraph<index_type, point_type, index_color> indices_type;
       friend std::ostream& operator<<(std::ostream& os, const index_color& c) {
         os << c.first << ","<< c.second;
         return os;
@@ -103,11 +105,11 @@ namespace ALE {
         }
       };
       template <typename InputSequence>
-      void order(const patch_type& patch, Obj<InputSequence> base, std::set<typename Sieve::point_type>& seen, int& ordinal) {
-        std::list<typename Sieve::point_type> points(base->begin(), base->end());
+      void order(const patch_type& patch, Obj<InputSequence> base, std::set<point_type>& seen, int& ordinal) {
+        std::list<point_type> points(base->begin(), base->end());
 
         //for(typename InputSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-        for(typename std::list<typename Sieve::point_type>::iterator b_iter = points.begin(); b_iter != points.end(); ++b_iter) {
+        for(typename std::list<point_type>::iterator b_iter = points.begin(); b_iter != points.end(); ++b_iter) {
           this->order(patch, this->_topology->cone(*b_iter), seen, ordinal);
 
           if(seen.find(*b_iter) == seen.end()){
@@ -128,7 +130,7 @@ namespace ALE {
           int dim = this->getIndexDimension(patch, *c_iter);
 
           if (dim > 0) {
-            typename Sieve::point_type newIndex(offset, dim);
+            point_type newIndex(offset, dim);
 
             this->_indices.replaceSourceOfTarget(*c_iter, newIndex);
             if (debug) {std::cout << "    Assigned new index " << newIndex << " to " << *c_iter << std::endl;}
@@ -138,9 +140,9 @@ namespace ALE {
       };
 
       template <typename InputSequence>
-      void order_old(const patch_type& patch, Obj<InputSequence> base, std::map<typename Sieve::point_type, typename Sieve::point_type>& seen, int& offset) {
+      void order_old(const patch_type& patch, Obj<InputSequence> base, std::map<point_type, point_type>& seen, int& offset) {
         // To enable the depth-first order traversal without recursion, we employ a stack.
-        std::stack<typename Sieve::point_type> stk;
+        std::stack<point_type> stk;
 
         // We traverse the sub-bundle over base
         for(typename InputSequence::reverse_iterator b_ritor = base->rbegin(); b_ritor != base->rend(); ++b_ritor) {
@@ -150,7 +152,7 @@ namespace ALE {
         while(1) {
           if (stk.empty()) break;
 
-          typename Sieve::point_type p = stk.top(); stk.pop();
+          point_type p = stk.top(); stk.pop();
           int p_dim = this->getIndexDimension(patch, p);
           int p_off;
 
@@ -160,7 +162,7 @@ namespace ALE {
           } else {
             // The offset is only incremented when we encounter a point not yet seen
             p_off   = offset;
-            seen[p] = typename Sieve::point_type(p_off, 0);
+            seen[p] = point_type(p_off, 0);
             offset += p_dim;
           }
           if (debug) {std::cout << "  Point " << p << " with dimension " << p_dim << " and offset " << p_off << std::endl;}
@@ -171,7 +173,7 @@ namespace ALE {
             if (*s_itor == p) {
               // If s (aka p) has a nonzero dimension but has not been indexed yet
               if((p_dim > 0) && (seen[p].index == 0)) {
-                typename Sieve::point_type newIndex(p_off, p_dim);
+                point_type newIndex(p_off, p_dim);
 
                 seen[p] = newIndex;
                 this->_indices.replaceSourceOfTarget(p, newIndex);
@@ -186,8 +188,8 @@ namespace ALE {
       };
 
       void allocateAndOrderPatch(const patch_type& patch) {
-        //std::map<typename Sieve::point_type, typename Sieve::point_type> seen;
-        std::set<typename Sieve::point_type> seen;
+        //std::map<point_type, point_type> seen;
+        std::set<point_type> seen;
         int                                  ordinal = 0;
         int                                  offset = 0;
 
@@ -203,14 +205,14 @@ namespace ALE {
         this->_storageSize[patch] = offset;
       };
     public:
-      // This attaches Sieve::point_type points to a patch in the order prescribed by the sequence; 
+      // This attaches point_type points to a patch in the order prescribed by the sequence; 
       // care must be taken not to assign duplicates (or should it?)
       template<typename pointSequence>
       void                            setPatch(const Obj<pointSequence>& points, const patch_type& patch) {
         this->_patches.addCone(points, patch);
         this->_patches.stratify();
       };
-      // This retrieves the Sieve::point_type points attached to a given patch
+      // This retrieves the point_type points attached to a given patch
       Obj<typename patches_type::coneSequence> getPatch(const patch_type& patch) {
         return this->_patches.cone(patch);
       };
@@ -227,26 +229,26 @@ namespace ALE {
         }
         ALE_LOG_EVENT_END;
       };
-      // These attach index_type indices of a given color to a Sieve::point_type point
-      void  addIndices(const patch_type& patch, const index_type& indx, typename Sieve::color_type color, const typename Sieve::point_type& p) {
+      // These attach index_type indices of a given color to a point_type point
+      void  addIndices(const patch_type& patch, const index_type& indx, typename Sieve::color_type color, const point_type& p) {
         this->_indices.addCone(indx, p, index_color(patch, color));
       };
       template<typename indexInputSequence>
-      void  addIndices(const patch_type& patch, const Obj<indexInputSequence>& indices, typename Sieve::color_type color, const typename Sieve::point_type& p) {
+      void  addIndices(const patch_type& patch, const Obj<indexInputSequence>& indices, typename Sieve::color_type color, const point_type& p) {
         this->_indices.addCone(indices, p, index_color(patch, color));
       };
-      void  setIndices(const patch_type& patch, const index_type& indices, typename Sieve::color_type color, const typename Sieve::point_type& p) {
+      void  setIndices(const patch_type& patch, const index_type& indices, typename Sieve::color_type color, const point_type& p) {
         this->_indices.setCone(indices, p, index_color(patch, color));
       };
       template<typename indexInputSequence>
-      void  setIndices(const patch_type& patch, const Obj<indexInputSequence>& indices, typename Sieve::color_type color, const typename Sieve::point_type& p) {
+      void  setIndices(const patch_type& patch, const Obj<indexInputSequence>& indices, typename Sieve::color_type color, const point_type& p) {
         this->_indices.setCone(indices, p, index_color(patch, color));
       };
-      // This retrieves the index_type indices of a given color attached to a Sieve::point_type point
-      const index_type& getIndex(const patch_type& patch, const typename Sieve::point_type& p) {
+      // This retrieves the index_type indices of a given color attached to a point_type point
+      const index_type& getIndex(const patch_type& patch, const point_type& p) {
         return *this->_indices.cone(p)->begin();
       };
-      Obj<typename indices_type::coneSequence> getIndices(const patch_type& patch, const typename Sieve::point_type& p) {
+      Obj<typename indices_type::coneSequence> getIndices(const patch_type& patch, const point_type& p) {
         return this->_indices.cone(p);
       };
       template<typename pointSequence>
@@ -265,9 +267,9 @@ namespace ALE {
       }
     private:
       template<typename orderSequence>
-      std::map<int, typename Sieve::point_type> __checkOrderChain(Obj<orderSequence> order, int& minDepth, int& maxDepth) {
+      std::map<int, point_type> __checkOrderChain(Obj<orderSequence> order, int& minDepth, int& maxDepth) {
         Obj<Sieve> topology = this->getTopology();
-        std::map<int, typename Sieve::point_type> dElement;
+        std::map<int, point_type> dElement;
         minDepth = 0;
         maxDepth = 0;
 
@@ -293,7 +295,7 @@ namespace ALE {
           throw Exception("Invalid order chain: minimal depth is nonzero");
         }
         for(int d = 0; d <= maxDepth; d++) {
-          typename std::map<int, typename Sieve::point_type>::iterator d_itor = dElement.find(d);
+          typename std::map<int, point_type>::iterator d_itor = dElement.find(d);
 
           if(d_itor == dElement.end()){
             ostringstream ex;
@@ -313,14 +315,14 @@ namespace ALE {
         }
         return dElement;
       };
-      void __orderElement(int dim, typename Sieve::point_type element, std::map<int, std::queue<index_type> >& ordered, ALE::Obj<ALE::def::PointSet> elementsOrdered) {
+      void __orderElement(int dim, point_type element, std::map<int, std::queue<index_type> >& ordered, ALE::Obj<ALE::def::PointSet> elementsOrdered) {
         if (elementsOrdered->find(element) != elementsOrdered->end()) return;
         ordered[dim].push(element);
         elementsOrdered->insert(element);
         if (debug) {std::cout << "  ordered element " << element << " dim " << dim << std::endl;}
       };
-      typename Sieve::point_type __orderCell(int dim, std::map<int, typename Sieve::point_type>& orderChain, std::map<int, std::queue<index_type> >& ordered, Obj<PointSet> elementsOrdered) {
-        typename Sieve::point_type last;
+      point_type __orderCell(int dim, std::map<int, point_type>& orderChain, std::map<int, std::queue<index_type> >& ordered, Obj<PointSet> elementsOrdered) {
+        point_type last;
 
         if (debug) {
           std::cout << "Ordering cell " << orderChain[dim] << " dim " << dim << std::endl;
@@ -399,17 +401,17 @@ namespace ALE {
       template<typename orderSequence>
       Obj<IndexArray> getOrderedIndices(const patch_type& patch, Obj<orderSequence> order) {
         // We store the elements ordered in each dimension
-        std::map<int, std::queue<typename Sieve::point_type> > ordered;
+        std::map<int, std::queue<point_type> > ordered;
         // Set of the elements already ordered
         Obj<PointSet> elementsOrdered = PointSet();
         Obj<IndexArray> indexArray = IndexArray();
         int minDepth, maxDepth;
 
-        std::map<int, typename Sieve::point_type> dElement = this->__checkOrderChain(order, minDepth, maxDepth);
+        std::map<int, point_type> dElement = this->__checkOrderChain(order, minDepth, maxDepth);
         if (debug) {std::cout << "Ordering " << dElement[maxDepth] << std::endl;}
         // Could share the closure between these methods
         Obj<IndexMap> indices = this->getIndices(patch, this->_topology->closure(dElement[maxDepth]));
-        typename Sieve::point_type last = this->__orderCell(maxDepth, dElement, ordered, elementsOrdered);
+        point_type last = this->__orderCell(maxDepth, dElement, ordered, elementsOrdered);
         for(int d = minDepth; d <= maxDepth; d++) {
           while(!ordered[d].empty()) {
             index_type ind = (*indices)[ordered[d].front()];
@@ -423,10 +425,60 @@ namespace ALE {
         }
         return indexArray;
       };
+    private:
+      //FIX: This is broken, but unnecessary right now
+      void orderSimplex(int dim, const point_type& p, point_type order[], Obj<std::list<point_type> > ordered) {
+        if (dim == 1) {
+          ordered->push_back(order[0]);
+          ordered->push_back(order[1]);
+          ordered->push_back(p);
+        } else {
+          // Simplices are made using the cone construction
+          point_type apex = order[dim];
+
+          // Order the base of the cone
+          orderSimplex(dim-1, p, order);
+          for(int i = 0; i < dim; i++) {
+            // Swap in apex
+            order[dim] = order[i+dim-1]; order[i+dim-1] = apex;
+            // Order face
+            point_type f = this->nJoin(apex, order[i], dim);
+            orderSimplex(dim-1, f, &(order[i]));
+            // Swap out apex
+            order[i+dim-1] = order[dim];
+          }
+          ordered->push_back(p);
+        }
+      };
+    public:
+      Obj<IndexArray> getOrderedIndices(const patch_type& patch, const point_type& p, Obj<PointArray> order, bool fullOrder = false) {
+        Obj<IndexArray> indexArray = IndexArray();
+        Obj<IndexMap>   indices;
+        Obj<PointArray> ordered;
+
+        if (fullOrder) {
+          indices = this->getIndices(patch, this->_topology->closure(p));
+          ordered = PointArray();
+          this->orderSimplex(order->size()-1, p, order, ordered);
+        } else {
+          indices = this->getIndices(patch, this->_topology->cone(p));
+          ordered = order;
+        }
+
+        for(typename PointArray::iterator o_iter = ordered->begin(); o_iter != ordered->end(); ++o_iter) {
+          index_type ind = (*indices)[*o_iter];
+
+          std::cout << "  indices " << ind << std::endl;
+          if (ind.index > 0) {
+            indexArray->push_back(ind);
+          }
+        }
+        return indexArray;
+      };
       int getIndexDimension(const patch_type& patch) {
         return this->_storageSize[patch];
       }
-      int getIndexDimension(const patch_type& patch, const typename Sieve::point_type& p) {
+      int getIndexDimension(const patch_type& patch, const point_type& p) {
         Obj<typename indices_type::coneSequence> cone = this->_indices.cone(p);
         int dim = 0;
 
@@ -436,7 +488,7 @@ namespace ALE {
         if (debug) {std::cout << "  getting dimension " << dim << " of " << p << " in patch " << patch << std::endl;}
         return dim;
       };
-      int getIndexDimension(const patch_type& patch, const typename Sieve::point_type& p, typename Sieve::color_type color) {
+      int getIndexDimension(const patch_type& patch, const point_type& p, typename Sieve::color_type color) {
         Obj<typename indices_type::coneSequence> cone = this->_indices.cone(p, index_color(patch, color));
         int dim = 0;
 
@@ -446,11 +498,11 @@ namespace ALE {
         if (debug) {std::cout << "  getting dimension " << dim << " of " << p << "(" << color << ") in patch " << patch << std::endl;}
         return dim;
       };
-      void setIndexDimension(const patch_type& patch, const typename Sieve::point_type& p, int indexDim) {
+      void setIndexDimension(const patch_type& patch, const point_type& p, int indexDim) {
         this->setIndexDimension(patch, p, typename Sieve::color_type(), indexDim);
       }
-      void setIndexDimension(const patch_type& patch, const typename Sieve::point_type& p, typename Sieve::color_type color, int indexDim) {
-        this->setIndices(patch, typename Sieve::point_type(-1, indexDim), color, p);
+      void setIndexDimension(const patch_type& patch, const point_type& p, typename Sieve::color_type color, int indexDim) {
+        this->setIndices(patch, point_type(-1, indexDim), color, p);
       }
       // Attach indexDim indices to each element of a certain depth in the topology
       void setIndexDimensionByDepth(int depth, int indexDim) {
@@ -476,7 +528,7 @@ namespace ALE {
       const value_type *restrict(const patch_type& patch) {
         return this->_storage[patch];
       };
-      const value_type *restrict(const patch_type& patch, const typename Sieve::point_type& p) {
+      const value_type *restrict(const patch_type& patch, const point_type& p) {
         Obj<typename indices_type::coneSequence> indices = this->getIndices(patch, p);
 
         if (indices->size() == 1) {
@@ -507,7 +559,7 @@ namespace ALE {
         throw ALE::Exception("Not implemented");
       };
       // Insert values into the specified patch
-      void update(const patch_type& patch, const typename Sieve::point_type& p, value_type values[]) {
+      void update(const patch_type& patch, const point_type& p, value_type values[]) {
         Obj<typename indices_type::coneSequence> indices = this->getIndices(patch, p);
 
         for(typename indices_type::coneSequence::iterator ind = indices->begin(); ind != indices->end(); ++ind) {

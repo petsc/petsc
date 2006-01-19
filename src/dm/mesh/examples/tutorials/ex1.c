@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
   PetscTruth     useZeroBase;
   const char    *fileTypes[2] = {"pcice", "pylith"};
   FileType       fileType;
-  PetscTruth     outputLocal;
+  PetscTruth     interpolate, outputLocal;
   PetscInt       dim, ft;
   int            verbosity;
   int            debug;
@@ -78,6 +78,8 @@ int main(int argc, char *argv[])
     ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex33.c", "ex1", baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
     outputLocal = PETSC_FALSE;
     ierr = PetscOptionsTruth("-output_local", "Output the local form of the mesh", "ex1.c", PETSC_FALSE, &outputLocal, PETSC_NULL);CHKERRQ(ierr);
+    interpolate = PETSC_TRUE;
+    ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex1.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   ierr = PetscOptionsBegin(comm, "", "Debugging options", "ALE");
     verbosity = 0;
@@ -94,7 +96,7 @@ int main(int argc, char *argv[])
     if (fileType == PCICE) {
       mesh = ALE::def::PCICEBuilder::create(comm, baseFilename, dim, useZeroBase, debug);
     } else if (fileType == PYLITH) {
-      mesh = ALE::def::PyLithBuilder::create(comm, baseFilename, debug);
+      mesh = ALE::def::PyLithBuilder::create(comm, baseFilename, interpolate, debug);
     }
     ALE::LogStagePop(stage);
     ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();

@@ -48,6 +48,7 @@ namespace ALE {
 
           // Need to globalize indices (that is what we might use the value ints for)
           std::cout << "Creating new bundle for dim " << dim << std::endl;
+          bundle->debug = this->debug;
           bundle->setTopology(this->topology);
           bundle->setPatch(this->topology->leaves(), 0);
           bundle->setIndexDimensionByDepth(dim, 1);
@@ -57,7 +58,7 @@ namespace ALE {
         return this->bundles[dim];
       }
 
-      void buildFaces(int dim, std::map<int, int*> *curSimplex, Obj<PointSet> boundary, Point& simplex) {
+      void buildFaces(int dim, std::map<int, int*> *curSimplex, Obj<PointSet> boundary, point_type& simplex) {
         Obj<PointSet> faces = PointSet();
 
         if (debug > 1) {std::cout << "  Building faces for boundary(size " << boundary->size() << "), dim " << dim << std::endl;}
@@ -65,7 +66,7 @@ namespace ALE {
           // Use the cone construction
           for(PointSet::iterator b_itor = boundary->begin(); b_itor != boundary->end(); ++b_itor) {
             Obj<PointSet> faceBoundary = PointSet();
-            Point         face;
+            point_type    face;
 
             faceBoundary.copy(boundary);
             if (debug > 1) {std::cout << "    boundary point " << *b_itor << std::endl;}
@@ -85,16 +86,16 @@ namespace ALE {
         // We always create the toplevel, so we could shortcircuit somehow
         // Should not have to loop here since the meet of just 2 boundary elements is an element
         PointSet::iterator f_itor = faces->begin();
-        Point              start = *f_itor;
+        point_type         start = *f_itor;
         f_itor++;
-        Point              next = *f_itor;
+        point_type         next = *f_itor;
         Obj<PointSet>      preElement = this->topology->nJoin(start, next, 1);
 
         if (preElement->size() > 0) {
           simplex = *preElement->begin();
           if (debug > 1) {std::cout << "  Found old simplex " << simplex << std::endl;}
         } else {
-          simplex = Point(0, (*(*curSimplex)[dim])++);
+          simplex = point_type(0, (*(*curSimplex)[dim])++);
           this->topology->addCone(faces, simplex);
           if (debug > 1) {std::cout << "  Added simplex " << simplex << " dim " << dim << std::endl;}
         }
@@ -105,7 +106,7 @@ namespace ALE {
       //   (0, 0)            ... (0, numSimplices-1):  dim-dimensional simplices
       //   (0, numSimplices) ... (0, numVertices):     vertices
       // The other simplices are numbered as they are requested
-      void buildTopology(int numSimplices, int simplices[], int numVertices) {
+      void buildTopology(int numSimplices, int simplices[], int numVertices, bool interpolate = true) {
         ALE_LOG_EVENT_BEGIN;
         // Create a map from dimension to the current element number for that dimension
         std::map<int,int*> curElement = std::map<int,int*>();
@@ -121,34 +122,45 @@ namespace ALE {
           curElement[d] = &newElement;
         }
         for(int s = 0; s < numSimplices; s++) {
-          Point simplex(0, s);
+          point_type simplex(0, s);
 
           // Build the simplex
-          boundary->clear();
-          for(int b = 0; b < dim+1; b++) {
-            Point vertex(0, simplices[s*(dim+1)+b]+numSimplices);
+          if (interpolate) {
+            boundary->clear();
+            for(int b = 0; b < dim+1; b++) {
+              point_type vertex(0, simplices[s*(dim+1)+b]+numSimplices);
 
-            if (debug > 1) {std::cout << "Adding boundary node " << vertex << std::endl;}
-            boundary->insert(vertex);
-          }
-          if (debug) {std::cout << "simplex " << s << " boundary size " << boundary->size() << std::endl;}
-          this->buildFaces(this->dim, &curElement, boundary, simplex);
-          // Orient the simplex
-          Point element(0, simplices[s*(dim+1)+0]+numSimplices);
-          cellTuple->clear();
-          cellTuple->insert(element);
-          for(int b = 1; b < dim+1; b++) {
-            Point next(0, simplices[s*(dim+1)+b]+numSimplices);
-            Obj<PointSet> join = this->topology->nJoin(element, next, b);
-
-            if (join->size() == 0) {
-              if (debug) {std::cout << "element " << element << " next " << next << std::endl;}
-              throw ALE::Exception("Invalid join");
+              if (debug > 1) {std::cout << "Adding boundary node " << vertex << std::endl;}
+              boundary->insert(vertex);
             }
-            element =  *join->begin();
+            if (debug) {std::cout << "simplex " << s << " boundary size " << boundary->size() << std::endl;}
+
+            this->buildFaces(this->dim, &curElement, boundary, simplex);
+
+            // Orient the simplex
+            point_type element(0, simplices[s*(dim+1)+0]+numSimplices);
+            cellTuple->clear();
             cellTuple->insert(element);
+            for(int b = 1; b < dim+1; b++) {
+              point_type next(0, simplices[s*(dim+1)+b]+numSimplices);
+              Obj<PointSet> join = this->topology->nJoin(element, next, b);
+
+              if (join->size() == 0) {
+                if (debug) {std::cout << "element " << element << " next " << next << std::endl;}
+                throw ALE::Exception("Invalid join");
+              }
+              element =  *join->begin();
+              cellTuple->insert(element);
+            }
+            this->orientation->addCone(cellTuple, simplex);
+          } else {
+            for(int b = 0; b < dim+1; b++) {
+              point_type p(0, simplices[s*(dim+1)+b]+numSimplices);
+
+              this->topology->addArrow(p, simplex);
+              this->orientation->addArrow(p, simplex, b);
+            }
           }
-          this->orientation->addCone(cellTuple, simplex);
         }
         ALE_LOG_EVENT_END;
       };
@@ -156,19 +168,13 @@ namespace ALE {
       #define __FUNCT__ "Mesh::createSerCoords"
       void createSerialCoordinates(int embedDim, int numElements, double coords[]) {
         ALE_LOG_EVENT_BEGIN;
-        std::cout << "Creating coordinates" << std::endl;
         this->topology->debug = this->debug;
         this->coordinates->setTopology(this->topology);
-        std::cout << "  setting patch" << std::endl;
         this->coordinates->setPatch(this->topology->leaves(), 0);
-        std::cout << "  setting index dimensions" << std::endl;
         this->coordinates->setIndexDimensionByDepth(0, embedDim);
-        std::cout << "  ordering patches" << std::endl;
         this->coordinates->orderPatches();
-        std::cout << "  setting coordinates" << std::endl;
-        Obj<Sieve<Point,int>::depthSequence> vertices = this->topology->depthStratum(0);
-        for(Sieve<Point,int>::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
-          if ((*v_itor).index%100 == 0) {std::cout << "Fiber index over vertex " << *v_itor << " is " << *this->coordinates->getIndices(0, *v_itor)->begin() << std::endl;}
+        Obj<sieve_type::depthSequence> vertices = this->topology->depthStratum(0);
+        for(sieve_type::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
           this->coordinates->update(0, *v_itor, &coords[((*v_itor).index - numElements)*embedDim]);
         }
         ALE_LOG_EVENT_END;
@@ -202,7 +208,7 @@ namespace ALE {
           this->boundary->update(0, vertex, &boundaryValues[v*numBoundaryComponents]);
         }
       };
-      void populate(int numSimplices, int simplices[], int numVertices, double coords[]) {
+      void populate(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true) {
         PetscMPIInt rank;
 
         MPI_Comm_rank(this->comm, &rank);
@@ -210,7 +216,7 @@ namespace ALE {
         this->topology->debug = this->debug;
         this->topology->setStratification(false);
         if (rank == 0) {
-          this->buildTopology(numSimplices, simplices, numVertices);
+          this->buildTopology(numSimplices, simplices, numVertices, interpolate);
         }
         this->topology->stratify();
         this->topology->setStratification(true);
@@ -336,7 +342,7 @@ namespace ALE {
       PyLithBuilder() {};
       virtual ~PyLithBuilder() {};
 
-      static Obj<Mesh> create(MPI_Comm comm, const std::string& baseFilename, int debug = 0) {
+      static Obj<Mesh> create(MPI_Comm comm, const std::string& baseFilename, bool interpolate = true, int debug = 0) {
         int       dim = 3;
         bool      useZeroBase = false;
         Obj<Mesh> mesh = Mesh(comm, dim);
@@ -347,7 +353,7 @@ namespace ALE {
         mesh->debug = debug;
         readConnectivity(comm, baseFilename+".connect", dim, useZeroBase, numElements, &vertices);
         readCoordinates(comm, baseFilename+".coord", dim, numVertices, &coordinates);
-        mesh->populate(numElements, vertices, numVertices, coordinates);
+        mesh->populate(numElements, vertices, numVertices, coordinates, interpolate);
         return mesh;
       };
     };
@@ -484,7 +490,7 @@ namespace ALE {
         free(outputCtx->neighborlist);
       };
       #undef __FUNCT__
-      #define __FUNCT__ "MeshGenerate_Triangle"
+      #define __FUNCT__ "generate_Triangle"
       static Obj<Mesh> generate_Triangle(Obj<Mesh> boundary) {
         struct triangulateio in;
         struct triangulateio out;
