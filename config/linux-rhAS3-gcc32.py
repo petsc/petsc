@@ -8,7 +8,7 @@ configure_options = [
 
   '-COPTFLAGS=-O2 -march=pentium4 -mcpu=pentium4',
   '-FOPTFLAGS=-O2 -march=pentium4 -mcpu=pentium4',
-  '--with-debuging=0',
+  '--with-debugging=0',
 
   '--with-lapack-lib=/soft/apps/packages/lapack-3.0/lib/lapack_LINUX.a',
   '--with-blas-lib=/usr/lib/libblas.a'
