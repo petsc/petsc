@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
   ierr = PetscOptionsEnd();
   comm = PETSC_COMM_WORLD;
 
-  ALE::Obj<ALE::def::Mesh> meshBoundary = ALE::def::Mesh(comm, dim-1);
+  ALE::Obj<ALE::def::Mesh> meshBoundary = ALE::def::Mesh(comm, dim-1, debug);
   ALE::Obj<ALE::def::Mesh> mesh;
 
   try {
