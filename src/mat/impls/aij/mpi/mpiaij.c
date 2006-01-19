@@ -2912,40 +2912,6 @@ PetscErrorCode MatFileSplit(Mat A,char *outfile)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
-#undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_MPIAIJ_SeqsToMPI"
-PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
-{
-  PetscErrorCode       ierr;
-  Mat_Merge_SeqsToMPI  *merge; 
-  PetscObjectContainer container;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)A,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
-  if (container) {
-    ierr = PetscObjectContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
-    ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
-    ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
-    ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
-    ierr = PetscFree(merge->bi);CHKERRQ(ierr);
-    ierr = PetscFree(merge->bj);CHKERRQ(ierr);
-    ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr); 
-    ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
-    ierr = PetscMapDestroy(merge->rowmap);CHKERRQ(ierr);
-    if (merge->coi){ierr = PetscFree(merge->coi);CHKERRQ(ierr);}
-    if (merge->coj){ierr = PetscFree(merge->coj);CHKERRQ(ierr);}
-    if (merge->owners_co){ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);}
-    
-    ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(merge);CHKERRQ(ierr);
-
-  ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #include "src/mat/utils/freespace.h"
 #include "petscbt.h"
 static PetscEvent logkey_seqstompinum = 0;
@@ -3095,6 +3061,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
 }
 
 static PetscEvent logkey_seqstompisym = 0;
+EXTERN PetscErrorCode MatDestroy_MPIAIJ_MatPtAP(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatMerge_SeqsToMPISymbolic"
 PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,Mat *mpimat) 
@@ -3330,7 +3297,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
 
   /* B_mpi is not ready for use - assembly will be done by MatMerge_SeqsToMPINumeric() */
   B_mpi->assembled     = PETSC_FALSE; 
-  B_mpi->ops->destroy  = MatDestroy_MPIAIJ_SeqsToMPI; 
+  B_mpi->ops->destroy  = MatDestroy_MPIAIJ_MatPtAP; 
   merge->bi            = bi;
   merge->bj            = bj;
   merge->buf_ri        = buf_ri;

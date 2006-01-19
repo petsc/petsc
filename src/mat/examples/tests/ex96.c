@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   PetscInt       m,n,M,N,i,nrows,*ia,*ja; 
   PetscScalar    one = 1.0;
   PetscReal      fill=2.0;
-  Mat            A,A_tmp,P,C;
+  Mat            A,A_tmp,P,C,C1,C2;
   PetscScalar    *array,none = -1.0,alpha;
   Vec           x,v1,v2,v3,v4;
   PetscReal     norm,norm_tmp,norm_tmp1,tol=1.e-12;
@@ -162,10 +162,13 @@ int main(int argc,char **argv)
       ierr = MatScale(A_tmp,alpha);CHKERRQ(ierr);
       ierr = MatMatMult(A_tmp,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
-    /*
-    if (rank == 0) ierr = PetscPrintf(PETSC_COMM_SELF, " \nA*P: \n");
-    ierr = MatView(C, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    */
+
+    /* Test MatDuplicate()        */
+    /*----------------------------*/
+    ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
+    ierr = MatDuplicate(C1,MAT_COPY_VALUES,&C2);CHKERRQ(ierr);
+    ierr = MatDestroy(C1);CHKERRQ(ierr);
+    ierr = MatDestroy(C2);CHKERRQ(ierr);
 
     /* Create vector x that is compatible with P */
     ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
@@ -207,6 +210,13 @@ int main(int argc,char **argv)
       ierr = MatScale(A,alpha);CHKERRQ(ierr);
       ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
+
+        /* Test MatDuplicate()        */
+    /*----------------------------*/
+    ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
+    ierr = MatDuplicate(C1,MAT_COPY_VALUES,&C2);CHKERRQ(ierr); 
+    ierr = MatDestroy(C1);CHKERRQ(ierr); 
+    ierr = MatDestroy(C2);CHKERRQ(ierr); 
 
     /* Create vector x that is compatible with P */
     ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);

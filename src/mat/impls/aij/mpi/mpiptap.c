@@ -10,6 +10,59 @@
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "petscbt.h"
 
+EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_MPIAIJ_MatPtAP"
+PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_MatPtAP(Mat A)
+{
+  PetscErrorCode       ierr;
+  Mat_Merge_SeqsToMPI  *merge; 
+  PetscObjectContainer container;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)A,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
+  if (container) {
+    ierr = PetscObjectContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
+    ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
+    ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
+    ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
+    ierr = PetscFree(merge->bi);CHKERRQ(ierr);
+    ierr = PetscFree(merge->bj);CHKERRQ(ierr);
+    ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr); 
+    ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
+    ierr = PetscMapDestroy(merge->rowmap);CHKERRQ(ierr);
+    if (merge->coi){ierr = PetscFree(merge->coi);CHKERRQ(ierr);}
+    if (merge->coj){ierr = PetscFree(merge->coj);CHKERRQ(ierr);}
+    if (merge->owners_co){ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);}
+    
+    ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
+  }
+  ierr = merge->MatDestroy(A);CHKERRQ(ierr);
+  ierr = PetscFree(merge);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDuplicate_MPIAIJ_MatPtAP"
+PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M) {
+  PetscErrorCode       ierr;
+  Mat_Merge_SeqsToMPI  *merge; 
+  PetscObjectContainer container;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)A,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
+  if (container) {
+    ierr  = PetscObjectContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
+  } else {
+    SETERRQ(PETSC_ERR_PLIB,"Container does not exit");
+  }
+  ierr = (*merge->MatDuplicate)(A,op,M);CHKERRQ(ierr);
+  (*M)->ops->destroy   = merge->MatDestroy;   /* =MatDestroy_MPIAIJ, *M doesn't duplicate A's container! */
+  (*M)->ops->duplicate = merge->MatDuplicate; /* =MatDuplicate_ MPIAIJ */
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPSymbolic_MPIAIJ"
 PetscErrorCode MatPtAPSymbolic_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
@@ -389,9 +442,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MatMPIAIJSetPreallocation(B_mpi,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
-  /* B_mpi is not ready for use - assembly will be done by MatPtAPNumeric() */
-  B_mpi->assembled     = PETSC_FALSE; 
-  B_mpi->ops->destroy  = MatDestroy_MPIAIJ_SeqsToMPI;  
   merge->bi            = bi;
   merge->bj            = bj;
   merge->coi           = coi;
@@ -399,6 +449,13 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   merge->buf_ri        = buf_ri;
   merge->buf_rj        = buf_rj;
   merge->owners_co     = owners_co;
+  merge->MatDestroy    = B_mpi->ops->destroy;
+  merge->MatDuplicate  = B_mpi->ops->duplicate;
+
+  /* B_mpi is not ready for use - assembly will be done by MatPtAPNumeric() */
+  B_mpi->assembled     = PETSC_FALSE; 
+  B_mpi->ops->destroy  = MatDestroy_MPIAIJ_MatPtAP;  
+  B_mpi->ops->duplicate = MatDuplicate_MPIAIJ_MatPtAP;
 
   /* attach the supporting struct to B_mpi for reuse */
   ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
