@@ -208,27 +208,38 @@ namespace ALE {
         virtual std::size_t size()  {return -1;};
       };
       class coneSequence {
-        const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& coneIndex;
+        typename ::boost::multi_index::index<ArrowSet,targetColor>::type& coneIndex;
         const target_type key;
         const color_type  color;
         const bool        useColor;
+        struct changeColor {
+          changeColor(color_type newColor) : newColor(newColor) {};
+
+          void operator()(Arrow_& p) {
+            p.color = newColor;
+          }
+        private:
+          color_type newColor;
+        };
       public:
         class iterator {
+          typename ::boost::multi_index::index<ArrowSet,targetColor>::type& index;
         public:
           typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator arrowIter;
 
-          iterator(const typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator& iter) {
+          iterator(typename ::boost::multi_index::index<ArrowSet,targetColor>::type& index, const typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator& iter) : index(index) {
             this->arrowIter = typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator(iter);
           };
           virtual ~iterator() {};
           //
           virtual iterator    operator++() {++this->arrowIter; return *this;};
-          virtual iterator    operator++(int n) {iterator tmp(this->arrowIter); ++this->arrowIter; return tmp;};
+          virtual iterator    operator++(int n) {iterator tmp(this->index, this->arrowIter); ++this->arrowIter; return tmp;};
           virtual iterator    operator--() {--this->arrowIter; return *this;};
-          virtual iterator    operator--(int n) {iterator tmp(this->arrowIter); --this->arrowIter; return tmp;};
+          virtual iterator    operator--(int n) {iterator tmp(this->index, this->arrowIter); --this->arrowIter; return tmp;};
           virtual bool        operator==(const iterator& itor) const {return this->arrowIter == itor.arrowIter;};
           virtual bool        operator!=(const iterator& itor) const {return this->arrowIter != itor.arrowIter;};
           virtual const source_type& operator*() const {return this->arrowIter->source;};
+          void                setColor(int newColor) {this->index.modify(this->arrowIter, changeColor(newColor));};
         };
         class reverse_iterator {
         public:
@@ -246,21 +257,21 @@ namespace ALE {
           virtual const source_type& operator*() const {return this->arrowIter->source;};
         };
 
-        coneSequence(const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const target_type& p) : coneIndex(cone), key(p), color(color_type()), useColor(0) {};
-        coneSequence(const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const target_type& p, const color_type& c) : coneIndex(cone), key(p), color(c), useColor(1) {};
+        coneSequence(typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const target_type& p) : coneIndex(cone), key(p), color(color_type()), useColor(0) {};
+        coneSequence(typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const target_type& p, const color_type& c) : coneIndex(cone), key(p), color(c), useColor(1) {};
         virtual ~coneSequence() {};
         virtual iterator    begin() {
           if (useColor) {
-            return iterator(this->coneIndex.lower_bound(::boost::make_tuple(key,color)));
+            return iterator(this->coneIndex, this->coneIndex.lower_bound(::boost::make_tuple(key,color)));
           } else {
-            return iterator(this->coneIndex.lower_bound(::boost::make_tuple(key)));
+            return iterator(this->coneIndex, this->coneIndex.lower_bound(::boost::make_tuple(key)));
           }
         };
         virtual iterator    end()   {
           if (useColor) {
-            return iterator(this->coneIndex.upper_bound(::boost::make_tuple(key,color)));
+            return iterator(this->coneIndex, this->coneIndex.upper_bound(::boost::make_tuple(key,color)));
           } else {
-            return iterator(this->coneIndex.upper_bound(::boost::make_tuple(key)));
+            return iterator(this->coneIndex, this->coneIndex.upper_bound(::boost::make_tuple(key)));
           }
         };
         virtual reverse_iterator rbegin() {
@@ -382,6 +393,15 @@ namespace ALE {
       Obj<supportSet>      support(const Obj<sourceInputSequence>& sources);
       template<class sourceInputSequence>
       Obj<supportSet>      support(const Obj<sourceInputSequence>& sources, const color_type& color);
+      bool                 supportContains(const source_type& p, const target_type& q) {
+        //FIX: Shouldn't we just be able to query an arrow?
+        Obj<supportSequence> support = this->support(p);
+      
+        for(typename supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); s_iter++) {
+          if (*s_iter == q) return true;
+        }
+        return false;
+      }
       // Lattice queries
       template<class targetInputSequence> 
       Obj<coneSequence> meet(const Obj<targetInputSequence>& targets);
@@ -503,6 +523,27 @@ namespace ALE {
           std::cout << "ERROR: Could not replace source of target" << t << " with " << new_s << std::endl;
         }
       }
+    private:
+      struct changeColor {
+        changeColor(color_type newColor) : newColor(newColor) {};
+
+        void operator()(Arrow_& p) {
+          p.color = newColor;
+        }
+      private:
+        color_type newColor;
+      };
+    public:
+      bool replaceSourceColor(const source_type& p, const color_type& newColor) {
+        typename ::boost::multi_index::index<ArrowSet,source>::type& index = ::boost::multi_index::get<source>(this->arrows);
+        typename ::boost::multi_index::index<ArrowSet,source>::type::iterator i = index.find(p);
+        if (i != index.end()) {
+          index.modify(i, changeColor(newColor));
+        } else {
+          return false;
+        }
+        return true;
+      };
       // Structural methods
       #undef __FUNCT__
       #define __FUNCT__ "BiGraph::stratify"
@@ -818,27 +859,38 @@ namespace ALE {
       };
     
       class coneSequence {
-        const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& coneIndex;
+        typename ::boost::multi_index::index<ArrowSet,targetColor>::type& coneIndex;
         const Point_ key;
         const Color_ color;
         const bool useColor;
+        struct changeColor {
+          changeColor(color_type newColor) : newColor(newColor) {};
+
+          void operator()(Arrow_& p) {
+            p.color = newColor;
+          }
+        private:
+          color_type newColor;
+        };
       public:
         class iterator {
+          typename ::boost::multi_index::index<ArrowSet,targetColor>::type& index;
         public:
           typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator arrowIter;
           
-          iterator(const typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator& iter) {
+          iterator(typename ::boost::multi_index::index<ArrowSet,targetColor>::type& index, const typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator& iter) : index(index) {
             this->arrowIter = typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator(iter);
           };
           virtual ~iterator() {};
           //
           virtual iterator    operator++() {++this->arrowIter; return *this;};
-          virtual iterator    operator++(int n) {iterator tmp(this->arrowIter); ++this->arrowIter; return tmp;};
+          virtual iterator    operator++(int n) {iterator tmp(this->index, this->arrowIter); ++this->arrowIter; return tmp;};
           virtual iterator    operator--() {--this->arrowIter; return *this;};
-          virtual iterator    operator--(int n) {iterator tmp(this->arrowIter); --this->arrowIter; return tmp;};
+          virtual iterator    operator--(int n) {iterator tmp(this->index, this->arrowIter); --this->arrowIter; return tmp;};
           virtual bool        operator==(const iterator& itor) const {return this->arrowIter == itor.arrowIter;};
           virtual bool        operator!=(const iterator& itor) const {return this->arrowIter != itor.arrowIter;};
           virtual const Point_& operator*() const {return this->arrowIter->source;};
+          void                setColor(int newColor) {this->index.modify(this->arrowIter, changeColor(newColor));};
         };
         class reverse_iterator {
         public:
@@ -856,23 +908,23 @@ namespace ALE {
           virtual const Point_&      operator*() const {return this->arrowIter->source;};
         };
         
-        coneSequence(const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const Point_& p) : 
+        coneSequence(typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const Point_& p) : 
           coneIndex(cone), key(p), color(Color_()), useColor(0) {};
-        coneSequence(const typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const Point_& p, const Color_& c) : 
+        coneSequence(typename ::boost::multi_index::index<ArrowSet,targetColor>::type& cone, const Point_& p, const Color_& c) : 
           coneIndex(cone), key(p), color(c), useColor(1) {};
         virtual ~coneSequence() {};
         virtual iterator    begin() {
           if (useColor) {
-            return iterator(this->coneIndex.lower_bound(::boost::make_tuple(key,color)));
+            return iterator(this->coneIndex, this->coneIndex.lower_bound(::boost::make_tuple(key,color)));
           } else {
-            return iterator(this->coneIndex.lower_bound(::boost::make_tuple(key)));
+            return iterator(this->coneIndex, this->coneIndex.lower_bound(::boost::make_tuple(key)));
           }
         };
         virtual iterator    end()   {
           if (useColor) {
-            return iterator(this->coneIndex.upper_bound(::boost::make_tuple(key,color)));
+            return iterator(this->coneIndex, this->coneIndex.upper_bound(::boost::make_tuple(key,color)));
           } else {
-            return iterator(this->coneIndex.upper_bound(::boost::make_tuple(key)));
+            return iterator(this->coneIndex, this->coneIndex.upper_bound(::boost::make_tuple(key)));
           }
         };
         virtual reverse_iterator rbegin() {
@@ -1158,7 +1210,7 @@ namespace ALE {
       };
 
     public:
-      Sieve() : debug(0), stratification(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
+      Sieve(int debug = 0) : debug(debug), stratification(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
       // Printing
       friend std::ostream& operator<<(std::ostream& os, Obj<Sieve<Point_,Color_> > s) { 
         os << *s; 
@@ -1223,6 +1275,8 @@ namespace ALE {
 
       template<class InputSequence> 
       Obj<PointSet>        nSupport(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor = true);
+
+      bool                 supportContains(const Point_& q, const Point_& p);
 
     private:
       template<class InputSequence> Obj<PointSet> 
@@ -1671,6 +1725,17 @@ namespace ALE {
       }
       return support;
     };
+
+    template <typename Point_, typename Color_> 
+    bool Sieve<Point_, Color_>::supportContains(const Point_& q, const Point_& p) {
+      //FIX: Shouldn't we just be able to query an arrow?
+      Obj<supportSequence> support = this->support(q);
+      
+      for(typename Sieve<Point_, Color_>::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); s_iter++) {
+        if (*s_iter == p) return true;
+      }
+      return false;
+    }
 
     //
     // Iterated versions

@@ -4,6 +4,7 @@
 #ifndef  included_ALE_Sifter_hh
 #include <Sifter.hh>
 #endif
+#include <list>
 #include <stack>
 #include <queue>
 
@@ -65,7 +66,7 @@ namespace ALE {
         return os;
       };
     private:
-      indices_type _indices; 
+      indices_type _indices;
     private:
       // Holds size and values for each patch
       std::map<patch_type, int>          _storageSize;
@@ -83,14 +84,61 @@ namespace ALE {
         this->_storageSize.clear();
       };
     public:
-      CoSieve() : debug(0) {};
+      CoSieve(int debug = 0) : debug(debug) {
+        this->_patches.debug = debug;
+        this->_indices.debug = debug;
+      };
       //     Topology Manipulation
       void           setTopology(const Obj<Sieve>& topology) {this->_topology = topology;};
       Obj<Sieve>     getTopology() {return this->_topology;};
       //     Patch manipulation
     private:
       template <typename InputSequence>
-      void order(const patch_type& patch, Obj<InputSequence> base, std::map<typename Sieve::point_type, typename Sieve::point_type>& seen, int& offset) {
+      void completePatch(const patch_type& patch, Obj<InputSequence> base) {
+        for(typename InputSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          if (!this->_patches.supportContains(*b_iter, patch)) {
+            this->_patches.addArrow(*b_iter, patch);
+          }
+          this->completePatch(patch, this->_topology->cone(*b_iter));
+        }
+      };
+      template <typename InputSequence>
+      void order(const patch_type& patch, Obj<InputSequence> base, std::set<typename Sieve::point_type>& seen, int& ordinal) {
+        std::list<typename Sieve::point_type> points(base->begin(), base->end());
+
+        //for(typename InputSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+        for(typename std::list<typename Sieve::point_type>::iterator b_iter = points.begin(); b_iter != points.end(); ++b_iter) {
+          this->order(patch, this->_topology->cone(*b_iter), seen, ordinal);
+
+          if(seen.find(*b_iter) == seen.end()){
+            if (debug) {std::cout << "    Assigned new ordinal " << ordinal << " to " << *b_iter << std::endl;}
+            //b_iter.setColor(ordinal++);
+            if (!this->_patches.replaceSourceColor(*b_iter, ordinal)) {
+              this->_patches.addArrow(*b_iter, patch, ordinal);
+            }
+            ordinal++;
+            seen.insert(*b_iter);
+          }
+        }
+      };
+      void index(const patch_type& patch, int& offset) {
+        Obj<typename patches_type::coneSequence> cone = this->_patches.cone(patch);
+
+        for(typename patches_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+          int dim = this->getIndexDimension(patch, *c_iter);
+
+          if (dim > 0) {
+            typename Sieve::point_type newIndex(offset, dim);
+
+            this->_indices.replaceSourceOfTarget(*c_iter, newIndex);
+            if (debug) {std::cout << "    Assigned new index " << newIndex << " to " << *c_iter << std::endl;}
+            offset += dim;
+          }
+        }
+      };
+
+      template <typename InputSequence>
+      void order_old(const patch_type& patch, Obj<InputSequence> base, std::map<typename Sieve::point_type, typename Sieve::point_type>& seen, int& offset) {
         // To enable the depth-first order traversal without recursion, we employ a stack.
         std::stack<typename Sieve::point_type> stk;
 
@@ -138,11 +186,14 @@ namespace ALE {
       };
 
       void allocateAndOrderPatch(const patch_type& patch) {
-        std::map<typename Sieve::point_type, typename Sieve::point_type> seen;
-        int                                            offset = 0;
+        //std::map<typename Sieve::point_type, typename Sieve::point_type> seen;
+        std::set<typename Sieve::point_type> seen;
+        int                                  ordinal = 0;
+        int                                  offset = 0;
 
         if (debug) {std::cout << "Ordering patch " << patch << std::endl;}
-        this->order(patch, this->getPatch(patch), seen, offset);
+        this->order(patch, this->getPatch(patch), seen, ordinal);
+        this->index(patch, offset);
 
         if (this->_storage.find(patch) != this->_storage.end()) {
           delete [] this->_storage[patch];
@@ -406,7 +457,7 @@ namespace ALE {
         this->setIndexDimensionByDepth(depth, typename Sieve::color_type(), indexDim);
       }
       #undef __FUNCT__
-      #define __FUNCT__ "CoSieve::setIndexDimensionByDepth"
+      #define __FUNCT__ "CoSieve::setIdxDimDpth"
       void setIndexDimensionByDepth(int depth, typename Sieve::color_type color, int indexDim) {
         ALE_LOG_EVENT_BEGIN;
         Obj<typename patches_type::baseSequence> base = this->_patches.base();

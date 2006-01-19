@@ -26,11 +26,11 @@ namespace ALE {
       MPI_Comm        comm;
       int             dim;
     public:
-      Mesh(MPI_Comm c, int dimension) : debug(0), comm(c), dim(dimension) {
-        this->topology    = sieve_type();
-        this->orientation = sieve_type();
-        this->coordinates = coordinate_type();
-        this->boundary    = coordinate_type();
+      Mesh(MPI_Comm c, int dimension, int debug = 0) : debug(debug), comm(c), dim(dimension) {
+        this->topology    = sieve_type(debug);
+        this->orientation = sieve_type(debug);
+        this->coordinates = coordinate_type(debug);
+        this->boundary    = coordinate_type(debug);
       };
 
       MPI_Comm             getComm() {return this->comm;};
@@ -153,7 +153,7 @@ namespace ALE {
         ALE_LOG_EVENT_END;
       };
       #undef __FUNCT__
-      #define __FUNCT__ "Mesh::createSerialCoordinates"
+      #define __FUNCT__ "Mesh::createSerCoords"
       void createSerialCoordinates(int embedDim, int numElements, double coords[]) {
         ALE_LOG_EVENT_BEGIN;
         std::cout << "Creating coordinates" << std::endl;
