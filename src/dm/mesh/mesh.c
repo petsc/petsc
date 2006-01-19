@@ -82,12 +82,11 @@ PetscErrorCode WriteVTKVertices(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewe
 PetscErrorCode WriteVTKElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewer)
 {
   MPI_Comm          comm = mesh->getComm();
-  int               dim  = mesh->getDimension();
   ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
   ALE::Obj<ALE::def::Mesh::sieve_type::heightSequence> elements = topology->heightStratum(0);
   // FIX: Needs to be global
   int               numElements = elements->size();
-  int               corners = topology->nCone(*elements->begin(), dim)->size();
+  int               corners = topology->nCone(*elements->begin(), topology->depth())->size();
   ALE::Obj<ALE::def::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
   PetscMPIInt       rank, size;
   PetscErrorCode    ierr;
@@ -98,7 +97,7 @@ PetscErrorCode WriteVTKElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewe
   ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
   if (rank == 0) {
     for(ALE::def::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-      ALE::Obj<ALE::def::PointSet> cone = topology->nCone(*e_itor, dim);
+      ALE::Obj<ALE::def::PointSet> cone = topology->nCone(*e_itor, topology->depth());
 
       ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
       for(ALE::def::PointSet::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
@@ -317,7 +316,7 @@ PetscErrorCode WritePyLithElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer vi
   ALE::Obj<ALE::def::Mesh::sieve_type::heightSequence> elements = topology->heightStratum(0);
   ALE::Obj<ALE::def::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
   // FIX: Needs to be global
-  int               corners = topology->nCone(*elements->begin(), dim)->size();
+  int               corners = topology->nCone(*elements->begin(), topology->depth())->size();
   PetscMPIInt       rank, size;
   int               elementCount = 1;
   PetscErrorCode    ierr;
