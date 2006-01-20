@@ -218,11 +218,8 @@ PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::def::Mesh> mesh)
 PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::def::Mesh> mesh)
 {
   MPI_Comm          comm = mesh->getComm();
-  ALE::Obj<ALE::Sieve>    topology = ALE::Sieve(comm);
-  ALE::Obj<ALE::PreSieve> orientation = ALE::PreSieve(comm);
-  ALE::Obj<ALE::Sieve>    boundary = ALE::Sieve(comm);
-  Mesh              m;
-  Vec               coordinates;
+  ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
+  ALE::Obj<ALE::def::Mesh::sieve_type> orientation = mesh->getOrientation();
   PetscScalar       coords[24] = {0.0, 0.0, 0.0,
                                   1.0, 0.0, 0.0,
                                   1.0, 1.0, 0.0,
@@ -231,152 +228,133 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::def::Mesh> mesh)
                                   1.0, 0.0, 1.0,
                                   1.0, 1.0, 1.0,
                                   0.0, 1.0, 1.0};
-  ALE::Point_set    cone;
-  ALE::Point        vertices[8];
-  ALE::Point        edges[18];
-  ALE::Point        edge;
-  PetscInt          embedDim = 3;
-  PetscMPIInt       rank, size;
-  PetscErrorCode    ierr;
+
+  ALE::Obj<std::set<ALE::def::Mesh::point_type> >  cone = std::set<ALE::def::Mesh::point_type>();
+  ALE::Obj<std::set<ALE::def::Mesh::point_type> >  ocone = std::set<ALE::def::Mesh::point_type>();
+  ALE::def::Mesh::point_type            vertices[8];
+  ALE::def::Mesh::point_type            edges[12];
+  ALE::def::Mesh::point_type            edge;
+  PetscInt                              embedDim = 3;
+  PetscMPIInt                           rank, size;
+  PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = MeshCreate(comm, &m);CHKERRQ(ierr);
   if (rank == 0) {
-    ALE::Point face;
+    ALE::def::Mesh::point_type face;
 
     /* Create topology and ordering */
+    /* Vertices: 0 .. 3 on the bottom of the cube, 4 .. 7 on the top */
     for(int v = 0; v < 8; v++) {
-      ALE::Point vertex(0, v);
-
-      vertices[v] = vertex;
-      cone.insert(vertex);
-      orientation->addCone(cone, vertex);
-      cone.clear();
+      vertices[v] = ALE::def::Mesh::point_type(0, v);
     }
+
+    /* Edges on the bottom: Sieve element numbers e = 8 .. 11, edge numbers e - 8 = 0 .. 3 */
     for(int e = 8; e < 12; e++) {
-      edge = ALE::Point(0, e);
+      edge = ALE::def::Mesh::point_type(0, e);
       edges[e-8] = edge;
-      cone.insert(vertices[e-8]);
-      cone.insert(vertices[(e-8)%4]);
+      /* (e-8) = 0 .. 3 -- initial vertex */
+      cone->insert(vertices[(e-8)]);
+      /* (e-7)%4 = 1 .. 0 -- final vertex   */
+      cone->insert(vertices[(e-7)%7]);
       topology->addCone(cone, edge);
-      cone.clear();
-/*       cone.insert(vertices[e-8]); */
-/*       cone.insert(edge); */
-/*       orientation->addCone(cone, edge); */
-/*       cone.clear(); */
+      cone->clear();
+      /* set the edge orientation: the initial vertex and the edge itself */
+      ocone->insert(vertices[(e-8)]);
+      ocone->insert(edge);
+      orientation->addCone(ocone,edge);
+      ocone->clear();
     }
+    /* Edges on the top: Sieve element numbers e = 12 .. 15, edge numbers e - 8 = 4 .. 7 */
     for(int e = 12; e < 16; e++) {
-      edge = ALE::Point(0, e);
+      edge = ALE::def::Mesh::point_type(0, e); 
       edges[e-8] = edge;
-      cone.insert(vertices[e-12+4]);
-      cone.insert(vertices[(e-12)%4+4]);
+      /* e - 12 + 4 =  4 .. 7 -- initial vertex */
+      cone->insert(vertices[e-8]);
+      /* (e-11)%4 + 4 = 5 .. 4 -- final vertex  */ 
+      cone->insert(vertices[(e-11)%4+4]);
       topology->addCone(cone, edge);
-      cone.clear();
+      cone->clear();
+      /* set the edge orientation: the initial vertex and the edge itself */
+      ocone->insert(vertices[(e-8)]);
+      ocone->insert(edge);
+      orientation->addCone(ocone,edge);
+      ocone->clear();
     }
+    /* Edges from bottom to top: Sieve element numbers e = 16 .. 19, edge numbers e - 8 = 8 .. 11 */
     for(int e = 16; e < 20; e++) {
-      edge = ALE::Point(0, e);
+      edge = ALE::def::Mesh::point_type(0, e); 
       edges[e-8] = edge;
-      cone.insert(vertices[e-16]);
-      cone.insert(vertices[e-16+4]);
+      /* (e-16) = 0 .. 3 -- initial vertex */
+      cone->insert(vertices[e-16]);
+      /* (e-16+4) = 4 .. 7 -- final vertex */
+      cone->insert(vertices[e-16+4]);
       topology->addCone(cone, edge);
-      cone.clear();
+      cone->clear();
+      /* set the edge orientation: the initial vertex and the edge itself */
+      ocone->insert(vertices[(e-16)]);
+      ocone->insert(edge);
+      orientation->addCone(ocone,edge);
+      ocone->clear();
     }
-    edge = ALE::Point(0, 20);
-    edges[12] = edge;
-    cone.insert(vertices[1]);
-    cone.insert(vertices[3]);
-    topology->addCone(cone, edge);
-    cone.clear();
-    edge = ALE::Point(0, 21);
-    edges[13] = edge;
-    cone.insert(vertices[5]);
-    cone.insert(vertices[2]);
-    topology->addCone(cone, edge);
-    cone.clear();
-    edge = ALE::Point(0, 22);
-    edges[14] = edge;
-    cone.insert(vertices[4]);
-    cone.insert(vertices[6]);
-    topology->addCone(cone, edge);
-    cone.clear();
-    edge = ALE::Point(0, 23);
-    edges[15] = edge;
-    cone.insert(vertices[0]);
-    cone.insert(vertices[7]);
-    topology->addCone(cone, edge);
-    cone.clear();
-    edge = ALE::Point(0, 24);
-    edges[16] = edge;
-    cone.insert(vertices[0]);
-    cone.insert(vertices[5]);
-    topology->addCone(cone, edge);
-    cone.clear();
-    edge = ALE::Point(0, 25);
-    edges[17] = edge;
-    cone.insert(vertices[2]);
-    cone.insert(vertices[7]);
-    topology->addCone(cone, edge);
-    cone.clear();
 
-    face = ALE::Point(0, 26);
-    cone.insert(vertices[2]);
-    cone.insert(vertices[7]);
-    cone.insert(vertices[7]);
-    topology->addCone(cone, edge);
-    cone.clear();
-  }
-  ierr = MeshSetTopology(m, topology);CHKERRQ(ierr);
-  ierr = MeshSetOrientation(m, orientation);CHKERRQ(ierr);
-  /* Create element numbering */
-  ALE::Obj<ALE::IndexBundle> elementBundle = ALE::IndexBundle(topology);
-  if (rank == 0) {
-    elementBundle->setFiberDimensionByHeight(0, 1);
-  }
-  elementBundle->computeOverlapIndices();
-  elementBundle->computeGlobalIndices();
-  ierr = MeshSetElementBundle(m, elementBundle);CHKERRQ(ierr);
-  /* Create vertex coordinates */
-  ALE::Obj<ALE::IndexBundle> coordBundle = ALE::IndexBundle(topology);
-  if (rank == 0) {
-    coordBundle->setFiberDimensionByDepth(0, embedDim);
-  }
-  coordBundle->computeOverlapIndices();
-  coordBundle->computeGlobalIndices();
-  ierr = MeshSetCoordinateBundle(m, coordBundle);CHKERRQ(ierr);
-  /* Store coordinates */
-  int localSize = 0, globalSize = 0;
+    /* Bottom face */
+    face = ALE::def::Mesh::point_type(0, 20); 
+    /* Covered by edges 0 .. 3 */
+    for(int e = 0; e < 4; e++) {
+      cone->insert(edges[e]);
+    }
+    topology->addCone(cone, face);
+    cone->clear();
+    /* set the face orientation: the orientation cone of the leading edge and the face itself */
+    orientation->addCone(orientation->cone(edges[0]),face);
+    orientation->addArrow(face,face);
 
-  ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
-  if (rank == 0) {
-    localSize = coordBundle->getLocalSize();
-  }
-  globalSize = coordBundle->getGlobalSize();
-  ierr = VecSetBlockSize(coordinates, embedDim);CHKERRQ(ierr);
-  ierr = VecSetSizes(coordinates, localSize, globalSize);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(coordinates);CHKERRQ(ierr);
-  ALE::Obj<ALE::Point_set> vertexPoints = topology->depthStratum(0);
-  for(ALE::Point_set::iterator vertex_itor = vertexPoints->begin(); vertex_itor != vertexPoints->end(); vertex_itor++) {
-    ALE::Point v = *vertex_itor;
-    //ierr = assembleField(coordBundle, orientation, coordinates, v, &coords[v.index*embedDim], INSERT_VALUES);CHKERRQ(ierr);
-  }
-  ierr = VecAssemblyBegin(coordinates);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(coordinates);CHKERRQ(ierr);
-  ierr = MeshSetCoordinates(m, coordinates);CHKERRQ(ierr);
-  /* Create boundary conditions */
-  if (rank == 0) {
-    for(int v = 0; v < 8; v++) {
-      cone.insert(ALE::Point(0, v));
+
+    /* Top face */
+    face = ALE::def::Mesh::point_type(0, 21); 
+    /* Covered by edges 4 .. 7 */
+    for(int e = 4; e < 8; e++) {
+      cone->insert(edges[e]);
     }
-    for(int e = 9; e < 17; e++) {
-      cone.insert(ALE::Point(0, e));
+    topology->addCone(cone, face);
+    cone->clear();
+    /* set the face orientation: the orientation cone of the leading edge and the face itself */
+    orientation->addCone(orientation->cone(edges[4]),face);
+    orientation->addArrow(face,face);
+
+    /* Side faces: f = 22 .. 25 */
+    for(int f = 22; f < 26; f++) {
+      face = ALE::def::Mesh::point_type(0, f); 
+      /* Covered by edges f - 22, f - 22 + 4, f - 22 + 8, (f - 21)%4 + 8 */
+      cone->insert(edges[f-22]);
+      cone->insert(edges[f-22+4]);
+      cone->insert(edges[f-22+8]);
+      cone->insert(edges[(f-22)%4+8]);
+      topology->addCone(cone, face);
+      cone->clear();
+      /* set the face orientation: the orientation cone of the leading edge and the face itself */
+      orientation->addCone(orientation->cone(edges[f-22]),face);
+      orientation->addArrow(face,face);
+
     }
-    ALE::Point boundaryPoint(-1, 1);
-    boundary->addCone(cone, boundaryPoint);
+
+  }/* if(rank == 0) */
+  
+  topology->stratify();
+  mesh->createSerialCoordinates(3, 0, coords);
+
+  /* Create boundary conditions: set marker 1 to all of the sieve elements, 
+     since everything is on the boundary (no internal faces, edges or vertices)  */
+  if (rank == 0) {
+    /* set marker to the base of the topology sieve -- the faces and the edges */
+    topology->setMarker(topology->base(), 1);
+    /* set marker to the vertices -- the 0-depth stratum */
+    topology->setMarker(topology->depthStratum(0), 1);
   }
-  ierr = MeshSetBoundary(m, boundary);CHKERRQ(ierr);
-  //*mesh = m;
+
+
   PetscFunctionReturn(0);
 }
 
