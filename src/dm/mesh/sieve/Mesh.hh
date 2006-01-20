@@ -5,6 +5,13 @@
 #include <CoSifter.hh>
 #endif
 
+#ifdef PETSC_HAVE_TRIANGLE
+#include <triangle.h>
+#endif
+#ifdef PETSC_HAVE_TETGEN
+#include <tetgen.h>
+#endif
+
 namespace ALE {
 
   namespace def {
@@ -450,12 +457,6 @@ namespace ALE {
       };
     };
 
-#ifdef PETSC_HAVE_TRIANGLE
-#include <triangle.h>
-#endif
-#ifdef PETSC_HAVE_TETGEN
-#include <tetgen.h>
-#endif
     class Generator {
 #ifdef PETSC_HAVE_TRIANGLE
       static void initInput_Triangle(struct triangulateio *inputCtx) {
@@ -595,8 +596,8 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "generate_TetGen"
       static Obj<Mesh> generate_TetGen(Obj<Mesh> boundary) {
-        tetgenio              in;
-        tetgenio              out;
+        ::tetgenio            in;
+        ::tetgenio            out;
         int                   dim = 3;
         Obj<Mesh>             m = Mesh(boundary->getComm(), dim);
         Obj<Mesh::sieve_type> bdTopology = boundary->getTopology();
@@ -660,7 +661,7 @@ namespace ALE {
 
           in.numberofholes = 0;
           if (createConvexHull) args += "c";
-          tetrahedralize((char *) args.c_str(), &in, &out);
+          ::tetrahedralize((char *) args.c_str(), &in, &out);
         }
         m->populate(out.numberoftetrahedra, out.tetrahedronlist, out.numberofpoints, out.pointlist);
   

@@ -255,13 +255,13 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::def::Mesh> mesh)
       edge = ALE::def::Mesh::point_type(0, e);
       edges[e-8] = edge;
       /* (e-8) = 0 .. 3 -- initial vertex */
-      cone->insert(vertices[(e-8)]);
+      cone->insert(vertices[e-8]);
       /* (e-7)%4 = 1 .. 0 -- final vertex   */
-      cone->insert(vertices[(e-7)%7]);
+      cone->insert(vertices[(e-7)%4]);
       topology->addCone(cone, edge);
       cone->clear();
       /* set the edge orientation: the initial vertex and the edge itself */
-      ocone->insert(vertices[(e-8)]);
+      ocone->insert(vertices[e-8]);
       ocone->insert(edge);
       orientation->addCone(ocone,edge);
       ocone->clear();
@@ -331,7 +331,7 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::def::Mesh> mesh)
       cone->insert(edges[f-22]);
       cone->insert(edges[f-22+4]);
       cone->insert(edges[f-22+8]);
-      cone->insert(edges[(f-22)%4+8]);
+      cone->insert(edges[(f-21)%4+8]);
       topology->addCone(cone, face);
       cone->clear();
       /* set the face orientation: the orientation cone of the leading edge and the face itself */
@@ -341,9 +341,8 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::def::Mesh> mesh)
     }
 
   }/* if(rank == 0) */
-  
   topology->stratify();
-  mesh->createSerialCoordinates(3, 0, coords);
+  mesh->createSerialCoordinates(embedDim, 0, coords);
 
   /* Create boundary conditions: set marker 1 to all of the sieve elements, 
      since everything is on the boundary (no internal faces, edges or vertices)  */
