@@ -5,6 +5,52 @@ import re
 import sys
 import md5
 
+import nargs
+
+class ArgDownload(nargs.Arg):
+  '''Arguments that represent software downloads'''
+  def __init__(self, key, value = None, help = '', isTemporary = 0):
+    nargs.Arg.__init__(self, key, value, help, isTemporary)
+    return
+
+  def valueName(self, value):
+    if value == 0:
+      return 'no'
+    elif value == 1:
+      return 'yes'
+    elif value == 2:
+      return 'ifneeded'
+    return str(value)
+
+  def __str__(self):
+    if not self.isValueSet():
+      return 'Empty '+str(self.__class__)
+    elif isinstance(self.value, list):
+      return str(map(self.valueName, self.value))
+    return self.valueName(self.value)
+
+  def getEntryPrompt(self):
+    return 'Please enter download value for '+str(self.key)+': '
+
+  def setValue(self, value):
+    '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    try:
+      if   value == '0':        value = 0
+      elif value == '1':        value = 1
+      elif value == 'no':       value = 0
+      elif value == 'yes':      value = 1
+      elif value == 'false':    value = 0
+      elif value == 'true':     value = 1
+      elif value == 'ifneeded': value = 2
+      elif not isinstance(value, int):
+        value = str(value)
+    except:
+      raise TypeError('Invalid download value: '+str(value)+' for key '+str(self.key))
+    if isinstance(value, str) and not os.path.isfile(value):
+      raise ValueError('Invalid download location: '+str(value)+' for key '+str(self.key))
+    self.value = value
+    return
+
 class Package(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -99,11 +145,10 @@ class Package(config.base.Configure):
   
   def setupHelp(self,help):
     '''Prints help messages for the package'''
-    import nargs
     help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required,'Indicate if you wish to test for '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
     if self.download:
-      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Download and install '+self.name))
+      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded>',  ArgDownload(None, 0, 'Download and install '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' include files'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../libparmetis.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))    
     return
