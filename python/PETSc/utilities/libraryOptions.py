@@ -98,16 +98,14 @@ class Configure(config.base.Configure):
 
   def configureISColorValueType(self):
     '''Sets PETSC_IS_COLOR_VALUE_TYPE, MPIU_COLORING_VALUE, IS_COLORING_MAX required by ISColor'''
-    import math
-    
     self.isColorValueType  = self.framework.argDB['with-is-color-value-type']
     if self.isColorValueType != 'char' and self.isColorValueType != 'short':
       raise RuntimeError('Incorrect --with-is-color-value-type value specified. Can be either char or short. Specified value is :'+self.isColorValueType)
     if self.isColorValueType == 'char':
-      max = int(math.pow(2,self.types.sizes['sizeof_char']*self.types.bits_per_byte))-1
+      max = pow(2,self.types.sizes['sizeof_char']*self.types.bits_per_byte)-1
       mpi_type = 'MPI_UNSIGNED_CHAR'
     else:
-      max = int(math.pow(2,self.types.sizes['sizeof_short']*self.types.bits_per_byte))-1
+      max = pow(2,self.types.sizes['sizeof_short']*self.types.bits_per_byte)-1
       mpi_type = 'MPI_UNSIGNED_SHORT'
 
     self.framework.addDefine('MPIU_COLORING_VALUE',mpi_type)
