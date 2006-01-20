@@ -1059,6 +1059,7 @@ namespace ALE {
           virtual bool        operator==(const iterator& itor) const {return this->pointIter == itor.pointIter;};
           virtual bool        operator!=(const iterator& itor) const {return this->pointIter != itor.pointIter;};
           virtual const Point_& operator*() const {return this->pointIter->point;};
+          marker_type           getMarker() const {return this->pointIter->marker;};
         };
         
         heightSequence(const typename ::boost::multi_index::index<StratumSet,heightTag>::type& height, const int h) : 

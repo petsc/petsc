@@ -453,6 +453,9 @@ namespace ALE {
 #ifdef PETSC_HAVE_TRIANGLE
 #include <triangle.h>
 #endif
+#ifdef PETSC_HAVE_TETGEN
+#include <tetgen.h>
+#endif
     class Generator {
 #ifdef PETSC_HAVE_TRIANGLE
       static void initInput_Triangle(struct triangulateio *inputCtx) {
@@ -492,14 +495,14 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "generate_Triangle"
       static Obj<Mesh> generate_Triangle(Obj<Mesh> boundary) {
-        struct triangulateio in;
-        struct triangulateio out;
-        int                  dim = 2;
-        Obj<Mesh>            m = Mesh(boundary->getComm(), dim);
-        PetscMPIInt          rank;
+        struct triangulateio  in;
+        struct triangulateio  out;
+        int                   dim = 2;
+        Obj<Mesh>             m = Mesh(boundary->getComm(), dim);
         Obj<Mesh::sieve_type> bdTopology = boundary->getTopology();
         Obj<Mesh::sieve_type> bdOrientation = boundary->getOrientation();
-        PetscErrorCode       ierr;
+        PetscMPIInt           rank;
+        PetscErrorCode        ierr;
 
         ierr = MPI_Comm_rank(boundary->getComm(), &rank);
         initInput_Triangle(&in);
@@ -530,7 +533,6 @@ namespace ALE {
 
           Obj<Mesh::sieve_type::depthSequence> edges = bdTopology->depthStratum(1);
           Obj<Mesh::bundle_type>               edgeBundle = boundary->getBundle(1);
-          Obj<Mesh::coordinate_type>           bdSieve = boundary->getBoundary();
 
           in.numberofsegments = edges->size();
           if (in.numberofsegments > 0) {
@@ -578,7 +580,7 @@ namespace ALE {
             if (out.edgemarkerlist[e]) {
               Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftriangles);
               Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftriangles);
-              Obj<PointSet>                join = topology->nJoin(endpointA, endpointB, 1);
+              Obj<PointSet>    join = topology->nJoin(endpointA, endpointB, 1);
 
               topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
             }
@@ -586,6 +588,115 @@ namespace ALE {
         }
 
         finiOutput_Triangle(&out);
+        return m;
+      };
+#endif
+#ifdef PETSC_HAVE_TETGEN
+      #undef __FUNCT__
+      #define __FUNCT__ "generate_TetGen"
+      static Obj<Mesh> generate_TetGen(Obj<Mesh> boundary) {
+        tetgenio              in;
+        tetgenio              out;
+        int                   dim = 3;
+        Obj<Mesh>             m = Mesh(boundary->getComm(), dim);
+        Obj<Mesh::sieve_type> bdTopology = boundary->getTopology();
+        Obj<Mesh::sieve_type> bdOrientation = boundary->getOrientation();
+        PetscMPIInt           rank;
+        PetscErrorCode        ierr;
+
+        ierr = MPI_Comm_rank(boundary->getComm(), &rank);
+
+        if (rank == 0) {
+          std::string args("pqenzQ");
+          bool        createConvexHull = false;
+          Obj<Mesh::sieve_type::depthSequence> vertices = bdTopology->depthStratum(0);
+          Obj<Mesh::bundle_type>               vertexBundle = boundary->getBundle(0);
+
+          in.numberofpoints = vertices->size();
+          if (in.numberofpoints > 0) {
+            Obj<Mesh::coordinate_type> coordinates = boundary->getCoordinates();
+
+            in.pointlist       = new double[in.numberofpoints*dim];
+            in.pointmarkerlist = new int[in.numberofpoints];
+            for(Mesh::sieve_type::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); ++v_itor) {
+              const Mesh::coordinate_type::index_type& interval = coordinates->getIndex(0, *v_itor);
+              const Mesh::coordinate_type::value_type *array = coordinates->restrict(0, *v_itor);
+
+              for(int d = 0; d < interval.index; d++) {
+                in.pointlist[interval.prefix + d] = array[d];
+              }
+              const Mesh::coordinate_type::index_type& vInterval = vertexBundle->getIndex(0, *v_itor);
+              in.pointmarkerlist[vInterval.prefix] = v_itor.getMarker();
+            }
+          }
+
+          Obj<Mesh::sieve_type::heightSequence> facets = bdTopology->heightStratum(0);
+          Obj<Mesh::bundle_type>                facetBundle = boundary->getBundle(bdTopology->depth());
+
+          in.numberoffacets = facets->size();
+          if (in.numberoffacets > 0) {
+            in.facetlist       = new tetgenio::facet[in.numberoffacets];
+            in.facetmarkerlist = new int[in.numberoffacets];
+            for(Mesh::sieve_type::heightSequence::iterator f_itor = facets->begin(); f_itor != facets->end(); ++f_itor) {
+              const Mesh::coordinate_type::index_type& interval = facetBundle->getIndex(0, *f_itor);
+              Obj<ALE::def::PointSet>                  cone = bdTopology->nCone(*f_itor, bdTopology->depth());
+
+              in.facetlist[interval.prefix].numberofpolygons = 1;
+              in.facetlist[interval.prefix].polygonlist = new tetgenio::polygon[in.facetlist[interval.prefix].numberofpolygons];
+              in.facetlist[interval.prefix].numberofholes = 0;
+              in.facetlist[interval.prefix].holelist = NULL;
+
+              tetgenio::polygon *poly = in.facetlist[interval.prefix].polygonlist;
+              int                c = 0;
+
+              poly->numberofvertices = cone->size();
+              poly->vertexlist = new int[poly->numberofvertices];
+              for(ALE::def::PointSet::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
+                poly->vertexlist[c++] = c_itor->index;
+              }
+              in.facetmarkerlist[interval.prefix] = f_itor.getMarker();
+            }
+          }
+
+          in.numberofholes = 0;
+          if (createConvexHull) args += "c";
+          tetrahedralize((char *) args.c_str(), &in, &out);
+        }
+        m->populate(out.numberoftetrahedra, out.tetrahedronlist, out.numberofpoints, out.pointlist);
+  
+        if (rank == 0) {
+          Obj<Mesh::sieve_type> topology = m->getTopology();
+
+          for(int v = 0; v < out.numberofpoints; v++) {
+            if (out.pointmarkerlist[v]) {
+              topology->setMarker(Mesh::point_type(0, v + out.numberoftetrahedra), out.pointmarkerlist[v]);
+            }
+          }
+          for(int e = 0; e < out.numberofedges; e++) {
+            if (out.edgemarkerlist[e]) {
+              Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftetrahedra);
+              Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftetrahedra);
+              Obj<PointSet>    join = topology->nJoin(endpointA, endpointB, 1);
+
+              topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
+            }
+          }
+          for(int f = 0; f < out.numberoftrifaces; f++) {
+            if (out.trifacemarkerlist[f]) {
+              Obj<PointSet>    point = PointSet();
+              Obj<PointSet>    edge = PointSet();
+              Mesh::point_type cornerA(0, out.edgelist[f*3+0] + out.numberoftetrahedra);
+              Mesh::point_type cornerB(0, out.edgelist[f*3+1] + out.numberoftetrahedra);
+              Mesh::point_type cornerC(0, out.edgelist[f*3+2] + out.numberoftetrahedra);
+              point->insert(cornerA);
+              edge->insert(cornerB);
+              edge->insert(cornerC);
+              Obj<PointSet>    join = topology->nJoin(point, edge, 2);
+
+              topology->setMarker(*join->begin(), out.trifacemarkerlist[f]);
+            }
+          }
+        }
         return m;
       };
 #endif
@@ -734,6 +845,11 @@ namespace ALE {
         return m;
       };
 #endif
+#ifdef PETSC_HAVE_TETGEN
+      static Obj<Mesh> refine_TetGen(Obj<Mesh> mesh, double maxAreas[]) {
+        return mesh;
+      };
+#endif
     public:
       static Obj<Mesh> refine(Obj<Mesh> mesh, double maxArea) {
         int       numElements = mesh->getTopology()->heightStratum(0)->size();
@@ -758,7 +874,7 @@ namespace ALE {
 #endif
         } else if (dim == 3) {
 #ifdef PETSC_HAVE_TETGEN
-          refinedMesh = refine_TetGen(mesh);
+          refinedMesh = refine_TetGen(mesh, maxAreas);
 #else
           throw ALE::Exception("Mesh generation currently requires TetGen to be installed. Use --download-tetgen during configure.");
 #endif
