@@ -148,7 +148,7 @@ class Package(config.base.Configure):
     help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required,'Indicate if you wish to test for '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
     if self.download:
-      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded>',  ArgDownload(None, 0, 'Download and install '+self.name))
+      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded,filename>', ArgDownload(None, 0, 'Download and install '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' include files'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../libparmetis.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))    
     return
@@ -178,7 +178,17 @@ class Package(config.base.Configure):
 
   def checkDownload(self,preOrPost):
     '''Check if we should download the package'''
-    if self.download and self.framework.argDB['download-'+self.downloadname.lower()] == preOrPost:
+    dowork=0
+    if preOrPost==1 and isinstance(self.framework.argDB['download-'+self.downloadname.lower()], str):
+      self.download = ['file://'+os.path.abspath(self.framework.argDB['download-'+self.downloadname.lower()])]
+      dowork=1
+    elif self.framework.argDB['download-'+self.downloadname.lower()] == preOrPost:
+      dowork=1
+
+    if not self.download:
+      raise RuntimeError('URL missing for package'+self.package+'. perhaps a PETSc bug\n')
+    
+    if dowork:
       if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
         self.framework.logClear()
         self.logPrint("**************************************************************************************************", debugSection='screen')

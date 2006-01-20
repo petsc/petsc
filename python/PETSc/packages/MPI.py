@@ -42,8 +42,8 @@ class Configure(PETSc.package.Package):
   def setupHelp(self, help):
     PETSc.package.Package.setupHelp(self,help)
     import nargs
-    help.addArgument('MPI', '-download-lam=<no,yes,ifneeded>',    nargs.ArgFuzzyBool(None, 0, 'Download and install LAM/MPI'))
-    help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Download and install MPICH-2'))
+    help.addArgument('MPI', '-download-lam=<no,yes,ifneeded,filename>',    PETSc.package.ArgDownload(None, 0, 'Download and install LAM/MPI'))
+    help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded,filename>',  PETSc.package.ArgDownload(None, 0, 'Download and install MPICH-2'))
     help.addArgument('MPI', '-with-mpirun=<prog>',                nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-download-mpich-machines=[machine1,machine2...]',  nargs.Arg(None, ['localhost','localhost'], 'Machines for MPI to use'))
@@ -217,20 +217,38 @@ class Configure(PETSc.package.Package):
 
   def checkDownload(self,preOrPost):
     '''Check if we should download LAM or MPICH'''
-    if self.framework.argDB['download-lam'] == preOrPost:
+
+    if self.framework.argDB['download-lam'] and self.framework.argDB['download-mpich']:
+      raise RuntimeError('Sorry, cannot install both LAM and MPICH. Install any one of the two')
+
+    # check for LAM
+    if self.framework.argDB['download-lam']:
       if config.setCompilers.Configure.isCygwin():
         raise RuntimeError('Sorry, cannot download-install LAM on Windows. Sugest installing windows version of MPICH manually')
-      return os.path.abspath(os.path.join(self.InstallLAM(),self.arch.arch))
-    if self.framework.argDB['download-mpich'] == preOrPost:
+      self.liblist      = self.liblist_lam   # only generate LAM MPI guesses
+      self.download     = self.download_lam
+      self.downloadname = 'lam'
+      return PETSc.package.Package.checkDownload(self,preOrPost)
+        
+    # Check for MPICH
+    if self.framework.argDB['download-mpich']:
       if config.setCompilers.Configure.isCygwin():
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows. Sugest installing windows version of MPICH manually')
-      return os.path.abspath(os.path.join(self.InstallMPICH(),self.arch.arch))
+      self.liblist      = self.liblist_mpich   # only generate MPICH guesses
+      self.download     = self.download_mpich
+      self.downloadname = 'mpich'
+      return PETSc.package.Package.checkDownload(self,preOrPost)
     return None
 
+  def Install(self):
+    if self.framework.argDB['download-lam']:
+      return self.InstallLAM()
+    elif self.framework.argDB['download-mpich']:
+      return self.InstallMPICH()
+    else:
+      raise RuntimeError('Internal Error!')
+    
   def InstallLAM(self):
-    self.liblist      = self.liblist_lam   # only generate LAM MPI guesses
-    self.download     = self.download_lam
-    self.downloadname = 'lam'
     lamDir = self.getDir()
 
     # Get the LAM directories
@@ -299,9 +317,6 @@ class Configure(PETSc.package.Package):
     return self.getDir()
 
   def InstallMPICH(self):
-    self.liblist      = self.liblist_mpich   # only generate MPICH guesses
-    self.download     = self.download_mpich
-    self.downloadname = 'mpich'
     mpichDir = self.getDir()
     installDir = os.path.join(mpichDir, self.arch.arch)
     if not os.path.isdir(installDir):

@@ -79,8 +79,6 @@ def petsc_configure(configure_options):
   # support a few standard configure option types 
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
-    if name.find('download-') >= 0:
-      sys.argv[l] = name.lower()
     if name.find('enable-') >= 0:
       sys.argv[l] = name.replace('enable-','with-')
       if name.find('=') == -1: sys.argv[l] += '=1'
