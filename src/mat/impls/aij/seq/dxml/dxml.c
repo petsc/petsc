@@ -20,8 +20,8 @@ static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
-  dmatvec_genr_(&zero,a->a,a->i,a->j,&a->nz,0,xx,yy,&a->m);
-  ierr = PetscLogFlops(2*a->nz - a->m);CHKERRQ(ierr);
+  dmatvec_genr_(&zero,a->a,a->i,a->j,&a->nz,0,xx,yy,&A->rmap.n);
+  ierr = PetscLogFlops(2*a->nz - A->rmap.n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

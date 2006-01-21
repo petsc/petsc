@@ -29,11 +29,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatlabEnginePut_Matlab(PetscObject obj,void
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)B->data;
 
   PetscFunctionBegin;
-  mat  = mxCreateSparse(B->n,B->m,aij->nz,mxREAL);
+  mat  = mxCreateSparse(B->cmap.n,B->rmap.n,aij->nz,mxREAL);
   ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(PetscScalar));CHKERRQ(ierr);
   /* Matlab stores by column, not row so we pass in the transpose of the matrix */
   ierr = PetscMemcpy(mxGetIr(mat),aij->j,aij->nz*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemcpy(mxGetJc(mat),aij->i,(B->m+1)*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(mxGetJc(mat),aij->i,(B->rmap.n+1)*sizeof(int));CHKERRQ(ierr);
 
   /* Matlab indices start at 0 for sparse (what a surprise) */
   
@@ -59,17 +59,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatlabEngineGet_Matlab(PetscObject obj,void
 
   mmat = engGetVariable((Engine *)mengine,obj->name);
 
-  aij->nz           = (mxGetJc(mmat))[mat->m];
-  ierr  = PetscMalloc3(aij->nz,PetscScalar,&aij->a,aij->nz,PetscInt,&aij->j,mat->m+1,PetscInt,&aij->i);CHKERRQ(ierr);
+  aij->nz           = (mxGetJc(mmat))[mat->rmap.n];
+  ierr  = PetscMalloc3(aij->nz,PetscScalar,&aij->a,aij->nz,PetscInt,&aij->j,mat->rmap.n+1,PetscInt,&aij->i);CHKERRQ(ierr);
   aij->singlemalloc = PETSC_TRUE;
   aij->freedata     = PETSC_TRUE;
 
   ierr = PetscMemcpy(aij->a,mxGetPr(mmat),aij->nz*sizeof(PetscScalar));CHKERRQ(ierr);
   /* Matlab stores by column, not row so we pass in the transpose of the matrix */
   ierr = PetscMemcpy(aij->j,mxGetIr(mmat),aij->nz*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemcpy(aij->i,mxGetJc(mmat),(mat->m+1)*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(aij->i,mxGetJc(mmat),(mat->rmap.n+1)*sizeof(int));CHKERRQ(ierr);
 
-  for (ii=0; ii<mat->m; ii++) {
+  for (ii=0; ii<mat->rmap.n; ii++) {
     aij->ilen[ii] = aij->imax[ii] = aij->i[ii+1] - aij->i[ii];
   }
 
@@ -175,9 +175,9 @@ PetscErrorCode MatLUFactorSymbolic_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Ma
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
+  if (A->cmap.N != A->rmap.N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
   ierr                       = MatCreate(A->comm,F);CHKERRQ(ierr);
-  ierr                       = MatSetSizes(*F,A->m,A->n,A->m,A->n);CHKERRQ(ierr);
+  ierr                       = MatSetSizes(*F,A->rmap.n,A->cmap.n,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
   ierr                       = MatSetType(*F,A->type_name);CHKERRQ(ierr);
   ierr                       = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
   (*F)->ops->solve           = MatSolve_Matlab;
@@ -237,9 +237,9 @@ PetscErrorCode MatLUFactorSymbolic_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
+  if (A->cmap.N != A->rmap.N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
   ierr                       = MatCreate(A->comm,F);CHKERRQ(ierr);
-  ierr                       = MatSetSizes(*F,A->m,A->n,A->m,A->n);CHKERRQ(ierr);
+  ierr                       = MatSetSizes(*F,A->rmap.n,A->cmap.n,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
   ierr                       = MatSetType(*F,A->type_name);CHKERRQ(ierr);
   ierr                       = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
   (*F)->ops->solve           = MatSolve_Matlab_QR;
@@ -262,9 +262,9 @@ PetscErrorCode MatILUDTFactor_Matlab(Mat A,IS isrow,IS iscol,MatFactorInfo *info
   PetscFunctionBegin;
   if (info->dt == PETSC_DEFAULT)      info->dt      = .005;
   if (info->dtcol == PETSC_DEFAULT)   info->dtcol   = .01;
-  if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
+  if (A->cmap.N != A->rmap.N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
   ierr                       = MatCreate(A->comm,F);CHKERRQ(ierr);
-  ierr                       = MatSetSizes(*F,A->m,A->n,A->m,A->n);CHKERRQ(ierr);
+  ierr                       = MatSetSizes(*F,A->rmap.n,A->cmap.n,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
   ierr                       = MatSetType(*F,A->type_name);CHKERRQ(ierr);
   ierr                       = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
   (*F)->ops->solve           = MatSolve_Matlab;

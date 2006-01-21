@@ -48,7 +48,7 @@ PetscErrorCode MatScale_MPIRowbs(Mat inA,PetscScalar alpha)
   BSspmat        *A = a->A;
   BSsprow        *vs;
   PetscScalar    *ap;
-  int            i,m = inA->m,nrow,j;
+  int            i,m = inA->rmap.n,nrow,j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -71,7 +71,7 @@ static PetscErrorCode MatCreateMPIRowbs_local(Mat A,int nz,const int nnz[])
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs*)A->data;
   PetscErrorCode ierr;
-  int   i,len,m = A->m,*tnnz;
+  int   i,len,m = A->rmap.n,*tnnz;
   BSspmat      *bsmat;
   BSsprow      *vs;
 
@@ -99,7 +99,7 @@ static PetscErrorCode MatCreateMPIRowbs_local(Mat A,int nz,const int nnz[])
   len                    = m*(sizeof(BSsprow*)+ sizeof(BSsprow)) + 1;
   ierr                   = PetscMalloc(len,&bsmat->rows);CHKERRQ(ierr);
   bsmat->num_rows        = m;
-  bsmat->global_num_rows = A->M;
+  bsmat->global_num_rows = A->rmap.N;
   bsmat->map             = bsif->bsmap;
   vs                     = (BSsprow*)(bsmat->rows + m);
   for (i=0; i<m; i++) {
@@ -142,14 +142,14 @@ static PetscErrorCode MatSetValues_MPIRowbs_local(Mat AA,int m,const int im[],in
   for (k=0; k<m; k++) { /* loop over added rows */
     row = im[k];
     if (row < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %d",row);
-    if (row >= AA->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,AA->m-1);
+    if (row >= AA->rmap.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,AA->rmap.n-1);
     vs   = A->rows[row];
     ap   = vs->nz; rp = vs->col;
     rmax = imax[row]; nrow = vs->length;
     a    = 0;
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative col: %d",in[l]);
-      if (in[l] >= AA->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[l],AA->N-1);
+      if (in[l] >= AA->cmap.N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[l],AA->cmap.N-1);
       col = in[l]; value = *v++;
       if (!sorted) a = 0; b = nrow;
       while (b-a > 5) {
@@ -229,13 +229,13 @@ static PetscErrorCode MatAssemblyEnd_MPIRowbs_local(Mat AA,MatAssemblyType mode)
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)AA->data;
   BSspmat      *A = a->A;
   BSsprow      *vs;
-  int          i,j,rstart = a->rstart;
+  int          i,j,rstart = AA->rmap.rstart;
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
 
   /* Mark location of diagonal */
-  for (i=0; i<AA->m; i++) {
+  for (i=0; i<AA->rmap.n; i++) {
     vs = A->rows[i];
     for (j=0; j<vs->length; j++) {
       if (vs->col[j] == i + rstart) {
@@ -257,7 +257,7 @@ static PetscErrorCode MatZeroRows_MPIRowbs_local(Mat A,PetscInt N,const PetscInt
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)A->data;
   BSspmat      *l = a->A;
   PetscErrorCode ierr;
-  int          i,m = A->m - 1,col,base=a->rowners[a->rank];
+  int          i,m = A->rmap.n - 1,col,base=a->rowners[a->rank];
 
   PetscFunctionBegin;
   if (a->keepzeroedrows) {
@@ -276,7 +276,7 @@ static PetscErrorCode MatZeroRows_MPIRowbs_local(Mat A,PetscInt N,const PetscInt
         if (l->rows[rz[i]]->length > 0) { /* in case row was completely empty */
           l->rows[rz[i]]->length = 1;
           l->rows[rz[i]]->nz[0]  = diag;
-          l->rows[rz[i]]->col[0] = a->rstart + rz[i];
+          l->rows[rz[i]]->col[0] = A->rmap.rstart + rz[i];
         } else {
           col=rz[i]+base;
           ierr = MatSetValues_MPIRowbs_local(A,1,&rz[i],1,&col,&diag,INSERT_VALUES);CHKERRQ(ierr);
@@ -309,7 +309,7 @@ static PetscErrorCode MatNorm_MPIRowbs_local(Mat A,NormType type,PetscReal *norm
   PetscFunctionBegin;
   rs = mat->A->rows;
   if (type == NORM_FROBENIUS) {
-    for (i=0; i<A->m; i++) {
+    for (i=0; i<A->rmap.n; i++) {
       vs = *rs++;
       nz = vs->length;
       xv = vs->nz;
@@ -324,10 +324,10 @@ static PetscErrorCode MatNorm_MPIRowbs_local(Mat A,NormType type,PetscReal *norm
     *norm = sqrt(sum);
   } else if (type == NORM_1) { /* max column norm */
     PetscReal *tmp;
-    ierr  = PetscMalloc(A->n*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
-    ierr  = PetscMemzero(tmp,A->n*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr  = PetscMalloc(A->cmap.n*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
+    ierr  = PetscMemzero(tmp,A->cmap.n*sizeof(PetscReal));CHKERRQ(ierr);
     *norm = 0.0;
-    for (i=0; i<A->m; i++) {
+    for (i=0; i<A->rmap.n; i++) {
       vs = *rs++;
       nz = vs->length;
       xi = vs->col;
@@ -337,13 +337,13 @@ static PetscErrorCode MatNorm_MPIRowbs_local(Mat A,NormType type,PetscReal *norm
         xi++; xv++;
       }
     }
-    for (j=0; j<A->n; j++) {
+    for (j=0; j<A->rmap.n; j++) {
       if (tmp[j] > *norm) *norm = tmp[j];
     }
     ierr = PetscFree(tmp);CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) { /* max row norm */
     *norm = 0.0;
-    for (i=0; i<A->m; i++) {
+    for (i=0; i<A->rmap.n; i++) {
       vs = *rs++;
       nz = vs->length;
       xv = vs->nz;
@@ -367,7 +367,7 @@ PetscErrorCode MatSetValues_MPIRowbs(Mat mat,int m,const int im[],int n,const in
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   PetscErrorCode ierr;
-  int   i,j,row,col,rstart = a->rstart,rend = a->rend;
+  int   i,j,row,col,rstart = mat->rmap.rstart,rend = mat->rmap.rend;
   PetscTruth   roworiented = a->roworiented;
 
   PetscFunctionBegin;
@@ -375,13 +375,13 @@ PetscErrorCode MatSetValues_MPIRowbs(Mat mat,int m,const int im[],int n,const in
      confined to a->pA, and we're working with a->A here */
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
-    if (im[i] >= mat->M) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",im[i],mat->M-1);
+    if (im[i] >= mat->rmap.N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",im[i],mat->rmap.N-1);
     if (im[i] >= rstart && im[i] < rend) {
       row = im[i] - rstart;
       for (j=0; j<n; j++) {
         if (in[j] < 0) continue;
-        if (in[j] >= mat->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[j],mat->N-1);
-        if (in[j] >= 0 && in[j] < mat->N){
+        if (in[j] >= mat->cmap.N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[j],mat->cmap.N-1);
+        if (in[j] >= 0 && in[j] < mat->cmap.N){
           col = in[j];
           if (roworiented) {
             ierr = MatSetValues_MPIRowbs_local(mat,1,&row,1,&col,v+i*n+j,av);CHKERRQ(ierr);
@@ -457,7 +457,7 @@ static PetscErrorCode MatView_MPIRowbs_ASCII(Mat mat,PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d local inode(s), %d local clique(s)\n",a->rank,ind_l,clq_l);
   } else  if (format == PETSC_VIEWER_ASCII_COMMON) {
     for (i=0; i<A->num_rows; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %d:",i+a->rstart);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %d:",i+A->rmap.rstart);CHKERRQ(ierr);
       for (j=0; j<rs[i]->length; j++) {
         if (rs[i]->nz[j]) {ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d %g ",rs[i]->col[j],rs[i]->nz[j]);CHKERRQ(ierr);}
       }
@@ -468,7 +468,7 @@ static PetscErrorCode MatView_MPIRowbs_ASCII(Mat mat,PetscViewer viewer)
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<A->num_rows; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %d:",i+a->rstart);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %d:",i+A->rmap.rstart);CHKERRQ(ierr);
       for (j=0; j<rs[i]->length; j++) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d %g ",rs[i]->col[j],rs[i]->nz[j]);CHKERRQ(ierr);
       }
@@ -500,7 +500,7 @@ static PetscErrorCode MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  M = mat->M; m = mat->m;
+  M = mat->rmap.N; m = mat->rmap.n;
   /* First gather together on the first processor the lengths of 
      each row, and write them out to the file */
   ierr = PetscMalloc(m*sizeof(int),&sbuff);CHKERRQ(ierr);
@@ -518,8 +518,8 @@ static PetscErrorCode MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
     }
     /* first four elements of rowlength are the header */
     rowlengths[0] = mat->cookie;
-    rowlengths[1] = mat->M;
-    rowlengths[2] = mat->N;
+    rowlengths[1] = mat->rmap.N;
+    rowlengths[2] = mat->cmap.N;
     rowlengths[3] = (int)info.nz_used;
     ierr = MPI_Gatherv(sbuff,m,MPI_INT,rowlengths+4,recvcts,recvdisp,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = PetscFree(sbuff);CHKERRQ(ierr);
@@ -660,8 +660,8 @@ static PetscErrorCode MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
   tag    = mat->tag;
   size   = a->size;
   rank   = a->rank;
-  M      = mat->M;
-  rstart = a->rstart;
+  M      = mat->rmap.N;
+  rstart = mat->rmap.rstart;
 
   ierr = PetscMalloc(M*sizeof(int),&rtable);CHKERRQ(ierr);
   /* Create hash table for the mapping :row -> proc */
@@ -679,7 +679,7 @@ static PetscErrorCode MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
   w4   = w3 + size;       /* temp work space used in determining w1,  w3 */
   ierr = PetscMemzero(w1,size*3*sizeof(int));CHKERRQ(ierr); /* initialize work vector */
 
-  for (i=0;  i<mat->m; i++) { 
+  for (i=0;  i<mat->rmap.n; i++) { 
     ierr = PetscMemzero(w4,size*sizeof(int));CHKERRQ(ierr); /* initialize work vector */
     vs = A->rows[i];
     for (j=0; j<vs->length; j++) {
@@ -754,7 +754,7 @@ static PetscErrorCode MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
   }
 
   /* Parse the matrix and copy the data into sbuf1 */
-  for (i=0; i<mat->m; i++) {
+  for (i=0; i<mat->rmap.n; i++) {
     ierr = PetscMemzero(ctr,size*sizeof(int));CHKERRQ(ierr);
     vs = A->rows[i];
     for (j=0; j<vs->length; j++) {
@@ -927,7 +927,7 @@ PetscErrorCode MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
   }
   ierr = MatStashScatterEnd_Private(&mat->stash);CHKERRQ(ierr);
 
-  rstart = a->rstart;
+  rstart = mat->rmap.rstart;
   nzcount = a->nz; /* This is the number of nonzeros entered by the user */
   /* BlockSolve requires that the matrix is structurally symmetric */
   if (mode == MAT_FINAL_ASSEMBLY && !mat->structurally_symmetric) {
@@ -936,7 +936,7 @@ PetscErrorCode MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
   
   /* BlockSolve requires that all the diagonal elements are set */
   val  = 0.0;
-  for (i=0; i<mat->m; i++) {
+  for (i=0; i<mat->rmap.n; i++) {
     row = i; col = i + rstart;
     ierr = MatSetValues_MPIRowbs_local(mat,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
   }
@@ -945,7 +945,7 @@ PetscErrorCode MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyEnd_MPIRowbs_local(mat,mode);CHKERRQ(ierr);
   
   a->blocksolveassembly = 0;
-  ierr = PetscInfo4(mat,"Matrix size: %d X %d; storage space: %d unneeded,%d used\n",mat->m,mat->n,a->maxnz-a->nz,a->nz);CHKERRQ(ierr);
+  ierr = PetscInfo4(mat,"Matrix size: %d X %d; storage space: %d unneeded,%d used\n",mat->rmap.n,mat->cmap.n,a->maxnz-a->nz,a->nz);CHKERRQ(ierr);
   ierr = PetscInfo2(mat,"User entered %d nonzeros, PETSc added %d\n",nzcount,a->nz-nzcount);CHKERRQ(ierr);
   ierr = PetscInfo1(mat,"Number of mallocs during MatSetValues is %d\n",a->reallocs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -961,7 +961,7 @@ PetscErrorCode MatZeroEntries_MPIRowbs(Mat mat)
   int          i,j;
 
   PetscFunctionBegin;
-  for (i=0; i <mat->m; i++) {
+  for (i=0; i <mat->rmap.n; i++) {
     vs = A->rows[i];
     for (j=0; j< vs->length; j++) vs->nz[j] = 0.0;
   }
@@ -1103,7 +1103,7 @@ PetscErrorCode MatNorm_MPIRowbs(Mat mat,NormType type,PetscReal *norm)
   } else {
     rs = a->A->rows;
     if (type == NORM_FROBENIUS) {
-      for (i=0; i<mat->m; i++) {
+      for (i=0; i<mat->rmap.n; i++) {
         vs = *rs++;
         nz = vs->length;
         xv = vs->nz;
@@ -1119,11 +1119,11 @@ PetscErrorCode MatNorm_MPIRowbs(Mat mat,NormType type,PetscReal *norm)
       *norm = sqrt(*norm);
     } else if (type == NORM_1) { /* max column norm */
       PetscReal *tmp,*tmp2;
-      ierr  = PetscMalloc(mat->n*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
-      ierr  = PetscMalloc(mat->n*sizeof(PetscReal),&tmp2);CHKERRQ(ierr);
-      ierr  = PetscMemzero(tmp,mat->n*sizeof(PetscReal));CHKERRQ(ierr);
+      ierr  = PetscMalloc(mat->cmap.n*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
+      ierr  = PetscMalloc(mat->cmap.n*sizeof(PetscReal),&tmp2);CHKERRQ(ierr);
+      ierr  = PetscMemzero(tmp,mat->cmap.n*sizeof(PetscReal));CHKERRQ(ierr);
       *norm = 0.0;
-      for (i=0; i<mat->m; i++) {
+      for (i=0; i<mat->rmap.n; i++) {
         vs = *rs++;
         nz = vs->length;
         xi = vs->col;
@@ -1133,15 +1133,15 @@ PetscErrorCode MatNorm_MPIRowbs(Mat mat,NormType type,PetscReal *norm)
           xi++; xv++;
         }
       }
-      ierr = MPI_Allreduce(tmp,tmp2,mat->N,MPIU_REAL,MPI_SUM,mat->comm);CHKERRQ(ierr);
-      for (j=0; j<mat->n; j++) {
+      ierr = MPI_Allreduce(tmp,tmp2,mat->cmap.N,MPIU_REAL,MPI_SUM,mat->comm);CHKERRQ(ierr);
+      for (j=0; j<mat->cmap.n; j++) {
         if (tmp2[j] > *norm) *norm = tmp2[j];
       }
       ierr = PetscFree(tmp);CHKERRQ(ierr);
       ierr = PetscFree(tmp2);CHKERRQ(ierr);
     } else if (type == NORM_INFINITY) { /* max row norm */
       PetscReal ntemp = 0.0;
-      for (i=0; i<mat->m; i++) {
+      for (i=0; i<mat->rmap.n; i++) {
         vs = *rs++;
         nz = vs->length;
         xv = vs->nz;
@@ -1218,7 +1218,7 @@ PetscErrorCode MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
     ierr = VecRestoreArray(bsif->xwork,&xworka);CHKERRQ(ierr);
     ierr = VecRestoreArray(yy,&yya);CHKERRQ(ierr);
   }
-  ierr = PetscLogFlops(2*bsif->nz - mat->m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*bsif->nz - mat->cmap.n);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1245,10 +1245,10 @@ PetscErrorCode MatGetInfo_MPIRowbs(Mat A,MatInfoType flag,MatInfo *info)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  info->rows_global    = (double)A->M;
-  info->columns_global = (double)A->N;
-  info->rows_local     = (double)A->m;
-  info->columns_local  = (double)A->N;
+  info->rows_global    = (double)A->rmap.N;
+  info->columns_global = (double)A->cmap.N;
+  info->rows_local     = (double)A->cmap.n;
+  info->columns_local  = (double)A->rmap.n;
   info->block_size     = 1.0;
   info->mallocs        = (double)mat->reallocs;
   isend[0] = mat->nz; isend[1] = mat->maxnz; isend[2] =  mat->maxnz -  mat->nz;
@@ -1296,9 +1296,9 @@ PetscErrorCode MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
 
   ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != mat->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
+  if (n != mat->rmap.n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
   ierr = VecGetArray(v,&x);CHKERRQ(ierr); 
-  for (i=0; i<mat->m; i++) {
+  for (i=0; i<mat->rmap.n; i++) {
     x[i] = rs[i]->nz[rs[i]->diag_ind]; 
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr); 
@@ -1317,7 +1317,7 @@ PetscErrorCode MatDestroy_MPIRowbs(Mat mat)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",mat->M,mat->N);
+  PetscLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",mat->rmap.N,mat->cmap.N);
 #endif
   ierr = PetscFree(a->rowners);CHKERRQ(ierr);
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
@@ -1329,7 +1329,7 @@ PetscErrorCode MatDestroy_MPIRowbs(Mat mat)
   } 
 
   if (A) {
-    for (i=0; i<mat->m; i++) {
+    for (i=0; i<mat->rmap.n; i++) {
       vs = A->rows[i];
       ierr = MatFreeRowbs_Private(mat,vs->length,vs->col,vs->nz);CHKERRQ(ierr);
     }
@@ -1425,9 +1425,9 @@ PetscErrorCode MatGetRow_MPIRowbs(Mat AA,int row,int *nz,int **idx,PetscScalar *
   BSsprow      *rs;
    
   PetscFunctionBegin;
-  if (row < mat->rstart || row >= mat->rend) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Only local rows");
+  if (row < AA->rmap.rstart || row >= AA->rmap.rend) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Only local rows");
 
-  rs  = A->rows[row - mat->rstart];
+  rs  = A->rows[row - AA->rmap.rstart];
   *nz = rs->length;
   if (v)   *v   = rs->nz;
   if (idx) *idx = rs->col;
@@ -1617,8 +1617,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   
   PetscFunctionBegin;
   comm = A->comm;
-  m    = A->m;
-  M    = A->M;
+  m    = A->rmap.n;
+  M    = A->rmap.N;
 
   ierr                  = PetscNew(Mat_MPIRowbs,&a);CHKERRQ(ierr);
   A->data               = (void*)a;
@@ -1637,18 +1637,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   ierr = PetscMapInitialize(comm,m,M,&A.rmap);CHKERRQ(ierr);
   ierr = PetscMapInitialize(comm,m,M,&A.cmap);CHKERRQ(ierr);
 
-  ierr                             = PetscMalloc((A->m+1)*sizeof(int),&a->imax);CHKERRQ(ierr);
+  ierr                             = PetscMalloc((A->rmap.n+1)*sizeof(int),&a->imax);CHKERRQ(ierr);
   a->reallocs                      = 0;
-  /* build local table of row ownerships */
-  ierr          = PetscMalloc((a->size+2)*sizeof(int),&a->rowners);CHKERRQ(ierr);
-  ierr          = MPI_Allgather(&m,1,MPI_INT,a->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
-  a->rowners[0] = 0;
-  for (i=2; i<=a->size; i++) {
-    a->rowners[i] += a->rowners[i-1];
-  }
-  a->rstart = a->rowners[a->rank]; 
-  a->rend   = a->rowners[a->rank+1]; 
-  ierr      = PetscLogObjectMemory(A,(A->m+a->size+3)*sizeof(int));CHKERRQ(ierr);
 
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(A->comm,1,&A->stash);CHKERRQ(ierr);
@@ -1664,10 +1654,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   a->ierr     = 0;
   a->failures = 0;
   ierr = MPI_Comm_dup(A->comm,&(a->comm_mpirowbs));CHKERRQ(ierr);
-  ierr = VecCreateMPI(A->comm,A->m,A->M,&(a->diag));CHKERRQ(ierr);
+  ierr = VecCreateMPI(A->comm,A->rmap.n,A->rmap.N,&(a->diag));CHKERRQ(ierr);
   ierr = VecDuplicate(a->diag,&(a->xwork));CHKERRQ(ierr);
   ierr = PetscLogObjectParent(A,a->diag);  PetscLogObjectParent(A,a->xwork);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(A,(A->m+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(A,(A->rmap.n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   bspinfo = BScreate_ctx();CHKERRBS(0);
   a->procinfo = bspinfo;
   BSctx_set_id(bspinfo,a->rank);CHKERRBS(0);
@@ -1699,7 +1689,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
 #endif
 
   /* Compute global offsets */
-  offset = &a->rstart;
+  offset = &A->rmap.rstart;
 
   ierr = PetscNew(BSmapping,&a->bsmap);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(A,sizeof(BSmapping));CHKERRQ(ierr);
@@ -1712,7 +1702,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   *((int*)bsmap->vglobal2local) = (*offset);
   bsmap->fglobal2local	         = BSglob2loc;
   bsmap->free_g2l	         = 0;
-  bsoff                          = BSmake_off_map(*offset,bspinfo,A->M);
+  bsoff                          = BSmake_off_map(*offset,bspinfo,A->rmap.N);
   bsmap->vglobal2proc	         = (void*)bsoff;
   bsmap->fglobal2proc	         = BSglob2proc;
   bsmap->free_g2p                = (void(*)(void*)) BSfree_off_map;
@@ -1809,6 +1799,7 @@ PetscErrorCode MatLoad_MPIRowbs(PetscViewer viewer,MatType type,Mat *newmat)
 
   ierr = MPI_Bcast(header+1,3,MPI_INT,0,comm);CHKERRQ(ierr);
   M = header[1]; 
+
   /* determine ownership of all rows */
   m          = M/size + ((M % size) > rank);
   ierr       = PetscMalloc((size+2)*sizeof(int),&rowners);CHKERRQ(ierr);
@@ -1958,7 +1949,7 @@ static PetscErrorCode MatDestroy_MPIRowbs_Factored(Mat mat)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",mat->M,mat->N);
+  PetscLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",mat->rmap.N,mat->cmap.N);
 #endif
   PetscFunctionReturn(0);
 }
@@ -2031,10 +2022,9 @@ PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,Mat
   newmat->ops->view    = MatView_MPIRowbs_Factored;
   newmat->factor       = 1;
   newmat->preallocated = PETSC_TRUE;
-  newmat->M            = mat->M;
-  newmat->N            = mat->N;
-  newmat->m            = mat->m;
-  newmat->n            = mat->n;
+  ierr = PetscMapCopy(mat->comm,&mat->rmap,&newmat->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCopy(mat->comm,&mat->cmap,&newmat->cmap);CHKERRQ(ierr);
+
   ierr = PetscStrallocpy(MATMPIROWBS,&newmat->type_name);CHKERRQ(ierr);
 
   *newfact = newmat; 
@@ -2093,10 +2083,10 @@ PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactor
   newmat->ops->view    = MatView_MPIRowbs_Factored;
   newmat->factor       = 1;
   newmat->preallocated = PETSC_TRUE;
-  newmat->M            = mat->M;
-  newmat->N            = mat->N;
-  newmat->m            = mat->m;
-  newmat->n            = mat->n;
+
+  ierr = PetscMapCopy(mat->comm,&mat->rmap,&newmat->rmap);CHKERRQ(ierr);
+  ierr = PetscMapCopy(mat->comm,&mat->cmap,&newmat->cmap);CHKERRQ(ierr);
+
   ierr = PetscStrallocpy(MATMPIROWBS,&newmat->type_name);CHKERRQ(ierr);
 
   *newfact = newmat; 
@@ -2190,7 +2180,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs(Mat C,int ismax,const IS isrow[],const
   } 
     
   /* Determine the number of stages through which submatrices are done */
-  nmax          = 20*1000000 / (C->N * sizeof(int));
+  nmax          = 20*1000000 / (C->cmap.N * sizeof(int));
   if (!nmax) nmax = 1;
   nstages_local = ismax/nmax + ((ismax % nmax)?1:0);
 
@@ -2240,7 +2230,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
   tag0   = C->tag;
   size   = c->size;
   rank   = c->rank;
-  m      = C->M;
+  m      = C->rmap.N;
   
   /* Get some new tags to keep the communication clean */
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
@@ -2412,7 +2402,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
  
   {
     BSsprow    **sAi = A->rows;
-    int        id,rstart = c->rstart;
+    int        id,rstart = C->rmap.rstart;
     int        *sbuf2_i;
 
     for (i=0; i<nrqr; ++i) {
@@ -2479,7 +2469,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
   {
     BSsprow *brow;
     int *Acol;
-    int rstart = c->rstart;
+    int rstart = C->rmap.rstart;
 
     for (i=0; i<nrqr; i++) {
       rbuf1_i   = rbuf1[i]; 
@@ -2516,7 +2506,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
   {
     BSsprow *brow;
     FLOAT *Aval;
-    int rstart = c->rstart;
+    int rstart = C->rmap.rstart;
     
     for (i=0; i<nrqr; i++) {
       rbuf1_i   = rbuf1[i];
@@ -2547,11 +2537,11 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
   {
     int *icol_i;
     
-    len     = (1+ismax)*sizeof(int*)+ ismax*C->N*sizeof(int);
+    len     = (1+ismax)*sizeof(int*)+ ismax*C->cmap.N*sizeof(int);
     ierr    = PetscMalloc(len,&cmap);CHKERRQ(ierr);
     cmap[0] = (int*)(cmap + ismax);
-    ierr    = PetscMemzero(cmap[0],(1+ismax*C->N)*sizeof(int));CHKERRQ(ierr);
-    for (i=1; i<ismax; i++) { cmap[i] = cmap[i-1] + C->N; }
+    ierr    = PetscMemzero(cmap[0],(1+ismax*C->cmap.N)*sizeof(int));CHKERRQ(ierr);
+    for (i=1; i<ismax; i++) { cmap[i] = cmap[i-1] + C->cmap.N; }
     for (i=0; i<ismax; i++) {
       jmax   = ncol[i];
       icol_i = icol[i];
@@ -2581,7 +2571,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
         row  = irow_i[j];
         proc = rtable[row];
         if (proc == rank) {
-          Arow=A->rows[row-c->rstart];
+          Arow=A->rows[row-C->rmap.rstart];
           ncols=Arow->length;
           cols=Arow->col;
           for (k=0; k<ncols; k++) {
@@ -2593,11 +2583,11 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
   }
   
   /* Create row map*/
-  len     = (1+ismax)*sizeof(int*)+ ismax*C->M*sizeof(int);
+  len     = (1+ismax)*sizeof(int*)+ ismax*C->rmap.N*sizeof(int);
   ierr    = PetscMalloc(len,&rmap);CHKERRQ(ierr);
   rmap[0] = (int*)(rmap + ismax);
-  ierr    = PetscMemzero(rmap[0],ismax*C->M*sizeof(int));CHKERRQ(ierr);
-  for (i=1; i<ismax; i++) { rmap[i] = rmap[i-1] + C->M;}
+  ierr    = PetscMemzero(rmap[0],ismax*C->rmap.N*sizeof(int));CHKERRQ(ierr);
+  for (i=1; i<ismax; i++) { rmap[i] = rmap[i-1] + C->rmap.N;}
   for (i=0; i<ismax; i++) {
     rmap_i = rmap[i];
     irow_i = irow[i];
@@ -2657,15 +2647,15 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
         SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong type");
       }
       mat = (Mat_SeqAIJ*)(submats[i]->data);
-      if ((submats[i]->m != nrow[i]) || (submats[i]->n != ncol[i])) {
+      if ((submats[i]->rmap.n != nrow[i]) || (submats[i]->cmap.n != ncol[i])) {
         SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       }
-      ierr = PetscMemcmp(mat->ilen,lens[i],submats[i]->m*sizeof(int),&same);CHKERRQ(ierr);
+      ierr = PetscMemcmp(mat->ilen,lens[i],submats[i]->rmap.n*sizeof(int),&same);CHKERRQ(ierr);
       if (!same) {
         SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
       }
       /* Initial matrix as if empty */
-      ierr = PetscMemzero(mat->ilen,submats[i]->m*sizeof(int));CHKERRQ(ierr);
+      ierr = PetscMemzero(mat->ilen,submats[i]->rmap.n*sizeof(int));CHKERRQ(ierr);
       submats[i]->factor = C->factor;
     }
   } else {
@@ -2703,7 +2693,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
           row      = rmap_i[row];
           ilen_row = imat_ilen[row];
           
-          Arow=A->rows[old_row-c->rstart];
+          Arow=A->rows[old_row-C->rmap.rstart];
           ncols=Arow->length;
           cols=Arow->col;
           vals=Arow->nz;
@@ -2893,7 +2883,7 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
   if (!iscol) SETERRQ(PETSC_ERR_ARG_SIZ,"Empty IScol");
   
   
-  len    = (C->M+1)*sizeof(int);
+  len    = (C->rmap.N+1)*sizeof(int);
   ierr   = PetscMalloc(len,&rtable);CHKERRQ(ierr);
   /* Create hash table for the mapping :row -> proc*/
   for (i=0,j=0; i<size; i++) {
@@ -3010,7 +3000,7 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
  
   {
     BSsprow    **sAi = A->rows;
-    int        id,rstart = c->rstart;
+    int        id,rstart = C->rmap.rstart;
     int        *sbuf2_i,*rbuf1_i,end;
 
     for (i=0; i<nrqr; ++i) {
@@ -3077,7 +3067,7 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&s_waits3);CHKERRQ(ierr);
   {
     int *Acol,*rbuf1_i,*sbuf3_i,rqrow,noutcols,kmax,*cols,ncols;
-    int rstart = c->rstart;
+    int rstart = C->rmap.rstart;
 
     for (i=0; i<nrqr; i++) {
       rbuf1_i   = rbuf1[i]; 
@@ -3110,7 +3100,7 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&s_waits4);CHKERRQ(ierr);
   {
     FLOAT *Aval,*vals,*sbuf4_i;
-    int rstart = c->rstart,*rbuf1_i,rqrow,noutvals,kmax,ncols;
+    int rstart = C->rmap.rstart,*rbuf1_i,rqrow,noutvals,kmax,ncols;
     
     
     for (i=0; i<nrqr; i++) {
@@ -3138,17 +3128,17 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
   /* Form the matrix */
 
   /* create col map */
-  len     = C->N*sizeof(int)+1;
+  len     = C->cmap.N*sizeof(int)+1;
   ierr    = PetscMalloc(len,&cmap);CHKERRQ(ierr);
-  ierr    = PetscMemzero(cmap,C->N*sizeof(int));CHKERRQ(ierr);
+  ierr    = PetscMemzero(cmap,C->cmap.N*sizeof(int));CHKERRQ(ierr);
   for (j=0; j<ncol; j++) { 
       cmap[icol[j]] = j+1; 
   }
   
   /* Create row map / maybe I will need global rowmap but here is local rowmap*/
-  len     = C->M*sizeof(int)+1;
+  len     = C->rmap.N*sizeof(int)+1;
   ierr    = PetscMalloc(len,&rmap);CHKERRQ(ierr);
-  ierr    = PetscMemzero(rmap,C->M*sizeof(int));CHKERRQ(ierr);
+  ierr    = PetscMemzero(rmap,C->rmap.N*sizeof(int));CHKERRQ(ierr);
   for (j=0; j<nrow; j++) { 
     rmap[irow[j]] = j; 
   }
@@ -3182,7 +3172,7 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
       row  = irow[j];
       proc = rtable[row];
       if (proc == rank) {
-        Arow=A->rows[row-c->rstart];
+        Arow=A->rows[row-C->rmap.rstart];
         ncols=Arow->length;
         cols=Arow->col;
         olen=dlen=0;
@@ -3244,7 +3234,7 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
     if (!same) {
       SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong type");
     }
-    if (((*submat)->m != nrow) || ((*submat)->N != ncol)) {
+    if (((*submat)->rmap.n != nrow) || ((*submat)->cmap.N != ncol)) {
         SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
     }
     mat=(Mat_MPIAIJ *)((*submat)->data);
@@ -3284,7 +3274,7 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
       if (proc == rank) {
         row  = rmap[oldrow];
         
-        Arow  = A->rows[oldrow-c->rstart];
+        Arow  = A->rows[oldrow-C->rmap.rstart];
         ncols = Arow->length;
         cols  = Arow->col;
         vals  = Arow->nz;

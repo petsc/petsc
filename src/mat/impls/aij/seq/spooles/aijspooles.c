@@ -56,7 +56,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *
   Mat          B;
   Mat_Spooles  *lu;
   PetscErrorCode ierr;
-  int          m=A->m,n=A->n;
+  int          m=A->rmap.n,n=A->cmap.n;
 
   PetscFunctionBegin;	
   /* Create the factorization matrix */  
@@ -89,7 +89,7 @@ PetscErrorCode MatQRFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *
   Mat          B;
   Mat_Spooles  *lu;   
   PetscErrorCode ierr;
-  int          m=A->m,n=A->n;
+  int          m=A->rmap.n,n=A->cmap.n;
 
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"QR Factorization is unsupported as the Spooles implementation of QR is invalid.");
@@ -120,7 +120,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat A,IS r,MatFactorInfo 
   Mat         B;
   Mat_Spooles *lu;   
   PetscErrorCode ierr;
-  int         m=A->m,n=A->n;
+  int         m=A->rmap.n,n=A->cmap.n;
 
   PetscFunctionBegin;	
   /* Create the factorization matrix */

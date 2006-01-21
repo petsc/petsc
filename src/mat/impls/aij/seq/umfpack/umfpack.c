@@ -120,7 +120,7 @@ PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat A,MatFactorInfo *info,Mat *F)
 {
   Mat_UMFPACK *lu=(Mat_UMFPACK*)(*F)->spptr;
   PetscErrorCode ierr;
-  int         *ai=lu->ai,*aj=lu->aj,m=A->m,status;
+  int         *ai=lu->ai,*aj=lu->aj,m=A->rmap.n,status;
   PetscScalar *av=lu->av;
 
   PetscFunctionBegin;
@@ -155,7 +155,7 @@ PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,M
   Mat_SeqAIJ  *mat=(Mat_SeqAIJ*)A->data;
   Mat_UMFPACK *lu;
   PetscErrorCode ierr;
-  int          m=A->m,n=A->n,*ai=mat->i,*aj=mat->j,status,*ra,idx;
+  int          m=A->rmap.n,n=A->cmap.n,*ai=mat->i,*aj=mat->j,status,*ra,idx;
   PetscScalar *av=mat->a;
   const char  *strategy[]={"AUTO","UNSYMMETRIC","SYMMETRIC","2BY2"},
               *scale[]={"NONE","SUM","MAX"}; 
@@ -226,8 +226,8 @@ PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,M
   ierr = PetscOptionsHasName(PETSC_NULL,"-pc_factor_mat_ordering_type",&lu->PetscMatOdering);CHKERRQ(ierr);  
   if (lu->PetscMatOdering) {
     ierr = ISGetIndices(r,&ra);CHKERRQ(ierr);
-    ierr = PetscMalloc(A->m*sizeof(int),&lu->perm_c);CHKERRQ(ierr);  
-    ierr = PetscMemcpy(lu->perm_c,ra,A->m*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMalloc(A->rmap.n*sizeof(int),&lu->perm_c);CHKERRQ(ierr);  
+    ierr = PetscMemcpy(lu->perm_c,ra,A->rmap.n*sizeof(int));CHKERRQ(ierr);
     ierr = ISRestoreIndices(r,&ra);CHKERRQ(ierr);
   }
   PetscOptionsEnd();

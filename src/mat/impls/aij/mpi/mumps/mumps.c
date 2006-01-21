@@ -66,7 +66,7 @@ EXTERN_C_END
 PetscErrorCode MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int **c, PetscScalar **v) {
   PetscInt       *ai, *aj, *bi, *bj, rstart,nz, *garray;
   PetscErrorCode ierr;
-  PetscInt       i,j,jj,jB,irow,m=A->m,*ajj,*bjj,countA,countB,colA_start,jcol;
+  PetscInt       i,j,jj,jB,irow,m=A->rmap.n,*ajj,*bjj,countA,countB,colA_start,jcol;
   PetscInt       *row,*col;
   PetscScalar    *av, *bv,*val;
   Mat_MUMPS      *mumps=(Mat_MUMPS*)A->spptr;
@@ -77,7 +77,7 @@ PetscErrorCode MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,i
     Mat_SeqAIJ    *aa=(Mat_SeqAIJ*)(mat->A)->data;
     Mat_SeqAIJ    *bb=(Mat_SeqAIJ*)(mat->B)->data;
     nz = aa->nz + bb->nz;
-    ai=aa->i; aj=aa->j; bi=bb->i; bj=bb->j; rstart= mat->rstart;
+    ai=aa->i; aj=aa->j; bi=bb->i; bj=bb->j; rstart= A->rmap.rstart;
     garray = mat->garray;
     av=aa->a; bv=bb->a;
    
@@ -87,7 +87,7 @@ PetscErrorCode MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,i
     Mat_SeqBAIJ    *bb=(Mat_SeqBAIJ*)(mat->B)->data;
     if (A->bs > 1) SETERRQ1(PETSC_ERR_SUP," bs=%d is not supported yet\n", A->bs);
     nz = aa->nz + bb->nz;
-    ai=aa->i; aj=aa->j; bi=bb->i; bj=bb->j; rstart= mat->rstart;
+    ai=aa->i; aj=aa->j; bi=bb->i; bj=bb->j; rstart= A->rmap.rstart;
     garray = mat->garray;
     av=aa->a; bv=bb->a;
   }
@@ -368,8 +368,8 @@ PetscErrorCode MatSolve_AIJMUMPS(Mat A,Vec b,Vec x) {
   PetscFunctionBegin; 
   if (lu->size > 1){
     if (!lu->myid){
-      ierr = VecCreateSeq(PETSC_COMM_SELF,A->N,&x_seq);CHKERRQ(ierr);
-      ierr = ISCreateStride(PETSC_COMM_SELF,A->N,0,1,&iden);CHKERRQ(ierr);
+      ierr = VecCreateSeq(PETSC_COMM_SELF,A->rmap.N,&x_seq);CHKERRQ(ierr);
+      ierr = ISCreateStride(PETSC_COMM_SELF,A->rmap.N,0,1,&iden);CHKERRQ(ierr);
     } else {
       ierr = VecCreateSeq(PETSC_COMM_SELF,0,&x_seq);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&iden);CHKERRQ(ierr);
@@ -449,7 +449,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
     ierr = MPI_Bcast(nneg,1,MPI_INT,0,lu->comm_mumps);CHKERRQ(ierr);
   }
   if (nzero) *nzero = 0;  
-  if (npos)  *npos  = F->M - (*nneg);
+  if (npos)  *npos  = F->rmap.N - (*nneg);
   PetscFunctionReturn(0);
 }
 
@@ -460,7 +460,7 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,MatFactorInfo *info,Mat *F)
   Mat_MUMPS      *lu =(Mat_MUMPS*)(*F)->spptr; 
   Mat_MUMPS      *lua=(Mat_MUMPS*)(A)->spptr; 
   PetscErrorCode ierr;
-  PetscInt       rnz,nnz,nz=0,i,M=A->M,*ai,*aj,icntl;
+  PetscInt       rnz,nnz,nz=0,i,M=A->rmap.N,*ai,*aj,icntl;
   PetscTruth     valOnly,flg;
   Mat            F_diag; 
 
@@ -665,7 +665,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat A,IS r,IS c,MatFactorInfo *info,
   PetscFunctionBegin;
   /* Create the factorization matrix */
   ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->m,A->n,A->M,A->N);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
@@ -691,7 +691,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat A,IS r,MatFactorInfo *in
   PetscFunctionBegin;
   /* Create the factorization matrix */ 
   ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->m,A->n,A->M,A->N);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(B,1,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(B,1,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);

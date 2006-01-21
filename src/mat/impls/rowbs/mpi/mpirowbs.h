@@ -15,8 +15,6 @@ EXTERN_C_END
  */
 
 typedef struct {
-  int         *rowners;           /* range of rows owned by each proc */
-  int         rstart,rend;       /* starting and ending owned rows */
   int         size;               /* size of communicator */
   int         rank;               /* rank of proc in communicator */ 
   int         sorted;             /* if true, rows sorted by increasing cols */

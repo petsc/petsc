@@ -120,7 +120,7 @@ PetscErrorCode MatAssemblyEnd_SuperLU(Mat A,MatAssemblyType mode) {
 PetscErrorCode MatCreateNull_SuperLU(Mat A,Mat *nullMat)
 {
   Mat_SuperLU   *lu = (Mat_SuperLU*)A->spptr;
-  PetscInt      numRows = A->m,numCols = A->n;
+  PetscInt      numRows = A->rmap.n,numCols = A->cmap.n;
   SCformat      *Lstore;
   PetscInt      numNullCols,size;
   SuperLUStat_t stat;
@@ -315,10 +315,10 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat A,MatFactorInfo *info,Mat *F)
        Since SuperLU likes column-oriented matrices,we pass it the transpose,
        and then solve A^T X = B in MatSolve(). */
 #if defined(PETSC_USE_COMPLEX)
-  zCreate_CompCol_Matrix(&lu->A,A->n,A->m,aa->nz,(doublecomplex*)aa->a,aa->j,aa->i,
+  zCreate_CompCol_Matrix(&lu->A,A->cmap.n,A->rmap.n,aa->nz,(doublecomplex*)aa->a,aa->j,aa->i,
                            SLU_NC,SLU_Z,SLU_GE);
 #else
-  dCreate_CompCol_Matrix(&lu->A,A->n,A->m,aa->nz,aa->a,aa->j,aa->i,
+  dCreate_CompCol_Matrix(&lu->A,A->cmap.n,A->rmap.n,aa->nz,aa->a,aa->j,aa->i,
                            SLU_NC,SLU_D,SLU_GE);
 #endif
   
@@ -379,7 +379,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
   Mat            B;
   Mat_SuperLU    *lu;
   PetscErrorCode ierr;
-  PetscInt       m=A->m,n=A->n,indx;  
+  PetscInt       m=A->rmap.n,n=A->cmap.n,indx;  
   PetscTruth     flg;
   const char   *colperm[]={"NATURAL","MMD_ATA","MMD_AT_PLUS_A","COLAMD"}; /* MY_PERMC - not supported by the petsc interface yet */
   const char   *iterrefine[]={"NOREFINE", "SINGLE", "DOUBLE", "EXTRA"};
@@ -387,7 +387,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
 
   PetscFunctionBegin;
   ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->m,A->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
@@ -474,7 +474,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
   lu->CleanUpSuperLU = PETSC_TRUE;
 
   *F = B;
-  ierr = PetscLogObjectMemory(B,(A->m+A->n)*sizeof(PetscInt)+sizeof(Mat_SuperLU));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(B,(A->rmap.n+A->cmap.n)*sizeof(PetscInt)+sizeof(Mat_SuperLU));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

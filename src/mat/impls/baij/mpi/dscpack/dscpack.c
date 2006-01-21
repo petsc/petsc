@@ -281,7 +281,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,MatFactorInfo *info,Mat *F
   RealNumberType *my_a_nonz;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscInt       M=A->M,Mbs=M/lu->bs,max_mem_estimate,max_single_malloc_blk,
+  PetscInt       M=A->rmap.N,Mbs=M/lu->bs,max_mem_estimate,max_single_malloc_blk,
                  number_of_procs,i,j,next,iold,*idx,*iidx=0,*itmp;
   IS             my_cols_sorted;
   Mat            F_diag;
@@ -456,7 +456,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,
   /* Create the factorization matrix F */ 
   ierr = MatGetBlockSize(A,&bs);
   ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->m,A->n,A->M,A->N);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(B,bs,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(B,bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
