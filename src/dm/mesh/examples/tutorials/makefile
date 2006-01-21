@@ -50,7 +50,7 @@ runex2:
 	-@${MPIRUN} -np ${NP} ./ex2 -dim 2 ${EXTRA_ARGS}
 
 valex2:
-	-@valgrind --tool=memcheck ./ex2 -dim 2 -refinement_limit 0.25 ${EXTRA_ARGS}
+	-@valgrind --tool=memcheck ./ex2 -dim 3 -refinement_limit 0.05 ${EXTRA_ARGS}
 
 debugex2:
 	-@${MPIRUN} -np ${NP} ./ex2 -dim 2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
