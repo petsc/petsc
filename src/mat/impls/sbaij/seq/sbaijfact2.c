@@ -18,7 +18,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_N(Mat A,Vec bb,Vec xx)
   PetscInt        mbs=a->mbs,*ai=a->i,*aj=a->j;
   PetscErrorCode  ierr;
   PetscInt        nz,*vj,k,*r,idx,k1;
-  PetscInt        bs=A->bs,bs2 = a->bs2;
+  PetscInt        bs=A->rmap.bs,bs2 = a->bs2;
   MatScalar       *aa=a->a,*v,*diag;
   PetscScalar     *x,*xk,*xj,*b,*xk_tmp,*t;
 
@@ -86,7 +86,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_N_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscErrorCode ierr;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
   PetscInt       nz,*vj,k;
-  PetscInt       bs=A->bs,bs2 = a->bs2;
+  PetscInt       bs=A->rmap.bs,bs2 = a->bs2;
   MatScalar      *aa=a->a,*v,*diag;
   PetscScalar    *x,*xk,*xj,*b,*xk_tmp;
 
@@ -1157,7 +1157,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(isrow,&rip);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(4*a->nz + A->m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(4*a->nz + A->rmap.N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1169,7 +1169,7 @@ PetscErrorCode MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->bs == 1) {
+  if (A->rmap.bs == 1) {
     ierr = MatSolve_SeqSBAIJ_1(A,bb->v,xx->v);CHKERRQ(ierr);
   } else {
     IS              isrow=a->row;
@@ -1179,7 +1179,7 @@ PetscErrorCode MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
     PetscInt             nz,*vj,k,n;
     if (bb->n > a->solves_work_n) {
       if (a->solves_work) {ierr = PetscFree(a->solves_work);CHKERRQ(ierr);}
-      ierr = PetscMalloc(bb->n*A->m*sizeof(PetscScalar),&a->solves_work);CHKERRQ(ierr);
+      ierr = PetscMalloc(bb->n*A->rmap.N*sizeof(PetscScalar),&a->solves_work);CHKERRQ(ierr);
       a->solves_work_n = bb->n;
     }
     n    = bb->n;
@@ -1217,7 +1217,7 @@ PetscErrorCode MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
     ierr = ISRestoreIndices(isrow,&rip);CHKERRQ(ierr);
     ierr = VecRestoreArray(bb->v,&b);CHKERRQ(ierr); 
     ierr = VecRestoreArray(xx->v,&x);CHKERRQ(ierr); 
-    ierr = PetscLogFlops(bb->n*(4*a->nz + A->m));CHKERRQ(ierr);
+    ierr = PetscLogFlops(bb->n*(4*a->nz + A->rmap.N));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1264,7 +1264,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(4*a->nz + A->m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(4*a->nz + A->rmap.N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1276,7 +1276,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInfo *in
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b;  
   PetscErrorCode ierr;
   PetscInt       *rip,i,mbs = a->mbs,*ai = a->i,*aj = a->j;
-  PetscInt       *jutmp,bs = A->bs,bs2=a->bs2;
+  PetscInt       *jutmp,bs = A->rmap.bs,bs2=a->bs2;
   PetscInt       m,reallocs = 0,*levtmp;
   PetscInt       *prowl,*q,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
   PetscInt       incrlev,*lev,shift,prow,nz;
@@ -1535,7 +1535,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   Mat                B;
   PetscErrorCode     ierr;
   PetscTruth         perm_identity;
-  PetscInt           bs=A->bs,am=a->mbs;
+  PetscInt           bs=A->rmap.bs,am=a->mbs;
   PetscInt           reallocs=0,*rip,i,*ai,*aj,*ui;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
   PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,ncols,*cols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
@@ -1547,7 +1547,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   PetscFunctionBegin;
   /*  
    This code originally uses Modified Sparse Row (MSR) storage
-   (see page 85, "Iterative Methods ..." by Saad) for the output matrix B - bad choise!
+   (see page 85, "Iterative Methods ..." by Saad) for the output matrix B - bad choice!
    Then it is rewritten so the factor B takes seqsbaij format. However the associated 
    MatCholeskyFactorNumeric_() have not been modified for the cases of bs>1, 
    thus the original code in MSR format is still used for these cases. 
@@ -1715,7 +1715,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   b->icol = perm;
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
   ierr    = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-  ierr    = PetscLogObjectMemory(B,(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = ui[am];
   
   B->factor                 = FACTOR_CHOLESKY;

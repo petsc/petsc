@@ -44,7 +44,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, MatType matype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  if (mat->m < 0 && mat->M < 0 && mat->n < 0 && mat->N < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatSetSizes() first");
+  if (mat->rmap.n < 0 && mat->rmap.N < 0 && mat->cmap.n < 0 && mat->cmap.N < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatSetSizes() first");
   ierr = PetscTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
   if (!sametype) {
     /* Get the function pointers for the matrix requested */
@@ -60,14 +60,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, MatType matype)
       mat->preallocated = PETSC_FALSE;
     }
 
-    if (mat->rmap) {
-      ierr = PetscMapDestroy(mat->rmap);CHKERRQ(ierr);
-      mat->rmap = 0;
-    }
-    if (mat->cmap) {
-      ierr = PetscMapDestroy(mat->cmap);CHKERRQ(ierr);
-      mat->cmap = 0;
-    }
     /* create the new data structure */
     ierr = (*r)(mat);CHKERRQ(ierr);
     ierr = PetscObjectChangeTypeName((PetscObject)mat,matype);CHKERRQ(ierr);

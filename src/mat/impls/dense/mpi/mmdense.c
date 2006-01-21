@@ -16,16 +16,16 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
 
   PetscFunctionBegin;
   /* Create local vector that is used to scatter into */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,mat->N,&mdn->lvec);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,mat->cmap.N,&mdn->lvec);CHKERRQ(ierr);
 
   /* Create temporary index set for building scatter gather */
-  ierr = ISCreateStride(mat->comm,mat->N,0,1,&from);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,mat->N,0,1,&to);CHKERRQ(ierr);
+  ierr = ISCreateStride(mat->comm,mat->cmap.N,0,1,&from);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,mat->cmap.N,0,1,&to);CHKERRQ(ierr);
 
   /* Create temporary global vector to generate scatter context */
   /* n    = mdn->cowners[mdn->rank+1] - mdn->cowners[mdn->rank]; */
 
-  ierr = VecCreateMPI(mat->comm,mdn->nvec,mat->N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(mat->comm,mdn->nvec,mat->cmap.N,&gvec);CHKERRQ(ierr);
 
   /* Generate the scatter context */
   ierr = VecScatterCreate(gvec,from,mdn->lvec,to,&mdn->Mvctx);CHKERRQ(ierr);
@@ -55,7 +55,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense(Mat C,PetscInt ismax,const IS isrow[],
     ierr = PetscMalloc((ismax+1)*sizeof(Mat),submat);CHKERRQ(ierr);
   }
   /* Determine the number of stages through which submatrices are done */
-  nmax          = 20*1000000 / (C->N * sizeof(PetscInt));
+  nmax          = 20*1000000 / (C->cmap.N * sizeof(PetscInt));
   if (!nmax) nmax = 1;
   nstages_local = ismax/nmax + ((ismax % nmax)?1:0);
 
@@ -82,7 +82,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data,*mat;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag0,tag1,idex,end,i;
-  PetscInt       N = C->N,rstart = c->rstart,count;
+  PetscInt       N = C->cmap.N,rstart = C->rmap.rstart,count;
   PetscInt       **irow,**icol,*nrow,*ncol,*w1,*w3,*w4,*rtable,start;
   PetscInt       **sbuf1,m,j,k,l,ct1,**rbuf1,row,proc;
   PetscInt       nrqs,msz,**ptr,*ctr,*pa,*tmp,bsz,nrqr;
@@ -99,7 +99,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   tag0   = C->tag;
   size   = c->size;
   rank   = c->rank;
-  m      = C->M;
+  m      = C->rmap.N;
   
   /* Get some new tags to keep the communication clean */
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
 
   /* Create hash table for the mapping :row -> proc*/
   for (i=0,j=0; i<size; i++) {
-    jmax = c->rowners[i+1];
+    jmax = C->rmap.range[i+1];
     for (; j<jmax; j++) {
       rtable[j] = i;
     }
@@ -284,7 +284,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
         v_start = a->v + row;
         for (k=0; k<N; k++) {
           sbuf2_i[0] = v_start[0];
-          sbuf2_i++; v_start += C->m;
+          sbuf2_i++; v_start += C->rmap.n;
         }
       }
       /* Now send off the data */
@@ -303,10 +303,10 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   if (scall == MAT_REUSE_MATRIX) {
     for (i=0; i<ismax; i++) {
       mat = (Mat_SeqDense *)(submats[i]->data);
-      if ((submats[i]->m != nrow[i]) || (submats[i]->n != ncol[i])) {
+      if ((submats[i]->rmap.n != nrow[i]) || (submats[i]->cmap.n != ncol[i])) {
         SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       }
-      ierr = PetscMemzero(mat->v,submats[i]->m*submats[i]->n*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscMemzero(mat->v,submats[i]->rmap.n*submats[i]->cmap.n*sizeof(PetscScalar));CHKERRQ(ierr);
       submats[i]->factor = C->factor;
     }
   } else {
@@ -338,7 +338,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
           imat_vi  = imat_v + j;
           for (k=0; k<ncol[i]; k++) {
             col = icol[i][k];
-            imat_vi[k*m] = mat_vi[col*C->m];
+            imat_vi[k*m] = mat_vi[col*C->rmap.n];
           }
         } 
       }
@@ -347,11 +347,11 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
 
   /* Create row map. This maps c->row to submat->row for each submat*/
   /* this is a very expensive operation wrt memory usage */
-  len     = (1+ismax)*sizeof(PetscInt*)+ ismax*C->M*sizeof(PetscInt);
+  len     = (1+ismax)*sizeof(PetscInt*)+ ismax*C->rmap.N*sizeof(PetscInt);
   ierr    = PetscMalloc(len,&rmap);CHKERRQ(ierr);
   rmap[0] = (PetscInt*)(rmap + ismax);
-  ierr    = PetscMemzero(rmap[0],ismax*C->M*sizeof(PetscInt));CHKERRQ(ierr);
-  for (i=1; i<ismax; i++) { rmap[i] = rmap[i-1] + C->M;}
+  ierr    = PetscMemzero(rmap[0],ismax*C->rmap.N*sizeof(PetscInt));CHKERRQ(ierr);
+  for (i=1; i<ismax; i++) { rmap[i] = rmap[i-1] + C->rmap.N;}
   for (i=0; i<ismax; i++) {
     rmap_i = rmap[i];
     irow_i = irow[i];

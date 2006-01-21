@@ -16,12 +16,11 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   Mat_SeqBAIJ    *B = (Mat_SeqBAIJ*)(sbaij->B->data);  
   PetscErrorCode ierr;
   PetscInt       Nbs = sbaij->Nbs,i,j,*indices,*aj = B->j,ec = 0,*garray,*sgarray;
-  PetscInt       bs = mat->bs,*stmp,mbs=sbaij->mbs, vec_size,nt;
+  PetscInt       bs = mat->rmap.bs,*stmp,mbs=sbaij->mbs, vec_size,nt;
   IS             from,to;
   Vec            gvec;
   PetscMPIInt    rank=sbaij->rank,lsize,size=sbaij->size; 
-  PetscInt       *owners=sbaij->rowners,*sowners,*ec_owner,k; 
-  PetscMap       vecmap;
+  PetscInt       *owners=sbaij->rangebs,*sowners,*ec_owner,k; 
   PetscScalar    *ptr;
 
   PetscFunctionBegin;
@@ -66,7 +65,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
     for (j=0; j<B->ilen[i]; j++) aj[B->i[i] + j] = indices[aj[B->i[i] + j]];
   }
   B->nbs      = ec;
-  sbaij->B->n = ec*mat->bs;
+  sbaij->B->cmap.n = ec*mat->rmap.bs;
   ierr = PetscFree(indices);CHKERRQ(ierr);
 
   /* create local vector that is used to scatter into */
@@ -82,7 +81,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   /* generate the scatter context 
      -- Mvctx and lvec are not used by MatMult_MPISBAIJ(), but usefule for some applications */
-  ierr = VecCreateMPI(mat->comm,mat->n,mat->N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(mat->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
   ierr = VecScatterCreate(gvec,from,sbaij->lvec,to,&sbaij->Mvctx);CHKERRQ(ierr); 
   ierr = VecScatterPostRecvs(gvec,sbaij->lvec,INSERT_VALUES,SCATTER_FORWARD,sbaij->Mvctx);CHKERRQ(ierr); 
 
@@ -101,8 +100,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = VecDuplicate(sbaij->slvec0,&sbaij->slvec1);CHKERRQ(ierr);
   ierr = VecGetSize(sbaij->slvec0,&vec_size);CHKERRQ(ierr);
 
-  ierr = VecGetPetscMap(sbaij->slvec0,&vecmap);CHKERRQ(ierr);   
-  ierr = PetscMapGetGlobalRange(vecmap,&sowners);CHKERRQ(ierr); 
+  sowners = sbaij->slvec0->map.range;
  
   /* x index in the IS sfrom */
   for (i=0; i<ec; i++) { 
@@ -172,7 +170,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(baij->B->data);  
   PetscErrorCode     ierr;
   PetscInt           i,j,*aj = B->j,ec = 0,*garray;
-  PetscInt           bs = mat->bs,*stmp;
+  PetscInt           bs = mat->rmap.bs,*stmp;
   IS                 from,to;
   Vec                gvec;
 #if defined (PETSC_USE_CTABLE)
@@ -220,7 +218,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
     }
   }
   B->nbs     = ec;
-  baij->B->n = ec*mat->bs;
+  baij->B->cmap.n = ec*mat->rmap.bs;
   ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
@@ -256,7 +254,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
     }
   }
   B->nbs       = ec;
-  baij->B->n   = ec*mat->bs;
+  baij->B->cmap.n   = ec*mat->rmap.bs;
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif  
   
@@ -281,7 +279,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   /* this is inefficient, but otherwise we must do either 
      1) save garray until the first actual scatter when the vector is known or
      2) have another way of generating a scatter context without a vector.*/
-  ierr = VecCreateMPI(mat->comm,mat->n,mat->N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(mat->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
 
   /* gnerate the scatter context */
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
@@ -323,8 +321,8 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
   Mat            B = baij->B,Bnew;
   Mat_SeqBAIJ    *Bbaij = (Mat_SeqBAIJ*)B->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
-  PetscInt       k,bs=A->bs,bs2=baij->bs2,*rvals,*nz,ec,m=A->m;
+  PetscInt       i,j,mbs=Bbaij->mbs,n = A->cmap.n,col,*garray=baij->garray;
+  PetscInt       k,bs=A->rmap.bs,bs2=baij->bs2,*rvals,*nz,ec,m=A->rmap.n;
   MatScalar      *a = Bbaij->a;
   PetscScalar    *atmp;
 #if defined(PETSC_USE_MAT_SINGLE)
@@ -333,7 +331,7 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_MAT_SINGLE)
-  ierr = PetscMalloc(A->bs*sizeof(PetscScalar),&atmp);
+  ierr = PetscMalloc(A->rmap.bs*sizeof(PetscScalar),&atmp);
 #endif
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(baij->lvec,&ec);CHKERRQ(ierr); /* needed for PetscLogObjectMemory below */
@@ -372,7 +370,7 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
   ierr = MatCreate(PETSC_COMM_SELF,&Bnew);CHKERRQ(ierr);
   ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,B->type_name);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(Bnew,B->bs,0,nz);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(Bnew,B->rmap.bs,0,nz);CHKERRQ(ierr);
   ierr = PetscFree(nz);CHKERRQ(ierr);
   
   ierr = PetscMalloc(bs*sizeof(PetscInt),&rvals);CHKERRQ(ierr);

@@ -11,8 +11,6 @@
  */
 
 typedef struct {
-  PetscInt      *rowners;           /* row range owned by each processor */
-  PetscInt      rstart,rend;        /* starting and ending local rows */
   PetscInt      brstart,brend;      /* block starting and ending local rows */
   Mat           A;                  /* local matrix */
   PetscInt      gnd;                /* number of global diagonals */

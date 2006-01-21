@@ -270,7 +270,7 @@ static struct _MatOps MatOps_Values = {0,
 /*60*/ 0,
        MatDestroy_Shell,
        0,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -324,21 +324,18 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr            = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+  ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
   ierr = PetscNew(Mat_Shell,&b);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(A,sizeof(struct _p_Mat)+sizeof(Mat_Shell));CHKERRQ(ierr);
   A->data = (void*)b;
 
-  if (A->m == PETSC_DECIDE || A->n == PETSC_DECIDE) {
+  if (A->rmap.n == PETSC_DECIDE || A->cmap.n == PETSC_DECIDE) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Must give local row and column count for matrix");
   }
 
-  ierr = PetscSplitOwnership(A->comm,&A->m,&A->M);CHKERRQ(ierr);
-  ierr = PetscSplitOwnership(A->comm,&A->n,&A->N);CHKERRQ(ierr);
-
-  ierr = PetscMapCreateMPI(A->comm,A->m,A->M,&A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(A->comm,A->n,A->N,&A->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(A->comm,&A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(A->comm,&A->cmap);CHKERRQ(ierr);
 
   b->ctx           = 0;
   b->scale         = PETSC_FALSE;
@@ -427,6 +424,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateShell(MPI_Comm comm,PetscInt m,PetscI
   PetscFunctionBegin;
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
+  
   ierr = MatSetType(*A,MATSHELL);CHKERRQ(ierr);
   ierr = MatShellSetContext(*A,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

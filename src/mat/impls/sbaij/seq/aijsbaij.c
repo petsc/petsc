@@ -13,8 +13,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newt
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
   Mat_SeqAIJ     *b;
   PetscErrorCode ierr;
-  PetscInt       *ai=a->i,*aj=a->j,m=A->m,n=A->n,i,j,k,*bi,*bj,*rowlengths,nz,*rowstart,itmp;
-  PetscInt       bs=A->bs,bs2=bs*bs,mbs=A->m/bs;
+  PetscInt       *ai=a->i,*aj=a->j,m=A->rmap.N,n=A->cmap.n,i,j,k,*bi,*bj,*rowlengths,nz,*rowstart,itmp;
+  PetscInt       bs=A->rmap.bs,bs2=bs*bs,mbs=A->rmap.N/bs;
   PetscScalar    *av,*bv;
 
   PetscFunctionBegin;
@@ -48,7 +48,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newt
   ierr = MatSetOption(B,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
-  B->bs = A->bs;
+  B->rmap.bs = A->rmap.bs;
 
   b  = (Mat_SeqAIJ*)(B->data);
   bi = b->i;
@@ -124,7 +124,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat A, MatType newt
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
   Mat_SeqSBAIJ   *b;
   PetscErrorCode ierr;
-  PetscInt       *ai=a->i,*aj,m=A->M,n=A->N,i,j,*bi,*bj,*rowlengths;
+  PetscInt       *ai=a->i,*aj,m=A->rmap.N,n=A->cmap.N,i,j,*bi,*bj,*rowlengths;
   PetscScalar    *av,*bv;
 
   PetscFunctionBegin;
@@ -183,8 +183,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType new
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
   Mat_SeqBAIJ    *b;
   PetscErrorCode ierr;
-  PetscInt       *ai=a->i,*aj=a->j,m=A->m,n=A->n,i,k,*bi,*bj,*browlengths,nz,*browstart,itmp;
-  PetscInt       bs=A->bs,bs2=bs*bs,mbs=m/bs;
+  PetscInt       *ai=a->i,*aj=a->j,m=A->rmap.N,n=A->cmap.n,i,k,*bi,*bj,*browlengths,nz,*browstart,itmp;
+  PetscInt       bs=A->rmap.bs,bs2=bs*bs,mbs=m/bs;
   PetscScalar    *av,*bv;
 
   PetscFunctionBegin;
@@ -276,8 +276,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType new
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data; 
   Mat_SeqSBAIJ   *b;
   PetscErrorCode ierr;
-  PetscInt       *ai=a->i,*aj,m=A->m,n=A->n,i,j,k,*bi,*bj,*browlengths;
-  PetscInt       bs=A->bs,bs2=bs*bs,mbs=m/bs;
+  PetscInt       *ai=a->i,*aj,m=A->rmap.N,n=A->cmap.n,i,j,k,*bi,*bj,*browlengths;
+  PetscInt       bs=A->rmap.bs,bs2=bs*bs,mbs=m/bs;
   PetscScalar    *av,*bv;
 
   PetscFunctionBegin;

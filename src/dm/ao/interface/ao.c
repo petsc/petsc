@@ -231,7 +231,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplication(AO ao,PetscInt n,PetscInt 
    Input Parameters:
 +  ao - the application ordering context
 .  n - the number of integers
--  ia - the integers
+-  ia - the integers; these are replaced with their mapped value
 
    Level: beginner
 

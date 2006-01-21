@@ -31,7 +31,6 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
   ierr = VecMax(x,&idx,&value);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %G index %D\n",value,idx);CHKERRQ(ierr);
   ierr = VecMin(x,&idx,&value);CHKERRQ(ierr);

@@ -211,7 +211,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_Natural(Mat mat,const MatColoringT
   for (i=start; i<end; i++) {
     colors[i-start] = i;
   }
-  ierr = ISColoringCreate(comm,end-start,mat->N,colors,iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(comm,end-start,mat->cmap.N,colors,iscoloring);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

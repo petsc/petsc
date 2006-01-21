@@ -70,7 +70,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat A,IS r,MatFactorInf
   Mat         B;
   Mat_Spooles *lu;   
   PetscErrorCode ierr;
-  int m=A->m,n=A->n;
+  int m=A->rmap.n,n=A->cmap.n;
 
   PetscFunctionBegin;	
   /* Create the factorization matrix */  

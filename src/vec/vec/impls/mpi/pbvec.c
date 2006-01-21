@@ -143,7 +143,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
     VecCreateMPIWithArray(), VecCreate_Shared() (i.e. VecCreateShared()), VecCreateGhost(),
     VecDuplicate_MPI(), VecCreateGhostWithArray(), VecDuplicate_MPI(), and VecDuplicate_Shared()
 */
-PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar array[],PetscMap map)
+PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar array[])
 {
   Vec_MPI        *s;
   PetscErrorCode ierr;
@@ -151,7 +151,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar arr
   PetscFunctionBegin;
 
   v->bops->publish   = VecPublish_MPI;
-  ierr = PetscLogObjectMemory(v,sizeof(Vec_MPI) + (v->n+nghost+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(v,sizeof(Vec_MPI) + (v->map.n+nghost+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr           = PetscNew(Vec_MPI,&s);CHKERRQ(ierr);
   ierr           = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   v->data        = (void*)s;
@@ -160,14 +160,16 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar arr
   v->bmapping    = 0;
   v->petscnative = PETSC_TRUE;
 
+  if (v->map.bs == -1) v->map.bs = 1;
+  ierr = PetscMapInitialize(v->comm,&v->map);CHKERRQ(ierr);
   if (array) {
     s->array           = (PetscScalar *)array;
     s->array_allocated = 0;
   } else {
-    PetscInt n         = v->n+nghost;
+    PetscInt n         = v->map.n+nghost;
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
     s->array_allocated = s->array;
-    ierr               = PetscMemzero(s->array,v->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr               = PetscMemzero(s->array,v->map.n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   /* By default parallel vectors do not have local representation */
@@ -175,20 +177,11 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar arr
   s->localupdate = 0;
 
   v->stash.insertmode  = NOT_SET_VALUES;
-
-  if (!v->map) {
-    if (!map) {
-      ierr = PetscMapCreateMPI(v->comm,v->n,v->N,&v->map);CHKERRQ(ierr);
-    } else {
-      v->map = map;
-      ierr = PetscObjectReference((PetscObject)map);CHKERRQ(ierr);
-    }
-  }
   /* create the stashes. The block-size for bstash is set later when 
      VecSetValuesBlocked is called.
   */
   ierr = VecStashCreate_Private(v->comm,1,&v->stash);CHKERRQ(ierr);
-  ierr = VecStashCreate_Private(v->comm,v->bs,&v->bstash);CHKERRQ(ierr); 
+  ierr = VecStashCreate_Private(v->comm,v->map.bs,&v->bstash);CHKERRQ(ierr); 
                                                         
 #if defined(PETSC_HAVE_MATLAB)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
@@ -218,12 +211,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPI(Vec vv)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (vv->bs > 0) {
-    ierr = PetscSplitOwnershipBlock(vv->comm,vv->bs,&vv->n,&vv->N);CHKERRQ(ierr);
-  } else {
-    ierr = PetscSplitOwnership(vv->comm,&vv->n,&vv->N);CHKERRQ(ierr);
-  }
-  ierr = VecCreate_MPI_Private(vv,0,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(vv,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -274,7 +262,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateMPIWithArray(MPI_Comm comm,PetscInt n
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
   ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
-  ierr = VecCreate_MPI_Private(*vv,0,array,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(*vv,0,array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -534,7 +522,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostWithArray(MPI_Comm comm,PetscInt
   /* Create global representation */
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
   ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
-  ierr = VecCreate_MPI_Private(*vv,nghost,array,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(*vv,nghost,array);CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;
   /* Create local representation */
   ierr = VecGetArray(*vv,&larray);CHKERRQ(ierr);
@@ -605,15 +593,15 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 
   PetscFunctionBegin;
   ierr = VecCreate(win->comm,v);CHKERRQ(ierr);
-  ierr = VecSetSizes(*v,win->n,win->N);CHKERRQ(ierr);
-  ierr = VecCreate_MPI_Private(*v,w->nghost,0,win->map);CHKERRQ(ierr);
+  ierr = VecSetSizes(*v,win->map.n,win->map.N);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(*v,w->nghost,0);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
   ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
     ierr = VecGetArray(*v,&array);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,win->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,win->map.n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
     ierr = PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
     ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(*v,vw->localrep);CHKERRQ(ierr);
@@ -636,7 +624,7 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
     (*v)->bmapping = win->bmapping;
     ierr = PetscObjectReference((PetscObject)win->bmapping);CHKERRQ(ierr);
   }
-  (*v)->bs        = win->bs;
+  (*v)->map.bs        = win->map.bs;
   (*v)->bstash.bs = win->bstash.bs;
 
   PetscFunctionReturn(0);
@@ -698,7 +686,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm comm,Pet
   /* Create global representation */
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
   ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
-  ierr = VecCreate_MPI_Private(*vv,nghost*bs,array,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(*vv,nghost*bs,array);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*vv,bs);CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;
   /* Create local representation */
@@ -779,7 +767,7 @@ PetscErrorCode VecSetLocalToGlobalMapping_FETI(Vec vv,ISLocalToGlobalMapping map
   Vec_MPI        *v = (Vec_MPI *)vv->data;
 
   PetscFunctionBegin;
-  v->nghost = map->n - vv->n;
+  v->nghost = map->n - vv->map.n;
 
   /* we need to make longer the array space that was allocated when the vector was created */
   ierr     = PetscFree(v->array_allocated);CHKERRQ(ierr);

@@ -25,7 +25,7 @@ PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,PetscInt *Ati[],PetscInt *At
   PetscErrorCode ierr;
   PetscInt       i,j,anzj;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ *)A->data;
-  PetscInt       an=A->N,am=A->M;
+  PetscInt       an=A->cmap.N,am=A->rmap.N;
   PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
 
   PetscFunctionBegin;
@@ -86,7 +86,7 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,Petsc
   PetscErrorCode ierr;
   PetscInt       i,j,anzj;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ *)A->data;
-  PetscInt       an=A->N;
+  PetscInt       an=A->cmap.N;
   PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
 
   PetscFunctionBegin;
@@ -145,7 +145,7 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,Mat *B)
   PetscInt       i,j,anzj;
   Mat            At;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ *)A->data,*at;
-  PetscInt       an=A->N,am=A->M;
+  PetscInt       an=A->cmap.N,am=A->rmap.N;
   PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
   MatScalar      *ata,*aa=a->a;
 

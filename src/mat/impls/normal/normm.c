@@ -61,12 +61,11 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
   const PetscInt    *cols;
   PetscScalar       *diag,*work,*values;
   const PetscScalar *mvalues;
-  PetscMap          cmap;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(2*A->N*sizeof(PetscScalar),&diag);CHKERRQ(ierr);
-  work = diag + A->N;
-  ierr = PetscMemzero(work,A->N*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMalloc(2*A->cmap.N*sizeof(PetscScalar),&diag);CHKERRQ(ierr);
+  work = diag + A->cmap.N;
+  ierr = PetscMemzero(work,A->cmap.N*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
@@ -75,9 +74,9 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
     }
     ierr = MatRestoreRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
   }
-  ierr = MPI_Allreduce(work,diag,A->N,MPIU_SCALAR,MPI_SUM,N->comm);CHKERRQ(ierr);
-  ierr = MatGetPetscMaps(A,PETSC_NULL,&cmap);CHKERRQ(ierr);
-  ierr = PetscMapGetLocalRange(cmap,&rstart,&rend);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(work,diag,A->cmap.N,MPIU_SCALAR,MPI_SUM,N->comm);CHKERRQ(ierr);
+  rstart = N->cmap.rstart;
+  rend   = N->cmap.rend;
   ierr = VecGetArray(v,&values);CHKERRQ(ierr);
   ierr = PetscMemcpy(values,diag+rstart,(rend-rstart)*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&values);CHKERRQ(ierr);
@@ -127,10 +126,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat A,Mat *N)
   (*N)->ops->multadd     = MatMultAdd_Normal; 
   (*N)->ops->getdiagonal = MatGetDiagonal_Normal;
   (*N)->assembled        = PETSC_TRUE;
-  (*N)->N                = A->N;
-  (*N)->M                = A->N;
-  (*N)->n                = A->n;
-  (*N)->m                = A->n;
+  (*N)->cmap.N           = A->cmap.N;
+  (*N)->rmap.N           = A->cmap.N;
+  (*N)->cmap.n           = A->cmap.n;
+  (*N)->rmap.n           = A->cmap.n;
   PetscFunctionReturn(0);
 }
 

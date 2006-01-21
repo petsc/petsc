@@ -11,10 +11,8 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   Vec            x;
   PetscReal      norm;
-  PetscMap       map;
 #if defined(__cplusplus) && !defined(PETSC_USE_EXTERN_CXX)
   PetscInt       s;
-  PetscMapType   t;
   PetscScalar    dot;
 #endif
 
@@ -49,16 +47,6 @@ int main(int argc,char **args)
 #endif
   ierr = VecDestroy(x);CHKERRQ(ierr);
 
-#if defined(__cplusplus) && !defined(PETSC_USE_EXTERN_CXX)
-  map = PetscMapCreate();
-  s   = PetscMapGetLocalSize(map);
-  s   = PetscMapGetSize(map);
-  t   = PetscMapGetType(map);
-#else
-  ierr = PetscMapCreate(PETSC_COMM_SELF,&map);CHKERRQ(ierr);
-#endif
-
-  ierr = PetscMapDestroy(map);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

@@ -11,19 +11,14 @@
 
 #include "petscvec.h"
 
-struct _PetscMapOps {
-  PetscErrorCode (*setfromoptions)(PetscMap);
-  PetscErrorCode (*destroy)(PetscMap);
-};
-
-struct _p_PetscMap {
-  PETSCHEADER(struct _PetscMapOps);
+typedef struct {
   PetscInt  n,N;         /* local, global vector size */
   PetscInt  rstart,rend; /* local start, local end + 1 */
   PetscInt  *range;      /* the offset of each processor */
   PetscInt  bs;          /* number of elements in each block (generally for multi-component problems */
-};
-
+} PetscMap;
+EXTERN PetscErrorCode PetscMapInitialize(MPI_Comm,PetscMap*);
+EXTERN PetscErrorCode PetscMapCopy(MPI_Comm,PetscMap*,PetscMap*);
 /* ----------------------------------------------------------------------------*/
 
 typedef struct _VecOps *VecOps;
@@ -120,8 +115,6 @@ struct _p_Vec {
   PETSCHEADER(struct _VecOps);
   PetscMap               map;
   void                   *data;     /* implementation-specific data */
-  PetscInt               N,n;      /* global, local vector size */
-  PetscInt               bs;
   ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */
   PetscTruth             array_gotten;

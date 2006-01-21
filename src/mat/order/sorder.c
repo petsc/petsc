@@ -207,7 +207,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
     PetscFunctionReturn(0);
   }
 
-  if (!mat->M) { /* matrix has zero rows */
+  if (!mat->rmap.N) { /* matrix has zero rows */
     ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,cperm);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,rperm);CHKERRQ(ierr);
     ierr = ISSetIdentity(*cperm);CHKERRQ(ierr);

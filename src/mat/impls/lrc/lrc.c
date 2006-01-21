@@ -101,17 +101,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateLRC(Mat A,Mat U, Mat V,Mat *N)
   ierr      = PetscObjectReference((PetscObject)Na->V);CHKERRQ(ierr);
   (*N)->data = (void*) Na;
 
-  ierr                   = VecCreateSeq(PETSC_COMM_SELF,U->N,&Na->work1);CHKERRQ(ierr);
+  ierr                   = VecCreateSeq(PETSC_COMM_SELF,U->cmap.N,&Na->work1);CHKERRQ(ierr);
   ierr                   = VecDuplicate(Na->work1,&Na->work2);CHKERRQ(ierr);
-  Na->nwork              = U->N;
+  Na->nwork              = U->cmap.N;
 
   (*N)->ops->destroy     = MatDestroy_LRC;
   (*N)->ops->mult        = MatMult_LRC;
   (*N)->assembled        = PETSC_TRUE;
-  (*N)->N                = A->N;
-  (*N)->M                = A->N;
-  (*N)->n                = A->n;
-  (*N)->m                = A->n;
+  (*N)->cmap.N                = A->cmap.N;
+  (*N)->rmap.N                = A->cmap.N;
+  (*N)->cmap.n                = A->cmap.n;
+  (*N)->rmap.n                = A->cmap.n;
   PetscFunctionReturn(0);
 }
 

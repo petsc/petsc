@@ -12,8 +12,6 @@
 */
 
 typedef struct {
-  PetscInt         *rowners;         /* ranges owned by each processor */
-  PetscInt         rstart,rend;      /* start and end of local rows */
   PetscInt         nz;
   PetscInt         *diag;            /* pointers to diagonal elements, if they exist */
   PetscInt         *i;               /* pointer to beginning of each row */

@@ -11,10 +11,8 @@
 #endif
 
 #define MPIBAIJHEADER \
-  PetscInt      *rowners,*cowners;      /* ranges owned by each processor, in blocks */        \
-  PetscInt      *rowners_bs;            /* rowners*bs */                                       \
-  PetscInt      rstart,rend;           /* starting and ending owned rows */                    \
-  PetscInt      cstart,cend;           /* starting and ending owned columns */                 \
+  PetscInt      *rangebs;              /* rmap.range/bs */                      		\
+  PetscInt      rstartbs,rendbs,cstartbs,cendbs;  /* map values / bs  */                        \
   Mat           A,B;                   /* local submatrices: A (diag part), B (off-diag part) */ \
   PetscMPIInt   size;                   /* size of communicator */                             \
   PetscMPIInt   rank;                   /* rank of proc in communicator */                     \

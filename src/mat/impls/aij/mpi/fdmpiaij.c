@@ -15,7 +15,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   PetscMPIInt    size,*ncolsonproc,*disp,nn;
   PetscInt       i,*is,n,nrows,j,k,m,*rows = 0,*A_ci,*A_cj,ncols,col;
   PetscInt       nis = iscoloring->n,nctot,*cols,*B_ci,*B_cj;
-  PetscInt       *rowhit,M = mat->m,cstart = aij->cstart,cend = aij->cend,colb;
+  PetscInt       *rowhit,M = mat->rmap.n,cstart = mat->cmap.rstart,cend = mat->cmap.rend,colb;
   PetscInt       *columnsforrow,l;
   IS             *isa;
   PetscTruth     done,flg;
@@ -26,10 +26,10 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   }
 
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
-  c->M             = mat->M;  /* set the global rows and columns and local rows */
-  c->N             = mat->N;
-  c->m             = mat->m;
-  c->rstart        = aij->rstart;
+  c->M             = mat->rmap.N;  /* set the global rows and columns and local rows */
+  c->N             = mat->cmap.N;
+  c->m             = mat->rmap.n;
+  c->rstart        = mat->rmap.rstart;
 
   c->ncolors       = nis;
   ierr             = PetscMalloc(nis*sizeof(PetscInt),&c->ncolumns);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   /*
        vscale will contain the "diagonal" on processor scalings followed by the off processor
   */
-  ierr = VecCreateGhost(mat->comm,aij->A->m,PETSC_DETERMINE,aij->B->n,aij->garray,&c->vscale);CHKERRQ(ierr)
+  ierr = VecCreateGhost(mat->comm,aij->A->rmap.n,PETSC_DETERMINE,aij->B->cmap.n,aij->garray,&c->vscale);CHKERRQ(ierr)
   ierr = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
   for (k=0; k<c->ncolors; k++) { 
     ierr = PetscMalloc((c->nrows[k]+1)*sizeof(PetscInt),&c->vscaleforrow[k]);CHKERRQ(ierr);

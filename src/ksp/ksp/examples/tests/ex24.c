@@ -40,6 +40,7 @@ int main(int argc,char **args)
     if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,ADD_VALUES);CHKERRQ(ierr);
   }
+    CHKMEMQ;    
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -48,7 +49,7 @@ int main(int argc,char **args)
   /* ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Setup and solve for system */
-    
+    CHKMEMQ;    
   /* Create vectors.  */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,N);CHKERRQ(ierr);
@@ -56,15 +57,17 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&u_tmp);CHKERRQ(ierr);
-
+    CHKMEMQ;
   /* Set exact solution u; then compute right-hand-side vector b. */   
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
   ierr = VecSetRandom(u,r);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(r);CHKERRQ(ierr); 
-  
+      CHKMEMQ;
   ierr = MatMult(C,u,b);CHKERRQ(ierr); 
+    CHKMEMQ;
 
   for (k=0; k<3; k++){
+    CHKMEMQ;
     if (k == 0){                              /* CG  */
       ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
       ierr = KSPSetOperators(ksp,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -81,7 +84,7 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"\n SYMMLQ: \n");CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPSYMMLQ);CHKERRQ(ierr); 
     }
-
+    CHKMEMQ;
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     /* ierr = PCSetType(pc,PCICC);CHKERRQ(ierr); */
     ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr); 
@@ -94,9 +97,13 @@ int main(int argc,char **args)
     KSPSetFromOptions() is called _after_ any other customization
     routines.
     */
+    CHKMEMQ;
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);   
 
     /* Solve linear system; */ 
+    CHKMEMQ;
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+    CHKMEMQ;
     ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);

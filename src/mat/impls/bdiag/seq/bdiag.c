@@ -11,11 +11,11 @@ PetscErrorCode MatDestroy_SeqBDiag(Mat A)
 {
   Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,bs = A->bs;
+  PetscInt       i,bs = A->rmap.bs;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D, BSize=%D, NDiag=%D",A->m,A->n,a->nz,A->bs,a->nd);
+  PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D, BSize=%D, NDiag=%D",A->rmap.N,A->cmap.n,a->nz,A->rmap.bs,a->nd);
 #endif
   if (!a->user_alloc) { /* Free the actual diagonals */
     for (i=0; i<a->nd; i++) {
@@ -71,7 +71,7 @@ PetscErrorCode MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
   for (i=0; i<a->nd; i++) {
     if (!a->diag[i]) {a->mainbd = i; break;}
   }
-  ierr = PetscInfo3(A,"Number diagonals %D,memory used %D, block size %D\n",a->nd,a->maxnz,A->bs);CHKERRQ(ierr);
+  ierr = PetscInfo3(A,"Number diagonals %D,memory used %D, block size %D\n",a->nd,a->maxnz,A->rmap.bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -150,14 +150,14 @@ static PetscErrorCode MatGetDiagonal_SeqBDiag_N(Mat A,Vec v)
 {
   Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,n,len,ibase,bs = A->bs,iloc;
+  PetscInt       i,j,n,len,ibase,bs = A->rmap.bs,iloc;
   PetscScalar    *x,*dd,zero = 0.0;
 
   PetscFunctionBegin;
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
   ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
+  if (n != A->rmap.N) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
   if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Main diagonal not set");
   len = PetscMin(a->mblock,a->nblock);
   dd = a->diagv[a->mainbd];
@@ -182,10 +182,10 @@ static PetscErrorCode MatGetDiagonal_SeqBDiag_1(Mat A,Vec v)
   PetscFunctionBegin;
   ierr = VecSet(v,zero);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
+  if (n != A->rmap.N) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
   if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Main diagonal not set");
   dd = a->diagv[a->mainbd];
-  len = PetscMin(A->m,A->n);
+  len = PetscMin(A->rmap.n,A->cmap.n);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<len; i++) x[i] = dd[i];
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -197,7 +197,7 @@ static PetscErrorCode MatGetDiagonal_SeqBDiag_1(Mat A,Vec v)
 PetscErrorCode MatZeroEntries_SeqBDiag(Mat A)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  PetscInt     d,i,len,bs = A->bs;
+  PetscInt     d,i,len,bs = A->rmap.bs;
   PetscScalar  *dv;
 
   PetscFunctionBegin;
@@ -218,7 +218,7 @@ PetscErrorCode MatZeroRows_SeqBDiag(Mat A,PetscInt N,const PetscInt rows[],Petsc
 {
   Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,m = A->m - 1,nz;
+  PetscInt       i,m = A->rmap.N - 1,nz;
   PetscScalar    *dd;
   PetscScalar    *val;
 
@@ -244,7 +244,7 @@ PetscErrorCode MatZeroRows_SeqBDiag(Mat A,PetscInt N,const PetscInt rows[],Petsc
 PetscErrorCode MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
 {
   PetscErrorCode ierr;
-  PetscInt       nznew,*smap,i,j,oldcols = A->n;
+  PetscInt       nznew,*smap,i,j,oldcols = A->cmap.n;
   PetscInt       *irow,*icol,newr,newc,*cwork,nz,bs;
   PetscInt       *col;
   PetscScalar    *vwork;
@@ -268,7 +268,7 @@ PetscErrorCode MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,M
   for (i=0; i<newc; i++) smap[icol[i]] = i+1;
 
   /* Determine diagonals; then create submatrix */
-  bs = A->bs; /* Default block size remains the same */
+  bs = A->rmap.bs; /* Default block size remains the same */
   ierr = MatCreate(A->comm,&newmat);CHKERRQ(ierr);
   ierr = MatSetSizes(newmat,newr,newc,newr,newc);CHKERRQ(ierr);
   ierr = MatSetType(newmat,A->type_name);CHKERRQ(ierr);
@@ -323,7 +323,7 @@ PetscErrorCode MatGetSubMatrices_SeqBDiag(Mat A,PetscInt n,const IS irow[],const
 PetscErrorCode MatScale_SeqBDiag(Mat inA,PetscScalar alpha)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)inA->data;
-  PetscInt          i,bs = inA->bs;
+  PetscInt          i,bs = inA->rmap.bs;
   PetscScalar  oalpha = alpha;
   PetscBLASInt one = 1,len;
   PetscErrorCode ierr;
@@ -349,12 +349,12 @@ PetscErrorCode MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
   PetscScalar    *l,*r,*dv;
   PetscErrorCode ierr;
   PetscInt       d,j,len;
-  PetscInt       nd = a->nd,bs = A->bs,diag,m,n;
+  PetscInt       nd = a->nd,bs = A->rmap.bs,diag,m,n;
 
   PetscFunctionBegin;
   if (ll) {
     ierr = VecGetSize(ll,&m);CHKERRQ(ierr);
-    if (m != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
+    if (m != A->rmap.N) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
     if (bs == 1) {
       ierr = VecGetArray(ll,&l);CHKERRQ(ierr); 
       for (d=0; d<nd; d++) {
@@ -370,7 +370,7 @@ PetscErrorCode MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
   }
   if (rr) {
     ierr = VecGetSize(rr,&n);CHKERRQ(ierr);
-    if (n != A->n) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
+    if (n != A->cmap.n) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
     if (bs == 1) {
       ierr = VecGetArray(rr,&r);CHKERRQ(ierr);  
       for (d=0; d<nd; d++) {
@@ -464,7 +464,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBDiag_N,
 /*60*/ 0,
        MatDestroy_SeqBDiag,
        MatView_SeqBDiag,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -573,7 +573,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBDiagSetPreallocation_SeqBDiag(Mat B,Pet
     nd   = nd2;
   }
 
-  if ((B->n%bs) || (B->m%bs)) SETERRQ(PETSC_ERR_ARG_SIZ,"Invalid block size");
+  B->rmap.bs = B->cmap.bs = bs;
+  ierr = PetscMapInitialize(B->comm,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,&B->cmap);CHKERRQ(ierr);
+
+  if ((B->cmap.n%bs) || (B->rmap.N%bs)) SETERRQ(PETSC_ERR_ARG_SIZ,"Invalid block size");
   if (!nd) nda = nd + 1;
   else     nda = nd;
   b            = (Mat_SeqBDiag*)B->data;
@@ -616,17 +620,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBDiagSetPreallocation_SeqBDiag(Mat B,Pet
    }
   }
 
-  b->mblock = B->m/bs;
-  b->nblock = B->n/bs;
+  b->mblock = B->rmap.N/bs;
+  b->nblock = B->cmap.n/bs;
   b->nd     = nd;
-  B->bs     = bs;
+  B->rmap.bs     = bs;
   b->ndim   = 0;
   b->mainbd = -1;
   b->pivot  = 0;
 
   ierr      = PetscMalloc(2*nda*sizeof(PetscInt),&b->diag);CHKERRQ(ierr);
   b->bdlen  = b->diag + nda;
-  ierr      = PetscMalloc((B->n+1)*sizeof(PetscInt),&b->colloc);CHKERRQ(ierr);
+  ierr      = PetscMalloc((B->cmap.n+1)*sizeof(PetscInt),&b->colloc);CHKERRQ(ierr);
   ierr      = PetscMalloc(nda*sizeof(PetscScalar*),&b->diagv);CHKERRQ(ierr);
   sizetot   = 0;
 
@@ -646,7 +650,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBDiagSetPreallocation_SeqBDiag(Mat B,Pet
   }
   sizetot   *= bs*bs;
   b->maxnz  =  sizetot;
-  ierr      = PetscMalloc((B->n+1)*sizeof(PetscScalar),&b->dvalue);CHKERRQ(ierr);
+  ierr      = PetscMalloc((B->cmap.n+1)*sizeof(PetscScalar),&b->dvalue);CHKERRQ(ierr);
   ierr      = PetscLogObjectMemory(B,(nda*(bs+2))*sizeof(PetscInt) + bs*nda*sizeof(PetscScalar)
                     + nda*sizeof(PetscScalar*) + sizeof(Mat_SeqBDiag)
                     + sizeof(struct _p_Mat) + sizetot*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -681,12 +685,12 @@ static PetscErrorCode MatDuplicate_SeqBDiag(Mat A,MatDuplicateOption cpvalues,Ma
 { 
   Mat_SeqBDiag   *newmat,*a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,len,diag,bs = A->bs;
+  PetscInt       i,len,diag,bs = A->rmap.bs;
   Mat            mat;
 
   PetscFunctionBegin;
   ierr = MatCreate(A->comm,matout);CHKERRQ(ierr);
-  ierr = MatSetSizes(*matout,A->m,A->n,A->m,A->n);CHKERRQ(ierr);
+  ierr = MatSetSizes(*matout,A->rmap.N,A->cmap.n,A->rmap.N,A->cmap.n);CHKERRQ(ierr);
   ierr = MatSetType(*matout,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(*matout,a->nd,bs,a->diag,PETSC_NULL);CHKERRQ(ierr);
 
@@ -818,17 +822,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBDiag(Mat B)
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
 
-  B->m = B->M = PetscMax(B->m,B->M);
-  B->n = B->N = PetscMax(B->n,B->N);
 
   ierr            = PetscNew(Mat_SeqBDiag,&b);CHKERRQ(ierr);
   B->data         = (void*)b;
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;
   B->mapping      = 0;
-
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
 
   b->ndim   = 0;
   b->mainbd = -1;

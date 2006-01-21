@@ -91,7 +91,7 @@ struct _MatOps {
   PetscErrorCode (*getsubmatrix)(Mat,IS,IS,PetscInt,MatReuse,Mat*);
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*view)(Mat,PetscViewer);
-  PetscErrorCode (*getmaps)(Mat,PetscMap*,PetscMap*);
+  PetscErrorCode (*dummy)();
   PetscErrorCode (*usescaledform)(Mat,PetscTruth);
   /*65*/
   PetscErrorCode (*scalesystem)(Mat,Vec,Vec);
@@ -161,7 +161,7 @@ struct _MatOps {
 EXTERN PetscErrorCode MatConvert_Basic(Mat, MatType,MatReuse,Mat*);
 EXTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
 EXTERN PetscErrorCode MatView_Private(Mat);
-EXTERN PetscErrorCode MatGetPetscMaps_Petsc(Mat,PetscMap *,PetscMap *);
+
 EXTERN PetscErrorCode MatHeaderCopy(Mat,Mat);
 EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat);
 EXTERN PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);
@@ -237,8 +237,6 @@ struct _p_Mat {
   PetscTruth             was_assembled;    /* new values inserted into assembled mat */
   PetscInt               num_ass;          /* number of times matrix has been assembled */
   PetscTruth             same_nonzero;     /* matrix has same nonzero pattern as previous */
-  PetscInt               M,N;             /* global numbers of rows, columns */
-  PetscInt               m,n;             /* local numbers of rows, columns */
   MatInfo                info;             /* matrix information */
   ISLocalToGlobalMapping mapping;          /* mapping used in MatSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;         /* mapping used in MatSetValuesBlockedLocal() */
@@ -250,7 +248,6 @@ struct _p_Mat {
   PetscTruth             symmetric,hermitian,structurally_symmetric;
   PetscTruth             symmetric_set,hermitian_set,structurally_symmetric_set; /* if true, then corresponding flag is correct*/
   PetscTruth             symmetric_eternal;
-  PetscInt               bs;
   void                   *spptr;          /* pointer for special library like SuperLU */
 };
 

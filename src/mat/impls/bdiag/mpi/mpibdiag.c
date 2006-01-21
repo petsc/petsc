@@ -12,18 +12,18 @@ PetscErrorCode MatSetValues_MPIBDiag(Mat mat,PetscInt m,const PetscInt idxm[],Pe
 {
   Mat_MPIBDiag   *mbd = (Mat_MPIBDiag*)mat->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,row,rstart = mbd->rstart,rend = mbd->rend;
+  PetscInt       i,j,row,rstart = mat->rmap.rstart,rend = mat->rmap.rend;
   PetscTruth     roworiented = mbd->roworiented;
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
     if (idxm[i] < 0) continue;
-    if (idxm[i] >= mat->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (idxm[i] >= mat->rmap.N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for (j=0; j<n; j++) {
         if (idxn[j] < 0) continue;
-        if (idxn[j] >= mat->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+        if (idxn[j] >= mat->cmap.N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
         if (roworiented) {
           ierr = MatSetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j,addv);CHKERRQ(ierr);
         } else {
@@ -49,17 +49,17 @@ PetscErrorCode MatGetValues_MPIBDiag(Mat mat,PetscInt m,const PetscInt idxm[],Pe
 {
   Mat_MPIBDiag   *mbd = (Mat_MPIBDiag*)mat->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,row,rstart = mbd->rstart,rend = mbd->rend;
+  PetscInt       i,j,row,rstart = mat->rmap.rstart,rend = mat->rmap.rend;
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
     if (idxm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
-    if (idxm[i] >= mat->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (idxm[i] >= mat->rmap.N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for (j=0; j<n; j++) {
         if (idxn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column");
-        if (idxn[j] >= mat->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+        if (idxn[j] >= mat->cmap.N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
         ierr = MatGetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j);CHKERRQ(ierr);
       }
     } else {
@@ -73,7 +73,6 @@ PetscErrorCode MatGetValues_MPIBDiag(Mat mat,PetscInt m,const PetscInt idxm[],Pe
 #define __FUNCT__ "MatAssemblyBegin_MPIBDiag"
 PetscErrorCode MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
-  Mat_MPIBDiag   *mbd = (Mat_MPIBDiag*)mat->data;
   MPI_Comm       comm = mat->comm;
   PetscErrorCode ierr;
   PetscInt       nstash,reallocs;
@@ -85,7 +84,7 @@ PetscErrorCode MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot mix adds/inserts on different procs");
   }
   mat->insertmode = addv; /* in case this processor had no cache */
-  ierr = MatStashScatterBegin_Private(&mat->stash,mbd->rowners);CHKERRQ(ierr);
+  ierr = MatStashScatterBegin_Private(&mat->stash,mat->rmap.range);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs);CHKERRQ(ierr);
   ierr = PetscInfo2(0,"Stash has %D entries,uses %D mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -127,7 +126,7 @@ PetscErrorCode MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
 
   /* Fix main diagonal location and determine global diagonals */
   mlocal         = (Mat_SeqBDiag*)mbd->A->data;
-  Mblock         = mat->M/mat->bs; Nblock = mat->N/mat->bs;
+  Mblock         = mat->rmap.N/mat->rmap.bs; Nblock = mat->cmap.N/mat->rmap.bs;
   len            = Mblock + Nblock + 1; /* add 1 to prevent 0 malloc */
   ierr           = PetscMalloc(2*len*sizeof(PetscInt),&tmp1);CHKERRQ(ierr);
   tmp2           = tmp1 + len;
@@ -184,7 +183,7 @@ PetscErrorCode MatZeroRows_MPIBDiag(Mat A,PetscInt N,const PetscInt rows[],Petsc
   Mat_MPIBDiag   *l = (Mat_MPIBDiag*)A->data;
   PetscErrorCode ierr;
   PetscMPIInt    n,imdex,size = l->size,rank = l->rank,tag = A->tag;
-  PetscInt       i,*owners = l->rowners;
+  PetscInt       i,*owners = A->rmap.range;
   PetscInt       *nprocs,j,idx,nsends;
   PetscInt       nmax,*svalues,*starts,*owner,nrecvs;
   PetscInt       *rvalues,count,base,slen,*source;
@@ -360,7 +359,7 @@ PetscErrorCode MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
   PetscReal      isend[5],irecv[5];
 
   PetscFunctionBegin;
-  info->block_size     = (PetscReal)mat->A->bs;
+  info->block_size     = (PetscReal)mat->A->rmap.bs;
   ierr = MatGetInfo(mat->A,MAT_LOCAL,info);CHKERRQ(ierr);
   isend[0] = info->nz_used; isend[1] = info->nz_allocated; isend[2] = info->nz_unneeded;
   isend[3] = info->memory;  isend[4] = info->mallocs;
@@ -385,10 +384,10 @@ PetscErrorCode MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   }
-  info->rows_global    = (double)matin->M;
-  info->columns_global = (double)matin->N;
-  info->rows_local     = (double)matin->m;
-  info->columns_local  = (double)matin->N;
+  info->rows_global    = (double)matin->rmap.N;
+  info->columns_global = (double)matin->cmap.N;
+  info->rows_local     = (double)matin->rmap.n;
+  info->columns_local  = (double)matin->cmap.N;
   PetscFunctionReturn(0);
 }
 
@@ -414,12 +413,11 @@ PetscErrorCode MatDestroy_MPIBDiag(Mat mat)
   Mat_SeqBDiag   *ms = (Mat_SeqBDiag*)mbd->A->data;
 
   PetscFunctionBegin;
-  PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D, BSize=%D, NDiag=%D",mat->M,mat->N,mat->bs,ms->nd);
+  PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D, BSize=%D, NDiag=%D",mat->rmap.N,mat->cmap.N,mat->rmap.bs,ms->nd);
 #else
   PetscFunctionBegin;
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
-  ierr = PetscFree(mbd->rowners);CHKERRQ(ierr);
   ierr = PetscFree(mbd->gdiag);CHKERRQ(ierr);
   ierr = MatDestroy(mbd->A);CHKERRQ(ierr);
   if (mbd->lvec) {ierr = VecDestroy(mbd->lvec);CHKERRQ(ierr);}
@@ -464,7 +462,7 @@ static PetscErrorCode MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       PetscInt nline = PetscMin(10,mbd->gnd),k,nk,np;
-      ierr = PetscViewerASCIIPrintf(viewer,"  block size=%D, total number of diagonals=%D\n",mat->bs,mbd->gnd);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  block size=%D, total number of diagonals=%D\n",mat->rmap.bs,mbd->gnd);CHKERRQ(ierr);
       nk = (mbd->gnd-1)/nline + 1;
       for (k=0; k<nk; k++) {
         ierr = PetscViewerASCIIPrintf(viewer,"  global diag numbers:");CHKERRQ(ierr);
@@ -478,7 +476,7 @@ static PetscErrorCode MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
         MatInfo info;
         ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
         ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] local rows %D nz %D nz alloced %D mem %D \n",rank,mat->m,
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] local rows %D nz %D nz alloced %D mem %D \n",rank,mat->rmap.N,
             (PetscInt)info.nz_used,(PetscInt)info.nz_allocated,(PetscInt)info.memory);CHKERRQ(ierr);
         ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
         ierr = VecScatterView(mbd->Mvctx,viewer);CHKERRQ(ierr);
@@ -499,7 +497,7 @@ static PetscErrorCode MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
   } else {
     /* assemble the entire matrix onto first processor. */
     Mat          A;
-    PetscInt     M = mat->M,N = mat->N,m,row,nz,*cols;
+    PetscInt     M = mat->rmap.N,N = mat->cmap.N,m,row,nz,*cols;
     PetscScalar  *vals;
 
     /* Here we are constructing a temporary matrix, so we will explicitly set the type to MPIBDiag */
@@ -507,18 +505,18 @@ static PetscErrorCode MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
     if (!rank) {
       ierr = MatSetSizes(A,M,N,M,N);CHKERRQ(ierr);
       ierr = MatSetType(A,MATMPIBDIAG);CHKERRQ(ierr);
-      ierr = MatMPIBDiagSetPreallocation(A,mbd->gnd,mbd->A->bs,mbd->gdiag,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatMPIBDiagSetPreallocation(A,mbd->gnd,mbd->A->rmap.bs,mbd->gdiag,PETSC_NULL);CHKERRQ(ierr);
     } else {
       ierr = MatSetSizes(A,0,0,M,N);CHKERRQ(ierr);
       ierr = MatSetType(A,MATMPIBDIAG);CHKERRQ(ierr);
-      ierr = MatMPIBDiagSetPreallocation(A,0,mbd->A->bs,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatMPIBDiagSetPreallocation(A,0,mbd->A->rmap.bs,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
     ierr = PetscLogObjectParent(mat,A);CHKERRQ(ierr);
 
     /* Copy the matrix ... This isn't the most efficient means,
        but it's quick for now */
-    row = mbd->rstart;
-    m = mbd->A->m;
+    row = mat->rmap.rstart;
+    m = mbd->A->rmap.N;
     for (i=0; i<m; i++) {
       ierr = MatGetRow_MPIBDiag(mat,row,&nz,&cols,&vals);CHKERRQ(ierr);
       ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
@@ -617,8 +615,8 @@ PetscErrorCode MatGetRow_MPIBDiag(Mat matin,PetscInt row,PetscInt *nz,PetscInt *
   PetscInt       lrow;
 
   PetscFunctionBegin;
-  if (row < mat->rstart || row >= mat->rend) SETERRQ(PETSC_ERR_SUP,"only for local rows")
-  lrow = row - mat->rstart;
+  if (row < matin->rmap.rstart || row >= matin->rmap.rend) SETERRQ(PETSC_ERR_SUP,"only for local rows")
+  lrow = row - matin->rmap.rstart;
   ierr = MatGetRow_SeqBDiag(mat->A,lrow,nz,idx,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -632,7 +630,7 @@ PetscErrorCode MatRestoreRow_MPIBDiag(Mat matin,PetscInt row,PetscInt *nz,PetscI
   PetscInt       lrow;
 
   PetscFunctionBegin;
-  lrow = row - mat->rstart;
+  lrow = row - matin->rmap.rstart;
   ierr = MatRestoreRow_SeqBDiag(mat->A,lrow,nz,idx,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -646,7 +644,7 @@ PetscErrorCode MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *nrm)
   Mat_SeqBDiag   *a = (Mat_SeqBDiag*)mbd->A->data;
   PetscReal      sum = 0.0;
   PetscErrorCode ierr;
-  PetscInt       d,i,nd = a->nd,bs = A->bs,len;
+  PetscInt       d,i,nd = a->nd,bs = A->rmap.bs,len;
   PetscScalar    *dv;
 
   PetscFunctionBegin;
@@ -664,16 +662,16 @@ PetscErrorCode MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *nrm)
     }
     ierr = MPI_Allreduce(&sum,nrm,1,MPIU_REAL,MPI_SUM,A->comm);CHKERRQ(ierr);
     *nrm = sqrt(*nrm);
-    ierr = PetscLogFlops(2*A->n*A->m);CHKERRQ(ierr);
+    ierr = PetscLogFlops(2*A->rmap.n*A->rmap.N);CHKERRQ(ierr);
   } else if (type == NORM_1) { /* max column norm */
     PetscReal *tmp,*tmp2;
     PetscInt    j;
-    ierr = PetscMalloc((mbd->A->n+1)*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
-    ierr = PetscMalloc((mbd->A->n+1)*sizeof(PetscReal),&tmp2);CHKERRQ(ierr);
-    ierr = MatNorm_SeqBDiag_Columns(mbd->A,tmp,mbd->A->n);CHKERRQ(ierr);
+    ierr = PetscMalloc((mbd->A->cmap.n+1)*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
+    ierr = PetscMalloc((mbd->A->cmap.n+1)*sizeof(PetscReal),&tmp2);CHKERRQ(ierr);
+    ierr = MatNorm_SeqBDiag_Columns(mbd->A,tmp,mbd->A->cmap.n);CHKERRQ(ierr);
     *nrm = 0.0;
-    ierr = MPI_Allreduce(tmp,tmp2,mbd->A->n,MPIU_REAL,MPI_SUM,A->comm);CHKERRQ(ierr);
-    for (j=0; j<mbd->A->n; j++) {
+    ierr = MPI_Allreduce(tmp,tmp2,mbd->A->cmap.n,MPIU_REAL,MPI_SUM,A->comm);CHKERRQ(ierr);
+    for (j=0; j<mbd->A->cmap.n; j++) {
       if (tmp2[j] > *nrm) *nrm = tmp2[j];
     }
     ierr = PetscFree(tmp);CHKERRQ(ierr);
@@ -788,7 +786,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
 /*60*/ 0,
        MatDestroy_MPIBDiag,
        MatView_MPIBDiag,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -880,41 +878,28 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,Pet
 
   if (bs <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Blocksize must be positive");
 
-  ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->m,&B->M);CHKERRQ(ierr);
-  ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->n,&B->N);CHKERRQ(ierr);
+  B->rmap.bs = B->cmap.bs = bs;
 
-  if ((B->N%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad column number");
-  if ((B->m%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad local row number");
-  if ((B->M%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad global row number");
-  B->bs = bs;
+  ierr = PetscMapInitialize(B->comm,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,&B->cmap);CHKERRQ(ierr);
 
-  /* the information in the maps duplicates the information computed below, eventually 
-     we should remove the duplicate information that is not contained in the maps */
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
+  if ((B->cmap.N%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad column number");
+  if ((B->rmap.N%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad local row number");
+  if ((B->rmap.N%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad global row number");
 
 
   b          = (Mat_MPIBDiag*)B->data;CHKERRQ(ierr);
   b->gnd     = nd;
-
-  ierr          = MPI_Allgather(&B->m,1,MPIU_INT,b->rowners+1,1,MPIU_INT,B->comm);CHKERRQ(ierr);
-  b->rowners[0] = 0;
-  for (i=2; i<=b->size; i++) {
-    b->rowners[i] += b->rowners[i-1];
-  }
-  b->rstart  = b->rowners[b->rank]; 
-  b->rend    = b->rowners[b->rank+1]; 
-  b->brstart = (b->rstart)/bs;
-  b->brend   = (b->rend)/bs;
+  b->brstart = (B->rmap.rstart)/bs;
+  b->brend   = (B->rmap.rend)/bs;
 
 
   /* Determine local diagonals; for now, assume global rows = global cols */
   /* These are sorted in MatCreateSeqBDiag */
   ierr = PetscMalloc((nd+1)*sizeof(PetscInt),&ldiag);CHKERRQ(ierr); 
-  len  = B->M/bs + B->N/bs + 1;
+  len  = B->rmap.N/bs + B->cmap.N/bs + 1;
   ierr = PetscMalloc(len*sizeof(PetscInt),&b->gdiag);CHKERRQ(ierr);
   k    = 0;
-  ierr = PetscLogObjectMemory(B,(nd+1)*sizeof(PetscInt) + (b->size+2)*sizeof(PetscInt) + sizeof(struct _p_Mat) + sizeof(Mat_MPIBDiag));CHKERRQ(ierr);
   if (diagv) {
     ierr = PetscMalloc((nd+1)*sizeof(PetscScalar*),&ldiagv);CHKERRQ(ierr); 
   }
@@ -927,14 +912,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,Pet
         k++;
       }
     } else { /* upper triangular */
-      if (B->M/bs - diag[i] > B->N/bs) {
-        if (B->M/bs + diag[i] > b->brstart) {
+      if (B->rmap.N/bs - diag[i] > B->cmap.N/bs) {
+        if (B->rmap.N/bs + diag[i] > b->brstart) {
           ldiag[k] = diag[i] - b->brstart;
           if (diagv) ldiagv[k] = diagv[i];
           k++;
         }
       } else {
-        if (B->M/bs > b->brstart) {
+        if (B->rmap.N/bs > b->brstart) {
           ldiag[k] = diag[i] - b->brstart;
           if (diagv) ldiagv[k] = diagv[i];
           k++;
@@ -945,7 +930,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,Pet
 
   /* Form local matrix */
   ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
-  ierr = MatSetSizes(b->A,B->m,B->N,B->m,B->N);CHKERRQ(ierr);
+  ierr = MatSetSizes(b->A,B->rmap.n,B->cmap.N,B->rmap.n,B->cmap.N);CHKERRQ(ierr);
   ierr = MatSetType(b->A,MATSEQBDIAG);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(b->A,k,bs,ldiag,ldiagv);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
@@ -985,9 +970,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBDiag(Mat B)
   B->insertmode = NOT_SET_VALUES;
   ierr = MPI_Comm_rank(B->comm,&b->rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(B->comm,&b->size);CHKERRQ(ierr);
-
-  /* build local table of row ownerships */
-  ierr = PetscMalloc((b->size+2)*sizeof(PetscInt),&b->rowners);CHKERRQ(ierr);
 
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(B->comm,1,&B->stash);CHKERRQ(ierr);
@@ -1230,7 +1212,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatBDiagGetData(Mat mat,PetscInt *nd,PetscInt 
     dmat = (Mat_SeqBDiag*)pdmat->A->data;
   } else SETERRQ(PETSC_ERR_SUP,"Valid only for MATSEQBDIAG and MATMPIBDIAG formats");
   *nd    = dmat->nd;
-  *bs    = mat->bs;
+  *bs    = mat->rmap.bs;
   *diag  = dmat->diag;
   *bdlen = dmat->bdlen;
   *diagv = dmat->diagv;

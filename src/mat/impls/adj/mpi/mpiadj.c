@@ -12,7 +12,7 @@ PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_MPIAdj        *a = (Mat_MPIAdj*)A->data;
   PetscErrorCode    ierr;
-  PetscInt          i,j,m = A->m;
+  PetscInt          i,j,m = A->rmap.n;
   const char        *name;
   PetscViewerFormat format;
 
@@ -26,7 +26,7 @@ PetscErrorCode MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %D:",i+a->rstart);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %D:",i+A->rmap.rstart);CHKERRQ(ierr);
       for (j=a->i[i]; j<a->i[i+1]; j++) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer," %D ",a->j[j]);CHKERRQ(ierr);
       }
@@ -64,7 +64,7 @@ PetscErrorCode MatDestroy_MPIAdj(Mat mat)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D, NZ=%D",mat->m,mat->n,a->nz);
+  PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D, NZ=%D",mat->rmap.n,mat->cmap.n,a->nz);
 #endif
   if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
   if (a->freeaij) {
@@ -72,7 +72,6 @@ PetscErrorCode MatDestroy_MPIAdj(Mat mat)
     ierr = PetscFree(a->j);CHKERRQ(ierr);
     if (a->values) {ierr = PetscFree(a->values);CHKERRQ(ierr);}
   }
-  ierr = PetscFree(a->rowners);CHKERRQ(ierr);
   ierr = PetscFree(a);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -119,12 +118,12 @@ PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
 {
   Mat_MPIAdj     *a = (Mat_MPIAdj*)A->data; 
   PetscErrorCode ierr;
-  PetscInt       i,j,*diag,m = A->m;
+  PetscInt       i,j,*diag,m = A->rmap.n;
 
   PetscFunctionBegin;
   ierr = PetscMalloc((m+1)*sizeof(PetscInt),&diag);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(A,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  for (i=0; i<A->m; i++) {
+  for (i=0; i<A->rmap.n; i++) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
       if (a->j[j] == i) {
         diag[i] = j;
@@ -144,9 +143,9 @@ PetscErrorCode MatGetRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,P
   PetscInt   *itmp;
 
   PetscFunctionBegin;
-  row -= a->rstart;
+  row -= A->rmap.rstart;
 
-  if (row < 0 || row >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
+  if (row < 0 || row >= A->rmap.n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
 
   *nz = a->i[row+1] - a->i[row];
   if (v) *v = PETSC_NULL;
@@ -178,12 +177,12 @@ PetscErrorCode MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
 
   PetscFunctionBegin;
   /* If the  matrix dimensions are not equal,or no of nonzeros */
-  if ((A->m != B->m) ||(a->nz != b->nz)) {
+  if ((A->rmap.n != B->rmap.n) ||(a->nz != b->nz)) {
     flag = PETSC_FALSE;
   }
   
   /* if the a->i are the same */
-  ierr = PetscMemcmp(a->i,b->i,(A->m+1)*sizeof(PetscInt),&flag);CHKERRQ(ierr);
+  ierr = PetscMemcmp(a->i,b->i,(A->rmap.n+1)*sizeof(PetscInt),&flag);CHKERRQ(ierr);
   
   /* if a->j are the same */
   ierr = PetscMemcmp(a->j,b->j,(a->nz)*sizeof(PetscInt),&flag);CHKERRQ(ierr);
@@ -204,7 +203,7 @@ PetscErrorCode MatGetRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscTruth symmetric,Pet
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size > 1) {*done = PETSC_FALSE; PetscFunctionReturn(0);}
-  *m    = A->m;
+  *m    = A->rmap.n;
   *ia   = a->i;
   *ja   = a->j;
   *done = PETSC_TRUE;
@@ -300,7 +299,7 @@ static struct _MatOps MatOps_Values = {0,
 /*60*/ 0,
        MatDestroy_MPIAdj,
        MatView_MPIAdj,
-       MatGetPetscMaps_Petsc,
+       0,
        0,
 /*65*/ 0,
        0,
@@ -352,13 +351,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscIn
   B->preallocated = PETSC_TRUE;
 #if defined(PETSC_USE_DEBUG)
   if (i[0] != 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %D\n",i[0]);
-  for (ii=1; ii<B->m; ii++) {
+  for (ii=1; ii<B->rmap.n; ii++) {
     if (i[ii] < 0 || i[ii] < i[ii-1]) {
       SETERRQ4(PETSC_ERR_ARG_OUTOFRANGE,"i[%D]=%D index is out of range: i[%D]=%D",ii,i[ii],ii-1,i[ii-1]);
     }
   }
-  for (ii=0; ii<i[B->m]; ii++) {
-    if (j[ii] < 0 || j[ii] >= B->N) {
+  for (ii=0; ii<i[B->rmap.n]; ii++) {
+    if (j[ii] < 0 || j[ii] >= B->cmap.N) {
       SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column index %D out of range %D\n",ii,j[ii]);
     }
   } 
@@ -368,7 +367,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscIn
   b->i      = i;
   b->values = values;
 
-  b->nz               = i[B->m];
+  b->nz               = i[B->rmap.n];
   b->diag             = 0;
   b->symmetric        = PETSC_FALSE;
   b->freeaij          = PETSC_TRUE;
@@ -395,7 +394,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat B)
 {
   Mat_MPIAdj     *b;
   PetscErrorCode ierr;
-  PetscInt       ii;
   PetscMPIInt    size,rank;
 
   PetscFunctionBegin;
@@ -409,24 +407,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat B)
   B->mapping          = 0;
   B->assembled        = PETSC_FALSE;
   
-  ierr = PetscSplitOwnership(B->comm,&B->m,&B->M);CHKERRQ(ierr);
-  B->n = B->N = PetscMax(B->N,B->n);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,&B->cmap);CHKERRQ(ierr);
 
-  /* the information in the maps duplicates the information computed below, eventually 
-     we should remove the duplicate information that is not contained in the maps */
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  /* we don't know the "local columns" so just use the row information :-(*/
-  ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
-
-  ierr = PetscMalloc((size+1)*sizeof(PetscInt),&b->rowners);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(B,(size+2)*sizeof(PetscInt)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAdj));CHKERRQ(ierr);
-  ierr = MPI_Allgather(&B->m,1,MPI_INT,b->rowners+1,1,MPI_INT,B->comm);CHKERRQ(ierr);
-  b->rowners[0] = 0;
-  for (ii=2; ii<=size; ii++) {
-    b->rowners[ii] += b->rowners[ii-1];
-  }
-  b->rstart = b->rowners[rank]; 
-  b->rend   = b->rowners[rank+1]; 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAdjSetPreallocation_C",
                                     "MatMPIAdjSetPreallocation_MPIAdj",
                                      MatMPIAdjSetPreallocation_MPIAdj);CHKERRQ(ierr);

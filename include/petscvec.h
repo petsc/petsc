@@ -11,68 +11,6 @@
 PETSC_EXTERN_CXX_BEGIN
 
 /*S
-     PetscMap - Abstract PETSc object that defines the layout of vector and
-  matrices across processors
-
-   Level: advanced
-
-   Notes:
-    Does not play a role in the PETSc design, can be ignored
-
-  Concepts: parallel decomposition
-
-.seealso:  PetscMapCreateMPI()
-S*/
-typedef struct _p_PetscMap*         PetscMap;
-
-#define MAP_SEQ "seq"
-#define MAP_MPI "mpi"
-#define PetscMapType const char*
-
-/* Logging support */
-extern PetscCookie MAP_COOKIE;
-
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCreate(MPI_Comm,PetscMap*);
-PetscPolymorphicSubroutine(PetscMapCreate,(PetscMap*m),(m))
-PetscPolymorphicFunction(PetscMapCreate,(void),(PETSC_COMM_SELF,&m),PetscMap,m)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCreateMPI(MPI_Comm,PetscInt,PetscInt,PetscMap*);
-PetscPolymorphicFunction(PetscMapCreateMPI,(MPI_Comm comm,PetscInt l,PetscInt g),(comm,l,g,&m),PetscMap,m)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetFromOptions(PetscMap);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapPrintHelp(PetscMap);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapDestroy(PetscMap);
-
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetUp(PetscMap);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapView(PetscMap,PetscViewer);
-
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetOptionsPrefix(PetscMap,const char[]);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapAppendOptionsPrefix(PetscMap,const char[]);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetOptionsPrefix(PetscMap,const char*[]);
-
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap,PetscInt);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalSize(PetscMap,PetscInt *);
-PetscPolymorphicFunction(PetscMapGetLocalSize,(PetscMap m),(m,&s),PetscInt,s)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap,PetscInt);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap,PetscInt *);
-PetscPolymorphicFunction(PetscMapGetSize,(PetscMap m),(m,&s),PetscInt,s)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalRange(PetscMap,PetscInt *,PetscInt *);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap,PetscInt *[]);
-
-/* Dynamic creation and loading functions */
-extern PetscFList PetscMapList;
-extern PetscTruth PetscMapRegisterAllCalled;
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetType(PetscMap, PetscMapType);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetType(PetscMap, PetscMapType *);
-PetscPolymorphicFunction(PetscMapGetType,(PetscMap m),(m,&t),PetscMapType,t)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscMap));
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapRegisterAll(const char []);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapRegisterDestroy(void);
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define PetscMapRegisterDynamic(a,b,c,d) PetscMapRegister(a,b,c,0)
-#else
-#define PetscMapRegisterDynamic(a,b,c,d) PetscMapRegister(a,b,c,d)
-#endif
-
-/*S
      Vec - Abstract PETSc vector object
 
    Level: beginner
@@ -253,8 +191,6 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAbs(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec,Vec*);          
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicateVecs(Vec,PetscInt,Vec*[]);         
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDestroyVecs(Vec[],PetscInt); 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetPetscMap(Vec,PetscMap*);
-PetscPolymorphicFunction(VecGetPetscMap,(Vec x),(x,&y),PetscMap,y)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNormAll(Vec,NormType,PetscReal*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMaxAll(Vec,PetscInt *,PetscReal *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec,PetscInt *,PetscReal *);

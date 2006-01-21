@@ -19,7 +19,7 @@ PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F,PetscInt *nneig,PetscInt *nzero,Pets
 { 
   Mat_SeqSBAIJ *fact_ptr = (Mat_SeqSBAIJ*)F->data;
   PetscScalar  *dd = fact_ptr->a;
-  PetscInt     mbs=fact_ptr->mbs,bs=F->bs,i,nneig_tmp,npos_tmp,*fi = fact_ptr->i;
+  PetscInt     mbs=fact_ptr->mbs,bs=F->rmap.bs,i,nneig_tmp,npos_tmp,*fi = fact_ptr->i;
 
   PetscFunctionBegin;
   if (bs != 1) SETERRQ1(PETSC_ERR_SUP,"No support for bs: %D >1 yet",bs);
@@ -51,7 +51,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInf
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b;
   PetscErrorCode ierr;
   PetscInt       *rip,i,mbs = a->mbs,*ai,*aj;
-  PetscInt       *jutmp,bs = A->bs,bs2=a->bs2;
+  PetscInt       *jutmp,bs = A->rmap.bs,bs2=a->bs2;
   PetscInt       m,reallocs = 0,prow;
   PetscInt       *jl,*q,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
   PetscReal      f = info->fill;
@@ -215,7 +215,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInf
     switch (bs) {
       case 1:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
-        (*B)->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+        (*B)->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering;
         ierr = PetscInfo(A,"Using special in-place natural ordering factor and solve BS=1\n");CHKERRQ(ierr);
         break;
       case 2:
@@ -272,7 +272,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
   PetscErrorCode     ierr;
   PetscTruth         perm_identity;
   PetscReal          fill = info->fill;
-  PetscInt           *rip,i,mbs=a->mbs,bs=A->bs,*ai,*aj,reallocs=0,prow;
+  PetscInt           *rip,i,mbs=a->mbs,bs=A->rmap.bs,*ai,*aj,reallocs=0,prow;
   PetscInt           *jl,jmin,jmax,nzk,*ui,k,j,*il,nextprow;
   PetscInt           nlnk,*lnk,ncols,*cols,*uj,**ui_ptr,*uj_ptr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
@@ -494,7 +494,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,MatFactorInfo *info,Mat
   PetscErrorCode ierr;
   PetscInt       *perm_ptr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
   PetscInt       *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
-  PetscInt       bs=A->bs,bs2 = a->bs2;
+  PetscInt       bs=A->rmap.bs,bs2 = a->bs2;
   MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
   MatScalar      *work;
@@ -655,7 +655,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat A,MatFact
   PetscErrorCode ierr;
   PetscInt       i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
   PetscInt       *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
-  PetscInt       bs=A->bs,bs2 = a->bs2;
+  PetscInt       bs=A->rmap.bs,bs2 = a->bs2;
   MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
   MatScalar      *work;
@@ -1214,7 +1214,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,MatFactorInfo *info,Mat
   C->factor       = FACTOR_CHOLESKY; 
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
-  ierr = PetscLogFlops(C->m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(C->rmap.N);CHKERRQ(ierr);
     if (sctx.nshift){
     if (shiftnz) {
       ierr = PetscInfo2(0,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
@@ -1355,7 +1355,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,MatFact
   C->factor       = FACTOR_CHOLESKY; 
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
-  ierr = PetscLogFlops(C->m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(C->rmap.N);CHKERRQ(ierr);
   if (sctx.nshift){
     if (shiftnz) {
       ierr = PetscInfo2(0,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);

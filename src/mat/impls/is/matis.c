@@ -110,7 +110,7 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mappin
   /* setup the global to local scatter */
   ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&to);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApplyIS(mapping,to,&from);CHKERRQ(ierr);
-  ierr = VecCreateMPI(A->comm,A->n,A->N,&global);CHKERRQ(ierr);
+  ierr = VecCreateMPI(A->comm,A->cmap.n,A->cmap.N,&global);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,is->x,to,&is->ctx);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
@@ -148,7 +148,7 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
     */
     Vec         counter;
     PetscScalar one=1.0, zero=0.0;
-    ierr = VecCreateMPI(A->comm,A->n,A->N,&counter);CHKERRQ(ierr);
+    ierr = VecCreateMPI(A->comm,A->cmap.n,A->cmap.N,&counter);CHKERRQ(ierr);
     ierr = VecSet(counter,zero);CHKERRQ(ierr);
     ierr = VecSet(is->x,one);CHKERRQ(ierr);
     ierr = VecScatterBegin(is->x,counter,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
@@ -360,10 +360,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IS(Mat A)
   A->ops->zeroentries             = MatZeroEntries_IS;
   A->ops->setoption               = MatSetOption_IS;
 
-  ierr = PetscSplitOwnership(A->comm,&A->m,&A->M);CHKERRQ(ierr);
-  ierr = PetscSplitOwnership(A->comm,&A->n,&A->N);CHKERRQ(ierr);
-  ierr = MPI_Scan(&A->m,&b->rend,1,MPIU_INT,MPI_SUM,A->comm);CHKERRQ(ierr);
-  b->rstart = b->rend - A->m;
+  ierr = PetscMapInitialize(A->comm,&A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(A->comm,&A->cmap);CHKERRQ(ierr);
 
   b->A          = 0;
   b->ctx        = 0;

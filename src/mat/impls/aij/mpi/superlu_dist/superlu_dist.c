@@ -108,7 +108,7 @@ PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
 #endif
       }
     }
-    Destroy_LU(A->N, &lu->grid, &lu->LUstruct);
+    Destroy_LU(A->cmap.N, &lu->grid, &lu->LUstruct);
     ScalePermstructFree(&lu->ScalePermstruct);
     LUstructFree(&lu->LUstruct);
 
@@ -135,7 +135,7 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->spptr;
   PetscErrorCode   ierr;
   PetscMPIInt      size;
-  PetscInt         m=A->M, N=A->N; 
+  PetscInt         m=A->rmap.N, N=A->cmap.N; 
   SuperLUStat_t    stat;  
   double           berr[1];
   PetscScalar      *bptr;  
@@ -178,11 +178,11 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 #endif 
   } else { /* distributed mat input */
 #if defined(PETSC_USE_COMPLEX)
-    pzgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, (doublecomplex*)bptr, A->M, nrhs, &lu->grid,
+    pzgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, (doublecomplex*)bptr, A->rmap.N, nrhs, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
     if (info) SETERRQ1(PETSC_ERR_LIB,"pzgssvx fails, info: %d\n",info);
 #else
-    pdgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, bptr, A->M, nrhs, &lu->grid,
+    pdgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, bptr, A->rmap.N, nrhs, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
     if (info) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
 #endif
@@ -216,8 +216,8 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
   Mat_SeqAIJ       *aa,*bb;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)(*F)->spptr;
   PetscErrorCode   ierr;
-  PetscInt         M=A->M,N=A->N,sinfo,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
-                   m=A->m, irow,colA_start,j,jcol,jB,countA,countB,*bjj,*ajj;
+  PetscInt         M=A->rmap.N,N=A->cmap.N,sinfo,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
+                   m=A->rmap.n, irow,colA_start,j,jcol,jB,countA,countB,*bjj,*ajj;
   PetscMPIInt      size,rank;
   SuperLUStat_t    stat;
   double           *berr=0;
@@ -284,10 +284,9 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
     av=aa->a;
     bv=bb->a;
 #endif
-    rstart = mat->rstart;
+    rstart = A->rmap.rstart;
     nz     = aa->nz + bb->nz;
     garray = mat->garray;
-    rstart = mat->rstart;
 
     if (lu->flg == DIFFERENT_NONZERO_PATTERN) {/* first numeric factorization */ 
 #if defined(PETSC_USE_COMPLEX)
@@ -300,7 +299,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
       Destroy_LU(N, &lu->grid, &lu->LUstruct); 
       lu->options.Fact = SamePattern; 
     }
-    nz = 0; irow = mat->rstart;   
+    nz = 0; irow = rstart;   
     for ( i=0; i<m; i++ ) {
       lu->row[i] = nz;
       countA = ai[i+1] - ai[i];
@@ -309,7 +308,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
       bjj = bj + bi[i];  
 
       /* B part, smaller col index */   
-      colA_start = mat->rstart + ajj[0]; /* the smallest global col index of A */  
+      colA_start = rstart + ajj[0]; /* the smallest global col index of A */  
       jB = 0;
       for (j=0; j<countB; j++){
         jcol = garray[bjj[j]];
@@ -324,7 +323,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
 
       /* A part */
       for (j=0; j<countA; j++){
-        lu->col[nz] = mat->rstart + ajj[j]; 
+        lu->col[nz] = rstart + ajj[j]; 
         lu->val[nz++] = *av++;
       }
 
@@ -409,7 +408,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   Mat               B;
   Mat_SuperLU_DIST  *lu;   
   PetscErrorCode    ierr;
-  PetscInt          M=A->M,N=A->N,indx;
+  PetscInt          M=A->rmap.N,N=A->cmap.N,indx;
   PetscMPIInt       size;
   superlu_options_t options;
   PetscTruth        flg;
@@ -419,7 +418,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   PetscFunctionBegin;
   /* Create the factorization matrix */
   ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->m,A->n,M,N);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);

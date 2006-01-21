@@ -10,7 +10,7 @@ EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscInt
 PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode ierr;
-  PetscInt       i,*is,n,nrows,N = mat->N,j,k,m,*rows,*ci,*cj,ncols,col;
+  PetscInt       i,*is,n,nrows,N = mat->cmap.N,j,k,m,*rows,*ci,*cj,ncols,col;
   PetscInt       nis = iscoloring->n,*rowhit,*columnsforrow,l;
   IS             *isa;
   PetscTruth     done,flg;
@@ -21,9 +21,9 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   }
 
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
-  c->M       = mat->M;  /* set total rows, columns and local rows */
-  c->N       = mat->N;
-  c->m       = mat->M;
+  c->M       = mat->rmap.N;  /* set total rows, columns and local rows */
+  c->N       = mat->cmap.N;
+  c->m       = mat->rmap.N;
   c->rstart  = 0;
 
   c->ncolors = nis;
@@ -144,7 +144,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   /*
        see the version for MPIAIJ
   */
-  ierr = VecCreateGhost(mat->comm,mat->m,PETSC_DETERMINE,0,PETSC_NULL,&c->vscale);CHKERRQ(ierr)
+  ierr = VecCreateGhost(mat->comm,mat->rmap.n,PETSC_DETERMINE,0,PETSC_NULL,&c->vscale);CHKERRQ(ierr)
   ierr = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
   for (k=0; k<c->ncolors; k++) { 
     ierr = PetscMalloc((c->nrows[k]+1)*sizeof(PetscInt),&c->vscaleforrow[k]);CHKERRQ(ierr);

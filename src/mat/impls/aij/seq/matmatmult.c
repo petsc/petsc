@@ -33,7 +33,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
   PetscInt           *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci,*cj;
-  PetscInt           am=A->M,bn=B->N,bm=B->M;
+  PetscInt           am=A->rmap.N,bn=B->cmap.N,bm=B->rmap.N;
   PetscInt           i,j,anzi,brow,bnzj,cnzi,nlnk,*lnk,nspacedouble=0;
   MatScalar          *ca;
   PetscBT            lnkbt;
@@ -122,7 +122,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   Mat_SeqAIJ     *b = (Mat_SeqAIJ *)B->data;
   Mat_SeqAIJ     *c = (Mat_SeqAIJ *)C->data;
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
-  PetscInt       am=A->M,cm=C->M;
+  PetscInt       am=A->rmap.N,cm=C->rmap.N;
   PetscInt       i,j,k,anzi,bnzi,cnzi,brow,nextb;
   MatScalar      *aa=a->a,*ba=b->a,*baj,*ca=c->a; 
 
@@ -184,7 +184,7 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   PetscFunctionBegin;
   /* create symbolic At */
   ierr = MatGetSymbolicTranspose_SeqAIJ(A,&ati,&atj);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,A->n,A->m,ati,atj,PETSC_NULL,&At);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,A->cmap.n,A->rmap.n,ati,atj,PETSC_NULL,&At);CHKERRQ(ierr);
 
   /* get symbolic C=At*B */
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(At,B,fill,C);CHKERRQ(ierr);
@@ -202,8 +202,8 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr; 
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;
-  PetscInt       am=A->m,anzi,*ai=a->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
-  PetscInt       cm=C->m,*ci=c->i,*cj=c->j,crow,*cjj,i,j,k,flops=0;
+  PetscInt       am=A->rmap.n,anzi,*ai=a->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
+  PetscInt       cm=C->rmap.n,*ci=c->i,*cj=c->j,crow,*cjj,i,j,k,flops=0;
   MatScalar      *aa=a->a,*ba,*ca=c->a,*caj;
  
   PetscFunctionBegin;

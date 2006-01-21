@@ -97,15 +97,14 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
 #define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ"
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
-  Mat_MPIAIJ           *a=(Mat_MPIAIJ*)A->data,*b=(Mat_MPIAIJ*)B->data;
   PetscErrorCode       ierr;
   PetscInt             start,end;
   Mat_MatMatMultMPI    *mult;
   PetscObjectContainer container;
  
   PetscFunctionBegin;
-  if (a->cstart != b->rstart || a->cend != b->rend){
-    SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",a->cstart,a->cend,b->rstart,b->rend);
+  if (A->cmap.rstart != B->rmap.rstart || A->cmap.rend != B->rmap.rend){
+    SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap.rstart,A->cmap.rend,B->rmap.rstart,B->rmap.rend);
   }
   ierr = PetscNew(Mat_MatMatMultMPI,&mult);CHKERRQ(ierr);
 
@@ -113,7 +112,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
   ierr = MatGetBrowsOfAcols(A,B,MAT_INITIAL_MATRIX,&mult->isrowb,&mult->iscolb,&mult->brstart,&mult->B_seq);CHKERRQ(ierr);
 
   /*  create a seq matrix A_seq = submatrix of A by taking all local rows of A */
-  start = a->rstart; end = a->rend;
+  start = A->rmap.rstart; end = A->rmap.rend;
   ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,&mult->isrowa);CHKERRQ(ierr); 
   ierr = MatGetLocalMatCondensed(A,MAT_INITIAL_MATRIX,&mult->isrowa,&mult->isrowb,&mult->A_loc);CHKERRQ(ierr); 
 
@@ -122,7 +121,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
 
   /* create mpi matrix C by concatinating C_seq */
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); /* prevent C_seq being destroyed by MatMerge() */
-  ierr = MatMerge(A->comm,mult->C_seq,B->n,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr); 
+  ierr = MatMerge(A->comm,mult->C_seq,B->cmap.n,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr); 
  
   /* attach the supporting struct to C for reuse of symbolic C */
   ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
@@ -166,6 +165,6 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
   ierr = MatMatMult_SeqAIJ_SeqAIJ(mult->A_loc,mult->B_seq,MAT_REUSE_MATRIX,0.0,&mult->C_seq);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); 
-  ierr = MatMerge(A->comm,mult->C_seq,B->n,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr); 
+  ierr = MatMerge(A->comm,mult->C_seq,B->cmap.n,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }

@@ -46,9 +46,8 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode
   SETERRQ(PETSC_ERR_SUP,"Not implemented due to limited MPI support for extremely long gathers");
 #else 
   PetscErrorCode ierr;
-  PetscInt       yy_n,xx_n,*range;
+  PetscInt       yy_n,xx_n;
   PetscScalar    *xv,*yv;
-  PetscMap       map;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(y,&yy_n);CHKERRQ(ierr);
@@ -86,9 +85,7 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode
           ierr        = PetscMalloc(xx_n*sizeof(PetscScalar),& xvt2);CHKERRQ(ierr);
           scat->work2 = xvt2;
         }
-        ierr = VecGetPetscMap(y,&map);CHKERRQ(ierr);
-        ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
-        ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,xvt2,scat->count,range,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
+        ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,xvt2,scat->count,y->map.range,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
         ierr = MPI_Reduce(xv,xvt,2*xx_n,MPIU_REAL,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
 #else
@@ -105,17 +102,15 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode
 	  }
 #endif
         } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
-        ierr = MPI_Scatterv(xvt,scat->count,map->range,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
+        ierr = MPI_Scatterv(xvt,scat->count,y->map.range,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
       } else {
-        ierr = VecGetPetscMap(y,&map);CHKERRQ(ierr);
-        ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
         ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,0, 0,0,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
         ierr = MPI_Reduce(xv,xvt,2*xx_n,MPIU_REAL,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
 #else
         ierr = MPI_Reduce(xv,xvt,xx_n,MPIU_SCALAR,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
 #endif
-        ierr = MPI_Scatterv(0,scat->count,range,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
+        ierr = MPI_Scatterv(0,scat->count,y->map.range,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
       }
     }
   } else {
@@ -123,17 +118,15 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     PetscInt             i;
 
-    ierr = VecGetPetscMap(x,&map);CHKERRQ(ierr);
-    ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
     if (addv == INSERT_VALUES) {
-      ierr = MPI_Allgatherv(xv,xx_n,MPIU_SCALAR,yv,scat->count,range,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgatherv(xv,xx_n,MPIU_SCALAR,yv,scat->count,x->map.range,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
     } else {
       if (scat->work1) yvt = scat->work1; 
       else {
         ierr        = PetscMalloc(yy_n*sizeof(PetscScalar),&yvt);CHKERRQ(ierr);
         scat->work1 = yvt;
       }
-      ierr = MPI_Allgatherv(xv,xx_n,MPIU_SCALAR,yvt,scat->count,map->range,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgatherv(xv,xx_n,MPIU_SCALAR,yvt,scat->count,x->map.range,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
       if (addv == ADD_VALUES){
         for (i=0; i<yy_n; i++) {
 	  yv[i] += yvt[i];
@@ -168,10 +161,9 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode
 #else 
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscInt       yy_n,xx_n,*range;
+  PetscInt       yy_n,xx_n;
   PetscScalar    *xv,*yv;
   MPI_Comm       comm;
-  PetscMap       map;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(y,&yy_n);CHKERRQ(ierr);
@@ -188,17 +180,15 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     PetscInt             i;
 
-    ierr = VecGetPetscMap(y,&map);CHKERRQ(ierr);
-    ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
     if (addv == INSERT_VALUES) {
-      ierr = MPI_Scatterv(xv,scat->count,range,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
+      ierr = MPI_Scatterv(xv,scat->count,y->map.range,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
     } else {
       if (scat->work2) yvt = scat->work2; 
       else {
         ierr        = PetscMalloc(xx_n*sizeof(PetscScalar),&yvt);CHKERRQ(ierr);
         scat->work2 = yvt;
       }
-      ierr = MPI_Scatterv(xv,scat->count,range,MPIU_SCALAR,yvt,yy_n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
+      ierr = MPI_Scatterv(xv,scat->count,y->map.range,MPIU_SCALAR,yvt,yy_n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
       if (addv == ADD_VALUES) {
         for (i=0; i<yy_n; i++) {
 	  yv[i] += yvt[i];
@@ -217,10 +207,8 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     PetscInt             i;
 
-    ierr = VecGetPetscMap(x,&map);CHKERRQ(ierr);
-    ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
     if (addv == INSERT_VALUES) {
-      ierr = MPI_Gatherv(xv,xx_n,MPIU_SCALAR,yv,scat->count,range,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
+      ierr = MPI_Gatherv(xv,xx_n,MPIU_SCALAR,yv,scat->count,x->map.range,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
     } else {
       if (!rank) {
         if (scat->work1) yvt = scat->work1; 
@@ -229,7 +217,7 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode
           scat->work1 = yvt;
         }
       }
-      ierr = MPI_Gatherv(xv,xx_n,MPIU_SCALAR,yvt,scat->count,range,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
+      ierr = MPI_Gatherv(xv,xx_n,MPIU_SCALAR,yvt,scat->count,x->map.range,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
       if (!rank) {
         if (addv == ADD_VALUES) {
           for (i=0; i<yy_n; i++) {
@@ -801,7 +789,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
   VecScatter     ctx;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscInt       totalv,*range,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID; 
+  PetscInt       totalv,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID,*range; 
   MPI_Comm       comm,ycomm;
   PetscTruth     ixblock,iyblock,iystride,islocal,cando,flag;
   IS             tix = 0,tiy = 0;
@@ -1133,12 +1121,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ierr = MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
 
       if (cando) {
-        PetscMap map;
 
         ierr  = MPI_Comm_size(ctx->comm,&size);CHKERRQ(ierr);
 	ierr  = PetscMalloc2(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&count);CHKERRQ(ierr);
-        ierr  = VecGetPetscMap(xin,&map);CHKERRQ(ierr);
-        ierr  = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
+        range = xin->map.range;
         for (i=0; i<size; i++) {
 	  count[i] = range[i+1] - range[i];
         }
@@ -1189,12 +1175,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ierr = MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
 
       if (cando) {
-        PetscMap map;
-
         ierr  = MPI_Comm_size(ctx->comm,&size);CHKERRQ(ierr);
 	ierr  = PetscMalloc2(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&count);CHKERRQ(ierr);
-        ierr  = VecGetPetscMap(xin,&map);CHKERRQ(ierr);
-        ierr  = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
+        range = xin->map.range;
         for (i=0; i<size; i++) {
 	  count[i] = range[i+1] - range[i];
         }

@@ -64,8 +64,8 @@ PetscErrorCode MPICRL_create_crl(Mat A)
   Mat_MPIAIJ     *a = (Mat_MPIAIJ *)(A)->data;
   Mat_SeqAIJ     *Aij = (Mat_SeqAIJ*)(a->A->data), *Bij = (Mat_SeqAIJ*)(a->B->data);
   Mat_CRL        *crl = (Mat_CRL*) A->spptr;
-  PetscInt       m = A->m;  /* Number of rows in the matrix. */
-  PetscInt       nd = a->A->n; /* number of columns in diagonal portion */
+  PetscInt       m = A->rmap.n;  /* Number of rows in the matrix. */
+  PetscInt       nd = a->A->cmap.n; /* number of columns in diagonal portion */
   PetscInt       *aj = Aij->j,*bj = Bij->j;  /* From the CSR representation; points to the beginning  of each row. */
   PetscInt       i, j,rmax = 0,*icols, *ailen = Aij->ilen, *bilen = Bij->ilen;
   PetscScalar    *aa = Aij->a,*ba = Bij->a,*acols,*array;
@@ -77,7 +77,7 @@ PetscErrorCode MPICRL_create_crl(Mat A)
     rmax = PetscMax(rmax,ailen[i]+bilen[i]);
   }
   crl->nz   = Aij->nz+Bij->nz;
-  crl->m    = A->m;
+  crl->m    = A->rmap.n;
   crl->rmax = rmax;
   ierr  = PetscMalloc2(rmax*m,PetscScalar,&crl->acols,rmax*m,PetscInt,&crl->icols);CHKERRQ(ierr);
   acols = crl->acols;
@@ -98,10 +98,10 @@ PetscErrorCode MPICRL_create_crl(Mat A)
   }
   ierr = PetscInfo1(A,"Percentage of 0's introduced for vectorized multiply %g\n",1.0-((double)(crl->nz))/((double)(rmax*m)));
 
-  ierr = PetscMalloc((a->B->n+nd)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+  ierr = PetscMalloc((a->B->cmap.n+nd)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   /* xwork array is actually B->n+nd long, but we define xwork this length so can copy into it */
   ierr = VecCreateMPIWithArray(A->comm,nd,PETSC_DECIDE,array,&crl->xwork);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->B->n,array+nd,&crl->fwork);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->B->cmap.n,array+nd,&crl->fwork);CHKERRQ(ierr);
   crl->array = array;
   crl->xscat = a->Mvctx;
   PetscFunctionReturn(0);
