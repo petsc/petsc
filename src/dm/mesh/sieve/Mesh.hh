@@ -696,9 +696,9 @@ namespace ALE {
               if (out.trifacemarkerlist[f]) {
                 Obj<PointSet>    point = PointSet();
                 Obj<PointSet>    edge = PointSet();
-                Mesh::point_type cornerA(0, out.edgelist[f*3+0] + out.numberoftetrahedra);
-                Mesh::point_type cornerB(0, out.edgelist[f*3+1] + out.numberoftetrahedra);
-                Mesh::point_type cornerC(0, out.edgelist[f*3+2] + out.numberoftetrahedra);
+                Mesh::point_type cornerA(0, out.trifacelist[f*3+0] + out.numberoftetrahedra);
+                Mesh::point_type cornerB(0, out.trifacelist[f*3+1] + out.numberoftetrahedra);
+                Mesh::point_type cornerC(0, out.trifacelist[f*3+2] + out.numberoftetrahedra);
                 point->insert(cornerA);
                 edge->insert(cornerB);
                 edge->insert(cornerC);
@@ -859,7 +859,126 @@ namespace ALE {
 #endif
 #ifdef PETSC_HAVE_TETGEN
       static Obj<Mesh> refine_TetGen(Obj<Mesh> mesh, double maxAreas[]) {
-        return mesh;
+        ::tetgenio     in;
+        ::tetgenio     out;
+        int            dim = 3;
+        Obj<Mesh>      m = Mesh(mesh->getComm(), dim);
+        // FIX: Need to globalize
+        PetscInt       numElements = mesh->getTopology()->heightStratum(0)->size();
+        PetscMPIInt    rank;
+        PetscErrorCode ierr;
+
+        ierr = MPI_Comm_rank(mesh->getComm(), &rank);
+
+        if (rank == 0) {
+          in.tetrahedronvolumelist = new double[numElements];
+        }
+        {
+          // Scatter in local area constraints
+#ifdef PARALLEL
+          Vec        locAreas;
+          VecScatter areaScatter;
+
+          ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, numElements, areas, &locAreas);CHKERRQ(ierr);
+          ierr = MeshCreateMapping(oldMesh, elementBundle, partitionTypes, serialElementBundle, &areaScatter);CHKERRQ(ierr);
+          ierr = VecScatterBegin(maxAreas, locAreas, INSERT_VALUES, SCATTER_FORWARD, areaScatter);CHKERRQ(ierr);
+          ierr = VecScatterEnd(maxAreas, locAreas, INSERT_VALUES, SCATTER_FORWARD, areaScatter);CHKERRQ(ierr);
+          ierr = VecDestroy(locAreas);CHKERRQ(ierr);
+          ierr = VecScatterDestroy(areaScatter);CHKERRQ(ierr);
+#else
+          for(int i = 0; i < numElements; i++) {
+            in.tetrahedronvolumelist[i] = maxAreas[i];
+          }
+#endif
+        }
+
+#ifdef PARALLEL
+        Obj<Mesh> serialMesh = this->unify(mesh);
+#else
+        Obj<Mesh> serialMesh = mesh;
+#endif
+        Obj<Mesh::sieve_type> serialTopology = serialMesh->getTopology();
+        Obj<Mesh::sieve_type> serialOrientation = serialMesh->getOrientation();
+        Obj<Mesh::ordering_type> serialOrdering = serialMesh->getOrdering();
+
+        if (rank == 0) {
+          std::string args("qenzQra");
+          Obj<Mesh::sieve_type::heightSequence> cells = serialTopology->heightStratum(0);
+          Obj<Mesh::sieve_type::depthSequence>  vertices = serialTopology->depthStratum(0);
+          Obj<Mesh::bundle_type>                vertexBundle = serialMesh->getBundle(0);
+          Obj<Mesh::coordinate_type>            coordinates = serialMesh->getCoordinates();
+          int                                   c = 0;
+
+          in.numberofpoints = vertices->size();
+          in.pointlist       = new double[in.numberofpoints*dim];
+          in.pointmarkerlist = new int[in.numberofpoints];
+          for(Mesh::sieve_type::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); ++v_itor) {
+            const Mesh::coordinate_type::index_type& interval = coordinates->getIndex(0, *v_itor);
+            const Mesh::coordinate_type::value_type *array = coordinates->restrict(0, *v_itor);
+
+            for(int d = 0; d < interval.index; d++) {
+              in.pointlist[interval.prefix + d] = array[d];
+            }
+            const Mesh::coordinate_type::index_type& vInterval = vertexBundle->getIndex(0, *v_itor);
+            in.pointmarkerlist[vInterval.prefix] = v_itor.getMarker();
+          }
+
+          in.numberofcorners = 4;
+          in.numberoftetrahedra = cells->size();
+          in.tetrahedronlist = new int[in.numberoftetrahedra*in.numberofcorners];
+          for(Mesh::sieve_type::heightSequence::iterator c_itor = cells->begin(); c_itor != cells->end(); ++c_itor) {
+            Obj<Mesh::coordinate_type::IndexArray> intervals = vertexBundle->getOrderedIndices(0, serialOrientation->cone(*c_itor));
+            int                                    v = 0;
+
+            for(Mesh::coordinate_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+              in.tetrahedronlist[c * in.numberofcorners + v++] = i_itor->prefix;
+            }
+            c++;
+          }
+
+          in.numberofholes = 0;
+          ::tetrahedralize((char *) args.c_str(), &in, &out);
+        }
+        m->populate(out.numberoftetrahedra, out.tetrahedronlist, out.numberofpoints, out.pointlist);
+  
+        if (rank == 0) {
+          Obj<Mesh::sieve_type> topology = m->getTopology();
+
+          for(int v = 0; v < out.numberofpoints; v++) {
+            if (out.pointmarkerlist[v]) {
+              topology->setMarker(Mesh::point_type(0, v + out.numberoftetrahedra), out.pointmarkerlist[v]);
+            }
+          }
+          if (out.edgemarkerlist) {
+            for(int e = 0; e < out.numberofedges; e++) {
+              if (out.edgemarkerlist[e]) {
+                Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftetrahedra);
+                Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftetrahedra);
+                Obj<PointSet>    join = topology->nJoin(endpointA, endpointB, 1);
+
+                topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
+              }
+            }
+          }
+          if (out.trifacemarkerlist) {
+            for(int f = 0; f < out.numberoftrifaces; f++) {
+              if (out.trifacemarkerlist[f]) {
+                Obj<PointSet>    point = PointSet();
+                Obj<PointSet>    edge = PointSet();
+                Mesh::point_type cornerA(0, out.edgelist[f*3+0] + out.numberoftetrahedra);
+                Mesh::point_type cornerB(0, out.edgelist[f*3+1] + out.numberoftetrahedra);
+                Mesh::point_type cornerC(0, out.edgelist[f*3+2] + out.numberoftetrahedra);
+                point->insert(cornerA);
+                edge->insert(cornerB);
+                edge->insert(cornerC);
+                Obj<PointSet>    join = topology->nJoin(point, edge, 2);
+
+                topology->setMarker(*join->begin(), out.trifacemarkerlist[f]);
+              }
+            }
+          }
+        }
+        return m;
       };
 #endif
     public:
