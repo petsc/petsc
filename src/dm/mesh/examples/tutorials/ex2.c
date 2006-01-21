@@ -220,6 +220,7 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::def::Mesh> mesh)
   MPI_Comm          comm = mesh->getComm();
   ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
   ALE::Obj<ALE::def::Mesh::sieve_type> orientation = mesh->getOrientation();
+  ALE::Obj<ALE::def::Mesh::ordering_type> ordering = mesh->getOrdering();
   PetscScalar       coords[24] = {0.0, 0.0, 0.0,
                                   1.0, 0.0, 0.0,
                                   1.0, 1.0, 0.0,
@@ -231,6 +232,7 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::def::Mesh> mesh)
 
   ALE::Obj<std::set<ALE::def::Mesh::point_type> >  cone = std::set<ALE::def::Mesh::point_type>();
   ALE::Obj<std::set<ALE::def::Mesh::point_type> >  ocone = std::set<ALE::def::Mesh::point_type>();
+  ALE::Obj<ALE::def::Mesh::ordering_type::PointArray> orderArray = ALE::def::Mesh::ordering_type::PointArray();
   ALE::def::Mesh::point_type            vertices[8];
   ALE::def::Mesh::point_type            edges[12];
   ALE::def::Mesh::point_type            edge;
@@ -310,7 +312,12 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::def::Mesh> mesh)
     /* set the face orientation: the orientation cone of the leading edge and the face itself */
     orientation->addCone(orientation->cone(edges[0]),face);
     orientation->addArrow(face,face);
-
+    orderArray->push_back(vertices[0]);
+    orderArray->push_back(vertices[1]);
+    orderArray->push_back(vertices[2]);
+    orderArray->push_back(vertices[3]);
+    ordering->setPatchOrdered(orderArray, face);
+    orderArray->clear();
 
     /* Top face */
     face = ALE::def::Mesh::point_type(0, 21); 
@@ -323,23 +330,34 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::def::Mesh> mesh)
     /* set the face orientation: the orientation cone of the leading edge and the face itself */
     orientation->addCone(orientation->cone(edges[4]),face);
     orientation->addArrow(face,face);
+    orderArray->push_back(vertices[4]);
+    orderArray->push_back(vertices[5]);
+    orderArray->push_back(vertices[6]);
+    orderArray->push_back(vertices[7]);
+    ordering->setPatchOrdered(orderArray, face);
+    orderArray->clear();
 
     /* Side faces: f = 22 .. 25 */
     for(int f = 22; f < 26; f++) {
-      face = ALE::def::Mesh::point_type(0, f); 
+      face = ALE::def::Mesh::point_type(0, f);
+      int v = f - 22;
       /* Covered by edges f - 22, f - 22 + 4, f - 22 + 8, (f - 21)%4 + 8 */
-      cone->insert(edges[f-22]);
-      cone->insert(edges[f-22+4]);
-      cone->insert(edges[f-22+8]);
-      cone->insert(edges[(f-21)%4+8]);
+      cone->insert(edges[v]);
+      cone->insert(edges[v+4]);
+      cone->insert(edges[v+8]);
+      cone->insert(edges[(v+1)%4+8]);
       topology->addCone(cone, face);
       cone->clear();
       /* set the face orientation: the orientation cone of the leading edge and the face itself */
       orientation->addCone(orientation->cone(edges[f-22]),face);
       orientation->addArrow(face,face);
-
+      orderArray->push_back(vertices[v]);
+      orderArray->push_back(vertices[(v+1)%4]);
+      orderArray->push_back(vertices[(v+1)%4+4]);
+      orderArray->push_back(vertices[(v)%4+4]);
+      ordering->setPatchOrdered(orderArray, face);
+      orderArray->clear();
     }
-
   }/* if(rank == 0) */
   topology->stratify();
   mesh->createSerialCoordinates(embedDim, 0, coords);

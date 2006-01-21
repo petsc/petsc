@@ -212,6 +212,15 @@ namespace ALE {
         this->_patches.addCone(points, patch);
         this->_patches.stratify();
       };
+      template<typename pointSequence>
+      void                            setPatchOrdered(const Obj<pointSequence>& points, const patch_type& patch) {
+        int color = 0;
+
+        for(typename pointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+          this->_patches.addArrow(*p_iter, patch, color++);
+        }
+        this->_patches.stratify();
+      };
       // This retrieves the point_type points attached to a given patch
       Obj<typename patches_type::coneSequence> getPatch(const patch_type& patch) {
         return this->_patches.cone(patch);

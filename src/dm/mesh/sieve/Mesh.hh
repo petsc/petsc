@@ -20,12 +20,14 @@ namespace ALE {
     public:
       typedef Point point_type;
       typedef Sieve<point_type,int> sieve_type;
+      typedef CoSieve<sieve_type, point_type, int, int> ordering_type;
       typedef CoSieve<sieve_type, int, point_type, double> coordinate_type;
       typedef CoSieve<sieve_type, int, point_type, int> bundle_type;
       int debug;
     private:
       Obj<sieve_type>      topology;
       Obj<sieve_type>      orientation;
+      Obj<ordering_type>   ordering;
       Obj<coordinate_type> coordinates;
       Obj<coordinate_type> boundary;
       std::map<std::string, Obj<coordinate_type> > fields;
@@ -36,6 +38,7 @@ namespace ALE {
       Mesh(MPI_Comm c, int dimension, int debug = 0) : debug(debug), comm(c), dim(dimension) {
         this->topology    = sieve_type(debug);
         this->orientation = sieve_type(debug);
+        this->ordering    = ordering_type(debug);
         this->coordinates = coordinate_type(debug);
         this->boundary    = coordinate_type(debug);
       };
@@ -43,6 +46,7 @@ namespace ALE {
       MPI_Comm             getComm() {return this->comm;};
       Obj<sieve_type>      getTopology() {return this->topology;};
       Obj<sieve_type>      getOrientation() {return this->orientation;};
+      Obj<ordering_type>   getOrdering() {return this->ordering;};
       int                  getDimension() {return this->dim;};
       Obj<coordinate_type> getCoordinates() {return this->coordinates;};
       Obj<coordinate_type> getBoundary() {return this->boundary;};
@@ -602,6 +606,7 @@ namespace ALE {
         Obj<Mesh>             m = Mesh(boundary->getComm(), dim);
         Obj<Mesh::sieve_type> bdTopology = boundary->getTopology();
         Obj<Mesh::sieve_type> bdOrientation = boundary->getOrientation();
+        Obj<Mesh::ordering_type> bdOrdering = boundary->getOrdering();
         PetscMPIInt           rank;
         PetscErrorCode        ierr;
 
@@ -640,7 +645,7 @@ namespace ALE {
             in.facetmarkerlist = new int[in.numberoffacets];
             for(Mesh::sieve_type::heightSequence::iterator f_itor = facets->begin(); f_itor != facets->end(); ++f_itor) {
               const Mesh::coordinate_type::index_type& interval = facetBundle->getIndex(0, *f_itor);
-              Obj<ALE::def::PointSet>                  cone = bdTopology->nCone(*f_itor, bdTopology->depth());
+              Obj<Mesh::ordering_type::patches_type::coneSequence> cone = bdOrdering->getPatch(*f_itor);
 
               in.facetlist[interval.prefix].numberofpolygons = 1;
               in.facetlist[interval.prefix].polygonlist = new tetgenio::polygon[in.facetlist[interval.prefix].numberofpolygons];
@@ -652,8 +657,10 @@ namespace ALE {
 
               poly->numberofvertices = cone->size();
               poly->vertexlist = new int[poly->numberofvertices];
-              for(ALE::def::PointSet::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
-                poly->vertexlist[c++] = c_itor->index;
+              for(Mesh::ordering_type::patches_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+                const Mesh::coordinate_type::index_type& vInterval = vertexBundle->getIndex(0, *c_itor);
+
+                poly->vertexlist[c++] = vInterval.prefix;
               }
               in.facetmarkerlist[interval.prefix] = f_itor.getMarker();
             }
@@ -673,28 +680,32 @@ namespace ALE {
               topology->setMarker(Mesh::point_type(0, v + out.numberoftetrahedra), out.pointmarkerlist[v]);
             }
           }
-          for(int e = 0; e < out.numberofedges; e++) {
-            if (out.edgemarkerlist[e]) {
-              Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftetrahedra);
-              Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftetrahedra);
-              Obj<PointSet>    join = topology->nJoin(endpointA, endpointB, 1);
+          if (out.edgemarkerlist) {
+            for(int e = 0; e < out.numberofedges; e++) {
+              if (out.edgemarkerlist[e]) {
+                Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftetrahedra);
+                Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftetrahedra);
+                Obj<PointSet>    join = topology->nJoin(endpointA, endpointB, 1);
 
-              topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
+                topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
+              }
             }
           }
-          for(int f = 0; f < out.numberoftrifaces; f++) {
-            if (out.trifacemarkerlist[f]) {
-              Obj<PointSet>    point = PointSet();
-              Obj<PointSet>    edge = PointSet();
-              Mesh::point_type cornerA(0, out.edgelist[f*3+0] + out.numberoftetrahedra);
-              Mesh::point_type cornerB(0, out.edgelist[f*3+1] + out.numberoftetrahedra);
-              Mesh::point_type cornerC(0, out.edgelist[f*3+2] + out.numberoftetrahedra);
-              point->insert(cornerA);
-              edge->insert(cornerB);
-              edge->insert(cornerC);
-              Obj<PointSet>    join = topology->nJoin(point, edge, 2);
+          if (out.trifacemarkerlist) {
+            for(int f = 0; f < out.numberoftrifaces; f++) {
+              if (out.trifacemarkerlist[f]) {
+                Obj<PointSet>    point = PointSet();
+                Obj<PointSet>    edge = PointSet();
+                Mesh::point_type cornerA(0, out.edgelist[f*3+0] + out.numberoftetrahedra);
+                Mesh::point_type cornerB(0, out.edgelist[f*3+1] + out.numberoftetrahedra);
+                Mesh::point_type cornerC(0, out.edgelist[f*3+2] + out.numberoftetrahedra);
+                point->insert(cornerA);
+                edge->insert(cornerB);
+                edge->insert(cornerC);
+                Obj<PointSet>    join = topology->nJoin(point, edge, 2);
 
-              topology->setMarker(*join->begin(), out.trifacemarkerlist[f]);
+                topology->setMarker(*join->begin(), out.trifacemarkerlist[f]);
+              }
             }
           }
         }
