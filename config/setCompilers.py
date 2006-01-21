@@ -121,11 +121,11 @@ class Configure(config.base.Configure):
   def isSUN(compiler):
     '''Returns true if the compiler is a SUN compiler'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -flags')
       output = output + error
       if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
         return 0
-      if output.find(' Sun ') >= 0:
+      if output.find('http://www.sun.com/software') >= 0:
         return 1
     except RuntimeError:
       pass
