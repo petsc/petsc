@@ -27,8 +27,8 @@ class Configure(PETSc.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-blas-lapack-lib=<lib>',                nargs.Arg(None, None, 'Indicate the library containing BLAS and LAPACK'))
     help.addArgument('BLAS/LAPACK', '-with-blas-lib=<lib>',                       nargs.Arg(None, None, 'Indicate the library(s) containing BLAS'))
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<lib>',                     nargs.Arg(None, None, 'Indicate the library(s) containing LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-download-c-blas-lapack=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Automatically install a C version of BLAS/LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-download-f-blas-lapack=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-download-c-blas-lapack=<no,yes,ifneeded,filename>', PETSc.package.ArgDownload(None, 0, 'Automatically install a C version of BLAS/LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-download-f-blas-lapack=<no,yes,ifneeded,filename>', PETSc.package.ArgDownload(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
     return
 
   def setupDependencies(self, framework):
@@ -138,15 +138,26 @@ class Configure(PETSc.package.Package):
     if 'with-blas-lapack-lib' in self.framework.argDB and 'with-blas-lapack-dir' in self.framework.argDB:
       raise RuntimeError('You cannot set both the library containing BLAS/LAPACK with --with-blas-lapack-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
 
-    if self.framework.argDB['download-c-blas-lapack'] == 1:
+    if self.framework.argDB['download-c-blas-lapack']:
+      self.download= 'ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack.tar.gz'
+    elif self.framework.argDB['download-f-blas-lapack']:
+      self.download= 'ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/fblaslapack.tar.gz'
+        
+    if self.framework.argDB['download-c-blas-lapack'] == 1 or isinstance(self.framework.argDB['download-c-blas-lapack'], str):
+      if isinstance(self.framework.argDB['download-c-blas-lapack'], str):
+        self.download= 'file://'+os.path.abspath(self.framework.argDB['download-c-blas-lapack'])
       self.f2c = 1
+      
       if hasattr(self.compilers, 'FC'):
         raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
       libdir = self.downLoadBlasLapack('f2c', 'c')
       yield ('Downloaded BLAS/LAPACK library', [os.path.join(libdir,'libf2cblas.a')]+self.libraries.math, os.path.join(libdir,'libf2clapack.a'), 0)
       raise RuntimeError('Could not use downloaded c-blas-lapack?')
-    if self.framework.argDB['download-f-blas-lapack'] == 1:
+    if self.framework.argDB['download-f-blas-lapack'] == 1  or isinstance(self.framework.argDB['download-f-blas-lapack'], str):
+      if isinstance(self.framework.argDB['download-f-blas-lapack'], str):
+        self.download= 'file://'+os.path.abspath(self.framework.argDB['download-f-blas-lapack'])
       self.fblaslapack = 1
+      
       if not hasattr(self.compilers, 'FC'):
         raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
       libdir = self.downLoadBlasLapack('f','f')            
@@ -269,7 +280,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Actually need to ftp '+l+'blaslapack\n')
       import urllib
       try:
-        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/'+f2c+'blaslapack.tar.gz',os.path.join(packages,f2c+'blaslapack.tar.gz'))
+        urllib.urlretrieve(self.download,os.path.join(packages,f2c+'blaslapack.tar.gz'))
       except:
         raise RuntimeError('Error downloading '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
       try:
