@@ -48,7 +48,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     adj  = (Mat_MPIAdj *)newmat->data;
   }
 
-  vtxdist = adj->rowners;
+  vtxdist = mat->rmap.range;
   xadj    = adj->i;
   adjncy  = adj->j;
   ierr    = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
@@ -68,7 +68,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   }
 #endif
 
-  ierr = PetscMalloc((mat->m+1)*sizeof(int),&locals);CHKERRQ(ierr);
+  ierr = PetscMalloc((mat->rmap.n+1)*sizeof(int),&locals);CHKERRQ(ierr);
 
   if (PetscLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
   ierr = PetscMalloc(ncon*nparts*sizeof(float),&tpwgts);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   ierr = PetscFree(ubvec);CHKERRQ(ierr);
   if (PetscLogPrintInfo) {parmetis->printout = itmp;}
 
-  ierr = ISCreateGeneral(part->comm,mat->m,locals,partitioning);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(part->comm,mat->rmap.n,locals,partitioning);CHKERRQ(ierr);
   ierr = PetscFree(locals);CHKERRQ(ierr);
 
   if (!flg) {

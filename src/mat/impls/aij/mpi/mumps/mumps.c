@@ -85,7 +85,7 @@ PetscErrorCode MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,i
     Mat_MPISBAIJ  *mat =  (Mat_MPISBAIJ*)A->data;
     Mat_SeqSBAIJ  *aa=(Mat_SeqSBAIJ*)(mat->A)->data;
     Mat_SeqBAIJ    *bb=(Mat_SeqBAIJ*)(mat->B)->data;
-    if (A->bs > 1) SETERRQ1(PETSC_ERR_SUP," bs=%d is not supported yet\n", A->bs);
+    if (A->rmap.bs > 1) SETERRQ1(PETSC_ERR_SUP," bs=%d is not supported yet\n", A->rmap.bs);
     nz = aa->nz + bb->nz;
     ai=aa->i; aj=aa->j; bi=bb->i; bj=bb->j; rstart= A->rmap.rstart;
     garray = mat->garray;
