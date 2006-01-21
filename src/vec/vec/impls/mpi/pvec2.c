@@ -170,7 +170,6 @@ PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
     PetscReal work2[2],z2[2];
     PetscInt  rstart;
     rstart = xin->map.rstart;
-    //    ierr = VecGetOwnershipRange(xin,&rstart,PETSC_NULL);CHKERRQ(ierr);
     work2[0] = work;
     work2[1] = *idx + rstart;
     ierr = MPI_Allreduce(work2,z2,2,MPIU_REAL,VecMax_Local_Op,xin->comm);CHKERRQ(ierr);

@@ -257,7 +257,7 @@ static PetscErrorCode MatZeroRows_MPIRowbs_local(Mat A,PetscInt N,const PetscInt
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)A->data;
   BSspmat      *l = a->A;
   PetscErrorCode ierr;
-  int          i,m = A->rmap.n - 1,col,base=a->rowners[a->rank];
+  int          i,m = A->rmap.n - 1,col,base=a->rmap.rstart;
 
   PetscFunctionBegin;
   if (a->keepzeroedrows) {
@@ -424,7 +424,7 @@ PetscErrorCode MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   }
   mat->insertmode = addv; /* in case this processor had no cache */
 
-  ierr = MatStashScatterBegin_Private(&mat->stash,a->rowners);CHKERRQ(ierr);
+  ierr = MatStashScatterBegin_Private(&mat->stash,mat->rmap.range);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs);CHKERRQ(ierr);
   ierr = PetscInfo2(0,"Block-Stash has %d entries, uses %d mallocs.\n",nstash,reallocs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -457,7 +457,7 @@ static PetscErrorCode MatView_MPIRowbs_ASCII(Mat mat,PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"    [%d] %d local inode(s), %d local clique(s)\n",a->rank,ind_l,clq_l);
   } else  if (format == PETSC_VIEWER_ASCII_COMMON) {
     for (i=0; i<A->num_rows; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %d:",i+A->rmap.rstart);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %d:",i+mat->rmap.rstart);CHKERRQ(ierr);
       for (j=0; j<rs[i]->length; j++) {
         if (rs[i]->nz[j]) {ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d %g ",rs[i]->col[j],rs[i]->nz[j]);CHKERRQ(ierr);}
       }
@@ -468,7 +468,7 @@ static PetscErrorCode MatView_MPIRowbs_ASCII(Mat mat,PetscViewer viewer)
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<A->num_rows; i++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %d:",i+A->rmap.rstart);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"row %d:",i+mat->rmap.rstart);CHKERRQ(ierr);
       for (j=0; j<rs[i]->length; j++) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer," %d %g ",rs[i]->col[j],rs[i]->nz[j]);CHKERRQ(ierr);
       }
@@ -512,7 +512,7 @@ static PetscErrorCode MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
     ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
     ierr = PetscMalloc((4+M)*sizeof(int),&rowlengths);CHKERRQ(ierr);
     ierr = PetscMalloc(size*sizeof(int),&recvcts);CHKERRQ(ierr);
-    recvdisp = a->rowners;
+    recvdisp = mat->rmap.range;
     for (i=0; i<size; i++) {
       recvcts[i] = recvdisp[i+1] - recvdisp[i];
     }
@@ -666,7 +666,7 @@ static PetscErrorCode MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
   ierr = PetscMalloc(M*sizeof(int),&rtable);CHKERRQ(ierr);
   /* Create hash table for the mapping :row -> proc */
   for (i=0,j=0; i<size; i++) {
-    len = a->rowners[i+1];  
+    len = mat->rmap.range[i+1];  
     for (; j<len; j++) {
       rtable[j] = i;
     }
@@ -979,7 +979,7 @@ PetscErrorCode MatZeroRows_MPIRowbs(Mat A,PetscInt N,const PetscInt rows[],Petsc
 {
   Mat_MPIRowbs   *l = (Mat_MPIRowbs*)A->data;
   PetscErrorCode ierr;
-  int            i,*owners = l->rowners,size = l->size;
+  int            i,*owners = A->rmap.range,size = l->size;
   int            *nprocs,j,idx,nsends;
   int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
   int            *rvalues,tag = A->tag,count,base,slen,n,*source;
@@ -1319,7 +1319,6 @@ PetscErrorCode MatDestroy_MPIRowbs(Mat mat)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",mat->rmap.N,mat->cmap.N);
 #endif
-  ierr = PetscFree(a->rowners);CHKERRQ(ierr);
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   if (a->bsmap) {
     if (a->bsmap->vlocal2global) {ierr = PetscFree(a->bsmap->vlocal2global);CHKERRQ(ierr);}
@@ -1610,7 +1609,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   BSmapping    *bsmap;
   BSoff_map    *bsoff;
   PetscErrorCode ierr;
-  int          i,*offset,m,M;
+  int          *offset,m,M;
   PetscTruth   flg1,flg2,flg3;
   BSprocinfo   *bspinfo;
   MPI_Comm     comm;
@@ -1634,8 +1633,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   ierr = MPI_Comm_size(comm,&a->size);CHKERRQ(ierr);
 
 
-  ierr = PetscMapInitialize(comm,m,M,&A.rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(comm,m,M,&A.cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(comm,m,M,&A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(comm,m,M,&A->cmap);CHKERRQ(ierr);
 
   ierr                             = PetscMalloc((A->rmap.n+1)*sizeof(int),&a->imax);CHKERRQ(ierr);
   a->reallocs                      = 0;
@@ -2261,7 +2260,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
 
   /* Create hash table for the mapping :row -> proc*/
   for (i=0,j=0; i<size; i++) {
-    jmax = c->rowners[i+1];
+    jmax = C->rmap.range[i+1];
     for (; j<jmax; j++) {
       rtable[j] = i;
     }
@@ -2887,7 +2886,7 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
   ierr   = PetscMalloc(len,&rtable);CHKERRQ(ierr);
   /* Create hash table for the mapping :row -> proc*/
   for (i=0,j=0; i<size; i++) {
-    jmax = c->rowners[i+1];
+    jmax = C->rmap.range[i+1];
     for (; j<jmax; j++) {
       rtable[j] = i;
     }

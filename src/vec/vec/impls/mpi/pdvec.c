@@ -427,7 +427,7 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
       for (i=0; i<xin->map.n; i++) {
         xr[i] = PetscRealPart(xarray[i]);
       }
-      ierr = MPI_Gatherv(xr,xin->map.n,MPIU_REAL,yy,lens,xin->map->range,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
+      ierr = MPI_Gatherv(xr,xin->map.n,MPIU_REAL,yy,lens,xin->map.range,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
       ierr = PetscFree(xr);CHKERRQ(ierr);
     }
 #endif
