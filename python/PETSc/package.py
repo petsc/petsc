@@ -84,8 +84,10 @@ class Package(config.base.Configure):
     self.deps             = []
     # functions we wish to check in the libraries
     self.functions        = []
-    # indicates if the above symblo is a fortran symbol [if so - name-mangling check is done]
+    # indicates if the above symbol is a Fortran symbol [if so - name-mangling check is done]
     self.functionsFortran = 0
+    # indicates if the above symbol is a C++ symbol [if so - name-mangling check with prototype is done]
+    self.functionsCxx     = [0, '', '']
     # include files we wish to check for
     self.includes         = []
     # list of libraries we wish to check for (can be overwritten by providing your own generateLibraryList()
@@ -330,7 +332,7 @@ class Package(config.base.Configure):
       elif not isinstance(incl, list): incl = [incl]
       incl += self.compilers.fincs
       self.framework.log.write('Checking for library in '+location+': '+str(lib)+'\n')
-      if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran}):
+      if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
         self.lib = lib	
         self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
         if (not self.includes) or self.executeTest(self.headers.checkInclude, [incl, self.includes],{'otherIncludes' : incls}):
