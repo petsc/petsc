@@ -60,7 +60,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   {
     int rstart;
     ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
-    for (i=0; i<mat->m; i++) {
+    for (i=0; i<mat->rmap.n; i++) {
       for (j=xadj[i]; j<xadj[i+1]; j++) {
         if (adjncy[j] == i+rstart) SETERRQ1(PETSC_ERR_ARG_WRONG,"Row %d has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
       }
