@@ -750,7 +750,7 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscMPIInt       rank,size,tag = ((PetscObject)viewer)->tag;
   int               fd;
-  PetscInt          nz,header[4],*row_lengths,*range,rlen,i;
+  PetscInt          nz,header[4],*row_lengths,*range=0,rlen,i;
   PetscInt          nzmax,*column_indices,j,k,col,*garray = aij->garray,cnt,cstart = mat->cmap.rstart,rnz;
   PetscScalar       *column_values;
 
