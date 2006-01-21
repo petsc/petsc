@@ -634,7 +634,9 @@ static PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   v->petscnative     = PETSC_TRUE;
   s->array           = (PetscScalar *)array;
   s->array_allocated = 0;
-  ierr = PetscMapInitialize(v->comm,PetscMax(v->map.n,v->map.N),PetscMax(v->map.n,v->map.N),&v->map);CHKERRQ(ierr);
+
+  if (v->map.bs == -1) v->map.bs = 1;
+  ierr = PetscMapInitialize(v->comm,&v->map);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)v,VECSEQ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);

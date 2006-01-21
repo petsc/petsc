@@ -7,7 +7,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapInitialize"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapInitialize(MPI_Comm comm,PetscInt m,PetscInt N,PetscMap *map)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapInitialize(MPI_Comm comm,PetscMap *map)
 {
   PetscMPIInt    rank,size;
   PetscInt       p;
@@ -16,9 +16,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapInitialize(MPI_Comm comm,PetscInt m,Pe
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr); 
-  map->n = m;
-  map->N = N;
+  if (map->n > 0) map->n = map->n/map->bs;
+  if (map->N > 0) map->N = map->N/map->bs;
   ierr = PetscSplitOwnership(comm,&map->n,&map->N);CHKERRQ(ierr);
+  map->n = map->n*map->bs;
+  map->N = map->N*map->bs;
   if (!map->range) {
     ierr = PetscMalloc((size+1)*sizeof(PetscInt), &map->range);CHKERRQ(ierr);
   }

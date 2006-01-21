@@ -77,11 +77,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm comm,Mat *A)
 #endif
 
   ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
-  B->m             = -1;
-  B->M             = -1;
-  B->n             = -1;
-  B->N             = -1;
-  B->bs            = 1;
+  B->rmap.n             = -1;
+  B->rmap.N             = -1;
+  B->cmap.n             = -1;
+  B->cmap.N             = -1;
+  B->rmap.bs            = 1;
+  B->cmap.bs            = 1;
   B->preallocated  = PETSC_FALSE;
   B->bops->publish = MatPublish_Base;
   *A               = B;
@@ -131,13 +132,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, Pet
        call of MatSetSizes() (which must be called BEFORE MatSetType() */
     ierr = (*A->ops->setsizes)(A,m,n,M,N);CHKERRQ(ierr);
   } else {
-    if ((A->m >= 0 || A->M >= 0) && (A->m != m || A->M != M)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->m,A->M);
-    if ((A->n >= 0 || A->N >= 0) && (A->n != n || A->N != N)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset column sizes to %D local %D global after previously setting them to %D local %D global",n,N,A->n,A->N);
+    if ((A->rmap.n >= 0 || A->rmap.N >= 0) && (A->rmap.n != m || A->rmap.N != M)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->rmap.n,A->rmap.N);
+    if ((A->cmap.n >= 0 || A->cmap.N >= 0) && (A->cmap.n != n || A->cmap.N != N)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset column sizes to %D local %D global after previously setting them to %D local %D global",n,N,A->cmap.n,A->cmap.N);
   }
-  A->m = m;
-  A->n = n;
-  A->M = M;
-  A->N = N;
+  A->rmap.n = m;
+  A->cmap.n = n;
+  A->rmap.N = M;
+  A->cmap.N = N;
   PetscFunctionReturn(0);
 }
 

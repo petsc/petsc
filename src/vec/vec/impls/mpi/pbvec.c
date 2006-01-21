@@ -160,6 +160,8 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar arr
   v->bmapping    = 0;
   v->petscnative = PETSC_TRUE;
 
+  if (v->map.bs == -1) v->map.bs = 1;
+  ierr = PetscMapInitialize(v->comm,&v->map);CHKERRQ(ierr);
   if (array) {
     s->array           = (PetscScalar *)array;
     s->array_allocated = 0;
@@ -169,7 +171,6 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar arr
     s->array_allocated = s->array;
     ierr               = PetscMemzero(s->array,v->map.n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
-  ierr = PetscMapInitialize(v->comm,v->map.n,v->map.N,&v->map);CHKERRQ(ierr);
 
   /* By default parallel vectors do not have local representation */
   s->localrep    = 0;
@@ -210,11 +211,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPI(Vec vv)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (vv->map.bs > 0) {
-    ierr = PetscSplitOwnershipBlock(vv->comm,vv->map.bs,&vv->map.n,&vv->map.N);CHKERRQ(ierr);
-  } else {
-    ierr = PetscSplitOwnership(vv->comm,&vv->map.n,&vv->map.N);CHKERRQ(ierr);
-  }
   ierr = VecCreate_MPI_Private(vv,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

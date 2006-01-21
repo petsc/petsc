@@ -141,12 +141,12 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   }
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   if (mpibaij || (baij && (size > 1))) A = ((Mat_MPIBAIJ*)A->data)->A;
-  if (A->m != A->n) SETERRQ(PETSC_ERR_SUP,"Supported only for square matrices and square storage");
+  if (A->rmap.n != A->cmap.n) SETERRQ(PETSC_ERR_SUP,"Supported only for square matrices and square storage");
 
   ierr        =  MatSeqBAIJInvertBlockDiagonal(A);CHKERRQ(ierr);
   a           = (Mat_SeqBAIJ*)A->data;
   jac->diag   = a->idiag;
-  jac->bs     = A->bs;
+  jac->bs     = A->rmap.bs;
   jac->mbs    = a->mbs;
   switch (jac->bs){
     case 2:

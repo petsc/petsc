@@ -1411,12 +1411,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec v,PetscInt bs)
   PetscValidHeaderSpecific(v,VEC_COOKIE,1); 
   if (bs <= 0) bs = 1;
   if (bs == v->map.bs) PetscFunctionReturn(0);
-  if (v->map.bs != -1) SETERRQ2(PETSC_ERR_ARG_WRONGSTATE,"Cannot reset blocksize. Current size %D new %D",v->map.bs,bs);
   if (v->map.N != -1 && v->map.N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Vector length not divisible by blocksize %D %D",v->map.N,bs);
   if (v->map.n != -1 && v->map.n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local vector length not divisible by blocksize %D %D\n\
    Try setting blocksize before setting the vector type",v->map.n,bs);
   
-  v->map.bs        = bs;
+  v->map.bs    = bs;
   v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */
   PetscFunctionReturn(0);
 }

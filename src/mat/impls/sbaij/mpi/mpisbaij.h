@@ -8,7 +8,6 @@
 
 typedef struct {
   MPIBAIJHEADER;
-
   Vec           slvec0,slvec1;            /* parallel vectors */
   Vec           slvec0b,slvec1a,slvec1b;  /* seq vectors: local partition of slvec0 and slvec1 */
   VecScatter    sMvctx;                   /* scatter context for vector used for reducing communication */

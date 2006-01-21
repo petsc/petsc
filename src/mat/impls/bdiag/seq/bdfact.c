@@ -13,7 +13,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatFactorIn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->m != A->n) SETERRQ(PETSC_ERR_SUP,"Matrix must be square");
+  if (A->rmap.N != A->cmap.n) SETERRQ(PETSC_ERR_SUP,"Matrix must be square");
   if (isrow) {
     ierr = ISIdentity(isrow,&idn);CHKERRQ(ierr);
     if (!idn) SETERRQ(PETSC_ERR_SUP,"Only identity row permutation supported");
@@ -42,7 +42,7 @@ PetscErrorCode MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,MatFactorInfo *info
   PetscFunctionBegin;
   /* For now, no fill is allocated in symbolic factorization phase, so we
      directly use the input matrix for numeric factorization. */
-  if (A->m != A->n) SETERRQ(PETSC_ERR_SUP,"Matrix must be square");
+  if (A->rmap.N != A->cmap.n) SETERRQ(PETSC_ERR_SUP,"Matrix must be square");
   if (isrow) {
     ierr = ISIdentity(isrow,&idn);CHKERRQ(ierr);
     if (!idn) SETERRQ(PETSC_ERR_SUP,"Only identity row permutation supported");
@@ -63,10 +63,10 @@ PetscErrorCode MatLUFactorNumeric_SeqBDiag_N(Mat A,MatFactorInfo *info,Mat *B)
 {
   Mat            C = *B;
   Mat_SeqBDiag   *a = (Mat_SeqBDiag*)C->data,*a1 = (Mat_SeqBDiag*)A->data;
-  PetscInt       k,d,d2,dgk,elim_row,elim_col,bs = A->bs,knb,knb2,bs2 = bs*bs;
+  PetscInt       k,d,d2,dgk,elim_row,elim_col,bs = A->rmap.bs,knb,knb2,bs2 = bs*bs;
   PetscErrorCode ierr;
   PetscInt       dnum,nd = a->nd,mblock = a->mblock,nblock = a->nblock;
-  PetscInt       *diag = a->diag, m = A->m,mainbd = a->mainbd,*dgptr,len,i;
+  PetscInt       *diag = a->diag, m = A->rmap.N,mainbd = a->mainbd,*dgptr,len,i;
   PetscScalar    **dv = a->diagv,*dd = dv[mainbd],*v_work;
   PetscScalar    *multiplier;
 
@@ -135,7 +135,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBDiag_1(Mat A,MatFactorInfo *info,Mat *B)
   Mat_SeqBDiag   *a = (Mat_SeqBDiag*)C->data,*a1 = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
   PetscInt       k,d,d2,dgk,elim_row,elim_col,dnum,nd = a->nd,i,len;
-  PetscInt       *diag = a->diag,n = A->n,m = A->m,mainbd = a->mainbd,*dgptr;
+  PetscInt       *diag = a->diag,n = A->cmap.n,m = A->rmap.N,mainbd = a->mainbd,*dgptr;
   PetscScalar    **dv = a->diagv,*dd = dv[mainbd],mult;
 
   PetscFunctionBegin;
@@ -193,7 +193,7 @@ PetscErrorCode MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
   Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,d,loc,mainbd = a->mainbd;
-  PetscInt       n = A->n,m = A->m,*diag = a->diag,col;
+  PetscInt       n = A->cmap.n,m = A->rmap.N,*diag = a->diag,col;
   PetscScalar    *x,*y,*dd = a->diagv[mainbd],sum,**dv = a->diagv;
 
   PetscFunctionBegin;
@@ -219,7 +219,7 @@ PetscErrorCode MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz - A->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - A->cmap.n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -231,7 +231,7 @@ PetscErrorCode MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
   PetscInt       i,d,loc,mainbd = a->mainbd;
   PetscInt       mblock = a->mblock,nblock = a->nblock,inb,inb2;
   PetscErrorCode ierr;
-  PetscInt       m = A->m,*diag = a->diag,col;
+  PetscInt       m = A->rmap.N,*diag = a->diag,col;
   PetscScalar    *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
   PetscScalar    w0,w1,sum0,sum1;
 
@@ -279,7 +279,7 @@ PetscErrorCode MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz - A->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - A->cmap.n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -291,7 +291,7 @@ PetscErrorCode MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
   PetscInt       i,d,loc,mainbd = a->mainbd;
   PetscInt       mblock = a->mblock,nblock = a->nblock,inb,inb2;
   PetscErrorCode ierr;
-  PetscInt       m = A->m,*diag = a->diag,col;
+  PetscInt       m = A->rmap.N,*diag = a->diag,col;
   PetscScalar    *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
   PetscScalar    w0,w1,w2,sum0,sum1,sum2;
 
@@ -341,7 +341,7 @@ PetscErrorCode MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz - A->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - A->cmap.n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -353,7 +353,7 @@ PetscErrorCode MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
   PetscInt       i,d,loc,mainbd = a->mainbd;
   PetscInt       mblock = a->mblock,nblock = a->nblock,inb,inb2;
   PetscErrorCode ierr;
-  PetscInt       m = A->m,*diag = a->diag,col;
+  PetscInt       m = A->rmap.N,*diag = a->diag,col;
   PetscScalar    *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
   PetscScalar    w0,w1,w2,w3,sum0,sum1,sum2,sum3;
 
@@ -406,7 +406,7 @@ PetscErrorCode MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz - A->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - A->cmap.n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -418,7 +418,7 @@ PetscErrorCode MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
   PetscInt       i,d,loc,mainbd = a->mainbd;
   PetscInt       mblock = a->mblock,nblock = a->nblock,inb,inb2;
   PetscErrorCode ierr;
-  PetscInt       m = A->m,*diag = a->diag,col;
+  PetscInt       m = A->rmap.N,*diag = a->diag,col;
   PetscScalar    *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
   PetscScalar    w0,w1,w2,w3,w4,sum0,sum1,sum2,sum3,sum4;
 
@@ -480,7 +480,7 @@ PetscErrorCode MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz - A->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - A->cmap.n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -492,7 +492,7 @@ PetscErrorCode MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   PetscInt       i,d,loc,mainbd = a->mainbd;
   PetscInt       mblock = a->mblock,nblock = a->nblock,inb,inb2;
   PetscErrorCode ierr;
-  PetscInt       bs = A->bs,m = A->m,*diag = a->diag,col,bs2 = bs*bs;
+  PetscInt       bs = A->rmap.bs,m = A->rmap.N,*diag = a->diag,col,bs2 = bs*bs;
   PetscScalar    *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv;
   PetscScalar    *work = a->solvework;
 
@@ -529,7 +529,7 @@ PetscErrorCode MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz - A->n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - A->cmap.n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

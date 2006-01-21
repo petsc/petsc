@@ -1633,20 +1633,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   ierr = MPI_Comm_rank(comm,&a->rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&a->size);CHKERRQ(ierr);
 
-  ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
 
-  A->N = M;
-  A->M = M;
-  A->m = m;
-  A->n = m;
-  ierr                             = PetscMalloc((A->m+1)*sizeof(int),&a->imax);CHKERRQ(ierr);
-  a->reallocs                      = 0;
-
-  /* the information in the maps duplicates the information computed below, eventually 
-     we should remove the duplicate information that is not contained in the maps */
   ierr = PetscMapInitialize(comm,m,M,&A.rmap);CHKERRQ(ierr);
   ierr = PetscMapInitialize(comm,m,M,&A.cmap);CHKERRQ(ierr);
 
+  ierr                             = PetscMalloc((A->m+1)*sizeof(int),&a->imax);CHKERRQ(ierr);
+  a->reallocs                      = 0;
   /* build local table of row ownerships */
   ierr          = PetscMalloc((a->size+2)*sizeof(int),&a->rowners);CHKERRQ(ierr);
   ierr          = MPI_Allgather(&m,1,MPI_INT,a->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);

@@ -33,11 +33,11 @@ PetscErrorCode Mat_CheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pet
       ierr = PetscFree(compressedrow->i);CHKERRQ(ierr); 
       compressedrow->rindex = PETSC_NULL;
       ierr = PetscInfo(A,"Mat structure might be changed. Free memory and recheck.\n");CHKERRQ(ierr);
-    } else if (compressedrow->i == PETSC_NULL) {
+    } else if (!compressedrow->i) {
       /* Don't know why this occures. For safe, recheck. */
       ierr = PetscInfo(A,"compressedrow.checked, but compressedrow.i==null. Recheck.\n");CHKERRQ(ierr);
     } else { /* use compressedrow, checked, A->same_nonzero = PETSC_TRUE. Skip check */
-      ierr = PetscInfo7(A,"Skip check. m: %d, n: %d,M: %d, N: %d,nrows: %d, ii: %p, type: %s\n",A->m,A->n,A->M,A->N,compressedrow->nrows,compressedrow->i,A->type_name);CHKERRQ(ierr);
+      ierr = PetscInfo7(A,"Skip check. m: %d, n: %d,M: %d, N: %d,nrows: %d, ii: %p, type: %s\n",A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N,compressedrow->nrows,compressedrow->i,A->type_name);CHKERRQ(ierr);
       PetscFunctionReturn(0); 
     }
   }

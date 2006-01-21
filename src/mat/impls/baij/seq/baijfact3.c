@@ -19,12 +19,12 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   IS             isicol;
   PetscErrorCode ierr;
   PetscInt       *r,*ic,i,n = a->mbs,*ai = a->i,*aj = a->j;
-  PetscInt       *ainew,*ajnew,jmax,*fill,*ajtmp,nz,bs = A->bs,bs2=a->bs2;
+  PetscInt       *ainew,*ajnew,jmax,*fill,*ajtmp,nz,bs = A->rmap.bs,bs2=a->bs2;
   PetscInt       *idnew,idx,row,m,fm,nnz,nzi,reallocs = 0,nzbd,*im;
   PetscReal      f = 1.0;
 
   PetscFunctionBegin;
-  if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
+  if (A->rmap.N != A->cmap.N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);

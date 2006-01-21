@@ -111,26 +111,26 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   */
 
   PetscFunctionBegin;
-  if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
+  if (A->cmap.N != A->rmap.N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
   ierr = PetscTypeCompare((PetscObject)pc->pmat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
   if (!ismpiaij) {
     SETERRQ(PETSC_ERR_SUP,"Currently only supports MPIAIJ matrices");
   }
 
   /* generate the local to global mapping */
-  ncol = a->A->n + a->B->n;
+  ncol = a->A->cmap.n + a->B->cmap.n;
   ierr = PetscMalloc((ncol)*sizeof(int),&localtoglobal);CHKERRQ(ierr);
-  for (i=0; i<a->A->n; i++) {
-    localtoglobal[i] = a->cstart + i + 1;
+  for (i=0; i<a->A->cmap.n; i++) {
+    localtoglobal[i] = A->cmap.rstart + i + 1;
   }
-  for (i=0; i<a->B->n; i++) {
-    localtoglobal[i+a->A->n] = a->garray[i] + 1;
+  for (i=0; i<a->B->cmap.n; i++) {
+    localtoglobal[i+a->A->cmap.n] = a->garray[i] + 1;
   }
   /* generate the vectors needed for the local solves */
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->A->m,PETSC_NULL,&tfs->b);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->A->n,PETSC_NULL,&tfs->xd);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->B->n,PETSC_NULL,&tfs->xo);CHKERRQ(ierr);
-  tfs->nd = a->A->n;
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->A->rmap.n,PETSC_NULL,&tfs->b);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->A->cmap.n,PETSC_NULL,&tfs->xd);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->B->cmap.n,PETSC_NULL,&tfs->xo);CHKERRQ(ierr);
+  tfs->nd = a->A->cmap.n;
 
 
   /*  ierr =  MatIsSymmetric(A,tol,&issymmetric); */
@@ -138,11 +138,11 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   ierr = PetscBarrier((PetscObject)pc);CHKERRQ(ierr);
   if (A->symmetric) {
     tfs->xxt       = XXT_new();
-    ierr           = XXT_factor(tfs->xxt,localtoglobal,A->m,ncol,(void*)LocalMult_TFS,pc);CHKERRQ(ierr);
+    ierr           = XXT_factor(tfs->xxt,localtoglobal,A->rmap.n,ncol,(void*)LocalMult_TFS,pc);CHKERRQ(ierr);
     pc->ops->apply = PCApply_TFS_XXT;
   } else {
     tfs->xyt       = XYT_new();
-    ierr           = XYT_factor(tfs->xyt,localtoglobal,A->m,ncol,(void*)LocalMult_TFS,pc);CHKERRQ(ierr);
+    ierr           = XYT_factor(tfs->xyt,localtoglobal,A->rmap.n,ncol,(void*)LocalMult_TFS,pc);CHKERRQ(ierr);
     pc->ops->apply = PCApply_TFS_XYT;
   }
 

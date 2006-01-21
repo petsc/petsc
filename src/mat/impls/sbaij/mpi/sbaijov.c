@@ -15,7 +15,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat,PetscInt*,PetscInt,P
 PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscInt ov)
 {
   PetscErrorCode ierr;
-  PetscInt       i,N=C->N, bs=C->bs;
+  PetscInt       i,N=C->cmap.N, bs=C->rmap.bs;
   IS             *is_new;
 
   PetscFunctionBegin;
@@ -72,7 +72,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   PetscBT        *table;  /* mark indices of this processor's is[] */
   PetscBT        table_i;
   PetscBT        otable; /* mark indices of other processors' is[] */ 
-  PetscInt       bs=C->bs,Bn = c->B->n,Bnbs = Bn/bs,*Bowners;  
+  PetscInt       bs=C->rmap.bs,Bn = c->B->cmap.n,Bnbs = Bn/bs,*Bowners;  
   IS             garray_local,garray_gl;
 
   PetscFunctionBegin;
@@ -135,7 +135,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
     /* hash table ctable which maps c->row to proc_id) */
     ierr = PetscMalloc(Mbs*sizeof(PetscInt),&ctable);CHKERRQ(ierr);
     for (proc_id=0,j=0; proc_id<size; proc_id++) {
-      for (; j<c->rowners[proc_id+1]; j++) {
+      for (; j<C->rmap.range[proc_id+1]; j++) {
         ctable[j] = proc_id;
       }
     }
@@ -392,7 +392,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C,PetscInt *data,Pet
   ai = a->i; aj = a->j;
   bi = b->i; bj = b->j;
   garray = c->garray;
-  rstart = c->rstart;
+  rstart = c->rstartbs;
   is_max = data[0];
 
   ierr = PetscBTCreate(Mbs,table0);CHKERRQ(ierr);

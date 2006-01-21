@@ -44,7 +44,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, MatType matype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  if (mat->m < 0 && mat->M < 0 && mat->n < 0 && mat->N < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatSetSizes() first");
+  if (mat->rmap.n < 0 && mat->rmap.N < 0 && mat->cmap.n < 0 && mat->cmap.N < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatSetSizes() first");
   ierr = PetscTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
   if (!sametype) {
     /* Get the function pointers for the matrix requested */

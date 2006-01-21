@@ -371,8 +371,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA_AD(Mat A,DA da)
   ierr  = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
   ierr  = DAGetInfo(da,0,&Nx,&Ny,&Nz,0,0,0,&nc,0,0,0);CHKERRQ(ierr);
   ierr  = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
-  A->m  = A->n = nc*nx*ny*nz;
-  A->M  = A->N = nc*Nx*Ny*Nz;
+  A->rmap.n  = A->cmap.n = nc*nx*ny*nz;
+  A->rmap.N  = A->cmap.N = nc*Nx*Ny*Nz;
   ierr  = DACreateLocalVector(da,&a->localu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -418,7 +418,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_DAAD"
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DAAD(Mat B)
 {
-  Mat_DAAD *b;
+  Mat_DAAD       *b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -426,8 +426,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DAAD(Mat B)
   B->data = (void*)b;
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   
-  ierr = PetscMapInitialize(B->comm,B->m,B->m,&B.rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(B->comm,B->n,B->n,&B.cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(B->comm,&B->cmap);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATDAAD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSNESMFSetBase_C","MatSNESMFSetBase_AD",MatSNESMFSetBase_AD);CHKERRQ(ierr);

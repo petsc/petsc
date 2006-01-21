@@ -12,8 +12,8 @@ PetscErrorCode MatSetUpMultiply_MPIBDiag(Mat mat)
   Mat_MPIBDiag   *mbd = (Mat_MPIBDiag*)mat->data;
   Mat_SeqBDiag   *lmbd = (Mat_SeqBDiag*)mbd->A->data;
   PetscErrorCode ierr;
-  PetscInt       N = mat->N,*indices,*garray,ec=0;
-  PetscInt       bs = mat->bs,d,i,j,diag;
+  PetscInt       N = mat->cmap.N,*indices,*garray,ec=0;
+  PetscInt       bs = mat->rmap.bs,d,i,j,diag;
   IS             to,from;
   Vec            gvec;
 
@@ -76,9 +76,9 @@ PetscErrorCode MatSetUpMultiply_MPIBDiag(Mat mat)
      1) save garray until the first actual scatter when the vector is known or
      2) have another way of generating a scatter context without a vector.*/
   /*
-     This is not correct for a rectangular matrix mbd->m? 
+     This is not correct for a rectangular matrix mbd->rmap.N? 
   */
-  ierr = VecCreateMPI(mat->comm,mat->m,mat->N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(mat->comm,mat->rmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,from,mbd->lvec,to,&mbd->Mvctx);CHKERRQ(ierr);

@@ -150,7 +150,7 @@ PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
   Mat            B=*C;
   Mat_inode      *c=(Mat_inode*)B->data,*a=(Mat_inode*)A->data;
   PetscErrorCode ierr;
-  PetscInt       m=A->m;
+  PetscInt       m=A->rmap.n;
 
   PetscFunctionBegin;
 

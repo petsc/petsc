@@ -237,8 +237,6 @@ struct _p_Mat {
   PetscTruth             was_assembled;    /* new values inserted into assembled mat */
   PetscInt               num_ass;          /* number of times matrix has been assembled */
   PetscTruth             same_nonzero;     /* matrix has same nonzero pattern as previous */
-  PetscInt               M,N;             /* global numbers of rows, columns */
-  PetscInt               m,n;             /* local numbers of rows, columns */
   MatInfo                info;             /* matrix information */
   ISLocalToGlobalMapping mapping;          /* mapping used in MatSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;         /* mapping used in MatSetValuesBlockedLocal() */
@@ -250,7 +248,6 @@ struct _p_Mat {
   PetscTruth             symmetric,hermitian,structurally_symmetric;
   PetscTruth             symmetric_set,hermitian_set,structurally_symmetric_set; /* if true, then corresponding flag is correct*/
   PetscTruth             symmetric_eternal;
-  PetscInt               bs;
   void                   *spptr;          /* pointer for special library like SuperLU */
 };
 

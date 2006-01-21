@@ -17,7 +17,7 @@ typedef struct {
   PetscInt  *range;      /* the offset of each processor */
   PetscInt  bs;          /* number of elements in each block (generally for multi-component problems */
 } PetscMap;
-EXTERN PetscErrorCode PetscMapInitialize(MPI_Comm,PetscInt,PetscInt,PetscMap*);
+EXTERN PetscErrorCode PetscMapInitialize(MPI_Comm,PetscMap*);
 EXTERN PetscErrorCode PetscMapCopy(MPI_Comm,PetscMap*,PetscMap*);
 /* ----------------------------------------------------------------------------*/
 
