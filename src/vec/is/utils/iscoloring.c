@@ -32,9 +32,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringDestroy(ISColoring iscoloring)
     }
     ierr = PetscFree(iscoloring->is);CHKERRQ(ierr);
   }
-  if (iscoloring->colors) {
-    ierr = PetscFree(iscoloring->colors);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(iscoloring->colors);CHKERRQ(ierr);
   PetscCommDestroy(&iscoloring->comm);
   ierr = PetscFree(iscoloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);

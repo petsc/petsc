@@ -545,7 +545,7 @@ PetscErrorCode VecDestroy_Seq(Vec v)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)v,"Length=%D",v->map.n);
 #endif
-  if (vs->array_allocated) {ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);}
+  ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
   ierr = PetscFree(vs);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

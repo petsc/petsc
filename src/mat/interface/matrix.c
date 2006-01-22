@@ -716,12 +716,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat A)
     ierr = ISLocalToGlobalMappingDestroy(A->bmapping);CHKERRQ(ierr);
   }
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  if (A->rmap.range) {
-    ierr = PetscFree(A->rmap.range);CHKERRQ(ierr);
-  }
-  if (A->cmap.range) {
-    ierr = PetscFree(A->cmap.range);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(A->rmap.range);CHKERRQ(ierr);
+  ierr = PetscFree(A->cmap.range);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

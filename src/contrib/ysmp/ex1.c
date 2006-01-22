@@ -207,7 +207,8 @@ int MatLUFactorSymbolic_SeqAIJ_YSMP(Mat A ,IS row,IS col,double f,Mat *B)
   if (FLAG) {
     SETERRQ2(1,0,"MatLUFactorSymbolic_SeqAIJ_YSMP:Error in YSMP symbolic factor N %d FLAG %d\n",N,FLAG);
   }
-  PetscFree(Q); PetscFree(IM);
+  ierr = PetscFree(Q);CHKERRQ(ierr);
+  ierr = PetscFree(IM);CHKERRQ(ierr);
 
   /* generate the factored PETSc matrix */
   ierr = MatCreateSeqAIJ(A->comm,N,N,MAT_SKIP_ALLOCATION,PETSC_NULL,B); CHKERRQ(ierr);

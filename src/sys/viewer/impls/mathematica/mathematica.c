@@ -82,12 +82,8 @@ static PetscErrorCode PetscViewerDestroy_Mathematica(PetscViewer viewer)
 
   PetscFunctionBegin;
   MLClose(vmath->link);
-  if (vmath->linkname) {
-    ierr = PetscFree(vmath->linkname);CHKERRQ(ierr);
-  }
-  if (vmath->linkhost) {
-    ierr = PetscFree(vmath->linkhost);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(vmath->linkname);CHKERRQ(ierr);
+  ierr = PetscFree(vmath->linkhost);CHKERRQ(ierr);
   ierr = PetscFree(vmath);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

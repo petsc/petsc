@@ -262,17 +262,12 @@ PetscErrorCode MatPartitioningSetFromOptions_Jostle(MatPartitioning part)
 #define __FUNCT__ "MatPartitioningDestroy_Jostle"
 PetscErrorCode MatPartitioningDestroy_Jostle(MatPartitioning part)
 {
-    MatPartitioning_Jostle *jostle_struct =
-        (MatPartitioning_Jostle *) part->data;
-    PetscErrorCode ierr;
+    MatPartitioning_Jostle *jostle_struct = (MatPartitioning_Jostle *) part->data;
+    PetscErrorCode         ierr;
 
     PetscFunctionBegin;
-
-    if (jostle_struct->mesg_log) {
-        ierr = PetscFree(jostle_struct->mesg_log);CHKERRQ(ierr);
-    }
+    ierr = PetscFree(jostle_struct->mesg_log);CHKERRQ(ierr);
     ierr = PetscFree(jostle_struct);CHKERRQ(ierr);
-
     PetscFunctionReturn(0);
 }
 

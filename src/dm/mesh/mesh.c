@@ -766,7 +766,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetGhosts(Mesh mesh,PetscInt bs,PetscInt nl
 
   PetscFunctionBegin;
   PetscValidPointer(mesh,1);
-  if (mesh->ghosts) {ierr = PetscFree(mesh->ghosts);CHKERRQ(ierr);}
+  ierr = PetscFree(mesh->ghosts);CHKERRQ(ierr);
   ierr = PetscMalloc((1+Nghosts)*sizeof(PetscInt),&mesh->ghosts);CHKERRQ(ierr);
   ierr = PetscMemcpy(mesh->ghosts,ghosts,Nghosts*sizeof(PetscInt));CHKERRQ(ierr);
   mesh->bs      = bs;

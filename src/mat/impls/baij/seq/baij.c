@@ -841,17 +841,17 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   if (a->col) {
     ierr = ISDestroy(a->col);CHKERRQ(ierr);
   }
-  if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
-  if (a->idiag) {ierr = PetscFree(a->idiag);CHKERRQ(ierr);}
-  if (a->imax) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
-  if (a->solve_work) {ierr = PetscFree(a->solve_work);CHKERRQ(ierr);}
-  if (a->mult_work) {ierr = PetscFree(a->mult_work);CHKERRQ(ierr);}
+  ierr = PetscFree(a->diag);CHKERRQ(ierr);
+  ierr = PetscFree(a->idiag);CHKERRQ(ierr);
+  ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);
+  ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
+  ierr = PetscFree(a->mult_work);CHKERRQ(ierr);
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
-  if (a->saved_values) {ierr = PetscFree(a->saved_values);CHKERRQ(ierr);}
+  ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
 #if defined(PETSC_USE_MAT_SINGLE)
-  if (a->setvaluescopy) {ierr = PetscFree(a->setvaluescopy);CHKERRQ(ierr);}
+  ierr = PetscFree(a->setvaluescopy);CHKERRQ(ierr);
 #endif
-  if (a->xtoy) {ierr = PetscFree(a->xtoy);CHKERRQ(ierr);}
+  ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
   if (a->compressedrow.use){ierr = PetscFree(a->compressedrow.i);} 
 
   ierr = PetscFree(a);CHKERRQ(ierr);
@@ -983,8 +983,8 @@ PetscErrorCode MatRestoreRow_SeqBAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (idx) {if (*idx) {ierr = PetscFree(*idx);CHKERRQ(ierr);}}
-  if (v)   {if (*v)   {ierr = PetscFree(*v);CHKERRQ(ierr);}}
+  if (idx) {ierr = PetscFree(*idx);CHKERRQ(ierr);}
+  if (v)   {ierr = PetscFree(*v);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1365,7 +1365,7 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat mat,PetscInt m,const PetscInt im[
 
   PetscFunctionBegin;  
   if (N > b->setvalueslen) {
-    if (b->setvaluescopy) {ierr = PetscFree(b->setvaluescopy);CHKERRQ(ierr);}
+    ierr = PetscFree(b->setvaluescopy);CHKERRQ(ierr);
     ierr = PetscMalloc(N*sizeof(MatScalar),&b->setvaluescopy);CHKERRQ(ierr);
     b->setvalueslen  = N;
   }

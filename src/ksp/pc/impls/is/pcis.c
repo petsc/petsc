@@ -230,10 +230,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISDestroy(PC pc)
   if (pcis->vec2_B)      {ierr = VecDestroy(pcis->vec2_B);CHKERRQ(ierr);}
   if (pcis->vec3_B)      {ierr = VecDestroy(pcis->vec3_B);CHKERRQ(ierr);}
   if (pcis->vec1_global) {ierr = VecDestroy(pcis->vec1_global);CHKERRQ(ierr);}
-  if (pcis->work_N)      {ierr = PetscFree(pcis->work_N);CHKERRQ(ierr);}
   if (pcis->global_to_D) {ierr = VecScatterDestroy(pcis->global_to_D);CHKERRQ(ierr);}
   if (pcis->N_to_B)      {ierr = VecScatterDestroy(pcis->N_to_B);CHKERRQ(ierr);}
   if (pcis->global_to_B) {ierr = VecScatterDestroy(pcis->global_to_B);CHKERRQ(ierr);}
+  ierr = PetscFree(pcis->work_N);CHKERRQ(ierr);
   if (pcis->ISLocalToGlobalMappingGetInfoWasCalled) {
     ierr = ISLocalToGlobalMappingRestoreInfo((ISLocalToGlobalMapping)0,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);
   }

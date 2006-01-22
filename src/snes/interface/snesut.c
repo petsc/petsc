@@ -203,7 +203,7 @@ PetscErrorCode SNESRatioMonitorDestroy(void *ct)
   SNESRatioMonitorContext *ctx = (SNESRatioMonitorContext*)ct;
 
   PetscFunctionBegin;
-  if (ctx->history) {ierr = PetscFree(ctx->history);CHKERRQ(ierr);}
+  ierr = PetscFree(ctx->history);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(ctx->viewer);CHKERRQ(ierr);
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

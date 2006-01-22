@@ -475,17 +475,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringDestroy(MatFDColoring c)
   if (--c->refct > 0) PetscFunctionReturn(0);
 
   for (i=0; i<c->ncolors; i++) {
-    if (c->columns[i])         {ierr = PetscFree(c->columns[i]);CHKERRQ(ierr);}
-    if (c->rows[i])            {ierr = PetscFree(c->rows[i]);CHKERRQ(ierr);}
-    if (c->columnsforrow[i])   {ierr = PetscFree(c->columnsforrow[i]);CHKERRQ(ierr);}
-    if (c->vscaleforrow && c->vscaleforrow[i]) {ierr = PetscFree(c->vscaleforrow[i]);CHKERRQ(ierr);} 
+    ierr = PetscFree(c->columns[i]);CHKERRQ(ierr);
+    ierr = PetscFree(c->rows[i]);CHKERRQ(ierr);
+    ierr = PetscFree(c->columnsforrow[i]);CHKERRQ(ierr);
+    if (c->vscaleforrow) {ierr = PetscFree(c->vscaleforrow[i]);CHKERRQ(ierr);} 
   }
   ierr = PetscFree(c->ncolumns);CHKERRQ(ierr);
   ierr = PetscFree(c->columns);CHKERRQ(ierr);
   ierr = PetscFree(c->nrows);CHKERRQ(ierr);
   ierr = PetscFree(c->rows);CHKERRQ(ierr);
   ierr = PetscFree(c->columnsforrow);CHKERRQ(ierr);
-  if (c->vscaleforrow) {ierr = PetscFree(c->vscaleforrow);CHKERRQ(ierr);}
+  ierr = PetscFree(c->vscaleforrow);CHKERRQ(ierr);
   if (c->vscale)       {ierr = VecDestroy(c->vscale);CHKERRQ(ierr);}
   if (c->w1) {
     ierr = VecDestroy(c->w1);CHKERRQ(ierr);

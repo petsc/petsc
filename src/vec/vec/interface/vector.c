@@ -493,9 +493,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDestroy(Vec v)
   if (v->bmapping) {
     ierr = ISLocalToGlobalMappingDestroy(v->bmapping);CHKERRQ(ierr);
   }
-  if (v->map.range) {
-    ierr = PetscFree(v->map.range);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(v->map.range);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

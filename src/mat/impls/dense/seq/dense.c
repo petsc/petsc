@@ -194,11 +194,9 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
   PetscBLASInt   n = (PetscBLASInt)A->cmap.n,info;
   
   PetscFunctionBegin;
-  if (mat->pivots) {
-    ierr = PetscFree(mat->pivots);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(A,-A->rmap.n*sizeof(PetscInt));CHKERRQ(ierr);
-    mat->pivots = 0;
-  }
+  ierr = PetscFree(mat->pivots);CHKERRQ(ierr);
+  mat->pivots = 0;
+
   if (!A->rmap.n || !A->cmap.n) PetscFunctionReturn(0);
   LAPACKpotrf_("L",&n,mat->v,&mat->lda,&info);
   if (info) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %D",(PetscInt)info-1);
@@ -1030,8 +1028,8 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)mat,"Rows %D Cols %D",mat->rmap.n,mat->cmap.n);
 #endif
-  if (l->pivots) {ierr = PetscFree(l->pivots);CHKERRQ(ierr);}
-  if (!l->user_alloc) {ierr = PetscFree(l->v);CHKERRQ(ierr);}
+  ierr = PetscFree(l->pivots);CHKERRQ(ierr);
+  ierr = PetscFree(l->v);CHKERRQ(ierr);
   ierr = PetscFree(l);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatSeqDenseSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -165,7 +165,7 @@ PetscErrorCode MatSetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],Pets
 
   PetscFunctionBegin;  
   if (N > b->setvalueslen) {
-    if (b->setvaluescopy) {ierr = PetscFree(b->setvaluescopy);CHKERRQ(ierr);}
+    ierr = PetscFree(b->setvaluescopy);CHKERRQ(ierr);
     ierr = PetscMalloc(N*sizeof(MatScalar),&b->setvaluescopy);CHKERRQ(ierr);
     b->setvalueslen  = N;
   }
@@ -189,7 +189,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im
 
   PetscFunctionBegin;  
   if (N > b->setvalueslen) {
-    if (b->setvaluescopy) {ierr = PetscFree(b->setvaluescopy);CHKERRQ(ierr);}
+    ierr = PetscFree(b->setvaluescopy);CHKERRQ(ierr);
     ierr = PetscMalloc(N*sizeof(MatScalar),&b->setvaluescopy);CHKERRQ(ierr);
     b->setvalueslen  = N;
   }
@@ -661,10 +661,8 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(baij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->B,mode);CHKERRQ(ierr);
   
-  if (baij->rowvalues) {
-    ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);
-    baij->rowvalues = 0;
-  }
+  ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);
+  baij->rowvalues = 0;
 
   PetscFunctionReturn(0);
 }
@@ -823,9 +821,9 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
 #if defined (PETSC_USE_CTABLE)
   if (baij->colmap) {ierr = PetscTableDelete(baij->colmap);CHKERRQ(ierr);}
 #else
-  if (baij->colmap) {ierr = PetscFree(baij->colmap);CHKERRQ(ierr);}
+  ierr = PetscFree(baij->colmap);CHKERRQ(ierr);
 #endif
-  if (baij->garray) {ierr = PetscFree(baij->garray);CHKERRQ(ierr);}
+  ierr = PetscFree(baij->garray);CHKERRQ(ierr);
   if (baij->lvec)   {ierr = VecDestroy(baij->lvec);CHKERRQ(ierr);}
   if (baij->Mvctx)  {ierr = VecScatterDestroy(baij->Mvctx);CHKERRQ(ierr);}
   if (baij->slvec0) {
@@ -838,11 +836,11 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
     ierr = VecDestroy(baij->slvec1b);CHKERRQ(ierr); 
   }
   if (baij->sMvctx)  {ierr = VecScatterDestroy(baij->sMvctx);CHKERRQ(ierr);} 
-  if (baij->rowvalues) {ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);}
-  if (baij->barray) {ierr = PetscFree(baij->barray);CHKERRQ(ierr);}
-  if (baij->hd) {ierr = PetscFree(baij->hd);CHKERRQ(ierr);}
+  ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);
+  ierr = PetscFree(baij->barray);CHKERRQ(ierr);
+  ierr = PetscFree(baij->hd);CHKERRQ(ierr);
 #if defined(PETSC_USE_MAT_SINGLE)
-  if (baij->setvaluescopy) {ierr = PetscFree(baij->setvaluescopy);CHKERRQ(ierr);}
+  ierr = PetscFree(baij->setvaluescopy);CHKERRQ(ierr);
 #endif
   ierr = PetscFree(baij->rangebs);CHKERRQ(ierr);
   ierr = PetscFree(baij);CHKERRQ(ierr);

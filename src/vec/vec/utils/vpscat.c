@@ -205,8 +205,8 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
 
   PetscFunctionBegin;
   CHKMEMQ;
-  if (gen_to->local.vslots)             {ierr = PetscFree2(gen_to->local.vslots,gen_from->local.vslots);CHKERRQ(ierr);}
-  if (gen_to->local.slots_nonmatching) {ierr = PetscFree2(gen_to->local.slots_nonmatching,gen_from->local.slots_nonmatching);CHKERRQ(ierr);}
+  ierr = PetscFree2(gen_to->local.vslots,gen_from->local.vslots);CHKERRQ(ierr);
+  ierr = PetscFree2(gen_to->local.slots_nonmatching,gen_from->local.slots_nonmatching);CHKERRQ(ierr);
   ierr = PetscFree7(gen_to->values,gen_to->requests,gen_to->indices,gen_to->starts,gen_to->procs,gen_to->sstatus,gen_to->rstatus);CHKERRQ(ierr);
   ierr = PetscFree5(gen_from->values,gen_from->requests,gen_from->indices,gen_from->starts,gen_from->procs);CHKERRQ(ierr);
   ierr = PetscFree(gen_from);CHKERRQ(ierr);
@@ -2530,8 +2530,8 @@ PetscErrorCode VecScatterDestroy_PtoP_X(VecScatter ctx)
     }
   }
 
-  if (gen_to->local.vslots)              {ierr = PetscFree2(gen_to->local.vslots,gen_from->local.vslots);CHKERRQ(ierr);}
-  if (gen_to->local.slots_nonmatching)  {ierr = PetscFree2(gen_to->local.slots_nonmatching,gen_from->local.slots_nonmatching);CHKERRQ(ierr);}
+  ierr = PetscFree2(gen_to->local.vslots,gen_from->local.vslots);CHKERRQ(ierr);
+  ierr = PetscFree2(gen_to->local.slots_nonmatching,gen_from->local.slots_nonmatching);CHKERRQ(ierr);
 
   /* release MPI resources obtained with MPI_Send_init() and MPI_Recv_init() */
   /* 

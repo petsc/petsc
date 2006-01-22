@@ -29,9 +29,8 @@ PetscErrorCode MatDestroy_SeqCRL(Mat A)
   A->ops->duplicate   = crl->MatDuplicate;
 
   /* Free everything in the Mat_CRL data structure. */
-  if (crl->icols) {
-    ierr = PetscFree2(crl->acols,crl->icols);CHKERRQ(ierr);
-  }
+  ierr = PetscFree2(crl->acols,crl->icols);CHKERRQ(ierr);
+
   /* Free the Mat_CRL struct itself. */
   ierr = PetscFree(crl);CHKERRQ(ierr);
 

@@ -357,12 +357,10 @@ PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part)
 PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
-    PetscErrorCode ierr;
+    PetscErrorCode        ierr;
 
     PetscFunctionBegin;
-    if (party->mesg_log) {
-        ierr = PetscFree(party->mesg_log);CHKERRQ(ierr);
-    }
+    ierr = PetscFree(party->mesg_log);CHKERRQ(ierr);
     ierr = PetscFree(party);CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }

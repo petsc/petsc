@@ -485,16 +485,11 @@ PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
 PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
 {
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
-    PetscErrorCode ierr;
+    PetscErrorCode        ierr;
 
     PetscFunctionBegin;
-
-    if (chaco->mesg_log) {
-        ierr = PetscFree(chaco->mesg_log);CHKERRQ(ierr);
-    }
-
+    ierr = PetscFree(chaco->mesg_log);CHKERRQ(ierr);
     ierr = PetscFree(chaco);CHKERRQ(ierr);
-
     PetscFunctionReturn(0);
 }
 

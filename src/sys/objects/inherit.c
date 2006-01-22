@@ -73,27 +73,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
   ierr = PetscStrfree(h->name);CHKERRQ(ierr);
   h->cookie = PETSCFREEDHEADER;
   ierr = PetscStrfree(h->prefix);CHKERRQ(ierr);
-  if (h->fortran_func_pointers) {
-    ierr = PetscFree(h->fortran_func_pointers);CHKERRQ(ierr);
-  }
-  if (h->intcomposeddata) {
-    ierr = PetscFree(h->intcomposeddata);CHKERRQ(ierr);
-  }
-  if (h->intcomposedstate) {
-    ierr = PetscFree(h->intcomposedstate);CHKERRQ(ierr);
-  }
-  if (h->realcomposeddata) {
-    ierr = PetscFree(h->realcomposeddata);CHKERRQ(ierr);
-  }
-  if (h->realcomposedstate) {
-    ierr = PetscFree(h->realcomposedstate);CHKERRQ(ierr);
-  }
-  if (h->scalarcomposeddata) {
-    ierr = PetscFree(h->scalarcomposeddata);CHKERRQ(ierr);
-  }
-  if (h->scalarcomposedstate) {
-    ierr = PetscFree(h->scalarcomposedstate);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(h->fortran_func_pointers);CHKERRQ(ierr);
+  ierr = PetscFree(h->intcomposeddata);CHKERRQ(ierr);
+  ierr = PetscFree(h->intcomposedstate);CHKERRQ(ierr);
+  ierr = PetscFree(h->realcomposeddata);CHKERRQ(ierr);
+  ierr = PetscFree(h->realcomposedstate);CHKERRQ(ierr);
+  ierr = PetscFree(h->scalarcomposeddata);CHKERRQ(ierr);
+  ierr = PetscFree(h->scalarcomposedstate);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1321,8 +1321,8 @@ PetscErrorCode MatDestroy_MPIRowbs(Mat mat)
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   if (a->bsmap) {
-    if (a->bsmap->vlocal2global) {ierr = PetscFree(a->bsmap->vlocal2global);CHKERRQ(ierr);}
-    if (a->bsmap->vglobal2local) {ierr = PetscFree(a->bsmap->vglobal2local);CHKERRQ(ierr);}
+    ierr = PetscFree(a->bsmap->vlocal2global);CHKERRQ(ierr);
+    ierr = PetscFree(a->bsmap->vglobal2local);CHKERRQ(ierr);
     if (a->bsmap->vglobal2proc)  (*a->bsmap->free_g2p)(a->bsmap->vglobal2proc);
     ierr = PetscFree(a->bsmap);CHKERRQ(ierr);
   } 
@@ -1343,7 +1343,7 @@ PetscErrorCode MatDestroy_MPIRowbs(Mat mat)
   if (a->fpA)      {BSfree_copy_par_mat(a->fpA);CHKERRBS(0);}
   if (a->comm_pA)  {BSfree_comm(a->comm_pA);CHKERRBS(0);}
   if (a->comm_fpA) {BSfree_comm(a->comm_fpA);CHKERRBS(0);}
-  if (a->imax)     {ierr = PetscFree(a->imax);CHKERRQ(ierr);}
+  ierr = PetscFree(a->imax);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&(a->comm_mpirowbs));CHKERRQ(ierr);
   ierr = PetscFree(a);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIRowbsSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);

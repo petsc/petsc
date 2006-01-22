@@ -980,7 +980,7 @@ PetscErrorCode VecReplaceArray_Seq(Vec vin,const PetscScalar *a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (v->array_allocated) {ierr = PetscFree(v->array_allocated);CHKERRQ(ierr);}
+  ierr = PetscFree(v->array_allocated);CHKERRQ(ierr);
   v->array_allocated = v->array = (PetscScalar *)a;
   PetscFunctionReturn(0);
 }

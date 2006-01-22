@@ -20,7 +20,7 @@ PetscErrorCode VecDestroy_MPI(Vec v)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)v,"Length=%D",v->map.N);
 #endif  
-  if (x->array_allocated) {ierr = PetscFree(x->array_allocated);CHKERRQ(ierr);}
+  ierr = PetscFree(x->array_allocated);CHKERRQ(ierr);
 
   /* Destroy local representation of vector if it exists */
   if (x->localrep) {

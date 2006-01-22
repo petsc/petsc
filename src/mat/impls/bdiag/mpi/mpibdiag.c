@@ -935,7 +935,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,Pet
   ierr = MatSeqBDiagSetPreallocation(b->A,k,bs,ldiag,ldiagv);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(B,b->A);CHKERRQ(ierr);
   ierr = PetscFree(ldiag);CHKERRQ(ierr);
-  if (ldiagv) {ierr = PetscFree(ldiagv);CHKERRQ(ierr);}
+  ierr = PetscFree(ldiagv);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

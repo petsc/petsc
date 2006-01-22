@@ -207,7 +207,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
     ierr = ISDestroy(is[i]);CHKERRQ(ierr); 
   }
   ierr = PetscFree(n);CHKERRQ(ierr);
-  if (ctable){ierr = PetscFree(ctable);CHKERRQ(ierr);}
+  ierr = PetscFree(ctable);CHKERRQ(ierr);
 
   /* Determine the number of messages to expect, their lengths, from from-ids */
   ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,len_s,&nrqr);CHKERRQ(ierr);

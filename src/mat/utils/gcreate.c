@@ -260,10 +260,9 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   mname = A->name;
   spptr = A->spptr;
 
-  if (C->spptr) {
-    ierr = PetscFree(C->spptr);CHKERRQ(ierr);
-    C->spptr = PETSC_NULL;
-  }
+  ierr = PetscFree(C->spptr);CHKERRQ(ierr);
+  C->spptr = PETSC_NULL;
+
   ierr = PetscFree(A->rmap.range);CHKERRQ(ierr);
   ierr = PetscFree(A->cmap.range);CHKERRQ(ierr);
 

@@ -34,8 +34,8 @@ PetscErrorCode PetscObjectContainerDestroy_Mat_MatMatMultMPI(void *ptr)
   Mat_MatMatMultMPI    *mult=(Mat_MatMatMultMPI*)ptr;
 
   PetscFunctionBegin;
-  if (mult->startsj){ierr = PetscFree(mult->startsj);CHKERRQ(ierr);}
-  if (mult->bufa){ierr = PetscFree(mult->bufa);CHKERRQ(ierr);}
+  ierr = PetscFree(mult->startsj);CHKERRQ(ierr);
+  ierr = PetscFree(mult->bufa);CHKERRQ(ierr);
   if (mult->isrowa){ierr = ISDestroy(mult->isrowa);CHKERRQ(ierr);}
   if (mult->isrowb){ierr = ISDestroy(mult->isrowb);CHKERRQ(ierr);}
   if (mult->iscolb){ierr = ISDestroy(mult->iscolb);CHKERRQ(ierr);}
@@ -44,8 +44,8 @@ PetscErrorCode PetscObjectContainerDestroy_Mat_MatMatMultMPI(void *ptr)
   if (mult->B_seq){ierr = MatDestroy(mult->B_seq);CHKERRQ(ierr);}
   if (mult->B_loc){ierr = MatDestroy(mult->B_loc);CHKERRQ(ierr);}
   if (mult->B_oth){ierr = MatDestroy(mult->B_oth);CHKERRQ(ierr);}
-  if (mult->abi){ierr = PetscFree(mult->abi);CHKERRQ(ierr);}
-  if (mult->abj){ierr = PetscFree(mult->abj);CHKERRQ(ierr);}
+  ierr = PetscFree(mult->abi);CHKERRQ(ierr);
+  ierr = PetscFree(mult->abj);CHKERRQ(ierr);
   ierr = PetscFree(mult);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }

@@ -385,7 +385,7 @@ PetscErrorCode MatTranspose_SeqBDiag(Mat A,Mat *matout)
         }
       }
     }
-    if (a->pivot) {ierr = PetscFree(a->pivot);CHKERRQ(ierr);}
+    ierr = PetscFree(a->pivot);CHKERRQ(ierr);
     ierr = PetscFree(a->diagv);CHKERRQ(ierr);
     ierr = PetscFree(a->diag);CHKERRQ(ierr);
     ierr = PetscFree(a->colloc);CHKERRQ(ierr);

@@ -84,9 +84,7 @@ PetscErrorCode ClassRegInfoDestroy(ClassRegInfo *c)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (c->name) {
-    ierr = PetscFree(c->name);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(c->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

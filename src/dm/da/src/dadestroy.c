@@ -56,46 +56,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
   }
 
   for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-    if (da->adstartghostedout[i]){
-      ierr = PetscFree(da->adstartghostedout[i]);CHKERRQ(ierr);
-    }
-    if (da->adstartghostedin[i]){
-      ierr = PetscFree(da->adstartghostedin[i]);CHKERRQ(ierr);
-    }
-    if (da->adstartout[i]){
-      ierr = PetscFree(da->adstartout[i]);CHKERRQ(ierr);
-    }
-    if (da->adstartin[i]){
-      ierr = PetscFree(da->adstartin[i]);CHKERRQ(ierr);
-    }
+    ierr = PetscFree(da->adstartghostedout[i]);CHKERRQ(ierr);
+    ierr = PetscFree(da->adstartghostedin[i]);CHKERRQ(ierr);
+    ierr = PetscFree(da->adstartout[i]);CHKERRQ(ierr);
+    ierr = PetscFree(da->adstartin[i]);CHKERRQ(ierr);
   }
   for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
-    if (da->admfstartghostedout[i]){
-      ierr = PetscFree(da->admfstartghostedout[i]);CHKERRQ(ierr);
-    }
-    if (da->admfstartghostedin[i]){
-      ierr = PetscFree(da->admfstartghostedin[i]);CHKERRQ(ierr);
-    }
-    if (da->admfstartout[i]){
-      ierr = PetscFree(da->admfstartout[i]);CHKERRQ(ierr);
-    }
-    if (da->admfstartin[i]){
-      ierr = PetscFree(da->admfstartin[i]);CHKERRQ(ierr);
-    }
+    ierr = PetscFree(da->admfstartghostedout[i]);CHKERRQ(ierr);
+    ierr = PetscFree(da->admfstartghostedin[i]);CHKERRQ(ierr);
+    ierr = PetscFree(da->admfstartout[i]);CHKERRQ(ierr);
+    ierr = PetscFree(da->admfstartin[i]);CHKERRQ(ierr);
   }
   for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
-    if (da->startghostedout[i]){
-      ierr = PetscFree(da->startghostedout[i]);CHKERRQ(ierr);
-    }
-    if (da->startghostedin[i]){
-      ierr = PetscFree(da->startghostedin[i]);CHKERRQ(ierr);
-    }
-    if (da->startout[i]){
-      ierr = PetscFree(da->startout[i]);CHKERRQ(ierr);
-    }
-    if (da->startin[i]){
-      ierr = PetscFree(da->startin[i]);CHKERRQ(ierr);
-    }
+    ierr = PetscFree(da->startghostedout[i]);CHKERRQ(ierr);
+    ierr = PetscFree(da->startghostedin[i]);CHKERRQ(ierr);
+    ierr = PetscFree(da->startout[i]);CHKERRQ(ierr);
+    ierr = PetscFree(da->startin[i]);CHKERRQ(ierr);
   }
 
   /* if memory was published with AMS then destroy it */
@@ -117,9 +93,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
   ierr = ISLocalToGlobalMappingDestroy(da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(da->ltogmapb);CHKERRQ(ierr);
 
-  if (da->lx) {ierr = PetscFree(da->lx);CHKERRQ(ierr);}
-  if (da->ly) {ierr = PetscFree(da->ly);CHKERRQ(ierr);}
-  if (da->lz) {ierr = PetscFree(da->lz);CHKERRQ(ierr);}
+  ierr = PetscFree(da->lx);CHKERRQ(ierr);
+  ierr = PetscFree(da->ly);CHKERRQ(ierr);
+  ierr = PetscFree(da->lz);CHKERRQ(ierr);
 
   for (i=0; i<da->w; i++) {
     ierr = PetscStrfree(da->fieldname[i]);CHKERRQ(ierr);
@@ -137,9 +113,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
   if (da->ghosted_coordinates) {ierr = VecDestroy(da->ghosted_coordinates);CHKERRQ(ierr);}
   if (da->da_coordinates && da != da->da_coordinates) {ierr = DADestroy(da->da_coordinates);CHKERRQ(ierr);}
 
-  if (da->dfill) {ierr = PetscFree(da->dfill);CHKERRQ(ierr);}
-  if (da->ofill) {ierr = PetscFree(da->ofill);CHKERRQ(ierr);}
-  if (da->e) {ierr = PetscFree(da->e);CHKERRQ(ierr);}
+  ierr = PetscFree(da->dfill);CHKERRQ(ierr);
+  ierr = PetscFree(da->ofill);CHKERRQ(ierr);
+  ierr = PetscFree(da->e);CHKERRQ(ierr);
 
   ierr = PetscHeaderDestroy(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
