@@ -102,6 +102,8 @@ class Package(config.base.Configure):
     self.needsMath        = 0
     # path of the package installation point; for example /usr/local or /home/bsmith/mpich-2.0.1
     self.directory        = None
+    # architecture independent install
+    self.archIndependent  = 0
     return
 
   def setupDependencies(self, framework):
@@ -178,6 +180,11 @@ class Package(config.base.Configure):
   def getSearchDirectories(self):
     return []
 
+  def getInstallDir(self):
+    if self.archIndependent:
+      return os.path.abspath(self.Install())
+    return os.path.abspath(os.path.join(self.Install(),self.arch.arch))
+
   def checkDownload(self,preOrPost):
     '''Check if we should download the package'''
     dowork=0
@@ -199,7 +206,7 @@ class Package(config.base.Configure):
         self.logPrint("**************************************************************************************************\n", debugSection='screen')
         fd = open(os.path.expanduser(os.path.join('~','.'+self.package+'_license')),'w')
         fd.close()
-      return os.path.abspath(os.path.join(self.Install(),self.arch.arch))
+      return self.getInstallDir()
     else:
       return ''
 
@@ -239,7 +246,7 @@ class Package(config.base.Configure):
     if dir:
       for l in self.generateLibList(os.path.join(dir,self.libdir)):
         yield('Download '+self.PACKAGE, dir,l, os.path.join(dir,self.includedir))
-      raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+os.path.join(self.Install(),self.arch.arch)+'\n')
+      raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+self.getInstallDir()+'\n')
 
     raise RuntimeError('You must specify a path for '+self.name+' with --with-'+self.package+'-dir=<directory>')
 
@@ -285,9 +292,18 @@ class Package(config.base.Configure):
         raise RuntimeError('Unable to download '+self.downloadname)
       self.downLoad()
       return self.getDir(retry = 0)
-    if not os.path.isdir(os.path.join(packages,Dir,self.arch.arch)):
-      os.mkdir(os.path.join(packages,Dir,self.arch.arch))
+    if not self.archIndependent:
+      if not os.path.isdir(os.path.join(packages,Dir,self.arch.arch)):
+        os.mkdir(os.path.join(packages,Dir,self.arch.arch))
     return os.path.join(packages, Dir)
+
+  def checkInclude(self, incl, hfiles, otherIncludes = []):
+    if self.cxx:
+      self.headers.pushLanguage('C++')
+    ret = self.executeTest(self.headers.checkInclude, [incl, hfiles],{'otherIncludes' : otherIncludes})
+    if self.cxx:
+      self.headers.popLanguage()
+    return ret
 
   def checkPackageLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
     oldFlags = self.compilers.CPPFLAGS
@@ -335,7 +351,7 @@ class Package(config.base.Configure):
       if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
         self.lib = lib	
         self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
-        if (not self.includes) or self.executeTest(self.headers.checkInclude, [incl, self.includes],{'otherIncludes' : incls}):
+        if (not self.includes) or self.checkInclude(incl, self.includes, incls):
           self.include = incl
           self.found   = 1
           self.dlib    = self.lib+libs

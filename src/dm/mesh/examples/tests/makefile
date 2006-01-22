@@ -1,4 +1,4 @@
-CFLAGS	        = -I${PETSC_DIR}/src/dm/mesh/sieve -I/PETSc3/ArX-2.2.4/src/boost/
+CFLAGS	        = -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE}
 FFLAGS	        =
 CPPFLAGS        = -DALE_USE_LOGGING -DALE_HAVE_CXX_ABI -DALE_USE_DEBUGGING
 FPPFLAGS        = 
