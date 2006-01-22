@@ -279,7 +279,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingDestroy(ISLocalToGlobalM
   }
 
   ierr = PetscFree(mapping->indices);CHKERRQ(ierr);
-  if (mapping->globals) {ierr = PetscFree(mapping->globals);CHKERRQ(ierr);}
+  ierr = PetscFree(mapping->globals);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(mapping);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -939,12 +939,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingRestoreInfo(ISLocalToGlo
   PetscInt i;
 
   PetscFunctionBegin;
-  if (*procs) {ierr = PetscFree(*procs);CHKERRQ(ierr);}
-  if (*numprocs) {ierr = PetscFree(*numprocs);CHKERRQ(ierr);}
+  ierr = PetscFree(*procs);CHKERRQ(ierr);
+  ierr = PetscFree(*numprocs);CHKERRQ(ierr);
   if (*indices) {
-    if ((*indices)[0]) {ierr = PetscFree((*indices)[0]);CHKERRQ(ierr);}
+    ierr = PetscFree((*indices)[0]);CHKERRQ(ierr);
     for (i=1; i<*nproc; i++) {
-      if ((*indices)[i]) {ierr = PetscFree((*indices)[i]);CHKERRQ(ierr);}
+      ierr = PetscFree((*indices)[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(*indices);CHKERRQ(ierr);
   }

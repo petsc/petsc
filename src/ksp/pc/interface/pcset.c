@@ -75,7 +75,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc, PCType type)
   /* Determine the PCCreateXXX routine for a particular preconditioner */
   ierr =  PetscFListFind(pc->comm,PCList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
-  if (pc->data) {ierr = PetscFree(pc->data);CHKERRQ(ierr);}
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
 
   pc->ops->setup               = (PetscErrorCode (*)(PC)) 0;
   pc->ops->apply               = (PetscErrorCode (*)(PC,Vec,Vec)) 0;

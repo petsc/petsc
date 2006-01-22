@@ -190,7 +190,7 @@ static PetscErrorCode PCDestroy_Shell(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (shell->name) {ierr = PetscFree(shell->name);CHKERRQ(ierr);}
+  ierr = PetscStrfree(shell->name);CHKERRQ(ierr);
   if (shell->destroy) {
     ierr  = (*shell->destroy)(shell->ctx);CHKERRQ(ierr);
   }

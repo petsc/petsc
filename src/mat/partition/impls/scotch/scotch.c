@@ -623,15 +623,11 @@ PetscErrorCode MatPartitioningSetFromOptions_Scotch(MatPartitioning part)
 PetscErrorCode MatPartitioningDestroy_Scotch(MatPartitioning part)
 {
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-    PetscErrorCode ierr;
+    PetscErrorCode         ierr;
 
     PetscFunctionBegin;
-
-    if (scotch->mesg_log) {
-        ierr = PetscFree(scotch->mesg_log);CHKERRQ(ierr);
-    }
+    ierr = PetscFree(scotch->mesg_log);CHKERRQ(ierr);
     ierr = PetscFree(scotch);CHKERRQ(ierr);
-
     PetscFunctionReturn(0);
 }
 

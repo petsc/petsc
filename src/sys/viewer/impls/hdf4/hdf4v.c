@@ -23,13 +23,11 @@ PetscErrorCode PetscViewerDestroy_HDF4(PetscViewer v)
 
  PetscFunctionBegin;
  if (vhdf4->sd_id >= 0) {
- SDend(vhdf4->sd_id);
- vhdf4->sd_id = -1;
+   SDend(vhdf4->sd_id);
+   vhdf4->sd_id = -1;
  }
- if (vhdf4->filename) {
-   ierr = PetscFree(vhdf4->filename);CE;
- }
- ierr = PetscFree(vhdf4); CE;
+ ierr = PetscFree(vhdf4->filename);CHKERRQ(ierr);
+ ierr = PetscFree(vhdf4);CHKERRQ(ierr);
  PetscFunctionReturn(0);
 }
 

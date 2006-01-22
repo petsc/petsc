@@ -66,11 +66,11 @@ PetscErrorCode MatDestroy_MPIAdj(Mat mat)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D, NZ=%D",mat->rmap.n,mat->cmap.n,a->nz);
 #endif
-  if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
+  ierr = PetscFree(a->diag);CHKERRQ(ierr);
   if (a->freeaij) {
     ierr = PetscFree(a->i);CHKERRQ(ierr);
     ierr = PetscFree(a->j);CHKERRQ(ierr);
-    if (a->values) {ierr = PetscFree(a->values);CHKERRQ(ierr);}
+    ierr = PetscFree(a->values);CHKERRQ(ierr);
   }
   ierr = PetscFree(a);CHKERRQ(ierr);
 

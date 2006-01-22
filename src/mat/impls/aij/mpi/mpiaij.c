@@ -365,10 +365,8 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(aij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->B,mode);CHKERRQ(ierr);
 
-  if (aij->rowvalues) {
-    ierr = PetscFree(aij->rowvalues);CHKERRQ(ierr);
-    aij->rowvalues = 0;
-  }
+  ierr = PetscFree(aij->rowvalues);CHKERRQ(ierr);
+  aij->rowvalues = 0;
 
   /* used by MatAXPY() */
   a->xtoy = 0; b->xtoy = 0;  
@@ -722,12 +720,12 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
 #if defined (PETSC_USE_CTABLE)
   if (aij->colmap) {ierr = PetscTableDelete(aij->colmap);CHKERRQ(ierr);}
 #else
-  if (aij->colmap) {ierr = PetscFree(aij->colmap);CHKERRQ(ierr);}
+  ierr = PetscFree(aij->colmap);CHKERRQ(ierr);
 #endif
-  if (aij->garray) {ierr = PetscFree(aij->garray);CHKERRQ(ierr);}
+  ierr = PetscFree(aij->garray);CHKERRQ(ierr);
   if (aij->lvec)   {ierr = VecDestroy(aij->lvec);CHKERRQ(ierr);}
   if (aij->Mvctx)  {ierr = VecScatterDestroy(aij->Mvctx);CHKERRQ(ierr);}
-  if (aij->rowvalues) {ierr = PetscFree(aij->rowvalues);CHKERRQ(ierr);}
+  ierr = PetscFree(aij->rowvalues);CHKERRQ(ierr);
   ierr = PetscFree(aij);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -2936,9 +2934,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
     ierr = PetscFree(merge->bj);CHKERRQ(ierr);
     ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr); 
     ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
-    if (merge->coi){ierr = PetscFree(merge->coi);CHKERRQ(ierr);}
-    if (merge->coj){ierr = PetscFree(merge->coj);CHKERRQ(ierr);}
-    if (merge->owners_co){ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);}
+    ierr = PetscFree(merge->coi);CHKERRQ(ierr);
+    ierr = PetscFree(merge->coj);CHKERRQ(ierr);
+    ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
     
     ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);

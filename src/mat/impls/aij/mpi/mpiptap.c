@@ -30,9 +30,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_MatPtAP(Mat A)
     ierr = PetscFree(merge->bj);CHKERRQ(ierr);
     ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr); 
     ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
-    if (merge->coi){ierr = PetscFree(merge->coi);CHKERRQ(ierr);}
-    if (merge->coj){ierr = PetscFree(merge->coj);CHKERRQ(ierr);}
-    if (merge->owners_co){ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);}
+    ierr = PetscFree(merge->coi);CHKERRQ(ierr);
+    ierr = PetscFree(merge->coj);CHKERRQ(ierr);
+    ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
     
     ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);

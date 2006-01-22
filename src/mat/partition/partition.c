@@ -300,12 +300,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningDestroy(MatPartitioning part)
   if (part->ops->destroy) {
     ierr = (*part->ops->destroy)(part);CHKERRQ(ierr);
   }
-  if (part->vertex_weights){
-    ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
-  }
-  if (part->part_weights){
-    ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
+  ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(part);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -338,9 +334,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetVertexWeights(MatPartitionin
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
 
-  if (part->vertex_weights){
-    ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
   part->vertex_weights = (PetscInt*)weights;
   PetscFunctionReturn(0);
 }
@@ -373,9 +367,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetPartitionWeights(MatPartitio
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
 
-  if (part->part_weights){
-    ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
   part->part_weights = (PetscReal*)weights;
   PetscFunctionReturn(0);
 }

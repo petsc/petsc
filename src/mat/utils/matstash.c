@@ -135,30 +135,18 @@ PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
     stash->space_head = 0;
     stash->space      = 0;
   }
-  if (stash->send_waits) {
-    ierr = PetscFree(stash->send_waits);CHKERRQ(ierr);
-    stash->send_waits = 0;
-  }
-  if (stash->recv_waits) {
-    ierr = PetscFree(stash->recv_waits);CHKERRQ(ierr);
-    stash->recv_waits = 0;
-  } 
-  if (stash->svalues) {
-    ierr = PetscFree(stash->svalues);CHKERRQ(ierr);
-    stash->svalues = 0;
-  }
-  if (stash->rvalues) {
-    ierr = PetscFree(stash->rvalues);CHKERRQ(ierr);
-    stash->rvalues = 0;
-  }
-  if (stash->rindices) {
-    ierr = PetscFree(stash->rindices);CHKERRQ(ierr);
-    stash->rindices = 0;
-  }
-  if (stash->nprocs) {
-    ierr = PetscFree(stash->nprocs);CHKERRQ(ierr);
-    stash->nprocs = 0;
-  }
+  ierr = PetscFree(stash->send_waits);CHKERRQ(ierr);
+  stash->send_waits = 0;
+  ierr = PetscFree(stash->recv_waits);CHKERRQ(ierr);
+  stash->recv_waits = 0;
+  ierr = PetscFree(stash->svalues);CHKERRQ(ierr);
+  stash->svalues = 0;
+  ierr = PetscFree(stash->rvalues);CHKERRQ(ierr);
+  stash->rvalues = 0;
+  ierr = PetscFree(stash->rindices);CHKERRQ(ierr);
+  stash->rindices = 0;
+  ierr = PetscFree(stash->nprocs);CHKERRQ(ierr);
+  stash->nprocs = 0;
   PetscFunctionReturn(0);
 }
 

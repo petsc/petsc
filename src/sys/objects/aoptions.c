@@ -187,8 +187,8 @@ PetscErrorCode PetscOptionsEnd_Private(void)
     ierr   = PetscStrfree(PetscOptionsObject.next->text);CHKERRQ(ierr);
     ierr   = PetscStrfree(PetscOptionsObject.next->option);CHKERRQ(ierr);
     ierr   = PetscFree(PetscOptionsObject.next->man);CHKERRQ(ierr);
-    if (PetscOptionsObject.next->data)  {ierr = PetscFree(PetscOptionsObject.next->data);CHKERRQ(ierr);}
-    if (PetscOptionsObject.next->edata) {ierr = PetscFree(PetscOptionsObject.next->edata);CHKERRQ(ierr);}
+    ierr   = PetscFree(PetscOptionsObject.next->data);CHKERRQ(ierr);
+    ierr   = PetscFree(PetscOptionsObject.next->edata);CHKERRQ(ierr);
     last                    = PetscOptionsObject.next;
     PetscOptionsObject.next = PetscOptionsObject.next->next;
     ierr                    = PetscFree(last);CHKERRQ(ierr);

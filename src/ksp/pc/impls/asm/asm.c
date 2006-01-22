@@ -354,9 +354,9 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
     for (i=0; i<osm->n_local_true; i++) {ierr = ISDestroy(osm->is[i]);CHKERRQ(ierr);}
     ierr = PetscFree(osm->is);CHKERRQ(ierr);
   }
-  if (osm->ksp) {ierr = PetscFree(osm->ksp);CHKERRQ(ierr);}
-  if (osm->scat) {ierr = PetscFree(osm->scat);CHKERRQ(ierr);}
-  if (osm->x) {ierr = PetscFree(osm->x);CHKERRQ(ierr);}
+  ierr = PetscFree(osm->ksp);CHKERRQ(ierr);
+  ierr = PetscFree(osm->scat);CHKERRQ(ierr);
+  ierr = PetscFree(osm->x);CHKERRQ(ierr);
   ierr = PetscFree(osm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

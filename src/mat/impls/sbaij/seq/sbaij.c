@@ -103,19 +103,16 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   if (a->row) {
     ierr = ISDestroy(a->row);CHKERRQ(ierr);
   }
-  if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
-  if (a->imax) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
+  ierr = PetscFree(a->diag);CHKERRQ(ierr);
+  ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
-  if (a->solve_work)  {ierr = PetscFree(a->solve_work);CHKERRQ(ierr);}
-  if (a->solves_work) {ierr = PetscFree(a->solves_work);CHKERRQ(ierr);}
-  if (a->mult_work)   {ierr = PetscFree(a->mult_work);CHKERRQ(ierr);}
-  if (a->saved_values) {ierr = PetscFree(a->saved_values);CHKERRQ(ierr);}
-  if (a->xtoy) {ierr = PetscFree(a->xtoy);CHKERRQ(ierr);}
+  ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
+  ierr = PetscFree(a->solves_work);CHKERRQ(ierr);
+  ierr = PetscFree(a->mult_work);CHKERRQ(ierr);
+  ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
+  ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
 
-  if (a->inew){
-    ierr = PetscFree(a->inew);CHKERRQ(ierr);
-    a->inew = 0;
-  }
+  ierr = PetscFree(a->inew);CHKERRQ(ierr);
   ierr = PetscFree(a);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -277,8 +274,8 @@ PetscErrorCode MatRestoreRow_SeqSBAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt *
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  if (idx) {if (*idx) {ierr = PetscFree(*idx);CHKERRQ(ierr);}}
-  if (v)   {if (*v)   {ierr = PetscFree(*v);CHKERRQ(ierr);}}
+  if (idx) {ierr = PetscFree(*idx);CHKERRQ(ierr);}
+  if (v)   {ierr = PetscFree(*v);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

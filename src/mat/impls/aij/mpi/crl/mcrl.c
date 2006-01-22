@@ -33,19 +33,14 @@ PetscErrorCode MatDestroy_MPICRL(Mat A)
   A->ops->duplicate   = crl->MatDuplicate;
 
   /* Free everything in the Mat_CRL data structure. */
-  if (crl->icols) {
-    ierr = PetscFree2(crl->acols,crl->icols);CHKERRQ(ierr);
-  }
+  ierr = PetscFree2(crl->acols,crl->icols);CHKERRQ(ierr);
   if (crl->fwork) {
     ierr = VecDestroy(crl->fwork);CHKERRQ(ierr);
   }
   if (crl->xwork) {
     ierr = VecDestroy(crl->xwork);CHKERRQ(ierr);
   }
-  if (crl->array) {
-    ierr = PetscFree(crl->array);CHKERRQ(ierr);
-  }
-  /* Free the Mat_CRL struct itself. */
+  ierr = PetscFree(crl->array);CHKERRQ(ierr);
   ierr = PetscFree(crl);CHKERRQ(ierr);
 
   /* Change the type of A back to MPIAIJ and use MatDestroy_MPIAIJ() 

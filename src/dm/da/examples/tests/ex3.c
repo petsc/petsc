@@ -37,7 +37,7 @@ int main(int argc,char **argv)
     
   /* Set up the array */ 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_XPERIODIC,M,1,1,localnodes,&da);CHKERRQ(ierr);
-  if (localnodes) {ierr = PetscFree(localnodes);CHKERRQ(ierr);}
+  ierr = PetscFree(localnodes);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
 

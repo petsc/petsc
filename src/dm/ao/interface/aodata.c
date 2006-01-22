@@ -1145,7 +1145,7 @@ static PetscErrorCode AODataAliasDestroy_Private(AODataAlias *aliases)
       t       = t->next;
       ierr = PetscFree(aliases->name);CHKERRQ(ierr);
       ierr = PetscFree(aliases->alias);CHKERRQ(ierr);
-      ierr    = PetscFree(aliases);CHKERRQ(ierr);
+      ierr = PetscFree(aliases);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

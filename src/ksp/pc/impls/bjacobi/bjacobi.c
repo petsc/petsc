@@ -193,8 +193,8 @@ static PetscErrorCode PCDestroy_BJacobi(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (jac->g_lens) {ierr = PetscFree(jac->g_lens);CHKERRQ(ierr);}
-  if (jac->l_lens) {ierr = PetscFree(jac->l_lens);CHKERRQ(ierr);}
+  ierr = PetscFree(jac->g_lens);CHKERRQ(ierr);
+  ierr = PetscFree(jac->l_lens);CHKERRQ(ierr);
   ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -734,8 +734,8 @@ PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
   ierr = PetscFree(jac->ksp);CHKERRQ(ierr);
   ierr = VecDestroy(bjac->x);CHKERRQ(ierr);
   ierr = VecDestroy(bjac->y);CHKERRQ(ierr);
-  if (jac->l_lens) {ierr = PetscFree(jac->l_lens);CHKERRQ(ierr);}
-  if (jac->g_lens) {ierr = PetscFree(jac->g_lens);CHKERRQ(ierr);}
+  ierr = PetscFree(jac->l_lens);CHKERRQ(ierr);
+  ierr = PetscFree(jac->g_lens);CHKERRQ(ierr);
   ierr = PetscFree(bjac);CHKERRQ(ierr);
   ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -986,8 +986,8 @@ PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
   ierr = PetscFree(bjac->starts);CHKERRQ(ierr);
   ierr = PetscFree(bjac->is);CHKERRQ(ierr);
   ierr = PetscFree(bjac);CHKERRQ(ierr);
-  if (jac->l_lens) {ierr = PetscFree(jac->l_lens);CHKERRQ(ierr);}
-  if (jac->g_lens) {ierr = PetscFree(jac->g_lens);CHKERRQ(ierr);}
+  ierr = PetscFree(jac->l_lens);CHKERRQ(ierr);
+  ierr = PetscFree(jac->g_lens);CHKERRQ(ierr);
   ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

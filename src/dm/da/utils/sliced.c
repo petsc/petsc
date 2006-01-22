@@ -100,7 +100,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedSetGhosts(Sliced slice,PetscInt bs,PetscI
 
   PetscFunctionBegin;
   PetscValidPointer(slice,1);
-  if (slice->ghosts) {ierr = PetscFree(slice->ghosts);CHKERRQ(ierr);}
+  ierr = PetscFree(slice->ghosts);CHKERRQ(ierr);
   ierr = PetscMalloc((1+Nghosts)*sizeof(PetscInt),&slice->ghosts);CHKERRQ(ierr);
   ierr = PetscMemcpy(slice->ghosts,ghosts,Nghosts*sizeof(PetscInt));CHKERRQ(ierr);
   slice->bs      = bs;

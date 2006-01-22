@@ -82,13 +82,9 @@ PetscErrorCode VecStashDestroy_Private(VecStash *stash)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (stash->array) {
-    ierr = PetscFree(stash->array);CHKERRQ(ierr);
-    stash->array = 0;
-  }
-  if (stash->bowners) {
-    ierr = PetscFree(stash->bowners);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(stash->array);CHKERRQ(ierr);
+  stash->array = 0;
+  ierr = PetscFree(stash->bowners);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -130,31 +126,19 @@ PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
   stash->rmax       = 0;
   stash->nprocessed = 0;
 
-  if (stash->array) {
-    ierr = PetscFree(stash->array);CHKERRQ(ierr);
-    stash->array = 0;
-    stash->idx   = 0;
-  }
-  if (stash->send_waits) {
-    ierr = PetscFree(stash->send_waits);CHKERRQ(ierr);
-    stash->send_waits = 0;
-  }
-  if (stash->recv_waits) {
-    ierr = PetscFree(stash->recv_waits);CHKERRQ(ierr);
-    stash->recv_waits = 0;
-  } 
-  if (stash->svalues) {
-    ierr = PetscFree(stash->svalues);CHKERRQ(ierr);
+  ierr = PetscFree(stash->array);CHKERRQ(ierr);
+  stash->array = 0;
+  stash->idx   = 0;
+  ierr = PetscFree(stash->send_waits);CHKERRQ(ierr);
+  stash->send_waits = 0;
+  ierr = PetscFree(stash->recv_waits);CHKERRQ(ierr);
+  stash->recv_waits = 0;
+  ierr = PetscFree(stash->svalues);CHKERRQ(ierr);
   stash->svalues = 0;
-  }
-  if (stash->rvalues) {
-    ierr = PetscFree(stash->rvalues);CHKERRQ(ierr);
-    stash->rvalues = 0;
-  }
-  if (stash->nprocs) {
-    ierr = PetscFree(stash->nprocs);CHKERRQ(ierr);
-    stash->nprocs = 0;
-  }
+  ierr = PetscFree(stash->rvalues);CHKERRQ(ierr);
+  stash->rvalues = 0;
+  ierr = PetscFree(stash->nprocs);CHKERRQ(ierr);
+  stash->nprocs = 0;
   PetscFunctionReturn(0);
 }
 
@@ -235,7 +219,7 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash,PetscInt incr)
   n_idx = (PetscInt*)(n_array + bs*newnmax);
   ierr  = PetscMemcpy(n_array,stash->array,bs*stash->nmax*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr  = PetscMemcpy(n_idx,stash->idx,stash->nmax*sizeof(PetscInt));CHKERRQ(ierr);
-  if (stash->array) {ierr = PetscFree(stash->array);CHKERRQ(ierr);}
+  ierr = PetscFree(stash->array);CHKERRQ(ierr);
   stash->array   = n_array; 
   stash->idx     = n_idx; 
   stash->nmax    = newnmax;

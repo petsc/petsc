@@ -460,31 +460,30 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrices */
-  if (lgmres->hh_origin) {ierr = PetscFree(lgmres->hh_origin);CHKERRQ(ierr);}
+  ierr = PetscFree(lgmres->hh_origin);CHKERRQ(ierr);
 
   /* Free pointers to user variables */
-  if (lgmres->vecs) {ierr = PetscFree(lgmres->vecs);CHKERRQ(ierr);}
+  ierr = PetscFree(lgmres->vecs);CHKERRQ(ierr);
 
   /*LGMRES_MOD - free pointers for extra vectors */ 
-  if (lgmres->augvecs) {ierr = PetscFree(lgmres->augvecs);CHKERRQ(ierr);}
+  ierr = PetscFree(lgmres->augvecs);CHKERRQ(ierr);
 
   /* free work vectors */
   for (i=0; i < lgmres->nwork_alloc; i++) {
     ierr = VecDestroyVecs(lgmres->user_work[i],lgmres->mwork_alloc[i]);CHKERRQ(ierr);
   }
-  if (lgmres->user_work)  {ierr = PetscFree(lgmres->user_work);CHKERRQ(ierr);}
+  ierr = PetscFree(lgmres->user_work);CHKERRQ(ierr);
 
   /*LGMRES_MOD - free aug work vectors also */
   /*this was all allocated as one "chunk" */
   ierr = VecDestroyVecs(lgmres->augvecs_user_work[0],lgmres->augwork_alloc);CHKERRQ(ierr);
-  if (lgmres->augvecs_user_work)  {ierr = PetscFree(lgmres->augvecs_user_work);CHKERRQ(ierr);}
-  if (lgmres->aug_order) {ierr = PetscFree(lgmres->aug_order);CHKERRQ(ierr);}
-
-  if (lgmres->mwork_alloc) {ierr = PetscFree(lgmres->mwork_alloc);CHKERRQ(ierr);}
-  if (lgmres->nrs) {ierr = PetscFree(lgmres->nrs);CHKERRQ(ierr);}
+  ierr = PetscFree(lgmres->augvecs_user_work);CHKERRQ(ierr);
+  ierr = PetscFree(lgmres->aug_order);CHKERRQ(ierr);
+  ierr = PetscFree(lgmres->mwork_alloc);CHKERRQ(ierr);
+  ierr = PetscFree(lgmres->nrs);CHKERRQ(ierr);
   if (lgmres->sol_temp) {ierr = VecDestroy(lgmres->sol_temp);CHKERRQ(ierr);}
-  if (lgmres->Rsvd) {ierr = PetscFree(lgmres->Rsvd);CHKERRQ(ierr);}
-  if (lgmres->Dsvd) {ierr = PetscFree(lgmres->Dsvd);CHKERRQ(ierr);}
+  ierr = PetscFree(lgmres->Rsvd);CHKERRQ(ierr);
+  ierr = PetscFree(lgmres->Dsvd);CHKERRQ(ierr);
   ierr = PetscFree(lgmres);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

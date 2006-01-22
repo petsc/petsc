@@ -1122,7 +1122,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES snes)
   ierr = PetscObjectDepublish(snes);CHKERRQ(ierr);
 
   if (snes->destroy) {ierr = (*(snes)->destroy)(snes);CHKERRQ(ierr);}
-  if (snes->kspconvctx) {ierr = PetscFree(snes->kspconvctx);CHKERRQ(ierr);}
+  ierr = PetscFree(snes->kspconvctx);CHKERRQ(ierr);
   if (snes->jacobian) {ierr = MatDestroy(snes->jacobian);CHKERRQ(ierr);}
   if (snes->jacobian_pre) {ierr = MatDestroy(snes->jacobian_pre);CHKERRQ(ierr);}
   if (snes->afine) {ierr = VecDestroy(snes->afine);CHKERRQ(ierr);}
@@ -1799,7 +1799,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES snes,SNESType type)
   if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr =  PetscFListFind(snes->comm,SNESList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested SNES type %s",type);
-  if (snes->data) {ierr = PetscFree(snes->data);CHKERRQ(ierr);}
+  ierr = PetscFree(snes->data);CHKERRQ(ierr);
   snes->data = 0;
   ierr = (*r)(snes);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)snes,type);CHKERRQ(ierr);

@@ -713,14 +713,14 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   if (a->col) {
     ierr = ISDestroy(a->col);CHKERRQ(ierr);
   }
-  if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
-  if (a->ilen) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
-  if (a->idiag) {ierr = PetscFree(a->idiag);CHKERRQ(ierr);}
-  if (a->solve_work) {ierr = PetscFree(a->solve_work);CHKERRQ(ierr);}
+  ierr = PetscFree(a->diag);CHKERRQ(ierr);
+  ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);
+  ierr = PetscFree(a->idiag);CHKERRQ(ierr);
+  ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
-  if (a->saved_values) {ierr = PetscFree(a->saved_values);CHKERRQ(ierr);}
+  ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
   if (a->coloring) {ierr = ISColoringDestroy(a->coloring);CHKERRQ(ierr);}
-  if (a->xtoy) {ierr = PetscFree(a->xtoy);CHKERRQ(ierr);}
+  ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
   if (a->compressedrow.use){ierr = PetscFree(a->compressedrow.i);} 
 
   ierr = MatDestroy_Inode(A);CHKERRQ(ierr);

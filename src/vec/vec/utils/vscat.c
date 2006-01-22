@@ -250,8 +250,8 @@ PetscErrorCode VecScatterDestroy_MPI_ToAll(VecScatter ctx)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  if (scat->work1) {ierr = PetscFree(scat->work1);CHKERRQ(ierr);}
-  if (scat->work2) {ierr = PetscFree(scat->work2);CHKERRQ(ierr);}
+  ierr = PetscFree(scat->work1);CHKERRQ(ierr);
+  ierr = PetscFree(scat->work2);CHKERRQ(ierr);
   ierr = PetscFree2(ctx->todata,scat->count);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

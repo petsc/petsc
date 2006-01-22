@@ -231,7 +231,6 @@ PetscErrorCode MatDestroy_LUSOL(Mat A)
     ierr = PetscFree(lusol->iqinv);CHKERRQ(ierr);
     ierr = PetscFree(lusol->mnsw);CHKERRQ(ierr);
     ierr = PetscFree(lusol->mnsv);CHKERRQ(ierr);
-    
     ierr = PetscFree(lusol->indc);CHKERRQ(ierr);
   }
 

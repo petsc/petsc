@@ -381,29 +381,29 @@ PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrices */
-  if (fgmres->hh_origin) {ierr = PetscFree(fgmres->hh_origin);CHKERRQ(ierr);}
+  ierr = PetscFree(fgmres->hh_origin);CHKERRQ(ierr);
 
   /* Free pointers to user variables */
-  if (fgmres->vecs) {ierr = PetscFree(fgmres->vecs);CHKERRQ(ierr);}
-  if (fgmres->prevecs) {ierr = PetscFree (fgmres->prevecs);CHKERRQ(ierr);}
+  ierr = PetscFree(fgmres->vecs);CHKERRQ(ierr);
+  ierr = PetscFree (fgmres->prevecs);CHKERRQ(ierr);
 
   /* free work vectors */
   for (i=0; i < fgmres->nwork_alloc; i++) {
     ierr = VecDestroyVecs(fgmres->user_work[i],fgmres->mwork_alloc[i]);CHKERRQ(ierr);
   }
-  if (fgmres->user_work)  {ierr = PetscFree(fgmres->user_work);CHKERRQ(ierr);}
+  ierr = PetscFree(fgmres->user_work);CHKERRQ(ierr);
 
   for (i=0; i < fgmres->nwork_alloc; i++) {
     ierr = VecDestroyVecs(fgmres->prevecs_user_work[i],fgmres->mwork_alloc[i]);CHKERRQ(ierr);
   }
-  if (fgmres->prevecs_user_work) {ierr = PetscFree(fgmres->prevecs_user_work);CHKERRQ(ierr);}
+  ierr = PetscFree(fgmres->prevecs_user_work);CHKERRQ(ierr);
 
-  if (fgmres->mwork_alloc) {ierr = PetscFree(fgmres->mwork_alloc);CHKERRQ(ierr);}
-  if (fgmres->nrs) {ierr = PetscFree(fgmres->nrs);CHKERRQ(ierr);}
+  ierr = PetscFree(fgmres->mwork_alloc);CHKERRQ(ierr);
+  ierr = PetscFree(fgmres->nrs);CHKERRQ(ierr);
   if (fgmres->sol_temp) {ierr = VecDestroy(fgmres->sol_temp);CHKERRQ(ierr);}
-  if (fgmres->Rsvd) {ierr = PetscFree(fgmres->Rsvd);CHKERRQ(ierr);}
-  if (fgmres->Dsvd) {ierr = PetscFree(fgmres->Dsvd);CHKERRQ(ierr);}
-  if (fgmres->orthogwork) { ierr = PetscFree(fgmres->orthogwork);CHKERRQ(ierr);}
+  ierr = PetscFree(fgmres->Rsvd);CHKERRQ(ierr);
+  ierr = PetscFree(fgmres->Dsvd);CHKERRQ(ierr);
+  ierr = PetscFree(fgmres->orthogwork);CHKERRQ(ierr);
   if (fgmres->modifydestroy) {
     ierr = (*fgmres->modifydestroy)(fgmres->modifyctx);CHKERRQ(ierr);
   }
@@ -718,12 +718,8 @@ PetscErrorCode KSPDestroy_FGMRES_Internal(KSP ksp)
 
   PetscFunctionBegin;
   ierr = KSPDestroy_GMRES_Internal(ksp);CHKERRQ(ierr);
-  if (gmres->prevecs) {
-    ierr = PetscFree (gmres->prevecs);CHKERRQ(ierr);
-  }
-  if (gmres->prevecs_user_work) {
-    ierr = PetscFree(gmres->prevecs_user_work);CHKERRQ(ierr);
-  }
+  ierr = PetscFree (gmres->prevecs);CHKERRQ(ierr);
+  ierr = PetscFree(gmres->prevecs_user_work);CHKERRQ(ierr);
   if (gmres->modifydestroy) {
     ierr = (*gmres->modifydestroy)(gmres->modifyctx);CHKERRQ(ierr);
   }

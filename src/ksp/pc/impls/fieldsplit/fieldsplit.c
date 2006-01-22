@@ -257,7 +257,7 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
     ierr = PetscFree2(ilink,ilink->fields);CHKERRQ(ierr);
     ilink = next;
   }
-  if (jac->x) {ierr = PetscFree2(jac->x,jac->y);CHKERRQ(ierr);}
+  ierr = PetscFree2(jac->x,jac->y);CHKERRQ(ierr);
   if (jac->pmat) {ierr = MatDestroyMatrices(jac->nsplits,&jac->pmat);CHKERRQ(ierr);}
   if (jac->is) {
     PetscInt i;

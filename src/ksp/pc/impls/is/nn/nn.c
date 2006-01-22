@@ -127,7 +127,7 @@ static PetscErrorCode PCDestroy_NN(PC pc)
   if (pcnn->coarse_b)    {ierr = VecDestroy(pcnn->coarse_b);CHKERRQ(ierr);}
   if (pcnn->ksp_coarse) {ierr = KSPDestroy(pcnn->ksp_coarse);CHKERRQ(ierr);}
   if (pcnn->DZ_IN) {
-    if (pcnn->DZ_IN[0]) {ierr = PetscFree(pcnn->DZ_IN[0]);CHKERRQ(ierr);}
+    ierr = PetscFree(pcnn->DZ_IN[0]);CHKERRQ(ierr);
     ierr = PetscFree(pcnn->DZ_IN);CHKERRQ(ierr);
   }
 
@@ -335,7 +335,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 
   /* Free the memory for DZ_OUT */
   if (DZ_OUT) {
-    if (DZ_OUT[0]) { ierr = PetscFree(DZ_OUT[0]);CHKERRQ(ierr); }
+    ierr = PetscFree(DZ_OUT[0]);CHKERRQ(ierr); 
     ierr = PetscFree(DZ_OUT);CHKERRQ(ierr);
   }
 

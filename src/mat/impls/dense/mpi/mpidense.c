@@ -562,12 +562,12 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   ierr = MatDestroy(mdn->A);CHKERRQ(ierr);
-  if (mdn->lvec)   VecDestroy(mdn->lvec);
-  if (mdn->Mvctx)  VecScatterDestroy(mdn->Mvctx);
+  if (mdn->lvec)   {ierr = VecDestroy(mdn->lvec);CHKERRQ(ierr);}
+  if (mdn->Mvctx)  {ierr = VecScatterDestroy(mdn->Mvctx);CHKERRQ(ierr);}
   if (mdn->factor) {
-    if (mdn->factor->temp)   {ierr = PetscFree(mdn->factor->temp);CHKERRQ(ierr);}
-    if (mdn->factor->tag)    {ierr = PetscFree(mdn->factor->tag);CHKERRQ(ierr);}
-    if (mdn->factor->pivots) {ierr = PetscFree(mdn->factor->pivots);CHKERRQ(ierr);}
+    ierr = PetscFree(mdn->factor->temp);CHKERRQ(ierr);
+    ierr = PetscFree(mdn->factor->tag);CHKERRQ(ierr);
+    ierr = PetscFree(mdn->factor->pivots);CHKERRQ(ierr);
     ierr = PetscFree(mdn->factor);CHKERRQ(ierr);
   }
   ierr = PetscFree(mdn);CHKERRQ(ierr);

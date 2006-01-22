@@ -208,12 +208,8 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
 #else
     dmumps_c(&lu->id); 
 #endif
-    if (lu->irn) {
-      ierr = PetscFree(lu->irn);CHKERRQ(ierr);
-    }
-    if (lu->jcn) { 
-      ierr = PetscFree(lu->jcn);CHKERRQ(ierr);
-    }
+    ierr = PetscFree(lu->irn);CHKERRQ(ierr);
+    ierr = PetscFree(lu->jcn);CHKERRQ(ierr);
     if (size>1 && lu->val) {
       ierr = PetscFree(lu->val);CHKERRQ(ierr);
     }

@@ -614,10 +614,7 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (ksp->data) {
-    ierr      = PetscFree(ksp->data);CHKERRQ(ierr);
-    ksp->data = 0;
-  }
+  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
 
   /* free work vectors */
   ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);

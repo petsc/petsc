@@ -219,7 +219,7 @@ int main(int argc,char **args)
     ierr = ISDestroy(is2[i]);CHKERRQ(ierr);
     ierr = MatDestroy(submatA[i]);CHKERRQ(ierr);
     ierr = MatDestroy(submatsA[i]);CHKERRQ(ierr);
- }
+  }
   ierr = PetscFree(submatA);CHKERRQ(ierr);
   ierr = PetscFree(submatsA);CHKERRQ(ierr);
   ierr = PetscFree(is1);CHKERRQ(ierr);

@@ -91,14 +91,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (actions) {
-    ierr = PetscFree(actions);CHKERRQ(ierr);
-    actions = PETSC_NULL;
-  }
-  if (objects) {
-    ierr = PetscFree(objects);CHKERRQ(ierr);
-    objects =  PETSC_NULL;
-  }
+  ierr = PetscFree(actions);CHKERRQ(ierr);
+  actions = PETSC_NULL;
+  ierr = PetscFree(objects);CHKERRQ(ierr);
+  objects =  PETSC_NULL;
   ierr = PetscLogSet(PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
 
   /* Resetting phase */
