@@ -151,7 +151,7 @@ class Package(config.base.Configure):
     '''Prints help messages for the package'''
     help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required,'Indicate if you wish to test for '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
-    if self.download:
+    if self.download and not self.download[0] == 'redefine':
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded,filename>', ArgDownload(None, 0, 'Download and install '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' include files'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../libparmetis.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))    
@@ -187,6 +187,7 @@ class Package(config.base.Configure):
 
   def checkDownload(self,preOrPost):
     '''Check if we should download the package'''
+    if not self.download : return ''
     dowork=0
     if preOrPost==1 and isinstance(self.framework.argDB['download-'+self.downloadname.lower()], str):
       self.download = ['file://'+os.path.abspath(self.framework.argDB['download-'+self.downloadname.lower()])]
@@ -368,7 +369,7 @@ class Package(config.base.Configure):
 
   def configure(self):
     '''Determines if the package should be configured for, then calls the configure'''
-    if self.download and self.framework.argDB['download-'+self.package]:
+    if self.download and not self.download[0] == 'redefine' and self.framework.argDB['download-'+self.package]:
       self.framework.argDB['with-'+self.package] = 1
 
     if 'with-'+self.package+'-dir' in self.framework.argDB and ('with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB):
