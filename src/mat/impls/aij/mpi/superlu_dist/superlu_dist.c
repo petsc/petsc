@@ -691,7 +691,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SuperLU_DIST(Mat A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  Mat            A_diag;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqAIJ or MPIAIJ */
@@ -702,8 +701,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SuperLU_DIST(Mat A)
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   } else {
     ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-    A_diag = ((Mat_MPIAIJ *)A->data)->A;
-    ierr   = MatConvert_Base_SuperLU_DIST(A_diag,MATSUPERLU_DIST,MAT_REUSE_MATRIX,&A_diag);CHKERRQ(ierr);
+    /*  A_diag = 0x0 ???  -- do we need it?
+    Mat A_diag = ((Mat_MPIAIJ *)A->data)->A;
+    ierr = MatConvert_Base_SuperLU_DIST(A_diag,MATSUPERLU_DIST,MAT_REUSE_MATRIX,&A_diag);CHKERRQ(ierr);
+    */
   }
   ierr = MatConvert_Base_SuperLU_DIST(A,MATSUPERLU_DIST,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

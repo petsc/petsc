@@ -681,14 +681,15 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJSpooles(Mat A) 
 {
   PetscErrorCode ierr;
-  Mat A_diag;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of MPIAIJ and MPIAIJSpooles types */
   ierr   = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJSPOOLES);CHKERRQ(ierr);
   ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-  A_diag = ((Mat_MPIAIJ *)A->data)->A;
+  /*
+  Mat A_diag = ((Mat_MPIAIJ *)A->data)->A;
   ierr   = MatConvert_SeqAIJ_SeqAIJSpooles(A_diag,MATSEQAIJSPOOLES,MAT_REUSE_MATRIX,&A_diag);CHKERRQ(ierr);
+  */
   ierr   = MatConvert_MPIAIJ_MPIAIJSpooles(A,MATMPIAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

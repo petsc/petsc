@@ -820,7 +820,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJMUMPS(Mat A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  Mat            A_diag;
   MPI_Comm       comm;
   
   PetscFunctionBegin;
@@ -833,8 +832,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJMUMPS(Mat A)
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   } else {
     ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-    A_diag = ((Mat_MPIAIJ *)A->data)->A;
+    /*
+    Mat A_diag = ((Mat_MPIAIJ *)A->data)->A;
     ierr   = MatConvert_AIJ_AIJMUMPS(A_diag,MATAIJMUMPS,MAT_REUSE_MATRIX,&A_diag);CHKERRQ(ierr);
+    */
   }
   ierr = MatConvert_AIJ_AIJMUMPS(A,MATAIJMUMPS,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

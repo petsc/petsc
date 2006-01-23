@@ -109,7 +109,7 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
   MPI_Comm       comm = A->comm;
   Mat_Plapack    *lu = (Mat_Plapack*)A->spptr;
   PetscErrorCode ierr;
-  PetscInt       M=A->M,m=A->m,rstart,i,j,*idx_pla,*idx_petsc,loc_m,loc_stride;
+  PetscInt       M=A->rmap.N,m=A->rmap.n,rstart,i,j,*idx_pla,*idx_petsc,loc_m,loc_stride;
   PetscScalar    *array;
   PetscReal      one = 1.0;
   PetscMPIInt    size,rank,r_rank,r_nproc,c_rank,c_nproc;;
@@ -202,7 +202,7 @@ PetscErrorCode MatLUFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F)
 {
   Mat_Plapack    *lu = (Mat_Plapack*)(*F)->spptr;
   PetscErrorCode ierr;
-  PetscInt       M=A->M,m=A->m,rstart;
+  PetscInt       M=A->rmap.N,m=A->rmap.n,rstart,rend;
   PetscInt       info_pla=0;
   PetscScalar    *array,one = 1.0;
 
@@ -220,7 +220,7 @@ PetscErrorCode MatLUFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F)
   /* Copy A into lu->A */
   PLA_API_begin();
   PLA_Obj_API_open(lu->A);  
-  ierr = MatGetOwnershipRange(A,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   ierr = MatGetArray(A,&array);CHKERRQ(ierr);
   PLA_API_axpy_matrix_to_global(m,M, &one,(void *)array,m,lu->A,rstart,0); 
   ierr = MatRestoreArray(A,&array);CHKERRQ(ierr);
@@ -246,7 +246,7 @@ PetscErrorCode MatCholeskyFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F
 {
   Mat_Plapack    *lu = (Mat_Plapack*)(*F)->spptr;
   PetscErrorCode ierr;
-  PetscInt       M=A->M,m=A->m,rstart;
+  PetscInt       M=A->rmap.N,m=A->rmap.n,rstart,rend;
   PetscInt       info_pla=0;
   PetscScalar    *array,one = 1.0;
 
@@ -262,7 +262,7 @@ PetscErrorCode MatCholeskyFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F
   /* Copy A into lu->A */
   PLA_API_begin();
   PLA_Obj_API_open(lu->A);  
-  ierr = MatGetOwnershipRange(A,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   ierr = MatGetArray(A,&array);CHKERRQ(ierr);
   PLA_API_axpy_matrix_to_global(m,M, &one,(void *)array,m,lu->A,rstart,0); 
   ierr = MatRestoreArray(A,&array);CHKERRQ(ierr);
@@ -289,7 +289,7 @@ PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *
   Mat            B;
   Mat_Plapack    *lu;   
   PetscErrorCode ierr;
-  PetscInt       M=A->M,N=A->N;
+  PetscInt       M=A->rmap.N,N=A->cmap.N;
   MPI_Comm       comm=A->comm,comm_2d;
   PetscMPIInt    size;
   PetscInt       ierror;
@@ -297,7 +297,7 @@ PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *
   PetscFunctionBegin;
   /* Create the factorization matrix */
   ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->m,A->n,M,N);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
 
   B->ops->solve = MatSolve_Plapack;
