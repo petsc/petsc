@@ -17,13 +17,13 @@ class CompilerOptions(config.base.Configure):
     # GNU gcc
     if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
-        flags.extend(['-Wall', '-Wshadow', '-Wwrite-strings', '-Wno-long-double'])
+        flags.extend(['-Wall', '-Wshadow', '-Wwrite-strings', '-Wno-long-double', '-fomit-frame-pointer', '-Wno-strict-aliasing'])
       elif bopt == 'g':
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         flags.append('-g3')
       elif bopt == 'O':
-        flags.extend(['-O', '-fomit-frame-pointer', '-Wno-strict-aliasing'])
+        flags.append('-O')
     # Alpha
     elif re.match(r'alphaev[5-9]', self.framework.host_cpu):
       # Compaq C
@@ -88,15 +88,14 @@ class CompilerOptions(config.base.Configure):
     # GNU g++
     if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
-        flags.append('-Wall')
+        flags.extend(['-Wall','-Wshadow', '-Wwrite-strings', '-Wno-long-double', '-fomit-frame-pointer', '-Wno-strict-aliasing'])
       elif bopt in ['g']:
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         flags.append('-g3')
       elif bopt in ['O']:
         if os.environ.has_key('USER'):
-          flags.extend(['-Wshadow', '-Wwrite-strings', '-Wno-strict-aliasing'])
-          flags.extend(['-O', '-fomit-frame-pointer'])
+          flags.append('-O')
     # Alpha
     elif re.match(r'alphaev[0-9]', self.framework.host_cpu):
       # Compaq C++
