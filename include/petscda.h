@@ -386,6 +386,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetRefinementFactor(DA,PetscInt*,Pets
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicArray(DA,PetscTruth,void**,void**,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DARestoreAdicArray(DA,PetscTruth,void**,void**,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArray(DA,PetscTruth,void**,void**,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArray4(DA,PetscTruth,void**,void**,PetscInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArray9(DA,PetscTruth,void**,void**,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAdicMFArrayb(DA,PetscTruth,void**,void**,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DARestoreAdicMFArray(DA,PetscTruth,void**,void**,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetArray(DA,PetscTruth,void**);

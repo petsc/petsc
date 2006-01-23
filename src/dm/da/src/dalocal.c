@@ -867,6 +867,189 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DAGetAdicMFArray4"
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
+{
+  PetscErrorCode ierr;
+  PetscInt j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
+  char *iarray_start;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  if (ghosted) {
+    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+      if (da->admfarrayghostedin[i]) {
+        *iptr                     = da->admfarrayghostedin[i];
+        iarray_start              = (char*)da->admfstartghostedin[i];
+        itdof                     = da->ghostedtdof;
+        da->admfarrayghostedin[i] = PETSC_NULL;
+        da->admfstartghostedin[i] = PETSC_NULL;
+        
+        goto done;
+      }
+    }
+    xs = da->Xs;
+    ys = da->Ys;
+    zs = da->Zs;
+    xm = da->Xe-da->Xs;
+    ym = da->Ye-da->Ys;
+    zm = da->Ze-da->Zs;
+  } else {
+    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+      if (da->admfarrayin[i]) {
+        *iptr              = da->admfarrayin[i];
+        iarray_start       = (char*)da->admfstartin[i];
+        itdof              = da->tdof;
+        da->admfarrayin[i] = PETSC_NULL;
+        da->admfstartin[i] = PETSC_NULL;
+        
+        goto done;
+      }
+    }
+    xs = da->xs;
+    ys = da->ys;
+    zs = da->zs;
+    xm = da->xe-da->xs;
+    ym = da->ye-da->ys;
+    zm = da->ze-da->zs;
+  }
+
+  switch (da->dim) {
+    case 2: {
+      void **ptr;
+      itdof = xm*ym;
+
+      ierr  = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*5*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+
+      ptr  = (void**)(iarray_start + xm*ym*5*sizeof(PetscScalar) - ys*sizeof(void*));
+      for(j=ys;j<ys+ym;j++) {
+        ptr[j] = iarray_start + 5*sizeof(PetscScalar)*(xm*(j-ys) - xs);
+      }
+      *iptr = (void*)ptr; 
+      break;}
+    default:
+      SETERRQ1(PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+  }
+
+  done:
+  /* add arrays to the checked out list */
+  if (ghosted) {
+    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+      if (!da->admfarrayghostedout[i]) {
+        da->admfarrayghostedout[i] = *iptr ;
+        da->admfstartghostedout[i] = iarray_start;
+        da->ghostedtdof            = itdof;
+        break;
+      }
+    }
+  } else {
+    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+      if (!da->admfarrayout[i]) {
+        da->admfarrayout[i] = *iptr ;
+        da->admfstartout[i] = iarray_start;
+        da->tdof            = itdof;
+        break;
+      }
+    }
+  }
+  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
+  if (tdof)        *tdof = itdof;
+  if (array_start) *array_start = iarray_start;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DAGetAdicMFArray9"
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
+{
+  PetscErrorCode ierr;
+  PetscInt j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
+  char *iarray_start;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  if (ghosted) {
+    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+      if (da->admfarrayghostedin[i]) {
+        *iptr                     = da->admfarrayghostedin[i];
+        iarray_start              = (char*)da->admfstartghostedin[i];
+        itdof                     = da->ghostedtdof;
+        da->admfarrayghostedin[i] = PETSC_NULL;
+        da->admfstartghostedin[i] = PETSC_NULL;
+        
+        goto done;
+      }
+    }
+    xs = da->Xs;
+    ys = da->Ys;
+    zs = da->Zs;
+    xm = da->Xe-da->Xs;
+    ym = da->Ye-da->Ys;
+    zm = da->Ze-da->Zs;
+  } else {
+    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+      if (da->admfarrayin[i]) {
+        *iptr              = da->admfarrayin[i];
+        iarray_start       = (char*)da->admfstartin[i];
+        itdof              = da->tdof;
+        da->admfarrayin[i] = PETSC_NULL;
+        da->admfstartin[i] = PETSC_NULL;
+        
+        goto done;
+      }
+    }
+    xs = da->xs;
+    ys = da->ys;
+    zs = da->zs;
+    xm = da->xe-da->xs;
+    ym = da->ye-da->ys;
+    zm = da->ze-da->zs;
+  }
+
+  switch (da->dim) {
+    case 2: {
+      void **ptr;
+      itdof = xm*ym;
+
+      ierr  = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*10*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+
+      ptr  = (void**)(iarray_start + xm*ym*10*sizeof(PetscScalar) - ys*sizeof(void*));
+      for(j=ys;j<ys+ym;j++) {
+        ptr[j] = iarray_start + 10*sizeof(PetscScalar)*(xm*(j-ys) - xs);
+      }
+      *iptr = (void*)ptr; 
+      break;}
+    default:
+      SETERRQ1(PETSC_ERR_SUP,"Dimension %D not supported",da->dim);
+  }
+
+  done:
+  /* add arrays to the checked out list */
+  if (ghosted) {
+    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+      if (!da->admfarrayghostedout[i]) {
+        da->admfarrayghostedout[i] = *iptr ;
+        da->admfstartghostedout[i] = iarray_start;
+        da->ghostedtdof            = itdof;
+        break;
+      }
+    }
+  } else {
+    for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+      if (!da->admfarrayout[i]) {
+        da->admfarrayout[i] = *iptr ;
+        da->admfstartout[i] = iarray_start;
+        da->tdof            = itdof;
+        break;
+      }
+    }
+  }
+  if (i == DA_MAX_AD_ARRAYS+1) SETERRQ(PETSC_ERR_ARG_WRONG,"Too many DA ADIC arrays obtained");
+  if (tdof)        *tdof = itdof;
+  if (array_start) *array_start = iarray_start;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DAGetAdicMFArrayb"
