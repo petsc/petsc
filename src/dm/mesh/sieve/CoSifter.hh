@@ -49,6 +49,7 @@ namespace ALE {
       // Basic types
       typedef Sieve_ sieve_type;
       typedef Patch_ patch_type;
+      typedef Index_ index_type;
       typedef typename sieve_type::point_type point_type;
     private:
       Obj<sieve_type> _topology;
@@ -64,7 +65,7 @@ namespace ALE {
     private:
       // A single distinguished ordering will be used for storage allocation
       //   We can have orderings which do not relate to storage, but only retrieval,
-      //   however, they
+      //   however, they must be subordinate to the allocation ordering.
       std::map<std::string,patches_type> _patches; 
     public:
       // Attachment of fiber dimension intervals to Sieve points
@@ -75,6 +76,8 @@ namespace ALE {
       typedef BiGraph<index_type, point_type, int> indices_type;
     private:
       std::map<patch_type,indices_type> _indices;
+    private:
+      
     public:
     };
   }
