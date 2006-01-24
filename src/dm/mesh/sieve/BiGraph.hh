@@ -790,6 +790,16 @@ namespace ALE {
       class baseSequence : public OutputSequence<BasePointSet, degreeTag, target_type> {
       public:
         typedef typename OutputSequence<BasePointSet, degreeTag, target_type>::iterator iterator;
+
+        virtual iterator begin() {
+          // Retrieve the beginning iterator to the sequence of points with indegree >= 1
+          return iterator(this->_index.lower_bound(1));
+        };
+        virtual iterator end() {
+          // Retrieve the ending iterator to the sequence of points with indegree >= 1
+          // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
+          return iterator(this->_index.end());
+        };
       };
       // baseSequence iterator dereferencing specialization
       //const typename baseSequence::iterator::reference baseSequence::iterator::operator*() const {return this->_itor->point;};
@@ -799,6 +809,16 @@ namespace ALE {
       class capSequence  : public OutputSequence<CapPointSet, degreeTag, source_type> {
       public:
         typedef typename OutputSequence<CapPointSet, degreeTag, source_type>::iterator iterator;
+
+        virtual iterator begin() {
+          // Retrieve the beginning iterator to the sequence of points with outdegree >= 1
+          return iterator(this->_index.lower_bound(1));
+        };
+        virtual iterator end() {
+          // Retrieve the ending iterator to the sequence of points with outdegree >= 1
+          // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
+          return iterator(this->_index.end());
+        };
       };
       // capSequence iterator dereferencing specialization
       //const typename capSequence::iterator::reference capSequence::iterator::operator*() const {return this->_itor->point;};
@@ -812,6 +832,8 @@ namespace ALE {
       public:
         typedef typename ReversibleOutputSequence<ArrowSet, Tag_, Value_>::set_type set_type;
         typedef Key_                                           key_type;
+        typedef typename OutputSequence<ArrowSet, Tag_, Value_>::iterator iterator;
+        typedef typename ReversibleOutputSequence<ArrowSet, Tag_, Value_>::reverse_iterator reverse_iterator;
       protected:
         const key_type      key;
         const color_type    color;  // color_type is defined by BiGraph
@@ -825,6 +847,47 @@ namespace ALE {
         ArrowSequence(const set_type& set, const key_type& p, const color_type& c)
           : ReversibleOutputSequence<ArrowSet,Tag_,Value_>(set), key(p), color(c), useColor(1) {};
         virtual ~ArrowSequence() {};
+
+        virtual iterator begin() {
+          if (this->useColor) {
+            return iterator(this->_index.lower_bound(::boost::make_tuple(this->key,this->color)));
+          } else {
+            return iterator(this->_index.lower_bound(::boost::make_tuple(this->key)));
+          }
+        };
+
+        virtual iterator end() {
+          if (this->useColor) {
+            return iterator(this->_index.upper_bound(::boost::make_tuple(this->key,this->color)));
+          } else {
+            return iterator(this->_index.upper_bound(::boost::make_tuple(this->key)));
+          }
+        };
+
+        virtual reverse_iterator rbegin() {
+          if (this->useColor) {
+            return reverse_iterator(--this->_index.upper_bound(::boost::make_tuple(this->key,this->color)));
+          } else {
+            return reverse_iterator(--this->_index.upper_bound(::boost::make_tuple(this->key)));
+          }
+        };
+
+        virtual reverse_iterator rend() {
+          //typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator i;
+          if (this->useColor) {
+            return reverse_iterator(--this->_index.lower_bound(::boost::make_tuple(this->key,this->color)));
+          } else {
+            return reverse_iterator(--this->_index.lower_bound(::boost::make_tuple(this->key)));
+          }
+        };
+
+        virtual std::size_t size() {
+          if (this->useColor) {
+            return this->_index.count(::boost::make_tuple(this->key,color));
+          } else {
+            return this->_index.count(::boost::make_tuple(this->key));
+          }
+        };
       };
 
       // coneSequence specializes ArrowSequence with Tag_ == targetColorTag, Key_ == target_type, Value_ == source_type
@@ -1009,37 +1072,23 @@ namespace ALE {
     //
     // BiGraph::baseSequence methods
     //
-#if 0
     // baseSequence iterator dereferencing specialization
     template <typename Source_, typename Target_, typename Color_>
-    const typename BiGraph<Source_,Target_,Color_>::baseSequence::iterator::reference
-    BiGraph<Source_,Target_,Color_>::baseSequence::iterator::operator*() const {
+    const typename result_iterator<typename ::boost::multi_index::index<typename BiGraph<Source_,Target_,Color_>::BasePointSet, typename BiGraph<Source_,Target_,Color_>::degreeTag>::type::iterator, Target_>::reference
+    result_iterator<typename ::boost::multi_index::index<typename BiGraph<Source_,Target_,Color_>::BasePointSet, typename BiGraph<Source_,Target_,Color_>::degreeTag>::type::iterator, Target_>::operator*() const {
       return this->_itor->point;
     }
-#endif
-
-    template <typename Source_, typename Target_, typename Color_>
-    typename BiGraph<Source_,Target_,Color_>::baseSequence::iterator
-    typename BiGraph<Source_,Target_,Color_>::baseSequence::begin() {
-      // Retrieve the beginning iterator to the sequence of points with indegree >= 1
-      return typename BiGraph<Source_,Target_,Color_>::baseSequence::iterator(this->_index.lower_bound(1));
-    }
-
-    template <typename Source_, typename Target_, typename Color_>
-    typename BiGraph<Source_,Target_,Color_>::baseSequence::iterator
-    typename BiGraph<Source_,Target_,Color_>::baseSequence::end() {
-      // Retrieve the ending iterator to the sequence of points with indegree >= 1
-      // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
-      return iterator(this->_index.end());
-    }
     
+#if 0
     // capSequence iterator dereferencing specialization
     template <typename Source_, typename Target_, typename Color_>
     const typename BiGraph<Source_,Target_,Color_>::capSequence::iterator::reference
     BiGraph<Source_,Target_,Color_>::capSequence::iterator::operator*() const {
       return this->_itor->point;
     }
-    
+#endif
+
+#if 0
     //
     // BiGraph::ArrowSequence methods
     //
@@ -1056,62 +1105,6 @@ namespace ALE {
     BiGraph<Source_,Target_,Color_>::coneSequence::reverse_iterator::operator*() const {
       return this->_itor->source;
     }
-
-    template <typename Source_, typename Target_, typename Color_>
-    template <typename Tag_, typename Key_, typename Value_>
-    virtual typename BiGraph<Source_,Target_,Color_>::ArrowSequence<Tag_,Key_,Value_>::iterator      
-    BiGraph<Source_,Target_,Color_>::ArrowSequence<Tag_,Key_,Value_>::begin() {
-      if (this->useColor) {
-        return iterator(this->_index.lower_bound(::boost::make_tuple(this->key,this->color)));
-      } else {
-        return iterator(this->_index.lower_bound(::boost::make_tuple(this->key)));
-      }
-    };
-
-    template <typename Source_, typename Target_, typename Color_>
-    template <typename Tag_, typename Key_, typename Value_>
-    virtual typename BiGraph<Source_,Target_,Color_>::ArrowSequence<Tag_,Key_,Value_>::iterator      
-    BiGraph<Source_,Target_,Color_>::ArrowSequence<Tag_,Key_,Value_>::end() {
-      if (this->useColor) {
-        return iterator(this->_index.upper_bound(::boost::make_tuple(this->key,this->color)));
-      } else {
-        return iterator(this->_index.upper_bound(::boost::make_tuple(this->key)));
-      }
-    };
-
-    template <typename Source_, typename Target_, typename Color_>
-    template <typename Tag_, typename Key_, typename Value_>
-    virtual typename BiGraph<Source_,Target_,Color_>::ArrowSequence<Tag_,Key_,Value_>::reverse_iterator 
-    BiGraph<Source_,Target_,Color_>::ArrowSequence<Tag_,Key_,Value_>::rbegin() {
-      if (this->useColor) {
-        return reverse_iterator(--this->_index.upper_bound(::boost::make_tuple(this->key,this->color)));
-      } else {
-        return reverse_iterator(--this->_index.upper_bound(::boost::make_tuple(this->key)));
-      }
-    };
-
-    template <typename Source_, typename Target_, typename Color_>
-    template <typename Tag_, typename Key_, typename Value_>
-    virtual typename BiGraph<Source_,Target_,Color_>::ArrowSequence<Tag_,Key_,Value_>::reverse_iterator      
-    BiGraph<Source_,Target_,Color_>::ArrowSequence<Tag_,Key_,Value_>::rend() {
-      //typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator i;
-      if (this->useColor) {
-        return reverse_iterator(--this->_index.lower_bound(::boost::make_tuple(this->key,this->color)));
-      } else {
-        return reverse_iterator(--this->_index.lower_bound(::boost::make_tuple(this->key)));
-      }
-    };
-
-    template <typename Source_, typename Target_, typename Color_>
-    template <typename Tag_, typename Key_, typename Value_>
-    virtual std::size_t      
-    BiGraph<Source_,Target_,Color_>::ArrowSequence<Tag_,Key_,Value_>::size() {
-      if (this->useColor) {
-        return this->_index.count(::boost::make_tuple(this->key,color));
-      } else {
-        return this->_index.count(::boost::make_tuple(this->key));
-      }
-    };
 
     //
     // BiGraph methods
@@ -1275,6 +1268,7 @@ namespace ALE {
         std::cout << "ERROR: Could not replace source of target" << t << " with " << new_s << std::endl;
       }
     }
+#endif
 
 
   } // namespace Two
