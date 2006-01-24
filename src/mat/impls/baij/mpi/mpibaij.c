@@ -1694,7 +1694,7 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
   PetscInt       *nprocs,j,idx,nsends,row;
   PetscInt       nmax,*svalues,*starts,*owner,nrecvs;
   PetscInt       *rvalues,tag = A->tag,count,base,slen,*source,lastidx = -1;
-  PetscInt       *lens,*lrows,*values,bs=A->rmap.bs,rstart_bs=A->rmap.rstart;
+  PetscInt       *lens,*lrows,*values,rstart_bs=A->rmap.rstart;
   MPI_Comm       comm = A->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
@@ -1712,7 +1712,7 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
     if (lastidx > (idx = rows[i])) j = 0;
     lastidx = idx;
     for (; j<size; j++) {
-      if (idx >= owners[j]*bs && idx < owners[j+1]*bs) {
+      if (idx >= owners[j] && idx < owners[j+1]) {
         nprocs[2*j]++; 
         nprocs[2*j+1] = 1;
         owner[i] = j; 
@@ -1762,7 +1762,7 @@ PetscErrorCode MatZeroRows_MPIBAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscS
   }
   ierr = PetscFree(starts);CHKERRQ(ierr);
 
-  base = owners[rank]*bs;
+  base = owners[rank];
   
   /*  wait on receives */
   ierr   = PetscMalloc(2*(nrecvs+1)*sizeof(PetscInt),&lens);CHKERRQ(ierr);

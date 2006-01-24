@@ -269,8 +269,6 @@ void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
 #define __FUNCT__ "PetscSetFPTrap"
 PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
 {
-  int flag;
-
   PetscFunctionBegin;
   if (on == PETSC_FP_TRAP_ON) {
     signal(SIGFPE,(void (*)(int))PetscDefaultFPTrap);

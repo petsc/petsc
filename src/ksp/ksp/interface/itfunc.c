@@ -1556,6 +1556,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 
     This routine is only used if the matrix and preconditioner matrix are
     the same thing.
+
+    This should NOT be used within the SNES solves if you are using a line
+    search.
  
     If you use this with the PCType Eisenstat preconditioner than you can 
     use the PCEisenstatNoDiagonalScaling() option, or -pc_eisenstat_no_diagonal_scaling
