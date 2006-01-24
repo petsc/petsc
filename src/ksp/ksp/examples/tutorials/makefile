@@ -1,5 +1,5 @@
 
-CFLAGS	         = -I${PETSC_DIR}/src/dm/mesh/sieve
+CFLAGS	         = -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
 FFLAGS	         = 
 CPPFLAGS         =
 FPPFLAGS         =

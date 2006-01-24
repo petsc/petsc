@@ -14,20 +14,9 @@ struct _MeshOps {
   PetscErrorCode (*refine)(Mesh,MPI_Comm,Mesh*);
 };
 
-#include <IndexBundle.hh>
-
 struct _p_Mesh {
   PETSCHEADER(struct _MeshOps);
-  ALE::Obj<ALE::Sieve>       topology;
-  ALE::Obj<ALE::Sieve>       boundary;
-  ALE::Obj<ALE::IndexBundle> boundaryBundle;
-  ALE::Obj<ALE::PreSieve>    orientation;
-  ALE::Obj<ALE::Stack>       spaceFootprint;
-  ALE::Obj<ALE::IndexBundle> bundle;
-  ALE::Obj<ALE::IndexBundle> vertexBundle;
-  ALE::Obj<ALE::IndexBundle> elementBundle;
-  ALE::Obj<ALE::IndexBundle> coordBundle;
-  Vec      coordinates;
+  ALE::Obj<ALE::def::Mesh> m;
   Vec      globalvector;
   PetscInt bs,n,N,Nghosts,*ghosts;
   PetscInt d_nz,o_nz,*d_nnz,*o_nnz;
@@ -59,9 +48,6 @@ PetscErrorCode WriteVTKVertices(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewe
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(viewer,"POINTS %d double\n", numVertices);CHKERRQ(ierr);
-/*   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_COORDS);CHKERRQ(ierr); */
-/*   ierr = VecView(coordinates, viewer);CHKERRQ(ierr); */
-/*   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); */
   for(int v = 0; v < numVertices; v++) {
     for(int d = 0; d < dim; d++) {
       if (d > 0) {
@@ -177,9 +163,6 @@ PetscErrorCode WritePCICEVertices(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer vie
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-/*   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_PCICE);CHKERRQ(ierr); */
-/*   ierr = VecView(coordinates, viewer);CHKERRQ(ierr); */
-/*   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); */
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n", numVertices);CHKERRQ(ierr);
   for(int v = 0; v < numVertices; v++) {
     ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", v+1);CHKERRQ(ierr);
@@ -286,9 +269,6 @@ PetscErrorCode WritePyLithVertices(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer vi
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"coord_units = km\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-/*   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr); */
-/*   ierr = VecView(coordinates, viewer);CHKERRQ(ierr); */
-/*   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); */
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"#  Node      X-coord           Y-coord           Z-coord\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
@@ -391,46 +371,48 @@ PetscErrorCode WritePyLithElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer vi
 
 #undef __FUNCT__  
 #define __FUNCT__ "WritePyLithVerticesLocal"
-PetscErrorCode WritePyLithVerticesLocal(Mesh mesh, PetscViewer viewer)
+PetscErrorCode WritePyLithVerticesLocal(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewer)
 {
-  Vec            coordinates, locCoordinates;
+  ALE::Obj<ALE::def::Mesh::coordinate_type> coordinates = mesh->getCoordinates();
+  const double  *array = coordinates->restrict(0);
+  int            dim = mesh->getDimension();
+  int            numVertices = mesh->getTopology()->depthStratum(0)->size();
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"coord_units = km\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-  ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
-  ierr = VecGhostGetLocalForm(coordinates, &locCoordinates);CHKERRQ(ierr);
-  ierr = VecView(locCoordinates, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"#  Node      X-coord           Y-coord           Z-coord\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
+  for(int v = 0; v < numVertices; v++) {
+    ierr = PetscViewerASCIIPrintf(viewer,"%7D ", v+1);CHKERRQ(ierr);
+    for(int d = 0; d < dim; d++) {
+      if (d > 0) {
+        ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer,"% 16.8E",array[v*dim+d]);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "WritePyLithElementsLocal"
-PetscErrorCode WritePyLithElementsLocal(Mesh mesh, PetscViewer viewer)
+PetscErrorCode WritePyLithElementsLocal(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Sieve>    topology;
-  ALE::Obj<ALE::PreSieve> orientation;
-  ALE::Point_set elements;
-  MPI_Comm       comm;
-  PetscMPIInt    rank, size;
-  int            dim, corners, elementCount = 1;
+  int            dim  = mesh->getDimension();
+  ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
+  ALE::Obj<ALE::def::Mesh::sieve_type> orientation = mesh->getOrientation();
+  ALE::Obj<ALE::def::Mesh::sieve_type::heightSequence> elements = topology->heightStratum(0);
+  ALE::Obj<ALE::def::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
+  int            corners = topology->nCone(*elements->begin(), topology->depth())->size();
+  int            elementCount = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);
-  ierr = MPI_Comm_size(comm, &size);
-  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, &orientation);CHKERRQ(ierr);
-  ALE::IndexBundle vertexBundle(topology);
-  vertexBundle.setFiberDimensionByDepth(0, 1);
-  vertexBundle.computeOverlapIndices();
-  vertexBundle.computeGlobalIndices();
-  elements = topology->heightStratum(0);
-  dim = topology->depth(*elements.begin());
-  corners = topology->nCone(*elements.begin(), dim)->size();
   if (dim != 3) {
     SETERRQ(PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
   }
@@ -440,12 +422,12 @@ PetscErrorCode WritePyLithElementsLocal(Mesh mesh, PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"#     N ETP MAT INF     N1     N2     N3     N4     N5     N6     N7     N8\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-  for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
-    ALE::Obj<ALE::Point_array> intervals = vertexBundle.getLocalOrderedClosureIndices(orientation->cone(*e_itor));
+  for(ALE::def::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+    ALE::Obj<ALE::def::Mesh::bundle_type::IndexArray> intervals = vertexBundle->getOrderedIndices(0, orientation->cone(*e_itor));
 
     // Only linear tetrahedra, 1 material, no infinite elements
     ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, 1, 0);CHKERRQ(ierr);
-    for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    for(ALE::def::Mesh::bundle_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
       ierr = PetscViewerASCIIPrintf(viewer, " %6d", (*i_itor).prefix+1);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
@@ -677,6 +659,59 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshLoad(PetscViewer viewer, Mesh *mesh)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MeshGetMesh"
+/*@C
+    MeshGetMesh - Gets the internal mesh object
+
+    Not collective
+
+    Input Parameter:
+.    mesh - the mesh object
+
+    Output Parameter:
+.    m - the internal mesh object
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshSetMesh()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::def::Mesh> *m)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh, DA_COOKIE, 1);
+  if (m) {
+    PetscValidPointer(m,2);
+    *m = mesh->m;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshSetMesh"
+/*@C
+    MeshSetMesh - Sets the internal mesh object
+
+    Not collective
+
+    Input Parameters:
++    mesh - the mesh object
+-    boundary - the internal mesh object
+ 
+    Level: advanced
+
+.seealso MeshCreate(), MeshGetMesh()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, ALE::Obj<ALE::def::Mesh> m)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh, DA_COOKIE, 1);
+  mesh->m = m;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshGetMatrix" 
 /*@C
     MeshGetMatrix - Creates a matrix with the correct parallel layout required for 
@@ -712,10 +747,6 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype,Mat *J)
 
   PetscFunctionBegin;
 
-#ifdef __cplusplus
-  localSize = ((ALE::IndexBundle *) mesh->bundle)->getLocalSize();
-  globalSize = ((ALE::IndexBundle *) mesh->bundle)->getGlobalSize();
-#endif
   ierr = MatCreate(mesh->comm,J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,localSize,localSize,globalSize,globalSize);CHKERRQ(ierr);
   ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
@@ -845,16 +876,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 
   ierr = PetscObjectChangeTypeName((PetscObject) p, "sieve");CHKERRQ(ierr);
 
-  p->topology       = PETSC_NULL;
-  p->boundary       = PETSC_NULL;
-  p->boundaryBundle = PETSC_NULL;
-  p->orientation    = PETSC_NULL;
-  p->spaceFootprint = PETSC_NULL;
-  p->bundle         = PETSC_NULL;
-  p->elementBundle  = PETSC_NULL;
-  p->coordBundle    = PETSC_NULL;
-  p->coordinates    = PETSC_NULL;
-  p->globalvector   = PETSC_NULL;
+  p->globalvector = PETSC_NULL;
   *mesh = p;
   PetscFunctionReturn(0);
 }
@@ -881,14 +903,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
   PetscFunctionBegin;
   if (--mesh->refct > 0) PetscFunctionReturn(0);
   if (mesh->globalvector) {ierr = VecDestroy(mesh->globalvector);CHKERRQ(ierr);}
-  if (mesh->spaceFootprint) {
-    /* delete (ALE::Stack *) p->spaceFootprint; */
-  }
   ierr = PetscHeaderDestroy(mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#ifdef __cplusplus
 
 #undef __FUNCT__
 #define __FUNCT__ "ExpandInterval"
@@ -921,6 +938,7 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::def::Mesh::bundle_type::IndexArray>
   PetscFunctionReturn(0);
 }
 
+#ifdef PARALLEL
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateVector"
 /*
@@ -978,7 +996,6 @@ PetscErrorCode MeshCreateVector(Mesh mesh, ALE::IndexBundle *bundle, int debug, 
   ierr = PetscFree(ghostIndices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 #endif
 
 #undef __FUNCT__  
@@ -1016,7 +1033,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh,Vec *gvec)
   }
 #endif
 #ifdef __cplusplus
-  ierr = MeshCreateVector(mesh, (ALE::IndexBundle *) mesh->bundle, 0, gvec);CHKERRQ(ierr);
+  //ierr = MeshCreateVector(mesh, (ALE::IndexBundle *) mesh->bundle, 0, gvec);CHKERRQ(ierr);
 #endif
 #if 0
   mesh->globalvector = *gvec;
@@ -1049,497 +1066,6 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh,Vec *gvec)
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 {
   SETERRQ(PETSC_ERR_SUP, "");
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetTopology"
-/*@C
-    MeshGetTopology - Gets the topology Sieve
-
-    Not collective
-
-    Input Parameter:
-.    mesh - the mesh object
-
-    Output Parameter:
-.    topology - the topology Sieve
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshSetTopology()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetTopology(Mesh mesh, ALE::Obj<ALE::Sieve> *topology)
-{
-  if (topology) {
-    PetscValidPointer(topology,2);
-    *topology = mesh->topology;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetTopology"
-/*@C
-    MeshSetTopology - Sets the topology Sieve
-
-    Not collective
-
-    Input Parameters:
-+    mesh - the mesh object
--    topology - the topology Sieve
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshGetTopology()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetTopology(Mesh mesh, ALE::Obj<ALE::Sieve> topology)
-{
-  mesh->topology = topology;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetBoundary"
-/*@C
-    MeshGetBoundary - Gets the boundary Sieve
-
-    Not collective
-
-    Input Parameter:
-.    mesh - the mesh object
-
-    Output Parameter:
-.    boundary - the boundary Sieve
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshSetBoundary()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetBoundary(Mesh mesh, ALE::Obj<ALE::Sieve> *boundary)
-{
-  if (boundary) {
-    PetscValidPointer(boundary,2);
-    *boundary = mesh->boundary;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetBoundary"
-/*@C
-    MeshSetBoundary - Sets the boundary Sieve
-
-    Not collective
-
-    Input Parameters:
-+    mesh - the mesh object
--    boundary - the boundary Sieve
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshGetBoundary()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetBoundary(Mesh mesh, ALE::Obj<ALE::Sieve> boundary)
-{
-  mesh->boundary = boundary;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetBoundaryBundle"
-/*@C
-    MeshGetBoundaryBundle - Gets the Sieve boundary bundle
-
-    Not collective
-
-    Input Parameter:
-.    mesh - the mesh object
-
-    Output Parameter:
-.    bundle - the Sieve boundary bundle
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshSetBoundaryBundle()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetBoundaryBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> *bundle)
-{
-  if (bundle) {
-    PetscValidPointer(bundle,2);
-    *bundle = mesh->boundaryBundle;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetBoundaryBundle"
-/*@C
-    MeshSetBoundaryBundle - Sets the Sieve boundary bundle
-
-    Not collective
-
-    Input Parameters:
-+    mesh - the mesh object
--    bundle - the Sieve boundary bundle
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshGetBoundaryBundle()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetBoundaryBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> bundle)
-{
-  mesh->boundaryBundle = bundle;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetBundle"
-/*@C
-    MeshGetBundle - Gets the Sieve bundle
-
-    Not collective
-
-    Input Parameter:
-.    mesh - the mesh object
-
-    Output Parameter:
-.    bundle - the Sieve bundle
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshSetBundle()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> *bundle)
-{
-  if (bundle) {
-    PetscValidPointer(bundle,2);
-    *bundle = mesh->bundle;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetBundle"
-/*@C
-    MeshSetBundle - Sets the Sieve bundle
-
-    Not collective
-
-    Input Parameters:
-+    mesh - the mesh object
--    bundle - the Sieve bundle
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshGetBundle()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> bundle)
-{
-  mesh->bundle = bundle;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetVertexBundle"
-/*@C
-    MeshGetVertexBundle - Gets the vertex bundle
-
-    Not collective
-
-    Input Parameter:
-.    mesh - the mesh object
-
-    Output Parameter:
-.    bundle - the vertex bundle
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshSetVertexBundle()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> *bundle)
-{
-  if (bundle) {
-    PetscValidPointer(bundle,2);
-    *bundle = mesh->vertexBundle;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetVertexBundle"
-/*@C
-    MeshSetVertexBundle - Sets the vertex bundle
-
-    Not collective
-
-    Input Parameters:
-+    mesh - the mesh object
--    bundle - the vertex bundle
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshGetVertexBundle()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetVertexBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> bundle)
-{
-  mesh->vertexBundle = bundle;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetElementBundle"
-/*@C
-    MeshGetElementBundle - Gets the element bundle
-
-    Not collective
-
-    Input Parameter:
-.    mesh - the mesh object
-
-    Output Parameter:
-.    bundle - the element bundle
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshSetElementBundle()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetElementBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> *bundle)
-{
-  if (bundle) {
-    PetscValidPointer(bundle,2);
-    *bundle = mesh->elementBundle;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetElementBundle"
-/*@C
-    MeshSetElementBundle - Sets the element bundle
-
-    Not collective
-
-    Input Parameters:
-+    mesh - the mesh object
--    bundle - the element bundle
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshGetElementBundle()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetElementBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> bundle)
-{
-  mesh->elementBundle = bundle;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetCoordinateBundle"
-/*@C
-    MeshGetCoordinateBundle - Gets the coordinate bundle
-
-    Not collective
-
-    Input Parameter:
-.    mesh - the mesh object
-
-    Output Parameter:
-.    bundle - the coordinate bundle
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshSetCoordinateBundle()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinateBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> *bundle)
-{
-  if (bundle) {
-    PetscValidPointer(bundle,2);
-    *bundle = mesh->coordBundle;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetCoordinateBundle"
-/*@C
-    MeshSetCoordinateBundle - Sets the coordinate bundle
-
-    Not collective
-
-    Input Parameters:
-+    mesh - the mesh object
--    bundle - the coordinate bundle
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshGetCoordinateBundle()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinateBundle(Mesh mesh,ALE::Obj<ALE::IndexBundle> bundle)
-{
-  mesh->coordBundle = bundle;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetOrientation"
-/*@C
-    MeshGetOrientation - Gets the orientation sieve
-
-    Not collective
-
-    Input Parameter:
-.    mesh - the mesh object
-
-    Output Parameter:
-.    orientation - the orientation sieve
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshSetOrientation()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetOrientation(Mesh mesh,ALE::Obj<ALE::PreSieve> *orientation)
-{
-  if (orientation) {
-    PetscValidPointer(orientation,2);
-    *orientation = mesh->orientation;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetOrientation"
-/*@C
-    MeshOrientation - Sets the orientation sieve
-
-    Not collective
-
-    Input Parameters:
-+    mesh - the mesh object
--    orientation - the orientation sieve
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshGetOrientation()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetOrientation(Mesh mesh,ALE::Obj<ALE::PreSieve> orientation)
-{
-  mesh->orientation = orientation;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetCoordinates"
-/*@C
-    MeshGetCoordinates - Gets the coordinate vector
-
-    Not collective
-
-    Input Parameter:
-.    mesh - the mesh object
-
-    Output Parameter:
-.    coordinates - the coordinate vector
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshSetCoordinates()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinates(Mesh mesh, Vec *coordinates)
-{
-  if (coordinates) {
-    PetscValidPointer(coordinates,2);
-    *coordinates = mesh->coordinates;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetCoordinates"
-/*@C
-    MeshCoordinates - Sets the coordinate vector
-
-    Not collective
-
-    Input Parameters:
-+    mesh - the mesh object
--    coordinates - the coordinate vector
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshGetCoordinates()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetCoordinates(Mesh mesh, Vec coordinates)
-{
-  PetscValidPointer(coordinates,2);
-  mesh->coordinates = coordinates;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetSpaceFootprint"
-/*@C
-    MeshGetSpaceFootprint - Gets the stack endcoding element overlap
-
-    Not collective
-
-    Input Parameter:
-.    mesh - the mesh object
-
-    Output Parameter:
-.    spaceFootprint - the overlap stack
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshSetSpaceFootprint()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetSpaceFootprint(Mesh mesh, ALE::Obj<ALE::Stack> *spaceFootprint)
-{
-  if (spaceFootprint) {
-    PetscValidPointer(spaceFootprint,2);
-    *spaceFootprint = mesh->spaceFootprint;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetSpaceFootprint"
-/*@C
-    MeshSpaceFootprint - Sets the stack endcoding element overlap
-
-    Not collective
-
-    Input Parameters:
-+    mesh - the mesh object
--    spaceFootprint - the overlap stack
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshGetSpaceFootprint()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetSpaceFootprint(Mesh mesh, ALE::Obj<ALE::Stack> spaceFootprint)
-{
-  mesh->spaceFootprint = spaceFootprint;
-  PetscFunctionReturn(0);
 }
 
 EXTERN PetscErrorCode assembleFullField(VecScatter, Vec, Vec, InsertMode);
@@ -1614,8 +1140,6 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode assembleField(ALE::Obj<ALE::IndexBundle>, ALE::Obj<ALE::PreSieve>, Vec, ALE::Point, PetscScalar[], InsertMode);
-
 #undef __FUNCT__
 #define __FUNCT__ "assembleVector"
 /*@
@@ -1637,20 +1161,22 @@ PetscErrorCode assembleField(ALE::Obj<ALE::IndexBundle>, ALE::Obj<ALE::PreSieve>
 @*/
 PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mode)
 {
-  Mesh              mesh;
-  ALE::Obj<ALE::PreSieve>    orientation;
-  ALE::Obj<ALE::IndexBundle> elementBundle;
-  ALE::Obj<ALE::IndexBundle> bundle;
-  PetscInt          firstElement;
-  PetscErrorCode    ierr;
+  Mesh                     mesh;
+  ALE::Obj<ALE::def::Mesh> m;
+  PetscInt                 firstElement;
+  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject) b, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, &orientation);CHKERRQ(ierr);
-  ierr = MeshGetElementBundle(mesh, &elementBundle);CHKERRQ(ierr);
-  ierr = MeshGetBundle(mesh, &bundle);CHKERRQ(ierr);
-  firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
-  ierr = assembleField(bundle, orientation, b, ALE::Point(0, e + firstElement), v, mode);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  //firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
+  firstElement = 0;
+  // Must relate b to field
+  if (mode == INSERT_VALUES) {
+    m->getField()->update(0, ALE::def::Point(0, e + firstElement), v);
+  } else {
+    m->getField()->updateAdd(0, ALE::def::Point(0, e + firstElement), v);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1724,57 +1250,6 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
     ierr = assembleOperator_New(A, mesh->getField(), mesh->getOrientation(), ALE::def::Mesh::sieve_type::point_type(0, e + firstElement), v, mode);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshGenerate"
-PetscErrorCode MeshGenerate(Mesh boundary, Mesh *mesh)
-{
-  PetscInt       dim;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetDimension(boundary, &dim);CHKERRQ(ierr);
-  if (dim == 1) {
-    SETERRQ(PETSC_ERR_SUP, "Mesh generation currently requires Triangle to be installed. Use --download-triangle during configure.");
-  } else if (dim == 2) {
-    SETERRQ(PETSC_ERR_SUP, "Mesh generation currently requires TetGen to be installed. Use --download-tetgen during configure.");
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshRefine"
-PetscErrorCode MeshRefine(Mesh mesh, PetscReal maxArea, /*CoSieve*/ Vec maxAreas, Mesh *refinedMesh)
-{
-  PetscInt       dim;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetDimension(mesh, &dim);CHKERRQ(ierr);
-  if (dim == 2) {
-    SETERRQ(PETSC_ERR_SUP, "Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
-  } else if (dim == 3) {
-    SETERRQ(PETSC_ERR_SUP, "Mesh refinement currently requires TetGen to be installed. Use --download-tetgen during configure.");
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshCoarsen"
-PetscErrorCode MeshCoarsen(Mesh mesh, PetscReal minArea, /*CoSieve*/ Vec minAreas, Mesh *coarseMesh)
-{
-  PetscInt       dim;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetDimension(mesh, &dim);CHKERRQ(ierr);
-  if (dim == 2) {
-    SETERRQ(PETSC_ERR_SUP, "Mesh coarsening currently requires Triangle to be installed. Use --download-triangle during configure.");
-  } else if (dim == 3) {
-    SETERRQ(PETSC_ERR_SUP, "Mesh refinement currently requires TetGen to be installed. Use --download-tetgen during configure.");
   }
   PetscFunctionReturn(0);
 }

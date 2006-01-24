@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(comm, "", "Options for mesh generation", "DMMG");
+  ierr = PetscOptionsBegin(comm, "", "Options for mesh generation", "DMMG");CHKERRQ(ierr);
     debug = 0;
     ierr = PetscOptionsInt("-debug", "The debugging flag", "ex2.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
     dim  = 2;
