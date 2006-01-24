@@ -4,6 +4,9 @@
 #ifndef  included_ALE_Sifter_hh
 #include <Sifter.hh>
 #endif
+#ifndef  included_ALE_BiGraph_hh
+#include <BiGraph.hh>
+#endif
 #include <list>
 #include <stack>
 #include <queue>
@@ -28,6 +31,54 @@
 // I can do the completion when I come back if you get the serial BiGraph/Sieve stuff going.
 //
 namespace ALE {
+  namespace Two {
+    template <typename Sieve_, typename Ordering_>
+    class CoSieve {
+    public:
+      // Basic types
+      typedef Sieve_    sieve_type;
+      typedef Ordering_ ordering_type;
+    private:
+      // Base topology
+      Obj<sieve_type> _topology;
+    };
+
+    template <typename Sieve_, typename Patch_, typename Index_, typename Value_>
+    class Sifter {
+    public:
+      // Basic types
+      typedef Sieve_ sieve_type;
+      typedef Patch_ patch_type;
+      typedef typename sieve_type::point_type point_type;
+    private:
+      Obj<sieve_type> _topology;
+    public:
+      // Breakdown of the base Sieve into patches
+      //   the colors (int) order the points (point_type) over a patch (patch_type).
+      // A patch is a member of the sheaf over the sieve which indicates a maximal
+      // domain of definition for a function on the sieve. Furthermore, we use the
+      // patch coloring to order the patch values, the analog of a coordinate system
+      // on the patch. We use a BiGraph here, but the object can properly be thought
+      // of as a CoSieve over the topology sieve.
+      typedef BiGraph<point_type, patch_type, int> patches_type;
+    private:
+      // A single distinguished ordering will be used for storage allocation
+      //   We can have orderings which do not relate to storage, but only retrieval,
+      //   however, they
+      std::map<std::string,patches_type> _patches; 
+    public:
+      // Attachment of fiber dimension intervals to Sieve points
+      //   fields are encoded by colors, which double as the field ordering index
+      //   colors (int) order the indices (index_type, usually an interval) over a point (point_type)
+      //   we maintain the index map separately over each patch
+      // Again we have a CoSieve structure here
+      typedef BiGraph<index_type, point_type, int> indices_type;
+    private:
+      std::map<patch_type,indices_type> _indices;
+    public:
+    };
+  }
+
   namespace def {
 
 
@@ -534,6 +585,20 @@ namespace ALE {
         }
         ALE_LOG_EVENT_END;
       };
+      #undef __FUNCT__
+      #define __FUNCT__ "CoSieve::setIdxDimDpth"
+      void setIndexDimensionByDepth(int depth, typename Sieve::marker_type marker, typename Sieve::color_type color, int indexDim) {
+        ALE_LOG_EVENT_BEGIN;
+        Obj<typename patches_type::baseSequence> base = this->_patches.base();
+        Obj<typename Sieve::depthSequence> stratum = this->getTopology()->depthStratum(depth, marker);
+
+        for(typename patches_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          for(typename Sieve::depthSequence::iterator iter = stratum->begin(); iter != stratum->end(); ++iter) {
+            this->setIndexDimension(*b_iter, *iter, color, indexDim);
+          }
+        }
+        ALE_LOG_EVENT_END;
+      };
       const value_type *restrict(const patch_type& patch) {
         return this->_storage[patch];
       };
@@ -582,6 +647,23 @@ namespace ALE {
       }
       template<typename InputSequence>
       void update(const patch_type& patch, const InputSequence& pointSequence, value_type values[]) {
+        throw ALE::Exception("Not implemented");
+      };
+      // Add values into the specified patch
+      void updateAdd(const patch_type& patch, const point_type& p, value_type values[]) {
+        Obj<typename indices_type::coneSequence> indices = this->getIndices(patch, p);
+
+        for(typename indices_type::coneSequence::iterator ind = indices->begin(); ind != indices->end(); ++ind) {
+          int offset = (*ind).prefix;
+
+          for(int i = 0; i < (*ind).index; ++i) {
+            if (debug) {std::cout << "Added a[" << offset+i << "] += " << values[i] << " on patch " << patch << std::endl;}
+            this->_storage[patch][offset+i] += values[i];
+          }
+        }
+      }
+      template<typename InputSequence>
+      void updateAdd(const patch_type& patch, const InputSequence& pointSequence, value_type values[]) {
         throw ALE::Exception("Not implemented");
       };
     public:

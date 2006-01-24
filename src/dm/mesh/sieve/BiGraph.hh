@@ -36,7 +36,7 @@ namespace ALE {
       struct color{};
       struct sourceColor{};
       struct targetColor{};
-      typedef Arrow<source_type,target_type,color_type> Arrow_;
+      typedef ALE::def::Arrow<source_type,target_type,color_type> Arrow_;
       typedef ::boost::multi_index::multi_index_container<
         Arrow_,
         ::boost::multi_index::indexed_by<
@@ -599,13 +599,13 @@ namespace ALE {
       typedef value_type&             reference;
       
       // Underlying iterator type
-      typename Iterator_ itor_type;
+      typedef Iterator_ itor_type;
     protected:
       // Underlying iterator 
       itor_type      _itor;
     public:
       result_iterator(const itor_type& itor) {
-        this->_itor = typename itor_type(itor);
+        this->_itor = itor_type(itor);
       };
       virtual ~result_iterator() {};
       //
@@ -619,9 +619,11 @@ namespace ALE {
     // reverse_result_iterator is the reverse of result_iterator
     template <typename Iterator_, typename Value_>
     class reverse_result_iterator : public result_iterator<Iterator_, Value_> {
-      
-      reverse_result_iterator(const typename itor_type& itor) {
-        this->_itor = typename itor_type(itor);
+    public:
+      typedef Iterator_ itor_type;
+    public:
+      reverse_result_iterator(const itor_type& itor) {
+        this->_itor = itor_type(itor);
       };
       virtual ~reverse_result_iterator() {};
       //
@@ -639,16 +641,16 @@ namespace ALE {
     class OutputSequence {
     public:
       // Basic encapsulated types
-      typedef MultiIndex_                                               set_type;
-      typedef typename ::boost::multi_index::index<set_type, tag>::type index_type;
-      typedef Tag_                                                      tag;
-      typedef Value_                                                    value_type;
-      typedef result_iterator<index_type::iterator, value_type>        iterator;
+      typedef MultiIndexSet_                                             set_type;
+      typedef Tag_                                                       tag;
+      typedef typename ::boost::multi_index::index<set_type, tag>::type  index_type;
+      typedef Value_                                                     value_type;
+      typedef result_iterator<typename index_type::iterator, value_type> iterator;
     protected:
       index_type _index;
     public:
       // Basic interface
-      virtual OutputSequence(const typename set_type& set) : _index(::boost::multi_index::get<tag_type>(set)){};
+      OutputSequence(const set_type& set) : _index(::boost::multi_index::get<tag>(set)) {};
       virtual ~OutputSequence() {};
       virtual iterator    begin() = 0;
       virtual iterator    end()   = 0;
@@ -661,10 +663,15 @@ namespace ALE {
     template <typename MultiIndexSet_, typename Tag_, typename Value_>
     class ReversibleOutputSequence : public OutputSequence<MultiIndexSet_, Tag_, Value_> {
     public:
+      typedef MultiIndexSet_                                             set_type;
+      typedef Tag_                                                       tag;
+      typedef typename ::boost::multi_index::index<set_type, tag>::type  index_type;
+      typedef Value_                                                     value_type;
+    public:
       // Encapsulated reverse_result_iterator type
-      typedef reverse_result_iterator<typename index_type::iterator, typename value_type> reverse_iterator;
+      typedef reverse_result_iterator<typename index_type::iterator, value_type> reverse_iterator;
       // Generic ReversibleOutputSequence interface
-      virtual ReversibleOutputSequence(const typename set_type& set) : OutputSequence<MultiIndexSet_,Tag_,Value_>(set) {};
+      ReversibleOutputSequence(const set_type& set) : OutputSequence<MultiIndexSet_,Tag_,Value_>(set) {};
       virtual ~ReversibleOutputSequence() {};
       virtual reverse_iterator    rbegin() = 0;
       virtual reverse_iterator    rend()   = 0;
@@ -690,11 +697,12 @@ namespace ALE {
       //
       struct sourceTag{};
       struct targetTag{};
+      struct colorTag{};
       struct sourceColorTag{};
       struct colorSourceTag{};
       struct targetColorTag{};
       // Arrow record
-      typedef Arrow<source_type,target_type,color_type> Arrow_;
+      typedef ALE::def::Arrow<source_type,target_type,color_type> Arrow_;
       // Arrow record set
       typedef ::boost::multi_index::multi_index_container<
         Arrow_,
@@ -714,7 +722,7 @@ namespace ALE {
             ::boost::multi_index::tag<targetColorTag>,
             ::boost::multi_index::composite_key<
               Arrow_, BOOST_MULTI_INDEX_MEMBER(Arrow_,target_type,target), BOOST_MULTI_INDEX_MEMBER(Arrow_,color_type,color)>
-          >
+          >,
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<colorSourceTag>,
             ::boost::multi_index::composite_key<
@@ -749,26 +757,26 @@ namespace ALE {
       // Base point records are of BasePoint type stored in a BasePointSet
       typedef PointRecord<target_type> BasePoint;
       typedef ::boost::multi_index::multi_index_container<
-        PointRecord,
+        BasePoint,
         ::boost::multi_index::indexed_by<
           ::boost::multi_index::ordered_unique<
-            ::boost::multi_index::tag<pointTag>, BOOST_MULTI_INDEX_MEMBER(BasePoint, point_type, point)>,
+            ::boost::multi_index::tag<pointTag>, BOOST_MULTI_INDEX_MEMBER(BasePoint, target_type, point)>,
           ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<degreeTag>, BOOST_MULTI_INDEX_MEMBER(BasePoint,int,degree)>,
+            ::boost::multi_index::tag<degreeTag>, BOOST_MULTI_INDEX_MEMBER(BasePoint,int,degree)>
         >,
-        ALE_ALLOCATOR<PointRecord>
+        ALE_ALLOCATOR<BasePoint>
       > BasePointSet;
       // Cap point records are of CapPoint type stored in a CapPointSet
       typedef PointRecord<source_type> CapPoint;    
       typedef ::boost::multi_index::multi_index_container<
-        PointRecord,
+        CapPoint,
         ::boost::multi_index::indexed_by<
           ::boost::multi_index::ordered_unique<
-            ::boost::multi_index::tag<pointTag>, BOOST_MULTI_INDEX_MEMBER(CapPoint, point_type, point)>,
+            ::boost::multi_index::tag<pointTag>, BOOST_MULTI_INDEX_MEMBER(CapPoint, source_type, point)>,
           ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<degreeTag>, BOOST_MULTI_INDEX_MEMBER(CapPoint,int,degree)>,
+            ::boost::multi_index::tag<degreeTag>, BOOST_MULTI_INDEX_MEMBER(CapPoint,int,degree)>
         >,
-        ALE_ALLOCATOR<PointRecord>
+        ALE_ALLOCATOR<CapPoint>
       > CapPointSet;
       BasePointSet _base;
       CapPointSet  _cap;      
@@ -779,23 +787,30 @@ namespace ALE {
       //
 
       // base specialization of OutputSequence and related iterators and methods
-      class baseSequence : public OutputSequence<BasePointSet, degreeTag, point_type>;
+      class baseSequence : public OutputSequence<BasePointSet, degreeTag, target_type> {
+      public:
+        typedef typename OutputSequence<BasePointSet, degreeTag, target_type>::iterator iterator;
+      };
       // baseSequence iterator dereferencing specialization
-      const baseSequence::iterator::reference baseSequence::iterator::operator*(){ return this->_itor->point;};
+      //const typename baseSequence::iterator::reference baseSequence::iterator::operator*() const {return this->_itor->point;};
 
 
       // cap specialization of OutputSequence and related iterators and  methods
-      class capSequence  : public IndexSequence<CapPointSet, degreeTag, point_type>;
+      class capSequence  : public OutputSequence<CapPointSet, degreeTag, source_type> {
+      public:
+        typedef typename OutputSequence<CapPointSet, degreeTag, source_type>::iterator iterator;
+      };
       // capSequence iterator dereferencing specialization
-      const capSequence::iterator::reference capSequence::iterator::operator*(){ return this->_itor->point;};
+      //const typename capSequence::iterator::reference capSequence::iterator::operator*() const {return this->_itor->point;};
 
       // (Partial) Arrow specialization of ReversibleOutputSequence and related iterators and methods.
       // Provides basis for cone and support specializations
       // ArrowSequence iterates over an index of ArrowSet defined by Tag_, Key_ and an optional color_type color argument,
       // returning Value_ objects upon dereferencing.
-      template <typename Tag_, typedef Key_, typedef Value_>
+      template <typename Tag_, typename Key_, typename Value_>
       class ArrowSequence : public ReversibleOutputSequence<ArrowSet, Tag_, Value_> {
       public:
+        typedef typename ReversibleOutputSequence<ArrowSet, Tag_, Value_>::set_type set_type;
         typedef Key_                                           key_type;
       protected:
         const key_type      key;
@@ -805,26 +820,26 @@ namespace ALE {
         //
         // Basic interface
         //
-        ArrowSequence(const typename set_type& set, const key_type& p) 
+        ArrowSequence(const set_type& set, const key_type& p)
           : ReversibleOutputSequence<ArrowSet,Tag_,Value_>(set), key(p), color(color_type()), useColor(0) {};
-        ArrowSequence(const typename set_type& set, const key_type& p, const color_type& c) 
+        ArrowSequence(const set_type& set, const key_type& p, const color_type& c)
           : ReversibleOutputSequence<ArrowSet,Tag_,Value_>(set), key(p), color(c), useColor(1) {};
         virtual ~ArrowSequence() {};
       };
 
       // coneSequence specializes ArrowSequence with Tag_ == targetColorTag, Key_ == target_type, Value_ == source_type
-      class coneSequence : public ArrowSequence<targetColorTag, target_type, source_type>;
+      class coneSequence : public ArrowSequence<targetColorTag, target_type, source_type> {};
       // coneSequence iterator dereferencing specialization
-      const coneSequence::iterator::reference coneSequence::iterator::operator*(){ return this->_itor->source;};
+      //const typename coneSequence::iterator::reference coneSequence::iterator::operator*(){ return this->_itor->source;};
       // coneSequence reverse_iterator dereferencing specialization
-      const coneSequence::reverse_iterator::reference coneSequence::reverse_iterator::operator*(){ return this->_itor->source;};
+      //const typename coneSequence::reverse_iterator::reference coneSequence::reverse_iterator::operator*(){ return this->_itor->source;};
 
       // supportSequence specializes ArrowSequence with Tag_ == sourceColorTag, Key_ == source_type, Value_ == target_type
-      class supportSequence : public ArrowSequence<sourceColorTag, source_type, target_type>;
+      class supportSequence : public ArrowSequence<sourceColorTag, source_type, target_type> {};
       // supportSequence iterator dereferencing specialization
-      const supportSequence::iterator::reference supportSequence::iterator::operator*(){ return this->_itor->target;};
+      //const typename supportSequence::iterator::reference supportSequence::iterator::operator*(){ return this->_itor->target;};
       // supportSequence reverse_iterator dereferencing specialization
-      const supportSequence::reverse_iterator::reference supportSequence::reverse_iterator::operator*(){ return this->_itor->target;};
+      //const typename supportSequence::reverse_iterator::reference supportSequence::reverse_iterator::operator*(){ return this->_itor->target;};
 
       typedef std::set<source_type, std::less<source_type>, ALE_ALLOCATOR<source_type> > coneSet;
       typedef std::set<target_type, std::less<target_type>, ALE_ALLOCATOR<target_type> > supportSet;
@@ -833,7 +848,7 @@ namespace ALE {
       // 
       // Basic interface
       //
-      BiGraph() : debug(0), {};
+      BiGraph() : debug(0) {};
 
       //
       // Query methods
@@ -952,7 +967,7 @@ namespace ALE {
       void addCone(const Obj<sourceInputSequence>& sources, const target_type& target, const color_type& color);
 
     private:
-      void __clearCone(const target_type& p, const color_type& color, bool useColor); {
+      void __clearCone(const target_type& p, const color_type& color, bool useColor);
     public:
       void setCone(const source_type& source, const target_type& target){
         this->__clearCone(target, color_type(), false); this->addCone(source, target);
@@ -994,11 +1009,20 @@ namespace ALE {
     //
     // BiGraph::baseSequence methods
     //
+#if 0
+    // baseSequence iterator dereferencing specialization
+    template <typename Source_, typename Target_, typename Color_>
+    const typename BiGraph<Source_,Target_,Color_>::baseSequence::iterator::reference
+    BiGraph<Source_,Target_,Color_>::baseSequence::iterator::operator*() const {
+      return this->_itor->point;
+    }
+#endif
+
     template <typename Source_, typename Target_, typename Color_>
     typename BiGraph<Source_,Target_,Color_>::baseSequence::iterator
     typename BiGraph<Source_,Target_,Color_>::baseSequence::begin() {
       // Retrieve the beginning iterator to the sequence of points with indegree >= 1
-      return iterator(this->_index.lower_bound(1));
+      return typename BiGraph<Source_,Target_,Color_>::baseSequence::iterator(this->_index.lower_bound(1));
     }
 
     template <typename Source_, typename Target_, typename Color_>
@@ -1009,11 +1033,29 @@ namespace ALE {
       return iterator(this->_index.end());
     }
     
-
+    // capSequence iterator dereferencing specialization
+    template <typename Source_, typename Target_, typename Color_>
+    const typename BiGraph<Source_,Target_,Color_>::capSequence::iterator::reference
+    BiGraph<Source_,Target_,Color_>::capSequence::iterator::operator*() const {
+      return this->_itor->point;
+    }
     
     //
     // BiGraph::ArrowSequence methods
     //
+
+    // coneSequence iterator dereferencing specialization
+    template <typename Source_, typename Target_, typename Color_>
+    const typename BiGraph<Source_,Target_,Color_>::coneSequence::iterator::reference
+    BiGraph<Source_,Target_,Color_>::coneSequence::iterator::operator*() const {
+      return this->_itor->source;
+    }
+    // coneSequence reverse_iterator dereferencing specialization
+    template <typename Source_, typename Target_, typename Color_>
+    const typename BiGraph<Source_,Target_,Color_>::coneSequence::reverse_iterator::reference
+    BiGraph<Source_,Target_,Color_>::coneSequence::reverse_iterator::operator*() const {
+      return this->_itor->source;
+    }
 
     template <typename Source_, typename Target_, typename Color_>
     template <typename Tag_, typename Key_, typename Value_>
