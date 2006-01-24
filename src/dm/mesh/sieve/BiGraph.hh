@@ -588,12 +588,13 @@ namespace ALE {
     
     // A result_iterator defines the generic way of iterating over a query result.
     // Members of type Value_ are extracted from each result record.
-    template <typename Iterator_, typename Value_>
+    template <typename Iterator_, typename MemberExtractor_>
     class result_iterator {
     public:
       // Standard iterator typedefs
       typedef std::input_iterator_tag iterator_category;
-      typedef Value_                  value_type;
+      typedef typename MemberExtractor_::result_type value_type;
+      typedef MemberExtractor_                       extractor_type;
       typedef int                     difference_type;
       typedef value_type*             pointer;
       typedef value_type&             reference;
@@ -603,6 +604,8 @@ namespace ALE {
     protected:
       // Underlying iterator 
       itor_type      _itor;
+      // Member extractor
+      extractor_type _ex;
     public:
       result_iterator(const itor_type& itor) {
         this->_itor = itor_type(itor);
@@ -613,7 +616,7 @@ namespace ALE {
       virtual result_iterator   operator++(int n) {result_iterator tmp(this->_itor); ++this->_itor; return tmp;};
       virtual bool              operator==(const result_iterator& iter) const {return this->_itor == iter._itor;};
       virtual bool              operator!=(const result_iterator& iter) const {return this->_itor != iter._itor;};
-      virtual const reference   operator*() const;
+      virtual const reference   operator*() const {return _ex(*(this->_itor));};
     };
 
     // reverse_result_iterator is the reverse of result_iterator
@@ -637,15 +640,14 @@ namespace ALE {
     // The result can be traversed yielding a Value_ object upon dereferencing.  To this end OutputSequence encapsulates the type 
     // of the iterator used to traverse the result, as well as the methods returning the extrema -- the beginning and ending iterators.
     // Specializations of OutputSequence will rely on specializations of iterator.
-    template <typename MultiIndexSet_, typename Tag_, typename Value_>
+    template <typename MultiIndexSet_, typename Tag_, typename MemberExtractor_>
     class OutputSequence {
     public:
       // Basic encapsulated types
-      typedef MultiIndexSet_                                             set_type;
-      typedef Tag_                                                       tag;
-      typedef typename ::boost::multi_index::index<set_type, tag>::type  index_type;
-      typedef Value_                                                     value_type;
-      typedef result_iterator<typename index_type::iterator, value_type> iterator;
+      typedef MultiIndexSet_                                                   set_type;
+      typedef Tag_                                                             tag;
+      typedef typename ::boost::multi_index::index<set_type, tag>::type        index_type;
+      typedef result_iterator<typename index_type::iterator, MemberExtractor_> iterator;
     protected:
       index_type _index;
     public:
@@ -660,18 +662,17 @@ namespace ALE {
     // ReversibleOutputSequence extends OutputSequence to allow reverse traversals.
     // Specializations of ReversibleOutputSequence will rely on specializations of result_iterator and reverse_result_iterator,
     // which dereference to objects of Value_ type.
-    template <typename MultiIndexSet_, typename Tag_, typename Value_>
-    class ReversibleOutputSequence : public OutputSequence<MultiIndexSet_, Tag_, Value_> {
+    template <typename MultiIndexSet_, typename Tag_, typename MemberExtractor_>
+    class ReversibleOutputSequence : public OutputSequence<MultiIndexSet_, Tag_, MemberExtractor_> {
     public:
       typedef MultiIndexSet_                                             set_type;
       typedef Tag_                                                       tag;
       typedef typename ::boost::multi_index::index<set_type, tag>::type  index_type;
-      typedef Value_                                                     value_type;
     public:
       // Encapsulated reverse_result_iterator type
-      typedef reverse_result_iterator<typename index_type::iterator, value_type> reverse_iterator;
+      typedef reverse_result_iterator<typename index_type::iterator, MemberExtractor_> reverse_iterator;
       // Generic ReversibleOutputSequence interface
-      ReversibleOutputSequence(const set_type& set) : OutputSequence<MultiIndexSet_,Tag_,Value_>(set) {};
+      ReversibleOutputSequence(const set_type& set) : OutputSequence<MultiIndexSet_,Tag_,MemberExtractor_>(set) {};
       virtual ~ReversibleOutputSequence() {};
       virtual reverse_iterator    rbegin() = 0;
       virtual reverse_iterator    rend()   = 0;
@@ -787,9 +788,9 @@ namespace ALE {
       //
 
       // base specialization of OutputSequence and related iterators and methods
-      class baseSequence : public OutputSequence<BasePointSet, degreeTag, target_type> {
+      class baseSequence : public OutputSequence<BasePointSet, degreeTag, BOOST_MULTI_INDEX_MEMBER(BasePoint,typename BasePoint::point_type,point)> {
       public:
-        typedef typename OutputSequence<BasePointSet, degreeTag, target_type>::iterator iterator;
+        typedef typename OutputSequence<BasePointSet, degreeTag, BOOST_MULTI_INDEX_MEMBER(BasePoint,typename BasePoint::point_type,point)>::iterator iterator;
 
         virtual iterator begin() {
           // Retrieve the beginning iterator to the sequence of points with indegree >= 1
@@ -806,9 +807,9 @@ namespace ALE {
 
 
       // cap specialization of OutputSequence and related iterators and  methods
-      class capSequence  : public OutputSequence<CapPointSet, degreeTag, source_type> {
+      class capSequence  : public OutputSequence<CapPointSet, degreeTag, BOOST_MULTI_INDEX_MEMBER(CapPoint,typename CapPoint::point_type,point)> {
       public:
-        typedef typename OutputSequence<CapPointSet, degreeTag, source_type>::iterator iterator;
+        typedef typename OutputSequence<CapPointSet, degreeTag, BOOST_MULTI_INDEX_MEMBER(CapPoint,typename CapPoint::point_type,point)>::iterator iterator;
 
         virtual iterator begin() {
           // Retrieve the beginning iterator to the sequence of points with outdegree >= 1
@@ -827,13 +828,13 @@ namespace ALE {
       // Provides basis for cone and support specializations
       // ArrowSequence iterates over an index of ArrowSet defined by Tag_, Key_ and an optional color_type color argument,
       // returning Value_ objects upon dereferencing.
-      template <typename Tag_, typename Key_, typename Value_>
-      class ArrowSequence : public ReversibleOutputSequence<ArrowSet, Tag_, Value_> {
+      template <typename Tag_, typename Key_, typename MemberExtractor_>
+      class ArrowSequence : public ReversibleOutputSequence<ArrowSet, Tag_, MemberExtractor_> {
       public:
-        typedef typename ReversibleOutputSequence<ArrowSet, Tag_, Value_>::set_type set_type;
+        typedef typename ReversibleOutputSequence<ArrowSet, Tag_, MemberExtractor_>::set_type set_type;
         typedef Key_                                           key_type;
-        typedef typename OutputSequence<ArrowSet, Tag_, Value_>::iterator iterator;
-        typedef typename ReversibleOutputSequence<ArrowSet, Tag_, Value_>::reverse_iterator reverse_iterator;
+        typedef typename OutputSequence<ArrowSet, Tag_, MemberExtractor_>::iterator iterator;
+        typedef typename ReversibleOutputSequence<ArrowSet, Tag_, MemberExtractor_>::reverse_iterator reverse_iterator;
       protected:
         const key_type      key;
         const color_type    color;  // color_type is defined by BiGraph
@@ -843,9 +844,9 @@ namespace ALE {
         // Basic interface
         //
         ArrowSequence(const set_type& set, const key_type& p)
-          : ReversibleOutputSequence<ArrowSet,Tag_,Value_>(set), key(p), color(color_type()), useColor(0) {};
+          : ReversibleOutputSequence<ArrowSet,Tag_,MemberExtractor_>(set), key(p), color(color_type()), useColor(0) {};
         ArrowSequence(const set_type& set, const key_type& p, const color_type& c)
-          : ReversibleOutputSequence<ArrowSet,Tag_,Value_>(set), key(p), color(c), useColor(1) {};
+          : ReversibleOutputSequence<ArrowSet,Tag_,MemberExtractor_>(set), key(p), color(c), useColor(1) {};
         virtual ~ArrowSequence() {};
 
         virtual iterator begin() {
@@ -891,14 +892,14 @@ namespace ALE {
       };
 
       // coneSequence specializes ArrowSequence with Tag_ == targetColorTag, Key_ == target_type, Value_ == source_type
-      class coneSequence : public ArrowSequence<targetColorTag, target_type, source_type> {};
+      class coneSequence : public ArrowSequence<targetColorTag, target_type, BOOST_MULTI_INDEX_MEMBER(Arrow_,source_type,source)> {};
       // coneSequence iterator dereferencing specialization
       //const typename coneSequence::iterator::reference coneSequence::iterator::operator*(){ return this->_itor->source;};
       // coneSequence reverse_iterator dereferencing specialization
       //const typename coneSequence::reverse_iterator::reference coneSequence::reverse_iterator::operator*(){ return this->_itor->source;};
 
       // supportSequence specializes ArrowSequence with Tag_ == sourceColorTag, Key_ == source_type, Value_ == target_type
-      class supportSequence : public ArrowSequence<sourceColorTag, source_type, target_type> {};
+      class supportSequence : public ArrowSequence<sourceColorTag, source_type, BOOST_MULTI_INDEX_MEMBER(Arrow_,target_type,target)> {};
       // supportSequence iterator dereferencing specialization
       //const typename supportSequence::iterator::reference supportSequence::iterator::operator*(){ return this->_itor->target;};
       // supportSequence reverse_iterator dereferencing specialization
@@ -1070,49 +1071,12 @@ namespace ALE {
     }; // BiGraph
 
     //
-    // BiGraph::baseSequence methods
-    //
-    // baseSequence iterator dereferencing specialization
-    template <typename Source_, typename Target_, typename Color_>
-    const typename result_iterator<typename ::boost::multi_index::index<typename BiGraph<Source_,Target_,Color_>::BasePointSet, typename BiGraph<Source_,Target_,Color_>::degreeTag>::type::iterator, Target_>::reference
-    result_iterator<typename ::boost::multi_index::index<typename BiGraph<Source_,Target_,Color_>::BasePointSet, typename BiGraph<Source_,Target_,Color_>::degreeTag>::type::iterator, Target_>::operator*() const {
-      return this->_itor->point;
-    }
-    
-#if 0
-    // capSequence iterator dereferencing specialization
-    template <typename Source_, typename Target_, typename Color_>
-    const typename BiGraph<Source_,Target_,Color_>::capSequence::iterator::reference
-    BiGraph<Source_,Target_,Color_>::capSequence::iterator::operator*() const {
-      return this->_itor->point;
-    }
-#endif
-
-#if 0
-    //
-    // BiGraph::ArrowSequence methods
-    //
-
-    // coneSequence iterator dereferencing specialization
-    template <typename Source_, typename Target_, typename Color_>
-    const typename BiGraph<Source_,Target_,Color_>::coneSequence::iterator::reference
-    BiGraph<Source_,Target_,Color_>::coneSequence::iterator::operator*() const {
-      return this->_itor->source;
-    }
-    // coneSequence reverse_iterator dereferencing specialization
-    template <typename Source_, typename Target_, typename Color_>
-    const typename BiGraph<Source_,Target_,Color_>::coneSequence::reverse_iterator::reference
-    BiGraph<Source_,Target_,Color_>::coneSequence::reverse_iterator::operator*() const {
-      return this->_itor->source;
-    }
-
-    //
     // BiGraph methods
     //
 
     template <typename Source_, typename Target_, typename Color_>
     template<class InputSequence>
-    Obj<BiGraph<Source_,Target_,Color_>::coneSet>  
+    Obj<typename BiGraph<Source_,Target_,Color_>::coneSet>  
     BiGraph<Source_,Target_,Color_>::cone(const Obj<InputSequence>& points, const color_type& color, bool useColor) {
       Obj<coneSet> cone = coneSet();
       
@@ -1143,7 +1107,7 @@ namespace ALE {
 
     template <typename Source_, typename Target_, typename Color_>
     void BiGraph<Source_,Target_,Color_>::__adjustIndegree(const BiGraph<Source_,Target_,Color_>::target_type& p, int delta) {
-      typename ::boost::multi_index::index<BasePointSet,pointTag>::type index ::boost::multi_index::get<pointTag>(this->_base);
+      typename ::boost::multi_index::index<BasePointSet,pointTag>::type& index = ::boost::multi_index::get<pointTag>(this->_base);
       typename ::boost::multi_index::index<BasePointSet,pointTag>::type::iterator i = index.find(p);
       if (i == index.end()) { // No such point exists
         if(delta < 0) { // Cannot decrease degree of a non-existent point
@@ -1170,8 +1134,8 @@ namespace ALE {
     }// BiGraph::__adjustIndegree
 
     template <typename Source_, typename Target_, typename Color_>
-    void BiGraph<Source_,Target_,Color_>::__adjustOutdegree(const BiGraph<Source_,Target_,Color_>::target_type& p, int delta) {
-      typename ::boost::multi_index::index<CapPointSet,pointTag>::type index ::boost::multi_index::get<pointTag>(this->_cap);
+    void BiGraph<Source_,Target_,Color_>::__adjustOutdegree(const typename BiGraph<Source_,Target_,Color_>::source_type& p, int delta) {
+      typename ::boost::multi_index::index<CapPointSet,pointTag>::type& index = ::boost::multi_index::get<pointTag>(this->_cap);
       typename ::boost::multi_index::index<CapPointSet,pointTag>::type::iterator i = index.find(p);
       if (i == index.end()) { // No such point exists
         if(delta < 0) { // Cannot decrease degree of a non-existent point
@@ -1238,7 +1202,7 @@ namespace ALE {
     template <typename Source_, typename Target_, typename Color_>
     void BiGraph<Source_,Target_,Color_>::replaceTarget(const BiGraph<Source_,Target_,Color_>::target_type& t, 
                                                         const BiGraph<Source_,Target_,Color_>::target_type& new_t) {
-      typename ::boost::multi_index::index<ArrowSet,targetTag>::type& index = ::boost::multi_index::get<target>(this->_arrows);
+      typename ::boost::multi_index::index<ArrowSet,targetTag>::type& index = ::boost::multi_index::get<targetTag>(this->_arrows);
       typename ::boost::multi_index::index<ArrowSet,targetTag>::type::iterator i = index.find(t);
       if (i != index.end()) {
         // The replacement of target amounts to removing an arrow and adding another arrow, hence, two sets of 
@@ -1255,7 +1219,7 @@ namespace ALE {
     template <typename Source_, typename Target_, typename Color_>
     void BiGraph<Source_,Target_,Color_>::replaceSourceOfTarget(const BiGraph<Source_,Target_,Color_>::target_type& t, 
                                                                 const BiGraph<Source_,Target_,Color_>::source_type& new_s) {
-      typename ::boost::multi_index::index<ArrowSet,targetTag>::type& index = ::boost::multi_index::get<target>(this->_arrows);
+      typename ::boost::multi_index::index<ArrowSet,targetTag>::type& index = ::boost::multi_index::get<targetTag>(this->_arrows);
       typename ::boost::multi_index::index<ArrowSet,targetTag>::type::iterator i = index.find(t);
       if (i != index.end()) {
         // The replacement of source amounts to removing an arrow and adding another arrow, hence, two sets of 
@@ -1268,7 +1232,6 @@ namespace ALE {
         std::cout << "ERROR: Could not replace source of target" << t << " with " << new_s << std::endl;
       }
     }
-#endif
 
 
   } // namespace Two
