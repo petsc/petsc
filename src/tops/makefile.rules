@@ -61,7 +61,7 @@ server-cxx:  server/cxx/obj/makefile
 
 server/cxx/obj/makefile: ${SIDLFILES}
 	-@if [ ! -d "server/cxx/obj" ]; then mkdir -p server/cxx/obj; fi
-	-@${BK} edit server/cxx/*_Impl.cc server/cxx/*_Impl.hh
+	-@if [ -d "server/cxx/SCCS" ]; then ${BK} edit -q server/cxx/*_Impl.cc server/cxx/*_Impl.hh; fi
 	-${BABEL} -R ${CCA_REPO} --hide-glue --exclude-external --suppress-timestamp \
 		${SIDLEXCLUDE} --server=cxx --output-directory=./server/cxx ${SIDLFILES}
 	@-${RM} ${REMOVEFILES} server/cxx/obj/makefile
