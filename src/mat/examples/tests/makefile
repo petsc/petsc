@@ -1027,7 +1027,7 @@ TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex32.PETSc ex32.rm ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 ex41.rm ex42.PETSc runex42 \
                                  ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm ex50.PETSc ex50.rm ex53.PETSc runex53 ex53.rm \
                                  ex94.PETSc runex94 runex94_2 ex94.rm ex100.PETSc runex100 ex100.rm
-TESTEXAMPLES_BLOCKSOLVE	       = ex5.PETSc runex5_3 ex5.rm ex46.PETSc runex46 ex46.rm
+TESTEXAMPLES_BLOCKSOLVE95      = ex5.PETSc runex5_3 ex5.rm ex46.PETSc runex46 ex46.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex79f ex79f.rm 
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm 
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm

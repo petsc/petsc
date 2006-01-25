@@ -407,7 +407,6 @@ PetscErrorCode MatSetValues_MPIRowbs(Mat mat,int m,const int im[],int n,const in
 #define __FUNCT__ "MatAssemblyBegin_MPIRowbs"
 PetscErrorCode MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 { 
-  Mat_MPIRowbs  *a = (Mat_MPIRowbs*)mat->data;
   MPI_Comm      comm = mat->comm;
   PetscErrorCode ierr;
   int         nstash,reallocs;
