@@ -192,7 +192,7 @@ static PetscErrorCode MatGetRowIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],Petsc
       ia[i1+1]++;
       i2++;                     /* Start col of next node */
       while (((col = *j++ + ishift) < tns[i2]) && nz > 0) {nz--;}
-      i2 = tvc[col];
+      if (nz > 0) i2 = tvc[col];
     }
   }
 
@@ -219,7 +219,7 @@ static PetscErrorCode MatGetRowIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],Petsc
       ja[work[i1]++] = i2 + oshift;
       ++i2;
       while(((col = *j++ + ishift) < tns[i2]) && nz > 0) {nz--;}
-      i2 = tvc[col];
+      if (nz > 0) i2 = tvc[col];
     }
   }
   ierr = PetscFree(ns_col);CHKERRQ(ierr);
@@ -307,7 +307,7 @@ static PetscErrorCode MatGetColumnIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],Pe
       ia[i2+1]++;
       i2++;      
       while (((col = *j++ + ishift) < tns[i2]) && nz > 0) {nz--;}
-      i2 = tvc[col];
+      if (nz > 0) i2 = tvc[col];
     }
   }
 
@@ -335,7 +335,7 @@ static PetscErrorCode MatGetColumnIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],Pe
       ja[work[i2]++] = i1 + oshift;
       i2++;
       while(((col = *j++ + ishift) < tns[i2]) && nz > 0) {nz--;}
-      i2 = tvc[col];
+      if (nz > 0) i2 = tvc[col];
     }
   }
   ierr = PetscFree(ns_col);CHKERRQ(ierr);
