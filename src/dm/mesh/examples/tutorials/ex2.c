@@ -23,7 +23,7 @@ static char help[] = "Generates, partitions, and outputs an unstructured mesh.\n
 PetscErrorCode MeshView_Sieve_New(ALE::Obj<ALE::def::Mesh>, PetscViewer);
 
 PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::def::Mesh>);
-PetscErrorCode CreatePartitionVector(Mesh, Vec *);
+PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::def::Mesh>, Vec *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -411,23 +411,17 @@ PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::def::Mesh> mesh)
 /*
   Creates a vector whose value is the processor rank on each element
 */
-PetscErrorCode CreatePartitionVector(Mesh mesh, Vec *partition)
+PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::def::Mesh> mesh, Vec *partition)
 {
-  ALE::Obj<ALE::Sieve> topology;
+  ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
+  ALE::Obj<ALE::def::Mesh::bundle_type> elementBundle = mesh->getBundle(mesh->getDimension());
   PetscScalar   *array;
-  MPI_Comm       comm;
   PetscMPIInt    rank;
   PetscInt       n, i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
-  ALE::IndexBundle elementBundle(topology);
-  elementBundle.setFiberDimensionByHeight(0, 1);
-  elementBundle.computeOverlapIndices();
-  elementBundle.computeGlobalIndices();
+  ierr = MPI_Comm_rank(mesh->getComm(), &rank);CHKERRQ(ierr);
   //ierr = MeshCreateVector(mesh, &elementBundle, debug, partition);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*partition, 1);CHKERRQ(ierr);
   ierr = VecGetLocalSize(*partition, &n);CHKERRQ(ierr);
