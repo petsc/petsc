@@ -88,7 +88,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSL_Minpack(Mat mat,MatColoringTyp
     for (i=0; i<n; i++) {
       s[i] = (ISColoringValue) (coloring[i]-1);
     }
-    ierr = MatColoringPatch(mat,n,ncolors,s,iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringPatch(mat,ncolors,n,s,iscoloring);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -137,7 +137,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringLF_Minpack(Mat mat,MatColoringTyp
     for (i=0; i<n; i++) {
       s[i] = (ISColoringValue) (coloring[i]-1);
     }
-    ierr = MatColoringPatch(mat,n,ncolors,s,iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringPatch(mat,ncolors,n,s,iscoloring);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -185,7 +185,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringID_Minpack(Mat mat,MatColoringTyp
     for (i=0; i<n; i++) {
       s[i] = (ISColoringValue) (coloring[i]-1);
     }
-    ierr = MatColoringPatch(mat,n,ncolors,s,iscoloring);CHKERRQ(ierr);
+    ierr = MatColoringPatch(mat,ncolors,n,s,iscoloring);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -211,7 +211,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_Natural(Mat mat,const MatColoringT
   for (i=start; i<end; i++) {
     colors[i-start] = i;
   }
-  ierr = ISColoringCreate(comm,end-start,mat->cmap.N,colors,iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(comm,mat->cmap.N,end-start,colors,iscoloring);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -1618,7 +1618,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoringPatch_Inode"
-PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt nin,PetscInt ncolors,ISColoringValue coloring[],ISColoring *iscoloring)
+PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISColoringValue coloring[],ISColoring *iscoloring)
 {
   Mat_inode       *a = (Mat_inode*)mat->data;
   PetscErrorCode  ierr;
@@ -1651,7 +1651,7 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt nin,PetscInt ncolors,ISCo
     newcolor[i] = colorused[newcolor[i]];
   }
   ierr = PetscFree(colorused);CHKERRQ(ierr);
-  ierr = ISColoringCreate(mat->comm,n,ncolors,newcolor,iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(mat->comm,ncolors,n,newcolor,iscoloring);CHKERRQ(ierr);
   ierr = PetscFree(coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -182,7 +182,7 @@ int main(int argc,char **argv)
   for (i=rstart; i<rend; i++) {
     colors[i - rstart] = 3*((i/user.mx) % 3) + (i % 3);
   }
-  ierr   = ISColoringCreate(PETSC_COMM_WORLD,rend-rstart,(3*2+2),colors,&iscoloring);CHKERRQ(ierr);
+  ierr   = ISColoringCreate(PETSC_COMM_WORLD,3*2+2,rend-rstart,colors,&iscoloring);CHKERRQ(ierr);
   ierr = PetscFree(colors);CHKERRQ(ierr);
 
   /*
