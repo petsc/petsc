@@ -5250,7 +5250,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoringPatch(Mat mat,PetscInt ncolors,Pets
   if (!mat->ops->coloringpatch){
     ierr = ISColoringCreate(mat->comm,ncolors,n,colorarray,iscoloring);CHKERRQ(ierr);
   } else {
-    ierr = (*mat->ops->coloringpatchg)(mat,ncolors,n,colorarray,iscoloring);CHKERRQ(ierr);
+    ierr = (*mat->ops->coloringpatch)(mat,ncolors,n,colorarray,iscoloring);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
