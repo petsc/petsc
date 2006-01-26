@@ -33,6 +33,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_MatPtAP(Mat A)
     ierr = PetscFree(merge->coi);CHKERRQ(ierr);
     ierr = PetscFree(merge->coj);CHKERRQ(ierr);
     ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
+    ierr = PetscFree(merge->rowmap.range);CHKERRQ(ierr);
     
     ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
@@ -261,6 +262,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
   merge->rowmap.n = pn;
   merge->rowmap.N = PETSC_DECIDE;
+  merge->rowmap.bs = 1;
   ierr = PetscMapInitialize(comm,&merge->rowmap);CHKERRQ(ierr);
   owners = merge->rowmap.range;
 
@@ -297,7 +299,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscGatherMessageLengths2(comm,merge->nsend,merge->nrecv,len_s,len_si,&merge->id_r,&merge->len_r,&len_ri);CHKERRQ(ierr);      
 
   /* post the Irecv and Isend of coj */
-  ierr = PetscObjectGetNewTag((PetscObject)merge,&tag);CHKERRQ(ierr);
+  ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
   ierr = PetscPostIrecvInt(comm,tag,merge->nrecv,merge->id_r,merge->len_r,&buf_rj,&rwaits);CHKERRQ(ierr);
 
   ierr = PetscMalloc((merge->nsend+1)*sizeof(MPI_Request),&swaits);CHKERRQ(ierr);
@@ -603,7 +605,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   buf_ri = merge->buf_ri;
   buf_rj = merge->buf_rj;
   len_s  = merge->len_s;
-  ierr = PetscObjectGetNewTag((PetscObject)merge,&taga);CHKERRQ(ierr);
+  ierr = PetscCommGetNewTag(comm,&taga);CHKERRQ(ierr);
   ierr = PetscPostIrecvScalar(comm,taga,merge->nrecv,merge->id_r,merge->len_r,&abuf_r,&r_waits);CHKERRQ(ierr);
 
   ierr = PetscMalloc((merge->nsend+1)*sizeof(MPI_Request),&s_waits);CHKERRQ(ierr);

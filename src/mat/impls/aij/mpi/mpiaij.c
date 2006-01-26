@@ -3134,6 +3134,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   /*---------------------------------------------------------*/
   merge->rowmap.n = m;
   merge->rowmap.N = M;
+  merge->rowmap.bs = 1;
   ierr = PetscMapInitialize(comm,&merge->rowmap);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&len_si);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&merge->len_s);CHKERRQ(ierr);

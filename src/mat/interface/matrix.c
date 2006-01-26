@@ -4511,8 +4511,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat mat,PetscInt *m,Petsc
   if (m) PetscValidIntPointer(m,2);
   if (n) PetscValidIntPointer(n,3);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  *m = mat->rmap.rstart;
-  *n = mat->rmap.rend;
+  if (m) *m = mat->rmap.rstart;
+  if (n) *n = mat->rmap.rend;
   PetscFunctionReturn(0);
 }
 
