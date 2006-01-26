@@ -1029,7 +1029,7 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
   PetscLogObjectState((PetscObject)mat,"Rows %D Cols %D",mat->rmap.n,mat->cmap.n);
 #endif
   ierr = PetscFree(l->pivots);CHKERRQ(ierr);
-  ierr = PetscFree(l->v);CHKERRQ(ierr);
+  if (!l->user_alloc) {ierr = PetscFree(l->v);CHKERRQ(ierr);}
   ierr = PetscFree(l);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatSeqDenseSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -65,7 +65,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
     for (j=0; j<B->ilen[i]; j++) aj[B->i[i] + j] = indices[aj[B->i[i] + j]];
   }
   B->nbs      = ec;
-  sbaij->B->cmap.n = ec*mat->rmap.bs;
+  sbaij->B->cmap.n = sbaij->B->cmap.N = ec*mat->rmap.bs;
+  ierr = PetscMapInitialize(sbaij->B->comm,&(sbaij->B->cmap));CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
 
   /* create local vector that is used to scatter into */
@@ -218,7 +219,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
     }
   }
   B->nbs     = ec;
-  baij->B->cmap.n = ec*mat->rmap.bs;
+  baij->B->cmap.n = baij->B->cmap.N = ec*mat->rmap.bs;
+  ierr = PetscMapInitialize(baij->B->comm,&(baij->B->cmap));CHKERRQ(ierr);
   ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
