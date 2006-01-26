@@ -66,7 +66,7 @@ PETSc</strong></a></li>
 &nbsp; Invoke the following commands from the toplevel PETSc directory
 [using bash shell]&nbsp; <br>
       <div style="margin-left: 40px;"><font color="#ff0000">export
-PETSC_DIR=`pwd`</font><br>
+PETSC_DIR=$PWD</font><br>
       </div>
       <div style="margin-left: 40px;"><font color="#ff0000">./config/configure.py
 --with-cc=gcc --with-fc=g77 --download-f-blas-lapack=1
@@ -452,6 +452,24 @@ for the installed TAU and PDT packages. For eg:<br>
 -pdt_parse=/homes/petsc/soft/linux-rh73/pdtoolkit-2.2b1/linux/bin/cxxparse
 -tau_lib_dir=/homes/petsc/soft/linux-rh73/tau-2.11.18/i386_linux/lib"</span><br>
       </p>
+      <h3><a name="PythonBindings"><font color="#551a8b">Installing
+TOPS components:</font></a></h3>
+      <p>To install TOPS components one has to download and install CCA
+Tools.&nbsp; [linux only]<br>
+      </p>
+      <ul>
+        <li>Get the CCA Tools package from <a
+ href="http://www.cca-forum.org/download/cca-tools/cca-tools-0.5.9.tar.gz">http://www.cca-forum.org/download/cca-tools/cca-tools-0.5.9.tar.gz</a></li>
+        <li>configure using '-with-mpi' option [prerequisites might be
+Java SDK, c++]</li>
+        <li>Run config/configure.py with C++, babel, ccafe options.
+Check config/asterix-tops.py for an example.<br>
+        </li>
+        <li>Build PETSc libraries &amp; TOPS components with 'make all'<br>
+        </li>
+        <li>To test&nbsp; do: 'cd src/tops; make examples'<br>
+        </li>
+      </ul>
       <h3><a name="PythonBindings"><font color="#551a8b">Installing the
 Python Bindings:</font></a></h3>
       <p>Currently, the automatic Python installtion works only for the
