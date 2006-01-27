@@ -4511,8 +4511,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat mat,PetscInt *m,Petsc
   if (m) PetscValidIntPointer(m,2);
   if (n) PetscValidIntPointer(n,3);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  *m = mat->rmap.rstart;
-  *n = mat->rmap.rend;
+  if (m) *m = mat->rmap.rstart;
+  if (n) *n = mat->rmap.rend;
   PetscFunctionReturn(0);
 }
 
@@ -5224,8 +5224,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumnIJ(Mat mat,PetscInt shift,Pets
 
     Input Parameters:
 +   mat - the matrix
-.   n   - number of colors
 .   ncolors - max color value
+.   n   - number of entries in colorarray
 -   colorarray - array indicating color for each column
 
     Output Parameters:
@@ -5236,7 +5236,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumnIJ(Mat mat,PetscInt shift,Pets
 .seealso: MatGetRowIJ(), MatGetColumnIJ()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatColoringPatch(Mat mat,PetscInt n,PetscInt ncolors,ISColoringValue colorarray[],ISColoring *iscoloring)
+PetscErrorCode PETSCMAT_DLLEXPORT MatColoringPatch(Mat mat,PetscInt ncolors,PetscInt n,ISColoringValue colorarray[],ISColoring *iscoloring)
 {
   PetscErrorCode ierr;
 
@@ -5248,9 +5248,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoringPatch(Mat mat,PetscInt n,PetscInt n
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   if (!mat->ops->coloringpatch){
-    ierr = ISColoringCreate(mat->comm,n,ncolors,colorarray,iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(mat->comm,ncolors,n,colorarray,iscoloring);CHKERRQ(ierr);
   } else {
-    ierr = (*mat->ops->coloringpatch)(mat,n,ncolors,colorarray,iscoloring);CHKERRQ(ierr);
+    ierr = (*mat->ops->coloringpatch)(mat,ncolors,n,colorarray,iscoloring);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

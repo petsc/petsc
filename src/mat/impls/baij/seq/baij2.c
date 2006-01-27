@@ -632,6 +632,7 @@ PetscErrorCode MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode VecCopy_Seq(Vec,Vec);
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqBAIJ_1"
 PetscErrorCode MatMultAdd_SeqBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
@@ -1099,7 +1100,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   PetscTruth     usecprow=a->compressedrow.use;
 
   PetscFunctionBegin;
-  ierr = VecCopy(yy,zz);CHKERRQ(ierr);
+  ierr = VecCopy_Seq(yy,zz);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&zarray);CHKERRQ(ierr);
 
@@ -1175,7 +1176,7 @@ PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   PetscTruth        usecprow=cprow.use;
 
   PetscFunctionBegin;
-  if (yy != zz) { ierr = VecCopy(yy,zz);CHKERRQ(ierr); }
+  if (yy != zz) { ierr = VecCopy_Seq(yy,zz);CHKERRQ(ierr); }
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr); 
 

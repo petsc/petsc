@@ -2731,7 +2731,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
       colors[i] = allcolors[a->garray[i]];
     }
     ierr = PetscFree(allcolors);CHKERRQ(ierr);
-    ierr = ISColoringCreate(MPI_COMM_SELF,a->B->cmap.n,coloring->n,colors,&ocoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(MPI_COMM_SELF,coloring->n,a->B->cmap.n,colors,&ocoloring);CHKERRQ(ierr);
     ierr = MatSetColoring_SeqAIJ(a->B,ocoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(ocoloring);CHKERRQ(ierr);
   } else if (coloring->ctype == IS_COLORING_GHOSTED) {
@@ -2750,7 +2750,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
       colors[i] = coloring->colors[larray[i]];
     }
     ierr = PetscFree(larray);CHKERRQ(ierr);
-    ierr = ISColoringCreate(PETSC_COMM_SELF,a->A->cmap.n,coloring->n,colors,&ocoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(PETSC_COMM_SELF,coloring->n,a->A->cmap.n,colors,&ocoloring);CHKERRQ(ierr);
     ierr = MatSetColoring_SeqAIJ(a->A,ocoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(ocoloring);CHKERRQ(ierr);
 
@@ -2762,7 +2762,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
       colors[i] = coloring->colors[larray[i]];
     }
     ierr = PetscFree(larray);CHKERRQ(ierr);
-    ierr = ISColoringCreate(MPI_COMM_SELF,a->B->cmap.n,coloring->n,colors,&ocoloring);CHKERRQ(ierr);
+    ierr = ISColoringCreate(MPI_COMM_SELF,coloring->n,a->B->cmap.n,colors,&ocoloring);CHKERRQ(ierr);
     ierr = MatSetColoring_SeqAIJ(a->B,ocoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(ocoloring);CHKERRQ(ierr);
   } else {
@@ -2937,6 +2937,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
     ierr = PetscFree(merge->coi);CHKERRQ(ierr);
     ierr = PetscFree(merge->coj);CHKERRQ(ierr);
     ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
+    ierr = PetscFree(merge->rowmap.range);CHKERRQ(ierr);
     
     ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
@@ -3134,6 +3135,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   /*---------------------------------------------------------*/
   merge->rowmap.n = m;
   merge->rowmap.N = M;
+  merge->rowmap.bs = 1;
   ierr = PetscMapInitialize(comm,&merge->rowmap);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&len_si);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&merge->len_s);CHKERRQ(ierr);
@@ -3174,7 +3176,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
 
   /* post the Irecv of j-structure */
   /*-------------------------------*/
-  ierr = PetscObjectGetNewTag((PetscObject)mpimat,&tagj);CHKERRQ(ierr);
+  ierr = PetscCommGetNewTag(comm,&tagj);CHKERRQ(ierr);
   ierr = PetscPostIrecvInt(comm,tagj,merge->nrecv,merge->id_r,merge->len_r,&buf_rj,&rj_waits);CHKERRQ(ierr);
 
   /* post the Isend of j-structure */
@@ -3196,7 +3198,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   
   /* send and recv i-structure */
   /*---------------------------*/  
-  ierr = PetscObjectGetNewTag((PetscObject)merge,&tagi);CHKERRQ(ierr);
+  ierr = PetscCommGetNewTag(comm,&tagi);CHKERRQ(ierr);
   ierr = PetscPostIrecvInt(comm,tagi,merge->nrecv,merge->id_r,len_ri,&buf_ri,&ri_waits);CHKERRQ(ierr);
     
   ierr = PetscMalloc((len+1)*sizeof(PetscInt),&buf_s);CHKERRQ(ierr); 

@@ -23,6 +23,8 @@ class Configure(PETSc.package.Package):
     '''Calls the regular package configureLibrary and then does an additional test needed by babel'''
     '''Normally you do not need to provide this method'''
     PETSc.package.Package.configureLibrary(self)
+    # add in include/cxx path
+    self.include.append(os.path.join(self.framework.argDB['with-babel-dir'],'include','cxx'))
     babel_bin_path = os.path.join(self.framework.argDB['with-babel-dir'],'bin')
     if self.framework.argDB['with-babel-dir']:
       self.getExecutable('babel', path = babel_bin_path, getFullPath = 1,resultName = 'babel')

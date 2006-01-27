@@ -192,7 +192,7 @@ static PetscErrorCode MatGetRowIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],Petsc
       ia[i1+1]++;
       i2++;                     /* Start col of next node */
       while (((col = *j++ + ishift) < tns[i2]) && nz > 0) {nz--;}
-      i2 = tvc[col];
+      if (nz > 0) i2 = tvc[col];
     }
   }
 
@@ -219,7 +219,7 @@ static PetscErrorCode MatGetRowIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],Petsc
       ja[work[i1]++] = i2 + oshift;
       ++i2;
       while(((col = *j++ + ishift) < tns[i2]) && nz > 0) {nz--;}
-      i2 = tvc[col];
+      if (nz > 0) i2 = tvc[col];
     }
   }
   ierr = PetscFree(ns_col);CHKERRQ(ierr);
@@ -307,7 +307,7 @@ static PetscErrorCode MatGetColumnIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],Pe
       ia[i2+1]++;
       i2++;      
       while (((col = *j++ + ishift) < tns[i2]) && nz > 0) {nz--;}
-      i2 = tvc[col];
+      if (nz > 0) i2 = tvc[col];
     }
   }
 
@@ -335,7 +335,7 @@ static PetscErrorCode MatGetColumnIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],Pe
       ja[work[i2]++] = i1 + oshift;
       i2++;
       while(((col = *j++ + ishift) < tns[i2]) && nz > 0) {nz--;}
-      i2 = tvc[col];
+      if (nz > 0) i2 = tvc[col];
     }
   }
   ierr = PetscFree(ns_col);CHKERRQ(ierr);
@@ -1618,7 +1618,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoringPatch_Inode"
-PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt nin,PetscInt ncolors,ISColoringValue coloring[],ISColoring *iscoloring)
+PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISColoringValue coloring[],ISColoring *iscoloring)
 {
   Mat_inode       *a = (Mat_inode*)mat->data;
   PetscErrorCode  ierr;
@@ -1651,7 +1651,7 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt nin,PetscInt ncolors,ISCo
     newcolor[i] = colorused[newcolor[i]];
   }
   ierr = PetscFree(colorused);CHKERRQ(ierr);
-  ierr = ISColoringCreate(mat->comm,n,ncolors,newcolor,iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(mat->comm,ncolors,n,newcolor,iscoloring);CHKERRQ(ierr);
   ierr = PetscFree(coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

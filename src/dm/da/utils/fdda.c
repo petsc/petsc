@@ -244,8 +244,8 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	    }
 	  }
 	}
-        ncolors = (nc-1) + nc*(col-1) + col*(col-1);
-	ierr = ISColoringCreate(comm,nc*nx*ny,ncolors,colors,&da->localcoloring);CHKERRQ(ierr);
+        ncolors = (nc-1) + nc*(col-1 + col*(col-1));
+	ierr = ISColoringCreate(comm,ncolors,nc*nx*ny,colors,&da->localcoloring);CHKERRQ(ierr);
       }
       *coloring = da->localcoloring;
     } else if (ctype == IS_COLORING_GHOSTED) {
@@ -260,8 +260,8 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	    }
 	  }
 	}
-        ncolors = (nc-1) + nc*(col -1) + col*(col-1);
-	ierr = ISColoringCreate(comm,nc*gnx*gny,ncolors,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+        ncolors = (nc-1) + nc*(col - 1 + col*(col-1));
+	ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,&da->ghostedcoloring);CHKERRQ(ierr);
 	ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
       *coloring = da->ghostedcoloring;
@@ -324,8 +324,8 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
           }
         }
       }
-      ncolors = (nc-1) + nc*(col-1) + col*(col-1)+ col*col*(col-1);
-      ierr = ISColoringCreate(comm,nc*nx*ny*nz,ncolors,colors,&da->localcoloring);CHKERRQ(ierr);
+      ncolors = (nc-1) + nc*(col-1 + col*(col-1)+ col*col*(col-1));
+      ierr = ISColoringCreate(comm,ncolors,nc*nx*ny*nz,colors,&da->localcoloring);CHKERRQ(ierr);
     }
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
@@ -342,8 +342,8 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
           }
         }
       }
-      ncolors = (nc-1) + nc*(col-1) + col*(col-1)+ col*col*(col-1);
-      ierr = ISColoringCreate(comm,nc*gnx*gny*gnz,ncolors,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+      ncolors = (nc-1) + nc*(col-1 + col*(col-1)+ col*col*(col-1));
+      ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny*gnz,colors,&da->ghostedcoloring);CHKERRQ(ierr);
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
@@ -394,7 +394,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
         }
       }
       ncolors = (nc-1) + nc*(col-1);
-      ierr = ISColoringCreate(comm,nc*nx,ncolors,colors,&da->localcoloring);CHKERRQ(ierr);
+      ierr = ISColoringCreate(comm,ncolors,nc*nx,colors,&da->localcoloring);CHKERRQ(ierr);
     }
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
@@ -408,7 +408,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
         }
       }
       ncolors = (nc-1) + nc*(col-1);
-      ierr = ISColoringCreate(comm,nc*gnx,ncolors,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+      ierr = ISColoringCreate(comm,ncolors,nc*gnx,colors,&da->ghostedcoloring);CHKERRQ(ierr);
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
@@ -460,8 +460,8 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
 	  }
 	}
       }
-      ncolors = (nc-1) + nc*4;
-      ierr = ISColoringCreate(comm,nc*nx*ny,ncolors,colors,&da->localcoloring);CHKERRQ(ierr);
+      ncolors = 5*nc;
+      ierr = ISColoringCreate(comm,ncolors,nc*nx*ny,colors,&da->localcoloring);CHKERRQ(ierr);
     }
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
@@ -475,8 +475,8 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
 	  }
 	}
       }
-      ncolors = (nc-1) + nc*4;
-      ierr = ISColoringCreate(comm,nc*gnx*gny,ncolors,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+      ncolors = 5*nc;
+      ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,&da->ghostedcoloring);CHKERRQ(ierr);
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;

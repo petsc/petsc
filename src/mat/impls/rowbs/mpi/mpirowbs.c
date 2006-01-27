@@ -254,10 +254,10 @@ static PetscErrorCode MatAssemblyEnd_MPIRowbs_local(Mat AA,MatAssemblyType mode)
 #define __FUNCT__ "MatZeroRows_MPIRowbs_local"
 static PetscErrorCode MatZeroRows_MPIRowbs_local(Mat A,PetscInt N,const PetscInt rz[],PetscScalar diag)
 {
-  Mat_MPIRowbs *a = (Mat_MPIRowbs*)A->data;
-  BSspmat      *l = a->A;
+  Mat_MPIRowbs   *a = (Mat_MPIRowbs*)A->data;
+  BSspmat        *l = a->A;
   PetscErrorCode ierr;
-  int          i,m = A->rmap.n - 1,col,base=a->rmap.rstart;
+  int            i,m = A->rmap.n - 1,col,base=A->rmap.rstart;
 
   PetscFunctionBegin;
   if (a->keepzeroedrows) {
@@ -407,7 +407,6 @@ PetscErrorCode MatSetValues_MPIRowbs(Mat mat,int m,const int im[],int n,const in
 #define __FUNCT__ "MatAssemblyBegin_MPIRowbs"
 PetscErrorCode MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 { 
-  Mat_MPIRowbs  *a = (Mat_MPIRowbs*)mat->data;
   MPI_Comm      comm = mat->comm;
   PetscErrorCode ierr;
   int         nstash,reallocs;
@@ -1616,8 +1615,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   
   PetscFunctionBegin;
   comm = A->comm;
-  m    = A->rmap.n;
-  M    = A->rmap.N;
 
   ierr                  = PetscNew(Mat_MPIRowbs,&a);CHKERRQ(ierr);
   A->data               = (void*)a;
@@ -1633,8 +1630,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   ierr = MPI_Comm_size(comm,&a->size);CHKERRQ(ierr);
 
 
-  ierr = PetscMapInitialize(comm,m,M,&A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(comm,m,M,&A->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(comm,&A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(comm,&A->cmap);CHKERRQ(ierr);
+  m    = A->rmap.n;
+  M    = A->rmap.N;
 
   ierr                             = PetscMalloc((A->rmap.n+1)*sizeof(int),&a->imax);CHKERRQ(ierr);
   a->reallocs                      = 0;
