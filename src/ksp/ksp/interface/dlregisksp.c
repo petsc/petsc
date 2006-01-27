@@ -72,7 +72,7 @@ const char *KSPConvergedReasons_Shifted[] = {"DIVERGED_INDEFINITE_MAT","DIVERGED
 					     "DIVERGED_NONSYMMETRIC", "DIVERGED_BREAKDOWN_BICG","DIVERGED_BREAKDOWN",
                                              "DIVERGED_DTOL","DIVERGED_ITS","DIVERGED_NULL","","CONVERGED_ITERATING",
                                              "","CONVERGED_RTOL","CONVERGED_ATOL","CONVERGED_ITS",
-                                             "CONVERGED_QCG_NEG_CURVE","CONVERGED_QCG_CONSTRAINED","CONVERGED_STEP_LENGTH",
+                                             "CONVERGED_STCG_NEG_CURVE","CONVERGED_STCG_CONSTRAINED","CONVERGED_STEP_LENGTH",
                                              "KSPConvergedReason","KSP_",0};
 const char **KSPConvergedReasons = KSPConvergedReasons_Shifted + 10;
 
