@@ -38,16 +38,22 @@ namespace ALE {
       // Basic types
       typedef Sieve_ sieve_type;
       typedef typename sieve_type::point_type point_type;
+      typedef std::vector<point_type> PointArray;
       typedef Patch_ patch_type;
       typedef Index_ index_type;
       typedef Value_ value_type;
+      typedef BiGraph<point_type,patch_type,index_type> order_type;
     private:
       int             debug;
       Obj<sieve_type> _topology;
-      // We need an ordering, which should be patch--order-->point
-      // We need a reordering, which should be patch--new order-->old order
-      // We can add fields to an ordering using <patch,field>--order-->point
+      // We need an ordering, which should be patch<--order--point
+      Obj<order_type> _order;
+      // We need a reordering, which should be patch<--new order--old order
+      // We can add fields to an ordering using <patch,field><--order--point
       // We need sequences that can return the color, or do it automatically
+      // We allocate based upon a certain
+      std::map<patch_type,int>          _storageSize;
+      std::map<patch_type,value_type *> _storage;
     public:
       // OLD CRAP:
       // Breakdown of the base Sieve into patches
@@ -58,17 +64,47 @@ namespace ALE {
       // on the patch. We use a BiGraph here, but the object can properly be thought
       // of as a CoSieve over the topology sieve.
     public:
-      CoSifter(int debug = 0) : debug(debug) {};
+      CoSifter(int debug = 0) : debug(debug) {
+        _order = order_type(debug);
+      };
 
       void            setTopology(const Obj<sieve_type>& topology) {this->_topology = topology;};
       Obj<sieve_type> getTopology() {return this->_topology;};
       // -- Patch manipulation --
       // Creates a patch whose order is taken from the input point sequence
-      template<typename pointSequence> void setPatch(const Obj<pointSequence>& points, const patch_type& patch);
+      template<typename pointSequence> void setPatch(const Obj<pointSequence>& points, const patch_type& patch) {
+        int c = 0;
+
+        for(typename pointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+          this->_order->addArrow(*p_iter, patch, point_type(c++, 0));
+        }
+      };
       // Returns the points in the patch in order
       //Obj<typename order_type::coneSequence> getPatch(const patch_type& patch);
       // -- Index manipulation --
-      void setFiberDimension(const patch_type& patch, const point_type& p, int dim);
+    private:
+      struct changeOffset {
+        changeOffset(int newOffset) : newOffset(newOffset) {};
+
+        void operator()(typename order_type::Arrow_& p) {
+          p.color.prefix = newOffset;
+        }
+      private:
+        int newOffset;
+      };
+      struct changeDim {
+        changeDim(int newDim) : newDim(newDim) {};
+
+        void operator()(typename order_type::Arrow_& p) {
+          p.color.index = newDim;
+        }
+      private:
+        int newDim;
+      };
+    public:
+      void setFiberDimension(const patch_type& patch, const point_type& p, int dim) {
+        this->_order->modifyColor(p, patch, changeDim(dim));
+      };
       void setFiberDimensionByDepth(const patch_type& patch, int depth, int dim) {
         Obj<typename sieve_type::depthSequence> points = this->_topology->depthStratum(depth);
 
@@ -76,30 +112,81 @@ namespace ALE {
           this->setFiberDimension(patch, *p_iter, dim);
         }
       };
+    private:
+      void __orderCell(const patch_type& patch, const point_type& cell, int& offset) {
+        Obj<typename sieve_type::coneSequence> cone = this->_topology->cone(cell);
+
+        for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          this->orderCell(patch, *p_iter, offset);
+        }
+        // Set the prefix to the current offset (this won't kill the topology iterator)
+        int dim = this->_order->getColor(cell, patch);
+
+        this->_order->modifyColor(cell, patch, changeOffset(offset));
+        offset += dim;
+      };
+    public:
       // This constructs an order on the patch by fusing the Ord CoSieve (embodied by the prefix number)
       // and the Count CoSieve (embodied by the index), turning the prefix into an offset.
-      void orderPatch(const patch_type& patch);
+      void orderPatch(const patch_type& patch) {
+        PointArray points;
+        int        offset = 0;
+
+        // Filter out newly added points
+        Obj<typename order_type::coneSequence> cone = this->_order->cone(patch);
+        int order = 0;
+        for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          if (p_iter.color().prefix == order) {
+            points.push_back(*p_iter);
+            order++;
+          }
+        }
+        // Loop over patch members
+        for(typename PointArray::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+          // Traverse the closure of the member in the topology
+          this->__orderCell(patch, *p_iter, offset);
+        }
+        // Allocate patch
+        if (this->_storage.find(patch) != this->_storage.end()) {
+          delete [] this->_storage[patch];
+        }
+        if (debug) {std::cout << "Allocated patch " << patch << " of size " << offset << std::endl;}
+        this->_storage[patch] = new value_type[offset];
+        this->_storageSize[patch] = offset;
+      };
       #undef __FUNCT__
       #define __FUNCT__ "CoSifter::orderPatches"
       void orderPatches() {
         ALE_LOG_EVENT_BEGIN;
-//         Obj<typename patches_type::baseSequence> base = this->_patches.base();
+        Obj<typename order_type::baseSequence> base = this->_order->base();
 
-//         for(typename patches_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-//           this->orderPatch(*b_iter);
-//         }
+        for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          this->orderPatch(*b_iter);
+        }
         ALE_LOG_EVENT_END;
       };
       //Obj<IndexArray> getIndices(const patch_type& patch};
       //Obj<IndexArray> getIndices(const patch_type& patch, const point_type& p};
-      const index_type& getIndex(const patch_type& patch, const point_type& p);
+      const index_type& getIndex(const patch_type& patch, const point_type& p) {
+        return this->_order->getColor(p, patch);
+      };
       // -- Value manipulation --
-      const value_type *restrict(const patch_type& patch);
+      const value_type *restrict(const patch_type& patch) {
+        return this->_storage[patch];
+      };
       const value_type *restrict(const patch_type& patch, const point_type& p);
       const value_type *restrict(const std::string& orderName, const patch_type& patch);
       const value_type *restrict(const std::string& orderName, const patch_type& patch, const point_type& p);
       void              update(const patch_type& patch, const value_type values[]);
-      void              update(const patch_type& patch, const point_type& p, const value_type values[]);
+      void              update(const patch_type& patch, const point_type& p, const value_type values[]) {
+        const index_type& idx = this->getIndex(patch, p);
+        int offset = idx.prefix;
+
+        for(int i = 0; i < idx.index; ++i) {
+          if (debug) {std::cout << "Set a[" << offset+i << "] = " << values[i] << " on patch " << patch << std::endl;}
+          this->_storage[patch][offset+i] = values[i];
+        }
+      };
       void              update(const std::string& orderName, const patch_type& patch, const value_type values[]);
       void              update(const std::string& orderName, const patch_type& patch, const point_type& p, const value_type values[]);
       void              updateAdd(const patch_type& patch, const value_type values[]);

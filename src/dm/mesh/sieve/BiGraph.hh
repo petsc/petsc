@@ -690,6 +690,7 @@ namespace ALE {
       typedef Source_ source_type;
       typedef Target_ target_type;
       typedef Color_  color_type;
+      typedef ALE::def::Arrow<source_type,target_type,color_type> Arrow_;
       int debug;
     private:
 
@@ -699,11 +700,10 @@ namespace ALE {
       struct sourceTag{};
       struct targetTag{};
       struct colorTag{};
+      struct targetSourceTag{};
       struct sourceColorTag{};
       struct colorSourceTag{};
       struct targetColorTag{};
-      // Arrow record
-      typedef ALE::def::Arrow<source_type,target_type,color_type> Arrow_;
       // Arrow record set
       typedef ::boost::multi_index::multi_index_container<
         Arrow_,
@@ -714,6 +714,11 @@ namespace ALE {
             ::boost::multi_index::tag<targetTag>, BOOST_MULTI_INDEX_MEMBER(Arrow_,target_type,target)>,
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<colorTag>,  BOOST_MULTI_INDEX_MEMBER(Arrow_,color_type,color)>,
+          ::boost::multi_index::ordered_unique<
+            ::boost::multi_index::tag<targetSourceTag>,
+            ::boost::multi_index::composite_key<
+              Arrow_, BOOST_MULTI_INDEX_MEMBER(Arrow_,target_type,target), BOOST_MULTI_INDEX_MEMBER(Arrow_,source_type,source)>
+          >,
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<sourceColorTag>,
             ::boost::multi_index::composite_key<
@@ -788,9 +793,9 @@ namespace ALE {
       //
 
       // base specialization of OutputSequence and related iterators and methods
-      class baseSequence : public OutputSequence<BasePointSet, degreeTag, BOOST_MULTI_INDEX_MEMBER(BasePoint,typename BasePoint::point_type,point)> {
+      class baseSequence : public OutputSequence<BasePointSet, degreeTag, BOOST_MULTI_INDEX_MEMBER(BasePoint,const typename BasePoint::point_type,point)> {
       public:
-        typedef typename OutputSequence<BasePointSet, degreeTag, BOOST_MULTI_INDEX_MEMBER(BasePoint,typename BasePoint::point_type,point)>::iterator iterator;
+        typedef typename OutputSequence<BasePointSet, degreeTag, BOOST_MULTI_INDEX_MEMBER(BasePoint,const typename BasePoint::point_type,point)>::iterator iterator;
 
         virtual iterator begin() {
           // Retrieve the beginning iterator to the sequence of points with indegree >= 1
@@ -802,14 +807,11 @@ namespace ALE {
           return iterator(this->_index.end());
         };
       };
-      // baseSequence iterator dereferencing specialization
-      //const typename baseSequence::iterator::reference baseSequence::iterator::operator*() const {return this->_itor->point;};
-
 
       // cap specialization of OutputSequence and related iterators and  methods
-      class capSequence  : public OutputSequence<CapPointSet, degreeTag, BOOST_MULTI_INDEX_MEMBER(CapPoint,typename CapPoint::point_type,point)> {
+      class capSequence  : public OutputSequence<CapPointSet, degreeTag, BOOST_MULTI_INDEX_MEMBER(CapPoint,const typename CapPoint::point_type,point)> {
       public:
-        typedef typename OutputSequence<CapPointSet, degreeTag, BOOST_MULTI_INDEX_MEMBER(CapPoint,typename CapPoint::point_type,point)>::iterator iterator;
+        typedef typename OutputSequence<CapPointSet, degreeTag, BOOST_MULTI_INDEX_MEMBER(CapPoint,const typename CapPoint::point_type,point)>::iterator iterator;
 
         virtual iterator begin() {
           // Retrieve the beginning iterator to the sequence of points with outdegree >= 1
@@ -907,12 +909,12 @@ namespace ALE {
 
       typedef std::set<source_type, std::less<source_type>, ALE_ALLOCATOR<source_type> > coneSet;
       typedef std::set<target_type, std::less<target_type>, ALE_ALLOCATOR<target_type> > supportSet;
-      
+
     public:
       // 
       // Basic interface
       //
-      BiGraph() : debug(0) {};
+      BiGraph(int debug = 0) : debug(debug) {};
 
       //
       // Query methods
@@ -948,6 +950,11 @@ namespace ALE {
       template<class sourceInputSequence>
       Obj<supportSet>      support(const Obj<sourceInputSequence>& sources, const color_type& color);
       // unimplemented
+      const color_type&    getColor(const source_type& s, const target_type& t) {
+        typename ::boost::multi_index::index<ArrowSet,targetSourceTag>::type& index = ::boost::multi_index::get<targetSourceTag>(this->_arrows);
+        typename ::boost::multi_index::index<ArrowSet,targetSourceTag>::type::iterator i = index.find(::boost::make_tuple(t,s));
+        return (*i).color;
+      };
 
       //
       // Lattice queries
@@ -1014,7 +1021,11 @@ namespace ALE {
         this->addArrow(p, q, color_type());
       };
       void addArrow(const source_type& p, const target_type& q, const color_type& color) {
-        this->_arrows.insert(arrow_type(p, q, color)); this->__adjustIndegree(q,1); this->__adjustOutdegree(p,1);
+        this->addArrow(Arrow_(p, q, color));
+        //std::cout << "Added " << Arrow_(p, q, color);
+      };
+      void addArrow(const Arrow_& a) {
+        this->_arrows.insert(a); this->__adjustIndegree(a.target,1); this->__adjustOutdegree(a.source,1);
         //std::cout << "Added " << Arrow_(p, q, color);
       };
       void addCone(const source_type& source, const target_type& target){
@@ -1065,6 +1076,23 @@ namespace ALE {
       void replaceSource(const source_type& s, const source_type& new_s);
 
       void replaceTarget(const target_type& t, const target_type& new_t);
+
+      template<typename Changer>
+      void modifyColor(const source_type& s, const target_type& t, Changer changeColor) {
+        typename ::boost::multi_index::index<ArrowSet,targetSourceTag>::type& index = ::boost::multi_index::get<targetSourceTag>(this->_arrows);
+        typename ::boost::multi_index::index<ArrowSet,targetSourceTag>::type::iterator i = index.find(::boost::make_tuple(t,s));
+        if (i != index.end()) {
+          index.modify(i, changeColor);
+        } else {
+//           std::cout << "ERROR: Could not change color for " << s << " to " << t << std::endl;
+//           for(typename ::boost::multi_index::index<ArrowSet,targetSourceTag>::type::iterator v = index.begin(); v != index.end(); ++v) {
+//             std::cout << "  Arrow " << *v << std::endl;
+//           }
+          Arrow_ a(s, t, color_type());
+          changeColor(a);
+          this->addArrow(a);
+        }
+      };
 
       void replaceSourceOfTarget(const target_type& t, const source_type& new_s);
 

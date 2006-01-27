@@ -40,7 +40,7 @@ namespace ALE {
 
       MPI_Comm        getComm() {return this->comm;};
       void            setComm(MPI_Comm comm) {this->comm = comm; MPI_Comm_rank(comm, &this->rank);};
-      int             getRank() {return this->comm;};
+      int             getRank() {return this->rank;};
       Obj<sieve_type> getTopology() {return this->topology;};
       void            setTopology(const Obj<sieve_type>& topology) {this->topology = topology;};
       int             getDimension() {return this->dim;};
@@ -177,7 +177,6 @@ namespace ALE {
 
       // Create a serial mesh
       void populate(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true) {
-        this->topology->debug = this->debug;
         this->topology->setStratification(false);
         if (this->getRank() == 0) {
           this->buildTopology(numSimplices, simplices, numVertices, interpolate);
@@ -651,12 +650,11 @@ namespace ALE {
       };
 
       static Obj<ALE::Two::Mesh> createNew(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, int debug = 0) {
-        Obj<ALE::Two::Mesh> mesh = ALE::Two::Mesh(comm, dim);
+        Obj<ALE::Two::Mesh> mesh = ALE::Two::Mesh(comm, dim, debug);
         int      *vertices;
         double   *coordinates;
         int       numElements, numVertices;
 
-        mesh->debug = debug;
         readConnectivity(comm, baseFilename+".lcon", dim, useZeroBase, numElements, &vertices);
         readCoordinates(comm, baseFilename+".nodes", dim, numVertices, &coordinates);
         mesh->populate(numElements, vertices, numVertices, coordinates);
