@@ -1201,7 +1201,7 @@ PetscErrorCode ExpandSetIntervals(ALE::Point_set intervals, PetscInt *indices)
 #define __FUNCT__ "ElementGeometry"
 PetscErrorCode ElementGeometry(ALE::Obj<ALE::def::Mesh> mesh, const ALE::def::Mesh::point_type& e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
-  PetscScalar   *array = mesh->getCoordinates()->restrictPatch(0, e);
+  double        *coords = mesh->getCoordinates()->restrict("element", e);
   int            dim = mesh->getDimension();
   PetscReal      det, invDet;
   PetscErrorCode ierr;
@@ -1209,13 +1209,13 @@ PetscErrorCode ElementGeometry(ALE::Obj<ALE::def::Mesh> mesh, const ALE::def::Me
   PetscFunctionBegin;
   if (v0) {
     for(int d = 0; d < dim; d++) {
-      v0[d] = array[d];
+      v0[d] = coords[d];
     }
   }
   if (J) {
     for(int d = 0; d < dim; d++) {
       for(int f = 0; f < dim; f++) {
-        J[d*dim+f] = 0.5*(array[(f+1)*dim+d] - array[0*dim+d]);
+        J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
       }
     }
     if (debug) {
@@ -1429,7 +1429,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     }
     if (debug) {PetscSynchronizedPrintf(comm, "elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);}
     /* Assembly */
-    field->updatePatchAdd(0, *e_itor, elementVec);
+    field->updateAdd("element", *e_itor, elementVec);
     if (debug) {ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);}
   }
   ierr = PetscFree(v0);CHKERRQ(ierr);

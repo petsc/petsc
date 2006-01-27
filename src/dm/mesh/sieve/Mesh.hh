@@ -14,6 +14,181 @@
 
 namespace ALE {
 
+  namespace Two {
+    class Mesh {
+    public:
+      typedef ALE::def::Point point_type;
+      typedef std::vector<point_type> PointArray;
+      typedef ALE::def::Sieve<point_type,int> sieve_type;
+      typedef point_type patch_type;
+      typedef CoSifter<sieve_type, patch_type, point_type, int> bundle_type;
+      typedef CoSifter<sieve_type, patch_type, point_type, double> field_type;
+      int debug;
+    private:
+      Obj<sieve_type> topology;
+      Obj<field_type> coordinates;
+      std::map<int, Obj<bundle_type> > bundles;
+      MPI_Comm        comm;
+      int             rank;
+      int             dim;
+    public:
+      Mesh(MPI_Comm comm, int dimension, int debug = 0) : debug(debug), dim(dimension) {
+        this->setComm(comm);
+        this->topology    = sieve_type(debug);
+        this->coordinates = field_type(debug);
+      };
+
+      MPI_Comm        getComm() {return this->comm;};
+      void            setComm(MPI_Comm comm) {this->comm = comm; MPI_Comm_rank(comm, &this->rank);};
+      int             getRank() {return this->comm;};
+      Obj<sieve_type> getTopology() {return this->topology;};
+      void            setTopology(const Obj<sieve_type>& topology) {this->topology = topology;};
+      int             getDimension() {return this->dim;};
+      void            setDimension(int dim) {this->dim = dim;};
+      Obj<field_type> getCoordinates() {return this->coordinates;};
+      void            setCoordinates(const Obj<field_type>& coordinates) {this->coordinates = coordinates;};
+      Obj<bundle_type> getBundle(const int dim) {
+        if (this->bundles.find(dim) == this->bundles.end()) {
+          Obj<bundle_type> bundle = bundle_type(debug);
+
+          // Need to globalize indices (that is what we might use the value ints for)
+          std::cout << "Creating new bundle for dim " << dim << std::endl;
+          bundle->setTopology(this->topology);
+          bundle->setPatch(this->topology->leaves(), bundle_type::patch_type());
+          bundle->setFiberDimensionByDepth(bundle_type::patch_type(), dim, 1);
+          bundle->orderPatches();
+          this->bundles[dim] = bundle;
+        }
+        return this->bundles[dim];
+      };
+
+      void buildFaces(int dim, std::map<int, int*> *curSimplex, Obj<PointArray> boundary, point_type& simplex) {
+        Obj<PointArray> faces = PointArray();
+
+        if (debug > 1) {std::cout << "  Building faces for boundary(size " << boundary->size() << "), dim " << dim << std::endl;}
+        if (dim > 1) {
+          // Use the cone construction
+          for(PointArray::iterator b_itor = boundary->begin(); b_itor != boundary->end(); ++b_itor) {
+            Obj<PointArray> faceBoundary = PointArray();
+            point_type    face;
+
+            for(PointArray::iterator i_itor = boundary->begin(); i_itor != boundary->end(); ++i_itor) {
+              if (i_itor != b_itor) {
+                faceBoundary->push_back(*i_itor);
+              }
+            }
+            if (debug > 1) {std::cout << "    boundary point " << *b_itor << std::endl;}
+            this->buildFaces(dim-1, curSimplex, faceBoundary, face);
+            faces->push_back(face);
+          }
+        } else {
+          if (debug > 1) {std::cout << "  Just set faces to boundary in 1d" << std::endl;}
+          faces = boundary;
+        }
+        if (debug > 1) {
+          for(PointArray::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
+            std::cout << "  face point " << *f_itor << std::endl;
+          }
+        }
+        // We always create the toplevel, so we could shortcircuit somehow
+        // Should not have to loop here since the meet of just 2 boundary elements is an element
+        PointArray::iterator f_itor = faces->begin();
+        point_type           start = *f_itor;
+        f_itor++;
+        point_type           next = *f_itor;
+        Obj<ALE::def::PointSet> preElement = this->topology->nJoin(start, next, 1);
+
+        if (preElement->size() > 0) {
+          simplex = *preElement->begin();
+          if (debug > 1) {std::cout << "  Found old simplex " << simplex << std::endl;}
+        } else {
+          int color = 0;
+
+          simplex = point_type(0, (*(*curSimplex)[dim])++);
+          for(PointArray::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
+            this->topology->addArrow(*f_itor, simplex, color++);
+          }
+          if (debug > 1) {std::cout << "  Added simplex " << simplex << " dim " << dim << std::endl;}
+        }
+      };
+
+      #undef __FUNCT__
+      #define __FUNCT__ "Mesh::buildTopology"
+      // Build a topology from a connectivity description
+      //   (0, 0)            ... (0, numSimplices-1):  dim-dimensional simplices
+      //   (0, numSimplices) ... (0, numVertices):     vertices
+      // The other simplices are numbered as they are requested
+      void buildTopology(int numSimplices, int simplices[], int numVertices, bool interpolate = true) {
+        ALE_LOG_EVENT_BEGIN;
+        // Create a map from dimension to the current element number for that dimension
+        std::map<int,int*> curElement = std::map<int,int*>();
+        int                curSimplex = 0;
+        int                curVertex  = numSimplices;
+        int                newElement = numSimplices+numVertices;
+        Obj<PointArray>    boundary   = PointArray();
+
+        curElement[0]   = &curVertex;
+        curElement[dim] = &curSimplex;
+        for(int d = 1; d < dim; d++) {
+          curElement[d] = &newElement;
+        }
+        for(int s = 0; s < numSimplices; s++) {
+          point_type simplex(0, s);
+
+          // Build the simplex
+          if (interpolate) {
+            boundary->clear();
+            for(int b = 0; b < dim+1; b++) {
+              point_type vertex(0, simplices[s*(dim+1)+b]+numSimplices);
+
+              if (debug > 1) {std::cout << "Adding boundary node " << vertex << std::endl;}
+              boundary->push_back(vertex);
+            }
+            if (debug) {std::cout << "simplex " << s << " boundary size " << boundary->size() << std::endl;}
+
+            this->buildFaces(this->dim, &curElement, boundary, simplex);
+          } else {
+            for(int b = 0; b < dim+1; b++) {
+              point_type p(0, simplices[s*(dim+1)+b]+numSimplices);
+
+              this->topology->addArrow(p, simplex, b);
+            }
+          }
+        }
+        ALE_LOG_EVENT_END;
+      };
+
+      #undef __FUNCT__
+      #define __FUNCT__ "Mesh::createSerCoords"
+      void createSerialCoordinates(int embedDim, int numElements, double coords[]) {
+        ALE_LOG_EVENT_BEGIN;
+        patch_type patch;
+
+        this->coordinates->setTopology(this->topology);
+        this->coordinates->setPatch(this->topology->leaves(), patch);
+        this->coordinates->setFiberDimensionByDepth(patch, 0, embedDim);
+        this->coordinates->orderPatches();
+        Obj<sieve_type::depthSequence> vertices = this->topology->depthStratum(0);
+        for(sieve_type::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
+          this->coordinates->update(patch, *v_itor, &coords[((*v_itor).index - numElements)*embedDim]);
+        }
+        ALE_LOG_EVENT_END;
+      };
+
+      // Create a serial mesh
+      void populate(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true) {
+        this->topology->debug = this->debug;
+        this->topology->setStratification(false);
+        if (this->getRank() == 0) {
+          this->buildTopology(numSimplices, simplices, numVertices, interpolate);
+        }
+        this->topology->stratify();
+        this->topology->setStratification(true);
+        this->createSerialCoordinates(this->dim, numSimplices, coords);
+      };
+    };
+  }
+
   namespace def {
     // A computational mesh
     class Mesh {
@@ -367,6 +542,21 @@ namespace ALE {
         mesh->populate(numElements, vertices, numVertices, coordinates, interpolate);
         return mesh;
       };
+
+      static Obj<ALE::Two::Mesh> createNew(MPI_Comm comm, const std::string& baseFilename, bool interpolate = true, int debug = 0) {
+        int       dim = 3;
+        bool      useZeroBase = false;
+        Obj<ALE::Two::Mesh> mesh = ALE::Two::Mesh(comm, dim);
+        int      *vertices;
+        double   *coordinates;
+        int       numElements, numVertices;
+
+        mesh->debug = debug;
+        readConnectivity(comm, baseFilename+".connect", dim, useZeroBase, numElements, &vertices);
+        readCoordinates(comm, baseFilename+".coord", dim, numVertices, &coordinates);
+        mesh->populate(numElements, vertices, numVertices, coordinates, interpolate);
+        return mesh;
+      };
     };
 
     class PCICEBuilder {
@@ -449,6 +639,19 @@ namespace ALE {
 
       static Obj<Mesh> create(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, int debug = 0) {
         Obj<Mesh> mesh = Mesh(comm, dim);
+        int      *vertices;
+        double   *coordinates;
+        int       numElements, numVertices;
+
+        mesh->debug = debug;
+        readConnectivity(comm, baseFilename+".lcon", dim, useZeroBase, numElements, &vertices);
+        readCoordinates(comm, baseFilename+".nodes", dim, numVertices, &coordinates);
+        mesh->populate(numElements, vertices, numVertices, coordinates);
+        return mesh;
+      };
+
+      static Obj<ALE::Two::Mesh> createNew(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, int debug = 0) {
+        Obj<ALE::Two::Mesh> mesh = ALE::Two::Mesh(comm, dim);
         int      *vertices;
         double   *coordinates;
         int       numElements, numVertices;

@@ -32,28 +32,24 @@
 //
 namespace ALE {
   namespace Two {
-    template <typename Sieve_, typename Ordering_>
-    class CoSieve {
-    public:
-      // Basic types
-      typedef Sieve_    sieve_type;
-      typedef Ordering_ ordering_type;
-    private:
-      // Base topology
-      Obj<sieve_type> _topology;
-    };
-
     template <typename Sieve_, typename Patch_, typename Index_, typename Value_>
-    class Sifter {
+    class CoSifter {
     public:
       // Basic types
       typedef Sieve_ sieve_type;
+      typedef typename sieve_type::point_type point_type;
       typedef Patch_ patch_type;
       typedef Index_ index_type;
-      typedef typename sieve_type::point_type point_type;
+      typedef Value_ value_type;
     private:
+      int             debug;
       Obj<sieve_type> _topology;
+      // We need an ordering, which should be patch--order-->point
+      // We need a reordering, which should be patch--new order-->old order
+      // We can add fields to an ordering using <patch,field>--order-->point
+      // We need sequences that can return the color, or do it automatically
     public:
+      // OLD CRAP:
       // Breakdown of the base Sieve into patches
       //   the colors (int) order the points (point_type) over a patch (patch_type).
       // A patch is a member of the sheaf over the sieve which indicates a maximal
@@ -61,24 +57,55 @@ namespace ALE {
       // patch coloring to order the patch values, the analog of a coordinate system
       // on the patch. We use a BiGraph here, but the object can properly be thought
       // of as a CoSieve over the topology sieve.
-      typedef BiGraph<point_type, patch_type, int> patches_type;
-    private:
-      // A single distinguished ordering will be used for storage allocation
-      //   We can have orderings which do not relate to storage, but only retrieval,
-      //   however, they must be subordinate to the allocation ordering.
-      std::map<std::string,patches_type> _patches; 
     public:
-      // Attachment of fiber dimension intervals to Sieve points
-      //   fields are encoded by colors, which double as the field ordering index
-      //   colors (int) order the indices (index_type, usually an interval) over a point (point_type)
-      //   we maintain the index map separately over each patch
-      // Again we have a CoSieve structure here
-      typedef BiGraph<index_type, point_type, int> indices_type;
-    private:
-      std::map<patch_type,indices_type> _indices;
-    private:
-      
-    public:
+      CoSifter(int debug = 0) : debug(debug) {};
+
+      void            setTopology(const Obj<sieve_type>& topology) {this->_topology = topology;};
+      Obj<sieve_type> getTopology() {return this->_topology;};
+      // -- Patch manipulation --
+      // Creates a patch whose order is taken from the input point sequence
+      template<typename pointSequence> void setPatch(const Obj<pointSequence>& points, const patch_type& patch);
+      // Returns the points in the patch in order
+      //Obj<typename order_type::coneSequence> getPatch(const patch_type& patch);
+      // -- Index manipulation --
+      void setFiberDimension(const patch_type& patch, const point_type& p, int dim);
+      void setFiberDimensionByDepth(const patch_type& patch, int depth, int dim) {
+        Obj<typename sieve_type::depthSequence> points = this->_topology->depthStratum(depth);
+
+        for(typename sieve_type::depthSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+          this->setFiberDimension(patch, *p_iter, dim);
+        }
+      };
+      // This constructs an order on the patch by fusing the Ord CoSieve (embodied by the prefix number)
+      // and the Count CoSieve (embodied by the index), turning the prefix into an offset.
+      void orderPatch(const patch_type& patch);
+      #undef __FUNCT__
+      #define __FUNCT__ "CoSifter::orderPatches"
+      void orderPatches() {
+        ALE_LOG_EVENT_BEGIN;
+//         Obj<typename patches_type::baseSequence> base = this->_patches.base();
+
+//         for(typename patches_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+//           this->orderPatch(*b_iter);
+//         }
+        ALE_LOG_EVENT_END;
+      };
+      //Obj<IndexArray> getIndices(const patch_type& patch};
+      //Obj<IndexArray> getIndices(const patch_type& patch, const point_type& p};
+      const index_type& getIndex(const patch_type& patch, const point_type& p);
+      // -- Value manipulation --
+      const value_type *restrict(const patch_type& patch);
+      const value_type *restrict(const patch_type& patch, const point_type& p);
+      const value_type *restrict(const std::string& orderName, const patch_type& patch);
+      const value_type *restrict(const std::string& orderName, const patch_type& patch, const point_type& p);
+      void              update(const patch_type& patch, const value_type values[]);
+      void              update(const patch_type& patch, const point_type& p, const value_type values[]);
+      void              update(const std::string& orderName, const patch_type& patch, const value_type values[]);
+      void              update(const std::string& orderName, const patch_type& patch, const point_type& p, const value_type values[]);
+      void              updateAdd(const patch_type& patch, const value_type values[]);
+      void              updateAdd(const patch_type& patch, const point_type& p, const value_type values[]);
+      void              updateAdd(const std::string& orderName, const patch_type& patch, const value_type values[]);
+      void              updateAdd(const std::string& orderName, const patch_type& patch, const point_type& p, const value_type values[]);
     };
   }
 

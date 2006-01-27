@@ -24,7 +24,7 @@ struct _p_Mesh {
 
 #undef __FUNCT__  
 #define __FUNCT__ "WriteVTKHeader"
-PetscErrorCode WriteVTKHeader(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewer)
+PetscErrorCode WriteVTKHeader(PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -64,6 +64,32 @@ PetscErrorCode WriteVTKVertices(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewe
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "WriteVTKVertices_New"
+PetscErrorCode WriteVTKVertices_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer)
+{
+  const double  *array = mesh->getCoordinates()->restrict(ALE::Two::Mesh::field_type::patch_type());
+  int            dim = mesh->getDimension();
+  int            numVertices = mesh->getTopology()->depthStratum(0)->size();
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIPrintf(viewer, "POINTS %d double\n", numVertices);CHKERRQ(ierr);
+  for(int v = 0; v < numVertices; v++) {
+    for(int d = 0; d < dim; d++) {
+      if (d > 0) {
+        ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, "%G", array[v*dim+d]);CHKERRQ(ierr);
+    }
+    for(int d = dim; d < 3; d++) {
+      ierr = PetscViewerASCIIPrintf(viewer, " 0.0");CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "WriteVTKElements"
 PetscErrorCode WriteVTKElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewer)
 {
@@ -88,6 +114,96 @@ PetscErrorCode WriteVTKElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewe
       ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
       for(ALE::def::PointSet::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
         ierr = PetscViewerASCIIPrintf(viewer, " %d", vertexBundle->getIndex(0, *c_itor).prefix);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+    }
+#ifdef PARALLEL
+    for(int p = 1; p < size; p++) {
+      MPI_Status  status;
+      int        *remoteVertices;
+      int         numLocalElements;
+
+      ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, comm, &status);CHKERRQ(ierr);
+      ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &remoteVertices);CHKERRQ(ierr);
+      ierr = MPI_Recv(remoteVertices, numLocalElements*corners, MPI_INT, p, 1, comm, &status);CHKERRQ(ierr);
+      for(int e = 0; e < numLocalElements; e++) {
+        ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
+        for(int c = 0; c < corners; c++) {
+          ierr = PetscViewerASCIIPrintf(viewer, " %d", remoteVertices[e*corners+c]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+      }
+      ierr = PetscFree(remoteVertices);CHKERRQ(ierr);
+    }
+#endif
+  } else {
+#ifdef PARALLEL
+    int  numLocalElements = elements.size(), offset = 0;
+    int *array;
+
+    ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &array);CHKERRQ(ierr);
+    for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
+      ALE::Point_set cone = topology->nCone(*e_itor, dim);
+      for(ALE::Point_set::iterator c_itor = cone.begin(); c_itor != cone.end(); c_itor++) {
+        ALE::Point index = vertexBundle->getGlobalFiberInterval(*c_itor);
+
+        array[offset++] = index.prefix;
+      }
+    }
+    if (offset != numLocalElements*corners) {
+      SETERRQ2(PETSC_ERR_PLIB, "Invalid number of vertices to send %d shuold be %d", offset, numLocalElements*corners);
+    }
+    ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
+    ierr = MPI_Send(array, numLocalElements*corners, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
+    ierr = PetscFree(array);CHKERRQ(ierr);
+#endif
+  }
+  ierr = PetscViewerASCIIPrintf(viewer, "CELL_TYPES %d\n", numElements);CHKERRQ(ierr);
+  if (corners == 2) {
+    // VTK_LINE
+    for(int e = 0; e < numElements; e++) {
+      ierr = PetscViewerASCIIPrintf(viewer, "3\n");CHKERRQ(ierr);
+    }
+  } else if (corners == 3) {
+    // VTK_TRIANGLE
+    for(int e = 0; e < numElements; e++) {
+      ierr = PetscViewerASCIIPrintf(viewer, "5\n");CHKERRQ(ierr);
+    }
+  } else if (corners == 4) {
+    // VTK_TETRA
+    for(int e = 0; e < numElements; e++) {
+      ierr = PetscViewerASCIIPrintf(viewer, "10\n");CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WriteVTKElements_New"
+PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer)
+{
+  MPI_Comm          comm = mesh->getComm();
+  ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
+  ALE::Obj<ALE::Two::Mesh::sieve_type::heightSequence> elements = topology->heightStratum(0);
+  // FIX: Needs to be global
+  int               numElements = elements->size();
+  int               corners = topology->nCone(*elements->begin(), topology->depth())->size();
+  ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
+  PetscMPIInt       rank, size;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm, &rank);
+  ierr = MPI_Comm_size(comm, &size);
+  ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
+  if (rank == 0) {
+    for(ALE::Two::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+      ALE::Obj<ALE::def::PointSet> cone = topology->nCone(*e_itor, topology->depth());
+      ALE::Two::Mesh::bundle_type::patch_type patch;
+
+      ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
+      for(ALE::def::PointSet::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+        ierr = PetscViewerASCIIPrintf(viewer, " %d", vertexBundle->getIndex(patch, *c_itor).prefix);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     }
@@ -445,7 +561,7 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer v
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_VTK) {
-    ierr = WriteVTKHeader(mesh, viewer);CHKERRQ(ierr);
+    ierr = WriteVTKHeader(viewer);CHKERRQ(ierr);
     ierr = WriteVTKVertices(mesh, viewer);CHKERRQ(ierr);
     ierr = WriteVTKElements(mesh, viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_PCICE) {
@@ -527,6 +643,56 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer v
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshView_Sieve_Ascii"
+PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer)
+{
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_VTK) {
+    ierr = WriteVTKHeader(viewer);CHKERRQ(ierr);
+    ierr = WriteVTKVertices_New(mesh, viewer);CHKERRQ(ierr);
+    ierr = WriteVTKElements_New(mesh, viewer);CHKERRQ(ierr);
+  } else {
+    int dim = mesh->getDimension();
+
+    ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %d dimensions:\n", dim);CHKERRQ(ierr);
+    for(int d = 0; d <= dim; d++) {
+      // FIX: Need to globalize
+      ierr = PetscViewerASCIIPrintf(viewer, "  %d %d-cells\n", mesh->getTopology()->depthStratum(d)->size(), d);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshView_Sieve_Newer"
+PetscErrorCode MeshView_Sieve_Newer(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer)
+{
+  PetscTruth     iascii, isbinary, isdraw;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_BINARY, &isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_DRAW, &isdraw);CHKERRQ(ierr);
+
+  if (iascii){
+    ierr = MeshView_Sieve_Ascii(mesh, viewer);CHKERRQ(ierr);
+  } else if (isbinary) {
+    SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Mesh");
+  } else if (isdraw){ 
+    SETERRQ(PETSC_ERR_SUP, "Draw viewer not implemented for Mesh");
+  } else {
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 

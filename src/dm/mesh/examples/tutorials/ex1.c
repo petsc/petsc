@@ -38,12 +38,11 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 #include <stdlib.h>
 #include <string.h>
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(Mesh, ALE::IndexBundle *, int, Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_New(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer);
+PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::def::Mesh>, Vec *);
 
 typedef enum {PCICE, PYLITH} FileType;
-
-PetscErrorCode CreatePartitionVector(Mesh, int, Vec *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -87,19 +86,19 @@ int main(int argc, char *argv[])
   ierr = PetscOptionsEnd(); 
   comm = PETSC_COMM_WORLD;
 
-  ALE::Obj<ALE::def::Mesh> mesh;
+  ALE::Obj<ALE::Two::Mesh> mesh;
 
   try {
     ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
     if (fileType == PCICE) {
-      mesh = ALE::def::PCICEBuilder::create(comm, baseFilename, dim, useZeroBase, debug);
+      mesh = ALE::def::PCICEBuilder::createNew(comm, baseFilename, dim, useZeroBase, debug);
     } else if (fileType == PYLITH) {
-      mesh = ALE::def::PyLithBuilder::create(comm, baseFilename, interpolate, debug);
+      mesh = ALE::def::PyLithBuilder::createNew(comm, baseFilename, interpolate, debug);
     }
     ALE::LogStagePop(stage);
-    ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
+    ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
 #if 0
@@ -118,7 +117,7 @@ int main(int argc, char *argv[])
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
-    ierr = MeshView_Sieve_New(mesh, viewer);CHKERRQ(ierr);
+    ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
     //ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
     //ierr = VecView(partition, viewer);CHKERRQ(ierr);
     //ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
@@ -153,7 +152,7 @@ int main(int argc, char *argv[])
         CHKERRQ(ierr);
       }
     }
-    ierr = MeshView_Sieve_New(mesh, viewer);CHKERRQ(ierr);
+    ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
   } catch (ALE::Exception e) {
@@ -168,25 +167,19 @@ int main(int argc, char *argv[])
 /*
   Creates a vector whose value is the processor rank on each element
 */
-PetscErrorCode CreatePartitionVector(Mesh mesh, int debug, Vec *partition)
+PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::def::Mesh> mesh, Vec *partition)
 {
-  ALE::Obj<ALE::Sieve> topology;
+  ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
+  ALE::Obj<ALE::def::Mesh::bundle_type> elementBundle = mesh->getBundle(mesh->getDimension());
   PetscScalar   *array;
-  MPI_Comm       comm;
   PetscMPIInt    rank;
   PetscInt       n, i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ALE_LOG_EVENT_BEGIN
-  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MeshGetTopology(mesh, &topology);CHKERRQ(ierr);
-  ALE::IndexBundle elementBundle(topology);
-  elementBundle.setFiberDimensionByHeight(0, 1);
-  elementBundle.computeOverlapIndices();
-  elementBundle.computeGlobalIndices();
-  ierr = MeshCreateVector(mesh, &elementBundle, debug, partition);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(mesh->getComm(), &rank);CHKERRQ(ierr);
+  //ierr = MeshCreateVector(mesh, &elementBundle, debug, partition);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*partition, 1);CHKERRQ(ierr);
   ierr = VecGetLocalSize(*partition, &n);CHKERRQ(ierr);
   ierr = VecGetArray(*partition, &array);CHKERRQ(ierr);
