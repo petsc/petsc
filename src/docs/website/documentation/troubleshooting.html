@@ -129,7 +129,7 @@ writing out of array bounds. To track this down rerun the debug version
 of the code with the option -malloc_debug. Occasionally the
 code may crash only with the optimized version, in that case
 run the optimized version with -malloc_debug. If you determine the problem
-is from memory corruption you can put the macro MEMCHKQ in the code
+is from memory corruption you can put the macro CHKMEMQ in the code
 near the crash to determine exactly what line is causing the problem. </font></p>
 
   </li>
