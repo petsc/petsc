@@ -629,7 +629,7 @@ namespace ALE {
       typedef typename base_type::pointer            pointer;
       typedef typename base_type::reference          reference;
       // Underlying iterator type
-      typedef typename base_type::reference          itor_type;
+      typedef typename base_type::itor_type          itor_type;
     public:
       result_iterator(const itor_type& itor) : base_type(itor) {};
       virtual ~result_iterator() {};
@@ -655,7 +655,7 @@ namespace ALE {
       typedef typename base_type::pointer            pointer;
       typedef typename base_type::reference          reference;
       // Underlying iterator type
-      typedef typename base_type::reference          itor_type;
+      typedef typename base_type::itor_type          itor_type;
     public:
       reverse_result_iterator(const itor_type& itor) : base_type(itor) {};
       virtual ~reverse_result_iterator() {};
@@ -850,7 +850,7 @@ namespace ALE {
 
         virtual iterator begin() {
           // Retrieve the beginning iterator to the sequence of points with outdegree >= 1
-          return iterator(this->_index.lower_bound(1));
+          return iterator(this->_index.lower_bound(1)); 
         };
         virtual iterator end() {
           // Retrieve the ending iterator to the sequence of points with outdegree >= 1
@@ -926,7 +926,6 @@ namespace ALE {
         };
 
         virtual reverse_iterator rend() {
-          //typename boost::multi_index::index<ArrowSet,targetColor>::type::iterator i;
           if (this->useColor) {
             return reverse_iterator(--this->_index.lower_bound(::boost::make_tuple(this->key,this->color)));
           } else {
