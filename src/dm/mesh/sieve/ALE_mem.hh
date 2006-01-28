@@ -287,7 +287,7 @@ namespace ALE {
 #endif
     typedef typename Allocator::size_type size_type;
   public:
-    // These are intended to be private
+    // These are intended to be private or at least protected
     // allocators
     Allocator_int          int_allocator;
     Allocator              allocator;
