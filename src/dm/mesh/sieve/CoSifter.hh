@@ -101,9 +101,20 @@ namespace ALE {
       private:
         int newDim;
       };
+      struct changeIndex {
+        changeIndex(int newOffset, int newDim) : newOffset(newOffset), newDim(newDim) {};
+
+        void operator()(typename order_type::Arrow_& p) {
+          p.color.prefix = newOffset;
+          p.color.index  = newDim;
+        }
+      private:
+        int newOffset;
+        int newDim;
+      };
     public:
       void setFiberDimension(const patch_type& patch, const point_type& p, int dim) {
-        this->_order->modifyColor(p, patch, changeDim(dim));
+        this->_order->modifyColor(p, patch, changeDim(-dim));
       };
       void setFiberDimensionByDepth(const patch_type& patch, int depth, int dim) {
         Obj<typename sieve_type::depthSequence> points = this->_topology->depthStratum(depth);
@@ -117,13 +128,16 @@ namespace ALE {
         Obj<typename sieve_type::coneSequence> cone = this->_topology->cone(cell);
 
         for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-          this->orderCell(patch, *p_iter, offset);
+          this->__orderCell(patch, *p_iter, offset);
         }
         // Set the prefix to the current offset (this won't kill the topology iterator)
-        int dim = this->_order->getColor(cell, patch);
+        int dim = this->_order->getColor(cell, patch).index;
 
-        this->_order->modifyColor(cell, patch, changeOffset(offset));
-        offset += dim;
+        if (dim < 0) {
+          this->_order->modifyColor(cell, patch, changeIndex(offset, -dim));
+          std::cout << "Order point " << cell << " of size " << -dim << " and offset " << offset << std::endl;
+          offset -= dim;
+        }
       };
     public:
       // This constructs an order on the patch by fusing the Ord CoSieve (embodied by the prefix number)
@@ -144,6 +158,7 @@ namespace ALE {
         // Loop over patch members
         for(typename PointArray::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
           // Traverse the closure of the member in the topology
+          std::cout << "Ordering patch point " << *p_iter << std::endl;
           this->__orderCell(patch, *p_iter, offset);
         }
         // Allocate patch

@@ -631,7 +631,7 @@ namespace ALE {
       // Underlying iterator type
       typedef typename base_type::reference          itor_type;
     public:
-      result_iterator(const itor_type& itor) : base_type(itor) {};
+      result_iterator(const base_type& itor) : base_type(itor) {};
       virtual ~result_iterator() {};
       //
       virtual result_iterator   operator++() {++this->_itor; return *this;};
@@ -657,7 +657,7 @@ namespace ALE {
       // Underlying iterator type
       typedef typename base_type::reference          itor_type;
     public:
-      reverse_result_iterator(const itor_type& itor) : base_type(itor) {};
+      reverse_result_iterator(const base_type& itor) : base_type(itor) {};
       virtual ~reverse_result_iterator() {};
       //
       virtual reverse_result_iterator     operator++() {--this->_itor; return *this;};
@@ -684,7 +684,7 @@ namespace ALE {
       // Basic interface
       OutputSequence(const OutputSequence& seq) : _index(seq._index) {};
       OutputSequence(index_type& index)         : _index(index)      {};
-      ~OutputSequence();
+      virtual ~OutputSequence() {};
     };
 
     // ReversibleOutputSequence extends OutputSequence to allow reverse traversals.
@@ -704,7 +704,7 @@ namespace ALE {
       // Generic ReversibleOutputSequence interface
       ReversibleOutputSequence(const ReversibleOutputSequence& seq) : OutputSequence<MultiIndexSet_, Tag_, MemberExtractor_>(seq){};
       ReversibleOutputSequence(index_type& index)            : OutputSequence<MultiIndexSet_,Tag_,MemberExtractor_>(index) {};
-      ~ReversibleOutputSequence();
+      virtual ~ReversibleOutputSequence() {};
     };
 
 
@@ -824,7 +824,7 @@ namespace ALE {
         
         baseSequence(const baseSequence& seq) : OutputSequence<BasePointSet, degreeTag, extractor_type>(seq){};
         baseSequence(typename baseSequence::index_type& index) : OutputSequence<BasePointSet, degreeTag, extractor_type>(index){};
-        virtual ~baseSequence();
+        virtual ~baseSequence() {};
 
         virtual iterator begin() {
           // Retrieve the beginning iterator to the sequence of points with indegree >= 1
@@ -878,13 +878,13 @@ namespace ALE {
         // Need to extend the inherited iterators to be able to extract arrow color
         class iterator : public ReversibleOutputSequence<ArrowSet, Tag_, MemberExtractor_>::iterator {
         public:
-          iterator(const typename ReversibleOutputSequence<ArrowSet, Tag_, MemberExtractor_>::iterator::itor_type& itor) 
+          iterator(const typename ReversibleOutputSequence<ArrowSet, Tag_, MemberExtractor_>::iterator::base_type& itor) 
             : ReversibleOutputSequence<ArrowSet, Tag_, MemberExtractor_>::iterator(itor) {};
           virtual const color_type& color() const {return this->_itor->color;};
         };
         class reverse_iterator : public ReversibleOutputSequence<ArrowSet, Tag_, MemberExtractor_>::reverse_iterator {
         public:
-          reverse_iterator(const typename ReversibleOutputSequence<ArrowSet,Tag_,MemberExtractor_>::reverse_iterator::itor_type& itor)
+          reverse_iterator(const typename ReversibleOutputSequence<ArrowSet,Tag_,MemberExtractor_>::reverse_iterator::base_type& itor)
             : ReversibleOutputSequence<ArrowSet, Tag_, MemberExtractor_>::reverse_iterator(itor) {};
           virtual const color_type& color() const {return this->_itor->color;};
         };
