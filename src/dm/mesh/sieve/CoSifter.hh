@@ -49,6 +49,7 @@ namespace ALE {
       // We need an ordering, which should be patch<--order--point
       Obj<order_type> _order;
       // We need a reordering, which should be patch<--new order--old order
+      std::map<std::string,Obj<order_type> > _reorders;
       // We can add fields to an ordering using <patch,field><--order--point
       // We need sequences that can return the color, or do it automatically
       // We allocate based upon a certain
@@ -79,8 +80,30 @@ namespace ALE {
           this->_order->addArrow(*p_iter, patch, point_type(c++, 0));
         }
       };
+      // Creates a patch for a named reordering whose order is taken from the input point sequence
+      template<typename pointSequence> void setPatch(const std::string& name, const Obj<pointSequence>& points, const patch_type& patch) {
+        Obj<order_type> reorder;
+        int c = 0;
+
+        if (this->_reorders.find(name) != this->_reorders.end()) {
+          reorder = this->_reorders[name];
+        } else {
+          reorder = order_type(this->debug);
+          this->_reorders[name] = reorder;
+        }
+
+        for(typename pointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+          reorder->addArrow(*p_iter, patch, point_type(c++, 0));
+        }
+      };
       // Returns the points in the patch in order
-      //Obj<typename order_type::coneSequence> getPatch(const patch_type& patch);
+      Obj<typename order_type::coneSequence> getPatch(const patch_type& patch) {
+        return this->_order->cone(patch);
+      };
+      // Returns the points in the reorder patch in order
+      Obj<typename order_type::coneSequence> getPatch(const std::string& name, const patch_type& patch) {
+        return this->_reorders[name]->cone(patch);
+      };
       // -- Index manipulation --
     private:
       struct changeOffset {

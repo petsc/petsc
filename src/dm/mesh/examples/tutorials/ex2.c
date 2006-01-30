@@ -252,19 +252,51 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
     topology->addArrow(edges[5], face, order++);
     topology->addArrow(edges[6], face, order++);
     topology->addArrow(edges[7], face, order++);
-
     /* Side faces: f = 22 .. 25 */
     for(int f = 22; f < 26; f++) {
       face = ALE::Two::Mesh::point_type(0, f);
       int v = f - 22;
       /* Covered by edges f - 22, f - 22 + 4, f - 22 + 8, (f - 21)%4 + 8 */
       topology->addArrow(edges[v],         face, order++);
+      topology->addArrow(edges[(v+1)%4+8], face, order++);
       topology->addArrow(edges[v+4],       face, order++);
       topology->addArrow(edges[v+8],       face, order++);
-      topology->addArrow(edges[(v+1)%4+8], face, order++);
     }
   }/* if(rank == 0) */
   topology->stratify();
+  if (rank == 0) {
+    ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
+    ALE::Obj<ALE::Two::Mesh::bundle_type::PointArray> points = ALE::Two::Mesh::bundle_type::PointArray();
+    const std::string orderName("element");
+    /* Bottom face */
+    ALE::Two::Mesh::point_type face = ALE::Two::Mesh::point_type(0, 20); 
+    points->clear();
+    points->push_back(vertices[0]);
+    points->push_back(vertices[1]);
+    points->push_back(vertices[2]);
+    points->push_back(vertices[3]);
+    vertexBundle->setPatch(orderName, points, face);
+    /* Top face */
+    face = ALE::Two::Mesh::point_type(0, 21); 
+    points->clear();
+    points->push_back(vertices[4]);
+    points->push_back(vertices[5]);
+    points->push_back(vertices[6]);
+    points->push_back(vertices[7]);
+    vertexBundle->setPatch(orderName, points, face);
+    /* Side faces: f = 22 .. 25 */
+    for(int f = 22; f < 26; f++) {
+      face = ALE::Two::Mesh::point_type(0, f);
+      int v = f - 22;
+      /* Covered by edges f - 22, f - 22 + 4, f - 22 + 8, (f - 21)%4 + 8 */
+      points->clear();
+      points->push_back(vertices[v]);
+      points->push_back(vertices[(v+1)%4]);
+      points->push_back(vertices[(v+1)%4+4]);
+      points->push_back(vertices[v+4]);
+      vertexBundle->setPatch(orderName, points, face);
+    }
+  }
   mesh->createSerialCoordinates(embedDim, 0, coords);
 
   /* Create boundary conditions: set marker 1 to all of the sieve elements, 
