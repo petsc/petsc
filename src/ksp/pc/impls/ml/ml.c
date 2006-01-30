@@ -116,19 +116,19 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ierr = PetscNew(FineGridCtx,&PetscMLdata);CHKERRQ(ierr);
   PetscMLdata->A    = A;
   PetscMLdata->Aloc = Aloc;
-  ierr = PetscMalloc((Aloc->n+1)*sizeof(PetscScalar),&PetscMLdata->pwork);CHKERRQ(ierr);
+  ierr = PetscMalloc((Aloc->cmap.n+1)*sizeof(PetscScalar),&PetscMLdata->pwork);CHKERRQ(ierr);
   pc_ml->PetscMLdata = PetscMLdata;
 
   ierr = VecCreate(PETSC_COMM_SELF,&PetscMLdata->x);CHKERRQ(ierr); 
   if (size == 1){
-    ierr = VecSetSizes(PetscMLdata->x,A->n,A->n);CHKERRQ(ierr);
+    ierr = VecSetSizes(PetscMLdata->x,A->cmap.n,A->cmap.n);CHKERRQ(ierr);
   } else {
-    ierr = VecSetSizes(PetscMLdata->x,Aloc->n,Aloc->n);CHKERRQ(ierr);
+    ierr = VecSetSizes(PetscMLdata->x,Aloc->cmap.n,Aloc->cmap.n);CHKERRQ(ierr);
   }
   ierr = VecSetType(PetscMLdata->x,VECSEQ);CHKERRQ(ierr); 
 
   ierr = VecCreate(PETSC_COMM_SELF,&PetscMLdata->y);CHKERRQ(ierr); 
-  ierr = VecSetSizes(PetscMLdata->y,A->m,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetSizes(PetscMLdata->y,A->rmap.n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetType(PetscMLdata->y,VECSEQ);CHKERRQ(ierr);
     
   /* create ML discretization matrix at fine grid */
@@ -197,18 +197,18 @@ PetscErrorCode PCSetUp_ML(PC pc)
   /* create coarse level and the interpolation between the levels */
   for (level=0; level<fine_level; level++){  
     ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].x);CHKERRQ(ierr); 
-    ierr = VecSetSizes(gridctx[level].x,gridctx[level].A->n,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetSizes(gridctx[level].x,gridctx[level].A->cmap.n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetType(gridctx[level].x,VECMPI);CHKERRQ(ierr); 
     ierr = PCMGSetX(pc,level,gridctx[level].x);CHKERRQ(ierr); 
     
     ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].b);CHKERRQ(ierr); 
-    ierr = VecSetSizes(gridctx[level].b,gridctx[level].A->m,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetSizes(gridctx[level].b,gridctx[level].A->rmap.n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetType(gridctx[level].b,VECMPI);CHKERRQ(ierr); 
     ierr = PCMGSetRhs(pc,level,gridctx[level].b);CHKERRQ(ierr); 
     
     level1 = level + 1;
     ierr = VecCreate(gridctx[level1].A->comm,&gridctx[level1].r);CHKERRQ(ierr); 
-    ierr = VecSetSizes(gridctx[level1].r,gridctx[level1].A->m,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetSizes(gridctx[level1].r,gridctx[level1].A->rmap.n,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = VecSetType(gridctx[level1].r,VECMPI);CHKERRQ(ierr);    
     ierr = PCMGSetR(pc,level1,gridctx[level1].r);CHKERRQ(ierr); 
 
@@ -498,7 +498,7 @@ int PetscML_comm(double p[],void *ML_data)
   Mat            A=ml->A;
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscMPIInt    size;
-  PetscInt       i,in_length=A->m,out_length=ml->Aloc->n;
+  PetscInt       i,in_length=A->rmap.n,out_length=ml->Aloc->cmap.n;
   PetscScalar    *array;
 
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
@@ -575,7 +575,7 @@ PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,Mat *Al
   Mat_SeqAIJ      *mat,*a=(Mat_SeqAIJ*)(mpimat->A)->data,*b=(Mat_SeqAIJ*)(mpimat->B)->data;
   PetscInt        *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   PetscScalar     *aa=a->a,*ba=b->a,*ca;
-  PetscInt        am=A->m,an=A->n,i,j,k;
+  PetscInt        am=A->rmap.n,an=A->cmap.n,i,j,k;
   PetscInt        *ci,*cj,ncols;
 
   PetscFunctionBegin;
@@ -608,7 +608,7 @@ PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,Mat *Al
     if (k != ci[am]) SETERRQ2(PETSC_ERR_ARG_WRONG,"k: %d != ci[am]: %d",k,ci[am]);
 
     /* put together the new matrix */
-    an = mpimat->A->n+mpimat->B->n;
+    an = mpimat->A->cmap.n+mpimat->B->cmap.n;
     ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,am,an,ci,cj,ca,Aloc);CHKERRQ(ierr);
 
     /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
