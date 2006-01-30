@@ -431,6 +431,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   ierr  = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   rtmps = rtmp; ics = ic;
 
+  sctx.shift_top  = 0;
+  sctx.nshift_max = 0;
+  sctx.shift_lo   = 0;
+  sctx.shift_hi   = 0;
+
   if (!a->diag) {
     ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
   }
