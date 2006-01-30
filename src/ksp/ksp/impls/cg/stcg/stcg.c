@@ -78,7 +78,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetQuadratic(KSP ksp,PetscReal *quadrat
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_STCG"
-/*@
+/*
   KSPSolve_STCG - Use preconditioned conjugate gradient to compute
   an approximate minimizer of the quadratic function
 
@@ -103,7 +103,7 @@ $  other KSP converged/diverged reasons
 
   Notes:
   The preconditioner supplied should be symmetric and positive definite.
-@*/
+*/
 PetscErrorCode KSPSolve_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
