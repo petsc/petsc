@@ -189,7 +189,9 @@ namespace ALE {
       const value_type *restrict(const patch_type& patch) {
         return this->_storage[patch];
       };
-      const value_type *restrict(const patch_type& patch, const point_type& p);
+      const value_type *restrict(const patch_type& patch, const point_type& p) {
+        return &this->_storage[patch][this->_order->getColor(p, patch).prefix];
+      };
       const value_type *restrict(const std::string& orderName, const patch_type& patch);
       const value_type *restrict(const std::string& orderName, const patch_type& patch, const point_type& p);
       void              update(const patch_type& patch, const value_type values[]);

@@ -38,7 +38,6 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 #include <stdlib.h>
 #include <string.h>
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_New(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer);
 PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::def::Mesh>, Vec *);
 

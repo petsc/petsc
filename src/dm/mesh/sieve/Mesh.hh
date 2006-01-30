@@ -186,6 +186,170 @@ namespace ALE {
         this->createSerialCoordinates(this->dim, numSimplices, coords);
       };
     };
+
+    class Generator {
+#ifdef PETSC_HAVE_TRIANGLE
+      static void initInput_Triangle(struct triangulateio *inputCtx) {
+        inputCtx->numberofpoints = 0;
+        inputCtx->numberofpointattributes = 0;
+        inputCtx->pointlist = NULL;
+        inputCtx->pointattributelist = NULL;
+        inputCtx->pointmarkerlist = NULL;
+        inputCtx->numberofsegments = 0;
+        inputCtx->segmentlist = NULL;
+        inputCtx->segmentmarkerlist = NULL;
+        inputCtx->numberoftriangleattributes = 0;
+        inputCtx->numberofholes = 0;
+        inputCtx->holelist = NULL;
+        inputCtx->numberofregions = 0;
+        inputCtx->regionlist = NULL;
+      };
+      static void initOutput_Triangle(struct triangulateio *outputCtx) {
+        outputCtx->pointlist = NULL;
+        outputCtx->pointattributelist = NULL;
+        outputCtx->pointmarkerlist = NULL;
+        outputCtx->trianglelist = NULL;
+        outputCtx->triangleattributelist = NULL;
+        outputCtx->neighborlist = NULL;
+        outputCtx->segmentlist = NULL;
+        outputCtx->segmentmarkerlist = NULL;
+        outputCtx->edgelist = NULL;
+        outputCtx->edgemarkerlist = NULL;
+      };
+      static void finiOutput_Triangle(struct triangulateio *outputCtx) {
+        free(outputCtx->pointmarkerlist);
+        free(outputCtx->edgelist);
+        free(outputCtx->edgemarkerlist);
+        free(outputCtx->trianglelist);
+        free(outputCtx->neighborlist);
+      };
+      #undef __FUNCT__
+      #define __FUNCT__ "generate_Triangle"
+      static Obj<Mesh> generate_Triangle(Obj<Mesh> boundary) {
+        struct triangulateio  in;
+        struct triangulateio  out;
+        int                   dim = 2;
+        Obj<Mesh>             m = Mesh(boundary->getComm(), dim);
+        Obj<Mesh::sieve_type> bdTopology = boundary->getTopology();
+        PetscMPIInt           rank;
+        PetscErrorCode        ierr;
+
+        ierr = MPI_Comm_rank(boundary->getComm(), &rank);
+        initInput_Triangle(&in);
+        initOutput_Triangle(&out);
+        if (rank == 0) {
+          std::string args("pqenzQ");
+          bool        createConvexHull = false;
+          Obj<Mesh::sieve_type::depthSequence> vertices = bdTopology->depthStratum(0);
+          Obj<Mesh::bundle_type>               vertexBundle = boundary->getBundle(0);
+          Mesh::field_type::patch_type         patch;
+
+          in.numberofpoints = vertices->size();
+          if (in.numberofpoints > 0) {
+            Obj<Mesh::field_type> coordinates = boundary->getCoordinates();
+
+            ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
+            ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+            for(Mesh::sieve_type::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
+              const Mesh::field_type::index_type& interval = coordinates->getIndex(patch, *v_itor);
+              const Mesh::field_type::value_type *array = coordinates->restrict(patch, *v_itor);
+
+              for(int d = 0; d < interval.index; d++) {
+                in.pointlist[interval.prefix + d] = array[d];
+              }
+              const Mesh::field_type::index_type& vInterval = vertexBundle->getIndex(patch, *v_itor);
+              in.pointmarkerlist[vInterval.prefix] = v_itor.getMarker();
+            }
+          }
+
+          Obj<Mesh::sieve_type::depthSequence> edges = bdTopology->depthStratum(1);
+          Obj<Mesh::bundle_type>               edgeBundle = boundary->getBundle(1);
+
+          in.numberofsegments = edges->size();
+          if (in.numberofsegments > 0) {
+            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
+            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+            for(Mesh::sieve_type::depthSequence::iterator e_itor = edges->begin(); e_itor != edges->end(); e_itor++) {
+              const Mesh::field_type::index_type& interval = edgeBundle->getIndex(patch, *e_itor);
+              Obj<Mesh::sieve_type::coneSequence> cone = bdTopology->cone(*e_itor);
+              int                                 p = 0;
+        
+              for(Mesh::sieve_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
+                const Mesh::field_type::index_type& vInterval = vertexBundle->getIndex(patch, *c_itor);
+
+                in.segmentlist[interval.prefix * 2 + (p++)] = vInterval.prefix;
+              }
+              in.segmentmarkerlist[interval.prefix] = e_itor.getMarker();
+            }
+          }
+
+          in.numberofholes = 0;
+          if (in.numberofholes > 0) {
+            ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);
+          }
+          if (createConvexHull) {
+            args += "c";
+          }
+          triangulate((char *) args.c_str(), &in, &out, NULL);
+
+          ierr = PetscFree(in.pointlist);
+          ierr = PetscFree(in.pointmarkerlist);
+          ierr = PetscFree(in.segmentlist);
+          ierr = PetscFree(in.segmentmarkerlist);
+        }
+        m->populate(out.numberoftriangles, out.trianglelist, out.numberofpoints, out.pointlist);
+
+        if (rank == 0) {
+          Obj<Mesh::sieve_type> topology = m->getTopology();
+
+          for(int v = 0; v < out.numberofpoints; v++) {
+            if (out.pointmarkerlist[v]) {
+              topology->setMarker(Mesh::point_type(0, v + out.numberoftriangles), out.pointmarkerlist[v]);
+            }
+          }
+          for(int e = 0; e < out.numberofedges; e++) {
+            if (out.edgemarkerlist[e]) {
+              Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftriangles);
+              Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftriangles);
+              Obj<ALE::def::PointSet> join = topology->nJoin(endpointA, endpointB, 1);
+
+              topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
+            }
+          }
+        }
+
+        finiOutput_Triangle(&out);
+        return m;
+      };
+#endif
+#ifdef PETSC_HAVE_TETGEN
+      static Obj<Mesh> generate_TetGen(Obj<Mesh> boundary) {
+        Obj<Mesh> m = Mesh(boundary->getComm(), 3);
+
+        return m;
+      };
+#endif
+    public:
+      static Obj<Mesh> generate(Obj<Mesh> boundary) {
+        Obj<Mesh> mesh;
+        int       dim = boundary->getDimension();
+
+        if (dim == 1) {
+#ifdef PETSC_HAVE_TRIANGLE
+          mesh = generate_Triangle(boundary);
+#else
+          throw ALE::Exception("Mesh generation currently requires Triangle to be installed. Use --download-triangle during configure.");
+#endif
+        } else if (dim == 2) {
+#ifdef PETSC_HAVE_TETGEN
+          mesh = generate_TetGen(boundary);
+#else
+          throw ALE::Exception("Mesh generation currently requires TetGen to be installed. Use --download-tetgen during configure.");
+#endif
+        }
+        return mesh;
+      };
+    };
   }
 
   namespace def {
