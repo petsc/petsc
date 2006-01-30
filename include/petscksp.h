@@ -32,6 +32,7 @@ E*/
 #define KSPCHEBYCHEV  "chebychev"
 #define KSPCG         "cg"
 #define   KSPCGNE       "cgne"
+#define   KSPSTCG       "stcg"
 #define KSPGMRES      "gmres"
 #define   KSPFGMRES     "fgmres" 
 #define   KSPLGMRES     "lgmres"
@@ -493,6 +494,8 @@ typedef enum {KSP_CG_SYMMETRIC=0,KSP_CG_HERMITIAN=1} KSPCGType;
 extern const char *KSPCGTypes[];
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP,KSPCGType);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP,PetscReal);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetQuadratic(KSP,PetscReal*);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPreSolve(PC,KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPostSolve(PC,KSP);

@@ -20,9 +20,8 @@ static char help[] = "Generates, partitions, and outputs an unstructured mesh.\n
 #include "petscmesh.h"
 #include "petscviewer.h"
 
-PetscErrorCode MeshView_Sieve_New(ALE::Obj<ALE::def::Mesh>, PetscViewer);
-
-PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::def::Mesh>);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer);
+PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh>);
 PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::def::Mesh>, Vec *);
 
 #undef __FUNCT__
@@ -48,16 +47,16 @@ int main(int argc, char *argv[])
   ierr = PetscOptionsEnd();
   comm = PETSC_COMM_WORLD;
 
-  ALE::Obj<ALE::def::Mesh> meshBoundary = ALE::def::Mesh(comm, dim-1, debug);
-  ALE::Obj<ALE::def::Mesh> mesh;
+  ALE::Obj<ALE::Two::Mesh> meshBoundary = ALE::Two::Mesh(comm, dim-1, debug);
+  ALE::Obj<ALE::Two::Mesh> mesh;
 
   try {
     ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Generating mesh\n");CHKERRQ(ierr);
     ierr = CreateMeshBoundary(meshBoundary);CHKERRQ(ierr);
-    mesh = ALE::def::Generator::generate(meshBoundary);
-    ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
+    mesh = ALE::Two::Generator::generate(meshBoundary);
+    ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
 #if 0
@@ -69,7 +68,7 @@ int main(int argc, char *argv[])
       stage = ALE::LogStageRegister("MeshRefine");
       ALE::LogStagePush(stage);
       ierr = PetscPrintf(comm, "Refining mesh\n");CHKERRQ(ierr);
-      mesh = ALE::def::Generator::refine(mesh, refinementLimit);
+      //mesh = ALE::def::Generator::refine(mesh, refinementLimit);
       ALE::LogStagePop(stage);
       ierr = PetscPrintf(comm, "  Read %d elements\n", mesh->getTopology()->heightStratum(0)->size());CHKERRQ(ierr);
       ierr = PetscPrintf(comm, "  Read %d vertices\n", mesh->getTopology()->depthStratum(0)->size());CHKERRQ(ierr);
@@ -83,7 +82,7 @@ int main(int argc, char *argv[])
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
-    ierr = MeshView_Sieve_New(mesh, viewer);CHKERRQ(ierr);
+    ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
     //ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
     //ierr = VecView(partition, viewer);CHKERRQ(ierr);
     //ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
@@ -111,11 +110,10 @@ int main(int argc, char *argv[])
   |     |     |
   0--9--1--10-2
 */
-PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::def::Mesh> mesh)
+PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
 {
   MPI_Comm          comm = mesh->getComm();
-  ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
-  ALE::Obj<ALE::def::Mesh::sieve_type> orientation = mesh->getOrientation();
+  ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
   PetscScalar       coords[18] = {0.0, 0.0,
                                   1.0, 0.0,
                                   2.0, 0.0,
@@ -125,77 +123,49 @@ PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::def::Mesh> mesh)
                                   0.0, 2.0,
                                   0.0, 1.0,
                                   1.0, 1.0};
-  ALE::Obj<ALE::def::PointSet> cone = ALE::def::PointSet();
-  ALE::def::Mesh::point_type vertices[9];
+  ALE::Two::Mesh::point_type vertices[9];
+  PetscInt          order = 0;
   PetscMPIInt       rank;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   if (rank == 0) {
-    ALE::def::Mesh::point_type edge;
+    ALE::Two::Mesh::point_type edge;
 
     /* Create topology and ordering */
     for(int v = 0; v < 9; v++) {
-      vertices[v] = ALE::def::Mesh::point_type(0, v);
+      vertices[v] = ALE::Two::Mesh::point_type(0, v);
     }
     for(int e = 9; e < 17; e++) {
-      edge = ALE::def::Mesh::point_type(0, e);
-      cone->insert(vertices[e-9]);
-      cone->insert(vertices[(e-8)%8]);
-      topology->addCone(cone, edge);
-      cone->clear();
-      cone->insert(vertices[e-9]);
-      cone->insert(edge);
-      orientation->addCone(cone, edge);
-      cone->clear();
+      edge = ALE::Two::Mesh::point_type(0, e);
+      topology->addArrow(vertices[e-9],     edge, order++);
+      topology->addArrow(vertices[(e-8)%8], edge, order++);
     }
-    edge = ALE::def::Mesh::point_type(0, 17);
-    cone->insert(vertices[1]);
-    cone->insert(vertices[8]);
-    topology->addCone(cone, edge);
-    cone->clear();
-    cone->insert(vertices[1]);
-    cone->insert(edge);
-    orientation->addCone(cone, edge);
-    cone->clear();
-    edge = ALE::def::Mesh::point_type(0, 18);
-    cone->insert(vertices[3]);
-    cone->insert(vertices[8]);
-    topology->addCone(cone, edge);
-    cone->clear();
-    cone->insert(vertices[3]);
-    cone->insert(edge);
-    orientation->addCone(cone, edge);
-    cone->clear();
-    edge = ALE::def::Mesh::point_type(0, 19);
-    cone->insert(vertices[5]);
-    cone->insert(vertices[8]);
-    topology->addCone(cone, edge);
-    cone->clear();
-    cone->insert(vertices[5]);
-    cone->insert(edge);
-    orientation->addCone(cone, edge);
-    cone->clear();
-    edge = ALE::def::Mesh::point_type(0, 20);
-    cone->insert(vertices[7]);
-    cone->insert(vertices[8]);
-    topology->addCone(cone, edge);
-    cone->clear();
-    cone->insert(vertices[7]);
-    cone->insert(edge);
-    orientation->addCone(cone, edge);
-    cone->clear();
+    edge = ALE::Two::Mesh::point_type(0, 17);
+    topology->addArrow(vertices[1], edge, order++);
+    topology->addArrow(vertices[8], edge, order++);
+    edge = ALE::Two::Mesh::point_type(0, 18);
+    topology->addArrow(vertices[3], edge, order++);
+    topology->addArrow(vertices[8], edge, order++);
+    edge = ALE::Two::Mesh::point_type(0, 19);
+    topology->addArrow(vertices[5], edge, order++);
+    topology->addArrow(vertices[8], edge, order++);
+    edge = ALE::Two::Mesh::point_type(0, 20);
+    topology->addArrow(vertices[7], edge, order++);
+    topology->addArrow(vertices[8], edge, order++);
   }
   topology->stratify();
   mesh->createSerialCoordinates(2, 0, coords);
   /* Create boundary conditions */
   if (rank == 0) {
+    ALE::Obj<ALE::def::PointSet> cone = ALE::def::PointSet();
+
     for(int v = 0; v < 8; v++) {
-      cone->insert(ALE::def::Mesh::point_type(0, v));
+      cone->insert(ALE::Two::Mesh::point_type(0, v));
     }
     for(int e = 9; e < 17; e++) {
-      cone->insert(ALE::def::Mesh::point_type(0, e));
+      cone->insert(ALE::Two::Mesh::point_type(0, e));
     }
     topology->setMarker(cone, 1);
   }
@@ -215,12 +185,10 @@ PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::def::Mesh> mesh)
     |/    |/
     0-----1
 */
-PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::def::Mesh> mesh)
+PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
 {
   MPI_Comm          comm = mesh->getComm();
-  ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
-  ALE::Obj<ALE::def::Mesh::sieve_type> orientation = mesh->getOrientation();
-  ALE::Obj<ALE::def::Mesh::ordering_type> ordering = mesh->getOrdering();
+  ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
   PetscScalar       coords[24] = {0.0, 0.0, 0.0,
                                   1.0, 0.0, 0.0,
                                   1.0, 1.0, 0.0,
@@ -230,136 +198,105 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::def::Mesh> mesh)
                                   1.0, 1.0, 1.0,
                                   0.0, 1.0, 1.0};
 
-  ALE::Obj<std::set<ALE::def::Mesh::point_type> >  cone = std::set<ALE::def::Mesh::point_type>();
-  ALE::Obj<std::set<ALE::def::Mesh::point_type> >  ocone = std::set<ALE::def::Mesh::point_type>();
-  ALE::Obj<ALE::def::Mesh::ordering_type::PointArray> orderArray = ALE::def::Mesh::ordering_type::PointArray();
-  ALE::def::Mesh::point_type            vertices[8];
-  ALE::def::Mesh::point_type            edges[12];
-  ALE::def::Mesh::point_type            edge;
+  ALE::Obj<std::set<ALE::Two::Mesh::point_type> > cone = std::set<ALE::Two::Mesh::point_type>();
+  ALE::Two::Mesh::point_type            vertices[8];
+  ALE::Two::Mesh::point_type            edges[12];
+  ALE::Two::Mesh::point_type            edge;
   PetscInt                              embedDim = 3;
-  PetscMPIInt                           rank, size;
+  PetscInt                              order = 0;
+  PetscMPIInt                           rank;
   PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (rank == 0) {
-    ALE::def::Mesh::point_type face;
+    ALE::Two::Mesh::point_type face;
 
     /* Create topology and ordering */
     /* Vertices: 0 .. 3 on the bottom of the cube, 4 .. 7 on the top */
     for(int v = 0; v < 8; v++) {
-      vertices[v] = ALE::def::Mesh::point_type(0, v);
+      vertices[v] = ALE::Two::Mesh::point_type(0, v);
     }
 
     /* Edges on the bottom: Sieve element numbers e = 8 .. 11, edge numbers e - 8 = 0 .. 3 */
     for(int e = 8; e < 12; e++) {
-      edge = ALE::def::Mesh::point_type(0, e);
+      edge = ALE::Two::Mesh::point_type(0, e);
       edges[e-8] = edge;
-      /* (e-8) = 0 .. 3 -- initial vertex */
-      cone->insert(vertices[e-8]);
-      /* (e-7)%4 = 1 .. 0 -- final vertex   */
-      cone->insert(vertices[(e-7)%4]);
-      topology->addCone(cone, edge);
-      cone->clear();
-      /* set the edge orientation: the initial vertex and the edge itself */
-      ocone->insert(vertices[e-8]);
-      ocone->insert(edge);
-      orientation->addCone(ocone,edge);
-      ocone->clear();
+      topology->addArrow(vertices[e-8],     edge, order++);
+      topology->addArrow(vertices[(e-7)%4], edge, order++);
     }
     /* Edges on the top: Sieve element numbers e = 12 .. 15, edge numbers e - 8 = 4 .. 7 */
     for(int e = 12; e < 16; e++) {
-      edge = ALE::def::Mesh::point_type(0, e); 
+      edge = ALE::Two::Mesh::point_type(0, e); 
       edges[e-8] = edge;
-      /* e - 12 + 4 =  4 .. 7 -- initial vertex */
-      cone->insert(vertices[e-8]);
-      /* (e-11)%4 + 4 = 5 .. 4 -- final vertex  */ 
-      cone->insert(vertices[(e-11)%4+4]);
-      topology->addCone(cone, edge);
-      cone->clear();
-      /* set the edge orientation: the initial vertex and the edge itself */
-      ocone->insert(vertices[(e-8)]);
-      ocone->insert(edge);
-      orientation->addCone(ocone,edge);
-      ocone->clear();
+      topology->addArrow(vertices[e-8],        edge, order++);
+      topology->addArrow(vertices[(e-11)%4+4], edge, order++);
     }
     /* Edges from bottom to top: Sieve element numbers e = 16 .. 19, edge numbers e - 8 = 8 .. 11 */
     for(int e = 16; e < 20; e++) {
-      edge = ALE::def::Mesh::point_type(0, e); 
+      edge = ALE::Two::Mesh::point_type(0, e); 
       edges[e-8] = edge;
-      /* (e-16) = 0 .. 3 -- initial vertex */
-      cone->insert(vertices[e-16]);
-      /* (e-16+4) = 4 .. 7 -- final vertex */
-      cone->insert(vertices[e-16+4]);
-      topology->addCone(cone, edge);
-      cone->clear();
-      /* set the edge orientation: the initial vertex and the edge itself */
-      ocone->insert(vertices[(e-16)]);
-      ocone->insert(edge);
-      orientation->addCone(ocone,edge);
-      ocone->clear();
+      topology->addArrow(vertices[e-16],   edge, order++);
+      topology->addArrow(vertices[e-16+4], edge, order++);
     }
 
     /* Bottom face */
-    face = ALE::def::Mesh::point_type(0, 20); 
-    /* Covered by edges 0 .. 3 */
-    for(int e = 0; e < 4; e++) {
-      cone->insert(edges[e]);
-    }
-    topology->addCone(cone, face);
-    cone->clear();
-    /* set the face orientation: the orientation cone of the leading edge and the face itself */
-    orientation->addCone(orientation->cone(edges[0]),face);
-    orientation->addArrow(face,face);
-    orderArray->push_back(vertices[0]);
-    orderArray->push_back(vertices[1]);
-    orderArray->push_back(vertices[2]);
-    orderArray->push_back(vertices[3]);
-    ordering->setPatchOrdered(orderArray, face);
-    orderArray->clear();
-
+    face = ALE::Two::Mesh::point_type(0, 20); 
+    topology->addArrow(edges[0], face, order++);
+    topology->addArrow(edges[1], face, order++);
+    topology->addArrow(edges[2], face, order++);
+    topology->addArrow(edges[3], face, order++);
     /* Top face */
-    face = ALE::def::Mesh::point_type(0, 21); 
-    /* Covered by edges 4 .. 7 */
-    for(int e = 4; e < 8; e++) {
-      cone->insert(edges[e]);
-    }
-    topology->addCone(cone, face);
-    cone->clear();
-    /* set the face orientation: the orientation cone of the leading edge and the face itself */
-    orientation->addCone(orientation->cone(edges[4]),face);
-    orientation->addArrow(face,face);
-    orderArray->push_back(vertices[4]);
-    orderArray->push_back(vertices[5]);
-    orderArray->push_back(vertices[6]);
-    orderArray->push_back(vertices[7]);
-    ordering->setPatchOrdered(orderArray, face);
-    orderArray->clear();
-
+    face = ALE::Two::Mesh::point_type(0, 21); 
+    topology->addArrow(edges[4], face, order++);
+    topology->addArrow(edges[5], face, order++);
+    topology->addArrow(edges[6], face, order++);
+    topology->addArrow(edges[7], face, order++);
     /* Side faces: f = 22 .. 25 */
     for(int f = 22; f < 26; f++) {
-      face = ALE::def::Mesh::point_type(0, f);
+      face = ALE::Two::Mesh::point_type(0, f);
       int v = f - 22;
       /* Covered by edges f - 22, f - 22 + 4, f - 22 + 8, (f - 21)%4 + 8 */
-      cone->insert(edges[v]);
-      cone->insert(edges[v+4]);
-      cone->insert(edges[v+8]);
-      cone->insert(edges[(v+1)%4+8]);
-      topology->addCone(cone, face);
-      cone->clear();
-      /* set the face orientation: the orientation cone of the leading edge and the face itself */
-      orientation->addCone(orientation->cone(edges[f-22]),face);
-      orientation->addArrow(face,face);
-      orderArray->push_back(vertices[v]);
-      orderArray->push_back(vertices[(v+1)%4]);
-      orderArray->push_back(vertices[(v+1)%4+4]);
-      orderArray->push_back(vertices[(v)%4+4]);
-      ordering->setPatchOrdered(orderArray, face);
-      orderArray->clear();
+      topology->addArrow(edges[v],         face, order++);
+      topology->addArrow(edges[(v+1)%4+8], face, order++);
+      topology->addArrow(edges[v+4],       face, order++);
+      topology->addArrow(edges[v+8],       face, order++);
     }
   }/* if(rank == 0) */
   topology->stratify();
+  if (rank == 0) {
+    ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
+    ALE::Obj<ALE::Two::Mesh::bundle_type::PointArray> points = ALE::Two::Mesh::bundle_type::PointArray();
+    const std::string orderName("element");
+    /* Bottom face */
+    ALE::Two::Mesh::point_type face = ALE::Two::Mesh::point_type(0, 20); 
+    points->clear();
+    points->push_back(vertices[0]);
+    points->push_back(vertices[1]);
+    points->push_back(vertices[2]);
+    points->push_back(vertices[3]);
+    vertexBundle->setPatch(orderName, points, face);
+    /* Top face */
+    face = ALE::Two::Mesh::point_type(0, 21); 
+    points->clear();
+    points->push_back(vertices[4]);
+    points->push_back(vertices[5]);
+    points->push_back(vertices[6]);
+    points->push_back(vertices[7]);
+    vertexBundle->setPatch(orderName, points, face);
+    /* Side faces: f = 22 .. 25 */
+    for(int f = 22; f < 26; f++) {
+      face = ALE::Two::Mesh::point_type(0, f);
+      int v = f - 22;
+      /* Covered by edges f - 22, f - 22 + 4, f - 22 + 8, (f - 21)%4 + 8 */
+      points->clear();
+      points->push_back(vertices[v]);
+      points->push_back(vertices[(v+1)%4]);
+      points->push_back(vertices[(v+1)%4+4]);
+      points->push_back(vertices[v+4]);
+      vertexBundle->setPatch(orderName, points, face);
+    }
+  }
   mesh->createSerialCoordinates(embedDim, 0, coords);
 
   /* Create boundary conditions: set marker 1 to all of the sieve elements, 
@@ -370,7 +307,6 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::def::Mesh> mesh)
     /* set marker to the vertices -- the 0-depth stratum */
     topology->setMarker(topology->depthStratum(0), 1);
   }
-
 
   PetscFunctionReturn(0);
 }
@@ -390,7 +326,7 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::def::Mesh> mesh)
   |     |     |
   0--9--1--10-2
 */
-PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::def::Mesh> mesh)
+PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
 {
   int            dim = mesh->getDimension();
   PetscErrorCode ierr;

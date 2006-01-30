@@ -577,7 +577,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestrict(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat,Vec*,Vec*);
 
 /*MC
-   MatPreallocInitialize - Begins the block of code that will count the number of nonzeros per
+   MatPreallocateInitialize - Begins the block of code that will count the number of nonzeros per
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
@@ -618,7 +618,7 @@ M*/
   _4_ierr = MPI_Scan(&__tmp,&__rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __tmp;
 
 /*MC
-   MatPreallocSymmetricInitialize - Begins the block of code that will count the number of nonzeros per
+   MatPreallocateSymmetricInitialize - Begins the block of code that will count the number of nonzeros per
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
@@ -817,7 +817,7 @@ M*/
 }
 
 /*MC
-   MatPreallocFinalize - Ends the block of code that will count the number of nonzeros per
+   MatPreallocateFinalize - Ends the block of code that will count the number of nonzeros per
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
    Synopsis:
