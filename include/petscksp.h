@@ -32,6 +32,7 @@ E*/
 #define KSPCHEBYCHEV  "chebychev"
 #define KSPCG         "cg"
 #define   KSPCGNE       "cgne"
+#define   KSPSTCG       "stcg"
 #define KSPGMRES      "gmres"
 #define   KSPFGMRES     "fgmres" 
 #define   KSPLGMRES     "lgmres"

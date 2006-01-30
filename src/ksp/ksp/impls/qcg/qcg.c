@@ -128,8 +128,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetQuadratic(KSP ksp,PetscReal *quadrati
      D is a scaling matrix.
 
    KSPConvergedReason may be 
-$  KSP_CONVERGED_QCG_NEG_CURVE if convergence is reached along a negative curvature direction,
-$  KSP_CONVERGED_QCG_CONSTRAINED if convergence is reached along a constrained step,
+$  KSP_CONVERGED_STCG_NEG_CURVE if convergence is reached along a negative curvature direction,
+$  KSP_CONVERGED_STCG_CONSTRAINED if convergence is reached along a constrained step,
 $  other KSP converged/diverged reasons
 
 
@@ -270,7 +270,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 #endif
        }
        pcgP->ltsnrm = pcgP->delta;                       /* convergence in direction of */
-       ksp->reason  = KSP_CONVERGED_QCG_NEG_CURVE;  /* negative curvature */
+       ksp->reason  = KSP_CONVERGED_STCG_NEG_CURVE;  /* negative curvature */
        if (!i) {
          ierr = PetscInfo1(ksp,"negative curvature: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
        } else {
@@ -307,7 +307,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 #endif
          }
          pcgP->ltsnrm = pcgP->delta;
-         ksp->reason  = KSP_CONVERGED_QCG_CONSTRAINED;	/* convergence along constrained step */
+         ksp->reason  = KSP_CONVERGED_STCG_CONSTRAINED;	/* convergence along constrained step */
          if (!i) {
            ierr = PetscInfo1(ksp,"constrained step: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
          } else {
