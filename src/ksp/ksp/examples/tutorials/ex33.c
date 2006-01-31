@@ -124,14 +124,16 @@ int main(int argc,char **argv)
 
     ierr = PetscPrintf(comm, "Creating boundary\n");CHKERRQ(ierr);
     ALE::Obj<ALE::Two::Mesh::field_type> boundary = mesh->getBoundary();
-    ALE::Obj<ALE::Two::Mesh::sieve_type::depthSequence> bdVertices = boundary->getTopology()->depthStratum(0, 1);
     ALE::Two::Mesh::field_type::patch_type patch;
 
     boundary->setTopology(mesh->getTopology());
     boundary->setPatch(mesh->getTopology()->leaves(), patch);
     boundary->setFiberDimensionByDepth(patch, 0, 1);
     boundary->orderPatches();
-    for(ALE::Two::Mesh::sieve_type::depthSequence::iterator v_iter = bdVertices->begin(); v_iter != bdVertices->end(); ++v_iter) {
+
+    ALE::Obj<ALE::Two::Mesh::sieve_type::depthMarkerSequence> bdVertices = boundary->getTopology()->depthStratum(0, 1);
+
+    for(ALE::Two::Mesh::sieve_type::depthMarkerSequence::iterator v_iter = bdVertices->begin(); v_iter != bdVertices->end(); ++v_iter) {
       //double *coords = mesh->getCoordinates()->restrict(patch, *v_iter);
       double values[1] = {0.0};
 
@@ -142,6 +144,14 @@ int main(int argc,char **argv)
     u->setPatch(mesh->getTopology()->leaves(), ALE::Two::Mesh::field_type::patch_type());
     u->setFiberDimensionByDepth(patch, 0, 1);
     u->orderPatches();
+    ALE::Obj<ALE::Two::Mesh::sieve_type::heightSequence> elements = mesh->getTopology()->heightStratum(0);
+    std::string orderName("element");
+
+    for(ALE::Two::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
+      u->setPatch(orderName, *e_itor, *e_itor);
+      u->setFiberDimensionByDepth(orderName, *e_itor, 0, 1);
+    }
+    u->orderPatches(orderName);
 
     Mesh petscMesh;
     ierr = MeshCreate(comm, &petscMesh);CHKERRQ(ierr);
@@ -177,7 +187,6 @@ int main(int argc,char **argv)
     ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
     //ierr = VecView(DMMGGetRHS(dmmg), viewer);CHKERRQ(ierr);
     ierr = VecView(DMMGGetx(dmmg), viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
 
@@ -1455,15 +1464,21 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 
   if (user->bcType == DIRICHLET) {
     /* Zero out BC rows */
-    ALE::Obj<ALE::Two::Mesh::sieve_type::depthSequence> bdVertices = m->getBoundary()->getTopology()->depthStratum(0, 1);
+    ALE::Obj<ALE::Two::Mesh::sieve_type::depthMarkerSequence> bdVertices = m->getBoundary()->getTopology()->depthStratum(0, 1);
     ALE::Two::Mesh::field_type::patch_type patch;
-    int numBoundaryIndices = m->getBoundary()->getSize(patch);
     PetscInt *boundaryIndices;
     PetscInt k = 0;
 
+    ALE::Obj<ALE::Two::Mesh::bundle_type> bdBundle = ALE::Two::Mesh::bundle_type(m->debug);
+    bdBundle->setTopology(m->getTopology());
+    bdBundle->setPatch(bdVertices, patch);
+    bdBundle->setFiberDimensionByDepth(patch, 0, 1);
+    bdBundle->orderPatches();
+
+    int numBoundaryIndices = bdBundle->getSize(patch);
     ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
-    for(ALE::Two::Mesh::sieve_type::depthSequence::iterator p = bdVertices->begin(); p != bdVertices->end(); ++p) {
-      const ALE::Two::Mesh::field_type::index_type& idx = m->getBoundary()->getIndex(patch, *p);
+    for(ALE::Two::Mesh::sieve_type::depthMarkerSequence::iterator p = bdVertices->begin(); p != bdVertices->end(); ++p) {
+      const ALE::Two::Mesh::field_type::index_type& idx = bdBundle->getIndex(patch, *p);
 
       for(int i = 0; i < idx.index; i++) {
         boundaryIndices[k++] = idx.prefix + i;

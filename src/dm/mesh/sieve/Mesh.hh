@@ -187,6 +187,14 @@ namespace ALE {
         for(sieve_type::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
           this->coordinates->update(patch, *v_itor, &coords[((*v_itor).index - numElements)*embedDim]);
         }
+        Obj<sieve_type::heightSequence> elements = this->topology->heightStratum(0);
+        std::string orderName("element");
+
+        for(sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
+          this->coordinates->setPatch(orderName, *e_itor, *e_itor);
+          this->coordinates->setFiberDimensionByDepth(orderName, *e_itor, 0, embedDim);
+        }
+        this->coordinates->orderPatches(orderName);
         ALE_LOG_EVENT_END;
       };
 

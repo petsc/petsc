@@ -81,17 +81,23 @@ namespace ALE {
           this->_order->addArrow(*p_iter, patch, point_type(c++, 0));
         }
       };
-      // Creates a patch for a named reordering whose order is taken from the input point sequence
-      template<typename pointSequence> void setPatch(const std::string& name, const Obj<pointSequence>& points, const patch_type& patch) {
-        Obj<order_type> reorder;
-        int c = 0;
-
-        if (this->_reorders.find(name) != this->_reorders.end()) {
-          reorder = this->_reorders[name];
-        } else {
-          reorder = order_type(this->debug);
-          this->_reorders[name] = reorder;
+    private:
+      Obj<order_type> __getOrder(const std::string& orderName) {
+        if (this->_reorders.find(orderName) == this->_reorders.end()) {
+          this->_reorders[orderName] = order_type(this->debug);
         }
+        return this->_reorders[orderName];
+      };
+    public:
+      // Creates a patch for a named reordering whose order is taken from the input point sequence
+      void setPatch(const std::string& orderName, const point_type& point, const patch_type& patch) {
+        Obj<order_type> reorder = this->__getOrder(orderName);
+
+        reorder->addArrow(point, patch, point_type());
+      }
+      template<typename pointSequence> void setPatch(const std::string& orderName, const Obj<pointSequence>& points, const patch_type& patch) {
+        Obj<order_type> reorder = this->__getOrder(orderName);
+        int c = 0;
 
         for(typename pointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           reorder->addArrow(*p_iter, patch, point_type(c++, 0));
@@ -101,9 +107,19 @@ namespace ALE {
       Obj<typename order_type::coneSequence> getPatch(const patch_type& patch) {
         return this->_order->cone(patch);
       };
+    private:
+      void __checkOrderName(const std::string& orderName) {
+        if (this->_reorders.find(orderName) != this->_reorders.end()) return;
+        std::string msg("Invalid order name: ");
+
+        msg += orderName;
+        throw ALE::Exception(msg.c_str());
+      };
+    public:
       // Returns the points in the reorder patch in order
-      Obj<typename order_type::coneSequence> getPatch(const std::string& name, const patch_type& patch) {
-        return this->_reorders[name]->cone(patch);
+      Obj<typename order_type::coneSequence> getPatch(const std::string& orderName, const patch_type& patch) {
+        this->__checkOrderName(orderName);
+        return this->_reorders[orderName]->cone(patch);
       };
       // -- Index manipulation --
     private:
@@ -147,52 +163,67 @@ namespace ALE {
           this->setFiberDimension(patch, *p_iter, dim);
         }
       };
+      void setFiberDimension(const std::string& orderName, const patch_type& patch, const point_type& p, int dim) {
+        this->__checkOrderName(orderName);
+        this->_reorders[orderName]->modifyColor(p, patch, changeDim(-dim));
+      };
+      void setFiberDimensionByDepth(const std::string& orderName, const patch_type& patch, int depth, int dim) {
+        Obj<typename sieve_type::depthSequence> points = this->_topology->depthStratum(depth);
+
+        for(typename sieve_type::depthSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+          this->setFiberDimension(orderName, patch, *p_iter, dim);
+        }
+      };
     private:
-      void __orderCell(const patch_type& patch, const point_type& cell, int& offset) {
+      void __orderCell(const Obj<order_type>& order, const patch_type& patch, const point_type& cell, int& offset) {
         Obj<typename sieve_type::coneSequence> cone = this->_topology->cone(cell);
 
         for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-          this->__orderCell(patch, *p_iter, offset);
+          this->__orderCell(order, patch, *p_iter, offset);
         }
         // Set the prefix to the current offset (this won't kill the topology iterator)
-        int dim = this->_order->getColor(cell, patch).index;
+        int dim = order->getColor(cell, patch).index;
 
         if (dim < 0) {
-          this->_order->modifyColor(cell, patch, changeIndex(offset, -dim));
+          order->modifyColor(cell, patch, changeIndex(offset, -dim));
           std::cout << "Order point " << cell << " of size " << -dim << " and offset " << offset << std::endl;
           offset -= dim;
         }
       };
-    public:
       // This constructs an order on the patch by fusing the Ord CoSieve (embodied by the prefix number)
       // and the Count CoSieve (embodied by the index), turning the prefix into an offset.
-      void orderPatch(const patch_type& patch) {
+      void __orderPatch(const Obj<order_type>& order, const patch_type& patch, bool allocate = true) {
         PointArray points;
         int        offset = 0;
 
         // Filter out newly added points
-        Obj<typename order_type::coneSequence> cone = this->_order->cone(patch);
-        int order = 0;
+        Obj<typename order_type::coneSequence> cone = order->cone(patch);
+        int rank = 0;
         for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-          if (p_iter.color().prefix == order) {
+          if (p_iter.color().prefix == rank) {
             points.push_back(*p_iter);
-            order++;
+            rank++;
           }
         }
         // Loop over patch members
         for(typename PointArray::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
           // Traverse the closure of the member in the topology
           std::cout << "Ordering patch point " << *p_iter << std::endl;
-          this->__orderCell(patch, *p_iter, offset);
+          this->__orderCell(order, patch, *p_iter, offset);
         }
-        // Allocate patch
-        if (this->_storage.find(patch) != this->_storage.end()) {
-          delete [] this->_storage[patch];
+        if (allocate) {
+          if (this->_storage.find(patch) != this->_storage.end()) {
+            delete [] this->_storage[patch];
+          }
+          if (debug) {std::cout << "Allocated patch " << patch << " of size " << offset << std::endl;}
+          this->_storage[patch] = new value_type[offset];
+          this->_storageSize[patch] = offset;
         }
-        if (debug) {std::cout << "Allocated patch " << patch << " of size " << offset << std::endl;}
-        this->_storage[patch] = new value_type[offset];
-        this->_storageSize[patch] = offset;
       };
+    public:
+      void orderPatch(const patch_type& patch) {
+        this->orderPatch(this->_order, patch);
+      }
       #undef __FUNCT__
       #define __FUNCT__ "CoSifter::orderPatches"
       void orderPatches() {
@@ -200,7 +231,17 @@ namespace ALE {
         Obj<typename order_type::baseSequence> base = this->_order->base();
 
         for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-          this->orderPatch(*b_iter);
+          this->__orderPatch(this->_order, *b_iter);
+        }
+        ALE_LOG_EVENT_END;
+      };
+      void orderPatches(const std::string& orderName) {
+        ALE_LOG_EVENT_BEGIN;
+        this->__checkOrderName(orderName);
+        Obj<typename order_type::baseSequence> base = this->_reorders[orderName]->base();
+
+        for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          this->__orderPatch(this->_reorders[orderName], *b_iter, false);
         }
         ALE_LOG_EVENT_END;
       };
@@ -209,8 +250,8 @@ namespace ALE {
       const index_type& getIndex(const patch_type& patch, const point_type& p) {
         return this->_order->getColor(p, patch);
       };
-      Obj<IndexArray> getIndices(const std::string& name, const patch_type& patch) {
-        Obj<typename order_type::coneSequence> cone = getPatch(name, patch);
+      Obj<IndexArray> getIndices(const std::string& orderName, const patch_type& patch) {
+        Obj<typename order_type::coneSequence> cone = getPatch(orderName, patch);
         Obj<IndexArray>                        array = IndexArray();
         patch_type                             oldPatch;
 
