@@ -244,7 +244,7 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	    }
 	  }
 	}
-        ncolors = (nc-1) + nc*(col-1 + col*(col-1));
+        ncolors = nc + nc*(col-1 + col*(col-1));
 	ierr = ISColoringCreate(comm,ncolors,nc*nx*ny,colors,&da->localcoloring);CHKERRQ(ierr);
       }
       *coloring = da->localcoloring;
@@ -260,7 +260,7 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	    }
 	  }
 	}
-        ncolors = (nc-1) + nc*(col - 1 + col*(col-1));
+        ncolors = nc + nc*(col - 1 + col*(col-1));
 	ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,&da->ghostedcoloring);CHKERRQ(ierr);
 	ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
@@ -324,7 +324,7 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
           }
         }
       }
-      ncolors = (nc-1) + nc*(col-1 + col*(col-1)+ col*col*(col-1));
+      ncolors = nc + nc*(col-1 + col*(col-1)+ col*col*(col-1));
       ierr = ISColoringCreate(comm,ncolors,nc*nx*ny*nz,colors,&da->localcoloring);CHKERRQ(ierr);
     }
     *coloring = da->localcoloring;
@@ -342,7 +342,7 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
           }
         }
       }
-      ncolors = (nc-1) + nc*(col-1 + col*(col-1)+ col*col*(col-1));
+      ncolors = nc + nc*(col-1 + col*(col-1)+ col*col*(col-1));
       ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny*gnz,colors,&da->ghostedcoloring);CHKERRQ(ierr);
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
@@ -393,7 +393,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
           colors[i1++] = l + nc*(i % col);
         }
       }
-      ncolors = (nc-1) + nc*(col-1);
+      ncolors = nc + nc*(col-1);
       ierr = ISColoringCreate(comm,ncolors,nc*nx,colors,&da->localcoloring);CHKERRQ(ierr);
     }
     *coloring = da->localcoloring;
@@ -407,7 +407,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
           colors[i1++] = l + nc*(SetInRange(i,m) % col);
         }
       }
-      ncolors = (nc-1) + nc*(col-1);
+      ncolors = nc + nc*(col-1);
       ierr = ISColoringCreate(comm,ncolors,nc*gnx,colors,&da->ghostedcoloring);CHKERRQ(ierr);
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
