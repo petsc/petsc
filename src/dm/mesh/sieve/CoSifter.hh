@@ -41,6 +41,7 @@ namespace ALE {
       typedef std::vector<point_type> PointArray;
       typedef Patch_ patch_type;
       typedef Index_ index_type;
+      typedef std::vector<index_type> IndexArray;
       typedef Value_ value_type;
       typedef BiGraph<point_type,patch_type,index_type> order_type;
     private:
@@ -203,19 +204,59 @@ namespace ALE {
         }
         ALE_LOG_EVENT_END;
       };
-      //Obj<IndexArray> getIndices(const patch_type& patch};
-      //Obj<IndexArray> getIndices(const patch_type& patch, const point_type& p};
+      //Obj<IndexArray> getIndices(const patch_type& patch);
+      //Obj<IndexArray> getIndices(const patch_type& patch, const point_type& p);
       const index_type& getIndex(const patch_type& patch, const point_type& p) {
         return this->_order->getColor(p, patch);
       };
+      Obj<IndexArray> getIndices(const std::string& name, const patch_type& patch) {
+        Obj<typename order_type::coneSequence> cone = getPatch(name, patch);
+        Obj<IndexArray>                        array = IndexArray();
+        patch_type                             oldPatch;
+
+        // We have no way to map the the old patch yet
+        // It would be better to map this through in a sequence to the original indices (like fusion)
+        for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          array->push_back(this->getIndex(oldPatch, *p_iter));
+        }
+        return array;
+      }
       // -- Value manipulation --
+      int getSize(const patch_type& patch) {
+        return this->_storageSize[patch];
+      };
       const value_type *restrict(const patch_type& patch) {
         return this->_storage[patch];
       };
       const value_type *restrict(const patch_type& patch, const point_type& p) {
         return &this->_storage[patch][this->_order->getColor(p, patch).prefix];
       };
-      const value_type *restrict(const std::string& orderName, const patch_type& patch);
+      // Can this be improved?
+      const value_type *restrict(const std::string& orderName, const patch_type& patch) {
+        Obj<typename order_type::coneSequence> cone = getPatch(orderName, patch);
+        static value_type                     *values = NULL;
+        static int                             size = 0;
+        int                                    newSize = 0;
+        int                                    newI = 0;
+        patch_type                             oldPatch;
+
+        for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          newSize += this->getIndex(oldPatch, *p_iter).index;
+        }
+        if (newSize != size) {
+          if (!values) delete [] values;
+          size = newSize;
+          values = new value_type[size];
+        }
+        for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          const index_type& ind = this->getIndex(oldPatch, *p_iter);
+
+          for(int i = ind.prefix; i < ind.prefix+ind.index; ++i) {
+            values[newI++] = this->_storage[oldPatch][i];
+          }
+        }
+        return values;
+      };
       const value_type *restrict(const std::string& orderName, const patch_type& patch, const point_type& p);
       void              update(const patch_type& patch, const value_type values[]);
       void              update(const patch_type& patch, const point_type& p, const value_type values[]) {
@@ -227,11 +268,44 @@ namespace ALE {
           this->_storage[patch][offset+i] = values[i];
         }
       };
-      void              update(const std::string& orderName, const patch_type& patch, const value_type values[]);
+      // Can this be improved?
+      void              update(const std::string& orderName, const patch_type& patch, const value_type values[]) {
+        Obj<typename order_type::coneSequence> cone = getPatch(orderName, patch);
+        int                                    newI = 0;
+        patch_type                             oldPatch;
+
+        for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          const index_type& ind = this->getIndex(oldPatch, *p_iter);
+
+          for(int i = ind.prefix; i < ind.prefix+ind.index; ++i) {
+            this->_storage[oldPatch][i] = values[newI++];
+          }
+        }
+      };
       void              update(const std::string& orderName, const patch_type& patch, const point_type& p, const value_type values[]);
       void              updateAdd(const patch_type& patch, const value_type values[]);
-      void              updateAdd(const patch_type& patch, const point_type& p, const value_type values[]);
-      void              updateAdd(const std::string& orderName, const patch_type& patch, const value_type values[]);
+      void              updateAdd(const patch_type& patch, const point_type& p, const value_type values[]) {
+        const index_type& idx = this->getIndex(patch, p);
+        int offset = idx.prefix;
+
+        for(int i = 0; i < idx.index; ++i) {
+          if (debug) {std::cout << "Set a[" << offset+i << "] = " << values[i] << " on patch " << patch << std::endl;}
+          this->_storage[patch][offset+i] += values[i];
+        }
+      };
+      void              updateAdd(const std::string& orderName, const patch_type& patch, const value_type values[]) {
+        Obj<typename order_type::coneSequence> cone = getPatch(orderName, patch);
+        int                                    newI = 0;
+        patch_type                             oldPatch;
+
+        for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          const index_type& ind = this->getIndex(oldPatch, *p_iter);
+
+          for(int i = ind.prefix; i < ind.prefix+ind.index; ++i) {
+            this->_storage[oldPatch][i] += values[newI++];
+          }
+        }
+      };
       void              updateAdd(const std::string& orderName, const patch_type& patch, const point_type& p, const value_type values[]);
     };
   }
