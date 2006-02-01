@@ -126,7 +126,7 @@ namespace ALE {
       struct changeOffset {
         changeOffset(int newOffset) : newOffset(newOffset) {};
 
-        void operator()(typename order_type::Arrow_& p) {
+        void operator()(typename order_type::Arrow_& p) const {
           p.color.prefix = newOffset;
         }
       private:
@@ -135,7 +135,7 @@ namespace ALE {
       struct changeDim {
         changeDim(int newDim) : newDim(newDim) {};
 
-        void operator()(typename order_type::Arrow_& p) {
+        void operator()(typename order_type::Arrow_& p) const {
           p.color.index = newDim;
         }
       private:
@@ -144,7 +144,7 @@ namespace ALE {
       struct changeIndex {
         changeIndex(int newOffset, int newDim) : newOffset(newOffset), newDim(newDim) {};
 
-        void operator()(typename order_type::Arrow_& p) {
+        void operator()(typename order_type::Arrow_& p) const {
           p.color.prefix = newOffset;
           p.color.index  = newDim;
         }
