@@ -243,6 +243,15 @@ namespace ALE {
         for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
           this->__orderPatch(this->_reorders[orderName], *b_iter, false);
         }
+//         std::cout << orderName << " ordering:" << std::endl;
+//         for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+//           Obj<typename order_type::coneSequence> cone = this->getPatch(orderName, *b_iter);
+
+//           std::cout << "  patch " << *b_iter << std::endl;
+//           for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+//             std::cout << "    " << *p_iter << std::endl;
+//           }
+//         };
         ALE_LOG_EVENT_END;
       };
       //Obj<IndexArray> getIndices(const patch_type& patch);

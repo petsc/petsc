@@ -118,16 +118,16 @@ int main(int argc,char **argv)
       ierr = PetscPrintf(comm, "Refining mesh\n");CHKERRQ(ierr);
       mesh = ALE::Two::Generator::refine(mesh, refinementLimit);
       ALE::LogStagePop(stage);
-      ierr = PetscPrintf(comm, "  Read %d elements\n", mesh->getTopology()->heightStratum(0)->size());CHKERRQ(ierr);
-      ierr = PetscPrintf(comm, "  Read %d vertices\n", mesh->getTopology()->depthStratum(0)->size());CHKERRQ(ierr);
+      ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
+      ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
     }
 
     ierr = PetscPrintf(comm, "Creating boundary\n");CHKERRQ(ierr);
     ALE::Obj<ALE::Two::Mesh::field_type> boundary = mesh->getBoundary();
     ALE::Two::Mesh::field_type::patch_type patch;
 
-    boundary->setTopology(mesh->getTopology());
-    boundary->setPatch(mesh->getTopology()->leaves(), patch);
+    boundary->setTopology(topology);
+    boundary->setPatch(topology->leaves(), patch);
     boundary->setFiberDimensionByDepth(patch, 0, 1);
     boundary->orderPatches();
 
@@ -141,15 +141,21 @@ int main(int argc,char **argv)
     }
 
     ALE::Obj<ALE::Two::Mesh::field_type> u = mesh->getField("u");
-    u->setPatch(mesh->getTopology()->leaves(), ALE::Two::Mesh::field_type::patch_type());
+    u->setPatch(topology->leaves(), ALE::Two::Mesh::field_type::patch_type());
     u->setFiberDimensionByDepth(patch, 0, 1);
     u->orderPatches();
-    ALE::Obj<ALE::Two::Mesh::sieve_type::heightSequence> elements = mesh->getTopology()->heightStratum(0);
+    ALE::Obj<ALE::Two::Mesh::sieve_type::heightSequence> elements = topology->heightStratum(0);
     std::string orderName("element");
 
-    for(ALE::Two::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
-      u->setPatch(orderName, *e_itor, *e_itor);
-      u->setFiberDimensionByDepth(orderName, *e_itor, 0, 1);
+    for(ALE::Two::Mesh::sieve_type::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
+      // setFiberDimensionByDepth() does not work here since we only want it to apply to the patch cone
+      //   What we really need is the depthStratum relative to the patch
+      ALE::Obj<ALE::def::PointSet> cone = topology->nCone(*e_iter, topology->depth());
+
+      u->setPatch(orderName, *e_iter, *e_iter);
+      for(ALE::def::PointSet::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+        u->setFiberDimension(orderName, *e_iter, *c_iter, 1);
+      }
     }
     u->orderPatches(orderName);
 
@@ -1206,10 +1212,11 @@ PetscErrorCode ElementGeometry(ALE::Obj<ALE::Two::Mesh> mesh, const ALE::Two::Me
     if (invJ) {
       if (dim == 2) {
         invJ[0] =  invDet*J[3];
-        invJ[1] = -invDet*J[2];
-        invJ[2] = -invDet*J[1];
+        invJ[1] = -invDet*J[1];
+        invJ[2] = -invDet*J[2];
         invJ[3] =  invDet*J[0];
       } else if (dim == 3) {
+        // FIX: This may be wrong
         invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
         invJ[0*3+1] = invDet*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]);
         invJ[0*3+2] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
@@ -1426,7 +1433,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   ALE::Obj<ALE::Two::Mesh::sieve_type::heightSequence> elements = m->getTopology()->heightStratum(0);
   for(ALE::Two::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
     CHKMEMQ;
-    ierr = ElementGeometry(m, *e_itor, v0, Jac, PETSC_NULL, &detJ);CHKERRQ(ierr);
+    ierr = ElementGeometry(m, *e_itor, v0, Jac, Jinv, &detJ);CHKERRQ(ierr);
     /* Element integral */
     ierr = PetscMemzero(elementMat, NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS*sizeof(PetscScalar));CHKERRQ(ierr);
     for(q = 0; q < NUM_QUADRATURE_POINTS; q++) {
