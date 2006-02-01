@@ -1115,12 +1115,14 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::def::Mesh::bundle_type::IndexArray>
 */
 PetscErrorCode MeshCreateVector(Mesh mesh, ALE::Obj<ALE::Two::Mesh> m, Vec *v)
 {
+  ALE::Obj<ALE::Two::Mesh::field_type> field = m->getField("u");
+  ALE::Two::Mesh::field_type::patch_type patch;
+  // FIX: Must not include ghosts
+  PetscInt       localSize = field->getSize(ALE::Two::Mesh::field_type::patch_type());
   MPI_Comm       comm = m->getComm();
   PetscMPIInt    rank = m->getRank();
   PetscInt      *ghostIndices = NULL;
   PetscInt       ghostSize = 0;
-  // FIX: Must not include ghosts
-  PetscInt       localSize = m->getField("u")->getSize(ALE::Two::Mesh::field_type::patch_type());
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

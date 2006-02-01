@@ -218,6 +218,7 @@ namespace ALE {
           if (debug) {std::cout << "Allocated patch " << patch << " of size " << offset << std::endl;}
           this->_storage[patch] = new value_type[offset];
           this->_storageSize[patch] = offset;
+          memset(this->_storage[patch], 0, offset*sizeof(value_type));
         }
       };
     public:

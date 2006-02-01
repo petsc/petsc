@@ -1368,7 +1368,9 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   dim  = m->getDimension();
   ierr = PetscMalloc(dim * sizeof(PetscReal), &v0);CHKERRQ(ierr);
   ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
+  ALE::Obj<ALE::Two::Mesh::field_type> field = m->getField("u");
   ALE::Obj<ALE::Two::Mesh::sieve_type::heightSequence> elements = m->getTopology()->heightStratum(0);
+  ALE::Two::Mesh::field_type::patch_type patch;
   for(ALE::Two::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
     ierr = ElementGeometry(m, *e_itor, v0, Jac, PETSC_NULL, &detJ);CHKERRQ(ierr);
     /* Element integral */
@@ -1385,11 +1387,15 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     }
     if (debug) {PetscSynchronizedPrintf(comm, "elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);}
     /* Assembly */
-    m->getField(std::string("u"))->updateAdd(std::string("element"), *e_itor, elementVec);
+    field->updateAdd("element", *e_itor, elementVec);
     if (debug) {ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);}
   }
   ierr = PetscFree(v0);CHKERRQ(ierr);
   ierr = PetscFree(Jac);CHKERRQ(ierr);
+  PetscScalar *array;
+  ierr = VecGetArray(b, &array);CHKERRQ(ierr);
+  ierr = PetscMemcpy(array, field->restrict(patch), field->getSize(patch)*sizeof(double));CHKERRQ(ierr);
+  ierr = VecRestoreArray(b, &array);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
