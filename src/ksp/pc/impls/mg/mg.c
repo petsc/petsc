@@ -562,7 +562,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 {
   PetscErrorCode ierr;
-  PC_MG          **mg;
+  PC_MG          **mg=0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);

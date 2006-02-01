@@ -117,6 +117,9 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   PetscReal      alpha, beta, kappa, rz, rzm1;
   PetscReal      radius;
   PetscInt       i, maxit;
+#if defined(PETSC_USE_COMPLEX)
+  PetscScalar    crz, ckappa, cquadratic;
+#endif
   PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
@@ -155,7 +158,11 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   ierr = PCApply(pc, r, z); CHKERRQ(ierr);               /* z = M_{-1} r */
   ierr = VecCopy(z, p); CHKERRQ(ierr);                   /* p = -z       */
   ierr = VecScale(p, negone); CHKERRQ(ierr);
-  ierr = VecDot(r, z, &rz);                              /* rz = r^T z   */
+#if defined(PETSC_USE_COMPLEX)
+  ierr = VecDot(r, z, &crz);CHKERRQ(ierr); rz = PetscRealPart(crz);
+#else
+  ierr = VecDot(r, z, &rz);CHKERRQ(ierr);                /* rz = r^T z   */
+#endif
 
   dMp    = 0;
   norm_p = rz;
@@ -166,7 +173,11 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     ksp->its++;
 
     ierr = MatMult(Qmat, p, w); CHKERRQ(ierr);            /* w = Q * p   */
+#if defined(PETSC_USE_COMPLEX)
+    ierr = VecDot(p, w, &ckappa);CHKERRQ(ierr); kappa = PetscRealPart(ckappa);
+#else
     ierr = VecDot(p, w, &kappa); CHKERRQ(ierr);           /* kappa = p^T w */
+#endif
 
     if (kappa <= zero) {
       /* Direction of negative curvature, calculate intersection and sol */
@@ -207,7 +218,11 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     ierr = PCApply(pc, r, z); CHKERRQ(ierr);
 
     rzm1 = rz;
+#if defined(PETSC_USE_COMPLEX)
+    ierr = VecDot(r, z, &crz);CHKERRQ(ierr); rz = PetscRealPart(crz);
+#else
     ierr = VecDot(r, z, &rz); CHKERRQ(ierr);
+#endif
     beta = rz / rzm1;
 
     VecAXPBY(p, negone, beta, z);                    /* p = beta p - z */
@@ -222,7 +237,11 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   /* Compute Q(x) */
   ierr = MatMult(Qmat, d, p); CHKERRQ(ierr);
   ierr = VecAXPBY(p, negone, pfive, ksp->vec_rhs); CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+  ierr = VecDot(d, p, &cquadratic);CHKERRQ(ierr); cg->quadratic = PetscRealPart(cquadratic);
+#else
   ierr = VecDot(d, p, &(cg->quadratic)); CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

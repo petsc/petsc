@@ -27,7 +27,9 @@ namespace ALE {
     private:
       Obj<sieve_type> topology;
       Obj<field_type> coordinates;
+      Obj<field_type> boundary;
       std::map<int, Obj<bundle_type> > bundles;
+      std::map<std::string, Obj<field_type> > fields;
       MPI_Comm        comm;
       int             rank;
       int             dim;
@@ -36,6 +38,7 @@ namespace ALE {
         this->setComm(comm);
         this->topology    = sieve_type(debug);
         this->coordinates = field_type(debug);
+        this->boundary    = field_type(debug);
       };
 
       MPI_Comm        getComm() {return this->comm;};
@@ -47,6 +50,8 @@ namespace ALE {
       void            setDimension(int dim) {this->dim = dim;};
       Obj<field_type> getCoordinates() {return this->coordinates;};
       void            setCoordinates(const Obj<field_type>& coordinates) {this->coordinates = coordinates;};
+      Obj<field_type> getBoundary() {return this->boundary;};
+      void            setBoundary(const Obj<field_type>& boundary) {this->boundary = boundary;};
       Obj<bundle_type> getBundle(const int dim) {
         if (this->bundles.find(dim) == this->bundles.end()) {
           Obj<bundle_type> bundle = bundle_type(debug);
@@ -61,6 +66,16 @@ namespace ALE {
         }
         return this->bundles[dim];
       };
+      Obj<field_type> getField(const std::string& name) {
+        if (this->fields.find(name) == this->fields.end()) {
+          Obj<field_type> field = field_type(debug);
+
+          std::cout << "Creating new field " << name << std::endl;
+          field->setTopology(this->topology);
+          this->fields[name] = field;
+        }
+        return this->fields[name];
+      }
 
       void buildFaces(int dim, std::map<int, int*> *curSimplex, Obj<PointArray> boundary, point_type& simplex) {
         Obj<PointArray> faces = PointArray();
@@ -172,6 +187,14 @@ namespace ALE {
         for(sieve_type::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
           this->coordinates->update(patch, *v_itor, &coords[((*v_itor).index - numElements)*embedDim]);
         }
+        Obj<sieve_type::heightSequence> elements = this->topology->heightStratum(0);
+        std::string orderName("element");
+
+        for(sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
+          this->coordinates->setPatch(orderName, *e_itor, *e_itor);
+          this->coordinates->setFiberDimensionByDepth(orderName, *e_itor, 0, embedDim);
+        }
+        this->coordinates->orderPatches(orderName);
         ALE_LOG_EVENT_END;
       };
 

@@ -1169,6 +1169,12 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       newshift;
 
   PetscFunctionBegin;  
+
+  sctx.shift_top  = 0;
+  sctx.nshift_max = 0;
+  sctx.shift_lo   = 0;
+  sctx.shift_hi   = 0;
+
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd && info->shiftnz) info->shiftnz = 0.0; 
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */

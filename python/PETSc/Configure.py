@@ -349,6 +349,8 @@ class Configure(config.base.Configure):
     self.framework.makeRuleHeader  = 'bmake/'+self.arch.arch+'/petscrules'
     if self.libraries.math is None:
       raise RuntimeError('PETSc requires a functional math library. Please send configure.log to petsc-maint@mcs.anl.gov.')
+    if self.languages.clanguage == 'Cxx' and not hasattr(self.compilers, 'CXX'):
+      raise RuntimeError('Cannot set C language to C++ without a functional C++ compiler.')
     self.executeTest(self.configureInline)
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)

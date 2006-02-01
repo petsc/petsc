@@ -16,7 +16,7 @@ struct _MeshOps {
 
 struct _p_Mesh {
   PETSCHEADER(struct _MeshOps);
-  ALE::Obj<ALE::def::Mesh> m;
+  ALE::Obj<ALE::Two::Mesh> m;
   Vec      globalvector;
   PetscInt bs,n,N,Nghosts,*ghosts;
   PetscInt d_nz,o_nz,*d_nnz,*o_nnz;
@@ -842,7 +842,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshLoad(PetscViewer viewer, Mesh *mesh)
 .seealso MeshCreate(), MeshSetMesh()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::def::Mesh> *m)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::Two::Mesh> *m)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, DA_COOKIE, 1);
@@ -869,7 +869,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::def::Mesh>
 .seealso MeshCreate(), MeshGetMesh()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, ALE::Obj<ALE::def::Mesh> m)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, ALE::Obj<ALE::Two::Mesh> m)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, DA_COOKIE, 1);
@@ -904,14 +904,18 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, ALE::Obj<ALE::def::Mesh>
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype,Mat *J)
 {
+  ALE::Obj<ALE::Two::Mesh> m;
 #if 0
   ISLocalToGlobalMapping lmap;
   PetscInt              *globals,rstart,i;
 #endif
-  PetscInt               localSize = 0, globalSize = 0;
+  PetscInt               localSize, globalSize;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  localSize = m->getField("u")->getSize(ALE::Two::Mesh::field_type::patch_type());
+  globalSize = localSize;
 
   ierr = MatCreate(mesh->comm,J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,localSize,localSize,globalSize,globalSize);CHKERRQ(ierr);
@@ -1104,26 +1108,27 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::def::Mesh::bundle_type::IndexArray>
   PetscFunctionReturn(0);
 }
 
-#ifdef PARALLEL
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateVector"
 /*
   Creates a ghosted vector based upon the global ordering in the bundle.
 */
-PetscErrorCode MeshCreateVector(Mesh mesh, ALE::IndexBundle *bundle, int debug, Vec *v)
+PetscErrorCode MeshCreateVector(Mesh mesh, ALE::Obj<ALE::Two::Mesh> m, Vec *v)
 {
-  MPI_Comm       comm;
-  PetscMPIInt    rank = bundle->getCommRank();
-  ALE::Obj<ALE::PreSieve> pointTypes = bundle->getPointTypes();
-  ALE::Obj<ALE::PreSieve> globalIndices = bundle->getGlobalIndices();
-  ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(rank, ALE::rentedPoint));
-  PetscInt      *ghostIndices, ghostSize = 0, ghostIdx = 0;
-  PetscInt       localSize = bundle->getLocalSize();
+  MPI_Comm       comm = m->getComm();
+  PetscMPIInt    rank = m->getRank();
+  PetscInt      *ghostIndices = NULL;
+  PetscInt       ghostSize = 0;
+  // FIX: Must not include ghosts
+  PetscInt       localSize = m->getField("u")->getSize(ALE::Two::Mesh::field_type::patch_type());
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+#ifdef PARALLEL
+  ALE::Obj<ALE::PreSieve> globalIndices = bundle->getGlobalIndices();
+  ALE::Obj<ALE::PreSieve> pointTypes = bundle->getPointTypes();
+  ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(rank, ALE::rentedPoint));
+
   for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
     ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
 
@@ -1133,7 +1138,13 @@ PetscErrorCode MeshCreateVector(Mesh mesh, ALE::IndexBundle *bundle, int debug, 
       ghostSize += interval.index;
     }
   }
-  ierr = PetscMalloc(ghostSize * sizeof(PetscInt), &ghostIndices);CHKERRQ(ierr);
+#endif
+  if (ghostSize) {
+    ierr = PetscMalloc(ghostSize * sizeof(PetscInt), &ghostIndices);CHKERRQ(ierr);
+  }
+#ifdef PARALLEL
+  PetscInt ghostIdx = 0;
+
   for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
     ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
 
@@ -1145,8 +1156,9 @@ PetscErrorCode MeshCreateVector(Mesh mesh, ALE::IndexBundle *bundle, int debug, 
       ExpandInterval(interval, ghostIndices, &ghostIdx);
     }
   }
+#endif
   ierr = VecCreateGhost(comm, localSize, PETSC_DETERMINE, ghostSize, ghostIndices, v);CHKERRQ(ierr);
-  if (debug) {
+  if (m->debug) {
     PetscInt globalSize, g;
 
     ierr = VecGetSize(*v, &globalSize);CHKERRQ(ierr);
@@ -1162,7 +1174,6 @@ PetscErrorCode MeshCreateVector(Mesh mesh, ALE::IndexBundle *bundle, int debug, 
   ierr = PetscFree(ghostIndices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateGlobalVector"
@@ -1189,7 +1200,6 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh,Vec *gvec)
 {
   PetscErrorCode ierr;
 
-
   PetscFunctionBegin;
   /* Turned off caching for this method so that bundle can be reset to make different vectors */
 #if 0
@@ -1199,7 +1209,10 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh,Vec *gvec)
   }
 #endif
 #ifdef __cplusplus
-  //ierr = MeshCreateVector(mesh, (ALE::IndexBundle *) mesh->bundle, 0, gvec);CHKERRQ(ierr);
+  ALE::Obj<ALE::Two::Mesh> m;
+
+  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  ierr = MeshCreateVector(mesh, m, gvec);CHKERRQ(ierr);
 #endif
 #if 0
   mesh->globalvector = *gvec;
@@ -1328,7 +1341,8 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
 PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mode)
 {
   Mesh                     mesh;
-  ALE::Obj<ALE::def::Mesh> m;
+  ALE::Obj<ALE::Two::Mesh> m;
+  ALE::Two::Mesh::field_type::patch_type patch;
   PetscInt                 firstElement;
   PetscErrorCode           ierr;
 
@@ -1339,10 +1353,47 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
   firstElement = 0;
   // Must relate b to field
   if (mode == INSERT_VALUES) {
-    m->getField()->update(0, ALE::def::Point(0, e + firstElement), v);
+    m->getField(std::string("x"))->update(patch, ALE::Two::Mesh::point_type(0, e + firstElement), v);
   } else {
-    m->getField()->updateAdd(0, ALE::def::Point(0, e + firstElement), v);
+    m->getField(std::string("x"))->updateAdd(patch, ALE::Two::Mesh::point_type(0, e + firstElement), v);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "updateOperator"
+PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Two::Mesh::field_type> field, const ALE::Two::Mesh::point_type& e, PetscScalar array[], InsertMode mode)
+{
+  ALE::Obj<ALE::Two::Mesh::field_type::IndexArray> intervals = field->getIndices("element", e);
+  static PetscInt  indicesSize = 0;
+  static PetscInt *indices = NULL;
+  PetscInt         numIndices = 0;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  for(ALE::def::Mesh::bundle_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+    numIndices += (*i_itor).index;
+    if (0) {
+      //printf("[%d]interval (%d, %d)\n", mesh->getCommRank(), (*i_itor).prefix, (*i_itor).index);
+      printf("[%d]interval (%d, %d)\n", 0, (*i_itor).prefix, (*i_itor).index);
+    }
+  }
+  if (indicesSize && (indicesSize != numIndices)) {
+    ierr = PetscFree(indices); CHKERRQ(ierr);
+    indices = NULL;
+  }
+  if (!indices) {
+    indicesSize = numIndices;
+    ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
+  }
+  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
+  if (0) {
+    for(int i = 0; i < numIndices; i++) {
+      //printf("[%d]indices[%d] = %d\n", mesh->getCommRank(), i, indices[i]);
+      printf("[%d]indices[%d] = %d\n", 0, i, indices[i]);
+    }
+  }
+  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
