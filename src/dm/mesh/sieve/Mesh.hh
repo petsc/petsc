@@ -190,12 +190,12 @@ namespace ALE {
         Obj<sieve_type::heightSequence> elements = this->topology->heightStratum(0);
         std::string orderName("element");
 
-        for(sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
+        for(sieve_type::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
           // setFiberDimensionByDepth() does not work here since we only want it to apply to the patch cone
           //   What we really need is the depthStratum relative to the patch
-          ALE::Obj<ALE::def::PointSet> cone = topology->nCone(*e_iter, topology->depth());
+          ALE::Obj<ALE::def::PointSet> cone = topology->nCone(*e_iter, this->topology->depth());
 
-          this->coordinates->setPatch(orderName, *e_itor, *e_itor);
+          this->coordinates->setPatch(orderName, *e_iter, *e_iter);
           for(ALE::def::PointSet::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
             this->coordinates->setFiberDimension(orderName, *e_iter, *c_iter, embedDim);
           }

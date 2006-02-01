@@ -1430,6 +1430,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   ierr = PetscMalloc(dim * sizeof(PetscReal), &b_der);CHKERRQ(ierr);
   ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
   ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jinv);CHKERRQ(ierr);
+  ALE::Obj<ALE::Two::Mesh::field_type> field = m->getField("u");
   ALE::Obj<ALE::Two::Mesh::sieve_type::heightSequence> elements = m->getTopology()->heightStratum(0);
   for(ALE::Two::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
     CHKMEMQ;
@@ -1458,7 +1459,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
                                      elementMat[5], elementMat[6], elementMat[7], elementMat[8]);CHKERRQ(ierr);
     }
     /* Assembly */
-    ierr = updateOperator(jac, m->getField("u"), *e_itor, elementMat, ADD_VALUES);CHKERRQ(ierr);
+    ierr = updateOperator(jac, field, *e_itor, elementMat, ADD_VALUES);CHKERRQ(ierr);
     if (debug) {ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);}
   }
   ierr = PetscFree(v0);CHKERRQ(ierr);
@@ -1485,7 +1486,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
     int numBoundaryIndices = bdBundle->getSize(patch);
     ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
     for(ALE::Two::Mesh::sieve_type::depthMarkerSequence::iterator p = bdVertices->begin(); p != bdVertices->end(); ++p) {
-      const ALE::Two::Mesh::field_type::index_type& idx = bdBundle->getIndex(patch, *p);
+      const ALE::Two::Mesh::field_type::index_type& idx = field->getIndex(patch, *p);
 
       for(int i = 0; i < idx.index; i++) {
         boundaryIndices[k++] = idx.prefix + i;
