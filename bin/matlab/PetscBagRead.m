@@ -55,7 +55,7 @@ return
    
 function [n, h] = ParsePetscBagDotH
    
-   petscbagh = [GetPetscDir,'/include/petscbag.h'];
+   petscbagh = [GetPetscDir,'/src/sys/bag/bagimpl.h'];
    fid = fopen(petscbagh,'rt');
    if (fid<0)
       errstr = sprintf('Could not open %s.',petscbagh);
