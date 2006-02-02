@@ -145,7 +145,8 @@ class Configure(PETSc.package.Package):
     if os.path.basename(self.getCompiler()) == 'mpicc' and os.path.dirname(self.getCompiler()):
       path.append(os.path.dirname(self.getCompiler()))
     self.popLanguage()
-    self.getExecutable(mpiruns, path = path, useDefaultPath = 1, resultName = 'mpirun')
+    self.getExecutable(mpiruns, path = path, useDefaultPath = 1, resultName = 'mpirun',setMakeMacro=0)
+    self.addMakeMacro('MPIRUN',self.mpirun.replace('-np 1',''))
     return
         
   def configureConversion(self):
