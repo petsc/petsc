@@ -182,11 +182,11 @@ namespace ALE {
           this->__orderCell(order, patch, *p_iter, offset);
         }
         // Set the prefix to the current offset (this won't kill the topology iterator)
-        int dim = order->getColor(cell, patch).index;
+        int dim = order->getColor(cell, patch, false).index;
 
         if (dim < 0) {
           order->modifyColor(cell, patch, changeIndex(offset, -dim));
-          if (debug) {std::cout << "Order point " << cell << " of size " << -dim << " and offset " << offset << std::endl;}
+          if (debug) {std::cout << "Order point " << cell << " of size " << -dim << " and offset " << offset << "(" << order->getColor(cell, patch) << ")" << std::endl;}
           offset -= dim;
         }
       };
@@ -258,7 +258,7 @@ namespace ALE {
       //Obj<IndexArray> getIndices(const patch_type& patch);
       //Obj<IndexArray> getIndices(const patch_type& patch, const point_type& p);
       const index_type& getIndex(const patch_type& patch, const point_type& p) {
-        return this->_order->getColor(p, patch);
+        return this->_order->getColor(p, patch, false);
       };
       Obj<IndexArray> getIndices(const std::string& orderName, const patch_type& patch) {
         Obj<typename order_type::coneSequence> cone = getPatch(orderName, patch);
@@ -280,7 +280,7 @@ namespace ALE {
         return this->_storage[patch];
       };
       const value_type *restrict(const patch_type& patch, const point_type& p) {
-        return &this->_storage[patch][this->_order->getColor(p, patch).prefix];
+        return &this->_storage[patch][this->_order->getColor(p, patch, false).prefix];
       };
       // Can this be improved?
       const value_type *restrict(const std::string& orderName, const patch_type& patch) {

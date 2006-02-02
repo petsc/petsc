@@ -1402,14 +1402,19 @@ namespace ALE {
       // Basic interface
       BiGraph(const int& debug = 0) : traits::base_type(debug) {};
       
-      typename traits::color_type
-      getColor(const typename traits::source_type& s, const typename traits::target_type& t) {
+      const typename traits::color_type&
+      getColor(const typename traits::source_type& s, const typename traits::target_type& t, bool fail = true) {
         typename traits::arrowSequence arr = this->arrows(s,t);
         if(arr.begin() != arr.end()) {
           return arr.begin().color();
         }
-        else {
-          return typename traits::color_type();
+        if (fail) {
+          ostringstream o;
+          o << "Arrow " << s << " --> " << t << " not present";
+          throw ALE::Exception(o.str().c_str());
+        } else {
+          static typename traits::color_type c;
+          return c;
         }
       };
 
