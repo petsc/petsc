@@ -26,12 +26,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_SeqAIJ(Mat A, MatType type, Mat
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES, &B);CHKERRQ(ierr);
+    ierr = PetscFree(B->spptr);CHKERRQ(ierr);
   }
 
   B->ops->convert = aij->MatConvert;
   B->ops->destroy = aij->MatDestroy;
-
-  ierr = PetscFree(aij);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_aij_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_aij_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -53,12 +52,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_MPIAIJ(Mat A, MatType type, Mat
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES, &B);CHKERRQ(ierr);
+    ierr = PetscFree(B->spptr);CHKERRQ(ierr);
   }
 
   B->ops->convert = aij->MatConvert;
   B->ops->destroy = aij->MatDestroy;
-
-  ierr = PetscFree(aij);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_aij_mpiaij_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpiaij_aij_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -82,6 +80,7 @@ PetscErrorCode MatDestroy_AIJ(Mat A)
   } else {
     ierr = MatConvert_AIJ_MPIAIJ(A,MATMPIAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
