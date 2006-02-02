@@ -26,7 +26,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_SeqAIJ(Mat A, MatType type, Mat
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES, &B);CHKERRQ(ierr);
-    ierr = PetscFree(B->spptr);CHKERRQ(ierr);
   }
 
   B->ops->convert = aij->MatConvert;
@@ -52,7 +51,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_MPIAIJ(Mat A, MatType type, Mat
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES, &B);CHKERRQ(ierr);
-    ierr = PetscFree(B->spptr);CHKERRQ(ierr);
   }
 
   B->ops->convert = aij->MatConvert;
@@ -80,7 +78,6 @@ PetscErrorCode MatDestroy_AIJ(Mat A)
   } else {
     ierr = MatConvert_AIJ_MPIAIJ(A,MATMPIAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
-  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -132,7 +129,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_AIJ(Mat A, MatType type,MatR
   ierr = PetscNew(Mat_AIJ,&aij);CHKERRQ(ierr);
   aij->MatConvert = A->ops->convert;
   aij->MatDestroy = A->ops->destroy;
-
+  
+  /* Free previously allocated memory - if it exists */
+  ierr = PetscFree(B->spptr);CHKERRQ(ierr);
   B->spptr        = (void *)aij;
   B->ops->convert = MatConvertFrom_AIJviaSeqAIJ;
   B->ops->destroy = MatDestroy_AIJ;
@@ -165,6 +164,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_AIJ(Mat A, MatType type,MatR
   aij->MatConvert = A->ops->convert;
   aij->MatDestroy = A->ops->destroy;
 
+  /* Free previously allocated memory - if it exists */
+  ierr = PetscFree(B->spptr);CHKERRQ(ierr);
   B->spptr        = (void *)aij;
   B->ops->convert = MatConvertFrom_AIJviaMPIAIJ;
   B->ops->destroy = MatDestroy_AIJ;

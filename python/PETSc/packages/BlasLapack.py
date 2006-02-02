@@ -365,7 +365,7 @@ class Configure(PETSc.package.Package):
       return libdir
     try:
       self.logPrintBox('Compiling '+l.upper()+'BLASLAPACK; this may take several minutes')
-      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';make -f tmpmakefile cleanblaslapck cleanlib; make -f tmpmakefile', timeout=800, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';make -f tmpmakefile cleanblaslapck cleanlib; make -f tmpmakefile', timeout=2500, log = self.framework.log)[0]
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+l+'blaslapack: '+str(e))
     try:

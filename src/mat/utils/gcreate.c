@@ -140,8 +140,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, Pet
   A->rmap.N = M;
   A->cmap.N = N;
   /* also set rmap/cmap.bs here? */
+  /*
   ierr = PetscMapInitialize(A->comm,&A->rmap);CHKERRQ(ierr);
   ierr = PetscMapInitialize(A->comm,&A->cmap);CHKERRQ(ierr);
+  */
   PetscFunctionReturn(0);
 }
 
@@ -264,7 +266,6 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   spptr = A->spptr;
 
   ierr = PetscFree(C->spptr);CHKERRQ(ierr);
-  C->spptr = PETSC_NULL;
 
   ierr = PetscFree(A->rmap.range);CHKERRQ(ierr);
   ierr = PetscFree(A->cmap.range);CHKERRQ(ierr);
@@ -300,7 +301,8 @@ PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   ierr = PetscHeaderDestroy_Private((PetscObject)A);CHKERRQ(ierr);
   ierr = PetscFree(A->rmap.range);CHKERRQ(ierr);
   ierr = PetscFree(A->cmap.range);CHKERRQ(ierr);
-
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
+  
   /* copy C over to A */
   if (C) {
     ierr = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
