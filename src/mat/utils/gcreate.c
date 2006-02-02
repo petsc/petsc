@@ -139,6 +139,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, Pet
   A->cmap.n = n;
   A->rmap.N = M;
   A->cmap.N = N;
+  /* also set rmap/cmap.bs here? */
+  ierr = PetscMapInitialize(A->comm,&A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(A->comm,&A->cmap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

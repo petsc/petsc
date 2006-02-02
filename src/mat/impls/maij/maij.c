@@ -2473,8 +2473,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newty
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
 
   ierr   = PetscMalloc2(nmax,PetscInt,&icols,onmax,PetscInt,&oicols);CHKERRQ(ierr);
-  rstart = dof*A->rmap.rstart;
-  cstart = dof*A->cmap.rstart;
+  rstart = dof*maij->A->rmap.rstart;
+  cstart = dof*maij->A->cmap.rstart;
   garray = mpiaij->garray;
 
   ii = rstart;

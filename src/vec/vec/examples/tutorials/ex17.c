@@ -12,7 +12,6 @@ int main(int argc,char **args)
   Vec            x;
   PetscReal      norm;
 #if defined(__cplusplus) && !defined(PETSC_USE_EXTERN_CXX)
-  PetscInt       s;
   PetscScalar    dot;
 #endif
 
