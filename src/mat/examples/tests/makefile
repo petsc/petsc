@@ -972,7 +972,7 @@ runex98:
 	   ${RM} -f ex98.tmp
 
 NPROCS    = 1 3 
-DOF       = 2 3 4 5 6 8 9 16
+DOF       = 1 2 3 4 5 6 8 9 16
 runex100:
 	-@touch ex100.tmp;\
 	for np in ${NPROCS}; do \

@@ -4,6 +4,7 @@ set -x
 # basic gcc tests
 ./config/asterix.py
 make PETSC_ARCH=asterix all test
+make PETSC_ARCH=asterix testexamples testfortran
 ./config/asterix.py --with-clanguage=cxx -PETSC_ARCH=asterix-cxx-opt --with-debugging=0
 make PETSC_ARCH=asterix-cxx-opt all test
 ./config/asterix.py --with-scalar-type=complex -PETSC_ARCH=asterix-complex
