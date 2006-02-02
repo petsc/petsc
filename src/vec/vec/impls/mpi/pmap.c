@@ -16,6 +16,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapInitialize(MPI_Comm comm,PetscMap *map
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr); 
+  if (map->bs <=0) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"BlockSize not yet set");}
   if (map->n > 0) map->n = map->n/map->bs;
   if (map->N > 0) map->N = map->N/map->bs;
   ierr = PetscSplitOwnership(comm,&map->n,&map->N);CHKERRQ(ierr);
