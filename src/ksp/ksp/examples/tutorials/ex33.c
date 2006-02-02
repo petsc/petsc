@@ -145,14 +145,15 @@ int main(int argc,char **argv)
     u->setFiberDimensionByDepth(patch, 0, 1);
     u->orderPatches();
     ALE::Obj<ALE::Two::Mesh::sieve_type::heightSequence> elements = topology->heightStratum(0);
+    ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
     std::string orderName("element");
 
     for(ALE::Two::Mesh::sieve_type::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
       // setFiberDimensionByDepth() does not work here since we only want it to apply to the patch cone
       //   What we really need is the depthStratum relative to the patch
-      ALE::Obj<ALE::def::PointSet> cone = topology->nCone(*e_iter, topology->depth());
+      ALE::Obj<ALE::Two::Mesh::bundle_type::coneSequence> cone = vertexBundle->getPatch(*e_iter);
 
-      u->setPatch(orderName, *e_iter, *e_iter);
+      u->setPatch(orderName, cone, *e_iter);
       for(ALE::def::PointSet::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
         u->setFiberDimension(orderName, *e_iter, *c_iter, 1);
       }
@@ -1199,14 +1200,15 @@ PetscErrorCode ElementGeometry(ALE::Obj<ALE::Two::Mesh> mesh, const ALE::Two::Me
       }
     }
     if (dim == 2) {
-      det = fabs(J[0]*J[3] - J[1]*J[2]);
+      det = J[0]*J[3] - J[1]*J[2];
     } else if (dim == 3) {
-      det = fabs(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
-                 J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
-                 J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
+      det = J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
+            J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
+            J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
     }
     invDet = 1.0/det;
     if (detJ) {
+      if (det < 0) {SETERRQ(PETSC_ERR_ARG_WRONG, "Negative Jacobian determinant");}
       *detJ = det;
     }
     if (invJ) {
@@ -1368,7 +1370,9 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   dim  = m->getDimension();
   ierr = PetscMalloc(dim * sizeof(PetscReal), &v0);CHKERRQ(ierr);
   ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
+  ALE::Obj<ALE::Two::Mesh::field_type> field = m->getField("u");
   ALE::Obj<ALE::Two::Mesh::sieve_type::heightSequence> elements = m->getTopology()->heightStratum(0);
+  ALE::Two::Mesh::field_type::patch_type patch;
   for(ALE::Two::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
     ierr = ElementGeometry(m, *e_itor, v0, Jac, PETSC_NULL, &detJ);CHKERRQ(ierr);
     /* Element integral */
@@ -1385,11 +1389,15 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     }
     if (debug) {PetscSynchronizedPrintf(comm, "elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);}
     /* Assembly */
-    m->getField(std::string("u"))->updateAdd(std::string("element"), *e_itor, elementVec);
+    field->updateAdd("element", *e_itor, elementVec);
     if (debug) {ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);}
   }
   ierr = PetscFree(v0);CHKERRQ(ierr);
   ierr = PetscFree(Jac);CHKERRQ(ierr);
+  PetscScalar *array;
+  ierr = VecGetArray(b, &array);CHKERRQ(ierr);
+  ierr = PetscMemcpy(array, field->restrict(patch), field->getSize(patch)*sizeof(double));CHKERRQ(ierr);
+  ierr = VecRestoreArray(b, &array);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 

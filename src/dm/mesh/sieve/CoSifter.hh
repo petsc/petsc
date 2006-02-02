@@ -186,7 +186,7 @@ namespace ALE {
 
         if (dim < 0) {
           order->modifyColor(cell, patch, changeIndex(offset, -dim));
-          std::cout << "Order point " << cell << " of size " << -dim << " and offset " << offset << std::endl;
+          if (debug) {std::cout << "Order point " << cell << " of size " << -dim << " and offset " << offset << std::endl;}
           offset -= dim;
         }
       };
@@ -208,7 +208,7 @@ namespace ALE {
         // Loop over patch members
         for(typename PointArray::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
           // Traverse the closure of the member in the topology
-          std::cout << "Ordering patch point " << *p_iter << std::endl;
+          if (debug) {std::cout << "Ordering patch point " << *p_iter << std::endl;}
           this->__orderCell(order, patch, *p_iter, offset);
         }
         if (allocate) {
@@ -218,6 +218,7 @@ namespace ALE {
           if (debug) {std::cout << "Allocated patch " << patch << " of size " << offset << std::endl;}
           this->_storage[patch] = new value_type[offset];
           this->_storageSize[patch] = offset;
+          memset(this->_storage[patch], 0, offset*sizeof(value_type));
         }
       };
     public:
