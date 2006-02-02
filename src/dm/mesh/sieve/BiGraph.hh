@@ -737,8 +737,14 @@ namespace ALE {
       protected:
         const typename traits::index_type& _index;
       public:
-        typedef typename traits::iterator iterator;
         
+        // Need to extend the inherited iterator to be able to extract the degree
+        class iterator : public traits::iterator {
+        public:
+          iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
+          virtual const int& degree() const {return this->_itor->degree;};
+        };
+
         DegreeSequence(const DegreeSequence& seq)           : _index(seq._index) {};
         DegreeSequence(typename traits::index_type& index)  : _index(index)     {};
         virtual ~DegreeSequence(){};
@@ -913,6 +919,21 @@ namespace ALE {
           }
         };
 
+        template<typename ostream_type>
+        void view(ostream_type& os, const bool& useColor = false, const char* label = NULL){
+          if(label != NULL) {
+            os << "Viewing " << label << " sequence:" << std::endl;
+          } 
+          os << "[";
+          for(iterator i = this->begin(); i != this->end(); i++) {
+            os << " (" << *i;
+            if(useColor) {
+              os << "," << i.color();
+            }
+            os  << ")";
+          }
+          os << " ]" << std::endl;
+        };
       };// class ArrowSequence    
     };// class ArrowContainerTraits
   
@@ -1136,6 +1157,7 @@ namespace ALE {
         else {
           os << "Viewing a BiGraph:" << std::endl;
         }
+        os << "cap --> base:" << std::endl;
         typename traits::capSequence cap = this->cap();
         for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
           typename traits::supportSequence supp = this->support(*capi);
@@ -1143,12 +1165,21 @@ namespace ALE {
             os << *capi << "--" << suppi.color() << "-->" << *suppi << std::endl;
           }
         }
+        os << "base <-- cap:" << std::endl;
         typename traits::baseSequence base = this->base();
         for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
           typename traits::coneSequence cone = this->cone(*basei);
           for(typename traits::coneSequence::iterator conei = cone.begin(); conei != cone.end(); conei++) {
             os << *basei <<  "<--" << conei.color() << "--" << *conei << std::endl;
           }
+        }
+        os << "cap --> outdegrees:" << std::endl;
+        for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
+            os << *capi <<  "-->" << capi.degree() << std::endl;
+        }
+        os << "base <-- indegrees:" << std::endl;
+        for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
+            os << *basei <<  "<--" << basei.degree() << std::endl;
         }
       };
     public:
