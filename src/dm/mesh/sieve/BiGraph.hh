@@ -1454,7 +1454,7 @@ namespace ALE {
         typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& index = 
           ::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set);
         typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type::iterator i = 
-          index.find(::boost::make_tuple(t,s));
+          index.find(::boost::make_tuple(s,t));
         if (i != index.end()) {
           index.modify(i, changeColor);
         } else {

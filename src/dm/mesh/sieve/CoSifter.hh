@@ -75,7 +75,7 @@ namespace ALE {
       // -- Patch manipulation --
       // Creates a patch whose order is taken from the input point sequence
       template<typename pointSequence> void setPatch(const Obj<pointSequence>& points, const patch_type& patch) {
-        int c = 0;
+        int c = 1;
 
         for(typename pointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           this->_order->addArrow(*p_iter, patch, point_type(c++, 0));
@@ -97,7 +97,7 @@ namespace ALE {
       }
       template<typename pointSequence> void setPatch(const std::string& orderName, const Obj<pointSequence>& points, const patch_type& patch) {
         Obj<order_type> reorder = this->__getOrder(orderName);
-        int c = 0;
+        int c = 1;
 
         for(typename pointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           reorder->addArrow(*p_iter, patch, point_type(c++, 0));
@@ -198,7 +198,7 @@ namespace ALE {
 
         // Filter out newly added points
         Obj<typename order_type::coneSequence> cone = order->cone(patch);
-        int rank = 0;
+        int rank = 1;
         for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
           if (p_iter.color().prefix == rank) {
             points.push_back(*p_iter);
