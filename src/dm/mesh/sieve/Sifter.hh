@@ -45,6 +45,7 @@ namespace ALE {
       };
     };
     typedef std::set<Point> PointSet;
+    typedef std::vector<Point> PointArray;
 
     template <typename Source_, typename Target_, typename Color_>
     struct Arrow {
@@ -1249,9 +1250,9 @@ namespace ALE {
       template<class InputSequence> 
       Obj<PointSet> cone(const Obj<InputSequence>& points, const Color_& color);
 
-      Obj<PointSet> nCone(const Point_& p, int n);
+      Obj<PointArray> nCone(const Point_& p, int n);
 
-      Obj<PointSet> nCone(const Point_& p, int n, const Color_& color, bool useColor = true);
+      Obj<PointArray> nCone(const Point_& p, int n, const Color_& color, bool useColor = true);
 
       template<class InputSequence> 
       Obj<PointSet> nCone(const Obj<InputSequence>& points, int n);
@@ -1282,6 +1283,9 @@ namespace ALE {
     private:
       template<class InputSequence> Obj<PointSet> 
       __nCone(Obj<InputSequence>& cone, int n, const Color_& color, bool useColor);
+
+      template<class pointSequence> void 
+      __nCone(const Obj<pointSequence>& cone, int n, const Color_& color, bool useColor, Obj<PointArray> cone, Obj<PointSet> seen);
       
     public:
       //
@@ -1615,15 +1619,41 @@ namespace ALE {
     };
     
     template <typename Point_, typename Color_> 
-    Obj<PointSet> Sieve<Point_, Color_>::nCone(const Point_& p, int n) {
+    Obj<PointArray> Sieve<Point_, Color_>::nCone(const Point_& p, int n) {
       return this->nCone(p, n, Color_(), false);
     };
     
     template <typename Point_, typename Color_> 
-    Obj<PointSet> Sieve<Point_, Color_>::nCone(const Point_& p, int n, const Color_& color, bool useColor) {
-      Obj<PointSet> cone = PointSet();
-      cone->insert(p);
-      return this->__nCone(cone, n, color, useColor);
+    Obj<PointArray> Sieve<Point_, Color_>::nCone(const Point_& p, int n, const Color_& color, bool useColor) {
+//       Obj<PointSet> cone = PointSet();
+//       cone->insert(p);
+//       return this->__nCone(cone, n, color, useColor);
+      Obj<PointArray> cone = PointArray();
+      Obj<PointSet>   seen = PointSet();
+
+      this->__nCone(this->cone(p), n-1, color, useColor, cone, seen);
+      return cone;
+    };
+
+    template <typename Point_, typename Color_> 
+    template<class pointSequence> 
+    void Sieve<Point_, Color_>::__nCone(const Obj<pointSequence>& points, int n, const Color_& color, bool useColor, Obj<PointArray> cone, Obj<PointSet> seen) {
+      if (n == 0) {
+        for(typename pointSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
+          if (seen->find(*p_itor) == seen->end()) {
+            cone->push_back(*p_itor);
+            seen->insert(*p_itor);
+          }
+        }
+      } else {
+        for(typename pointSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
+          if (useColor) {
+            this->__nCone(this->cone(*p_itor, color), n-1, color, useColor, cone, seen);
+          } else {
+            this->__nCone(this->cone(*p_itor), n-1, color, useColor, cone, seen);
+          }
+        }
+      }
     };
     
     template <typename Point_, typename Color_> 

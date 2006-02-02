@@ -62,6 +62,7 @@ namespace ALE {
           bundle->setPatch(this->topology->leaves(), bundle_type::patch_type());
           bundle->setFiberDimensionByDepth(bundle_type::patch_type(), dim, 1);
           bundle->orderPatches();
+          // "element" reorder is in vertexBundle by default, and intermediate bundles could be handled by a cell tuple
           this->bundles[dim] = bundle;
         }
         return this->bundles[dim];
@@ -174,8 +175,33 @@ namespace ALE {
       };
 
       #undef __FUNCT__
+      #define __FUNCT__ "Mesh::createVertBnd"
+      void createVertexBundle(int numSimplices, int simplices[]) {
+        ALE_LOG_EVENT_BEGIN;
+        Obj<bundle_type> vertexBundle = this->getBundle(0);
+        Obj<sieve_type::heightSequence> elements = this->topology->heightStratum(0);
+        std::string orderName("element");
+
+        for(sieve_type::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+          // setFiberDimensionByDepth() does not work here since we only want it to apply to the patch cone
+          //   What we really need is the depthStratum relative to the patch
+          Obj<PointArray> patch = PointArray();
+
+          for(int b = 0; b < dim+1; b++) {
+            patch->push_back(point_type(0, simplices[(*e_iter).index*(this->dim+1)+b]+numSimplices));
+          }
+          vertexBundle->setPatch(orderName, patch, *e_iter);
+          for(PointArray::iterator p_iter = patch->begin(); p_iter != patch->end(); ++p_iter) {
+            vertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
+          }
+        }
+        vertexBundle->orderPatches(orderName);
+        ALE_LOG_EVENT_END;
+      };
+
+      #undef __FUNCT__
       #define __FUNCT__ "Mesh::createSerCoords"
-      void createSerialCoordinates(int embedDim, int numElements, double coords[]) {
+      void createSerialCoordinates(int embedDim, int numSimplices, double coords[]) {
         ALE_LOG_EVENT_BEGIN;
         patch_type patch;
 
@@ -185,18 +211,19 @@ namespace ALE {
         this->coordinates->orderPatches();
         Obj<sieve_type::depthSequence> vertices = this->topology->depthStratum(0);
         for(sieve_type::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
-          this->coordinates->update(patch, *v_itor, &coords[((*v_itor).index - numElements)*embedDim]);
+          this->coordinates->update(patch, *v_itor, &coords[((*v_itor).index - numSimplices)*embedDim]);
         }
+        Obj<bundle_type> vertexBundle = this->getBundle(0);
         Obj<sieve_type::heightSequence> elements = this->topology->heightStratum(0);
         std::string orderName("element");
 
         for(sieve_type::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
           // setFiberDimensionByDepth() does not work here since we only want it to apply to the patch cone
           //   What we really need is the depthStratum relative to the patch
-          ALE::Obj<ALE::def::PointSet> cone = topology->nCone(*e_iter, this->topology->depth());
+          Obj<bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(*e_iter);
 
-          this->coordinates->setPatch(orderName, *e_iter, *e_iter);
-          for(ALE::def::PointSet::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+          this->coordinates->setPatch(orderName, cone, *e_iter);
+          for(bundle_type::order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
             this->coordinates->setFiberDimension(orderName, *e_iter, *c_iter, embedDim);
           }
         }
@@ -212,6 +239,7 @@ namespace ALE {
         }
         this->topology->stratify();
         this->topology->setStratification(true);
+        this->createVertexBundle(numSimplices, simplices);
         this->createSerialCoordinates(this->dim, numSimplices, coords);
       };
     };
@@ -254,7 +282,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "generate_Triangle"
-      static Obj<Mesh> generate_Triangle(Obj<Mesh> boundary) {
+      static Obj<Mesh> generate_Triangle(Obj<Mesh> boundary, bool interpolate) {
         struct triangulateio  in;
         struct triangulateio  out;
         int                   dim = 2;
@@ -326,7 +354,7 @@ namespace ALE {
           ierr = PetscFree(in.segmentlist);
           ierr = PetscFree(in.segmentmarkerlist);
         }
-        m->populate(out.numberoftriangles, out.trianglelist, out.numberofpoints, out.pointlist);
+        m->populate(out.numberoftriangles, out.trianglelist, out.numberofpoints, out.pointlist, interpolate);
 
         if (rank == 0) {
           Obj<Mesh::sieve_type> topology = m->getTopology();
@@ -352,7 +380,7 @@ namespace ALE {
       };
 #endif
 #ifdef PETSC_HAVE_TETGEN
-      static Obj<Mesh> generate_TetGen(Obj<Mesh> boundary) {
+      static Obj<Mesh> generate_TetGen(Obj<Mesh> boundary, bool interpolate) {
         ::tetgenio            in;
         ::tetgenio            out;
         int                   dim = 3;
@@ -423,7 +451,7 @@ namespace ALE {
           if (createConvexHull) args += "c";
           ::tetrahedralize((char *) args.c_str(), &in, &out);
         }
-        m->populate(out.numberoftetrahedra, out.tetrahedronlist, out.numberofpoints, out.pointlist);
+        m->populate(out.numberoftetrahedra, out.tetrahedronlist, out.numberofpoints, out.pointlist, interpolate);
   
         if (rank == 0) {
           Obj<Mesh::sieve_type> topology = m->getTopology();
@@ -466,19 +494,19 @@ namespace ALE {
       };
 #endif
     public:
-      static Obj<Mesh> generate(Obj<Mesh> boundary) {
+      static Obj<Mesh> generate(Obj<Mesh> boundary, bool interpolate = true) {
         Obj<Mesh> mesh;
         int       dim = boundary->getDimension();
 
         if (dim == 1) {
 #ifdef PETSC_HAVE_TRIANGLE
-          mesh = generate_Triangle(boundary);
+          mesh = generate_Triangle(boundary, interpolate);
 #else
           throw ALE::Exception("Mesh generation currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
         } else if (dim == 2) {
 #ifdef PETSC_HAVE_TETGEN
-          mesh = generate_TetGen(boundary);
+          mesh = generate_TetGen(boundary, interpolate);
 #else
           throw ALE::Exception("Mesh generation currently requires TetGen to be installed. Use --download-tetgen during configure.");
 #endif
@@ -556,12 +584,14 @@ namespace ALE {
           in.numberoftriangles = faces->size();
           ierr = PetscMalloc(in.numberoftriangles * in.numberofcorners * sizeof(int), &in.trianglelist);
           for(Mesh::sieve_type::heightSequence::iterator f_itor = faces->begin(); f_itor != faces->end(); f_itor++) {
-            //FIX: Obj<Mesh::field_type::IndexArray> intervals = vertexBundle->getOrderedIndices(0, serialOrientation->cone(*f_itor));
+            Obj<Mesh::field_type::IndexArray> intervals = vertexBundle->getIndices("element", *f_itor);
             int                               v = 0;
 
-            //FIX: for(Mesh::coordinate_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-            //FIX:   in.trianglelist[f * in.numberofcorners + v++] = i_itor->prefix;
-            //FIX: }
+            for(Mesh::field_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+              if (i_itor->index) {
+                in.trianglelist[f * in.numberofcorners + v++] = i_itor->prefix;
+              }
+            }
             f++;
           }
 
@@ -679,12 +709,14 @@ namespace ALE {
           in.numberoftetrahedra = cells->size();
           in.tetrahedronlist = new int[in.numberoftetrahedra*in.numberofcorners];
           for(Mesh::sieve_type::heightSequence::iterator c_itor = cells->begin(); c_itor != cells->end(); ++c_itor) {
-            //FIX: Obj<Mesh::field_type::IndexArray> intervals = vertexBundle->getOrderedIndices(0, serialOrientation->cone(*c_itor));
+            Obj<Mesh::field_type::IndexArray> intervals = vertexBundle->getIndices("element", *c_itor);
             int                               v = 0;
 
-            //FIX: for(Mesh::field_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-            //FIX:   in.tetrahedronlist[c * in.numberofcorners + v++] = i_itor->prefix;
-            //FIX: }
+            for(Mesh::field_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+              if (i_itor->index) {
+                in.tetrahedronlist[c * in.numberofcorners + v++] = i_itor->prefix;
+              }
+            }
             c++;
           }
 

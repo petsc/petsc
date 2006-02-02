@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
   PetscViewer    viewer;
   PetscInt       dim, debug;
   PetscReal      refinementLimit;
+  PetscTruth     interpolate;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -42,6 +43,8 @@ int main(int argc, char *argv[])
     ierr = PetscOptionsInt("-debug", "The debugging flag", "ex2.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
     dim  = 2;
     ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex2.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
+    interpolate = PETSC_TRUE;
+    ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex2.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
     refinementLimit = 0.0;
     ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex2.c", 1.0, &refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -68,7 +71,7 @@ int main(int argc, char *argv[])
       stage = ALE::LogStageRegister("MeshRefine");
       ALE::LogStagePush(stage);
       ierr = PetscPrintf(comm, "Refining mesh\n");CHKERRQ(ierr);
-      //mesh = ALE::def::Generator::refine(mesh, refinementLimit);
+      mesh = ALE::Two::Generator::refine(mesh, refinementLimit);
       ALE::LogStagePop(stage);
       ierr = PetscPrintf(comm, "  Read %d elements\n", mesh->getTopology()->heightStratum(0)->size());CHKERRQ(ierr);
       ierr = PetscPrintf(comm, "  Read %d vertices\n", mesh->getTopology()->depthStratum(0)->size());CHKERRQ(ierr);

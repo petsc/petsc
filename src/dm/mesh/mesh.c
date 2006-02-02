@@ -109,10 +109,10 @@ PetscErrorCode WriteVTKElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewe
   ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
   if (rank == 0) {
     for(ALE::def::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-      ALE::Obj<ALE::def::PointSet> cone = topology->nCone(*e_itor, topology->depth());
+      ALE::Obj<ALE::def::PointArray> cone = topology->nCone(*e_itor, topology->depth());
 
       ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
-      for(ALE::def::PointSet::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+      for(ALE::def::PointArray::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
         ierr = PetscViewerASCIIPrintf(viewer, " %d", vertexBundle->getIndex(0, *c_itor).prefix);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
@@ -198,11 +198,11 @@ PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
   ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
   if (rank == 0) {
     for(ALE::Two::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-      ALE::Obj<ALE::def::PointSet> cone = topology->nCone(*e_itor, topology->depth());
+      ALE::Obj<ALE::def::PointArray> cone = topology->nCone(*e_itor, topology->depth());
       ALE::Two::Mesh::bundle_type::patch_type patch;
 
       ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
-      for(ALE::def::PointSet::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+      for(ALE::def::PointArray::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
         ierr = PetscViewerASCIIPrintf(viewer, " %d", vertexBundle->getIndex(patch, *c_itor).prefix);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
