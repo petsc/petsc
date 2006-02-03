@@ -45,14 +45,17 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
 {
   PetscErrorCode ierr;
   PC_KSP         *jac = (PC_KSP*)pc->data;
-  Mat            mat;
+  Mat            mat,A;
 
   PetscFunctionBegin;
   ierr = KSPSetFromOptions(jac->ksp);CHKERRQ(ierr);
   if (jac->use_true_matrix) mat = pc->mat;
   else                      mat = pc->pmat;
 
-  ierr = KSPSetOperators(jac->ksp,mat,pc->pmat,pc->flag);CHKERRQ(ierr);
+  ierr = KSPGetOperators(jac->ksp,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  if (!A) {
+    ierr = KSPSetOperators(jac->ksp,mat,pc->pmat,pc->flag);CHKERRQ(ierr);
+  }
   ierr = KSPSetUp(jac->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -211,7 +214,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCKSPGetKSP(PC pc,KSP *ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidPointer(ksp,2);
-  if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call KSPSetUp first");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCKSPGetKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ksp);CHKERRQ(ierr);
