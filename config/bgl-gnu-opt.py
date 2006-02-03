@@ -12,6 +12,7 @@
 configure_options = [
   '-LIBS=-lc -lnss_files -lnss_dns -lresolv',
   '--with-cc=mpicc',
+  '--with-cxx=mpicxx',
   '--with-fc=mpif77',
 
   '--download-f-blas-lapack=1',

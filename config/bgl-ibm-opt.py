@@ -11,8 +11,9 @@
 # CC=" /soft/apps/ibmcmp-20050414/vac/7.0/bin/xlc -F /etc/opt/ibmcmp/vac/7.0/blrts-vac.cfg"
 #
 configure_options = [
-  '-LIBS=-lc -lnss_files -lnss_dns -lresolv',
+  '-LIBS=-lc -lnss_files -lnss_dns -lresolv -L/opt/ibmcmp/vacpp/7.0/blrts_lib -libmc++ -lstdc++',
   '--with-cc=mpxlc',
+  '--with-cxx=mpxlc -+',
   '--with-fc=mpxlf',
 
   '--download-f-blas-lapack=1',
