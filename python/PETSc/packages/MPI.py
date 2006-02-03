@@ -12,11 +12,11 @@ class Configure(PETSc.package.Package):
     self.download_lam     = ['http://www.lam-mpi.org/download/files/lam-7.1.1.tar.gz']
     self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpich2-1.0.3.tar.gz']
     self.download         = ['redefine']
-    self.functions        = ['MPI_Init', 'MPI_Comm_create', 'MPI_Allreduce']
+    self.functions        = ['MPI_Init', 'MPI_Comm_create']
     self.includes         = ['mpi.h']
-    self.liblist_mpich    = [['libmpich.a'],
-                             ['libmpich.a', 'libpmpich.a'],
+    self.liblist_mpich    = [['libmpich.a', 'libpmpich.a'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a'],
+                             ['libmpich.a'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['mpich2.lib'],
