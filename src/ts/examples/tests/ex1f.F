@@ -505,7 +505,7 @@
       PetscErrorCode ierr
 
       Mat              A
-      PetscInt       i,mstart,mend,idx(3)
+      PetscInt       i,mstart(1),mend(1),idx(3)
       PetscMPIInt rank,size
       PetscScalar      v(3),stwo,sone
       PetscInt          i1,i3
@@ -521,13 +521,14 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
 
       call MatGetOwnershipRange(A,mstart,mend,ierr) 
-      if (mstart .eq. 0) then
+      if (mstart(1) .eq. 0) then
         v(1) = 1.0
-        call MatSetValues(A,i1,mstart,i1,mstart,v,INSERT_VALUES,ierr) 
-        mstart = mstart + 1
+        call MatSetValues(A,i1,mstart(1),i1,mstart(1),v,INSERT_VALUES,  &
+     &       ierr) 
+        mstart(1) = mstart(1) + 1
       endif
-      if (mend .eq. M) then
-        mend = mend - 1
+      if (mend(1) .eq. M) then
+        mend(1) = mend(1) - 1
         v(1) = 1.0
         call MatSetValues(A,i1,mend,i1,mend,v,INSERT_VALUES,ierr) 
       endif
@@ -538,7 +539,7 @@
       v(1) = sone
       v(2) = stwo
       v(3) = sone  
-      do 10, i=mstart,mend-1
+      do 10, i=mstart(1),mend(1)-1
         idx(1) = i-1
         idx(2) = i 
         idx(3) = i+1

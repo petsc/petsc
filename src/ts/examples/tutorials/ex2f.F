@@ -568,7 +568,8 @@
       PetscScalar localptr(1),sc,v(3)
       PetscInt    i,col(3),i1,i3
       PetscErrorCode ierr
-      PetscInt    mstart,mend,mstarts,mends
+      PetscInt    mstart(1),mend(1)
+      PetscInt    mstarts,mends
       PetscOffset idx,is
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -588,8 +589,8 @@
 
 !  Get starting and ending locally owned rows of the matrix
       call MatGetOwnershipRange(A,mstarts,mends,ierr)
-      mstart = mstarts
-      mend   = mends
+      mstart(1) = mstarts
+      mend(1)   = mends
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Compute entries for the locally owned part of the Jacobian.
@@ -606,13 +607,13 @@
 !  Set matrix rows corresponding to boundary data
       i1 = 1
       i3 = 3
-      if (mstart .eq. 0) then
+      if (mstart(1) .eq. 0) then
         v(1) = zero_d0
         call MatSetValues(A,i1,mstart,i1,mstart,v,INSERT_VALUES,ierr)
-        mstart = mstart + 1
+        mstart(1) = mstart(1) + 1
       endif
-      if (mend .eq. m) then
-        mend = mend - 1
+      if (mend(1) .eq. m) then
+        mend(1) = mend(1) - 1
         v(1) = zero_d0
         call MatSetValues(A,i1,mend,i1,mend,v,INSERT_VALUES,ierr)
       endif
@@ -621,11 +622,11 @@
 !  We construct the matrix one row at a time.
 
       sc = one_d0/(h*h*two_d0*(one_d0+t)*(one_d0+t))
-      do 10, i=mstart,mend-1
+      do 10, i=mstart(1),mend(1)-1
          col(1) = i-1
          col(2) = i
          col(3) = i+1
-         is     = i - mstart + 1 +idx + 1
+         is     = i - mstart(1) + 1 +idx + 1
          v(1)   = sc*localptr(is)
          v(2)   = sc*(localptr(is+1) + localptr(is-1) -                 &
      &                four_d0*localptr(is))
