@@ -11,13 +11,13 @@ PETSC_EXTERN_CXX_BEGIN
     docs/tex/manual/manual.tex.
     docs/website/index.html.
 */
-#define PETSC_VERSION_RELEASE    0
+#define PETSC_VERSION_RELEASE    1
 #define PETSC_VERSION_MAJOR      2
 #define PETSC_VERSION_MINOR      3
-#define PETSC_VERSION_SUBMINOR   0
-#define PETSC_VERSION_PATCH      44
-#define PETSC_VERSION_DATE       "April, 26, 2005"
-#define PETSC_VERSION_PATCH_DATE "January, 5, 2006"
+#define PETSC_VERSION_SUBMINOR   1
+#define PETSC_VERSION_PATCH      0
+#define PETSC_VERSION_DATE       "February, 3, 2006"
+#define PETSC_VERSION_PATCH_DATE "February, 3, 2006"
 #define PETSC_VERSION_BK         "unknown"
 #define PETSC_AUTHOR_INFO        "\
        The PETSc Team\n\

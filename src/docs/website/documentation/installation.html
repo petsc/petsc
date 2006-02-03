@@ -81,9 +81,9 @@ test</font></div>
 python </font>modules<strong></strong>) and use cygwin shell.<br>
         </li>
         <li>In the directory you wish PETSc installed: <font
- color="#ff0000">gunzip -c <a href="../download/index.html">petsc-2.3.0.tar.gz</a>
+ color="#ff0000">gunzip -c <a href="../download/index.html">petsc-2.3.1.tar.gz</a>
 | tar -xof -</font></li>
-        <li><font color="#ff0000">cd petsc-2.3.1</font></li>
+        <li><font color="#ff0000">cd petsc-2.3.1-p0</font></li>
         <li>sh/bash shell:&nbsp;&nbsp; <font color="#ff0000">PETSC_DIR=`pwd`;
 export PETSC_DIR</font>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (note the backquote)<br>
@@ -138,7 +138,7 @@ will download &amp;
 install BLAS, LAPACK, MPICH if they are not already installed on the
 system) :<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-2.3.1<br>
+PETSC_DIR=/home/petsc/petsc-2.3.1-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py
 --download-f-blas-lapack=1 --download-mpich=1<br>
@@ -146,7 +146,7 @@ PETSC_DIR=/home/petsc/petsc-2.3.1<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make test</font></li>
         <li>Same as above - but build Complex version of PETSc:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-2.3.1<br>
+PETSC_DIR=/home/petsc/petsc-2.3.1-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py
 --download-f-blas-lapack=1 --download-mpich=1 --with-scalar-type=complex<br>
@@ -155,7 +155,7 @@ PETSC_DIR=/home/petsc/petsc-2.3.1<br>
         <li>Using the bash shell, assuming BLAS,
 LAPACK, MPICH software are installed at the specified locations:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-2.3.1<br>
+PETSC_DIR=/home/petsc/petsc-2.3.1-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py
 --with-blas-lapack-dir=/usr/local/lib --with-mpi-dir=/usr/local/mpich<br>
@@ -165,7 +165,7 @@ PETSC_DIR=/home/petsc/petsc-2.3.1<br>
         <li>Using tcsh shell, install PETSc with default BLAS and
 LAPACK and no MPI:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">setenv
-PETSC_DIR /home/petsc/petsc-2.3.1<br>
+PETSC_DIR /home/petsc/petsc-2.3.1-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py
 --with-mpi=0<br>
