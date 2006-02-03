@@ -1951,7 +1951,7 @@ PetscErrorCode MatSetUpPreallocation_SeqBAIJ(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr =  MatSeqBAIJSetPreallocation_SeqBAIJ(A,1,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  ierr =  MatSeqBAIJSetPreallocation_SeqBAIJ(A,PetscMax(A->rmap.bs,1),PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
