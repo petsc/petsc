@@ -974,7 +974,7 @@ PetscErrorCode MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
 PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIBAIJ    *baij=(Mat_MPIBAIJ*)mat->data;
-  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)baij->A->data,*b=(Mat_SeqBAIJ*)baij->B->data;
+  Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)baij->A->data;
   PetscErrorCode ierr;
   PetscInt       i,j,rstart,ncols,flg,bs2=baij->bs2;
   PetscInt       *row,*col,other_disassembled;
@@ -983,6 +983,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   InsertMode     addv = mat->insertmode;
   PetscMPIInt    n;
 
+  /* do not use 'b=(Mat_SeqBAIJ*)baij->B->data' as B can be reset in disassembly */
   PetscFunctionBegin;
   if (!baij->donotstash) {
     while (1) {
@@ -1005,10 +1006,10 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
        restore the original flags */
     r1 = baij->roworiented;
     r2 = a->roworiented;
-    r3 = b->roworiented;
+    r3 = ((Mat_SeqBAIJ*)baij->B->data)->roworiented;
     baij->roworiented = PETSC_FALSE;
     a->roworiented    = PETSC_FALSE;
-    b->roworiented    = PETSC_FALSE;
+    (((Mat_SeqBAIJ*)baij->B->data))->roworiented    = PETSC_FALSE; /* b->roworiented */
     while (1) {
       ierr = MatStashScatterGetMesg_Private(&mat->bstash,&n,&row,&col,&val,&flg);CHKERRQ(ierr);
       if (!flg) break;
@@ -1025,7 +1026,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
     ierr = MatStashScatterEnd_Private(&mat->bstash);CHKERRQ(ierr);
     baij->roworiented = r1;
     a->roworiented    = r2;
-    b->roworiented    = r3;
+    ((Mat_SeqBAIJ*)baij->B->data)->roworiented    = r3; /* b->roworiented */
   }
   
   ierr = MatAssemblyBegin(baij->A,mode);CHKERRQ(ierr);
@@ -1047,7 +1048,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIBAIJ(mat);CHKERRQ(ierr);
   }
-  b->compressedrow.use = PETSC_TRUE;
+  ((Mat_SeqBAIJ*)baij->B->data)->compressedrow.use = PETSC_TRUE; /* b->compressedrow.use */
   ierr = MatAssemblyBegin(baij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->B,mode);CHKERRQ(ierr);
   

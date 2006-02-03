@@ -516,7 +516,7 @@
       PetscErrorCode ierr
       PetscInt nloc,xs,ys,xm,ym
       PetscInt gxs,gys,gxm,gym
-      PetscInt grow,i,j
+      PetscInt grow(1),i,j
       PetscInt row,mx,my,ione
       PetscInt col(5),ifive
       PetscScalar two,one,lambda
@@ -574,7 +574,7 @@
         row = (j - gys)*gxm + xs - gxs 
         do 20 i=xs,xs+xm-1
           row = row + 1
-          grow = ltog(idltog+row)
+          grow(1) = ltog(idltog+row)
           if (i .eq. 0 .or. j .eq. 0 .or. i .eq. (mx-1) .or.            &
      &        j .eq. (my-1)) then
              call MatSetValues(jac,ione,grow,ione,grow,one,             &
@@ -586,7 +586,7 @@
           v(2)   = -hydhx 
           col(2) = ltog(idltog+row - 1)
           v(3)   = two*(hydhx + hxdhy) - sc*lambda*exp(xx(idx+row))
-          col(3) = grow
+          col(3) = grow(1)
           v(4)   = -hydhx 
           col(4) = ltog(idltog+row + 1)
           v(5)   = -hxdhy 

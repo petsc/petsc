@@ -327,7 +327,7 @@
       PetscErrorCode   ierr
       Mat              jac
       PetscOffset xidx
-      PetscInt    i,j,row,mx,my
+      PetscInt    i,j,row(1),mx,my
       PetscInt    col(5),i1,i5
       PetscScalar two,one,lambda
       PetscScalar v(5),sc,xx(1)
@@ -358,21 +358,21 @@
 !
 !      When inserting into PETSc matrices, indices start at 0
 !
-          row = i - 1 + (j-1)*mx
+          row(1) = i - 1 + (j-1)*mx
           if (i .eq. 1 .or. j .eq. 1 .or.                               &
      &        i .eq. mx .or. j .eq. my) then
             call MatSetValues(jac,i1,row,i1,row,one,INSERT_VALUES,ierr) 
           else
             v(1)   = hxdhy 
-            col(1) = row - mx
+            col(1) = row(1) - mx
             v(2)   = hydhx 
-            col(2) = row - 1
-            v(3)   = -two*(hydhx+hxdhy)+sc*lambda*exp(xx(row+1+xidx)) 
-            col(3) = row
+            col(2) = row(1) - 1
+            v(3)   = -two*(hydhx+hxdhy)+sc*lambda*exp(xx(row(1)+1+xidx)) 
+            col(3) = row(1)
             v(4)   = hydhx 
-            col(4) = row + 1
+            col(4) = row(1) + 1
             v(5)   = hxdhy 
-            col(5) = row + mx
+            col(5) = row(1) + mx
             call MatSetValues(jac,i1,row,i5,col,v,INSERT_VALUES,ierr) 
           endif
  20     continue

@@ -47,9 +47,16 @@
       m = 5
 
 !  Create matrix
-      call MatCreateSeqDense(PETSC_COMM_SELF,m,n,PETSC_NULL_SCALAR,     &
-     &     A,ierr)
-!      call MatCreateMPIDense(PETSC_COMM_WORLD,m,n,m,n,PETSC_NULL_SCALAR,A,ierr)
+
+!      call MatCreateSeqDense(PETSC_COMM_SELF,m,n,PETSC_NULL_SCALAR,     &
+!     &     A,ierr)
+
+!  Using MatCreate() instead of  MatCreateSeqDense() as above to avoid Nag F90 errors
+!  However both cases are equivalent
+
+      call MatCreate(PETSC_COMM_SELF,A,ierr)
+      call MatSetSizes(A,m,n,m,n,ierr)
+      call MatSetType(A,MATSEQDENSE,ierr)
 
 !  Access array storage
       call MatGetArray(A,aa,ia,ierr)

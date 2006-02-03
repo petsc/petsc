@@ -652,7 +652,7 @@
       PetscErrorCode      ierr
 
 !  Local variables:
-      PetscInt      i,j,row,col(5),i1,i5
+      PetscInt      i,j,row(1),col(5),i1,i5
       PetscScalar  two,one, hx,hy
       PetscScalar  hxdhy,hydhx,sc,v(5)
 
@@ -674,9 +674,9 @@
 !     in Fortran as well as in C.
 
       do 20 j=1,my
-         row = (j-1)*mx - 1
+         row(1) = (j-1)*mx - 1
          do 10 i=1,mx
-            row = row + 1
+            row(1) = row(1) + 1
 !           boundary points
             if (i .eq. 1 .or. j .eq. 1                                  &
      &             .or. i .eq. mx .or. j .eq. my) then
@@ -690,11 +690,11 @@
      &                  - sc*lambda*exp(x(i,j))
                v(4) = -hydhx
                v(5) = -hxdhy
-               col(1) = row - mx
-               col(2) = row - 1
-               col(3) = row
-               col(4) = row + 1
-               col(5) = row + mx
+               col(1) = row(1) - mx
+               col(2) = row(1) - 1
+               col(3) = row(1)
+               col(4) = row(1) + 1
+               col(5) = row(1) + mx
                call MatSetValues(jac_prec,i1,row,i5,col,v,                &
      &                           INSERT_VALUES,ierr)
             endif

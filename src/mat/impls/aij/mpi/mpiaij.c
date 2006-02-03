@@ -312,7 +312,7 @@ PetscErrorCode MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ *)aij->A->data,*b= (Mat_SeqAIJ *)aij->B->data;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ *)aij->A->data;
   PetscErrorCode ierr;
   PetscMPIInt    n;
   PetscInt       i,j,rstart,ncols,flg;
@@ -320,6 +320,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   PetscScalar    *val;
   InsertMode     addv = mat->insertmode;
 
+  /* do not use 'b = (Mat_SeqAIJ *)aij->B->data' as B can be reset in disassembly */
   PetscFunctionBegin;
   if (!aij->donotstash) {
     while (1) {
@@ -354,14 +355,11 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
       ierr = DisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
     }
   }
-  /* reaccess the b because aij->B was changed in MatSetValues() or DisAssemble() */
-  b    = (Mat_SeqAIJ *)aij->B->data;
-
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIAIJ(mat);CHKERRQ(ierr);
   }
   ierr = MatSetOption(aij->B,MAT_DO_NOT_USE_INODES);CHKERRQ(ierr);
-  b->compressedrow.use = PETSC_TRUE; 
+  ((Mat_SeqAIJ *)aij->B->data)->compressedrow.use = PETSC_TRUE; /* b->compressedrow.use */
   ierr = MatAssemblyBegin(aij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->B,mode);CHKERRQ(ierr);
 
@@ -369,8 +367,8 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   aij->rowvalues = 0;
 
   /* used by MatAXPY() */
-  a->xtoy = 0; b->xtoy = 0;  
-  a->XtoY = 0; b->XtoY = 0;
+  a->xtoy = 0; ((Mat_SeqAIJ *)aij->B->data)->xtoy = 0;  /* b->xtoy = 0 */
+  a->XtoY = 0; ((Mat_SeqAIJ *)aij->B->data)->XtoY = 0;  /* b->XtoY = 0 */
 
   PetscFunctionReturn(0);
 }
