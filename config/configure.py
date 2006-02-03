@@ -81,14 +81,14 @@ def petsc_configure(configure_options):
     name = sys.argv[l]
     if name.find('enable-') >= 0:
       sys.argv[l] = name.replace('enable-','with-')
-      if name.find('=') == -1: sys.argv[l].append('=1')
+      if name.find('=') == -1: sys.argv[l] = sys.argv[l]+'=1'
     if name.find('disable-') >= 0:
       sys.argv[l] = name.replace('disable-','with-')
-      if name.find('=') == -1: sys.argv[l].append('=0')
+      if name.find('=') == -1: sys.argv[l] = sys.argv[l]+'=0'
       elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
     if name.find('without-') >= 0:
       sys.argv[l] = name.replace('without-','with-')
-      if name.find('=') == -1: sys.argv[l].append('=0')
+      if name.find('=') == -1: sys.argv[l] = sys.argv[l]+'=0'
       elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
 
   # Check for broken cygwin
@@ -174,7 +174,7 @@ def petsc_configure(configure_options):
     return 0
   except RuntimeError, e:
     emsg = str(e)
-    if not emsg.endswith('\n'): emsg.append('\n')
+    if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*********************************************************************************\n'\
     +'         UNABLE to CONFIGURE with GIVEN OPTIONS    (see configure.log for details):\n' \
     +'---------------------------------------------------------------------------------------\n'  \
@@ -182,7 +182,7 @@ def petsc_configure(configure_options):
     se = ''
   except (TypeError, ValueError), e:
     emsg = str(e)
-    if not emsg.endswith('\n'): emsg.append('\n')
+    if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*********************************************************************************\n'\
     +'                ERROR in COMMAND LINE ARGUMENT to config/configure.py \n' \
     +'---------------------------------------------------------------------------------------\n'  \
@@ -190,7 +190,7 @@ def petsc_configure(configure_options):
     se = ''
   except ImportError, e :
     emsg = str(e)
-    if not emsg.endswith('\n'): emsg.append('\n')
+    if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*********************************************************************************\n'\
     +'                     UNABLE to FIND MODULE for config/configure.py \n' \
     +'---------------------------------------------------------------------------------------\n'  \

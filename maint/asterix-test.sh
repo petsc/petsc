@@ -4,23 +4,23 @@ set -x
 # basic gcc tests
 ./config/asterix.py
 make PETSC_ARCH=asterix all test
-make PETSC_ARCH=asterix testexamples testfortran testexamples_C_X11
-make PETSC_ARCH=asterix tree ACTION=testexamples_C_X11
-make PETSC_ARCH=asterix tree ACTION=testexamples_C_NoComplex
-make PETSC_ARCH=asterix tree ACTION=testexamples_Fortran_NoComplex
+make PETSC_ARCH=asterix testexamples testfortran
+make PETSC_ARCH=asterix tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_C_X11 
+make PETSC_ARCH=asterix tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_C_NoComplex
+make PETSC_ARCH=asterix tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_Fortran_NoComplex
 
 ./config/asterix.py --with-clanguage=cxx -PETSC_ARCH=asterix-cxx-opt --with-debugging=0
 make PETSC_ARCH=asterix-cxx-opt all test
 ./config/asterix.py --with-scalar-type=complex -PETSC_ARCH=asterix-complex
 make PETSC_ARCH=asterix-complex all test
-make PETSC_ARCH=asterix testexamples testfortran 
-make PETSC_ARCH=asterix tree ACTION=testexamples_C_X11
-make PETSC_ARCH=asterix tree ACTION=testexamples_C_Complex
-make PETSC_ARCH=asterix tree ACTION=testexamples_Fortran_Complex
+make PETSC_ARCH=asterix-complex testexamples testfortran 
+make PETSC_ARCH=asterix-complex tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_C_X11
+make PETSC_ARCH=asterix-complex tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_C_Complex
+make PETSC_ARCH=asterix-complex tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_Fortran_Complex
 
 ./config/asterix.py --download-prometheus=1 --download-parmetis=1 -PETSC_ARCH=asterix-prometheus
 make PETSC_ARCH=asterix-prometheus all test
-make PETSC_ARCH=asterix-prometheus tree ACTION=testexamples_PARMETIS
+make PETSC_ARCH=asterix-prometheus tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_PARMETIS
 
 # basic intel tests
 ./config/asterix-intel.py --with-debugging=0 -PETSC_ARCH=asterix-intel-opt --download-spooles=1 --download-superlu=1 \
@@ -28,12 +28,12 @@ make PETSC_ARCH=asterix-prometheus tree ACTION=testexamples_PARMETIS
 --download-mumps=1 --download-mpe=1 --download-sundials=1 LIBS=/usr/lib/libm.a
 make PETSC_ARCH=asterix-intel-opt all test
 make PETSC_ARCH=asterix-intel-opt testexamples testfortran
-make PETSC_ARCH=asterix-intel-opt tree ACTION=testexamples_F90
-make PETSC_ARCH=asterix-intel-opt tree ACTION=testexamples_SUPERLU
-make PETSC_ARCH=asterix-intel-opt tree ACTION=testexamples_SUPERLU_DIST
-make PETSC_ARCH=asterix-intel-opt tree ACTION=testexamples_HYPRE
-make PETSC_ARCH=asterix-intel-opt tree ACTION=testexamples_SPAI
-make PETSC_ARCH=asterix-intel-opt tree ACTION=testexamples_MUMPS
+make PETSC_ARCH=asterix-intel-opt tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_F90
+make PETSC_ARCH=asterix-intel-opt tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_SUPERLU
+make PETSC_ARCH=asterix-intel-opt tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_SUPERLU_DIST
+make PETSC_ARCH=asterix-intel-opt tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_HYPRE
+make PETSC_ARCH=asterix-intel-opt tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_SPAI
+make PETSC_ARCH=asterix-intel-opt tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_MUMPS
 
 ./config/asterix-intel.py --with-clanguage=cxx -PETSC_ARCH=asterix-intel-cxx
 make PETSC_ARCH=asterix-intel-cxx all test
