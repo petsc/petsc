@@ -46,8 +46,7 @@ class Configure(config.base.Configure):
     if len(library) > 3 and library[-4:] == '.lib':
       return library
     if os.path.basename(library).startswith('lib'):
-      import config.libraries
-      name = config.libraries.Configure.getLibName(library)
+      name = self.getLibName(library)
       if ((len(library) > 2 and library[1] == ':') or os.path.isabs(library)):
         flagName  = self.language[-1]+'SharedLinkerFlag'
         flagSubst = self.language[-1].upper()+'_LINKER_SLFLAG'
@@ -92,6 +91,18 @@ class Configure(config.base.Configure):
   def toString(self,libs):
     '''Converts a list of libraries to a string suitable for a linker'''
     return ' '.join([self.getLibArgument(lib) for lib in libs])
+
+  def getShortLibName(self,lib):
+    '''Checks the given name for a valid library name. If not valid - returns empty string.
+       If valid - returns the short name for the library. Valid names are -lfoo or libfoo.[a,so,lib]'''
+    if lib.startswith('-l'):
+      libname = lib[2:]
+      return libname
+    if lib.endswith('.a') or lib.endswith('.so') or lib.endswith('.lib'):
+      libname = os.path.splitext(os.path.basename(lib))[0]
+      if lib.startswith('lib'): libname = libname[3:]
+      return libname
+    return ''
 
   def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0, cxxMangle = 0):
     '''Checks that the library "libName" contains "funcs", and if it does defines HAVE_LIB"libName"
@@ -155,10 +166,8 @@ extern "C" {
         found = 1
         # add to list of found libraries
         for lib in libName:
-          if self.haveLib(lib): continue
-          if lib.startswith('-L'): continue
-          strippedlib = os.path.splitext(os.path.basename(lib))[0]
-          if strippedlib: self.addDefine(self.getDefineName(strippedlib), 1)
+          shortlib = self.getShortLibName(lib)
+          if shortlib: self.addDefine(self.getDefineName(shortlib), 1)
       self.setCompilers.LIBS = oldLibs
       self.popLanguage()
       if not found: return 0
