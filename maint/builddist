@@ -70,12 +70,12 @@ version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -
 
 #generated a couple of more values
 version_patch_date=`date`
-version_bk=`bk changes -k -r+`
+version_bk=`bk changes -k -r+ | head -1`
 
 if  [ ${version_release} = 0 ]; then
   version=-dev
 elif [ ${version_release} = 1 ]; then
-  version=${version_major}.${version_minor}.${version_subminor}-p${version_patch}
+  version=-${version_major}.${version_minor}.${version_subminor}-p${version_patch}
 else
   echo "Unknown PETSC_VERSION_RELEASE: ${version_release}"
   exit
@@ -114,11 +114,13 @@ cd $tmpdir/petsc$version
 /bin/rm -f  bmake/common/rules.bak
 
 #add in PETSC_VERSION_PATCH_DATE and PETSC_VERSION_BK
+echo Using PETSC_VERSION_PATCH_DATE: ${version_patch_date}
+echo Using PETSC_VERSION_BK: ${version_bk}
 /bin/mv include/petscversion.h include/petscversion.h.bak
 cat include/petscversion.h.bak | \
   sed -e "s/#define PETSC_VERSION_PATCH_DATE.*/#define PETSC_VERSION_PATCH_DATE \"${version_patch_date}\"/" | \
   sed -e "s/#define PETSC_VERSION_BK.*/#define PETSC_VERSION_BK         \"${version_bk}\"/" > include/petscversion.h
-/bin/rm include/petscversion.h.bak
+/bin/rm -f include/petscversion.h.bak
 
 # just to be sure
 /bin/rm -rf configure.log* RDict.* lib RESYNC PENDING

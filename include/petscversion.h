@@ -17,7 +17,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_VERSION_SUBMINOR   1
 #define PETSC_VERSION_PATCH      0
 #define PETSC_VERSION_DATE       "February, 3, 2006"
-#define PETSC_VERSION_PATCH_DATE "February, 3, 2006"
+#define PETSC_VERSION_PATCH_DATE "unknown"
 #define PETSC_VERSION_BK         "unknown"
 #define PETSC_AUTHOR_INFO        "\
        The PETSc Team\n\

@@ -23,5 +23,5 @@ scp ~/petsc-lite-${VERSION}.tar.gz petsc@harley.mcs.anl.gov:/nfs/ftp/pub/petsc/r
 ssh petsc@harley.mcs.anl.gov " \
   cd /nfs/ftp/pub/petsc/; \
   /bin/rm -f petsc-${RELEASE}.tar.gz petsc-lite-${RELEASE}.tar.gz ; \
-  /bin/ln -s release-snapshots/petsc-{VERSION}.tar.gz petsc.${RELEASE}.tar.gz; \
-  /bin/ln -s release-snapshots/petsc-lite-${VERSION}.tar.gz petsc-lite.${RELEASE}.tar.gz"
+  /bin/ln -s release-snapshots/petsc-${VERSION}.tar.gz petsc-${RELEASE}.tar.gz; \
+  /bin/ln -s release-snapshots/petsc-lite-${VERSION}.tar.gz petsc-lite-${RELEASE}.tar.gz"
