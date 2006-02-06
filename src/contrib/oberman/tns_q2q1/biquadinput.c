@@ -129,7 +129,7 @@ ierr = AODataSegmentAdd(aodata,"df","v2",1,agrid.df_count,keys,agrid.df_v2,PETSC
  ierr = AODataSegmentAdd(aodata,"df","pwall",1,agrid.df_count,keys,agrid.wall_pdf,PETSC_LOGICAL);  CHKERRA(ierr);  
  ierr = AODataSegmentAdd(aodata,"df","ywall",1,agrid.df_count,keys,agrid.ywall_vdf,PETSC_LOGICAL);  CHKERRA(ierr);  
 
-  PetscFree(keys);
+  ierr = PetscFree(keys);CHKERRQ(ierr);
 
   /* View */
   if (agrid.show_ao){

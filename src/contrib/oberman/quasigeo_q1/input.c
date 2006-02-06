@@ -121,7 +121,7 @@ int main( int argc, char **argv )
   CHKERRA(ierr);
   ierr = AODataSegmentAdd(aodata,"edge","cell",2,agrid.n_edges,keys,agrid.edge_quads,PETSC_INT);
   CHKERRA(ierr);
-   PetscFree(keys);
+   ierr = PetscFree(keys);CHKERRQ(ierr);
   
   /* View */
   if (agrid.show_ao){
@@ -360,13 +360,14 @@ int ComputeVertexBoundary(AGrid *agrid)
 */
 int AGridDestroy(AGrid *agrid)
 {
-   PetscFree(agrid->vertices);
-   PetscFree(agrid->quad_vertices);
-   PetscFree(agrid->quad_edges);
-   PetscFree(agrid->cell_coords);
-   PetscFree(agrid->edge_vertices);
-   PetscFree(agrid->edge_quads);
-   PetscFree(agrid->quad_quads);
-   PetscFunctionReturn(0);
+  PetscErrorCode ierr;
+  ierr =  PetscFree(agrid->vertices);CHKERRQ(ierr);
+  ierr =  PetscFree(agrid->quad_vertices);CHKERRQ(ierr);
+  ierr =  PetscFree(agrid->quad_edges);CHKERRQ(ierr);
+  ierr =  PetscFree(agrid->cell_coords);CHKERRQ(ierr);
+  ierr =  PetscFree(agrid->edge_vertices);CHKERRQ(ierr);
+  ierr =  PetscFree(agrid->edge_quads);CHKERRQ(ierr);
+  ierr =  PetscFree(agrid->quad_quads);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 

@@ -34,6 +34,9 @@ ex3: ex3.o  chkopts
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o -lsimviewers ${PETSC_SNES_LIB}
 	${RM} ex4.o
+ex4tu: ex4tu.o  chkopts
+	-${CLINKER} -o ex4tu ex4tu.o ${PETSC_SNES_LIB}
+	${RM} ex4tu.o
 ex5: ex5.o chkopts
 	-${CLINKER} -o ex5 ex5.o ${PETSC_SNES_LIB}
 	${RM} ex5.o
@@ -92,6 +95,9 @@ ex18: ex18.o chkopts
 ex19:  ex19.o chkopts
 	-${CLINKER} -o ex19  ex19.o ${PETSC_SNES_LIB}
 	${RM} ex19.o
+ex19tu:  ex19tu.o chkopts
+	-${CLINKER} -o ex19tu  ex19tu.o ${PETSC_SNES_LIB}
+	${RM} ex19tu.o
 ex20: ex20.o chkopts
 	-${CLINKER} -o ex20 ex20.o ${PETSC_SNES_LIB}
 	${RM} ex20.o

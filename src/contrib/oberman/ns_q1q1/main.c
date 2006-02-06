@@ -334,19 +334,19 @@ Velocity is : Zero on wall, Dirichlet at opening.
     /* need to set these values in a non-blocked way, so that pressure isn't affected */
   }
   ierr = VecSetValuesLocal(f, blocked_wall_count,  blocked_wall_indices, bvswall, INSERT_VALUES); CHKERRQ(ierr);
-  PetscFree(bvswall);
+  ierr = PetscFree(bvswall);CHKERRQ(ierr);
 
 /* Now the inlet  indices */
- for( i = 0; i <inlet_count; i++ )
+  for( i = 0; i <inlet_count; i++ )
    { 
      xval = grid->vertex_value[2*inlet_indices[i]];
      yval = grid->vertex_value[2*inlet_indices[i]+1];
      bvsinlet[2*i] = uvvals[3*inlet_indices[i]] -  bc1(xval, yval);
      bvsinlet[2*i+1] = uvvals[3*inlet_indices[i]+1] -  bc2(xval, yval);
      /* skip the pressure */
-   }
-ierr = VecSetValuesLocal(f, inlet_blocked_count, inlet_indices_blocked, bvsinlet, INSERT_VALUES); CHKERRQ(ierr);
-PetscFree(bvsinlet);
+  }
+  ierr = VecSetValuesLocal(f, inlet_blocked_count, inlet_indices_blocked, bvsinlet, INSERT_VALUES); CHKERRQ(ierr);
+  ierr = PetscFree(bvsinlet);CHKERRQ(ierr);
 
 /* Now the outlet  indices */
  for( i = 0; i <outlet_count; i++ )
@@ -356,8 +356,8 @@ PetscFree(bvsinlet);
      bvsoutlet[i] = uvvals[3*inlet_indices[i]+2] -  bc3(xval, yval);   
      /* just the pressure */
    }
-ierr = VecSetValuesLocal(f, outlet_blocked_count, outlet_indices_blocked, bvsoutlet, INSERT_VALUES); CHKERRQ(ierr);
-PetscFree(bvsoutlet);
+  ierr = VecSetValuesLocal(f, outlet_blocked_count, outlet_indices_blocked, bvsoutlet, INSERT_VALUES); CHKERRQ(ierr);
+  ierr = PetscFree(bvsoutlet);CHKERRQ(ierr);
 
 
   /* need to free up the indices */

@@ -348,7 +348,7 @@ int AppctxDestroy(AppCtx *appctx)
   ierr = ISDestroy(appctx->grid.cell_global);CHKERRQ(ierr);
 
   ierr = ISLocalToGlobalMappingDestroy(appctx->grid.ltog);CHKERRQ(ierr);
-  PetscFree(appctx);
+  ierr = PetscFree(appctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

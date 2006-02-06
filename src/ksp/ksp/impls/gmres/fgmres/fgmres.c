@@ -723,8 +723,6 @@ PetscErrorCode KSPDestroy_FGMRES_Internal(KSP ksp)
   if (gmres->modifydestroy) {
     ierr = (*gmres->modifydestroy)(gmres->modifyctx);CHKERRQ(ierr);
   }
-  gmres->prevecs           = 0;
-  gmres->prevecs_user_work = 0;
   PetscFunctionReturn(0);
 }
 

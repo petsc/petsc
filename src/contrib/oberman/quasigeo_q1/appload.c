@@ -134,7 +134,7 @@ int AppCtxSetLocal(AppCtx *appctx)
     }   
     ierr = ISRestoreIndices(grid->vertex_boundary, &vertex_ptr); CHKERRQ(ierr);
 /* free up unneeded vertex_coords */
- PetscFree(vertex_coords);
+  ierr = PetscFree(vertex_coords);CHKERRQ(ierr);
 
  /**********view things ****************/
   
@@ -187,7 +187,7 @@ int AppCtxDestroy(AppCtx *appctx)
   ierr = VecDestroy(appctx->algebra.x);CHKERRQ(ierr);
  
   ierr = ISLocalToGlobalMappingDestroy(appctx->grid.ltog);CHKERRQ(ierr);
-  PetscFree(appctx);
+  ierr = PetscFree(appctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

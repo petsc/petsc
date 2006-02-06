@@ -7,6 +7,7 @@
 #if defined(PETSC_HAVE_ADIC)
 extern PetscErrorCode DMMGComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode DMMGSolveFAS(DMMG*,PetscInt);
+extern PetscErrorCode DMMGSolveFAS4(DMMG*,PetscInt);
 extern PetscErrorCode DMMGSolveFASb(DMMG*,PetscInt);
 extern PetscErrorCode DMMGComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 #endif
@@ -557,7 +558,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
             ierr = PetscPrintf(dmmg[i]->comm,"  using point-block smoothing\n");CHKERRQ(ierr);
           }
         } else {
-          dmmg[i]->solve = DMMGSolveFAS;
+          dmmg[i]->solve = DMMGSolveFAS4;
         }
       }
     }

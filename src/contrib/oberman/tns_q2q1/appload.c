@@ -289,7 +289,7 @@ int AppCtxSetLocal(AppCtx *appctx)
 
 
 /* free up unneeded df_coords */
- PetscFree(df_coords);
+  ierr = PetscFree(df_coords);CHKERRQ(ierr);
 
 
  PetscFunctionReturn(0);
@@ -316,7 +316,7 @@ int AppCtxDestroy(AppCtx *appctx)
   ierr = VecScatterDestroy(appctx->algebra.dfgtol);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(appctx->grid.dfltog);CHKERRQ(ierr);
 
-  PetscFree(appctx);
+  ierr = PetscFree(appctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

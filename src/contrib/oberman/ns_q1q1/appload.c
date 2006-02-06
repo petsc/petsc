@@ -225,7 +225,7 @@ ISView(boundary_outlet,  VIEWER_STDOUT_SELF);
       /* Skip the pressure */
     }
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,2*vertex_wall_size, vertex_wall_blocked, &isvertex_wall_blocked); 
-PetscFree(vertex_wall_blocked);
+  ierr = PetscFree(vertex_wall_blocked);CHKERRQ(ierr);
   /* Could reuse the array */
    
   /* Create a blocked IS for the inletl boundary, which contains u,v but skips p 
@@ -233,13 +233,13 @@ PetscFree(vertex_wall_blocked);
   ierr = ISGetIndices(boundary_inlet, &vertex_indices);CHKERRQ(ierr);
   ierr = ISGetSize(boundary_inlet, &vertex_inlet_size); CHKERRQ(ierr); 
   vertex_inlet_blocked = (int *) PetscMalloc((2*vertex_inlet_size)*sizeof(int));CHKPTRQ(vertex_inlet_blocked); 
- for(i=0;i<vertex_inlet_size;i++){ 
+  for(i=0;i<vertex_inlet_size;i++){ 
       vertex_inlet_blocked[2*i] = 3*vertex_indices[i]; 
       vertex_inlet_blocked[2*i+1] = 3*vertex_indices[i] + 1; 
       /* Skip the pressure */
     }
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,2*vertex_inlet_size, vertex_inlet_blocked, &isvertex_inlet_blocked); 
-PetscFree(vertex_inlet_blocked);
+  ierr = PetscFree(vertex_inlet_blocked);CHKERRQ(ierr);
   /* Could reuse the array */
 
  /* Create a blocked IS for the outlet boundary, 
@@ -251,7 +251,7 @@ At the outlet, we set pressure = 0 , and then du/dn = 0 naturally  */
       vertex_outlet_blocked[i] = 3*vertex_indices[i] + 2;  /* index of the pressure */
     }
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,vertex_outlet_size, vertex_outlet_blocked, &isvertex_outlet_blocked); 
-PetscFree(vertex_outlet_blocked);
+  ierr = PetscFree(vertex_outlet_blocked);CHKERRQ(ierr);
 
    /* Make the assignments   */ 
    grid->cell_vertex          = cell_vertex; 
@@ -338,7 +338,7 @@ int AppCtxDestroy(AppCtx *appctx)
   ierr = ISLocalToGlobalMappingDestroy(appctx->grid.ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(appctx->grid.dltog);CHKERRQ(ierr);
 
-  PetscFree(appctx);
+  ierr = PetscFree(appctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

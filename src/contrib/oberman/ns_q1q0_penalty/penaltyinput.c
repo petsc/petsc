@@ -180,7 +180,7 @@ ierr = AODataSegmentAdd(aodata,"df","pinlet",1,agrid.df_count,keys,agrid.inlet_p
 /*   ierr = AODataSegmentAdd(aodata,"vertex","boundary_inlet",1,agrid.n_vertices,keys,agrid.boundary_inlet,PETSC_LOGICAL);  CHKERRA(ierr); */
 /*   ierr = AODataSegmentAdd(aodata,"vertex","boundary_outlet",1,agrid.n_vertices,keys,agrid.boundary_outlet,PETSC_LOGICAL);  CHKERRA(ierr); */
 
-  PetscFree(keys);
+  ierr = PetscFree(keys);CHKERRQ(ierr);
 
   /* View */
   if(0){
@@ -522,14 +522,14 @@ int GenerateNodes(AGrid *agrid)
 /*    Frees all the memory space allocated in AGrid*/
 int AGridDestroy(AGrid *agrid)
 {
-   PetscFree(agrid->vertices);
-   PetscFree(agrid->quad_vertices);
-   PetscFree(agrid->quad_edges);
-   PetscFree(agrid->edge_vertices);
-   PetscFree(agrid->edge_quads);
-   PetscFree(agrid->quad_quads);
-   PetscFree(agrid->vert_df);
-   PetscFree(agrid->cell_df);
+   ierr = PetscFree(agrid->vertices);CHKERRQ(ierr);
+   ierr = PetscFree(agrid->quad_vertices);CHKERRQ(ierr);
+   ierr = PetscFree(agrid->quad_edges);CHKERRQ(ierr);
+   ierr = PetscFree(agrid->edge_vertices);CHKERRQ(ierr);
+   ierr = PetscFree(agrid->edge_quads);CHKERRQ(ierr);
+   ierr = PetscFree(agrid->quad_quads);CHKERRQ(ierr);
+   ierr = PetscFree(agrid->vert_df);CHKERRQ(ierr);
+   ierr = PetscFree(agrid->cell_df);CHKERRQ(ierr);
    PetscFunctionReturn(0);
 }
 

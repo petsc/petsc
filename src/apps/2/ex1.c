@@ -141,8 +141,8 @@ int AppCtxSetRhs(AppCtx* appctx)
   }
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
-  PetscFree(values);  
-  PetscFree(coors);
+  ierr = PetscFree(values);CHKERRQ(ierr);
+  ierr = PetscFree(coors);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -309,7 +309,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFree(values);
+  ierr = PetscFree(values);CHKERRQ(ierr);
 
   /*  -------------------------------------------------------------
          Apply Dirichlet boundary conditions

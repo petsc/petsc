@@ -64,21 +64,27 @@ PetscErrorCode NLFNewton_DAAD4(NLF A,DALocalInfo *info,MatStencil *stencil,void 
   PetscFunctionBegin;
 
   /* This sets the identity as the seed matrix for ADIC */   
+    CHKMEMQ;
   ad_vustart[1+5*gI   ] = 1.0;
+    CHKMEMQ;
   ad_vustart[2+5*gI+5 ] = 1.0;
+    CHKMEMQ;
   ad_vustart[3+5*gI+10] = 1.0;
+    CHKMEMQ;
   ad_vustart[4+5*gI+15] = 1.0;
+    CHKMEMQ;
 
   do {
     /* compute the function and Jacobian */        
+    CHKMEMQ;
     ierr = (*A->da->adicmf_lfib)(info,stencil,ad_vu,ad_f,A->ctx);CHKERRQ(ierr);
-   
+       CHKMEMQ;
     /* copy ADIC formated Jacobian into regular C array */
     J[0] = ad_f[1] ; J[1] = ad_f[2] ; J[2] = ad_f[3] ; J[3] = ad_f[4] ;
     J[4] = ad_f[6] ; J[5] = ad_f[7] ; J[6] = ad_f[8] ; J[7] = ad_f[9] ;
     J[8] = ad_f[11]; J[9] = ad_f[12]; J[10]= ad_f[13]; J[11]= ad_f[14];
     J[12]= ad_f[16]; J[13]= ad_f[17]; J[14]= ad_f[18]; J[15]= ad_f[19];
-
+    CHKMEMQ;
     f[0]    = -ad_f[0]   + residual[0];
     f[1]    = -ad_f[5]   + residual[1];
     f[2]    = -ad_f[10]  + residual[2];
@@ -113,13 +119,13 @@ PetscErrorCode NLFNewton_DAAD4(NLF A,DALocalInfo *info,MatStencil *stencil,void 
           J[1]*(J[4]*(J[10]*f[ 3]-f[ 2]*J[14])-J[6]*(J[8]*f[ 3]-f[ 2]*J[12])+f[1]*(J[8]*J[14]-J[10]*J[12]))+
           J[2]*(J[4]*(J[ 9]*f[ 3]-f[ 2]*J[13])-J[5]*(J[8]*f[ 3]-f[ 2]*J[12])+f[1]*(J[8]*J[13]-J[ 9]*J[12]))-
 	  f[0]*(J[4]*(J[ 9]*J[14]-J[10]*J[13])-J[5]*(J[8]*J[14]-J[10]*J[12])+J[6]*(J[8]*J[13]-J[ 9]*J[12])))/dd[0];
-
+    CHKMEMQ;
     /* copy solution back into ADIC data structure */
     ad_vustart[5*(gI+0)] += dd[1];
     ad_vustart[5*(gI+1)] += dd[2];
     ad_vustart[5*(gI+2)] += dd[3];
     ad_vustart[5*(gI+3)] += dd[4];
-
+    CHKMEMQ;
     res =  f[0]*f[0]; 
     res += f[1]*f[1]; 
     res += f[2]*f[2]; 
@@ -133,6 +139,7 @@ PetscErrorCode NLFNewton_DAAD4(NLF A,DALocalInfo *info,MatStencil *stencil,void 
   ad_vustart[2+5*gI+5 ] = 0.0;
   ad_vustart[3+5*gI+10] = 0.0;
   ad_vustart[4+5*gI+15] = 0.0;
+    CHKMEMQ;
   PetscFunctionReturn(0);
 }
 

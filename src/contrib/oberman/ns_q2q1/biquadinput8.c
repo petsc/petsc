@@ -136,11 +136,11 @@ BT junk;
   ierr = AODataSegmentAdd(aodata,"df","vinlet",1,agrid.df_count,keys,agrid.inlet_vdf,PETSC_LOGICAL);  CHKERRA(ierr); 
   ierr = AODataSegmentAdd(aodata,"df","vwall",1,agrid.df_count,keys,agrid.wall_vdf,PETSC_LOGICAL);  CHKERRA(ierr); 
   ierr = AODataSegmentAdd(aodata,"df","voutlet",1,agrid.df_count,keys,agrid.outlet_vdf,PETSC_LOGICAL);  CHKERRA(ierr); 
-   ierr = AODataSegmentAdd(aodata,"df","poutlet",1,agrid.df_count,keys,agrid.outlet_pdf,PETSC_LOGICAL);  CHKERRA(ierr);  
- ierr = AODataSegmentAdd(aodata,"df","pinlet",1,agrid.df_count,keys,agrid.inlet_pdf,PETSC_LOGICAL);  CHKERRA(ierr);  
- ierr = AODataSegmentAdd(aodata,"df","pwall",1,agrid.df_count,keys,agrid.wall_pdf,PETSC_LOGICAL);  CHKERRA(ierr);  
+  ierr = AODataSegmentAdd(aodata,"df","poutlet",1,agrid.df_count,keys,agrid.outlet_pdf,PETSC_LOGICAL);  CHKERRA(ierr);  
+  ierr = AODataSegmentAdd(aodata,"df","pinlet",1,agrid.df_count,keys,agrid.inlet_pdf,PETSC_LOGICAL);  CHKERRA(ierr);  
+  ierr = AODataSegmentAdd(aodata,"df","pwall",1,agrid.df_count,keys,agrid.wall_pdf,PETSC_LOGICAL);  CHKERRA(ierr);  
 
-  PetscFree(keys);
+  ierr = PetscFree(keys);CHKERRQ(ierr);
 
   /* View */
   if (agrid.show_ao){
@@ -510,11 +510,12 @@ int ComputeBoundary(AGrid *agrid)
 /*    Frees all the memory space allocated in AGrid*/
 int AGridDestroy(AGrid *agrid)
 {
-   PetscFree(agrid->vertices);
-   PetscFree(agrid->quad_vertices);
-   PetscFree(agrid->vert_vdf);
-   PetscFree(agrid->cell_vdf);
-   PetscFunctionReturn(0);
+  PetscErrorCode ierr;
+  ierr = PetscFree(agrid->vertices);CHKERRQ(ierr);
+  ierr = PetscFree(agrid->quad_vertices);CHKERRQ(ierr);
+  ierr = PetscFree(agrid->vert_vdf);CHKERRQ(ierr);
+  ierr = PetscFree(agrid->cell_vdf);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 

@@ -191,7 +191,7 @@ int main(int argc,char **args)
       Set default viewer to cause matrices to be printed in 
      a standard format; independent of the underlying data structure.
   */
-  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRA(ierr);
+  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL);CHKERRA(ierr);
 
   /* 
      Set problem parameters
@@ -206,14 +206,14 @@ int main(int argc,char **args)
   user.mach       = 0.5;
   user.pi         = 4.0 * atan(1.0);
   user.xi_max     = user.pi/2.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-problem",&user.problem,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m_eta",&user.m_eta,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m_xi",&user.m_xi,&flg); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-amp",&user.amp,&flg); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-mach",&user.mach,&flg); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-k1",&k1,&flg); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-xi_max",&user.xi_max,&flg); CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-print_debug",&user.print_debug); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-problem",&user.problem,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m_eta",&user.m_eta,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m_xi",&user.m_xi,&flg);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-amp",&user.amp,&flg);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-mach",&user.mach,&flg);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-k1",&k1,&flg);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-xi_max",&user.xi_max,&flg);CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-print_debug",&user.print_debug);CHKERRA(ierr);
   user.m_dim      = user.m_eta * user.m_xi;
   user.h_eta      = 1.0/(user.m_eta - 1);
   user.h_xi       = user.xi_max/(user.m_xi - 1);
@@ -227,8 +227,8 @@ int main(int argc,char **args)
   MPI_Comm_size(user.comm,&user.size);
   MPI_Comm_rank(user.comm,&user.rank);
   N_xi = PETSC_DECIDE; N_eta = PETSC_DECIDE;
-  ierr = OptionsGetInt(PETSC_NULL,"-N_eta",&N_eta,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N_xi",&N_xi,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N_eta",&N_eta,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N_xi",&N_xi,&flg);CHKERRA(ierr);
   if (N_eta*N_xi != user.size && (N_eta != PETSC_DECIDE || N_xi != PETSC_DECIDE)) {
     SETERRA(1,0,"Incompatible number of processors:  N_eta * N_xi != size");
   }
@@ -241,11 +241,11 @@ int main(int argc,char **args)
      grid points on a processor edge.
   */
   ierr = DACreate2d(user.comm,DA_NONPERIODIC,DA_STENCIL_STAR,user.m_eta,
-                    user.m_xi,N_eta,N_xi,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
-  ierr = DACreateGlobalVector(user.da,&user.phi); CHKERRA(ierr);
-  ierr = VecGetLocalSize(user.phi,&user.m_ldim); CHKERRA(ierr);
-  ierr = VecDuplicate(user.phi,&b); CHKERRA(ierr);
-  ierr = VecDuplicate(user.phi,&b2); CHKERRA(ierr);
+                    user.m_xi,N_eta,N_xi,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
+  ierr = DACreateGlobalVector(user.da,&user.phi);CHKERRA(ierr);
+  ierr = VecGetLocalSize(user.phi,&user.m_ldim);CHKERRA(ierr);
+  ierr = VecDuplicate(user.phi,&b);CHKERRA(ierr);
+  ierr = VecDuplicate(user.phi,&b2);CHKERRA(ierr);
 
 
   /* 
@@ -254,10 +254,10 @@ int main(int argc,char **args)
   switch (user.problem) {
     case 1:
       /* Create matrix data structure */
-      ierr = UserMatrixCreate1(&user,&A); CHKERRA(ierr);
+      ierr = UserMatrixCreate1(&user,&A);CHKERRA(ierr);
 
       /* Compute matrix and vector that define linear system */
-      ierr = FormSystem1(&user,A,b); CHKERRA(ierr); break;
+      ierr = FormSystem1(&user,A,b);CHKERRA(ierr); break;
     default:
       SETERRA(1,0,"Only problem #1 currently supported");
   }
@@ -265,24 +265,24 @@ int main(int argc,char **args)
   /*
       Create linear solver context; set linear system matrix 
   */
-  ierr = SLESCreate(user.comm,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+  ierr = SLESCreate(user.comm,&sles);CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
 
   /*
       Set convergence tolerance default; can be overwritten with command-line option 
   */
-  ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-8,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-8,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
 
   /* 
      Set routine for modifying submarices that arise in certain preconditioners
       (block Jacobi, ASM, and block Gauss-Seidel)
   */
-  ierr = OptionsHasName(PETSC_NULL,"-modify_submat",&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-modify_submat",&flg);CHKERRA(ierr);
   if (flg) {
-    ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    ierr = PCSetModifySubMatrices(pc,ModifySubmatrices1,(void*)&user); CHKERRA(ierr);
+    ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
+    ierr = PCSetModifySubMatrices(pc,ModifySubmatrices1,(void*)&user);CHKERRA(ierr);
   }
 
   /*
@@ -291,27 +291,27 @@ int main(int argc,char **args)
      These calls are optional, since both will be called within
      SLESSolve() if they haven't been called already. 
   */
-  ierr = SLESSetUp(sles,b,user.phi); CHKERRA(ierr);
-  ierr = SLESSetUpOnBlocks(sles); CHKERRA(ierr);
-  ierr = SLESSolve(sles,b,user.phi,&its); CHKERRA(ierr);
+  ierr = SLESSetUp(sles,b,user.phi);CHKERRA(ierr);
+  ierr = SLESSetUpOnBlocks(sles);CHKERRA(ierr);
+  ierr = SLESSolve(sles,b,user.phi,&its);CHKERRA(ierr);
 
   /* 
      View info about linear solver; could use runtime option -sles_view instead 
   */
-  ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ierr = SLESView(sles,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-print_solution",&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-print_solution",&flg);CHKERRA(ierr);
   if (flg) {
     PetscPrintf(user.comm,"solution vector\n");
-    ierr = DFVecView(user.phi,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+    ierr = DFVecView(user.phi,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   }
 
   /*
      Check norm of residual
   */
-  ierr = MatMult(A,user.phi,b2); CHKERRA(ierr);
-  ierr = VecAXPY(b2,-1.0,b); CHKERRA(ierr);
-  ierr  = VecNorm(b2,NORM_2,&norm); CHKERRA(ierr);
+  ierr = MatMult(A,user.phi,b2);CHKERRA(ierr);
+  ierr = VecAXPY(b2,-1.0,b);CHKERRA(ierr);
+  ierr  = VecNorm(b2,NORM_2,&norm);CHKERRA(ierr);
   if (norm > 1.e-12) 
     PetscPrintf(PETSC_COMM_WORLD,"Norm of RHS difference=%g, Iterations=%d\n",norm,its);
   else 
@@ -320,14 +320,14 @@ int main(int argc,char **args)
   /*
       Destroy all the PETSc objects created
   */
-  ierr = VecDestroy(user.phi); CHKERRA(ierr);
-  ierr = VecDestroy(b); CHKERRA(ierr);
-  ierr = VecDestroy(b2); CHKERRA(ierr);
-  ierr = MatDestroy(A); CHKERRA(ierr);
-  ierr = SLESDestroy(sles); CHKERRA(ierr);
-  ierr = DACreateLocalVector(user.da,&localv); CHKERRA(ierr);
-  ierr = VecDestroy(localv); CHKERRA(ierr);
-  ierr = DADestroy(user.da); CHKERRA(ierr);
+  ierr = VecDestroy(user.phi);CHKERRA(ierr);
+  ierr = VecDestroy(b);CHKERRA(ierr);
+  ierr = VecDestroy(b2);CHKERRA(ierr);
+  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRA(ierr);
+  ierr = DACreateLocalVector(user.da,&localv);CHKERRA(ierr);
+  ierr = VecDestroy(localv);CHKERRA(ierr);
+  ierr = DADestroy(user.da);CHKERRA(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -369,26 +369,26 @@ int UserMatrixCreate1(Atassi *user,Mat *mat)
   int        ierr, *nnz_d, *nnz_o;
   PetscTruth flg;
 
-  ierr = MatGetTypeFromOptions(user->comm,PETSC_NULL,&mtype,&flg); CHKERRQ(ierr);
+  ierr = MatGetTypeFromOptions(user->comm,PETSC_NULL,&mtype,&flg);CHKERRQ(ierr);
 
   /*
      Determine precise nonzero structure of matrix so that we can preallocate
      memory.  We could alternatively use rough estimates of the number of nonzeros
      per row. 
   */
-  ierr = UserDetermineMatrixNonzeros(user,mtype,&nnz_d,&nnz_o); CHKERRQ(ierr);
+  ierr = UserDetermineMatrixNonzeros(user,mtype,&nnz_d,&nnz_o);CHKERRQ(ierr);
 
   if (mtype == MATSEQAIJ) {
-    ierr = MatCreateSeqAIJ(user->comm,user->m_dim,user->m_dim,PETSC_NULL,nnz_d,&A); CHKERRQ(ierr);
+    ierr = MatCreateSeqAIJ(user->comm,user->m_dim,user->m_dim,PETSC_NULL,nnz_d,&A);CHKERRQ(ierr);
   } 
   else if (mtype == MATMPIAIJ) {
     ierr = MatCreateMPIAIJ(user->comm,user->m_ldim,user->m_ldim,user->m_dim,
-                           user->m_dim,PETSC_NULL,nnz_d,PETSC_NULL,nnz_o,&A); CHKERRQ(ierr);
+                           user->m_dim,PETSC_NULL,nnz_d,PETSC_NULL,nnz_o,&A);CHKERRQ(ierr);
   } else {
-    ierr = MatCreate(user->comm,&A); CHKERRQ(ierr);
-    ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,user->m_dim,user->m_dim); CHKERRQ(ierr);
+    ierr = MatCreate(user->comm,&A);CHKERRQ(ierr);
+    ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,user->m_dim,user->m_dim);CHKERRQ(ierr);
   }
-  PetscFree(nnz_d);
+  ierr = PetscFree(nnz_d);CHKERRQ(ierr);
   *mat = A;
   return 0;
 }
@@ -437,17 +437,17 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
     PetscMemzero(nnz_d,2*m_ldim * sizeof(int));
     nnz_o = nnz_d + m_ldim;
     /* Note: vector and matrix distribution is identical */
-    ierr = VecGetOwnershipRange(user->phi,&istart,&iend); CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(user->phi,&istart,&iend);CHKERRQ(ierr);
   } else {
     SETERRQ(1,0,"UserDetermineMatrixNonzeros: Code not yet written for this type");
   }
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
   *nz_o = nnz_o; *nz_d = nnz_d;
 
   /* Get corners and global indices */
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   xe = xs + xm;
   ye = ys + ym;
 
@@ -626,15 +626,15 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
   rh_xi = 1.0/h_xi;
 
   /* Get corners and global indices */
-  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
-  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(user->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   xe = xs + xm;
   ye = ys + ym;
 
-  ierr = OptionsHasName(PETSC_NULL,"-print_grid",&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-print_grid",&flg);CHKERRA(ierr);
   if (flg) {
-    ierr = DAView(user->da,VIEWER_STDOUT_SELF); CHKERRQ(ierr);
+    ierr = DAView(user->da,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     PetscPrintf(user->comm,"global grid: %d X %d ==> global vector dimension %d\n",
       user->m_eta,user->m_xi,user->m_dim); fflush(stdout);
     PetscSequentialPhaseBegin(user->comm,1);
@@ -670,8 +670,8 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
                 c*(sqr(sin(pi*i*h_eta)) + sqr(sinh(pi*j*h_xi)) );
       v[3]   = rh_eta_sq;
       v[4]   = rh_xi_sq;
-      ierr = MatSetValues(A,1,&grow,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
-      ierr = VecSetValues(b,1,&grow,&zero,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValues(A,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValues(b,1,&grow,&zero,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
@@ -688,8 +688,8 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
       col[1] = te;
       v[0]   = -one;
       v[1]   = exp(PETSC_i * k1Dbeta_sq * (cosh(pi*j*h_xi) - one));
-      ierr   = MatSetValues(A,1,&grow,2,col,v,INSERT_VALUES); CHKERRQ(ierr);
-      ierr   = VecSetValues(b,1,&grow,&zero,INSERT_VALUES); CHKERRQ(ierr);
+      ierr   = MatSetValues(A,1,&grow,2,col,v,INSERT_VALUES);CHKERRQ(ierr);
+      ierr   = VecSetValues(b,1,&grow,&zero,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
@@ -699,8 +699,8 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
       lrow = (j-Ys)*Xm + xe-1-Xs;
       grow = ltog[lrow];
       v[0] = -one;
-      ierr = MatSetValues(A,1,&grow,1,&grow,v,INSERT_VALUES); CHKERRQ(ierr);
-      ierr = VecSetValues(b,1,&grow,&zero,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValues(A,1,&grow,1,&grow,v,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValues(b,1,&grow,&zero,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
@@ -715,8 +715,8 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
       v[1]   = rh_xi;
       val    = -pi*ampDbeta * sin(pi*i*h_eta) *
                 exp(PETSC_i * k1Dbeta_sq * cos(pi*i*h_eta));
-      ierr   = MatSetValues(A,1,&grow,2,col,v,INSERT_VALUES); CHKERRQ(ierr);
-      ierr   = VecSetValues(b,1,&grow,&val,INSERT_VALUES); CHKERRQ(ierr);
+      ierr   = MatSetValues(A,1,&grow,2,col,v,INSERT_VALUES);CHKERRQ(ierr);
+      ierr   = VecSetValues(b,1,&grow,&val,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
@@ -736,19 +736,19 @@ int FormSystem1(Atassi *user,Mat A,Vec b)
       v[1]   = -2.0*c2 + PETSC_i * c1;
       v[2]   = c2 - PETSC_i * c1 - sqr(k1Dbeta_sq)*mach;
       /* v[2]   = c2 - PETSC_i * c1 - sqr(k1Dbeta_sq*mach); */
-      ierr   = MatSetValues(A,1,&grow,3,col,v,INSERT_VALUES); CHKERRQ(ierr);
-      ierr   = VecSetValues(b,1,&grow,&zero,INSERT_VALUES); CHKERRQ(ierr);
+      ierr   = MatSetValues(A,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
+      ierr   = VecSetValues(b,1,&grow,&zero,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(b); CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(b); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-print_system",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-print_system",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-    ierr = DFVecView(b,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+    ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = DFVecView(b,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   return 0;
@@ -805,7 +805,7 @@ int ModifySubmatrices1(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
      Loop over local submatrices
   */
   for (i=0; i<nsub; i++) {
-    ierr = MatGetSize(submat[i],&m,&n); CHKERRQ(ierr);
+    ierr = MatGetSize(submat[i],&m,&n);CHKERRQ(ierr);
     if (user->print_debug) {
       printf("[%d] changing submatrix %d of %d local submatrices: dimension %d X %d\n",
               user->rank,i+1,nsub,m,n);
@@ -817,17 +817,17 @@ int ModifySubmatrices1(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
        to zero. Note that each processor creates its own local index set using
        the communicator PETSC_COMM_SELF.
     */
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,1,&m,&is); CHKERRQ(ierr);
-    ierr = MatZeroRowsIS(submat[i],is,&one); CHKERRQ(ierr);
-    ierr = ISDestroy(is); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,1,&m,&is);CHKERRQ(ierr);
+    ierr = MatZeroRowsIS(submat[i],is,&one);CHKERRQ(ierr);
+    ierr = ISDestroy(is);CHKERRQ(ierr);
 
     /*
        Reassemble the submatrix 
     */
     lrow = 1; lcol = 1; val = 0.5;
-    ierr = MatSetValues(submat[i],1,&lrow,1,&lcol,&val,INSERT_VALUES); CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(submat[i],MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(submat[i],MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatSetValues(submat[i],1,&lrow,1,&lcol,&val,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(submat[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(submat[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
   return 0;
 }

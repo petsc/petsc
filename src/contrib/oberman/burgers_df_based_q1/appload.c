@@ -247,7 +247,7 @@ PetscErrorCode AppCtxDestroy(AppCtx *appctx)
   ierr = ISLocalToGlobalMappingDestroy(appctx->grid.ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(appctx->grid.dfltog);CHKERRQ(ierr);
 
-  PetscFree(appctx);
+  ierr = PetscFree(appctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

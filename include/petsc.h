@@ -702,7 +702,7 @@ M*/
    PetscFree - Frees memory
 
    Input Parameter:
-.   memory - memory to free
+.   memory - memory to free (the pointer is ALWAYS set to 0 upon sucess)
 
    Synopsis:
    PetscErrorCode PetscFree(void *memory)

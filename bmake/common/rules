@@ -303,6 +303,7 @@ getmpirun:
 	          sed -e "s/DERIV_TYPE/mfbDERIV_TYPE/g" $<.ad.tmp1 >> $*.ad.c ;\
                 fi;\
 	        echo "#include \"$<\"" >> $*.ad.c ;\
+                ${RM} *.ad.tmp* *.c.tmp* ad_deriv.h ;\
 	        echo ${PCC} -g  -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
 	        ${PCC} -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
 		 \

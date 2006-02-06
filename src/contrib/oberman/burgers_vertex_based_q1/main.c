@@ -360,8 +360,8 @@ PetscErrorCode AppCtxCreateMatrix(AppCtx* appctx)
   ierr = MatSetLocalToGlobalMappingBlock(J,ltog);CHKERRQ(ierr); 
  ierr = MatSetLocalToGlobalMapping(J,dltog);CHKERRQ(ierr); 
 
-  PetscFree(dnz);
-  PetscFree(onz);
+  ierr = PetscFree(dnz);CHKERRQ(ierr);
+  ierr = PetscFree(onz);CHKERRQ(ierr);
   algebra->A = A;
   algebra->J = J;
 

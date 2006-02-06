@@ -283,20 +283,10 @@ PetscErrorCode KSPDestroy_GMRES_Internal(KSP ksp)
   ierr = PetscFree(gmres->Rsvd);CHKERRQ(ierr);
   ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);
   ierr = PetscFree(gmres->orthogwork);CHKERRQ(ierr);
-  gmres->orthogwork     = 0;
-  gmres->Dsvd           = 0;
-  gmres->hh_origin      = 0;
-  gmres->vecs           = 0;
-  gmres->user_work      = 0;
-  gmres->mwork_alloc    = 0;
-  gmres->nrs            = 0;
   gmres->sol_temp       = 0;
-  gmres->nwork_alloc    = 0;
   gmres->vv_allocated   = 0;
   gmres->vecs_allocated = 0;
-  gmres->nrs            = 0;
   gmres->sol_temp       = 0;
-  gmres->Rsvd           = 0;
   PetscFunctionReturn(0);
 }
 
