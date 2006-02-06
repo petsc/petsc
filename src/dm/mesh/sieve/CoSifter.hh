@@ -153,6 +153,13 @@ namespace ALE {
         int newDim;
       };
     public:
+      int getFiberDimension(const patch_type& patch, const point_type& p) {
+        return this->_order->getColor(p, patch, false).index;
+      };
+      int getFiberDimension(const std::string& orderName, const patch_type& patch, const point_type& p) {
+        this->__checkOrderName(orderName);
+        return this->_reorders[orderName]->getColor(p, patch, false).index;
+      };
       void setFiberDimension(const patch_type& patch, const point_type& p, int dim) {
         this->_order->modifyColor(p, patch, changeDim(-dim));
       };
@@ -176,12 +183,13 @@ namespace ALE {
       };
     private:
       void __orderCell(const Obj<order_type>& order, const patch_type& patch, const point_type& cell, int& offset) {
+        // Set the prefix to the current offset (this won't kill the topology iterator)
         Obj<typename sieve_type::coneSequence> cone = this->_topology->cone(cell);
 
         for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
           this->__orderCell(order, patch, *p_iter, offset);
         }
-        // Set the prefix to the current offset (this won't kill the topology iterator)
+
         int dim = order->getColor(cell, patch, false).index;
 
         if (dim < 0) {

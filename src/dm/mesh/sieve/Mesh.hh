@@ -23,11 +23,13 @@ namespace ALE {
       typedef point_type patch_type;
       typedef CoSifter<sieve_type, patch_type, point_type, int> bundle_type;
       typedef CoSifter<sieve_type, patch_type, point_type, double> field_type;
+      typedef CoSifter<sieve_type, std::pair<patch_type,int>, point_type, double> foliation_type;
       int debug;
     private:
       Obj<sieve_type> topology;
       Obj<field_type> coordinates;
       Obj<field_type> boundary;
+      Obj<foliation_type> boundaries;
       std::map<int, Obj<bundle_type> > bundles;
       std::map<std::string, Obj<field_type> > fields;
       MPI_Comm        comm;
@@ -39,6 +41,7 @@ namespace ALE {
         this->topology    = sieve_type(debug);
         this->coordinates = field_type(debug);
         this->boundary    = field_type(debug);
+        this->boundaries  = foliation_type(debug);
       };
 
       MPI_Comm        getComm() {return this->comm;};
@@ -52,7 +55,9 @@ namespace ALE {
       void            setCoordinates(const Obj<field_type>& coordinates) {this->coordinates = coordinates;};
       Obj<field_type> getBoundary() {return this->boundary;};
       void            setBoundary(const Obj<field_type>& boundary) {this->boundary = boundary;};
+      Obj<foliation_type> getBoundaries() {return this->boundaries;};
       Obj<bundle_type> getBundle(const int dim) {
+        ALE_LOG_EVENT_BEGIN;
         if (this->bundles.find(dim) == this->bundles.end()) {
           Obj<bundle_type> bundle = bundle_type(debug);
 
@@ -65,6 +70,7 @@ namespace ALE {
           // "element" reorder is in vertexBundle by default, and intermediate bundles could be handled by a cell tuple
           this->bundles[dim] = bundle;
         }
+        ALE_LOG_EVENT_END;
         return this->bundles[dim];
       };
       Obj<field_type> getField(const std::string& name) {
@@ -177,11 +183,12 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "Mesh::createVertBnd"
       void createVertexBundle(int numSimplices, int simplices[]) {
-        ALE_LOG_EVENT_BEGIN;
+        ALE_LOG_STAGE_BEGIN;
         Obj<bundle_type> vertexBundle = this->getBundle(0);
         Obj<sieve_type::heightSequence> elements = this->topology->heightStratum(0);
         std::string orderName("element");
 
+        ALE_LOG_EVENT_BEGIN;
         for(sieve_type::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
           // setFiberDimensionByDepth() does not work here since we only want it to apply to the patch cone
           //   What we really need is the depthStratum relative to the patch
@@ -195,8 +202,9 @@ namespace ALE {
             vertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
           }
         }
-        vertexBundle->orderPatches(orderName);
         ALE_LOG_EVENT_END;
+        vertexBundle->orderPatches(orderName);
+        ALE_LOG_STAGE_END;
       };
 
       #undef __FUNCT__
@@ -364,13 +372,15 @@ namespace ALE {
               topology->setMarker(Mesh::point_type(0, v + out.numberoftriangles), out.pointmarkerlist[v]);
             }
           }
-          for(int e = 0; e < out.numberofedges; e++) {
-            if (out.edgemarkerlist[e]) {
-              Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftriangles);
-              Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftriangles);
-              Obj<ALE::def::PointSet> join = topology->nJoin(endpointA, endpointB, 1);
+          if (interpolate) {
+            for(int e = 0; e < out.numberofedges; e++) {
+              if (out.edgemarkerlist[e]) {
+                Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftriangles);
+                Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftriangles);
+                Obj<ALE::def::PointSet> join = topology->nJoin(endpointA, endpointB, 1);
 
-              topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
+                topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
+              }
             }
           }
         }
@@ -461,31 +471,33 @@ namespace ALE {
               topology->setMarker(Mesh::point_type(0, v + out.numberoftetrahedra), out.pointmarkerlist[v]);
             }
           }
-          if (out.edgemarkerlist) {
-            for(int e = 0; e < out.numberofedges; e++) {
-              if (out.edgemarkerlist[e]) {
-                Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftetrahedra);
-                Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftetrahedra);
-                Obj<ALE::def::PointSet> join = topology->nJoin(endpointA, endpointB, 1);
+          if (interpolate) {
+            if (out.edgemarkerlist) {
+              for(int e = 0; e < out.numberofedges; e++) {
+                if (out.edgemarkerlist[e]) {
+                  Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftetrahedra);
+                  Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftetrahedra);
+                  Obj<ALE::def::PointSet> join = topology->nJoin(endpointA, endpointB, 1);
 
-                topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
+                  topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
+                }
               }
             }
-          }
-          if (out.trifacemarkerlist) {
-            for(int f = 0; f < out.numberoftrifaces; f++) {
-              if (out.trifacemarkerlist[f]) {
-                Obj<ALE::def::PointSet> point = ALE::def::PointSet();
-                Obj<ALE::def::PointSet> edge = ALE::def::PointSet();
-                Mesh::point_type cornerA(0, out.trifacelist[f*3+0] + out.numberoftetrahedra);
-                Mesh::point_type cornerB(0, out.trifacelist[f*3+1] + out.numberoftetrahedra);
-                Mesh::point_type cornerC(0, out.trifacelist[f*3+2] + out.numberoftetrahedra);
-                point->insert(cornerA);
-                edge->insert(cornerB);
-                edge->insert(cornerC);
-                Obj<ALE::def::PointSet> join = topology->nJoin(point, edge, 2);
+            if (out.trifacemarkerlist) {
+              for(int f = 0; f < out.numberoftrifaces; f++) {
+                if (out.trifacemarkerlist[f]) {
+                  Obj<ALE::def::PointSet> point = ALE::def::PointSet();
+                  Obj<ALE::def::PointSet> edge = ALE::def::PointSet();
+                  Mesh::point_type cornerA(0, out.trifacelist[f*3+0] + out.numberoftetrahedra);
+                  Mesh::point_type cornerB(0, out.trifacelist[f*3+1] + out.numberoftetrahedra);
+                  Mesh::point_type cornerC(0, out.trifacelist[f*3+2] + out.numberoftetrahedra);
+                  point->insert(cornerA);
+                  edge->insert(cornerB);
+                  edge->insert(cornerC);
+                  Obj<ALE::def::PointSet> join = topology->nJoin(point, edge, 2);
 
-                topology->setMarker(*join->begin(), out.trifacemarkerlist[f]);
+                  topology->setMarker(*join->begin(), out.trifacemarkerlist[f]);
+                }
               }
             }
           }
@@ -515,7 +527,7 @@ namespace ALE {
       };
     private:
 #ifdef PETSC_HAVE_TRIANGLE
-      static Obj<Mesh> refine_Triangle(Obj<Mesh> mesh, double maxAreas[]) {
+      static Obj<Mesh> refine_Triangle(Obj<Mesh> mesh, double maxAreas[], bool interpolate) {
         struct triangulateio in;
         struct triangulateio out;
         int                  dim = 2;
@@ -631,7 +643,7 @@ namespace ALE {
           ierr = PetscFree(in.segmentlist);
           ierr = PetscFree(in.segmentmarkerlist);
         }
-        m->populate(out.numberoftriangles, out.trianglelist, out.numberofpoints, out.pointlist);
+        m->populate(out.numberoftriangles, out.trianglelist, out.numberofpoints, out.pointlist, interpolate);
         //m->distribute(m);
 
         // Need to make boundary
@@ -641,7 +653,7 @@ namespace ALE {
       };
 #endif
 #ifdef PETSC_HAVE_TETGEN
-      static Obj<Mesh> refine_TetGen(Obj<Mesh> mesh, double maxAreas[]) {
+      static Obj<Mesh> refine_TetGen(Obj<Mesh> mesh, double maxAreas[], bool interpolate) {
         ::tetgenio     in;
         ::tetgenio     out;
         int            dim = 3;
@@ -723,7 +735,7 @@ namespace ALE {
           in.numberofholes = 0;
           ::tetrahedralize((char *) args.c_str(), &in, &out);
         }
-        m->populate(out.numberoftetrahedra, out.tetrahedronlist, out.numberofpoints, out.pointlist);
+        m->populate(out.numberoftetrahedra, out.tetrahedronlist, out.numberofpoints, out.pointlist, interpolate);
   
         if (rank == 0) {
           Obj<Mesh::sieve_type> topology = m->getTopology();
@@ -766,30 +778,30 @@ namespace ALE {
       };
 #endif
     public:
-      static Obj<Mesh> refine(Obj<Mesh> mesh, double maxArea) {
+      static Obj<Mesh> refine(Obj<Mesh> mesh, double maxArea, bool interpolate = true) {
         int       numElements = mesh->getTopology()->heightStratum(0)->size();
         double   *maxAreas = new double[numElements];
         for(int e = 0; e < numElements; e++) {
           maxAreas[e] = maxArea;
         }
-        Obj<Mesh> refinedMesh = refine(mesh, maxAreas);
+        Obj<Mesh> refinedMesh = refine(mesh, maxAreas, interpolate);
 
         delete [] maxAreas;
         return refinedMesh;
       };
-      static Obj<Mesh> refine(Obj<Mesh> mesh, double maxAreas[]) {
+      static Obj<Mesh> refine(Obj<Mesh> mesh, double maxAreas[], bool interpolate = true) {
         Obj<Mesh> refinedMesh;
         int       dim = mesh->getDimension();
 
         if (dim == 2) {
 #ifdef PETSC_HAVE_TRIANGLE
-          refinedMesh = refine_Triangle(mesh, maxAreas);
+          refinedMesh = refine_Triangle(mesh, maxAreas, interpolate);
 #else
           throw ALE::Exception("Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
         } else if (dim == 3) {
 #ifdef PETSC_HAVE_TETGEN
-          refinedMesh = refine_TetGen(mesh, maxAreas);
+          refinedMesh = refine_TetGen(mesh, maxAreas, interpolate);
 #else
           throw ALE::Exception("Mesh generation currently requires TetGen to be installed. Use --download-tetgen during configure.");
 #endif
@@ -1157,9 +1169,9 @@ namespace ALE {
         int       dim = 3;
         bool      useZeroBase = false;
         Obj<ALE::Two::Mesh> mesh = ALE::Two::Mesh(comm, dim);
-        int      *vertices;
-        double   *coordinates;
-        int       numElements, numVertices;
+        int      *vertices = NULL;
+        double   *coordinates = NULL;
+        int       numElements = 0, numVertices = 0;
 
         mesh->debug = debug;
         readConnectivity(comm, baseFilename+".connect", dim, useZeroBase, numElements, &vertices);

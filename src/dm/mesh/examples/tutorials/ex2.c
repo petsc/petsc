@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Generating mesh\n");CHKERRQ(ierr);
     ierr = CreateMeshBoundary(meshBoundary);CHKERRQ(ierr);
-    mesh = ALE::Two::Generator::generate(meshBoundary);
+    mesh = ALE::Two::Generator::generate(meshBoundary, interpolate);
     ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
       stage = ALE::LogStageRegister("MeshRefine");
       ALE::LogStagePush(stage);
       ierr = PetscPrintf(comm, "Refining mesh\n");CHKERRQ(ierr);
-      mesh = ALE::Two::Generator::refine(mesh, refinementLimit);
+      mesh = ALE::Two::Generator::refine(mesh, refinementLimit, interpolate);
       ALE::LogStagePop(stage);
       ierr = PetscPrintf(comm, "  Read %d elements\n", mesh->getTopology()->heightStratum(0)->size());CHKERRQ(ierr);
       ierr = PetscPrintf(comm, "  Read %d vertices\n", mesh->getTopology()->depthStratum(0)->size());CHKERRQ(ierr);

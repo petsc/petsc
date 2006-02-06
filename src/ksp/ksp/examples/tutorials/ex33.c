@@ -151,10 +151,10 @@ int main(int argc,char **argv)
     for(ALE::Two::Mesh::sieve_type::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
       // setFiberDimensionByDepth() does not work here since we only want it to apply to the patch cone
       //   What we really need is the depthStratum relative to the patch
-      ALE::Obj<ALE::Two::Mesh::bundle_type::coneSequence> cone = vertexBundle->getPatch(*e_iter);
+      ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_iter);
 
       u->setPatch(orderName, cone, *e_iter);
-      for(ALE::def::PointSet::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+      for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
         u->setFiberDimension(orderName, *e_iter, *c_iter, 1);
       }
     }
