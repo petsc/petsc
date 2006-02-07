@@ -7,6 +7,7 @@ configure_options = [
   '--with-mpi-dir=/soft/apps/packages/mpich-gm-1.2.6..13b-gcc-3.2.3-1',
 
   '-COPTFLAGS=-O2 -march=pentium4 -mcpu=pentium4',
+  '-CXXOPTFLAGS=-O2 -march=pentium4 -mcpu=pentium4',
   '-FOPTFLAGS=-O2 -march=pentium4 -mcpu=pentium4',
   '--with-debugging=0',
 

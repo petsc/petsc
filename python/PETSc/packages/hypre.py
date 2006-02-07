@@ -88,7 +88,8 @@ class Configure(PETSc.package.Package):
     args.append('--without-babel')
     args.append('--without-mli')    
     args.append('--without-FEI')
-    args.append('--without-blas')
+    args.append('--with-blas=yes')
+    args.append('--with-lapack=yes')
     args = ' '.join(args)
 
     try:
@@ -106,7 +107,7 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running configure on HYPRE: '+str(e))
       try:
         self.logPrintBox('Compiling hypre; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';HYPRE_INSTALL_DIR='+installDir+';export HYPRE_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';HYPRE_INSTALL_DIR='+installDir+';export HYPRE_INSTALL_DIR; make install HYPRE_BASIC_DIRS=""', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on HYPRE: '+str(e))
       if not os.path.isdir(os.path.join(installDir,'lib')):
