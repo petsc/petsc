@@ -8,8 +8,8 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download  = ['http://www.netlib.org/scalapack/scalapack-1.7.0.tgz']
-    self.downloadname = 'scalapack'
+    # use the version from PETSc ftp site - it has lapack removed
+    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/scalapack.tgz']
     self.includes  = []
     self.libdir    = ''
     self.liblist   = [['libscalapack.a']]
