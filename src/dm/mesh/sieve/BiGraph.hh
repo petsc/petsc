@@ -277,7 +277,7 @@ namespace ALE {
 
       // Printing
       friend std::ostream& operator<<(std::ostream& os, const Arrow& a) {
-        os << a.source << " --" << a.color << "--> " << a.target << std::endl;
+        os << a.source << " --" << a.color << "--> " << a.target;
         return os;
       }
 
@@ -716,9 +716,22 @@ namespace ALE {
         //std::cout << "Added " << Arrow_(p, q, color);
       };
       void removeArrow(const typename traits::arrow_type& a) {
-        _base.adjustDegree(a.target, -1); _base.adjustDegree(a.source,-1);
-        this->_arrows.set.erase(a); 
+        // First, produce an arrow sequence for the given source, target combination.
+        typename traits::arrowSequence::traits::index_type& arrowIndex = 
+          ::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set);
+        typename traits::arrowSequence::traits::index_type::iterator i,ii,j;
+        i = arrowIndex.lower_bound(::boost::make_tuple(a.source,a.target));
+        ii = arrowIndex.upper_bound(::boost::make_tuple(a.source, a.target));
+        for(j = i; j != ii; j++) {
+          // Find the arrow of right color and remove it
+          if(j->color == a.color) {
+            _base.adjustDegree(a.target, -1); _base.adjustDegree(a.source,-1);
+            arrowIndex.erase(j);
+            break;
+          }
+        }
       };
+
       void addCone(const typename traits::source_type& source, const typename traits::target_type& target){
         this->addArrow(source, target);
       };
