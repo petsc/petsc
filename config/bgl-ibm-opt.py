@@ -11,15 +11,16 @@
 # CC=" /soft/apps/ibmcmp-20050414/vac/7.0/bin/xlc -F /etc/opt/ibmcmp/vac/7.0/blrts-vac.cfg"
 #
 configure_options = [
-  '-LIBS=-lc -lnss_files -lnss_dns -lresolv -L/opt/ibmcmp/vacpp/7.0/blrts_lib -libmc++ -lstdc++',
-  '--with-cc=mpxlc',
-  '--with-cxx=mpxlc -+',
-  '--with-fc=mpxlf',
+  '-LIBS=-L/opt/ibmcmp/xlmass/4.3/blrts_lib -lmass -lc -lnss_files -lnss_dns -lresolv -L/opt/ibmcmp/vacpp/7.0/blrts_lib -libmc++ -lstdc++',
+  '--with-cc=/home/balay/bin/mpxlc',
+  '--with-cxx=/home/balay/bin/mpxlc -+',
+  '--with-fc=/home/balay/bin/mpxlf',
 
-  '--download-f-blas-lapack=1',
+  '--with-blas-lapack-lib=[/soft/tools/lapack440/liblapack440.a,/soft/tools/blass440/libblas440.a]',
   '--with-shared=0',
   
   '-COPTFLAGS=-qbgl -qarch=440 -qtune=440 -O3',
+  '-CXXOPTFLAGS=-qbgl -qarch=440 -qtune=440 -O3',
   '-FOPTFLAGS=-qbgl -qarch=440 -qtune=440 -O3',
   '--with-debugging=0',
 
@@ -38,7 +39,15 @@ configure_options = [
   '--sizeof_double=8',
   '--bits_per_byte=8',
   '--sizeof_MPI_Comm=4',
-  '--sizeof_MPI_Fint=4'
+  '--sizeof_MPI_Fint=4',
+
+  '--download-hypre=1',
+  '--download-spooles=1',
+  '--download-superlu=1',
+  '--download-superlu_dist=1',
+  '--download-blacs=1',
+  '--download-scalapack=1',
+  '--download-mumps=1'
   ]
 
 if __name__ == '__main__':
