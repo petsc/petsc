@@ -9,6 +9,7 @@ RELEASE=2.3.1
 PETSC_DIR=/home/balay/bk-rep/petsc-release-${RELEASE}
 
 #automatically crankup the patchlevel
+# ${PETSC_DIR}/maint/createpatch
 
 #create the tarfile
 ${PETSC_DIR}/maint/builddist ${PETSC_DIR}
@@ -25,3 +26,6 @@ ssh petsc@harley.mcs.anl.gov " \
   /bin/rm -f petsc-${RELEASE}.tar.gz petsc-lite-${RELEASE}.tar.gz ; \
   /bin/ln -s release-snapshots/petsc-${VERSION}.tar.gz petsc-${RELEASE}.tar.gz; \
   /bin/ln -s release-snapshots/petsc-lite-${VERSION}.tar.gz petsc-lite-${RELEASE}.tar.gz"
+
+# Update download/index.html as well
+scp ${PETSC_DIR}/src/docs/website/download/index.html petsc@harley.mcs.anl.gov:/nfs/www-unix/petsc/petsc-as/download
