@@ -115,7 +115,7 @@ namespace ALE {
       Rec(const point_type& p, const int d) : point(p), degree(d) {};
       // Printing
       friend std::ostream& operator<<(std::ostream& os, const Rec& p) {
-        os << "[" << p.point << ", "<< p.degree << "]";
+        os << "<" << p.point << ", "<< p.degree << ">";
         return os;
       };
       
@@ -182,8 +182,8 @@ namespace ALE {
         };
       }; // class DegreeSequence
 
-      class PointSequence {
-      public:
+//      class PointSequence {
+//      public:
 //         typedef IndexSequenceTraits<typename ::boost::multi_index::index<set_type, pointTag>::type,
 //                                     BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type,point)>
 //         traits;
@@ -211,7 +211,7 @@ namespace ALE {
 //           // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
 //           return iterator(this->_index.end());
 //         };
-      }; // class PointSequence
+//      }; // class PointSequence
     };// struct RecContainerTraits
 
 
@@ -274,9 +274,14 @@ namespace ALE {
       target_type target;
       color_type  color;
       Arrow(const source_type& s, const target_type& t, const color_type& c) : source(s), target(t), color(c) {};
-      //
+
+      // Printing
+      friend std::ostream& operator<<(std::ostream& os, const Arrow& a) {
+        os << a.source << " --" << a.color << "--> " << a.target << std::endl;
+        return os;
+      }
+
       // Arrow modifiers
-      //
       struct sourceChanger {
         sourceChanger(const source_type& newSource) : _newSource(newSource) {};
         void operator()(arrow_type& a) {a.source = this->_newSource;}
@@ -327,7 +332,10 @@ namespace ALE {
         class iterator : public traits::iterator {
         public:
           iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
-          virtual const color_type& color() const {return this->_itor->color;};
+          virtual const source_type& source() const {return this->_itor->source;};
+          virtual const color_type&  color()  const {return this->_itor->color;};
+          virtual const target_type& target() const {return this->_itor->target;};
+          virtual const arrow_type&  arrow()  const {return *(this->_itor);};
         };
         class reverse_iterator : public traits::reverse_iterator {
         public:
@@ -417,10 +425,9 @@ namespace ALE {
     template<typename Source_, typename Target_, typename Color_>
     struct ArrowContainer<Source_, Target_, Color_, multiColor> {
       // Define container's encapsulated types
-      typedef ArrowContainerTraits<Source_, Target_, Color_> traits;
+      typedef ArrowContainerTraits<Source_, Target_, Color_>      traits;
       // need to def arrow_type locally, since BOOST_MULTI_INDEX_MEMBER barfs when first template parameter starts with 'typename'
       typedef typename traits::arrow_type                         arrow_type; 
-
       // Container set type
       typedef ::boost::multi_index::multi_index_container<
         typename traits::arrow_type,
@@ -452,16 +459,16 @@ namespace ALE {
         >,
         ALE_ALLOCATOR<typename traits::arrow_type>
       > set_type;      
-      // multi-index set of multicolor arrows
+     // multi-index set of multicolor arrows
       set_type set;
     }; // class ArrowContainer<multiColor>
     
     template<typename Source_, typename Target_, typename Color_>
     struct ArrowContainer<Source_, Target_, Color_, uniColor> {
       // Define container's encapsulated types
-      typedef ArrowContainerTraits<Source_, Target_, Color_>      traits;
+      typedef ArrowContainerTraits<Source_, Target_, Color_>                traits;
       // need to def arrow_type locally, since BOOST_MULTI_INDEX_MEMBER barfs when first template parameter starts with 'typename'
-      typedef typename traits::arrow_type                         arrow_type; 
+      typedef typename traits::arrow_type                                   arrow_type; 
 
       // multi-index set type -- arrow set
       typedef ::boost::multi_index::multi_index_container<
@@ -621,36 +628,58 @@ namespace ALE {
       // unimplemented
  
       template<typename ostream_type>
-      void view(ostream_type& os, const char* label = NULL){
+      void view(ostream_type& os, const char* label = NULL, bool rawData = false){
         if(label != NULL) {
           os << "Viewing BiGraph '" << label << "':" << std::endl;
         } 
         else {
           os << "Viewing a BiGraph:" << std::endl;
         }
-        os << "cap --> base:" << std::endl;
-        typename traits::capSequence cap = this->cap();
-        for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
-          typename traits::supportSequence supp = this->support(*capi);
-          for(typename traits::supportSequence::iterator suppi = supp.begin(); suppi != supp.end(); suppi++) {
-            os << *capi << "--" << suppi.color() << "-->" << *suppi << std::endl;
+        if(!rawData) {
+          os << "cap --> base:" << std::endl;
+          typename traits::capSequence cap = this->cap();
+          for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
+            typename traits::supportSequence supp = this->support(*capi);
+            for(typename traits::supportSequence::iterator suppi = supp.begin(); suppi != supp.end(); suppi++) {
+              os << *capi << "--(" << suppi.color() << ")-->" << *suppi << std::endl;
+            }
           }
-        }
-        os << "base <-- cap:" << std::endl;
-        typename traits::baseSequence base = this->base();
-        for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
-          typename traits::coneSequence cone = this->cone(*basei);
-          for(typename traits::coneSequence::iterator conei = cone.begin(); conei != cone.end(); conei++) {
-            os << *basei <<  "<--" << conei.color() << "--" << *conei << std::endl;
+          os << "base <-- cap:" << std::endl;
+          typename traits::baseSequence base = this->base();
+          for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
+            typename traits::coneSequence cone = this->cone(*basei);
+            for(typename traits::coneSequence::iterator conei = cone.begin(); conei != cone.end(); conei++) {
+              os << *basei <<  "<--(" << conei.color() << ")--" << *conei << std::endl;
+            }
           }
-        }
-        os << "cap --> outdegrees:" << std::endl;
-        for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
+          os << "cap --> outdegrees:" << std::endl;
+          for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
             os << *capi <<  "-->" << capi.degree() << std::endl;
-        }
-        os << "base <-- indegrees:" << std::endl;
-        for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
+          }
+          os << "base <-- indegrees:" << std::endl;
+          for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
             os << *basei <<  "<--" << basei.degree() << std::endl;
+          }
+        }
+        else {
+          os << "'raw' arrow set:" << std::endl;
+          for(typename traits::arrow_container_type::set_type::iterator ai = _arrows.set.begin(); ai != _arrows.set.end(); ai++)
+          {
+            typename traits::arrow_type arr = *ai;
+            os << arr << std::endl;
+          }
+          os << "'raw' base set:" << std::endl;
+          for(typename traits::base_container_type::set_type::iterator bi = _base.set.begin(); bi != _base.set.end(); bi++) 
+          {
+            typename traits::base_container_type::traits::rec_type bp = *bi;
+            os << bp << std::endl;
+          }
+          os << "'raw' cap set:" << std::endl;
+          for(typename traits::cap_container_type::set_type::iterator ci = _cap.set.begin(); ci != _cap.set.end(); ci++) 
+          {
+            typename traits::cap_container_type::traits::rec_type cp = *ci;
+            os << cp << std::endl;
+          }
         }
       };
     public:
@@ -686,6 +715,10 @@ namespace ALE {
         this->_arrows.set.insert(a); _base.adjustDegree(a.target,1); _cap.adjustDegree(a.source,1);
         //std::cout << "Added " << Arrow_(p, q, color);
       };
+      void removeArrow(const typename traits::arrow_type& a) {
+        _base.adjustDegree(a.target, -1); _base.adjustDegree(a.source,-1);
+        this->_arrows.set.erase(a); 
+      };
       void addCone(const typename traits::source_type& source, const typename traits::target_type& target){
         this->addArrow(source, target);
       };
@@ -705,41 +738,88 @@ namespace ALE {
           this->addArrow(*iter, target, color);
         }
       };
-    private:
-      void 
-      __clearCone(const typename traits::target_type& t, const typename traits::color_type&  color, bool useColor = false) {
+      void clearCone(const typename traits::target_type& t) {
+        clearCone(t, typename traits::color_type(), false);
+      };
+      void clearCone(const typename traits::target_type& t, const typename traits::color_type&  color, bool useColor = true) {
         // Use the cone sequence types to clear the cone
-        typename traits::coneSequence cone;
-        typename traits::coneSequence::index& coneIndex = ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set);
-        typename traits::coneSequence::index::iterator i, ii;
-        if (this->useColor) {
-          i = coneIndex.lower_bound(::boost::make_tuple(t,color));
-          ii = coneIndex.upper_bound(::boost::make_tuple(t,color));
+        typename traits::coneSequence::traits::index_type& coneIndex = 
+          ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set);
+        typename traits::coneSequence::traits::index_type::iterator i, ii, j;
+        if(debug) {
+          std::cout << "clearCone: removing cone over " << t;
+          if(useColor) {
+            std::cout << " with color" << color << std::endl;
+            typename traits::coneSequence cone = this->cone(t,color);
+            std::cout << "[" << std::endl;
+            for(typename traits::coneSequence::iterator ci = cone.begin(); ci != cone.end(); ci++) {
+              std::cout << "  " << ci.arrow();
+            }
+            std::cout << "]" << std::endl;
+          }
+          else {
+            std::cout << std::endl;
+            typename traits::coneSequence cone = this->cone(t);
+            std::cout << "[" << std::endl;
+            for(typename traits::coneSequence::iterator ci = cone.begin(); ci != cone.end(); ci++) {
+              std::cout << "  " << ci.arrow();
+            }
+            std::cout << "]" << std::endl;
+          }
+        }
+        if (useColor) {
+           i = coneIndex.lower_bound(::boost::make_tuple(t,color));
+           ii = coneIndex.upper_bound(::boost::make_tuple(t,color));
         } else {
           i = coneIndex.lower_bound(::boost::make_tuple(t));
           ii = coneIndex.upper_bound(::boost::make_tuple(t));
         }
-        for(; i != ii; i++){
-          // Adjust the degrees before removing the arrow
-          this->_cap.adjustDegree(i->source, -1);
-          this->_base.adjustDegree(i->target, -1);
-          coneIndex.erase(i);
+        for(j = i; j != ii; j++){          
+          // Adjust the degrees before removing the arrow; use a different iterator, since we'll need i,ii to do the arrow erasing.
+          if(debug) {
+            std::cout << "clearCone: adjusting degrees for endpoints of arrow: " << *j << std::endl;
+          }
+          this->_cap.adjustDegree(j->source, -1);
+          this->_base.adjustDegree(j->target, -1);
         }
+        coneIndex.erase(i,ii);
+      };// clearCone()
+
+      void clearSupport(const typename traits::source_type& s) {
+        clearSupport(s, typename traits::color_type(), false);
       };
-    public:
+      void clearSupport(const typename traits::source_type& s, const typename traits::color_type&  color, bool useColor = true) {
+        // Use the cone sequence types to clear the cone
+        typename 
+          traits::supportSequence::traits::index_type& suppIndex = ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set);
+        typename traits::supportSequence::traits::index_type::iterator i, ii, j;
+        if (useColor) {
+          i = suppIndex.lower_bound(::boost::make_tuple(s,color));
+          ii = suppIndex.upper_bound(::boost::make_tuple(s,color));
+        } else {
+          i = suppIndex.lower_bound(::boost::make_tuple(s));
+          ii = suppIndex.upper_bound(::boost::make_tuple(s));
+        }
+        for(j = i; j != ii; j++){
+          // Adjust the degrees before removing the arrow
+          this->_cap.adjustDegree(j->source, -1);
+          this->_base.adjustDegree(j->target, -1);
+        }
+        suppIndex.erase(i,ii);
+      };
       void setCone(const typename traits::source_type& source, const typename traits::target_type& target){
-        this->__clearCone(target, typename traits::color_type(), false); this->addCone(source, target);
+        this->clearCone(target, typename traits::color_type(), false); this->addCone(source, target);
       };
       template<class sourceInputSequence> 
       void setCone(const Obj<sourceInputSequence>& sources, const typename traits::target_type& target) {
-        this->__clearCone(target, typename traits::color_type(), false); this->addCone(sources, target, typename traits::color_type());
+        this->clearCone(target, typename traits::color_type(), false); this->addCone(sources, target, typename traits::color_type());
       };
       void setCone(const typename traits::source_type& source, const typename traits::target_type& target, const typename traits::color_type& color) {
-        this->__clearCone(target, color, true); this->addCone(source, target, color);
+        this->clearCone(target, color, true); this->addCone(source, target, color);
       };
       template<class sourceInputSequence> 
       void setCone(const Obj<sourceInputSequence>& sources, const typename traits::target_type& target, const typename traits::color_type& color){
-        this->__clearCone(target, color, true); this->addCone(sources, target, color);
+        this->clearCone(target, color, true); this->addCone(sources, target, color);
       };
       template<class targetInputSequence> 
       void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence >& targets);
@@ -891,6 +971,30 @@ namespace ALE {
           this->addArrow(a);
         }
       };
+      
+      struct ColorSetter {
+        ColorSetter(const typename traits::color_type& color) : _color(color) {}; 
+        void operator()(typename traits::arrow_type& p) const { 
+          p.color = _color;
+        } 
+      private:
+        const typename traits::color_type& _color;
+      };
+
+      void setColor(const typename traits::source_type& s, const typename traits::target_type& t, const typename traits::color_type& color) {
+        ColorSetter colorSetter(color);
+        typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& index = 
+          ::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set);
+        typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type::iterator i = 
+          index.find(::boost::make_tuple(s,t));
+        if (i != index.end()) {
+          index.modify(i, colorSetter);
+        } else {
+          typename traits::arrow_type a(s, t, color);
+          this->addArrow(a);
+        }
+      };
+
     };// class BiGraph
 
   } // namespace Two
