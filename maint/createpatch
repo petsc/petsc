@@ -1,0 +1,73 @@
+#!/bin/sh
+
+# This script updates PATCHLEVEL in petscversion.h and download/index.html
+#
+# Usage: createpatch petscrepo
+# example usage: createpatch /sandbox/petsc/petsc-dist
+
+if [ $# = 1 ]; then
+  petscrepo=$1
+else
+  echo 'Error: petscrepo not specified. Usge: createpatch petscrepo'
+  exit
+fi
+
+# check petscrepo to be valid
+if [ ! -d $petscrepo ]; then
+  echo 'Error: dir $petscrepo does not exist'
+  exit
+fi
+cd $petscrepo
+
+if [ ! -f include/petscversion.h ]; then
+  echo 'Error: dir $petscrepo/include/petscversion.h does not exist'
+  exit
+fi
+
+if [ ! -f src/docs/website/download/index.html ]; then
+  echo 'Error: dir $petscrepo/src/docs/website/download/index.html does not exist'
+  exit
+fi
+
+# check if all files are checked in
+a=`bk sfiles -l| wc -l`
+b=`bk sfiles -l python/BuildSystem | wc -l`
+if [ "${a}" != "0" -o "${b}" != "0" ]; then
+  echo "*** BK edited files exist. Cannot proceed! ****"
+  bk sfiles -l
+  bk sfiles -l python/BuildSystem
+  exit
+fi
+
+version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+new_version_patch=`expr $version_patch + 1`
+
+echo #########################################################
+echo ## updating patchlevel from $version_patch to $new_version_patch  ##
+echo #########################################################
+
+
+# Update patchlevel in petscversion.h
+bk edit -q include/petscversion.h
+/bin/mv include/petscversion.h include/petscversion.h.bak
+cat include/petscversion.h.bak | \
+  sed -e "s/#define PETSC_VERSION_PATCH .*/#define PETSC_VERSION_PATCH      ${new_version_patch}/" > include/petscversion.h
+/bin/rm -f include/petscversion.h.bak
+
+# Update patchlevel in download/index.html
+
+patchlevel=0
+bk edit src/docs/website/download/index.html
+/bin/mv src/docs/website/download/index.html src/docs/website/download/index.html.bak
+cat src/docs/website/download/index.html.bak | \
+  sed -e "s/(patchlevel=.*)/(patchlevel=${new_version_patch})/" > src/docs/website/download/index.html
+/bin/rm -f src/docs/website/download/index.html.bak
+
+# now create a changeset
+bk ci -u -y"Cranked up patch level" include/petscversion.h
+bk ci -u -y"Cranked up patch level" src/docs/website/download/index.html
+bk commit -y"Cranked up patch level"
+echo #########################################################
+echo # Created patch for the following change                #
+echo #########################################################
+bk export -tpatch -d -r+
