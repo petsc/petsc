@@ -133,16 +133,12 @@ namespace ALE {
       typedef Rec<Point_> rec_type;
       // Index tags
       struct pointTag{};
-      struct degreeTag{};
       // Rec set definition
       typedef ::boost::multi_index::multi_index_container<
         rec_type,
         ::boost::multi_index::indexed_by<
           ::boost::multi_index::ordered_unique<
             ::boost::multi_index::tag<pointTag>, BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type, point)
-          >,
-          ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<degreeTag>, BOOST_MULTI_INDEX_MEMBER(rec_type, int, degree)
           >
         >,
         ALE_ALLOCATOR<rec_type>
@@ -151,40 +147,9 @@ namespace ALE {
       // Return types
       //
 
-      class DegreeSequence {
-      public:
-        typedef IndexSequenceTraits<typename ::boost::multi_index::index<set_type, degreeTag>::type,
-                                    BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type,point)>
-        traits;
-      protected:
-        const typename traits::index_type& _index;
-      public:
-        
-        // Need to extend the inherited iterator to be able to extract the degree
-        class iterator : public traits::iterator {
-        public:
-          iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
-          virtual const int& degree() const {return this->_itor->degree;};
-        };
-
-        DegreeSequence(const DegreeSequence& seq)           : _index(seq._index) {};
-        DegreeSequence(typename traits::index_type& index)  : _index(index)     {};
-        virtual ~DegreeSequence(){};
-
-        virtual iterator begin() {
-          // Retrieve the beginning iterator to the sequence of points with indegree >= 1
-          return iterator(this->_index.lower_bound(1));
-        };
-        virtual iterator end() {
-          // Retrieve the ending iterator to the sequence of points with indegree >= 1
-          // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
-          return iterator(this->_index.end());
-        };
-      }; // class DegreeSequence
-
-//      class PointSequence {
-//      public:
-//         typedef IndexSequenceTraits<typename ::boost::multi_index::index<set_type, pointTag>::type,
+//       class DegreeSequence {
+//       public:
+//         typedef IndexSequenceTraits<typename ::boost::multi_index::index<set_type, degreeTag>::type,
 //                                     BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type,point)>
 //         traits;
 //       protected:
@@ -211,7 +176,38 @@ namespace ALE {
 //           // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
 //           return iterator(this->_index.end());
 //         };
-//      }; // class PointSequence
+//       }; // class DegreeSequence
+
+     class PointSequence {
+     public:
+        typedef IndexSequenceTraits<typename ::boost::multi_index::index<set_type, pointTag>::type,
+                                    BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type,point)>
+        traits;
+      protected:
+        const typename traits::index_type& _index;
+      public:
+        
+        // Need to extend the inherited iterator to be able to extract the degree
+        class iterator : public traits::iterator {
+        public:
+          iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
+          virtual const int& degree() const {return this->_itor->degree;};
+        };
+
+        PointSequence(const PointSequence& seq)            : _index(seq._index) {};
+        PointSequence(typename traits::index_type& index) : _index(index)     {};
+        virtual ~PointSequence(){};
+
+        virtual iterator begin() {
+          // Retrieve the beginning iterator of the index
+          return iterator(this->_index.begin());
+        };
+        virtual iterator end() {
+          // Retrieve the ending iterator of the index
+          // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
+          return iterator(this->_index.end());
+        };
+     }; // class PointSequence
     };// struct RecContainerTraits
 
 
@@ -512,8 +508,6 @@ namespace ALE {
     // except the source and target points may have different types and iterated operations (e.g., nCone, closure)
     // are not available.
     // 
-
-
     template<typename Source_, typename Target_, typename Color_, ColorMultiplicity colorMultiplicity>
     class ColorBiGraph { // class ColorBiGraph
     public:
@@ -531,8 +525,8 @@ namespace ALE {
         typedef typename arrow_container_type::traits::sourceColorTag            supportInd;
         typedef typename arrow_container_type::traits::targetColorTag            coneInd;
         typedef typename arrow_container_type::traits::sourceTargetTag           arrowInd;
-        typedef typename base_container_type::traits::degreeTag                  baseInd;
-        typedef typename cap_container_type::traits::degreeTag                   capInd;
+        typedef typename base_container_type::traits::pointTag                   baseInd;
+        typedef typename cap_container_type::traits::pointTag                    capInd;
         //
         // Return types
         //
@@ -548,12 +542,17 @@ namespace ALE {
         arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type, supportInd>::type, source_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, target_type, target)> 
         supportSequence;
      
-        typedef typename base_container_type::traits::DegreeSequence baseSequence;
-        typedef typename cap_container_type::traits::DegreeSequence  capSequence;
+        typedef typename base_container_type::traits::PointSequence baseSequence;
+        typedef typename cap_container_type::traits::PointSequence  capSequence;
         typedef std::set<source_type> coneSet;
         typedef std::set<target_type> supportSet;
-
       } traits;
+
+      template <typename OtherSource_, typename OtherTarget_, typename OtherColor_, ColorMultiplicity otherColorMultiplicity>
+      struct reparameterize {
+        typedef ColorBiGraph<OtherSource_, OtherTarget_, OtherColor_, otherColorMultiplicity> type;
+      };
+
     public:
       // Debug level
       int debug;
@@ -561,15 +560,31 @@ namespace ALE {
       typename traits::arrow_container_type _arrows;
       typename traits::base_container_type  _base;
       typename traits::cap_container_type   _cap;
+    protected:
+      MPI_Comm    _comm;
+      int         _commRank;
+      int         _commSize;
+      PetscObject _petscObj;
+      void __init(MPI_Comm comm) {    
+        PetscErrorCode ierr;
+        this->_comm = comm;
+        ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
+        ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_rank"); 
+        ierr = PetscObjectCreate(this->_comm, &this->_petscObj); CHKERROR(ierr, "Failed in PetscObjectCreate");
+      };
     public:
       // 
       // Basic interface
       //
-      ColorBiGraph(int debug = 0) : debug(debug) {};
+      ColorBiGraph(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : debug(debug) {__init(comm);}
       virtual ~ColorBiGraph(){};
       //
       // Query methods
       //
+      MPI_Comm comm()     {return this->_comm;};
+      int      commSize() {return this->_commSize;};
+      int      commRank() {return this->_commRank;}
+
       Obj<typename traits::capSequence>   
       cap() {
         return typename traits::capSequence(::boost::multi_index::get<typename traits::capInd>(_cap.set));
@@ -845,105 +860,15 @@ namespace ALE {
 
     }; // class ColorBiGraph
 
-    //
-    // Delta namespace contains classes and methods implementing  the delta operation on a pair of ColorBiGraphs or similar objects.
-    //
-//     namespace Delta { 
-
-
-//       template <typename LeftBiGraph_, typename RightBiGraph_, typename DeltaBiGraph_>
-//       class ProductConeFuser {
-//       public:
-//         //Encapsulated types
-//         struct traits {
-//           typedef LeftBiGraph_  left_type;
-//           typedef RightBiGraph_ right_type;
-//           typedef DeltaBiGraph_ delta_type;
-//           typedef std::pair<typename left_type::traits::source_type,typename right_type::traits::source_type> source_type;
-//           typedef typename left_type::traits::target_type                                                     target_type;
-//           typedef std::pair<typename left_type::traits::color_type,typename right_type::traits::color_type>   color_type;
-//         };        
-//         void
-//         fuseCones(const typename traits::left_type::traits::coneSequence&  lcone, 
-//                   const typename traits::right_type::traits::coneSequence& rcone, 
-//                   typename typename traits::delta_type& delta) {
-//           // This Fuser traverses both left cone and right cone, forming an arrow from each pair of arrows -- 
-//           // one from each of the cones --  and inserting it into the delta BiGraph.
-//           for(typename left_type::traits::coneSequence::iterator lci = lcone.begin(); lci != lcone.end(); lci++) {
-//             for(typename left_type::traits::coneSequence::iterator lci = lcone.begin(); lci != lcone.end(); lci++) {
-//               delta.addArrow(this->fuseArrows(lci.arrow(), rci.arrow()));
-//             }
-//           }
-//         }
-//         typename traits::delta_type::arrow_type
-//         fuseArrows(const typename traits::left_type::traits::arrow_type& larrow, 
-//                    const typename traits::right_type::traits::arrow_type& rarrow) {
-//           return typename traits::arrow_type(traits::source_type(*lci,*rci), lci.target(), 
-//                                              typename traits::color_type(lci.color(),rci.color()));
-//         }
-//       }; // struct ProductConeFuser
-      
-
-//       template <typename LeftBiGraph_, typename RightBiGraph_>
-//       class BaseOverlapSequence : public LeftBiGraph_::traits::baseContainer::traits::PointSequence {
-//       public:
-//         // Encapsulted types
-//         typedef LeftBiGraph_  left_type;
-//         typedef RightBiGraph_ right_type;
-//         typedef typename left_type::traits::baseContainer::traits::PointSequence::traits traits;
-//         //
-//         // Basic interface
-//         //
-//         BaseOverlapSequence(const typename traits::left_type& l, const typename traits::right_type& r) : _left(l), _right(r){};
-
-//         virtual typename traits::iterator begin() {
-//         };
-//         virtual typename traits::iterator end() {
-//           //return typename traits::iterator();
-//         };
-//       protected:
-//         const typename traits::left_type&  _left;
-//         const typename traits::right_type& _right;
-
-//       };// class BaseOverlapSequence
-
-//       template <typename LeftBiGraph_, typename RightBiGraph_, typename DeltaBiGraph_>
-//       class ConeDelta {
-//         // ConeDelta::operator() in various forms
-//         void 
-//         operator()(const left_type& l, const right_type& r, delta_type& d, const fuser_type& f = fuser_type()) {
-//           // Compute the overlap of left and right bases and then call a 'based' version of the operator
-//           operator()(overlap(l,r), l,r,d,f);
-//         };
-//         void 
-//         operator()(const BaseOverlapSequence& overlap,const left_type& l,const right_type& r, delta_type& d, 
-//                    const fuser_type& f = fuser_type()) {
-//           for(typename BaseOverlapSequence::iterator i = overlap.begin(); i != overlap.end(); i++) {
-//             typename left_type::traits::coneSequence lcone = l.cone(*i);
-//             typename right_type::traits::coneSequence rcone = r.cone(*i);
-//           }
-//         }
-//         Obj<delta_type> 
-//         operator()(const left_type& l, const right_type& r, const fuser_type& f = fuser_type()) {
-//           Obj<delta_type> d = delta_type();
-//           operator()(l,r,d,f);
-//           return d;
-//         };
-//         Obj<delta_type> 
-//         operator()(const BaseOverlapSequence& overlap, const left_type& l, const right_type& r, const fuser_type& f = fuser_type()) {
-//           Obj<delta_type> d = delta_type();
-//           operator()(overlap,l,r,d,f);
-//           return d;
-//         };
-//       }; // class ConeDelta
-            
-//     }; // namespace Delta
-
     // A UniColorBiGraph aka BiGraph
     template <typename Source_, typename Target_, typename Color_>
     class BiGraph : public ColorBiGraph<Source_, Target_, Color_, uniColor> {
     public:
       typedef typename ColorBiGraph<Source_, Target_, Color_, uniColor>::traits       traits;
+      template <typename OtherSource_, typename OtherTarget_, typename OtherColor_>
+      struct rebind {
+        typedef BiGraph<OtherSource_, OtherTarget_, OtherColor_> type;
+      };
       //typedef ColorBiGraphTraits<ColorBiGraph<Source_, Target_, Color_, uniColor> >   traits;
       // Re-export some typedefs expected by CoSifter
       typedef typename traits::arrow_type                                             Arrow_;
@@ -952,7 +877,8 @@ namespace ALE {
       typedef typename traits::baseSequence                                           baseSequence;
       typedef typename traits::capSequence                                            capSequence;
       // Basic interface
-      BiGraph(const int& debug = 0) : ColorBiGraph<Source_, Target_, Color_, uniColor>(debug) {};
+      BiGraph(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : 
+        ColorBiGraph<Source_, Target_, Color_, uniColor>(comm, debug) {};
       
       const typename traits::color_type&
       getColor(const typename traits::source_type& s, const typename traits::target_type& t, bool fail = true) {
@@ -1009,6 +935,7 @@ namespace ALE {
       };
 
     };// class BiGraph
+
 
   } // namespace Two
 
