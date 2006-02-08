@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-1.9.0b.tar.gz']
+    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-1.9.0b-mod.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']
     self.license   = 'http://www.llnl.gov/CASC/hypre/download/hyprebeta_cur_agree.html'
@@ -107,7 +107,7 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running configure on HYPRE: '+str(e))
       try:
         self.logPrintBox('Compiling hypre; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';HYPRE_INSTALL_DIR='+installDir+';export HYPRE_INSTALL_DIR; make install HYPRE_BASIC_DIRS=""', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';HYPRE_INSTALL_DIR='+installDir+';export HYPRE_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on HYPRE: '+str(e))
       if not os.path.isdir(os.path.join(installDir,'lib')):
