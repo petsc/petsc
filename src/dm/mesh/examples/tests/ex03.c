@@ -81,9 +81,40 @@ PetscErrorCode testBiGraphDiv2() {
   for(BiGraphInt3::baseSequence::iterator i = base.begin(); i != base.end(); i++) {
     BiGraphInt3::coneSequence cone = bg->cone(*i);
     for(BiGraphInt3::coneSequence::iterator j = cone.begin(); j != cone.end(); j++) {
-
+      bg->setColor(*j,*i,-(j.color()));
     }
   }
+  // View
+  bg->view(std::cout, "bigraph/2 after negation");
+
+  // Remove the arrow from 4 to 2 with color 0
+  BiGraphInt3::traits::arrow_type a(4,2,0), b(4,3,0);
+  bg->removeArrow(a);
+  bg->removeArrow(b);
+  // View
+  ostringstream txt;
+  txt << "bigraph/2 after removal of arrows " << a << " and " << b;
+  bg->view(std::cout, txt.str().c_str());
+
+  // Remove first cone
+  {
+    BiGraphInt3::baseSequence base = bg->base();
+    bg->clearCone(*(base.begin()));
+  }
+
+  // View
+  bg->view(std::cout, "bigraph/2 after removal of the first cone");
+
+  // Remove first support
+  {
+    BiGraphInt3::capSequence cap = bg->cap();
+    bg->clearSupport(*(cap.begin()));
+  }
+
+  // View
+  bg->view(std::cout, "bigraph/2 after removal of the first support");
+
+
 
   PetscFunctionReturn(0);
 }/* testBiGraphDiv2() */
