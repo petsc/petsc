@@ -1,9 +1,9 @@
+CPPFLAGS        = -DALE_HAVE_CXX_ABI -DALE_USE_LOGGING -DALE_USE_DEBUGGING -DALE_LOGGING_USE_EVENTS #-DALE_LOGGING_USE_STAGES
 CFLAGS	        = -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE}
 FFLAGS	        =
-CPPFLAGS        = -DALE_USE_LOGGING -DALE_HAVE_CXX_ABI -DALE_USE_DEBUGGING
 FPPFLAGS        = 
 LOCDIR          = src/dm/mesh/examples/tutorials/
-EXAMPLESC       = ex00.c ex01.c ex02.c ex1.c
+EXAMPLESC       = ex00.c ex01.c ex02.c ex03.c ex1.c
 EXAMPLESF       = 
 MANSEC          = DA
 NP              = 1
@@ -23,6 +23,14 @@ ex01: ex01.o chkopts
 ex02: ex02.o chkopts
 	-${CLINKER} -o ex02 ex02.o ${PETSC_DM_LIB}
 	${RM} -f ex02.o
+
+ex03: ex03.o chkopts
+	-${CLINKER} -o ex03 ex03.o ${PETSC_DM_LIB}
+	${RM} -f ex03.o
+
+ex04: ex04.o chkopts
+	-${CLINKER} -o ex04 ex04.o ${PETSC_DM_LIB}
+	${RM} -f ex04.o
 
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_DM_LIB}
@@ -57,6 +65,26 @@ debugex02:
 
 valex02:
 	-@valgrind --tool=memcheck ./ex02 ${EXTRA_ARGS}
+
+#-----------------------------------------------------------------
+runex03:
+	-@${MPIRUN} -np ${NP} ./ex03 ${EXTRA_ARGS}
+
+debugex03:
+	-@${MPIRUN} -np ${NP} ./ex03 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+
+valex03:
+	-@valgrind --tool=memcheck ./ex03 ${EXTRA_ARGS}
+
+#-----------------------------------------------------------------
+runex04:
+	-@${MPIRUN} -np ${NP} ./ex04 ${EXTRA_ARGS}
+
+debugex04:
+	-@${MPIRUN} -np ${NP} ./ex04 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+
+valex04:
+	-@valgrind --tool=memcheck ./ex04 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex1:

@@ -29,6 +29,14 @@ namespace ALE {
       Point(int p, int i) : prefix(p), index(i){};
       Point(const Point& p) : prefix(p.prefix), index(p.index){};
       // Comparisons
+//       class less_than {
+//       public: 
+//         bool operator()(const Point& p, const Point& q) const {
+//           return( (p.prefix < q.prefix) || ((p.prefix == q.prefix) && (p.index < q.index)));
+//         };
+//       };
+//       typedef less_than Cmp;
+      //
       bool operator==(const Point& q) const {
         return ( (this->prefix == q.prefix) && (this->index == q.index) );
       };

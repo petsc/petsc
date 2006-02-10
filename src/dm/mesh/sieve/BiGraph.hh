@@ -187,26 +187,30 @@ namespace ALE {
         const typename traits::index_type& _index;
       public:
         
-        // Need to extend the inherited iterator to be able to extract the degree
-        class iterator : public traits::iterator {
-        public:
-          iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
-          virtual const int& degree() const {return this->_itor->degree;};
-        };
+       // Need to extend the inherited iterator to be able to extract the degree
+       class iterator : public traits::iterator {
+       public:
+         iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
+         virtual const int& degree() const {return this->_itor->degree;};
+       };
+       
+       PointSequence(const PointSequence& seq)            : _index(seq._index) {};
+       PointSequence(typename traits::index_type& index) : _index(index)     {};
+       virtual ~PointSequence(){};
+       
+       virtual bool empty(){return this->_index.empty();};
+       
+       virtual typename traits::index_type::size_type size() {return this->_index.size();};
 
-        PointSequence(const PointSequence& seq)            : _index(seq._index) {};
-        PointSequence(typename traits::index_type& index) : _index(index)     {};
-        virtual ~PointSequence(){};
-
-        virtual iterator begin() {
-          // Retrieve the beginning iterator of the index
-          return iterator(this->_index.begin());
-        };
-        virtual iterator end() {
-          // Retrieve the ending iterator of the index
-          // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
-          return iterator(this->_index.end());
-        };
+       virtual iterator begin() {
+         // Retrieve the beginning iterator of the index
+         return iterator(this->_index.begin());
+       };
+       virtual iterator end() {
+         // Retrieve the ending iterator of the index
+         // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
+         return iterator(this->_index.end());
+       };
      }; // class PointSequence
     };// struct RecContainerTraits
 
@@ -352,6 +356,16 @@ namespace ALE {
           _index(index), key(k), subkey(kk), useSubkey(1){};
         virtual ~ArrowSequence() {};
         
+        virtual bool         empty() {return this->_index.empty();};
+
+        virtual typename traits::index_type::size_type  size()  {
+          if (this->useSubkey) {
+            return this->_index.count(::boost::make_tuple(this->key,this->subkey));
+          } else {
+            return this->_index.count(::boost::make_tuple(this->key));
+          }
+        };
+
         virtual iterator begin() {
           if (this->useSubkey) {
             return iterator(this->_index.lower_bound(::boost::make_tuple(this->key,this->subkey)));
@@ -384,13 +398,6 @@ namespace ALE {
           }
         };
         
-        virtual std::size_t size() {
-          if (this->useSubkey) {
-            return this->_index.count(::boost::make_tuple(this->key,subkey));
-          } else {
-            return this->_index.count(::boost::make_tuple(this->key));
-          }
-        };
 
         template<typename ostream_type>
         void view(ostream_type& os, const bool& useColor = false, const char* label = NULL){
@@ -581,18 +588,20 @@ namespace ALE {
       //
       // Query methods
       //
-      MPI_Comm comm()     {return this->_comm;};
-      int      commSize() {return this->_commSize;};
-      int      commRank() {return this->_commRank;}
+      MPI_Comm comm()     const {return this->_comm;};
+      int      commSize() const {return this->_commSize;};
+      int      commRank() const {return this->_commRank;}
 
+      // FIX: need const_cap, const_base returning const capSequence etc, but those need to have const_iterators, const_begin etc.
       Obj<typename traits::capSequence>   
-      cap() {
+      cap()  {
         return typename traits::capSequence(::boost::multi_index::get<typename traits::capInd>(_cap.set));
       };
       Obj<typename traits::baseSequence>    
       base() {
         return typename traits::baseSequence(::boost::multi_index::get<typename traits::baseInd>(_base.set));
       };
+      // FIX: should probably have cone and const_cone etc, since arrows can be modified through an iterator (modifyColor).
       Obj<typename traits::arrowSequence> 
       arrows(const typename traits::source_type& s, const typename traits::target_type& t) {
         return typename traits::arrowSequence(::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set), s, t);
