@@ -371,12 +371,14 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
   ierr = PetscOptionsHead("ILU Options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_factor_levels","levels of fill","PCFactorSetLevels",(PetscInt)ilu->info.levels,&itmp,&flg);CHKERRQ(ierr);
     if (flg) ilu->info.levels = itmp;
-    ierr = PetscOptionsName("-pc_factor_in_place","do factorization in place","PCFactorSetUseInPlace",&ilu->inplace);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_factor_in_place","do factorization in place","PCFactorSetUseInPlace",&flg);CHKERRQ(ierr);
+    if (flg) ilu->inplace = PETSC_TRUE;
     ierr = PetscOptionsName("-pc_factor_diagonal_fill","Allow fill into empty diagonal entry","PCFactorSetAllowDiagonalFill",&flg);CHKERRQ(ierr);
     ilu->info.diagonal_fill = (double) flg;
-    ierr = PetscOptionsName("-pc_factor_reuse_fill","Reuse fill ratio from previous factorization","PCFactorSetReuseFill",&ilu->reusefill);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-pc_factor_reuse_ordering","Reuse previous reordering","PCFactorSetReuseOrdering",&ilu->reuseordering);CHKERRQ(ierr);
-
+    ierr = PetscOptionsName("-pc_factor_reuse_fill","Reuse fill ratio from previous factorization","PCFactorSetReuseFill",&flg);CHKERRQ(ierr);
+    if (flg) ilu->reusefill = PETSC_TRUE;
+    ierr = PetscOptionsName("-pc_factor_reuse_ordering","Reuse previous reordering","PCFactorSetReuseOrdering",&flg);CHKERRQ(ierr);
+    if (flg) ilu->reuseordering = PETSC_TRUE;
     ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetShiftNonzero(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
