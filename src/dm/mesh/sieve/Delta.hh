@@ -109,7 +109,7 @@ namespace ALE {
       // We also assume that the Points in the base (cap) are ordered appropriately so we can use baseSequence.begin() and 
       // baseSequence.end() as the extrema for global reduction.
       typedef ParBiGraph_ graph_type;
-      typedef ColorBiGraph<ALE::def::Point, int, ALE::def::Point, uniColor> overlap_type;
+      typedef ColorBiGraph<int, ALE::def::Point, ALE::def::Point, uniColor> overlap_type;
       //
       ParDelta(Obj<graph_type> graph, int debug = 0) : 
         _graph(graph), comm(_graph->comm()), size(_graph->commSize()), rank(_graph->commRank()), debug(debug) {
@@ -747,7 +747,7 @@ namespace ALE {
             NeighborPointConeSizeIn[neighbor][p]= coneSize;
             // Record the size of the cone over p going out to neighbor
             NeighborPointConeSizeOut[neighbor][p] = this->_graph->cone(p)->size();
-            overlap->addArrow(p, neighbor, Point(coneSize, this->_graph->cone(p)->size())); 
+            overlap->addArrow(neighbor, p, Point(coneSize, this->_graph->cone(p)->size())); 
           }
         }// for(int32_t i = 0; i < LeasedNodeCount; i++)
         
