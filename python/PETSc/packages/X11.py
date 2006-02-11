@@ -27,6 +27,7 @@ class Configure(PETSc.package.Package,config.autoconf.Configure):
     help.addArgument('X11', '-with-x=<bool>',                nargs.ArgBool(None, 1,   'Activate X11'))
     help.addArgument('X11', '-with-x-include=<include dir>', nargs.ArgDir(None, None, 'Specify an include directory for X11'))
     help.addArgument('X11', '-with-x-lib=<X11 lib>',         nargs.Arg(None, None,    'Specify X11 library file'))
+    help.addArgument('X11', '-with-xt=<bool>',               nargs.ArgBool(None, 0,   'Activate Xt'))
     return
 
   def setupDependencies(self, framework):
@@ -132,21 +133,26 @@ acfindx:
       includeDir = self.framework.argDB['with-x-include']
       foundInclude = 1
     else:
-      testInclude  = 'X11/Intrinsic.h'
+      includes  = ['X11/Xlib.h']
+      if self.framework.argDB['with-xt']:
+        includes.append('X11/Intrinsic.h')
 
-      # Check guess
-      if includeDirGuess and os.path.isfile(os.path.join(includeDirGuess, testInclude)):
-        foundInclude = 1
-        includeDir   = includeDirGuess
-        # Check default compiler paths
-      if not foundInclude and self.checkPreprocess('#include <'+testInclude+'>\n'):
-        foundInclude = 1
-      # Check standard paths
-      if not foundInclude:
-        for dir in includeDirs:
-          if os.path.isfile(os.path.join(dir, testInclude)):
-            foundInclude = 1
-            includeDir   = dir
+      for testInclude in includes:
+        # Check guess
+        if includeDirGuess and os.path.isfile(os.path.join(includeDirGuess, testInclude)):
+          foundInclude = 1
+          includeDir   = includeDirGuess
+          # Check default compiler paths
+        if not foundInclude and self.checkPreprocess('#include <'+testInclude+'>\n'):
+          foundInclude = 1
+        # Check standard paths
+        if not foundInclude:
+          for dir in includeDirs:
+            if os.path.isfile(os.path.join(dir, testInclude)):
+              foundInclude = 1
+              includeDir   = dir
+        if not foundInclude:
+          break
     # Check for X11 libraries
     if self.framework.argDB.has_key('with-x-lib'):
       if not os.path.isfile(self.framework.argDB['with-x-lib']):
@@ -154,32 +160,36 @@ acfindx:
       libraryDir = os.path.dirname(self.framework.argDB['with-x-lib'])
       foundLibrary = 1
     else:
-      testLibrary  = 'Xt'
-      testFunction = 'XtMalloc'
+      testLibraries = [('X11', 'XSetForeground')]
+      if self.framework.argDB['with-xt']:
+        testLibraries.append(('Xt', 'XtMalloc'))
 
       # Check guess
-      if libraryDirGuess:
-        for ext in ['.a', '.so', '.sl', '.dll.a']:
-          if os.path.isfile(os.path.join(libraryDirGuess, 'lib'+testLibrary+ext)):
-            foundLibrary = 1
-            libraryDir   = libraryDirGuess
-            break
-      # Check default compiler libraries
-      if not foundLibrary:
-        oldLibs = self.compilers.LIBS
-        self.compilers.LIBS += ' -l'+testLibrary
-        self.pushLanguage(self.language[-1])
-        if self.checkLink('', testFunction+'();\n'):
-          foundLibrary = 1
-        self.compilers.LIBS = oldLibs
-        self.popLanguage()
-      # Check standard paths
-      if not foundLibrary:
-        for dir in libraryDirs:
-          for ext in ['.a', '.so', '.sl']:
-            if os.path.isfile(os.path.join(dir, 'lib'+testLibrary+ext)):
+      for testLibrary, testFunction in testLibraries:
+        if libraryDirGuess:
+          for ext in ['.a', '.so', '.sl', '.dll.a']:
+            if os.path.isfile(os.path.join(libraryDirGuess, 'lib'+testLibrary+ext)):
               foundLibrary = 1
-              libraryDir   = dir
+              libraryDir   = libraryDirGuess
+              break
+        # Check default compiler libraries
+        if not foundLibrary:
+          oldLibs = self.compilers.LIBS
+          self.compilers.LIBS += ' -l'+testLibrary
+          self.pushLanguage(self.language[-1])
+          if self.checkLink('', testFunction+'();\n'):
+            foundLibrary = 1
+          self.compilers.LIBS = oldLibs
+          self.popLanguage()
+        # Check standard paths
+        if not foundLibrary:
+          for dir in libraryDirs:
+            for ext in ['.a', '.so', '.sl']:
+              if os.path.isfile(os.path.join(dir, 'lib'+testLibrary+ext)):
+                foundLibrary = 1
+                libraryDir   = dir
+        if not foundLibrary:
+          break
       # Verify that library can be linked with
       if foundLibrary:
         oldLibs = self.compilers.LIBS

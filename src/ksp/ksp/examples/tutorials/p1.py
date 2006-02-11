@@ -7,11 +7,11 @@ class P1(script.Script):
   def __init__(self):
     script.Script.__init__(self)
     self.setupPaths()
-    import ASE.Compiler.Python.Cxx
+    import Cxx, CxxHelper
     import FIAT.shapes
     import os
 
-    self.Cxx = ASE.Compiler.Python.Cxx.Cxx()
+    self.Cxx = CxxHelper.Cxx()
     self.baseDir = os.getcwd()
     self.shape = FIAT.shapes.TRIANGLE
     return
@@ -20,26 +20,7 @@ class P1(script.Script):
     import sys
 
     sys.path.append('/PETSc3/fenics/fiat-cvs')
-    sys.path.append('/PETSc3/ase/Runtime/client-python')
-    sys.path.append('/PETSc3/ase/Runtime/server-python-ase')
-    sys.path.append('/PETSc3/ase/Compiler/client-python')
-    sys.path.append('/PETSc3/ase/Compiler/server-python-bootstrap')
-    sys.path.append('/PETSc3/ase/Compiler/server-python-compiler')
-    sys.path.append('/PETSc3/ase/Compiler/server-python-cxxI')
-    sys.path.append('/PETSc3/ase/Compiler/server-python-cxxII')
-    sys.path.append('/PETSc3/ase/Compiler/server-python-cxxIII')
-    sys.path.append('/PETSc3/ase/Compiler/server-python-cxxIV')
-    sys.path.append('/PETSc3/ase/Compiler/server-python-cxxV')
-    sys.path.append('/PETSc3/ase/Compiler/server-python-cxxVisitor')
-    sys.path.append('/PETSc3/ase/Compiler/server-python-pythonI')
-    sys.path.append('/PETSc3/ase/Compiler/server-python-pythonII')
-    sys.path.append('/PETSc3/ase/Compiler/server-python-pythonIII')
-    sys.path.append('/PETSc3/ase/Compiler/server-python-pythonVisitor')
-    sys.path.append('/PETSc3/ase/Compiler/server-python-sidl')
-    sys.path.append('/PETSc3/ase/Compiler/server-python-sidlVisitor')
-
-    import ASE.Loader
-    ASE.Loader.Loader.setSearchPath(['/PETSc3/ase/Runtime/lib', '/PETSc3/ase/Compiler/lib'])
+    sys.path.append('/PETSc3/ase/Generator')
     return
 
   def createElement(self, shape, k):
@@ -51,31 +32,31 @@ class P1(script.Script):
     return FIAT.quadrature.make_quadrature_by_degree(shape, degree)
 
   def getArray(self, name, values, comment = None, typeName = 'double'):
-    import ASE.Compiler.Cxx.Array
-    import ASE.Compiler.Cxx.Initializer
+    from Cxx import Array
+    from Cxx import Initializer
     import Numeric
 
     values = Numeric.array(values)
-    arrayInit = ASE.Compiler.Cxx.Initializer.Initializer()
-    arrayInit.addChildren(map(self.Cxx.getDouble, Numeric.ravel(values)))
-    arrayInit.setList(1)
-    arrayDecl = ASE.Compiler.Cxx.Array.Array()
-    arrayDecl.setChildren([name])
-    arrayDecl.setType(self.Cxx.typeMap[typeName])
-    arrayDecl.setSize(self.Cxx.getInteger(Numeric.size(values)))
-    arrayDecl.setStatic(1)
-    arrayDecl.setInitializer(arrayInit)
+    arrayInit = Initializer()
+    arrayInit.children = map(self.Cxx.getDouble, Numeric.ravel(values))
+    arrayInit.list = True
+    arrayDecl = Array()
+    arrayDecl.children = [name]
+    arrayDecl.type = self.Cxx.typeMap[typeName]
+    arrayDecl.size = self.Cxx.getInteger(Numeric.size(values))
+    arrayDecl.static = True
+    arrayDecl.initializer = arrayInit
     return self.Cxx.getDecl(arrayDecl, comment)
 
   def getQuadratureStructs(self, degree, quadrature, mangle = 1):
     '''Return C arrays with the quadrature points and weights
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
-    import ASE.Compiler.Cxx.Define
+    from Cxx import Define
 
     self.logPrint('Generating quadrature structures for degree '+str(degree))
-    numPoints = ASE.Compiler.Cxx.Define.Define()
-    numPoints.setIdentifier('NUM_QUADRATURE_POINTS')
-    numPoints.setReplacementText(str(len(quadrature.get_points())))
+    numPoints = Define()
+    numPoints.identifier = 'NUM_QUADRATURE_POINTS'
+    numPoints.replacementText = str(len(quadrature.get_points()))
     if mangle:
       ext = str(degree)
     else:
@@ -87,16 +68,16 @@ class P1(script.Script):
   def getBasisStructs(self, name, element, quadrature, mangle = 1):
     '''Return C arrays with the basis functions and their derivatives evalauted at the quadrature points
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
-    import ASE.Compiler.Cxx.Define
+    from Cxx import Define
     import FIAT.shapes
     import Numeric
 
     points = quadrature.get_points()
     basis = element.function_space()
     dim = FIAT.shapes.dimension(basis.base.shape)
-    numFunctions = ASE.Compiler.Cxx.Define.Define()
-    numFunctions.setIdentifier('NUM_BASIS_FUNCTIONS')
-    numFunctions.setReplacementText(str(len(basis)))
+    numFunctions = Define()
+    numFunctions.identifier = 'NUM_BASIS_FUNCTIONS'
+    numFunctions.replacementText = str(len(basis))
     if mangle:
       basisName = name+'Basis'+str(quadrature.degree)
       basisDerName = name+'BasisDerivatives'+str(quadrature.degree)
@@ -108,26 +89,24 @@ class P1(script.Script):
             self.getArray(self.Cxx.getVar(basisDerName), Numeric.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)]), 'Nodal basis function derivative evaluations')]
 
   def getSkeletonFile(self, basename, decls):
-    import ASE.Compiler.CodePurpose
-    import ASE.Compiler.Cxx.Include
-    import ASE.Compiler.Cxx.Source
+    from Compiler import CodePurpose
+    from Cxx import Include
+    from Cxx import Source
     import os
 
     # Needed to define NULL
-    stdInclude = ASE.Compiler.Cxx.Include.Include()
-    stdInclude.setIdentifier('<stdlib.h>')
-    source     = ASE.Compiler.Cxx.Source.Source()
-    name       = 'Integration.c'
+    stdInclude = Include()
+    stdInclude.identifier = '<stdlib.h>'
+    source     = Source()
+    source.filename = 'Integration.c'
     if basename:
-      name     = basename+'_'+name
-    source.setFilename(name)
-    source.addChildren([stdInclude])
-    source.addChildren(decls)
-    source.setPurpose(ASE.Compiler.CodePurpose.SKELETON)
+      source.filename = basename+'_'+name
+    source.children = [stdInclude]+decls
+    source.purpose  = CodePurpose.SKELETON
     return source
 
   def getElementSource(self, shape, k):
-    import ASE.Compiler.CompilerException
+    from Compiler import CompilerException
 
     self.logPrint('Generating element module')
     source = {'Cxx': []}
@@ -140,32 +119,29 @@ class P1(script.Script):
         name = ''
         defns.extend(self.getBasisStructs(name, element, quadrature, mangle = 0))
       source['Cxx'].append(self.getSkeletonFile(name, defns))
-    except ASE.Compiler.CompilerException.Exception, e:
-      print e.getMessage()
+    except CompilerException, e:
+      print e
       raise RuntimeError('Quadrature source generation failed')
     return source
 
   def outputElementSource(self, shape, k):
-    import ASE.BaseException
-    import ASE.Compiler.CodePurpose
-    import ASE.Compiler.Cxx.Output
+    from Compiler import CodePurpose
+    import CxxVisitor
 
     # May need to move setupPETScLogging() here because PETSc clients are currently interfering with Numeric
-    outputs = {'Cxx':ASE.Compiler.Cxx.Output.Output()}
+    outputs = {'Cxx':CxxVisitor.Output()}
     source  = self.getElementSource(shape, k)
     self.logPrint('Writing element source')
     for language,output in outputs.items():
-      import gc
-      gc.collect()
-      output.setRoot(ASE.Compiler.CodePurpose.STUB, self.baseDir)
-      output.setRoot(ASE.Compiler.CodePurpose.IOR, self.baseDir)
-      output.setRoot(ASE.Compiler.CodePurpose.SKELETON, self.baseDir)
+      output.setRoot(CodePurpose.STUB, self.baseDir)
+      output.setRoot(CodePurpose.IOR, self.baseDir)
+      output.setRoot(CodePurpose.SKELETON, self.baseDir)
       try:
         map(lambda tree: tree.accept(output), source[language])
         for f in output.getFiles():
           self.logPrint('Created '+str(language)+' file '+str(f))
-      except ASE.BaseException.Exception, e:
-        print e.getMessage()
+      except RuntimeError, e:
+        print e
     del source
     return
   
