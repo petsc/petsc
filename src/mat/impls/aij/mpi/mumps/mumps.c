@@ -174,7 +174,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MUMPS_Base(Mat A,MatType type,MatRe
   if (f) {
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C","",(PetscVoidFunction)mumps->MatPreallocate);CHKERRQ(ierr);
   }
-  ierr = PetscFree(mumps);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_aijmumps_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_aijmumps_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
