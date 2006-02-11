@@ -52,8 +52,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_UMFPACK_SeqAIJ(Mat A,MatType type,M
   B->ops->assemblyend      = lu->MatAssemblyEnd;
   B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
   B->ops->destroy          = lu->MatDestroy;
-    
-  ierr = PetscFree(lu);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_umfpack_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_umfpack_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);

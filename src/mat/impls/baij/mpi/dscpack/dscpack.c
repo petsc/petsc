@@ -183,7 +183,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_DSCPACK_Base(Mat A,const MatType ty
   if (f) {
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPIBAIJSetPreallocation_C","",(PetscVoidFunction)lu->MatPreallocate);CHKERRQ(ierr);
   }
-  ierr = PetscFree(lu);CHKERRQ(ierr); 
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqbaij_dscpack_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_dscpack_seqbaij_C","",PETSC_NULL);CHKERRQ(ierr);

@@ -505,10 +505,10 @@
       PetscErrorCode ierr
 
       Mat              A
-      PetscInt       i,mstart(1),mend(1),idx(3)
+      PetscInt    i,mstart(1),mend(1),idx(3)
       PetscMPIInt rank,size
-      PetscScalar      v(3),stwo,sone
-      PetscInt          i1,i3
+      PetscScalar v(3),stwo,sone
+      PetscInt    i1,i3
 
       i1 = 1
       i3 = 3
