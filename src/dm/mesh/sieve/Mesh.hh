@@ -1837,6 +1837,145 @@ namespace ALE {
         return refinedMesh;
       };
     };
+
+    class Partitioner {
+      void partition_Sieve(const ALE::Two::Mesh& mesh) {
+        ALE_LOG_EVENT_BEGIN;
+#if 0
+        // Construct a Delta object and a base overlap object
+        ALE::Two::ParDelta<typename mesh::sieve_type> delta(bg, 0);
+
+        // Cone complete to move the partitions to the other processors
+        ALE::Obj<typename ALE::Two::ParDelta<PointBiGraph>::overlap_type> overlap = delta.overlap();
+        // Merge in the completion
+        presieve->add(completion);
+        // Cone complete again to build the local topology
+        completion = presieve->coneCompletion(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeCone, NULL)->top();
+        // Unless explicitly prohibited, restrict to the local partition
+        if(localize) {
+          presieve->restrictBase(partition);
+          if (debug) {
+            ostringstream label5;
+            if(name != NULL) {
+              label5 << "Localized parallel version of '" << name << "'";
+            } else {
+              label5 << "Localized parallel presieve";
+            }
+            presieve->view(label5.str().c_str());
+          }
+        }
+#endif
+        ALE_LOG_EVENT_END;
+      };
+
+#ifdef PETSC_HAVE_CHACO
+      void partition_Chaco(const ALE::Two::Mesh& mesh) {
+        int size;
+        MPI_Comm_size(this->getComm(), &size);
+
+        /* arguments for Chaco library */
+        int nvtxs;                              /* number of vertices in full graph */
+        int *start;                             /* start of edge list for each vertex */
+        int *adjacency;                         /* = adj -> j; edge list data  */
+        int *vwgts = NULL;                      /* weights for all vertices */
+        float *ewgts = NULL;                    /* weights for all edges */
+        float *x = NULL, *y = NULL, *z = NULL;  /* coordinates for inertial method */
+        char *outassignname = NULL;             /*  name of assignment output file */
+        char *outfilename = NULL;               /* output file name */
+        short *assignment;                      /* set number of each vtx (length n) */
+        int architecture = 1;                   /* 0 => hypercube, d => d-dimensional mesh */
+        int ndims_tot = 0;                      /* total number of cube dimensions to divide */
+        int *mesh_dims = size;                  /* dimensions of mesh of processors */
+        double *goal = NULL;                    /* desired set sizes for each set */
+        int global_method = 1;                  /* global partitioning algorithm */
+        int local_method = 1;                   /* local partitioning algorithm */
+        int rqi_flag = 0;                       /* should I use RQI/Symmlq eigensolver? */
+        int vmax = 200;                         /* how many vertices to coarsen down to? */
+        int ndims = 1;                          /* number of eigenvectors (2^d sets) */
+        double eigtol = 0.001;                  /* tolerance on eigenvectors */
+        long seed = 123636512;                  /* for random graph mutations */
+
+        nvtxs = this->topology->heightStratum(0)->size();
+        start = new int[nvtxs+1];
+
+        Obj<sieve_type::heightSequence> faces = this->topology->heightStratum(1);
+        Obj<bundle_type> vertexBundle = this->getBundle(0);
+        Obj<bundle_type> elementBundle = this->getBundle(this->topology->depth());
+        ierr = PetscMemzero(start, (nvtxs+1) * sizeof(int));CHKERRQ(ierr);
+        for(sieve_type::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+          Obj<sieve_type::supportSequence> cells = this->topology->support(*f_iter);
+
+          if (cells->size() == 2) {
+            start[elementBundle->getIndex(*cells->begin()).prefix+1]++;
+            start[elementBundle->getIndex(*(++cells->begin())).prefix+1]++;
+          }
+        }
+        for(int v = 1; v <= nvtxs; v++) {
+          start[v] += start[v-1];
+        }
+        adjacency = new int[start[nvtxs]];
+        for(sieve_type::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+          Obj<sieve_type::supportSequence> cells = this->topology->support(*f_iter);
+
+          if (cells->size()) {
+            int cellA = elementBundle->getIndex(*cells->begin()).prefix;
+            int cellB = elementBundle->getIndex(*(++cells->begin())).prefix;
+
+            adjacency[cellA+1] = cellB;
+            adjacency[cellB+1] = cellA;
+          }
+        }
+
+        assignment = new int[nvtxs];
+
+        /* redirect output to buffer: chaco -> msgLog */
+#ifdef PETSC_HAVE_UNISTD_H
+        char *msgLog;
+        int fd_stdout, fd_pipe[2], count;
+
+        fd_stdout = dup(1);
+        pipe(fd_pipe);
+        close(1);
+        dup2(fd_pipe[1], 1);
+        msgLog = new char[16284];
+#endif
+
+        ierr = interface(nvtxs, start, adjacency, vwgts, ewgts, x, y, z,
+                         outassignname, outfilename, assignment, architecture, ndims_tot,
+                         mesh_dims, goal, global_method, local_method, rqi_flag, vmax, ndims,
+                         eigtol, seed);
+
+#ifdef PETSC_HAVE_UNISTD_H
+        fflush(stdout);
+        count = read(fd_pipe[0], msgLog, (SIZE_LOG - 1) * sizeof(char));
+        if (count < 0) count = 0;
+        msgLog[count] = 0;
+        close(1);
+        dup2(fd_stdout, 1);
+        close(fd_stdout);
+        close(fd_pipe[0]);
+        close(fd_pipe[1]);
+        std::cout << msgLog << std::endl;
+        delete [] msgLog;
+#endif
+
+        delete [] assignment;
+        delete [] adjacency;
+        delete [] start;
+      };
+#endif
+    public:
+      void partition(const ALE::Two::Mesh& mesh) {
+        int dim = mesh->getDimension();
+
+        if (dim == 2) {
+#ifdef PETSC_HAVE_CHACO
+          partition_Chaco(mesh);
+#else
+          throw ALE::Exception("Mesh partitioning currently requires Chaco to be installed. Use --download-chaco during configure.");
+#endif
+      };
+    }
   } // namespace def
 } // namespace ALE
 
