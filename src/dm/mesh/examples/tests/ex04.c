@@ -13,9 +13,11 @@ static char help[] = "Constructs a series of parallel BiGraphs and performs Delt
 #include <ALE.hh>
 
 
-typedef ALE::Two::BiGraph<int,ALE::def::Point,int>     PointBiGraph;
-typedef ALE::Two::ParDelta<PointBiGraph>               PointParDelta;
-typedef PointParDelta::overlap_type                    PointOverlap;
+typedef ALE::Two::BiGraph<int,ALE::def::Point,int>                        PointBiGraph;
+typedef ALE::Two::RightConeDuplicationFuser<PointBiGraph,PointBiGraph>    PointConeFuser;
+typedef ALE::Two::ParDelta<PointBiGraph,PointConeFuser>                   PointParDelter;
+typedef PointParDelter::overlap_type                                      PointOverlap;
+typedef PointParDelter::delta_type                                        PointConeDelta;
 
 PetscErrorCode   testBiGraphHat(MPI_Comm comm);
 void             viewConesAndSupports(const ALE::Obj<PointBiGraph>& bg, const char* name);
@@ -63,11 +65,15 @@ PetscErrorCode testBiGraphHat(MPI_Comm comm) {
   viewConesAndSupports(bg, "Hat bigraph");
   
   // Construct a Delta object and a base overlap object
-  PointParDelta delta(bg, 0);
-  ALE::Obj<PointOverlap>  overlap = delta.overlap();
-
+  PointParDelter delter(bg, 0);
+  ALE::Obj<PointOverlap>   overlap = delter.overlap();
   // View
   overlap->view(std::cout, "Hat overlap");
+
+  ALE::Obj<PointConeDelta> delta   = delter.delta(overlap);
+  // View
+  delta->view(std::cout, "Hat cone delta");
+
 
 
   PetscFunctionReturn(0);

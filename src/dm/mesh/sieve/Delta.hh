@@ -13,38 +13,6 @@ namespace ALE {
   namespace Two {
 
 
-//       template <typename LeftBiGraph_, typename RightBiGraph_, typename DeltaBiGraph_>
-//       class ProductConeFuser {
-//       public:
-//         //Encapsulated types
-//         struct traits {
-//           typedef LeftBiGraph_  left_type;
-//           typedef RightBiGraph_ right_type;
-//           typedef DeltaBiGraph_ delta_type;
-//           typedef std::pair<typename left_type::traits::source_type,typename right_type::traits::source_type> source_type;
-//           typedef typename left_type::traits::target_type                                                     target_type;
-//           typedef std::pair<typename left_type::traits::color_type,typename right_type::traits::color_type>   color_type;
-//         };        
-//         void
-//         fuseCones(const typename traits::left_type::traits::coneSequence&  lcone, 
-//                   const typename traits::right_type::traits::coneSequence& rcone, 
-//                   typename typename traits::delta_type& delta) {
-//           // This Fuser traverses both left cone and right cone, forming an arrow from each pair of arrows -- 
-//           // one from each of the cones --  and inserting it into the delta BiGraph.
-//           for(typename left_type::traits::coneSequence::iterator lci = lcone.begin(); lci != lcone.end(); lci++) {
-//             for(typename left_type::traits::coneSequence::iterator lci = lcone.begin(); lci != lcone.end(); lci++) {
-//               delta.addArrow(this->fuseArrows(lci.arrow(), rci.arrow()));
-//             }
-//           }
-//         }
-//         typename traits::delta_type::arrow_type
-//         fuseArrows(const typename traits::left_type::traits::arrow_type& larrow, 
-//                    const typename traits::right_type::traits::arrow_type& rarrow) {
-//           return typename traits::arrow_type(traits::source_type(*lci,*rci), lci.target(), 
-//                                              typename traits::color_type(lci.color(),rci.color()));
-//         }
-//       }; // struct ProductConeFuser
-      
       
 //       template <typename LeftBiGraph_, typename RightBiGraph_, typename DeltaBiGraph_>
 //       class Cone {
@@ -76,40 +44,114 @@ namespace ALE {
 //         };
 //       }; // class Cone
     
-      template <typename LeftBiGraph_, typename RightBiGraph_>
-      class BaseOverlapSequence : public LeftBiGraph_::traits::baseSequence {
-        // There is an assumption that LeftBiGraph_ and RightBiGraph_ have equivalent baseSequence types
-      public:
-        //
-        // Encapsulted types
-        //
+
+
+//       template <typename LeftBiGraph_, typename RightBiGraph_, typename DeltaBiGraph_>
+//       class ConeProductFuser {
+//       public:
+//         //Encapsulated types
+//         struct traits {
+//           typedef LeftBiGraph_  left_type;
+//           typedef RightBiGraph_ right_type;
+//           typedef DeltaBiGraph_ delta_type;
+//           typedef std::pair<typename left_type::traits::source_type,typename right_type::traits::source_type> source_type;
+//           typedef typename left_type::traits::target_type                                                     target_type;
+//           typedef std::pair<typename left_type::traits::color_type,typename right_type::traits::color_type>   color_type;
+//         };        
+//         void
+//         fuseCones(const typename traits::left_type::traits::coneSequence&  lcone, 
+//                   const typename traits::right_type::traits::coneSequence& rcone, 
+//                   typename typename traits::delta_type& delta) {
+//           // This Fuser traverses both left cone and right cone, forming an arrow from each pair of arrows -- 
+//           // one from each of the cones --  and inserting it into the delta BiGraph.
+//           for(typename left_type::traits::coneSequence::iterator lci = lcone.begin(); lci != lcone.end(); lci++) {
+//             for(typename left_type::traits::coneSequence::iterator lci = lcone.begin(); lci != lcone.end(); lci++) {
+//               delta.addArrow(this->fuseArrows(lci.arrow(), rci.arrow()));
+//             }
+//           }
+//         }
+//         typename traits::delta_type::arrow_type
+//         fuseArrows(const typename traits::left_type::traits::arrow_type& larrow, 
+//                    const typename traits::right_type::traits::arrow_type& rarrow) {
+//           return typename traits::arrow_type(traits::source_type(*lci,*rci), lci.target(), 
+//                                              typename traits::color_type(lci.color(),rci.color()));
+//         }
+//       }; // struct ConeProductFuser
+
+
+    template <typename LeftBiGraph_, typename RightBiGraph_>
+    class BaseOverlapSequence : public LeftBiGraph_::traits::baseSequence {
+      // There is an assumption that LeftBiGraph_ and RightBiGraph_ have equivalent baseSequence types
+    public:
+      //
+      // Encapsulted types
+      //
+      typedef LeftBiGraph_  left_type;
+      typedef RightBiGraph_ right_type;
+      typedef typename left_type::traits::baseSequence::traits traits;
+      
+      // Overloaded iterator
+      class iterator : public traits::iterator {
+      };
+      //
+      // Basic interface
+      //
+      BaseOverlapSequence(const left_type& l, const right_type& r) : left_type::traits::baseSequence(l.base()), _left(l), _right(r){};
+      
+    protected:
+      const typename traits::left_type&  _left;
+      const typename traits::right_type& _right;
+      
+    };// class BaseOverlapSequence
+    
+
+    template <typename LeftBiGraph_, typename RightBiGraph_>
+    class RightConeDuplicationFuser {
+      // Replicate the cone of the graph on the right in the overlap graph.
+    public:
+      //Encapsulated types
+      struct traits {
         typedef LeftBiGraph_  left_type;
         typedef RightBiGraph_ right_type;
-        typedef typename left_type::traits::baseSequence::traits traits;
-
-        // Overloaded iterator
-        class iterator : public traits::iterator {
-        };
+        typedef typename right_type::traits::source_type                                source_type;
+        typedef typename right_type::traits::target_type                                target_type;
+        typedef typename right_type::traits::color_type                                 color_type;
+        // we are using 'rebind' here to illustrate the general point, 
+        // even though a simple 'typedef right_type delta_type' would be enough
+        typedef typename right_type::template rebind<source_type, target_type, color_type>::type delta_type;
         //
-        // Basic interface
-        //
-        BaseOverlapSequence(const left_type& l, const right_type& r) : left_type::traits::baseSequence(l.base()), _left(l), _right(r){};
+        typedef typename delta_type::traits::coneSequence                               coneSequence;
+      };        
+      
+      static typename traits::coneSequence
+      fusion(const typename traits::left_type::traits::coneSequence&  lcone, 
+             const typename traits::right_type::traits::coneSequence& rcone){
+        // Simply return the right cone sequence
+        return rcone;
+      };
+      static void
+      fuseCones(const typename traits::left_type::traits::coneSequence&  lcone, 
+                const typename traits::right_type::traits::coneSequence& rcone, 
+                typename traits::delta_type& delta) {
+        // This Fuser traverses the right cone and inserts it into the overlap, 
+        // duplicating the right graph's cone in the overlap graph.
+        for(typename traits::right_type::traits::coneSequence::iterator rci = rcone.begin(); rci != rcone.end(); rci++) {
+          delta.addArrow(rci.arrow());
+        }
+      }
+    }; // struct RightConeDuplicationFuser
 
-      protected:
-        const typename traits::left_type&  _left;
-        const typename traits::right_type& _right;
 
-      };// class BaseOverlapSequence
-
-
-    template <typename ParBiGraph_>
-    class ParDelta {
+    template <typename ParBiGraph_, typename Fuser_>
+    class ParDelta { // class ParDelta
     public:
       // Here we specialize to BiGraphs based on (capped by) Points in order to enable parallel overlap discovery.
       // We also assume that the Points in the base (cap) are ordered appropriately so we can use baseSequence.begin() and 
       // baseSequence.end() as the extrema for global reduction.
+      typedef Fuser_      fuser_type;
       typedef ParBiGraph_ graph_type;
       typedef ColorBiGraph<int, ALE::def::Point, ALE::def::Point, uniColor> overlap_type;
+      typedef typename fuser_type::traits::delta_type                       delta_type;
       //
       ParDelta(Obj<graph_type> graph, int debug = 0) : 
         _graph(graph), comm(_graph->comm()), size(_graph->commSize()), rank(_graph->commRank()), debug(debug) {
@@ -125,7 +167,15 @@ namespace ALE {
         }
         return overlap;
       };
-      
+
+      Obj<delta_type> delta(const Obj<overlap_type>& overlap) {
+        Obj<delta_type> delta = delta_type();
+        // If this is a serial object, we return an empty delta
+        if((this->comm != PETSC_COMM_SELF) && (this->size > 1)) {
+          __computeDelta(overlap, delta);
+        }
+        return delta;
+      };
     protected:
       // FIX:  need to have _graph of const graph_type& type, but that requires const_cap, const_base etc (see ColorBiGraph)
       Obj<graph_type>           _graph;
@@ -804,7 +854,13 @@ namespace ALE {
           ierr = PetscFree(Renter_waits); CHKERROR(ierr, "Error in PetscFree");
           ierr = PetscFree(Renter_status); CHKERROR(ierr, "Error in PetscFree");
         }        
-      };// 
+      };// __determinePointOwners()
+
+
+      void __computeDelta(const Obj<overlap_type>& overlap, Obj<delta_type> delta) {
+        
+      };
+
     }; // class ParDelta
 
   } // namespace Two
