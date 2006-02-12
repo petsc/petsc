@@ -132,7 +132,7 @@ acfindx:
       includeDir = self.framework.argDB['with-x-include']
       foundInclude = 1
     else:
-      testInclude  = 'X11/Intrinsic.h'
+      testInclude  = 'X11/Xlib.h'
 
       # Check guess
       if includeDirGuess and os.path.isfile(os.path.join(includeDirGuess, testInclude)):
@@ -154,8 +154,8 @@ acfindx:
       libraryDir = os.path.dirname(self.framework.argDB['with-x-lib'])
       foundLibrary = 1
     else:
-      testLibrary  = 'Xt'
-      testFunction = 'XtMalloc'
+      testLibrary  = 'X11'
+      testFunction = 'XSetForeground'
 
       # Check guess
       if libraryDirGuess:
