@@ -128,9 +128,9 @@ namespace ALE {
 
     };// class Rec
 
-    template <typename Point_>
+    template <typename Point_, typename Rec_>
     struct RecContainerTraits {
-      typedef Rec<Point_> rec_type;
+      typedef Rec_ rec_type;
       // Index tags
       struct pointTag{};
       // Rec set definition
@@ -188,9 +188,9 @@ namespace ALE {
     };// struct RecContainerTraits
 
 
-    template <typename Point_>
+    template <typename Point_, typename Rec_>
     struct RecContainer {
-      typedef RecContainerTraits<Point_> traits;
+      typedef RecContainerTraits<Point_, Rec_> traits;
       typedef typename traits::set_type set_type;
       set_type set;
       void adjustDegree(const typename traits::rec_type::point_type& p, int delta) {
@@ -494,8 +494,8 @@ namespace ALE {
       typedef struct {
         // Encapsulated container types
         typedef ArrowContainer<Source_, Target_, Color_, colorMultiplicity>      arrow_container_type;
-        typedef RecContainer<Source_>                                            cap_container_type;
-        typedef RecContainer<Target_>                                            base_container_type;
+        typedef RecContainer<Source_, Rec<Source_> >                             cap_container_type;
+        typedef RecContainer<Target_, Rec<Target_> >                             base_container_type;
         // Types associated with records held in containers
         typedef typename arrow_container_type::traits::arrow_type                arrow_type;
         typedef typename arrow_container_type::traits::source_type               source_type;
