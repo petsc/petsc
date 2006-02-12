@@ -13,6 +13,7 @@ static char help[] = "Constructs a series of BiGraphs and performs basic queries
 #include <BiGraph.hh>
 
 typedef ALE::Two::BiGraph<int,int,int> BiGraphInt3;
+typedef std::set<int>                  int_set;
 
 PetscErrorCode   testBiGraphDiv2();
 void             viewConesAndSupports(const ALE::Obj<BiGraphInt3>& bg, const char* name);
@@ -42,8 +43,13 @@ int main(int argc, char *argv[])
 #undef  __FUNCT__
 #define __FUNCT__ "testBiGraphDiv2"
 PetscErrorCode testBiGraphDiv2() {
+  PetscInt debug;
+  PetscTruth flag;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ALE::Obj<BiGraphInt3> bg = BiGraphInt3();
+  debug = 0;
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag); CHKERRQ(ierr);
+  ALE::Obj<BiGraphInt3> bg = BiGraphInt3(PETSC_COMM_SELF, debug);
   
   // Add arrows from the first 10 integers to the first 20 integers, coloring the arrows for 0 (even target) or 1 (odd target) 
   for(int i = 0; i < 10; i++) {
@@ -114,7 +120,40 @@ PetscErrorCode testBiGraphDiv2() {
   // View
   bg->view(std::cout, "bigraph/2 after removal of the first support");
 
+  // Now restrict the base to the [0,8[ interval
+  try {
+    {
+      ALE::Obj<int_set> base = int_set();
+      for(int i = 0; i < 8; i++) {
+        base->insert(i);
+      }
+      bg->restrictBase(base);
+    }
+  }
+  catch(ALE::Exception e) {
+    std::cout << "Caught exception: " << e.message() << std::endl;
+  }
 
+  // View
+  bg->view(std::cout, "bigraph/2 after restricting base to [0,8[");
+
+  // Now exclude [0,5[ from the base
+  try {
+    {
+      ALE::Obj<int_set> ebase = int_set();
+      for(int i = 0; i < 5; i++) {
+        ebase->insert(i);
+      }
+      bg->excludeBase(ebase);
+    }
+  }
+  catch(ALE::Exception e) {
+    std::cout << "Caught exception: " << e.message() << std::endl;
+  }
+
+  // View
+  bg->view(std::cout, "bigraph/2 after excluding [0,5[ from base");
+  
 
   PetscFunctionReturn(0);
 }/* testBiGraphDiv2() */

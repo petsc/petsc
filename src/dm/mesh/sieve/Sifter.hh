@@ -63,7 +63,7 @@ namespace ALE {
 
       Arrow(Source_ s, Target_ t, Color_ c) : source(s), target(t), color(c) {};
       friend std::ostream& operator<<(std::ostream& os, const Arrow& a) {
-        os << a.source << " --" << a.color << "--> " << a.target << std::endl;
+        os << a.source << " --(" << a.color << ")--> " << a.target << std::endl;
         return os;
       }
     };

@@ -147,37 +147,6 @@ namespace ALE {
       // Return types
       //
 
-//       class DegreeSequence {
-//       public:
-//         typedef IndexSequenceTraits<typename ::boost::multi_index::index<set_type, degreeTag>::type,
-//                                     BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type,point)>
-//         traits;
-//       protected:
-//         const typename traits::index_type& _index;
-//       public:
-        
-//         // Need to extend the inherited iterator to be able to extract the degree
-//         class iterator : public traits::iterator {
-//         public:
-//           iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
-//           virtual const int& degree() const {return this->_itor->degree;};
-//         };
-
-//         DegreeSequence(const DegreeSequence& seq)           : _index(seq._index) {};
-//         DegreeSequence(typename traits::index_type& index)  : _index(index)     {};
-//         virtual ~DegreeSequence(){};
-
-//         virtual iterator begin() {
-//           // Retrieve the beginning iterator to the sequence of points with indegree >= 1
-//           return iterator(this->_index.lower_bound(1));
-//         };
-//         virtual iterator end() {
-//           // Retrieve the ending iterator to the sequence of points with indegree >= 1
-//           // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
-//           return iterator(this->_index.end());
-//         };
-//       }; // class DegreeSequence
-
      class PointSequence {
      public:
         typedef IndexSequenceTraits<typename ::boost::multi_index::index<set_type, pointTag>::type,
@@ -211,6 +180,10 @@ namespace ALE {
          // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
          return iterator(this->_index.end());
        };
+       virtual bool contains(const typename rec_type::point_type& p) {
+         // Check whether a given point is in the index
+         return (this->_index.find(p) != this->_index.end());
+       }
      }; // class PointSequence
     };// struct RecContainerTraits
 
@@ -277,7 +250,7 @@ namespace ALE {
 
       // Printing
       friend std::ostream& operator<<(std::ostream& os, const Arrow& a) {
-        os << a.source << " --" << a.color << "--> " << a.target;
+        os << a.source << " --(" << a.color << ")--> " << a.target;
         return os;
       }
 
@@ -746,10 +719,20 @@ namespace ALE {
         typename traits::arrowSequence::traits::index_type::iterator i,ii,j;
         i = arrowIndex.lower_bound(::boost::make_tuple(a.source,a.target));
         ii = arrowIndex.upper_bound(::boost::make_tuple(a.source, a.target));
+        if(debug) { // if(debug)
+          std::cout << "removeArrow: attempting to remove arrow:" << a << std::endl;
+          std::cout << "removeArrow: candidate arrows are:" << std::endl;
+        }
         for(j = i; j != ii; j++) {
+          if(debug) { // if(debug)
+            std::cout << " " << *j;
+          }
           // Find the arrow of right color and remove it
           if(j->color == a.color) {
-            _base.adjustDegree(a.target, -1); _base.adjustDegree(a.source,-1);
+            if(debug) { // if(debug)
+              std::cout << std::endl << "removeArrow: found:" << *j << std::endl;
+            }
+            _base.adjustDegree(a.target, -1); _cap.adjustDegree(a.source,-1);
             arrowIndex.erase(j);
             break;
           }
@@ -778,17 +761,18 @@ namespace ALE {
       void clearCone(const typename traits::target_type& t) {
         clearCone(t, typename traits::color_type(), false);
       };
+
       void clearCone(const typename traits::target_type& t, const typename traits::color_type&  color, bool useColor = true) {
         // Use the cone sequence types to clear the cone
         typename traits::coneSequence::traits::index_type& coneIndex = 
           ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set);
         typename traits::coneSequence::traits::index_type::iterator i, ii, j;
-        if(debug) {
+        if(debug) { // if(debug)
           std::cout << "clearCone: removing cone over " << t;
           if(useColor) {
             std::cout << " with color" << color << std::endl;
             typename traits::coneSequence cone = this->cone(t,color);
-            std::cout << "[" << std::endl;
+            std::cout << "[";
             for(typename traits::coneSequence::iterator ci = cone.begin(); ci != cone.end(); ci++) {
               std::cout << "  " << ci.arrow();
             }
@@ -797,13 +781,13 @@ namespace ALE {
           else {
             std::cout << std::endl;
             typename traits::coneSequence cone = this->cone(t);
-            std::cout << "[" << std::endl;
+            std::cout << "[";
             for(typename traits::coneSequence::iterator ci = cone.begin(); ci != cone.end(); ci++) {
               std::cout << "  " << ci.arrow();
             }
             std::cout << "]" << std::endl;
           }
-        }
+        }// if(debug)
         if (useColor) {
            i = coneIndex.lower_bound(::boost::make_tuple(t,color));
            ii = coneIndex.upper_bound(::boost::make_tuple(t,color));
@@ -821,6 +805,27 @@ namespace ALE {
         }
         coneIndex.erase(i,ii);
       };// clearCone()
+
+      template<class InputSequence>
+      void
+      restrictBase(const Obj<InputSequence>& points) {
+        typename traits::baseSequence base = this->base();
+        for(typename traits::baseSequence::iterator bi = base.begin(); bi != base.end(); bi++) {
+          // Check whether *bi is in points, if it is NOT, remove it
+          if(points->find(*bi) == points->end()) {
+            this->clearCone(*bi);
+          }
+        }
+      };
+
+      template<class InputSequence>
+      void
+      excludeBase(const Obj<InputSequence>& points) {
+        Obj<typename traits::baseSequence> base = this->base();
+        for(typename InputSequence::iterator pi = points->begin(); pi != points->end(); pi++) {
+            this->clearCone(*pi);
+        }
+      };
 
       void clearSupport(const typename traits::source_type& s) {
         clearSupport(s, typename traits::color_type(), false);
