@@ -12,8 +12,8 @@ static char help[] = "Constructs a series of BiGraphs and performs basic queries
 
 #include <BiGraph.hh>
 
-typedef ALE::Two::BiGraph<int,int,int> BiGraphInt3;
-typedef std::set<int>                  int_set;
+typedef ALE::Two::BiGraph<int,ALE::Two::Rec<int>,int,ALE::Two::Rec<int>,int> BiGraphInt3;
+typedef std::set<int> int_set;
 
 PetscErrorCode   testBiGraphDiv2();
 void             viewConesAndSupports(const ALE::Obj<BiGraphInt3>& bg, const char* name);

@@ -9,8 +9,8 @@
 
 // ALE extensions
 
-#ifndef  included_Sifter_hh
-#include <Sifter.hh>
+#ifndef  included_ALE_hh
+#include <ALE.hh>
 #endif
 
 namespace ALE {
@@ -488,18 +488,20 @@ namespace ALE {
     // except the source and target points may have different types and iterated operations (e.g., nCone, closure)
     // are not available.
     // 
-    template<typename Source_, typename Target_, typename Color_, ColorMultiplicity colorMultiplicity>
+    template<typename Source_, typename SourceRec_, typename Target_, typename TargetRec_, typename Color_, ColorMultiplicity colorMultiplicity>
     class ColorBiGraph { // class ColorBiGraph
     public:
       typedef struct {
         // Encapsulated container types
         typedef ArrowContainer<Source_, Target_, Color_, colorMultiplicity>      arrow_container_type;
-        typedef RecContainer<Source_, Rec<Source_> >                             cap_container_type;
-        typedef RecContainer<Target_, Rec<Target_> >                             base_container_type;
+        typedef RecContainer<Source_, SourceRec_>                                cap_container_type;
+        typedef RecContainer<Target_, TargetRec_>                                base_container_type;
         // Types associated with records held in containers
         typedef typename arrow_container_type::traits::arrow_type                arrow_type;
         typedef typename arrow_container_type::traits::source_type               source_type;
+        typedef SourceRec_                                                       sourceRec_type;
         typedef typename arrow_container_type::traits::target_type               target_type;
+        typedef TargetRec_                                                       targetRec_type;
         typedef typename arrow_container_type::traits::color_type                color_type;
         // Convenient tag names
         typedef typename arrow_container_type::traits::sourceColorTag            supportInd;
@@ -528,9 +530,9 @@ namespace ALE {
         typedef std::set<target_type> supportSet;
       } traits;
 
-      template <typename OtherSource_, typename OtherTarget_, typename OtherColor_, ColorMultiplicity otherColorMultiplicity>
+      template <typename OtherSource_, typename OtherSourceRec_, typename OtherTarget_, typename OtherTargetRec_, typename OtherColor_, ColorMultiplicity otherColorMultiplicity>
       struct reparameterize {
-        typedef ColorBiGraph<OtherSource_, OtherTarget_, OtherColor_, otherColorMultiplicity> type;
+        typedef ColorBiGraph<OtherSource_, OtherSourceRec_, OtherTarget_, OtherTargetRec_, OtherColor_, otherColorMultiplicity> type;
       };
 
     public:
@@ -869,19 +871,19 @@ namespace ALE {
       template<class targetInputSequence> 
       void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence>& targets, const typename traits::color_type& color);
         
-      void add(const Obj<ColorBiGraph<typename traits::source_type, typename traits::target_type, const typename traits::color_type, colorMultiplicity> >& cbg);
+      void add(const Obj<ColorBiGraph<typename traits::source_type, typename traits::sourceRec_type, typename traits::target_type, typename traits::targetRec_type, const typename traits::color_type, colorMultiplicity> >& cbg);
       // Unimplemented
 
     }; // class ColorBiGraph
 
     // A UniColorBiGraph aka BiGraph
-    template <typename Source_, typename Target_, typename Color_>
-    class BiGraph : public ColorBiGraph<Source_, Target_, Color_, uniColor> {
+    template <typename Source_, typename SourceRec_, typename Target_, typename TargetRec_, typename Color_>
+    class BiGraph : public ColorBiGraph<Source_, SourceRec_, Target_, TargetRec_, Color_, uniColor> {
     public:
-      typedef typename ColorBiGraph<Source_, Target_, Color_, uniColor>::traits       traits;
-      template <typename OtherSource_, typename OtherTarget_, typename OtherColor_>
+      typedef typename ColorBiGraph<Source_, SourceRec_, Target_, TargetRec_, Color_, uniColor>::traits       traits;
+      template <typename OtherSource_, typename OtherSourceRec_, typename OtherTarget_, typename OtherTargetRec_, typename OtherColor_>
       struct rebind {
-        typedef BiGraph<OtherSource_, OtherTarget_, OtherColor_> type;
+        typedef BiGraph<OtherSource_, OtherSourceRec_, OtherTarget_, OtherTargetRec_, OtherColor_> type;
       };
       //typedef ColorBiGraphTraits<ColorBiGraph<Source_, Target_, Color_, uniColor> >   traits;
       // Re-export some typedefs expected by CoSifter
@@ -892,7 +894,7 @@ namespace ALE {
       typedef typename traits::capSequence                                            capSequence;
       // Basic interface
       BiGraph(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : 
-        ColorBiGraph<Source_, Target_, Color_, uniColor>(comm, debug) {};
+        ColorBiGraph<Source_, SourceRec_, Target_, TargetRec_, Color_, uniColor>(comm, debug) {};
       
       const typename traits::color_type&
       getColor(const typename traits::source_type& s, const typename traits::target_type& t, bool fail = true) {

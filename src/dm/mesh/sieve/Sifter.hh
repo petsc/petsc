@@ -9,8 +9,8 @@
 
 // ALE extensions
 
-#ifndef  included_ALE_hh
-#include <ALE.hh>
+#ifndef  included_ALE_BiGraph_hh
+#include <BiGraph.hh>
 #endif
 
 namespace ALE {
@@ -2463,15 +2463,16 @@ namespace ALE {
 
 
   } // namespace def
-#if 0
-  namespace Two {
+
+  namespace Three {
     //
     // Rec & RecContainer definitions.
     // Rec is intended to denote a graph point record.
     // 
-    template <typename Point_>
+    template <typename Point_, typename Marker_>
     struct Rec {
-      typedef Point_ point_type;
+      typedef Point_  point_type;
+      typedef Marker_ marker_type;
       point_type  point;
       int         depth;
       int         height;
@@ -2482,7 +2483,7 @@ namespace ALE {
       Rec() : point(point_type()), depth(0), height(0), indegree(0), outdegree(0), marker(marker_type()) {};
       Rec(const Rec& r) : point(r.point), depth(r.depth), height(r.height), indegree(r.indegree), outdegree(r.outdegree), marker(r.marker) {}
       Rec(const point_type& p) : point(p), depth(0), height(0), indegree(0), outdegree(0), marker(marker_type()) {};
-      Rec(const point_type& p, const int depth, const int height, const int indegree, const in outdegreee, const marker_type marker) : point(p), depth(depth), height(height), indegree(indegree), outdegree(outdegree), marker(marker) {};
+      Rec(const point_type& p, const int depth, const int height, const int indegree, const int outdegreee, const marker_type marker) : point(p), depth(depth), height(height), indegree(indegree), outdegree(outdegree), marker(marker) {};
       // Printing
       friend std::ostream& operator<<(std::ostream& os, const Rec& p) {
         os << "<" << p.point << ", "<< p.depth << ", "<< p.height << ", "<< p.indegree << ", "<< p.outdegree << ", "<< p.marker << ">";
@@ -2497,106 +2498,6 @@ namespace ALE {
       };
     };// class Rec
 
-    template <typename Point_, typename Rec_>
-    struct RecContainerTraits {
-      typedef Rec_<Point_> rec_type;
-      // Index tags
-      struct pointTag{};
-      // Rec set definition
-      typedef ::boost::multi_index::multi_index_container<
-        rec_type,
-        ::boost::multi_index::indexed_by<
-          ::boost::multi_index::ordered_unique<
-            ::boost::multi_index::tag<pointTag>, BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type, point)
-          >
-        >,
-        ALE_ALLOCATOR<rec_type>
-      > set_type;
-      //
-      // Return types
-      //
-     class PointSequence {
-     public:
-        typedef IndexSequenceTraits<typename ::boost::multi_index::index<set_type, pointTag>::type,
-                                    BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type,point)>
-        traits;
-      protected:
-        const typename traits::index_type& _index;
-      public:
-        
-       // Need to extend the inherited iterator to be able to extract the degree
-       class iterator : public traits::iterator {
-       public:
-         iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
-         virtual const int& degree() const {return this->_itor->degree;};
-       };
-       
-       PointSequence(const PointSequence& seq)           : _index(seq._index) {};
-       PointSequence(typename traits::index_type& index) : _index(index)      {};
-       virtual ~PointSequence() {};
-       
-       virtual bool empty(){return this->_index.empty();};
-       
-       virtual typename traits::index_type::size_type size() {return this->_index.size();};
-
-       virtual iterator begin() {
-         // Retrieve the beginning iterator of the index
-         return iterator(this->_index.begin());
-       };
-       virtual iterator end() {
-         // Retrieve the ending iterator of the index
-         // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
-         return iterator(this->_index.end());
-       };
-     }; // class PointSequence
-    };// struct RecContainerTraits
-
-    template <typename Point_, typename Rec_>
-    struct RecContainer {
-      typedef RecContainerTraits<Point_, Rec_> traits;
-      typedef typename traits::set_type set_type;
-      set_type set;
-      void adjustDegree(const typename traits::rec_type::point_type& p, int delta) {
-        typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index = 
-          ::boost::multi_index::get<typename traits::pointTag>(this->set);
-        typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type::iterator i = index.find(p);
-        if (i == index.end()) { // No such point exists
-          if(delta < 0) { // Cannot decrease degree of a non-existent point
-            ostringstream err;
-            err << "ERROR: BiGraph::adjustDegree: Non-existent point " << p;
-            std::cout << err << std::endl;
-            throw(Exception(err.str().c_str()));
-          }
-          else { // We CAN INCREASE the degree of a non-existent point: simply insert a new element with degree == delta
-            std::pair<typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type::iterator, bool> ii;
-            typename traits::rec_type r(p,delta);
-            ii = index.insert(r);
-            if(ii.second == false) {
-              ostringstream err;
-              err << "ERROR: BiGraph::adjustDegree: Failed to insert a rec " << r;
-              std::cout << err << std::endl;
-              throw(Exception(err.str().c_str()));
-            }
-          }
-        }
-        else { // Point exists, so we try to modify its degree
-          int newDegree = i->degree + delta;
-          if(newDegree < 0) {
-            ostringstream ss;
-            ss << "adjustDegree: Adjustment of " << *i << " by " << delta << " would result in negative degree: " << newDegree;
-            throw Exception(ss.str().c_str());
-          }
-          if(newDegree == 0) {
-            // We must erase this point
-            index.erase(i);
-          }
-          else {
-            index.modify(i, typename traits::rec_type::degreeAdjuster(newDegree));
-          }
-        }
-      }; // adjustDegree()
-    }; // struct RecContainer
-
     //
     // Sieve:
     //   A Sieve is a set of {\emph arrows} connecting {\emph points} of type Point_. Thus we
@@ -2605,12 +2506,12 @@ namespace ALE {
     // or {\emph color} of type Color_, and the interface allows sets of arrows to be filtered 
     // by color.
     //
-    template <typename Point_, typename Color_>
-    class Sieve : BiGraph<Point_, Point_, Color_> {
+    template <typename Point_, typename Marker_, typename Color_>
+    class Sieve : ALE::Two::BiGraph<Point_, Rec<Point_, Marker_>, Point_, Rec<Point_, Marker_>, Color_> {
     public:
-      typedef Color_ color_type;
-      typedef Point_ point_type;
-      typedef int    marker_type;
+      typedef Color_  color_type;
+      typedef Point_  point_type;
+      typedef Marker_ marker_type;
       int debug;
 
       struct StratumPoint {
@@ -2629,9 +2530,8 @@ namespace ALE {
           return os;
         };
       };
-    }
-  } // namespace Two
-#endif
+    };
+  } // namespace Three
 } // namespace ALE
 
 #endif

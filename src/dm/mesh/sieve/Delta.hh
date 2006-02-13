@@ -1,8 +1,8 @@
 #ifndef included_ALE_Delta_hh
 #define included_ALE_Delta_hh
 
-#ifndef  included_ALE_BiGraph_hh
-#include <BiGraph.hh>
+#ifndef  included_ALE_Sifter_hh
+#include <Sifter.hh>
 #endif
 
 //
@@ -114,11 +114,13 @@ namespace ALE {
         typedef LeftBiGraph_  left_type;
         typedef RightBiGraph_ right_type;
         typedef typename right_type::traits::source_type                                source_type;
+        typedef typename right_type::traits::sourceRec_type                             sourceRec_type;
         typedef typename right_type::traits::target_type                                target_type;
+        typedef typename right_type::traits::targetRec_type                             targetRec_type;
         typedef typename right_type::traits::color_type                                 color_type;
         // we are using 'rebind' here to illustrate the general point, 
         // even though a simple 'typedef right_type delta_type' would be enough
-        typedef typename right_type::template rebind<source_type, target_type, color_type>::type delta_type;
+        typedef typename right_type::template rebind<source_type, sourceRec_type, target_type, targetRec_type, color_type>::type delta_type;
         //
         typedef typename delta_type::traits::coneSequence                               coneSequence;
       };        
@@ -150,7 +152,7 @@ namespace ALE {
       // baseSequence.end() as the extrema for global reduction.
       typedef Fuser_      fuser_type;
       typedef ParBiGraph_ graph_type;
-      typedef ColorBiGraph<int, ALE::def::Point, ALE::def::Point, uniColor> overlap_type;
+      typedef ColorBiGraph<int, ALE::Two::Rec<int>, ALE::def::Point, ALE::Two::Rec<ALE::def::Point>, ALE::def::Point, uniColor> overlap_type;
       typedef typename fuser_type::traits::delta_type                       delta_type;
       //
       ParDelta(Obj<graph_type> graph, int debug = 0) : 

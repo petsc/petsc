@@ -4,9 +4,6 @@
 #ifndef  included_ALE_Sifter_hh
 #include <Sifter.hh>
 #endif
-#ifndef  included_ALE_BiGraph_hh
-#include <BiGraph.hh>
-#endif
 #include <list>
 #include <stack>
 #include <queue>
