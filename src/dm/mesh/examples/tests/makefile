@@ -32,6 +32,10 @@ ex04: ex04.o chkopts
 	-${CLINKER} -o ex04 ex04.o ${PETSC_DM_LIB}
 	${RM} -f ex04.o
 
+ex05: ex05.o chkopts
+	-${CLINKER} -o ex05 ex05.o ${PETSC_DM_LIB}
+	${RM} -f ex05.o
+
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_DM_LIB}
 	${RM} -f ex1.o
@@ -85,6 +89,16 @@ debugex04:
 
 valex04:
 	-@valgrind --tool=memcheck ./ex04 ${EXTRA_ARGS}
+
+#-----------------------------------------------------------------
+runex05:
+	-@${MPIRUN} -np ${NP} ./ex05 ${EXTRA_ARGS}
+
+debugex05:
+	-@${MPIRUN} -np ${NP} ./ex05 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+
+valex05:
+	-@valgrind --tool=memcheck ./ex05 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex1:

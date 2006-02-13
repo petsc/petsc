@@ -4,7 +4,7 @@
 T*/
 
 /*
-  Create a series of parallel BiGraphs suitable for testing the Delta routines .
+  Create a series of parallel BiGraphs suitable for testing the Delta routines.
 */
 
 static char help[] = "Constructs a series of parallel BiGraphs and performs Delta routines.\n\n";
@@ -13,11 +13,11 @@ static char help[] = "Constructs a series of parallel BiGraphs and performs Delt
 #include <ALE.hh>
 
 
-typedef ALE::Two::BiGraph<int,ALE::def::Point,int>                        PointBiGraph;
-typedef ALE::Two::RightConeDuplicationFuser<PointBiGraph,PointBiGraph>    PointConeFuser;
-typedef ALE::Two::ParDelta<PointBiGraph,PointConeFuser>                   PointParDelter;
-typedef PointParDelter::overlap_type                                      PointOverlap;
-typedef PointParDelter::delta_type                                        PointConeDelta;
+typedef ALE::Two::BiGraph<int,ALE::def::Point,int>                       PointBiGraph;
+typedef ALE::Two::RightConeDuplicationFuser<PointBiGraph,PointBiGraph>   PointConeFuser;
+typedef ALE::Two::ParDelta<PointBiGraph,PointConeFuser>                  PointParDelta;
+typedef PointParDelta::overlap_type                                      PointOverlap;
+typedef PointParDelta::fusion_type                                       PointConeFusion;
 
 PetscErrorCode   testBiGraphHat(MPI_Comm comm);
 void             viewConesAndSupports(const ALE::Obj<PointBiGraph>& bg, const char* name);
@@ -65,14 +65,14 @@ PetscErrorCode testBiGraphHat(MPI_Comm comm) {
   viewConesAndSupports(bg, "Hat bigraph");
   
   // Construct a Delta object and a base overlap object
-  PointParDelter delter(bg, 0);
-  ALE::Obj<PointOverlap>   overlap = delter.overlap();
+  PointParDelta delta(bg, 0);
+  ALE::Obj<PointOverlap>   overlap = delta.overlap();
   // View
   overlap->view(std::cout, "Hat overlap");
 
-  ALE::Obj<PointConeDelta> delta   = delter.delta(overlap);
+  ALE::Obj<PointConeFusion> fusion   = delta.fusion(overlap);
   // View
-  delta->view(std::cout, "Hat cone delta");
+  fusion->view(std::cout, "Hat cone fusion");
 
 
 

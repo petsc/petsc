@@ -11,9 +11,10 @@ T*/
 static char help[] = "Constructs a series of BiGraphs and performs basic queries on them.\n\n";
 
 #include <BiGraph.hh>
+#include <Delta.hh>
 
-typedef ALE::Two::BiGraph<int,int,int> BiGraphInt3;
-typedef std::set<int>                  int_set;
+typedef ALE::Two::BiGraph<int,int,int>                          BiGraphInt3;
+typedef std::set<int>                                           int_set;
 
 PetscErrorCode   testBiGraphDiv2();
 void             viewConesAndSupports(const ALE::Obj<BiGraphInt3>& bg, const char* name);
@@ -34,11 +35,12 @@ int main(int argc, char *argv[])
   ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag); CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
-  ierr = testBiGraphDiv2(); CHKERRQ(ierr);
+  ierr = testBiGraphDiv2();                                               CHKERRQ(ierr);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* main() */
+
 
 #undef  __FUNCT__
 #define __FUNCT__ "testBiGraphDiv2"
