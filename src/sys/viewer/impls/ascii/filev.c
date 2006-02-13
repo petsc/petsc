@@ -138,6 +138,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIGetPointer(PetscViewer viewer,FIL
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerFileGetMode_ASCII"
+PetscErrorCode PETSC_DLLEXPORT PetscViewerFileGetMode_ASCII(PetscViewer viewer, PetscFileMode *mode)
+{
+  PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
+
+  PetscFunctionBegin;
+  *mode = vascii->mode;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 /*@C
     PetscViewerFileSetMode - Sets the mode in which to open the file.
 
@@ -667,6 +680,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_ASCII(PetscViewer viewer)
                                      PetscViewerFileSetName_ASCII);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileGetName_C","PetscViewerFileGetName_ASCII",
                                      PetscViewerFileGetName_ASCII);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileGetMode_C","PetscViewerFileGetMode_ASCII",
+                                     PetscViewerFileGetMode_ASCII);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_ASCII",
                                      PetscViewerFileSetMode_ASCII);CHKERRQ(ierr);
 

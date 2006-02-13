@@ -184,6 +184,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerFlush(PetscViewer);
 */
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIGetPointer(PetscViewer,FILE**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerFileGetMode(PetscViewer,PetscFileMode*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetMode(PetscViewer,PetscFileMode);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
