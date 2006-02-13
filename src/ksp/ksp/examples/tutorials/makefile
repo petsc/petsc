@@ -456,6 +456,27 @@ runex10_21: #test icc with shift
 	   if (${DIFF} output/ex10_21shiftpd.out ex10_21.tmp) then true; \
 	   else echo "Possible problem with ex10_21shiftpd on sbaij matrix, diffs above"; fi; \
 	   ${RM} -f ex10_21.tmp
+
+runex10_mumps:
+        #test mumps lu      
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type aijmumps -num_numfac 2 -num_rhs 2 > ex10_mumps.tmp 2>&1; \
+	   if (${DIFF} output/ex10_mumps.out ex10_mumps.tmp) then true; \
+	   else echo "Possible problem with ex10_mumps_lu_1, diffs above"; fi; \
+	   ${RM} -f ex10_mumps.tmp
+	-@${MPIRUN} -np 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type aijmumps -num_numfac 2 -num_rhs 2 > ex10_mumps.tmp 2>&1; \
+	   if (${DIFF} output/ex10_mumps.out ex10_mumps.tmp) then true; \
+	   else echo "Possible problem with ex10_mumps_lu_2, diffs above"; fi; \
+	   ${RM} -f ex10_mumps.tmp
+        #test mumps cholesky 
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type sbaijmumps -num_numfac 2 -num_rhs 2 -mat_ignore_lower_triangular > ex10_mumps.tmp 2>&1; \
+	   if (${DIFF} output/ex10_mumps.out ex10_mumps.tmp) then true; \
+	   else echo "Possible problem with ex10_mumps_cholesky_1, diffs above"; fi; \
+	   ${RM} -f ex10_mumps.tmp
+	-@${MPIRUN} -np 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type sbaijmumps -num_numfac 2 -num_rhs 2 -mat_ignore_lower_triangular > ex10_mumps.tmp 2>&1; \
+	   if (${DIFF} output/ex10_mumps.out ex10_mumps.tmp) then true; \
+	   else echo "Possible problem with ex10_mumps_cholesky_2, diffs above"; fi; \
+	   ${RM} -f ex10_mumps.tmp
+
 runex11:
 	-@${MPIRUN} -np 1 ./ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex11_1.tmp 2>&1; \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
@@ -603,5 +624,6 @@ TESTEXAMPLES_18		       = ex2.PETSc runex2_6 ex2.rm
 TESTEXAMPLES_SPAI	       = ex10.PETSc runex10_14 ex10.rm
 TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_18 ex10.rm
 TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
+TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps ex10.rm
 
 include ${PETSC_DIR}/bmake/common/test
