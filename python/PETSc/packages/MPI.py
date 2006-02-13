@@ -19,6 +19,7 @@ class Configure(PETSc.package.Package):
                              ['libmpich.a'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
+                             ['libmpich.a','libssl.a','libuuid.a','libpthread.a','librt.a','libdl.a'],
                              ['mpich2.lib'],
                              ['libmpich.a','libgm.a','libpthread.a'],
                              ['mpich.lib']]
