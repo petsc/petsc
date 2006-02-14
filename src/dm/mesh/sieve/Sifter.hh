@@ -2498,6 +2498,177 @@ namespace ALE {
       };
     };// class Rec
 
+    template <typename Point_, typename Rec_>
+    struct RecContainerTraits {
+      typedef Rec_ rec_type;
+      typedef typename rec_type::marker_type marker_type;
+      // Index tags
+      struct pointTag{};
+      struct indegreeTag{};
+      struct outdegreeTag{};
+      struct markerTag{};
+      struct depthMarkerTag{};
+      struct heightMarkerTag{};
+      // Rec set definition
+      typedef ::boost::multi_index::multi_index_container<
+        rec_type,
+        ::boost::multi_index::indexed_by<
+          ::boost::multi_index::ordered_unique<
+            ::boost::multi_index::tag<pointTag>, BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type, point)
+          >,
+          ::boost::multi_index::ordered_non_unique<
+            ::boost::multi_index::tag<indegreeTag>, BOOST_MULTI_INDEX_MEMBER(rec_type, int, indegree)
+          >,
+          ::boost::multi_index::ordered_non_unique<
+            ::boost::multi_index::tag<outdegreeTag>, BOOST_MULTI_INDEX_MEMBER(rec_type, int, outdegree)
+          >,
+          ::boost::multi_index::ordered_non_unique<
+            ::boost::multi_index::tag<markerTag>, BOOST_MULTI_INDEX_MEMBER(rec_type, marker_type, marker)
+          >,
+          ::boost::multi_index::ordered_non_unique<
+            ::boost::multi_index::tag<depthMarkerTag>,
+            ::boost::multi_index::composite_key<
+              rec_type, BOOST_MULTI_INDEX_MEMBER(rec_type,int,depth), BOOST_MULTI_INDEX_MEMBER(rec_type,marker_type,marker)>
+          >,
+          ::boost::multi_index::ordered_non_unique<
+            ::boost::multi_index::tag<heightMarkerTag>,
+            ::boost::multi_index::composite_key<
+              rec_type, BOOST_MULTI_INDEX_MEMBER(rec_type,int,height), BOOST_MULTI_INDEX_MEMBER(rec_type,marker_type,marker)>
+          >
+        >,
+        ALE_ALLOCATOR<rec_type>
+      > set_type; 
+      //
+      // Return types
+      //
+
+     class PointSequence {
+     public:
+       typedef ALE::Two::IndexSequenceTraits<typename ::boost::multi_index::index<set_type, pointTag>::type,
+                                    BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type,point)>
+       traits;
+      protected:
+        const typename traits::index_type& _index;
+      public:
+        
+       // Need to extend the inherited iterator to be able to extract the degree
+       class iterator : public traits::iterator {
+       public:
+         iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
+         virtual const int& degree() const {return this->_itor->degree;};
+       };
+       
+       PointSequence(const PointSequence& seq)            : _index(seq._index) {};
+       PointSequence(typename traits::index_type& index) : _index(index)     {};
+       virtual ~PointSequence(){};
+       
+       virtual bool empty(){return this->_index.empty();};
+       
+       virtual typename traits::index_type::size_type size() {return this->_index.size();};
+
+       virtual iterator begin() {
+         // Retrieve the beginning iterator of the index
+         return iterator(this->_index.begin());
+       };
+       virtual iterator end() {
+         // Retrieve the ending iterator of the index
+         // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
+         return iterator(this->_index.end());
+       };
+       virtual bool contains(const typename rec_type::point_type& p) {
+         // Check whether a given point is in the index
+         return (this->_index.find(p) != this->_index.end());
+       }
+     }; // class PointSequence
+
+     template<typename Tag_, typename Value_>
+     class ValueSequence {
+     public:
+       typedef Value_ value_type;
+       typedef ALE::Two::IndexSequenceTraits<typename ::boost::multi_index::index<set_type, Tag_>::type,
+                                   BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type,point)>
+       traits;
+     protected:
+       const typename traits::index_type& _index;
+       const value_type _value;
+     public:
+       // Need to extend the inherited iterator to be able to extract the degree
+       class iterator : public traits::iterator {
+       public:
+         iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
+         virtual const int& degree() const {return this->_itor->degree;};
+       };
+       
+       ValueSequence(const PointSequence& seq)           : _index(seq._index), _value(seq._value) {};
+       ValueSequence(typename traits::index_type& index, const value_type& value) : _index(index), _value(value) {};
+       virtual ~ValueSequence(){};
+       
+       virtual bool empty(){return this->_index.empty();};
+       
+       virtual typename traits::index_type::size_type size() {return this->_index.size();};
+
+       virtual iterator begin() {
+         // Retrieve the beginning iterator of the index
+         return iterator(this->_index.lower_bound(this->_value));
+       };
+       virtual iterator end() {
+         // Retrieve the ending iterator of the index
+         // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
+         return iterator(this->_index.upper_bound(this->_value));
+       };
+       virtual bool contains(const typename rec_type::point_type& p) {
+         // Check whether a given point is in the index
+         return (this->_index.find(p) != this->_index.end());
+       }
+     }; // class ValueSequence
+    };// struct RecContainerTraits
+
+    template <typename Point_, typename Rec_>
+    struct RecContainer {
+      typedef RecContainerTraits<Point_, Rec_> traits;
+      typedef typename traits::set_type set_type;
+      set_type set;
+      void adjustDegree(const typename traits::rec_type::point_type& p, int delta) {
+        typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index = 
+          ::boost::multi_index::get<typename traits::pointTag>(this->set);
+        typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type::iterator i = index.find(p);
+        if (i == index.end()) { // No such point exists
+          if(delta < 0) { // Cannot decrease degree of a non-existent point
+            ostringstream err;
+            err << "ERROR: BiGraph::adjustDegree: Non-existent point " << p;
+            std::cout << err << std::endl;
+            throw(Exception(err.str().c_str()));
+          }
+          else { // We CAN INCREASE the degree of a non-existent point: simply insert a new element with degree == delta
+            std::pair<typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type::iterator, bool> ii;
+            typename traits::rec_type r(p,delta);
+            ii = index.insert(r);
+            if(ii.second == false) {
+              ostringstream err;
+              err << "ERROR: BiGraph::adjustDegree: Failed to insert a rec " << r;
+              std::cout << err << std::endl;
+              throw(Exception(err.str().c_str()));
+            }
+          }
+        }
+        else { // Point exists, so we try to modify its degree
+          int newDegree = i->degree + delta;
+          if(newDegree < 0) {
+            ostringstream ss;
+            ss << "adjustDegree: Adjustment of " << *i << " by " << delta << " would result in negative degree: " << newDegree;
+            throw Exception(ss.str().c_str());
+          }
+          if(newDegree == 0) {
+            // We must erase this point
+            index.erase(i);
+          }
+          else {
+            index.modify(i, typename traits::rec_type::degreeAdjuster(newDegree));
+          }
+        }
+      }; // adjustDegree()
+    }; // struct RecContainer
+
     //
     // Sieve:
     //   A Sieve is a set of {\emph arrows} connecting {\emph points} of type Point_. Thus we
@@ -2513,7 +2684,17 @@ namespace ALE {
       typedef Point_  point_type;
       typedef Marker_ marker_type;
       int debug;
+      typedef struct {
+        typedef RecContainer<Point_, Rec<Point_, Marker_> > cap_container_type;
+        typedef RecContainer<Point_, Rec<Point_, Marker_> > base_container_type;
 
+        typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::indegreeTag,int> rootSequence;
+        typedef typename base_container_type::traits::template ValueSequence<typename base_container_type::traits::outdegreeTag,int> leafSequence;
+        typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::depthMarkerTag,int> depthSequence;
+        typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::heightMarkerTag,int> heightSequence;
+        typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::markerTag,marker_type> markerSequence;
+      } traits;
+    private:
       struct StratumPoint {
         Point_  point;
         int   depth;
@@ -2530,6 +2711,762 @@ namespace ALE {
           return os;
         };
       };
+
+    public:
+      Sieve(int debug = 0) : debug(debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
+      // Printing
+      friend std::ostream& operator<<(std::ostream& os, Obj<Sieve<Point_,Marker_,Color_> > s) { 
+        os << *s; 
+        return os;
+      };
+    
+      friend std::ostream& operator<<(std::ostream& os, Sieve<Point_,Marker_,Color_>& s) {
+        Obj<typename traits::baseSequence> base = s.base();
+        for(typename traits::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          Obj<typename traits::coneSequence> cone = s.cone(*b_iter);
+          os << "Base point " << *b_iter << " with cone:" << std::endl;
+          for(typename traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+            os << "  " << *c_iter << std::endl;
+          }
+        }
+        return os;
+      };
+
+    private:
+      typedef ALE::def::PointSet   PointSet;
+      typedef ALE::def::PointArray PointArray;
+      template<class InputSequence> Obj<PointSet> __nCone(Obj<InputSequence>& cone, int n, const Color_& color, bool useColor);
+      template<class pointSequence> void __nCone(const Obj<pointSequence>& cone, int n, const Color_& color, bool useColor, Obj<PointArray> cone, Obj<PointSet> seen);
+    public:
+      //
+      // The basic Sieve interface (extensions to BiGraph)
+      //
+      Obj<PointArray> nCone(const Point_& p, int n);
+      Obj<PointArray> nCone(const Point_& p, int n, const Color_& color, bool useColor = true);
+      template<class InputSequence> Obj<PointSet> nCone(const Obj<InputSequence>& points, int n);
+      template<class InputSequence> Obj<PointSet> nCone(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor = true);
+
+      template<class InputSequence> Obj<PointSet> nSupport(const Obj<InputSequence>& points, int n);
+      template<class InputSequence> Obj<PointSet> nSupport(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor = true);
+    public:
+      //
+      // Iterated versions
+      //
+      Obj<PointSet> closure(const Point_& p);
+
+      Obj<PointSet> closure(const Point_& p, const Color_& color);
+
+      template<class InputSequence> 
+      Obj<PointSet> closure(const Obj<InputSequence>& points);
+
+      template<class InputSequence> 
+      Obj<PointSet> closure(const Obj<InputSequence>& points, const Color_& color);
+
+      Obj<PointSet> nClosure(const Point_& p, int n);
+
+      Obj<PointSet> nClosure(const Point_& p, int n, const Color_& color, bool useColor = true);
+
+      template<class InputSequence> 
+      Obj<PointSet> nClosure(const Obj<InputSequence>& points, int n);
+
+      template<class InputSequence> 
+      Obj<PointSet> nClosure(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor = true);
+
+      Obj<Sieve<Point_,Marker_,Color_> > closureSieve(const Point_& p);
+
+      Obj<Sieve<Point_,Marker_,Color_> > closureSieve(const Point_& p, const Color_& color);
+
+      template<class InputSequence> 
+      Obj<Sieve<Point_,Marker_,Color_> > closureSieve(const Obj<InputSequence>& points);
+
+      template<class InputSequence> 
+      Obj<Sieve<Point_,Marker_,Color_> > closureSieve(const Obj<InputSequence>& points, const Color_& color);
+
+      Obj<Sieve<Point_,Marker_,Color_> > nClosureSieve(const Point_& p, int n);
+
+      Obj<Sieve<Point_,Marker_,Color_> > nClosureSieve(const Point_& p, int n, const Color_& color, bool useColor = true);
+
+      template<class InputSequence> 
+      Obj<Sieve<Point_,Marker_,Color_> > nClosureSieve(const Obj<InputSequence>& points, int n);
+
+      template<class InputSequence> 
+      Obj<Sieve<Point_,Marker_,Color_> > nClosureSieve(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor = true);
+
+      Obj<PointSet> star(const Point_& p);
+
+      Obj<PointSet> star(const Point_& p, const Color_& color);
+
+      template<class InputSequence> 
+      Obj<PointSet> star(const Obj<InputSequence>& points);
+
+      template<class InputSequence> 
+      Obj<PointSet> star(const Obj<InputSequence>& points, const Color_& color);
+
+      Obj<PointSet> nStar(const Point_& p, int n);
+
+      Obj<PointSet> nStar(const Point_& p, int n, const Color_& color, bool useColor = true);
+
+      template<class InputSequence> 
+      Obj<PointSet> nStar(const Obj<InputSequence>& points, int n);
+
+      template<class InputSequence> 
+      Obj<PointSet> nStar(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor = true);
+
+    private:
+      template<class InputSequence> 
+      Obj<PointSet> __nClosure(Obj<InputSequence>& cone, int n, const Color_& color, bool useColor);
+
+      template<class InputSequence> 
+      Obj<Sieve<Point_,Marker_,Color_> > __nClosureSieve(Obj<InputSequence>& cone, int n, const Color_& color, bool useColor);
+
+      template<class InputSequence> 
+      Obj<PointSet> __nStar(Obj<InputSequence>& support, int n, const Color_& color, bool useColor);
+
+    public:
+      //
+      // Lattice methods
+      //
+      Obj<PointSet> meet(const Point_& p, const Point_& q);
+
+      Obj<PointSet> meet(const Point_& p, const Point_& q, const Color_& color);
+
+      template<class InputSequence> 
+      Obj<PointSet> meet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1);
+
+      template<class InputSequence> 
+      Obj<PointSet> meet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, const Color_& color);
+
+      Obj<PointSet> nMeet(const Point_& p, const Point_& q, int n);
+
+      Obj<PointSet> nMeet(const Point_& p, const Point_& q, int n, const Color_& color, bool useColor = true);
+
+      template<class InputSequence> 
+      Obj<PointSet> nMeet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n);
+
+      template<class InputSequence> 
+      Obj<PointSet> nMeet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n, 
+                          const Color_& color, bool useColor = true);
+
+      Obj<PointSet> join(const Point_& p, const Point_& q);
+
+      Obj<PointSet> join(const Point_& p, const Point_& q, const Color_& color);
+
+      template<class InputSequence> 
+      Obj<PointSet> join(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1);
+
+      template<class InputSequence> 
+      Obj<PointSet> join(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, const Color_& color);
+
+      Obj<PointSet> nJoin(const Point_& p, const Point_& q, int n);
+
+      Obj<PointSet> nJoin(const Point_& p, const Point_& q, int n, const Color_& color, bool useColor = true);
+
+      template<class InputSequence> 
+      Obj<PointSet> nJoin(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n);
+
+      template<class InputSequence> 
+      Obj<PointSet> nJoin(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n, const Color_& color, bool useColor = true);
+
+    public:
+      Obj<typename traits::rootSequence> roots() {
+        return typename traits::rootSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::indegreeTag>(this->_cap), 0);
+      };
+      Obj<typename traits::leafSequence> leaves() {
+        return typename traits::leafSequence(::boost::multi_index::get<typename traits::base_container_type::traits::outdegreeTag>(this->_base), 0);
+      };
+    private:
+      bool doStratify;
+      int  maxDepth, maxHeight, graphDiameter;
+    public:
+      //
+      // Structural queries
+      //
+      int depth(); 
+      int depth(const point_type& p);
+      template<typename InputSequence> int depth(const Obj<InputSequence>& points);
+
+      int height();
+      int height(const point_type& p);
+      template<typename InputSequence> int height(const Obj<InputSequence>& points);
+
+      int diameter();
+      int diameter(const point_type& p);
+
+      Obj<typename traits::depthSequence> depthStratum(int d);
+      Obj<typename traits::depthSequence> depthStratum(int d, marker_type m);
+
+      Obj<typename traits::heightSequence> heightStratum(int h);
+      Obj<typename traits::heightSequence> heightStratum(int h, marker_type m);
+
+      Obj<typename traits::markerSequence> markerStratum(marker_type m);
+ 
+      void setStratification(bool doStratify) {this->doStratify = doStratify;};
+
+      bool getStratification() {return this->doStratify;};
+
+      void stratify(bool show = false);
+    public:
+      //
+      // Structural manipulation
+      //
+      struct changeMarker {
+        changeMarker(int newMarker) : newMarker(newMarker) {};
+
+        void operator()(StratumPoint& p) {
+          p.marker = newMarker;
+        }
+      private:
+        marker_type newMarker;
+      };
+
+      void setMarker(const point_type& p, const marker_type& marker);
+      template<class InputSequence> void setMarker(const Obj<InputSequence>& points, const marker_type& marker);
+
+    private:
+      struct changeIndegree {
+        changeIndegree(int newIndegree) : newIndegree(newIndegree) {};
+
+        void operator()(StratumPoint& p) {
+          p.indegree = newIndegree;
+        }
+      private:
+        int newIndegree;
+      };
+
+      struct changeOutdegree {
+        changeOutdegree(int newOutdegree) : newOutdegree(newOutdegree) {};
+
+        void operator()(StratumPoint& p) {
+          p.outdegree = newOutdegree;
+        }
+      private:
+        int newOutdegree;
+      };
+
+      void __computeDegrees();
+
+      struct changeHeight {
+        changeHeight(int newHeight) : newHeight(newHeight) {};
+
+        void operator()(StratumPoint& p) {
+          p.height = newHeight;
+        }
+      private:
+        int newHeight;
+      };
+      
+      template<class InputSequence> void __computeClosureHeights(const Obj<InputSequence>& points);
+
+      struct changeDepth {
+        changeDepth(int newDepth) : newDepth(newDepth) {};
+
+        void operator()(StratumPoint& p) {
+          p.depth = newDepth;
+        }
+      private:
+        int newDepth;
+      };
+
+      template<class InputSequence> void __computeStarDepths(const Obj<InputSequence>& points);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointArray> Sieve<Point_,Marker_,Color_>::nCone(const Point_& p, int n) {
+      return this->nCone(p, n, Color_(), false);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointArray> Sieve<Point_,Marker_,Color_>::nCone(const Point_& p, int n, const Color_& color, bool useColor) {
+      Obj<PointArray> cone = PointArray();
+      Obj<PointSet>   seen = PointSet();
+
+      this->__nCone(this->cone(p), n-1, color, useColor, cone, seen);
+      return cone;
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class pointSequence> 
+    void Sieve<Point_,Marker_,Color_>::__nCone(const Obj<pointSequence>& points, int n, const Color_& color, bool useColor, Obj<PointArray> cone, Obj<PointSet> seen) {
+      if (n == 0) {
+        for(typename pointSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
+          if (seen->find(*p_itor) == seen->end()) {
+            cone->push_back(*p_itor);
+            seen->insert(*p_itor);
+          }
+        }
+      } else {
+        for(typename pointSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
+          if (useColor) {
+            this->__nCone(this->cone(*p_itor, color), n-1, color, useColor, cone, seen);
+          } else {
+            this->__nCone(this->cone(*p_itor), n-1, color, useColor, cone, seen);
+          }
+        }
+      }
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nCone(const Obj<InputSequence>& points, int n) {
+      return this->nCone(points, n, Color_(), false);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nCone(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor ) {
+      Obj<PointSet> cone = PointSet();
+      cone->insert(points->begin(), points->end());
+      return this->__nCone(cone, n, color, useColor);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::__nCone(Obj<InputSequence>& cone, int n, const Color_& color, bool useColor) {
+      Obj<PointSet> base = PointSet();
+
+      for(int i = 0; i < n; ++i) {
+        Obj<PointSet> tmp = cone; cone = base; base = tmp;
+        
+        cone->clear();
+        for(PointSet::iterator b_itor = base->begin(); b_itor != base->end(); ++b_itor) {
+          Obj<typename traits::coneSequence> pCone;
+          
+          if (useColor) {
+            pCone = this->cone(*b_itor, color);
+          } else {
+            pCone = this->cone(*b_itor);
+          }
+          cone->insert(pCone->begin(), pCone->end());
+        }
+      }
+      return cone;
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nSupport(const Obj<InputSequence>& points, int n) {
+      return this->nSupport(points, n, Color_(), false);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nSupport(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor ) {
+      Obj<PointSet> support = PointSet();
+      Obj<PointSet> cap = PointSet();
+      
+      support->insert(points->begin(), points->end());
+      for(int i = 0; i < n; ++i) {
+        Obj<PointSet> tmp = support; support = cap; cap = tmp;
+        
+        support->clear();
+        for(PointSet::iterator c_itor = cap->begin(); c_itor != cap->end(); ++c_itor) {
+          Obj<typename traits::supportSequence> pSupport;
+          
+          if (useColor) {
+            pSupport = this->support(*c_itor, color);
+          } else {
+            pSupport = this->support(*c_itor);
+          }
+          support->insert(pSupport->begin(), pSupport->end());
+        }
+      }
+      return support;
+    };
+    //
+    // Iterated versions
+    //
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::closure(const Point_& p) {
+      return nClosure(p, this->depth());
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::closure(const Point_& p, const Color_& color) {
+      return nClosure(p, this->depth(), color);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::closure(const Obj<InputSequence>& points) {
+      return nClosure(points, this->depth());
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::closure(const Obj<InputSequence>& points, const Color_& color) {
+      return nClosure(points, this->depth(), color);
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nClosure(const Point_& p, int n) {
+      return this->nClosure(p, n, Color_(), false);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nClosure(const Point_& p, int n, const Color_& color, bool useColor ) {
+      Obj<PointSet> cone = PointSet();
+      
+      cone->insert(p);
+      return this->__nClosure(cone, n, color, useColor);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nClosure(const Obj<InputSequence>& points, int n) {
+      return this->nClosure(points, n, Color_(), false);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nClosure(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor ) {
+      Obj<PointSet> cone = PointSet();
+      cone->insert(points->begin(), points->end());
+      return this->__nClosure(cone, n, color, useColor);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::__nClosure(Obj<InputSequence>& cone, int n, const Color_& color, bool useColor) {
+      Obj<PointSet> base = PointSet();
+      Obj<PointSet> closure = PointSet();
+      
+      for(int i = 0; i < n; ++i) {
+        Obj<PointSet> tmp = cone; cone = base; base = tmp;
+        
+        cone->clear();
+        for(PointSet::iterator b_itor = base->begin(); b_itor != base->end(); ++b_itor) {
+          Obj<typename traits::coneSequence> pCone;
+          
+          if (useColor) {
+            pCone = this->cone(*b_itor, color);
+          } else {
+            pCone = this->cone(*b_itor);
+          }
+          cone->insert(pCone->begin(), pCone->end());
+          closure->insert(pCone->begin(), pCone->end());
+        }
+      }
+      return closure;
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<Sieve<Point_,Marker_,Color_> > Sieve<Point_,Marker_,Color_>::closureSieve(const Point_& p) {
+      return nClosureSieve(p, this->depth());
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<Sieve<Point_,Marker_,Color_> > Sieve<Point_,Marker_,Color_>::closureSieve(const Point_& p, const Color_& color) {
+      return nClosureSieve(p, this->depth(), color);
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<Sieve<Point_,Marker_,Color_> > Sieve<Point_,Marker_,Color_>::closureSieve(const Obj<InputSequence>& points) {
+      return nClosureSieve(points, this->depth());
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<Sieve<Point_,Marker_,Color_> > Sieve<Point_,Marker_,Color_>::closureSieve(const Obj<InputSequence>& points, const Color_& color) {
+      return nClosureSieve(points, this->depth(), color);
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<Sieve<Point_,Marker_,Color_> > Sieve<Point_,Marker_,Color_>::nClosureSieve(const Point_& p, int n) {
+      return this->nClosureSieve(p, n, Color_(), false);
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<Sieve<Point_,Marker_,Color_> > Sieve<Point_,Marker_,Color_>::nClosureSieve(const Point_& p, int n, const Color_& color, bool useColor ) {
+      Obj<PointSet> cone = PointSet();
+      
+      cone->insert(p);
+      return this->__nClosureSieve(cone, n, color, useColor);
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<Sieve<Point_,Marker_,Color_> > Sieve<Point_,Marker_,Color_>::nClosureSieve(const Obj<InputSequence>& points, int n) {
+      return this->nClosureSieve(points, n, Color_(), false);
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<Sieve<Point_,Marker_,Color_> > Sieve<Point_,Marker_,Color_>::nClosureSieve(const Obj<InputSequence>& points, int n, 
+                                                                   const Color_& color, bool useColor ) {
+      Obj<PointSet> cone = PointSet();
+      
+      cone->insert(points->begin(), points->end());
+      return this->__nClosureSieve(cone, n, color, useColor);
+    };
+ 
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<Sieve<Point_,Marker_,Color_> > Sieve<Point_,Marker_,Color_>::__nClosureSieve(Obj<InputSequence>& cone,int n,const Color_& color,bool useColor) {
+      Obj<PointSet> base = PointSet();
+      Obj<Sieve<Point_,Marker_,Color_> > closure = Sieve<Point_,Marker_,Color_>();
+      
+      for(int i = 0; i < n; ++i) {
+        Obj<PointSet> tmp = cone; cone = base; base = tmp;
+        
+        cone->clear();
+        for(PointSet::iterator b_itor = base->begin(); b_itor != base->end(); ++b_itor) {
+          Obj<typename traits::coneSequence> pCone;
+          
+          if (useColor) {
+            pCone = this->cone(*b_itor, color);
+          } else {
+            pCone = this->cone(*b_itor);
+          }
+          cone->insert(pCone->begin(), pCone->end());
+          closure->addCone(pCone, *b_itor);
+        }
+      }
+      return closure;
+    };
+      
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::star(const Point_& p) {
+      return nStar(p, this->height());
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::star(const Point_& p, const Color_& color) {
+      return nStar(p, this->depth(), color);
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::star(const Obj<InputSequence>& points) {
+      return nStar(points, this->height());
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::star(const Obj<InputSequence>& points, const Color_& color) {
+      return nStar(points, this->height(), color);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nStar(const Point_& p, int n) {
+      return this->nStar(p, n, Color_(), false);
+    };
+      
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nStar(const Point_& p, int n, const Color_& color, bool useColor ) {
+      Obj<PointSet> support = PointSet();
+      
+      support->insert(p);
+      return this->__nStar(support, n, color, useColor);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nStar(const Obj<InputSequence>& points, int n) {
+      return this->nStar(points, n, Color_(), false);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nStar(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor ) {
+      Obj<PointSet> support = PointSet();
+      
+      support->insert(points->begin(), points->end());
+      return this->__nStar(support, n, color, useColor);
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::__nStar(Obj<InputSequence>& support, int n, const Color_& color, bool useColor) {
+      Obj<PointSet> cap = PointSet();
+      Obj<PointSet> star = PointSet();
+      
+      for(int i = 0; i < n; ++i) {
+        Obj<PointSet> tmp = support; support = cap; cap = tmp;
+        
+        support->clear();
+        for(PointSet::iterator c_itor = cap->begin(); c_itor != cap->end(); ++c_itor) {
+          Obj<typename traits::supportSequence> pSupport;
+          
+          if (useColor) {
+            pSupport = this->support(*c_itor, color);
+          } else {
+            pSupport = this->support(*c_itor);
+          }
+          support->insert(pSupport->begin(), pSupport->end());
+          star->insert(pSupport->begin(), pSupport->end());
+        }
+      }
+      return star;
+    };
+
+    //
+    // Lattice methods
+    //
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::meet(const Point_& p, const Point_& q) {
+      return nMeet(p, q, this->depth());
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::meet(const Point_& p, const Point_& q, const Color_& color) {
+      return nMeet(p, q, this->depth(), color);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::meet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1) {
+      return nMeet(chain0, chain1, this->depth());
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::meet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, const Color_& color) {
+        return nMeet(chain0, chain1, this->depth(), color);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nMeet(const Point_& p, const Point_& q, int n) {
+        return nMeet(p, q, n, Color_(), false);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nMeet(const Point_& p, const Point_& q, int n, const Color_& color, bool useColor ) {
+      Obj<PointSet> chain0 = PointSet();
+      Obj<PointSet> chain1 = PointSet();
+      
+      chain0->insert(p);
+      chain1->insert(q);
+      return this->nMeet(chain0, chain1, n, color, useColor);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_>     
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nMeet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n) {
+      return this->nMeet(chain0, chain1, n, Color_(), false);
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nMeet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1,int n,const Color_& color, bool useColor){
+      // The strategy is to compute the intersection of cones over the chains, remove the intersection 
+      // and use the remaining two parts -- two disjoined components of the symmetric difference of cones -- as the new chains.
+      // The intersections at each stage are accumulated and their union is the meet.
+      // The iteration stops after n steps in addition to the meet of the initial chains or sooner if at least one of the chains is empty.
+      Obj<PointSet> meet = PointSet(); 
+      Obj<PointSet> cone;
+      
+      if((chain0->size() != 0) && (chain1->size() != 0)) {
+        for(int i = 0; i <= n; ++i) {
+          // Compute the intersection of chains and put it in meet at the same time removing it from c and cc
+          //std::set_intersection(chain0->begin(), chain0->end(), chain1->begin(), chain1->end(), std::insert_iterator<PointSet>(meet, meet->begin()));
+          //chain0->erase(meet->begin(), meet->end());
+          //chain1->erase(meet->begin(), meet->end());
+          for(typename InputSequence::iterator iter = chain0->begin(); iter != chain0->end(); ++iter) {
+            if (chain1->find(*iter) != chain1->end()) {
+              meet->insert(*iter);
+              chain0->erase(*iter);
+              chain1->erase(*iter);
+            }
+          }
+          // Replace each of the cones with a cone over it, and check if either is empty; if so, return what's in meet at the moment.
+          cone = this->cone(chain0);
+          chain0->insert(cone->begin(), cone->end());
+          if(chain0->size() == 0) {
+            break;
+          }
+          cone = this->cone(chain1);
+          chain1->insert(cone->begin(), cone->end());
+          if(chain1->size() == 0) {
+            break;
+          }
+        }
+      }
+      return meet;
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::join(const Point_& p, const Point_& q) {
+      return this->nJoin(p, q, this->depth());
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::join(const Point_& p, const Point_& q, const Color_& color) {
+      return this->nJoin(p, q, this->depth(), color);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::join(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1) {
+      return this->nJoin(chain0, chain1, this->depth());
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::join(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, const Color_& color) {
+      return this->nJoin(chain0, chain1, this->depth(), color);
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nJoin(const Point_& p, const Point_& q, int n) {
+      return this->nJoin(p, q, n, Color_(), false);
+    };
+    
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nJoin(const Point_& p, const Point_& q, int n, const Color_& color, bool useColor) {
+      Obj<PointSet> chain0 = PointSet();
+      Obj<PointSet> chain1 = PointSet();
+      
+      chain0->insert(p);
+      chain1->insert(q);
+      return this->nJoin(chain0, chain1, n, color, useColor);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nJoin(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n) {
+      return this->nJoin(chain0, chain1, n, Color_(), false);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::nJoin(const Obj<InputSequence>& chain0,const Obj<InputSequence>& chain1,int n,const Color_& color,bool useColor){
+      // The strategy is to compute the intersection of supports over the chains, remove the intersection 
+      // and use the remaining two parts -- two disjoined components of the symmetric difference of supports -- as the new chains.
+      // The intersections at each stage are accumulated and their union is the join.
+      // The iteration stops after n steps in addition to the join of the initial chains or sooner if at least one of the chains is empty.
+      Obj<PointSet> join = PointSet(); 
+      Obj<PointSet> support;
+      
+      if((chain0->size() != 0) && (chain1->size() != 0)) {
+        for(int i = 0; i <= n; ++i) {
+          // Compute the intersection of chains and put it in meet at the same time removing it from c and cc
+          //std::set_intersection(chain0->begin(), chain0->end(), chain1->begin(), chain1->end(), std::insert_iterator<PointSet>(join.obj(), join->begin()));
+          //chain0->erase(join->begin(), join->end());
+          //chain1->erase(join->begin(), join->end());
+          for(typename InputSequence::iterator iter = chain0->begin(); iter != chain0->end(); ++iter) {
+            if (chain1->find(*iter) != chain1->end()) {
+              join->insert(*iter);
+              chain0->erase(*iter);
+              chain1->erase(*iter);
+            }
+          }
+          // Replace each of the supports with the support over it, and check if either is empty; if so, return what's in join at the moment.
+          support = this->support(chain0);
+          chain0->insert(support->begin(), support->end());
+          if(chain0->size() == 0) {
+            break;
+          }
+          support = this->support(chain1);
+          chain1->insert(support->begin(), support->end());
+          if(chain1->size() == 0) {
+            break;
+          }
+        }
+      }
+      return join;
     };
   } // namespace Three
 } // namespace ALE
