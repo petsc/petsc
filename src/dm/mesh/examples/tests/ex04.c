@@ -13,7 +13,7 @@ static char help[] = "Constructs a series of parallel BiGraphs and performs Delt
 #include <ALE.hh>
 
 
-typedef ALE::Two::BiGraph<int,ALE::def::Point,int>                       PointBiGraph;
+typedef ALE::Two::BiGraph<int,ALE::Two::Rec<int>,ALE::def::Point,ALE::Two::Rec<ALE::def::Point>,int> PointBiGraph;
 typedef ALE::Two::RightConeDuplicationFuser<PointBiGraph,PointBiGraph>   PointConeFuser;
 typedef ALE::Two::ParDelta<PointBiGraph,PointConeFuser>                  PointParDelta;
 typedef PointParDelta::overlap_type                                      PointOverlap;
