@@ -686,81 +686,35 @@ namespace ALE {
         }
       };
       // A parallel viewer
-      PetscErrorCode parView(const char* label = NULL, bool rawData = false){
+      PetscErrorCode view(const char* label = NULL){
         PetscErrorCode ierr;
+        ostringstream txt;
         PetscFunctionBegin;
+        if(debug) {
+          std::cout << "viewing a BiGraph, comm = " << this->comm() << ", PETSC_COMM_SELF = " << PETSC_COMM_SELF << ", commRank = " << this->commRank() << std::endl;
+        }
         if(label != NULL) {
-          ierr = PetscPrintf(this->comm(), "parViewing BiGraph :'%s'\n",label); CHKERRQ(ierr);
+          if(this->commRank() == 0) {
+            txt << "viewing BiGraph :'" << label << "'" << std::endl;
+          }
         } 
         else {
-          ierr = PetscPrintf(this->comm(), "parViewing a BiGraph\n"); CHKERRQ(ierr);
+          if(this->commRank() == 0) {
+            txt << "viewing a BiGraph" << std::endl;
+          }
         }
-        if(!rawData) {
-          ierr = PetscPrintf(this->comm(), "cap --> base:\n"); CHKERRQ(ierr);
-          ostringstream txt1;
-          typename traits::capSequence cap = this->cap();
-          for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
-            typename traits::supportSequence supp = this->support(*capi);
-            for(typename traits::supportSequence::iterator suppi = supp.begin(); suppi != supp.end(); suppi++) {
-              txt1 << *capi << "--(" << suppi.color() << ")-->" << *suppi << std::endl;
-            }
-          }
-          ierr = PetscSynchronizedPrintf(this->comm(), "%s", txt1.str().c_str()); CHKERRQ(ierr);
-          //
-          ierr = PetscPrintf(this->comm(), "base <-- cap:\n"); CHKERRQ(ierr);
-          ostringstream txt2;
-          typename traits::baseSequence base = this->base();
-          for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
-            typename traits::coneSequence cone = this->cone(*basei);
-            for(typename traits::coneSequence::iterator conei = cone.begin(); conei != cone.end(); conei++) {
-              txt2 << *basei <<  "<--(" << conei.color() << ")--" << *conei << std::endl;
-            }
-          }
-          ierr = PetscSynchronizedPrintf(this->comm(), "%s", txt2.str().c_str()); CHKERRQ(ierr);
-          //
-          ierr = PetscPrintf(this->comm(), "cap --> outdegrees:\n"); CHKERRQ(ierr);
-          ostringstream txt3;
-          for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
-            txt3 << *capi <<  "-->" << capi.degree() << std::endl;
-          }
-          ierr = PetscSynchronizedPrintf(this->comm(), "%s", txt3.str().c_str()); CHKERRQ(ierr);
-          //
-          ierr = PetscPrintf(this->comm(), "base <-- indegrees:\n"); CHKERRQ(ierr);
-          ostringstream txt4;
-          for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
-            txt4 << *basei <<  "<--" << basei.degree() << std::endl;
-          }
-          ierr = PetscSynchronizedPrintf(this->comm(), "%s", txt4.str().c_str()); CHKERRQ(ierr);
+        if(this->commRank() == 0) {
+          txt << "cap --> base:\n";
         }
-        else {
-          //
-          ierr = PetscPrintf(this->comm(), "'raw' arrow set:\n"); CHKERRQ(ierr);
-          ostringstream txt1;
-          for(typename traits::arrow_container_type::set_type::iterator ai = _arrows.set.begin(); ai != _arrows.set.end(); ai++)
-          {
-            typename traits::arrow_type arr = *ai;
-            txt1 << arr << std::endl;
+        typename traits::capSequence cap = this->cap();
+        for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
+          typename traits::supportSequence supp = this->support(*capi);
+          for(typename traits::supportSequence::iterator suppi = supp.begin(); suppi != supp.end(); suppi++) {
+            txt << "[" << this->commRank() << "]: " << *capi << "--(" << suppi.color() << ")-->" << *suppi << std::endl;
           }
-          ierr = PetscSynchronizedPrintf(this->comm(), "%s", txt1.str().c_str()); CHKERRQ(ierr);
-          //
-          ierr = PetscPrintf(this->comm(), "'raw' base set:\n"); CHKERRQ(ierr);
-          ostringstream txt2;
-          for(typename traits::base_container_type::set_type::iterator bi = _base.set.begin(); bi != _base.set.end(); bi++) 
-          {
-            typename traits::base_container_type::traits::rec_type bp = *bi;
-            txt2 << bp << std::endl;
-          }
-          ierr = PetscSynchronizedPrintf(this->comm(), "%s", txt2.str().c_str()); CHKERRQ(ierr);
-          //
-          ierr = PetscPrintf(this->comm(), "'raw' cap set:\n"); CHKERRQ(ierr);
-          ostringstream txt3;
-          for(typename traits::cap_container_type::set_type::iterator ci = _cap.set.begin(); ci != _cap.set.end(); ci++) 
-          {
-            typename traits::cap_container_type::traits::rec_type cp = *ci;
-            txt3 << cp << std::endl;
-          }
-          ierr = PetscSynchronizedPrintf(this->comm(), "%s", txt3.str().c_str()); CHKERRQ(ierr);
         }
+        ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERRQ(ierr);
+        
         PetscFunctionReturn(0);
       };
     public:

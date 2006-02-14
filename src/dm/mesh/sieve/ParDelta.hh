@@ -140,7 +140,7 @@ namespace ALE {
       ~ParDelta(){};
 
       Obj<overlap_type> overlap(){
-        Obj<overlap_type> overlap = overlap_type();
+        Obj<overlap_type> overlap = overlap_type(this->comm);
         // If this is a serial object, we return an empty overlap
         if((this->comm != PETSC_COMM_SELF) && (this->size > 1)) {
           __determineNeighbors(overlap);
@@ -149,7 +149,7 @@ namespace ALE {
       };
 
       Obj<fusion_type> fusion(const Obj<overlap_type>& overlap, const Obj<fuser_type>& fuser = fuser_type()) {
-        Obj<fusion_type> fusion = fusion_type();
+        Obj<fusion_type> fusion = fusion_type(this->comm);
         // If this is a serial object, we return an empty delta
         if((this->comm != PETSC_COMM_SELF) && (this->size > 1)) {
           __computeFusion(overlap, fuser, fusion);
@@ -900,7 +900,7 @@ namespace ALE {
         for(typename overlap_type::traits::capSequence::iterator ci  = overlapCap.begin(); ci != overlapCap.end(); ci++) 
         { // traversing overlap.cap()
           int32_t neighbor = *ci;
-          NeighborConeSizeIn[neighbor] = 0;
+          NeighborConeSizeOut[neighbor] = 0;
           // Traverse the supports of the overlap graph under each neighbor rank, count cone sizes to be sent and add the cone sizes
           typename overlap_type::traits::supportSequence supp = overlap->support(*ci);
           if(debug2) {
@@ -909,7 +909,7 @@ namespace ALE {
           }
           for(typename overlap_type::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
             // FIX: replace si.color() Point --> ALE::pair
-            NeighborConeSizeIn[neighbor] = NeighborConeSizeIn[neighbor] + si.color().index;
+            NeighborConeSizeOut[neighbor] = NeighborConeSizeOut[neighbor] + si.color().index;
           }
           // Accumulate the total cone size
           ConeSizeOut += NeighborConeSizeOut[neighbor];
