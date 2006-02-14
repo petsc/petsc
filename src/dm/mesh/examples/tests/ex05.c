@@ -4,21 +4,22 @@
 T*/
 
 /*
-  Tests TargetArrow sequence -- a sequence that wraps an array of (source,color) arrows over a given target
+  Tests ConeArraySequence -- a sequence that wraps an array of (source,color) "arrows" over a given target
   and presents it as an sequence of Arrows; used in ParDelta.fusion().
-  Note: may not fail in parallel, but is not designed to run that way.
+  Note: this test may not fail in parallel, but is not designed to run that way.
 */
 
-static char help[] = "Constructs and views test Arrow sequences involved in fusion.\n\n";
+static char help[] = "Constructs and views test ConeArraySequences involved in ParFusion.\n\n";
 
-#include <Delta.hh>
+#include <ParDelta.hh>
 
-typedef ALE::def::Point                                         Point;
-typedef ALE::def::Arrow<Point, Point, Point>                    PointArrow;
-typedef ALE::Two::TargetArrowArraySequence<Point, Point, Point> PointTargetArrowSequence;
-typedef PointTargetArrowSequence::target_arrow_type             PointTargetArrow;
+typedef ALE::def::Point                         Point;
+typedef ALE::Two::Arrow<Point, Point, Point>    PointArrow;
+typedef ALE::Two::ConeArraySequence<PointArrow> PointConeArraySequence;
+typedef PointConeArraySequence::cone_arrow_type PointConeArrow;
 
-PetscErrorCode   testPointTargetArrowSequence();
+PetscErrorCode   testPointConeArraySequence();
+PetscErrorCode   viewPointConeArraySequence(PointConeArraySequence& seq, const char* label = NULL);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -27,7 +28,6 @@ int main(int argc, char *argv[])
   MPI_Comm       comm;
   PetscTruth     flag;
   PetscInt       verbosity;
-  PetscTruth     sequenceOnly;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -35,8 +35,7 @@ int main(int argc, char *argv[])
   verbosity = 1;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag); CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
-
-  ierr = testPointTargetArrowSequence();                                          CHKERRQ(ierr);
+  ierr = testPointConeArraySequence();                                    CHKERRQ(ierr);
 
 
   ierr = PetscFinalize();CHKERRQ(ierr);
@@ -44,29 +43,55 @@ int main(int argc, char *argv[])
 }/* main() */
 
 #undef  __FUNCT__
-#define __FUNCT__ "testPointTargetArrowSequence"
-PetscErrorCode testPointTargetArrowSequence() {
-  PetscInt debug;
+#define __FUNCT__ "testPointConeArraySequence"
+PetscErrorCode testPointConeArraySequence() {
   PetscTruth flag;
   PetscErrorCode ierr;
 
-  // Allocate a raw array of n PointArrows 
+  // Allocate a raw array of n PointConeArrows 
   int n = 10;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-sequenceSize", &n, &flag); CHKERRQ(ierr);
   if(n < 0) {
-    SETERRQ1(1, "Invalid PointTargetArrowSequence size: %d", n);
+    SETERRQ1(1, "Invalid PointConeArraySequence size: %d", n);
   }
   
-  PointTargetArrow *aa = (PointTargetArrow*) malloc(sizeof(PointTargetArrow)*n);
+  PointConeArrow *aa = (PointConeArrow*) malloc(sizeof(PointConeArrow)*n);
+
   // Fill in the array
   for(int i = 0; i < n; i++) {
-    aa[i] = PointTargetArrow(Point(i+1,i+1), Point(-(i+1),-(i+1)));
+    aa[i] = PointConeArrow(Point(i+1,i+1), Point(-(i+1),-(i+1)));
   }
-  // Wrap it in a PointTargetArrowSequence with the target (0,0).
-  PointTargetArrowSequence aas(Point(0,0),aa,n);
+  // Wrap it in a PointConeArraySequence with the target (0,0).
+  PointConeArraySequence aas(aa,n,Point(0,0));
 
   // View the sequence
-  std::cout << __FUNCT__ << ": viewing a PointTargetArrowSequence of " << aas.size() << " PointTargetArrows" << std::endl;
+  ierr = viewPointConeArraySequence(aas, "'Manual'"); CHKERRQ(ierr);
+
+  // Fill in the array using the 'PointConeArrow::place' method
+  for(int i = 0; i < n; i++) {
+    PointArrow a(Point(i+1,i+1), Point(0,0), Point(-(i+1),-(i+1)));
+    PointConeArraySequence::cone_arrow_type::place(aa+i,a);
+  }
+  // Wrap it in a PointConeArraySequence with the target (0,0).
+  aas = PointConeArraySequence(aa,n,Point(0,0));
+
+  // View the sequence
+  ierr = viewPointConeArraySequence(aas, "'Auto'"); CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}/* testPointConeArraySequence() */
+
+
+#undef  __FUNCT__
+#define __FUNCT__ "viewPointConeArraySequence"
+PetscErrorCode viewPointConeArraySequence(PointConeArraySequence& aas, const char* label) {
+  PetscFunctionBegin;
+
+  std::cout << __FUNCT__ << ": viewing a PointConeArraySequence ";
+  if(label != NULL) {
+    std::cout << label;
+  }
+  std::cout << " of " << aas.size() << " PointConeArrows" << std::endl;
   if(aas.empty()) {
     std::cout << __FUNCT__ << ": sequence IS empty" << std::endl;
   }
@@ -74,10 +99,10 @@ PetscErrorCode testPointTargetArrowSequence() {
     std::cout << __FUNCT__ << ": sequence NOT empty" << std::endl;
   }
   std::cout << "[";
-  for(PointTargetArrowSequence::iterator ai = aas.begin(); ai != aas.end(); ai++) {
+  for(PointConeArraySequence::iterator ai = aas.begin(); ai != aas.end(); ai++) {
     std::cout << " " << *ai;
   }
   std::cout << "]" << std::endl;
 
   PetscFunctionReturn(0);
-}/* testPointTargetArrowSequence() */
+}/* viewPointConeArraySequence() */
