@@ -79,6 +79,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
   HYPRE_ParCSRMatrix hmat;
   HYPRE_ParVector    bv,xv;
   int                hierr;
+  PetscInt           bs;
 
   PetscFunctionBegin;
   if (!jac->ij) { /* create the matrix the first time through */ 
@@ -95,6 +96,8 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
   ierr = HYPRE_IJMatrixGetObject(jac->ij,(void**)&hmat);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorGetObject(jac->b,(void**)&bv);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorGetObject(jac->x,(void**)&xv);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
+  ierr = HYPRE_BoomerAMGSetNumFunctions(jac->hsolver,bs);CHKERRQ(ierr);
   hierr = (*jac->setup)(jac->hsolver,hmat,bv,xv);
   if (hierr) SETERRQ1(PETSC_ERR_LIB,"Error in HYPRE setup, error code %d",hierr);
   PetscFunctionReturn(0);
@@ -442,10 +445,13 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     jac->coarsentype = indx;
     ierr = HYPRE_BoomerAMGSetCoarsenType(jac->hsolver,jac->coarsentype);CHKERRQ(ierr); 
   }
-  ierr = PetscOptionsTruth("-pc_hypre_boomeramg_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
-  if (jac->printstatistics) {
-    ierr = HYPRE_BoomerAMGSetPrintLevel(jac->hsolver,3);CHKERRQ(ierr);
-    ierr = HYPRE_BoomerAMGSetDebugFlag(jac->hsolver,3);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-pc_hypre_boomeramg_print_statistics","Print statistics","None",&flg);CHKERRQ(ierr);
+  if (flg) {
+    int level=3;
+    jac->printstatistics = PETSC_TRUE;
+    ierr = PetscOptionsInt("-pc_hypre_boomeramg_print_statistics","Print statistics","None",level,&level,PETSC_NULL);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetPrintLevel(jac->hsolver,level);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetDebugFlag(jac->hsolver,level);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
