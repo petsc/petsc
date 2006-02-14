@@ -355,7 +355,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   ierr = PetscOptionsReal("-pc_ml_Threshold","Smoother drop tol","ML_Aggregate_Set_Threshold",Threshold,&Threshold,PETSC_NULL);CHKERRQ(ierr);
   pc_ml->Threshold = Threshold;
 
-  ierr = PetscOptionsTruth("-pc_ml_SpectralNormScheme_Anorm","Method used for estimating spectral radius","ML_Aggregate_Set_SpectralNormScheme_Anorm",PETSC_FALSE,&pc_ml->SpectralNormScheme_Anorm,PETSC_FALSE);
+  ierr = PetscOptionsTruth("-pc_ml_SpectralNormScheme_Anorm","Method used for estimating spectral radius","ML_Aggregate_Set_SpectralNormScheme_Anorm",PETSC_FALSE,&pc_ml->SpectralNormScheme_Anorm,PETSC_NULL);
   
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -520,12 +520,12 @@ int PetscML_comm(double p[],void *ML_data)
 PetscErrorCode MatMult_ML(Mat A,Vec x,Vec y)
 {
   PetscErrorCode   ierr;
-  Mat_MLShell      *shell;
+  Mat_MLShell      *shell; 
   PetscScalar      *xarray,*yarray;
   PetscInt         x_length,y_length;
   
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,(void *)&shell);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A,(void **)&shell);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yarray);CHKERRQ(ierr);
   x_length = shell->mlmat->invec_leng;
@@ -549,7 +549,7 @@ PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
   PetscInt          x_length,y_length;
   
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,(void *)&shell);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A,(void **)&shell);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
   ierr = VecGetArray(y,&yarray);CHKERRQ(ierr);
 
@@ -641,7 +641,7 @@ PetscErrorCode MatDestroy_ML(Mat A)
   Mat_MLShell    *shell;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,(void *)&shell);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A,(void **)&shell);CHKERRQ(ierr);
   ierr = VecDestroy(shell->y);CHKERRQ(ierr);
   ierr = PetscFree(shell);CHKERRQ(ierr); 
   ierr = MatDestroy_Shell(A);CHKERRQ(ierr);
@@ -770,7 +770,7 @@ PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
   nz_max++;
   ierr = PetscMalloc(nz_max*(sizeof(PetscInt)+sizeof(PetscScalar)),&aj);CHKERRQ(ierr);
   aa = (PetscScalar*)(aj + nz_max);
-  ML_build_global_numbering(mlmat,mlmat->comm,&gordering);
+  ML_build_global_numbering(mlmat,(ML_Comm*)mlmat->comm,&gordering);
   for (i=0; i<m; i++){
     row = gordering[i];
     k = 0;

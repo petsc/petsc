@@ -9,7 +9,8 @@ class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
     self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_4.6.tar.gz']
-    self.liblist   = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libpord.a']]
+    self.liblist   = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libpord.a'],
+                      ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libpord.a','libpthread.a']]
     self.functions = ['dmumps_c']
     self.includes  = ['dmumps_c.h']
     self.complex   = 1

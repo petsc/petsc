@@ -6,7 +6,7 @@
 #endif
 
 //
-// This file contains classes and methods implementing  the delta operation on a pair of ColorBiGraphs or similar objects.
+// This file contains classes and methods implementing  the fusion operation on a pair of ColorBiGraphs or similar objects.
 //
 namespace ALE {
 
@@ -111,22 +111,22 @@ namespace ALE {
     public:
       //Encapsulated types
       struct traits {
-        typedef LeftBiGraph_  left_type;
-        typedef RightBiGraph_ right_type;
-        typedef typename right_type::traits::source_type                                source_type;
-        typedef typename right_type::traits::sourceRec_type                             sourceRec_type;
-        typedef typename right_type::traits::target_type                                target_type;
-        typedef typename right_type::traits::targetRec_type                             targetRec_type;
-        typedef typename right_type::traits::color_type                                 color_type;
+        typedef LeftBiGraph_                                                                     left_type;
+        typedef RightBiGraph_                                                                    right_type;
+        //
+        typedef typename right_type::traits::source_type                                         source_type;
+        typedef typename right_type::traits::sourceRec_type                                      sourceRec_type;
+        typedef typename right_type::traits::target_type                                         target_type;
+        typedef typename right_type::traits::targetRec_type                                      targetRec_type;
+        typedef typename right_type::traits::color_type                                          color_type;
         // we are using 'rebind' here to illustrate the general point, 
         // even though a simple 'typedef right_type delta_type' would be enough
-        typedef typename right_type::template rebind<source_type, sourceRec_type, target_type, targetRec_type, color_type>::type delta_type;
-        //
-        typedef typename delta_type::traits::coneSequence                               coneSequence;
+        typedef typename right_type::template rebind<source_type, sourceRec_type, target_type, targetRec_type, color_type>::type fusion_type;
+        typedef typename fusion_type::traits::coneSequence                                       coneSequence;
       };        
       
       static typename traits::coneSequence
-      fusion(const typename traits::left_type::traits::coneSequence&  lcone, 
+      coneFusion(const typename traits::left_type::traits::coneSequence&  lcone, 
              const typename traits::right_type::traits::coneSequence& rcone){
         // Simply return the right cone sequence
         return rcone;
@@ -134,15 +134,71 @@ namespace ALE {
       static void
       fuseCones(const typename traits::left_type::traits::coneSequence&  lcone, 
                 const typename traits::right_type::traits::coneSequence& rcone, 
-                typename traits::delta_type& delta) {
+                typename traits::fusion_type& fusion) {
         // This Fuser traverses the right cone and inserts it into the overlap, 
-        // duplicating the right graph's cone in the overlap graph.
+        // duplicating the right graph's cone in the fusion graph.
         for(typename traits::right_type::traits::coneSequence::iterator rci = rcone.begin(); rci != rcone.end(); rci++) {
-          delta.addArrow(rci.arrow());
+          fusion.addArrow(rci.arrow());
         }
       }
     }; // struct RightConeDuplicationFuser
 
+
+    template <typename Source_, typename Target_, typename Color_>
+    class TargetArrowArraySequence {
+      // TargetArrowArraySequence wraps a raw byte array of (Source_,Color_) pairs
+      // presenting it as a sequence of arrows to a fixed target.
+    public:
+      typedef Arrow<Source_, Target_, Color_> arrow_type;
+      typedef Source_ source_type;
+      typedef Target_ target_type;
+      typedef Color_  color_type;
+      //
+      struct target_arrow_type { 
+        source_type source; color_type color; 
+        target_arrow_type(const source_type& s, const color_type& c) : source(s), color(c)  {};
+        target_arrow_type(const target_arrow_type& ta) : source(ta.source), color(ta.color) {};
+      };
+      typedef target_arrow_type* target_arrow_array;
+    protected:
+      target_type        _target;
+      target_arrow_array _arr_ptr;
+      size_t             _seq_size;
+    public:
+      class iterator {
+        target_type        _target;
+        target_arrow_type* _ptr;
+      public:
+        iterator(const target_type& target, const target_arrow_array& ptr) : _target(target),     _ptr(ptr)     {};
+        iterator(const iterator& it)                                       : _target(it._target), _ptr(it._ptr) {};
+        virtual ~iterator() {};
+        //
+        virtual arrow_type                  operator*() const {
+          return arrow_type(this->_ptr->source, this->_target, this->_ptr->color);
+        };
+        virtual iterator           operator++()      {this->_ptr++; return *this;};
+        virtual iterator           operator++(int n) {iterator tmp(this->_target, this->_ptr); this->_ptr++; return tmp;};
+        virtual bool               operator!=(const iterator& it) {return ((it._target != this->_target)||(it._ptr != this->_ptr));};
+        //
+        virtual const source_type& source() const    {return (this->_ptr)->source;};
+        virtual const color_type&  color()  const    {return (this->_ptr)->color; };
+        virtual const target_type& target() const    {return this->_target;       };
+        virtual const arrow_type   arrow()  const    {
+          return arrow_type(this->_ptr->source,this->_target,this->_ptr->color);
+        };
+      }; 
+      // Basic interface
+      TargetArrowArraySequence(const target_type& target, target_arrow_array arr_ptr, const size_t& seq_size) : 
+        _target(target), _arr_ptr(arr_ptr), _seq_size(seq_size) {};
+      TargetArrowArraySequence(const TargetArrowArraySequence& seq) :
+        _target(seq._target), _arr_ptr(seq._arr_ptr), _seq_size(seq._seq_size) {};
+      virtual ~TargetArrowArraySequence() {};
+      //
+      virtual iterator begin() { return iterator(this->_target, this->_arr_ptr); };
+      virtual iterator end()   { return iterator(this->_target, this->_arr_ptr+this->_seq_size); };
+      virtual size_t   size()  { return this->_seq_size; };
+      virtual bool     empty() { return (this->size() == 0); };
+    };// class TargetArrowArraySequence
 
     template <typename ParBiGraph_, typename Fuser_>
     class ParDelta { // class ParDelta
@@ -153,7 +209,7 @@ namespace ALE {
       typedef Fuser_      fuser_type;
       typedef ParBiGraph_ graph_type;
       typedef ColorBiGraph<int, ALE::Two::Rec<int>, ALE::def::Point, ALE::Two::Rec<ALE::def::Point>, ALE::def::Point, uniColor> overlap_type;
-      typedef typename fuser_type::traits::delta_type                       delta_type;
+      typedef typename fuser_type::traits::fusion_type                      fusion_type;
       //
       ParDelta(Obj<graph_type> graph, int debug = 0) : 
         _graph(graph), comm(_graph->comm()), size(_graph->commSize()), rank(_graph->commRank()), debug(debug) {
@@ -170,13 +226,13 @@ namespace ALE {
         return overlap;
       };
 
-      Obj<delta_type> delta(const Obj<overlap_type>& overlap) {
-        Obj<delta_type> delta = delta_type();
+      Obj<fusion_type> fusion(const Obj<overlap_type>& overlap) {
+        Obj<fusion_type> fusion = fusion_type();
         // If this is a serial object, we return an empty delta
         if((this->comm != PETSC_COMM_SELF) && (this->size > 1)) {
-          __computeDelta(overlap, delta);
+          __computeFusion(overlap, fusion);
         }
-        return delta;
+        return fusion;
       };
     protected:
       // FIX:  need to have _graph of const graph_type& type, but that requires const_cap, const_base etc (see ColorBiGraph)
@@ -858,8 +914,8 @@ namespace ALE {
         }        
       };// __determinePointOwners()
 
-
-      void __computeDelta(const Obj<overlap_type>& overlap, Obj<delta_type> delta) {
+      
+      void __computeFusion(const Obj<overlap_type>& overlap, Obj<fusion_type> fusion) {
         
       };
 
