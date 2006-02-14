@@ -11,7 +11,6 @@ T*/
 static char help[] = "Constructs a series of BiGraphs and performs basic queries on them.\n\n";
 
 #include <BiGraph.hh>
-#include <Delta.hh>
 
 typedef ALE::Two::BiGraph<int,int,int>                          BiGraphInt3;
 typedef std::set<int>                                           int_set;

@@ -85,7 +85,7 @@ runex04:
 	-@${MPIRUN} -np ${NP} ./ex04 ${EXTRA_ARGS}
 
 debugex04:
-	-@${MPIRUN} -np ${NP} ./ex04 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./ex04 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
 valex04:
 	-@valgrind --tool=memcheck ./ex04 ${EXTRA_ARGS}
@@ -95,7 +95,7 @@ runex05:
 	-@${MPIRUN} -np ${NP} ./ex05 ${EXTRA_ARGS}
 
 debugex05:
-	-@${MPIRUN} -np ${NP} ./ex05 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./ex05 -log_summary ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
 valex05:
 	-@valgrind --tool=memcheck ./ex05 ${EXTRA_ARGS}

@@ -7,20 +7,18 @@ T*/
   Create a series of parallel BiGraphs suitable for testing the Delta routines.
 */
 
-static char help[] = "Constructs a series of parallel BiGraphs and performs Delta routines.\n\n";
+static char help[] = "Constructs a series of parallel BiGraphs and performs ParDelta routines.\n\n";
 
-#include <Delta.hh>
+#include <ParDelta.hh>
 #include <ALE.hh>
 
 
 typedef ALE::Two::BiGraph<int,ALE::def::Point,int>                       PointBiGraph;
-typedef ALE::Two::RightConeDuplicationFuser<PointBiGraph,PointBiGraph>   PointConeFuser;
-typedef ALE::Two::ParDelta<PointBiGraph,PointConeFuser>                  PointParDelta;
+typedef ALE::Two::ParDelta<PointBiGraph>                                 PointParDelta;
 typedef PointParDelta::overlap_type                                      PointOverlap;
 typedef PointParDelta::fusion_type                                       PointConeFusion;
 
 PetscErrorCode   testBiGraphHat(MPI_Comm comm);
-void             viewConesAndSupports(const ALE::Obj<PointBiGraph>& bg, const char* name);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -48,56 +46,33 @@ int main(int argc, char *argv[])
 PetscErrorCode testBiGraphHat(MPI_Comm comm) {
   int rank;
   PetscErrorCode ierr;
+  int debug;
+  PetscTruth flag;
   PetscFunctionBegin;
   ALE::Obj<PointBiGraph> bg = PointBiGraph(comm);
 
   ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
   
+  debug = 0;
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag); CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "%s: using debug value of %d\n", __FUNCT__, debug); CHKERRQ(ierr);
+
   // Add three arrows from a single cap point rank to global points with the indices 2*rank, 2*rank+1, 2*rank+2 
   for(int i = 0; i < 3; i++) {
     bg->addArrow(rank, ALE::def::Point(-1,2*rank+i), -rank);
   }
   
   // View
-  bg->view(std::cout, "Hat bigraph");
+  bg->parView("Hat bigraph");
 
-  // View cones and supports
-  viewConesAndSupports(bg, "Hat bigraph");
-  
   // Construct a Delta object and a base overlap object
-  PointParDelta delta(bg, 0);
+  PointParDelta delta(bg, 1);
   ALE::Obj<PointOverlap>   overlap = delta.overlap();
   // View
-  overlap->view(std::cout, "Hat overlap");
-
+  overlap->parView("Hat overlap");
   ALE::Obj<PointConeFusion> fusion   = delta.fusion(overlap);
   // View
-  fusion->view(std::cout, "Hat cone fusion");
-
-
+  fusion->parView("Hat cone fusion");
 
   PetscFunctionReturn(0);
 }/* testBiGraphHat() */
-
-#undef  __FUNCT__
-#define __FUNCT__ "viewConesAndSupports"
-void viewConesAndSupports(const ALE::Obj<PointBiGraph>& bg, const char* name) {
-  
-  // View the cones for all base points
-  std::cout << name << " cones:" << std::endl;
-  ALE::Obj<PointBiGraph::traits::baseSequence> base = bg->base();
-  for(PointBiGraph::traits::baseSequence::traits::iterator i = base->begin(); i != base->end(); i++) {
-    ALE::Obj<PointBiGraph::traits::coneSequence> cone = bg->cone(*i);
-    std::cout << *i << ": ";
-    cone->view(std::cout, true); 
-  }
-
-  // View the supports for all cap points
-  std::cout << name << " supports:" << std::endl;
-  ALE::Obj<PointBiGraph::traits::capSequence> cap = bg->cap();
-  for(PointBiGraph::traits::capSequence::traits::iterator i = cap->begin(); i != cap->end(); i++) {
-    ALE::Obj<PointBiGraph::traits::supportSequence> supp = bg->support(*i);
-    std::cout << *i << ": ";
-    supp->view(std::cout, true); 
-  }
-}/* viewConesAndSupports() */
