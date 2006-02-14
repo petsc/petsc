@@ -1,9 +1,11 @@
 #ifndef included_ALE_ParDelta_hh
 #define included_ALE_ParDelta_hh
 
-#ifndef  included_ALE_BiGraph_hh
-#include <BiGraph.hh>
+#ifndef  included_ALE_Sifter_hh
+#include <Sifter.hh>
 #endif
+
+
 
 //
 // Classes and methods implementing  the parallel Overlap and Fusion algorithms on ColorBiGraph-like objects.
@@ -25,7 +27,8 @@ namespace ALE {
       typedef typename right_sequence_type::color_type                                         color_type;
       // we are using 'rebind' here to illustrate the general point, 
       // even though a simple 'typedef right_type delta_type' would be enough
-      typedef typename BiGraph_::template rebind<source_type, target_type, color_type>::type   fusion_type;
+      typedef typename BiGraph_::template rebind<source_type, ALE::Two::Rec<source_type>, target_type, 
+                                                 ALE::Two::Rec<target_type>, color_type>::type fusion_type;
       typedef typename fusion_type::traits::coneSequence                                       fusion_sequence_type;
     public:
       //
@@ -127,7 +130,7 @@ namespace ALE {
       // baseSequence.end() as the extrema for global reduction.
       typedef Fuser_                                                        fuser_type;
       typedef ParBiGraph_                                                   graph_type;
-      typedef ColorBiGraph<int, ALE::def::Point, ALE::def::Point, uniColor> overlap_type;
+      typedef ColorBiGraph<int, ALE::Two::Rec<int>, ALE::def::Point, ALE::Two::Rec<ALE::def::Point>, ALE::def::Point, uniColor> overlap_type;
       typedef typename fuser_type::fusion_type                              fusion_type;
       //
       ParDelta(Obj<graph_type> graph, int debug = 0) : 
