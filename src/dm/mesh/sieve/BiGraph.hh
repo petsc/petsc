@@ -713,8 +713,9 @@ namespace ALE {
             txt << "[" << this->commRank() << "]: " << *capi << "--(" << suppi.color() << ")-->" << *suppi << std::endl;
           }
         }
-        ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERRQ(ierr);
-        
+        ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+
         PetscFunctionReturn(0);
       };
     public:
