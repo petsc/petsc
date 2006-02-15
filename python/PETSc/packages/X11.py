@@ -160,7 +160,7 @@ acfindx:
       libraryDir = os.path.dirname(self.framework.argDB['with-x-lib'])
       foundLibrary = 1
     else:
-      testLibraries = [('X11', 'XSetForeground')]
+      testLibraries = [('X11', 'XSetWMName')]
       if self.framework.argDB['with-xt']:
         testLibraries.append(('Xt', 'XtMalloc'))
 
