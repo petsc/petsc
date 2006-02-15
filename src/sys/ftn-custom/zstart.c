@@ -60,6 +60,9 @@ extern PETSC_DLL_IMPORT PetscTruth PetscBeganMPI;
 #if defined(PETSC_HAVE_GFORTRAN_IARGC) /* gfortran from gcc4 */
 #define iargc_  _gfortran_iargc
 #define getarg_ _gfortran_getarg_i4
+#elif defined(PETSC_HAVE_BGL_IARGC) /* bgl g77 has different external & internal name mangling */
+#define iargc  iargc_
+#define getarg getarg_
 #endif
 
 /*
