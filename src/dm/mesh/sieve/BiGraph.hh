@@ -193,6 +193,16 @@ namespace ALE {
       typedef RecContainerTraits<Point_, Rec_> traits;
       typedef typename traits::set_type set_type;
       set_type set;
+      //
+      void removePoint(const typename traits::rec_type::point_type& p) {
+        typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index = 
+          ::boost::multi_index::get<typename traits::pointTag>(this->set);
+        typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type::iterator i = index.find(p);
+        if (i != index.end()) { // Point exists
+          index.erase(i);
+        }
+      };
+      //
       void adjustDegree(const typename traits::rec_type::point_type& p, int delta) {
         typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index = 
           ::boost::multi_index::get<typename traits::pointTag>(this->set);
@@ -217,17 +227,14 @@ namespace ALE {
           }
         }
         else { // Point exists, so we try to modify its degree
-          int newDegree = i->degree + delta;
-          if(newDegree < 0) {
-            ostringstream ss;
-            ss << "adjustDegree: Adjustment of " << *i << " by " << delta << " would result in negative degree: " << newDegree;
-            throw Exception(ss.str().c_str());
-          }
-          if(newDegree == 0) {
-            // We must erase this point
-            index.erase(i);
-          }
-          else {
+          // If the adjustment is zero, there is nothing to do, otherwise ...
+          if(delta != 0) {
+            int newDegree = i->degree + delta;
+            if(newDegree < 0) {
+              ostringstream ss;
+              ss << "adjustDegree: Adjustment of " << *i << " by " << delta << " would result in negative degree: " << newDegree;
+              throw Exception(ss.str().c_str());
+            }
             index.modify(i, typename traits::rec_type::degreeAdjuster(newDegree));
           }
         }
@@ -621,14 +628,28 @@ namespace ALE {
       support(const typename traits::source_type& p, const typename traits::color_type& color) {
         return typename traits::supportSequence(::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p, color);
       };
-      template<class sourceInputSequence>
+
+      template<class InputSequence>
       Obj<typename traits::supportSet>      
-      support(const Obj<sourceInputSequence>& sources);
-      // unimplemented
-      template<class sourceInputSequence>
+      support(const Obj<InputSequence>& sources) {
+        return this->support(sources, typename traits::color_type(), false);
+      };
+
+      template<class InputSequence>
       Obj<typename traits::supportSet>      
-      support(const Obj<sourceInputSequence>& sources, const typename traits::color_type& color);
-      // unimplemented
+      support(const Obj<InputSequence>& points, const typename traits::color_type& color, bool useColor = true){
+        Obj<typename traits::supportSet> supp = typename traits::supportSet();
+        for(typename InputSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
+          Obj<typename traits::supportSequence> pSupport;
+          if (useColor) {
+            pSupport = this->support(*p_itor, color);
+          } else {
+            pSupport = this->support(*p_itor);
+          }
+          supp->insert(pSupport->begin(), pSupport->end());
+        }
+        return supp;
+      };
  
       template<typename ostream_type>
       void view(ostream_type& os, const char* label = NULL, bool rawData = false){
@@ -740,6 +761,24 @@ namespace ALE {
       void clear() {
         this->_arrows.set.clear(); this->_base.set.clear(); this->_cap.set.clear();
       };
+      void addBasePoint(const typename traits::target_type t) {
+        // Increase degree by 0, which won't affect an existing point and will insert a new point, if necessery
+        this->_base.adjustDegree(t,0);
+      }
+      void removeBasePoint(const typename traits::target_type t) {
+        // Clear the cone and remove the point from _base
+        this->clearCone(t);
+        this->_base.removePoint(t);
+      }
+      void addCapPoint(const typename traits::source_type s) {
+        // Increase degree by 0, which won't affect an existing point and will insert a new point, if necessery
+        this->_cap.adjustDegree(s,0);
+      }
+      void removeCapPoint(const typename traits::source_type s) {
+        // Clear the support and remove the point from _cap
+        this->clearSupport(s);
+        this->_cap.removePoint(s);
+      }
       void addArrow(const typename traits::source_type& p, const typename traits::target_type& q) {
         this->addArrow(p, q, typename traits::color_type());
       };
@@ -852,7 +891,7 @@ namespace ALE {
         for(typename traits::baseSequence::iterator bi = base.begin(); bi != base.end(); bi++) {
           // Check whether *bi is in points, if it is NOT, remove it
           if(points->find(*bi) == points->end()) {
-            this->clearCone(*bi);
+            this->removeBasePoint(*bi);
           }
         }
       };
@@ -862,7 +901,28 @@ namespace ALE {
       excludeBase(const Obj<InputSequence>& points) {
         Obj<typename traits::baseSequence> base = this->base();
         for(typename InputSequence::iterator pi = points->begin(); pi != points->end(); pi++) {
-            this->clearCone(*pi);
+            this->removeBasePoint(*pi);
+        }
+      };
+
+      template<class InputSequence>
+      void
+      restrictCap(const Obj<InputSequence>& points) {
+        typename traits::capSequence cap = this->cap();
+        for(typename traits::capSequence::iterator ci = cap.begin(); ci != cap.end(); ci++) {
+          // Check whether *ci is in points, if it is NOT, remove it
+          if(points->find(*ci) == points->end()) {
+            this->removeCapPoint(*ci);
+          }
+        }
+      };
+
+      template<class InputSequence>
+      void
+      excludeCap(const Obj<InputSequence>& points) {
+        Obj<typename traits::capSequence> cap = this->cap();
+        for(typename InputSequence::iterator pi = points->begin(); pi != points->end(); pi++) {
+            this->removeCapPoint(*pi);
         }
       };
 
