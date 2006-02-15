@@ -34,6 +34,8 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_NAGF90',1)
     elif self.functions.check('PXFGETARG', libraries = self.compilers.flibs):
       self.addDefine('HAVE_PXFGETARG',1)
+    elif self.functions.check('iargc_', libraries = self.compilers.flibs):
+      self.addDefine('HAVE_BGL_IARGC',1)
     elif self.functions.check('GETARG@16', libraries = self.compilers.flibs): 
       self.addDefine('USE_NARGS',1)
       self.addDefine('HAVE_IARG_COUNT_PROGNAME',1)
