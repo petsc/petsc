@@ -22,7 +22,7 @@ static char help[] = "Generates, partitions, and outputs an unstructured mesh.\n
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer);
 PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh>);
-PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::def::Mesh>, Vec *);
+PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Two::Mesh>, Vec *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -350,10 +350,10 @@ PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
 /*
   Creates a vector whose value is the processor rank on each element
 */
-PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::def::Mesh> mesh, Vec *partition)
+PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Two::Mesh> mesh, Vec *partition)
 {
-  ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
-  ALE::Obj<ALE::def::Mesh::bundle_type> elementBundle = mesh->getBundle(mesh->getDimension());
+  ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
+  ALE::Obj<ALE::Two::Mesh::bundle_type> elementBundle = mesh->getBundle(mesh->getDimension());
   PetscScalar   *array;
   PetscMPIInt    rank;
   PetscInt       n, i;
