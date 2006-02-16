@@ -95,7 +95,7 @@ runex05:
 	-@${MPIRUN} -np ${NP} ./ex05 ${EXTRA_ARGS}
 
 debugex05:
-	-@${MPIRUN} -np ${NP} ./ex05 -log_summary ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIRUN} -np ${NP} ./ex05 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
 valex05:
 	-@valgrind --tool=memcheck ./ex05 ${EXTRA_ARGS}
