@@ -499,20 +499,20 @@ namespace ALE {
     // except the source and target points may have different types and iterated operations (e.g., nCone, closure)
     // are not available.
     // 
-    template<typename Source_, typename SourceRec_, typename Target_, typename TargetRec_, typename Color_, ColorMultiplicity colorMultiplicity>
+    template<typename Source_, typename SourceSet_, typename Target_, typename TargetSet_, typename Color_, ColorMultiplicity colorMultiplicity>
     class ColorBiGraph { // class ColorBiGraph
     public:
       typedef struct {
         // Encapsulated container types
         typedef ArrowContainer<Source_, Target_, Color_, colorMultiplicity>      arrow_container_type;
-        typedef RecContainer<Source_, SourceRec_>                                cap_container_type;
-        typedef RecContainer<Target_, TargetRec_>                                base_container_type;
+        typedef SourceSet_                                                       cap_container_type;
+        typedef TargetSet_                                                       base_container_type;
         // Types associated with records held in containers
         typedef typename arrow_container_type::traits::arrow_type                arrow_type;
         typedef typename arrow_container_type::traits::source_type               source_type;
-        typedef SourceRec_                                                       sourceRec_type;
+        typedef typename cap_container_type::traits::rec_type                    sourceRec_type;
         typedef typename arrow_container_type::traits::target_type               target_type;
-        typedef TargetRec_                                                       targetRec_type;
+        typedef typename base_container_type::traits::rec_type                   targetRec_type;
         typedef typename arrow_container_type::traits::color_type                color_type;
         // Convenient tag names
         typedef typename arrow_container_type::traits::sourceColorTag            supportInd;

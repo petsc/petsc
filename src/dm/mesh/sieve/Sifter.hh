@@ -2674,18 +2674,18 @@ namespace ALE {
     // by color.
     //
     template <typename Point_, typename Marker_, typename Color_>
-    class Sieve : public ALE::Two::BiGraph<Point_, Rec<Point_, Marker_>, Point_, Rec<Point_, Marker_>, Color_> {
+    class Sieve : public ALE::Two::BiGraph<Point_, RecContainer<Point_, Rec<Point_, Marker_> >, Point_, RecContainer<Point_, Rec<Point_, Marker_> >, Color_> {
     public:
       typedef Color_  color_type;
       typedef Point_  point_type;
       typedef Marker_ marker_type;
       int debug;
       typedef struct {
-        typedef ALE::Two::BiGraph<Point_, Rec<Point_, Marker_>, Point_, Rec<Point_, Marker_>, Color_> baseType;
+        typedef ALE::Two::BiGraph<Point_, RecContainer<Point_, Rec<Point_, Marker_> >, Point_, RecContainer<Point_, Rec<Point_, Marker_> >, Color_> baseType;
         // Encapsulated container types
         typedef typename baseType::traits::arrow_container_type arrow_container_type;
-        typedef RecContainer<Point_, Rec<Point_, Marker_> >     cap_container_type;
-        typedef RecContainer<Point_, Rec<Point_, Marker_> >     base_container_type;
+        typedef typename baseType::traits::cap_container_type   cap_container_type;
+        typedef typename baseType::traits::base_container_type  base_container_type;
         // Types associated with records held in containers
         typedef typename baseType::traits::arrow_type           arrow_type;
         typedef typename baseType::traits::source_type          source_type;
@@ -2704,20 +2704,20 @@ namespace ALE {
         // Return types
         //
         typedef typename baseType::traits::arrowSequence        arrowSequence;
-        typedef typename arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,coneInd>::type, target_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, source_type, source)> coneSequence;
-        typedef typename arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type, supportInd>::type, source_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, target_type, target)> supportSequence;
+        typedef typename baseType::traits::coneSequence         coneSequence;
+        typedef typename baseType::traits::supportSequence      supportSequence;
+        typedef typename baseType::traits::baseSequence         baseSequence;
+        typedef typename baseType::traits::capSequence          capSequence;
         typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::degreeTag,int> rootSequence;
         typedef typename base_container_type::traits::template ValueSequence<typename base_container_type::traits::degreeTag,int> leafSequence;
         typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::depthMarkerTag,int> depthSequence;
         typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::heightMarkerTag,int> heightSequence;
         typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::markerTag,marker_type> markerSequence;
-        typedef typename base_container_type::traits::PointSequence baseSequence;
-        typedef typename cap_container_type::traits::PointSequence  capSequence;
         typedef std::set<source_type> coneSet;
         typedef std::set<target_type> supportSet;
       } traits;
     public:
-      Sieve(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : ALE::Two::BiGraph<Point_, Rec<Point_, Marker_>, Point_, Rec<Point_, Marker_>, Color_>(comm, debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
+      Sieve(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : ALE::Two::BiGraph<Point_, RecContainer<Point_, Rec<Point_, Marker_> >, Point_, RecContainer<Point_, Rec<Point_, Marker_> >, Color_>(comm, debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
       virtual ~Sieve() {};
       // Printing
       friend std::ostream& operator<<(std::ostream& os, Obj<Sieve<Point_,Marker_,Color_> > s) { 
