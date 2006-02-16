@@ -579,12 +579,10 @@ namespace ALE {
       int      commRank() const {return this->_commRank;}
 
       // FIX: need const_cap, const_base returning const capSequence etc, but those need to have const_iterators, const_begin etc.
-      Obj<typename traits::capSequence>   
-      cap()  {
+      Obj<typename traits::capSequence> cap() {
         return typename traits::capSequence(::boost::multi_index::get<typename traits::capInd>(this->_cap.set));
       };
-      Obj<typename traits::baseSequence>    
-      base() {
+      Obj<typename traits::baseSequence> base() {
         return typename traits::baseSequence(::boost::multi_index::get<typename traits::baseInd>(this->_base.set));
       };
       // FIX: should probably have cone and const_cone etc, since arrows can be modified through an iterator (modifyColor).

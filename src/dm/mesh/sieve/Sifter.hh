@@ -2716,9 +2716,6 @@ namespace ALE {
         typedef std::set<source_type> coneSet;
         typedef std::set<target_type> supportSet;
       } traits;
-    protected:
-      typename traits::base_container_type  _base;
-      typename traits::cap_container_type   _cap;
     public:
       Sieve(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : ALE::Two::BiGraph<Point_, Rec<Point_, Marker_>, Point_, Rec<Point_, Marker_>, Color_>(comm, debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
       virtual ~Sieve() {};
