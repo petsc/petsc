@@ -2474,25 +2474,25 @@ namespace ALE {
       typedef Point_  point_type;
       typedef Marker_ marker_type;
       point_type  point;
+      int         degree;
       int         depth;
       int         height;
-      int         indegree;
-      int         outdegree;
       marker_type marker;
       // Basic interface
-      Rec() : point(point_type()), depth(0), height(0), indegree(0), outdegree(0), marker(marker_type()) {};
-      Rec(const Rec& r) : point(r.point), depth(r.depth), height(r.height), indegree(r.indegree), outdegree(r.outdegree), marker(r.marker) {}
-      Rec(const point_type& p) : point(p), depth(0), height(0), indegree(0), outdegree(0), marker(marker_type()) {};
-      Rec(const point_type& p, const int depth, const int height, const int indegree, const int outdegreee, const marker_type marker) : point(p), depth(depth), height(height), indegree(indegree), outdegree(outdegree), marker(marker) {};
+      Rec() : point(point_type()), degree(0), depth(0), height(0), marker(marker_type()) {};
+      Rec(const Rec& r) : point(r.point), degree(r.degree), depth(r.depth), height(r.height), marker(r.marker) {}
+      Rec(const point_type& p) : point(p), degree(0), depth(0), height(0), marker(marker_type()) {};
+      Rec(const point_type& p, const int degree) : point(p), degree(degree), depth(0), height(0), marker(marker_type()) {};
+      Rec(const point_type& p, const int degree, const int depth, const int height, const marker_type marker) : point(p), degree(degree), depth(depth), height(height), marker(marker) {};
       // Printing
       friend std::ostream& operator<<(std::ostream& os, const Rec& p) {
-        os << "<" << p.point << ", "<< p.depth << ", "<< p.height << ", "<< p.indegree << ", "<< p.outdegree << ", "<< p.marker << ">";
+        os << "<" << p.point << ", "<< p.degree << ", "<< p.depth << ", "<< p.height << ", "<< p.marker << ">";
         return os;
       };
-      
-      struct indegreeAdjuster {
-        indegreeAdjuster(int newDegree) : _newDegree(newDegree) {};
-        void operator()(Rec& r) { r.indegree = this->_newDegree; }
+
+      struct degreeAdjuster {
+        degreeAdjuster(int newDegree) : _newDegree(newDegree) {};
+        void operator()(Rec& r) { r.degree = this->_newDegree; }
       private:
         int _newDegree;
       };
@@ -2504,8 +2504,7 @@ namespace ALE {
       typedef typename rec_type::marker_type marker_type;
       // Index tags
       struct pointTag{};
-      struct indegreeTag{};
-      struct outdegreeTag{};
+      struct degreeTag{};
       struct markerTag{};
       struct depthMarkerTag{};
       struct heightMarkerTag{};
@@ -2517,10 +2516,7 @@ namespace ALE {
             ::boost::multi_index::tag<pointTag>, BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type, point)
           >,
           ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<indegreeTag>, BOOST_MULTI_INDEX_MEMBER(rec_type, int, indegree)
-          >,
-          ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<outdegreeTag>, BOOST_MULTI_INDEX_MEMBER(rec_type, int, outdegree)
+            ::boost::multi_index::tag<degreeTag>, BOOST_MULTI_INDEX_MEMBER(rec_type, int, degree)
           >,
           ::boost::multi_index::ordered_non_unique<
             ::boost::multi_index::tag<markerTag>, BOOST_MULTI_INDEX_MEMBER(rec_type, marker_type, marker)
@@ -2596,7 +2592,7 @@ namespace ALE {
        class iterator : public traits::iterator {
        public:
          iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
-         virtual const int& degree() const {return this->_itor->degree;};
+         virtual const int& degree()  const {return this->_itor->degree;};
        };
        
        ValueSequence(const PointSequence& seq)           : _index(seq._index), _value(seq._value) {};
@@ -2678,42 +2674,54 @@ namespace ALE {
     // by color.
     //
     template <typename Point_, typename Marker_, typename Color_>
-    class Sieve : ALE::Two::BiGraph<Point_, Rec<Point_, Marker_>, Point_, Rec<Point_, Marker_>, Color_> {
+    class Sieve : public ALE::Two::BiGraph<Point_, Rec<Point_, Marker_>, Point_, Rec<Point_, Marker_>, Color_> {
     public:
       typedef Color_  color_type;
       typedef Point_  point_type;
       typedef Marker_ marker_type;
       int debug;
       typedef struct {
-        typedef RecContainer<Point_, Rec<Point_, Marker_> > cap_container_type;
-        typedef RecContainer<Point_, Rec<Point_, Marker_> > base_container_type;
+        typedef ALE::Two::BiGraph<Point_, Rec<Point_, Marker_>, Point_, Rec<Point_, Marker_>, Color_> baseType;
+        // Encapsulated container types
+        typedef typename baseType::traits::arrow_container_type arrow_container_type;
+        typedef RecContainer<Point_, Rec<Point_, Marker_> >     cap_container_type;
+        typedef RecContainer<Point_, Rec<Point_, Marker_> >     base_container_type;
+        // Types associated with records held in containers
+        typedef typename baseType::traits::arrow_type           arrow_type;
+        typedef typename baseType::traits::source_type          source_type;
+        typedef typename baseType::traits::sourceRec_type       sourceRec_type;
+        typedef typename baseType::traits::target_type          target_type;
+        typedef typename baseType::traits::targetRec_type       targetRec_type;
+        typedef typename baseType::traits::color_type           color_type;
+        // Convenient tag names
+        typedef typename baseType::traits::supportInd           supportInd;
+        typedef typename baseType::traits::coneInd              coneInd;
+        typedef typename baseType::traits::arrowInd             arrowInd;
+        typedef typename baseType::traits::baseInd              baseInd;
+        typedef typename baseType::traits::capInd               capInd;
 
-        typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::indegreeTag,int> rootSequence;
-        typedef typename base_container_type::traits::template ValueSequence<typename base_container_type::traits::outdegreeTag,int> leafSequence;
+        //
+        // Return types
+        //
+        typedef typename baseType::traits::arrowSequence        arrowSequence;
+        typedef typename arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,coneInd>::type, target_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, source_type, source)> coneSequence;
+        typedef typename arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type, supportInd>::type, source_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, target_type, target)> supportSequence;
+        typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::degreeTag,int> rootSequence;
+        typedef typename base_container_type::traits::template ValueSequence<typename base_container_type::traits::degreeTag,int> leafSequence;
         typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::depthMarkerTag,int> depthSequence;
         typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::heightMarkerTag,int> heightSequence;
         typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::markerTag,marker_type> markerSequence;
+        typedef typename base_container_type::traits::PointSequence baseSequence;
+        typedef typename cap_container_type::traits::PointSequence  capSequence;
+        typedef std::set<source_type> coneSet;
+        typedef std::set<target_type> supportSet;
       } traits;
-    private:
-      struct StratumPoint {
-        Point_  point;
-        int   depth;
-        int   height;
-        int   indegree;
-        int   outdegree;
-        marker_type marker;
-
-        StratumPoint() : depth(0), height(0), indegree(0), outdegree(0), marker(marker_type()) {};
-        StratumPoint(const Point_& p) : point(p), depth(0), height(0), indegree(0), outdegree(0), marker(marker_type()) {};
-        // Printing
-        friend std::ostream& operator<<(std::ostream& os, const StratumPoint& p) {
-          os << "[" << p.point << ", "<< p.depth << ", "<< p.height << ", "<< p.indegree << ", "<< p.outdegree << ", " << p.marker << "]";
-          return os;
-        };
-      };
-
+    protected:
+      typename traits::base_container_type  _base;
+      typename traits::cap_container_type   _cap;
     public:
-      Sieve(int debug = 0) : debug(debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
+      Sieve(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : ALE::Two::BiGraph<Point_, Rec<Point_, Marker_>, Point_, Rec<Point_, Marker_>, Color_>(comm, debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
+      virtual ~Sieve() {};
       // Printing
       friend std::ostream& operator<<(std::ostream& os, Obj<Sieve<Point_,Marker_,Color_> > s) { 
         os << *s; 
@@ -2731,6 +2739,9 @@ namespace ALE {
         }
         return os;
       };
+
+      template<typename ostream_type>
+      void view(ostream_type& os, const char* label, bool rawData);
 
     private:
       typedef ALE::def::PointSet   PointSet;
@@ -2869,10 +2880,10 @@ namespace ALE {
 
     public:
       Obj<typename traits::rootSequence> roots() {
-        return typename traits::rootSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::indegreeTag>(this->_cap), 0);
+        return typename traits::rootSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::degreeTag>(this->_cap), 0);
       };
       Obj<typename traits::leafSequence> leaves() {
-        return typename traits::leafSequence(::boost::multi_index::get<typename traits::base_container_type::traits::outdegreeTag>(this->_base), 0);
+        return typename traits::leafSequence(::boost::multi_index::get<typename traits::base_container_type::traits::degreeTag>(this->_base), 0);
       };
     private:
       bool doStratify;
@@ -2909,10 +2920,11 @@ namespace ALE {
       //
       // Structural manipulation
       //
+
       struct changeMarker {
         changeMarker(int newMarker) : newMarker(newMarker) {};
 
-        void operator()(StratumPoint& p) {
+        void operator()(typename traits::base_container_type::traits::rec_type& p) {
           p.marker = newMarker;
         }
       private:
@@ -2923,32 +2935,10 @@ namespace ALE {
       template<class InputSequence> void setMarker(const Obj<InputSequence>& points, const marker_type& marker);
 
     private:
-      struct changeIndegree {
-        changeIndegree(int newIndegree) : newIndegree(newIndegree) {};
-
-        void operator()(StratumPoint& p) {
-          p.indegree = newIndegree;
-        }
-      private:
-        int newIndegree;
-      };
-
-      struct changeOutdegree {
-        changeOutdegree(int newOutdegree) : newOutdegree(newOutdegree) {};
-
-        void operator()(StratumPoint& p) {
-          p.outdegree = newOutdegree;
-        }
-      private:
-        int newOutdegree;
-      };
-
-      void __computeDegrees();
-
       struct changeHeight {
         changeHeight(int newHeight) : newHeight(newHeight) {};
 
-        void operator()(StratumPoint& p) {
+        void operator()(typename traits::base_container_type::traits::rec_type& p) {
           p.height = newHeight;
         }
       private:
@@ -2960,7 +2950,7 @@ namespace ALE {
       struct changeDepth {
         changeDepth(int newDepth) : newDepth(newDepth) {};
 
-        void operator()(StratumPoint& p) {
+        void operator()(typename traits::base_container_type::traits::rec_type& p) {
           p.depth = newDepth;
         }
       private:
@@ -3468,6 +3458,66 @@ namespace ALE {
       }
       return join;
     };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<typename ostream_type>
+    void Sieve<Point_,Marker_,Color_>::view(ostream_type& os, const char* label = NULL, bool rawData = false){
+      if(label != NULL) {
+        os << "Viewing Sieve '" << label << "':" << std::endl;
+      } 
+      else {
+        os << "Viewing a Sieve:" << std::endl;
+      }
+      if(!rawData) {
+        os << "cap --> base:" << std::endl;
+        Obj<typename traits::capSequence> cap = this->cap();
+        for(typename traits::capSequence::iterator capi = cap->begin(); capi != cap->end(); ++capi) {
+          Obj<typename traits::supportSequence> supp = this->support(*capi);
+          for(typename traits::supportSequence::iterator suppi = supp->begin(); suppi != supp->end(); ++suppi) {
+            os << *capi << "--(" << suppi.color() << ")-->" << *suppi << std::endl;
+          }
+        }
+        os << "base <-- cap:" << std::endl;
+        Obj<typename traits::baseSequence> base = this->base();
+        for(typename traits::baseSequence::iterator basei = base->begin(); basei != base->end(); ++basei) {
+          Obj<typename traits::coneSequence> cone = this->cone(*basei);
+          for(typename traits::coneSequence::iterator conei = cone->begin(); conei != cone->end(); ++conei) {
+            os << *basei <<  "<--(" << conei.color() << ")--" << *conei << std::endl;
+          }
+        }
+        os << "cap --> outdegrees:" << std::endl;
+        for(typename traits::capSequence::iterator capi = cap->begin(); capi != cap->end(); ++capi) {
+          os << *capi <<  "-->" << capi.degree() << std::endl;
+        }
+        os << "base <-- indegrees:" << std::endl;
+        for(typename traits::baseSequence::iterator basei = base->begin(); basei != base->end(); ++basei) {
+          os << *basei <<  "<--" << basei.degree() << std::endl;
+        }
+      }
+      else {
+        os << "'raw' arrow set:" << std::endl;
+        for(typename traits::arrow_container_type::set_type::iterator ai = this->_arrows.set.begin(); ai != this->_arrows.set.end(); ai++)
+        {
+          typename traits::arrow_type arr = *ai;
+          os << arr << std::endl;
+        }
+        os << "'raw' base set:" << std::endl;
+        for(typename traits::base_container_type::set_type::iterator bi = this->_base.set.begin(); bi != this->_base.set.end(); bi++) 
+        {
+          typename traits::base_container_type::traits::rec_type bp = *bi;
+          os << bp << std::endl;
+        }
+        os << "'raw' cap set:" << std::endl;
+        for(typename traits::cap_container_type::set_type::iterator ci = this->_cap.set.begin(); ci != this->_cap.set.end(); ci++) 
+        {
+          typename traits::cap_container_type::traits::rec_type cp = *ci;
+          os << cp << std::endl;
+        }
+      }
+    };
+    //
+    // Structural manipulation
+    //
   } // namespace Three
 } // namespace ALE
 

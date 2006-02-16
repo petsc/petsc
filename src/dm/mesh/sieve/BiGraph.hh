@@ -581,11 +581,11 @@ namespace ALE {
       // FIX: need const_cap, const_base returning const capSequence etc, but those need to have const_iterators, const_begin etc.
       Obj<typename traits::capSequence>   
       cap()  {
-        return typename traits::capSequence(::boost::multi_index::get<typename traits::capInd>(_cap.set));
+        return typename traits::capSequence(::boost::multi_index::get<typename traits::capInd>(this->_cap.set));
       };
       Obj<typename traits::baseSequence>    
       base() {
-        return typename traits::baseSequence(::boost::multi_index::get<typename traits::baseInd>(_base.set));
+        return typename traits::baseSequence(::boost::multi_index::get<typename traits::baseInd>(this->_base.set));
       };
       // FIX: should probably have cone and const_cone etc, since arrows can be modified through an iterator (modifyColor).
       Obj<typename traits::arrowSequence> 
@@ -650,7 +650,7 @@ namespace ALE {
         }
         return supp;
       };
- 
+
       template<typename ostream_type>
       void view(ostream_type& os, const char* label = NULL, bool rawData = false){
         if(label != NULL) {
@@ -810,18 +810,18 @@ namespace ALE {
         this->clearSupport(s);
         this->_cap.removePoint(s);
       }
-      void addArrow(const typename traits::source_type& p, const typename traits::target_type& q) {
+      virtual void addArrow(const typename traits::source_type& p, const typename traits::target_type& q) {
         this->addArrow(p, q, typename traits::color_type());
       };
-      void addArrow(const typename traits::source_type& p, const typename traits::target_type& q, const typename traits::color_type& color) {
+      virtual void addArrow(const typename traits::source_type& p, const typename traits::target_type& q, const typename traits::color_type& color) {
         this->addArrow(typename traits::arrow_type(p, q, color));
         //std::cout << "Added " << arrow_type(p, q, color);
       };
-      void addArrow(const typename traits::arrow_type& a) {
-        this->_arrows.set.insert(a); _base.adjustDegree(a.target,1); _cap.adjustDegree(a.source,1);
+      virtual void addArrow(const typename traits::arrow_type& a) {
+        this->_arrows.set.insert(a); this->_base.adjustDegree(a.target,1); this->_cap.adjustDegree(a.source,1);
         //std::cout << "Added " << Arrow_(p, q, color);
       };
-      void removeArrow(const typename traits::arrow_type& a) {
+      virtual void removeArrow(const typename traits::arrow_type& a) {
         // First, produce an arrow sequence for the given source, target combination.
         typename traits::arrowSequence::traits::index_type& arrowIndex = 
           ::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set);
@@ -841,7 +841,7 @@ namespace ALE {
             if(debug) { // if(debug)
               std::cout << std::endl << "removeArrow: found:" << *j << std::endl;
             }
-            _base.adjustDegree(a.target, -1); _cap.adjustDegree(a.source,-1);
+            this->_base.adjustDegree(a.target, -1); this->_cap.adjustDegree(a.source,-1);
             arrowIndex.erase(j);
             break;
           }

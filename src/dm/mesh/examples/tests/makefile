@@ -1,5 +1,5 @@
 CPPFLAGS        = -DALE_HAVE_CXX_ABI -DALE_USE_LOGGING -DALE_USE_DEBUGGING -DALE_LOGGING_USE_EVENTS #-DALE_LOGGING_USE_STAGES
-CFLAGS	        = -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE}
+CFLAGS	        = -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
 FFLAGS	        =
 FPPFLAGS        = 
 LOCDIR          = src/dm/mesh/examples/tutorials/

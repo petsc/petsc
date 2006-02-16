@@ -44,18 +44,18 @@ namespace ALE {
         this->boundaries  = foliation_type(debug);
       };
 
-      MPI_Comm        getComm() {return this->comm;};
+      MPI_Comm        getComm() const {return this->comm;};
       void            setComm(MPI_Comm comm) {this->comm = comm; MPI_Comm_rank(comm, &this->rank);};
-      int             getRank() {return this->rank;};
-      Obj<sieve_type> getTopology() {return this->topology;};
+      int             getRank() const {return this->rank;};
+      Obj<sieve_type> getTopology() const {return this->topology;};
       void            setTopology(const Obj<sieve_type>& topology) {this->topology = topology;};
-      int             getDimension() {return this->dim;};
+      int             getDimension() const {return this->dim;};
       void            setDimension(int dim) {this->dim = dim;};
-      Obj<field_type> getCoordinates() {return this->coordinates;};
+      Obj<field_type> getCoordinates() const {return this->coordinates;};
       void            setCoordinates(const Obj<field_type>& coordinates) {this->coordinates = coordinates;};
-      Obj<field_type> getBoundary() {return this->boundary;};
+      Obj<field_type> getBoundary() const {return this->boundary;};
       void            setBoundary(const Obj<field_type>& boundary) {this->boundary = boundary;};
-      Obj<foliation_type> getBoundaries() {return this->boundaries;};
+      Obj<foliation_type> getBoundaries() const {return this->boundaries;};
       Obj<bundle_type> getBundle(const int dim) {
         ALE_LOG_EVENT_BEGIN;
         if (this->bundles.find(dim) == this->bundles.end()) {
@@ -1966,7 +1966,7 @@ namespace ALE {
 #endif
     public:
       void partition(const ALE::Two::Mesh& mesh) {
-        int dim = mesh->getDimension();
+        int dim = mesh.getDimension();
 
         if (dim == 2) {
 #ifdef PETSC_HAVE_CHACO
@@ -1974,8 +1974,9 @@ namespace ALE {
 #else
           throw ALE::Exception("Mesh partitioning currently requires Chaco to be installed. Use --download-chaco during configure.");
 #endif
+        }
       };
-    }
+    };
   } // namespace def
 } // namespace ALE
 
