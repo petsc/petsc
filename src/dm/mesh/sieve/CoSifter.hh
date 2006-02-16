@@ -42,6 +42,7 @@ namespace ALE {
       typedef Value_ value_type;
       typedef BiGraph<point_type,RecContainer<point_type,Rec<point_type> >,patch_type,RecContainer<patch_type,Rec<patch_type> >,index_type> order_type;
     private:
+      MPI_Comm        _comm;
       int             debug;
       Obj<sieve_type> _topology;
       // We need an ordering, which should be patch<--order--point
@@ -63,10 +64,11 @@ namespace ALE {
       // on the patch. We use a BiGraph here, but the object can properly be thought
       // of as a CoSieve over the topology sieve.
     public:
-      CoSifter(int debug = 0) : debug(debug) {
-        _order = order_type(debug);
+      CoSifter(MPI_Comm comm = PETSC_COMM_SELF, int debug = 0) : _comm(comm), debug(debug) {
+        _order = order_type(this->_comm, debug);
       };
 
+      MPI_Comm        comm() {return this->_comm;};
       void            setTopology(const Obj<sieve_type>& topology) {this->_topology = topology;};
       Obj<sieve_type> getTopology() {return this->_topology;};
       // -- Patch manipulation --
@@ -81,7 +83,7 @@ namespace ALE {
     private:
       Obj<order_type> __getOrder(const std::string& orderName) {
         if (this->_reorders.find(orderName) == this->_reorders.end()) {
-          this->_reorders[orderName] = order_type(this->debug);
+          this->_reorders[orderName] = order_type(this->_topology->comm(), this->debug);
         }
         return this->_reorders[orderName];
       };
@@ -278,13 +280,25 @@ namespace ALE {
         return array;
       }
       // -- Value manipulation --
+    private:
+      void __checkPatch(const patch_type& patch) {
+        if (this->_storage.find(patch) != this->_storage.end()) return;
+        ostringstream msg;
+
+        msg << "Invalid patch: " << patch;
+        throw ALE::Exception(msg.str().c_str());
+      };
+    public:
       int getSize(const patch_type& patch) {
+        this->__checkPatch(patch);
         return this->_storageSize[patch];
       };
       const value_type *restrict(const patch_type& patch) {
+        this->__checkPatch(patch);
         return this->_storage[patch];
       };
       const value_type *restrict(const patch_type& patch, const point_type& p) {
+        this->__checkPatch(patch);
         return &this->_storage[patch][this->_order->getColor(p, patch, false).prefix];
       };
       // Can this be improved?

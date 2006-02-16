@@ -1219,8 +1219,11 @@ namespace ALE {
         };
       };
 
+      MPI_Comm _comm;
     public:
-      Sieve(int debug = 0) : debug(debug), stratification(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
+      Sieve(MPI_Comm comm = PETSC_COMM_SELF, int debug = 0) : _comm(comm), debug(debug), stratification(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
+
+      MPI_Comm comm() {return this->_comm;};
       // Printing
       friend std::ostream& operator<<(std::ostream& os, Obj<Sieve<Point_,Color_> > s) { 
         os << *s; 
