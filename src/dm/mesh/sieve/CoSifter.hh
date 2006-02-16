@@ -40,7 +40,7 @@ namespace ALE {
       typedef Index_ index_type;
       typedef std::vector<index_type> IndexArray;
       typedef Value_ value_type;
-      typedef BiGraph<point_type,patch_type,index_type> order_type;
+      typedef BiGraph<point_type,Rec<point_type>,patch_type,Rec<patch_type>,index_type> order_type;
     private:
       int             debug;
       Obj<sieve_type> _topology;
