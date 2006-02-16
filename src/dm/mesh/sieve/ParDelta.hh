@@ -798,6 +798,8 @@ namespace ALE {
 
 
       // -------------------------------------------------------------------------------------------------------------------
+      #undef __FUNCT__
+      #define __FUNCT__ "__computeFusion"
       void __computeFusion(const Obj<overlap_type>& overlap, const Obj<fuser_type>& fuser, Obj<fusion_type> fusion) {
         typedef ConeArraySequence<typename graph_type::traits::arrow_type> cone_array_sequence;
         typedef typename cone_array_sequence::cone_arrow_type cone_arrow_type;
@@ -1020,6 +1022,7 @@ namespace ALE {
         // Traverse all neighbors  from whom we are expecting cones
         cntr = 0; // arrow counter
         NeighborOffsetIn = ConesIn;
+        ostringstream txt;
         for(typename overlap_type::traits::capSequence::iterator ci  = overlapCap.begin(); ci != overlapCap.end(); ci++) 
         { // traversing overlap.cap()
           // Traverse all the points within the overlap with this neighbor 
@@ -1028,15 +1031,28 @@ namespace ALE {
           for(typename overlap_type::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++)
           {
             Point p = *si;
-            int32_t coneSizeIn = si.color().index; // FIX: color() type Point --> ALE::Two::pair
+            int32_t coneSizeIn = si.color().prefix; // FIX: color() type Point --> ALE::Two::pair
             // NOTE: coneSizeIn may be 0, which is legal, since the fuser in principle can operate on an empty cone.
             // Extract the local cone into a coneSequence
             typename graph_type::traits::coneSequence lcone = this->_graph->cone(p);
             // Wrap the arrived cone in a cone_array_sequence
             cone_array_sequence rcone(NeighborOffsetIn, coneSizeIn, p);
+            if(debug) { /* ---------------------------------------------------------------------------------------*/
+              txt << "[" << this->rank << "]: "<<__FUNCT__<< ": received a cone of size " << coneSizeIn << " from "<<*ci<< std::endl;
+            }/* --------------------------------------------------------------------------------------------------*/
             // Fuse the cones
             fuser->fuseCones(lcone, rcone, fusion);
+            NeighborOffsetIn += coneSizeIn;
           }
+        }
+        if(debug) { /* ---------------------------------------------------------------------------------------*/
+          if(NeighborCountIn == 0) {
+            txt << "[" << this->rank << "]: no cones to fuse in" << std::endl;
+          } 
+          ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
+          CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedFlush(this->comm);
+          CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         }
 
         // Wait on the original sends
