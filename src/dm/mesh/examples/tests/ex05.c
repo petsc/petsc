@@ -1,25 +1,25 @@
 /*T
-   Concepts: BiGraph, ParDelta
-   Processors: 1
+   Concepts: BiGraph
+   Processors: multiple
 T*/
 
 /*
-  Tests ConeArraySequence -- a sequence that wraps an array of (source,color) "arrows" over a given target
-  and presents it as an sequence of Arrows; used in ParDelta.fusion().
-  Note: this test may not fail in parallel, but is not designed to run that way.
+  Create a series of parallel BiGraphs suitable for testing the Delta routines.
 */
 
-static char help[] = "Constructs and views test ConeArraySequences involved in ParFusion.\n\n";
+static char help[] = "Constructs a series of parallel BiGraphs and performs ParDelta routines.\n\n";
 
 #include <ParDelta.hh>
+#include <ALE.hh>
 
-typedef ALE::def::Point                         Point;
-typedef ALE::Two::Arrow<Point, Point, Point>    PointArrow;
-typedef ALE::Two::ConeArraySequence<PointArrow> PointConeArraySequence;
-typedef PointConeArraySequence::cone_arrow_type PointConeArrow;
 
-PetscErrorCode   testPointConeArraySequence();
-PetscErrorCode   viewPointConeArraySequence(PointConeArraySequence& seq, const char* label = NULL);
+typedef ALE::Two::BiGraph<int,ALE::Two::Rec<int>,ALE::def::Point,ALE::Two::Rec<ALE::def::Point>,int> PointBiGraph;
+typedef ALE::Two::ParDelta<PointBiGraph>                                 PointParDelta;
+typedef PointParDelta::overlap_type                                      PointOverlap;
+typedef PointParDelta::fusion_type                                       PointConeFusion;
+
+PetscErrorCode   testBiGraphHat(MPI_Comm comm);
+PetscErrorCode   testBiGraphSkewedHat(MPI_Comm comm);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -35,74 +35,86 @@ int main(int argc, char *argv[])
   verbosity = 1;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag); CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
-  ierr = testPointConeArraySequence();                                    CHKERRQ(ierr);
 
+  ierr = testBiGraphHat(comm); CHKERRQ(ierr);
+  ierr = testBiGraphSkewedHat(comm); CHKERRQ(ierr);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* main() */
 
 #undef  __FUNCT__
-#define __FUNCT__ "testPointConeArraySequence"
-PetscErrorCode testPointConeArraySequence() {
-  PetscTruth flag;
+#define __FUNCT__ "testBiGraphHat"
+PetscErrorCode testBiGraphHat(MPI_Comm comm) {
+  int rank;
   PetscErrorCode ierr;
-
-  // Allocate a raw array of n PointConeArrows 
-  int n = 10;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-sequenceSize", &n, &flag); CHKERRQ(ierr);
-  if(n < 0) {
-    SETERRQ1(1, "Invalid PointConeArraySequence size: %d", n);
-  }
-  
-  PointConeArrow *aa = (PointConeArrow*) malloc(sizeof(PointConeArrow)*n);
-
-  // Fill in the array
-  for(int i = 0; i < n; i++) {
-    aa[i] = PointConeArrow(Point(i+1,i+1), Point(-(i+1),-(i+1)));
-  }
-  // Wrap it in a PointConeArraySequence with the target (0,0).
-  PointConeArraySequence aas(aa,n,Point(0,0));
-
-  // View the sequence
-  ierr = viewPointConeArraySequence(aas, "'Manual'"); CHKERRQ(ierr);
-
-  // Fill in the array using the 'PointConeArrow::place' method
-  for(int i = 0; i < n; i++) {
-    PointArrow a(Point(i+1,i+1), Point(0,0), Point(-(i+1),-(i+1)));
-    PointConeArraySequence::cone_arrow_type::place(aa+i,a);
-  }
-  // Wrap it in a PointConeArraySequence with the target (0,0).
-  aas = PointConeArraySequence(aa,n,Point(0,0));
-
-  // View the sequence
-  ierr = viewPointConeArraySequence(aas, "'Auto'"); CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}/* testPointConeArraySequence() */
-
-
-#undef  __FUNCT__
-#define __FUNCT__ "viewPointConeArraySequence"
-PetscErrorCode viewPointConeArraySequence(PointConeArraySequence& aas, const char* label) {
+  int debug;
+  PetscTruth flag;
   PetscFunctionBegin;
 
-  std::cout << __FUNCT__ << ": viewing a PointConeArraySequence ";
-  if(label != NULL) {
-    std::cout << label;
+  ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
+  
+  debug = 0;
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag); CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "%s: using debug value of %d\n", __FUNCT__, debug); CHKERRQ(ierr);
+
+  ALE::Obj<PointBiGraph> bg = PointBiGraph(comm, debug);
+
+  // Add three arrows from a single cap point rank to global points with the indices 2*rank, 2*rank+1, 2*rank+2 
+  for(int i = 0; i < 3; i++) {
+    bg->addArrow(rank, ALE::def::Point(-1,2*rank+i), -rank);
   }
-  std::cout << " of " << aas.size() << " PointConeArrows" << std::endl;
-  if(aas.empty()) {
-    std::cout << __FUNCT__ << ": sequence IS empty" << std::endl;
-  }
-  if(!aas.empty()) {
-    std::cout << __FUNCT__ << ": sequence NOT empty" << std::endl;
-  }
-  std::cout << "[";
-  for(PointConeArraySequence::iterator ai = aas.begin(); ai != aas.end(); ai++) {
-    std::cout << " " << *ai;
-  }
-  std::cout << "]" << std::endl;
+  
+  // View
+  bg->view("Hat bigraph");
+
+  // Construct a Delta object and a base overlap object
+  PointParDelta delta(bg, debug);
+  ALE::Obj<PointOverlap>   overlap = delta.overlap();
+  // View
+  overlap->view("Hat overlap");
+  ALE::Obj<PointConeFusion> fusion   = delta.fusion(overlap);
+  // View
+  fusion->view("Hat cone fusion");
 
   PetscFunctionReturn(0);
-}/* viewPointConeArraySequence() */
+}/* testBiGraphHat() */
+
+#undef  __FUNCT__
+#define __FUNCT__ "testBiGraphSkewedHat"
+PetscErrorCode testBiGraphSkewedHat(MPI_Comm comm) {
+  int rank;
+  PetscErrorCode ierr;
+  int debug;
+  PetscTruth flag;
+  PetscFunctionBegin;
+
+  ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
+  
+  debug = 0;
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag); CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "%s: using debug value of %d\n", __FUNCT__, debug); CHKERRQ(ierr);
+
+  ALE::Obj<PointBiGraph> bg = PointBiGraph(comm, debug);
+
+  // Add two arrows from a single cap point 'rank' to global points with the indices 2*rank, 2*rank+1
+  // as well as a single base point 2*(rank+1)
+  for(int i = 0; i < 2; i++) {
+    bg->addArrow(rank, ALE::def::Point(-1,2*rank+i), -rank);
+  }
+  bg->addBasePoint(ALE::def::Point(-1,2*(rank+1)));
+  
+  // View
+  bg->view("SkewedHat bigraph");
+
+  // Construct a Delta object and a base overlap object
+  PointParDelta delta(bg, debug);
+  ALE::Obj<PointOverlap>   overlap = delta.overlap();
+  // View
+  overlap->view("SkewedHat overlap");
+  ALE::Obj<PointConeFusion> fusion   = delta.fusion(overlap);
+  // View
+  fusion->view("SkewedHat cone fusion");
+
+  PetscFunctionReturn(0);
+}/* testBiGraphSkewedHat() */
