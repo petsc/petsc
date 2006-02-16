@@ -727,14 +727,45 @@ namespace ALE {
         if(this->commRank() == 0) {
           txt << "cap --> base:\n";
         }
-        typename traits::capSequence cap = this->cap();
+        typename traits::capSequence cap   = this->cap();
+        typename traits::baseSequence base = this->base();
+        if(cap.empty()) {
+          txt << "[" << this->commRank() << "]: empty" << std::endl; 
+        }
         for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
           typename traits::supportSequence supp = this->support(*capi);
           for(typename traits::supportSequence::iterator suppi = supp.begin(); suppi != supp.end(); suppi++) {
             txt << "[" << this->commRank() << "]: " << *capi << "--(" << suppi.color() << ")-->" << *suppi << std::endl;
           }
         }
+        //
         ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        //
+        ostringstream txt1;
+        if(this->commRank() == 0) {
+          txt1 << "cap <point,degree>:\n";
+        }
+        txt1 << "[" << this->commRank() << "]:  [";
+        for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
+          txt1 << " <" << *capi << "," << capi.degree() << ">";
+        }
+        txt1 << " ]" << std::endl;
+        //
+        ierr = PetscSynchronizedPrintf(this->comm(), txt1.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        //
+        ostringstream txt2;
+        if(this->commRank() == 0) {
+          txt2 << "base <point,degree>:\n";
+        }
+        txt2 << "[" << this->commRank() << "]:  [";
+        for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
+          txt2 << " <" << *basei << "," << basei.degree() << ">";
+        }
+        txt2 << " ]" << std::endl;
+        //
+        ierr = PetscSynchronizedPrintf(this->comm(), txt2.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
 
         PetscFunctionReturn(0);

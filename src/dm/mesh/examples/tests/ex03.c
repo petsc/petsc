@@ -74,13 +74,13 @@ PetscErrorCode testBiGraphDiv2() {
   std::cout << " ]" << std::endl;
 
   // Take and view the support of the whole cap
-/*   ALE::Obj<BiGraphInt3::traits::supportSet> supp = bg->support(bg->cap()); */
-/*   std::cout << "Total support of bigraph/2" << std::endl; */
-/*   std::cout << "["; */
-/*   for(BiGraphInt3::traits::supportSet::iterator i = supp->begin(); i != supp->end(); i++) { */
-/*     std::cout << *i; */
-/*   } */
-/*   std::cout << "]"; */
+  ALE::Obj<BiGraphInt3::traits::supportSet> supp = bg->support(bg->cap());
+  std::cout << "Total support of bigraph/2" << std::endl;
+  std::cout << "[";
+  for(BiGraphInt3::traits::supportSet::iterator i = supp->begin(); i != supp->end(); i++) {
+    std::cout << *i;
+  }
+  std::cout << "]";
 
 
   // Change each arrow color to its negative

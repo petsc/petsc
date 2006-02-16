@@ -807,34 +807,38 @@ namespace ALE {
 
         // Compute total incoming cone sizes by neighbor and the total incomping cone size.
         // Also count the total number of neighbors we will be communicating with
-        int32_t  NeighborCount = 0;
+        int32_t  NeighborCountIn = 0;
         int__int NeighborConeSizeIn;
         int32_t  ConeSizeIn = 0;
         ostringstream txt3;
         // Traverse all of the neighbors  from whom we will be receiving cones -- the cap of the overlap.
-        // FIX: replace overlap->cap() with a generic method
         typename overlap_type::traits::capSequence overlapCap = overlap->cap();
         for(typename overlap_type::traits::capSequence::iterator ci  = overlapCap.begin(); ci != overlapCap.end(); ci++) 
         { // traversing overlap.cap()
-          int32_t neighbor = *ci;
-          NeighborConeSizeIn[neighbor] = 0;
+          int32_t neighborIn = *ci;
           // Traverse the supports of the overlap graph under each neighbor rank, count cone sizes to be received and add the cone sizes
-          // FIX: replace overlap->cap() and supportSequence with a generic method
           typename overlap_type::traits::supportSequence supp = overlap->support(*ci);
           if(debug2) {
-            txt3 << "[" << rank << "]: " << "__computeFusion: overlap: support of rank " << neighbor << ": " << std::endl;
+            //txt3 << "[" << rank << "]: " << "__computeFusion: overlap: support of rank " << neighborIn << ": " << std::endl;
             //txt3 << supp;
           }
+          int32_t coneSizeIn = 0;
           for(typename overlap_type::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
-            // FIX: replace si.color() Point --> ALE::pair
-            NeighborConeSizeIn[neighbor] = NeighborConeSizeIn[neighbor] + si.color().prefix;
+            // FIX: replace si.color() type: Point --> ALE::pair
+            coneSizeIn += si.color().prefix;
           }
-          // Accumulate the total cone size
-          ConeSizeIn += NeighborConeSizeIn[neighbor];
-          NeighborCount++;
-          txt3 << "NeighborConeSizeIn[" << neighbor << "]: " << NeighborConeSizeIn[neighbor] << "\n";
+          if(coneSizeIn > 0) {
+            // Accumulate the total cone size
+            ConeSizeIn += coneSizeIn;
+            NeighborConeSizeIn[neighborIn] = coneSizeIn;
+            NeighborCountIn++;
+            txt3  << "[" << rank << "]: " << "NeighborConeSizeIn[" << neighborIn << "]: " << NeighborConeSizeIn[neighborIn] << "\n";
+          }
         }
         if(debug2) {
+          if(NeighborCountIn == 0) {
+            txt3  << "[" << rank << "]: no incoming Neighbors" << std::endl;
+          }
           ierr = PetscSynchronizedPrintf(this->comm,txt3.str().c_str());CHKERROR(ierr,"Error in PetscSynchronizedPrintf");
           ierr = PetscSynchronizedFlush(this->comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
         }
@@ -862,15 +866,14 @@ namespace ALE {
         }
         // Allocate receive requests
         MPI_Request *NeighborsIn_waits;
-        if(NeighborCount) {
-          ierr = PetscMalloc((NeighborCount)*sizeof(MPI_Request),&NeighborsIn_waits);CHKERROR(ierr,"Error in PetscMalloc");
+        if(NeighborCountIn) {
+          ierr = PetscMalloc((NeighborCountIn)*sizeof(MPI_Request),&NeighborsIn_waits);CHKERROR(ierr,"Error in PetscMalloc");
         }
         // Post receives for ConesIn
         PetscMPIInt    tag4;
         ierr = PetscObjectGetNewTag(this->petscObj, &tag4); CHKERROR(ierr, "Failded on PetscObjectGetNewTag");
         // Traverse all neighbors from whom we are receiving cones
-        cone_arrow_type *NeighborOffset = ConesIn;
-        int32_t n = 0;
+        cone_arrow_type *NeighborOffsetIn = ConesIn;
         if(debug2) {
           ierr = PetscSynchronizedPrintf(this->comm, "[%d]: __computeFusion: NeighborConeSizeIn.size() = %d\n",rank, NeighborConeSizeIn.size());
           CHKERROR(ierr, "Error in PetscSynchornizedPrintf");
@@ -885,34 +888,40 @@ namespace ALE {
             
           }
         }
+        int32_t n = 0;
         for(std::map<int32_t, int32_t>::iterator n_itor = NeighborConeSizeIn.begin(); n_itor!=NeighborConeSizeIn.end(); n_itor++) {
-          int32_t neighbor = (*n_itor).first;
-          int32_t coneSize = (*n_itor).second;
-          ierr = MPI_Irecv(NeighborOffset,cone_arrow_size*coneSize,MPI_BYTE,neighbor,tag4,this->comm, NeighborsIn_waits+n);
+          int32_t neighborIn = (*n_itor).first;
+          int32_t coneSizeIn = (*n_itor).second;
+          ierr = MPI_Irecv(NeighborOffsetIn,cone_arrow_size*coneSizeIn,MPI_BYTE,neighborIn,tag4,this->comm, NeighborsIn_waits+n);
           CHKERROR(ierr, "Error in MPI_Irecv");
-          NeighborOffset += coneSize;
+          NeighborOffsetIn += coneSizeIn;
           n++;
         }
         
         // Compute the total outgoing cone sizes by neighbor and the total outgoing cone size.
         int__int NeighborConeSizeOut;
         int32_t  ConeSizeOut = 0;
+        int32_t NeighborCountOut = 0;
         for(typename overlap_type::traits::capSequence::iterator ci  = overlapCap.begin(); ci != overlapCap.end(); ci++) 
         { // traversing overlap.cap()
-          int32_t neighbor = *ci;
-          NeighborConeSizeOut[neighbor] = 0;
+          int32_t neighborOut = *ci;
           // Traverse the supports of the overlap graph under each neighbor rank, count cone sizes to be sent and add the cone sizes
           typename overlap_type::traits::supportSequence supp = overlap->support(*ci);
           if(debug2) {
-            txt3 << "[" << rank << "]: " << "__computeFusion: overlap: support of rank " << neighbor << ": " << std::endl;
+            //txt3 << "[" << rank << "]: " << "__computeFusion: overlap: support of rank " << neighborOut << ": " << std::endl;
             //txt3 << supp;
           }
+          int32_t coneSizeOut = 0;
           for(typename overlap_type::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
             // FIX: replace si.color() Point --> ALE::pair
-            NeighborConeSizeOut[neighbor] = NeighborConeSizeOut[neighbor] + si.color().index;
+            coneSizeOut += si.color().index;
           }
-          // Accumulate the total cone size
-          ConeSizeOut += NeighborConeSizeOut[neighbor];
+          if(coneSizeOut > 0) {
+            // Accumulate the total cone size
+            ConeSizeOut += coneSizeOut;
+            NeighborConeSizeOut[neighborOut] = coneSizeOut;
+            NeighborCountOut++;
+          }
         }//traversing overlap.cap()
         
         if(debug) {/* --------------------------------------------------------------------------------------------- */
@@ -920,9 +929,9 @@ namespace ALE {
           txt << "[" << rank << "]: __computeFusion: total size of outgoing cone: " << ConeSizeOut << "\n";
           for(int__int::iterator np_itor = NeighborConeSizeOut.begin();np_itor!=NeighborConeSizeOut.end();np_itor++)
           {
-            int32_t neighbor = (*np_itor).first;
-            int32_t coneSize = (*np_itor).second;
-            txt << "[" << rank << "]: __computeFusion: size of cone to " << neighbor << ": " << coneSize << "\n";
+            int32_t neighborOut = (*np_itor).first;
+            int32_t coneSizeOut = (*np_itor).second;
+            txt << "[" << rank << "]: __computeFusion: size of cone to " << neighborOut << ": " << coneSizeOut << "\n";
             
           }//int__int::iterator np_itor=NeighborConeSizeOut.begin();np_itor!=NeighborConeSizeOut.end();np_itor++)
           ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
@@ -938,107 +947,117 @@ namespace ALE {
         }
         // Allocate send requests
         MPI_Request *NeighborsOut_waits;
-        if(NeighborCount) {
-          ierr = PetscMalloc((NeighborCount)*sizeof(MPI_Request),&NeighborsOut_waits);CHKERROR(ierr,"Error in PetscMalloc");
+        if(NeighborCountOut) {
+          ierr = PetscMalloc((NeighborCountOut)*sizeof(MPI_Request),&NeighborsOut_waits);CHKERROR(ierr,"Error in PetscMalloc");
         }
         
         // Pack and send messages
-        NeighborOffset = ConesOut;
+        cone_arrow_type *NeighborOffsetOut = ConesOut;
         int32_t cntr = 0; // arrow counter
         n = 0;    // neighbor counter
         ostringstream txt2;
         // Traverse all neighbors to whom we are sending cones
         for(typename overlap_type::traits::capSequence::iterator ci  = overlapCap.begin(); ci != overlapCap.end(); ci++) 
         { // traversing overlap.cap()
-          int32_t neighbor = *ci;
-          if(debug) { /* ------------------------------------------------------------ */
-            txt2  << "[" << rank << "]: __computeFusion: outgoing cones destined for " << neighbor << "\n";
-          }/* ----------------------------------------------------------------------- */
-          // ASSUMPTION: all overlap supports are "symmetric" with respect to swapping processes,so we safely can assume that 
-          //             the receiver will be expecting points in the same order as they appear in the support here.
-          // Traverse all the points within the overlap with this neighbor 
-          typename overlap_type::traits::supportSequence supp = overlap->support(*ci);
-          for(typename overlap_type::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
-            Point p = *si;
+          int32_t neighborOut = *ci;
+
+          // Make sure we have a cone going out to this neighbor
+          if(NeighborConeSizeOut.find(neighborOut) != NeighborConeSizeOut.end()) { // if there is anything to send
             if(debug) { /* ------------------------------------------------------------ */
-              txt2  << "[" << rank << "]: \t cone over " << p << ":  ";
+              txt2  << "[" << rank << "]: __computeFusion: outgoing cones destined for " << neighborOut << "\n";
             }/* ----------------------------------------------------------------------- */
-            // Traverse the cone over p in the local _graph and place corresponding TargetArrows in ConesOut
-            typename graph_type::traits::coneSequence cone = this->_graph->cone(p);
-            for(typename graph_type::traits::coneSequence::iterator cone_itor = cone.begin(); cone_itor != cone.end(); cone_itor++) {
-              // Place a TargetArrow into the ConesOut buffer 
-              // WARNING: pointer arithmetic involving ConesOut takes place here
-              cone_arrow_type::place(ConesOut+cntr, cone_itor.arrow());
-              cntr++;
+            int32_t coneSizeOut = NeighborConeSizeOut[neighborOut];          
+            // ASSUMPTION: all overlap supports are "symmetric" with respect to swapping processes,so we safely can assume that 
+            //             the receiver will be expecting points in the same order as they appear in the support here.
+            // Traverse all the points within the overlap with this neighbor 
+            typename overlap_type::traits::supportSequence supp = overlap->support(*ci);
+            for(typename overlap_type::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
+              Point p = *si;
               if(debug) { /* ------------------------------------------------------------ */
-                txt2  << " " << *cone_itor;
+                txt2  << "[" << rank << "]: \t cone over " << p << ":  ";
+              }/* ----------------------------------------------------------------------- */
+              // Traverse the cone over p in the local _graph and place corresponding TargetArrows in ConesOut
+              typename graph_type::traits::coneSequence cone = this->_graph->cone(p);
+              for(typename graph_type::traits::coneSequence::iterator cone_itor = cone.begin(); cone_itor != cone.end(); cone_itor++) {
+                // Place a TargetArrow into the ConesOut buffer 
+                // WARNING: pointer arithmetic involving ConesOut takes place here
+                cone_arrow_type::place(ConesOut+cntr, cone_itor.arrow());
+                cntr++;
+                if(debug) { /* ------------------------------------------------------------ */
+                  txt2  << " " << *cone_itor;
+                }/* ----------------------------------------------------------------------- */
+              }
+              if(debug) { /* ------------------------------------------------------------ */
+                txt2  << std::endl;
               }/* ----------------------------------------------------------------------- */
             }
-            if(debug) { /* ------------------------------------------------------------ */
-              txt2  << std::endl;
-            }/* ----------------------------------------------------------------------- */
-          }
-          int32_t coneSize = NeighborConeSizeOut[neighbor];
-          ierr = MPI_Isend(NeighborOffset,cone_arrow_size*coneSize,MPI_BYTE,neighbor,tag4,this->comm, NeighborsOut_waits+n);
-          CHKERROR(ierr, "Error in MPI_Isend");
-          // WARNING: pointer arithmetic involving NeighborOffset takes place here
-          NeighborOffset += coneSize; // keep track of offset
-          n++;  // count neighbors
+            ierr = MPI_Isend(NeighborOffsetOut,cone_arrow_size*coneSizeOut,MPI_BYTE,neighborOut,tag4,this->comm, NeighborsOut_waits+n);
+            CHKERROR(ierr, "Error in MPI_Isend");
+            // WARNING: pointer arithmetic involving NeighborOffsetOut takes place here
+            NeighborOffsetOut += coneSizeOut; // keep track of offset
+            n++;  // count neighbors
+          }// if there is anything to send
         }// traversing overlap.cap()
-        if(debug) {/* --------------------------------------------------------------------------------------------- */
+        if(debug && NeighborCountOut) {/* --------------------------------------------------------------- */
           ierr = PetscSynchronizedPrintf(this->comm, txt2.str().c_str());
           CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
           ierr = PetscSynchronizedFlush(this->comm);
           CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         }/* --------------------------------------------------------------------------------------------- */
         
-        // Allocate a status array
-        MPI_Status *Neighbor_status;
-        if(NeighborCount) {
-          ierr = PetscMalloc((NeighborCount)*sizeof(MPI_Status),&Neighbor_status);CHKERROR(ierr,"Error in PetscMalloc");
+        // Allocate an In status array
+        MPI_Status *NeighborIn_status;
+        if(NeighborCountIn) {
+          ierr = PetscMalloc((NeighborCountIn)*sizeof(MPI_Status),&NeighborIn_status);CHKERROR(ierr,"Error in PetscMalloc");
         }
         
         // Wait on the receives
-        if(NeighborCount) {
-          ierr = MPI_Waitall(NeighborCount, NeighborsIn_waits, Neighbor_status); CHKERROR(ierr,"Error in MPI_Waitall");
+        if(NeighborCountIn) {
+          ierr = MPI_Waitall(NeighborCountIn, NeighborsIn_waits, NeighborIn_status); CHKERROR(ierr,"Error in MPI_Waitall");
         }
         
         // Now we unpack the received cones, fuse them with the local cones and store the result in the completion graph.
         // Traverse all neighbors  from whom we are expecting cones
         cntr = 0; // arrow counter
-        NeighborOffset = ConesIn;
+        NeighborOffsetIn = ConesIn;
         for(typename overlap_type::traits::capSequence::iterator ci  = overlapCap.begin(); ci != overlapCap.end(); ci++) 
         { // traversing overlap.cap()
-          //int32_t neighbor = *ci;
           // Traverse all the points within the overlap with this neighbor 
           // ASSUMPTION: points are sorted within each neighbor, so we are expecting points in the same order as they arrived in ConesIn
           typename overlap_type::traits::supportSequence supp = overlap->support(*ci);
           for(typename overlap_type::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++)
           {
             Point p = *si;
-            int32_t coneSize = si.color().index; // FIX: color() --> ALE::Two::pair
+            int32_t coneSizeIn = si.color().index; // FIX: color() type Point --> ALE::Two::pair
+            // NOTE: coneSizeIn may be 0, which is legal, since the fuser in principle can operate on an empty cone.
             // Extract the local cone into a coneSequence
             typename graph_type::traits::coneSequence lcone = this->_graph->cone(p);
             // Wrap the arrived cone in a cone_array_sequence
-            cone_array_sequence rcone(NeighborOffset, coneSize, p);
+            cone_array_sequence rcone(NeighborOffsetIn, coneSizeIn, p);
             // Fuse the cones
             fuser->fuseCones(lcone, rcone, fusion);
           }
         }
 
         // Wait on the original sends
-        if(NeighborCount) {
-          ierr = MPI_Waitall(NeighborCount, NeighborsOut_waits, Neighbor_status); CHKERROR(ierr,"Error in MPI_Waitall");
+        // Allocate an Out status array
+        MPI_Status *NeighborOut_status;
+        if(NeighborCountOut) {
+          ierr = PetscMalloc((NeighborCountOut)*sizeof(MPI_Status),&NeighborOut_status);CHKERROR(ierr,"Error in PetscMalloc");
+          ierr = MPI_Waitall(NeighborCountOut, NeighborsOut_waits, NeighborOut_status); CHKERROR(ierr,"Error in MPI_Waitall");
         }
         
         // Computation complete; freeing memory.
         // Some of these can probably be freed earlier, if memory is needed.
         // However, be careful while freeing memory that may be in use implicitly.  
         // For instance, ConesOut is a send buffer and should probably be retained until all send requests have been waited on.
-        if(NeighborCount){
+        if(NeighborCountOut){
           ierr = PetscFree(NeighborsOut_waits); CHKERROR(ierr, "Error in PetscFree");
+          ierr = PetscFree(NeighborOut_status); CHKERROR(ierr, "Error in PetscFree");
+        }
+        if(NeighborCountIn){
           ierr = PetscFree(NeighborsIn_waits);  CHKERROR(ierr, "Error in PetscFree");
-          ierr = PetscFree(Neighbor_status);    CHKERROR(ierr, "Error in PetscFree");
+          ierr = PetscFree(NeighborIn_status); CHKERROR(ierr, "Error in PetscFree");
         }
         
         if(ConeSizeIn) {ierr = PetscFree(ConesIn);           CHKERROR(ierr, "Error in PetscFree");}

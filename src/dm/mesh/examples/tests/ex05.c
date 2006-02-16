@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
 
   ierr = testBiGraphHat(comm); CHKERRQ(ierr);
+  ierr = testBiGraphSkewedHat(comm); CHKERRQ(ierr);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -96,22 +97,24 @@ PetscErrorCode testBiGraphSkewedHat(MPI_Comm comm) {
 
   ALE::Obj<PointBiGraph> bg = PointBiGraph(comm, debug);
 
-  // Add three arrows from a single cap point rank to global points with the indices 2*rank, 2*rank+1, 2*rank+2 
-  for(int i = 0; i < 3; i++) {
+  // Add two arrows from a single cap point 'rank' to global points with the indices 2*rank, 2*rank+1
+  // as well as a single base point 2*(rank+1)
+  for(int i = 0; i < 2; i++) {
     bg->addArrow(rank, ALE::def::Point(-1,2*rank+i), -rank);
   }
+  bg->addBasePoint(ALE::def::Point(-1,2*(rank+1)));
   
   // View
-  bg->view("Hat bigraph");
+  bg->view("SkewedHat bigraph");
 
   // Construct a Delta object and a base overlap object
   PointParDelta delta(bg, debug);
   ALE::Obj<PointOverlap>   overlap = delta.overlap();
   // View
-  overlap->view("Hat overlap");
+  overlap->view("SkewedHat overlap");
   ALE::Obj<PointConeFusion> fusion   = delta.fusion(overlap);
   // View
-  fusion->view("Hat cone fusion");
+  fusion->view("SkewedHat cone fusion");
 
   PetscFunctionReturn(0);
 }/* testBiGraphSkewedHat() */
