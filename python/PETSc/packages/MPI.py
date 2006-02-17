@@ -39,6 +39,7 @@ class Configure(PETSc.package.Package):
     self.isPOE            = 0
     self.usingMPIUni      = 0
     self.requires32bitint = 0
+    self.shared           = 0
     return
 
   def setupHelp(self, help):
