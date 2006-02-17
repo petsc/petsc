@@ -210,7 +210,7 @@ namespace ALE {
         if (i == index.end()) { // No such point exists
           if(delta < 0) { // Cannot decrease degree of a non-existent point
             ostringstream err;
-            err << "ERROR: BiGraph::adjustDegree: Non-existent point " << p;
+            err << "ERROR: adjustDegree: Non-existent point " << p;
             std::cout << err << std::endl;
             throw(Exception(err.str().c_str()));
           }
@@ -220,7 +220,7 @@ namespace ALE {
             ii = index.insert(r);
             if(ii.second == false) {
               ostringstream err;
-              err << "ERROR: BiGraph::adjustDegree: Failed to insert a rec " << r;
+              err << "ERROR: adjustDegree: Failed to insert a rec " << r;
               std::cout << err << std::endl;
               throw(Exception(err.str().c_str()));
             }
@@ -307,7 +307,7 @@ namespace ALE {
         typedef Key_                                                    key_type;
         typedef SubKey_                                                 subkey_type;
       protected:
-        const typename traits::index_type&                              _index;
+        typename traits::index_type&                                    _index;
         const key_type                                                  key;
         const subkey_type                                               subkey;
         const bool                                                      useSubkey;
@@ -334,9 +334,9 @@ namespace ALE {
         // Basic ArrowSequence interface
         //
         ArrowSequence(const ArrowSequence& seq) : _index(seq._index), key(seq.key), subkey(seq.subkey), useSubkey(seq.useSubkey) {};
-        ArrowSequence(const typename traits::index_type& index, const key_type& k) : 
+        ArrowSequence(typename traits::index_type& index, const key_type& k) : 
           _index(index), key(k), subkey(subkey_type()), useSubkey(0) {};
-        ArrowSequence(const typename traits::index_type& index, const key_type& k, const subkey_type& kk) : 
+        ArrowSequence(typename traits::index_type& index, const key_type& k, const subkey_type& kk) : 
           _index(index), key(k), subkey(kk), useSubkey(1){};
         virtual ~ArrowSequence() {};
         
@@ -499,14 +499,16 @@ namespace ALE {
     // except the source and target points may have different types and iterated operations (e.g., nCone, closure)
     // are not available.
     // 
-    template<typename Source_, typename SourceSet_, typename Target_, typename TargetSet_, typename Color_, ColorMultiplicity colorMultiplicity>
+    template<typename Source_, typename Target_, typename Color_, ColorMultiplicity colorMultiplicity, 
+             typename SourceCtnr_ = RecContainer<Source_, Rec<Source_> >, typename TargetCtnr_ = RecContainer<Target_, Rec<Target_> > >
     class ColorBiGraph { // class ColorBiGraph
     public:
       typedef struct {
+        typedef ColorBiGraph<Source_, Target_, Color_, colorMultiplicity, SourceCtnr_, TargetCtnr_> graph_type;
         // Encapsulated container types
         typedef ArrowContainer<Source_, Target_, Color_, colorMultiplicity>      arrow_container_type;
-        typedef SourceSet_                                                       cap_container_type;
-        typedef TargetSet_                                                       base_container_type;
+        typedef SourceCtnr_                                                      cap_container_type;
+        typedef TargetCtnr_                                                      base_container_type;
         // Types associated with records held in containers
         typedef typename arrow_container_type::traits::arrow_type                arrow_type;
         typedef typename arrow_container_type::traits::source_type               source_type;
@@ -527,9 +529,34 @@ namespace ALE {
         arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,arrowInd>::type, source_type, target_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, color_type, color)> 
         arrowSequence;
 
-        typedef typename 
-        arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,coneInd>::type, target_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, source_type, source)> 
-        coneSequence;
+        // This is a temp fix to include addArrow into the interface; should probably be pushed up to ArrowSequence
+        struct coneSequence : public arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,coneInd>::type, target_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, source_type, source)> {
+        protected:
+          graph_type& _graph;
+        public:
+          typedef typename 
+          arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,coneInd>::type, target_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, source_type, source)> base_type;
+          // Encapsulated types
+          typedef typename base_type::traits traits;
+          typedef typename base_type::iterator iterator;
+          typedef typename base_type::reverse_iterator reverse_iterator;
+          // Basic interface
+          coneSequence(const coneSequence& seq) : base_type(seq), _graph(seq._graph) {};
+            coneSequence(graph_type& graph, typename traits::index_type& index, const typename base_type::key_type& k) : base_type(index, k), _graph(graph){};
+              coneSequence(graph_type& graph, typename traits::index_type& index, const typename base_type::key_type& k, const typename base_type::subkey_type& kk) : base_type(index, k, kk), _graph(graph) {};
+          virtual ~coneSequence() {};
+
+          // Fancy interface
+          void addArrow(const arrow_type& a) {
+            // if(a.target != this->key) {
+//               throw ALE::Exception("Arrow target mismatch in a coneSequence");
+//             }
+            this->_graph.addArrow(a);
+          };
+          void addArrow(const source_type& s, const color_type& c){
+            this->_graph.addArrow(arrow_type(s,this->key,c));
+          }
+        };
 
         typedef typename 
         arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type, supportInd>::type, source_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, target_type, target)> 
@@ -541,9 +568,11 @@ namespace ALE {
         typedef std::set<target_type> supportSet;
       } traits;
 
-      template <typename OtherSource_, typename OtherSourceRec_, typename OtherTarget_, typename OtherTargetRec_, typename OtherColor_, ColorMultiplicity otherColorMultiplicity>
-      struct reparameterize {
-        typedef ColorBiGraph<OtherSource_, OtherSourceRec_, OtherTarget_, OtherTargetRec_, OtherColor_, otherColorMultiplicity> type;
+      template <typename OtherSource_, typename OtherTarget_, typename OtherColor_, ColorMultiplicity otherColorMultiplicity, 
+                typename OtherSourceCtnr_ = RecContainer<OtherSource_, Rec<OtherSource_> >, 
+                typename OtherTargetCtnr_ = RecContainer<OtherTarget_, Rec<OtherTarget_> > >
+      struct rebind {
+        typedef ColorBiGraph<OtherSource_, OtherTarget_, OtherColor_, otherColorMultiplicity, OtherSourceCtnr_, OtherTargetCtnr_> type;
       };
 
     public:
@@ -592,7 +621,7 @@ namespace ALE {
       };
       Obj<typename traits::coneSequence> 
       cone(const typename traits::target_type& p) {
-        return typename traits::coneSequence(::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), p);
+        return typename traits::coneSequence(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), p);
       };
       template<class InputSequence> 
       Obj<typename traits::coneSet> 
@@ -601,7 +630,7 @@ namespace ALE {
       };
       Obj<typename traits::coneSequence> 
       cone(const typename traits::target_type& p, const typename traits::color_type& color) {
-        return typename traits::coneSequence(::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), p, color);
+        return typename traits::coneSequence(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), p, color);
       };
       template<class InputSequence>
       Obj<typename traits::coneSet> 
@@ -997,21 +1026,23 @@ namespace ALE {
       template<class targetInputSequence> 
       void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence>& targets, const typename traits::color_type& color);
         
-      void add(const Obj<ColorBiGraph<typename traits::source_type, typename traits::sourceRec_type, typename traits::target_type, typename traits::targetRec_type, const typename traits::color_type, colorMultiplicity> >& cbg);
+      void add(const Obj<ColorBiGraph<typename traits::source_type, typename traits::target_type, const typename traits::color_type, colorMultiplicity, typename traits::cap_container_type, typename traits::base_container_type> >& cbg);
       // Unimplemented
 
     }; // class ColorBiGraph
 
     // A UniColorBiGraph aka BiGraph
-    template <typename Source_, typename SourceRec_, typename Target_, typename TargetRec_, typename Color_>
-    class BiGraph : public ColorBiGraph<Source_, SourceRec_, Target_, TargetRec_, Color_, uniColor> {
+    template <typename Source_, typename Target_, typename Color_, 
+              typename SourceCtnr_ = RecContainer<Source_, Rec<Source_> >, typename TargetCtnr_=RecContainer<Target_, Rec<Target_> > >
+    class BiGraph : public ColorBiGraph<Source_, Target_, Color_, uniColor, SourceCtnr_, TargetCtnr_> {
     public:
-      typedef typename ColorBiGraph<Source_, SourceRec_, Target_, TargetRec_, Color_, uniColor>::traits       traits;
-      template <typename OtherSource_, typename OtherSourceRec_, typename OtherTarget_, typename OtherTargetRec_, typename OtherColor_>
+      typedef typename ColorBiGraph<Source_, Target_, Color_, uniColor, SourceCtnr_, TargetCtnr_>::traits       traits;
+      template <typename OtherSource_, typename OtherTarget_, typename OtherColor_, 
+                typename OtherSourceCtnr_ = RecContainer<OtherSource_, Rec<OtherSource_> >, 
+                typename OtherTargetCtnr_ = RecContainer<OtherTarget_, Rec<OtherTarget_> >      >
       struct rebind {
-        typedef BiGraph<OtherSource_, OtherSourceRec_, OtherTarget_, OtherTargetRec_, OtherColor_> type;
+        typedef BiGraph<OtherSource_, OtherTarget_, OtherColor_, OtherSourceCtnr_, OtherTargetCtnr_> type;
       };
-      //typedef ColorBiGraphTraits<ColorBiGraph<Source_, Target_, Color_, uniColor> >   traits;
       // Re-export some typedefs expected by CoSifter
       typedef typename traits::arrow_type                                             Arrow_;
       typedef typename traits::coneSequence                                           coneSequence;
@@ -1020,7 +1051,7 @@ namespace ALE {
       typedef typename traits::capSequence                                            capSequence;
       // Basic interface
       BiGraph(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : 
-        ColorBiGraph<Source_, SourceRec_, Target_, TargetRec_, Color_, uniColor>(comm, debug) {};
+        ColorBiGraph<Source_, Target_, Color_, uniColor, SourceCtnr_, TargetCtnr_>(comm, debug) {};
       
       const typename traits::color_type&
       getColor(const typename traits::source_type& s, const typename traits::target_type& t, bool fail = true) {

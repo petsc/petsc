@@ -2631,7 +2631,7 @@ namespace ALE {
         if (i == index.end()) { // No such point exists
           if(delta < 0) { // Cannot decrease degree of a non-existent point
             ostringstream err;
-            err << "ERROR: BiGraph::adjustDegree: Non-existent point " << p;
+            err << "ERROR: adjustDegree: Non-existent point " << p;
             std::cout << err << std::endl;
             throw(Exception(err.str().c_str()));
           }
@@ -2641,7 +2641,7 @@ namespace ALE {
             ii = index.insert(r);
             if(ii.second == false) {
               ostringstream err;
-              err << "ERROR: BiGraph::adjustDegree: Failed to insert a rec " << r;
+              err << "ERROR: adjustDegree: Failed to insert a rec " << r;
               std::cout << err << std::endl;
               throw(Exception(err.str().c_str()));
             }
@@ -2674,14 +2674,14 @@ namespace ALE {
     // by color.
     //
     template <typename Point_, typename Marker_, typename Color_>
-    class Sieve : public ALE::Two::BiGraph<Point_, RecContainer<Point_, Rec<Point_, Marker_> >, Point_, RecContainer<Point_, Rec<Point_, Marker_> >, Color_> {
+    class Sieve : public ALE::Two::BiGraph<Point_, Point_, Color_, RecContainer<Point_, Rec<Point_, Marker_> >, RecContainer<Point_, Rec<Point_, Marker_> > > {
     public:
       typedef Color_  color_type;
       typedef Point_  point_type;
       typedef Marker_ marker_type;
       int debug;
       typedef struct {
-        typedef ALE::Two::BiGraph<Point_, RecContainer<Point_, Rec<Point_, Marker_> >, Point_, RecContainer<Point_, Rec<Point_, Marker_> >, Color_> baseType;
+        typedef ALE::Two::BiGraph<Point_, Point_, Color_, RecContainer<Point_, Rec<Point_, Marker_> >, RecContainer<Point_, Rec<Point_, Marker_> > > baseType;
         // Encapsulated container types
         typedef typename baseType::traits::arrow_container_type arrow_container_type;
         typedef typename baseType::traits::cap_container_type   cap_container_type;
@@ -2717,7 +2717,7 @@ namespace ALE {
         typedef std::set<target_type> supportSet;
       } traits;
     public:
-      Sieve(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : ALE::Two::BiGraph<Point_, RecContainer<Point_, Rec<Point_, Marker_> >, Point_, RecContainer<Point_, Rec<Point_, Marker_> >, Color_>(comm, debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
+      Sieve(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : ALE::Two::BiGraph<Point_, Point_, Color_, RecContainer<Point_, Rec<Point_, Marker_> >, RecContainer<Point_, Rec<Point_, Marker_> > >(comm, debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
       virtual ~Sieve() {};
       // Printing
       friend std::ostream& operator<<(std::ostream& os, Obj<Sieve<Point_,Marker_,Color_> > s) { 

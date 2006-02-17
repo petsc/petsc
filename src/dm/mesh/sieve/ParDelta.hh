@@ -14,38 +14,40 @@ namespace ALE {
 
   namespace Two {
 
-    template <typename LeftConeSequence_, typename RightConeSequence_, typename BiGraph_>
+    template <typename RightConeSequence_>
     class RightSequenceDuplicator {
       // Replicate the cone sequence on the right in the overlap graph.
+      int debug;
     public:
       //Encapsulated types
-      typedef LeftConeSequence_                                                                left_sequence_type;
-      typedef RightConeSequence_                                                               right_sequence_type;
+      typedef RightConeSequence_                            right_sequence_type;
+      typedef typename right_sequence_type::target_type     right_target_type;
       //
-      typedef typename right_sequence_type::source_type                                        source_type;
-      typedef typename right_sequence_type::target_type                                        target_type;
-      typedef typename right_sequence_type::color_type                                         color_type;
-      // we are using 'rebind' here to illustrate the general point, 
-      // even though a simple 'typedef right_type delta_type' would be enough
-      typedef typename BiGraph_::template rebind<source_type, ALE::Two::Rec<source_type>, target_type, 
-                                                 ALE::Two::Rec<target_type>, color_type>::type fusion_type;
-      typedef typename fusion_type::traits::coneSequence                                       fusion_sequence_type;
+      typedef typename right_sequence_type::source_type     fusion_source_type;   
+      typedef typename right_sequence_type::target_type     fusion_target_type;   
+      typedef typename right_sequence_type::color_type      fusion_color_type;   
     public:
       //
       // Basic interface
       //
-      RightSequenceDuplicator() {};
+      RightSequenceDuplicator(int debug = 0) : debug(debug) {};
       RightSequenceDuplicator(const RightSequenceDuplicator& f) {};
       virtual ~RightSequenceDuplicator() {};
-      // FIX: need to have const left_sequence& etc, but begin() and end() aren't const methods 
+
+      template <typename left_target_type>
+      fusion_target_type
+      fuseBasePoints(const left_target_type&  ltarget, const right_target_type& rtarget) {
+        return rtarget;
+      };
+
+      // FIX: need to have const left_sequence& and const right_sequence& , but begin() and end() aren't const methods 
+      template <typename left_sequence_type, typename fusion_sequence_type>
       void
-      fuseCones(left_sequence_type&  lcone, right_sequence_type& rcone, Obj<fusion_type> fusion) {
-        // This Fuser inserts the right cone into the overlap, that is it
-        // duplicates the right graph's cone in the fusion graph.
+      fuseCones(left_sequence_type&  lcone, right_sequence_type& rcone, const Obj<fusion_sequence_type>& fcone) {
         for(typename right_sequence_type::iterator rci = rcone.begin(); rci != rcone.end(); rci++) {
-          fusion->addArrow(rci.arrow());
+          fcone->addArrow(rci.arrow());
         }
-      }
+      };
     }; // struct RightSequenceDuplicator
 
 
@@ -118,11 +120,12 @@ namespace ALE {
     };// class ConeArraySequence
 
 
-    template <typename ParBiGraph_, typename Fuser_ =  
-              RightSequenceDuplicator<typename ParBiGraph_::traits::coneSequence, 
-                                      ConeArraySequence<typename ParBiGraph_::traits::arrow_type>, 
-                                      ParBiGraph_> 
-    >
+    template <typename ParBiGraph_,
+              typename Fuser_ = RightSequenceDuplicator<ConeArraySequence<typename ParBiGraph_::traits::arrow_type> >,
+              typename FusionBiGraph_ = typename ParBiGraph_::template rebind<typename Fuser_::fusion_source_type, 
+                                                                              typename Fuser_::fusion_target_type, 
+                                                                              typename Fuser_::fusion_color_type>::type
+    >    
     class ParDelta { // class ParDelta
     public:
       // Here we specialize to BiGraphs based on (capped by) Points in order to enable parallel overlap discovery.
@@ -130,8 +133,8 @@ namespace ALE {
       // baseSequence.end() as the extrema for global reduction.
       typedef Fuser_                                                        fuser_type;
       typedef ParBiGraph_                                                   graph_type;
-      typedef ColorBiGraph<int, ALE::Two::Rec<int>, ALE::def::Point, ALE::Two::Rec<ALE::def::Point>, ALE::def::Point, uniColor> overlap_type;
-      typedef typename fuser_type::fusion_type                              fusion_type;
+      typedef FusionBiGraph_                                                fusion_type;
+      typedef ColorBiGraph<int, ALE::def::Point, ALE::def::Point, uniColor> overlap_type;
       //
       ParDelta(Obj<graph_type> graph, int debug = 0) : 
         _graph(graph), comm(_graph->comm()), size(_graph->commSize()), rank(_graph->commRank()), debug(debug) {
@@ -1041,7 +1044,12 @@ namespace ALE {
               txt << "[" << this->rank << "]: "<<__FUNCT__<< ": received a cone of size " << coneSizeIn << " from "<<*ci<< std::endl;
             }/* --------------------------------------------------------------------------------------------------*/
             // Fuse the cones
-            fuser->fuseCones(lcone, rcone, fusion);
+            fuser->fuseCones(lcone, rcone, fusion->cone(fuser->fuseBasePoints(p,p)));
+            if(debug) {
+              ostringstream txt;
+              txt << "[" << rank << "]: ... after fusing the cone over" << p << std::endl;
+              fusion->view(std::cout, txt.str().c_str());
+            }
             NeighborOffsetIn += coneSizeIn;
           }
         }
