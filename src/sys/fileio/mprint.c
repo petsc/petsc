@@ -536,7 +536,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
     PetscFPrintf(PETSC_COMM_SELF,fd,"Libraries linked from %s\n",PETSC_LIB_DIR);
     PetscFPrintf(PETSC_COMM_SELF,fd,"Configure run at %s\n",petscconfigureruntime);
     PetscFPrintf(PETSC_COMM_SELF,fd,"Configure options %s\n",petscconfigureoptions);
-    PetscFPrintf(PETSC_COMM_SELF,fd,"------------------------------------------------------------------------\n");
     InPetscErrorPrintfDefault = PETSC_FALSE;
   }
 

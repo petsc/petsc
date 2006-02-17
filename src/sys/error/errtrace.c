@@ -91,8 +91,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int line,const char *f
 
   PetscFunctionBegin;
 
-  (*PetscErrorPrintf)("%s() line %d in %s%s\n",fun,line,dir,file);
   if (p == 1) {
+    (*PetscErrorPrintf)("--------------- Error Message --------------\n");
     if (n == PETSC_ERR_MEM) {
       (*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
       (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
@@ -119,7 +119,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int line,const char *f
     if (mess) {
       (*PetscErrorPrintf)("%s!\n",mess);
     }
+    (*PetscErrorPrintf)("--------------------------------------------\n");
   }
+  (*PetscErrorPrintf)("%s() line %d in %s%s\n",fun,line,dir,file);
   PetscFunctionReturn(n);
 }
 
