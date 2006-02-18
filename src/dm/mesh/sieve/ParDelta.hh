@@ -120,6 +120,34 @@ namespace ALE {
     };// class ConeArraySequence
 
 
+
+
+    template <typename BiGraph_>
+    class Flip {
+    protected:
+      typedef BiGraph_ _graph_type;
+      Obj<_graph_type> _graph;
+    public:
+      //
+      typedef struct {
+        // Basic types
+        typedef typename _graph_type::traits::arrow_type::flip::type  arrow_type;
+        typedef typename arrow_type::source_type                      source_type;
+        typedef typename arrow_type::target_type                      target_type;
+        typedef typename arrow_type::color_type                       color_type;
+        // Sequences
+        struct coneSequence : _graph_type::traits::supportSequence {
+          // traits go here
+          // Be careful to use only a limit set of iterator methods: NO arrow(), source(), target() etc; operator*() and color() are OK.
+        };
+      } traits;
+    };
+
+
+
+
+
+
     template <typename ParBiGraph_,
               typename Fuser_ = RightSequenceDuplicator<ConeArraySequence<typename ParBiGraph_::traits::arrow_type> >,
               typename FusionBiGraph_ = typename ParBiGraph_::template rebind<typename Fuser_::fusion_source_type, 
