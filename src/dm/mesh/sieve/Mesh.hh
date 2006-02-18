@@ -4,6 +4,9 @@
 #ifndef  included_ALE_CoSifter_hh
 #include <CoSifter.hh>
 #endif
+#ifndef  included_ALE_ParDelta_hh
+#include <ParDelta.hh>
+#endif
 
 #ifdef PETSC_HAVE_TRIANGLE
 #include <triangle.h>
@@ -19,7 +22,7 @@ namespace ALE {
     public:
       typedef ALE::def::Point point_type;
       typedef std::vector<point_type> PointArray;
-      typedef ALE::def::Sieve<point_type,int> sieve_type;
+      typedef ALE::Three::Sieve<point_type,int,int> sieve_type;
       typedef point_type patch_type;
       typedef CoSifter<sieve_type, patch_type, point_type, int> bundle_type;
       typedef CoSifter<sieve_type, patch_type, point_type, double> field_type;
@@ -185,11 +188,11 @@ namespace ALE {
       void createVertexBundle(int numSimplices, int simplices[]) {
         ALE_LOG_STAGE_BEGIN;
         Obj<bundle_type> vertexBundle = this->getBundle(0);
-        Obj<sieve_type::heightSequence> elements = this->topology->heightStratum(0);
+        Obj<sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
         std::string orderName("element");
 
         ALE_LOG_EVENT_BEGIN;
-        for(sieve_type::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+        for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
           // setFiberDimensionByDepth() does not work here since we only want it to apply to the patch cone
           //   What we really need is the depthStratum relative to the patch
           Obj<PointArray> patch = PointArray();
@@ -217,15 +220,15 @@ namespace ALE {
         this->coordinates->setPatch(this->topology->leaves(), patch);
         this->coordinates->setFiberDimensionByDepth(patch, 0, embedDim);
         this->coordinates->orderPatches();
-        Obj<sieve_type::depthSequence> vertices = this->topology->depthStratum(0);
-        for(sieve_type::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
+        Obj<sieve_type::traits::depthSequence> vertices = this->topology->depthStratum(0);
+        for(sieve_type::traits::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
           this->coordinates->update(patch, *v_itor, &coords[((*v_itor).index - numSimplices)*embedDim]);
         }
         Obj<bundle_type> vertexBundle = this->getBundle(0);
-        Obj<sieve_type::heightSequence> elements = this->topology->heightStratum(0);
+        Obj<sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
         std::string orderName("element");
 
-        for(sieve_type::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
+        for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
           // setFiberDimensionByDepth() does not work here since we only want it to apply to the patch cone
           //   What we really need is the depthStratum relative to the patch
           Obj<bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(*e_iter);
@@ -305,7 +308,7 @@ namespace ALE {
         if (rank == 0) {
           std::string args("pqenzQ");
           bool        createConvexHull = false;
-          Obj<Mesh::sieve_type::depthSequence> vertices = bdTopology->depthStratum(0);
+          Obj<Mesh::sieve_type::traits::depthSequence> vertices = bdTopology->depthStratum(0);
           Obj<Mesh::bundle_type>               vertexBundle = boundary->getBundle(0);
           Mesh::field_type::patch_type         patch;
 
@@ -315,7 +318,7 @@ namespace ALE {
 
             ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
             ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
-            for(Mesh::sieve_type::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
+            for(Mesh::sieve_type::traits::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
               const Mesh::field_type::index_type& interval = coordinates->getIndex(patch, *v_itor);
               const Mesh::field_type::value_type *array = coordinates->restrict(patch, *v_itor);
 
@@ -323,18 +326,18 @@ namespace ALE {
                 in.pointlist[interval.prefix + d] = array[d];
               }
               const Mesh::field_type::index_type& vInterval = vertexBundle->getIndex(patch, *v_itor);
-              in.pointmarkerlist[vInterval.prefix] = v_itor.getMarker();
+              in.pointmarkerlist[vInterval.prefix] = v_itor.marker();
             }
           }
 
-          Obj<Mesh::sieve_type::depthSequence> edges = bdTopology->depthStratum(1);
+          Obj<Mesh::sieve_type::traits::depthSequence> edges = bdTopology->depthStratum(1);
           Obj<Mesh::bundle_type>               edgeBundle = boundary->getBundle(1);
 
           in.numberofsegments = edges->size();
           if (in.numberofsegments > 0) {
             ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
             ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
-            for(Mesh::sieve_type::depthSequence::iterator e_itor = edges->begin(); e_itor != edges->end(); e_itor++) {
+            for(Mesh::sieve_type::traits::depthSequence::iterator e_itor = edges->begin(); e_itor != edges->end(); e_itor++) {
               const Mesh::field_type::index_type& interval = edgeBundle->getIndex(patch, *e_itor);
               Obj<Mesh::sieve_type::coneSequence> cone = bdTopology->cone(*e_itor);
               int                                 p = 0;
@@ -344,7 +347,7 @@ namespace ALE {
 
                 in.segmentlist[interval.prefix * 2 + (p++)] = vInterval.prefix;
               }
-              in.segmentmarkerlist[interval.prefix] = e_itor.getMarker();
+              in.segmentmarkerlist[interval.prefix] = e_itor.marker();
             }
           }
 
@@ -404,7 +407,7 @@ namespace ALE {
         if (rank == 0) {
           std::string args("pqenzQ");
           bool        createConvexHull = false;
-          Obj<Mesh::sieve_type::depthSequence> vertices = bdTopology->depthStratum(0);
+          Obj<Mesh::sieve_type::traits::depthSequence> vertices = bdTopology->depthStratum(0);
           Obj<Mesh::bundle_type>               vertexBundle = boundary->getBundle(0);
           Mesh::field_type::patch_type         patch;
 
@@ -414,7 +417,7 @@ namespace ALE {
 
             in.pointlist       = new double[in.numberofpoints*dim];
             in.pointmarkerlist = new int[in.numberofpoints];
-            for(Mesh::sieve_type::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); ++v_itor) {
+            for(Mesh::sieve_type::traits::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); ++v_itor) {
               const Mesh::field_type::index_type& interval = coordinates->getIndex(patch, *v_itor);
               const Mesh::field_type::value_type *array = coordinates->restrict(patch, *v_itor);
 
@@ -422,18 +425,18 @@ namespace ALE {
                 in.pointlist[interval.prefix + d] = array[d];
               }
               const Mesh::field_type::index_type& vInterval = vertexBundle->getIndex(patch, *v_itor);
-              in.pointmarkerlist[vInterval.prefix] = v_itor.getMarker();
+              in.pointmarkerlist[vInterval.prefix] = v_itor.marker();
             }
           }
 
-          Obj<Mesh::sieve_type::heightSequence> facets = bdTopology->heightStratum(0);
+          Obj<Mesh::sieve_type::traits::heightSequence> facets = bdTopology->heightStratum(0);
           Obj<Mesh::bundle_type>                facetBundle = boundary->getBundle(bdTopology->depth());
 
           in.numberoffacets = facets->size();
           if (in.numberoffacets > 0) {
             in.facetlist       = new tetgenio::facet[in.numberoffacets];
             in.facetmarkerlist = new int[in.numberoffacets];
-            for(Mesh::sieve_type::heightSequence::iterator f_itor = facets->begin(); f_itor != facets->end(); ++f_itor) {
+            for(Mesh::sieve_type::traits::heightSequence::iterator f_itor = facets->begin(); f_itor != facets->end(); ++f_itor) {
               const Mesh::field_type::index_type& interval = facetBundle->getIndex(patch, *f_itor);
               Obj<Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch("element", *f_itor);
 
@@ -453,7 +456,7 @@ namespace ALE {
 
                 poly->vertexlist[c++] = vInterval.prefix;
               }
-              in.facetmarkerlist[interval.prefix] = f_itor.getMarker();
+              in.facetmarkerlist[interval.prefix] = f_itor.marker();
             }
           }
 
@@ -571,8 +574,8 @@ namespace ALE {
 
         if (rank == 0) {
           std::string args("pqenzQra");
-          Obj<Mesh::sieve_type::heightSequence> faces = serialTopology->heightStratum(0);
-          Obj<Mesh::sieve_type::depthSequence>  vertices = serialTopology->depthStratum(0);
+          Obj<Mesh::sieve_type::traits::heightSequence> faces = serialTopology->heightStratum(0);
+          Obj<Mesh::sieve_type::traits::depthSequence>  vertices = serialTopology->depthStratum(0);
           Obj<Mesh::bundle_type>                vertexBundle = serialMesh->getBundle(0);
           Obj<Mesh::field_type>                 coordinates = serialMesh->getCoordinates();
           Mesh::field_type::patch_type          patch;
@@ -581,7 +584,7 @@ namespace ALE {
           in.numberofpoints = vertices->size();
           ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
           ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
-          for(Mesh::sieve_type::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
+          for(Mesh::sieve_type::traits::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
             const Mesh::field_type::index_type& interval = coordinates->getIndex(patch, *v_itor);
             const Mesh::field_type::value_type *array = coordinates->restrict(patch, *v_itor);
 
@@ -589,13 +592,13 @@ namespace ALE {
               in.pointlist[interval.prefix + d] = array[d];
             }
             const Mesh::field_type::index_type& vInterval = vertexBundle->getIndex(patch, *v_itor);
-            in.pointmarkerlist[vInterval.prefix] = v_itor.getMarker();
+            in.pointmarkerlist[vInterval.prefix] = v_itor.marker();
           }
 
           in.numberofcorners = 3;
           in.numberoftriangles = faces->size();
           ierr = PetscMalloc(in.numberoftriangles * in.numberofcorners * sizeof(int), &in.trianglelist);
-          for(Mesh::sieve_type::heightSequence::iterator f_itor = faces->begin(); f_itor != faces->end(); f_itor++) {
+          for(Mesh::sieve_type::traits::heightSequence::iterator f_itor = faces->begin(); f_itor != faces->end(); f_itor++) {
             Obj<Mesh::field_type::IndexArray> intervals = vertexBundle->getIndices("element", *f_itor);
             int                               v = 0;
 
@@ -607,7 +610,7 @@ namespace ALE {
             f++;
           }
 
-          Obj<Mesh::sieve_type::depthMarkerSequence> segments = serialTopology->depthStratum(1, 1);
+          Obj<Mesh::sieve_type::traits::depthSequence> segments = serialTopology->depthStratum(1, 1);
           Obj<Mesh::bundle_type> segmentBundle = Mesh::bundle_type();
 
           segmentBundle->setTopology(serialTopology);
@@ -618,17 +621,17 @@ namespace ALE {
           if (in.numberofsegments > 0) {
             ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
             ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
-            for(Mesh::sieve_type::depthMarkerSequence::iterator s_itor = segments->begin(); s_itor != segments->end(); s_itor++) {
+            for(Mesh::sieve_type::traits::depthSequence::iterator s_itor = segments->begin(); s_itor != segments->end(); s_itor++) {
               const Mesh::field_type::index_type& interval = segmentBundle->getIndex(patch, *s_itor);
-              Obj<Mesh::sieve_type::coneSequence> cone = serialTopology->cone(*s_itor);
+              Obj<Mesh::sieve_type::traits::coneSequence> cone = serialTopology->cone(*s_itor);
               int                                 p = 0;
         
-              for(Mesh::sieve_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
+              for(Mesh::sieve_type::traits::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
                 const Mesh::field_type::index_type& vInterval = vertexBundle->getIndex(patch, *c_itor);
 
                 in.segmentlist[interval.prefix * 2 + (p++)] = vInterval.prefix;
               }
-              in.segmentmarkerlist[interval.prefix] = s_itor.getMarker();
+              in.segmentmarkerlist[interval.prefix] = s_itor.marker();
             }
           }
 
@@ -696,8 +699,8 @@ namespace ALE {
 
         if (rank == 0) {
           std::string args("qenzQra");
-          Obj<Mesh::sieve_type::heightSequence> cells = serialTopology->heightStratum(0);
-          Obj<Mesh::sieve_type::depthSequence>  vertices = serialTopology->depthStratum(0);
+          Obj<Mesh::sieve_type::traits::heightSequence> cells = serialTopology->heightStratum(0);
+          Obj<Mesh::sieve_type::traits::depthSequence>  vertices = serialTopology->depthStratum(0);
           Obj<Mesh::bundle_type>                vertexBundle = serialMesh->getBundle(0);
           Obj<Mesh::field_type>                 coordinates = serialMesh->getCoordinates();
           Mesh::field_type::patch_type          patch;
@@ -706,7 +709,7 @@ namespace ALE {
           in.numberofpoints = vertices->size();
           in.pointlist       = new double[in.numberofpoints*dim];
           in.pointmarkerlist = new int[in.numberofpoints];
-          for(Mesh::sieve_type::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); ++v_itor) {
+          for(Mesh::sieve_type::traits::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); ++v_itor) {
             const Mesh::field_type::index_type& interval = coordinates->getIndex(patch, *v_itor);
             const Mesh::field_type::value_type *array = coordinates->restrict(patch, *v_itor);
 
@@ -714,13 +717,13 @@ namespace ALE {
               in.pointlist[interval.prefix + d] = array[d];
             }
             const Mesh::field_type::index_type& vInterval = vertexBundle->getIndex(patch, *v_itor);
-            in.pointmarkerlist[vInterval.prefix] = v_itor.getMarker();
+            in.pointmarkerlist[vInterval.prefix] = v_itor.marker();
           }
 
           in.numberofcorners = 4;
           in.numberoftetrahedra = cells->size();
           in.tetrahedronlist = new int[in.numberoftetrahedra*in.numberofcorners];
-          for(Mesh::sieve_type::heightSequence::iterator c_itor = cells->begin(); c_itor != cells->end(); ++c_itor) {
+          for(Mesh::sieve_type::traits::heightSequence::iterator c_itor = cells->begin(); c_itor != cells->end(); ++c_itor) {
             Obj<Mesh::field_type::IndexArray> intervals = vertexBundle->getIndices("element", *c_itor);
             int                               v = 0;
 
@@ -1036,37 +1039,82 @@ namespace ALE {
     };
 
     class Partitioner {
-      void partition_Sieve(const ALE::Two::Mesh& mesh) {
+    public:
+      typedef ALE::Two::ParDelta<ALE::Two::Mesh::sieve_type> delta_type;
+    public:
+      #undef __FUNCT__
+      #define __FUNCT__ "partition_Sieve"
+      void partition_Sieve(const ALE::Obj<ALE::Two::Mesh>& mesh, bool localize = true) {
         ALE_LOG_EVENT_BEGIN;
-#if 0
-        // Construct a Delta object and a base overlap object
-        ALE::Two::ParDelta<typename mesh::sieve_type> delta(bg, 0);
+        ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
+        const char *name = NULL;
 
+        // Construct a Delta object and a base overlap object
+        delta_type delta(topology, mesh->debug);
+        ALE::Obj<delta_type::overlap_type> overlap = delta.overlap();
         // Cone complete to move the partitions to the other processors
-        ALE::Obj<typename ALE::Two::ParDelta<PointBiGraph>::overlap_type> overlap = delta.overlap();
+        ALE::Obj<delta_type::fusion_type> fusion   = delta.fusion(overlap);
         // Merge in the completion
-        presieve->add(completion);
+        topology->add(fusion);
         // Cone complete again to build the local topology
-        completion = presieve->coneCompletion(ALE::PreSieve::completionTypePoint, ALE::PreSieve::footprintTypeCone, NULL)->top();
+        overlap = delta.overlap();
+        fusion  = delta.fusion(overlap);
+        topology->add(fusion);
         // Unless explicitly prohibited, restrict to the local partition
         if(localize) {
-          presieve->restrictBase(partition);
-          if (debug) {
+          //topology->restrictBase(partition);
+          if (mesh->debug) {
             ostringstream label5;
             if(name != NULL) {
               label5 << "Localized parallel version of '" << name << "'";
             } else {
-              label5 << "Localized parallel presieve";
+              label5 << "Localized parallel sieve";
             }
-            presieve->view(label5.str().c_str());
+            topology->view(std::cout, label5.str().c_str());
           }
         }
-#endif
         ALE_LOG_EVENT_END;
       };
 
+      #undef __FUNCT__
+      #define __FUNCT__ "partition_Simple"
+      void partition_Simple(const ALE::Obj<ALE::Two::Mesh> mesh) {
+        ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
+        PetscInt numLeaves = topology->leaves()->size();
+        const char *name = NULL;
+
+        PetscFunctionBegin;
+        ALE_LOG_STAGE_BEGIN;
+        ALE_LOG_EVENT_BEGIN;
+        if (topology->commRank() == 0) {
+          int size = topology->commSize();
+
+          for(int p = 0; p < size; p++) {
+            ALE::Two::Mesh::point_type partitionPoint(-1, p);
+
+            for(int l = (numLeaves/size)*p + PetscMin(numLeaves%size, p); l < (numLeaves/size)*(p+1) + PetscMin(numLeaves%size, p+1); l++) {
+              topology->addCone(topology->closure(ALE::Two::Mesh::point_type(0, l)), partitionPoint);
+            }
+          }
+        } else {
+          ALE::Two::Mesh::point_type partitionPoint(-1, topology->commRank());
+          topology->addBasePoint(partitionPoint);
+        }
+        if (mesh->debug) {
+          ostringstream label1;
+          label1 << "Partition of sieve ";
+          if(name != NULL) {
+            label1 << "'" << name << "'";
+          }
+          label1 << "\n";
+          topology->view(std::cout, label1.str().c_str());
+        }
+        ALE_LOG_EVENT_END;
+        ALE_LOG_STAGE_END;
+      };
+
 #ifdef PETSC_HAVE_CHACO
-      void partition_Chaco(const ALE::Two::Mesh& mesh) {
+      void partition_Chaco(const ALE::Obj<ALE::Two::Mesh> mesh) {
         int size;
         MPI_Comm_size(this->getComm(), &size);
 
@@ -1166,6 +1214,7 @@ namespace ALE {
         int dim = mesh.getDimension();
 
         if (dim == 2) {
+          partition_Simple(mesh);
 #ifdef PETSC_HAVE_CHACO
           partition_Chaco(mesh);
 #else

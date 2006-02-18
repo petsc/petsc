@@ -46,8 +46,6 @@ PetscErrorCode CreateSieve(MPI_Comm comm, int debug)
     sieve->addArrow(p,b);
   }
   sieve->view(std::cout, "Hat");
-  //ALE::Stack *stack = preSieve->complete();
-  //stack->view("'Hat's point cone completion'");
   PetscFunctionReturn(0);
 }
 
