@@ -2596,6 +2596,7 @@ namespace ALE {
        public:
          iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
          virtual const int& degree()  const {return this->_itor->degree;};
+         virtual const int& marker()  const {return this->_itor->marker;};
        };
        
        ValueSequence(const PointSequence& seq)           : _index(seq._index), _value(seq._value) {};
@@ -2604,22 +2605,66 @@ namespace ALE {
        
        virtual bool empty(){return this->_index.empty();};
        
-       virtual typename traits::index_type::size_type size() {return this->_index.size();};
+       virtual typename traits::index_type::size_type size() {return this->_index.count(this->_value);};
 
        virtual iterator begin() {
-         // Retrieve the beginning iterator of the index
          return iterator(this->_index.lower_bound(this->_value));
        };
        virtual iterator end() {
-         // Retrieve the ending iterator of the index
-         // Since the elements in this index are ordered by degree, this amounts to the end() of the index.
          return iterator(this->_index.upper_bound(this->_value));
        };
-       virtual bool contains(const typename rec_type::point_type& p) {
-         // Check whether a given point is in the index
-         return (this->_index.find(p) != this->_index.end());
-       }
      }; // class ValueSequence
+
+     template<typename Tag_, typename Value_>
+     class TwoValueSequence {
+     public:
+       typedef Value_ value_type;
+       typedef ALE::Two::IndexSequenceTraits<typename ::boost::multi_index::index<set_type, Tag_>::type,
+                                   BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type,point)>
+       traits;
+     protected:
+       const typename traits::index_type& _index;
+       const value_type _valueA, _valueB;
+       const bool _useTwoValues;
+     public:
+       // Need to extend the inherited iterator to be able to extract the degree
+       class iterator : public traits::iterator {
+       public:
+         iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
+         virtual const int& degree()  const {return this->_itor->degree;};
+         virtual const int& marker()  const {return this->_itor->marker;};
+       };
+       
+       TwoValueSequence(const PointSequence& seq)           : _index(seq._index), _valueA(seq._valueA), _valueB(seq._valueB), _useTwoValues(seq._useTwoValues) {};
+       TwoValueSequence(typename traits::index_type& index, const value_type& valueA) : _index(index), _valueA(valueA), _valueB(value_type()), _useTwoValues(false) {};
+       TwoValueSequence(typename traits::index_type& index, const value_type& valueA, const value_type& valueB) : _index(index), _valueA(valueA), _valueB(valueB), _useTwoValues(true) {};
+       virtual ~TwoValueSequence(){};
+       
+       virtual bool empty(){return this->_index.empty();};
+       
+       virtual typename traits::index_type::size_type size() {
+         if (this->_useTwoValues) {
+           return this->_index.count(::boost::make_tuple(this->_valueA,this->_valueB));
+         } else {
+           return this->_index.count(::boost::make_tuple(this->_valueA));
+         }
+       };
+
+       virtual iterator begin() {
+         if (this->_useTwoValues) {
+           return iterator(this->_index.lower_bound(::boost::make_tuple(this->_valueA,this->_valueB)));
+         } else {
+           return iterator(this->_index.lower_bound(::boost::make_tuple(this->_valueA)));
+         }
+       };
+       virtual iterator end() {
+         if (this->_useTwoValues) {
+           return iterator(this->_index.upper_bound(::boost::make_tuple(this->_valueA,this->_valueB)));
+         } else {
+           return iterator(this->_index.upper_bound(::boost::make_tuple(this->_valueA)));
+         }
+       };
+     }; // class TwoValueSequence
     };// struct RecContainerTraits
 
     template <typename Point_, typename Rec_>
@@ -2713,8 +2758,8 @@ namespace ALE {
         typedef typename baseType::traits::capSequence          capSequence;
         typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::degreeTag,int> rootSequence;
         typedef typename base_container_type::traits::template ValueSequence<typename base_container_type::traits::degreeTag,int> leafSequence;
-        typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::depthMarkerTag,int> depthSequence;
-        typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::heightMarkerTag,int> heightSequence;
+        typedef typename cap_container_type::traits::template TwoValueSequence<typename cap_container_type::traits::depthMarkerTag,int> depthSequence;
+        typedef typename cap_container_type::traits::template TwoValueSequence<typename cap_container_type::traits::heightMarkerTag,int> heightSequence;
         typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::markerTag,marker_type> markerSequence;
         typedef std::set<source_type> coneSet;
         typedef std::set<target_type> supportSet;
@@ -2880,10 +2925,10 @@ namespace ALE {
 
     public:
       Obj<typename traits::rootSequence> roots() {
-        return typename traits::rootSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::degreeTag>(this->_cap), 0);
+        return typename traits::rootSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::degreeTag>(this->_cap.set), 0);
       };
       Obj<typename traits::leafSequence> leaves() {
-        return typename traits::leafSequence(::boost::multi_index::get<typename traits::base_container_type::traits::degreeTag>(this->_base), 0);
+        return typename traits::leafSequence(::boost::multi_index::get<typename traits::base_container_type::traits::degreeTag>(this->_base.set), 0);
       };
     private:
       bool doStratify;
@@ -3513,6 +3558,104 @@ namespace ALE {
           typename traits::cap_container_type::traits::rec_type cp = *ci;
           os << cp << std::endl;
         }
+      }
+    };
+    //
+    // Structural queries
+    //
+    template <typename Point_, typename Marker_, typename Color_> 
+    int Sieve<Point_,Marker_,Color_>::depth() {
+      return this->maxDepth;
+    }; 
+    template <typename Point_, typename Marker_, typename Color_> 
+    int Sieve<Point_,Marker_,Color_>::depth(const point_type& p) {
+      const typename ::boost::multi_index::index<typename traits::base_container_type,point_type>::type& i = ::boost::multi_index::get<typename traits::base_container_type::traits::pointTag>(this->_base.set);
+      if (i.find(p) != i.end()) {
+        return i.find(p)->depth;
+      }
+      return 0;
+    };
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<typename InputSequence>
+    int Sieve<Point_,Marker_,Color_>::depth(const Obj<InputSequence>& points) {
+      const typename ::boost::multi_index::index<typename traits::base_container_type,point_type>::type& i = ::boost::multi_index::get<typename traits::base_container_type::traits::pointTag>(this->_base.set);
+      int maxDepth = 0;
+      
+      for(typename InputSequence::iterator iter = points->begin(); iter != points->end(); ++iter) {
+        if (i.find(*iter) != i.end()) {
+          maxDepth = std::max(maxDepth, i.find(*iter)->depth);
+        }
+      }
+      return maxDepth;
+    };
+    template <typename Point_, typename Marker_, typename Color_> 
+    int Sieve<Point_,Marker_,Color_>::height() {
+      return this->maxHeight;
+    }; 
+    template <typename Point_, typename Marker_, typename Color_> 
+    int Sieve<Point_,Marker_,Color_>::height(const point_type& p) {
+      const typename ::boost::multi_index::index<typename traits::cap_container_type,point_type>::type& i = ::boost::multi_index::get<typename traits::cap_container_type::traits::pointTag>(this->_cap.set);
+      if (i.find(p) != i.end()) {
+        return i.find(p)->height;
+      }
+      return 0;
+    };
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<typename InputSequence>
+    int Sieve<Point_,Marker_,Color_>::height(const Obj<InputSequence>& points) {
+      const typename ::boost::multi_index::index<typename traits::cap_container_type,point_type>::type& i = ::boost::multi_index::get<typename traits::cap_container_type::traits::pointTag>(this->_cap.set);
+      int maxHeight = 0;
+      
+      for(typename InputSequence::iterator iter = points->begin(); iter != points->end(); ++iter) {
+        if (i.find(*iter) != i.end()) {
+          maxHeight = std::max(maxHeight, i.find(*iter)->height);
+        }
+      }
+      return maxHeight;
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    int Sieve<Point_,Marker_,Color_>::diameter() {
+      int globalDiameter;
+      int ierr = MPI_Allreduce(&this->graphDiameter, &globalDiameter, 1, MPI_INT, MPI_MAX, this->comm());
+      CHKMPIERROR(ierr, ERRORMSG("Error in MPI_Allreduce"));
+      return globalDiameter;
+    };
+    template <typename Point_, typename Marker_, typename Color_> 
+    int Sieve<Point_,Marker_,Color_>::diameter(const point_type& p) {
+      return this->depth(p) + this->height(p);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::traits::depthSequence> Sieve<Point_,Marker_,Color_>::depthStratum(int d) {
+      if (d == 0) {
+        return typename traits::depthSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::depthMarkerTag>(this->_cap.set), d);
+      } else {
+        return typename traits::depthSequence(::boost::multi_index::get<typename traits::base_container_type::traits::depthMarkerTag>(this->_base.set), d);
+      }
+    };
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::traits::depthSequence> Sieve<Point_,Marker_,Color_>::depthStratum(int d, marker_type m) {
+      if (d == 0) {
+        return typename traits::depthSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::depthMarkerTag>(this->_cap.set), d, m);
+      } else {
+        return typename traits::depthSequence(::boost::multi_index::get<typename traits::base_container_type::traits::depthMarkerTag>(this->_base.set), d, m);
+      }
+    };
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::traits::heightSequence> Sieve<Point_,Marker_,Color_>::heightStratum(int h) {
+      if (h == 0) {
+        return typename traits::heightSequence(::boost::multi_index::get<typename traits::base_container_type::traits::heightMarkerTag>(this->_base.set), h);
+      } else {
+        return typename traits::heightSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::heightMarkerTag>(this->_cap.set), h);
+      }
+    };
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::traits::heightSequence> Sieve<Point_,Marker_,Color_>::heightStratum(int h, marker_type m) {
+      if (h == 0) {
+        return typename traits::heightSequence(::boost::multi_index::get<typename traits::base_container_type::traits::heightMarkerTag>(this->_base.set), h, m);
+      } else {
+        return typename traits::heightSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::heightMarkerTag>(this->_cap.set), h, m);
       }
     };
     //

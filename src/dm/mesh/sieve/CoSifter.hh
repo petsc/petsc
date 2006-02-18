@@ -163,9 +163,9 @@ namespace ALE {
         this->_order->modifyColor(p, patch, changeDim(-dim));
       };
       void setFiberDimensionByDepth(const patch_type& patch, int depth, int dim) {
-        Obj<typename sieve_type::depthSequence> points = this->_topology->depthStratum(depth);
+        Obj<typename sieve_type::traits::depthSequence> points = this->_topology->depthStratum(depth);
 
-        for(typename sieve_type::depthSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        for(typename sieve_type::traits::depthSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           this->setFiberDimension(patch, *p_iter, dim);
         }
       };

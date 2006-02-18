@@ -367,12 +367,11 @@ PetscErrorCode WritePyLithElements(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer vi
   PetscFunctionReturn(0);
 }
 
-#ifdef OLD_MESH
 #undef __FUNCT__  
 #define __FUNCT__ "WritePyLithVerticesLocal"
-PetscErrorCode WritePyLithVerticesLocal(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewer)
+PetscErrorCode WritePyLithVerticesLocal(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::def::Mesh::coordinate_type> coordinates = mesh->getCoordinates();
+  ALE::Obj<ALE::Two::Mesh::field_type> coordinates = mesh->getCoordinates();
   const double  *array = coordinates->restrict(0);
   int            dim = mesh->getDimension();
   int            numVertices = mesh->getTopology()->depthStratum(0)->size();
@@ -400,13 +399,12 @@ PetscErrorCode WritePyLithVerticesLocal(ALE::Obj<ALE::def::Mesh> mesh, PetscView
 
 #undef __FUNCT__  
 #define __FUNCT__ "WritePyLithElementsLocal"
-PetscErrorCode WritePyLithElementsLocal(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewer)
+PetscErrorCode WritePyLithElementsLocal(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer)
 {
   int            dim  = mesh->getDimension();
-  ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
-  ALE::Obj<ALE::def::Mesh::sieve_type> orientation = mesh->getOrientation();
-  ALE::Obj<ALE::def::Mesh::sieve_type::heightSequence> elements = topology->heightStratum(0);
-  ALE::Obj<ALE::def::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
+  ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
+  ALE::Obj<ALE::Two::Mesh::sieve_type::heightSequence> elements = topology->heightStratum(0);
+  ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
   int            corners = topology->nCone(*elements->begin(), topology->depth())->size();
   int            elementCount = 1;
   PetscErrorCode ierr;
@@ -434,6 +432,7 @@ PetscErrorCode WritePyLithElementsLocal(ALE::Obj<ALE::def::Mesh> mesh, PetscView
   PetscFunctionReturn(0);
 }
 
+#ifdef OLD_MESH
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve_Ascii"
 PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewer)
