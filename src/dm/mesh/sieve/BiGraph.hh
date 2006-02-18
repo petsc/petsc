@@ -254,6 +254,15 @@ namespace ALE {
       target_type target;
       color_type  color;
       Arrow(const source_type& s, const target_type& t, const color_type& c) : source(s), target(t), color(c) {};
+      // Flipping
+      template <typename OtherSource_, typename OtherTarget_, typename OtherColor_>
+      struct rebind {
+        typedef Arrow<OtherSource_, OtherTarget_, OtherColor_> type;
+      };
+      struct flip {
+        typedef Arrow<target_type, source_type, color_type> type;
+        type arrow(const arrow_type& a) { return type(a.target, a.source, a.color);};
+      };
 
       // Printing
       friend std::ostream& operator<<(std::ostream& os, const Arrow& a) {
