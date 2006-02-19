@@ -193,7 +193,7 @@ namespace ALE {
 
         if (dim < 0) {
           order->modifyColor(cell, patch, changeIndex(offset, -dim));
-          if (debug) {std::cout << "Order point " << cell << " of size " << -dim << " and offset " << offset << "(" << order->getColor(cell, patch) << ")" << std::endl;}
+          if (debug) {std::cout << "Order point " << cell << " of size " << -dim << " and offset " << offset << " color " << order->getColor(cell, patch) << std::endl;}
           offset -= dim;
         }
       };
@@ -210,6 +210,8 @@ namespace ALE {
           if (p_iter.color().prefix == rank) {
             points.push_back(*p_iter);
             rank++;
+//           } else if (debug) {
+//             std::cout << "Rejected patch point " << *p_iter << " with color " << p_iter.color() << std::endl;
           }
         }
         // Loop over patch members
