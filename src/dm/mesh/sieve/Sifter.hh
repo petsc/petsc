@@ -3533,13 +3533,13 @@ namespace ALE {
             os << *basei <<  "<--(" << conei.color() << ")--" << *conei << std::endl;
           }
         }
-        os << "cap --> outdegrees:" << std::endl;
+        os << "cap --> (outdegree, marker, depth, height):" << std::endl;
         for(typename traits::capSequence::iterator capi = cap->begin(); capi != cap->end(); ++capi) {
-          os << *capi <<  "-->" << capi.degree() << std::endl;
+          os << *capi <<  "-->" << capi.degree() << ", " << capi.marker() << ", " << capi.depth() << ", " << capi.height() << ", " << std::endl;
         }
-        os << "base <-- indegrees:" << std::endl;
+        os << "base --> (indegree, marker, depth, height):" << std::endl;
         for(typename traits::baseSequence::iterator basei = base->begin(); basei != base->end(); ++basei) {
-          os << *basei <<  "<--" << basei.degree() << std::endl;
+          os << *basei <<  "-->" << basei.degree() << ", " << basei.marker() << ", " << basei.depth() << ", " << basei.height() << ", " << std::endl;
         }
       }
       else {
@@ -3665,6 +3665,7 @@ namespace ALE {
     template<class InputSequence> 
     void Sieve<Point_,Marker_,Color_>::__computeClosureHeights(const Obj<InputSequence>& points) {
       typename ::boost::multi_index::index<typename traits::cap_container_type::set_type,typename traits::cap_container_type::traits::pointTag>::type& index = ::boost::multi_index::get<typename traits::cap_container_type::traits::pointTag>(this->_cap.set);
+      typename ::boost::multi_index::index<typename traits::base_container_type::set_type,typename traits::base_container_type::traits::pointTag>::type& bIndex = ::boost::multi_index::get<typename traits::base_container_type::traits::pointTag>(this->_base.set);
       Obj<PointSet> modifiedPoints = PointSet();
       
       for(typename InputSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
@@ -3672,7 +3673,12 @@ namespace ALE {
         int h0 = this->height(*p_itor);
         int h1 = this->height(this->support(*p_itor)) + 1;
         if(h1 != h0) {
+          typename ::boost::multi_index::index<typename traits::base_container_type::set_type,typename traits::base_container_type::traits::pointTag>::type::iterator bIter = bIndex.find(*p_itor);
+
           index.modify(index.find(*p_itor), changeHeight(h1));
+          if (bIter != bIndex.end()) {
+            bIndex.modify(bIter, changeHeight(h1));
+          }
           if (h1 > this->maxHeight) this->maxHeight = h1;
           modifiedPoints->insert(*p_itor);
         }
@@ -3686,6 +3692,7 @@ namespace ALE {
     template<class InputSequence> 
     void Sieve<Point_,Marker_,Color_>::__computeStarDepths(const Obj<InputSequence>& points) {
       typename ::boost::multi_index::index<typename traits::base_container_type::set_type,typename traits::base_container_type::traits::pointTag>::type& index = ::boost::multi_index::get<typename traits::base_container_type::traits::pointTag>(this->_base.set);
+      typename ::boost::multi_index::index<typename traits::cap_container_type::set_type,typename traits::cap_container_type::traits::pointTag>::type& cIndex = ::boost::multi_index::get<typename traits::cap_container_type::traits::pointTag>(this->_cap.set);
       Obj<PointSet> modifiedPoints = PointSet();
       
       for(typename InputSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
@@ -3693,7 +3700,12 @@ namespace ALE {
         int d0 = this->depth(*p_itor);
         int d1 = this->depth(this->cone(*p_itor)) + 1;
         if(d1 != d0) {
+          typename ::boost::multi_index::index<typename traits::cap_container_type::set_type,typename traits::cap_container_type::traits::pointTag>::type::iterator cIter = cIndex.find(*p_itor);
+
           index.modify(index.find(*p_itor), changeDepth(d1));
+          if (cIter != cIndex.end()) {
+            cIndex.modify(cIter, changeDepth(d1));
+          }
           if (d1 > this->maxDepth) this->maxDepth = d1;
           modifiedPoints->insert(*p_itor);
         }
