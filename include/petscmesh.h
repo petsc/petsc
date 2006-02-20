@@ -26,6 +26,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh,PetscInt*[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetPreallocation(Mesh,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetGhosts(Mesh,PetscInt,PetscInt,PetscInt,const PetscInt[]);
 
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(Mesh,ALE::Obj<ALE::Two::Mesh>,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh,ALE::Obj<ALE::Two::Mesh> *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh,ALE::Obj<ALE::Two::Mesh>);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDistribute(Mesh);

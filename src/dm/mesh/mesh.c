@@ -68,7 +68,7 @@ PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
 {
   MPI_Comm          comm = mesh->getComm();
   ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
-  ALE::Obj<ALE::Two::Mesh::sieve_type::heightSequence> elements = topology->heightStratum(0);
+  ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
   // FIX: Needs to be global
   int               numElements = elements->size();
   int               corners = topology->nCone(*elements->begin(), topology->depth())->size();
@@ -81,7 +81,7 @@ PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
   ierr = MPI_Comm_size(comm, &size);
   ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
   if (rank == 0) {
-    for(ALE::Two::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+    for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
       ALE::Obj<ALE::def::PointArray> cone = topology->nCone(*e_itor, topology->depth());
       ALE::Two::Mesh::bundle_type::patch_type patch;
 
@@ -294,7 +294,7 @@ PetscErrorCode WritePyLithElements(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer vi
   PetscMPIInt       rank = mesh->getRank();
   int               dim  = mesh->getDimension();
   ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
-  ALE::Obj<ALE::Two::Mesh::sieve_type::heightSequence> elements = topology->heightStratum(0);
+  ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
   ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
   // FIX: Needs to be global
   int               corners = topology->nCone(*elements->begin(), topology->depth())->size();
@@ -312,7 +312,7 @@ PetscErrorCode WritePyLithElements(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer vi
   ierr = PetscViewerASCIIPrintf(viewer,"#     N ETP MAT INF     N1     N2     N3     N4     N5     N6     N7     N8\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
   if (rank == 0) {
-    for(ALE::Two::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+    for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
       ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch("element", *e_itor);
       ALE::Two::Mesh::bundle_type::patch_type patch;
 
@@ -372,7 +372,7 @@ PetscErrorCode WritePyLithElements(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer vi
 PetscErrorCode WritePyLithVerticesLocal(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer)
 {
   ALE::Obj<ALE::Two::Mesh::field_type> coordinates = mesh->getCoordinates();
-  const double  *array = coordinates->restrict(0);
+  const double  *array = coordinates->restrict(ALE::Two::Mesh::field_type::patch_type());
   int            dim = mesh->getDimension();
   int            numVertices = mesh->getTopology()->depthStratum(0)->size();
   PetscErrorCode ierr;
@@ -403,7 +403,7 @@ PetscErrorCode WritePyLithElementsLocal(ALE::Obj<ALE::Two::Mesh> mesh, PetscView
 {
   int            dim  = mesh->getDimension();
   ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
-  ALE::Obj<ALE::Two::Mesh::sieve_type::heightSequence> elements = topology->heightStratum(0);
+  ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
   ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
   int            corners = topology->nCone(*elements->begin(), topology->depth())->size();
   int            elementCount = 1;
@@ -419,13 +419,14 @@ PetscErrorCode WritePyLithElementsLocal(ALE::Obj<ALE::Two::Mesh> mesh, PetscView
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"#     N ETP MAT INF     N1     N2     N3     N4     N5     N6     N7     N8\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-  for(ALE::def::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-    ALE::Obj<ALE::def::Mesh::bundle_type::IndexArray> intervals = vertexBundle->getOrderedIndices(0, orientation->cone(*e_itor));
+  for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+    ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch("element", *e_itor);
+    ALE::Two::Mesh::bundle_type::patch_type patch;
 
     // Only linear tetrahedra, 1 material, no infinite elements
     ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, 1, 0);CHKERRQ(ierr);
-    for(ALE::def::Mesh::bundle_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-      ierr = PetscViewerASCIIPrintf(viewer, " %6d", (*i_itor).prefix+1);CHKERRQ(ierr);
+    for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+      ierr = PetscViewerASCIIPrintf(viewer, " %6d", vertexBundle->getIndex(patch, *c_itor).prefix+1);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
   }

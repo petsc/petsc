@@ -39,7 +39,7 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 #include <string.h>
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer);
-PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::def::Mesh>, Vec *);
+PetscErrorCode CreatePartitionVector(Mesh, Vec *);
 
 typedef enum {PCICE, PYLITH} FileType;
 
@@ -92,9 +92,9 @@ int main(int argc, char *argv[])
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
     if (fileType == PCICE) {
-      mesh = ALE::def::PCICEBuilder::createNew(comm, baseFilename, dim, useZeroBase, debug);
+      mesh = ALE::Two::PCICEBuilder::createNew(comm, baseFilename, dim, useZeroBase, debug);
     } else if (fileType == PYLITH) {
-      mesh = ALE::def::PyLithBuilder::createNew(comm, baseFilename, interpolate, debug);
+      mesh = ALE::Two::PyLithBuilder::createNew(comm, baseFilename, interpolate, debug);
     }
     ALE::LogStagePop(stage);
     ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
@@ -166,19 +166,18 @@ int main(int argc, char *argv[])
 /*
   Creates a vector whose value is the processor rank on each element
 */
-PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::def::Mesh> mesh, Vec *partition)
+PetscErrorCode CreatePartitionVector(Mesh mesh, Vec *partition)
 {
-  ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
-  ALE::Obj<ALE::def::Mesh::bundle_type> elementBundle = mesh->getBundle(mesh->getDimension());
+  ALE::Obj<ALE::Two::Mesh> m;
   PetscScalar   *array;
-  PetscMPIInt    rank;
+  int            rank = m->getRank();
   PetscInt       n, i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ALE_LOG_EVENT_BEGIN
-  ierr = MPI_Comm_rank(mesh->getComm(), &rank);CHKERRQ(ierr);
-  //ierr = MeshCreateVector(mesh, &elementBundle, debug, partition);CHKERRQ(ierr);
+  ALE_LOG_EVENT_BEGIN;
+  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  ierr = MeshCreateVector(mesh, m, partition);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*partition, 1);CHKERRQ(ierr);
   ierr = VecGetLocalSize(*partition, &n);CHKERRQ(ierr);
   ierr = VecGetArray(*partition, &array);CHKERRQ(ierr);
@@ -186,6 +185,6 @@ PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::def::Mesh> mesh, Vec *partiti
     array[i] = rank;
   }
   ierr = VecRestoreArray(*partition, &array);CHKERRQ(ierr);
-  ALE_LOG_EVENT_END
+  ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
 }
