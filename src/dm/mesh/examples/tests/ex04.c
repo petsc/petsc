@@ -4,19 +4,19 @@
 T*/
 
 /*
-  Tests ConeArraySequence -- a sequence that wraps an array of (source,color) "arrows" over a given target
-  and presents it as an sequence of Arrows; used in ParDelta.fusion().
+  Tests ParDelta::ConeArraySequence -- a sequence that wraps an array of (source,color) "arrows" over a given target
+  and presents it as an sequence of Arrows; used in ParDelta::fusion().
   Note: this test may not fail in parallel, but is not designed to run that way.
 */
 
-static char help[] = "Constructs and views test ConeArraySequences involved in ParFusion.\n\n";
+static char help[] = "Constructs and views test ParDelta::ConeArraySequences involved in ParFusion.\n\n";
 
 #include <ParDelta.hh>
 
-typedef ALE::def::Point                         Point;
-typedef ALE::Two::Arrow<Point, Point, Point>    PointArrow;
-typedef ALE::Two::ConeArraySequence<PointArrow> PointConeArraySequence;
-typedef PointConeArraySequence::cone_arrow_type PointConeArrow;
+typedef ALE::def::Point                                   Point;
+typedef ALE::Two::Arrow<Point, Point, Point>              PointArrow;
+typedef ALE::Two::ConeArraySequence<PointArrow>           PointConeArraySequence;
+typedef PointConeArraySequence::cone_arrow_type           PointConeArrow;
 
 PetscErrorCode   testPointConeArraySequence();
 PetscErrorCode   viewPointConeArraySequence(PointConeArraySequence& seq, const char* label = NULL);

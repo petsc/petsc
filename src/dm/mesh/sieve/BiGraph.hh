@@ -612,9 +612,10 @@ namespace ALE {
       //
       // Query methods
       //
-      MPI_Comm comm()     const {return this->_comm;};
-      int      commSize() const {return this->_commSize;};
-      int      commRank() const {return this->_commRank;}
+      MPI_Comm    comm()     const {return this->_comm;};
+      int         commSize() const {return this->_commSize;};
+      int         commRank() const {return this->_commRank;}
+      PetscObject petscObj() const {return this->_petscObj;};
 
       // FIX: need const_cap, const_base returning const capSequence etc, but those need to have const_iterators, const_begin etc.
       Obj<typename traits::capSequence> cap() {

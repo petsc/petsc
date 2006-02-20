@@ -14,9 +14,9 @@ static char help[] = "Constructs a series of parallel BiGraphs and performs ParD
 
 
 typedef ALE::Two::BiGraph<int,ALE::def::Point,int> PointBiGraph;
-typedef ALE::Two::ParDelta<PointBiGraph>                                 PointParDelta;
-typedef PointParDelta::overlap_type                                      PointOverlap;
-typedef PointParDelta::fusion_type                                       PointConeFusion;
+typedef ALE::Two::ParDelta<PointBiGraph>           PointParDelta;
+typedef PointParDelta::overlap_type                PointParDelta__overlap_type;
+typedef PointParDelta::fusion_type                 PointParDelta__fusion_type;
 
 PetscErrorCode   testBiGraphHat(MPI_Comm comm);
 PetscErrorCode   testBiGraphSkewedHat(MPI_Comm comm);
@@ -68,12 +68,13 @@ PetscErrorCode testBiGraphHat(MPI_Comm comm) {
   // View
   bg->view("Hat bigraph");
 
-  // Construct a Delta object and a base overlap object
-  PointParDelta delta(bg, debug);
-  ALE::Obj<PointOverlap>   overlap = delta.overlap();
+  // Construct a base overlap object using the static method PointParDelta::overlap
+  ALE::Obj<PointParDelta::overlap_type>   overlap = PointParDelta::overlap(bg);
   // View
   overlap->view("Hat overlap");
-  ALE::Obj<PointConeFusion> fusion   = delta.fusion(overlap);
+
+  // Construct the fusion over the overlap using the static method PointParDelta::fusion
+  ALE::Obj<PointParDelta::fusion_type>    fusion   = PointParDelta::fusion(bg, overlap);
   // View
   fusion->view("Hat cone fusion");
 
@@ -107,12 +108,13 @@ PetscErrorCode testBiGraphSkewedHat(MPI_Comm comm) {
   // View
   bg->view("SkewedHat bigraph");
 
-  // Construct a Delta object and a base overlap object
-  PointParDelta delta(bg, debug);
-  ALE::Obj<PointOverlap>   overlap = delta.overlap();
+  // Construct a base overlap object using static method PointParDelta::overlap
+  ALE::Obj<PointParDelta__overlap_type>   overlap = PointParDelta::overlap(bg);
   // View
   overlap->view("SkewedHat overlap");
-  ALE::Obj<PointConeFusion> fusion   = delta.fusion(overlap);
+
+  // Compute the fusion over the overlap using static method PointParDelta::fusion
+  ALE::Obj<PointParDelta__fusion_type>    fusion  = PointParDelta::fusion(bg, overlap);
   // View
   fusion->view("SkewedHat cone fusion");
 

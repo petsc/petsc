@@ -123,7 +123,7 @@ namespace ALE {
 
 
     template <typename BiGraph_>
-    class Flip {
+    class Flip { // class Flip
     protected:
       typedef BiGraph_ _graph_type;
       Obj<_graph_type> _graph;
@@ -145,9 +145,6 @@ namespace ALE {
 
 
 
-
-
-
     template <typename ParBiGraph_,
               typename Fuser_ = RightSequenceDuplicator<ConeArraySequence<typename ParBiGraph_::traits::arrow_type> >,
               typename FusionBiGraph_ = typename ParBiGraph_::template rebind<typename Fuser_::fusion_source_type, 
@@ -159,42 +156,33 @@ namespace ALE {
       // Here we specialize to BiGraphs based on (capped by) Points in order to enable parallel overlap discovery.
       // We also assume that the Points in the base (cap) are ordered appropriately so we can use baseSequence.begin() and 
       // baseSequence.end() as the extrema for global reduction.
-      typedef Fuser_                                                        fuser_type;
-      typedef ParBiGraph_                                                   graph_type;
-      typedef FusionBiGraph_                                                fusion_type;
-      typedef ColorBiGraph<int, ALE::def::Point, ALE::def::Point, uniColor> overlap_type;
+      typedef Fuser_                                                                  fuser_type;
+      typedef ParBiGraph_                                                             graph_type;
+      typedef FusionBiGraph_                                                          fusion_type;
+      typedef ColorBiGraph<int, ALE::def::Point, ALE::def::Point, uniColor>           overlap_type;
+      typedef ParDelta<ParBiGraph_, Fuser_, FusionBiGraph_>                           delta_type;
       //
-      ParDelta(Obj<graph_type> graph, int debug = 0) : 
-        _graph(graph), comm(_graph->comm()), size(_graph->commSize()), rank(_graph->commRank()), debug(debug) {
-        PetscErrorCode ierr = PetscObjectCreate(this->comm, &this->petscObj); CHKERROR(ierr, "Failed in PetscObjectCreate");
-      };
-      ~ParDelta(){};
-
-      Obj<overlap_type> overlap(){
-        Obj<overlap_type> overlap = overlap_type(this->comm);
+      static Obj<overlap_type> 
+      overlap(const Obj<graph_type> graph) {
+        Obj<overlap_type> overlap = overlap_type(graph->comm());
         // If this is a serial object, we return an empty overlap
-        if((this->comm != PETSC_COMM_SELF) && (this->size > 1)) {
-          __determineNeighbors(overlap);
+        if((graph->comm() != PETSC_COMM_SELF) && (graph->commSize() > 1)) {
+          computeOverlap(graph, overlap);
         }
         return overlap;
       };
 
-      Obj<fusion_type> fusion(const Obj<overlap_type>& overlap, const Obj<fuser_type>& fuser = fuser_type()) {
-        Obj<fusion_type> fusion = fusion_type(this->comm);
+      static Obj<fusion_type> 
+      fusion(const Obj<graph_type> graph, const Obj<overlap_type>& overlap, const Obj<fuser_type>& fuser = fuser_type()) {
+        Obj<fusion_type> fusion = fusion_type(graph->comm());
         // If this is a serial object, we return an empty delta
-        if((this->comm != PETSC_COMM_SELF) && (this->size > 1)) {
-          __computeFusion(overlap, fuser, fusion);
+        if((graph->comm() != PETSC_COMM_SELF) && (graph->commSize() > 1)) {
+          computeFusion(graph, overlap, fuser, fusion);
         }
         return fusion;
       };
     protected:
-      // FIX:  need to have _graph of const graph_type& type, but that requires const_cap, const_base etc (see ColorBiGraph)
-      Obj<graph_type>           _graph;
-      MPI_Comm                  comm;
-      int                       size;
-      int                       rank;
-      int                       debug;
-      PetscObject               petscObj;
+      static int                debug;
       // Internal type definitions to ensure compatibility with the legacy code in the parallel subroutines
       typedef ALE::def::Point                                Point;
       typedef int                                            int32_t;
@@ -204,13 +192,15 @@ namespace ALE {
       typedef std::map<Point, int32_t>                       Point__int;
       typedef std::map<Point, std::pair<int32_t,int32_t> >   Point__int_int;
       typedef std::map<Point, int_pair_set>                  Point__int_pair_set;
-      //
+
+      //--------------------------------------------------------------------------------------------------------
       template <typename Sequence>
-      void __determinePointOwners(const Obj<Sequence>& points, int32_t *LeaseData, Point__int& owner) {
+      static void __determinePointOwners(const Obj<graph_type> _graph, const Obj<Sequence>& points, int32_t *LeaseData, Point__int& owner) {
         PetscErrorCode ierr;
         // The Sequence points will be referred to as 'base' throughout, although it may in fact represent a cap.
-        int  size = this->_graph->commSize();
-        int  rank = this->_graph->commRank();
+        MPI_Comm comm = _graph->comm();
+        int  size     = _graph->commSize();
+        int  rank     = _graph->commRank();
         // Make sure the base is not empty 
         if(points->begin() != points->end()) {
           // We need to partition global nodes among lessors, which we do by global prefix
@@ -224,7 +214,7 @@ namespace ALE {
             }
           }
           int MinGlobalPrefix;
-          ierr = MPI_Allreduce(&minGlobalPrefix, &MinGlobalPrefix, 1, MPIU_INT, MPI_MIN, this->comm); 
+          ierr = MPI_Allreduce(&minGlobalPrefix, &MinGlobalPrefix, 1, MPIU_INT, MPI_MIN, comm); 
           CHKERROR(ierr, "Error in MPI_Allreduce");
           
           int__int BaseLowerBound, BaseUpperBound; // global quantities computed from the local quantities below
@@ -256,9 +246,9 @@ namespace ALE {
             // Compute global bounds
             for(int d = -1; d >= MinGlobalPrefix; d--){
               int lowerBound, upperBound, maxSize;
-              ierr   = MPI_Allreduce(&baseLowerBound[d],&lowerBound,1,MPIU_INT,MPI_MIN,this->comm); 
+              ierr   = MPI_Allreduce(&baseLowerBound[d],&lowerBound,1,MPIU_INT,MPI_MIN,comm); 
               CHKERROR(ierr, "Error in MPI_Allreduce");
-              ierr   = MPI_Allreduce(&baseUpperBound[d],&upperBound,1,MPIU_INT,MPI_MAX,this->comm); 
+              ierr   = MPI_Allreduce(&baseUpperBound[d],&upperBound,1,MPIU_INT,MPI_MAX,comm); 
               CHKERROR(ierr, "Error in MPI_Allreduce");
               maxSize = upperBound - lowerBound + 1;
               if(maxSize > 0) { // there are actually some indices in this global prefix
@@ -308,14 +298,19 @@ namespace ALE {
       }; // __determinePointOwners()
 
 
-
-      // ------------------------------------------------------------------------------------------------------
-      void __determineNeighbors(Obj<overlap_type>& overlap) {
+    public:
+      //-------------------------------------------------------------------------------------------------------
+      static void computeOverlap(const Obj<graph_type>& _graph, Obj<overlap_type>& overlap) {
 
         typedef typename graph_type::baseSequence Sequence;
         PetscErrorCode ierr;
-        bool debug = this->debug > 0;
-        bool debug2 = this->debug > 1;
+        MPI_Comm comm = _graph->comm();
+        int      size = _graph->commSize();
+        int      rank = _graph->commRank();
+        PetscObject petscObj = _graph->petscObj();
+
+        bool debug  = delta_type::debug > 0;
+        bool debug2 = delta_type::debug > 1;
 
         // Allocate space for the ownership data
         int32_t *LeaseData; // 2 ints per processor: number of leased nodes and number of leases (0 or 1).
@@ -323,32 +318,32 @@ namespace ALE {
         ierr = PetscMemzero(LeaseData,2*size*sizeof(PetscInt));CHKERROR(ierr, "Error in PetscMemzero");
         
         // The base we are going to work with
-        Obj<Sequence> points = this->_graph->base();
+        Obj<Sequence> points = _graph->base();
 
         // determine owners of each base node and save it in a map
         Point__int owner;
-        this->__determinePointOwners(this->_graph->base(), LeaseData, owner);
+        __determinePointOwners(_graph, _graph->base(), LeaseData, owner);
     
         // Now we accumulate the max lease size and the total number of renters
         // Determine the owners of base nodes and collect the lease data for each processor:
         // the number of nodes leased and the number of leases (0 or 1).
         int32_t MaxLeaseSize, RenterCount;
-        ierr = PetscMaxSum(this->comm,LeaseData,&MaxLeaseSize,&RenterCount); 
+        ierr = PetscMaxSum(comm,LeaseData,&MaxLeaseSize,&RenterCount); 
         CHKERROR(ierr,"Error in PetscMaxSum");
-        ierr = PetscInfo1(0,"ParDelta::__determineNeighbors: Number of renters %d\n", RenterCount); 
+        ierr = PetscInfo1(0,"ParDelta::computeOverlap: Number of renters %d\n", RenterCount); 
         CHKERROR(ierr,"Error in PetscInfo");
 
         if(debug) { /* -------------------------------------------------------------- */
-          ierr = PetscSynchronizedPrintf(this->comm, "[%d]: ParDelta::__determineNeighbors: RenterCount = %d, MaxLeaseSize = %d\n", rank, RenterCount, MaxLeaseSize);
+          ierr = PetscSynchronizedPrintf(comm, "[%d]: ParDelta::computeOverlap: RenterCount = %d, MaxLeaseSize = %d\n", rank, RenterCount, MaxLeaseSize);
           CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm);
+          ierr = PetscSynchronizedFlush(comm);
           CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         } /* ----------------------------------------------------------------------- */
         
         // post receives for all Rented nodes; we will be receiving 3 data items per rented node, 
         // and at most MaxLeaseSize of nodes per renter
         PetscMPIInt    tag1;
-        ierr = PetscObjectGetNewTag(this->petscObj, &tag1); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        ierr = PetscObjectGetNewTag(petscObj, &tag1); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
         int32_t *RentedNodes;
         MPI_Request *Renter_waits;
         if(RenterCount){
@@ -357,18 +352,18 @@ namespace ALE {
           ierr = PetscMalloc((RenterCount)*sizeof(MPI_Request),&Renter_waits);                CHKERROR(ierr,"Error in PetscMalloc");
         }
         for (int32_t i=0; i<RenterCount; i++) {
-          ierr = MPI_Irecv(RentedNodes+3*MaxLeaseSize*i,3*MaxLeaseSize,MPIU_INT,MPI_ANY_SOURCE,tag1,this->comm,Renter_waits+i);
+          ierr = MPI_Irecv(RentedNodes+3*MaxLeaseSize*i,3*MaxLeaseSize,MPIU_INT,MPI_ANY_SOURCE,tag1,comm,Renter_waits+i);
           CHKERROR(ierr,"Error in MPI_Irecv");
         }
         
         int32_t LessorCount;
         LessorCount = 0; for (int32_t i=0; i<size; i++) LessorCount += LeaseData[2*i+1];
-        ierr = PetscInfo1(0,"ParDelta::__determineNeighbors: Number of lessors %d\n",LessorCount);
+        ierr = PetscInfo1(0,"ParDelta::computeOverlap: Number of lessors %d\n",LessorCount);
         CHKERROR(ierr,"Error in PetscInfo");
         if(debug) { /* -------------------------------------------------------------- */
-          ierr = PetscSynchronizedPrintf(this->comm, "[%d]: ParDelta::__determineNeighbors: LessorCount = %d\n", rank, LessorCount);
+          ierr = PetscSynchronizedPrintf(comm, "[%d]: ParDelta::computeOverlap: LessorCount = %d\n", rank, LessorCount);
           CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm);
+          ierr = PetscSynchronizedFlush(comm);
           CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         } /* ----------------------------------------------------------------------- */
         
@@ -394,25 +389,25 @@ namespace ALE {
         ierr = PetscFree(LeaseData); CHKERROR(ierr, "Error in PetscFree");
         if(debug2) { /* ----------------------------------- */
           ostringstream txt;
-          txt << "[" << rank << "]: ParDelta::__determineNeighbors: lessor data [index, rank, lease size]: ";
+          txt << "[" << rank << "]: ParDelta::computeOverlap: lessor data [index, rank, lease size]: ";
           for(int32_t i = 0; i < LessorCount; i++) {
             txt << "[" << i << ", " << Lessors[i] << ", " << LeaseSizes[i] << "] ";
           }
           txt << "\n";
-          ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
         }/* -----------------------------------  */
         if(debug2) { /* ----------------------------------- */
           ostringstream txt;
-          txt << "[" << rank << "]: ParDelta::__determineNeighbors: LessorIndex: ";
+          txt << "[" << rank << "]: ParDelta::computeOverlap: LessorIndex: ";
           for(int__int::iterator li_itor = LessorIndex.begin(); li_itor!= LessorIndex.end(); li_itor++) {
             int32_t i = (*li_itor).first;
             int32_t j = (*li_itor).second;
             txt << i << "-->" << j << "; ";
           }
           txt << "\n";
-          ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
         }/* -----------------------------------  */
         
         
@@ -435,7 +430,7 @@ namespace ALE {
           int32_t ind  = LessorIndex[ow];
           LeasedNodes[LessorOffsets[ind]++] = p.prefix;
           LeasedNodes[LessorOffsets[ind]++] = p.index;      
-          LeasedNodes[LessorOffsets[ind]++] = this->_graph->cone(p)->size();
+          LeasedNodes[LessorOffsets[ind]++] = _graph->cone(p)->size();
         }
         if(LessorCount) {
           LessorOffsets[0] = 0; 
@@ -448,7 +443,7 @@ namespace ALE {
           ierr = PetscMalloc((LessorCount)*sizeof(MPI_Request),&Lessor_waits);CHKERROR(ierr,"Error in PetscMalloc");
         }
         for (int32_t i=0; i<LessorCount; i++) {
-          ierr      = MPI_Isend(LeasedNodes+LessorOffsets[i],3*LeaseSizes[i],MPIU_INT,Lessors[i],tag1,this->comm,&Lessor_waits[i]);
+          ierr      = MPI_Isend(LeasedNodes+LessorOffsets[i],3*LeaseSizes[i],MPIU_INT,Lessors[i],tag1,comm,&Lessor_waits[i]);
           CHKERROR(ierr,"Error in MPI_Isend");
         }
         
@@ -488,7 +483,7 @@ namespace ALE {
             Point node = (*nodeRenters_itor).first;
             int_pair_set renterSet   = (*nodeRenters_itor).second;
             // ASSUMPTION on point type
-            txt << "[" << rank << "]: ParDelta::__determineNeighbors: node (" << node.prefix << "," << node.index << ") is rented by " << renterSet.size() << " renters (renter, cone size):  ";
+            txt << "[" << rank << "]: ParDelta::computeOverlap: node (" << node.prefix << "," << node.index << ") is rented by " << renterSet.size() << " renters (renter, cone size):  ";
             for (int_pair_set::iterator renterSet_itor = renterSet.begin(); renterSet_itor != renterSet.end(); renterSet_itor++) 
             {
               txt << "(" << (*renterSet_itor).first << "," << (*renterSet_itor).second << ") ";
@@ -496,8 +491,8 @@ namespace ALE {
             txt << "\n";
           }
           // Now send the C-string behind txt to PetscSynchronizedPrintf
-          ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
         }/* -----------------------------------  */
         
         // wait on the original sends to the lessors
@@ -519,9 +514,9 @@ namespace ALE {
         }
         // Post receives for NeighbornCounts
         PetscMPIInt    tag2;
-        ierr = PetscObjectGetNewTag(this->petscObj, &tag2); CHKERROR(ierr, "Failded on PetscObjectGetNewTag");
+        ierr = PetscObjectGetNewTag(petscObj, &tag2); CHKERROR(ierr, "Failded on PetscObjectGetNewTag");
         for (int32_t i=0; i<LessorCount; i++) {
-          ierr = MPI_Irecv(NeighborCounts+LessorOffsets[i],3*LeaseSizes[i],MPIU_INT,Lessors[i],tag2,this->comm,&Lessor_waits[i]);
+          ierr = MPI_Irecv(NeighborCounts+LessorOffsets[i],3*LeaseSizes[i],MPIU_INT,Lessors[i],tag2,comm,&Lessor_waits[i]);
           CHKERROR(ierr,"Error in MPI_Irecv");
         }
         // pack and send messages back to renters; we need to send 3 integers per rental (2 for Point, 1 for sharer count) 
@@ -533,9 +528,9 @@ namespace ALE {
           TotalRentalCount += (*nodeRenters_itor).second.size();
         }
         if(debug2) {
-          ierr = PetscSynchronizedPrintf(this->comm, "[%d]: TotalRentalCount %d\n", rank, TotalRentalCount); 
+          ierr = PetscSynchronizedPrintf(comm, "[%d]: TotalRentalCount %d\n", rank, TotalRentalCount); 
           CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm); CHKERROR(ierr, "PetscSynchronizedFlush");
+          ierr = PetscSynchronizedFlush(comm); CHKERROR(ierr, "PetscSynchronizedFlush");
         }/* -----------------------------------  */
         
         // Allocate sharer counts array for all rentals
@@ -560,7 +555,7 @@ namespace ALE {
             SharerCounts[cntr++] = NodeRenters[node].size()-1;
           }
           // Send message to renter
-          ierr      = MPI_Isend(SharerCounts+RenterOffset,3*RenterLeaseSizes[a],MPIU_INT,Renters[a],tag2,this->comm,Renter_waits+a);
+          ierr      = MPI_Isend(SharerCounts+RenterOffset,3*RenterLeaseSizes[a],MPIU_INT,Renters[a],tag2,comm,Renter_waits+a);
           CHKERROR(ierr, "Error in MPI_Isend");
           // Offset is advanced by thrice the number of leased nodes, since we store 3 integers per leased node: Point and cone size
           RenterOffset = cntr;
@@ -580,7 +575,7 @@ namespace ALE {
           // Use a C++ string stream to report the numbers of shared nodes leased from each lessor
           ostringstream txt;
           cntr = 0;
-          txt << "[" << rank << "]: ParDelta::__determineNeighbors: neighbor counts by lessor-node [lessor rank, (node), neighbor count]:  ";
+          txt << "[" << rank << "]: ParDelta::computeOverlap: neighbor counts by lessor-node [lessor rank, (node), neighbor count]:  ";
           for(int32_t i = 0; i < LessorCount; i++) {
             // ASSUMPTION on point type
             for(int32_t j = 0; j < LeaseSizes[i]; j++) 
@@ -593,8 +588,8 @@ namespace ALE {
             }
           }
           txt << "\n";
-          ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm); CHKERROR(ierr, "PetscSynchronizedFlush");
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedFlush(comm); CHKERROR(ierr, "PetscSynchronizedFlush");
         }/* -----------------------------------  */
         
         
@@ -627,13 +622,13 @@ namespace ALE {
           // Use a C++ string stream to report the numbers of shared nodes leased from each lessor
           ostringstream txt;
           cntr = 0;
-          txt << "[" << rank << "]: ParDelta::__determineNeighbors: NeighborCountsByLessor [rank, count]:  ";
+          txt << "[" << rank << "]: ParDelta::computeOverlap: NeighborCountsByLessor [rank, count]:  ";
           for(int32_t i = 0; i < LessorCount; i++) {
             txt << "[" << Lessors[i] <<","  <<  NeighborCountsByLessor[i] << "]; ";
           }
           txt << "\n";
-          ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm); CHKERROR(ierr, "PetscSynchronizedFlush");
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedFlush(comm); CHKERROR(ierr, "PetscSynchronizedFlush");
         }/* -----------------------------------  */
         int32_t *Neighbors = 0;
         if(TotalNeighborCount) {
@@ -642,11 +637,11 @@ namespace ALE {
         
         // Post receives for Neighbors
         PetscMPIInt    tag3;
-        ierr = PetscObjectGetNewTag(this->petscObj, &tag3); CHKERROR(ierr, "Failded on PetscObjectGetNewTag");
+        ierr = PetscObjectGetNewTag(petscObj, &tag3); CHKERROR(ierr, "Failded on PetscObjectGetNewTag");
         int32_t lessorOffset = 0;
         for(int32_t i=0; i<LessorCount; i++) {
           if(NeighborCountsByLessor[i]) { // We expect messages from lessors with a non-zero NeighborCountsByLessor entry only
-            ierr = MPI_Irecv(Neighbors+lessorOffset,2*NeighborCountsByLessor[i],MPIU_INT,Lessors[i],tag3,this->comm,&Lessor_waits[i]);
+            ierr = MPI_Irecv(Neighbors+lessorOffset,2*NeighborCountsByLessor[i],MPIU_INT,Lessors[i],tag3,comm,&Lessor_waits[i]);
             CHKERROR(ierr,"Error in MPI_Irecv");
             lessorOffset += 2*NeighborCountsByLessor[i];
           }
@@ -684,7 +679,7 @@ namespace ALE {
         // Renters are traversed in the order of their original arrival index by arrival number a
         ostringstream txt; // DEBUG
         if(debug2) {
-          txt << "[" << rank << "]: ParDelta::__determineNeighbors: RenterCount = " << RenterCount << "\n";
+          txt << "[" << rank << "]: ParDelta::computeOverlap: RenterCount = " << RenterCount << "\n";
         }
         RenterOffset = 0; // this is the current offset into Sharers needed for the send statement
         for(int32_t a = 0; a < RenterCount; a++) {//
@@ -699,7 +694,7 @@ namespace ALE {
             p.prefix = RentedNodes[RenterLeaseOffset + 3*i];
             p.index  = RentedNodes[RenterLeaseOffset + 3*i + 1];
             if(debug) {
-              txt << "[" << rank << "]: ParDelta::__determineNeighbors: renters sharing with " << r << " of node  (" << p.prefix << "," << p.index << ")  [rank, cone size]:  ";
+              txt << "[" << rank << "]: ParDelta::computeOverlap: renters sharing with " << r << " of node  (" << p.prefix << "," << p.index << ")  [rank, cone size]:  ";
             }
             // now traverse the set of all the renters of p
             for(int_pair_set::iterator pRenters_itor=NodeRenters[p].begin(); pRenters_itor!=NodeRenters[p].end(); pRenters_itor++) {
@@ -720,15 +715,15 @@ namespace ALE {
           }// for(int32_t i = 0; i < RenterLeaseSizes[a]; i++) {
           // Send message to renter only if the segment size is positive
           if(SegmentSize > 0) {
-            ierr      = MPI_Isend(Sharers+RenterOffset,SegmentSize,MPIU_INT,Renters[a],tag3,this->comm,Renter_waits+a);
+            ierr      = MPI_Isend(Sharers+RenterOffset,SegmentSize,MPIU_INT,Renters[a],tag3,comm,Renter_waits+a);
             CHKERROR(ierr, "Error in MPI_Isend");
           }
           // Offset is advanced by the segmentSize
           RenterOffset += SegmentSize;
         }//  for(int32_t a = 0; a < RenterCount; a++) {
         if(debug) {
-          ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm); CHKERROR(ierr, "PetscSynchronizedFlush");      
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedFlush(comm); CHKERROR(ierr, "PetscSynchronizedFlush");      
         }
         
         // Wait on receives from lessors with the neighbor counts
@@ -742,7 +737,7 @@ namespace ALE {
           int32_t cntr2 = 0;
           for(int32_t i = 0; i < LessorCount; i++) {
             // ASSUMPTION on point type
-            txt << "[" <<rank<< "]: ParDelta::__determineNeighbors: neighbors over nodes leased from " <<Lessors[i]<< ":\n";
+            txt << "[" <<rank<< "]: ParDelta::computeOverlap: neighbors over nodes leased from " <<Lessors[i]<< ":\n";
             int32_t activeLessor = 0;
             for(int32_t j = 0; j < LeaseSizes[i]; j++) 
             {
@@ -765,8 +760,8 @@ namespace ALE {
             }
             txt << "\n";
           }// for(int32_t i = 0; i < LessorCount; i++)
-          ierr = PetscSynchronizedPrintf(this->comm,txt.str().c_str());CHKERROR(ierr,"Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+          ierr = PetscSynchronizedPrintf(comm,txt.str().c_str());CHKERROR(ierr,"Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
         }/* -----------------------------------  */
         
         // This concludes the interaction of lessors and renters, and the exchange is completed by a peer-to-peer neighbor cone swap
@@ -806,7 +801,7 @@ namespace ALE {
             // Record the size of the cone over p coming in from neighbor as prefix and 
             // the size of the cone over p going out to neighbor as the index of the color in the overlap arrow from 
             // neighbor to p
-            overlap->addArrow(neighbor, p, Point(coneSize, this->_graph->cone(p)->size())); 
+            overlap->addArrow(neighbor, p, Point(coneSize, _graph->cone(p)->size())); 
           }
         }// for(int32_t i = 0; i < LeasedNodeCount; i++)
 
@@ -824,19 +819,23 @@ namespace ALE {
         if(TotalNeighborCount) {ierr = PetscFree(Neighbors);   CHKERROR(ierr, "Error in PetscFree");}    
         if(TotalRentalCount){ierr = PetscFree(SharerCounts);   CHKERROR(ierr, "Error in PetscFree");}
 
-      };// __determineNeighbors()
+      };// computeOverlap()
 
 
 
       // -------------------------------------------------------------------------------------------------------------------
       #undef __FUNCT__
-      #define __FUNCT__ "__computeFusion"
-      void __computeFusion(const Obj<overlap_type>& overlap, const Obj<fuser_type>& fuser, Obj<fusion_type> fusion) {
+      #define __FUNCT__ "computeFusion"
+      static void computeFusion(const Obj<graph_type>& _graph, const Obj<overlap_type>& overlap, const Obj<fuser_type>& fuser, Obj<fusion_type> fusion) {
         typedef ConeArraySequence<typename graph_type::traits::arrow_type> cone_array_sequence;
         typedef typename cone_array_sequence::cone_arrow_type cone_arrow_type;
         PetscErrorCode ierr;
-        bool debug = this->debug > 0;
-        bool debug2 = this->debug > 1;
+        MPI_Comm comm = _graph->comm();
+        int      rank = _graph->commRank();
+        PetscObject petscObj = _graph->petscObj();
+
+        bool debug = delta_type::debug > 0;
+        bool debug2 = delta_type::debug > 1;
 
         // Compute total incoming cone sizes by neighbor and the total incomping cone size.
         // Also count the total number of neighbors we will be communicating with
@@ -852,7 +851,7 @@ namespace ALE {
           // Traverse the supports of the overlap graph under each neighbor rank, count cone sizes to be received and add the cone sizes
           typename overlap_type::traits::supportSequence supp = overlap->support(*ci);
           if(debug2) {
-            //txt3 << "[" << rank << "]: " << "__computeFusion: overlap: support of rank " << neighborIn << ": " << std::endl;
+            //txt3 << "[" << rank << "]: " << "computeFusion: overlap: support of rank " << neighborIn << ": " << std::endl;
             //txt3 << supp;
           }
           int32_t coneSizeIn = 0;
@@ -872,22 +871,22 @@ namespace ALE {
           if(NeighborCountIn == 0) {
             txt3  << "[" << rank << "]: no incoming Neighbors" << std::endl;
           }
-          ierr = PetscSynchronizedPrintf(this->comm,txt3.str().c_str());CHKERROR(ierr,"Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+          ierr = PetscSynchronizedPrintf(comm,txt3.str().c_str());CHKERROR(ierr,"Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
         }
         if(debug) {/* --------------------------------------------------------------------------------------------- */
           ostringstream txt;
-          txt << "[" << rank << "]: __computeFusion: total size of incoming cone: " << ConeSizeIn << "\n";
+          txt << "[" << rank << "]: computeFusion: total size of incoming cone: " << ConeSizeIn << "\n";
           for(int__int::iterator np_itor = NeighborConeSizeIn.begin();np_itor!=NeighborConeSizeIn.end();np_itor++)
           {
             int32_t neighbor = (*np_itor).first;
             int32_t coneSize = (*np_itor).second;
-            txt << "[" << rank << "]: __computeFusion: size of cone from " << neighbor << ": " << coneSize << "\n";
+            txt << "[" << rank << "]: computeFusion: size of cone from " << neighbor << ": " << coneSize << "\n";
             
           }//int__int::iterator np_itor=NeighborConeSizeIn.begin();np_itor!=NeighborConeSizeIn.end();np_itor++)
-          ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str());
           CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm);
+          ierr = PetscSynchronizedFlush(comm);
           CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         }/* --------------------------------------------------------------------------------------------- */
         // Compute the size of a cone element
@@ -904,19 +903,19 @@ namespace ALE {
         }
         // Post receives for ConesIn
         PetscMPIInt    tag4;
-        ierr = PetscObjectGetNewTag(this->petscObj, &tag4); CHKERROR(ierr, "Failded on PetscObjectGetNewTag");
+        ierr = PetscObjectGetNewTag(petscObj, &tag4); CHKERROR(ierr, "Failded on PetscObjectGetNewTag");
         // Traverse all neighbors from whom we are receiving cones
         cone_arrow_type *NeighborOffsetIn = ConesIn;
         if(debug2) {
-          ierr = PetscSynchronizedPrintf(this->comm, "[%d]: __computeFusion: NeighborConeSizeIn.size() = %d\n",rank, NeighborConeSizeIn.size());
+          ierr = PetscSynchronizedPrintf(comm, "[%d]: computeFusion: NeighborConeSizeIn.size() = %d\n",rank, NeighborConeSizeIn.size());
           CHKERROR(ierr, "Error in PetscSynchornizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm);
+          ierr = PetscSynchronizedFlush(comm);
           CHKERROR(ierr, "Error in PetscSynchornizedFlush");
           if(NeighborConeSizeIn.size()) {
-            ierr=PetscSynchronizedPrintf(this->comm, "[%d]: __computeFusion: *NeighborConeSizeIn.begin() = (%d,%d)\n",
+            ierr=PetscSynchronizedPrintf(comm, "[%d]: computeFusion: *NeighborConeSizeIn.begin() = (%d,%d)\n",
                                          rank, (*NeighborConeSizeIn.begin()).first, (*NeighborConeSizeIn.begin()).second);
             CHKERROR(ierr, "Error in PetscSynchornizedPrintf");
-            ierr = PetscSynchronizedFlush(this->comm);
+            ierr = PetscSynchronizedFlush(comm);
             CHKERROR(ierr, "Error in PetscSynchornizedFlush");
             
           }
@@ -925,7 +924,7 @@ namespace ALE {
         for(std::map<int32_t, int32_t>::iterator n_itor = NeighborConeSizeIn.begin(); n_itor!=NeighborConeSizeIn.end(); n_itor++) {
           int32_t neighborIn = (*n_itor).first;
           int32_t coneSizeIn = (*n_itor).second;
-          ierr = MPI_Irecv(NeighborOffsetIn,cone_arrow_size*coneSizeIn,MPI_BYTE,neighborIn,tag4,this->comm, NeighborsIn_waits+n);
+          ierr = MPI_Irecv(NeighborOffsetIn,cone_arrow_size*coneSizeIn,MPI_BYTE,neighborIn,tag4,comm, NeighborsIn_waits+n);
           CHKERROR(ierr, "Error in MPI_Irecv");
           NeighborOffsetIn += coneSizeIn;
           n++;
@@ -941,7 +940,7 @@ namespace ALE {
           // Traverse the supports of the overlap graph under each neighbor rank, count cone sizes to be sent and add the cone sizes
           typename overlap_type::traits::supportSequence supp = overlap->support(*ci);
           if(debug2) {
-            //txt3 << "[" << rank << "]: " << "__computeFusion: overlap: support of rank " << neighborOut << ": " << std::endl;
+            //txt3 << "[" << rank << "]: " << "computeFusion: overlap: support of rank " << neighborOut << ": " << std::endl;
             //txt3 << supp;
           }
           int32_t coneSizeOut = 0;
@@ -959,17 +958,17 @@ namespace ALE {
         
         if(debug) {/* --------------------------------------------------------------------------------------------- */
           ostringstream txt;
-          txt << "[" << rank << "]: __computeFusion: total size of outgoing cone: " << ConeSizeOut << "\n";
+          txt << "[" << rank << "]: computeFusion: total size of outgoing cone: " << ConeSizeOut << "\n";
           for(int__int::iterator np_itor = NeighborConeSizeOut.begin();np_itor!=NeighborConeSizeOut.end();np_itor++)
           {
             int32_t neighborOut = (*np_itor).first;
             int32_t coneSizeOut = (*np_itor).second;
-            txt << "[" << rank << "]: __computeFusion: size of cone to " << neighborOut << ": " << coneSizeOut << "\n";
+            txt << "[" << rank << "]: computeFusion: size of cone to " << neighborOut << ": " << coneSizeOut << "\n";
             
           }//int__int::iterator np_itor=NeighborConeSizeOut.begin();np_itor!=NeighborConeSizeOut.end();np_itor++)
-          ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str());
           CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm);
+          ierr = PetscSynchronizedFlush(comm);
           CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         }/* --------------------------------------------------------------------------------------------- */
         
@@ -997,7 +996,7 @@ namespace ALE {
           // Make sure we have a cone going out to this neighbor
           if(NeighborConeSizeOut.find(neighborOut) != NeighborConeSizeOut.end()) { // if there is anything to send
             if(debug) { /* ------------------------------------------------------------ */
-              txt2  << "[" << rank << "]: __computeFusion: outgoing cones destined for " << neighborOut << "\n";
+              txt2  << "[" << rank << "]: computeFusion: outgoing cones destined for " << neighborOut << "\n";
             }/* ----------------------------------------------------------------------- */
             int32_t coneSizeOut = NeighborConeSizeOut[neighborOut];          
             // ASSUMPTION: all overlap supports are "symmetric" with respect to swapping processes,so we safely can assume that 
@@ -1010,7 +1009,7 @@ namespace ALE {
                 txt2  << "[" << rank << "]: \t cone over " << p << ":  ";
               }/* ----------------------------------------------------------------------- */
               // Traverse the cone over p in the local _graph and place corresponding TargetArrows in ConesOut
-              typename graph_type::traits::coneSequence cone = this->_graph->cone(p);
+              typename graph_type::traits::coneSequence cone = _graph->cone(p);
               for(typename graph_type::traits::coneSequence::iterator cone_itor = cone.begin(); cone_itor != cone.end(); cone_itor++) {
                 // Place a TargetArrow into the ConesOut buffer 
                 // WARNING: pointer arithmetic involving ConesOut takes place here
@@ -1024,7 +1023,7 @@ namespace ALE {
                 txt2  << std::endl;
               }/* ----------------------------------------------------------------------- */
             }
-            ierr = MPI_Isend(NeighborOffsetOut,cone_arrow_size*coneSizeOut,MPI_BYTE,neighborOut,tag4,this->comm, NeighborsOut_waits+n);
+            ierr = MPI_Isend(NeighborOffsetOut,cone_arrow_size*coneSizeOut,MPI_BYTE,neighborOut,tag4,comm, NeighborsOut_waits+n);
             CHKERROR(ierr, "Error in MPI_Isend");
             // WARNING: pointer arithmetic involving NeighborOffsetOut takes place here
             NeighborOffsetOut += coneSizeOut; // keep track of offset
@@ -1032,9 +1031,9 @@ namespace ALE {
           }// if there is anything to send
         }// traversing overlap.cap()
         if(debug && NeighborCountOut) {/* --------------------------------------------------------------- */
-          ierr = PetscSynchronizedPrintf(this->comm, txt2.str().c_str());
+          ierr = PetscSynchronizedPrintf(comm, txt2.str().c_str());
           CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm);
+          ierr = PetscSynchronizedFlush(comm);
           CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         }/* --------------------------------------------------------------------------------------------- */
         
@@ -1065,11 +1064,11 @@ namespace ALE {
             int32_t coneSizeIn = si.color().prefix; // FIX: color() type Point --> ALE::Two::pair
             // NOTE: coneSizeIn may be 0, which is legal, since the fuser in principle can operate on an empty cone.
             // Extract the local cone into a coneSequence
-            typename graph_type::traits::coneSequence lcone = this->_graph->cone(p);
+            typename graph_type::traits::coneSequence lcone = _graph->cone(p);
             // Wrap the arrived cone in a cone_array_sequence
             cone_array_sequence rcone(NeighborOffsetIn, coneSizeIn, p);
             if(debug) { /* ---------------------------------------------------------------------------------------*/
-              txt << "[" << this->rank << "]: "<<__FUNCT__<< ": received a cone of size " << coneSizeIn << " from "<<*ci<< std::endl;
+              txt << "[" << rank << "]: "<<__FUNCT__<< ": received a cone of size " << coneSizeIn << " from "<<*ci<< std::endl;
             }/* --------------------------------------------------------------------------------------------------*/
             // Fuse the cones
             fuser->fuseCones(lcone, rcone, fusion->cone(fuser->fuseBasePoints(p,p)));
@@ -1083,11 +1082,11 @@ namespace ALE {
         }
         if(debug) { /* ---------------------------------------------------------------------------------------*/
           if(NeighborCountIn == 0) {
-            txt << "[" << this->rank << "]: no cones to fuse in" << std::endl;
+            txt << "[" << rank << "]: no cones to fuse in" << std::endl;
           } 
-          ierr = PetscSynchronizedPrintf(this->comm, txt.str().c_str());
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str());
           CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(this->comm);
+          ierr = PetscSynchronizedFlush(comm);
           CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         }
 
@@ -1117,10 +1116,19 @@ namespace ALE {
         
         // Done!  
       };// fusion()
+
+      static void setDebug(int debug) {ParDelta::debug = debug;};
+      static int  getDebug() {return ParDelta::debug;};
     }; // class ParDelta
+  
+      
+  template <typename ParBiGraph_, typename Fuser_, typename FusionBiGraph_>
+  int ParDelta<ParBiGraph_, Fuser_, FusionBiGraph_>::debug = 0;
+    
+    
+  
 
   } // namespace Two
-    
 } // namespace ALE
 
 #endif
