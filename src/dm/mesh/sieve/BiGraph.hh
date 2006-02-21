@@ -831,21 +831,27 @@ namespace ALE {
       void addBasePoint(const typename traits::target_type t) {
         // Increase degree by 0, which won't affect an existing point and will insert a new point, if necessery
         this->_base.adjustDegree(t,0);
-      }
+      };
+      void addBasePoint(const typename traits::targetRec_type b) {
+        this->_base.set.insert(b);
+      };
       void removeBasePoint(const typename traits::target_type t) {
         // Clear the cone and remove the point from _base
         this->clearCone(t);
         this->_base.removePoint(t);
-      }
+      };
       void addCapPoint(const typename traits::source_type s) {
         // Increase degree by 0, which won't affect an existing point and will insert a new point, if necessery
         this->_cap.adjustDegree(s,0);
-      }
+      };
+      void addCapPoint(const typename traits::sourceRec_type c) {
+        this->_cap.set.insert(c);
+      };
       void removeCapPoint(const typename traits::source_type s) {
         // Clear the support and remove the point from _cap
         this->clearSupport(s);
         this->_cap.removePoint(s);
-      }
+      };
       virtual void addArrow(const typename traits::source_type& p, const typename traits::target_type& q) {
         this->addArrow(p, q, typename traits::color_type());
       };
@@ -1034,10 +1040,24 @@ namespace ALE {
       // Unimplemented
       template<class targetInputSequence> 
       void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence>& targets, const typename traits::color_type& color);
-        
-      void add(const Obj<ColorBiGraph<typename traits::source_type, typename traits::target_type, const typename traits::color_type, colorMultiplicity, typename traits::cap_container_type, typename traits::base_container_type> >& cbg);
-      // Unimplemented
 
+      void add(const Obj<ColorBiGraph<typename traits::source_type, typename traits::target_type, typename traits::color_type, colorMultiplicity, typename traits::cap_container_type, typename traits::base_container_type> >& cbg) {
+        typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set);
+
+        for(typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
+          this->addArrow(*a_iter);
+        }
+        typename ::boost::multi_index::index<typename traits::base_container_type::set_type, typename traits::baseInd>::type& bInd = ::boost::multi_index::get<typename traits::baseInd>(this->_base.set);
+
+        for(typename ::boost::multi_index::index<typename traits::base_container_type::set_type, typename traits::baseInd>::type::iterator b_iter = bInd.begin(); b_iter != bInd.end(); ++b_iter) {
+          this->addBasePoint(*b_iter);
+        }
+        typename ::boost::multi_index::index<typename traits::cap_container_type::set_type, typename traits::capInd>::type& cInd = ::boost::multi_index::get<typename traits::capInd>(this->_cap.set);
+
+        for(typename ::boost::multi_index::index<typename traits::cap_container_type::set_type, typename traits::capInd>::type::iterator c_iter = cInd.begin(); c_iter != cInd.end(); ++c_iter) {
+          this->addCapPoint(*c_iter);
+        }
+      };
     }; // class ColorBiGraph
 
     // A UniColorBiGraph aka BiGraph
@@ -1113,6 +1133,24 @@ namespace ALE {
         } else {
           typename traits::arrow_type a(s, t, color);
           this->addArrow(a);
+        }
+      };
+
+      void add(const Obj<BiGraph<typename traits::source_type, typename traits::target_type, typename traits::color_type, typename traits::cap_container_type, typename traits::base_container_type> >& cbg) {
+        typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set);
+
+        for(typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
+          this->addArrow(*a_iter);
+        }
+        typename ::boost::multi_index::index<typename traits::base_container_type::set_type, typename traits::baseInd>::type& bInd = ::boost::multi_index::get<typename traits::baseInd>(this->_base.set);
+
+        for(typename ::boost::multi_index::index<typename traits::base_container_type::set_type, typename traits::baseInd>::type::iterator b_iter = bInd.begin(); b_iter != bInd.end(); ++b_iter) {
+          this->addBasePoint(*b_iter);
+        }
+        typename ::boost::multi_index::index<typename traits::cap_container_type::set_type, typename traits::capInd>::type& cInd = ::boost::multi_index::get<typename traits::capInd>(this->_cap.set);
+
+        for(typename ::boost::multi_index::index<typename traits::cap_container_type::set_type, typename traits::capInd>::type::iterator c_iter = cInd.begin(); c_iter != cInd.end(); ++c_iter) {
+          this->addCapPoint(*c_iter);
         }
       };
 
