@@ -837,6 +837,7 @@ namespace ALE {
         this->_base.set.insert(b);
       };
       void removeBasePoint(const typename traits::target_type t) {
+        if (debug) {std::cout << " Removing " << t << " from the base" << std::endl;}
         // Clear the cone and remove the point from _base
         this->clearCone(t);
         this->_base.removePoint(t);
@@ -849,6 +850,7 @@ namespace ALE {
         this->_cap.set.insert(c);
       };
       void removeCapPoint(const typename traits::source_type s) {
+        if (debug) {std::cout << " Removing " << s << " from the cap" << std::endl;}
         // Clear the support and remove the point from _cap
         this->clearSupport(s);
         this->_cap.removePoint(s);
@@ -973,9 +975,8 @@ namespace ALE {
       template<class InputSequence>
       void
       excludeBase(const Obj<InputSequence>& points) {
-        Obj<typename traits::baseSequence> base = this->base();
         for(typename InputSequence::iterator pi = points->begin(); pi != points->end(); pi++) {
-            this->removeBasePoint(*pi);
+          this->removeBasePoint(*pi);
         }
       };
 
@@ -994,9 +995,8 @@ namespace ALE {
       template<class InputSequence>
       void
       excludeCap(const Obj<InputSequence>& points) {
-        Obj<typename traits::capSequence> cap = this->cap();
         for(typename InputSequence::iterator pi = points->begin(); pi != points->end(); pi++) {
-            this->removeCapPoint(*pi);
+          this->removeCapPoint(*pi);
         }
       };
 
@@ -1043,7 +1043,7 @@ namespace ALE {
       void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence>& targets, const typename traits::color_type& color);
 
       void add(const Obj<ColorBiGraph<typename traits::source_type, typename traits::target_type, typename traits::color_type, colorMultiplicity, typename traits::cap_container_type, typename traits::base_container_type> >& cbg) {
-        typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set);
+        typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename traits::arrowInd>(cbg->_arrows.set);
 
         for(typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
           this->addArrow(*a_iter);
@@ -1137,8 +1137,8 @@ namespace ALE {
         }
       };
 
-      void add(const Obj<BiGraph<typename traits::source_type, typename traits::target_type, typename traits::color_type, typename traits::cap_container_type, typename traits::base_container_type> >& cbg) {
-        typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set);
+      void add(const Obj<BiGraph<typename traits::source_type, typename traits::target_type, typename traits::color_type, typename traits::cap_container_type, typename traits::base_container_type> >& bg) {
+        typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename traits::arrowInd>(bg->_arrows.set);
 
         for(typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
           this->addArrow(*a_iter);

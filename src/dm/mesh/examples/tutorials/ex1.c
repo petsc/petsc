@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
 PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Two::Mesh> mesh, Vec *partition)
 {
   PetscScalar   *array;
-  int            rank = mesh->getRank();
+  int            rank = mesh->commRank();
   PetscInt       n, i;
   PetscErrorCode ierr;
 

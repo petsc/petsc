@@ -328,16 +328,13 @@ namespace ALE {
         // Determine the owners of base nodes and collect the lease data for each processor:
         // the number of nodes leased and the number of leases (0 or 1).
         int32_t MaxLeaseSize, RenterCount;
-        ierr = PetscMaxSum(comm,LeaseData,&MaxLeaseSize,&RenterCount); 
-        CHKERROR(ierr,"Error in PetscMaxSum");
-        ierr = PetscInfo1(0,"ParDelta::computeOverlap: Number of renters %d\n", RenterCount); 
-        CHKERROR(ierr,"Error in PetscInfo");
+        ierr = PetscMaxSum(comm,LeaseData,&MaxLeaseSize,&RenterCount);CHKERROR(ierr,"Error in PetscMaxSum");
+        ierr = PetscInfo1(0,"ParDelta::computeOverlap: Number of renters %d\n", RenterCount);CHKERROR(ierr,"Error in PetscInfo");
 
-        if(debug) { /* -------------------------------------------------------------- */
+        if (debug) { /* -------------------------------------------------------------- */
           ierr = PetscSynchronizedPrintf(comm, "[%d]: ParDelta::computeOverlap: RenterCount = %d, MaxLeaseSize = %d\n", rank, RenterCount, MaxLeaseSize);
           CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(comm);
-          CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         } /* ----------------------------------------------------------------------- */
         
         // post receives for all Rented nodes; we will be receiving 3 data items per rented node, 
@@ -363,8 +360,7 @@ namespace ALE {
         if(debug) { /* -------------------------------------------------------------- */
           ierr = PetscSynchronizedPrintf(comm, "[%d]: ParDelta::computeOverlap: LessorCount = %d\n", rank, LessorCount);
           CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-          ierr = PetscSynchronizedFlush(comm);
-          CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         } /* ----------------------------------------------------------------------- */
         
         // We keep only the data about the real lessors -- those that own the nodes we lease
@@ -1075,7 +1071,7 @@ namespace ALE {
             if(debug) {
               ostringstream txt;
               txt << "[" << rank << "]: ... after fusing the cone over" << p << std::endl;
-              fusion->view(std::cout, txt.str().c_str());
+              fusion->view(txt.str().c_str());
             }
             NeighborOffsetIn += coneSizeIn;
           }

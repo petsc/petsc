@@ -37,8 +37,9 @@ namespace ALE {
       Obj<foliation_type> boundaries;
       std::map<int, Obj<bundle_type> > bundles;
       std::map<std::string, Obj<field_type> > fields;
-      MPI_Comm        comm;
-      int             rank;
+      MPI_Comm        _comm;
+      int             _commRank;
+      int             _commSize;
       int             dim;
     public:
       Mesh(MPI_Comm comm, int dimension, int debug = 0) : debug(debug), dim(dimension) {
@@ -49,9 +50,10 @@ namespace ALE {
         this->boundaries  = foliation_type(comm, debug);
       };
 
-      MPI_Comm        getComm() const {return this->comm;};
-      void            setComm(MPI_Comm comm) {this->comm = comm; MPI_Comm_rank(comm, &this->rank);};
-      int             getRank() const {return this->rank;};
+      MPI_Comm        comm() const {return this->_comm;};
+      void            setComm(MPI_Comm comm) {this->_comm = comm; MPI_Comm_rank(comm, &this->_commRank); MPI_Comm_size(comm, &this->_commSize);};
+      int             commRank() const {return this->_commRank;};
+      int             commSize() const {return this->_commSize;};
       Obj<sieve_type> getTopology() const {return this->topology;};
       void            setTopology(const Obj<sieve_type>& topology) {this->topology = topology;};
       int             getDimension() const {return this->dim;};
@@ -64,7 +66,7 @@ namespace ALE {
       Obj<bundle_type> getBundle(const int dim) {
         ALE_LOG_EVENT_BEGIN;
         if (this->bundles.find(dim) == this->bundles.end()) {
-          Obj<bundle_type> bundle = bundle_type(this->comm, debug);
+          Obj<bundle_type> bundle = bundle_type(this->comm(), debug);
 
           // Need to globalize indices (that is what we might use the value ints for)
           std::cout << "Creating new bundle for dim " << dim << std::endl;
@@ -80,7 +82,7 @@ namespace ALE {
       };
       Obj<field_type> getField(const std::string& name) {
         if (this->fields.find(name) == this->fields.end()) {
-          Obj<field_type> field = field_type(this->comm, debug);
+          Obj<field_type> field = field_type(this->comm(), debug);
 
           std::cout << "Creating new field " << name << std::endl;
           field->setTopology(this->topology);
@@ -207,6 +209,9 @@ namespace ALE {
             vertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
           }
         }
+        if (elements->size() == 0) {
+          vertexBundle->setPatch(orderName, elements, bundle_type::patch_type());
+        }
         ALE_LOG_EVENT_END;
         vertexBundle->orderPatches(orderName);
         ALE_LOG_STAGE_END;
@@ -240,6 +245,9 @@ namespace ALE {
             this->coordinates->setFiberDimension(orderName, *e_iter, *c_iter, embedDim);
           }
         }
+        if (elements->size() == 0) {
+          this->coordinates->setPatch(orderName, elements, field_type::patch_type());
+        }
         this->coordinates->orderPatches(orderName);
         ALE_LOG_EVENT_END;
       };
@@ -261,6 +269,7 @@ namespace ALE {
             vertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
           }
         }
+        vertexBundle->setPatch(orderName, elements, bundle_type::patch_type());
         vertexBundle->orderPatches(orderName);
         // Create coordinates
         patch_type patch;
@@ -296,7 +305,7 @@ namespace ALE {
       // Create a serial mesh
       void populate(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true) {
         this->topology->setStratification(false);
-        if (this->getRank() == 0) {
+        if (this->commRank() == 0) {
           this->buildTopology(numSimplices, simplices, numVertices, interpolate);
         }
         this->topology->stratify();
@@ -351,12 +360,12 @@ namespace ALE {
         struct triangulateio  in;
         struct triangulateio  out;
         int                   dim = 2;
-        Obj<Mesh>             m = Mesh(boundary->getComm(), dim);
+        Obj<Mesh>             m = Mesh(boundary->comm(), dim);
         Obj<Mesh::sieve_type> bdTopology = boundary->getTopology();
         PetscMPIInt           rank;
         PetscErrorCode        ierr;
 
-        ierr = MPI_Comm_rank(boundary->getComm(), &rank);
+        ierr = MPI_Comm_rank(boundary->comm(), &rank);
         initInput_Triangle(&in);
         initOutput_Triangle(&out);
         if (rank == 0) {
@@ -451,12 +460,12 @@ namespace ALE {
         ::tetgenio            in;
         ::tetgenio            out;
         int                   dim = 3;
-        Obj<Mesh>             m = Mesh(boundary->getComm(), dim);
+        Obj<Mesh>             m = Mesh(boundary->comm(), dim);
         Obj<Mesh::sieve_type> bdTopology = boundary->getTopology();
         PetscMPIInt           rank;
         PetscErrorCode        ierr;
 
-        ierr = MPI_Comm_rank(boundary->getComm(), &rank);
+        ierr = MPI_Comm_rank(boundary->comm(), &rank);
 
         if (rank == 0) {
           std::string args("pqenzQ");
@@ -588,13 +597,13 @@ namespace ALE {
         struct triangulateio in;
         struct triangulateio out;
         int                  dim = 2;
-        Obj<Mesh>            m = Mesh(mesh->getComm(), dim);
+        Obj<Mesh>            m = Mesh(mesh->comm(), dim);
         // FIX: Need to globalize
         PetscInt             numElements = mesh->getTopology()->heightStratum(0)->size();
         PetscMPIInt          rank;
         PetscErrorCode       ierr;
 
-        ierr = MPI_Comm_rank(mesh->getComm(), &rank);
+        ierr = MPI_Comm_rank(mesh->comm(), &rank);
         initInput_Triangle(&in);
         initOutput_Triangle(&out);
         if (rank == 0) {
@@ -714,13 +723,13 @@ namespace ALE {
         ::tetgenio     in;
         ::tetgenio     out;
         int            dim = 3;
-        Obj<Mesh>      m = Mesh(mesh->getComm(), dim);
+        Obj<Mesh>      m = Mesh(mesh->comm(), dim);
         // FIX: Need to globalize
         PetscInt       numElements = mesh->getTopology()->heightStratum(0)->size();
         PetscMPIInt    rank;
         PetscErrorCode ierr;
 
-        ierr = MPI_Comm_rank(mesh->getComm(), &rank);
+        ierr = MPI_Comm_rank(mesh->comm(), &rank);
 
         if (rank == 0) {
           in.tetrahedronvolumelist = new double[numElements];
@@ -1083,7 +1092,7 @@ namespace ALE {
         Obj<ALE::Two::Mesh> mesh = ALE::Two::Mesh(comm, dim, debug);
         int      *vertices;
         double   *coordinates;
-        int       numElements, numVertices;
+        int       numElements = 0, numVertices = 0;
 
         readConnectivity(comm, baseFilename+".lcon", dim, useZeroBase, numElements, &vertices);
         readCoordinates(comm, baseFilename+".nodes", dim, numVertices, &coordinates);
@@ -1109,22 +1118,35 @@ namespace ALE {
       static void partition_Sieve(const Obj<Mesh>& mesh, bool localize = true) {
         ALE_LOG_EVENT_BEGIN;
         Obj<Mesh::sieve_type> topology = mesh->getTopology();
+        Obj<ALE::def::PointSet> localBase = ALE::def::PointSet();
         const char *name = NULL;
 
         // Construct a Delta object and a base overlap object
-        delta_type delta(topology, mesh->debug);
-        Obj<delta_type::overlap_type> overlap = delta.overlap();
+        delta_type::setDebug(mesh->debug);
+        Obj<delta_type::overlap_type> overlap = delta_type::overlap(topology);
         // Cone complete to move the partitions to the other processors
-        Obj<delta_type::fusion_type> fusion   = delta.fusion(overlap);
+        Obj<delta_type::fusion_type> fusion   = delta_type::fusion(topology, overlap);
         // Merge in the completion
         topology->add(fusion);
-        // Cone complete again to build the local topology
-        overlap = delta.overlap();
-        fusion  = delta.fusion(overlap);
+        if (mesh->debug) {
+          topology->view("After merging inital fusion");
+        }
+        // Remove partition point, but preserve local base
+        if(localize) {
+          Obj<Mesh::sieve_type::coneSequence> cone = topology->cone(Mesh::point_type(-1, mesh->commRank()));
+          localBase->insert(cone->begin(), cone->end());
+        }
+        // Support complete to build the local topology
+        overlap = delta_type::overlap(topology);
+        fusion  = delta_type::fusion(topology, overlap);
         topology->add(fusion);
+        if (mesh->debug) {
+          fusion->view("Second fusion");
+          topology->view("After merging second fusion");
+        }
         // Unless explicitly prohibited, restrict to the local partition
         if(localize) {
-          //topology->restrictBase(partition);
+          topology->restrictBase(localBase);
           if (mesh->debug) {
             ostringstream label5;
             if(name != NULL) {
@@ -1132,7 +1154,7 @@ namespace ALE {
             } else {
               label5 << "Localized parallel sieve";
             }
-            topology->view(std::cout, label5.str().c_str());
+            topology->view(label5.str().c_str());
           }
         }
         ALE_LOG_EVENT_END;
@@ -1169,7 +1191,7 @@ namespace ALE {
             label1 << "'" << name << "'";
           }
           label1 << "\n";
-          topology->view(std::cout, label1.str().c_str());
+          topology->view(label1.str().c_str());
         }
         ALE_LOG_EVENT_END;
         ALE_LOG_STAGE_END;
@@ -1276,13 +1298,16 @@ namespace ALE {
         int dim = mesh->getDimension();
 
         if (dim == 2) {
-          partition_Simple(mesh);
 #ifdef PETSC_HAVE_CHACO
           partition_Chaco(mesh);
 #else
-          throw ALE::Exception("Mesh partitioning currently requires Chaco to be installed. Use --download-chaco during configure.");
+          partition_Simple(mesh);
+          //throw ALE::Exception("Mesh partitioning currently requires Chaco to be installed. Use --download-chaco during configure.");
 #endif
+        } else {
+          partition_Simple(mesh);
         }
+        mesh->getTopology()->view("Ready to partition");
         partition_Sieve(mesh);
       };
     };
@@ -1294,12 +1319,14 @@ namespace ALE {
       ALE::Two::Partitioner::partition(*this);
       this->topology->stratify();
       this->topology->setStratification(true);
-      this->topology->view(std::cout, "Parallel mesh");
+      this->topology->view("Parallel mesh");
       // Need to deal with boundary
       Obj<bundle_type> vertexBundle = this->getBundle(0);
+      Obj<field_type>  coordinates  = this->coordinates;
+      this->coordinates = field_type(this->comm(), this->debug);
       this->bundles.clear();
       this->fields.clear();
-      this->createParallelCoordinates(this->dim, vertexBundle, this->coordinates);
+      this->createParallelCoordinates(this->dim, vertexBundle, coordinates);
       ALE_LOG_EVENT_END;
     };
   } // namespace Two

@@ -1838,6 +1838,7 @@ namespace ALE {
       Obj<PointSet> base = PointSet();
       Obj<PointSet> closure = PointSet();
       
+      closure->insert(cone->begin(), cone->end());
       for(int i = 0; i < n; ++i) {
         Obj<PointSet> tmp = cone; cone = base; base = tmp;
         
@@ -1913,7 +1914,8 @@ namespace ALE {
     Obj<Sieve<Point_,Color_> > Sieve<Point_,Color_>::__nClosureSieve(Obj<InputSequence>& cone,int n,const Color_& color,bool useColor) {
       Obj<PointSet> base = PointSet();
       Obj<Sieve<Point_,Color_> > closure = Sieve<Point_,Color_>();
-      
+
+      // FIX: Need to add initial stuff
       for(int i = 0; i < n; ++i) {
         Obj<PointSet> tmp = cone; cone = base; base = tmp;
         
@@ -1989,6 +1991,7 @@ namespace ALE {
       Obj<PointSet> cap = PointSet();
       Obj<PointSet> star = PointSet();
       
+      star->insert(support->begin(), support->end());
       for(int i = 0; i < n; ++i) {
         Obj<PointSet> tmp = support; support = base; base = tmp;
         
@@ -2677,6 +2680,14 @@ namespace ALE {
       typedef RecContainerTraits<Point_, Rec_> traits;
       typedef typename traits::set_type set_type;
       set_type set;
+      void removePoint(const typename traits::rec_type::point_type& p) {
+        typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index = 
+          ::boost::multi_index::get<typename traits::pointTag>(this->set);
+        typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type::iterator i = index.find(p);
+        if (i != index.end()) { // Point exists
+          index.erase(i);
+        }
+      };
       void adjustDegree(const typename traits::rec_type::point_type& p, int delta) {
         typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index = 
           ::boost::multi_index::get<typename traits::pointTag>(this->set);
@@ -2790,6 +2801,7 @@ namespace ALE {
 
       template<typename ostream_type>
       void view(ostream_type& os, const char* label, bool rawData);
+      void view(const char* label);
 
     private:
       typedef ALE::def::PointSet   PointSet;
@@ -3169,6 +3181,7 @@ namespace ALE {
       Obj<PointSet> base = PointSet();
       Obj<PointSet> closure = PointSet();
       
+      closure->insert(cone->begin(), cone->end());
       for(int i = 0; i < n; ++i) {
         Obj<PointSet> tmp = cone; cone = base; base = tmp;
         
@@ -3244,7 +3257,8 @@ namespace ALE {
     Obj<Sieve<Point_,Marker_,Color_> > Sieve<Point_,Marker_,Color_>::__nClosureSieve(Obj<InputSequence>& cone,int n,const Color_& color,bool useColor) {
       Obj<PointSet> base = PointSet();
       Obj<Sieve<Point_,Marker_,Color_> > closure = Sieve<Point_,Marker_,Color_>();
-      
+
+      // FIX: need to add initial stuff
       for(int i = 0; i < n; ++i) {
         Obj<PointSet> tmp = cone; cone = base; base = tmp;
         
@@ -3319,7 +3333,8 @@ namespace ALE {
     Obj<typename Sieve<Point_,Marker_,Color_>::PointSet> Sieve<Point_,Marker_,Color_>::__nStar(Obj<InputSequence>& support, int n, const Color_& color, bool useColor) {
       Obj<PointSet> cap = PointSet();
       Obj<PointSet> star = PointSet();
-      
+
+      star->insert(support->begin(), support->end());
       for(int i = 0; i < n; ++i) {
         Obj<PointSet> tmp = support; support = cap; cap = tmp;
         
@@ -3535,11 +3550,11 @@ namespace ALE {
         }
         os << "cap --> (outdegree, marker, depth, height):" << std::endl;
         for(typename traits::capSequence::iterator capi = cap->begin(); capi != cap->end(); ++capi) {
-          os << *capi <<  "-->" << capi.degree() << ", " << capi.marker() << ", " << capi.depth() << ", " << capi.height() << ", " << std::endl;
+          os << *capi <<  "-->" << capi.degree() << ", " << capi.marker() << ", " << capi.depth() << ", " << capi.height() << std::endl;
         }
         os << "base --> (indegree, marker, depth, height):" << std::endl;
         for(typename traits::baseSequence::iterator basei = base->begin(); basei != base->end(); ++basei) {
-          os << *basei <<  "-->" << basei.degree() << ", " << basei.marker() << ", " << basei.depth() << ", " << basei.height() << ", " << std::endl;
+          os << *basei <<  "-->" << basei.degree() << ", " << basei.marker() << ", " << basei.depth() << ", " << basei.height() << std::endl;
         }
       }
       else {
@@ -3562,6 +3577,83 @@ namespace ALE {
           os << cp << std::endl;
         }
       }
+    };
+    template <typename Point_, typename Marker_, typename Color_> 
+    void Sieve<Point_,Marker_,Color_>::view(const char* label = NULL) {
+        ostringstream txt;
+
+        if(debug) {
+          std::cout << "viewing a Sieve, comm = " << this->comm() << ", commRank = " << this->commRank() << std::endl;
+        }
+        if(label != NULL) {
+          if(this->commRank() == 0) {
+            txt << "viewing Sieve :'" << label << "'" << std::endl;
+          }
+        } 
+        else {
+          if(this->commRank() == 0) {
+            txt << "viewing a Sieve" << std::endl;
+          }
+        }
+        if(this->commRank() == 0) {
+          txt << "cap --> base:\n";
+        }
+        typename traits::capSequence cap   = this->cap();
+        typename traits::baseSequence base = this->base();
+        if(cap.empty()) {
+          txt << "[" << this->commRank() << "]: empty" << std::endl; 
+        }
+        for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
+          typename traits::supportSequence supp = this->support(*capi);
+          for(typename traits::supportSequence::iterator suppi = supp.begin(); suppi != supp.end(); suppi++) {
+            txt << "[" << this->commRank() << "]: " << *capi << "--(" << suppi.color() << ")-->" << *suppi << std::endl;
+          }
+        }
+        //
+        PetscSynchronizedPrintf(this->comm(), txt.str().c_str());
+        PetscSynchronizedFlush(this->comm());
+        //
+        if(this->commRank() == 0) {
+          txt << "base --> cap:\n";
+        }
+        if(base.empty()) {
+          txt << "[" << this->commRank() << "]: empty" << std::endl; 
+        }
+        for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
+          typename traits::coneSequence cone = this->cone(*basei);
+          for(typename traits::coneSequence::iterator conei = cone.begin(); conei != cone.end(); conei++) {
+            txt << "[" << this->commRank() << "]: " << *basei << "--(" << conei.color() << ")-->" << *conei << std::endl;
+          }
+        }
+        //
+        PetscSynchronizedPrintf(this->comm(), txt.str().c_str());
+        PetscSynchronizedFlush(this->comm());
+        //
+        ostringstream txt1;
+        if(this->commRank() == 0) {
+          txt1 << "cap <point, outdegree, marker, depth, height>:\n";
+        }
+        txt1 << "[" << this->commRank() << "]:  [";
+        for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
+          txt1 << " <" << *capi << ", " << capi.degree() << ", " << capi.marker() << ", " << capi.depth() << ", " << capi.height() << ">";
+        }
+        txt1 << " ]" << std::endl;
+        //
+        PetscSynchronizedPrintf(this->comm(), txt1.str().c_str());
+        PetscSynchronizedFlush(this->comm());
+        //
+        ostringstream txt2;
+        if(this->commRank() == 0) {
+          txt2 << "base <point, indegree, marker, depth, height>:\n";
+        }
+        txt2 << "[" << this->commRank() << "]:  [";
+        for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
+          txt2 << " <" << *basei << "," << basei.degree() << ", " << basei.marker() << ", " << basei.depth() << ", " << basei.height() << ">";
+        }
+        txt2 << " ]" << std::endl;
+        //
+        PetscSynchronizedPrintf(this->comm(), txt2.str().c_str());
+        PetscSynchronizedFlush(this->comm());
     };
     //
     // Structural queries
