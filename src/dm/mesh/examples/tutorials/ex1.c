@@ -39,7 +39,7 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 #include <string.h>
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer);
-PetscErrorCode CreatePartitionVector(Mesh, Vec *);
+PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Two::Mesh>, Vec *);
 
 typedef enum {PCICE, PYLITH} FileType;
 
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
   PetscViewer    viewer;
-  //Vec            partition;
+  Vec            partition;
   char           baseFilename[2048];
   PetscTruth     useZeroBase;
   const char    *fileTypes[2] = {"pcice", "pylith"};
@@ -100,14 +100,12 @@ int main(int argc, char *argv[])
     ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
-#if 0
     stage = ALE::LogStageRegister("MeshDistribution");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
-    ierr = MeshDistribute(mesh);CHKERRQ(ierr);
-    ierr = CreatePartitionVector(mesh, debug, &partition);CHKERRQ(ierr);
+    mesh->distribute();
+    ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
-#endif
 
     stage = ALE::LogStageRegister("MeshOutput");
     ALE::LogStagePush(stage);
@@ -166,18 +164,16 @@ int main(int argc, char *argv[])
 /*
   Creates a vector whose value is the processor rank on each element
 */
-PetscErrorCode CreatePartitionVector(Mesh mesh, Vec *partition)
+PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Two::Mesh> mesh, Vec *partition)
 {
-  ALE::Obj<ALE::Two::Mesh> m;
   PetscScalar   *array;
-  int            rank = m->getRank();
+  int            rank = mesh->getRank();
   PetscInt       n, i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ALE_LOG_EVENT_BEGIN;
-  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
-  ierr = MeshCreateVector(mesh, m, partition);CHKERRQ(ierr);
+  ierr = MeshCreateVector(mesh, mesh->getBundle(mesh->getDimension()), partition);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*partition, 1);CHKERRQ(ierr);
   ierr = VecGetLocalSize(*partition, &n);CHKERRQ(ierr);
   ierr = VecGetArray(*partition, &array);CHKERRQ(ierr);

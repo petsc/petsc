@@ -16,8 +16,10 @@
 #endif
 
 namespace ALE {
-
   namespace Two {
+    // Forward declaration
+    class Partitioner;
+
     class Mesh {
     public:
       typedef ALE::def::Point point_type;
@@ -242,6 +244,55 @@ namespace ALE {
         ALE_LOG_EVENT_END;
       };
 
+      #undef __FUNCT__
+      #define __FUNCT__ "Mesh::createParCoords"
+      void createParallelCoordinates(int embedDim, Obj<bundle_type> serialVertexBundle, Obj<field_type> serialCoordinates) {
+        ALE_LOG_EVENT_BEGIN;
+        // Create vertex bundle
+        Obj<bundle_type> vertexBundle = this->getBundle(0);
+        Obj<sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
+        std::string orderName("element");
+
+        for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+          Obj<bundle_type::order_type::coneSequence> patch = serialVertexBundle->getPatch(*e_iter);
+
+          vertexBundle->setPatch(orderName, patch, *e_iter);
+          for(bundle_type::order_type::coneSequence::iterator p_iter = patch->begin(); p_iter != patch->end(); ++p_iter) {
+            vertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
+          }
+        }
+        vertexBundle->orderPatches(orderName);
+        // Create coordinates
+        patch_type patch;
+
+        this->coordinates->setTopology(this->topology);
+        this->coordinates->setPatch(this->topology->leaves(), patch);
+        this->coordinates->setFiberDimensionByDepth(patch, 0, embedDim);
+        this->coordinates->orderPatches();
+
+        Obj<sieve_type::traits::depthSequence> vertices = this->topology->depthStratum(0);
+        for(sieve_type::traits::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
+          this->coordinates->update(patch, *v_itor, serialCoordinates->restrict(patch, *v_itor));
+        }
+
+        for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
+          Obj<field_type::order_type::coneSequence> cone = serialCoordinates->getPatch(*e_iter);
+
+          this->coordinates->setPatch(orderName, cone, *e_iter);
+          for(bundle_type::order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+            this->coordinates->setFiberDimension(orderName, *e_iter, *c_iter, embedDim);
+          }
+        }
+        this->coordinates->orderPatches(orderName);
+
+        //FIX: Setup mapping to partitioned storage
+        //ierr = MeshCreateMapping(mesh, serialCoordBundle, partitionTypes, coordBundle, &coordScatter);CHKERRQ(ierr);
+        // Communicate ghosted coordinates
+        //ierr = VecGhostUpdateBegin(coordinates, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+        //ierr = VecGhostUpdateEnd(coordinates, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+        ALE_LOG_EVENT_END;
+      };
+
       // Create a serial mesh
       void populate(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true) {
         this->topology->setStratification(false);
@@ -253,6 +304,9 @@ namespace ALE {
         this->createVertexBundle(numSimplices, simplices);
         this->createSerialCoordinates(this->dim, numSimplices, coords);
       };
+
+      // Create a serial mesh
+      void distribute();
     };
 
     class Generator {
@@ -647,7 +701,7 @@ namespace ALE {
           ierr = PetscFree(in.segmentmarkerlist);
         }
         m->populate(out.numberoftriangles, out.trianglelist, out.numberofpoints, out.pointlist, interpolate);
-        //m->distribute(m);
+        m->distribute();
 
         // Need to make boundary
 
@@ -1040,20 +1094,28 @@ namespace ALE {
 
     class Partitioner {
     public:
-      typedef ALE::Two::ParDelta<ALE::Two::Mesh::sieve_type> delta_type;
+//       typedef ParDelta<Mesh::sieve_type>;
+      typedef ALE::Two::RightSequenceDuplicator<ALE::Two::ConeArraySequence<Mesh::sieve_type::traits::arrow_type> > fuser;
+      typedef ParDelta<Mesh::sieve_type, fuser,
+                       Mesh::sieve_type::rebind<fuser::fusion_source_type,
+                                                fuser::fusion_target_type,
+                                                fuser::fusion_color_type,
+                                                ALE::Three::RecContainer<fuser::fusion_source_type, ALE::Three::Rec<fuser::fusion_source_type, Mesh::sieve_type::marker_type> >,
+                                                ALE::Three::RecContainer<fuser::fusion_target_type, ALE::Three::Rec<fuser::fusion_target_type, Mesh::sieve_type::marker_type> >
+                                                >::type> delta_type;
     public:
       #undef __FUNCT__
       #define __FUNCT__ "partition_Sieve"
-      void partition_Sieve(const ALE::Obj<ALE::Two::Mesh>& mesh, bool localize = true) {
+      static void partition_Sieve(const Obj<Mesh>& mesh, bool localize = true) {
         ALE_LOG_EVENT_BEGIN;
-        ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
+        Obj<Mesh::sieve_type> topology = mesh->getTopology();
         const char *name = NULL;
 
         // Construct a Delta object and a base overlap object
         delta_type delta(topology, mesh->debug);
-        ALE::Obj<delta_type::overlap_type> overlap = delta.overlap();
+        Obj<delta_type::overlap_type> overlap = delta.overlap();
         // Cone complete to move the partitions to the other processors
-        ALE::Obj<delta_type::fusion_type> fusion   = delta.fusion(overlap);
+        Obj<delta_type::fusion_type> fusion   = delta.fusion(overlap);
         // Merge in the completion
         topology->add(fusion);
         // Cone complete again to build the local topology
@@ -1078,7 +1140,7 @@ namespace ALE {
 
       #undef __FUNCT__
       #define __FUNCT__ "partition_Simple"
-      void partition_Simple(const ALE::Obj<ALE::Two::Mesh> mesh) {
+      static void partition_Simple(const ALE::Obj<ALE::Two::Mesh> mesh) {
         ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
         PetscInt numLeaves = topology->leaves()->size();
         const char *name = NULL;
@@ -1114,9 +1176,9 @@ namespace ALE {
       };
 
 #ifdef PETSC_HAVE_CHACO
-      void partition_Chaco(const ALE::Obj<ALE::Two::Mesh> mesh) {
+      static void partition_Chaco(const ALE::Obj<ALE::Two::Mesh> mesh) {
         int size;
-        MPI_Comm_size(this->getComm(), &size);
+        MPI_Comm_size(mesh->getComm(), &size);
 
         /* arguments for Chaco library */
         int nvtxs;                              /* number of vertices in full graph */
@@ -1140,15 +1202,15 @@ namespace ALE {
         double eigtol = 0.001;                  /* tolerance on eigenvectors */
         long seed = 123636512;                  /* for random graph mutations */
 
-        nvtxs = this->topology->heightStratum(0)->size();
+        nvtxs = mesh->getTopology()->heightStratum(0)->size();
         start = new int[nvtxs+1];
 
-        Obj<sieve_type::heightSequence> faces = this->topology->heightStratum(1);
-        Obj<bundle_type> vertexBundle = this->getBundle(0);
-        Obj<bundle_type> elementBundle = this->getBundle(this->topology->depth());
+        Obj<sieve_type::heightSequence> faces = mesh->getTopology()->heightStratum(1);
+        Obj<bundle_type> vertexBundle = mesh->getBundle(0);
+        Obj<bundle_type> elementBundle = mesh->getBundle(mesh->getTopology()->depth());
         ierr = PetscMemzero(start, (nvtxs+1) * sizeof(int));CHKERRQ(ierr);
         for(sieve_type::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-          Obj<sieve_type::supportSequence> cells = this->topology->support(*f_iter);
+          Obj<sieve_type::supportSequence> cells = mesh->getTopology()->support(*f_iter);
 
           if (cells->size() == 2) {
             start[elementBundle->getIndex(*cells->begin()).prefix+1]++;
@@ -1160,7 +1222,7 @@ namespace ALE {
         }
         adjacency = new int[start[nvtxs]];
         for(sieve_type::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-          Obj<sieve_type::supportSequence> cells = this->topology->support(*f_iter);
+          Obj<sieve_type::supportSequence> cells = mesh->getTopology()->support(*f_iter);
 
           if (cells->size()) {
             int cellA = elementBundle->getIndex(*cells->begin()).prefix;
@@ -1210,8 +1272,8 @@ namespace ALE {
       };
 #endif
     public:
-      void partition(const ALE::Two::Mesh& mesh) {
-        int dim = mesh.getDimension();
+      static void partition(const Obj<Mesh> mesh) {
+        int dim = mesh->getDimension();
 
         if (dim == 2) {
           partition_Simple(mesh);
@@ -1221,7 +1283,24 @@ namespace ALE {
           throw ALE::Exception("Mesh partitioning currently requires Chaco to be installed. Use --download-chaco during configure.");
 #endif
         }
+        partition_Sieve(mesh);
       };
+    };
+
+    void Mesh::distribute() {
+      ALE_LOG_EVENT_BEGIN;
+      this->topology->setStratification(false);
+      // Partition the topology
+      ALE::Two::Partitioner::partition(*this);
+      this->topology->stratify();
+      this->topology->setStratification(true);
+      this->topology->view(std::cout, "Parallel mesh");
+      // Need to deal with boundary
+      Obj<bundle_type> vertexBundle = this->getBundle(0);
+      this->bundles.clear();
+      this->fields.clear();
+      this->createParallelCoordinates(this->dim, vertexBundle, this->coordinates);
+      ALE_LOG_EVENT_END;
     };
   } // namespace Two
 } // namespace ALE

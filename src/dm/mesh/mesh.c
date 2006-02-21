@@ -996,12 +996,10 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Two::Mesh::bundle_type::IndexArray>
 /*
   Creates a ghosted vector based upon the global ordering in the bundle.
 */
-PetscErrorCode MeshCreateVector(Mesh mesh, ALE::Obj<ALE::Two::Mesh> m, Vec *v)
+PetscErrorCode MeshCreateVector(ALE::Obj<ALE::Two::Mesh> m, ALE::Obj<ALE::Two::Mesh::bundle_type> bundle, Vec *v)
 {
-  ALE::Obj<ALE::Two::Mesh::field_type> field = m->getField("u");
-  ALE::Two::Mesh::field_type::patch_type patch;
   // FIX: Must not include ghosts
-  PetscInt       localSize = field->getSize(ALE::Two::Mesh::field_type::patch_type());
+  PetscInt       localSize = bundle->getSize(ALE::Two::Mesh::bundle_type::patch_type());
   MPI_Comm       comm = m->getComm();
   PetscMPIInt    rank = m->getRank();
   PetscInt      *ghostIndices = NULL;
@@ -1097,7 +1095,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh,Vec *gvec)
   ALE::Obj<ALE::Two::Mesh> m;
 
   ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
-  ierr = MeshCreateVector(mesh, m, gvec);CHKERRQ(ierr);
+  ierr = MeshCreateVector(m, m->getBundle(0), gvec);CHKERRQ(ierr);
 #endif
 #if 0
   mesh->globalvector = *gvec;
