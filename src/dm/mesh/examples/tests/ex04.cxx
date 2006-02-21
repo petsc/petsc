@@ -1,5 +1,5 @@
 /*T
-   Concepts: BiGraph, ParDelta
+   Concepts: BiGraph, ParDelta, wrapping
    Processors: 1
 T*/
 
@@ -7,9 +7,12 @@ T*/
   Tests ParDelta::ConeArraySequence -- a sequence that wraps an array of (source,color) "arrows" over a given target
   and presents it as an sequence of Arrows; used in ParDelta::fusion().
   Note: this test may not fail in parallel, but is not designed to run that way.
+
+  Tests ParDelta::Flip  -- a class that wraps a BiGraph, implements a subset of the BiGraph interface  and redirects 
+  select methods to the underlying BiGraph while reversing the input arrows.
 */
 
-static char help[] = "Constructs and views test ParDelta::ConeArraySequences involved in ParFusion.\n\n";
+static char help[] = "Constructs and views test ParDelta::ConeArraySequences and ParDelta::Flip involved in ParDelta.\n\n";
 
 #include <ParDelta.hh>
 

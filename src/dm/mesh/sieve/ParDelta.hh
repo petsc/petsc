@@ -120,47 +120,24 @@ namespace ALE {
     };// class ConeArraySequence
 
 
-
-
-    template <typename BiGraph_>
-    class Flip { // class Flip
-    protected:
-      typedef BiGraph_ _graph_type;
-      Obj<_graph_type> _graph;
-    public:
-      //
-      typedef struct {
-        // Basic types
-        typedef typename _graph_type::traits::arrow_type::flip::type  arrow_type;
-        typedef typename arrow_type::source_type                      source_type;
-        typedef typename arrow_type::target_type                      target_type;
-        typedef typename arrow_type::color_type                       color_type;
-        // Sequences
-        struct coneSequence : _graph_type::traits::supportSequence {
-          // traits go here
-          // Be careful to use only a limit set of iterator methods: NO arrow(), source(), target() etc; operator*() and color() are OK.
-        };
-      } traits;
-    };
-
-
-
     template <typename ParBiGraph_,
               typename Fuser_ = RightSequenceDuplicator<ConeArraySequence<typename ParBiGraph_::traits::arrow_type> >,
               typename FusionBiGraph_ = typename ParBiGraph_::template rebind<typename Fuser_::fusion_source_type, 
                                                                               typename Fuser_::fusion_target_type, 
                                                                               typename Fuser_::fusion_color_type>::type
     >    
-    class ParDelta { // class ParDelta
+    class ParConeDelta { // class ParConeDelta
     public:
-      // Here we specialize to BiGraphs based on (capped by) Points in order to enable parallel overlap discovery.
-      // We also assume that the Points in the base (cap) are ordered appropriately so we can use baseSequence.begin() and 
+      // Here we specialize to BiGraphs based on Points in order to enable parallel overlap discovery.
+      // We also assume that the Points in the base are ordered appropriately so we can use baseSequence.begin() and 
       // baseSequence.end() as the extrema for global reduction.
-      typedef Fuser_                                                                  fuser_type;
-      typedef ParBiGraph_                                                             graph_type;
-      typedef FusionBiGraph_                                                          fusion_type;
-      typedef ColorBiGraph<int, ALE::def::Point, ALE::def::Point, uniColor>           overlap_type;
-      typedef ParDelta<ParBiGraph_, Fuser_, FusionBiGraph_>                           delta_type;
+      typedef ParConeDelta<ParBiGraph_, Fuser_, FusionBiGraph_>                                  delta_type;
+      typedef ParBiGraph_                                                                        graph_type;
+      typedef Fuser_                                                                             fuser_type;
+      // These are default "return" types, although methods are templated on their main input/return types
+      typedef ColorBiGraph<int, ALE::def::Point, ALE::def::Point, uniColor>                      overlap_type;
+      typedef FusionBiGraph_                                                                     fusion_type;
+
       //
       static Obj<overlap_type> 
       overlap(const Obj<graph_type> graph) {
@@ -172,15 +149,27 @@ namespace ALE {
         return overlap;
       };
 
+      template <typename Overlap_>
+      static void computeOverlap(const Obj<graph_type>& graph, Obj<Overlap_>& overlap){
+        __computeOverlap(graph, overlap);
+      };
+
+      template <typename Overlap_>
       static Obj<fusion_type> 
-      fusion(const Obj<graph_type> graph, const Obj<overlap_type>& overlap, const Obj<fuser_type>& fuser = fuser_type()) {
+      fusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, const Obj<fuser_type>& fuser = fuser_type()) {
         Obj<fusion_type> fusion = fusion_type(graph->comm());
         // If this is a serial object, we return an empty delta
         if((graph->comm() != PETSC_COMM_SELF) && (graph->commSize() > 1)) {
-          computeFusion(graph, overlap, fuser, fusion);
+          computeFusion(graph, overlap, fusion, fuser);
         }
         return fusion;
       };
+
+      template <typename Overlap_, typename Fusion_>
+      static void computeFusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, Obj<Fusion_>& fusion, const Obj<fuser_type>& fuser = fuser_type()){
+        __computeFusion(graph, overlap, fusion, fuser);
+      };
+
     protected:
       static int                debug;
       // Internal type definitions to ensure compatibility with the legacy code in the parallel subroutines
@@ -193,6 +182,8 @@ namespace ALE {
       typedef std::map<Point, std::pair<int32_t,int32_t> >   Point__int_int;
       typedef std::map<Point, int_pair_set>                  Point__int_pair_set;
 
+    public:
+    protected:
       //--------------------------------------------------------------------------------------------------------
       template <typename Sequence>
       static void __determinePointOwners(const Obj<graph_type> _graph, const Obj<Sequence>& points, int32_t *LeaseData, Point__int& owner) {
@@ -298,11 +289,12 @@ namespace ALE {
       }; // __determinePointOwners()
 
 
-    public:
       //-------------------------------------------------------------------------------------------------------
-      static void computeOverlap(const Obj<graph_type>& _graph, Obj<overlap_type>& overlap) {
-
-        typedef typename graph_type::baseSequence Sequence;
+      #undef  __FUNCT__
+      #define __FUNCT__ "__computeOverlap"
+      template <typename Overlap_>
+      static void __computeOverlap(const Obj<graph_type>& _graph, Obj<Overlap_>& overlap) {
+        typedef typename graph_type::traits::baseSequence Sequence;
         PetscErrorCode ierr;
         MPI_Comm comm = _graph->comm();
         int      size = _graph->commSize();
@@ -330,11 +322,12 @@ namespace ALE {
         int32_t MaxLeaseSize, RenterCount;
         ierr = PetscMaxSum(comm,LeaseData,&MaxLeaseSize,&RenterCount); 
         CHKERROR(ierr,"Error in PetscMaxSum");
-        ierr = PetscInfo1(0,"ParDelta::computeOverlap: Number of renters %d\n", RenterCount); 
-        CHKERROR(ierr,"Error in PetscInfo");
+        //ierr = PetscInfo1(0,"%s: Number of renters %d\n", __FUNCT__, RenterCount); 
+        //CHKERROR(ierr,"Error in PetscInfo");
 
         if(debug) { /* -------------------------------------------------------------- */
-          ierr = PetscSynchronizedPrintf(comm, "[%d]: ParDelta::computeOverlap: RenterCount = %d, MaxLeaseSize = %d\n", rank, RenterCount, MaxLeaseSize);
+          ierr = PetscSynchronizedPrintf(comm, "[%d]: %s: RenterCount = %d, MaxLeaseSize = %d\n", 
+                                         rank, __FUNCT__, RenterCount, MaxLeaseSize);
           CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
           ierr = PetscSynchronizedFlush(comm);
           CHKERROR(ierr, "Error in PetscSynchronizedFlush");
@@ -358,10 +351,10 @@ namespace ALE {
         
         int32_t LessorCount;
         LessorCount = 0; for (int32_t i=0; i<size; i++) LessorCount += LeaseData[2*i+1];
-        ierr = PetscInfo1(0,"ParDelta::computeOverlap: Number of lessors %d\n",LessorCount);
-        CHKERROR(ierr,"Error in PetscInfo");
+        //ierr = PetscInfo1(0,"%s: Number of lessors %d\n",__FUNCT__, LessorCount);
+        //CHKERROR(ierr,"Error in PetscInfo");
         if(debug) { /* -------------------------------------------------------------- */
-          ierr = PetscSynchronizedPrintf(comm, "[%d]: ParDelta::computeOverlap: LessorCount = %d\n", rank, LessorCount);
+          ierr = PetscSynchronizedPrintf(comm, "[%d]: %s: LessorCount = %d\n", rank, __FUNCT__, LessorCount);
           CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
           ierr = PetscSynchronizedFlush(comm);
           CHKERROR(ierr, "Error in PetscSynchronizedFlush");
@@ -389,7 +382,7 @@ namespace ALE {
         ierr = PetscFree(LeaseData); CHKERROR(ierr, "Error in PetscFree");
         if(debug2) { /* ----------------------------------- */
           ostringstream txt;
-          txt << "[" << rank << "]: ParDelta::computeOverlap: lessor data [index, rank, lease size]: ";
+          txt << "[" << rank << "]: " << __FUNCT__ << ": lessor data [index, rank, lease size]: ";
           for(int32_t i = 0; i < LessorCount; i++) {
             txt << "[" << i << ", " << Lessors[i] << ", " << LeaseSizes[i] << "] ";
           }
@@ -399,7 +392,7 @@ namespace ALE {
         }/* -----------------------------------  */
         if(debug2) { /* ----------------------------------- */
           ostringstream txt;
-          txt << "[" << rank << "]: ParDelta::computeOverlap: LessorIndex: ";
+          txt << "[" << rank << "]: " << __FUNCT__ << ": LessorIndex: ";
           for(int__int::iterator li_itor = LessorIndex.begin(); li_itor!= LessorIndex.end(); li_itor++) {
             int32_t i = (*li_itor).first;
             int32_t j = (*li_itor).second;
@@ -483,7 +476,7 @@ namespace ALE {
             Point node = (*nodeRenters_itor).first;
             int_pair_set renterSet   = (*nodeRenters_itor).second;
             // ASSUMPTION on point type
-            txt << "[" << rank << "]: ParDelta::computeOverlap: node (" << node.prefix << "," << node.index << ") is rented by " << renterSet.size() << " renters (renter, cone size):  ";
+            txt << "[" << rank << "]: " << __FUNCT__ << ": node (" << node.prefix << "," << node.index << ") is rented by " << renterSet.size() << " renters (renter, cone size):  ";
             for (int_pair_set::iterator renterSet_itor = renterSet.begin(); renterSet_itor != renterSet.end(); renterSet_itor++) 
             {
               txt << "(" << (*renterSet_itor).first << "," << (*renterSet_itor).second << ") ";
@@ -575,7 +568,7 @@ namespace ALE {
           // Use a C++ string stream to report the numbers of shared nodes leased from each lessor
           ostringstream txt;
           cntr = 0;
-          txt << "[" << rank << "]: ParDelta::computeOverlap: neighbor counts by lessor-node [lessor rank, (node), neighbor count]:  ";
+          txt << "[" << rank << "]: " << __FUNCT__ << ": neighbor counts by lessor-node [lessor rank, (node), neighbor count]:  ";
           for(int32_t i = 0; i < LessorCount; i++) {
             // ASSUMPTION on point type
             for(int32_t j = 0; j < LeaseSizes[i]; j++) 
@@ -622,7 +615,7 @@ namespace ALE {
           // Use a C++ string stream to report the numbers of shared nodes leased from each lessor
           ostringstream txt;
           cntr = 0;
-          txt << "[" << rank << "]: ParDelta::computeOverlap: NeighborCountsByLessor [rank, count]:  ";
+          txt << "[" << rank << "]: " << __FUNCT__ << ": NeighborCountsByLessor [rank, count]:  ";
           for(int32_t i = 0; i < LessorCount; i++) {
             txt << "[" << Lessors[i] <<","  <<  NeighborCountsByLessor[i] << "]; ";
           }
@@ -679,7 +672,7 @@ namespace ALE {
         // Renters are traversed in the order of their original arrival index by arrival number a
         ostringstream txt; // DEBUG
         if(debug2) {
-          txt << "[" << rank << "]: ParDelta::computeOverlap: RenterCount = " << RenterCount << "\n";
+          txt << "[" << rank << "]: " << __FUNCT__ << ": RenterCount = " << RenterCount << "\n";
         }
         RenterOffset = 0; // this is the current offset into Sharers needed for the send statement
         for(int32_t a = 0; a < RenterCount; a++) {//
@@ -694,7 +687,7 @@ namespace ALE {
             p.prefix = RentedNodes[RenterLeaseOffset + 3*i];
             p.index  = RentedNodes[RenterLeaseOffset + 3*i + 1];
             if(debug) {
-              txt << "[" << rank << "]: ParDelta::computeOverlap: renters sharing with " << r << " of node  (" << p.prefix << "," << p.index << ")  [rank, cone size]:  ";
+              txt << "[" << rank << "]: " << __FUNCT__ << ": renters sharing with " << r << " of node  (" << p.prefix << "," << p.index << ")  [rank, cone size]:  ";
             }
             // now traverse the set of all the renters of p
             for(int_pair_set::iterator pRenters_itor=NodeRenters[p].begin(); pRenters_itor!=NodeRenters[p].end(); pRenters_itor++) {
@@ -737,7 +730,7 @@ namespace ALE {
           int32_t cntr2 = 0;
           for(int32_t i = 0; i < LessorCount; i++) {
             // ASSUMPTION on point type
-            txt << "[" <<rank<< "]: ParDelta::computeOverlap: neighbors over nodes leased from " <<Lessors[i]<< ":\n";
+            txt << "[" <<rank<< "]: " << __FUNCT__ << ": neighbors over nodes leased from " <<Lessors[i]<< ":\n";
             int32_t activeLessor = 0;
             for(int32_t j = 0; j < LeaseSizes[i]; j++) 
             {
@@ -819,16 +812,18 @@ namespace ALE {
         if(TotalNeighborCount) {ierr = PetscFree(Neighbors);   CHKERROR(ierr, "Error in PetscFree");}    
         if(TotalRentalCount){ierr = PetscFree(SharerCounts);   CHKERROR(ierr, "Error in PetscFree");}
 
-      };// computeOverlap()
+      };// __computeOverlap()
 
 
 
       // -------------------------------------------------------------------------------------------------------------------
       #undef __FUNCT__
-      #define __FUNCT__ "computeFusion"
-      static void computeFusion(const Obj<graph_type>& _graph, const Obj<overlap_type>& overlap, const Obj<fuser_type>& fuser, Obj<fusion_type> fusion) {
+      #define __FUNCT__ "__computeFusion"
+      template <typename Overlap_, typename Fusion_>
+      static void __computeFusion(const Obj<graph_type>& _graph, const Obj<Overlap_>& overlap, Obj<Fusion_> fusion, const Obj<fuser_type>& fuser) {
+        //
         typedef ConeArraySequence<typename graph_type::traits::arrow_type> cone_array_sequence;
-        typedef typename cone_array_sequence::cone_arrow_type cone_arrow_type;
+        typedef typename cone_array_sequence::cone_arrow_type              cone_arrow_type;
         PetscErrorCode ierr;
         MPI_Comm comm = _graph->comm();
         int      rank = _graph->commRank();
@@ -844,18 +839,18 @@ namespace ALE {
         int32_t  ConeSizeIn = 0;
         ostringstream txt3;
         // Traverse all of the neighbors  from whom we will be receiving cones -- the cap of the overlap.
-        typename overlap_type::traits::capSequence overlapCap = overlap->cap();
-        for(typename overlap_type::traits::capSequence::iterator ci  = overlapCap.begin(); ci != overlapCap.end(); ci++) 
+        typename Overlap_::traits::capSequence overlapCap = overlap->cap();
+        for(typename Overlap_::traits::capSequence::iterator ci  = overlapCap.begin(); ci != overlapCap.end(); ci++) 
         { // traversing overlap.cap()
           int32_t neighborIn = *ci;
           // Traverse the supports of the overlap graph under each neighbor rank, count cone sizes to be received and add the cone sizes
-          typename overlap_type::traits::supportSequence supp = overlap->support(*ci);
+          typename Overlap_::traits::supportSequence supp = overlap->support(*ci);
           if(debug2) {
-            //txt3 << "[" << rank << "]: " << "computeFusion: overlap: support of rank " << neighborIn << ": " << std::endl;
+            //txt3 << "[" << rank << "]: " << __FUNCT__ << ": overlap: support of rank " << neighborIn << ": " << std::endl;
             //txt3 << supp;
           }
           int32_t coneSizeIn = 0;
-          for(typename overlap_type::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
+          for(typename Overlap_::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
             // FIX: replace si.color() type: Point --> ALE::pair
             coneSizeIn += si.color().prefix;
           }
@@ -876,12 +871,12 @@ namespace ALE {
         }
         if(debug) {/* --------------------------------------------------------------------------------------------- */
           ostringstream txt;
-          txt << "[" << rank << "]: computeFusion: total size of incoming cone: " << ConeSizeIn << "\n";
+          txt << "[" << rank << "]: " << __FUNCT__ << ": total size of incoming cone: " << ConeSizeIn << "\n";
           for(int__int::iterator np_itor = NeighborConeSizeIn.begin();np_itor!=NeighborConeSizeIn.end();np_itor++)
           {
             int32_t neighbor = (*np_itor).first;
             int32_t coneSize = (*np_itor).second;
-            txt << "[" << rank << "]: computeFusion: size of cone from " << neighbor << ": " << coneSize << "\n";
+            txt << "[" << rank << "]: " << __FUNCT__ << ": size of cone from " << neighbor << ": " << coneSize << "\n";
             
           }//int__int::iterator np_itor=NeighborConeSizeIn.begin();np_itor!=NeighborConeSizeIn.end();np_itor++)
           ierr = PetscSynchronizedPrintf(comm, txt.str().c_str());
@@ -907,13 +902,13 @@ namespace ALE {
         // Traverse all neighbors from whom we are receiving cones
         cone_arrow_type *NeighborOffsetIn = ConesIn;
         if(debug2) {
-          ierr = PetscSynchronizedPrintf(comm, "[%d]: computeFusion: NeighborConeSizeIn.size() = %d\n",rank, NeighborConeSizeIn.size());
+          ierr = PetscSynchronizedPrintf(comm, "[%d]: %s: NeighborConeSizeIn.size() = %d\n",rank, __FUNCT__, NeighborConeSizeIn.size());
           CHKERROR(ierr, "Error in PetscSynchornizedPrintf");
           ierr = PetscSynchronizedFlush(comm);
           CHKERROR(ierr, "Error in PetscSynchornizedFlush");
           if(NeighborConeSizeIn.size()) {
-            ierr=PetscSynchronizedPrintf(comm, "[%d]: computeFusion: *NeighborConeSizeIn.begin() = (%d,%d)\n",
-                                         rank, (*NeighborConeSizeIn.begin()).first, (*NeighborConeSizeIn.begin()).second);
+            ierr=PetscSynchronizedPrintf(comm, "[%d]: %s: *NeighborConeSizeIn.begin() = (%d,%d)\n",
+                                         rank, __FUNCT__, (*NeighborConeSizeIn.begin()).first, (*NeighborConeSizeIn.begin()).second);
             CHKERROR(ierr, "Error in PetscSynchornizedPrintf");
             ierr = PetscSynchronizedFlush(comm);
             CHKERROR(ierr, "Error in PetscSynchornizedFlush");
@@ -934,17 +929,17 @@ namespace ALE {
         int__int NeighborConeSizeOut;
         int32_t  ConeSizeOut = 0;
         int32_t NeighborCountOut = 0;
-        for(typename overlap_type::traits::capSequence::iterator ci  = overlapCap.begin(); ci != overlapCap.end(); ci++) 
+        for(typename Overlap_::traits::capSequence::iterator ci  = overlapCap.begin(); ci != overlapCap.end(); ci++) 
         { // traversing overlap.cap()
           int32_t neighborOut = *ci;
           // Traverse the supports of the overlap graph under each neighbor rank, count cone sizes to be sent and add the cone sizes
-          typename overlap_type::traits::supportSequence supp = overlap->support(*ci);
+          typename Overlap_::traits::supportSequence supp = overlap->support(*ci);
           if(debug2) {
-            //txt3 << "[" << rank << "]: " << "computeFusion: overlap: support of rank " << neighborOut << ": " << std::endl;
+            //txt3 << "[" << rank << "]: " << __FUNCT__ << ": overlap: support of rank " << neighborOut << ": " << std::endl;
             //txt3 << supp;
           }
           int32_t coneSizeOut = 0;
-          for(typename overlap_type::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
+          for(typename Overlap_::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
             // FIX: replace si.color() Point --> ALE::pair
             coneSizeOut += si.color().index;
           }
@@ -958,12 +953,12 @@ namespace ALE {
         
         if(debug) {/* --------------------------------------------------------------------------------------------- */
           ostringstream txt;
-          txt << "[" << rank << "]: computeFusion: total size of outgoing cone: " << ConeSizeOut << "\n";
+          txt << "[" << rank << "]: " << __FUNCT__ << ": total size of outgoing cone: " << ConeSizeOut << "\n";
           for(int__int::iterator np_itor = NeighborConeSizeOut.begin();np_itor!=NeighborConeSizeOut.end();np_itor++)
           {
             int32_t neighborOut = (*np_itor).first;
             int32_t coneSizeOut = (*np_itor).second;
-            txt << "[" << rank << "]: computeFusion: size of cone to " << neighborOut << ": " << coneSizeOut << "\n";
+            txt << "[" << rank << "]: " << __FUNCT__ << ": size of cone to " << neighborOut << ": " << coneSizeOut << "\n";
             
           }//int__int::iterator np_itor=NeighborConeSizeOut.begin();np_itor!=NeighborConeSizeOut.end();np_itor++)
           ierr = PetscSynchronizedPrintf(comm, txt.str().c_str());
@@ -989,21 +984,21 @@ namespace ALE {
         n = 0;    // neighbor counter
         ostringstream txt2;
         // Traverse all neighbors to whom we are sending cones
-        for(typename overlap_type::traits::capSequence::iterator ci  = overlapCap.begin(); ci != overlapCap.end(); ci++) 
+        for(typename Overlap_::traits::capSequence::iterator ci  = overlapCap.begin(); ci != overlapCap.end(); ci++) 
         { // traversing overlap.cap()
           int32_t neighborOut = *ci;
 
           // Make sure we have a cone going out to this neighbor
           if(NeighborConeSizeOut.find(neighborOut) != NeighborConeSizeOut.end()) { // if there is anything to send
             if(debug) { /* ------------------------------------------------------------ */
-              txt2  << "[" << rank << "]: computeFusion: outgoing cones destined for " << neighborOut << "\n";
+              txt2  << "[" << rank << "]: " << __FUNCT__ << ": outgoing cones destined for " << neighborOut << "\n";
             }/* ----------------------------------------------------------------------- */
             int32_t coneSizeOut = NeighborConeSizeOut[neighborOut];          
             // ASSUMPTION: all overlap supports are "symmetric" with respect to swapping processes,so we safely can assume that 
             //             the receiver will be expecting points in the same order as they appear in the support here.
             // Traverse all the points within the overlap with this neighbor 
-            typename overlap_type::traits::supportSequence supp = overlap->support(*ci);
-            for(typename overlap_type::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
+            typename Overlap_::traits::supportSequence supp = overlap->support(*ci);
+            for(typename Overlap_::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
               Point p = *si;
               if(debug) { /* ------------------------------------------------------------ */
                 txt2  << "[" << rank << "]: \t cone over " << p << ":  ";
@@ -1013,7 +1008,8 @@ namespace ALE {
               for(typename graph_type::traits::coneSequence::iterator cone_itor = cone.begin(); cone_itor != cone.end(); cone_itor++) {
                 // Place a TargetArrow into the ConesOut buffer 
                 // WARNING: pointer arithmetic involving ConesOut takes place here
-                cone_arrow_type::place(ConesOut+cntr, cone_itor.arrow());
+                //cone_arrow_type::place(ConesOut+cntr, cone_itor.arrow()); 
+                cone_arrow_type::place(ConesOut+cntr, typename graph_type::traits::arrow_type(*cone_itor,p,cone_itor.color()));
                 cntr++;
                 if(debug) { /* ------------------------------------------------------------ */
                   txt2  << " " << *cone_itor;
@@ -1053,12 +1049,12 @@ namespace ALE {
         cntr = 0; // arrow counter
         NeighborOffsetIn = ConesIn;
         ostringstream txt;
-        for(typename overlap_type::traits::capSequence::iterator ci  = overlapCap.begin(); ci != overlapCap.end(); ci++) 
+        for(typename Overlap_::traits::capSequence::iterator ci  = overlapCap.begin(); ci != overlapCap.end(); ci++) 
         { // traversing overlap.cap()
           // Traverse all the points within the overlap with this neighbor 
           // ASSUMPTION: points are sorted within each neighbor, so we are expecting points in the same order as they arrived in ConesIn
-          typename overlap_type::traits::supportSequence supp = overlap->support(*ci);
-          for(typename overlap_type::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++)
+          typename Overlap_::traits::supportSequence supp = overlap->support(*ci);
+          for(typename Overlap_::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++)
           {
             Point p = *si;
             int32_t coneSizeIn = si.color().prefix; // FIX: color() type Point --> ALE::Two::pair
@@ -1073,9 +1069,9 @@ namespace ALE {
             // Fuse the cones
             fuser->fuseCones(lcone, rcone, fusion->cone(fuser->fuseBasePoints(p,p)));
             if(debug) {
-              ostringstream txt;
-              txt << "[" << rank << "]: ... after fusing the cone over" << p << std::endl;
-              fusion->view(std::cout, txt.str().c_str());
+              //ostringstream txt;
+              //txt << "[" << rank << "]: ... after fusing the cone over" << p << std::endl;
+              //fusion->view(std::cout, txt.str().c_str());
             }
             NeighborOffsetIn += coneSizeIn;
           }
@@ -1115,17 +1111,157 @@ namespace ALE {
         if(ConeSizeOut){ierr = PetscFree(ConesOut);          CHKERROR(ierr, "Error in PetscFree");}
         
         // Done!  
-      };// fusion()
+      };// __computeFusion()
 
-      static void setDebug(int debug) {ParDelta::debug = debug;};
-      static int  getDebug() {return ParDelta::debug;};
-    }; // class ParDelta
+      static void setDebug(int debug) {ParConeDelta::debug = debug;};
+      static int  getDebug() {return ParConeDelta::debug;};
+    }; // class ParConeDelta
   
+    template <typename ParBiGraph_, typename Fuser_, typename FusionBiGraph_>
+    int ParConeDelta<ParBiGraph_, Fuser_, FusionBiGraph_>::debug = 0;
+    
+
+    //
+    // Auxiliary type
+    //
+    template <typename BiGraph_>
+    class Flip { // class Flip
+    public:
+      typedef BiGraph_       graph_type;
+      typedef Flip<BiGraph_> flip_type;
+    protected:
+      Obj<graph_type> _graph;
+    public:
+      //
+      struct traits {
+        // Basic types
+        typedef typename graph_type::traits::arrow_type::flip::type                 arrow_type;
+        typedef typename arrow_type::source_type                                    source_type;
+        typedef typename arrow_type::target_type                                    target_type;
+        typedef typename arrow_type::color_type                                     color_type;
+        // Sequences
+        // Be careful: use only a limited set of iterator methods: NO arrow(), source(), target() etc; operator*() and color() are OK.
+        typedef typename graph_type::traits::coneSequence                           supportSequence;
+        typedef typename graph_type::traits::supportSequence                        coneSequence;
+        typedef typename graph_type::traits::baseSequence                           capSequence;
+        typedef typename graph_type::traits::capSequence                            baseSequence;
+      };
+      // Basic interface
+      Flip(const Obj<graph_type> graph) : _graph(graph) {};
+      Flip(const Flip& flip) : _graph(flip._graph) {};
+      virtual ~Flip() {};
+      // Redirect 
+      // Only a limited set of methods is redirected: simple cone, support, base, cap and arrow insertion.
+      //
+      // Query methods
+      //
+      MPI_Comm    comm()     const {return this->_graph->comm();};
+      int         commSize() const {return this->_graph->commSize();};
+      int         commRank() const {return this->_graph->commRank();}
+      PetscObject petscObj() const {return this->_graph->petscObj();};
       
-  template <typename ParBiGraph_, typename Fuser_, typename FusionBiGraph_>
-  int ParDelta<ParBiGraph_, Fuser_, FusionBiGraph_>::debug = 0;
-    
-    
+      // FIX: need const_cap, const_base returning const capSequence etc, but those need to have const_iterators, const_begin etc.
+      Obj<typename traits::capSequence> cap() {
+        return this->_graph->base();
+      };
+      Obj<typename traits::baseSequence> base() {
+        return this->_graph->cap();
+      };
+      
+      Obj<typename traits::coneSequence> 
+      cone(const typename traits::target_type& p) {
+        return this->_graph->support(p);
+      };
+      
+      Obj<typename traits::coneSequence> 
+      cone(const typename traits::target_type& p, const typename traits::color_type& color) {
+        return this->_graph->support(p, color);
+      };
+      
+      Obj<typename traits::supportSequence> 
+      support(const typename traits::source_type& p) {
+        return this->_graph->cone(p);
+      };
+      
+      Obj<typename traits::supportSequence> 
+      support(const typename traits::source_type& p, const typename traits::color_type& color) {
+        return this->_graph->cone(p,color);
+      };
+      
+      virtual void addArrow(const typename traits::source_type& p, const typename traits::target_type& q) {
+        this->_graph->addArrow(q, p);
+      };
+      
+      virtual void addArrow(const typename traits::source_type& p, const typename traits::target_type& q, const typename traits::color_type& color) {
+        this->_graph->addArrow(q, p, color);
+      };
+      
+      virtual void addArrow(const typename traits::arrow_type& a) {
+        this->_graph->addArrow(a.target, a.source, a.color);
+      };
+      
+    };// class Flip
+
+
+    // WARNING: must pass in a 'flipped' Fuser, that is a fuser that acts on cones instead of supports 
+    template<typename ParBiGraph_,
+             typename Fuser_ = RightSequenceDuplicator<ConeArraySequence<typename ParBiGraph_::traits::arrow_type::flip::type> >,
+             typename FusionBiGraph_ = typename ParBiGraph_::template rebind<typename Fuser_::fusion_target_type, 
+                                                                             typename Fuser_::fusion_source_type, 
+                                                                             typename Fuser_::fusion_color_type>::type>    
+    class ParSupportDelta {
+    public:
+      // Here we specialize to BiGraphs based on Points in order to enable parallel overlap discovery.
+      // We also assume that the Points in the base are ordered appropriately so we can use baseSequence.begin() and 
+      // baseSequence.end() as the extrema for global reduction.
+      typedef ParSupportDelta<ParBiGraph_, Fuser_, FusionBiGraph_>                               delta_type;
+      typedef ParBiGraph_                                                                        graph_type;
+      typedef Fuser_                                                                             fuser_type;
+      typedef ColorBiGraph<ALE::def::Point, int, ALE::def::Point, uniColor>                      overlap_type;
+      typedef FusionBiGraph_                                                                     fusion_type;
+      //
+
+      //
+      // FIX: Is there a way to inherit this from ParConeDelta?  Right now it is a verbatim copy.
+      static Obj<overlap_type> 
+      overlap(const Obj<graph_type> graph) {
+        Obj<overlap_type> overlap = overlap_type(graph->comm());
+        // If this is a serial object, we return an empty overlap
+        if((graph->comm() != PETSC_COMM_SELF) && (graph->commSize() > 1)) {
+          computeOverlap(graph, overlap);
+        }
+        return overlap;
+      };
+
+      template <typename Overlap_>
+      static void computeOverlap(const Obj<graph_type>& graph, Obj<Overlap_>& overlap){
+        // Flip the graph and the overlap and use ParConeDelta's method
+        Obj<Flip<graph_type> >   graph_flip   = Flip<graph_type>(graph);
+        Obj<Flip<Overlap_> > overlap_flip     = Flip<Overlap_>(overlap);
+        ParConeDelta<Flip<graph_type>, fuser_type, Flip<fusion_type> >::computeOverlap(graph_flip, overlap_flip);
+      };
+      
+      // FIX: Is there a way to inherit this from ParConeDelta?  Right now it is a verbatim copy.
+      template <typename Overlap_>
+      static Obj<fusion_type> 
+      fusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, const Obj<fuser_type>& fuser = fuser_type()) {
+        Obj<fusion_type> fusion = fusion_type(graph->comm());
+        // If this is a serial object, we return an empty delta
+        if((graph->comm() != PETSC_COMM_SELF) && (graph->commSize() > 1)) {
+          computeFusion(graph, overlap, fusion, fuser);
+        }
+        return fusion;
+      };
+
+      template <typename Overlap_, typename Fusion_>
+      static void computeFusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, Obj<Fusion_> fusion, const Obj<fuser_type>& fuser = fuser_type()){
+        // Flip the graph, the overlap and the fusion, and the use ParConeDelta's method
+        Obj<Flip<graph_type> > graph_flip   = Flip<graph_type>(graph);
+        Obj<Flip<Overlap_> >   overlap_flip = Flip<Overlap_>(overlap);
+        Obj<Flip<Fusion_> >    fusion_flip  = Flip<Fusion_>(fusion);
+        ParConeDelta<Flip<graph_type>, fuser_type, Flip<fusion_type> >::computeFusion(graph_flip, overlap_flip, fusion_flip);
+      };      
+    }; // class ParSupportDelta
   
 
   } // namespace Two

@@ -538,7 +538,7 @@ namespace ALE {
         arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,arrowInd>::type, source_type, target_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, color_type, color)> 
         arrowSequence;
 
-        // This is a temp fix to include addArrow into the interface; should probably be pushed up to ArrowSequence
+        // FIX: This is a temp fix to include addArrow into the interface; should probably be pushed up to ArrowSequence
         struct coneSequence : public arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,coneInd>::type, target_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, source_type, source)> {
         protected:
           graph_type& _graph;
@@ -567,9 +567,33 @@ namespace ALE {
           }
         };
 
-        typedef typename 
-        arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type, supportInd>::type, source_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, target_type, target)> 
-        supportSequence;
+        // FIX: This is a temp fix to include addArrow into the interface; should probably be pushed up to ArrowSequence
+        struct supportSequence : public arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,supportInd>::type, source_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, target_type, target)> {
+        protected:
+          graph_type& _graph;
+        public:
+          typedef typename 
+          arrow_container_type::traits::template ArrowSequence<typename ::boost::multi_index::index<typename arrow_container_type::set_type,supportInd>::type, source_type, color_type, BOOST_MULTI_INDEX_MEMBER(arrow_type, target_type, target)> base_type;
+          // Encapsulated types
+          typedef typename base_type::traits traits;
+          typedef typename base_type::iterator iterator;
+          typedef typename base_type::reverse_iterator reverse_iterator;
+          // Basic interface
+          supportSequence(const supportSequence& seq) : base_type(seq), _graph(seq._graph) {};
+          supportSequence(graph_type& graph, typename traits::index_type& index, const typename base_type::key_type& k) : base_type(index, k), _graph(graph){};
+          supportSequence(graph_type& graph, typename traits::index_type& index, const typename base_type::key_type& k, const typename base_type::subkey_type& kk) : base_type(index, k, kk), _graph(graph) {};
+          virtual ~supportSequence() {};
+
+          // FIX: WARNING: (or a HACK?): we flip the arrow on addition here. 
+          // Fancy interface
+          void addArrow(const typename arrow_type::flip::type& af) {
+            this->_graph.addArrow(af.target, af.source, af.color);
+          };
+          void addArrow(const target_type& t, const color_type& c){
+            this->_graph.addArrow(arrow_type(this->key,t,c));
+          };
+        };
+
      
         typedef typename base_container_type::traits::PointSequence baseSequence;
         typedef typename cap_container_type::traits::PointSequence  capSequence;
@@ -659,11 +683,11 @@ namespace ALE {
       };
       Obj<typename traits::supportSequence> 
       support(const typename traits::source_type& p) {
-        return typename traits::supportSequence(::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p);
+        return typename traits::supportSequence(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p);
       };
       Obj<typename traits::supportSequence> 
       support(const typename traits::source_type& p, const typename traits::color_type& color) {
-        return typename traits::supportSequence(::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p, color);
+        return typename traits::supportSequence(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p, color);
       };
 
       template<class InputSequence>
