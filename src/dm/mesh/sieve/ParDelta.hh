@@ -12,6 +12,18 @@
 //
 namespace ALE {
 
+  template <typename X, typename Y>
+  struct pair : public std::pair<X,Y> {
+    pair() : std::pair<X,Y>(){};
+    pair(const pair& p) : std::pair<X,Y>(p.first, p.second) {};
+    pair(const X& x, const Y& y) : std::pair<X,Y>(x,y) {};
+    ~pair(){};
+    friend std::ostream& operator<<(std::ostream& os, const pair& p) {
+      os << "<" << p.first << ", "<< p.second << ">";
+      return os;
+    };
+  };// struct pair
+
   namespace Two {
 
     template <typename RightConeSequence_>
@@ -135,7 +147,7 @@ namespace ALE {
       typedef ParBiGraph_                                                                        graph_type;
       typedef Fuser_                                                                             fuser_type;
       // These are default "return" types, although methods are templated on their main input/return types
-      typedef ColorBiGraph<int, ALE::def::Point, ALE::def::Point, uniColor>                      overlap_type;
+      typedef ColorBiGraph<int, ALE::def::Point, ALE::pair<int,int>, uniColor>                            overlap_type;
       typedef FusionBiGraph_                                                                     fusion_type;
 
       //
@@ -791,10 +803,9 @@ namespace ALE {
           for(int32_t j = 0; j < pNeighborsCount; j++) {
             int32_t neighbor = Neighbors[cntr++];
             int32_t coneSize = Neighbors[cntr++];
-            // Record the size of the cone over p coming in from neighbor as prefix and 
-            // the size of the cone over p going out to neighbor as the index of the color in the overlap arrow from 
-            // neighbor to p
-            overlap->addArrow(neighbor, p, Point(coneSize, _graph->cone(p)->size())); 
+            // Record the size of the cone over p coming in from neighbor and going out to the neighbor as a pair of integers
+            // which is the color of the overlap arrow from neighbor to p
+            overlap->addArrow(neighbor, p, ALE::pair<int,int>(coneSize, _graph->cone(p)->size()) ); 
           }
         }// for(int32_t i = 0; i < LeasedNodeCount; i++)
 
@@ -852,7 +863,8 @@ namespace ALE {
           int32_t coneSizeIn = 0;
           for(typename Overlap_::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
             // FIX: replace si.color() type: Point --> ALE::pair
-            coneSizeIn += si.color().prefix;
+            //coneSizeIn += si.color().prefix;
+            coneSizeIn += si.color().first;
           }
           if(coneSizeIn > 0) {
             // Accumulate the total cone size
@@ -941,7 +953,8 @@ namespace ALE {
           int32_t coneSizeOut = 0;
           for(typename Overlap_::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
             // FIX: replace si.color() Point --> ALE::pair
-            coneSizeOut += si.color().index;
+            //coneSizeOut += si.color().index;
+            coneSizeOut += si.color().second;
           }
           if(coneSizeOut > 0) {
             // Accumulate the total cone size
@@ -1057,7 +1070,8 @@ namespace ALE {
           for(typename Overlap_::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++)
           {
             Point p = *si;
-            int32_t coneSizeIn = si.color().prefix; // FIX: color() type Point --> ALE::Two::pair
+            //int32_t coneSizeIn = si.color().prefix; // FIX: color() type Point --> ALE::Two::pair
+            int32_t coneSizeIn = si.color().first;
             // NOTE: coneSizeIn may be 0, which is legal, since the fuser in principle can operate on an empty cone.
             // Extract the local cone into a coneSequence
             typename graph_type::traits::coneSequence lcone = _graph->cone(p);
@@ -1217,7 +1231,7 @@ namespace ALE {
       typedef ParSupportDelta<ParBiGraph_, Fuser_, FusionBiGraph_>                               delta_type;
       typedef ParBiGraph_                                                                        graph_type;
       typedef Fuser_                                                                             fuser_type;
-      typedef ColorBiGraph<ALE::def::Point, int, ALE::def::Point, uniColor>                      overlap_type;
+      typedef ColorBiGraph<ALE::def::Point, int, ALE::pair<int,int>, uniColor>                   overlap_type;
       typedef FusionBiGraph_                                                                     fusion_type;
       //
 
