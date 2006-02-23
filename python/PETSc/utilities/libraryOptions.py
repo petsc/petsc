@@ -16,7 +16,8 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-log=<bool>',              nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
+    help.addArgument('PETSc', '-with-gnu-copyright-code=<bool>',nargs.ArgBool(None, 1, 'Compile in GNU copyright code (see http://www.mcs.anl.gov/petsc/petsc-as/documentation/copyright.html'))
+    help.addArgument('PETSc', '-with-log=<bool>',              nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))    
     help.addArgument('PETSc', '-with-info=<bool>',             nargs.ArgBool(None, 1, 'Activate PetscInfo() (i.e. -info)  code in PETSc'))
     help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Activate CTABLE hashing for certain search functions - to conserve memory'))
     help.addArgument('PETSc', '-with-sieve=<bool>',            nargs.ArgBool(None, 0, 'Activate SIEVE mesh functionality[requires cxx]'))
@@ -51,6 +52,9 @@ class Configure(config.base.Configure):
     if self.debugging.debugging:
       self.addDefine('USE_DEBUG', '1')
 
+    if not self.framework.argDB['with-gnu-copyright-code']:
+      self.addDefine('AVOID_GNUCOPYRIGHT_CODE', '1')
+      
     self.useInfo   = self.framework.argDB['with-info']
     self.addDefine('USE_INFO',   self.useInfo)
 

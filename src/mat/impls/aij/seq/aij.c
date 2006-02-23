@@ -21,6 +21,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode i
   PetscScalar    *v,*aa = aij->a;
 
   PetscFunctionBegin;
+  if (!Y->assembled) SETERRQ(PETSC_ERR_SUP,"Requires matrix be already assembled");
   ierr = MatMarkDiagonal_SeqAIJ(Y);CHKERRQ(ierr);
   diag = aij->diag;
   ierr = VecGetArray(D,&v);CHKERRQ(ierr);

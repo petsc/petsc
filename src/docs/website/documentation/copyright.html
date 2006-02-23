@@ -50,8 +50,8 @@
  
     <td width="75%" valign="top">
    If you modify PETSc source code and wish to distributed only binary versions of your changed code
-    (which you can) you <strong>must</strong> compile PETSc with the additional flag PETSC_AVOID_GNUCOPYRIGHT_CODE
-    (add it to bmake/${PETSC_ARCH}/petscconf.h) to prevent violating the GNU copyright which covers a
+    (which you can) you <strong>must</strong> config/configure.py PETSc with the additional flag --with-gnu-copyright-code=0
+    to prevent violating the GNU copyright which covers a
     tiny percentage of the code in the PETSc distribution.</p>
 
    <p align="center"><font size="5">COPYRIGHT NOTIFICATION</font>
