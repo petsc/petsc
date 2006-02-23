@@ -204,7 +204,7 @@
       if (flg .eq. 1) then
          call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,        &
      &                          rctx,ierr)
-         call VecSetRandom(rctx,u,ierr)
+         call VecSetRandom(u,rctx,ierr)
          call PetscRandomDestroy(rctx,ierr)
       else
          call VecSet(u,one,ierr)
