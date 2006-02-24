@@ -68,17 +68,17 @@ PetscErrorCode testHat(MPI_Comm comm) {
   }
   
   // View
-  bg->view("Hat bigraph");
+  bg->view("Hat bigraph", true);
 
   // Compute a base overlap object using the static method PointParDelta::computeOverlap
   ALE::Obj<PointParConeDelta::overlap_type>    overlap = PointParConeDelta::overlap(bg);
   // View
-  overlap->view("Hat overlap");
+  overlap->view("Hat overlap", true);
 
   // Compute the fusion over the overlap using the static method PointParDelta::computeFusion
   ALE::Obj<PointParConeDelta::fusion_type>    fusion = PointParConeDelta::fusion(bg, overlap);
   // View
-  fusion->view("Hat cone fusion");
+  fusion->view("Hat cone fusion", true);
 
   PetscFunctionReturn(0);
 }/* testHat() */
