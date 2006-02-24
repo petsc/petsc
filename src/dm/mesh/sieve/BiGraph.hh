@@ -768,7 +768,7 @@ namespace ALE {
         }
       };
       // A parallel viewer
-      PetscErrorCode view(const char* label = NULL){
+      PetscErrorCode view(const char* label = NULL, bool raw = false){
         PetscErrorCode ierr;
         ostringstream txt;
         PetscFunctionBegin;
@@ -785,49 +785,95 @@ namespace ALE {
             txt << "viewing a BiGraph" << std::endl;
           }
         }
-        if(this->commRank() == 0) {
-          txt << "cap --> base:\n";
-        }
-        typename traits::capSequence cap   = this->cap();
-        typename traits::baseSequence base = this->base();
-        if(cap.empty()) {
-          txt << "[" << this->commRank() << "]: empty" << std::endl; 
-        }
-        for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
-          typename traits::supportSequence supp = this->support(*capi);
-          for(typename traits::supportSequence::iterator suppi = supp.begin(); suppi != supp.end(); suppi++) {
-            txt << "[" << this->commRank() << "]: " << *capi << "--(" << suppi.color() << ")-->" << *suppi << std::endl;
-          }
-        }
-        //
         ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        //
-        ostringstream txt1;
-        if(this->commRank() == 0) {
-          txt1 << "cap <point,degree>:\n";
+        if(!raw) {
+          ostringstream txt;
+          if(this->commRank() == 0) {
+            txt << "cap --> base:\n";
+          }
+          typename traits::capSequence cap   = this->cap();
+          typename traits::baseSequence base = this->base();
+          if(cap.empty()) {
+            txt << "[" << this->commRank() << "]: empty" << std::endl; 
+          }
+          for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
+            typename traits::supportSequence supp = this->support(*capi);
+            for(typename traits::supportSequence::iterator suppi = supp.begin(); suppi != supp.end(); suppi++) {
+              txt << "[" << this->commRank() << "]: " << *capi << "--(" << suppi.color() << ")-->" << *suppi << std::endl;
+            }
+          }
+          //
+          ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+          ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+          //
+          ostringstream txt1;
+          if(this->commRank() == 0) {
+            //txt1 << "cap <point,degree>:\n";
+            txt1 << "cap:\n";
+          }
+          txt1 << "[" << this->commRank() << "]:  [";
+          for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
+            //txt1 << " <" << *capi << "," << capi.degree() << ">";
+            txt1 << "  " << *capi;
+          }
+          txt1 << " ]" << std::endl;
+          //
+          ierr = PetscSynchronizedPrintf(this->comm(), txt1.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+          ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+          //
+          ostringstream txt2;
+          if(this->commRank() == 0) {
+            //txt2 << "base <point,degree>:\n";
+            txt2 << "base:\n";
+          }
+          txt2 << "[" << this->commRank() << "]:  [";
+          for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
+            txt2 << "  " << *basei;
+            //txt2 << " <" << *basei << "," << basei.degree() << ">";
+          }
+          txt2 << " ]" << std::endl;
+          //
+          ierr = PetscSynchronizedPrintf(this->comm(), txt2.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+          ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         }
-        txt1 << "[" << this->commRank() << "]:  [";
-        for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
-          txt1 << " <" << *capi << "," << capi.degree() << ">";
-        }
-        txt1 << " ]" << std::endl;
-        //
-        ierr = PetscSynchronizedPrintf(this->comm(), txt1.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        //
-        ostringstream txt2;
-        if(this->commRank() == 0) {
-          txt2 << "base <point,degree>:\n";
-        }
-        txt2 << "[" << this->commRank() << "]:  [";
-        for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
-          txt2 << " <" << *basei << "," << basei.degree() << ">";
-        }
-        txt2 << " ]" << std::endl;
-        //
-        ierr = PetscSynchronizedPrintf(this->comm(), txt2.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        else { // if(raw)
+          ostringstream txt;
+          if(this->commRank() == 0) {
+            txt << "'raw' arrow set:" << std::endl;
+          }
+          for(typename traits::arrow_container_type::set_type::iterator ai = _arrows.set.begin(); ai != _arrows.set.end(); ai++)
+          {
+            typename traits::arrow_type arr = *ai;
+            txt << arr << std::endl;
+          }
+          ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+          ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+          //
+          ostringstream txt1;
+          if(this->commRank() == 0) {
+            txt1 << "'raw' base set:" << std::endl;
+          }
+          for(typename traits::base_container_type::set_type::iterator bi = _base.set.begin(); bi != _base.set.end(); bi++) 
+          {
+            typename traits::base_container_type::traits::rec_type bp = *bi;
+            txt1 << bp << std::endl;
+          }
+          ierr = PetscSynchronizedPrintf(this->comm(), txt1.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+          ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+          //
+          ostringstream txt2;
+          if(this->commRank() == 0) {
+            txt2 << "'raw' cap set:" << std::endl;
+          }
+          for(typename traits::cap_container_type::set_type::iterator ci = _cap.set.begin(); ci != _cap.set.end(); ci++) 
+          {
+            typename traits::cap_container_type::traits::rec_type cp = *ci;
+            txt2 << cp << std::endl;
+          }
+          ierr = PetscSynchronizedPrintf(this->comm(), txt2.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+          ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        }// if(raw)
 
         PetscFunctionReturn(0);
       };
@@ -854,8 +900,9 @@ namespace ALE {
         this->_arrows.set.clear(); this->_base.set.clear(); this->_cap.set.clear();
       };
       void addBasePoint(const typename traits::target_type t) {
-        // Increase degree by 0, which won't affect an existing point and will insert a new point, if necessery
-        this->_base.adjustDegree(t,0);
+        /* // Increase degree by 0, which won't affect an existing point and will insert a new point, if necessery
+           this->_base.adjustDegree(t,0); */
+        this->_base.set.insert(typename traits::targetRec_type(t,0));
       };
       void addBasePoint(const typename traits::targetRec_type b) {
         this->_base.set.insert(b);
@@ -867,8 +914,9 @@ namespace ALE {
         this->_base.removePoint(t);
       };
       void addCapPoint(const typename traits::source_type s) {
-        // Increase degree by 0, which won't affect an existing point and will insert a new point, if necessery
-        this->_cap.adjustDegree(s,0);
+        /* // Increase degree by 0, which won't affect an existing point and will insert a new point, if necessery
+           this->_cap.adjustDegree(s,0); */
+        this->_cap.set.insert(typename traits::sourceRec_type(s,0));
       };
       void addCapPoint(const typename traits::sourceRec_type c) {
         this->_cap.set.insert(c);
@@ -887,7 +935,8 @@ namespace ALE {
         //std::cout << "Added " << arrow_type(p, q, color);
       };
       virtual void addArrow(const typename traits::arrow_type& a) {
-        this->_arrows.set.insert(a); this->_base.adjustDegree(a.target,1); this->_cap.adjustDegree(a.source,1);
+        this->_arrows.set.insert(a); this->addBasePoint(a.target); this->addCapPoint(a.source);
+        /*this->_base.adjustDegree(a.target,1); this->_cap.adjustDegree(a.source,1);*/
         //std::cout << "Added " << Arrow_(p, q, color);
       };
       virtual void removeArrow(const typename traits::arrow_type& a) {
@@ -910,7 +959,7 @@ namespace ALE {
             if(debug) { // if(debug)
               std::cout << std::endl << "removeArrow: found:" << *j << std::endl;
             }
-            this->_base.adjustDegree(a.target, -1); this->_cap.adjustDegree(a.source,-1);
+            /* this->_base.adjustDegree(a.target, -1); this->_cap.adjustDegree(a.source,-1); */
             arrowIndex.erase(j);
             break;
           }
@@ -978,8 +1027,8 @@ namespace ALE {
           if(debug) {
             std::cout << "clearCone: adjusting degrees for endpoints of arrow: " << *j << std::endl;
           }
-          this->_cap.adjustDegree(j->source, -1);
-          this->_base.adjustDegree(j->target, -1);
+          /* this->_cap.adjustDegree(j->source, -1);
+             this->_base.adjustDegree(j->target, -1); */
         }
         coneIndex.erase(i,ii);
       };// clearCone()
@@ -1041,8 +1090,8 @@ namespace ALE {
         }
         for(j = i; j != ii; j++){
           // Adjust the degrees before removing the arrow
-          this->_cap.adjustDegree(j->source, -1);
-          this->_base.adjustDegree(j->target, -1);
+          /* this->_cap.adjustDegree(j->source, -1);
+             this->_base.adjustDegree(j->target, -1); */
         }
         suppIndex.erase(i,ii);
       };
