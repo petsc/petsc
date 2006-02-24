@@ -194,7 +194,6 @@ namespace ALE {
       typedef std::map<Point, std::pair<int32_t,int32_t> >   Point__int_int;
       typedef std::map<Point, int_pair_set>                  Point__int_pair_set;
 
-    public:
     protected:
       //--------------------------------------------------------------------------------------------------------
       template <typename Sequence>
@@ -1127,6 +1126,7 @@ namespace ALE {
         // Done!  
       };// __computeFusion()
 
+    public:
       static void setDebug(int debug) {ParConeDelta::debug = debug;};
       static int  getDebug() {return ParConeDelta::debug;};
     }; // class ParConeDelta

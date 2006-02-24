@@ -2479,6 +2479,10 @@ namespace ALE {
     struct Rec {
       typedef Point_  point_type;
       typedef Marker_ marker_type;
+      template<typename OtherPoint_, typename OtherMarker_>
+      struct rebind {
+        typedef Rec<OtherPoint_, OtherMarker_> type;
+      };
       point_type  point;
       int         degree;
       int         depth;
@@ -2679,7 +2683,12 @@ namespace ALE {
     struct RecContainer {
       typedef RecContainerTraits<Point_, Rec_> traits;
       typedef typename traits::set_type set_type;
+      template <typename OtherPoint_, typename OtherRec_>
+      struct rebind {
+        typedef RecContainer<OtherPoint_, OtherRec_> type;
+      };
       set_type set;
+
       void removePoint(const typename traits::rec_type::point_type& p) {
         typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index = 
           ::boost::multi_index::get<typename traits::pointTag>(this->set);

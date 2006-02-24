@@ -4,6 +4,9 @@
 #ifndef  included_ALE_Sifter_hh
 #include <Sifter.hh>
 #endif
+#ifndef  included_ALE_ParDelta_hh
+#include <ParDelta.hh>
+#endif
 #include <list>
 #include <stack>
 #include <queue>
@@ -41,8 +44,29 @@ namespace ALE {
       typedef std::vector<index_type> IndexArray;
       typedef Value_ value_type;
       typedef BiGraph<point_type,patch_type,index_type, RecContainer<point_type,Rec<point_type> >,RecContainer<patch_type,Rec<patch_type> > > order_type;
+
+      typedef RightSequenceDuplicator<ConeArraySequence<typename sieve_type::traits::arrow_type> > fuser;
+      typedef ParConeDelta<sieve_type, fuser,
+                           typename sieve_type::template rebind<typename fuser::fusion_source_type,
+                                                                typename fuser::fusion_target_type,
+                                                                typename fuser::fusion_color_type,
+                                                                typename sieve_type::traits::cap_container_type::template rebind<typename fuser::fusion_source_type,
+                                                                                                                                 typename sieve_type::traits::sourceRec_type::template rebind<typename fuser::fusion_source_type,
+                                                                                                                                                                                              typename sieve_type::marker_type>::type>,
+                                                                typename sieve_type::traits::base_container_type::template rebind<typename fuser::fusion_target_type,
+                                                                                                                                  typename sieve_type::traits::targetRec_type::template rebind<typename fuser::fusion_target_type,
+                                                                                                                                                                                               typename sieve_type::marker_type>::type> >::type> coneDelta_type;
+      typedef ParSupportDelta<sieve_type, fuser,
+                              typename sieve_type::template rebind<typename fuser::fusion_source_type,
+                                                                   typename fuser::fusion_target_type,
+                                                                   typename fuser::fusion_color_type,
+                                                                   typename sieve_type::traits::cap_container_type::template rebind<typename fuser::fusion_source_type, typename sieve_type::traits::sourceRec_type::template rebind<typename fuser::fusion_source_type, typename sieve_type::marker_type>::type>,
+                                                                   typename sieve_type::traits::base_container_type::template rebind<typename fuser::fusion_target_type, typename sieve_type::traits::targetRec_type::template rebind<typename fuser::fusion_target_type, typename sieve_type::marker_type>::type>
+      >::type> supportDelta_type;
+      typedef ParSupportDelta<order_type, fuser> supportOrderDelta_type;
     private:
       MPI_Comm        _comm;
+      int             _commRank;
       int             debug;
       Obj<sieve_type> _topology;
       // We need an ordering, which should be patch<--order--point
@@ -54,6 +78,8 @@ namespace ALE {
       // We allocate based upon a certain
       std::map<patch_type,int>          _storageSize;
       std::map<patch_type,value_type *> _storage;
+      Obj<order_type> localOrder;
+      Obj<order_type> globalOrder;
     public:
       // OLD CRAP:
       // Breakdown of the base Sieve into patches
@@ -66,9 +92,11 @@ namespace ALE {
     public:
       CoSifter(MPI_Comm comm = PETSC_COMM_SELF, int debug = 0) : _comm(comm), debug(debug) {
         _order = order_type(this->_comm, debug);
+        MPI_Comm_rank(this->_comm, &this->_commRank);
       };
 
-      MPI_Comm        comm() {return this->_comm;};
+      MPI_Comm        comm() const {return this->_comm;};
+      int             commRank() const {return this->_commRank;};
       void            setTopology(const Obj<sieve_type>& topology) {this->_topology = topology;};
       Obj<sieve_type> getTopology() {return this->_topology;};
       // -- Patch manipulation --
@@ -103,7 +131,7 @@ namespace ALE {
         }
       };
       // Returns the points in the patch in order
-      Obj<typename order_type::coneSequence> getPatch(const patch_type& patch) {
+      Obj<typename order_type::coneSequence> getPatch(const patch_type& patch) const {
         return this->_order->cone(patch);
       };
     private:
@@ -131,6 +159,15 @@ namespace ALE {
       private:
         int newOffset;
       };
+      struct incrementOffset {
+        incrementOffset(int newOffset) : newOffset(newOffset) {};
+
+        void operator()(typename order_type::Arrow_& p) const {
+          p.color.prefix += newOffset;
+        }
+      private:
+        int newOffset;
+      };
       struct changeDim {
         changeDim(int newDim) : newDim(newDim) {};
 
@@ -152,10 +189,10 @@ namespace ALE {
         int newDim;
       };
     public:
-      int getFiberDimension(const patch_type& patch, const point_type& p) {
+      int getFiberDimension(const patch_type& patch, const point_type& p) const {
         return this->_order->getColor(p, patch, false).index;
       };
-      int getFiberDimension(const std::string& orderName, const patch_type& patch, const point_type& p) {
+      int getFiberDimension(const std::string& orderName, const patch_type& patch, const point_type& p) const {
         this->__checkOrderName(orderName);
         return this->_reorders[orderName]->getColor(p, patch, false).index;
       };
@@ -181,17 +218,24 @@ namespace ALE {
         }
       };
     private:
-      void __orderCell(const Obj<order_type>& order, const patch_type& patch, const point_type& cell, int& offset) {
+      struct trueTester {
+      public:
+        bool operator()(const point_type& p) const {
+          return true;
+        };
+      };
+      template<typename OrderTest>
+      void __orderCell(const Obj<order_type>& order, const patch_type& patch, const point_type& cell, int& offset, const OrderTest& tester) {
         // Set the prefix to the current offset (this won't kill the topology iterator)
         Obj<typename sieve_type::coneSequence> cone = this->_topology->cone(cell);
 
         for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-          this->__orderCell(order, patch, *p_iter, offset);
+          this->__orderCell(order, patch, *p_iter, offset, tester);
         }
 
         int dim = order->getColor(cell, patch, false).index;
 
-        if (dim < 0) {
+        if ((dim < 0) && tester(cell)) {
           order->modifyColor(cell, patch, changeIndex(offset, -dim));
           if (debug) {std::cout << "Order point " << cell << " of size " << -dim << " and offset " << offset << " color " << order->getColor(cell, patch) << std::endl;}
           offset -= dim;
@@ -199,7 +243,8 @@ namespace ALE {
       };
       // This constructs an order on the patch by fusing the Ord CoSieve (embodied by the prefix number)
       // and the Count CoSieve (embodied by the index), turning the prefix into an offset.
-      void __orderPatch(const Obj<order_type>& order, const patch_type& patch, bool allocate = true) {
+      template<typename OrderTest>
+      void __orderPatch(const Obj<order_type>& order, const patch_type& patch, bool allocate, const OrderTest& tester) {
         PointArray points;
         int        offset = 0;
 
@@ -218,7 +263,7 @@ namespace ALE {
         for(typename PointArray::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
           // Traverse the closure of the member in the topology
           if (debug) {std::cout << "Ordering patch point " << *p_iter << std::endl;}
-          this->__orderCell(order, patch, *p_iter, offset);
+          this->__orderCell(order, patch, *p_iter, offset, tester);
         }
         if (allocate) {
           if (this->_storage.find(patch) != this->_storage.end()) {
@@ -232,7 +277,7 @@ namespace ALE {
       };
     public:
       void orderPatch(const patch_type& patch) {
-        this->orderPatch(this->_order, patch);
+        this->__orderPatch(this->_order, patch, true, trueTester());
       }
       #undef __FUNCT__
       #define __FUNCT__ "CoSifter::orderPatches"
@@ -241,7 +286,7 @@ namespace ALE {
         Obj<typename order_type::baseSequence> base = this->_order->base();
 
         for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-          this->__orderPatch(this->_order, *b_iter);
+          this->__orderPatch(this->_order, *b_iter, true, trueTester());
         }
         ALE_LOG_EVENT_END;
       };
@@ -251,7 +296,7 @@ namespace ALE {
         Obj<typename order_type::baseSequence> base = this->_reorders[orderName]->base();
 
         for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-          this->__orderPatch(this->_reorders[orderName], *b_iter, false);
+          this->__orderPatch(this->_reorders[orderName], *b_iter, false, trueTester());
         }
 //         std::cout << orderName << " ordering:" << std::endl;
 //         for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
@@ -379,6 +424,144 @@ namespace ALE {
         }
       };
       void              updateAdd(const std::string& orderName, const patch_type& patch, const point_type& p, const value_type values[]);
+
+      void view(const char* label) const {
+        ostringstream txt;
+
+        if(label != NULL) {
+          if(this->commRank() == 0) {
+            txt << "viewing CoSifter :'" << label << "'" << std::endl;
+          }
+        } else {
+          if(this->commRank() == 0) {
+            txt << "viewing a CoSifter" << std::endl;
+          }
+        }
+        for(typename std::map<patch_type,value_type *>::const_iterator s_iter = this->_storage.begin(); s_iter != this->_storage.end(); ++s_iter) {
+          txt << "[" << this->commRank() << "]: Patch " << s_iter->first << std::endl;
+          Obj<typename order_type::coneSequence> cone = this->getPatch(s_iter->first);
+
+          for(typename order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+            int dim = this->getFiberDimension(s_iter->first, *c_iter);
+
+            if (dim > 0) {
+              txt << "[" << this->commRank() << "]:   " << *c_iter << " dim " << dim << std::endl;
+            }
+          }
+        }
+        PetscSynchronizedPrintf(this->comm(), txt.str().c_str());
+        PetscSynchronizedFlush(this->comm());
+      };
+    protected:
+      struct localizer {
+        Obj<typename supportDelta_type::overlap_type>               overlap;
+        Obj<typename supportDelta_type::overlap_type::baseSequence> base;
+        int                                                         rank;
+        public:
+        localizer(Obj<typename supportDelta_type::overlap_type> overlap, const int rank) : overlap(overlap), rank(rank) {base = overlap->base();};
+        template<typename Overlap, typename Sequence>
+        bool isLocal(Obj<Overlap> overlap, Obj<Sequence> points, const typename sieve_type::point_type& p) {
+          if (points->contains(p)) {
+            Obj<typename Overlap::coneSequence> cone = overlap->cone(p);
+
+            for(typename Overlap::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+              if (c_iter.source() < rank)
+                return false;
+            }
+          }
+          return true;
+        };
+
+        bool operator()(const typename sieve_type::point_type& p) {
+          return this->isLocal(this->overlap, this->base, p);
+        }
+      };
+    public:
+      void createGlobalOrder() {
+        Obj<typename sieve_type::depthSequence>  vertices = this->_topology->depthStratum(0);
+        Obj<typename sieve_type::heightSequence> cells    = this->_topology->heightStratum(0);
+        bool useBaseOverlap = false, useCapOverlap = false;
+
+        for(typename sieve_type::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+          if (this->getFiberDimension(*v_iter) > 0) {
+            useCapOverlap = true;
+            break;
+          }
+        }
+        for(typename sieve_type::heightSequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+          if (this->getFiberDimension(*c_iter) > 0) {
+            useBaseOverlap = true;
+            break;
+          }
+        }
+        // Get overlap
+        Obj<typename supportDelta_type::overlap_type> capOverlap;
+        Obj<typename coneDelta_type::overlap_type> baseOverlap;
+        int rank = this->commRank();
+
+        if (useCapOverlap) {
+          capOverlap = typename supportDelta_type::overlap(this->_topology);
+        }
+        if (useBaseOverlap) {
+          baseOverlap = typename coneDelta_type::overlap(this->_topology);
+        }
+        // Give a local offset to each local element, continue sequential offsets for ghosts
+        this->localOrder  = order_type(this->_comm, this->debug);
+        this->globalOrder = order_type(this->_comm, this->debug);
+        Obj<typename order_type::baseSequence> base = this->_order->base();
+
+        this->localOrder->setTopology(this->_topology);
+        this->globalOrder->setTopology(this->_topology);
+        for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          Obj<typename order_type::coneSequence> cone = getPatch(*b_iter);
+
+          this->localOrder->setPatch(this->getPatch(*b_iter), *b_iter);
+          this->globalOrder->setPatch(this->getPatch(*b_iter), *b_iter);
+          for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+            this->localOrder->setFiberDimension(*p_iter, this->getFiberDimension(*p_iter));
+            this->globalOrder->setFiberDimension(*p_iter, this->getFiberDimension(*p_iter));
+          }
+        }
+        this->localOrder->orderPatches(localizer(capOverlap, this->commRank()));
+        this->globalOrder->orderPatches(localizer(capOverlap, this->commRank()));
+        int ierr, localVars = 0, globalVars = 0, offsets[this->commSize()+1];
+
+        for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          localVars += this->_storageSize[*b_iter];
+        }
+        ierr = MPI_Allgather(&localVars, 1, MPI_INT, &offsets[1], 1, MPI_INT, this->comm());CHKERROR(ierr, "Error in MPI_Allgather");
+        offsets[0] = 0;
+        for(int p = 1; p <= this->commSize(); p++) {
+          offsets[p] += offsets[p-1];
+        }
+        // Create global numbering
+        for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          Obj<typename order_type::coneSequence> cone = getPatch(*b_iter);
+
+          for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+            this->globalOrder->modifyColor(*p_iter, *b_iter, incrementOffset(offsets[rank]));
+          }
+        }
+        // Complete order to get ghost offsets
+        Obj<typename supportOrderDelta_type::overlap_type> overlap = supportOrderDelta_type::overlap(globalOrder);
+        Obj<typename supportOrderDelta_type::fusion_type>  fusion  = supportOrderDelta_type::fusion(globalOrder, overlap);
+        Obj<typename supportOrderDelta_type::fusion_type::baseSequence> fBase = fusion->base();
+        typename order_type::patch_type patch;
+
+        for(typename supportDelta_type::fusion_type::baseSequence::iterator b_iter = fBase->begin(); b_iter != fBase->end(); ++b_iter) {
+          if (b_iter.color().prefix > 0) {
+            this->globalOrder->modifyColor(*b_iter, patch, changeOffset(b_iter.color().prefix));
+          }
+        }
+        // Create a PETSc scatter
+        //ISCreateGeneral();
+        //ISCreateGeneral();
+        //VecCreateMPIWithArray();
+        //VecCreateMPIWithArray();
+        //VecScatterCreate();
+        //VecDestroy();
+        //VecDestroy();
+      };
     };
   } // namespace Two
 } // namespace ALE

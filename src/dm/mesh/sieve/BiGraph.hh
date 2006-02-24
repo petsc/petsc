@@ -390,7 +390,6 @@ namespace ALE {
             return reverse_iterator(--this->_index.lower_bound(::boost::make_tuple(this->key)));
           }
         };
-        
 
         template<typename ostream_type>
         void view(ostream_type& os, const bool& useColor = false, const char* label = NULL){
@@ -564,7 +563,13 @@ namespace ALE {
           };
           void addArrow(const source_type& s, const color_type& c){
             this->_graph.addArrow(arrow_type(s,this->key,c));
-          }
+          };
+
+          virtual bool contains(const source_type& s) {
+            // Check whether a given point is in the index
+            typename ::boost::multi_index::index<typename ColorBiGraph::traits::arrow_container_type::set_type,typename ColorBiGraph::traits::arrowInd>::type& index = ::boost::multi_index::get<typename ColorBiGraph::traits::arrowInd>(this->_graph._arrows.set);
+            return (index.find(::boost::make_tuple(s,this->key)) != index.end());
+          };
         };
 
         // FIX: This is a temp fix to include addArrow into the interface; should probably be pushed up to ArrowSequence
@@ -990,7 +995,7 @@ namespace ALE {
         typename traits::baseSequence base = this->base();
         for(typename traits::baseSequence::iterator bi = base.begin(); bi != base.end(); bi++) {
           // Check whether *bi is in points, if it is NOT, remove it
-          if(points->find(*bi) == points->end()) {
+          if (!points->contains(*bi)) {
             this->removeBasePoint(*bi);
           }
         }

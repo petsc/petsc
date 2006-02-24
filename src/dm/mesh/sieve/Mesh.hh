@@ -255,6 +255,7 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "Mesh::createParCoords"
       void createParallelCoordinates(int embedDim, Obj<bundle_type> serialVertexBundle, Obj<field_type> serialCoordinates) {
+        serialCoordinates->view("Serial coordinates");
         ALE_LOG_EVENT_BEGIN;
         // Create vertex bundle
         Obj<bundle_type> vertexBundle = this->getBundle(0);
@@ -278,7 +279,8 @@ namespace ALE {
         this->coordinates->setPatch(this->topology->leaves(), patch);
         this->coordinates->setFiberDimensionByDepth(patch, 0, embedDim);
         this->coordinates->orderPatches();
-
+        this->coordinates->createGlobalOrder();
+#if 0
         Obj<sieve_type::traits::depthSequence> vertices = this->topology->depthStratum(0);
         for(sieve_type::traits::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
           this->coordinates->update(patch, *v_itor, serialCoordinates->restrict(patch, *v_itor));
@@ -292,6 +294,7 @@ namespace ALE {
             this->coordinates->setFiberDimension(orderName, *e_iter, *c_iter, embedDim);
           }
         }
+#endif
         this->coordinates->orderPatches(orderName);
 
         //FIX: Setup mapping to partitioned storage
@@ -1104,49 +1107,55 @@ namespace ALE {
     class Partitioner {
     public:
 //       typedef ParDelta<Mesh::sieve_type>;
-      typedef ALE::Two::RightSequenceDuplicator<ALE::Two::ConeArraySequence<Mesh::sieve_type::traits::arrow_type> > fuser;
-      typedef ParDelta<Mesh::sieve_type, fuser,
-                       Mesh::sieve_type::rebind<fuser::fusion_source_type,
-                                                fuser::fusion_target_type,
-                                                fuser::fusion_color_type,
-                                                ALE::Three::RecContainer<fuser::fusion_source_type, ALE::Three::Rec<fuser::fusion_source_type, Mesh::sieve_type::marker_type> >,
-                                                ALE::Three::RecContainer<fuser::fusion_target_type, ALE::Three::Rec<fuser::fusion_target_type, Mesh::sieve_type::marker_type> >
-                                                >::type> delta_type;
+      typedef RightSequenceDuplicator<ConeArraySequence<Mesh::sieve_type::traits::arrow_type> > fuser;
+      typedef ParConeDelta<Mesh::sieve_type, fuser,
+                           Mesh::sieve_type::rebind<fuser::fusion_source_type,
+                                                    fuser::fusion_target_type,
+                                                    fuser::fusion_color_type,
+                                                    Mesh::sieve_type::traits::cap_container_type::rebind<fuser::fusion_source_type, Mesh::sieve_type::traits::sourceRec_type::rebind<fuser::fusion_source_type, Mesh::sieve_type::marker_type>::type>::type,
+                                                    Mesh::sieve_type::traits::base_container_type::rebind<fuser::fusion_target_type, Mesh::sieve_type::traits::targetRec_type::rebind<fuser::fusion_target_type, Mesh::sieve_type::marker_type>::type>::type
+      >::type> coneDelta_type;
+      typedef ParSupportDelta<Mesh::sieve_type, fuser,
+                              Mesh::sieve_type::rebind<fuser::fusion_source_type,
+                                                       fuser::fusion_target_type,
+                                                       fuser::fusion_color_type,
+                                                       Mesh::sieve_type::traits::cap_container_type::rebind<fuser::fusion_source_type, Mesh::sieve_type::traits::sourceRec_type::rebind<fuser::fusion_source_type, Mesh::sieve_type::marker_type>::type>::type,
+                                                       Mesh::sieve_type::traits::base_container_type::rebind<fuser::fusion_target_type, Mesh::sieve_type::traits::targetRec_type::rebind<fuser::fusion_target_type, Mesh::sieve_type::marker_type>::type>::type
+      >::type> supportDelta_type;
     public:
       #undef __FUNCT__
       #define __FUNCT__ "partition_Sieve"
       static void partition_Sieve(const Obj<Mesh>& mesh, bool localize = true) {
         ALE_LOG_EVENT_BEGIN;
         Obj<Mesh::sieve_type> topology = mesh->getTopology();
-        Obj<ALE::def::PointSet> localBase = ALE::def::PointSet();
         const char *name = NULL;
 
         // Construct a Delta object and a base overlap object
-        delta_type::setDebug(mesh->debug);
-        Obj<delta_type::overlap_type> overlap = delta_type::overlap(topology);
+        coneDelta_type::setDebug(mesh->debug);
+        Obj<coneDelta_type::overlap_type> overlap = coneDelta_type::overlap(topology);
         // Cone complete to move the partitions to the other processors
-        Obj<delta_type::fusion_type> fusion   = delta_type::fusion(topology, overlap);
+        Obj<coneDelta_type::fusion_type>  fusion  = coneDelta_type::fusion(topology, overlap);
         // Merge in the completion
         topology->add(fusion);
         if (mesh->debug) {
           topology->view("After merging inital fusion");
         }
-        // Remove partition point, but preserve local base
-        if(localize) {
-          Obj<Mesh::sieve_type::coneSequence> cone = topology->cone(Mesh::point_type(-1, mesh->commRank()));
-          localBase->insert(cone->begin(), cone->end());
-        }
         // Support complete to build the local topology
-        overlap = delta_type::overlap(topology);
-        fusion  = delta_type::fusion(topology, overlap);
-        topology->add(fusion);
+        Obj<supportDelta_type::overlap_type> overlap2 = supportDelta_type::overlap(topology);
+        Obj<supportDelta_type::fusion_type>  fusion2  = supportDelta_type::fusion(topology, overlap2);
+        topology->add(fusion2);
         if (mesh->debug) {
-          fusion->view("Second fusion");
+          fusion2->view("Second fusion");
           topology->view("After merging second fusion");
         }
         // Unless explicitly prohibited, restrict to the local partition
         if(localize) {
-          topology->restrictBase(localBase);
+//           Obj<ALE::def::PointSet> localBase = ALE::def::PointSet();
+//           Obj<Mesh::sieve_type::coneSequence> cone = topology->cone(Mesh::point_type(-1, mesh->commRank()));
+
+//           localBase->insert(cone->begin(), cone->end());
+//           topology->restrictBase(localBase);
+          topology->restrictBase(topology->cone(Mesh::point_type(-1, mesh->commRank())));
           if (mesh->debug) {
             ostringstream label5;
             if(name != NULL) {
