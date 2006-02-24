@@ -16,7 +16,7 @@ typedef struct {
   VECHEADER
 } Vec_Seq;
 
-EXTERN PetscErrorCode VecMDot_Seq(Vec,PetscInt,const Vec[],PetscScalar * PETSC_RESTRICT);
+EXTERN PetscErrorCode VecMDot_Seq(Vec,PetscInt,const Vec[],PetscScalar *);
 EXTERN PetscErrorCode VecMTDot_Seq(Vec,PetscInt,const Vec[],PetscScalar *);
 EXTERN PetscErrorCode VecMin_Seq(Vec,PetscInt*,PetscReal *);
 EXTERN PetscErrorCode VecSet_Seq(Vec,PetscScalar);
