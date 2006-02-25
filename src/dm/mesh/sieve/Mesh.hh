@@ -15,6 +15,8 @@
 #include <tetgen.h>
 #endif
 
+#include <petscvec.h>
+
 namespace ALE {
   namespace Two {
     // Forward declaration
@@ -251,11 +253,30 @@ namespace ALE {
         this->coordinates->orderPatches(orderName);
         ALE_LOG_EVENT_END;
       };
+    private:
+      template<typename IntervalSequence>
+      int *__expandIntervals(Obj<IntervalSequence> intervals) {
+        int *indices;
+        int  k = 0;
 
+        for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+          k += i_iter.color().index;
+        }
+        indices = new int[k];
+        k = 0;
+        for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+          for(int i = i_iter.color().prefix; i < i_iter.color().prefix + i_iter.color().index; i++) {
+            indices[k++] = i;
+          }
+        }
+        return indices;
+      };
+    public:
       #undef __FUNCT__
       #define __FUNCT__ "Mesh::createParCoords"
       void createParallelCoordinates(int embedDim, Obj<bundle_type> serialVertexBundle, Obj<field_type> serialCoordinates) {
         serialCoordinates->view("Serial coordinates");
+        this->topology->view("Parallel topology");
         ALE_LOG_EVENT_BEGIN;
         // Create vertex bundle
         Obj<bundle_type> vertexBundle = this->getBundle(0);
@@ -263,7 +284,7 @@ namespace ALE {
         std::string orderName("element");
 
         for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-          Obj<bundle_type::order_type::coneSequence> patch = serialVertexBundle->getPatch(*e_iter);
+          Obj<bundle_type::order_type::coneSequence> patch = serialVertexBundle->getPatch(orderName, *e_iter);
 
           vertexBundle->setPatch(orderName, patch, *e_iter);
           for(bundle_type::order_type::coneSequence::iterator p_iter = patch->begin(); p_iter != patch->end(); ++p_iter) {
@@ -279,7 +300,35 @@ namespace ALE {
         this->coordinates->setPatch(this->topology->leaves(), patch);
         this->coordinates->setFiberDimensionByDepth(patch, 0, embedDim);
         this->coordinates->orderPatches();
+        this->coordinates->view("New parallel coordinates");
         this->coordinates->createGlobalOrder();
+
+        VecScatter scatter;
+        Vec serialVec, globalVec;
+        IS  serialIS, globalIS;
+
+        if (this->commRank()) {
+          VecCreateMPIWithArray(this->comm(), 0, PETSC_DETERMINE, PETSC_NULL, &serialVec);
+          ISCreateGeneral(this->comm(), 0, PETSC_NULL, &serialIS);
+        } else {
+          VecCreateMPIWithArray(this->comm(), serialCoordinates->getSize(patch), PETSC_DETERMINE, serialCoordinates->restrict(patch), &serialVec);
+          int *indices = this->__expandIntervals(serialCoordinates->getPatch(patch));
+          ISCreateGeneral(this->comm(), serialCoordinates->getSize(patch), indices, &serialIS);
+          delete [] indices;
+        }
+        VecCreateMPIWithArray(this->comm(), this->coordinates->getSize(patch), PETSC_DETERMINE, this->coordinates->restrict(patch), &globalVec);
+        int *indices = this->__expandIntervals(this->coordinates->getPatch(patch));
+        ISCreateGeneral(this->comm(), this->coordinates->getSize(patch), indices, &globalIS);
+        delete [] indices;
+        VecScatterCreate(serialVec, serialIS, globalVec, globalIS, &scatter);
+        ISDestroy(serialIS);
+        ISDestroy(globalIS);
+        VecScatterBegin(serialVec, globalVec, INSERT_VALUES, SCATTER_FORWARD, scatter);
+        VecScatterEnd(serialVec, globalVec, INSERT_VALUES, SCATTER_FORWARD, scatter);
+        VecDestroy(serialVec);
+        VecDestroy(globalVec);
+        VecScatterDestroy(scatter);
+
 #if 0
         Obj<sieve_type::traits::depthSequence> vertices = this->topology->depthStratum(0);
         for(sieve_type::traits::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
@@ -294,8 +343,8 @@ namespace ALE {
             this->coordinates->setFiberDimension(orderName, *e_iter, *c_iter, embedDim);
           }
         }
-#endif
         this->coordinates->orderPatches(orderName);
+#endif
 
         //FIX: Setup mapping to partitioned storage
         //ierr = MeshCreateMapping(mesh, serialCoordBundle, partitionTypes, coordBundle, &coordScatter);CHKERRQ(ierr);
@@ -1150,12 +1199,21 @@ namespace ALE {
         }
         // Unless explicitly prohibited, restrict to the local partition
         if(localize) {
-//           Obj<ALE::def::PointSet> localBase = ALE::def::PointSet();
-//           Obj<Mesh::sieve_type::coneSequence> cone = topology->cone(Mesh::point_type(-1, mesh->commRank()));
+          Obj<ALE::def::PointSet> localBase = ALE::def::PointSet();
+          Obj<Mesh::sieve_type::coneSequence> cone = topology->cone(Mesh::point_type(-1, mesh->commRank()));
 
-//           localBase->insert(cone->begin(), cone->end());
-//           topology->restrictBase(localBase);
-          topology->restrictBase(topology->cone(Mesh::point_type(-1, mesh->commRank())));
+          localBase->insert(cone->begin(), cone->end());
+          topology->restrictBase(localBase);
+          //FIX: The contains() method does not work
+          //topology->restrictBase(topology->cone(Mesh::point_type(-1, mesh->commRank())));
+
+          Obj<Mesh::sieve_type::capSequence> cap = topology->cap();
+
+          for(Mesh::sieve_type::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+            if (c_iter.degree() == 0) {
+              topology->removeCapPoint(*c_iter);
+            }
+          }
           if (mesh->debug) {
             ostringstream label5;
             if(name != NULL) {

@@ -2565,6 +2565,7 @@ namespace ALE {
          virtual const int& marker() const {return this->_itor->marker;};
          virtual const int& depth()  const {return this->_itor->depth;};
          virtual const int& height() const {return this->_itor->height;};
+         //void setDegree(const int degree) {this->_index.modify(this->_itor, typename traits::rec_type::degreeAdjuster(degree));};
        };
        
        PointSequence(const PointSequence& seq)            : _index(seq._index) {};
@@ -2587,7 +2588,7 @@ namespace ALE {
        virtual bool contains(const typename rec_type::point_type& p) {
          // Check whether a given point is in the index
          return (this->_index.find(p) != this->_index.end());
-       }
+       };
      }; // class PointSequence
 
      template<typename Tag_, typename Value_>
@@ -3619,9 +3620,6 @@ namespace ALE {
           }
         }
         //
-        PetscSynchronizedPrintf(this->comm(), txt.str().c_str());
-        PetscSynchronizedFlush(this->comm());
-        //
         if(this->commRank() == 0) {
           txt << "base --> cap:\n";
         }
@@ -3821,20 +3819,24 @@ namespace ALE {
     template <typename Point_, typename Marker_, typename Color_> 
     void Sieve<Point_,Marker_,Color_>::stratify(bool show) {
       ALE_LOG_EVENT_BEGIN;
+      // FIX: We would like to avoid the copy here with cone() and support()
+      this->__computeClosureHeights(this->cone(this->leaves()));
+      this->__computeStarDepths(this->support(this->roots()));
+      
       Obj<typename traits::capSequence> base = this->base();
 
       for(typename traits::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
         maxDepth = std::max(maxDepth, b_iter.depth());
+        //b_iter.setDegree(this->cone(*b_iter)->size());
+        this->_base.adjustDegree(*b_iter, this->cone(*b_iter)->size());
       }
       Obj<typename traits::capSequence> cap = this->cap();
 
       for(typename traits::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
         maxHeight = std::max(maxHeight, c_iter.height());
+        //c_iter.setDegree(this->support(*c_iter)->size());
+        this->_cap.adjustDegree(*c_iter, this->support(*c_iter)->size());
       }
-      // FIX: We would like to avoid the copy here with cone() and support()
-      this->__computeClosureHeights(this->cone(this->leaves()));
-      this->__computeStarDepths(this->support(this->roots()));
-      
       if (debug || show) {
 //         const typename ::boost::multi_index::index<StratumSet,point>::type& points = ::boost::multi_index::get<point>(this->strata);
 //         for(typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = points.begin(); i != points.end(); i++) {

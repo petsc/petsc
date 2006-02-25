@@ -1044,7 +1044,8 @@ namespace ALE {
         typename traits::baseSequence base = this->base();
         for(typename traits::baseSequence::iterator bi = base.begin(); bi != base.end(); bi++) {
           // Check whether *bi is in points, if it is NOT, remove it
-          if (!points->contains(*bi)) {
+//           if (!points->contains(*bi)) {
+          if (points->find(*bi) == points->end()) {
             this->removeBasePoint(*bi);
           }
         }

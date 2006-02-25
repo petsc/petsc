@@ -66,7 +66,7 @@ PetscErrorCode WriteVTKVertices_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
 #define __FUNCT__ "WriteVTKElements_New"
 PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer)
 {
-  MPI_Comm          comm = mesh->getComm();
+  MPI_Comm          comm = mesh->comm();
   ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
   ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
   // FIX: Needs to be global
@@ -291,7 +291,7 @@ PetscErrorCode WritePyLithVertices(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer vi
 #define __FUNCT__ "WritePyLithElements"
 PetscErrorCode WritePyLithElements(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer)
 {
-  PetscMPIInt       rank = mesh->getRank();
+  PetscMPIInt       rank = mesh->commRank();
   int               dim  = mesh->getDimension();
   ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
   ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
@@ -998,10 +998,11 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Two::Mesh::bundle_type::IndexArray>
 */
 PetscErrorCode MeshCreateVector(ALE::Obj<ALE::Two::Mesh> m, ALE::Obj<ALE::Two::Mesh::bundle_type> bundle, Vec *v)
 {
+  bundle->view("Element bundle");
   // FIX: Must not include ghosts
   PetscInt       localSize = bundle->getSize(ALE::Two::Mesh::bundle_type::patch_type());
-  MPI_Comm       comm = m->getComm();
-  PetscMPIInt    rank = m->getRank();
+  MPI_Comm       comm = m->comm();
+  PetscMPIInt    rank = m->commRank();
   PetscInt      *ghostIndices = NULL;
   PetscInt       ghostSize = 0;
   PetscErrorCode ierr;
