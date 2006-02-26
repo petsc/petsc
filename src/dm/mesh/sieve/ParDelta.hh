@@ -273,7 +273,7 @@ namespace ALE {
                 BaseSliceSize[d]   = PetscMax(1,BaseSliceSize[d]);
                 BaseSliceOffset[d] = BaseLowerBound[d] + BaseSliceScale[d]*rank;
               }// for(int d = -1; d >= MinGlobalPrefix; d--){
-            }// 
+            }
           }// if(MinGlobalDomain < 0) 
           
           for (typename Sequence::iterator point_itor = points->begin(); point_itor != points->end(); point_itor++) {
@@ -297,6 +297,9 @@ namespace ALE {
             LeaseData[2*proc]++;                     // count of how many we lease from proc
           }
         }// base not empty
+        else {
+          std::cout << "Argghhhh! Base is empty" << std::endl;
+        }
       }; // __determinePointOwners()
 
 

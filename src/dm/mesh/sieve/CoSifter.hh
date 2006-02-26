@@ -153,6 +153,9 @@ namespace ALE {
         this->__checkOrderName(orderName);
         return this->_reorders[orderName]->cone(patch);
       };
+      Obj<typename order_type::coneSequence> getGlobalPatch(const patch_type& patch) const {
+        return this->globalOrder->getPatch(patch);
+      };
       // -- Index manipulation --
     private:
       struct changeOffset {
@@ -168,7 +171,7 @@ namespace ALE {
         incrementOffset(int newOffset) : newOffset(newOffset) {};
 
         void operator()(typename order_type::Arrow_& p) const {
-          p.color.prefix += newOffset;
+          p.color.prefix = p.color.prefix + newOffset;
         }
       private:
         int newOffset;
@@ -221,6 +224,9 @@ namespace ALE {
         for(typename sieve_type::depthSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           this->setFiberDimension(orderName, patch, *p_iter, dim);
         }
+      };
+      int getFiberOffset(const patch_type& patch, const point_type& p) const {
+        return this->_order->getColor(p, patch, false).prefix;
       };
       void setFiberOffset(const patch_type& patch, const point_type& p, int offset) {
         this->_order->modifyColor(p, patch, changeOffset(offset));
@@ -457,10 +463,10 @@ namespace ALE {
           Obj<typename order_type::coneSequence> cone = this->getPatch(s_iter->first);
 
           for(typename order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-            int dim = this->getFiberDimension(s_iter->first, *c_iter);
+            index_type color = this->_order->getColor(*c_iter, s_iter->first, false);
 
-            if (dim > 0) {
-              txt << "[" << this->commRank() << "]:   " << *c_iter << " dim " << dim << std::endl;
+            if (color.index != 0) {
+              txt << "[" << this->commRank() << "]:   " << *c_iter << " dim " << color.index << " offset " << color.prefix << std::endl;
             }
           }
         }
@@ -495,18 +501,18 @@ namespace ALE {
       void createGlobalOrder() {
         Obj<typename sieve_type::traits::depthSequence>  vertices = this->_topology->depthStratum(0);
         Obj<typename sieve_type::traits::heightSequence> cells    = this->_topology->heightStratum(0);
-        bool useBaseOverlap = false, useCapOverlap = false;
+        int useBaseOverlap = 0, useCapOverlap = 0, useOverlap;
         typename bundle_type::patch_type patch;
 
         for(typename sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
           if (this->getFiberDimension(patch, *v_iter) > 0) {
-            useCapOverlap = true;
+            useCapOverlap = 1;
             break;
           }
         }
         for(typename sieve_type::traits::heightSequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
           if (this->getFiberDimension(patch, *c_iter) > 0) {
-            useBaseOverlap = true;
+            useBaseOverlap = 1;
             break;
           }
         }
@@ -515,10 +521,12 @@ namespace ALE {
         Obj<typename coneDelta_type::overlap_type> baseOverlap;
         int rank = this->commRank();
 
-        if (useCapOverlap) {
+        MPI_Allreduce(&useCapOverlap, &useOverlap, 1, MPI_INT, MPI_LOR, this->comm());
+        if (useOverlap) {
           capOverlap = supportDelta_type::overlap(this->_topology);
         }
-        if (useBaseOverlap) {
+        MPI_Allreduce(&useBaseOverlap, &useOverlap, 1, MPI_INT, MPI_LOR, this->comm());
+        if (useOverlap) {
           baseOverlap = coneDelta_type::overlap(this->_topology);
         }
         // Give a local offset to each local element, continue sequential offsets for ghosts
@@ -563,8 +571,10 @@ namespace ALE {
             this->globalOrder->addFiberOffset(*b_iter, *p_iter, offsets[rank]);
           }
         }
+        this->globalOrder->view("Global order with offset");
         // Complete order to get ghost offsets
-        globalOrder->completeOrder();
+        this->globalOrder->completeOrder();
+        this->globalOrder->view("Global order after completion");
       };
       void completeOrder() {
         typename bundle_type::patch_type patch;
@@ -572,11 +582,11 @@ namespace ALE {
         Obj<typename supportOrderDelta_type::overlap_type> overlap = supportOrderDelta_type::overlap(this->_order);
         Obj<typename supportOrderDelta_type::fusion_type>  fusion  = supportOrderDelta_type::fusion(this->_order, overlap);
         fusion->view("Fusion for global indices");
-        Obj<typename supportOrderDelta_type::fusion_type::supportSequence> fPatch = fusion->support(patch);
+        Obj<typename supportOrderDelta_type::fusion_type::coneSequence> fPatch = fusion->cone(patch);
 
-        for(typename supportOrderDelta_type::fusion_type::supportSequence::iterator b_iter = fPatch->begin(); b_iter != fPatch->end(); ++b_iter) {
-          if (b_iter.color().prefix > 0) {
-            this->setFiberOffset(patch, *b_iter, b_iter.color().prefix);
+        for(typename supportOrderDelta_type::fusion_type::coneSequence::iterator c_iter = fPatch->begin(); c_iter != fPatch->end(); ++c_iter) {
+          if (c_iter.color().index > 0) {
+            this->setFiberOffset(patch, *c_iter, c_iter.color().prefix);
           }
         }
       };

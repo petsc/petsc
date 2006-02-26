@@ -3592,7 +3592,7 @@ namespace ALE {
     void Sieve<Point_,Marker_,Color_>::view(const char* label = NULL) {
         ostringstream txt;
 
-        if(debug) {
+        if (this->debug) {
           std::cout << "viewing a Sieve, comm = " << this->comm() << ", commRank = " << this->commRank() << std::endl;
         }
         if(label != NULL) {

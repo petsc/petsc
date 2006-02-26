@@ -309,17 +309,14 @@ namespace ALE {
 
         if (this->commRank()) {
           VecCreateMPIWithArray(this->comm(), 0, PETSC_DETERMINE, PETSC_NULL, &serialVec);
-          ISCreateGeneral(this->comm(), 0, PETSC_NULL, &serialIS);
         } else {
           VecCreateMPIWithArray(this->comm(), serialCoordinates->getSize(patch), PETSC_DETERMINE, serialCoordinates->restrict(patch), &serialVec);
-          int *indices = this->__expandIntervals(serialCoordinates->getPatch(patch));
-          ISCreateGeneral(this->comm(), serialCoordinates->getSize(patch), indices, &serialIS);
-          delete [] indices;
         }
-        VecCreateMPIWithArray(this->comm(), this->coordinates->getSize(patch), PETSC_DETERMINE, this->coordinates->restrict(patch), &globalVec);
-        int *indices = this->__expandIntervals(this->coordinates->getPatch(patch));
-        ISCreateGeneral(this->comm(), this->coordinates->getSize(patch), indices, &globalIS);
+        int *indices = this->__expandIntervals(this->coordinates->getGlobalPatch(patch));
+        ISCreateGeneral(PETSC_COMM_SELF, this->coordinates->getSize(patch), indices, &serialIS);
         delete [] indices;
+        VecCreateSeqWithArray(PETSC_COMM_SELF, this->coordinates->getSize(patch), this->coordinates->restrict(patch), &globalVec);
+        ISCreateStride(PETSC_COMM_SELF, this->coordinates->getSize(patch), 0, 1, &globalIS);
         VecScatterCreate(serialVec, serialIS, globalVec, globalIS, &scatter);
         ISDestroy(serialIS);
         ISDestroy(globalIS);
@@ -1206,11 +1203,10 @@ namespace ALE {
           topology->restrictBase(localBase);
           //FIX: The contains() method does not work
           //topology->restrictBase(topology->cone(Mesh::point_type(-1, mesh->commRank())));
-
           Obj<Mesh::sieve_type::capSequence> cap = topology->cap();
 
           for(Mesh::sieve_type::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
-            if (c_iter.degree() == 0) {
+            if (topology->support(*c_iter)->size() == 0) {
               topology->removeCapPoint(*c_iter);
             }
           }
