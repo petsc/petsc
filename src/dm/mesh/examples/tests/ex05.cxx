@@ -149,12 +149,12 @@ PetscErrorCode testSkewedHatFlip(MPI_Comm comm) {
   bg->addCapPoint(ALE::def::Point(-1,2*(rank+1)));
   
   // View
-  bg->view("SkewedHat bigraph");
+  bg->view("SkewedHatFlip bigraph");
 
-  // Compute a base overlap object using the static method PointParDelta::computeOverlap
+  // Compute a base overlap object using the static method PointParSupportDelta::computeOverlap
   ALE::Obj<PointParSupportDelta::overlap_type>   overlap = PointParSupportDelta::overlap(bg);
   // View
-  overlap->view("SkewedHat cap overlap");
+  overlap->view("SkewedHatFlip cap overlap");
 
   // Compute the fusion over the overlap using the static method PointParDelta::computeFusion
   ALE::Obj<PointParSupportDelta::fusion_type>    fusion = PointParSupportDelta::fusion(bg, overlap);
