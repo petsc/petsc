@@ -1208,7 +1208,7 @@ PetscErrorCode __expandIntervals(ALE::Obj<IntervalSequence> intervals, PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshGetGlobalScatter"
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Obj<ALE::Two::Mesh> *mesh,const char fieldName[],Vec g,VecScatter *scatter)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Obj<ALE::Two::Mesh> mesh,const char fieldName[],Vec g,VecScatter *scatter)
 {
   ALE::Two::Mesh::patch_type patch;
   Vec            localVec;
