@@ -43,6 +43,8 @@ namespace ALE {
       int             _commRank;
       int             _commSize;
       int             dim;
+      //FIX:
+      bool            distributed;
     public:
       Mesh(MPI_Comm comm, int dimension, int debug = 0) : debug(debug), dim(dimension) {
         this->setComm(comm);
@@ -50,6 +52,7 @@ namespace ALE {
         this->coordinates = field_type(comm, debug);
         this->boundary    = field_type(comm, debug);
         this->boundaries  = foliation_type(comm, debug);
+        this->distributed = false;
       };
 
       MPI_Comm        comm() const {return this->_comm;};
@@ -76,8 +79,15 @@ namespace ALE {
           bundle->setPatch(this->topology->leaves(), bundle_type::patch_type());
           bundle->setFiberDimensionByDepth(bundle_type::patch_type(), dim, 1);
           bundle->orderPatches();
+          if (this->distributed) {
+            bundle->createGlobalOrder();
+          }
           // "element" reorder is in vertexBundle by default, and intermediate bundles could be handled by a cell tuple
           this->bundles[dim] = bundle;
+        } else {
+          if (this->distributed && this->bundles[dim]->getGlobalOffsets() == NULL) {
+            this->bundles[dim]->createGlobalOrder();
+          }
         }
         ALE_LOG_EVENT_END;
         return this->bundles[dim];
@@ -260,12 +270,14 @@ namespace ALE {
         int  k = 0;
 
         for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
-          k += i_iter.color().index;
+          k += std::abs(i_iter.color().index);
         }
+        std::cout << "Allocated indices of size " << k << std::endl;
         indices = new int[k];
         k = 0;
         for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
-          for(int i = i_iter.color().prefix; i < i_iter.color().prefix + i_iter.color().index; i++) {
+          for(int i = i_iter.color().prefix; i < i_iter.color().prefix + std::abs(i_iter.color().index); i++) {
+            std::cout << "  indices[" << k << "] = " << i << std::endl;
             indices[k++] = i;
           }
         }
@@ -312,7 +324,7 @@ namespace ALE {
         } else {
           VecCreateMPIWithArray(this->comm(), serialCoordinates->getSize(patch), PETSC_DETERMINE, serialCoordinates->restrict(patch), &serialVec);
         }
-        int *indices = this->__expandIntervals(this->coordinates->getGlobalPatch(patch));
+        int *indices = this->__expandIntervals(this->coordinates->getGlobalOrder()->getPatch(patch));
         ISCreateGeneral(PETSC_COMM_SELF, this->coordinates->getSize(patch), indices, &serialIS);
         delete [] indices;
         VecCreateSeqWithArray(PETSC_COMM_SELF, this->coordinates->getSize(patch), this->coordinates->restrict(patch), &globalVec);
@@ -1390,6 +1402,7 @@ namespace ALE {
       this->bundles.clear();
       this->fields.clear();
       this->createParallelCoordinates(this->dim, vertexBundle, coordinates);
+      this->distributed = true;
       ALE_LOG_EVENT_END;
     };
   } // namespace Two

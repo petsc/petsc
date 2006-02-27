@@ -81,6 +81,8 @@ namespace ALE {
       // We allocate based upon a certain
       std::map<patch_type,int>          _storageSize;
       std::map<patch_type,value_type *> _storage;
+      int *offsets;
+      int  ghostVars;
       Obj<bundle_type> localOrder;
       Obj<bundle_type> globalOrder;
     public:
@@ -94,16 +96,24 @@ namespace ALE {
       // of as a CoSieve over the topology sieve.
     public:
       CoSifter(MPI_Comm comm = PETSC_COMM_SELF, int debug = 0) : _comm(comm), debug(debug) {
-        _order = order_type(this->_comm, debug);
+        this->_order = order_type(this->_comm, debug);
         MPI_Comm_rank(this->_comm, &this->_commRank);
         MPI_Comm_size(this->_comm, &this->_commSize);
+        this->offsets = NULL;
+        this->ghostVars = 0;
+      };
+      ~CoSifter() {
+        if (this->offsets) {
+          delete [] this->offsets;
+          this->offsets = NULL;
+        }
       };
 
       MPI_Comm        comm() const {return this->_comm;};
       int             commRank() const {return this->_commRank;};
       int             commSize() const {return this->_commSize;};
       void            setTopology(const Obj<sieve_type>& topology) {this->_topology = topology;};
-      Obj<sieve_type> getTopology() {return this->_topology;};
+      Obj<sieve_type> getTopology() const {return this->_topology;};
       // -- Patch manipulation --
       // Creates a patch whose order is taken from the input point sequence
       template<typename pointSequence> void setPatch(const Obj<pointSequence>& points, const patch_type& patch) {
@@ -112,6 +122,9 @@ namespace ALE {
         for(typename pointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           this->_order->addArrow(*p_iter, patch, point_type(c++, 0));
         }
+      };
+      Obj<bundle_type> getGlobalOrder() const {
+        return this->globalOrder;
       };
     private:
       Obj<order_type> __getOrder(const std::string& orderName) {
@@ -152,9 +165,6 @@ namespace ALE {
       Obj<typename order_type::coneSequence> getPatch(const std::string& orderName, const patch_type& patch) {
         this->__checkOrderName(orderName);
         return this->_reorders[orderName]->cone(patch);
-      };
-      Obj<typename order_type::coneSequence> getGlobalPatch(const patch_type& patch) const {
-        return this->globalOrder->getPatch(patch);
       };
       // -- Index manipulation --
     private:
@@ -361,6 +371,7 @@ namespace ALE {
         this->__checkPatch(patch);
         return this->_storageSize[patch];
       };
+      const int *getGlobalOffsets() {return this->offsets;};
       const value_type *restrict(const patch_type& patch) {
         this->__checkPatch(patch);
         return this->_storage[patch];
@@ -474,18 +485,19 @@ namespace ALE {
         PetscSynchronizedFlush(this->comm());
       };
     protected:
-      struct localizer {
-        Obj<typename supportDelta_type::overlap_type>                      overlap;
-        Obj<typename supportDelta_type::overlap_type::traits::capSequence> cap;
-        int                                                                rank;
+      struct supportLocalizer {
+        typedef typename supportDelta_type::overlap_type                      overlap_type;
+        typedef typename supportDelta_type::overlap_type::traits::capSequence sequence_type;
+        Obj<overlap_type>  overlap;
+        Obj<sequence_type> points;
+        int                rank;
         public:
-        localizer(Obj<typename supportDelta_type::overlap_type> overlap, const int rank) : overlap(overlap), rank(rank) {cap = overlap->cap();};
-        template<typename Overlap, typename Sequence>
-        bool isLocal(Obj<Overlap> overlap, Obj<Sequence> points, const typename sieve_type::point_type& p) const {
+        supportLocalizer(Obj<overlap_type> overlap, const int rank) : overlap(overlap), rank(rank) {points = overlap->cap();};
+        bool isLocal(const Obj<overlap_type> overlap, const Obj<sequence_type> points, const typename sieve_type::point_type& p) const {
           if (points->contains(p)) {
-            Obj<typename Overlap::traits::supportSequence> neighbors = overlap->support(p);
+            Obj<typename overlap_type::traits::supportSequence> neighbors = overlap->support(p);
 
-            for(typename Overlap::traits::supportSequence::iterator s_iter = neighbors->begin(); s_iter != neighbors->end(); ++s_iter) {
+            for(typename overlap_type::traits::supportSequence::iterator s_iter = neighbors->begin(); s_iter != neighbors->end(); ++s_iter) {
               if (s_iter.target() < rank)
                 return false;
             }
@@ -494,14 +506,41 @@ namespace ALE {
         };
 
         bool operator()(const typename sieve_type::point_type& p) const {
-          return this->isLocal(this->overlap, this->cap, p);
+          std::cout << "Checking for local point " << p << std::endl;
+          return this->isLocal(this->overlap, this->points, p);
+        }
+      };
+      //FIX: Should just flip internals I think
+      struct coneLocalizer {
+        typedef typename coneDelta_type::overlap_type                       overlap_type;
+        typedef typename coneDelta_type::overlap_type::traits::baseSequence sequence_type;
+        Obj<overlap_type>  overlap;
+        Obj<sequence_type> points;
+        int                rank;
+        public:
+        coneLocalizer(Obj<overlap_type> overlap, const int rank) : overlap(overlap), rank(rank) {points = overlap->base();};
+        bool isLocal(const Obj<overlap_type> overlap, const Obj<sequence_type> points, const typename sieve_type::point_type& p) const {
+          if (points->contains(p)) {
+            Obj<typename overlap_type::traits::coneSequence> neighbors = overlap->cone(p);
+
+            for(typename overlap_type::traits::coneSequence::iterator c_iter = neighbors->begin(); c_iter != neighbors->end(); ++c_iter) {
+              if (c_iter.source() < rank)
+                return false;
+            }
+          }
+          return true;
+        };
+
+        bool operator()(const typename sieve_type::point_type& p) const {
+          std::cout << "Checking for local point " << p << std::endl;
+          return this->isLocal(this->overlap, this->points, p);
         }
       };
     public:
       void createGlobalOrder() {
         Obj<typename sieve_type::traits::depthSequence>  vertices = this->_topology->depthStratum(0);
         Obj<typename sieve_type::traits::heightSequence> cells    = this->_topology->heightStratum(0);
-        int useBaseOverlap = 0, useCapOverlap = 0, useOverlap;
+        int useBaseOverlap = 0, useCapOverlap = 0;
         typename bundle_type::patch_type patch;
 
         for(typename sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
@@ -521,13 +560,18 @@ namespace ALE {
         Obj<typename coneDelta_type::overlap_type> baseOverlap;
         int rank = this->commRank();
 
-        MPI_Allreduce(&useCapOverlap, &useOverlap, 1, MPI_INT, MPI_LOR, this->comm());
-        if (useOverlap) {
+        MPI_Allreduce(&useCapOverlap, &useCapOverlap, 1, MPI_INT, MPI_LOR, this->comm());
+        if (useCapOverlap) {
+          std::cout << "Doing cap overlap" << std::endl;
           capOverlap = supportDelta_type::overlap(this->_topology);
         }
-        MPI_Allreduce(&useBaseOverlap, &useOverlap, 1, MPI_INT, MPI_LOR, this->comm());
-        if (useOverlap) {
+        MPI_Allreduce(&useBaseOverlap, &useBaseOverlap, 1, MPI_INT, MPI_LOR, this->comm());
+        if (useBaseOverlap) {
+          std::cout << "Doing base overlap" << std::endl;
           baseOverlap = coneDelta_type::overlap(this->_topology);
+        }
+        if (useCapOverlap && useBaseOverlap) {
+          throw ALE::Exception("Cannot have both kinds of overlap");
         }
         // Give a local offset to each local element, continue sequential offsets for ghosts
         // Local order is a CoSifter<sieve_type, patch_type, point_type, int>
@@ -549,28 +593,40 @@ namespace ALE {
             this->globalOrder->setFiberDimension(patch, *p_iter, this->getFiberDimension(patch, *p_iter));
           }
         }
-        this->localOrder->orderPatches(localizer(capOverlap, this->commRank()));
-        this->globalOrder->orderPatches(localizer(capOverlap, this->commRank()));
+        if (useCapOverlap) {
+          this->localOrder->orderPatches(supportLocalizer(capOverlap, this->commRank()));
+          this->globalOrder->orderPatches(supportLocalizer(capOverlap, this->commRank()));
+        } else {
+          this->localOrder->orderPatches(coneLocalizer(baseOverlap, this->commRank()));
+          this->globalOrder->orderPatches(coneLocalizer(baseOverlap, this->commRank()));
+        }
         this->localOrder->view("Local order");
         this->globalOrder->view("Global order");
-        int ierr, localVars = 0, offsets[this->commSize()+1];
+        int ierr, localVars = 0;
 
-        for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-          localVars += this->_storageSize[*b_iter];
+        if (this->offsets) {
+          delete [] this->offsets;
         }
-        ierr = MPI_Allgather(&localVars, 1, MPI_INT, &offsets[1], 1, MPI_INT, this->comm());CHKERROR(ierr, "Error in MPI_Allgather");
-        offsets[0] = 0;
+        this->offsets = new int[this->_commSize+1];
+        for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          localVars += this->globalOrder->getSize(*b_iter);
+        }
+        ierr = MPI_Allgather(&localVars, 1, MPI_INT, &this->offsets[1], 1, MPI_INT, this->comm());CHKERROR(ierr, "Error in MPI_Allgather");
+        this->offsets[0] = 0;
+        this->ghostVars  = 0;
         for(int p = 1; p <= this->commSize(); p++) {
-          offsets[p] += offsets[p-1];
+          this->offsets[p] += this->offsets[p-1];
         }
         // Create global numbering
         for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
           Obj<typename order_type::coneSequence> cone = getPatch(*b_iter);
 
           for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-            this->globalOrder->addFiberOffset(*b_iter, *p_iter, offsets[rank]);
+            this->globalOrder->addFiberOffset(*b_iter, *p_iter, this->offsets[rank]);
+            this->localOrder->setFiberOffset(*b_iter, *p_iter, this->offsets[rank] + this->ghostVars++);
           }
         }
+        this->localOrder->view("Local order with offset");
         this->globalOrder->view("Global order with offset");
         // Complete order to get ghost offsets
         this->globalOrder->completeOrder();

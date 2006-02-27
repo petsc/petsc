@@ -1164,7 +1164,7 @@ namespace ALE {
         typedef typename graph_type::traits::capSequence                            baseSequence;
       };
       // Basic interface
-      Flip(const Obj<graph_type> graph) : _graph(graph) {};
+      Flip(const Obj<graph_type>& graph) : _graph(graph) {};
       Flip(const Flip& flip) : _graph(flip._graph) {};
       virtual ~Flip() {};
       // Redirect 
