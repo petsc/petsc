@@ -45,10 +45,16 @@ PetscErrorCode WriteVTKVertices_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
   const double  *array = coordinates->restrict(patch);
   int            dim = mesh->getDimension();
   ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
-  int            numVertices = vertexBundle->getGlobalOffsets()[mesh->commSize()];
+  int            numVertices;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  //FIX:
+  if (vertexBundle->getGlobalOffsets()) {
+    numVertices = vertexBundle->getGlobalOffsets()[mesh->commSize()];
+  } else {
+    numVertices = mesh->getTopology()->depthStratum(0)->size();
+  }
   ierr = PetscViewerASCIIPrintf(viewer, "POINTS %d double\n", numVertices);CHKERRQ(ierr);
   if (mesh->commRank() == 0) {
     int numLocalVertices = mesh->getTopology()->depthStratum(0)->size();
@@ -122,15 +128,21 @@ PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
 {
   ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
   ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
-  ALE::Obj<ALE::Two::Mesh::bundle_type> elementBundle = mesh->getBundle(1);
-  int               numElements = elementBundle->getGlobalOffsets()[mesh->commSize()];
+  ALE::Obj<ALE::Two::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
   int               corners = topology->nCone(*elements->begin(), topology->depth())->size();
   ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
   ALE::Obj<ALE::Two::Mesh::bundle_type> globalVertex = vertexBundle->getGlobalOrder();
   ALE::Two::Mesh::bundle_type::patch_type patch;
+  int               numElements;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  //FIX:
+  if (elementBundle->getGlobalOffsets()) {
+    numElements = elementBundle->getGlobalOffsets()[mesh->commSize()];
+  } else {
+    numElements = mesh->getTopology()->heightStratum(0)->size();
+  }
   ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
   if (mesh->commRank() == 0) {
     for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
@@ -538,7 +550,6 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer v
       ierr = 0;
     } 
     CHKERRQ(ierr);
-#if 0
   } else if (format == PETSC_VIEWER_ASCII_PYLITH_LOCAL) {
     PetscViewer connectViewer, coordViewer;
     char       *filename;
@@ -565,7 +576,6 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer v
     ierr = PetscViewerFileSetName(coordViewer, localFilename);CHKERRQ(ierr);
     ierr = WritePyLithVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(coordViewer);CHKERRQ(ierr);
-#endif
   } else {
     int dim = mesh->getDimension();
 
@@ -616,6 +626,29 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
       ierr = 0;
     } 
     CHKERRQ(ierr);
+  } else if (format == PETSC_VIEWER_ASCII_PYLITH_LOCAL) {
+    PetscViewer connectViewer, coordViewer;
+    char       *filename;
+    char        localFilename[2048];
+    int         rank = mesh->commRank();
+
+    ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
+
+    sprintf(localFilename, "%s.%d.connect", filename, rank);
+    ierr = PetscViewerCreate(PETSC_COMM_SELF, &connectViewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(connectViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(connectViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(connectViewer, localFilename);CHKERRQ(ierr);
+    ierr = WritePyLithElementsLocal(mesh, connectViewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(connectViewer);CHKERRQ(ierr);
+
+    sprintf(localFilename, "%s.%d.coord", filename, rank);
+    ierr = PetscViewerCreate(PETSC_COMM_SELF, &coordViewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(coordViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(coordViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(coordViewer, localFilename);CHKERRQ(ierr);
+    ierr = WritePyLithVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(coordViewer);CHKERRQ(ierr);
   } else {
     int dim = mesh->getDimension();
 

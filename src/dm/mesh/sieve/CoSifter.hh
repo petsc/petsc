@@ -576,6 +576,9 @@ namespace ALE {
         if (useCapOverlap && useBaseOverlap) {
           throw ALE::Exception("Cannot have both kinds of overlap");
         }
+        if (!useCapOverlap && !useBaseOverlap) {
+          throw ALE::Exception("Cannot have no overlap");
+        }
         // Give a local offset to each local element, continue sequential offsets for ghosts
         // Local order is a CoSifter<sieve_type, patch_type, point_type, int>
         //   which means localOrder->_order is BiGraph<point_type,patch_type,point_type>
@@ -649,6 +652,18 @@ namespace ALE {
           }
         }
       };
+      void partitionOrder(const std::string& orderName) {
+        Obj<typename sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
+        Obj<order_type> reorder = this->__getOrder(orderName);
+        
+        for(typename sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
+          reorder->addBasePoint(*e_iter);
+        }
+        Obj<typename ParConeDelta<order_type>::overlap_type> overlap = ParConeDelta<order_type>::overlap(reorder);
+        Obj<typename ParConeDelta<order_type>::fusion_type>  fusion  = ParConeDelta<order_type>::fusion(reorder, overlap);
+        reorder->add(fusion);
+        reorder->restrictBase(elements);
+      }
     };
   } // namespace Two
 } // namespace ALE

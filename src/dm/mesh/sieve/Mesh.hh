@@ -303,8 +303,10 @@ namespace ALE {
             vertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
           }
         }
-        vertexBundle->setPatch(orderName, elements, bundle_type::patch_type());
         vertexBundle->orderPatches(orderName);
+#if 0
+        vertexBundle->partitionOrder(orderName);
+#endif
         // Create coordinates
         patch_type patch;
 
@@ -337,29 +339,6 @@ namespace ALE {
         VecDestroy(serialVec);
         VecDestroy(globalVec);
         VecScatterDestroy(scatter);
-
-#if 0
-        Obj<sieve_type::traits::depthSequence> vertices = this->topology->depthStratum(0);
-        for(sieve_type::traits::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
-          this->coordinates->update(patch, *v_itor, serialCoordinates->restrict(patch, *v_itor));
-        }
-
-        for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
-          Obj<field_type::order_type::coneSequence> cone = serialCoordinates->getPatch(*e_iter);
-
-          this->coordinates->setPatch(orderName, cone, *e_iter);
-          for(bundle_type::order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-            this->coordinates->setFiberDimension(orderName, *e_iter, *c_iter, embedDim);
-          }
-        }
-        this->coordinates->orderPatches(orderName);
-#endif
-
-        //FIX: Setup mapping to partitioned storage
-        //ierr = MeshCreateMapping(mesh, serialCoordBundle, partitionTypes, coordBundle, &coordScatter);CHKERRQ(ierr);
-        // Communicate ghosted coordinates
-        //ierr = VecGhostUpdateBegin(coordinates, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-        //ierr = VecGhostUpdateEnd(coordinates, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
         ALE_LOG_EVENT_END;
       };
 

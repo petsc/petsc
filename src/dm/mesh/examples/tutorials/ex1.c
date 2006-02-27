@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
   PetscTruth     useZeroBase;
   const char    *fileTypes[2] = {"pcice", "pylith"};
   FileType       fileType;
-  PetscTruth     interpolate, outputLocal;
+  PetscTruth     distribute, interpolate, outputLocal, outputVTK;
   PetscInt       dim, ft;
   int            verbosity;
   int            debug;
@@ -74,8 +74,12 @@ int main(int argc, char *argv[])
     fileType = (FileType) ft;
     ierr = PetscStrcpy(baseFilename, "data/ex1_2d");CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex33.c", "ex1", baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+    distribute = PETSC_TRUE;
+    ierr = PetscOptionsTruth("-distribute", "Distribute the mesh among processes", "ex1.c", PETSC_TRUE, &distribute, PETSC_NULL);CHKERRQ(ierr);
     outputLocal = PETSC_FALSE;
     ierr = PetscOptionsTruth("-output_local", "Output the local form of the mesh", "ex1.c", PETSC_FALSE, &outputLocal, PETSC_NULL);CHKERRQ(ierr);
+    outputVTK = PETSC_TRUE;
+    ierr = PetscOptionsTruth("-output_vtk", "Output the mesh in VTK", "ex1.c", PETSC_TRUE, &outputVTK, PETSC_NULL);CHKERRQ(ierr);
     interpolate = PETSC_TRUE;
     ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex1.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -101,25 +105,29 @@ int main(int argc, char *argv[])
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
     mesh->getTopology()->view("Serial topology");
-    stage = ALE::LogStageRegister("MeshDistribution");
-    ALE::LogStagePush(stage);
-    ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
-    mesh->distribute();
-    ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
-    ALE::LogStagePop(stage);
+    if (distribute) {
+      stage = ALE::LogStageRegister("MeshDistribution");
+      ALE::LogStagePush(stage);
+      ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
+      mesh->distribute();
+      ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
+      ALE::LogStagePop(stage);
+    }
 
     stage = ALE::LogStageRegister("MeshOutput");
     ALE::LogStagePush(stage);
-    ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
-    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
-    ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
-    //ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
-    //ierr = VecView(partition, viewer);CHKERRQ(ierr);
-    //ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    if (outputVTK) {
+      ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
+      ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
+      ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
+      //ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
+      //ierr = VecView(partition, viewer);CHKERRQ(ierr);
+      //ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    }
 
     ierr = PetscPrintf(comm, "Creating original format mesh file\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
