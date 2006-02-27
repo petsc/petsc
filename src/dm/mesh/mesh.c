@@ -1208,7 +1208,7 @@ PetscErrorCode __expandIntervals(ALE::Obj<IntervalSequence> intervals, PetscInt 
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshGetGlobalScatter"
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Obj<ALE::Two::Mesh> mesh,const char fieldName[],Vec g,VecScatter *scatter)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Two::Mesh *mesh,const char fieldName[],Vec g,VecScatter *scatter)
 {
   ALE::Two::Mesh::patch_type patch;
   Vec            localVec;
@@ -1254,18 +1254,18 @@ EXTERN PetscErrorCode assembleFullField(VecScatter, Vec, Vec, InsertMode);
 @*/
 PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
 {
-  //VecScatter     injection;
+  VecScatter     injection;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  //ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
-  //ierr = VecScatterBegin(g, l, mode, SCATTER_REVERSE, injection);
-  //ierr = VecScatterEnd(g, l, mode, SCATTER_REVERSE, injection);
-  if (mode == INSERT_VALUES) {
-    ierr = VecCopy(g, l);CHKERRQ(ierr);
-  } else {
-    ierr = VecAXPY(l, 1.0, g);CHKERRQ(ierr);
-  }
+  ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
+  ierr = VecScatterBegin(g, l, mode, SCATTER_REVERSE, injection);
+  ierr = VecScatterEnd(g, l, mode, SCATTER_REVERSE, injection);
+/*   if (mode == INSERT_VALUES) { */
+/*     ierr = VecCopy(g, l);CHKERRQ(ierr); */
+/*   } else { */
+/*     ierr = VecAXPY(l, 1.0, g);CHKERRQ(ierr); */
+/*   } */
   PetscFunctionReturn(0);
 }
 
@@ -1289,18 +1289,18 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
 @*/
 PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
 {
-  //VecScatter     injection;
+  VecScatter     injection;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  //ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
-  //ierr = VecScatterBegin(l, g, mode, SCATTER_FORWARD, injection);CHKERRQ(ierr);
-  //ierr = VecScatterEnd(l, g, mode, SCATTER_FORWARD, injection);CHKERRQ(ierr);
-  if (mode == INSERT_VALUES) {
-    ierr = VecCopy(l, g);CHKERRQ(ierr);
-  } else {
-    ierr = VecAXPY(g, 1.0, l);CHKERRQ(ierr);
-  }
+  ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
+  ierr = VecScatterBegin(l, g, mode, SCATTER_FORWARD, injection);CHKERRQ(ierr);
+  ierr = VecScatterEnd(l, g, mode, SCATTER_FORWARD, injection);CHKERRQ(ierr);
+/*   if (mode == INSERT_VALUES) { */
+/*     ierr = VecCopy(l, g);CHKERRQ(ierr); */
+/*   } else { */
+/*     ierr = VecAXPY(g, 1.0, l);CHKERRQ(ierr); */
+/*   } */
   PetscFunctionReturn(0);
 }
 
@@ -1442,14 +1442,14 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
 {
   PetscObjectContainer c;
   ALE::Two::Mesh      *mesh;
-  int                  firstElement = 0;
+  int                  firstElement;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &c);CHKERRQ(ierr);
   ierr = PetscObjectContainerGetPointer(c, (void **) &mesh);CHKERRQ(ierr);
   // Need to globalize
-  // firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
+  firstElement = mesh->getBundle(mesh->getTopology()->depth())->getGlobalOffsets()[mesh->commRank()];
   try {
     //ierr = assembleOperator_New(A, mesh->getField(), mesh->getOrientation(), ALE::def::Mesh::sieve_type::point_type(0, e + firstElement), v, mode);CHKERRQ(ierr);
     ierr = updateOperator(A, mesh->getField("displacement"), ALE::Two::Mesh::sieve_type::point_type(0, e + firstElement), v, mode);CHKERRQ(ierr);
