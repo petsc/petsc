@@ -1007,7 +1007,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck(SNES snes,PetscErr
 
    Calling sequence of func:
 .vb
-   int func (SNES snes, Vec x,Vec y,,void *checkctx, PetscTruth *changed_y)
+   int func (SNES snes, Vec x,Vec y,void *checkctx, PetscTruth *changed_y)
 .ve
    where func returns an error code of 0 on success and a nonzero
    on failure.

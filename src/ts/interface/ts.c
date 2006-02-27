@@ -934,7 +934,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDestroy(TS ts)
 
   if (ts->ksp) {ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
-  ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
+  if (ts->ops->destroy) {ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);}
   ierr = TSClearMonitor(ts);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);

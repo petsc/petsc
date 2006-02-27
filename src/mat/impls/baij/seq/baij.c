@@ -599,7 +599,7 @@ void PETSCMAT_DLLEXPORT matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscIn
       col = in[l]; 
       if (col <= lastcol) low = 0; else high = nrow;
       lastcol = col;
-      value = v + k*(stepval+4)*4 + l*4;
+      value = v + k*(stepval+4 + l)*4;
       while (high-low > 7) {
         t = (low+high)/2;
         if (rp[t] > col) high = t;

@@ -23,6 +23,8 @@ static PetscErrorCode DASetBlockFills_Private(PetscInt *dfill,PetscInt w,PetscIn
   PetscInt       i,j,nz,*fill;
 
   PetscFunctionBegin;
+  if (!dfill) PetscFunctionReturn(0);
+
   /* count number nonzeros */
   nz = 0; 
   for (i=0; i<w; i++) {
@@ -114,9 +116,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dfill) {
-    ierr = DASetBlockFills_Private(dfill,da->w,&da->dfill);CHKERRQ(ierr);
-  }
+  ierr = DASetBlockFills_Private(dfill,da->w,&da->dfill);CHKERRQ(ierr);
   ierr = DASetBlockFills_Private(ofill,da->w,&da->ofill);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

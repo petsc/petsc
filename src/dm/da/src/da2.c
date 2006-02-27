@@ -887,13 +887,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
   } else {
     P = 1 + da->refine_z*(da->P - 1);
   }
-  if (da->dim == 1) {
-    ierr = DACreate1d(da->comm,da->wrap,M,da->w,da->s,PETSC_NULL,&da2);CHKERRQ(ierr);
-  } else if (da->dim == 2) {
-    ierr = DACreate2d(da->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,PETSC_NULL,PETSC_NULL,&da2);CHKERRQ(ierr);
-  } else if (da->dim == 3) {
-    ierr = DACreate3d(da->comm,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
-  }
+  ierr = DACreate(da->comm,da->dim,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
+
   /* allow overloaded (user replaced) operations to be inherited by refinement clones */
   da2->ops->getmatrix        = da->ops->getmatrix;
   da2->ops->getinterpolation = da->ops->getinterpolation;
