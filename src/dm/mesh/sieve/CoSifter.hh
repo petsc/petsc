@@ -126,6 +126,9 @@ namespace ALE {
       Obj<bundle_type> getGlobalOrder() const {
         return this->globalOrder;
       };
+      Obj<bundle_type> getLocalOrder() const {
+        return this->localOrder;
+      };
     private:
       Obj<order_type> __getOrder(const std::string& orderName) {
         if (this->_reorders.find(orderName) == this->_reorders.end()) {

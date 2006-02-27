@@ -1181,6 +1181,57 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
   SETERRQ(PETSC_ERR_SUP, "");
 }
 
+template<typename IntervalSequence>
+PetscErrorCode __expandIntervals(ALE::Obj<IntervalSequence> intervals, PetscInt *indices[]) {
+  PetscInt      *ind;
+  PetscInt       k = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+    int dim = i_iter.color().index;
+
+    if (dim > 0) k += dim;
+  }
+  std::cout << "Allocated indices of size " << k << std::endl;
+  ierr = PetscMalloc(k * sizeof(PetscInt), &ind);CHKERRQ(ierr);
+  k = 0;
+  for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+    for(int i = i_iter.color().prefix; i < i_iter.color().prefix + i_iter.color().index; i++) {
+      std::cout << "  indices[" << k << "] = " << i << std::endl;
+      ind[k++] = i;
+    }
+  }
+  *indices = ind;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshGetGlobalScatter"
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Obj<ALE::Two::Mesh> *mesh,const char fieldName[],Vec g,VecScatter *scatter)
+{
+  ALE::Two::Mesh::patch_type patch;
+  Vec            localVec;
+  IS             globalIS, localIS;
+  PetscInt      *indices;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ALE::Obj<ALE::Two::Mesh::field_type>  field       = mesh->getField(std::string(fieldName));
+  ALE::Obj<ALE::Two::Mesh::bundle_type> globalOrder = field->getGlobalOrder();
+  ALE::Obj<ALE::Two::Mesh::bundle_type> localOrder  = field->getLocalOrder();
+
+  ierr = __expandIntervals(globalOrder->getPatch(patch), &indices);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, globalOrder->getSize(patch), indices, &globalIS);CHKERRQ(ierr);
+  ierr = PetscFree(indices);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, localOrder->getSize(patch), field->restrict(patch), &localVec);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF, localOrder->getSize(patch), 0, 1, &localIS);CHKERRQ(ierr);
+  ierr = VecScatterCreate(g, globalIS, localVec, localIS, scatter);CHKERRQ(ierr);
+  ierr = ISDestroy(globalIS);CHKERRQ(ierr);
+  ierr = ISDestroy(localIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN PetscErrorCode assembleFullField(VecScatter, Vec, Vec, InsertMode);
 
 #undef __FUNCT__
