@@ -35,7 +35,7 @@ runex1_pylith:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file /PETSc3/geoframe/packages/lithomop/lithomop3d/examples/lintet/bm1b/bm1b ${EXTRA_ARGS}
 
 debugex1_pylith:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file /PETSc3/geoframe/packages/lithomop/lithomop3d/examples/lintet/bm1b/bm1b -start_in_debugger ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file /PETSc3/geoframe/packages/lithomop/lithomop3d/examples/lintet/bm1b/bm1b -display ${DISPLAY} -start_in_debugger ${EXTRA_ARGS}
 
 runex1_pylith2:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local 0 -base_file /PETSc3/geoframe/packages/lithomop/lithomop3d/examples/lintet/bm1a/bm1a ${EXTRA_ARGS}

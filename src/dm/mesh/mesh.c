@@ -96,7 +96,7 @@ PetscErrorCode WriteVTKVertices_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
     ALE::Obj<ALE::Two::Mesh::bundle_type> globalOrder = coordinates->getGlobalOrder();
     ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> cone = globalOrder->getPatch(patch);
     const int *offsets = coordinates->getGlobalOffsets();
-    int        numLocalVertices = offsets[mesh->commRank()+1] - offsets[mesh->commRank()];
+    int        numLocalVertices = (offsets[mesh->commRank()+1] - offsets[mesh->commRank()])/dim;
     double    *localCoords;
     int        k = 0;
 

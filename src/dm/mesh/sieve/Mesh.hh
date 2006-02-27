@@ -283,6 +283,29 @@ namespace ALE {
         }
         return indices;
       };
+      template<typename IntervalSequence,typename Field>
+      int *__expandCanonicalIntervals(Obj<IntervalSequence> intervals, Obj<Field> field) {
+        typename Field::patch_type patch;
+        int *indices;
+        int  k = 0;
+
+        for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+          k += std::abs(field->getFiberDimension(patch, *i_iter));
+        }
+        std::cout << "Allocated indices of size " << k << std::endl;
+        indices = new int[k];
+        k = 0;
+        for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+          int dim = field->getFiberDimension(patch, *i_iter);
+          int offset = field->getFiberOffset(patch, *i_iter);
+
+          for(int i = offset; i < offset + std::abs(dim); i++) {
+            std::cout << "  indices[" << k << "] = " << i << std::endl;
+            indices[k++] = i;
+          }
+        }
+        return indices;
+      };
     public:
       #undef __FUNCT__
       #define __FUNCT__ "Mesh::createParCoords"
@@ -330,7 +353,10 @@ namespace ALE {
         ISCreateGeneral(PETSC_COMM_SELF, this->coordinates->getSize(patch), indices, &serialIS);
         delete [] indices;
         VecCreateSeqWithArray(PETSC_COMM_SELF, this->coordinates->getSize(patch), this->coordinates->restrict(patch), &globalVec);
-        ISCreateStride(PETSC_COMM_SELF, this->coordinates->getSize(patch), 0, 1, &globalIS);
+        //ISCreateStride(PETSC_COMM_SELF, this->coordinates->getSize(patch), 0, 1, &globalIS);
+        indices = this->__expandCanonicalIntervals(this->coordinates->getGlobalOrder()->getPatch(patch), this->coordinates);
+        ISCreateGeneral(PETSC_COMM_SELF, this->coordinates->getSize(patch), indices, &globalIS);
+        delete [] indices;
         VecScatterCreate(serialVec, serialIS, globalVec, globalIS, &scatter);
         ISDestroy(serialIS);
         ISDestroy(globalIS);
@@ -1165,6 +1191,7 @@ namespace ALE {
       static void partition_Sieve(const Obj<Mesh>& mesh, bool localize = true) {
         ALE_LOG_EVENT_BEGIN;
         Obj<Mesh::sieve_type> topology = mesh->getTopology();
+        Obj<ALE::def::PointSet> localBase = ALE::def::PointSet();
         const char *name = NULL;
 
         // Construct a Delta object and a base overlap object
@@ -1177,7 +1204,16 @@ namespace ALE {
         if (mesh->debug) {
           topology->view("After merging inital fusion");
         }
+        if(localize) {
+          Obj<Mesh::sieve_type::coneSequence> cone = topology->cone(Mesh::point_type(-1, mesh->commRank()));
+
+          localBase->insert(cone->begin(), cone->end());
+          for(int p = 0; p < mesh->commSize(); ++p) {
+            topology->removeBasePoint(Mesh::point_type(-1, p));
+          }
+        }
         // Support complete to build the local topology
+        //supportDelta_type::setDebug(mesh->debug);
         Obj<supportDelta_type::overlap_type> overlap2 = supportDelta_type::overlap(topology);
         Obj<supportDelta_type::fusion_type>  fusion2  = supportDelta_type::fusion(topology, overlap2);
         topology->add(fusion2);
@@ -1187,10 +1223,13 @@ namespace ALE {
         }
         // Unless explicitly prohibited, restrict to the local partition
         if(localize) {
-          Obj<ALE::def::PointSet> localBase = ALE::def::PointSet();
-          Obj<Mesh::sieve_type::coneSequence> cone = topology->cone(Mesh::point_type(-1, mesh->commRank()));
-
-          localBase->insert(cone->begin(), cone->end());
+          if (mesh->debug) {
+            std::cout << "["<<mesh->commRank()<<"]: Restricting base to";
+            for(ALE::def::PointSet::iterator b_iter = localBase->begin(); b_iter != localBase->end(); ++b_iter) {
+              std::cout << " " << *b_iter;
+            }
+            std::cout << std::endl;
+          }
           topology->restrictBase(localBase);
           //FIX: The contains() method does not work
           //topology->restrictBase(topology->cone(Mesh::point_type(-1, mesh->commRank())));
@@ -1373,6 +1412,14 @@ namespace ALE {
       ALE::Two::Partitioner::partition(*this);
       this->topology->stratify();
       this->topology->setStratification(true);
+      Obj<Mesh::sieve_type::baseSequence> base = topology->base();
+      int dim = this->getDimension();
+
+      for(Mesh::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+        if (b_iter.depth() + b_iter.height() != dim) {
+          topology->removeBasePoint(*b_iter);
+        }
+      }
       this->topology->view("Parallel mesh");
       // Need to deal with boundary
       Obj<bundle_type> vertexBundle = this->getBundle(0);

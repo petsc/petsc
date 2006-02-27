@@ -1042,12 +1042,19 @@ namespace ALE {
       void
       restrictBase(const Obj<InputSequence>& points) {
         typename traits::baseSequence base = this->base();
+        typename std::set<typename traits::target_type> remove;
+
         for(typename traits::baseSequence::iterator bi = base.begin(); bi != base.end(); bi++) {
           // Check whether *bi is in points, if it is NOT, remove it
 //           if (!points->contains(*bi)) {
           if (points->find(*bi) == points->end()) {
-            this->removeBasePoint(*bi);
+//             this->removeBasePoint(*bi);
+            remove.insert(*bi);
           }
+        }
+        //FIX
+        for(typename std::set<typename traits::target_type>::iterator r_iter = remove.begin(); r_iter != remove.end(); ++r_iter) {
+          this->removeBasePoint(*r_iter);
         }
       };
 

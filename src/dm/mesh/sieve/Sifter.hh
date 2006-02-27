@@ -3619,47 +3619,50 @@ namespace ALE {
             txt << "[" << this->commRank() << "]: " << *capi << "--(" << suppi.color() << ")-->" << *suppi << std::endl;
           }
         }
-        //
-        if(this->commRank() == 0) {
-          txt << "base --> cap:\n";
-        }
-        if(base.empty()) {
-          txt << "[" << this->commRank() << "]: empty" << std::endl; 
-        }
-        for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
-          typename traits::coneSequence cone = this->cone(*basei);
-          for(typename traits::coneSequence::iterator conei = cone.begin(); conei != cone.end(); conei++) {
-            txt << "[" << this->commRank() << "]: " << *basei << "--(" << conei.color() << ")-->" << *conei << std::endl;
-          }
-        }
-        //
         PetscSynchronizedPrintf(this->comm(), txt.str().c_str());
         PetscSynchronizedFlush(this->comm());
         //
         ostringstream txt1;
         if(this->commRank() == 0) {
-          txt1 << "cap <point, outdegree, marker, depth, height>:\n";
+          txt1 << "base --> cap:\n";
         }
-        txt1 << "[" << this->commRank() << "]:  [";
-        for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
-          txt1 << " <" << *capi << ", " << capi.degree() << ", " << capi.marker() << ", " << capi.depth() << ", " << capi.height() << ">";
+        if(base.empty()) {
+          txt1 << "[" << this->commRank() << "]: empty" << std::endl; 
         }
-        txt1 << " ]" << std::endl;
+        for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
+          typename traits::coneSequence cone = this->cone(*basei);
+          for(typename traits::coneSequence::iterator conei = cone.begin(); conei != cone.end(); conei++) {
+            txt1 << "[" << this->commRank() << "]: " << *basei << "--(" << conei.color() << ")-->" << *conei << std::endl;
+          }
+        }
         //
         PetscSynchronizedPrintf(this->comm(), txt1.str().c_str());
         PetscSynchronizedFlush(this->comm());
         //
         ostringstream txt2;
         if(this->commRank() == 0) {
-          txt2 << "base <point, indegree, marker, depth, height>:\n";
+          txt2 << "cap <point, outdegree, marker, depth, height>:\n";
         }
         txt2 << "[" << this->commRank() << "]:  [";
-        for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
-          txt2 << " <" << *basei << "," << basei.degree() << ", " << basei.marker() << ", " << basei.depth() << ", " << basei.height() << ">";
+        for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
+          txt2 << " <" << *capi << ", " << capi.degree() << ", " << capi.marker() << ", " << capi.depth() << ", " << capi.height() << ">";
         }
         txt2 << " ]" << std::endl;
         //
         PetscSynchronizedPrintf(this->comm(), txt2.str().c_str());
+        PetscSynchronizedFlush(this->comm());
+        //
+        ostringstream txt3;
+        if(this->commRank() == 0) {
+          txt3 << "base <point, indegree, marker, depth, height>:\n";
+        }
+        txt3 << "[" << this->commRank() << "]:  [";
+        for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
+          txt3 << " <" << *basei << "," << basei.degree() << ", " << basei.marker() << ", " << basei.depth() << ", " << basei.height() << ">";
+        }
+        txt3 << " ]" << std::endl;
+        //
+        PetscSynchronizedPrintf(this->comm(), txt3.str().c_str());
         PetscSynchronizedFlush(this->comm());
     };
     //
