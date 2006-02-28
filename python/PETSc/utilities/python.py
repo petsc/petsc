@@ -110,7 +110,7 @@ class Configure(config.base.Configure):
         self.logPrint('Python binding source already present')
         return
       try:
-        self.retrievePackage('Python Bindings', 'PETScPython', 'ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz', os.path.join(self.petscdir.dir, 'src', 'python'))
+        self.retrievePackage('Python Bindings', 'PETScPython', ['ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz'], os.path.join(self.petscdir.dir, 'src', 'python'))
       except:
         self.logPrintBox('Warning: Unable to get the PETSc Python bindings; perhaps you are off the network.\nBuilding without Python bindings')
     else:

@@ -248,7 +248,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     ierr = PetscMallocDebug(PETSC_TRUE);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-memory_info",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_info",&flg1);CHKERRQ(ierr);
+  if (!flg1) {
+    ierr = PetscOptionsHasName(PETSC_NULL,"-memory_info",&flg1);CHKERRQ(ierr);
+  }
   if (flg1) {
     ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
   }

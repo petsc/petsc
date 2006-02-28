@@ -143,6 +143,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetDebuggerFromString(char *string)
   ierr = PetscCheckDebugger_Private("ups",      string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("workshop", string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("pgdbg",    string, &debugger);CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("pathdb",   string, &debugger);CHKERRQ(ierr);
 
   ierr = PetscSetDebugger(debugger, xterm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
