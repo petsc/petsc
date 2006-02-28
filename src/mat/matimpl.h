@@ -447,7 +447,7 @@ typedef struct {
   } else if (info->shiftpd && PetscRealPart(sctx.pv) <= _zero){\
     /* force matfactor to be diagonally dominant */\
     if (sctx.nshift > sctx.nshift_max) {\
-      SETERRQ1(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner after %d tries. Use -pc_factor_shift_nonzero instead",sctx.nshift);\
+      SETERRQ1(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner after %d tries",sctx.nshift);\
     } else if (sctx.nshift == sctx.nshift_max) {\
       info->shift_fraction = sctx.shift_hi;\
       sctx.lushift        = PETSC_TRUE;\
