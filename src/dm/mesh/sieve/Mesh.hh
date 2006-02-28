@@ -314,22 +314,30 @@ namespace ALE {
         this->topology->view("Parallel topology");
         ALE_LOG_EVENT_BEGIN;
         // Create vertex bundle
-        Obj<bundle_type> vertexBundle = this->getBundle(0);
-        Obj<sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
         std::string orderName("element");
+        Obj<bundle_type> vertexBundle = this->getBundle(0);
 
-        for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-          Obj<bundle_type::order_type::coneSequence> patch = serialVertexBundle->getPatch(orderName, *e_iter);
+        if (!this->_commRank) {
+          Obj<bundle_type::order_type::baseSequence> patches = serialVertexBundle->getPatches(orderName);
 
-          vertexBundle->setPatch(orderName, patch, *e_iter);
-          for(bundle_type::order_type::coneSequence::iterator p_iter = patch->begin(); p_iter != patch->end(); ++p_iter) {
-            vertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
+          for(bundle_type::order_type::baseSequence::iterator e_iter = patches->begin(); e_iter != patches->end(); ++e_iter) {
+            Obj<bundle_type::order_type::coneSequence> patch = serialVertexBundle->getPatch(orderName, *e_iter);
+
+            vertexBundle->setPatch(orderName, patch, *e_iter);
+            for(bundle_type::order_type::coneSequence::iterator p_iter = patch->begin(); p_iter != patch->end(); ++p_iter) {
+              vertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
+            }
+          }
+        } else {
+          Obj<sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
+          Obj<bundle_type::order_type> reorder = vertexBundle->__getOrder(orderName);
+
+          for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
+            reorder->addBasePoint(*e_iter);
           }
         }
         vertexBundle->orderPatches(orderName);
-#if 0
         vertexBundle->partitionOrder(orderName);
-#endif
         // Create coordinates
         patch_type patch;
 

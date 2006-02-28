@@ -129,7 +129,7 @@ namespace ALE {
       Obj<bundle_type> getLocalOrder() const {
         return this->localOrder;
       };
-    private:
+    public:
       Obj<order_type> __getOrder(const std::string& orderName) {
         if (this->_reorders.find(orderName) == this->_reorders.end()) {
           this->_reorders[orderName] = order_type(this->_topology->comm(), this->debug);
@@ -155,6 +155,9 @@ namespace ALE {
       Obj<typename order_type::coneSequence> getPatch(const patch_type& patch) const {
         return this->_order->cone(patch);
       };
+      Obj<typename order_type::baseSequence> getPatches() {
+        return this->_order->base();
+      };
     private:
       void __checkOrderName(const std::string& orderName) {
         if (this->_reorders.find(orderName) != this->_reorders.end()) return;
@@ -168,6 +171,9 @@ namespace ALE {
       Obj<typename order_type::coneSequence> getPatch(const std::string& orderName, const patch_type& patch) {
         this->__checkOrderName(orderName);
         return this->_reorders[orderName]->cone(patch);
+      };
+      Obj<typename order_type::baseSequence> getPatches(const std::string& orderName) {
+        return this->_reorders[orderName]->base();
       };
       // -- Index manipulation --
     private:
@@ -653,16 +659,25 @@ namespace ALE {
         }
       };
       void partitionOrder(const std::string& orderName) {
-        Obj<typename sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
+        Obj<typename sieve_type::traits::heightSequence> elements = this->_topology->heightStratum(0);
         Obj<order_type> reorder = this->__getOrder(orderName);
         
-        for(typename sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
-          reorder->addBasePoint(*e_iter);
-        }
+        reorder->view("Initial reorder");
+        ParConeDelta<order_type>::setDebug(this->debug);
         Obj<typename ParConeDelta<order_type>::overlap_type> overlap = ParConeDelta<order_type>::overlap(reorder);
         Obj<typename ParConeDelta<order_type>::fusion_type>  fusion  = ParConeDelta<order_type>::fusion(reorder, overlap);
         reorder->add(fusion);
-        reorder->restrictBase(elements);
+        if (debug) {
+          fusion->view("Reorder fusion");
+          reorder->view("Reorder after adding fusion");
+        }
+        //FIX
+        Obj<ALE::def::PointSet> points = ALE::def::PointSet();
+        points->insert(elements->begin(), elements->end());
+        reorder->restrictBase(points);
+        if (debug) {
+          reorder->view("Reorder after base restriction");
+        }
       }
     };
   } // namespace Two
