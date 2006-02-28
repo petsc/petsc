@@ -29,7 +29,7 @@ PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Two::Mesh>, Vec *);
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  //Vec            partition;
+  Vec            partition;
   PetscViewer    viewer;
   PetscInt       dim, debug;
   PetscReal      refinementLimit;
@@ -62,10 +62,13 @@ int main(int argc, char *argv[])
     ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
-#if 0
+    ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
+
+    stage = ALE::LogStageRegister("MeshDistribution");
+    ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
     mesh->distribute();
-#endif
+    ALE::LogStagePop(stage);
 
     if (refinementLimit > 0.0) {
       stage = ALE::LogStageRegister("MeshRefine");
@@ -76,10 +79,10 @@ int main(int argc, char *argv[])
       ierr = PetscPrintf(comm, "  Read %d elements\n", mesh->getTopology()->heightStratum(0)->size());CHKERRQ(ierr);
       ierr = PetscPrintf(comm, "  Read %d vertices\n", mesh->getTopology()->depthStratum(0)->size());CHKERRQ(ierr);
     }
-    //ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
 
     stage = ALE::LogStageRegister("MeshOutput");
     ALE::LogStagePush(stage);
+    ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
@@ -115,7 +118,6 @@ int main(int argc, char *argv[])
 */
 PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
 {
-  MPI_Comm          comm = mesh->getComm();
   ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
   PetscScalar       coords[18] = {0.0, 0.0,
                                   1.0, 0.0,
@@ -129,11 +131,9 @@ PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
   ALE::Two::Mesh::point_type vertices[9];
   PetscInt          order = 0;
   PetscMPIInt       rank;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  if (rank == 0) {
+  if (mesh->commRank() == 0) {
     ALE::Two::Mesh::point_type edge;
 
     /* Create topology and ordering */
@@ -190,7 +190,6 @@ PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
 */
 PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
 {
-  MPI_Comm          comm = mesh->getComm();
   ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
   PetscScalar       coords[24] = {0.0, 0.0, 0.0,
                                   1.0, 0.0, 0.0,
@@ -207,11 +206,9 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
   ALE::Two::Mesh::point_type            edge;
   PetscInt                              embedDim = 3;
   PetscInt                              order = 0;
-  PetscMPIInt                           rank;
-  PetscErrorCode                        ierr;
+  int                                   rank = mesh->commRank();
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   if (rank == 0) {
     ALE::Two::Mesh::point_type face;
 
@@ -352,16 +349,14 @@ PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
 */
 PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Two::Mesh> mesh, Vec *partition)
 {
-  ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
-  ALE::Obj<ALE::Two::Mesh::bundle_type> elementBundle = mesh->getBundle(mesh->getDimension());
   PetscScalar   *array;
-  PetscMPIInt    rank;
+  int            rank = mesh->commRank();
   PetscInt       n, i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(mesh->getComm(), &rank);CHKERRQ(ierr);
-  //ierr = MeshCreateVector(mesh, &elementBundle, debug, partition);CHKERRQ(ierr);
+  ALE_LOG_EVENT_BEGIN;
+  ierr = MeshCreateVector(mesh, mesh->getBundle(mesh->getDimension()), partition);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*partition, 1);CHKERRQ(ierr);
   ierr = VecGetLocalSize(*partition, &n);CHKERRQ(ierr);
   ierr = VecGetArray(*partition, &array);CHKERRQ(ierr);
@@ -369,5 +364,6 @@ PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Two::Mesh> mesh, Vec *partiti
     array[i] = rank;
   }
   ierr = VecRestoreArray(*partition, &array);CHKERRQ(ierr);
+  ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
 }

@@ -70,7 +70,6 @@ namespace ALE {
       MPI_Comm        _comm;
       int             _commRank;
       int             _commSize;
-      int             debug;
       Obj<sieve_type> _topology;
       // We need an ordering, which should be patch<--order--point
       Obj<order_type> _order;
@@ -86,6 +85,7 @@ namespace ALE {
       Obj<bundle_type> localOrder;
       Obj<bundle_type> globalOrder;
     public:
+      int              debug;
       // OLD CRAP:
       // Breakdown of the base Sieve into patches
       //   the colors (int) order the points (point_type) over a patch (patch_type).
@@ -161,6 +161,7 @@ namespace ALE {
     private:
       void __checkOrderName(const std::string& orderName) {
         if (this->_reorders.find(orderName) != this->_reorders.end()) return;
+        //FIX: String memory management
         std::string msg("Invalid order name: ");
 
         msg += orderName;
@@ -543,7 +544,7 @@ namespace ALE {
         };
 
         bool operator()(const typename sieve_type::point_type& p) const {
-          std::cout << "Checking for local point " << p << std::endl;
+          //std::cout << "Checking for local point " << p << std::endl;
           return this->isLocal(this->overlap, this->points, p);
         }
       };
@@ -615,8 +616,10 @@ namespace ALE {
           this->localOrder->orderPatches(coneLocalizer(baseOverlap, this->commRank()));
           this->globalOrder->orderPatches(coneLocalizer(baseOverlap, this->commRank()));
         }
-        this->localOrder->view("Local order");
-        this->globalOrder->view("Global order");
+        if (this->debug) {
+          this->localOrder->view("Local order");
+          this->globalOrder->view("Global order");
+        }
         int ierr, localVars = 0;
 
         if (this->offsets) {
@@ -641,18 +644,24 @@ namespace ALE {
             this->localOrder->setFiberOffset(*b_iter, *p_iter, this->offsets[rank] + this->ghostVars++);
           }
         }
-        this->localOrder->view("Local order with offset");
-        this->globalOrder->view("Global order with offset");
+        if (this->debug) {
+          this->localOrder->view("Local order with offset");
+          this->globalOrder->view("Global order with offset");
+        }
         // Complete order to get ghost offsets
         this->globalOrder->completeOrder();
-        this->globalOrder->view("Global order after completion");
+        if (this->debug) {
+          this->globalOrder->view("Global order after completion");
+        }
       };
       void completeOrder() {
         typename bundle_type::patch_type patch;
 
         Obj<typename supportOrderDelta_type::overlap_type> overlap = supportOrderDelta_type::overlap(this->_order);
         Obj<typename supportOrderDelta_type::fusion_type>  fusion  = supportOrderDelta_type::fusion(this->_order, overlap);
-        fusion->view("Fusion for global indices");
+        if (this->debug) {
+          fusion->view("Fusion for global indices");
+        }
         Obj<typename supportOrderDelta_type::fusion_type::coneSequence> fPatch = fusion->cone(patch);
 
         for(typename supportOrderDelta_type::fusion_type::coneSequence::iterator c_iter = fPatch->begin(); c_iter != fPatch->end(); ++c_iter) {
@@ -665,7 +674,9 @@ namespace ALE {
         Obj<typename sieve_type::traits::heightSequence> elements = this->_topology->heightStratum(0);
         Obj<order_type> reorder = this->__getOrder(orderName);
         
-        reorder->view("Initial reorder");
+        if (this->debug) {
+          reorder->view("Initial reorder");
+        }
         ParConeDelta<order_type>::setDebug(this->debug);
         Obj<typename ParConeDelta<order_type>::overlap_type> overlap = ParConeDelta<order_type>::overlap(reorder);
         Obj<typename ParConeDelta<order_type>::fusion_type>  fusion  = ParConeDelta<order_type>::fusion(reorder, overlap);

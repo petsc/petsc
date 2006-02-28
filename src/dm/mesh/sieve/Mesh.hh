@@ -316,8 +316,10 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "Mesh::createParCoords"
       void createParallelCoordinates(int embedDim, Obj<bundle_type> serialVertexBundle, Obj<field_type> serialCoordinates) {
-        serialCoordinates->view("Serial coordinates");
-        this->topology->view("Parallel topology");
+        if (this->debug) {
+          serialCoordinates->view("Serial coordinates");
+          this->topology->view("Parallel topology");
+        }
         ALE_LOG_EVENT_BEGIN;
         // Create vertex bundle
         std::string orderName("element");
@@ -351,7 +353,9 @@ namespace ALE {
         this->coordinates->setPatch(this->topology->leaves(), patch);
         this->coordinates->setFiberDimensionByDepth(patch, 0, embedDim);
         this->coordinates->orderPatches();
-        this->coordinates->view("New parallel coordinates");
+        if (this->debug) {
+          this->coordinates->view("New parallel coordinates");
+        }
         this->coordinates->createGlobalOrder();
 
         VecScatter scatter;
@@ -920,6 +924,7 @@ namespace ALE {
             }
           }
         }
+        m->distribute();
         return m;
       };
 #endif
@@ -1414,7 +1419,6 @@ namespace ALE {
         } else {
           partition_Simple(mesh);
         }
-        mesh->getTopology()->view("Ready to partition");
         partition_Sieve(mesh);
       };
     };
@@ -1434,7 +1438,9 @@ namespace ALE {
           topology->removeBasePoint(*b_iter);
         }
       }
-      this->topology->view("Parallel mesh");
+      if (this->debug) {
+        this->topology->view("Parallel mesh");
+      }
       // Need to deal with boundary
       Obj<bundle_type> vertexBundle = this->getBundle(0);
       Obj<field_type>  coordinates  = this->coordinates;
