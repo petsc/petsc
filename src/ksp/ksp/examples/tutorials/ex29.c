@@ -58,7 +58,7 @@ int main(int argc,char **argv)
 
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-3,-3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
-  ierr = DMMGSetDM(dmmg,(DM)da);
+  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {
     ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);

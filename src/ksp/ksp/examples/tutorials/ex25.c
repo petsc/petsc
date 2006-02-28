@@ -46,7 +46,7 @@ int main(int argc,char **argv)
 
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,&user,&dmmg);CHKERRQ(ierr);
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-3,1,1,0,&da);CHKERRQ(ierr);  
-  ierr = DMMGSetDM(dmmg,(DM)da);
+  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
 
   ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
