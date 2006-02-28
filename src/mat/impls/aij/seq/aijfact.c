@@ -454,7 +454,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
 	rs += PetscAbsScalar(v[j]);
       if (rs>sctx.shift_top) sctx.shift_top = rs;
     }
-    if (sctx.shift_top == 0.0) sctx.shift_top += 1.e-12;
+    if (sctx.shift_top < info->zeropivot) sctx.shift_top = info->zeropivot;
     sctx.shift_top    *= 1.1;
     sctx.nshift_max   = 5;
     sctx.shift_lo     = 0.;
