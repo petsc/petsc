@@ -158,8 +158,8 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   ierr = HYPRE_IJMatrixDestroy(jac->ij);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorDestroy(jac->b);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorDestroy(jac->x);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&(jac->comm_hypre));CHKERRQ(ierr);
   ierr = (*jac->destroy)(jac->hsolver);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&(jac->comm_hypre));CHKERRQ(ierr);
   ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
