@@ -3669,6 +3669,27 @@ namespace ALE {
     // Structural queries
     //
     template <typename Point_, typename Marker_, typename Color_> 
+    void Sieve<Point_,Marker_,Color_>::setMarker(const point_type& p, const marker_type& marker) {
+      typename ::boost::multi_index::index<typename traits::base_container_type::set_type,typename traits::base_container_type::traits::pointTag>::type& bIndex = ::boost::multi_index::get<typename traits::base_container_type::traits::pointTag>(this->_base.set);
+      typename ::boost::multi_index::index<typename traits::cap_container_type::set_type,typename traits::cap_container_type::traits::pointTag>::type& cIndex = ::boost::multi_index::get<typename traits::cap_container_type::traits::pointTag>(this->_cap.set);
+
+      if (bIndex.find(p) != bIndex.end()) {
+        bIndex.modify(bIndex.find(p), changeMarker(marker));
+      }
+      if (cIndex.find(p) != cIndex.end()) {
+        cIndex.modify(cIndex.find(p), changeMarker(marker));
+      }
+    };
+
+    template <typename Point_, typename Marker_, typename Color_>
+    template <typename Sequence>
+    void Sieve<Point_,Marker_,Color_>::setMarker(const Obj<Sequence>& points, const marker_type& marker) {
+      for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        this->setMarker(*p_iter, marker);
+      }
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
     int Sieve<Point_,Marker_,Color_>::depth() {
       return this->maxDepth;
     }; 

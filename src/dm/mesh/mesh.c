@@ -1518,7 +1518,7 @@ PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Two::Mesh::field_type> field,
   printf("[%d]mat for element (%d, %d)\n", field->commRank(), e.prefix, e.index);
   for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator i_itor = intervals->begin(); i_itor != intervals->end(); ++i_itor) {
     numIndices += std::abs(globalOrder->getFiberDimension(patch, *i_itor));
-    if (1) {
+    if (field->debug) {
       printf("[%d]mat interval (%d, %d)\n", field->commRank(), (*i_itor).prefix, (*i_itor).index);
     }
   }
@@ -1532,7 +1532,7 @@ PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Two::Mesh::field_type> field,
   }
   //ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
   ierr = __expandCanonicalIntervals(intervals, globalOrder, indices); CHKERRQ(ierr);
-  if (1) {
+  if (field->debug) {
     for(int i = 0; i < numIndices; i++) {
       printf("[%d]mat indices[%d] = %d\n", field->commRank(), i, indices[i]);
     }
