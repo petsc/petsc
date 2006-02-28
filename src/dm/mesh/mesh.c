@@ -1224,13 +1224,13 @@ PetscErrorCode __expandIntervals(ALE::Obj<IntervalSequence> intervals, PetscInt 
   for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
     int dim = i_iter.color().index;
 
-    if (dim > 0) k += dim;
+    k += std::abs(dim);
   }
   std::cout << "Allocated indices of size " << k << std::endl;
   ierr = PetscMalloc(k * sizeof(PetscInt), &ind);CHKERRQ(ierr);
   k = 0;
   for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
-    for(int i = i_iter.color().prefix; i < i_iter.color().prefix + i_iter.color().index; i++) {
+    for(int i = i_iter.color().prefix; i < i_iter.color().prefix + std::abs(i_iter.color().index); i++) {
       std::cout << "  indices[" << k << "] = " << i << std::endl;
       ind[k++] = i;
     }
@@ -1238,6 +1238,32 @@ PetscErrorCode __expandIntervals(ALE::Obj<IntervalSequence> intervals, PetscInt 
   *indices = ind;
   PetscFunctionReturn(0);
 }
+
+template<typename IntervalSequence,typename Field>
+  PetscErrorCode __expandCanonicalIntervals(ALE::Obj<IntervalSequence> intervals, ALE::Obj<Field> field,PetscInt *indices[]) {
+  typename Field::patch_type patch;
+  PetscInt      *ind;
+  PetscInt       k = 0;
+  PetscErrorCode ierr;
+
+  for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+    k += std::abs(field->getFiberDimension(patch, *i_iter));
+  }
+  std::cout << "Allocated indices of size " << k << std::endl;
+  ierr = PetscMalloc(k * sizeof(PetscInt), &ind);CHKERRQ(ierr);
+  k = 0;
+  for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+    int dim = field->getFiberDimension(patch, *i_iter);
+    int offset = field->getFiberOffset(patch, *i_iter);
+
+    for(int i = offset; i < offset + std::abs(dim); i++) {
+      std::cout << "  indices[" << k << "] = " << i << std::endl;
+      ind[k++] = i;
+    }
+  }
+  *indices = ind;
+  PetscFunctionReturn(0);
+};
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshGetGlobalScatter"
@@ -1255,11 +1281,14 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Two::Mesh *mesh,const
   ALE::Obj<ALE::Two::Mesh::bundle_type> localOrder  = field->getLocalOrder();
 
   ierr = __expandIntervals(globalOrder->getPatch(patch), &indices);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, globalOrder->getSize(patch), indices, &globalIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, field->getSize(patch), indices, &globalIS);CHKERRQ(ierr);
   ierr = PetscFree(indices);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, localOrder->getSize(patch), field->restrict(patch), &localVec);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF, localOrder->getSize(patch), 0, 1, &localIS);CHKERRQ(ierr);
-  ierr = VecScatterCreate(g, globalIS, localVec, localIS, scatter);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, field->getSize(patch), field->restrict(patch), &localVec);CHKERRQ(ierr);
+  //ierr = ISCreateStride(PETSC_COMM_SELF, localOrder->getSize(patch), 0, 1, &localIS);CHKERRQ(ierr);
+  ierr = __expandCanonicalIntervals(globalOrder->getPatch(patch), field, &indices);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, field->getSize(patch), indices, &localIS);CHKERRQ(ierr);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
+  ierr = VecScatterCreate(localVec, localIS, g, globalIS, scatter);CHKERRQ(ierr);
   ierr = ISDestroy(globalIS);CHKERRQ(ierr);
   ierr = ISDestroy(localIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
