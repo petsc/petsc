@@ -429,14 +429,38 @@ PetscErrorCode WritePyLithElements(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer vi
   PetscFunctionReturn(0);
 }
 
+static int testerCount = 0;
+
+struct outputTester {
+  PetscViewer viewer;
+  ALE::Obj<ALE::Two::Mesh::field_type> coordinates;
+  int dim;
+  int rank;
+  public:
+  outputTester(PetscViewer viewer, ALE::Obj<ALE::Two::Mesh::field_type> coordinates, int dim, int rank) : viewer(viewer), coordinates(coordinates), dim(dim), rank(rank) {testerCount = 0;};
+  bool operator()(const ALE::Two::Mesh::point_type& p) const {
+    ALE::Two::Mesh::field_type::patch_type patch;
+    const double  *array = coordinates->restrict(patch, p);
+
+    std::cout << "[" <<rank<< "]: Writing " << testerCount << " vertex " << p << std::endl;
+    PetscViewerASCIIPrintf(this->viewer,"%7D ", 1 + testerCount++);
+    for(int d = 0; d < dim; d++) {
+      if (d > 0) {
+        PetscViewerASCIIPrintf(this->viewer," ");
+      }
+      PetscViewerASCIIPrintf(this->viewer,"% 16.8E",array[d]);
+    }
+    PetscViewerASCIIPrintf(this->viewer,"\n");
+    return true;
+  };
+};
+
 #undef __FUNCT__  
 #define __FUNCT__ "WritePyLithVerticesLocal"
 PetscErrorCode WritePyLithVerticesLocal(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer)
 {
   ALE::Obj<ALE::Two::Mesh::field_type> coordinates = mesh->getCoordinates();
-  const double  *array = coordinates->restrict(ALE::Two::Mesh::field_type::patch_type());
   int            dim = mesh->getDimension();
-  int            numVertices = mesh->getTopology()->depthStratum(0)->size();
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -446,6 +470,14 @@ PetscErrorCode WritePyLithVerticesLocal(ALE::Obj<ALE::Two::Mesh> mesh, PetscView
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"#  Node      X-coord           Y-coord           Z-coord\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
+#if 0
+  ALE::Obj<ALE::Two::Mesh::sieve_type::traits::depthSequence> vertices = mesh->getTopology()->depthStratum(0);
+  const double  *array = coordinates->restrict(ALE::Two::Mesh::field_type::patch_type());
+  int            numVertices = mesh->getTopology()->depthStratum(0)->size();
+  int            count = 0;
+  for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+    std::cout << "[" <<mesh->commRank()<< "]: Writing " << count++ << " vertex " << *v_iter << std::endl;
+  }
   for(int v = 0; v < numVertices; v++) {
     ierr = PetscViewerASCIIPrintf(viewer,"%7D ", v+1);CHKERRQ(ierr);
     for(int d = 0; d < dim; d++) {
@@ -456,6 +488,15 @@ PetscErrorCode WritePyLithVerticesLocal(ALE::Obj<ALE::Two::Mesh> mesh, PetscView
     }
     ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
   }
+#else
+  ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = ALE::Two::Mesh::bundle_type(mesh->comm());
+  ALE::Two::Mesh::bundle_type::patch_type patch;
+
+  vertexBundle->setTopology(mesh->getTopology());
+  vertexBundle->setPatch(mesh->getTopology()->leaves(), patch);
+  vertexBundle->setFiberDimensionByDepth(patch, 0, 1);
+  vertexBundle->orderPatches(outputTester(viewer, coordinates, dim, mesh->commRank()));
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -486,10 +527,14 @@ PetscErrorCode WritePyLithElementsLocal(ALE::Obj<ALE::Two::Mesh> mesh, PetscView
     ALE::Two::Mesh::bundle_type::patch_type patch;
 
     // Only linear tetrahedra, 1 material, no infinite elements
+    std::cout << "[" <<mesh->commRank()<< "]: Writing " << elementCount << " element " << *e_itor << std::endl;
+    std::cout << "[" <<mesh->commRank()<< "]:   ";
     ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, 1, 0);CHKERRQ(ierr);
     for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+      std::cout << " " << *c_itor << "(" << vertexBundle->getIndex(patch, *c_itor).prefix+1 << ")";
       ierr = PetscViewerASCIIPrintf(viewer, " %6d", vertexBundle->getIndex(patch, *c_itor).prefix+1);CHKERRQ(ierr);
     }
+    std::cout << std::endl;
     ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1230,7 +1275,37 @@ PetscErrorCode __expandIntervals(ALE::Obj<IntervalSequence> intervals, PetscInt 
   ierr = PetscMalloc(k * sizeof(PetscInt), &ind);CHKERRQ(ierr);
   k = 0;
   for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+    std::cout << "  indices for " << *i_iter << std::endl;
     for(int i = i_iter.color().prefix; i < i_iter.color().prefix + std::abs(i_iter.color().index); i++) {
+      std::cout << "  indices[" << k << "] = " << i << std::endl;
+      ind[k++] = i;
+    }
+  }
+  *indices = ind;
+  PetscFunctionReturn(0);
+}
+
+template<typename IntervalSequence>
+PetscErrorCode __expandIntervals(ALE::Obj<IntervalSequence> intervals, ALE::Obj<ALE::Two::Mesh::bundle_type::order_type> order, PetscInt *indices[]) {
+  typename ALE::Two::Mesh::bundle_type::patch_type patch;
+  PetscInt      *ind;
+  PetscInt       k = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+    int dim = order->getColor(*i_iter, patch, false).index;
+
+    k += std::abs(dim);
+  }
+  std::cout << "Allocated indices of size " << k << std::endl;
+  ierr = PetscMalloc(k * sizeof(PetscInt), &ind);CHKERRQ(ierr);
+  k = 0;
+  for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+    const ALE::Two::Mesh::bundle_type::index_type& color = order->getColor(*i_iter, patch, false);
+
+    std::cout << "  indices for " << *i_iter << std::endl;
+    for(int i = color.prefix; i < color.prefix + std::abs(color.index); i++) {
       std::cout << "  indices[" << k << "] = " << i << std::endl;
       ind[k++] = i;
     }
@@ -1256,12 +1331,31 @@ template<typename IntervalSequence,typename Field>
     int dim = field->getFiberDimension(patch, *i_iter);
     int offset = field->getFiberOffset(patch, *i_iter);
 
+    std::cout << "  indices for " << *i_iter << std::endl;
     for(int i = offset; i < offset + std::abs(dim); i++) {
       std::cout << "  indices[" << k << "] = " << i << std::endl;
       ind[k++] = i;
     }
   }
   *indices = ind;
+  PetscFunctionReturn(0);
+};
+
+template<typename IntervalSequence,typename Field>
+  PetscErrorCode __expandCanonicalIntervals(ALE::Obj<IntervalSequence> intervals, ALE::Obj<Field> field,PetscInt indices[]) {
+  typename Field::patch_type patch;
+  PetscInt k = 0;
+
+  for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+    int dim = field->getFiberDimension(patch, *i_iter);
+    int offset = field->getFiberOffset(patch, *i_iter);
+
+    std::cout << "  indices for " << *i_iter << std::endl;
+    for(int i = offset; i < offset + std::abs(dim); i++) {
+      std::cout << "  indices[" << k << "] = " << i << std::endl;
+      indices[k++] = i;
+    }
+  }
   PetscFunctionReturn(0);
 };
 
@@ -1411,18 +1505,21 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
 #define __FUNCT__ "updateOperator"
 PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Two::Mesh::field_type> field, const ALE::Two::Mesh::point_type& e, PetscScalar array[], InsertMode mode)
 {
-  ALE::Obj<ALE::Two::Mesh::bundle_type::IndexArray> intervals = field->getIndices("element", e);
+  //ALE::Obj<ALE::Two::Mesh::bundle_type::IndexArray> intervals = field->getIndices("element", e);
+  ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> intervals = field->getPatch("element", e);
+  ALE::Obj<ALE::Two::Mesh::bundle_type> globalOrder = field->getGlobalOrder();
+  ALE::Two::Mesh::bundle_type::patch_type patch;
   static PetscInt  indicesSize = 0;
   static PetscInt *indices = NULL;
   PetscInt         numIndices = 0;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  for(ALE::Two::Mesh::bundle_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    numIndices += (*i_itor).index;
-    if (0) {
-      //printf("[%d]interval (%d, %d)\n", mesh->getCommRank(), (*i_itor).prefix, (*i_itor).index);
-      printf("[%d]interval (%d, %d)\n", 0, (*i_itor).prefix, (*i_itor).index);
+  printf("[%d]mat for element (%d, %d)\n", field->commRank(), e.prefix, e.index);
+  for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator i_itor = intervals->begin(); i_itor != intervals->end(); ++i_itor) {
+    numIndices += std::abs(globalOrder->getFiberDimension(patch, *i_itor));
+    if (1) {
+      printf("[%d]mat interval (%d, %d)\n", field->commRank(), (*i_itor).prefix, (*i_itor).index);
     }
   }
   if (indicesSize && (indicesSize != numIndices)) {
@@ -1433,11 +1530,18 @@ PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Two::Mesh::field_type> field,
     indicesSize = numIndices;
     ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
   }
-  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
-  if (0) {
+  //ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
+  ierr = __expandCanonicalIntervals(intervals, globalOrder, indices); CHKERRQ(ierr);
+  if (1) {
     for(int i = 0; i < numIndices; i++) {
-      //printf("[%d]indices[%d] = %d\n", mesh->getCommRank(), i, indices[i]);
-      printf("[%d]indices[%d] = %d\n", 0, i, indices[i]);
+      printf("[%d]mat indices[%d] = %d\n", field->commRank(), i, indices[i]);
+    }
+    for(int i = 0; i < numIndices; i++) {
+      printf("[%d]", field->commRank());
+      for(int j = 0; j < numIndices; j++) {
+        printf(" %g", array[i*numIndices+j]);
+      }
+      printf("\n");
     }
   }
   ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);CHKERRQ(ierr);
@@ -1469,7 +1573,7 @@ PetscErrorCode assembleOperator_New(Mat A, ALE::Obj<ALE::def::Mesh::coordinate_t
     indicesSize = numIndices;
     ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
   }
-  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
+  ierr = __expandCanonicalIntervals(intervals, indices); CHKERRQ(ierr);
   if (0) {
     for(int i = 0; i < numIndices; i++) {
       //printf("[%d]indices[%d] = %d\n", mesh->getCommRank(), i, indices[i]);
@@ -1504,17 +1608,26 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
 {
   PetscObjectContainer c;
   ALE::Two::Mesh      *mesh;
-  int                  firstElement;
+  int                  firstElement = 0;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &c);CHKERRQ(ierr);
   ierr = PetscObjectContainerGetPointer(c, (void **) &mesh);CHKERRQ(ierr);
-  // Need to globalize
-  firstElement = mesh->getBundle(mesh->getTopology()->depth())->getGlobalOffsets()[mesh->commRank()];
+  //FIX: Must use a reorder to map local to global element numbers
+  //firstElement = mesh->getBundle(mesh->getTopology()->depth())->getGlobalOffsets()[mesh->commRank()];
+  int localElement, count = 0;
+  ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
+  for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+    if (count == e) {
+      localElement = (*e_itor).index;
+      break;
+    }
+    count++;
+  }
   try {
     //ierr = assembleOperator_New(A, mesh->getField(), mesh->getOrientation(), ALE::def::Mesh::sieve_type::point_type(0, e + firstElement), v, mode);CHKERRQ(ierr);
-    ierr = updateOperator(A, mesh->getField("displacement"), ALE::Two::Mesh::sieve_type::point_type(0, e + firstElement), v, mode);CHKERRQ(ierr);
+    ierr = updateOperator(A, mesh->getField("displacement"), ALE::Two::Mesh::sieve_type::point_type(0, localElement + firstElement), v, mode);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }
