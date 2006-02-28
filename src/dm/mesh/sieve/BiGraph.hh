@@ -111,7 +111,7 @@ namespace ALE {
       // Basic interface
       Rec() : degree(0){};
       Rec(const Rec& r) : point(r.point), degree(r.degree) {}
-      Rec(const point_type& p) : point(p), degree(0) {};
+      //Rec(const point_type& p) : point(p), degree(0) {};
       Rec(const point_type& p, const int d) : point(p), degree(d) {};
       // Printing
       friend std::ostream& operator<<(std::ostream& os, const Rec& p) {

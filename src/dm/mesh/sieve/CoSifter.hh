@@ -479,7 +479,9 @@ namespace ALE {
           }
         }
         for(typename std::map<patch_type,value_type *>::const_iterator s_iter = this->_storage.begin(); s_iter != this->_storage.end(); ++s_iter) {
-          txt << "[" << this->commRank() << "]: Patch " << s_iter->first << std::endl;
+          patch_type patch = s_iter->first;
+
+          txt << "[" << this->commRank() << "]: Patch " << patch << std::endl;
           Obj<typename order_type::coneSequence> cone = this->getPatch(s_iter->first);
 
           for(typename order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
@@ -515,7 +517,7 @@ namespace ALE {
         };
 
         bool operator()(const typename sieve_type::point_type& p) const {
-          std::cout << "Checking for local point " << p << std::endl;
+          //std::cout << "Checking for local point " << p << std::endl;
           return this->isLocal(this->overlap, this->points, p);
         }
       };
@@ -549,18 +551,19 @@ namespace ALE {
       void createGlobalOrder() {
         Obj<typename sieve_type::traits::depthSequence>  vertices = this->_topology->depthStratum(0);
         Obj<typename sieve_type::traits::heightSequence> cells    = this->_topology->heightStratum(0);
-        int useBaseOverlap = 0, useCapOverlap = 0;
+        int useLocBaseOverlap = 0, useLocCapOverlap = 0;
+        int useBaseOverlap    = 0, useCapOverlap    = 0;
         typename bundle_type::patch_type patch;
 
         for(typename sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
           if (this->getFiberDimension(patch, *v_iter) > 0) {
-            useCapOverlap = 1;
+            useLocCapOverlap = 1;
             break;
           }
         }
         for(typename sieve_type::traits::heightSequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
           if (this->getFiberDimension(patch, *c_iter) > 0) {
-            useBaseOverlap = 1;
+            useLocBaseOverlap = 1;
             break;
           }
         }
@@ -569,12 +572,12 @@ namespace ALE {
         Obj<typename coneDelta_type::overlap_type> baseOverlap;
         int rank = this->commRank();
 
-        MPI_Allreduce(&useCapOverlap, &useCapOverlap, 1, MPI_INT, MPI_LOR, this->comm());
+        MPI_Allreduce(&useLocCapOverlap, &useCapOverlap, 1, MPI_INT, MPI_LOR, this->comm());
         if (useCapOverlap) {
           std::cout << "Doing cap overlap" << std::endl;
           capOverlap = supportDelta_type::overlap(this->_topology);
         }
-        MPI_Allreduce(&useBaseOverlap, &useBaseOverlap, 1, MPI_INT, MPI_LOR, this->comm());
+        MPI_Allreduce(&useLocBaseOverlap, &useBaseOverlap, 1, MPI_INT, MPI_LOR, this->comm());
         if (useBaseOverlap) {
           std::cout << "Doing base overlap" << std::endl;
           baseOverlap = coneDelta_type::overlap(this->_topology);

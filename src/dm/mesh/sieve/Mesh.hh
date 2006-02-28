@@ -32,6 +32,12 @@ namespace ALE {
       typedef CoSifter<sieve_type, patch_type, point_type, double> field_type;
       typedef CoSifter<sieve_type, std::pair<patch_type,int>, point_type, double> foliation_type;
       int debug;
+    public:
+      // Printing
+      friend std::ostream& operator<<(std::ostream& os, const std::pair<patch_type,int>& p) {
+        os << "<" << p.first << ", "<< p.second << ">";
+        return os;
+      };
     private:
       Obj<sieve_type> topology;
       Obj<field_type> coordinates;
