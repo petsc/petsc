@@ -91,9 +91,9 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterLocalOptimize_Private"
-PetscErrorCode VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,VecScatter_Seq_General *gen_from)
+PetscErrorCode VecScatterLocalOptimize_Private(VecScatter_Seq_General *to,VecScatter_Seq_General *from)
 {
-  PetscInt       n = gen_to->n,n_nonmatching = 0,i,*to_slots = gen_to->vslots,*from_slots = gen_from->vslots;
+  PetscInt       n = to->n,n_nonmatching = 0,i,*to_slots = to->vslots,*from_slots = from->vslots;
   PetscErrorCode ierr;
   PetscInt       *nto_slots,*nfrom_slots,j = 0;
   
@@ -103,18 +103,18 @@ PetscErrorCode VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,Ve
   }
 
   if (!n_nonmatching) {
-    gen_to->nonmatching_computed = PETSC_TRUE;
-    gen_to->n_nonmatching        = gen_from->n_nonmatching = 0;
+    to->nonmatching_computed = PETSC_TRUE;
+    to->n_nonmatching        = from->n_nonmatching = 0;
     ierr = PetscInfo1(0,"Reduced %D to 0\n", n);CHKERRQ(ierr);
   } else if (n_nonmatching == n) {
-    gen_to->nonmatching_computed = PETSC_FALSE;
+    to->nonmatching_computed = PETSC_FALSE;
     ierr = PetscInfo(0,"All values non-matching\n");CHKERRQ(ierr);
   } else {
-    gen_to->nonmatching_computed= PETSC_TRUE;
-    gen_to->n_nonmatching       = gen_from->n_nonmatching = n_nonmatching;
+    to->nonmatching_computed= PETSC_TRUE;
+    to->n_nonmatching       = from->n_nonmatching = n_nonmatching;
     ierr = PetscMalloc2(n_nonmatching,PetscInt,&nto_slots,n_nonmatching,PetscInt,&nfrom_slots);CHKERRQ(ierr);
-    gen_to->slots_nonmatching   = nto_slots;
-    gen_from->slots_nonmatching = nfrom_slots;
+    to->slots_nonmatching   = nto_slots;
+    from->slots_nonmatching = nfrom_slots;
     for (i=0; i<n; i++) {
       if (to_slots[i] != from_slots[i]) {
         nto_slots[j]   = to_slots[i];
@@ -199,20 +199,20 @@ PetscErrorCode VecScatterCopy_PtoP(VecScatter in,VecScatter out)
 #define __FUNCT__ "VecScatterDestroy_PtoP"
 PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to   = (VecScatter_MPI_General*)ctx->todata;
-  VecScatter_MPI_General *gen_from = (VecScatter_MPI_General*)ctx->fromdata;
+  VecScatter_MPI_General *to   = (VecScatter_MPI_General*)ctx->todata;
+  VecScatter_MPI_General *from = (VecScatter_MPI_General*)ctx->fromdata;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   CHKMEMQ;
-  ierr = PetscFree2(gen_to->local.vslots,gen_from->local.vslots);CHKERRQ(ierr);
-  ierr = PetscFree2(gen_to->counts,gen_to->displs);CHKERRQ(ierr);
-  ierr = PetscFree2(gen_from->counts,gen_from->displs);CHKERRQ(ierr);
-  ierr = PetscFree2(gen_to->local.slots_nonmatching,gen_from->local.slots_nonmatching);CHKERRQ(ierr);
-  ierr = PetscFree7(gen_to->values,gen_to->requests,gen_to->indices,gen_to->starts,gen_to->procs,gen_to->sstatus,gen_to->rstatus);CHKERRQ(ierr);
-  ierr = PetscFree5(gen_from->values,gen_from->requests,gen_from->indices,gen_from->starts,gen_from->procs);CHKERRQ(ierr);
-  ierr = PetscFree(gen_from);CHKERRQ(ierr);
-  ierr = PetscFree(gen_to);CHKERRQ(ierr);
+  ierr = PetscFree2(to->local.vslots,from->local.vslots);CHKERRQ(ierr);
+  ierr = PetscFree2(to->counts,to->displs);CHKERRQ(ierr);
+  ierr = PetscFree2(from->counts,from->displs);CHKERRQ(ierr);
+  ierr = PetscFree2(to->local.slots_nonmatching,from->local.slots_nonmatching);CHKERRQ(ierr);
+  ierr = PetscFree7(to->values,to->requests,to->indices,to->starts,to->procs,to->sstatus,to->rstatus);CHKERRQ(ierr);
+  ierr = PetscFree5(from->values,from->requests,from->indices,from->starts,from->procs);CHKERRQ(ierr);
+  ierr = PetscFree(from);CHKERRQ(ierr);
+  ierr = PetscFree(to);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -223,8 +223,8 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   vectors, either xin or yin (but not both) may be Seq
   vectors, one for each processor.
   
-     gen_from indices indicate where arriving stuff is stashed
-     gen_to   indices indicate where departing stuff came from. 
+     from indices indicate where arriving stuff is stashed
+     to   indices indicate where departing stuff came from. 
      the naming can be VERY confusing.
 
 */
@@ -232,7 +232,7 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
 #define __FUNCT__ "VecScatterBegin_PtoP"
 PetscErrorCode VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   MPI_Comm               comm = ctx->comm;
   PetscScalar            *xv,*yv,*val,*rvalues,*svalues;
   MPI_Request            *rwaits,*swaits;
@@ -246,27 +246,27 @@ PetscErrorCode VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
   if (mode & SCATTER_REVERSE){
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
   }
-  rvalues  = gen_from->values;
-  svalues  = gen_to->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  rwaits   = gen_from->requests;
-  swaits   = gen_to->requests;
-  indices  = gen_to->indices;
-  rstarts  = gen_from->starts;
-  sstarts  = gen_to->starts;
-  rprocs   = gen_from->procs;
-  sprocs   = gen_to->procs;
+  rvalues  = from->values;
+  svalues  = to->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  rwaits   = from->requests;
+  swaits   = to->requests;
+  indices  = to->indices;
+  rstarts  = from->starts;
+  sstarts  = to->starts;
+  rprocs   = from->procs;
+  sprocs   = to->procs;
 
   if (!(mode & SCATTER_LOCAL)) {  
 
-    if (gen_to->sendfirst) {
+    if (to->sendfirst) {
       /* do sends:  */
       for (i=0; i<nsends; i++) {
         val  = svalues + sstarts[i];
@@ -284,7 +284,7 @@ PetscErrorCode VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode 
       ierr = MPI_Irecv(rvalues+rstarts[i],rstarts[i+1]-rstarts[i],MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
     }
 
-    if (!gen_to->sendfirst) {
+    if (!to->sendfirst) {
       /* do sends:  */
       for (i=0; i<nsends; i++) {
         val  = svalues + sstarts[i];
@@ -299,27 +299,27 @@ PetscErrorCode VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   }
 
   /* take care of local scatters */
-  if (gen_to->local.n && addv == INSERT_VALUES) {
-    if (yv == xv && !gen_to->local.nonmatching_computed) {
-      ierr = VecScatterLocalOptimize_Private(&gen_to->local,&gen_from->local);CHKERRQ(ierr);
+  if (to->local.n && addv == INSERT_VALUES) {
+    if (yv == xv && !to->local.nonmatching_computed) {
+      ierr = VecScatterLocalOptimize_Private(&to->local,&from->local);CHKERRQ(ierr);
     }
-    if (gen_to->local.is_copy) {
-      ierr = PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
-    } else if (yv != xv || !gen_to->local.nonmatching_computed) {
-      PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
-      PetscInt n       = gen_to->local.n;
+    if (to->local.is_copy) {
+      ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
+    } else if (yv != xv || !to->local.nonmatching_computed) {
+      PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
+      PetscInt n       = to->local.n;
       for (i=0; i<n; i++) {yv[fslots[i]] = xv[tslots[i]];}
     } else {
       /* 
         In this case, it is copying the values into their old locations, thus we can skip those  
       */
-      PetscInt *tslots = gen_to->local.slots_nonmatching,*fslots = gen_from->local.slots_nonmatching;
-      PetscInt n       = gen_to->local.n_nonmatching;
+      PetscInt *tslots = to->local.slots_nonmatching,*fslots = from->local.slots_nonmatching;
+      PetscInt n       = to->local.n_nonmatching;
       for (i=0; i<n; i++) {yv[fslots[i]] = xv[tslots[i]];}
     } 
-  } else if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
-    PetscInt n = gen_to->local.n;
+  } else if (to->local.n) {
+    PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
+    PetscInt n = to->local.n;
     if (addv == ADD_VALUES) {
       for (i=0; i<n; i++) {yv[fslots[i]] += xv[tslots[i]];}
 #if !defined(PETSC_USE_COMPLEX)
@@ -340,7 +340,7 @@ PetscErrorCode VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode 
 #define __FUNCT__ "VecScatterEnd_PtoP"
 PetscErrorCode VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *rvalues,*yv,*val;
   PetscErrorCode         ierr;
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices;
@@ -354,21 +354,21 @@ PetscErrorCode VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mo
   ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE){
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    sstatus  = gen_from->sstatus;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    sstatus  = from->sstatus;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    sstatus  = gen_to->sstatus;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    sstatus  = to->sstatus;
   }
-  rvalues  = gen_from->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  rwaits   = gen_from->requests;
-  swaits   = gen_to->requests;
-  indices  = gen_from->indices;
-  rstarts  = gen_from->starts;
+  rvalues  = from->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  rwaits   = from->requests;
+  swaits   = to->requests;
+  indices  = from->indices;
+  rstarts  = from->starts;
 
   /*  wait on receives */
   count = nrecvs;
@@ -407,7 +407,7 @@ PetscErrorCode VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mo
 #define __FUNCT__ "VecScatterBegin_PtoP_Alltoallv"
 PetscErrorCode VecScatterBegin_PtoP_Alltoallv(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscInt               i,*indices,n;
   PetscErrorCode         ierr;
   PetscScalar            *xv,*yv,*val;
@@ -417,62 +417,64 @@ PetscErrorCode VecScatterBegin_PtoP_Alltoallv(Vec xin,Vec yin,InsertMode addv,Sc
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
   if (mode & SCATTER_REVERSE){
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
   }
-  /* pack messages */
-  indices = gen_to->indices;
-  val     = gen_to->values;
-  n       = gen_to->starts[gen_to->n];
-  for (i=0; i<n; i++) {
-    val[i] = xv[*indices++];
-  }
-  ierr = MPI_Alltoallv(val,gen_to->counts,gen_to->displs,MPIU_SCALAR,gen_from->values,gen_from->counts,gen_from->displs,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
-  /* unpack messages */
-  indices = gen_from->indices;
-  val     = gen_from->values;
-  n       = gen_from->starts[gen_from->n];
-  if (addv == INSERT_VALUES) {
+  if (!(mode & SCATTER_LOCAL)) {  
+    /* pack messages */
+    indices = to->indices;
+    val     = to->values;
+    n       = to->starts[to->n];
     for (i=0; i<n; i++) {
-      yv[*indices++] = val[i];
+      val[i] = xv[*indices++];
     }
-  } else if (addv == ADD_VALUES) {
-    for (i=0; i<n; i++) {
-      yv[*indices++] += val[i];
-    }
+    ierr = MPI_Alltoallv(val,to->counts,to->displs,MPIU_SCALAR,from->values,from->counts,from->displs,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
+    /* unpack messages */
+    indices = from->indices;
+    val     = from->values;
+    n       = from->starts[from->n];
+    if (addv == INSERT_VALUES) {
+      for (i=0; i<n; i++) {
+        yv[*indices++] = val[i];
+      }
+    } else if (addv == ADD_VALUES) {
+      for (i=0; i<n; i++) {
+        yv[*indices++] += val[i];
+      }
 #if !defined(PETSC_USE_COMPLEX)
-  } else if (addv == MAX_VALUES) {
-    for (i=0; i<n; i++) {
-      yv[*indices] = PetscMax(yv[*indices],val[i]); indices++;
-    }
+    } else if (addv == MAX_VALUES) {
+      for (i=0; i<n; i++) {
+        yv[*indices] = PetscMax(yv[*indices],val[i]); indices++;
+      }
 #endif
-  }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
+    }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
+  }
 
   /* take care of local scatters */
-  if (gen_to->local.n && addv == INSERT_VALUES) {
-    if (yv == xv && !gen_to->local.nonmatching_computed) {
-      ierr = VecScatterLocalOptimize_Private(&gen_to->local,&gen_from->local);CHKERRQ(ierr);
+  if (to->local.n && addv == INSERT_VALUES) {
+    if (yv == xv && !to->local.nonmatching_computed) {
+      ierr = VecScatterLocalOptimize_Private(&to->local,&from->local);CHKERRQ(ierr);
     }
-    if (gen_to->local.is_copy) {
-      ierr = PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
-    } else if (yv != xv || !gen_to->local.nonmatching_computed) {
-      PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
-      n = gen_to->local.n;
+    if (to->local.is_copy) {
+      ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
+    } else if (yv != xv || !to->local.nonmatching_computed) {
+      PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
+      n = to->local.n;
       for (i=0; i<n; i++) {yv[fslots[i]] = xv[tslots[i]];}
     } else {
       /* 
         In this case, it is copying the values into their old locations, thus we can skip those  
       */
-      PetscInt *tslots = gen_to->local.slots_nonmatching,*fslots = gen_from->local.slots_nonmatching;
-      n = gen_to->local.n_nonmatching;
+      PetscInt *tslots = to->local.slots_nonmatching,*fslots = from->local.slots_nonmatching;
+      n = to->local.n_nonmatching;
       for (i=0; i<n; i++) {yv[fslots[i]] = xv[tslots[i]];}
     } 
-  } else if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
-    n = gen_to->local.n;
+  } else if (to->local.n) {
+    PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
+    n = to->local.n;
     if (addv == ADD_VALUES) {
       for (i=0; i<n; i++) {yv[fslots[i]] += xv[tslots[i]];}
 #if !defined(PETSC_USE_COMPLEX)
@@ -509,10 +511,10 @@ PetscErrorCode VecScatterBegin_PtoP_Alltoallv(Vec xin,Vec yin,InsertMode addv,Sc
 PetscErrorCode VecScatterPostRecvs_PtoP_X(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   PetscErrorCode         ierr;
-  VecScatter_MPI_General *gen_from = (VecScatter_MPI_General*)ctx->fromdata;
+  VecScatter_MPI_General *from = (VecScatter_MPI_General*)ctx->fromdata;
 
   PetscFunctionBegin;
-  if (gen_from->n) {ierr = MPI_Startall_irecv(gen_from->starts[gen_from->n]*gen_from->bs,gen_from->n,gen_from->requests);CHKERRQ(ierr);}
+  if (from->n) {ierr = MPI_Startall_irecv(from->starts[from->n]*from->bs,from->n,from->requests);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -524,9 +526,9 @@ PetscErrorCode VecScatterPostRecvs_PtoP_X(Vec xin,Vec yin,InsertMode addv,Scatte
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterLocalOptimizeCopy_Private"
-PetscErrorCode VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatter_Seq_General *gen_from,PetscInt bs)
+PetscErrorCode VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *to,VecScatter_Seq_General *from,PetscInt bs)
 {
-  PetscInt       n = gen_to->n,i,*to_slots = gen_to->vslots,*from_slots = gen_from->vslots;
+  PetscInt       n = to->n,i,*to_slots = to->vslots,*from_slots = from->vslots;
   PetscInt       to_start,from_start;
   PetscErrorCode ierr;
 
@@ -540,12 +542,12 @@ PetscErrorCode VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_t
     if (to_slots[i]   != to_start)   PetscFunctionReturn(0);
     if (from_slots[i] != from_start) PetscFunctionReturn(0);
   }
-  gen_to->is_copy       = PETSC_TRUE; 
-  gen_to->copy_start    = to_slots[0]; 
-  gen_to->copy_length   = bs*sizeof(PetscScalar)*n;
-  gen_from->is_copy     = PETSC_TRUE;
-  gen_from->copy_start  = from_slots[0];
-  gen_from->copy_length = bs*sizeof(PetscScalar)*n;
+  to->is_copy       = PETSC_TRUE; 
+  to->copy_start    = to_slots[0]; 
+  to->copy_length   = bs*sizeof(PetscScalar)*n;
+  from->is_copy     = PETSC_TRUE;
+  from->copy_start  = from_slots[0];
+  from->copy_length = bs*sizeof(PetscScalar)*n;
 
   ierr = PetscInfo(0,"Local scatter is a copy, optimizing for it\n");CHKERRQ(ierr);
 
@@ -688,7 +690,7 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
 #define __FUNCT__ "VecScatterBegin_PtoP_12"
 PetscErrorCode VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscInt               *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,len;
@@ -699,27 +701,27 @@ PetscErrorCode VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMo
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
 
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
   }
-  svalues  = gen_to->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_to->indices;
-  sstarts  = gen_to->starts;
+  svalues  = to->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = to->indices;
+  sstarts  = to->starts;
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (!gen_from->use_readyreceiver && !gen_to->sendfirst) {  
+    if (!from->use_readyreceiver && !to->sendfirst) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      if (nrecvs) {ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
     if (ctx->packtogether) {
       /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
@@ -768,19 +770,19 @@ PetscErrorCode VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMo
       } 
     }
 
-    if (!gen_from->use_readyreceiver && gen_to->sendfirst) {  
+    if (!from->use_readyreceiver && to->sendfirst) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      if (nrecvs) {ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
   }
 
   /* take care of local scatters */
-  if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
-    PetscInt n       = gen_to->local.n,il,ir;
+  if (to->local.n) {
+    PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
+    PetscInt n       = to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
-      if (gen_to->local.is_copy) {
-        ierr = PetscMemcpy(yv+gen_from->local.copy_start,xv+gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
+      if (to->local.is_copy) {
+        ierr = PetscMemcpy(yv+from->local.copy_start,xv+to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
       } else {
         for (i=0; i<n; i++) {
           il = fslots[i]; ir = tslots[i];
@@ -845,7 +847,7 @@ PetscErrorCode VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMo
 #define __FUNCT__ "VecScatterEnd_PtoP_12"
 PetscErrorCode VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *rvalues,*yv,*val;
   PetscErrorCode         ierr;
   PetscMPIInt            imdex;
@@ -858,25 +860,25 @@ PetscErrorCode VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode
   ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
-    sstatus  = gen_from->sstatus;
-    rstatus  = gen_from->rstatus;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
+    sstatus  = from->sstatus;
+    rstatus  = from->rstatus;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
-    sstatus  = gen_to->sstatus;
-    rstatus  = gen_to->rstatus;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
+    sstatus  = to->sstatus;
+    rstatus  = to->rstatus;
   }
-  rvalues  = gen_from->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_from->indices;
-  rstarts  = gen_from->starts;
+  rvalues  = from->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = from->indices;
+  rstarts  = from->starts;
 
   /*  wait on receives */
   count = nrecvs;
@@ -1015,7 +1017,7 @@ PetscErrorCode VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode
 #define __FUNCT__ "VecScatterBegin_PtoP_8"
 PetscErrorCode VecScatterBegin_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
@@ -1025,25 +1027,25 @@ PetscErrorCode VecScatterBegin_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMod
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
   }
-  svalues  = gen_to->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_to->indices;
-  sstarts  = gen_to->starts;
+  svalues  = to->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = to->indices;
+  sstarts  = to->starts;
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (gen_to->sendfirst) {
+    if (to->sendfirst) {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -1065,12 +1067,12 @@ PetscErrorCode VecScatterBegin_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMod
       }
     }
 
-    if (!gen_from->use_readyreceiver) {  
+    if (!from->use_readyreceiver) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      if (nrecvs) {ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
 
-    if (!gen_to->sendfirst) {
+    if (!to->sendfirst) {
       /* this version packs all the messages together and sends */
       /*
       len  = 5*sstarts[nsends];
@@ -1110,12 +1112,12 @@ PetscErrorCode VecScatterBegin_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMod
   }
 
   /* take care of local scatters */
-  if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
-    PetscInt n       = gen_to->local.n,il,ir;
+  if (to->local.n) {
+    PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
+    PetscInt n       = to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
-      if (gen_to->local.is_copy) {
-        ierr = PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
+      if (to->local.is_copy) {
+        ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
       } else {
         for (i=0; i<n; i++) {
           il = fslots[i]; ir = tslots[i];
@@ -1168,7 +1170,7 @@ PetscErrorCode VecScatterBegin_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMod
 #define __FUNCT__ "VecScatterEnd_PtoP_8"
 PetscErrorCode VecScatterEnd_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *rvalues,*yv,*val;
   PetscErrorCode         ierr;
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
@@ -1181,23 +1183,23 @@ PetscErrorCode VecScatterEnd_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
-    sstatus  = gen_from->sstatus;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
+    sstatus  = from->sstatus;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
-    sstatus  = gen_to->sstatus;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
+    sstatus  = to->sstatus;
   }
-  rvalues  = gen_from->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_from->indices;
-  rstarts  = gen_from->starts;
+  rvalues  = from->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = from->indices;
+  rstarts  = from->starts;
 
   /*  wait on receives */
   count = nrecvs;
@@ -1262,7 +1264,7 @@ PetscErrorCode VecScatterEnd_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMode 
 #define __FUNCT__ "VecScatterBegin_PtoP_7"
 PetscErrorCode VecScatterBegin_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
@@ -1272,25 +1274,25 @@ PetscErrorCode VecScatterBegin_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMod
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
   }
-  svalues  = gen_to->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_to->indices;
-  sstarts  = gen_to->starts;
+  svalues  = to->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = to->indices;
+  sstarts  = to->starts;
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (gen_to->sendfirst) {
+    if (to->sendfirst) {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -1311,12 +1313,12 @@ PetscErrorCode VecScatterBegin_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMod
       }
     }
 
-    if (!gen_from->use_readyreceiver) {  
+    if (!from->use_readyreceiver) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      if (nrecvs) {ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
 
-    if (!gen_to->sendfirst) {
+    if (!to->sendfirst) {
       /* this version packs all the messages together and sends */
       /*
       len  = 5*sstarts[nsends];
@@ -1355,12 +1357,12 @@ PetscErrorCode VecScatterBegin_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMod
   }
 
   /* take care of local scatters */
-  if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
-    PetscInt n       = gen_to->local.n,il,ir;
+  if (to->local.n) {
+    PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
+    PetscInt n       = to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
-      if (gen_to->local.is_copy) {
-        ierr = PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
+      if (to->local.is_copy) {
+        ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
       } else {
         for (i=0; i<n; i++) {
           il = fslots[i]; ir = tslots[i];
@@ -1410,7 +1412,7 @@ PetscErrorCode VecScatterBegin_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMod
 #define __FUNCT__ "VecScatterEnd_PtoP_7"
 PetscErrorCode VecScatterEnd_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *rvalues,*yv,*val;
   PetscErrorCode         ierr;
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
@@ -1423,23 +1425,23 @@ PetscErrorCode VecScatterEnd_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
-    sstatus  = gen_from->sstatus;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
+    sstatus  = from->sstatus;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
-    sstatus  = gen_to->sstatus;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
+    sstatus  = to->sstatus;
   }
-  rvalues  = gen_from->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_from->indices;
-  rstarts  = gen_from->starts;
+  rvalues  = from->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = from->indices;
+  rstarts  = from->starts;
 
   /*  wait on receives */
   count = nrecvs;
@@ -1502,7 +1504,7 @@ PetscErrorCode VecScatterEnd_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMode 
 #define __FUNCT__ "VecScatterBegin_PtoP_6"
 PetscErrorCode VecScatterBegin_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
@@ -1512,25 +1514,25 @@ PetscErrorCode VecScatterBegin_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMod
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
   }
-  svalues  = gen_to->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_to->indices;
-  sstarts  = gen_to->starts;
+  svalues  = to->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = to->indices;
+  sstarts  = to->starts;
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (gen_to->sendfirst) {
+    if (to->sendfirst) {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -1550,12 +1552,12 @@ PetscErrorCode VecScatterBegin_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMod
       }
     }
 
-    if (!gen_from->use_readyreceiver) {  
+    if (!from->use_readyreceiver) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      if (nrecvs) {ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
 
-    if (!gen_to->sendfirst) {
+    if (!to->sendfirst) {
       /* this version packs all the messages together and sends */
       /*
       len  = 5*sstarts[nsends];
@@ -1593,12 +1595,12 @@ PetscErrorCode VecScatterBegin_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMod
   }
 
   /* take care of local scatters */
-  if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
-    PetscInt n       = gen_to->local.n,il,ir;
+  if (to->local.n) {
+    PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
+    PetscInt n       = to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
-      if (gen_to->local.is_copy) {
-        ierr = PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
+      if (to->local.is_copy) {
+        ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
       } else {
         for (i=0; i<n; i++) {
           il = fslots[i]; ir = tslots[i];
@@ -1645,7 +1647,7 @@ PetscErrorCode VecScatterBegin_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMod
 #define __FUNCT__ "VecScatterEnd_PtoP_6"
 PetscErrorCode VecScatterEnd_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *rvalues,*yv,*val;
   PetscErrorCode         ierr;
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
@@ -1658,23 +1660,23 @@ PetscErrorCode VecScatterEnd_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
-    sstatus  = gen_from->sstatus;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
+    sstatus  = from->sstatus;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
-    sstatus  = gen_to->sstatus;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
+    sstatus  = to->sstatus;
   }
-  rvalues  = gen_from->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_from->indices;
-  rstarts  = gen_from->starts;
+  rvalues  = from->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = from->indices;
+  rstarts  = from->starts;
 
   /*  wait on receives */
   count = nrecvs;
@@ -1734,7 +1736,7 @@ PetscErrorCode VecScatterEnd_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMode 
 #define __FUNCT__ "VecScatterBegin_PtoP_5"
 PetscErrorCode VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
@@ -1744,25 +1746,25 @@ PetscErrorCode VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMod
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
   }
-  svalues  = gen_to->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_to->indices;
-  sstarts  = gen_to->starts;
+  svalues  = to->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = to->indices;
+  sstarts  = to->starts;
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (gen_to->sendfirst) {
+    if (to->sendfirst) {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -1781,12 +1783,12 @@ PetscErrorCode VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMod
       }
     }
 
-    if (!gen_from->use_readyreceiver) {  
+    if (!from->use_readyreceiver) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      if (nrecvs) {ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
 
-    if (!gen_to->sendfirst) {
+    if (!to->sendfirst) {
       /* this version packs all the messages together and sends */
       /*
       len  = 5*sstarts[nsends];
@@ -1823,12 +1825,12 @@ PetscErrorCode VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMod
   }
 
   /* take care of local scatters */
-  if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
-    PetscInt n       = gen_to->local.n,il,ir;
+  if (to->local.n) {
+    PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
+    PetscInt n       = to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
-      if (gen_to->local.is_copy) {
-        ierr = PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
+      if (to->local.is_copy) {
+        ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
       } else {
         for (i=0; i<n; i++) {
           il = fslots[i]; ir = tslots[i];
@@ -1872,7 +1874,7 @@ PetscErrorCode VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMod
 #define __FUNCT__ "VecScatterEnd_PtoP_5"
 PetscErrorCode VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *rvalues,*yv,*val;
   PetscErrorCode         ierr;
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
@@ -1885,23 +1887,23 @@ PetscErrorCode VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
-    sstatus  = gen_from->sstatus;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
+    sstatus  = from->sstatus;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
-    sstatus  = gen_to->sstatus;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
+    sstatus  = to->sstatus;
   }
-  rvalues  = gen_from->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_from->indices;
-  rstarts  = gen_from->starts;
+  rvalues  = from->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = from->indices;
+  rstarts  = from->starts;
 
   /*  wait on receives */
   count = nrecvs;
@@ -1958,7 +1960,7 @@ PetscErrorCode VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode 
 #define __FUNCT__ "VecScatterBegin_PtoP_4"
 PetscErrorCode VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscInt               *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,len;
@@ -1969,27 +1971,27 @@ PetscErrorCode VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMod
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
 
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
   }
-  svalues  = gen_to->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_to->indices;
-  sstarts  = gen_to->starts;
+  svalues  = to->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = to->indices;
+  sstarts  = to->starts;
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (!gen_from->use_readyreceiver && !gen_to->sendfirst) {  
+    if (!from->use_readyreceiver && !to->sendfirst) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      if (nrecvs) {ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
 
     if (ctx->packtogether) {
@@ -2023,19 +2025,19 @@ PetscErrorCode VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMod
       }
     }
 
-    if (!gen_from->use_readyreceiver && gen_to->sendfirst) {  
+    if (!from->use_readyreceiver && to->sendfirst) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      if (nrecvs) {ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
   }
 
   /* take care of local scatters */
-  if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
-    PetscInt n       = gen_to->local.n,il,ir;
+  if (to->local.n) {
+    PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
+    PetscInt n       = to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
-      if (gen_to->local.is_copy) {
-        ierr = PetscMemcpy(yv+gen_from->local.copy_start,xv+gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
+      if (to->local.is_copy) {
+        ierr = PetscMemcpy(yv+from->local.copy_start,xv+to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
       } else {
         for (i=0; i<n; i++) {
           il = fslots[i]; ir = tslots[i];
@@ -2076,7 +2078,7 @@ PetscErrorCode VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMod
 #define __FUNCT__ "VecScatterEnd_PtoP_4"
 PetscErrorCode VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *rvalues,*yv,*val;
   PetscErrorCode         ierr;
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
@@ -2089,25 +2091,25 @@ PetscErrorCode VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
-    sstatus  = gen_from->sstatus;
-    rstatus  = gen_from->rstatus;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
+    sstatus  = from->sstatus;
+    rstatus  = from->rstatus;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
-    sstatus  = gen_to->sstatus;
-    rstatus  = gen_to->rstatus;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
+    sstatus  = to->sstatus;
+    rstatus  = to->rstatus;
   }
-  rvalues  = gen_from->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_from->indices;
-  rstarts  = gen_from->starts;
+  rvalues  = from->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = from->indices;
+  rstarts  = from->starts;
 
   /*  wait on receives */
   count = nrecvs;
@@ -2199,7 +2201,7 @@ PetscErrorCode VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode 
 #define __FUNCT__ "VecScatterBegin_PtoP_3"
 PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
@@ -2210,25 +2212,25 @@ PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMod
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
 
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
   }
-  svalues  = gen_to->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_to->indices;
-  sstarts  = gen_to->starts;
+  svalues  = to->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = to->indices;
+  sstarts  = to->starts;
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (gen_to->sendfirst) {
+    if (to->sendfirst) {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -2245,12 +2247,12 @@ PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMod
       }
     }
 
-    if (!gen_from->use_readyreceiver) {  
+    if (!from->use_readyreceiver) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      if (nrecvs) {ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
 
-    if (!gen_to->sendfirst) {
+    if (!to->sendfirst) {
       /* this version packs all the messages together and sends */
       /*
       len  = 3*sstarts[nsends];
@@ -2283,12 +2285,12 @@ PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMod
   }
 
   /* take care of local scatters */
-  if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
-    PetscInt n       = gen_to->local.n,il,ir;
+  if (to->local.n) {
+    PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
+    PetscInt n       = to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
-      if (gen_to->local.is_copy) {
-        ierr = PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
+      if (to->local.is_copy) {
+        ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
       } else {
         for (i=0; i<n; i++) {
           il = fslots[i]; ir = tslots[i];
@@ -2326,7 +2328,7 @@ PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMod
 #define __FUNCT__ "VecScatterEnd_PtoP_3"
 PetscErrorCode VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *rvalues,*yv,*val;
   PetscErrorCode         ierr;
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
@@ -2339,23 +2341,23 @@ PetscErrorCode VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
-    sstatus  = gen_from->sstatus;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
+    sstatus  = from->sstatus;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
-    sstatus  = gen_to->sstatus;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
+    sstatus  = to->sstatus;
   }
-  rvalues  = gen_from->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_from->indices;
-  rstarts  = gen_from->starts;
+  rvalues  = from->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = from->indices;
+  rstarts  = from->starts;
 
   /*  wait on receives */
   count = nrecvs;
@@ -2406,7 +2408,7 @@ PetscErrorCode VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode 
 #define __FUNCT__ "VecScatterBegin_PtoP_2"
 PetscErrorCode VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
@@ -2416,25 +2418,25 @@ PetscErrorCode VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMod
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
   }
-  svalues  = gen_to->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_to->indices;
-  sstarts  = gen_to->starts;
+  svalues  = to->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = to->indices;
+  sstarts  = to->starts;
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (gen_to->sendfirst) {
+    if (to->sendfirst) {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -2450,12 +2452,12 @@ PetscErrorCode VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMod
       }
     }
 
-    if (!gen_from->use_readyreceiver) {  
+    if (!from->use_readyreceiver) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
-      if (nrecvs) {ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
 
-    if (!gen_to->sendfirst) {
+    if (!to->sendfirst) {
       /* this version packs all the messages together and sends */
       /*
       len  = 2*sstarts[nsends];
@@ -2486,12 +2488,12 @@ PetscErrorCode VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMod
   }
 
   /* take care of local scatters */
-  if (gen_to->local.n) {
-    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
-    PetscInt n       = gen_to->local.n,il,ir;
+  if (to->local.n) {
+    PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
+    PetscInt n       = to->local.n,il,ir;
     if (addv == INSERT_VALUES) {
-      if (gen_to->local.is_copy) {
-        ierr = PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
+      if (to->local.is_copy) {
+        ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
       } else {
         for (i=0; i<n; i++) {
           il = fslots[i]; ir = tslots[i];
@@ -2526,7 +2528,7 @@ PetscErrorCode VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMod
 #define __FUNCT__ "VecScatterEnd_PtoP_2"
 PetscErrorCode VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to,*gen_from;
+  VecScatter_MPI_General *to,*from;
   PetscScalar            *rvalues,*yv,*val;
   PetscErrorCode         ierr;
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
@@ -2539,23 +2541,23 @@ PetscErrorCode VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
   if (mode & SCATTER_REVERSE) {
-    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
-    gen_from = (VecScatter_MPI_General*)ctx->todata;
-    rwaits   = gen_from->rev_requests;
-    swaits   = gen_to->rev_requests;
-    sstatus  = gen_from->sstatus;
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+    rwaits   = from->rev_requests;
+    swaits   = to->rev_requests;
+    sstatus  = from->sstatus;
   } else {
-    gen_to   = (VecScatter_MPI_General*)ctx->todata;
-    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-    rwaits   = gen_from->requests;
-    swaits   = gen_to->requests;
-    sstatus  = gen_to->sstatus;
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+    rwaits   = from->requests;
+    swaits   = to->requests;
+    sstatus  = to->sstatus;
   }
-  rvalues  = gen_from->values;
-  nrecvs   = gen_from->n;
-  nsends   = gen_to->n;
-  indices  = gen_from->indices;
-  rstarts  = gen_from->starts;
+  rvalues  = from->values;
+  nrecvs   = from->n;
+  nsends   = to->n;
+  indices  = from->indices;
+  rstarts  = from->starts;
 
   /*  wait on receives */
   count = nrecvs;
@@ -2603,19 +2605,19 @@ PetscErrorCode VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode 
 #define __FUNCT__ "VecScatterDestroy_PtoP_X"
 PetscErrorCode VecScatterDestroy_PtoP_X(VecScatter ctx)
 {
-  VecScatter_MPI_General *gen_to   = (VecScatter_MPI_General*)ctx->todata;
-  VecScatter_MPI_General *gen_from = (VecScatter_MPI_General*)ctx->fromdata;
+  VecScatter_MPI_General *to   = (VecScatter_MPI_General*)ctx->todata;
+  VecScatter_MPI_General *from = (VecScatter_MPI_General*)ctx->fromdata;
   PetscErrorCode         ierr;
   PetscInt               i;
 
   PetscFunctionBegin;
-  if (gen_to->use_readyreceiver) {
+  if (to->use_readyreceiver) {
     /*
        Since we have already posted sends we must cancel them before freeing 
        the requests
     */
-    for (i=0; i<gen_from->n; i++) {
-      ierr = MPI_Cancel(gen_from->requests+i);CHKERRQ(ierr);
+    for (i=0; i<from->n; i++) {
+      ierr = MPI_Cancel(from->requests+i);CHKERRQ(ierr);
     }
   }
 
@@ -2625,19 +2627,19 @@ PetscErrorCode VecScatterDestroy_PtoP_X(VecScatter ctx)
      message passing.
   */
 #if !defined(PETSC_HAVE_BROKEN_REQUEST_FREE)
-  for (i=0; i<gen_to->n; i++) {
-    ierr = MPI_Request_free(gen_to->requests + i);CHKERRQ(ierr);
-    ierr = MPI_Request_free(gen_to->rev_requests + i);CHKERRQ(ierr);
+  for (i=0; i<to->n; i++) {
+    ierr = MPI_Request_free(to->requests + i);CHKERRQ(ierr);
+    ierr = MPI_Request_free(to->rev_requests + i);CHKERRQ(ierr);
   }
 
   /*
       MPICH could not properly cancel requests thus with ready receiver mode we
     cannot free the requests. It may be fixed now, if not then put the following 
-    code inside a if !gen_to->use_readyreceiver) {
+    code inside a if !to->use_readyreceiver) {
   */
-  for (i=0; i<gen_from->n; i++) {
-    ierr = MPI_Request_free(gen_from->requests + i);CHKERRQ(ierr);
-    ierr = MPI_Request_free(gen_from->rev_requests + i);CHKERRQ(ierr);
+  for (i=0; i<from->n; i++) {
+    ierr = MPI_Request_free(from->requests + i);CHKERRQ(ierr);
+    ierr = MPI_Request_free(from->rev_requests + i);CHKERRQ(ierr);
   }  
 #endif
  
