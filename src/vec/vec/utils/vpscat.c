@@ -206,6 +206,8 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   PetscFunctionBegin;
   CHKMEMQ;
   ierr = PetscFree2(gen_to->local.vslots,gen_from->local.vslots);CHKERRQ(ierr);
+  ierr = PetscFree2(gen_to->counts,gen_to->displs);CHKERRQ(ierr);
+  ierr = PetscFree2(gen_from->counts,gen_from->displs);CHKERRQ(ierr);
   ierr = PetscFree2(gen_to->local.slots_nonmatching,gen_from->local.slots_nonmatching);CHKERRQ(ierr);
   ierr = PetscFree7(gen_to->values,gen_to->requests,gen_to->indices,gen_to->starts,gen_to->procs,gen_to->sstatus,gen_to->rstatus);CHKERRQ(ierr);
   ierr = PetscFree5(gen_from->values,gen_from->requests,gen_from->indices,gen_from->starts,gen_from->procs);CHKERRQ(ierr);
@@ -400,6 +402,93 @@ PetscErrorCode VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mo
   CHKMEMQ;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecScatterBegin_PtoP_Alltoallv"
+PetscErrorCode VecScatterBegin_PtoP_Alltoallv(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+{
+  VecScatter_MPI_General *gen_to,*gen_from;
+  PetscInt               i,*indices,n;
+  PetscErrorCode         ierr;
+  PetscScalar            *xv,*yv,*val;
+
+  PetscFunctionBegin;
+  CHKMEMQ;
+  ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
+  if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
+  if (mode & SCATTER_REVERSE){
+    gen_to   = (VecScatter_MPI_General*)ctx->fromdata;
+    gen_from = (VecScatter_MPI_General*)ctx->todata;
+  } else {
+    gen_to   = (VecScatter_MPI_General*)ctx->todata;
+    gen_from = (VecScatter_MPI_General*)ctx->fromdata;
+  }
+  /* pack messages */
+  indices = gen_to->indices;
+  val     = gen_to->values;
+  n       = gen_to->starts[gen_to->n];
+  for (i=0; i<n; i++) {
+    val[i] = xv[*indices++];
+  }
+  ierr = MPI_Alltoallv(val,gen_to->counts,gen_to->displs,MPIU_SCALAR,gen_from->values,gen_from->counts,gen_from->displs,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
+  /* unpack messages */
+  indices = gen_from->indices;
+  val     = gen_from->values;
+  n       = gen_from->starts[gen_from->n];
+  if (addv == INSERT_VALUES) {
+    for (i=0; i<n; i++) {
+      yv[*indices++] = val[i];
+    }
+  } else if (addv == ADD_VALUES) {
+    for (i=0; i<n; i++) {
+      yv[*indices++] += val[i];
+    }
+#if !defined(PETSC_USE_COMPLEX)
+  } else if (addv == MAX_VALUES) {
+    for (i=0; i<n; i++) {
+      yv[*indices] = PetscMax(yv[*indices],val[i]); indices++;
+    }
+#endif
+  }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
+
+  /* take care of local scatters */
+  if (gen_to->local.n && addv == INSERT_VALUES) {
+    if (yv == xv && !gen_to->local.nonmatching_computed) {
+      ierr = VecScatterLocalOptimize_Private(&gen_to->local,&gen_from->local);CHKERRQ(ierr);
+    }
+    if (gen_to->local.is_copy) {
+      ierr = PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);CHKERRQ(ierr);
+    } else if (yv != xv || !gen_to->local.nonmatching_computed) {
+      PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
+      n = gen_to->local.n;
+      for (i=0; i<n; i++) {yv[fslots[i]] = xv[tslots[i]];}
+    } else {
+      /* 
+        In this case, it is copying the values into their old locations, thus we can skip those  
+      */
+      PetscInt *tslots = gen_to->local.slots_nonmatching,*fslots = gen_from->local.slots_nonmatching;
+      n = gen_to->local.n_nonmatching;
+      for (i=0; i<n; i++) {yv[fslots[i]] = xv[tslots[i]];}
+    } 
+  } else if (gen_to->local.n) {
+    PetscInt *tslots = gen_to->local.vslots,*fslots = gen_from->local.vslots;
+    n = gen_to->local.n;
+    if (addv == ADD_VALUES) {
+      for (i=0; i<n; i++) {yv[fslots[i]] += xv[tslots[i]];}
+#if !defined(PETSC_USE_COMPLEX)
+    } else if (addv == MAX_VALUES) {
+      for (i=0; i<n; i++) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[tslots[i]]);}
+#endif
+    } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
+  }
+
+  ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
+  if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
+  CHKMEMQ;
+  PetscFunctionReturn(0);
+}
+
+
 /* ==========================================================================================*/
 /*
     Special scatters for fixed block sizes. These provide better performance
@@ -2530,9 +2619,6 @@ PetscErrorCode VecScatterDestroy_PtoP_X(VecScatter ctx)
     }
   }
 
-  ierr = PetscFree2(gen_to->local.vslots,gen_from->local.vslots);CHKERRQ(ierr);
-  ierr = PetscFree2(gen_to->local.slots_nonmatching,gen_from->local.slots_nonmatching);CHKERRQ(ierr);
-
   /* release MPI resources obtained with MPI_Send_init() and MPI_Recv_init() */
   /* 
      IBM's PE version of MPI has a bug where freeing these guys will screw up later
@@ -2555,12 +2641,7 @@ PetscErrorCode VecScatterDestroy_PtoP_X(VecScatter ctx)
   }  
 #endif
  
-  ierr = PetscFree7(gen_to->values,gen_to->requests,gen_to->indices,gen_to->starts,gen_to->procs,gen_to->sstatus,gen_to->rstatus);CHKERRQ(ierr);
-  ierr = PetscFree2(gen_to->rev_requests,gen_from->rev_requests);CHKERRQ(ierr);
-  ierr = PetscFree5(gen_from->values,gen_from->requests,gen_from->indices,gen_from->starts,gen_from->procs);CHKERRQ(ierr);
-  ierr = PetscFree(gen_to);CHKERRQ(ierr);
-  ierr = PetscFree(gen_from);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy_PtoP(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2582,6 +2663,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   PetscInt               *nprocs,i,j,idx,nsends,nrecvs;
   PetscInt               *owner,*starts,count,slen;
   PetscInt               *rvalues,*svalues,base,nmax,*values,*indx,nprocslocal,lastidx;
+  PetscTruth             flg;
   MPI_Comm               comm;
   MPI_Request            *send_waits,*recv_waits;
   MPI_Status             recv_status,*send_status;
@@ -2765,8 +2847,33 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
 
   from->bs = bs;
   to->bs   = bs;
-  if (bs > 1) {
-    PetscTruth  flg,flgs = PETSC_FALSE;
+  ierr     = PetscOptionsHasName(PETSC_NULL,"-vecscatter_alltoallv",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ctx->begin   = VecScatterBegin_PtoP_Alltoallv;
+    ctx->destroy = VecScatterDestroy_PtoP;
+
+    ierr       = PetscMalloc2(size,PetscMPIInt,&to->counts,size,PetscMPIInt,&to->displs);CHKERRQ(ierr);
+    ierr       = PetscMemzero(to->counts,size*sizeof(PetscMPIInt));
+    for (i=0; i<to->n; i++) {
+      to->counts[to->procs[i]] = to->starts[i+1] - to->starts[i];
+    }
+    to->displs[0] = 0;
+    for (i=1; i<size; i++) {
+      to->displs[i] = to->displs[i-1] + to->counts[i-1]; 
+    }
+
+    ierr       = PetscMalloc2(size,PetscMPIInt,&from->counts,size,PetscMPIInt,&from->displs);CHKERRQ(ierr);
+    ierr       = PetscMemzero(from->counts,size*sizeof(PetscMPIInt));
+    for (i=0; i<from->n; i++) {
+      from->counts[from->procs[i]] = from->starts[i+1] - from->starts[i];
+    }
+    from->displs[0] = 0;
+    for (i=1; i<size; i++) {
+      from->displs[i] = from->displs[i-1] + from->counts[i-1]; 
+    }
+
+  } else if (bs > 1) {
+    PetscTruth  flgs = PETSC_FALSE;
     PetscInt    *sstarts = to->starts,  *rstarts = from->starts;
     PetscMPIInt *sprocs  = to->procs,   *rprocs  = from->procs;
     MPI_Request *swaits  = to->requests,*rwaits  = from->requests;
