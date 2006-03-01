@@ -11,29 +11,35 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  KSP solver; PC pc;
-  Mat A,B;
-  Vec X,Y,Z;
-  PetscScalar *a,*b,*x,*y,*z;
-  PetscReal nrm;
+  KSP         solver; 
+  PC          pc;
+  Mat         A,B;
+  Vec         X,Y,Z;
+  MatScalar   *a;
+  PetscScalar *b,*x,*y,*z;
+  PetscReal   nrm;
   PetscErrorCode ierr,size=8,lda=10, i,j;
 
   PetscInitialize(&argc,&argv,0,0);
-
-  /*
-   * Create matrix and three vectors: these are all normal
-   */
-  ierr = PetscMalloc(size*size*sizeof(PetscScalar),&a);CHKERRQ(ierr);
+  /* Create matrix and three vectors: these are all normal */
   ierr = PetscMalloc(lda*size*sizeof(PetscScalar),&b);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     for (j=0; j<size; j++) {
-      a[i+j*size] = rand(); b[i+j*lda] = a[i+j*size];
+      b[i+j*lda] = rand();
     }
   }
   ierr = MatCreate(MPI_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,size,size,size,size);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(A,a);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(A,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = MatGetArray(A,&a);CHKERRQ(ierr);
+  for (i=0; i<size; i++) {
+    for (j=0; j<size; j++) {
+      a[i+j*size] = b[i+j*lda];
+    }
+  }
+  ierr = MatRestoreArray(A,&a);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -77,6 +83,18 @@ int main(int argc,char **argv)
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
   printf("Test1; error norm=%e\n",nrm);
+
+  /* Free spaces */
+  ierr = PetscFree(b);CHKERRQ(ierr);
+  ierr = PetscFree(x);CHKERRQ(ierr);
+  ierr = PetscFree(y);CHKERRQ(ierr);
+  ierr = PetscFree(z);CHKERRQ(ierr);
+  ierr = VecDestroy(X);CHKERRQ(ierr);
+  ierr = VecDestroy(Y);CHKERRQ(ierr);
+  ierr = VecDestroy(Z);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = KSPDestroy(solver);CHKERRQ(ierr);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
