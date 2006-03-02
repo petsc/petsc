@@ -1,7 +1,7 @@
 #define PETSCKSP_DLL
 
 /* 
-   Provides an interface to the ML 3.0 smoothed Aggregation 
+   Provides an interface to the ML 4.0 smoothed Aggregation 
 */
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
 #include "src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
@@ -374,7 +374,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
 */
 
 /*MC
-     PCML - Use geometric multigrid preconditioning. This preconditioner requires you provide 
+     PCML - Use algebraic multigrid preconditioning. This preconditioner requires you provide 
        fine grid discretization matrix. The coarser grid matrices and restriction/interpolation 
        operators are computed by ML, with the matrices coverted to PETSc matrices in aij format
        and the restriction/interpolation operators wrapped as PETSc shell matrices.
@@ -770,7 +770,7 @@ PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
   nz_max++;
   ierr = PetscMalloc(nz_max*(sizeof(PetscInt)+sizeof(PetscScalar)),&aj);CHKERRQ(ierr);
   aa = (PetscScalar*)(aj + nz_max);
-  ML_build_global_numbering(mlmat,(ML_Comm*)mlmat->comm,&gordering);
+  ML_build_global_numbering(mlmat,&gordering);
   for (i=0; i<m; i++){
     row = gordering[i];
     k = 0;
