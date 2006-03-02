@@ -868,9 +868,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *sc
   } else if (dac->interptype == DA_Q0){
     if (dimc == 1){
       ierr = DAGetInterpolation_1D_Q0(dac,daf,A);CHKERRQ(ierr);
-    } if (dimc == 2){
+    } else if (dimc == 2){
        ierr = DAGetInterpolation_2D_Q0(dac,daf,A);CHKERRQ(ierr);
-    } if (dimc == 3){
+    } else if (dimc == 3){
        ierr = DAGetInterpolation_3D_Q0(dac,daf,A);CHKERRQ(ierr);
     } else {
       SETERRQ2(PETSC_ERR_SUP,"No support for this DA dimension %D for interpolation type %d",dimc,(int)dac->interptype);
