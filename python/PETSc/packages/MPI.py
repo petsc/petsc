@@ -51,6 +51,7 @@ class Configure(PETSc.package.Package):
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-download-mpich-machines=[machine1,machine2...]',  nargs.Arg(None, ['localhost','localhost'], 'Machines for MPI to use'))
     help.addArgument('MPI', '-download-mpich-pm=gforker or mpd',  nargs.Arg(None, 'gforker', 'Launcher for MPI processes')) 
+    help.addArgument('MPI', '-download-mpich-device=ch3:shm or see mpich2 docs', nargs.Arg(None, None, 'Communicator for MPI processes'))
     return
 
   def setupDependencies(self, framework):
@@ -368,6 +369,8 @@ class Configure(PETSc.package.Package):
           args.append('--enable-sharedlibs=gcc')
       else:
         args.append('--enable-sharedlibs=libtool')
+    if 'download-mpich-device' in self.argDB:
+      args.append('--with-device='+self.argDB['download-mpich-device'])
     args.append('--without-mpe')
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
     args = ' '.join(args)
