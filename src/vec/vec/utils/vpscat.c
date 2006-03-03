@@ -346,11 +346,11 @@ PetscErrorCode VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mo
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecScatterBegin_PtoP_Alltoallv"
-PetscErrorCode VecScatterBegin_PtoP_Alltoallv(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+#define __FUNCT__ "VecScatterBegin_PtoP_Alltoallv_1"
+PetscErrorCode VecScatterBegin_PtoP_Alltoallv_1(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *to,*from;
-  PetscInt               i,*indices,n;
+  PetscInt               i,*indices,len;
   PetscErrorCode         ierr;
   PetscScalar            *xv,*yv,*val;
 
@@ -369,26 +369,26 @@ PetscErrorCode VecScatterBegin_PtoP_Alltoallv(Vec xin,Vec yin,InsertMode addv,Sc
     /* pack messages */
     indices = to->indices;
     val     = to->values;
-    n       = to->starts[to->n];
-    for (i=0; i<n; i++) {
+    len     = to->starts[to->n];
+    for (i=0; i<len; i++) {
       val[i] = xv[*indices++];
     }
     ierr = MPI_Alltoallv(val,to->counts,to->displs,MPIU_SCALAR,from->values,from->counts,from->displs,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
     /* unpack messages */
     indices = from->indices;
     val     = from->values;
-    n       = from->starts[from->n];
+    len     = from->starts[from->n];
     if (addv == INSERT_VALUES) {
-      for (i=0; i<n; i++) {
+      for (i=0; i<len; i++) {
         yv[*indices++] = val[i];
       }
     } else if (addv == ADD_VALUES) {
-      for (i=0; i<n; i++) {
+      for (i=0; i<len; i++) {
         yv[*indices++] += val[i];
       }
 #if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
-      for (i=0; i<n; i++) {
+      for (i=0; i<len; i++) {
         yv[*indices] = PetscMax(yv[*indices],val[i]); indices++;
       }
 #endif
@@ -404,19 +404,19 @@ PetscErrorCode VecScatterBegin_PtoP_Alltoallv(Vec xin,Vec yin,InsertMode addv,Sc
       ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
     } else if (yv != xv || !to->local.nonmatching_computed) {
       PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
-      n = to->local.n;
+      PetscInt n = to->local.n;
       for (i=0; i<n; i++) {yv[fslots[i]] = xv[tslots[i]];}
     } else {
       /* 
         In this case, it is copying the values into their old locations, thus we can skip those  
       */
       PetscInt *tslots = to->local.slots_nonmatching,*fslots = from->local.slots_nonmatching;
-      n = to->local.n_nonmatching;
+      PetscInt n = to->local.n_nonmatching;
       for (i=0; i<n; i++) {yv[fslots[i]] = xv[tslots[i]];}
     } 
   } else if (to->local.n) {
     PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
-    n = to->local.n;
+    PetscInt n = to->local.n;
     if (addv == ADD_VALUES) {
       for (i=0; i<n; i++) {yv[fslots[i]] += xv[tslots[i]];}
 #if !defined(PETSC_USE_COMPLEX)
@@ -432,6 +432,110 @@ PetscErrorCode VecScatterBegin_PtoP_Alltoallv(Vec xin,Vec yin,InsertMode addv,Sc
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecScatterBegin_PtoP_Alltoallv_3"
+PetscErrorCode VecScatterBegin_PtoP_Alltoallv_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+{
+  VecScatter_MPI_General *to,*from;
+  PetscInt               i,*indices,len,idx;
+  PetscErrorCode         ierr;
+  PetscScalar            *xv,*yv,*val;
+
+  PetscFunctionBegin;
+  CHKMEMQ;
+  ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
+  if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
+  if (mode & SCATTER_REVERSE){
+    to   = (VecScatter_MPI_General*)ctx->fromdata;
+    from = (VecScatter_MPI_General*)ctx->todata;
+  } else {
+    to   = (VecScatter_MPI_General*)ctx->todata;
+    from = (VecScatter_MPI_General*)ctx->fromdata;
+  }
+  if (!(mode & SCATTER_LOCAL)) {  
+    indices = to->indices;
+    val     = to->values;
+    len     = to->starts[to->n];
+    for (i=0; i<len; i++) {
+      idx    = *indices++;
+      val[0] = xv[idx];
+      val[1] = xv[idx+1];
+      val[2] = xv[idx+2];
+      val    += 3;
+    }
+    ierr = MPI_Alltoallv(to->values,to->counts,to->displs,MPIU_SCALAR,from->values,from->counts,from->displs,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
+    len      = from->starts[from->n];
+    val      = from->values;
+    indices  = from->indices;
+    if (addv == INSERT_VALUES) {
+      for (i=0; i<len; i++) {
+	idx       = indices[i];
+	yv[idx]   = val[0];
+	yv[idx+1] = val[1];
+	yv[idx+2] = val[2];
+	val      += 3;
+      }
+    } else if (addv == ADD_VALUES) {
+      for (i=0; i<len; i++) {
+	idx       = indices[i];
+	yv[idx]   += val[0];
+	yv[idx+1] += val[1];
+	yv[idx+2] += val[2];
+	val       += 3;
+      }
+#if !defined(PETSC_USE_COMPLEX)
+    } else if (addv == MAX_VALUES) {
+      for (i=0; i<len; i++) {
+	idx       = indices[i];
+	yv[idx]   = PetscMax(yv[idx],val[0]);
+	yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+	yv[idx+2] = PetscMax(yv[idx+2],val[2]);
+	val       += 3;
+      }
+#endif
+    }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
+  }
+
+  /* take care of local scatters */
+  if (to->local.n) {
+    PetscInt *tslots = to->local.vslots,*fslots = from->local.vslots;
+    PetscInt n       = to->local.n,il,ir;
+    if (addv == INSERT_VALUES) {
+      if (to->local.is_copy) {
+        ierr = PetscMemcpy(yv + from->local.copy_start,xv + to->local.copy_start,to->local.copy_length);CHKERRQ(ierr);
+      } else {
+        for (i=0; i<n; i++) {
+          il = fslots[i]; ir = tslots[i];
+          yv[il]   = xv[ir];
+          yv[il+1] = xv[ir+1];
+          yv[il+2] = xv[ir+2];
+        }
+      }
+    }  else if (addv == ADD_VALUES) {
+      for (i=0; i<n; i++) {
+        il = fslots[i]; ir = tslots[i];
+        yv[il]   += xv[ir];
+        yv[il+1] += xv[ir+1];
+        yv[il+2] += xv[ir+2];
+      }
+#if !defined(PETSC_USE_COMPLEX)
+    }  else if (addv == MAX_VALUES) {
+      for (i=0; i<n; i++) {
+        il = fslots[i]; ir = tslots[i];
+        yv[il]   = PetscMax(yv[il],xv[ir]);
+        yv[il+1] = PetscMax(yv[il+1],xv[ir+1]);
+        yv[il+2] = PetscMax(yv[il+2],xv[ir+2]);
+      }
+#endif
+    }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
+  }
+
+  ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
+  if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
+  CHKMEMQ;
+  CHKMEMQ;
+  PetscFunctionReturn(0);
+}
 
 /* ==========================================================================================*/
 /*
@@ -647,9 +751,9 @@ PetscErrorCode VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMo
     }
     if (ctx->packtogether) {
       /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
-      len  = 12*sstarts[nsends];
+      len  = sstarts[nsends];
       val  = svalues;
-      for (i=0; i<len; i += 12) {
+      for (i=0; i<len; i++) {
         idx     = *indices++;
         val[0]  = xv[idx];
         val[1]  = xv[idx+1];
@@ -773,9 +877,9 @@ PetscErrorCode VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode
   PetscScalar            *rvalues,*yv,*val;
   PetscErrorCode         ierr;
   PetscMPIInt            imdex;
-  PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
+  PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,idx,*lindices;
   MPI_Request            *rwaits,*swaits;
-  MPI_Status             *rstatus,*sstatus;
+  MPI_Status             *rstatus,*sstatus,xrstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
@@ -805,10 +909,9 @@ PetscErrorCode VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode
     if (nrecvs) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
     n        = rstarts[count];
     val      = rvalues;
-    lindices = indices;
     if (addv == INSERT_VALUES) {
       for (i=0; i<n; i++) {
-	idx        = lindices[i];
+	idx        = indices[i];
 	yv[idx]    = val[0];
 	yv[idx+1]  = val[1];
 	yv[idx+2]  = val[2];
@@ -825,7 +928,7 @@ PetscErrorCode VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode
       }
     } else if (addv == ADD_VALUES) {
       for (i=0; i<n; i++) {
-	idx         = lindices[i];
+	idx         = indices[i];
 	yv[idx]    += val[0];
 	yv[idx+1]  += val[1];
 	yv[idx+2]  += val[2];
@@ -843,7 +946,7 @@ PetscErrorCode VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode
 #if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {
-	idx        = lindices[i];
+	idx        = indices[i];
 	yv[idx]    = PetscMax(yv[idx],val[0]);
 	yv[idx+1]  = PetscMax(yv[idx+1],val[1]);
 	yv[idx+2]  = PetscMax(yv[idx+2],val[2]);
@@ -862,7 +965,7 @@ PetscErrorCode VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode
     }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   } else { /* unpack each message as it arrives, default version */
     while (count) {
-      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus[0]);CHKERRQ(ierr);
+      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
       /* unpack receives into our local space */
       val      = rvalues + 12*rstarts[imdex];
       lindices = indices + rstarts[imdex];
@@ -945,7 +1048,7 @@ PetscErrorCode VecScatterBegin_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMod
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
-  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
+  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx,len;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -974,6 +1077,24 @@ PetscErrorCode VecScatterBegin_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMod
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
 
+    if (ctx->packtogether) {
+      /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
+      len  = sstarts[nsends];
+      val  = svalues;
+      for (i=0; i<len; i++) {
+        idx     = *indices++;
+        val[0]  = xv[idx];
+        val[1]  = xv[idx+1];
+        val[2]  = xv[idx+2];
+        val[3]  = xv[idx+3];
+	val[4]  = xv[idx+4];
+	val[5]  = xv[idx+5];
+	val[6]  = xv[idx+6];
+	val[7]  = xv[idx+7];
+        val    += 8;
+      }
+      if (nsends) {ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);}
+    } else {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -993,6 +1114,7 @@ PetscErrorCode VecScatterBegin_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMod
         } 
         ierr = MPI_Start_isend(8*iend,swaits+i);CHKERRQ(ierr);
       }
+    }
 
     if (!from->use_readyreceiver && to->sendfirst) {  
       /* post receives since they were not previously posted   */
@@ -1065,7 +1187,7 @@ PetscErrorCode VecScatterEnd_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
   PetscMPIInt            imdex;
   MPI_Request            *rwaits,*swaits;
-  MPI_Status             rstatus,*sstatus;
+  MPI_Status             xrstatus,*rstatus,*sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
@@ -1074,6 +1196,7 @@ PetscErrorCode VecScatterEnd_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   to   = (VecScatter_MPI_General*)ctx->todata;
   from = (VecScatter_MPI_General*)ctx->fromdata;
   sstatus  = to->sstatus;
+  rstatus  = to->rstatus;
   rwaits   = from->requests;
   swaits   = to->requests;
   if (mode & SCATTER_REVERSE) {
@@ -1089,57 +1212,106 @@ PetscErrorCode VecScatterEnd_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   rstarts  = from->starts;
 
   /*  wait on receives */
-  count = nrecvs;
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    val      = rvalues + 8*rstarts[imdex];
-    lindices = indices + rstarts[imdex];
-    n        = rstarts[imdex+1] - rstarts[imdex];
+  if (ctx->packtogether) { /* receive all messages, then unpack all, when -vecscatter_packtogether used */
+    if (nrecvs) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
+    n        = rstarts[count];
+    val      = rvalues;
     if (addv == INSERT_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   = val[0];
-        yv[idx+1] = val[1];
-        yv[idx+2] = val[2];
-        yv[idx+3] = val[3];
-        yv[idx+4] = val[4];
-        yv[idx+5] = val[5];
-        yv[idx+6] = val[6];
-        yv[idx+7] = val[7];
-        val      += 8;
+	idx        = indices[i];
+	yv[idx]    = val[0];
+	yv[idx+1]  = val[1];
+	yv[idx+2]  = val[2];
+	yv[idx+3]  = val[3];
+	yv[idx+4]  = val[4];
+	yv[idx+5]  = val[5];
+	yv[idx+6]  = val[6];
+	yv[idx+7]  = val[7];
+	val       += 8;
       }
     } else if (addv == ADD_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   += val[0];
-        yv[idx+1] += val[1];
-        yv[idx+2] += val[2];
-        yv[idx+3] += val[3];
-        yv[idx+4] += val[4];
-        yv[idx+5] += val[5];
-        yv[idx+6] += val[6];
-        yv[idx+7] += val[7];
-        val       += 8;
+	idx         = indices[i];
+	yv[idx]    += val[0];
+	yv[idx+1]  += val[1];
+	yv[idx+2]  += val[2];
+	yv[idx+3]  += val[3];
+        yv[idx+4]  += val[4];
+        yv[idx+5]  += val[5];
+        yv[idx+6]  += val[6];
+        yv[idx+7]  += val[7];
+	val        += 8;
       }
 #if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   = PetscMax(yv[idx],val[0]);
-        yv[idx+1] = PetscMax(yv[idx+1],val[1]);
-        yv[idx+2] = PetscMax(yv[idx+2],val[2]);
-        yv[idx+3] = PetscMax(yv[idx+3],val[3]);
-        yv[idx+4] = PetscMax(yv[idx+4],val[4]);
-        yv[idx+5] = PetscMax(yv[idx+5],val[5]);
-        yv[idx+6] = PetscMax(yv[idx+6],val[6]);
-        yv[idx+7] = PetscMax(yv[idx+7],val[7]);
-        val       += 8;
+	idx        = indices[i];
+	yv[idx]    = PetscMax(yv[idx],val[0]);
+	yv[idx+1]  = PetscMax(yv[idx+1],val[1]);
+	yv[idx+2]  = PetscMax(yv[idx+2],val[2]);
+	yv[idx+3]  = PetscMax(yv[idx+3],val[3]);
+        yv[idx+4]  = PetscMax(yv[idx+4],val[4]);
+        yv[idx+5]  = PetscMax(yv[idx+5],val[5]);
+        yv[idx+6]  = PetscMax(yv[idx+6],val[6]);
+        yv[idx+7]  = PetscMax(yv[idx+7],val[7]);
+	val       += 8;
       }
 #endif
     }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
-    count--;
+  } else { /* unpack each message as it arrives, default version */
+    count = nrecvs;
+    while (count) {
+      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
+      /* unpack receives into our local space */
+      val      = rvalues + 8*rstarts[imdex];
+      lindices = indices + rstarts[imdex];
+      n        = rstarts[imdex+1] - rstarts[imdex];
+      if (addv == INSERT_VALUES) {
+        for (i=0; i<n; i++) {
+          idx       = lindices[i];
+	  yv[idx]   = val[0];
+	  yv[idx+1] = val[1];
+	  yv[idx+2] = val[2];
+	  yv[idx+3] = val[3];
+	  yv[idx+4] = val[4];
+	  yv[idx+5] = val[5];
+	  yv[idx+6] = val[6];
+	  yv[idx+7] = val[7];
+	  val      += 8;
+	}
+      } else if (addv == ADD_VALUES) {
+	for (i=0; i<n; i++) {
+	  idx       = lindices[i];
+	  yv[idx]   += val[0];
+	  yv[idx+1] += val[1];
+	  yv[idx+2] += val[2];
+	  yv[idx+3] += val[3];
+	  yv[idx+4] += val[4];
+	  yv[idx+5] += val[5];
+	  yv[idx+6] += val[6];
+	  yv[idx+7] += val[7];
+	  val       += 8;
+	}
+#if !defined(PETSC_USE_COMPLEX)
+      } else if (addv == MAX_VALUES) {
+	for (i=0; i<n; i++) {
+	  idx       = lindices[i];
+	  yv[idx]   = PetscMax(yv[idx],val[0]);
+	  yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+	  yv[idx+2] = PetscMax(yv[idx+2],val[2]);
+	  yv[idx+3] = PetscMax(yv[idx+3],val[3]);
+	  yv[idx+4] = PetscMax(yv[idx+4],val[4]);
+	  yv[idx+5] = PetscMax(yv[idx+5],val[5]);
+	  yv[idx+6] = PetscMax(yv[idx+6],val[6]);
+	  yv[idx+7] = PetscMax(yv[idx+7],val[7]);
+	  val       += 8;
+	}
+#endif
+      }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
+      count--;
+    }
   }
+
   if (from->use_readyreceiver) {  
     if (from->n) {ierr = MPI_Startall_irecv(from->starts[from->n]*from->bs,from->n,from->requests);CHKERRQ(ierr);}
     ierr = MPI_Barrier(ctx->comm);CHKERRQ(ierr);
@@ -1160,7 +1332,7 @@ PetscErrorCode VecScatterBegin_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMod
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
-  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
+  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx,len;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -1189,6 +1361,23 @@ PetscErrorCode VecScatterBegin_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMod
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
 
+    if (ctx->packtogether) {
+      /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
+      len  = sstarts[nsends];
+      val  = svalues;
+      for (i=0; i<len; i++) {
+        idx     = *indices++;
+        val[0]  = xv[idx];
+        val[1]  = xv[idx+1];
+        val[2]  = xv[idx+2];
+        val[3]  = xv[idx+3];
+	val[4]  = xv[idx+4];
+	val[5]  = xv[idx+5];
+	val[6]  = xv[idx+6];
+        val    += 7;
+      }
+      if (nsends) {ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);}
+    } else {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -1207,6 +1396,7 @@ PetscErrorCode VecScatterBegin_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMod
         } 
         ierr = MPI_Start_isend(7*iend,swaits+i);CHKERRQ(ierr);
       }
+    }
 
     if (!from->use_readyreceiver && to->sendfirst) {  
       /* post receives since they were not previously posted   */
@@ -1276,7 +1466,7 @@ PetscErrorCode VecScatterEnd_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
   PetscMPIInt            imdex;
   MPI_Request            *rwaits,*swaits;
-  MPI_Status             rstatus,*sstatus;
+  MPI_Status             xrstatus,*rstatus,*sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
@@ -1285,6 +1475,7 @@ PetscErrorCode VecScatterEnd_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   to       = (VecScatter_MPI_General*)ctx->todata;
   from     = (VecScatter_MPI_General*)ctx->fromdata;
   sstatus  = to->sstatus;
+  rstatus  = to->rstatus;
   rwaits   = from->requests;
   swaits   = to->requests;
   if (mode & SCATTER_REVERSE) {
@@ -1300,53 +1491,98 @@ PetscErrorCode VecScatterEnd_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   rstarts  = from->starts;
 
   /*  wait on receives */
-  count = nrecvs;
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    val      = rvalues + 7*rstarts[imdex];
-    lindices = indices + rstarts[imdex];
-    n        = rstarts[imdex+1] - rstarts[imdex];
+  if (ctx->packtogether) { /* receive all messages, then unpack all, when -vecscatter_packtogether used */
+    if (nrecvs) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
+    n        = rstarts[count];
+    val      = rvalues;
     if (addv == INSERT_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   = val[0];
-        yv[idx+1] = val[1];
-        yv[idx+2] = val[2];
-        yv[idx+3] = val[3];
-        yv[idx+4] = val[4];
-        yv[idx+5] = val[5];
-        yv[idx+6] = val[6];
-        val      += 7;
+	idx        = indices[i];
+	yv[idx]    = val[0];
+	yv[idx+1]  = val[1];
+	yv[idx+2]  = val[2];
+	yv[idx+3]  = val[3];
+	yv[idx+4]  = val[4];
+	yv[idx+5]  = val[5];
+	yv[idx+6]  = val[6];
+	val       += 7;
       }
     } else if (addv == ADD_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   += val[0];
-        yv[idx+1] += val[1];
-        yv[idx+2] += val[2];
-        yv[idx+3] += val[3];
-        yv[idx+4] += val[4];
-        yv[idx+5] += val[5];
-        yv[idx+6] += val[6];
-        val       += 7;
+	idx         = indices[i];
+	yv[idx]    += val[0];
+	yv[idx+1]  += val[1];
+	yv[idx+2]  += val[2];
+	yv[idx+3]  += val[3];
+        yv[idx+4]  += val[4];
+        yv[idx+5]  += val[5];
+        yv[idx+6]  += val[6];
+	val        += 7;
       }
 #if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   = PetscMax(yv[idx],val[0]);
-        yv[idx+1] = PetscMax(yv[idx+1],val[1]);
-        yv[idx+2] = PetscMax(yv[idx+2],val[2]);
-        yv[idx+3] = PetscMax(yv[idx+3],val[3]);
-        yv[idx+4] = PetscMax(yv[idx+4],val[4]);
-        yv[idx+5] = PetscMax(yv[idx+5],val[5]);
-        yv[idx+6] = PetscMax(yv[idx+6],val[6]);
-        val       += 7;
+	idx        = indices[i];
+	yv[idx]    = PetscMax(yv[idx],val[0]);
+	yv[idx+1]  = PetscMax(yv[idx+1],val[1]);
+	yv[idx+2]  = PetscMax(yv[idx+2],val[2]);
+	yv[idx+3]  = PetscMax(yv[idx+3],val[3]);
+        yv[idx+4]  = PetscMax(yv[idx+4],val[4]);
+        yv[idx+5]  = PetscMax(yv[idx+5],val[5]);
+        yv[idx+6]  = PetscMax(yv[idx+6],val[6]);
+	val       += 7;
       }
 #endif
     }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
-    count--;
+  } else { /* unpack each message as it arrives, default version */
+    count = nrecvs;
+    while (count) {
+      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
+      /* unpack receives into our local space */
+      val      = rvalues + 7*rstarts[imdex];
+      lindices = indices + rstarts[imdex];
+      n        = rstarts[imdex+1] - rstarts[imdex];
+      if (addv == INSERT_VALUES) {
+        for (i=0; i<n; i++) {
+          idx       = lindices[i];
+          yv[idx]   = val[0];
+          yv[idx+1] = val[1];
+          yv[idx+2] = val[2];
+          yv[idx+3] = val[3];
+          yv[idx+4] = val[4];
+          yv[idx+5] = val[5];
+          yv[idx+6] = val[6];
+          val      += 7;
+        }
+      } else if (addv == ADD_VALUES) {
+        for (i=0; i<n; i++) {
+          idx       = lindices[i];
+          yv[idx]   += val[0];
+          yv[idx+1] += val[1];
+          yv[idx+2] += val[2];
+          yv[idx+3] += val[3];
+          yv[idx+4] += val[4];
+          yv[idx+5] += val[5];
+          yv[idx+6] += val[6];
+          val       += 7;
+        }
+#if !defined(PETSC_USE_COMPLEX)
+      } else if (addv == MAX_VALUES) {
+        for (i=0; i<n; i++) {
+          idx       = lindices[i];
+          yv[idx]   = PetscMax(yv[idx],val[0]);
+          yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+          yv[idx+2] = PetscMax(yv[idx+2],val[2]);
+          yv[idx+3] = PetscMax(yv[idx+3],val[3]);
+          yv[idx+4] = PetscMax(yv[idx+4],val[4]);
+          yv[idx+5] = PetscMax(yv[idx+5],val[5]);
+          yv[idx+6] = PetscMax(yv[idx+6],val[6]);
+          val       += 7;
+        }
+#endif
+      }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
+      count--;
+    }
   }
   if (from->use_readyreceiver) {  
     if (from->n) {ierr = MPI_Startall_irecv(from->starts[from->n]*from->bs,from->n,from->requests);CHKERRQ(ierr);}
@@ -1369,7 +1605,7 @@ PetscErrorCode VecScatterBegin_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMod
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
-  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
+  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx,len;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -1398,6 +1634,22 @@ PetscErrorCode VecScatterBegin_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMod
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
 
+    if (ctx->packtogether) {
+      /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
+      len  = sstarts[nsends];
+      val  = svalues;
+      for (i=0; i<len; i++) {
+        idx     = *indices++;
+        val[0]  = xv[idx];
+        val[1]  = xv[idx+1];
+        val[2]  = xv[idx+2];
+        val[3]  = xv[idx+3];
+	val[4]  = xv[idx+4];
+	val[5]  = xv[idx+5];
+        val    += 6;
+      }
+      if (nsends) {ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);}
+    } else {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -1415,6 +1667,7 @@ PetscErrorCode VecScatterBegin_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMod
         } 
         ierr = MPI_Start_isend(6*iend,swaits+i);CHKERRQ(ierr);
       }
+    }
 
     if (!from->use_readyreceiver && to->sendfirst) {  
       /* post receives since they were not previously posted   */
@@ -1481,7 +1734,7 @@ PetscErrorCode VecScatterEnd_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
   PetscMPIInt            imdex;
   MPI_Request            *rwaits,*swaits;
-  MPI_Status             rstatus,*sstatus;
+  MPI_Status             xrstatus,*rstatus,*sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
@@ -1490,6 +1743,7 @@ PetscErrorCode VecScatterEnd_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   to       = (VecScatter_MPI_General*)ctx->todata;
   from     = (VecScatter_MPI_General*)ctx->fromdata;
   sstatus  = to->sstatus;
+  rstatus  = to->rstatus;
   rwaits   = from->requests;
   swaits   = to->requests;
   if (mode & SCATTER_REVERSE) {
@@ -1505,50 +1759,92 @@ PetscErrorCode VecScatterEnd_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   rstarts  = from->starts;
 
   /*  wait on receives */
-  count = nrecvs;
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    val      = rvalues + 6*rstarts[imdex];
-    lindices = indices + rstarts[imdex];
-    n        = rstarts[imdex+1] - rstarts[imdex];
+  if (ctx->packtogether) { /* receive all messages, then unpack all, when -vecscatter_packtogether used */
+    if (nrecvs) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
+    n        = rstarts[count];
+    val      = rvalues;
     if (addv == INSERT_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   = val[0];
-        yv[idx+1] = val[1];
-        yv[idx+2] = val[2];
-        yv[idx+3] = val[3];
-        yv[idx+4] = val[4];
-        yv[idx+5] = val[5];
-        val      += 6;
+	idx        = indices[i];
+	yv[idx]    = val[0];
+	yv[idx+1]  = val[1];
+	yv[idx+2]  = val[2];
+	yv[idx+3]  = val[3];
+	yv[idx+4]  = val[4];
+	yv[idx+5]  = val[5];
+	val       += 6;
       }
     } else if (addv == ADD_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   += val[0];
-        yv[idx+1] += val[1];
-        yv[idx+2] += val[2];
-        yv[idx+3] += val[3];
-        yv[idx+4] += val[4];
-        yv[idx+5] += val[5];
-        val       += 6;
+	idx         = indices[i];
+	yv[idx]    += val[0];
+	yv[idx+1]  += val[1];
+	yv[idx+2]  += val[2];
+	yv[idx+3]  += val[3];
+        yv[idx+4]  += val[4];
+        yv[idx+5]  += val[5];
+	val        += 6;
       }
 #if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   = PetscMax(yv[idx],val[0]);
-        yv[idx+1] = PetscMax(yv[idx+1],val[1]);
-        yv[idx+2] = PetscMax(yv[idx+2],val[2]);
-        yv[idx+3] = PetscMax(yv[idx+3],val[3]);
-        yv[idx+4] = PetscMax(yv[idx+4],val[4]);
-        yv[idx+5] = PetscMax(yv[idx+5],val[5]);
-        val       += 6;
+	idx        = indices[i];
+	yv[idx]    = PetscMax(yv[idx],val[0]);
+	yv[idx+1]  = PetscMax(yv[idx+1],val[1]);
+	yv[idx+2]  = PetscMax(yv[idx+2],val[2]);
+	yv[idx+3]  = PetscMax(yv[idx+3],val[3]);
+        yv[idx+4]  = PetscMax(yv[idx+4],val[4]);
+        yv[idx+5]  = PetscMax(yv[idx+5],val[5]);
+	val       += 6;
       }
 #endif
     }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
-    count--;
+  } else { /* unpack each message as it arrives, default version */
+    count = nrecvs;
+    while (count) {
+      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
+      /* unpack receives into our local space */
+      val      = rvalues + 6*rstarts[imdex];
+      lindices = indices + rstarts[imdex];
+      n        = rstarts[imdex+1] - rstarts[imdex];
+      if (addv == INSERT_VALUES) {
+        for (i=0; i<n; i++) {
+          idx       = lindices[i];
+          yv[idx]   = val[0];
+          yv[idx+1] = val[1];
+          yv[idx+2] = val[2];
+          yv[idx+3] = val[3];
+          yv[idx+4] = val[4];
+          yv[idx+5] = val[5];
+          val      += 6;
+        }
+      } else if (addv == ADD_VALUES) {
+        for (i=0; i<n; i++) {
+          idx       = lindices[i];
+          yv[idx]   += val[0];
+          yv[idx+1] += val[1];
+          yv[idx+2] += val[2];
+          yv[idx+3] += val[3];
+          yv[idx+4] += val[4];
+          yv[idx+5] += val[5];
+          val       += 6;
+        }
+#if !defined(PETSC_USE_COMPLEX)
+      } else if (addv == MAX_VALUES) {
+        for (i=0; i<n; i++) {
+          idx       = lindices[i];
+          yv[idx]   = PetscMax(yv[idx],val[0]);
+          yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+          yv[idx+2] = PetscMax(yv[idx+2],val[2]);
+          yv[idx+3] = PetscMax(yv[idx+3],val[3]);
+          yv[idx+4] = PetscMax(yv[idx+4],val[4]);
+          yv[idx+5] = PetscMax(yv[idx+5],val[5]);
+          val       += 6;
+        }
+#endif
+      }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
+      count--;
+    }
   }
   if (from->use_readyreceiver) {  
     if (from->n) {ierr = MPI_Startall_irecv(from->starts[from->n]*from->bs,from->n,from->requests);CHKERRQ(ierr);}
@@ -1571,7 +1867,7 @@ PetscErrorCode VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMod
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
-  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
+  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx,len;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -1599,6 +1895,23 @@ PetscErrorCode VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMod
       /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
+
+    if (ctx->packtogether) {
+      /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
+      len  = sstarts[nsends];
+      val  = svalues;
+      for (i=0; i<len; i++) {
+        idx     = *indices++;
+        val[0]  = xv[idx];
+        val[1]  = xv[idx+1];
+        val[2]  = xv[idx+2];
+        val[3]  = xv[idx+3];
+	val[4]  = xv[idx+4];
+	val[5]  = xv[idx+5];
+        val    += 5;
+      }
+      if (nsends) {ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);}
+    } else {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -1615,6 +1928,7 @@ PetscErrorCode VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMod
         } 
         ierr = MPI_Start_isend(5*iend,swaits+i);CHKERRQ(ierr);
       }
+    }
 
     if (!from->use_readyreceiver && to->sendfirst) {  
       /* post receives since they were not previously posted   */
@@ -1678,7 +1992,7 @@ PetscErrorCode VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
   PetscMPIInt            imdex;
   MPI_Request            *rwaits,*swaits;
-  MPI_Status             rstatus,*sstatus;
+  MPI_Status             xrstatus,*rstatus,*sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
@@ -1687,6 +2001,7 @@ PetscErrorCode VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   to       = (VecScatter_MPI_General*)ctx->todata;
   from     = (VecScatter_MPI_General*)ctx->fromdata;
   sstatus  = to->sstatus;
+  rstatus  = to->rstatus;
   rwaits   = from->requests;
   swaits   = to->requests;
   if (mode & SCATTER_REVERSE) {
@@ -1702,47 +2017,86 @@ PetscErrorCode VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   rstarts  = from->starts;
 
   /*  wait on receives */
-  count = nrecvs;
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    val      = rvalues + 5*rstarts[imdex];
-    lindices = indices + rstarts[imdex];
-    n        = rstarts[imdex+1] - rstarts[imdex];
+  if (ctx->packtogether) { /* receive all messages, then unpack all, when -vecscatter_packtogether used */
+    if (nrecvs) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
+    n        = rstarts[count];
+    val      = rvalues;
     if (addv == INSERT_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   = val[0];
-        yv[idx+1] = val[1];
-        yv[idx+2] = val[2];
-        yv[idx+3] = val[3];
-        yv[idx+4] = val[4];
-        val      += 5;
+	idx        = indices[i];
+	yv[idx]    = val[0];
+	yv[idx+1]  = val[1];
+	yv[idx+2]  = val[2];
+	yv[idx+3]  = val[3];
+	yv[idx+4]  = val[4];
+	val       += 5;
       }
     } else if (addv == ADD_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   += val[0];
-        yv[idx+1] += val[1];
-        yv[idx+2] += val[2];
-        yv[idx+3] += val[3];
-        yv[idx+4] += val[4];
-        val       += 5;
+	idx         = indices[i];
+	yv[idx]    += val[0];
+	yv[idx+1]  += val[1];
+	yv[idx+2]  += val[2];
+	yv[idx+3]  += val[3];
+        yv[idx+4]  += val[4];
+	val        += 5;
       }
 #if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   = PetscMax(yv[idx],val[0]);
-        yv[idx+1] = PetscMax(yv[idx+1],val[1]);
-        yv[idx+2] = PetscMax(yv[idx+2],val[2]);
-        yv[idx+3] = PetscMax(yv[idx+3],val[3]);
-        yv[idx+4] = PetscMax(yv[idx+4],val[4]);
-        val       += 5;
+	idx        = indices[i];
+	yv[idx]    = PetscMax(yv[idx],val[0]);
+	yv[idx+1]  = PetscMax(yv[idx+1],val[1]);
+	yv[idx+2]  = PetscMax(yv[idx+2],val[2]);
+	yv[idx+3]  = PetscMax(yv[idx+3],val[3]);
+        yv[idx+4]  = PetscMax(yv[idx+4],val[4]);
+	val       += 5;
       }
 #endif
     }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
-    count--;
+  } else { /* unpack each message as it arrives, default version */
+    count = nrecvs;
+    while (count) {
+      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
+      /* unpack receives into our local space */
+      val      = rvalues + 5*rstarts[imdex];
+      lindices = indices + rstarts[imdex];
+      n        = rstarts[imdex+1] - rstarts[imdex];
+      if (addv == INSERT_VALUES) {
+	for (i=0; i<n; i++) {
+	  idx       = lindices[i];
+	  yv[idx]   = val[0];
+	  yv[idx+1] = val[1];
+	  yv[idx+2] = val[2];
+	  yv[idx+3] = val[3];
+	  yv[idx+4] = val[4];
+	  val      += 5;
+	}
+      } else if (addv == ADD_VALUES) {
+	for (i=0; i<n; i++) {
+	  idx       = lindices[i];
+	  yv[idx]   += val[0];
+	  yv[idx+1] += val[1];
+	  yv[idx+2] += val[2];
+	  yv[idx+3] += val[3];
+	  yv[idx+4] += val[4];
+	  val       += 5;
+	}
+#if !defined(PETSC_USE_COMPLEX)
+      } else if (addv == MAX_VALUES) {
+	for (i=0; i<n; i++) {
+	  idx       = lindices[i];
+	  yv[idx]   = PetscMax(yv[idx],val[0]);
+	  yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+	  yv[idx+2] = PetscMax(yv[idx+2],val[2]);
+	  yv[idx+3] = PetscMax(yv[idx+3],val[3]);
+	  yv[idx+4] = PetscMax(yv[idx+4],val[4]);
+	  val       += 5;
+	}
+#endif
+      }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
+      count--;
+    }
   }
   if (from->use_readyreceiver) {  
     if (from->n) {ierr = MPI_Startall_irecv(from->starts[from->n]*from->bs,from->n,from->requests);CHKERRQ(ierr);}
@@ -1797,9 +2151,9 @@ PetscErrorCode VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
     if (ctx->packtogether) {
       /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
-      len  = 4*sstarts[nsends];
+      len  = sstarts[nsends];
       val  = svalues;
-      for (i=0; i<len; i += 4) {
+      for (i=0; i<len; i++) {
         idx    = *indices++;
         val[0] = xv[idx];
         val[1] = xv[idx+1];
@@ -1885,7 +2239,7 @@ PetscErrorCode VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
   PetscMPIInt            imdex;
   MPI_Request            *rwaits,*swaits;
-  MPI_Status             *rstatus,*sstatus;
+  MPI_Status             *rstatus,*sstatus,xrstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
@@ -1909,8 +2263,6 @@ PetscErrorCode VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   indices  = from->indices;
   rstarts  = from->starts;
 
-  /*  wait on receives */
-  count = nrecvs;
   if (ctx->packtogether) { /* receive all messages, then unpack all, when -vecscatter_packtogether used */
     if (nrecvs) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
     n        = rstarts[count];
@@ -1947,8 +2299,9 @@ PetscErrorCode VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode 
 #endif
     }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   } else { /* unpack each message as it arrives, default version */
+    count = nrecvs;
     while (count) {
-      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus[0]);CHKERRQ(ierr);
+      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
       /* unpack receives into our local space */
       val      = rvalues + 4*rstarts[imdex];
       lindices = indices + rstarts[imdex];
@@ -2007,7 +2360,7 @@ PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMod
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
-  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
+  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx,len;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -2036,6 +2389,20 @@ PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMod
       /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
+
+    if (ctx->packtogether) {
+      /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
+      len  = sstarts[nsends];
+      val  = svalues;
+      for (i=0; i<len; i++) {
+        idx    = *indices++;
+        val[0] = xv[idx];
+        val[1] = xv[idx+1];
+        val[2] = xv[idx+2];
+        val    += 3;
+      }
+      if (nsends) {ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);}
+    } else {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -2050,6 +2417,7 @@ PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMod
         } 
         ierr = MPI_Start_isend(3*iend,swaits+i);CHKERRQ(ierr);
       }
+    }
 
     if (!from->use_readyreceiver && to->sendfirst) {  
       /* post receives since they were not previously posted   */
@@ -2107,7 +2475,7 @@ PetscErrorCode VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
   PetscMPIInt            imdex;
   MPI_Request            *rwaits,*swaits;
-  MPI_Status             rstatus,*sstatus;
+  MPI_Status             xrstatus,*rstatus,*sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
@@ -2116,6 +2484,7 @@ PetscErrorCode VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   to       = (VecScatter_MPI_General*)ctx->todata;
   from     = (VecScatter_MPI_General*)ctx->fromdata;
   sstatus  = to->sstatus;
+  rstatus  = to->rstatus;
   rwaits   = from->requests;
   swaits   = to->requests;
   if (mode & SCATTER_REVERSE) {
@@ -2131,41 +2500,75 @@ PetscErrorCode VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   rstarts  = from->starts;
 
   /*  wait on receives */
-  count = nrecvs;
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    val      = rvalues + 3*rstarts[imdex];
-    lindices = indices + rstarts[imdex];
-    n        = rstarts[imdex+1] - rstarts[imdex];
+  if (ctx->packtogether) { /* receive all messages, then unpack all, when -vecscatter_packtogether used */
+    if (nrecvs) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
+    n        = rstarts[count];
+    val      = rvalues;
+    lindices = indices;
     if (addv == INSERT_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   = val[0];
-        yv[idx+1] = val[1];
-        yv[idx+2] = val[2];
-        val      += 3;
+	idx       = lindices[i];
+	yv[idx]   = val[0];
+	yv[idx+1] = val[1];
+	yv[idx+2] = val[2];
+	val      += 3;
       }
     } else if (addv == ADD_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   += val[0];
-        yv[idx+1] += val[1];
-        yv[idx+2] += val[2];
-        val       += 3;
+	idx       = lindices[i];
+	yv[idx]   += val[0];
+	yv[idx+1] += val[1];
+	yv[idx+2] += val[2];
+	val       += 3;
       }
 #if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   = PetscMax(yv[idx],val[0]);
-        yv[idx+1] = PetscMax(yv[idx+1],val[1]);
-        yv[idx+2] = PetscMax(yv[idx+2],val[2]);
-        val       += 3;
+	idx       = lindices[i];
+	yv[idx]   = PetscMax(yv[idx],val[0]);
+	yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+	yv[idx+2] = PetscMax(yv[idx+2],val[2]);
+	val       += 3;
       }
 #endif
     }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
-    count--;
+  } else { /* unpack each message as it arrives, default version */
+    count = nrecvs;
+    while (count) {
+      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
+      /* unpack receives into our local space */
+      val      = rvalues + 3*rstarts[imdex];
+      lindices = indices + rstarts[imdex];
+      n        = rstarts[imdex+1] - rstarts[imdex];
+      if (addv == INSERT_VALUES) {
+	for (i=0; i<n; i++) {
+	  idx       = lindices[i];
+	  yv[idx]   = val[0];
+	  yv[idx+1] = val[1];
+	  yv[idx+2] = val[2];
+	  val      += 3;
+	}
+      } else if (addv == ADD_VALUES) {
+	for (i=0; i<n; i++) {
+	  idx       = lindices[i];
+	  yv[idx]   += val[0];
+	  yv[idx+1] += val[1];
+	  yv[idx+2] += val[2];
+	  val       += 3;
+	}
+#if !defined(PETSC_USE_COMPLEX)
+      } else if (addv == MAX_VALUES) {
+	for (i=0; i<n; i++) {
+	  idx       = lindices[i];
+	  yv[idx]   = PetscMax(yv[idx],val[0]);
+	  yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+	  yv[idx+2] = PetscMax(yv[idx+2],val[2]);
+	  val       += 3;
+	}
+#endif
+      }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
+      count--;
+    }
   }
   if (from->use_readyreceiver) {  
     if (from->n) {ierr = MPI_Startall_irecv(from->starts[from->n]*from->bs,from->n,from->requests);CHKERRQ(ierr);}
@@ -2188,7 +2591,7 @@ PetscErrorCode VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMod
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
-  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
+  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,idx,len;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -2216,6 +2619,19 @@ PetscErrorCode VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMod
       /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
+
+    if (ctx->packtogether) {
+      /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
+      len  = sstarts[nsends];
+      val  = svalues;
+      for (i=0; i<len; i++) {
+        idx     = *indices++;
+        val[0]  = xv[idx];
+        val[1]  = xv[idx+1];
+        val    += 2;
+      }
+      if (nsends) {ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);}
+    } else {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -2229,6 +2645,7 @@ PetscErrorCode VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMod
         } 
         ierr = MPI_Start_isend(2*iend,swaits+i);CHKERRQ(ierr);
       }
+    }
 
     if (!from->use_readyreceiver && to->sendfirst) {  
       /* post receives since they were not previously posted   */
@@ -2283,7 +2700,7 @@ PetscErrorCode VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices,idx;
   PetscMPIInt            imdex;
   MPI_Request            *rwaits,*swaits;
-  MPI_Status             rstatus,*sstatus;
+  MPI_Status             xrstatus,*rstatus,*sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
@@ -2292,6 +2709,7 @@ PetscErrorCode VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   to       = (VecScatter_MPI_General*)ctx->todata;
   from     = (VecScatter_MPI_General*)ctx->fromdata;
   sstatus  = to->sstatus;
+  rstatus  = to->rstatus;
   rwaits   = from->requests;
   swaits   = to->requests;
   if (mode & SCATTER_REVERSE) {
@@ -2307,38 +2725,69 @@ PetscErrorCode VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   rstarts  = from->starts;
 
   /*  wait on receives */
-  count = nrecvs;
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    val      = rvalues + 2*rstarts[imdex];
-    lindices = indices + rstarts[imdex];
-    n        = rstarts[imdex+1] - rstarts[imdex];
+  if (ctx->packtogether) { /* receive all messages, then unpack all, when -vecscatter_packtogether used */
+    if (nrecvs) {ierr = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);}
+    n        = rstarts[count];
+    val      = rvalues;
+    lindices = indices;
     if (addv == INSERT_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   = val[0];
-        yv[idx+1] = val[1];
-        val      += 2;
+	idx       = lindices[i];
+	yv[idx]   = val[0];
+	yv[idx+1] = val[1];
+	val      += 2;
       }
     } else if (addv == ADD_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   += val[0];
-        yv[idx+1] += val[1];
-        val       += 2;
+	idx       = lindices[i];
+	yv[idx]   += val[0];
+	yv[idx+1] += val[1];
+	val       += 2;
       }
 #if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   = PetscMax(yv[idx],val[0]);
-        yv[idx+1] = PetscMax(yv[idx+1],val[1]);
-        val       += 2;
+	idx       = lindices[i];
+	yv[idx]   = PetscMax(yv[idx],val[0]);
+	yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+	val       += 2;
       }
 #endif
     }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
-    count--;
+  } else { /* unpack each message as it arrives, default version */
+    count = nrecvs;
+    while (count) {
+      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
+      /* unpack receives into our local space */
+      val      = rvalues + 2*rstarts[imdex];
+      lindices = indices + rstarts[imdex];
+      n        = rstarts[imdex+1] - rstarts[imdex];
+      if (addv == INSERT_VALUES) {
+	for (i=0; i<n; i++) {
+	  idx       = lindices[i];
+	  yv[idx]   = val[0];
+	  yv[idx+1] = val[1];
+	  val      += 2;
+	}
+      } else if (addv == ADD_VALUES) {
+	for (i=0; i<n; i++) {
+	  idx       = lindices[i];
+	  yv[idx]   += val[0];
+	  yv[idx+1] += val[1];
+	  val       += 2;
+	}
+#if !defined(PETSC_USE_COMPLEX)
+      } else if (addv == MAX_VALUES) {
+	for (i=0; i<n; i++) {
+	  idx       = lindices[i];
+	  yv[idx]   = PetscMax(yv[idx],val[0]);
+	  yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+	  val       += 2;
+	}
+#endif
+      }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
+      count--;
+    }
   }
   if (from->use_readyreceiver) {  
     if (from->n) {ierr = MPI_Startall_irecv(from->starts[from->n]*from->bs,from->n,from->requests);CHKERRQ(ierr);}
@@ -2359,7 +2808,7 @@ PetscErrorCode VecScatterBegin_PtoP_1(Vec xin,Vec yin,InsertMode addv,ScatterMod
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
-  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends;
+  PetscInt               i,*indices,*sstarts,iend,j,nrecvs,nsends,len;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -2387,6 +2836,16 @@ PetscErrorCode VecScatterBegin_PtoP_1(Vec xin,Vec yin,InsertMode addv,ScatterMod
       /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
+
+    if (ctx->packtogether) {
+      /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
+      len  = sstarts[nsends];
+      val  = svalues;
+      for (i=0; i<len; i++) {
+        *val++  = xv[*indices++];
+      }
+      if (nsends) {ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);}
+    } else {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -2396,6 +2855,7 @@ PetscErrorCode VecScatterBegin_PtoP_1(Vec xin,Vec yin,InsertMode addv,ScatterMod
         } 
         ierr = MPI_Start_isend(iend,swaits+i);CHKERRQ(ierr);
       }
+    }
 
     if (!from->use_readyreceiver && to->sendfirst) {  
       /* post receives since they were not previously posted   */
@@ -2444,7 +2904,7 @@ PetscErrorCode VecScatterEnd_PtoP_1(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   PetscInt               nrecvs,nsends,i,*indices,count,n,*rstarts,*lindices;
   PetscMPIInt            imdex;
   MPI_Request            *rwaits,*swaits;
-  MPI_Status             rstatus,*sstatus;
+  MPI_Status             xrstatus,*rstatus,*sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
@@ -2453,6 +2913,7 @@ PetscErrorCode VecScatterEnd_PtoP_1(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   to       = (VecScatter_MPI_General*)ctx->todata;
   from     = (VecScatter_MPI_General*)ctx->fromdata;
   sstatus  = to->sstatus;
+  rstatus  = to->rstatus;
   rwaits   = from->requests;
   swaits   = to->requests;
   if (mode & SCATTER_REVERSE) {
@@ -2470,7 +2931,7 @@ PetscErrorCode VecScatterEnd_PtoP_1(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   /*  wait on receives */
   count = nrecvs;
   while (count) {
-    ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus);CHKERRQ(ierr);
+    ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
     /* unpack receives into our local space */
     val      = rvalues + rstarts[imdex];
     lindices = indices + rstarts[imdex];
@@ -2755,13 +3216,18 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   to->bs   = bs;
   ierr     = PetscOptionsHasName(PETSC_NULL,"-vecscatter_alltoallv",&use_alltoallv);CHKERRQ(ierr);
   if (use_alltoallv) {
-    ctx->begin   = VecScatterBegin_PtoP_Alltoallv;
-    ctx->destroy = VecScatterDestroy_PtoP;
+    if (bs == 1) {
+      ctx->begin   = VecScatterBegin_PtoP_Alltoallv_1;
+      ctx->destroy = VecScatterDestroy_PtoP;
+    } else if (bs == 3) {
+      ctx->begin   = VecScatterBegin_PtoP_Alltoallv_3;
+      ctx->destroy = VecScatterDestroy_PtoP;
+    }
 
     ierr       = PetscMalloc2(size,PetscMPIInt,&to->counts,size,PetscMPIInt,&to->displs);CHKERRQ(ierr);
     ierr       = PetscMemzero(to->counts,size*sizeof(PetscMPIInt));
     for (i=0; i<to->n; i++) {
-      to->counts[to->procs[i]] = to->starts[i+1] - to->starts[i];
+      to->counts[to->procs[i]] = bs*(to->starts[i+1] - to->starts[i]);
     }
     to->displs[0] = 0;
     for (i=1; i<size; i++) {
@@ -2771,7 +3237,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
     ierr       = PetscMalloc2(size,PetscMPIInt,&from->counts,size,PetscMPIInt,&from->displs);CHKERRQ(ierr);
     ierr       = PetscMemzero(from->counts,size*sizeof(PetscMPIInt));
     for (i=0; i<from->n; i++) {
-      from->counts[from->procs[i]] = from->starts[i+1] - from->starts[i];
+      from->counts[from->procs[i]] = bs*(from->starts[i+1] - from->starts[i]);
     }
     from->displs[0] = 0;
     for (i=1; i<size; i++) {
