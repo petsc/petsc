@@ -22,9 +22,6 @@
 #if defined(PETSC_HAVE_STRING_H)
 #include <string.h>
 #endif
-#if defined(PETSC_HAVE_STROPTS_H)
-#include <stropts.h>
-#endif
 
 #define PETSC_MEX_ERROR(a) {fprintf(stdout,"ReadInVecs %s \n",a); return -1;}
 /*-----------------------------------------------------------------*/
