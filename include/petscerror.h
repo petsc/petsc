@@ -275,9 +275,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode);
 EXTERN void PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,PetscTruth);
-
+EXTERN PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
 /*MC
-   PetscExceptionCaught - Indicates if exception zierr was caught.
+   PetscExceptionCaught - Indicates if a specific exception zierr was caught.
 
    Not Collective
 
@@ -292,6 +292,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,Pets
 
    Notes:
     PETSc must not be configured using the option --with-errorchecking=0 for this to work
+
+    Use PetscExceptionValue() to see if the current error code is one that has been "tried"
 
   Concepts: exceptions, exception hanlding
 
@@ -324,6 +326,8 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscEr
 
    Notes:
     PETSc must not be configured using the option --with-errorchecking=0 for this to work
+
+    Use PetscExceptionCaught() to see if the current error code is EXACTLY the one you want
 
   Concepts: exceptions, exception hanlding
 
@@ -362,7 +366,7 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
   Concepts: exceptions, exception hanlding
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
-          CHKERRQ(), PetscExceptionCaught()
+          CHKERRQ(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop()
 M*/
 extern PetscErrorCode PetscExceptionTmp;
 #define PetscExceptionTry1(a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : (PetscExceptionTmp = a , PetscExceptionPop(b),PetscExceptionTmp)

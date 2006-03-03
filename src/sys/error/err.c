@@ -291,7 +291,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscExceptionTmp                           = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorIsCatchable" 
-static PetscTruth PetscErrorIsCatchable(PetscErrorCode err)
+/*@C
+      PetscErrorIsCatchable - Returns if a PetscErrorCode can be caught with a PetscExceptionTry1() or
+           PetscExceptionPush()
+
+  Input Parameters:
+.   err - error code 
+
+  Level: advanced
+
+   Notes:
+    PETSc must not be configured using the option --with-errorchecking=0 for this to work
+
+.seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop(), PetscErrorSetCatchable()
+@*/
+PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode err)
 {
   PetscInt i;
   for (i=0; i<PetscErrorUncatchableCount; i++) {
@@ -304,7 +318,7 @@ static PetscTruth PetscErrorIsCatchable(PetscErrorCode err)
 #define __FUNCT__ "PetscErrorSetCatchable" 
 /*@
       PetscErrorSetCatchable - Sets if a PetscErrorCode can be caught with a PetscExceptionTry1()
-    PetscExceptionCaught() pair. By default all errors are catchable.
+    PetscExceptionCaught() pair, or PetscExceptionPush(). By default all errors are catchable.
 
   Input Parameters:
 +   err - error code 
@@ -315,7 +329,7 @@ static PetscTruth PetscErrorIsCatchable(PetscErrorCode err)
    Notes:
     PETSc must not be configured using the option --with-errorchecking=0 for this to work
 
-.seealso: PetscExceptionTry1(), PetscExceptionCaught()
+.seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop(), PetscErrorIsCatchable()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode err,PetscTruth flg)
 {
@@ -340,6 +354,24 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode err,PetscTr
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscExceptionPush" 
+/*@
+      PetscExceptionPush - Adds the exception as one to be caught and passed up. If passed up
+        can be checked with PetscExceptionCaught() or PetscExceptionValue()
+
+  Input Parameters:
+.   err - the exception to catch
+
+  Level: advanced
+
+   Notes:
+    PETSc must not be configured using the option --with-errorchecking=0 for this to work
+
+    Use PetscExceptionPop() to remove this as a value to be caught
+
+    This is not usually needed in C/C++ rather use PetscExceptionTry1()
+
+.seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop()
+@*/
 PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode err) 
 {
   PetscFunctionBegin;
@@ -350,6 +382,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode err)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscExceptionPop" 
+/*@
+      PetscExceptionPop - Removes  the most recent exception asked to be caught with PetscExceptionPush()
+
+  Input Parameters:
+.   err - the exception that was pushed
+
+  Level: advanced
+
+   Notes:
+    PETSc must not be configured using the option --with-errorchecking=0 for this to work
+
+    This is not usually needed in C/C++ rather use PetscExceptionTry1()
+
+.seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop()
+@*/
 void PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode err)
 {
   /* if (PetscExceptionsCount <= 0)SETERRQ(PETSC_ERR_PLIB,"Stack for PetscExceptions is empty"); */
