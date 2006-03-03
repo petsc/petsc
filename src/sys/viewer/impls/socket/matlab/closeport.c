@@ -34,9 +34,6 @@
 #if defined(PETSC_HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
-#if defined(PETSC_HAVE_STROPTS_H)
-#include <stropts.h>
-#endif
 #if defined(PETSC_HAVE_IO_H)
 #include <io.h>
 #endif
