@@ -472,9 +472,7 @@ PetscErrorCode VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *to,Ve
   from->is_copy     = PETSC_TRUE;
   from->copy_start  = from_slots[0];
   from->copy_length = bs*sizeof(PetscScalar)*n;
-
   ierr = PetscInfo(0,"Local scatter is a copy, optimizing for it\n");CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -970,50 +968,11 @@ PetscErrorCode VecScatterBegin_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (to->sendfirst) {
-      /* this version packs and sends one at a time */
-      val  = svalues;
-      for (i=0; i<nsends; i++) {
-        iend = sstarts[i+1]-sstarts[i];
-
-        for (j=0; j<iend; j++) {
-          idx     = *indices++;
-          val[0] = xv[idx];
-          val[1] = xv[idx+1];
-          val[2] = xv[idx+2];
-          val[3] = xv[idx+3];
-          val[4] = xv[idx+4];
-          val[5] = xv[idx+5];
-          val[6] = xv[idx+6];
-          val[7] = xv[idx+7];
-          val    += 8;
-        } 
-        ierr = MPI_Start_isend(8*iend,swaits+i);CHKERRQ(ierr);
-      }
-    }
-
-    if (!from->use_readyreceiver) {  
-      /* post receives since they were not previousl posted   */
+    if (!from->use_readyreceiver && !to->sendfirst) {  
+      /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
 
-    if (!to->sendfirst) {
-      /* this version packs all the messages together and sends */
-      /*
-      len  = 5*sstarts[nsends];
-      val  = svalues;
-      for (i=0; i<len; i += 5) {
-        idx     = *indices++;
-        val[0] = xv[idx];
-        val[1] = xv[idx+1];
-        val[2] = xv[idx+2];
-        val[3] = xv[idx+3];
-        val[4] = xv[idx+4];
-        val      += 5;
-      }
-      ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);
-      */
-
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -1033,6 +992,10 @@ PetscErrorCode VecScatterBegin_PtoP_8(Vec xin,Vec yin,InsertMode addv,ScatterMod
         } 
         ierr = MPI_Start_isend(8*iend,swaits+i);CHKERRQ(ierr);
       }
+
+    if (!from->use_readyreceiver && to->sendfirst) {  
+      /* post receives since they were not previously posted   */
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
   }
 
@@ -1220,49 +1183,11 @@ PetscErrorCode VecScatterBegin_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (to->sendfirst) {
-      /* this version packs and sends one at a time */
-      val  = svalues;
-      for (i=0; i<nsends; i++) {
-        iend = sstarts[i+1]-sstarts[i];
-
-        for (j=0; j<iend; j++) {
-          idx     = *indices++;
-          val[0] = xv[idx];
-          val[1] = xv[idx+1];
-          val[2] = xv[idx+2];
-          val[3] = xv[idx+3];
-          val[4] = xv[idx+4];
-          val[5] = xv[idx+5];
-          val[6] = xv[idx+6];
-          val    += 7;
-        } 
-        ierr = MPI_Start_isend(7*iend,swaits+i);CHKERRQ(ierr);
-      }
-    }
-
-    if (!from->use_readyreceiver) {  
-      /* post receives since they were not previously posted   */
+    if (!from->use_readyreceiver && !to->sendfirst) {  
+      /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
 
-    if (!to->sendfirst) {
-      /* this version packs all the messages together and sends */
-      /*
-      len  = 5*sstarts[nsends];
-      val  = svalues;
-      for (i=0; i<len; i += 5) {
-        idx     = *indices++;
-        val[0] = xv[idx];
-        val[1] = xv[idx+1];
-        val[2] = xv[idx+2];
-        val[3] = xv[idx+3];
-        val[4] = xv[idx+4];
-        val      += 5;
-      }
-      ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);
-      */
-
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -1281,6 +1206,10 @@ PetscErrorCode VecScatterBegin_PtoP_7(Vec xin,Vec yin,InsertMode addv,ScatterMod
         } 
         ierr = MPI_Start_isend(7*iend,swaits+i);CHKERRQ(ierr);
       }
+
+    if (!from->use_readyreceiver && to->sendfirst) {  
+      /* post receives since they were not previously posted   */
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
   }
 
@@ -1463,48 +1392,11 @@ PetscErrorCode VecScatterBegin_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (to->sendfirst) {
-      /* this version packs and sends one at a time */
-      val  = svalues;
-      for (i=0; i<nsends; i++) {
-        iend = sstarts[i+1]-sstarts[i];
-
-        for (j=0; j<iend; j++) {
-          idx     = *indices++;
-          val[0] = xv[idx];
-          val[1] = xv[idx+1];
-          val[2] = xv[idx+2];
-          val[3] = xv[idx+3];
-          val[4] = xv[idx+4];
-          val[5] = xv[idx+5];
-          val    += 6;
-        } 
-        ierr = MPI_Start_isend(6*iend,swaits+i);CHKERRQ(ierr);
-      }
-    }
-
-    if (!from->use_readyreceiver) {  
-      /* post receives since they were not previously posted   */
+    if (!from->use_readyreceiver && !to->sendfirst) {  
+      /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
 
-    if (!to->sendfirst) {
-      /* this version packs all the messages together and sends */
-      /*
-      len  = 5*sstarts[nsends];
-      val  = svalues;
-      for (i=0; i<len; i += 5) {
-        idx     = *indices++;
-        val[0] = xv[idx];
-        val[1] = xv[idx+1];
-        val[2] = xv[idx+2];
-        val[3] = xv[idx+3];
-        val[4] = xv[idx+4];
-        val      += 5;
-      }
-      ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);
-      */
-
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -1522,6 +1414,10 @@ PetscErrorCode VecScatterBegin_PtoP_6(Vec xin,Vec yin,InsertMode addv,ScatterMod
         } 
         ierr = MPI_Start_isend(6*iend,swaits+i);CHKERRQ(ierr);
       }
+
+    if (!from->use_readyreceiver && to->sendfirst) {  
+      /* post receives since they were not previously posted   */
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
   }
 
@@ -1698,47 +1594,10 @@ PetscErrorCode VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (to->sendfirst) {
-      /* this version packs and sends one at a time */
-      val  = svalues;
-      for (i=0; i<nsends; i++) {
-        iend = sstarts[i+1]-sstarts[i];
-
-        for (j=0; j<iend; j++) {
-          idx     = *indices++;
-          val[0] = xv[idx];
-          val[1] = xv[idx+1];
-          val[2] = xv[idx+2];
-          val[3] = xv[idx+3];
-          val[4] = xv[idx+4];
-          val    += 5;
-        } 
-        ierr = MPI_Start_isend(5*iend,swaits+i);CHKERRQ(ierr);
-      }
-    }
-
-    if (!from->use_readyreceiver) {  
-      /* post receives since they were not previousl posted   */
+    if (!from->use_readyreceiver && !to->sendfirst) {  
+      /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
-
-    if (!to->sendfirst) {
-      /* this version packs all the messages together and sends */
-      /*
-      len  = 5*sstarts[nsends];
-      val  = svalues;
-      for (i=0; i<len; i += 5) {
-        idx     = *indices++;
-        val[0] = xv[idx];
-        val[1] = xv[idx+1];
-        val[2] = xv[idx+2];
-        val[3] = xv[idx+3];
-        val[4] = xv[idx+4];
-        val      += 5;
-      }
-      ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);
-      */
-
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -1755,6 +1614,10 @@ PetscErrorCode VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMod
         } 
         ierr = MPI_Start_isend(5*iend,swaits+i);CHKERRQ(ierr);
       }
+
+    if (!from->use_readyreceiver && to->sendfirst) {  
+      /* post receives since they were not previously posted   */
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
   }
 
@@ -2168,43 +2031,10 @@ PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (to->sendfirst) {
-      /* this version packs and sends one at a time */
-      val  = svalues;
-      for (i=0; i<nsends; i++) {
-        iend = sstarts[i+1]-sstarts[i];
-
-        for (j=0; j<iend; j++) {
-          idx     = *indices++;
-          val[0] = xv[idx];
-          val[1] = xv[idx+1];
-          val[2] = xv[idx+2];
-          val    += 3;
-        } 
-        ierr = MPI_Start_isend(3*iend,swaits+i);CHKERRQ(ierr);
-      }
-    }
-
-    if (!from->use_readyreceiver) {  
-      /* post receives since they were not previously posted   */
+    if (!from->use_readyreceiver && !to->sendfirst) {  
+      /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
-
-    if (!to->sendfirst) {
-      /* this version packs all the messages together and sends */
-      /*
-      len  = 3*sstarts[nsends];
-      val  = svalues;
-      for (i=0; i<len; i += 3) {
-        idx     = *indices++;
-        val[0] = xv[idx];
-        val[1] = xv[idx+1];
-        val[2] = xv[idx+2];
-        val      += 3;
-      }
-      ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);
-      */
-
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -2219,6 +2049,10 @@ PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMod
         } 
         ierr = MPI_Start_isend(3*iend,swaits+i);CHKERRQ(ierr);
       }
+
+    if (!from->use_readyreceiver && to->sendfirst) {  
+      /* post receives since they were not previously posted   */
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
   }
 
@@ -2377,41 +2211,10 @@ PetscErrorCode VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (to->sendfirst) {
-      /* this version packs and sends one at a time */
-      val  = svalues;
-      for (i=0; i<nsends; i++) {
-        iend = sstarts[i+1]-sstarts[i];
-
-        for (j=0; j<iend; j++) {
-          idx     = *indices++;
-          val[0] = xv[idx];
-          val[1] = xv[idx+1];
-          val    += 2;
-        } 
-        ierr = MPI_Start_isend(2*iend,swaits+i);CHKERRQ(ierr);
-      }
-    }
-
-    if (!from->use_readyreceiver) {  
+    if (!from->use_readyreceiver && !to->sendfirst) {  
       /* post receives since they were not previously posted    */
       if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
-
-    if (!to->sendfirst) {
-      /* this version packs all the messages together and sends */
-      /*
-      len  = 2*sstarts[nsends];
-      val  = svalues;
-      for (i=0; i<len; i += 2) {
-        idx     = *indices++;
-        val[0] = xv[idx];
-        val[1] = xv[idx+1];
-        val      += 2;
-      }
-      ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);
-      */
-
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -2425,6 +2228,10 @@ PetscErrorCode VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMod
         } 
         ierr = MPI_Start_isend(2*iend,swaits+i);CHKERRQ(ierr);
       }
+
+    if (!from->use_readyreceiver && to->sendfirst) {  
+      /* post receives since they were not previously posted   */
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
   }
 
@@ -2575,7 +2382,10 @@ PetscErrorCode VecScatterBegin_PtoP_1(Vec xin,Vec yin,InsertMode addv,ScatterMod
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (to->sendfirst) {
+    if (!from->use_readyreceiver && !to->sendfirst) {  
+      /* post receives since they were not previously posted    */
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
+    }
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -2585,25 +2395,10 @@ PetscErrorCode VecScatterBegin_PtoP_1(Vec xin,Vec yin,InsertMode addv,ScatterMod
         } 
         ierr = MPI_Start_isend(iend,swaits+i);CHKERRQ(ierr);
       }
-    }
 
-    if (!from->use_readyreceiver) {  
+    if (!from->use_readyreceiver && to->sendfirst) {  
       /* post receives since they were not previously posted   */
-      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs],nrecvs,rwaits);CHKERRQ(ierr);}
-    }
-
-    if (!to->sendfirst) {
-
-      /* this version packs and sends one at a time */
-      val  = svalues;
-      for (i=0; i<nsends; i++) {
-        iend = sstarts[i+1]-sstarts[i];
-
-        for (j=0; j<iend; j++) {
-          *val++ = xv[*indices++];
-        } 
-        ierr = MPI_Start_isend(iend,swaits+i);CHKERRQ(ierr);
-      }
+      if (nrecvs) {ierr = MPI_Startall_irecv(from->starts[nrecvs]*from->bs,nrecvs,rwaits);CHKERRQ(ierr);}
     }
   }
 
@@ -3378,7 +3173,44 @@ PetscErrorCode VecScatterCreate_StoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   from->type = VEC_SCATTER_MPI_GENERAL;
 
   if (bs > 1) {
-    SETERRQ(PETSC_ERR_SUP,"Blocksize not supported");
+    ierr = PetscInfo1(0,"Using blocksize %D scatter\n",bs);CHKERRQ(ierr);
+    ctx->copy        = VecScatterCopy_PtoP_X;
+    switch (bs) {
+    case 12: 
+      ctx->begin     = VecScatterBegin_PtoP_12;
+      ctx->end       = VecScatterEnd_PtoP_12; 
+      break;
+    case 8: 
+      ctx->begin     = VecScatterBegin_PtoP_8;
+      ctx->end       = VecScatterEnd_PtoP_8; 
+      break;
+    case 7: 
+      ctx->begin     = VecScatterBegin_PtoP_7;
+      ctx->end       = VecScatterEnd_PtoP_7; 
+      break;
+    case 6: 
+      ctx->begin     = VecScatterBegin_PtoP_6;
+      ctx->end       = VecScatterEnd_PtoP_6; 
+      break;
+    case 5: 
+      ctx->begin     = VecScatterBegin_PtoP_5;
+      ctx->end       = VecScatterEnd_PtoP_5; 
+      break;
+    case 4: 
+      ctx->begin     = VecScatterBegin_PtoP_4;
+      ctx->end       = VecScatterEnd_PtoP_4; 
+      break;
+    case 3: 
+      ctx->begin     = VecScatterBegin_PtoP_3;
+      ctx->end       = VecScatterEnd_PtoP_3; 
+      break;
+    case 2: 
+      ctx->begin     = VecScatterBegin_PtoP_2;
+      ctx->end       = VecScatterEnd_PtoP_2; 
+      break;
+    default:
+      SETERRQ(PETSC_ERR_SUP,"Blocksize not supported");
+    }
   } else {
     ierr = PetscInfo(0,"Using nonblocked scatter\n");CHKERRQ(ierr);
     ctx->begin     = VecScatterBegin_PtoP;
