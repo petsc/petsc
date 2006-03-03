@@ -85,9 +85,11 @@
 #if defined (PETSC_MISSING_DREAL)
 #define PetscRealPart(a) real(a)
 #define PetscConj(a) conjg(a)
+#define PetscImaginaryPart(a) aimg(a)
 #else
 #define PetscRealPart(a) dreal(a)
 #define PetscConj(a) dconjg(a)
+#define PetscImaginaryPart(a) daimg(a)
 #endif
 #define MPIU_SCALAR MPI_DOUBLE_COMPLEX
 #else
@@ -98,6 +100,7 @@
 #endif
 #define PetscRealPart(a) a
 #define PetscConj(a) a
+#define PetscImaginaryPart(a) a
 #define MPIU_SCALAR MPI_DOUBLE_PRECISION
 #endif
 
