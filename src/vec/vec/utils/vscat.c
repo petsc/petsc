@@ -316,7 +316,6 @@ PetscErrorCode VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
   PetscInt             i;
 
   PetscFunctionBegin;
-  out->postrecvs      = 0;
   out->begin          = in->begin;
   out->end            = in->end;
   out->copy           = in->copy;
@@ -628,7 +627,6 @@ PetscErrorCode VecScatterCopy_SGToSG(VecScatter in,VecScatter out)
   VecScatter_Seq_General *in_from = (VecScatter_Seq_General*)in->fromdata,*out_from;
   
   PetscFunctionBegin;
-  out->postrecvs     = 0;
   out->begin         = in->begin;
   out->end           = in->end;
   out->copy          = in->copy;
@@ -665,7 +663,6 @@ PetscErrorCode VecScatterCopy_SGToSS(VecScatter in,VecScatter out)
   VecScatter_Seq_General *in_from = (VecScatter_Seq_General*)in->fromdata,*out_from;
   
   PetscFunctionBegin;
-  out->postrecvs     = 0;
   out->begin         = in->begin;
   out->end           = in->end;
   out->copy          = in->copy;
@@ -704,7 +701,6 @@ PetscErrorCode VecScatterCopy_SStoSS(VecScatter in,VecScatter out)
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
-  out->postrecvs  = 0;
   out->begin      = in->begin;
   out->end        = in->end;
   out->copy       = in->copy;
@@ -898,7 +894,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       from->type        = VEC_SCATTER_SEQ_GENERAL; 
       ctx->todata       = (void*)to; 
       ctx->fromdata     = (void*)from;
-      ctx->postrecvs    = 0;
       ctx->begin        = VecScatterBegin_SGtoSG; 
       ctx->end          = 0; 
       ctx->destroy      = VecScatterDestroy_SGtoSG;
@@ -925,7 +920,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       from8->type        = VEC_SCATTER_SEQ_STRIDE; 
       ctx->todata       = (void*)to8; 
       ctx->fromdata     = (void*)from8;
-      ctx->postrecvs    = 0;
       ctx->begin        = VecScatterBegin_SStoSS; 
       ctx->end          = 0; 
       ctx->destroy      = VecScatterDestroy_SStoSS;
@@ -952,7 +946,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
 #endif
       ierr           = PetscMemcpy(from9->vslots,idx,nx*sizeof(PetscInt));CHKERRQ(ierr);
       ctx->todata    = (void*)to9; ctx->fromdata = (void*)from9;
-      ctx->postrecvs = 0;
       if (step == 1)  ctx->begin = VecScatterBegin_SGtoSS_Stride1;
       else            ctx->begin = VecScatterBegin_SGtoSS;
       ctx->destroy   = VecScatterDestroy_SGtoSS;
@@ -983,7 +976,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ierr = PetscMemcpy(to10->vslots,idy,nx*sizeof(PetscInt));CHKERRQ(ierr);
       ctx->todata     = (void*)to10; 
       ctx->fromdata   = (void*)from10;
-      ctx->postrecvs  = 0;
       if (step == 1) ctx->begin = VecScatterBegin_SStoSG_Stride1; 
       else           ctx->begin = VecScatterBegin_SStoSG; 
       ctx->destroy    = VecScatterDestroy_SStoSG;
@@ -1017,7 +1009,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         from13->type      = VEC_SCATTER_SEQ_STRIDE;
         ctx->todata       = (void*)to13;
         ctx->fromdata     = (void*)from13;
-        ctx->postrecvs    = 0;
         ctx->begin        = VecScatterBegin_SStoSS; 
         ctx->end          = 0;  
         ctx->destroy      = VecScatterDestroy_SStoSS;
@@ -1043,7 +1034,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       from11->type      = VEC_SCATTER_SEQ_GENERAL; 
       ctx->todata       = (void*)to11; 
       ctx->fromdata     = (void*)from11;
-      ctx->postrecvs    = 0;
       ctx->begin        = VecScatterBegin_SGtoSG; 
       ctx->end          = 0; 
       ctx->destroy      = VecScatterDestroy_SGtoSG;
@@ -1087,7 +1077,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         from12->type        = VEC_SCATTER_SEQ_STRIDE; 
         ctx->todata         = (void*)to12; 
         ctx->fromdata       = (void*)from12;
-        ctx->postrecvs      = 0;
         ctx->begin          = VecScatterBegin_SStoSS; 
         ctx->end            = 0; 
         ctx->destroy        = VecScatterDestroy_SStoSS;
@@ -1134,7 +1123,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         sto->type         = VEC_SCATTER_MPI_TOALL;
         ctx->todata       = (void*)sto;
         ctx->fromdata     = 0;
-        ctx->postrecvs    = 0;
         ctx->begin        = VecScatterBegin_MPI_ToAll;   
         ctx->end          = 0;
         ctx->destroy      = VecScatterDestroy_MPI_ToAll;
@@ -1187,7 +1175,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         sto->type         = VEC_SCATTER_MPI_TOONE;
         ctx->todata       = (void*)sto;
         ctx->fromdata     = 0;
-        ctx->postrecvs    = 0;
         ctx->begin        = VecScatterBegin_MPI_ToOne;   
         ctx->end          = 0;
         ctx->destroy      = VecScatterDestroy_MPI_ToAll;
@@ -1290,7 +1277,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         from->type        = VEC_SCATTER_SEQ_STRIDE;
         ctx->todata       = (void*)to;
         ctx->fromdata     = (void*)from;
-        ctx->postrecvs    = 0;
         ctx->begin        = VecScatterBegin_SStoSS; 
         ctx->end          = 0;  
         ctx->destroy      = VecScatterDestroy_SStoSS;
@@ -1368,56 +1354,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_view",&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = VecScatterView(ctx,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-/* ------------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "VecScatterPostRecvs"
-/*@
-   VecScatterPostRecvs - Posts the receives required for the ready-receiver
-   version of the VecScatter routines.
-
-   Collective on VecScatter
-
-   Input Parameters:
-+  x - the vector from which we scatter (not needed,can be null)
-.  y - the vector to which we scatter
-.  addv - either ADD_VALUES or INSERT_VALUES
-.  mode - the scattering mode, usually SCATTER_FORWARD.  The available modes are:
-    SCATTER_FORWARD, SCATTER_REVERSE
--  inctx - scatter context generated by VecScatterCreate()
-
-   Output Parameter:
-.  y - the vector to which we scatter
-
-   Level: advanced
-
-   Notes:
-   If you use SCATTER_REVERSE the first two arguments should be reversed, from 
-   the SCATTER_FORWARD.
-   The vectors x and y cannot be the same. y[iy[i]] = x[ix[i]], for i=0,...,ni-1
-
-   This scatter is far more general than the conventional
-   scatter, since it can be a gather or a scatter or a combination,
-   depending on the indices ix and iy.  If x is a parallel vector and y
-   is sequential, VecScatterBegin() can serve to gather values to a
-   single processor.  Similarly, if y is parallel and x sequential, the
-   routine can scatter from one processor to many processors.
-
-.seealso: VecScatterCreate(), VecScatterEnd(), VecScatterBegin()
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecScatterPostRecvs(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(y,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE,5);
-
-  if (inctx->postrecvs) {
-    ierr = (*inctx->postrecvs)(x,y,addv,mode,inctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

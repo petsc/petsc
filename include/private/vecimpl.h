@@ -210,12 +210,10 @@ typedef struct {
 struct _p_VecScatter {
   PETSCHEADER(int);
   PetscInt       to_n,from_n;
-  PetscTruth     inuse;   /* prevents corruption from mixing two scatters */
-  PetscTruth     beginandendtogether;         /* indicates that the scatter begin and end
-                                          function are called together, VecScatterEnd()
+  PetscTruth     inuse;                /* prevents corruption from mixing two scatters */
+  PetscTruth     beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd()
                                           is then treated as a nop */
-  PetscTruth     packtogether; /* packs all the messages before sending, same with receive */
-  PetscErrorCode (*postrecvs)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+  PetscTruth     packtogether;         /* packs all the messages before sending, same with receive */
   PetscErrorCode (*begin)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
   PetscErrorCode (*end)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
   PetscErrorCode (*copy)(VecScatter,VecScatter);

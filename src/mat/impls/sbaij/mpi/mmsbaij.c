@@ -84,7 +84,6 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
      -- Mvctx and lvec are not used by MatMult_MPISBAIJ(), but usefule for some applications */
   ierr = VecCreateMPI(mat->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
   ierr = VecScatterCreate(gvec,from,sbaij->lvec,to,&sbaij->Mvctx);CHKERRQ(ierr); 
-  ierr = VecScatterPostRecvs(gvec,sbaij->lvec,INSERT_VALUES,SCATTER_FORWARD,sbaij->Mvctx);CHKERRQ(ierr); 
 
   sbaij->garray = garray;
   ierr = PetscLogObjectParent(mat,sbaij->Mvctx);CHKERRQ(ierr);
@@ -123,16 +122,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2*ec,stmp,&to);CHKERRQ(ierr); 
 
-  /* gnerate the SBAIJ scatter context */
   ierr = VecScatterCreate(sbaij->slvec0,from,sbaij->slvec1,to,&sbaij->sMvctx);CHKERRQ(ierr);  
  
-   /*
-      Post the receives for the first matrix vector product. We sync-chronize after
-    this on the chance that the user immediately calls MatMult() after assemblying 
-    the matrix.
-  */
-  ierr = VecScatterPostRecvs(sbaij->slvec0,sbaij->slvec1,INSERT_VALUES,SCATTER_FORWARD,sbaij->sMvctx);CHKERRQ(ierr); 
-
   ierr = VecGetLocalSize(sbaij->slvec1,&nt);CHKERRQ(ierr);
   ierr = VecGetArray(sbaij->slvec1,&ptr);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs*mbs,ptr,&sbaij->slvec1a);CHKERRQ(ierr); 
@@ -283,16 +274,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
      2) have another way of generating a scatter context without a vector.*/
   ierr = VecCreateMPI(mat->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
 
-  /* gnerate the scatter context */
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
-
-  /*
-      Post the receives for the first matrix vector product. We sync-chronize after
-    this on the chance that the user immediately calls MatMult() after assemblying 
-    the matrix.
-  */
-  ierr = VecScatterPostRecvs(gvec,baij->lvec,INSERT_VALUES,SCATTER_FORWARD,baij->Mvctx);CHKERRQ(ierr);
-  ierr = MPI_Barrier(mat->comm);CHKERRQ(ierr);
 
   ierr = PetscLogObjectParent(mat,baij->Mvctx);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(mat,baij->lvec);CHKERRQ(ierr);

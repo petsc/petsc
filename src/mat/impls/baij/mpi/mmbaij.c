@@ -129,16 +129,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
      2) have another way of generating a scatter context without a vector.*/
   ierr = VecCreateMPI(mat->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
 
-  /* gnerate the scatter context */
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
-
-  /*
-      Post the receives for the first matrix vector product. We sync-chronize after
-    this on the chance that the user immediately calls MatMult() after assemblying 
-    the matrix.
-  */
-  ierr = VecScatterPostRecvs(gvec,baij->lvec,INSERT_VALUES,SCATTER_FORWARD,baij->Mvctx);CHKERRQ(ierr);
-  ierr = MPI_Barrier(mat->comm);CHKERRQ(ierr);
 
   ierr = PetscLogObjectParent(mat,baij->Mvctx);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(mat,baij->lvec);CHKERRQ(ierr);
