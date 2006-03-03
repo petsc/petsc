@@ -144,6 +144,7 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   ierr = PetscFree2(to->counts,to->displs);CHKERRQ(ierr);
   ierr = PetscFree2(from->counts,from->displs);CHKERRQ(ierr);
   ierr = PetscFree2(to->local.slots_nonmatching,from->local.slots_nonmatching);CHKERRQ(ierr);
+  ierr = PetscFree2(to->rev_requests,from->rev_requests);CHKERRQ(ierr);
   ierr = PetscFree7(to->values,to->requests,to->indices,to->starts,to->procs,to->sstatus,to->rstatus);CHKERRQ(ierr);
   ierr = PetscFree5(from->values,from->requests,from->indices,from->starts,from->procs);CHKERRQ(ierr);
   ierr = PetscFree(from);CHKERRQ(ierr);
