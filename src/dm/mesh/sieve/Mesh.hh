@@ -444,7 +444,7 @@ namespace ALE {
         struct triangulateio  in;
         struct triangulateio  out;
         int                   dim = 2;
-        Obj<Mesh>             m = Mesh(boundary->comm(), dim);
+        Obj<Mesh>             m = Mesh(boundary->comm(), dim, boundary->debug);
         Obj<Mesh::sieve_type> bdTopology = boundary->getTopology();
         PetscMPIInt           rank;
         PetscErrorCode        ierr;
@@ -544,7 +544,7 @@ namespace ALE {
         ::tetgenio            in;
         ::tetgenio            out;
         int                   dim = 3;
-        Obj<Mesh>             m = Mesh(boundary->comm(), dim);
+        Obj<Mesh>             m = Mesh(boundary->comm(), dim, boundary->debug);
         Obj<Mesh::sieve_type> bdTopology = boundary->getTopology();
         PetscMPIInt           rank;
         PetscErrorCode        ierr;
@@ -681,7 +681,7 @@ namespace ALE {
         struct triangulateio in;
         struct triangulateio out;
         int                  dim = 2;
-        Obj<Mesh>            m = Mesh(mesh->comm(), dim);
+        Obj<Mesh>            m = Mesh(mesh->comm(), dim, mesh->debug);
         // FIX: Need to globalize
         PetscInt             numElements = mesh->getTopology()->heightStratum(0)->size();
         PetscMPIInt          rank;
@@ -807,7 +807,7 @@ namespace ALE {
         ::tetgenio     in;
         ::tetgenio     out;
         int            dim = 3;
-        Obj<Mesh>      m = Mesh(mesh->comm(), dim);
+        Obj<Mesh>      m = Mesh(mesh->comm(), dim, mesh->debug);
         // FIX: Need to globalize
         PetscInt       numElements = mesh->getTopology()->heightStratum(0)->size();
         PetscMPIInt    rank;
