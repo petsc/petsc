@@ -3923,7 +3923,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   MPI_Comm               comm;
   MPI_Request            *send_waits,*recv_waits;
   MPI_Status             recv_status,*send_status;
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_USE_DEBUG)
   PetscTruth             found = PETSC_FALSE;
 #endif
   
@@ -3948,13 +3948,13 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
         nprocs[2*j]++; 
         nprocs[2*j+1] = 1; 
         owner[i] = j; 
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_USE_DEBUG)
         found = PETSC_TRUE; 
 #endif
         break;
       }
     }
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_USE_DEBUG)
     if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
     found = PETSC_FALSE;
 #endif
@@ -4384,7 +4384,7 @@ PetscErrorCode VecScatterCreate_StoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   MPI_Comm               comm = yin->comm;
   MPI_Request            *send_waits,*recv_waits;
   MPI_Status             recv_status,*send_status;
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_USE_DEBUG)
   PetscTruth             found = PETSC_FALSE;
 #endif
 
@@ -4405,13 +4405,13 @@ PetscErrorCode VecScatterCreate_StoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
         nprocs[2*j]++; 
         nprocs[2*j+1] = 1; 
         owner[i] = j; 
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_USE_DEBUG)
         found = PETSC_TRUE; 
 #endif
         break;
       }
     }
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_USE_DEBUG)
     if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
     found = PETSC_FALSE;
 #endif
@@ -4626,7 +4626,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
   PetscTruth     duplicate = PETSC_FALSE;
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_USE_DEBUG)
   PetscTruth     found = PETSC_FALSE;
 #endif
 
@@ -4658,13 +4658,13 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
         nprocs[2*j]++; 
         nprocs[2*j+1] = 1; 
         owner[i] = j; 
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_USE_DEBUG)
         found = PETSC_TRUE; 
 #endif
         break;
       }
     }
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_USE_DEBUG)
     if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
     found = PETSC_FALSE;
 #endif
