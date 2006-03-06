@@ -1,7 +1,7 @@
 
 CFLAGS	        = -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
 FFLAGS	        =
-CPPFLAGS        = -DALE_USE_LOGGING -DALE_LOGGING_USE_EVENTS -DALE_LOGGING_USE_STAGES -DALE_HAVE_CXX_ABI -DALE_USE_DEBUGGING
+CPPFLAGS        = -DALE_USE_DEBUGGING -DALE_HAVE_CXX_ABI -DALE_USE_LOGGING -DALE_LOGGING_USE_EVENTS # -DALE_LOGGING_USE_STAGES
 FPPFLAGS        = 
 LOCDIR          = src/dm/mesh/examples/tutorials/
 EXAMPLESC       = ex1.c
@@ -32,13 +32,16 @@ valex1:
 	-@${MPIRUN} -np ${NP} valgrind --tool=memcheck ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
 
 runex1_pylith:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file /PETSc3/geoframe/packages/lithomop/lithomop3d/examples/lintet/bm1b/bm1b ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS}
 
 debugex1_pylith:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file /PETSc3/geoframe/packages/lithomop/lithomop3d/examples/lintet/bm1b/bm1b -display ${DISPLAY} -start_in_debugger ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file data/bm1b/bm1b -display ${DISPLAY} -start_in_debugger ${EXTRA_ARGS}
 
 runex1_pylith2:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -interpolate 1 -output_local 1 -base_file /PETSc3/geoframe/packages/lithomop-sieve/lithomop3d/examples/lintet/bm1m/bm1m ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -interpolate 1 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS}
+
+debugex1_pylith2:
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -interpolate 1 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 runex1_2:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}

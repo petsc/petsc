@@ -2,11 +2,11 @@ ALL: lib
 
 CFLAGS   = -I. ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
 FFLAGS   =
-CPPFLAGS = -DALE_HAVE_CXX_ABI -DALE_USE_LOGGING -DALE_USE_DEBUGGING -DALE_LOGGING_USE_EVENTS #-DALE_LOGGING_USE_STAGES
-SOURCEC  = ALE.cxx Coaster.cxx PreSieve.cxx Sieve.cxx Stack.cxx IndexBundle.cxx Simplicializer.cxx Mesh.cxx
+CPPFLAGS = -DALE_USE_DEBUGGING -DALE_HAVE_CXX_ABI -DALE_USE_LOGGING -DALE_LOGGING_USE_EVENTS #-DALE_LOGGING_USE_STAGES
+SOURCEC  = ALE.cxx
 SOURCEF  =
-SOURCEH  = ALE.hh  Coaster.hh  PreSieve.hh  Sieve.hh  Stack.hh  IndexBundle.hh                     Mesh.hh  Sifter.hh
-OBJSC    = ALE.o   Coaster.o   PreSieve.o   Sieve.o   Stack.o   IndexBundle.o   Simplicializer.o   Mesh.o
+SOURCEH  = ALE.hh  Coaster.hh  Mesh.hh  Sifter.hh
+OBJSC    = ALE.o               
 OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DA
