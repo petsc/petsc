@@ -1061,7 +1061,9 @@ namespace ALE {
         
         // Wait on the receives
         if(NeighborCountIn) {
-          ierr = MPI_Waitall(NeighborCountIn, NeighborsIn_waits, NeighborIn_status); CHKERROR(ierr,"Error in MPI_Waitall");
+          ostringstream txt;
+          txt << "[" << _graph->commRank() << "]: Error in MPI_Waitall";
+          ierr = MPI_Waitall(NeighborCountIn, NeighborsIn_waits, NeighborIn_status); CHKERROR(ierr,txt.str().c_str());
         }
         
         // Now we unpack the received cones, fuse them with the local cones and store the result in the completion graph.
