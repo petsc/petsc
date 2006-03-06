@@ -606,6 +606,7 @@ namespace ALE {
         // leased from that lessor, but on the number of neighbor over the nodes leased from that lessor.
         
         // First we compute the numbers of neighbors over the nodes leased from a given lessor.
+        // NeighborCountsByLessor[lessor] = # of neighbors on that lessor
         int32_t TotalNeighborCount = 0;
         int32_t *NeighborCountsByLessor;
         if(LessorCount) {
@@ -633,7 +634,8 @@ namespace ALE {
           for(int32_t i = 0; i < LessorCount; i++) {
             txt << "[" << Lessors[i] <<","  <<  NeighborCountsByLessor[i] << "]; ";
           }
-          txt << "\n";
+          txt << std::endl;
+          txt << "[" << rank << "]: " << __FUNCT__ << ": TotalNeighborCount: " << TotalNeighborCount << std::endl;
           ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
           ierr = PetscSynchronizedFlush(comm); CHKERROR(ierr, "PetscSynchronizedFlush");
         }/* -----------------------------------  */
@@ -652,6 +654,12 @@ namespace ALE {
             CHKERROR(ierr,"Error in MPI_Irecv");
             lessorOffset += 2*NeighborCountsByLessor[i];
           }
+        }
+        if (lessorOffset != 2*TotalNeighborCount) {
+          ostringstream msg;
+
+          msg << "["<<rank<<"]Invalid lessor offset " << lessorOffset << " should be " << 2*TotalNeighborCount << std::endl;
+          throw ALE::Exception(msg.str().c_str());
         }
         // Pack and send messages back to renters. 
         // For each node p and each renter r (hence for each rental (p,r)) we must send to r a segment consisting of the list of all

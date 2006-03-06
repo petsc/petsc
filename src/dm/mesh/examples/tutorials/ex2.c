@@ -129,7 +129,6 @@ PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
                                   1.0, 1.0};
   ALE::Two::Mesh::point_type vertices[9];
   PetscInt          order = 0;
-  PetscMPIInt       rank;
 
   PetscFunctionBegin;
   if (mesh->commRank() == 0) {
@@ -160,7 +159,7 @@ PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
   topology->stratify();
   mesh->createSerialCoordinates(2, 0, coords);
   /* Create boundary conditions */
-  if (rank == 0) {
+  if (mesh->commRank() == 0) {
     ALE::Obj<ALE::def::PointSet> cone = ALE::def::PointSet();
 
     for(int v = 0; v < 8; v++) {
