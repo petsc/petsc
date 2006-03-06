@@ -613,17 +613,14 @@ namespace ALE {
         }
         cntr = 0;
         for(int32_t i = 0; i < LessorCount; i++) {
+          int32_t neighborCountByLessor = 0;        
           for(int32_t j = 0; j < LeaseSizes[i]; j++) {
             //ASSUMPTION on Point type affects NeighborCountsOffset size
             cntr += 2;
-            TotalNeighborCount += NeighborCounts[cntr++];
+            neighborCountByLessor += NeighborCounts[cntr++];
           }
-          if(i == 0) {
-            NeighborCountsByLessor[i] = TotalNeighborCount;
-          }
-          else {
-            NeighborCountsByLessor[i] = TotalNeighborCount - NeighborCountsByLessor[i-1];
-          }
+          NeighborCountsByLessor[i] = neighborCountByLessor;
+          TotalNeighborCount       += neighborCountByLessor; 
         }
         if (debug2) { /* -----------------------------------  */
           // Use a C++ string stream to report the numbers of shared nodes leased from each lessor
