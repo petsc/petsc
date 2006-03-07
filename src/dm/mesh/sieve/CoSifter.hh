@@ -96,7 +96,7 @@ namespace ALE {
       // of as a CoSieve over the topology sieve.
     public:
       CoSifter(MPI_Comm comm = PETSC_COMM_SELF, int debug = 0) : _comm(comm), debug(debug) {
-        this->_order = order_type(PETSC_COMM_SELF, debug);
+        this->_order = order_type(this->_comm, debug);
         MPI_Comm_rank(this->_comm, &this->_commRank);
         MPI_Comm_size(this->_comm, &this->_commSize);
         this->offsets = NULL;
@@ -132,7 +132,7 @@ namespace ALE {
     public:
       Obj<order_type> __getOrder(const std::string& orderName) {
         if (this->_reorders.find(orderName) == this->_reorders.end()) {
-          this->_reorders[orderName] = order_type(PETSC_COMM_SELF, this->debug);
+          this->_reorders[orderName] = order_type(this->_comm, this->debug);
         }
         return this->_reorders[orderName];
       };

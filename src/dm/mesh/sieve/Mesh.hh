@@ -441,13 +441,15 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "generate_Triangle"
       static Obj<Mesh> generate_Triangle(Obj<Mesh> boundary, bool interpolate) {
-        struct triangulateio  in;
-        struct triangulateio  out;
-        int                   dim = 2;
-        Obj<Mesh>             m = Mesh(boundary->comm(), dim, boundary->debug);
-        Obj<Mesh::sieve_type> bdTopology = boundary->getTopology();
-        PetscMPIInt           rank;
-        PetscErrorCode        ierr;
+        struct triangulateio   in;
+        struct triangulateio   out;
+        int                    dim = 2;
+        Obj<Mesh>              m = Mesh(boundary->comm(), dim, boundary->debug);
+        Obj<Mesh::sieve_type>  bdTopology = boundary->getTopology();
+        Obj<Mesh::bundle_type> vertexBundle = boundary->getBundle(0);
+        Obj<Mesh::bundle_type> edgeBundle = boundary->getBundle(1);
+        PetscMPIInt            rank;
+        PetscErrorCode         ierr;
 
         ierr = MPI_Comm_rank(boundary->comm(), &rank);
         initInput_Triangle(&in);
@@ -456,7 +458,6 @@ namespace ALE {
           std::string args("pqenzQ");
           bool        createConvexHull = false;
           Obj<Mesh::sieve_type::traits::depthSequence> vertices = bdTopology->depthStratum(0);
-          Obj<Mesh::bundle_type>               vertexBundle = boundary->getBundle(0);
           Mesh::field_type::patch_type         patch;
 
           in.numberofpoints = vertices->size();
@@ -478,7 +479,6 @@ namespace ALE {
           }
 
           Obj<Mesh::sieve_type::traits::depthSequence> edges = bdTopology->depthStratum(1);
-          Obj<Mesh::bundle_type>               edgeBundle = boundary->getBundle(1);
 
           in.numberofsegments = edges->size();
           if (in.numberofsegments > 0) {
@@ -541,13 +541,15 @@ namespace ALE {
 #endif
 #ifdef PETSC_HAVE_TETGEN
       static Obj<Mesh> generate_TetGen(Obj<Mesh> boundary, bool interpolate) {
-        ::tetgenio            in;
-        ::tetgenio            out;
-        int                   dim = 3;
-        Obj<Mesh>             m = Mesh(boundary->comm(), dim, boundary->debug);
-        Obj<Mesh::sieve_type> bdTopology = boundary->getTopology();
-        PetscMPIInt           rank;
-        PetscErrorCode        ierr;
+        ::tetgenio             in;
+        ::tetgenio             out;
+        int                    dim = 3;
+        Obj<Mesh>              m = Mesh(boundary->comm(), dim, boundary->debug);
+        Obj<Mesh::sieve_type>  bdTopology = boundary->getTopology();
+        Obj<Mesh::bundle_type> vertexBundle = boundary->getBundle(0);
+        Obj<Mesh::bundle_type> facetBundle = boundary->getBundle(bdTopology->depth());
+        PetscMPIInt            rank;
+        PetscErrorCode         ierr;
 
         ierr = MPI_Comm_rank(boundary->comm(), &rank);
 
@@ -555,7 +557,6 @@ namespace ALE {
           std::string args("pqenzQ");
           bool        createConvexHull = false;
           Obj<Mesh::sieve_type::traits::depthSequence> vertices = bdTopology->depthStratum(0);
-          Obj<Mesh::bundle_type>               vertexBundle = boundary->getBundle(0);
           Mesh::field_type::patch_type         patch;
 
           in.numberofpoints = vertices->size();
@@ -577,7 +578,6 @@ namespace ALE {
           }
 
           Obj<Mesh::sieve_type::traits::heightSequence> facets = bdTopology->heightStratum(0);
-          Obj<Mesh::bundle_type>                facetBundle = boundary->getBundle(bdTopology->depth());
 
           in.numberoffacets = facets->size();
           if (in.numberoffacets > 0) {
@@ -717,13 +717,13 @@ namespace ALE {
 #else
         Obj<Mesh> serialMesh = mesh;
 #endif
-        Obj<Mesh::sieve_type> serialTopology = serialMesh->getTopology();
+        Obj<Mesh::sieve_type>  serialTopology = serialMesh->getTopology();
+        Obj<Mesh::bundle_type> vertexBundle = serialMesh->getBundle(0);
 
         if (rank == 0) {
           std::string args("pqenzQra");
           Obj<Mesh::sieve_type::traits::heightSequence> faces = serialTopology->heightStratum(0);
           Obj<Mesh::sieve_type::traits::depthSequence>  vertices = serialTopology->depthStratum(0);
-          Obj<Mesh::bundle_type>                vertexBundle = serialMesh->getBundle(0);
           Obj<Mesh::field_type>                 coordinates = serialMesh->getCoordinates();
           Mesh::field_type::patch_type          patch;
           int                                   f = 0;
@@ -842,13 +842,13 @@ namespace ALE {
 #else
         Obj<Mesh> serialMesh = mesh;
 #endif
-        Obj<Mesh::sieve_type> serialTopology = serialMesh->getTopology();
+        Obj<Mesh::sieve_type>  serialTopology = serialMesh->getTopology();
+        Obj<Mesh::bundle_type> vertexBundle = serialMesh->getBundle(0);
 
         if (rank == 0) {
           std::string args("qenzQra");
           Obj<Mesh::sieve_type::traits::heightSequence> cells = serialTopology->heightStratum(0);
           Obj<Mesh::sieve_type::traits::depthSequence>  vertices = serialTopology->depthStratum(0);
-          Obj<Mesh::bundle_type>                vertexBundle = serialMesh->getBundle(0);
           Obj<Mesh::field_type>                 coordinates = serialMesh->getCoordinates();
           Mesh::field_type::patch_type          patch;
           int                                   c = 0;
