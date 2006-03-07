@@ -203,9 +203,12 @@ typedef struct {
   PetscTruth             use_readyreceiver;
   PetscInt               bs;
   PetscTruth             sendfirst;
+  PetscTruth             contiq;
   /* for MPI_Alltoallv() approach */
+  PetscTruth             use_alltoallv;
   PetscMPIInt            *counts,*displs;
   /* for MPI_Alltoallw() approach */
+  PetscTruth             use_alltoallw;
   PetscMPIInt            *wcounts,*wdispls;
   MPI_Datatype           *types;
 } VecScatter_MPI_General;

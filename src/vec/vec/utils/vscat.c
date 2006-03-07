@@ -1404,6 +1404,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterGetMerged(VecScatter ctx,PetscTruth 
 
    Level: intermediate
 
+   Options Database
++   -vecscatter_rr   - use ready receiver mode (i.e. receives are post BEFORE sends)
+.   -vecscatter_ssend  - use MPI_Ssend() instead of MPI_Send()
+.   -vecscatter_packtogether - packs all the message before sending any and receivers all
+                               before sending. Default for the alltoall versions.
+.   -vecscatter_sendfirst - post ALL sends before posting receives (cannot be used with -vecscatter_rr)
+.   -vecscatter_alltoallv - use MPI_Alltoallv() instead of sends and receives
+-   -vecscatter_alltoallw  - use MPI_Alltoallw() instead of MPI_Alltoallv() for INSERT_VALUES
+
    Notes:
    The vectors x and y need not be the same vectors used in the call 
    to VecScatterCreate(), but x must have the same parallel data layout
