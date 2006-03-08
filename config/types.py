@@ -189,7 +189,7 @@ void (*signal())();
       endian = self.framework.argDB['with-endian']
     else:
       # See if sys/param.h defines the BYTE_ORDER macro
-      includes = '#include <sys/types.h>\n#include <sys/param.h>\n'
+      includes = '#include <sys/types.h>\n#ifdef HAVE_SYS_PARAM_H\n  #include <sys/param.h>\n#endif\n'
       body     = '''
 #if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
   bogus endian macros
