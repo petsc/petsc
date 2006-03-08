@@ -2,7 +2,7 @@
 #define included_ALE_CoSifter_hh
 
 #ifndef  included_ALE_Sifter_hh
-#include <Sifter.hh>
+#include <Sieve.hh>
 #endif
 #ifndef  included_ALE_ParDelta_hh
 #include <ParDelta.hh>
@@ -16,19 +16,19 @@
 // Okay, check out what I have put there.
 // It's a rather high-level interface, but I think it sketches out the implementation idea.  I have also become a master of switching from 'public' to 'private' and back.
 
-// The idea is to put more power into BiGraphs (BipartiteGraphs).  They are like Sieves but with two point types (source and target) and no recursive operations (nCone, closure, etc).
-// I claim they should be parallel, so cone/support completions should be computable for them.  The footprint is incorporated into the color of the new BiGraph, which is returned as a completion.
-// It would be very natural to have Sieve<Point_, Color_> to extend BiGraph<Point_, Point_, Color_> with the recursive operations.
+// The idea is to put more power into Sifters (BipartiteGraphs).  They are like Sieves but with two point types (source and target) and no recursive operations (nCone, closure, etc).
+// I claim they should be parallel, so cone/support completions should be computable for them.  The footprint is incorporated into the color of the new Sifter, which is returned as a completion.
+// It would be very natural to have Sieve<Point_, Color_> to extend Sifter<Point_, Point_, Color_> with the recursive operations.
 
-// The reason for putting the completion functionality into BiGraphs is that patches and indices under and over a topology Sieve are BiGraphs and have to be completed:
+// The reason for putting the completion functionality into Sifters is that patches and indices under and over a topology Sieve are Sifters and have to be completed:
 // the new overlap_patches has to encode patch pairs along with the rank of the second patch (first is always local); likewise, overlap_indices must encode a pair of intervals with a rank
 // -- the attached to the same Sieve point by two different processes -- one local and one (possibly) remote.  At any rate, the support completion of 'patches' contains all the information
 // needed for 'overlap_patches' -- remember that struct with a triple {point, patch, number} you had on the board?   Likewise for 'overlap_indices' built out of the cone completion of 'indices'.
 
 // Once the 'overlap_XXX' are computed, we can allocate the storage for the Delta data and post sends receives.
 // We should be able to reuse the completion subroutine from the old Sieve.
-// So you are right that perhaps Sieve completion gets us to the CoSieve completion, except I think it's the BiGraph completion this time.
-// I can do the completion when I come back if you get the serial BiGraph/Sieve stuff going.
+// So you are right that perhaps Sieve completion gets us to the CoSieve completion, except I think it's the Sifter completion this time.
+// I can do the completion when I come back if you get the serial Sifter/Sieve stuff going.
 //
 namespace ALE {
   namespace Two {
@@ -43,7 +43,7 @@ namespace ALE {
       typedef Index_ index_type;
       typedef std::vector<index_type> IndexArray;
       typedef Value_ value_type;
-      typedef BiGraph<point_type,patch_type,index_type, RecContainer<point_type,Rec<point_type> >,RecContainer<patch_type,Rec<patch_type> > > order_type;
+      typedef Sifter<point_type,patch_type,index_type, RecContainer<point_type,Rec<point_type> >,RecContainer<patch_type,Rec<patch_type> > > order_type;
 
       typedef RightSequenceDuplicator<ConeArraySequence<typename sieve_type::traits::arrow_type> > fuser;
       typedef ParConeDelta<sieve_type, fuser,
@@ -92,7 +92,7 @@ namespace ALE {
       // A patch is a member of the sheaf over the sieve which indicates a maximal
       // domain of definition for a function on the sieve. Furthermore, we use the
       // patch coloring to order the patch values, the analog of a coordinate system
-      // on the patch. We use a BiGraph here, but the object can properly be thought
+      // on the patch. We use a Sifter here, but the object can properly be thought
       // of as a CoSieve over the topology sieve.
     public:
       CoSifter(MPI_Comm comm = PETSC_COMM_SELF, int debug = 0) : _comm(comm), debug(debug) {
@@ -591,8 +591,8 @@ namespace ALE {
         }
         // Give a local offset to each local element, continue sequential offsets for ghosts
         // Local order is a CoSifter<sieve_type, patch_type, point_type, int>
-        //   which means localOrder->_order is BiGraph<point_type,patch_type,point_type>
-        // SupportDelta::overlap_type is ColorBiGraph<ALE::Point, int, ALE::pair<int,int>, uniColor>
+        //   which means localOrder->_order is Sifter<point_type,patch_type,point_type>
+        // SupportDelta::overlap_type is ColorSifter<ALE::Point, int, ALE::pair<int,int>, uniColor>
         this->localOrder  = bundle_type(this->_comm, this->debug);
         this->globalOrder = bundle_type(this->_comm, this->debug);
         Obj<typename order_type::baseSequence> base = this->_order->base();

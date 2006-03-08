@@ -8,11 +8,9 @@
 
 
 //
-// Classes and methods implementing  the parallel Overlap and Fusion algorithms on ColorBiGraph-like objects.
+// Classes and methods implementing  the parallel Overlap and Fusion algorithms on ColorSifter-like objects.
 //
 namespace ALE {
-
-  namespace Two {
 
     template <typename RightConeSequence_>
     class RightSequenceDuplicator {
@@ -120,23 +118,23 @@ namespace ALE {
     };// class ConeArraySequence
 
 
-    template <typename ParBiGraph_,
-              typename Fuser_ = RightSequenceDuplicator<ConeArraySequence<typename ParBiGraph_::traits::arrow_type> >,
-              typename FusionBiGraph_ = typename ParBiGraph_::template rebind<typename Fuser_::fusion_source_type, 
+    template <typename ParSifter_,
+              typename Fuser_ = RightSequenceDuplicator<ConeArraySequence<typename ParSifter_::traits::arrow_type> >,
+              typename FusionSifter_ = typename ParSifter_::template rebind<typename Fuser_::fusion_source_type, 
                                                                               typename Fuser_::fusion_target_type, 
                                                                               typename Fuser_::fusion_color_type>::type
     >    
     class ParConeDelta { // class ParConeDelta
     public:
-      // Here we specialize to BiGraphs based on Points in order to enable parallel overlap discovery.
+      // Here we specialize to Sifters based on Points in order to enable parallel overlap discovery.
       // We also assume that the Points in the base are ordered appropriately so we can use baseSequence.begin() and 
       // baseSequence.end() as the extrema for global reduction.
-      typedef ParConeDelta<ParBiGraph_, Fuser_, FusionBiGraph_>                                  delta_type;
-      typedef ParBiGraph_                                                                        graph_type;
+      typedef ParConeDelta<ParSifter_, Fuser_, FusionSifter_>                                  delta_type;
+      typedef ParSifter_                                                                        graph_type;
       typedef Fuser_                                                                             fuser_type;
       // These are default "return" types, although methods are templated on their main input/return types
-      typedef ColorBiGraph<int, ALE::Point, ALE::pair<int,int>, uniColor>                            overlap_type;
-      typedef FusionBiGraph_                                                                     fusion_type;
+      typedef ColorSifter<int, ALE::Point, ALE::pair<int,int>, uniColor>                            overlap_type;
+      typedef FusionSifter_                                                                     fusion_type;
 
       //
       static Obj<overlap_type> 
@@ -1129,18 +1127,18 @@ namespace ALE {
       static int  getDebug() {return ParConeDelta::debug;};
     }; // class ParConeDelta
   
-    template <typename ParBiGraph_, typename Fuser_, typename FusionBiGraph_>
-    int ParConeDelta<ParBiGraph_, Fuser_, FusionBiGraph_>::debug = 0;
+    template <typename ParSifter_, typename Fuser_, typename FusionSifter_>
+    int ParConeDelta<ParSifter_, Fuser_, FusionSifter_>::debug = 0;
     
 
     //
     // Auxiliary type
     //
-    template <typename BiGraph_>
+    template <typename Sifter_>
     class Flip { // class Flip
     public:
-      typedef BiGraph_       graph_type;
-      typedef Flip<BiGraph_> flip_type;
+      typedef Sifter_       graph_type;
+      typedef Flip<Sifter_> flip_type;
     protected:
       Obj<graph_type> _graph;
     public:
@@ -1216,21 +1214,21 @@ namespace ALE {
 
 
     // WARNING: must pass in a 'flipped' Fuser, that is a fuser that acts on cones instead of supports 
-    template<typename ParBiGraph_,
-             typename Fuser_ = RightSequenceDuplicator<ConeArraySequence<typename ParBiGraph_::traits::arrow_type::flip::type> >,
-             typename FusionBiGraph_ = typename ParBiGraph_::template rebind<typename Fuser_::fusion_target_type, 
+    template<typename ParSifter_,
+             typename Fuser_ = RightSequenceDuplicator<ConeArraySequence<typename ParSifter_::traits::arrow_type::flip::type> >,
+             typename FusionSifter_ = typename ParSifter_::template rebind<typename Fuser_::fusion_target_type, 
                                                                              typename Fuser_::fusion_source_type, 
                                                                              typename Fuser_::fusion_color_type>::type>    
     class ParSupportDelta {
     public:
-      // Here we specialize to BiGraphs based on Points in order to enable parallel overlap discovery.
+      // Here we specialize to Sifters based on Points in order to enable parallel overlap discovery.
       // We also assume that the Points in the base are ordered appropriately so we can use baseSequence.begin() and 
       // baseSequence.end() as the extrema for global reduction.
-      typedef ParSupportDelta<ParBiGraph_, Fuser_, FusionBiGraph_>                               delta_type;
-      typedef ParBiGraph_                                                                        graph_type;
-      typedef Fuser_                                                                             fuser_type;
-      typedef ColorBiGraph<ALE::Point, int, ALE::pair<int,int>, uniColor>                        overlap_type;
-      typedef FusionBiGraph_                                                                     fusion_type;
+      typedef ParSupportDelta<ParSifter_, Fuser_, FusionSifter_>                                delta_type;
+      typedef ParSifter_                                                                        graph_type;
+      typedef Fuser_                                                                            fuser_type;
+      typedef ColorSifter<ALE::Point, int, ALE::pair<int,int>, uniColor>                        overlap_type;
+      typedef FusionSifter_                                                                     fusion_type;
       //
 
       //
@@ -1275,8 +1273,6 @@ namespace ALE {
       };      
     }; // class ParSupportDelta
   
-
-  } // namespace Two
 } // namespace ALE
 
 #endif
