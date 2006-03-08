@@ -12,23 +12,27 @@
 #ifndef  included_ALE_mem_hh
 #include <ALE_mem.hh>
 #endif
+#ifndef  included_ALE_log_hh
+#include <ALE_log.hh>
+#endif
 
 namespace ALE {
 
 
+  //
+  // This is a set of classes and class templates describing an interface to point containers.
+  //
+  
+  // Basic object
   class Point {
   public:
-    int32_t prefix, index;
     typedef ALE_ALLOCATOR<Point> allocator;
+    int32_t prefix, index;
+    // Constructors
     Point() : prefix(0), index(0){};
-    Point(const int32_t& p, const int32_t& i) : prefix(p), index(i){};
-    //Point(const Point& q) : prefix(q.prefix), index(q.index) {};
-    bool operator==(const Point& q) const {
-      return ( (this->prefix == q.prefix) && (this->index == q.index) );
-    };
-    bool operator!=(const Point& q) const {
-      return ( (this->prefix != q.prefix) || (this->index != q.index) );
-    };
+    Point(int p, int i) : prefix(p), index(i){};
+    Point(const Point& p) : prefix(p.prefix), index(p.index){};
+    // Comparisons
     class less_than {
     public: 
       bool operator()(const Point& p, const Point& q) const {
@@ -36,96 +40,137 @@ namespace ALE {
       };
     };
     typedef less_than Cmp;
+    
+    bool operator==(const Point& q) const {
+      return ( (this->prefix == q.prefix) && (this->index == q.index) );
+    };
+    bool operator!=(const Point& q) const {
+      return ( (this->prefix != q.prefix) || (this->index != q.index) );
+    };
+    bool operator<(const Point& q) const {
+      return( (this->prefix < q.prefix) || ((this->prefix == q.prefix) && (this->index < q.index)));
+    };
+    // Printing
+    friend std::ostream& operator<<(std::ostream& os, const Point& p) {
+      os << "(" << p.prefix << ", "<< p.index << ")";
+      return os;
+    };
   };
-  
 
-
-
-  class Point_array : public std::vector<Point, Point::allocator > {
+  template <typename Element_>
+  class array : public std::vector<Element_, ALE_ALLOCATOR<Element_> > {
   public:
-    Point_array()             : std::vector<Point, Point::allocator >(){};
-    Point_array(int32_t size) : std::vector<Point, Point::allocator >(size){};
+    array()             : std::vector<Element_, ALE_ALLOCATOR<Element_> >(){};
+    array(int32_t size) : std::vector<Element_, ALE_ALLOCATOR<Element_> >(size){};
     //
-    void view(const char *name = NULL) {
-      printf("Viewing Point_array");
+    template <typename ostream_type>
+    void view(ostream_type& os, const char *name = NULL) {
+      os << "Viewing array";
       if(name != NULL) {
-        printf(" %s", name);
+        os << " " << name;
       }
-      printf(" of size %d\n", (int) this->size());
+      os << " of size " << (int) this->size() << std::endl;
+      os << "[";
       for(unsigned int cntr = 0; cntr < this->size(); cntr++) {
-        Point p = (*this)[cntr];
-        printf("element[%d]: (%d,%d)\n", cntr++, p.prefix, p.index);
+        Element_ e = (*this)[cntr];
+        os << e;
       }
+      os << " ]" << std::endl;
       
     };
   };
 
 
-
-  class Point_set : public std::set<Point, Point::less_than, Point::allocator > {
+  template <typename Element_>
+  class set : public std::set<Element_, typename Element_::less_than,  ALE_ALLOCATOR<Element_> > {
   public:
-    Point_set()        : std::set<Point, Point::less_than, Point::allocator>(){};
-    Point_set(Point p) : std::set<Point, Point::less_than, Point::allocator>(){insert(p);};
-    //
-    void join(Obj<Point_set> s) {
-      for(Point_set::iterator s_itor = s->begin(); s_itor != s->end(); s_itor++) {
+    // Encapsulated types
+    typedef std::set<Element_, typename Element_::less_than, ALE_ALLOCATOR<Element_> > base_type;
+    typedef typename base_type::iterator                                               iterator;
+    // Basic interface
+    set()        : std::set<Element_, typename Element_::less_than, ALE_ALLOCATOR<Element_> >(){};
+    set(Point p) : std::set<Element_, typename Element_::less_than, ALE_ALLOCATOR<Element_> >(){insert(p);};
+    // Redirection: 
+    // FIX: it is a little weird that methods aren't inheritec, 
+    //      but perhaps can be fixed by calling insert<Element_> (i.e., insert<Point> etc)?
+
+    std::pair<iterator, bool> 
+    insert(const Element_& e) { return base_type::insert(e); };
+
+    iterator 
+    insert(iterator position, const Element_& e) {return base_type::insert(position,e);};
+
+    template <class InputIterator>
+    void 
+    insert(InputIterator b, InputIterator e) { return base_type::insert(b,e);};
+
+    
+    // Extensions to std::set interface
+    bool contains(const Element_& e) {return (this->find(e) != this->end());};
+    void join(Obj<set> s) {
+      for(iterator s_itor = s->begin(); s_itor != s->end(); s_itor++) {
         this->insert(*s_itor);
       }
     };
-    void meet(Obj<Point_set> s) {// this should be called 'intersect' (the verb)
-      Point_set removal;
-      for(Point_set::iterator self_itor = this->begin(); self_itor != this->end(); self_itor++) {
-        Point p = *self_itor;
-        if(s->find(p) == s->end()){
-          removal.insert(p);
+    void meet(Obj<set> s) {// this should be called 'intersect' (the verb)
+      set removal;
+      for(iterator self_itor = this->begin(); self_itor != this->end(); self_itor++) {
+        Element_ e = *self_itor;
+        if(!s->contains(e)){
+          removal.insert(e);
         }
       }
-      for(Point_set::iterator rem_itor = removal.begin(); rem_itor != removal.end(); rem_itor++) {
-        Point q = *rem_itor;
-        this->erase(q);
+      for(iterator rem_itor = removal.begin(); rem_itor != removal.end(); rem_itor++) {
+        Element_ ee = *rem_itor;
+        this->erase(ee);
       }
     };
-    void subtract(Obj<Point_set> s) {
-      Point_set removal;
-      for(Point_set::iterator self_itor = this->begin(); self_itor != this->end(); self_itor++) {
-        Point p = *self_itor;
-        if(s->find(p) != s->end()){
-          removal.insert(p);
+    void subtract(Obj<set> s) {
+      set removal;
+      for(iterator self_itor = this->begin(); self_itor != this->end(); self_itor++) {
+        Element_ e = *self_itor;
+        if(s->contains(e)){
+          removal.insert(e);
         }
       }
-      for(Point_set::iterator rem_itor = removal.begin(); rem_itor != removal.end(); rem_itor++) {
-        Point q = *rem_itor;
-        this->erase(q);
+      for(iterator rem_itor = removal.begin(); rem_itor != removal.end(); rem_itor++) {
+        Element_ ee = *rem_itor;
+        this->erase(ee);
       }
     };
 
-    void view(const char *name = NULL) {
-      printf("Viewing Point_set");
+    //
+    template <typename ostream_type>
+    void view(ostream_type& os, const char *name = NULL) {
+      os << "Viewing set";
       if(name != NULL) {
-        printf(" %s", name);
+        os << " " << name;
       }
-      printf(" of size %d\n", (int) this->size());
-      int32_t cntr = 0;
-      for(Point_set::iterator s_itor = this->begin(); s_itor != this->end(); s_itor++) {
-        Point p = *s_itor;
-        printf("element[%d]: (%d,%d)\n", cntr++, p.prefix, p.index);
+      os << " of size " << (int) this->size() << std::endl;
+      os << "[";
+      for(iterator s_itor = this->begin(); s_itor != this->end(); s_itor++) {
+        Element_ e = *s_itor;
+        os << e;
       }
-      
+      os << " ]" << std::endl;
     };
   };
 
-  typedef std::map<int32_t, Point >                       int__Point;
-  typedef std::map<Point, int32_t,   Point::less_than >   Point__int;
-  typedef std::map<Point, Point,     Point::less_than >   Point__Point;
-  typedef std::map<Point, Point_set, Point::less_than >   Point__Point_set;
+  typedef set<Point>   PointSet;
+  typedef array<Point> PointArray;
 
-  typedef std::pair<int32_t, int32_t> int_pair;
-  typedef std::set<int32_t> int_set;
-  typedef std::set<int_pair> int_pair_set;
-  typedef std::map<int32_t, int32_t> int__int;
-  typedef std::map<int32_t, int_set> int__int_set;
-
-
+  template <typename X, typename Y>
+  struct pair : public std::pair<X,Y> {
+    pair() : std::pair<X,Y>(){};
+    pair(const pair& p) : std::pair<X,Y>(p.first, p.second) {};
+    pair(const X& x, const Y& y) : std::pair<X,Y>(x,y) {};
+    ~pair(){};
+    friend std::ostream& operator<<(std::ostream& os, const pair& p) {
+      os << "<" << p.first << ", "<< p.second << ">";
+      return os;
+    };
+  };// struct pair
+  
 
 } // namespace ALE
 

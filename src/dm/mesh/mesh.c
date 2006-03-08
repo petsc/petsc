@@ -146,10 +146,10 @@ PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
   ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
   if (mesh->commRank() == 0) {
     for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-      ALE::Obj<ALE::def::PointArray> cone = topology->nCone(*e_itor, topology->depth());
+      ALE::Obj<ALE::PointArray> cone = topology->nCone(*e_itor, topology->depth());
 
       ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
-      for(ALE::def::PointArray::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+      for(ALE::PointArray::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
         ierr = PetscViewerASCIIPrintf(viewer, " %d", globalVertex->getIndex(patch, *c_itor).prefix);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
@@ -179,10 +179,10 @@ PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
 
     ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &localVertices);CHKERRQ(ierr);
     for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-      ALE::Obj<ALE::def::PointArray> cone = topology->nCone(*e_itor, topology->depth());
+      ALE::Obj<ALE::PointArray> cone = topology->nCone(*e_itor, topology->depth());
 
       if (elementBundle->getFiberDimension(patch, *e_itor) > 0) {
-        for(ALE::def::PointArray::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+        for(ALE::PointArray::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
           localVertices[k++] = globalVertex->getIndex(patch, *c_itor).prefix;
         }
       }
@@ -1099,7 +1099,7 @@ inline void ExpandInterval(ALE::Point interval, PetscInt indices[], PetscInt *in
 
 #undef __FUNCT__
 #define __FUNCT__ "ExpandInterval_New"
-inline void ExpandInterval_New(ALE::def::Point interval, PetscInt indices[], PetscInt *indx)
+inline void ExpandInterval_New(ALE::Point interval, PetscInt indices[], PetscInt *indx)
 {
   for(int i = 0; i < interval.index; i++) {
     indices[(*indx)++] = interval.prefix + i;

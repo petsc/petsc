@@ -10,9 +10,6 @@
 //
 namespace ALE {
 
-  namespace Two {
-
-
       
 //       template <typename LeftBiGraph_, typename RightBiGraph_, typename DeltaBiGraph_>
 //       class Cone {
@@ -106,7 +103,6 @@ namespace ALE {
     
 
 
-  } // namespace Two
     
 } // namespace ALE
 

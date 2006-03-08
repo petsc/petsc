@@ -602,8 +602,10 @@ namespace ALE {
      
         typedef typename base_container_type::traits::PointSequence baseSequence;
         typedef typename cap_container_type::traits::PointSequence  capSequence;
-        typedef std::set<source_type> coneSet;
-        typedef std::set<target_type> supportSet;
+        typedef ALE::set<source_type>   coneSet;
+        typedef ALE::array<source_type> coneArray;
+        typedef ALE::set<target_type>   supportSet;
+        typedef ALE::array<target_type> supportArray;
       } traits;
 
       template <typename OtherSource_, typename OtherTarget_, typename OtherColor_, ColorMultiplicity otherColorMultiplicity, 
