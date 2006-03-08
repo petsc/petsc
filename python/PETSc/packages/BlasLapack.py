@@ -204,6 +204,7 @@ class Configure(PETSc.package.Package):
     # IRIX locations
     yield ('IRIX Mathematics library', None, 'libcomplib.sgimath.a', 1)
     yield ('Another IRIX Mathematics library', None, 'libscs.a', 1)
+    yield ('Compaq/Alpha Mathematics library', None, 'libcxml.a', 1)
     # IBM ESSL locations
     yield ('IBM ESSL Mathematics library', None, 'libessl.a', 1)
     # Portland group compiler blas and lapack
