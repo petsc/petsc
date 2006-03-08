@@ -24,7 +24,7 @@ namespace ALE {
 
     class Mesh {
     public:
-      typedef ALE::def::Point point_type;
+      typedef ALE::Point point_type;
       typedef std::vector<point_type> PointArray;
       typedef ALE::Three::Sieve<point_type,int,int> sieve_type;
       typedef point_type patch_type;
@@ -143,7 +143,7 @@ namespace ALE {
         point_type           start = *f_itor;
         f_itor++;
         point_type           next = *f_itor;
-        Obj<ALE::def::PointSet> preElement = this->topology->nJoin(start, next, 1);
+        Obj<ALE::PointSet> preElement = this->topology->nJoin(start, next, 1);
 
         if (preElement->size() > 0) {
           simplex = *preElement->begin();
@@ -527,7 +527,7 @@ namespace ALE {
               if (out.edgemarkerlist[e]) {
                 Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftriangles);
                 Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftriangles);
-                Obj<ALE::def::PointSet> join = topology->nJoin(endpointA, endpointB, 1);
+                Obj<ALE::PointSet> join = topology->nJoin(endpointA, endpointB, 1);
 
                 topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
               }
@@ -627,7 +627,7 @@ namespace ALE {
                 if (out.edgemarkerlist[e]) {
                   Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftetrahedra);
                   Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftetrahedra);
-                  Obj<ALE::def::PointSet> join = topology->nJoin(endpointA, endpointB, 1);
+                  Obj<ALE::PointSet> join = topology->nJoin(endpointA, endpointB, 1);
 
                   topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
                 }
@@ -636,15 +636,15 @@ namespace ALE {
             if (out.trifacemarkerlist) {
               for(int f = 0; f < out.numberoftrifaces; f++) {
                 if (out.trifacemarkerlist[f]) {
-                  Obj<ALE::def::PointSet> point = ALE::def::PointSet();
-                  Obj<ALE::def::PointSet> edge = ALE::def::PointSet();
+                  Obj<ALE::PointSet> point = ALE::PointSet();
+                  Obj<ALE::PointSet> edge = ALE::PointSet();
                   Mesh::point_type cornerA(0, out.trifacelist[f*3+0] + out.numberoftetrahedra);
                   Mesh::point_type cornerB(0, out.trifacelist[f*3+1] + out.numberoftetrahedra);
                   Mesh::point_type cornerC(0, out.trifacelist[f*3+2] + out.numberoftetrahedra);
                   point->insert(cornerA);
                   edge->insert(cornerB);
                   edge->insert(cornerC);
-                  Obj<ALE::def::PointSet> join = topology->nJoin(point, edge, 2);
+                  Obj<ALE::PointSet> join = topology->nJoin(point, edge, 2);
 
                   topology->setMarker(*join->begin(), out.trifacemarkerlist[f]);
                 }
@@ -900,7 +900,7 @@ namespace ALE {
               if (out.edgemarkerlist[e]) {
                 Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftetrahedra);
                 Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftetrahedra);
-                Obj<ALE::def::PointSet> join = topology->nJoin(endpointA, endpointB, 1);
+                Obj<ALE::PointSet> join = topology->nJoin(endpointA, endpointB, 1);
 
                 topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
               }
@@ -909,15 +909,15 @@ namespace ALE {
           if (out.trifacemarkerlist) {
             for(int f = 0; f < out.numberoftrifaces; f++) {
               if (out.trifacemarkerlist[f]) {
-                Obj<ALE::def::PointSet> point = ALE::def::PointSet();
-                Obj<ALE::def::PointSet> edge = ALE::def::PointSet();
+                Obj<ALE::PointSet> point = ALE::PointSet();
+                Obj<ALE::PointSet> edge = ALE::PointSet();
                 Mesh::point_type cornerA(0, out.edgelist[f*3+0] + out.numberoftetrahedra);
                 Mesh::point_type cornerB(0, out.edgelist[f*3+1] + out.numberoftetrahedra);
                 Mesh::point_type cornerC(0, out.edgelist[f*3+2] + out.numberoftetrahedra);
                 point->insert(cornerA);
                 edge->insert(cornerB);
                 edge->insert(cornerC);
-                Obj<ALE::def::PointSet> join = topology->nJoin(point, edge, 2);
+                Obj<ALE::PointSet> join = topology->nJoin(point, edge, 2);
 
                 topology->setMarker(*join->begin(), out.trifacemarkerlist[f]);
               }
@@ -1210,7 +1210,7 @@ namespace ALE {
       static void partition_Sieve(const Obj<Mesh>& mesh, bool localize = true) {
         ALE_LOG_EVENT_BEGIN;
         Obj<Mesh::sieve_type> topology = mesh->getTopology();
-        Obj<ALE::def::PointSet> localBase = ALE::def::PointSet();
+        Obj<ALE::PointSet> localBase = ALE::PointSet();
         const char *name = NULL;
 
         // Construct a Delta object and a base overlap object
@@ -1244,7 +1244,7 @@ namespace ALE {
         if(localize) {
           if (mesh->debug) {
             std::cout << "["<<mesh->commRank()<<"]: Restricting base to";
-            for(ALE::def::PointSet::iterator b_iter = localBase->begin(); b_iter != localBase->end(); ++b_iter) {
+            for(ALE::PointSet::iterator b_iter = localBase->begin(); b_iter != localBase->end(); ++b_iter) {
               std::cout << " " << *b_iter;
             }
             std::cout << std::endl;

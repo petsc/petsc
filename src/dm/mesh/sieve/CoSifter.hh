@@ -592,7 +592,7 @@ namespace ALE {
         // Give a local offset to each local element, continue sequential offsets for ghosts
         // Local order is a CoSifter<sieve_type, patch_type, point_type, int>
         //   which means localOrder->_order is BiGraph<point_type,patch_type,point_type>
-        // SupportDelta::overlap_type is ColorBiGraph<ALE::def::Point, int, ALE::pair<int,int>, uniColor>
+        // SupportDelta::overlap_type is ColorBiGraph<ALE::Point, int, ALE::pair<int,int>, uniColor>
         this->localOrder  = bundle_type(this->_comm, this->debug);
         this->globalOrder = bundle_type(this->_comm, this->debug);
         Obj<typename order_type::baseSequence> base = this->_order->base();
@@ -686,7 +686,7 @@ namespace ALE {
           reorder->view("Reorder after adding fusion");
         }
         //FIX
-        Obj<ALE::def::PointSet> points = ALE::def::PointSet();
+        Obj<ALE::PointSet> points = ALE::PointSet();
         points->insert(elements->begin(), elements->end());
         reorder->restrictBase(points);
         if (debug) {

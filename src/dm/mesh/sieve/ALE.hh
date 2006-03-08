@@ -9,11 +9,11 @@
 #ifndef  included_ALE_mem_hh
 #include <ALE_mem.hh>
 #endif
-#ifndef  included_ALE_containers_hh
-#include <ALE_containers.hh>
-#endif
 #ifndef  included_ALE_log_hh
 #include <ALE_log.hh>
+#endif
+#ifndef  included_ALE_containers_hh
+#include <ALE_containers.hh>
 #endif
 
 

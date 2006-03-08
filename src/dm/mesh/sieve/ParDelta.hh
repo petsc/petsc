@@ -12,18 +12,6 @@
 //
 namespace ALE {
 
-  template <typename X, typename Y>
-  struct pair : public std::pair<X,Y> {
-    pair() : std::pair<X,Y>(){};
-    pair(const pair& p) : std::pair<X,Y>(p.first, p.second) {};
-    pair(const X& x, const Y& y) : std::pair<X,Y>(x,y) {};
-    ~pair(){};
-    friend std::ostream& operator<<(std::ostream& os, const pair& p) {
-      os << "<" << p.first << ", "<< p.second << ">";
-      return os;
-    };
-  };// struct pair
-
   namespace Two {
 
     template <typename RightConeSequence_>
@@ -147,7 +135,7 @@ namespace ALE {
       typedef ParBiGraph_                                                                        graph_type;
       typedef Fuser_                                                                             fuser_type;
       // These are default "return" types, although methods are templated on their main input/return types
-      typedef ColorBiGraph<int, ALE::def::Point, ALE::pair<int,int>, uniColor>                            overlap_type;
+      typedef ColorBiGraph<int, ALE::Point, ALE::pair<int,int>, uniColor>                            overlap_type;
       typedef FusionBiGraph_                                                                     fusion_type;
 
       //
@@ -185,7 +173,7 @@ namespace ALE {
     protected:
       static int                debug;
       // Internal type definitions to ensure compatibility with the legacy code in the parallel subroutines
-      typedef ALE::def::Point                                Point;
+      typedef ALE::Point                                Point;
       typedef int                                            int32_t;
       typedef std::pair<int32_t, int32_t>                    int_pair;
       typedef std::set<std::pair<int32_t, int32_t> >         int_pair_set;
@@ -1241,7 +1229,7 @@ namespace ALE {
       typedef ParSupportDelta<ParBiGraph_, Fuser_, FusionBiGraph_>                               delta_type;
       typedef ParBiGraph_                                                                        graph_type;
       typedef Fuser_                                                                             fuser_type;
-      typedef ColorBiGraph<ALE::def::Point, int, ALE::pair<int,int>, uniColor>                   overlap_type;
+      typedef ColorBiGraph<ALE::Point, int, ALE::pair<int,int>, uniColor>                        overlap_type;
       typedef FusionBiGraph_                                                                     fusion_type;
       //
 
