@@ -60,6 +60,8 @@ class Configure(config.base.Configure):
       return 1
     if 'download-hypre' in self.framework.argDB and self.framework.argDB['download-hypre']:
       return 1
+    if 'download-ml' in self.framework.argDB and self.framework.argDB['download-ml']:
+      return 1
     return 0
 
   def configureCLanguage(self):
