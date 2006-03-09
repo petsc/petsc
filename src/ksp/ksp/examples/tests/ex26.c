@@ -20,8 +20,9 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
     system of equations.
 
     Usage: ex26 -ksp_smonitor -pc_type ml
-           -mg_coarse_ksp_max_it 10 -mg_levels_3_ksp_max_it 10 -mg_levels_2_ksp_max_it 10 
-           -mg_levels_1_ksp_max_it 10 -mg_fine_ksp_max_it 10
+           -mg_coarse_ksp_max_it 10  
+           -mg_levels_1_ksp_max_it 10 -mg_levels_2_ksp_max_it 10 
+           -mg_fine_ksp_max_it 10
 */
 
 #include "petscksp.h"
