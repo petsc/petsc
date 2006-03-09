@@ -433,7 +433,7 @@ PetscErrorCode MatSolve_AIJMUMPS(Mat A,Vec b,Vec x) {
       ierr = PetscMalloc((1+lsol_loc)*(sizeof(PetscScalar)+sizeof(PetscInt)),&sol_loc);CHKERRQ(ierr);
       lu->id.isol_loc = (PetscInt *)(sol_loc + lsol_loc);
       lu->id.lsol_loc = lsol_loc;
-      lu->id.sol_loc  = sol_loc; 
+      lu->id.sol_loc  = (F_DOUBLE *)sol_loc; 
       ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,lsol_loc,sol_loc,&lu->x_seq);CHKERRQ(ierr);
     }
   }
