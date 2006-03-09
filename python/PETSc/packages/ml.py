@@ -44,7 +44,7 @@ class Configure(PETSc.package.Package):
     
     self.framework.pushLanguage('C')
     CCenv = self.framework.getCompiler()
-    args.append('--with-cflags="'+self.framework.getCompilerFlags()+'"')
+    args.append('--with-cflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX"')
     self.framework.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
@@ -58,7 +58,7 @@ class Configure(PETSc.package.Package):
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       CXXenv = self.framework.getCompiler()
-      args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+'"')
+      args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX"')
       self.framework.popLanguage()
     else:
       raise RuntimeError('Error: ML requires C++ compiler. None specified')
@@ -73,7 +73,7 @@ class Configure(PETSc.package.Package):
       ll = os.path.basename(l)
       libs.append('-l'+ll[3:-2])
     libs = ' '.join(libs) # '-lmpich -lpmpich'
-    args.append('--with-mpi-libs="'+libs+'"')
+    args.append('--with-mpi-libs=" '+libs+'"')
     args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"')
 
     args = ' '.join(args)
