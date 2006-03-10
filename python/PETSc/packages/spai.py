@@ -31,7 +31,14 @@ class Configure(PETSc.package.Package):
     if not os.path.isdir(os.path.join(installDir,'lib')):
       os.mkdir(os.path.join(installDir,'lib'))      
     self.framework.pushLanguage('C')
-    args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DMPI '+self.framework.getCompilerFlags()+' '+self.headers.toString(self.mpi.include)+'\n'
+    if self.compilers.fortranMangling == 'underscore':
+      FTNOPT = ''
+    elif self.compilers.fortranMangling == 'capitalize':
+      FTNOPT = ''
+    else:
+      FTNOPT = '-DSP2'
+    args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DMPI '+FTNOPT+' '+self.framework.getCompilerFlags()+' '+self.headers.toString(self.mpi.include)+'\n'
+                                  
     self.framework.popLanguage()
     try:
       fd      = file(os.path.join(installDir,'Makefile.in'))
@@ -58,6 +65,18 @@ class Configure(PETSc.package.Package):
     return spaiDir
 
 
+  def configureLibrary(self):
+    '''Calls the regular package configureLibrary and then does an additional test needed by SPAI'''
+    '''Normally you do not need to provide this method'''
+    PETSc.package.Package.configureLibrary(self)
+    if self.blasLapack.f2c:
+      raise RuntimeError('SPAI requires a COMPLETE BLAS and LAPACK, it cannot be used with --download-c-blas-lapack=1 \nUse --download-f-blas-lapack option instead.')
+    # SuperLU_DIST requires dormqr() LAPACK routine
+    if not self.blasLapack.checkForRoutine('dormqr'): 
+      raise RuntimeError('SuperLU_DIST requires the LAPACK routine dormqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-f-blas-lapack=1 option \nIf you are using the IBM ESSL library, it does not contain this function.')
+    self.framework.log.write('Found slamch() in Lapack library as needed by SuperLU_DIST\n')
+    return
+  
 if __name__ == '__main__':
   import config.framework
   import sys
