@@ -426,11 +426,16 @@ typedef struct {
    Input Parameters:
 +  info - information about the matrix factorization 
 .  sctx - pointer to the struct LUShift_Ctx
--  newshift - 0: shift is unchanged; 1: shft is updated; -1: zeropivot  
+.  row  - active row index
+.  aval - values of unfactored matrix
+-  idiag - index of diagonals in array aval
+
+   Output  Parameter:
++  newshift - 0: shift is unchanged; 1: shft is updated; -1: zeropivot  
 
    Level: developer
 @*/
-#define MatLUCheckShift_inline(info,sctx,newshift) 0;\
+#define MatLUCheckShift_inline(info,sctx,row,aval,idiag,newshift) 0;\
 {\
   PetscInt _newshift;\
   PetscReal _zero = info->zeropivot*rs;\
@@ -461,6 +466,15 @@ typedef struct {
     _newshift = 1;\
   } else if (PetscAbsScalar(sctx.pv) <= _zero){\
     _newshift = -1;\
+    if (rs > 1.e100){\
+       ierr = PetscPrintf(PETSC_COMM_SELF," Frightening large rs %g, diagonals of the original matrix: \n",rs);\
+       PetscInt row_start,row_end,_i;\
+       row_start = PetscMax(row-10,0);\
+       row_end   = PetscMin(row+10,n);\
+       for (_i=row_start; _i<row_end; _i++){\
+         ierr = PetscPrintf(PETSC_COMM_SELF,"diag[%d] = %g\n",_i,aval[idiag[_i]]);\
+       }\
+    }\
   } else {\
     _newshift = 0;\
   }\
