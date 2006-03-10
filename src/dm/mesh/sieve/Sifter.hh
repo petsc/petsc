@@ -505,16 +505,16 @@ namespace ALE {
   using namespace SifterContainers;
 
     //
-    // ColorSifter (short for ColorBipartiteGraph) implements a sequential interface similar to that of Sieve,
-    // except the source and target points may have different types and iterated operations (e.g., nCone, closure)
-    // are not available.
+    // ASifter (short for Abstract Sifter, structurally a bipartite graph with colored arrows) implements a sequential interface 
+    // similar to that of Sieve, except the source and target points may have different types and iterated operations (e.g., nCone, 
+    // closure) are not available.
     // 
     template<typename Source_, typename Target_, typename Color_, ColorMultiplicity colorMultiplicity, 
              typename SourceCtnr_ = RecContainer<Source_, Rec<Source_> >, typename TargetCtnr_ = RecContainer<Target_, Rec<Target_> > >
-    class ColorSifter { // class ColorSifter
+    class ASifter { // class ASifter
     public:
       typedef struct {
-        typedef ColorSifter<Source_, Target_, Color_, colorMultiplicity, SourceCtnr_, TargetCtnr_> graph_type;
+        typedef ASifter<Source_, Target_, Color_, colorMultiplicity, SourceCtnr_, TargetCtnr_> graph_type;
         // Encapsulated container types
         typedef ArrowContainer<Source_, Target_, Color_, colorMultiplicity>      arrow_container_type;
         typedef SourceCtnr_                                                      cap_container_type;
@@ -569,7 +569,7 @@ namespace ALE {
 
           virtual bool contains(const source_type& s) {
             // Check whether a given point is in the index
-            typename ::boost::multi_index::index<typename ColorSifter::traits::arrow_container_type::set_type,typename ColorSifter::traits::arrowInd>::type& index = ::boost::multi_index::get<typename ColorSifter::traits::arrowInd>(this->_graph._arrows.set);
+            typename ::boost::multi_index::index<typename ASifter::traits::arrow_container_type::set_type,typename ASifter::traits::arrowInd>::type& index = ::boost::multi_index::get<typename ASifter::traits::arrowInd>(this->_graph._arrows.set);
             return (index.find(::boost::make_tuple(s,this->key)) != index.end());
           };
         };
@@ -614,7 +614,7 @@ namespace ALE {
                 typename OtherSourceCtnr_ = RecContainer<OtherSource_, Rec<OtherSource_> >, 
                 typename OtherTargetCtnr_ = RecContainer<OtherTarget_, Rec<OtherTarget_> > >
       struct rebind {
-        typedef ColorSifter<OtherSource_, OtherTarget_, OtherColor_, otherColorMultiplicity, OtherSourceCtnr_, OtherTargetCtnr_> type;
+        typedef ASifter<OtherSource_, OtherTarget_, OtherColor_, otherColorMultiplicity, OtherSourceCtnr_, OtherTargetCtnr_> type;
       };
 
     public:
@@ -640,8 +640,8 @@ namespace ALE {
       // 
       // Basic interface
       //
-      ColorSifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : debug(debug) {__init(comm);}
-      virtual ~ColorSifter(){};
+      ASifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : debug(debug) {__init(comm);}
+      virtual ~ASifter(){};
       //
       // Query methods
       //
@@ -1132,7 +1132,7 @@ namespace ALE {
       template<class targetInputSequence> 
       void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence>& targets, const typename traits::color_type& color);
 
-      void add(const Obj<ColorSifter<typename traits::source_type, typename traits::target_type, typename traits::color_type, colorMultiplicity, typename traits::cap_container_type, typename traits::base_container_type> >& cbg) {
+      void add(const Obj<ASifter<typename traits::source_type, typename traits::target_type, typename traits::color_type, colorMultiplicity, typename traits::cap_container_type, typename traits::base_container_type> >& cbg) {
         typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename traits::arrowInd>(cbg->_arrows.set);
 
         for(typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
@@ -1149,14 +1149,14 @@ namespace ALE {
           this->addCapPoint(*c_iter);
         }
       };
-    }; // class ColorSifter
+    }; // class ASifter
 
-    // A UniColorSifter aka Sifter
+    // A UniSifter aka Sifter
     template <typename Source_, typename Target_, typename Color_, 
               typename SourceCtnr_ = RecContainer<Source_, Rec<Source_> >, typename TargetCtnr_=RecContainer<Target_, Rec<Target_> > >
-    class Sifter : public ColorSifter<Source_, Target_, Color_, uniColor, SourceCtnr_, TargetCtnr_> {
+    class Sifter : public ASifter<Source_, Target_, Color_, uniColor, SourceCtnr_, TargetCtnr_> {
     public:
-      typedef typename ColorSifter<Source_, Target_, Color_, uniColor, SourceCtnr_, TargetCtnr_>::traits       traits;
+      typedef typename ASifter<Source_, Target_, Color_, uniColor, SourceCtnr_, TargetCtnr_>::traits       traits;
       template <typename OtherSource_, typename OtherTarget_, typename OtherColor_, 
                 typename OtherSourceCtnr_ = RecContainer<OtherSource_, Rec<OtherSource_> >, 
                 typename OtherTargetCtnr_ = RecContainer<OtherTarget_, Rec<OtherTarget_> >      >
@@ -1171,7 +1171,7 @@ namespace ALE {
       typedef typename traits::capSequence                                            capSequence;
       // Basic interface
       Sifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : 
-        ColorSifter<Source_, Target_, Color_, uniColor, SourceCtnr_, TargetCtnr_>(comm, debug) {};
+        ASifter<Source_, Target_, Color_, uniColor, SourceCtnr_, TargetCtnr_>(comm, debug) {};
       
       const typename traits::color_type&
       getColor(const typename traits::source_type& s, const typename traits::target_type& t, bool fail = true) {

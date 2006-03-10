@@ -8,7 +8,7 @@
 
 
 //
-// Classes and methods implementing  the parallel Overlap and Fusion algorithms on ColorSifter-like objects.
+// Classes and methods implementing  the parallel Overlap and Fusion algorithms on ASifter-like objects.
 //
 namespace ALE {
 
@@ -133,7 +133,7 @@ namespace ALE {
       typedef ParSifter_                                                                        graph_type;
       typedef Fuser_                                                                             fuser_type;
       // These are default "return" types, although methods are templated on their main input/return types
-      typedef ColorSifter<int, ALE::Point, ALE::pair<int,int>, uniColor>                            overlap_type;
+      typedef ASifter<int, ALE::Point, ALE::pair<int,int>, uniColor>                            overlap_type;
       typedef FusionSifter_                                                                     fusion_type;
 
       //
@@ -1227,7 +1227,7 @@ namespace ALE {
       typedef ParSupportDelta<ParSifter_, Fuser_, FusionSifter_>                                delta_type;
       typedef ParSifter_                                                                        graph_type;
       typedef Fuser_                                                                            fuser_type;
-      typedef ColorSifter<ALE::Point, int, ALE::pair<int,int>, uniColor>                        overlap_type;
+      typedef ASifter<ALE::Point, int, ALE::pair<int,int>, uniColor>                        overlap_type;
       typedef FusionSifter_                                                                     fusion_type;
       //
 

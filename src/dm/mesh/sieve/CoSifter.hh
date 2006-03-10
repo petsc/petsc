@@ -1,7 +1,7 @@
 #ifndef included_ALE_CoSifter_hh
 #define included_ALE_CoSifter_hh
 
-#ifndef  included_ALE_Sifter_hh
+#ifndef  included_ALE_Sieve_hh
 #include <Sieve.hh>
 #endif
 #ifndef  included_ALE_ParDelta_hh
@@ -16,7 +16,7 @@
 // Okay, check out what I have put there.
 // It's a rather high-level interface, but I think it sketches out the implementation idea.  I have also become a master of switching from 'public' to 'private' and back.
 
-// The idea is to put more power into Sifters (BipartiteGraphs).  They are like Sieves but with two point types (source and target) and no recursive operations (nCone, closure, etc).
+// The idea is to put more power into Sifters (bipartite graphs with color).  They are like Sieves but with two point types (source and target) and no recursive operations (nCone, closure, etc).
 // I claim they should be parallel, so cone/support completions should be computable for them.  The footprint is incorporated into the color of the new Sifter, which is returned as a completion.
 // It would be very natural to have Sieve<Point_, Color_> to extend Sifter<Point_, Point_, Color_> with the recursive operations.
 
@@ -591,8 +591,8 @@ namespace ALE {
         }
         // Give a local offset to each local element, continue sequential offsets for ghosts
         // Local order is a CoSifter<sieve_type, patch_type, point_type, int>
-        //   which means localOrder->_order is Sifter<point_type,patch_type,point_type>
-        // SupportDelta::overlap_type is ColorSifter<ALE::Point, int, ALE::pair<int,int>, uniColor>
+        //   which means localOrder->_order is a Sifter<point_type,patch_type,point_type>
+        // SupportDelta::overlap_type is an ASifter<ALE::Point, int, ALE::pair<int,int>, uniColor>
         this->localOrder  = bundle_type(this->_comm, this->debug);
         this->globalOrder = bundle_type(this->_comm, this->debug);
         Obj<typename order_type::baseSequence> base = this->_order->base();
