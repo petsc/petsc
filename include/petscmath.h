@@ -288,9 +288,6 @@ typedef double PetscLogDouble;
 #define PassiveReal   PetscReal
 #define PassiveScalar PetscScalar
 
-#define PETSCMAP1_a(a,b)  a ## _ ## b
-#define PETSCMAP1_b(a,b)  PETSCMAP1_a(a,b)
-#define PETSCMAP1(a)      PETSCMAP1_b(a,PetscScalar)
 
 PETSC_EXTERN_CXX_END
 #endif

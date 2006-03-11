@@ -528,6 +528,9 @@ extern int    Petsc_MPI_Finalize(void);
 #define MPI_Alltoallv(sendbuf,sendcounts,sdispls,\
      sendtype, recvbuf,recvcounts,\
      rdispls, recvtype,comm) MPI_Abort(MPI_COMM_WORLD,0)
+#define MPI_Alltoallw(sendbuf,sendcounts,sdispls,\
+     sendtypes, recvbuf,recvcounts,\
+     rdispls, recvtypes,comm) MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Reduce(sendbuf, recvbuf,count,\
      datatype,op,root,comm) \
      (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*(datatype)),\
