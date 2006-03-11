@@ -494,6 +494,8 @@ class Configure(PETSc.package.Package):
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.SGIMPICheck)
     self.executeTest(self.FortranMPICheck)
+    if self.libraries.check(self.dlib, "MPI_Alltoallw"):
+      self.addDefine('HAVE_MPI_ALLTOALLW',1)
 
 if __name__ == '__main__':
   import config.framework

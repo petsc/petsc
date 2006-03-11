@@ -1,49 +1,95 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
+
+  
   <meta http-equiv="Content-Type" content="text/html">
-  <title>PETSc: The Portable, Extensible Toolkit for Scientific
-Computation</title>
+
+  
+  <title>PETSc: The Portable, Extensible Toolkit for Scientific Computation</title>
 </head>
+
+
 <body bgcolor="#d5eaff">
+
 <table width="775">
+
   <tbody>
+
     <tr>
+
       <td valign="top" width="218">
+      
       <h1><font color="#ff0000" size="7">PETSc</font></h1>
+
+      
       <ul>
+
         <li><a href="../index.html"><strong>Home</strong></a></li>
+
+      
       </ul>
+
 &nbsp;</td>
+
       <td width="549">
+      
       <h1>Developers Site</h1>
+
       </td>
+
     </tr>
+
     <tr>
+
       <td colspan="2" width="771">
+      
       <hr color="#ff5b5b" size="4"> </td>
+
     </tr>
+
     <tr>
+
       <td valign="top" width="218">
+      
       <ul>
+
         <li><a href="../download/index.html"><strong>Download</strong></a></li>
+
         <li><a href="../features/index.html"><strong>Features</strong></a></li>
+
         <li><a href="../documentation/index.html"><strong>Documentation</strong></a></li>
+
         <li><strong><a href="../publications/index.html">Applications/Publications</a></strong></li>
+
         <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
+        <li><a href="../miscellaneous/external.html"><strong>External Software</strong></a></li>
+
         <li><strong><font color="#ff0000">Developers Site</font></strong>
+          
           <ul>
-            <li><strong><font color="#ff0000">&nbsp;<a
- href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Development
+
+            <li><strong><font color="#ff0000">&nbsp;<a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Development
 copy of documentation</a></font></strong></li>
+
             <li><strong><font color="#ff0000"><a href="projects.html">Proposed
 projects</a></font></strong></li>
+
+          
           </ul>
+
         </li>
+
+      
       </ul>
+
+      
       <p>&nbsp;</p>
+
       </td>
+
       <td valign="top" width="549">
+      
       <p align="left">&nbsp;These pages are for people interested in
 using the development
 copy of PETSc or contributing to the PETSc libraries. It is intended
@@ -51,199 +97,337 @@ only
 for people who are experienced with building, using and debugging
 PETSc. If you cannot use makefiles, a debugger and EMACS etags then
 please don't access these pages.<br>
+
       </p>
+
+      
       <p align="left"><br>
-Consider joining petsc-dev <a
- href="../miscellaneous/mailing-lists.html">mailing-list.</a><br>
+
+Consider joining petsc-dev <a href="../miscellaneous/mailing-lists.html">mailing-list.</a><br>
+
       </p>
+
       <big><span style="font-weight: bold;">Obtaining PETSc:</span></big><br>
+
       <br>
+
 To obtain the development version of PETSc you have four options<br>
+
+      
       <ol>
-        <li>&nbsp;download and install the <span
- style="font-weight: bold;">free</span> <b>BitKeeper</b> download
+
+        <li>&nbsp;download and install the <span style="font-weight: bold;">free</span> <b>BitKeeper</b> download
 client</li>
+
         <li>&nbsp;access the nightly <span style="font-weight: bold;">tarball</span>
 snapshot at <a href="ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a>
           <br>
+
         </li>
+
         <li><span style="font-weight: bold;">license BitKeeper</span>
 (inexpensive academic licences available).</li>
+
         <li>[<span style="color: rgb(0, 102, 0); font-weight: bold;">experimental</span>]
 obtain PETSc repostiory using darcs<br>
+
         </li>
+
+      
       </ol>
+
 &nbsp;All
 three create a local directory with the name petsc-dev.
+      
       <p></p>
+
       <strong>1) To use the free BitKeeper client </strong> Install
-the free client from here <a
- href="http://www.bitkeeper.com/Hosted.Downloading.html">http://www.bitkeeper.com/Hosted.Downloading.html</a>.
+the free client from here <a href="http://www.bitkeeper.com/Hosted.Downloading.html">http://www.bitkeeper.com/Hosted.Downloading.html</a>.
 Make sure
 the directory where you have compiled this code is in your path.
+      
       <ul style="color: rgb(128, 0, 0);">
+
         <li> sfioball bk://petsc.bkbits.net/petsc-dev petsc-dev</li>
+
         <li> cd petsc-dev/python</li>
+
         <li> sfioball bk://sidl.bkbits.net/BuildSystem BuildSystem</li>
+
+      
       </ul>
+
 To update PETSc
+      
       <ul style="color: rgb(128, 0, 0);">
+
         <li>cd petsc-dev</li>
+
         <li>update bk://petsc.bkbits.net/petsc-dev</li>
+
         <li>cd python/BuildSystem</li>
+
         <li>update bk://sidl.bkbits.net/BuildSystem </li>
+
+      
       </ul>
+
+      
       <p></p>
-      <strong>2) To use the tarball snapshot</strong>, simply download <a
- href="ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a>
+
+      <strong>2) To use the tarball snapshot</strong>, simply download <a href="ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a>
 and ungzip and untar it. To update PETSc simply
 get a new copy of the tar file.
+      
       <p></p>
-      <strong>3) To use the licensed <a
- href="http://www.bitkeeper.com/">BitKeeper</a></strong>, invoke the
+
+      <strong>3) To use the licensed <a href="http://www.bitkeeper.com/">BitKeeper</a></strong>, invoke the
 following command to obtain PETSc.
+      
       <ul>
+
         <li><font color="#800000">bk&nbsp; clone&nbsp;
 bk://petsc.bkbits.net/petsc-dev</font></li>
+
         <li><font color="#800000">cd petsc-dev/python</font></li>
+
         <li><font color="#800000">bk clone
 bk://sidl.bkbits.net/BuildSystem<br>
+
           </font></li>
+
+      
       </ul>
+
 For additional help on using BitKeeper you can use
+      
       <ul>
+
         <li><font color="#800000">bk helptool</font></li>
+
+      
       </ul>
+
 To update PETSc <br>
+
+      
       <ul>
+
         <li><font color="#800000">cd petsc-dev<br>
+
           </font></li>
+
         <li><font color="#800000">&nbsp;bk pull</font></li>
+
         <li><font color="#800000">cd python/BuildSystem</font></li>
+
         <li><font color="#800000">bk
 pull</font></li>
+
+      
       </ul>
+
 To modify your local copy of PETSc, you can use <font color="#800000">bk
 edit</font> and <font color="#800000">bk citool</font>, as described
 in <font color="#800000">bk helptool</font>. These changes
 can be shared with the PETSc community by pushing to the BkBits
 repository. You will need to send an SSH 1 public
 key to <a href="mailot:petsc-maint@mcs.anl.gov">petsc-maint</a> along
-with a description of the changes. <a
- href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Documentation</a>
+with a description of the changes. <a href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Documentation</a>
 for the development version (updated nightly).<br>
+
       <br>
+
 4) Using <a href="http://darcs.net/"><span style="font-weight: bold;">Darcs</span></a>
 obtain the PETSc repository snapshot. We export our BitKeeper
 repository into
 darcs a couple of times a day. <br>
+
+      
       <ul>
+
         <li><font color="#800000">darcs get --partial
 --set-scripts-executable
 http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev-darcs
 petsc-dev</font></li>
+
         <li><font color="#800000">cd petsc-dev/python</font></li>
+
         <li><font color="#800000">darcs get</font><font color="#800000">
 --partial --set-scripts-executable
 http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/BuildSystem-darcs
 BuildSystem<br>
+
           </font></li>
+
+      
       </ul>
+
 To update PETSc <br>
+
+      
       <ul>
+
         <li><font color="#800000">cd petsc-dev<br>
+
           </font></li>
+
         <li><font color="#800000">darcs pull</font></li>
+
         <li><font color="#800000">cd python/BuildSystem</font></li>
+
         <li><font color="#800000">darcs pull</font><br>
+
         </li>
+
+      
       </ul>
-      <p style="font-weight: bold;" align="left"><span
- style="font-weight: normal;">Note: this is highly </span><span
- style="color: rgb(0, 0, 102); font-weight: normal;">experimental</span><span
- style="font-weight: normal;"> and useful only if a PETSc snapshot with
+
+      
+      <p style="font-weight: bold;" align="left"><span style="font-weight: normal;">Note: this is highly </span><span style="color: rgb(0, 0, 102); font-weight: normal;">experimental</span><span style="font-weight: normal;"> and useful only if a PETSc snapshot with
 revision history is necessary [and you don't have access to BitKeeper
 but know how to use Darcs]</span><br>
+
       </p>
+
+      
       <p style="font-weight: bold;" align="left"><big>Frequency of
 updates:<br>
+
       </big></p>
+
+      
       <ul>
+
         <li>Comercial Bitkeeper - changes available immediately</li>
+
         <li>Free Bitkeeper&nbsp; - changes available immediately</li>
+
         <li>Darcs&nbsp; - changes are pushed to darcs four times a day</li>
+
         <li>tarball snapshot - created once per day [during the night]<br>
+
         </li>
+
+      
       </ul>
-      <p style="font-weight: bold;" align="left"><span
- style="font-weight: normal;"></span><big>Compiling and
+
+      
+      <p style="font-weight: bold;" align="left"><span style="font-weight: normal;"></span><big>Compiling and
 Using the Development Copy:</big><br>
+
       </p>
-Use config/configure.py <a
- href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html">to
+
+Use config/configure.py <a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html">to
 install PETSc</a>, (trouble, please contact us
 petsc-maint@mcs.anl.gov).
+      
       <p></p>
+
 Subscribe to the mailing list. Send mail to majordomo@mcs.anl.gov with
 the message: subscribe petsc-dev
+      
       <p></p>
+
+      
       <p style="font-weight: bold;" align="left"><big>Building
 Documentation:</big></p>
+
+      
       <p align="left">The documentation tools are now automatically
 downloaded and installed by config/configure.py. However, as a
 failsafe, we
 provide them here as well.</p>
+
+      
       <p align="left">The following additional tools are required to
 build the PETSc documentation:</p>
+
+      
       <ul>
+
         <li>
-          <p align="left"><font size="4"><a
- href="ftp://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz">Sowing</a>:</font>&nbsp;
+          
+          <p align="left"><font size="4"><a href="ftp://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz">Sowing</a>:</font>&nbsp;
 A text processing tools developed by Bill Gropp</p>
+
         </li>
+
         <li>
-          <p align="left"><font size="4"><a
- href="ftp://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz">C2html</a></font>:
+          
+          <p align="left"><font size="4"><a href="ftp://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz">C2html</a></font>:
 A text processing package required to generate the PETSc documentation.</p>
+
         </li>
+
         <li>
-          <p align="left">A version of pdflatex <a
- href="http://www.tug.org/teTeX/"></a><font size="4"><a
- href="http://www.tug.org/teTeX/">(for example in teTeX)</a>:</font>This
+          
+          <p align="left">A version of pdflatex <a href="http://www.tug.org/teTeX/"></a><font size="4"><a href="http://www.tug.org/teTeX/">(for example in teTeX)</a>:</font>This
 package might already be installed on most systems. It is required to
 generate the users manual (part of the PETSc documentation)</p>
+
         </li>
+
+      
       </ul>
+
+      
       <p align="left">&nbsp;&nbsp; Once pdflatex (from teTeX) is in
 your PATH you can build the documentation with:<br>
+
       </p>
+
+      
       <ul>
+
         <li><font color="#800000">make alldoc LOC=${PETSC_DIR}</font></li>
+
+      
       </ul>
+
       <big style="font-weight: bold;">BuildSystem:<br>
+
       </big><br>
-PETSc configure relies on <a
- href="http://sidl.bkbits.net:8080/BuildSystem">BuildSystem</a> package
+
+PETSc configure relies on <a href="http://sidl.bkbits.net:8080/BuildSystem">BuildSystem</a> package
 which is in a different BitKeeper repository <b>bk://sidl.bkbits.net/BuildSystem</b>.
 This
 package is automatically downloaded (into petsc-dev/python) the first
 time config/configure.py is invoked.<br>
+
       <br>
+
       <span style="font-weight: bold;"> </span></td>
+
     </tr>
+
     <tr>
+
       <td colspan="2" width="771">
+      
       <hr color="#ff5b5b" size="4"> </td>
+
     </tr>
+
     <tr>
+
       <td colspan="2" width="771"><br>
+
       </td>
+
     </tr>
+
     <tr>
+
       <td colspan="2" width="771"><br>
+
       </td>
+
     </tr>
+
+  
   </tbody>
 </table>
+
 </body>
 </html>
