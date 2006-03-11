@@ -1458,19 +1458,21 @@ namespace ALE {
         }
         partition_Sieve(mesh);
       };
-      static void unify(const Obj<Mesh> mesh) {
+      static void unify(const Obj<Mesh> mesh, const Obj<Mesh> serialMesh) {
         Obj<Mesh::sieve_type>               topology = mesh->getTopology();
+        Obj<Mesh::sieve_type>               serialTopology = serialMesh->getTopology();
         Obj<Mesh::sieve_type::baseSequence> base = topology->base();
         Obj<Mesh::sieve_type::capSequence>  cap = topology->cap();
         Mesh::point_type                    partitionPoint(-1, 0);
 
         for(Mesh::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-          topology->addCone(*b_iter, partitionPoint);
+          serialTopology->addCone(topology->cone(*b_iter), *b_iter);
+          serialTopology->addCone(*b_iter, partitionPoint);
         }
         for(Mesh::sieve_type::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
-          topology->addCone(*c_iter, partitionPoint);
+          serialTopology->addCone(*c_iter, partitionPoint);
         }
-        partition_Sieve(mesh);
+        partition_Sieve(serialMesh);
       };
     };
 
@@ -1515,7 +1517,7 @@ namespace ALE {
 
       topology->setStratification(false);
       // Partition the topology
-      ALE::Two::Partitioner::unify(*this);
+      ALE::Two::Partitioner::unify(*this, serialMesh);
       topology->stratify();
       topology->setStratification(true);
       if (serialMesh->debug) {
@@ -1527,8 +1529,9 @@ namespace ALE {
 
       serialMesh->coordinates->setTopology(serialMesh->getTopology());
       serialMesh->coordinates->setPatch(serialMesh->getTopology()->leaves(), patch);
-      serialMesh->coordinates->setFiberDimensionByHeight(patch, 0, this->dim);
+      serialMesh->coordinates->setFiberDimensionByDepth(patch, 0, this->dim);
       serialMesh->coordinates->orderPatches();
+      serialMesh->coordinates->view("Serial coordinates");
 
       VecScatter scatter = serialMesh->createMapping(serialMesh->coordinates, this->coordinates);
       Vec        serialVec, parallelVec;
@@ -1540,6 +1543,30 @@ namespace ALE {
       VecDestroy(serialVec);
       VecDestroy(parallelVec);
       VecScatterDestroy(scatter);
+
+      std::string orderName("element");
+      Obj<bundle_type> vertexBundle = this->getBundle(0);
+      Obj<bundle_type> serialVertexBundle = serialMesh->getBundle(0);
+      Obj<bundle_type::order_type::baseSequence> patches = vertexBundle->getPatches(orderName);
+
+      for(bundle_type::order_type::baseSequence::iterator e_iter = patches->begin(); e_iter != patches->end(); ++e_iter) {
+        Obj<bundle_type::order_type::coneSequence> patch = vertexBundle->getPatch(orderName, *e_iter);
+
+        serialVertexBundle->setPatch(orderName, patch, *e_iter);
+        for(bundle_type::order_type::coneSequence::iterator p_iter = patch->begin(); p_iter != patch->end(); ++p_iter) {
+          serialVertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
+        }
+      }
+      if (!this->commRank()) {
+        Obj<sieve_type::traits::heightSequence> elements = serialMesh->getTopology()->heightStratum(0);
+        Obj<bundle_type::order_type> reorder = serialVertexBundle->__getOrder(orderName);
+
+        for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
+          reorder->addBasePoint(*e_iter);
+        }
+      }
+      serialVertexBundle->orderPatches(orderName);
+      serialVertexBundle->partitionOrder(orderName);
 
       serialMesh->distributed = false;
       ALE_LOG_EVENT_END;
