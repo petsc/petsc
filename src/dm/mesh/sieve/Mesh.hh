@@ -50,6 +50,7 @@ namespace ALE {
       int             _commSize;
       int             dim;
       //FIX:
+    public:
       bool            distributed;
     public:
       Mesh(MPI_Comm comm, int dimension, int debug = 0) : debug(debug), dim(dimension) {
@@ -314,6 +315,30 @@ namespace ALE {
       };
     public:
       #undef __FUNCT__
+      #define __FUNCT__ "createMapping"
+      VecScatter createMapping(Obj<field_type> initSifter, Obj<field_type> finiSifter) {
+        VecScatter scatter;
+        patch_type patch;
+        int       *indices;
+        Vec initVec, finiVec;
+        IS  initIS,  finiIS;
+
+        VecCreateMPIWithArray(this->comm(), initSifter->getSize(patch), PETSC_DETERMINE, initSifter->restrict(patch), &initVec);
+        indices = this->__expandIntervals(finiSifter->getGlobalOrder()->getPatch(patch));
+        ISCreateGeneral(PETSC_COMM_SELF, finiSifter->getSize(patch), indices, &initIS);
+        delete [] indices;
+        VecCreateSeqWithArray(PETSC_COMM_SELF, finiSifter->getSize(patch), finiSifter->restrict(patch), &finiVec);
+        indices = this->__expandCanonicalIntervals(finiSifter->getGlobalOrder()->getPatch(patch), finiSifter);
+        ISCreateGeneral(PETSC_COMM_SELF, finiSifter->getSize(patch), indices, &finiIS);
+        delete [] indices;
+        VecScatterCreate(initVec, initIS, finiVec, finiIS, &scatter);
+        ISDestroy(initIS);
+        ISDestroy(finiIS);
+        VecDestroy(initVec);
+        VecDestroy(finiVec);
+        return scatter;
+      };
+      #undef __FUNCT__
       #define __FUNCT__ "Mesh::createParCoords"
       void createParallelCoordinates(int embedDim, Obj<bundle_type> serialVertexBundle, Obj<field_type> serialCoordinates) {
         if (this->debug) {
@@ -378,6 +403,7 @@ namespace ALE {
         VecScatterCreate(serialVec, serialIS, globalVec, globalIS, &scatter);
         ISDestroy(serialIS);
         ISDestroy(globalIS);
+
         VecScatterBegin(serialVec, globalVec, INSERT_VALUES, SCATTER_FORWARD, scatter);
         VecScatterEnd(serialVec, globalVec, INSERT_VALUES, SCATTER_FORWARD, scatter);
         VecDestroy(serialVec);
@@ -398,8 +424,10 @@ namespace ALE {
         this->createSerialCoordinates(this->dim, numSimplices, coords);
       };
 
-      // Create a serial mesh
+      // Partition and distribute a serial mesh
       void distribute();
+      // Collect a distributed mesh on process 0
+      Obj<Mesh> unify();
     };
 
     class Generator {
@@ -677,46 +705,25 @@ namespace ALE {
       };
     private:
 #ifdef PETSC_HAVE_TRIANGLE
-      static Obj<Mesh> refine_Triangle(Obj<Mesh> mesh, double maxAreas[], bool interpolate) {
+      static Obj<Mesh> refine_Triangle(Obj<Mesh> serialMesh, const double maxAreas[], bool interpolate) {
         struct triangulateio in;
         struct triangulateio out;
         int                  dim = 2;
-        Obj<Mesh>            m = Mesh(mesh->comm(), dim, mesh->debug);
-        // FIX: Need to globalize
-        PetscInt             numElements = mesh->getTopology()->heightStratum(0)->size();
+        Obj<Mesh>            m = Mesh(serialMesh->comm(), dim, serialMesh->debug);
+        PetscInt             numElements = serialMesh->getTopology()->heightStratum(0)->size();
         PetscMPIInt          rank;
         PetscErrorCode       ierr;
 
-        ierr = MPI_Comm_rank(mesh->comm(), &rank);
+        ierr = MPI_Comm_rank(serialMesh->comm(), &rank);
         initInput_Triangle(&in);
         initOutput_Triangle(&out);
         if (rank == 0) {
           ierr = PetscMalloc(numElements * sizeof(double), &in.trianglearealist);
-        }
-        {
-          // Scatter in local area constraints
-#ifdef PARALLEL
-          Vec        locAreas;
-          VecScatter areaScatter;
-
-          ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, numElements, areas, &locAreas);CHKERRQ(ierr);
-          ierr = MeshCreateMapping(oldMesh, elementBundle, partitionTypes, serialElementBundle, &areaScatter);CHKERRQ(ierr);
-          ierr = VecScatterBegin(maxAreas, locAreas, INSERT_VALUES, SCATTER_FORWARD, areaScatter);CHKERRQ(ierr);
-          ierr = VecScatterEnd(maxAreas, locAreas, INSERT_VALUES, SCATTER_FORWARD, areaScatter);CHKERRQ(ierr);
-          ierr = VecDestroy(locAreas);CHKERRQ(ierr);
-          ierr = VecScatterDestroy(areaScatter);CHKERRQ(ierr);
-#else
           for(int i = 0; i < numElements; i++) {
             in.trianglearealist[i] = maxAreas[i];
           }
-#endif
         }
 
-#ifdef PARALLEL
-        Obj<Mesh> serialMesh = this->unify(mesh);
-#else
-        Obj<Mesh> serialMesh = mesh;
-#endif
         Obj<Mesh::sieve_type>  serialTopology = serialMesh->getTopology();
         Obj<Mesh::bundle_type> vertexBundle = serialMesh->getBundle(0);
 
@@ -803,7 +810,7 @@ namespace ALE {
       };
 #endif
 #ifdef PETSC_HAVE_TETGEN
-      static Obj<Mesh> refine_TetGen(Obj<Mesh> mesh, double maxAreas[], bool interpolate) {
+      static Obj<Mesh> refine_TetGen(Obj<Mesh> mesh, const double maxAreas[], bool interpolate) {
         ::tetgenio     in;
         ::tetgenio     out;
         int            dim = 3;
@@ -930,29 +937,65 @@ namespace ALE {
 #endif
     public:
       static Obj<Mesh> refine(Obj<Mesh> mesh, double maxArea, bool interpolate = true) {
-        int       numElements = mesh->getTopology()->heightStratum(0)->size();
-        double   *maxAreas = new double[numElements];
+        Obj<Mesh::field_type> constraints = Mesh::field_type(mesh->comm(), mesh->debug);
+        int             numElements = mesh->getTopology()->heightStratum(0)->size();
+        Mesh::field_type::patch_type patch;
+
+        constraints->setTopology(mesh->getTopology());
+        constraints->setPatch(mesh->getTopology()->leaves(), patch);
+        constraints->setFiberDimensionByHeight(patch, 0, 1);
+        constraints->orderPatches();
+        constraints->createGlobalOrder();
+
+        double *maxAreas = new double[numElements];
         for(int e = 0; e < numElements; e++) {
           maxAreas[e] = maxArea;
         }
-        Obj<Mesh> refinedMesh = refine(mesh, maxAreas, interpolate);
+        constraints->update(patch, maxAreas);
+        delete maxAreas;
+        Obj<Mesh> refinedMesh = refine(mesh, constraints, interpolate);
 
-        delete [] maxAreas;
         return refinedMesh;
       };
-      static Obj<Mesh> refine(Obj<Mesh> mesh, double maxAreas[], bool interpolate = true) {
+      static Obj<Mesh> refine(Obj<Mesh> mesh, Obj<Mesh::field_type> parallelConstraints, bool interpolate = true) {
         Obj<Mesh> refinedMesh;
+        Obj<Mesh> serialMesh;
         int       dim = mesh->getDimension();
+        Obj<Mesh::field_type> serialConstraints = Mesh::field_type(mesh->comm(), mesh->debug);
+        Mesh::field_type::patch_type patch;
+
+        if (mesh->distributed) {
+          serialMesh = mesh->unify();
+
+          serialConstraints->setTopology(mesh->getTopology());
+          serialConstraints->setPatch(serialMesh->getTopology()->leaves(), patch);
+          serialConstraints->setFiberDimensionByHeight(patch, 0, 1);
+          serialConstraints->orderPatches();
+
+          VecScatter scatter = serialMesh->createMapping(serialConstraints, parallelConstraints);
+          Vec        serialVec, parallelVec;
+
+          VecCreateMPIWithArray(serialMesh->comm(), serialConstraints->getSize(patch), PETSC_DETERMINE, serialConstraints->restrict(patch), &serialVec);
+          VecCreateSeqWithArray(PETSC_COMM_SELF, parallelConstraints->getSize(patch), parallelConstraints->restrict(patch), &parallelVec);
+          VecScatterBegin(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);
+          VecScatterEnd(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);
+          VecDestroy(serialVec);
+          VecDestroy(parallelVec);
+          VecScatterDestroy(scatter);
+        } else {
+          serialMesh        = mesh;
+          serialConstraints = parallelConstraints;
+        }
 
         if (dim == 2) {
 #ifdef PETSC_HAVE_TRIANGLE
-          refinedMesh = refine_Triangle(mesh, maxAreas, interpolate);
+          refinedMesh = refine_Triangle(serialMesh, serialConstraints->restrict(patch), interpolate);
 #else
           throw ALE::Exception("Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
         } else if (dim == 3) {
 #ifdef PETSC_HAVE_TETGEN
-          refinedMesh = refine_TetGen(mesh, maxAreas, interpolate);
+          refinedMesh = refine_TetGen(serialMesh, serialConstraints->restrict(patch), interpolate);
 #else
           throw ALE::Exception("Mesh generation currently requires TetGen to be installed. Use --download-tetgen during configure.");
 #endif
@@ -1421,8 +1464,24 @@ namespace ALE {
         }
         partition_Sieve(mesh);
       };
+      static void unify(const Obj<Mesh> mesh) {
+        Obj<Mesh::sieve_type>               topology = mesh->getTopology();
+        Obj<Mesh::sieve_type::baseSequence> base = topology->base();
+        Obj<Mesh::sieve_type::capSequence>  cap = topology->cap();
+        Mesh::point_type                    partitionPoint(-1, 0);
+
+        for(Mesh::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          topology->addCone(*b_iter, partitionPoint);
+        }
+        for(Mesh::sieve_type::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+          topology->addCone(*c_iter, partitionPoint);
+        }
+        partition_Sieve(mesh);
+      };
     };
 
+    #undef __FUNCT__
+    #define __FUNCT__ "Mesh::distribute"
     void Mesh::distribute() {
       ALE_LOG_EVENT_BEGIN;
       this->topology->setStratification(false);
@@ -1451,6 +1510,47 @@ namespace ALE {
       this->distributed = true;
       ALE_LOG_EVENT_END;
     };
+
+    #undef __FUNCT__
+    #define __FUNCT__ "Mesh::unify"
+    Obj<Mesh> Mesh::unify() {
+      ALE_LOG_EVENT_BEGIN;
+      Obj<Mesh> serialMesh = Mesh(this->comm(), this->getDimension(), this->debug);
+      Obj<Mesh::sieve_type> topology = serialMesh->getTopology();
+      Mesh::patch_type patch;
+
+      topology->setStratification(false);
+      // Partition the topology
+      ALE::Two::Partitioner::unify(*this);
+      topology->stratify();
+      topology->setStratification(true);
+      if (serialMesh->debug) {
+        topology->view("Serial mesh");
+      }
+      // Need to deal with boundary
+      serialMesh->bundles.clear();
+      serialMesh->fields.clear();
+
+      serialMesh->coordinates->setTopology(serialMesh->getTopology());
+      serialMesh->coordinates->setPatch(serialMesh->getTopology()->leaves(), patch);
+      serialMesh->coordinates->setFiberDimensionByHeight(patch, 0, this->dim);
+      serialMesh->coordinates->orderPatches();
+
+      VecScatter scatter = serialMesh->createMapping(serialMesh->coordinates, this->coordinates);
+      Vec        serialVec, parallelVec;
+
+      VecCreateMPIWithArray(serialMesh->comm(), serialMesh->coordinates->getSize(patch), PETSC_DETERMINE, serialMesh->coordinates->restrict(patch), &serialVec);
+      VecCreateSeqWithArray(PETSC_COMM_SELF, this->coordinates->getSize(patch), this->coordinates->restrict(patch), &parallelVec);
+      VecScatterBegin(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);
+      VecScatterEnd(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);
+      VecDestroy(serialVec);
+      VecDestroy(parallelVec);
+      VecScatterDestroy(scatter);
+
+      serialMesh->distributed = false;
+      ALE_LOG_EVENT_END;
+      return serialMesh;
+    }
   } // namespace Two
 } // namespace ALE
 

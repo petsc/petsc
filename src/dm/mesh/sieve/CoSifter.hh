@@ -234,6 +234,13 @@ namespace ALE {
           this->setFiberDimension(patch, *p_iter, dim);
         }
       };
+      void setFiberDimensionByHeight(const patch_type& patch, int height, int dim) {
+        Obj<typename sieve_type::traits::heightSequence> points = this->_topology->heightStratum(height);
+
+        for(typename sieve_type::traits::heightSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+          this->setFiberDimension(patch, *p_iter, dim);
+        }
+      };
       void setFiberDimension(const std::string& orderName, const patch_type& patch, const point_type& p, int dim) {
         this->__checkOrderName(orderName);
         this->_reorders[orderName]->modifyColor(p, patch, changeDim(-dim));
@@ -417,14 +424,23 @@ namespace ALE {
         return values;
       };
       const value_type *restrict(const std::string& orderName, const patch_type& patch, const point_type& p);
-      void              update(const patch_type& patch, const value_type values[]);
+      void              update(const patch_type& patch, const value_type values[]) {
+        this->__checkPatch(patch);
+        value_type *storage = this->_storage[patch];
+        const int   size = this->_storageSize[patch];
+
+        for(int i = 0; i < size; ++i) {
+          storage[i] = values[i];
+        }
+      };
       void              update(const patch_type& patch, const point_type& p, const value_type values[]) {
         const index_type& idx = this->getIndex(patch, p);
         int offset = idx.prefix;
+        value_type *storage = &(this->_storage[patch][offset]);
 
         for(int i = 0; i < idx.index; ++i) {
           if (debug) {std::cout << "Set a[" << offset+i << "] = " << values[i] << " on patch " << patch << std::endl;}
-          this->_storage[patch][offset+i] = values[i];
+          storage[i] = values[i];
         }
       };
       // Can this be improved?
