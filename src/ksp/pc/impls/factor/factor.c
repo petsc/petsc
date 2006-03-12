@@ -2,12 +2,6 @@
 
 #include "private/pcimpl.h"                /*I "petscpc.h" I*/
 
-/*  Options Database Keys: ???
-.  -pc_ilu_damping - add damping to diagonal to prevent zero (or very small) pivots
-.  -pc_ilu_shift - apply Manteuffel shift to diagonal to force positive definite preconditioner
-.  -pc_ilu_zeropivot <tol> - set tolerance for what is considered a zero pivot
- */
-
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetZeroPivot"
 /*@

@@ -3672,8 +3672,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
   svalues  = gen_to->values;   /* holds the length of receiving row */
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
-  rwaits   = gen_from->requests;
-  swaits   = gen_to->requests;
+
+  ierr = PetscMalloc2(nrecvs,MPI_Request,&rwaits,nsends,MPI_Request,&swaits);CHKERRQ(ierr);
   srow     = gen_to->indices;   /* local row index to be sent */
   rstarts  = gen_from->starts;
   sstarts  = gen_to->starts; 
@@ -3805,8 +3805,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
   while (i--) {
     ierr = MPI_Waitany(nrecvs,rwaits,&j,&rstatus);CHKERRQ(ierr);
   }
-   if (nsends) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}  
- 
+  if (nsends) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}  
+  ierr = PetscFree2(rwaits,swaits);CHKERRQ(ierr); 
+
   if (scall == MAT_INITIAL_MATRIX){
     /* put together the new matrix */
     ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,aBn,B->cmap.N,b_othi,b_othj,b_otha,B_oth);CHKERRQ(ierr);

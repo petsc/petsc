@@ -79,7 +79,7 @@ int main(int argc,char **argv)
   /*
    * ILU preconditioner;
    * The iterative method will break down unless you comment in the SetShift
-   * line below, or use the -pc_ilu_shift option.
+   * line below, or use the -pc_factor_shift_positive_definite option.
    * Run the code twice: once as given to see the negative pivot and the
    * divergence behaviour, then comment in the Shift line, or add the 
    * command line option, and see that the pivots are all positive and

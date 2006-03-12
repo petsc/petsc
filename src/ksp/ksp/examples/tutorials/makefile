@@ -318,7 +318,7 @@ runex10_5:
 	   else echo "Possible problem with ex10_5, diffs above"; fi; \
 	   ${RM} -f ex10_5.tmp
 runex10_6:
-	-@${MPIRUN} -np 1 ./ex10 -pc_ilu_levels 2 -pc_factor_fill 1.73 -ksp_gmres_cgs_refinement_type refine_always \
+	-@${MPIRUN} -np 1 ./ex10 -pc_factor_levels 2 -pc_factor_fill 1.73 -ksp_gmres_cgs_refinement_type refine_always \
 	   -f0 ${DATAFILESPATH}/matrices/fem1 > ex10_6.tmp 2>&1; \
 	   if (${DIFF} output/ex10_6.out ex10_6.tmp) then true; \
 	   else echo "Possible problem with ex10_6, diffs above"; fi; \
@@ -332,10 +332,10 @@ runex10_7:
                     1.0e-15 -ksp_smonitor >> ex10_7.tmp 2>&1 ; \
 	 ${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol \
-                    1.0e-15 -ksp_smonitor -pc_ilu_mat_ordering_type nd >> ex10_7.tmp 2>&1 ; \
+                    1.0e-15 -ksp_smonitor -pc_factor_mat_ordering_type nd >> ex10_7.tmp 2>&1 ; \
 	 ${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol \
-                    1.0e-15 -ksp_smonitor -pc_ilu_levels 1 >> ex10_7.tmp 2>&1 ; \
+                    1.0e-15 -ksp_smonitor -pc_factor_levels 1 >> ex10_7.tmp 2>&1 ; \
 	 ${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_type preonly \
                     -ksp_smonitor -pc_type lu  >> ex10_7.tmp 2>&1 ; \

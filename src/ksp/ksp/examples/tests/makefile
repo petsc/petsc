@@ -190,7 +190,7 @@ runex6_2:
 	-@${MPIRUN} -np 1 ./ex6 -sub_pc_type ilu -options_left no \
 	   -f ${DATAFILESPATH}/matrices/arco1 \
 	   -ksp_gmres_restart 100 -ksp_gmres_cgs_refinement_type refine_always -sub_ksp_type preonly -pc_type bjacobi \
-	   -pc_bjacobi_blocks 8 -sub_pc_ilu_in_place -ksp_smonitor \
+	   -pc_bjacobi_blocks 8 -sub_pc_factor_in_place -ksp_smonitor \
 	   > ex6_2.tmp 2>&1; \
 	   if (${DIFF} output/ex6_2.out ex6_2.tmp) then true; \
 	   else echo "Possible problem with ex6_2, diffs above"; fi; \
@@ -209,7 +209,7 @@ runex6_3:
 runex6_6:
 	-@${MPIRUN} -np 3 ./ex6  -ksp_gmres_cgs_refinement_type refine_always -ksp_gmres_restart 100 \
 	   -f ${DATAFILESPATH}/matrices/arco1_ns \
-	   -mat_type mpirowbs -pc_type ilu -pc_ilu_factorpointwise 
+	   -mat_type mpirowbs -pc_type ilu -pc_factor_factorpointwise 
 	-@echo "ex6_6: This program tested the ILU preconditioner in BlockSolve95."
 runex6_7:
 	-@${MPIRUN} -np 1 ./ex6 -ksp_gmres_cgs_refinement_type refine_always -pc_type asm -pc_asm_blocks 6 \

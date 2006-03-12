@@ -350,6 +350,8 @@ PETSC_STATIC_INLINE void UnPack_1(PetscInt n,const PetscScalar *x,const PetscInt
     for (i=0; i<n; i++) {
       y[indicesy[i]] = PetscMax(y[indicesy[i]],x[i]);
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -375,6 +377,8 @@ PETSC_STATIC_INLINE void Scatter_1(PetscInt n,const PetscInt *indicesx,const Pet
     for (i=0; i<n; i++) {
       y[indicesy[i]] = PetscMax(y[indicesy[i]],x[indicesx[i]]);
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -422,6 +426,8 @@ PETSC_STATIC_INLINE void UnPack_2(PetscInt n,const PetscScalar *x,const PetscInt
       y[idy+1]  = PetscMax(y[idy+1],x[1]);
       x    += 2;
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -457,6 +463,8 @@ PETSC_STATIC_INLINE void Scatter_2(PetscInt n,const PetscInt *indicesx,const Pet
       y[idy]    = PetscMax(y[idy],x[idx]);
       y[idy+1]  = PetscMax(y[idy+1],x[idx+1]);
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -507,6 +515,8 @@ PETSC_STATIC_INLINE void UnPack_3(PetscInt n,const PetscScalar *x,const PetscInt
       y[idy+2]  = PetscMax(y[idy+2],x[2]);
       x    += 3;
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -545,6 +555,8 @@ PETSC_STATIC_INLINE void Scatter_3(PetscInt n,const PetscInt *indicesx,const Pet
       y[idy+1]  = PetscMax(y[idy+1],x[idx+1]);
       y[idy+2]  = PetscMax(y[idy+2],x[idx+2]);
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -599,6 +611,8 @@ PETSC_STATIC_INLINE void UnPack_4(PetscInt n,const PetscScalar *x,const PetscInt
       y[idy+3]  = PetscMax(y[idy+3],x[3]);
       x    += 4;
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -640,6 +654,8 @@ PETSC_STATIC_INLINE void Scatter_4(PetscInt n,const PetscInt *indicesx,const Pet
       y[idy+2]  = PetscMax(y[idy+2],x[idx+2]);
       y[idy+3]  = PetscMax(y[idy+3],x[idx+3]);
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -698,6 +714,8 @@ PETSC_STATIC_INLINE void UnPack_5(PetscInt n,const PetscScalar *x,const PetscInt
       y[idy+4]  = PetscMax(y[idy+4],x[4]);
       x    += 5;
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -742,6 +760,8 @@ PETSC_STATIC_INLINE void Scatter_5(PetscInt n,const PetscInt *indicesx,const Pet
       y[idy+3]  = PetscMax(y[idy+3],x[idx+3]);
       y[idy+4]  = PetscMax(y[idy+4],x[idx+4]);
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -804,6 +824,8 @@ PETSC_STATIC_INLINE void UnPack_6(PetscInt n,const PetscScalar *x,const PetscInt
       y[idy+5]  = PetscMax(y[idy+5],x[5]);
       x    += 6;
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -851,6 +873,8 @@ PETSC_STATIC_INLINE void Scatter_6(PetscInt n,const PetscInt *indicesx,const Pet
       y[idy+4]  = PetscMax(y[idy+4],x[idx+4]);
       y[idy+5]  = PetscMax(y[idy+5],x[idx+5]);
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -917,6 +941,8 @@ PETSC_STATIC_INLINE void UnPack_7(PetscInt n,const PetscScalar *x,const PetscInt
       y[idy+6]  = PetscMax(y[idy+6],x[6]);
       x    += 7;
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -967,6 +993,8 @@ PETSC_STATIC_INLINE void Scatter_7(PetscInt n,const PetscInt *indicesx,const Pet
       y[idy+5]  = PetscMax(y[idy+5],x[idx+5]);
       y[idy+6]  = PetscMax(y[idy+6],x[idx+6]);
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -1037,6 +1065,8 @@ PETSC_STATIC_INLINE void UnPack_8(PetscInt n,const PetscScalar *x,const PetscInt
       y[idy+7]  = PetscMax(y[idy+7],x[7]);
       x    += 8;
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -1090,6 +1120,8 @@ PETSC_STATIC_INLINE void Scatter_8(PetscInt n,const PetscInt *indicesx,const Pet
       y[idy+6]  = PetscMax(y[idy+6],x[idx+6]);
       y[idy+7]  = PetscMax(y[idy+7],x[idx+7]);
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -1177,6 +1209,8 @@ PETSC_STATIC_INLINE void UnPack_12(PetscInt n,const PetscScalar *x,const PetscIn
       y[idy+11] = PetscMax(y[idy+11],x[11]);
       x    += 12;
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
@@ -1242,6 +1276,8 @@ PETSC_STATIC_INLINE void Scatter_12(PetscInt n,const PetscInt *indicesx,const Pe
       y[idy+10] = PetscMax(y[idy+10],x[idx+10]);
       y[idy+11] = PetscMax(y[idy+11],x[idx+11]);
     }
+#else
+  case MAX_VALUES: 
 #endif
   case NOT_SET_VALUES:
     break;
