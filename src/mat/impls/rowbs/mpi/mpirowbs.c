@@ -1609,7 +1609,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   BSoff_map    *bsoff;
   PetscErrorCode ierr;
   int          *offset,m,M;
-  PetscTruth   flg1,flg2,flg3;
+  PetscTruth   flg1,flg3;
   BSprocinfo   *bspinfo;
   MPI_Comm     comm;
   
@@ -1674,10 +1674,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
     BSctx_set_pr(bspinfo,1);CHKERRBS(0);
   }
 #endif
-  ierr = PetscOptionsHasName(PETSC_NULL,"-pc_ilu_factorpointwise",&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-pc_icc_factorpointwise",&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-pc_factor_factorpointwise",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_rowbs_no_inode",&flg3);CHKERRQ(ierr);
-  if (flg1 || flg2 || flg3) {
+  if (flg1 || flg3) {
     BSctx_set_si(bspinfo,1);CHKERRBS(0);
   } else {
     BSctx_set_si(bspinfo,0);CHKERRBS(0);

@@ -483,7 +483,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC pc,PCCompositeType type
 
 
      To set options on the solvers for each block append -sub_ to all the PC
-        options database keys. For example, -sub_pc_type ilu -sub_pc_ilu_levels 1
+        options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1
         
      To set the options on the solvers separate for each block call PCFieldSplitGetSubKSP()
          and set the options directly on the resulting KSP object

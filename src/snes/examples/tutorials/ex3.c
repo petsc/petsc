@@ -569,10 +569,10 @@ PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscTruth
        as a meaningful or appropriate choice.)
     */
     for (i=xs; i<xs+xm; i++) {
-      rdiff = PetscAbsScalar((xa[i] - xa_last[i])/xa[i]);
+      if (!xa[i]) rdiff = 2*check->tolerance; else rdiff = PetscAbsScalar((xa[i] - xa_last[i])/xa[i]);
       if (rdiff > check->tolerance) {
         tmp        = xa[i];
-        xa[i]      = (xa[i] + xa_last[i])/2.0;
+        xa[i]      = .5*(xa[i] + xa_last[i]);
         *changed_x = PETSC_TRUE;
         ierr       = PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %D: x=%G, x_last=%G, diff=%G, x_new=%G\n",
                                 i,PetscAbsScalar(tmp),PetscAbsScalar(xa_last[i]),rdiff,PetscAbsScalar(xa[i]));CHKERRQ(ierr);

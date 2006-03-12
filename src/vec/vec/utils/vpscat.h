@@ -17,7 +17,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(Vec xin,Vec yin,InsertMode addv,Scatte
   PetscScalar            *xv,*yv,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
-  PetscInt               i,*indices,*sstarts,iend,nrecvs,nsends,bs;
+  PetscInt               i,*indices,*sstarts,nrecvs,nsends,bs;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -64,7 +64,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(Vec xin,Vec yin,InsertMode addv,Scatte
       /* this version packs and sends one at a time */
       for (i=0; i<nsends; i++) {
         PETSCMAP1(Pack)(sstarts[i+1]-sstarts[i],indices + sstarts[i],xv,svalues + bs*sstarts[i]);
-        ierr = MPI_Start_isend(iend,swaits+i);CHKERRQ(ierr);
+        ierr = MPI_Start_isend(sstarts[i+1]-sstarts[i],swaits+i);CHKERRQ(ierr);
       }
     }
 
@@ -148,7 +148,8 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(Vec xin,Vec yin,InsertMode addv,ScatterM
   PetscFunctionReturn(0);
 }
 
-#undef PETSCMAP1_a(a,b)
-#undef PETSCMAP1_b(a,b)
-#undef PETSCMAP1(a)
+#undef PETSCMAP1_a
+#undef PETSCMAP1_b
+#undef PETSCMAP1
 #undef BS
+
