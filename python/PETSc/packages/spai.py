@@ -10,7 +10,7 @@ import os
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/spai_3.0.tar.gz']
+    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/spai_3.0-mar-06.tar.gz']
     self.functions = ['bspai']
     self.includes  = ['spai.h']
     self.liblist   = [['libspai.a']]
@@ -38,6 +38,8 @@ class Configure(PETSc.package.Package):
     else:
       FTNOPT = '-DSP2'
     args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DMPI '+FTNOPT+' '+self.framework.getCompilerFlags()+' '+self.headers.toString(self.mpi.include)+'\n'
+    args = args+'AR         = '+self.setCompilers.AR+'\n'
+    args = args+'ARFLAGS    = '+self.setCompilers.AR_FLAGS+'\n'
                                   
     self.framework.popLanguage()
     try:
