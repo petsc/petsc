@@ -27,10 +27,10 @@
 !
 !  Flags for binary I/O
 !
-      PetscEnum FILE_MODE_READ,
+      PetscEnum FILE_MODE_READ
       PetscEnum FILE_MODE_WRITE
       PetscEnum FILE_MODE_APPEND
-      PetscEnum FILE_MODE_UPDATE,
+      PetscEnum FILE_MODE_UPDATE
       PetscEnum FILE_MODE_APPEND_UPDATE
 
       parameter (FILE_MODE_READ = 0)
