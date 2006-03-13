@@ -295,8 +295,11 @@ class Configure(config.base.Configure):
       fd.write('include '+os.path.join('${PETSC_DIR}','bmake',self.arch.arch,'petscconf')+'\n')
       fd.close()
       self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch.arch+' in bmake/petscconf')
-    else:
-      os.unlink(os.path.join('bmake', 'petscconf'))
+    elif os.path.isfile(os.path.join('bmake', 'petscconf')):
+      try:
+        os.unlink(os.path.join('bmake', 'petscconf'))
+      except:
+        raise RuntimeError('Unable to remove file '+os.path.join('bmake', 'petscconf')+'. Did a different user create it?')
     return
 
   def configureScript(self):
