@@ -467,8 +467,8 @@ typedef struct {
   } else if (PetscAbsScalar(sctx.pv) <= _zero){\
     _newshift = -1;\
     if (rs > 1.e100){\
-       ierr = PetscPrintf(PETSC_COMM_SELF," Frightening large rs %g, diagonals of the original matrix: \n",rs);\
        PetscInt row_start,row_end,_i;\
+       ierr = PetscPrintf(PETSC_COMM_SELF," Frightening large rs %g, diagonals of the original matrix: \n",rs);\
        row_start = PetscMax(row-10,0);\
        row_end   = PetscMin(row+10,n);\
        for (_i=row_start; _i<row_end; _i++){\
