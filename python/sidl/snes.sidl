@@ -75,7 +75,7 @@ package PETSc {
       PETSC_VIEWER_BINARY_NATIVE, PETSC_VIEWER_DRAW_BASIC, PETSC_VIEWER_DRAW_LG, PETSC_VIEWER_DRAW_CONTOUR,
       PETSC_VIEWER_DRAW_PORTS, PETSC_VIEWER_NATIVE, PETSC_VIEWER_NOFORMAT, PETSC_VIEWER_ASCII_FACTOR_INFO};
 
-  enum PetscViewerFileType {PETSC_FILE_RDONLY, PETSC_FILE_WRONLY, PETSC_FILE_CREATE};
+  enum PetscFileMode {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE};
 
   interface PetscViewer extends PetscObject {
     // Get the filename associated with the viewer
@@ -109,21 +109,6 @@ package PETSc {
     bool getSkipOptions();
     // Set the flag indicating whether the options databse is used when recreating objects in the file
     void setSkipOptions(in bool skipOptions);
-  }
-
-  class PetscMap implements PetscObject {
-    // Get the size of the locally-owned portion
-    int getLocalSize();
-    // Set the size of the locally-owned portion
-    void setLocalSize(in int localSize);
-    // Get the total size
-    int getSize();
-    // Set the total size
-    void setSize(in int size);
-    // Get the half-open interval of local indices
-    void getLocalRange(out int start, out int end);
-    // Get the ranges for all processors (range[rank] <= local index < range[rank+1])
-    array<int>:range getGlobalRange();
   }
 
   enum NormType {NORM_1, NORM_2, NORM_FROBENIUS, NORM_INFINITY, NORM_1_AND_2};
@@ -189,8 +174,6 @@ package PETSc {
     void abs();
     // Duplicates the vector (does not copy values)
     Vec duplicate();          
-    // Return the layout of the vector
-    PetscMap getPetscMap();
     // Set values into the vector
     void setValues(in array<int> indices, in array<double> values, in InsertMode mode);
     // Start parallel assembly
@@ -285,8 +268,6 @@ package PETSc {
     void getLocalSize(out int numLocalRows, out int numLocalCols);
     // Get the range of local rows
     void getOwnershipRange(out int startRow, out int endRow);
-    // Get the row and column layouts
-    void getPetscMaps(out PetscMap rowLayout, out PetscMap colLayout);
     // Get the diagonal entires as a Vec
     void getDiagonal(in Vec diag);
     // Test for equality A = B
