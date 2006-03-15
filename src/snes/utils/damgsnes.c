@@ -97,6 +97,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
 
 /* ---------------------------------------------------------------------------*/
 
+
 #undef __FUNCT__
 #define __FUNCT__ "DMMGFormFunction"
 /* 
@@ -128,6 +129,41 @@ PetscErrorCode DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAFormFunction1(da,localX,F,dmmg->user);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+} 
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMGFormFunctionFD"
+/* 
+   DMMGFormFunctionFD - This is a universal global FormFunction used by the DMMG code
+   when the user provides a local function used to compute the Jacobian via FD.
+
+   Input Parameters:
++  snes - the SNES context
+.  X - input vector
+-  ptr - optional user-defined context, as set by SNESSetFunction()
+
+   Output Parameter:
+.  F - function vector
+
+ */
+PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
+{
+  DMMG           dmmg = (DMMG)ptr;
+  PetscErrorCode ierr;
+  Vec            localX;
+  DA             da = (DA)dmmg->dm;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  /*
+     Scatter ghost points to local vector, using the 2-step process
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+  */
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAFormFunction(da,dmmg->lfj,localX,F,dmmg->user);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
@@ -473,6 +509,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
       ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(dmmg[i]->B,iscoloring,&dmmg[i]->fdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+      if (function == DMMGFormFunction) function = DMMGFormFunctionFD;
       ierr = MatFDColoringSetFunction(dmmg[i]->fdcoloring,(PetscErrorCode(*)(void))function,dmmg[i]);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(dmmg[i]->fdcoloring);CHKERRQ(ierr);
     }
@@ -568,6 +605,34 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetSNESLocalFD"
+/*@
+    DMMGSetSNESLocalFD - Sets the local user function that is used to approximately compute the Jacobian
+        via finite differences.
+
+    Collective on DMMG
+
+    Input Parameter:
++   dmmg - the context
+-   function - the function that defines the nonlinear system
+
+    Level: intermediate
+
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGSetSNESLocal()
+
+@*/
+PetscErrorCode DMMGSetSNESLocalFD(DMMG *dmmg,DALocalFunction1 function)
+{
+  PetscInt       i,nlevels = dmmg[0]->nlevels;
+
+  PetscFunctionBegin;
+  for (i=0; i<nlevels; i++) {
+    dmmg[i]->lfj = (PetscErrorCode (*)(void))function; 
+  }
+  PetscFunctionReturn(0);
+}
+
 /*M
     DMMGSetSNESLocal - Sets the local user function that defines the nonlinear set of equations
     that will use the grid hierarchy and (optionally) its derivative.
@@ -632,6 +697,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
   ierr = DMMGSetSNES(dmmg,DMMGFormFunction,computejacobian);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
     ierr = DASetLocalFunction((DA)dmmg[i]->dm,function);CHKERRQ(ierr);
+    dmmg[i]->lfj = (PetscErrorCode (*)(void))function; 
     ierr = DASetLocalJacobian((DA)dmmg[i]->dm,jacobian);CHKERRQ(ierr);
     ierr = DASetLocalAdicFunction((DA)dmmg[i]->dm,ad_function);CHKERRQ(ierr);
     ierr = DASetLocalAdicMFFunction((DA)dmmg[i]->dm,admf_function);CHKERRQ(ierr);

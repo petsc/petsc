@@ -1342,6 +1342,51 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DAFormFunction"
+/*@
+    DAFormFunction - Evaluates a user provided function on each processor that 
+        share a DA
+
+   Input Parameters:
++    da - the DA that defines the grid
+.    vu - input vector
+.    vfu - output vector 
+-    w - any user data
+
+    Notes: Does NOT do ghost updates on vu upon entry
+
+           This should eventually replace DAFormFunction1
+
+    Level: advanced
+
+.seealso: DAComputeJacobian1WithAdic()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAFormFunction(DA da,PetscErrorCode (*lf)(void),Vec vu,Vec vfu,void *w)
+{
+  PetscErrorCode ierr;
+  void           *u,*fu;
+  DALocalInfo    info;
+  PetscErrorCode (*f)(DALocalInfo*,void*,void*,void*) = (PetscErrorCode (*)(DALocalInfo*,void*,void*,void*))lf;
+  
+  PetscFunctionBegin;
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vfu,&fu);CHKERRQ(ierr);
+
+  ierr = (*f)(&info,u,fu,w);
+  if (PetscExceptionValue(ierr)) {
+    PetscErrorCode pierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(pierr);
+    pierr = DAVecRestoreArray(da,vfu,&fu);CHKERRQ(pierr);
+  }
+  CHKERRQ(ierr);
+
+  ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vfu,&fu);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DAFormFunction1"
 /*@
     DAFormFunction1 - Evaluates a user provided function on each processor that 
