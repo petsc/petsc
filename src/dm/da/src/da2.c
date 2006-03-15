@@ -1342,59 +1342,48 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DAFormFunctionLocal"
-/*@C 
-   DAFormFunctionLocal - This is a universal function evaluation routine for
-   a local DA function.
-
-   Collective on DA
+#define __FUNCT__ "DAFormFunction"
+/*@
+    DAFormFunction - Evaluates a user provided function on each processor that 
+        share a DA
 
    Input Parameters:
-+  da - the DA context
-.  func - The local function
-.  X - input vector
-.  F - function vector
--  ctx - A user context
++    da - the DA that defines the grid
+.    vu - input vector
+.    vfu - output vector 
+-    w - any user data
 
-   Level: intermediate
+    Notes: Does NOT do ghost updates on vu upon entry
 
-.seealso: DASetLocalFunction(), DASetLocalJacobian(), DASetLocalAdicFunction(), DASetLocalAdicMFFunction(),
-          SNESSetFunction(), SNESSetJacobian()
+           This should eventually replace DAFormFunction1
+
+    Level: advanced
+
+.seealso: DAComputeJacobian1WithAdic()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctionLocal(DA da, DALocalFunction1 func, Vec X, Vec F, void *ctx)
+PetscErrorCode PETSCDM_DLLEXPORT DAFormFunction(DA da,PetscErrorCode (*lf)(void),Vec vu,Vec vfu,void *w)
 {
-  Vec            localX;
-  DALocalInfo    info;
-  void          *u;
-  void          *fu;
   PetscErrorCode ierr;
-
+  void           *u,*fu;
+  DALocalInfo    info;
+  PetscErrorCode (*f)(DALocalInfo*,void*,void*,void*) = (PetscErrorCode (*)(DALocalInfo*,void*,void*,void*))lf;
+  
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
-  /*
-     Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
-  */
-  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,localX,&u);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,F,&fu);CHKERRQ(ierr);
-  ierr = (*func)(&info,u,fu,ctx);
+  ierr = DAVecGetArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vfu,&fu);CHKERRQ(ierr);
+
+  ierr = (*f)(&info,u,fu,w);
   if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(pierr);
-    pierr = DAVecRestoreArray(da,F,&fu);CHKERRQ(pierr);
+    PetscErrorCode pierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(pierr);
+    pierr = DAVecRestoreArray(da,vfu,&fu);CHKERRQ(pierr);
   }
   CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,F,&fu);CHKERRQ(ierr);
-  if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = DARestoreLocalVector(da,&localX);CHKERRQ(pierr);
-  }
-  CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
+
+  ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vfu,&fu);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__

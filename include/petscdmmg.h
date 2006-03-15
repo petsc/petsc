@@ -48,6 +48,8 @@ struct _n_DMMG {
   Vec            w,work1,work2;         /* global vectors */
   Vec            lwork1;
 
+  PetscErrorCode (*lfj)(void);          /* function used when computing Jacobian via FD, usually da->lf */
+
   /* FAS only */
   NLF            nlf;                   /* FAS smoother object */
   VecScatter     inject;                /* inject from this level to the next coarsest */
@@ -94,6 +96,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNESLocalib_Private(DMMG*,Petsc
 #  define DMMGSetSNESLocalib(dmmg,function,ad_function,admf_function) DMMGSetSNESLocalib_Private(dmmg,(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,0,0)
 #endif
 
+extern PetscErrorCode DMMGSetSNESLocalFD(DMMG*,DALocalFunction1);
 
 /*MC
    DMMGGetRHS - Returns the right hand side vector from a DMMG solve on the finest grid

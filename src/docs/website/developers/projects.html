@@ -4,6 +4,8 @@
 
 
 
+
+  
   
   
   <title>PETSc: The Portable, Extensible Toolkit for Scientific Computation</title>
@@ -15,24 +17,31 @@
 
 
 
+
 <table style="width: 775px;">
+
 
 
 
   <tbody>
 
 
+
     <tr>
+
 
 
 
     <td valign="top" width="218">
       
       
+      
       <h1><font color="#ff0000" size="7">PETSc</font></h1>
 
 
 
+
+      
       
       
       
@@ -40,14 +49,18 @@
 
 
 
+
         <li><a href="../index.html"><strong>Home</strong></a></li>
 
 
 
+
+      
       
       
       
       </ul>
+
 
 
 
@@ -56,10 +69,13 @@
 
 
 
+
     <td width="549">
       
       
+      
       <h1>Projects: Big and Small</h1>
+
 
 
 
@@ -67,7 +83,9 @@
 
 
 
+
   </tr>
+
 
 
 
@@ -75,7 +93,9 @@
 
 
 
+
     <td colspan="2" width="771">
+      
       
       
       <hr color="#ff5b5b" size="4">
@@ -83,7 +103,9 @@
 
 
 
+
   </tr>
+
 
 
 
@@ -91,10 +113,13 @@
 
 
 
+
     <td valign="top" width="218">
       
       
+      
       <ul>
+
 
 
 
@@ -102,7 +127,9 @@
 
 
 
+
       <li><a href="../features/index.html"><strong>Features</strong></a></li>
+
 
 
 
@@ -110,12 +137,16 @@
 
 
 
+
       <li><strong><a href="../publications/index.html">Applications/Publications</a></strong></li>
 
 
 
+
       <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
+
         <li><strong><a href="../miscellaneous/external.html"><strong>External Software</strong></a></strong></li>
+
 
 
 
@@ -123,7 +154,9 @@
         
           
           
+          
           <ul>
+
 
 
 
@@ -132,15 +165,19 @@
 
 
 
+
           <li><strong><font color="#ff0000">Proposed
             projects</font></strong></li>
+
 
 
 
         
           
           
+          
           </ul>
+
 
 
 
@@ -148,20 +185,26 @@
 
 
 
+
     
+      
       
       
       </ul>
 
 
 
+
     
+      
       
       
       <p>&nbsp;</p>
 
 
+
       </td>
+
 
 
 
@@ -169,19 +212,25 @@
       &nbsp; &nbsp; This is the PETSc to-do list; any help on these would be greatly appreciated<br>
 
 
+
       <br>
 
 
+
+      
       
       
       <h3>&nbsp; Optimizations</h3>
+
 
 
 &nbsp;&nbsp;&nbsp; change mpibaij and mpisbaij to use the lastcol1,2
 stuff as in mpiaij matsetvalues[blocked] for faster insertion<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp;&nbsp; DONE - added DASetMatPreallocateOnly(), not tested. Add flag to DA that allows setting the preallocation
@@ -191,13 +240,17 @@ Jacobian&nbsp;using color, so try to add error checking to prevent
 users from screwing up.<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp;&nbsp; (Priority 1) Use blocksize in MPIAIJ to pass in getsubmatrices for faster in ASM.<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp;&nbsp; Fix MatGet/RestoreRow/ColumnIJ() to have an
@@ -206,24 +259,32 @@ the reoordering codes need to check that flag since Sparsepack corrupts
 the data.<br>
 
 
+
       <br>
 
 
+
+      
       
       
       <h3>Missing functionality (for a particular data storage or size)</h3>
 
 
+
 &nbsp;&nbsp;&nbsp;&nbsp; Convert the Tufo-Fischer parallel direct solver to its own PC extend to other matrix types<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp;&nbsp;&nbsp; Add support for MatLoad() for Matlab .mat files; we already have the view.<br>
 
 
+
       <br>
+
 
 
 &nbsp; Fix all MatPartitioners to optionally turn on edge weights from
@@ -231,69 +292,96 @@ the matrix values. Currently the are ignored for all partitioners
 except parmetis, where they are incorrectly always used.<br>
 
 
+
       <br>
+
 
  Add MatMatMult() to dense matrices<br>
 
 
+
+      
       
       
       <h3>&nbsp;New functionality</h3>
 
 
+
       When solving F(x) = 0, I would like to be able to scale both the solution<br>
+
 
 vector x and the residual function vector F, simply by specifying scaling<br>
 
+
 vectors, sx and sf, say. (These vectors would be the diagonal entries of<br>
+
 
 scaling matrices Dx and Df.)<br>
 
+
       <br>
+
 
 I realize this can be achieved, at least in part, within the user residual<br>
 
+
 function.<br>
+
 
 This is what I had been doing, until I looked at Denis and Schnabel (sp?),<br>
 
+
 Brown and Saad, and the KINSOL user guide. It seems one has to take the<br>
+
 
 scaling matrices into account when computing various norms, when applying the<br>
 
+
 preconditioner, and when computing the step size, \sigma. No doubt there<br>
+
 
 are other things I have missed that also need to be done.<br>
 
 
+
       <br>
+
 
 
 &nbsp; Make PetscBagLoad() machine independent by requiring the user to register the<br>
 
 
+
 entire bag before calling PetscBagLoad()<br>
 
 
+
       <br>
+
 
 
 &nbsp; add GMRESR<br>
 
 
+
       <br>
+
 
 
 &nbsp; Add PCCreate_LRC() see MatCreateLRC()<br>
 
 
+
       <br>
+
 
 
 &nbsp; (Priority 1) Add DAVecGetArrayf90() Hmmm, thought I did this a long time ago?<br>
 
 
+
       <br>
+
 
 
 &nbsp; Support overlapping finite difference grids using DA, see
@@ -306,31 +394,41 @@ then local search, what about duplicates?), then do DAGlobalToLocal on
 the DA's to get local vectors to have all correct ghosted values. Easy.<br>
 
 
+
       <br>
+
 
 
 &nbsp; Add MatSolveForward/Back() per Jose petsc-maint 9785<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp;&nbsp; Make a Mat type of PC and KSP.<br>
 
 
+
       <br>
+
 
 
 &nbsp; allow matrix to share another matrices stuff and its stored numerical values petscmaint 12168<br>
 
 
+
       <br>
+
 
 
 &nbsp; Interface for vectors to fftw.<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; (Priority 1) Add new KSP that allows reordering unknowns
@@ -338,20 +436,26 @@ the DA's to get local vectors to have all correct ghosted values. Easy.<br>
 KSP. Or should this be PC?<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; (Priority 2) General mechanism for DMGetMatrix() etc ...for composite matrices<br>
 
 
+
       <br>
+
 
 
 &nbsp; Make all KSP (if possible) use either preconditioned or
 unpreconditioned norms for monitoring &amp; convergence (e.g. BCGSL)<br>
 
 
+
       <br>
+
 
 
 &nbsp; I like the idea of having an optional usage logging facility in
@@ -360,59 +464,81 @@ server somewhere sounds good. Kind of like how we use FLEXLM for
 licensed software.<br>
 
 
+
       <br>
 
 
+
+      
       
       
       <h3>&nbsp;Cleaner code</h3>
 
 
-&nbsp; (Priority 2) Add more PetscMallocXXX() in MatGetOverlap() and getsubmatrices etc()<br>
+
+&nbsp; Make common header for the four PC_Factor types and common PCSetFromOptions_Factor for common options.<br>
+      <br>
+&nbsp; &nbsp;(Priority 2) Add more PetscMallocXXX() in MatGetOverlap() and getsubmatrices etc()<br>
+
 
 
       <br>
 
 
-&nbsp; (Priority 0) Fix bad macros with inline, which ones?<br>
+
+&nbsp; (Priority 0) Fix bad macros with inline functions, which ones?<br>
+
 
 
       <br>
+
 
 
 &nbsp;&nbsp; Make binary file and socket viewers subclass off a common binary viewer<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; Add _SNESOps function table, dang I can't beleive we don't have it yet<br>
 
 
+
       <br>
 
 
+
+      
       
       
       <h3>Better user interface </h3>
 
 
+
 &nbsp; (Priority 1) Change setfromoptions for sor to use Enum for setting symmetric, local etc<br>
 
 
+
       <br>
+
 
 
 &nbsp; (Priority 1) Allow setting precision of printed numbers in ASCII viewers.<br>
 
 
+
       <br>
+
 
 
 &nbsp; (Priority 1) add DAVecGatherAll and DAVecGather<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp;&nbsp;&nbsp; (Piority 1) Add option to KSP to generate
@@ -420,62 +546,82 @@ error when convergence fails, rather than continuing with
 ConvergedReason<br>
 
 
+
 &nbsp;&nbsp;&nbsp;&nbsp; Take out calls to SETERRQ directly in KSP solvers and replace with correct ConvergedReason<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; (Priority 1) Add option to SNES to generate error when
 convergence fails, rather than continuing with ConvergedReason<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; (Priority 2) Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input allow setting type before sizes<br>
 
 
+
 &nbsp;&nbsp; provide VecSetMap()<br>
 
 
+
       <br>
+
 
 
 &nbsp; (Priority 2) Change MatLoad() to take a matrix, move sizes out
 of MatCreate(), add MatSetMaps(), allow setting type before sizes<br>
 
 
+
 &nbsp;&nbsp; Also allow loading matrices with the same nonzero pattern efficiently.<br>
 
 
+
       <br>
+
 
 
 &nbsp; (Priority 1) Modify PC_MG to allow setters and fold DMMG and ML (and maybe hypre) into it?<br>
 
 
+
       <br>
+
 
 
 &nbsp; Add MatOption POSITIVE_DEFINITE and have KSP default to CG if that plus symmetric set<br>
 
 
+
       <br>
 
 
+
+      
       
       
       <h3>&nbsp; Algorithmic improvements</h3>
 
 
+
 &nbsp;&nbsp;&nbsp; Figure out why gmres as smoother for one iteration can be some much better<br>
+
 
 
 &nbsp;&nbsp;&nbsp; than Richardson? Is it computing some good damping factor?<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp;&nbsp; Make LSQR properly handle nonzero initial guess by
@@ -483,144 +629,193 @@ simply computing the residual right hand side; solving that and then
 adding back the initial guess.<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp;&nbsp; Add support for point block diagonal scaling the matrix before calling KSPSolve.<br>
 
 
+
       <br>
 
 
+
+      
       
       
       <h3>Testing</h3>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; Test everywhere with Lam<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; PetscInt long long<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp;&nbsp; configure for all packages, with install option for as many as possible<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; Test support for requesting 32 bit or 64 bit code<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; Test that the Fortran preprocessor actually preprocesses somehow<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; Test for --with-precision=longdouble<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; We should have performance benchmarking to make sure code performance is not decreased by changes<br>
 
 
+
       <br>
 
 
+
+      
       
       
       <h3>&nbsp; Interfaces to external packages</h3>
 
 
+
 &nbsp;&nbsp; An almost linear time LU solver for second order elliptic<br>
+
 
 
 &nbsp;&nbsp; operators (http://www.math.uni-leipzig.de/~bebendorf/AHMED.html)<br>
 
 
+
 &nbsp;&nbsp; Another software library on Hierarchical Matrices for Elliptic<br>
+
 
 
 &nbsp;&nbsp; Differential equations (AHMED)<br>
 
 
+
 &nbsp;&nbsp; An approximate LU decomposition can be computed in the algebra of<br>
+
 
 
 &nbsp;&nbsp; hierarchical matrices with almost linear time complexity and with<br>
 
 
+
 &nbsp;&nbsp; the same robustness as the classical LU decomposition method.<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; DUNE, the Distributed and Unified Numerics Environment <br>
 
 
+
 &nbsp;&nbsp; (http://hal.iwr.uni-heidelberg.de/dune)<br>
+
 
 
 &nbsp;&nbsp; DUNE aims to reach the following goals:<br>
 
 
+
 &nbsp;&nbsp;&nbsp; - Distributed development<br>
+
 
 
 &nbsp;&nbsp;&nbsp; - Unified access to different grid managers (ALBERTA , UG),<br>
 
 
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; visualization tools (Grape), solvers, etc.<br>
+
 
 
 &nbsp;&nbsp;&nbsp; - high level abstraction through Operator concept<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp;&nbsp; ILUPACK www.math.tu-berlin.de/ilupack<br>
 
 
+
       <br>
+
 
 
 &nbsp; &nbsp;QHULL<br>
 
 
+
       <br>
+
 
 
 &nbsp; &nbsp;OpenDX<br>
 
 
+
+      
       
       
       <h3>&nbsp; PR </h3>
 
 
+
 &nbsp; Add all PETSc user publications we find from scholar.google.com<br>
 
 
+
+      
       
       
       <h3>&nbsp; Documentation</h3>
+
 
 
 &nbsp; add support to lgrind to map char string tokens with htmlmap.
@@ -630,66 +825,88 @@ yucky latex lgrind generates. Should be easy cannibalizing stuff from
 Bill's sowing.<br>
 
 
+
       <br>
+
 
 
 &nbsp; keywords in maual pages should get listed in help topic list<br>
 
 
+
       <br>
+
 
 
 &nbsp; need python tool to find all manual page functions that are missing in the users manual.<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; Add troubleshooting entries and error messages with web address for common errors.<br>
 
 
+
       <br>
 
 
+
+      
       
       
       <h3>config/configure.py</h3>
 
 
+
 &nbsp; Configure: Look for classes in libraries instead of just functions<br>
 
 
+
       <br>
+
 
 
 &nbsp; Configure needs to set the right compiler for linking!!&nbsp; [PETSC #12367] When should<br>
 
 
+
 it use C++ to link fortran, when C when Fortran???<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; We need to have MPI.py properly detect if the MPI macros<br>
 
 
+
 in PETSc can be used and turn them off if they cannot.<br>
+
 
 
 Better to add a new flag like PETSC_USE_MPI_MACROS<br>
 
 
+
       <br>
+
 
 
 &nbsp; If shared libraries is turned on, need configure test that each external package<br>
 
 
+
 &nbsp; can go into shared library. Trouble on Mac<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; Check for broken Windows sed. Does anyone here have this
@@ -697,24 +914,32 @@ broken sed. The signal is&nbsp;all spaces are missing from the
 petscmachineinfo.h declaration.<br>
 
 
+
       <br>
+
 
 
 &nbsp;&nbsp; It would be nice if someday configure could get the "compute nodes" to see<br>
 
 
+
 &nbsp;&nbsp; that they have the appropriate shared libraries that are used when compiling<br>
+
 
 
 &nbsp;&nbsp; or otherwise the static libraries are used.<br>
 
 
+
+      
       
       
       <p align="left">&nbsp;&nbsp;&nbsp; </p>
 
 
 
+
+      
       
       
       
@@ -722,7 +947,9 @@ petscmachineinfo.h declaration.<br>
 
 
 
+
     </td>
+
 
 
 
@@ -730,11 +957,14 @@ petscmachineinfo.h declaration.<br>
 
 
 
+
   <tr>
 
 
 
+
     <td colspan="2" width="771">
+      
       
       
       <hr color="#ff5b5b" size="4">
@@ -742,11 +972,14 @@ petscmachineinfo.h declaration.<br>
 
 
 
+
   </tr>
 
 
 
+
   <tr>
+
 
 
 
@@ -755,11 +988,14 @@ petscmachineinfo.h declaration.<br>
 
 
 
+
   </tr>
 
 
 
+
   <tr>
+
 
 
 
@@ -768,14 +1004,18 @@ petscmachineinfo.h declaration.<br>
 
 
 
+
   </tr>
 
 
 
+
+  
   
   
   </tbody>
 </table>
+
 
 
 
