@@ -418,11 +418,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       *r,*ic,i,j,n=A->rmap.n,*bi=b->i,*bj=b->j;
   PetscInt       *ajtmp,*bjtmp,nz,row,*ics;
   PetscInt       *diag_offset = b->diag,diag,*pj;
-  PetscScalar    *rtmp,*v,*pc,multiplier,*pv,*rtmps;
+  PetscScalar    *rtmp,*v,*pc,multiplier,*pv,*rtmps,*aa=a->a;
   PetscScalar    d;
   PetscReal      rs;
   LUShift_Ctx    sctx;
-  PetscInt       newshift;
+  PetscInt       newshift,*ddiag = a->diag;
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -436,13 +436,13 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   sctx.shift_lo   = 0;
   sctx.shift_hi   = 0;
 
-  if (!a->diag) {
+  if (!ddiag) {
     ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
   }
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd && info->shiftnz) info->shiftnz = 0.0; 
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
-    PetscInt *aai = a->i,*ddiag = a->diag;
+    PetscInt *aai = a->i;
     sctx.shift_top = 0;
     for (i=0; i<n; i++) {
       /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
@@ -507,7 +507,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
       sctx.rs  = rs;
       sctx.pv  = pv[diag];
-      ierr = MatLUCheckShift_inline(info,sctx,i,a->a,a->diag,newshift);CHKERRQ(ierr);
+      ierr = MatLUCheckShift_inline(info,sctx,i,aa,ddiag,newshift);CHKERRQ(ierr);
       if (newshift == 1){
         break;    /* sctx.shift_amount is updated */
       } else if (newshift == -1){
