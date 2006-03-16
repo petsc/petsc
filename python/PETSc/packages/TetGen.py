@@ -128,7 +128,7 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
-    import sys
+    import os, sys
     tetgenDir = self.getDir()
     installDir = os.path.join(tetgenDir, self.arch.arch)
     if not os.path.isdir(installDir):
