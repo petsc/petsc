@@ -148,7 +148,8 @@ class Configure(PETSc.package.Package):
     if os.path.basename(self.getCompiler()) == 'mpicc' and os.path.dirname(self.getCompiler()):
       path.append(os.path.dirname(self.getCompiler()))
     self.popLanguage()
-    self.getExecutable(mpiruns, path = path, useDefaultPath = 1, resultName = 'mpirun',setMakeMacro=0)
+    if not self.getExecutable(mpiruns, path = path, useDefaultPath = 1, resultName = 'mpirun',setMakeMacro=0):
+      raise RuntimeError('Could not locate MPIRUN - please specify --with-mpirun option')
     self.addMakeMacro('MPIRUN',self.mpirun.replace('-np 1',''))
     return
         
