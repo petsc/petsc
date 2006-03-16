@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-1.9.0b-mod.tar.gz']
+    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-1.10.0b-mod.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']
     self.license   = 'http://www.llnl.gov/CASC/hypre/download/hyprebeta_cur_agree.html'
@@ -31,7 +31,6 @@ class Configure(PETSc.package.Package):
             'MatrixMatrix',
             'ParaSails',
             'krylov',
-            'lobpcg',
             'parcsr_ls',
             'parcsr_mv',
             'seq_mv',
