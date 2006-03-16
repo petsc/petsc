@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "Options for mesh generation", "DMMG");CHKERRQ(ierr);
     debug = 0;
     ierr = PetscOptionsInt("-debug", "The debugging flag", "ex2.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
@@ -48,7 +49,6 @@ int main(int argc, char *argv[])
     refinementLimit = 0.0;
     ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex2.c", 1.0, &refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
-  comm = PETSC_COMM_WORLD;
 
   ALE::Obj<ALE::Two::Mesh> meshBoundary = ALE::Two::Mesh(comm, dim-1, debug);
   ALE::Obj<ALE::Two::Mesh> mesh;
