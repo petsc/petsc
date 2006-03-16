@@ -1394,6 +1394,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   }
   ierr = PetscFree(v0);CHKERRQ(ierr);
   ierr = PetscFree(Jac);CHKERRQ(ierr);
+  // Should just wrap the restrict pointer
   PetscScalar *array;
   ierr = VecGetArray(b, &array);CHKERRQ(ierr);
   ierr = PetscMemcpy(array, field->restrict(patch), field->getSize(patch)*sizeof(double));CHKERRQ(ierr);
