@@ -131,9 +131,9 @@ int main(int argc,char **argv)
     boundary->setFiberDimensionByDepth(patch, 0, 1);
     boundary->orderPatches();
 
-    ALE::Obj<ALE::Two::Mesh::sieve_type::depthMarkerSequence> bdVertices = boundary->getTopology()->depthStratum(0, 1);
+    ALE::Obj<ALE::Two::Mesh::sieve_type::depthSequence> bdVertices = boundary->getTopology()->depthStratum(0, 1);
 
-    for(ALE::Two::Mesh::sieve_type::depthMarkerSequence::iterator v_iter = bdVertices->begin(); v_iter != bdVertices->end(); ++v_iter) {
+    for(ALE::Two::Mesh::sieve_type::depthSequence::iterator v_iter = bdVertices->begin(); v_iter != bdVertices->end(); ++v_iter) {
       //double *coords = mesh->getCoordinates()->restrict(patch, *v_iter);
       double values[1] = {0.0};
 
