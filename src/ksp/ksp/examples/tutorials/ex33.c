@@ -130,6 +130,7 @@ int main(int argc,char **argv)
     boundary->setPatch(topology->leaves(), patch);
     boundary->setFiberDimensionByDepth(patch, 0, 1);
     boundary->orderPatches();
+    boundary->createGlobalOrder();
 
     ALE::Obj<ALE::Two::Mesh::sieve_type::traits::depthSequence> bdVertices = boundary->getTopology()->depthStratum(0, 1);
 
@@ -144,6 +145,7 @@ int main(int argc,char **argv)
     u->setPatch(topology->leaves(), ALE::Two::Mesh::field_type::patch_type());
     u->setFiberDimensionByDepth(patch, 0, 1);
     u->orderPatches();
+    u->createGlobalOrder();
     ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
     ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
     std::string orderName("element");
@@ -1473,6 +1475,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
     bdBundle->setPatch(bdVertices, patch);
     bdBundle->setFiberDimensionByDepth(patch, 0, 1);
     bdBundle->orderPatches();
+    bdBundle->createGlobalOrder();
 
     int numBoundaryIndices = bdBundle->getSize(patch);
     ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
