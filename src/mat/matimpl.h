@@ -472,7 +472,7 @@ typedef struct {
        row_start = PetscMax(row-10,0);\
        row_end   = PetscMin(row+10,n);\
        for (_i=row_start; _i<row_end; _i++){\
-         ierr = PetscPrintf(PETSC_COMM_SELF,"diag[%d] = %g\n",_i,aval[idiag[_i]]);\
+         ierr = PetscPrintf(PETSC_COMM_SELF,"|diag[%d]| = %g\n",_i,PetscAbsScalar(aval[idiag[_i]]));\
        }\
     }\
   } else {\
