@@ -122,7 +122,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
   }
 
   ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscgrid");CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetsccontrib");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
