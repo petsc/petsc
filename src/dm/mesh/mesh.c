@@ -138,6 +138,9 @@ PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
 
   PetscFunctionBegin;
   //FIX:
+  if (!globalVertex) {
+    globalVertex = vertexBundle;
+  }
   if (elementBundle->getGlobalOffsets()) {
     numElements = elementBundle->getGlobalOffsets()[mesh->commSize()];
   } else {

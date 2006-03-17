@@ -132,6 +132,7 @@ namespace ALE {
     public:
       Obj<order_type> __getOrder(const std::string& orderName) {
         if (this->_reorders.find(orderName) == this->_reorders.end()) {
+          if (this->debug) {std::cout << "Creating new order: " << orderName << std::endl;}
           this->_reorders[orderName] = order_type(this->_comm, this->debug);
         }
         return this->_reorders[orderName];

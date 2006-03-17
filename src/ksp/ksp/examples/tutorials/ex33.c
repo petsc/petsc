@@ -235,6 +235,18 @@ PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
                                   0.0, 2.0,
                                   0.0, 1.0,
                                   1.0, 1.0};
+  PetscInt    connectivity[40] = {0, 1,
+                                  1, 2,
+                                  2, 3,
+                                  3, 4,
+                                  4, 5,
+                                  5, 6,
+                                  6, 7,
+                                  7, 0,
+                                  1, 8,
+                                  3, 8,
+                                  5, 8,
+                                  7, 8};
   ALE::Two::Mesh::point_type vertices[9];
   PetscInt          order = 0;
   PetscMPIInt       rank;
@@ -268,6 +280,7 @@ PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
     topology->addArrow(vertices[8], edge, order++);
   }
   topology->stratify();
+  mesh->createVertexBundle(20, connectivity);
   mesh->createSerialCoordinates(2, 0, coords);
   /* Create boundary conditions */
   if (rank == 0) {
@@ -306,7 +319,12 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
                                   1.0, 0.0, 1.0,
                                   1.0, 1.0, 1.0,
                                   0.0, 1.0, 1.0};
-
+  PetscInt    connectivity[24] = {0, 1, 2, 3,
+                                  7, 6, 5, 4,
+                                  0, 4, 5, 1,
+                                  1, 5, 6, 2,
+                                  2, 6, 7, 3,
+                                  3, 7, 4, 0};
   ALE::Obj<std::set<ALE::Two::Mesh::point_type> > cone = std::set<ALE::Two::Mesh::point_type>();
   ALE::Two::Mesh::point_type            vertices[8];
   ALE::Two::Mesh::point_type            edges[12];
@@ -406,6 +424,7 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
       vertexBundle->setPatch(orderName, points, face);
     }
   }
+  mesh->createVertexBundle(6, connectivity);
   mesh->createSerialCoordinates(embedDim, 0, coords);
 
   /* Create boundary conditions: set marker 1 to all of the sieve elements, 
@@ -1470,7 +1489,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
     PetscInt *boundaryIndices;
     PetscInt k = 0;
 
-    ALE::Obj<ALE::Two::Mesh::bundle_type> bdBundle = ALE::Two::Mesh::bundle_type(m->debug);
+    ALE::Obj<ALE::Two::Mesh::bundle_type> bdBundle = ALE::Two::Mesh::bundle_type(m->comm(), m->debug);
     bdBundle->setTopology(m->getTopology());
     bdBundle->setPatch(bdVertices, patch);
     bdBundle->setFiberDimensionByDepth(patch, 0, 1);
