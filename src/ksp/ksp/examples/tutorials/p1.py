@@ -13,14 +13,20 @@ class P1(script.Script):
 
     self.Cxx = CxxHelper.Cxx()
     self.baseDir = os.getcwd()
+
+
+    # -------------------------------
     self.shape = FIAT.shapes.TRIANGLE
+    self.order = 1
+    # -------------------------------
+    
     return
 
   def setupPaths(self):
     import sys
 
-    sys.path.append('/PETSc3/fenics/fiat-cvs')
-    sys.path.append('/PETSc3/ase/Generator')
+    sys.path.append('/home/ecoon/applications/petsc-dev/python:/home/ecoon/applications/python_modules/c-generator')
+    sys.path.append('/home/ecoon/applications/FIAT-0.2.3')
     return
 
   def createElement(self, shape, k):
@@ -148,7 +154,7 @@ class P1(script.Script):
   def run(self):
     self.setup()
     self.logPrint('Making a P1 element')
-    self.outputElementSource(self.shape, 1)
+    self.outputElementSource(self.shape, self.order)
     return
 
 if __name__ == '__main__':
