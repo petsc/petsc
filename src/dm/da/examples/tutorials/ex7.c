@@ -44,8 +44,8 @@ int main(int argc,char **argv)
   ierr = PetscBagGetData(bag,(void **)&params);CHKERRQ(ierr);
 
   /* fill bag: register variables, defaults, names, help strings */
-  ierr = PetscBagSetName(bag,"ParameterBag","contains parameters for ex6");CHKERRQ(ierr);
-  ierr = PetscBagRegisterString(bag,&params->filename,PETSC_MAX_PATH_LEN,"ex6_output","filename","Name of secret file");CHKERRQ(ierr);
+  ierr = PetscBagSetName(bag,"ParameterBag","contains problem parameters");CHKERRQ(ierr);
+  ierr = PetscBagRegisterString(bag,&params->filename,PETSC_MAX_PATH_LEN,"output_file","filename","Name of secret file");CHKERRQ(ierr);
   ierr = PetscBagRegisterReal  (bag,&params->ra,1.0,"param_1","The first parameter");CHKERRQ(ierr);
   ierr = PetscBagRegisterInt   (bag,&params->ia,5  ,"param_2","The second parameter");CHKERRQ(ierr);
   ierr = PetscBagRegisterTruth (bag,&params->ta,PETSC_TRUE,"do_output","Write output file (true/false)");CHKERRQ(ierr);
