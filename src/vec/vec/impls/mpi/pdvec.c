@@ -592,9 +592,9 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
     ierr = PetscMalloc((N+1)*sizeof(PetscScalar),&xx);CHKERRQ(ierr);
     ierr = PetscMalloc(size*sizeof(PetscMPIInt),&lens);CHKERRQ(ierr);
     for (i=0; i<size; i++) {
-      lens[i] = xin->map->range[i+1] - xin->map->range[i];
+      lens[i] = xin->map.range[i+1] - xin->map.range[i];
     }
-    ierr = MPI_Gatherv(xarray,xin->map.n,MPIU_SCALAR,xx,lens,xin->map->range,MPIU_SCALAR,0,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(xarray,xin->map.n,MPIU_SCALAR,xx,lens,xin->map.range,MPIU_SCALAR,0,xin->comm);CHKERRQ(ierr);
     ierr = PetscFree(lens);CHKERRQ(ierr);
 
     ierr = PetscObjectName((PetscObject)xin);CHKERRQ(ierr);
