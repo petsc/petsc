@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = matlabDA.c
+SOURCEC  = binaryMatlab.c
 SOURCEF  =
-SOURCEH  = matlabDA.h
-OBJSC    = matlabDA.o
+SOURCEH  = binaryMatlab.h
+OBJSC    = binaryMatlab.o
 OBJSF    =
 LIBBASE  = libpetsc
 MANSEC   = Viewer
