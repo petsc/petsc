@@ -27,8 +27,7 @@ at the old time advected to the new time.
 #include "petscda.h"
 #include "petscdmmg.h"
 #include "petscbag.h"
-#include "characteristic.h"
-#include "PetscSimOutput.h"
+#include "src/contrib/semiLagrange/characteristic.h"
 
 #define EXAMPLE_NUMBER 1
 #define SHEAR_CELL     0
@@ -463,11 +462,11 @@ int DoOutput(DMMG *dmmg, int n_plot)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"file = \"%s\"\n",filename);
 
     /* make output files */
-    ierr = PetscWriteOutputInitialize(PETSC_COMM_WORLD,filename,&viewer);CHKERRQ(ierr);
-    ierr = PetscWriteOutputBag(viewer,"par",user->bag);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryMatlabOpen(PETSC_COMM_WORLD,filename,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryMatlabOutputBag(viewer,"par",user->bag);CHKERRQ(ierr);
     ierr = DASetFieldName(da,0,"phi");CHKERRQ(ierr);
-    ierr = PetscWriteOutputVecDA(viewer,"field",DMMGGetx(dmmg),da);CHKERRQ(ierr);
-    ierr = PetscWriteOutputFinalize(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryMatlabOutputVecDA(viewer,"field",DMMGGetx(dmmg),da);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryMatlabDestroy(viewer);CHKERRQ(ierr);
   }  
   return 0;
 }
