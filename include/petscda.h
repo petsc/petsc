@@ -482,6 +482,13 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInterpolationScale(DM,DM,Mat,Vec*)
 
 typedef struct NLF_DAAD* NLF;
 
+#include <petscbag.h>
+
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabDAOpen(MPI_Comm, const char [], PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabDADestroy(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabDAOutputBag(PetscViewer, const char [], PetscBag);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabDAOutputVec(PetscViewer, const char [], Vec);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabDAOutputVecDA(PetscViewer, const char [], Vec, DA);
 
 PETSC_EXTERN_CXX_END
 #endif

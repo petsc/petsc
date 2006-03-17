@@ -8,8 +8,8 @@
  *	i.e. no whitespace or illegal characters such as grouping 
  *	operators, quotations, math/boolean operators, etc. 
  * ----------------------------------------------------------------------*/
-#include "matlabDA.h"
-
+#include <petscviewer.h>
+#include <petscda.h>
 
 /* ---------------------------------------------------------------------
  *  PetscViewerMatlabDAOpen
