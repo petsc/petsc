@@ -1,7 +1,7 @@
 
 CFLAGS	         = -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
 FFLAGS	         = 
-CPPFLAGS         =
+CPPFLAGS         = -Wno-shadow
 FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
@@ -173,6 +173,10 @@ ex32: ex32.o  chkopts
 ex33: ex33.o chkopts
 	-${CLINKER} -o ex33 ex33.o ${PETSC_SNES_LIB}
 	${RM} ex33.o
+
+ex35: ex35.o chkopts
+	-${CLINKER} -o ex35 ex35.o ${PETSC_SNES_LIB}
+	${RM} ex35.o
 
 ex34: ex34.o chkopts
 	-${CLINKER} -o ex34 ex34.o ${PETSC_SNES_LIB}
@@ -596,6 +600,10 @@ runex32:
 
 runex33:
 	-${MPIRUN} -np ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -base_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1_2d -bc_file data/ex33bc.data ${EXTRA_ARGS}
+
+runex35:
+	-${MPIRUN} -np ${NP} ./ex35 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -base_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1_2d ${EXTRA_ARGS}
+
 
 debugex33:
 	-${MPIRUN} -np ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -base_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1_2d -bc_file data/ex33bc.data ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
