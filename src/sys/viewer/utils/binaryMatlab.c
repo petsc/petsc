@@ -66,7 +66,8 @@ PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm comm, const char fname[], Pe
 
   Level: beginner
 
-  .seealso PetscViewerBinaryMatlabOpen()
+  .seealso PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputVec(), 
+           PetscViewerBinaryMatlabOutputVecDA(), PetscViewerBinaryMatlabOutputBag()
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabDestroy"
