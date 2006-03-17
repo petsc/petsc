@@ -1,8 +1,8 @@
 /* ----------------------------------------------------------------------
  * Ethan Coon <ecoon@ldeo.columbia.edu> and Richard Katz <katz@ldeo.columbia.edu>
  *
- *	This is a library of functions to write info files with matlab code
- * for interpreting various PETSc binary files.
+ *	This is a library of functions to write .info files with matlab code
+ *      for interpreting various PETSc binary files.
  *
  *	Note all "name" and "DAFieldName" variables must be Matlab-Kosher
  *	i.e. no whitespace or illegal characters such as grouping 
@@ -14,8 +14,6 @@
 /* ---------------------------------------------------------------------
  *  PetscViewerMatlabDAOpen
  *	
- *	
- *
  *		Input
  *		------------------------------
  *		comm	| mpi communicator
