@@ -1,17 +1,19 @@
 function Set = PetscReadBinaryMatlab(filename)
 % PETSCREADBINARYMATLAB - Reads and interprets matlab specific lines 
 %   from the .info files produced by PetscViewerBinaryMatlab
-%   
-%   All matlab specific lines in the .info file are expected to 
-%   begin with %Set.
+%
+%   Input filename can be the name of the binary file with or without
+%   the .info suffix
 %
 %   This function returns a single struct containing all objects submitted
 %   to the PetscViewerBinaryMatlab viewer.
    
+   if (isempty(strfind(filename,'.info')))
+      filename = [filename,'.info'];
+   end
    fid=fopen(filename,'r');
    if (fid == -1)
       error(sprintf('PetscReadMatlabDA: cannot load file %s',filename))
-      Set = []; return; 
    end
    str=fgets(fid);
    while (ischar(str))

@@ -37,6 +37,10 @@ ex6: ex6.o   chkopts
 ex6f90: ex6f90.o   chkopts
 	-${FLINKER} -o ex6f90 ex6f90.o  ${PETSC_DM_LIB}
 	${RM} -f ex6f90.o
+
+ex7: ex7.o   chkopts
+	-${CLINKER} -o ex7 ex7.o  ${PETSC_DM_LIB}
+	${RM} -f ex7.o
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 2 ./ex1
