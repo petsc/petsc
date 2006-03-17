@@ -146,8 +146,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DARestoreGlobalVector(DMMGGetDA(user->dmmg), &(user->Xold)); CHKERRQ(ierr);
   ierr = PetscBagDestroy(user->bag);CHKERRQ(ierr); 
-  ierr = PetscFree(user); CHKERRQ(ierr);
   ierr = DMMGDestroy(user->dmmg); CHKERRQ(ierr);
+  ierr = PetscFree(user); CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
