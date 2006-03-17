@@ -1,9 +1,12 @@
-function Set = PetscReadMatlabDA(filename)
-% PETSCREADMATLABDA - Reads and interprets matlab specific lines 
-%   from the .info files produced by PetscViewerMatlabDA
+function Set = PetscReadBinaryMatlab(filename)
+% PETSCREADBINARYMATLAB - Reads and interprets matlab specific lines 
+%   from the .info files produced by PetscViewerBinaryMatlab
 %   
 %   All matlab specific lines in the .info file are expected to 
 %   begin with %Set.
+%
+%   This function returns a single struct containing all objects submitted
+%   to the PetscViewerBinaryMatlab viewer.
    
    fid=fopen(filename,'r');
    if (fid == -1)
