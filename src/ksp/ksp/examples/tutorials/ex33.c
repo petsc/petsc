@@ -52,7 +52,6 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 
 PetscErrorCode MeshView_Sieve_Newer(ALE::Obj<ALE::Two::Mesh>, PetscViewer);
 PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh>);
-PetscErrorCode updateOperator(Mat, ALE::Obj<ALE::Two::Mesh::field_type>, const ALE::Two::Mesh::point_type&, PetscScalar [], InsertMode);
 
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
@@ -80,6 +79,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
+  comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "Options for the inhomogeneous Poisson equation", "DMMG");CHKERRQ(ierr);
     debug = 0;
     ierr = PetscOptionsInt("-debug", "The debugging flag", "ex33.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
@@ -93,7 +93,6 @@ int main(int argc,char **argv)
     ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex33.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
     user.bcType = (BCType) bc;
   ierr = PetscOptionsEnd();
-  comm = PETSC_COMM_WORLD;
 
   ALE::Obj<ALE::Two::Mesh> meshBoundary = ALE::Two::Mesh(comm, dim-1, debug);
   ALE::Obj<ALE::Two::Mesh> mesh;

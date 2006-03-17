@@ -68,8 +68,8 @@ class P1(script.Script):
     else:
       ext = ''
     return [numPoints,
-            self.getArray(self.Cxx.getVar('points'+ext), quadrature.get_points(), 'Quadrature points'),
-            self.getArray(self.Cxx.getVar('weights'+ext), quadrature.get_weights(), 'Quadrature weights')]
+            self.getArray(self.Cxx.getVar('points'+ext), quadrature.get_points(), 'Quadrature points\n   - (x1,y1,x2,y2,...)'),
+            self.getArray(self.Cxx.getVar('weights'+ext), quadrature.get_weights(), 'Quadrature weights\n   - (v1,v2,...)')]
 
   def getBasisStructs(self, name, element, quadrature, mangle = 1):
     '''Return C arrays with the basis functions and their derivatives evalauted at the quadrature points
@@ -90,9 +90,11 @@ class P1(script.Script):
     else:
       basisName = name+'Basis'
       basisDerName = name+'BasisDerivatives'
+
+    
     return [numFunctions,
-            self.getArray(self.Cxx.getVar(basisName), Numeric.transpose(basis.tabulate(points)), 'Nodal basis function evaluations'),
-            self.getArray(self.Cxx.getVar(basisDerName), Numeric.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)]), 'Nodal basis function derivative evaluations')]
+            self.getArray(self.Cxx.getVar(basisName), Numeric.transpose(basis.tabulate(points)), 'Nodal basis function evaluations\n    - basis function is fastest varying, then point'),
+            self.getArray(self.Cxx.getVar(basisDerName), Numeric.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)]), 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point')]
 
   def getSkeletonFile(self, basename, decls):
     from Compiler import CodePurpose
