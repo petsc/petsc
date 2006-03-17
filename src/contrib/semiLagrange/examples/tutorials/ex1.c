@@ -493,11 +493,11 @@ int DoOutput(DMMG *dmmg, int n_plot)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"file = \"%s\"\n",filename);
 
     /* make output files */
-    ierr = PetscViewerMatlabDAOpen(PETSC_COMM_WORLD,filename,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerMatlabDAOutputBag(viewer,"par",user->bag);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryMatlabOpen(PETSC_COMM_WORLD,filename,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryMatlabOutputBag(viewer,"par",user->bag);CHKERRQ(ierr);
     ierr = DASetFieldNames("u","v","phi",da);CHKERRQ(ierr);
-    ierr = PetscViewerMatlabDAOutputVecDA(viewer,"field",DMMGGetx(dmmg),da);CHKERRQ(ierr);
-    ierr = PetscViewerMatlabDADestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryMatlabOutputVecDA(viewer,"field",DMMGGetx(dmmg),da);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryMatlabDestroy(viewer);CHKERRQ(ierr);
   }  
   return 0;
 }

@@ -12,7 +12,7 @@
 #include <petscda.h>
 
 /* ---------------------------------------------------------------------
- *  PetscViewerMatlabDAOpen
+ *  PetscViewerBinaryMatlabOpen
  *	
  *		Input
  *		------------------------------
@@ -23,9 +23,9 @@
  * ----------------------------------------------------------------------*/
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerMatlabDAOpen"
+#define __FUNCT__ "PetscViewerBinaryMatlabOpen"
 /*@C
-  PetscViewerMatlabDAOpen - Open a binary viewer and write matlab info file initialization.
+  PetscViewerBinaryMatlabOpen - Open a binary viewer and write matlab info file initialization.
 
   Collective on MPI_Comm
 
@@ -38,9 +38,9 @@
 
   Level: beginner
 
-  .seealso: PetscViewerMatlabDADestroy()
+  .seealso: PetscViewerBinaryMatlabDestroy()
 */
-PetscErrorCode PetscViewerMatlabDAOpen(MPI_Comm comm, const char fname[], PetscViewer *viewer)
+PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm comm, const char fname[], PetscViewer *viewer)
 {
   FILE          *info;
   PetscErrorCode ierr;
@@ -57,7 +57,7 @@ PetscErrorCode PetscViewerMatlabDAOpen(MPI_Comm comm, const char fname[], PetscV
 }
 
 /*@C
-  PetscViewerMatlabDADestroy - Write matlab info file finalization and destroy viewer.
+  PetscViewerBinaryMatlabDestroy - Write matlab info file finalization and destroy viewer.
 
   Not Collective
 
@@ -66,11 +66,11 @@ PetscErrorCode PetscViewerMatlabDAOpen(MPI_Comm comm, const char fname[], PetscV
 
   Level: beginner
 
-  .seealso PetscViewerMatlabDAOpen()
+  .seealso PetscViewerBinaryMatlabOpen()
 */
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerMatlabDADestroy"
-PetscErrorCode PetscViewerMatlabDADestroy(PetscViewer viewer)
+#define __FUNCT__ "PetscViewerBinaryMatlabDestroy"
+PetscErrorCode PetscViewerBinaryMatlabDestroy(PetscViewer viewer)
 {
   FILE          *info;
   MPI_Comm       comm;
@@ -88,7 +88,7 @@ PetscErrorCode PetscViewerMatlabDADestroy(PetscViewer viewer)
 }
 
 /*@C
-  PetscViewerMatlabDAOutputBag - Write matlab code to info file to read a PetscBag from binary.
+  PetscViewerBinaryMatlabOutputBag - Write matlab code to info file to read a PetscBag from binary.
 
   Input Parameters:
 + viewer - The viewer object
@@ -97,11 +97,11 @@ PetscErrorCode PetscViewerMatlabDADestroy(PetscViewer viewer)
 
   Level: intermediate
 
-  .seealso: PetscViewerMatlabDAOpen(), PetscViewerMatlabDAOutputVec(), PetscViewerMatlabDAOutputVecDA()
+  .seealso: PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputVec(), PetscViewerBinaryMatlabOutputVecDA()
 */
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerMatlabDAOutputBag"
-PetscErrorCode PetscViewerMatlabDAOutputBag(PetscViewer viewer, const char name[], PetscBag bag)
+#define __FUNCT__ "PetscViewerBinaryMatlabOutputBag"
+PetscErrorCode PetscViewerBinaryMatlabOutputBag(PetscViewer viewer, const char name[], PetscBag bag)
 {
   FILE          *info;
   MPI_Comm       comm;
@@ -118,7 +118,7 @@ PetscErrorCode PetscViewerMatlabDAOutputBag(PetscViewer viewer, const char name[
 }
   
 /*@C
-  PetscViewerMatlabDAOutputVec - Write matlab code to info file to read a (non DA) Vec from binary.
+  PetscViewerBinaryMatlabOutputVec - Write matlab code to info file to read a (non DA) Vec from binary.
 
   Input Parameters:
 + viewer - The viewer object
@@ -127,11 +127,11 @@ PetscErrorCode PetscViewerMatlabDAOutputBag(PetscViewer viewer, const char name[
 
   Level: intermediate
 
-  .seealso: PetscViewerMatlabDAOpen(), PetscViewerMatlabDAOutputBag(), PetscViewerMatlabDAOutputVecDA()
+  .seealso: PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputBag(), PetscViewerBinaryMatlabOutputVecDA()
 */
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerMatlabDAOutputVec"
-PetscErrorCode PetscViewerMatlabDAOutputVec(PetscViewer viewer, const char name[], Vec vec)
+#define __FUNCT__ "PetscViewerBinaryMatlabOutputVec"
+PetscErrorCode PetscViewerBinaryMatlabOutputVec(PetscViewer viewer, const char name[], Vec vec)
 {
   FILE          *info;
   MPI_Comm       comm;
@@ -148,7 +148,7 @@ PetscErrorCode PetscViewerMatlabDAOutputVec(PetscViewer viewer, const char name[
 }
 
 /*@C
-  PetscViewerMatlabDAOutputVecDA - Write matlab code to info file to read a DA's Vec from binary.
+  PetscViewerBinaryMatlabOutputVecDA - Write matlab code to info file to read a DA's Vec from binary.
 
   Input Parameters:
 + viewer - The viewer object
@@ -160,11 +160,11 @@ PetscErrorCode PetscViewerMatlabDAOutputVec(PetscViewer viewer, const char name[
 
   Note: This method requires dof names have been set using DASetFieldName().
 
-  .seealso: PetscViewerMatlabDAOpen(), PetscViewerMatlabDAOutputBag(), PetscViewerMatlabDAOutputVec(), DASetFieldName()
+  .seealso: PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputBag(), PetscViewerBinaryMatlabOutputVec(), DASetFieldName()
 */
 #undef __FUNCT__
-#define __FUNCT__ "PetscViewerMatlabDAOutputVecDA"
-PetscErrorCode PetscViewerMatlabDAOutputVecDA(PetscViewer viewer, const char name[], Vec vec, DA da)
+#define __FUNCT__ "PetscViewerBinaryMatlabOutputVecDA"
+PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char name[], Vec vec, DA da)
 {
   MPI_Comm       comm;
   FILE          *info;

@@ -484,11 +484,11 @@ typedef struct NLF_DAAD* NLF;
 
 #include <petscbag.h>
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabDAOpen(MPI_Comm, const char [], PetscViewer*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabDADestroy(PetscViewer);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabDAOutputBag(PetscViewer, const char [], PetscBag);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabDAOutputVec(PetscViewer, const char [], Vec);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabDAOutputVecDA(PetscViewer, const char [], Vec, DA);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOpen(MPI_Comm, const char [], PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabDestroy(PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOutputBag(PetscViewer, const char [], PetscBag);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOutputVec(PetscViewer, const char [], Vec);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOutputVecDA(PetscViewer, const char [], Vec, DA);
 
 PETSC_EXTERN_CXX_END
 #endif
