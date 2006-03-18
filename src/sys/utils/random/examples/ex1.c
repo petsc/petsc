@@ -1,8 +1,12 @@
 
-static char help[] = "Tests timing PetscSortInt().\n\n";
+static char help[] = "Tests PetscRandom functions.\n\n";
 
 #include "petsc.h"
 #include "petscsys.h"
+
+/* Usage: 
+   ./ex1 -log_summary
+*/
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -28,7 +32,7 @@ int main(int argc,char **argv)
 
   ierr = PetscLogEventRegister(&event,"Sort",0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
-
+ 
   for (i=0; i<n; i++) {
     ierr = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
