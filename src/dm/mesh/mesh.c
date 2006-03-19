@@ -40,8 +40,8 @@ PetscErrorCode WriteVTKHeader(PetscViewer viewer)
 #define __FUNCT__ "WriteVTKVertices_New"
 PetscErrorCode WriteVTKVertices_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer)
 {
-  ALE::Two::Mesh::field_type::patch_type patch;
   ALE::Obj<ALE::Two::Mesh::field_type> coordinates = mesh->getCoordinates();
+  ALE::Two::Mesh::field_type::patch_type patch;
   const double  *array = coordinates->restrict(patch);
   int            dim = mesh->getDimension();
   ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
@@ -129,12 +129,13 @@ PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
   ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
   ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
   ALE::Obj<ALE::Two::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
-  int               corners = topology->nCone(*elements->begin(), topology->depth())->size();
+  int            corners = topology->nCone(*elements->begin(), topology->depth())->size();
   ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
   ALE::Obj<ALE::Two::Mesh::bundle_type> globalVertex = vertexBundle->getGlobalOrder();
   ALE::Two::Mesh::bundle_type::patch_type patch;
-  int               numElements;
-  PetscErrorCode    ierr;
+  std::string    orderName("element");
+  int            numElements;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   //FIX:
@@ -149,10 +150,10 @@ PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
   ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
   if (mesh->commRank() == 0) {
     for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-      ALE::Obj<ALE::PointArray> cone = topology->nCone(*e_itor, topology->depth());
+      ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
       ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
-      for(ALE::PointArray::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+      for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
         ierr = PetscViewerASCIIPrintf(viewer, " %d", globalVertex->getIndex(patch, *c_itor).prefix);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
@@ -182,10 +183,10 @@ PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
 
     ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &localVertices);CHKERRQ(ierr);
     for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-      ALE::Obj<ALE::PointArray> cone = topology->nCone(*e_itor, topology->depth());
+      ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
       if (elementBundle->getFiberDimension(patch, *e_itor) > 0) {
-        for(ALE::PointArray::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+        for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
           localVertices[k++] = globalVertex->getIndex(patch, *c_itor).prefix;
         }
       }
@@ -217,76 +218,134 @@ PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
   PetscFunctionReturn(0);
 }
 
-#ifdef OLD_MESH
 #undef __FUNCT__  
 #define __FUNCT__ "WritePCICEVertices"
-PetscErrorCode WritePCICEVertices(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewer)
+PetscErrorCode WritePCICEVertices(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::def::Mesh::coordinate_type> coordinates = mesh->getCoordinates();
-  const double  *array = coordinates->restrict(0);
+  ALE::Obj<ALE::Two::Mesh::field_type> coordinates = mesh->getCoordinates();
+  ALE::Two::Mesh::field_type::patch_type patch;
+  const double  *array = coordinates->restrict(patch);
   int            dim = mesh->getDimension();
-  int            numVertices = mesh->getTopology()->depthStratum(0)->size();
+  ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
+  int            numVertices;
+  int            vertexCount = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  //FIX:
+  if (vertexBundle->getGlobalOffsets()) {
+    numVertices = vertexBundle->getGlobalOffsets()[mesh->commSize()];
+  } else {
+    numVertices = mesh->getTopology()->depthStratum(0)->size();
+  }
   ierr = PetscViewerASCIIPrintf(viewer,"%D\n", numVertices);CHKERRQ(ierr);
-  for(int v = 0; v < numVertices; v++) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", v+1);CHKERRQ(ierr);
-    for(int d = 0; d < dim; d++) {
-      if (d > 0) {
-        ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
+  if (mesh->commRank() == 0) {
+    int numLocalVertices = mesh->getTopology()->depthStratum(0)->size();
+
+    for(int v = 0; v < numLocalVertices; v++) {
+      ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", vertexCount++);CHKERRQ(ierr);
+      for(int d = 0; d < dim; d++) {
+        if (d > 0) {
+          ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer,"% 12.5E",array[v*dim+d]);CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIIPrintf(viewer,"% 12.5E",array[v*dim+d]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+    for(int p = 1; p < mesh->commSize(); p++) {
+      int        numLocalVertices;
+      double    *remoteCoords;
+      MPI_Status status;
+
+      ierr = MPI_Recv(&numLocalVertices, 1, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
+      ierr = PetscMalloc(numLocalVertices*dim * sizeof(double), &remoteCoords);CHKERRQ(ierr);
+      ierr = MPI_Recv(remoteCoords, numLocalVertices*dim, MPI_DOUBLE, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
+      for(int v = 0; v < numLocalVertices; v++) {
+        ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", vertexCount++);CHKERRQ(ierr);
+        for(int d = 0; d < dim; d++) {
+          if (d > 0) {
+            ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, "% 12.5E", remoteCoords[v*dim+d]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+      }
+    }
+  } else {
+    ALE::Obj<ALE::Two::Mesh::bundle_type> globalOrder = coordinates->getGlobalOrder();
+    ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> cone = globalOrder->getPatch(patch);
+    const int *offsets = coordinates->getGlobalOffsets();
+    int        numLocalVertices = (offsets[mesh->commRank()+1] - offsets[mesh->commRank()])/dim;
+    double    *localCoords;
+    int        k = 0;
+
+    ierr = PetscMalloc(numLocalVertices*dim * sizeof(double), &localCoords);CHKERRQ(ierr);
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+      int dim = globalOrder->getFiberDimension(patch, *p_iter);
+
+      if (dim > 0) {
+        int offset = coordinates->getFiberOffset(patch, *p_iter);
+
+        for(int i = offset; i < offset+dim; ++i) {
+          localCoords[k++] = array[i];
+        }
+      }
+    }
+    if (k != numLocalVertices*dim) {
+      SETERRQ2(PETSC_ERR_PLIB, "Invalid number of coordinates to send %d should be %d", k, numLocalVertices*dim);
+    }
+    ierr = MPI_Send(&numLocalVertices, 1, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
+    ierr = MPI_Send(localCoords, numLocalVertices*dim, MPI_DOUBLE, 0, 1, mesh->comm());CHKERRQ(ierr);
+    ierr = PetscFree(localCoords);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "WritePCICEElements"
-PetscErrorCode WritePCICEElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewer)
+PetscErrorCode WritePCICEElements(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer)
 {
-  MPI_Comm          comm = mesh->getComm();
-  int               dim  = mesh->getDimension();
-  ALE::Obj<ALE::def::Mesh::sieve_type> topology = mesh->getTopology();
-  ALE::Obj<ALE::def::Mesh::sieve_type> orientation = mesh->getOrientation();
-  ALE::Obj<ALE::def::Mesh::sieve_type::heightSequence> elements = topology->heightStratum(0);
-  ALE::Obj<ALE::def::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
-  // FIX: Needs to be global
-  int               numElements = elements->size();
-  int               corners = topology->nCone(*elements->begin(), dim)->size();
-  PetscMPIInt       rank, size;
-  int               elementCount = 1;
-  PetscErrorCode    ierr;
+  int            dim  = mesh->getDimension();
+  ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
+  ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
+  ALE::Obj<ALE::Two::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
+  int            corners = topology->nCone(*elements->begin(), topology->depth())->size();
+  ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
+  ALE::Obj<ALE::Two::Mesh::bundle_type> globalVertex = vertexBundle->getGlobalOrder();
+  ALE::Two::Mesh::bundle_type::patch_type patch;
+  std::string    orderName("element");
+  int            numElements;
+  int            elementCount = 1;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);
-  ierr = MPI_Comm_size(comm, &size);
   if (corners != dim+1) {
     SETERRQ(PETSC_ERR_SUP, "PCICE only supports simplicies");
   }
-  if (rank == 0) {
+  if (elementBundle->getGlobalOffsets()) {
+    numElements = elementBundle->getGlobalOffsets()[mesh->commSize()];
+  } else {
+    numElements = mesh->getTopology()->heightStratum(0)->size();
+  }
+  if (mesh->commRank() == 0) {
     ierr = PetscViewerASCIIPrintf(viewer, "%d\n", numElements);CHKERRQ(ierr);
-    for(ALE::def::Mesh::sieve_type::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-      // FIX: Need to globalize
-      ALE::Obj<ALE::def::Mesh::bundle_type::IndexArray> intervals = vertexBundle->getOrderedIndices(0, orientation->cone(*e_itor));
+    for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+      ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
       ierr = PetscViewerASCIIPrintf(viewer, "%7d", elementCount++);CHKERRQ(ierr);
-      for(ALE::def::Mesh::bundle_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-        ierr = PetscViewerASCIIPrintf(viewer, " %7d", i_itor->prefix+1);CHKERRQ(ierr);
+      for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+        ierr = PetscViewerASCIIPrintf(viewer, " %7d", globalVertex->getIndex(patch, *c_itor).prefix);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     }
-#ifdef PARALLEL
-    for(int p = 1; p < size; p++) {
-      MPI_Status  status;
-      int        *remoteVertices;
-      int         numLocalElements;
+    for(int p = 1; p < mesh->commSize(); p++) {
+      int        numLocalElements;
+      int       *remoteVertices;
+      MPI_Status status;
 
-      ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, comm, &status);CHKERRQ(ierr);
+      ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
       ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &remoteVertices);CHKERRQ(ierr);
-      ierr = MPI_Recv(remoteVertices, numLocalElements*corners, MPI_INT, p, 1, comm, &status);CHKERRQ(ierr);
+      ierr = MPI_Recv(remoteVertices, numLocalElements*corners, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
       for(int e = 0; e < numLocalElements; e++) {
         ierr = PetscViewerASCIIPrintf(viewer, "%7d", elementCount++);CHKERRQ(ierr);
         for(int c = 0; c < corners; c++) {
@@ -296,31 +355,31 @@ PetscErrorCode WritePCICEElements(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer vie
       }
       ierr = PetscFree(remoteVertices);CHKERRQ(ierr);
     }
-#endif
   } else {
-#ifdef PARALLEL
-    int  numLocalElements = elements.size(), offset = 0;
-    int *array;
+    const int *offsets = elementBundle->getGlobalOffsets();
+    int        numLocalElements = offsets[mesh->commRank()+1] - offsets[mesh->commRank()];
+    int       *localVertices;
+    int        k = 0;
 
-    ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &array);CHKERRQ(ierr);
-    for(ALE::Point_set::iterator e_itor = elements.begin(); e_itor != elements.end(); e_itor++) {
-      ALE::Obj<ALE::Point_array> intervals = vertexBundle.getGlobalOrderedClosureIndices(orientation->cone(*e_itor));
+    ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &localVertices);CHKERRQ(ierr);
+    for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+      ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
-      for(ALE::Point_array::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-        array[offset++] = (*i_itor).prefix+1;
+      if (elementBundle->getFiberDimension(patch, *e_itor) > 0) {
+        for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+          localVertices[k++] = globalVertex->getIndex(patch, *c_itor).prefix;
+        }
       }
     }
-    if (offset != numLocalElements*corners) {
-      SETERRQ2(PETSC_ERR_PLIB, "Invalid number of vertices to send %d shuold be %d", offset, numLocalElements*corners);
+    if (k != numLocalElements*corners) {
+      SETERRQ2(PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numLocalElements*corners);
     }
-    ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
-    ierr = MPI_Send(array, numLocalElements*corners, MPI_INT, 0, 1, comm);CHKERRQ(ierr);
-    ierr = PetscFree(array);CHKERRQ(ierr);
-#endif
+    ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
+    ierr = MPI_Send(localVertices, numLocalElements*corners, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
+    ierr = PetscFree(localVertices);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "WritePyLithVertices"
@@ -575,55 +634,6 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer v
     ierr = PetscStrcat(coordFilename, ".nodes");CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
     ierr = WritePCICEVertices(mesh, viewer);CHKERRQ(ierr);
-  } else if (format == PETSC_VIEWER_ASCII_PYLITH) {
-    char *filename;
-    char  connectFilename[2048];
-    char  coordFilename[2048];
-
-    ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_WRITE);CHKERRQ(ierr);
-    ierr = PetscStrcpy(connectFilename, filename);CHKERRQ(ierr);
-    ierr = PetscStrcat(connectFilename, ".connect");CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, connectFilename);CHKERRQ(ierr);
-    ierr = WritePyLithElements(mesh, viewer);CHKERRQ(ierr);
-    ierr = PetscStrcpy(coordFilename, filename);CHKERRQ(ierr);
-    ierr = PetscStrcat(coordFilename, ".coord");CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
-    ierr = WritePyLithVertices(mesh, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename), PETSC_ERR_FILE_OPEN);
-    if (PetscExceptionValue(ierr)) {
-      /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
-    } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
-      ierr = 0;
-    } 
-    CHKERRQ(ierr);
-  } else if (format == PETSC_VIEWER_ASCII_PYLITH_LOCAL) {
-    PetscViewer connectViewer, coordViewer;
-    char       *filename;
-    char        localFilename[2048];
-    MPI_Comm    comm;
-    PetscMPIInt rank;
-
-    ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-    ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
-
-    sprintf(localFilename, "%s.%d.connect", filename, rank);
-    ierr = PetscViewerCreate(PETSC_COMM_SELF, &connectViewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(connectViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(connectViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(connectViewer, localFilename);CHKERRQ(ierr);
-    ierr = WritePyLithElementsLocal(mesh, connectViewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(connectViewer);CHKERRQ(ierr);
-
-    sprintf(localFilename, "%s.%d.coord", filename, rank);
-    ierr = PetscViewerCreate(PETSC_COMM_SELF, &coordViewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(coordViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(coordViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(coordViewer, localFilename);CHKERRQ(ierr);
-    ierr = WritePyLithVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(coordViewer);CHKERRQ(ierr);
   } else {
     int dim = mesh->getDimension();
 
@@ -697,6 +707,24 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
     ierr = PetscViewerFileSetName(coordViewer, localFilename);CHKERRQ(ierr);
     ierr = WritePyLithVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(coordViewer);CHKERRQ(ierr);
+  } else if (format == PETSC_VIEWER_ASCII_PCICE) {
+    char      *filename;
+    char       coordFilename[2048];
+    PetscTruth isConnect;
+    size_t     len;
+
+    ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
+    ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
+    ierr = PetscStrcmp(&(filename[len-5]), ".lcon", &isConnect);CHKERRQ(ierr);
+    if (!isConnect) {
+      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid element connectivity filename: %s", filename);
+    }
+    ierr = WritePCICEElements(mesh, viewer);CHKERRQ(ierr);
+    ierr = PetscStrncpy(coordFilename, filename, len-5);CHKERRQ(ierr);
+    coordFilename[len-5] = '\0';
+    ierr = PetscStrcat(coordFilename, ".nodes");CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
+    ierr = WritePCICEVertices(mesh, viewer);CHKERRQ(ierr);
   } else {
     int dim = mesh->getDimension();
 
