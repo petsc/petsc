@@ -228,6 +228,7 @@ PetscErrorCode WritePCICEVertices(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer vie
   int            dim = mesh->getDimension();
   ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
   int            numVertices;
+  int            vertexCount = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -242,7 +243,7 @@ PetscErrorCode WritePCICEVertices(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer vie
     int numLocalVertices = mesh->getTopology()->depthStratum(0)->size();
 
     for(int v = 0; v < numLocalVertices; v++) {
-      ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", v+1);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", vertexCount++);CHKERRQ(ierr);
       for(int d = 0; d < dim; d++) {
         if (d > 0) {
           ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
@@ -260,6 +261,7 @@ PetscErrorCode WritePCICEVertices(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer vie
       ierr = PetscMalloc(numLocalVertices*dim * sizeof(double), &remoteCoords);CHKERRQ(ierr);
       ierr = MPI_Recv(remoteCoords, numLocalVertices*dim, MPI_DOUBLE, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
       for(int v = 0; v < numLocalVertices; v++) {
+        ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", vertexCount++);CHKERRQ(ierr);
         for(int d = 0; d < dim; d++) {
           if (d > 0) {
             ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);

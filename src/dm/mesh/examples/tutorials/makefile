@@ -91,7 +91,30 @@ testex1_3:
     if (${DIFF} data/ex1_3d.nodes testMesh.nodes) then true; \
 	else echo "Possible problem with ex1_3, diffs above"; fi
 
-TESTEXAMPLES_C  		  = ex1.PETSc runex1 ex1.rm
+testex1_4:
+	-@${MPIRUN} -np 5 ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file data/bm1b/bm1b > /dev/null 2>&1; \
+    if (${DIFF} data/bm1b/bm1b.0.connect testMesh.0.connect) then true; \
+	else echo "Possible problem with ex1_4, diffs above"; fi; \
+    if (${DIFF} data/bm1b/bm1b.0.coord testMesh.0.coord) then true; \
+	else echo "Possible problem with ex1_4, diffs above"; fi; \
+    if (${DIFF} data/bm1b/bm1b.1.connect testMesh.1.connect) then true; \
+	else echo "Possible problem with ex1_4, diffs above"; fi; \
+    if (${DIFF} data/bm1b/bm1b.1.coord testMesh.1.coord) then true; \
+	else echo "Possible problem with ex1_4, diffs above"; fi; \
+    if (${DIFF} data/bm1b/bm1b.2.connect testMesh.2.connect) then true; \
+	else echo "Possible problem with ex1_4, diffs above"; fi; \
+    if (${DIFF} data/bm1b/bm1b.2.coord testMesh.2.coord) then true; \
+	else echo "Possible problem with ex1_4, diffs above"; fi; \
+    if (${DIFF} data/bm1b/bm1b.3.connect testMesh.3.connect) then true; \
+	else echo "Possible problem with ex1_4, diffs above"; fi; \
+    if (${DIFF} data/bm1b/bm1b.3.coord testMesh.3.coord) then true; \
+	else echo "Possible problem with ex1_4, diffs above"; fi; \
+    if (${DIFF} data/bm1b/bm1b.4.connect testMesh.4.connect) then true; \
+	else echo "Possible problem with ex1_4, diffs above"; fi; \
+    if (${DIFF} data/bm1b/bm1b.4.coord testMesh.4.coord) then true; \
+	else echo "Possible problem with ex1_4, diffs above"; fi
+
+TESTEXAMPLES_C  		  = ex1.PETSc testex1_1 testex1_2 testex1_3 testex1_4 ex1.rm
 TESTEXAMPLES_C_X11  	  = 
 TESTEXAMPLES_FORTRAN	  = 
 TESTEXAMPLES_F90          = 
