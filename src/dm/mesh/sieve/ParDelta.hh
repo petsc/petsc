@@ -115,6 +115,22 @@ namespace ALE {
       virtual iterator end()   { return iterator(this->_target, this->_arr_ptr+this->_seq_size); };
       virtual size_t   size()  { return this->_seq_size; };
       virtual bool     empty() { return (this->size() == 0); };
+
+      template<typename ostream_type>
+      void view(ostream_type& os, const bool& useColor = false, const char* label = NULL){
+        if(label != NULL) {
+          os << "Viewing " << label << " sequence:" << std::endl;
+        } 
+        os << "[";
+        for(iterator i = this->begin(); i != this->end(); i++) {
+          os << " (" << *i;
+          if(useColor) {
+            os << "," << i.color();
+          }
+          os  << ")";
+        }
+        os << " ]" << std::endl;
+      };
     };// class ConeArraySequence
 
 
@@ -1073,7 +1089,8 @@ namespace ALE {
             // Wrap the arrived cone in a cone_array_sequence
             cone_array_sequence rcone(NeighborOffsetIn, coneSizeIn, p);
             if(debug) { /* ---------------------------------------------------------------------------------------*/
-              txt << "[" << rank << "]: "<<__FUNCT__<< ": received a cone of size " << coneSizeIn << " from "<<*ci<< std::endl;
+              txt << "[" << rank << "]: "<<__FUNCT__<< ": received a cone over " << p << " of size " << coneSizeIn << " from rank "<<*ci<< ":" << std::endl;
+              rcone.view(txt, true);
             }/* --------------------------------------------------------------------------------------------------*/
             // Fuse the cones
             fuser->fuseCones(lcone, rcone, fusion->cone(fuser->fuseBasePoints(p,p)));
