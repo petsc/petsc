@@ -3117,7 +3117,7 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg)
      MatCreateSeqAIJWithArrays - Creates an sequential AIJ matrix using matrix elements (in CSR format)
               provided by the user.
 
-      Coolective on MPI_Comm
+      Collective on MPI_Comm
 
    Input Parameters:
 +   comm - must be an MPI communicator of size 1

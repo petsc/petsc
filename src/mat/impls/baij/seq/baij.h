@@ -45,7 +45,8 @@
   Mat              XtoY;             /* used by MatAXPY() */                                         \
   PetscScalar      *idiag;           /* inverse of block diagonal  */                                \
   PetscTruth       idiagvalid;       /* if above has correct/current values */                       \
-  Mat_CompressedRow compressedrow;   /* use compressed row format */
+  Mat_CompressedRow compressedrow;   /* use compressed row format */                                 \
+  PetscTruth       freedata;         /* free the i,j,a data when the matrix is destroyed; true by default */
 
 typedef struct {
   SEQBAIJHEADER

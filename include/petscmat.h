@@ -857,6 +857,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInodeGetInodeSizes(Mat,PetscInt *,Pe
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetColumnIndices(Mat,PetscInt[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetColumnIndices(Mat,PetscInt[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqSBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],Mat*);
 
 #define MAT_SKIP_ALLOCATION -4
 

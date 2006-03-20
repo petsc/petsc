@@ -99,7 +99,9 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)A,"Rows=%D, NZ=%D",A->rmap.N,a->nz);
 #endif
-  ierr = MatSeqXAIJFreeAIJ(a->singlemalloc,&a->a,&a->j,&a->i);CHKERRQ(ierr);
+  if (a->freedata){
+    ierr = MatSeqXAIJFreeAIJ(a->singlemalloc,&a->a,&a->j,&a->i);CHKERRQ(ierr);
+  }
   if (a->row) {
     ierr = ISDestroy(a->row);CHKERRQ(ierr);
   }
@@ -2122,6 +2124,80 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   PetscFunctionReturn(0);
 } 
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateSeqSBAIJWithArrays"
+/*@
+     MatCreateSeqSBAIJWithArrays - Creates an sequential SBAIJ matrix using matrix elements 
+              (upper triangular entries in CSR format) provided by the user.
+
+     Collective on MPI_Comm
+
+   Input Parameters:
++  comm - must be an MPI communicator of size 1
+.  bs - size of block
+.  m - number of rows
+.  n - number of columns
+.  i - row indices
+.  j - column indices
+-  a - matrix values
+
+   Output Parameter:
+.  mat - the matrix
+
+   Level: intermediate
+
+   Notes:
+       The i, j, and a arrays are not copied by this routine, the user must free these arrays
+    once the matrix is destroyed
+
+       You cannot set new nonzero locations into this matrix, that will generate an error.
+
+       The i and j indices are 0 based
+
+.seealso: MatCreate(), MatCreateMPISBAIJ(), MatCreateSeqSBAIJ()
+
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqSBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,PetscInt* i,PetscInt*j,PetscScalar *a,Mat *mat)
+{
+  PetscErrorCode ierr;
+  PetscInt       ii;
+  Mat_SeqSBAIJ   *sbaij;
+
+  PetscFunctionBegin;
+  if (bs != 1) SETERRQ1(PETSC_ERR_SUP,"block size %D > 1 is not supported yet",bs);
+  if (i[0]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
+  
+  ierr = MatCreate(comm,mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mat,m,n,m,n);CHKERRQ(ierr);
+  ierr = MatSetType(*mat,MATSEQSBAIJ);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(*mat,bs,MAT_SKIP_ALLOCATION,0);CHKERRQ(ierr);
+  sbaij = (Mat_SeqSBAIJ*)(*mat)->data;
+  ierr = PetscMalloc2(m,PetscInt,&sbaij->imax,m,PetscInt,&sbaij->ilen);CHKERRQ(ierr);
+
+  sbaij->i = i;
+  sbaij->j = j;
+  sbaij->a = a;
+  sbaij->singlemalloc = PETSC_FALSE;
+  sbaij->nonew        = -1;             /*this indicates that inserting a new value in the matrix that generates a new nonzero is an error*/
+  sbaij->freedata     = PETSC_FALSE; 
+
+  for (ii=0; ii<m; ii++) {
+    sbaij->ilen[ii] = sbaij->imax[ii] = i[ii+1] - i[ii];
+#if defined(PETSC_USE_DEBUG)
+    if (i[ii+1] - i[ii] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %d length = %d",ii,i[ii+1] - i[ii]);
+#endif    
+  }
+#if defined(PETSC_USE_DEBUG)
+  for (ii=0; ii<sbaij->i[m]; ii++) {
+    if (j[ii] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Negative column index at location = %d index = %d",ii,j[ii]);
+    if (j[ii] > n - 1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column index to large at location = %d index = %d",ii,j[ii]);
+  }
+#endif    
+
+  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 
