@@ -145,11 +145,11 @@ namespace ALE {
       // Here we specialize to Sifters based on Points in order to enable parallel overlap discovery.
       // We also assume that the Points in the base are ordered appropriately so we can use baseSequence.begin() and 
       // baseSequence.end() as the extrema for global reduction.
-      typedef ParConeDelta<ParSifter_, Fuser_, FusionSifter_>                                  delta_type;
+      typedef ParConeDelta<ParSifter_, Fuser_, FusionSifter_>                                   delta_type;
       typedef ParSifter_                                                                        graph_type;
-      typedef Fuser_                                                                             fuser_type;
+      typedef Fuser_                                                                            fuser_type;
       // These are default "return" types, although methods are templated on their main input/return types
-      typedef ASifter<int, ALE::Point, ALE::pair<int,int>, uniColor>                            overlap_type;
+      typedef ASifter<int, ALE::Point, ALE::pair<ALE::Point, ALE::pair<int,int> >, uniColor>    overlap_type;
       typedef FusionSifter_                                                                     fusion_type;
 
       //
@@ -814,7 +814,7 @@ namespace ALE {
             int32_t coneSize = Neighbors[cntr++];
             // Record the size of the cone over p coming in from neighbor and going out to the neighbor as a pair of integers
             // which is the color of the overlap arrow from neighbor to p
-            overlap->addArrow(neighbor, p, ALE::pair<int,int>(coneSize, _graph->cone(p)->size()) ); 
+            overlap->addArrow(neighbor, p, ALE::pair<Point,ALE::pair<int,int> >(p, ALE::pair<int,int>(coneSize, _graph->cone(p)->size())) ); 
           }
         }// for(int32_t i = 0; i < LeasedNodeCount; i++)
 
@@ -873,7 +873,7 @@ namespace ALE {
           for(typename Overlap_::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
             // FIX: replace si.color() type: Point --> ALE::pair
             //coneSizeIn += si.color().prefix;
-            coneSizeIn += si.color().first;
+            coneSizeIn += si.color().second.first;
           }
           if(coneSizeIn > 0) {
             // Accumulate the total cone size
@@ -963,7 +963,7 @@ namespace ALE {
           for(typename Overlap_::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++) {
             // FIX: replace si.color() Point --> ALE::pair
             //coneSizeOut += si.color().index;
-            coneSizeOut += si.color().second;
+            coneSizeOut += si.color().second.second;
           }
           if(coneSizeOut > 0) {
             // Accumulate the total cone size
@@ -1082,7 +1082,7 @@ namespace ALE {
           {
             Point p = *si;
             //int32_t coneSizeIn = si.color().prefix; // FIX: color() type Point --> ALE::Two::pair
-            int32_t coneSizeIn = si.color().first;
+            int32_t coneSizeIn = si.color().second.first;
             // NOTE: coneSizeIn may be 0, which is legal, since the fuser in principle can operate on an empty cone.
             // Extract the local cone into a coneSequence
             typename graph_type::traits::coneSequence lcone = _graph->cone(p);
@@ -1244,7 +1244,7 @@ namespace ALE {
       typedef ParSupportDelta<ParSifter_, Fuser_, FusionSifter_>                                delta_type;
       typedef ParSifter_                                                                        graph_type;
       typedef Fuser_                                                                            fuser_type;
-      typedef ASifter<ALE::Point, int, ALE::pair<int,int>, uniColor>                        overlap_type;
+      typedef ASifter<ALE::Point, int, ALE::pair<ALE::Point, ALE::pair<int,int> >, uniColor>    overlap_type;
       typedef FusionSifter_                                                                     fusion_type;
       //
 
@@ -1288,6 +1288,9 @@ namespace ALE {
         Obj<Flip<Fusion_> >    fusion_flip  = Flip<Fusion_>(fusion);
         ParConeDelta<Flip<graph_type>, fuser_type, Flip<fusion_type> >::computeFusion(graph_flip, overlap_flip, fusion_flip);
       };      
+    public:
+      static void setDebug(int debug) {ParConeDelta<Flip<graph_type>, fuser_type, Flip<fusion_type> >::setDebug(debug);};
+      static int  getDebug() {return ParConeDelta<Flip<graph_type>, fuser_type, Flip<fusion_type> >::getDebug();};
     }; // class ParSupportDelta
   
 } // namespace ALE

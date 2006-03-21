@@ -961,7 +961,7 @@ namespace ALE {
         if (mesh->distributed) {
           serialMesh = mesh->unify();
 
-          serialConstraints->setTopology(mesh->getTopology());
+          serialConstraints->setTopology(serialMesh->getTopology());
           serialConstraints->setPatch(serialMesh->getTopology()->leaves(), patch);
           serialConstraints->setFiberDimensionByHeight(patch, 0, 1);
           serialConstraints->orderPatches();
@@ -1269,11 +1269,12 @@ namespace ALE {
           }
         }
         // Support complete to build the local topology
-        //supportDelta_type::setDebug(mesh->debug);
+        supportDelta_type::setDebug(mesh->debug);
         Obj<supportDelta_type::overlap_type> overlap2 = supportDelta_type::overlap(topology);
         Obj<supportDelta_type::fusion_type>  fusion2  = supportDelta_type::fusion(topology, overlap2);
         topology->add(fusion2);
         if (mesh->debug) {
+          overlap2->view("Second overlap");
           fusion2->view("Second fusion");
           topology->view("After merging second fusion");
         }
@@ -1518,6 +1519,7 @@ namespace ALE {
       topology->setStratification(false);
       // Partition the topology
       ALE::Two::Partitioner::unify(*this, serialMesh);
+      topology->view("Serial mesh before stratification");
       topology->stratify();
       topology->setStratification(true);
       if (serialMesh->debug) {
