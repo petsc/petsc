@@ -20,7 +20,6 @@ typedef struct {
   PetscTruth       permute;        /* if true, a non-trivial permutation is used for factorization */
   PetscTruth       ignore_ltriangular; /* if true, ignore the lower triangular values inserted by users */
   PetscTruth       getrow_utriangular; /* if true, MatGetRow_SeqSBAIJ() is enabled to get the upper part of the row */
-  PetscTruth       freedata;           /* free the i,j,a data when the matrix is destroyed; true by default */
 } Mat_SeqSBAIJ;
 
 EXTERN_C_BEGIN
