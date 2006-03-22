@@ -1,4 +1,4 @@
-#include "src/contrib/semiLagrange/characteristicimpl.h"
+#include "src/contrib/semiLagrange/characteristicimpl.h" /*I "src/contrib/semiLagrange/characteristic.h" I*/
 
 PetscCookie CHARACTERISTIC_COOKIE = 0;
 PetscEvent  CHARACTERISTIC_SetUp = 0, CHARACTERISTIC_Solve = 0, CHARACTERISTIC_QueueSetup = 0, CHARACTERISTIC_DAUpdate = 0;
