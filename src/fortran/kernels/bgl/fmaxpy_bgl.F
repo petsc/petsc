@@ -13,7 +13,6 @@
       PetscScalar y1(*),y2(*),y3(*)
       PetscInt n, i
 
-      write(6,*) 'n=', n
       call flush_(6)
 
       call ALIGNX(16,x(1))
