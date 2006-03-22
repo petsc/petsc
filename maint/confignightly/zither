@@ -1,6 +1,6 @@
 #! /bin/csh
 #
-set MACH=rockies
+set MACH=zither
 set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev
 set TAO_LOC=/sandbox/petsc/tao-devel
