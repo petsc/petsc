@@ -96,12 +96,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetMatPreallocateOnly(DA da,PetscTruth only)
 
            The format for dfill and ofill is a 2 dimensional dof by dof matrix with 1 entries
        representing coupling and 0 entries for missing coupling. For example 
-$             dfill[3][3] = {1, 0, 0,
-$                            1, 1, 0,
-$                            0, 1, 1} 
+$             dfill[9] = {1, 0, 0,
+$                         1, 1, 0,
+$                         0, 1, 1} 
        means that row 0 is coupled with only itself in the diagonal block, row 1 is coupled with 
        itself and row 0 (in the diagonal block) and row 2 is coupled with itself and row 1 (in the 
-       diagonal block.
+       diagonal block).
 
      DASetGetMatrix() allows you to provide general code for those more complicated nonzero patterns then
      can be represented in the dfill, ofill format

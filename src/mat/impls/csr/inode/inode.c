@@ -1315,12 +1315,8 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         }
 
         sctx.rs  = rs; 
-        ierr = MatLUCheckShift_inline(info,sctx,row,aa,a->diag,newshift);CHKERRQ(ierr);
-        if (newshift == 1){
-          goto endofwhile;
-        } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G, inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
-        }
+        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+        if (newshift == 1) goto endofwhile;
         break;
       
       case 2:
@@ -1392,12 +1388,8 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           
           sctx.rs  = rs; 
           sctx.pv  = *pc1;
-          ierr = MatLUCheckShift_inline(info,sctx,row,aa,a->diag,newshift);CHKERRQ(ierr);
-          if (newshift == 1){
-            goto endofwhile; /* sctx.shift_amount is updated */
-          } else if (newshift == -1){
-            SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
-          }
+          ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+          if (newshift == 1) goto endofwhile;
         }
  
         nz  = bi[row+1] - bi[row];
@@ -1418,20 +1410,12 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
 
         sctx.pv = 1.0/rtmp1[row]; /* rtmp1[row] = 1.0/diag[row] */
         sctx.rs = rsum[0];
-        ierr = MatLUCheckShift_inline(info,sctx,row,aa,a->diag,newshift);CHKERRQ(ierr);
-        if (newshift == 1){
-          goto endofwhile;
-        } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
-        }
+        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+        if (newshift == 1) goto endofwhile;
         sctx.pv = 1.0/rtmp2[row+1]; 
         sctx.rs = rsum[1];
-        ierr = MatLUCheckShift_inline(info,sctx,row,aa,a->diag,newshift);CHKERRQ(ierr);
-        if (newshift == 1){
-          goto endofwhile;
-        } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D",row+1,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
-        }
+        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+        if (newshift == 1) goto endofwhile;
         break;
 
       case 3:
@@ -1502,12 +1486,8 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
 
           sctx.rs = 1.0; /* for simplicity, set rs=1.0 */
           sctx.pv = *pc1;
-          ierr = MatLUCheckShift_inline(info,sctx,row,aa,a->diag,newshift);CHKERRQ(ierr);
-          if (newshift == 1){
-            goto endofwhile;
-          } else if (newshift == -1){
-            SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
-          }
+          ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+          if (newshift == 1) goto endofwhile;
 
           mul2 = (*pc2)/(*pc1);
           mul3 = (*pc3)/(*pc1);
@@ -1531,12 +1511,8 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
 
           sctx.rs  = 1.0; /* for simplicity, set rs=1.0 */
           sctx.pv  = *pc2;
-          ierr = MatLUCheckShift_inline(info,sctx,row,a->a,a->diag,newshift);CHKERRQ(ierr);
-          if (newshift == 1){
-            goto endofwhile;
-          } else if (newshift == -1){
-            SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
-          }
+          ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+          if (newshift == 1) goto endofwhile;
           mul3 = (*pc3)/(*pc2);
           *pc3 = mul3;
           nz   = bi[prow+1] - bd[prow] - 1;
@@ -1571,28 +1547,16 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         /* sctx.rs = rs/3.0; */
         sctx.pv = 1.0/rtmp1[row];
         sctx.rs = rsum[0];
-        ierr = MatLUCheckShift_inline(info,sctx,row,aa,a->diag,newshift);CHKERRQ(ierr);
-        if (newshift == 1){
-          goto endofwhile;
-        } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
-        }
+        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+        if (newshift == 1) goto endofwhile;
         sctx.pv = 1.0/rtmp2[row+1];
         sctx.rs = rsum[1];
-        ierr = MatLUCheckShift_inline(info,sctx,row,aa,a->diag,newshift);CHKERRQ(ierr);
-        if (newshift == 1){
-          goto endofwhile;
-        } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D, 2nd row",row+1,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
-        }
+        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+        if (newshift == 1) goto endofwhile;
         sctx.pv = 1.0/rtmp3[row+2];
         sctx.rs = rsum[2];
-        ierr = MatLUCheckShift_inline(info,sctx,row,aa,a->diag,newshift);CHKERRQ(ierr);
-        if (newshift == 1){
-          goto endofwhile;
-        } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G inode.size %D, 3rd row",row+2,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
-        }
+        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+        if (newshift == 1) goto endofwhile;
         break;
       default:
         SETERRQ(PETSC_ERR_COR,"Node size not yet supported \n");
