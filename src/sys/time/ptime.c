@@ -17,9 +17,9 @@
       #include "petsctime.h"
 
       PetscLogDouble v1,v2,elapsed_time;
-      ierr = PetscGetTime(&v1);CHKERR(ierr);
+      ierr = PetscGetTime(&v1);CHKERRQ(ierr);
       .... perform some calculation ...
-      ierr = PetscGetTime(&v2);CHKERR(ierr);
+      ierr = PetscGetTime(&v2);CHKERRQ(ierr);
       elapsed_time = v2 - v1;   
 .ve
 
