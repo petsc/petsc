@@ -114,6 +114,35 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintf(FILE *fd,const char *format,va_list
   return 0;
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSNPrintf" 
+/*@C
+    PetscSNPrintf - Prints to a string of given length
+
+    Not Collective
+
+    Input Parameters:
++   str - the string to print to
+.   len - the length of str
+.   format - the usual printf() format string 
+-   any arguments
+
+   Level: intermediate
+
+.seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), PetscVSNPrintf(),
+          PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscSNPrintf(char *str,size_t len,const char format[],...)
+{
+  PetscErrorCode ierr;
+  va_list        Argp;
+
+  PetscFunctionBegin;
+  va_start(Argp,format);
+  ierr = PetscVSNPrintf(str,len,format,Argp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* ----------------------------------------------------------------------- */
 
 PrintfQueue queue       = 0,queuebase = 0;

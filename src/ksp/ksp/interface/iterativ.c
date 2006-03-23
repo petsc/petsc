@@ -510,7 +510,7 @@ PetscErrorCode KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   Mat            Amat,Pmat;
 
   PetscFunctionBegin;
-  PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   ierr = KSPBuildSolution(ksp,t,PETSC_NULL);CHKERRQ(ierr);
   ierr = KSP_MatMult(ksp,Amat,t,v);CHKERRQ(ierr);
   ierr = VecAYPX(v,-1.0,ksp->vec_rhs);CHKERRQ(ierr);

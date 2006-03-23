@@ -982,7 +982,7 @@ PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
     ierr = ISDestroy(bjac->is[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(jac->ksp);CHKERRQ(ierr);
-  ierr = PetscFree(bjac->x);CHKERRQ(ierr);
+  ierr = PetscFree2(bjac->x,bjac->y);CHKERRQ(ierr);
   ierr = PetscFree(bjac->starts);CHKERRQ(ierr);
   ierr = PetscFree(bjac->is);CHKERRQ(ierr);
   ierr = PetscFree(bjac);CHKERRQ(ierr);
@@ -1117,7 +1117,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     if (mat->type != pmat->type) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices not of same type");
   }
 
-  /* set default direct solver with no Krylov method */
   if (!pc->setupcalled) {
     scall                  = MAT_INITIAL_MATRIX;
     pc->ops->destroy       = PCDestroy_BJacobi_Multiblock;
@@ -1129,9 +1128,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     ierr = PetscLogObjectMemory(pc,sizeof(PC_BJacobi_Multiblock));CHKERRQ(ierr);
     ierr = PetscMalloc(n_local*sizeof(KSP),&jac->ksp);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(pc,sizeof(n_local*sizeof(KSP)));CHKERRQ(ierr);
-    ierr = PetscMalloc(2*n_local*sizeof(Vec),&bjac->x);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(pc,sizeof(2*n_local*sizeof(Vec)));CHKERRQ(ierr);
-    bjac->y      = bjac->x + n_local;
+    ierr = PetscMalloc2(n_local,Vec,&bjac->x,n_local,Vec,&bjac->y);CHKERRQ(ierr);
     ierr = PetscMalloc(n_local*sizeof(PetscScalar),&bjac->starts);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(pc,sizeof(n_local*sizeof(PetscScalar)));CHKERRQ(ierr);
     

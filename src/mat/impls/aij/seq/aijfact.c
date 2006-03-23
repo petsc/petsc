@@ -406,6 +406,30 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   PetscFunctionReturn(0); 
 }
 
+/*
+    Trouble in factorization, should we dump the original matrix?
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorDumpMatrix"
+PetscErrorCode MatFactorDumpMatrix(Mat A)
+{
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_factor_dump_on_error",&flg);CHKERRQ(ierr);
+  if (flg) {
+    PetscViewer viewer;
+    char        filename[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"matrix_factor_error.%d",PetscGlobalRank);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(A->comm,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    ierr = MatView(A,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ"
@@ -418,7 +442,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       *r,*ic,i,j,n=A->rmap.n,*bi=b->i,*bj=b->j;
   PetscInt       *ajtmp,*bjtmp,nz,row,*ics;
   PetscInt       *diag_offset = b->diag,diag,*pj;
-  PetscScalar    *rtmp,*v,*pc,multiplier,*pv,*rtmps,*aa=a->a;
+  PetscScalar    *rtmp,*v,*pc,multiplier,*pv,*rtmps;
   PetscScalar    d;
   PetscReal      rs;
   LUShift_Ctx    sctx;
@@ -508,12 +532,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
       sctx.rs  = rs;
       sctx.pv  = pv[diag];
-      ierr = MatLUCheckShift_inline(info,sctx,i,aa,a->diag,newshift);CHKERRQ(ierr);
-      if (newshift == 1){
-        break;    /* sctx.shift_amount is updated */
-      } else if (newshift == -1){
-        SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G",i,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
-      }
+      ierr = MatLUCheckShift_inline(info,sctx,i,a->diag,newshift);CHKERRQ(ierr);
+      if (newshift == 1) break;
     } 
 
     if (info->shiftpd && !sctx.lushift && info->shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
@@ -1190,12 +1210,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
 
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr = MatCholeskyCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr); 
-      if (newshift == 1){
-        break;    /* sctx.shift_amount is updated */
-      } else if (newshift == -1){
-        SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G",k,PetscAbsScalar(dk),zeropivot,rs);
-      }
+      ierr = MatCholeskyCheckShift_inline(info,sctx,k,newshift);CHKERRQ(ierr); 
+      if (newshift == 1) break;
    
       /* copy data into U(k,:) */
       ba[bi[k]] = 1.0/dk; /* U(k,k) */

@@ -1525,7 +1525,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
     ierr = PetscLogObjectParent((PetscObject)ksp,w);CHKERRQ(ierr);
   }
   if (!tt) {
-    ierr = VecDuplicate(ksp->vec_rhs,&tt);CHKERRQ(ierr); flag = PETSC_TRUE;
+    ierr = VecDuplicate(ksp->vec_sol,&tt);CHKERRQ(ierr); flag = PETSC_TRUE;
     ierr = PetscLogObjectParent((PetscObject)ksp,tt);CHKERRQ(ierr);
   }
   ierr = (*ksp->ops->buildresidual)(ksp,tt,w,V);CHKERRQ(ierr);

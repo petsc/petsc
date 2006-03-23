@@ -416,6 +416,8 @@ typedef struct {
   PetscScalar    pv;  /* pivot of the active row */
 } LUShift_Ctx;
 
+EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUCheckShift_inline"
 /*@C
@@ -427,7 +429,6 @@ typedef struct {
 +  info - information about the matrix factorization 
 .  sctx - pointer to the struct LUShift_Ctx
 .  row  - active row index
-.  aval - values of unfactored matrix
 -  idiag - index of diagonals in array aval
 
    Output  Parameter:
@@ -435,7 +436,7 @@ typedef struct {
 
    Level: developer
 @*/
-#define MatLUCheckShift_inline(info,sctx,row,aval,idiag,newshift) 0;\
+#define MatLUCheckShift_inline(info,sctx,row,idiag,newshift) 0;\
 {\
   PetscInt _newshift;\
   PetscReal _zero = info->zeropivot*rs;\
@@ -452,6 +453,7 @@ typedef struct {
   } else if (info->shiftpd && PetscRealPart(sctx.pv) <= _zero){\
     /* force matfactor to be diagonally dominant */\
     if (sctx.nshift > sctx.nshift_max) {\
+      ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
       SETERRQ1(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner after %d tries",sctx.nshift);\
     } else if (sctx.nshift == sctx.nshift_max) {\
       info->shift_fraction = sctx.shift_hi;\
@@ -465,16 +467,8 @@ typedef struct {
     sctx.nshift++;\
     _newshift = 1;\
   } else if (PetscAbsScalar(sctx.pv) <= _zero){\
-    _newshift = -1;\
-    if (rs > 1.e100){\
-       PetscInt row_start,row_end,_i;\
-       ierr = PetscPrintf(PETSC_COMM_SELF," Frightening large rs %g, diagonals of the original matrix: \n",rs);\
-       row_start = PetscMax(row-10,0);\
-       row_end   = PetscMin(row+10,n);\
-       for (_i=row_start; _i<row_end; _i++){\
-         ierr = PetscPrintf(PETSC_COMM_SELF,"|diag[%d]| = %g\n",_i,PetscAbsScalar(aval[idiag[_i]]));\
-       }\
-    }\
+    ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
+    SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G",row,PetscAbsScalar(sctx.pv),_zero,rs); \
   } else {\
     _newshift = 0;\
   }\
@@ -510,7 +504,7 @@ typedef struct {
        this algorithm converges faster or slower, or is better or worse
        than the ILU algorithm. 
 @*/
-#define MatCholeskyCheckShift_inline(info,sctx,newshift) 0;\
+#define MatCholeskyCheckShift_inline(info,sctx,row,newshift) 0;	\
 {\
   PetscInt _newshift;\
   PetscReal _zero = info->zeropivot*rs;\
@@ -531,7 +525,7 @@ typedef struct {
     sctx.nshift++;\
     _newshift = 1;\
   } else if (PetscAbsScalar(sctx.pv) <= _zero){\
-    _newshift = -1;\
+    SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G",row,PetscAbsScalar(sctx.pv),_zero,rs); \
   } else {\
     _newshift = 0; \
   }\
