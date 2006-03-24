@@ -114,13 +114,28 @@ testex1_4:
     if (${DIFF} data/bm1b/bm1b.4.coord testMesh.4.coord) then true; \
 	else echo "Possible problem with ex1_4, diffs above"; fi
 
-TESTEXAMPLES_C  		  = ex1.PETSc testex1_1 testex1_2 testex1_3 testex1_4 ex1.rm
+testex2_1:
+	-@${MPIRUN} -np 1 ./ex2 -dim 2 -refinement_limit 0.0625 > /dev/null 2>&1; \
+    if (${DIFF} data/ex2_1.vtk testMesh.vtk) then true; \
+	else echo "Possible problem with ex2_1, diffs above"; fi
+
+testex2_2:
+	-@${MPIRUN} -np 2 ./ex2 -dim 2 -refinement_limit 0.0625 > /dev/null 2>&1; \
+    if (${DIFF} data/ex2_1.vtk testMesh.vtk) then true; \
+	else echo "Possible problem with ex2_1, diffs above"; fi
+
+testex2_3:
+	-@${MPIRUN} -np 3 ./ex2 -dim 2 -refinement_limit 0.0625 > /dev/null 2>&1; \
+    if (${DIFF} data/ex2_1.vtk testMesh.vtk) then true; \
+	else echo "Possible problem with ex2_1, diffs above"; fi
+
+TESTEXAMPLES_SIEVE 		  = ex1.PETSc testex1_1 testex1_2 testex1_3 testex1_4 ex1.rm ex2.PETSc testex2_1 testex2_2 testex2_3 ex2.rm
+TESTEXAMPLES_C  		  = 
 TESTEXAMPLES_C_X11  	  = 
 TESTEXAMPLES_FORTRAN	  = 
 TESTEXAMPLES_F90          = 
 TESTEXAMPLES_C_X11_MPIUNI = 
 TESTEXAMPLES_C_COMPLEX	  = 
 TESTEXAMPLES_C_NOCOMPLEX  = 
-TESTEXAMPLES_13		      = 
 
 include ${PETSC_DIR}/bmake/common/test

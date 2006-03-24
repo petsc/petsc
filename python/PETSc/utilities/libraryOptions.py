@@ -20,7 +20,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-log=<bool>',              nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))    
     help.addArgument('PETSc', '-with-info=<bool>',             nargs.ArgBool(None, 1, 'Activate PetscInfo() (i.e. -info)  code in PETSc'))
     help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Activate CTABLE hashing for certain search functions - to conserve memory'))
-    help.addArgument('PETSc', '-with-sieve=<bool>',            nargs.ArgBool(None, 0, 'Activate SIEVE mesh functionality[requires cxx]'))
     help.addArgument('PETSc', '-with-fortran-kernels=<none,generic,bgl>',  nargs.ArgString(None, None, 'Use Fortran for linear algebra kernels'))
     help.addArgument('PETSc', '-with-64-bit-indices=<bool>',   nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
     help.addArgument('PETSc', '-with-is-color-value-type=<char,short>',nargs.ArgString(None, 'char', 'char, short can store 256, 65536 colors'))
@@ -61,10 +60,6 @@ class Configure(config.base.Configure):
     self.useCtable = self.framework.argDB['with-ctable']
     if self.useCtable:
       self.addDefine('USE_CTABLE', '1')
-
-    self.useSieve = self.framework.argDB['with-sieve']
-    if self.useSieve:
-      self.addDefine('USE_SIEVE', '1')
 
     # If user doesn't specify this option - automatically enable bgl-kernels for IBM-bgl-crosscompilers
     if 'with-fortran-kernels' not in self.framework.argDB and self.isBGL():

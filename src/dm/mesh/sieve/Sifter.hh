@@ -662,6 +662,10 @@ namespace ALE {
       arrows(const typename traits::source_type& s, const typename traits::target_type& t) {
         return typename traits::arrowSequence(::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set), s, t);
       };
+      Obj<typename traits::arrowSequence> 
+      arrows(const typename traits::source_type& s) {
+        return typename traits::arrowSequence(::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set), s);
+      };
       Obj<typename traits::coneSequence> 
       cone(const typename traits::target_type& p) {
         return typename traits::coneSequence(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), p);

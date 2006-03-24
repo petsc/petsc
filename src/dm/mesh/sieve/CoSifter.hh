@@ -122,6 +122,9 @@ namespace ALE {
         for(typename pointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           this->_order->addArrow(*p_iter, patch, point_type(c++, 0));
         }
+        if (points->begin() == points->end()) {
+          this->_order->addBasePoint(patch);
+        }
       };
       Obj<bundle_type> getGlobalOrder() const {
         return this->globalOrder;
