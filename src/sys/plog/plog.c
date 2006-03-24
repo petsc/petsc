@@ -1506,6 +1506,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
         ierr = MPI_Allreduce(&ierr,                           &maxCt, 1, MPI_INT,             MPI_MAX, comm);CHKERRQ(ierr);
         name = "";
       }
+      if (mint < 0.0) SETERRQ2(PETSC_ERR_PLIB,"Minimum time %g over all processors for %s is negative! Not possible!",mint,name);
+      if (minf < 0.0) SETERRQ2(PETSC_ERR_PLIB,"Minimum flops %g over all processors for %s is negative! Not possible!",minf,name);
       totm *= 0.5; totml *= 0.5; totr /= size;
      
       if (maxCt != 0) {
