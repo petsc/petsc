@@ -380,7 +380,7 @@ namespace ALE {
       }
       // -- Value manipulation --
     private:
-      void __checkPatch(const patch_type& patch) {
+      void __checkPatch(const patch_type& patch) const {
         if (this->_storage.find(patch) != this->_storage.end()) return;
         ostringstream msg;
 
@@ -504,12 +504,17 @@ namespace ALE {
 
           txt << "[" << this->commRank() << "]: Patch " << patch << std::endl;
           Obj<typename order_type::coneSequence> cone = this->getPatch(s_iter->first);
+          const value_type *array = ((std::map<patch_type,value_type *>) _storage)[s_iter->first];
 
           for(typename order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
             index_type color = this->_order->getColor(*c_iter, s_iter->first, false);
 
             if (color.index != 0) {
-              txt << "[" << this->commRank() << "]:   " << *c_iter << " dim " << color.index << " offset " << color.prefix << std::endl;
+              txt << "[" << this->commRank() << "]:   " << *c_iter << " dim " << color.index << " offset " << color.prefix << "  ";
+              for(int i = 0; i < color.index; i++) {
+                txt << " " << array[color.prefix+i];
+              }
+              txt << std::endl;
             }
           }
         }
@@ -702,6 +707,7 @@ namespace ALE {
         Obj<typename ParConeDelta<order_type>::fusion_type>  fusion  = ParConeDelta<order_type>::fusion(reorder, overlap);
         reorder->add(fusion);
         if (debug) {
+          overlap->view("Reorder fusion");
           fusion->view("Reorder fusion");
           reorder->view("Reorder after adding fusion");
         }
