@@ -723,37 +723,35 @@ namespace ALE {
 
         if (rank == 0) {
           std::string args("pqenzQra");
+          Mesh::field_type::patch_type          patch;
+          std::string                           orderName("element");
           Obj<Mesh::sieve_type::traits::heightSequence> faces = serialTopology->heightStratum(0);
           Obj<Mesh::sieve_type::traits::depthSequence>  vertices = serialTopology->depthStratum(0);
           Obj<Mesh::field_type>                 coordinates = serialMesh->getCoordinates();
-          Mesh::field_type::patch_type          patch;
+          const double                         *array = coordinates->restrict(patch);
           int                                   f = 0;
 
           in.numberofpoints = vertices->size();
           ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
           ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
-          for(Mesh::sieve_type::traits::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
-            const Mesh::field_type::index_type& interval = coordinates->getIndex(patch, *v_itor);
-            const Mesh::field_type::value_type *array = coordinates->restrict(patch, *v_itor);
-
-            for(int d = 0; d < interval.index; d++) {
-              in.pointlist[interval.prefix + d] = array[d];
+          for(int v = 0; v < (int) vertices->size(); ++v) {
+            for(int d = 0; d < 2; d++) {
+              in.pointlist[v*2 + d] = array[v*2 + d];
             }
-            const Mesh::field_type::index_type& vInterval = vertexBundle->getIndex(patch, *v_itor);
-            in.pointmarkerlist[vInterval.prefix] = v_itor.marker();
+          }
+          for(Mesh::sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+            in.pointmarkerlist[vertexBundle->getIndex(patch, *v_iter).prefix] = v_iter.marker();
           }
 
           in.numberofcorners = 3;
           in.numberoftriangles = faces->size();
           ierr = PetscMalloc(in.numberoftriangles * in.numberofcorners * sizeof(int), &in.trianglelist);
           for(Mesh::sieve_type::traits::heightSequence::iterator f_itor = faces->begin(); f_itor != faces->end(); f_itor++) {
-            Obj<Mesh::field_type::IndexArray> intervals = vertexBundle->getIndices("element", *f_itor);
-            int                               v = 0;
+            Obj<Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *f_itor);
+            int                                              v = 0;
 
-            for(Mesh::field_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-              if (i_itor->index) {
-                in.trianglelist[f * in.numberofcorners + v++] = i_itor->prefix;
-              }
+            for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+              in.trianglelist[f * in.numberofcorners + v++] = vertexBundle->getIndex(patch, *c_itor).prefix;
             }
             f++;
           }
@@ -775,9 +773,7 @@ namespace ALE {
               int                                 p = 0;
         
               for(Mesh::sieve_type::traits::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
-                const Mesh::field_type::index_type& vInterval = vertexBundle->getIndex(patch, *c_itor);
-
-                in.segmentlist[interval.prefix * 2 + (p++)] = vInterval.prefix;
+                in.segmentlist[interval.prefix * 2 + (p++)] = vertexBundle->getIndex(patch, *c_itor).prefix;
               }
               in.segmentmarkerlist[interval.prefix] = s_itor.marker();
             }
@@ -960,6 +956,14 @@ namespace ALE {
 
         if (mesh->distributed) {
           serialMesh = mesh->unify();
+
+//           PetscViewer viewer;
+//           PetscViewerCreate(mesh->comm(), &viewer);
+//           PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+//           PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);
+//           PetscViewerFileSetName(viewer, "serialMesh.vtk");
+//           MeshView_Sieve_Newer(mesh, viewer);
+//           PetscViewerDestroy(viewer);
 
           serialConstraints->setTopology(serialMesh->getTopology());
           serialConstraints->setPatch(serialMesh->getTopology()->leaves(), patch);
@@ -1258,6 +1262,8 @@ namespace ALE {
         // Merge in the completion
         topology->add(fusion);
         if (mesh->debug) {
+          overlap->view("Initial overlap");
+          fusion->view("Initial fusion");
           topology->view("After merging inital fusion");
         }
         if(localize) {
@@ -1533,7 +1539,6 @@ namespace ALE {
       serialMesh->coordinates->setPatch(serialMesh->getTopology()->leaves(), patch);
       serialMesh->coordinates->setFiberDimensionByDepth(patch, 0, this->dim);
       serialMesh->coordinates->orderPatches();
-      serialMesh->coordinates->view("Serial coordinates");
 
       VecScatter scatter = serialMesh->createMapping(serialMesh->coordinates, this->coordinates);
       Vec        serialVec, parallelVec;
@@ -1545,6 +1550,7 @@ namespace ALE {
       VecDestroy(serialVec);
       VecDestroy(parallelVec);
       VecScatterDestroy(scatter);
+      serialMesh->coordinates->view("Serial coordinates");
 
       std::string orderName("element");
       Obj<bundle_type> vertexBundle = this->getBundle(0);

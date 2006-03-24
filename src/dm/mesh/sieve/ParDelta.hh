@@ -165,7 +165,20 @@ namespace ALE {
 
       template <typename Overlap_>
       static void computeOverlap(const Obj<graph_type>& graph, Obj<Overlap_>& overlap){
-        __computeOverlap(graph, overlap);
+        __computeOverlapNew(graph, overlap);
+      };
+
+      static Obj<overlap_type> 
+      overlap(const Obj<graph_type> graphA, const Obj<graph_type> graphB) {
+        Obj<overlap_type> overlap = overlap_type(graphA->comm());
+        PetscMPIInt       comp;
+
+        MPI_Comm_compare(graphA->comm(), graphB->comm(), &comp);
+        if (comp != MPI_IDENT) {
+          throw ALE::Exception("Non-matching communicators for overlap");
+        }
+        __computeOverlap(graphA, graphB, overlap);
+        return overlap;
       };
 
       template <typename Overlap_>
@@ -307,6 +320,210 @@ namespace ALE {
 
       //-------------------------------------------------------------------------------------------------------
       #undef  __FUNCT__
+      #define __FUNCT__ "__computeOverlapNew"
+      template <typename Overlap_>
+      static void __computeOverlapNew(const Obj<graph_type>& _graph, Obj<Overlap_>& overlap) {
+        typedef typename graph_type::traits::baseSequence Sequence;
+        MPI_Comm       comm = _graph->comm();
+        int            size = _graph->commSize();
+        int            rank = _graph->commRank();
+        PetscObject    petscObj = _graph->petscObj();
+        PetscMPIInt    tag1, tag2, tag3;
+        PetscErrorCode ierr;
+        // The base we are going to work with
+        Obj<Sequence> points = _graph->base();
+        // 2 ints per processor: number of points we buy and number of sales (0 or 1).
+        int *BuyData;
+        ierr = PetscMalloc(2*size * sizeof(int), &BuyData);CHKERROR(ierr, "Error in PetscMalloc");
+        ierr = PetscMemzero(BuyData, 2*size * sizeof(int));CHKERROR(ierr, "Error in PetscMemzero");
+        // Map from points to the process managing its bin (seller)
+        Point__int owner;
+
+        // determine owners of each base node and save it in a map
+        __determinePointOwners(_graph, points, BuyData, owner);
+
+        int  msgSize = 3;  // A point is 2 ints, and the cone size is 1
+        int  BuyCount = 0; // The number of sellers with which this process (buyer) communicates
+        int *BuySizes;     // The number of points to buy from each seller
+        int *Sellers;      // The process for each seller
+        int *offsets = new int[size];
+        for(int p = 0; p < size; ++p) {BuyCount += BuyData[2*p+1];}
+        ierr = PetscMalloc2(BuyCount,int,&BuySizes,BuyCount,int,&Sellers);CHKERROR(ierr, "Error in PetscMalloc");
+        for(int p = 0, buyNum = 0; p < size; ++p) {
+          if (BuyData[2*p]) {
+            Sellers[buyNum]    = p;
+            BuySizes[buyNum++] = BuyData[2*p];
+          }
+          if (p == 0) {
+            offsets[p] = 0;
+          } else {
+            offsets[p] = offsets[p-1] + msgSize*BuyData[2*(p-1)];
+          }
+        }
+
+        // All points are bought from someone
+        int32_t *BuyPoints;
+        ierr = PetscMalloc(msgSize*points->size() *sizeof(int32_t),&BuyPoints);CHKERROR(ierr,"Error in PetscMalloc");
+        for (typename Sequence::iterator p_itor = points->begin(); p_itor != points->end(); p_itor++) {
+          BuyPoints[offsets[owner[*p_itor]]++] = (*p_itor).prefix;
+          BuyPoints[offsets[owner[*p_itor]]++] = (*p_itor).index;      
+          BuyPoints[offsets[owner[*p_itor]]++] = _graph->cone(*p_itor)->size();
+        }
+        delete [] offsets;
+
+        int  SellCount;      // The number of buyers with which this process (seller) communicates
+        int *SellSizes;      // The number of points to sell to each buyer
+        int *Buyers;         // The process for each buyer
+        int  MaxSellSize;    // The maximum number of messages to be sold to any buyer
+        int32_t *SellPoints = PETSC_NULL; // The points and cone sizes from all buyers
+        ierr = PetscMaxSum(comm, BuyData, &MaxSellSize, &SellCount);CHKERROR(ierr,"Error in PetscMaxSum");
+        ierr = PetscMalloc2(SellCount,int,&SellSizes,SellCount,int,&Buyers);CHKERROR(ierr, "Error in PetscMalloc");
+        for(int s = 0; s < SellCount; s++) {
+          SellSizes[s] = MaxSellSize;
+          Buyers[s]    = MPI_ANY_SOURCE;
+        }
+
+        if (debug) {
+          ostringstream txt;
+
+          for(int p = 0; p < (int) points->size(); p++) {
+            txt << "["<<rank<<"]: BuyPoints["<<p<<"]: ("<<BuyPoints[p*msgSize]<<", "<<BuyPoints[p*msgSize+1]<<") coneSize "<<BuyPoints[p*msgSize+2]<<std::endl;
+          }
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+        }
+
+        // First tell sellers which points we want to buy
+        ierr = PetscObjectGetNewTag(petscObj, &tag1); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        commCycle(comm, tag1, msgSize, BuyCount, BuySizes, Sellers, BuyPoints, SellCount, SellSizes, Buyers, &SellPoints);
+
+        if (debug) {
+          ostringstream txt;
+
+          if (!rank) {txt << "Unsquished" << std::endl;}
+          for(int p = 0; p < SellCount*MaxSellSize; p++) {
+            txt << "["<<rank<<"]: SellPoints["<<p<<"]: ("<<SellPoints[p*msgSize]<<", "<<SellPoints[p*msgSize+1]<<") coneSize "<<SellPoints[p*msgSize+2]<<std::endl;
+          }
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+        }
+
+        // Since we gave maximum sizes, we need to squeeze SellPoints
+        for(int s = 0, offset = 0; s < SellCount; s++) {
+          if (offset != s*MaxSellSize*msgSize) {
+            ierr = PetscMemmove(&SellPoints[offset], &SellPoints[s*MaxSellSize*msgSize], SellSizes[s]*msgSize*sizeof(int32_t));CHKERROR(ierr,"Error in PetscMemmove");
+          }
+          offset += SellSizes[s]*msgSize;
+        }
+
+        if (debug) {
+          ostringstream txt;
+          int SellSize = 0;
+
+          if (!rank) {txt << "Squished" << std::endl;}
+          for(int s = 0; s < SellCount; s++) {
+            SellSize += SellSizes[s];
+            txt << "SellSizes["<<s<<"]: "<<SellSizes[s]<< std::endl;
+          }
+          for(int p = 0; p < SellSize; p++) {
+            txt << "["<<rank<<"]: SellPoints["<<p<<"]: ("<<SellPoints[p*msgSize]<<", "<<SellPoints[p*msgSize+1]<<") coneSize "<<SellPoints[p*msgSize+2]<<std::endl;
+          }
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+        }
+
+        // SellSizes, Buyers, and SellPoints are output
+        Point__int_pair_set BillOfSale;
+
+        for(int s = 0, offset = 0; s < SellCount; s++) {
+          for(int m = 0; m < SellSizes[s]; m++) {
+            Point point = Point(SellPoints[offset], SellPoints[offset+1]);
+
+            BillOfSale[point].insert(int_pair(Buyers[s], SellPoints[offset+2]));
+            offset += msgSize;
+          }
+        }
+        for(int s = 0, offset = 0; s < SellCount; s++) {
+          for(int m = 0; m < SellSizes[s]; m++) {
+            Point point = Point(SellPoints[offset], SellPoints[offset+1]);
+
+            // Decrement the buyer count so as not to count the current buyer itself
+            SellPoints[offset+2] = BillOfSale[point].size()-1;
+            offset += msgSize;
+          }
+        }
+
+        // Then tell buyers how many other buyers there were
+        ierr = PetscObjectGetNewTag(petscObj, &tag2); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        commCycle(comm, tag2, msgSize, SellCount, SellSizes, Buyers, SellPoints, BuyCount, BuySizes, Sellers, &BuyPoints);
+
+        int      BuyConesSize  = 0;
+        int      SellConesSize = 0;
+        int     *BuyConesSizes;  // The number of points to buy from each seller
+        int     *SellConesSizes; // The number of points to sell to each buyer
+        int32_t *SellCones;      // The (rank, cone size) for each point from all other buyers
+        int32_t *overlapInfo = PETSC_NULL; // The (rank, cone size) for each point from all other buyers
+        ierr = PetscMalloc2(BuyCount,int,&BuyConesSizes,SellCount,int,&SellConesSizes);CHKERROR(ierr, "Error in PetscMalloc");
+        for(int s = 0, offset = 0; s < SellCount; s++) {
+          SellConesSizes[s] = 0;
+
+          for(int m = 0; m < SellSizes[s]; m++) {
+            SellConesSizes[s] += SellPoints[offset+2]+1;
+            offset            += msgSize;
+          }
+          SellConesSize += SellConesSizes[s];
+        }
+
+        for(int b = 0, offset = 0; b < BuyCount; b++) {
+          BuyConesSizes[b] = 0;
+
+          for(int m = 0; m < BuySizes[b]; m++) {
+            BuyConesSizes[b] += BuyPoints[offset+2]+1;
+            offset           += msgSize;
+          }
+          BuyConesSize += BuyConesSizes[b];
+        }
+
+        int cMsgSize = 2;
+        ierr = PetscMalloc(SellConesSize*cMsgSize * sizeof(int32_t), &SellCones);CHKERROR(ierr, "Error in PetscMalloc");
+        for(int s = 0, offset = 0, cOffset = 0; s < SellCount; s++) {
+          for(int m = 0; m < SellSizes[s]; m++) {
+            Point point(SellPoints[offset],SellPoints[offset+1]);
+
+            for(typename int_pair_set::iterator p_iter = BillOfSale[point].begin(); p_iter != BillOfSale[point].end(); ++p_iter) {
+              SellCones[cOffset+0] = (*p_iter).first;
+              SellCones[cOffset+1] = (*p_iter).second;
+              cOffset += cMsgSize;
+            }
+            offset += msgSize;
+          }
+        }
+
+        // Then send buyers a (rank, cone size) for all buyers of the same points
+        ierr = PetscObjectGetNewTag(petscObj, &tag3); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        commCycle(comm, tag3, cMsgSize, SellCount, SellConesSizes, Buyers, SellCones, BuyCount, BuyConesSizes, Sellers, &overlapInfo);
+
+        // Finally build the overlap sifter
+        for(int b = 0, offset = 0, cOffset = 0; b < BuyCount; b++) {
+          for(int m = 0; m < BuySizes[b]; m++) {
+            Point p(BuyPoints[offset],BuyPoints[offset+1]);
+
+            for(int n = 0; n <= BuyPoints[offset+2]; n++) {
+              int neighbor = overlapInfo[cOffset+0];
+              int coneSize = overlapInfo[cOffset+1];
+
+              if (neighbor != rank) {
+                // Record the point, size of the cone over p coming in from neighbor, and going out to the neighbor for the arrow color
+                overlap->addArrow(neighbor, p, ALE::pair<Point,ALE::pair<int,int> >(p, ALE::pair<int,int>(coneSize, _graph->cone(p)->size())) );
+              }
+              cOffset += cMsgSize;
+            }
+            offset += msgSize;
+          }
+        }
+      };
+
+      #undef  __FUNCT__
       #define __FUNCT__ "__computeOverlap"
       template <typename Overlap_>
       static void __computeOverlap(const Obj<graph_type>& _graph, Obj<Overlap_>& overlap) {
@@ -336,8 +553,7 @@ namespace ALE {
         // Determine the owners of base nodes and collect the lease data for each processor:
         // the number of nodes leased and the number of leases (0 or 1).
         int32_t MaxLeaseSize, RenterCount;
-        ierr = PetscMaxSum(comm,LeaseData,&MaxLeaseSize,&RenterCount); 
-        CHKERROR(ierr,"Error in PetscMaxSum");
+        ierr = PetscMaxSum(comm,LeaseData,&MaxLeaseSize,&RenterCount);CHKERROR(ierr,"Error in PetscMaxSum");
         //ierr = PetscInfo1(0,"%s: Number of renters %d\n", __FUNCT__, RenterCount); 
         //CHKERROR(ierr,"Error in PetscInfo");
 
@@ -523,7 +739,7 @@ namespace ALE {
         }
         // Post receives for NeighbornCounts
         PetscMPIInt    tag2;
-        ierr = PetscObjectGetNewTag(petscObj, &tag2); CHKERROR(ierr, "Failded on PetscObjectGetNewTag");
+        ierr = PetscObjectGetNewTag(petscObj, &tag2); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
         for (int32_t i=0; i<LessorCount; i++) {
           ierr = MPI_Irecv(NeighborCounts+LessorOffsets[i],3*LeaseSizes[i],MPIU_INT,Lessors[i],tag2,comm,&Lessor_waits[i]);
           CHKERROR(ierr,"Error in MPI_Irecv");
@@ -645,7 +861,7 @@ namespace ALE {
         
         // Post receives for Neighbors
         PetscMPIInt    tag3;
-        ierr = PetscObjectGetNewTag(petscObj, &tag3); CHKERROR(ierr, "Failded on PetscObjectGetNewTag");
+        ierr = PetscObjectGetNewTag(petscObj, &tag3); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
         int32_t lessorOffset = 0;
         for(int32_t i=0; i<LessorCount; i++) {
           if(NeighborCountsByLessor[i]) { // We expect messages from lessors with a non-zero NeighborCountsByLessor entry only
@@ -834,7 +1050,97 @@ namespace ALE {
 
       };// __computeOverlap()
 
+      /*
+        Seller:       A possessor of data
+        Buyer:        A requestor of data
 
+        Note that in this routine, the caller functions as BOTH a buyer and seller.
+
+        When we post receives, we use a buffer of the maximum size for each message
+        in order to simplify the size calculations (less communication).
+
+        BuyCount:     The number of sellers with which this process (buyer) communicates
+                      This is calculated locally
+        BuySizes:     The number of messages to buy from each seller
+        Sellers:      The process for each seller
+        BuyData:      The data to be bought from each seller. There are BuySizes[p] messages
+                      to be purchased from each process p, in order of rank.
+        SellCount:    The number of buyers with which this process (seller) communicates
+                      This requires communication
+        SellSizes:    The number of messages to be sold to each buyer
+        Buyers:       The process for each buyer
+        msgSize:      The number of integers in each message
+        SellData:     The data to be sold to each buyer. There are SellSizes[p] messages
+                      to be sold to each process p, in order of rank.
+      */
+      static void commCycle(MPI_Comm comm, PetscMPIInt tag, int msgSize, int BuyCount, int BuySizes[], int Sellers[], int32_t BuyData[], int SellCount, int SellSizes[], int Buyers[], int32_t *SellData[]) {
+        int32_t     *locSellData; // Messages to sell to buyers (received from buyers)
+        int          SellSize = 0;
+        int         *BuyOffsets, *SellOffsets;
+        MPI_Request *buyWaits,  *sellWaits;
+        MPI_Status  *buyStatus;
+        PetscErrorCode ierr;
+
+        // Allocation
+        ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERROR(ierr,"Memory corruption");
+        for(int s = 0; s < SellCount; s++) {SellSize += SellSizes[s];}
+        ierr = PetscMalloc2(BuyCount,int,&BuyOffsets,SellCount,int,&SellOffsets);CHKERROR(ierr,"Error in PetscMalloc");
+        ierr = PetscMalloc3(BuyCount,MPI_Request,&buyWaits,SellCount,MPI_Request,&sellWaits,BuyCount,MPI_Status,&buyStatus);
+        CHKERROR(ierr,"Error in PetscMalloc");
+        if (*SellData) {
+          locSellData = *SellData;
+        } else {
+          ierr = PetscMalloc(msgSize*SellSize * sizeof(int32_t), &locSellData);CHKERROR(ierr,"Error in PetscMalloc");
+        }
+        // Initialization
+        for(int b = 0; b < BuyCount; b++) {
+          if (b == 0) {
+            BuyOffsets[0] = 0;
+          } else {
+            BuyOffsets[b] = BuyOffsets[b-1] + msgSize*BuySizes[b-1];
+          }
+        }
+        for(int s = 0; s < SellCount; s++) {
+          if (s == 0) {
+            SellOffsets[0] = 0;
+          } else {
+            SellOffsets[s] = SellOffsets[s-1] + msgSize*SellSizes[s-1];
+          }
+        }
+        ierr = PetscMemzero(locSellData, msgSize*SellSize * sizeof(int32_t));CHKERROR(ierr,"Error in PetscMemzero");
+
+        // Post receives for bill of sale (data request)
+        for(int s = 0; s < SellCount; s++) {
+          ierr = MPI_Irecv(&locSellData[SellOffsets[s]], msgSize*SellSizes[s], MPIU_INT, Buyers[s], tag, comm, &sellWaits[s]);
+          CHKERROR(ierr,"Error in MPI_Irecv");
+        }
+        // Post sends with bill of sale (data request)
+        for(int b = 0; b < BuyCount; b++) {
+          ierr = MPI_Isend(&BuyData[BuyOffsets[b]], msgSize*BuySizes[b], MPIU_INT, Sellers[b], tag, comm, &buyWaits[b]);
+          CHKERROR(ierr,"Error in MPI_Isend");
+        }
+        // Receive the bill of sale from buyer
+        for(int s = 0; s < SellCount; s++) {
+          MPI_Status sellStatus;
+          int        num;
+
+          ierr = MPI_Waitany(SellCount, sellWaits, &num, &sellStatus);CHKMPIERROR(ierr,ERRORMSG("Error in MPI_Waitany"));
+          // OUTPUT: Overwriting input buyer process
+          Buyers[num] = sellStatus.MPI_SOURCE;
+          // OUTPUT: Overwriting input sell size
+          ierr = MPI_Get_count(&sellStatus, MPIU_INT, &SellSizes[num]);CHKERROR(ierr,"Error in MPI_Get_count");
+          SellSizes[num] /= msgSize;
+        }
+        // Wait on send for bill of sale
+        if (BuyCount) {
+          ierr = MPI_Waitall(BuyCount, buyWaits, buyStatus); CHKERROR(ierr,"Error in MPI_Waitall");
+        }
+
+        ierr = PetscFree2(BuyOffsets, SellOffsets);CHKERROR(ierr,"Error in PetscFree");
+        ierr = PetscFree3(buyWaits, sellWaits, buyStatus);CHKERROR(ierr,"Error in PetscFree");
+        // OUTPUT: Providing data out
+        *SellData = locSellData;
+      }
 
       // -------------------------------------------------------------------------------------------------------------------
       #undef __FUNCT__
@@ -919,7 +1225,7 @@ namespace ALE {
         }
         // Post receives for ConesIn
         PetscMPIInt    tag4;
-        ierr = PetscObjectGetNewTag(petscObj, &tag4); CHKERROR(ierr, "Failded on PetscObjectGetNewTag");
+        ierr = PetscObjectGetNewTag(petscObj, &tag4); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
         // Traverse all neighbors from whom we are receiving cones
         cone_arrow_type *NeighborOffsetIn = ConesIn;
         if(debug2) {
