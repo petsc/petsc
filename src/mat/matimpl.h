@@ -496,6 +496,7 @@ typedef struct {
    Input Parameters:
 +  info - information about the matrix factorization 
 .  sctx - pointer to the struct CholeskyShift_Ctx
+.  row  - pivot row
 -  newshift - 0: shift is unchanged; 1: shft is updated; -1: zeropivot  
 
    Level: developer

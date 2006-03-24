@@ -1187,13 +1187,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,MatFactorInfo *info,Mat
 
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr = MatCholeskyCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr); 
-      if (newshift == 1){
-        break;    /* sctx.shift_amount is updated */
-      } else if (newshift == -1){
-        SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G",k,PetscAbsScalar(dk),zeropivot,rs);
-      }
-
+      ierr = MatCholeskyCheckShift_inline(info,sctx,k,newshift);CHKERRQ(ierr); 
+      if (newshift == 1) break;    /* sctx.shift_amount is updated */
+      
       /* copy data into U(k,:) */
       ba[bi[k]] = 1.0/dk; /* U(k,k) */
       jmin = bi[k]+1; jmax = bi[k+1];
@@ -1325,12 +1321,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,MatFact
 
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr = MatCholeskyCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr); 
-      if (newshift == 1){
-        break;    /* sctx.shift_amount is updated */
-      } else if (newshift == -1){
-        SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G",k,PetscAbsScalar(dk),zeropivot,rs);
-      }
+      ierr = MatCholeskyCheckShift_inline(info,sctx,k,newshift);CHKERRQ(ierr); 
+      if (newshift == 1) break;    /* sctx.shift_amount is updated */
      
       /* copy data into U(k,:) */
       ba[bi[k]] = 1.0/dk;
