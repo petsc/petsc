@@ -2328,6 +2328,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
     for (i=1; i<mbs+1; i++) {
       b->i[i] = b->i[i-1] + b->imax[i-1];
     }
+    b->freedata     = PETSC_TRUE;
+  } else {
+    b->freedata     = PETSC_FALSE;
   }
 
   B->rmap.bs          = bs;
@@ -2482,6 +2485,7 @@ PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->maxnz              = a->maxnz;
   c->solve_work         = 0;
   c->mult_work          = 0;
+  c->freedata           = PETSC_TRUE;
   C->preallocated       = PETSC_TRUE;
   C->assembled          = PETSC_TRUE;
 
