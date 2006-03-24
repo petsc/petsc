@@ -1585,6 +1585,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
 
   b = (Mat_SeqSBAIJ*)B->data;
   b->singlemalloc = PETSC_FALSE;
+  b->freedata     = PETSC_TRUE;
   ierr = PetscMalloc((ui[am]+1)*sizeof(MatScalar),&b->a);CHKERRQ(ierr);
   b->j    = uj;
   b->i    = ui;

@@ -414,6 +414,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
 
   b = (Mat_SeqSBAIJ*)B->data;
   b->singlemalloc = PETSC_FALSE;
+  b->freedata     = PETSC_TRUE;
   ierr = PetscMalloc((ui[mbs]+1)*sizeof(MatScalar),&b->a);CHKERRQ(ierr);
   b->j    = uj;
   b->i    = ui;
