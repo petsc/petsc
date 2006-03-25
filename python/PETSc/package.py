@@ -90,7 +90,7 @@ class Package(config.base.Configure):
     self.functionsCxx     = [0, '', '']
     # include files we wish to check for
     self.includes         = []
-    # list of libraries we wish to check for (can be overwritten by providing your own generateLibraryList()
+    # list of libraries we wish to check for (can be overwritten by providing your own generateLibraryList())
     self.liblist          = [[]]
     self.extraLib         = []
     # location of libraries and includes in packages directory tree
@@ -237,11 +237,17 @@ class Package(config.base.Configure):
       raise RuntimeError('--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])+' and \n'+\
         '--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])+' did not work') 
 
+    if 'with-'+self.package+'-include' in self.framework.argDB not and 'with-'+self.package+'-lib' in self.framework.argDB:
+      raise RuntimeError('If you provide --with-'+self.package+'-include you must also supply with-'+self.package+'-lib\n')
+                         
+    if 'with-'+self.package+'-lib' in self.framework.argDB not and 'with-'+self.package+'-include' in self.framework.argDB:
+      raise RuntimeError('If you provide --with-'+self.package+'-lib you must also supply with-'+self.package+'-include\n')
+
     for d in self.getSearchDirectories():
       for l in self.generateLibList(os.path.join(d,self.libdir)):
         if d: includedir = os.path.join(d,self.includedir)
         else: includedir = ''
-        yield('User specified root directory '+self.PACKAGE, d,l, includedir)
+        yield('Package specific search directory '+self.PACKAGE, d,l, includedir)
 
     dir = self.checkDownload(2)
     if dir:
