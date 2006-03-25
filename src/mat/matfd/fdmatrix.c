@@ -573,6 +573,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   PetscValidHeaderSpecific(J,MAT_COOKIE,1);
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE,2);
   PetscValidHeaderSpecific(x1,VEC_COOKIE,3);
+  if (!f) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
 
   if (coloring->usersetsrecompute) {
     if (!coloring->recompute) {
