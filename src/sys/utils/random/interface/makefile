@@ -1,10 +1,9 @@
 
 ALL: lib 
 
-CFLAGS    = -DPETSC_LIB_DIR='"${INSTALL_DIR}/lib/${PETSC_ARCH}"' -DPETSC_ARCH='"${PETSC_ARCH}"' \
-            -DPETSC_SLSUFFIX='"${SLSUFFIX}"' -DPETSC_DIR='"${PETSC_DIR}"' 
+CFLAGS    =
 FFLAGS    =
-SOURCEC	  = random.c  
+SOURCEC	  = random.c randreg.c dlregisrand.c
 SOURCEF	  =
 SOURCEH	  = 
 OBJSC	  = ${SOURCEC:.c=.o}

@@ -26,7 +26,17 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDisplay(char[],size_t);
 
 extern PetscCookie PETSC_DLLEXPORT PETSC_RANDOM_COOKIE;
 
-typedef enum {RANDOM_DEFAULT,RANDOM_DEFAULT_REAL,RANDOM_DEFAULT_IMAGINARY} PetscRandomType;
+#define RANDOM_DEFAULT           "random_default"
+#define RANDOM_DEFAULT_REAL      "random_default_real"
+#define RANDOM_DEFAULT_IMAGINARY "random_default_imaginary"
+#define PETSC_RAND               "petsc_rand"
+#define PETSC_RAND48             "petsc_rand48"
+#define PetscRandomType const char*
+
+/* Logging support */
+extern PETSCVEC_DLLEXPORT PetscCookie PETSC_RANDOM_COOKIE;
+
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomInitializePackage(char *);
 
 /*S
      PetscRandom - Abstract PETSc object that manages generating random numbers
@@ -38,6 +48,64 @@ typedef enum {RANDOM_DEFAULT,RANDOM_DEFAULT_REAL,RANDOM_DEFAULT_IMAGINARY} Petsc
 .seealso:  PetscRandomCreate(), PetscRandomGetValue()
 S*/
 typedef struct _p_PetscRandom*   PetscRandom;
+
+/* Dynamic creation and loading functions */
+extern PetscFList PetscRandomList;
+extern PetscTruth PetscRandomRegisterAllCalled;
+
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterAll(const char []);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscRandom*));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterDestroy(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomSetType(PetscRandom, PetscRandomType);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetType(PetscRandom, PetscRandomType *);
+
+/*MC
+  PetscRandomRegisterDynamic - Adds a new PetscRandom component implementation
+
+  Synopsis:
+  PetscErrorCode PetscRandomRegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(PetscRandom))
+
+  Not Collective
+
+  Input Parameters:
++ name        - The name of a new user-defined creation routine
+. path        - The path (either absolute or relative) of the library containing this routine
+. func_name   - The name of routine to create method context
+- create_func - The creation routine itself
+
+  Notes:
+  PetscRandomRegisterDynamic() may be called multiple times to add several user-defined vectors
+
+  If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
+
+  Sample usage:
+.vb
+    PetscRandomRegisterDynamic("my_rand","/home/username/my_lib/lib/libO/solaris/libmy.a", "MyPetscRandomtorCreate", MyPetscRandomtorCreate);
+.ve
+
+  Then, your random type can be chosen with the procedural interface via
+.vb
+    PetscRandomCreate(MPI_Comm, PetscRandom *);
+    PetscRandomSetType(PetscRandom,"my_random_name");
+.ve
+   or at runtime via the option
+.vb
+    -random_type my_random_name
+.ve
+
+  Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
+         If your function is not being put into a shared library then use PetscRandomRegister() instead
+        
+  Level: advanced
+
+.keywords: PetscRandom, register
+.seealso: PetscRandomRegisterAll(), PetscRandomRegisterDestroy(), PetscRandomRegister()
+M*/
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define PetscRandomRegisterDynamic(a,b,c,d) PetscRandomRegister(a,b,c,0)
+#else
+#define PetscRandomRegisterDynamic(a,b,c,d) PetscRandomRegister(a,b,c,d)
+#endif
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm,PetscRandomType,PetscRandom*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom,PetscScalar*);
