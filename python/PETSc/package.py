@@ -237,10 +237,10 @@ class Package(config.base.Configure):
       raise RuntimeError('--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])+' and \n'+\
         '--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])+' did not work') 
 
-    if 'with-'+self.package+'-include' in self.framework.argDB not and 'with-'+self.package+'-lib' in self.framework.argDB:
+    if 'with-'+self.package+'-include' in self.framework.argDB and not 'with-'+self.package+'-lib' in self.framework.argDB:
       raise RuntimeError('If you provide --with-'+self.package+'-include you must also supply with-'+self.package+'-lib\n')
                          
-    if 'with-'+self.package+'-lib' in self.framework.argDB not and 'with-'+self.package+'-include' in self.framework.argDB:
+    if 'with-'+self.package+'-lib' in self.framework.argDB and not 'with-'+self.package+'-include' in self.framework.argDB:
       raise RuntimeError('If you provide --with-'+self.package+'-lib you must also supply with-'+self.package+'-include\n')
 
     for d in self.getSearchDirectories():
@@ -379,7 +379,7 @@ class Package(config.base.Configure):
       self.framework.argDB['with-'+self.package] = 1
 
     if 'with-'+self.package+'-dir' in self.framework.argDB and ('with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB):
-      raise RuntimeError('Use either --with-'+self.package+'-dir or --with-'+self.package+'-lib and --with-'+self.package+'-include Not both!')
+      raise RuntimeError('Specify either "--with-'+self.package+'-dir" or "--with-'+self.package+'-lib --with-'+self.package+'-include". But not both!')
 
     if 'with-'+self.package+'-dir' in self.framework.argDB or 'with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
