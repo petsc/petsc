@@ -194,7 +194,7 @@ namespace ALE {
 
       template <typename Overlap_, typename Fusion_>
       static void computeFusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, Obj<Fusion_>& fusion, const Obj<fuser_type>& fuser = fuser_type()){
-        __computeFusion(graph, overlap, fusion, fuser);
+        __computeFusionNew(graph, overlap, fusion, fuser);
       };
 
     protected:
@@ -1444,6 +1444,109 @@ namespace ALE {
         
         // Done!  
       };// __computeFusion()
+
+      #undef __FUNCT__
+      #define __FUNCT__ "__computeFusionNew"
+      template <typename Overlap_, typename Fusion_>
+      static void __computeFusionNew(const Obj<graph_type>& _graph, const Obj<Overlap_>& overlap, Obj<Fusion_> fusion, const Obj<fuser_type>& fuser) {
+        typedef ConeArraySequence<typename graph_type::traits::arrow_type> cone_array_sequence;
+        typedef typename cone_array_sequence::cone_arrow_type              cone_arrow_type;
+        MPI_Comm       comm = _graph->comm();
+        int            rank = _graph->commRank();
+        int            size = _graph->commSize();
+        PetscObject    petscObj = _graph->petscObj();
+        PetscMPIInt    tag1;
+        PetscErrorCode ierr;
+
+        Obj<typename Overlap_::traits::capSequence> overlapCap = overlap->cap();
+        int msgSize = sizeof(cone_arrow_type)/sizeof(int); // Messages are arrows
+
+        int NeighborCount = overlapCap->size();
+        int *Neighbors, *NeighborByProc; // Neighbor processes and the reverse map
+        int *SellSizes, *BuySizes;    // Sizes of the cones to transmit and receive
+        int *SellCones = PETSC_NULL, *BuyCones = PETSC_NULL;    //
+        int n, offset;
+        ierr = PetscMalloc2(NeighborCount,int,&Neighbors,size,int,&NeighborByProc);CHKERROR(ierr, "Error in PetscMalloc");
+        ierr = PetscMalloc2(NeighborCount,int,&SellSizes,NeighborCount,int,&BuySizes);CHKERROR(ierr, "Error in PetscMalloc");
+
+        n = 0;
+        for(typename Overlap_::traits::capSequence::iterator neighbor = overlapCap->begin(); neighbor != overlapCap->end(); ++neighbor) {
+          Neighbors[n] = *neighbor;
+          NeighborByProc[*neighbor] = n;
+          BuySizes[n] = 0;
+          SellSizes[n] = 0;
+          n++;
+        }
+
+        n = 0;
+        offset = 0;
+        for(typename Overlap_::traits::capSequence::iterator neighbor = overlapCap->begin(); neighbor != overlapCap->end(); ++neighbor) {
+          Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
+
+          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
+            BuySizes[n] += p_iter.color().second.first;
+            SellSizes[n] += p_iter.color().second.second;
+            offset += _graph->cone(*p_iter)->size();
+          }
+          n++;
+        }
+
+        ierr = PetscMalloc(offset*msgSize * sizeof(int), &SellCones);CHKERROR(ierr, "Error in PetscMalloc");
+        cone_arrow_type *ConesOut = (cone_arrow_type *) SellCones;
+        offset = 0;
+        for(typename Overlap_::traits::capSequence::iterator neighbor = overlapCap->begin(); neighbor != overlapCap->end(); ++neighbor) {
+          Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
+          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
+            Obj<typename graph_type::traits::coneSequence> cone = _graph->cone(*p_iter);
+
+            for(typename graph_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+              if (debug) {
+                ostringstream txt;
+
+                txt << "["<<rank<<"]Packing arrow for " << *neighbor << "  " << *c_iter << "--" << c_iter.color() << "-->" << *p_iter << std::endl;
+                ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+              }
+              cone_arrow_type::place(ConesOut+offset, typename graph_type::traits::arrow_type(*c_iter, *p_iter, c_iter.color()));
+              offset++;
+            }
+            if (p_iter.color().second.second != (int) cone->size()) {
+              throw ALE::Exception("Non-matching sizes");
+            }
+          }
+        }
+        if (debug) {
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+        }
+
+        // Send and retrieve cones of the base overlap
+        ierr = PetscObjectGetNewTag(petscObj, &tag1); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        commCycle(comm, tag1, msgSize, NeighborCount, SellSizes, Neighbors, SellCones, NeighborCount, BuySizes, Neighbors, &BuyCones);
+
+        cone_arrow_type *ConesIn = (cone_arrow_type *) BuyCones;
+        offset = 0;
+        for(typename Overlap_::traits::capSequence::iterator neighbor = overlapCap->begin(); neighbor != overlapCap->end(); ++neighbor) {
+          Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
+
+          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
+            typename graph_type::traits::coneSequence localCone = _graph->cone(*p_iter);
+            int remoteConeSize = p_iter.color().second.first;
+            cone_array_sequence remoteCone(&ConesIn[offset], remoteConeSize, *p_iter);
+            if (debug) {
+              ostringstream txt;
+
+              txt << "["<<rank<<"]Unpacking cone for " << *p_iter << std::endl;
+              remoteCone.view(txt, true);
+              ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+            }
+            // Fuse in received cones
+            fuser->fuseCones(localCone, remoteCone, fusion->cone(fuser->fuseBasePoints(*p_iter, *p_iter)));
+            offset += remoteConeSize;
+          }
+        }
+        if (debug) {
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+        }
+      };
 
     public:
       static void setDebug(int debug) {ParConeDelta::debug = debug;};
