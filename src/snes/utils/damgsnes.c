@@ -182,7 +182,7 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
 .  X - input vector
 .  F - function vector
 -  ptr - pointer to a structure that must have a DA as its first entry. For example this 
-         could be a DMMG
+         could be a DMMG, this ptr must have been passed into SNESDAFormFunction() as the context
 
    Level: intermediate
 
@@ -197,6 +197,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void
   DA             da = *(DA*)ptr;
 
   PetscFunctionBegin;
+  if (!da) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Looks like you called SNESSetFromFuntion(snes,SNESDAFormFunction,) without the DA context");
   ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
   /*
      Scatter ghost points to local vector, using the 2-step process
