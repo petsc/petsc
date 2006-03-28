@@ -54,7 +54,7 @@ extern PetscFList PetscRandomList;
 extern PetscTruth PetscRandomRegisterAllCalled;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterAll(const char []);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscRandom*));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscRandom));
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterDestroy(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomSetType(PetscRandom, PetscRandomType);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetType(PetscRandom, PetscRandomType *);

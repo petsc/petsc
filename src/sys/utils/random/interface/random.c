@@ -181,6 +181,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetSeed(PetscRandom r,unsigned long se
   PetscFunctionReturn(0);
 }
 
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate" 
 /*@
@@ -242,8 +244,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandomType t
     SETERRQ(PETSC_ERR_SUP,"Not for this random number type");
   }
   */
-  ierr = PetscHeaderCreate(rr,_p_PetscRandom,PETSC_NULL,PETSC_RANDOM_COOKIE,-1,"PetscRandom",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(rr,_p_PetscRandom,struct _PetscRandomOps,PETSC_RANDOM_COOKIE,-1,"PetscRandom",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(rr, sizeof(struct _p_PetscRandom));CHKERRQ(ierr);
+  ierr = PetscMemzero(rr->ops, sizeof(struct _PetscRandomOps));CHKERRQ(ierr);
+  rr->bops->publish = PETSC_NULL;
+  rr->type_name     = PETSC_NULL;
+
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  rr->data  = PETSC_NULL;
   rr->low   = 0.0;
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;
@@ -322,6 +330,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *va
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
   PetscValidIntPointer(val,2);
+  PetscValidType(r,1);
+
+
 #if defined(PETSC_USE_COMPLEX)
   if (r->type == RANDOM_DEFAULT) {
     if (r->iset) {
@@ -344,143 +355,3 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *va
 #endif
   PetscFunctionReturn(0);
 }
-// ------------------------------------
-
-#if defined(PETSC_HAVE_DRAND48)
-/*
-   For now we have set up using the DRAND48() generater. We need to deal 
-   with other variants of random number generators. We should also add
-   a routine to enable restarts [seed48()] 
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomCreate_Rand48" 
-PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate_Rand48(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
-{
-  PetscRandom    rr;
-  PetscErrorCode ierr;
-  PetscMPIInt    rank;
-
-  PetscFunctionBegin;
-  *r = 0;
-  if (type != RANDOM_DEFAULT && type != RANDOM_DEFAULT_REAL && type != RANDOM_DEFAULT_IMAGINARY){
-    SETERRQ(PETSC_ERR_SUP,"Not for this random number type");
-  }
-  ierr = PetscHeaderCreate(rr,_p_PetscRandom,PETSC_NULL,PETSC_RANDOM_COOKIE,-1,"PetscRandom",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  rr->low   = 0.0;
-  rr->width = 1.0;
-  rr->iset  = PETSC_FALSE;
-  rr->seed  = 0x12345678+rank;
-  srand48(rr->seed);   /* different! */
-  *r = rr;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomSeed_Rand48"
-PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed_Rand48(PetscRandom r)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
-  srand48(r->seed);   /* different! */
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomGetValue_Rand48"
-PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue_Rand48(PetscRandom r,PetscScalar *val)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
-  PetscValidIntPointer(val,2);
-#if defined(PETSC_USE_COMPLEX)
-  if (r->type == RANDOM_DEFAULT) {
-    if (r->iset) {
-         *val = PetscRealPart(r->width)*drand48() + PetscRealPart(r->low) +
-                (PetscImaginaryPart(r->width)*drand48() + PetscImaginaryPart(r->low)) * PETSC_i;
-    }
-    else *val = drand48() + drand48()*PETSC_i;
-  } else if (r->type == RANDOM_DEFAULT_REAL) {
-    if (r->iset) *val = PetscRealPart(r->width)*drand48() + PetscRealPart(r->low);
-    else                       *val = drand48();
-  } else if (r->type == RANDOM_DEFAULT_IMAGINARY) {
-    if (r->iset) *val = (PetscImaginaryPart(r->width)*drand48()+PetscImaginaryPart(r->low))*PETSC_i;
-    else         *val = drand48()*PETSC_i;
-  } else {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid random number type");
-  }
-#else
-  if (r->iset) *val = r->width * drand48() + r->low;
-  else         *val = drand48();
-#endif
-  PetscFunctionReturn(0);
-}
-
-// ---------------------------------------
-#elif defined(PETSC_HAVE_RAND)
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomCreate" 
-PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate_Rand(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
-{
-  PetscRandom    rr;
-  PetscErrorCode ierr;
-  PetscMPIInt    rank;
-
-  PetscFunctionBegin;
-  ierr = PetscInfo(0,"using rand(). not as efficinet as dran48\n");CHKERRQ(ierr);
-  *r = 0;
-  if (type != RANDOM_DEFAULT && type != RANDOM_DEFAULT_REAL && type != RANDOM_DEFAULT_IMAGINARY) {
-    SETERRQ(PETSC_ERR_SUP,"Not for this random number type");
-  }
-  ierr = PetscHeaderCreate(rr,_p_PetscRandom,int,PETSC_RANDOM_COOKIE,type,"PetscRandom",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  rr->low   = 0.0;
-  rr->width = 1.0;
-  rr->iset  = PETSC_FALSE;
-  rr->seed  = 0x12345678+rank;
-  srand(rr->seed);    /* different! */
-  *r = rr;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomSeed_Rand"
-PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed_Rand(PetscRandom r)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
-  srand(r->seed);  /* different! */
-  PetscFunctionReturn(0);
-}
-
-#define RAND_WRAP() (rand()/(double)((unsigned int)RAND_MAX+1))
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomGetValue_Rand"
-PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue_Rand(PetscRandom r,PetscScalar *val)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
-  PetscValidScalarPointer(val,2);
-#if defined(PETSC_USE_COMPLEX)
-  if (r->type == RANDOM_DEFAULT) {
-    if (r->iset)
-         *val = PetscRealPart(r->width)*RAND_WRAP() + PetscRealPart(r->low) +
-                (PetscImaginaryPart(r->width)*RAND_WRAP() + PetscImaginaryPart(r->low)) * PETSC_i;
-    else *val = RAND_WRAP() + RAND_WRAP()*PETSC_i;
-  } else if (r->type == RANDOM_DEFAULT_REAL) {
-    if (r->iset) *val = PetscRealPart(r->width)*RAND_WRAP() + PetscRealPart(r->low);
-    else         *val = RAND_WRAP();
-  } else if (r->type == RANDOM_DEFAULT_IMAGINARY) {
-    if (r->iset) *val = (PetscImaginaryPart(r->width)*RAND_WRAP()+PetscImaginaryPart(r->low))*PETSC_i;
-    else         *val = RAND_WRAP()*PETSC_i;
-  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid random number type");
-#else
-  if (r->iset) *val = r->width * RAND_WRAP() + r->low;
-  else         *val = RAND_WRAP();
-#endif
-  PetscFunctionReturn(0);
-}
-#endif
-
-

@@ -3,6 +3,7 @@ static char help[] = "Tests PetscRandom functions.\n\n";
 
 #include "petsc.h"
 #include "petscsys.h"
+#include "src/sys/utils/random/randomimpl.h"
 
 /* Usage: 
    ./ex1 -log_summary
@@ -21,7 +22,8 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomSetType(rand,PETSC_RAND48);CHKERRQ(ierr);
 
   ierr = PetscMalloc(n*sizeof(PetscInt),&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {

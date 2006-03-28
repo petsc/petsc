@@ -42,8 +42,6 @@ PetscTruth PetscRandomRegisterAllCalled = PETSC_FALSE;
 .seealso: PetscRandomGetType(), PetscRandomCreate()
 @*/
 
-#define PetscRandomType const char*  // change original!
-
 PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomSetType(PetscRandom rand, PetscRandomType type)
 {
   PetscErrorCode (*r)(PetscRandom);
@@ -59,52 +57,49 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomSetType(PetscRandom rand, PetscRand
   if (!PetscRandomRegisterAllCalled) {
     ierr = PetscRandomRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
-  /* ierr = PetscFListFind(rand->comm, PetscRandomList, type,(void (**)(void)) &r);CHKERRQ(ierr); */
-  ierr = PetscFListFind(PETSC_COMM_SELF, PetscRandomList, type,(void (**)(void)) &r);CHKERRQ(ierr)
+  ierr = PetscFListFind(rand->comm, PetscRandomList, type,(void (**)(void)) &r);CHKERRQ(ierr); 
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown random type: %s", type);
-#ifdef TMP
-  if (vec->ops->destroy) {
-    ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);
-  }
 
+  if (rand->ops->destroy) {
+    ierr = (*rand->ops->destroy)(rand);CHKERRQ(ierr);
+  }
   ierr = (*r)(rand);CHKERRQ(ierr); /* PetscRandomCreate_xxx() ? */
-#endif
+
   ierr = PetscObjectChangeTypeName((PetscObject)rand, type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#ifdef TMP
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetType"
 /*@C
-  PetscRandomGetType - Gets the vector type name (as a string) from the PetscRandom.
+  PetscRandomGetType - Gets the type name (as a string) from the PetscRandom.
 
   Not Collective
 
   Input Parameter:
-. vec  - The vector
+. rand  - The random number generator context
 
   Output Parameter:
-. type - The vector type name
+. type - The type name
 
   Level: intermediate
 
-.keywords: vector, get, type, name
+.keywords: random, get, type, name
 .seealso: PetscRandomSetType(), PetscRandomCreate()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomGetType(PetscRandom vec, PetscRandomType *type)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomGetType(PetscRandom rand, PetscRandomType *type)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(vec, VEC_COOKIE,1);
+  PetscValidHeaderSpecific(rand, PETSC_RANDOM_COOKIE,1);
   PetscValidCharPointer(type,2);
   if (!PetscRandomRegisterAllCalled) {
     ierr = PetscRandomRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
-  *type = vec->type_name;
+  *type = rand->type_name;
   PetscFunctionReturn(0);
 }
-
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
@@ -115,7 +110,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomGetType(PetscRandom vec, PetscRando
 
   Level: advanced
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(Random))
+PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(PetscRandom))
 {
   char fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -124,7 +119,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomRegister(const char sname[], const 
   ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
   ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
   ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&RandomList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PetscRandomList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -147,7 +142,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (RandomList) {
+  if (PetscRandomList) {
     ierr = PetscFListDestroy(&PetscRandomList);CHKERRQ(ierr);
     PetscRandomList = PETSC_NULL;
   }
@@ -155,13 +150,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#endif  /* TMP */
-
 EXTERN_C_BEGIN
-//EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec);
-//EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_MPI(Vec);
-//EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec);
-//EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_FETI(Vec);
+#if defined(PETSC_HAVE_DRAND)
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomCreate_Rand(PetscRandom);
+#endif
+#if defined(PETSC_HAVE_DRAND48)
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomCreate_Rand48(PetscRandom);
+#endif
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -185,10 +180,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomRegisterAll(const char path[])
 
   PetscFunctionBegin;
   PetscRandomRegisterAllCalled = PETSC_TRUE;
-  /*
+#if defined(PETSC_HAVE_DRAND)
   ierr = PetscRandomRegisterDynamic(PETSC_RAND,  path,"PetscRandomCreate_Rand",  PetscRandomCreate_Rand);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_DRAND48)
   ierr = PetscRandomRegisterDynamic(PETSC_RAND48,path,"PetscRandomCreate_Rand48",PetscRandomCreate_Rand48);CHKERRQ(ierr);
-  */
+#endif
   PetscFunctionReturn(0);
 }
 
