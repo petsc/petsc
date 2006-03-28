@@ -648,8 +648,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr)
   ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stderr",&flg1);CHKERRQ(ierr);
 
-  flg3 = PETSC_FALSE;
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-options_left",&flg3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
   if (flg3) {
     if (!flg2) { /* have not yet printed the options */
@@ -664,7 +663,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     }
   } 
 #if defined(PETSC_USE_DEBUG)
-  if (nopt && !flg3) {
+  if (nopt && !flg3 && !flg1) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);
     ierr = PetscOptionsLeft();CHKERRQ(ierr);
