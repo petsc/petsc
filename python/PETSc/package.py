@@ -327,7 +327,7 @@ class Package(config.base.Configure):
     return 1
 
   def configureLibrary(self):
-    '''Find an installation ando check if it can work with PETSc'''
+    '''Find an installation and check if it can work with PETSc'''
     self.framework.log.write('==================================================================================\n')
     self.framework.log.write('Checking for a functional '+self.name+'\n')
     foundLibrary = 0
