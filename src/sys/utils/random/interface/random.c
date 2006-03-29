@@ -12,7 +12,7 @@
     one to reinitialize and set the seed.
  */
 
-#include "src/sys/utils/random/randomimpl.h"
+#include "src/sys/utils/random/randomimpl.h"                              /*I "petscsys.h" I*/
 #if defined (PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -324,7 +324,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *va
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValueReal"
 /*@
-   PetscRandomGetValue - Generates a random number.  Call this after first calling
+   PetscRandomGetValueReal - Generates a random number.  Call this after first calling
    PetscRandomCreate().
 
    Not Collective
@@ -370,7 +370,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscScalar
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValueImaginary"
 /*@
-   PetscRandomGetValue - Generates a random number.  Call this after first calling
+   PetscRandomGetValueImaginary - Generates a random number.  Call this after first calling
    PetscRandomCreate().
 
    Not Collective
