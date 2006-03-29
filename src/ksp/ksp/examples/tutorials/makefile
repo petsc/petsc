@@ -1,7 +1,7 @@
 
 CFLAGS	         = -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
 FFLAGS	         = 
-CPPFLAGS         = -Wno-shadow
+CPPFLAGS         = 
 FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
