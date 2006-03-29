@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #endif
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomSeed_Rand"
 PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed_Rand(PetscRandom r)
@@ -22,18 +21,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue_Rand(PetscRandom r,PetscScala
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
-  if (r->type == RANDOM_DEFAULT) {
-    if (r->iset)
-         *val = PetscRealPart(r->width)*RAND_WRAP() + PetscRealPart(r->low) +
-                (PetscImaginaryPart(r->width)*RAND_WRAP() + PetscImaginaryPart(r->low)) * PETSC_i;
-    else *val = RAND_WRAP() + RAND_WRAP()*PETSC_i;
-  } else if (r->type == RANDOM_DEFAULT_REAL) {
-    if (r->iset) *val = PetscRealPart(r->width)*RAND_WRAP() + PetscRealPart(r->low);
-    else         *val = RAND_WRAP();
-  } else if (r->type == RANDOM_DEFAULT_IMAGINARY) {
-    if (r->iset) *val = (PetscImaginaryPart(r->width)*RAND_WRAP()+PetscImaginaryPart(r->low))*PETSC_i;
-    else         *val = RAND_WRAP()*PETSC_i;
-  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid random number type");
+  if (r->iset)
+    *val = PetscRealPart(r->width)*RAND_WRAP() + PetscRealPart(r->low) +
+      (PetscImaginaryPart(r->width)*RAND_WRAP() + PetscImaginaryPart(r->low)) * PETSC_i;
+  else *val = RAND_WRAP() + RAND_WRAP()*PETSC_i;
 #else
   if (r->iset) *val = r->width * RAND_WRAP() + r->low;
   else         *val = RAND_WRAP();
@@ -94,7 +85,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate_Rand(PetscRandom r)
   PetscFunctionBegin;
   ierr = PetscMemcpy(r->ops,&PetscRandomOps_Values,sizeof(PetscRandomOps_Values));CHKERRQ(ierr);
   srand(r->seed);   
-  ierr = PetscObjectChangeTypeName((PetscObject)r,PETSC_RAND48);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)r,PETSCRAND);CHKERRQ(ierr);
   ierr = PetscPublishAll(r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

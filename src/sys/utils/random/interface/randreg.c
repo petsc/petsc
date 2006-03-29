@@ -34,7 +34,7 @@ PetscTruth PetscRandomRegisterAllCalled = PETSC_FALSE;
                      of available types
 
   Notes:
-  See "petsc/include/petscsys.h" for available random types (for instance, PETSC_RAND48, PETSC_RAND).
+  See "petsc/include/petscsys.h" for available random types (for instance, PETSCRAND48, PETSCRAND).
 
   Level: intermediate
 
@@ -104,7 +104,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomGetType(PetscRandom rand, PetscRand
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomSetTypeFromOptions_Private"
 /*
-  PetscRandomSetTypeFromOptions_Private - Sets the type of random generator from user options. Defaults to type PETSC_RAND48 or PETSC_RAND.
+  PetscRandomSetTypeFromOptions_Private - Sets the type of random generator from user options. Defaults to type PETSCRAND48 or PETSCRAND.
 
   Collective on PetscRandom
 
@@ -128,9 +128,9 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rand)
     defaultType = rand->type_name;
   } else {
 #if defined(PETSC_HAVE_DRAND48)    
-    defaultType = PETSC_RAND48;
+    defaultType = PETSCRAND48;
 #elif defined(PETSC_HAVE_RAND)
-    defaultType = PETSC_RAND;
+    defaultType = PETSCRAND;
 #endif
   }
 
@@ -293,10 +293,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomRegisterAll(const char path[])
   PetscFunctionBegin;
   PetscRandomRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_DRAND)
-  ierr = PetscRandomRegisterDynamic(PETSC_RAND,  path,"PetscRandomCreate_Rand",  PetscRandomCreate_Rand);CHKERRQ(ierr);
+  ierr = PetscRandomRegisterDynamic(PETSCRAND,  path,"PetscRandomCreate_Rand",  PetscRandomCreate_Rand);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_DRAND48)
-  ierr = PetscRandomRegisterDynamic(PETSC_RAND48,path,"PetscRandomCreate_Rand48",PetscRandomCreate_Rand48);CHKERRQ(ierr);
+  ierr = PetscRandomRegisterDynamic(PETSCRAND48,path,"PetscRandomCreate_Rand48",PetscRandomCreate_Rand48);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

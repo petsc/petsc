@@ -26,8 +26,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDisplay(char[],size_t);
 
 extern PetscCookie PETSC_DLLEXPORT PETSC_RANDOM_COOKIE;
 
-#define PETSC_RAND               "petsc_rand"
-#define PETSC_RAND48             "petsc_rand48"
+#define PETSCRAND               "petscrand"
+#define PETSCRAND48             "petscrand48"
 #define PetscRandomType const char*
 
 /* Logging support */
