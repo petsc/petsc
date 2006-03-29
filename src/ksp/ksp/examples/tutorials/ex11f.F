@@ -127,7 +127,8 @@
       else
          use_random = .true.
          call PetscRandomCreate(PETSC_COMM_WORLD,                       &
-     &        RANDOM_DEFAULT_IMAGINARY,rctx,ierr)
+     &        rctx,ierr)
+         call PetscRandomSetFromOptions(rctx,ierr)
       endif
       h2 = 1.0/((n+1)*(n+1))
 
@@ -152,7 +153,8 @@
           JJ = II + 1
           call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
-        if (use_random) call PetscRandomGetValue(rctx,sigma2,ierr)
+        if (use_random) call PetscRandomGetValueImaginary(rctx,         &
+     &                        sigma2,ierr)
         v = 4.0 - sigma1*h2 + sigma2*h2
         call  MatSetValues(A,one,II,one,II,v,ADD_VALUES,ierr)
  10   continue
@@ -181,8 +183,8 @@
 !  Set exact solution; then compute right-hand-side vector.
 
       if (use_random) then
-         call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,        &
-     &                          rctx,ierr)
+         call PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr)                        
+         call PetscRandomSetFromOptions(rctx,ierr)
          call VecSetRandom(rctx,u,ierr)
       else
          pfive = 0.5

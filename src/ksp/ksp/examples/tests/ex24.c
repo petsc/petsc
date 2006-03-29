@@ -59,7 +59,8 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&u_tmp);CHKERRQ(ierr);
     CHKMEMQ;
   /* Set exact solution u; then compute right-hand-side vector b. */   
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
   ierr = VecSetRandom(u,r);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(r);CHKERRQ(ierr); 
       CHKMEMQ;

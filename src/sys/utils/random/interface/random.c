@@ -15,16 +15,6 @@
 #include "src/sys/utils/random/randomimpl.h"
 #if defined (PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
-#else
-/* maybe the protypes are missing */
-#if defined(PETSC_HAVE_DRAND48)
-EXTERN_C_BEGIN
-extern double drand48();
-extern void   srand48(long);
-EXTERN_C_END
-#else
-extern double drand48();
-#endif
 #endif
 
 /* Logging support */
@@ -227,7 +217,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetSeed(PetscRandom r,unsigned long se
 .seealso: PetscRandomGetValue(), PetscRandomSetInterval(), PetscRandomDestroy(), VecSetRandom()
 @*/
 
-PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
 {
   PetscRandom    rr;
   PetscErrorCode ierr;
@@ -239,11 +229,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandomType t
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = PetscRandomInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  /*
-  if (type != RANDOM_DEFAULT && type != RANDOM_DEFAULT_REAL && type != RANDOM_DEFAULT_IMAGINARY){
-    SETERRQ(PETSC_ERR_SUP,"Not for this random number type");
-  }
-  */
+
   ierr = PetscHeaderCreate(rr,_p_PetscRandom,struct _PetscRandomOps,PETSC_RANDOM_COOKIE,-1,"PetscRandom",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(rr, sizeof(struct _p_PetscRandom));CHKERRQ(ierr);
   ierr = PetscMemzero(rr->ops, sizeof(struct _PetscRandomOps));CHKERRQ(ierr);
@@ -256,11 +242,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandomType t
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;
   rr->seed  = 0x12345678+rank;
-#if defined(PETSC_HAVE_DRAND48)
-  srand48(rr->seed);   
-#elif defined(PETSC_HAVE_RAND)
-  srand(rr->seed);
-#endif
   *r = rr;
   PetscFunctionReturn(0);
 }
@@ -283,13 +264,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandomType t
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed(PetscRandom r)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
-#if defined(PETSC_HAVE_DRAND48)
-  srand48(r->seed);   
-#elif defined(PETSC_HAVE_RAND)
-  srand(r->seed); 
-#endif
+  PetscValidType(r,1);
+
+  ierr = (*r->ops->seed)(r);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -327,31 +309,106 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed(PetscRandom r)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
   PetscValidIntPointer(val,2);
   PetscValidType(r,1);
 
+  ierr = (*r->ops->getvalue)(r,val);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)r);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-#if defined(PETSC_USE_COMPLEX)
-  if (r->type == RANDOM_DEFAULT) {
-    if (r->iset) {
-         *val = PetscRealPart(r->width)*drand48() + PetscRealPart(r->low) +
-           (PetscImaginaryPart(r->width)*drand48() + PetscImaginaryPart(r->low)) * PETSC_i; // modify!
-    }
-    else *val = drand48() + drand48()*PETSC_i;
-  } else if (r->type == RANDOM_DEFAULT_REAL) {
-    if (r->iset) *val = PetscRealPart(r->width)*drand48() + PetscRealPart(r->low);
-    else                       *val = drand48();
-  } else if (r->type == RANDOM_DEFAULT_IMAGINARY) {
-    if (r->iset) *val = (PetscImaginaryPart(r->width)*drand48()+PetscImaginaryPart(r->low))*PETSC_i;
-    else         *val = drand48()*PETSC_i;
-  } else {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid random number type");
-  }
-#else
-  if (r->iset) *val = r->width * drand48() + r->low;
-  else         *val = drand48();
-#endif
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomGetValueReal"
+/*@
+   PetscRandomGetValue - Generates a random number.  Call this after first calling
+   PetscRandomCreate().
+
+   Not Collective
+
+   Intput Parameter:
+.  r  - the random number generator context
+
+   Output Parameter:
+.  val - the value
+
+   Level: intermediate
+
+   Notes:
+   Use VecSetRandom() to set the elements of a vector to random numbers.
+
+   Example of Usage:
+.vb
+      PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&r);
+      PetscRandomGetValue(r,&value1);
+      PetscRandomGetValue(r,&value2);
+      PetscRandomGetValue(r,&value3);
+      PetscRandomDestroy(r);
+.ve
+
+   Concepts: random numbers^getting
+
+.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscScalar *val)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  PetscValidIntPointer(val,2);
+  PetscValidType(r,1);
+
+  ierr = (*r->ops->getvalue)(r,val);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)r);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomGetValueImaginary"
+/*@
+   PetscRandomGetValue - Generates a random number.  Call this after first calling
+   PetscRandomCreate().
+
+   Not Collective
+
+   Intput Parameter:
+.  r  - the random number generator context
+
+   Output Parameter:
+.  val - the value
+
+   Level: intermediate
+
+   Notes:
+   Use VecSetRandom() to set the elements of a vector to random numbers.
+
+   Example of Usage:
+.vb
+      PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&r);
+      PetscRandomGetValue(r,&value1);
+      PetscRandomGetValue(r,&value2);
+      PetscRandomGetValue(r,&value3);
+      PetscRandomDestroy(r);
+.ve
+
+   Concepts: random numbers^getting
+
+.seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueImaginary(PetscRandom r,PetscScalar *val)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  PetscValidIntPointer(val,2);
+  PetscValidType(r,1);
+
+  ierr = (*r->ops->getvalue)(r,val);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

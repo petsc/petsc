@@ -20,7 +20,8 @@ int main(int argc,char **argv) {
 
   /* Create a aij matrix for checking */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,5,5,2,PETSC_NULL,&A);CHKERRQ(ierr); 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
  
   k = 0;
   for (i=0; i<5; i++) {

@@ -64,7 +64,8 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(v1);CHKERRQ(ierr);
   ierr = VecDuplicate(v1,&v2);CHKERRQ(ierr);
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rdm);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-fill",&fill,PETSC_NULL);CHKERRQ(ierr);
 
   /* Test MatMatMult() */

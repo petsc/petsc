@@ -49,7 +49,8 @@ int main(int argc,char **args)
 
   /* Create the random Index Sets */
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
   for (i=0; i<nd; i++) {
     ierr  = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
     start = (PetscInt)(rand*m);

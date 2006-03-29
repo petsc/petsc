@@ -147,7 +147,8 @@ int main(int argc,char **argv)
   ierr = VecSetSizes(v1,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(v1);CHKERRQ(ierr);
   ierr = VecDuplicate(v1,&v2);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rdm);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
 
   /* Test MatMatMult(): C = A*P */
   /*----------------------------*/

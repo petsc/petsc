@@ -90,7 +90,8 @@ int main(int argc,char **args)
   if (flg) use_random = 0;
   else     use_random = 1;
   if (use_random) {
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx);CHKERRQ(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   } else {
     sigma2 = 10.0*PETSC_i;
   }
@@ -105,7 +106,7 @@ int main(int argc,char **args)
       J = I-1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (j<n-1) {
       J = I+1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-    if (use_random) {ierr = PetscRandomGetValue(rctx,&sigma2);CHKERRQ(ierr);}
+    if (use_random) {ierr = PetscRandomGetValueImaginary(rctx,&sigma2);CHKERRQ(ierr);}
     v = 4.0 - sigma1*h2 + sigma2*h2;
     ierr = MatSetValues(A,1,&I,1,&I,&v,ADD_VALUES);CHKERRQ(ierr);
   }

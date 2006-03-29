@@ -29,7 +29,8 @@ int main(int argc,char **args)
   /* create a SeqBAIJ matrix A */
   M    = m*bs;
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,PETSC_NULL,&A);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
   ierr = PetscMalloc(bs*sizeof(PetscInt),&rows);CHKERRQ(ierr);
   ierr = PetscMalloc(bs*sizeof(PetscInt),&cols);CHKERRQ(ierr);

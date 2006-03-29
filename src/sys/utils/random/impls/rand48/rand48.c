@@ -20,7 +20,6 @@ extern double drand48();
 PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed_Rand48(PetscRandom r)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
   srand48(r->seed);   
   PetscFunctionReturn(0);
 }
@@ -30,24 +29,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed_Rand48(PetscRandom r)
 PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue_Rand48(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
-  PetscValidIntPointer(val,2);
-#if defined(PETSC_USE_COMPLEX)
-  if (r->type == RANDOM_DEFAULT) {
-    if (r->iset) {
-         *val = PetscRealPart(r->width)*drand48() + PetscRealPart(r->low) +
-                (PetscImaginaryPart(r->width)*drand48() + PetscImaginaryPart(r->low)) * PETSC_i;
-    }
-    else *val = drand48() + drand48()*PETSC_i;
-  } else if (r->type == RANDOM_DEFAULT_REAL) {
-    if (r->iset) *val = PetscRealPart(r->width)*drand48() + PetscRealPart(r->low);
-    else                       *val = drand48();
-  } else if (r->type == RANDOM_DEFAULT_IMAGINARY) {
-    if (r->iset) *val = (PetscImaginaryPart(r->width)*drand48()+PetscImaginaryPart(r->low))*PETSC_i;
-    else         *val = drand48()*PETSC_i;
+#if defined(PETSC_USE_COMPLEX)  
+  if (r->iset) {
+    *val = PetscRealPart(r->width)*drand48() + PetscRealPart(r->low) +
+      (PetscImaginaryPart(r->width)*drand48() + PetscImaginaryPart(r->low)) * PETSC_i;
   } else {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid random number type");
-  }
+    *val = drand48() + drand48()*PETSC_i;
+  } 
 #else
   if (r->iset) *val = r->width * drand48() + r->low;
   else         *val = drand48();
@@ -55,15 +43,45 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue_Rand48(PetscRandom r,PetscSca
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomGetValue_Rand48"
+PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal_Rand48(PetscRandom r,PetscScalar *val)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_COMPLEX)
+  if (r->iset) *val = PetscRealPart(r->width)*drand48() + PetscRealPart(r->low);
+  else         *val = drand48();
+#else
+  if (r->iset) *val = r->width * drand48() + r->low;
+  else         *val = drand48();
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomGetValue_Rand48"
+PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueImaginary_Rand48(PetscRandom r,PetscScalar *val)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_USE_COMPLEX)
+  if (r->iset) *val = (PetscImaginaryPart(r->width)*drand48()+PetscImaginaryPart(r->low))*PETSC_i;
+  else         *val = drand48()*PETSC_i;   
+#else
+  if (r->iset) *val = r->width * drand48() + r->low;
+  else         *val = drand48();
+#endif
+  PetscFunctionReturn(0);
+}
 
 static struct _PetscRandomOps PetscRandomOps_Values = {
   /* 0 */
   PetscRandomSeed_Rand48,
-  0,
-  0,
   PetscRandomGetValue_Rand48,
+  PetscRandomGetValueReal_Rand48,
+  PetscRandomGetValueImaginary_Rand48,
   0,
   /* 5 */
+  0,
   0,
   0
 };

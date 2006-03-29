@@ -59,7 +59,8 @@ int main(int argc,char **args)
   /* PLAPACK doesn't support INSERT_VALUES mode, zero all entries before calling MatSetValues() */
   ierr = MatZeroEntries(C);CHKERRQ(ierr);
   ierr = MatZeroEntries(Cpetsc);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRQ(ierr);
   printf(" [%d] C m: %d, Istart/end: %d %d\n",rank,m,Istart,Iend);
   

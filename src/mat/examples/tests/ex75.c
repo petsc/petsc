@@ -191,7 +191,8 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&s1);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&s2);CHKERRQ(ierr);
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   ierr = VecSetRandom(x,rctx);CHKERRQ(ierr);
   ierr = VecSet(u,one);CHKERRQ(ierr);
 

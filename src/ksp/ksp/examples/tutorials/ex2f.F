@@ -202,8 +202,8 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
      &             "-random_exact_sol",flg,ierr)
       if (flg .eq. 1) then
-         call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,        &
-     &                          rctx,ierr)
+         call PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr)
+         call PetscRandomSetFromOptions(rctx,ierr)
          call VecSetRandom(u,rctx,ierr)
          call PetscRandomDestroy(rctx,ierr)
       else

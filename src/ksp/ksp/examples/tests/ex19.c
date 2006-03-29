@@ -139,7 +139,8 @@ int main(int argc,char **argv)
   ierr = VecSet(user.fine.b,one);CHKERRQ(ierr);
   {
     PetscRandom rdm;
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rdm);CHKERRQ(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
     ierr = VecSetRandom(user.fine.b,rdm);CHKERRQ(ierr);
     ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
   }

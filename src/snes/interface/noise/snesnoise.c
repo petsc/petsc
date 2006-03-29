@@ -48,7 +48,8 @@ PetscErrorCode DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   w = neP->workv[0];
 
   /* Set components of vector w to random numbers */
-  ierr = PetscRandomCreate(snes->comm,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(snes->comm,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   ierr = VecSetRandom(w,rctx);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
 

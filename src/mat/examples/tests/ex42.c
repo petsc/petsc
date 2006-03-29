@@ -46,7 +46,8 @@ int main(int argc,char **args)
   
   /* Create the Random no generator */
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);  
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
 
   /* Create the IS corresponding to subdomains */
   ierr = PetscMalloc(nd*sizeof(IS **),&is1);CHKERRQ(ierr);

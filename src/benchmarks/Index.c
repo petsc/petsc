@@ -31,7 +31,8 @@ int test1(void)
   PetscScalar *x,*y;
   PetscRandom r;
 
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
   ierr = PetscMalloc(20000*sizeof(PetscScalar),&x);CHKERRQ(ierr);
   ierr = PetscMalloc(20000*sizeof(PetscScalar),&y);CHKERRQ(ierr);
 
@@ -124,7 +125,8 @@ int test2(void)
   PetscScalar  x[20000],y[20000];
   PetscRandom  r;
 
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
 
   /* Take care of paging effects */
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);

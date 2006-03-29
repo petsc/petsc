@@ -13,7 +13,8 @@
          print*, 'Unable to begin PETSc program'
       endif
 
-      call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,r,ierr)
+      call PetscRandomCreate(PETSC_COMM_WORLD,r,ierr)
+      call PetscRandomSetFromOptions(r,ierr)
       call PetscRandomGetValue(r,rand,ierr)
       print*, 'Random value:',rand
 

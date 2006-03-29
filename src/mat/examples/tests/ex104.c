@@ -23,7 +23,8 @@ int main(int argc,char **argv) {
   ierr = MatSetSizes(A,M,N,M,N);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(A,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);  
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
   ierr = MatGetArray(A,&array);CHKERRQ(ierr);
   k = 0;
   for (i=0; i<M; i++){

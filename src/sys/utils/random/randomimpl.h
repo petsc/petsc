@@ -8,13 +8,14 @@ typedef struct _PetscRandomOps *PetscRandomOps;
 struct _PetscRandomOps {
   /* 0 */
   PetscErrorCode PETSC_DLLEXPORT (*seed)(PetscRandom);
-  PetscErrorCode PETSC_DLLEXPORT (*getseed)(PetscRandom,unsigned long *);
-  PetscErrorCode PETSC_DLLEXPORT (*setseed)(PetscRandom,unsigned long);
   PetscErrorCode PETSC_DLLEXPORT (*getvalue)(PetscRandom,PetscScalar*);
+  PetscErrorCode PETSC_DLLEXPORT (*getvaluereal)(PetscRandom,PetscScalar*);
+  PetscErrorCode PETSC_DLLEXPORT (*getvalueimaginary)(PetscRandom,PetscScalar*);
   PetscErrorCode PETSC_DLLEXPORT (*getinterval)(PetscRandom,PetscScalar*,PetscScalar*);
   /* 5 */
   PetscErrorCode PETSC_DLLEXPORT (*setinterval)(PetscRandom,PetscScalar,PetscScalar);
   PetscErrorCode PETSC_DLLEXPORT (*destroy)(PetscRandom);
+  PetscErrorCode PETSC_DLLEXPORT (*setfromoptions)(PetscRandom);
 };
 
 struct _p_PetscRandom {

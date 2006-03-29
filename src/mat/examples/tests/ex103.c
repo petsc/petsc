@@ -41,7 +41,8 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr); /* save the true solution */
 
   /* Assembly */
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = MatGetArray(C,&array);CHKERRQ(ierr);
   for (i=0; i<m*M; i++){
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);

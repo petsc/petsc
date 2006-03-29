@@ -26,9 +26,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDisplay(char[],size_t);
 
 extern PetscCookie PETSC_DLLEXPORT PETSC_RANDOM_COOKIE;
 
-#define RANDOM_DEFAULT           "random_default"
-#define RANDOM_DEFAULT_REAL      "random_default_real"
-#define RANDOM_DEFAULT_IMAGINARY "random_default_imaginary"
 #define PETSC_RAND               "petsc_rand"
 #define PETSC_RAND48             "petsc_rand48"
 #define PetscRandomType const char*
@@ -57,6 +54,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterAll(const char []);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscRandom));
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterDestroy(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomSetType(PetscRandom, PetscRandomType);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomSetFromOptions(PetscRandom);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomPrintHelp(PetscRandom);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetType(PetscRandom, PetscRandomType *);
 
 /*MC
@@ -107,8 +106,10 @@ M*/
 #define PetscRandomRegisterDynamic(a,b,c,d) PetscRandomRegister(a,b,c,d)
 #endif
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm,PetscRandomType,PetscRandom*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm,PetscRandom*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom,PetscScalar*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom,PetscReal*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueImaginary(PetscRandom,PetscScalar*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetInterval(PetscRandom,PetscScalar*,PetscScalar*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomSetInterval(PetscRandom,PetscScalar,PetscScalar);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomSetSeed(PetscRandom,unsigned long);

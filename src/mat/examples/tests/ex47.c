@@ -65,7 +65,8 @@ int main(int argc,char **args)
   if (!tflg)  SETERRQ(1,"MatGetDiagonal() failed");
 
   /* Test MatDiagonalScale() */
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
   ierr = VecSetRandom(x,r);CHKERRQ(ierr);
   ierr = VecSetRandom(y,r);CHKERRQ(ierr);
 

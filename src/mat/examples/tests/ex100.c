@@ -43,7 +43,8 @@ int main(int argc,char **args)
   } else {
     ierr = MatConvert(MA,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   }
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&xx);CHKERRQ(ierr);
   ierr = VecSetSizes(xx,m,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(xx);CHKERRQ(ierr);

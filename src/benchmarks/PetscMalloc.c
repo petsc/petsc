@@ -15,7 +15,8 @@ int main(int argc,char **argv)
   
   PetscInitialize(&argc,&argv,0,0);
   
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
   for (i=0; i<1000; i++) {
     ierr    = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
     rand1[i] = (int)(value* 144327);

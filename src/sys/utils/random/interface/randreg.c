@@ -26,7 +26,7 @@ PetscTruth PetscRandomRegisterAllCalled = PETSC_FALSE;
   Collective on PetscRandom
 
   Input Parameters:
-+ rand   - The random object
++ rand   - The random number generator context
 - type - The name of the random type
 
   Options Database Key:
@@ -34,7 +34,7 @@ PetscTruth PetscRandomRegisterAllCalled = PETSC_FALSE;
                      of available types
 
   Notes:
-  See "petsc/include/petscsys.h" for available random types (for instance, RANDOM_RAND48, RANDOM_RAND).
+  See "petsc/include/petscsys.h" for available random types (for instance, PETSC_RAND48, PETSC_RAND).
 
   Level: intermediate
 
@@ -63,7 +63,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomSetType(PetscRandom rand, PetscRand
   if (rand->ops->destroy) {
     ierr = (*rand->ops->destroy)(rand);CHKERRQ(ierr);
   }
-  ierr = (*r)(rand);CHKERRQ(ierr); /* PetscRandomCreate_xxx() ? */
+  ierr = (*r)(rand);CHKERRQ(ierr); 
 
   ierr = PetscObjectChangeTypeName((PetscObject)rand, type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -100,7 +100,119 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomGetType(PetscRandom rand, PetscRand
   *type = rand->type_name;
   PetscFunctionReturn(0);
 }
+//-------------------------------------------------------------------
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomSetTypeFromOptions_Private"
+/*
+  PetscRandomSetTypeFromOptions_Private - Sets the type of random generator from user options. Defaults to type PETSC_RAND48 or PETSC_RAND.
 
+  Collective on PetscRandom
+
+  Input Parameter:
+. rand - The random number generator context
+
+  Level: intermediate
+
+.keywords: PetscRandom, set, options, database, type
+.seealso: PetscRandomSetFromOptions(), PetscRandomSetType()
+*/
+static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rand)
+{
+  PetscTruth     opt;
+  const char     *defaultType;
+  char           typeName[256];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (rand->type_name) {
+    defaultType = rand->type_name;
+  } else {
+#if defined(PETSC_HAVE_DRAND48)    
+    defaultType = PETSC_RAND48;
+#elif defined(PETSC_HAVE_RAND)
+    defaultType = PETSC_RAND;
+#endif
+  }
+
+  if (!PetscRandomRegisterAllCalled) {
+    ierr = PetscRandomRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsList("-random_type","PetscRandom type","PetscRandomSetType",PetscRandomList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscRandomSetType(rand, typeName);CHKERRQ(ierr);
+  } else {
+    ierr = PetscRandomSetType(rand, defaultType);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomSetFromOptions"
+/*@
+  PetscRandomSetFromOptions - Configures the random number generator from the options database.
+
+  Collective on PetscRandom
+
+  Input Parameter:
+. rand - The random number generator context
+
+  Notes:  To see all options, run your program with the -help option, or consult the users manual.
+          Must be called after PetscRandomCreate() but before the rand is used.
+
+  Level: beginner
+
+.keywords: PetscRandom, set, options, database
+.seealso: PetscRandomCreate(), PetscRandomSetType()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRandomSetFromOptions(PetscRandom rand)
+{
+  PetscTruth     opt;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(rand,PETSC_RANDOM_COOKIE,1);
+
+  ierr = PetscOptionsBegin(rand->comm, rand->prefix, "PetscRandom options", "PetscRandom");CHKERRQ(ierr);
+
+  /* Handle generic options */
+  ierr = PetscOptionsHasName(PETSC_NULL, "-help", &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscRandomPrintHelp(rand);CHKERRQ(ierr);
+  }
+
+  /* Handle PetscRandom type options */
+  ierr = PetscRandomSetTypeFromOptions_Private(rand);CHKERRQ(ierr);
+
+  /* Handle specific random generator's options */
+  if (rand->ops->setfromoptions) {
+    ierr = (*rand->ops->setfromoptions)(rand);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomPrintHelp"
+/*@
+  PetscRandomPrintHelp - Prints some options for the PetscRandom.
+
+  Input Parameter:
+. rand - The random number generator context
+
+  Options Database Keys:
+$  -help, -h
+
+  Level: intermediate
+
+.keywords: PetscRandom, help
+.seealso: PetscRandomSetFromOptions()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRandomPrintHelp(PetscRandom rand)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(rand, PETSC_RANDOM_COOKIE,1);
+  PetscFunctionReturn(0);
+}
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 #undef __FUNCT__  

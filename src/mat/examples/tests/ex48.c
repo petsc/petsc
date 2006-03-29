@@ -26,7 +26,8 @@ int main(int argc,char **args)
   M    = m*bs;
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,PETSC_NULL,&A);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,M,M,15,PETSC_NULL,&B);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rdm);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,M,&xx);CHKERRQ(ierr);
   ierr = VecDuplicate(xx,&s1);CHKERRQ(ierr);
   ierr = VecDuplicate(xx,&s2);CHKERRQ(ierr);

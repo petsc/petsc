@@ -47,7 +47,8 @@ int main(int argc,char **args)
     use_random = 0;
     ierr = VecSet(u,pfive);CHKERRQ(ierr);
   } else {
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);
   }
 
@@ -150,7 +151,8 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
     PetscReal   h2,sigma1 = 5.0;
     PetscScalar sigma2;
     ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx);CHKERRQ(ierr);
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
     for (I=Istart; I<Iend; I++) { 
       *val = -1.0; i = I/n; j = I - i*n;  
@@ -162,7 +164,7 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
         J = I-1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
       if (j<n-1) {
         J = I+1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
-      ierr = PetscRandomGetValue(rctx,&sigma2);CHKERRQ(ierr);
+      ierr = PetscRandomGetValueImaginary(rctx,&sigma2);CHKERRQ(ierr);
       *val = 4.0 - sigma1*h2 + sigma2*h2;
       ierr = MatSetValues(A,1,&I,1,&I,val,ADD_VALUES);CHKERRQ(ierr);
     }
