@@ -20,7 +20,11 @@ class Arg(object):
   '''This is the base class for all objects contained in RDict. Access to the raw argument values is
 provided by getValue() and setValue(). These objects can be thought of as type objects for the
 values themselves. It is possible to set an Arg in the RDict which has not yet been assigned a value
-in order to declare the type of that option.'''
+in order to declare the type of that option.
+
+Inputs which cannot be converted to the correct type will cause TypeError, those failing validation
+tests will cause ValueError.
+'''
   def __init__(self, key, value = None, help = '', isTemporary = 0):
     self.key = key
     if not value is None:
@@ -103,6 +107,24 @@ in order to declare the type of that option.'''
         return value
     return None
   findArgument = staticmethod(findArgument)
+
+  def processAlternatePrefixes(argList):
+    '''Convert alternate prefixes to our normal form'''
+    for l in range(0, len(argList)):
+      name = argList[l]
+      if name.find('enable-') >= 0:
+        argList[l] = name.replace('enable-','with-')
+        if name.find('=') == -1: argList[l] = argList[l]+'=1'
+      if name.find('disable-') >= 0:
+        argList[l] = name.replace('disable-','with-')
+        if name.find('=') == -1: argList[l] = argList[l]+'=0'
+        elif name.endswith('=1'): argList[l].replace('=1','=0')
+      if name.find('without-') >= 0:
+        argList[l] = name.replace('without-','with-')
+        if name.find('=') == -1: argList[l] = argList[l]+'=0'
+        elif name.endswith('=1'): argList[l].replace('=1','=0')
+    return
+  processAlternatePrefixes = staticmethod(processAlternatePrefixes)
 
   def __str__(self):
     if not self.isValueSet():
@@ -229,7 +251,7 @@ class ArgInt(Arg):
     except:
       raise TypeError('Invalid integer number: '+str(value)+' for key '+str(self.key))
     if value < self.min or value >= self.max:
-      raise TypeError('Number out of range: '+str(value)+' not in ['+str(self.min)+','+str(self.max)+')'+' for key '+str(self.key))
+      raise ValueError('Number out of range: '+str(value)+' not in ['+str(self.min)+','+str(self.max)+')'+' for key '+str(self.key))
     self.value = value
     return
 
@@ -251,7 +273,7 @@ class ArgReal(Arg):
     except:
       raise TypeError('Invalid floating point number: '+str(value)+' for key '+str(self.key))
     if value < self.min or value >= self.max:
-      raise TypeError('Number out of range: '+str(value)+' not in ['+str(self.min)+','+str(self.max)+')'+' for key '+str(self.key))
+      raise ValueError('Number out of range: '+str(value)+' not in ['+str(self.min)+','+str(self.max)+')'+' for key '+str(self.key))
     self.value = value
     return
 
@@ -331,7 +353,7 @@ class ArgDirList(Arg):
     value = nvalue
     for dir in value:
       if self.mustExist and not os.path.isdir(dir):
-        raise TypeError('Invalid directory: '+str(dir)+' for key '+str(self.key))
+        raise ValueError('Invalid directory: '+str(dir)+' for key '+str(self.key))
     self.value = value
     return
 
@@ -370,7 +392,7 @@ class ArgLibrary(Arg):
         value = [value]
       for lib in value:
         if lib.startswith('/') and not os.path.isfile(lib):
-          raise TypeError('Invalid library: '+str(lib)+' for key '+str(self.key))
+          raise ValueError('Invalid library: '+str(lib)+' for key '+str(self.key))
     self.value = value
     return
 
@@ -422,8 +444,8 @@ class ArgExecutable(Arg):
           if self.checkExecutable(dir, value):
             found = 1
             break
-      if found:
-        raise TypeError('Invalid executable: '+str(value)+' for key '+str(self.key))
+      if not found:
+        raise ValueError('Invalid executable: '+str(value)+' for key '+str(self.key))
     self.value = value+options
     return
 
@@ -440,6 +462,6 @@ class ArgString(Arg):
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     if self.regExp and not self.re.match(value):
-      raise TypeError('Invalid string '+str(value)+'. You must give a string satisfying "'+str(self.regExp)+'"'+' for key '+str(self.key))
+      raise ValueError('Invalid string '+str(value)+'. You must give a string satisfying "'+str(self.regExp)+'"'+' for key '+str(self.key))
     self.value = value
     return

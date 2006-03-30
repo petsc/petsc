@@ -474,8 +474,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def substituteFile(self, inName, outName):
     '''Carry out substitution on the file "inName", creating "outName"'''
     inFile  = file(inName)
-    if not os.path.exists(os.path.dirname(outName)):
-      os.makedirs(os.path.dirname(outName))
+    if os.path.dirname(outName):
+      if not os.path.exists(os.path.dirname(outName)):
+        os.makedirs(os.path.dirname(outName))
     outFile = file(outName, 'w')
     for line in inFile.xreadlines():
       outFile.write(self.substRE.sub(self.substituteName, line))
