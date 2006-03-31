@@ -220,8 +220,6 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStashSetInitialSize(Vec,PetscInt,Pet
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStashView(Vec,PetscViewer);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
-extern PETSCVEC_DLLEXPORT PetscInt    VecSetValue_Row;
-extern PETSCVEC_DLLEXPORT PetscScalar VecSetValue_Value;
 /*MC
    VecSetValue - Set a single entry into a vector.
 
@@ -278,7 +276,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecSetValue(Vec v,PetscInt i,PetscScalar va,I
 
 .seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(), VecSetValue()
 M*/
-#define VecSetValueLocal(v,i,va,mode) ((VecSetValue_Row = i,VecSetValue_Value = va,0) || VecSetValuesLocal(v,1,&VecSetValue_Row,&VecSetValue_Value,mode))
+PETSC_STATIC_INLINE PetscErrorCode VecSetValueLocal(Vec v,PetscInt i,PetscScalar va,InsertMode mode) {return VecSetValuesLocal(v,1,&i,&va,mode);}
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec,PetscInt);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetBlockSize(Vec,PetscInt*);
