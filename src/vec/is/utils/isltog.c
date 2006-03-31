@@ -78,7 +78,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingView(ISLocalToGlobalMapp
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISLocalToGlobalMappingCreateIS"
-/*@C
+/*@
     ISLocalToGlobalMappingCreateIS - Creates a mapping between a local (0 to n)
     ordering and a global parallel ordering.
 

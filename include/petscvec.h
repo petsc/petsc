@@ -220,8 +220,6 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStashSetInitialSize(Vec,PetscInt,Pet
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStashView(Vec,PetscViewer);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStashGetInfo(Vec,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 
-extern PETSCVEC_DLLEXPORT PetscInt    VecSetValue_Row;
-extern PETSCVEC_DLLEXPORT PetscScalar VecSetValue_Value;
 /*MC
    VecSetValue - Set a single entry into a vector.
 
@@ -251,34 +249,6 @@ extern PETSCVEC_DLLEXPORT PetscScalar VecSetValue_Value;
 M*/
 PETSC_STATIC_INLINE PetscErrorCode VecSetValue(Vec v,PetscInt i,PetscScalar va,InsertMode mode) {return VecSetValues(v,1,&i,&va,mode);}
 
-/*MC
-   VecSetValueLocal - Set a single entry into a vector using the local numbering
-
-   Synopsis:
-   PetscErrorCode VecSetValueLocal(Vec v,int row,PetscScalar value, InsertMode mode);
-
-   Not Collective
-
-   Input Parameters:
-+  v - the vector
-.  row - the row location of the entry
-.  value - the value to insert
--  mode - either INSERT_VALUES or ADD_VALUES
-
-   Notes:
-   For efficiency one should use VecSetValues() and set several or 
-   many values simultaneously if possible.
-
-   These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
-   MUST be called after all calls to VecSetValues() have been completed.
-
-   VecSetValues() uses 0-based indices in Fortran as well as in C.
-
-   Level: beginner
-
-.seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(), VecSetValue()
-M*/
-#define VecSetValueLocal(v,i,va,mode) ((VecSetValue_Row = i,VecSetValue_Value = va,0) || VecSetValuesLocal(v,1,&VecSetValue_Row,&VecSetValue_Value,mode))
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetBlockSize(Vec,PetscInt);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetBlockSize(Vec,PetscInt*);
@@ -390,6 +360,36 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec,PetscInt*,Pets
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec,ISLocalToGlobalMapping);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesLocal(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+
+/*MC
+   VecSetValueLocal - Set a single entry into a vector using the local numbering
+
+   Synopsis:
+   PetscErrorCode VecSetValueLocal(Vec v,int row,PetscScalar value, InsertMode mode);
+
+   Not Collective
+
+   Input Parameters:
++  v - the vector
+.  row - the row location of the entry
+.  value - the value to insert
+-  mode - either INSERT_VALUES or ADD_VALUES
+
+   Notes:
+   For efficiency one should use VecSetValues() and set several or 
+   many values simultaneously if possible.
+
+   These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
+   MUST be called after all calls to VecSetValues() have been completed.
+
+   VecSetValues() uses 0-based indices in Fortran as well as in C.
+
+   Level: beginner
+
+.seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(), VecSetValue()
+M*/
+PETSC_STATIC_INLINE PetscErrorCode VecSetValueLocal(Vec v,PetscInt i,PetscScalar va,InsertMode mode) {return VecSetValuesLocal(v,1,&i,&va,mode);}
+
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMappingBlock(Vec,ISLocalToGlobalMapping);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlockedLocal(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 
