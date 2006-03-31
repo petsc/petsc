@@ -353,7 +353,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *va
 
 .seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscScalar *val)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
 {
   PetscErrorCode ierr;
 
