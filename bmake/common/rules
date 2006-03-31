@@ -13,6 +13,13 @@ chkpetsc_dir:
           echo "******************************************************" ; \
         fi
 
+chk_loc:
+	@if [ ${LOC}foo = foo ] ; then \
+	  echo "*********************** ERROR ************************" ; \
+	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc"; \
+	  echo "******************************************************";  false; fi
+	@${MKDIR} ${LOC}/docs/manualpages
+
 lssrc:
 	@if [ "${SOURCEC}"foo != "foo" -o "${SOURCEH}foo" != "foo" ]; then \
 	  ls ${SOURCEC} ${SOURCEH} | cat;\
@@ -218,7 +225,7 @@ getmpirun:
 #
 #
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .eps .pdf .dvi .ps
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .eps .pdf .dvi .ps .F95 .f95
 
 #
 #

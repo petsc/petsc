@@ -32,13 +32,17 @@ all_build: chk_petsc_dir chklib_dir info info_h deletelibs  build shared
 info:
 	-@echo "=========================================="
 	-@echo " "
-	-@echo "See docs/faq.html and docs/bugreporting.html"
+	-@echo "See documentation/faq.html and documentation/bugreporting.html"
 	-@echo "for help with installation problems. Please send EVERYTHING"
 	-@echo "printed out below when reporting problems"
 	-@echo " "
-	-@echo "To subscribe to the PETSc users mailing list, send mail to "
+	-@echo "To subscribe to the PETSc announcement list, send mail to "
 	-@echo "majordomo@mcs.anl.gov with the message: "
 	-@echo "subscribe petsc-announce"
+	-@echo " "
+	-@echo "To subscribe to the PETSc users mailing list, send mail to "
+	-@echo "majordomo@mcs.anl.gov with the message: "
+	-@echo "subscribe petsc-users"
 	-@echo " "
 	-@echo "=========================================="
 	-@echo On `date` on `hostname`
@@ -294,12 +298,6 @@ SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/bugReport.py maint
              python/PETSc/Configure.py python/PETSc/Options.py \
              python/PETSc/packages/*.py python/PETSc/utilities/*.py
 
-chk_loc:
-	@if [ ${LOC}foo = foo ] ; then \
-	  echo "*********************** ERROR ************************" ; \
-	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc"; \
-	  echo "******************************************************";  false; fi
-	@${MKDIR} ${LOC}/docs/manualpages
 
 # Builds all the documentation - should be done every night
 alldoc: alldoc1 alldoc2
