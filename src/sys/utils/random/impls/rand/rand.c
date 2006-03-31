@@ -34,7 +34,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue_Rand(PetscRandom r,PetscScala
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValue_Rand"
-PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal_Rand(PetscRandom r,PetscScalar *val)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal_Rand(PetscRandom r,PetscReal *val)
 {
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
