@@ -858,7 +858,7 @@ namespace ALE {
           for(typename traits::arrow_container_type::set_type::iterator ai = _arrows.set.begin(); ai != _arrows.set.end(); ai++)
           {
             typename traits::arrow_type arr = *ai;
-            txt << arr << std::endl;
+            txt << "[" << this->commRank() << "]: " << arr << std::endl;
           }
           ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
           ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
@@ -870,7 +870,7 @@ namespace ALE {
           for(typename traits::base_container_type::set_type::iterator bi = _base.set.begin(); bi != _base.set.end(); bi++) 
           {
             typename traits::base_container_type::traits::rec_type bp = *bi;
-            txt1 << bp << std::endl;
+            txt1 << "[" << this->commRank() << "]: " << bp << std::endl;
           }
           ierr = PetscSynchronizedPrintf(this->comm(), txt1.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
           ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
@@ -882,7 +882,7 @@ namespace ALE {
           for(typename traits::cap_container_type::set_type::iterator ci = _cap.set.begin(); ci != _cap.set.end(); ci++) 
           {
             typename traits::cap_container_type::traits::rec_type cp = *ci;
-            txt2 << cp << std::endl;
+            txt2 << "[" << this->commRank() << "]: " << cp << std::endl;
           }
           ierr = PetscSynchronizedPrintf(this->comm(), txt2.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
           ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
