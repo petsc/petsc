@@ -11,17 +11,18 @@
 # CC=" /soft/apps/ibmcmp-20050414/vac/7.0/bin/xlc -F /etc/opt/ibmcmp/vac/7.0/blrts-vac.cfg"
 #
 configure_options = [
-  '-LIBS=-L/opt/ibmcmp/xlmass/4.3/blrts_lib -lmass -lc -lnss_files -lnss_dns -lresolv -L/opt/ibmcmp/vacpp/7.0/blrts_lib -libmc++ -lstdc++',
-  '--with-cc=/home/balay/bin/mpxlc',
-  '--with-cxx=/home/balay/bin/mpxlc -+',
-  '--with-fc=/home/balay/bin/mpxlf',
+  '--with-cc=mpicc.ibm',
+  '--with-cxx=mpicxx.ibm',
+  '--with-fc=mpif77.ibm -qnosave',
+  '--with-mpi-dir=/bgl/BlueLight/V1R2M1_020_2006-060110/ppc/bglsys',  # required by BLACS to get mpif.h
 
-  '--with-blas-lapack-lib=[/soft/tools/lapack440/liblapack440.a,/soft/tools/blass440/libblas440.a]',
+  '--with-is-color-value-type=short',
+  '--with-blas-lapack-lib=[/opt/ibmmath/essl/4.2/lib/libesslbg.a,/soft/tools/lapack440/liblapack440.a,/soft/tools/blass440/libblas440.a]',
   '--with-shared=0',
   
-  '-COPTFLAGS=-qbgl -qarch=440 -qtune=440 -O3',
-  '-CXXOPTFLAGS=-qbgl -qarch=440 -qtune=440 -O3',
-  '-FOPTFLAGS=-qbgl -qarch=440 -qtune=440 -O3',
+  '-COPTFLAGS=-O3 -qbgl -qarch=440 -qtune=440',
+  '-CXXOPTFLAGS=-O3 -qbgl -qarch=440 -qtune=440',
+  '-FOPTFLAGS=-O3 -qbgl -qarch=440 -qtune=440',
   '--with-debugging=0',
 
   # the following option gets automatically enabled on BGL/with IBM compilers.
