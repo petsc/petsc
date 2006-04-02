@@ -41,6 +41,10 @@ manual.pdf: chk_loc intro.tex abstract.tex acknowl.tex manual.tex part1.tex part
 	${PDFLATEX} intro 
 	${MAKE} rclean
 
-developers.pdf: developers.tex
-	${PDFLATEX} developers.tex
+developers.pdf: chk_loc developers.tex
+	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat developers.tex | \
+	  ../../../../maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > developerstmp.tex
+	${PDFLATEX} developerstmp.tex
+	${PDFLATEX} developerstmp.tex
+	${MV} developerstmp.pdf developers.pdf
 

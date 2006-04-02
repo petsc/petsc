@@ -345,7 +345,7 @@ One creates a new parallel or
 sequential vector, \trl{x}, of global dimension \trl{M} with the 
 commands \findex{VecCreate()}  \findex{VecSetSizes()} \sindex{vectors}
 \begin{tabbing}
-  VecCreate(MPI\_Comm comm,Vec *x);
+  VecCreate(MPI\_Comm comm,Vec *x);\\
   VecSetSizes(Vec x, int m, int M);
 \end{tabbing}
 where \trl{comm} denotes the MPI communicator and \trl{m} is the optional local size
@@ -386,7 +386,7 @@ The user can create a new parallel or sequential matrix, \trl{A}, which
 has \trl{M} global rows and \trl{N} global columns, with the routines
 \findex{MatCreate()} and \findex{MatSetSizes()}
 \begin{tabbing}
-  MatCreate(MPI\_Comm comm,Mat *A);
+  MatCreate(MPI\_Comm comm,Mat *A);\\
   MatSetSizes(Mat A,int m,int n,int M,int N);
 \end{tabbing}
 where the matrix format can be specified at runtime.  The user could

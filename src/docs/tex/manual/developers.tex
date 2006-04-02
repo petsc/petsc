@@ -6,11 +6,18 @@
 % the corresponding base HTML format file.
 %
 \documentclass[twoside,12pt]{../sty/report_petsc}
-%\usepackage{psfig}
+
+\usepackage{makeidx,xspace}
+\usepackage[bookmarksopen,colorlinks]{hyperref}
+\usepackage{color}
+\input pdfcolor.tex     
+
+\usepackage[pdftex]{graphicx}        
 \usepackage{../sty/verbatim}
 \usepackage{../sty/tpage}
 \usepackage{../sty/here}
 \usepackage{../sty/anlhelper}
+\usepackage[obeyspaces]{../sty/trl}
 
 \setlength{\textwidth}{6.5in}
 \setlength{\oddsidemargin}{0.0in}
@@ -29,14 +36,11 @@
 
 \begin{document}
 
-\ANLTitle{PETSc Developers Manual}{\em Satish Balay\\
-William Gropp\\ Lois Curfman McInnes\\ Barry Smith\\
-\hspace{0.3in}\\
-Mathematics and Computer Science Division \\
+\ANLTitle{PETSc Developers Manual}{\em The PETSc Team \\
 http://www.mcs.anl.gov/petsc
 \vspace{0.5in} \\
-{\rm This document is intended for use with PETSc 2.2.0}}
-{\Large This is not yet an official ANL document}{1998}
+{\rm This document is intended for use with PETSc 2.3.1}}
+{\Large This is not yet an official ANL document}{2006}
 
 \newpage
 
@@ -62,14 +66,14 @@ http://www.mcs.anl.gov/petsc
 \medskip \medskip
 PETSc is 
 a set of extensible software libraries for scientific computation.
-PETSc is designed using a component-based object-oriented
+PETSc is designed using a object-oriented
 architecture. This means that libraries consist of {\em objects} that
-have a certain, defined functionality. This document defines how these
+have certain, defined functionality. This document defines how these
 objects are implemented.
 
-This manual discusses the PETSc component library design and describes
+This manual discusses the PETSc library design and describes
 how to develop new library codes that are compatible with other PETSc components 
-including PETSc 2.2.
+including PETSc 2.3.1.
 The idea is not to develop one massive library that everyone shoves code 
 into; rather, to develop an architecture that allows many people
 to (as painlessly as possible) contribute (and maintain) their own libraries,
@@ -78,7 +82,7 @@ in a distributed fashion.
 The text assumes
 that you are familiar with PETSc, have a copy of the PETSc users
 manual, and have access to PETSc source code and documentation
-(available via {\tt http://www.mcs.anl.gov/petsc}).
+(available via \href{http://www.mcs.anl.gov/petsc}{http://www.mcs.anl.gov/petsc}.)
 
 
 \vspace{1cm}
@@ -86,17 +90,9 @@ manual, and have access to PETSc source code and documentation
 This is the first draft of the PETSc developers manual;
 therefore, it is very sketchy and incomplete. Please
 direct all comments and questions regarding PETSc design and
-development to {\tt petsc-developers@mcs.anl.gov}.  Note that all {\em
+development to \trl{petsc-dev@mcs.anl.gov}.  Note that all {\em
 bug reports and questions regarding the use of PETSc} should continue
-to be directed to {\tt petsc-maint@mcs.anl.gov}.
-
-The PETSc team is part of a larger group (mostly at the DOE labs)
-funded by the DOE2000 initiative to develop a Common Component
-Architecture (CCA), http://www.... In addition, we are involved in a
-related DOE lab initiative to develop a standard object interface for
-scalable linear solvers. Already as a result of these efforts we have modified
-the PETSc software design and will continue to evolve PETSc as these
-initiatives progress. 
+to be directed to \trl{petsc-maint@mcs.anl.gov}.
 
 %
 % NOTES:  
@@ -118,8 +114,9 @@ initiatives progress.
 \label{chapter:kernel}
 PETSc provides a variety of basic services for writing scalable, component 
 based libraries; these are referred to as the PETSc kernel. The source
-code for the kernel is in {\tt src/sys/src}. It contains systematic support for
+code for the kernel is in \trl{src/sys}. It contains systematic support for
 \begin{itemize}
+  \item PETSc types
   \item error handling
   \item memory management
   \item profiling
@@ -130,133 +127,145 @@ code for the kernel is in {\tt src/sys/src}. It contains systematic support for
 Each of these is discussed in a section below.
 
 % -------------------------------------------------------------------------------
+\section{PETSc Types}
+For maximum flexibility, the basic data types \trl{int}, \trl{double} etc are 
+generally not used in source code, rather it has:
+\begin{itemize}
+  \item PetscScalar 
+  \item PetscInt
+  \item PetscMPIInt
+  \item PetscBLASInt
+  \item PetscTruth
+  \item PetscBT  - bit storate of logical true and false
+\end{itemize}
+PetscInt can be set using config/configure.py to be either \trl{int} (32 bit) or \trl{long long}
+(64 bit)
+to allow indexing into very large arrays. PetscMPIInt are for integers passed to MPI
+as counts etc, these are always \trl{int} since that is what the MPI standard uses. Similarly
+PetscBLASInt are for counts etc passed to BLAS and LAPACK routines. These are almost always
+\trl{int} unless one is using a special ``64 bit integer'' BLAS/LAPACK (this is available, for 
+example on Solaris systems).
+
+In addition there a special types
+\begin{itemize}
+  \item PetscCookie
+  \item PetscErrorCode
+  \item PetscEvent
+\end{itemize}
+in fact, these are currently always \trl{int} but their use clarifies the code.
+
 \section{Implementation of Error Handling}
 
 PETSc  uses a ``call error handler; then (depending on result) return
 error code'' model when problems are detected in the running code. 
 
-The public include file for error handling is {\tt include/petscerror.h}, the 
+The public include file for error handling is
+ \href{http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/include/petscerror.h.html}{include/petscerror.h}, the 
 source code for the PETSc error handling is in  
-{\tt src/sys/src/error/}.
+\trl{src/sys/error/}.
 
 \subsection{Simplified Interface}
 
 The simplified C/C++ macro-based interface consists of the following three calls
 \begin{itemize}
-\item SETERRQ(generic error code,specific error code,''Error message'');
+\item SETERRQ(error code,''Error message'');
 \item CHKERRQ(ierr);
-\item CHKPTRQ(ptr);
 \end{itemize}
 
-The macro {\tt SETERRQ()} is given by 
-\begin{verbatim}
-
-return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,generic,specific,''Error message'');
-
-\end{verbatim}
+The macro SETERRQ() is given by 
+\begin{tabbing}
+return PetscError(\_\_LINE\_\_,\_\_FUNC\_\_,\_\_FILE\_\_,\_\_SDIR\_\_,specific,''Error message'');
+\end{tabbing}
 It calls the error handler with the current function name and location: line number,
-file and directory, plus two integer error codes and an error message.
-The macro {\tt CHKERRQ()} is defined by
-\begin{verbatim}
+file and directory, plus an error codes and an error message.
+The macro CHKERRQ() is defined by
+\begin{tabbing}
+  if (ierr) SETERRQ(ierr,(char *)0);
+\end{tabbing}
 
-  if (ierr) SETERRQ(ierr,0,(char *)0);
-
-\end{verbatim}
-and {\tt CHKPTRQ()} by 
-\begin{verbatim}
-
-  if (!ptr) SETERRQ(PETSC_ERR_MEM,0,(char*)0);
-
-\end{verbatim}
-
-Different versions of the macros must be used in the {\tt main()} program:
-{\tt SETERRA(), CHKERRA()}, and {\tt CHKPTRA()}. The reason for the different versions
-is that when an error is detected in the main program one cannot return, because 
-this would not call the {\tt MPI\_Abort()} routine and would leave MPI processes hanging.
-Hence these versions of the macros call {\tt MPI\_Abort()}, rather than returning.
-
-In addition to {\tt SETERRQ()} are the macros {\tt SETERRQ1()}, {\tt SETERRQ2()}, {\tt SETERRQ3()}
-and {\tt SETERRQ4()} that allow one to include additional arguments that the message
+In addition to SETERRQ() are the macros SETERRQ1(), SETERRQ2(), SETERRQ3()
+and SETERRQ4() that allow one to include additional arguments that the message
 string is formated. For example,
-\begin{verbatim}
-  SETERRQ2(1,26,''Iteration overflow: its %d norm %g'',its,norm);
-\end{verbatim}
+\begin{tabbing}
+  SETERRQ2(PETSC\_ERR,''Iteration overflow: its %d norm %g'',its,norm);
+\end{tabbing}
 The reason for the numbered format is because CPP macros cannot handle variable number
 of arguments.
  
 \subsection{Error Handlers}
-The error handling function {\tt PetscError()} calls the ``current'' error handler
+The error handling function PetscError() calls the ``current'' error handler
 with the code
-\begin{verbatim}
-int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  if (!eh)     ierr = PetscTraceBackErrorHandler(line,func,file,dir,n,p,mess,0);
-  else         ierr = (*eh->handler)(line,func,file,dir,n,p,mess,eh->ctx);
-  PetscFunctionReturn(ierr);
-}
-\end{verbatim}
-The variable {\tt eh} is the current error handler context and is defined in 
-{\tt src/sys/src/error/err.c} as
-\begin{verbatim}
-typedef struct _EH* EH;
-struct _EH {
-  int    cookie;
-  int    (*handler)(int, char*,char*,char *,int,int,char*,void *);
-  void   *ctx;
-  EH     previous;
-};
-\end{verbatim}
+\begin{tabbing}
+PetscErrorCode PetscError(int line,char *func,char* file,char *dir,PetscErrorCode n,int p,char *mess)\\
+\{ \\
+  PetscErrorCode ierr;\\
+\\
+  PetscFunctionBegin;\\
+  if (!eh)     ierr = PetscTraceBackErrorHandler(line,func,file,dir,n,p,mess,0);\\
+  else         ierr = (*eh-$>$handler)(line,func,file,dir,n,p,mess,eh-$>$ctx);\\
+  PetscFunctionReturn(ierr);\\
+\}
+\end{tabbing}
+The variable \trl{eh} is the current error handler context and is defined in 
+\trl{src/sys/error/err.c} as
+\begin{tabbing}
+typedef struct \_EH* EH;\\
+struct \_EH \{\\
+  int    cookie;\\
+  int    (*handler)(int, char*,char*,char *,int,int,char*,void *);\\
+  void   *ctx;\\
+  EH     previous;\\
+\};
+\end{tabbing}
 
 One can set a new error handler with the command 
-\begin{verbatim}
-int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,void*),
-                          void *ctx )
-{
-  EH neweh = (EH) PetscMalloc(sizeof(struct _EH)); CHKPTRQ(neweh);
-
-  PetscFunctionBegin;
-  if (eh) {neweh->previous = eh;} 
-  else    {neweh->previous = 0;}
-  neweh->handler = handler;
-  neweh->ctx     = ctx;
-  eh             = neweh;
-  PetscFunctionReturn(0);
-}
-\end{verbatim}
+\begin{tabbing}
+int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,PetscErrorCode,\\
+                          int,char*,void*),void *ctx )\\
+\{\\
+  EH neweh = (EH) PetscMalloc(sizeof(struct \_EH)); CHKPTRQ(neweh);\\
+\\
+  PetscFunctionBegin;\\
+  if (eh) {neweh-$>$previous = eh;} \\
+  else    {neweh-$>$previous = 0;}\\
+  neweh-$>$handler = handler;\\
+  neweh-$>$ctx     = ctx;\\
+  eh             = neweh;\\
+  PetscFunctionReturn(0);\\
+\}
+\end{tabbing}
 which maintains a linked list of error handlers. The most recent error handler is removed
 via
-\begin{verbatim}
-int PetscPopErrorHandler(void)
-{
-  EH tmp;
-
-  PetscFunctionBegin;
-  if (!eh) PetscFunctionReturn(0);
-  tmp = eh;
-  eh  = eh->previous;
-  PetscFree(tmp);
-
-  PetscFunctionReturn(0);
-}
-\end{verbatim}
+\begin{tabbing}
+int PetscPopErrorHandler(void)\\
+\{\\
+  EH tmp;\\
+\\
+  PetscFunctionBegin;\\
+  if (!eh) PetscFunctionReturn(0);\\
+  tmp = eh;\\
+  eh  = eh-$>$previous;\\
+  PetscFree(tmp);\\
+  PetscFunctionReturn(0);\\
+\}
+\end{tabbing}
 
 PETSc provides several default error handlers
 \begin{itemize}
-\item {\tt PetscTraceBackErrorHandler()},
-\item {\tt PetscAbortErrorHandler()}, 
-\item {\tt PetscStopErrorHandler()}, and
-\item {\tt PetscAttachDebuggerErrorHandler()}. 
+\item PetscTraceBackErrorHandler(),
+\item PetscAbortErrorHandler(), 
+\item PetscReturnErrorHandler(), 
+\item PetscEmacsClientErrorHandler(), 
+\item PetscStopErrorHandler(), and
+\item PetscAttachDebuggerErrorHandler(). 
 \end{itemize}
 
 \subsection{Error Codes}
 
 The PETSc error handler take a generic error code.
-The generic error codes are defined in {\tt include/petscerror.h}, the same generic
+The generic error codes are defined in \trl{include/petscerror.h}, the same generic
 error code would be used many times in the libraries. For example the 
-generic error code {\tt PETSC\_ERR\_MEM} is used whenever requested memory allocation
+generic error code PETSC\_ERR\_MEM is used whenever requested memory allocation
 is not available. 
 
 \subsection{Detailed Error Messages}
@@ -264,15 +273,17 @@ In a modern parallel component oriented application code it does not make sense
 to simply print error messages to the screen (more than likely there is no 
 ``screen'', for example with Windows applications).
 PETSc provides the replaceable function pointer 
-\begin{verbatim}
-
+\begin{tabbing}
    (*PetscErrorPrintf)(``Format'',...);
+\end{tabbing}
+that, by default prints to standard out. Thus error messages should not
+be printed with printf() or fprintf() rather it should be printed with
+(*PetscErrorPrintf)(). One can direct all error messages to 
+stderr with the command line options \trl{-error\_output\_stderr}. 
 
-\end{verbatim}
-that, by default prints to standard error. Thus error messages should not
-be printed with printf() or fprintf() rather than should be printed with
-{\tt (*PetscErrorPrintf)()}.
 
+\subsection{Exception} 
+I have begun to add support for treating errors as exceptions, see PetscExceptionTry1()
 
 % -----------------------------------------------------------------------------------
 \section{Implementation of Profiling}
@@ -281,70 +292,76 @@ be printed with printf() or fprintf() rather than should be printed with
 This section provides details about the implementation of event
 logging and profiling within the PETSc kernel.
 The interface for profiling in PETSc is contained in the file 
-{\tt \$\{PETSC\_DIR\}/include/petsclog.h}. The source code for the profile logging
-is in {\tt src/sys/src/plog/}.
+\trl{include/petsclog.h}. The source code for the profile logging
+is in \trl{src/sys/plog/}.
 
 \subsection{Profiling Object Create and Destruction}
 
 The creation of objects may be profiled with the command
- \findex{PLogObjectCreate()}
-\begin{verbatim}
-   PLogObjectCreate(PetscObject h);
-\end{verbatim}
+ \findex{PetscLogObjectCreate()}
+\begin{tabbing}
+   PetscLogObjectCreate(PetscObject h);
+\end{tabbing}
 which logs the creation of any PETSc object. 
 Just before an object is destroyed, it should be  logged with
-with \findex{PLogObjectDestroy()} 
-\begin{verbatim}
-   PLogObjectDestroy(PetscObject h);
-\end{verbatim}
+with \findex{PetscLogObjectDestroy()} 
+\begin{tabbing}
+   PetscLogObjectDestroy(PetscObject h);
+\end{tabbing}
+These are called automatically by PetscHeaderCreate() and 
+PetscHeaderDestroy() which are used in creating all objects
+inherited off the basic object. Thus these logging routines should
+never be called directly.
 
 If an object has a clearly defined parent object (for instance, when 
 a work vector is generated for use in a Krylov solver), this information
-is logged with the command, \findex{PLogObjectParent()}
-\begin{verbatim}
-   PLogObjectParent(PetscObject parent,PetscObject child);
-\end{verbatim}
+is logged with the command, \findex{PetscLogObjectParent()}
+\begin{tabbing}
+   PetscLogObjectParent(PetscObject parent,PetscObject child);
+\end{tabbing}
 It is also useful to log information about the state of an object, as can
-be done with the command \findex{PLogObjectState()}
-\begin{verbatim}
-   PLogObjectState(PetscObject h,char *format,...);
-\end{verbatim}
+be done with the command \findex{PetscLogObjectState()}
+\begin{tabbing}
+   PetscLogObjectState(PetscObject h,char *format,...);
+\end{tabbing}
+
 For example, for sparse matrices we usually log the matrix 
 dimensions and number of nonzeros.
 
 \subsection{Profiling Events}
 
 Events are logged using the 
-pair \findex{PLogEventBegin()}
-\begin{verbatim}
-   PLogEventBegin(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
-   PLogEventEnd(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
-\end{verbatim}
+pair \findex{PetscLogEventBegin()}
+\begin{tabbing}
+   PetscLogEventBegin(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);\\
+   PetscLogEventEnd(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
+\end{tabbing}
 This logging is usually done in the abstract
-interface file for the operations, for example, {\tt src/mat/src/matrix.c}.
+interface file for the operations, for example, \trl{src/mat/src/matrix.c}.
 
 \subsection{Controling Profiling}
 
 Several routines that control the default profiling available in PETSc are
-\findex{PLogPrintSummary()}
-are \findex{PLogBegin()} \findex{PLogDump()} \findex{PLogAllBegin()} 
-\begin{verbatim}
-   PLogBegin();
-   PLogAllBegin();
-   PLogDump(char *filename);
-   PLogPrintSummary(FILE *fd);
-\end{verbatim}
-These routines are normally called by the {\tt PetscInitialize()}
-and {\tt PetscFinalize()} routines when the option {\tt -log}, 
-{\tt -log\_summary}, or 
-{\tt -log\_all} is given.
+\findex{PetscLogPrintSummary()}
+are \findex{PetscLogBegin()} \findex{PetscLogDump()} \findex{PetscLogAllBegin()} 
+\begin{tabbing}
+   PetscLogBegin();\\
+   PetscLogAllBegin();\\
+   PetscLogDump(char *filename);\\
+   PetscLogPrintSummary(FILE *fd);
+\end{tabbing}
+These routines are normally called by the PetscInitialize()
+and PetscFinalize() routines when the option \trl{-log}, 
+\trl{-log\_summary}, or 
+\trl{-log\_all} is given.
 
-\subsection{Setting Profile Handlers}
-It is possible to set new profile handlers using the commands:
+\subsection{Details of the Logging Design}
+
 
 % -----------------------------------------------------------------------------------
 \chapter{Basic Object Design}
 \label{chapter:design}
+
 
 PETSc is designed using strong data encapsulation.  Hence,
 any collection of data (for instance, a sparse matrix) is stored in 
@@ -354,211 +371,226 @@ does {\em not} ``know'' how the data is stored internally.
 
 \section{Introduction}
 
-PETSc is designed around several components (e.g. {\tt Vec} (vectors),
-{\tt Mat} (matrices, both dense and sparse)). These components are each 
-implemented using C {\tt struct}s, that contain the data and function pointers
+PETSc is designed around several classes (e.g. Vec (vectors),
+Mat (matrices, both dense and sparse)). These classs are each 
+implemented using C \trl{struct}s, that contain the data and function pointers
 for operations on the data (much like virtual functions in classes in C++). 
-Each components consists of three parts: 
+Each classs consists of three parts: 
 \begin{itemize}
 \item a (small) common part shared by all PETSc compatible libraries.
-\item another common part shared by all PETSc implementations of the component and
+\item another common part shared by all PETSc implementations of the class and
 \item a private part used by only one particular implementation written in PETSc.
 \end{itemize}
-For example, all matrix (Mat) components share a function table of operations that 
+For example, all matrix (Mat) classs share a function table of operations that 
 may be performed on the matrix; all PETSc matrix implementations share some additional
 data fields,including matrix size; while a particular matrix implementation in PETSc
 (say compressed sparse row) has its own data fields for storing the actual
 matrix values and sparsity pattern. This will be explained in more detail
-in the following sections. People providing new component implementations {\bf must}
-use the (small) PETSc common
-part, but need not use the PETSc common part.
+in the following sections. People providing new class implementations {\bf must}
+use the PETSc common part.
 
-We will use {\tt <component>\_<implementation>} to denote the actual source code and 
+
+We will use \trl{$<$class$>$\_$<$implementation$>$} to denote the actual source code and 
 data structures used for a particular implementation of an object that has the 
-{\tt <component>} interface.
+\trl{$<$class$>$} interface.
 
 \section{Organization of the Source Code}
 
-Each component has
+Each class has
 \begin{itemize}
-\item Its own, application public, include file {\tt \$\{PETSC\_DIR\}/include/<component>.h} 
-\item Its own directory, {\tt \$\{PETSC\_DIR\}/src/<component>}
+\item Its own, application public, include file \trl{include/petsc$<$class$>$.h} 
+\item Its own directory, \trl{src/$<$class$>$}
 \item A data structure defined in  the file
-      {\tt \$\{PETSC\_DIR\}/src/<component>/<component>impl.h}.
+      \trl{src/$<$class$>$/$<$class$>$impl.h}.
       This data structure is shared by all the different PETSc implementations of the 
-      component. For example, for matrices it is shared by dense,
+      class. For example, for matrices it is shared by dense,
       sparse, parallel, and sequential formats.
+      Two of the classes Vec and PC have their
+      private include files in \trl{include/private}, along
+      with \trl{petscimpl.h} so that other classes can have direct access to 
+      certain parts of the private structure for efficiency reasons.
 \item An abstract interface that defines the application callable 
-      functions for the component. These are defined in the directory
-      {\tt \$\{PETSC\_DIR\}/src/<component>/interface}.
-\item One or more actual implementations of the components (for example,
+      functions for the class. These are defined in the directory
+      \trl{src/$<$class$>$/interface}.
+\item One or more actual implementations of the classs (for example,
       sparse uniprocessor and parallel matrices implemented with the AIJ storage format).
       These are each in a subdirectory of 
-      \break {\tt \$\{PETSC\_DIR\}/src/<component>/impls}. Except in rare
+      \break \trl{src/$<$class$>$/impls}. Except in rare
       circumstances data 
       structures defined here should not be referenced from outside this 
       directory.
 \end{itemize}
 
 Each type of object, for instance a vector, is defined in its own
-include file, by 
-\begin{verbatim}
-   typedef _p_<component>* <component>; (for example, typedef _p_Vec* Vec;).
-\end{verbatim}
+public include file, by 
+\begin{tabbing}
+   typedef \_p\_$<$class$>$* $<$class$>$; (for example, typedef \_p\_Vec* Vec;).
+\end{tabbing}
   This organization
 allows the compiler to perform type checking on all subroutine calls
 while at the same time
 completely removing the details of the implementation of {\tt
-\_p\_<component>} from the application code.  This capability is extremely important
+\_p\_$<$class$>$} from the application code.  This capability is extremely important
 because it allows the library internals to be changed
 without altering or recompiling the application code.
 
 Polymorphism is supported through the directory 
-{\tt \$\{PETSC\_DIR\}/src/<component>/interface},
+\trl{src/$<$class$>$/interface},
 which contains the code that implements the abstract interface to the
 operations on the object.  Essentially, these routines do some error
 checking of arguments and logging of profiling information 
 and then call the function appropriate for the
 particular implementation of the object. The name of the abstract
-function is {\tt <component>Operation}, for instance, {\tt MatMult} or {\tt PCCreate}, while
+function is \trl{$<$class$>$Operation}, for instance, MatMult() or PCCreate(), while
 the name of a particular implementation is 
-{\tt <component>Operation\_<implementation>}, for instance, 
-{\tt MatMult\_SeqAIJ} or {\tt PCCreate\_ILU}. These naming
+\trl{$<$class$>$Operation\_$<$implementation$>$}, for instance, 
+\trl{MatMult\_SeqAIJ()} or \trl{PCCreate\_ILU()}. These naming
 conventions are used to simplify code maintenance.
 
 \section{Common Object Header}
 
-All PETSc/PETSc objects have the following common header structures.
+All PETSc/PETSc objects have the following common header structures
+(in \trl{include/private/petscimpl.h})
 
-\begin{verbatim}
+\begin{tabbing}
+\\
+/* Function table common to all PETSc compatible classs */\\
+\\
+typedef struct \{ \\
+   int (*getcomm)(PetscObject,MPI\_Comm *);\\
+   int (*view)(PetscObject,Viewer);\\
+   int (*destroy)(PetscObject);\\
+   int (*query)(PetscObject,char *,PetscObject *);\\
+   int (*compose)(PetscObject,char*,PetscObject);\\
+   int (*composefunction)(PetscObject,char *,char *,void *);\\
+   int (*queryfunction)(PetscObject,char *, void **);\\
+\} PetscOps;\\
+\\
+/* Data structure header common to all PETSc compatible classs */\\
+\\
+struct \_p\_$<$class$>$ \{\\
+  PetscCookie      cookie;                                  \\
+  PetscOps         *bops;                                   \\
+  $<$class$>$Ops       *ops;                                    \\
+  MPI\_Comm         comm;                                    \\
+  PetscLogDouble  flops,time,mem;                          \\
+  int              id;                                      \\
+  int              refct;                                   \\
+  int              tag;                                     \\
+  DLList           qlist;                                   \\
+  OList            olist;                                   \\
+  char             *type\_name;                              \\
+  PetscObject      parent;                                  \\
+  char             *name;                                    \\
+  char             *prefix;                                 \\
+  void             *cpp;\\
+  void             **fortran\_func\_pointers;       \\
+  ..........\\
+  CLASS-SPECIFIC DATASTRUCTURES\\
+\}; 
+\end{tabbing}
+Here \trl{$<$class$>$ops} is a function table (like the \trl{PetscOps} above) that 
+contains the function pointers for the operations specific to that class.
+For example, the PETSc vector class object looks like
 
-/* Function table common to all PETSc compatible components */
+\begin{tabbing}
+\\
+/* Function table common to all PETSc compatible vector objects */\\
+\\
+typedef struct \_VecOps* VecOps;\\
+struct \_VecOps \{\\
+  PetscErrorCode  (*duplicate)(Vec,Vec*),           /* get single vector */\\
+       (*duplicatevecs)(Vec,int,Vec**),  /* get array of vectors */\\
+       (*destroyvecs)(Vec*,int),         /* free array of vectors */\\
+       (*dot)(Vec,Vec,Scalar*),          /* z = x\^H * y */\\
+       (*mdot)(int,Vec,Vec*,Scalar*),    /* z[j] = x dot y[j] */\\
+       (*norm)(Vec,NormType,double*),    /* z = sqrt(x\^H * x) */\\
+       (*tdot)(Vec,Vec,Scalar*),         /* x'*y */\\
+       (*mtdot)(int,Vec,Vec*,Scalar*),   /* z[j] = x dot y[j] */\\
+       (*scale)(Scalar*,Vec),            /* x = alpha * x   */\\
+       (*copy)(Vec,Vec),                 /* y = x */\\
+       (*set)(Scalar*,Vec),              /* y = alpha  */\\
+       (*swap)(Vec,Vec),                 /* exchange x and y */\\
+       (*axpy)(Scalar*,Vec,Vec),         /* y = y + alpha * x */\\
+       (*axpby)(Scalar*,Scalar*,Vec,Vec),/* y = y + alpha * x + beta * y*/\\
+       (*maxpy)(int,Scalar*,Vec,Vec*),   /* y = y + alpha[j] x[j] */\\
+       (*aypx)(Scalar*,Vec,Vec),         /* y = x + alpha * y */\\
+       (*waxpy)(Scalar*,Vec,Vec,Vec),    /* w = y + alpha * x */\\
+       (*pointwisemult)(Vec,Vec,Vec),    /* w = x .* y */\\
+       (*pointwisedivide)(Vec,Vec,Vec),  /* w = x ./ y */\\
+       (*setvalues)(Vec,int,int*,Scalar*,InsertMode),\\
+       (*assemblybegin)(Vec),            /* start global assembly */\\
+       (*assemblyend)(Vec),              /* end global assembly */\\
+       (*getarray)(Vec,Scalar**),        /* get data array */\\
+       (*getsize)(Vec,int*),(*getlocalsize)(Vec,int*),\\
+       (*getownershiprange)(Vec,int*,int*),\\
+       (*restorearray)(Vec,Scalar**),    /* restore data array */\\
+       (*max)(Vec,int*,double*),         /* z = max(x); idx=index of max(x) */\\
+       (*min)(Vec,int*,double*),         /* z = min(x); idx=index of min(x) */\\
+       (*setrandom)(PetscRandom,Vec),    /* set y[j] = random numbers */\\
+       (*setoption)(Vec,VecOption),\\
+       (*setvaluesblocked)(Vec,int,int*,Scalar*,InsertMode),\\
+       (*destroy)(Vec),\\
+       (*view)(Vec,Viewer);\\
+\};\\
+\\
+/* Data structure header common to all PETSc vector classs */\\
+\\
+struct \_p\_Vec \{\\
+  PetscCookie            cookie;                                  \\
+  PetscOps               *bops;                                   \\
+  VecOps                 *ops;                                    \\
+  MPI\_Comm               comm;\\
+  PetscLogDouble         flops,time,mem;                          \\
+  int                    id;                                      \\
+  int                    refct;                                   \\
+  int                    tag;                                     \\
+  DLList                 qlist;                                   \\
+  OList                  olist;                                   \\
+  char                   *type\_name;                              \\
+  PetscObject            parent;                                  \\
+  char*                  name;                                    \\
+  char                   *prefix;                                 \\
+  void**                 fortran\_func\_pointers;       \\
+  void                   *data;     /* implementation-specific data */\\
+  int                    N, n;      /* global, local vector size */\\
+  int                    bs;\\
+  ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */\\
+  ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */\\
+\};
+\end{tabbing}
 
-typedef struct {
-   int (*getcomm)(PetscObject,MPI_Comm *);
-   int (*view)(PetscObject,Viewer);
-   int (*destroy)(PetscObject);
-   int (*query)(PetscObject,char *,PetscObject *);
-   int (*compose)(PetscObject,char*,PetscObject);
-   int (*reference)(PetscObject);
-   int (*composefunction)(PetscObject,char *,char *,void *);
-   int (*queryfunction)(PetscObject,char *, void **);
-   int (*composelanguage(PetscObject,PetscLanguage,void *);
-   int (*querylanguage(PetscObject,PetscLanguage,void **);
-} PetscOps;
+Each PETSc object begins with a PetscCookie which is used for error checking.
+Each different class of objects has its value for the cookie; these are used
+to distinguish between classes. When a new class is created one needs to call
+\begin{tabbing}
+  ierr = PetscLogClassRegister(PetscCookie *cookie,char *classname);CHKERRQ(ierr);
+\end{tabbing}
+For example,
+\begin{tabbing}
+  ierr = PetscLogClassRegister(\&IS\_COOKIE,''index set'');CHKERRQ(ierr);
+\end{tabbing}
+{\bf Question: Why is a fundamental part of PETSc objects defined in PetscLog when PETSc Log
+is something that can be "turned off"} On can verify that an object is valid of a particular
+class with 
+\begin{tabbing}
+  PetscValidHeaderSpecific(x,VEC\_COOKIE,1);
+\end{tabbing}
+The third argument to this macro indicates the position in the calling sequence of the 
+function the object was passed in. This is generate more complete error messages.
 
-/* Data structure header common to all PETSc compatible components */
+To check for an object of any type use
+\begin{tabbing}
+  PetscValidHeader(x,1);
+\end{tabbing}
 
-struct _p_<component> {
-  int              cookie;                                  
-  PetscOps         *bops;                                   
-  <component>Ops   *ops;       
-  OTHER STUFF SPECIFIC TO THAT PARTICULAR LIBRARY
-};
-
-/* Data structure header common to all PETSc components; but not all PETSc components */
-
-struct _p_<component> {
-  int              cookie;                                  
-  PetscOps         *bops;                                   
-  <component>Ops   *ops;                                    
-  MPI_Comm         comm;                                    
-  int              type;                                    
-  PLogDouble       flops,time,mem;                          
-  int              id;                                      
-  int              refct;                                   
-  int              tag;                                     
-  DLList           qlist;                                   
-  OList            olist;                                   
-  char             *type_name;                              
-  PetscObject      parent;                                  
-  char             *name;                                    
-  char             *prefix;                                 
-  void             *cpp;
-  void             **fortran_func_pointers;       
-  COMPONENT-SPECIFIC DATASTRUCTURES
-}; 
-
-\end{verbatim}
-Here {\tt <component>ops} is a function table (like the {\tt PetscOps} above) that 
-contains the function pointers for the operations specific to that component.
-For example, the PETSc vector component object looks like
-
-\begin{verbatim}
-
-/* Function table common to all PETSc compatible vector objects */
-
-typedef struct _VecOps* VecOps;
-struct _VecOps {
-  int  (*duplicate)(Vec,Vec*),           /* get single vector */
-       (*duplicatevecs)(Vec,int,Vec**),  /* get array of vectors */
-       (*destroyvecs)(Vec*,int),         /* free array of vectors */
-       (*dot)(Vec,Vec,Scalar*),          /* z = x^H * y */
-       (*mdot)(int,Vec,Vec*,Scalar*),    /* z[j] = x dot y[j] */
-       (*norm)(Vec,NormType,double*),    /* z = sqrt(x^H * x) */
-       (*tdot)(Vec,Vec,Scalar*),         /* x'*y */
-       (*mtdot)(int,Vec,Vec*,Scalar*),   /* z[j] = x dot y[j] */
-       (*scale)(Scalar*,Vec),            /* x = alpha * x   */
-       (*copy)(Vec,Vec),                 /* y = x */
-       (*set)(Scalar*,Vec),              /* y = alpha  */
-       (*swap)(Vec,Vec),                 /* exchange x and y */
-       (*axpy)(Scalar*,Vec,Vec),         /* y = y + alpha * x */
-       (*axpby)(Scalar*,Scalar*,Vec,Vec),/* y = y + alpha * x + beta * y*/
-       (*maxpy)(int,Scalar*,Vec,Vec*),   /* y = y + alpha[j] x[j] */
-       (*aypx)(Scalar*,Vec,Vec),         /* y = x + alpha * y */
-       (*waxpy)(Scalar*,Vec,Vec,Vec),    /* w = y + alpha * x */
-       (*pointwisemult)(Vec,Vec,Vec),    /* w = x .* y */
-       (*pointwisedivide)(Vec,Vec,Vec),  /* w = x ./ y */
-       (*setvalues)(Vec,int,int*,Scalar*,InsertMode),
-       (*assemblybegin)(Vec),            /* start global assembly */
-       (*assemblyend)(Vec),              /* end global assembly */
-       (*getarray)(Vec,Scalar**),        /* get data array */
-       (*getsize)(Vec,int*),(*getlocalsize)(Vec,int*),
-       (*getownershiprange)(Vec,int*,int*),
-       (*restorearray)(Vec,Scalar**),    /* restore data array */
-       (*max)(Vec,int*,double*),         /* z = max(x); idx=index of max(x) */
-       (*min)(Vec,int*,double*),         /* z = min(x); idx=index of min(x) */
-       (*setrandom)(PetscRandom,Vec),    /* set y[j] = random numbers */
-       (*setoption)(Vec,VecOption),
-       (*setvaluesblocked)(Vec,int,int*,Scalar*,InsertMode),
-       (*destroy)(Vec),
-       (*view)(Vec,Viewer);
-};
-
-/* Data structure header common to all PETSc vector components */
-
-struct _p_Vec {
-  int                    cookie;                                  
-  MPI_Comm               comm;                                    
-  PetscOps               *bops;                                   
-  VecOps                 *ops;                                    
-  MPI_Comm               comm;
-  int                    type;                                    
-  PLogDouble             flops,time,mem;                          
-  int                    id;                                      
-  int                    refct;                                   
-  int                    tag;                                     
-  DLList                 qlist;                                   
-  OList                  olist;                                   
-  char                   *type_name;                              
-  PetscObject            parent;                                  
-  char*                  name;                                    
-  char                   *prefix;                                 
-  void**                 fortran_func_pointers;       
-  void                   *data;     /* implementation-specific data */
-  int                    N, n;      /* global, local vector size */
-  int                    bs;
-  ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
-  ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */
-};
-\end{verbatim}
 
 Several routines are provided for manipulating data within the header,
 including
-\begin{verbatim}
-   int PetscObjectGetComm(PetscObject object,MPI_Comm *comm) 
-\end{verbatim}
-which returns in {\tt comm}  the MPI communicator associated with the
+\begin{tabbing}
+   int PetscObjectGetComm(PetscObject object,MPI\_Comm *comm);
+\end{tabbing}
+which returns in \trl{comm}  the MPI communicator associated with the
 specified object.
 
 \section{Common Object Functions}
@@ -566,141 +598,131 @@ specified object.
 We now discuss the specific functions in the PETSc common function table.
 
 \begin{itemize}
-\item {\tt getcomm(PetscObject,MPI\_Comm *)} obtains the MPI communicator associated
+\item \trl{getcomm(PetscObject,MPI\_Comm *)} obtains the MPI communicator associated
       with this object.
 
-\item {\tt view(PetscObject,Viewer)} allows one to store or visualize the data inside
-      an object. If the {\tt Viewer} is null than should cause the object to print 
+\item \trl{view(PetscObject,Viewer)} allows one to store or visualize the data inside
+      an object. If the Viewer is null than should cause the object to print 
       information on the object to standard out. PETSc provides a variety of simple
       viewers.
 
-\item {\tt destroy(PetscObject)} causes the reference count of the object to be decreased
-      by one or the object to be destroyed and all memory used by the object to be freed.
+\item \trl{destroy(PetscObject)} causes the reference count of the object to be decreased
+      by one or the object to be destroyed and all memory used by the object to be freed when
+      the reference count drops to zero.
       If the object has any other objects composed with it then they are each sent a
-      {\tt destroy()}, i.e. the {\tt destroy()} function is called on them also.
+      \trl{destroy()}, i.e. the \trl{destroy()} function is called on them also.
 
-\item {\tt reference(PetscObject)} increases the reference count on the object by one.
-
-\item {\tt compose(PetscObject,char *name, PetscObject)} associates the second object with 
+\item \trl{compose(PetscObject,char *name, PetscObject)} associates the second object with 
       the first object and increases the reference count of the second object. If an
       object with the 
       same name was previously composed that object is dereferenced and replaced with 
       the new object. If the 
       second object is null and and object with the same name has already been 
-      composed that object is dereferenced (the {\tt destroy()} function is called on 
+      composed that object is dereferenced (the \trl{destroy()} function is called on 
       it, and that object is removed from the first object); i.e. this is a way to 
       remove, by name, an object that was previously composed. 
 
-\item {\tt query(PetscObject,char *name, PetscObject *)} retrieves an object that was 
+\item \trl{query(PetscObject,char *name, PetscObject *)} retrieves an object that was 
       previously composed with the first object. Retreives a null if no object with 
       that name was previously composed.
 
-\item {\tt composefunction(PetscObject,char *name,char *fname,void *func)} associates a function
+\item \trl{composefunction(PetscObject,char *name,char *fname,void *func)} associates a function
       pointer to an object. If the object already had a composed function with the 
       same name, the old one is replace. If the fname is null it is removed from 
-      the object. The string {\tt fname} is the  character string name of the function;
+      the object. The string \trl{fname} is the  character string name of the function;
       it may include the path name or URL of the dynamic library where the function is located.
-      The argument {\tt name} is a ``short'' name of the function to be used with the 
-      {\tt queryfunction()} call. On systems that support dynamic libraries the {\tt func}
-      argument is ignored; otherwise {\tt func} is the actual function pointer.
+      The argument \trl{name} is a ``short'' name of the function to be used with the 
+      \trl{queryfunction()} call. On systems that support dynamic libraries the \trl{func}
+      argument is ignored; otherwise \trl{func} is the actual function pointer.
 
-      For example, {\tt fname} may be {\tt libpetscksp:PCCreate\_LU} or 
-      {\tt http://www.mcs.anl.gov/petsc/libpetscksp:PCCreate\_LU}.
+      For example, \trl{fname} may be \trl{libpetscksp:PCCreate\_LU} or 
+      \trl{http://www.mcs.anl.gov/petsc/libpetscksp:PCCreate\_LU}.
 
-\item {\tt queryfunction(PetscObject,char *name,void **func)} retreives a function pointer that
+\item \trl{queryfunction(PetscObject,char *name,void **func)} retreives a function pointer that
       was associated with the object. If dynamic libraries are used the function is loaded
       into memory at this time (if it has not been previously loaded), not when the
-      {\tt composefunction()} routine was called.
-
-\item {\tt composelanguage(PetscObject obj,PetscLanguage lang,void *interface)} sets an
-      alternative language interface for an object. Currently languages are {\tt PETSC\_C}
-      {\tt PETSC\_CPP}, though the C++ version is not yet supported.
-
-\item {\tt querylanguage(PetscObject obj,PetscLanguage lang,void **interface)} requests
-      an interface to an objects data from an alternative language.
+      \trl{composefunction()} routine was called.
 
 \end{itemize}
 
 Since the object composition allows one to {\bf only} compose PETSc objects
 with PETSc objects rather than any arbitrary pointer, PETsc provides
-the convenience object {\tt PetscObjectContainer}, created with the
-routine {\tt PetscObjectContainerCreate(MPI\_Comm,PetscObjectContainer)}
+the convenience object PetscObjectContainer, created with the
+routine PetscObjectContainerCreate(MPI\_Comm,PetscObjectContainer)
 to allow one to wrap any kind of data into a PETSc object that can then be
 composed with a PETSc object.
 
 % --------------------------------------------------------------------------------------
 \section{PETSc Implementation of the  Object Functions}
 
-This sections discusses how PETSc implements the {\tt compose()}, {\tt query()}, {\tt
-composefunction()}, and {\tt queryfunction()} functions for its object implementations. 
-Other PETSc compatible component implementations are free to manage these functions in any 
+This sections discusses how PETSc implements the \trl{compose()}, \trl{query()}, {\tt
+composefunction()}, and \trl{queryfunction()} functions for its object implementations. 
+Other PETSc compatible class implementations are free to manage these functions in any 
 manner; but generally they would use the PETSc defaults so that the library writer does
 not have to ``reinvent the wheel.''
 
 \subsection{Compose and Query}
 
-In {\tt src/sys/src/objects/olist.c} PETSc defines a C struct
-\begin{verbatim}
-
-typedef struct _OList *OList;
-struct _OList {
-    char        name[128];
-    PetscObject obj;
-    OList       next;
-};
-\end{verbatim}
+In \trl{src/sys/objects/olist.c} PETSc defines a C struct
+\begin{tabbing}
+typedef struct \_PetscOList *PetscOList;\\
+struct \_PetscOList \{\\
+    char        name[128];\\
+    PetscObject obj;\\
+    PetscOList  next;\\
+\};
+\end{tabbing}
 from which linked lists of composed objects may be constructed. The routines
 to manipulate these elementary objects are
-\begin{verbatim}
-  int OListAdd(OList *fl,char *name,PetscObject obj );
-  int OListDestroy(OList *fl );
-  int OListFind(OList fl, char *name, PetscObject *obj)
-  int OListDuplicate(OList fl, OList *nl);
-\end{verbatim}
-The function {\tt OListAdd()} will create the initial {\tt OList} if the argument 
-{\tt fl} points to a null.
+\begin{tabbing}
+  int PetscOListAdd(PetscOList *fl,char *name,PetscObject obj );\\
+  int PetscOListDestroy(PetscOList *fl );\\
+  int PetscOListFind(PetscOList fl, char *name, PetscObject *obj)\\
+  int PetscOListDuplicate(PetscOList fl, PetscOList *nl);
+\end{tabbing}
+The function PetscOListAdd() will create the initial PetscOList if the argument 
+\trl{fl} points to a null.
 
-The PETSc object {\tt compose()} and {\tt query()} functions are then simply
-(defined in {\tt src/sys/src/objects/inherit.c})
-\begin{verbatim}
-  int PetscObjectCompose_Petsc(PetscObject obj,char *name,PetscObject ptr)
-  {
-    int ierr;
-
-    PetscFunctionBegin;
-    ierr = OListAdd(&obj->olist,name,ptr); CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-
-  int PetscObjectQuery_Petsc(PetscObject obj,char *name,PetscObject *ptr)
-  {
-    int ierr;
-
-    PetscFunctionBegin;
-    ierr = OListFind(obj->olist,name,ptr); CHKERRQ(ierr);
-    PetscFunctionReturn(0); 
-  }
-\end{verbatim}
+The PETSc object \trl{compose()} and \trl{query()} functions are then simply
+(defined in \trl{src/sys/objects/inherit.c})
+\begin{tabbing}
+  PetscErrorCode PetscObjectCompose\_Petsc(PetscObject obj,char *name,PetscObject ptr)\\
+  \{\\
+    PetscErrorCode ierr;\\
+\\
+    PetscFunctionBegin;\\
+    ierr = PetscOListAdd(\&obj-$>$olist,name,ptr); CHKERRQ(ierr);\\
+    PetscFunctionReturn(0);\\
+  \}\\
+\\
+  PetscErrorCode PetscObjectQuery\_Petsc(PetscObject obj,char *name,PetscObject *ptr)\\
+  \{\\
+    PetscErrorCode ierr;\\
+\\
+    PetscFunctionBegin;\\
+    ierr = PetscOListFind(obj-$>$olist,name,ptr); CHKERRQ(ierr);\\
+    PetscFunctionReturn(0); \\
+  \}
+\end{tabbing}
 
 \subsection{Compose and Query Function}
 
 PETSc allows one to compose functions by string name (to be loaded later from 
-a dynamic library) or by function pointer. In {\tt src/sys/src/dll/reg.c}
+a dynamic library) or by function pointer. In \trl{src/sys/dll/reg.c}
 PETSc defines the C structure
 
-\begin{verbatim}
+\begin{tabbing}
+typedef struct \_PetscFList* PetscFList;\\
+struct \_PetscFList \{\\
+  int    (*routine)(void *);\\
+  char   *path;\\
+  char   *name;  \\             
+  char   *rname;            /* name of create function in link library */\\
+  PetscFList  *next;\\
+\};
+\end{tabbing}
 
-typedef struct _FList* FList;
-struct _FList {
-  int    (*routine)(void *);
-  char   *path;
-  char   *name;               
-  char   *rname;            /* name of create function in link library */
-  FList  *next;
-};
-\end{verbatim}
-
-The {\tt FList} object is a linked list of function data; each 
+The PetscFList object is a linked list of function data; each 
 of which contains
 \begin{itemize}
 \item a function pointer (if it has already been loaded into memory from the dynamic library)
@@ -711,28 +733,28 @@ of which contains
       to load in the actual function pointer).
 \end{itemize}
 
-Each PETSc object contains a {\tt FList} object. The {\tt composefunction()} and 
-{\tt queryfunction()} are given by 
+Each PETSc object contains a PetscFList object. The \trl{composefunction()} and 
+\trl{queryfunction()} are given by 
 
-\begin{verbatim}
-int PetscObjectComposeFunction_Petsc(PetscObject obj,char *name,char *fname,void *ptr)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = FListAdd(&obj->qlist,name,fname,(int (*)(void *))ptr);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-int PetscObjectQueryFunction_Petsc(PetscObject obj,char *name,void **ptr)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = FListFind(obj->comm,obj->qlist,name,( int(**)(void *)) ptr);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-\end{verbatim}
+\begin{tabbing}
+PetscErrorCode PetscObjectComposeFunction\_Petsc(PetscObject obj,char *name,char *fname,void *ptr)\\
+\{\\
+  PetscErrorCode ierr;\\
+\\
+  PetscFunctionBegin;\\
+  ierr = PetscFListAdd(\&obj-$>$qlist,name,fname,(int (*)(void *))ptr);CHKERRQ(ierr);\\
+  PetscFunctionReturn(0);\\
+\}\\
+\\
+PetscErrorCode PetscObjectQueryFunction\_Petsc(PetscObject obj,char *name,void **ptr)\\
+\{\\
+  PetscErrorCode ierr;\\
+\\
+  PetscFunctionBegin;\\
+  ierr = PetscFListFind(obj-$>$comm,obj-$>$qlist,name,( int(**)(void *)) ptr);CHKERRQ(ierr);\\
+  PetscFunctionReturn(0);\\
+\}
+\end{tabbing}
 
   Because we need to support function composition on systems both {\bf with} and {\bf without} 
 dynamic link libraries the actual source code is a little messy. The idea is that
@@ -742,66 +764,26 @@ function pointer argument must eliminate this argument in the preprocessor step 
 the code is compiled. Otherwise, since the compiler sees the function pointer, it will 
 compile it in and link in all those functions; thus one could not take advantage of the
 dynamic libraries. This is done with macros like the following
-\begin{verbatim}
-#if defined(USE_DYNAMIC_LIBRARIES)
-#define       FListAdd(a,b,p,c) FListAdd_Private(a,b,p,0)
-#else
-#define       FListAdd(a,b,p,c) FListAdd_Private(a,b,p,(int (*)(void *))c)
-#endif
-\end{verbatim}
+\begin{tabbing}
+\#if defined(USE\_DYNAMIC\_LIBRARIES)\\
+\#define       PetscFListAdd(a,b,p,c) PetscFListAdd\_Private(a,b,p,0)\\
+\#else\\
+\#define       PetscFListAdd(a,b,p,c) PetscFListAdd\_Private(a,b,p,(int (*)(void *))c)\\
+\#endif\\
+\end{tabbing}
 Thus when the code is compiled with the dynamic link library flag the function pointer 
 argument is removed from the code; otherwise it is retained. Ugly, but neccessary.
 
-The {\tt FListAdd\_Private()} and all related routines can be found in the directory
-{\tt src/sys/src/dll}.
+The \trl{PetscFListAdd\_Private()} and all related routines can be found in the directory
+\trl{src/sys/dll}.
 
-In addition to using the {\tt FList} mechanism to compose functions into PETSc objects, it is
-also used to allow registration of new component implementations; for example, new
+In addition to using the PetscFList mechanism to compose functions into PETSc objects, it is
+also used to allow registration of new class implementations; for example, new
 preconditioners, see Section \ref{sec:registeringnewmethods}. 
 
-\subsection{Compose and Query Language}
-
-PETSc implements the compose and query language feature using the routines
-\begin{verbatim}
-int PetscObjectComposeLanguage_Petsc(PetscObject obj,PetscLanguage lang,void *vob)
-{
-  PetscFunctionBegin;
-  if (lang == PETSC_LANGUAGE_CPP) {
-    obj->cpp = vob;
-  } else {
-    SETERRQ(1,1,"No support for this language yet");
-  }
-  PetscFunctionReturn(0);
-}
-\end{verbatim}
-and
-\begin{verbatim}
-int PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob)
-{
-  PetscFunctionBegin;
-  if (lang == PETSC_LANGUAGE_C) {
-    *vob = (void *) obj;
-  } else if (lang == PETSC_LANGUAGE_CPP) {
-    if (obj->cpp) {
-      *vob = obj->cpp;
-    } else {
-      SETERRQ(1,1,"No C++ wrapper generated");
-    }
-  } else {
-    SETERRQ(1,1,"No support for this language yet");
-  }
-  PetscFunctionReturn(0);
-}
-\end{verbatim}
-As one can see the implementation is very basic. Each PETSc object has a
-``place-holder'' for the C++ interface object which may be set or accessed.
-
-Currently PETSc does not provide C++ wrapper objects that could be
-composed into our C objects, but we hope to provide them someday.
-
-\chapter{Mimimal Component Standards}
+\chapter{Mimimal Class Standards}
 This chapter discusses the miminal functionality and format required of any 
-component that is compatible with PETSc. 
+class that is compatible with PETSc. 
 
 % -----------------------------------------------------------------------------------
 \chapter{PetscObjects}
@@ -810,35 +792,22 @@ component that is compatible with PETSc.
 
 \section{Solver Objects: PC, KSP, SNES, TS}
 
-The PETSc solver objects have not yet been completely cast into the common component 
-header 
-\begin{verbatim}
-struct _p_<component> {
-  int              cookie;                                  
-  PetscOps         *bops;                                   
-  <component>Ops   *ops;       
-  OTHER STUFF SPECIFIC TO THAT PARTICULAR LIBRARY
-};
-\end{verbatim}
-model; rather the {\tt <component>Ops} field is empty and the member functions
-are scattered in the {\tt OTHER STUFF SPECIFIC TO THAT PARTICULAR LIBRARY}
-fields. We hope to rectify this in the next release. Regardless, this does not
-effect (except superficially) the development of the objects.
-
 \subsection{Preconditioners: PC}
-The base PETSc PC object is defined in the {\tt include/private/pcimpl.h} include file. 
+
+The base PETSc PC object is defined in the \trl{include/private/pcimpl.h} include file. 
 A carefully commented implementation of a PC object can be found in 
-{\tt src/ksp/pc/impls/jacobi/jacobi.c}. 
+\trl{src/ksp/pc/impls/jacobi/jacobi.c}. 
+
 
 \subsection{Krylov Solvers: KSP}
-The base PETSc KSP object is defined in the {\tt src/ksp/ksp/kspimpl.h} include file. 
+The base PETSc KSP object is defined in the \trl{src/ksp/ksp/kspimpl.h} include file. 
 A carefully commented implementation of a KSP object can be found in 
-{\tt src/ksp/ksp/impls/cg/cg.c}. 
+\trl{src/ksp/ksp/impls/cg/cg.c}. 
 
 \subsection{Registering New Methods}
 \label{sec:registeringnewmethods}
 
-See {\tt src/ksp/examples/tutorials/ex12.c} for an example of registering a new
+See \trl{src/ksp/examples/tutorials/ex12.c} for an example of registering a new
 preconditioning (PC) method.
 
 
@@ -846,7 +815,7 @@ preconditioning (PC) method.
 \chapter{Style Guide}
 
 The PETSc team uses certain conventions to make our source code consistent. Groups
-developing components compatible with PETSc are, of course, free to organize their
+developing classs compatible with PETSc are, of course, free to organize their
 own source code anyway they like.
 
 \section{Names}
@@ -855,27 +824,27 @@ important in making the package both usable and maintainable.
 We use several conventions:
 \begin{itemize}
 \item All function names and enum types consist of words, each of 
-      which is capitalized, for example {\tt KSPSolve()} and 
-      {\tt MatGetOrdering()}.
+      which is capitalized, for example KSPSolve() and 
+      MatGetOrdering().
 \item All enum elements and macro variables are capitalized. When
       they consist of several complete words, there is an underscore between each word.
 \item Functions that are private to PETSc (not callable by the 
       application code) either
       \begin{itemize}
-        \item have an appended {\tt \_Private} (for example, 
-           {\tt StashValues\_Private}) or
-        \item have an appended {\tt \_<component>Subtype} (for example,
-           {\tt MatMult\_SeqAIJ}).
+        \item have an appended \trl{\_Private} (for example, 
+           \trl{StashValues\_Private}) or
+        \item have an appended \trl{\_$<$class$>$Subtype} (for example,
+           \trl{MatMult\_SeqAIJ}).
       \end{itemize}
 
       In addition, functions that are not intended for use outside
       of a particular file are declared static.
 \item Function names in structures are the same as the base application
       function name without the object prefix, and all are in small letters. 
-      For example, {\tt MatMultTrans()} has a structure name of 
-      {\tt multtrans()}.
-\item Each application usable function begins with the name of the component object, 
-      for example, {\tt ISInvertPermutation} or {\tt MatMult}. 
+      For example, MatMultTrans() has a structure name of 
+      \trl{multtrans()}.
+\item Each application usable function begins with the name of the class object, 
+      for example, ISInvertPermutation() or MatMult(). 
 \end{itemize}
 
 \section{Coding Conventions and Style Guide}
@@ -889,96 +858,97 @@ so that the code is uniform and easily maintainable:
       two more characters.
 \item Wrapping lines should be avoided whenever possible.
 \item Source code lines should not be more than 120 characters wide.
-\item The macros {\tt SETERRQ()} and {\tt CHKERRQ()} should be on the 
+\item The macros SETERRQ() and CHKERRQ() should be on the 
       same line as the routine to be checked unless this violates the 
       120 character width rule. Try to make error messages short, but 
       informative.
 \item The local variable declarations should be aligned. For example,
       use the style
-\begin{verbatim}
-   int    i,j;
+\begin{tabbing}
+   int    i,j;\\
    Scalar a;
-\end{verbatim}
+\end{tabbing}
 instead of
-\begin{verbatim}
-   int i,j;
+\begin{tabbing}
+   int i,j;\\
    Scalar a;
-\end{verbatim}
-\item All local variables of a particular type (e.g., {\tt int}) should be 
+\end{tabbing}
+\item All local variables of a particular type (e.g., \trl{int}) should be 
       listed on the same line if possible; otherwise, they should be listed
       on adjacent lines.
 \item Equal signs should be aligned in regions where possible.
 \item There {\em must} be a single blank line
       between the local variable declarations and the body of the function.
-\item The first line of the executable statments must be {\tt PetscFunctionBegin;}
+\item The first line of the executable statments must be PetscFunctionBegin;
 \item The following text should be before each function
-\begin{verbatim}
-#undef __FUNC__
-#define __FUNC__ ``FunctionName''
-\end{verbatim}
+\begin{tabbing}
+\#undef \_\_FUNC\_\_\\
+\#define \_\_FUNC\_\_ ``FunctionName''
+\end{tabbing}
 this is used by various macros (for example the error handlers) to always know
 what function one is in.
-\item Use {\tt PetscFunctionReturn(returnvalue);} not {\tt return(returnvalue);}
+\item Use PetscFunctionReturn(returnvalue); not \trl{return(returnvalue);}
 \item {\em Never} put a function call in a return statment; do not do
-\begin{verbatim}
+\begin{tabbing}
    PetscFunctionReturn( somefunction(...) );
-\end{verbatim}
-\item Do {\bf not} put a blank line immediately after {\tt PetscFunctionBegin;} or 
-a blank line immediately before {\tt PetscFunctionReturn(0);}.
-\item Indentation for {\tt if} statements {\em must}  be done  as
+\end{tabbing}
+\item Do {\bf not} put a blank line immediately after PetscFunctionBegin; or 
+a blank line immediately before PetscFunctionReturn(0);.
+\item Indentation for \trl{if} statements {\em must}  be done  as
 as
-\begin{verbatim}
-   if (  ) {
-     ....
-   } else {
-     ....
-   }
-\end{verbatim}
+\begin{tabbing}
+   if (  ) \{\\
+     ....\\
+   \} else \{\\
+     ....\\
+   \}
+\end{tabbing}
 \item {\em Never}  have 
-\begin{verbatim}
-   if (  ) 
+\begin{tabbing}
+   if (  ) \\
      a single indented line
-\end{verbatim}
+\end{tabbing}
 or
-\begin{verbatim}
+\begin{tabbing}
    for (  )
      a single indented line
-\end{verbatim}
+\end{tabbing}
 instead use either 
-\begin{verbatim}
+\begin{tabbing}
    if (  ) a single line
-\end{verbatim}
+\end{tabbing}
 or 
-\begin{verbatim}
-   if (  ) {
-     a single indented line
-   }
-\end{verbatim}
+\begin{tabbing}
+   if (  ) \{\\
+     a single indented line\\
+   \}
+\end{tabbing}
 \item {\em No} tabs are allowed in {\em any} of the source code.
 \item The open bracket \{ should be on the same line as the {\em if ()} test, {\em for ()}, etc. never on 
       its own line. The closing bracket \} should {\bf always} be on its own line. 
 \item In function declaration the open bracket \{ should be on the {\bf next} line, not on the same line as the function name and
       arguments. This is an exception to the rule above.
 \item {\em No} space after a ( or before a ). No space before the CHKXXX(). That is, do not write
-\begin{verbatim}
-   ierr = PetscMalloc( 10*sizeof(int),&a ); CHKERRQ(ierr);
-\end{verbatim}
+\begin{tabbing}
+   ierr = PetscMalloc( 10*sizeof(int),\&a ); CHKERRQ(ierr);
+\end{tabbing}
 instead write
-\begin{verbatim}
-   ierr = PetscMalloc(10*sizeof(int),&a);CHKERRQ(ierr);
-\end{verbatim}
+\begin{tabbing}
+   ierr = PetscMalloc(10*sizeof(int),\&a);CHKERRQ(ierr);
+\end{tabbing}
 \item {\em No} space after the ) in a cast, no space between the type and the * in a caste.
 \item {\em No} space before or after a , in lists
 That is, do not write
-\begin{verbatim}
-    int a, b,c;
+\begin{tabbing}
+    int a, b,c;\\
     ierr = func(a, 22.0);CHKERRQ(ierr);
-\end{verbatim}
+\end{tabbing}
 instead write
-\begin{verbatim}
-    int a,b,c;
+\begin{tabbing}
+    int a,b,c;\\
     ierr = func(a,22.0);CHKERRQ(ierr);
-\end{verbatim}
+\end{tabbing}
+
 \item Do not use the {\em register} directive.
 \item Do not use {\em if (rank == 0)} or {\em if (v == PETSC\_NULL)} or {\em if (flg == PETSC\_TRUE)} or {\em if (flg == PETSC\_FALSE)} 
 instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg)}.
@@ -989,12 +959,12 @@ instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg
 
 Since consistency simplifies usage and code maintenance, the names of
 PETSc routines, flags, options, etc. have been selected with great care.
-The default option names are of the form {\tt -<component>\_sub<component>\_name}.  
+The default option names are of the form \trl{-$<$class$>$\_sub$<$class$>$\_name}.  
 For example, the option name for the basic convergence tolerance for 
-the KSP package is {\tt -ksp\_atol}. In addition, operations in different 
+the KSP package is \trl{-ksp\_atol}. In addition, operations in different 
 packages of a similar nature have a similar name.  For example, the option
 name for the basic convergence tolerance for the SNES package is 
-{\tt -snes\_atol}.
+\trl{-snes\_atol}.
 
 % -----------------------------------------------------------------------------------
 \chapter{The Various Matrix Classes}
@@ -1049,12 +1019,12 @@ of techniques for blocking, including
    storing additional information about adjacent rows with identical 
    nonzero structure (so called I-nodes); this I-node information is 
    used in the key computational routines to improve performance
-   (the default for the {\tt MATSEQAIJ} and {\tt MATMPIAIJ} formats);
+   (the default for the MATSEQAIJ and MATMPIAIJ formats);
 \item storing the matrices using a fixed (problem dependent) block size
-   (via the {\tt MATSEQBAIJ} and {\tt MATMPIBAIJ} formats); and
+   (via the MATSEQBAIJ and MATMPIBAIJ formats); and
 \item storing the matrices using a variable block size, that can be 
    different for different parts of the matrix
-   (supported by the BlockSolve95 matrix format {\tt MATMPIROWBS}).
+   (supported by the BlockSolve95 matrix format MATMPIROWBS).
 \end{itemize}
 
 The advantage of the first approach is that it is a minimal change
@@ -1072,7 +1042,7 @@ of checking block sizes.
 The following table presents the floating point performance
 for a basic matrix-vector product using these four approaches: a basic
 compressed row storage format (using the PETSc runtime options 
-{\tt -mat\_seqaij -mat\_no\_unroll)}; the same compressed row format using
+\trl{-mat\_seqaij -mat\_no\_unroll)}; the same compressed row format using
 I-nodes (with the option {-mat\_seqaij}); a fixed block size code,
 with a block size of three for these problems (using the option 
 {-mat\_seqbaij}); and the BlockSolve95 variable block size code (using
@@ -1136,25 +1106,25 @@ given in \cite{efficient}.
 
 The sequential and parallel block AIJ formats, which are extensions of
 the AIJ formats described above, are intended especially for use with
-multicomponent PDEs.  The block variants store matrix elements by
-fixed-sized dense {\tt nb} $\times$ {\tt nb} blocks.  The stored row
+multiclass PDEs.  The block variants store matrix elements by
+fixed-sized dense \trl{nb} $\times$ \trl{nb} blocks.  The stored row
 and column indices begin at zero.
 
-The routine for creating a sequential block AIJ matrix with {\tt m} 
-rows, {\tt n} columns, and a block size of {\tt nb} is
-\begin{verbatim}
-   ierr = MatCreateSeqBAIJ(MPI_Comm comm,int nb,int m,int n,int nz,int *nnz, Mat *A)
-\end{verbatim}
+The routine for creating a sequential block AIJ matrix with \trl{m} 
+rows, \trl{n} columns, and a block size of \trl{nb} is
+\begin{tabbing}
+   ierr = MatCreateSeqBAIJ(MPI\_Comm comm,int nb,int m,int n,int nz,int *nnz, Mat *A)
+\end{tabbing}
 \findex{MatCreateSeqBAIJ} 
-The arguments {\tt nz} and {\tt nnz} can be used to preallocate matrix
+The arguments \trl{nz} and \trl{nnz} can be used to preallocate matrix
 memory by indicating the number of {\em block} nonzeros per row.  For good
 performance during matrix assembly, preallocation is crucial; however, the
-user can set {\tt nz=0} and {\tt nzz=PETSC\_NULL} for PETSc to dynamically
+user can set \trl{nz=0} and \trl{nzz=PETSC\_NULL} for PETSc to dynamically
 allocate matrix memory as needed.  The PETSc users manual 
 discusses preallocation for the AIJ format; extension to the block AIJ
 format is straightforward.
 
-Note that the routine {\tt MatSetValuesBlocked()}
+Note that the routine MatSetValuesBlocked()
 \findex{MatSetValuesBlocked()} can be used for more efficient matrix assembly
 when using the block AIJ format.
  
@@ -1162,33 +1132,33 @@ when using the block AIJ format.
 
 Parallel block AIJ matrices with block size {\t nb} can be created with
 the command \findex{MatCreateMPIBAIJ()}
-\begin{verbatim}
-   ierr = MatCreateMPIBAIJ(MPI_Comm comm,int nb,int m,int n,int M,int N,int d_nz,
-                          int *d_nnz, int o_nz,int *o_nnz,Mat *A);
-\end{verbatim}
-{\tt A} is the newly created matrix, while the arguments {\tt m}, {\tt n}, 
-{\tt M}, and {\tt N}, indicate the number of local rows and columns and
+\begin{tabbing}
+   ierr = MatCreateMPIBAIJ(MPI\_Comm comm,int nb,int m,int n,int M,int N,int d\_nz,\\
+                          int *d\_nnz, int o\_nz,int *o\_nnz,Mat *A);
+\end{tabbing}
+\trl{A} is the newly created matrix, while the arguments \trl{m}, \trl{n}, 
+\trl{M}, and \trl{N}, indicate the number of local rows and columns and
 the number of global rows and columns, respectively. Either the local or
-global parameters can be replaced with {\tt PETSC\_DECIDE}, so that 
+global parameters can be replaced with PETSC\_DECIDE, so that 
 PETSc will determine \findex{PETSC_DECIDE} them.
 The matrix is stored with a fixed number of rows on 
-each processor, given by {\tt m}, or determined by PETSc if {\tt m} is
-{\tt PETSC\_DECIDE}.
+each processor, given by \trl{m}, or determined by PETSc if \trl{m} is
+PETSC\_DECIDE.
 
-If {\tt PETSC\_DECIDE} is not used for
-{\tt m} and {\tt n} then the user must ensure that they are chosen to be
+If PETSC\_DECIDE is not used for
+\trl{m} and \trl{n} then the user must ensure that they are chosen to be
 compatible with the vectors. To do this, one first considers the product 
-$y = A x$. The {\tt m} that one uses in {\tt MatCreateMPIBAIJ()}
-must match the local size used in the {\tt VecCreateMPI()} for {\tt y}.
-The {\tt n} used must match that used as the local size in 
-{\tt VecCreateMPI()} for {\tt x}. 
+$y = A x$. The \trl{m} that one uses in MatCreateMPIBAIJ()
+must match the local size used in the VecCreateMPI() for \trl{y}.
+The \trl{n} used must match that used as the local size in 
+VecCreateMPI() for \trl{x}. 
 
-The user must set {\tt d\_nz=0}, {\tt o\_nz=0}, {\tt d\_nnz=PETSC\_NULL}, and 
-{\tt o\_nnz=PETSC\_NULL} for PETSc to control dynamic allocation of matrix
-memory space.  Analogous to {\tt nz} and {\tt nnz} for the routine 
-{\tt MatCreateSeqBAIJ()}, these arguments optionally specify 
-block nonzero information for the diagonal ({\tt d\_nz} and {\tt d\_nnz}) and 
-off-diagonal ({\tt o\_nz} and {\tt o\_nnz}) parts of the matrix. 
+The user must set \trl{d\_nz=0}, \trl{o\_nz=0}, \trl{d\_nnz=PETSC\_NULL}, and 
+\trl{o\_nnz=PETSC\_NULL} for PETSc to control dynamic allocation of matrix
+memory space.  Analogous to \trl{nz} and \trl{nnz} for the routine 
+MatCreateSeqBAIJ(), these arguments optionally specify 
+block nonzero information for the diagonal (\trl{d\_nz} and \trl{d\_nnz}) and 
+off-diagonal (\trl{o\_nz} and \trl{o\_nnz}) parts of the matrix. 
 For a square global matrix, we define each processor's diagonal portion 
 to be its local rows and the corresponding columns (a square submatrix);  
 each processor's off-diagonal portion encompasses the remainder of the
@@ -1222,33 +1192,33 @@ Storage \sindex{block diagonal matrix storage} by block diagonals is
 available in both uniprocessor and parallel versions, although currently
 only a subset of matrix operations is supported.  Each element of
 a block diagonal is defined to be a square dense block of size {\tt
-nb} $\times$ {\tt nb}, where conventional diagonal storage results for
-{\tt nb}=1.  Such storage is particularly useful for multicomponent PDEs
+nb} $\times$ \trl{nb}, where conventional diagonal storage results for
+\trl{nb}=1.  Such storage is particularly useful for multicomponent PDEs
 discretized on regular grids.
 
-The routine for creating a uniprocessor block diagonal matrix with {\tt m} 
-rows, {\tt n} columns, and a block size of {\tt nb} is
-\begin{verbatim}
-   ierr = MatCreateSeqBDiag(PETSC_COMM_SELF,int m,int n,int nd,int nb,int *diag,
+The routine for creating a uniprocessor block diagonal matrix with \trl{m} 
+rows, \trl{n} columns, and a block size of \trl{nb} is
+\begin{tabbing}
+   ierr = MatCreateSeqBDiag(PETSC\_COMM\_SELF,int m,int n,int nd,int nb,int *diag,\\
                                    Scalar **diagv,Mat *A);
-\end{verbatim}
-The \findex{MatCreateSeqBDiag} argument {\tt nd} is the number of 
-block diagonals, and {\tt diag} is
+\end{tabbing}
+The \findex{MatCreateSeqBDiag} argument \trl{nd} is the number of 
+block diagonals, and \trl{diag} is
 an array of block diagonal numbers.  For the matrix element $A_{ij}$,
 where $i$ and $j$ respectively denote the row and column number of the 
 element, the block diagonal number is computed using integer division by
 \[ {\tt diag} = i/nb - j/nb. \]
-If matrix storage space is allocated by the user, the argument {\tt diagv} 
-is a pointer to the actual diagonals (in the same order as the {\tt diag} 
+If matrix storage space is allocated by the user, the argument \trl{diagv} 
+is a pointer to the actual diagonals (in the same order as the \trl{diag} 
 array).  For PETSc to control memory allocation, the user should merely
-set {\tt diagv=PETSC\_NULL}.
+set \trl{diagv=PETSC\_NULL}.
 
 A simple example of this storage format is illustrated below for block
-size {\tt nb}=1. 
-Here {\tt nd} = 4 and {\tt diag} = [2, 1, 0, -3]. The
+size \trl{nb}=1. 
+Here \trl{nd} = 4 and \trl{diag} = [2, 1, 0, -3]. The
 diagonals need not be listed in any particular order, so that
-{\tt diag} = [-3, 0, 1, 2] or {\tt diag} = [0, 2, -3, 1] would also
-be valid values for the {\tt diag} array. 
+\trl{diag} = [-3, 0, 1, 2] or \trl{diag} = [0, 2, -3, 1] would also
+be valid values for the \trl{diag} array. 
 
 \begin{center}
 \begin{tabular}{| c c c c c c |}
@@ -1268,13 +1238,13 @@ a20  &a21  &a22  &0    &0    &a25\\
 The parallel block diagonal matrices are partitioned by rows across
 the processors, so that each local rectangular submatrix is stored by
 block diagonals as described above.  The routine for creating a
-parallel block diagonal matrix with {\tt m} local rows, {\tt M} global
-rows, {\tt n} global columns, and a block size of {\tt nb} is
-\begin{verbatim}
-   ierr = MatCreateMPIBDiag(PETSC_COMM_SELF,int m,int M,int N,int nd,int nb,int *diag,
+parallel block diagonal matrix with \trl{m} local rows, \trl{M} global
+rows, \trl{n} global columns, and a block size of \trl{nb} is
+\begin{tabbing}
+   ierr = MatCreateMPIBDiag(PETSC\_COMM\_SELF,int m,int M,int N,int nd,int nb,int *diag,\\
                             Scalar **diagv,Mat *A);
-\end{verbatim}
-Either the {\tt m} or {\tt M} can be set to {\tt PETSC\_DECIDE} for PETSc
+\end{tabbing}
+Either the \trl{m} or \trl{M} can be set to PETSC\_DECIDE for PETSc
 to determine the corresponding quantity.
 
 

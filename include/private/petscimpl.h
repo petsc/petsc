@@ -20,8 +20,6 @@
       getcomm()         - Gets the object's communicator.
       view()            - Is the routine for viewing the entire PETSc object; for
                           example, MatView() is the general matrix viewing routine.
-      reference()       - Increases the reference count for a PETSc object; when
-                          a reference count reaches zero it is destroyed.
       destroy()         - Is the routine for destroying the entire PETSc object; 
                           for example,MatDestroy() is the general matrix 
                           destruction routine.
@@ -30,20 +28,18 @@
                           with the first object.
       composefunction() - Attaches an additional registered function.
       queryfunction()   - Requests a registered function that has been registered.
-      composelanguage() - associates the object's representation in a different language
-      querylanguage()   - obtain the object's representation in a different language
+      publish()         - Not currently used
 */
 
 typedef struct {
    PetscErrorCode (*getcomm)(PetscObject,MPI_Comm *);
    PetscErrorCode (*view)(PetscObject,PetscViewer);
-   PetscErrorCode (*reference)(PetscObject);
    PetscErrorCode (*destroy)(PetscObject);
    PetscErrorCode (*compose)(PetscObject,const char[],PetscObject);
    PetscErrorCode (*query)(PetscObject,const char[],PetscObject *);
    PetscErrorCode (*composefunction)(PetscObject,const char[],const char[],void (*)(void));
    PetscErrorCode (*queryfunction)(PetscObject,const char[],void (**)(void));
-      PetscErrorCode (*publish)(PetscObject);
+   PetscErrorCode (*publish)(PetscObject);
 } PetscOps;
 
 #define PETSCHEADER(ObjectOps)                                  \

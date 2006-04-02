@@ -517,7 +517,7 @@ manconcepts:
                   echo $$i $$a >> ${LOC}/docs/manconcepts; \
                   line=`expr $$line - 1` ; \
                 done; \
-                grep -v Concepts: $$i > tmp; \
+                grep -v Concepts: $$i | sed "s/PETSC[A-Z]*_DLLEXPORT//g" > tmp; \
                 mv tmp $$i; \
               fi; \
               ${RM} ltmp; \
@@ -555,7 +555,7 @@ html:
               ${RM} $${loc}/$$i.html; \
               echo "<center><a href=\"$${iroot}\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
               sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g"  \
-              -e "s/ierr [ ]*= //g"  $$i | ${C2HTML} -n  | \
+              -e "s/ierr [ ]*= //g"  -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n  | \
               sed "s?splicer.begin(\([_A-Za-z0-9.]*\))?splicer.begin(\1)  <a name=\1></p>?g" | \
               ${PETSC_DIR}/maint/fixinclude $$i $${ROOT} | \
               egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C|extern )' | \
