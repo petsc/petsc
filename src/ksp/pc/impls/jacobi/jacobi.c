@@ -61,6 +61,7 @@ typedef struct {
                                     the diagonal elements of the preconditioner matrix (used 
                                     only for symmetric preconditioner application) */
   PetscTruth userowmax;
+  PetscTruth useabs;             /* use the absolute values of the diagonal entries */
 } PC_Jacobi;
 
 EXTERN_C_BEGIN
@@ -73,6 +74,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowMax_Jacobi(PC pc)
   PetscFunctionBegin;
   j            = (PC_Jacobi*)pc->data;
   j->userowmax = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCJacobiSetUseAbs_Jacobi"
+PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseAbs_Jacobi(PC pc)
+{
+  PC_Jacobi *j;
+
+  PetscFunctionBegin;
+  j         = (PC_Jacobi*)pc->data;
+  j->useabs = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -98,8 +113,9 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
   PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
   Vec            diag,diagsqrt;
   PetscErrorCode ierr;
-  PetscInt       n,i,zeroflag=0;
-  PetscScalar   *x;
+  PetscInt       n,i;
+  PetscScalar    *x;
+  PetscTruth     zeroflag = PETSC_FALSE;
 
   PetscFunctionBegin;
   /*
@@ -135,10 +151,15 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
     ierr = VecReciprocal(diag);CHKERRQ(ierr);
     ierr = VecGetLocalSize(diag,&n);CHKERRQ(ierr);
     ierr = VecGetArray(diag,&x);CHKERRQ(ierr);
+    if (jac->useabs) {
+      for (i=0; i<n; i++) {
+        x[i]     = PetscAbsScalar(x[i]);
+      }
+    }
     for (i=0; i<n; i++) {
       if (x[i] == 0.0) {
         x[i]     = 1.0;
-        zeroflag = 1;
+        zeroflag = PETSC_TRUE;
       }
     }
     ierr = VecRestoreArray(diag,&x);CHKERRQ(ierr);
@@ -155,7 +176,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
       if (x[i] != 0.0) x[i] = 1.0/sqrt(PetscAbsScalar(x[i]));
       else {
         x[i]     = 1.0;
-        zeroflag = 1;
+        zeroflag = PETSC_TRUE;
       }
     }
     ierr = VecRestoreArray(diagsqrt,&x);CHKERRQ(ierr);
@@ -303,6 +324,8 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
   ierr = PetscOptionsHead("Jacobi options");CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
                           &jac->userowmax,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-pc_jacobi_abs","Use absolute values of diagaonal entries","PCJacobiSetUseAbs",jac->useabs,
+                          &jac->useabs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -323,8 +346,9 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
      PCJacobi - Jacobi (i.e. diagonal scaling preconditioning)
 
    Options Database Key:
-.    -pc_jacobi_rowmax - use the maximum absolute value in each row as the scaling factor,
++    -pc_jacobi_rowmax - use the maximum absolute value in each row as the scaling factor,
                         rather than the diagonal
+-    -pc_jacobi_abs - use the absolute value of the diagaonl entry
 
    Level: beginner
 
@@ -336,7 +360,7 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
          Zero entries along the diagonal are replaced with the value 1.0
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCJacobiSetUseRowMax(), 
+           PCJacobiSetUseRowMax(), PCJacobiSetUseAbs()
 M*/
 
 EXTERN_C_BEGIN
@@ -368,6 +392,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Jacobi(PC pc)
   jac->diag          = 0;
   jac->diagsqrt      = 0;
   jac->userowmax     = PETSC_FALSE;
+  jac->useabs        = PETSC_FALSE;
 
   /*
       Set the pointers for the functions that are provided above.
@@ -385,11 +410,47 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Jacobi(PC pc)
   pc->ops->applyrichardson     = 0;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
   pc->ops->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCJacobiSetUseRowMax_C","PCJacobiSetUseRowMax_Jacobi",
-                    PCJacobiSetUseRowMax_Jacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCJacobiSetUseRowMax_C","PCJacobiSetUseRowMax_Jacobi",PCJacobiSetUseRowMax_Jacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCJacobiSetUseAbs_C","PCJacobiSetUseAbs_Jacobi",PCJacobiSetUseAbs_Jacobi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCJacobiSetUseAbs"
+/*@
+   PCJacobiSetUseAbs - Causes the Jacobi preconditioner to use the 
+      absolute value of the diagonal to for the preconditioner
+
+   Collective on PC
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+
+   Options Database Key:
+.  -pc_jacobi_abs
+
+   Level: intermediate
+
+   Concepts: Jacobi preconditioner
+
+.seealso: PCJacobiaUseRowMax()
+
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseAbs(PC pc)
+{
+  PetscErrorCode ierr,(*f)(PC);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCJacobiSetUseAbs_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCJacobiSetUseRowMax"
@@ -411,6 +472,7 @@ EXTERN_C_END
 
    Concepts: Jacobi preconditioner
 
+.seealso: PCJacobiaUseAbs()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowMax(PC pc)
 {
