@@ -879,40 +879,42 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetCGSRefinementType_GMRES(KSP,
 EXTERN_C_END
 
 /*MC
-     KSPLGMRES - Augments the standard GMRES approximation space with approximation to
-                 the error from previous restart cycles.
+    KSPLGMRES - Augments the standard GMRES approximation space with approximations to
+                the error from previous restart cycles.
 
-   Options Database Keys:
-+   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
+  Options Database Keys:
++   -ksp_gmres_restart <restart> - total approximation space size (Krylov directions + error approximations)
 .   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
-.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of 
-                             vectors are allocated as needed)
+.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of
+                            vectors are allocated as needed)
 .   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
 .   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
-.   -ksp_gmres_cgs_refinement_type <never,ifneeded,always> - determine if iterative refinement is used to increase the 
-                                   stability of the classical Gram-Schmidt  orthogonalization.
+.   -ksp_gmres_cgs_refinement_type <never,ifneeded,always> - determine if iterative refinement is used to increase the
+                                  stability of the classical Gram-Schmidt  orthogonalization.
 .   -ksp_gmres_krylov_monitor - plot the Krylov space generated
-.   -ksp_lgmres_constant - Use constant approx. space size
--   -ksp_lgmres_augment <n> - Number of error approximations to augment the Krylov space with
+.   -ksp_lgmres_augment <k> - number of error approximations to augment the Krylov space with
+-   -ksp_lgmres_constant - use a constant approx. space size (only affects restart cycles < num. error approx.(k), i.e. the first k restarts)
 
-    Described in:
-     A. H. Baker, E.R. Jessup, and T.A. Manteuffel. A technique for
-     accelerating the convergence of restarted GMRES. Submitted to SIAM
-     Journal on Matrix Analysis and Applications. Also available as
-     Technical Report #CU-CS-945-03, University of Colorado, Department of
-     Computer Science, January, 2003. 
+   Described in:
+    A. H. Baker, E.R. Jessup, and T.A. Manteuffel. A technique for
+    accelerating the convergence of restarted GMRES. SIAM
+    Journal on Matrix Analysis and Applications, 26 (2005), pp. 962-984.
 
-   Level: beginner
+    To run LGMRES(m, k) as described in the above paper, use:
+       -ksp_gmres_restart <m+k>
+       -ksp_lgmres_augment <k>
 
-   Notes:  This object is subclassed off of KSPGMRES
+  Level: beginner
 
-   Contributed by: Allison Baker
+  Notes:  This object is subclassed off of KSPGMRES
+
+  Contributed by: Allison Baker
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPGMRES,
-           KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization()
-           KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
-           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESKrylovMonitor(), KSPLGMRESSetAugDim(),
-           KSPGMRESSetConstant()
+          KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization()
+          KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
+          KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESKrylovMonitor(), KSPLGMRESSetAugDim(),
+          KSPGMRESSetConstant()
 
 M*/
 
