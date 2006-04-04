@@ -13,7 +13,10 @@ class Configure(PETSc.package.Package):
 
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
-    self.deps = ['PETSc.packages.Boost', 'PETSc.packages.Triangle', 'PETSc.packages.TetGen']
+    self.boost = self.framework.require('PETSc.packages.Boost',self)
+    #self.boost = self.framework.require('PETSc.packages.Triangle',self)
+    #self.boost = self.framework.require('PETSc.packages.TetGen',self)
+    self.deps = [self.boost]
     return
 
   def Install(self):
