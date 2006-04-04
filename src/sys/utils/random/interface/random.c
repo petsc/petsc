@@ -343,9 +343,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *va
    Example of Usage:
 .vb
       PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&r);
-      PetscRandomGetValue(r,&value1);
-      PetscRandomGetValue(r,&value2);
-      PetscRandomGetValue(r,&value3);
+      PetscRandomGetValueReal(r,&value1);
+      PetscRandomGetValueReal(r,&value2);
+      PetscRandomGetValueReal(r,&value3);
       PetscRandomDestroy(r);
 .ve
 
@@ -362,7 +362,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscReal *
   PetscValidIntPointer(val,2);
   PetscValidType(r,1);
 
-  ierr = (*r->ops->getvalue)(r,val);CHKERRQ(ierr);
+  ierr = (*r->ops->getvaluereal)(r,val);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -389,9 +389,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscReal *
    Example of Usage:
 .vb
       PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&r);
-      PetscRandomGetValue(r,&value1);
-      PetscRandomGetValue(r,&value2);
-      PetscRandomGetValue(r,&value3);
+      PetscRandomGetValueImaginary(r,&value1);
+      PetscRandomGetValueImaginary(r,&value2);
+      PetscRandomGetValueImaginary(r,&value3);
       PetscRandomDestroy(r);
 .ve
 
@@ -408,7 +408,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueImaginary(PetscRandom r,PetscS
   PetscValidIntPointer(val,2);
   PetscValidType(r,1);
 
-  ierr = (*r->ops->getvalue)(r,val);CHKERRQ(ierr);
+  ierr = (*r->ops->getvalueimaginary)(r,val);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
