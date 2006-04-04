@@ -353,7 +353,7 @@ class Configure(script.Script):
       raise RuntimeError('Invalid language: '+language)
     return codeStr
 
-  def preprocess(self, codeStr):
+  def preprocess(self, codeStr, timeout = 600.0):
     def report(command, status, output, error):
       if error or status:
         self.framework.log.write('Possible ERROR while running preprocessor: '+error)
@@ -368,7 +368,7 @@ class Configure(script.Script):
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
     f.close()
-    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, log = self.framework.log)
+    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, timeout = timeout, log = self.framework.log)
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerFixes): os.remove(self.compilerFixes)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
@@ -378,10 +378,10 @@ class Configure(script.Script):
     '''Return the contents of stdout when preprocessing "codeStr"'''
     return self.preprocess(codeStr)[0]
 
-  def checkPreprocess(self, codeStr):
+  def checkPreprocess(self, codeStr, timeout = 600.0):
     '''Return True if no error occurred
        - An error is signaled by a nonzero return code, or output on stderr'''
-    (out, err, ret) = self.preprocess(codeStr)
+    (out, err, ret) = self.preprocess(codeStr, timeout = timeout)
     #pgi dumps filename on stderr - but returns 0 errorcode'
     if err =='conftest.c:': err = ''
     err = self.framework.filterPreprocessOutput(err)
