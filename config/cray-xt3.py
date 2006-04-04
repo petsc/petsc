@@ -36,8 +36,8 @@ configure_options = [
   '--sizeof_MPI_Fint=4',
   
   '--with-debugging=0',
-  'CFLAGS=-fastsse -O3 -Munroll=c:4 -tp k8-64',
-  'FFLAGS=-fastsse -O3 -Munroll=c:4 -tp k8-64',
+  'COPTFLAGS=-fastsse -O3 -Munroll=c:4 -tp k8-64',
+  'FOPTFLAGS=-fastsse -O3 -Munroll=c:4 -tp k8-64',
   '--with-x=0',
   '--with-mpi-dir=/opt/xt-mpt/1.3.15/mpich2-64/P2'
   ]
