@@ -79,13 +79,13 @@ package PETSc {
 
   interface PetscViewer extends PetscObject {
     // Get the filename associated with the viewer
-    string getFilename();
+    string fileGetName();
     // Set the filename associated with the viewer
-    void setFilename(in string filename);
-    // Get the viewer file type
-    PetscViewerFileType getFileType();
-    // Set the viewer file type
-    void setFileType(in PetscViewerFileType fileType);
+    void fileSetName(in string filename);
+    // Get the file mode
+    PetscFileMode fileGetMode();
+    // Set the file mode
+    void fileSetMode(in PetscFileMode fileMode);
     // Get the current format (top of the format stack)
     PetscViewerFormat getFormat();
     // Set the current format (top of the format stack)
