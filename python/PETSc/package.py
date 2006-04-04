@@ -244,10 +244,15 @@ class Package(config.base.Configure):
       raise RuntimeError('If you provide --with-'+self.package+'-lib you must also supply with-'+self.package+'-include\n')
 
     for d in self.getSearchDirectories():
-      for l in self.generateLibList(os.path.join(d,self.libdir)):
-        if d: includedir = os.path.join(d,self.includedir)
-        else: includedir = ''
-        yield('Package specific search directory '+self.PACKAGE, d,l, includedir)
+      for l in self.generateLibList(os.path.join(d, self.libdir)):
+        if isinstance(self.includedir, list):
+          includedir = ([inc for inc in self.includedir if os.path.isabs(inc)] +
+                        [os.path.join(d, inc) for inc in self.includedir if not os.path.isabs(inc)])
+        elif d:
+          includedir = os.path.join(d, self.includedir)
+        else:
+          includedir = ''
+        yield('Package specific search directory '+self.PACKAGE, d, l, includedir)
 
     dir = self.checkDownload(2)
     if dir:
@@ -304,10 +309,10 @@ class Package(config.base.Configure):
         os.mkdir(os.path.join(packages,Dir,self.arch.arch))
     return os.path.join(packages, Dir)
 
-  def checkInclude(self, incl, hfiles, otherIncludes = []):
+  def checkInclude(self, incl, hfiles, otherIncludes = [], timeout = 600.0):
     if self.cxx:
       self.headers.pushLanguage('C++')
-    ret = self.executeTest(self.headers.checkInclude, [incl, hfiles],{'otherIncludes' : otherIncludes})
+    ret = self.executeTest(self.headers.checkInclude, [incl, hfiles],{'otherIncludes' : otherIncludes, 'timeout': timeout})
     if self.cxx:
       self.headers.popLanguage()
     return ret
@@ -358,7 +363,7 @@ class Package(config.base.Configure):
       if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
         self.lib = lib	
         self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
-        if (not self.includes) or self.checkInclude(incl, self.includes, incls):
+        if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 900.0):
           self.include = incl
           self.found   = 1
           self.dlib    = self.lib+libs
