@@ -9,7 +9,7 @@ struct _PetscRandomOps {
   /* 0 */
   PetscErrorCode PETSC_DLLEXPORT (*seed)(PetscRandom);
   PetscErrorCode PETSC_DLLEXPORT (*getvalue)(PetscRandom,PetscScalar*);
-  PetscErrorCode PETSC_DLLEXPORT (*getvaluereal)(PetscRandom,PetscScalar*);
+  PetscErrorCode PETSC_DLLEXPORT (*getvaluereal)(PetscRandom,PetscReal*);
   PetscErrorCode PETSC_DLLEXPORT (*getvalueimaginary)(PetscRandom,PetscScalar*);
   PetscErrorCode PETSC_DLLEXPORT (*getinterval)(PetscRandom,PetscScalar*,PetscScalar*);
   /* 5 */
