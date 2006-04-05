@@ -700,22 +700,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatUseScaledForm(Mat mat,PetscTruth scaled)
 PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat A)
 {
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
   if (--A->refct > 0) PetscFunctionReturn(0);
-
-  PetscValidType(A,1);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(A);CHKERRQ(ierr);
+  if (A->ops->destroy) {
+    ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  }
   if (A->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(A->mapping);CHKERRQ(ierr);
   }
   if (A->bmapping) {
     ierr = ISLocalToGlobalMappingDestroy(A->bmapping);CHKERRQ(ierr);
   }
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   ierr = PetscFree(A->rmap.range);CHKERRQ(ierr);
   ierr = PetscFree(A->cmap.range);CHKERRQ(ierr);
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
