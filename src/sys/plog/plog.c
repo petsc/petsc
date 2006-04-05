@@ -1606,6 +1606,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
     }
     ierr = PetscCommDestroy(&newcomm);CHKERRQ(ierr);
   }
+  if (!rank) {
+    ierr = PetscOptionsPrint(fd);CHKERRQ(ierr);
+  }
   /* Machine and compile information */
 #if defined(PETSC_USE_FORTRAN_KERNELS)
   ierr = PetscFPrintf(comm, fd, "Compiled with FORTRAN kernels\n");CHKERRQ(ierr);
