@@ -6,11 +6,13 @@
 #define pcshellsetapplyrichardson_ PCSHELLSETAPPLYRICHARDSON
 #define pcshellsetapplytranspose_  PCSHELLSETAPPLYTRANSPOSE
 #define pcshellsetsetup_           PCSHELLSETSETUP
+#define pcshellsetname_            PCSHELLSETNAME
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define pcshellsetapply_           pcshellsetapply
 #define pcshellsetapplyrichardson_ pcshellsetapplyrichardson
 #define pcshellsetapplytranspose_  pcshellsetapplytranspose
 #define pcshellsetsetup_           pcshellsetsetup
+#define pcshellsetname_            pcshellsetname
 #endif
 
 EXTERN_C_BEGIN
@@ -79,6 +81,14 @@ void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,Pet
 {
   f9 = setup;
   *ierr = PCShellSetSetUp(*pc,ourshellsetup);
+}
+
+void PETSC_STDCALL pcshellsetname_(PC *pc,CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *c;
+  FIXCHAR(name,len,c);
+  *ierr = PCShellSetName(*pc,c);
+  FREECHAR(name,c);
 }
 
 /* -----------------------------------------------------------------*/

@@ -2,18 +2,18 @@
 #include "petsc.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petscviewersetfilename_                PETSCVIEWERSETFILENAME
+#define petscviewerfilesetname_                PETSCVIEWERFILESETNAME
 #define petscviewerasciiprintf_                PETSCVIEWERASCIIPRINTF
 #define petscviewerasciisynchronizedprintf_    PETSCVIEWERASCIISYNCHRONIZEDPRINTF
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscviewersetfilename_                petscviewersetfilename
+#define petscviewerfilesetname_                petscviewerfilesetname
 #define petscviewerasciiprintf_                petscviewerasciiprintf
 #define petscviewerasciisynchronizedprintf_    petscviewerasciisynchronizedprintf
 #endif
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL petscviewersetfilename_(PetscViewer *viewer,CHAR name PETSC_MIXED_LEN(len),
+void PETSC_STDCALL petscviewerfilesetname_(PetscViewer *viewer,CHAR name PETSC_MIXED_LEN(len),
                                       PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char   *c1;

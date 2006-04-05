@@ -5,9 +5,11 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matfdcoloringsetfunctionts_      MATFDCOLORINGSETFUNCTIONTS
 #define matfdcoloringsetfunctionsnes_    MATFDCOLORINGSETFUNCTIONSNES
+#define matfdcoloringview_               MATFDCOLORINGVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matfdcoloringsetfunctionts_      matfdcoloringsetfunctionts
 #define matfdcoloringsetfunctionsnes_    matfdcoloringsetfunctionsnes
+#define matfdcoloringview_               matfdcoloringview
 #endif
 
 EXTERN_C_BEGIN
@@ -55,5 +57,14 @@ void PETSC_STDCALL matfdcoloringsetfunctionsnes_(MatFDColoring *fd,void (PETSC_S
   f8 = f;
   *ierr = MatFDColoringSetFunction(*fd,(PetscErrorCodeFunction)ourmatfdcoloringfunctionsnes,ctx);
 }
+
+void PETSC_STDCALL matfdcoloringview_(MatFDColoring *c,PetscViewer *vin,PetscErrorCode *ierr)
+{
+  PetscViewer v;
+
+  PetscPatchDefaultViewers_Fortran(vin,v);
+  *ierr = MatFDColoringView(*c,v);
+}
+
 
 EXTERN_C_END
