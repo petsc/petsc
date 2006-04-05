@@ -376,6 +376,8 @@ update-web:
 	@cd ${PETSC_DIR}/src/docs; make PETSC_ARCH=docsonly PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} bib2html; \
 	/usr/bin/rsync -az -C --exclude=BitKeeper --exclude=documentation/installation.html \
 	  ${PETSC_DIR}/src/docs/website/ petsc@harley.mcs.anl.gov:/nfs/www-unix/petsc/petsc-as
+	@cd ${PETSC_DIR}/src/docs/tex/manual; make developer.pdf PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} LOC=${PETSC_DIR}; \
+	/usr/bin/rsync -az developer.pdf petsc@harley.mcs.anl.gov:/nfs/www-unix/petsc/petsc-as/developers/
 
 ###########################################################
 
