@@ -10,4 +10,4 @@ SHELL    = /bin/sh
 SED      = /bin/sed
 OMAKE    = make --no-print-directory
 MKDIR    = mkdir -p
-
+PDFLATEX = pdflatex
