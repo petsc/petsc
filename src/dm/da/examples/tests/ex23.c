@@ -46,7 +46,8 @@ int main(int argc,char **argv)
   }
 
   ierr = DACreateGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rdm);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   ierr = VecSetRandom(global1,rdm);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
 
