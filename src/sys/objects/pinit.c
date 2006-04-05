@@ -648,6 +648,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr)
   ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stderr",&flg1);CHKERRQ(ierr);
 
+  flg3 = PETSC_FALSE; /* default value is required */
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
   if (flg3) {
