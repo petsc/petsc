@@ -74,7 +74,7 @@ from %s
       raise RuntimeError('Error doing tar -xf '+archive+': '+str(e))
     # now find the dirname - and do a chmod
     try:
-      output = config.base.Configure.executeShellCommand('cd '+root+'; tar -tf '+archive+' | head -1', log = self.log)
+      output = config.base.Configure.executeShellCommand('cd '+root+'; tar -tf '+archive+' | head -n 1', log = self.log)
       dirname = output[0].strip()
       config.base.Configure.executeShellCommand('cd '+root+'; chmod -R a+r '+dirname+';find  '+dirname + ' -type d -name "*" -exec chmod a+rx {} \;', log = self.log)
     except RuntimeError, e:
