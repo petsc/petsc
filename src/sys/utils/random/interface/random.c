@@ -183,7 +183,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetSeed(PetscRandom r,unsigned long se
 
    Input Parameters:
 +  comm - MPI communicator
--  type - the type of random numbers to be generated, usually RANDOM_DEFAULT
 
    Output Parameter:
 .  r  - the random number generator context
@@ -191,30 +190,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetSeed(PetscRandom r,unsigned long se
    Level: intermediate
 
    Notes:
-   By default, we generate random numbers via srand48()/drand48() that
-   are uniformly distributed over [0,1).  The user can shift and stretch
-   this interval by calling PetscRandomSetInterval().
-  
-   Currently three types of random numbers are supported. These types
-   are equivalent when working with real numbers.
-.     RANDOM_DEFAULT - both real and imaginary components are random
-.     RANDOM_DEFAULT_REAL - real component is random; imaginary component is 0
-.     RANDOM_DEFAULT_IMAGINARY - imaginary component is random; real component is 0
+   The random type has to be set by PetscRandomSetType().
 
    Use VecSetRandom() to set the elements of a vector to random numbers.
 
    Example of Usage:
 .vb
-      PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);
+      PetscRandomCreate(PETSC_COMM_SELF,&r);
+      PetscRandomSetType(r,PETSCRAND48);
       PetscRandomGetValue(r,&value1);
-      PetscRandomGetValue(r,&value2);
-      PetscRandomGetValue(r,&value3);
+      PetscRandomGetValueReal(r,&value2);
+      PetscRandomGetValueImaginary(r,&value3);
       PetscRandomDestroy(r);
 .ve
 
    Concepts: random numbers^creating
 
-.seealso: PetscRandomGetValue(), PetscRandomSetInterval(), PetscRandomDestroy(), VecSetRandom()
+.seealso: PetscRandomSetType(), PetscRandomGetValue(), PetscRandomGetValueReal(), PetscRandomGetValueImaginary(), PetscRandomSetInterval(), PetscRandomDestroy(), VecSetRandom()
 @*/
 
 PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
