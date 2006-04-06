@@ -48,6 +48,7 @@ E*/
 #define KSPBICG       "bicg"
 #define KSPMINRES     "minres"
 #define KSPSYMMLQ     "symmlq"
+#define KSPLCD        "lcd"
 #define KSPType const char*
 
 /* Logging support */

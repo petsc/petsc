@@ -17,9 +17,14 @@
 #define KSPRICHARDSON 'richardson'
 #define KSPCHEBYCHEV 'chebychev'
 #define KSPCG 'cg'
+#define KSPCGNE 'cgne'
+#define KSPSTCG 'stcg'
 #define KSPGMRES 'gmres'
+#define KSPFGMRES 'fgmres'
+#define KSPLGMRES 'lgmres'
 #define KSPTCQMR 'tcqmr'
 #define KSPBCGS 'bcgs'
+#define KSPBCGSL 'bcgsl'
 #define KSPCGS 'cgs'
 #define KSPTFQMR 'tfqmr'
 #define KSPCR 'cr'
@@ -27,9 +32,9 @@
 #define KSPPREONLY 'preonly'
 #define KSPQCG 'qcg'
 #define KSPBICG 'bicg'
-#define KSPFGMRES 'fgmres'
 #define KSPMINRES 'minres'
 #define KSPSYMMLQ 'symmlq'
+#define KSPLCD 'lcd'
 #endif
 
 
