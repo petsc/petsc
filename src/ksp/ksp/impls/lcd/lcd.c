@@ -18,7 +18,7 @@
      equations,  Communications in Numerical Methods in Engineering, (Early
      View).
 
-  Contributed by: luciac@ices.utexas.edu
+  Contributed by: Lucia Catabriga <luciac@ices.utexas.edu>
 */
 
 #include "src/ksp/ksp/impls/lcd/lcdctx.h"

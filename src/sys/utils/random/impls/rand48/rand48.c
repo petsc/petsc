@@ -5,14 +5,10 @@
 #include <stdlib.h>
 #else
 /* maybe the protypes are missing */
-#if defined(PETSC_HAVE_DRAND48)
 EXTERN_C_BEGIN
 extern double drand48();
 extern void   srand48(long);
 EXTERN_C_END
-#else
-extern double drand48();
-#endif
 #endif
 
 #undef __FUNCT__  
