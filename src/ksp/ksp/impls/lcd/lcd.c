@@ -27,7 +27,6 @@
 
 PetscErrorCode KSPSetUp_LCD(KSP ksp)
 {
-  //int i;
   KSP_LCD         *lcd = (KSP_LCD*)ksp->data;
   PetscErrorCode ierr;
   PetscInt        restart = lcd->restart;
@@ -48,16 +47,7 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp)
  
   ierr = VecDuplicateVecs(ksp->vec_rhs,restart+1,&lcd->P); CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ksp->vec_rhs, restart + 1, &lcd->Q); CHKERRQ(ierr); 
-  //ierr = PetscMalloc((restart+2)*sizeof(Vec),&lcd->P);CHKERRQ(ierr);
-  //ierr = PetscMalloc((restart+2)*sizeof(Vec),&lcd->Q);CHKERRQ(ierr);
   PetscLogObjectMemory(ksp,2*(restart+2)*sizeof(Vec));
-  
-  /*for( i = 0; i < restart+2 ; i++)
-  {
-  	VecDuplicate(ksp->work[0], &lcd->P[i]);
-  	VecDuplicate(ksp->work[0], &lcd->Q[i]);
-  }*/
-  
   PetscFunctionReturn(0);
 }
 
@@ -117,7 +107,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
 
 
   KSPLogResidualHistory(ksp,rnorm);
-  KSPMonitor(ksp,0,rnorm);                    // call any registered monitor routines 
+  KSPMonitor(ksp,0,rnorm);                    /* call any registered monitor routines */
   ksp->rnorm = rnorm;
 
  
@@ -189,7 +179,6 @@ PetscErrorCode KSPDestroy_LCD(KSP ksp)
 {
   KSP_LCD         *lcd = (KSP_LCD*)ksp->data;
   PetscErrorCode ierr;
-  //PetscInt       i;
 
   PetscFunctionBegin;
   ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
@@ -247,11 +236,7 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp)
 
   PetscErrorCode ierr;
   PetscTruth     flg;
-  KSP_LCD        *lcd;
- // PetscInt       restart;
-  
-  lcd = (KSP_LCD *)ksp->data;
-  
+  KSP_LCD        *lcd = (KSP_LCD *)ksp->data;
   
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP LCD options");CHKERRQ(ierr);
