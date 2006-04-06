@@ -33,7 +33,7 @@
     By switching to the indefinite vector inner product, VecTDot(), the
     same code is used for the complex symmetric case as well.  The user
     must call KSPCGSetType(ksp,KSP_CG_SYMMETRIC) or use the option 
-    -ksp_cg_symmetric to invoke this variant for the complex case.
+    -ksp_cg_type symmetric to invoke this variant for the complex case.
     Note, however, that the complex symmetric code is NOT valid for
     all such matrices ... and thus we don't recommend using this method.
 */
@@ -333,8 +333,8 @@ EXTERN_C_END
      KSPCG - The preconditioned conjugate gradient (PCG) iterative method
 
    Options Database Keys:
-+   -ksp_cg_Hermitian - (for complex matrices only) indicates the matrix is Hermitian
--   -ksp_cg_symmetric - (for complex matrices only) indicates the matrix is symmetric
++   -ksp_cg_type Hermitian - (for complex matrices only) indicates the matrix is Hermitian
+-   -ksp_cg_type symmetric - (for complex matrices only) indicates the matrix is symmetric
 
    Level: beginner
 
