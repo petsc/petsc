@@ -206,7 +206,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im
    Any a(i,j) with i>j input by user is ingored. 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetValues_MPIBAIJ_MatScalar"
+#define __FUNCT__ "MatSetValues_MPISBAIJ_MatScalar"
 PetscErrorCode MatSetValues_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const MatScalar v[],InsertMode addv)
 {
   Mat_MPISBAIJ   *baij = (Mat_MPISBAIJ*)mat->data;
