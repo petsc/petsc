@@ -3249,6 +3249,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
     ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(*fact,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(*fact,isicol);CHKERRQ(ierr);
     b    = (Mat_SeqBAIJ*)(*fact)->data;
+    b->freedata     = PETSC_TRUE;
     b->singlemalloc = PETSC_FALSE;
     ierr = PetscMalloc(bs2*ainew[n]*sizeof(MatScalar),&b->a);CHKERRQ(ierr);
     b->j          = ajnew;
