@@ -94,7 +94,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
      stack.
   */
   kern_return_t          kerr;
-  task_basic_info_data_t ti1,ti2;
 #elif defined(PETSC_HAVE_GETRUSAGE)
   static struct rusage   temp;
 #endif
