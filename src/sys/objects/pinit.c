@@ -340,8 +340,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
 .  -stop_for_debugger - Print message on how to attach debugger manually to 
                         process and wait (-debugger_pause) seconds for attachment
-.  -malloc - Indicates use of PETSc error-checking malloc
+.  -malloc - Indicates use of PETSc error-checking malloc (on by default for debug version of libraries)
 .  -malloc no - Indicates not to use error-checking malloc
+.  -malloc_debug - check for memory corruption at EVERY malloc or free
 .  -fp_trap - Stops on floating point exceptions (Note that on the
               IBM RS6000 this slows code by at least a factor of 10.)
 .  -no_signal_handler - Indicates not to trap error signals
@@ -525,7 +526,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 .  -mpidump - Calls PetscMPIDump()
 .  -malloc_dump - Calls PetscMallocDump()
 .  -malloc_info - Prints total memory usage
-.  -malloc_debug - Calls PetscMallocDebug(), checks allocated memory for corruption while running
 -  -malloc_log - Prints summary of memory usage
 
    Options Database Keys for Profiling:
