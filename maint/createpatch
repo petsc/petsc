@@ -39,7 +39,19 @@ if [ "${a}" != "0" -o "${b}" != "0" ]; then
   exit
 fi
 
+version_release=`grep '^#define PETSC_VERSION_RELEASE ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+version_major=`grep '^#define PETSC_VERSION_MAJOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+version_minor=`grep '^#define PETSC_VERSION_MINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+version_subminor=`grep '^#define PETSC_VERSION_SUBMINOR ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
+
+if  [ ${version_release} = 0 ]; then
+  echo 'Error: cannot update patchlevel for petsc-dev.'
+  exit
+fi
+
+# crank up patchlevel
 new_version_patch=`expr $version_patch + 1`
 
 echo #########################################################
@@ -66,7 +78,7 @@ cat src/docs/website/download/index.html.bak | \
 # now create a changeset
 bk ci -u -y"Cranked up patch level" include/petscversion.h
 bk ci -u -y"Cranked up patch level" src/docs/website/download/index.html
-bk commit -y"Cranked up patch level"
+bk commit -y"Cranked up patch level ${version_major}.${version_minor}.${version_subminor}-p${new_version_patch}"
 echo #########################################################
 echo # Created patch for the following change                #
 echo #########################################################
