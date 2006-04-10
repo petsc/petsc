@@ -1,7 +1,7 @@
 #define PETSC_DLL
 
-#include "petsc.h"           /*I "petsc.h" I*/
-
+#include "petscsys.h"        /*I "petscsys.h" I*/
+#include "petscconfiginfo.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscIgnoreErrorHandler" 
@@ -44,6 +44,32 @@ PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(int line,const char *fun,
   PetscFunctionBegin;
   PetscFunctionReturn(n);
 }
+
+/* ---------------------------------------------------------------------------------------*/
+
+static char  arch[10],hostname[64],username[16],pname[PETSC_MAX_PATH_LEN],date[64];
+static PetscTruth PetscErrorPrintfInitializeCalled = PETSC_FALSE;
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscErrorPrintfInitialize"
+/*
+   Initializes arch, hostname, username,date so that system calls do NOT need
+   to be made during the error handler.
+*/
+PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
+  ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
+  ierr = PetscGetUserName(username,16);CHKERRQ(ierr);
+  ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscGetDate(date,64);CHKERRQ(ierr);
+  PetscErrorPrintfInitializeCalled = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 
 
 #undef __FUNCT__  
@@ -88,11 +114,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int line,const char *f
 {
   PetscLogDouble    mem,rss;
   PetscTruth        flg1,flg2;
+  char              version[256];
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
 
   if (p == 1) {
-    (*PetscErrorPrintf)("--------------- Error Message --------------\n");
+    (*PetscErrorPrintf)("--------------------- Error Message ------------------------------------\n");
     if (n == PETSC_ERR_MEM) {
       (*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
       (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
@@ -119,9 +147,27 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int line,const char *f
     if (mess) {
       (*PetscErrorPrintf)("%s!\n",mess);
     }
-    (*PetscErrorPrintf)("--------------------------------------------\n");
+    ierr = PetscGetVersion(&version);
+    (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
+    (*PetscErrorPrintf)("%s\n",version);
+    (*PetscErrorPrintf)("See docs/changes/index.html for recent updates.\n");
+    (*PetscErrorPrintf)("See docs/faq.html for hints about trouble shooting.\n");
+    (*PetscErrorPrintf)("See docs/index.html for manual pages.\n");
+    (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
+    if (PetscErrorPrintfInitializeCalled) {
+      (*PetscErrorPrintf)("%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
+    }
+    (*PetscErrorPrintf)("Libraries linked from %s\n",PETSC_LIB_DIR);
+    (*PetscErrorPrintf)("Configure run at %s\n",petscconfigureruntime);
+    (*PetscErrorPrintf)("Configure options %s\n",petscconfigureoptions);
+    (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
   }
+
+
+  /* first line in stack trace? */
   (*PetscErrorPrintf)("%s() line %d in %s%s\n",fun,line,dir,file);
+
+
   PetscFunctionReturn(n);
 }
 

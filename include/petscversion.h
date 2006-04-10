@@ -28,12 +28,12 @@ PETSC_EXTERN_CXX_BEGIN
 #define PetscGetVersion(version) (sprintf(*(version),"Petsc Release Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
                                          PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_PATCH_DATE), \
-                                         PetscStrcat(*(version),"\nBK revision: "),PetscStrcat(*(version),PETSC_VERSION_BK),0)
+                                         PetscStrcat(*(version)," BK revision: "),PetscStrcat(*(version),PETSC_VERSION_BK),0)
 #else
 #define PetscGetVersion(version) (sprintf(*(version),"Petsc Development Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
                                          PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_PATCH_DATE), \
-                                         PetscStrcat(*(version),"\nBK revision: "),PetscStrcat(*(version),PETSC_VERSION_BK),0)
+                                         PetscStrcat(*(version)," BK revision: "),PetscStrcat(*(version),PETSC_VERSION_BK),0)
 #endif
 
 /*MC

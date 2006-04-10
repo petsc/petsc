@@ -3,7 +3,6 @@
       Utilites routines to add simple ASCII IO capability.
 */
 #include "src/sys/fileio/mprint.h"
-#include "petscconfiginfo.h"
 /*
    If petsc_history is on, then all Petsc*Printf() results are saved
    if the appropriate (usually .petschistory) file.
@@ -478,29 +477,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscHelpPrintfDefault(MPI_Comm comm,const char f
 
 /* ---------------------------------------------------------------------------------------*/
 
-static char  arch[10],hostname[64],username[16],pname[PETSC_MAX_PATH_LEN],date[64];
-static PetscTruth PetscErrorPrintfInitializeCalled = PETSC_FALSE;
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscErrorPrintfInitialize"
-/*
-   Initializes arch, hostname, username,date so that system calls do NOT need
-   to be made during the error handler.
-*/
-PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
-  ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
-  ierr = PetscGetUserName(username,16);CHKERRQ(ierr);
-  ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscGetDate(date,64);CHKERRQ(ierr);
-  PetscErrorPrintfInitializeCalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorPrintfDefault" 
@@ -510,8 +486,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
   static  PetscTruth PetscErrorPrintfCalled    = PETSC_FALSE;
   static  PetscTruth InPetscErrorPrintfDefault = PETSC_FALSE;
   static  FILE       *fd;
-  char               version[256];
-  PetscErrorCode     ierr;
 
   /*
       InPetscErrorPrintfDefault is used to prevent the error handler called (potentially)
@@ -550,24 +524,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
       PetscSleep(rank);
     }
 #endif
-    
-    ierr = PetscGetVersion(&version);CHKERRQ(ierr);
-
-    PetscFPrintf(PETSC_COMM_SELF,fd,"------------------------------------------------------------------------\n");
-    PetscFPrintf(PETSC_COMM_SELF,fd,"%s\n",version);
-    PetscFPrintf(PETSC_COMM_SELF,fd,"See docs/changes/index.html for recent updates.\n");
-    PetscFPrintf(PETSC_COMM_SELF,fd,"See docs/faq.html for hints about trouble shooting.\n");
-    PetscFPrintf(PETSC_COMM_SELF,fd,"See docs/index.html for manual pages.\n");
-    PetscFPrintf(PETSC_COMM_SELF,fd,"------------------------------------------------------------------------\n");
-    if (PetscErrorPrintfInitializeCalled) {
-      PetscFPrintf(PETSC_COMM_SELF,fd,"%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
-    }
-    PetscFPrintf(PETSC_COMM_SELF,fd,"Libraries linked from %s\n",PETSC_LIB_DIR);
-    PetscFPrintf(PETSC_COMM_SELF,fd,"Configure run at %s\n",petscconfigureruntime);
-    PetscFPrintf(PETSC_COMM_SELF,fd,"Configure options %s\n",petscconfigureoptions);
     InPetscErrorPrintfDefault = PETSC_FALSE;
   }
-
+    
   if (!InPetscErrorPrintfDefault) {
     PetscFPrintf(PETSC_COMM_SELF,fd,"[%d]PETSC ERROR: ",PetscGlobalRank);
     va_start(Argp,format);
