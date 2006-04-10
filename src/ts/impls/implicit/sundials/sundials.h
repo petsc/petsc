@@ -7,7 +7,7 @@
 #if !defined(__PETSCSUNDIALS_H)
 #define __PETSCSUNDIALS_H
 
-#include "src/ts/tsimpl.h"              /*I   "petscts.h"   I*/
+#include "src/ts/tsimpl.h"          /*I   "petscts.h"   I*/
 #include "private/pcimpl.h"         /*I   "petscpc.h"   I*/
 #include "src/mat/matimpl.h"
 
@@ -17,27 +17,28 @@
 #if defined(PETSC_HAVE_SUNDIALS)
 
 EXTERN_C_BEGIN
-#include "sundialstypes.h"
-#include "cvode.h"
-#include "nvector_parallel.h"
-#include "iterative.h" 
-#include "cvspgmr.h"
+#include "cvode.h"               /* prototypes for CVODE fcts. */
+#include "nvector_parallel.h"    /* definition N_Vector and macro NV_DATA_P  */
+#include "cvode_spgmr.h"         /* prototypes and constants for CVSPGMR solver */
+#include "sundials_smalldense.h" /* prototypes for small dense matrix fcts. */
+#include "sundials_types.h"      /* definitions of realtype, booleantype */
+#include "sundials_math.h"       /* definition of macros SQR and EXP */
 EXTERN_C_END
 
 typedef struct {
-  Vec  update;    /* work vector where new solution is formed */
-  Vec  func;      /* work vector where F(t[i],u[i]) is stored */
-  Vec  rhs;       /* work vector for RHS; vec_sol/dt */
-  Vec  w1,w2;     /* work space vectors for function evaluation */
-  PetscTruth  exact_final_time; /* force Sundials to interpolate solution to exactly final time
+  Vec        update;    /* work vector where new solution is formed */
+  Vec        func;      /* work vector where F(t[i],u[i]) is stored */
+  Vec        rhs;       /* work vector for RHS; vec_sol/dt */
+  Vec        w1,w2;     /* work space vectors for function evaluation */
+  PetscTruth exact_final_time; /* force Sundials to interpolate solution to exactly final time
                                    requested by user (default) */
   /* PETSc peconditioner objects used by SUNDIALS */
   Mat  pmat;                         /* preconditioner Jacobian */
   PC   pc;                           /* the PC context */
-  int  cvode_type;                   /* the SUNDIALS method, BDF or ADAMS   */
+  int  cvode_type;                   /* the SUNDIALS method, BDF or ADAMS  */
   TSSundialsGramSchmidtType gtype; 
-  int                    restart;
-  double                 linear_tol;
+  int                       restart;
+  double                    linear_tol;
 
   /* Variables used by Sundials */
   MPI_Comm comm_sundials;
