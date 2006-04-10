@@ -42,9 +42,11 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
     /* make PETSc vector yy point to SUNDIALS vector y */
     y_data = (PetscScalar *) N_VGetArrayPointer(y);
     ierr   = VecPlaceArray(yy,y_data); CHKERRQ(ierr);
+
     /* compute the Jacobian */
     ierr = TSComputeRHSJacobian(ts,ts->ptime,yy,&Jac,&Jac,&str);CHKERRQ(ierr);
     ierr = VecResetArray(yy); CHKERRQ(ierr);
+
     /* copy the Jacobian matrix */
     if (!cvode->pmat) {
       ierr = MatDuplicate(Jac,MAT_COPY_VALUES,&cvode->pmat);CHKERRQ(ierr);
@@ -70,10 +72,8 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
 */    
 #undef __FUNCT__
 #define __FUNCT__ "TSPSolve_Sundials"
-PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,
-                                 N_Vector r,N_Vector z,
-                                 realtype _gamma,realtype delta,
-                                 int lr,void *P_data,N_Vector vtemp)
+PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,N_Vector r,N_Vector z,
+                                 realtype _gamma,realtype delta,int lr,void *P_data,N_Vector vtemp)
 { 
   TS              ts = (TS) P_data;
   TS_Sundials     *cvode = (TS_Sundials*)ts->data;
@@ -88,6 +88,7 @@ PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,
   z_data  = (PetscScalar *) N_VGetArrayPointer(z);
   ierr = VecPlaceArray(rr,r_data); CHKERRQ(ierr);
   ierr = VecPlaceArray(zz,z_data); CHKERRQ(ierr);
+
   /* Solve the Px=r and put the result in zz */
   ierr = PCApply(pc,rr,zz); CHKERRQ(ierr);
   ierr = VecResetArray(rr); CHKERRQ(ierr);
@@ -101,7 +102,7 @@ PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,
 */  
 #undef __FUNCT__  
 #define __FUNCT__ "TSFunction_Sundials"
-void TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
+int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 {
   TS              ts = (TS) ctx;
   MPI_Comm        comm = ts->comm;
@@ -114,13 +115,14 @@ void TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
   /* Make the PETSc work vectors yy and yyd point to the arrays in the SUNDIALS vectors y and ydot respectively*/
   y_data     = (PetscScalar *) N_VGetArrayPointer(y);
   ydot_data  = (PetscScalar *) N_VGetArrayPointer(ydot);
-  ierr = VecPlaceArray(yy,y_data);CHKERRABORT(comm,ierr)
-  ierr = VecPlaceArray(yyd,ydot_data); CHKERRABORT(comm,ierr)
+  ierr = VecPlaceArray(yy,y_data);CHKERRABORT(comm,ierr);
+  ierr = VecPlaceArray(yyd,ydot_data); CHKERRABORT(comm,ierr);
+
   /* now compute the right hand side function */
   ierr = TSComputeRHSFunction(ts,t,yy,yyd); CHKERRABORT(comm,ierr);
   ierr = VecResetArray(yy); CHKERRABORT(comm,ierr);
   ierr = VecResetArray(yyd); CHKERRABORT(comm,ierr);
-  PetscFunctionReturnVoid();
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -174,17 +176,17 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   *steps = -ts->steps;
   ierr   = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr); 
 
-  /* call CVSpgmr to use GMRES as the linear solver. */
+  /* call CVSpgmr to use GMRES as the linear solver.        */
   /* setup the ode integrator with the given preconditioner */
-  /* flag  = CVSpgmr(mem,PREC_LEFT,cvode->restart); */
   flag  = CVSpgmr(mem,PREC_LEFT,0);
   if (flag) SETERRQ(1,"CVSpgmr() fails");
-  flag = CVSpgmrSetGSType(mem,MODIFIED_GS);
+  
+  flag = CVSpilsSetGSType(mem, MODIFIED_GS);
   if (flag) SETERRQ(1,"CVSpgmrSetGSType() fails");
 
   /* Set preconditioner setup and solve routines Precond and PSolve, 
      and the pointer to the user-defined block data */
-  flag = CVSpgmrSetPreconditioner(mem,TSPrecond_Sundials,TSPSolve_Sundials,ts);
+  flag = CVSpilsSetPreconditioner(mem,TSPrecond_Sundials,TSPSolve_Sundials,ts);
   if (flag) SETERRQ(1,"CVSpgmrSetPreconditioner() fails");
 
   tout = ts->max_time;
@@ -212,7 +214,7 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     ierr = VecCopy(cvode->update,sol);CHKERRQ(ierr);
     ierr = CVodeGetNumNonlinSolvIters(mem,&its);CHKERRQ(ierr);
     ts->nonlinear_its = its;
-    ierr = CVSpgmrGetNumLinIters(mem, &its);
+    ierr = CVSpilsGetNumLinIters(mem, &its);
     ts->linear_its = its; 
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr); 
