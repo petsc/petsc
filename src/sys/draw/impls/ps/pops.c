@@ -297,7 +297,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate_PS(PetscDraw draw)
     ierr = PetscStrallocpy(buff,&draw->display);CHKERRQ(ierr);
   }
 
-  ierr = PetscGetVersion(&version);CHKERRQ(ierr);
+  ierr = PetscGetVersion(&version,256);CHKERRQ(ierr);
   ierr = PetscNew(PetscDraw_PS,&ps);CHKERRQ(ierr);
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   ierr = PetscViewerASCIIOpen(draw->comm,draw->display,&ps->ps_file);CHKERRQ(ierr);

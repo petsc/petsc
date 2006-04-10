@@ -75,7 +75,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogOpenHistoryFile(const char filename[],FIL
     char arch[10];
     ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
     ierr = PetscGetDate(date,64);CHKERRQ(ierr);
-    ierr = PetscGetVersion(&version);CHKERRQ(ierr);
+    ierr = PetscGetVersion(&version,256);CHKERRQ(ierr);
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (filename) {
       ierr = PetscFixFilename(filename,fname);CHKERRQ(ierr);
@@ -276,7 +276,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
       ierr = (*PetscExternalVersionFunction)(comm);CHKERRQ(ierr);
     }
 
-    ierr = PetscGetVersion(&version);CHKERRQ(ierr);
+    ierr = PetscGetVersion(&version,256);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------\
 ------------------------------\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"%s\n",version);CHKERRQ(ierr);

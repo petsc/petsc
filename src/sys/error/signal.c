@@ -143,6 +143,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int sig,void *ptr)
 #endif
 
   signal(sig,SIG_DFL);
+    (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
   if (sig >= 0 && sig <= 20) {
     (*PetscErrorPrintf)("Caught signal number %d %s\n",sig,SIGNAME[sig]);
   } else {
@@ -157,7 +158,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int sig,void *ptr)
     PetscStackPop;  /* remove stack frames for error handlers */
     PetscStackPop;
     (*PetscErrorPrintf)("likely location of problem given in stack below\n");
-    (*PetscErrorPrintf)("--------------- Stack Frames ---------------\n");
+    (*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
     PetscStackView(PETSC_VIEWER_STDOUT_SELF);
   }
 #endif
@@ -165,7 +166,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int sig,void *ptr)
   (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
   (*PetscErrorPrintf)("to get more information on the crash.\n");
 #endif
-  ierr =  PetscError(0,"User provided function"," unknown file","unknown directory",PETSC_ERR_SIG,1," ");
+  ierr =  PetscError(0,"User provided function"," unknown file","unknown directory",PETSC_ERR_SIG,1,PETSC_NULL);
   MPI_Abort(PETSC_COMM_WORLD,(int)ierr);
   PetscFunctionReturn(0);
 }

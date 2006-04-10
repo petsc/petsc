@@ -49,6 +49,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(int line,const char *fun,
 
 static char  arch[10],hostname[64],username[16],pname[PETSC_MAX_PATH_LEN],date[64];
 static PetscTruth PetscErrorPrintfInitializeCalled = PETSC_FALSE;
+static char version[256];
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorPrintfInitialize"
@@ -66,6 +67,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
   ierr = PetscGetUserName(username,16);CHKERRQ(ierr);
   ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscGetDate(date,64);CHKERRQ(ierr);
+  ierr = PetscGetVersion(&version,256);CHKERRQ(ierr);
   PetscErrorPrintfInitializeCalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -114,7 +116,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int line,const char *f
 {
   PetscLogDouble    mem,rss;
   PetscTruth        flg1,flg2;
-  char              version[256];
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
@@ -147,7 +148,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int line,const char *f
     if (mess) {
       (*PetscErrorPrintf)("%s!\n",mess);
     }
-    ierr = PetscGetVersion(&version);
     (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
     (*PetscErrorPrintf)("%s\n",version);
     (*PetscErrorPrintf)("See docs/changes/index.html for recent updates.\n");

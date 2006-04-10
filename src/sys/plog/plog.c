@@ -1219,7 +1219,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   ierr = PetscGetUserName(username, 16);CHKERRQ(ierr);
   ierr = PetscGetProgramName(pname, PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscGetDate(date, 64);CHKERRQ(ierr);
-  ierr = PetscGetVersion(&version);CHKERRQ(ierr);
+  ierr = PetscGetVersion(&version,256);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s\n", pname, arch, hostname, size, username, date); CHKERRQ(ierr);
   } else {

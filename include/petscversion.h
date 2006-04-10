@@ -25,12 +25,12 @@ PETSC_EXTERN_CXX_BEGIN
  http://www.mcs.anl.gov/petsc/\n"
 
 #if (PETSC_VERSION_RELEASE == 1)
-#define PetscGetVersion(version) (sprintf(*(version),"Petsc Release Version %d.%d.%d, Patch %d, ", \
+#define PetscGetVersion(version,len) (PetscSNPrintf(*(version),len,"Petsc Release Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
                                          PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_PATCH_DATE), \
                                          PetscStrcat(*(version)," BK revision: "),PetscStrcat(*(version),PETSC_VERSION_BK),0)
 #else
-#define PetscGetVersion(version) (sprintf(*(version),"Petsc Development Version %d.%d.%d, Patch %d, ", \
+#define PetscGetVersion(version,len) (PetscSNPrintf(*(version),len,"Petsc Development Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
                                          PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_PATCH_DATE), \
                                          PetscStrcat(*(version)," BK revision: "),PetscStrcat(*(version),PETSC_VERSION_BK),0)
@@ -42,11 +42,14 @@ PETSC_EXTERN_CXX_BEGIN
     Output Parameter:
 .   version - version string
 
+    Input Parameter:
+.   len - length of the string
+
     Level: developer
 
     Usage:
     char version[256];
-    PetscGetVersion(&version);
+    PetscGetVersion(&version,256);
 
     Fortran Note:
     This routine is not supported in Fortran.
