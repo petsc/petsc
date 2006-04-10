@@ -46,7 +46,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SuperLU_DIST(Mat);
 #if defined(PETSC_HAVE_UMFPACK)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_UMFPACK(Mat);
 #endif
-#if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Essl(Mat);
 #endif
 #if defined(PETSC_HAVE_LUSOL)
@@ -144,7 +144,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
 #if defined(PETSC_HAVE_UMFPACK)
   ierr = MatRegisterDynamic(MATUMFPACK,path,"MatCreate_UMFPACK",MatCreate_UMFPACK);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
   ierr = MatRegisterDynamic(MATESSL,path,"MatCreate_Essl",MatCreate_Essl);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_LUSOL)
