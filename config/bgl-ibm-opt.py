@@ -29,6 +29,7 @@ configure_options = [
   # '--with-fortran-kernels=bgl'
 
   '--with-batch=1',
+  '--with-endian=big',
   '--with-memcmp-ok',
   '--sizeof_char=1',
   '--sizeof_void_p=4',

@@ -6,6 +6,7 @@
 
 configure_options = [
   '--with-batch=1',
+  '--with-endian=big',
   '--with-memcmp-ok',
   '--sizeof_void_p=8',
   '--sizeof_char=1',
