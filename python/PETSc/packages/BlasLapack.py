@@ -232,7 +232,7 @@ class Configure(PETSc.package.Package):
     yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libfui.a','libfsu.a','libsunmath.a','libm.a'], 1)
     # Try Microsoft Windows location
     for MKL_Version in [os.path.join('MKL','8.0'),'MKL72','MKL70','MKL61','MKL']:
-      MKL_Dir = os.path.join('/cygdrive', 'c', 'Program\\ Files', 'Intel', MKL_Version)
+      MKL_Dir = os.path.join('/cygdrive', 'c', 'Program Files', 'Intel', MKL_Version)
       if self.setCompilers.use64BitPointers:
         MKL_Dir = os.path.join(MKL_Dir, 'ia64', 'lib')
       else:
