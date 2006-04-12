@@ -259,7 +259,7 @@ M*/
 
 #define CHKMEMA {PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,__SDIR__);}
 
-#if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
+#if defined(PETSC_UNDERSCORE_CHKERR)
 extern  PetscErrorCode __gierr;
 #define _   __gierr = 
 #define ___  CHKERRQ(__gierr);
