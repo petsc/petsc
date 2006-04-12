@@ -737,6 +737,27 @@ EXTERN PetscErrorCode VecScatterCreate_StoP(PetscInt,PetscInt *,PetscInt,PetscIn
 
 #define VecScatterOptimizedBS(mbs) ((2 <= mbs && mbs <= 8) || mbs == 12)
 
+PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
+{
+  VecScatter     ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,"VecScatter",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
+  ctx->inuse               = PETSC_FALSE;
+  ctx->beginandendtogether = PETSC_FALSE;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_merge",&ctx->beginandendtogether);CHKERRQ(ierr);
+  if (ctx->beginandendtogether) {
+    ierr = PetscInfo(ctx,"Using combined (merged) vector scatter begin and end\n");CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_packtogether",&ctx->packtogether);CHKERRQ(ierr);
+  if (ctx->packtogether) {
+    ierr = PetscInfo(ctx,"Pack all messages before sending\n");CHKERRQ(ierr);
+  }
+  *newctx = ctx;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreate"
 /*@C
