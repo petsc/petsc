@@ -150,6 +150,7 @@ namespace ALE {
       typedef Fuser_                                                                            fuser_type;
       // These are default "return" types, although methods are templated on their main input/return types
       typedef ASifter<int, ALE::Point, ALE::pair<ALE::Point, ALE::pair<int,int> >, uniColor>    overlap_type;
+      typedef ASifter<int, ALE::pair<int,ALE::Point>, ALE::pair<ALE::Point, ALE::pair<int,int> >, uniColor>    bioverlap_type;
       typedef FusionSifter_                                                                     fusion_type;
 
       //
@@ -168,17 +169,22 @@ namespace ALE {
         __computeOverlapNew(graph, overlap);
       };
 
-      static Obj<overlap_type> 
+      static Obj<bioverlap_type> 
       overlap(const Obj<graph_type> graphA, const Obj<graph_type> graphB) {
-        Obj<overlap_type> overlap = overlap_type(graphA->comm());
-        PetscMPIInt       comp;
+        Obj<bioverlap_type> overlap = bioverlap_type(graphA->comm());
+        PetscMPIInt         comp;
 
         MPI_Comm_compare(graphA->comm(), graphB->comm(), &comp);
         if (comp != MPI_IDENT) {
           throw ALE::Exception("Non-matching communicators for overlap");
         }
-        __computeOverlapNew(graphA, graphB, overlap);
+        computeOverlap(graphA, graphB, overlap);
         return overlap;
+      };
+
+      template <typename Overlap_>
+      static void computeOverlap(const Obj<graph_type>& graphA, const Obj<graph_type>& graphB, Obj<Overlap_>& overlap){
+        __computeOverlapNew(graphA, graphB, overlap);
       };
 
       template <typename Overlap_>
@@ -195,6 +201,31 @@ namespace ALE {
       template <typename Overlap_, typename Fusion_>
       static void computeFusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, Obj<Fusion_>& fusion, const Obj<fuser_type>& fuser = fuser_type()){
         __computeFusionNew(graph, overlap, fusion, fuser);
+      };
+
+      template <typename Overlap_>
+      static Obj<fusion_type> 
+      fusion(const Obj<graph_type>& graphA, const Obj<graph_type>& graphB, const Obj<Overlap_>& overlap, const Obj<fuser_type>& fuser = fuser_type()) {
+        Obj<fusion_type> fusion = fusion_type(graphA->comm());
+        PetscMPIInt       comp;
+
+        MPI_Comm_compare(graphA->comm(), graphB->comm(), &comp);
+        if (comp != MPI_IDENT) {
+          throw ALE::Exception("Non-matching communicators for overlap");
+        }
+        computeFusion(graphA, graphB, overlap, fusion, fuser);
+        return fusion;
+      };
+
+      template <typename Overlap_, typename Fusion_>
+      static void computeFusion(const Obj<graph_type>& graphA, const Obj<graph_type>& graphB, const Obj<Overlap_>& overlap, Obj<Fusion_>& fusion, const Obj<fuser_type>& fuser = fuser_type()){
+        PetscMPIInt       comp;
+
+        MPI_Comm_compare(graphA->comm(), graphB->comm(), &comp);
+        if (comp != MPI_IDENT) {
+          throw ALE::Exception("Non-matching communicators for overlap");
+        }
+        __computeFusionNew(graphA, graphB, overlap, fusion, fuser);
       };
 
     protected:
@@ -218,102 +249,105 @@ namespace ALE {
         MPI_Comm comm = _graph->comm();
         int  size     = _graph->commSize();
         int  rank     = _graph->commRank();
-        // Make sure the base is not empty 
-        if(points->begin() != points->end()) {
-          // We need to partition global nodes among lessors, which we do by global prefix
-          // First we determine the extent of global prefices and the bounds on the indices with each global prefix.
-          int minGlobalPrefix = 0;
-          // Determine the local extent of global domains
+
+        // We need to partition global nodes among lessors, which we do by global prefix
+        // First we determine the extent of global prefices and the bounds on the indices with each global prefix.
+        int minGlobalPrefix = 0;
+        // Determine the local extent of global domains
+        for(typename Sequence::iterator point_itor = points->begin(); point_itor != points->end(); point_itor++) {
+          Point p = (*point_itor);
+          if((p.prefix < 0) && (p.prefix < minGlobalPrefix)) {
+            minGlobalPrefix = p.prefix;
+          }
+        }
+        int MinGlobalPrefix;
+        ierr = MPI_Allreduce(&minGlobalPrefix, &MinGlobalPrefix, 1, MPIU_INT, MPI_MIN, comm); 
+        CHKERROR(ierr, "Error in MPI_Allreduce");
+          
+        int__int BaseLowerBound, BaseUpperBound; // global quantities computed from the local quantities below
+        int__int BaseMaxSize;                    // the maximum size of the global base index space by global prefix
+        int__int BaseSliceScale, BaseSliceSize, BaseSliceOffset;
+          
+        if(MinGlobalPrefix < 0) { // if we actually do have global base points
+          // Determine the upper and lower bounds on the indices of base points with each global prefix.
+          // We use maps to keep track of these quantities with different global prefices.
+          int__int baseLowerBound, baseUpperBound; // local quantities
+          // Initialize local bound maps with the upper below lower so we can later recognize omitted prefices.
+          for(int d = -1; d >= MinGlobalPrefix; d--) {
+            baseLowerBound[d] = 0; baseUpperBound[d] = -1;
+          }
+          // Compute local bounds
           for(typename Sequence::iterator point_itor = points->begin(); point_itor != points->end(); point_itor++) {
             Point p = (*point_itor);
-            if((p.prefix < 0) && (p.prefix < minGlobalPrefix)) {
-              minGlobalPrefix = p.prefix;
-            }
-          }
-          int MinGlobalPrefix;
-          ierr = MPI_Allreduce(&minGlobalPrefix, &MinGlobalPrefix, 1, MPIU_INT, MPI_MIN, comm); 
-          CHKERROR(ierr, "Error in MPI_Allreduce");
-          
-          int__int BaseLowerBound, BaseUpperBound; // global quantities computed from the local quantities below
-          int__int BaseMaxSize;                    // the maximum size of the global base index space by global prefix
-          int__int BaseSliceScale, BaseSliceSize, BaseSliceOffset;
-          
-          if(MinGlobalPrefix < 0) { // if we actually do have global base points
-            // Determine the upper and lower bounds on the indices of base points with each global prefix.
-            // We use maps to keep track of these quantities with different global prefices.
-            int__int baseLowerBound, baseUpperBound; // local quantities
-            // Initialize local bound maps with the upper below lower so we can later recognize omitted prefices.
-            for(int d = -1; d >= MinGlobalPrefix; d--) {
-              baseLowerBound[d] = 0; baseUpperBound[d] = -1;
-            }
-            // Compute local bounds
-            for(typename Sequence::iterator point_itor = points->begin(); point_itor != points->end(); point_itor++) {
-              Point p = (*point_itor);
-              int d = p.prefix;
-              int i = p.index;
-              if(d < 0) { // it is indeed a global prefix
-                if (i < baseLowerBound[d]) {
-                  baseLowerBound[d] = i;
-                }
-                if (i > baseUpperBound[d]) {
-                  baseUpperBound[d] = i;
-                }
-              }
-            }
-            // Compute global bounds
-            for(int d = -1; d >= MinGlobalPrefix; d--){
-              int lowerBound, upperBound, maxSize;
-              ierr   = MPI_Allreduce(&baseLowerBound[d],&lowerBound,1,MPIU_INT,MPI_MIN,comm); 
-              CHKERROR(ierr, "Error in MPI_Allreduce");
-              ierr   = MPI_Allreduce(&baseUpperBound[d],&upperBound,1,MPIU_INT,MPI_MAX,comm); 
-              CHKERROR(ierr, "Error in MPI_Allreduce");
-              maxSize = upperBound - lowerBound + 1;
-              if(maxSize > 0) { // there are actually some indices in this global prefix
-                BaseLowerBound[d] = lowerBound;
-                BaseUpperBound[d] = upperBound;
-                BaseMaxSize[d]    = maxSize;
-                
-                // Each processor (at least potentially) owns a slice of the base indices with each global indices.
-                // The size of the slice with global prefix d is BaseMaxSize[d]/size + 1 (except if rank == size-1, 
-                // where the slice size can be smaller; +1 is for safety).
-                
-                // For a non-empty domain d we compute and store the slice size in BaseSliceScale[d] (the 'typical' slice size) and 
-                // BaseSliceSize[d] (the 'actual' slice size, which only differs from 'typical' for processor with rank == size -1 ).
-                // Likewise, each processor has to keep track of the index offset for each slice it owns and stores it in BaseSliceOffset[d].
-                BaseSliceScale[d]  = BaseMaxSize[d]/size + 1;
-                BaseSliceSize[d]   = BaseSliceScale[d]; 
-                if (rank == size-1) {
-                  BaseSliceSize[d] =  BaseMaxSize[d] - BaseSliceScale[d]*(size-1); 
-                }
-                BaseSliceSize[d]   = PetscMax(1,BaseSliceSize[d]);
-                BaseSliceOffset[d] = BaseLowerBound[d] + BaseSliceScale[d]*rank;
-              }// for(int d = -1; d >= MinGlobalPrefix; d--){
-            }
-          }// if(MinGlobalDomain < 0) 
-          
-          for (typename Sequence::iterator point_itor = points->begin(); point_itor != points->end(); point_itor++) {
-            Point p = (*point_itor);
-            // Determine which slice p falls into
-            // ASSUMPTION on Point type
             int d = p.prefix;
             int i = p.index;
-            int proc;
-            if(d < 0) { // global domain -- determine the owner by which slice p falls into
-              proc = (i-BaseLowerBound[d])/BaseSliceScale[d];
-            }
-            else { // local domain -- must refer to a rank within the comm
-              if(d >= size) {
-                throw ALE::Exception("Local domain outside of comm size");
+            if(d < 0) { // it is indeed a global prefix
+              if (i < baseLowerBound[d]) {
+                baseLowerBound[d] = i;
               }
-              proc = d;
+              if (i > baseUpperBound[d]) {
+                baseUpperBound[d] = i;
+              }
             }
-            owner[p]     = proc;              
-            LeaseData[2*proc+1] = 1;                 // processor owns at least one of ours (i.e., the number of leases from proc is 1)
-            LeaseData[2*proc]++;                     // count of how many we lease from proc
           }
-        }// base not empty
-        else {
-          std::cout << "Argghhhh! Base is empty" << std::endl;
+          // Compute global bounds
+          for(int d = -1; d >= MinGlobalPrefix; d--){
+            int lowerBound, upperBound, maxSize;
+            ierr   = MPI_Allreduce(&baseLowerBound[d],&lowerBound,1,MPIU_INT,MPI_MIN,comm); 
+            CHKERROR(ierr, "Error in MPI_Allreduce");
+            ierr   = MPI_Allreduce(&baseUpperBound[d],&upperBound,1,MPIU_INT,MPI_MAX,comm); 
+            CHKERROR(ierr, "Error in MPI_Allreduce");
+            maxSize = upperBound - lowerBound + 1;
+            if(maxSize > 0) { // there are actually some indices in this global prefix
+              BaseLowerBound[d] = lowerBound;
+              BaseUpperBound[d] = upperBound;
+              BaseMaxSize[d]    = maxSize;
+                
+              // Each processor (at least potentially) owns a slice of the base indices with each global indices.
+              // The size of the slice with global prefix d is BaseMaxSize[d]/size + 1 (except if rank == size-1, 
+              // where the slice size can be smaller; +1 is for safety).
+                
+              // For a non-empty domain d we compute and store the slice size in BaseSliceScale[d] (the 'typical' slice size) and 
+              // BaseSliceSize[d] (the 'actual' slice size, which only differs from 'typical' for processor with rank == size -1 ).
+              // Likewise, each processor has to keep track of the index offset for each slice it owns and stores it in BaseSliceOffset[d].
+              BaseSliceScale[d]  = BaseMaxSize[d]/size + 1;
+              BaseSliceSize[d]   = BaseSliceScale[d]; 
+              if (rank == size-1) {
+                BaseSliceSize[d] =  BaseMaxSize[d] - BaseSliceScale[d]*(size-1); 
+              }
+              BaseSliceSize[d]   = PetscMax(1,BaseSliceSize[d]);
+              BaseSliceOffset[d] = BaseLowerBound[d] + BaseSliceScale[d]*rank;
+            }// for(int d = -1; d >= MinGlobalPrefix; d--){
+          }
+        }// if(MinGlobalDomain < 0) 
+          
+        for (typename Sequence::iterator point_itor = points->begin(); point_itor != points->end(); point_itor++) {
+          Point p = (*point_itor);
+          // Determine which slice p falls into
+          // ASSUMPTION on Point type
+          int d = p.prefix;
+          int i = p.index;
+          int proc;
+          if(d < 0) { // global domain -- determine the owner by which slice p falls into
+            proc = (i-BaseLowerBound[d])/BaseSliceScale[d];
+          }
+          else { // local domain -- must refer to a rank within the comm
+            if(d >= size) {
+              throw ALE::Exception("Local domain outside of comm size");
+            }
+            proc = d;
+          }
+          owner[p]     = proc;              
+          LeaseData[2*proc+1] = 1;                 // processor owns at least one of ours (i.e., the number of leases from proc is 1)
+          LeaseData[2*proc]++;                     // count of how many we lease from proc
+        }
+
+        // Base was empty 
+        if(points->begin() == points->end()) {
+          for(int p = 0; p < size; p++) {
+            LeaseData[2*p+0] = 0;
+            LeaseData[2*p+1] = 0;
+          }
         }
       }; // __determinePointOwners()
 
@@ -552,11 +586,9 @@ namespace ALE {
         // We MUST have the same sellers for points in A and B (same point owner determination)
         int *BuyDataA; // 2 ints per processor: number of A base points we buy and number of sales (0 or 1).
         int *BuyDataB; // 2 ints per processor: number of B base points we buy and number of sales (0 or 1).
-        int *BuyData;
-        ierr = PetscMalloc3(2*size,int,&BuyDataA,2*size,int,&BuyDataB,2*size,int,&BuyData);CHKERROR(ierr, "Error in PetscMalloc");
+        ierr = PetscMalloc2(2*size,int,&BuyDataA,2*size,int,&BuyDataB);CHKERROR(ierr, "Error in PetscMalloc");
         ierr = PetscMemzero(BuyDataA, 2*size * sizeof(int));CHKERROR(ierr, "Error in PetscMemzero");
         ierr = PetscMemzero(BuyDataB, 2*size * sizeof(int));CHKERROR(ierr, "Error in PetscMemzero");
-        ierr = PetscMemzero(BuyData,  2*size * sizeof(int));CHKERROR(ierr, "Error in PetscMemzero");
         // Map from points to the process managing its bin (seller)
         Point__int ownerA, ownerB;
 
@@ -725,7 +757,10 @@ namespace ALE {
 
         // Map from A base points to (B process, B coneSize) pairs
         Point__int_pair_set BillOfSaleAtoB;
+        // Map from B base points to (A process, A coneSize) pairs
+        Point__int_pair_set BillOfSaleBtoA;
 
+        // Find the A points being sold to B buyers and record the B cone size
         for(int s = 0, offset = 0; s < SellCountA; s++) {
           for(int m = 0; m < SellSizesA[s]; m++) {
             Point point = Point(SellPointsA[offset], SellPointsA[offset+1]);
@@ -745,6 +780,26 @@ namespace ALE {
             offset += msgSize;
           }
         }
+        // Find the B points being sold to A buyers and record the A cone size
+        for(int s = 0, offset = 0; s < SellCountB; s++) {
+          for(int m = 0; m < SellSizesB[s]; m++) {
+            Point point = Point(SellPointsB[offset], SellPointsB[offset+1]);
+            // Just insert the point
+            int size = BillOfSaleBtoA[point].size();
+            // Avoid unused variable warning
+            if (!size) offset += msgSize;
+          }
+        }
+        for(int s = 0, offset = 0; s < SellCountA; s++) {
+          for(int m = 0; m < SellSizesA[s]; m++) {
+            Point point = Point(SellPointsA[offset], SellPointsA[offset+1]);
+
+            if (BillOfSaleBtoA.find(point) != BillOfSaleBtoA.end()) {
+              BillOfSaleBtoA[point].insert(int_pair(BuyersA[s], SellPointsA[offset+2]));
+            }
+            offset += msgSize;
+          }
+        }
         // Calculate number of B buyers for A base points
         for(int s = 0, offset = 0; s < SellCountA; s++) {
           for(int m = 0; m < SellSizesA[s]; m++) {
@@ -754,16 +809,27 @@ namespace ALE {
             offset += msgSize;
           }
         }
+        // Calculate number of A buyers for B base points
+        for(int s = 0, offset = 0; s < SellCountB; s++) {
+          for(int m = 0; m < SellSizesB[s]; m++) {
+            Point point = Point(SellPointsB[offset], SellPointsB[offset+1]);
 
-        // Then tell A buyers how many B buyers there were (contained in BuyPointsA)
+            SellPointsB[offset+2] = BillOfSaleBtoA[point].size();
+            offset += msgSize;
+          }
+        }
+
+        // Tell A buyers how many B buyers there were (contained in BuyPointsA)
+        // Tell B buyers how many A buyers there were (contained in BuyPointsB)
         ierr = PetscObjectGetNewTag(petscObj, &tag2); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
         commCycle(comm, tag2, msgSize, SellCountA, SellSizesA, BuyersA, SellPointsA, BuyCountA, BuySizesA, SellersA, &BuyPointsA);
+        commCycle(comm, tag2, msgSize, SellCountB, SellSizesB, BuyersB, SellPointsB, BuyCountB, BuySizesB, SellersB, &BuyPointsB);
 
         if (debug) {
           ostringstream txt;
-          int BuySizeA = 0;
+          int BuySizeA = 0, BuySizeB = 0;
 
-          if (!rank) {txt << "Got B buyers" << std::endl;}
+          if (!rank) {txt << "Got other B and A buyers" << std::endl;}
           for(int s = 0; s < BuyCountA; s++) {
             BuySizeA += BuySizesA[s];
             txt << "BuySizesA["<<s<<"]: "<<BuySizesA[s]<<" from seller "<<SellersA[s]<< std::endl;
@@ -771,17 +837,31 @@ namespace ALE {
           for(int p = 0; p < BuySizeA; p++) {
             txt << "["<<rank<<"]: BuyPointsA["<<p<<"]: ("<<BuyPointsA[p*msgSize]<<", "<<BuyPointsA[p*msgSize+1]<<") B buyers "<<BuyPointsA[p*msgSize+2]<<std::endl;
           }
+          for(int s = 0; s < BuyCountB; s++) {
+            BuySizeB += BuySizesB[s];
+            txt << "BuySizesB["<<s<<"]: "<<BuySizesB[s]<<" from seller "<<SellersB[s]<< std::endl;
+          }
+          for(int p = 0; p < BuySizeB; p++) {
+            txt << "["<<rank<<"]: BuyPointsB["<<p<<"]: ("<<BuyPointsB[p*msgSize]<<", "<<BuyPointsB[p*msgSize+1]<<") A buyers "<<BuyPointsB[p*msgSize+2]<<std::endl;
+          }
           ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
           ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
         }
 
         int      BuyConesSizeA  = 0;
+        int      BuyConesSizeB  = 0;
         int      SellConesSizeA = 0;
+        int      SellConesSizeB = 0;
         int     *BuyConesSizesA;  // The number of A points to buy from each seller
+        int     *BuyConesSizesB;  // The number of B points to buy from each seller
         int     *SellConesSizesA; // The number of A points to sell to each buyer
+        int     *SellConesSizesB; // The number of B points to sell to each buyer
         int32_t *SellConesA;      // The (rank, B cone size) for each A point from all other B buyers
+        int32_t *SellConesB;      // The (rank, A cone size) for each B point from all other A buyers
         int32_t *overlapInfoA = PETSC_NULL; // The (rank, B cone size) for each A point from all other B buyers
+        int32_t *overlapInfoB = PETSC_NULL; // The (rank, A cone size) for each B point from all other A buyers
         ierr = PetscMalloc2(BuyCountA,int,&BuyConesSizesA,SellCountA,int,&SellConesSizesA);CHKERROR(ierr, "Error in PetscMalloc");
+        ierr = PetscMalloc2(BuyCountB,int,&BuyConesSizesB,SellCountB,int,&SellConesSizesB);CHKERROR(ierr, "Error in PetscMalloc");
         for(int s = 0, offset = 0; s < SellCountA; s++) {
           SellConesSizesA[s] = 0;
 
@@ -790,6 +870,15 @@ namespace ALE {
             offset             += msgSize;
           }
           SellConesSizeA += SellConesSizesA[s];
+        }
+        for(int s = 0, offset = 0; s < SellCountB; s++) {
+          SellConesSizesB[s] = 0;
+
+          for(int m = 0; m < SellSizesB[s]; m++) {
+            SellConesSizesB[s] += SellPointsB[offset+2];
+            offset             += msgSize;
+          }
+          SellConesSizeB += SellConesSizesB[s];
         }
 
         for(int b = 0, offset = 0; b < BuyCountA; b++) {
@@ -801,9 +890,18 @@ namespace ALE {
           }
           BuyConesSizeA += BuyConesSizesA[b];
         }
+        for(int b = 0, offset = 0; b < BuyCountB; b++) {
+          BuyConesSizesB[b] = 0;
+
+          for(int m = 0; m < BuySizesB[b]; m++) {
+            BuyConesSizesB[b] += BuyPointsB[offset+2];
+            offset            += msgSize;
+          }
+          BuyConesSizeB += BuyConesSizesB[b];
+        }
 
         int cMsgSize = 2;
-        ierr = PetscMalloc(SellConesSizeA*cMsgSize * sizeof(int32_t), &SellConesA);CHKERROR(ierr, "Error in PetscMalloc");
+        ierr = PetscMalloc2(SellConesSizeA*cMsgSize,int32_t,&SellConesA,SellConesSizeB*cMsgSize,int32_t,&SellConesB);CHKERROR(ierr, "Error in PetscMalloc");
         for(int s = 0, offset = 0, cOffset = 0, SellConeSize = 0; s < SellCountA; s++) {
           for(int m = 0; m < SellSizesA[s]; m++) {
             Point point(SellPointsA[offset],SellPointsA[offset+1]);
@@ -820,13 +918,30 @@ namespace ALE {
           }
           SellConeSize += SellConesSizesA[s];
         }
+        for(int s = 0, offset = 0, cOffset = 0, SellConeSize = 0; s < SellCountB; s++) {
+          for(int m = 0; m < SellSizesB[s]; m++) {
+            Point point(SellPointsB[offset],SellPointsB[offset+1]);
+
+            for(typename int_pair_set::iterator p_iter = BillOfSaleBtoA[point].begin(); p_iter != BillOfSaleBtoA[point].end(); ++p_iter) {
+              SellConesB[cOffset+0] = (*p_iter).first;
+              SellConesB[cOffset+1] = (*p_iter).second;
+              cOffset += cMsgSize;
+            }
+            offset += msgSize;
+          }
+          if (cOffset - cMsgSize*SellConeSize != cMsgSize*SellConesSizesB[s]) {
+            throw ALE::Exception("Nonmatching sizes");
+          }
+          SellConeSize += SellConesSizesB[s];
+        }
 
         // Then send A buyers a (rank, cone size) for all B buyers of the same points
         ierr = PetscObjectGetNewTag(petscObj, &tag3); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
         commCycle(comm, tag3, cMsgSize, SellCountA, SellConesSizesA, BuyersA, SellConesA, BuyCountA, BuyConesSizesA, SellersA, &overlapInfoA);
+        commCycle(comm, tag3, cMsgSize, SellCountB, SellConesSizesB, BuyersB, SellConesB, BuyCountB, BuyConesSizesB, SellersB, &overlapInfoB);
 
         // Finally build the A-->B overlap sifter
-        //   (remote rank) ---(base overlap point, remote cone size, local cone size)---> (base A overlap point)
+        //   (remote rank) ---(base A overlap point, remote cone size, local cone size)---> (base A overlap point)
         for(int b = 0, offset = 0, cOffset = 0; b < BuyCountA; b++) {
           for(int m = 0; m < BuySizesA[b]; m++) {
             Point p(BuyPointsA[offset],BuyPointsA[offset+1]);
@@ -836,7 +951,25 @@ namespace ALE {
               int coneSize = overlapInfoA[cOffset+1];
 
               // Record the point, size of the cone over p coming in from neighbor, and going out to the neighbor for the arrow color
-              overlap->addArrow(neighbor, p, ALE::pair<Point,ALE::pair<int,int> >(p, ALE::pair<int,int>(coneSize, _graphA->cone(p)->size())) );
+              overlap->addArrow(neighbor, ALE::pair<int,Point>(0, p), ALE::pair<Point,ALE::pair<int,int> >(p, ALE::pair<int,int>(coneSize, _graphA->cone(p)->size())) );
+              cOffset += cMsgSize;
+            }
+            offset += msgSize;
+          }
+        }
+
+        // Finally build the B-->A overlap sifter
+        //   (remote rank) ---(base B overlap point, remote cone size, local cone size)---> (base B overlap point)
+        for(int b = 0, offset = 0, cOffset = 0; b < BuyCountB; b++) {
+          for(int m = 0; m < BuySizesB[b]; m++) {
+            Point p(BuyPointsB[offset],BuyPointsB[offset+1]);
+
+            for(int n = 0; n < BuyPointsB[offset+2]; n++) {
+              int neighbor = overlapInfoB[cOffset+0];
+              int coneSize = overlapInfoB[cOffset+1];
+
+              // Record the point, size of the cone over p coming in from neighbor, and going out to the neighbor for the arrow color
+              overlap->addArrow(neighbor, ALE::pair<int,Point>(1, p), ALE::pair<Point,ALE::pair<int,int> >(p, ALE::pair<int,int>(coneSize, _graphB->cone(p)->size())) );
               cOffset += cMsgSize;
             }
             offset += msgSize;
@@ -1869,6 +2002,203 @@ namespace ALE {
         }
       };
 
+      #undef __FUNCT__
+      #define __FUNCT__ "__computeFusionNew"
+      template <typename Overlap_, typename Fusion_>
+      static void __computeFusionNew(const Obj<graph_type>& _graphA, const Obj<graph_type>& _graphB, const Obj<Overlap_>& overlap, Obj<Fusion_> fusion, const Obj<fuser_type>& fuser) {
+        typedef ConeArraySequence<typename graph_type::traits::arrow_type> cone_array_sequence;
+        typedef typename cone_array_sequence::cone_arrow_type              cone_arrow_type;
+        MPI_Comm       comm = _graphA->comm();
+        int            rank = _graphA->commRank();
+        PetscObject    petscObj = _graphA->petscObj();
+        PetscMPIInt    tag1;
+        PetscErrorCode ierr;
+
+        Obj<typename Overlap_::traits::capSequence> overlapCap = overlap->cap();
+        int msgSize = sizeof(cone_arrow_type)/sizeof(int); // Messages are arrows
+
+        int NeighborCountA = 0, NeighborCountB = 0;
+        for(typename Overlap_::traits::capSequence::iterator neighbor = overlapCap->begin(); neighbor != overlapCap->end(); ++neighbor) {
+          Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
+
+          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
+            if ((*p_iter).first == 0) {
+              NeighborCountA++;
+              break;
+            }
+          }
+          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
+            if ((*p_iter).first == 1) {
+              NeighborCountB++;
+              break;
+            }
+          } 
+        }
+
+        int *NeighborsA, *NeighborsB; // Neighbor processes
+        int *SellSizesA, *BuySizesA;  // Sizes of the A cones to transmit and B cones to receive
+        int *SellSizesB, *BuySizesB;  // Sizes of the B cones to transmit and A cones to receive
+        int *SellConesA = PETSC_NULL, *BuyConesA = PETSC_NULL;
+        int *SellConesB = PETSC_NULL, *BuyConesB = PETSC_NULL;
+        int nA, nB, offsetA, offsetB;
+        ierr = PetscMalloc2(NeighborCountA,int,&NeighborsA,NeighborCountB,int,&NeighborsB);CHKERROR(ierr, "Error in PetscMalloc");
+        ierr = PetscMalloc2(NeighborCountA,int,&SellSizesA,NeighborCountA,int,&BuySizesA);CHKERROR(ierr, "Error in PetscMalloc");
+        ierr = PetscMalloc2(NeighborCountB,int,&SellSizesB,NeighborCountB,int,&BuySizesB);CHKERROR(ierr, "Error in PetscMalloc");
+
+        nA = 0;
+        nB = 0;
+        for(typename Overlap_::traits::capSequence::iterator neighbor = overlapCap->begin(); neighbor != overlapCap->end(); ++neighbor) {
+          Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
+
+          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
+            if ((*p_iter).first == 0) {
+              NeighborsA[nA] = *neighbor;
+              BuySizesA[nA] = 0;
+              SellSizesA[nA] = 0;
+              nA++;
+              break;
+            }
+          }
+          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
+            if ((*p_iter).first == 1) {
+              NeighborsB[nB] = *neighbor;
+              BuySizesB[nB] = 0;
+              SellSizesB[nB] = 0;
+              nB++;
+              break;
+            }
+          } 
+        }
+        if ((nA != NeighborCountA) || (nB != NeighborCountB)) {
+          throw ALE::Exception("Invalid neighbor count");
+        }
+
+        nA = 0;
+        offsetA = 0;
+        nB = 0;
+        offsetB = 0;
+        for(typename Overlap_::traits::capSequence::iterator neighbor = overlapCap->begin(); neighbor != overlapCap->end(); ++neighbor) {
+          Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
+          int foundA = 0, foundB = 0;
+
+          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
+            if ((*p_iter).first == 0) {
+              BuySizesA[nA] += p_iter.color().second.first;
+              SellSizesA[nA] += p_iter.color().second.second;
+              offsetA += _graphA->cone((*p_iter).second)->size();
+              foundA = 1;
+            } else {
+              BuySizesB[nB] += p_iter.color().second.first;
+              SellSizesB[nB] += p_iter.color().second.second;
+              offsetB += _graphB->cone((*p_iter).second)->size();
+              foundB = 1;
+            }
+          }
+          if (foundA) nA++;
+          if (foundB) nB++;
+        }
+
+        ierr = PetscMalloc2(offsetA*msgSize,int,&SellConesA,offsetB*msgSize,int,&SellConesB);CHKERROR(ierr, "Error in PetscMalloc");
+        cone_arrow_type *ConesOutA = (cone_arrow_type *) SellConesA;
+        cone_arrow_type *ConesOutB = (cone_arrow_type *) SellConesB;
+        offsetA = 0;
+        offsetB = 0;
+        for(typename Overlap_::traits::capSequence::iterator neighbor = overlapCap->begin(); neighbor != overlapCap->end(); ++neighbor) {
+          Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
+
+          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
+            Obj<typename graph_type::traits::coneSequence> cone;
+            const Point& p = (*p_iter).second;
+
+            if ((*p_iter).first == 0) {
+              cone = _graphA->cone(p);
+              for(typename graph_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+                if (debug) {
+                  ostringstream txt;
+
+                  txt << "["<<rank<<"]Packing A arrow for " << *neighbor << "  " << *c_iter << "--" << c_iter.color() << "-->" << p << std::endl;
+                  ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+                }
+                cone_arrow_type::place(ConesOutA+offsetA, typename graph_type::traits::arrow_type(*c_iter, p, c_iter.color()));
+                offsetA++;
+              }
+            } else {
+              cone = _graphB->cone(p);
+              for(typename graph_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+                if (debug) {
+                  ostringstream txt;
+
+                  txt << "["<<rank<<"]Packing B arrow for " << *neighbor << "  " << *c_iter << "--" << c_iter.color() << "-->" << p << std::endl;
+                  ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+                }
+                cone_arrow_type::place(ConesOutB+offsetB, typename graph_type::traits::arrow_type(*c_iter, p, c_iter.color()));
+                offsetB++;
+              }
+            }
+            if (p_iter.color().second.second != (int) cone->size()) {
+              std::cout << "["<<rank<<"] " << p_iter.color() << " does not match cone size " << cone->size() << std::endl;
+              throw ALE::Exception("Non-matching sizes");
+            }
+          }
+        }
+        if (debug) {
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+        }
+
+        // Send and retrieve cones of the base overlap
+        ierr = PetscObjectGetNewTag(petscObj, &tag1); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        commCycle(comm, tag1, msgSize, NeighborCountA, SellSizesA, NeighborsA, SellConesA, NeighborCountA, BuySizesA, NeighborsA, &BuyConesA);
+        commCycle(comm, tag1, msgSize, NeighborCountB, SellSizesB, NeighborsB, SellConesB, NeighborCountB, BuySizesB, NeighborsB, &BuyConesB);
+
+        // Must unpack with the BtoA overlap
+        cone_arrow_type *ConesInA = (cone_arrow_type *) BuyConesA;
+        cone_arrow_type *ConesInB = (cone_arrow_type *) BuyConesB;
+        offsetA = 0;
+        offsetB = 0;
+        for(typename Overlap_::traits::capSequence::iterator neighbor = overlapCap->begin(); neighbor != overlapCap->end(); ++neighbor) {
+          Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
+
+          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
+            Obj<typename graph_type::traits::coneSequence> localCone;
+            const Point& p = (*p_iter).second;
+            int remoteConeSize = p_iter.color().second.first;
+
+            if ((*p_iter).first == 0) {
+              cone_array_sequence remoteCone(&ConesInB[offsetB], remoteConeSize, p);
+
+              localCone = _graphA->cone(p);
+              offsetB += remoteConeSize;
+              if (debug) {
+                ostringstream txt;
+
+                txt << "["<<rank<<"]Unpacking B cone for " << p << " from " << *neighbor << std::endl;
+                remoteCone.view(txt, true);
+                ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+              }
+              // Fuse in received cones
+              fuser->fuseCones(localCone, remoteCone, fusion->cone(fuser->fuseBasePoints(p, p)));
+            } else {
+              cone_array_sequence remoteCone(&ConesInA[offsetA], remoteConeSize, p);
+
+              localCone = _graphB->cone(p);
+              offsetA += remoteConeSize;
+              if (debug) {
+                ostringstream txt;
+
+                txt << "["<<rank<<"]Unpacking A cone for " << p <<  " from " << *neighbor << std::endl;
+                remoteCone.view(txt, true);
+                ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+              }
+              // Fuse in received cones
+              fuser->fuseCones(localCone, remoteCone, fusion->cone(fuser->fuseBasePoints(p, p)));
+            }
+          }
+        }
+        if (debug) {
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+        }
+      };
+
     public:
       static void setDebug(int debug) {ParConeDelta::debug = debug;};
       static int  getDebug() {return ParConeDelta::debug;};
@@ -1975,6 +2305,7 @@ namespace ALE {
       typedef ParSifter_                                                                        graph_type;
       typedef Fuser_                                                                            fuser_type;
       typedef ASifter<ALE::Point, int, ALE::pair<ALE::Point, ALE::pair<int,int> >, uniColor>    overlap_type;
+      typedef ASifter<ALE::pair<int,ALE::Point>, int, ALE::pair<ALE::Point, ALE::pair<int,int> >, uniColor>    bioverlap_type;
       typedef FusionSifter_                                                                     fusion_type;
       //
 
@@ -1997,7 +2328,24 @@ namespace ALE {
         Obj<Flip<Overlap_> > overlap_flip     = Flip<Overlap_>(overlap);
         ParConeDelta<Flip<graph_type>, fuser_type, Flip<fusion_type> >::computeOverlap(graph_flip, overlap_flip);
       };
-      
+
+      static Obj<bioverlap_type> 
+      overlap(const Obj<graph_type> graphA, const Obj<graph_type> graphB) {
+        Obj<bioverlap_type> overlap = bioverlap_type(graphA->comm());
+        PetscMPIInt         comp;
+
+        MPI_Comm_compare(graphA->comm(), graphB->comm(), &comp);
+        if (comp != MPI_IDENT) {
+          throw ALE::Exception("Non-matching communicators for overlap");
+        }
+        Obj<Flip<graph_type> >   graphA_flip   = Flip<graph_type>(graphA);
+        Obj<Flip<graph_type> >   graphB_flip   = Flip<graph_type>(graphB);
+        Obj<Flip<bioverlap_type> > overlap_flip     = Flip<bioverlap_type>(overlap);
+
+        ParConeDelta<Flip<graph_type>, fuser_type, Flip<fusion_type> >::computeOverlap(graphA_flip, graphB_flip, overlap_flip);
+        return overlap;
+      };
+
       // FIX: Is there a way to inherit this from ParConeDelta?  Right now it is a verbatim copy.
       template <typename Overlap_>
       static Obj<fusion_type> 

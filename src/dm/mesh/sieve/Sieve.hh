@@ -369,6 +369,24 @@ namespace ALE {
       void view(ostream_type& os, const char* label, bool rawData);
       void view(const char* label);
 
+      Obj<Sieve> copy() {
+        Obj<Sieve> s = Sieve(this->comm(), this->debug);
+        Obj<typename traits::capSequence>  cap  = this->cap();
+        Obj<typename traits::baseSequence> base = this->base();
+
+        for(typename traits::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+          s->addCapPoint(*c_iter);
+        }
+        for(typename traits::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          Obj<typename traits::coneSequence> cone = this->cone(*b_iter);
+
+          for(typename traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+            s->addArrow(*c_iter, *b_iter, c_iter.color());
+          }
+        }
+        s->stratify();
+        return s;
+      };
     private:
       template<class InputSequence> Obj<coneSet> __nCone(Obj<InputSequence>& cone, int n, const Color_& color, bool useColor);
       template<class pointSequence> void __nCone(const Obj<pointSequence>& cone, int n, const Color_& color, bool useColor, Obj<coneArray> cone, Obj<coneSet> seen);

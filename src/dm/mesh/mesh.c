@@ -951,16 +951,15 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype,Mat *J)
   ISLocalToGlobalMapping lmap;
   PetscInt              *globals,rstart,i;
 #endif
-  PetscInt               localSize, globalSize;
+  PetscInt               localSize;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
-  localSize = m->getField("u")->getSize(ALE::Two::Mesh::field_type::patch_type());
-  globalSize = localSize;
+  localSize = m->getField("u")->getGlobalOrder()->getSize(ALE::Two::Mesh::field_type::patch_type());
 
   ierr = MatCreate(mesh->comm,J);CHKERRQ(ierr);
-  ierr = MatSetSizes(*J,localSize,localSize,globalSize,globalSize);CHKERRQ(ierr);
+  ierr = MatSetSizes(*J,localSize,localSize,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
   ierr = MatSetBlockSize(*J,1);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(*J,mesh->d_nz,mesh->d_nnz);CHKERRQ(ierr);
