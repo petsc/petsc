@@ -1,16 +1,16 @@
 
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = ${SPRNG_INCLUDE}
 FFLAGS   =
-SOURCEC  =  
+SOURCEC  = sprng.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    =  
+OBJSC    = sprng.o
 OBJSF    =
 LIBBASE  = libpetsc
-DIRS     = rand rand48 sprng
-LOCDIR   = src/sys/utils/random/impls/
+DIRS     = 
+LOCDIR   = src/sys/utils/random/impls/sprng
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

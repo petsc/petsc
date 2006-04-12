@@ -28,6 +28,7 @@ extern PetscCookie PETSC_DLLEXPORT PETSC_RANDOM_COOKIE;
 
 #define PETSCRAND               "petscrand"
 #define PETSCRAND48             "petscrand48"
+#define SPRNG                   "sprng"          
 #define PetscRandomType const char*
 
 /* Logging support */

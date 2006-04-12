@@ -256,6 +256,9 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomCreate_Rand(PetscRandom);
 #if defined(PETSC_HAVE_DRAND48)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomCreate_Rand48(PetscRandom);
 #endif
+#if defined(PETSC_HAVE_SPRNG)
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomCreate_Sprng(PetscRandom);
+#endif
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -284,6 +287,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomRegisterAll(const char path[])
 #endif
 #if defined(PETSC_HAVE_DRAND48)
   ierr = PetscRandomRegisterDynamic(PETSCRAND48,path,"PetscRandomCreate_Rand48",PetscRandomCreate_Rand48);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SPRNG)
+  ierr = PetscRandomRegisterDynamic(SPRNG,path,"PetscRandomCreate_Sprng",PetscRandomCreate_Sprng);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

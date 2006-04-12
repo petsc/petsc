@@ -27,8 +27,8 @@ int main(int argc,char **argv)
 
   ierr = PetscMalloc(n*sizeof(PetscInt),&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscRandomSeed(rand);CHKERRQ(ierr);
     ierr = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
+    /* printf("value[%d] = %g\n",i,value); */
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
   }
   ierr = PetscSortInt(n,values);CHKERRQ(ierr);
@@ -36,9 +36,11 @@ int main(int argc,char **argv)
   ierr = PetscLogEventRegister(&event,"Sort",0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
  
+  ierr = PetscRandomSeed(rand);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
+    /* printf("value[%d] = %g\n",i,value); */
   }
   ierr = PetscSortInt(n,values);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);

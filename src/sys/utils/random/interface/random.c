@@ -373,6 +373,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscReal *
    Output Parameter:
 .  val - the value
 
+   Options Database Keys:
++    -random_type petscrand48
+.    -random_type petscrand
+-    -random_type sprng, uses SPRNG package
+
    Level: intermediate
 
    Notes:

@@ -77,8 +77,6 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
   PetscRandomGetValueImaginary_Rand48,
   0,
   /* 5 */
-  0,
-  0,
   0
 };
 
