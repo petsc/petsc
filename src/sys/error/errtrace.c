@@ -116,7 +116,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int line,const char *f
 {
   PetscLogDouble    mem,rss;
   PetscTruth        flg1,flg2;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
 
