@@ -50,12 +50,14 @@ class Configure(config.base.Configure):
       if ((len(library) > 2 and library[1] == ':') or os.path.isabs(library)):
         flagName  = self.language[-1]+'SharedLinkerFlag'
         flagSubst = self.language[-1].upper()+'_LINKER_SLFLAG'
+        dirname   = os.path.dirname(library)
+        if dirname.find(' ') >= 0: dirname.replace(' ', '\\ ')
         if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
-          return getattr(self.setCompilers, flagName)+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
+          return getattr(self.setCompilers, flagName)+dirname+' -L'+dirname+' -l'+name
         if flagSubst in self.framework.argDB:
-          return self.framework.argDB[flagSubst]+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
+          return self.framework.argDB[flagSubst]+dirname+' -L'+dirname+' -l'+name
         else:
-          return '-L'+os.path.dirname(library)+' -l'+name
+          return '-L'+dirname+' -l'+name
       else:
         return '-l'+name
     if os.path.splitext(library)[1] == '.so':
