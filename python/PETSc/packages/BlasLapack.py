@@ -435,6 +435,12 @@ class Configure(PETSc.package.Package):
       self.addDefine('HAVE_ESSL',1)
     return
 
+  def checkPESSL(self):
+    '''Check for the IBM PESSL library - and error out - if used instead of ESSL'''
+    if self.libraries.check(self.lapackLibrary, 'pdgemm'):
+      raise RuntimeError('Cannot use PESSL instead of ESSL!')
+    return
+
   def checkMissing(self):
     '''Check for missing LAPACK routines'''
     if self.foundLapack:
@@ -462,6 +468,7 @@ class Configure(PETSc.package.Package):
   def configure(self):
     self.executeTest(self.configureLibrary)
     self.executeTest(self.checkESSL)
+    self.executeTest(self.checkPESSL)
     self.executeTest(self.checkMissing)
     if (self.languages.precision == 'longdouble' or self.languages.precision == 'int') and not self.f2c:
       raise RuntimeError('Need to use --download-c-blas-lapack when using --with-precision=longdouble/int')
