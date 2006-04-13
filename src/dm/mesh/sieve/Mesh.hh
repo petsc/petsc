@@ -332,79 +332,9 @@ namespace ALE {
         VecDestroy(finiVec);
         return scatter;
       };
-      #undef __FUNCT__
-      #define __FUNCT__ "Mesh::createParCoords"
-      void createParallelCoordinates(int embedDim, Obj<bundle_type> serialVertexBundle, Obj<field_type> serialCoordinates) {
-        if (this->debug) {
-          serialCoordinates->view("Serial coordinates");
-          this->topology->view("Parallel topology");
-        }
-        ALE_LOG_EVENT_BEGIN;
-        // Create vertex bundle
-        std::string orderName("element");
-        Obj<bundle_type> vertexBundle = this->getBundle(0);
 
-        if (!this->_commRank) {
-          Obj<bundle_type::order_type::baseSequence> patches = serialVertexBundle->getPatches(orderName);
-
-          for(bundle_type::order_type::baseSequence::iterator e_iter = patches->begin(); e_iter != patches->end(); ++e_iter) {
-            Obj<bundle_type::order_type::coneSequence> patch = serialVertexBundle->getPatch(orderName, *e_iter);
-
-            vertexBundle->setPatch(orderName, patch, *e_iter);
-            for(bundle_type::order_type::coneSequence::iterator p_iter = patch->begin(); p_iter != patch->end(); ++p_iter) {
-              vertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
-            }
-          }
-        } else {
-          Obj<sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
-          Obj<bundle_type::order_type> reorder = vertexBundle->__getOrder(orderName);
-
-          for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
-            reorder->addBasePoint(*e_iter);
-          }
-        }
-        vertexBundle->orderPatches(orderName);
-        vertexBundle->partitionOrder(orderName);
-        // Create coordinates
-        patch_type patch;
-
-        this->coordinates->setTopology(this->topology);
-        this->coordinates->setPatch(this->topology->leaves(), patch);
-        this->coordinates->setFiberDimensionByDepth(patch, 0, embedDim);
-        this->coordinates->orderPatches();
-        if (this->debug) {
-          this->coordinates->view("New parallel coordinates");
-        }
-        this->coordinates->createGlobalOrder();
-
-        VecScatter scatter;
-        Vec serialVec, globalVec;
-        IS  serialIS, globalIS;
-
-        if (this->commRank()) {
-          VecCreateMPIWithArray(this->comm(), 0, PETSC_DETERMINE, PETSC_NULL, &serialVec);
-        } else {
-          VecCreateMPIWithArray(this->comm(), serialCoordinates->getSize(patch), PETSC_DETERMINE, serialCoordinates->restrict(patch), &serialVec);
-        }
-        int *indices = this->__expandIntervals(this->coordinates->getGlobalOrder()->getPatch(patch));
-        ISCreateGeneral(PETSC_COMM_SELF, this->coordinates->getSize(patch), indices, &serialIS);
-        delete [] indices;
-        VecCreateSeqWithArray(PETSC_COMM_SELF, this->coordinates->getSize(patch), this->coordinates->restrict(patch), &globalVec);
-        //ISCreateStride(PETSC_COMM_SELF, this->coordinates->getSize(patch), 0, 1, &globalIS);
-        indices = this->__expandCanonicalIntervals(this->coordinates->getGlobalOrder()->getPatch(patch), this->coordinates);
-        ISCreateGeneral(PETSC_COMM_SELF, this->coordinates->getSize(patch), indices, &globalIS);
-        delete [] indices;
-        VecScatterCreate(serialVec, serialIS, globalVec, globalIS, &scatter);
-        ISDestroy(serialIS);
-        ISDestroy(globalIS);
-
-        VecScatterBegin(serialVec, globalVec, INSERT_VALUES, SCATTER_FORWARD, scatter);
-        VecScatterEnd(serialVec, globalVec, INSERT_VALUES, SCATTER_FORWARD, scatter);
-        VecDestroy(serialVec);
-        VecDestroy(globalVec);
-        VecScatterDestroy(scatter);
-        ALE_LOG_EVENT_END;
-      };
+      template<typename OverlapType>
+      void createParallelCoordinates(int embedDim, Obj<bundle_type> serialVertexBundle, Obj<field_type> serialCoordinates, Obj<OverlapType> partitionOverlap);
 
       // Create a serial mesh
       void populate(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true) {
@@ -1481,18 +1411,273 @@ namespace ALE {
         }
         partition_Sieve(serialMesh);
       };
-    };
+      template<typename PointSequence, typename OrderType, typename PatchType>
+      static int *__expandIntervalsByPoint(Obj<PointSequence> points, Obj<OrderType> order, const PatchType& patch) {
+        int *indices;
+        int  k = 0;
 
+        for(typename PointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+          if ((*p_iter).first == 0) {
+            k += std::abs(order->getIndex(patch, (*p_iter).second).index);
+          }
+        }
+        if (order->debug) {PetscSynchronizedPrintf(order->comm(), "[%d]Allocated indices of size %d\n", order->commRank(), k);}
+        indices = new int[k];
+        k = 0;
+        for(typename PointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+          if ((*p_iter).first == 0) {
+            const typename OrderType::index_type& offset = order->getIndex(patch, (*p_iter).second);
+
+            for(int i = offset.prefix; i < offset.prefix + std::abs(offset.index); i++) {
+              if (order->debug) {PetscSynchronizedPrintf(order->comm(), "[%d]indices[%d] = %d\n", order->commRank(), k, i);}
+              indices[k++] = i;
+            }
+          }
+        }
+        if (order->debug) {PetscSynchronizedFlush(order->comm());}
+        return indices;
+      };
+      #undef __FUNCT__
+      #define __FUNCT__ "createMappingStoP"
+      template<typename FieldType, typename OverlapType>
+      static VecScatter createMappingStoP(Obj<FieldType> serialSifter, Obj<FieldType> parallelSifter, Obj<OverlapType> overlap, bool doExchange = false) {
+        VecScatter scatter;
+        Obj<typename OverlapType::traits::baseSequence> neighbors = overlap->base();
+        MPI_Comm comm = serialSifter->comm();
+        int      rank = serialSifter->commRank();
+        int      debug = serialSifter->debug;
+        typename FieldType::patch_type patch;
+        int       *indices;
+        Vec        serialVec, parallelVec;
+        IS         serialIS,  parallelIS;
+        PetscErrorCode ierr;
+
+        if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "Creating mapping\n");}
+        // Use an MPI vector for the serial data since it has no overlap
+        if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "  Creating serial indices\n");}
+        if (serialSifter->debug) {
+          serialSifter->view("SerialSifter");
+          overlap->view("Partition Overlap");
+        }
+        ierr = VecCreateMPIWithArray(serialSifter->comm(), serialSifter->getSize(patch), PETSC_DETERMINE, serialSifter->restrict(patch), &serialVec);CHKERROR(ierr, "Error in VecCreate");
+//         indices = __expandIntervalsByPoint(overlap->cap(), serialSifter, patch);
+//         ierr = ISCreateGeneral(PETSC_COMM_SELF, serialSifter->getSize(patch), indices, &serialIS);CHKERROR(ierr, "Error in ISCreate");
+//         delete [] indices;
+        // Use individual serial vectors for each of the parallel domains
+        if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "  Creating parallel indices\n");}
+        ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, parallelSifter->getSize(patch), parallelSifter->restrict(patch), &parallelVec);CHKERROR(ierr, "Error in VecCreate");
+//         indices = __expandIntervalsByPoint(overlap->cap(), parallelSifter, patch);
+//         ierr = ISCreateGeneral(PETSC_COMM_SELF, parallelSifter->getSize(patch), indices, &parallelIS);CHKERROR(ierr, "Error in ISCreate");
+//         delete [] indices;
+
+        //ierr = VecScatterCreate(serialVec, serialIS, parallelVec, parallelIS, &scatter);CHKERROR(ierr, "Error in VecScatterCreate");
+        //ierr = ISDestroy(serialIS);CHKERROR(ierr, "Error in ISDestroy");
+        //ierr = ISDestroy(parallelIS);CHKERROR(ierr, "Error in ISDestroy");
+
+        int NeighborCountA = 0, NeighborCountB = 0;
+        for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
+          Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
+
+          for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+            if ((*p_iter).first == 0) {
+              NeighborCountA++;
+              break;
+            }
+          }
+          for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+            if ((*p_iter).first == 1) {
+              NeighborCountB++;
+              break;
+            }
+          } 
+        }
+
+        int *NeighborsA, *NeighborsB; // Neighbor processes
+        int *SellSizesA, *BuySizesA;  // Sizes of the A cones to transmit and B cones to receive
+        int *SellSizesB, *BuySizesB;  // Sizes of the B cones to transmit and A cones to receive
+        int *SellConesA = PETSC_NULL, *BuyConesA = PETSC_NULL;
+        int *SellConesB = PETSC_NULL, *BuyConesB = PETSC_NULL;
+        int nA, nB, offsetA, offsetB;
+        ierr = PetscMalloc2(NeighborCountA,int,&NeighborsA,NeighborCountB,int,&NeighborsB);CHKERROR(ierr, "Error in PetscMalloc");
+        ierr = PetscMalloc2(NeighborCountA,int,&SellSizesA,NeighborCountA,int,&BuySizesA);CHKERROR(ierr, "Error in PetscMalloc");
+        ierr = PetscMalloc2(NeighborCountB,int,&SellSizesB,NeighborCountB,int,&BuySizesB);CHKERROR(ierr, "Error in PetscMalloc");
+
+        nA = 0;
+        nB = 0;
+        for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
+          Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
+
+          for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+            if ((*p_iter).first == 0) {
+              NeighborsA[nA] = *neighbor;
+              BuySizesA[nA] = 0;
+              SellSizesA[nA] = 0;
+              nA++;
+              break;
+            }
+          }
+          for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+            if ((*p_iter).first == 1) {
+              NeighborsB[nB] = *neighbor;
+              BuySizesB[nB] = 0;
+              SellSizesB[nB] = 0;
+              nB++;
+              break;
+            }
+          } 
+        }
+        if ((nA != NeighborCountA) || (nB != NeighborCountB)) {
+          throw ALE::Exception("Invalid neighbor count");
+        }
+
+        nA = 0;
+        offsetA = 0;
+        nB = 0;
+        offsetB = 0;
+        for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
+          Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
+          int foundA = 0, foundB = 0;
+
+          for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+            if ((*p_iter).first == 0) {
+              // Assume the same index sizes
+              int idxSize = serialSifter->getIndex(patch, (*p_iter).second).index;
+
+              BuySizesA[nA] += idxSize;
+              SellSizesA[nA] += idxSize;
+              offsetA += idxSize;
+              foundA = 1;
+            } else {
+              // Assume the same index sizes
+              int idxSize = parallelSifter->getIndex(patch, (*p_iter).second).index;
+
+              BuySizesB[nB] += idxSize;
+              SellSizesB[nB] += idxSize;
+              offsetB += idxSize;
+              foundB = 1;
+            }
+          }
+          if (foundA) nA++;
+          if (foundB) nB++;
+        }
+
+        ierr = PetscMalloc2(offsetA,int,&SellConesA,offsetB,int,&SellConesB);CHKERROR(ierr, "Error in PetscMalloc");
+        offsetA = 0;
+        offsetB = 0;
+        for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
+          Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
+
+          for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+            const Point& p = (*p_iter).second;
+
+            if ((*p_iter).first == 0) {
+              const typename FieldType::index_type& idx = serialSifter->getIndex(patch, p);
+
+              if (debug) {
+                ostringstream txt;
+
+                txt << "["<<rank<<"]Packing A index " << idx << " for " << *neighbor << std::endl;
+                ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+              }
+              for(int i = idx.prefix; i < idx.prefix+idx.index; ++i) {
+                SellConesA[offsetA++] = i;
+              }
+            } else {
+              const typename FieldType::index_type& idx = parallelSifter->getIndex(patch, p);
+
+              if (debug) {
+                ostringstream txt;
+
+                txt << "["<<rank<<"]Packing B index " << idx << " for " << *neighbor << std::endl;
+                ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+              }
+              for(int i = idx.prefix; i < idx.prefix+idx.index; ++i) {
+                SellConesB[offsetB++] = i;
+              }
+            }
+          }
+        }
+        if (debug) {
+          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+        }
+
+        ierr = VecScatterCreateEmpty(comm, &scatter);CHKERROR(ierr, "Error in VecScatterCreate");
+        scatter->from_n = serialSifter->getSize(patch);
+        scatter->to_n = parallelSifter->getSize(patch);
+        ierr = VecScatterCreateLocal_PtoS(NeighborCountA, SellSizesA, NeighborsA, SellConesA, NeighborCountB, SellSizesB, NeighborsB, SellConesB, 1, scatter);CHKERROR(ierr, "Error in VecScatterCreate");
+
+        if (doExchange) {
+          if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "  Exchanging data\n");}
+          ierr = VecScatterBegin(serialVec, parallelVec, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERROR(ierr, "Error in VecScatter");
+          ierr = VecScatterEnd(serialVec, parallelVec, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERROR(ierr, "Error in VecScatter");
+        }
+
+        ierr = VecDestroy(serialVec);CHKERROR(ierr, "Error in VecDestroy");
+        ierr = VecDestroy(parallelVec);CHKERROR(ierr, "Error in VecDestroy");
+        return scatter;
+      };
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "Mesh::createParCoords"
+    template<typename OverlapType>
+    void Mesh::createParallelCoordinates(int embedDim, Obj<bundle_type> serialVertexBundle, Obj<field_type> serialCoordinates, Obj<OverlapType> partitionOverlap) {
+      if (this->debug) {
+        serialCoordinates->view("Serial coordinates");
+        this->topology->view("Parallel topology");
+      }
+      ALE_LOG_EVENT_BEGIN;
+      // Create vertex bundle
+      std::string orderName("element");
+      Obj<bundle_type> vertexBundle = this->getBundle(0);
+
+      if (!this->_commRank) {
+        Obj<bundle_type::order_type::baseSequence> patches = serialVertexBundle->getPatches(orderName);
+
+        for(bundle_type::order_type::baseSequence::iterator e_iter = patches->begin(); e_iter != patches->end(); ++e_iter) {
+          Obj<bundle_type::order_type::coneSequence> patch = serialVertexBundle->getPatch(orderName, *e_iter);
+
+          vertexBundle->setPatch(orderName, patch, *e_iter);
+          for(bundle_type::order_type::coneSequence::iterator p_iter = patch->begin(); p_iter != patch->end(); ++p_iter) {
+            vertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
+          }
+        }
+      } else {
+        Obj<sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
+        Obj<bundle_type::order_type> reorder = vertexBundle->__getOrder(orderName);
+
+        for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
+          reorder->addBasePoint(*e_iter);
+        }
+      }
+      vertexBundle->orderPatches(orderName);
+      vertexBundle->partitionOrder(orderName);
+      // Create coordinates
+      patch_type patch;
+
+      this->coordinates->setTopology(this->topology);
+      this->coordinates->setPatch(this->topology->leaves(), patch);
+      this->coordinates->setFiberDimensionByDepth(patch, 0, embedDim);
+      this->coordinates->orderPatches();
+      if (this->debug) {
+        this->coordinates->view("New parallel coordinates");
+      }
+      this->coordinates->createGlobalOrder();
+
+      VecScatter scatter = ALE::Two::Partitioner::createMappingStoP(serialCoordinates, this->coordinates, partitionOverlap, true);
+      PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
+      ALE_LOG_EVENT_END;
+    };
     #undef __FUNCT__
     #define __FUNCT__ "Mesh::distribute"
     void Mesh::distribute() {
       ALE_LOG_EVENT_BEGIN;
       this->topology->setStratification(false);
       // Partition the topology
+      Obj<sieve_type> serialTopology = this->topology->copy();
       ALE::Two::Partitioner::partition(*this);
       this->topology->stratify();
       this->topology->setStratification(true);
-      Obj<Mesh::sieve_type::baseSequence> base = topology->base();
+      Obj<Mesh::sieve_type::baseSequence> base = this->topology->base();
       int dim = this->getDimension();
 
       for(Mesh::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
@@ -1503,13 +1688,19 @@ namespace ALE {
       if (this->debug) {
         this->topology->view("Parallel mesh");
       }
+      // Calculate the bioverlap
+      if (this->debug) {
+        serialTopology->view("Serial topology");
+        this->topology->view("Parallel topology");
+      }
+      Obj<Partitioner::supportDelta_type::bioverlap_type> partitionOverlap = Partitioner::supportDelta_type::overlap(serialTopology, this->topology);
       // Need to deal with boundary
       Obj<bundle_type> vertexBundle = this->getBundle(0);
       Obj<field_type>  coordinates  = this->coordinates;
       this->coordinates = field_type(this->comm(), this->debug);
       this->bundles.clear();
       this->fields.clear();
-      this->createParallelCoordinates(this->dim, vertexBundle, coordinates);
+      this->createParallelCoordinates(this->dim, vertexBundle, coordinates, partitionOverlap);
       this->distributed = true;
       ALE_LOG_EVENT_END;
     };

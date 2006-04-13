@@ -3,6 +3,7 @@
 PWD = /home/knepley/PETSc-dev/petsc-dev/python
 WRAPPER = ${PWD}/wrappers
 PETSC_ARCH = linux-gnu
+SOURCE_DIR = wrappers
 SOURCE = wrappers/PETSc/Base.c wrappers/PETSc/PetscLog.c wrappers/PETSc/PetscOptions.c wrappers/PETSc/PetscViewer.c wrappers/PETSc/PetscViewerBinary.c wrappers/PETSc/PetscMap.c wrappers/PETSc/Vec.c wrappers/PETSc/Mat.c wrappers/PETSc/KSP.c wrappers/PETSc/PC.c wrappers/PETSc/SNES.c
 
 build: ${SOURCE:.c=.so}
@@ -21,13 +22,13 @@ realclean: clean
 	rm -f ${SOURCE}
 
 tarball:
-	tar cvzf PETScPython.tar.gz -C wrappers `cd wrappers; find PETSc -name "*.c" -o -name "*.py"`
+	tar cvzf PETScPython.tar.gz -C ${SOURCE_DIR} `cd ${SOURCE_DIR}; find PETSc -name "*.c" -o -name "*.py"`
 
 getTarball:
 	wget --passive-ftp ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz .
 
 pushTarball:
-	scp PETScPython.tar.gz petsc@terra.mcs.anl.gov:/mcs/ftp/pub/petsc
+	scp PETScPython.tar.gz petsc@harley.mcs.anl.gov:/mcs/ftp/pub/petsc
 
 install:
 	tar xvzf PETScPython.tar.gz -C ${PETSC_DIR}/src/python
