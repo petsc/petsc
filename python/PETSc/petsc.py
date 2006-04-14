@@ -90,11 +90,12 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.languages = framework.require('PETSc.utilities.languages', self)
-    self.compilers = framework.require('config.compilers', self)
-    self.headers   = framework.require('config.headers', self)
-    self.libraries = framework.require('config.libraries', self)
-    self.mpi       = framework.require('PETSc.packages.MPI', self)
+    self.languages  = framework.require('PETSc.utilities.languages', self)
+    self.compilers  = framework.require('config.compilers', self)
+    self.headers    = framework.require('config.headers', self)
+    self.libraries  = framework.require('config.libraries', self)
+    self.blaslapack = framework.require('PETSc.packages.BlasLapack', self)
+    self.mpi        = framework.require('PETSc.packages.MPI', self)
     return
 
   def getPETScArch(self, petscDir):
@@ -219,6 +220,7 @@ class Configure(config.base.Configure):
     if not hasattr(self, '_otherLibs'):
       libs = self.compilers.flibs[:]
       libs.extend(self.mpi.lib)
+      libs.extend(self.blaslapack.lib)
       return libs
     return self._otherLibs
   def setOtherLibs(self, otherLibs):
