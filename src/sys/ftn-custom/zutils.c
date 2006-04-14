@@ -81,8 +81,9 @@ PetscInt *PetscIntAddressFromFortran(PetscInt *base,size_t addr)
        shift - number of bytes that prevent base and addr from being commonly aligned
        N - size of the array
 
+       align indicates alignment relative to PetscScalar, 1 means aligned on PetscScalar, 2 means aligned on 2 PetscScalar etc
 */
-PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,PetscScalar *addr,PetscInt N,size_t *res)
+PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscScalar *base,PetscScalar *addr,PetscInt N,size_t *res)
 {
   size_t   tmp1 = (size_t) base,tmp2 = tmp1/sizeof(PetscScalar);
   size_t   tmp3 = (size_t) addr;
@@ -93,11 +94,11 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,Pet
   if (tmp3 > tmp1) {  /* C is bigger than Fortran */
     tmp2  = (tmp3 - tmp1)/sizeof(PetscScalar);
     itmp2 = (size_t) tmp2;
-    shift = (sizeof(PetscScalar) - (int)((tmp3 - tmp1) % sizeof(PetscScalar))) % sizeof(PetscScalar);
+    shift = (align*sizeof(PetscScalar) - (PetscInt)((tmp3 - tmp1) % (align*sizeof(PetscScalar)))) % (align*sizeof(PetscScalar));
   } else {  
     tmp2  = (tmp1 - tmp3)/sizeof(PetscScalar);
     itmp2 = -((size_t) tmp2);
-    shift = (int)((tmp1 - tmp3) % sizeof(PetscScalar));
+    shift = (PetscInt)((tmp1 - tmp3) % (align*sizeof(PetscScalar)));
   }
 #else
   if (tmp3 > tmp1) {  /* C is bigger than Fortran */
@@ -109,7 +110,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,Pet
   }
   shift = 0;
 #endif
-  
+
   if (shift) { 
     /* 
         Fortran and C not PetscScalar aligned,recover by copying values into
@@ -119,7 +120,15 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,Pet
     PetscScalar          *work;
     PetscObjectContainer container;
 
-    ierr = PetscMalloc((N+1)*sizeof(PetscScalar),&work);CHKERRQ(ierr); 
+    ierr = PetscMalloc((N+align)*sizeof(PetscScalar),&work);CHKERRQ(ierr); 
+
+    /* recompute shift for newly allocated space */
+    tmp3 = (size_t) work;
+    if (tmp3 > tmp1) {  /* C is bigger than Fortran */
+      shift = (align*sizeof(PetscScalar) - (PetscInt)((tmp3 - tmp1) % (align*sizeof(PetscScalar)))) % (align*sizeof(PetscScalar));
+    } else {  
+      shift = (PetscInt)((tmp1 - tmp3) % (align*sizeof(PetscScalar)));
+    }
 
     /* shift work by that number of bytes */
     work = (PetscScalar*)(((char*)work) + shift);
@@ -136,11 +145,11 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,Pet
     if (tmp3 > tmp1) {  /* C is bigger than Fortran */
       tmp2  = (tmp3 - tmp1)/sizeof(PetscScalar);
       itmp2 = (size_t) tmp2;
-      shift = (sizeof(PetscScalar) - (int)((tmp3 - tmp1) % sizeof(PetscScalar))) % sizeof(PetscScalar);
+      shift = (align*sizeof(PetscScalar) - (PetscInt)((tmp3 - tmp1) % (align*sizeof(PetscScalar)))) % (align*sizeof(PetscScalar));
     } else {  
       tmp2  = (tmp1 - tmp3)/sizeof(PetscScalar);
       itmp2 = -((size_t) tmp2);
-      shift = (int)((tmp1 - tmp3) % sizeof(PetscScalar));
+      shift = (PetscInt)((tmp1 - tmp3) % (align*sizeof(PetscScalar)));
     }
     if (shift) {
       (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
