@@ -1,10 +1,9 @@
 #!/usr/local/bin/bash
-# $Id: mpirun.prun,v 1.1 2000/01/18 15:38:06 bsmith Exp bsmith $ 
 
 #
 # This script is for Compaq systems that use prun instead of mpirun
 #
-# Usage: petsc/bin/mpirun.prun [-np n] programname programoptions
+# Usage: bin/mpirun.prun [-np n] programname programoptions
 #
 two=$2
 if [ $1 = "-np" ]; then

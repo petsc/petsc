@@ -372,7 +372,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetApplicationContext(SNES snes,void **us
 
    Level: intermediate
 
-.keywords: SNES, nonlinear, get, iteration, number
+.keywords: SNES, nonlinear, get, iteration, number, 
+
+.seealso:   SNESGetFunctionNorm(), SNESGetNumberLinearIterations()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetIterationNumber(SNES snes,PetscInt* iter)
 {
@@ -401,7 +403,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetIterationNumber(SNES snes,PetscInt* it
 
 .keywords: SNES, nonlinear, get, function, norm
 
-.seealso: SNESGetFunction()
+.seealso: SNESGetFunction(), SNESGetIterationNumber(), SNESGetNumberLinearIterations()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunctionNorm(SNES snes,PetscScalar *fnorm)
 {
@@ -513,6 +515,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaximumUnsuccessfulSteps(SNES snes, Pe
    Level: intermediate
 
 .keywords: SNES, nonlinear, get, number, linear, iterations
+
+.seealso:  SNESGetIterationNumber(), SNESGetFunctionNorm()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberLinearIterations(SNES snes,PetscInt* lits)
 {
@@ -845,7 +849,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES snes,Vec x,Vec y)
    Output Parameters:
 +  A - Jacobian matrix
 .  B - optional preconditioning matrix
--  flag - flag indicating matrix structure
+-  flag - flag indicating matrix structure (one of, SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER)
 
    Notes: 
    Most users should not need to explicitly call this routine, as it 
@@ -858,7 +862,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES snes,Vec x,Vec y)
 
 .keywords: SNES, compute, Jacobian, matrix
 
-.seealso:  SNESSetJacobian(), KSPSetOperators()
+.seealso:  SNESSetJacobian(), KSPSetOperators(), MatStructure
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
 {
@@ -907,7 +911,7 @@ $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 .  A - Jacobian matrix
 .  B - preconditioner matrix, usually the same as A
 .  flag - flag indicating information about the preconditioner matrix
-   structure (same as flag in KSPSetOperators())
+   structure (same as flag in KSPSetOperators()), one of SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
 -  ctx - [optional] user-defined Jacobian context
 
    Notes: 
@@ -924,7 +928,7 @@ $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 
 .keywords: SNES, nonlinear, set, Jacobian, matrix
 
-.seealso: KSPSetOperators(), SNESSetFunction(), MatSNESMFComputeJacobian(), SNESDefaultComputeJacobianColor()
+.seealso: KSPSetOperators(), SNESSetFunction(), MatSNESMFComputeJacobian(), SNESDefaultComputeJacobianColor(), MatStructure
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetJacobian(SNES snes,Mat A,Mat B,PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {

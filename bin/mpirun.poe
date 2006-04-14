@@ -1,11 +1,9 @@
 #!/usr/local/bin/bash
-# $Id: mpirun.poe,v 1.4 1997/09/10 19:49:05 balay Exp $ 
-
 #
 # This script is for IBM SP machines running POE that do not 
 # have mpirun installed. 
 #
-# Usage: petsc/bin/mpirun.poe [-np n] programname programoptions
+# Usage: bin/mpirun.poe [-np n] programname programoptions
 #
 two=$2
 if [ $1 = "-np" ]; then

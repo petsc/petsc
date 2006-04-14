@@ -1,0 +1,15 @@
+#!/usr/local/bin/bash
+#
+# This script is for systems that use llrun instead of mpirun
+#
+# Usage: bin/mpirun.llrun [-np n] programname programoptions
+#
+two=$2
+if [ $1 = "-np" ]; then
+        shift
+        shift
+        llrun -p $two $*
+else
+        llrun -p 1 $*
+fi
+
