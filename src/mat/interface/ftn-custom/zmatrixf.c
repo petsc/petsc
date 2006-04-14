@@ -119,7 +119,7 @@ void PETSC_STDCALL matgetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCo
 
   *ierr = MatGetArray(*mat,&mm); if (*ierr) return;
   *ierr = MatGetSize(*mat,&m,&n);  if (*ierr) return;
-  *ierr = PetscScalarAddressToFortran((PetscObject)*mat,fa,mm,m*n,ia); if (*ierr) return;
+  *ierr = PetscScalarAddressToFortran((PetscObject)*mat,1,fa,mm,m*n,ia); if (*ierr) return;
 }
 
 void PETSC_STDCALL matrestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)

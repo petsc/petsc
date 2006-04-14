@@ -6,12 +6,14 @@
 #define vecloadintovector_        VECLOADINTOVECTOR  
 #define vecview_                  VECVIEW
 #define vecgetarray_              VECGETARRAY
+#define vecgetarrayaligned_       VECGETARRAYALIGNED
 #define vecrestorearray_          VECRESTOREARRAY
 #define vecduplicatevecs_         VECDUPLICATEVECS
 #define vecdestroyvecs_           VECDESTROYVECS
 #define vecmax_                   VECMAX
 #define vecgetownershiprange_     VECGETOWNERSHIPRANGE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define vecgetarrayaligned_       vecgetarrayaligned
 #define vecsetvalue_              vecsetvalue
 #define vecsetvaluelocal_         vecsetvaluelocal
 #define vecloadintovector_        vecloadintovector
@@ -52,14 +54,57 @@ void PETSC_STDCALL vecview_(Vec *x,PetscViewer *vin,PetscErrorCode *ierr)
   *ierr = VecView(*x,v);
 }
 
+/*MC
+         VecGetArrayAligned - FORTRAN only. Forces alignment of vector
+      arrays so that arrays of derived types may be used.
+
+   Synopsis:
+   VecGetArrayAligned(PetscErrorCode ierr)
+
+     Not Collective
+
+     Notes: Allows code such as 
+
+$     type  :: Field
+$        PetscScalar :: p1
+$        PetscScalar :: p2
+$      end type Field
+$ 
+$      type(Field)       :: lx_v(0:1)
+$
+$      call VecGetArray( localX, lx_v, lx_i, ierr )
+$      call InitialGuessLocal(lx_v(lx_i/2),ierr) 
+$
+$      subroutine InitialGuessLocal(a,ierr)
+$      type(Field)     :: a(*)
+
+     If you have not called VecGetArrayAligned() the code may generate incorrect data
+     or crash.
+
+     lx_i needs to be divided by the number of entries in Field (in this case 2)
+
+     You do NOT need VecGetArrayAligned() if lx_v and a are arrays of PetscScalar
+
+.seealso: VecGetArray(), VecGetArrayF90()
+M*/
+static PetscTruth VecGetArrayAligned = PETSC_FALSE;
+void PETSC_STDCALL vecgetarrayaligned_(PetscErrorCode *ierr)
+{
+  VecGetArrayAligned = PETSC_TRUE;
+}
+
 void PETSC_STDCALL vecgetarray_(Vec *x,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscScalar *lx;
-  PetscInt    m;
+  PetscInt    m,bs;
 
   *ierr = VecGetArray(*x,&lx); if (*ierr) return;
   *ierr = VecGetLocalSize(*x,&m);if (*ierr) return;
-  *ierr = PetscScalarAddressToFortran((PetscObject)*x,fa,lx,m,ia);
+  bs = 1;
+  if (VecGetArrayAligned) {
+    *ierr = VecGetBlockSize(*x,&bs);if (*ierr) return;
+  }
+  *ierr = PetscScalarAddressToFortran((PetscObject)*x,bs,fa,lx,m,ia);
 }
 
 /* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
