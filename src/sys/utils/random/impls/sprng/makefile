@@ -1,4 +1,4 @@
-#requirespackage PETSC_HAVE_SPRNG
+#requirespackage 'PETSC_HAVE_SPRNG'
 
 ALL: lib
 
