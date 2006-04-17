@@ -2163,7 +2163,9 @@ namespace ALE {
             const Point& p = (*p_iter).second;
             int remoteConeSize = p_iter.color().second.first;
 
+            // Right now we only provide the A->B fusion
             if ((*p_iter).first == 0) {
+#if 0
               cone_array_sequence remoteCone(&ConesInB[offsetB], remoteConeSize, p);
 
               localCone = _graphA->cone(p);
@@ -2177,6 +2179,7 @@ namespace ALE {
               }
               // Fuse in received cones
               fuser->fuseCones(localCone, remoteCone, fusion->cone(fuser->fuseBasePoints(p, p)));
+#endif
             } else {
               cone_array_sequence remoteCone(&ConesInA[offsetA], remoteConeSize, p);
 
