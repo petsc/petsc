@@ -91,6 +91,14 @@ def petsc_configure(configure_options):
       if name.find('=') == -1: sys.argv[l] = sys.argv[l]+'=0'
       elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
 
+  # Check for sudo
+  if os.getuid() == 0:
+    print '================================================================================='
+    print '             *** Do not run configure as root, or using sudo. ***'
+    print '             ***** That should be reserved for installation *****'
+    print '================================================================================='
+    sys.exit(3)
+
   # Check for broken cygwin
   if chkcygwin():
     print '================================================================================='
