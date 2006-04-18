@@ -108,6 +108,7 @@ static PetscErrorCode PCSetup_ICC(PC pc)
   PC_ICC         *icc = (PC_ICC*)pc->data;
   IS             perm,cperm;
   PetscErrorCode ierr;
+  MatInfo        info;
 
   PetscFunctionBegin;
   ierr = MatGetOrdering(pc->pmat,icc->ordering,&perm,&cperm);CHKERRQ(ierr);
@@ -118,6 +119,9 @@ static PetscErrorCode PCSetup_ICC(PC pc)
     ierr = MatDestroy(icc->fact);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(pc->pmat,perm,&icc->info,&icc->fact);CHKERRQ(ierr);
   }
+  ierr = MatGetInfo(icc->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
+  icc->actualfill = info.fill_ratio_needed;
+
   ierr = ISDestroy(cperm);CHKERRQ(ierr);
   ierr = ISDestroy(perm);CHKERRQ(ierr);
   ierr = MatCholeskyFactorNumeric(pc->pmat,&icc->info,&icc->fact);CHKERRQ(ierr);
@@ -239,8 +243,21 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
     } else {
         ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %D levels of fill\n",(PetscInt)icc->info.levels);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  ICC: max fill ratio allocated %G\n",icc->info.fill);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  ICC: factor fill ratio allocated %G\n",icc->info.fill);CHKERRQ(ierr);
     if (icc->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using Manteuffel shift\n");CHKERRQ(ierr);}
+    if (icc->fact) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICC: factor fill ratio needed %G\n",icc->actualfill);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"       Factored matrix follows\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+      ierr = MatView(icc->fact,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," lvls=%D",(PetscInt)icc->info.levels);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {

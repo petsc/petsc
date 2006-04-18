@@ -954,7 +954,10 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
   if (!levels && row_identity && col_identity) {
     ierr = MatDuplicate_SeqAIJ(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
-    (*fact)->factor = FACTOR_LU;
+    (*fact)->factor                 = FACTOR_LU;
+    (*fact)->info.factor_mallocs    = 0;
+    (*fact)->info.fill_ratio_given  = info->fill;
+    (*fact)->info.fill_ratio_needed = 1.0;
     b               = (Mat_SeqAIJ*)(*fact)->data;
     if (!b->diag) {
       ierr = MatMarkDiagonal_SeqAIJ(*fact);CHKERRQ(ierr);

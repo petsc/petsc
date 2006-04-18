@@ -446,7 +446,7 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
     } else {
         ierr = PetscViewerASCIIPrintf(viewer,"  ILU: %D levels of fill\n",(PetscInt)ilu->info.levels);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  ILU: max fill ratio allocated %G\n",ilu->info.fill);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  ILU: factor fill ratio allocated %G\n",ilu->info.fill);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  ILU: tolerance for zero pivot %G\n",ilu->info.zeropivot);CHKERRQ(ierr);
     if (ilu->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using Manteuffel shift\n");CHKERRQ(ierr);}
     if (ilu->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"       in-place factorization\n");CHKERRQ(ierr);}
@@ -455,11 +455,16 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
     if (ilu->reusefill)     {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
     if (ilu->reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
     if (ilu->fact) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  ILU: factor fill ratio needed %G\n",ilu->actualfill);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"       Factored matrix follows\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
       ierr = MatView(ilu->fact,viewer);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
@@ -476,6 +481,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
 {
   PetscErrorCode ierr;
   PC_ILU         *ilu = (PC_ILU*)pc->data;
+  MatInfo        info;
 
   PetscFunctionBegin;
   if (ilu->inplace) {
@@ -519,7 +525,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     } else {
       ierr = MatLUFactorNumeric(pc->pmat,&ilu->info,&ilu->fact);CHKERRQ(ierr);
     }
-   } else {
+  } else {
     if (!pc->setupcalled) {
       /* first time in so compute reordering and symbolic factorization */
       ierr = MatGetOrdering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
@@ -530,6 +536,8 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
       ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
+      ierr = MatGetInfo(ilu->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
+      ilu->actualfill = info.fill_ratio_needed;
       ierr = PetscLogObjectParent(pc,ilu->fact);CHKERRQ(ierr);
     } else if (pc->flag != SAME_NONZERO_PATTERN) { 
       if (!ilu->reuseordering) {
@@ -546,6 +554,8 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       }
       ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);
       ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
+      ierr = MatGetInfo(ilu->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
+      ilu->actualfill = info.fill_ratio_needed;
       ierr = PetscLogObjectParent(pc,ilu->fact);CHKERRQ(ierr);
     }
     ierr = MatLUFactorNumeric(pc->pmat,&ilu->info,&ilu->fact);CHKERRQ(ierr);
