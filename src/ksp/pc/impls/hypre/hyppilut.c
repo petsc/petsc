@@ -302,12 +302,12 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     if (jac->maxlevels < 2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of levels %d must be at least two",jac->maxlevels);
     ierr = HYPRE_BoomerAMGSetMaxLevels(jac->hsolver,jac->maxlevels);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_iter","Maximum iterations used","None",jac->maxiter,&jac->maxiter,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_iter","Maximum iterations used PER hypre call","None",jac->maxiter,&jac->maxiter,&flg);CHKERRQ(ierr);
   if (flg) {
     if (jac->maxiter < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of iterations %d must be at least one",jac->maxiter);
     ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,jac->maxiter);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsScalar("-pc_hypre_boomeramg_tol","Convergence tolerance","None",jac->tol,&jac->tol,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsScalar("-pc_hypre_boomeramg_tol","Convergence tolerance PER hypre call","None",jac->tol,&jac->tol,&flg);CHKERRQ(ierr);
   if (flg) {
     if (jac->tol < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Tolerance %G must be great than or equal zero",jac->tol);
     ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
@@ -465,8 +465,8 @@ static PetscErrorCode PCApplyRichardson_BoomerAMG(PC pc,Vec b,Vec y,Vec w,PetscR
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,its);CHKERRQ(ierr);
-  ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,rtol);CHKERRQ(ierr);
+  ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,its*jac->maxiter);CHKERRQ(ierr);
+  ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,PetscMin(rtol,jac->tol));CHKERRQ(ierr);
   jac->applyrichardson = PETSC_TRUE;
   ierr = PCApply_HYPRE(pc,b,y);CHKERRQ(ierr);
   jac->applyrichardson = PETSC_FALSE;
@@ -489,8 +489,8 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG preconditioning\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum number of levels %d\n",jac->maxlevels);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum number of iterations %d\n",jac->maxiter);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Convergence tolerance %G\n",jac->tol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum number of iterations PER hypre call%d\n",jac->maxiter);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Convergence tolerance PER hypre call%G\n",jac->tol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Threshold for strong coupling %G\n",jac->strongthreshold);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum row sums %G\n",jac->maxrowsum);CHKERRQ(ierr);
 
@@ -792,7 +792,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType(PC pc,const char name[])
           the many hypre options can ONLY be set via the options database (e.g. the command line
           or with PetscOptionsSetValue(), there are no functions to set them)
 
+          The options -pc_hypre_boomeramg_max_iter and -pc_hypre_boomeramg_rtol refer to the number of iterations
+          (V-cycles) that boomeramg does EACH time it is called. So for example, if it is set to 2 then 
+          2-V-cycles are being used to define the preconditioner. -ksp_max_iter and -ksp_rtol STILL determine
+          the total number of iterations and tolerance for the Krylov solver. For example, if 
+          -pc_hypre_boomeramg_max_iter is 2 and -ksp_max_it is 10 then AT MOST twenty V-cycles of boomeramg
+          will be called.
+
+
           If you wish to use boomerAMG WITHOUT a Krylov method use -ksp_type richardson NOT -ksp_type preonly
+          and use -ksp_max_it to control the number of V-cycles.
           (see the PETSc FAQ.html at the PETSc website under the Documentation tab).
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
