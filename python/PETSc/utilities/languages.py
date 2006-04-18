@@ -75,6 +75,8 @@ class Configure(config.base.Configure):
       self.framework.argDB['with-cxx'] = '0'
       self.framework.logPrint('Turning off C++ support')
     if self.clanguage == 'Cxx' and self.framework.argDB['with-c-support']:
+      if self.scalartype == 'complex':
+        raise RuntimeError('Cannot use --with-c-support and --with-scalar-type=complex together')
       self.cSupport = 1
       self.addDefine('USE_EXTERN_CXX', '1')
       self.framework.logPrint('Turning off C++ name mangling')
