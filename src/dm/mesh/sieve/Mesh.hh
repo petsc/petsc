@@ -7,6 +7,9 @@
 #ifndef  included_ALE_ParDelta_hh
 #include <ParDelta.hh>
 #endif
+#ifndef  included_ALE_Partitioner_hh
+#include <Partitioner.hh>
+#endif
 
 #ifdef PETSC_HAVE_TRIANGLE
 #include <triangle.h>
@@ -349,7 +352,7 @@ namespace ALE {
       };
 
       // Partition and distribute a serial mesh
-      void distribute();
+      Obj<Mesh> distribute();
       // Collect a distributed mesh on process 0
       Obj<Mesh> unify();
     };
@@ -721,7 +724,7 @@ namespace ALE {
           ierr = PetscFree(in.segmentmarkerlist);
         }
         m->populate(out.numberoftriangles, out.trianglelist, out.numberofpoints, out.pointlist, interpolate);
-        m->distribute();
+        m = m->distribute();
 
         // Need to make boundary
 
@@ -851,7 +854,7 @@ namespace ALE {
             }
           }
         }
-        m->distribute();
+        m = m->distribute();
         return m;
       };
 #endif
@@ -1688,41 +1691,38 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "Mesh::distribute"
-    void Mesh::distribute() {
+    Obj<Mesh> Mesh::distribute() {
       ALE_LOG_EVENT_BEGIN;
-      this->topology->setStratification(false);
       // Partition the topology
-      Obj<sieve_type> serialTopology = this->topology->copy();
-      ALE::Two::Partitioner::partition(*this);
-      this->topology->stratify();
-      this->topology->setStratification(true);
-      Obj<Mesh::sieve_type::baseSequence> base = this->topology->base();
+      Obj<Mesh> parallelMesh = Mesh(this->comm(), this->debug);
+      parallelMesh->topology->setStratification(false);
+      ALE::MeshPartitioner<Mesh>::partition(*this, parallelMesh);
+      parallelMesh->topology->stratify();
+      parallelMesh->topology->setStratification(true);
+      // Remove dangling points not in the closure of an element
+      Obj<Mesh::sieve_type::baseSequence> base = parallelMesh->topology->base();
       int dim = this->getDimension();
 
       for(Mesh::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
         if (b_iter.depth() + b_iter.height() != dim) {
-          topology->removeBasePoint(*b_iter);
+          parallelMesh->topology->removeBasePoint(*b_iter);
         }
       }
       if (this->debug) {
-        this->topology->view("Parallel mesh");
-        this->getBoundary()->view("Parallel boundary");
+        parallelMesh->topology->view("Parallel mesh");
+        parallelMesh->getBoundary()->view("Parallel boundary");
       }
       // Calculate the bioverlap
       if (this->debug) {
-        serialTopology->view("Serial topology");
-        this->topology->view("Parallel topology");
+        this->topology->view("Serial topology");
+        parallelMesh->topology->view("Parallel topology");
       }
-      Obj<Partitioner::supportDelta_type::bioverlap_type> partitionOverlap = Partitioner::supportDelta_type::overlap(serialTopology, this->topology);
+      Obj<Partitioner::supportDelta_type::bioverlap_type> partitionOverlap = Partitioner::supportDelta_type::overlap(this->topology, parallelMesh->topology);
       // Need to deal with boundary
-      Obj<bundle_type> vertexBundle = this->getBundle(0);
-      Obj<field_type>  coordinates  = this->coordinates;
-      this->coordinates = field_type(this->comm(), this->debug);
-      this->bundles.clear();
-      this->fields.clear();
-      this->createParallelCoordinates(this->dim, vertexBundle, coordinates, partitionOverlap);
-      this->distributed = true;
+      parallelMesh->createParallelCoordinates(this->dim, this->getBundle(0), this->coordinates, partitionOverlap);
+      parallelMesh->distributed = true;
       ALE_LOG_EVENT_END;
+      return parallelMesh;
     };
 
     #undef __FUNCT__

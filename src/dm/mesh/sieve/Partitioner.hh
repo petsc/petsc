@@ -1,0 +1,421 @@
+#ifndef included_ALE_Partitioner_hh
+#define included_ALE_Partitioner_hh
+
+#include <petscvec.h>
+
+namespace ALE {
+  class Distributer {
+  public:
+    #undef __FUNCT__
+    #define __FUNCT__ "Part::distribute"
+    template<typename Sifter_>
+    static void distribute(Obj<Sifter_> oldSifter, Obj<Sifter_> newSifter) {
+      typedef Sifter_ sifter_type;
+      typedef RightSequenceDuplicator<ConeArraySequence<typename sifter_type::traits::arrow_type> > fuser;
+      typedef ParConeDelta<sifter_type, fuser,
+                           typename sifter_type::template rebind<typename fuser::fusion_source_type,
+                                                                 typename fuser::fusion_target_type,
+                                                                 typename fuser::fusion_color_type,
+                                                                 typename sifter_type::traits::cap_container_type::template rebind<typename fuser::fusion_source_type, typename sifter_type::traits::sourceRec_type::template rebind<typename fuser::fusion_source_type>::type>::type,
+                                                                 typename sifter_type::traits::base_container_type::template rebind<typename fuser::fusion_target_type, typename sifter_type::traits::targetRec_type::template rebind<typename fuser::fusion_target_type>::type>::type
+      >::type> coneDelta_type;
+      typedef ParSupportDelta<sifter_type, fuser,
+                              typename sifter_type::template rebind<typename fuser::fusion_source_type,
+                                                                    typename fuser::fusion_target_type,
+                                                                    typename fuser::fusion_color_type,
+                                                                    typename sifter_type::traits::cap_container_type::template rebind<typename fuser::fusion_source_type, typename sifter_type::traits::sourceRec_type::template rebind<typename fuser::fusion_source_type>::type>::type,
+                                                                    typename sifter_type::traits::base_container_type::template rebind<typename fuser::fusion_target_type, typename sifter_type::traits::targetRec_type::template rebind<typename fuser::fusion_target_type>::type>::type
+      >::type> supportDelta_type;
+      ALE_LOG_EVENT_BEGIN;
+      // Construct a Delta object and a base overlap object
+      coneDelta_type::setDebug(oldSifter->debug);
+      Obj<typename coneDelta_type::bioverlap_type> overlap = coneDelta_type::overlap(oldSifter, newSifter);
+      // Cone complete to move the partitions to the other processors
+      Obj<typename coneDelta_type::fusion_type>    fusion  = coneDelta_type::fusion(oldSifter, newSifter, overlap);
+      // Merge in the completion
+      newSifter->add(fusion);
+      if (oldSifter->debug) {
+        overlap->view("Initial overlap");
+        fusion->view("Initial fusion");
+        newSifter->view("After merging inital fusion");
+      }
+      // Remove partition points
+      for(int p = 0; p < oldSifter->commSize(); ++p) {
+        oldSifter->removeBasePoint(typename sifter_type::traits::target_type(-1, p));
+        newSifter->removeBasePoint(typename sifter_type::traits::target_type(-1, p));
+      }
+      // Support complete to build the local topology
+      supportDelta_type::setDebug(oldSifter->debug);
+      Obj<typename supportDelta_type::bioverlap_type> overlap2 = supportDelta_type::overlap(oldSifter, newSifter);
+      Obj<typename supportDelta_type::fusion_type>    fusion2  = supportDelta_type::fusion(oldSifter, newSifter, overlap2);
+      newSifter->add(fusion2);
+      if (oldSifter->debug) {
+        overlap2->view("Second overlap");
+        fusion2->view("Second fusion");
+        newSifter->view("After merging second fusion");
+      }
+      ALE_LOG_EVENT_END;
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "createMappingStoP"
+    template<typename FieldType, typename OverlapType>
+    static VecScatter createMappingStoP(Obj<FieldType> serialSifter, Obj<FieldType> parallelSifter, Obj<OverlapType> overlap, bool doExchange = false) {
+      VecScatter scatter;
+      Obj<typename OverlapType::traits::baseSequence> neighbors = overlap->base();
+      MPI_Comm comm = serialSifter->comm();
+      int      rank = serialSifter->commRank();
+      int      debug = serialSifter->debug;
+      typename FieldType::patch_type patch;
+      Vec        serialVec, parallelVec;
+      PetscErrorCode ierr;
+
+      if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "Creating mapping\n");}
+      // Use an MPI vector for the serial data since it has no overlap
+      if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "  Creating serial indices\n");}
+      if (serialSifter->debug) {
+        serialSifter->view("SerialSifter");
+        overlap->view("Partition Overlap");
+      }
+      ierr = VecCreateMPIWithArray(serialSifter->comm(), serialSifter->getSize(patch), PETSC_DETERMINE, serialSifter->restrict(patch), &serialVec);CHKERROR(ierr, "Error in VecCreate");
+      // Use individual serial vectors for each of the parallel domains
+      if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "  Creating parallel indices\n");}
+      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, parallelSifter->getSize(patch), parallelSifter->restrict(patch), &parallelVec);CHKERROR(ierr, "Error in VecCreate");
+
+      int NeighborCountA = 0, NeighborCountB = 0;
+      for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
+        Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
+
+        for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          if ((*p_iter).first == 0) {
+            NeighborCountA++;
+            break;
+          }
+        }
+        for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          if ((*p_iter).first == 1) {
+            NeighborCountB++;
+            break;
+          }
+        } 
+      }
+
+      int *NeighborsA, *NeighborsB; // Neighbor processes
+      int *SellSizesA, *BuySizesA;  // Sizes of the A cones to transmit and B cones to receive
+      int *SellSizesB, *BuySizesB;  // Sizes of the B cones to transmit and A cones to receive
+      int *SellConesA = PETSC_NULL;
+      int *SellConesB = PETSC_NULL;
+      int nA, nB, offsetA, offsetB;
+      ierr = PetscMalloc2(NeighborCountA,int,&NeighborsA,NeighborCountB,int,&NeighborsB);CHKERROR(ierr, "Error in PetscMalloc");
+      ierr = PetscMalloc2(NeighborCountA,int,&SellSizesA,NeighborCountA,int,&BuySizesA);CHKERROR(ierr, "Error in PetscMalloc");
+      ierr = PetscMalloc2(NeighborCountB,int,&SellSizesB,NeighborCountB,int,&BuySizesB);CHKERROR(ierr, "Error in PetscMalloc");
+
+      nA = 0;
+      nB = 0;
+      for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
+        Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
+
+        for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          if ((*p_iter).first == 0) {
+            NeighborsA[nA] = *neighbor;
+            BuySizesA[nA] = 0;
+            SellSizesA[nA] = 0;
+            nA++;
+            break;
+          }
+        }
+        for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          if ((*p_iter).first == 1) {
+            NeighborsB[nB] = *neighbor;
+            BuySizesB[nB] = 0;
+            SellSizesB[nB] = 0;
+            nB++;
+            break;
+          }
+        } 
+      }
+      if ((nA != NeighborCountA) || (nB != NeighborCountB)) {
+        throw ALE::Exception("Invalid neighbor count");
+      }
+
+      nA = 0;
+      offsetA = 0;
+      nB = 0;
+      offsetB = 0;
+      for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
+        Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
+        int foundA = 0, foundB = 0;
+
+        for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          if ((*p_iter).first == 0) {
+            // Assume the same index sizes
+            int idxSize = serialSifter->getIndex(patch, (*p_iter).second).index;
+
+            BuySizesA[nA] += idxSize;
+            SellSizesA[nA] += idxSize;
+            offsetA += idxSize;
+            foundA = 1;
+          } else {
+            // Assume the same index sizes
+            int idxSize = parallelSifter->getIndex(patch, (*p_iter).second).index;
+
+            BuySizesB[nB] += idxSize;
+            SellSizesB[nB] += idxSize;
+            offsetB += idxSize;
+            foundB = 1;
+          }
+        }
+        if (foundA) nA++;
+        if (foundB) nB++;
+      }
+
+      ierr = PetscMalloc2(offsetA,int,&SellConesA,offsetB,int,&SellConesB);CHKERROR(ierr, "Error in PetscMalloc");
+      offsetA = 0;
+      offsetB = 0;
+      for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
+        Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
+
+        for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          const Point& p = (*p_iter).second;
+
+          if ((*p_iter).first == 0) {
+            const typename FieldType::index_type& idx = serialSifter->getIndex(patch, p);
+
+            if (debug) {
+              ostringstream txt;
+
+              txt << "["<<rank<<"]Packing A index " << idx << " for " << *neighbor << std::endl;
+              ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+            }
+            for(int i = idx.prefix; i < idx.prefix+idx.index; ++i) {
+              SellConesA[offsetA++] = i;
+            }
+          } else {
+            const typename FieldType::index_type& idx = parallelSifter->getIndex(patch, p);
+
+            if (debug) {
+              ostringstream txt;
+
+              txt << "["<<rank<<"]Packing B index " << idx << " for " << *neighbor << std::endl;
+              ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+            }
+            for(int i = idx.prefix; i < idx.prefix+idx.index; ++i) {
+              SellConesB[offsetB++] = i;
+            }
+          }
+        }
+      }
+      if (debug) {
+        ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
+      }
+
+      ierr = VecScatterCreateEmpty(comm, &scatter);CHKERROR(ierr, "Error in VecScatterCreate");
+      scatter->from_n = serialSifter->getSize(patch);
+      scatter->to_n = parallelSifter->getSize(patch);
+      ierr = VecScatterCreateLocal_PtoS(NeighborCountA, SellSizesA, NeighborsA, SellConesA, NeighborCountB, SellSizesB, NeighborsB, SellConesB, 1, scatter);CHKERROR(ierr, "Error in VecScatterCreate");
+
+      if (doExchange) {
+        if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "  Exchanging data\n");}
+        ierr = VecScatterBegin(serialVec, parallelVec, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERROR(ierr, "Error in VecScatter");
+        ierr = VecScatterEnd(serialVec, parallelVec, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERROR(ierr, "Error in VecScatter");
+      }
+
+      ierr = VecDestroy(serialVec);CHKERROR(ierr, "Error in VecDestroy");
+      ierr = VecDestroy(parallelVec);CHKERROR(ierr, "Error in VecDestroy");
+      return scatter;
+    };
+  };
+  template<typename Mesh_> class MeshPartitioner {
+  public:
+    typedef Mesh_                                      mesh_type;
+    typedef typename mesh_type::sieve_type             sieve_type;
+    typedef typename mesh_type::field_type::order_type sifter_type;
+  private:
+    #undef __FUNCT__
+    #define __FUNCT__ "partition_Simple"
+    static void partition_Simple(Obj<sieve_type> oldSieve, Obj<sieve_type> newSieve) {
+      typedef typename sieve_type::traits::target_type point_type;
+      int numLeaves = oldSieve->leaves()->size();
+
+      ALE_LOG_EVENT_BEGIN;
+      if (oldSieve->commRank() == 0) {
+        int size = oldSieve->commSize();
+
+        for(int p = 0; p < size; p++) {
+          point_type partitionPoint(-1, p);
+
+          for(int l = (numLeaves/size)*p + PetscMin(numLeaves%size, p); l < (numLeaves/size)*(p+1) + PetscMin(numLeaves%size, p+1); l++) {
+            oldSieve->addCone(oldSieve->closure(point_type(0, l)), partitionPoint);
+          }
+        }
+      }
+      point_type partitionPoint(-1, newSieve->commRank());
+
+      newSieve->addBasePoint(partitionPoint);
+      if (oldSieve->debug) {
+        oldSieve->view("Partition of old sieve");
+        newSieve->view("Partition of new sieve");
+      }
+      ALE_LOG_EVENT_END;
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "partition_Simple"
+    static void partition_Simple(Obj<sifter_type> oldSifter, Obj<sifter_type> newSifter, int numLeaves) {
+      typedef typename sifter_type::traits::target_type point_type;
+      Obj<typename sifter_type::traits::capSequence> cap = oldSifter->cap();
+
+      ALE_LOG_EVENT_BEGIN;
+      if (oldSifter->commRank() == 0) {
+        int size = oldSifter->commSize();
+
+        for(int p = 0; p < size; p++) {
+          point_type partitionPoint(-1, p);
+
+          for(int l = (numLeaves/size)*p + PetscMin(numLeaves%size, p); l < (numLeaves/size)*(p+1) + PetscMin(numLeaves%size, p+1); l++) {
+            point_type point(0, l);
+
+            if (cap->contains(point)) {
+              oldSifter->addCone(point, partitionPoint);
+            }
+          }
+        }
+      }
+      point_type partitionPoint(-1, newSifter->commRank());
+
+      newSifter->addBasePoint(partitionPoint);
+      if (oldSifter->debug) {
+        oldSifter->view("Partition of old sifter");
+        newSifter->view("Partition of new sifter");
+      }
+      ALE_LOG_EVENT_END;
+    };
+#ifdef PETSC_HAVE_CHACO
+      static void partition_Chaco(const Obj<mesh_type> mesh) {
+        int size;
+        MPI_Comm_size(mesh->getComm(), &size);
+
+        /* arguments for Chaco library */
+        int nvtxs;                              /* number of vertices in full graph */
+        int *start;                             /* start of edge list for each vertex */
+        int *adjacency;                         /* = adj -> j; edge list data  */
+        int *vwgts = NULL;                      /* weights for all vertices */
+        float *ewgts = NULL;                    /* weights for all edges */
+        float *x = NULL, *y = NULL, *z = NULL;  /* coordinates for inertial method */
+        char *outassignname = NULL;             /*  name of assignment output file */
+        char *outfilename = NULL;               /* output file name */
+        short *assignment;                      /* set number of each vtx (length n) */
+        int architecture = 1;                   /* 0 => hypercube, d => d-dimensional mesh */
+        int ndims_tot = 0;                      /* total number of cube dimensions to divide */
+        int *mesh_dims = size;                  /* dimensions of mesh of processors */
+        double *goal = NULL;                    /* desired set sizes for each set */
+        int global_method = 1;                  /* global partitioning algorithm */
+        int local_method = 1;                   /* local partitioning algorithm */
+        int rqi_flag = 0;                       /* should I use RQI/Symmlq eigensolver? */
+        int vmax = 200;                         /* how many vertices to coarsen down to? */
+        int ndims = 1;                          /* number of eigenvectors (2^d sets) */
+        double eigtol = 0.001;                  /* tolerance on eigenvectors */
+        long seed = 123636512;                  /* for random graph mutations */
+
+        nvtxs = mesh->getTopology()->heightStratum(0)->size();
+        start = new int[nvtxs+1];
+
+        Obj<sieve_type::heightSequence> faces = mesh->getTopology()->heightStratum(1);
+        Obj<bundle_type> vertexBundle = mesh->getBundle(0);
+        Obj<bundle_type> elementBundle = mesh->getBundle(mesh->getTopology()->depth());
+        ierr = PetscMemzero(start, (nvtxs+1) * sizeof(int));CHKERRQ(ierr);
+        for(sieve_type::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+          Obj<sieve_type::supportSequence> cells = mesh->getTopology()->support(*f_iter);
+
+          if (cells->size() == 2) {
+            start[elementBundle->getIndex(*cells->begin()).prefix+1]++;
+            start[elementBundle->getIndex(*(++cells->begin())).prefix+1]++;
+          }
+        }
+        for(int v = 1; v <= nvtxs; v++) {
+          start[v] += start[v-1];
+        }
+        adjacency = new int[start[nvtxs]];
+        for(sieve_type::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+          Obj<sieve_type::supportSequence> cells = mesh->getTopology()->support(*f_iter);
+
+          if (cells->size()) {
+            int cellA = elementBundle->getIndex(*cells->begin()).prefix;
+            int cellB = elementBundle->getIndex(*(++cells->begin())).prefix;
+
+            adjacency[cellA+1] = cellB;
+            adjacency[cellB+1] = cellA;
+          }
+        }
+
+        assignment = new int[nvtxs];
+
+        /* redirect output to buffer: chaco -> msgLog */
+#ifdef PETSC_HAVE_UNISTD_H
+        char *msgLog;
+        int fd_stdout, fd_pipe[2], count;
+
+        fd_stdout = dup(1);
+        pipe(fd_pipe);
+        close(1);
+        dup2(fd_pipe[1], 1);
+        msgLog = new char[16284];
+#endif
+
+        ierr = interface(nvtxs, start, adjacency, vwgts, ewgts, x, y, z,
+                         outassignname, outfilename, assignment, architecture, ndims_tot,
+                         mesh_dims, goal, global_method, local_method, rqi_flag, vmax, ndims,
+                         eigtol, seed);
+
+#ifdef PETSC_HAVE_UNISTD_H
+        fflush(stdout);
+        count = read(fd_pipe[0], msgLog, (SIZE_LOG - 1) * sizeof(char));
+        if (count < 0) count = 0;
+        msgLog[count] = 0;
+        close(1);
+        dup2(fd_stdout, 1);
+        close(fd_stdout);
+        close(fd_pipe[0]);
+        close(fd_pipe[1]);
+        std::cout << msgLog << std::endl;
+        delete [] msgLog;
+#endif
+
+        delete [] assignment;
+        delete [] adjacency;
+        delete [] start;
+      };
+#endif
+  public:
+    static void partition(const Obj<mesh_type> serialMesh, const Obj<mesh_type> parallelMesh) {
+      Obj<sieve_type> serialTopology = serialMesh->getTopology();
+      Obj<sieve_type> parallelTopology = parallelMesh->getTopology();
+      Obj<typename mesh_type::field_type> serialBoundary = serialMesh->getBoundary();
+      Obj<typename mesh_type::field_type> parallelBoundary = parallelMesh->getBoundary();
+      bool hasBd = (serialBoundary->getPatches()->size() > 0);
+
+#ifdef PETSC_HAVE_CHACO
+      partition_Chaco(serialTopology, parallelTopology);
+#else
+      partition_Simple(serialTopology, parallelTopology);
+      if (hasBd) {
+        partition_Simple(serialBoundary->__getOrder(), parallelBoundary->__getOrder(), serialTopology->leaves()->size());
+      }
+#endif
+      Distributer::distribute(serialTopology, parallelTopology);
+      if (hasBd) {
+        Distributer::distribute(serialBoundary->__getOrder(), parallelBoundary->__getOrder());
+      }
+    };
+    static void unify(const Obj<mesh_type> parallelMesh, const Obj<mesh_type> serialMesh) {
+      Obj<sieve_type>                parallelTopology = parallelMesh->getTopology();
+      Obj<sieve_type>                serialTopology = serialMesh->getTopology();
+      typename mesh_type::point_type partitionPoint(-1, 0);
+
+      parallelTopology->addCone(parallelTopology->space(), partitionPoint);
+      if (serialTopology->commRank == 0) {
+        serialTopology->addBasePoint(partitionPoint);
+      }
+      Distributer::distribute(parallelTopology, serialTopology);
+    };
+  };
+}
+#endif

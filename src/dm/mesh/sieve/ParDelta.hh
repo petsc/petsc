@@ -198,8 +198,8 @@ namespace ALE {
         return fusion;
       };
 
-      template <typename Overlap_, typename Fusion_>
-      static void computeFusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, Obj<Fusion_>& fusion, const Obj<fuser_type>& fuser = fuser_type()){
+      template <typename Overlap_>
+      static void computeFusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, Obj<fusion_type>& fusion, const Obj<fuser_type>& fuser = fuser_type()){
         __computeFusionNew(graph, overlap, fusion, fuser);
       };
 
@@ -217,8 +217,8 @@ namespace ALE {
         return fusion;
       };
 
-      template <typename Overlap_, typename Fusion_>
-      static void computeFusion(const Obj<graph_type>& graphA, const Obj<graph_type>& graphB, const Obj<Overlap_>& overlap, Obj<Fusion_>& fusion, const Obj<fuser_type>& fuser = fuser_type()){
+      template <typename Overlap_>
+      static void computeFusion(const Obj<graph_type>& graphA, const Obj<graph_type>& graphB, const Obj<Overlap_>& overlap, Obj<fusion_type>& fusion, const Obj<fuser_type>& fuser = fuser_type()){
         PetscMPIInt       comp;
 
         MPI_Comm_compare(graphA->comm(), graphB->comm(), &comp);
@@ -1504,6 +1504,8 @@ namespace ALE {
 
       };// __computeOverlap()
 
+      #undef  __FUNCT__
+      #define __FUNCT__ "commCycle"
       /*
         Seller:       A possessor of data
         Buyer:        A requestor of data
@@ -1544,7 +1546,8 @@ namespace ALE {
         if (*SellData) {
           locSellData = *SellData;
         } else {
-          ierr = PetscMalloc(msgSize*SellSize * sizeof(int32_t), &locSellData);CHKERROR(ierr,"Error in PetscMalloc");
+          // Stupid, stupid, stupid fucking MPICH fails with 0-length storage
+          ierr = PetscMalloc(PetscMax(1, msgSize*SellSize) * sizeof(int32_t), &locSellData);CHKERROR(ierr,"Error in PetscMalloc");
         }
         // Initialization
         for(int b = 0; b < BuyCount; b++) {
@@ -2022,13 +2025,13 @@ namespace ALE {
           Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
 
           for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
-            if ((*p_iter).first == 0) {
+            if (((*p_iter).first == 0) && (p_iter.color().second.first || p_iter.color().second.second)) {
               NeighborCountA++;
               break;
             }
           }
           for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
-            if ((*p_iter).first == 1) {
+            if (((*p_iter).first == 1) && (p_iter.color().second.first || p_iter.color().second.second)) {
               NeighborCountB++;
               break;
             }
@@ -2051,7 +2054,7 @@ namespace ALE {
           Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
 
           for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
-            if ((*p_iter).first == 0) {
+            if (((*p_iter).first == 0) && (p_iter.color().second.first || p_iter.color().second.second)) {
               NeighborsA[nA] = *neighbor;
               BuySizesA[nA] = 0;
               SellSizesA[nA] = 0;
@@ -2060,7 +2063,7 @@ namespace ALE {
             }
           }
           for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
-            if ((*p_iter).first == 1) {
+            if (((*p_iter).first == 1) && (p_iter.color().second.first || p_iter.color().second.second)) {
               NeighborsB[nB] = *neighbor;
               BuySizesB[nB] = 0;
               SellSizesB[nB] = 0;
@@ -2082,12 +2085,12 @@ namespace ALE {
           int foundA = 0, foundB = 0;
 
           for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
-            if ((*p_iter).first == 0) {
+            if (((*p_iter).first == 0) && (p_iter.color().second.first || p_iter.color().second.second)) {
               BuySizesA[nA] += p_iter.color().second.first;
               SellSizesA[nA] += p_iter.color().second.second;
               offsetA += _graphA->cone((*p_iter).second)->size();
               foundA = 1;
-            } else {
+            } else if (((*p_iter).first == 1) && (p_iter.color().second.first || p_iter.color().second.second)) {
               BuySizesB[nB] += p_iter.color().second.first;
               SellSizesB[nB] += p_iter.color().second.second;
               offsetB += _graphB->cone((*p_iter).second)->size();
@@ -2147,11 +2150,11 @@ namespace ALE {
 
         // Send and retrieve cones of the base overlap
         ierr = PetscObjectGetNewTag(petscObj, &tag1); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
-        commCycle(comm, tag1, msgSize, NeighborCountA, SellSizesA, NeighborsA, SellConesA, NeighborCountA, BuySizesA, NeighborsA, &BuyConesA);
-        commCycle(comm, tag1, msgSize, NeighborCountB, SellSizesB, NeighborsB, SellConesB, NeighborCountB, BuySizesB, NeighborsB, &BuyConesB);
+        commCycle(comm, tag1, msgSize, NeighborCountA, SellSizesA, NeighborsA, SellConesA, NeighborCountB, BuySizesB, NeighborsB, &BuyConesB);
+        commCycle(comm, tag1, msgSize, NeighborCountB, SellSizesB, NeighborsB, SellConesB, NeighborCountA, BuySizesA, NeighborsA, &BuyConesA);
 
         // Must unpack with the BtoA overlap
-        cone_arrow_type *ConesInA = (cone_arrow_type *) BuyConesA;
+        //cone_arrow_type *ConesInA = (cone_arrow_type *) BuyConesA;
         cone_arrow_type *ConesInB = (cone_arrow_type *) BuyConesB;
         offsetA = 0;
         offsetB = 0;
@@ -2166,10 +2169,10 @@ namespace ALE {
             // Right now we only provide the A->B fusion
             if ((*p_iter).first == 0) {
 #if 0
-              cone_array_sequence remoteCone(&ConesInB[offsetB], remoteConeSize, p);
+              cone_array_sequence remoteCone(&ConesInA[offsetA], remoteConeSize, p);
 
               localCone = _graphA->cone(p);
-              offsetB += remoteConeSize;
+              offsetA += remoteConeSize;
               if (debug) {
                 ostringstream txt;
 
@@ -2181,10 +2184,10 @@ namespace ALE {
               fuser->fuseCones(localCone, remoteCone, fusion->cone(fuser->fuseBasePoints(p, p)));
 #endif
             } else {
-              cone_array_sequence remoteCone(&ConesInA[offsetA], remoteConeSize, p);
+              cone_array_sequence remoteCone(&ConesInB[offsetB], remoteConeSize, p);
 
               localCone = _graphB->cone(p);
-              offsetA += remoteConeSize;
+              offsetB += remoteConeSize;
               if (debug) {
                 ostringstream txt;
 
@@ -2347,6 +2350,25 @@ namespace ALE {
 
         ParConeDelta<Flip<graph_type>, fuser_type, Flip<fusion_type> >::computeOverlap(graphA_flip, graphB_flip, overlap_flip);
         return overlap;
+      };
+
+      template <typename Overlap_>
+      static Obj<fusion_type> 
+      fusion(const Obj<graph_type>& graphA, const Obj<graph_type>& graphB, const Obj<Overlap_>& overlap, const Obj<fuser_type>& fuser = fuser_type()) {
+        Obj<fusion_type> fusion = fusion_type(graphA->comm());
+        PetscMPIInt      comp;
+
+        MPI_Comm_compare(graphA->comm(), graphB->comm(), &comp);
+        if (comp != MPI_IDENT) {
+          throw ALE::Exception("Non-matching communicators for overlap");
+        }
+        Obj<Flip<graph_type> >  graphA_flip  = Flip<graph_type>(graphA);
+        Obj<Flip<graph_type> >  graphB_flip  = Flip<graph_type>(graphB);
+        Obj<Flip<Overlap_> >    overlap_flip = Flip<Overlap_>(overlap);
+        Obj<Flip<fusion_type> > fusion_flip  = Flip<fusion_type>(fusion);
+
+        ParConeDelta<Flip<graph_type>, fuser_type, Flip<fusion_type> >::computeFusion(graphA_flip, graphB_flip, overlap_flip, fusion_flip);
+        return fusion;
       };
 
       // FIX: Is there a way to inherit this from ParConeDelta?  Right now it is a verbatim copy.
