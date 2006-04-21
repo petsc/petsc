@@ -245,7 +245,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 .  m, n, p - corresponding number of procs in each dimension
 .  dof     - number of degrees of freedom per node
 .  s       - stencil width
-.  wrap    - type of periodicity, on of DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, 
+.  wrap    - type of periodicity, one of DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, 
              DA_XYPERIODIC, DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC,DA_ZPERIODIC
 -  st      - stencil type, either DA_STENCIL_STAR or DA_STENCIL_BOX
 
