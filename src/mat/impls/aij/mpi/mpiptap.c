@@ -165,7 +165,6 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscLLCreate(pN,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*nnz(A) */
-  if (fill < 1.0) fill = 1.0; /* In case user input a wrong fill, reset it to 1.0 */
   ierr = PetscFreeSpaceGet((PetscInt)(fill*(adi[am]+aoi[am])),&free_space);CHKERRQ(ierr);
   current_space = free_space; 
 

@@ -4626,7 +4626,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatICCFactorSymbolic(Mat mat,IS perm,MatFactor
   PetscValidPointer(fact,4);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (info->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Levels negative %D",(PetscInt) info->levels);
-  if (info->fill < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 0.0 %G",info->fill);
+  if (info->fill < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %G",info->fill);
   if (!mat->ops->iccfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ICC",mat->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
@@ -6376,7 +6376,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal f
   if (P->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
   if (P->rmap.N!=A->cmap.N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->rmap.N,A->cmap.N);
-  if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%G must be > 0.0",fill);
+  if (fill < 1.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr); 
@@ -6475,6 +6475,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat
   PetscValidType(A,1);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (fill <1.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
   PetscValidHeaderSpecific(P,MAT_COOKIE,2);
   PetscValidType(P,2);
   MatPreallocated(P);
@@ -6539,7 +6540,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult(Mat A,Mat B,MatReuse scall,PetscRea
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
   if (B->rmap.N!=A->cmap.N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap.N,A->cmap.N);
-  if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%G must be > 0.0",fill);
+  if (fill <1.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
   /* For now, we do not dispatch based on the type of A and B */
@@ -6602,7 +6603,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,
   PetscValidPointer(C,3);
 
   if (B->rmap.N!=A->cmap.N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap.N,A->cmap.N);
-  if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%G must be > 0.0",fill);
+  if (fill < 1.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"Expected fill=%G must be > 1.0",fill);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
   /* For now, we do not dispatch based on the type of A and P */
@@ -6733,7 +6734,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultTranspose(Mat A,Mat B,MatReuse scall
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
   if (B->rmap.N!=A->rmap.N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap.N,A->rmap.N);
-  if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%G must be > 0.0",fill);
+  if (fill < 1.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"Expected fill=%G must be > 1.0",fill);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
   fA = A->ops->matmulttranspose;
