@@ -30,7 +30,7 @@ namespace ALE {
     struct Rec {
       typedef Point_  point_type;
       typedef Marker_ marker_type;
-      template<typename OtherPoint_, typename OtherMarker_>
+      template<typename OtherPoint_, typename OtherMarker_ = Marker_>
       struct rebind {
         typedef Rec<OtherPoint_, OtherMarker_> type;
       };
@@ -1189,7 +1189,7 @@ namespace ALE {
         for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
           typename traits::coneSequence cone = this->cone(*basei);
           for(typename traits::coneSequence::iterator conei = cone.begin(); conei != cone.end(); conei++) {
-            txt1 << "[" << this->commRank() << "]: " << *basei << "--(" << conei.color() << ")-->" << *conei << std::endl;
+            txt1 << "[" << this->commRank() << "]: " << *basei << "<--(" << conei.color() << ")--" << *conei << std::endl;
           }
         }
         //

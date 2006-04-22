@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
       stage = ALE::LogStageRegister("MeshDistribution");
       ALE::LogStagePush(stage);
       ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
-      mesh->distribute();
+      mesh = mesh->distribute();
       ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
       ALE::LogStagePop(stage);
     }

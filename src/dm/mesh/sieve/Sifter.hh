@@ -105,6 +105,10 @@ namespace ALE {
     template <typename Point_>
     struct Rec {
       typedef Point_ point_type;
+      template<typename OtherPoint_>
+      struct rebind {
+        typedef Rec<OtherPoint_> type;
+      };
       point_type     point;
       int            degree;
       // Basic interface
@@ -191,6 +195,10 @@ namespace ALE {
     struct RecContainer {
       typedef RecContainerTraits<Point_, Rec_> traits;
       typedef typename traits::set_type set_type;
+      template <typename OtherPoint_, typename OtherRec_>
+      struct rebind {
+        typedef RecContainer<OtherPoint_, OtherRec_> type;
+      };
       set_type set;
       //
       void removePoint(const typename traits::rec_type::point_type& p) {

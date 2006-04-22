@@ -58,11 +58,10 @@ namespace ALE {
       PetscErrorCode ie = MPI_Error_string(ierr, mpi_error, &len);
       char *mess;
       if(!ie) {
-        mess = (char *)malloc(sizeof(char)*(strlen(msg)+len+1));
+        mess = (char *) malloc(sizeof(char)*(strlen(msg)+len+3));
         sprintf(mess, "%s: %s", msg, mpi_error);
-      }
-      else {
-        mess = (char *)malloc(sizeof(char)*(strlen(msg)));
+      } else {
+        mess = (char *) malloc(sizeof(char)*(strlen(msg)+18));
         sprintf(mess, "%s: <unknown error>", msg);
       }
       ERROR(ierr, func, line, mess);

@@ -133,6 +133,9 @@ namespace ALE {
         return this->localOrder;
       };
     public:
+      Obj<order_type> __getOrder() {
+        return this->_order;
+      };
       Obj<order_type> __getOrder(const std::string& orderName) {
         if (this->_reorders.find(orderName) == this->_reorders.end()) {
           if (this->debug) {std::cout << "Creating new order: " << orderName << std::endl;}
