@@ -129,15 +129,21 @@ PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
   ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
   ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
   ALE::Obj<ALE::Two::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
-  int            corners = topology->nCone(*elements->begin(), topology->depth())->size();
   ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
   ALE::Obj<ALE::Two::Mesh::bundle_type> globalVertex = vertexBundle->getGlobalOrder();
+  ALE::Obj<ALE::Two::Mesh::bundle_type> globalElement = elementBundle->getGlobalOrder();
   ALE::Two::Mesh::bundle_type::patch_type patch;
   std::string    orderName("element");
-  int            numElements;
+  int            numElements, corners;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+    if (globalElement->getFiberDimension(patch, *e_itor) > 0) {
+      corners = topology->nCone(*e_itor, topology->depth())->size();
+      break;
+    }
+  }
   //FIX:
   if (!globalVertex) {
     globalVertex = vertexBundle;
@@ -185,7 +191,7 @@ PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
     for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
       ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
-      if (elementBundle->getFiberDimension(patch, *e_itor) > 0) {
+      if (globalElement->getFiberDimension(patch, *e_itor) > 0) {
         for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
           localVertices[k++] = globalVertex->getIndex(patch, *c_itor).prefix;
         }
@@ -309,16 +315,22 @@ PetscErrorCode WritePCICEElements(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer vie
   ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
   ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
   ALE::Obj<ALE::Two::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
-  int            corners = topology->nCone(*elements->begin(), topology->depth())->size();
   ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
   ALE::Obj<ALE::Two::Mesh::bundle_type> globalVertex = vertexBundle->getGlobalOrder();
+  ALE::Obj<ALE::Two::Mesh::bundle_type> globalElement = elementBundle->getGlobalOrder();
   ALE::Two::Mesh::bundle_type::patch_type patch;
   std::string    orderName("element");
-  int            numElements;
+  int            corners, numElements;
   int            elementCount = 1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+    if (globalElement->getFiberDimension(patch, *e_itor) > 0) {
+      corners = topology->nCone(*e_itor, topology->depth())->size();
+      break;
+    }
+  }
   if (corners != dim+1) {
     SETERRQ(PETSC_ERR_SUP, "PCICE only supports simplicies");
   }
@@ -365,7 +377,7 @@ PetscErrorCode WritePCICEElements(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer vie
     for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
       ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
-      if (elementBundle->getFiberDimension(patch, *e_itor) > 0) {
+      if (globalElement->getFiberDimension(patch, *e_itor) > 0) {
         for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
           localVertices[k++] = globalVertex->getIndex(patch, *c_itor).prefix;
         }

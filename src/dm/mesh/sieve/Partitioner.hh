@@ -48,7 +48,7 @@ namespace ALE {
       supportDelta_type::setDebug(oldSifter->debug);
       Obj<typename supportDelta_type::bioverlap_type> overlap2 = supportDelta_type::overlap(oldSifter, newSifter);
       Obj<typename supportDelta_type::fusion_type>    fusion2  = supportDelta_type::fusion(oldSifter, newSifter, overlap2);
-      newSifter->add(fusion2);
+      newSifter->add(fusion2, true);
       if (oldSifter->debug) {
         overlap2->view("Second overlap");
         fusion2->view("Second fusion");

@@ -1694,28 +1694,25 @@ namespace ALE {
     Obj<Mesh> Mesh::distribute() {
       ALE_LOG_EVENT_BEGIN;
       // Partition the topology
-      Obj<Mesh> parallelMesh = Mesh(this->comm(), this->debug);
+      Obj<Mesh> parallelMesh = Mesh(this->comm(), this->getDimension(), this->debug);
       parallelMesh->topology->setStratification(false);
       ALE::MeshPartitioner<Mesh>::partition(*this, parallelMesh);
       parallelMesh->topology->stratify();
       parallelMesh->topology->setStratification(true);
-      // Remove dangling points not in the closure of an element
-      Obj<Mesh::sieve_type::baseSequence> base = parallelMesh->topology->base();
-      int dim = this->getDimension();
+//       // Remove dangling points not in the closure of an element
+//       Obj<Mesh::sieve_type::baseSequence> base = parallelMesh->topology->base();
+//       int dim = this->getDimension();
 
-      for(Mesh::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-        if (b_iter.depth() + b_iter.height() != dim) {
-          parallelMesh->topology->removeBasePoint(*b_iter);
-        }
-      }
-      if (this->debug) {
-        parallelMesh->topology->view("Parallel mesh");
-        parallelMesh->getBoundary()->view("Parallel boundary");
-      }
+//       for(Mesh::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+//         if (b_iter.depth() + b_iter.height() != dim) {
+//           parallelMesh->topology->removeBasePoint(*b_iter);
+//         }
+//       }
       // Calculate the bioverlap
       if (this->debug) {
         this->topology->view("Serial topology");
         parallelMesh->topology->view("Parallel topology");
+        parallelMesh->getBoundary()->view("Parallel boundary");
       }
       Obj<Partitioner::supportDelta_type::bioverlap_type> partitionOverlap = Partitioner::supportDelta_type::overlap(this->topology, parallelMesh->topology);
       // Need to deal with boundary

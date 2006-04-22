@@ -402,6 +402,11 @@ namespace ALE {
       template<class InputSequence> Obj<supportSet> nSupport(const Obj<InputSequence>& points, int n);
       template<class InputSequence> Obj<supportSet> nSupport(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor = true);
     public:
+      virtual bool checkArrow(const typename traits::arrow_type& a) {
+        if ((this->_cap.set.find(a.source) == this->_cap.set.end()) && (this->_base.set.find(a.source) == this->_base.set.end())) return false;
+        if ((this->_cap.set.find(a.target) == this->_cap.set.end()) && (this->_base.set.find(a.target) == this->_base.set.end())) return false;
+        return true;
+      };
       //
       // Iterated versions
       //

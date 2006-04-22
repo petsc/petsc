@@ -577,7 +577,7 @@ namespace ALE {
         int            size = _graphA->commSize();
         int            rank = _graphA->commRank();
         PetscObject    petscObj = _graphA->petscObj();
-        PetscMPIInt    tag1, tag2, tag3;
+        PetscMPIInt    tag1, tag2, tag3, tag4, tag5, tag6;
         PetscErrorCode ierr;
         // The bases we are going to work with
         Obj<Sequence> pointsA = _graphA->base();
@@ -643,15 +643,17 @@ namespace ALE {
           BuyPointsB[offsetsB[ownerB[*p_itor]]++] = (*p_itor).index;      
           BuyPointsB[offsetsB[ownerB[*p_itor]]++] = _graphB->cone(*p_itor)->size();
         }
-        for(int b = 0; b < BuyCountA; ++b) {
-          if (offsetsA[SellersA[b]] != msgSize*BuySizesA[b]) {
-            throw ALE::Exception("Invalid point size");
+        for(int b = 0, o = 0; b < BuyCountA; ++b) {
+          if (offsetsA[SellersA[b]] - o != msgSize*BuySizesA[b]) {
+            throw ALE::Exception("Invalid A point size");
           }
+          o += msgSize*BuySizesA[b];
         }
-        for(int b = 0; b < BuyCountB; ++b) {
-          if (offsetsB[SellersB[b]] != msgSize*BuySizesB[b]) {
-            throw ALE::Exception("Invalid point size");
+        for(int b = 0, o = 0; b < BuyCountB; ++b) {
+          if (offsetsB[SellersB[b]] - o != msgSize*BuySizesB[b]) {
+            throw ALE::Exception("Invalid B point size");
           }
+          o += msgSize*BuySizesB[b];
         }
         delete [] offsetsA;
         delete [] offsetsB;
@@ -702,7 +704,8 @@ namespace ALE {
         //   SellSizes, Buyers, and SellPoints are output
         ierr = PetscObjectGetNewTag(petscObj, &tag1); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
         commCycle(comm, tag1, msgSize, BuyCountA, BuySizesA, SellersA, BuyPointsA, SellCountA, SellSizesA, BuyersA, &SellPointsA);
-        commCycle(comm, tag1, msgSize, BuyCountB, BuySizesB, SellersB, BuyPointsB, SellCountB, SellSizesB, BuyersB, &SellPointsB);
+        ierr = PetscObjectGetNewTag(petscObj, &tag2); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        commCycle(comm, tag2, msgSize, BuyCountB, BuySizesB, SellersB, BuyPointsB, SellCountB, SellSizesB, BuyersB, &SellPointsB);
 
         if (debug) {
           ostringstream txt;
@@ -821,9 +824,10 @@ namespace ALE {
 
         // Tell A buyers how many B buyers there were (contained in BuyPointsA)
         // Tell B buyers how many A buyers there were (contained in BuyPointsB)
-        ierr = PetscObjectGetNewTag(petscObj, &tag2); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
-        commCycle(comm, tag2, msgSize, SellCountA, SellSizesA, BuyersA, SellPointsA, BuyCountA, BuySizesA, SellersA, &BuyPointsA);
-        commCycle(comm, tag2, msgSize, SellCountB, SellSizesB, BuyersB, SellPointsB, BuyCountB, BuySizesB, SellersB, &BuyPointsB);
+        ierr = PetscObjectGetNewTag(petscObj, &tag3); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        commCycle(comm, tag3, msgSize, SellCountA, SellSizesA, BuyersA, SellPointsA, BuyCountA, BuySizesA, SellersA, &BuyPointsA);
+        ierr = PetscObjectGetNewTag(petscObj, &tag4); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        commCycle(comm, tag4, msgSize, SellCountB, SellSizesB, BuyersB, SellPointsB, BuyCountB, BuySizesB, SellersB, &BuyPointsB);
 
         if (debug) {
           ostringstream txt;
@@ -936,9 +940,10 @@ namespace ALE {
         }
 
         // Then send A buyers a (rank, cone size) for all B buyers of the same points
-        ierr = PetscObjectGetNewTag(petscObj, &tag3); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
-        commCycle(comm, tag3, cMsgSize, SellCountA, SellConesSizesA, BuyersA, SellConesA, BuyCountA, BuyConesSizesA, SellersA, &overlapInfoA);
-        commCycle(comm, tag3, cMsgSize, SellCountB, SellConesSizesB, BuyersB, SellConesB, BuyCountB, BuyConesSizesB, SellersB, &overlapInfoB);
+        ierr = PetscObjectGetNewTag(petscObj, &tag5); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        commCycle(comm, tag5, cMsgSize, SellCountA, SellConesSizesA, BuyersA, SellConesA, BuyCountA, BuyConesSizesA, SellersA, &overlapInfoA);
+        ierr = PetscObjectGetNewTag(petscObj, &tag6); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        commCycle(comm, tag6, cMsgSize, SellCountB, SellConesSizesB, BuyersB, SellConesB, BuyCountB, BuyConesSizesB, SellersB, &overlapInfoB);
 
         // Finally build the A-->B overlap sifter
         //   (remote rank) ---(base A overlap point, remote cone size, local cone size)---> (base A overlap point)

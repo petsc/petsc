@@ -955,10 +955,16 @@ namespace ALE {
         this->addArrow(typename traits::arrow_type(p, q, color));
         //std::cout << "Added " << arrow_type(p, q, color);
       };
-      virtual void addArrow(const typename traits::arrow_type& a) {
-        this->_arrows.set.insert(a); this->addBasePoint(a.target); this->addCapPoint(a.source);
-        /*this->_base.adjustDegree(a.target,1); this->_cap.adjustDegree(a.source,1);*/
-        //std::cout << "Added " << Arrow_(p, q, color);
+      virtual bool checkArrow(const typename traits::arrow_type& a) {
+        if (this->_cap.set.find(a.source) == this->_cap.set.end()) return false;
+        if (this->_base.set.find(a.target) == this->_base.set.end()) return false;
+        return true;
+      };
+      virtual void addArrow(const typename traits::arrow_type& a, bool restrict = false) {
+        if (restrict && !this->checkArrow(a)) return;
+        this->_arrows.set.insert(a);
+        this->addBasePoint(a.target);
+        this->addCapPoint(a.source);
       };
       virtual void removeArrow(const typename traits::arrow_type& a) {
         // First, produce an arrow sequence for the given source, target combination.
@@ -1144,21 +1150,23 @@ namespace ALE {
       template<class targetInputSequence> 
       void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence>& targets, const typename traits::color_type& color);
 
-      void add(const Obj<ASifter<typename traits::source_type, typename traits::target_type, typename traits::color_type, colorMultiplicity, typename traits::cap_container_type, typename traits::base_container_type> >& cbg) {
+      void add(const Obj<ASifter<typename traits::source_type, typename traits::target_type, typename traits::color_type, colorMultiplicity, typename traits::cap_container_type, typename traits::base_container_type> >& cbg, bool restrict = false) {
         typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename traits::arrowInd>(cbg->_arrows.set);
 
         for(typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
-          this->addArrow(*a_iter);
+          this->addArrow(*a_iter, restrict);
         }
-        typename ::boost::multi_index::index<typename traits::base_container_type::set_type, typename traits::baseInd>::type& bInd = ::boost::multi_index::get<typename traits::baseInd>(this->_base.set);
+        if (!restrict) {
+          typename ::boost::multi_index::index<typename traits::base_container_type::set_type, typename traits::baseInd>::type& bInd = ::boost::multi_index::get<typename traits::baseInd>(this->_base.set);
 
-        for(typename ::boost::multi_index::index<typename traits::base_container_type::set_type, typename traits::baseInd>::type::iterator b_iter = bInd.begin(); b_iter != bInd.end(); ++b_iter) {
-          this->addBasePoint(*b_iter);
-        }
-        typename ::boost::multi_index::index<typename traits::cap_container_type::set_type, typename traits::capInd>::type& cInd = ::boost::multi_index::get<typename traits::capInd>(this->_cap.set);
+          for(typename ::boost::multi_index::index<typename traits::base_container_type::set_type, typename traits::baseInd>::type::iterator b_iter = bInd.begin(); b_iter != bInd.end(); ++b_iter) {
+            this->addBasePoint(*b_iter);
+          }
+          typename ::boost::multi_index::index<typename traits::cap_container_type::set_type, typename traits::capInd>::type& cInd = ::boost::multi_index::get<typename traits::capInd>(this->_cap.set);
 
-        for(typename ::boost::multi_index::index<typename traits::cap_container_type::set_type, typename traits::capInd>::type::iterator c_iter = cInd.begin(); c_iter != cInd.end(); ++c_iter) {
-          this->addCapPoint(*c_iter);
+          for(typename ::boost::multi_index::index<typename traits::cap_container_type::set_type, typename traits::capInd>::type::iterator c_iter = cInd.begin(); c_iter != cInd.end(); ++c_iter) {
+            this->addCapPoint(*c_iter);
+          }
         }
       };
     }; // class ASifter
@@ -1239,24 +1247,25 @@ namespace ALE {
         }
       };
 
-      void add(const Obj<Sifter<typename traits::source_type, typename traits::target_type, typename traits::color_type, typename traits::cap_container_type, typename traits::base_container_type> >& bg) {
+      void add(const Obj<Sifter<typename traits::source_type, typename traits::target_type, typename traits::color_type, typename traits::cap_container_type, typename traits::base_container_type> >& bg, bool restrict = false) {
         typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename traits::arrowInd>(bg->_arrows.set);
 
         for(typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type, typename traits::arrowInd>::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
-          this->addArrow(*a_iter);
+          this->addArrow(*a_iter, restrict);
         }
-        typename ::boost::multi_index::index<typename traits::base_container_type::set_type, typename traits::baseInd>::type& bInd = ::boost::multi_index::get<typename traits::baseInd>(this->_base.set);
+        if (!restrict) {
+          typename ::boost::multi_index::index<typename traits::base_container_type::set_type, typename traits::baseInd>::type& bInd = ::boost::multi_index::get<typename traits::baseInd>(this->_base.set);
 
-        for(typename ::boost::multi_index::index<typename traits::base_container_type::set_type, typename traits::baseInd>::type::iterator b_iter = bInd.begin(); b_iter != bInd.end(); ++b_iter) {
-          this->addBasePoint(*b_iter);
-        }
-        typename ::boost::multi_index::index<typename traits::cap_container_type::set_type, typename traits::capInd>::type& cInd = ::boost::multi_index::get<typename traits::capInd>(this->_cap.set);
+          for(typename ::boost::multi_index::index<typename traits::base_container_type::set_type, typename traits::baseInd>::type::iterator b_iter = bInd.begin(); b_iter != bInd.end(); ++b_iter) {
+            this->addBasePoint(*b_iter);
+          }
+          typename ::boost::multi_index::index<typename traits::cap_container_type::set_type, typename traits::capInd>::type& cInd = ::boost::multi_index::get<typename traits::capInd>(this->_cap.set);
 
-        for(typename ::boost::multi_index::index<typename traits::cap_container_type::set_type, typename traits::capInd>::type::iterator c_iter = cInd.begin(); c_iter != cInd.end(); ++c_iter) {
-          this->addCapPoint(*c_iter);
+          for(typename ::boost::multi_index::index<typename traits::cap_container_type::set_type, typename traits::capInd>::type::iterator c_iter = cInd.begin(); c_iter != cInd.end(); ++c_iter) {
+            this->addCapPoint(*c_iter);
+          }
         }
       };
-
     };// class Sifter
 
 } // namespace ALE
