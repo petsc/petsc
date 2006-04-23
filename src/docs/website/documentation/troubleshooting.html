@@ -88,8 +88,13 @@ Management</a></strong></li>
         <li><a href="../publications/index.html"><strong>Applications/Publications</strong></a></li>
 
         <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-        <li><a href="../miscellaneous/external.html"><strong>External Software</strong></a></li>
-        <li><a href="../developers/index.html"><strong>Developers Site</strong></a></li>
+
+        <li><a href="../miscellaneous/external.html"><strong>External
+Software</strong></a></li>
+
+        <li><a href="../developers/index.html"><strong>Developers
+Site</strong></a></li>
+
       </ul>
 
       </td>
@@ -118,6 +123,11 @@ recent version.of the troubleshooting guide</a>.</p>
 <hr>
 <ol start="1" type="1">
 
+  <li><font color="#ff0000"><strong>Symptom: </strong></font><font face="Terminal">No or little speedup: </font>
+    <p><font color="#ff0000"><strong>Problem:&nbsp;</strong>This can be a result of not using a <a href="faq.html#computers">parallel system that is suitable for sparse linear solvers.</a> </font></p>
+
+  </li>
+
   <li><a name="Corrupt"></a><font color="#ff0000"><strong>Symptom: </strong></font><font face="Terminal">Corrupt argument: </font>
     <p><font color="#ff0000"><strong>Problem: </strong>
 An argument to
@@ -127,7 +137,8 @@ is usually caused by memory corruption; that is somewhere the code is
 writing out of array bounds. To track this down rerun the debug version
 of the code with the option -malloc_debug. Occasionally the
 code may crash only with the optimized version, in that case
-run the optimized version with -malloc_debug. If you determine the problem
+run the optimized version with -malloc_debug. If you determine the
+problem
 is from memory corruption you can put the macro CHKMEMQ in the code
 near the crash to determine exactly what line is causing the problem. </font></p>
 
@@ -166,19 +177,23 @@ that generates the matrix. </font></p>
 
 make: Warning: Can't find `../../bmake/': <br>
 
-    <p><font color="#ff0000"><strong>Problem: </strong></font>You
+    </font>
+    <p><font face="Terminal"><font color="#ff0000"><strong>Problem:
+    </strong></font>You
 have not set the variable PETSC_ARCH to the architecture of your
-machine (e.g., sun4, rs6000). </p>
+machine (e.g., sun4, rs6000). </font></p>
 
-    <p><font color="#ff0000"><strong>Cure: </strong></font>Include
+    <font face="Terminal"> </font>
+    <p><font face="Terminal"><font color="#ff0000"><strong>Cure:
+    </strong></font>Include
 in your .cshrc file some code to set it automatically. Or remember to
 include the PETSC_ARCH in the
 command line every time you use make. For instance,
-PETSC_ARCH=sun4 example4 </p>
+PETSC_ARCH=sun4 example4 </font></p>
 
-  </li>
+    <font face="Terminal"> </font></li>
 
-  <li><font face="Terminal"><strong>Symptom:
+  <font face="Terminal"> <li><font face="Terminal"><strong>Symptom:
 alder&gt; make</strong>&nbsp;</font>
     <p><font face="Terminal"> makefile:12:
 /bmake/common/base: No such file or directory<br>
@@ -649,8 +664,6 @@ handle this automatically. </li>
 
   </li>
 
-
- 
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>[0]
 PETSC ERROR: MatAssemblyBegin() line 1858 in
@@ -665,7 +678,6 @@ MatSetUnfactored(Mat); before calling the MatSetValues()
 routines.</p>
 
   </li>
-
 
   <li><strong><font color="#ff0000">Symptom:</font></strong>
 Error
@@ -786,8 +798,8 @@ like&nbsp;<br>
 there are two residual norms per iteration. You can also think of it as
 twice<br>
 
-as many iterations.
-    </p>
+as many iterations. </p>
+
     <p></p>
 
   </li>
@@ -803,7 +815,9 @@ in src/sys/src/dll/reg.c<br>
 /home/balay/spetsc/lib/libg/linux/libpetsc&nbsp;<br>
 
 You cannot move the dynamic libraries!<br>
+
     <br>
+
     </p>
 
     <p><font color="#ff0000"><strong>Problem:</strong></font>
@@ -814,7 +828,9 @@ the paths are different on the (run) nodes - than on the
 (compile) front-end. </p>
 
     <p><font color="#ff0000"><strong>Cure:</strong></font>&nbsp;
-Do not use dynamic libraries &amp; shared libraries. Run config/configure.py with --with-shared=0 --with-dynamic=0</p>
+Do not use dynamic libraries &amp; shared libraries. Run
+config/configure.py with --with-shared=0 --with-dynamic=0</p>
+
   </li>
 
   <li><font color="#ff0000"><strong>Symptom</strong>:</font>
@@ -887,6 +903,7 @@ be at MPI_DIR/bin/mpd].<br>
 
   </li>
 
+  </font>
 </ol>
 
 </body>
