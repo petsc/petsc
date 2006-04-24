@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
     stage = ALE::LogStageRegister("MeshDistribution");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
-    mesh->distribute();
+    mesh = mesh->distribute();
     ALE::LogStagePop(stage);
 
     if (refinementLimit > 0.0) {

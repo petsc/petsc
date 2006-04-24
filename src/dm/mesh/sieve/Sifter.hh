@@ -648,7 +648,7 @@ namespace ALE {
       // 
       // Basic interface
       //
-      ASifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : debug(debug) {__init(comm);}
+      ASifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) {__init(comm);  this->debug = debug;}
       virtual ~ASifter(){};
       //
       // Query methods

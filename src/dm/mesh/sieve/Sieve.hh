@@ -304,7 +304,6 @@ namespace ALE {
       typedef Color_  color_type;
       typedef Point_  point_type;
       typedef Marker_ marker_type;
-      int debug;
       typedef struct {
         typedef ALE::Sifter<Point_, Point_, Color_, RecContainer<Point_, Rec<Point_, Marker_> >, RecContainer<Point_, Rec<Point_, Marker_> > > baseType;
         // Encapsulated container types
@@ -1422,7 +1421,7 @@ namespace ALE {
         //c_iter.setDegree(this->support(*c_iter)->size());
         this->_cap.adjustDegree(*c_iter, this->support(*c_iter)->size());
       }
-      if (debug || show) {
+      if (this->debug || show) {
 //         const typename ::boost::multi_index::index<StratumSet,point>::type& points = ::boost::multi_index::get<point>(this->strata);
 //         for(typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = points.begin(); i != points.end(); i++) {
 //           std::cout << *i << std::endl;
