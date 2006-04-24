@@ -1398,8 +1398,8 @@ PetscErrorCode VecScatterCreateLocal_PtoS(int nsends,int sendSizes[],int sendPro
                       sendSize,PetscInt,&to->indices,
                       to->n+1,PetscInt,&to->starts,
                       to->n,PetscMPIInt,&to->procs);CHKERRQ(ierr);
-  ierr = PetscMalloc2(PetscMax(to->n,nsends),MPI_Status,&to->sstatus,
-                      PetscMax(to->n,nsends),MPI_Status,&to->rstatus);CHKERRQ(ierr);
+  ierr = PetscMalloc2(PetscMax(to->n,nrecvs),MPI_Status,&to->sstatus,
+                      PetscMax(to->n,nrecvs),MPI_Status,&to->rstatus);CHKERRQ(ierr);
   to->starts[0] = 0;
   for(n = 0; n < to->n; n++) {
     to->starts[n+1] = to->starts[n] + sendSizes[n];
