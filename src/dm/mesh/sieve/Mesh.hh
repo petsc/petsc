@@ -311,31 +311,6 @@ namespace ALE {
         return indices;
       };
     public:
-      #undef __FUNCT__
-      #define __FUNCT__ "createMapping"
-      VecScatter createMapping(Obj<field_type> initSifter, Obj<field_type> finiSifter) {
-        VecScatter scatter;
-        patch_type patch;
-        int       *indices;
-        Vec initVec, finiVec;
-        IS  initIS,  finiIS;
-
-        VecCreateMPIWithArray(this->comm(), initSifter->getSize(patch), PETSC_DETERMINE, initSifter->restrict(patch), &initVec);
-        indices = this->__expandIntervals(finiSifter->getGlobalOrder()->getPatch(patch));
-        ISCreateGeneral(PETSC_COMM_SELF, finiSifter->getSize(patch), indices, &initIS);
-        delete [] indices;
-        VecCreateSeqWithArray(PETSC_COMM_SELF, finiSifter->getSize(patch), finiSifter->restrict(patch), &finiVec);
-        indices = this->__expandCanonicalIntervals(finiSifter->getGlobalOrder()->getPatch(patch), finiSifter);
-        ISCreateGeneral(PETSC_COMM_SELF, finiSifter->getSize(patch), indices, &finiIS);
-        delete [] indices;
-        VecScatterCreate(initVec, initIS, finiVec, finiIS, &scatter);
-        ISDestroy(initIS);
-        ISDestroy(finiIS);
-        VecDestroy(initVec);
-        VecDestroy(finiVec);
-        return scatter;
-      };
-
       template<typename OverlapType>
       void createParallelCoordinates(int embedDim, Obj<bundle_type> serialVertexBundle, Obj<field_type> serialCoordinates, Obj<OverlapType> partitionOverlap);
 
@@ -858,6 +833,7 @@ namespace ALE {
         return m;
       };
 #endif
+      static Obj<Mesh::field_type> getSerialConstraints(Obj<Mesh> serialMesh, Obj<Mesh> parallelMesh, Obj<Mesh::field_type> parallelConstraints);
     public:
       static Obj<Mesh> refine(Obj<Mesh> mesh, double maxArea, bool interpolate = true) {
         Obj<Mesh::field_type> constraints = Mesh::field_type(mesh->comm(), mesh->debug);
@@ -884,39 +860,14 @@ namespace ALE {
         Obj<Mesh> refinedMesh;
         Obj<Mesh> serialMesh;
         int       dim = mesh->getDimension();
-        Obj<Mesh::field_type> serialConstraints = Mesh::field_type(mesh->comm(), mesh->debug);
-        Mesh::field_type::patch_type patch;
 
         if (mesh->distributed) {
           serialMesh = mesh->unify();
-
-//           PetscViewer viewer;
-//           PetscViewerCreate(mesh->comm(), &viewer);
-//           PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
-//           PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);
-//           PetscViewerFileSetName(viewer, "serialMesh.vtk");
-//           MeshView_Sieve_Newer(mesh, viewer);
-//           PetscViewerDestroy(viewer);
-
-          serialConstraints->setTopology(serialMesh->getTopology());
-          serialConstraints->setPatch(serialMesh->getTopology()->leaves(), patch);
-          serialConstraints->setFiberDimensionByHeight(patch, 0, 1);
-          serialConstraints->orderPatches();
-
-          VecScatter scatter = serialMesh->createMapping(serialConstraints, parallelConstraints);
-          Vec        serialVec, parallelVec;
-
-          VecCreateMPIWithArray(serialMesh->comm(), serialConstraints->getSize(patch), PETSC_DETERMINE, serialConstraints->restrict(patch), &serialVec);
-          VecCreateSeqWithArray(PETSC_COMM_SELF, parallelConstraints->getSize(patch), parallelConstraints->restrict(patch), &parallelVec);
-          VecScatterBegin(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);
-          VecScatterEnd(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);
-          VecDestroy(serialVec);
-          VecDestroy(parallelVec);
-          VecScatterDestroy(scatter);
         } else {
-          serialMesh        = mesh;
-          serialConstraints = parallelConstraints;
+          serialMesh = mesh;
         }
+        Obj<Mesh::field_type> serialConstraints = getSerialConstraints(serialMesh, mesh, parallelConstraints);
+        Mesh::field_type::patch_type patch;
 
         if (dim == 2) {
 #ifdef PETSC_HAVE_TRIANGLE
@@ -1639,6 +1590,35 @@ namespace ALE {
         return scatter;
       };
     };
+    Obj<Mesh::field_type> Generator::getSerialConstraints(Obj<Mesh> serialMesh, Obj<Mesh> parallelMesh, Obj<Mesh::field_type> parallelConstraints) {
+      Obj<Mesh::field_type> serialConstraints = Mesh::field_type(parallelMesh->comm(), parallelMesh->debug);
+
+      if (parallelMesh->distributed) {
+        Mesh::field_type::patch_type patch;
+        PetscErrorCode ierr;
+
+        serialConstraints->setTopology(serialMesh->getTopology());
+        serialConstraints->setPatch(serialMesh->getTopology()->leaves(), patch);
+        serialConstraints->setFiberDimensionByHeight(patch, 0, 1);
+        serialConstraints->orderPatches();
+
+        Obj<ALE::Two::Partitioner::coneDelta_type::bioverlap_type> partitionOverlap = ALE::Two::Partitioner::coneDelta_type::overlap(serialMesh->getTopology(), parallelMesh->getTopology());
+        Obj<Flip<ALE::Two::Partitioner::coneDelta_type::bioverlap_type> > overlapFlip = Flip<ALE::Two::Partitioner::coneDelta_type::bioverlap_type>(partitionOverlap);
+        VecScatter scatter = ALE::Two::Partitioner::createMappingStoP(serialConstraints, parallelConstraints, overlapFlip, false);
+        Vec        serialVec, parallelVec;
+
+        ierr = VecCreateMPIWithArray(serialMesh->comm(), serialConstraints->getSize(patch), PETSC_DETERMINE, serialConstraints->restrict(patch), &serialVec);CHKERROR(ierr, "Error in VecCreate");
+        ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, parallelConstraints->getSize(patch), parallelConstraints->restrict(patch), &parallelVec);CHKERROR(ierr, "Error in VecCreate");
+        ierr = VecScatterBegin(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERROR(ierr, "Error in VecScatter");
+        ierr = VecScatterEnd(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERROR(ierr, "Error in VecScatter");
+        ierr = VecDestroy(serialVec);CHKERROR(ierr, "Error in VecDestroy");
+        ierr = VecDestroy(parallelVec);CHKERROR(ierr, "Error in VecDestroy");
+        ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
+      } else {
+        serialConstraints = parallelConstraints;
+      }
+      return serialConstraints;
+    };
     #undef __FUNCT__
     #define __FUNCT__ "Mesh::createParCoords"
     template<typename OverlapType>
@@ -1729,11 +1709,11 @@ namespace ALE {
       Obj<Mesh> serialMesh = Mesh(this->comm(), this->getDimension(), this->debug);
       Obj<Mesh::sieve_type> topology = serialMesh->getTopology();
       Mesh::patch_type patch;
+      PetscErrorCode ierr;
 
       topology->setStratification(false);
       // Partition the topology
       ALE::Two::Partitioner::unify(*this, serialMesh);
-      topology->view("Serial mesh before stratification");
       topology->stratify();
       topology->setStratification(true);
       if (serialMesh->debug) {
@@ -1748,17 +1728,17 @@ namespace ALE {
       serialMesh->coordinates->setFiberDimensionByDepth(patch, 0, this->dim);
       serialMesh->coordinates->orderPatches();
 
-      VecScatter scatter = serialMesh->createMapping(serialMesh->coordinates, this->coordinates);
+      Obj<Partitioner::supportDelta_type::bioverlap_type> partitionOverlap = Partitioner::supportDelta_type::overlap(serialMesh->topology, this->topology);
+      VecScatter scatter = ALE::Two::Partitioner::createMappingStoP(serialMesh->coordinates, this->coordinates, partitionOverlap, false);
       Vec        serialVec, parallelVec;
 
-      VecCreateMPIWithArray(serialMesh->comm(), serialMesh->coordinates->getSize(patch), PETSC_DETERMINE, serialMesh->coordinates->restrict(patch), &serialVec);
-      VecCreateSeqWithArray(PETSC_COMM_SELF, this->coordinates->getSize(patch), this->coordinates->restrict(patch), &parallelVec);
-      VecScatterBegin(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);
-      VecScatterEnd(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);
-      VecDestroy(serialVec);
-      VecDestroy(parallelVec);
-      VecScatterDestroy(scatter);
-      serialMesh->coordinates->view("Serial coordinates");
+      ierr = VecCreateMPIWithArray(serialMesh->comm(), serialMesh->coordinates->getSize(patch), PETSC_DETERMINE, serialMesh->coordinates->restrict(patch), &serialVec);CHKERROR(ierr, "Error in VecCreate");
+      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, this->coordinates->getSize(patch), this->coordinates->restrict(patch), &parallelVec);CHKERROR(ierr, "Error in VecCreate");
+      ierr = VecScatterBegin(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERROR(ierr, "Error in VecScatter");
+      ierr = VecScatterEnd(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERROR(ierr, "Error in VecScatter");
+      ierr = VecDestroy(serialVec);CHKERROR(ierr, "Error in VecDestroy");
+      ierr = VecDestroy(parallelVec);CHKERROR(ierr, "Error in VecDestroy");
+      ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
 
       std::string orderName("element");
       Obj<bundle_type> vertexBundle = this->getBundle(0);

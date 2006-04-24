@@ -2257,6 +2257,8 @@ namespace ALE {
       int         commSize() const {return this->_graph->commSize();};
       int         commRank() const {return this->_graph->commRank();}
       PetscObject petscObj() const {return this->_graph->petscObj();};
+
+      int view(const char* label = NULL) {return this->_graph->view(label);}
       
       // FIX: need const_cap, const_base returning const capSequence etc, but those need to have const_iterators, const_begin etc.
       Obj<typename traits::capSequence> cap() {
