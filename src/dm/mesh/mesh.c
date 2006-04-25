@@ -1169,7 +1169,7 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Two::Mesh::bundle_type::IndexArray>
 PetscErrorCode MeshCreateVector(ALE::Obj<ALE::Two::Mesh> m, ALE::Obj<ALE::Two::Mesh::bundle_type> bundle, Vec *v)
 {
   // FIX: Must not include ghosts
-  PetscInt       localSize = bundle->getSize(ALE::Two::Mesh::bundle_type::patch_type());
+  PetscInt       localSize = bundle->getGlobalOrder()->getSize(ALE::Two::Mesh::bundle_type::patch_type());
   MPI_Comm       comm = m->comm();
   PetscMPIInt    rank = m->commRank();
   PetscInt      *ghostIndices = NULL;
