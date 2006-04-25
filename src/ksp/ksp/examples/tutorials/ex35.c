@@ -31,6 +31,7 @@ typedef enum {DIRICHLET, NEUMANN} BCType;
 typedef struct {
   PetscScalar   nu;
   BCType        bcType;
+  VecScatter  injection;
 } UserContext;
 
 PetscInt debug;
@@ -72,18 +73,43 @@ int main(int argc,char **argv)
   try {
     ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
     ALE::LogStagePush(stage);
-
-    /* Generate boundary mesh and domain mesh; distribute mesh to all processes. */
     ierr = PetscPrintf(comm, "Generating mesh\n");CHKERRQ(ierr);
     ierr = CreateZoneBoundary(meshBoundary);CHKERRQ(ierr);
     mesh = ALE::Two::Generator::generate(meshBoundary);
     ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
-#if 0
+    ALE::LogStagePop(stage);
+
+    stage = ALE::LogStageRegister("BndCreation");
+    ALE::LogStagePush(stage);
+    ierr = PetscPrintf(comm, "Creating boundary\n");CHKERRQ(ierr);
+    ALE::Obj<ALE::Two::Mesh::field_type> boundary = mesh->getBoundary();
+    ALE::Obj<ALE::Two::Mesh::sieve_type::traits::depthSequence> bdVertices = topology->depthStratum(0, 1);
+    ALE::Two::Mesh::field_type::patch_type patch;
+
+    boundary->setTopology(topology);
+    boundary->setPatch(topology->leaves(), patch);
+    //boundary->setFiberDimensionByDepth(patch, 0, 1);
+    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator v_iter = bdVertices->begin(); v_iter != bdVertices->end(); ++v_iter) {
+      boundary->setFiberDimension(patch, *v_iter, 1);
+    }
+    boundary->orderPatches();
+    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator v_iter = bdVertices->begin(); v_iter != bdVertices->end(); ++v_iter) {
+      //double *coords = mesh->getCoordinates()->restrict(patch, *v_iter);
+      double values[1] = {0.0};
+
+      boundary->update(patch, *v_iter, values);
+    }
+    boundary->view("Mesh Boundary");
+    ALE::LogStagePop(stage);
+
+    stage = ALE::LogStageRegister("MeshDistribution");
+    ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
-    mesh->distribute();
-#endif
+    mesh = mesh->distribute();
+    ALE::LogStagePop(stage);
+    mesh->getBoundary()->view("Mesh Boundary");
 
     /* Refine... ideally we will refine based on the distance from the singularity.
        This "function call" based refinement has not yet been implemented.  Matt's doing it... */
@@ -93,36 +119,15 @@ int main(int argc,char **argv)
       ierr = PetscPrintf(comm, "Refining mesh\n");CHKERRQ(ierr);
       mesh = ALE::Two::Generator::refine(mesh, refinementLimit);
       ALE::LogStagePop(stage);
-      ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
-      ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
     }
+    topology = mesh->getTopology();
 
-
-    ierr = PetscPrintf(comm, "Label boundary on mesh\n");CHKERRQ(ierr);
-    ALE::Obj<ALE::Two::Mesh::field_type> boundary = mesh->getBoundary();
-    ALE::Two::Mesh::field_type::patch_type patch;
-
-    boundary->setTopology(topology);
-    boundary->setPatch(topology->heightStratum(0), patch);
-    boundary->setFiberDimensionByDepth(patch, 0, 1);
-    boundary->orderPatches();
-    boundary->createGlobalOrder();
-
-    ALE::Obj<ALE::Two::Mesh::sieve_type::traits::depthSequence> bdVertices = boundary->getTopology()->depthStratum(0, 1);
-
-    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator v_iter = bdVertices->begin(); v_iter != bdVertices->end(); ++v_iter) {
-      //double *coords = mesh->getCoordinates()->restrict(patch, *v_iter);
-      double values[1] = {0.0};
-
-      boundary->update(patch, *v_iter, values);
-    }
-
+    ALE::Obj<ALE::Two::Mesh::field_type> coords = mesh->getCoordinates();
     ALE::Obj<ALE::Two::Mesh::field_type> u = mesh->getField("u");
     u->setPatch(topology->leaves(), ALE::Two::Mesh::field_type::patch_type());
     u->setFiberDimensionByDepth(patch, 0, 1);
     u->orderPatches();
     u->createGlobalOrder();
-
     ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
     ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
     std::string orderName("element");
@@ -132,6 +137,7 @@ int main(int argc,char **argv)
       //   What we really need is the depthStratum relative to the patch
       ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_iter);
 
+      coords->setPatch(orderName, cone, *e_iter);
       u->setPatch(orderName, cone, *e_iter);
       for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
         u->setFiberDimension(orderName, *e_iter, *c_iter, 1);
@@ -153,6 +159,7 @@ int main(int argc,char **argv)
     if (user.bcType == NEUMANN) {
       ierr = DMMGSetNullSpace(dmmg,PETSC_TRUE,0,PETSC_NULL);CHKERRQ(ierr);
     }
+    ierr = MeshGetGlobalScatter(mesh, "u", DMMGGetx(dmmg), &user.injection); CHKERRQ(ierr);
 
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
@@ -208,10 +215,10 @@ PetscErrorCode CreateZoneBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
   ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
   PetscScalar   coords[14] = {	  0.,  0.,
                                 660.,  0.,
-				 50., 50.,
-				660., 50.,
-				  0.,600.,
-				600.,600.,
+                                 50., 50.,
+                                660., 50.,
+                                  0.,600.,
+                                600.,600.,
                                 660.,600.};
   PetscInt	conns[18] = {	0, 1,
 				1, 3,
@@ -230,13 +237,7 @@ PetscErrorCode CreateZoneBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  if (rank == 0) {
-    /* Create topology and ordering */
-    mesh->populate(9,conns,7,coords,0);
-  }
-  topology->stratify();
-  mesh->createVertexBundle(9, conns);
-  mesh->createSerialCoordinates(2, 0, coords);
+  mesh->populate(9, conns, 7, coords, false);
 
   /* Create boundary condition markers
 	1 - surface
@@ -1068,83 +1069,7 @@ PetscErrorCode ComputeRho(PetscReal x, PetscReal y, PetscScalar *rho)
   }
   PetscFunctionReturn(0);
 }
-#if 0
-#undef __FUNCT__
-#define __FUNCT__ "ComputeBlock"
-PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
-{
-  Mesh              mesh = (Mesh) dmmg->dm;
-  UserContext      *user = (UserContext *) dmmg->user;
-  ALE::Sieve       *topology;
-  ALE::PreSieve    *orientation;
-  ALE::IndexBundle *bundle;
-  ALE::IndexBundle *coordBundle;
-  ALE::Point_set    elements;
-  PetscInt          dim;
-  Vec               coordinates;
-  PetscScalar      *coords;
-  PetscScalar      *array;
-  PetscScalar      *field;
-  PetscReal         elementVec[NUM_BASIS_FUNCTIONS];
-  PetscReal         linearVec[NUM_BASIS_FUNCTIONS];
-  PetscReal        *v0, *Jac, *Jinv, *t_der, *b_der;
-  PetscReal         xi, eta, x_q, y_q, detJ, rho, funcValue;
-  PetscInt          f, g, q;
-  PetscErrorCode    ierr;
 
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
-  ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
-  ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
-  ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
-  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = VecGetArray(u, &array); CHKERRQ(ierr);
-  dim = coordBundle->getFiberDimension(*coordBundle->getTopology()->depthStratum(0).begin());
-  ierr = PetscMalloc(dim * sizeof(PetscReal), &v0);CHKERRQ(ierr);
-  ierr = PetscMalloc(dim * sizeof(PetscReal), &t_der);CHKERRQ(ierr);
-  ierr = PetscMalloc(dim * sizeof(PetscReal), &b_der);CHKERRQ(ierr);
-  ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
-  ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jinv);CHKERRQ(ierr);
-  elements = topology->star(block);
-  for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
-    ALE::Point e = *element_itor;
-
-    ierr = ElementGeometry(coordBundle, orientation, coords, e, v0, Jac, Jinv, &detJ); CHKERRQ(ierr);
-    ierr = restrictField(bundle, orientation, array, e, &field); CHKERRQ(ierr);
-    /* Element integral */
-    ierr = PetscMemzero(elementVec, NUM_BASIS_FUNCTIONS*sizeof(PetscScalar));CHKERRQ(ierr);
-    for(q = 0; q < NUM_QUADRATURE_POINTS; q++) {
-      xi = points[q*2+0] + 1.0;
-      eta = points[q*2+1] + 1.0;
-      x_q = Jac[0]*xi + Jac[1]*eta + v0[0];
-      y_q = Jac[2]*xi + Jac[3]*eta + v0[1];
-      ierr = ComputeRho(x_q, y_q, &rho);CHKERRQ(ierr);
-      funcValue = PetscExpScalar(-(x_q*x_q)/user->nu)*PetscExpScalar(-(y_q*y_q)/user->nu);
-      for(f = 0; f < NUM_BASIS_FUNCTIONS; f++) {
-        t_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+1];
-        t_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+1];
-        for(g = 0; g < NUM_BASIS_FUNCTIONS; g++) {
-          b_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
-          b_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
-          linearVec[f] += rho*(t_der[0]*b_der[0] + t_der[1]*b_der[1])*field[g];
-        }
-        elementVec[f] += (Basis[q*NUM_BASIS_FUNCTIONS+f]*funcValue - linearVec[f])*weights[q]*detJ;
-      }
-    }
-    if (debug) {printf("elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);}
-    /* Assembly */
-    ierr = assembleField(bundle, orientation, r, e, elementVec, ADD_VALUES); CHKERRQ(ierr);
-  }
-  ierr = PetscFree(v0);CHKERRQ(ierr);
-  ierr = PetscFree(t_der);CHKERRQ(ierr);
-  ierr = PetscFree(b_der);CHKERRQ(ierr);
-  ierr = PetscFree(Jac);CHKERRQ(ierr);
-  ierr = PetscFree(Jinv);CHKERRQ(ierr);
-  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = VecRestoreArray(u, &array); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
 PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
@@ -1190,13 +1115,12 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   }
   ierr = PetscFree(v0);CHKERRQ(ierr);
   ierr = PetscFree(Jac);CHKERRQ(ierr);
-  // Should just wrap the restrict pointer
-  PetscScalar *array;
-  ierr = VecGetArray(b, &array);CHKERRQ(ierr);
-  ierr = PetscMemcpy(array, field->restrict(patch), field->getSize(patch)*sizeof(double));CHKERRQ(ierr);
-  ierr = VecRestoreArray(b, &array);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+
+  Vec locB;
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, field->getSize(patch), field->restrict(patch), &locB);CHKERRQ(ierr);
+  ierr = VecScatterBegin(locB, b, ADD_VALUES, SCATTER_FORWARD, user->injection);CHKERRQ(ierr);
+  ierr = VecScatterEnd(locB, b, ADD_VALUES, SCATTER_FORWARD, user->injection);CHKERRQ(ierr);
+  ierr = VecDestroy(locB);CHKERRQ(ierr);
 
   /* force right hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
@@ -1277,25 +1201,30 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 
   if (user->bcType == DIRICHLET) {
     /* Zero out BC rows */
-    ALE::Obj<ALE::Two::Mesh::sieve_type::traits::depthSequence> bdVertices = m->getBoundary()->getTopology()->depthStratum(0, 1);
+    ALE::Obj<ALE::Two::Mesh::field_type> boundary = m->getBoundary();
+    ALE::Obj<ALE::Two::Mesh::sieve_type::traits::depthSequence> vertices = m->getTopology()->depthStratum(0);
     ALE::Two::Mesh::field_type::patch_type patch;
     PetscInt *boundaryIndices;
-    PetscInt k = 0;
+    PetscInt  numBoundaryIndices = 0;
+    PetscInt  k = 0;
 
-    ALE::Obj<ALE::Two::Mesh::bundle_type> bdBundle = ALE::Two::Mesh::bundle_type(m->comm(), m->debug);
-    bdBundle->setTopology(m->getTopology());
-    bdBundle->setPatch(bdVertices, patch);
-    bdBundle->setFiberDimensionByDepth(patch, 0, 1);
-    bdBundle->orderPatches();
-    bdBundle->createGlobalOrder();
+    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator p = vertices->begin(); p != vertices->end(); ++p) {
+      if (boundary->getIndex(patch, *p).index > 0) {
+        const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
 
-    int numBoundaryIndices = bdBundle->getSize(patch);
+        if (idx.index > 0) {
+          numBoundaryIndices += idx.index;
+        }
+      }
+    }
     ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
-    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator p = bdVertices->begin(); p != bdVertices->end(); ++p) {
-      const ALE::Two::Mesh::field_type::index_type& idx = field->getIndex(patch, *p);
+    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator p = vertices->begin(); p != vertices->end(); ++p) {
+      if (boundary->getIndex(patch, *p).index > 0) {
+        const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
 
-      for(int i = 0; i < idx.index; i++) {
-        boundaryIndices[k++] = idx.prefix + i;
+        for(int i = 0; i < idx.index; i++) {
+          boundaryIndices[k++] = idx.prefix + i;
+        }
       }
     }
     if (debug) {
