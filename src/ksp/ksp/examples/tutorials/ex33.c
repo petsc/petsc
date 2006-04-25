@@ -61,8 +61,9 @@ extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
 typedef struct {
-  PetscScalar   nu;
-  BCType        bcType;
+  PetscScalar nu;
+  BCType      bcType;
+  VecScatter  injection;
 } UserContext;
 
 PetscInt debug;
@@ -108,7 +109,7 @@ int main(int argc,char **argv)
     ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
-    CheckElementGeometry(mesh);
+    //CheckElementGeometry(mesh);
     ALE::LogStagePop(stage);
 
     stage = ALE::LogStageRegister("BndCreation");
@@ -147,9 +148,8 @@ int main(int argc,char **argv)
       ierr = PetscPrintf(comm, "Refining mesh\n");CHKERRQ(ierr);
       mesh = ALE::Two::Generator::refine(mesh, refinementLimit);
       ALE::LogStagePop(stage);
-      ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
-      ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
     }
+    topology = mesh->getTopology();
 
     ALE::Obj<ALE::Two::Mesh::field_type> coords = mesh->getCoordinates();
     ALE::Obj<ALE::Two::Mesh::field_type> u = mesh->getField("u");
@@ -190,6 +190,7 @@ int main(int argc,char **argv)
     if (user.bcType == NEUMANN) {
       ierr = DMMGSetNullSpace(dmmg,PETSC_TRUE,0,PETSC_NULL);CHKERRQ(ierr);
     }
+    ierr = MeshGetGlobalScatter(mesh, "u", DMMGGetx(dmmg), &user.injection); CHKERRQ(ierr);
 
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
@@ -1447,13 +1448,12 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   }
   ierr = PetscFree(v0);CHKERRQ(ierr);
   ierr = PetscFree(Jac);CHKERRQ(ierr);
-  // Should just wrap the restrict pointer
-  PetscScalar *array;
-  ierr = VecGetArray(b, &array);CHKERRQ(ierr);
-  ierr = PetscMemcpy(array, field->restrict(patch), field->getSize(patch)*sizeof(double));CHKERRQ(ierr);
-  ierr = VecRestoreArray(b, &array);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+
+  Vec locB;
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, field->getSize(patch), field->restrict(patch), &locB);CHKERRQ(ierr);
+  ierr = VecScatterBegin(locB, b, ADD_VALUES, SCATTER_FORWARD, user->injection);CHKERRQ(ierr);
+  ierr = VecScatterEnd(locB, b, ADD_VALUES, SCATTER_FORWARD, user->injection);CHKERRQ(ierr);
+  ierr = VecDestroy(locB);CHKERRQ(ierr);
 
   /* force right hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
@@ -1543,24 +1543,28 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 
     for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator p = vertices->begin(); p != vertices->end(); ++p) {
       if (boundary->getIndex(patch, *p).index > 0) {
-        numBoundaryIndices += field->getIndex(patch, *p).index;
+        const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
+
+        if (idx.index > 0) {
+          numBoundaryIndices += idx.index;
+        }
       }
     }
     ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
     for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator p = vertices->begin(); p != vertices->end(); ++p) {
       if (boundary->getIndex(patch, *p).index > 0) {
-        const ALE::Two::Mesh::field_type::index_type& idx = field->getIndex(patch, *p);
+        const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
 
         for(int i = 0; i < idx.index; i++) {
           boundaryIndices[k++] = idx.prefix + i;
         }
       }
     }
-    if (debug) {
+    //if (debug) {
       for(int i = 0; i < numBoundaryIndices; i++) {
         ierr = PetscSynchronizedPrintf(comm, "[%d]boundaryIndices[%d] = %d\n", rank, i, boundaryIndices[i]);CHKERRQ(ierr);
       }
-    }
+    //}
     ierr = PetscSynchronizedFlush(comm);
     ierr = MatZeroRows(jac, numBoundaryIndices, boundaryIndices, 1.0);CHKERRQ(ierr);
     ierr = PetscFree(boundaryIndices);CHKERRQ(ierr);
