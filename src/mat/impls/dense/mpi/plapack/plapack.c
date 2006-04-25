@@ -441,7 +441,7 @@ PetscErrorCode MatView_Plapack(Mat A,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
+    if (format == PETSC_VIEWER_ASCII_INFO) {
       ierr = MatFactorInfo_Plapack(A,viewer);CHKERRQ(ierr);
     }
   }
