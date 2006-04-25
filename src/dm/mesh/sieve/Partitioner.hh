@@ -9,7 +9,7 @@ namespace ALE {
     #undef __FUNCT__
     #define __FUNCT__ "Part::distribute"
     template<typename Sifter_>
-    static void distribute(Obj<Sifter_> oldSifter, Obj<Sifter_> newSifter) {
+    static void distribute(Obj<Sifter_> oldSifter, Obj<Sifter_> newSifter, bool restrict = true) {
       typedef Sifter_ sifter_type;
       typedef RightSequenceDuplicator<ConeArraySequence<typename sifter_type::traits::arrow_type> > fuser;
       typedef ParConeDelta<sifter_type, fuser,
@@ -48,7 +48,7 @@ namespace ALE {
       supportDelta_type::setDebug(oldSifter->debug);
       Obj<typename supportDelta_type::bioverlap_type> overlap2 = supportDelta_type::overlap(oldSifter, newSifter);
       Obj<typename supportDelta_type::fusion_type>    fusion2  = supportDelta_type::fusion(oldSifter, newSifter, overlap2);
-      newSifter->add(fusion2, true);
+      newSifter->add(fusion2, true && restrict);
       if (oldSifter->debug) {
         overlap2->view("Second overlap");
         fusion2->view("Second fusion");
@@ -259,9 +259,10 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "partition_Simple"
-    static void partition_Simple(Obj<sifter_type> oldSifter, Obj<sifter_type> newSifter, int numLeaves) {
+    static void partition_Simple(Obj<sieve_type> oldSieve, Obj<sifter_type> oldSifter, Obj<sifter_type> newSifter) {
       typedef typename sifter_type::traits::target_type point_type;
       Obj<typename sifter_type::traits::capSequence> cap = oldSifter->cap();
+      int numLeaves = oldSieve->leaves()->size();
 
       ALE_LOG_EVENT_BEGIN;
       if (oldSifter->commRank() == 0) {
@@ -271,10 +272,12 @@ namespace ALE {
           point_type partitionPoint(-1, p);
 
           for(int l = (numLeaves/size)*p + PetscMin(numLeaves%size, p); l < (numLeaves/size)*(p+1) + PetscMin(numLeaves%size, p+1); l++) {
-            point_type point(0, l);
+            Obj<typename sieve_type::coneSet> closure = oldSieve->closure(point_type(0, l));
 
-            if (cap->contains(point)) {
-              oldSifter->addCone(point, partitionPoint);
+            for(typename sieve_type::coneSet::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter) {
+              if (cap->contains(*c_iter)) {
+                oldSifter->addCone(*c_iter, partitionPoint);
+              }
             }
           }
         }
@@ -397,12 +400,12 @@ namespace ALE {
 #else
       partition_Simple(serialTopology, parallelTopology);
       if (hasBd) {
-        partition_Simple(serialBoundary->__getOrder(), parallelBoundary->__getOrder(), serialTopology->leaves()->size());
+        partition_Simple(serialTopology, serialBoundary->__getOrder(), parallelBoundary->__getOrder());
       }
 #endif
       Distributer::distribute(serialTopology, parallelTopology);
       if (hasBd) {
-        Distributer::distribute(serialBoundary->__getOrder(), parallelBoundary->__getOrder());
+        Distributer::distribute(serialBoundary->__getOrder(), parallelBoundary->__getOrder(), false);
       }
     };
     static void unify(const Obj<mesh_type> parallelMesh, const Obj<mesh_type> serialMesh) {

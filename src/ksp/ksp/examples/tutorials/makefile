@@ -601,12 +601,14 @@ runex32:
 runex33:
 	-${MPIRUN} -np ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -base_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1_2d -bc_file data/ex33bc.data ${EXTRA_ARGS}
 
-runex35:
-	-${MPIRUN} -np ${NP} ./ex35 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -base_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1_2d ${EXTRA_ARGS}
-
-
 debugex33:
 	-${MPIRUN} -np ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -base_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1_2d -bc_file data/ex33bc.data ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+
+valex33:
+	-${MPIRUN} -np ${NP} valgrind --tool=memcheck ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -base_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1_2d -bc_file data/ex33bc.data ${EXTRA_ARGS}
+
+runex35:
+	-${MPIRUN} -np ${NP} ./ex35 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -base_file ${PETSC_DIR}/src/dm/mesh/examples/tutorials/data/ex1_2d ${EXTRA_ARGS}
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \
