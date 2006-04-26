@@ -7,50 +7,6 @@ import md5
 
 import nargs
 
-class ArgDownload(nargs.Arg):
-  '''Arguments that represent software downloads'''
-  def __init__(self, key, value = None, help = '', isTemporary = 0):
-    nargs.Arg.__init__(self, key, value, help, isTemporary)
-    return
-
-  def valueName(self, value):
-    if value == 0:
-      return 'no'
-    elif value == 1:
-      return 'yes'
-    elif value == 2:
-      return 'ifneeded'
-    return str(value)
-
-  def __str__(self):
-    if not self.isValueSet():
-      return 'Empty '+str(self.__class__)
-    elif isinstance(self.value, list):
-      return str(map(self.valueName, self.value))
-    return self.valueName(self.value)
-
-  def getEntryPrompt(self):
-    return 'Please enter download value for '+str(self.key)+': '
-
-  def setValue(self, value):
-    '''Set the value. SHOULD MAKE THIS A PROPERTY'''
-    try:
-      if   value == '0':        value = 0
-      elif value == '1':        value = 1
-      elif value == 'no':       value = 0
-      elif value == 'yes':      value = 1
-      elif value == 'false':    value = 0
-      elif value == 'true':     value = 1
-      elif value == 'ifneeded': value = 2
-      elif not isinstance(value, int):
-        value = str(value)
-    except:
-      raise TypeError('Invalid download value: '+str(value)+' for key '+str(self.key))
-    if isinstance(value, str) and not os.path.isfile(value):
-      raise ValueError('Invalid download location: '+str(value)+' for key '+str(self.key))
-    self.value = value
-    return
-
 class Package(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -152,7 +108,7 @@ class Package(config.base.Configure):
     help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required,'Indicate if you wish to test for '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
     if self.download and not self.download[0] == 'redefine':
-      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded,filename>', ArgDownload(None, 0, 'Download and install '+self.name))
+      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' include files'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../libparmetis.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))    
     return
@@ -212,11 +168,11 @@ class Package(config.base.Configure):
       return ''
 
   def generateGuesses(self):
-    dir = self.checkDownload(1)
-    if dir:
-      for l in self.generateLibList(os.path.join(dir, self.libdir)):
-        yield('Download '+self.PACKAGE, dir,l, os.path.join(dir, self.includedir))
-      raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')
+    d = self.checkDownload(1)
+    if d:
+      for l in self.generateLibList(os.path.join(d, self.libdir)):
+        yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
+      raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+d+'\n')
 
     if 'with-'+self.package+'-dir' in self.framework.argDB:     
       dir = self.framework.argDB['with-'+self.package+'-dir']
@@ -415,3 +371,37 @@ class Package(config.base.Configure):
       self.executeTest(self.alternateConfigureLibrary)
     return
 
+class NewPackage(config.package.Package):
+  def __init__(self, framework):
+    config.package.Package.__init__(self, framework)
+    # These are specified for the package
+    self.double           = 1   # 1 means requires double precision 
+    self.complex          = 0   # 0 means cannot use complex
+    self.requires32bitint = 1;  # 1 means that the package will not work in 64 bit mode
+    self.archIndependent  = 0   # 1 means the install directory does not incorporate the ARCH name
+    return
+
+  def setupDependencies(self, framework):
+    config.package.Package.setupDependencies(self, framework)
+    self.arch           = framework.require('PETSc.utilities.arch', self)
+    self.languages      = framework.require('PETSc.utilities.languages', self)
+    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
+    return
+
+  def consistencyChecks(self):
+    config.package.Package.consistencyChecks(self)
+    if self.framework.argDB['with-'+self.package]:
+      if self.cxx and not self.languages.clanguage == 'Cxx':
+        raise RuntimeError('Cannot use '+self.name+' without C++, run config/configure.py --with-clanguage=C++')    
+      if self.double and not self.languages.precision.lower() == 'double':
+        raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')    
+      if not self.complex and self.languages.scalartype.lower() == 'complex':
+        raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')    
+      if self.libraryOptions.integerSize == 64 and self.requires32bitint:
+        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')    
+    return
+
+  def getInstallDir(self):
+    if self.archIndependent:
+      return os.path.abspath(self.Install())
+    return os.path.abspath(os.path.join(self.Install(), self.arch.arch))

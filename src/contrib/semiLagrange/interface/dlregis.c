@@ -90,8 +90,8 @@ PetscErrorCode PetscDLLibraryRegister_petsccontrib(char *path)
 EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc Method of Characteristics library.\n";
-static char *authors  = "Richard Katz and Matthew G. Knepley\n";
+static const char *contents = "PETSc Method of Characteristics library.\n";
+static const char *authors  = "Richard Katz and Matthew G. Knepley\n";
 
 /* $Id: dlregis.h,v 1.8 2001/03/23 23:20:45 balay Exp $ */
 /*
@@ -99,7 +99,7 @@ static char *authors  = "Richard Katz and Matthew G. Knepley\n";
    on the PETSC team.
 */
 
-static char *version = "???";
+static const char *version = "???";
 
 EXTERN_C_BEGIN
 /* --------------------------------------------------------------------------*/
