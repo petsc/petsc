@@ -1,5 +1,6 @@
 from __future__ import generators
 import config.base
+import config.package
 import os
 import re
 import sys

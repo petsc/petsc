@@ -45,8 +45,8 @@ class Configure(PETSc.package.Package):
   def setupHelp(self, help):
     PETSc.package.Package.setupHelp(self,help)
     import nargs
-    help.addArgument('MPI', '-download-lam=<no,yes,ifneeded,filename>',    PETSc.package.ArgDownload(None, 0, 'Download and install LAM/MPI'))
-    help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded,filename>',  PETSc.package.ArgDownload(None, 0, 'Download and install MPICH-2'))
+    help.addArgument('MPI', '-download-lam=<no,yes,ifneeded,filename>',    nargs.ArgDownload(None, 0, 'Download and install LAM/MPI'))
+    help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded,filename>',  nargs.ArgDownload(None, 0, 'Download and install MPICH-2'))
     help.addArgument('MPI', '-with-mpirun=<prog>',                nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-download-mpich-machines=[machine1,machine2...]',  nargs.Arg(None, ['localhost','localhost'], 'Machines for MPI to use'))
