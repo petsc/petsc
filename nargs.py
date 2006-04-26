@@ -465,3 +465,47 @@ class ArgString(Arg):
       raise ValueError('Invalid string '+str(value)+'. You must give a string satisfying "'+str(self.regExp)+'"'+' for key '+str(self.key))
     self.value = value
     return
+
+class ArgDownload(Arg):
+  '''Arguments that represent software downloads'''
+  def __init__(self, key, value = None, help = '', isTemporary = 0):
+    Arg.__init__(self, key, value, help, isTemporary)
+    return
+
+  def valueName(self, value):
+    if value == 0:
+      return 'no'
+    elif value == 1:
+      return 'yes'
+    elif value == 2:
+      return 'ifneeded'
+    return str(value)
+
+  def __str__(self):
+    if not self.isValueSet():
+      return 'Empty '+str(self.__class__)
+    elif isinstance(self.value, list):
+      return str(map(self.valueName, self.value))
+    return self.valueName(self.value)
+
+  def getEntryPrompt(self):
+    return 'Please enter download value for '+str(self.key)+': '
+
+  def setValue(self, value):
+    '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    try:
+      if   value == '0':        value = 0
+      elif value == '1':        value = 1
+      elif value == 'no':       value = 0
+      elif value == 'yes':      value = 1
+      elif value == 'false':    value = 0
+      elif value == 'true':     value = 1
+      elif value == 'ifneeded': value = 2
+      elif not isinstance(value, int):
+        value = str(value)
+    except:
+      raise TypeError('Invalid download value: '+str(value)+' for key '+str(self.key))
+    if isinstance(value, str) and not os.path.isfile(value):
+      raise ValueError('Invalid download location: '+str(value)+' for key '+str(self.key))
+    self.value = value
+    return
