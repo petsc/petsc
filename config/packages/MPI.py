@@ -130,7 +130,7 @@ class Configure(config.package.Package):
         raise RuntimeError('Invalid mpirun specified: '+str(self.framework.argDB['with-mpirun']))
       return
     if self.isPOE:
-      self.mpirun = os.path.join(self.petscdir.dir, 'bin', 'mpirun.poe')
+      self.mpirun = os.path.abspath(os.path.join('bin', 'mpirun.poe'))
       return
     mpiruns = ['mpiexec -np 1', 'mpirun -np 1', 'mprun -np 1', 'mpiexec', 'mpirun', 'mprun']
     path    = []
@@ -187,10 +187,10 @@ class Configure(config.package.Package):
   def alternateConfigureLibrary(self):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
     self.addDefine('HAVE_MPIUNI', 1)
-    self.include = [os.path.join(self.petscdir.dir,'include','mpiuni')]
+    self.include = [os.path.abspath(os.path.join('include', 'mpiuni'))]
     if 'STDCALL' in self.compilers.defines:
       self.framework.addDefine('MPIUNI_USE_STDCALL')
-    self.lib = [os.path.join(self.petscdir.dir,'lib',self.arch,'libmpiuni')]
+    self.lib = [os.path.abspath(os.path.join('lib', self.arch, 'libmpiuni'))]
     self.mpirun = '${PETSC_DIR}/bin/mpirun.uni'
     self.addMakeMacro('MPIRUN','${PETSC_DIR}/bin/mpirun.uni')
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
