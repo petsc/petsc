@@ -5,19 +5,23 @@
 #include <sstream>
 
 typedef std::basic_ostringstream<char> ostringstream;
+typedef std::string string;
 
 namespace ALE {
   class Exception {
-    const char *_msg;
+    string _msg;
   public:
-    Exception(const char *msg)    {this->_msg = msg;};
-    //Exception(const Exception& e) {this->_msg = e._msg;};
-    const char *message() const   {return this->_msg;};
+    Exception(const char         * msg) : _msg(msg){};
+    Exception(const string&        msg) : _msg(msg){};
+    Exception(const ostringstream& txt) : _msg(txt.str()){};
+    Exception(const Exception& e)      : _msg(e._msg) {};
+    const string& msg()     const  {return this->_msg;};
+    const char   *message() const  {return this->_msg.c_str();};
     // Printing
-    friend std::ostream& operator<<(std::ostream& os, const Exception& e) {
-      os << "ERROR: " << e.message() << std::endl;
-      return os;
-    };
+//     friend std::ostream& operator<<(std::ostream& os, const Exception& e) {
+//       os << "ERROR: " << e.message() << std::endl;
+//       return os;
+//     };
   };
 
   // A helper function that throws an ALE::Exception with a message identifying the function that returned the given error code, 
