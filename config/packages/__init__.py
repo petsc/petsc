@@ -1,1 +1,1 @@
-all = ['MPI']
+all = ['BlasLapack', 'MPI', 'PETSc']

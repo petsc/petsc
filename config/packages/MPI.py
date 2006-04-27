@@ -190,7 +190,7 @@ class Configure(config.package.Package):
     self.include = [os.path.join(self.petscdir.dir,'include','mpiuni')]
     if 'STDCALL' in self.compilers.defines:
       self.framework.addDefine('MPIUNI_USE_STDCALL')
-    self.lib = [os.path.join(self.petscdir.dir,'lib',self.arch.arch,'libmpiuni')]
+    self.lib = [os.path.join(self.petscdir.dir,'lib',self.arch,'libmpiuni')]
     self.mpirun = '${PETSC_DIR}/bin/mpirun.uni'
     self.addMakeMacro('MPIRUN','${PETSC_DIR}/bin/mpirun.uni')
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
@@ -258,7 +258,7 @@ class Configure(config.package.Package):
     lamDir = self.getDir()
 
     # Get the LAM directories
-    installDir = os.path.join(lamDir, self.arch.arch)
+    installDir = os.path.join(lamDir, self.arch)
     # Configure and Build LAM
     self.framework.pushLanguage('C')
     args = ['--prefix='+installDir, '--with-rsh=ssh','CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
@@ -324,7 +324,7 @@ class Configure(config.package.Package):
 
   def InstallMPICH(self):
     mpichDir = self.getDir()
-    installDir = os.path.join(mpichDir, self.arch.arch)
+    installDir = os.path.join(mpichDir, self.arch)
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
       

@@ -150,6 +150,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     help.addArgument('Framework', '-with-alternatives',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
     help.addArgument('Framework', '-search-dirs',         nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
     help.addArgument('Framework', '-package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
+    help.addArgument('Framework', '-with-external-packages-dir=<dir>', nargs.Arg(None, None, 'Location to install downloaded packages'))
     help.addArgument('Framework', '-with-batch',          nargs.ArgBool(None, 0, 'Machine uses a batch system to submit jobs'))
     return help
 
@@ -745,6 +746,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.log.write(('='*80)+'\n')
     return
 
+  def configureExternalPackagesDir(self):
+    if 'with-external-packages-dir' in self.argDB:
+      self.externalPackagesDir = self.argDB['with-external-packages-dir']
+    else:
+      self.externalPackagesDir = None
+    return
+
   def addBatchInclude(self, includes):
     '''Add an include or a list of includes to the batch run'''
     if not isinstance(includes, list):
@@ -803,6 +811,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.setup()
     self.outputBanner()
     self.updateDependencies()
+    self.executeTest(self.configureExternalPackagesDir)
     for child in graph.DirectedGraph.topologicalSort(self.childGraph):
       if not hasattr(child, '_configured'):
         child.configure()

@@ -8,6 +8,7 @@ class Package(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix     = 'PETSc'
     self.substPrefix      = 'PETSc'
+    self.arch             = None # The architecture identifier
     # These are derived by the configure tests
     self.found            = 0
     self.setNames()
@@ -18,9 +19,9 @@ class Package(config.base.Configure):
     self.version          = ''
     # These are specified for the package
     self.required         = 0    # 1 means the package is required
-    self.defaultLanguage  = 'C'  # The language in which to run tests
     self.download         = []   # urls where repository or tarballs may be found
     self.deps             = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
+    self.defaultLanguage  = 'C'  # The language in which to run tests
     self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibraryList())
     self.extraLib         = []   # additional libraries needed to link
     self.functions        = []   # functions we wish to check for in the libraries
@@ -31,6 +32,9 @@ class Package(config.base.Configure):
     self.needsMath        = 0    # 1 means requires the system math library
     self.libdir           = 'lib'     # location of libraries in the package directory tree
     self.includedir       = 'include' # location of includes in the package directory tree
+    self.license          = None # optional license text
+    self.excludedDirs     = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
+    self.archIndependent  = 0    # 1 means the install directory does not incorporate the ARCH name
     return
     
   def __str__(self):
@@ -79,12 +83,40 @@ class Package(config.base.Configure):
     self.downloadname = self.name
     return
 
+  def getDefaultLanguage(self):
+    '''The language in which to run tests'''
+    if hasattr(self, 'languageProvider'):
+      if hasattr(self.languageProvider, 'defaultLanguage'):
+        return self.languageProvider.defaultLanguage
+      elif hasattr(self.languageProvider, 'clanguage'):
+        return self.languageProvider.clanguage
+    return self._defaultLanguage
+  def setDefaultLanguage(self, defaultLanguage):
+    '''The language in which to run tests'''
+    self._defaultLanguage = defaultLanguage
+    return
+  defaultLanguage = property(getDefaultLanguage, setDefaultLanguage, doc = 'The language in which to run tests')
+
+  def getArch(self):
+    '''The architecture identifier'''
+    if hasattr(self, 'archProvider'):
+      if hasattr(self.archProvider, 'arch'):
+        return self.archProvider.arch
+    return self._arch
+  def setArch(self, arch):
+    '''The architecture identifier'''
+    self._arch = arch
+    return
+  arch = property(getArch, setArch, doc = 'The architecture identifier')
+
   def getSearchDirectories(self):
     '''By default, do not search any particular directories'''
     return []
 
   def getInstallDir(self):
-    return os.path.abspath(self.Install())
+    if self.archIndependent:
+      return os.path.abspath(self.Install())
+    return os.path.abspath(os.path.join(self.Install(), self.arch))
 
   def generateLibList(self, directory):
     '''Generates full path list of libraries from self.liblist'''
@@ -185,6 +217,38 @@ class Package(config.base.Configure):
       return self.getInstallDir()
     return ''
 
+  def matchExcludeDir(self,dir):
+    '''Check is the dir matches something in the excluded directory list'''
+    for exdir in self.excludedDirs:
+      if dir.startswith(exdir):
+        return 1
+    return 0
+
+  def getDir(self, retry = 1):
+    '''Find the directory containing the package'''
+    if self.framework.externalPackagesDir is None:
+      packages = os.path.abspath('externalpackages')
+    else:
+      packages = self.framework.externalPackagesDir
+    if not os.path.isdir(packages):
+      os.mkdir(packages)
+      self.framework.actions.addArgument('Framework', 'Directory creation', 'Created the external packages directory: '+packages)
+    Dir = None
+    for d in os.listdir(packages):
+      if d.startswith(self.downloadname) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
+        Dir = d
+        break
+    if Dir is None:
+      self.framework.log.write('Could not locate an existing copy of '+self.downloadname+':\n'+str(os.listdir(packages)))
+      if retry <= 0:
+        raise RuntimeError('Unable to download '+self.downloadname)
+      self.downLoad()
+      return self.getDir(retry = 0)
+    if not self.archIndependent:
+      if not os.path.isdir(os.path.join(packages, Dir, self.arch)):
+        os.mkdir(os.path.join(packages, Dir, self.arch))
+    return os.path.join(packages, Dir)
+
   def Install(self):
     raise RuntimeError('No custom installation implemented for package '+self.package+'\n')
 
@@ -220,7 +284,10 @@ class Package(config.base.Configure):
       if not hasattr(package, 'found'):
         raise RuntimeError('Package '+package.name+' does not have found attribute!')
       if not package.found:
-        raise RuntimeError('Did not find Package '+package.name+' needed by '+self.name)
+        if self.framework.argDB['with-'+package.package] == 1:
+          raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
+        else:
+          raise RuntimeError('Did not find package '+package.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+package.package)
       if hasattr(package, 'dlib'):    libs  += package.dlib
       if hasattr(package, 'include'): incls += package.include
     if self.needsMath:
