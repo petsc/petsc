@@ -17,7 +17,7 @@ class Configure(PETSc.package.Package):
 
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
-    self.blasLapack = framework.require('PETSc.packages.BlasLapack',self)
+    self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.deps       = [self.blasLapack]
     return
 

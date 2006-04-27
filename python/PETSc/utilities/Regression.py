@@ -24,7 +24,7 @@ class Configure(config.base.Configure):
     self.bmake         = framework.require('PETSc.utilities.bmakeDir', self)    
     self.datafilespath = framework.require('PETSc.utilities.dataFilesPath', self)
     self.compilers     = framework.require('config.compilers', self)
-    self.mpi           = framework.require('PETSc.packages.MPI', self)
+    self.mpi           = framework.require('config.packages.MPI', self)
     self.x11           = framework.require('PETSc.packages.X11', self)        
     return
 

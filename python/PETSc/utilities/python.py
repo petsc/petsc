@@ -26,7 +26,7 @@ class Configure(config.base.Configure):
     self.sourceControl = framework.require('config.sourceControl',self)
     self.petscdir = framework.require('PETSc.utilities.petscdir', self)
     self.setCompilers = framework.require('config.setCompilers', self)
-    self.MPI = framework.require('PETSc.packages.MPI', self)
+    self.MPI = framework.require('config.packages.MPI', self)
     if self.framework.argDB['with-python']:
       self.python = framework.require('config.python', None)
     return

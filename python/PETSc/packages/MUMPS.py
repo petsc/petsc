@@ -18,10 +18,10 @@ class Configure(PETSc.package.Package):
 
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi        = framework.require('PETSc.packages.MPI',self)
-    self.blasLapack = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.blacs      = self.framework.require('PETSc.packages.blacs',self)
-    self.scalapack  = self.framework.require('PETSc.packages.SCALAPACK',self)
+    self.mpi        = framework.require('config.packages.MPI',self)
+    self.blasLapack = framework.require('config.packages.BlasLapack',self)
+    self.blacs      = framework.require('PETSc.packages.blacs',self)
+    self.scalapack  = framework.require('PETSc.packages.SCALAPACK',self)
     self.deps       = [self.scalapack,self.blacs,self.mpi,self.blasLapack]
     return
         

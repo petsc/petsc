@@ -19,8 +19,8 @@ class Configure(PETSc.package.Package):
 
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi        = framework.require('PETSc.packages.MPI',self)
-    self.blasLapack = framework.require('PETSc.packages.BlasLapack',self)
+    self.mpi        = framework.require('config.packages.MPI',self)
+    self.blasLapack = framework.require('config.packages.BlasLapack',self)
     if self.framework.argDB.has_key('download-hypre') and not self.framework.argDB['download-hypre'] == 0:
       self.hypre      = framework.require('PETSc.packages.hypre',self)
       self.deps       = [self.mpi,self.blasLapack,self.hypre]

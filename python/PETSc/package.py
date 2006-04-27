@@ -306,7 +306,10 @@ class Package(config.base.Configure):
       if not hasattr(l,'found'):
         raise RuntimeError(l.PACKAGE+' does not have found attribute!')
       if not l.found:
-        raise RuntimeError('Did not find '+l.PACKAGE+' needed by '+self.name)
+        if self.framework.argDB['with-'+l.package] == 1:
+          raise RuntimeError('Package '+l.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
+        else:
+          raise RuntimeError('Did not find package '+l.PACKAGE+' needed by '+self.name+'.\nEnable the package using --with-'+l.package)
       if hasattr(l,'dlib'):    libs  += l.dlib
       if hasattr(l,'include'): incls += l.include
     if self.needsMath:
@@ -379,12 +382,10 @@ class NewPackage(config.package.Package):
     self.double           = 1   # 1 means requires double precision 
     self.complex          = 0   # 0 means cannot use complex
     self.requires32bitint = 1;  # 1 means that the package will not work in 64 bit mode
-    self.archIndependent  = 0   # 1 means the install directory does not incorporate the ARCH name
     return
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.arch           = framework.require('PETSc.utilities.arch', self)
     self.languages      = framework.require('PETSc.utilities.languages', self)
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
     return
@@ -401,8 +402,3 @@ class NewPackage(config.package.Package):
       if self.libraryOptions.integerSize == 64 and self.requires32bitint:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')    
     return
-
-  def getInstallDir(self):
-    if self.archIndependent:
-      return os.path.abspath(self.Install())
-    return os.path.abspath(os.path.join(self.Install(), self.arch.arch))

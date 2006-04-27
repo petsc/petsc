@@ -35,13 +35,21 @@ class Configure(config.base.Configure):
     self.headers       = framework.require('config.headers',           self)
     self.functions     = framework.require('config.functions',         self)
     self.libraries     = framework.require('config.libraries',         self)
-    for d in ['utilities', 'packages']:
-      for utility in os.listdir(os.path.join('python', 'PETSc', d)):
-        (utilityName, ext) = os.path.splitext(utility)
-        if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
-          utilityObj              = self.framework.require('PETSc.'+d+'.'+utilityName, self)
-          utilityObj.headerPrefix = self.headerPrefix
-          setattr(self, utilityName.lower(), utilityObj)
+    if os.path.isdir(os.path.join('python', 'PETSc')):
+      for d in ['utilities', 'packages']:
+        for utility in os.listdir(os.path.join('python', 'PETSc', d)):
+          (utilityName, ext) = os.path.splitext(utility)
+          if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
+            utilityObj              = self.framework.require('PETSc.'+d+'.'+utilityName, self)
+            utilityObj.headerPrefix = self.headerPrefix
+            ##utilityObj.languageProvider = self.languages
+            setattr(self, utilityName.lower(), utilityObj)
+    self.blaslapack    = framework.require('config.packages.BlasLapack', self)
+    self.blaslapack.archProvider      = self.arch
+    self.blaslapack.precisionProvider = self.languages
+    self.mpi           = framework.require('config.packages.MPI',        self)
+    self.mpi.archProvider             = self.arch
+    self.mpi.languageProvider         = self.languages
 
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix

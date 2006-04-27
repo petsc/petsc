@@ -17,8 +17,8 @@ class Configure(PETSc.package.Package):
 
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
-    self.mpi        = framework.require('PETSc.packages.MPI',self)
-    self.blasLapack = framework.require('PETSc.packages.BlasLapack',self)
+    self.mpi        = framework.require('config.packages.MPI',self)
+    self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.parmetis   = framework.require('PETSc.packages.ParMetis',self)
     self.deps       = [self.parmetis,self.mpi,self.blasLapack]
     return

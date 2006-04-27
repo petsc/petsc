@@ -21,7 +21,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-c++-support', nargs.Arg(None, 0, 'When building C, compile C++ portions of external libraries (e.g. Prometheus)'))
     help.addArgument('PETSc', '-with-c-support', nargs.Arg(None, 0, 'When building with C++, compile so may be used directly from C'))
     help.addArgument('PETSc', '-with-fortran', nargs.ArgBool(None, 1, 'Create and install the Fortran wrappers'))
-    help.addArgument('PETSc', '-with-precision=<single,double,longdouble,matsingle>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
+    help.addArgument('PETSc', '-with-precision=<single,double,longdouble,int,matsingle>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
     help.addArgument('PETSc', '-with-scalar-type=<real or complex>', nargs.Arg(None, 'real', 'Specify real or complex numbers'))
     return
 

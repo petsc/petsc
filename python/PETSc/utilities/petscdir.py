@@ -28,7 +28,6 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-PETSC_DIR',                        nargs.Arg(None, None, 'The root directory of the PETSc installation'))
-    help.addArgument('PETSc', '-with-external-packages-dir=<dir>', nargs.Arg(None, None, 'Location to install downloaded packages'))
     help.addArgument('PETSc', '-with-installation-method=<method>', nargs.Arg(None, 'tarball', 'Method of installation, e.g. tarball, clone, etc.'))
     return
 
@@ -111,10 +110,10 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
     return
 
   def configureExternalPackagesDir(self):
-    if 'with-external-packages-dir' in self.framework.argDB:
-      self.externalPackagesDir = self.framework.argDB['with-external-packages-dir']
-    else:
+    if self.framework.externalPackagesDir is None:
       self.externalPackagesDir = os.path.join(self.dir, 'externalpackages')
+    else:
+      self.externalPackagesDir = self.framework.externalPackagesDir
     return
 
   def configureInstallationMethod(self):

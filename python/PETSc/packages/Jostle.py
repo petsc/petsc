@@ -38,7 +38,7 @@ class Configure(config.base.Configure):
     self.petscdir       = framework.require('PETSc.utilities.petscdir', self)
     self.arch           = framework.require('PETSc.utilities.arch', self)
     self.compilers      = framework.require('config.compilers', self)
-    self.mpi            = framework.require('PETSc.packages.MPI', self)
+    self.mpi            = framework.require('config.packages.MPI', self)
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
     return
 
