@@ -94,10 +94,8 @@ class Configure(config.base.Configure):
     self.compilers  = framework.require('config.compilers', self)
     self.headers    = framework.require('config.headers', self)
     self.libraries  = framework.require('config.libraries', self)
-    ##self.blaslapack = framework.require('config.packages.BlasLapack', self)
-    ##self.mpi        = framework.require('config.packages.MPI', self)
-    self.blaslapack = framework.require('PETSc.packages.BlasLapack', self)
-    self.mpi        = framework.require('PETSc.packages.MPI', self)
+    self.blaslapack = framework.require('config.packages.BlasLapack', self)
+    self.mpi        = framework.require('config.packages.MPI', self)
     return
 
   def getPETScArch(self, petscDir):
