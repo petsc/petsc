@@ -9,6 +9,7 @@ class Package(config.base.Configure):
     self.headerPrefix     = 'PETSc'
     self.substPrefix      = 'PETSc'
     self.arch             = None # The architecture identifier
+    self.externalPackagesDir = os.path.abspath('externalpackages')
     # These are derived by the configure tests
     self.found            = 0
     self.setNames()
@@ -24,6 +25,7 @@ class Package(config.base.Configure):
     self.defaultLanguage  = 'C'  # The language in which to run tests
     self.liblist          = [[]] # list of libraries we wish to check for (override with your own generateLibraryList())
     self.extraLib         = []   # additional libraries needed to link
+    self.includes         = []   # headers to check for
     self.functions        = []   # functions we wish to check for in the libraries
     self.functionsFortran = 0    # 1 means the above symbol is a Fortran symbol, so name-mangling is done
     self.functionsCxx     = [0, '', ''] # 1 means the above symbol is a C++ symbol, so name-mangling with prototype/call is done
@@ -53,6 +55,7 @@ class Package(config.base.Configure):
     self.compilers     = framework.require('config.compilers', self)
     self.headers       = framework.require('config.headers', self)
     self.libraries     = framework.require('config.libraries', self)
+    self.sourceControl = framework.require('config.sourceControl',self)
     return
 
   def setupHelp(self,help):
@@ -61,7 +64,7 @@ class Package(config.base.Configure):
     help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required,'Indicate if you wish to test for '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
     if self.download and not self.download[0] == 'redefine':
-      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
+      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded,filename>', nargs.ArgDownload(None, 2, 'Download and install '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' include files'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../libparmetis.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))    
     return
@@ -108,6 +111,18 @@ class Package(config.base.Configure):
     self._arch = arch
     return
   arch = property(getArch, setArch, doc = 'The architecture identifier')
+
+  def getExternalPackagesDir(self):
+    '''The directory for downloaded packages'''
+    if not self.framework.externalPackagesDir is None:
+      packages = os.path.abspath('externalpackages')
+      return self.framework.externalPackagesDir
+    return self._externalPackagesDir
+  def setExternalPackagesDir(self, externalPackagesDir):
+    '''The directory for downloaded packages'''
+    self._externalPackagesDir = externalPackagesDir
+    return
+  externalPackagesDir = property(getExternalPackagesDir, setExternalPackagesDir, doc = 'The directory for downloaded packages')
 
   def getSearchDirectories(self):
     '''By default, do not search any particular directories'''
@@ -185,7 +200,7 @@ class Package(config.base.Configure):
     d = self.checkDownload(requireDownload = 0)
     if d:
       for l in self.generateLibList(os.path.join(d, self.libdir)):
-        yield('Download '+self.PACKAGE, d, l, os.path.join(dir,self.includedir))
+        yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+self.getInstallDir()+'\n')
 
     raise RuntimeError('You must specify a path for '+self.name+' with --with-'+self.package+'-dir=<directory>')
@@ -226,10 +241,7 @@ class Package(config.base.Configure):
 
   def getDir(self, retry = 1):
     '''Find the directory containing the package'''
-    if self.framework.externalPackagesDir is None:
-      packages = os.path.abspath('externalpackages')
-    else:
-      packages = self.framework.externalPackagesDir
+    packages = self.externalPackagesDir
     if not os.path.isdir(packages):
       os.mkdir(packages)
       self.framework.actions.addArgument('Framework', 'Directory creation', 'Created the external packages directory: '+packages)
@@ -239,7 +251,8 @@ class Package(config.base.Configure):
         Dir = d
         break
     if Dir is None:
-      self.framework.log.write('Could not locate an existing copy of '+self.downloadname+':\n'+str(os.listdir(packages)))
+      self.framework.logPrint('Could not locate an existing copy of '+self.downloadname+':')
+      self.framework.logPrint('  '+str(os.listdir(packages)))
       if retry <= 0:
         raise RuntimeError('Unable to download '+self.downloadname)
       self.downLoad()
@@ -248,6 +261,24 @@ class Package(config.base.Configure):
       if not os.path.isdir(os.path.join(packages, Dir, self.arch)):
         os.mkdir(os.path.join(packages, Dir, self.arch))
     return os.path.join(packages, Dir)
+
+  def downLoad(self):
+    '''Downloads a package; using bk or ftp; opens it in the with-external-packages-dir directory'''
+    import install.retrieval
+
+    retriever = install.retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
+    retriever.setup()
+    failureMessage = []
+    self.framework.logPrint('Downloading '+self.name)
+    for url in self.download:
+      try:
+        retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadname)
+        self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
+        return
+      except RuntimeError, e:
+        failureMessage.append('  Failed to download '+url+'\n'+str(e))
+    failureMessage = 'Unable to download '+self.package+' from locations '+str(self.download)+'\n'+'\n'.join(failureMessage)
+    raise RuntimeError(failureMessage)
 
   def Install(self):
     raise RuntimeError('No custom installation implemented for package '+self.package+'\n')
@@ -273,7 +304,7 @@ class Package(config.base.Configure):
   def configureLibrary(self):
     '''Find an installation and check if it can work with PETSc'''
     self.framework.log.write('==================================================================================\n')
-    self.framework.log.write('Checking for a functional '+self.name+'\n')
+    self.framework.logPrint('Checking for a functional '+self.name)
     foundLibrary = 0
     foundHeader  = 0
 
@@ -301,10 +332,10 @@ class Package(config.base.Configure):
       if incl == '': incl = []
       elif not isinstance(incl, list): incl = [incl]
       incl += self.compilers.fincs
-      self.framework.log.write('Checking for library in '+location+': '+str(lib)+'\n')
+      self.framework.logPrint('Checking for library in '+location+': '+str(lib))
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
         self.lib = lib	
-        self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
+        self.framework.logPrint('Checking for headers '+location+': '+str(incl))
         if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 900.0):
           self.include = incl
           self.found   = 1
