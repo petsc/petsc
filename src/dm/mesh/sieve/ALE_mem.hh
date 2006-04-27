@@ -269,8 +269,12 @@ namespace ALE {
   // This is an Obj<X>-specific exception that is thrown when incompatible object conversion is attempted.
   class BadCast : public Exception {
   public:
-    BadCast(const char  *msg)   : Exception(msg) {};
-    BadCast(const BadCast& e)   : Exception(e) {};
+    BadCast(const char         *msg) : Exception(msg) {};
+    BadCast(const string        msg) : Exception(msg) {};
+    BadCast(const ostringstream txt) : Exception(txt.str()) {};
+    //  It actually looks like passing txt as an argument to Exception(ostringstream) performs a copy of txt, 
+    //  which is disallowed due to the ostringstream constructor being private; must use a string constructor.
+    BadCast(const BadCast& e)        : Exception(e) {};
   };
 
   // This is the main smart pointer class.
@@ -303,7 +307,7 @@ namespace ALE {
     Obj(const X& x);
     Obj(X *xx);
     Obj(const Obj& obj);
-    ~Obj();
+    virtual ~Obj();
 
     // "Factory" methods
     Obj& create(const X& x = X());

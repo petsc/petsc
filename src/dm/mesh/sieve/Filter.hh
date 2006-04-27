@@ -22,20 +22,35 @@ namespace ALE {
     template<>
     struct PredicateTraits<unsigned int> {
       typedef      unsigned int  predicate_type;
+      typedef      unsigned int  printable_type;
       //
-      static predicate_type zero_predicate() {return 0;};
-      static predicate_type max_predicate()  {return UINT_MAX;};
-      predicate_type& inc(predicate_type& p) {return(++p);};
+      static const predicate_type half;
+      static const predicate_type max;
     };
+    const PredicateTraits<unsigned int>::predicate_type PredicateTraits<unsigned int>::half = UINT_MAX/4;
+    const PredicateTraits<unsigned int>::predicate_type PredicateTraits<unsigned int>::max  = UINT_MAX;
     //
     template<>
-    struct PredicateTraits<char> {
-      typedef char predicate_type;
+    struct PredicateTraits<unsigned short> {
+      typedef      unsigned short  predicate_type;
+      typedef      unsigned short  printable_type;
       //
-      static predicate_type zero_predicate() {return 0;};
-      static predicate_type max_predicate()  {return CHAR_MAX;};
-      predicate_type& inc(predicate_type& p) {return (++p);};
+      static const predicate_type half;
+      static const predicate_type max;
     };
+    const PredicateTraits<unsigned short>::predicate_type PredicateTraits<unsigned short>::half = USHRT_MAX/4;
+    const PredicateTraits<unsigned short>::predicate_type PredicateTraits<unsigned short>::max  = USHRT_MAX;
+    //
+    template<>
+    struct PredicateTraits<unsigned char> {
+      typedef unsigned char  predicate_type;
+      typedef unsigned short printable_type;
+      //
+      static const predicate_type half;
+      static const predicate_type max;
+    };
+    const PredicateTraits<unsigned char>::predicate_type PredicateTraits<unsigned char>::half = UCHAR_MAX/4;
+    const PredicateTraits<unsigned char>::predicate_type PredicateTraits<unsigned char>::max  = UCHAR_MAX;
     //
     template <typename Predicate_, typename PredicateTraits_ = PredicateTraits<Predicate_> >
     struct PredicateRec {
@@ -45,7 +60,7 @@ namespace ALE {
       //
       predicate_type     predicate;
       struct PredicateAdjuster {
-        PredicateAdjuster(const predicate_type& newPredicate = predicate_traits::zero_predicate()) : 
+        PredicateAdjuster(const predicate_type& newPredicate = 0) : 
           _newPredicate(newPredicate) {};
         void operator()(predicate_rec_type& r) {r.predicate = this->_newPredicate;};
       private:
@@ -53,167 +68,270 @@ namespace ALE {
       };
       //
       // Basic interface
-      PredicateRec(const predicate_type& p = predicate_traits::zero_predicate()) : predicate(p) {};
+      PredicateRec(const predicate_type& p = 0) : predicate(p) {};
       PredicateRec(const PredicateRec& r) : predicate(r.p) {};
       ~PredicateRec() {};
     };
 
-    template <typename PredicateSet_, typename FilterTag_>
+    class FilterError : public ALE::Exception {
+    public:
+      FilterError(const string&  msg) : ALE::Exception(msg){}
+      FilterError(const ostringstream& txt) : ALE::Exception(txt.str()) {};
+     ~FilterError(){};
+    };
+
+    template <typename PredicateSet_>
     struct FilterContainer {
     public:
       //
       // Encapsulated types
+      typedef FilterContainer                                                filter_container_type;
       typedef PredicateSet_                                                  predicate_set_type;
-      typedef FilterTag_                                                     filter_tag;
-      typedef typename predicate_set_type::template index<filter_tag>::type  filter_index_type;
-      //
       typedef typename predicate_set_type::value_type                        predicate_rec_type;
       typedef typename predicate_rec_type::predicate_type                    predicate_type;
       typedef typename predicate_rec_type::predicate_traits                  predicate_traits;
       //
-      //
-      // 
-      enum FilterClearingPolicy {doNotClear = 0, clearOnEntry, clearOnExit};
-      //
-      // Filter
-      struct Filter : public IndexSequence<filter_index_type> {
-      public:
-        //
-        // Encapsulated types
-        typedef FilterContainer                          container_type;
-        typedef IndexSequence<filter_index_type>         index_sequence_type;
-        typedef typename index_sequence_type::index_type index_type;
-        //
+      class Filter : public std::pair<predicate_type, predicate_type> {
       protected:
-        container_type&      _container;
-        predicate_type       _high;
-        predicate_type       _low;
-        FilterClearingPolicy _policy;
+        filter_container_type& _container;
       public:
+        Filter(filter_container_type& container) : std::pair<predicate_type, predicate_type>(0,0),  _container(container) {};
+        Filter(filter_container_type& container, const predicate_type& left, const predicate_type& right) : 
+          std::pair<predicate_type, predicate_type>(left, right), _container(container) {};
+        Filter(const Filter& f) : std::pair<predicate_type, predicate_type>(f.left(), f.right()),_container(f._container) {};
+        ~Filter(){this->_container.returnFilter(*this);};
         //
-        // Basic interface
-        Filter(container_type& container, index_type& index, const predicate_type& high = predicate_traits::zero_predicate(), 
-               const predicate_type& low = predicate_traits::zero_predicate(), FilterClearingPolicy policy = doNotClear) : 
-          index_sequence_type(index), _container(container), _high(high), _low(low), _policy(policy)      
-        {
-          this->_container.applyFilter();
-          if((this->_policy == clearOnEntry)) {
-            // Upon entering Window must clear out the predicate values.
-            this->clear(this->_high, this->_low);
-          }
+        predicate_type         left()      const {return this->first;};
+        predicate_type         right()     const {return this->second;};
+        template <typename Stream_>
+        friend Stream_& operator<<(Stream_& os, const Filter& f) {
+          os << "[";
+          os << ((typename predicate_traits::printable_type)(f.left())) << ",";
+          os << ((typename predicate_traits::printable_type)(f.right())); 
+          os << "]";
+          return os;
         };
-        //
-        // Basic interface
-        Filter(const Filter& f) : 
-          index_sequence_type(f._index), _container(f._container), _high(f._high), _low(f._low), _policy(f._policy) {};
-       ~Filter() {
-          if((this->_policy == clearOnExit)) {
-            // Upon entering Window must clear out the predicate values.
-            this->clear(this->_high, this->_low);
-          }       
-          this->_container.removeFilter();
+        template <typename Stream_>
+        friend Stream_& operator<<(Stream_& os, const Obj<Filter>& f) {
+          os << "[";
+          os << ((typename predicate_traits::printable_type)(f->left())) << ",";
+          os << ((typename predicate_traits::printable_type)(f->right())); 
+          os << "]";
+          return os;
         };
-        //
-        // Extended interface
-        predicate_type low() {return this->_low;};
-        void           newLow(const predicate_type& low) {this->_low = low;};
-        predicate_type high() {return this->_high;};
-        void           newHigh(const predicate_type& high) {this->_low = high;};
-        //
-        FilterClearingPolicy clearingPolicy() {return this->_policy;};
-        void clear() {this->clear(this->high(), this->low());};
-        void clear(const predicate_type& high, const predicate_type& low) {
-          if( (high >= low) && (high > predicate_traits::zero_predicate())) {
-            // Clear out all predicates with values between low and high (inclusive).
-            // We must be careful, since we are modifying the index we are traversing.
-            // The good news is that the modification only lowers the rank of the modified element's predicate(sends to zero_predicate),
-            // and we are only interested in the elements that are greater than zero_predicate.
-            typename predicate_rec_type::PredicateAdjuster zeroOut;
-            // We traverse the interval [low, high].
-            for(typename index_type::iterator itor = this->_index.lower_bound(::boost::make_tuple(low)); 
-                itor != this->_index.upper_bound(::boost::make_tuple(high));){
-              // We advance storing the current itor in mod_itor
-              // The reason is that mod_itor will be modified and its position will change
-              typename index_type::iterator mod_itor = itor; ++itor;
-              // Now we modify mod_itor with the default PredicateAdjuster, which will make the predicate zero.
-              this->_index.modify(mod_itor, zeroOut);
-            }
-          }
-        }; // Filter::clear()        
-      };// class FilterContainer::Filter
+      };
+      typedef Filter                                                          filter_type;
+      typedef Obj<Filter>                                                     filter_object_type;
+      
       //
-      template <typename FilterIndex_, typename ValueExtractor_>
-      class FilterSequence : public IndexSequence<FilterIndex_, ValueExtractor_> { // class FilterSequence
+      //
+      // FilterSequence extends IndexSequence:
+      //       0) elements are 'PredicateRec's
+      //       1) holds the parent FilterContainer and an Obj<Filter>
+      //       2) elements' predicates can be modified through the index iterator
+      //       3) intent: in subclasses iterator construction (begin(), end()) and other queries should depend on the Filter(Object).
+      template <typename FilterContainer_, typename Index_, typename ValueExtractor_>
+      class FilterSequence : public IndexSequence<Index_, ValueExtractor_> { // class FilterSequence
       public:
-        typedef FilterContainer                              container_type;
-        typedef IndexSequence<FilterIndex_, ValueExtractor_> index_sequence_type;
+        typedef FilterContainer_                             container_type;
+        typedef IndexSequence<Index_, ValueExtractor_>       index_sequence_type;
         typedef typename index_sequence_type::index_type     index_type;
         typedef typename index_sequence_type::extractor_type extractor_type;
+        typedef typename container_type::filter_type         filter_type;
+        typedef typename container_type::filter_object_type  filter_object_type;
         //
         // Basic iterator over records with predicates
-        class iterator : public index_sequence_type::iterator { // class iterator
+        template <typename Sequence_ = FilterSequence>
+        class iterator : public index_sequence_type::template iterator<Sequence_> { // class iterator
         public:
-          typedef FilterSequence sequence_type;
+          typedef typename index_sequence_type::template iterator<Sequence_> index_sequence_iterator;
+          typedef typename index_sequence_iterator::sequence_type            sequence_type;
         public:
-          iterator(sequence_type& sequence, typename index_type::iterator& itor) : 
-            index_sequence_type::iterator(sequence, itor) {};
-          iterator(const iterator& iter) : index_sequence_type::iterator(iter) {};
+          iterator(sequence_type& sequence, typename index_type::iterator& itor) : index_sequence_iterator(sequence, itor) {};
+          iterator(const iterator& iter)                                         : index_sequence_iterator(iter) {};
           //
-          void            setPredicate(const predicate_type& p)      {
-            this->_sequence._index.modify(this->_itor, typename predicate_rec_type::PredicateAdjuster(p));
-          };
-          predicate_type  getPredicate()                       const {
-            return this->_itor->predicate;
-          };
+          predicate_type  predicate()               const {return this->_itor->predicate;};
+          bool            markUp(const predicate_type& p) {
+            // We only allow predicate to increase above the filter boundary
+            // In either case the iterator is advanced
+            filter_object_type f = this->_sequence.filter();
+            predicate_type high = 0;
+            bool result = false;
+            if(!f.isNull()) {
+              high = f->right();
+            }
+            if(p > high){
+              // We keep a copy of the inderlying _itor of the location following *this prior to the mark up.
+              // This becomes the new value of *this at the end, since the marked up *this will be out of the filter.
+              iterator it(*this); ++it; 
+              // We have to deal with the following "corner case":
+              // ++it points to this->_sequence.end(), but after having been marked Up *this becomes the new this->_sequence.end().
+              // There are two ways to deal with the situation:
+              // (1) the situation arises only if *this <= it, hence we can check for this using the ordering of this->_sequence --
+              //    the ordering of the underlying index;
+              // (2) the situation arises only if until the markUp ++it == this->_sequence.end(), so we can check for this 
+              //    and at the end of the markUp enforce *this == this->_sequence.end() regardless of the actual relationship 
+              //    between ++it and *this;
+              // We choose option (2).
+              bool atEnd = (it == this->_sequence.end());
+              this->_sequence.mark(this->_itor, p);
+              // now we advance this->_itor relative to ++it, not to the new marked up *this
+              // can't use 'iterator' assignments because of the reference member _sequence
+              if(atEnd) {
+                this->_itor = this->_sequence.end()._itor;
+              }
+              else {
+                this->_itor =  it._itor; 
+              }
+              result = true;
+            }// if(p > high)
+            return result; // return true if markUp successful
+          };// markUp()
         };// class iterator
       protected:
-        container_type&      _container;
-        Obj<Filter>          _filter;
+        container_type&        _container;
+        filter_object_type     _filter;
       public:
         //
         // Basic interface
         FilterSequence(const FilterSequence& seq) : index_sequence_type(seq),_container(seq._container), _filter(seq._filter) {};
-        FilterSequence(container_type& container, index_type& index, const Obj<Filter>& filter = Obj<Filter>()) : 
+        FilterSequence(container_type& container, index_type& index, const filter_object_type& filter = filter_object_type()) : 
           index_sequence_type(index), _container(container), _filter(filter) {};
         ~FilterSequence(){};
         //
         // Extended interface
-        virtual typename index_type::size_type size()  {
-          typename index_type::size_type sz = 0;
-          predicate_type low, high;
-          if(!this->_filter.isNull()) {
-            low = this->_filter->low();
-            high = this->_filter->high();
-          }
-          for(predicate_type p = low; p != high; p++) {
-            sz += this->_index.count(::boost::make_tuple(p));
-          }
-          return sz;
+        filter_object_type filter() {return _filter;};
+        void               mark(typename index_type::iterator itor, const predicate_type& p)      {
+          this->_index.modify(itor, typename predicate_rec_type::PredicateAdjuster(p));
         };
       }; // class FilterSequence
     protected:
       predicate_set_type _set;
-      bool _filterSet;
+      predicate_type     _top;
+      predicate_type     _occupancy[3];
     public:
       //
       // Basic interface
-      FilterContainer() : _filterSet(false) {};
-     ~FilterContainer() {
-        if(this->_filterSet) {
-          throw ALE::Exception("Destructor attempted on FilterContainer with a Filter set");
-        }
-      };
+      FilterContainer() : _top(1) {this->_occupancy[0] = 0; this->_occupancy[1] = 0; this->_occupancy[2] = 0;};
+     ~FilterContainer() {};
       //
       // Extended interface
-      void setFilter() {
-        if(this->_filterSet) {
-          throw ALE::Exception("setFilter attempted on a FilterContainer with a Filter already set");
-        }
+      predicate_type   top()                   const {return this->_top;};
+      predicate_type   occupancy(const int& i) const {
+        if((i < 0) || (i > 2)){throw FilterError("Invalid interval index");} 
+        return this->_occupancy[i];
       };
-      void removeFilter() {
-        if(!this->_filterSet) {
-          throw ALE::Exception("removeFilter attempted on a FilterContainer without a Filter set");
+      filter_object_type newFilter(const predicate_type& width) {
+        // This routine will allocate a new filter prescribed by a (left,right) predicate pair.
+        // Filter endpoints are chosen from three different intervals of size predicate_traits::half ('half' here) each:
+        // 'left' is picked from [1,half] or [half+1,2*half], while 'right' is picked from [1,half],[half+1,2*half],[2*half+1,3*half].
+        // The container keeps track of the number of filters intersecting each interval as well as the 'top' of the allocated
+        // predicate range: 'top' is the next available predicate -- the next 'left'. Here are the rules for picking 'left' and 'right':
+        //   (1) 'left' = 'top', 'right' = 'left' + width - 1,  and allocation of 'width' = 'right' - 'left' + 1 >= 'half' fails.
+        //       Hence, if 'left' is from [1,half] then 'right' can be from [1,half] or [half+1,2*half] (depending on 'left' & 'width').
+        //       Likewise, if 'left' is from [half+1,2*half] then 'right' can be from [half+1,2*half] or [2*half+1,3*half].
+        //   (2) When 'top' ends up in [2*half+1, 3*half] it is shifted to 1 so that subsequent allocations are from [1,half]
+        //       thereby completing the 'circle'.
+        //   (3) Any time a filter crosses into a new interval, that interval is required to have no intersections with previously
+        //       allocated filters, or allocation fails.
+        // The rules can be intuitively summed up by imagining a cycle of intervals such that all old filters are deallocated from
+        // an interval before new filters move in there again.  The working assumption is that the life span of filters is short enough
+        // relative to the rate of new filter creation.  Rule (2) ensures that the interval endpoints always satisfy left <= right:
+        // [2*half+1, 3*half] forms an 'overlflow buffer' for [half+1,2*half] and is little used.
+        // 
+        if(width <= 0) {
+          ostringstream txt; txt << "Invalid filter: width = " << width << " (" << *this << ")";
+          throw FilterError(txt);
         }
+        if(width > predicate_traits::half){
+          ostringstream txt; txt << "Too big a filter requested: width = " << width << " (" << *this << ")";
+          throw FilterError(txt);
+        }
+        predicate_type lastRight = this->_top-1;      // 'right' of the preceeding interval
+        predicate_type left      = this->_top;        
+        predicate_type right     = this->_top+width-1;
+        // Before we return the new filter, internal bookkeeping and checks must be done to enforce the rules above.
+        for(int i = 0; i < 2; i++) {
+          // Check if crossing from the (i-1)-st interval  [(i-1)*half+1,i*half] to the i-th interval [i*half+1,i*half] has occured.
+          if((lastRight <= i*predicate_traits::half) && (right > i*predicate_traits::half)) {
+            // Line from [(i-1)*half+1,i*half] to [i*half+1,(i+1)*half] has been crossed
+            // Check if [i*half+1,(i+1)*half] has been fully vacated
+            if(this->_occupancy[i] > 0){
+              ostringstream txt; 
+              txt << "Interval " << i << " not fully vacated when new filter requested: width = ";
+              txt << (typename predicate_traits::printable_type)width;
+              txt << " (" << *this << ")"; 
+              throw FilterError(txt);
+            }
+          }
+        }// for(int i = 0; i < 2; i++) {
+        // Adjust occupancy of intervals
+        // Find the interval that 'left' lies in
+        for(int i = 0; i < 2; i++) {
+          if((i*predicate_traits::half < left) && (left <= (i+1)*predicate_traits::half)) {
+            ++(this->_occupancy[i]);
+            // Now check whether the interval spans two intervals (i.e., 'right' lies in the following interval)
+            if(right > (i+1)*predicate_traits::half) {
+              ++(this->_occupancy[i+1]);
+            }
+          }
+        }// for(int i = 0; i < 2; i++)
+        //
+        // Now we calculate the new top and set it to 0 if it is greater than 2*half (i.e. within [2*half+1, 3*half]).
+        this->_top = right+1;
+        if(this->_top > 2*predicate_traits::half) {
+          this->_top = 1;
+        }
+        // Finally, we return the newly allocated filter;
+        filter_object_type f;
+        f.create(filter_type(*this));
+        f->first = left; f->second = right;
+        return f;
+      }; // newFilter()
+      //
+      void returnFilter(const filter_type& f)      {
+        predicate_type left = f.left(), right = f.right();
+        // We only deregister non-zero filters
+        if((left == 0) && (right == 0)) {
+          return;
+        }
+        predicate_type width = right-left+1;
+        // DEBUG
+        // Validate filter: size etc.
+        if((left == 0) || (left > 2*predicate_traits::half) || (right < left) || (width > predicate_traits::half)) {
+          ostringstream txt; txt << "Cannot close invalid filter " << f << " (" << *this << ")";
+          throw FilterError(txt);
+        }
+        // Find the interval that 'left' lies in
+        for(int i = 0; i < 2; i++) {
+          if((i*predicate_traits::half < left) && (left <= (i+1)*predicate_traits::half)) {
+            if(this->_occupancy[i] == 0) {
+              ostringstream txt; 
+              txt << "Occupancy of interval " << i << " will be negative upon closing of filter [" << left << ", " << right << "]";
+              throw FilterError(txt);
+            }
+            --(this->_occupancy[i]);
+            // Now check whether the interval spans two intervals (i.e., 'right' lies in the following interval)
+            if(right > (i+1)*predicate_traits::half) {
+              if(this->_occupancy[i+1] == 0) {
+                ostringstream txt; 
+                txt << "Occupancy of interval " << i+1 << " will be negative upon closing of filter [" << left << ", " << right << "]";
+                throw FilterError(txt);
+              }
+              --(this->_occupancy[i+1]);
+            }
+          }
+        }// for(int i = 0; i < 2; i++)
+      }; // returnFilter()
+      // Printing
+      template <typename Stream_>
+      friend Stream_& operator<<(Stream_& os, const FilterContainer& fc) {
+        os << "top = " << (typename predicate_traits::printable_type)(fc.top()) << ", occupancy = [";
+        os << (typename predicate_traits::printable_type)(fc.occupancy(0)) << ",";
+        os << (typename predicate_traits::printable_type)(fc.occupancy(1)) << ",";
+        os << (typename predicate_traits::printable_type)(fc.occupancy(2));
+        os << "]";
+        return os;
       };
     };// class FilterContainer
   }// namespace FilterDef
@@ -226,10 +344,8 @@ namespace ALE {
       // 
 
       // Index tags
-      struct SourceColorTag{};
-      struct TargetColorTag{};
-      struct SourceTargetTag{}; 
-      
+      struct ConeTag{};
+
       // Arrow record 'concept' -- conceptual structure names the fields expected in such an ArrowRec
       template <typename Predicate_, typename Arrow_>
       struct ArrowRec : public PredicateRec<Predicate_> {
@@ -259,15 +375,21 @@ namespace ALE {
         const source_type&    getSource()    const {return this->arrow.source;};
         const target_type&    getTarget()    const {return this->arrow.target;};
         const color_type&     getColor()     const {return this->arrow.color;};
+        template <typename Stream_>
+        friend Stream_& operator<<(Stream_& os, const ArrowRec& r) {
+          os << r.getArrow() << " <" << (typename predicate_traits::printable_type)(r.getPredicate()) << "> ";
+          return os;
+        };
       };// class ArrowRec
       
-      template<typename ArrowRecSet_, typename ArrowFilterTag_ = SourceColorTag>
-      struct ArrowContainer : public FilterContainer<ArrowRecSet_, ArrowFilterTag_> { // class ArrowContainer
+      template<typename ArrowRecSet_>
+      struct ArrowContainer : public FilterContainer<ArrowRecSet_> { // class ArrowContainer
       public:
         //
         // Encapsulated types
-        typedef FilterContainer<ArrowRecSet_, ArrowFilterTag_> filter_container_type;
-        typedef typename filter_container_type::Filter         filter_type;
+        typedef FilterContainer<ArrowRecSet_>                        filter_container_type;
+        typedef typename filter_container_type::filter_type          filter_type;
+        typedef typename filter_container_type::filter_object_type   filter_object_type;
         //
         typedef ArrowRecSet_                               arrow_rec_set_type; //must have correct tags
         typedef typename arrow_rec_set_type::value_type    arrow_rec_type;     // must (conceptually) extend ArrowContainerDef::ArrowRec
@@ -279,111 +401,105 @@ namespace ALE {
         typedef typename arrow_type::target_type           target_type;
         typedef typename arrow_type::color_type            color_type;
         //
-        template <typename Index_, typename Key_, typename SubKey_, typename ValueExtractor_>
-        class ArrowSequence : public filter_container_type::template FilterSequence<Index_, ValueExtractor_> { // class ArrowSequence
+        //
+        template <typename ArrowContainer_, typename Index_, typename Key_, typename ValueExtractor_>
+        class UniKeyArrowSequence : public filter_container_type::template FilterSequence<ArrowContainer_, Index_, ValueExtractor_> 
+        { // class TopFilterArrowSequence
         public:
           //
           // Encapsulated types
-          typedef ArrowContainer                                                                   arrow_container_type;
-          typedef typename filter_container_type::template FilterSequence<Index_, ValueExtractor_> filter_sequence_type;            
-          typedef typename filter_sequence_type::index_type                                        index_type;
-          typedef typename filter_sequence_type::extractor_type                                    extractor_type;
-          typedef Key_                                                                             key_type;
-          typedef SubKey_                                                                          subkey_type;
+          typedef typename filter_container_type::template FilterSequence<ArrowContainer_,Index_,ValueExtractor_> filter_sequence_type; 
+          typedef typename filter_sequence_type::container_type                                                   container_type;
+          typedef typename filter_sequence_type::index_sequence_type                                              index_sequence_type;
+          typedef typename filter_sequence_type::index_type                                                       index_type;
+          typedef typename filter_sequence_type::extractor_type                                                   extractor_type;
+          typedef typename filter_sequence_type::filter_type                                                      filter_type;
+          typedef typename filter_sequence_type::filter_object_type                                               filter_object_type;
+          typedef Key_                                                                                            key_type;
           // Need to extend the inherited iterator to be able to extract arrow attributes
-          class iterator : public filter_sequence_type::iterator {
+          template <typename Sequence_ = UniKeyArrowSequence>
+          class iterator : public filter_sequence_type::template iterator<Sequence_> {
           public:
-            typedef ArrowSequence                          sequence_type;
-            typedef typename sequence_type::index_type     index_type;
+            typedef typename filter_sequence_type::template iterator<Sequence_> filter_sequence_iterator;
+            typedef typename filter_sequence_iterator::sequence_type            sequence_type;
+            typedef typename sequence_type::index_type                          index_type;
             //
-            iterator(sequence_type& sequence, typename index_type::iterator itor) : 
-              filter_sequence_type::iterator(sequence, itor) {};
+            iterator(sequence_type& sequence, typename index_type::iterator itor) : filter_sequence_iterator(sequence, itor) {};
             virtual const source_type& source()  const {return this->_itor->arrow.source;};
             virtual const color_type&  color ()  const {return this->_itor->arrow.color;};
             virtual const target_type& target()  const {return this->_itor->arrow.target;};
             virtual const arrow_type&  arrow ()  const {return this->_itor->arrow;};
           };// class iterator
         protected:
-          arrow_container_type& _container;
-          const key_type        key;
-          const subkey_type     subkey;
-          const bool            useSubkey;
+          const key_type         _key;
         public:
           //
           // Basic interface
-          ArrowSequence(const ArrowSequence& seq) : 
-            filter_sequence_type(seq), _container(seq._container), key(seq.key), subkey(seq.subkey), useSubkey(seq.useSubkey) {};
-          ArrowSequence(arrow_container_type& container,index_type& index,const key_type& k,Obj<filter_type> filter=Obj<filter_type>()):
-            filter_sequence_type(container,index, filter), _container(container), key(k), subkey(subkey_type()), useSubkey(0) {};
-          ArrowSequence(arrow_container_type& container,index_type& index,const key_type& k,const subkey_type& kk,Obj<filter_type> filter=Obj<filter_type>()) : filter_sequence_type(container,index, filter), _container(container), key(k), subkey(kk), useSubkey(1){};
-         ~ArrowSequence() {};
+          UniKeyArrowSequence(const UniKeyArrowSequence& seq) : filter_sequence_type(seq), _key(seq._key) {};
+          UniKeyArrowSequence(container_type& container, index_type& index,const key_type& key, filter_object_type filter=filter_object_type()) : filter_sequence_type(container, index, filter), _key(key) {};
+         ~UniKeyArrowSequence() {};
           //
           // Extended interface
           virtual typename index_type::size_type  size()  {
             typename index_type::size_type sz = 0;
-            predicate_type low, high;
+            predicate_type low  = 0;
+            predicate_type high = 0;
             if(!(this->_filter.isNull())) {
-              low = this->_filter->low();
-              high = this->_filter->high();
+              low  = this->_filter->left();
+              high = this->_filter->right();
             }
-            if (this->useSubkey) {
-              for(predicate_type p = low; p <= high; ++p) {
-                sz += this->_index.count(::boost::make_tuple(p, this->key, this->subkey));
-              }
-            } else {
-              for(predicate_type p = low; p <= high; ++p) {
-                sz += this->_index.count(::boost::make_tuple(p, this->key));
-              }
+            for(predicate_type p = low; p != high; p++) {              
+              sz += this->_index.count(::boost::make_tuple(this->_key,p));
             }
             return sz;
           };
-          virtual iterator begin() {
-            predicate_type low, high;
+          virtual iterator<> begin() {
+            predicate_type low = 0;
             if(!(this->_filter.isNull())) {
-              low = this->_filter->low();
-              high = this->_filter->high();
+              low = this->_filter->left();
             }
-            if (this->useSubkey) {
-              return iterator(*this, this->_index.lower_bound(::boost::make_tuple(low, this->key,this->subkey)));
-            } else {
-              return iterator(*this, this->_index.lower_bound(::boost::make_tuple(low, this->key)));
-            }
+            return iterator<>(*this, this->_index.lower_bound(::boost::make_tuple(this->_key,low)));
           };
-          virtual iterator end() {
-            predicate_type low, high;
+          virtual iterator<> end() {
+            predicate_type high = 0;
             if(!(this->_filter.isNull())) {
-              low = this->_filter->low();
-              high = this->_filter->high();
+              high = this->_filter->right();
             }
-            if (this->useSubkey) {
-              return iterator(*this, this->_index.upper_bound(::boost::make_tuple(high, this->key,this->subkey)));
-            } else {
-              return iterator(*this, this->_index.upper_bound(::boost::make_tuple(high, this->key)));
-            }
+            return iterator<>(*this, this->_index.upper_bound(::boost::make_tuple(this->_key,high)));
+          };
+          virtual iterator<> beginAll() {
+            return iterator<>(*this, this->_index.lower_bound(::boost::make_tuple(this->_key)));
+          };
+          virtual iterator<> endAll() {
+            return iterator<>(*this, this->_index.upper_bound(::boost::make_tuple(this->_key)));
           };
           template<typename ostream_type>
-          void view(ostream_type& os, const char* label = NULL, const bool& useColor = true){
+          void view(ostream_type& os, const char* label = NULL){
+            os << "Viewing";
             if(label != NULL) {
-              os << "Viewing " << label << " arrow sequence:";
-              if(useColor) {
-                os << " with color";
-              }
-              os << std::endl;
-            } 
-            os << "[";
-            for(iterator i = this->begin(); i != this->end(); i++) {
-              os << " (" << *i;
-              if(useColor) {
-                os << "," << i.color();
-              }
-              os  << ")";
+              os << " " << label;
             }
-            os << " ]" << std::endl;
-          };
-        };// class ArrowSequence
-        //
-        typedef ArrowSequence<typename ::boost::multi_index::index<arrow_rec_set_type,TargetColorTag>::type, target_type, color_type,  typename ::boost::multi_index::const_mem_fun<arrow_rec_type, const source_type&, &arrow_rec_type::getSource> >
-        ConeSequence;
+            if(!this->_filter.isNull()) {
+              os << " filtered";
+            }
+            os << " sequence";
+            if(!this->_filter.isNull()) {
+              os << ", filter " << this->_filter;
+            }
+            os << ":" << std::endl;
+            os << "[";
+            for(iterator<> i = this->begin(); i != this->end(); i++) {
+              if(i != this->begin()) {
+                os << ", " << i.arrow();
+              }
+              else {
+                os  << i.arrow();
+              }
+              os << " <" << (typename predicate_traits::printable_type)(i.predicate()) << ">";              
+            };
+            os << "]" << std::endl;
+          };// view()
+        };// class UniKeyArrowSequence
       public:
         //
         // Basic interface
@@ -395,46 +511,53 @@ namespace ALE {
         void addArrow(const source_type& s, const target_type& t, const color_type& c) {
           this->_set.insert(arrow_rec_type(s,t,c));
         };
-        ConeSequence cone(const target_type& t) {
-          return ConeSequence(*this, ::boost::multi_index::get<TargetColorTag>(this->_set), t);
+        //
+        typedef UniKeyArrowSequence<ArrowContainer, 
+                                    typename ::boost::multi_index::index<arrow_rec_set_type,ConeTag>::type, 
+                                    target_type, 
+                                    typename ::boost::multi_index::const_mem_fun<arrow_rec_type, const source_type&, &arrow_rec_type::getSource> >
+        ConeSequence;
+        ConeSequence cone(const target_type& t, typename ConeSequence::filter_object_type f = filter_object_type()) {
+          return ConeSequence(*this, ::boost::multi_index::get<ConeTag>(this->_set), t, f);
         };
       };// class ArrowContainer
     };// namespace SifterDef 
 
-    typedef SifterDef::ArrowRec<unsigned int, ALE::Arrow<int, int, int> > ArrowRec;
+    typedef SifterDef::ArrowRec<unsigned char, ALE::Arrow<int, int, int> > MyArrowRec;
 
     // multi-index set type -- arrow set
     typedef  ::boost::multi_index::multi_index_container<
-               ArrowRec,
+               MyArrowRec,
                ::boost::multi_index::indexed_by<
                  ::boost::multi_index::ordered_non_unique<
-                   ::boost::multi_index::tag<SifterDef::SourceTargetTag>,
+                   ::boost::multi_index::tag<SifterDef::ConeTag>,
                    ::boost::multi_index::composite_key<
-                     ArrowRec, 
-                     ::boost::multi_index::const_mem_fun<ArrowRec, const ArrowRec::predicate_type&, &ArrowRec::getPredicate>,
-                     ::boost::multi_index::const_mem_fun<ArrowRec, const ArrowRec::source_type&,    &ArrowRec::getSource>, 
-                     ::boost::multi_index::const_mem_fun<ArrowRec, const ArrowRec::target_type&,    &ArrowRec::getTarget>
-                  >
-                 >,
-                 ::boost::multi_index::ordered_non_unique<
-                   ::boost::multi_index::tag<SifterDef::SourceColorTag>,
-                   ::boost::multi_index::composite_key<
-                     ArrowRec, 
-                     ::boost::multi_index::const_mem_fun<ArrowRec, const ArrowRec::source_type&, &ArrowRec::getSource>, 
-                     ::boost::multi_index::const_mem_fun<ArrowRec, const ArrowRec::color_type&,  &ArrowRec::getColor>
-                   >
-                 >,
-                 ::boost::multi_index::ordered_non_unique<
-                   ::boost::multi_index::tag<SifterDef::TargetColorTag>,
-                   ::boost::multi_index::composite_key<
-                     ArrowRec, 
-                     ::boost::multi_index::const_mem_fun<ArrowRec, const ArrowRec::target_type&, &ArrowRec::getTarget>, 
-                     ::boost::multi_index::const_mem_fun<ArrowRec, const ArrowRec::color_type&,  &ArrowRec::getColor>
+                     MyArrowRec, 
+                     ::boost::multi_index::const_mem_fun<MyArrowRec, const MyArrowRec::target_type&,    &MyArrowRec::getTarget>, 
+                     ::boost::multi_index::const_mem_fun<MyArrowRec, const MyArrowRec::predicate_type&, &MyArrowRec::getPredicate>, 
+                     ::boost::multi_index::const_mem_fun<MyArrowRec, const MyArrowRec::color_type&,     &MyArrowRec::getColor>
                    >
                  >
                >,
-               ALE_ALLOCATOR<ArrowRec>
-    > UnicolorArrowSet;
+               ALE_ALLOCATOR<MyArrowRec>
+    > TopFilterUniColorArrowSet;
+
+    // multi-index set type -- arrow set
+    typedef  ::boost::multi_index::multi_index_container<
+               MyArrowRec,
+               ::boost::multi_index::indexed_by<
+                 ::boost::multi_index::ordered_non_unique<
+                   ::boost::multi_index::tag<SifterDef::ConeTag>,
+                   ::boost::multi_index::composite_key<
+                     MyArrowRec, 
+                     ::boost::multi_index::const_mem_fun<MyArrowRec, const MyArrowRec::color_type&,     &MyArrowRec::getColor>,
+                     ::boost::multi_index::const_mem_fun<MyArrowRec, const MyArrowRec::target_type&,    &MyArrowRec::getTarget>, 
+                     ::boost::multi_index::const_mem_fun<MyArrowRec, const MyArrowRec::predicate_type&, &MyArrowRec::getPredicate>
+                   >
+                 >
+               >,
+               ALE_ALLOCATOR<MyArrowRec>
+    > BottomFilterUniColorArrowSet;
     
   }; // namespace Experimental
 }; // namespace ALE

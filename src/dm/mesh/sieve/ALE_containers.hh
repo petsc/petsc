@@ -221,7 +221,8 @@ namespace ALE {
     //
     // Extended interface
     // Printing
-    friend std::ostream& operator<<(std::ostream& os, const Arrow& a) {
+    template <typename Stream_>
+    friend Stream_& operator<<(Stream_& os, const Arrow& a) {
       os << a.source << " --(" << a.color << ")--> " << a.target;
       return os;
     }
@@ -234,16 +235,18 @@ namespace ALE {
   struct IndexSequence {
     typedef Index_                                   index_type;
     typedef ValueExtractor_                          extractor_type;
+    //
+    template <typename Sequence_ = IndexSequence>
     class iterator {
     public:
+      // Parent sequence type
+      typedef Sequence_                              sequence_type;
       // Standard iterator typedefs
       typedef std::input_iterator_tag                iterator_category;
       typedef typename extractor_type::result_type   value_type;
       typedef int                                    difference_type;
       typedef value_type*                            pointer;
       typedef value_type&                            reference;
-      // Parent sequence type
-      typedef IndexSequence                          sequence_type;
       // Underlying iterator type
       typedef typename index_type::iterator          itor_type;
     protected:
@@ -285,22 +288,13 @@ namespace ALE {
       }
       return sz;
     };
-
-//     virtual iterator begin() {
-//       return iterator(this->_index.begin());
-//     };
-        
-//     virtual iterator end() {
-//       return iterator(this->_index.end());
-//     };
-        
     template<typename ostream_type>
     void view(ostream_type& os, const char* label = NULL){
       if(label != NULL) {
         os << "Viewing " << label << " sequence:" << std::endl;
       } 
       os << "[";
-      for(iterator i = this->begin(); i != this->end(); i++) {
+      for(iterator<> i = this->begin(); i != this->end(); i++) {
         os << " "<< *i;
       }
       os << " ]" << std::endl;
