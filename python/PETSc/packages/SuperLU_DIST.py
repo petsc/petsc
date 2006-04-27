@@ -63,8 +63,7 @@ class Configure(PETSc.package.Package):
         g.write('CDEFS   = -DNoChange\n')
       self.setCompilers.popLanguage()
     else:
-      g.write('FORTRAN      = \n')
-      g.write('FFLAGS       = \n')
+      raise RuntimeError('SuperLU_DIST requires a fortran compiler! No fortran compiler configured!')
     g.write('NOOPTS       =  -O0\n')
     g.close()
     if not os.path.isdir(installDir):

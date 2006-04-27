@@ -31,7 +31,7 @@ configure_options = [
   '--sizeof_long_long=8',
   '--sizeof_float=4',
   '--sizeof_double=8',
-  '--bits_per_byte=9',
+  '--bits_per_byte=8',
   '--sizeof_MPI_Comm=4',
   '--sizeof_MPI_Fint=4',
   
