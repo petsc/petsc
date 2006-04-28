@@ -49,8 +49,6 @@ int main(int argc, char *argv[])
   catch(...) {
     std::cout << "SOME KINDA ERROR" << std::endl;
   }
-
-
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* main() */
@@ -93,7 +91,7 @@ PetscErrorCode testCone()
     bool adv = false;
     if(ci.source() > 0) {
       std::cout << "attempting to mark arrow " << ci.arrow() << " with predicate " << 1+ci.source() << " ... ";
-      adv = ci.markUp(1+ci.source());
+      adv = ci.markOut(1+ci.source());
       if(adv) {
         std::cout << " successful";
       }
@@ -102,7 +100,9 @@ PetscErrorCode testCone()
       }
       std::cout << std::endl;
     }
-    if(!adv){ci++;}
+    else {
+      ++ci;
+    }
     std::cout << "<<< cone0.begin(): " << cone0.begin().arrow() << " <";
     std::cout << (ArrowContainer::predicate_traits::printable_type)(cone0.begin().predicate()) << "> " << std::endl;
     std::cout << "<<< ci: " << ci.arrow() << " <";
@@ -143,11 +143,11 @@ PetscErrorCode testArrowFilters()
   
   // Check the predicate type
   std::cout << "Using predicate type with the following traits:" << std::endl;
-  std::cout << "half = "  << (ArrowContainer::predicate_traits::printable_type)ArrowContainer::predicate_traits::half;
+  std::cout << "third = "  << (ArrowContainer::predicate_traits::printable_type)ArrowContainer::predicate_traits::third;
   std::cout << ", max = " << (ArrowContainer::predicate_traits::printable_type)ArrowContainer::predicate_traits::max;
   std::cout << std::endl << std::endl;
 
-  ArrowContainer::predicate_type width = ArrowContainer::predicate_traits::half-1;
+  ArrowContainer::predicate_type width = ArrowContainer::predicate_traits::third-1;
   std::cout << "Will excersize ArrowContainer ac: " << ac << std::endl;
   {
     ArrowContainer::filter_object_type f1 = requestFilter(ac,width);

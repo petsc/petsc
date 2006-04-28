@@ -18,39 +18,39 @@ namespace ALE {
     template<typename Predicate_> 
     struct PredicateTraits {};
     // Traits of different predicate types are defined via specialization of PredicateTraits.
-    // We require that the predicate type act like unsigned int.
+    // We require that the predicate type act like a signed int.
     template<>
-    struct PredicateTraits<unsigned int> {
-      typedef      unsigned int  predicate_type;
-      typedef      unsigned int  printable_type;
+    struct PredicateTraits<int> {
+      typedef      int  predicate_type;
+      typedef      int  printable_type;
       //
-      static const predicate_type half;
+      static const predicate_type third;
       static const predicate_type max;
     };
-    const PredicateTraits<unsigned int>::predicate_type PredicateTraits<unsigned int>::half = UINT_MAX/4;
-    const PredicateTraits<unsigned int>::predicate_type PredicateTraits<unsigned int>::max  = UINT_MAX;
+    const PredicateTraits<int>::predicate_type PredicateTraits<int>::third = INT_MAX/3;
+    const PredicateTraits<int>::predicate_type PredicateTraits<int>::max   = INT_MAX;
     //
     template<>
-    struct PredicateTraits<unsigned short> {
-      typedef      unsigned short  predicate_type;
-      typedef      unsigned short  printable_type;
+    struct PredicateTraits<short> {
+      typedef      short  predicate_type;
+      typedef      short  printable_type;
       //
-      static const predicate_type half;
+      static const predicate_type third;
       static const predicate_type max;
     };
-    const PredicateTraits<unsigned short>::predicate_type PredicateTraits<unsigned short>::half = USHRT_MAX/4;
-    const PredicateTraits<unsigned short>::predicate_type PredicateTraits<unsigned short>::max  = USHRT_MAX;
+    const PredicateTraits<short>::predicate_type PredicateTraits<short>::third = SHRT_MAX/3;
+    const PredicateTraits<short>::predicate_type PredicateTraits<short>::max   = SHRT_MAX;
     //
     template<>
-    struct PredicateTraits<unsigned char> {
-      typedef unsigned char  predicate_type;
-      typedef unsigned short printable_type;
+    struct PredicateTraits<char> {
+      typedef char  predicate_type;
+      typedef short printable_type;
       //
-      static const predicate_type half;
+      static const predicate_type third;
       static const predicate_type max;
     };
-    const PredicateTraits<unsigned char>::predicate_type PredicateTraits<unsigned char>::half = UCHAR_MAX/4;
-    const PredicateTraits<unsigned char>::predicate_type PredicateTraits<unsigned char>::max  = UCHAR_MAX;
+    const PredicateTraits<char>::predicate_type PredicateTraits<char>::third = CHAR_MAX/3;
+    const PredicateTraits<char>::predicate_type PredicateTraits<char>::max   = CHAR_MAX;
     //
     template <typename Predicate_, typename PredicateTraits_ = PredicateTraits<Predicate_> >
     struct PredicateRec {
@@ -151,16 +151,18 @@ namespace ALE {
           iterator(const iterator& iter)                                         : index_sequence_iterator(iter) {};
           //
           predicate_type  predicate()               const {return this->_itor->predicate;};
-          bool            markUp(const predicate_type& p) {
-            // We only allow predicate to increase above the filter boundary
+          bool            markOut(const predicate_type& p) {
+            // We only allow predicate to increase or decrease so as to leave the filter.
             // In either case the iterator is advanced
             filter_object_type f = this->_sequence.filter();
-            predicate_type high = 0;
+            predicate_type left  = 0;
+            predicate_type right = 0;
             bool result = false;
             if(!f.isNull()) {
-              high = f->right();
+              left  = f->left();
+              right = f->right();
             }
-            if(p > high){
+            if((p < left) || (p > right)){
               // We keep a copy of the inderlying _itor of the location following *this prior to the mark up.
               // This becomes the new value of *this at the end, since the marked up *this will be out of the filter.
               iterator it(*this); ++it; 
@@ -184,9 +186,12 @@ namespace ALE {
                 this->_itor =  it._itor; 
               }
               result = true;
-            }// if(p > high)
+            }// if((p < left) || (p > right))
+            else {
+              ++(*this);
+            }
             return result; // return true if markUp successful
-          };// markUp()
+          };// markOut()
         };// class iterator
       protected:
         container_type&        _container;
@@ -208,55 +213,65 @@ namespace ALE {
     protected:
       predicate_set_type _set;
       predicate_type     _top;
-      predicate_type     _occupancy[3];
+      predicate_type     _bottom;
+      predicate_type     _poccupancy[3];
+      predicate_type     _noccupancy[3];
     public:
       //
       // Basic interface
-      FilterContainer() : _top(1) {this->_occupancy[0] = 0; this->_occupancy[1] = 0; this->_occupancy[2] = 0;};
+      FilterContainer() : _top(1), _bottom(-1) {
+        this->_poccupancy[0] = 0; this->_poccupancy[1] = 0; this->_poccupancy[2] = 0;
+        this->_noccupancy[0] = 0; this->_noccupancy[1] = 0; this->_noccupancy[2] = 0;
+      };
      ~FilterContainer() {};
       //
       // Extended interface
       predicate_type   top()                   const {return this->_top;};
-      predicate_type   occupancy(const int& i) const {
+      predicate_type   bottom()                const {return this->_bottom;};
+      predicate_type   pOccupancy(const int& i) const {
         if((i < 0) || (i > 2)){throw FilterError("Invalid interval index");} 
-        return this->_occupancy[i];
+        return this->_poccupancy[i];
       };
-      filter_object_type newFilter(const predicate_type& width) {
+      predicate_type   nOccupancy(const int& i) const {
+        if((i < 0) || (i > 2)){throw FilterError("Invalid interval index");} 
+        return this->_noccupancy[i];
+      };
+    protected:
+      void __allocateFilter(const predicate_type& width, predicate_type& top, predicate_type* occupancy, predicate_type& left, predicate_type& right) {
         // This routine will allocate a new filter prescribed by a (left,right) predicate pair.
-        // Filter endpoints are chosen from three different intervals of size predicate_traits::half ('half' here) each:
-        // 'left' is picked from [1,half] or [half+1,2*half], while 'right' is picked from [1,half],[half+1,2*half],[2*half+1,3*half].
+        // Depending on the sign of width, left & right are both positive or negative; here we describe the positive case.
+        // Filter endpoints are chosen from three different intervals of size predicate_traits::third ('third' here) each:
+        // 'left' is picked from [1,third] or [third+1,2*third], 
+        // while 'right' is picked from [1,third],[third+1,2*third],[2*third+1,3*third].
         // The container keeps track of the number of filters intersecting each interval as well as the 'top' of the allocated
         // predicate range: 'top' is the next available predicate -- the next 'left'. Here are the rules for picking 'left' and 'right':
-        //   (1) 'left' = 'top', 'right' = 'left' + width - 1,  and allocation of 'width' = 'right' - 'left' + 1 >= 'half' fails.
-        //       Hence, if 'left' is from [1,half] then 'right' can be from [1,half] or [half+1,2*half] (depending on 'left' & 'width').
-        //       Likewise, if 'left' is from [half+1,2*half] then 'right' can be from [half+1,2*half] or [2*half+1,3*half].
-        //   (2) When 'top' ends up in [2*half+1, 3*half] it is shifted to 1 so that subsequent allocations are from [1,half]
+        //   (1) 'left' = 'top', 'right' = 'left' + width - 1,  and allocation of 'width' = 'right' - 'left' + 1 >= 'third' fails.
+        //       Hence, if 'left' is from [1,third] then 'right' can be from [1,third] or [third+1,2*third] 
+        //       (depending on 'left' & 'width').
+        //       Likewise, if 'left' is from [third+1,2*third] then 'right' can be from [third+1,2*third] or [2*third+1,3*third].
+        //   (2) When 'top' ends up in [2*third+1, 3*third] it is shifted to 1 so that subsequent allocations are from [1,third]
         //       thereby completing the 'circle'.
         //   (3) Any time a filter crosses into a new interval, that interval is required to have no intersections with previously
         //       allocated filters, or allocation fails.
         // The rules can be intuitively summed up by imagining a cycle of intervals such that all old filters are deallocated from
         // an interval before new filters move in there again.  The working assumption is that the life span of filters is short enough
         // relative to the rate of new filter creation.  Rule (2) ensures that the interval endpoints always satisfy left <= right:
-        // [2*half+1, 3*half] forms an 'overlflow buffer' for [half+1,2*half] and is little used.
+        // [2*third+1, 3*third] forms an 'overlflow buffer' for [third+1,2*third] and is little used.
         // 
-        if(width <= 0) {
-          ostringstream txt; txt << "Invalid filter: width = " << width << " (" << *this << ")";
-          throw FilterError(txt);
-        }
-        if(width > predicate_traits::half){
+        if(width > predicate_traits::third){
           ostringstream txt; txt << "Too big a filter requested: width = " << width << " (" << *this << ")";
           throw FilterError(txt);
         }
-        predicate_type lastRight = this->_top-1;      // 'right' of the preceeding interval
-        predicate_type left      = this->_top;        
-        predicate_type right     = this->_top+width-1;
+        predicate_type lastRight = top-1;      // 'right' of the preceeding interval
+        left      = top;        
+        right     = top+width-1;
         // Before we return the new filter, internal bookkeeping and checks must be done to enforce the rules above.
         for(int i = 0; i < 2; i++) {
-          // Check if crossing from the (i-1)-st interval  [(i-1)*half+1,i*half] to the i-th interval [i*half+1,i*half] has occured.
-          if((lastRight <= i*predicate_traits::half) && (right > i*predicate_traits::half)) {
-            // Line from [(i-1)*half+1,i*half] to [i*half+1,(i+1)*half] has been crossed
-            // Check if [i*half+1,(i+1)*half] has been fully vacated
-            if(this->_occupancy[i] > 0){
+          // Check if crossing from the (i-1)-st interval  [(i-1)*third+1,i*third] to the i-th interval [i*third+1,i*third] has occured.
+          if((lastRight <= i*predicate_traits::third) && (right > i*predicate_traits::third)) {
+            // Line from [(i-1)*third+1,i*third] to [i*third+1,(i+1)*third] has been crossed
+            // Check if [i*third+1,(i+1)*third] has been fully vacated
+            if(occupancy[i] > 0){
               ostringstream txt; 
               txt << "Interval " << i << " not fully vacated when new filter requested: width = ";
               txt << (typename predicate_traits::printable_type)width;
@@ -268,29 +283,47 @@ namespace ALE {
         // Adjust occupancy of intervals
         // Find the interval that 'left' lies in
         for(int i = 0; i < 2; i++) {
-          if((i*predicate_traits::half < left) && (left <= (i+1)*predicate_traits::half)) {
-            ++(this->_occupancy[i]);
+          if((i*predicate_traits::third < left) && (left <= (i+1)*predicate_traits::third)) {
+            ++(occupancy[i]);
             // Now check whether the interval spans two intervals (i.e., 'right' lies in the following interval)
-            if(right > (i+1)*predicate_traits::half) {
-              ++(this->_occupancy[i+1]);
+            if(right > (i+1)*predicate_traits::third) {
+              ++(occupancy[i+1]);
             }
           }
         }// for(int i = 0; i < 2; i++)
         //
-        // Now we calculate the new top and set it to 0 if it is greater than 2*half (i.e. within [2*half+1, 3*half]).
-        this->_top = right+1;
-        if(this->_top > 2*predicate_traits::half) {
-          this->_top = 1;
+        // Now we calculate the new top and set it to 0 if it is greater than 2*third (i.e. within [2*third+1, 3*third]).
+        top = right+1;
+        if(top > 2*predicate_traits::third) {
+          top = 1;
         }
-        // Finally, we return the newly allocated filter;
+      }; // __allocateFilter()
+    public:
+      //
+      filter_object_type newFilter(const predicate_type& width) {
+        if(width == 0) {
+          ostringstream txt; txt << "Invalid filter: width = " << width << " (" << *this << ")";
+          throw FilterError(txt);
+        }
+        predicate_type left, right;
+        if(width > 0) {
+          __allocateFilter(width, this->_top, this->_poccupancy, left, right);
+        }
+        else {
+          __allocateFilter(-width, this->_bottom, this->_noccupancy, right, left);
+          right = -right;
+          left  = -left;
+        }
+        //
         filter_object_type f;
         f.create(filter_type(*this));
-        f->first = left; f->second = right;
+        f->first = left; 
+        f->second = right;
         return f;
-      }; // newFilter()
+      };// newFilter()
+    protected:
       //
-      void returnFilter(const filter_type& f)      {
-        predicate_type left = f.left(), right = f.right();
+      void __deallocateFilter(predicate_type left, predicate_type right, predicate_type* occupancy) {
         // We only deregister non-zero filters
         if((left == 0) && (right == 0)) {
           return;
@@ -298,39 +331,59 @@ namespace ALE {
         predicate_type width = right-left+1;
         // DEBUG
         // Validate filter: size etc.
-        if((left == 0) || (left > 2*predicate_traits::half) || (right < left) || (width > predicate_traits::half)) {
-          ostringstream txt; txt << "Cannot close invalid filter " << f << " (" << *this << ")";
+        if((left == 0) || (left > 2*predicate_traits::third) || (right < left) || (width > predicate_traits::third)) {
+          ostringstream txt; txt << "Cannot close invalid filter [" << left << "," << right << "] (container " << *this << ")";
           throw FilterError(txt);
         }
         // Find the interval that 'left' lies in
         for(int i = 0; i < 2; i++) {
-          if((i*predicate_traits::half < left) && (left <= (i+1)*predicate_traits::half)) {
-            if(this->_occupancy[i] == 0) {
+          if((i*predicate_traits::third < left) && (left <= (i+1)*predicate_traits::third)) {
+            if(occupancy[i] == 0) {
               ostringstream txt; 
               txt << "Occupancy of interval " << i << " will be negative upon closing of filter [" << left << ", " << right << "]";
               throw FilterError(txt);
             }
-            --(this->_occupancy[i]);
+            --(occupancy[i]);
             // Now check whether the interval spans two intervals (i.e., 'right' lies in the following interval)
-            if(right > (i+1)*predicate_traits::half) {
-              if(this->_occupancy[i+1] == 0) {
+            if(right > (i+1)*predicate_traits::third) {
+              if(occupancy[i+1] == 0) {
                 ostringstream txt; 
                 txt << "Occupancy of interval " << i+1 << " will be negative upon closing of filter [" << left << ", " << right << "]";
                 throw FilterError(txt);
               }
-              --(this->_occupancy[i+1]);
+              --(occupancy[i+1]);
             }
           }
         }// for(int i = 0; i < 2; i++)
+      }; // __deallocateFilter()
+    public:
+      //
+      void returnFilter(const filter_type& f)      {
+        predicate_type left = f.left(), right = f.right();
+        if(((left > 0)&&(right<0))||((left<0)&&(right>0))) {
+          ostringstream txt; txt << "Cannot close invalid filter " << f << " (" << *this << ")";
+          throw FilterError(txt);
+        }
+        if(left > 0) {// positive filter
+          __deallocateFilter(left, right, this->_poccupancy);
+        }
+        if(left < 0) {// negative filter
+          __deallocateFilter(-right, -left, this->_poccupancy);
+        }
       }; // returnFilter()
       // Printing
       template <typename Stream_>
       friend Stream_& operator<<(Stream_& os, const FilterContainer& fc) {
-        os << "top = " << (typename predicate_traits::printable_type)(fc.top()) << ", occupancy = [";
-        os << (typename predicate_traits::printable_type)(fc.occupancy(0)) << ",";
-        os << (typename predicate_traits::printable_type)(fc.occupancy(1)) << ",";
-        os << (typename predicate_traits::printable_type)(fc.occupancy(2));
-        os << "]";
+        os << "top = " << (typename predicate_traits::printable_type)(fc.top()) << ", pOccupancy = [";
+        os << (typename predicate_traits::printable_type)(fc.pOccupancy(0)) << ",";
+        os << (typename predicate_traits::printable_type)(fc.pOccupancy(1)) << ",";
+        os << (typename predicate_traits::printable_type)(fc.pOccupancy(2));
+        os << "]; ";
+        os << "bottom = " << (typename predicate_traits::printable_type)(fc.bottom()) << ", nOccupancy = [";
+        os << (typename predicate_traits::printable_type)(fc.nOccupancy(0)) << ",";
+        os << (typename predicate_traits::printable_type)(fc.nOccupancy(1)) << ",";
+        os << (typename predicate_traits::printable_type)(fc.nOccupancy(2));
+        os << "]; ";
         return os;
       };
     };// class FilterContainer
@@ -523,7 +576,7 @@ namespace ALE {
       };// class ArrowContainer
     };// namespace SifterDef 
 
-    typedef SifterDef::ArrowRec<unsigned char, ALE::Arrow<int, int, int> > MyArrowRec;
+    typedef SifterDef::ArrowRec<int, ALE::Arrow<int, int, int> > MyArrowRec;
 
     // multi-index set type -- arrow set
     typedef  ::boost::multi_index::multi_index_container<
