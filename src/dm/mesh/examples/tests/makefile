@@ -44,6 +44,10 @@ ex07: ex07.o chkopts
 	-${CLINKER} -o ex07 ex07.o ${PETSC_DM_LIB}
 	${RM} -f ex07.o
 
+ex08: ex08.o chkopts
+	-${CLINKER} -o ex08 ex08.o ${PETSC_DM_LIB}
+	${RM} -f ex08.o
+
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_DM_LIB}
 	${RM} -f ex1.o
@@ -127,6 +131,16 @@ debugex07:
 
 valex07:
 	-@valgrind --tool=memcheck ./ex07 ${EXTRA_ARGS}
+
+#-----------------------------------------------------------------
+runex08:
+	-@${MPIRUN} -np ${NP} ./ex08 ${EXTRA_ARGS}
+
+debugex08:
+	-@${MPIRUN} -np ${NP} ./ex08 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+
+valex08:
+	-@valgrind --tool=memcheck ./ex08 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex1:
