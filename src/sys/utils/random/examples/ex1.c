@@ -14,20 +14,20 @@ int main(int argc,char **argv)
 {
   PetscInt       i,n = 1000,*values;
   int            event;
-  PetscRandom    rand;
+  PetscRandom    rnd;
   PetscScalar    value;
   PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetType(rand,PETSCRAND48);CHKERRQ(ierr); 
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr); 
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rnd);CHKERRQ(ierr);
+  ierr = PetscRandomSetType(rnd,PETSCRAND48);CHKERRQ(ierr); 
+  ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr); 
 
   ierr = PetscMalloc(n*sizeof(PetscInt),&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
+    ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
     /* printf("value[%d] = %g\n",i,value); */
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
   }
@@ -36,9 +36,9 @@ int main(int argc,char **argv)
   ierr = PetscLogEventRegister(&event,"Sort",0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
  
-  ierr = PetscRandomSeed(rand);CHKERRQ(ierr);
+  ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
+    ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
     /* printf("value[%d] = %g\n",i,value); */
   }
@@ -49,7 +49,7 @@ int main(int argc,char **argv)
     if (values[i] < values[i-1]) SETERRQ(1,"Values not sorted");
   }
   ierr = PetscFree(values);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rnd);CHKERRQ(ierr);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;

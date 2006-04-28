@@ -1,0 +1,216 @@
+static char help[] = "Tests PetscRandom functions.\n\n";
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+#include <sys/types.h>
+
+#include "petsc.h"
+#include "petscsys.h"
+
+#define MAXBSIZE     40
+#define PI           3.1415926535897
+#define DATAFILENAME "ex2_stock.txt"
+
+struct himaInfoTag {
+  int           n;
+  double        r;
+  double        dt;
+  int           totalNumSim;
+  double        *St0; 
+  double        *vol; 
+};
+typedef struct himaInfoTag himaInfo;
+
+/* function protype */
+PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo);
+double mcVal(double St, double r, double vol, double dt, double eps);
+void exchange(double *a, double *b);
+double basketPayoff(double vol[], double St0[], int n, double r,double dt, double eps[]);
+void stdNormalArray(double *eps, unsigned long size,PetscRandom ran);
+unsigned long divWork(int id, unsigned long num, int np);
+
+/* 
+   Contributed by Xiaoyan Zeng <zengxia@iit.edu> and Liu, Kwong Ip" <kiliu@math.hkbu.edu.hk>
+
+   Example of usage: 
+     mpirun -np 4 ./ex2 -num_of_stocks 30 -interest_rate 0.4 -time_interval 0.01 -num_of_simulations 10000
+*/
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc, char *argv[])
+{
+    double         r,dt;
+    int            n;
+    unsigned long  i,myNumSim,totalNumSim,numdim;
+    double         payoff;
+    double         *vol, *St0, x, totalx;
+    int            np,myid;
+    time_t         start,stop;
+    double         *eps;
+    himaInfo       hinfo;
+    PetscRandom    ran;
+    PetscErrorCode ierr;
+
+    PetscInitialize(&argc,&argv,(char *)0,help);
+    time(&start);
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ran);CHKERRQ(ierr);
+    ierr = PetscRandomSetType(ran,SPRNG);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(ran);CHKERRQ(ierr);
+
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD, &np);CHKERRQ(ierr);     /* number of nodes */
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &myid);CHKERRQ(ierr);   /* my ranking */   
+    
+    vol = (double *)malloc(sizeof(double)*(2*MAXBSIZE));
+    St0 = vol + MAXBSIZE;
+    hinfo.vol = vol;
+    hinfo.St0 = St0;
+
+    hinfo.n           = 31;
+    hinfo.r           = 0.2;
+    hinfo.dt          = 0.1;
+    hinfo.totalNumSim = 1000;
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-num_of_stocks",&(hinfo.n),PETSC_NULL);CHKERRQ(ierr); 
+    if (hinfo.n <1 || hinfo.n > 31) SETERRQ1(PETSC_ERR_SUP,"Only 31 stocks listed in stock.txt. num_of_stocks %D must between 1 and 31",hinfo.n);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-interest_rate",&(hinfo.r),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-time_interval",&(hinfo.dt),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-num_of_simulations",&(hinfo.totalNumSim),PETSC_NULL);CHKERRQ(ierr);
+   
+    ierr = readData(PETSC_COMM_WORLD,&hinfo);CHKERRQ(ierr);
+    n           = hinfo.n;
+    r           = hinfo.r;
+    dt          = hinfo.dt;
+    totalNumSim = hinfo.totalNumSim;
+
+    numdim = n*(n+1)/2;
+    if (numdim%2 == 1){
+      numdim++;
+    }
+    eps = (double *)malloc(sizeof(double)*numdim);
+
+    myNumSim = divWork(myid,totalNumSim,np);
+
+    x = 0;
+    for (i=0;i<myNumSim;i++){
+        stdNormalArray(eps,numdim,ran);
+        x += basketPayoff(vol,St0,n,r,dt,eps);
+    }
+
+    ierr = MPI_Reduce(&x, &totalx, 1, MPI_DOUBLE, MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    time(&stop);
+    if (myid == 0){        
+        payoff = exp(-r*dt*n)*(totalx/totalNumSim);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Option price = $%.3f "
+           "using %ds of %s computation with %d %s "
+           "for %d stocks, %d trading period per year, "
+           "%.2f%% interest rate\n",
+           payoff,(int)(stop - start),"parallel",np,"processors",n,
+           (int)(1/dt),r);CHKERRQ(ierr);
+    }
+    
+    free(eps);
+    ierr = PetscRandomDestroy(ran);CHKERRQ(ierr);
+    PetscFinalize();   
+    return 0;
+}
+
+void stdNormalArray(double *eps, unsigned long size, PetscRandom ran)
+{
+  int            i;
+  double         u1,u2,t;
+  PetscErrorCode ierr;
+
+  for (i=0;i<size;i+=2){
+    ierr = PetscRandomGetValue(ran,&u1);
+    ierr = PetscRandomGetValue(ran,&u2);
+    
+    t = sqrt(-2*log(u1));
+    eps[i] = t * cos(2*PI*u2);
+    eps[i+1] = t * sin(2*PI*u2);
+  }
+}
+
+
+double basketPayoff(double vol[], double St0[], int n, double r,double dt, double eps[])
+{
+  double Stk[MAXBSIZE], temp;
+  double payoff;
+  int    maxk,i,j;
+  int    pointcount=0;
+    
+  for (i=0;i<n;i++) {
+    Stk[i] = St0[i];
+  }
+
+  for (i=0;i<n;i++){
+    maxk = 0;
+    for (j=0;j<(n-i);j++){
+      Stk[j] = mcVal(Stk[j],r,vol[j],dt,eps[pointcount++]);
+      if ((Stk[j]/St0[j]) > (Stk[maxk]/St0[maxk])){
+        maxk = j;
+      }
+    }
+    exchange(Stk+j-1,Stk+maxk);
+    exchange(St0+j-1,St0+maxk);
+    exchange(vol+j-1,vol+maxk);
+  }
+    
+  payoff = 0;
+  for (i=0;i<n;i++){
+    temp = (Stk[i]/St0[i]) - 1 ;
+    if (temp > 0) payoff += temp;
+  }
+  return payoff;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "readData_"
+PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
+{
+  int            i;
+  FILE           *fd;
+  char           temp[50];
+  PetscErrorCode ierr;
+  PetscMPIInt    rank;
+  double         *v=hinfo->vol, *t=hinfo->St0;
+  int            num=hinfo->n;
+    
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (!rank){
+    ierr = PetscFOpen(PETSC_COMM_SELF,DATAFILENAME,"r",&fd);CHKERRQ(ierr);
+    for (i=0;i<num;i++){
+      fscanf(fd,"%s%lf%lf",temp,v+i,t+i);
+    }
+    fclose(fd);
+  }
+  ierr = MPI_Bcast(hinfo,sizeof(himaInfo),MPI_BYTE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+void exchange(double *a, double *b)
+{
+  double t;
+    
+  t = *a;
+  *a = *b;
+  *b = t;
+}
+
+double mcVal(double St, double r, double vol, double dt, double eps)
+{
+  return (St * exp((r-0.5*vol*vol)*dt + vol*sqrt(dt)*eps));
+}
+
+unsigned long divWork(int id, unsigned long num, int np)
+{
+  unsigned long numit;
+
+  numit = (unsigned long)(((double)num)/np);
+  numit++;
+  return numit;
+}
+
+
