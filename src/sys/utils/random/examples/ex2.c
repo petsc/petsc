@@ -63,26 +63,23 @@ int main(int argc, char *argv[])
     ierr = MPI_Comm_size(PETSC_COMM_WORLD, &np);CHKERRQ(ierr);     /* number of nodes */
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &myid);CHKERRQ(ierr);   /* my ranking */   
     
-    vol = (double *)malloc(sizeof(double)*(2*MAXBSIZE));
-    St0 = vol + MAXBSIZE;
-    hinfo.vol = vol;
-    hinfo.St0 = St0;
-
     hinfo.n           = 31;
-    hinfo.r           = 0.2;
-    hinfo.dt          = 0.1;
+    hinfo.r           = 0.04;
+    hinfo.dt          = 1.0/12; /* a month as a period */
     hinfo.totalNumSim = 1000;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-num_of_stocks",&(hinfo.n),PETSC_NULL);CHKERRQ(ierr); 
     if (hinfo.n <1 || hinfo.n > 31) SETERRQ1(PETSC_ERR_SUP,"Only 31 stocks listed in stock.txt. num_of_stocks %D must between 1 and 31",hinfo.n);
     ierr = PetscOptionsGetReal(PETSC_NULL,"-interest_rate",&(hinfo.r),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetReal(PETSC_NULL,"-time_interval",&(hinfo.dt),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(PETSC_NULL,"-num_of_simulations",&(hinfo.totalNumSim),PETSC_NULL);CHKERRQ(ierr);
-   
-    ierr = readData(PETSC_COMM_WORLD,&hinfo);CHKERRQ(ierr);
+
     n           = hinfo.n;
     r           = hinfo.r;
     dt          = hinfo.dt;
     totalNumSim = hinfo.totalNumSim;
+    vol         = hinfo.vol = (double *)malloc(sizeof(double)*(2*n+1));
+    St0         = hinfo.St0 = hinfo.vol + n;
+    ierr = readData(PETSC_COMM_WORLD,&hinfo);CHKERRQ(ierr);
 
     numdim = n*(n+1)/2;
     if (numdim%2 == 1){
@@ -110,6 +107,7 @@ int main(int argc, char *argv[])
            (int)(1/dt),r);CHKERRQ(ierr);
     }
     
+    free(vol);
     free(eps);
     ierr = PetscRandomDestroy(ran);CHKERRQ(ierr);
     PetscFinalize();   
@@ -174,7 +172,7 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
   char           temp[50];
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  double         *v=hinfo->vol, *t=hinfo->St0;
+  double         *v = hinfo->vol, *t = hinfo->St0; 
   int            num=hinfo->n;
     
   PetscFunctionBegin;
@@ -186,7 +184,8 @@ PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
     }
     fclose(fd);
   }
-  ierr = MPI_Bcast(hinfo,sizeof(himaInfo),MPI_BYTE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(v,2*num,MPI_DOUBLE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  //ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] vol %g, ... %g; St0 %g, ... %g\n",rank,hinfo->vol[0],hinfo->vol[num-1],hinfo->St0 [0],hinfo->St0[num-1]);
   PetscFunctionReturn(0);
 }
 
