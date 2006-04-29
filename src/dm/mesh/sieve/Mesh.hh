@@ -1263,118 +1263,12 @@ namespace ALE {
         ALE_LOG_EVENT_END;
         ALE_LOG_STAGE_END;
       };
-
-#ifdef PETSC_HAVE_CHACO
-      static void partition_Chaco(const ALE::Obj<ALE::Two::Mesh> mesh) {
-        int size;
-        MPI_Comm_size(mesh->getComm(), &size);
-
-        /* arguments for Chaco library */
-        int nvtxs;                              /* number of vertices in full graph */
-        int *start;                             /* start of edge list for each vertex */
-        int *adjacency;                         /* = adj -> j; edge list data  */
-        int *vwgts = NULL;                      /* weights for all vertices */
-        float *ewgts = NULL;                    /* weights for all edges */
-        float *x = NULL, *y = NULL, *z = NULL;  /* coordinates for inertial method */
-        char *outassignname = NULL;             /*  name of assignment output file */
-        char *outfilename = NULL;               /* output file name */
-        short *assignment;                      /* set number of each vtx (length n) */
-        int architecture = 1;                   /* 0 => hypercube, d => d-dimensional mesh */
-        int ndims_tot = 0;                      /* total number of cube dimensions to divide */
-        int *mesh_dims = size;                  /* dimensions of mesh of processors */
-        double *goal = NULL;                    /* desired set sizes for each set */
-        int global_method = 1;                  /* global partitioning algorithm */
-        int local_method = 1;                   /* local partitioning algorithm */
-        int rqi_flag = 0;                       /* should I use RQI/Symmlq eigensolver? */
-        int vmax = 200;                         /* how many vertices to coarsen down to? */
-        int ndims = 1;                          /* number of eigenvectors (2^d sets) */
-        double eigtol = 0.001;                  /* tolerance on eigenvectors */
-        long seed = 123636512;                  /* for random graph mutations */
-
-        nvtxs = mesh->getTopology()->heightStratum(0)->size();
-        start = new int[nvtxs+1];
-
-        Obj<sieve_type::heightSequence> faces = mesh->getTopology()->heightStratum(1);
-        Obj<bundle_type> vertexBundle = mesh->getBundle(0);
-        Obj<bundle_type> elementBundle = mesh->getBundle(mesh->getTopology()->depth());
-        ierr = PetscMemzero(start, (nvtxs+1) * sizeof(int));CHKERRQ(ierr);
-        for(sieve_type::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-          Obj<sieve_type::supportSequence> cells = mesh->getTopology()->support(*f_iter);
-
-          if (cells->size() == 2) {
-            start[elementBundle->getIndex(*cells->begin()).prefix+1]++;
-            start[elementBundle->getIndex(*(++cells->begin())).prefix+1]++;
-          }
-        }
-        for(int v = 1; v <= nvtxs; v++) {
-          start[v] += start[v-1];
-        }
-        adjacency = new int[start[nvtxs]];
-        for(sieve_type::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-          Obj<sieve_type::supportSequence> cells = mesh->getTopology()->support(*f_iter);
-
-          if (cells->size()) {
-            int cellA = elementBundle->getIndex(*cells->begin()).prefix;
-            int cellB = elementBundle->getIndex(*(++cells->begin())).prefix;
-
-            adjacency[cellA+1] = cellB;
-            adjacency[cellB+1] = cellA;
-          }
-        }
-
-        assignment = new int[nvtxs];
-
-        /* redirect output to buffer: chaco -> msgLog */
-#ifdef PETSC_HAVE_UNISTD_H
-        char *msgLog;
-        int fd_stdout, fd_pipe[2], count;
-
-        fd_stdout = dup(1);
-        pipe(fd_pipe);
-        close(1);
-        dup2(fd_pipe[1], 1);
-        msgLog = new char[16284];
-#endif
-
-        ierr = interface(nvtxs, start, adjacency, vwgts, ewgts, x, y, z,
-                         outassignname, outfilename, assignment, architecture, ndims_tot,
-                         mesh_dims, goal, global_method, local_method, rqi_flag, vmax, ndims,
-                         eigtol, seed);
-
-#ifdef PETSC_HAVE_UNISTD_H
-        fflush(stdout);
-        count = read(fd_pipe[0], msgLog, (SIZE_LOG - 1) * sizeof(char));
-        if (count < 0) count = 0;
-        msgLog[count] = 0;
-        close(1);
-        dup2(fd_stdout, 1);
-        close(fd_stdout);
-        close(fd_pipe[0]);
-        close(fd_pipe[1]);
-        std::cout << msgLog << std::endl;
-        delete [] msgLog;
-#endif
-
-        delete [] assignment;
-        delete [] adjacency;
-        delete [] start;
-      };
-#endif
     public:
       static void partition(const Obj<Mesh> mesh) {
         ALE::Obj<ALE::Two::Mesh::field_type> boundary = mesh->getBoundary();
         bool hasBd = (bool) boundary->getPatches()->size();
-        int dim = mesh->getDimension();
 
-        if (dim == 2) {
-#ifdef PETSC_HAVE_CHACO
-          partition_Chaco(mesh);
-#else
-          partition_Simple(mesh);
-#endif
-        } else {
-          partition_Simple(mesh);
-        }
+        partition_Simple(mesh);
         partition_Sieve(mesh->getTopology(), true);
         if (hasBd) {
           partition_Sieve(boundary->__getOrder(), true);
