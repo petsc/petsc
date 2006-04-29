@@ -18,7 +18,7 @@ PetscErrorCode testCone();
 typedef ALE::Experimental::SifterDef::ArrowContainer<ALE::Experimental::TopFilterUniColorArrowSet>
 ArrowContainer;
 //
-ArrowContainer::filter_object_type requestFilter(ArrowContainer& ac, ArrowContainer::predicate_type width);
+ArrowContainer::filter_object_type requestFilter(ArrowContainer& ac, ArrowContainer::predicate_type width, const char *label = NULL);
 
 
 #undef __FUNCT__
@@ -143,18 +143,35 @@ PetscErrorCode testArrowFilters()
   
   // Check the predicate type
   std::cout << "Using predicate type with the following traits:" << std::endl;
-  std::cout << "third = "  << (ArrowContainer::predicate_traits::printable_type)ArrowContainer::predicate_traits::third;
+  std::cout << "min = "  << (ArrowContainer::predicate_traits::printable_type)ArrowContainer::predicate_traits::min;
   std::cout << ", max = " << (ArrowContainer::predicate_traits::printable_type)ArrowContainer::predicate_traits::max;
+  std::cout << ", third = " << (ArrowContainer::predicate_traits::printable_type)ArrowContainer::predicate_traits::third;
   std::cout << std::endl << std::endl;
 
   ArrowContainer::predicate_type width = ArrowContainer::predicate_traits::third-1;
-  std::cout << "Will excersize ArrowContainer ac: " << ac << std::endl;
+  std::cout << "Will request positive filters from ArrowContainer ac: " << ac << std::endl;
   {
-    ArrowContainer::filter_object_type f1 = requestFilter(ac,width);
-    {ArrowContainer::filter_object_type f2 = requestFilter(ac,width);}
-    ArrowContainer::filter_object_type f3 = requestFilter(ac,width);
+    ArrowContainer::filter_object_type   pf1 = requestFilter(ac,width, "pf1");
+    {ArrowContainer::filter_object_type  pf2 = requestFilter(ac,width, "pf2");}
+    ArrowContainer::filter_object_type   pf3 = requestFilter(ac,width, "pf3");
     try {
-      ArrowContainer::filter_object_type f4 = requestFilter(ac,width);
+      ArrowContainer::filter_object_type pf4 = requestFilter(ac,width, "pf4");
+    }
+    catch(const ALE::FilterDef::FilterError& e) {
+      std::cout << "FILTER ERROR (not unexpected ;)): " << e.msg() << std::endl; 
+    }
+  }
+  ArrowContainer::filter_object_type pf5 = requestFilter(ac,width, "pf5");
+  std::cout << "End-state of ArrowContainer ac: " << ac << std::endl;
+  //
+  width = -(ArrowContainer::predicate_traits::third-1);
+  std::cout << std::endl << "Will request negative filters from ArrowContainer ac: " << ac << std::endl;
+  {
+    ArrowContainer::filter_object_type  nf1 = requestFilter(ac,width, "nf1");
+    {ArrowContainer::filter_object_type nf2 = requestFilter(ac,width, "nf2");}
+    ArrowContainer::filter_object_type  nf3 = requestFilter(ac,width, "nf3");
+    try {
+      ArrowContainer::filter_object_type nf4 = requestFilter(ac,width, "nf4");
     }
     catch(const ALE::FilterDef::FilterError& e) {
       std::cout << "FILTER ERROR (not unexpected ;)): " << e.msg() << std::endl; 
@@ -167,11 +184,19 @@ PetscErrorCode testArrowFilters()
   PetscFunctionReturn(0);
 }/* testArrowFilters() */
 
-ArrowContainer::filter_object_type requestFilter(ArrowContainer& ac, ArrowContainer::predicate_type width) {
-  std::cout << "Requesting filter of width " << (ArrowContainer::predicate_traits::printable_type)width << std::endl;
+ArrowContainer::filter_object_type requestFilter(ArrowContainer& ac, ArrowContainer::predicate_type width, const char *label) {
+  std::cout << "Requesting filter ";
+  if(label != NULL) {
+    std::cout << label;
+  }
+  std::cout << " of width " << (ArrowContainer::predicate_traits::printable_type)width << std::endl;
   std::cout << "from ArrowContainer: " << ac << std::endl;
   ArrowContainer::filter_object_type f = ac.newFilter(width);
-  std::cout << "resulting filter: " << f << std::endl;
+  std::cout << "resulting filter";
+  if(label != NULL) {
+    std::cout << " " << label;
+  }
+  std::cout << ": " << f << std::endl;
   std::cout << "resulting ArrowContainer state: " << ac << std::endl;
   
   return f;
