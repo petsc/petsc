@@ -109,6 +109,9 @@ namespace ALE {
         //
         predicate_type         left()      const {return this->first;};
         predicate_type         right()     const {return this->second;};
+        filter_container_type  container() const {return this->_container;};
+        void extend(const predicate_type& width) {this->_container.extendFilter(*this, width);};
+        void contract(const predicate_type& width) {this->_container.contractFilter(*this, width);};
         template <typename Stream_>
         friend Stream_& operator<<(Stream_& os, const Filter& f) {
           os << "[";
@@ -242,6 +245,36 @@ namespace ALE {
         if((i < 0) || (i > 2)){throw FilterError("Invalid interval index");} 
         return this->_noccupancy[i];
       };
+    protected:
+      //
+      void __validateFilter(const filter_type& f) {
+        // Check filter validity
+        bool negative = (f.left() < 0);
+        // Produce correct filter limits and figure out which occupancy array to use
+        predicate_type  left;
+        predicate_type  right;
+        if(negative) {
+          left = -f.right(); right = -f.left();
+        }
+        else {
+          left = f.left(); right = f.right();
+        }
+        predicate_type width = right - left + 1;
+        if(((f.left() > 0)&&(f.right() < 0)) || ((f.left() < 0)&&(f.right() > 0))) {
+          throw FilterError("inverted");
+        }
+        if((f.left()==0) || (f.right()==0)) {
+          throw FilterError("zero extremum");
+        }
+        if(width > predicate_traits::third) {
+          ostringstream txt;
+          txt << "width too large: " << (typename predicate_traits::printable_type)width;;
+          txt << " (limit is " << (typename predicate_traits::printable_type)predicate_traits::third << ")";
+          throw FilterError(txt);
+        }
+      };// __validateFilter()
+
+    public:
       //
       filter_object_type newFilter(predicate_type width) {
         // This routine will allocate a new filter prescribed by a (left,right) predicate pair.
@@ -255,8 +288,8 @@ namespace ALE {
         //       Hence, if 'left' is from [1,third] then 'right' can be from [1,third] or [third+1,2*third] 
         //       (depending on 'left' & 'width').
         //       Likewise, if 'left' is from [third+1,2*third] then 'right' can be from [third+1,2*third] or [2*third+1,3*third].
-        //   (2) When 'top' ends up in [2*third+1, 3*third] it is shifted to 1 so that subsequent allocations are from [1,third]
-        //       thereby completing the 'circle'.
+        //   (2) When 'top' ends up in [2*third+1, 3*third] it is shifted to 1 upon a subsequent allocation request so that it is 
+        //       served from [1,third] thereby completing the 'circle'.
         //   (3) Any time a filter crosses into a new interval, that interval is required to have no intersections with previously
         //       allocated filters, or allocation fails.
         // The rules can be intuitively summed up by imagining a cycle of intervals such that all old filters are deallocated from
@@ -287,6 +320,10 @@ namespace ALE {
           txt << " (" << *this << ")";
           throw FilterError(txt);
         }
+        // First, we set 'top' to 1 if it is greater than 2*third (i.e. within [2*third+1, 3*third]).
+        if(*top > 2*predicate_traits::third) {
+          *top = 1;
+        }
         predicate_type lastRight = *top-1;      // 'right' of the preceeding interval
         predicate_type left      = *top;        
         predicate_type right     = *top+width-1;
@@ -312,7 +349,7 @@ namespace ALE {
           }
         }// for(int i = 0; i < 2; i++) {
         // Adjust occupancy of intervals
-        // Find the interval that 'left' lies in
+        // Find the interval that 'left' lies in: 'left' is only allowed in the first two intervals
         for(int i = 0; i < 2; i++) {
           if((i*predicate_traits::third < left) && (left <= (i+1)*predicate_traits::third)) {
             ++(occupancy[i]);
@@ -322,12 +359,9 @@ namespace ALE {
             }
           }
         }// for(int i = 0; i < 2; i++)
-        //
-        // Now we calculate the new top and set it to 1 if it is greater than 2*third (i.e. within [2*third+1, 3*third]).
+        // Finally, we advance 'top'
         *top = right+1;
-        if(*top > 2*predicate_traits::third) {
-          *top = 1;
-        }
+        //
         filter_object_type f;
         f.create(filter_type(*this));
         if(negative) {
@@ -341,10 +375,152 @@ namespace ALE {
         return f;
       }; // newFilter()
       //
+      void extendFilter(filter_type& f, const predicate_type& w) {
+        try {
+          __validateFilter(f);
+        }
+        catch(const FilterError& e) {
+          ostringstream txt;
+          txt << "Cannot extend invalid filter " << f << " in container " << f.container() << ": " << e.msg();
+          throw FilterError(txt);
+        }
+        // Positive or negative filter?
+        bool negative = (f.left() < 0);
+        predicate_type width = f.right()-f.left()+1;
+        predicate_type *top;
+        predicate_type *occupancy;
+        predicate_type left, right;
+        if(negative) {
+          width = -width;
+          top = &this->_bottom;
+          occupancy = this->_noccupancy;
+          left = -f.right();
+          right = -f.left();
+        }
+        else {
+          top = &this->_top;
+          occupancy = this->_poccupancy;
+          left  = f.left();
+          right = f.right();
+        }
+        // Only top filters can be extended
+        if(right + 1 != *top){
+          ostringstream txt;
+          txt << "Only top/bottom filters can be extended: filter " << f << " in container " << *this;
+        }
+        if((width + w) > predicate_traits::third) {
+          ostringstream txt;
+          txt << "Extesion of ";
+          if(negative) {
+            txt << "negative ";
+          }
+          else {
+            txt << "positive ";
+          }
+          txt << "filter " << f << " by " << w;
+          txt << " width would exceed width limit of " << predicate_traits::third << " in container " << *this;
+        }
+        // newRight is right + w. Is newRight > 3*third? How do we check without an overflow?
+        // newRight = left + width - 1 + w, so newRight > 3*third <==> width + w = newRight - left + 1 > third - left + 1.
+        if(w+width > (3*predicate_traits::third-left+1)) { 
+          ostringstream txt;
+          txt << "Extesion of ";
+          if(negative) {
+            txt << "negative ";
+          }
+          else {
+            txt << "positive ";
+          }
+          txt << "filter " << f << " by " << w;
+          txt << " width would exceed the upper limit limit of " << 3*predicate_traits::third << " in container " << *this;
+        }
+        predicate_type newRight = right + w;
+        // Locate the 'right' footprint
+        for(int i = 0; i < 3; i++) {
+          if((i*predicate_traits::third < right) && (right <= (i+1)*predicate_traits::third)) {
+            if(newRight > (i+1)*predicate_traits::third){
+              // Extension leads to a new interval crossing, which we record in the occupancy array
+              ++occupancy[i+1];
+            }
+          }
+        }
+        // Update 'top'
+        *top = newRight+1;
+        // Update filter limits
+        if(negative) {
+          f.first = -newRight;
+        }
+        else {
+          f.second = newRight;
+        }
+      };// extendFilter()
+      //
+      void contractFilter(filter_type& f, const predicate_type& w) {
+        try{
+          __validateFilter(f);
+        }
+        catch(const FilterError& e) {
+          ostringstream txt;
+          txt << "Cannot contract invalid filter " << f << " in container " << f.container() << ": " << e.msg();
+          throw FilterError(txt);
+        }
+        // Positive or negative filter?
+        bool negative = (f.left() < 0);
+        predicate_type width = f.right()-f.left()+1;
+        predicate_type *top;
+        predicate_type *occupancy;
+        predicate_type left, right;
+        if(negative) {
+          width = -width;
+          top = &this->_bottom;
+          occupancy = this->_noccupancy;
+          left  = -f.right();
+          right = -f.left();
+        }
+        else {
+          top = &this->_top;
+          occupancy = this->_poccupancy;
+          left  = f.left();
+          right = f.right();
+        }
+        if((width - w) <= 0) {
+          ostringstream txt;
+          txt << "Contraction of ";
+          if(negative) {
+            txt << "negative ";
+          }
+          else {
+            txt << "positive ";
+          }
+          txt << "filter " << f << " by " << w;
+          txt << " would result in non-positive filter width " << width - w << " in container " << *this;
+        }
+        predicate_type newLeft = left + w;
+        // Locate the 'left' footprint
+        for(int i = 0; i < 2; i++) {
+          if((i*predicate_traits::third < left) && (left <= (i+1)*predicate_traits::third)) {
+            if(newLeft > (i+1)*predicate_traits::third){
+              // Extension leads to a new interval crossing eliminated, which we record in the occupancy array
+              --occupancy[i];
+            }
+          }
+        }
+        // Update filter limits
+        if(negative) {
+          f.second = -newLeft;
+        }
+        else {
+          f.first = newLeft;
+        }
+      };// contractFilter()
+      //
       void returnFilter(const filter_type& f) {
-        // Check filter validity
-        if(((f.left() > 0)&&(f.right()<0))||((f.left()<0)&&(f.right()>0))||(f.left()==0)||(f.right()==0)) {
-          ostringstream txt; txt << "Cannot close invalid filter " << f << " (" << *this << ")";
+        try {
+          __validateFilter(f);
+        }
+        catch(const FilterError& e) {
+          ostringstream txt;
+          txt << "Cannot return invalid filter " << f << " in container " << f.container() << ": " << e.msg();
           throw FilterError(txt);
         }
         // Compute the sign of the filter
@@ -361,13 +537,7 @@ namespace ALE {
           left = f.left(); right = f.right();
           occupancy = this->_poccupancy;
         }
-        predicate_type width = right-left+1;
-        // Validate filter: size etc.
-        if((left == 0) || (left > 2*predicate_traits::third) || (right < left) || (width > predicate_traits::third)) {
-          ostringstream txt; txt << "Cannot close invalid filter " << f << " (container: " << *this << ")";
-          throw FilterError(txt);
-        }
-        // Find the interval that 'left' lies in
+        // Find the interval that 'left' lies in: 'left' only allowed in the first two intervals
         for(int i = 0; i < 2; i++) {
           if((i*predicate_traits::third < left) && (left <= (i+1)*predicate_traits::third)) {
             if(occupancy[i] == 0) {
