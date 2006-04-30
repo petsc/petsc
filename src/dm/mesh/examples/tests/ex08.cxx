@@ -14,8 +14,9 @@ static char help[] = "Constructs and views test Predicate-enabled ArrowContainer
 
 PetscErrorCode testArrowFilters();
 PetscErrorCode testCone();
-
-typedef ALE::Experimental::SifterDef::ArrowContainer<ALE::Experimental::TopFilterUniColorArrowSet, ALE::Experimental::SifterDef::PredicateTag> ArrowContainer;
+typedef ALE::Experimental::UniColorArrowSet                                             ArrowSet;
+typedef ALE::FilterDef::DummyPredicateSetClearer<ArrowSet>                              ArrowSetPredicateClearer;
+typedef ALE::Experimental::SifterDef::ArrowContainer<ArrowSet,ArrowSetPredicateClearer> ArrowContainer;
 //
 ArrowContainer::filter_object_type requestFilter(ArrowContainer& ac, ArrowContainer::predicate_type width, const char *label = NULL);
 void adjustFilter(ArrowContainer& ac, ArrowContainer::filter_object_type& f, ArrowContainer::predicate_type width, const char *label);
