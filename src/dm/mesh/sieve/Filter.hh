@@ -86,7 +86,7 @@ namespace ALE {
      ~FilterError(){};
     };
 
-    template <typename PredicateSet_>
+    template <typename PredicateSet_, typename FilterTag_>
     struct FilterContainer {
     public:
       //
@@ -96,6 +96,9 @@ namespace ALE {
       typedef typename predicate_set_type::value_type                        predicate_rec_type;
       typedef typename predicate_rec_type::predicate_type                    predicate_type;
       typedef typename predicate_rec_type::predicate_traits                  predicate_traits;
+      // 
+      typedef FilterTag_                                                                         filter_tag;
+      typedef typename ::boost::multi_index::index<predicate_set_type, filter_tag>::type         filter_index_type;
       //
       class Filter : public std::pair<predicate_type, predicate_type> {
       protected:
@@ -225,27 +228,15 @@ namespace ALE {
       predicate_type     _bottom;
       predicate_type     _poccupancy[3];
       predicate_type     _noccupancy[3];
-    public:
-      //
-      // Basic interface
-      FilterContainer() : _top(1), _bottom(1) {
-        this->_poccupancy[0] = 0; this->_poccupancy[1] = 0; this->_poccupancy[2] = 0;
-        this->_noccupancy[0] = 0; this->_noccupancy[1] = 0; this->_noccupancy[2] = 0;
-      };
-     ~FilterContainer() {};
-      //
-      // Extended interface
-      predicate_type   top()                   const {return this->_top;};
-      predicate_type   bottom()                const {return this->_bottom;};
-      predicate_type   pOccupancy(const int& i) const {
-        if((i < 0) || (i > 2)){throw FilterError("Invalid interval index");} 
-        return this->_poccupancy[i];
-      };
-      predicate_type   nOccupancy(const int& i) const {
-        if((i < 0) || (i > 2)){throw FilterError("Invalid interval index");} 
-        return this->_noccupancy[i];
-      };
-    protected:
+      void __clear(const predicate_type& low, const predicate_type& high) {
+        filter_index_type& fi = ::boost::multi_index::get<filter_tag>(this->_set);
+        typename predicate_rec_type::PredicateAdjuster zeroOutPredicate;
+        typename filter_index_type::iterator fi_low  = fi.lower_bound(low);
+        typename filter_index_type::iterator fi_high = fi.upper_bound(high);
+        for(typename filter_index_type::iterator fii = fi_low; fii != fi_high; fii++) {
+          fi.modify(fii,zeroOutPredicate);
+        }
+      }
       //
       void __validateFilter(const filter_type& f) {
         // Check filter validity
@@ -273,7 +264,26 @@ namespace ALE {
           throw FilterError(txt);
         }
       };// __validateFilter()
-
+    public:
+      //
+      // Basic interface
+      FilterContainer() : _top(1), _bottom(1) {
+        this->_poccupancy[0] = 0; this->_poccupancy[1] = 0; this->_poccupancy[2] = 0;
+        this->_noccupancy[0] = 0; this->_noccupancy[1] = 0; this->_noccupancy[2] = 0;
+      };
+     ~FilterContainer() {};
+      //
+      // Extended interface
+      predicate_type   top()                   const {return this->_top;};
+      predicate_type   bottom()                const {return this->_bottom;};
+      predicate_type   pOccupancy(const int& i) const {
+        if((i < 0) || (i > 2)){throw FilterError("Invalid interval index");} 
+        return this->_poccupancy[i];
+      };
+      predicate_type   nOccupancy(const int& i) const {
+        if((i < 0) || (i > 2)){throw FilterError("Invalid interval index");} 
+        return this->_noccupancy[i];
+      };
     public:
       //
       filter_object_type newFilter(predicate_type width) {
@@ -346,6 +356,9 @@ namespace ALE {
               txt << " (" << *this << ")"; 
               throw FilterError(txt);
             }
+            // Clear out the interval [i*third+1,(i+1)*third]
+            this->__clear(i*predicate_traits::third+1, (i+1)*predicate_traits::third);
+            break;
           }
         }// for(int i = 0; i < 2; i++) {
         // Adjust occupancy of intervals
@@ -435,15 +448,34 @@ namespace ALE {
           txt << " width would exceed the upper limit limit of " << 3*predicate_traits::third << " in container " << *this;
         }
         predicate_type newRight = right + w;
+        // CONTINUE: this is sorta messed up
         // Locate the 'right' footprint
-        for(int i = 0; i < 3; i++) {
+        for(int i = 0; i < 2; i++) {
           if((i*predicate_traits::third < right) && (right <= (i+1)*predicate_traits::third)) {
-            if(newRight > (i+1)*predicate_traits::third){
-              // Extension leads to a new interval crossing, which we record in the occupancy array
-              ++occupancy[i+1];
-            }
-          }
-        }
+            if(newRight > (i+1)*predicate_traits::third){ // crossing occured
+              // Extension leads to a new interval crossing into the (i+1)-st interval
+              // We check if the interval is occupied or not
+              if(occupancy[i+1] > 0){
+                ostringstream txt; 
+                if(negative) {
+                  txt << "Negative ";
+                }
+                else {
+                  txt << "Positive ";
+                }
+                txt << "interval " << i+1 << " not fully vacated when attempting extension of filter " << f << "by  width = " << w;
+                txt << (typename predicate_traits::printable_type)w;
+                txt << " (container " << *this << ")"; 
+                throw FilterError(txt);
+              }
+              // Clear out the interval [i*third+1,(i+1)*third]
+              this->__clear((i+1)*predicate_traits::third+1, (i+2)*predicate_traits::third);
+              // We record the new crossing in the occupancy array
+              ++(occupancy[i+1]);
+              break;
+            }// if(newRight > (i+1)*predicate_traits::third): crossing occured
+          }// if((i*predicate_traits::third < right) && (right <= (i+1)*predicate_traits::third))
+        }// for(int i = 0; i < 2; i++) 
         // Update 'top'
         *top = newRight+1;
         // Update filter limits
@@ -595,10 +627,11 @@ namespace ALE {
     using namespace ALE::FilterDef;
     namespace SifterDef { // namespace SifterDef
       // 
-      // Various ArrowContainer definitions
+      // Various ArrowContainer definitionsg
       // 
 
       // Index tags
+      struct PredicateTag{};
       struct ConeTag{};
 
       // Arrow record 'concept' -- conceptual structure names the fields expected in such an ArrowRec
@@ -637,12 +670,12 @@ namespace ALE {
         };
       };// class ArrowRec
       
-      template<typename ArrowRecSet_>
-      struct ArrowContainer : public FilterContainer<ArrowRecSet_> { // class ArrowContainer
+      template<typename ArrowRecSet_, typename FilterTag_>
+      struct ArrowContainer : public FilterContainer<ArrowRecSet_, FilterTag_> { // class ArrowContainer
       public:
         //
         // Encapsulated types
-        typedef FilterContainer<ArrowRecSet_>                        filter_container_type;
+        typedef FilterContainer<ArrowRecSet_, FilterTag_>            filter_container_type;
         typedef typename filter_container_type::filter_type          filter_type;
         typedef typename filter_container_type::filter_object_type   filter_object_type;
         //
@@ -792,28 +825,14 @@ namespace ALE {
                      ::boost::multi_index::const_mem_fun<MyArrowRec, const MyArrowRec::predicate_type&, &MyArrowRec::getPredicate>, 
                      ::boost::multi_index::const_mem_fun<MyArrowRec, const MyArrowRec::color_type&,     &MyArrowRec::getColor>
                    >
+                 >,
+                 ::boost::multi_index::ordered_non_unique<
+                   ::boost::multi_index::tag<SifterDef::PredicateTag>,
+                   ::boost::multi_index::const_mem_fun<MyArrowRec, const MyArrowRec::predicate_type&, &MyArrowRec::getPredicate>
                  >
                >,
                ALE_ALLOCATOR<MyArrowRec>
     > TopFilterUniColorArrowSet;
-
-    // multi-index set type -- arrow set
-    typedef  ::boost::multi_index::multi_index_container<
-               MyArrowRec,
-               ::boost::multi_index::indexed_by<
-                 ::boost::multi_index::ordered_non_unique<
-                   ::boost::multi_index::tag<SifterDef::ConeTag>,
-                   ::boost::multi_index::composite_key<
-                     MyArrowRec, 
-                     ::boost::multi_index::const_mem_fun<MyArrowRec, const MyArrowRec::color_type&,     &MyArrowRec::getColor>,
-                     ::boost::multi_index::const_mem_fun<MyArrowRec, const MyArrowRec::target_type&,    &MyArrowRec::getTarget>, 
-                     ::boost::multi_index::const_mem_fun<MyArrowRec, const MyArrowRec::predicate_type&, &MyArrowRec::getPredicate>
-                   >
-                 >
-               >,
-               ALE_ALLOCATOR<MyArrowRec>
-    > BottomFilterUniColorArrowSet;
-    
   }; // namespace Experimental
 }; // namespace ALE
 
