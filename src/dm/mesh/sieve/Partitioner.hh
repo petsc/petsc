@@ -270,7 +270,7 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "partition_Simple"
-    static void partition_Simple(Obj<sieve_type> oldMesh, Obj<sieve_type> oldSieve, Obj<sifter_type> oldSifter, Obj<sifter_type> newSifter) {
+    static void partition_Simple(Obj<sieve_type> oldSieve, Obj<sifter_type> oldSifter, Obj<sifter_type> newSifter) {
       typedef typename sifter_type::traits::target_type point_type;
       Obj<typename sifter_type::traits::capSequence> cap = oldSifter->cap();
       int numLeaves = oldSieve->leaves()->size();
@@ -443,10 +443,10 @@ namespace ALE {
       }
 #else
       partition_Simple(serialTopology, parallelTopology);
+#endif
       if (hasBd) {
         partition_Simple(serialTopology, serialBoundary->__getOrder(), parallelBoundary->__getOrder());
       }
-#endif
       Distributer::distribute(serialTopology, parallelTopology);
       if (hasBd) {
         Distributer::distribute(serialBoundary->__getOrder(), parallelBoundary->__getOrder(), false);
