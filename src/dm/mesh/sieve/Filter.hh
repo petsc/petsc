@@ -81,8 +81,8 @@ namespace ALE {
 
     class FilterError : public ALE::Exception {
     public:
-      FilterError(const string&  msg) : ALE::Exception(msg){}
-      FilterError(const ostringstream& txt) : ALE::Exception(txt.str()) {};
+      explicit FilterError(const string&  msg)       : ALE::Exception(msg){}
+      explicit FilterError(const ostringstream& txt) : ALE::Exception(txt){};
      ~FilterError(){};
     };
 
@@ -902,9 +902,47 @@ namespace ALE {
           return ConeSequence(*this, ::boost::multi_index::get<ConeTag>(this->_set), t, f);
         };
       };// class ArrowContainer
+
+      // 
+      // Various PointContainer definitions
+      // 
+
+      // Index tags
+      struct PointTag{};
+
+      // Point record 'concept' -- conceptual structure names the fields expected in such an PointRec
+      template <typename Predicate_, typename Point_>
+      struct PointRec : public PredicateRec<Predicate_> {
+        typedef PredicateRec<Predicate_>                      predicate_rec_type;
+        typedef typename predicate_rec_type::predicate_type   predicate_type;
+        typedef typename predicate_rec_type::predicate_traits predicate_traits;
+        //
+        typedef Point_                                        point_type;
+      public:
+        //
+        point_type point;
+      public:
+        //
+        // Basic interface
+        PointRec(const point_type& q, const predicate_type& p = predicate_type()) : predicate_rec_type(p), point(q) {};
+        PointRec(const PointRec& r) : predicate_rec_type(r.predicate), point(r.point)  {};
+       ~PointRec(){};
+        // 
+        // Extended interface
+        const predicate_type& getPredicate() const {return this->predicate;};
+        const point_type&     getPoint()     const {return this->point;};
+        template <typename Stream_>
+        friend Stream_& operator<<(Stream_& os, const PointRec& r) {
+          os << r.getPoint() << " <" << (typename predicate_traits::printable_type)(r.getPredicate()) << "> ";
+          return os;
+        };
+      };// class PointRec
+
     };// namespace SifterDef 
 
     typedef SifterDef::ArrowRec<char, ALE::Arrow<int, int, int> > MyArrowRec;
+    typedef SifterDef::PointRec<char, ALE::Point>                 MySourceRec;
+    typedef SifterDef::PointRec<char, ALE::Point>                 MyTargetRec;
 
     // multi-index set type -- arrow set
     typedef  ::boost::multi_index::multi_index_container<
