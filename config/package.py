@@ -64,7 +64,7 @@ class Package(config.base.Configure):
     help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,self.required,'Indicate if you wish to test for '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
     if self.download and not self.download[0] == 'redefine':
-      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded,filename>', nargs.ArgDownload(None, 2, 'Download and install '+self.name))
+      help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' include files'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../libparmetis.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))    
     return
