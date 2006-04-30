@@ -31,9 +31,10 @@ int main(int argc, char *argv[])
   MPI_Comm       comm;
   Vec            partition;
   PetscViewer    viewer;
+  char           baseFilename[2048];
   PetscInt       dim, debug;
   PetscReal      refinementLimit;
-  PetscTruth     interpolate;
+  PetscTruth     interpolate, readFile;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -48,6 +49,8 @@ int main(int argc, char *argv[])
     ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex2.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
     refinementLimit = 0.0;
     ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex2.c", 1.0, &refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscStrcpy(baseFilename, "none");CHKERRQ(ierr);
+    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex2.c", "ex2", baseFilename, 2048, &readFile);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ALE::Obj<ALE::Two::Mesh> meshBoundary = ALE::Two::Mesh(comm, dim-1, debug);
@@ -57,7 +60,19 @@ int main(int argc, char *argv[])
     ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Generating mesh\n");CHKERRQ(ierr);
-    ierr = CreateMeshBoundary(meshBoundary);CHKERRQ(ierr);
+    if (readFile) {
+      meshBoundary = ALE::Two::PCICEBuilder::createNewBd(comm, baseFilename, dim-1, PETSC_TRUE, debug);
+    } else {
+      ierr = CreateMeshBoundary(meshBoundary);CHKERRQ(ierr);
+    }
+    if (debug) {
+      ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(viewer, "testBoundary.vtk");CHKERRQ(ierr);
+      ierr = MeshView_Sieve_Newer(meshBoundary, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    }
     mesh = ALE::Two::Generator::generate(meshBoundary, interpolate);
     ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
@@ -94,7 +109,7 @@ int main(int argc, char *argv[])
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
   } catch (ALE::Exception e) {
-    std::cout << e << std::endl;
+    std::cout << e.msg() << std::endl;
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);

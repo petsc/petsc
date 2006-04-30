@@ -325,6 +325,16 @@ namespace ALE {
         this->createVertexBundle(numSimplices, simplices);
         this->createSerialCoordinates(this->dim, numSimplices, coords);
       };
+      void populateBd(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true) {
+        this->topology->setStratification(false);
+        if (this->commRank() == 0) {
+          this->buildTopology(numSimplices, simplices, numVertices, interpolate);
+        }
+        this->topology->stratify();
+        this->topology->setStratification(true);
+        this->createVertexBundle(numSimplices, simplices);
+        this->createSerialCoordinates(this->dim+1, numSimplices, coords);
+      };
 
       // Partition and distribute a serial mesh
       Obj<Mesh> distribute();
@@ -1107,6 +1117,18 @@ namespace ALE {
         readConnectivity(comm, baseFilename+".lcon", dim, useZeroBase, numElements, &vertices);
         readCoordinates(comm, baseFilename+".nodes", dim, numVertices, &coordinates);
         mesh->populate(numElements, vertices, numVertices, coordinates);
+        return mesh;
+      };
+
+      static Obj<ALE::Two::Mesh> createNewBd(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, int debug = 0) {
+        Obj<ALE::Two::Mesh> mesh = ALE::Two::Mesh(comm, dim, debug);
+        int      *vertices;
+        double   *coordinates;
+        int       numElements = 0, numVertices = 0;
+
+        readConnectivity(comm, baseFilename+".lcon", dim, useZeroBase, numElements, &vertices);
+        readCoordinates(comm, baseFilename+".nodes", dim+1, numVertices, &coordinates);
+        mesh->populateBd(numElements, vertices, numVertices, coordinates);
         return mesh;
       };
     };
