@@ -468,7 +468,9 @@ namespace ALE {
   Obj<X>& Obj<X>::operator=(const Obj<X>& obj) {
     if(this->objPtr == obj.objPtr) {return *this;}
     // Destroy 'this' Obj -- it will properly release the underlying object if the reference count is exhausted.
-    this->~Obj<X>();
+    if(this->objPtr) {
+      this->~Obj<X>();
+    }
     // Now copy the data from obj.
     this->objPtr = obj.objPtr;
     this->refCnt = obj.refCnt;

@@ -1104,6 +1104,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 
   ierr = PetscObjectChangeTypeName((PetscObject) p, "sieve");CHKERRQ(ierr);
 
+  p->m            = PETSC_NULL;
   p->globalvector = PETSC_NULL;
   *mesh = p;
   PetscFunctionReturn(0);
