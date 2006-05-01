@@ -43,9 +43,9 @@ PetscErrorCode WriteVTKVertices_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
   ALE::Obj<ALE::Two::Mesh::field_type> coordinates = mesh->getCoordinates();
   ALE::Two::Mesh::field_type::patch_type patch;
   const double  *array = coordinates->restrict(patch);
-  int            dim = mesh->getDimension();
   ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
   int            numVertices;
+  int            embedDim;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -59,14 +59,15 @@ PetscErrorCode WriteVTKVertices_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
   if (mesh->commRank() == 0) {
     int numLocalVertices = mesh->getTopology()->depthStratum(0)->size();
 
+    embedDim = mesh->getCoordinates()->getFiberDimension(patch, *mesh->getTopology()->depthStratum(0)->begin());
     for(int v = 0; v < numLocalVertices; v++) {
-      for(int d = 0; d < dim; d++) {
+      for(int d = 0; d < embedDim; d++) {
         if (d > 0) {
           ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
         }
-        ierr = PetscViewerASCIIPrintf(viewer, "%G", array[v*dim+d]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "%G", array[v*embedDim+d]);CHKERRQ(ierr);
       }
-      for(int d = dim; d < 3; d++) {
+      for(int d = embedDim; d < 3; d++) {
         ierr = PetscViewerASCIIPrintf(viewer, " 0.0");CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
@@ -77,30 +78,31 @@ PetscErrorCode WriteVTKVertices_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
       MPI_Status status;
 
       ierr = MPI_Recv(&numLocalVertices, 1, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
-      ierr = PetscMalloc(numLocalVertices*dim * sizeof(double), &remoteCoords);CHKERRQ(ierr);
-      ierr = MPI_Recv(remoteCoords, numLocalVertices*dim, MPI_DOUBLE, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
+      ierr = PetscMalloc(numLocalVertices*embedDim * sizeof(double), &remoteCoords);CHKERRQ(ierr);
+      ierr = MPI_Recv(remoteCoords, numLocalVertices*embedDim, MPI_DOUBLE, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
       for(int v = 0; v < numLocalVertices; v++) {
-        for(int d = 0; d < dim; d++) {
+        for(int d = 0; d < embedDim; d++) {
           if (d > 0) {
             ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
           }
-          ierr = PetscViewerASCIIPrintf(viewer, "%G", remoteCoords[v*dim+d]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, "%G", remoteCoords[v*embedDim+d]);CHKERRQ(ierr);
         }
-        for(int d = dim; d < 3; d++) {
+        for(int d = embedDim; d < 3; d++) {
           ierr = PetscViewerASCIIPrintf(viewer, " 0.0");CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }
     }
   } else {
+    embedDim = mesh->getCoordinates()->getFiberDimension(patch, *mesh->getTopology()->depthStratum(0)->begin());
     ALE::Obj<ALE::Two::Mesh::bundle_type> globalOrder = coordinates->getGlobalOrder();
     ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> cone = globalOrder->getPatch(patch);
     const int *offsets = coordinates->getGlobalOffsets();
-    int        numLocalVertices = (offsets[mesh->commRank()+1] - offsets[mesh->commRank()])/dim;
+    int        numLocalVertices = (offsets[mesh->commRank()+1] - offsets[mesh->commRank()])/embedDim;
     double    *localCoords;
     int        k = 0;
 
-    ierr = PetscMalloc(numLocalVertices*dim * sizeof(double), &localCoords);CHKERRQ(ierr);
+    ierr = PetscMalloc(numLocalVertices*embedDim * sizeof(double), &localCoords);CHKERRQ(ierr);
     for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
       int dim = globalOrder->getFiberDimension(patch, *p_iter);
 
@@ -112,11 +114,11 @@ PetscErrorCode WriteVTKVertices_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
         }
       }
     }
-    if (k != numLocalVertices*dim) {
-      SETERRQ2(PETSC_ERR_PLIB, "Invalid number of coordinates to send %d should be %d", k, numLocalVertices*dim);
+    if (k != numLocalVertices*embedDim) {
+      SETERRQ2(PETSC_ERR_PLIB, "Invalid number of coordinates to send %d should be %d", k, numLocalVertices*embedDim);
     }
     ierr = MPI_Send(&numLocalVertices, 1, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
-    ierr = MPI_Send(localCoords, numLocalVertices*dim, MPI_DOUBLE, 0, 1, mesh->comm());CHKERRQ(ierr);
+    ierr = MPI_Send(localCoords, numLocalVertices*embedDim, MPI_DOUBLE, 0, 1, mesh->comm());CHKERRQ(ierr);
     ierr = PetscFree(localCoords);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -138,6 +140,9 @@ PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!globalElement) {
+    globalElement = elementBundle;
+  }
   for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
     if (globalElement->getFiberDimension(patch, *e_itor) > 0) {
       corners = topology->nCone(*e_itor, topology->depth())->size();
@@ -1670,7 +1675,7 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
     //ierr = assembleOperator_New(A, mesh->getField(), mesh->getOrientation(), ALE::def::Mesh::sieve_type::point_type(0, e + firstElement), v, mode);CHKERRQ(ierr);
     ierr = updateOperator(A, mesh->getField("displacement"), ALE::Two::Mesh::sieve_type::point_type(0, localElement + firstElement), v, mode);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
-    std::cout << e << std::endl;
+    std::cout << e.msg() << std::endl;
   }
   PetscFunctionReturn(0);
 }

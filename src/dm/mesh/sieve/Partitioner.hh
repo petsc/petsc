@@ -3,6 +3,17 @@
 
 #include <petscvec.h>
 
+/* Chaco does not have an include file */
+extern "C" {
+  extern int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
+                       float *ewgts, float *x, float *y, float *z, char *outassignname,
+                       char *outfilename, short *assignment, int architecture, int ndims_tot,
+                       int mesh_dims[3], double *goal, int global_method, int local_method,
+                       int rqi_flag, int vmax, int ndims, double eigtol, long seed);
+
+  extern int FREE_GRAPH;
+}
+
 namespace ALE {
   class Distributer {
   public:
@@ -292,11 +303,21 @@ namespace ALE {
       ALE_LOG_EVENT_END;
     };
 #ifdef PETSC_HAVE_CHACO
-      static void partition_Chaco(const Obj<mesh_type> mesh) {
-        int size;
-        MPI_Comm_size(mesh->getComm(), &size);
+    static void partition_Chaco(Obj<mesh_type> oldMesh, Obj<sieve_type> oldSieve, const Obj<sieve_type> newSieve) {
+      ALE_LOG_EVENT_BEGIN;
+      typename mesh_type::patch_type patch;
+      PetscErrorCode ierr;
+      int size = oldSieve->commSize();
+      int *offsets;
 
+
+      Obj<typename sieve_type::traits::heightSequence> faces = oldSieve->heightStratum(1);
+      Obj<typename sieve_type::traits::heightSequence> elements = oldSieve->heightStratum(0);
+      Obj<typename mesh_type::bundle_type> vertexBundle = oldMesh->getBundle(0);
+      Obj<typename mesh_type::bundle_type> elementBundle = oldMesh->getBundle(oldSieve->depth());
+      if (oldSieve->commRank() == 0) {
         /* arguments for Chaco library */
+        FREE_GRAPH = 0;                         /* Do not let Chaco free my memory */
         int nvtxs;                              /* number of vertices in full graph */
         int *start;                             /* start of edge list for each vertex */
         int *adjacency;                         /* = adj -> j; edge list data  */
@@ -308,7 +329,7 @@ namespace ALE {
         short *assignment;                      /* set number of each vtx (length n) */
         int architecture = 1;                   /* 0 => hypercube, d => d-dimensional mesh */
         int ndims_tot = 0;                      /* total number of cube dimensions to divide */
-        int *mesh_dims = size;                  /* dimensions of mesh of processors */
+        int mesh_dims[3];                       /* dimensions of mesh of processors */
         double *goal = NULL;                    /* desired set sizes for each set */
         int global_method = 1;                  /* global partitioning algorithm */
         int local_method = 1;                   /* local partitioning algorithm */
@@ -318,38 +339,38 @@ namespace ALE {
         double eigtol = 0.001;                  /* tolerance on eigenvectors */
         long seed = 123636512;                  /* for random graph mutations */
 
-        nvtxs = mesh->getTopology()->heightStratum(0)->size();
+        nvtxs = oldSieve->heightStratum(0)->size();
         start = new int[nvtxs+1];
-
-        Obj<sieve_type::heightSequence> faces = mesh->getTopology()->heightStratum(1);
-        Obj<bundle_type> vertexBundle = mesh->getBundle(0);
-        Obj<bundle_type> elementBundle = mesh->getBundle(mesh->getTopology()->depth());
-        ierr = PetscMemzero(start, (nvtxs+1) * sizeof(int));CHKERRQ(ierr);
-        for(sieve_type::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-          Obj<sieve_type::supportSequence> cells = mesh->getTopology()->support(*f_iter);
+        offsets = new int[nvtxs];
+        mesh_dims[0] = size; mesh_dims[1] = 1; mesh_dims[2] = 1;
+        ierr = PetscMemzero(start, (nvtxs+1) * sizeof(int));CHKERROR(ierr, "Error in PetscMemzero");
+        for(typename sieve_type::traits::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+          Obj<typename sieve_type::supportSequence> cells = oldSieve->support(*f_iter);
 
           if (cells->size() == 2) {
-            start[elementBundle->getIndex(*cells->begin()).prefix+1]++;
-            start[elementBundle->getIndex(*(++cells->begin())).prefix+1]++;
+            start[elementBundle->getIndex(patch, *cells->begin()).prefix+1]++;
+            start[elementBundle->getIndex(patch, *(++cells->begin())).prefix+1]++;
           }
         }
         for(int v = 1; v <= nvtxs; v++) {
-          start[v] += start[v-1];
+          offsets[v-1] = start[v-1];
+          start[v]    += start[v-1];
         }
         adjacency = new int[start[nvtxs]];
-        for(sieve_type::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-          Obj<sieve_type::supportSequence> cells = mesh->getTopology()->support(*f_iter);
+        for(typename sieve_type::traits::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+          Obj<typename sieve_type::supportSequence> cells = oldSieve->support(*f_iter);
 
-          if (cells->size()) {
-            int cellA = elementBundle->getIndex(*cells->begin()).prefix;
-            int cellB = elementBundle->getIndex(*(++cells->begin())).prefix;
+          if (cells->size() == 2) {
+            int cellA = elementBundle->getIndex(patch, *cells->begin()).prefix;
+            int cellB = elementBundle->getIndex(patch, *(++cells->begin())).prefix;
 
-            adjacency[cellA+1] = cellB;
-            adjacency[cellB+1] = cellA;
+            adjacency[offsets[cellA]++] = cellB+1;
+            adjacency[offsets[cellB]++] = cellA+1;
           }
         }
 
-        assignment = new int[nvtxs];
+        assignment = new short int[nvtxs];
+        ierr = PetscMemzero(assignment, nvtxs * sizeof(short));CHKERROR(ierr, "Error in PetscMemzero");
 
         /* redirect output to buffer: chaco -> msgLog */
 #ifdef PETSC_HAVE_UNISTD_H
@@ -369,6 +390,8 @@ namespace ALE {
                          eigtol, seed);
 
 #ifdef PETSC_HAVE_UNISTD_H
+        int SIZE_LOG  = 10000;
+
         fflush(stdout);
         count = read(fd_pipe[0], msgLog, (SIZE_LOG - 1) * sizeof(char));
         if (count < 0) count = 0;
@@ -381,11 +404,26 @@ namespace ALE {
         std::cout << msgLog << std::endl;
         delete [] msgLog;
 #endif
+        for(typename sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+          if ((*e_iter).prefix >= 0) {
+            oldSieve->addCone(oldSieve->closure(*e_iter), typename mesh_type::point_type(-1, assignment[elementBundle->getIndex(patch, *e_iter).prefix]));
+          }
+        }
 
         delete [] assignment;
         delete [] adjacency;
         delete [] start;
-      };
+        delete [] offsets;
+      }
+      typename mesh_type::point_type partitionPoint(-1, newSieve->commRank());
+
+      newSieve->addBasePoint(partitionPoint);
+      if (oldSieve->debug) {
+        oldSieve->view("Partition of old sieve");
+        newSieve->view("Partition of new sieve");
+      }
+      ALE_LOG_EVENT_END;
+    };
 #endif
   public:
     static void partition(const Obj<mesh_type> serialMesh, const Obj<mesh_type> parallelMesh) {
@@ -396,13 +434,19 @@ namespace ALE {
       bool hasBd = (serialBoundary->getPatches()->size() > 0);
 
 #ifdef PETSC_HAVE_CHACO
-      partition_Chaco(serialTopology, parallelTopology);
+      int dim = serialMesh->getDimension();
+
+      if (dim == 2) {
+        partition_Chaco(serialMesh, serialTopology, parallelTopology);
+      } else {
+        partition_Simple(serialTopology, parallelTopology);
+      }
 #else
       partition_Simple(serialTopology, parallelTopology);
+#endif
       if (hasBd) {
         partition_Simple(serialTopology, serialBoundary->__getOrder(), parallelBoundary->__getOrder());
       }
-#endif
       Distributer::distribute(serialTopology, parallelTopology);
       if (hasBd) {
         Distributer::distribute(serialBoundary->__getOrder(), parallelBoundary->__getOrder(), false);

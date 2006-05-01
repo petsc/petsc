@@ -11,17 +11,18 @@ namespace ALE {
   class Exception {
     string _msg;
   public:
-    Exception(const char         * msg) : _msg(msg){};
-    Exception(const string&        msg) : _msg(msg){};
-    Exception(const ostringstream& txt) : _msg(txt.str()){};
+    //    explicit Exception(const char         * msg) : _msg(msg){};
+    explicit Exception(const string&        msg) : _msg(msg){};
+    explicit Exception(const ostringstream& txt) : _msg(txt.str()){};
     Exception(const Exception& e)      : _msg(e._msg) {};
     const string& msg()     const  {return this->_msg;};
     const char   *message() const  {return this->_msg.c_str();};
     // Printing
-//     friend std::ostream& operator<<(std::ostream& os, const Exception& e) {
-//       os << "ERROR: " << e.message() << std::endl;
-//       return os;
-//     };
+    template <typename Stream_>
+    friend Stream_& operator<<(Stream_& os, const Exception& e) {
+      os << "ERROR: " << e.message() << std::endl;
+      return os;
+    };
   };
 
   // A helper function that throws an ALE::Exception with a message identifying the function that returned the given error code, 

@@ -56,17 +56,17 @@ class Configure(PETSc.package.Package):
     installDir = os.path.join(hypreDir, self.arch.arch)
     # Configure and Build HYPRE
     self.framework.pushLanguage('C')
-    args = ['--prefix='+installDir, '--with-CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
+    args = ['--prefix='+installDir, 'CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
-      args.append('--with-CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      args.append('CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
     else:
       raise RuntimeError('Error: Hypre requires C++ compiler. None specified')
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
-      args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
+      args.append('F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
       self.framework.popLanguage()
     if self.mpi.include:
       # just use the first dir - and assume the subsequent one isn't necessary [relavant only on AIX?]
