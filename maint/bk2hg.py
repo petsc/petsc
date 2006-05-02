@@ -84,8 +84,14 @@ def main():
     # a new repository has -1 changeset number.
     bk_cset_min = '1.0'
   else:
-    bk_cset_min = buf.splitlines()[7].strip()
-
+    bk_cset_min =''
+    for line in buf.splitlines():
+      if line.find('|ChangeSet|') >=0:
+        bk_cset_min = line.strip()
+        break
+    if bk_cset_min == '':
+      print 'Error! bk changeset tag not found at the tip of hg repo!'
+          
   if bk_cset_min == bk_cset_max:
     print 'No new changesets Quitting! Last commit:', bk_cset_min
     sys.exit()
@@ -139,7 +145,7 @@ def main():
     timestr = '"' + str(gtime) + ' ' +str(time.timezone) + '"'
     
     #get comment string
-    fd=os.popen('bk changes -r'+revq+' | grep -v ^ChangeSet@')
+    fd=os.popen('bk changes -v -r'+revq)
     buf=fd.read()
     fd.close()
     msg = 'bk-changeset-'+revn + '\n' + rev + '\n'+ buf.strip() + '\n'
