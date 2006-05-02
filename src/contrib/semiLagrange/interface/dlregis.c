@@ -105,7 +105,7 @@ EXTERN_C_BEGIN
 /* --------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryInfo"
-int PetscDLLibraryInfo(char *path,char *type,char **mess) 
+int PetscDLLibraryInfo(const char *path,const char *type,const char **mess) 
 {
   PetscTruth iscon,isaut,isver;
   int        ierr;
