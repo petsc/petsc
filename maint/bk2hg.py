@@ -12,6 +12,7 @@
 
 import sys
 import os
+import time
 
 def main():
   createhgrepo=0
@@ -83,8 +84,14 @@ def main():
     # a new repository has -1 changeset number.
     bk_cset_min = '1.0'
   else:
-    bk_cset_min = buf.splitlines()[7].strip()
-
+    bk_cset_min =''
+    for line in buf.splitlines():
+      if line.find('|ChangeSet|') >=0:
+        bk_cset_min = line.strip()
+        break
+    if bk_cset_min == '':
+      print 'Error! bk changeset tag not found at the tip of hg repo!'
+          
   if bk_cset_min == bk_cset_max:
     print 'No new changesets Quitting! Last commit:', bk_cset_min
     sys.exit()
@@ -132,9 +139,13 @@ def main():
     auth_email=fd.read().splitlines()[0].strip()
     fd.close()
     auth_email=auth_email.replace('.(none)','')
+
+    fd=os.popen('bk changes -and:TIME_T: -r'+revq)
+    gtime = fd.read().splitlines()[0].strip()
+    timestr = '"' + str(gtime) + ' ' +str(time.timezone) + '"'
     
     #get comment string
-    fd=os.popen('bk changes -r'+revq+' | grep -v ^ChangeSet@')
+    fd=os.popen('bk changes -v -r'+revq)
     buf=fd.read()
     fd.close()
     msg = 'bk-changeset-'+revn + '\n' + rev + '\n'+ buf.strip() + '\n'
@@ -152,7 +163,10 @@ def main():
     os.system('ls -a | grep -v .hg | xargs rm -rf >/dev/null 2>&1')
     os.system('bk export -r'+revq+' ' + bk_repo + ' ' + hg_repo)
     # somehow add in --date as well
-    os.system('hg commit --addremove --user ' + auth_email + ' --logfile '+log_file + ' --exclude '+log_file+ ' > /dev/null 2>&1')
+    if os.system('hg commit --addremove --user ' + auth_email + ' --date ' + timestr + ' --logfile '+log_file + ' --exclude '+log_file):
+      print 'Exiting due to the previous error!'
+      sys.exit()
+    os.unlink(log_file)
     
   return 0
 
