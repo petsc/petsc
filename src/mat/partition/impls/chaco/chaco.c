@@ -118,7 +118,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
 
     {
         /* arguments for Chaco library */
-        int nvtxs = mat->M;                     /* number of vertices in full graph */
+        int nvtxs = mat->rmap.N;                /* number of vertices in full graph */
         int *start = adj->i;                    /* start of edge list for each vertex */
         int *adjacency;                         /* = adj -> j; edge list data  */
         int *vwgts = NULL;                      /* weights for all vertices */
@@ -140,7 +140,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
         long seed = 123636512;                  /* for random graph mutations */
 
         /* return value of Chaco */
-        ierr = PetscMalloc((mat->M) * sizeof(short), &assignment);CHKERRQ(ierr);          
+        ierr = PetscMalloc((mat->rmap.N) * sizeof(short), &assignment);CHKERRQ(ierr);          
         
         /* index change for libraries that have fortran implementation */
         ierr = PetscMalloc(sizeof(int) * start[nvtxs], &adjacency);CHKERRQ(ierr);
@@ -179,7 +179,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
 
         ierr = PetscFree(adjacency);CHKERRQ(ierr);
 
-        ierr = PetscMalloc((mat->M) * sizeof(int), &parttab);CHKERRQ(ierr);          
+        ierr = PetscMalloc((mat->rmap.N) * sizeof(int), &parttab);CHKERRQ(ierr);          
         for (i = 0; i < nvtxs; i++) {
             parttab[i] = assignment[i];
         }
@@ -189,13 +189,13 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
     /* Creation of the index set */
     ierr = MPI_Comm_rank(part->comm, &rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(part->comm, &size);CHKERRQ(ierr);
-    nb_locals = mat->M / size;
+    nb_locals = mat->rmap.N / size;
     locals = parttab + rank * nb_locals;
-    if (rank < mat->M % size) {
+    if (rank < mat->rmap.N % size) {
         nb_locals++;
         locals += rank;
     } else
-        locals += mat->M % size;
+        locals += mat->rmap.N % size;
     ierr = ISCreateGeneral(part->comm, nb_locals, locals, partitioning);CHKERRQ(ierr);
 
     /* destroy temporary objects */
@@ -330,7 +330,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningChacoSetCoarseLevel(MatPartitio
         SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,
             "Chaco: level of coarsening out of range [0.01-1.0]");
     } else
-        chaco->nbvtxcoarsed = (int)(part->adj->N * level);
+        chaco->nbvtxcoarsed = (int)(part->adj->cmap.N * level);
 
     if (chaco->nbvtxcoarsed < 20)
         chaco->nbvtxcoarsed = 20;
