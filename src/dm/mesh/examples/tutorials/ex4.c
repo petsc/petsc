@@ -25,6 +25,12 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Two::
 PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh>);
 PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Two::Mesh>, Vec *);
 PetscErrorCode CreateDielectricVector(ALE::Obj<ALE::Two::Mesh>, Vec *);
+double refineLimit(const double [], void *);
+
+typedef struct {
+  PetscReal refinementLimit;
+  PetscReal refinementExp;
+} RefinementCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -33,8 +39,8 @@ int main(int argc, char *argv[])
   MPI_Comm       comm;
   Vec            partition, dielectric;
   PetscViewer    viewer;
+  RefinementCtx  refCtx;
   PetscInt       dim, debug;
-  PetscReal      refinementLimit;
   PetscTruth     interpolate, viewDielectric;
   PetscErrorCode ierr;
 
@@ -46,8 +52,10 @@ int main(int argc, char *argv[])
     ierr = PetscOptionsInt("-debug", "The debugging flag", "ex4.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
     interpolate = PETSC_TRUE;
     ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex4.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
-    refinementLimit = 0.0;
-    ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex4.c", 1.0, &refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+    refCtx.refinementLimit = 0.0;
+    ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex4.c", 1.0, &refCtx.refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+    refCtx.refinementExp = 0.0;
+    ierr = PetscOptionsReal("-refinement_exp", "The exponent of the radius for refinement", "ex4.c", 1.0, &refCtx.refinementExp, PETSC_NULL);CHKERRQ(ierr);
     viewDielectric = PETSC_FALSE;
     ierr = PetscOptionsTruth("-view_dielectric", "View the dielectric constant as a field", "ex4.c", PETSC_FALSE, &viewDielectric, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -88,11 +96,15 @@ int main(int argc, char *argv[])
     ALE::LogStagePop(stage);
 
     /* Refine the mesh */
-    if (refinementLimit > 0.0) {
+    if (refCtx.refinementLimit > 0.0) {
       stage = ALE::LogStageRegister("MeshRefine");
       ALE::LogStagePush(stage);
       ierr = PetscPrintf(comm, "Refining mesh\n");CHKERRQ(ierr);
-      mesh = ALE::Two::Generator::refine(mesh, refinementLimit, interpolate);
+      if (refCtx.refinementExp == 0.0) {
+        mesh = ALE::Two::Generator::refine(mesh, refCtx.refinementLimit, interpolate);
+      } else {
+        mesh = ALE::Two::Generator::refine(mesh, refineLimit, (void *) &refCtx, interpolate);
+      }
       ALE::LogStagePop(stage);
       ierr = PetscPrintf(comm, "  Generated %d elements\n", mesh->getTopology()->heightStratum(0)->size());CHKERRQ(ierr);
       ierr = PetscPrintf(comm, "  Generated %d vertices\n", mesh->getTopology()->depthStratum(0)->size());CHKERRQ(ierr);
@@ -122,6 +134,13 @@ int main(int argc, char *argv[])
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+
+double refineLimit(const double centroid[], void *ctx) {
+  RefinementCtx *refCtx = (RefinementCtx *) ctx;
+  double         r2     = centroid[0]*centroid[0] + centroid[1]*centroid[1];
+
+  return refCtx->refinementLimit*pow(r2, refCtx->refinementExp*0.5);
 }
 
 #undef __FUNCT__

@@ -962,7 +962,6 @@ namespace ALE {
         constraints->setPatch(mesh->getTopology()->leaves(), patch);
         constraints->setFiberDimensionByHeight(patch, 0, 1);
         constraints->orderPatches();
-        constraints->createGlobalOrder();
 
         double *maxAreas = new double[numElements];
         for(int e = 0; e < numElements; e++) {
@@ -970,6 +969,40 @@ namespace ALE {
         }
         constraints->update(patch, maxAreas);
         delete maxAreas;
+        Obj<Mesh> refinedMesh = refine(mesh, constraints, interpolate);
+
+        return refinedMesh;
+      };
+      static Obj<Mesh> refine(Obj<Mesh> mesh, double (*maxArea)(const double centroid[], void *ctx), void *ctx, bool interpolate = true) {
+        Obj<Mesh::sieve_type>                         topology = mesh->getTopology();
+        Obj<Mesh::field_type>                         constraints = Mesh::field_type(mesh->comm(), mesh->debug);
+        Obj<Mesh::field_type>                         coordinates = mesh->getCoordinates();
+        Obj<Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
+        Mesh::field_type::patch_type                  patch;
+        int                                           corners = topology->nCone(*elements->begin(), topology->depth())->size();
+        int                                           embedDim = coordinates->getFiberDimension(patch, *topology->depthStratum(0)->begin());
+        double                                       *centroid = new double[embedDim];
+        std::string                                   orderName("element");
+
+        constraints->setTopology(topology);
+        constraints->setPatch(topology->leaves(), patch);
+        constraints->setFiberDimensionByHeight(patch, 0, 1);
+        constraints->orderPatches();
+
+        for(Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+          const double *coords = coordinates->restrict(orderName, *e_itor);
+
+          for(int d = 0; d < embedDim; d++) {
+            centroid[d] = 0.0;
+            for(int c = 0; c < corners; c++) {
+              centroid[d] += coords[c*embedDim+d];
+            }
+            centroid[d] /= corners;
+          }
+          double area = maxArea(centroid, ctx);
+          constraints->update(patch, *e_itor, &area);
+        }
+        delete [] centroid;
         Obj<Mesh> refinedMesh = refine(mesh, constraints, interpolate);
 
         return refinedMesh;
