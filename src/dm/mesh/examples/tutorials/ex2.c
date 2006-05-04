@@ -142,7 +142,7 @@ PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
                                   0.0, 2.0,
                                   0.0, 1.0,
                                   1.0, 1.0};
-  PetscInt    connectivity[40] = {0, 1,
+  PetscInt    connectivity[24] = {0, 1,
                                   1, 2,
                                   2, 3,
                                   3, 4,
@@ -184,7 +184,7 @@ PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
     topology->addArrow(vertices[8], edge, order++);
   }
   topology->stratify();
-  mesh->createVertexBundle(20, connectivity);
+  mesh->createVertexBundle(12, connectivity, 9);
   mesh->createSerialCoordinates(2, 0, coords);
   /* Create boundary conditions */
   if (mesh->commRank() == 0) {
@@ -328,7 +328,7 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
       vertexBundle->setPatch(orderName, points, face);
     }
   }
-  mesh->createVertexBundle(6, connectivity);
+  mesh->createVertexBundle(12, connectivity, 8);
   mesh->createSerialCoordinates(embedDim, 0, coords);
 
   /* Create boundary conditions: set marker 1 to all of the sieve elements, 

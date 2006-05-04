@@ -1318,13 +1318,13 @@ PetscErrorCode __expandIntervals(ALE::Obj<IntervalSequence> intervals, PetscInt 
 
     k += std::abs(dim);
   }
-  std::cout << "Allocated indices of size " << k << std::endl;
+  //std::cout << "Allocated indices of size " << k << std::endl;
   ierr = PetscMalloc(k * sizeof(PetscInt), &ind);CHKERRQ(ierr);
   k = 0;
   for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
-    std::cout << "  indices for " << *i_iter << std::endl;
+    //std::cout << "  indices for " << *i_iter << std::endl;
     for(int i = i_iter.color().prefix; i < i_iter.color().prefix + std::abs(i_iter.color().index); i++) {
-      std::cout << "  indices[" << k << "] = " << i << std::endl;
+      //std::cout << "  indices[" << k << "] = " << i << std::endl;
       ind[k++] = i;
     }
   }
@@ -1345,15 +1345,15 @@ PetscErrorCode __expandIntervals(ALE::Obj<IntervalSequence> intervals, ALE::Obj<
 
     k += std::abs(dim);
   }
-  std::cout << "Allocated indices of size " << k << std::endl;
+  //std::cout << "Allocated indices of size " << k << std::endl;
   ierr = PetscMalloc(k * sizeof(PetscInt), &ind);CHKERRQ(ierr);
   k = 0;
   for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
     const ALE::Two::Mesh::bundle_type::index_type& color = order->getColor(*i_iter, patch, false);
 
-    std::cout << "  indices for " << *i_iter << std::endl;
+    //std::cout << "  indices for " << *i_iter << std::endl;
     for(int i = color.prefix; i < color.prefix + std::abs(color.index); i++) {
-      std::cout << "  indices[" << k << "] = " << i << std::endl;
+      //std::cout << "  indices[" << k << "] = " << i << std::endl;
       ind[k++] = i;
     }
   }
@@ -1371,16 +1371,16 @@ template<typename IntervalSequence,typename Field>
   for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
     k += std::abs(field->getFiberDimension(patch, *i_iter));
   }
-  std::cout << "Allocated indices of size " << k << std::endl;
+  //std::cout << "Allocated indices of size " << k << std::endl;
   ierr = PetscMalloc(k * sizeof(PetscInt), &ind);CHKERRQ(ierr);
   k = 0;
   for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
     int dim = field->getFiberDimension(patch, *i_iter);
     int offset = field->getFiberOffset(patch, *i_iter);
 
-    std::cout << "  indices for " << *i_iter << std::endl;
+    //std::cout << "  indices for " << *i_iter << std::endl;
     for(int i = offset; i < offset + std::abs(dim); i++) {
-      std::cout << "  indices[" << k << "] = " << i << std::endl;
+      //std::cout << "  indices[" << k << "] = " << i << std::endl;
       ind[k++] = i;
     }
   }

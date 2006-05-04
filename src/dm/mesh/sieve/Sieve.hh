@@ -339,12 +339,15 @@ namespace ALE {
       } traits;
       typedef ALE::set<point_type>    pointSet;
       typedef ALE::array<point_type>  pointArray;
+      typedef std::set<marker_type>   markerSet;
       typedef pointSet                coneSet;
       typedef pointSet                supportSet;
       typedef pointArray              coneArray;
       typedef pointArray              supportArray;
     public:
-      Sieve(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : ALE::Sifter<Point_, Point_, Color_, RecContainer<Point_, Rec<Point_, Marker_> >, RecContainer<Point_, Rec<Point_, Marker_> > >(comm, debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {};
+      Sieve(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : ALE::Sifter<Point_, Point_, Color_, RecContainer<Point_, Rec<Point_, Marker_> >, RecContainer<Point_, Rec<Point_, Marker_> > >(comm, debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {
+        this->_markers = markerSet();
+      };
       virtual ~Sieve() {};
       // Printing
       friend std::ostream& operator<<(std::ostream& os, Obj<Sieve<Point_,Marker_,Color_> > s) { 
@@ -562,6 +565,8 @@ namespace ALE {
       bool getStratification() {return this->doStratify;};
 
       void stratify(bool show = false);
+    private:
+      Obj<markerSet> _markers;
     public:
       //
       // Structural manipulation
@@ -580,6 +585,8 @@ namespace ALE {
       void setMarker(const point_type& p, const marker_type& marker);
       template<class InputSequence> void setMarker(const Obj<InputSequence>& points, const marker_type& marker);
 
+      void clearMarkers() {this->_markers.clear();};
+      Obj<markerSet> markers() {return this->_markers;};
     private:
       struct changeHeight {
         changeHeight(int newHeight) : newHeight(newHeight) {};
@@ -1240,6 +1247,7 @@ namespace ALE {
       if (cIndex.find(p) != cIndex.end()) {
         cIndex.modify(cIndex.find(p), changeMarker(marker));
       }
+      this->_markers->insert(marker);
     };
 
     template <typename Point_, typename Marker_, typename Color_>

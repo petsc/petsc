@@ -5,45 +5,59 @@
 T*/
 
 /*
-Added at the request of Marc Garbey.
+Added at the request of Bob Eisenberg.
 
-Inhomogeneous Laplacian in 2D. Modeled by the partial differential equation
+Inhomogeneous Laplacian in a 2D ion channel. Modeled by the partial differential equation
 
-   div \rho grad u = f,  0 < x,y < 1,
+   div \epsilon grad u = f,  on \Omega,
 
 with forcing function
 
-   f = e^{-(1 - x)^2/\nu} e^{-(1 - y)^2/\nu}
+   f = \sum_i q_i \delta(x - x_i)
 
 with Dirichlet boundary conditions
 
-   u = f(x,y) for x = 0, x = 1, y = 0, y = 1
+   u = 0 for x = -L
+   u = V for x =  L
 
-or pure Neumman boundary conditions
+and Neumman boundary conditions
 
-This uses multigrid to solve the linear system
+   \hat n \cdot \grad u = 0 for y = -W, W
 
-The 2D test mesh
+This uses multigrid to solve the linear system on a 2D radially-symmetric channel boundary:
 
-         13
-  14--29----31---12
-    |\    |\    |
-    2 2 5 2 3 7 3
-    7  6  8  0  2
-    | 4 \ | 6 \ |
-    |    \|    \|
-  15--20-16-24---11
-    |\    |\    |
-    1 1 1 2 2 3 2
-    8  7  1  2  5
-    | 0 \ | 2 \ |
-    |    \|    \|
-   8--19----23---10
-          9
+             28                         29      35         43
+              V                          V      V          V 
+    2----------------------------------3-----4----12--------------------------------13
+    |                                  |     |     |                                 |
+    |                                  |     |     |                                 |
+    |                               34>|     |     | <36                             |
+    |                                  |     |     |                                 |
+ 27>|                                  |  30>|     |                                 |
+    |                                  8     |     11                            42> |
+    |                               33>\     |     / <37                             |
+    |                                   7 31 | 39 10                                 |
+    |                                32> \ V | V / <38                               |
+    |                                     6--5--9      41                            |
+    |                                        |<40      V                             |
+    1----------------------------------------O--------------------------------------14
+    |          ^                             |<50                                    |
+    |         57                         25-20--19                                   |
+    |                               56>  / ^ | ^ \ <48                               |
+    |                                   24 51| 49 18                                 |
+    |                              55> /     |     \ <47                             |
+    | <58                              23    |    17                             44> |
+    |                                  | 52> |     |                                 |
+    |                                  |     |     |                                 |
+    |                              54> |     |(XX) |<46                              |
+    |       59                         | 53  | 60  |        45                       |
+    |        V                         |  V  |  V  |        V                        |
+    26(X)-----------------------------22----21-----16-------------------------------15
 
+    (X) denotes the last vertex, (XX) denotes the last edge
 */
 
-static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
+static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid in an ion channel.\n\n";
 
 #include "petscmesh.h"
 #include "petscksp.h"
@@ -231,269 +245,128 @@ int main(int argc,char **argv)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "CreateSquareBoundary"
+#define __FUNCT__ "CreateMeshBoundary"
 /*
-  Simple square boundary:
+  2D radially-symmetric channel boundary:
+             28                         29      35         43
+              V                          V      V          V 
+    2----------------------------------3-----4----12--------------------------------13
+    |                                  |     |     |                                 |
+    |                                  |     |     |                                 |
+    |                               34>|     |     | <36                             |
+    |                                  |     |     |                                 |
+ 27>|                                  |  30>|     |                                 |
+    |                                  8     |     11                            42> |
+    |                               33>\     |     / <37                             |
+    |                                   7 31 | 39 10                                 |
+    |                                32> \ V | V / <38                               |
+    |                                     6--5--9      41                            |
+    |                                        |<40      V                             |
+    1----------------------------------------O--------------------------------------14
+    |          ^                             |<50                                    |
+    |         57                         25-20--19                                   |
+    |                               56>  / ^ | ^ \ <48                               |
+    |                                   24 51| 49 18                                 |
+    |                              55> /     |     \ <47                             |
+    | <58                              23    |    17                             44> |
+    |                                  | 52> |     |                                 |
+    |                                  |     |     |                                 |
+    |                              54> |     |(XX) |<46                              |
+    |       59                         | 53  | 60  |        45                       |
+    |        V                         |  V  |  V  |        V                        |
+    26(X)-----------------------------22----21-----16-------------------------------15
 
-  6--14-5--13-4
-  |     |     |
-  15   19    12
-  |     |     |
-  7--20-8--18-3
-  |     |     |
-  16   17    11
-  |     |     |
-  0--9--1--10-2
+    (X) denotes the last vertex, (XX) denotes the last edge
 */
-PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
+PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
 {
-  MPI_Comm          comm = mesh->comm();
   ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
-  PetscScalar       coords[18] = {0.0, 0.0,
-                                  1.0, 0.0,
-                                  2.0, 0.0,
-                                  2.0, 1.0,
-                                  2.0, 2.0,
-                                  1.0, 2.0,
-                                  0.0, 2.0,
-                                  0.0, 1.0,
-                                  1.0, 1.0};
-  PetscInt    connectivity[40] = {0, 1,
-                                  1, 2,
+  PetscScalar       coords[54] =  {/*O*/      0.0,      0.0, 
+                                   /*1*/   -112.5,      0.0, 
+                                   /*2*/   -112.5,     50.0, 
+                                   /*3*/    -12.5,     50.0,
+                                   /*4*/      0.0,     50.0,
+                                   /*5*/      0.0,      3.0,
+                                   /*6*/     -2.5,      3.0,
+                                   /*7*/   -35.0/6.0,  10.0,
+                                   /*8*/    -12.5,     15.0,
+                                   /*9*/      2.5,      3.0, 
+                                   /*10*/   35.0/6.0,  10.0, 
+                                   /*11*/    12.5,     15.0,
+                                   /*12*/    12.5,     50.0,
+                                   /*13*/   112.5,     50.0, 
+                                   /*14*/   112.5,      0.0, 
+                                   /*15*/   112.5,    -50.0, 
+                                   /*16*/    12.5,    -50.0,
+                                   /*17*/    12.5,    -15.0, 
+                                   /*18*/   35.0/6.0, -10.0,  
+                                   /*19*/     2.5,     -3.0, 
+                                   /*20*/     0.0,     -3.0,
+                                   /*21*/     0.0,    -50.0,
+                                   /*22*/   -12.5,    -50.0,
+                                   /*23*/   -12.5,    -15.0,
+                                   /*24*/  -35.0/6.0, -10.0,
+                                   /*25*/    -2.5,     -3.0,
+                                   /*26*/  -112.5,    -50.0};
+  PetscInt    connectivity[68] = {1, 2,
                                   2, 3,
                                   3, 4,
                                   4, 5,
                                   5, 6,
                                   6, 7,
-                                  7, 0,
-                                  1, 8,
-                                  3, 8,
-                                  5, 8,
-                                  7, 8};
-  ALE::Two::Mesh::point_type vertices[9];
-  PetscInt          order = 0;
-  PetscMPIInt       rank;
-  PetscErrorCode    ierr;
+                                  7, 8,
+                                  8, 3,
+                                  4, 12,
+                                  11,12,
+                                  10,11,
+                                  9, 10,
+                                  5,  9,
+                                  0,  5,
+                                  0, 14,
+                                  13,14,
+                                  12,13,
+                                  14,15,
+                                  15,16,
+                                  16,17,
+                                  17,18,
+                                  18,19,
+                                  19,20,
+                                  0, 20,
+                                  20,25,
+                                  20,21,
+                                  21,22,
+                                  22,23,
+                                  23,24,
+                                  24,25,
+                                   0, 1,
+                                   1,26,
+                                  22,26,
+                                  21,16};
+  ALE::Two::Mesh::point_type vertices[27];
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  if (rank == 0) {
+  PetscInt order = 0;
+  if (mesh->commRank() == 0) {
     ALE::Two::Mesh::point_type edge;
 
     /* Create topology and ordering */
-    for(int v = 0; v < 9; v++) {
+    for(int v = 0; v < 27; v++) {
       vertices[v] = ALE::Two::Mesh::point_type(0, v);
     }
-    for(int e = 9; e < 17; e++) {
+    for(int e = 27; e < 61; e++) {
+      int ee = e - 27;
       edge = ALE::Two::Mesh::point_type(0, e);
-      topology->addArrow(vertices[e-9],     edge, order++);
-      topology->addArrow(vertices[(e-8)%8], edge, order++);
+      topology->addArrow(vertices[connectivity[2*ee]],   edge, order++);
+      topology->addArrow(vertices[connectivity[2*ee+1]], edge, order++);
     }
-    edge = ALE::Two::Mesh::point_type(0, 17);
-    topology->addArrow(vertices[1], edge, order++);
-    topology->addArrow(vertices[8], edge, order++);
-    edge = ALE::Two::Mesh::point_type(0, 18);
-    topology->addArrow(vertices[3], edge, order++);
-    topology->addArrow(vertices[8], edge, order++);
-    edge = ALE::Two::Mesh::point_type(0, 19);
-    topology->addArrow(vertices[5], edge, order++);
-    topology->addArrow(vertices[8], edge, order++);
-    edge = ALE::Two::Mesh::point_type(0, 20);
-    topology->addArrow(vertices[7], edge, order++);
-    topology->addArrow(vertices[8], edge, order++);
   }
   topology->stratify();
-  mesh->createVertexBundle(20, connectivity);
+  mesh->createVertexBundle(34, connectivity, 27);
   mesh->createSerialCoordinates(2, 0, coords);
   /* Create boundary conditions */
-  if (rank == 0) {
-    for(int v = 0; v < 8; v++) {
-      topology->setMarker(ALE::Two::Mesh::point_type(0, v), 1);
-    }
-    for(int e = 9; e < 17; e++) {
-      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 1);
-    }
-  }
+  /* Use ex2 as template */
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "CreateCubeBoundary"
-/*
-  Simple cube boundary:
-
-      7-----6
-     /|    /|
-    3-----2 |
-    | |   | |
-    | 4---|-5
-    |/    |/
-    0-----1
-*/
-PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
-{
-  MPI_Comm          comm = mesh->comm();
-  ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
-  PetscScalar       coords[24] = {0.0, 0.0, 0.0,
-                                  1.0, 0.0, 0.0,
-                                  1.0, 1.0, 0.0,
-                                  0.0, 1.0, 0.0,
-                                  0.0, 0.0, 1.0,
-                                  1.0, 0.0, 1.0,
-                                  1.0, 1.0, 1.0,
-                                  0.0, 1.0, 1.0};
-  PetscInt    connectivity[24] = {0, 1, 2, 3,
-                                  7, 6, 5, 4,
-                                  0, 4, 5, 1,
-                                  1, 5, 6, 2,
-                                  2, 6, 7, 3,
-                                  3, 7, 4, 0};
-  ALE::Obj<std::set<ALE::Two::Mesh::point_type> > cone = std::set<ALE::Two::Mesh::point_type>();
-  ALE::Two::Mesh::point_type            vertices[8];
-  ALE::Two::Mesh::point_type            edges[12];
-  ALE::Two::Mesh::point_type            edge;
-  PetscInt                              embedDim = 3;
-  PetscInt                              order = 0;
-  PetscMPIInt                           rank;
-  PetscErrorCode                        ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  if (rank == 0) {
-    ALE::Two::Mesh::point_type face;
-
-    /* Create topology and ordering */
-    /* Vertices: 0 .. 3 on the bottom of the cube, 4 .. 7 on the top */
-    for(int v = 0; v < 8; v++) {
-      vertices[v] = ALE::Two::Mesh::point_type(0, v);
-    }
-
-    /* Edges on the bottom: Sieve element numbers e = 8 .. 11, edge numbers e - 8 = 0 .. 3 */
-    for(int e = 8; e < 12; e++) {
-      edge = ALE::Two::Mesh::point_type(0, e);
-      edges[e-8] = edge;
-      topology->addArrow(vertices[e-8],     edge, order++);
-      topology->addArrow(vertices[(e-7)%4], edge, order++);
-    }
-    /* Edges on the top: Sieve element numbers e = 12 .. 15, edge numbers e - 8 = 4 .. 7 */
-    for(int e = 12; e < 16; e++) {
-      edge = ALE::Two::Mesh::point_type(0, e); 
-      edges[e-8] = edge;
-      topology->addArrow(vertices[e-8],        edge, order++);
-      topology->addArrow(vertices[(e-11)%4+4], edge, order++);
-    }
-    /* Edges from bottom to top: Sieve element numbers e = 16 .. 19, edge numbers e - 8 = 8 .. 11 */
-    for(int e = 16; e < 20; e++) {
-      edge = ALE::Two::Mesh::point_type(0, e); 
-      edges[e-8] = edge;
-      topology->addArrow(vertices[e-16],   edge, order++);
-      topology->addArrow(vertices[e-16+4], edge, order++);
-    }
-
-    /* Bottom face */
-    face = ALE::Two::Mesh::point_type(0, 20); 
-    topology->addArrow(edges[0], face, order++);
-    topology->addArrow(edges[1], face, order++);
-    topology->addArrow(edges[2], face, order++);
-    topology->addArrow(edges[3], face, order++);
-    /* Top face */
-    face = ALE::Two::Mesh::point_type(0, 21); 
-    topology->addArrow(edges[4], face, order++);
-    topology->addArrow(edges[5], face, order++);
-    topology->addArrow(edges[6], face, order++);
-    topology->addArrow(edges[7], face, order++);
-    /* Side faces: f = 22 .. 25 */
-    for(int f = 22; f < 26; f++) {
-      face = ALE::Two::Mesh::point_type(0, f);
-      int v = f - 22;
-      /* Covered by edges f - 22, f - 22 + 4, f - 22 + 8, (f - 21)%4 + 8 */
-      topology->addArrow(edges[v],         face, order++);
-      topology->addArrow(edges[(v+1)%4+8], face, order++);
-      topology->addArrow(edges[v+4],       face, order++);
-      topology->addArrow(edges[v+8],       face, order++);
-    }
-  }/* if(rank == 0) */
-  topology->stratify();
-  if (rank == 0) {
-    ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
-    ALE::Obj<ALE::Two::Mesh::bundle_type::PointArray> points = ALE::Two::Mesh::bundle_type::PointArray();
-    const std::string orderName("element");
-    /* Bottom face */
-    ALE::Two::Mesh::point_type face = ALE::Two::Mesh::point_type(0, 20); 
-    points->clear();
-    points->push_back(vertices[0]);
-    points->push_back(vertices[1]);
-    points->push_back(vertices[2]);
-    points->push_back(vertices[3]);
-    vertexBundle->setPatch(orderName, points, face);
-    /* Top face */
-    face = ALE::Two::Mesh::point_type(0, 21); 
-    points->clear();
-    points->push_back(vertices[4]);
-    points->push_back(vertices[5]);
-    points->push_back(vertices[6]);
-    points->push_back(vertices[7]);
-    vertexBundle->setPatch(orderName, points, face);
-    /* Side faces: f = 22 .. 25 */
-    for(int f = 22; f < 26; f++) {
-      face = ALE::Two::Mesh::point_type(0, f);
-      int v = f - 22;
-      /* Covered by edges f - 22, f - 22 + 4, f - 22 + 8, (f - 21)%4 + 8 */
-      points->clear();
-      points->push_back(vertices[v]);
-      points->push_back(vertices[(v+1)%4]);
-      points->push_back(vertices[(v+1)%4+4]);
-      points->push_back(vertices[v+4]);
-      vertexBundle->setPatch(orderName, points, face);
-    }
-  }
-  mesh->createVertexBundle(6, connectivity);
-  mesh->createSerialCoordinates(embedDim, 0, coords);
-
-  /* Create boundary conditions: set marker 1 to all of the sieve elements, 
-     since everything is on the boundary (no internal faces, edges or vertices)  */
-  if (rank == 0) {
-    /* set marker to the base of the topology sieve -- the faces and the edges */
-    topology->setMarker(topology->base(), 1);
-    /* set marker to the vertices -- the 0-depth stratum */
-    topology->setMarker(topology->depthStratum(0), 1);
-  }
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "CreateMeshBoundary"
-/*
-  Simple square boundary:
-
-  6--14-5--13-4
-  |     |     |
-  15   19    12
-  |     |     |
-  7--20-8--18-3
-  |     |     |
-  16   17    11
-  |     |     |
-  0--9--1--10-2
-*/
-PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
-{
-  int            dim = mesh->getDimension();
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (dim == 1) {
-    ierr = CreateSquareBoundary(mesh);
-  } else if (dim == 2) {
-    ierr = CreateCubeBoundary(mesh);
-  } else {
-    SETERRQ1(PETSC_ERR_SUP, "Cannot construct a boundary of dimension %d", dim);
-  }
-  PetscFunctionReturn(0);
-}
-
-#ifndef MESH_3D
 
 #define NUM_QUADRATURE_POINTS 9
 
@@ -618,566 +491,6 @@ static double BasisDerivatives[54] = {
   4.74937635818e-17,
   0.0,
   0.5};
-
-#else
-
-#define NUM_QUADRATURE_POINTS 27
-
-/* Quadrature points */
-static double points[81] = {
-  -0.809560240317,
-  -0.835756864273,
-  -0.854011951854,
-  -0.865851516496,
-  -0.884304792128,
-  -0.305992467923,
-  -0.939397037651,
-  -0.947733495427,
-  0.410004419777,
-  -0.876607962782,
-  -0.240843539439,
-  -0.854011951854,
-  -0.913080888692,
-  -0.465239359176,
-  -0.305992467923,
-  -0.960733394129,
-  -0.758416359732,
-  0.410004419777,
-  -0.955631394718,
-  0.460330056095,
-  -0.854011951854,
-  -0.968746121484,
-  0.0286773243482,
-  -0.305992467923,
-  -0.985880737721,
-  -0.53528439884,
-  0.410004419777,
-  -0.155115591937,
-  -0.835756864273,
-  -0.854011951854,
-  -0.404851369974,
-  -0.884304792128,
-  -0.305992467923,
-  -0.731135462175,
-  -0.947733495427,
-  0.410004419777,
-  -0.452572254354,
-  -0.240843539439,
-  -0.854011951854,
-  -0.61438408645,
-  -0.465239359176,
-  -0.305992467923,
-  -0.825794030022,
-  -0.758416359732,
-  0.410004419777,
-  -0.803159052121,
-  0.460330056095,
-  -0.854011951854,
-  -0.861342428212,
-  0.0286773243482,
-  -0.305992467923,
-  -0.937360010468,
-  -0.53528439884,
-  0.410004419777,
-  0.499329056443,
-  -0.835756864273,
-  -0.854011951854,
-  0.0561487765469,
-  -0.884304792128,
-  -0.305992467923,
-  -0.522873886699,
-  -0.947733495427,
-  0.410004419777,
-  -0.0285365459258,
-  -0.240843539439,
-  -0.854011951854,
-  -0.315687284208,
-  -0.465239359176,
-  -0.305992467923,
-  -0.690854665916,
-  -0.758416359732,
-  0.410004419777,
-  -0.650686709523,
-  0.460330056095,
-  -0.854011951854,
-  -0.753938734941,
-  0.0286773243482,
-  -0.305992467923,
-  -0.888839283216,
-  -0.53528439884,
-  0.410004419777};
-
-/* Quadrature weights */
-static double weights[27] = {
-  0.0701637994372,
-  0.0653012061324,
-  0.0133734490519,
-  0.0800491405774,
-  0.0745014590358,
-  0.0152576273199,
-  0.0243830167241,
-  0.022693189565,
-  0.0046474825267,
-  0.1122620791,
-  0.104481929812,
-  0.021397518483,
-  0.128078624924,
-  0.119202334457,
-  0.0244122037118,
-  0.0390128267586,
-  0.0363091033041,
-  0.00743597204272,
-  0.0701637994372,
-  0.0653012061324,
-  0.0133734490519,
-  0.0800491405774,
-  0.0745014590358,
-  0.0152576273199,
-  0.0243830167241,
-  0.022693189565,
-  0.0046474825267};
-
-#define NUM_BASIS_FUNCTIONS 4
-
-/* Nodal basis function evaluations */
-static double Basis[108] = {
-  0.749664528222,
-  0.0952198798417,
-  0.0821215678634,
-  0.0729940240731,
-  0.528074388273,
-  0.0670742417521,
-  0.0578476039361,
-  0.347003766038,
-  0.23856305665,
-  0.0303014811743,
-  0.0261332522867,
-  0.705002209888,
-  0.485731727037,
-  0.0616960186091,
-  0.379578230281,
-  0.0729940240731,
-  0.342156357896,
-  0.0434595556538,
-  0.267380320412,
-  0.347003766038,
-  0.154572667042,
-  0.0196333029355,
-  0.120791820134,
-  0.705002209888,
-  0.174656645238,
-  0.0221843026408,
-  0.730165028048,
-  0.0729940240731,
-  0.12303063253,
-  0.0156269392579,
-  0.514338662174,
-  0.347003766038,
-  0.0555803583921,
-  0.00705963113955,
-  0.23235780058,
-  0.705002209888,
-  0.422442204032,
-  0.422442204032,
-  0.0821215678634,
-  0.0729940240731,
-  0.297574315013,
-  0.297574315013,
-  0.0578476039361,
-  0.347003766038,
-  0.134432268912,
-  0.134432268912,
-  0.0261332522867,
-  0.705002209888,
-  0.273713872823,
-  0.273713872823,
-  0.379578230281,
-  0.0729940240731,
-  0.192807956775,
-  0.192807956775,
-  0.267380320412,
-  0.347003766038,
-  0.0871029849888,
-  0.0871029849888,
-  0.120791820134,
-  0.705002209888,
-  0.0984204739396,
-  0.0984204739396,
-  0.730165028048,
-  0.0729940240731,
-  0.0693287858938,
-  0.0693287858938,
-  0.514338662174,
-  0.347003766038,
-  0.0313199947658,
-  0.0313199947658,
-  0.23235780058,
-  0.705002209888,
-  0.0952198798417,
-  0.749664528222,
-  0.0821215678634,
-  0.0729940240731,
-  0.0670742417521,
-  0.528074388273,
-  0.0578476039361,
-  0.347003766038,
-  0.0303014811743,
-  0.23856305665,
-  0.0261332522867,
-  0.705002209888,
-  0.0616960186091,
-  0.485731727037,
-  0.379578230281,
-  0.0729940240731,
-  0.0434595556538,
-  0.342156357896,
-  0.267380320412,
-  0.347003766038,
-  0.0196333029355,
-  0.154572667042,
-  0.120791820134,
-  0.705002209888,
-  0.0221843026408,
-  0.174656645238,
-  0.730165028048,
-  0.0729940240731,
-  0.0156269392579,
-  0.12303063253,
-  0.514338662174,
-  0.347003766038,
-  0.00705963113955,
-  0.0555803583921,
-  0.23235780058,
-  0.705002209888};
-
-/* Nodal basis function derivative evaluations */
-static double BasisDerivatives[324] = {
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6964953901e-17,
-  8.15881875835e-17,
-  0.0,
-  0.5,
-  1.52600313755e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6938349868e-17,
-  1.08228622783e-16,
-  0.0,
-  0.5,
-  -1.68114298577e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.69035912409e-17,
-  1.43034809879e-16,
-  0.0,
-  0.5,
-  -5.87133459397e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6964953901e-17,
-  2.8079494593e-17,
-  0.0,
-  0.5,
-  1.52600313755e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6938349868e-17,
-  7.0536336094e-17,
-  0.0,
-  0.5,
-  -1.68114298577e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.69035912409e-17,
-  1.26006930238e-16,
-  0.0,
-  0.5,
-  -5.87133459397e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6964953901e-17,
-  -3.49866380524e-17,
-  0.0,
-  0.5,
-  1.52600313755e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6938349868e-17,
-  2.61116525673e-17,
-  0.0,
-  0.5,
-  -1.68114298577e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.69035912409e-17,
-  1.05937620823e-16,
-  0.0,
-  0.5,
-  -5.87133459397e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6964953901e-17,
-  1.52807111565e-17,
-  0.0,
-  0.5,
-  1.52600313755e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6938349868e-17,
-  6.1520690456e-17,
-  0.0,
-  0.5,
-  -1.68114298577e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.69035912409e-17,
-  1.21934019246e-16,
-  0.0,
-  0.5,
-  -5.87133459397e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6964953901e-17,
-  -1.48832491782e-17,
-  0.0,
-  0.5,
-  1.52600313755e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6938349868e-17,
-  4.0272766482e-17,
-  0.0,
-  0.5,
-  -1.68114298577e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.69035912409e-17,
-  1.1233505023e-16,
-  0.0,
-  0.5,
-  -5.87133459397e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6964953901e-17,
-  -5.04349365259e-17,
-  0.0,
-  0.5,
-  1.52600313755e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6938349868e-17,
-  1.52296507396e-17,
-  0.0,
-  0.5,
-  -1.68114298577e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.69035912409e-17,
-  1.01021564153e-16,
-  0.0,
-  0.5,
-  -5.87133459397e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6964953901e-17,
-  -5.10267652705e-17,
-  0.0,
-  0.5,
-  1.52600313755e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6938349868e-17,
-  1.4812758129e-17,
-  0.0,
-  0.5,
-  -1.68114298577e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.69035912409e-17,
-  1.00833228612e-16,
-  0.0,
-  0.5,
-  -5.87133459397e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6964953901e-17,
-  -5.78459929494e-17,
-  0.0,
-  0.5,
-  1.52600313755e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6938349868e-17,
-  1.00091968699e-17,
-  0.0,
-  0.5,
-  -1.68114298577e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.69035912409e-17,
-  9.86631702223e-17,
-  0.0,
-  0.5,
-  -5.87133459397e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6964953901e-17,
-  -6.58832349994e-17,
-  0.0,
-  0.5,
-  1.52600313755e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.6938349868e-17,
-  4.34764891191e-18,
-  0.0,
-  0.5,
-  -1.68114298577e-17,
-  0.0,
-  0.0,
-  0.5,
-  -0.5,
-  -0.5,
-  -0.5,
-  0.5,
-  2.69035912409e-17,
-  9.61055074835e-17,
-  0.0,
-  0.5,
-  -5.87133459397e-17,
-  0.0,
-  0.0,
-  0.5};
-
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "ElementGeometry"
@@ -1321,96 +634,6 @@ PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Two::Mesh> mesh)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRho"
-PetscErrorCode ComputeRho(PetscReal x, PetscReal y, PetscScalar *rho)
-{
-  PetscFunctionBegin;
-  if ((x > 1.0/3.0) && (x < 2.0/3.0) && (y > 1.0/3.0) && (y < 2.0/3.0)) {
-    //*rho = 100.0;
-    *rho = 1.0;
-  } else {
-    *rho = 1.0;
-  }
-  PetscFunctionReturn(0);
-}
-#if 0
-#undef __FUNCT__
-#define __FUNCT__ "ComputeBlock"
-PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
-{
-  Mesh              mesh = (Mesh) dmmg->dm;
-  UserContext      *user = (UserContext *) dmmg->user;
-  ALE::Sieve       *topology;
-  ALE::PreSieve    *orientation;
-  ALE::IndexBundle *bundle;
-  ALE::IndexBundle *coordBundle;
-  ALE::Point_set    elements;
-  PetscInt          dim;
-  Vec               coordinates;
-  PetscScalar      *coords;
-  PetscScalar      *array;
-  PetscScalar      *field;
-  PetscReal         elementVec[NUM_BASIS_FUNCTIONS];
-  PetscReal         linearVec[NUM_BASIS_FUNCTIONS];
-  PetscReal        *v0, *Jac, *Jinv, *t_der, *b_der;
-  PetscReal         xi, eta, x_q, y_q, detJ, rho, funcValue;
-  PetscInt          f, g, q;
-  PetscErrorCode    ierr;
-
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
-  ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
-  ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
-  ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
-  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = VecGetArray(u, &array); CHKERRQ(ierr);
-  dim = coordBundle->getFiberDimension(*coordBundle->getTopology()->depthStratum(0).begin());
-  ierr = PetscMalloc(dim * sizeof(PetscReal), &v0);CHKERRQ(ierr);
-  ierr = PetscMalloc(dim * sizeof(PetscReal), &t_der);CHKERRQ(ierr);
-  ierr = PetscMalloc(dim * sizeof(PetscReal), &b_der);CHKERRQ(ierr);
-  ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
-  ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jinv);CHKERRQ(ierr);
-  elements = topology->star(block);
-  for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
-    ALE::Point e = *element_itor;
-
-    ierr = ElementGeometry(coordBundle, orientation, coords, e, v0, Jac, Jinv, &detJ); CHKERRQ(ierr);
-    ierr = restrictField(bundle, orientation, array, e, &field); CHKERRQ(ierr);
-    /* Element integral */
-    ierr = PetscMemzero(elementVec, NUM_BASIS_FUNCTIONS*sizeof(PetscScalar));CHKERRQ(ierr);
-    for(q = 0; q < NUM_QUADRATURE_POINTS; q++) {
-      xi = points[q*2+0] + 1.0;
-      eta = points[q*2+1] + 1.0;
-      x_q = Jac[0]*xi + Jac[1]*eta + v0[0];
-      y_q = Jac[2]*xi + Jac[3]*eta + v0[1];
-      ierr = ComputeRho(x_q, y_q, &rho);CHKERRQ(ierr);
-      funcValue = PetscExpScalar(-(x_q*x_q)/user->nu)*PetscExpScalar(-(y_q*y_q)/user->nu);
-      for(f = 0; f < NUM_BASIS_FUNCTIONS; f++) {
-        t_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+1];
-        t_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+1];
-        for(g = 0; g < NUM_BASIS_FUNCTIONS; g++) {
-          b_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
-          b_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
-          linearVec[f] += rho*(t_der[0]*b_der[0] + t_der[1]*b_der[1])*field[g];
-        }
-        elementVec[f] += (Basis[q*NUM_BASIS_FUNCTIONS+f]*funcValue - linearVec[f])*weights[q]*detJ;
-      }
-    }
-    if (debug) {printf("elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);}
-    /* Assembly */
-    ierr = assembleField(bundle, orientation, r, e, elementVec, ADD_VALUES); CHKERRQ(ierr);
-  }
-  ierr = PetscFree(v0);CHKERRQ(ierr);
-  ierr = PetscFree(t_der);CHKERRQ(ierr);
-  ierr = PetscFree(b_der);CHKERRQ(ierr);
-  ierr = PetscFree(Jac);CHKERRQ(ierr);
-  ierr = PetscFree(Jinv);CHKERRQ(ierr);
-  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = VecRestoreArray(u, &array); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
 PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)

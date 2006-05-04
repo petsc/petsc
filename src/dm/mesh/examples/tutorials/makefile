@@ -21,6 +21,10 @@ ex2: ex2.o   chkopts
 	-${CLINKER} -o ex2 ex2.o  ${PETSC_DM_LIB}
 	${RM} -f ex2.o
 
+ex4: ex4.o   chkopts
+	-${CLINKER} -o ex4 ex4.o  ${PETSC_DM_LIB}
+	${RM} -f ex4.o
+
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
@@ -69,6 +73,9 @@ runex3:
 	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   ${RM} -f ex3_1.tmp
+
+runex4:
+	-@${MPIRUN} -np ${NP} ./ex4 -dim 2 ${EXTRA_ARGS}
 
 testex1_1:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d > /dev/null 2>&1; \

@@ -450,18 +450,38 @@ namespace ALE {
       Distributer::distribute(serialTopology, parallelTopology);
       if (hasBd) {
         Distributer::distribute(serialBoundary->__getOrder(), parallelBoundary->__getOrder(), false);
+        Obj<typename mesh_type::field_type::order_type::baseSequence> patches = parallelBoundary->getPatches();
+
+        for(typename mesh_type::field_type::order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
+          parallelBoundary->allocatePatch(*p_iter);
+        }
       }
     };
     static void unify(const Obj<mesh_type> parallelMesh, const Obj<mesh_type> serialMesh) {
-      Obj<sieve_type>                parallelTopology = parallelMesh->getTopology();
-      Obj<sieve_type>                serialTopology = serialMesh->getTopology();
-      typename mesh_type::point_type partitionPoint(-1, 0);
+      Obj<sieve_type>                     parallelTopology = parallelMesh->getTopology();
+      Obj<sieve_type>                     serialTopology = serialMesh->getTopology();
+      Obj<typename mesh_type::field_type> parallelBoundary = parallelMesh->getBoundary();
+      Obj<typename mesh_type::field_type> serialBoundary = serialMesh->getBoundary();
+      bool                                hasBd = (parallelBoundary->getPatches()->size() > 0);
+      typename mesh_type::point_type      partitionPoint(-1, 0);
 
-      parallelTopology->addCone(parallelTopology->space(), partitionPoint);
-      if (serialTopology->commRank == 0) {
+      parallelTopology->addCone(parallelTopology->cap(), partitionPoint);
+      parallelTopology->addCone(parallelTopology->base(), partitionPoint);
+      parallelTopology->removeCapPoint(partitionPoint);
+      parallelBoundary->__getOrder()->addCone(parallelBoundary->__getOrder()->cap(), partitionPoint);
+      if (serialTopology->commRank() == 0) {
         serialTopology->addBasePoint(partitionPoint);
+        serialBoundary->__getOrder()->addBasePoint(partitionPoint);
       }
       Distributer::distribute(parallelTopology, serialTopology);
+      if (hasBd) {
+        Distributer::distribute(parallelBoundary->__getOrder(), serialBoundary->__getOrder(), false);
+        Obj<typename mesh_type::field_type::order_type::baseSequence> patches = serialBoundary->getPatches();
+
+        for(typename mesh_type::field_type::order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
+          serialBoundary->allocatePatch(*p_iter);
+        }
+      }
     };
   };
 }

@@ -317,16 +317,28 @@ namespace ALE {
           this->__orderCell(order, patch, *p_iter, offset, tester);
         }
         if (allocate) {
-          if (this->_storage.find(patch) != this->_storage.end()) {
-            delete [] this->_storage[patch];
-          }
-          if (debug) {std::cout << "Allocated patch " << patch << " of size " << offset << std::endl;}
-          this->_storage[patch] = new value_type[offset];
-          this->_storageSize[patch] = offset;
-          memset(this->_storage[patch], 0, offset*sizeof(value_type));
+          this->allocatePatch(patch, offset);
         }
       };
     public:
+      void allocatePatch(const patch_type& patch, int size = -1) {
+        if (size < 0) {
+          Obj<typename order_type::coneSequence> cone = getPatch(patch);
+
+          for(typename order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+            const index_type& idx = this->getIndex(patch, *c_iter);
+
+            if (size < idx.prefix) size = idx.prefix + idx.index;
+          }
+        }
+        if (this->_storage.find(patch) != this->_storage.end()) {
+          delete [] this->_storage[patch];
+        }
+        if (debug) {std::cout << "Allocated patch " << patch << " of size " << size << std::endl;}
+        this->_storage[patch] = new value_type[size];
+        this->_storageSize[patch] = size;
+        memset(this->_storage[patch], 0, size*sizeof(value_type));
+      };
       void orderPatch(const patch_type& patch) {
         this->__orderPatch(this->_order, patch, true, trueTester());
       }
