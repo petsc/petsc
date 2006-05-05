@@ -79,7 +79,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSplitOwnership(MPI_Comm comm,PetscInt *n,Pet
   PetscMPIInt    size,rank;
 
   PetscFunctionBegin;
-  if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE");
+  if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html#PetscSplitOwnership");
 
   if (*N == PETSC_DECIDE) { 
     ierr = MPI_Allreduce(n,N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSplitOwnership(MPI_Comm comm,PetscInt *n,Pet
   } else {
     PetscInt tmp;
     ierr = MPI_Allreduce(n,&tmp,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
-    if (tmp != *N) SETERRQ3(PETSC_ERR_ARG_SIZ,"Sum of local lengths %D does not equal global length %D, my local length %D",tmp,*N,*n);
+    if (tmp != *N) SETERRQ3(PETSC_ERR_ARG_SIZ,"Sum of local lengths %D does not equal global length %D, my local length %D\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html#PetscSplitOwnership",tmp,*N,*n);
 #endif
   }
 

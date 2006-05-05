@@ -103,8 +103,12 @@ Site</strong></a></li>
       <menu> <li><a href="faq.html#petsc-mailing-list">How
 can I subscribe to the PETSc&nbsp;mailing lists?</a></li>
 
-      <li><a href="faq.html#computers">What kind of parallel computers or clusters are needed
+      <li><a href="faq.html#computers">What kind of
+parallel computers or clusters are needed
 to use PETSc?</a></li>
+
+      <li><a href="faq.html#license">What kind of
+license is PETSc released under?</a></li>
 
       <li><a href="faq.html#why-c">Why is PETSc
 programmed in C, instead of Fortran or C++?</a> </li>
@@ -251,19 +255,35 @@ PETSc&nbsp;mailing lists?</font></strong> </a></p>
 are needed to use PETSc?</font></strong><br>
 
       </a><br>
+
 PETSc can be used with
-any kind of parallel system that supports MPI.<span style="font-weight: bold;"> BUT </span>for any decent performance one needs&nbsp;</p>
+any kind of parallel system that supports MPI.<span style="font-weight: bold;"> BUT </span>for any decent
+performance one needs&nbsp;</p>
+
       <ul>
-        <li>a <span style="font-weight: bold;">fast, low-latency interconnect</span>; any ethernet, even 10 gigE simply cannot provide the needed performance.&nbsp;</li>
-        <li><span style="font-weight: bold;">high per-CPU memory performance</span>. Each CPU (core in dual core systems) needs to have its <span style="font-weight: bold;">own</span> memory bandwith of roughly 2 or more gigabytes. For example, standard dual processor "PC's" will <span style="font-weight: bold;">not</span>
+
+        <li>a <span style="font-weight: bold;">fast,
+low-latency interconnect</span>; any ethernet, even 10 gigE
+simply cannot provide the needed performance.&nbsp;</li>
+
+        <li><span style="font-weight: bold;">high
+per-CPU memory performance</span>. Each CPU (core in dual core
+systems) needs to have its <span style="font-weight: bold;">own</span>
+memory bandwith of roughly 2 or more gigabytes. For example, standard
+dual processor "PC's" will <span style="font-weight: bold;">not</span>
 provide better performance when the second processor is used, that is,
 you will not see speed-up when you using the second processor. This is
 because the speed of sparse matrix computations is almost totally
 determined by the speed of the memory, not the speed of the CPU.</li>
+
       </ul>
 
-      <span style="text-decoration: underline;"></span><strong></strong>
+      <a name="license"><strong><font color="#ff0000">What kind of license is PETSc released under?</font></strong><br>
 
+      </a><br>
+
+See the <a href="copyright.html">copyright notice.</a>&nbsp;
+      <span style="text-decoration: underline;"></span><strong></strong>
       <p><strong><a name="why-c"><font color="#ff0000">Why is PETSc programmed in C, instead of
 Fortran or C++?</font> </a></strong></p>
 
