@@ -274,13 +274,13 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
     ierr = PetscMemcpy(sorted,allapp,N*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
     for (i=0; i<N; i++) {
-      if (sorted[i] != i) SETERRQ2(PETSC_ERR_ARG_WRONG,"PETSc ordering is missing %D has %D",i,sorted[i]);
+      if (sorted[i] != i) SETERRQ2(PETSC_ERR_ARG_WRONG,"PETSc ordering requires a permutation of numbers 0 to N-1\n it is missing %D has %D",i,sorted[i]);
     }
 
     ierr = PetscMemcpy(sorted,allapp,N*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
     for (i=0; i<N; i++) {
-      if (sorted[i] != i) SETERRQ2(PETSC_ERR_ARG_WRONG,"Application ordering is missing %D has %D",i,sorted[i]);
+      if (sorted[i] != i) SETERRQ2(PETSC_ERR_ARG_WRONG,"Application ordering requires a permutation of numbers 0 to N-1\n it is missing %D has %D",i,sorted[i]);
     }
 
     ierr = PetscFree(sorted);CHKERRQ(ierr);
