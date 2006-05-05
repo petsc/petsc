@@ -2,134 +2,352 @@
 <html>
 <head>
 
+
+
+
+  
+  
+  
   <meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+
+
+
+  
+  
+  
   <title>PETSc: Docs:&nbsp; Troubleshooting</title>
-
-
 </head>
 
 
 <body style="background-color: rgb(213, 234, 255);">
 
+
+
+
 <table width="100%">
+
+
+
 
   <tbody>
 
+
+
+
     <tr>
 
+
+
+
       <td valign="top" width="26%">
+      
+      
+      
       <h1><font color="#ff0000" size="7">PETSc</font></h1>
 
+
+
+
+      
+      
+      
       <ul>
+
+
+
 
         <li><a href="../index.html"><strong>Home</strong></a></li>
 
+
+
+
+      
+      
+      
       </ul>
+
+
+
 
       </td>
 
+
+
+
       <td width="74%"><!--##begin-->
+      
+      
+      
       <h1>Docs:&nbsp;&nbsp; Troubleshooting</h1>
+
+
+
 
 <!--##end--> </td>
 
+
+
+
     </tr>
 
+
+
+
     <tr>
+
+
+
 
       <td colspan="2" width="100%">
+      
+      
+      
       <hr color="#ff5b5b" size="4"> </td>
+
+
+
 
     </tr>
 
+
+
+
     <tr>
 
+
+
+
       <td valign="top" width="26%">
+      
+      
+      
       <ul>
+
+
+
 
         <li><a href="../download/index.html"><strong>Download</strong></a></li>
 
+
+
+
         <li><a href="../features/index.html"><strong>Features</strong></a></li>
 
+
+
+
         <li><a href="./index.html"><strong>Documentation</strong></a>
+          
+          
+          
           <ul>
+
+
+
 
             <li><a href="index.html#Manual"><strong>Manual
 pages and
 Users Manual</strong></a></li>
 
+
+
+
             <li><a href="referencing.html"><strong>Referencing&nbsp;
 PETSc</strong></a></li>
 
+
+
+
             <li><a href="tutorials/index.html"><strong>Tutorials</strong></a></li>
+
+
+
 
             <li><strong><a href="installation.html">Installation</a></strong></li>
 
+
+
+
             <li><strong><a href="changes/index.html">Changes</a></strong></li>
 
+
+
+
             <li><strong><font color="#ff0000">Troubleshooting</font></strong></li>
+
+
+
 
             <li><strong><a href="bugreporting.html">Bug
 Reporting</a><font color="#ff0000"> </font></strong></li>
 
+
+
+
             <li><strong><a href="codemanagement.html">Code
 Management</a></strong></li>
+
+
+
 
             <li><strong><a href="faq.html">FAQ</a>
               </strong></li>
 
+
+
+
             <li><strong><a href="copyright.html">Copyright</a></strong>
             </li>
 
+
+
+
+          
+          
+          
           </ul>
+
+
+
 
         </li>
 
+
+
+
         <li><a href="../publications/index.html"><strong>Applications/Publications</strong></a></li>
 
+
+
+
         <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
+
+
+
 
         <li><a href="../miscellaneous/external.html"><strong>External
 Software</strong></a></li>
 
+
+
+
         <li><a href="../developers/index.html"><strong>Developers
 Site</strong></a></li>
 
+
+
+
+      
+      
+      
       </ul>
+
+
+
 
       </td>
 
+
+
+
       <td valign="top" width="74%"><!--##begin-->
+      
+      
+      
       <p align="left">Doing a search below will usually
 lead straight
 to the problem.</p>
 
+
+
+
+      
+      
+      
       <ul>
 
+
+
+
+      
+      
+      
       </ul>
 
+
+
+
+      
+      
+      
       <p>We continually update this guide; so please click here
 to get
 the <a href="http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html">most
 recent version.of the troubleshooting guide</a>.</p>
 
+
+
+
       </td>
+
+
+
 
     </tr>
 
+
+
+
+  
+  
+  
   </tbody>
 </table>
+
+
+
 
 <hr>
 <ol start="1" type="1">
 
+
+
+
   <li><font color="#ff0000"><strong>Symptom: </strong></font><font face="Terminal">No or little speedup: </font>
-    <p><font color="#ff0000"><strong>Problem:&nbsp;</strong>This can be a result of not using a <a href="faq.html#computers">parallel system that is suitable for sparse linear solvers.</a> </font></p>
+    
+    
+    
+    <p><font color="#ff0000"><strong>Problem:&nbsp;</strong><span style="color: rgb(0, 0, 0);">This can be a result of not using a</span> <a href="faq.html#computers">parallel system that is suitable for sparse linear solvers.</a> </font></p>
+
+
+
+
+  </li>
+
+
+
+
+  <li><font color="#ff0000"><strong><a name="PetscSplitOwnership"></a>Symptom: </strong></font><font face="Terminal">Error detected&nbsp;in PetscSplitOwnership() about "sum of local lengths ...": </font>
+    
+    
+    
+    <p><font color="#ff0000"><strong>Problem:&nbsp;</strong><span style="color: rgb(0, 0, 0);">In
+a previous call to VecSetSizes(), MatSetSizes(), VecCreateXXX() or
+MatCreateXXX() you passed in local and global sizes that do not make
+sense for the correct number of processors. For example if you pass in
+a local size of 2 and a global size of 100 and run on two processors,
+this cannot work since the sum of the local sizes is 4, not 100.</span><a href="faq.html#computers"></a> </font></p>
+
+
+
 
   </li>
 
   <li><a name="Corrupt"></a><font color="#ff0000"><strong>Symptom: </strong></font><font face="Terminal">Corrupt argument: </font>
-    <p><font color="#ff0000"><strong>Problem: </strong>
+    
+    
+    
+    <p><font color="#ff0000"><strong>Problem: </strong><span style="color: rgb(0, 0, 0);">
 An argument to
 a function is invalid. In Fortran this may be caused by forgeting to
 list an argument in the call, especially the final ierr. Otherwise it
@@ -140,50 +358,92 @@ code may crash only with the optimized version, in that case
 run the optimized version with -malloc_debug. If you determine the
 problem
 is from memory corruption you can put the macro CHKMEMQ in the code
-near the crash to determine exactly what line is causing the problem. </font></p>
+near the crash to determine exactly what line is causing the proble</span>m. </font></p>
+
+
+
 
   </li>
 
+
+
+
   <li><a name="ZeroPivot"></a><font color="#ff0000"><strong>Symptom: </strong></font><font face="Terminal">Detected zero pivot in LU factorization: </font>
-    <p><font color="#ff0000"><strong>Problem: </strong>
+    
+    
+    
+    <p><font color="#ff0000"><strong>Problem: </strong><span style="color: rgb(0, 0, 0);">
 A zero pivot
 in LU, ILU, Cholesky, or ICC sparse factorization does not always mean
 that the matrix is singular. You can use -pc_factor_shift_nonzero or
 -pc_factor_shift_positive_definite,
--[level]_pc_factor_shift_nonzero,&nbsp; </font><font color="#ff0000">-[level]_pc_factor_shift_postive_definite </font><font color="#ff0000">to prevent the zero pivot. For lu, ilu,
+-[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite </font><font style="color: rgb(0, 0, 0);" color="#ff0000">to prevent the zero pivot. For lu, ilu,
 cholesky, or icc and [level] is sub is for a block in the bjacobi or
 ASM preconditioner and -mg_levels and -mg_coarse are for inside
 multigrid
 smoothers or the coarse grid solver). See PCFactorSetShiftNonzero(),
 PCFactorSetShiftPd().</font></p>
 
-    <font color="#ff0000"> </font>
-    <p><font color="#ff0000">This error can also
+
+
+
+    <font style="color: rgb(0, 0, 0);" color="#ff0000"> </font>
+    
+    
+    
+    <p style="color: rgb(0, 0, 0);">This error can also
 happen if your matrix
 is <strong>singular </strong>, see KSPSetNullSpace() for
 how to
-handle this.</font></p>
+handle this.</p>
 
-    <font color="#ff0000"> </font>
-    <p><font color="#ff0000">If this error occurs in
-the <strong>zeroth
-row </strong> of the matrix it is likely you have an error in
+
+
+
+    <font style="color: rgb(0, 0, 0);" color="#ff0000"> </font>
+    
+    
+    
+    <p><font color="#ff0000"><span style="color: rgb(0, 0, 0);">If this error occurs in
+the </span><strong style="color: rgb(0, 0, 0);">zeroth
+row </strong><span style="color: rgb(0, 0, 0);"> of the matrix it is likely you have an error in
 the code
-that generates the matrix. </font></p>
+that generates the matrix.</span> </font></p>
+
+
+
 
   </li>
 
+
+
+
   <li><font color="#ff0000"><strong>Symptom: </strong></font><font face="Terminal">alder&gt;make<br>
+
+
+
 
 make: Warning: Can't find `../../bmake/': <br>
 
+
+
+
     </font>
+    
+    
+    
     <p><font face="Terminal"><font color="#ff0000"><strong>Problem:
     </strong></font>You
 have not set the variable PETSC_ARCH to the architecture of your
 machine (e.g., sun4, rs6000). </font></p>
 
+
+
+
     <font face="Terminal"> </font>
+    
+    
+    
     <p><font face="Terminal"><font color="#ff0000"><strong>Cure:
     </strong></font>Include
 in your .cshrc file some code to set it automatically. Or remember to
@@ -191,30 +451,66 @@ include the PETSC_ARCH in the
 command line every time you use make. For instance,
 PETSC_ARCH=sun4 example4 </font></p>
 
+
+
+
     <font face="Terminal"> </font></li>
+
+
+
 
   <font face="Terminal"> <li><font face="Terminal"><strong>Symptom:
 alder&gt; make</strong>&nbsp;</font>
+    
+    
+    
     <p><font face="Terminal"> makefile:12:
 /bmake/common/base: No such file or directory<br>
 
+
+
+
 makefile:13: /bmake/common/test: No such file or directory<br>
+
+
+
 
 make: *** No rule to make target `/bmake/common/test'.&nbsp; Stop.</font>
     </p>
 
+
+
+
 or makefile:12:
 home/joe/bmake/common/base: No such file or directory<br>
 
+
+
+
 makefile:13: home/joe/bmake/common/test: No such file or directory<br>
+
+
+
 
 make: *** No rule to make target
 `home/joe/bmake/common/test'.&nbsp; Stop.<br>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem: </strong></font>The
 variable&nbsp; PETSC_DIR is not set or does not point to the PETSc
 directory; in this case it points to the directory /home/joe. </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>Make
 sure the variable PETSC_DIR in the makefile points to the PETSc
 directory. Be aware that at many sites, your home directory may
@@ -223,155 +519,329 @@ make the path relative, rather than absolute. That is, use
 PETSC_DIR = ../../petsc rather than PETSC_DIR =
 /c/cafa/username/petsc. </p>
 
+
+
+
   </li>
 
+
+
+
   <li><font color="#ff0000"><strong>Symptom: </strong></font><font face="Terminal">alder&gt; make <br>
+
+
+
 
 ex1 f77 -g -o ex1 ex1.o affine2d.o \ ../../libs/libsg/sun4/domain.a
 ../../libs/libsg/sun4/Xtools.a ../../libs/libsg/sun4/tools.a
 ../../libs/libsg/sun4/liblapack.a ../../libs/libsg/sun4/blas.a
 ../../libs/libsg/sun4/system.a -lX11 -lm<br>
 
+
+
+
 ld: ex1.o: bad magic number Compilation failed *** Error code 4 </font>
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 The
 file ex1.o was compiled on a different architecture or with a
 different compiler. </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure:</strong></font>
 Remove
 all .o files and recompile from scatch</p>
 
+
+
+
   </li>
+
+
+
 
   <li>using
 MPICH [0] Truncated message (in CHK_MSGLEN) <br>
 
+
+
+
 [0] Aborting program! <br>
 
+
+
+
 p0_8959: p4_error: (null): 1
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 this
 is due to some bug in a call to an MPI routine. </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>Run
 the program with the option -start_in_debugger. In the
 debugger, type "break p4_error" (or "stop in p4_error" for
 dbx); then type "cont". When the program aborts, use debugger commands
 such as "where" to track down the problem with the call.</p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom:</strong></font>
 on
 HP-UX <br>
 
-Make: Unknown flag argument -. Stop. <br>
+
+
 
 Make: Unknown flag argument -. Stop. <br>
+
+
+
+
+Make: Unknown flag argument -. Stop. <br>
+
+
+
 
 Make: Unknown flag argument -. Stop.
+    
+    
+    
     <p>We have gotten this on the HP-UX using the native (vendor
 provided) make. </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>Install
 and use Gnu make. To force PETSc to use an alternative make,
 edit the file petsc/bmake/$PETSC_ARCH/base and change OMAKE to
 your alternative. </p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>on
 IBM SP<br>
 
+
+
+
 Could not load program
 /afs/rpi.edu/big/00/0000/hongwl/petsc/petsc/src/ksp/examp les/ex1<br>
+
+
+
 
 Symbol XSetWMProperties in pmd2 is undefined Symbol XSetWMName in pmd2
 is undefined <br>
 
+
+
+
 Error was: Exec format error
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 The
 libraries on the IBM SP front-end for X may be different than on the
 nodes. </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>Get
 your system administrator to make sure the dynamic libraries on
 the nodes are IDENTICAL to those on the compiler server. </p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>using
 Fortran While using VecGetArray(), MatGetArray(), ISGetArray() <br>
 
+
+
+
 /usr/local/mpi/bin/mpirun.ch_p4: 17545 Breakpoint then program stops
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 You
 have compiled some of your code with the option to check for
 arrays out of bound. (on the IBM rs6000 this is the -C option) </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>Recompile
 all code making sure it does not check for arrays out of bound.
 The use of VecGetArray(), etc. requires accessing arrays out of
 bounds; this is done safely. -</p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>You
 create Draw windows or ViewerDraw windows or use options
 -ksp_xmonitor or -snes_xmonitor and the program seems to run OK
 but windows never open.
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 The
 libraries were compiled without support for X windows. </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>Make
 sure that config/configure.py was run with the option --with-x=1 </p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong>
     </font>PETSc
 cannot work on a machine where the length of C integers does not equal
 the length of Fortran integers. </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>Change
 your compilers so that you use ones that have the same length
 for integers. Or check compiler flags to see if you can change
 the default integer lengths to match.</p>
 
+
+
+
   </li>
+
+
+
 
   <li>On
 DEDC alpha Unaligned access pid=15199 va=140021674 pc=12001e8d8
 ra=12001e8c0 type=ldt
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem: </strong></font>The
 system has detected an unaligned variable. This is usually an unaligned
 double. </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>Make
 sure in Fortran that you always write double precision numbers
 as 10.d0 etc not just as 10. cause then it will be stored as a
 single precision number and may not be properly aligned. -</p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom: </strong></font>PetscScalarAddressToFortran:C
 and Fortran arrays are not commonly aligned <br>
 
+
+
+
 or are too far apart to be indexed by an integer. <br>
+
+
+
 
 Locations: C 1920156 Fortran 2438656 [<br>
 
+
+
+
 0] MPI Abort by user Aborting program ! <br>
 
+
+
+
 [0] Aborting program!
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 This
 occurs when trying to access a PETSc array from Fortran. The array may
@@ -384,6 +854,12 @@ point and the C array starting point is not divisible by the
 length of a double (or complex). This one cannot access the other with
 an integer offset. </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>1)
 Rewrite Fortran code to not use the particular XXXGetXXX()
 routine. For example, use VecSetValues() instead of directly stuffing
@@ -394,20 +870,41 @@ won't be a problem, if all complex are quad aligned then it is not a
 problem. If you determine how to do this for a particular machine,
 please let use know so we can add it to PETSc. </p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom: </strong></font>On
 rs6000 machines, the program encounters a segmentation fault
 when initializing MPI. <br>
 
+
+
+
 [light] mpirun ex1 <br>
+
+
+
 
 /light_home2/lmcinnes/mpich/lib/rs6000/ch_p4/mpirun: 23817 Memory fault
     <br>
 
+
+
+
 See, e.g., the following debugger session:<br>
 
+
+
+
 [light] 525%gdb ex1 <br>
+
+
+
 
 GDB is free software and you are welcome to distribute copies of it
 under certain conditions; type "show copying" to see the
@@ -415,54 +912,117 @@ conditions. There is absolutely no warranty for GDB; type "show
 warranty" for details. GDB 4.13 (rs6000-ibm-aix3.2), Copyright
 1994 Free Software Foundation, Inc... <br>
 
+
+
+
 (gdb) run -p4pg joe <br>
+
+
+
 
 Starting program:
 /light_home2/lmcinnes/petsc-2.0.15/src/sles/examples/tutorials/ex1
 -p4pg joe <br>
 
+
+
+
 Program received signal SIGSEGV, Segmentation fault. 0x10003750 in
 getenv () <br>
 
+
+
+
 (gdb) where <br>
+
+
+
 
 #0 0x10003750 in getenv () <br>
 
+
+
+
 #1 0x10001438 in MPIR_Init (=0x2ff7f630, =0x2ff7f634) <br>
+
+
+
 
 #2 0x10001384 in MPI_Init (=0x2ff7f630, =0x2ff7f634) <br>
 
+
+
+
 #3 0x100004d8 in main (argc=3, args=0x2ff7f65c) at ex1.c:37 <br>
 
+
+
+
 #4 0x10000430 in __start ()
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem: </strong></font>As
 shown
 below, libxlf.a contains the Fortran routine getenv(), which is
 being used instead of the UNIX routine that we really need.
 This seems to occur when using gcc/g++ instead of xlc. <br>
 
+
+
+
     </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>Edit
 the file petsc/bmake/rs6000/bpackages and define FC_LIB as as
 follows, making sure to list "-lbsd -lc" BEFORE libxlf.a and
 any other Fortran libraries. FC_LIB = -lbsd -lc /usr/lib/libxlf.a</p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>The
 program seems to use more and more memory as it runs, even
 though you don't think you are allocating more memory.
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 Possibly some of the following:</p>
 
+
+
+
+    
+    
+    
     <ol>
+
+
+
 
       <li>You are creating new PETSc objects but never freeing
 them.</li>
 
+
+
+
       <li>There is a memory leak in PETSc or your code. </li>
+
+
+
 
       <li>Something much more subtle: (if you are using Fortran).
 When you declare a large array in Fortran, the operating
@@ -472,9 +1032,15 @@ code, if at each step you start using later values in the
 array your virtual memory usage will "continue" to increase
 as measured by ps or top. </li>
 
+
+
+
       <li>You are running with the -log, -log_mpe, or -log_all
 option. He a great deal of logging information is stored in
 memory until the conclusion of the run.</li>
+
+
+
 
       <li>You are linking with the MPI profiling libraries; these
 cause logging of all MPI activities. Another <font color="#ff0000"><strong>Symptom</strong>
@@ -482,13 +1048,34 @@ cause logging of all MPI activities. Another <font color="#ff0000"><strong>Sympt
 message about writing log
 files. </li>
 
+
+
+
+    
+    
+    
     </ol>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cures:</strong></font></p>
 
+
+
+
+    
+    
+    
     <ol>
 
-      <li>Run with the -malloc_debug option or -malloc_dump. Use
+
+
+
+      <li>Run with the -malloc_debug option and -malloc_dump. Or use
 the
 commands PetscMallocDump() and PetscMallocLogDump() sprinkled in
 your code to track memory that is allocated and not later freed. Use
@@ -496,20 +1083,44 @@ the commands PetscMallocSpace() and PetscGetResidentSetSize()
 to monitor memory allocated and total memory used as the
 code progresses. </li>
 
+
+
+
       <li>This is just the way Unix works and is harmless.</li>
+
+
+
 
       <li>Do not use the -log, -log_mpe, or -log_all option, or
 use PLogEventDeactivate() or PLogEventDeactivateClass(),
 PLogEventMPEDeactivate() to turn off logging of specific events. </li>
 
+
+
+
       <li>Make sure you do not link with the MPI profiling
 libraries.&nbsp;</li>
 
+
+
+
       <li></li>
 
+
+
+
+    
+    
+    
     </ol>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>Under
@@ -517,33 +1128,63 @@ Windows when Installing using g++ libfast in:
 /users/petsc/petsc_prj/petsc/src/sys/src str.c: In function `void
 PetscStrncpy(char *, char *, int)': str.c:36: warning: implicit
 declaration of function `int strncpy(...)' ... ...
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 This is
 due to the case insensitivity of Windows file systems. Instead of using
 string.h , the compiler is picking up String.h - a C++
 include-file, causing these errors. </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>In
 the gcc include dir do "cp string.h string_bak.h" - Edit
 petsc/src/sys/src/str.c replace string.h with string_bak.h -
 Edit petsc/src/sys/src/memc.c replace memory.h with string_bak.h -
 recompile. </p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>on
 SGI (or Origin) using SGI MPI version 2.0 MPI Error, rank:0,
 function:MPI_ERRHANDLER_SET, Invalid communicator MPI_Abort()
 called, aborting program! Other, random crashes in MPI.
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem: </strong></font>bug
 in SGI's implementation of MPI called version 2.0 (confirmed by
 SGI) </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>Upgrade
 to SGI's version 3.0 of MPI. </p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>on
@@ -552,50 +1193,107 @@ definition of __dcis in /usr/lib64/mips4/libftn.so preempts that weak
 definition in /usr/lib64/mips4/libm.so. ld64: WARNING 134: weak
 definition of __rcis in /usr/lib64/mips4/libftn.so preempts
 that weak definition in /usr/lib64/mips4/libm.so.
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 Message seems harmless </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>Change
 the CLINKER and FLINKER in bmake/IRIX64/base to&nbsp; <br>
+
+
+
 
 CLINKER = cc -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 -rpath
 ${LDIR}:${DYLIBPATH} <br>
 
+
+
+
 FLINKER = f77 -64 ${FOPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 -rpath
 ${LDIR}:${DYLIBPATH}</p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>on
 Cray T3D/T3E mpirun -np 1 ex1 -info /bin/mpprun: exec of
 'ex1' failed: No such file or directory
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem: </strong></font>./
 is not in your path. </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure:</strong></font>
 add ./
 to your PATH variable in your .cshrc </p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>With
 GMRES At restart the second residual norm printed does not
 match the first <br>
 
+
+
+
 26 KSP Residual norm 3.421544615851e-04 <br>
+
+
+
 
 27 KSP Residual norm 2.973675659493e-04 <br>
 
+
+
+
 28 KSP Residual norm 2.588642948270e-04 <br>
+
+
+
 
 29 KSP Residual norm 2.268190747349e-04 <br>
 
+
+
+
 30 KSP Residual norm 1.977245964368e-04<br>
+
+
+
 
 30 KSP Residual norm 1.994426291979e-04 &lt;----- At restart the
 residual norm is printed a second time
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 Actually this is not surprising. GMRES computes the norm of the
 residual at each iteration via a recurrence relation between
@@ -610,6 +1308,12 @@ difference printed. The drifting, if it remains small, is harmless
 (doesn't effect the accuracy of the solution that GMRES
 computes). </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure:</strong></font>
 There
 realy isn't a cure, but if you use a more powerful
@@ -617,32 +1321,74 @@ preconditioner the drift will often be smaller and less noticeable. Of
 if you are running matrix-free you may need to tune the
 matrix-free parameters.</p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>on
 Cray T3E/T3D My mixed Fortran/(C or C++) code works fine on
 other machines but does not link (or links but crashes on) on
 the Cray T3D or T3E.
+    
+    
+    
     <p><font color="#ff0000"><strong>Probable
 problems</strong></font>:</p>
 
+
+
+
+    
+    
+    
     <ol>
+
+
+
 
       <li>NOT LINKING: the Cray Fortran compiler changes all
 Fortran routine names to all caps, so when you call them
 from C/C++ with all small letters, the linker cannot find the. </li>
 
+
+
+
       <li>STRANGE CRASHING: the Cray Fortran compiler uses double
 precision to denote quad precision and single precision to
 denote "regular" double precision. </li>
 
+
+
+
+    
+    
+    
     </ol>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cures:</strong></font>
     </p>
 
+
+
+
+    
+    
+    
     <ol>
+
+
+
 
       <li>You must make sure that when you call Fortran routines
 from C/C++ the name of the routine called (in C/C++) is in
@@ -654,42 +1400,87 @@ myfortranroutine_ #define myfortranroutine #endif /* some C
 code that calls Fortran */ myfortranroutine_(.....). See
 src/fortran/custom/zoptions.c for examples. </li>
 
+
+
+
       <li>To get the Fortran compiler to to behave like a normal
 Unix Fortran compiler you must make sure that all of your
 Fortran routines are compiled with the -dp flag. If you use the PETSc
 makefiles and macro FC to compile your Fortran code this will
 handle this automatically. </li>
 
+
+
+
+    
+    
+    
     </ol>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>[0]
 PETSC ERROR: MatAssemblyBegin() line 1858 in
 src/mat/interface/matrix.c Not for factored matrix
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem: </strong></font>You
 are trying to assemble a matrix that has been factored.
 Normally this does not make sense, unless you are using an implace
 factorization and want to reuse the space. </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>Call
 MatSetUnfactored(Mat); before calling the MatSetValues()
 routines.</p>
 
+
+
+
   </li>
+
+
+
 
   <li><strong><font color="#ff0000">Symptom:</font></strong>
 Error
 while running program<br>
 
+
+
+
     <br>
+
+
+
 
 &gt; mpirun ex1<br>
 
+
+
+
 p0_27137: p4_error: semget failed for setnum=%d: 0<br>
 
+
+
+
     <br>
+
+
+
 
     <strong><font color="#ff0000">Problem:</font></strong>
 Inproperly installed or configured MPICH. Often this results
@@ -697,7 +1488,13 @@ from compiling the socket based version of MPICH, with device ch_p4 but
 using the mpirun associated with the shared memory version or
 the other way around.<br>
 
+
+
+
     <br>
+
+
+
 
     <font color="#ff0000"><strong>Cure:</strong>
     </font>First,
@@ -705,121 +1502,274 @@ make sure that you can run plain old MPI programs (those
 without PETSC). Make sure you are using the correct version of
 mpirun for the installed version of MPICH or reinstall MPICH<br>
 
+
+
+
 .<br>
 
+
+
+
   </li>
+
+
+
 
   <li><strong><font color="#ff0000">Symptom</font></strong>:
 Error when compiling PETSc examples<br>
 
+
+
+
     <br>
+
+
+
 
 &gt; ld : -lg2c no such file<br>
 
+
+
+
     <br>
+
+
+
 
     <font color="#ff0000"><strong>Problem:</strong></font>
 Your
 fortran compiler is probably using libf2c.a instead of libg2c.a<br>
 
+
+
+
     <br>
+
+
+
 
     <font color="#ff0000"><strong>Cure:</strong></font>
 Edit
 bmake/${PETSC_ARCH}/petscconf and replace -lg2c with -lf2c<br>
 
+
+
+
     <br>
+
+
+
 
   </li>
 
+
+
+
   <li>
+    
+    
+    
     <p>&nbsp;<font color="#ff0000"><strong>Symptom</strong>:</font>
 Get the following errors when using PETSc graphics on
 windows/cygwin-X11 <br>
 
+
+
+
     <font face="Terminal"><br>
+
+
+
 
 X Error of failed request: BadMatch (invalid parameter attributes)<br>
 
+
+
+
 Major opcode of failed request: 78 (X_CreateColormap)<br>
+
+
+
 
 Serial number of failed request: 8<br>
 
+
+
+
 Current serial number in output stream: 9<br>
+
+
+
 
     <br>
 
+
+
+
     </font></p>
 
+
+
+
+    
+    
+    
     <p><font face="Terminal"><font color="#ff0000"><strong>Problem:</strong></font>
 This
 problem might occur when using 25 color mode or 32bit color
 mode on windows. </font></p>
 
+
+
+
     <font face="Terminal"> </font>
+    
+    
+    
     <p><font face="Terminal"><font color="#ff0000"><strong>Cure:</strong></font>
 This
 can be fixed by changing the display settings on windows to 16
 bit colors or 24 bit colors.<br>
 
+
+
+
     </font></p>
 
+
+
+
     <font face="Terminal"> </font>
+    
+    
+    
     <p></p>
 
+
+
+
   </li>
+
+
+
 
   <li><font face="Terminal"><font color="#ff0000"><strong>Symptom</strong>:</font>
 Some
 Krylov methods seem to print two residual norms per iteration,
 for example <br>
 
+
+
+
     <font face="Terminal"><br>
+
+
+
 
 &gt; 1198 KSP Residual norm 1.366052062216e-04<br>
 
+
+
+
 &gt; 1198 KSP Residual norm 1.931875025549e-04<br>
+
+
+
 
 &gt; 1199 KSP Residual norm 1.366026406067e-04<br>
 
+
+
+
 &gt; 1199 KSP Residual norm 1.931819426344e-04&nbsp;</font></font>
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 Some Krylov methods, for example tfqmr, actually have a
 "sub-iteration"<br>
 
+
+
+
 of size 2 inside the loop; each of the two substeps has its own matrix
 vector<br>
 
+
+
+
 product and application of the preconditioner and updates the residual<br>
+
+
+
 
 approximations. This is why you get this "funny" output where it looks
 like&nbsp;<br>
 
+
+
+
 there are two residual norms per iteration. You can also think of it as
 twice<br>
 
+
+
+
 as many iterations. </p>
 
+
+
+
+    
+    
+    
     <p></p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom</strong>:</font>
 The
 example compiles fine - but at runtime gives the following
 error:
+    
+    
+    
     <p>[0]PETSC ERROR: PetscInitialize_DynamicLibraries() line 63
 in src/sys/src/dll/reg.c<br>
+
+
+
 
 [0]PETSC ERROR: Unable to locate PETSc dynamic library
 /home/balay/spetsc/lib/libg/linux/libpetsc&nbsp;<br>
 
+
+
+
 You cannot move the dynamic libraries!<br>
+
+
+
 
     <br>
 
+
+
+
     </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 When
 using DYNAMIC libraries - the libraries cannot be moved after
@@ -827,15 +1777,30 @@ they are installed. This could also happen on clusters - where
 the paths are different on the (run) nodes - than on the
 (compile) front-end. </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure:</strong></font>&nbsp;
 Do not use dynamic libraries &amp; shared libraries. Run
 config/configure.py with --with-shared=0 --with-dynamic=0</p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong>Symptom</strong>:</font>
 When
 running with -start_in_debugger one gets the error message
+    
+    
+    
     <p>PETSC: Attaching gdb to
 /opt/procast_mpich/procast051003/./procast of pid 31603 on display
 linux.:0.\
@@ -843,68 +1808,155 @@ linux.:0.\
 : Can't get address for linux. Xt error: Can't open display: linux.:0.0
     </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 The
 remote nodes
 do not know where to display the debugger window. </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>Run
 with
 the additional option
 -display displayname where displayname is something like mymachine.0.0 </p>
 
+
+
+
   </li>
+
+
+
 
   <li><font color="#ff0000"><strong></strong></font><font color="#ff0000"><strong>Symptom: </strong></font><br>
 
+
+
+
 # make PETSC_ARCH=asterix-mpd test<br>
 
+
+
+
 Running test examples to verify correct installation<br>
+
+
+
 
 Possible error running C/C++ src/snes/examples/tutorials/ex19 with 1
 MPI process<br>
 
+
+
+
 See
 http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html<br>
+
+
+
 
 mpdrun_asterix: cannot connect to local mpd (/tmp/mpd2.console_balay);
 possible causes:<br>
 
+
+
+
 &nbsp; 1. no mpd is running on this host<br>
+
+
+
 
 &nbsp; 2. an mpd is running but was started without a "console" (-n
 option)<br>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem:</strong></font>&nbsp;
 As
 the error message indicates - 'mpd'&nbsp; - required for the
 version of
 MPICH you've installed isn't started </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure:</strong></font><span style="font-weight: bold;">&nbsp;</span> Start the
 mpd daemon [should
-be at MPI_DIR/bin/mpd].<br>
+be at MPI_DIR/bin/mpdboot].<br>
+
+
+
 
     </p>
 
+
+
+
   </li>
 
+
+
+
   <li><font color="#ff0000"><strong>Symptom: </strong></font>
+    
+    
+    
     <p><font color="#ff0000"><strong>Problem: </strong></font>
     </p>
 
+
+
+
+    
+    
+    
     <p><font color="#ff0000"><strong>Cure: </strong></font>
     </p>
 
+
+
+
   </li>
+
+
+
 
   <li>
+    
+    
+    
     <p> </p>
 
+
+
+
   </li>
+
+
+
 
   </font>
 </ol>
+
+
+
 
 </body>
 </html>
