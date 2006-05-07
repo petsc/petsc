@@ -5,21 +5,26 @@
 T*/
 
 /*
-Added at the request of Marc Garbey.
+Laplacian in 2D. Modeled by the partial differential equation
 
-Inhomogeneous Laplacian in 2D. Modeled by the partial differential equation
-
-   div \rho grad u = f,  0 < x,y < 1,
+   -div grad u = f,  0 < x,y < 2,
 
 with forcing function
 
-   f = e^{-(1 - x)^2/\nu} e^{-(1 - y)^2/\nu}
+   f = 2
+   f = 2y (1 - y) + 2x (1 - x)
 
 with Dirichlet boundary conditions
 
-   u = f(x,y) for x = 0, x = 1, y = 0, y = 1
+   u = 0 for x = 0, x = 2 and u = x (2 - x) for y = 0, y = 2
+   u = 0 for x = 0, x = 2, y = 0, y = 2
 
-or pure Neumman boundary conditions
+or pure Neumman boundary conditions.
+
+This has exact solution
+
+   u = x (2 - x)
+   u = x (2 - x) y (2 - y)
 
 This uses multigrid to solve the linear system
 
@@ -57,11 +62,11 @@ PetscErrorCode updateOperator(Mat, ALE::Obj<ALE::Two::Mesh::field_type>, const A
 extern PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Two::Mesh>);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
+extern PetscErrorCode ComputeError(DMMG,Vec,double*);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
 typedef struct {
-  PetscScalar nu;
   BCType      bcType;
   VecScatter  injection;
 } UserContext;
@@ -76,11 +81,9 @@ int main(int argc,char **argv)
   DMMG          *dmmg;
   UserContext    user;
   PetscViewer    viewer;
-  char           baseFilename[2048];
   const char    *bcTypes[2] = {"dirichlet", "neumann"};
-  PetscTruth     readFile;
-  PetscReal      refinementLimit, norm;
-  PetscInt       dim, bc, l;
+  PetscReal      refinementLimit, norm, error;
+  PetscInt       dim, bc, l, meshDebug;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
@@ -88,59 +91,29 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBegin(comm, "", "Options for the inhomogeneous Poisson equation", "DMMG");CHKERRQ(ierr);
     debug = 0;
     ierr = PetscOptionsInt("-debug", "The debugging flag", "ex33.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
+    meshDebug = 0;
+    ierr = PetscOptionsInt("-mesh_debug", "The mesh debugging flag", "ex33.c", 0, &meshDebug, PETSC_NULL);CHKERRQ(ierr);
     dim  = 2;
     ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex33.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
     refinementLimit = 0.0;
     ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex33.c", 1.0, &refinementLimit, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscStrcpy(baseFilename, "none");CHKERRQ(ierr);
-    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex2.c", "ex2", baseFilename, 2048, &readFile);CHKERRQ(ierr);
-    user.nu = 0.1;
-    ierr = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex33.c", 0.1, &user.nu, PETSC_NULL);CHKERRQ(ierr);
     bc = (PetscInt)DIRICHLET;
     ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex33.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
     user.bcType = (BCType) bc;
   ierr = PetscOptionsEnd();
 
-  ALE::Obj<ALE::Two::Mesh> meshBoundary = ALE::Two::Mesh(comm, dim-1, debug);
+  ALE::Obj<ALE::Two::Mesh> meshBoundary = ALE::Two::Mesh(comm, dim-1, meshDebug);
   ALE::Obj<ALE::Two::Mesh> mesh;
 
   try {
     ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Generating mesh\n");CHKERRQ(ierr);
-    if (readFile) {
-      meshBoundary = ALE::Two::PCICEBuilder::createNewBd(comm, baseFilename, dim-1, PETSC_TRUE, debug);
-    } else {
-      ierr = CreateMeshBoundary(meshBoundary);CHKERRQ(ierr);
-    }
+    ierr = CreateMeshBoundary(meshBoundary);CHKERRQ(ierr);
     mesh = ALE::Two::Generator::generate(meshBoundary);
     ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
-    ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
-    //CheckElementGeometry(mesh);
-    ALE::LogStagePop(stage);
-
-    stage = ALE::LogStageRegister("BndCreation");
-    ALE::LogStagePush(stage);
-    ierr = PetscPrintf(comm, "Creating boundary\n");CHKERRQ(ierr);
-    ALE::Obj<ALE::Two::Mesh::field_type> boundary = mesh->getBoundary();
-    ALE::Obj<ALE::Two::Mesh::sieve_type::traits::depthSequence> bdVertices = topology->depthStratum(0, 1);
-    ALE::Two::Mesh::field_type::patch_type patch;
-
-    boundary->setTopology(topology);
-    boundary->setPatch(topology->leaves(), patch);
-    //boundary->setFiberDimensionByDepth(patch, 0, 1);
-    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator v_iter = bdVertices->begin(); v_iter != bdVertices->end(); ++v_iter) {
-      boundary->setFiberDimension(patch, *v_iter, 1);
-    }
-    boundary->orderPatches();
-    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator v_iter = bdVertices->begin(); v_iter != bdVertices->end(); ++v_iter) {
-      //double *coords = mesh->getCoordinates()->restrict(patch, *v_iter);
-      double values[1] = {0.0};
-
-      boundary->update(patch, *v_iter, values);
-    }
-    boundary->view("Mesh Boundary");
+    ierr = PetscPrintf(comm, "  Generated %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "  Generated %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
     ALE::LogStagePop(stage);
 
     stage = ALE::LogStageRegister("MeshDistribution");
@@ -148,7 +121,6 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
     mesh = mesh->distribute();
     ALE::LogStagePop(stage);
-    mesh->getBoundary()->view("Mesh Boundary");
 
     if (refinementLimit > 0.0) {
       stage = ALE::LogStageRegister("MeshRefine");
@@ -159,13 +131,38 @@ int main(int argc,char **argv)
     }
     topology = mesh->getTopology();
 
-    ALE::Obj<ALE::Two::Mesh::field_type> coords = mesh->getCoordinates();
+    stage = ALE::LogStageRegister("BndValues");
+    ALE::LogStagePush(stage);
+    ierr = PetscPrintf(comm, "Calculating boundary values\n");CHKERRQ(ierr);
+    ALE::Obj<ALE::Two::Mesh::field_type> boundary = mesh->getBoundary();
+    ALE::Obj<ALE::Two::Mesh::sieve_type::traits::depthSequence> vertices = topology->depthStratum(0);
+    ALE::Two::Mesh::field_type::patch_type bdPatch(0, 1);
+    ALE::Two::Mesh::field_type::patch_type patch;
+
+    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+      if (boundary->getIndex(bdPatch, *v_iter).index > 0) {
+        const double *coords = mesh->getCoordinates()->restrict(patch, *v_iter);
+        double        values[1];
+
+        values[0] = coords[0]*(2.0 - coords[0]);
+        boundary->update(bdPatch, *v_iter, values);
+      }
+    }
+    if (debug) {boundary->view("Mesh Boundary");}
+    ALE::LogStagePop(stage);
+
     ALE::Obj<ALE::Two::Mesh::field_type> u = mesh->getField("u");
+    ALE::Obj<ALE::Two::Mesh::field_type> b = mesh->getField("b");
     u->setPatch(topology->leaves(), ALE::Two::Mesh::field_type::patch_type());
     u->setFiberDimensionByDepth(patch, 0, 1);
     u->orderPatches();
-    u->view("u");
+    if (debug) {u->view("u");}
     u->createGlobalOrder();
+    b->setPatch(topology->leaves(), ALE::Two::Mesh::field_type::patch_type());
+    b->setFiberDimensionByDepth(patch, 0, 1);
+    b->orderPatches();
+    if (debug) {b->view("b");}
+    b->createGlobalOrder();
     ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
     ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
     std::string orderName("element");
@@ -175,13 +172,15 @@ int main(int argc,char **argv)
       //   What we really need is the depthStratum relative to the patch
       ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_iter);
 
-      coords->setPatch(orderName, cone, *e_iter);
       u->setPatch(orderName, cone, *e_iter);
+      b->setPatch(orderName, cone, *e_iter);
       for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
         u->setFiberDimension(orderName, *e_iter, *c_iter, 1);
+        b->setFiberDimension(orderName, *e_iter, *c_iter, 1);
       }
     }
     u->orderPatches(orderName);
+    b->orderPatches(orderName);
     CheckElementGeometry(mesh);
 
     Mesh petscMesh;
@@ -201,6 +200,13 @@ int main(int argc,char **argv)
     ierr = MeshGetGlobalScatter(mesh, "u", DMMGGetx(dmmg), &user.injection); CHKERRQ(ierr);
 
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
+
+    if (debug) {
+      ierr = PetscPrintf(mesh->comm(), "Solution vector:");CHKERRQ(ierr);
+      ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
+    ierr = ComputeError(dmmg[DMMGGetLevels(dmmg)-1], DMMGGetx(dmmg), &error);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Error norm %g\n",error);CHKERRQ(ierr);
 
     ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
     ierr = VecAXPY(DMMGGetr(dmmg),-1.0,DMMGGetRHS(dmmg));CHKERRQ(ierr);
@@ -1306,111 +1312,18 @@ PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Two::Mesh> mesh)
   PetscInt       dim = mesh->getDimension();
   PetscReal     *v0, *Jac;
   PetscReal      detJ;
-  PetscInt       oldDebug = debug;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  debug = 1;
   ierr = PetscMalloc2(dim,PetscReal,&v0,dim*dim,PetscReal,&Jac);CHKERRQ(ierr);
   for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
     ierr = ElementGeometry(mesh, *e_iter, v0, Jac, PETSC_NULL, &detJ);
   }
   ierr = PetscSynchronizedFlush(mesh->comm());CHKERRQ(ierr);
-  oldDebug = 1;
   ierr = PetscFree2(v0,Jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ComputeRho"
-PetscErrorCode ComputeRho(PetscReal x, PetscReal y, PetscScalar *rho)
-{
-  PetscFunctionBegin;
-  if ((x > 1.0/3.0) && (x < 2.0/3.0) && (y > 1.0/3.0) && (y < 2.0/3.0)) {
-    //*rho = 100.0;
-    *rho = 1.0;
-  } else {
-    *rho = 1.0;
-  }
-  PetscFunctionReturn(0);
-}
-#if 0
-#undef __FUNCT__
-#define __FUNCT__ "ComputeBlock"
-PetscErrorCode ComputeBlock(DMMG dmmg, Vec u, Vec r, ALE::Point_set block)
-{
-  Mesh              mesh = (Mesh) dmmg->dm;
-  UserContext      *user = (UserContext *) dmmg->user;
-  ALE::Sieve       *topology;
-  ALE::PreSieve    *orientation;
-  ALE::IndexBundle *bundle;
-  ALE::IndexBundle *coordBundle;
-  ALE::Point_set    elements;
-  PetscInt          dim;
-  Vec               coordinates;
-  PetscScalar      *coords;
-  PetscScalar      *array;
-  PetscScalar      *field;
-  PetscReal         elementVec[NUM_BASIS_FUNCTIONS];
-  PetscReal         linearVec[NUM_BASIS_FUNCTIONS];
-  PetscReal        *v0, *Jac, *Jinv, *t_der, *b_der;
-  PetscReal         xi, eta, x_q, y_q, detJ, rho, funcValue;
-  PetscInt          f, g, q;
-  PetscErrorCode    ierr;
-
-  ierr = MeshGetTopology(mesh, (void **) &topology);CHKERRQ(ierr);
-  ierr = MeshGetOrientation(mesh, (void **) &orientation);CHKERRQ(ierr);
-  ierr = MeshGetBundle(mesh, (void **) &bundle);CHKERRQ(ierr);
-  ierr = MeshGetCoordinateBundle(mesh, (void **) &coordBundle);CHKERRQ(ierr);
-  ierr = MeshGetCoordinates(mesh, &coordinates);CHKERRQ(ierr);
-  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = VecGetArray(u, &array); CHKERRQ(ierr);
-  dim = coordBundle->getFiberDimension(*coordBundle->getTopology()->depthStratum(0).begin());
-  ierr = PetscMalloc(dim * sizeof(PetscReal), &v0);CHKERRQ(ierr);
-  ierr = PetscMalloc(dim * sizeof(PetscReal), &t_der);CHKERRQ(ierr);
-  ierr = PetscMalloc(dim * sizeof(PetscReal), &b_der);CHKERRQ(ierr);
-  ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
-  ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jinv);CHKERRQ(ierr);
-  elements = topology->star(block);
-  for(ALE::Point_set::iterator element_itor = elements.begin(); element_itor != elements.end(); element_itor++) {
-    ALE::Point e = *element_itor;
-
-    ierr = ElementGeometry(coordBundle, orientation, coords, e, v0, Jac, Jinv, &detJ); CHKERRQ(ierr);
-    ierr = restrictField(bundle, orientation, array, e, &field); CHKERRQ(ierr);
-    /* Element integral */
-    ierr = PetscMemzero(elementVec, NUM_BASIS_FUNCTIONS*sizeof(PetscScalar));CHKERRQ(ierr);
-    for(q = 0; q < NUM_QUADRATURE_POINTS; q++) {
-      xi = points[q*2+0] + 1.0;
-      eta = points[q*2+1] + 1.0;
-      x_q = Jac[0]*xi + Jac[1]*eta + v0[0];
-      y_q = Jac[2]*xi + Jac[3]*eta + v0[1];
-      ierr = ComputeRho(x_q, y_q, &rho);CHKERRQ(ierr);
-      funcValue = PetscExpScalar(-(x_q*x_q)/user->nu)*PetscExpScalar(-(y_q*y_q)/user->nu);
-      for(f = 0; f < NUM_BASIS_FUNCTIONS; f++) {
-        t_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+1];
-        t_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+1];
-        for(g = 0; g < NUM_BASIS_FUNCTIONS; g++) {
-          b_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
-          b_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
-          linearVec[f] += rho*(t_der[0]*b_der[0] + t_der[1]*b_der[1])*field[g];
-        }
-        elementVec[f] += (Basis[q*NUM_BASIS_FUNCTIONS+f]*funcValue - linearVec[f])*weights[q]*detJ;
-      }
-    }
-    if (debug) {printf("elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);}
-    /* Assembly */
-    ierr = assembleField(bundle, orientation, r, e, elementVec, ADD_VALUES); CHKERRQ(ierr);
-  }
-  ierr = PetscFree(v0);CHKERRQ(ierr);
-  ierr = PetscFree(t_der);CHKERRQ(ierr);
-  ierr = PetscFree(b_der);CHKERRQ(ierr);
-  ierr = PetscFree(Jac);CHKERRQ(ierr);
-  ierr = PetscFree(Jinv);CHKERRQ(ierr);
-  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = VecRestoreArray(u, &array); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
 PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
@@ -1432,7 +1345,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   dim  = m->getDimension();
   ierr = PetscMalloc(dim * sizeof(PetscReal), &v0);CHKERRQ(ierr);
   ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
-  ALE::Obj<ALE::Two::Mesh::field_type> field = m->getField("u");
+  ALE::Obj<ALE::Two::Mesh::field_type> field = m->getField("b");
   ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = m->getTopology()->heightStratum(0);
   ALE::Two::Mesh::field_type::patch_type patch;
   for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
@@ -1444,7 +1357,8 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
       eta = points[q*2+1] + 1.0;
       x_q = Jac[0]*xi + Jac[1]*eta + v0[0];
       y_q = Jac[2]*xi + Jac[3]*eta + v0[1];
-      funcValue = PetscExpScalar(-(x_q*x_q)/user->nu)*PetscExpScalar(-(y_q*y_q)/user->nu);
+      funcValue = 2.0;
+      //funcValue = 2.0*y_q*(2.0 - y_q) + 2.0*x_q*(2.0 - x_q);
       for(f = 0; f < NUM_BASIS_FUNCTIONS; f++) {
         elementVec[f] += Basis[q*NUM_BASIS_FUNCTIONS+f]*funcValue*weights[q]*detJ;
       }
@@ -1471,6 +1385,45 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     ierr = KSPGetNullSpace(dmmg->ksp,&nullspace);CHKERRQ(ierr);
     ierr = MatNullSpaceRemove(nullspace,b,PETSC_NULL);CHKERRQ(ierr);
   }
+  if (user->bcType == DIRICHLET) {
+    /* Zero out BC rows */
+    ALE::Two::Mesh::field_type::patch_type patch;
+    ALE::Two::Mesh::field_type::patch_type bdPatch(0, 1);
+    ALE::Obj<ALE::Two::Mesh::field_type> boundary = m->getBoundary();
+    ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> cone = boundary->getPatch(bdPatch);
+    PetscScalar *boundaryValues;
+    PetscInt    *boundaryIndices;
+    PetscInt     numBoundaryIndices = 0;
+    PetscInt     k = 0;
+
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = cone->begin(); p != cone->end(); ++p) {
+      numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
+    }
+    ierr = PetscMalloc2(numBoundaryIndices,PetscInt,&boundaryIndices,numBoundaryIndices,PetscScalar,&boundaryValues); CHKERRQ(ierr);
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = cone->begin(); p != cone->end(); ++p) {
+      const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
+      const double *data = boundary->restrict(bdPatch, *p);
+
+      for(int i = 0; i < idx.index; i++) {
+        boundaryIndices[k] = idx.prefix + i;
+        boundaryValues[k] = data[i];
+        k++;
+      }
+    }
+    if (debug) {
+      boundary->view("Boundary for rhs conditions");
+      for(int i = 0; i < numBoundaryIndices; i++) {
+        ierr = PetscSynchronizedPrintf(comm, "[%d]boundaryIndices[%d] = %d\n", m->commRank(), i, boundaryIndices[i]);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscSynchronizedFlush(comm);
+    ierr = VecSetValues(b, numBoundaryIndices, boundaryIndices, boundaryValues, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = PetscFree2(boundaryIndices, boundaryValues);CHKERRQ(ierr);
+  }
+  if (debug) {
+    ierr = PetscPrintf(m->comm(), "Rhs vector:");CHKERRQ(ierr);
+    ierr = VecView(b, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1484,7 +1437,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   MPI_Comm          comm;
   PetscReal         elementMat[NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS];
   PetscReal        *v0, *Jac, *Jinv, *t_der, *b_der;
-  PetscReal         xi, eta, x_q, y_q, detJ, rho;
+  PetscReal         xi, eta, x_q, y_q, detJ;
   PetscInt          dim;
   PetscInt          f, g, q;
   PetscMPIInt       rank;
@@ -1512,14 +1465,13 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
       eta = points[q*2+1] + 1.0;
       x_q = Jac[0]*xi + Jac[1]*eta + v0[0];
       y_q = Jac[2]*xi + Jac[3]*eta + v0[1];
-      ierr = ComputeRho(x_q, y_q, &rho);CHKERRQ(ierr);
       for(f = 0; f < NUM_BASIS_FUNCTIONS; f++) {
         t_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+1];
         t_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+1];
         for(g = 0; g < NUM_BASIS_FUNCTIONS; g++) {
           b_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
           b_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
-          elementMat[f*NUM_BASIS_FUNCTIONS+g] += rho*(t_der[0]*b_der[0] + t_der[1]*b_der[1])*weights[q]*detJ;
+          elementMat[f*NUM_BASIS_FUNCTIONS+g] += (t_der[0]*b_der[0] + t_der[1]*b_der[1])*weights[q]*detJ;
         }
       }
     }
@@ -1542,42 +1494,98 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 
   if (user->bcType == DIRICHLET) {
     /* Zero out BC rows */
-    ALE::Obj<ALE::Two::Mesh::field_type> boundary = m->getBoundary();
-    ALE::Obj<ALE::Two::Mesh::sieve_type::traits::depthSequence> vertices = m->getTopology()->depthStratum(0);
     ALE::Two::Mesh::field_type::patch_type patch;
+    ALE::Two::Mesh::field_type::patch_type bdPatch(0, 1);
+    ALE::Obj<ALE::Two::Mesh::field_type> boundary = m->getBoundary();
+    ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> cone = boundary->getPatch(bdPatch);
     PetscInt *boundaryIndices;
     PetscInt  numBoundaryIndices = 0;
     PetscInt  k = 0;
 
-    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator p = vertices->begin(); p != vertices->end(); ++p) {
-      if (boundary->getIndex(patch, *p).index > 0) {
-        const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
-
-        if (idx.index > 0) {
-          numBoundaryIndices += idx.index;
-        }
-      }
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = cone->begin(); p != cone->end(); ++p) {
+      numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
     }
     ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
-    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator p = vertices->begin(); p != vertices->end(); ++p) {
-      if (boundary->getIndex(patch, *p).index > 0) {
-        const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = cone->begin(); p != cone->end(); ++p) {
+      const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
 
-        for(int i = 0; i < idx.index; i++) {
-          boundaryIndices[k++] = idx.prefix + i;
-        }
+      for(int i = 0; i < idx.index; i++) {
+        boundaryIndices[k++] = idx.prefix + i;
       }
     }
-    //if (debug) {
+    if (debug) {
       for(int i = 0; i < numBoundaryIndices; i++) {
         ierr = PetscSynchronizedPrintf(comm, "[%d]boundaryIndices[%d] = %d\n", rank, i, boundaryIndices[i]);CHKERRQ(ierr);
       }
-    //}
+    }
     ierr = PetscSynchronizedFlush(comm);
     ierr = MatZeroRows(jac, numBoundaryIndices, boundaryIndices, 1.0);CHKERRQ(ierr);
     ierr = PetscFree(boundaryIndices);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ComputeError"
+PetscErrorCode ComputeError(DMMG dmmg, Vec u, double *error)
+{
+  ALE::Obj<ALE::Two::Mesh> m;
+  Mesh                mesh = (Mesh) dmmg->dm;
+  UserContext        *user = (UserContext *) dmmg->user;
+  MPI_Comm            comm;
+  PetscReal           *v0, *Jac;
+  PetscReal           detJ, totalError;
+  PetscInt            dim;
+  PetscInt            f, q;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  dim  = m->getDimension();
+  ierr = PetscMalloc(dim * sizeof(PetscReal), &v0);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
+  ALE::Obj<ALE::Two::Mesh::field_type> field = m->getField("u");
+  ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = m->getTopology()->heightStratum(0);
+  ALE::Two::Mesh::field_type::patch_type patch;
+
+  Vec locU;
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, field->getSize(patch), field->restrict(patch), &locU);CHKERRQ(ierr);
+  ierr = VecScatterBegin(u, locU, INSERT_VALUES, SCATTER_REVERSE, user->injection);CHKERRQ(ierr);
+  ierr = VecScatterEnd(u, locU, INSERT_VALUES, SCATTER_REVERSE, user->injection);CHKERRQ(ierr);
+  ierr = VecDestroy(locU);CHKERRQ(ierr);
+
+  totalError = 0.0;
+  for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
+    const double *elementVec = field->restrict("element", *e_itor);
+    double e;
+
+    e = 0.0;
+    ierr = ElementGeometry(m, *e_itor, v0, Jac, PETSC_NULL, &detJ);CHKERRQ(ierr);
+    /* Element integral */
+    for(q = 0; q < NUM_QUADRATURE_POINTS; q++) {
+      PetscReal xi, eta, x_q, y_q, uExact, uComputed;
+
+      xi = points[q*2+0] + 1.0;
+      eta = points[q*2+1] + 1.0;
+      x_q = Jac[0]*xi + Jac[1]*eta + v0[0];
+      y_q = Jac[2]*xi + Jac[3]*eta + v0[1];
+      uExact = x_q*(2.0 - x_q);
+      //uExact = x_q*(2.0 - x_q)*y_q*(2.0 - y_q);
+      uComputed = 0.0;
+      for(f = 0; f < NUM_BASIS_FUNCTIONS; f++) {
+        uComputed += elementVec[f]*Basis[q*NUM_BASIS_FUNCTIONS+f];
+      }
+      e += (uComputed - uExact)*(uComputed - uExact)*weights[q]*detJ;
+    }
+    totalError += e;
+    if (debug) {PetscSynchronizedPrintf(comm, "elementError = %g\n", e);}
+    if (debug) {ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);}
+  }
+  ierr = PetscFree(v0);CHKERRQ(ierr);
+  ierr = PetscFree(Jac);CHKERRQ(ierr);
+  *error = sqrt(totalError);
   PetscFunctionReturn(0);
 }

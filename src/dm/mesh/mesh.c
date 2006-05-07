@@ -1397,9 +1397,9 @@ template<typename IntervalSequence,typename Field>
     int dim = field->getFiberDimension(patch, *i_iter);
     int offset = field->getFiberOffset(patch, *i_iter);
 
-    std::cout << "  indices for " << *i_iter << std::endl;
+    //std::cout << "  indices for " << *i_iter << std::endl;
     for(int i = offset; i < offset + std::abs(dim); i++) {
-      std::cout << "  indices[" << k << "] = " << i << std::endl;
+      //std::cout << "  indices[" << k << "] = " << i << std::endl;
       indices[k++] = i;
     }
   }
@@ -1562,7 +1562,7 @@ PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Two::Mesh::field_type> field,
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  printf("[%d]mat for element (%d, %d)\n", field->commRank(), e.prefix, e.index);
+  if (field->debug) {printf("[%d]mat for element (%d, %d)\n", field->commRank(), e.prefix, e.index);}
   for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator i_itor = intervals->begin(); i_itor != intervals->end(); ++i_itor) {
     numIndices += std::abs(globalOrder->getFiberDimension(patch, *i_itor));
     if (field->debug) {
