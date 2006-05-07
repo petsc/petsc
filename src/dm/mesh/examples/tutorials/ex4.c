@@ -81,12 +81,12 @@ int main(int argc, char *argv[])
     }
     ierr = PetscPrintf(comm, "  Generated %d boundary edges\n",    meshBoundary->getTopology()->depthStratum(1)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Generated %d boundary vertices\n", meshBoundary->getTopology()->depthStratum(0)->size());CHKERRQ(ierr);
-
     /* Generate the interior from the boundary */
     mesh = ALE::Two::Generator::generate(meshBoundary, interpolate);
     ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Generated %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Generated %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
+    ALE::LogStagePop(stage);
 
     /* Distribute the mesh */
     stage = ALE::LogStageRegister("MeshDistribution");
@@ -106,9 +106,11 @@ int main(int argc, char *argv[])
         mesh = ALE::Two::Generator::refine(mesh, refineLimit, (void *) &refCtx, interpolate);
       }
       ALE::LogStagePop(stage);
-      ierr = PetscPrintf(comm, "  Generated %d elements\n", mesh->getTopology()->heightStratum(0)->size());CHKERRQ(ierr);
-      ierr = PetscPrintf(comm, "  Generated %d vertices\n", mesh->getTopology()->depthStratum(0)->size());CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(comm, "  [%d]Generated %d local elements\n", mesh->commRank(), mesh->getTopology()->heightStratum(0)->size());CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(comm, "  [%d]Generated %d local vertices\n", mesh->commRank(), mesh->getTopology()->depthStratum(0)->size());CHKERRQ(ierr);
+      ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
     }
+
     /* Output the mesh */
     stage = ALE::LogStageRegister("MeshOutput");
     ALE::LogStagePush(stage);

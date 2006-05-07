@@ -186,6 +186,10 @@ ex36: ex36.o chkopts
 	-${CLINKER} -o ex36 ex36.o ${PETSC_SNES_LIB}
 	${RM} ex36.o
 
+ex37: ex37.o chkopts
+	-${CLINKER} -o ex37 ex37.o ${PETSC_SNES_LIB}
+	${RM} ex37.o
+
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ./ex1 -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -603,7 +607,10 @@ runex32:
 	   ${RM} -f ex32_1.tmp
 
 runex33:
-	-${MPIRUN} -np ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex33bc.data ${EXTRA_ARGS}
+	-${MPIRUN} -np ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor ${EXTRA_ARGS}
+
+runex33_quiet:
+	-${MPIRUN} -np ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 ${EXTRA_ARGS}
 
 debugex33:
 	-${MPIRUN} -np ${NP} ./ex33 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex33bc.data ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
@@ -619,6 +626,9 @@ debugex35:
 
 runex36:
 	-${MPIRUN} -np ${NP} ./ex36 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex36bc.data ${EXTRA_ARGS}
+
+runex37:
+	-${MPIRUN} -np ${NP} ./ex37 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex37bc.data ${EXTRA_ARGS}
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \

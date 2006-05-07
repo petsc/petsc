@@ -90,9 +90,7 @@ int main(int argc,char **argv)
   DMMG          *dmmg;
   UserContext    user;
   PetscViewer    viewer;
-  char           baseFilename[2048];
   const char    *bcTypes[2] = {"dirichlet", "neumann"};
-  PetscTruth     readFile;
   PetscReal      refinementLimit, norm;
   PetscInt       dim, bc, l;
   PetscErrorCode ierr;
@@ -106,8 +104,6 @@ int main(int argc,char **argv)
     ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex33.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
     refinementLimit = 0.0;
     ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex33.c", 1.0, &refinementLimit, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscStrcpy(baseFilename, "none");CHKERRQ(ierr);
-    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex2.c", "ex2", baseFilename, 2048, &readFile);CHKERRQ(ierr);
     user.nu = 0.1;
     ierr = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex33.c", 0.1, &user.nu, PETSC_NULL);CHKERRQ(ierr);
     bc = (PetscInt)DIRICHLET;
@@ -122,39 +118,11 @@ int main(int argc,char **argv)
     ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Generating mesh\n");CHKERRQ(ierr);
-    if (readFile) {
-      meshBoundary = ALE::Two::PCICEBuilder::createNewBd(comm, baseFilename, dim-1, PETSC_TRUE, debug);
-    } else {
-      ierr = CreateMeshBoundary(meshBoundary);CHKERRQ(ierr);
-    }
+    ierr = CreateMeshBoundary(meshBoundary);CHKERRQ(ierr);
     mesh = ALE::Two::Generator::generate(meshBoundary);
     ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
-    //CheckElementGeometry(mesh);
-    ALE::LogStagePop(stage);
-
-    stage = ALE::LogStageRegister("BndCreation");
-    ALE::LogStagePush(stage);
-    ierr = PetscPrintf(comm, "Creating boundary\n");CHKERRQ(ierr);
-    ALE::Obj<ALE::Two::Mesh::field_type> boundary = mesh->getBoundary();
-    ALE::Obj<ALE::Two::Mesh::sieve_type::traits::depthSequence> bdVertices = topology->depthStratum(0, 1);
-    ALE::Two::Mesh::field_type::patch_type patch;
-
-    boundary->setTopology(topology);
-    boundary->setPatch(topology->leaves(), patch);
-    //boundary->setFiberDimensionByDepth(patch, 0, 1);
-    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator v_iter = bdVertices->begin(); v_iter != bdVertices->end(); ++v_iter) {
-      boundary->setFiberDimension(patch, *v_iter, 1);
-    }
-    boundary->orderPatches();
-    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator v_iter = bdVertices->begin(); v_iter != bdVertices->end(); ++v_iter) {
-      //double *coords = mesh->getCoordinates()->restrict(patch, *v_iter);
-      double values[1] = {0.0};
-
-      boundary->update(patch, *v_iter, values);
-    }
-    boundary->view("Mesh Boundary");
     ALE::LogStagePop(stage);
 
     stage = ALE::LogStageRegister("MeshDistribution");
@@ -173,7 +141,24 @@ int main(int argc,char **argv)
     }
     topology = mesh->getTopology();
 
-    ALE::Obj<ALE::Two::Mesh::field_type> coords = mesh->getCoordinates();
+    stage = ALE::LogStageRegister("BndValues");
+    ALE::LogStagePush(stage);
+    ierr = PetscPrintf(comm, "Calculating boundary values\n");CHKERRQ(ierr);
+    ALE::Obj<ALE::Two::Mesh::field_type> boundary = mesh->getBoundary();
+    ALE::Obj<ALE::Two::Mesh::sieve_type::traits::depthSequence> vertices = topology->depthStratum(0);
+    ALE::Two::Mesh::field_type::patch_type patch;
+
+    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+      if (boundary->getIndex(patch, *v_iter).index > 0) {
+        //double *coords = mesh->getCoordinates()->restrict(patch, *v_iter);
+        double values[1] = {0.0};
+
+        boundary->update(patch, *v_iter, values);
+      }
+    }
+    boundary->view("Mesh Boundary");
+    ALE::LogStagePop(stage);
+
     ALE::Obj<ALE::Two::Mesh::field_type> u = mesh->getField("u");
     u->setPatch(topology->leaves(), ALE::Two::Mesh::field_type::patch_type());
     u->setFiberDimensionByDepth(patch, 0, 1);
@@ -189,7 +174,6 @@ int main(int argc,char **argv)
       //   What we really need is the depthStratum relative to the patch
       ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_iter);
 
-      coords->setPatch(orderName, cone, *e_iter);
       u->setPatch(orderName, cone, *e_iter);
       for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
         u->setFiberDimension(orderName, *e_iter, *c_iter, 1);
@@ -248,32 +232,32 @@ int main(int argc,char **argv)
 #define __FUNCT__ "CreateMeshBoundary"
 /*
   2D radially-symmetric channel boundary:
-             28                         29      35         43
-              V                          V      V          V 
+                    29                   30    31                 32
+                     V                    V     V                  V
     2----------------------------------3-----4----12--------------------------------13
     |                                  |     |     |                                 |
     |                                  |     |     |                                 |
-    |                               34>|     |     | <36                             |
+    |                               39>|     |     |<46                              |
     |                                  |     |     |                                 |
- 27>|                                  |  30>|     |                                 |
-    |                                  8     |     11                            42> |
-    |                               33>\     |     / <37                             |
-    |                                   7 31 | 39 10                                 |
-    |                                32> \ V | V / <38                               |
-    |                                     6--5--9      41                            |
-    |                                        |<40      V                             |
+ 28>|                                  |  59>|     |                                 |<33
+    |                                  8     |     11                                |
+    |                               40>\     |     /<45                              |
+    |                                   7 42 |43 10                                  |
+    |                                 41>\ V | V /<44                                |
+    |               55                    6--5--9                 57                 |
+    |                V                       |<56                  V                 |
     1----------------------------------------O--------------------------------------14
-    |          ^                             |<50                                    |
-    |         57                         25-20--19                                   |
-    |                               56>  / ^ | ^ \ <48                               |
-    |                                   24 51| 49 18                                 |
-    |                              55> /     |     \ <47                             |
-    | <58                              23    |    17                             44> |
-    |                                  | 52> |     |                                 |
+    |                                        |<58                                    |
+    |                                    25-20--19                                   |
+    |                                 49>/ ^ | ^ \<52                                |
+    |                                   24 50| 51 18                                 |
+    |                               48>/     |     \<53                              |
+ 27>|                                  23    |    17                                 |<34
+    |                                  |  60>|     |                                 |
     |                                  |     |     |                                 |
-    |                              54> |     |(XX) |<46                              |
-    |       59                         | 53  | 60  |        45                       |
-    |        V                         |  V  |  V  |        V                        |
+    |                               47>|     |     |<54                              |
+    |               38                 | 37  | 36  |              35                 |
+    |                V                 |  V  |  V  |               V                 |
     26(X)-----------------------------22----21-----16-------------------------------15
 
     (X) denotes the last vertex, (XX) denotes the last edge
@@ -308,40 +292,41 @@ PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
                                    /*24*/  -35.0/6.0, -10.0,
                                    /*25*/    -2.5,     -3.0,
                                    /*26*/  -112.5,    -50.0};
-  PetscInt    connectivity[68] = {1, 2,
-                                  2, 3,
-                                  3, 4,
-                                  4, 5,
-                                  5, 6,
-                                  6, 7,
-                                  7, 8,
-                                  8, 3,
-                                  4, 12,
-                                  11,12,
-                                  10,11,
-                                  9, 10,
-                                  5,  9,
-                                  0,  5,
-                                  0, 14,
-                                  13,14,
-                                  12,13,
-                                  14,15,
-                                  15,16,
-                                  16,17,
-                                  17,18,
-                                  18,19,
-                                  19,20,
-                                  0, 20,
-                                  20,25,
-                                  20,21,
-                                  21,22,
-                                  22,23,
-                                  23,24,
-                                  24,25,
-                                   0, 1,
-                                   1,26,
-                                  22,26,
-                                  21,16};
+  PetscInt    connectivity[68] = {26, 1, /* 1: phi = 0 */
+                                  1, 2,  /* 1: phi = 0 */
+                                  2, 3,  /* 2: grad phi = 0 */
+                                  3, 4,  /* 2: grad phi = 0 */
+                                  4, 12, /* 2: grad phi = 0 */
+                                  12,13, /* 2: grad phi = 0 */
+                                  13,14, /* 3: phi = V */
+                                  14,15, /* 3: phi = V */
+                                  15,16, /* 4: grad phi = 0 */
+                                  16,21, /* 4: grad phi = 0 */
+                                  21,22, /* 4: grad phi = 0 */
+                                  22,26, /* 4: grad phi = 0 */
+                                  3, 8,  /* 5: top lipid boundary */
+                                  8, 7,  /* 5: top lipid boundary */
+                                  7, 6,  /* 5: top lipid boundary */
+                                  6, 5,  /* 5: top lipid boundary */
+                                  5,  9, /* 5: top lipid boundary */
+                                  9, 10, /* 5: top lipid boundary */
+                                  10,11, /* 5: top lipid boundary */
+                                  11,12, /* 5: top lipid boundary */
+                                  22,23, /* 6: bottom lipid boundary */
+                                  23,24, /* 6: bottom lipid boundary */
+                                  24,25, /* 6: bottom lipid boundary */
+                                  25,20, /* 6: bottom lipid boundary */
+                                  20,19, /* 6: bottom lipid boundary */
+                                  19,18, /* 6: bottom lipid boundary */
+                                  18,17, /* 6: bottom lipid boundary */
+                                  17,16, /* 6: bottom lipid boundary */
+                                  0, 1,  /* 7: symmetry preservation */
+                                  0, 5,  /* 7: symmetry preservation */
+                                  0, 14, /* 7: symmetry preservation */
+                                  0, 20, /* 7: symmetry preservation */
+                                  4, 5,  /* 7: symmetry preservation */
+                                  21,20  /* 7: symmetry preservation */
+                                  };
   ALE::Two::Mesh::point_type vertices[27];
 
   PetscFunctionBegin;
@@ -364,7 +349,26 @@ PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
   mesh->createVertexBundle(34, connectivity, 27);
   mesh->createSerialCoordinates(2, 0, coords);
   /* Create boundary conditions */
-  /* Use ex2 as template */
+  if (mesh->commRank() == 0) {
+    for(int e = 27; e < 29; e++) {
+      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 1);
+    }
+    for(int e = 29; e < 33; e++) {
+      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 2);
+    }
+    for(int e = 33; e < 35; e++) {
+      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 3);
+    }
+    for(int e = 35; e < 39; e++) {
+      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 4);
+    }
+    for(int e = 39; e < 47; e++) {
+      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 5);
+    }
+    for(int e = 47; e < 55; e++) {
+      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 6);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -707,7 +711,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   MPI_Comm          comm;
   PetscReal         elementMat[NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS];
   PetscReal        *v0, *Jac, *Jinv, *t_der, *b_der;
-  PetscReal         xi, eta, x_q, y_q, detJ, rho;
+  PetscReal         xi, eta, x_q, y_q, detJ;
   PetscInt          dim;
   PetscInt          f, g, q;
   PetscMPIInt       rank;
@@ -735,14 +739,13 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
       eta = points[q*2+1] + 1.0;
       x_q = Jac[0]*xi + Jac[1]*eta + v0[0];
       y_q = Jac[2]*xi + Jac[3]*eta + v0[1];
-      ierr = ComputeRho(x_q, y_q, &rho);CHKERRQ(ierr);
       for(f = 0; f < NUM_BASIS_FUNCTIONS; f++) {
         t_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+1];
         t_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+1];
         for(g = 0; g < NUM_BASIS_FUNCTIONS; g++) {
           b_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
           b_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
-          elementMat[f*NUM_BASIS_FUNCTIONS+g] += rho*(t_der[0]*b_der[0] + t_der[1]*b_der[1])*weights[q]*detJ;
+          elementMat[f*NUM_BASIS_FUNCTIONS+g] += (t_der[0]*b_der[0] + t_der[1]*b_der[1])*weights[q]*detJ;
         }
       }
     }
@@ -765,30 +768,24 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 
   if (user->bcType == DIRICHLET) {
     /* Zero out BC rows */
-    ALE::Obj<ALE::Two::Mesh::field_type> boundary = m->getBoundary();
-    ALE::Obj<ALE::Two::Mesh::sieve_type::traits::depthSequence> vertices = m->getTopology()->depthStratum(0);
     ALE::Two::Mesh::field_type::patch_type patch;
+    ALE::Two::Mesh::field_type::patch_type bdPatch(0, 1);
+    ALE::Obj<ALE::Two::Mesh::field_type> boundary = m->getBoundary();
+    ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> cone = boundary->getPatch(bdPatch);
     PetscInt *boundaryIndices;
     PetscInt  numBoundaryIndices = 0;
     PetscInt  k = 0;
 
-    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator p = vertices->begin(); p != vertices->end(); ++p) {
-      if (boundary->getIndex(patch, *p).index > 0) {
-        const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
-
-        if (idx.index > 0) {
-          numBoundaryIndices += idx.index;
-        }
-      }
+    boundary->view("Boundary before conditions");
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = cone->begin(); p != cone->end(); ++p) {
+      numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
     }
     ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
-    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator p = vertices->begin(); p != vertices->end(); ++p) {
-      if (boundary->getIndex(patch, *p).index > 0) {
-        const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = cone->begin(); p != cone->end(); ++p) {
+      const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
 
-        for(int i = 0; i < idx.index; i++) {
-          boundaryIndices[k++] = idx.prefix + i;
-        }
+      for(int i = 0; i < idx.index; i++) {
+        boundaryIndices[k++] = idx.prefix + i;
       }
     }
     //if (debug) {
