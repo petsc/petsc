@@ -679,10 +679,8 @@ namespace ALE {
           for(int v = 0; v < (int) vertices->size(); ++v) {
             for(int d = 0; d < 2; d++) {
               in.pointlist[v*2 + d] = array[v*2 + d];
+              in.pointmarkerlist[v] = 0;
             }
-          }
-          for(Mesh::sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-            in.pointmarkerlist[vertexBundle->getIndex(patch, *v_iter).prefix] = v_iter.marker();
           }
 
           in.numberofcorners = 3;
@@ -698,24 +696,6 @@ namespace ALE {
             f++;
           }
 
-#if 0
-          Obj<Mesh::sieve_type::markerSet> markers = serialTopology->markers();
-          Obj<Mesh::bundle_type> segmentBundle = Mesh::bundle_type();
-
-          in.numberofsegments = 0;
-          segmentBundle->setTopology(serialTopology);
-          for(Mesh::sieve_type::markerSet::iterator m_iter = markers->begin(); m_iter != markers->end(); ++m_iter) {
-            Obj<Mesh::sieve_type::traits::depthSequence> segments = serialTopology->depthStratum(1, *m_iter);
-            Mesh::field_type::patch_type patch(0, *m_iter);
-
-            segmentBundle->setPatch(segments, patch);
-            for(Mesh::sieve_type::traits::depthSequence::iterator s_iter = segments->begin(); s_iter != segments->end(); ++s_iter) {
-              segmentBundle->setFiberDimension(patch, *s_iter, 1);
-            }
-            in.numberofsegments += segments->size();
-          }
-          segmentBundle->orderPatches();
-#endif
           Obj<Mesh::field_type> boundary = serialMesh->getBoundary();
           Obj<Mesh::sieve_type::traits::depthSequence> segments = serialTopology->depthStratum(1);
           Obj<Mesh::field_type::order_type::baseSequence> patches = boundary->getPatches();
@@ -742,29 +722,15 @@ namespace ALE {
                   int                                         p    = 0;
 
                   for(Mesh::sieve_type::traits::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
-                    in.segmentlist[s*2 + (p++)] = vertexBundle->getIndex(patch, *c_itor).prefix;
+                    int v = vertexBundle->getIndex(patch, *c_itor).prefix;
+
+                    in.segmentlist[s*2 + (p++)] = v;
+                    in.pointmarkerlist[v] = (*p_iter).index;
                   }
                   in.segmentmarkerlist[s++] = (*p_iter).index;
                 }
               }
             }
-#if 0
-            for(Mesh::sieve_type::markerSet::iterator m_iter = markers->begin(); m_iter != markers->end(); ++m_iter) {
-              Obj<Mesh::sieve_type::traits::depthSequence> segments = serialTopology->depthStratum(1, *m_iter);
-              Mesh::field_type::patch_type patch(0, *m_iter);
-
-              for(Mesh::sieve_type::traits::depthSequence::iterator s_itor = segments->begin(); s_itor != segments->end(); s_itor++) {
-                const Mesh::field_type::index_type& interval = segmentBundle->getIndex(patch, *s_itor);
-                Obj<Mesh::sieve_type::traits::coneSequence> cone = serialTopology->cone(*s_itor);
-                int                                 p = 0;
-        
-                for(Mesh::sieve_type::traits::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); c_itor++) {
-                  in.segmentlist[interval.prefix * 2 + (p++)] = vertexBundle->getIndex(patch, *c_itor).prefix;
-                }
-                in.segmentmarkerlist[interval.prefix] = s_itor.marker();
-              }
-            }
-#endif
           }
 
           in.numberofholes = 0;

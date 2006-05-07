@@ -71,13 +71,17 @@ PetscErrorCode updateOperator(Mat, ALE::Obj<ALE::Two::Mesh::field_type>, const A
 extern PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Two::Mesh>);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
+extern PetscErrorCode CreateDielectricField(ALE::Obj<ALE::Two::Mesh>, ALE::Obj<ALE::Two::Mesh::field_type>);
+double refineLimit(const double [], void *);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
 typedef struct {
-  PetscScalar nu;
-  BCType      bcType;
+  ALE::Obj<ALE::Two::Mesh::field_type> epsilon;
+  PetscScalar voltage;
   VecScatter  injection;
+  PetscReal   refinementLimit;
+  PetscReal   refinementExp;
 } UserContext;
 
 PetscInt debug;
@@ -90,9 +94,8 @@ int main(int argc,char **argv)
   DMMG          *dmmg;
   UserContext    user;
   PetscViewer    viewer;
-  const char    *bcTypes[2] = {"dirichlet", "neumann"};
-  PetscReal      refinementLimit, norm;
-  PetscInt       dim, bc, l;
+  PetscReal      norm;
+  PetscInt       dim, l, meshDebug;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
@@ -100,18 +103,19 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBegin(comm, "", "Options for the inhomogeneous Poisson equation", "DMMG");CHKERRQ(ierr);
     debug = 0;
     ierr = PetscOptionsInt("-debug", "The debugging flag", "ex33.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
+    meshDebug = 0;
+    ierr = PetscOptionsInt("-mesh_debug", "The mesh debugging flag", "ex33.c", 0, &meshDebug, PETSC_NULL);CHKERRQ(ierr);
     dim  = 2;
     ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex33.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
-    refinementLimit = 0.0;
-    ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex33.c", 1.0, &refinementLimit, PETSC_NULL);CHKERRQ(ierr);
-    user.nu = 0.1;
-    ierr = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex33.c", 0.1, &user.nu, PETSC_NULL);CHKERRQ(ierr);
-    bc = (PetscInt)DIRICHLET;
-    ierr = PetscOptionsEList("-bc_type","Type of boundary condition","ex33.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
-    user.bcType = (BCType) bc;
+    user.refinementLimit = 0.0;
+    ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex33.c", 1.0, &user.refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+    user.refinementExp = 0.0;
+    ierr = PetscOptionsReal("-refinement_exp", "The exponent of the radius for refinement", "ex33.c", 1.0, &user.refinementExp, PETSC_NULL);CHKERRQ(ierr);
+    user.voltage = 1.0;
+    ierr = PetscOptionsScalar("-voltage", "The voltage of the clamp", "ex33.c", 1.0, &user.voltage, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  ALE::Obj<ALE::Two::Mesh> meshBoundary = ALE::Two::Mesh(comm, dim-1, debug);
+  ALE::Obj<ALE::Two::Mesh> meshBoundary = ALE::Two::Mesh(comm, dim-1, meshDebug);
   ALE::Obj<ALE::Two::Mesh> mesh;
 
   try {
@@ -132,12 +136,19 @@ int main(int argc,char **argv)
     ALE::LogStagePop(stage);
     mesh->getBoundary()->view("Mesh Boundary");
 
-    if (refinementLimit > 0.0) {
+    if (user.refinementLimit > 0.0) {
       stage = ALE::LogStageRegister("MeshRefine");
       ALE::LogStagePush(stage);
       ierr = PetscPrintf(comm, "Refining mesh\n");CHKERRQ(ierr);
-      mesh = ALE::Two::Generator::refine(mesh, refinementLimit);
+      if (user.refinementExp == 0.0) {
+        mesh = ALE::Two::Generator::refine(mesh, user.refinementLimit, true);
+      } else {
+        mesh = ALE::Two::Generator::refine(mesh, refineLimit, (void *) &user, true);
+      }
       ALE::LogStagePop(stage);
+      ierr = PetscSynchronizedPrintf(comm, "  [%d]Generated %d local elements\n", mesh->commRank(), mesh->getTopology()->heightStratum(0)->size());CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(comm, "  [%d]Generated %d local vertices\n", mesh->commRank(), mesh->getTopology()->depthStratum(0)->size());CHKERRQ(ierr);
+      ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
     }
     topology = mesh->getTopology();
 
@@ -146,25 +157,36 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(comm, "Calculating boundary values\n");CHKERRQ(ierr);
     ALE::Obj<ALE::Two::Mesh::field_type> boundary = mesh->getBoundary();
     ALE::Obj<ALE::Two::Mesh::sieve_type::traits::depthSequence> vertices = topology->depthStratum(0);
+    ALE::Two::Mesh::field_type::patch_type groundPatch(0, 1);
+    ALE::Two::Mesh::field_type::patch_type voltagePatch(0, 3);
     ALE::Two::Mesh::field_type::patch_type patch;
 
     for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-      if (boundary->getIndex(patch, *v_iter).index > 0) {
-        //double *coords = mesh->getCoordinates()->restrict(patch, *v_iter);
+      if (boundary->getIndex(groundPatch, *v_iter).index > 0) {
         double values[1] = {0.0};
 
-        boundary->update(patch, *v_iter, values);
+        boundary->update(groundPatch, *v_iter, values);
+      } else if (boundary->getIndex(voltagePatch, *v_iter).index > 0) {
+        double values[1] = {user.voltage};
+
+        boundary->update(voltagePatch, *v_iter, values);
       }
     }
-    boundary->view("Mesh Boundary");
+    if (debug) {boundary->view("Mesh Boundary");}
     ALE::LogStagePop(stage);
 
     ALE::Obj<ALE::Two::Mesh::field_type> u = mesh->getField("u");
+    ALE::Obj<ALE::Two::Mesh::field_type> b = mesh->getField("b");
     u->setPatch(topology->leaves(), ALE::Two::Mesh::field_type::patch_type());
     u->setFiberDimensionByDepth(patch, 0, 1);
     u->orderPatches();
-    u->view("u");
+    if (debug) {u->view("u");}
     u->createGlobalOrder();
+    b->setPatch(topology->leaves(), ALE::Two::Mesh::field_type::patch_type());
+    b->setFiberDimensionByDepth(patch, 0, 1);
+    b->orderPatches();
+    if (debug) {b->view("b");}
+    b->createGlobalOrder();
     ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
     ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
     std::string orderName("element");
@@ -175,12 +197,18 @@ int main(int argc,char **argv)
       ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_iter);
 
       u->setPatch(orderName, cone, *e_iter);
+      b->setPatch(orderName, cone, *e_iter);
       for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
         u->setFiberDimension(orderName, *e_iter, *c_iter, 1);
+        b->setFiberDimension(orderName, *e_iter, *c_iter, 1);
       }
     }
     u->orderPatches(orderName);
+    b->orderPatches(orderName);
     CheckElementGeometry(mesh);
+
+    ierr = CreateDielectricField(mesh, mesh->getField("epsilon"));
+    user.epsilon = mesh->getField("epsilon");
 
     Mesh petscMesh;
     ierr = MeshCreate(comm, &petscMesh);CHKERRQ(ierr);
@@ -193,12 +221,16 @@ int main(int argc,char **argv)
     }
 
     ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
-    if (user.bcType == NEUMANN) {
-      ierr = DMMGSetNullSpace(dmmg,PETSC_TRUE,0,PETSC_NULL);CHKERRQ(ierr);
-    }
     ierr = MeshGetGlobalScatter(mesh, "u", DMMGGetx(dmmg), &user.injection); CHKERRQ(ierr);
 
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
+
+    if (debug) {
+      ierr = PetscPrintf(mesh->comm(), "Solution vector:");CHKERRQ(ierr);
+      ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
+    //ierr = ComputeError(dmmg[DMMGGetLevels(dmmg)-1], DMMGGetx(dmmg), &error);CHKERRQ(ierr);
+    //ierr = PetscPrintf(comm,"Error norm %g\n",error);CHKERRQ(ierr);
 
     ierr = MatMult(DMMGGetJ(dmmg),DMMGGetx(dmmg),DMMGGetr(dmmg));CHKERRQ(ierr);
     ierr = VecAXPY(DMMGGetr(dmmg),-1.0,DMMGGetRHS(dmmg));CHKERRQ(ierr);
@@ -213,7 +245,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "poisson.vtk");CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "channel.vtk");CHKERRQ(ierr);
     ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
     //ierr = VecView(DMMGGetRHS(dmmg), viewer);CHKERRQ(ierr);
     ierr = VecView(DMMGGetx(dmmg), viewer);CHKERRQ(ierr);
@@ -226,6 +258,13 @@ int main(int argc,char **argv)
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
+}
+
+double refineLimit(const double centroid[], void *ctx) {
+  UserContext *user = (UserContext *) ctx;
+  double       r2   = centroid[0]*centroid[0] + centroid[1]*centroid[1];
+
+  return user->refinementLimit*pow(r2, user->refinementExp*0.5);
 }
 
 #undef __FUNCT__
@@ -350,23 +389,47 @@ PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
   mesh->createSerialCoordinates(2, 0, coords);
   /* Create boundary conditions */
   if (mesh->commRank() == 0) {
-    for(int e = 27; e < 29; e++) {
-      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 1);
-    }
-    for(int e = 29; e < 33; e++) {
-      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 2);
-    }
-    for(int e = 33; e < 35; e++) {
-      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 3);
-    }
-    for(int e = 35; e < 39; e++) {
-      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 4);
+    for(int e = 47; e < 55; e++) {
+      int ee = e - 27;
+
+      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 6);
+      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+0]), 6);
+      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+1]), 6);
     }
     for(int e = 39; e < 47; e++) {
+      int ee = e - 27;
+
       topology->setMarker(ALE::Two::Mesh::point_type(0, e), 5);
+      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+0]), 5);
+      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+1]), 5);
     }
-    for(int e = 47; e < 55; e++) {
-      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 6);
+    for(int e = 35; e < 39; e++) {
+      int ee = e - 27;
+
+      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 4);
+      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+0]), 4);
+      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+1]), 4);
+    }
+    for(int e = 29; e < 33; e++) {
+      int ee = e - 27;
+
+      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 2);
+      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+0]), 2);
+      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+1]), 2);
+    }
+    for(int e = 33; e < 35; e++) {
+      int ee = e - 27;
+
+      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 3);
+      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+0]), 3);
+      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+1]), 3);
+    }
+    for(int e = 27; e < 29; e++) {
+      int ee = e - 27;
+
+      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 1);
+      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+0]), 1);
+      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+1]), 1);
     }
   }
   PetscFunctionReturn(0);
@@ -623,17 +686,14 @@ PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Two::Mesh> mesh)
   PetscInt       dim = mesh->getDimension();
   PetscReal     *v0, *Jac;
   PetscReal      detJ;
-  PetscInt       oldDebug = debug;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  debug = 1;
   ierr = PetscMalloc2(dim,PetscReal,&v0,dim*dim,PetscReal,&Jac);CHKERRQ(ierr);
   for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
     ierr = ElementGeometry(mesh, *e_iter, v0, Jac, PETSC_NULL, &detJ);
   }
   ierr = PetscSynchronizedFlush(mesh->comm());CHKERRQ(ierr);
-  oldDebug = 1;
   ierr = PetscFree2(v0,Jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -659,7 +719,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   dim  = m->getDimension();
   ierr = PetscMalloc(dim * sizeof(PetscReal), &v0);CHKERRQ(ierr);
   ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
-  ALE::Obj<ALE::Two::Mesh::field_type> field = m->getField("u");
+  ALE::Obj<ALE::Two::Mesh::field_type> field = m->getField("b");
   ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = m->getTopology()->heightStratum(0);
   ALE::Two::Mesh::field_type::patch_type patch;
   for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
@@ -671,7 +731,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
       eta = points[q*2+1] + 1.0;
       x_q = Jac[0]*xi + Jac[1]*eta + v0[0];
       y_q = Jac[2]*xi + Jac[3]*eta + v0[1];
-      funcValue = PetscExpScalar(-(x_q*x_q)/user->nu)*PetscExpScalar(-(y_q*y_q)/user->nu);
+      funcValue = 0.0;
       for(f = 0; f < NUM_BASIS_FUNCTIONS; f++) {
         elementVec[f] += Basis[q*NUM_BASIS_FUNCTIONS+f]*funcValue*weights[q]*detJ;
       }
@@ -690,13 +750,59 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   ierr = VecScatterEnd(locB, b, ADD_VALUES, SCATTER_FORWARD, user->injection);CHKERRQ(ierr);
   ierr = VecDestroy(locB);CHKERRQ(ierr);
 
-  /* force right hand side to be consistent for singular matrix */
-  /* note this is really a hack, normally the model would provide you with a consistent right handside */
-  if (user->bcType == NEUMANN) {
-    MatNullSpace nullspace;
+  {
+    /* Zero out BC rows */
+    ALE::Two::Mesh::field_type::patch_type patch;
+    ALE::Two::Mesh::field_type::patch_type groundPatch(0, 1);
+    ALE::Two::Mesh::field_type::patch_type voltagePatch(0, 3);
+    ALE::Obj<ALE::Two::Mesh::field_type> boundary = m->getBoundary();
+    ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> groundCone = boundary->getPatch(groundPatch);
+    ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> voltageCone = boundary->getPatch(voltagePatch);
+    PetscScalar *boundaryValues;
+    PetscInt    *boundaryIndices;
+    PetscInt     numBoundaryIndices = 0;
+    PetscInt     k = 0;
 
-    ierr = KSPGetNullSpace(dmmg->ksp,&nullspace);CHKERRQ(ierr);
-    ierr = MatNullSpaceRemove(nullspace,b,PETSC_NULL);CHKERRQ(ierr);
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = groundCone->begin(); p != groundCone->end(); ++p) {
+      numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
+    }
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = voltageCone->begin(); p != voltageCone->end(); ++p) {
+      numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
+    }
+    ierr = PetscMalloc2(numBoundaryIndices,PetscInt,&boundaryIndices,numBoundaryIndices,PetscScalar,&boundaryValues); CHKERRQ(ierr);
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = groundCone->begin(); p != groundCone->end(); ++p) {
+      const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
+      const double *data = boundary->restrict(groundPatch, *p);
+
+      for(int i = 0; i < idx.index; i++) {
+        boundaryIndices[k] = idx.prefix + i;
+        boundaryValues[k] = data[i];
+        k++;
+      }
+    }
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = voltageCone->begin(); p != voltageCone->end(); ++p) {
+      const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
+      const double *data = boundary->restrict(voltagePatch, *p);
+
+      for(int i = 0; i < idx.index; i++) {
+        boundaryIndices[k] = idx.prefix + i;
+        boundaryValues[k] = data[i];
+        k++;
+      }
+    }
+    if (debug) {
+      boundary->view("Boundary for rhs conditions");
+      for(int i = 0; i < numBoundaryIndices; i++) {
+        ierr = PetscSynchronizedPrintf(comm, "[%d]boundaryIndices[%d] = %d\n", m->commRank(), i, boundaryIndices[i]);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscSynchronizedFlush(comm);
+    ierr = VecSetValues(b, numBoundaryIndices, boundaryIndices, boundaryValues, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = PetscFree2(boundaryIndices, boundaryValues);CHKERRQ(ierr);
+  }
+  if (debug) {
+    ierr = PetscPrintf(comm, "Rhs vector:");CHKERRQ(ierr);
+    ierr = VecView(b, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -730,6 +836,9 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   ALE::Obj<ALE::Two::Mesh::field_type> field = m->getField("u");
   ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = m->getTopology()->heightStratum(0);
   for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
+    ALE::Two::Mesh::field_type::patch_type patch;
+    double eps = user->epsilon->restrict(patch, *e_itor)[0];
+
     CHKMEMQ;
     ierr = ElementGeometry(m, *e_itor, v0, Jac, Jinv, &detJ);CHKERRQ(ierr);
     /* Element integral */
@@ -745,7 +854,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
         for(g = 0; g < NUM_BASIS_FUNCTIONS; g++) {
           b_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
           b_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
-          elementMat[f*NUM_BASIS_FUNCTIONS+g] += (t_der[0]*b_der[0] + t_der[1]*b_der[1])*weights[q]*detJ;
+          elementMat[f*NUM_BASIS_FUNCTIONS+g] += eps*(t_der[0]*b_der[0] + t_der[1]*b_der[1])*weights[q]*detJ;
         }
       }
     }
@@ -766,38 +875,226 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   ierr = MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (user->bcType == DIRICHLET) {
+  {
     /* Zero out BC rows */
     ALE::Two::Mesh::field_type::patch_type patch;
-    ALE::Two::Mesh::field_type::patch_type bdPatch(0, 1);
+    ALE::Two::Mesh::field_type::patch_type groundPatch(0, 1);
+    ALE::Two::Mesh::field_type::patch_type voltagePatch(0, 3);
     ALE::Obj<ALE::Two::Mesh::field_type> boundary = m->getBoundary();
-    ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> cone = boundary->getPatch(bdPatch);
+    ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> groundCone = boundary->getPatch(groundPatch);
+    ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> voltageCone = boundary->getPatch(voltagePatch);
     PetscInt *boundaryIndices;
     PetscInt  numBoundaryIndices = 0;
     PetscInt  k = 0;
 
-    boundary->view("Boundary before conditions");
-    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = cone->begin(); p != cone->end(); ++p) {
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = groundCone->begin(); p != groundCone->end(); ++p) {
+      numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
+    }
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = voltageCone->begin(); p != voltageCone->end(); ++p) {
       numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
     }
     ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
-    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = cone->begin(); p != cone->end(); ++p) {
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = groundCone->begin(); p != groundCone->end(); ++p) {
       const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
 
       for(int i = 0; i < idx.index; i++) {
         boundaryIndices[k++] = idx.prefix + i;
       }
     }
-    //if (debug) {
+    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = voltageCone->begin(); p != voltageCone->end(); ++p) {
+      const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
+
+      for(int i = 0; i < idx.index; i++) {
+        boundaryIndices[k++] = idx.prefix + i;
+      }
+    }
+    if (debug) {
       for(int i = 0; i < numBoundaryIndices; i++) {
         ierr = PetscSynchronizedPrintf(comm, "[%d]boundaryIndices[%d] = %d\n", rank, i, boundaryIndices[i]);CHKERRQ(ierr);
       }
-    //}
+    }
     ierr = PetscSynchronizedFlush(comm);
     ierr = MatZeroRows(jac, numBoundaryIndices, boundaryIndices, 1.0);CHKERRQ(ierr);
     ierr = PetscFree(boundaryIndices);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ComputeDielectric"
+PetscErrorCode ComputeDielectric(double x, double y, double *epsilon) {
+  double water   = 80.0;
+  double lipid   = 2.0;
+  double channel = 10.0;
+
+  PetscFunctionBegin;
+  *epsilon = -80;
+  if ((x >= -112.5) && (x <= -12.5)) {
+    // Left water bath
+    *epsilon = water;
+  } else if ((x >= 12.5) && (x <= 112.5)) {
+    // Right water bath
+    *epsilon = water;
+  } else {
+    if ((y >= 15.0) && (y <= 50.0)) {
+      // Top lipid
+      *epsilon = lipid;
+    } else if ((y <= -15.0) && (y >= -50.0)) {
+      // Bottom lipid
+      *epsilon = lipid;
+    } else {
+      if ((x >= -12.5) && (x <= -2.5)) {
+        // Left lipid or water
+        if (x <= -35.0/6.0) {
+          // Left parallelogram
+          if (y >= 0.0) {
+            // Top half
+            double slope = (15.0 - 10.0)/(-12.5 + 35.0/6.0);
+
+            if (y <= 15.0 + slope*(x + 12.5)) {
+              // Middle water
+              *epsilon = water;
+            } else {
+              // Middle lipid
+              *epsilon = lipid;
+            }
+          } else {
+            // Bottom half
+            double slope = (-15.0 + 10.0)/(-12.5 + 35.0/6.0);
+
+            if (y >= -15.0 + slope*(x + 12.5)) {
+              // Middle water
+              *epsilon = water;
+            } else {
+              // Middle lipid
+              *epsilon = lipid;
+            }
+          }
+        } else {
+          // Right parallelogram
+          if (y >= 0.0) {
+            // Top half
+            double slope = (10.0 - 3.0)/(-35.0/6.0 + 2.5);
+
+            if (y <= 10.0 + slope*(x + 35.0/6.0)) {
+              // Middle water
+              *epsilon = water;
+            } else {
+              // Middle lipid
+              *epsilon = lipid;
+            }
+          } else {
+            // Bottom half
+            double slope = (-10.0 + 3.0)/(-35.0/6.0 + 2.5);
+
+            if (y >= -10.0 + slope*(x + 35.0/6.0)) {
+              // Middle water
+              *epsilon = water;
+            } else {
+              // Middle lipid
+              *epsilon = lipid;
+            }
+          }
+        }
+      } else if ((x >= 2.5) && (x <= 12.5)) {
+        // Right lipid or water
+        if (x >= 35.0/6.0) {
+          // Right parallelogram
+          if (y >= 0.0) {
+            // Top half
+            double slope = (15.0 - 10.0)/(12.5 - 35.0/6.0);
+
+            if (y <= 15.0 + slope*(x - 12.5)) {
+              // Middle water
+              *epsilon = water;
+            } else {
+              // Middle lipid
+              *epsilon = lipid;
+            }
+          } else {
+            // Bottom half
+            double slope = (-15.0 + 10.0)/(12.5 - 35.0/6.0);
+
+            if (y >= -15.0 + slope*(x - 12.5)) {
+              // Middle water
+              *epsilon = water;
+            } else {
+              // Middle lipid
+              *epsilon = lipid;
+            }
+          }
+        } else {
+          // Left parallelogram
+          if (y >= 0.0) {
+            // Top half
+            double slope = (10.0 - 3.0)/(35.0/6.0 - 2.5);
+
+            if (y <= 10.0 + slope*(x - 35.0/6.0)) {
+              // Middle water
+              *epsilon = water;
+            } else {
+              // Middle lipid
+              *epsilon = lipid;
+            }
+          } else {
+            // Bottom half
+            double slope = (-10.0 + 3.0)/(35.0/6.0 - 2.5);
+
+            if (y >= -10.0 + slope*(x - 35.0/6.0)) {
+              // Middle water
+              *epsilon = water;
+            } else {
+              // Middle lipid
+              *epsilon = lipid;
+            }
+          }
+        }
+      } else {
+        if ((y <= 3.0) && (y >= -3.0)) {
+          // Channel
+          *epsilon = channel;
+        } else {
+          // Central lipid
+          *epsilon = lipid;
+        }
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateDielectricField"
+/*
+  Creates a vector whose value is the dielectric constant on each element
+*/
+PetscErrorCode CreateDielectricField(ALE::Obj<ALE::Two::Mesh> mesh, ALE::Obj<ALE::Two::Mesh::field_type> epsilon)
+{
+  ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
+  ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
+  ALE::Obj<ALE::Two::Mesh::field_type> coordinates = mesh->getCoordinates();
+  ALE::Two::Mesh::field_type::patch_type patch;
+  std::string orderName("element");
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ALE_LOG_EVENT_BEGIN;
+  epsilon->setPatch(topology->leaves(), patch);
+  epsilon->setFiberDimensionByHeight(patch, 0, 1);
+  epsilon->orderPatches();
+  epsilon->createGlobalOrder();
+
+  for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+    const double *coords = coordinates->restrict(orderName, *e_itor);
+    double centroidX = (coords[0]+coords[2]+coords[4])/3.0;
+    double centroidY = (coords[1]+coords[3]+coords[5])/3.0;
+
+    double eps;
+    ierr = ComputeDielectric(centroidX, centroidY, &eps);CHKERRQ(ierr);
+    epsilon->update(patch, *e_itor, &eps);
+  }
+  ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
 }

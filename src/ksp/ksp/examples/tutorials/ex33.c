@@ -1421,7 +1421,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     ierr = PetscFree2(boundaryIndices, boundaryValues);CHKERRQ(ierr);
   }
   if (debug) {
-    ierr = PetscPrintf(m->comm(), "Rhs vector:");CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Rhs vector:");CHKERRQ(ierr);
     ierr = VecView(b, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
