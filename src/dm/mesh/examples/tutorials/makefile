@@ -21,6 +21,10 @@ ex2: ex2.o   chkopts
 	-${CLINKER} -o ex2 ex2.o  ${PETSC_DM_LIB}
 	${RM} -f ex2.o
 
+ex4: ex4.o   chkopts
+	-${CLINKER} -o ex4 ex4.o  ${PETSC_DM_LIB}
+	${RM} -f ex4.o
+
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
@@ -69,7 +73,6 @@ runex3:
 	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   ${RM} -f ex3_1.tmp
-
 testex1_1:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d > /dev/null 2>&1; \
     if (${DIFF} data/ex1_1d.lcon testMesh.lcon) then true; \
@@ -128,6 +131,13 @@ testex2_3:
 	-@${MPIRUN} -np 3 ./ex2 -dim 2 -refinement_limit 0.0625 > /dev/null 2>&1; \
     if (${DIFF} data/ex2_1.vtk testMesh.vtk) then true; \
 	else echo "Possible problem with ex2_1, diffs above"; fi
+
+
+runex4:
+	-@${MPIRUN} -np ${NP} ./ex4 ${EXTRA_ARGS}
+debugex4:
+	-@${MPIRUN} -np ${NP} ./ex4 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+
 
 TESTEXAMPLES_SIEVE 		  = ex1.PETSc testex1_1 testex1_2 testex1_3 testex1_4 ex1.rm ex2.PETSc testex2_1 testex2_2 testex2_3 ex2.rm
 TESTEXAMPLES_C  		  = 
