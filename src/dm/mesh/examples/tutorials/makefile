@@ -76,7 +76,6 @@ runex3:
 
 runex4:
 	-@${MPIRUN} -np ${NP} ./ex4 -dim 2 ${EXTRA_ARGS}
-
 testex1_1:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d > /dev/null 2>&1; \
     if (${DIFF} data/ex1_1d.lcon testMesh.lcon) then true; \
@@ -135,6 +134,13 @@ testex2_3:
 	-@${MPIRUN} -np 3 ./ex2 -dim 2 -refinement_limit 0.0625 > /dev/null 2>&1; \
     if (${DIFF} data/ex2_1.vtk testMesh.vtk) then true; \
 	else echo "Possible problem with ex2_1, diffs above"; fi
+
+
+runex4:
+	-@${MPIRUN} -np ${NP} ./ex4 ${EXTRA_ARGS}
+debugex4:
+	-@${MPIRUN} -np ${NP} ./ex4 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+
 
 TESTEXAMPLES_SIEVE 		  = ex1.PETSc testex1_1 testex1_2 testex1_3 testex1_4 ex1.rm ex2.PETSc testex2_1 testex2_2 testex2_3 ex2.rm
 TESTEXAMPLES_C  		  = 
