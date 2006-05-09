@@ -26,7 +26,7 @@ class Configure(config.base.Configure):
   def configureFortranCPP(self):
     '''Handle case where Fortran cannot preprocess properly'''
     if hasattr(self.compilers, 'FC'):
-      self.addMakeRule('.f.o .f90.o .f95.o','',['-${FC} -c ${FFLAGS} ${FC_FLAGS} ${FOPTFLAGS} $<'])
+      self.addMakeRule('.f.o .f90.o .f95.o','',['-${FC} -c ${FFLAGS} ${FC_FLAGS} ${FOPTFLAGS} -o $@ $<'])
       self.addMakeRule('.f.a',       '',['-${FC} -c ${FFLAGS} ${FC_FLAGS} ${FOPTFLAGS} $<', \
                                          '-${AR} ${AR_FLAGS} ${LIBNAME} $*.o', \
                                          '-${RM} $*.o'])
@@ -50,7 +50,7 @@ class Configure(config.base.Configure):
                                            '-${RM} __$*.F __$*.c'])
       else:
         # Fortran handles CPP macros correctly
-        self.addMakeRule('.F.o .F90.o .F95.o','',['-${FC} -c ${FFLAGS} ${FC_FLAGS} ${FCPPFLAGS} $<'])
+        self.addMakeRule('.F.o .F90.o .F95.o','',['-${FC} -c ${FFLAGS} ${FC_FLAGS} ${FCPPFLAGS} -o $@ $<'])
         self.addMakeRule('.F.a','',       ['-${FC} -c ${FFLAGS} ${FC_FLAGS} ${FCPPFLAGS} $<',\
                                            '-${AR} ${AR_FLAGS} ${LIBNAME} $*.o',\
                                            '-${RM} $*.o'])
