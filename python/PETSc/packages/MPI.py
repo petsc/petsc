@@ -472,8 +472,8 @@ class Configure(PETSc.package.Package):
     oldFlags = self.compilers.CPPFLAGS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.framework.log.write('Checking for header mpif.h\n')
-    if not self.libraries.check(self.lib,'', call = '       include \'mpif.h\''):
-        raise RuntimeError('Fortran error! mpif.h could not be located at: '+str(self.include))
+    if not self.libraries.checkCompile(body = '       include \'mpif.h\''):
+      raise RuntimeError('Fortran error! mpif.h could not be located at: '+str(self.include))
     # check if mpi_init form fortran works
     self.framework.log.write('Checking for fortran mpi_init()\n')
     if not self.libraries.check(self.lib,'', call = '       include \'mpif.h\'\n       integer ierr\n       call mpi_init(ierr)'):
