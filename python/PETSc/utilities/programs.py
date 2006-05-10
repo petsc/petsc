@@ -38,28 +38,35 @@ class Configure(config.base.Configure):
 
   def configurePrograms(self):
     '''Check for the programs needed to build and run PETSc'''
-    # should generate error if cannot locate one
     self.getExecutable('sh',   getFullPath = 1, resultName = 'SHELL')
+    if not hasattr(self, 'sh'): raise RuntimeError('Could not locate sh executable')
     self.getExecutable('sed',  getFullPath = 1)
+    if not hasattr(self, 'sed'): raise RuntimeError('Could not locate sed executable')
     self.getExecutable('mv',   getFullPath = 1)
+    if not hasattr(self, 'mv'): raise RuntimeError('Could not locate mv executable')
     self.getExecutable('cp',   getFullPath = 1)
+    if not hasattr(self, 'cp'): raise RuntimeError('Could not locate cp executable')
     self.getExecutable('grep', getFullPath = 1)    
+    if not hasattr(self, 'grep'): raise RuntimeError('Could not locate grep executable')
     self.getExecutable('rm -f',getFullPath = 1, resultName = 'RM')
-    # check if diff supports -w option for ignoring whitespace
+    if not hasattr(self, 'rm'): raise RuntimeError('Could not locate rm executable')
     self.getExecutable('diff', getFullPath = 1,setMakeMacro=0)
-    f = file('diff1', 'w')
-    f.write('diff\n')
-    f.close()
-    f = file('diff2', 'w')
-    f.write('diff  \n')
-    f.close()
-    (out,err,status) = Configure.executeShellCommand(getattr(self, 'diff')+' -w diff1 diff2')
-    os.unlink('diff1')
-    os.unlink('diff2')
-    if not status:    
-      self.diff = self.diff + ' -w'
-    self.addMakeMacro('DIFF',self.diff)
-      
+    if hasattr(self, 'diff'):
+      # check if diff supports -w option for ignoring whitespace
+      f = file('diff1', 'w')
+      f.write('diff\n')
+      f.close()
+      f = file('diff2', 'w')
+      f.write('diff  \n')
+      f.close()
+      (out,err,status) = Configure.executeShellCommand(self.diff+' -w diff1 diff2')
+      os.unlink('diff1')
+      os.unlink('diff2')
+      if not status:    
+        self.diff = self.diff + ' -w'
+      self.addMakeMacro('DIFF',self.diff)
+    else:
+      raise RuntimeError('Could not locate diff executable')
     self.getExecutable('ps',   path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self, 'UCBPS'):
       self.addDefine('HAVE_UCBPS', 1)
