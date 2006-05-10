@@ -55,16 +55,16 @@ int main(int argc,char **args)
   if (flg) { 
     row /= bs;
     col = start/bs;
-    PetscScalar bval[bs][bs];
+    PetscScalar bval[bs*bs];
     /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Set offproc blockvalues, blockrow %d, blockcol: %d\n",rank,row,col);CHKERRQ(ierr); */
     k = 1;
     /* row oriented - defalt */
     for (i=0; i<bs; i++){
       for (j=0; j<bs; j++){
-        bval[i][j] = (PetscScalar)k; k++;
+        bval[i*bs+j] = (PetscScalar)k; k++;
       }
     }
-    ierr = MatSetValuesBlocked(A,1,&row,1,&col,&bval[0][0],INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesBlocked(A,1,&row,1,&col,bval,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
