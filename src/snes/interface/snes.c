@@ -496,6 +496,95 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaximumUnsuccessfulSteps(SNES snes, Pe
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SNESGetLinearSolveFailures"
+/*@
+   SNESGetLinearSolveFailures - Gets the number of failed (non-converged)
+   linear solvers.
+
+   Not Collective
+
+   Input Parameter:
+.  snes - SNES context
+
+   Output Parameter:
+.  nfails - number of failed solves
+
+   Notes:
+   This counter is reset to zero for each successive call to SNESSolve().
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, get, number, unsuccessful, steps
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveFailures(SNES snes,PetscInt* nfails)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidIntPointer(nfails,2);
+  *nfails = snes->numLinearSolveFailures;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetMaxLinearSolveFailures"
+/*@
+   SNESSetMaxLinearSolveFailures - the number of failed linear solve attempts
+   allowed before SNES returns with a diverged reason of SNES_DIVERGED_LINEAR_SOLVE
+
+   Collective on SNES
+
+   Input Parameters:
++  snes     - SNES context
+-  maxFails - maximum allowed linear solve failures
+
+   Level: intermediate
+
+   Notes: By default this is 1; that is SNES returns on the first failed linear solve
+
+.keywords: SNES, nonlinear, set, maximum, unsuccessful, steps
+
+.seealso: SNESGetLinearSolveFailures(), SNESGetMaxLinearSolveFailures()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxLinearSolveFailures(SNES snes, PetscInt maxFails)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  snes->maxLinearSolveFailures = maxFails;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESGetMaxLinearSolveFailures"
+/*@
+   SNESGetMaxLinearSolveFailures - gets the maximum number of linear solve failures that
+     are allowed before SNES terminates
+
+   Not Collective
+
+   Input Parameter:
+.  snes     - SNES context
+
+   Output Parameter:
+.  maxFails - maximum of unsuccessful solves allowed
+
+   Level: intermediate
+
+   Notes: By default this is 1; that is SNES returns on the first failed linear solve
+
+.keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
+
+.seealso: SNESGetLinearSolveFailures(), SNESGetMaxLinearSolveFailures()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxLinearSolveFailures(SNES snes, PetscInt *maxFails)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidIntPointer(maxFails,2);
+  *maxFails = snes->maxLinearSolveFailures;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "SNESGetNumberLinearIterations"
 /*@
    SNESGetNumberLinearIterations - Gets the total number of linear iterations
@@ -636,6 +725,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->conv_hist_its     = PETSC_NULL;
   snes->conv_hist_reset   = PETSC_TRUE;
   snes->reason            = SNES_CONVERGED_ITERATING;
+
+  snes->numLinearSolveFailures = 0;
+  snes->maxLinearSolveFailures = 1;
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
   ierr = PetscNew(SNES_KSP_EW_ConvCtx,&kctx);CHKERRQ(ierr);

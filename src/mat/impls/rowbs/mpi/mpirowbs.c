@@ -1385,7 +1385,7 @@ PetscErrorCode MatSetOption_MPIRowbs(Mat A,MatOption op)
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_ROWS_UNSORTED:
   case MAT_USE_HASH_TABLE:
-    ierr = PetscInfo(A,"Option ignored\n");CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Option %d ignored\n",op);CHKERRQ(ierr);
     break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
     a->donotstash = PETSC_TRUE;
@@ -1408,7 +1408,7 @@ PetscErrorCode MatSetOption_MPIRowbs(Mat A,MatOption op)
   case MAT_NOT_SYMMETRY_ETERNAL:
     break;
   default:
-    SETERRQ(PETSC_ERR_SUP,"unknown option");
+    SETERRQ1(PETSC_ERR_SUP,"unknown option %d",op);
     break;
   }
   PetscFunctionReturn(0);
