@@ -26,10 +26,10 @@ namespace ALE {
   // This allocator implements create and del methods, that act roughly as new and delete in that they invoke a constructor/destructor
   // in addition to memory allocation/deallocation.
   // An additional (and potentially dangerous) feature allows an object of any type to be deleted so long as its size has been provided.
-  template <class _T>
+  template <class T>
   class polymorphic_allocator {
   public:
-    typedef typename std::allocator<_T> Alloc;
+    typedef typename std::allocator<T> Alloc;
     // A specific allocator -- alloc -- of type Alloc is used to define the correct types and implement methods
     // that do not allocate/deallocate memory themselves -- the universal _alloc is used for that (and only that).
     // The relative size sz is used to calculate the amount of memory to request from _alloc to satisfy a request to alloc.
@@ -42,65 +42,65 @@ namespace ALE {
     typedef typename Alloc::value_type      value_type;
 
     static Alloc alloc;                            // The underlying specific allocator
-    static typename Alloc::size_type sz;           // The size of _T universal units of char
+    static typename Alloc::size_type sz;           // The size of T universal units of char
 
     polymorphic_allocator()                                    {};    
     polymorphic_allocator(const polymorphic_allocator& a)      {};
-    template <class _TT> 
-    polymorphic_allocator(const polymorphic_allocator<_TT>& aa){};
+    template <class TT> 
+    polymorphic_allocator(const polymorphic_allocator<TT>& aa){};
     ~polymorphic_allocator() {};
 
     // Reproducing the standard allocator interface
     pointer       address(reference _x) const          { return alloc.address(_x);                                    };
     const_pointer address(const_reference _x) const    { return alloc.address(_x);                                    };
-    _T*           allocate(size_type _n)               { return (_T*)universal_allocator::allocate(_n*sz);            };
+    T*           allocate(size_type _n)               { return (T*)universal_allocator::allocate(_n*sz);            };
     void          deallocate(pointer _p, size_type _n) { universal_allocator::deallocate((char*)_p, _n*sz);           };
-    void          construct(pointer _p, const _T& _val){ alloc.construct(_p, _val);                                   };
+    void          construct(pointer _p, const T& _val){ alloc.construct(_p, _val);                                   };
     void          destroy(pointer _p)                  { alloc.destroy(_p);                                           };
     size_type     max_size() const                     { return (size_type)floor(universal_allocator::max_size()/sz); };
     // conversion typedef
-    template <class _TT>
-    struct rebind { typedef polymorphic_allocator<_TT> other;};
+    template <class TT>
+    struct rebind { typedef polymorphic_allocator<TT> other;};
     
-    _T*  create(const _T& _val = _T());
-    void del(_T* _p);
-    template<class _TT> void del(_TT* _p, size_type _sz);
+    T*  create(const T& _val = T());
+    void del(T* _p);
+    template<class TT> void del(TT* _p, size_type _sz);
   };
 
-  template <class _T>
-  typename polymorphic_allocator<_T>::Alloc polymorphic_allocator<_T>::alloc;
+  template <class T>
+  typename polymorphic_allocator<T>::Alloc polymorphic_allocator<T>::alloc;
 
   //IMPORTANT: allocator 'sz' calculation takes place here
-  template <class _T>
-  typename polymorphic_allocator<_T>::size_type polymorphic_allocator<_T>::sz = 
-    (typename polymorphic_allocator<_T>::size_type)(ceil(sizeof(_T)/sizeof(char)));
+  template <class T>
+  typename polymorphic_allocator<T>::size_type polymorphic_allocator<T>::sz = 
+    (typename polymorphic_allocator<T>::size_type)(ceil(sizeof(T)/sizeof(char)));
 
-  template <class _T> 
-  _T* polymorphic_allocator<_T>::create(const _T& _val) {
+  template <class T> 
+  T* polymorphic_allocator<T>::create(const T& _val) {
     // First, allocate space for a single object
-    _T* _p = (_T*)universal_allocator::allocate(sz);
+    T* _p = (T*)universal_allocator::allocate(sz);
     // Construct an object in the provided space using the provided initial value
     this->alloc.construct(_p,  _val);
     return _p;
   }
 
-  template <class _T>
-  void polymorphic_allocator<_T>::del(_T* _p) {
-    _p->~_T();
-    universal_allocator::deallocate((char*)_p, polymorphic_allocator<_T>::sz);
+  template <class T>
+  void polymorphic_allocator<T>::del(T* _p) {
+    _p->~T();
+    universal_allocator::deallocate((char*)_p, polymorphic_allocator<T>::sz);
   }
 
-  template <class _T> template <class _TT>
-  void polymorphic_allocator<_T>::del(_TT* _p, size_type _sz) {
-    _p->~_TT();
+  template <class T> template <class TT>
+  void polymorphic_allocator<T>::del(TT* _p, size_type _sz) {
+    _p->~TT();
     universal_allocator::deallocate((char*)_p, _sz);
   }
 
 
   // An allocator all of whose events (allocation, deallocation, new, delete) are logged using ALE_log facilities.
-  // _O is true if this is an Obj allocator (that's the intended use, anyhow).
-  template <class _T, bool _O = false>
-  class logged_allocator : public polymorphic_allocator<_T> {
+  // O is true if this is an Obj allocator (that's the intended use, anyhow).
+  template <class T, bool O = false>
+  class logged_allocator : public polymorphic_allocator<T> {
   private:
     static bool        _log_initialized;
     static LogCookie   _cookie;
@@ -113,48 +113,48 @@ namespace ALE {
     static void __log_initialize();
     static LogEvent __log_event_register(const char *class_name, const char *event_name);
   public:
-    typedef typename polymorphic_allocator<_T>::size_type size_type;
-    logged_allocator()                                   : polymorphic_allocator<_T>()  {__log_initialize();};    
-    logged_allocator(const logged_allocator& a)          : polymorphic_allocator<_T>(a) {__log_initialize();};
-    template <class _TT> 
-    logged_allocator(const logged_allocator<_TT>& aa)    : polymorphic_allocator<_T>(aa){__log_initialize();};
+    typedef typename polymorphic_allocator<T>::size_type size_type;
+    logged_allocator()                                   : polymorphic_allocator<T>()  {__log_initialize();};    
+    logged_allocator(const logged_allocator& a)          : polymorphic_allocator<T>(a) {__log_initialize();};
+    template <class TT> 
+    logged_allocator(const logged_allocator<TT>& aa)    : polymorphic_allocator<T>(aa){__log_initialize();};
     ~logged_allocator() {};
     // conversion typedef
-    template <class _TT>
-    struct rebind { typedef logged_allocator<_TT> other;};
+    template <class TT>
+    struct rebind { typedef logged_allocator<TT> other;};
 
-    _T*  allocate(size_type _n);
-    void deallocate(_T*  _p, size_type _n);
-    void construct(_T* _p, const _T& _val);
-    void destroy(_T* _p);
+    T*  allocate(size_type _n);
+    void deallocate(T*  _p, size_type _n);
+    void construct(T* _p, const T& _val);
+    void destroy(T* _p);
 
-    _T*  create(const _T& _val = _T());
-    void del(_T*  _p);    
-    template <class _TT> void del(_TT* _p, size_type _sz);
+    T*  create(const T& _val = T());
+    void del(T*  _p);    
+    template <class TT> void del(TT* _p, size_type _sz);
   };
 
-  template <class _T, bool _O>
-  bool logged_allocator<_T, _O>::_log_initialized(false);
-  template <class _T, bool _O>
-  LogCookie logged_allocator<_T,_O>::_cookie(0);
-  template <class _T, bool _O>
-  int logged_allocator<_T, _O>::_allocate_event(0);
-  template <class _T, bool _O>
-  int logged_allocator<_T, _O>::_deallocate_event(0);
-  template <class _T, bool _O>
-  int logged_allocator<_T, _O>::_construct_event(0);
-  template <class _T, bool _O>
-  int logged_allocator<_T, _O>::_destroy_event(0);
-  template <class _T, bool _O>
-  int logged_allocator<_T, _O>::_create_event(0);
-  template <class _T, bool _O>
-  int logged_allocator<_T, _O>::_del_event(0);
+  template <class T, bool O>
+  bool logged_allocator<T, O>::_log_initialized(false);
+  template <class T, bool O>
+  LogCookie logged_allocator<T,O>::_cookie(0);
+  template <class T, bool O>
+  int logged_allocator<T, O>::_allocate_event(0);
+  template <class T, bool O>
+  int logged_allocator<T, O>::_deallocate_event(0);
+  template <class T, bool O>
+  int logged_allocator<T, O>::_construct_event(0);
+  template <class T, bool O>
+  int logged_allocator<T, O>::_destroy_event(0);
+  template <class T, bool O>
+  int logged_allocator<T, O>::_create_event(0);
+  template <class T, bool O>
+  int logged_allocator<T, O>::_del_event(0);
   
-  template <class _T, bool _O>
-  void logged_allocator<_T, _O>::__log_initialize() {
+  template <class T, bool O>
+  void logged_allocator<T, O>::__log_initialize() {
     if(!logged_allocator::_log_initialized) {
-      // Get a new cookie based on _T's typeid name
-      const std::type_info& id = typeid(_T);
+      // Get a new cookie based on T's typeid name
+      const std::type_info& id = typeid(T);
       const char *id_name;
 #ifdef ALE_HAVE_CXX_ABI
       // If the C++ ABI API is available, we can use it to demangle the class name provided by type_info.
@@ -192,11 +192,11 @@ namespace ALE {
   }
 
 
-  template <class _T, bool _O> 
-  LogEvent logged_allocator<_T, _O>::__log_event_register(const char *class_name, const char *event_name){
+  template <class T, bool O> 
+  LogEvent logged_allocator<T, O>::__log_event_register(const char *class_name, const char *event_name){
     // This routine assumes a cookie has been obtained.
     ostringstream txt;
-    if(_O) {
+    if(O) {
       txt << "Obj: ";
     }
     txt << class_name;
@@ -204,54 +204,54 @@ namespace ALE {
     return LogEventRegister(logged_allocator::_cookie, txt.str().c_str());
   }
 
-  template <class _T, bool _O>
-  _T*  logged_allocator<_T, _O>::allocate(size_type _n) {
+  template <class T, bool O>
+  T*  logged_allocator<T, O>::allocate(size_type _n) {
     LogEventBegin(logged_allocator::_allocate_event); 
-    _T* _p = polymorphic_allocator<_T>::allocate(_n);
+    T* _p = polymorphic_allocator<T>::allocate(_n);
     LogEventEnd(logged_allocator::_allocate_event); 
     return _p;
   }
   
-  template <class _T, bool _O>
-  void logged_allocator<_T, _O>::deallocate(_T* _p, size_type _n) {
+  template <class T, bool O>
+  void logged_allocator<T, O>::deallocate(T* _p, size_type _n) {
     LogEventBegin(logged_allocator::_deallocate_event);
-    polymorphic_allocator<_T>::deallocate(_p, _n);
+    polymorphic_allocator<T>::deallocate(_p, _n);
     LogEventEnd(logged_allocator::_deallocate_event);
   }
   
-  template <class _T, bool _O>
-  void logged_allocator<_T, _O>::construct(_T* _p, const _T& _val) {
+  template <class T, bool O>
+  void logged_allocator<T, O>::construct(T* _p, const T& _val) {
     LogEventBegin(logged_allocator::_construct_event);
-    polymorphic_allocator<_T>::construct(_p, _val);
+    polymorphic_allocator<T>::construct(_p, _val);
     LogEventEnd(logged_allocator::_construct_event);
   }
   
-  template <class _T, bool _O>
-  void logged_allocator<_T, _O>::destroy(_T* _p) {
+  template <class T, bool O>
+  void logged_allocator<T, O>::destroy(T* _p) {
     LogEventBegin(logged_allocator::_destroy_event);
-    polymorphic_allocator<_T>::destroy(_p);
+    polymorphic_allocator<T>::destroy(_p);
     LogEventEnd(logged_allocator::_destroy_event);
   }
   
-  template <class _T, bool _O>
-  _T* logged_allocator<_T, _O>::create(const _T& _val) {
+  template <class T, bool O>
+  T* logged_allocator<T, O>::create(const T& _val) {
     LogEventBegin(logged_allocator::_create_event); 
-    _T* _p = polymorphic_allocator<_T>::create(_val);
+    T* _p = polymorphic_allocator<T>::create(_val);
     LogEventEnd(logged_allocator::_create_event);
     return _p;
   }
 
-  template <class _T, bool _O>
-  void logged_allocator<_T, _O>::del(_T* _p) {
+  template <class T, bool O>
+  void logged_allocator<T, O>::del(T* _p) {
     LogEventBegin(logged_allocator::_del_event);
-    polymorphic_allocator<_T>::del(_p);
+    polymorphic_allocator<T>::del(_p);
     LogEventEnd(logged_allocator::_del_event);
   }
 
-  template <class _T, bool _O> template <class _TT>
-  void logged_allocator<_T, _O>::del(_TT* _p, size_type _sz) {
+  template <class T, bool O> template <class TT>
+  void logged_allocator<T, O>::del(TT* _p, size_type _sz) {
     LogEventBegin(logged_allocator::_del_event);
-    polymorphic_allocator<_T>::del(_p, _sz);
+    polymorphic_allocator<T>::del(_p, _sz);
     LogEventEnd(logged_allocator::_del_event);
   }
 

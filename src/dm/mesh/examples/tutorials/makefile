@@ -135,9 +135,6 @@ testex2_3:
     if (${DIFF} data/ex2_1.vtk testMesh.vtk) then true; \
 	else echo "Possible problem with ex2_1, diffs above"; fi
 
-
-runex4:
-	-@${MPIRUN} -np ${NP} ./ex4 ${EXTRA_ARGS}
 debugex4:
 	-@${MPIRUN} -np ${NP} ./ex4 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
