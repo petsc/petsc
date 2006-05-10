@@ -527,6 +527,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
 {
   PetscInt       i,j,n,dummy,*perm;
   size_t         *shortlength;
+  int            *shortcount;
   PetscMPIInt    rank,size,tag = 1212 /* very bad programming */;
   PetscTruth     match;
   const char     **shortfunction;
@@ -553,21 +554,25 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
   } else {
     ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory PetscMalloc()ed %.0f OS cannot compute size of entire process\n",rank,(PetscLogDouble)TRMaxMem);CHKERRQ(ierr);
   }
+  shortcount       = (int*)malloc(PetscLogMalloc*sizeof(int));if (!shortcount) SETERRQ(PETSC_ERR_MEM,"Out of memory");
   shortlength      = (size_t*)malloc(PetscLogMalloc*sizeof(size_t));if (!shortlength) SETERRQ(PETSC_ERR_MEM,"Out of memory");
   shortfunction    = (const char**)malloc(PetscLogMalloc*sizeof(char *));if (!shortfunction) SETERRQ(PETSC_ERR_MEM,"Out of memory");
   shortfunction[0] = PetscLogMallocFunction[0];
   shortlength[0]   = PetscLogMallocLength[0]; 
+  shortcount[0]    = 0;
   n = 1;
   for (i=1; i<PetscLogMalloc; i++) {
     for (j=0; j<n; j++) {
       ierr = PetscStrcmp(shortfunction[j],PetscLogMallocFunction[i],&match);CHKERRQ(ierr);
       if (match) {
         shortlength[j] += PetscLogMallocLength[i];
+        shortcount[j]++;
         goto foundit;
       }
     }
     shortfunction[n] = PetscLogMallocFunction[i];
     shortlength[n]   = PetscLogMallocLength[i]; 
+    shortcount[n]    = 1;
     n++;
     foundit:;
   }
@@ -578,10 +583,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
 
   ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Memory usage sorted by function\n",rank);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] %.0f %s()\n",rank,(PetscLogDouble)shortlength[perm[i]],shortfunction[perm[i]]);CHKERRQ(ierr);
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] %d %.0f %s()\n",rank,shortcount[perm[i]],(PetscLogDouble)shortlength[perm[i]],shortfunction[perm[i]]);CHKERRQ(ierr);
   }
   free(perm);
   free(shortlength);
+  free(shortcount);
   free((char **)shortfunction);
   fflush(fp);
   if (rank != size-1) {

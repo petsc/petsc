@@ -234,14 +234,21 @@ PetscErrorCode MatSetValues_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const PetscInt
   MatScalar     *ap,*bap;
 
   /* for stash */
-  PetscInt      n_loc, *in_loc=0;
-  MatScalar     *v_loc=0;
+  PetscInt      n_loc, *in_loc;
+  MatScalar     *v_loc;
 
   PetscFunctionBegin;
 
-  if(!baij->donotstash){
-    ierr = PetscMalloc(n*sizeof(PetscInt),&in_loc);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(MatScalar),&v_loc);CHKERRQ(ierr);
+  if (!baij->donotstash){
+    if (n > baij->n_loc) {
+      ierr = PetscFree(baij->in_loc);CHKERRQ(ierr);
+      ierr = PetscFree(baij->v_loc);CHKERRQ(ierr);
+      ierr = PetscMalloc(n*sizeof(PetscInt),&baij->in_loc);CHKERRQ(ierr);
+      ierr = PetscMalloc(n*sizeof(MatScalar),&baij->v_loc);CHKERRQ(ierr);
+      baij->n_loc = n;
+    }
+    in_loc = baij->in_loc;
+    v_loc  = baij->v_loc;
   }
 
   for (i=0; i<m; i++) {
@@ -312,11 +319,6 @@ PetscErrorCode MatSetValues_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const PetscInt
         ierr = MatStashValuesRow_Private(&mat->stash,im[i],n_loc,in_loc,v_loc);CHKERRQ(ierr);        
       }
     }
-  }
-
-  if(!baij->donotstash){
-    ierr = PetscFree(in_loc);CHKERRQ(ierr);
-    ierr = PetscFree(v_loc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -842,6 +844,8 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
 #if defined(PETSC_USE_MAT_SINGLE)
   ierr = PetscFree(baij->setvaluescopy);CHKERRQ(ierr);
 #endif
+  ierr = PetscFree(baij->in_loc);CHKERRQ(ierr);
+  ierr = PetscFree(baij->v_loc);CHKERRQ(ierr);
   ierr = PetscFree(baij->rangebs);CHKERRQ(ierr);
   ierr = PetscFree(baij);CHKERRQ(ierr);
 
@@ -1761,6 +1765,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat B)
   b->ht_total_ct  = 0;
   b->ht_insert_ct = 0;
 
+  b->in_loc       = 0;
+  b->v_loc        = 0;
+  b->n_loc        = 0;
   ierr = PetscOptionsHasName(B->prefix,"-mat_use_hash_table",&flg);CHKERRQ(ierr);
   if (flg) { 
     PetscReal fact = 1.39;

@@ -77,7 +77,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
 
   Output Parameter:
 +  ctx - scatter context
--  vout - output MPIVEC that is large enough to scatter into on processor 0 and
+-  vout - output SEQVEC that is large enough to scatter into on processor 0 and
           of length zero on all other processors
 
   Level: intermediate
@@ -95,9 +95,6 @@ $
 $        // destroy scatter context and local vector when no longer needed
 $        VecScatterDestroy(ctx);
 $        VecDestroy(vout);
-
-   Note: If you want to treat the vector on processor zero as a sequential vector call
-         VecGetArray() on it and create a sequential vector with VecCreateSeqWithArray().
 
 .seealso VecScatterCreate(), VecScatterCreateToAll(), VecScatterBegin(), VecScatterEnd()
 
@@ -121,11 +118,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToZero(Vec vin,VecScatter *ctx
   /* Create vec on each proc, with the same size of the original mpi vec (all on process 0)*/
   ierr = VecGetSize(vin,&N);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(vin->comm,&rank);CHKERRQ(ierr);
-  if (!rank) {
-    ierr = VecCreateMPI(vin->comm,N,N,vout);CHKERRQ(ierr);
-  } else {
-    ierr = VecCreateMPI(vin->comm,0,N,vout);CHKERRQ(ierr);
-  }
+  if (rank) N = 0;
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,vout);CHKERRQ(ierr);
   /* Create the VecScatter ctx with the communication info */
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
   ierr = VecScatterCreate(vin,is,*vout,is,ctx);CHKERRQ(ierr);
