@@ -1237,6 +1237,8 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op)
   case MAT_NO_NEW_DIAGONALS:
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
   case MAT_SYMMETRIC:
+    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
+    break;
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
