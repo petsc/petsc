@@ -1258,7 +1258,7 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op)
   case MAT_ROWS_SORTED: 
   case MAT_ROWS_UNSORTED:
   case MAT_YES_NEW_DIAGONALS:
-    ierr = PetscInfo(A,"Option ignored\n");CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Option %d ignored\n",op);CHKERRQ(ierr);
     break;
   case MAT_COLUMN_ORIENTED:
     a->roworiented = PETSC_FALSE;
@@ -1293,7 +1293,7 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op)
     aA->getrow_utriangular = PETSC_TRUE;
     break;
   default:
-    SETERRQ(PETSC_ERR_SUP,"unknown option");
+    SETERRQ1(PETSC_ERR_SUP,"unknown option %d",op);
   }
   PetscFunctionReturn(0);
 }

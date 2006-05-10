@@ -1583,7 +1583,7 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op)
   case MAT_NOT_SYMMETRY_ETERNAL:
     break;
   default: 
-    SETERRQ(PETSC_ERR_SUP,"unknown option");
+    SETERRQ1(PETSC_ERR_SUP,"unknown option %d",op);
   }
   PetscFunctionReturn(0);
 }
