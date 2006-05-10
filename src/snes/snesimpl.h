@@ -88,8 +88,13 @@ struct _p_SNES {
   PetscInt    conv_hist_len;      /* size of convergence history array */
   PetscInt    conv_hist_max;      /* actual amount of data in conv_history */
   PetscTruth  conv_hist_reset;    /* reset counter for each new SNES solve */
+
+  /* the next two are used for failures in the line search; they should be put into the LS struct */
   PetscInt    numFailures;        /* number of unsuccessful step attempts */
   PetscInt    maxFailures;        /* maximum number of unsuccessful step attempts */
+
+  PetscInt    numLinearSolveFailures;
+  PetscInt    maxLinearSolveFailures;
 
  /*
    These are REALLY ugly and don't belong here, but since they must 
