@@ -5,6 +5,7 @@
 #define __PETSCMESH_H
 #include <Mesh.hh>
 #include "petscda.h"
+PETSC_EXTERN_CXX_BEGIN
 
 /*S
      Mesh - Abstract PETSc object that manages distributed field data for a Sieve.
@@ -36,4 +37,6 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT restrictVector(Vec, Vec, InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleVectorComplete(Vec, Vec, InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleVector(Vec, PetscInt, PetscScalar [], InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleMatrix(Mat, PetscInt, PetscScalar [], InsertMode);
+
+PETSC_EXTERN_CXX_END
 #endif
