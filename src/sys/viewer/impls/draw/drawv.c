@@ -20,6 +20,7 @@ PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
     if (vdraw->draw[i])     {ierr = PetscDrawDestroy(vdraw->draw[i]);CHKERRQ(ierr);}
   }
 
+  ierr = PetscFree(vdraw->display);CHKERRQ(ierr);
   ierr = PetscFree(vdraw->drawaxis);CHKERRQ(ierr);
   ierr = PetscFree(vdraw->drawlg);CHKERRQ(ierr);
   ierr = PetscFree(vdraw->draw);CHKERRQ(ierr);
