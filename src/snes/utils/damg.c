@@ -292,7 +292,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolveKSP(DMMG *dmmg,PetscInt level)
 
   PetscFunctionBegin;
   if (dmmg[level]->rhs) {
+    CHKMEMQ;
     ierr = (*dmmg[level]->rhs)(dmmg[level],dmmg[level]->b);CHKERRQ(ierr); 
+    CHKMEMQ;
   }
   if (dmmg[level]->matricesset) {
     ierr = KSPSetOperators(dmmg[level]->ksp,dmmg[level]->J,dmmg[level]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
