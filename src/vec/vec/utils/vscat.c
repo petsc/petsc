@@ -864,7 +864,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
     }
     tix  = ix;
   } else if (!ix) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iy not given, but not Seq or MPI vector");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"ix not given, but not Seq or MPI vector");
   }
 
   if (!iy && yin_type == VEC_SEQ_ID) {
