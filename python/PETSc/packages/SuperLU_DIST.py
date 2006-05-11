@@ -93,15 +93,17 @@ class Configure(PETSc.package.Package):
     if self.blasLapack.f2c:
       raise RuntimeError('SuperLU_DIST requires a COMPLETE BLAS and LAPACK, it cannot be used with --download-c-blas-lapack=1 \nUse --download-f-blas-lapack option instead.')
 
-    # SuperLU_DIST requires slamch() & dlamch() LAPACK routines and PETSc version of superlu
-    # have the internal versions disabled in favour of generic blas/lapack
+     errormsg = ', the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-f-blas-lapack=1 option or see \nhttp://www-unix.mcs.anl.gov/petsc/petsc-as/documentation/installation.html#BLAS/LAPACK'
     if not self.blasLapack.checkForRoutine('slamch'): 
-      raise RuntimeError('SuperLU_DIST requires the LAPACK routine slamch(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-f-blas-lapack=1 option \nIf you are using the IBM ESSL library, it does not contain this function.')
-    self.framework.log.write('Found slamch() in Lapack library as needed by SuperLU_DIST\n')
+      raise RuntimeError('SuperLU_DIST requires the BLAS routine slamch()'+errormsg)
+    self.framework.log.write('Found slamch() in BLAS library as needed by SuperLU_DIST\n')
 
     if not self.blasLapack.checkForRoutine('dlamch'): 
-      raise RuntimeError('SuperLU_DIST requires the LAPACK routine dlamch(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-f-blas-lapack=1 option \nIf you are using the IBM ESSL library, it does not contain this function.')
-    self.framework.log.write('Found dlamch() in Lapack library as needed by SuperLU_DIST\n')
+      raise RuntimeError('SuperLU_DIST requires the BLAS routine dlamch()'+errormsg)
+    self.framework.log.write('Found dlamch() in BLAS library as needed by SuperLU_DIST\n')
+    if not self.blasLapack.checkForRoutine('xerbla'): 
+      raise RuntimeError('SuperLU_DIST requires the BLAS routine xerbla()'+errormsg)
+    self.framework.log.write('Found xerbla() in BLAS library as needed by SuperLU_DIST\n')
     return
   
 if __name__ == '__main__':
