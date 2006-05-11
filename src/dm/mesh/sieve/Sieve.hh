@@ -273,17 +273,14 @@ namespace ALE {
           }
         }
         else { // Point exists, so we try to modify its degree
-          int newDegree = i->degree + delta;
-          if(newDegree < 0) {
-            ostringstream ss;
-            ss << "adjustDegree: Adjustment of " << *i << " by " << delta << " would result in negative degree: " << newDegree;
-            throw Exception(ss.str().c_str());
-          }
-          if(newDegree == 0) {
-            // We must erase this point
-            index.erase(i);
-          }
-          else {
+          // If the adjustment is zero, there is nothing to do, otherwise ...
+          if(delta != 0) {
+            int newDegree = i->degree + delta;
+            if(newDegree < 0) {
+              ostringstream ss;
+              ss << "adjustDegree: Adjustment of " << *i << " by " << delta << " would result in negative degree: " << newDegree;
+              throw Exception(ss.str().c_str());
+            }
             index.modify(i, typename traits::rec_type::degreeAdjuster(newDegree));
           }
         }
@@ -994,15 +991,13 @@ namespace ALE {
       if((chain0->size() != 0) && (chain1->size() != 0)) {
         for(int i = 0; i <= n; ++i) {
           // Compute the intersection of chains and put it in meet at the same time removing it from c and cc
+          std::set<point_type> intersect;
           //std::set_intersection(chain0->begin(), chain0->end(), chain1->begin(), chain1->end(), std::insert_iterator<coneSet>(meet, meet->begin()));
-          //chain0->erase(meet->begin(), meet->end());
-          //chain1->erase(meet->begin(), meet->end());
-          for(typename InputSequence::iterator iter = chain0->begin(); iter != chain0->end(); ++iter) {
-            if (chain1->find(*iter) != chain1->end()) {
-              meet->insert(*iter);
-              chain0->erase(*iter);
-              chain1->erase(*iter);
-            }
+          std::set_intersection(chain0->begin(), chain0->end(), chain1->begin(), chain1->end(), std::insert_iterator<std::set<point_type> >(intersect, intersect.begin()));
+          meet->insert(intersect.begin(), intersect.end());
+          for(typename std::set<point_type>::iterator i_iter = intersect.begin(); i_iter != intersect.end(); ++i_iter) {
+            chain0->erase(chain0->find(*i_iter));
+            chain1->erase(chain1->find(*i_iter));
           }
           // Replace each of the cones with a cone over it, and check if either is empty; if so, return what's in meet at the moment.
           cone = this->cone(chain0);
@@ -1015,6 +1010,7 @@ namespace ALE {
           if(chain1->size() == 0) {
             break;
           }
+          // If both cones are empty, we should quit
         }
       }
       return meet;
@@ -1074,15 +1070,13 @@ namespace ALE {
       if((chain0->size() != 0) && (chain1->size() != 0)) {
         for(int i = 0; i <= n; ++i) {
           // Compute the intersection of chains and put it in meet at the same time removing it from c and cc
+          std::set<point_type> intersect;
           //std::set_intersection(chain0->begin(), chain0->end(), chain1->begin(), chain1->end(), std::insert_iterator<supportSet>(join.obj(), join->begin()));
-          //chain0->erase(join->begin(), join->end());
-          //chain1->erase(join->begin(), join->end());
-          for(typename InputSequence::iterator iter = chain0->begin(); iter != chain0->end(); ++iter) {
-            if (chain1->find(*iter) != chain1->end()) {
-              join->insert(*iter);
-              chain0->erase(*iter);
-              chain1->erase(*iter);
-            }
+          std::set_intersection(chain0->begin(), chain0->end(), chain1->begin(), chain1->end(), std::insert_iterator<std::set<point_type> >(intersect, intersect.begin()));
+          join->insert(intersect.begin(), intersect.end());
+          for(typename std::set<point_type>::iterator i_iter = intersect.begin(); i_iter != intersect.end(); ++i_iter) {
+            chain0->erase(chain0->find(*i_iter));
+            chain1->erase(chain1->find(*i_iter));
           }
           // Replace each of the supports with the support over it, and check if either is empty; if so, return what's in join at the moment.
           support = this->support(chain0);
@@ -1095,6 +1089,7 @@ namespace ALE {
           if(chain1->size() == 0) {
             break;
           }
+          // If both supports are empty, we should quit
         }
       }
       return join;
