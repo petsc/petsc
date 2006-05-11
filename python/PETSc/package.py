@@ -327,7 +327,7 @@ class Package(config.base.Configure):
       if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
         self.lib = lib	
         self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
-        if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 900.0):
+        if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
           self.include = incl
           self.found   = 1
           self.dlib    = self.lib+libs

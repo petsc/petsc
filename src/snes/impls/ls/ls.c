@@ -131,18 +131,19 @@ PetscErrorCode SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
 #define __FUNCT__ "SNESSolve_LS"
 PetscErrorCode SNESSolve_LS(SNES snes)
 { 
-  SNES_LS        *neP = (SNES_LS*)snes->data;
-  PetscErrorCode ierr;
-  PetscInt       maxits,i,lits;
-  PetscTruth     lssucceed;
-  MatStructure   flg = DIFFERENT_NONZERO_PATTERN;
-  PetscReal      fnorm,gnorm,xnorm,ynorm;
-  Vec            Y,X,F,G,W,TMP;
-  KSP            ksp;
+  SNES_LS            *neP = (SNES_LS*)snes->data;
+  PetscErrorCode     ierr;
+  PetscInt           maxits,i,lits;
+  PetscTruth         lssucceed;
+  MatStructure       flg = DIFFERENT_NONZERO_PATTERN;
+  PetscReal          fnorm,gnorm,xnorm,ynorm;
+  Vec                Y,X,F,G,W,TMP;
+  KSPConvergedReason kspreason;
 
   PetscFunctionBegin;
-  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-  snes->reason  = SNES_CONVERGED_ITERATING;
+  snes->numFailures            = 0;
+  snes->numLinearSolveFailures = 0;
+  snes->reason                 = SNES_CONVERGED_ITERATING;
 
   maxits	= snes->max_its;	/* maximum number of iterations */
   X		= snes->vec_sol;	/* solution vector */
@@ -179,7 +180,14 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
     ierr = KSPSolve(snes->ksp,F,Y);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(ksp,&lits);CHKERRQ(ierr);
+    ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
+    if (kspreason < 0) {
+      if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
+        snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
+        PetscFunctionReturn(0);
+      }
+    }
+    ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
 
     if (neP->precheckstep) {
       PetscTruth changed_y = PETSC_FALSE;

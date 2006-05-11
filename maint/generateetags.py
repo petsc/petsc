@@ -77,8 +77,9 @@ def processDir(tagfile,dirname,names):
   if newls: createTags(tagfile,dirname,newls)
 
   # exclude 'docs' but not 'src/docs'
-  if dir in names and dirname.find('src') >=0:
-    names.remove(exname)
+  for exname in ['docs']:
+    if exname in names and dirname.find('src') <0:
+      names.remove(exname)
   # One-level unique dirs
   for exname in ['SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','bmake','bin','maint']:
     if exname in names:
