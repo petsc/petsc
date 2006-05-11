@@ -39,7 +39,7 @@ class Configure(config.base.Configure):
   def configurePrograms(self):
     '''Check for the programs needed to build and run PETSc'''
     self.getExecutable('sh',   getFullPath = 1, resultName = 'SHELL')
-    if not hasattr(self, 'sh'): raise RuntimeError('Could not locate sh executable')
+    if not hasattr(self, 'SHELL'): raise RuntimeError('Could not locate sh executable')
     self.getExecutable('sed',  getFullPath = 1)
     if not hasattr(self, 'sed'): raise RuntimeError('Could not locate sed executable')
     self.getExecutable('mv',   getFullPath = 1)
@@ -49,7 +49,7 @@ class Configure(config.base.Configure):
     self.getExecutable('grep', getFullPath = 1)    
     if not hasattr(self, 'grep'): raise RuntimeError('Could not locate grep executable')
     self.getExecutable('rm -f',getFullPath = 1, resultName = 'RM')
-    if not hasattr(self, 'rm'): raise RuntimeError('Could not locate rm executable')
+    if not hasattr(self, 'RM'): raise RuntimeError('Could not locate rm executable')
     self.getExecutable('diff', getFullPath = 1,setMakeMacro=0)
     if hasattr(self, 'diff'):
       # check if diff supports -w option for ignoring whitespace
