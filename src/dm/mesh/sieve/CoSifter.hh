@@ -727,7 +727,7 @@ namespace ALE {
           reorder->view("Reorder after adding fusion");
         }
         //FIX
-        Obj<ALE::PointSet> points = ALE::PointSet();
+        Obj<ALE::set<point_type> > points = ALE::set<point_type>();
         points->insert(elements->begin(), elements->end());
         reorder->restrictBase(points);
         if (debug) {

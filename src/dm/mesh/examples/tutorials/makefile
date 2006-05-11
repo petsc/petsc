@@ -50,6 +50,9 @@ debugex1_pylith2:
 runex1_2:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}
 
+valex1_2:
+	-@${MPIRUN} -np ${NP} valgrind --tool=memcheck ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}
+
 runex1_3:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -use_zero_base 1 -base_file data/ex1_3d ${EXTRA_ARGS}
 

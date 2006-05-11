@@ -162,9 +162,6 @@ namespace ALE {
     };
   };
 
-  typedef set<Point>   PointSet;
-  typedef array<Point> PointArray;
-
   template <typename X, typename Y>
   struct pair : public std::pair<X,Y> {
     pair() : std::pair<X,Y>(){};

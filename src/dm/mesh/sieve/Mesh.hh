@@ -141,7 +141,7 @@ namespace ALE {
         point_type           start = *f_itor;
         f_itor++;
         point_type           next = *f_itor;
-        Obj<ALE::PointSet> preElement = this->topology->nJoin(start, next, 1);
+        Obj<sieve_type::supportSet> preElement = this->topology->nJoin(start, next, 1);
 
         if (preElement->size() > 0) {
           simplex = *preElement->begin();
@@ -591,7 +591,7 @@ namespace ALE {
                 if (out.edgemarkerlist[e]) {
                   Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftetrahedra);
                   Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftetrahedra);
-                  Obj<ALE::PointSet> join = topology->nJoin(endpointA, endpointB, 1);
+                  Obj<Mesh::sieve_type::supportSet> join = topology->nJoin(endpointA, endpointB, 1);
 
                   topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
                 }
@@ -600,15 +600,15 @@ namespace ALE {
             if (out.trifacemarkerlist) {
               for(int f = 0; f < out.numberoftrifaces; f++) {
                 if (out.trifacemarkerlist[f]) {
-                  Obj<ALE::PointSet> point = ALE::PointSet();
-                  Obj<ALE::PointSet> edge = ALE::PointSet();
+                  Obj<Mesh::sieve_type::supportSet> point = Mesh::sieve_type::supportSet();
+                  Obj<Mesh::sieve_type::supportSet> edge = Mesh::sieve_type::supportSet();
                   Mesh::point_type cornerA(0, out.trifacelist[f*3+0] + out.numberoftetrahedra);
                   Mesh::point_type cornerB(0, out.trifacelist[f*3+1] + out.numberoftetrahedra);
                   Mesh::point_type cornerC(0, out.trifacelist[f*3+2] + out.numberoftetrahedra);
                   point->insert(cornerA);
                   edge->insert(cornerB);
                   edge->insert(cornerC);
-                  Obj<ALE::PointSet> join = topology->nJoin(point, edge, 2);
+                  Obj<Mesh::sieve_type::supportSet> join = topology->nJoin(point, edge, 2);
 
                   topology->setMarker(*join->begin(), out.trifacemarkerlist[f]);
                 }
@@ -889,7 +889,7 @@ namespace ALE {
               if (out.edgemarkerlist[e]) {
                 Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftetrahedra);
                 Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftetrahedra);
-                Obj<ALE::PointSet> join = topology->nJoin(endpointA, endpointB, 1);
+                Obj<Mesh::sieve_type::supportSet> join = topology->nJoin(endpointA, endpointB, 1);
 
                 topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
               }
@@ -898,15 +898,15 @@ namespace ALE {
           if (out.trifacemarkerlist) {
             for(int f = 0; f < out.numberoftrifaces; f++) {
               if (out.trifacemarkerlist[f]) {
-                Obj<ALE::PointSet> point = ALE::PointSet();
-                Obj<ALE::PointSet> edge = ALE::PointSet();
+                Obj<Mesh::sieve_type::supportSet> point = Mesh::sieve_type::supportSet();
+                Obj<Mesh::sieve_type::supportSet> edge = Mesh::sieve_type::supportSet();
                 Mesh::point_type cornerA(0, out.edgelist[f*3+0] + out.numberoftetrahedra);
                 Mesh::point_type cornerB(0, out.edgelist[f*3+1] + out.numberoftetrahedra);
                 Mesh::point_type cornerC(0, out.edgelist[f*3+2] + out.numberoftetrahedra);
                 point->insert(cornerA);
                 edge->insert(cornerB);
                 edge->insert(cornerC);
-                Obj<ALE::PointSet> join = topology->nJoin(point, edge, 2);
+                Obj<Mesh::sieve_type::supportSet> join = topology->nJoin(point, edge, 2);
 
                 topology->setMarker(*join->begin(), out.trifacemarkerlist[f]);
               }
@@ -1259,6 +1259,7 @@ namespace ALE {
                                                        Mesh::sieve_type::traits::base_container_type::rebind<fuser::fusion_target_type, Mesh::sieve_type::traits::targetRec_type::rebind<fuser::fusion_target_type, Mesh::sieve_type::marker_type>::type>::type
       >::type> supportDelta_type;
     public:
+#if 0
       #undef __FUNCT__
       #define __FUNCT__ "partition_Sieve"
       template<typename SifterType>
@@ -1392,6 +1393,7 @@ namespace ALE {
         ALE_LOG_EVENT_END;
         ALE_LOG_STAGE_END;
       };
+#endif
     public:
 #if 0
       static void partition(const Obj<Mesh> mesh) {
