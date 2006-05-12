@@ -93,7 +93,7 @@ class Configure(PETSc.package.Package):
     if self.blasLapack.f2c:
       raise RuntimeError('SuperLU_DIST requires a COMPLETE BLAS and LAPACK, it cannot be used with --download-c-blas-lapack=1 \nUse --download-f-blas-lapack option instead.')
 
-     errormsg = ', the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-f-blas-lapack=1 option or see \nhttp://www-unix.mcs.anl.gov/petsc/petsc-as/documentation/installation.html#BLAS/LAPACK'
+    errormsg = ', the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-f-blas-lapack=1 option or see \nhttp://www-unix.mcs.anl.gov/petsc/petsc-as/documentation/installation.html#BLAS/LAPACK'
     if not self.blasLapack.checkForRoutine('slamch'): 
       raise RuntimeError('SuperLU_DIST requires the BLAS routine slamch()'+errormsg)
     self.framework.log.write('Found slamch() in BLAS library as needed by SuperLU_DIST\n')
