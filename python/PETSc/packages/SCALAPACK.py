@@ -40,7 +40,10 @@ class Configure(PETSc.package.Package):
     g.write('home         = '+self.getDir()+'\n')
     g.write('USEMPI       = -DUsingMpiBlacs\n')
     g.write('SENDIS       = -DSndIsLocBlk\n')
-    g.write('WHATMPI      = -DUseF77Mpi\n')
+    if (self.mpi.commf2c):
+      g.write('WHATMPI      = -DUseMpi2\n')
+    else:
+      g.write('WHATMPI      = -DCSAMEF77\n')
     g.write('BLACSDBGLVL  = -DBlacsDebugLvl=1\n')
     g.write('BLACSLIB     = '+self.libraries.toString(self.blacs.lib)+'\n') 
     g.write('SMPLIB       = '+self.libraries.toString(self.mpi.lib)+'\n')

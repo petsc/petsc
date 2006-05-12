@@ -38,7 +38,10 @@ class Configure(PETSc.package.Package):
     g.write('SHELL     = /bin/sh\n')
     g.write('COMMLIB   = MPI\n')
     g.write('SENDIS    = -DSndIsLocBlk\n')
-    g.write('WHATMPI   = -DUseF77Mpi\n')
+    if (self.mpi.commf2c):
+      g.write('WHATMPI      = -DUseMpi2\n')
+    else:
+      g.write('WHATMPI      = -DCSAMEF77\n')
     g.write('DEBUGLVL  = -DBlacsDebugLvl=1\n')
     g.write('BLACSdir  = '+blacsDir+'\n')
     g.write('BLACSLIB  = '+os.path.join(installDir,'libblacs.a')+'\n')
