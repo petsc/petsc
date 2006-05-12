@@ -37,7 +37,8 @@
     Concepts: opening ASCII file
     Concepts: files^opening ASCII
 
-.seealso: PetscFClose()
+.seealso: PetscFClose(), PetscSynchronizedFGets(), PetscSynchronizedPrintf(), PetscSynchronizedFlush(),
+          PetscFPrintf()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FILE **fp)
 {
