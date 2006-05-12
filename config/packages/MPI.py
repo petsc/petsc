@@ -40,6 +40,9 @@ class Configure(config.package.Package):
     self.usingMPIUni      = 0
     self.requires32bitint = 0
     self.shared           = 0
+    # local state
+    self.commf2c          = 0
+    self.commc2f          = 0
     return
 
   def setupHelp(self, help):
@@ -161,10 +164,11 @@ class Configure(config.package.Package):
     oldLibs  = self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
-
     if self.checkLink('#include <mpi.h>\n', 'if (MPI_Comm_f2c(MPI_COMM_WORLD));\n'):
+      self.commf2c = 1
       self.addDefine('HAVE_MPI_COMM_F2C', 1)
     if self.checkLink('#include <mpi.h>\n', 'if (MPI_Comm_c2f(MPI_COMM_WORLD));\n'):
+      self.commc2f = 1
       self.addDefine('HAVE_MPI_COMM_C2F', 1)
     if self.checkLink('#include <mpi.h>\n', 'MPI_Fint a;\n'):
       self.addDefine('HAVE_MPI_FINT', 1)
@@ -196,6 +200,8 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)
+    self.commf2c = 1
+    self.commc2f = 1
     self.framework.packages.append(self)
     self.usingMPIUni = 1
     return
