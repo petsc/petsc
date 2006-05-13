@@ -1,63 +1,8 @@
  
 #include "src/dm/mesh/mesh.h"   /*I      "petscmesh.h"   I*/
-
-extern PetscErrorCode WriteVTKHeader(PetscViewer);
-extern PetscErrorCode WriteVTKVertices_New(ALE::Obj<ALE::Two::Mesh>, PetscViewer);
-extern PetscErrorCode WriteVTKElements_New(ALE::Obj<ALE::Two::Mesh>, PetscViewer);
-
-extern PetscErrorCode WritePCICEVertices(ALE::Obj<ALE::Two::Mesh>, PetscViewer);
-extern PetscErrorCode WritePCICEElements(ALE::Obj<ALE::Two::Mesh>, PetscViewer);  
-
-extern PetscErrorCode WritePyLithVertices(ALE::Obj<ALE::Two::Mesh>, PetscViewer);
-extern PetscErrorCode WritePyLithElements(ALE::Obj<ALE::Two::Mesh>, PetscViewer);
-extern PetscErrorCode WritePyLithVerticesLocal(ALE::Obj<ALE::Two::Mesh>, PetscViewer);
-extern PetscErrorCode WritePyLithElementsLocal(ALE::Obj<ALE::Two::Mesh>, PetscViewer);
-
-#ifdef OLD_MESH
-#undef __FUNCT__  
-#define __FUNCT__ "MeshView_Sieve_Ascii"
-PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::def::Mesh> mesh, PetscViewer viewer)
-{
-  PetscViewerFormat format;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_VTK) {
-    ierr = WriteVTKHeader(viewer);CHKERRQ(ierr);
-    ierr = WriteVTKVertices(mesh, viewer);CHKERRQ(ierr);
-    ierr = WriteVTKElements(mesh, viewer);CHKERRQ(ierr);
-  } else if (format == PETSC_VIEWER_ASCII_PCICE) {
-    char      *filename;
-    char       coordFilename[2048];
-    PetscTruth isConnect;
-    size_t     len;
-
-    ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
-    ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
-    ierr = PetscStrcmp(&(filename[len-5]), ".lcon", &isConnect);CHKERRQ(ierr);
-    if (!isConnect) {
-      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid element connectivity filename: %s", filename);
-    }
-    ierr = WritePCICEElements(mesh, viewer);CHKERRQ(ierr);
-    ierr = PetscStrncpy(coordFilename, filename, len-5);CHKERRQ(ierr);
-    coordFilename[len-5] = '\0';
-    ierr = PetscStrcat(coordFilename, ".nodes");CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
-    ierr = WritePCICEVertices(mesh, viewer);CHKERRQ(ierr);
-  } else {
-    int dim = mesh->getDimension();
-
-    ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %d dimensions:\n", dim);CHKERRQ(ierr);
-    for(int d = 0; d <= dim; d++) {
-      // FIX: Need to globalize
-      ierr = PetscViewerASCIIPrintf(viewer, "  %d %d-cells\n", mesh->getTopology()->depthStratum(d)->size(), d);CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
+#include "src/dm/mesh/meshvtk.h"
+#include "src/dm/mesh/meshpcice.h"
+#include "src/dm/mesh/meshpylith.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve_Ascii"
@@ -69,9 +14,9 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_VTK) {
-    ierr = WriteVTKHeader(viewer);CHKERRQ(ierr);
-    ierr = WriteVTKVertices_New(mesh, viewer);CHKERRQ(ierr);
-    ierr = WriteVTKElements_New(mesh, viewer);CHKERRQ(ierr);
+    ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
+    ierr = VTKViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
+    ierr = VTKViewer::writeElements(mesh, viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_PYLITH) {
     char *filename;
     char  connectFilename[2048];
@@ -82,11 +27,11 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
     ierr = PetscStrcpy(connectFilename, filename);CHKERRQ(ierr);
     ierr = PetscStrcat(connectFilename, ".connect");CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, connectFilename);CHKERRQ(ierr);
-    ierr = WritePyLithElements(mesh, viewer);CHKERRQ(ierr);
+    ierr = PyLithViewer::writeElements(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscStrcpy(coordFilename, filename);CHKERRQ(ierr);
     ierr = PetscStrcat(coordFilename, ".coord");CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
-    ierr = WritePyLithVertices(mesh, viewer);CHKERRQ(ierr);
+    ierr = PyLithViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
     ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename), PETSC_ERR_FILE_OPEN);
     if (PetscExceptionValue(ierr)) {
@@ -108,7 +53,7 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
     ierr = PetscViewerSetType(connectViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(connectViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(connectViewer, localFilename);CHKERRQ(ierr);
-    ierr = WritePyLithElementsLocal(mesh, connectViewer);CHKERRQ(ierr);
+    ierr = PyLithViewer::writeElementsLocal(mesh, connectViewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(connectViewer);CHKERRQ(ierr);
 
     sprintf(localFilename, "%s.%d.coord", filename, rank);
@@ -116,7 +61,7 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
     ierr = PetscViewerSetType(coordViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(coordViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(coordViewer, localFilename);CHKERRQ(ierr);
-    ierr = WritePyLithVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
+    ierr = PyLithViewer::writeVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(coordViewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_PCICE) {
     char      *filename;
@@ -130,12 +75,12 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
     if (!isConnect) {
       SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid element connectivity filename: %s", filename);
     }
-    ierr = WritePCICEElements(mesh, viewer);CHKERRQ(ierr);
+    ierr = PCICEViewer::writeElements(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscStrncpy(coordFilename, filename, len-5);CHKERRQ(ierr);
     coordFilename[len-5] = '\0';
     ierr = PetscStrcat(coordFilename, ".nodes");CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
-    ierr = WritePCICEVertices(mesh, viewer);CHKERRQ(ierr);
+    ierr = PCICEViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
   } else {
     int dim = mesh->getDimension();
 
@@ -989,43 +934,6 @@ PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Two::Mesh::field_type> field,
   PetscFunctionReturn(0);
 }
 
-#ifdef OLD_MESH
-PetscErrorCode assembleOperator_New(Mat A, ALE::Obj<ALE::def::Mesh::coordinate_type> field, ALE::Obj<ALE::def::Mesh::sieve_type> orientation, ALE::def::Mesh::sieve_type::point_type e, PetscScalar array[], InsertMode mode)
-{
-  ALE::Obj<ALE::def::Mesh::bundle_type::IndexArray> intervals = field->getOrderedIndices(0, orientation->cone(e));
-  static PetscInt  indicesSize = 0;
-  static PetscInt *indices = NULL;
-  PetscInt         numIndices = 0;
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  for(ALE::def::Mesh::bundle_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    numIndices += (*i_itor).index;
-    if (0) {
-      //printf("[%d]interval (%d, %d)\n", mesh->getCommRank(), (*i_itor).prefix, (*i_itor).index);
-      printf("[%d]interval (%d, %d)\n", 0, (*i_itor).prefix, (*i_itor).index);
-    }
-  }
-  if (indicesSize && (indicesSize != numIndices)) {
-    ierr = PetscFree(indices); CHKERRQ(ierr);
-    indices = NULL;
-  }
-  if (!indices) {
-    indicesSize = numIndices;
-    ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
-  }
-  ierr = __expandCanonicalIntervals(intervals, indices); CHKERRQ(ierr);
-  if (0) {
-    for(int i = 0; i < numIndices; i++) {
-      //printf("[%d]indices[%d] = %d\n", mesh->getCommRank(), i, indices[i]);
-      printf("[%d]indices[%d] = %d\n", 0, i, indices[i]);
-    }
-  }
-  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "assembleMatrix"
 /*@
@@ -1073,4 +981,101 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
     std::cout << e.msg() << std::endl;
   }
   PetscFunctionReturn(0);
+}
+
+/******************************** C Wrappers **********************************/
+
+#undef __FUNCT__  
+#define __FUNCT__ "WriteVTKHeader"
+PetscErrorCode WriteVTKHeader(PetscViewer viewer)
+{
+  return VTKViewer::writeHeader(viewer);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WriteVTKVertices"
+PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
+{
+  ALE::Obj<ALE::Two::Mesh> m;
+  PetscErrorCode ierr;
+
+  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  return VTKViewer::writeVertices(m, viewer);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WriteVTKElements"
+PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
+{
+  ALE::Obj<ALE::Two::Mesh> m;
+  PetscErrorCode ierr;
+
+  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  return VTKViewer::writeElements(m, viewer);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WritePCICEVertices"
+PetscErrorCode WritePCICEVertices(Mesh mesh, PetscViewer viewer)
+{
+  ALE::Obj<ALE::Two::Mesh> m;
+  PetscErrorCode ierr;
+
+  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  return PCICEViewer::writeVertices(m, viewer);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WritePCICEElements"
+PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
+{
+  ALE::Obj<ALE::Two::Mesh> m;
+  PetscErrorCode ierr;
+
+  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  return PCICEViewer::writeElements(m, viewer);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WritePyLithVertices"
+PetscErrorCode WritePyLithVertices(Mesh mesh, PetscViewer viewer)
+{
+  ALE::Obj<ALE::Two::Mesh> m;
+  PetscErrorCode ierr;
+
+  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  return PyLithViewer::writeVertices(m, viewer);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WritePyLithElements"
+PetscErrorCode WritePyLithElements(Mesh mesh, PetscViewer viewer)
+{
+  ALE::Obj<ALE::Two::Mesh> m;
+  PetscErrorCode ierr;
+
+  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  return PyLithViewer::writeElements(m, viewer);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WritePyLithVerticesLocal"
+PetscErrorCode WritePyLithVerticesLocal(Mesh mesh, PetscViewer viewer)
+{
+  ALE::Obj<ALE::Two::Mesh> m;
+  PetscErrorCode ierr;
+
+  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  return PyLithViewer::writeVerticesLocal(m, viewer);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WritePyLithElementsLocal"
+PetscErrorCode WritePyLithElementsLocal(Mesh mesh, PetscViewer viewer)
+{
+  ALE::Obj<ALE::Two::Mesh> m;
+  PetscErrorCode ierr;
+
+  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  return PyLithViewer::writeElementsLocal(m, viewer);
 }
