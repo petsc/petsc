@@ -17,7 +17,7 @@ class Configure(PETSc.package.Package):
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
     self.petscdir = self.framework.require('PETSc.utilities.petscdir',self)
-    self.boost    = self.framework.require('PETSc.packages.Boost',self)
+    self.boost    = self.framework.require('config.packages.Boost',self)
     #self.boost = self.framework.require('PETSc.packages.Triangle',self)
     #self.boost = self.framework.require('PETSc.packages.TetGen',self)
     self.deps = [self.boost]

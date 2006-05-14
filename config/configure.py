@@ -158,6 +158,7 @@ def petsc_configure(configure_options):
       
   sys.path.insert(0, bsDir)
   sys.path.insert(0, pythonDir)
+  import config.base
   import config.framework
   import cPickle
 
@@ -180,7 +181,7 @@ def petsc_configure(configure_options):
         i.postProcess()
     framework.logClear()
     return 0
-  except (RuntimeError, ConfigureSetupError), e:
+  except (RuntimeError, config.base.ConfigureSetupError), e:
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*********************************************************************************\n'\
