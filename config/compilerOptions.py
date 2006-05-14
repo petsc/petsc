@@ -92,7 +92,8 @@ class CompilerOptions(config.base.Configure):
       elif bopt in ['g']:
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
-        flags.append('-g3')
+        # -g3 causes an as SEGV on OSX
+        flags.append('-g')
       elif bopt in ['O']:
         if os.environ.has_key('USER'):
           flags.append('-O')

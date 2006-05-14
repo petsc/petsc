@@ -117,7 +117,7 @@ class Configure(config.package.Package):
     '''Check that the libraries for MPI are shared libraries'''
     self.executeTest(self.configureMPIRUN)
     try:
-      self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, executor = self.mpirun)
+      self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'with-mpi-shared', executor = self.mpirun)
     except RuntimeError, e:
       if self.framework.argDB['with-shared']:
         raise RuntimeError('Shared libraries cannot be built using MPI provided.\nEither rebuild with --with-shared=0 or rebuild MPI with shared library support')
