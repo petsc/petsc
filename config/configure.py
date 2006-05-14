@@ -180,7 +180,7 @@ def petsc_configure(configure_options):
         i.postProcess()
     framework.logClear()
     return 0
-  except RuntimeError, e:
+  except (RuntimeError, ConfigureSetupError), e:
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*********************************************************************************\n'\
