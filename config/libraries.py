@@ -206,7 +206,7 @@ extern "C" {
     self.headers.check('dlfcn.h')
     return
 
-  def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int', noCheckArg = 0, executor = None):
+  def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int', noCheckArg = 0, defaultArg = '', executor = None):
     '''Determine whether a library is shared
        - initFunction(int *argc, char *argv[]) is called to initialize some static data
        - checkFunction(int *check) is called to verify that the static data wer set properly
@@ -329,7 +329,7 @@ int checkInit(void) {
     oldLibs = self.setCompilers.LIBS
     if self.haveLib('dl'):
       self.setCompilers.LIBS += ' -ldl'
-    if self.checkRun(defaultIncludes, body, executor = executor):
+    if self.checkRun(defaultIncludes, body, defaultArg = defaultArg, executor = executor):
       isShared = 1
     self.setCompilers.LIBS = oldLibs
     if os.path.isfile('lib1.so') and self.framework.doCleanup: os.remove('lib1.so')

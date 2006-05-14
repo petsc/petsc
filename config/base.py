@@ -61,6 +61,9 @@ import script
 
 import os
 
+class ConfigureSetupError(Exception):
+  pass
+
 class Configure(script.Script):
   def __init__(self, framework):
     script.Script.__init__(self, framework.clArgs, framework.argDB)
@@ -511,9 +514,9 @@ class Configure(script.Script):
         if defaultOutputArg in self.framework.argDB:
           return (self.framework.argDB[defaultOutputArg], 0)
         else:
-          raise RuntimeError('Must give a default value for '+defaultOutputArg+' since executables cannot be run')
+          raise ConfigureSetupError('Must give a default value for '+defaultOutputArg+' since executables cannot be run')
       else:
-        raise RuntimeError('Running executables on this system is not supported')
+        raise ConfigureSetupError('Running executables on this system is not supported')
     cleanup = cleanup and self.framework.doCleanup
     if executor:
       command = executor+' ./'+self.linkerObj
