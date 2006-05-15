@@ -395,7 +395,8 @@ class Configure(config.package.Package):
         self.logPrintBox('Running configure on MPICH; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=2000, log = self.framework.log)[0]
       except RuntimeError, e:
-        if self.arch.hostOsBase.startswith('cygwin'):
+        import sys
+        if sys.platform.startswith('cygwin'):
           raise RuntimeError('Error running configure on MPICH. \n \
   On Microsoft Windows systems, please obtain and install the binary distribution from \n \
     http://www.mcs.anl.gov/mpi/mpich/mpich-nt \n \
@@ -408,7 +409,8 @@ class Configure(config.package.Package):
         self.logPrintBox('Running make on MPICH; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
-        if self.arch.hostOsBase.startswith('cygwin'):
+        import sys
+        if sys.platform.startswith('cygwin'):
           raise RuntimeError('Error running make; make install on MPICH. \n \
   On Microsoft Windows systems, please obtain and install the binary distribution from \n \
     http://www.mcs.anl.gov/mpi/mpich/mpich-nt \n \
