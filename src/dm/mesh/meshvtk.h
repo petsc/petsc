@@ -26,7 +26,6 @@ class VTKViewer {
     ALE::Two::Mesh::field_type::patch_type patch;
     const double  *array = coordinates->restrict(patch);
     int            numVertices;
-    int            embedDim;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
@@ -77,8 +76,8 @@ class VTKViewer {
       ALE::Obj<ALE::Two::Mesh::bundle_type> globalOrder = coordinates->getGlobalOrder();
       ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> cone = globalOrder->getPatch(patch);
       const int *offsets = coordinates->getGlobalOffsets();
-      int        numLocalVertices = (offsets[mesh->commRank()+1] - offsets[mesh->commRank()])/embedDim;
       int        embedDim = coordinates->getFiberDimension(patch, *mesh->getTopology()->depthStratum(0)->begin());
+      int        numLocalVertices = (offsets[mesh->commRank()+1] - offsets[mesh->commRank()])/embedDim;
       double    *localCoords;
       int        k = 0;
 

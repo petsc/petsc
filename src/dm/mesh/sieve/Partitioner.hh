@@ -436,7 +436,7 @@ namespace ALE {
 #ifdef PETSC_HAVE_CHACO
       int dim = serialMesh->getDimension();
 
-      if (dim == 2) {
+      if (dim > 1) {
         partition_Chaco(serialMesh, serialTopology, parallelTopology);
       } else {
         partition_Simple(serialTopology, parallelTopology);
