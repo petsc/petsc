@@ -1617,6 +1617,7 @@ namespace ALE {
         return scatter;
       };
     };
+    inline
     Obj<Mesh::field_type> Generator::getSerialConstraints(Obj<Mesh> serialMesh, Obj<Mesh> parallelMesh, Obj<Mesh::field_type> parallelConstraints) {
       Obj<Mesh::field_type> serialConstraints = Mesh::field_type(parallelMesh->comm(), parallelMesh->debug);
 
@@ -1704,6 +1705,7 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "Mesh::distribute"
+    inline
     Obj<Mesh> Mesh::distribute() {
       ALE_LOG_EVENT_BEGIN;
       // Partition the topology
@@ -1728,6 +1730,7 @@ namespace ALE {
 
     #undef __FUNCT__
     #define __FUNCT__ "Mesh::unify"
+    inline
     Obj<Mesh> Mesh::unify() {
       ALE_LOG_EVENT_BEGIN;
       Obj<Mesh> serialMesh = Mesh(this->comm(), this->getDimension(), this->debug);
