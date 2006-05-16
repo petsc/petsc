@@ -40,6 +40,7 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer);
 PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Two::Mesh>, Vec *);
+PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Two::Mesh>, const char[], Vec *);
 
 typedef enum {PCICE, PYLITH} FileType;
 
@@ -49,7 +50,7 @@ int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
   PetscViewer    viewer;
-  Vec            partition;
+  Vec            partition, material;
   char           baseFilename[2048];
   PetscTruth     useZeroBase;
   const char    *fileTypes[2] = {"pcice", "pylith"};
@@ -111,6 +112,7 @@ int main(int argc, char *argv[])
       ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
       mesh = mesh->distribute();
       ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
+      ierr = CreateFieldVector(mesh, "material", &material);CHKERRQ(ierr);
       ALE::LogStagePop(stage);
     }
 
@@ -125,6 +127,9 @@ int main(int argc, char *argv[])
       ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
       ierr = VecView(partition, viewer);CHKERRQ(ierr);
+      if (material) {
+        ierr = VecView(material, viewer);CHKERRQ(ierr);
+      }
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     }
@@ -190,6 +195,36 @@ PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Two::Mesh> mesh, Vec *partiti
     array[i] = rank;
   }
   ierr = VecRestoreArray(*partition, &array);CHKERRQ(ierr);
+  ALE_LOG_EVENT_END;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateFieldVector"
+/*
+  Creates a vector whose value is the field value on each element
+*/
+PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Two::Mesh> mesh, const char fieldName[], Vec *fieldVec)
+{
+  if (!mesh->hasField(fieldName)) {
+    *fieldVec = PETSC_NULL;
+    return(0);
+  }
+  ALE::Obj<ALE::Two::Mesh::field_type> field = mesh->getField(fieldName);
+  ALE::Two::Mesh::field_type::patch_type patch;
+  VecScatter     injection;
+  Vec            locField;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ALE_LOG_EVENT_BEGIN;
+  ierr = MeshCreateVector(mesh, mesh->getBundle(mesh->getDimension()), fieldVec);CHKERRQ(ierr);
+  ierr = MeshGetGlobalScatter(mesh, fieldName, *fieldVec, &injection); CHKERRQ(ierr);
+
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, field->getSize(patch), field->restrict(patch), &locField);CHKERRQ(ierr);
+  ierr = VecScatterBegin(locField, *fieldVec, INSERT_VALUES, SCATTER_FORWARD, injection);CHKERRQ(ierr);
+  ierr = VecScatterEnd(locField, *fieldVec, INSERT_VALUES, SCATTER_FORWARD, injection);CHKERRQ(ierr);
+  ierr = VecDestroy(locField);CHKERRQ(ierr);
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
 }
