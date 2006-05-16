@@ -483,6 +483,24 @@ namespace ALE {
         }
       }
     };
+    template<typename OverlapType>
+    static void distributeField(Obj<typename mesh_type::field_type> serialField, Obj<typename mesh_type::field_type> parallelField, Obj<OverlapType> partitionOverlap) {
+      int dim = 1;
+      typename mesh_type::patch_type patch;
+
+      parallelField->setPatch(parallelField->getTopology()->leaves(), patch);
+
+      // distributeOrder
+
+      parallelField->orderPatches();
+      if (parallelField->debug) {
+        parallelField->view("New parallel field");
+      }
+      parallelField->createGlobalOrder();
+
+      VecScatter scatter = createMappingStoP(serialField, parallelField, partitionOverlap, true);
+      PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
+    };
   };
 }
 #endif

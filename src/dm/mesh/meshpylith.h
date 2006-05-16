@@ -148,7 +148,7 @@ class PyLithViewer {
         ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
         // Only linear tetrahedra, material, no infinite elements
-        ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, material->restrict(patch, *e_itor)[0], 0);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, (int) material->restrict(patch, *e_itor)[0], 0);CHKERRQ(ierr);
         for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
           ierr = PetscViewerASCIIPrintf(viewer, " %6d", globalVertex->getIndex(patch, *c_itor).prefix+1);CHKERRQ(ierr);
         }
@@ -253,7 +253,7 @@ class PyLithViewer {
       ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
       // Only linear tetrahedra, material, no infinite elements
-      ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, material->restrict(patch, *e_itor)[0], 0);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, (int) material->restrict(patch, *e_itor)[0], 0);CHKERRQ(ierr);
       for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
         ierr = PetscViewerASCIIPrintf(viewer, " %6d", vertexBundle->getIndex(patch, *c_itor).prefix+1);CHKERRQ(ierr);
       }

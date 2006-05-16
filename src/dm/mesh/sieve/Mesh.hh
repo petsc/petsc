@@ -34,14 +34,16 @@ namespace ALE {
       typedef CoSifter<sieve_type, patch_type, point_type, int> bundle_type;
       typedef CoSifter<sieve_type, patch_type, point_type, double> field_type;
       typedef CoSifter<sieve_type, ALE::pair<patch_type,int>, point_type, double> foliation_type;
+      typedef std::map<std::string, Obj<field_type> > FieldContainer;
+      typedef std::map<int, Obj<bundle_type> > BundleContainer;
       int debug;
     private:
       Obj<sieve_type> topology;
       Obj<field_type> coordinates;
       Obj<field_type> boundary;
       Obj<foliation_type> boundaries;
-      std::map<int, Obj<bundle_type> > bundles;
-      std::map<std::string, Obj<field_type> > fields;
+      FieldContainer  fields;
+      BundleContainer bundles;
       MPI_Comm        _comm;
       int             _commRank;
       int             _commSize;
@@ -347,7 +349,7 @@ namespace ALE {
         vertexBundle->partitionOrder(orderName);
       };
       template<typename OverlapType>
-      void createParallelCoordinates(int embedDim, Obj<bundle_type> serialVertexBundle, Obj<field_type> serialCoordinates, Obj<OverlapType> partitionOverlap);
+      void createParallelCoordinates(int embedDim, Obj<field_type> serialCoordinates, Obj<OverlapType> partitionOverlap);
 
       // Create a serial mesh
       void populate(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true) {
@@ -1233,6 +1235,19 @@ namespace ALE {
           matField->update(patch, Mesh::point_type(0, e), &mat);
         }
       };
+      static void createSplitField(int numSplit, int splitInd[], double splitVals[], Obj<Mesh> mesh, Obj<Mesh::field_type> splitField) {
+        Obj<Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
+        Mesh::field_type::patch_type patch;
+
+        splitField->setTopology(mesh->getTopology());
+        splitField->setPatch(elements, patch);
+        splitField->setFiberDimensionByHeight(patch, 0, 1);
+        splitField->orderPatches();
+        for(int e = 0; e < numSplit; e++) {
+          double mat = (double) splitVals[e];
+          splitField->update(patch, Mesh::point_type(0, e), &mat);
+        }
+      };
     public:
       PyLithBuilder() {};
       virtual ~PyLithBuilder() {};
@@ -1255,7 +1270,7 @@ namespace ALE {
         readSplit(comm, baseFilename+".split", dim, useZeroBase, numSplit, &splitInd, &splitValues);
         mesh->populate(numElements, vertices, numVertices, coordinates, interpolate);
         createMaterialField(numElements, materials, mesh, mesh->getField("material"));
-        createSplitField(numSplit, splitInd, splitValues, mesh->getField("split"));
+        //createSplitField(numSplit, splitInd, splitValues, mesh, mesh->getField("split"));
         ierr = PetscFree2(vertices, materials);
         ierr = PetscFree(coordinates);
         return mesh;
@@ -1798,7 +1813,9 @@ namespace ALE {
       VecScatter scatter = ALE::Two::Partitioner::createMappingStoP(serialCoordinates, this->coordinates, partitionOverlap, true);
       PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
 
+      Obj<bundle_type> vertexBundle = this->getBundle(0);
       Obj<sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
+      std::string orderName("element");
 
       for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
         this->coordinates->setPatch(orderName, vertexBundle->getPatch(orderName, *e_iter), *e_iter);
@@ -1826,6 +1843,26 @@ namespace ALE {
       // Need to deal with boundary
       parallelMesh->createParallelVertexReorder(this->getBundle(0));
       parallelMesh->createParallelCoordinates(this->dim, this->coordinates, partitionOverlap);
+
+      if (this->hasField("material")) {
+        Obj<Mesh::field_type> parallelField = parallelMesh->getField("material");
+        patch_type patch;
+
+        parallelField->setPatch(parallelField->getTopology()->leaves(), patch);
+        parallelField->setFiberDimensionByHeight(patch, 0, 1);
+        parallelField->orderPatches();
+        if (parallelField->debug) {
+          parallelField->view("New parallel material field");
+        }
+        parallelField->createGlobalOrder();
+
+        VecScatter scatter = Partitioner::createMappingStoP(this->getField("material"), parallelField, partitionOverlap, true);
+        PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
+      }
+
+//       for(FieldContainer::iterator f_iter = this->fields.begin(); f_iter != this->fields.end(); ++f_iter) {
+//         ALE::Two::Partitioner::distributeField(f_iter->second, parallelMesh->getField(), partitionOverlap);
+//       }
       parallelMesh->distributed = true;
       ALE_LOG_EVENT_END;
       return parallelMesh;
