@@ -105,8 +105,10 @@ namespace ALE {
           this->fields[name] = field;
         }
         return this->fields[name];
-      }
-
+      };
+      bool hasField(const std::string& name) {
+        return(this->fields.find(name) != this->fields.end());
+      };
       void buildFaces(int dim, std::map<int, int*> *curSimplex, Obj<PointArray> boundary, point_type& simplex) {
         Obj<PointArray> faces = PointArray();
 
@@ -317,6 +319,33 @@ namespace ALE {
         return indices;
       };
     public:
+      // This is not right, we should not have to copy everything to the new order first
+      void createParallelVertexReorder(Obj<bundle_type> serialVertexBundle) {
+        Obj<bundle_type> vertexBundle = this->getBundle(0);
+        std::string orderName("element");
+
+        if (!this->commRank()) {
+          Obj<bundle_type::order_type::baseSequence> patches = serialVertexBundle->getPatches(orderName);
+
+          for(bundle_type::order_type::baseSequence::iterator e_iter = patches->begin(); e_iter != patches->end(); ++e_iter) {
+            Obj<bundle_type::order_type::coneSequence> patch = serialVertexBundle->getPatch(orderName, *e_iter);
+
+            vertexBundle->setPatch(orderName, patch, *e_iter);
+            for(bundle_type::order_type::coneSequence::iterator p_iter = patch->begin(); p_iter != patch->end(); ++p_iter) {
+              vertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
+            }
+          }
+        } else {
+          Obj<sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
+          Obj<bundle_type::order_type> reorder = vertexBundle->__getOrder(orderName);
+
+          for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
+            reorder->addBasePoint(*e_iter);
+          }
+        }
+        vertexBundle->orderPatches(orderName);
+        vertexBundle->partitionOrder(orderName);
+      };
       template<typename OverlapType>
       void createParallelCoordinates(int embedDim, Obj<bundle_type> serialVertexBundle, Obj<field_type> serialCoordinates, Obj<OverlapType> partitionOverlap);
 
@@ -1009,11 +1038,12 @@ namespace ALE {
         while((fgets(buf, bufSize, f) != NULL) && (buf[0] == '#')) {}
       };
 
-      static void readConnectivity(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numElements, int *vertices[]) {
+      static void readConnectivity(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numElements, int *vertices[], int *materials[]) {
         PetscViewer    viewer;
         FILE          *f;
         PetscInt       maxCells = 1024, cellCount = 0;
         PetscInt      *verts;
+        PetscInt      *mats;
         char           buf[2048];
         PetscInt       c;
         PetscInt       commRank;
@@ -1031,18 +1061,20 @@ namespace ALE {
         ierr = PetscViewerASCIIGetPointer(viewer, &f);
         /* Ignore comments */
         ignoreComments(buf, 2048, f);
-        ierr = PetscMalloc(maxCells*(dim+1) * sizeof(PetscInt), &verts);
+        ierr = PetscMalloc2(maxCells*(dim+1),PetscInt,&verts,maxCells,PetscInt,&mats);
         do {
           const char *v = strtok(buf, " ");
           int         elementType;
 
           if (cellCount == maxCells) {
-            PetscInt *vtmp;
+            PetscInt *vtmp, *mtmp;
 
             vtmp = verts;
-            ierr = PetscMalloc(maxCells*2*(dim+1) * sizeof(PetscInt), &verts);
+            mtmp = mats;
+            ierr = PetscMalloc2(maxCells*2*(dim+1),PetscInt,&verts,maxCells*2,PetscInt,&mats);
             ierr = PetscMemcpy(verts, vtmp, maxCells*(dim+1) * sizeof(PetscInt));
-            ierr = PetscFree(vtmp);
+            ierr = PetscMemcpy(mats,  mtmp, maxCells         * sizeof(PetscInt));
+            ierr = PetscFree2(vtmp,mtmp);
             maxCells *= 2;
           }
           /* Ignore cell number */
@@ -1053,7 +1085,8 @@ namespace ALE {
             throw ALE::Exception("We only accept linear tetrahedra right now");
           }
           v = strtok(NULL, " ");
-          /* Ignore material type */
+          /* Store material type */
+          mats[cellCount] = atoi(v);
           v = strtok(NULL, " ");
           /* Ignore infinite domain element code */
           v = strtok(NULL, " ");
@@ -1068,7 +1101,8 @@ namespace ALE {
         } while(fgets(buf, 2048, f) != NULL);
         ierr = PetscViewerDestroy(viewer);
         numElements = cellCount;
-        *vertices = verts;
+        *vertices   = verts;
+        *materials  = mats;
       };
       static void readCoordinates(MPI_Comm comm, const std::string& filename, int dim, int& numVertices, double *coordinates[]) {
         PetscViewer    viewer;
@@ -1117,22 +1151,113 @@ namespace ALE {
           *coordinates = coords;
         }
       };
+      static void readSplit(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numSplit, int *splitInd[], double *splitValues[]) {
+        PetscViewer    viewer;
+        FILE          *f;
+        PetscInt       maxSplit = 1024, splitCount = 0;
+        PetscInt      *splitId;
+        PetscScalar   *splitVal;
+        char           buf[2048];
+        PetscInt       c;
+        PetscInt       commRank;
+        PetscErrorCode ierr;
+
+        ierr = MPI_Comm_rank(comm, &commRank);
+        if (dim != 3) {
+          throw ALE::Exception("PyLith only works in 3D");
+        }
+        if (commRank != 0) return;
+        ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
+        ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+        ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
+        ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename.c_str()), PETSC_ERR_FILE_OPEN);
+        if (PetscExceptionValue(ierr)) {
+          // this means that a caller above me has also tryed this exception so I don't handle it here, pass it up
+        } else if (PetscExceptionCaught(ierr,PETSC_ERR_FILE_OPEN)) {
+          // File does not exist
+          return;
+        } 
+        ierr = PetscViewerASCIIGetPointer(viewer, &f);
+        /* Ignore comments */
+        ignoreComments(buf, 2048, f);
+        ierr = PetscMalloc2(maxSplit*2,PetscInt,&splitId,maxSplit*dim,PetscScalar,&splitVal);
+        do {
+          const char *s = strtok(buf, " ");
+
+          if (splitCount == maxSplit) {
+            PetscInt    *sitmp;
+            PetscScalar *svtmp;
+
+            sitmp = splitId;
+            svtmp = splitVal;
+            ierr = PetscMalloc2(maxSplit*2*2,PetscInt,&splitId,maxSplit*dim*2,PetscScalar,&splitVal);
+            ierr = PetscMemcpy(splitId,  sitmp, maxSplit*2   * sizeof(PetscInt));
+            ierr = PetscMemcpy(splitVal, svtmp, maxSplit*dim * sizeof(PetscScalar));
+            ierr = PetscFree2(sitmp,svtmp);
+            maxSplit *= 2;
+          }
+          /* Get element number */
+          int elem = atoi(s);
+          if (!useZeroBase) elem -= 1;
+          splitId[splitCount*2+0] = elem;
+          s = strtok(NULL, " ");
+          /* Get node number */
+          int node = atoi(s);
+          if (!useZeroBase) node -= 1;
+          splitId[splitCount*2+1] = node;
+          s = strtok(NULL, " ");
+          /* Ignore load history number */
+          s = strtok(NULL, " ");
+          /* Get split values */
+          for(c = 0; c < dim; c++) {
+            splitVal[splitCount*dim+c] = atof(s);
+            s = strtok(NULL, " ");
+          }
+          splitCount++;
+        } while(fgets(buf, 2048, f) != NULL);
+        ierr = PetscViewerDestroy(viewer);
+        numSplit     = splitCount;
+        *splitInd    = splitId;
+        *splitValues = splitVal;
+      };
+      static void createMaterialField(int numElements, int materials[], Obj<Mesh> mesh, Obj<Mesh::field_type> matField) {
+        Obj<Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
+        Mesh::field_type::patch_type patch;
+
+        matField->setTopology(mesh->getTopology());
+        matField->setPatch(elements, patch);
+        matField->setFiberDimensionByHeight(patch, 0, 1);
+        matField->orderPatches();
+        for(int e = 0; e < numElements; e++) {
+          double mat = (double) materials[e];
+          matField->update(patch, Mesh::point_type(0, e), &mat);
+        }
+      };
     public:
       PyLithBuilder() {};
       virtual ~PyLithBuilder() {};
 
-      static Obj<ALE::Two::Mesh> createNew(MPI_Comm comm, const std::string& baseFilename, bool interpolate = true, int debug = 0) {
+      static Obj<Mesh> createNew(MPI_Comm comm, const std::string& baseFilename, bool interpolate = true, int debug = 0) {
         int       dim = 3;
         bool      useZeroBase = false;
-        Obj<ALE::Two::Mesh> mesh = ALE::Two::Mesh(comm, dim);
+        Obj<Mesh> mesh = Mesh(comm, dim);
         int      *vertices = NULL;
+        int      *materials = NULL;
         double   *coordinates = NULL;
-        int       numElements = 0, numVertices = 0;
+        int      *splitInd = NULL;
+        double   *splitValues = NULL;
+        int       numElements = 0, numVertices = 0, numSplit = 0;
+        PetscErrorCode ierr;
 
         mesh->debug = debug;
-        readConnectivity(comm, baseFilename+".connect", dim, useZeroBase, numElements, &vertices);
+        readConnectivity(comm, baseFilename+".connect", dim, useZeroBase, numElements, &vertices, &materials);
         readCoordinates(comm, baseFilename+".coord", dim, numVertices, &coordinates);
+        readSplit(comm, baseFilename+".split", dim, useZeroBase, numSplit, &splitInd, &splitValues);
         mesh->populate(numElements, vertices, numVertices, coordinates, interpolate);
+        createMaterialField(numElements, materials, mesh, mesh->getField("material"));
+        createSplitField(numSplit, splitInd, splitValues, mesh->getField("split"));
+        ierr = PetscFree2(vertices, materials);
+        ierr = PetscFree(coordinates);
         return mesh;
       };
     };
@@ -1229,13 +1354,16 @@ namespace ALE {
 
       static Obj<ALE::Two::Mesh> createNewBd(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, int debug = 0) {
         Obj<ALE::Two::Mesh> mesh = ALE::Two::Mesh(comm, dim, debug);
-        int      *vertices;
-        double   *coordinates;
+        int      *vertices = NULL;
+        double   *coordinates = NULL;
         int       numElements = 0, numVertices = 0;
+        PetscErrorCode ierr;
 
         readConnectivity(comm, baseFilename+".lcon", dim, useZeroBase, numElements, &vertices);
         readCoordinates(comm, baseFilename+".nodes", dim+1, numVertices, &coordinates);
         mesh->populateBd(numElements, vertices, numVertices, coordinates);
+        ierr = PetscFree(vertices);
+        ierr = PetscFree(coordinates);
         return mesh;
       };
     };
@@ -1650,38 +1778,12 @@ namespace ALE {
     #undef __FUNCT__
     #define __FUNCT__ "Mesh::createParCoords"
     template<typename OverlapType>
-    void Mesh::createParallelCoordinates(int embedDim, Obj<bundle_type> serialVertexBundle, Obj<field_type> serialCoordinates, Obj<OverlapType> partitionOverlap) {
+    void Mesh::createParallelCoordinates(int embedDim, Obj<field_type> serialCoordinates, Obj<OverlapType> partitionOverlap) {
       if (this->debug) {
         serialCoordinates->view("Serial coordinates");
         this->topology->view("Parallel topology");
       }
       ALE_LOG_EVENT_BEGIN;
-      // Create vertex bundle
-      std::string orderName("element");
-      Obj<bundle_type> vertexBundle = this->getBundle(0);
-
-      if (!this->_commRank) {
-        Obj<bundle_type::order_type::baseSequence> patches = serialVertexBundle->getPatches(orderName);
-
-        for(bundle_type::order_type::baseSequence::iterator e_iter = patches->begin(); e_iter != patches->end(); ++e_iter) {
-          Obj<bundle_type::order_type::coneSequence> patch = serialVertexBundle->getPatch(orderName, *e_iter);
-
-          vertexBundle->setPatch(orderName, patch, *e_iter);
-          for(bundle_type::order_type::coneSequence::iterator p_iter = patch->begin(); p_iter != patch->end(); ++p_iter) {
-            vertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
-          }
-        }
-      } else {
-        Obj<sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
-        Obj<bundle_type::order_type> reorder = vertexBundle->__getOrder(orderName);
-
-        for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
-          reorder->addBasePoint(*e_iter);
-        }
-      }
-      vertexBundle->orderPatches(orderName);
-      vertexBundle->partitionOrder(orderName);
-      // Create coordinates
       patch_type patch;
 
       this->coordinates->setTopology(this->topology);
@@ -1722,7 +1824,8 @@ namespace ALE {
       }
       Obj<Partitioner::supportDelta_type::bioverlap_type> partitionOverlap = Partitioner::supportDelta_type::overlap(this->topology, parallelMesh->topology);
       // Need to deal with boundary
-      parallelMesh->createParallelCoordinates(this->dim, this->getBundle(0), this->coordinates, partitionOverlap);
+      parallelMesh->createParallelVertexReorder(this->getBundle(0));
+      parallelMesh->createParallelCoordinates(this->dim, this->coordinates, partitionOverlap);
       parallelMesh->distributed = true;
       ALE_LOG_EVENT_END;
       return parallelMesh;

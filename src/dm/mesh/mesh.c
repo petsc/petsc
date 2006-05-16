@@ -41,7 +41,7 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
     } 
     CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_PYLITH_LOCAL) {
-    PetscViewer connectViewer, coordViewer;
+    PetscViewer connectViewer, coordViewer, splitViewer;
     char       *filename;
     char        localFilename[2048];
     int         rank = mesh->commRank();
@@ -63,6 +63,16 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer v
     ierr = PetscViewerFileSetName(coordViewer, localFilename);CHKERRQ(ierr);
     ierr = PyLithViewer::writeVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(coordViewer);CHKERRQ(ierr);
+
+    if (mesh->hasField("split")) {
+      sprintf(localFilename, "%s.%d.split", filename, rank);
+      ierr = PetscViewerCreate(PETSC_COMM_SELF, &splitViewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(splitViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetFormat(splitViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(splitViewer, localFilename);CHKERRQ(ierr);
+      ierr = PyLithViewer::writeSplitLocal(mesh, splitViewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(splitViewer);CHKERRQ(ierr);
+    }
   } else if (format == PETSC_VIEWER_ASCII_PCICE) {
     char      *filename;
     char       coordFilename[2048];
@@ -1078,4 +1088,15 @@ PetscErrorCode WritePyLithElementsLocal(Mesh mesh, PetscViewer viewer)
 
   ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
   return PyLithViewer::writeElementsLocal(m, viewer);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WritePyLithSplitLocal"
+PetscErrorCode WritePyLithSplitLocal(Mesh mesh, PetscViewer viewer)
+{
+  ALE::Obj<ALE::Two::Mesh> m;
+  PetscErrorCode ierr;
+
+  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  return PyLithViewer::writeSplitLocal(m, viewer);
 }

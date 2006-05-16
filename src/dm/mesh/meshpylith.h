@@ -120,6 +120,7 @@ class PyLithViewer {
   static PetscErrorCode writeElements(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer) {
     ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
     ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
+    ALE::Obj<ALE::Two::Mesh::field_type> material = mesh->getField("material");
     ALE::Obj<ALE::Two::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
     ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
     ALE::Obj<ALE::Two::Mesh::bundle_type> globalVertex = vertexBundle->getGlobalOrder();
@@ -146,8 +147,8 @@ class PyLithViewer {
       for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
         ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
-        // Only linear tetrahedra, 1 material, no infinite elements
-        ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, 1, 0);CHKERRQ(ierr);
+        // Only linear tetrahedra, material, no infinite elements
+        ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, material->restrict(patch, *e_itor)[0], 0);CHKERRQ(ierr);
         for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
           ierr = PetscViewerASCIIPrintf(viewer, " %6d", globalVertex->getIndex(patch, *c_itor).prefix+1);CHKERRQ(ierr);
         }
@@ -159,13 +160,15 @@ class PyLithViewer {
         MPI_Status  status;
 
         ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
-        ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &remoteVertices);CHKERRQ(ierr);
-        ierr = MPI_Recv(remoteVertices, numLocalElements*corners, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
+        ierr = PetscMalloc(numLocalElements*(corners+1) * sizeof(int), &remoteVertices);CHKERRQ(ierr);
+        ierr = MPI_Recv(remoteVertices, numLocalElements*(corners+1), MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
         for(int e = 0; e < numLocalElements; e++) {
-          // Only linear tetrahedra, 1 material, no infinite elements
-          ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, 1, 0);CHKERRQ(ierr);
+          // Only linear tetrahedra, material, no infinite elements
+          int mat = remoteVertices[e*(corners+1)+corners];
+
+          ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, mat, 0);CHKERRQ(ierr);
           for(int c = 0; c < corners; c++) {
-            ierr = PetscViewerASCIIPrintf(viewer, " %6d", remoteVertices[e*corners+c]);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer, " %6d", remoteVertices[e*(corners+1)+c]);CHKERRQ(ierr);
           }
           ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
         }
@@ -177,7 +180,7 @@ class PyLithViewer {
       int       *localVertices;
       int        k = 0;
 
-      ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &localVertices);CHKERRQ(ierr);
+      ierr = PetscMalloc(numLocalElements*(corners+1) * sizeof(int), &localVertices);CHKERRQ(ierr);
       for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
         ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
@@ -185,13 +188,14 @@ class PyLithViewer {
           for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
             localVertices[k++] = globalVertex->getIndex(patch, *c_itor).prefix;
           }
+          localVertices[k++] = (int) material->restrict(patch, *e_itor)[0];
         }
       }
       if (k != numLocalElements*corners) {
         SETERRQ2(PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numLocalElements*corners);
       }
       ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
-      ierr = MPI_Send(localVertices, numLocalElements*corners, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
+      ierr = MPI_Send(localVertices, numLocalElements*(corners+1), MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
       ierr = PetscFree(localVertices);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
@@ -226,6 +230,7 @@ class PyLithViewer {
   static PetscErrorCode writeElementsLocal(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer) {
     ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
     ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
+    ALE::Obj<ALE::Two::Mesh::field_type> material = mesh->getField("material");
     ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
     ALE::Two::Mesh::bundle_type::patch_type patch;
     std::string    orderName("element");
@@ -247,10 +252,46 @@ class PyLithViewer {
     for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
       ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
-      // Only linear tetrahedra, 1 material, no infinite elements
-      ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, 1, 0);CHKERRQ(ierr);
+      // Only linear tetrahedra, material, no infinite elements
+      ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, material->restrict(patch, *e_itor)[0], 0);CHKERRQ(ierr);
       for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
         ierr = PetscViewerASCIIPrintf(viewer, " %6d", vertexBundle->getIndex(patch, *c_itor).prefix+1);CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  };
+
+  #undef __FUNCT__  
+  #define __FUNCT__ "PyLithWriteSplitLocal"
+  // The elements seem to be implicitly numbered by appearance, which makes it impossible to
+  //   number here by bundle, but we can fix it by traversing the elements like the vertices
+  static PetscErrorCode writeSplitLocal(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer) {
+    ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
+    ALE::Obj<ALE::Two::Mesh::field_type> splitField = mesh->getField("split");
+    ALE::Obj<ALE::Two::Mesh::field_type::order_type::baseSequence> splitElements = splitField->getPatches();
+    ALE::Obj<ALE::Two::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
+    ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
+    ALE::Two::Mesh::bundle_type::patch_type patch;
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    if (mesh->getDimension() != 3) {
+      SETERRQ(PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
+    }
+    for(ALE::Two::Mesh::field_type::order_type::baseSequence::iterator e_itor = splitElements->begin(); e_itor != splitElements->end(); ++e_itor) {
+      ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> cone = splitField->getPatch(*e_itor);
+
+      ierr = PetscViewerASCIIPrintf(viewer, "%6d", elementBundle->getIndex(patch, *e_itor).prefix+1);CHKERRQ(ierr);
+      for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+        ierr = PetscViewerASCIIPrintf(viewer, " %6d", vertexBundle->getIndex(patch, *c_itor).prefix+1);CHKERRQ(ierr);
+      }
+      // No time history
+      ierr = PetscViewerASCIIPrintf(viewer, " 0");CHKERRQ(ierr);
+      for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+        const double *values = splitField->restrict(*e_itor, *c_itor);
+
+        ierr = PetscViewerASCIIPrintf(viewer, " %15.9g %15.9g %15.9g", values[0], values[1], values[2]);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     }
