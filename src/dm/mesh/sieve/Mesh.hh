@@ -111,6 +111,14 @@ namespace ALE {
       bool hasField(const std::string& name) {
         return(this->fields.find(name) != this->fields.end());
       };
+      Obj<std::set<std::string> > getFields() {
+        Obj<std::set<std::string> > names = std::set<std::string>();
+
+        for(FieldContainer::iterator f_iter = this->fields.begin(); f_iter != this->fields.end(); ++f_iter) {
+          names->insert(f_iter->first);
+        }
+        return names;
+      }
       void buildFaces(int dim, std::map<int, int*> *curSimplex, Obj<PointArray> boundary, point_type& simplex) {
         Obj<PointArray> faces = PointArray();
 
@@ -1226,7 +1234,6 @@ namespace ALE {
         Obj<Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
         Mesh::field_type::patch_type patch;
 
-        matField->setTopology(mesh->getTopology());
         matField->setPatch(elements, patch);
         matField->setFiberDimensionByHeight(patch, 0, 1);
         matField->orderPatches();
@@ -1237,15 +1244,30 @@ namespace ALE {
       };
       static void createSplitField(int numSplit, int splitInd[], double splitVals[], Obj<Mesh> mesh, Obj<Mesh::field_type> splitField) {
         Obj<Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
+        std::map<Mesh::point_type, std::set<int> > elem2vertIndex;
+        Obj<std::list<Mesh::point_type> > vertices = std::list<Mesh::point_type>();
         Mesh::field_type::patch_type patch;
+        int numElements = elements->size();
 
-        splitField->setTopology(mesh->getTopology());
-        splitField->setPatch(elements, patch);
-        splitField->setFiberDimensionByHeight(patch, 0, 1);
-        splitField->orderPatches();
         for(int e = 0; e < numSplit; e++) {
-          double mat = (double) splitVals[e];
-          splitField->update(patch, Mesh::point_type(0, e), &mat);
+          elem2vertIndex[Mesh::point_type(0, splitInd[e*2+1])].insert(e);
+        }
+        for(std::map<Mesh::point_type, std::set<int> >::iterator e_iter = elem2vertIndex.begin(); e_iter != elem2vertIndex.end(); ++e_iter) {
+          vertices->clear();
+          for(std::set<int>::iterator v_iter = e_iter->second.begin(); v_iter != e_iter->second.end(); ++v_iter) {
+            vertices->push_back(Mesh::point_type(0, numElements+splitInd[*v_iter*2+0]));
+          }
+          splitField->setPatch(vertices, e_iter->first);
+
+          for(std::list<Mesh::point_type>::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+            splitField->setFiberDimension(e_iter->first, *v_iter, 1);
+          }
+        }
+        splitField->orderPatches();
+        for(std::map<Mesh::point_type, std::set<int> >::iterator e_iter = elem2vertIndex.begin(); e_iter != elem2vertIndex.end(); ++e_iter) {
+          for(std::set<int>::iterator v_iter = e_iter->second.begin(); v_iter != e_iter->second.end(); ++v_iter) {
+            splitField->update(e_iter->first, Mesh::point_type(0, numElements+splitInd[*v_iter*2+0]), &splitVals[*v_iter]);
+          }
         }
       };
     public:
@@ -1270,7 +1292,9 @@ namespace ALE {
         readSplit(comm, baseFilename+".split", dim, useZeroBase, numSplit, &splitInd, &splitValues);
         mesh->populate(numElements, vertices, numVertices, coordinates, interpolate);
         createMaterialField(numElements, materials, mesh, mesh->getField("material"));
-        //createSplitField(numSplit, splitInd, splitValues, mesh, mesh->getField("split"));
+        if (numSplit) {
+          createSplitField(numSplit, splitInd, splitValues, mesh, mesh->getField("split"));
+        }
         ierr = PetscFree2(vertices, materials);
         ierr = PetscFree(coordinates);
         return mesh;
@@ -1402,196 +1426,6 @@ namespace ALE {
                                                        Mesh::sieve_type::traits::base_container_type::rebind<fuser::fusion_target_type, Mesh::sieve_type::traits::targetRec_type::rebind<fuser::fusion_target_type, Mesh::sieve_type::marker_type>::type>::type
       >::type> supportDelta_type;
     public:
-#if 0
-      #undef __FUNCT__
-      #define __FUNCT__ "partition_Sieve"
-      template<typename SifterType>
-      static void partition_Sieve(Obj<SifterType> topology, bool localize) {
-        ALE_LOG_EVENT_BEGIN;
-        Obj<ALE::PointSet> localBase = ALE::PointSet();
-        const char *name = NULL;
-
-        // Construct a Delta object and a base overlap object
-        coneDelta_type::setDebug(topology->debug);
-        Obj<coneDelta_type::overlap_type> overlap = coneDelta_type::overlap(topology);
-        // Cone complete to move the partitions to the other processors
-        Obj<coneDelta_type::fusion_type>  fusion  = coneDelta_type::fusion(topology, overlap);
-        // Merge in the completion
-        topology->add(fusion);
-        if (topology->debug) {
-          overlap->view("Initial overlap");
-          fusion->view("Initial fusion");
-          topology->view("After merging inital fusion");
-        }
-        if(localize) {
-          Obj<Mesh::sieve_type::coneSequence> cone = topology->cone(Mesh::point_type(-1, topology->commRank()));
-
-          localBase->insert(cone->begin(), cone->end());
-          for(int p = 0; p < topology->commSize(); ++p) {
-            topology->removeBasePoint(Mesh::point_type(-1, p));
-          }
-        }
-        // Support complete to build the local topology
-        supportDelta_type::setDebug(topology->debug);
-        Obj<supportDelta_type::overlap_type> overlap2 = supportDelta_type::overlap(topology);
-        Obj<supportDelta_type::fusion_type>  fusion2  = supportDelta_type::fusion(topology, overlap2);
-        topology->add(fusion2);
-        if (topology->debug) {
-          overlap2->view("Second overlap");
-          fusion2->view("Second fusion");
-          topology->view("After merging second fusion");
-        }
-        // Unless explicitly prohibited, restrict to the local partition
-        if(localize) {
-          if (topology->debug) {
-            std::cout << "["<<topology->commRank()<<"]: Restricting base to";
-            for(ALE::PointSet::iterator b_iter = localBase->begin(); b_iter != localBase->end(); ++b_iter) {
-              std::cout << " " << *b_iter;
-            }
-            std::cout << std::endl;
-          }
-          topology->restrictBase(localBase);
-          //FIX: The contains() method does not work
-          //topology->restrictBase(topology->cone(Mesh::point_type(-1, topology->commRank())));
-          Obj<Mesh::sieve_type::capSequence> cap = topology->cap();
-
-          for(Mesh::sieve_type::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
-            if (topology->support(*c_iter)->size() == 0) {
-              topology->removeCapPoint(*c_iter);
-            }
-          }
-          if (topology->debug) {
-            ostringstream label5;
-            if(name != NULL) {
-              label5 << "Localized parallel version of '" << name << "'";
-            } else {
-              label5 << "Localized parallel sieve";
-            }
-            topology->view(label5.str().c_str());
-          }
-        }
-        ALE_LOG_EVENT_END;
-      };
-
-      #undef __FUNCT__
-      #define __FUNCT__ "partition_Simple"
-      static void partition_Simple(const ALE::Obj<ALE::Two::Mesh> mesh) {
-        ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
-        ALE::Obj<ALE::Two::Mesh::field_type> boundary = mesh->getBoundary();
-        PetscInt numLeaves = topology->leaves()->size();
-        bool hasBd = (bool) boundary->getPatches()->size();
-        const char *name = NULL;
-
-        PetscFunctionBegin;
-        ALE_LOG_STAGE_BEGIN;
-        ALE_LOG_EVENT_BEGIN;
-        if (topology->commRank() == 0) {
-          int size = topology->commSize();
-
-          for(int p = 0; p < size; p++) {
-            ALE::Two::Mesh::point_type partitionPoint(-1, p);
-
-            for(int l = (numLeaves/size)*p + PetscMin(numLeaves%size, p); l < (numLeaves/size)*(p+1) + PetscMin(numLeaves%size, p+1); l++) {
-              topology->addCone(topology->closure(ALE::Two::Mesh::point_type(0, l)), partitionPoint);
-            }
-            if (hasBd) {
-              ALE::Obj<ALE::Two::Mesh::field_type::order_type::traits::capSequence> cap = boundary->__getOrder()->cap();
-              ALE::Obj<std::set<ALE::Two::Mesh::point_type> > points = std::set<ALE::Two::Mesh::point_type>();
-
-              for(int l = (numLeaves/size)*p + PetscMin(numLeaves%size, p); l < (numLeaves/size)*(p+1) + PetscMin(numLeaves%size, p+1); l++) {
-                ALE::Two::Mesh::point_type point(0, l);
-
-                if (cap->contains(point)) {
-                  points->insert(point);
-                }
-              }
-              boundary->setPatch(points, partitionPoint);
-            }
-          }
-        } else {
-          ALE::Two::Mesh::point_type partitionPoint(-1, topology->commRank());
-          topology->addBasePoint(partitionPoint);
-          if (hasBd) {
-            boundary->setPatch(topology->cone(partitionPoint), partitionPoint);
-          }
-        }
-        if (mesh->debug) {
-          ostringstream label1;
-          label1 << "Partition of sieve ";
-          if(name != NULL) {
-            label1 << "'" << name << "'";
-          }
-          label1 << "\n";
-          topology->view(label1.str().c_str());
-          if (hasBd) {
-            ostringstream label1;
-            label1 << "Partition of boundary ";
-            if(name != NULL) {
-              label1 << "'" << name << "'";
-            }
-            label1 << "\n";
-            boundary->view(label1.str().c_str());
-          }
-        }
-        ALE_LOG_EVENT_END;
-        ALE_LOG_STAGE_END;
-      };
-#endif
-    public:
-#if 0
-      static void partition(const Obj<Mesh> mesh) {
-        ALE::Obj<ALE::Two::Mesh::field_type> boundary = mesh->getBoundary();
-        bool hasBd = (bool) boundary->getPatches()->size();
-
-        partition_Simple(mesh);
-        partition_Sieve(mesh->getTopology(), true);
-        if (hasBd) {
-          partition_Sieve(boundary->__getOrder(), true);
-        }
-      };
-      static void unify(const Obj<Mesh> mesh, const Obj<Mesh> serialMesh) {
-        Obj<Mesh::sieve_type>               topology = mesh->getTopology();
-        Obj<Mesh::sieve_type>               serialTopology = serialMesh->getTopology();
-        Obj<Mesh::sieve_type::baseSequence> base = topology->base();
-        Obj<Mesh::sieve_type::capSequence>  cap = topology->cap();
-        Mesh::point_type                    partitionPoint(-1, 0);
-
-        for(Mesh::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-          serialTopology->addCone(topology->cone(*b_iter), *b_iter);
-          serialTopology->addCone(*b_iter, partitionPoint);
-        }
-        for(Mesh::sieve_type::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
-          serialTopology->addCone(*c_iter, partitionPoint);
-        }
-        partition_Sieve(serialMesh->getTopology(), true);
-      };
-#endif
-      template<typename PointSequence, typename OrderType, typename PatchType>
-      static int *__expandIntervalsByPoint(Obj<PointSequence> points, Obj<OrderType> order, const PatchType& patch) {
-        int *indices;
-        int  k = 0;
-
-        for(typename PointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
-          if ((*p_iter).first == 0) {
-            k += std::abs(order->getIndex(patch, (*p_iter).second).index);
-          }
-        }
-        if (order->debug) {PetscSynchronizedPrintf(order->comm(), "[%d]Allocated indices of size %d\n", order->commRank(), k);}
-        indices = new int[k];
-        k = 0;
-        for(typename PointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
-          if ((*p_iter).first == 0) {
-            const typename OrderType::index_type& offset = order->getIndex(patch, (*p_iter).second);
-
-            for(int i = offset.prefix; i < offset.prefix + std::abs(offset.index); i++) {
-              if (order->debug) {PetscSynchronizedPrintf(order->comm(), "[%d]indices[%d] = %d\n", order->commRank(), k, i);}
-              indices[k++] = i;
-            }
-          }
-        }
-        if (order->debug) {PetscSynchronizedFlush(order->comm());}
-        return indices;
-      };
       #undef __FUNCT__
       #define __FUNCT__ "createMappingStoP"
       template<typename FieldType, typename OverlapType>
@@ -1829,10 +1663,7 @@ namespace ALE {
       ALE_LOG_EVENT_BEGIN;
       // Partition the topology
       Obj<Mesh> parallelMesh = Mesh(this->comm(), this->getDimension(), this->debug);
-      parallelMesh->topology->setStratification(false);
       ALE::MeshPartitioner<Mesh>::partition(*this, parallelMesh);
-      parallelMesh->topology->stratify();
-      parallelMesh->topology->setStratification(true);
       // Calculate the bioverlap
       if (this->debug) {
         this->topology->view("Serial topology");
@@ -1843,26 +1674,6 @@ namespace ALE {
       // Need to deal with boundary
       parallelMesh->createParallelVertexReorder(this->getBundle(0));
       parallelMesh->createParallelCoordinates(this->dim, this->coordinates, partitionOverlap);
-
-      if (this->hasField("material")) {
-        Obj<Mesh::field_type> parallelField = parallelMesh->getField("material");
-        patch_type patch;
-
-        parallelField->setPatch(parallelField->getTopology()->leaves(), patch);
-        parallelField->setFiberDimensionByHeight(patch, 0, 1);
-        parallelField->orderPatches();
-        if (parallelField->debug) {
-          parallelField->view("New parallel material field");
-        }
-        parallelField->createGlobalOrder();
-
-        VecScatter scatter = Partitioner::createMappingStoP(this->getField("material"), parallelField, partitionOverlap, true);
-        PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
-      }
-
-//       for(FieldContainer::iterator f_iter = this->fields.begin(); f_iter != this->fields.end(); ++f_iter) {
-//         ALE::Two::Partitioner::distributeField(f_iter->second, parallelMesh->getField(), partitionOverlap);
-//       }
       parallelMesh->distributed = true;
       ALE_LOG_EVENT_END;
       return parallelMesh;

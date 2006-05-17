@@ -219,6 +219,7 @@ PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Two::Mesh> mesh, const char field
   PetscFunctionBegin;
   ALE_LOG_EVENT_BEGIN;
   ierr = MeshCreateVector(mesh, mesh->getBundle(mesh->getDimension()), fieldVec);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *fieldVec, fieldName);CHKERRQ(ierr);
   ierr = MeshGetGlobalScatter(mesh, fieldName, *fieldVec, &injection); CHKERRQ(ierr);
 
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, field->getSize(patch), field->restrict(patch), &locField);CHKERRQ(ierr);

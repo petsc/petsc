@@ -15,28 +15,30 @@ extern "C" {
 }
 
 namespace ALE {
+  template<typename Sifter_>
   class Distributer {
+  public:
+    typedef Sifter_ sifter_type;
+    typedef RightSequenceDuplicator<ConeArraySequence<typename sifter_type::traits::arrow_type> > fuser;
+    typedef ParConeDelta<sifter_type, fuser,
+                         typename sifter_type::template rebind<typename fuser::fusion_source_type,
+                                                               typename fuser::fusion_target_type,
+                                                               typename fuser::fusion_color_type,
+                                                               typename sifter_type::traits::cap_container_type::template rebind<typename fuser::fusion_source_type, typename sifter_type::traits::sourceRec_type::template rebind<typename fuser::fusion_source_type>::type>::type,
+                                                               typename sifter_type::traits::base_container_type::template rebind<typename fuser::fusion_target_type, typename sifter_type::traits::targetRec_type::template rebind<typename fuser::fusion_target_type>::type>::type
+    >::type> coneDelta_type;
+    typedef ParSupportDelta<sifter_type, fuser,
+                            typename sifter_type::template rebind<typename fuser::fusion_source_type,
+                                                                  typename fuser::fusion_target_type,
+                                                                  typename fuser::fusion_color_type,
+                                                                  typename sifter_type::traits::cap_container_type::template rebind<typename fuser::fusion_source_type, typename sifter_type::traits::sourceRec_type::template rebind<typename fuser::fusion_source_type>::type>::type,
+                                                                  typename sifter_type::traits::base_container_type::template rebind<typename fuser::fusion_target_type, typename sifter_type::traits::targetRec_type::template rebind<typename fuser::fusion_target_type>::type>::type
+    >::type> supportDelta_type;
+    typedef typename supportDelta_type::bioverlap_type overlap_type;
   public:
     #undef __FUNCT__
     #define __FUNCT__ "Part::distribute"
-    template<typename Sifter_>
-    static void distribute(Obj<Sifter_> oldSifter, Obj<Sifter_> newSifter, bool restrict = true) {
-      typedef Sifter_ sifter_type;
-      typedef RightSequenceDuplicator<ConeArraySequence<typename sifter_type::traits::arrow_type> > fuser;
-      typedef ParConeDelta<sifter_type, fuser,
-                           typename sifter_type::template rebind<typename fuser::fusion_source_type,
-                                                                 typename fuser::fusion_target_type,
-                                                                 typename fuser::fusion_color_type,
-                                                                 typename sifter_type::traits::cap_container_type::template rebind<typename fuser::fusion_source_type, typename sifter_type::traits::sourceRec_type::template rebind<typename fuser::fusion_source_type>::type>::type,
-                                                                 typename sifter_type::traits::base_container_type::template rebind<typename fuser::fusion_target_type, typename sifter_type::traits::targetRec_type::template rebind<typename fuser::fusion_target_type>::type>::type
-      >::type> coneDelta_type;
-      typedef ParSupportDelta<sifter_type, fuser,
-                              typename sifter_type::template rebind<typename fuser::fusion_source_type,
-                                                                    typename fuser::fusion_target_type,
-                                                                    typename fuser::fusion_color_type,
-                                                                    typename sifter_type::traits::cap_container_type::template rebind<typename fuser::fusion_source_type, typename sifter_type::traits::sourceRec_type::template rebind<typename fuser::fusion_source_type>::type>::type,
-                                                                    typename sifter_type::traits::base_container_type::template rebind<typename fuser::fusion_target_type, typename sifter_type::traits::targetRec_type::template rebind<typename fuser::fusion_target_type>::type>::type
-      >::type> supportDelta_type;
+    static Obj<overlap_type> distribute(Obj<sifter_type> oldSifter, Obj<sifter_type> newSifter, bool restrict = true) {
       ALE_LOG_EVENT_BEGIN;
       // Construct a Delta object and a base overlap object
       coneDelta_type::setDebug(oldSifter->debug);
@@ -66,6 +68,7 @@ namespace ALE {
         newSifter->view("After merging second fusion");
       }
       ALE_LOG_EVENT_END;
+      return overlap2;
     };
     #undef __FUNCT__
     #define __FUNCT__ "createMappingStoP"
@@ -242,77 +245,87 @@ namespace ALE {
     typedef typename mesh_type::field_type::order_type sifter_type;
   private:
     #undef __FUNCT__
-    #define __FUNCT__ "partition_Simple"
-    static void partition_Simple(Obj<sieve_type> oldSieve, Obj<sieve_type> newSieve) {
-      typedef typename sieve_type::traits::target_type point_type;
-      int numLeaves = oldSieve->leaves()->size();
+    #define __FUNCT__ "partition_Induced"
+    static void partition_Induced(short assignment[], Obj<mesh_type> oldMesh, Obj<sieve_type> oldSieve, Obj<sieve_type> newSieve) {
+      Obj<typename sieve_type::traits::heightSequence> elements = oldSieve->heightStratum(0);
+      Obj<typename mesh_type::bundle_type> elementBundle = oldMesh->getBundle(oldSieve->depth());
+      typename mesh_type::patch_type patch;
 
-      ALE_LOG_EVENT_BEGIN;
-      if (oldSieve->commRank() == 0) {
-        int size = oldSieve->commSize();
-
-        for(int p = 0; p < size; p++) {
-          point_type partitionPoint(-1, p);
-
-          for(int l = (numLeaves/size)*p + PetscMin(numLeaves%size, p); l < (numLeaves/size)*(p+1) + PetscMin(numLeaves%size, p+1); l++) {
-            oldSieve->addCone(oldSieve->closure(point_type(0, l)), partitionPoint);
-          }
+      for(typename sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+        if ((*e_iter).prefix >= 0) {
+          oldSieve->addCone(oldSieve->closure(*e_iter), typename mesh_type::point_type(-1, assignment[elementBundle->getIndex(patch, *e_iter).prefix]));
         }
       }
-      point_type partitionPoint(-1, newSieve->commRank());
+      typename mesh_type::point_type partitionPoint(-1, newSieve->commRank());
 
       newSieve->addBasePoint(partitionPoint);
       if (oldSieve->debug) {
         oldSieve->view("Partition of old sieve");
         newSieve->view("Partition of new sieve");
       }
-      ALE_LOG_EVENT_END;
     };
     #undef __FUNCT__
-    #define __FUNCT__ "partition_Simple"
-    static void partition_Simple(Obj<sieve_type> oldSieve, Obj<sifter_type> oldSifter, Obj<sifter_type> newSifter) {
-      typedef typename sifter_type::traits::target_type point_type;
+    #define __FUNCT__ "partition_Induced"
+    static void partition_Induced(short assignment[], Obj<mesh_type> oldMesh, Obj<sifter_type> oldSifter, Obj<sifter_type> newSifter) {
+      Obj<typename mesh_type::sieve_type> oldSieve = oldMesh->getTopology();
+      Obj<typename sieve_type::traits::heightSequence> elements = oldSieve->heightStratum(0);
+      Obj<typename mesh_type::bundle_type> elementBundle = oldMesh->getBundle(oldSieve->depth());
       Obj<typename sifter_type::traits::capSequence> cap = oldSifter->cap();
-      int numLeaves = oldSieve->leaves()->size();
+      typename mesh_type::patch_type patch;
 
-      ALE_LOG_EVENT_BEGIN;
-      if (oldSifter->commRank() == 0) {
-        int size = oldSifter->commSize();
+      for(typename sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+        Obj<typename sieve_type::coneSet> closure = oldSieve->closure(*e_iter);
+        typename mesh_type::point_type partitionPoint(-1, assignment[elementBundle->getIndex(patch, *e_iter).prefix]);
 
-        for(int p = 0; p < size; p++) {
-          point_type partitionPoint(-1, p);
-
-          for(int l = (numLeaves/size)*p + PetscMin(numLeaves%size, p); l < (numLeaves/size)*(p+1) + PetscMin(numLeaves%size, p+1); l++) {
-            Obj<typename sieve_type::coneSet> closure = oldSieve->closure(point_type(0, l));
-
-            for(typename sieve_type::coneSet::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter) {
-              if (cap->contains(*c_iter)) {
-                oldSifter->addCone(*c_iter, partitionPoint);
-              }
-            }
+        for(typename sieve_type::coneSet::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter) {
+          if (cap->contains(*c_iter)) {
+            oldSifter->addCone(*c_iter, partitionPoint);
           }
         }
       }
-      point_type partitionPoint(-1, newSifter->commRank());
+      typename mesh_type::point_type partitionPoint(-1, newSifter->commRank());
 
       newSifter->addBasePoint(partitionPoint);
       if (oldSifter->debug) {
         oldSifter->view("Partition of old sifter");
         newSifter->view("Partition of new sifter");
       }
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "partition_Simple"
+    static short *partition_Simple(Obj<mesh_type> oldMesh, Obj<sieve_type> oldSieve, Obj<sieve_type> newSieve) {
+      typedef typename sieve_type::traits::target_type point_type;
+      Obj<typename mesh_type::bundle_type> elementBundle = oldMesh->getBundle(oldSieve->depth());
+      typename mesh_type::patch_type patch;
+      short *assignment = NULL;
+
+      ALE_LOG_EVENT_BEGIN;
+      if (oldSieve->commRank() == 0) {
+        int numLeaves = oldSieve->leaves()->size();
+        int size = oldSieve->commSize();
+
+        assignment = new short[numLeaves];
+        for(int p = 0; p < size; p++) {
+          for(int l = (numLeaves/size)*p + PetscMin(numLeaves%size, p); l < (numLeaves/size)*(p+1) + PetscMin(numLeaves%size, p+1); l++) {
+            assignment[elementBundle->getIndex(patch, point_type(0, l)).prefix] = p;
+          }
+        }
+      }
+      partition_Induced(assignment, oldMesh, oldSieve, newSieve);
       ALE_LOG_EVENT_END;
+      return assignment;
     };
 #ifdef PETSC_HAVE_CHACO
-    static void partition_Chaco(Obj<mesh_type> oldMesh, Obj<sieve_type> oldSieve, const Obj<sieve_type> newSieve) {
+    static short *partition_Chaco(Obj<mesh_type> oldMesh, Obj<sieve_type> oldSieve, const Obj<sieve_type> newSieve) {
       ALE_LOG_EVENT_BEGIN;
       typename mesh_type::patch_type patch;
       PetscErrorCode ierr;
       int size = oldSieve->commSize();
-      int *offsets;
+      short *assignment = NULL; /* set number of each vtx (length n) */
+      int *offsets = NULL;
 
 
       Obj<typename sieve_type::traits::heightSequence> faces = oldSieve->heightStratum(1);
-      Obj<typename sieve_type::traits::heightSequence> elements = oldSieve->heightStratum(0);
       Obj<typename mesh_type::bundle_type> vertexBundle = oldMesh->getBundle(0);
       Obj<typename mesh_type::bundle_type> elementBundle = oldMesh->getBundle(oldSieve->depth());
       if (oldSieve->commRank() == 0) {
@@ -326,7 +339,6 @@ namespace ALE {
         float *x = NULL, *y = NULL, *z = NULL;  /* coordinates for inertial method */
         char *outassignname = NULL;             /*  name of assignment output file */
         char *outfilename = NULL;               /* output file name */
-        short *assignment;                      /* set number of each vtx (length n) */
         int architecture = 1;                   /* 0 => hypercube, d => d-dimensional mesh */
         int ndims_tot = 0;                      /* total number of cube dimensions to divide */
         int mesh_dims[3];                       /* dimensions of mesh of processors */
@@ -404,60 +416,73 @@ namespace ALE {
         std::cout << msgLog << std::endl;
         delete [] msgLog;
 #endif
-        for(typename sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-          if ((*e_iter).prefix >= 0) {
-            oldSieve->addCone(oldSieve->closure(*e_iter), typename mesh_type::point_type(-1, assignment[elementBundle->getIndex(patch, *e_iter).prefix]));
-          }
-        }
-
-        delete [] assignment;
         delete [] adjacency;
         delete [] start;
         delete [] offsets;
       }
-      typename mesh_type::point_type partitionPoint(-1, newSieve->commRank());
 
-      newSieve->addBasePoint(partitionPoint);
-      if (oldSieve->debug) {
-        oldSieve->view("Partition of old sieve");
-        newSieve->view("Partition of new sieve");
-      }
+      partition_Induced(assignment, oldMesh, oldSieve, newSieve);
       ALE_LOG_EVENT_END;
+      return assignment;
     };
 #endif
   public:
     static void partition(const Obj<mesh_type> serialMesh, const Obj<mesh_type> parallelMesh) {
+      typedef typename mesh_type::field_type::order_type order_type;
       Obj<sieve_type> serialTopology = serialMesh->getTopology();
       Obj<sieve_type> parallelTopology = parallelMesh->getTopology();
       Obj<typename mesh_type::field_type> serialBoundary = serialMesh->getBoundary();
       Obj<typename mesh_type::field_type> parallelBoundary = parallelMesh->getBoundary();
+      short *assignment = NULL;
+      bool useSimple = true;
       bool hasBd = (serialBoundary->getPatches()->size() > 0);
 
+      parallelTopology->setStratification(false);
 #ifdef PETSC_HAVE_CHACO
-      int dim = serialMesh->getDimension();
-
-      if (dim > 1) {
-        partition_Chaco(serialMesh, serialTopology, parallelTopology);
-      } else {
-        partition_Simple(serialTopology, parallelTopology);
+      if (serialMesh->getDimension() > 1) {
+        assignment = partition_Chaco(serialMesh, serialTopology, parallelTopology);
+        useSimple = false;
       }
-#else
-      partition_Simple(serialTopology, parallelTopology);
 #endif
-      if (hasBd) {
-        partition_Simple(serialTopology, serialBoundary->__getOrder(), parallelBoundary->__getOrder());
+      if (useSimple) {
+        assignment = partition_Simple(serialMesh, serialTopology, parallelTopology);
       }
-      Distributer::distribute(serialTopology, parallelTopology);
       if (hasBd) {
-        Distributer::distribute(serialBoundary->__getOrder(), parallelBoundary->__getOrder(), false);
-        Obj<typename mesh_type::field_type::order_type::baseSequence> patches = parallelBoundary->getPatches();
+        partition_Induced(assignment, serialMesh, serialBoundary->__getOrder(), parallelBoundary->__getOrder());
+      }
+      Obj<std::set<std::string> > fieldNames = serialMesh->getFields();
 
-        for(typename mesh_type::field_type::order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
-          parallelBoundary->allocatePatch(*p_iter);
-        }
+      for(typename std::set<std::string>::iterator f_iter = fieldNames->begin(); f_iter != fieldNames->end(); ++f_iter) {
+        partition_Induced(assignment, serialMesh, serialMesh->getField(*f_iter)->__getOrder(), parallelMesh->getField(*f_iter)->__getOrder());
+      }
+      delete [] assignment;
+
+      Obj<typename Distributer<sieve_type>::overlap_type> partitionOverlap = Distributer<sieve_type>::distribute(serialTopology, parallelTopology);
+      parallelTopology->stratify();
+      parallelTopology->setStratification(true);
+
+      if (hasBd) {
+        Distributer<order_type>::distribute(serialBoundary->__getOrder(), parallelBoundary->__getOrder(), false);
+        parallelBoundary->allocatePatches();
+        parallelBoundary->createGlobalOrder();
+
+        VecScatter scatter = Distributer<order_type>::createMappingStoP(serialBoundary, parallelBoundary, partitionOverlap, true);
+        PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
+      }
+      for(typename std::set<std::string>::iterator f_iter = fieldNames->begin(); f_iter != fieldNames->end(); ++f_iter) {
+        Obj<typename mesh_type::field_type> serialField   = serialMesh->getField(*f_iter);
+        Obj<typename mesh_type::field_type> parallelField = parallelMesh->getField(*f_iter);
+
+        Distributer<order_type>::distribute(serialField->__getOrder(), parallelField->__getOrder(), false);
+        parallelField->allocatePatches();
+        parallelField->createGlobalOrder();
+
+        VecScatter scatter = Distributer<order_type>::createMappingStoP(serialField, parallelField, partitionOverlap, true);
+        PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
       }
     };
     static void unify(const Obj<mesh_type> parallelMesh, const Obj<mesh_type> serialMesh) {
+      typedef typename mesh_type::field_type::order_type order_type;
       Obj<sieve_type>                     parallelTopology = parallelMesh->getTopology();
       Obj<sieve_type>                     serialTopology = serialMesh->getTopology();
       Obj<typename mesh_type::field_type> parallelBoundary = parallelMesh->getBoundary();
@@ -473,33 +498,15 @@ namespace ALE {
         serialTopology->addBasePoint(partitionPoint);
         serialBoundary->__getOrder()->addBasePoint(partitionPoint);
       }
-      Distributer::distribute(parallelTopology, serialTopology);
+      Distributer<sieve_type>::distribute(parallelTopology, serialTopology);
       if (hasBd) {
-        Distributer::distribute(parallelBoundary->__getOrder(), serialBoundary->__getOrder(), false);
+        Distributer<order_type>::distribute(parallelBoundary->__getOrder(), serialBoundary->__getOrder(), false);
         Obj<typename mesh_type::field_type::order_type::baseSequence> patches = serialBoundary->getPatches();
 
         for(typename mesh_type::field_type::order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
           serialBoundary->allocatePatch(*p_iter);
         }
       }
-    };
-    template<typename OverlapType>
-    static void distributeField(Obj<typename mesh_type::field_type> serialField, Obj<typename mesh_type::field_type> parallelField, Obj<OverlapType> partitionOverlap) {
-      int dim = 1;
-      typename mesh_type::patch_type patch;
-
-      parallelField->setPatch(parallelField->getTopology()->leaves(), patch);
-
-      // distributeOrder
-
-      parallelField->orderPatches();
-      if (parallelField->debug) {
-        parallelField->view("New parallel field");
-      }
-      parallelField->createGlobalOrder();
-
-      VecScatter scatter = createMappingStoP(serialField, parallelField, partitionOverlap, true);
-      PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
     };
   };
 }

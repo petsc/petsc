@@ -41,6 +41,9 @@ runex1_pylith:
 debugex1_pylith:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file data/bm1b/bm1b -display ${DISPLAY} -start_in_debugger ${EXTRA_ARGS}
 
+valex1_pylith:
+	-@${MPIRUN} -np ${NP} valgrind --tool=memcheck ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS}
+
 runex1_pylith2:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -interpolate 1 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS}
 

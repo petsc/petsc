@@ -328,7 +328,7 @@ namespace ALE {
           for(typename order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
             const index_type& idx = this->getIndex(patch, *c_iter);
 
-            if (size < idx.prefix) size = idx.prefix + idx.index;
+            if (size < idx.prefix + idx.index) size = idx.prefix + idx.index;
           }
         }
         if (this->_storage.find(patch) != this->_storage.end()) {
@@ -338,6 +338,13 @@ namespace ALE {
         this->_storage[patch] = new value_type[size];
         this->_storageSize[patch] = size;
         memset(this->_storage[patch], 0, size*sizeof(value_type));
+      };
+      void allocatePatches() {
+        Obj<typename order_type::baseSequence> patches = this->getPatches();
+
+        for(typename order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
+          this->allocatePatch(*p_iter);
+        }
       };
       void orderPatch(const patch_type& patch) {
         this->__orderPatch(this->_order, patch, true, trueTester());

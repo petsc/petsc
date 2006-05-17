@@ -117,19 +117,72 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         }
       }          
     } else if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
+      // state 0: No header has been output
+      // state 1: Only POINT_DATA has been output
+      // state 2: Only CELL_DATA has been output
+      // state 3: Output both, POINT_DATA last
+      // state 4: Output both, CELL_DATA last
+      static PetscInt stateId = -1;
+      int outputState;
+      const char *name;
+      PetscTruth hasState;
+      int doOutput;
       PetscInt bs, b;
 
+      if (stateId < 0) {
+        ierr = PetscObjectComposedDataRegister(&stateId);CHKERRQ(ierr);
+      }
+      ierr = PetscObjectComposedDataGetInt((PetscObject) viewer, stateId, outputState, hasState);CHKERRQ(ierr);
+      if (!hasState) {
+        outputState = 0;
+      }
+      ierr = PetscObjectGetName((PetscObject) xin, &name);CHKERRQ(ierr);
       ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
       if ((bs < 1) || (bs > 3)) {
         SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
       }
       if (format == PETSC_VIEWER_ASCII_VTK) {
-        ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", xin->map.N);CHKERRQ(ierr);
+        if (outputState == 0) {
+          outputState = 1;
+          doOutput = 1;
+        } else if (outputState == 1) {
+          doOutput = 0;
+        } else if (outputState == 2) {
+          outputState = 3;
+          doOutput = 1;
+        } else if (outputState == 3) {
+          doOutput = 0;
+        } else if (outputState == 4) {
+          SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
+        }
+        if (doOutput) {
+          ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", xin->map.N);CHKERRQ(ierr);
+        }
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", xin->map.N);CHKERRQ(ierr);
+        if (outputState == 0) {
+          outputState = 2;
+          doOutput = 1;
+        } else if (outputState == 1) {
+          outputState = 4;
+          doOutput = 1;
+        } else if (outputState == 2) {
+          doOutput = 0;
+        } else if (outputState == 3) {
+          SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
+        } else if (outputState == 4) {
+          doOutput = 0;
+        }
+        if (doOutput) {
+          ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", xin->map.N);CHKERRQ(ierr);
+        }
       }
-      ierr = PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %d\n", bs);CHKERRQ(ierr);
+      ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, outputState);CHKERRQ(ierr);
+      if (name) {
+        ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %d\n", name, bs);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %d\n", bs);CHKERRQ(ierr);
+      }
       ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
       for (i=0; i<n/bs; i++) {
         for (b=0; b<bs; b++) {
