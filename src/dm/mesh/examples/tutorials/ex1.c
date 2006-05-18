@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
     ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
-    mesh->getTopology()->view("Serial topology");
+    if (debug) {mesh->getTopology()->view("Serial topology");}
     if (distribute) {
       stage = ALE::LogStageRegister("MeshDistribution");
       ALE::LogStagePush(stage);

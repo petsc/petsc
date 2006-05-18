@@ -295,11 +295,24 @@ namespace ALE {
       // This constructs an order on the patch by fusing the Ord CoSieve (embodied by the prefix number)
       // and the Count CoSieve (embodied by the index), turning the prefix into an offset.
       template<typename OrderTest>
+      void __orderPatch(const Obj<order_type>& order, const patch_type& patch, bool allocate, const OrderTest& tester, const PointArray& points) {
+        int offset = 0;
+
+        // Loop over patch members
+        for(typename PointArray::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+          // Traverse the closure of the member in the topology
+          if (debug) {std::cout << "Ordering patch point " << *p_iter << std::endl;}
+          this->__orderCell(order, patch, *p_iter, offset, tester);
+        }
+        if (allocate) {
+          this->allocatePatch(patch, offset);
+        }
+      };
+      // Filter out newly added points and then number
+      template<typename OrderTest>
       void __orderPatch(const Obj<order_type>& order, const patch_type& patch, bool allocate, const OrderTest& tester) {
         PointArray points;
-        int        offset = 0;
 
-        // Filter out newly added points
         Obj<typename order_type::coneSequence> cone = order->cone(patch);
         int rank = 1;
         for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
@@ -310,15 +323,22 @@ namespace ALE {
 //             std::cout << "Rejected patch point " << *p_iter << " with color " << p_iter.color() << std::endl;
           }
         }
-        // Loop over patch members
-        for(typename PointArray::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
-          // Traverse the closure of the member in the topology
-          if (debug) {std::cout << "Ordering patch point " << *p_iter << std::endl;}
-          this->__orderCell(order, patch, *p_iter, offset, tester);
+        this->__orderPatch(order, patch, allocate, tester, points);
+      };
+      // Number all points
+      template<typename OrderTest>
+      void __reorderPatch(const Obj<order_type>& order, const patch_type& patch, bool allocate, const OrderTest& tester) {
+        PointArray points;
+
+        Obj<typename order_type::coneSequence> cone = order->cone(patch);
+        for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          points.push_back(*p_iter);
         }
-        if (allocate) {
-          this->allocatePatch(patch, offset);
+        int rank = 1;
+        for(typename PointArray::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+          order->modifyColor(*p_iter, patch, changeIndex(rank++, -(order->getColor(*p_iter, patch, false).index)));
         }
+        this->__orderPatch(order, patch, allocate, tester, points);
       };
     public:
       void allocatePatch(const patch_type& patch, int size = -1) {
@@ -382,6 +402,21 @@ namespace ALE {
 //           }
 //         };
         ALE_LOG_EVENT_END;
+      };
+      #undef __FUNCT__
+      #define __FUNCT__ "CoSifter::reorderPatches"
+      template<typename OrderTest>
+      void reorderPatches(const OrderTest& tester) {
+        ALE_LOG_EVENT_BEGIN;
+        Obj<typename order_type::baseSequence> base = this->_order->base();
+
+        for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          this->__reorderPatch(this->_order, *b_iter, true, tester);
+        }
+        ALE_LOG_EVENT_END;
+      };
+      void reorderPatches() {
+        this->reorderPatches(trueTester());
       };
       //Obj<IndexArray> getIndices(const patch_type& patch);
       //Obj<IndexArray> getIndices(const patch_type& patch, const point_type& p);

@@ -274,12 +274,14 @@ namespace ALE {
       typename mesh_type::patch_type patch;
 
       for(typename sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-        Obj<typename sieve_type::coneSet> closure = oldSieve->closure(*e_iter);
-        typename mesh_type::point_type partitionPoint(-1, assignment[elementBundle->getIndex(patch, *e_iter).prefix]);
+        if ((*e_iter).prefix >= 0) {
+          Obj<typename sieve_type::coneSet> closure = oldSieve->closure(*e_iter);
+          typename mesh_type::point_type partitionPoint(-1, assignment[elementBundle->getIndex(patch, *e_iter).prefix]);
 
-        for(typename sieve_type::coneSet::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter) {
-          if (cap->contains(*c_iter)) {
-            oldSifter->addCone(*c_iter, partitionPoint);
+          for(typename sieve_type::coneSet::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter) {
+            if (cap->contains(*c_iter)) {
+              oldSifter->addCone(*c_iter, partitionPoint);
+            }
           }
         }
       }
@@ -474,11 +476,24 @@ namespace ALE {
         Obj<typename mesh_type::field_type> parallelField = parallelMesh->getField(*f_iter);
 
         Distributer<order_type>::distribute(serialField->__getOrder(), parallelField->__getOrder(), false);
+        std::string msg = "Distributed A field ";
+        msg += *f_iter;
+        parallelField->view(msg.c_str());
+        parallelField->reorderPatches();
+        msg = "Distributed B field ";
+        msg += *f_iter;
+        parallelField->view(msg.c_str());
         parallelField->allocatePatches();
+        msg = "Distributed C field ";
+        msg += *f_iter;
+        parallelField->view(msg.c_str());
         parallelField->createGlobalOrder();
 
         VecScatter scatter = Distributer<order_type>::createMappingStoP(serialField, parallelField, partitionOverlap, true);
         PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
+        msg = "Parallel field ";
+        msg += *f_iter;
+        parallelField->view(msg.c_str());
       }
     };
     static void unify(const Obj<mesh_type> parallelMesh, const Obj<mesh_type> serialMesh) {
