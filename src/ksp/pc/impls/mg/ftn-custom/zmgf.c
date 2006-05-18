@@ -11,7 +11,7 @@
 EXTERN_C_BEGIN
 void PETSC_STDCALL pcmgsetlevels_(PC *pc,PetscInt *levels,MPI_Comm *comms, PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLINTEGER(comms);
+  CHKFORTRANNULLOBJECT(comms);
   *ierr = PCMGSetLevels(*pc,*levels,comms);
 }
 
