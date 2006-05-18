@@ -64,7 +64,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
   MPI_Comm       comm;
   Vec            vec;
-  int            rank; 
 
   PetscFunctionBegin;
   ierr = MatGetVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
@@ -112,10 +111,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     */
     ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
     ierr = MatGetSubMatrices(pc->pmat,1,&isl,&isl,reuse,&red->pmats);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    if (rank == 0) {
-      MatView(*red->pmats,PETSC_VIEWER_BINARY_(PETSC_COMM_SELF));
-    }
     ierr = ISDestroy(isl);CHKERRQ(ierr);
 
     /* tell sequential PC its operators */
