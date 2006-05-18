@@ -1283,7 +1283,7 @@ namespace ALE {
         double   *coordinates = NULL;
         int      *splitInd = NULL;
         double   *splitValues = NULL;
-        int       numElements = 0, numVertices = 0, numSplit = 0;
+        int       numElements = 0, numVertices = 0, numSplit = 0, hasSplit;
         PetscErrorCode ierr;
 
         mesh->debug = debug;
@@ -1292,7 +1292,8 @@ namespace ALE {
         readSplit(comm, baseFilename+".split", dim, useZeroBase, numSplit, &splitInd, &splitValues);
         mesh->populate(numElements, vertices, numVertices, coordinates, interpolate);
         createMaterialField(numElements, materials, mesh, mesh->getField("material"));
-        if (numSplit) {
+        ierr = MPI_Allreduce(&numSplit, &hasSplit, 1, MPI_INT, MPI_MAX, comm);
+        if (hasSplit) {
           createSplitField(numSplit, splitInd, splitValues, mesh, mesh->getField("split"));
         }
         ierr = PetscFree2(vertices, materials);

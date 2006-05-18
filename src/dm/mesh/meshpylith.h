@@ -281,19 +281,15 @@ class PyLithViewer {
     }
     for(ALE::Two::Mesh::field_type::order_type::baseSequence::iterator e_itor = splitElements->begin(); e_itor != splitElements->end(); ++e_itor) {
       ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> cone = splitField->getPatch(*e_itor);
+      int e = elementBundle->getIndex(patch, *e_itor).prefix+1;
 
-      ierr = PetscViewerASCIIPrintf(viewer, "%6d", elementBundle->getIndex(patch, *e_itor).prefix+1);CHKERRQ(ierr);
-      for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
-        ierr = PetscViewerASCIIPrintf(viewer, " %6d", vertexBundle->getIndex(patch, *c_itor).prefix+1);CHKERRQ(ierr);
-      }
-      // No time history
-      ierr = PetscViewerASCIIPrintf(viewer, " 0");CHKERRQ(ierr);
       for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
         const double *values = splitField->restrict(*e_itor, *c_itor);
+        int v = vertexBundle->getIndex(patch, *c_itor).prefix+1;
 
-        ierr = PetscViewerASCIIPrintf(viewer, " %15.9g %15.9g %15.9g", values[0], values[1], values[2]);CHKERRQ(ierr);
+        // No time history
+        ierr = PetscViewerASCIIPrintf(viewer, "%6d %6d 0 %15.9g %15.9g %15.9g\n", e, v, values[0], values[1], values[2]);CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
   };
