@@ -254,10 +254,12 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
   xb = x;
    
   for (i=0; i<mbs; i++) {
-    n  = ai[1] - ai[0];  /* length of i_th row of A */    
-    x1 = xb[0];
-    ib = aj + *ai;
+    n    = ai[1] - ai[0];  /* length of i_th row of A */    
+    x1   = *xb++;
+    ib   = aj + *ai++;
     jmin = 0;
+    /* if we ALWAYS required a diagonal entry then could remove this if test */
+    /* should we use a tmp to hold the accumulated z[i] */
     if (*ib == i) {      /* (diag of A)*x */
       z[i] += *v++ * x[*ib++]; 
       jmin++;  
@@ -265,9 +267,8 @@ PetscErrorCode MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
     for (j=jmin; j<n; j++) {
       cval    = *ib; 
       z[cval] += *v * x1;      /* (strict lower triangular part of A)*x  */
-      z[i] += *v++ * x[*ib++]; /* (strict upper triangular part of A)*x  */
+      z[i]    += *v++ * x[*ib++]; /* (strict upper triangular part of A)*x  */
     }
-    xb++; ai++; 
   }
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
