@@ -509,30 +509,23 @@ namespace ALE {
         Obj<typename mesh_type::field_type> serialField   = serialMesh->getField(*f_iter);
         Obj<typename mesh_type::field_type> parallelField = parallelMesh->getField(*f_iter);
 
-        std::string msg = "Serial field ";
-        msg += *f_iter;
-        serialField->view(msg.c_str());
+        if (serialMesh->debug) {
+          std::string msg = "Serial field ";
+          msg += *f_iter;
+          serialField->view(msg.c_str());
+        }
         Distributer<order_type>::distribute(serialField->__getOrder(), parallelField->__getOrder(), false);
-        msg = "Distributed A field ";
-        msg += *f_iter;
-        parallelField->view(msg.c_str());
         parallelField->reorderPatches();
-        msg = "Distributed B field ";
-        msg += *f_iter;
-        parallelField->view(msg.c_str());
         parallelField->allocatePatches();
-        msg = "Distributed C field ";
-        msg += *f_iter;
-        parallelField->view(msg.c_str());
         parallelField->createGlobalOrder();
 
-        serialField->debug = 1;
         VecScatter scatter = Distributer<order_type>::createMappingStoP(serialField, parallelField, partitionOverlap, true);
         PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
-        serialField->debug = 0;
-        msg = "Parallel field ";
-        msg += *f_iter;
-        parallelField->view(msg.c_str());
+        if (parallelMesh->debug) {
+          std::string msg = "Parallel field ";
+          msg += *f_iter;
+          parallelField->view(msg.c_str());
+        }
       }
     };
     static void unify(const Obj<mesh_type> parallelMesh, const Obj<mesh_type> serialMesh) {
