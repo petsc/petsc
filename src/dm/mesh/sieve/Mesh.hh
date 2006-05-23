@@ -1248,25 +1248,26 @@ namespace ALE {
         Obj<std::list<Mesh::point_type> > vertices = std::list<Mesh::point_type>();
         Mesh::field_type::patch_type patch;
         int numElements = elements->size();
+        int dim = 3;
 
         for(int e = 0; e < numSplit; e++) {
-          elem2vertIndex[Mesh::point_type(0, splitInd[e*2+1])].insert(e);
+          elem2vertIndex[Mesh::point_type(0, splitInd[e*2+0])].insert(e);
         }
         for(std::map<Mesh::point_type, std::set<int> >::iterator e_iter = elem2vertIndex.begin(); e_iter != elem2vertIndex.end(); ++e_iter) {
           vertices->clear();
           for(std::set<int>::iterator v_iter = e_iter->second.begin(); v_iter != e_iter->second.end(); ++v_iter) {
-            vertices->push_back(Mesh::point_type(0, numElements+splitInd[*v_iter*2+0]));
+            vertices->push_back(Mesh::point_type(0, numElements+splitInd[*v_iter*2+1]));
           }
           splitField->setPatch(vertices, e_iter->first);
 
           for(std::list<Mesh::point_type>::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-            splitField->setFiberDimension(e_iter->first, *v_iter, 1);
+            splitField->setFiberDimension(e_iter->first, *v_iter, dim);
           }
         }
         splitField->orderPatches();
         for(std::map<Mesh::point_type, std::set<int> >::iterator e_iter = elem2vertIndex.begin(); e_iter != elem2vertIndex.end(); ++e_iter) {
           for(std::set<int>::iterator v_iter = e_iter->second.begin(); v_iter != e_iter->second.end(); ++v_iter) {
-            splitField->update(e_iter->first, Mesh::point_type(0, numElements+splitInd[*v_iter*2+0]), &splitVals[*v_iter]);
+            splitField->update(e_iter->first, Mesh::point_type(0, numElements+splitInd[*v_iter*2+1]), &splitVals[*v_iter*dim]);
           }
         }
       };

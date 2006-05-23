@@ -102,7 +102,7 @@ namespace ALE {
         serialSize += serialSifter->getSize(*p_iter);
         serialOffsets[++k] = serialSize;
       }
-      ierr = VecCreateMPIWithArray(serialSifter->comm(), serialSize, PETSC_DETERMINE, serialSifter->restrict(*serialPatches->begin()), &serialVec);CHKERROR(ierr, "Error in VecCreate");
+      ierr = VecCreateMPIWithArray(serialSifter->comm(), serialSize, PETSC_DETERMINE, serialSifter->restrict(*serialPatches->begin(), false), &serialVec);CHKERROR(ierr, "Error in VecCreate");
       // Use individual serial vectors for each of the parallel domains
       if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "  Creating parallel indices\n");}
       int *parallelOffsets = new int[parallelPatches->size()+1];
@@ -113,7 +113,7 @@ namespace ALE {
         parallelSize += parallelSifter->getSize(*p_iter);
         parallelOffsets[++k] = parallelSize;
       }
-      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, parallelSize, parallelSifter->restrict(*parallelPatches->begin()), &parallelVec);CHKERROR(ierr, "Error in VecCreate");
+      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, parallelSize, parallelSifter->restrict(*parallelPatches->begin(), false), &parallelVec);CHKERROR(ierr, "Error in VecCreate");
 
       int NeighborCountA = 0, NeighborCountB = 0;
       for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
@@ -509,8 +509,11 @@ namespace ALE {
         Obj<typename mesh_type::field_type> serialField   = serialMesh->getField(*f_iter);
         Obj<typename mesh_type::field_type> parallelField = parallelMesh->getField(*f_iter);
 
+        std::string msg = "Serial field ";
+        msg += *f_iter;
+        serialField->view(msg.c_str());
         Distributer<order_type>::distribute(serialField->__getOrder(), parallelField->__getOrder(), false);
-        std::string msg = "Distributed A field ";
+        msg = "Distributed A field ";
         msg += *f_iter;
         parallelField->view(msg.c_str());
         parallelField->reorderPatches();

@@ -468,8 +468,14 @@ namespace ALE {
         return this->_storageSize[patch];
       };
       const int *getGlobalOffsets() {return this->offsets;};
-      const value_type *restrict(const patch_type& patch) {
-        this->__checkPatch(patch);
+      const value_type *restrict(const patch_type& patch, bool fail = true) {
+        if (fail) {
+          this->__checkPatch(patch);
+        } else {
+          if (this->_storage.find(patch) == this->_storage.end()) {
+            return NULL;
+          }
+        }
         return this->_storage[patch];
       };
       const value_type *restrict(const patch_type& patch, const point_type& p) {
