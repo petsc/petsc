@@ -126,6 +126,18 @@ namespace ALE {
           this->_order->addBasePoint(patch);
         }
       };
+      void extendPatch(const point_type& point, const patch_type& patch, const index_type& color) {
+        this->_order->addArrow(point, patch, color);
+      };
+      void extendPatch(const point_type& point, const patch_type& patch) {
+        Obj<typename order_type::traits::coneSequence> cone = this->_order->cone(patch);
+        int c = 1;
+
+        for(typename order_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+          c = c_iter.color().prefix;
+        }
+        this->extendPatch(point, patch, point_type(c+1, 0));
+      };
       Obj<bundle_type> getGlobalOrder() const {
         return this->globalOrder;
       };
@@ -305,7 +317,7 @@ namespace ALE {
           this->__orderCell(order, patch, *p_iter, offset, tester);
         }
         if (allocate) {
-          this->allocatePatch(patch, offset);
+          this->setPatchSize(patch, offset);
         }
       };
       // Filter out newly added points and then number
@@ -341,7 +353,7 @@ namespace ALE {
         this->__orderPatch(order, patch, allocate, tester, points);
       };
     public:
-      void allocatePatch(const patch_type& patch, int size = -1) {
+      void setPatchSize(const patch_type& patch, int size = -1) {
         if (size < 0) {
           Obj<typename order_type::coneSequence> cone = getPatch(patch);
 
@@ -351,19 +363,23 @@ namespace ALE {
             if (size < idx.prefix + idx.index) size = idx.prefix + idx.index;
           }
         }
-        if (this->_storage.find(patch) != this->_storage.end()) {
-          delete [] this->_storage[patch];
-        }
-        if (debug) {std::cout << "Allocated patch " << patch << " of size " << size << std::endl;}
-        this->_storage[patch] = new value_type[size];
         this->_storageSize[patch] = size;
-        memset(this->_storage[patch], 0, size*sizeof(value_type));
       };
       void allocatePatches() {
         Obj<typename order_type::baseSequence> patches = this->getPatches();
+        int size = 0;
 
         for(typename order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
-          this->allocatePatch(*p_iter);
+          size += this->_storageSize[*p_iter];
+        }
+        if (this->_storage.find(*patches->begin()) != this->_storage.end()) {
+          delete [] this->_storage[*patches->begin()];
+        }
+        value_type *data = new value_type[size];
+        memset(data, 0, size*sizeof(value_type));
+        for(typename order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
+          this->_storage[*p_iter] = data;
+          data += this->_storageSize[*p_iter];
         }
       };
       void orderPatch(const patch_type& patch) {
@@ -379,6 +395,7 @@ namespace ALE {
         for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
           this->__orderPatch(this->_order, *b_iter, true, tester);
         }
+        this->allocatePatches();
         ALE_LOG_EVENT_END;
       };
       void orderPatches() {
@@ -413,6 +430,7 @@ namespace ALE {
         for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
           this->__reorderPatch(this->_order, *b_iter, true, tester);
         }
+        this->allocatePatches();
         ALE_LOG_EVENT_END;
       };
       void reorderPatches() {

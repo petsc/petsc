@@ -72,6 +72,7 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "createMappingStoP"
+    // ERROR: This crap only works for a single patch
     template<typename FieldType, typename OverlapType>
     static VecScatter createMappingStoP(Obj<FieldType> serialSifter, Obj<FieldType> parallelSifter, Obj<OverlapType> overlap, bool doExchange = false) {
       VecScatter scatter;
@@ -79,8 +80,7 @@ namespace ALE {
       MPI_Comm comm = serialSifter->comm();
       int      rank = serialSifter->commRank();
       int      debug = serialSifter->debug;
-      typename FieldType::patch_type patch;
-      Vec        serialVec, parallelVec;
+      Vec      serialVec, parallelVec;
       PetscErrorCode ierr;
 
       if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "Creating mapping\n");}
@@ -90,10 +90,30 @@ namespace ALE {
         serialSifter->view("SerialSifter");
         overlap->view("Partition Overlap");
       }
-      ierr = VecCreateMPIWithArray(serialSifter->comm(), serialSifter->getSize(patch), PETSC_DETERMINE, serialSifter->restrict(patch), &serialVec);CHKERROR(ierr, "Error in VecCreate");
+      // We may restrict to the first patch, since they are allocated in order
+      Obj<typename FieldType::order_type::baseSequence> serialPatches = serialSifter->getPatches();
+      Obj<typename FieldType::order_type::baseSequence> parallelPatches = parallelSifter->getPatches();
+      
+      int *serialOffsets = new int[serialPatches->size()+1];
+      int serialSize = 0;
+      int k = 0;
+      serialOffsets[0] = 0;
+      for(typename FieldType::order_type::baseSequence::iterator p_iter = serialPatches->begin(); p_iter != serialPatches->end(); ++p_iter) {
+        serialSize += serialSifter->getSize(*p_iter);
+        serialOffsets[++k] = serialSize;
+      }
+      ierr = VecCreateMPIWithArray(serialSifter->comm(), serialSize, PETSC_DETERMINE, serialSifter->restrict(*serialPatches->begin()), &serialVec);CHKERROR(ierr, "Error in VecCreate");
       // Use individual serial vectors for each of the parallel domains
       if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "  Creating parallel indices\n");}
-      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, parallelSifter->getSize(patch), parallelSifter->restrict(patch), &parallelVec);CHKERROR(ierr, "Error in VecCreate");
+      int *parallelOffsets = new int[parallelPatches->size()+1];
+      int parallelSize = 0;
+      k = 0;
+      parallelOffsets[0] = 0;
+      for(typename FieldType::order_type::baseSequence::iterator p_iter = parallelPatches->begin(); p_iter != parallelPatches->end(); ++p_iter) {
+        parallelSize += parallelSifter->getSize(*p_iter);
+        parallelOffsets[++k] = parallelSize;
+      }
+      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, parallelSize, parallelSifter->restrict(*parallelPatches->begin()), &parallelVec);CHKERROR(ierr, "Error in VecCreate");
 
       int NeighborCountA = 0, NeighborCountB = 0;
       for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
@@ -161,21 +181,25 @@ namespace ALE {
 
         for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
           if ((*p_iter).first == 0) {
-            // Assume the same index sizes
-            int idxSize = serialSifter->getIndex(patch, (*p_iter).second).index;
+            for(typename FieldType::order_type::baseSequence::iterator sp_iter = serialPatches->begin(); sp_iter != serialPatches->end(); ++sp_iter) {
+              // Assume the same index sizes
+              int idxSize = serialSifter->getIndex(*sp_iter, (*p_iter).second).index;
 
-            BuySizesA[nA] += idxSize;
-            SellSizesA[nA] += idxSize;
-            offsetA += idxSize;
-            foundA = 1;
+              BuySizesA[nA] += idxSize;
+              SellSizesA[nA] += idxSize;
+              offsetA += idxSize;
+              foundA = 1;
+            }
           } else {
-            // Assume the same index sizes
-            int idxSize = parallelSifter->getIndex(patch, (*p_iter).second).index;
+            for(typename FieldType::order_type::baseSequence::iterator pp_iter = parallelPatches->begin(); pp_iter != parallelPatches->end(); ++pp_iter) {
+              // Assume the same index sizes
+              int idxSize = parallelSifter->getIndex(*pp_iter, (*p_iter).second).index;
 
-            BuySizesB[nB] += idxSize;
-            SellSizesB[nB] += idxSize;
-            offsetB += idxSize;
-            foundB = 1;
+              BuySizesB[nB] += idxSize;
+              SellSizesB[nB] += idxSize;
+              offsetB += idxSize;
+              foundB = 1;
+            }
           }
         }
         if (foundA) nA++;
@@ -192,28 +216,36 @@ namespace ALE {
           const Point& p = (*p_iter).second;
 
           if ((*p_iter).first == 0) {
-            const typename FieldType::index_type& idx = serialSifter->getIndex(patch, p);
+            int patchNum = 0;
+            for(typename FieldType::order_type::baseSequence::iterator sp_iter = serialPatches->begin(); sp_iter != serialPatches->end(); ++sp_iter) {
+              const typename FieldType::index_type& idx = serialSifter->getIndex(*sp_iter, p);
 
-            if (debug) {
-              ostringstream txt;
+              if (debug) {
+                ostringstream txt;
 
-              txt << "["<<rank<<"]Packing A index " << idx << " for " << *neighbor << std::endl;
-              ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-            }
-            for(int i = idx.prefix; i < idx.prefix+idx.index; ++i) {
-              SellConesA[offsetA++] = i;
+                txt << "["<<rank<<"]Packing A patch " << *sp_iter << " index " << idx << "(" << serialOffsets[patchNum] << ") for " << *neighbor << std::endl;
+                ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+              }
+              for(int i = serialOffsets[patchNum]+idx.prefix; i < serialOffsets[patchNum]+idx.prefix+idx.index; ++i) {
+                SellConesA[offsetA++] = i;
+              }
+              patchNum++;
             }
           } else {
-            const typename FieldType::index_type& idx = parallelSifter->getIndex(patch, p);
+            int patchNum = 0;
+            for(typename FieldType::order_type::baseSequence::iterator pp_iter = parallelPatches->begin(); pp_iter != parallelPatches->end(); ++pp_iter) {
+              const typename FieldType::index_type& idx = parallelSifter->getIndex(*pp_iter, p);
 
-            if (debug) {
-              ostringstream txt;
+              if (debug) {
+                ostringstream txt;
 
-              txt << "["<<rank<<"]Packing B index " << idx << " for " << *neighbor << std::endl;
-              ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-            }
-            for(int i = idx.prefix; i < idx.prefix+idx.index; ++i) {
-              SellConesB[offsetB++] = i;
+                txt << "["<<rank<<"]Packing B patch " << *pp_iter << " index " << idx << "(" << parallelOffsets[patchNum] << ") for " << *neighbor << std::endl;
+                ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+              }
+              for(int i = parallelOffsets[patchNum]+idx.prefix; i < parallelOffsets[patchNum]+idx.prefix+idx.index; ++i) {
+                SellConesB[offsetB++] = i;
+              }
+              patchNum++;
             }
           }
         }
@@ -223,8 +255,8 @@ namespace ALE {
       }
 
       ierr = VecScatterCreateEmpty(comm, &scatter);CHKERROR(ierr, "Error in VecScatterCreate");
-      scatter->from_n = serialSifter->getSize(patch);
-      scatter->to_n = parallelSifter->getSize(patch);
+      scatter->from_n = serialSize;
+      scatter->to_n = parallelSize;
       ierr = VecScatterCreateLocal_PtoS(NeighborCountA, SellSizesA, NeighborsA, SellConesA, NeighborCountB, SellSizesB, NeighborsB, SellConesB, 1, scatter);CHKERROR(ierr, "Error in VecScatterCreate");
 
       if (doExchange) {
@@ -437,7 +469,8 @@ namespace ALE {
       Obj<typename mesh_type::field_type> parallelBoundary = parallelMesh->getBoundary();
       short *assignment = NULL;
       bool useSimple = true;
-      bool hasBd = (serialBoundary->getPatches()->size() > 0);
+      //bool hasBd = (serialBoundary->getPatches()->size() > 0);
+      bool hasBd = false;
 
       parallelTopology->setStratification(false);
 #ifdef PETSC_HAVE_CHACO
@@ -465,6 +498,7 @@ namespace ALE {
 
       if (hasBd) {
         Distributer<order_type>::distribute(serialBoundary->__getOrder(), parallelBoundary->__getOrder(), false);
+        parallelBoundary->reorderPatches();
         parallelBoundary->allocatePatches();
         parallelBoundary->createGlobalOrder();
 
@@ -489,8 +523,10 @@ namespace ALE {
         parallelField->view(msg.c_str());
         parallelField->createGlobalOrder();
 
+        serialField->debug = 1;
         VecScatter scatter = Distributer<order_type>::createMappingStoP(serialField, parallelField, partitionOverlap, true);
         PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
+        serialField->debug = 0;
         msg = "Parallel field ";
         msg += *f_iter;
         parallelField->view(msg.c_str());
@@ -516,11 +552,7 @@ namespace ALE {
       Distributer<sieve_type>::distribute(parallelTopology, serialTopology);
       if (hasBd) {
         Distributer<order_type>::distribute(parallelBoundary->__getOrder(), serialBoundary->__getOrder(), false);
-        Obj<typename mesh_type::field_type::order_type::baseSequence> patches = serialBoundary->getPatches();
-
-        for(typename mesh_type::field_type::order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
-          serialBoundary->allocatePatch(*p_iter);
-        }
+        serialBoundary->allocatePatches();
       }
     };
   };

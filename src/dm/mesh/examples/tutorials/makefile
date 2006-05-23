@@ -21,6 +21,10 @@ ex2: ex2.o   chkopts
 	-${CLINKER} -o ex2 ex2.o  ${PETSC_DM_LIB}
 	${RM} -f ex2.o
 
+ex3: ex3.o   chkopts
+	-${CLINKER} -o ex3 ex3.o  ${PETSC_DM_LIB}
+	${RM} -f ex3.o
+
 ex4: ex4.o   chkopts
 	-${CLINKER} -o ex4 ex4.o  ${PETSC_DM_LIB}
 	${RM} -f ex4.o
@@ -75,10 +79,16 @@ runex2_3:
 	-@${MPIRUN} -np ${NP} ./ex2 -dim 3 ${EXTRA_ARGS}
 
 runex3:
-	-@${MPIRUN} -np 3 ./ex3 -mat_view  > ex3_1.tmp 2>&1;   \
-	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
-	   else echo "Possible problem with ex3_1, diffs above"; fi; \
-	   ${RM} -f ex3_1.tmp
+	-@${MPIRUN} -np ${NP} ./ex3 -dim 2 ${EXTRA_ARGS}
+
+valex3:
+	-@${MPIRUN} -np ${NP} valgrind --tool=memcheck ./ex3 -dim 2 ${EXTRA_ARGS}
+
+valex3_3:
+	-@valgrind --tool=memcheck ./ex3 -dim 3 -refinement_limit 0.05 ${EXTRA_ARGS}
+
+debugex3:
+	-@${MPIRUN} -np ${NP} ./ex3 -dim 2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 runex4:
 	-@${MPIRUN} -np ${NP} ./ex4 -dim 2 ${EXTRA_ARGS}
