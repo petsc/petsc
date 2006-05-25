@@ -132,7 +132,6 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
     static PetscInt stateId = -1;
     int outputState;
     PetscTruth hasState;
-    const char *name;
     int doOutput;
     PetscInt bs, b;
 
