@@ -188,7 +188,7 @@ PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::Mesh> mesh)
   mesh->createSerialCoordinates(2, 0, coords);
   /* Create boundary conditions */
   if (mesh->commRank() == 0) {
-    ALE::Obj<ALE::PointSet> cone = ALE::PointSet();
+    ALE::Obj<ALE::Mesh::sieve_type::pointSet> cone = ALE::Mesh::sieve_type::pointSet();
 
     for(int v = 0; v < 8; v++) {
       cone->insert(ALE::Mesh::point_type(0, v));
