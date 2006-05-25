@@ -109,7 +109,7 @@ class Make(maker.BasicMake):
   def setupConfigure(self, framework):
     import sys
     sys.path.insert(0, os.path.join(os.getcwd(), 'python'))
-    self.configureMod = self.getModule(os.path.join(os.getcwd(), 'python', 'PETSc'), 'petsc')
+    self.configureMod = self.getModule(os.path.join(os.getcwd(), 'python', 'BuildSystem', 'config', 'packages'), 'PETSc')
     maker.BasicMake.setupConfigure(self, framework)
     framework.header = None
     framework.cHeader = None
@@ -120,7 +120,7 @@ class Make(maker.BasicMake):
     framework = maker.BasicMake.configure(self, builder)
     self.arch = framework.require('PETSc.utilities.arch', None)
     self.python = framework.require('config.python', None)
-    self.mpi = framework.require('PETSc.packages.MPI', None)
+    self.mpi = framework.require('config.packages.MPI', None)
     return framework
 
   def setupDirectories(self, builder):
