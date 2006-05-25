@@ -38,9 +38,9 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 #include <stdlib.h>
 #include <string.h>
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer);
-PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Two::Mesh>, Vec *);
-PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Two::Mesh>, const char[], Vec *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
+PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Mesh>, Vec *);
+PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh>, const char[], Vec *);
 
 typedef enum {PCICE, PYLITH} FileType;
 
@@ -90,19 +90,19 @@ int main(int argc, char *argv[])
   ierr = PetscOptionsEnd(); 
   comm = PETSC_COMM_WORLD;
 
-  ALE::Obj<ALE::Two::Mesh> mesh;
+  ALE::Obj<ALE::Mesh> mesh;
 
   try {
     ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
     if (fileType == PCICE) {
-      mesh = ALE::Two::PCICEBuilder::createNew(comm, baseFilename, dim, useZeroBase, debug);
+      mesh = ALE::PCICEBuilder::createNew(comm, baseFilename, dim, useZeroBase, debug);
     } else if (fileType == PYLITH) {
-      mesh = ALE::Two::PyLithBuilder::createNew(comm, baseFilename, interpolate, debug);
+      mesh = ALE::PyLithBuilder::createNew(comm, baseFilename, interpolate, debug);
     }
     ALE::LogStagePop(stage);
-    ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
+    ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
     if (debug) {mesh->getTopology()->view("Serial topology");}
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 /*
   Creates a vector whose value is the processor rank on each element
 */
-PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Two::Mesh> mesh, Vec *partition)
+PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Mesh> mesh, Vec *partition)
 {
   PetscScalar   *array;
   int            rank = mesh->commRank();
@@ -204,14 +204,14 @@ PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Two::Mesh> mesh, Vec *partiti
 /*
   Creates a vector whose value is the field value on each element
 */
-PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Two::Mesh> mesh, const char fieldName[], Vec *fieldVec)
+PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh> mesh, const char fieldName[], Vec *fieldVec)
 {
   if (!mesh->hasField(fieldName)) {
     *fieldVec = PETSC_NULL;
     return(0);
   }
-  ALE::Obj<ALE::Two::Mesh::field_type> field = mesh->getField(fieldName);
-  ALE::Two::Mesh::field_type::patch_type patch;
+  ALE::Obj<ALE::Mesh::field_type> field = mesh->getField(fieldName);
+  ALE::Mesh::field_type::patch_type patch;
   VecScatter     injection;
   Vec            locField;
   PetscErrorCode ierr;

@@ -20,10 +20,10 @@ class VTKViewer {
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteVertices"
-  static PetscErrorCode writeVertices(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer) {
-    ALE::Obj<ALE::Two::Mesh::field_type>   coordinates  = mesh->getCoordinates();
-    ALE::Obj<ALE::Two::Mesh::bundle_type>  vertexBundle = mesh->getBundle(0);
-    ALE::Two::Mesh::field_type::patch_type patch;
+  static PetscErrorCode writeVertices(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer) {
+    ALE::Obj<ALE::Mesh::field_type>   coordinates  = mesh->getCoordinates();
+    ALE::Obj<ALE::Mesh::bundle_type>  vertexBundle = mesh->getBundle(0);
+    ALE::Mesh::field_type::patch_type patch;
     const double  *array = coordinates->restrict(patch);
     int            numVertices;
     PetscErrorCode ierr;
@@ -73,8 +73,8 @@ class VTKViewer {
         }
       }
     } else {
-      ALE::Obj<ALE::Two::Mesh::bundle_type> globalOrder = coordinates->getGlobalOrder();
-      ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> cone = globalOrder->getPatch(patch);
+      ALE::Obj<ALE::Mesh::bundle_type> globalOrder = coordinates->getGlobalOrder();
+      ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> cone = globalOrder->getPatch(patch);
       const int *offsets = coordinates->getGlobalOffsets();
       int        embedDim = coordinates->getFiberDimension(patch, *mesh->getTopology()->depthStratum(0)->begin());
       int        numLocalVertices = (offsets[mesh->commRank()+1] - offsets[mesh->commRank()])/embedDim;
@@ -82,7 +82,7 @@ class VTKViewer {
       int        k = 0;
 
       ierr = PetscMalloc(numLocalVertices*embedDim * sizeof(double), &localCoords);CHKERRQ(ierr);
-      for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+      for(ALE::Mesh::field_type::order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
         int dim = globalOrder->getFiberDimension(patch, *p_iter);
 
         if (dim > 0) {
@@ -105,15 +105,15 @@ class VTKViewer {
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteElements"
-  static PetscErrorCode writeElements(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer)
+  static PetscErrorCode writeElements(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer)
   {
-    ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
-    ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
-    ALE::Obj<ALE::Two::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
-    ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
-    ALE::Obj<ALE::Two::Mesh::bundle_type> globalVertex = vertexBundle->getGlobalOrder();
-    ALE::Obj<ALE::Two::Mesh::bundle_type> globalElement = elementBundle->getGlobalOrder();
-    ALE::Two::Mesh::bundle_type::patch_type patch;
+    ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
+    ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
+    ALE::Obj<ALE::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
+    ALE::Obj<ALE::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
+    ALE::Obj<ALE::Mesh::bundle_type> globalVertex = vertexBundle->getGlobalOrder();
+    ALE::Obj<ALE::Mesh::bundle_type> globalElement = elementBundle->getGlobalOrder();
+    ALE::Mesh::bundle_type::patch_type patch;
     std::string    orderName("element");
     int            corners = topology->nCone(*elements->begin(), topology->depth())->size();
     int            numElements;
@@ -130,11 +130,11 @@ class VTKViewer {
     }
     ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
     if (mesh->commRank() == 0) {
-      for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-        ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
+      for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+        ALE::Obj<ALE::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
         ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
-        for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+        for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
           ierr = PetscViewerASCIIPrintf(viewer, " %d", globalVertex->getIndex(patch, *c_itor).prefix);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
@@ -163,11 +163,11 @@ class VTKViewer {
       int        k = 0;
 
       ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &localVertices);CHKERRQ(ierr);
-      for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-        ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
+      for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+        ALE::Obj<ALE::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
         if (globalElement->getFiberDimension(patch, *e_itor) > 0) {
-          for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+          for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
             localVertices[k++] = globalVertex->getIndex(patch, *c_itor).prefix;
           }
         }
