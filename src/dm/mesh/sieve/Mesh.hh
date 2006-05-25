@@ -21,7 +21,6 @@
 #include <petscvec.h>
 
 namespace ALE {
-  namespace Two {
     // Forward declaration
     class Partitioner;
 
@@ -29,7 +28,7 @@ namespace ALE {
     public:
       typedef ALE::Point point_type;
       typedef std::vector<point_type> PointArray;
-      typedef ALE::Three::Sieve<point_type,int,int> sieve_type;
+      typedef ALE::Sieve<point_type,int,int> sieve_type;
       typedef point_type patch_type;
       typedef CoSifter<sieve_type, patch_type, point_type, int> bundle_type;
       typedef CoSifter<sieve_type, patch_type, point_type, double> field_type;
@@ -729,7 +728,7 @@ namespace ALE {
             Obj<Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *f_itor);
             int                                              v = 0;
 
-            for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+            for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
               in.trianglelist[f * in.numberofcorners + v++] = vertexBundle->getIndex(patch, *c_itor).prefix;
             }
             f++;
@@ -1381,8 +1380,8 @@ namespace ALE {
       PCICEBuilder() {};
       virtual ~PCICEBuilder() {};
 
-      static Obj<ALE::Two::Mesh> createNew(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, int debug = 0) {
-        Obj<ALE::Two::Mesh> mesh = ALE::Two::Mesh(comm, dim, debug);
+      static Obj<ALE::Mesh> createNew(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, int debug = 0) {
+        Obj<ALE::Mesh> mesh = ALE::Mesh(comm, dim, debug);
         int      *vertices;
         double   *coordinates;
         int       numElements = 0, numVertices = 0;
@@ -1393,8 +1392,8 @@ namespace ALE {
         return mesh;
       };
 
-      static Obj<ALE::Two::Mesh> createNewBd(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, int debug = 0) {
-        Obj<ALE::Two::Mesh> mesh = ALE::Two::Mesh(comm, dim, debug);
+      static Obj<ALE::Mesh> createNewBd(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, int debug = 0) {
+        Obj<ALE::Mesh> mesh = ALE::Mesh(comm, dim, debug);
         int      *vertices = NULL;
         double   *coordinates = NULL;
         int       numElements = 0, numVertices = 0;
@@ -1609,9 +1608,9 @@ namespace ALE {
         serialConstraints->setFiberDimensionByHeight(patch, 0, 1);
         serialConstraints->orderPatches();
 
-        Obj<ALE::Two::Partitioner::coneDelta_type::bioverlap_type> partitionOverlap = ALE::Two::Partitioner::coneDelta_type::overlap(serialMesh->getTopology(), parallelMesh->getTopology());
-        Obj<Flip<ALE::Two::Partitioner::coneDelta_type::bioverlap_type> > overlapFlip = Flip<ALE::Two::Partitioner::coneDelta_type::bioverlap_type>(partitionOverlap);
-        VecScatter scatter = ALE::Two::Partitioner::createMappingStoP(serialConstraints, parallelConstraints, overlapFlip, false);
+        Obj<ALE::Partitioner::coneDelta_type::bioverlap_type> partitionOverlap = ALE::Partitioner::coneDelta_type::overlap(serialMesh->getTopology(), parallelMesh->getTopology());
+        Obj<Flip<ALE::Partitioner::coneDelta_type::bioverlap_type> > overlapFlip = Flip<ALE::Partitioner::coneDelta_type::bioverlap_type>(partitionOverlap);
+        VecScatter scatter = ALE::Partitioner::createMappingStoP(serialConstraints, parallelConstraints, overlapFlip, false);
         Vec        serialVec, parallelVec;
 
         ierr = VecCreateMPIWithArray(serialMesh->comm(), serialConstraints->getSize(patch), PETSC_DETERMINE, serialConstraints->restrict(patch), &serialVec);CHKERROR(ierr, "Error in VecCreate");
@@ -1646,7 +1645,7 @@ namespace ALE {
       }
       this->coordinates->createGlobalOrder();
 
-      VecScatter scatter = ALE::Two::Partitioner::createMappingStoP(serialCoordinates, this->coordinates, partitionOverlap, true);
+      VecScatter scatter = ALE::Partitioner::createMappingStoP(serialCoordinates, this->coordinates, partitionOverlap, true);
       PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
 
       Obj<bundle_type> vertexBundle = this->getBundle(0);
@@ -1709,7 +1708,7 @@ namespace ALE {
       serialMesh->coordinates->orderPatches();
 
       Obj<Partitioner::supportDelta_type::bioverlap_type> partitionOverlap = Partitioner::supportDelta_type::overlap(serialMesh->topology, this->topology);
-      VecScatter scatter = ALE::Two::Partitioner::createMappingStoP(serialMesh->coordinates, this->coordinates, partitionOverlap, false);
+      VecScatter scatter = ALE::Partitioner::createMappingStoP(serialMesh->coordinates, this->coordinates, partitionOverlap, false);
       Vec        serialVec, parallelVec;
 
       ierr = VecCreateMPIWithArray(serialMesh->comm(), serialMesh->coordinates->getSize(patch), PETSC_DETERMINE, serialMesh->coordinates->restrict(patch), &serialVec);CHKERROR(ierr, "Error in VecCreate");
@@ -1748,7 +1747,6 @@ namespace ALE {
       ALE_LOG_EVENT_END;
       return serialMesh;
     }
-  } // namespace Two
 } // namespace ALE
 
 #endif

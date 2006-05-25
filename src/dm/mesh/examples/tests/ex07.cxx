@@ -13,7 +13,7 @@ static char help[] = "Constructs and views test Predicate-enabled ArrowContainer
 
 PetscErrorCode testWindowedArrowContainer();
 
-typedef ALE::Experimental::SifterDef::ArrowContainer<ALE::Experimental::UnicolorArrowSet> WindowedArrowContainer;
+typedef ALE::X::SifterDef::ArrowContainer<ALE::X::UnicolorArrowSet> WindowedArrowContainer;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

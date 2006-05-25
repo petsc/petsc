@@ -626,7 +626,7 @@ namespace ALE {
     };// class FilterContainer
   }// namespace FilterDef
 
-  namespace Experimental {
+  namespace X {
     using namespace ALE::FilterDef;
     namespace SifterDef { // namespace SifterDef
       // 
@@ -960,7 +960,7 @@ namespace ALE {
                >,
                ALE_ALLOCATOR<MyArrowRec>
     > UniColorArrowSet;
-  }; // namespace Experimental
+  }; // namespace X
 }; // namespace ALE
 
 #endif

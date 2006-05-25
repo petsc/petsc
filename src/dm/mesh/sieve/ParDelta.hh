@@ -149,9 +149,9 @@ namespace ALE {
       typedef ParSifter_                                                                        graph_type;
       typedef Fuser_                                                                            fuser_type;
       // These are default "return" types, although methods are templated on their main input/return types
-      typedef ASifter<int, ALE::Point, ALE::pair<ALE::Point, ALE::pair<int,int> >, uniColor>    overlap_type;
-      typedef ASifter<int, ALE::pair<int,ALE::Point>, ALE::pair<ALE::Point, ALE::pair<int,int> >, uniColor>    bioverlap_type;
-      typedef FusionSifter_                                                                     fusion_type;
+      typedef ASifter<int, ALE::Point, ALE::pair<ALE::Point, ALE::pair<int,int> >, SifterDef::uniColor>                 overlap_type;
+      typedef ASifter<int, ALE::pair<int,ALE::Point>, ALE::pair<ALE::Point, ALE::pair<int,int> >, SifterDef::uniColor>  bioverlap_type;
+      typedef FusionSifter_                                                                                             fusion_type;
 
       //
       static Obj<overlap_type> 
@@ -1849,7 +1849,7 @@ namespace ALE {
           for(typename Overlap_::traits::supportSequence::iterator si = supp.begin(); si != supp.end(); si++)
           {
             Point p = *si;
-            //int32_t coneSizeIn = si.color().prefix; // FIX: color() type Point --> ALE::Two::pair
+            //int32_t coneSizeIn = si.color().prefix; // FIX: color() type Point --> ALE::pair
             int32_t coneSizeIn = si.color().second.first;
             // NOTE: coneSizeIn may be 0, which is legal, since the fuser in principle can operate on an empty cone.
             // Extract the local cone into a coneSequence
@@ -2317,9 +2317,9 @@ namespace ALE {
       typedef ParSupportDelta<ParSifter_, Fuser_, FusionSifter_>                                delta_type;
       typedef ParSifter_                                                                        graph_type;
       typedef Fuser_                                                                            fuser_type;
-      typedef ASifter<ALE::Point, int, ALE::pair<ALE::Point, ALE::pair<int,int> >, uniColor>    overlap_type;
-      typedef ASifter<ALE::pair<int,ALE::Point>, int, ALE::pair<ALE::Point, ALE::pair<int,int> >, uniColor>    bioverlap_type;
-      typedef FusionSifter_                                                                     fusion_type;
+      typedef ASifter<ALE::Point, int, ALE::pair<ALE::Point, ALE::pair<int,int> >, SifterDef::uniColor>                overlap_type;
+      typedef ASifter<ALE::pair<int,ALE::Point>, int, ALE::pair<ALE::Point, ALE::pair<int,int> >, SifterDef::uniColor> bioverlap_type;
+      typedef FusionSifter_                                                                                            fusion_type;
       //
 
       //

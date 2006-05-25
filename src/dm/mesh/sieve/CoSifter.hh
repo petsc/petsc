@@ -31,7 +31,6 @@
 // I can do the completion when I come back if you get the serial Sifter/Sieve stuff going.
 //
 namespace ALE {
-  namespace Two {
     template <typename Sieve_, typename Patch_, typename Index_, typename Value_>
     class CoSifter {
     public:
@@ -43,7 +42,7 @@ namespace ALE {
       typedef Index_ index_type;
       typedef std::vector<index_type> IndexArray;
       typedef Value_ value_type;
-      typedef Sifter<point_type,patch_type,index_type, RecContainer<point_type,Rec<point_type> >,RecContainer<patch_type,Rec<patch_type> > > order_type;
+      typedef Sifter<point_type,patch_type,index_type, SifterDef::RecContainer<point_type, SifterDef::Rec<point_type> >, SifterDef::RecContainer<patch_type, SifterDef::Rec<patch_type> > > order_type;
 
       typedef RightSequenceDuplicator<ConeArraySequence<typename sieve_type::traits::arrow_type> > fuser;
       typedef ParConeDelta<sieve_type, fuser,
@@ -801,7 +800,6 @@ namespace ALE {
         }
       }
     };
-  } // namespace Two
 } // namespace ALE
 
 #endif

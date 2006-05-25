@@ -21,7 +21,7 @@
 
 namespace ALE {
 
-  namespace Three {
+  namespace SieveDef {
     //
     // Rec & RecContainer definitions.
     // Rec is intended to denote a graph point record.
@@ -101,7 +101,7 @@ namespace ALE {
 
      class PointSequence {
      public:
-       typedef ALE::SifterContainers::IndexSequenceTraits<typename ::boost::multi_index::index<set_type, pointTag>::type,
+       typedef ALE::SifterDef::IndexSequenceTraits<typename ::boost::multi_index::index<set_type, pointTag>::type,
                                     BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type,point)>
        traits;
       protected:
@@ -146,7 +146,7 @@ namespace ALE {
      class ValueSequence {
      public:
        typedef Value_ value_type;
-       typedef ALE::SifterContainers::IndexSequenceTraits<typename ::boost::multi_index::index<set_type, Tag_>::type,
+       typedef ALE::SifterDef::IndexSequenceTraits<typename ::boost::multi_index::index<set_type, Tag_>::type,
                                    BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type,point)>
        traits;
      protected:
@@ -183,7 +183,7 @@ namespace ALE {
      class TwoValueSequence {
      public:
        typedef Value_ value_type;
-       typedef ALE::SifterContainers::IndexSequenceTraits<typename ::boost::multi_index::index<set_type, Tag_>::type,
+       typedef ALE::SifterDef::IndexSequenceTraits<typename ::boost::multi_index::index<set_type, Tag_>::type,
                                    BOOST_MULTI_INDEX_MEMBER(rec_type, typename rec_type::point_type,point)>
        traits;
      protected:
@@ -286,6 +286,7 @@ namespace ALE {
         }
       }; // adjustDegree()
     }; // struct RecContainer
+  };// namespace SieveDef
 
     //
     // Sieve:
@@ -296,13 +297,13 @@ namespace ALE {
     // by color.
     //
     template <typename Point_, typename Marker_, typename Color_>
-    class Sieve : public ALE::Sifter<Point_, Point_, Color_, RecContainer<Point_, Rec<Point_, Marker_> >, RecContainer<Point_, Rec<Point_, Marker_> > > {
+    class Sieve : public ALE::Sifter<Point_, Point_, Color_, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> > > {
     public:
       typedef Color_  color_type;
       typedef Point_  point_type;
       typedef Marker_ marker_type;
       typedef struct {
-        typedef ALE::Sifter<Point_, Point_, Color_, RecContainer<Point_, Rec<Point_, Marker_> >, RecContainer<Point_, Rec<Point_, Marker_> > > baseType;
+        typedef ALE::Sifter<Point_, Point_, Color_, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> > > baseType;
         // Encapsulated container types
         typedef typename baseType::traits::arrow_container_type arrow_container_type;
         typedef typename baseType::traits::cap_container_type   cap_container_type;
@@ -342,7 +343,7 @@ namespace ALE {
       typedef pointArray              coneArray;
       typedef pointArray              supportArray;
     public:
-      Sieve(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : ALE::Sifter<Point_, Point_, Color_, RecContainer<Point_, Rec<Point_, Marker_> >, RecContainer<Point_, Rec<Point_, Marker_> > >(comm, debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {
+      Sieve(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : ALE::Sifter<Point_, Point_, Color_, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> > >(comm, debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {
         this->_markers = markerSet();
       };
       virtual ~Sieve() {};
@@ -1435,7 +1436,6 @@ namespace ALE {
     //
     // Structural manipulation
     //
-  } // namespace Three
   
 } // namespace ALE
 
