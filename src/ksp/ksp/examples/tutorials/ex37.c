@@ -72,6 +72,7 @@ extern PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Two::Mesh>);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
 extern PetscErrorCode CreateDielectricField(ALE::Obj<ALE::Two::Mesh>, ALE::Obj<ALE::Two::Mesh::field_type>);
+extern PetscErrorCode CreateEnergyDensity(ALE::Obj<ALE::Two::Mesh>, ALE::Obj<ALE::Two::Mesh::field_type>, ALE::Obj<ALE::Two::Mesh::field_type>, Vec *);
 double refineLimit(const double [], void *);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
@@ -82,6 +83,10 @@ typedef struct {
   VecScatter  injection;
   PetscReal   refinementLimit;
   PetscReal   refinementExp;
+
+  PetscInt    numCharges;
+  PetscReal  *charge;
+  PetscReal  *chargeLocation;
 } UserContext;
 
 PetscInt debug;
@@ -96,23 +101,26 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   PetscReal      norm;
   PetscInt       dim, l, meshDebug;
+  PetscTruth     viewEnergy;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "Options for the inhomogeneous Poisson equation", "DMMG");CHKERRQ(ierr);
     debug = 0;
-    ierr = PetscOptionsInt("-debug", "The debugging flag", "ex33.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging flag", "ex37.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
     meshDebug = 0;
-    ierr = PetscOptionsInt("-mesh_debug", "The mesh debugging flag", "ex33.c", 0, &meshDebug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mesh_debug", "The mesh debugging flag", "ex37.c", 0, &meshDebug, PETSC_NULL);CHKERRQ(ierr);
     dim  = 2;
-    ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex33.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex37.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
     user.refinementLimit = 0.0;
-    ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex33.c", 1.0, &user.refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex37.c", 1.0, &user.refinementLimit, PETSC_NULL);CHKERRQ(ierr);
     user.refinementExp = 0.0;
-    ierr = PetscOptionsReal("-refinement_exp", "The exponent of the radius for refinement", "ex33.c", 1.0, &user.refinementExp, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-refinement_exp", "The exponent of the radius for refinement", "ex37.c", 1.0, &user.refinementExp, PETSC_NULL);CHKERRQ(ierr);
     user.voltage = 1.0;
-    ierr = PetscOptionsScalar("-voltage", "The voltage of the clamp", "ex33.c", 1.0, &user.voltage, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsScalar("-voltage", "The voltage of the clamp", "ex37.c", 1.0, &user.voltage, PETSC_NULL);CHKERRQ(ierr);
+    viewEnergy = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-view_energy", "View the energy density as a field", "ex37.c", PETSC_FALSE, &viewEnergy, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ALE::Obj<ALE::Two::Mesh> meshBoundary = ALE::Two::Mesh(comm, dim-1, meshDebug);
@@ -175,6 +183,12 @@ int main(int argc,char **argv)
     if (debug) {boundary->view("Mesh Boundary");}
     ALE::LogStagePop(stage);
 
+    user->numCharges = 1;
+    ierr = PetscMalloc2(user->numCharges,PetscReal,user->charge,user->numCharges*2,PetscReal,user->chargeLocation);CHKERRQ(ierr);
+    user->charge[0] = 1.0;
+    user->chargeLocation[0] = 0.0;
+    user->chargeLocation[1] = 0.0;
+
     ALE::Obj<ALE::Two::Mesh::field_type> u = mesh->getField("u");
     ALE::Obj<ALE::Two::Mesh::field_type> b = mesh->getField("b");
     u->setPatch(topology->leaves(), ALE::Two::Mesh::field_type::patch_type());
@@ -207,7 +221,7 @@ int main(int argc,char **argv)
     b->orderPatches(orderName);
     CheckElementGeometry(mesh);
 
-    ierr = CreateDielectricField(mesh, mesh->getField("epsilon"));
+    ierr = CreateDielectricField(mesh, mesh->getField("epsilon"));CHKERRQ(ierr);
     user.epsilon = mesh->getField("epsilon");
 
     Mesh petscMesh;
@@ -248,10 +262,26 @@ int main(int argc,char **argv)
     ierr = PetscViewerFileSetName(viewer, "channel.vtk");CHKERRQ(ierr);
     ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
     //ierr = VecView(DMMGGetRHS(dmmg), viewer);CHKERRQ(ierr);
-    ierr = VecView(DMMGGetx(dmmg), viewer);CHKERRQ(ierr);
+    if (viewEnergy) {
+      ALE::Obj<ALE::Two::Mesh::field_type> u = mesh->getField("u");
+      Vec energy, locU;
+
+      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, u->getSize(patch), u->restrict(patch), &locU);CHKERRQ(ierr);
+      ierr = VecScatterBegin(DMMGGetx(dmmg), locU, INSERT_VALUES, SCATTER_REVERSE, user.injection);CHKERRQ(ierr);
+      ierr = VecScatterEnd(DMMGGetx(dmmg), locU, INSERT_VALUES, SCATTER_REVERSE, user.injection);CHKERRQ(ierr);
+      ierr = VecDestroy(locU);CHKERRQ(ierr);
+
+      ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
+      ierr = CreateEnergyDensity(mesh, u, mesh->getField("epsilon"), &energy);CHKERRQ(ierr);
+      ierr = VecView(energy, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    } else {
+      ierr = VecView(DMMGGetx(dmmg), viewer);CHKERRQ(ierr);
+    }
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
 
+    ierr = PetscFree2(user->charge,user->chargeLocation);CHKERRQ(ierr);
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
@@ -699,6 +729,48 @@ PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Two::Mesh> mesh)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ComputeChargeDensity"
+PetscErrorCode ComputeChargeDensity(ALE::Obj<ALE::Two::Mesh> mesh, double jac, double v0, double detJ, double basis, ALE::Obj<ALE::Two::Mesh::field_type> field, UserContext *user)
+{
+  PetscReal elementVec[NUM_BASIS_FUNCTIONS];
+
+  for(int q = 0; q < user->numCharges; q++) {
+    double x = user->chargeLocation[q*2+0];
+    double y = user->chargeLocation[q*2+1];
+
+    for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
+
+      if () {
+        double     minDist = 1.0e30;
+        int        minP    = -1;
+        PetscReal *v0, *Jac, detJ;
+
+        ierr = ElementGeometry(mesh, *e_itor, v0, Jac, PETSC_NULL, &detJ);CHKERRQ(ierr);
+        for(int p = 0; p < NUM_QUADRATURE_POINTS; p++) {
+          double x, y, xi, eta, x_p, y_p, dist;
+
+          xi = points[p*2+0] + 1.0;
+          eta = points[p*2+1] + 1.0;
+          x_p = jac[0]*xi + jac[1]*eta + v0[0];
+          y_p = jac[2]*xi + jac[3]*eta + v0[1];
+          dist = (x - x_p)*(x - x_p) + (y - y_p)*(y - y_p);
+          if (dist < minDist) {
+            minDist = dist;
+            minP    = p;
+          }
+        }
+        for(int f = 0; f < NUM_BASIS_FUNCTIONS; f++) {
+          elementVec[f] += basis[minP*NUM_BASIS_FUNCTIONS+f]*user->charge[q]*detJ;
+        }
+        /* Assembly */
+        field->updateAdd("element", *e_itor, elementVec);
+        break;
+      }
+    }
+  }
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
 PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 {
@@ -736,11 +808,12 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
         elementVec[f] += Basis[q*NUM_BASIS_FUNCTIONS+f]*funcValue*weights[q]*detJ;
       }
     }
-    if (debug) {PetscSynchronizedPrintf(comm, "elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);}
+    if (debug) {PetscSynchronizedPrintf(comm, "elementVec = [%g %g %g]\n", elementVec[0], elementVec[1], elementVec[2]);CHKERRQ(ierr);}
     /* Assembly */
     field->updateAdd("element", *e_itor, elementVec);
     if (debug) {ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);}
   }
+  ierr = ComputeChargeDensity(points, v0, Jac, detJ, Basis, elementVec, user);CHKERRQ(ierr);
   ierr = PetscFree(v0);CHKERRQ(ierr);
   ierr = PetscFree(Jac);CHKERRQ(ierr);
 
@@ -1095,6 +1168,86 @@ PetscErrorCode CreateDielectricField(ALE::Obj<ALE::Two::Mesh> mesh, ALE::Obj<ALE
     ierr = ComputeDielectric(centroidX, centroidY, &eps);CHKERRQ(ierr);
     epsilon->update(patch, *e_itor, &eps);
   }
+  ALE_LOG_EVENT_END;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateEnergyDensity"
+/*
+  Creates a vector whose value is the energy on each element
+*/
+PetscErrorCode CreateEnergyDensity(ALE::Obj<ALE::Two::Mesh> mesh, ALE::Obj<ALE::Two::Mesh::field_type> field, ALE::Obj<ALE::Two::Mesh::field_type> epsilon, Vec *energy)
+{
+  ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
+  ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
+  ALE::Obj<ALE::Two::Mesh::field_type> coordinates = mesh->getCoordinates();
+  ALE::Obj<ALE::Two::Mesh::field_type> e2 = mesh->getField("energy");
+  ALE::Two::Mesh::field_type::patch_type patch;
+  std::string orderName("element");
+  PetscInt       dim = mesh->getDimension();
+  PetscReal      elementMat[NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS];
+  PetscReal     *v0, *Jac, *Jinv, *t_der, *b_der;
+  PetscReal      xi, eta, x_q, y_q, detJ;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ALE_LOG_EVENT_BEGIN;
+  e2->setPatch(mesh->getTopology()->leaves(), patch);
+  e2->setFiberDimensionByHeight(patch, 0, 1);
+  e2->orderPatches();
+  e2->createGlobalOrder();
+
+  ierr = PetscMalloc(dim * sizeof(PetscReal), &v0);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim * sizeof(PetscReal), &t_der);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim * sizeof(PetscReal), &b_der);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jinv);CHKERRQ(ierr);
+  for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+    const double *phi = field->restrict(orderName, *e_itor);
+    double eps = epsilon->restrict(patch, *e_itor)[0];
+    double elementEnergy = 0.0;
+
+    ierr = ElementGeometry(mesh, *e_itor, v0, Jac, Jinv, &detJ);CHKERRQ(ierr);
+    /* Element integral */
+    ierr = PetscMemzero(elementMat, NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS*sizeof(PetscScalar));CHKERRQ(ierr);
+    for(int q = 0; q < NUM_QUADRATURE_POINTS; q++) {
+      xi = points[q*2+0] + 1.0;
+      eta = points[q*2+1] + 1.0;
+      x_q = Jac[0]*xi + Jac[1]*eta + v0[0];
+      y_q = Jac[2]*xi + Jac[3]*eta + v0[1];
+      for(int f = 0; f < NUM_BASIS_FUNCTIONS; f++) {
+        t_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+1];
+        t_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+f)*2+1];
+        for(int g = 0; g < NUM_BASIS_FUNCTIONS; g++) {
+          b_der[0] = Jinv[0]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[2]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
+          b_der[1] = Jinv[1]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+0] + Jinv[3]*BasisDerivatives[(q*NUM_BASIS_FUNCTIONS+g)*2+1];
+          elementMat[f*NUM_BASIS_FUNCTIONS+g] += eps*(t_der[0]*b_der[0] + t_der[1]*b_der[1])*weights[q]*detJ;
+        }
+      }
+    }
+    for(int f = 0; f < NUM_BASIS_FUNCTIONS; f++) {
+      for(int g = 0; g < NUM_BASIS_FUNCTIONS; g++) {
+        elementEnergy += phi[f]*elementMat[f*NUM_BASIS_FUNCTIONS+g]*phi[g];
+      }
+    }
+    e2->update(patch, *e_itor, &elementEnergy);
+  }
+  ierr = PetscFree(v0);CHKERRQ(ierr);
+  ierr = PetscFree(t_der);CHKERRQ(ierr);
+  ierr = PetscFree(b_der);CHKERRQ(ierr);
+  ierr = PetscFree(Jac);CHKERRQ(ierr);
+  ierr = PetscFree(Jinv);CHKERRQ(ierr);
+
+  VecScatter injection;
+  ierr = MeshCreateVector(mesh, mesh->getBundle(mesh->getDimension()), energy);CHKERRQ(ierr);
+  ierr = MeshGetGlobalScatter(mesh, "energy", *energy, &injection); CHKERRQ(ierr);
+
+  Vec locEnergy;
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, e2->getSize(patch), e2->restrict(patch), &locEnergy);CHKERRQ(ierr);
+  ierr = VecScatterBegin(locEnergy, *energy, INSERT_VALUES, SCATTER_FORWARD, injection);CHKERRQ(ierr);
+  ierr = VecScatterEnd(locEnergy, *energy, INSERT_VALUES, SCATTER_FORWARD, injection);CHKERRQ(ierr);
+  ierr = VecDestroy(locEnergy);CHKERRQ(ierr);
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
 }
