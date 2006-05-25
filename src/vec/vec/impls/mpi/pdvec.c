@@ -124,7 +124,6 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       // state 4: Output both, CELL_DATA last
       static PetscInt stateId = -1;
       int outputState;
-      const char *name;
       PetscTruth hasState;
       int doOutput;
       PetscInt bs, b;

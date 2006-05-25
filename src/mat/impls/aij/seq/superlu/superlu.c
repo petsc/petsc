@@ -609,10 +609,13 @@ EXTERN_C_END
 
   Options Database Keys:
 + -mat_type superlu - sets the matrix type to "superlu" during a call to MatSetFromOptions()
-- -mat_superlu_ordering <0,1,2,3> - 0: natural ordering, 
+. -mat_superlu_ordering <0,1,2,3> - 0: natural ordering, 
                                     1: MMD applied to A'*A, 
                                     2: MMD applied to A'+A, 
                                     3: COLAMD, approximate minimum degree column ordering
+. -mat_superlu_iterrefine - have SuperLU do iterative refinement after the triangular solve
+                          choices: NOREFINE, SINGLE, DOUBLE, EXTRA; default is NOREFINE
+- -mat_superlu_printstat - print SuperLU statistics about the factorization
 
    Level: beginner
 
