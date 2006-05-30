@@ -87,6 +87,19 @@ shared_darwin7:
         if [ "${MACOSX_DEPLOYMENT_TARGET}" = "" ]; then MACOSX_DEPLOYMENT_TARGET=10.3; export MACOSX_DEPLOYMENT_TARGET; fi;\
         ${CC}  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR}  ${OTHERSHAREDLIBS} ${SL_LINKER_LIBS} $$OTHERLIBS
 
+shared_cygwin:
+	-@cd ${SHARED_LIBRARY_TMPDIR}; \
+       if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) $(PETSC_SYS_LIB_BASIC)"  ; fi;\
+       if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PLAPACK_LIB} -L$(PETSC_LIB_DIR) ${PETSC_VEC_LIB_BASIC}"  ; fi;\
+       if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_MAT_LIB_BASIC}"  ; fi;\
+       if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_DM_LIB_BASIC}"  ; fi;\
+       if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_KSP_LIB_BASIC}"  ; fi;\
+       if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_SNES_LIB_BASIC}"  ; fi;\
+       if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_TS_LIB_BASIC}"  ; fi;\
+       if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_TS_LIB_BASIC}"  ; fi;\
+       if [ "${LIBNAME}" = "libslepc" ]; then OTHERLIBS="-L$(PETSC_LIB_DIR) ${PETSC_KSP_LIB_BASIC}"  ; fi;\
+       ${CLINKER} -shared -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o $$OTHERLIBS ${PETSC_EXTERNAL_LIB_BASIC} ${OTHERSHAREDLIBS}
+
 # This is the main target for building shared libraries. It takes the following actions
 #   a) Create 'tmp-petsc-shlib' in the library directory
 #   b) Loops over the shared libraries in $SHLIBS
