@@ -367,6 +367,7 @@ getmpirun:
           grep -v Anachronism | \
           grep -v "/opt/ibmcmp/xlsmp/1.3/lib" | \
           grep -v "/opt/ibmcmp/xlsmp/1.3/../.." | \
+          grep -v "IPO Error: unresolved" | \
           grep -v "may result in errors or" | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
@@ -400,6 +401,7 @@ getmpirun:
           grep -v "warning prebinding disabled"  |\
           grep -v "ex20f.F:34: warning:" | \
 	  grep -v "Unused dummy argument" | \
+          grep -v "IPO Error: unresolved" | \
           grep -v "warning multiple definitions of symbol _matgetarray_" | \
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
