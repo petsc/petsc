@@ -168,11 +168,10 @@ PetscErrorCode FieldView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, const std::string
         SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
       }
       if (doOutput) {
-        ALE::Obj<ALE::Mesh::field_type> field = mesh->getField(name);
-        int                             N     = 0;
-
+        ALE::Obj<ALE::Mesh::field_type>   field = mesh->getField(name);
+        ALE::Mesh::field_type::patch_type patch = *field->getPatches()->begin();
         ALE::Obj<ALE::Mesh::sieve_type::traits::depthSequence> vertices = mesh->getTopology()->depthStratum(0);
-        ALE::Mesh::field_type::patch_type                      patch    = *field->getPatches()->begin();
+        int                               N     = 0;
 
         for(ALE::Mesh::sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
           int dim = field->getFiberDimension(patch, *v_iter);
@@ -189,6 +188,7 @@ PetscErrorCode FieldView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, const std::string
         }
         ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", N);CHKERRQ(ierr);
       }
+      VTKViewer::writeField(mesh, mesh->getField(name), name, fiberDim, mesh->getBundle(0)->getGlobalOrder(), viewer);
     } else {
       if (outputState == 0) {
         outputState = 2;
@@ -204,11 +204,10 @@ PetscErrorCode FieldView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, const std::string
         doOutput = 0;
       }
       if (doOutput) {
-        ALE::Obj<ALE::Mesh::field_type> field = mesh->getField(name);
-        int                             N     = 0;
-
+        ALE::Obj<ALE::Mesh::field_type>   field = mesh->getField(name);
+        ALE::Mesh::field_type::patch_type patch = *field->getPatches()->begin();
         ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> cells = mesh->getTopology()->heightStratum(0);
-        ALE::Mesh::field_type::patch_type                       patch = *field->getPatches()->begin();
+        int                               N     = 0;
 
         for(ALE::Mesh::sieve_type::traits::heightSequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
           int dim = field->getFiberDimension(patch, *c_iter);
@@ -225,8 +224,8 @@ PetscErrorCode FieldView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, const std::string
         }
         ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", N);CHKERRQ(ierr);
       }
+      VTKViewer::writeField(mesh, mesh->getField(name), name, fiberDim, mesh->getBundle(mesh->getTopology()->depth())->getGlobalOrder(), viewer);
     }
-    VTKViewer::writeField(mesh, mesh->getField(name), name, fiberDim, viewer);
   } else {
   }
   PetscFunctionReturn(0);
