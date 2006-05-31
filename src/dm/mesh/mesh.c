@@ -129,6 +129,133 @@ PetscErrorCode MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "FieldView_Sieve_Ascii"
+PetscErrorCode FieldView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, const std::string& name, PetscViewer viewer)
+{
+  // state 0: No header has been output
+  // state 1: Only POINT_DATA has been output
+  // state 2: Only CELL_DATA has been output
+  // state 3: Output both, POINT_DATA last
+  // state 4: Output both, CELL_DATA last
+  PetscViewerFormat format;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
+    static PetscInt   stateId = -1;
+    PetscInt          outputState;
+    PetscTruth        hasState;
+    PetscInt          doOutput;
+    PetscInt          fiberDim;
+
+    if (stateId < 0) {
+      ierr = PetscObjectComposedDataRegister(&stateId);CHKERRQ(ierr);
+    }
+    ierr = PetscObjectComposedDataGetInt((PetscObject) viewer, stateId, outputState, hasState);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_VTK) {
+      if (outputState == 0) {
+        outputState = 1;
+        doOutput = 1;
+      } else if (outputState == 1) {
+        doOutput = 0;
+      } else if (outputState == 2) {
+        outputState = 3;
+        doOutput = 1;
+      } else if (outputState == 3) {
+        doOutput = 0;
+      } else if (outputState == 4) {
+        SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
+      }
+      if (doOutput) {
+        ALE::Obj<ALE::Mesh::field_type>   field = mesh->getField(name);
+        ALE::Mesh::field_type::patch_type patch = *field->getPatches()->begin();
+        ALE::Obj<ALE::Mesh::sieve_type::traits::depthSequence> vertices = mesh->getTopology()->depthStratum(0);
+        int                               N     = 0;
+
+        for(ALE::Mesh::sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+          int dim = field->getFiberDimension(patch, *v_iter);
+
+          if (dim > 0) {
+            fiberDim = dim;
+            break;
+          }
+        }
+        if (field->getGlobalOffsets()) {
+          N = field->getGlobalOffsets()[mesh->commSize()]/fiberDim;
+        } else {
+          N = field->getSize(*field->getPatches()->begin())/fiberDim;
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", N);CHKERRQ(ierr);
+      }
+      VTKViewer::writeField(mesh, mesh->getField(name), name, fiberDim, mesh->getBundle(0)->getGlobalOrder(), viewer);
+    } else {
+      if (outputState == 0) {
+        outputState = 2;
+        doOutput = 1;
+      } else if (outputState == 1) {
+        outputState = 4;
+        doOutput = 1;
+      } else if (outputState == 2) {
+        doOutput = 0;
+      } else if (outputState == 3) {
+        SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
+      } else if (outputState == 4) {
+        doOutput = 0;
+      }
+      if (doOutput) {
+        ALE::Obj<ALE::Mesh::field_type>   field = mesh->getField(name);
+        ALE::Mesh::field_type::patch_type patch = *field->getPatches()->begin();
+        ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> cells = mesh->getTopology()->heightStratum(0);
+        int                               N     = 0;
+
+        for(ALE::Mesh::sieve_type::traits::heightSequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+          int dim = field->getFiberDimension(patch, *c_iter);
+
+          if (dim > 0) {
+            fiberDim = dim;
+            break;
+          }
+        }
+        if (field->getGlobalOffsets()) {
+          N = field->getGlobalOffsets()[mesh->commSize()]/fiberDim;
+        } else {
+          N = field->getSize(*field->getPatches()->begin())/fiberDim;
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", N);CHKERRQ(ierr);
+      }
+      VTKViewer::writeField(mesh, mesh->getField(name), name, fiberDim, mesh->getBundle(mesh->getTopology()->depth())->getGlobalOrder(), viewer);
+    }
+  } else {
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "FieldView_Sieve"
+PetscErrorCode FieldView_Sieve(ALE::Obj<ALE::Mesh> mesh, const std::string& name, PetscViewer viewer)
+{
+  PetscTruth     iascii, isbinary, isdraw;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_BINARY, &isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_DRAW, &isdraw);CHKERRQ(ierr);
+
+  if (iascii){
+    ierr = FieldView_Sieve_Ascii(mesh, name, viewer);CHKERRQ(ierr);
+  } else if (isbinary) {
+    SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Field");
+  } else if (isdraw){ 
+    SETERRQ(PETSC_ERR_SUP, "Draw viewer not implemented for Field");
+  } else {
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this field object", ((PetscObject)viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve"
 PetscErrorCode MeshView_Sieve(Mesh mesh, PetscViewer viewer)
 {

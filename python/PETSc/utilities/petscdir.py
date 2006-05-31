@@ -117,7 +117,10 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
     return
 
   def configureInstallationMethod(self):
-    if os.path.exists(os.path.join(self.dir, 'BitKeeper')):
+    if os.path.exists(os.path.join(self.dir, '.hg')):
+      self.logPrint('This is a Mercurial clone')
+      self.isClone = 1
+    elif os.path.exists(os.path.join(self.dir, 'BitKeeper')):
       self.logPrint('This is a BitKeeper clone')
       self.isClone = 1
     elif os.path.exists(os.path.join(self.dir, 'BK')):
