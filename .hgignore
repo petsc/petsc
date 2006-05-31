@@ -1,0 +1,13 @@
+syntax: glob
+RDict.log
+TAGS
+bmake/*/*
+bmake/petscconf
+configure.log
+externalpackages/*
+*/ftn-auto/*
+lib/*
+make_log_*
+src/python/*
+*.pyc
+*~
