@@ -1,0 +1,365 @@
+Identification_Information:
+  Citation:
+    Citation_Information:
+      Originator: Illinois State Geological Survey
+      Publication_Date: 1984
+      Title:
+        Illinois State Boundary,
+        Including Illinois Portion of Lake Michigan
+      Edition: 1.1
+      Geospatial_Data_Presentation_Form: map
+      Series_Information:
+        Series_Name: ISGS GIS Database
+        Issue_Identification: stbnd_w_lake
+      Publication_Information:
+        Publication_Place: Champaign, Illinois
+        Publisher: Illinois State Geological Survey
+      Online_Linkage:
+        Downloadable Data
+        (Shift-Click to download data file)
+        <URL:http://www.isgs.uiuc.edu/nsdihome/browse/statewide/stbnd_w_lake.e00>
+      Online_Linkage:
+        Browse Graphic (GIF)
+        Screen-size image representing the nature of the data.
+        <URL:http://www.isgs.uiuc.edu/nsdihome/browse/statewide/stbnd_w_lakeb.gif>
+      Online_Linkage:
+        Text (.txt) version of this Metadata file.
+        (Shift-Click to download documentation)
+        <URL:http://www.isgs.uiuc.edu/nsdihome/outmeta/stbnd_w_lake.txt>
+      Online_Linkage:
+        HTML (.html) version of this Metadata file.
+        (Shift-Click to download documentation)
+        <URL:http://www.isgs.uiuc.edu/nsdihome/outmeta/stbnd_w_lake.html>
+
+  Description:
+    Abstract:
+      This is an Arc/Info polygon data set showing the state line boundary,
+      including the area extending into Lake Michigan.  Nominal scale is
+      1:62,500.  This data set was created in 1984 by Environmental Systems
+      Research Institute (ESRI).
+
+    Purpose:
+      This data set was created to serve as base map information
+      at scales of 1:62,500 or smaller.  Data are not appropriate
+      as a geodetic or engineering base.
+
+    Supplemental_Information:
+      Updates to the data: Edition 1.0 of these data were reviewed for
+      internal logical consistency in March, 1998.  As a result, new tics
+      were created.  See logical consistency report and process steps for
+      March, 1998 for more details.  The updated data set (this one) is
+      edition 1.1.
+
+  Time_Period_of_Content:
+    Time_Period_Information:
+      Single_Date/Time:
+        Calendar_Date: 1984
+
+    Currentness_Reference: publication date
+
+  Status:
+    Progress: Complete
+    Maintenance_and_Update_Frequency: none planned
+
+  Spatial_Domain:
+    Bounding_Coordinates:
+      West_Bounding_Coordinate: -91.58062731
+      East_Bounding_Coordinate: -87.02229099
+      North_Bounding_Coordinate: 42.50050364
+      South_Bounding_Coordinate: 36.94578309
+
+  Keywords:
+    Theme:
+      Theme_Keyword_Thesaurus: none
+      Theme_Keyword: public land survey
+      Theme_Keyword: state outline
+      Theme_Keyword: state boundary
+      Theme_Keyword: illimap
+      Theme_Keyword: base map
+    Place:
+      Place_Keyword_Thesaurus: none
+      Place_Keyword: Illinois
+
+  Access_Constraints: none
+
+  Use_Constraints:
+    Reproduction or redistribution of copyrighted digital data sets
+    or products derived therefrom outside of licensees'
+    organization or entity is expressly forbidden.  The only
+    exception is redistribution to consultants working for the
+    licensee, and then only for purposes, related to work for the
+    licensee.  Such consultants may not further reproduce or
+    redistribute these data sets.  None of these data shall be
+    electronically duplicated on magnetic or optical media for
+    use by others, in whole or in part, without permission of the
+    appropriate custodial division within DNR.
+
+    Any hardcopies utilizing DNR data sets shall clearly indicate
+    their source.  If the licensee has modified the data in any way
+    they are obligated to describe the types of modifications they
+    have performed on the hardcopy map.  Licensee specifically agrees
+    not to misrepresent DNR data sets, nor to imply that changes they
+    made were approved by DNR.
+
+    These data are not to be used for commercial profit.
+
+  Point_of_Contact:
+    Contact_Information:
+      Contact_Person_Primary:
+        Contact_Person: Database Administrator
+      Contact_Address:
+        Address_Type: mailing and physical address
+        Address: 615 East Peabody Drive
+        City: Champaign
+        State_or_Province: Illinois
+        Postal_Code: 61820
+        Country: U.S.A.
+      Contact_Voice_Telephone: 217-333-5102
+      Contact_Facsimile_Telephone: 217-333-2830
+      Contact_Electronic_Mail_Address: denhart@isgs.uiuc.edu
+      Hours_of_Service: 8:00 a.m. - 5:00 p.m., Monday-Friday
+
+  Data_Set_Credit:
+    >GIS Processing:  ISGS Staff
+    >Documentation:   D. Nelson and S. Beaverson
+    >Quality Control: ISGS Staff, D. Nelson
+
+  Native_Data_Set_Environment:
+    SunOS, 5.5, sun4m UNIX
+    ARC/INFO version 7.1.1 with no8.3 setting
+
+  Cross_Reference:
+    Citation_Information:
+      Originator: Illinois State Geological Survey
+      Publication_Date: 1984
+      Title: State line Boundary of Illinois
+      Geospatial_Data_Presentation_Form: map
+      Series_Information:
+        Series_Name: ISGS GIS Database
+        Issue_Identification: state
+      Publication_Information:
+        Publication_Place: Champaign, IL
+        Publisher: Illinois State Geological Survey
+      Online_Linkage:
+        Data Set Documentation
+        <URL:http://www.isgs.uiuc.edu/nsdihome/outmeta/state.html>
+
+
+Data_Quality_Information:
+  Attribute_Accuracy:
+    Attribute_Accuracy_Report: Not available.
+
+  Logical_Consistency_Report:
+    A logical consistency review was performed in March, 1998.
+    The following checks were made:
+
+    Data set was DESCRIBED and coverage files listed to determine
+    the feature types present.  In this data set, the following feature
+    types were found and checked:  polygons, arcs, labels, and nodes.
+    The presence of spatial indices was also checked.
+
+    For PAT and AAT files, each ITEM was checked for the following:
+    >- DOMAIN of allowable values
+    >- adherence of values to the DOMAIN
+    >- definition of ITEMS
+    >- requirement of all UNIQUE values for an item
+    >- logic of ITEMS REDEFINED over other ITEMS
+    >- length of ITEM name as regards conversion to shape file
+
+    BUILD statuses of data sets were checked, as were LABELERRORS and
+    NODEERRORS (where appropriate), and PROJECTION definition.
+
+    The presence of a BND file was verified.
+
+    The presence and location of TICS were checked.
+
+    Polygon and chain-node topology present.  There are no dangling
+    arcs.  There is one polygon label per polygon, except for universe
+    polygon.  Boundary values appropriate for map projection
+    and map units.  "Fuzzy" tolerance is suitable for nominal scale.
+    New tics were added.  See process steps for March, 1998.  There are
+    no attribute values outside the appropriate domains.  There are no
+    user-defined attributes.
+
+  Completeness_Report:
+    In 1995, the state boundary along the Ohio River was
+    officially changed, but these changes have not been
+    incorporated.  This coverage does include the portion
+    of the state boundary that extends into Lake Michigan.
+
+  Positional_Accuracy:
+    Horizontal_Positional_Accuracy:
+      Horizontal_Positional_Accuracy_Report: Not available.
+
+  Lineage:
+    Source_Information:
+      Source_Citation:
+        Citation_Information:
+          Originator: United States Geological Survey
+          Publication_Date: unknown
+          Title:
+            various - 7.5 minute and 15 minute topographic
+            quadrangles depicting Illinois State boundary
+          Geospatial_Data_Presentation_Form: map
+          Series_Information:
+            Series_Name: topographic quadrangles
+            Issue_Identification:
+              Those which depicted a portion of the Illinois state
+              boundary at the time of automation (1984).
+      Source_Scale_Denominator: 24000 and 62500
+      Type_of_Source_Media: paper
+      Source_Time_Period_of_Content:
+        Time_Period_Information:
+          Range_of_Dates/Times:
+            Beginning_Date: unknown
+            Ending_Date: unknown
+        Source_Currentness_Reference: publication date
+      Source_Citation_Abbreviation: none
+      Source_Contribution: Lines depicting Illinois state boundary
+
+    Process_Step:
+      Process_Description:
+        This is a legacy data set compiled circa 1984.  It is
+        assumed that the automation process was typical of that
+        for Arc/info geo-data sets, implying digitization from
+        source maps, editing and error checking, building for
+        topology, and subsequent revision and update.  Specific
+        process descriptions prior to 1997 are unavailable,
+        other than those listed in the associated Arc/Info log file.
+      Process_Date: 1984
+
+    Process_Step:
+      Process_Description:
+        An internal logical consistency check was performed in March, 1998.
+        See entry for logical consistency.  As a result, the following
+        changes/updates were made to the data:
+
+        TICS - The data set had no tics.  Ten new tics were added from
+        *path_name_suppressed*/quad100, evenly distributed around
+        the state.  However, users needing registration tics for use with
+        these data (or a subset of these data) should expect to create
+        a task-specific tic set, usually based on section corners.
+        For detailed review see *path_name_suppressed*/illimap_v1_0_rev.txt.
+      Process_Date: 199803
+
+
+Spatial_Data_Organization_Information:
+  Direct_Spatial_Reference_Method: Vector
+  Point_and_Vector_Object_Information:
+    SDTS_Terms_Description:
+      SDTS_Point_and_Vector_Object_Type: Point
+      Point_and_Vector_Object_Count: 1
+      SDTS_Point_and_Vector_Object_Type: String
+      Point_and_Vector_Object_Count: 5
+      SDTS_Point_and_Vector_Object_Type: GT-polygon composed of chains
+      Point_and_Vector_Object_Count: 2
+
+Spatial_Reference_Information:
+  Horizontal_Coordinate_System_Definition:
+    Planar:
+      Map_Projection:
+        Map_Projection_Name: Lambert Conformal Conic
+        Lambert_Conformal_Conic:
+          Standard_Parallel: 33
+          Standard_Parallel: 45
+          Longitude_of_Central_Meridian: -89.5
+          Latitude_of_Projection_Origin: 33
+          False_Easting: 914400.00000 meters
+          False_Northing: 0.00000
+
+      Planar_Coordinate_Information:
+        Planar_Coordinate_Encoding_Method: coordinate pair
+        Coordinate_Representation:
+          Abscissa_Resolution: not determined
+          Ordinate_Resolution: not determined
+        Planar_Distance_Units: feet
+
+    Geodetic_Model:
+      Horizontal_Datum_Name: Unknown
+      Ellipsoid_Name: Clarke 1866
+      Semi-major_Axis: 6378206.4 meters
+      Denominator_of_Flattening_Ratio: 294.98
+
+
+Entity_and_Attribute_Information:
+  Overview_Description:
+    Entity_and_Attribute_Overview:
+      Attribute items are in typical ARC/INFO feature class format.
+      There are no user-defined attributes.
+    Entity_and_Attribute_Detail_Citation: none
+
+
+Distribution_Information:
+  Distributor:
+    Contact_Information:
+      Contact_Organization_Primary:
+        Contact_Organization: Illinois State Geological Survey
+      Contact_Position: Database Administrator
+      Contact_Address:
+        Address_Type: mailing and physical address
+        Address: 615 East Peabody Drive
+        City: Champaign
+        State_or_Province: Illinois
+        Postal_Code: 61820
+        Country: U.S.A.
+      Contact_Voice_Telephone: 217-333-5102
+      Contact_Facsimile_Telephone: 217-333-2830
+      Contact_Electronic_Mail_Address: denhart@nomad.isgs.uiuc.edu
+      Hours_of_Service: 8:00 a.m. - 5:00 p.m., Monday-Friday
+
+  Distribution_Liability:
+    The Illinois Department of Natural Resources (DNR) provides these
+    geographic data "as is."  DNR makes no guarantee or warranty
+    concerning the accuracy of information contained in the geographic
+    data.  DNR further makes no warranties, either expressed or implied
+    as to any other matter whatsoever, including, without limitation,
+    the condition of the product, or its fitness for any particular
+    purpose. The burden for determining fitness for use lies entirely
+    with the user.  Although these data have been processed successfully
+    on computers of DNR, no warranty, expressed or implied, is made by
+    DNR regarding the use of these data on any other system, nor does the
+    fact of distribution constitute or imply any such warranty.
+
+    In no event shall the DNR have any liability whatsoever for payment
+    of any consequential, incidental, indirect, special, or tort damages
+    of any kind, including, but not limited to, any loss of profits
+    arising out of use of or reliance on the geographic data or arising
+    out of the delivery, installation, operation, or support by DNR.
+
+  Resource_Description:
+    An Arc/Info .e00 (export) file is currently available free of charge
+    at the Illinois Natural Resources Geospatial Data Clearinghouse.
+    Refer to the Citation Information portion of this file for access
+    to downloadable data and metadata, and a visual (GIF image)
+    representation of the data.
+
+    Shift-click to download the data set and related documentation.
+    (Data and metadata offered separately, please download both files.)
+
+
+Metadata_Reference_Information:
+  Metadata_Date: 19980324
+  Metadata_Review_Date: 19980331
+  Metadata_Future_Review_Date: 200003
+  Metadata_Contact:
+    Contact_Information:
+      Contact_Organization_Primary:
+        Contact_Organization: Illinois State Geological Survey
+        Contact_Person: Database Administrator
+      Contact_Address:
+        Address_Type: mailing and physical address
+        Address: 615 East Peabody Drive
+        City: Champaign
+        State_or_Province: Illinois
+        Postal_Code: 61820
+        Country: U.S.A.
+      Contact_Voice_Telephone: 217-333-5102
+      Contact_Facsimile_Telephone: 217-333-2830
+      Contact_Electronic_Mail_Address: denhart@isgs.uiuc.edu
+      Hours_of_Service: 8:00 a.m. - 5:00 p.m., Monday-Friday
+  Metadata_Standard_Name:
+    FGDC Content Standards for Digital Geospatial
+    Metadata
+  Metadata_Standard_Version: Version of June 8, 1994
+  Metadata_Access_Constraints: none
+  Metadata_Use_Constraints: none
