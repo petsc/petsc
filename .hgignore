@@ -1,9 +1,9 @@
 syntax: glob
 RDict.log
-TAGS
+TAGS*
 bmake/*/*
 bmake/petscconf
-configure.log
+configure.log*
 externalpackages/*
 */ftn-auto/*
 lib/*
@@ -11,3 +11,20 @@ make_log_*
 src/python/*
 *.pyc
 *~
+*.orig
+#*#
+ex[0-9]
+ex[0-9]f
+ex[0-9]f90
+ex[0-9][0-9]
+ex[0-9][0-9]f
+ex[0-9][0-9]f90
+*.m.html
+index.html
+*.F.html
+makefile.html
+*.c.html
+*.h.html
+*.h90.html
+*.cxx.html
+*.hh.html

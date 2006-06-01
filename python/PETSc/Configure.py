@@ -190,6 +190,7 @@ class Configure(config.base.Configure):
           i.include = [i.include]
         self.addMakeMacro(i.PACKAGE+'_INCLUDE', ' '.join([self.headers.getIncludeArgument(inc) for inc in i.include]))
     self.addMakeMacro('PACKAGES_LIBS',' '.join(['${'+package.PACKAGE+'_LIB}' for package in self.framework.packages]+[self.libraries.getLibArgument(l) for l in self.libraries.math]))
+    self.addMakeMacro('PACKAGES_INCLUDES',' '.join(['${'+p.PACKAGE+'_INCLUDE}' for p in self.framework.packages if hasattr(p,'include')]))
     
     self.addMakeMacro('INSTALL_DIR',self.installdir)
     self.addMakeMacro('top_builddir',self.installdir)                
