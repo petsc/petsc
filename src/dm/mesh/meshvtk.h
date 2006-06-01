@@ -159,8 +159,8 @@ class VTKViewer {
         }
       }
     } else {
-      ALE::Obj<ALE::Mesh::bundle_type>                          globalOrder = field->getGlobalOrder();
-      ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> elements    = globalOrder->getPatch(patch);
+      ALE::Obj<ALE::Mesh::bundle_type>                          fieldGlobalOrder = field->getGlobalOrder();
+      ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> elements = globalOrder->getPatch(patch);
       const int *offsets          = field->getGlobalOffsets();
       int        numLocalElements = (offsets[mesh->commRank()+1] - offsets[mesh->commRank()])/fiberDim;
       double    *localValues;
@@ -168,7 +168,7 @@ class VTKViewer {
 
       ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(double), &localValues);CHKERRQ(ierr);
       for(ALE::Mesh::field_type::order_type::coneSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-        int dim = globalOrder->getFiberDimension(patch, *e_iter);
+        int dim = fieldGlobalOrder->getFiberDimension(patch, *e_iter);
 
         if (dim > 0) {
           int offset = field->getFiberOffset(patch, *e_iter);
@@ -179,7 +179,7 @@ class VTKViewer {
         }
       }
       if (k != numLocalElements*fiberDim) {
-        SETERRQ2(PETSC_ERR_PLIB, "Invalid number of coordinates to send %d should be %d", k, numLocalElements*fiberDim);
+        SETERRQ3(PETSC_ERR_PLIB, "Invalid number of values to send for field %s, %d should be %d", name.c_str(), k, numLocalElements*fiberDim);
       }
       ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
       ierr = MPI_Send(localValues, numLocalElements*fiberDim, MPI_DOUBLE, 0, 1, mesh->comm());CHKERRQ(ierr);
