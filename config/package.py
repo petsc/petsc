@@ -6,8 +6,8 @@ import os
 class Package(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    self.headerPrefix     = 'PETSc'
-    self.substPrefix      = 'PETSc'
+    self.headerPrefix     = 'PETSC'
+    self.substPrefix      = 'PETSC'
     self.arch             = None # The architecture identifier
     self.externalPackagesDir = os.path.abspath('externalpackages')
     # These are derived by the configure tests
