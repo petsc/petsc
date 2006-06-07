@@ -64,21 +64,21 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid in an io
 #include "petscmg.h"
 #include "petscdmmg.h"
 
-PetscErrorCode MeshView_Sieve_Newer(ALE::Obj<ALE::Two::Mesh>, PetscViewer);
-PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh>);
-PetscErrorCode updateOperator(Mat, ALE::Obj<ALE::Two::Mesh::field_type>, const ALE::Two::Mesh::point_type&, PetscScalar [], InsertMode);
+PetscErrorCode MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh>, PetscViewer);
+PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Mesh>);
+PetscErrorCode updateOperator(Mat, ALE::Obj<ALE::Mesh::field_type>, const ALE::Mesh::point_type&, PetscScalar [], InsertMode);
 
-extern PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Two::Mesh>);
+extern PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Mesh>);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
-extern PetscErrorCode CreateDielectricField(ALE::Obj<ALE::Two::Mesh>, ALE::Obj<ALE::Two::Mesh::field_type>);
-extern PetscErrorCode CreateEnergyDensity(ALE::Obj<ALE::Two::Mesh>, ALE::Obj<ALE::Two::Mesh::field_type>, ALE::Obj<ALE::Two::Mesh::field_type>, Vec *);
+extern PetscErrorCode CreateDielectricField(ALE::Obj<ALE::Mesh>, ALE::Obj<ALE::Mesh::field_type>);
+extern PetscErrorCode CreateEnergyDensity(ALE::Obj<ALE::Mesh>, ALE::Obj<ALE::Mesh::field_type>, ALE::Obj<ALE::Mesh::field_type>, Vec *);
 double refineLimit(const double [], void *);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
 typedef struct {
-  ALE::Obj<ALE::Two::Mesh::field_type> epsilon;
+  ALE::Obj<ALE::Mesh::field_type> epsilon;
   PetscScalar voltage;
   VecScatter  injection;
   PetscReal   refinementLimit;
@@ -123,35 +123,36 @@ int main(int argc,char **argv)
     ierr = PetscOptionsTruth("-view_energy", "View the energy density as a field", "ex37.c", PETSC_FALSE, &viewEnergy, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  ALE::Obj<ALE::Two::Mesh> meshBoundary = ALE::Two::Mesh(comm, dim-1, meshDebug);
-  ALE::Obj<ALE::Two::Mesh> mesh;
+  ALE::Obj<ALE::Mesh> meshBoundary = ALE::Mesh(comm, dim-1, meshDebug);
+  ALE::Obj<ALE::Mesh> mesh;
 
   try {
     ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Generating mesh\n");CHKERRQ(ierr);
     ierr = CreateMeshBoundary(meshBoundary);CHKERRQ(ierr);
-    mesh = ALE::Two::Generator::generate(meshBoundary);
-    ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
+    mesh = ALE::Generator::generate(meshBoundary);
+    ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
     ALE::LogStagePop(stage);
+    mesh->getBoundary()->view("Initial Mesh Boundary");
 
     stage = ALE::LogStageRegister("MeshDistribution");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
     mesh = mesh->distribute();
     ALE::LogStagePop(stage);
-    mesh->getBoundary()->view("Mesh Boundary");
+    mesh->getBoundary()->view("Distributed Mesh Boundary");
 
     if (user.refinementLimit > 0.0) {
       stage = ALE::LogStageRegister("MeshRefine");
       ALE::LogStagePush(stage);
       ierr = PetscPrintf(comm, "Refining mesh\n");CHKERRQ(ierr);
       if (user.refinementExp == 0.0) {
-        mesh = ALE::Two::Generator::refine(mesh, user.refinementLimit, true);
+        mesh = ALE::Generator::refine(mesh, user.refinementLimit, true);
       } else {
-        mesh = ALE::Two::Generator::refine(mesh, refineLimit, (void *) &user, true);
+        mesh = ALE::Generator::refine(mesh, refineLimit, (void *) &user, true);
       }
       ALE::LogStagePop(stage);
       ierr = PetscSynchronizedPrintf(comm, "  [%d]Generated %d local elements\n", mesh->commRank(), mesh->getTopology()->heightStratum(0)->size());CHKERRQ(ierr);
@@ -163,13 +164,13 @@ int main(int argc,char **argv)
     stage = ALE::LogStageRegister("BndValues");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Calculating boundary values\n");CHKERRQ(ierr);
-    ALE::Obj<ALE::Two::Mesh::field_type> boundary = mesh->getBoundary();
-    ALE::Obj<ALE::Two::Mesh::sieve_type::traits::depthSequence> vertices = topology->depthStratum(0);
-    ALE::Two::Mesh::field_type::patch_type groundPatch(0, 1);
-    ALE::Two::Mesh::field_type::patch_type voltagePatch(0, 3);
-    ALE::Two::Mesh::field_type::patch_type patch;
+    ALE::Obj<ALE::Mesh::field_type> boundary = mesh->getBoundary();
+    ALE::Obj<ALE::Mesh::sieve_type::traits::depthSequence> vertices = topology->depthStratum(0);
+    ALE::Mesh::field_type::patch_type groundPatch(0, 1);
+    ALE::Mesh::field_type::patch_type voltagePatch(0, 3);
+    ALE::Mesh::field_type::patch_type patch;
 
-    for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+    for(ALE::Mesh::sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
       if (boundary->getIndex(groundPatch, *v_iter).index > 0) {
         double values[1] = {0.0};
 
@@ -183,36 +184,36 @@ int main(int argc,char **argv)
     if (debug) {boundary->view("Mesh Boundary");}
     ALE::LogStagePop(stage);
 
-    user->numCharges = 1;
-    ierr = PetscMalloc2(user->numCharges,PetscReal,user->charge,user->numCharges*2,PetscReal,user->chargeLocation);CHKERRQ(ierr);
-    user->charge[0] = 1.0;
-    user->chargeLocation[0] = 0.0;
-    user->chargeLocation[1] = 0.0;
+    user.numCharges = 1;
+    ierr = PetscMalloc2(user.numCharges,PetscReal,&user.charge,user.numCharges*2,PetscReal,&user.chargeLocation);CHKERRQ(ierr);
+    user.charge[0] = 1.0;
+    user.chargeLocation[0] = 0.0;
+    user.chargeLocation[1] = 0.0;
 
-    ALE::Obj<ALE::Two::Mesh::field_type> u = mesh->getField("u");
-    ALE::Obj<ALE::Two::Mesh::field_type> b = mesh->getField("b");
-    u->setPatch(topology->leaves(), ALE::Two::Mesh::field_type::patch_type());
+    ALE::Obj<ALE::Mesh::field_type> u = mesh->getField("u");
+    ALE::Obj<ALE::Mesh::field_type> b = mesh->getField("b");
+    u->setPatch(topology->leaves(), ALE::Mesh::field_type::patch_type());
     u->setFiberDimensionByDepth(patch, 0, 1);
     u->orderPatches();
     if (debug) {u->view("u");}
     u->createGlobalOrder();
-    b->setPatch(topology->leaves(), ALE::Two::Mesh::field_type::patch_type());
+    b->setPatch(topology->leaves(), ALE::Mesh::field_type::patch_type());
     b->setFiberDimensionByDepth(patch, 0, 1);
     b->orderPatches();
     if (debug) {b->view("b");}
     b->createGlobalOrder();
-    ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
-    ALE::Obj<ALE::Two::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
+    ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
+    ALE::Obj<ALE::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
     std::string orderName("element");
 
-    for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
+    for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
       // setFiberDimensionByDepth() does not work here since we only want it to apply to the patch cone
       //   What we really need is the depthStratum relative to the patch
-      ALE::Obj<ALE::Two::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_iter);
+      ALE::Obj<ALE::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_iter);
 
       u->setPatch(orderName, cone, *e_iter);
       b->setPatch(orderName, cone, *e_iter);
-      for(ALE::Two::Mesh::bundle_type::order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+      for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
         u->setFiberDimension(orderName, *e_iter, *c_iter, 1);
         b->setFiberDimension(orderName, *e_iter, *c_iter, 1);
       }
@@ -263,7 +264,7 @@ int main(int argc,char **argv)
     ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
     //ierr = VecView(DMMGGetRHS(dmmg), viewer);CHKERRQ(ierr);
     if (viewEnergy) {
-      ALE::Obj<ALE::Two::Mesh::field_type> u = mesh->getField("u");
+      ALE::Obj<ALE::Mesh::field_type> u = mesh->getField("u");
       Vec energy, locU;
 
       ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, u->getSize(patch), u->restrict(patch), &locU);CHKERRQ(ierr);
@@ -281,7 +282,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
 
-    ierr = PetscFree2(user->charge,user->chargeLocation);CHKERRQ(ierr);
+    ierr = PetscFree2(user.charge,user.chargeLocation);CHKERRQ(ierr);
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
@@ -331,9 +332,9 @@ double refineLimit(const double centroid[], void *ctx) {
 
     (X) denotes the last vertex, (XX) denotes the last edge
 */
-PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
+PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Mesh> mesh)
 {
-  ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
+  ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
   PetscScalar       coords[54] =  {/*O*/      0.0,      0.0, 
                                    /*1*/   -112.5,      0.0, 
                                    /*2*/   -112.5,     50.0, 
@@ -396,20 +397,20 @@ PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
                                   4, 5,  /* 7: symmetry preservation */
                                   21,20  /* 7: symmetry preservation */
                                   };
-  ALE::Two::Mesh::point_type vertices[27];
+  ALE::Mesh::point_type vertices[27];
 
   PetscFunctionBegin;
   PetscInt order = 0;
   if (mesh->commRank() == 0) {
-    ALE::Two::Mesh::point_type edge;
+    ALE::Mesh::point_type edge;
 
     /* Create topology and ordering */
     for(int v = 0; v < 27; v++) {
-      vertices[v] = ALE::Two::Mesh::point_type(0, v);
+      vertices[v] = ALE::Mesh::point_type(0, v);
     }
     for(int e = 27; e < 61; e++) {
       int ee = e - 27;
-      edge = ALE::Two::Mesh::point_type(0, e);
+      edge = ALE::Mesh::point_type(0, e);
       topology->addArrow(vertices[connectivity[2*ee]],   edge, order++);
       topology->addArrow(vertices[connectivity[2*ee+1]], edge, order++);
     }
@@ -422,44 +423,44 @@ PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh> mesh)
     for(int e = 47; e < 55; e++) {
       int ee = e - 27;
 
-      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 6);
-      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+0]), 6);
-      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+1]), 6);
+      topology->setMarker(ALE::Mesh::point_type(0, e), 6);
+      topology->setMarker(ALE::Mesh::point_type(0, connectivity[2*ee+0]), 6);
+      topology->setMarker(ALE::Mesh::point_type(0, connectivity[2*ee+1]), 6);
     }
     for(int e = 39; e < 47; e++) {
       int ee = e - 27;
 
-      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 5);
-      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+0]), 5);
-      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+1]), 5);
+      topology->setMarker(ALE::Mesh::point_type(0, e), 5);
+      topology->setMarker(ALE::Mesh::point_type(0, connectivity[2*ee+0]), 5);
+      topology->setMarker(ALE::Mesh::point_type(0, connectivity[2*ee+1]), 5);
     }
     for(int e = 35; e < 39; e++) {
       int ee = e - 27;
 
-      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 4);
-      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+0]), 4);
-      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+1]), 4);
+      topology->setMarker(ALE::Mesh::point_type(0, e), 4);
+      topology->setMarker(ALE::Mesh::point_type(0, connectivity[2*ee+0]), 4);
+      topology->setMarker(ALE::Mesh::point_type(0, connectivity[2*ee+1]), 4);
     }
     for(int e = 29; e < 33; e++) {
       int ee = e - 27;
 
-      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 2);
-      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+0]), 2);
-      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+1]), 2);
+      topology->setMarker(ALE::Mesh::point_type(0, e), 2);
+      topology->setMarker(ALE::Mesh::point_type(0, connectivity[2*ee+0]), 2);
+      topology->setMarker(ALE::Mesh::point_type(0, connectivity[2*ee+1]), 2);
     }
     for(int e = 33; e < 35; e++) {
       int ee = e - 27;
 
-      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 3);
-      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+0]), 3);
-      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+1]), 3);
+      topology->setMarker(ALE::Mesh::point_type(0, e), 3);
+      topology->setMarker(ALE::Mesh::point_type(0, connectivity[2*ee+0]), 3);
+      topology->setMarker(ALE::Mesh::point_type(0, connectivity[2*ee+1]), 3);
     }
     for(int e = 27; e < 29; e++) {
       int ee = e - 27;
 
-      topology->setMarker(ALE::Two::Mesh::point_type(0, e), 1);
-      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+0]), 1);
-      topology->setMarker(ALE::Two::Mesh::point_type(0, connectivity[2*ee+1]), 1);
+      topology->setMarker(ALE::Mesh::point_type(0, e), 1);
+      topology->setMarker(ALE::Mesh::point_type(0, connectivity[2*ee+0]), 1);
+      topology->setMarker(ALE::Mesh::point_type(0, connectivity[2*ee+1]), 1);
     }
   }
   PetscFunctionReturn(0);
@@ -591,7 +592,7 @@ static double BasisDerivatives[54] = {
 
 #undef __FUNCT__
 #define __FUNCT__ "ElementGeometry"
-PetscErrorCode ElementGeometry(ALE::Obj<ALE::Two::Mesh> mesh, const ALE::Two::Mesh::point_type& e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
+PetscErrorCode ElementGeometry(ALE::Obj<ALE::Mesh> mesh, const ALE::Mesh::point_type& e, PetscReal v0[], PetscReal J[], PetscReal invJ[], PetscReal *detJ)
 {
   const double  *coords = mesh->getCoordinates()->restrict(std::string("element"), e);
   int            dim = mesh->getDimension();
@@ -709,10 +710,32 @@ PetscErrorCode ElementGeometry(ALE::Obj<ALE::Two::Mesh> mesh, const ALE::Two::Me
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "CheckElementGeometry"
-PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Two::Mesh> mesh)
+#define __FUNCT__ "ElementContains"
+PetscErrorCode ElementContains(ALE::Obj<ALE::Mesh> mesh, const ALE::Mesh::point_type& e, double point[], PetscTruth *contains)
 {
-  ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
+  const double  *coords = mesh->getCoordinates()->restrict(std::string("element"), e);
+  int            dim = mesh->getDimension();
+
+  PetscFunctionBegin;
+  *contains = PETSC_TRUE;
+  for(int p = 0; p < 3; p++) {
+    double side[2] = {coords[((p+1)%3)*dim+0] - coords[p*dim+0], coords[((p+1)%3)*dim+1] - coords[p*dim+1]};
+    double ray[2]  = {point[0]                - coords[p*dim+0], point[1]                - coords[p*dim+1]};
+    double cross   = side[0]*ray[1] - side[1]*ray[0];
+
+    if (cross <= 0.0) {
+      *contains = PETSC_FALSE;
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CheckElementGeometry"
+PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Mesh> mesh)
+{
+  ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
   PetscInt       dim = mesh->getDimension();
   PetscReal     *v0, *Jac;
   PetscReal      detJ;
@@ -720,7 +743,7 @@ PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Two::Mesh> mesh)
 
   PetscFunctionBegin;
   ierr = PetscMalloc2(dim,PetscReal,&v0,dim*dim,PetscReal,&Jac);CHKERRQ(ierr);
-  for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+  for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
     ierr = ElementGeometry(mesh, *e_iter, v0, Jac, PETSC_NULL, &detJ);
   }
   ierr = PetscSynchronizedFlush(mesh->comm());CHKERRQ(ierr);
@@ -730,24 +753,28 @@ PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Two::Mesh> mesh)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeChargeDensity"
-PetscErrorCode ComputeChargeDensity(ALE::Obj<ALE::Two::Mesh> mesh, double jac, double v0, double detJ, double basis, ALE::Obj<ALE::Two::Mesh::field_type> field, UserContext *user)
+PetscErrorCode ComputeChargeDensity(ALE::Obj<ALE::Mesh> mesh, double points[], double jac[], double v0[], double detJ, double basis[], ALE::Obj<ALE::Mesh::field_type> field, UserContext *user)
 {
-  PetscReal elementVec[NUM_BASIS_FUNCTIONS];
+  ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
+  PetscReal      elementVec[NUM_BASIS_FUNCTIONS];
+  PetscTruth     contains;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   for(int q = 0; q < user->numCharges; q++) {
     double x = user->chargeLocation[q*2+0];
     double y = user->chargeLocation[q*2+1];
 
-    for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
-
-      if () {
+    for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
+      ierr = ElementContains(mesh, *e_itor, user->chargeLocation, &contains);CHKERRQ(ierr);
+      if (contains) {
         double     minDist = 1.0e30;
         int        minP    = -1;
         PetscReal *v0, *Jac, detJ;
 
         ierr = ElementGeometry(mesh, *e_itor, v0, Jac, PETSC_NULL, &detJ);CHKERRQ(ierr);
         for(int p = 0; p < NUM_QUADRATURE_POINTS; p++) {
-          double x, y, xi, eta, x_p, y_p, dist;
+          double xi, eta, x_p, y_p, dist;
 
           xi = points[p*2+0] + 1.0;
           eta = points[p*2+1] + 1.0;
@@ -768,13 +795,14 @@ PetscErrorCode ComputeChargeDensity(ALE::Obj<ALE::Two::Mesh> mesh, double jac, d
       }
     }
   }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
 PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 {
-  ALE::Obj<ALE::Two::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   Mesh                mesh = (Mesh) dmmg->dm;
   UserContext        *user = (UserContext *) dmmg->user;
   MPI_Comm            comm;
@@ -791,10 +819,10 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   dim  = m->getDimension();
   ierr = PetscMalloc(dim * sizeof(PetscReal), &v0);CHKERRQ(ierr);
   ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
-  ALE::Obj<ALE::Two::Mesh::field_type> field = m->getField("b");
-  ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = m->getTopology()->heightStratum(0);
-  ALE::Two::Mesh::field_type::patch_type patch;
-  for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
+  ALE::Obj<ALE::Mesh::field_type> field = m->getField("b");
+  ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = m->getTopology()->heightStratum(0);
+  ALE::Mesh::field_type::patch_type patch;
+  for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
     ierr = ElementGeometry(m, *e_itor, v0, Jac, PETSC_NULL, &detJ);CHKERRQ(ierr);
     /* Element integral */
     ierr = PetscMemzero(elementVec, NUM_BASIS_FUNCTIONS*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -813,7 +841,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     field->updateAdd("element", *e_itor, elementVec);
     if (debug) {ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);}
   }
-  ierr = ComputeChargeDensity(points, v0, Jac, detJ, Basis, elementVec, user);CHKERRQ(ierr);
+  ierr = ComputeChargeDensity(m, points, v0, Jac, detJ, Basis, field, user);CHKERRQ(ierr);
   ierr = PetscFree(v0);CHKERRQ(ierr);
   ierr = PetscFree(Jac);CHKERRQ(ierr);
 
@@ -825,26 +853,26 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 
   {
     /* Zero out BC rows */
-    ALE::Two::Mesh::field_type::patch_type patch;
-    ALE::Two::Mesh::field_type::patch_type groundPatch(0, 1);
-    ALE::Two::Mesh::field_type::patch_type voltagePatch(0, 3);
-    ALE::Obj<ALE::Two::Mesh::field_type> boundary = m->getBoundary();
-    ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> groundCone = boundary->getPatch(groundPatch);
-    ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> voltageCone = boundary->getPatch(voltagePatch);
+    ALE::Mesh::field_type::patch_type patch;
+    ALE::Mesh::field_type::patch_type groundPatch(0, 1);
+    ALE::Mesh::field_type::patch_type voltagePatch(0, 3);
+    ALE::Obj<ALE::Mesh::field_type> boundary = m->getBoundary();
+    ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> groundCone = boundary->getPatch(groundPatch);
+    ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> voltageCone = boundary->getPatch(voltagePatch);
     PetscScalar *boundaryValues;
     PetscInt    *boundaryIndices;
     PetscInt     numBoundaryIndices = 0;
     PetscInt     k = 0;
 
-    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = groundCone->begin(); p != groundCone->end(); ++p) {
+    for(ALE::Mesh::field_type::order_type::coneSequence::iterator p = groundCone->begin(); p != groundCone->end(); ++p) {
       numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
     }
-    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = voltageCone->begin(); p != voltageCone->end(); ++p) {
+    for(ALE::Mesh::field_type::order_type::coneSequence::iterator p = voltageCone->begin(); p != voltageCone->end(); ++p) {
       numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
     }
     ierr = PetscMalloc2(numBoundaryIndices,PetscInt,&boundaryIndices,numBoundaryIndices,PetscScalar,&boundaryValues); CHKERRQ(ierr);
-    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = groundCone->begin(); p != groundCone->end(); ++p) {
-      const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
+    for(ALE::Mesh::field_type::order_type::coneSequence::iterator p = groundCone->begin(); p != groundCone->end(); ++p) {
+      const ALE::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
       const double *data = boundary->restrict(groundPatch, *p);
 
       for(int i = 0; i < idx.index; i++) {
@@ -853,8 +881,8 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
         k++;
       }
     }
-    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = voltageCone->begin(); p != voltageCone->end(); ++p) {
-      const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
+    for(ALE::Mesh::field_type::order_type::coneSequence::iterator p = voltageCone->begin(); p != voltageCone->end(); ++p) {
+      const ALE::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
       const double *data = boundary->restrict(voltagePatch, *p);
 
       for(int i = 0; i < idx.index; i++) {
@@ -884,7 +912,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 #define __FUNCT__ "ComputeJacobian"
 PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 {
-  ALE::Obj<ALE::Two::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   Mesh              mesh = (Mesh) dmmg->dm;
   UserContext      *user = (UserContext *) dmmg->user;
   MPI_Comm          comm;
@@ -906,10 +934,10 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   ierr = PetscMalloc(dim * sizeof(PetscReal), &b_der);CHKERRQ(ierr);
   ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
   ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jinv);CHKERRQ(ierr);
-  ALE::Obj<ALE::Two::Mesh::field_type> field = m->getField("u");
-  ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = m->getTopology()->heightStratum(0);
-  for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
-    ALE::Two::Mesh::field_type::patch_type patch;
+  ALE::Obj<ALE::Mesh::field_type> field = m->getField("u");
+  ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = m->getTopology()->heightStratum(0);
+  for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
+    ALE::Mesh::field_type::patch_type patch;
     double eps = user->epsilon->restrict(patch, *e_itor)[0];
 
     CHKMEMQ;
@@ -950,32 +978,32 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
 
   {
     /* Zero out BC rows */
-    ALE::Two::Mesh::field_type::patch_type patch;
-    ALE::Two::Mesh::field_type::patch_type groundPatch(0, 1);
-    ALE::Two::Mesh::field_type::patch_type voltagePatch(0, 3);
-    ALE::Obj<ALE::Two::Mesh::field_type> boundary = m->getBoundary();
-    ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> groundCone = boundary->getPatch(groundPatch);
-    ALE::Obj<ALE::Two::Mesh::field_type::order_type::coneSequence> voltageCone = boundary->getPatch(voltagePatch);
+    ALE::Mesh::field_type::patch_type patch;
+    ALE::Mesh::field_type::patch_type groundPatch(0, 1);
+    ALE::Mesh::field_type::patch_type voltagePatch(0, 3);
+    ALE::Obj<ALE::Mesh::field_type> boundary = m->getBoundary();
+    ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> groundCone = boundary->getPatch(groundPatch);
+    ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> voltageCone = boundary->getPatch(voltagePatch);
     PetscInt *boundaryIndices;
     PetscInt  numBoundaryIndices = 0;
     PetscInt  k = 0;
 
-    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = groundCone->begin(); p != groundCone->end(); ++p) {
+    for(ALE::Mesh::field_type::order_type::coneSequence::iterator p = groundCone->begin(); p != groundCone->end(); ++p) {
       numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
     }
-    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = voltageCone->begin(); p != voltageCone->end(); ++p) {
+    for(ALE::Mesh::field_type::order_type::coneSequence::iterator p = voltageCone->begin(); p != voltageCone->end(); ++p) {
       numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
     }
     ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
-    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = groundCone->begin(); p != groundCone->end(); ++p) {
-      const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
+    for(ALE::Mesh::field_type::order_type::coneSequence::iterator p = groundCone->begin(); p != groundCone->end(); ++p) {
+      const ALE::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
 
       for(int i = 0; i < idx.index; i++) {
         boundaryIndices[k++] = idx.prefix + i;
       }
     }
-    for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = voltageCone->begin(); p != voltageCone->end(); ++p) {
-      const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
+    for(ALE::Mesh::field_type::order_type::coneSequence::iterator p = voltageCone->begin(); p != voltageCone->end(); ++p) {
+      const ALE::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
 
       for(int i = 0; i < idx.index; i++) {
         boundaryIndices[k++] = idx.prefix + i;
@@ -1143,12 +1171,12 @@ PetscErrorCode ComputeDielectric(double x, double y, double *epsilon) {
 /*
   Creates a vector whose value is the dielectric constant on each element
 */
-PetscErrorCode CreateDielectricField(ALE::Obj<ALE::Two::Mesh> mesh, ALE::Obj<ALE::Two::Mesh::field_type> epsilon)
+PetscErrorCode CreateDielectricField(ALE::Obj<ALE::Mesh> mesh, ALE::Obj<ALE::Mesh::field_type> epsilon)
 {
-  ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
-  ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
-  ALE::Obj<ALE::Two::Mesh::field_type> coordinates = mesh->getCoordinates();
-  ALE::Two::Mesh::field_type::patch_type patch;
+  ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
+  ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
+  ALE::Obj<ALE::Mesh::field_type> coordinates = mesh->getCoordinates();
+  ALE::Mesh::field_type::patch_type patch;
   std::string orderName("element");
   PetscErrorCode ierr;
 
@@ -1159,7 +1187,7 @@ PetscErrorCode CreateDielectricField(ALE::Obj<ALE::Two::Mesh> mesh, ALE::Obj<ALE
   epsilon->orderPatches();
   epsilon->createGlobalOrder();
 
-  for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+  for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
     const double *coords = coordinates->restrict(orderName, *e_itor);
     double centroidX = (coords[0]+coords[2]+coords[4])/3.0;
     double centroidY = (coords[1]+coords[3]+coords[5])/3.0;
@@ -1177,13 +1205,13 @@ PetscErrorCode CreateDielectricField(ALE::Obj<ALE::Two::Mesh> mesh, ALE::Obj<ALE
 /*
   Creates a vector whose value is the energy on each element
 */
-PetscErrorCode CreateEnergyDensity(ALE::Obj<ALE::Two::Mesh> mesh, ALE::Obj<ALE::Two::Mesh::field_type> field, ALE::Obj<ALE::Two::Mesh::field_type> epsilon, Vec *energy)
+PetscErrorCode CreateEnergyDensity(ALE::Obj<ALE::Mesh> mesh, ALE::Obj<ALE::Mesh::field_type> field, ALE::Obj<ALE::Mesh::field_type> epsilon, Vec *energy)
 {
-  ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
-  ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
-  ALE::Obj<ALE::Two::Mesh::field_type> coordinates = mesh->getCoordinates();
-  ALE::Obj<ALE::Two::Mesh::field_type> e2 = mesh->getField("energy");
-  ALE::Two::Mesh::field_type::patch_type patch;
+  ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
+  ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
+  ALE::Obj<ALE::Mesh::field_type> coordinates = mesh->getCoordinates();
+  ALE::Obj<ALE::Mesh::field_type> e2 = mesh->getField("energy");
+  ALE::Mesh::field_type::patch_type patch;
   std::string orderName("element");
   PetscInt       dim = mesh->getDimension();
   PetscReal      elementMat[NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS];
@@ -1203,7 +1231,7 @@ PetscErrorCode CreateEnergyDensity(ALE::Obj<ALE::Two::Mesh> mesh, ALE::Obj<ALE::
   ierr = PetscMalloc(dim * sizeof(PetscReal), &b_der);CHKERRQ(ierr);
   ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jac);CHKERRQ(ierr);
   ierr = PetscMalloc(dim*dim * sizeof(PetscReal), &Jinv);CHKERRQ(ierr);
-  for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+  for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
     const double *phi = field->restrict(orderName, *e_itor);
     double eps = epsilon->restrict(patch, *e_itor)[0];
     double elementEnergy = 0.0;

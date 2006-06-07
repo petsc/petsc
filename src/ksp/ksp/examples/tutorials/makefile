@@ -628,7 +628,10 @@ runex36:
 	-${MPIRUN} -np ${NP} ./ex36 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex36bc.data ${EXTRA_ARGS}
 
 runex37:
-	-${MPIRUN} -np ${NP} ./ex37 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex37bc.data ${EXTRA_ARGS}
+	-${MPIRUN} -np ${NP} valgrind --tool=memcheck ./ex37 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex37bc.data ${EXTRA_ARGS}
+
+debugex37:
+	-${MPIRUN} -np ${NP} ./ex37 -dmmg_nlevels 1 -ksp_max_it 100 -mat_view -ksp_monitor -use_zero_base 1 -bc_file data/ex37bc.data -start_in_debugger ${EXTRA_ARGS}
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \

@@ -389,7 +389,7 @@ namespace ALE {
       };
     private:
       template<class InputSequence> Obj<coneSet> __nCone(Obj<InputSequence>& cone, int n, const Color_& color, bool useColor);
-      template<class pointSequence> void __nCone(const Obj<pointSequence>& cone, int n, const Color_& color, bool useColor, Obj<coneArray> cone, Obj<coneSet> seen);
+      template<class pointSequence> void __nCone(const Obj<pointSequence>& points, int n, const Color_& color, bool useColor, Obj<coneArray> cone, Obj<coneSet> seen);
     public:
       //
       // The basic Sieve interface (extensions to Sifter)
