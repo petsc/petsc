@@ -58,6 +58,9 @@ namespace ALE {
         this->boundary    = field_type(comm, debug);
         this->boundaries  = foliation_type(comm, debug);
         this->distributed = false;
+        this->coordinates->setTopology(this->topology);
+        this->boundary->setTopology(this->topology);
+        this->boundaries->setTopology(this->topology);
       };
 
       MPI_Comm        comm() const {return this->_comm;};

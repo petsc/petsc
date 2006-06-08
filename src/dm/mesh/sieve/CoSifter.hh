@@ -662,16 +662,26 @@ namespace ALE {
         typename bundle_type::patch_type patch;
 
         for(typename sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-          if (this->getFiberDimension(patch, *v_iter) > 0) {
-            useLocCapOverlap = 1;
-            break;
+          Obj<typename order_type::baseSequence> patches = this->getPatches();
+
+          for(typename order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
+            if (this->getFiberDimension(*p_iter, *v_iter) > 0) {
+              useLocCapOverlap = 1;
+              break;
+            }
           }
+          if (useLocCapOverlap) break;
         }
         for(typename sieve_type::traits::heightSequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-          if (this->getFiberDimension(patch, *c_iter) > 0) {
-            useLocBaseOverlap = 1;
-            break;
+          Obj<typename order_type::baseSequence> patches = this->getPatches();
+
+          for(typename order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
+            if (this->getFiberDimension(*p_iter, *c_iter) > 0) {
+              useLocBaseOverlap = 1;
+              break;
+            }
           }
+          if (useLocBaseOverlap) break;
         }
         // Get overlap
         Obj<typename supportDelta_type::overlap_type> capOverlap;

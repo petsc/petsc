@@ -469,8 +469,7 @@ namespace ALE {
       Obj<typename mesh_type::field_type> parallelBoundary = parallelMesh->getBoundary();
       short *assignment = NULL;
       bool useSimple = true;
-      //bool hasBd = (serialBoundary->getPatches()->size() > 0);
-      bool hasBd = false;
+      bool hasBd = (serialBoundary->getPatches()->size() > 0);
 
       parallelTopology->setStratification(false);
 #ifdef PETSC_HAVE_CHACO
