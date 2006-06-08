@@ -1,4 +1,4 @@
-!/usr/bin/env python
+#!/usr/bin/env python
 from __future__ import generators
 import user
 import config.base
