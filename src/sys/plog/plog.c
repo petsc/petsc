@@ -1093,25 +1093,29 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogDump(const char sname[])
   ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Total Flops %14e %16.8e\n", _TotalFlops, _TotalTime);
   ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Clock Resolution %g\n", 0.0);
   /* Output actions */
-  ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Actions accomplished %d\n", numActions);
-  for(action = 0; action < numActions; action++) {
-    ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "%g %d %d %d %d %d %d %g %g %g\n",
-                        actions[action].time, actions[action].action, (int)actions[action].event, (int)actions[action].cookie, actions[action].id1,
-                        actions[action].id2, actions[action].id3, actions[action].flops, actions[action].mem, actions[action].maxmem);
+  if (logActions) {
+    ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Actions accomplished %d\n", numActions);
+    for(action = 0; action < numActions; action++) {
+      ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "%g %d %d %d %d %d %d %g %g %g\n",
+                          actions[action].time, actions[action].action, (int)actions[action].event, (int)actions[action].cookie, actions[action].id1,
+                          actions[action].id2, actions[action].id3, actions[action].flops, actions[action].mem, actions[action].maxmem);
+    }
   }
   /* Output objects */
-  ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Objects created %d destroyed %d\n", numObjects, numObjectsDestroyed);
-  for(object = 0; object < numObjects; object++) {
-    ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Parent ID: %d Memory: %d\n", objects[object].parent, (int) objects[object].mem);
-    if (!objects[object].name[0]) {
-      ierr = PetscFPrintf(PETSC_COMM_WORLD, fd,"No Name\n");
-    } else {
-      ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Name: %s\n", objects[object].name);
-    }
-    if (objects[object].info[0] != 0) {
-      ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "No Info\n");
-    } else {
-      ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Info: %s\n", objects[object].info);
+  if (logObjects) {
+    ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Objects created %d destroyed %d\n", numObjects, numObjectsDestroyed);
+    for(object = 0; object < numObjects; object++) {
+      ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Parent ID: %d Memory: %d\n", objects[object].parent, (int) objects[object].mem);
+      if (!objects[object].name[0]) {
+        ierr = PetscFPrintf(PETSC_COMM_WORLD, fd,"No Name\n");
+      } else {
+        ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Name: %s\n", objects[object].name);
+      }
+      if (objects[object].info[0] != 0) {
+        ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "No Info\n");
+      } else {
+        ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Info: %s\n", objects[object].info);
+      }
     }
   }
   /* Output events */

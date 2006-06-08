@@ -273,7 +273,6 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_FieldSplit"
 static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
-/*   This does not call KSPSetFromOptions() on the subksp's, see PCSetFromOptionsBJacobi/ASM() */
 {
   PetscErrorCode ierr;
   PetscInt       i = 0,nfields,fields[12];
