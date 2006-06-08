@@ -109,6 +109,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
+  ierr = PetscFree(a->relax_work);CHKERRQ(ierr);
   ierr = PetscFree(a->solves_work);CHKERRQ(ierr);
   ierr = PetscFree(a->mult_work);CHKERRQ(ierr);
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
@@ -2020,7 +2021,10 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
     b = x;
   } 
 
-  ierr = PetscMalloc(m*sizeof(PetscScalar),&t);CHKERRQ(ierr);
+  if (!a->relax_work) {
+    ierr = PetscMalloc(m*sizeof(PetscScalar),&a->relax_work);CHKERRQ(ierr);
+  }
+  t = a->relax_work;
  
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){ 
@@ -2120,7 +2124,6 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
     }
   } 
 
-  ierr = PetscFree(t);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   if (bb != xx) { 
     ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);

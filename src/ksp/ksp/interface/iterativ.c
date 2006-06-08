@@ -245,7 +245,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPTrueMonitor(KSP ksp,PetscInt n,PetscReal rn
 {
   PetscErrorCode ierr;
   Vec            resid,work;
-  PetscReal      scnorm;
+  PetscReal      scnorm,bnorm;
   PC             pc;
   Mat            A,B;
   PetscViewer    viewer = (PetscViewer) dummy;
@@ -268,7 +268,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPTrueMonitor(KSP ksp,PetscInt n,PetscReal rn
   }
   ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
   ierr = VecDestroy(work);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e true resid norm %14.12e\n",n,rnorm,scnorm);CHKERRQ(ierr);
+  ierr = VecNorm(ksp->vec_rhs,NORM_2,&bnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e true resid norm %14.12e ||Ae||/||Ax|| %14.12e\n",n,rnorm,scnorm,scnorm/bnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -33,7 +33,7 @@ PetscTruth VecRegisterAllCalled          = PETSC_FALSE;
 PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, VecType method)
 {
   PetscErrorCode (*r)(Vec);
-  PetscTruth match;
+  PetscTruth     match;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

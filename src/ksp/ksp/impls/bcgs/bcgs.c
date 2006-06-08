@@ -38,7 +38,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
   P       = ksp->work[5];
 
   /* Compute initial preconditioned residual */
-  ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
+ ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
   if (ksp->normtype != KSP_NO_NORM) {
