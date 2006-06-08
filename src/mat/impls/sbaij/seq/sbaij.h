@@ -16,6 +16,7 @@ typedef struct {
   MatScalar        *anew;        /* nonzero diagonal and superdiagonal elements of reordered matrix */
   PetscScalar      *solves_work; /* work space used in MatSolves */
   PetscInt         solves_work_n;/* size of solves_work */  
+  PetscScalar      *relax_work;  
   PetscInt         *a2anew;        /* map used for symm permutation */
   PetscTruth       permute;        /* if true, a non-trivial permutation is used for factorization */
   PetscTruth       ignore_ltriangular; /* if true, ignore the lower triangular values inserted by users */
