@@ -202,8 +202,13 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink = jac->head;
+  PetscInt          bs;
 
   PetscFunctionBegin;
+  ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
+  if (bs != jac->bs) {
+    SETERRQ2(PETSC_ERR_ARG_SIZ,"Vector blocksize %D does not match Fieldsplit blocksize %D",bs,jac->bs);
+  }
   if (jac->type == PC_COMPOSITE_ADDITIVE) {
     if (jac->defaultsplit) {
       ierr = VecStrideGatherAll(x,jac->x,INSERT_VALUES);CHKERRQ(ierr);
