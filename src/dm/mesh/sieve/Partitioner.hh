@@ -447,7 +447,9 @@ namespace ALE {
         close(fd_stdout);
         close(fd_pipe[0]);
         close(fd_pipe[1]);
-        std::cout << msgLog << std::endl;
+        if (oldMesh->debug) {
+          std::cout << msgLog << std::endl;
+        }
         delete [] msgLog;
 #endif
         delete [] adjacency;

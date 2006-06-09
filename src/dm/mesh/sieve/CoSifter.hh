@@ -690,12 +690,16 @@ namespace ALE {
 
         MPI_Allreduce(&useLocCapOverlap, &useCapOverlap, 1, MPI_INT, MPI_LOR, this->comm());
         if (useCapOverlap) {
-          std::cout << "Doing cap overlap" << std::endl;
+          if (this->debug) {
+            std::cout << "Doing cap overlap" << std::endl;
+          }
           capOverlap = supportDelta_type::overlap(this->_topology);
         }
         MPI_Allreduce(&useLocBaseOverlap, &useBaseOverlap, 1, MPI_INT, MPI_LOR, this->comm());
         if (useBaseOverlap) {
-          std::cout << "Doing base overlap" << std::endl;
+          if (this->debug) {
+            std::cout << "Doing base overlap" << std::endl;
+          }
           baseOverlap = coneDelta_type::overlap(this->_topology);
         }
         if (useCapOverlap && useBaseOverlap) {
