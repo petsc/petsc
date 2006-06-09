@@ -209,13 +209,13 @@ M*/
    Level: developer
 
     Example:
-      PetscPolymorphicScalar(VecAXPY,(PetscScalar _t,Vec x,Vec y),(&_T,x,y)) generates the new routine
-           PetscErrorCode VecAXPY(PetscScalar _t,Vec x,Vec y) = {PetscScalar _T = _t; return VecAXPY(&_T,x,y);}
+      PetscPolymorphicScalar(VecAXPY,(PetscScalar _val,Vec x,Vec y),(&_Val,x,y)) generates the new routine
+           PetscErrorCode VecAXPY(PetscScalar _val,Vec x,Vec y) = {PetscScalar _Val = _val; return VecAXPY(&_Val,x,y);}
 
 .seealso: PetscPolymorphicFunction(),PetscPolymorphicSubroutine()
 
 M*/
-#define PetscPolymorphicScalar(A,B,C) PETSC_STATIC_INLINE PetscErrorCode A B {PetscScalar _T = _t; return A C;}
+#define PetscPolymorphicScalar(A,B,C) PETSC_STATIC_INLINE PetscErrorCode A B {PetscScalar _Val = _val; return A C;}
 
 /*MC
       PetscPolymorphicFunction - allows defining a C++ polymorphic version of 
