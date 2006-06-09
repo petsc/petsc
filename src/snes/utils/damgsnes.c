@@ -548,6 +548,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_fas",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscTruth block = PETSC_FALSE;
+      PetscTruth ngmres = PETSC_FALSE;
       PetscInt   newton_its;
       ierr = PetscOptionsHasName(0,"-dmmg_fas_view",&flg);CHKERRQ(ierr);
       for (i=0; i<nlevels; i++) {
@@ -590,10 +591,16 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
           }
         }
         ierr = PetscOptionsHasName(0,"-dmmg_fas_block",&block);CHKERRQ(ierr);
-        if (block) {
+        ierr = PetscOptionsHasName(0,"-dmmg_fas_ngmres",&ngmres);CHKERRQ(ierr);
+	if (block) {
           dmmg[i]->solve = DMMGSolveFASb;
           if (flg) {
             ierr = PetscPrintf(dmmg[i]->comm,"  using point-block smoothing\n");CHKERRQ(ierr);
+          }
+	} else if(ngmres) {
+          dmmg[i]->solve = DMMGSolve_NGMRES;
+          if (flg) {
+            ierr = PetscPrintf(dmmg[i]->comm,"  using non-linear gmres\n");CHKERRQ(ierr);
           }
         } else {
           dmmg[i]->solve = DMMGSolveFAS4;
