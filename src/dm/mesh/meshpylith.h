@@ -280,15 +280,19 @@ class PyLithViewer {
       SETERRQ(PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
     }
     for(ALE::Mesh::field_type::order_type::baseSequence::iterator e_itor = splitElements->begin(); e_itor != splitElements->end(); ++e_itor) {
-      ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> cone = splitField->getPatch(*e_itor);
-      int e = elementBundle->getIndex(patch, *e_itor).prefix+1;
+      const ALE::Mesh::bundle_type::index_type& idx = elementBundle->getIndex(patch, *e_itor);
 
-      for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
-        const double *values = splitField->restrict(*e_itor, *c_itor);
-        int v = vertexBundle->getIndex(patch, *c_itor).prefix+1;
+      if (idx.index > 0) {
+        ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> cone = splitField->getPatch(*e_itor);
+        int e = idx.prefix+1;
 
-        // No time history
-        ierr = PetscViewerASCIIPrintf(viewer, "%6d %6d 0 %15.9g %15.9g %15.9g\n", e, v, values[0], values[1], values[2]);CHKERRQ(ierr);
+        for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+          const double *values = splitField->restrict(*e_itor, *c_itor);
+          int v = vertexBundle->getIndex(patch, *c_itor).prefix+1;
+
+          // No time history
+          ierr = PetscViewerASCIIPrintf(viewer, "%6d %6d 0 %15.9g %15.9g %15.9g\n", e, v, values[0], values[1], values[2]);CHKERRQ(ierr);
+        }
       }
     }
     PetscFunctionReturn(0);
