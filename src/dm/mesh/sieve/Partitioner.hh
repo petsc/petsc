@@ -75,6 +75,7 @@ namespace ALE {
     // ERROR: This crap only works for a single patch
     template<typename FieldType, typename OverlapType>
     static VecScatter createMappingStoP(Obj<FieldType> serialSifter, Obj<FieldType> parallelSifter, Obj<OverlapType> overlap, bool doExchange = false) {
+      ALE_LOG_EVENT_BEGIN;
       VecScatter scatter;
       Obj<typename OverlapType::traits::baseSequence> neighbors = overlap->base();
       MPI_Comm comm = serialSifter->comm();
@@ -267,6 +268,7 @@ namespace ALE {
 
       ierr = VecDestroy(serialVec);CHKERROR(ierr, "Error in VecDestroy");
       ierr = VecDestroy(parallelVec);CHKERROR(ierr, "Error in VecDestroy");
+      ALE_LOG_EVENT_END;
       return scatter;
     };
   };
@@ -350,6 +352,8 @@ namespace ALE {
       return assignment;
     };
 #ifdef PETSC_HAVE_CHACO
+    #undef __FUNCT__
+    #define __FUNCT__ "partition_Chaco"
     static short *partition_Chaco(Obj<mesh_type> oldMesh, Obj<sieve_type> oldSieve, const Obj<sieve_type> newSieve) {
       ALE_LOG_EVENT_BEGIN;
       typename mesh_type::patch_type patch;

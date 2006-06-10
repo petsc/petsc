@@ -76,6 +76,8 @@ namespace ALE {
       Obj<field_type> getBoundary() const {return this->boundary;};
       void            setBoundary(const Obj<field_type>& boundary) {this->boundary = boundary;};
       Obj<foliation_type> getBoundaries() const {return this->boundaries;};
+      #undef __FUNCT__
+      #define __FUNCT__ "Mesh::getBundle"
       Obj<bundle_type> getBundle(const int dim) {
         ALE_LOG_EVENT_BEGIN;
         if (this->bundles.find(dim) == this->bundles.end()) {
@@ -331,8 +333,11 @@ namespace ALE {
         return indices;
       };
     public:
+      #undef __FUNCT__
+      #define __FUNCT__ "Mesh::parVertReOrd"
       // This is not right, we should not have to copy everything to the new order first
       void createParallelVertexReorder(Obj<bundle_type> serialVertexBundle) {
+        ALE_LOG_EVENT_BEGIN;
         Obj<bundle_type> vertexBundle = this->getBundle(0);
         std::string orderName("element");
 
@@ -357,6 +362,7 @@ namespace ALE {
         }
         vertexBundle->orderPatches(orderName);
         vertexBundle->partitionOrder(orderName);
+        ALE_LOG_EVENT_END;
       };
       template<typename OverlapType>
       void createParallelCoordinates(int embedDim, Obj<field_type> serialCoordinates, Obj<OverlapType> partitionOverlap);

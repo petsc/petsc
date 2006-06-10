@@ -1194,7 +1194,8 @@ namespace ALE {
 
     const typename traits::color_type&
     getColor(const typename traits::source_type& s, const typename traits::target_type& t, bool fail = true) {
-      typename traits::arrowSequence arr = this->arrows(s,t);
+      //typename traits::arrowSequence arr = this->arrows(s,t);
+      typename traits::arrowSequence arr(::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set), s, t);
       if(arr.begin() != arr.end()) {
         return arr.begin().color();
       }
