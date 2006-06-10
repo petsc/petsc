@@ -154,13 +154,17 @@ namespace ALE {
       typedef FusionSifter_                                                                                             fusion_type;
 
       //
+      #undef __FUNCT__
+      #define __FUNCT__ "Delta::overlap"
       static Obj<overlap_type> 
       overlap(const Obj<graph_type> graph) {
+        ALE_LOG_EVENT_BEGIN;
         Obj<overlap_type> overlap = overlap_type(graph->comm());
         // If this is a serial object, we return an empty overlap
         if((graph->comm() != PETSC_COMM_SELF) && (graph->commSize() > 1)) {
           computeOverlap(graph, overlap);
         }
+        ALE_LOG_EVENT_END;
         return overlap;
       };
 
@@ -169,8 +173,11 @@ namespace ALE {
         __computeOverlapNew(graph, overlap);
       };
 
+      #undef __FUNCT__
+      #define __FUNCT__ "Delta::bioverlap"
       static Obj<bioverlap_type> 
       overlap(const Obj<graph_type> graphA, const Obj<graph_type> graphB) {
+        ALE_LOG_EVENT_BEGIN;
         Obj<bioverlap_type> overlap = bioverlap_type(graphA->comm());
         PetscMPIInt         comp;
 
@@ -179,6 +186,7 @@ namespace ALE {
           throw ALE::Exception("Non-matching communicators for overlap");
         }
         computeOverlap(graphA, graphB, overlap);
+        ALE_LOG_EVENT_END;
         return overlap;
       };
 
@@ -2324,13 +2332,17 @@ namespace ALE {
 
       //
       // FIX: Is there a way to inherit this from ParConeDelta?  Right now it is a verbatim copy.
+      #undef __FUNCT__
+      #define __FUNCT__ "Flip::overlap"
       static Obj<overlap_type> 
       overlap(const Obj<graph_type> graph) {
+        ALE_LOG_EVENT_BEGIN;
         Obj<overlap_type> overlap = overlap_type(graph->comm());
         // If this is a serial object, we return an empty overlap
         if((graph->comm() != PETSC_COMM_SELF) && (graph->commSize() > 1)) {
           computeOverlap(graph, overlap);
         }
+        ALE_LOG_EVENT_END;
         return overlap;
       };
 
@@ -2342,8 +2354,11 @@ namespace ALE {
         ParConeDelta<Flip<graph_type>, fuser_type, Flip<fusion_type> >::computeOverlap(graph_flip, overlap_flip);
       };
 
+      #undef __FUNCT__
+      #define __FUNCT__ "Flip::bioverlap"
       static Obj<bioverlap_type> 
       overlap(const Obj<graph_type> graphA, const Obj<graph_type> graphB) {
+        ALE_LOG_EVENT_BEGIN;
         Obj<bioverlap_type> overlap = bioverlap_type(graphA->comm());
         PetscMPIInt         comp;
 
@@ -2356,6 +2371,7 @@ namespace ALE {
         Obj<Flip<bioverlap_type> > overlap_flip     = Flip<bioverlap_type>(overlap);
 
         ParConeDelta<Flip<graph_type>, fuser_type, Flip<fusion_type> >::computeOverlap(graphA_flip, graphB_flip, overlap_flip);
+        ALE_LOG_EVENT_END;
         return overlap;
       };
 

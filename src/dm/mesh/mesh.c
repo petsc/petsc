@@ -4,6 +4,10 @@
 #include "src/dm/mesh/meshpcice.h"
 #include "src/dm/mesh/meshpylith.h"
 
+/* Logging support */
+PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE = 0;
+PetscEvent  Mesh_GetGlobalScatter = 0;
+
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve_Ascii"
 PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer)
@@ -326,7 +330,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, DA_COOKIE, 1);
+  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
   PetscValidType(mesh, 1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(mesh->comm);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
@@ -380,7 +384,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshLoad(PetscViewer viewer, Mesh *mesh)
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::Mesh> *m)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, DA_COOKIE, 1);
+  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
   if (m) {
     PetscValidPointer(m,2);
     *m = mesh->m;
@@ -407,7 +411,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::Mesh> *m)
 PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, ALE::Obj<ALE::Mesh> m)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, DA_COOKIE, 1);
+  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
   mesh->m = m;
   PetscFunctionReturn(0);
 }
@@ -573,7 +577,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(p,_p_Mesh,struct _MeshOps,DA_COOKIE,0,"Mesh",comm,MeshDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(p,_p_Mesh,struct _MeshOps,MESH_COOKIE,0,"Mesh",comm,MeshDestroy,0);CHKERRQ(ierr);
   p->ops->view               = MeshView_Sieve;
   p->ops->createglobalvector = MeshCreateGlobalVector;
   p->ops->getmatrix          = MeshGetMatrix;
@@ -893,6 +897,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Mesh *mesh,const char
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
   ALE::Obj<ALE::Mesh::field_type>  field       = mesh->getField(std::string(fieldName));
   ALE::Obj<ALE::Mesh::bundle_type> globalOrder = field->getGlobalOrder();
   ALE::Obj<ALE::Mesh::bundle_type> localOrder  = field->getLocalOrder();
@@ -908,6 +913,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Mesh *mesh,const char
   ierr = VecScatterCreate(localVec, localIS, g, globalIS, scatter);CHKERRQ(ierr);
   ierr = ISDestroy(globalIS);CHKERRQ(ierr);
   ierr = ISDestroy(localIS);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

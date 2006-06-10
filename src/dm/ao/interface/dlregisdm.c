@@ -32,12 +32,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
   ierr = PetscLogClassRegister(&AO_COOKIE,     "Application Order");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&AODATA_COOKIE, "Application Data");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&DA_COOKIE,     "Distributed array");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&MESH_COOKIE,   "Distributed array");CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister(&AO_PetscToApplication, "AOPetscToApplication", AO_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&AO_ApplicationToPetsc, "AOApplicationToPetsc", AO_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&DA_GlobalToLocal,      "DAGlobalToLocal",      DA_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&DA_LocalToGlobal,      "DALocalToGlobal",      DA_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&DA_LocalADFunction,    "DALocalADFunc",        DA_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&Mesh_GetGlobalScatter, "GetGlobalScatter",     MESH_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {

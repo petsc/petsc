@@ -139,6 +139,7 @@ namespace ALE {
     if(_log_event.find(event_name) == _log_event.end()) {    
       PetscErrorCode ierr = PetscLogEventRegister(&event, name, cookie);
       CHKERROR(ierr, "PetscLogEventRegister failed");
+      std::cout << "Registered event " << name << " to " << event << std::endl;
       _log_event[event_name] = event;                   
     }                                                        
     else {                                                   

@@ -173,6 +173,7 @@ namespace ALE {
       // If demangling is not available, use the class name returned by typeid directly.
       id_name = id.name();
 #endif
+#ifdef ALE_USE_LOGGING_MEM
       // Use id_name to register a cookie and events.
       logged_allocator::_cookie = LogCookieRegister(id_name); 
       // Register the basic allocator methods' invocations as events; use the mangled class name.
@@ -182,6 +183,7 @@ namespace ALE {
       logged_allocator::_destroy_event = logged_allocator::__log_event_register(id_name, "destroy");
       logged_allocator::_create_event = logged_allocator::__log_event_register(id_name, "create");
       logged_allocator::_del_event = logged_allocator::__log_event_register(id_name, "del");
+#endif
 #ifdef ALE_HAVE_CXX_ABI
       // Free the name malloc'ed by __cxa_demangle
       free(id_name_demangled);
@@ -206,53 +208,81 @@ namespace ALE {
 
   template <class T, bool O>
   T*  logged_allocator<T, O>::allocate(size_type _n) {
+#ifdef ALE_USE_LOGGING_MEM
     LogEventBegin(logged_allocator::_allocate_event); 
+#endif
     T* _p = polymorphic_allocator<T>::allocate(_n);
+#ifdef ALE_USE_LOGGING_MEM
     LogEventEnd(logged_allocator::_allocate_event); 
+#endif
     return _p;
   }
   
   template <class T, bool O>
   void logged_allocator<T, O>::deallocate(T* _p, size_type _n) {
+#ifdef ALE_USE_LOGGING_MEM
     LogEventBegin(logged_allocator::_deallocate_event);
+#endif
     polymorphic_allocator<T>::deallocate(_p, _n);
+#ifdef ALE_USE_LOGGING_MEM
     LogEventEnd(logged_allocator::_deallocate_event);
+#endif
   }
   
   template <class T, bool O>
   void logged_allocator<T, O>::construct(T* _p, const T& _val) {
+#ifdef ALE_USE_LOGGING_MEM
     LogEventBegin(logged_allocator::_construct_event);
+#endif
     polymorphic_allocator<T>::construct(_p, _val);
+#ifdef ALE_USE_LOGGING_MEM
     LogEventEnd(logged_allocator::_construct_event);
+#endif
   }
   
   template <class T, bool O>
   void logged_allocator<T, O>::destroy(T* _p) {
+#ifdef ALE_USE_LOGGING_MEM
     LogEventBegin(logged_allocator::_destroy_event);
+#endif
     polymorphic_allocator<T>::destroy(_p);
+#ifdef ALE_USE_LOGGING_MEM
     LogEventEnd(logged_allocator::_destroy_event);
+#endif
   }
   
   template <class T, bool O>
   T* logged_allocator<T, O>::create(const T& _val) {
+#ifdef ALE_USE_LOGGING_MEM
     LogEventBegin(logged_allocator::_create_event); 
+#endif
     T* _p = polymorphic_allocator<T>::create(_val);
+#ifdef ALE_USE_LOGGING_MEM
     LogEventEnd(logged_allocator::_create_event);
+#endif
     return _p;
   }
 
   template <class T, bool O>
   void logged_allocator<T, O>::del(T* _p) {
+#ifdef ALE_USE_LOGGING_MEM
     LogEventBegin(logged_allocator::_del_event);
+#endif
     polymorphic_allocator<T>::del(_p);
+#ifdef ALE_USE_LOGGING_MEM
     LogEventEnd(logged_allocator::_del_event);
+#endif
   }
 
   template <class T, bool O> template <class TT>
   void logged_allocator<T, O>::del(TT* _p, size_type _sz) {
+#ifdef ALE_USE_LOGGING_MEM
     LogEventBegin(logged_allocator::_del_event);
+#endif
     polymorphic_allocator<T>::del(_p, _sz);
+#ifdef ALE_USE_LOGGING_MEM
     LogEventEnd(logged_allocator::_del_event);
+#endif
   }
 
 #ifdef ALE_USE_LOGGING
