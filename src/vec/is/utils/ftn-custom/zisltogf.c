@@ -2,9 +2,13 @@
 #include "petscis.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define islocaltoglobalmappingview_   ISLOCALTOGLOBALMAPPINGVIEW
+#define islocaltoglobalmappingview_       ISLOCALTOGLOBALMAPPINGVIEW
+#define islocaltoglobalmpnggetinfosize_   ISLOCALTOGLOBALMPNGGETINFOSIZE
+#define islocaltoglobalmappinggetinfo_    ISLOCALTOGLOBALMAPPINGGETINFO
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define islocaltoglobalmappingview_   islocaltoglobalmappingview
+#define islocaltoglobalmappingview_       islocaltoglobalmappingview
+#define islocaltoglobalmpnggetinfosize_   islocaltoglobalmpnggetinfosize
+#define islocaltoglobalmappinggetinfo_    islocaltoglobalmappinggetinfo
 #endif
 
 EXTERN_C_BEGIN
@@ -14,6 +18,36 @@ void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping,P
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = ISLocalToGlobalMappingView(*mapping,v);
+}
+
+static PetscInt   *sprocs, *snumprocs, **sindices;
+static PetscTruth called;
+void PETSC_STDCALL islocaltoglobalmpnggetinfosize_(ISLocalToGlobalMapping *mapping,PetscInt *nprocs,PetscInt *maxnumprocs,PetscErrorCode *ierr)
+{
+  PetscInt i;
+  if (!called) {*ierr = PETSC_ERR_ARG_WRONGSTATE; return;}
+  *ierr        = ISLocalToGlobalMappingGetInfo(*mapping,nprocs,&sprocs,&snumprocs,&sindices); if (*ierr) return;
+  *maxnumprocs = 0;
+  for (i=0; i<*nprocs; i++) {
+    *maxnumprocs = PetscMax(*maxnumprocs,snumprocs[i]);
+  }
+  called = PETSC_TRUE;
+}
+
+void PETSC_STDCALL islocaltoglobalmappinggetinfo_(ISLocalToGlobalMapping *mapping,PetscInt *nprocs,PetscInt *procs,PetscInt *numprocs,
+                                                  PetscInt *indices,PetscErrorCode *ierr)
+{
+  PetscInt i,j;
+  if (!called) {*ierr = PETSC_ERR_ARG_WRONGSTATE; return;}
+  *ierr = PetscMemcpy(procs,sprocs,*nprocs*sizeof(PetscInt)); if (*ierr) return;
+  *ierr = PetscMemcpy(numprocs,snumprocs,*nprocs*sizeof(PetscInt)); if (*ierr) return;
+  for (i=0; i<*nprocs; i++) {
+    for (j=0; j<numprocs[i]; j++) {
+      indices[i + (*nprocs)*j] = sindices[i][j];
+    }
+  }
+  *ierr = ISLocalToGlobalMappingRestoreInfo(*mapping,nprocs,&sprocs,&snumprocs,&sindices); if (*ierr) return;
+  called = PETSC_FALSE;
 }
 
 EXTERN_C_END
