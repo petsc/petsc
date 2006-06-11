@@ -1,4 +1,4 @@
-#include "src/dm/mesh/mesh.h"   /*I      "petscmesh.h"   I*/
+#include "src/dm/mesh/meshimpl.h"   /*I      "petscmesh.h"   I*/
 
 class PCICEViewer {
  public:
