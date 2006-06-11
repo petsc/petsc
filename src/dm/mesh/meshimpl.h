@@ -25,4 +25,8 @@ struct _p_Mesh {
   PetscInt                 d_nz,o_nz,*d_nnz,*o_nnz;
 };
 
+
+extern PetscEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
+                  Mesh_assembleVectorComplete, Mesh_assembleMatrix;
+
 #endif

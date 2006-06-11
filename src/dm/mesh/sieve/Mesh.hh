@@ -181,6 +181,10 @@ namespace ALE {
       // The other simplices are numbered as they are requested
       void buildTopology(int numSimplices, int simplices[], int numVertices, bool interpolate = true) {
         ALE_LOG_EVENT_BEGIN;
+        if (this->commRank() != 0) {
+          ALE_LOG_EVENT_END;
+          return;
+        }
         // Create a map from dimension to the current element number for that dimension
         std::map<int,int*> curElement = std::map<int,int*>();
         int                curSimplex = 0;
@@ -370,9 +374,7 @@ namespace ALE {
       // Create a serial mesh
       void populate(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true) {
         this->topology->setStratification(false);
-        if (this->commRank() == 0) {
-          this->buildTopology(numSimplices, simplices, numVertices, interpolate);
-        }
+        this->buildTopology(numSimplices, simplices, numVertices, interpolate);
         this->topology->stratify();
         this->topology->setStratification(true);
         this->createVertexBundle(numSimplices, simplices);
@@ -380,9 +382,7 @@ namespace ALE {
       };
       void populateBd(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true) {
         this->topology->setStratification(false);
-        if (this->commRank() == 0) {
-          this->buildTopology(numSimplices, simplices, numVertices, interpolate);
-        }
+        this->buildTopology(numSimplices, simplices, numVertices, interpolate);
         this->topology->stratify();
         this->topology->setStratification(true);
         this->createVertexBundle(numSimplices, simplices);

@@ -18,6 +18,9 @@ PETSC_EXTERN_CXX_BEGIN
 S*/
 typedef struct _p_Mesh* Mesh;
 
+/* Logging support */
+extern PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE;
+
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm,Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh);

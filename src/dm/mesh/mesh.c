@@ -1,12 +1,13 @@
  
-#include "src/dm/mesh/mesh.h"   /*I      "petscmesh.h"   I*/
+#include "src/dm/mesh/meshimpl.h"   /*I      "petscmesh.h"   I*/
 #include "src/dm/mesh/meshvtk.h"
 #include "src/dm/mesh/meshpcice.h"
 #include "src/dm/mesh/meshpylith.h"
 
 /* Logging support */
 PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE = 0;
-PetscEvent  Mesh_GetGlobalScatter = 0;
+PetscEvent  Mesh_View = 0, Mesh_GetGlobalScatter = 0, Mesh_restrictVector = 0, Mesh_assembleVector = 0,
+            Mesh_assembleVectorComplete = 0, Mesh_assembleMatrix = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve_Ascii"
@@ -336,7 +337,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
   PetscCheckSameComm(mesh, 1, viewer, 2);
 
+  ierr = PetscLogEventBegin(Mesh_View,0,0,0,0);CHKERRQ(ierr);
   ierr = (*mesh->ops->view)(mesh, viewer);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(Mesh_View,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -943,6 +946,7 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(Mesh_restrictVector,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
   ierr = VecScatterBegin(g, l, mode, SCATTER_REVERSE, injection);
   ierr = VecScatterEnd(g, l, mode, SCATTER_REVERSE, injection);
@@ -951,6 +955,7 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
 /*   } else { */
 /*     ierr = VecAXPY(l, 1.0, g);CHKERRQ(ierr); */
 /*   } */
+  ierr = PetscLogEventEnd(Mesh_restrictVector,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -978,6 +983,7 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(Mesh_assembleVectorComplete,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
   ierr = VecScatterBegin(l, g, mode, SCATTER_FORWARD, injection);CHKERRQ(ierr);
   ierr = VecScatterEnd(l, g, mode, SCATTER_FORWARD, injection);CHKERRQ(ierr);
@@ -986,6 +992,7 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
 /*   } else { */
 /*     ierr = VecAXPY(g, 1.0, l);CHKERRQ(ierr); */
 /*   } */
+  ierr = PetscLogEventEnd(Mesh_assembleVectorComplete,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1017,6 +1024,7 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(Mesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) b, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
   //firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
@@ -1027,6 +1035,7 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
   } else {
     m->getField(std::string("x"))->updateAdd(patch, ALE::Mesh::point_type(0, e + firstElement), v);
   }
+  ierr = PetscLogEventEnd(Mesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1104,6 +1113,7 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(Mesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &c);CHKERRQ(ierr);
   ierr = PetscObjectContainerGetPointer(c, (void **) &mesh);CHKERRQ(ierr);
   //FIX: Must use a reorder to map local to global element numbers
@@ -1123,6 +1133,7 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;
   }
+  ierr = PetscLogEventEnd(Mesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
