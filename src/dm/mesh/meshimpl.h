@@ -2,7 +2,9 @@
 
 #if !defined(__mesh_h)
 #define __mesh_h
- 
+
+#ifdef PETSC_HAVE_SIEVE
+
 #include "petscmesh.h"   /*I      "petscmesh.h"   I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
 
@@ -25,6 +27,7 @@ struct _p_Mesh {
   PetscInt                 d_nz,o_nz,*d_nnz,*o_nnz;
 };
 
+#endif
 
 extern PetscEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
                   Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
