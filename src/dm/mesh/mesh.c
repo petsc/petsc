@@ -7,7 +7,7 @@
 /* Logging support */
 PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE = 0;
 PetscEvent  Mesh_View = 0, Mesh_GetGlobalScatter = 0, Mesh_restrictVector = 0, Mesh_assembleVector = 0,
-            Mesh_assembleVectorComplete = 0, Mesh_assembleMatrix = 0;
+            Mesh_assembleVectorComplete = 0, Mesh_assembleMatrix = 0, Mesh_updateOperator = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve_Ascii"
@@ -1043,16 +1043,17 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
 #define __FUNCT__ "updateOperator"
 PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Mesh::field_type> field, const ALE::Mesh::point_type& e, PetscScalar array[], InsertMode mode)
 {
-  //ALE::Obj<ALE::Mesh::bundle_type::IndexArray> intervals = field->getIndices("element", e);
-  ALE::Obj<ALE::Mesh::bundle_type::order_type::coneSequence> intervals = field->getPatch("element", e);
-  ALE::Obj<ALE::Mesh::bundle_type> globalOrder = field->getGlobalOrder();
-  ALE::Mesh::bundle_type::patch_type patch;
   static PetscInt  indicesSize = 0;
   static PetscInt *indices = NULL;
   PetscInt         numIndices = 0;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ALE::Obj<ALE::Mesh::bundle_type::order_type::coneSequence> intervals = field->getPatch("element", e);
+  ALE::Obj<ALE::Mesh::bundle_type> globalOrder = field->getGlobalOrder();
+  ALE::Mesh::bundle_type::patch_type patch;
+
+  ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   if (field->debug) {printf("[%d]mat for element (%d, %d)\n", field->commRank(), e.prefix, e.index);}
   for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator i_itor = intervals->begin(); i_itor != intervals->end(); ++i_itor) {
     numIndices += std::abs(globalOrder->getFiberDimension(patch, *i_itor));
@@ -1083,6 +1084,7 @@ PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Mesh::field_type> field, cons
     }
   }
   ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1107,29 +1109,19 @@ PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Mesh::field_type> field, cons
 @*/
 PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mode)
 {
-  PetscObjectContainer c;
-  ALE::Mesh      *mesh;
-  int                  firstElement = 0;
-  PetscErrorCode       ierr;
+  static ALE::Mesh::field_type::patch_type patch;
+  PetscObjectContainer  c;
+  ALE::Mesh            *mesh;
+  ALE::Mesh::point_type order(e, 0);
+  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &c);CHKERRQ(ierr);
   ierr = PetscObjectContainerGetPointer(c, (void **) &mesh);CHKERRQ(ierr);
-  //FIX: Must use a reorder to map local to global element numbers
-  //firstElement = mesh->getBundle(mesh->getTopology()->depth())->getGlobalOffsets()[mesh->commRank()];
-  int localElement, count = 0;
-  ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
-  for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-    if (count == e) {
-      localElement = (*e_itor).index;
-      break;
-    }
-    count++;
-  }
   try {
-    //ierr = assembleOperator_New(A, mesh->getField(), mesh->getOrientation(), ALE::def::Mesh::sieve_type::point_type(0, e + firstElement), v, mode);CHKERRQ(ierr);
-    ierr = updateOperator(A, mesh->getField("displacement"), ALE::Mesh::sieve_type::point_type(0, localElement + firstElement), v, mode);CHKERRQ(ierr);
+    //ierr = updateOperator(A, mesh->getField("displacement"), ALE::Mesh::sieve_type::point_type(0, localElement), v, mode);CHKERRQ(ierr);
+    ierr = updateOperator(A, mesh->getField("displacement"), *mesh->getBundle(mesh->getTopology()->depth())->__getOrder()->cone(patch, order)->begin(), v, mode);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;
   }

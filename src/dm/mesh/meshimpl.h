@@ -27,6 +27,6 @@ struct _p_Mesh {
 
 
 extern PetscEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
-                  Mesh_assembleVectorComplete, Mesh_assembleMatrix;
+                  Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
 #endif

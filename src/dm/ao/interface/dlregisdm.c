@@ -46,6 +46,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
   ierr = PetscLogEventRegister(&Mesh_assembleVector,         "MeshAssembleVector",   MESH_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&Mesh_assembleVectorComplete, "MeshAssemVecComplete", MESH_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&Mesh_assembleMatrix,         "MeshAssembleMatrix",   MESH_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&Mesh_updateOperator,         "MeshUpdateOperator",   MESH_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
