@@ -701,6 +701,23 @@ namespace ALE {
       }
       return cone;
     };
+    template<typename PointCheck>
+    bool coneContains(const typename traits::target_type& p, const PointCheck& checker) {
+      typename traits::coneSequence cone(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), p);
+
+      for(typename traits::coneSequence::iterator c_iter = cone.begin(); c_iter != cone.end(); ++c_iter) {
+        if (checker(*c_iter, p)) return true;
+      }
+      return false;
+    };
+    template<typename PointProcess>
+    void coneApply(const typename traits::target_type& p, PointProcess& processor) {
+      typename traits::coneSequence cone(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), p);
+
+      for(typename traits::coneSequence::iterator c_iter = cone.begin(); c_iter != cone.end(); ++c_iter) {
+        processor(*c_iter, p);
+      }
+    };
     Obj<typename traits::supportSequence> 
     support(const typename traits::source_type& p) {
       return typename traits::supportSequence(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p);
@@ -1194,11 +1211,25 @@ namespace ALE {
 
     const typename traits::color_type&
     getColor(const typename traits::source_type& s, const typename traits::target_type& t, bool fail = true) {
-      //typename traits::arrowSequence arr = this->arrows(s,t);
-      typename traits::arrowSequence arr(::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set), s, t);
-      if(arr.begin() != arr.end()) {
-        return arr.begin().color();
+      typedef typename ::boost::multi_index::index<typename traits::arrow_container_type::set_type,typename traits::arrowInd>::type index_type;
+
+      const index_type& _index = ::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set);
+#if 0
+      ::boost::tuple<typename traits::source_type, typename traits::target_type> key = ::boost::make_tuple(s, t);
+      typename index_type::iterator begin = _index.lower_bound(key);
+      if(begin != _index.upper_bound(key)) {
+        return begin->color;
       }
+#else
+      const typename index_type::iterator begin = _index.find(::boost::make_tuple(s, t));
+      if (begin != _index.end()) {
+        return begin->color;
+      }
+#endif
+//       typename traits::arrowSequence arr(::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set), s, t);
+//       if(arr.begin() != arr.end()) {
+//         return arr.begin().color();
+//       }
       if (fail) {
         ostringstream o;
         o << "Arrow " << s << " --> " << t << " not present";

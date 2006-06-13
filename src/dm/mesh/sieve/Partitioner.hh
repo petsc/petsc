@@ -14,6 +14,119 @@ extern "C" {
   extern int FREE_GRAPH;
 }
 
+template<typename OverlapType>
+struct findNeighbor {
+  int graph;
+
+  findNeighbor(int graph) : graph(graph) {};
+  bool operator()(const typename OverlapType::traits::source_type& p, const typename OverlapType::traits::target_type& t) const {
+    if (p.first == graph) return true;
+    return false;
+  };
+};
+
+template<typename OverlapType, typename FieldType>
+struct calcNeighborSize {
+  ALE::Obj<FieldType>                                    serialSifter;
+  ALE::Obj<typename FieldType::order_type::baseSequence> serialPatches;
+  int *BuySizesA;
+  int *SellSizesA;
+  int& offsetA;
+  int  foundA;
+  ALE::Obj<FieldType>                                    parallelSifter;
+  ALE::Obj<typename FieldType::order_type::baseSequence> parallelPatches;
+  int *BuySizesB;
+  int *SellSizesB;
+  int& offsetB;
+  int  foundB;
+
+  calcNeighborSize(ALE::Obj<FieldType> serialSifter, ALE::Obj<typename FieldType::order_type::baseSequence> serialPatches, int *BuySizesA, int *SellSizesA, int& offsetA, ALE::Obj<FieldType> parallelSifter, ALE::Obj<typename FieldType::order_type::baseSequence> parallelPatches, int *BuySizesB, int *SellSizesB, int& offsetB) : serialSifter(serialSifter), serialPatches(serialPatches), BuySizesA(BuySizesA), SellSizesA(SellSizesA), offsetA(offsetA), parallelSifter(parallelSifter), parallelPatches(parallelPatches), BuySizesB(BuySizesB), SellSizesB(SellSizesB), offsetB(offsetB) {foundA = 0; foundB = 0;};
+  void operator()(const typename OverlapType::traits::source_type& p, const typename OverlapType::traits::target_type& t) {
+    if (p.first == 0) {
+      ALE::Obj<typename FieldType::order_type::supportSequence> patches = serialSifter->__getOrder()->support(p.second);
+
+      for(typename FieldType::order_type::supportSequence::iterator sp_iter = patches->begin(); sp_iter != patches->end(); ++sp_iter) {
+        // Assume the same index sizes
+        int idxSize = serialSifter->getIndex(*sp_iter, p.second).index;
+
+        BuySizesA[0]  += idxSize;
+        SellSizesA[0] += idxSize;
+        offsetA       += idxSize;
+        foundA         = 1;
+      }
+    } else {
+      ALE::Obj<typename FieldType::order_type::supportSequence> patches = parallelSifter->__getOrder()->support(p.second);
+
+      for(typename FieldType::order_type::supportSequence::iterator pp_iter = patches->begin(); pp_iter != patches->end(); ++pp_iter) {
+        // Assume the same index sizes
+        int idxSize = parallelSifter->getIndex(*pp_iter, p.second).index;
+
+        BuySizesB[0]  += idxSize;
+        SellSizesB[0] += idxSize;
+        offsetB       += idxSize;
+        foundB         = 1;
+      }
+    }
+  };
+};
+
+template<typename OverlapType, typename FieldType>
+struct fillNeighborCones {
+  ALE::Obj<FieldType>                                    serialSifter;
+  ALE::Obj<typename FieldType::order_type::baseSequence> serialPatches;
+  int *serialOffsets;
+  int *SellConesA;
+  int& offsetA;
+  ALE::Obj<FieldType>                                    parallelSifter;
+  ALE::Obj<typename FieldType::order_type::baseSequence> parallelPatches;
+  int *parallelOffsets;
+  int *SellConesB;
+  int& offsetB;
+
+  fillNeighborCones(ALE::Obj<FieldType> serialSifter, ALE::Obj<typename FieldType::order_type::baseSequence> serialPatches, int *serialOffsets, int *SellConesA, int &offsetA, ALE::Obj<FieldType> parallelSifter, ALE::Obj<typename FieldType::order_type::baseSequence> parallelPatches, int *parallelOffsets, int *SellConesB, int& offsetB) : serialSifter(serialSifter), serialPatches(serialPatches), serialOffsets(serialOffsets), SellConesA(SellConesA), offsetA(offsetA), parallelSifter(parallelSifter), parallelPatches(parallelPatches), parallelOffsets(parallelOffsets), SellConesB(SellConesB), offsetB(offsetB) {};
+  void operator()(const typename OverlapType::traits::source_type& p, const typename OverlapType::traits::target_type& t) {
+    if (p.first == 0) {
+      ALE::Obj<typename FieldType::order_type::supportSequence> patches = serialSifter->__getOrder()->support(p.second);
+      int patchNum = 0;
+
+      for(typename FieldType::order_type::supportSequence::iterator sp_iter = patches->begin(); sp_iter != patches->end(); ++sp_iter) {
+        const typename FieldType::index_type& idx = serialSifter->getIndex(*sp_iter, p.second);
+
+        if (serialSifter->debug) {
+          ostringstream  txt;
+          PetscErrorCode ierr;
+
+          txt << "["<<serialSifter->commRank()<<"]Packing A patch " << *sp_iter << " index " << idx << "(" << serialOffsets[patchNum] << ") for " << t << std::endl;
+          ierr = PetscSynchronizedPrintf(serialSifter->comm(), txt.str().c_str()); ALE::CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+        }
+        for(int i = serialOffsets[patchNum]+idx.prefix; i < serialOffsets[patchNum]+idx.prefix+idx.index; ++i) {
+          SellConesA[offsetA++] = i;
+        }
+        patchNum++;
+      }
+    } else {
+      ALE::Obj<typename FieldType::order_type::supportSequence> patches = parallelSifter->__getOrder()->support(p.second);
+      int patchNum = 0;
+
+      for(typename FieldType::order_type::supportSequence::iterator pp_iter = patches->begin(); pp_iter != patches->end(); ++pp_iter) {
+        const typename FieldType::index_type& idx = parallelSifter->getIndex(*pp_iter, p.second);
+
+        if (parallelSifter->debug) {
+          ostringstream  txt;
+          PetscErrorCode ierr;
+
+          txt << "["<<parallelSifter->commRank()<<"]Packing B patch " << *pp_iter << " index " << idx << "(" << parallelOffsets[patchNum] << ") for " << t << std::endl;
+          ierr = PetscSynchronizedPrintf(parallelSifter->comm(), txt.str().c_str()); ALE::CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+        }
+        for(int i = parallelOffsets[patchNum]+idx.prefix; i < parallelOffsets[patchNum]+idx.prefix+idx.index; ++i) {
+          SellConesB[offsetB++] = i;
+        }
+        patchNum++;
+      }
+    }
+  };
+};
+
 namespace ALE {
   template<typename Sifter_>
   class Distributer {
@@ -70,16 +183,20 @@ namespace ALE {
       ALE_LOG_EVENT_END;
       return overlap2;
     };
+
     #undef __FUNCT__
     #define __FUNCT__ "createMappingStoP"
     // ERROR: This crap only works for a single patch
     template<typename FieldType, typename OverlapType>
     static VecScatter createMappingStoP(Obj<FieldType> serialSifter, Obj<FieldType> parallelSifter, Obj<OverlapType> overlap, bool doExchange = false) {
       ALE_LOG_EVENT_BEGIN;
+      {
+        ALE::LogEvent event = ALE::LogEventRegister("createMappingI");
+        ALE::LogEventBegin(event);
+      }
       VecScatter scatter;
       Obj<typename OverlapType::traits::baseSequence> neighbors = overlap->base();
       MPI_Comm comm = serialSifter->comm();
-      int      rank = serialSifter->commRank();
       int      debug = serialSifter->debug;
       Vec      serialVec, parallelVec;
       PetscErrorCode ierr;
@@ -118,22 +235,18 @@ namespace ALE {
 
       int NeighborCountA = 0, NeighborCountB = 0;
       for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
-        Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
-
-        for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-          if ((*p_iter).first == 0) {
-            NeighborCountA++;
-            break;
-          }
-        }
-        for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-          if ((*p_iter).first == 1) {
-            NeighborCountB++;
-            break;
-          }
-        } 
+        if (overlap->coneContains(*neighbor, findNeighbor<OverlapType>(0))) NeighborCountA++;
+        if (overlap->coneContains(*neighbor, findNeighbor<OverlapType>(1))) NeighborCountB++;
+      }
+      {
+        ALE::LogEvent event = ALE::LogEventRegister("createMappingI");
+        ALE::LogEventEnd(event);
       }
 
+      {
+        ALE::LogEvent event = ALE::LogEventRegister("createMappingII");
+        ALE::LogEventBegin(event);
+      }
       int *NeighborsA, *NeighborsB; // Neighbor processes
       int *SellSizesA, *BuySizesA;  // Sizes of the A cones to transmit and B cones to receive
       int *SellSizesB, *BuySizesB;  // Sizes of the B cones to transmit and A cones to receive
@@ -147,114 +260,71 @@ namespace ALE {
       nA = 0;
       nB = 0;
       for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
-        Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
-
-        for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-          if ((*p_iter).first == 0) {
-            NeighborsA[nA] = *neighbor;
-            BuySizesA[nA] = 0;
-            SellSizesA[nA] = 0;
-            nA++;
-            break;
-          }
+        if (overlap->coneContains(*neighbor, findNeighbor<OverlapType>(0))) {
+          NeighborsA[nA] = *neighbor;
+          BuySizesA[nA]  = 0;
+          SellSizesA[nA] = 0;
+          nA++;
         }
-        for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-          if ((*p_iter).first == 1) {
-            NeighborsB[nB] = *neighbor;
-            BuySizesB[nB] = 0;
-            SellSizesB[nB] = 0;
-            nB++;
-            break;
-          }
-        } 
+        if (overlap->coneContains(*neighbor, findNeighbor<OverlapType>(1))) {
+          NeighborsB[nB] = *neighbor;
+          BuySizesB[nB]  = 0;
+          SellSizesB[nB] = 0;
+          nB++;
+        }
       }
       if ((nA != NeighborCountA) || (nB != NeighborCountB)) {
         throw ALE::Exception("Invalid neighbor count");
       }
+      {
+        ALE::LogEvent event = ALE::LogEventRegister("createMappingII");
+        ALE::LogEventEnd(event);
+      }
 
+      {
+        ALE::LogEvent event = ALE::LogEventRegister("createMappingIII");
+        ALE::LogEventBegin(event);
+      }
       nA = 0;
       offsetA = 0;
       nB = 0;
       offsetB = 0;
       for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
-        Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
-        int foundA = 0, foundB = 0;
-
-        for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-          if ((*p_iter).first == 0) {
-            for(typename FieldType::order_type::baseSequence::iterator sp_iter = serialPatches->begin(); sp_iter != serialPatches->end(); ++sp_iter) {
-              // Assume the same index sizes
-              int idxSize = serialSifter->getIndex(*sp_iter, (*p_iter).second).index;
-
-              BuySizesA[nA] += idxSize;
-              SellSizesA[nA] += idxSize;
-              offsetA += idxSize;
-              foundA = 1;
-            }
-          } else {
-            for(typename FieldType::order_type::baseSequence::iterator pp_iter = parallelPatches->begin(); pp_iter != parallelPatches->end(); ++pp_iter) {
-              // Assume the same index sizes
-              int idxSize = parallelSifter->getIndex(*pp_iter, (*p_iter).second).index;
-
-              BuySizesB[nB] += idxSize;
-              SellSizesB[nB] += idxSize;
-              offsetB += idxSize;
-              foundB = 1;
-            }
-          }
-        }
-        if (foundA) nA++;
-        if (foundB) nB++;
+        calcNeighborSize<OverlapType, FieldType> processor(serialSifter,   serialPatches,   &BuySizesA[nA], &SellSizesA[nA], offsetA,
+                                                              parallelSifter, parallelPatches, &BuySizesB[nB], &SellSizesB[nB], offsetB);
+        overlap->coneApply(*neighbor, processor);
+        if (processor.foundA) nA++;
+        if (processor.foundB) nB++;
+      }
+      {
+        ALE::LogEvent event = ALE::LogEventRegister("createMappingIII");
+        ALE::LogEventEnd(event);
       }
 
+      {
+        ALE::LogEvent event = ALE::LogEventRegister("createMappingIV");
+        ALE::LogEventBegin(event);
+      }
       ierr = PetscMalloc2(offsetA,int,&SellConesA,offsetB,int,&SellConesB);CHKERROR(ierr, "Error in PetscMalloc");
       offsetA = 0;
       offsetB = 0;
       for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
-        Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
-
-        for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-          const Point& p = (*p_iter).second;
-
-          if ((*p_iter).first == 0) {
-            int patchNum = 0;
-            for(typename FieldType::order_type::baseSequence::iterator sp_iter = serialPatches->begin(); sp_iter != serialPatches->end(); ++sp_iter) {
-              const typename FieldType::index_type& idx = serialSifter->getIndex(*sp_iter, p);
-
-              if (debug) {
-                ostringstream txt;
-
-                txt << "["<<rank<<"]Packing A patch " << *sp_iter << " index " << idx << "(" << serialOffsets[patchNum] << ") for " << *neighbor << std::endl;
-                ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-              }
-              for(int i = serialOffsets[patchNum]+idx.prefix; i < serialOffsets[patchNum]+idx.prefix+idx.index; ++i) {
-                SellConesA[offsetA++] = i;
-              }
-              patchNum++;
-            }
-          } else {
-            int patchNum = 0;
-            for(typename FieldType::order_type::baseSequence::iterator pp_iter = parallelPatches->begin(); pp_iter != parallelPatches->end(); ++pp_iter) {
-              const typename FieldType::index_type& idx = parallelSifter->getIndex(*pp_iter, p);
-
-              if (debug) {
-                ostringstream txt;
-
-                txt << "["<<rank<<"]Packing B patch " << *pp_iter << " index " << idx << "(" << parallelOffsets[patchNum] << ") for " << *neighbor << std::endl;
-                ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-              }
-              for(int i = parallelOffsets[patchNum]+idx.prefix; i < parallelOffsets[patchNum]+idx.prefix+idx.index; ++i) {
-                SellConesB[offsetB++] = i;
-              }
-              patchNum++;
-            }
-          }
-        }
+        fillNeighborCones<OverlapType, FieldType> processor(serialSifter,   serialPatches,   serialOffsets,   SellConesA, offsetA,
+                                                            parallelSifter, parallelPatches, parallelOffsets, SellConesB, offsetB);
+        overlap->coneApply(*neighbor, processor);
       }
       if (debug) {
         ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
       }
+      {
+        ALE::LogEvent event = ALE::LogEventRegister("createMappingIV");
+        ALE::LogEventEnd(event);
+      }
 
+      {
+        ALE::LogEvent event = ALE::LogEventRegister("createMappingV");
+        ALE::LogEventBegin(event);
+      }
       ierr = VecScatterCreateEmpty(comm, &scatter);CHKERROR(ierr, "Error in VecScatterCreate");
       scatter->from_n = serialSize;
       scatter->to_n = parallelSize;
@@ -268,6 +338,10 @@ namespace ALE {
 
       ierr = VecDestroy(serialVec);CHKERROR(ierr, "Error in VecDestroy");
       ierr = VecDestroy(parallelVec);CHKERROR(ierr, "Error in VecDestroy");
+      {
+        ALE::LogEvent event = ALE::LogEventRegister("createMappingV");
+        ALE::LogEventEnd(event);
+      }
       ALE_LOG_EVENT_END;
       return scatter;
     };
@@ -511,6 +585,10 @@ namespace ALE {
         PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
       }
       for(typename std::set<std::string>::iterator f_iter = fieldNames->begin(); f_iter != fieldNames->end(); ++f_iter) {
+        {
+          ALE::LogStage stage = ALE::LogStageRegister((*f_iter).c_str());
+          ALE::LogStagePush(stage);
+        }
         Obj<typename mesh_type::field_type> serialField   = serialMesh->getField(*f_iter);
         Obj<typename mesh_type::field_type> parallelField = parallelMesh->getField(*f_iter);
 
@@ -530,6 +608,10 @@ namespace ALE {
           std::string msg = "Parallel field ";
           msg += *f_iter;
           parallelField->view(msg.c_str());
+        }
+        {
+          ALE::LogStage stage = ALE::LogStageRegister((*f_iter).c_str());
+          ALE::LogStagePop(stage);
         }
       }
     };
