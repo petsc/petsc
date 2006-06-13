@@ -3,11 +3,11 @@
 #if !defined(__mesh_h)
 #define __mesh_h
 
+#include "petscmat.h"    /*I      "petscmat.h"    I*/
+
 #ifdef PETSC_HAVE_SIEVE
 
 #include "petscmesh.h"   /*I      "petscmesh.h"   I*/
-#include "petscmat.h"    /*I      "petscmat.h"    I*/
-
 
 typedef struct _MeshOps *MeshOps;
 struct _MeshOps {
