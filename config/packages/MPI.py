@@ -204,6 +204,7 @@ class Configure(config.package.Package):
     self.commc2f = 1
     self.framework.packages.append(self)
     self.usingMPIUni = 1
+    self.version = 'PETSc MPIUNI uniprocessor MPI replacement'
     return
 
   def configureMissingPrototypes(self):
@@ -492,6 +493,8 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
+    if 'with-'+self.package+'-shared' in self.framework.argDB:
+      self.framework.argDB['with-'+self.package] = 1
     self.addExtraLibraries()
     config.package.Package.configureLibrary(self)
     # Satish check here if the self.directory is truly the MPI root directory with mpicc underneath it
