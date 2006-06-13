@@ -384,7 +384,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetConvergenceTestEW(SNES snes)
  
    Input Parameters:
 +    snes - SNES context
-.    version - version 1 or 2 (default is 2)
+.    version - version 1, 2 (default is 2) or 3
 .    rtol_0 - initial relative tolerance (0 <= rtol_0 < 1)
 .    rtol_max - maximum relative tolerance (0 <= rtol_max < 1)
 .    alpha - power for version 2 rtol computation (1 < alpha <= 2)
@@ -394,6 +394,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetConvergenceTestEW(SNES snes)
 -    threshold - threshold for imposing safeguard (0 < threshold < 1)
 
    Note:
+   Version 3 was contributed by .....
+
    Use PETSC_DEFAULT to retain the default for any of the parameters.
 
    Level: advanced
@@ -464,7 +466,14 @@ PetscErrorCode SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
       rtol = kctx->gamma * pow(snes->norm/kctx->norm_last,kctx->alpha);
       stol = kctx->gamma * pow(kctx->rtol_last,kctx->alpha);
       if (stol > kctx->threshold) rtol = PetscMax(rtol,stol);
-    } else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1 or 2 are supported: %D",kctx->version);
+    } else if (kctx->version == 3) {
+      rtol = kctx->gamma * pow(snes->norm/kctx->norm_last,kctx->alpha);
+      /* safeguard: avoid sharp decrease of rtol */
+      rtol = PetscMin(kctx->rtol_0,PetscMax(rtol,kctx->gamma*pow(kctx->rtol_last,kctx->alpha)));
+      /* safeguard: avoid oversolving */
+      rtol = PetscMin(kctx->rtol_0,PetscMax(rtol,kctx->gamma*(snes->ttol)/snes->norm));
+
+    } else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1, 2 or 3 are supported: %D",kctx->version);
   }
   rtol = PetscMin(rtol,kctx->rtol_max);
   kctx->rtol_last = rtol;
