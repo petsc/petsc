@@ -19,10 +19,10 @@ typedef struct {
   PCCompositeType   type;              /* additive or multiplicative */
   PetscTruth        defaultsplit;
   PetscInt          bs;
-  PetscInt          nsplits;
+  PetscInt          nsplits,*csize;
   Vec               *x,*y,w1,w2;
   Mat               *pmat;
-  IS                *is;
+  IS                *is,*cis;
   PC_FieldSplitLink head;
 } PC_FieldSplit;
 
@@ -39,7 +39,7 @@ static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit with %s composition: total splits = %D",PCCompositeTypes[jac->type],jac->nsplits);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  FieldSplit with %s composition: total splits = %D\n",PCCompositeTypes[jac->type],jac->nsplits);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Solver info for each split is in the following KSP objects:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (i=0; i<jac->nsplits; i++) {
@@ -108,13 +108,13 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink;
-  PetscInt          i,nsplit;
+  PetscInt          i,nsplit,ccsize;
   MatStructure      flag = pc->flag;
 
   PetscFunctionBegin;
   ierr   = PCFieldSplitSetDefaults(pc);CHKERRQ(ierr);
   nsplit = jac->nsplits;
-  ilink   = jac->head;
+  ilink  = jac->head;
 
   /* get the matrices for each split */
   if (!jac->is) {
@@ -122,11 +122,16 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
     ierr   = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
     ierr   = MatGetOwnershipRange(pc->pmat,&rstart,&rend);CHKERRQ(ierr);
+    ierr   = MatGetLocalSize(pc->pmat,PETSC_NULL,&ccsize);CHKERRQ(ierr);
     nslots = (rend - rstart)/bs;
     ierr   = PetscMalloc(nsplit*sizeof(IS),&jac->is);CHKERRQ(ierr);
+    ierr   = PetscMalloc(nsplit*sizeof(IS),&jac->cis);CHKERRQ(ierr);
+    ierr   = PetscMalloc(nsplit*sizeof(PetscInt),&jac->csize);CHKERRQ(ierr);
     for (i=0; i<nsplit; i++) {
       if (jac->defaultsplit) {
-	ierr = ISCreateStride(pc->comm,nslots,rstart+i,nsplit,&jac->is[i]);CHKERRQ(ierr);
+	ierr     = ISCreateStride(pc->comm,nslots,rstart+i,nsplit,&jac->is[i]);CHKERRQ(ierr);
+        if (bs != nsplit) SETERRQ2(PETSC_ERR_PLIB,"With default-split the number of fields %D must equal the matrix block size %D",nsplit,bs);
+        jac->csize[i] = ccsize/nsplit;
       } else {
         PetscInt   *ii,j,k,nfields = ilink->nfields,*fields = ilink->fields;
         PetscTruth sorted;
@@ -137,18 +142,25 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
           }
         }
 	ierr = ISCreateGeneral(pc->comm,nslots*nfields,ii,&jac->is[i]);CHKERRQ(ierr);       
+        jac->csize[i] = (ccsize/bs)*ilink->nfields;
         ierr = ISSorted(jac->is[i],&sorted);CHKERRQ(ierr);
         if (!sorted) SETERRQ(PETSC_ERR_USER,"Fields must be sorted when creating split");
         ierr = PetscFree(ii);CHKERRQ(ierr);
         ilink = ilink->next;
       }
+      ierr = ISAllGather(jac->is[i],&jac->cis[i]);CHKERRQ(ierr);
     }
   }
   
   if (!jac->pmat) {
-    ierr = MatGetSubMatrices(pc->pmat,nsplit,jac->is,jac->is,MAT_INITIAL_MATRIX,&jac->pmat);CHKERRQ(ierr);
+    ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->pmat);CHKERRQ(ierr);
+    for (i=0; i<nsplit; i++) {
+      ierr = MatGetSubMatrix(pc->pmat,jac->is[i],jac->cis[i],jac->csize[i],MAT_INITIAL_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+    }
   } else {
-    ierr = MatGetSubMatrices(pc->pmat,nsplit,jac->is,jac->is,MAT_REUSE_MATRIX,&jac->pmat);CHKERRQ(ierr);
+    for (i=0; i<nsplit; i++) {
+      ierr = MatGetSubMatrix(pc->pmat,jac->is[i],jac->cis[i],jac->csize[i],MAT_REUSE_MATRIX,&jac->pmat[i]);CHKERRQ(ierr);
+    }
   }
 
   /* set up the individual PCs */
@@ -269,8 +281,14 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
     for (i=0; i<jac->nsplits; i++) {ierr = ISDestroy(jac->is[i]);CHKERRQ(ierr);}
     ierr = PetscFree(jac->is);CHKERRQ(ierr);
   }
+  if (jac->cis) {
+    PetscInt i;
+    for (i=0; i<jac->nsplits; i++) {ierr = ISDestroy(jac->cis[i]);CHKERRQ(ierr);}
+    ierr = PetscFree(jac->cis);CHKERRQ(ierr);
+  }
   if (jac->w1) {ierr = VecDestroy(jac->w1);CHKERRQ(ierr);}
   if (jac->w2) {ierr = VecDestroy(jac->w2);CHKERRQ(ierr);}
+  ierr = PetscFree(jac->csize);CHKERRQ(ierr);
   ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

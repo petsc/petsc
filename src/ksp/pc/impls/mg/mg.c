@@ -246,7 +246,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
   PetscInt       m,levels = 1;
   PetscTruth     flg;
   PC_MG          **mg = (PC_MG**)pc->data;
-  PCMGType       mgtype = mg[0]->am;;
+  PCMGType       mgtype;
 
   PetscFunctionBegin;
 
@@ -254,7 +254,9 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
     if (!pc->data) {
       ierr = PetscOptionsInt("-pc_mg_levels","Number of Levels","PCMGSetLevels",levels,&levels,&flg);CHKERRQ(ierr);
       ierr = PCMGSetLevels(pc,levels,PETSC_NULL);CHKERRQ(ierr);
+      mg = (PC_MG**)pc->data;
     }
+    mgtype = mg[0]->am;
     ierr = PetscOptionsInt("-pc_mg_cycles","1 for V cycle, 2 for W-cycle","PCMGSetCycles",1,&m,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCMGSetCycles(pc,m);CHKERRQ(ierr);

@@ -25,7 +25,7 @@ static PetscTruth called;
 void PETSC_STDCALL islocaltoglobalmpnggetinfosize_(ISLocalToGlobalMapping *mapping,PetscInt *nprocs,PetscInt *maxnumprocs,PetscErrorCode *ierr)
 {
   PetscInt i;
-  if (!called) {*ierr = PETSC_ERR_ARG_WRONGSTATE; return;}
+  if (called) {*ierr = PETSC_ERR_ARG_WRONGSTATE; return;}
   *ierr        = ISLocalToGlobalMappingGetInfo(*mapping,nprocs,&sprocs,&snumprocs,&sindices); if (*ierr) return;
   *maxnumprocs = 0;
   for (i=0; i<*nprocs; i++) {
