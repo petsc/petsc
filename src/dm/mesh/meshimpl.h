@@ -29,6 +29,7 @@ struct _p_Mesh {
 
 #endif
 
+extern PetscCookie MESH_COOKIE;
 extern PetscEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
                   Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
