@@ -18,7 +18,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_VERSION_PATCH      14
 #define PETSC_VERSION_DATE       "February, 3, 2006"
 #define PETSC_VERSION_PATCH_DATE "unknown"
-#define PETSC_VERSION_BK         "unknown"
+#define PETSC_VERSION_HG         "unknown"
 #define PETSC_AUTHOR_INFO        "\
        The PETSc Team\n\
     petsc-maint@mcs.anl.gov\n\
@@ -28,12 +28,12 @@ PETSC_EXTERN_CXX_BEGIN
 #define PetscGetVersion(version,len) (PetscSNPrintf(*(version),len,"Petsc Release Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
                                          PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_PATCH_DATE), \
-                                         PetscStrcat(*(version)," BK revision: "),PetscStrcat(*(version),PETSC_VERSION_BK),0)
+                                         PetscStrcat(*(version)," HG revision: "),PetscStrcat(*(version),PETSC_VERSION_HG),0)
 #else
 #define PetscGetVersion(version,len) (PetscSNPrintf(*(version),len,"Petsc Development Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
                                          PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_PATCH_DATE), \
-                                         PetscStrcat(*(version)," BK revision: "),PetscStrcat(*(version),PETSC_VERSION_BK),0)
+                                         PetscStrcat(*(version)," HG revision: "),PetscStrcat(*(version),PETSC_VERSION_HG),0)
 #endif
 
 /*MC

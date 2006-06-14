@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # This script builds the PETSc tar file distribution
-# It uses the bk rep in harley:/sandbox/petsc/petsc-dist (or asterix)
+# It uses the hg rep in triumph:/sandbox/petsc/petsc-dev-dist (or asterix)
 #
 # Usage: builddist petscrepo
 # example usage: builddist /sandbox/petsc/petsc-dist
@@ -15,7 +15,7 @@
 #echo "(4) Latest version of win32fe.exe is copied over into /sandbox/petsc/petsc-dist on harley"
 #echo "(5) Update update-docs.py with additional docs on the www-fp web page (for eg new changes file)"
 #echo "(5) Update version info on all www-fp/petsc web pages"
-#echo "(5) tag the new release with 'bk' and make a new clone for the release"
+#echo "(5) tag the new release with 'hg' and make a new clone for the release"
 
 # If version specified on the commandline, set the version
 echo "Starting date: `date`"
@@ -53,13 +53,13 @@ if [ ! -d $tmpdir ]; then
   exit
 fi
 
-# Update the bk repository
+# Update the hg repository
 cd $PETSC_DIR/python/BuildSystem
-bk pull
-bk -r co -q
+hg pull
+hg -q update
 cd $PETSC_DIR
-bk pull
-bk -r co -q
+hg pull
+hg -q update
 
 # check petscversion.h and set the version string
 version_release=`grep '^#define PETSC_VERSION_RELEASE ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
@@ -70,8 +70,7 @@ version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -
 
 #generated a couple of more values
 version_patch_date=`date`
-version_bk=`bk changes -k -r+ | head -1`
-
+version_hg=`hg tip --template '{node}\n'`
 if  [ ${version_release} = 0 ]; then
   version=-dev
 elif [ ${version_release} = 1 ]; then
@@ -92,7 +91,7 @@ make ACTION=clean tree_basic
 # now tar up the PETSc tree
 cd $PETSC_DIR/..
 cat ${PETSC_DIR}/maint/xclude | sed -e s/petsc-dist/$pdir/ > $tmpdir/xclude
-/bin/tar --create --file $tmpdir/petsc.tar --exclude=SCCS --exclude-from  $tmpdir/xclude $pdir
+/bin/tar --create --file $tmpdir/petsc.tar --exclude-from  $tmpdir/xclude $pdir
 cd $tmpdir
 /bin/tar xf $tmpdir/petsc.tar
 # just make sure we are not doing 'mv petsc petsc'
@@ -113,13 +112,13 @@ cd $tmpdir/petsc$version
 /bin/grep -v 'chmod' bmake/common/rules.bak > bmake/common/rules
 /bin/rm -f  bmake/common/rules.bak
 
-#add in PETSC_VERSION_PATCH_DATE and PETSC_VERSION_BK
+#add in PETSC_VERSION_PATCH_DATE and PETSC_VERSION_HG
 echo Using PETSC_VERSION_PATCH_DATE: ${version_patch_date}
-echo Using PETSC_VERSION_BK: ${version_bk}
+echo Using PETSC_VERSION_HG: ${version_hg}
 /bin/mv include/petscversion.h include/petscversion.h.bak
 cat include/petscversion.h.bak | \
   sed -e "s/#define PETSC_VERSION_PATCH_DATE.*/#define PETSC_VERSION_PATCH_DATE \"${version_patch_date}\"/" | \
-  sed -e "s/#define PETSC_VERSION_BK.*/#define PETSC_VERSION_BK         \"${version_bk}\"/" > include/petscversion.h
+  sed -e "s/#define PETSC_VERSION_HG.*/#define PETSC_VERSION_HG         \"${version_hg}\"/" > include/petscversion.h
 /bin/rm -f include/petscversion.h.bak
 
 # just to be sure
