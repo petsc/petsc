@@ -55,6 +55,7 @@ class Package(config.base.Configure):
     self.compilers     = framework.require('config.compilers', self)
     self.headers       = framework.require('config.headers', self)
     self.libraries     = framework.require('config.libraries', self)
+    self.programs      = framework.require('config.programs', self)
     self.sourceControl = framework.require('config.sourceControl',self)
     return
 
