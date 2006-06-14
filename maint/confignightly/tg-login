@@ -5,7 +5,7 @@ set USR=balay
 set LOC=/home/balay/petsc-dev
 set TAO_LOC=/home/balay/tao-devel
 set CONF=linux-gnu-ia64
-set BITKEEPER=no
+set MERCURIAL=no
 
 if ($day == Tue || $day == Wed || $day == Thu) then
   set CONF=linux-gnu-ia64-intel
