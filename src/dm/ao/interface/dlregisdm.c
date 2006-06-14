@@ -2,7 +2,9 @@
 
 #include "src/dm/ao/aoimpl.h"
 #include "src/dm/da/daimpl.h"
+#ifdef PETSC_HAVE_SIEVE
 #include "src/dm/mesh/meshimpl.h"
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMInitializePackage"
