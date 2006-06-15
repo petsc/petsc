@@ -4,6 +4,8 @@ set MACH=seaborg.nersc.gov
 set USR=kaushik
 set LOC=/scratch/scratchdirs/kaushik/petsc-dev
 set TAO_LOC=/scratch/scratchdirs/kaushik/tao-devel
+set MERCURIAL=no
+
 set CONF=aix5.1.0.0
 if ($day == Tue || $day == Thu || $day == Sun) then
   set CONF=aix5.1.0.0-64

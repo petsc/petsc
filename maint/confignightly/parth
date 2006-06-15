@@ -5,7 +5,6 @@ set USR=balay
 set LOC=/home/balay/petsc-dev
 set TAO_LOC=/home/balay/tao-devel
 set CONF=cygwin
-set MERCURIAL=no
 
 if ($day == Tue || $day == Thu) then
   set CONF=cygwin-borland

@@ -4,6 +4,7 @@ set MACH=atlantis
 set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev
 set TAO_LOC=/sandbox/petsc/tao-devel
+set MERCURIAL=no
 set CONF=solaris2.9
 if ($day == Tue || $day == Thu || $day == Sun) then
   set CONF=solaris-64

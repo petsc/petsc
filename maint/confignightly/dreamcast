@@ -5,3 +5,4 @@ set USR=petsc
 set LOC=/home/petsc/petsc-dev
 set TAO_LOC=/home/petsc/tao-devel
 set CONF=freebsd5.1
+set MERCURIAL=no
