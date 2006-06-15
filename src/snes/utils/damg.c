@@ -344,14 +344,14 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
 
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
-    if (dmmg[0]->galerkin) {
+    /*    if (dmmg[0]->galerkin) {
       ierr = PCMGSetGalerkin(pc);CHKERRQ(ierr);
-    }
+      }*/
 
     /* set solvers for each level */
     for (i=0; i<nlevels; i++) {
       ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr);
-      if (i == nlevels-1 || !dmmg[0]->galerkin) {
+      if (1) {
         ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       }
       if (i < nlevels-1) { /* don't set for finest level, they are set in PCApply_MG()*/
@@ -360,7 +360,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
       }
       if (i > 0) {
         ierr = PCMGSetR(pc,i,dmmg[i]->r);CHKERRQ(ierr); 
-        ierr = PCMGSetResidual(pc,i,PCMGDefaultResidual,dmmg[i]->J);CHKERRQ(ierr);
       }
       if (monitor) {
         ierr = PetscObjectGetComm((PetscObject)lksp,&comm);CHKERRQ(ierr);
@@ -526,7 +525,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
     if (iascii) {
       ierr = PetscViewerASCIIPrintf(viewer,"%s Object on finest level\n",dmmg[nlevels-1]->ksp ? "KSP" : "SNES");CHKERRQ(ierr);
       if (dmmg[nlevels-2 > 0 ? nlevels-2 : 0]->galerkin) {
-	ierr = PetscViewerASCIIPrintf(viewer,"Using Galerkin R^T*A*R process to compute coarser matrices");CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(viewer,"Using Galerkin R^T*A*R process to compute coarser matrices\n");CHKERRQ(ierr);
       }
     }
     if (dmmg[nlevels-1]->ksp) {

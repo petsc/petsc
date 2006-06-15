@@ -354,6 +354,37 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   Vec            tvec;
 
   PetscFunctionBegin;
+
+  /* If user did not provide fine grid operators, use those from PC */
+  /* BUG BUG BUG This will work ONLY the first time called: hence if the user changes
+     the PC matrices between solves PCMG will continue to use first set provided */
+  ierr = KSPGetOperators(mg[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
+  if (!dA  && !dB) {
+    ierr = PetscInfo(pc,"Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
+    ierr = KSPSetOperators(mg[n-1]->smoothd,pc->mat,pc->pmat,uflag);CHKERRQ(ierr);
+  }
+
+  if (mg[0]->galerkin) {
+    Mat B;
+    mg[0]->galerkinused = PETSC_TRUE;
+    /* currently only handle case where mat and pmat are the same on coarser levels */
+    ierr = KSPGetOperators(mg[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
+    if (!pc->setupcalled) {
+      for (i=n-2; i>-1; i--) {
+        ierr = MatPtAP(dB,mg[i+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
+        ierr = KSPSetOperators(mg[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
+        dB   = B;
+      }
+    } else {
+      for (i=n-2; i>-1; i--) {
+        ierr = KSPGetOperators(mg[i]->smoothd,0,&B,0);CHKERRQ(ierr);
+        ierr = MatPtAP(dB,mg[i+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
+        ierr = KSPSetOperators(mg[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
+        dB   = B;
+      }
+    }
+  }
+
   if (!pc->setupcalled) {
     ierr = PetscOptionsHasName(0,"-pc_mg_monitor",&monitor);CHKERRQ(ierr);
      
@@ -416,35 +447,6 @@ static PetscErrorCode PCSetUp_MG(PC pc)
     }
   }
 
-  /* If user did not provide fine grid operators, use those from PC */
-  /* BUG BUG BUG This will work ONLY the first time called: hence if the user changes
-     the PC matrices between solves PCMG will continue to use first set provided */
-  ierr = KSPGetOperators(mg[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
-  if (!dA  && !dB) {
-    ierr = PetscInfo(pc,"Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
-    ierr = KSPSetOperators(mg[n-1]->smoothd,pc->mat,pc->pmat,uflag);CHKERRQ(ierr);
-  }
-
-  if (mg[0]->galerkin) {
-    Mat B;
-    mg[0]->galerkinused = PETSC_TRUE;
-    /* currently only handle case where mat and pmat are the same on coarser levels */
-    ierr = KSPGetOperators(mg[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
-    if (!pc->setupcalled) {
-      for (i=n-2; i>-1; i--) {
-        ierr = MatPtAP(dB,mg[i+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
-        ierr = KSPSetOperators(mg[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
-        dB   = B;
-      }
-    } else {
-      for (i=n-2; i>-1; i--) {
-        ierr = KSPGetOperators(mg[i]->smoothd,0,&B,0);CHKERRQ(ierr);
-        ierr = MatPtAP(dB,mg[i+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
-        ierr = KSPSetOperators(mg[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
-        dB   = B;
-      }
-    }
-  }
 
   for (i=1; i<n; i++) {
     if (mg[i]->smoothu == mg[i]->smoothd) {

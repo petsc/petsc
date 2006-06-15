@@ -409,7 +409,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP ksp, int ell)
     bcgsl->ell = ell;
   } else if (bcgsl->ell != ell) {
     /* free the data structures, then create them again */
-   ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
+    ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
 
     bcgsl->ell = ell;
     ksp->setupcalled = 0;

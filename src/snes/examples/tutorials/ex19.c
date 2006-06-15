@@ -82,6 +82,8 @@ typedef struct {
    PetscTruth     draw_contours;                /* flag - 1 indicates drawing contours */
 } AppCtx;
 
+extern PetscErrorCode PCCreate_DMMG(PC);
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -97,6 +99,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
 
+  PCRegister(PCDMMG,0,0,PCCreate_DMMG);CHKERRQ(ierr);
 
   PreLoadBegin(PETSC_TRUE,"SetUp");
     ierr = DMMGCreate(comm,2,&user,&dmmg);CHKERRQ(ierr);
@@ -150,6 +153,12 @@ int main(int argc,char **argv)
        Solve the nonlinear system
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
+
+    snes = DMMGGetSNES(dmmg);
+    SNESGetKSP(snes,&ksp);
+    KSPGetPC(ksp,&pc);
+    PCSetType(pc,PCDMMG);
+    PCDMMGSetDMMG(
 
   PreLoadStage("Solve");
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 

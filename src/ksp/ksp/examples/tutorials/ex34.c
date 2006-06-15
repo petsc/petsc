@@ -36,11 +36,14 @@ typedef struct {
   BCType        bcType;
 } UserContext;
 
+extern "C" {
+extern PetscErrorCode PCCreate_DMMG(PC);
+}
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG           *dmmg;
+  DMMG           *dmmg,*dmmg2;
   DA             da;
   UserContext    user;
   PetscReal      norm;
@@ -54,27 +57,38 @@ int main(int argc,char **argv)
 
 
   PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = PCRegister(PCDMMG,0,0,PCCreate_DMMG);CHKERRQ(ierr);
   
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
+  /*  ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg2);CHKERRQ(ierr);*/
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
   ierr = DASetInterpolationType(da, DA_Q0); CHKERRQ(ierr);  
 
-  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr)
+				  /*  ierr = DMMGSetDM(dmmg2,(DM)da);CHKERRQ(ierr);*/
   ierr = DADestroy(da);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {
     ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
+    /*    ierr = DMMGSetUser(dmmg2,l,&user);CHKERRQ(ierr);*/
   } 
   
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMMG");
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the Poisson equation", "DMMG");
   bc          = (PetscInt)NEUMANN;
   ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex34.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
   user.bcType = (BCType)bc;
   ierr = PetscOptionsEnd();
   
   ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
+  /*  ierr = DMMGSetKSP(dmmg2,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);*/
   if (user.bcType == NEUMANN) {
     ierr = DMMGSetNullSpace(dmmg,PETSC_TRUE,0,PETSC_NULL);CHKERRQ(ierr);
+    /*    ierr = DMMGSetNullSpace(dmmg2,PETSC_TRUE,0,PETSC_NULL);CHKERRQ(ierr);*/
   }
+  KSP ksp; PC pc;
+  ksp = DMMGGetKSP(dmmg);
+  /*  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+      ierr = PCSetType(pc,PCDMMG);CHKERRQ(ierr); 
+  ierr = PCDMMGSetDMMG(pc,dmmg2);CHKERRQ(ierr); */
 
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   
