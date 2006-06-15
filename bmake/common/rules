@@ -765,16 +765,16 @@ checkTestCoverage:
 #
 
 citool:
-	-@bk citool
-	-@cd ${PETSC_DIR}/python/BuildSystem; bk citool
+	-@cd ${PETSC_DIR}; hg ct
+	-@cd ${PETSC_DIR}/python/BuildSystem; hg ct
 
 pull:
-	-@bk pull ${BK_QUIET}
-	-@cd ${PETSC_DIR}/python/BuildSystem; bk pull ${BK_QUIET}
+	-@cd ${PETSC_DIR}; hg pull; hg update
+	-@cd ${PETSC_DIR}/python/BuildSystem; hg pull; hg update
 
 push:
-	-@bk push
-	-@cd ${PETSC_DIR}/python/BuildSystem; bk push
+	-@cd ${PETSC_DIR}; hg push
+	-@cd ${PETSC_DIR}/python/BuildSystem; hg push
 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscrules

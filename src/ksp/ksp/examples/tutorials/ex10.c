@@ -98,13 +98,22 @@ int main(int argc,char **args)
        reading from this file.
     */
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-
+    
     /*
        Load the matrix and vector; then destroy the viewer.
     */
     ierr = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);
+    
+    if (!preload){
+      flg = PETSC_FALSE;
+      ierr = PetscOptionsGetString(PETSC_NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+      if (flg){ /* rhs is stored in a separate file */
+        ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+        ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+      }
+    }
     if (rank){
-      ierr = PetscExceptionTry1(VecLoad(fd,PETSC_NULL,&b),PETSC_ERR_FILE_UNEXPECTED);
+        ierr = PetscExceptionTry1(VecLoad(fd,PETSC_NULL,&b),PETSC_ERR_FILE_UNEXPECTED);
     } else {
       ierr = PetscExceptionTry1(VecLoad(fd,PETSC_NULL,&b),PETSC_ERR_FILE_READ); 
     }   

@@ -46,11 +46,13 @@ rm -f $nPETSC_DIR/buildout.tar
 echo "Build on $MACH $ARCH  `date` " > $nPETSC_DIR/test.log
 
 cd $nPETSC_DIR
-bk -r unedit
-bk pull -q >>& $nPETSC_DIR/test.log
+hg revert
+hg -q pull >>& $nPETSC_DIR/test.log
+hg update  >>& $nPETSC_DIR/test.log
 pushd python/BuildSystem
-bk -r unedit
-bk pull -q >>& $nPETSC_DIR/test.log
+hg revert
+hg -q pull >>& $nPETSC_DIR/test.log
+hg update  >>& $nPETSC_DIR/test.log
 popd
 
 set DATAFILESPATH=/home/petsc/datafiles

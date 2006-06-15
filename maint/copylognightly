@@ -15,7 +15,7 @@ foreach CONF ($*)
   $SCP $USR@${MACH}:${LOC}/configure.log /home/petsc/logs/nightly/configure_${CONF}_${MACH}.log ;/bin/chmod a+r /home/petsc/logs/nightly/configure_${CONF}_${MACH}.log &
   $SCP $USR@${MACH}:${LOC}/gcov.tar.gz /home/petsc/logs/nightly/gcov_${CONF}_${MACH}.tar.gz ;/bin/chmod a+r /home/petsc/logs/nightly/gcov_${CONF}_${MACH}.tar.gz &
 end
-sleep 300
+sleep 60
 /bin/chmod a+r /home/petsc/logs/nightly/*
 wait
 /bin/chmod a+r /home/petsc/logs/nightly/*

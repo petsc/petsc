@@ -69,10 +69,10 @@ class Package(config.base.Configure):
     self.compilers     = self.framework.require('config.compilers',self)
     self.headers       = self.framework.require('config.headers',self)
     self.libraries     = self.framework.require('config.libraries',self)
+    self.programs      = self.framework.require('config.programs', self)
     self.languages     = self.framework.require('PETSc.utilities.languages',self)
     self.arch          = self.framework.require('PETSc.utilities.arch',self)
     self.petscdir      = self.framework.require('PETSc.utilities.petscdir',self)
-    self.programs      = self.framework.require('PETSc.utilities.programs', self)
     self.sourceControl = self.framework.require('config.sourceControl',self)
     # Need this for the with-64-bit-indices option
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)

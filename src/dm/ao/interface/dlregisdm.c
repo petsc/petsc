@@ -2,7 +2,9 @@
 
 #include "src/dm/ao/aoimpl.h"
 #include "src/dm/da/daimpl.h"
+#ifdef PETSC_HAVE_SIEVE
 #include "src/dm/mesh/meshimpl.h"
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMInitializePackage"
@@ -33,13 +35,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
   ierr = PetscLogClassRegister(&AO_COOKIE,     "Application Order");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&AODATA_COOKIE, "Application Data");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&DA_COOKIE,     "Distributed array");CHKERRQ(ierr);
+#ifdef PETSC_HAVE_SIEVE
   ierr = PetscLogClassRegister(&MESH_COOKIE,   "Distributed array");CHKERRQ(ierr);
+#endif
   /* Register Events */
   ierr = PetscLogEventRegister(&AO_PetscToApplication,       "AOPetscToApplication", AO_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&AO_ApplicationToPetsc,       "AOApplicationToPetsc", AO_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&DA_GlobalToLocal,            "DAGlobalToLocal",      DA_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&DA_LocalToGlobal,            "DALocalToGlobal",      DA_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&DA_LocalADFunction,          "DALocalADFunc",        DA_COOKIE);CHKERRQ(ierr);
+#ifdef PETSC_HAVE_SIEVE
   ierr = PetscLogEventRegister(&Mesh_View,                   "MeshView",             MESH_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&Mesh_GetGlobalScatter,       "MeshGetGlobalScatter", MESH_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&Mesh_restrictVector,         "MeshRestrictVector",   MESH_COOKIE);CHKERRQ(ierr);
@@ -47,6 +52,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
   ierr = PetscLogEventRegister(&Mesh_assembleVectorComplete, "MeshAssemVecComplete", MESH_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&Mesh_assembleMatrix,         "MeshAssembleMatrix",   MESH_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&Mesh_updateOperator,         "MeshUpdateOperator",   MESH_COOKIE);CHKERRQ(ierr);
+#endif
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {

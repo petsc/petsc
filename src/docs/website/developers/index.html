@@ -57,126 +57,73 @@ for people who are experienced with building, using and debugging
 PETSc. If you cannot use makefiles, a debugger and EMACS etags then
 please don't access these pages.<br>
       </p>
-      <p align="left"><br>
-Consider joining petsc-dev <a
+      <p align="left">Consider joining petsc-dev <a
  href="../miscellaneous/mailing-lists.html">mailing-list.</a><br>
       </p>
       <big><span style="font-weight: bold;">Obtaining PETSc:</span></big><br>
       <br>
 To obtain the development version of PETSc you have four options<br>
       <ol>
-        <li>&nbsp;download and install the <span
- style="font-weight: bold;">free</span> <b>BitKeeper</b> download
-client</li>
+        <li>&nbsp;download and install <span style="font-weight: bold;"></span><a
+ href="http://www.selenic.com/mercurial"><b>mercurial</b></a></li>
         <li>&nbsp;access the nightly <span style="font-weight: bold;">tarball</span>
 snapshot at <a href="ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a>
           <br>
         </li>
-        <li><span style="font-weight: bold;">license BitKeeper</span>
-(inexpensive academic licences available).</li>
-        <li>[<span style="color: rgb(0, 102, 0); font-weight: bold;">experimental</span>]
-obtain PETSc repostiory using darcs<br>
-        </li>
       </ol>
-&nbsp;All
-three create a local directory with the name petsc-dev.
+&nbsp; Both methods above create a local directory with the name
+petsc-dev.
       <p></p>
-      <strong>1) To use the free BitKeeper client </strong> Install
-the free client from here <a
- href="http://www.bitkeeper.com/Hosted.Downloading.html">http://www.bitkeeper.com/Hosted.Downloading.html</a>.
-Make sure
-the directory where you have compiled this code is in your path.
+      <strong></strong>1) To use<strong> mercurial</strong> - install
+the software from <a
+ href="http://www.selenic.com/mercurial/wiki/index.cgi/Download">http://www.selenic.com/mercurial/wiki/index.cgi/Download</a>
+[follow instructions provided].
+We require mercurial-0.9 version or newer.&nbsp; Obtain petsc with the
+following:
       <ul style="color: rgb(128, 0, 0);">
-        <li> sfioball bk://petsc.bkbits.net/petsc-dev petsc-dev</li>
+        <li>hg clone http://mercurial.mcs.anl.gov/petsc/petsc-dev</li>
         <li> cd petsc-dev/python</li>
-        <li> sfioball bk://sidl.bkbits.net/BuildSystem BuildSystem</li>
+        <li>hg clone http://mercurial.mcs.anl.gov/petsc/BuildSystem
+BuildSystem</li>
       </ul>
 To update PETSc
       <ul style="color: rgb(128, 0, 0);">
-        <li>cd petsc-dev</li>
-        <li>update bk://petsc.bkbits.net/petsc-dev</li>
+        <li>make PETSC_ARCH=docsonly pull</li>
+      </ul>
+&nbsp;or<br>
+      <ul style="color: rgb(128, 0, 0);">
+        <li>cd petsc-dev<br>
+        </li>
+        <li>hg pull</li>
+        <li>hg update</li>
         <li>cd python/BuildSystem</li>
-        <li>update bk://sidl.bkbits.net/BuildSystem </li>
-      </ul>
-      <p></p>
-      <strong>2) To use the tarball snapshot</strong>, simply download <a
- href="ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a>
-and ungzip and untar it. To update PETSc simply
-get a new copy of the tar file.
-      <p></p>
-      <strong>3) To use the licensed <a
- href="http://www.bitkeeper.com/">BitKeeper</a></strong>, invoke the
-following command to obtain PETSc.
-      <ul>
-        <li><font color="#800000">bk&nbsp; clone&nbsp;
-bk://petsc.bkbits.net/petsc-dev</font></li>
-        <li><font color="#800000">cd petsc-dev/python</font></li>
-        <li><font color="#800000">bk clone
-bk://sidl.bkbits.net/BuildSystem<br>
-          </font></li>
-      </ul>
-For additional help on using BitKeeper you can use
-      <ul>
-        <li><font color="#800000">bk helptool</font></li>
-      </ul>
-To update PETSc <br>
-      <ul>
-        <li><font color="#800000">cd petsc-dev<br>
-          </font></li>
-        <li><font color="#800000">&nbsp;bk pull</font></li>
-        <li><font color="#800000">cd python/BuildSystem</font></li>
-        <li><font color="#800000">bk
-pull</font></li>
-      </ul>
-To modify your local copy of PETSc, you can use <font color="#800000">bk
-edit</font> and <font color="#800000">bk citool</font>, as described
-in <font color="#800000">bk helptool</font>. These changes
-can be shared with the PETSc community by pushing to the BkBits
-repository. You will need to send an SSH 1 public
-key to <a href="mailot:petsc-maint@mcs.anl.gov">petsc-maint</a> along
-with a description of the changes. <a
- href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Documentation</a>
-for the development version (updated nightly).<br>
-      <br>
-4) Using <a href="http://darcs.net/"><span style="font-weight: bold;">Darcs</span></a>
-obtain the PETSc repository snapshot. We export our BitKeeper
-repository into
-darcs a couple of times a day. <br>
-      <ul>
-        <li><font color="#800000">darcs get --partial
---set-scripts-executable
-http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev-darcs
-petsc-dev</font></li>
-        <li><font color="#800000">cd petsc-dev/python</font></li>
-        <li><font color="#800000">darcs get</font><font color="#800000">
---partial --set-scripts-executable
-http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/BuildSystem-darcs
-BuildSystem<br>
-          </font></li>
-      </ul>
-To update PETSc <br>
-      <ul>
-        <li><font color="#800000">cd petsc-dev<br>
-          </font></li>
-        <li><font color="#800000">darcs pull</font></li>
-        <li><font color="#800000">cd python/BuildSystem</font></li>
-        <li><font color="#800000">darcs pull</font><br>
+        <li>hg pull</li>
+        <li>hg update <br>
         </li>
       </ul>
-      <p style="font-weight: bold;" align="left"><span
- style="font-weight: normal;">Note: this is highly </span><span
- style="color: rgb(0, 0, 102); font-weight: normal;">experimental</span><span
- style="font-weight: normal;"> and useful only if a PETSc snapshot with
-revision history is necessary [and you don't have access to BitKeeper
-but know how to use Darcs]</span><br>
-      </p>
+For additional help use<br>
+      <ul style="color: rgb(128, 0, 0);">
+        <li>hg help&nbsp; [or]</li>
+        <li>man hg<br>
+        </li>
+      </ul>
+      <p></p>
+      <strong></strong>2) To use the <strong>tarball </strong>snapshot,
+simply download <a
+ href="ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a>
+and extract it.
+      <ul style="color: rgb(128, 0, 0);">
+        <li>gunzip -c petsc-dev.tar.gz | tar xf&nbsp; -</li>
+      </ul>
+To update PETSc simply
+get a new copy of the tar file.
+      <p></p>
+      <strong></strong>
       <p style="font-weight: bold;" align="left"><big>Frequency of
 updates:<br>
       </big></p>
       <ul>
-        <li>Comercial Bitkeeper - changes available immediately</li>
-        <li>Free Bitkeeper&nbsp; - changes available immediately</li>
-        <li>Darcs&nbsp; - changes are pushed to darcs four times a day</li>
+        <li>Mercurial- changes available immediately</li>
         <li>tarball snapshot - created once per day [during the night]<br>
         </li>
       </ul>
@@ -225,15 +172,6 @@ your PATH you can build the documentation with:<br>
       <ul>
         <li><font color="#800000">make alldoc LOC=${PETSC_DIR}</font></li>
       </ul>
-      <big style="font-weight: bold;">BuildSystem:<br>
-      </big><br>
-PETSc configure relies on <a
- href="http://sidl.bkbits.net:8080/BuildSystem">BuildSystem</a> package
-which is in a different BitKeeper repository <b>bk://sidl.bkbits.net/BuildSystem</b>.
-This
-package is automatically downloaded (into petsc-dev/python) the first
-time config/configure.py is invoked.<br>
-      <br>
       <span style="font-weight: bold;"> </span></td>
     </tr>
     <tr>
