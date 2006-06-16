@@ -7,7 +7,7 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.__init__(self, framework)
     #self.download        = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/sieve.tar.gz']
     self.includes        = ['Mesh.hh']
-    self.includedir      = ['include', os.path.join('include', 'mpiuni'), os.path.join('bmake', 'docsonly'), os.path.join('src', 'dm', 'mesh', 'sieve')]
+    self.includedir      = [os.path.join('bmake', 'docsonly'), os.path.join('src', 'dm', 'mesh', 'sieve')]
     self.libdir          = ''
     self.archIndependent = 1
     self.cxx             = 1
@@ -18,9 +18,10 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.setupDependencies(self, framework)
     self.petscdir = self.framework.require('PETSc.utilities.petscdir',self)
     self.boost    = self.framework.require('config.packages.Boost',self)
-    #self.boost = self.framework.require('PETSc.packages.Triangle',self)
-    #self.boost = self.framework.require('PETSc.packages.TetGen',self)
-    self.deps = [self.boost]
+    self.mpi      = self.framework.require('config.packages.MPI',self)
+    #self.triangle = self.framework.require('PETSc.packages.Triangle',self)
+    #self.tetgen   = self.framework.require('PETSc.packages.TetGen',self)
+    self.deps = [self.boost, self.mpi]
     return
 
   def getSearchDirectories(self):
