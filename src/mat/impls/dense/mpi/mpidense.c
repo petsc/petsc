@@ -976,7 +976,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0,
        MatTranspose_MPIDense,
 /*15*/ MatGetInfo_MPIDense,
-       0,
+       MatEqual_MPIDense,
        MatGetDiagonal_MPIDense,
        MatDiagonalScale_MPIDense,
        MatNorm_MPIDense,
@@ -1560,7 +1560,21 @@ PetscErrorCode MatLoad_MPIDense(PetscViewer viewer, MatType type,Mat *newmat)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatEqual_MPIDense"
+PetscErrorCode MatEqual_MPIDense(Mat A,Mat B,PetscTruth *flag)
+{
+  Mat_MPIDense   *matB = (Mat_MPIDense*)B->data,*matA = (Mat_MPIDense*)A->data;
+  Mat            a,b;
+  PetscTruth     flg;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
+  a = matA->A; 
+  b = matB->A;
+  ierr = MatEqual(a,b,&flg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 

@@ -54,3 +54,4 @@ typedef struct {
 EXTERN PetscErrorCode MatLoad_MPIDense(PetscViewer, MatType,Mat*);
 EXTERN PetscErrorCode MatSetUpMultiply_MPIDense(Mat);
 EXTERN PetscErrorCode MatGetSubMatrices_MPIDense(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+EXTERN PetscErrorCode MatEqual_MPIDense(Mat,Mat,PetscTruth*);
