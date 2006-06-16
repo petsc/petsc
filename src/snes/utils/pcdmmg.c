@@ -1,7 +1,7 @@
 #define PETSCSNES_DLL
 
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
-#include "petscdmmg.h"
+#include "petscdmmg.h"        /*I "petscdmmg.h" I*/
 
 /* 
    Private context (data structure) for the DMMG preconditioner.  
