@@ -326,13 +326,13 @@ namespace ALE {
     Allocator              allocator;
     //
     X*                     objPtr; // object pointer
-    int32_t*               refCnt; // reference count
+    int*                   refCnt; // reference count
     size_type              sz;     // Size of underlying object (universal units) allocated with an allocator; indicates allocator use.
     // Constructor; this can be made private, if we move operator Obj<Y> outside this class definition and make it a friend.
-    Obj(X *xx, int32_t *refCnt, size_type sz);
+    Obj(X *xx, int *refCnt, size_type sz);
   public:
     // Constructors & a destructor
-    Obj() : objPtr((X *)NULL), refCnt((int32_t*)NULL), sz(0) {};
+    Obj() : objPtr((X *)NULL), refCnt((int*)NULL), sz(0) {};
     Obj(const X& x);
     Obj(X *xx);
     Obj(const Obj& obj);
@@ -398,7 +398,7 @@ namespace ALE {
   }
   
   template <class X>
-  Obj<X>::Obj(X *_xx, int32_t *_refCnt, size_type _sz) {  // This is intended to be private.
+  Obj<X>::Obj(X *_xx, int *_refCnt, size_type _sz) {  // This is intended to be private.
     if (!_xx) {
       throw ALE::Exception("Making an Obj with a NULL objPtr");
     }

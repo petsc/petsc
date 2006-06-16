@@ -1,4 +1,5 @@
 syntax: glob
+RDict.db
 RDict.log
 TAGS*
 bmake/*/*
