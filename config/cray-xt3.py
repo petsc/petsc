@@ -22,6 +22,7 @@
 
 configure_options = [
   '--with-batch=1',
+  '--with-mpi-shared=0',
   '--with-memcmp-ok',
   '--sizeof_char=1',
   '--sizeof_void_p=8',

@@ -24,6 +24,7 @@ configure_options = [
   '--with-fortran-kernels=generic',
   
   '--with-batch=1',
+  '--with-mpi-shared=0',
   '--with-endian=big',
   '--with-memcmp-ok',
   '--sizeof_char=1',
