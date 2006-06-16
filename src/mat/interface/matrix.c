@@ -6515,8 +6515,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat
    C will be created and must be destroyed by the user with MatDestroy().
    Unless scall is MAT_REUSE_MATRIX
 
-   This routine is currently only implemented for pairs of AIJ matrices and classes
-   which inherit from AIJ.  C will be of type MATAIJ.
+   This routine is currently implemented for 
+    - pairs of AIJ matrices and classes which inherit from AIJ, C will be of type MATAIJ.
+    - pairs of AIJ (A) and Dense (B) matrix, C will be of type MATDENSE.
 
    Level: intermediate
 
@@ -6527,6 +6528,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult(Mat A,Mat B,MatReuse scall,PetscRea
   PetscErrorCode ierr;
   PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
   PetscErrorCode (*fB)(Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*mult)(Mat,Mat,MatReuse,PetscReal,Mat *)=PETSC_NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -6543,18 +6545,25 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult(Mat A,Mat B,MatReuse scall,PetscRea
   if (fill <1.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
-  /* For now, we do not dispatch based on the type of A and B */
-  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
   fA = A->ops->matmult;
   if (!fA) SETERRQ1(PETSC_ERR_SUP,"MatMatMult not supported for A of type %s",A->type_name);
   fB = B->ops->matmult;
-  if (!fB) SETERRQ1(PETSC_ERR_SUP,"MatMatMult not supported for B of type %s",B->type_name);
-  if (fB!=fA) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatMatMult requires A, %s, to be compatible with B, %s",A->type_name,B->type_name);
-
+  if (fB == fA) {
+    mult = fA;
+  } else { 
+    /* dispatch based on the type of A and B */
+    char  multname[256];
+    ierr = PetscStrcpy(multname,"MatMatMult_");CHKERRQ(ierr);
+    ierr = PetscStrcat(multname,A->type_name);CHKERRQ(ierr);
+    ierr = PetscStrcat(multname,"_");CHKERRQ(ierr);
+    ierr = PetscStrcat(multname,B->type_name);CHKERRQ(ierr);
+    ierr = PetscStrcat(multname,"_C");CHKERRQ(ierr); /* e.g., multname = "MatMatMult_aij_dense_C" */
+    ierr = PetscObjectQueryFunction((PetscObject)A,multname,(void (**)(void))&mult);CHKERRQ(ierr);
+    if (!mult) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatMatMult requires A, %s, to be compatible with B, %s",A->type_name,B->type_name);    
+  } 
   ierr = PetscLogEventBegin(MAT_MatMult,A,B,0,0);CHKERRQ(ierr); 
-  ierr = (*A->ops->matmult)(A,B,scall,fill,C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MatMult,A,B,0,0);CHKERRQ(ierr); 
-  
+  ierr = (*mult)(A,B,scall,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMult,A,B,0,0);CHKERRQ(ierr);   
   PetscFunctionReturn(0);
 } 
 

@@ -239,3 +239,61 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMult_SeqAIJ_SeqDense"
+PetscErrorCode MatMatMult_SeqAIJ_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = MatMatMultSymbolic_SeqAIJ_SeqDense(A,B,fill,C);CHKERRQ(ierr);
+  }
+  ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,B,*C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqDense"
+PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMatMultSymbolic_SeqDense_SeqDense(A,B,0.0,C);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatMultNumeric_SeqAIJ_SeqDense"
+PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
+{
+  PetscErrorCode ierr;
+  PetscScalar    *b,*c,*barray,*carray;
+  PetscInt       cm=C->rmap.n, bn=B->cmap.n, bm=B->rmap.n, col;
+  Vec            vb,vc;
+
+  PetscFunctionBegin;
+  if (!cm || !bn) PetscFunctionReturn(0);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,bm,&vb);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,cm,&vc);CHKERRQ(ierr);
+
+  ierr = MatGetArray(B,&barray);CHKERRQ(ierr);
+  ierr = MatGetArray(C,&carray);CHKERRQ(ierr);
+  b = barray; c = carray;
+  for (col=0; col<bn; col++){
+    ierr = VecPlaceArray(vb,b);CHKERRQ(ierr);
+    ierr = VecPlaceArray(vc,c);CHKERRQ(ierr);
+    ierr = MatMult(A,vb,vc);CHKERRQ(ierr);
+    //printf("vc: \n");
+    //ierr = VecView(vc,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    b += bm; c += cm;
+    ierr = VecResetArray(vb);CHKERRQ(ierr);
+    ierr = VecResetArray(vc);CHKERRQ(ierr);
+  }
+  ierr = MatRestoreArray(B,&barray);CHKERRQ(ierr);
+  ierr = MatRestoreArray(C,&carray);CHKERRQ(ierr);
+  ierr = VecDestroy(vb);CHKERRQ(ierr);
+  ierr = VecDestroy(vc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
