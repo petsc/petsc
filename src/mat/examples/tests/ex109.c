@@ -1,0 +1,93 @@
+static char help[] = "Test MatMatMult() for AIJ and Dense matrices.\n\n";
+
+#include "petscmat.h"
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc,char **argv) 
+{
+  Mat            A,B,C,D;
+  PetscInt       i,j,k,M=10,N=5;
+  PetscScalar    *array,*a;
+  PetscErrorCode ierr;
+  PetscRandom    r;
+  PetscTruth     equal;
+  PetscReal      fill = 1.0;
+  PetscMPIInt    size;
+  PetscInt       rstart,rend,nza,col,am,an,bm,bn;
+
+  PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
+
+  /* create a aij matrix A */
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,M);CHKERRQ(ierr);
+  if (size == 1){
+    ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+  }
+  nza  = (PetscInt)(0.2*M); /* num of nozeros in each row of A */
+  ierr = MatSeqAIJSetPreallocation(A,nza,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,nza,PETSC_NULL,nza,PETSC_NULL);CHKERRQ(ierr);  
+  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  ierr = PetscMalloc((nza+1)*sizeof(PetscScalar),&a);CHKERRQ(ierr);
+  for (i=rstart; i<rend; i++) { 
+    for (j=0; j<nza; j++) {
+      ierr = PetscRandomGetValue(r,&a[j]);CHKERRQ(ierr);
+      col  = (PetscInt)(PetscRealPart(a[j])*M);
+      ierr = MatSetValues(A,1,&i,1,&col,&a[j],ADD_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* create a dense matrix B */
+  ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,an,PETSC_DECIDE,PETSC_DECIDE,N);CHKERRQ(ierr);
+  if (size == 1){
+    ierr = MatSetType(B,MATSEQDENSE);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(B,MATMPIDENSE);CHKERRQ(ierr);
+  }
+  ierr = MatSeqDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
+  ierr = MatGetArray(B,&array);CHKERRQ(ierr);
+  k = 0;
+  for (j=0; j<N; j++){ /* local column-wise entries */
+    for (i=0; i<bm; i++){
+      ierr = PetscRandomGetValue(r,&array[k++]);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatRestoreArray(B,&array);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(r);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* Test MatMatMult() */
+  ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+  
+  /* Test repeated MatMatMultNumeric() - reuse of the previous symbolic product */
+  ierr = MatMatMultSymbolic(A,B,fill,&D);CHKERRQ(ierr); /* D = A*B */
+  for (i=0; i<2; i++){    
+    ierr = MatMatMultNumeric(A,B,D);CHKERRQ(ierr);
+  }  
+  ierr = MatEqual(C,D,&equal);CHKERRQ(ierr);
+  if (!equal) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"C != D");
+
+  ierr = MatDestroy(D);CHKERRQ(ierr); 
+  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = PetscFree(a);CHKERRQ(ierr);
+  PetscFinalize();
+  return(0);
+}

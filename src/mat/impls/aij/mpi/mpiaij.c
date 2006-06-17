@@ -733,7 +733,6 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAIJSetPreallocationCSR_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDiagonalScaleLocal_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_mpiaij_mpidense_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4001,9 +4000,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDiagonalScaleLocal_C",
 				     "MatDiagonalScaleLocal_MPIAIJ",
 				     MatDiagonalScaleLocal_MPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMult_mpiaij_mpidense_C",
-                                     "MatMatMult_MPIAIJ_MPIDense",
-                                      MatMatMult_MPIAIJ_MPIDense);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
