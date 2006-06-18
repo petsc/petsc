@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = damg.c damgsnes.c
+SOURCEC  = damg.c damgsnes.c pcdmmg.c
 SOURCEF  =
 SOURCEH  = ../../../include/petscdmmg.h
-OBJSC    = damg.o damgsnes.o
+OBJSC    = damg.o damgsnes.o pcdmmg.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = DA

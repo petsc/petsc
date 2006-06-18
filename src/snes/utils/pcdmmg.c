@@ -16,7 +16,6 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCKSP_DLLEXPORT PCDMMGSetDMMG_DMMG(PC pc,DMMG *dmmg)
 {
   PC_DMMG        *pcdmmg = (PC_DMMG*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   pcdmmg->dmmg = dmmg;
@@ -29,7 +28,6 @@ static PetscErrorCode PCSetUp_DMMG(PC pc)
 {
   PC_DMMG        *pcdmmg = (PC_DMMG*)pc->data;
   DMMG           *dmmg = pcdmmg->dmmg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* when used as preconditioner cannot provide right hand size (it is provided by PCApply()) */
@@ -68,7 +66,6 @@ static PetscErrorCode PCDestroy_DMMG(PC pc)
 #define __FUNCT__ "PCSetFromOptions_DMMG"
 static PetscErrorCode PCSetFromOptions_DMMG(PC pc)
 {
-  PC_DMMG        *pcdmmg = (PC_DMMG*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -29,5 +29,8 @@ EXTERN PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatMatMultTranspose_SeqDense_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultTransposeSymbolic_SeqDense_SeqDense(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultTransposeNumeric_SeqDense_SeqDense(Mat,Mat,Mat);
+EXTERN PetscErrorCode MatMatMult_SeqAIJ_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat,Mat,PetscReal,Mat*); 
+EXTERN PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat,Mat,Mat);
 
 #endif

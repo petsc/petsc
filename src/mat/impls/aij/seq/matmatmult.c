@@ -8,7 +8,7 @@
 #include "src/mat/impls/aij/seq/aij.h" /*I "petscmat.h" I*/
 #include "src/mat/utils/freespace.h"
 #include "petscbt.h"
-
+#include "src/mat/impls/dense/seq/dense.h" /*I "petscmat.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"
@@ -253,6 +253,7 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqDense(Mat A,Mat B,MatReuse scall,PetscReal f
   ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,B,*C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultSymbolic_SeqAIJ_SeqDense"
 PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat *C) 
@@ -285,8 +286,6 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
     ierr = VecPlaceArray(vb,b);CHKERRQ(ierr);
     ierr = VecPlaceArray(vc,c);CHKERRQ(ierr);
     ierr = MatMult(A,vb,vc);CHKERRQ(ierr);
-    //printf("vc: \n");
-    //ierr = VecView(vc,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     b += bm; c += cm;
     ierr = VecResetArray(vb);CHKERRQ(ierr);
     ierr = VecResetArray(vc);CHKERRQ(ierr);
