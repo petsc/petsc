@@ -71,7 +71,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
 .    - the context
 
     Options Database Keys:
-.    -dmmg_galerkin
+.    -dmmg_galerkin 
 
     Level: advanced
 
@@ -79,7 +79,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
        to have the coarsest grid not compute via Galerkin but still have the intermediate
        grids computed via Galerkin.
 
-.seealso DMMGCreate()
+       The default behavior of this should be idential to using -pc_mg_galerkin; this offers
+       more potential flexibility since you can select exactly which levels are done via
+       Galerkin and which are done via user provided function.
+
+.seealso DMMGCreate(), PCMGSetGalerkin()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUseGalerkinCoarse(DMMG* dmmg)
@@ -344,10 +348,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
 
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
-    /*    if (dmmg[0]->galerkin) {
-      ierr = PCMGSetGalerkin(pc);CHKERRQ(ierr);
-      }*/
-
     /* set solvers for each level */
     for (i=0; i<nlevels; i++) {
       ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr);
