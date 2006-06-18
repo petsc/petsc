@@ -8,6 +8,7 @@
 #include "src/mat/utils/freespace.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "petscbt.h"
+#include "src/mat/impls/dense/mpi/mpidense.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_MPIAIJ_MPIAIJ"
@@ -183,26 +184,6 @@ PetscErrorCode MatMatMult_MPIAIJ_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal f
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "MatMatMultSymbolic_MPIDense_MPIDense"
-PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C) 
-{
-  PetscErrorCode ierr;
-  PetscInt       m=A->rmap.n,n=B->cmap.n;
-  Mat            Cmat;
-
-  PetscFunctionBegin;
-  if (A->cmap.n != B->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"A->cmap.n %d != B->rmap.n %d\n",A->cmap.n,B->rmap.n);
-  ierr = MatCreate(B->comm,&Cmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(Cmat,m,n,A->rmap.N,B->cmap.N);CHKERRQ(ierr);
-  ierr = MatSetType(Cmat,MATMPIDENSE);CHKERRQ(ierr);
-  ierr = MatMPIDenseSetPreallocation(Cmat,PETSC_NULL);CHKERRQ(ierr);
-  Cmat->assembled = PETSC_TRUE;
-  *C = Cmat;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIDense"
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C) 
@@ -224,8 +205,6 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
   Vec            vb,vc;
 
   PetscFunctionBegin;
-  //PetscMPIInt rank;
-  //ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
   if (!C->rmap.N || !bN) PetscFunctionReturn(0);
   ierr = VecCreateMPI(B->comm,bm,PETSC_DECIDE,&vb);CHKERRQ(ierr);
   ierr = VecCreateMPI(A->comm,cm,PETSC_DECIDE,&vc);CHKERRQ(ierr);
@@ -236,11 +215,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
   for (col=0; col<bN; col++){
     ierr = VecPlaceArray(vb,b);CHKERRQ(ierr);
     ierr = VecPlaceArray(vc,c);CHKERRQ(ierr);
-    //if (!rank) printf(" col %d, vb:\n",col);
-    //ierr = VecView(vb,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = MatMult(A,vb,vc);CHKERRQ(ierr);
-    //if (!rank) printf(" col %d, vc:\n",col);
-    //ierr = VecView(vc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     b += bm; c += cm;
     ierr = VecResetArray(vb);CHKERRQ(ierr);
     ierr = VecResetArray(vc);CHKERRQ(ierr);

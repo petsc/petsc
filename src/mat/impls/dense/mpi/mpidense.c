@@ -573,6 +573,9 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   ierr = PetscFree(mdn);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetDiagonalBlock_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMPIDenseSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMult_mpiaij_mpidense_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultSymbolic_mpiaij_mpidense_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMatMultNumeric_mpiaij_mpidense_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -959,6 +962,25 @@ PetscErrorCode MatSetUpPreallocation_MPIDense(Mat A)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultSymbolic_MPIDense_MPIDense"
+PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode ierr;
+  PetscInt       m=A->rmap.n,n=B->cmap.n;
+  Mat            Cmat;
+
+  PetscFunctionBegin;
+  if (A->cmap.n != B->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"A->cmap.n %d != B->rmap.n %d\n",A->cmap.n,B->rmap.n);
+  ierr = MatCreate(B->comm,&Cmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(Cmat,m,n,A->rmap.N,B->cmap.N);CHKERRQ(ierr);
+  ierr = MatSetType(Cmat,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(Cmat,PETSC_NULL);CHKERRQ(ierr);
+  Cmat->assembled = PETSC_TRUE;
+  *C = Cmat;
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        MatGetRow_MPIDense,
@@ -1051,7 +1073,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0,
        0,
 /*90*/ 0,
-       0,
+       MatMatMultSymbolic_MPIDense_MPIDense,
        0,
        0,
        0,
@@ -1134,6 +1156,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMPIDenseSetPreallocation_C",
                                      "MatMPIDenseSetPreallocation_MPIDense",
                                      MatMPIDenseSetPreallocation_MPIDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMult_mpiaij_mpidense_C",
+                                     "MatMatMult_MPIAIJ_MPIDense",
+                                      MatMatMult_MPIAIJ_MPIDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMultSymbolic_mpiaij_mpidense_C",
+                                     "MatMatMultSymbolic_MPIAIJ_MPIDense",
+                                      MatMatMultSymbolic_MPIAIJ_MPIDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMultNumeric_mpiaij_mpidense_C",
+                                     "MatMatMultNumeric_MPIAIJ_MPIDense",
+                                      MatMatMultNumeric_MPIAIJ_MPIDense);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

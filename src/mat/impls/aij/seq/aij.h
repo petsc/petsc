@@ -93,9 +93,6 @@ EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat, MatType,MatReuse,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqBAIJ(Mat, MatType,MatReuse,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult_SeqAIJ_SeqDense(Mat,Mat,MatReuse,PetscReal,Mat*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultSymbolic_SeqAIJ_SeqDense(Mat,Mat,PetscReal,Mat*); 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultNumeric_SeqAIJ_SeqDense(Mat,Mat,Mat);
 EXTERN_C_END
 
 #endif

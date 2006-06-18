@@ -1032,6 +1032,9 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
   if (!l->user_alloc) {ierr = PetscFree(l->v);CHKERRQ(ierr);}
   ierr = PetscFree(l);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatSeqDenseSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMult_seqaij_seqdense_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMultSymbolic_seqaij_seqdense_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMultNumeric_seqaij_seqdense_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1854,6 +1857,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqDenseSetPreallocation_C",
                                     "MatSeqDenseSetPreallocation_SeqDense",
                                      MatSeqDenseSetPreallocation_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMult_seqaij_seqdense_C",
+                                     "MatMatMult_SeqAIJ_SeqDense",
+                                      MatMatMult_SeqAIJ_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMultSymbolic_seqaij_seqdense_C",
+                                     "MatMatMultSymbolic_SeqAIJ_SeqDense",
+                                      MatMatMultSymbolic_SeqAIJ_SeqDense);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMultNumeric_seqaij_seqdense_C",
+                                     "MatMatMultNumeric_SeqAIJ_SeqDense",
+                                      MatMatMultNumeric_SeqAIJ_SeqDense);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

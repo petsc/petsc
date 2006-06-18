@@ -55,3 +55,7 @@ EXTERN PetscErrorCode MatLoad_MPIDense(PetscViewer, MatType,Mat*);
 EXTERN PetscErrorCode MatSetUpMultiply_MPIDense(Mat);
 EXTERN PetscErrorCode MatGetSubMatrices_MPIDense(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 EXTERN PetscErrorCode MatEqual_MPIDense(Mat,Mat,PetscTruth*);
+EXTERN PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat,Mat,PetscReal,Mat*);
+EXTERN PetscErrorCode MatMatMult_MPIAIJ_MPIDense(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat,Mat,PetscReal,Mat*); 
+EXTERN PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat,Mat,Mat);
