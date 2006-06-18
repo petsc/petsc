@@ -7,7 +7,7 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.__init__(self, framework)
     #self.download        = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/sieve.tar.gz']
     self.includes        = ['Mesh.hh']
-    self.includedir      = [os.path.join('bmake', 'docsonly'), os.path.join('src', 'dm', 'mesh', 'sieve')]
+    self.includedir      = ['include', os.path.join('bmake', 'docsonly'), os.path.join('src', 'dm', 'mesh', 'sieve')]
     self.libdir          = ''
     self.archIndependent = 1
     self.cxx             = 1
