@@ -255,7 +255,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
    Parameter:
 +  ksp - iterative context obtained from KSPCreate()
 .  b - the right hand side vector
--  x - the solution 
+-  x - the solution  (this may be the same vector as b, then b will be overwritten with answer)
 
    Options Database Keys:
 +  -ksp_compute_eigenvalues - compute preconditioned operators eigenvalues
@@ -296,17 +296,21 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscTruth     flag1,flag2,viewed=PETSC_FALSE,flg;
+  PetscTruth     flag1,flag2,viewed=PETSC_FALSE,flg,inXisinB = PETSC_FALSE;
   char           view[10];
   char           filename[PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
-
+  
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidHeaderSpecific(b,VEC_COOKIE,2);
   PetscValidHeaderSpecific(x,VEC_COOKIE,3);
-  
+
+  if (x == b) {
+    ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
+    inXisinB = PETSC_TRUE;
+  }
   ksp->vec_rhs = b;
   ksp->vec_sol = x;
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_binary",&flg);CHKERRQ(ierr); 
@@ -516,6 +520,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecNorm(t,NORM_2,&norm);CHKERRQ(ierr);
     ierr = VecDestroy(t);CHKERRQ(ierr);
     ierr = PetscPrintf(ksp->comm,"KSP final norm of residual %G\n",norm);CHKERRQ(ierr);
+  }
+
+  if (inXisinB) {
+    ierr = VecCopy(x,b);CHKERRQ(ierr);
+    ierr = VecDestroy(x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
