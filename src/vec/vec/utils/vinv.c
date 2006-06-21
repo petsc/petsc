@@ -684,7 +684,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec v,PetscInt *idex,PetscReal
 PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,bs,j,k,*bss,nv,jj,nvc;
+  PetscInt       i,n,bs,j,k,*bss = PETSC_NULL,nv,jj,nvc;
   PetscScalar    *x,**y;
 
   PetscFunctionBegin;
@@ -787,7 +787,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec *s,InsertMode add
 PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt        i,n,bs,j,jj,k,*bss,nv,nvc;
+  PetscInt        i,n,bs,j,jj,k,*bss = PETSC_NULL,nv,nvc;
   PetscScalar     *x,**y;
 
   PetscFunctionBegin;

@@ -1460,13 +1460,13 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
 {
   VecScatter_MPI_General *from,*to;
   PetscMPIInt            size,rank,imdex,tag,n;
-  PetscInt               *source,*lens,*owners;
-  PetscInt               *lowner,*start,lengthy,lengthx;
-  PetscInt               *nprocs,i,j,idx,nsends,nrecvs;
-  PetscInt               *owner,*starts,count,slen;
+  PetscInt               *source = PETSC_NULL,*lens = PETSC_NULL,*owners = PETSC_NULL;
+  PetscInt               *lowner = PETSC_NULL,*start = PETSC_NULL,lengthy,lengthx;
+  PetscInt               *nprocs = PETSC_NULL,i,j,idx,nsends,nrecvs;
+  PetscInt               *owner = PETSC_NULL,*starts = PETSC_NULL,count,slen;
   PetscInt               *rvalues,*svalues,base,nmax,*values,*indx,nprocslocal;
   MPI_Comm               comm;
-  MPI_Request            *send_waits,*recv_waits;
+  MPI_Request            *send_waits = PETSC_NULL,*recv_waits = PETSC_NULL;
   MPI_Status             recv_status,*send_status;
   PetscErrorCode         ierr;
 
@@ -1905,13 +1905,13 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag,imdex,n;
-  PetscInt       *lens,*owners = xin->map.range;
-  PetscInt       *nprocs,i,j,idx,nsends,nrecvs,*local_inidx,*local_inidy;
-  PetscInt       *owner,*starts,count,slen;
-  PetscInt       *rvalues,*svalues,base,nmax,*values,lastidx;
+  PetscInt       *lens = PETSC_NULL,*owners = xin->map.range;
+  PetscInt       *nprocs = PETSC_NULL,i,j,idx,nsends,nrecvs,*local_inidx = PETSC_NULL,*local_inidy = PETSC_NULL;
+  PetscInt       *owner = PETSC_NULL,*starts = PETSC_NULL,count,slen;
+  PetscInt       *rvalues = PETSC_NULL,*svalues = PETSC_NULL,base,nmax,*values = PETSC_NULL,lastidx;
   MPI_Comm       comm;
-  MPI_Request    *send_waits,*recv_waits;
-  MPI_Status     recv_status,*send_status;
+  MPI_Request    *send_waits = PETSC_NULL,*recv_waits = PETSC_NULL;
+  MPI_Status     recv_status,*send_status = PETSC_NULL;
   PetscTruth     duplicate = PETSC_FALSE;
 #if defined(PETSC_USE_DEBUG)
   PetscTruth     found = PETSC_FALSE;
