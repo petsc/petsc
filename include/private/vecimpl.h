@@ -17,8 +17,20 @@ typedef struct {
   PetscInt  *range;      /* the offset of each processor */
   PetscInt  bs;          /* number of elements in each block (generally for multi-component problems */
 } PetscMap;
+
 EXTERN PetscErrorCode PetscMapInitialize(MPI_Comm,PetscMap*);
 EXTERN PetscErrorCode PetscMapCopy(MPI_Comm,PetscMap*,PetscMap*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap*,PetscInt);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalSize(PetscMap*,PetscInt *);
+PetscPolymorphicFunction(PetscMapGetLocalSize,(PetscMap m),(m,&s),PetscInt,s)
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap*,PetscInt);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap*,PetscInt *);
+PetscPolymorphicFunction(PetscMapGetSize,(PetscMap m),(m,&s),PetscInt,s)
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalRange(PetscMap*,PetscInt *,PetscInt *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap*,PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSizeBlockSize(PetscMap*,PetscInt);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSizeBlockSize(PetscMap*,PetscInt *);
+
 /* ----------------------------------------------------------------------------*/
 
 typedef struct _VecOps *VecOps;
