@@ -156,6 +156,7 @@ PetscErrorCode FieldView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, const std::string
 
     if (stateId < 0) {
       ierr = PetscObjectComposedDataRegister(&stateId);CHKERRQ(ierr);
+      ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, 0);CHKERRQ(ierr);
     }
     ierr = PetscObjectComposedDataGetInt((PetscObject) viewer, stateId, outputState, hasState);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_VTK) {
@@ -231,6 +232,7 @@ PetscErrorCode FieldView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, const std::string
       }
       VTKViewer::writeField(mesh, mesh->getField(name), name, fiberDim, mesh->getBundle(mesh->getTopology()->depth())->getGlobalOrder(), viewer);
     }
+    ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, outputState);CHKERRQ(ierr);
   } else {
   }
   PetscFunctionReturn(0);
