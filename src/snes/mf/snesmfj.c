@@ -667,7 +667,7 @@ EXTERN_C_END
 
 .keywords: default, matrix-free, create, matrix
 
-.seealso: MatDestroy(), MatSNESMFSetFunctionError(), MatSNESMFDefaultSetUmin()
+.seealso: MatDestroy(), MatSNESMFSetFunctionError(), MatSNESMFDefaultSetUmin(), MatSNESMFSetFunction()
           MatSNESMFSetHHistory(), MatSNESMFResetHHistory(), MatCreateSNESMF(),
           MatSNESMFGetH(),MatSNESMFKSPMonitor(), MatSNESMFRegisterDynamic),, MatSNESMFComputeJacobian()
  

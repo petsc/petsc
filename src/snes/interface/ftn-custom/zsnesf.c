@@ -7,6 +7,7 @@
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define snessolve_                       SNESSOLVE
 #define snesdefaultcomputejacobian_      SNESDEFAULTCOMPUTEJACOBIAN
 #define snesdefaultcomputejacobiancolor_ SNESDEFAULTCOMPUTEJACOBIANCOLOR
 #define snesdacomputejacobian_           SNESDACOMPUTEJACOBIAN
@@ -32,6 +33,7 @@
 #define snesvecviewupdatemonitor_        SNESVECVIEWUPDATEMONITOR
 #define snessetmonitor_                  SNESSETMONITOR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define snessolve_                       snessolve
 #define snesdefaultcomputejacobian_      snesdefaultcomputejacobian
 #define snesdefaultcomputejacobiancolor_ snesdefaultcomputejacobiancolor
 #define snesdacomputejacobian_           snesdacomputejacobian
@@ -149,6 +151,13 @@ void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL
   }
 }
 /* -------------------------------------------------------------*/
+
+void PETSC_STDCALL   snessolve_(SNES *snes,Vec *b,Vec *x, int *__ierr )
+{
+  Vec B = *b;
+  if (*b == PETSC_NULL_OBJECT_Fortran) B = PETSC_NULL;
+  *__ierr = SNESSolve(*snes,B,*x);
+}
 
 void PETSC_STDCALL snesgetoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_LEN(len),
                                          PetscErrorCode *ierr PETSC_END_LEN(len))

@@ -975,8 +975,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES snes,Vec X,Mat *A,Ma
   PetscStackPop;
   ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
   /* make sure user returned a correct Jacobian and preconditioner */
-  PetscValidHeaderSpecific(*A,MAT_COOKIE,3);
-  PetscValidHeaderSpecific(*B,MAT_COOKIE,4);  
+  /*PetscValidHeaderSpecific(*A,MAT_COOKIE,3);
+    PetscValidHeaderSpecific(*B,MAT_COOKIE,4);   */
   PetscFunctionReturn(0);
 }
 
@@ -1739,7 +1739,7 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolve"
-/*@
+/*@C
    SNESSolve - Solves a nonlinear system F(x) = b.
    Call SNESSolve() after calling SNESCreate() and optional routines of the form SNESSetXXX().
 
