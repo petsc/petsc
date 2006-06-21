@@ -1971,7 +1971,7 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, MatType type,Mat *newmat)
   PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,maxnz;
   PetscInt       i,nz,j,rstart,rend,mmax;
   PetscInt       header[4],*rowlengths = 0,M,N,m,*cols;
-  PetscInt       *ourlens,*procsnz = 0,*offlens,jj,*mycols,*smycols;
+  PetscInt       *ourlens = PETSC_NULL,*procsnz = PETSC_NULL,*offlens = PETSC_NULL,jj,*mycols,*smycols;
   PetscInt       cend,cstart,n,*rowners;
   int            fd;
 
@@ -3707,7 +3707,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
   PetscInt               *rowlen,*bufj,*bufJ,ncols,aBn=a->B->cmap.n,row,*b_othi,*b_othj;
   PetscScalar            *rvalues,*svalues,*b_otha,*bufa,*bufA;
   PetscInt               i,k,l,nrecvs,nsends,nrows,*srow,*rstarts,*rstartsj = 0,*sstarts,*sstartsj,len;
-  MPI_Request            *rwaits,*swaits;
+  MPI_Request            *rwaits = PETSC_NULL,*swaits = PETSC_NULL;
   MPI_Status             *sstatus,rstatus;
   PetscInt               *cols;
   PetscScalar            *vals;

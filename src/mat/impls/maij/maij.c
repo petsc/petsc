@@ -2453,7 +2453,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newty
   Mat_SeqAIJ        *AIJ = (Mat_SeqAIJ*) MatAIJ->data;
   Mat_SeqAIJ        *OAIJ =(Mat_SeqAIJ*) MatOAIJ->data;
   Mat_MPIAIJ        *mpiaij = (Mat_MPIAIJ*) maij->A->data;
-  PetscInt          dof = maij->dof,i,j,*dnz,*onz,nmax = 0,onmax = 0,*oicols,*icols,ncols,*cols,oncols,*ocols;
+  PetscInt          dof = maij->dof,i,j,*dnz = PETSC_NULL,*onz = PETSC_NULL,nmax = 0,onmax = 0;
+  PetscInt          *oicols = PETSC_NULL,*icols = PETSC_NULL,ncols,*cols = PETSC_NULL,oncols,*ocols = PETSC_NULL;
   PetscInt          rstart,cstart,*garray,ii,k;
   PetscErrorCode    ierr;
   PetscScalar       *vals,*ovals;
