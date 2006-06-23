@@ -74,20 +74,19 @@ template<typename OverlapType, typename FieldType>
 struct fillNeighborCones {
   ALE::Obj<FieldType>                                    serialSifter;
   ALE::Obj<typename FieldType::order_type::baseSequence> serialPatches;
-  int *serialOffsets;
+  std::map<typename FieldType::patch_type,int>&          serialOffsets;
   int *SellConesA;
   int& offsetA;
   ALE::Obj<FieldType>                                    parallelSifter;
   ALE::Obj<typename FieldType::order_type::baseSequence> parallelPatches;
-  int *parallelOffsets;
+  std::map<typename FieldType::patch_type,int>&          parallelOffsets;
   int *SellConesB;
   int& offsetB;
 
-  fillNeighborCones(ALE::Obj<FieldType> serialSifter, ALE::Obj<typename FieldType::order_type::baseSequence> serialPatches, int *serialOffsets, int *SellConesA, int &offsetA, ALE::Obj<FieldType> parallelSifter, ALE::Obj<typename FieldType::order_type::baseSequence> parallelPatches, int *parallelOffsets, int *SellConesB, int& offsetB) : serialSifter(serialSifter), serialPatches(serialPatches), serialOffsets(serialOffsets), SellConesA(SellConesA), offsetA(offsetA), parallelSifter(parallelSifter), parallelPatches(parallelPatches), parallelOffsets(parallelOffsets), SellConesB(SellConesB), offsetB(offsetB) {};
+  fillNeighborCones(ALE::Obj<FieldType> serialSifter, ALE::Obj<typename FieldType::order_type::baseSequence> serialPatches, std::map<typename FieldType::patch_type,int>& serialOffsets, int *SellConesA, int &offsetA, ALE::Obj<FieldType> parallelSifter, ALE::Obj<typename FieldType::order_type::baseSequence> parallelPatches, std::map<typename FieldType::patch_type,int>& parallelOffsets, int *SellConesB, int& offsetB) : serialSifter(serialSifter), serialPatches(serialPatches), serialOffsets(serialOffsets), SellConesA(SellConesA), offsetA(offsetA), parallelSifter(parallelSifter), parallelPatches(parallelPatches), parallelOffsets(parallelOffsets), SellConesB(SellConesB), offsetB(offsetB) {};
   void operator()(const typename OverlapType::traits::source_type& p, const typename OverlapType::traits::target_type& t) {
     if (p.first == 0) {
       ALE::Obj<typename FieldType::order_type::supportSequence> patches = serialSifter->__getOrder()->support(p.second);
-      int patchNum = 0;
 
       for(typename FieldType::order_type::supportSequence::iterator sp_iter = patches->begin(); sp_iter != patches->end(); ++sp_iter) {
         const typename FieldType::index_type& idx = serialSifter->getIndex(*sp_iter, p.second);
@@ -96,17 +95,15 @@ struct fillNeighborCones {
           ostringstream  txt;
           PetscErrorCode ierr;
 
-          txt << "["<<serialSifter->commRank()<<"]Packing A patch " << *sp_iter << " index " << idx << "(" << serialOffsets[patchNum] << ") for " << t << std::endl;
+          txt << "["<<serialSifter->commRank()<<"]Packing A patch " << *sp_iter << " point " << p.second << " index " << idx << "(" << serialOffsets[*sp_iter] << ") for " << t << std::endl;
           ierr = PetscSynchronizedPrintf(serialSifter->comm(), txt.str().c_str()); ALE::CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
         }
-        for(int i = serialOffsets[patchNum]+idx.prefix; i < serialOffsets[patchNum]+idx.prefix+idx.index; ++i) {
+        for(int i = serialOffsets[*sp_iter]+idx.prefix; i < serialOffsets[*sp_iter]+idx.prefix+idx.index; ++i) {
           SellConesA[offsetA++] = i;
         }
-        patchNum++;
       }
     } else {
       ALE::Obj<typename FieldType::order_type::supportSequence> patches = parallelSifter->__getOrder()->support(p.second);
-      int patchNum = 0;
 
       for(typename FieldType::order_type::supportSequence::iterator pp_iter = patches->begin(); pp_iter != patches->end(); ++pp_iter) {
         const typename FieldType::index_type& idx = parallelSifter->getIndex(*pp_iter, p.second);
@@ -115,13 +112,12 @@ struct fillNeighborCones {
           ostringstream  txt;
           PetscErrorCode ierr;
 
-          txt << "["<<parallelSifter->commRank()<<"]Packing B patch " << *pp_iter << " index " << idx << "(" << parallelOffsets[patchNum] << ") for " << t << std::endl;
+          txt << "["<<parallelSifter->commRank()<<"]Packing B patch " << *pp_iter << " point " << p.second << " index " << idx << "(" << parallelOffsets[*pp_iter] << ") for " << t << std::endl;
           ierr = PetscSynchronizedPrintf(parallelSifter->comm(), txt.str().c_str()); ALE::CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
         }
-        for(int i = parallelOffsets[patchNum]+idx.prefix; i < parallelOffsets[patchNum]+idx.prefix+idx.index; ++i) {
+        for(int i = parallelOffsets[*pp_iter]+idx.prefix; i < parallelOffsets[*pp_iter]+idx.prefix+idx.index; ++i) {
           SellConesB[offsetB++] = i;
         }
-        patchNum++;
       }
     }
   };
@@ -212,24 +208,22 @@ namespace ALE {
       Obj<typename FieldType::order_type::baseSequence> serialPatches = serialSifter->getPatches();
       Obj<typename FieldType::order_type::baseSequence> parallelPatches = parallelSifter->getPatches();
       
-      int *serialOffsets = new int[serialPatches->size()+1];
+      std::map<typename FieldType::patch_type,int> serialOffsets;
       int serialSize = 0;
       int k = 0;
-      serialOffsets[0] = 0;
       for(typename FieldType::order_type::baseSequence::iterator p_iter = serialPatches->begin(); p_iter != serialPatches->end(); ++p_iter) {
+        serialOffsets[*p_iter] = serialSize;
         serialSize += serialSifter->getSize(*p_iter);
-        serialOffsets[++k] = serialSize;
       }
       ierr = VecCreateMPIWithArray(serialSifter->comm(), serialSize, PETSC_DETERMINE, serialSifter->restrict(*serialPatches->begin(), false), &serialVec);CHKERROR(ierr, "Error in VecCreate");
       // Use individual serial vectors for each of the parallel domains
       if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "  Creating parallel indices\n");}
-      int *parallelOffsets = new int[parallelPatches->size()+1];
+      std::map<typename FieldType::patch_type,int> parallelOffsets;
       int parallelSize = 0;
       k = 0;
-      parallelOffsets[0] = 0;
       for(typename FieldType::order_type::baseSequence::iterator p_iter = parallelPatches->begin(); p_iter != parallelPatches->end(); ++p_iter) {
+        parallelOffsets[*p_iter] = parallelSize;
         parallelSize += parallelSifter->getSize(*p_iter);
-        parallelOffsets[++k] = parallelSize;
       }
       ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, parallelSize, parallelSifter->restrict(*parallelPatches->begin(), false), &parallelVec);CHKERROR(ierr, "Error in VecCreate");
 
@@ -598,6 +592,14 @@ namespace ALE {
           serialField->view(msg.c_str());
         }
         Distributer<order_type>::distribute(serialField->__getOrder(), parallelField->__getOrder(), false);
+        if (parallelMesh->debug) {
+          std::string msg = "Serial order ";
+          msg += *f_iter;
+          serialField->__getOrder()->view(msg.c_str());
+          msg = "Parallel order ";
+          msg += *f_iter;
+          parallelField->__getOrder()->view(msg.c_str());
+        }
         parallelField->reorderPatches();
         parallelField->allocatePatches();
         parallelField->createGlobalOrder();

@@ -724,8 +724,8 @@ namespace ALE {
           this->localOrder->setPatch(cone, *b_iter);
           this->globalOrder->setPatch(cone, *b_iter);
           for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-            this->localOrder->setFiberDimension(patch, *p_iter, this->getFiberDimension(patch, *p_iter));
-            this->globalOrder->setFiberDimension(patch, *p_iter, this->getFiberDimension(patch, *p_iter));
+            this->localOrder->setFiberDimension(*b_iter, *p_iter, this->getFiberDimension(*b_iter, *p_iter));
+            this->globalOrder->setFiberDimension(*b_iter, *p_iter, this->getFiberDimension(*b_iter, *p_iter));
           }
         }
         if (useCapOverlap) {
