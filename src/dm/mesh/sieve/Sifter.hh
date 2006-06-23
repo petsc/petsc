@@ -483,7 +483,8 @@ namespace ALE {
             ::boost::multi_index::composite_key<
               typename traits::arrow_type, 
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source), 
-              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::target_type, target)
+              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::target_type, target),
+              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::color_type,  color)
             >
           >,
           ::boost::multi_index::ordered_non_unique<
@@ -491,7 +492,8 @@ namespace ALE {
             ::boost::multi_index::composite_key<
               typename traits::arrow_type, 
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source), 
-              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::color_type,  color)
+              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::color_type,  color),
+              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::target_type, target)
             >
           >,
           ::boost::multi_index::ordered_non_unique<
@@ -499,7 +501,8 @@ namespace ALE {
             ::boost::multi_index::composite_key<
               typename traits::arrow_type, 
               BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::target_type, target), 
-              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::color_type,  color)
+              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::color_type,  color),
+              BOOST_MULTI_INDEX_MEMBER(arrow_type, typename traits::source_type, source)
             >
           >
         >,
