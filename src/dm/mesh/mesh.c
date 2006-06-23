@@ -148,11 +148,11 @@ PetscErrorCode FieldView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, const std::string
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
-    static PetscInt   stateId = -1;
-    PetscInt          outputState;
+    static PetscInt   stateId     = -1;
+    PetscInt          doOutput    = 0;
+    PetscInt          outputState = 0;
+    PetscInt          fiberDim    = 0;
     PetscTruth        hasState;
-    PetscInt          doOutput;
-    PetscInt          fiberDim;
 
     if (stateId < 0) {
       ierr = PetscObjectComposedDataRegister(&stateId);CHKERRQ(ierr);

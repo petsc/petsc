@@ -2712,10 +2712,10 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
   MPI_Status     status;
   PetscMPIInt    rank,size,maxnz;
   PetscInt       header[4],*rowlengths = 0,M,N,m,*rowners,*cols;
-  PetscInt       *locrowlens,*procsnz = 0,*browners;
+  PetscInt       *locrowlens = PETSC_NULL,*procsnz = PETSC_NULL,*browners = PETSC_NULL;
   PetscInt       jj,*mycols,*ibuf,bs=1,Mbs,mbs,extra_rows,mmax;
   PetscMPIInt    tag = ((PetscObject)viewer)->tag;
-  PetscInt       *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
+  PetscInt       *dlens = PETSC_NULL,*odlens = PETSC_NULL,*mask = PETSC_NULL,*masked1 = PETSC_NULL,*masked2 = PETSC_NULL,rowcount,odcount;
   PetscInt       dcount,kmax,k,nzcount,tmp,mend;
  
   PetscFunctionBegin;

@@ -36,7 +36,7 @@
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscGatherNumberOfMessages(MPI_Comm comm,PetscMPIInt *iflags,PetscMPIInt *ilengths,PetscMPIInt *nrecvs)
 {
-  PetscMPIInt    size,rank,*recv_buf,i,*iflags_local,*iflags_localm;
+  PetscMPIInt    size,rank,*recv_buf,i,*iflags_local = PETSC_NULL,*iflags_localm = PETSC_NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -105,8 +105,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscGatherMessageLengths(MPI_Comm comm,PetscMPII
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,tag,i,j;
-  MPI_Request    *s_waits,*r_waits;
-  MPI_Status     *w_status;
+  MPI_Request    *s_waits = PETSC_NULL,*r_waits = PETSC_NULL;
+  MPI_Status     *w_status = PETSC_NULL;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -178,9 +178,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscGatherMessageLengths(MPI_Comm comm,PetscMPII
 PetscErrorCode PETSC_DLLEXPORT PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,PetscMPIInt nrecvs,PetscMPIInt *ilengths1,PetscMPIInt *ilengths2,PetscMPIInt **onodes,PetscMPIInt **olengths1,PetscMPIInt **olengths2)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size,tag,i,j,*buf_s,*buf_r,*buf_j;
-  MPI_Request    *s_waits,*r_waits;
-  MPI_Status     *w_status;
+  PetscMPIInt    size,tag,i,j,*buf_s = PETSC_NULL,*buf_r = PETSC_NULL,*buf_j = PETSC_NULL;
+  MPI_Request    *s_waits = PETSC_NULL,*r_waits = PETSC_NULL;
+  MPI_Status     *w_status = PETSC_NULL;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

@@ -384,10 +384,10 @@ namespace ALE {
         // determine owners of each base node and save it in a map
         __determinePointOwners(_graph, points, BuyData, owner);
 
-        int  msgSize = 3;  // A point is 2 ints, and the cone size is 1
-        int  BuyCount = 0; // The number of sellers with which this process (buyer) communicates
-        int *BuySizes;     // The number of points to buy from each seller
-        int *Sellers;      // The process for each seller
+        int  msgSize = 3;           // A point is 2 ints, and the cone size is 1
+        int  BuyCount = 0;          // The number of sellers with which this process (buyer) communicates
+        int *BuySizes = PETSC_NULL; // The number of points to buy from each seller
+        int *Sellers = PETSC_NULL;  // The process for each seller
         int *offsets = new int[size];
         for(int p = 0; p < size; ++p) {BuyCount += BuyData[2*p+1];}
         ierr = PetscMalloc2(BuyCount,int,&BuySizes,BuyCount,int,&Sellers);CHKERROR(ierr, "Error in PetscMalloc");
@@ -419,10 +419,10 @@ namespace ALE {
         }
         delete [] offsets;
 
-        int  SellCount;      // The number of buyers with which this process (seller) communicates
-        int *SellSizes;      // The number of points to sell to each buyer
-        int *Buyers;         // The process for each buyer
-        int  MaxSellSize;    // The maximum number of messages to be sold to any buyer
+        int  SellCount;                   // The number of buyers with which this process (seller) communicates
+        int *SellSizes = PETSC_NULL;      // The number of points to sell to each buyer
+        int *Buyers = PETSC_NULL;         // The process for each buyer
+        int  MaxSellSize;                 // The maximum number of messages to be sold to any buyer
         int32_t *SellPoints = PETSC_NULL; // The points and cone sizes from all buyers
         ierr = PetscMaxSum(comm, BuyData, &MaxSellSize, &SellCount);CHKERROR(ierr,"Error in PetscMaxSum");
         ierr = PetscMalloc2(SellCount,int,&SellSizes,SellCount,int,&Buyers);CHKERROR(ierr, "Error in PetscMalloc");
@@ -507,10 +507,10 @@ namespace ALE {
 
         int      BuyConesSize  = 0;
         int      SellConesSize = 0;
-        int     *BuyConesSizes;  // The number of points to buy from each seller
-        int     *SellConesSizes; // The number of points to sell to each buyer
-        int32_t *SellCones;      // The (rank, cone size) for each point from all other buyers
-        int32_t *overlapInfo = PETSC_NULL; // The (rank, cone size) for each point from all other buyers
+        int     *BuyConesSizes = PETSC_NULL;  // The number of points to buy from each seller
+        int     *SellConesSizes = PETSC_NULL; // The number of points to sell to each buyer
+        int32_t *SellCones = PETSC_NULL;      // The (rank, cone size) for each point from all other buyers
+        int32_t *overlapInfo = PETSC_NULL;    // The (rank, cone size) for each point from all other buyers
         ierr = PetscMalloc2(BuyCount,int,&BuyConesSizes,SellCount,int,&SellConesSizes);CHKERROR(ierr, "Error in PetscMalloc");
         for(int s = 0, offset = 0; s < SellCount; s++) {
           SellConesSizes[s] = 0;
@@ -1545,9 +1545,9 @@ namespace ALE {
       static void commCycle(MPI_Comm comm, PetscMPIInt tag, int msgSize, int BuyCount, int BuySizes[], int Sellers[], int32_t BuyData[], int SellCount, int SellSizes[], int Buyers[], int32_t *SellData[]) {
         int32_t     *locSellData; // Messages to sell to buyers (received from buyers)
         int          SellSize = 0;
-        int         *BuyOffsets, *SellOffsets;
-        MPI_Request *buyWaits,  *sellWaits;
-        MPI_Status  *buyStatus;
+        int         *BuyOffsets = PETSC_NULL, *SellOffsets = PETSC_NULL;
+        MPI_Request *buyWaits = PETSC_NULL,  *sellWaits = PETSC_NULL;
+        MPI_Status  *buyStatus = PETSC_NULL;
         PetscErrorCode ierr;
 
         // Allocation
@@ -1932,9 +1932,9 @@ namespace ALE {
         int msgSize = sizeof(cone_arrow_type)/sizeof(int); // Messages are arrows
 
         int NeighborCount = overlapCap->size();
-        int *Neighbors, *NeighborByProc; // Neighbor processes and the reverse map
-        int *SellSizes, *BuySizes;    // Sizes of the cones to transmit and receive
-        int *SellCones = PETSC_NULL, *BuyCones = PETSC_NULL;    //
+        int *Neighbors = PETSC_NULL, *NeighborByProc = PETSC_NULL; // Neighbor processes and the reverse map
+        int *SellSizes = PETSC_NULL, *BuySizes = PETSC_NULL;       // Sizes of the cones to transmit and receive
+        int *SellCones = PETSC_NULL, *BuyCones = PETSC_NULL;       //
         int n, offset;
         ierr = PetscMalloc2(NeighborCount,int,&Neighbors,size,int,&NeighborByProc);CHKERROR(ierr, "Error in PetscMalloc");
         ierr = PetscMalloc2(NeighborCount,int,&SellSizes,NeighborCount,int,&BuySizes);CHKERROR(ierr, "Error in PetscMalloc");
