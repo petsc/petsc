@@ -1,6 +1,6 @@
 #! /bin/csh
 
-set MACH=opteron-ibm
+set MACH=msopteron1
 set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev
 set TAO_LOC=/sandbox/petsc/tao-devel
