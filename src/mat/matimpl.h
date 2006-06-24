@@ -390,6 +390,7 @@ struct  _p_MatFDColoring{
   Vec            F;                /* current value of user provided function; can set with MatFDColoringSetF() */
   PetscInt       currentcolor;     /* color for which function evaluation is being done now */
   const char     *htype;            /* "wp" or "ds" */
+  ISColoringType ctype;            /* IS_COLORING_LOCAL or IS_COLORING_GHOSTED */
 };
 
 /*
