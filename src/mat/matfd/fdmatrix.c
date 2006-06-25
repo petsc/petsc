@@ -638,12 +638,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   }
 
   x1_tmp = x1; 
-
+#if !defined(PETSC_USE_COMPLEX)
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-fd_jacobian_ghost",&fd_jacobian_ghost,0);CHKERRQ(ierr);
   if (fd_jacobian_ghost){ /* ex5 */
     da = *(DA*)fctx;
     ierr = DAGetLocalVector(da,&x1_tmp);CHKERRQ(ierr);
   } 
+#endif
 
   if (ctype == IS_COLORING_GHOSTED && !coloring->vscale){ 
     ierr = VecDuplicate(x1_tmp,&coloring->vscale);CHKERRQ(ierr);
@@ -799,9 +800,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   }
   ierr = MatFDColoringView_Private(coloring);CHKERRQ(ierr);
 
+#if !defined(PETSC_USE_COMPLEX)
   if (fd_jacobian_ghost){ /* ex5 */
     ierr = DARestoreLocalVector(da,&x1_tmp);CHKERRQ(ierr);
   }
+#endif
   PetscFunctionReturn(0);
 }
 
