@@ -269,30 +269,130 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat
 #define __FUNCT__ "MatMatMultNumeric_SeqAIJ_SeqDense"
 PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 {
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscScalar    *b,*c,*barray,*carray;
-  PetscInt       cm=C->rmap.n, bn=B->cmap.n, bm=B->rmap.n, col;
-  Vec            vb,vc;
+  PetscScalar    *b,*c,r1,r2,r3,r4,*aa,*b1,*b2,*b3,*b4;
+  PetscInt       cm=C->rmap.n, cn=B->cmap.n, bm=B->rmap.n, col, i,j,n,*aj, am = A->rmap.n;
+  PetscInt       am2 = 2*am, am3 = 3*am,  bm4 = 4*bm,colam;
 
   PetscFunctionBegin;
-  if (!cm || !bn) PetscFunctionReturn(0);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,bm,&vb);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,cm,&vc);CHKERRQ(ierr);
-
-  ierr = MatGetArray(B,&barray);CHKERRQ(ierr);
-  ierr = MatGetArray(C,&carray);CHKERRQ(ierr);
-  b = barray; c = carray;
-  for (col=0; col<bn; col++){
-    ierr = VecPlaceArray(vb,b);CHKERRQ(ierr);
-    ierr = VecPlaceArray(vc,c);CHKERRQ(ierr);
-    ierr = MatMult(A,vb,vc);CHKERRQ(ierr);
-    b += bm; c += cm;
-    ierr = VecResetArray(vb);CHKERRQ(ierr);
-    ierr = VecResetArray(vc);CHKERRQ(ierr);
+  if (!cm || !cn) PetscFunctionReturn(0);
+  if (bm != A->cmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number columns in A %D not equal rows in B %D\n",A->cmap.n,bm);
+  if (A->rmap.n != C->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number rows in C %D not equal rows in A %D\n",C->rmap.n,A->rmap.n);
+  if (B->cmap.n != C->cmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number columns in B %D not equal columns in C %D\n",B->cmap.n,C->cmap.n);
+  ierr = MatGetArray(B,&b);CHKERRQ(ierr);
+  ierr = MatGetArray(C,&c);CHKERRQ(ierr);
+  b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
+  for (col=0; col<cn-4; col += 4){  /* over columns of C */
+    colam = col*am;
+    for (i=0; i<am; i++) {        /* over rows of C in those columns */
+      r1 = r2 = r3 = r4 = 0.0;
+      n   = a->i[i+1] - a->i[i]; 
+      aj  = a->j + a->i[i];
+      aa  = a->a + a->i[i];
+      for (j=0; j<n; j++) {
+        r1 += (*aa)*b1[*aj]; 
+        r2 += (*aa)*b2[*aj]; 
+        r3 += (*aa)*b3[*aj]; 
+        r4 += (*aa++)*b4[*aj++]; 
+      }
+      c[colam + i]       = r1;
+      c[colam + am + i]  = r2;
+      c[colam + am2 + i] = r3;
+      c[colam + am3 + i] = r4;
+    }
+    b1 += bm4;
+    b2 += bm4;
+    b3 += bm4;
+    b4 += bm4;
   }
-  ierr = MatRestoreArray(B,&barray);CHKERRQ(ierr);
-  ierr = MatRestoreArray(C,&carray);CHKERRQ(ierr);
-  ierr = VecDestroy(vb);CHKERRQ(ierr);
-  ierr = VecDestroy(vc);CHKERRQ(ierr);
+  for (;col<cn; col++){     /* over extra columns of C */
+    for (i=0; i<am; i++) {  /* over rows of C in those columns */
+      r1 = 0.0;
+      n   = a->i[i+1] - a->i[i]; 
+      aj  = a->j + a->i[i];
+      aa  = a->a + a->i[i];
+
+      for (j=0; j<n; j++) {
+        r1 += (*aa++)*b1[*aj++]; 
+      }
+      c[col*am + i]     = r1;
+    }
+    b1 += bm;
+  }
+  ierr = MatRestoreArray(B,&b);CHKERRQ(ierr);
+  ierr = MatRestoreArray(C,&c);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (PetscGlobalRank == -1) printf("A B result C in mult add\n");
+  if (PetscGlobalRank == -1) MatView(A,PETSC_VIEWER_STDOUT_SELF);
+  if (PetscGlobalRank == -1) MatView(B,PETSC_VIEWER_STDOUT_SELF);
+  if (PetscGlobalRank == -1) MatView(C,PETSC_VIEWER_STDOUT_SELF);
+  PetscFunctionReturn(0);
+}
+
+/*
+   will replace with optimized version that uses rows[]
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatMultNumericAdd_SeqAIJ_SeqDense"
+PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
+{
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscScalar    *b,*c,r1,r2,r3,r4,*aa,*b1,*b2,*b3,*b4;
+  PetscInt       cm=C->rmap.n, cn=B->cmap.n, bm=B->rmap.n, col, i,j,n,*aj, am = A->rmap.n;
+  PetscInt       am2 = 2*am, am3 = 3*am,  bm4 = 4*bm,colam;
+
+  PetscFunctionBegin;
+  if (!cm || !cn) PetscFunctionReturn(0);
+  if (PetscGlobalRank == -1) printf("C in mult add\n");
+  if (PetscGlobalRank == -1) MatView(C,PETSC_VIEWER_STDOUT_SELF);
+  ierr = MatGetArray(B,&b);CHKERRQ(ierr);
+  ierr = MatGetArray(C,&c);CHKERRQ(ierr);
+  b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
+  for (col=0; col<cn-4; col += 4){  /* over columns of C */
+    colam = col*am;
+    for (i=0; i<am; i++) {        /* over rows of C in those columns */
+      r1 = r2 = r3 = r4 = 0.0;
+      n   = a->i[i+1] - a->i[i]; 
+      aj  = a->j + a->i[i];
+      aa  = a->a + a->i[i];
+      for (j=0; j<n; j++) {
+        r1 += (*aa)*b1[*aj]; 
+        r2 += (*aa)*b2[*aj]; 
+        r3 += (*aa)*b3[*aj]; 
+        r4 += (*aa++)*b4[*aj++]; 
+      }
+      c[colam + i]       += r1;
+      c[colam + am + i]  += r2;
+      c[colam + am2 + i] += r3;
+      c[colam + am3 + i] += r4;
+    }
+    b1 += bm4;
+    b2 += bm4;
+    b3 += bm4;
+    b4 += bm4;
+  }
+  for (;col<cn; col++){     /* over extra columns of C */
+    for (i=0; i<am; i++) {  /* over rows of C in those columns */
+      r1 = 0.0;
+      n   = a->i[i+1] - a->i[i]; 
+      aj  = a->j + a->i[i];
+      aa  = a->a + a->i[i];
+
+      for (j=0; j<n; j++) {
+        r1 += (*aa++)*b1[*aj++]; 
+      }
+      c[col*am + i]     += r1;
+    }
+    b1 += bm;
+  }
+  ierr = MatRestoreArray(B,&b);CHKERRQ(ierr);
+  ierr = MatRestoreArray(C,&c);CHKERRQ(ierr);
+  if (PetscGlobalRank == -1) printf("A B result C in mult add\n");
+  if (PetscGlobalRank == -1) MatView(A,PETSC_VIEWER_STDOUT_SELF);
+  if (PetscGlobalRank == -1) MatView(B,PETSC_VIEWER_STDOUT_SELF);
+  if (PetscGlobalRank == -1) MatView(C,PETSC_VIEWER_STDOUT_SELF);
   PetscFunctionReturn(0);
 }

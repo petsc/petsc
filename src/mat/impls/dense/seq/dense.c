@@ -800,12 +800,12 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
       for (j=0; j<A->cmap.n; j++) {
 #if defined(PETSC_USE_COMPLEX)
         if (allreal) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%6.4e ",PetscRealPart(*v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%18.16e ",PetscRealPart(*v));CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerASCIIPrintf(viewer,"%6.4e + %6.4e i ",PetscRealPart(*v),PetscImaginaryPart(*v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%18.16e + %18.16e i ",PetscRealPart(*v),PetscImaginaryPart(*v));CHKERRQ(ierr);
         }
 #else
-        ierr = PetscViewerASCIIPrintf(viewer,"%6.4e ",*v);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%18.16e ",*v);CHKERRQ(ierr);
 #endif
 	v += a->lda;
       }

@@ -44,8 +44,6 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       max_k,k;
   KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data;
-  Vec            vec;
-  Mat            pmat;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
@@ -83,9 +81,6 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(PetscInt),&gmres->mwork_alloc);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)+sizeof(PetscInt)));CHKERRQ(ierr);
 
-  ierr = PCGetOperators(ksp->pc,0,&pmat,0);CHKERRQ(ierr);
-  if (!pmat) SETERRQ(PETSC_ERR_ORDER,"You must call KSPSetOperators() or PCSetOperators() before this call");
-  ierr = MatGetVecs(pmat,&vec,0);CHKERRQ(ierr);
   if (gmres->q_preallocate) {
     gmres->vv_allocated   = VEC_OFFSET + 2 + max_k;
     ierr = KSPGetVecs(ksp,gmres->vv_allocated,&gmres->user_work[0],0,PETSC_NULL);CHKERRQ(ierr);
@@ -105,7 +100,6 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
       gmres->vecs[k] = gmres->user_work[0][k];
     }
   }
-  ierr = VecDestroy(vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

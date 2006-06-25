@@ -36,7 +36,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat mat,MatOperation op,PetscT
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
-  ierr = MatPreallocated(mat);CHKERRQ(ierr);
   PetscValidPointer(has,3);
   if (((void **)mat->ops)[op]) {*has =  PETSC_TRUE;}
   else {*has = PETSC_FALSE;}

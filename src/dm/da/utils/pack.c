@@ -631,7 +631,8 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackCreateGlobalVector(VecPack packer,Vec *g
 .    packer - the packer object
 
     Output Parameters:
-.    idx - the individual indices for each packed vector/array
+.    idx - the individual indices for each packed vector/array. Note that this includes
+           all the ghost points that individual ghosted DA's may have.
  
     Level: advanced
 

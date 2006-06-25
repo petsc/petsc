@@ -188,44 +188,142 @@ PetscErrorCode MatMatMult_MPIAIJ_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal f
 #define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIDense"
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C) 
 {
-  PetscErrorCode ierr;
+  PetscErrorCode         ierr;
+  Mat                    workB;
+  Mat_MPIAIJ             *aij = (Mat_MPIAIJ*) A->data;
+  PetscInt               nz = aij->B->cmap.n;
 
   PetscFunctionBegin; 
   ierr = MatMatMultSymbolic_MPIDense_MPIDense(A,B,0.0,C);
+
+  /* Create work matrix used to store off processor rows of B needed for local product */
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,nz,B->cmap.N,PETSC_NULL,&workB);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)(*C),"workB",(PetscObject)workB);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*
+    Performs an efficient scatter on the rows of B needed by this process
+*/
+PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat workB)
+{
+  Mat_MPIAIJ             *aij = (Mat_MPIAIJ*)A->data;
+  PetscErrorCode         ierr;
+  PetscScalar            *b,*w,*svalues,*rvalues;
+  VecScatter             ctx = aij->Mvctx; 
+  VecScatter_MPI_General *from = (VecScatter_MPI_General*) ctx->fromdata;
+  VecScatter_MPI_General *to   = ( VecScatter_MPI_General*) ctx->todata;
+  PetscInt               i,j,k;
+  PetscMPIInt            *sindices,*sstarts,*sprocs,*rindices,*rstarts,*rprocs,nrecvs;
+  MPI_Request            *swaits,*rwaits;
+  MPI_Comm               comm = A->comm;
+  PetscMPIInt            tag = ctx->tag,ncols = B->cmap.N, nrows = aij->B->cmap.n,imdex,nrowsB = B->rmap.n;
+  MPI_Status             status;
+
+  PetscFunctionBegin;
+  if (nrows != workB->rmap.n) SETERRQ2(PETSC_ERR_PLIB,"Number of rows of workB %D not equal to columns of aij->B %D",nrows,workB->cmap.n);
+  sindices  = to->indices;
+  sstarts   = to->starts;
+  sprocs    = to->procs;
+
+  rindices  = from->indices;
+  rstarts   = from->starts;
+  rprocs    = from->procs;
+
+  ierr = MatGetArray(B,&b);CHKERRQ(ierr);
+  ierr = MatGetArray(workB,&w);CHKERRQ(ierr);
+
+  ierr = PetscMalloc(from->n*sizeof(MPI_Request),&rwaits);CHKERRQ(ierr);
+  ierr = PetscMalloc(ncols*rstarts[from->n]*sizeof(PetscScalar),&rvalues);CHKERRQ(ierr);
+  for (i=0; i<from->n; i++) {
+    // printf("[%d]rstarts %d %d %d %d\n",PetscGlobalRank,rstarts[i],rstarts[i+1],ncols,rprocs[i]);
+    ierr = MPI_Irecv(rvalues+ncols*rstarts[i],ncols*(rstarts[i+1]-rstarts[i]),MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
+  } 
+
+  ierr = PetscMalloc(to->n*sizeof(MPI_Request),&swaits);CHKERRQ(ierr);
+  ierr = PetscMalloc(ncols*(sstarts[to->n])*sizeof(PetscScalar),&svalues);CHKERRQ(ierr);
+  for (i=0; i<to->n; i++) {
+    //    printf("[%d]sstarts %d %d %d %d\n",PetscGlobalRank,sstarts[i],sstarts[i+1],ncols,sprocs[i]);
+    /* pack a message at a time */
+  CHKMEMQ;
+    for (j=0; j<sstarts[i+1]-sstarts[i]; j++){
+  CHKMEMQ;
+      for (k=0; k<ncols; k++) {
+  CHKMEMQ;
+        svalues[ncols*(sstarts[i] + j) + k] = b[sindices[sstarts[i]+j] + nrowsB*k];
+  CHKMEMQ;
+	if (PetscGlobalRank == -1){
+	  printf("row %d col %d %d val %g %d\n",j,k,ncols*(sstarts[i] + j) + k,b[sindices[sstarts[i]+j] + nrows*k],sindices[sstarts[i]+j] + nrows*k);}
+      }
+    }
+
+    ierr = MPI_Isend(svalues+ncols*sstarts[i],ncols*(sstarts[i+1]-sstarts[i]),MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
+  }
+  CHKMEMQ;
+  nrecvs = from->n;
+  while (nrecvs) {
+    //printf("[%d] waiting %d\n",PetscGlobalRank,nrecvs);
+    ierr = MPI_Waitany(from->n,rwaits,&imdex,&status);CHKERRQ(ierr);
+    //printf("MPI status %d %d\n",ierr,status.MPI_ERROR);
+    nrecvs--;
+    /* unpack a message at a time */
+  CHKMEMQ;
+    for (j=0; j<rstarts[imdex+1]-rstarts[imdex]; j++){
+      for (k=0; k<ncols; k++) {
+  CHKMEMQ;
+        w[rindices[rstarts[imdex]+j] + nrows*k] = rvalues[ncols*(rstarts[imdex] + j) + k];
+  CHKMEMQ;
+      }
+    }
+  }
+  ierr = PetscFree(rvalues);CHKERRQ(ierr);
+  ierr = PetscFree(rwaits);CHKERRQ(ierr);
+
+  if (to->n) {ierr = MPI_Waitall(to->n,swaits,to->sstatus);CHKERRQ(ierr)}
+
+  ierr = PetscFree(svalues);CHKERRQ(ierr);
+  ierr = PetscFree(swaits);CHKERRQ(ierr); 
+
+  ierr = MatRestoreArray(B,&b);CHKERRQ(ierr);
+  ierr = MatRestoreArray(workB,&w);CHKERRQ(ierr);
+  CHKMEMQ;
+  ierr = MatAssemblyBegin(workB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKMEMQ;
+  ierr = MatAssemblyEnd(workB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKMEMQ;
+  if (PetscGlobalRank == -11) MatView(workB,PETSC_VIEWER_STDOUT_SELF);
+  PetscFunctionReturn(0);
+}
+extern PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat,Mat,Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIDense"
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr;
-  PetscScalar    *b,*c,*barray,*carray;
-  PetscInt       cm=C->rmap.n, bN=B->cmap.N, bm=B->rmap.n, col;
-  Vec            vb,vc;
+  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)A->data;
+  Mat_MPIDense   *bdense = (Mat_MPIDense*)B->data;
+  Mat_MPIDense   *cdense = (Mat_MPIDense*)C->data;
+  Mat            workB;
 
   PetscFunctionBegin;
-  if (!C->rmap.N || !bN) PetscFunctionReturn(0);
-  ierr = VecCreateMPI(B->comm,bm,PETSC_DECIDE,&vb);CHKERRQ(ierr);
-  ierr = VecCreateMPI(A->comm,cm,PETSC_DECIDE,&vc);CHKERRQ(ierr);
 
-  ierr = MatGetArray(B,&barray);CHKERRQ(ierr);
-  ierr = MatGetArray(C,&carray);CHKERRQ(ierr);
-  b = barray; c = carray;
-  for (col=0; col<bN; col++){
-    ierr = VecPlaceArray(vb,b);CHKERRQ(ierr);
-    ierr = VecPlaceArray(vc,c);CHKERRQ(ierr);
-    ierr = MatMult(A,vb,vc);CHKERRQ(ierr);
-    b += bm; c += cm;
-    ierr = VecResetArray(vb);CHKERRQ(ierr);
-    ierr = VecResetArray(vc);CHKERRQ(ierr);
-  }
-  ierr = MatRestoreArray(B,&barray);CHKERRQ(ierr);
-  ierr = MatRestoreArray(C,&carray);CHKERRQ(ierr);
+  /* diagonal block of A times all local rows of B*/
+  ierr = MatMatMultNumeric_SeqAIJ_SeqDense(aij->A,bdense->A,cdense->A);CHKERRQ(ierr);
+
+  /* get off processor parts of B needed to complete the product */
+  ierr = PetscObjectQuery((PetscObject)C,"workB",(PetscObject*)&workB);CHKERRQ(ierr);
+  ierr = MatMPIDenseScatter(A,B,workB);CHKERRQ(ierr);
+  CHKMEMQ;
+
+  CHKMEMQ;
+  if (PetscGlobalRank == -1) {ierr = MatView(workB,0);CHKERRQ(ierr);}
+
+  CHKMEMQ;
+  /* off-diagonal block of A times nonlocal rows of B */
+  ierr = MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B,workB,cdense->A);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecDestroy(vb);CHKERRQ(ierr);
-  ierr = VecDestroy(vc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

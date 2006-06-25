@@ -3884,7 +3884,7 @@ PetscErrorCode MatView_Private(Mat mat)
 
 .seealso: MatAssemblyBegin(), MatSetValues(), PetscDrawOpenX(), MatView(), MatAssembled(), PetscViewerSocketOpen()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
+\PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {
   PetscErrorCode  ierr;
   static PetscInt inassm = 0;
@@ -4691,6 +4691,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetArray(Mat mat,PetscScalar *v[])
   if (!mat->ops->getarray) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = (*mat->ops->getarray)(mat,v);CHKERRQ(ierr);
+  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 

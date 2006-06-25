@@ -554,6 +554,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostWithArray(MPI_Comm comm,PetscInt
     indices[n+i] = ghosts[i];
   }
   ierr = ISLocalToGlobalMappingCreate(comm,n+nghost,indices,&ltog);CHKERRQ(ierr);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(*vv,ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
   PetscFunctionReturn(0);

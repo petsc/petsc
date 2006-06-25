@@ -53,7 +53,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFormat(PetscViewer viewer,PetscView
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  CHKMEMQ;
   viewer->format     = format;
+  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
