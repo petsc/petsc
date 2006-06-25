@@ -137,13 +137,22 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring iscoloring,PetscInt
       for (i=1; i<nc; i++) {
 	ii[i] = ii[i-1] + mcolors[i-1];
       }
-   
-      ierr = MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
-      base -= iscoloring->N;
       ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
-      for (i=0; i<n; i++) {
-	ii[colors[i]][mcolors[colors[i]]++] = i + base;
+
+      if (iscoloring->ctype == IS_COLORING_LOCAL){
+        ierr = MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
+        base -= iscoloring->N;
+        for (i=0; i<n; i++) {
+          ii[colors[i]][mcolors[colors[i]]++] = i + base; /* global idx */
+        }
+      } else if (iscoloring->ctype == IS_COLORING_GHOSTED){
+        for (i=0; i<n; i++) {
+          ii[colors[i]][mcolors[colors[i]]++] = i;   /* local idx */
+        }
+      } else {
+        SETERRQ(PETSC_ERR_SUP,"Not provided for this ISColoringType type");
       }
+     
       ierr = PetscMalloc(nc*sizeof(IS),&is);CHKERRQ(ierr);
       for (i=0; i<nc; i++) {
 	ierr = ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],is+i);CHKERRQ(ierr);
@@ -156,14 +165,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring iscoloring,PetscInt
     }
     *isis = iscoloring->is;
   }
-
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISColoringRestoreIS"
 /*@C
-   ISColoringGetIS - Restores the index sets extracted from the coloring context
+   ISColoringRestoreIS - Restores the index sets extracted from the coloring context
 
    Collective on ISColoring 
 
