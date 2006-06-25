@@ -136,9 +136,9 @@ namespace ALE {
 
     template <typename ParSifter_,
               typename Fuser_ = RightSequenceDuplicator<ConeArraySequence<typename ParSifter_::traits::arrow_type> >,
-              typename FusionSifter_ = typename ParSifter_::template rebind<typename Fuser_::fusion_source_type, 
-                                                                              typename Fuser_::fusion_target_type, 
-                                                                              typename Fuser_::fusion_color_type>::type
+              typename FusionSifter_ = typename ParSifter_::template rebind<typename Fuser_::fusion_source_type,
+                                                                            typename Fuser_::fusion_target_type,
+                                                                            typename Fuser_::fusion_color_type>::type
     >    
     class ParConeDelta { // class ParConeDelta
     public:

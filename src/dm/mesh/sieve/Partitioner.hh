@@ -133,6 +133,9 @@ namespace ALE {
                          typename sifter_type::template rebind<typename fuser::fusion_source_type,
                                                                typename fuser::fusion_target_type,
                                                                typename fuser::fusion_color_type,
+                                                               ::boost::multi_index::composite_key_compare<std::less<typename fuser::fusion_source_type>,
+                                                                                                           std::less<typename fuser::fusion_color_type>,
+                                                                                                           std::less<typename fuser::fusion_target_type> >,
                                                                typename sifter_type::traits::cap_container_type::template rebind<typename fuser::fusion_source_type, typename sifter_type::traits::sourceRec_type::template rebind<typename fuser::fusion_source_type>::type>::type,
                                                                typename sifter_type::traits::base_container_type::template rebind<typename fuser::fusion_target_type, typename sifter_type::traits::targetRec_type::template rebind<typename fuser::fusion_target_type>::type>::type
     >::type> coneDelta_type;
@@ -140,6 +143,9 @@ namespace ALE {
                             typename sifter_type::template rebind<typename fuser::fusion_source_type,
                                                                   typename fuser::fusion_target_type,
                                                                   typename fuser::fusion_color_type,
+                                                                  ::boost::multi_index::composite_key_compare<std::less<typename fuser::fusion_source_type>,
+                                                                                                              std::less<typename fuser::fusion_color_type>,
+                                                                                                              std::less<typename fuser::fusion_target_type> >,
                                                                   typename sifter_type::traits::cap_container_type::template rebind<typename fuser::fusion_source_type, typename sifter_type::traits::sourceRec_type::template rebind<typename fuser::fusion_source_type>::type>::type,
                                                                   typename sifter_type::traits::base_container_type::template rebind<typename fuser::fusion_target_type, typename sifter_type::traits::targetRec_type::template rebind<typename fuser::fusion_target_type>::type>::type
     >::type> supportDelta_type;
@@ -285,7 +291,7 @@ namespace ALE {
       offsetB = 0;
       for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
         calcNeighborSize<OverlapType, FieldType> processor(serialSifter,   serialPatches,   &BuySizesA[nA], &SellSizesA[nA], offsetA,
-                                                              parallelSifter, parallelPatches, &BuySizesB[nB], &SellSizesB[nB], offsetB);
+                                                           parallelSifter, parallelPatches, &BuySizesB[nB], &SellSizesB[nB], offsetB);
         overlap->coneApply(*neighbor, processor);
         if (processor.foundA) nA++;
         if (processor.foundB) nB++;
