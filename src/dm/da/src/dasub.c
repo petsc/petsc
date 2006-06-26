@@ -39,7 +39,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DA da,DADirection dir,Pets
   MPI_Group      group,subgroup;
   PetscErrorCode ierr;
   PetscInt       i,ict,flag,*owners,xs,xm,ys,ym,zs,zm;
-  PetscMPIInt    size,*ranks;
+  PetscMPIInt    size,*ranks = PETSC_NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

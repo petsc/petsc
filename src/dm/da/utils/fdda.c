@@ -638,7 +638,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, MatType mtype,Mat *J)
 PetscErrorCode DAGetMatrix2d_MPIAIJ(DA da,Mat J)
 {
   PetscErrorCode         ierr;
-  PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny,m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
+  PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny,m,n,dim,s,*cols = PETSC_NULL,k,nc,*rows = PETSC_NULL,col,cnt,l,p;
   PetscInt               lstart,lend,pstart,pend,*dnz,*onz;
   MPI_Comm               comm;
   PetscScalar            *values;
@@ -869,7 +869,7 @@ PetscErrorCode DAGetMatrix3d_MPIAIJ(DA da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
-  PetscInt               m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
+  PetscInt               m,n,dim,s,*cols = PETSC_NULL,k,nc,*rows = PETSC_NULL,col,cnt,l,p,*dnz = PETSC_NULL,*onz = PETSC_NULL;
   PetscInt               istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
   PetscScalar            *values;
@@ -983,7 +983,7 @@ PetscErrorCode DAGetMatrix1d_MPIAIJ(DA da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,nx,i,i1,slot,gxs,gnx;           
-  PetscInt               m,dim,s,*cols,nc,*rows,col,cnt,l;
+  PetscInt               m,dim,s,*cols = PETSC_NULL,nc,*rows = PETSC_NULL,col,cnt,l;
   PetscInt               istart,iend;
   PetscScalar            *values;
   DAPeriodicType         wrap;

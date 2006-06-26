@@ -33,6 +33,11 @@
 namespace ALE {
     template <typename Sieve_, typename Patch_, typename Index_, typename Value_>
     class CoSifter {
+      template <class _Type>
+      struct trueFunc : public std::binary_function<_Type, _Type, bool>
+      {
+        bool operator()(const _Type& __x, const _Type& __y) const { return true; }
+      };
     public:
       // Basic types
       typedef Sieve_ sieve_type;
@@ -42,7 +47,7 @@ namespace ALE {
       typedef Index_ index_type;
       typedef std::vector<index_type> IndexArray;
       typedef Value_ value_type;
-      typedef Sifter<point_type,patch_type,index_type, SifterDef::RecContainer<point_type, SifterDef::Rec<point_type> >, SifterDef::RecContainer<patch_type, SifterDef::Rec<patch_type> > > order_type;
+      typedef Sifter<point_type,patch_type,index_type, ::boost::multi_index::composite_key_compare<std::less<point_type>, trueFunc<index_type>, std::less<patch_type> >, SifterDef::RecContainer<point_type, SifterDef::Rec<point_type> >, SifterDef::RecContainer<patch_type, SifterDef::Rec<patch_type> > > order_type;
 
       typedef RightSequenceDuplicator<ConeArraySequence<typename sieve_type::traits::arrow_type> > fuser;
       typedef ParConeDelta<sieve_type, fuser,
@@ -724,8 +729,8 @@ namespace ALE {
           this->localOrder->setPatch(cone, *b_iter);
           this->globalOrder->setPatch(cone, *b_iter);
           for(typename order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-            this->localOrder->setFiberDimension(patch, *p_iter, this->getFiberDimension(patch, *p_iter));
-            this->globalOrder->setFiberDimension(patch, *p_iter, this->getFiberDimension(patch, *p_iter));
+            this->localOrder->setFiberDimension(*b_iter, *p_iter, this->getFiberDimension(*b_iter, *p_iter));
+            this->globalOrder->setFiberDimension(*b_iter, *p_iter, this->getFiberDimension(*b_iter, *p_iter));
           }
         }
         if (useCapOverlap) {

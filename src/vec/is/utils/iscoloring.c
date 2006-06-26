@@ -137,13 +137,22 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring iscoloring,PetscInt
       for (i=1; i<nc; i++) {
 	ii[i] = ii[i-1] + mcolors[i-1];
       }
-   
-      ierr = MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
-      base -= iscoloring->N;
       ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
-      for (i=0; i<n; i++) {
-	ii[colors[i]][mcolors[colors[i]]++] = i + base;
+
+      if (iscoloring->ctype == IS_COLORING_LOCAL){
+        ierr = MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
+        base -= iscoloring->N;
+        for (i=0; i<n; i++) {
+          ii[colors[i]][mcolors[colors[i]]++] = i + base; /* global idx */
+        }
+      } else if (iscoloring->ctype == IS_COLORING_GHOSTED){
+        for (i=0; i<n; i++) {
+          ii[colors[i]][mcolors[colors[i]]++] = i;   /* local idx */
+        }
+      } else {
+        SETERRQ(PETSC_ERR_SUP,"Not provided for this ISColoringType type");
       }
+     
       ierr = PetscMalloc(nc*sizeof(IS),&is);CHKERRQ(ierr);
       for (i=0; i<nc; i++) {
 	ierr = ISCreateGeneral(iscoloring->comm,mcolors[i],ii[i],is+i);CHKERRQ(ierr);
@@ -156,14 +165,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring iscoloring,PetscInt
     }
     *isis = iscoloring->is;
   }
-
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISColoringRestoreIS"
 /*@C
-   ISColoringGetIS - Restores the index sets extracted from the coloring context
+   ISColoringRestoreIS - Restores the index sets extracted from the coloring context
 
    Collective on ISColoring 
 
@@ -300,7 +308,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt ncolor
 PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningToNumbering(IS part,IS *is)
 {
   MPI_Comm       comm;
-  PetscInt       i,*indices,np,npt,n,*starts,*sums,*lsizes,*newi;
+  PetscInt       i,*indices = PETSC_NULL,np,npt,n,*starts = PETSC_NULL,*sums = PETSC_NULL,*lsizes = PETSC_NULL,*newi = PETSC_NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -453,7 +461,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
   PetscErrorCode ierr;
   PetscInt       *indices,n,*lindices,i,N;
   MPI_Comm       comm;
-  PetscMPIInt    size,*sizes,*offsets,nn;
+  PetscMPIInt    size,*sizes = PETSC_NULL,*offsets = PETSC_NULL,nn;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -514,7 +522,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherIndices(MPI_Comm comm,PetscInt n,co
 {
   PetscErrorCode ierr;
   PetscInt       *indices,i,N;
-  PetscMPIInt    size,*sizes,*offsets,nn;
+  PetscMPIInt    size,*sizes = PETSC_NULL,*offsets = PETSC_NULL,nn;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -571,7 +579,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm comm,PetscInt n,ISC
   ISColoringValue *indices;
   PetscErrorCode  ierr;
   PetscInt        i,N;
-  PetscMPIInt     size,*offsets,*sizes, nn = n;
+  PetscMPIInt     size,*offsets = PETSC_NULL,*sizes = PETSC_NULL, nn = n;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

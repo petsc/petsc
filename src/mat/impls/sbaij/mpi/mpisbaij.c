@@ -234,8 +234,8 @@ PetscErrorCode MatSetValues_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const PetscInt
   MatScalar     *ap,*bap;
 
   /* for stash */
-  PetscInt      n_loc, *in_loc;
-  MatScalar     *v_loc;
+  PetscInt      n_loc, *in_loc = PETSC_NULL;
+  MatScalar     *v_loc = PETSC_NULL;
 
   PetscFunctionBegin;
 

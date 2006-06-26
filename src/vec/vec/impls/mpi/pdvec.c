@@ -117,15 +117,17 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         }
       }          
     } else if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
-      // state 0: No header has been output
-      // state 1: Only POINT_DATA has been output
-      // state 2: Only CELL_DATA has been output
-      // state 3: Output both, POINT_DATA last
-      // state 4: Output both, CELL_DATA last
+      /*
+        state 0: No header has been output
+        state 1: Only POINT_DATA has been output
+        state 2: Only CELL_DATA has been output
+        state 3: Output both, POINT_DATA last
+        state 4: Output both, CELL_DATA last
+      */
       static PetscInt stateId = -1;
       int outputState;
       PetscTruth hasState;
-      int doOutput;
+      int doOutput = 0;
       PetscInt bs, b;
 
       if (stateId < 0) {

@@ -297,13 +297,13 @@ namespace ALE {
     // by color.
     //
     template <typename Point_, typename Marker_, typename Color_>
-    class Sieve : public ALE::Sifter<Point_, Point_, Color_, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> > > {
+    class Sieve : public ALE::Sifter<Point_, Point_, Color_, ::boost::multi_index::composite_key_compare<std::less<Point_>, std::less<Color_>, std::less<Point_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> > > {
     public:
       typedef Color_  color_type;
       typedef Point_  point_type;
       typedef Marker_ marker_type;
       typedef struct {
-        typedef ALE::Sifter<Point_, Point_, Color_, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> > > baseType;
+        typedef ALE::Sifter<Point_, Point_, Color_, ::boost::multi_index::composite_key_compare<std::less<Point_>, std::less<Color_>, std::less<Point_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> > > baseType;
         // Encapsulated container types
         typedef typename baseType::traits::arrow_container_type arrow_container_type;
         typedef typename baseType::traits::cap_container_type   cap_container_type;
@@ -343,7 +343,7 @@ namespace ALE {
       typedef pointArray              coneArray;
       typedef pointArray              supportArray;
     public:
-      Sieve(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : ALE::Sifter<Point_, Point_, Color_, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> > >(comm, debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {
+      Sieve(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : ALE::Sifter<Point_, Point_, Color_, ::boost::multi_index::composite_key_compare<std::less<Point_>, std::less<Color_>, std::less<Point_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> > >(comm, debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {
         this->_markers = markerSet();
       };
       virtual ~Sieve() {};

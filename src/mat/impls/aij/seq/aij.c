@@ -2303,7 +2303,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
 #endif
        MatSetValuesAdifor_SeqAIJ,
-/*75*/ MatFDColoringApply_SeqAIJ,
+/*75*/ 0, 
        0,
        0,
        0,

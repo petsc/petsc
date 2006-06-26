@@ -286,7 +286,7 @@ class PyLithViewer {
         ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> cone = splitField->getPatch(*e_itor);
         int e = idx.prefix+1;
 
-        for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+        for(ALE::Mesh::field_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
           const double *values = splitField->restrict(*e_itor, *c_itor);
           int v = vertexBundle->getIndex(patch, *c_itor).prefix+1;
 
