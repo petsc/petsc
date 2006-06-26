@@ -218,7 +218,6 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   PetscFunctionBegin; 
   ierr = MatMatMultSymbolic_MPIDense_MPIDense(A,B,0.0,C);
 
-
   ierr = PetscObjectContainerCreate(A->comm,&cont);CHKERRQ(ierr);
   ierr = PetscNew(MPIAIJ_MPIDense,&contents);CHKERRQ(ierr);
   ierr = PetscObjectContainerSetPointer(cont,contents);CHKERRQ(ierr);
@@ -239,7 +238,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
 }
 
 /*
-    Performs an efficient scatter on the rows of B needed by this process
+    Performs an efficient scatter on the rows of B needed by this process; this is
+    a modification of the VecScatterBegin_() routines.
 */
 PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
 {
@@ -281,54 +281,40 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
   ierr = MatGetArray(workB,&w);CHKERRQ(ierr);
 
   for (i=0; i<from->n; i++) {
-    // printf("[%d]rstarts %d %d %d %d\n",PetscGlobalRank,rstarts[i],rstarts[i+1],ncols,rprocs[i]);
     ierr = MPI_Irecv(rvalues+ncols*rstarts[i],ncols*(rstarts[i+1]-rstarts[i]),MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
   } 
 
   for (i=0; i<to->n; i++) {
-    //    printf("[%d]sstarts %d %d %d %d\n",PetscGlobalRank,sstarts[i],sstarts[i+1],ncols,sprocs[i]);
     /* pack a message at a time */
-  CHKMEMQ;
+    CHKMEMQ;
     for (j=0; j<sstarts[i+1]-sstarts[i]; j++){
-  CHKMEMQ;
       for (k=0; k<ncols; k++) {
-  CHKMEMQ;
         svalues[ncols*(sstarts[i] + j) + k] = b[sindices[sstarts[i]+j] + nrowsB*k];
-  CHKMEMQ;
-	if (PetscGlobalRank == -1){
-	  printf("row %d col %d %d val %g %d\n",j,k,ncols*(sstarts[i] + j) + k,b[sindices[sstarts[i]+j] + nrows*k],sindices[sstarts[i]+j] + nrows*k);}
       }
     }
-
+    CHKMEMQ;
     ierr = MPI_Isend(svalues+ncols*sstarts[i],ncols*(sstarts[i+1]-sstarts[i]),MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
   }
-  CHKMEMQ;
+
   nrecvs = from->n;
   while (nrecvs) {
-    //printf("[%d] waiting %d\n",PetscGlobalRank,nrecvs);
     ierr = MPI_Waitany(from->n,rwaits,&imdex,&status);CHKERRQ(ierr);
-    //printf("MPI status %d %d\n",ierr,status.MPI_ERROR);
     nrecvs--;
     /* unpack a message at a time */
-  CHKMEMQ;
+    CHKMEMQ;
     for (j=0; j<rstarts[imdex+1]-rstarts[imdex]; j++){
       for (k=0; k<ncols; k++) {
-  CHKMEMQ;
         w[rindices[rstarts[imdex]+j] + nrows*k] = rvalues[ncols*(rstarts[imdex] + j) + k];
-  CHKMEMQ;
       }
     }
+    CHKMEMQ;
   }
   if (to->n) {ierr = MPI_Waitall(to->n,swaits,to->sstatus);CHKERRQ(ierr)}
 
   ierr = MatRestoreArray(B,&b);CHKERRQ(ierr);
   ierr = MatRestoreArray(workB,&w);CHKERRQ(ierr);
-  CHKMEMQ;
   ierr = MatAssemblyBegin(workB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  CHKMEMQ;
   ierr = MatAssemblyEnd(workB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  CHKMEMQ;
-  if (PetscGlobalRank == -11) MatView(workB,PETSC_VIEWER_STDOUT_SELF);
   PetscFunctionReturn(0);
 }
 extern PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat,Mat,Mat);
@@ -350,12 +336,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
 
   /* get off processor parts of B needed to complete the product */
   ierr = MatMPIDenseScatter(A,B,C,&workB);CHKERRQ(ierr);
-  CHKMEMQ;
 
-  CHKMEMQ;
-  if (PetscGlobalRank == -1) {ierr = MatView(workB,0);CHKERRQ(ierr);}
-
-  CHKMEMQ;
   /* off-diagonal block of A times nonlocal rows of B */
   ierr = MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B,workB,cdense->A);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

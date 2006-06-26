@@ -325,10 +325,6 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   ierr = MatRestoreArray(C,&c);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (PetscGlobalRank == -1) printf("A B result C in mult add\n");
-  if (PetscGlobalRank == -1) MatView(A,PETSC_VIEWER_STDOUT_SELF);
-  if (PetscGlobalRank == -1) MatView(B,PETSC_VIEWER_STDOUT_SELF);
-  if (PetscGlobalRank == -1) MatView(C,PETSC_VIEWER_STDOUT_SELF);
   PetscFunctionReturn(0);
 }
 
@@ -347,8 +343,6 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 
   PetscFunctionBegin;
   if (!cm || !cn) PetscFunctionReturn(0);
-  if (PetscGlobalRank == -1) printf("C in mult add\n");
-  if (PetscGlobalRank == -1) MatView(C,PETSC_VIEWER_STDOUT_SELF);
   ierr = MatGetArray(B,&b);CHKERRQ(ierr);
   ierr = MatGetArray(C,&c);CHKERRQ(ierr);
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
@@ -440,9 +434,5 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   ierr = PetscLogFlops(cn*2*a->nz);CHKERRQ(ierr);
   ierr = MatRestoreArray(B,&b);CHKERRQ(ierr);
   ierr = MatRestoreArray(C,&c);CHKERRQ(ierr);
-  if (PetscGlobalRank == -1) printf("A B result C in mult add\n");
-  if (PetscGlobalRank == -1) MatView(A,PETSC_VIEWER_STDOUT_SELF);
-  if (PetscGlobalRank == -1) MatView(B,PETSC_VIEWER_STDOUT_SELF);
-  if (PetscGlobalRank == -1) MatView(C,PETSC_VIEWER_STDOUT_SELF);
   PetscFunctionReturn(0);
 }

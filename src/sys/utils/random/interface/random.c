@@ -199,6 +199,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetSeed(PetscRandom r,unsigned long se
    Notes:
    The random type has to be set by PetscRandomSetType().
 
+   This is only a primative "parallel" random number generator, it should NOT
+   be used for sophisticated parallel Monte Carlo methods since it will very likely
+   not have the correct statistics across processors. You can provide your own
+   parallel generator using PetscRandomRegister();
+
+   If you create a PetscRandom() using PETSC_COMM_SELF on several processors then
+   the SAME random numbers will be generated on all those processors. Use PETSC_COMM_WORLD
+   or the appropriate parallel communicator to eliminate this issue.
+
    Use VecSetRandom() to set the elements of a vector to random numbers.
 
    Example of Usage:
