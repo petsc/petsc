@@ -1051,13 +1051,13 @@ PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Mesh::field_type> field, cons
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ALE::Obj<ALE::Mesh::bundle_type::order_type::coneSequence> intervals = field->getPatch("element", e);
+  ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> intervals = field->getPatch("element", e);
   ALE::Obj<ALE::Mesh::bundle_type> globalOrder = field->getGlobalOrder();
   ALE::Mesh::bundle_type::patch_type patch;
 
   ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   if (field->debug) {printf("[%d]mat for element (%d, %d)\n", field->commRank(), e.prefix, e.index);}
-  for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator i_itor = intervals->begin(); i_itor != intervals->end(); ++i_itor) {
+  for(ALE::Mesh::field_type::order_type::coneSequence::iterator i_itor = intervals->begin(); i_itor != intervals->end(); ++i_itor) {
     numIndices += std::abs(globalOrder->getFiberDimension(patch, *i_itor));
     if (field->debug) {
       printf("[%d]mat interval (%d, %d)\n", field->commRank(), (*i_itor).prefix, (*i_itor).index);
