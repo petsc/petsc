@@ -159,6 +159,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetSeed(PetscRandom r,unsigned long *s
 
    Level: intermediate
 
+   Usage:
+      PetscRandomSetSeed(r,a positive integer);
+      PetscRandomSeed(r);  PetscRandomGetValue() will now start with the new seed.
+
+      PetscRandomSeed(r) without a call to PetscRandomSetSeed() re-initializes
+        the seed. The random numbers generated will be the same as before.
+
    Concepts: random numbers^seed
 
 .seealso: PetscRandomCreate(), PetscRandomGetSeed(), PetscRandomSeed()
@@ -233,7 +240,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   rr->low   = 0.0;
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;
-  rr->seed  = 0x12345678+rank;
+  rr->seed  = 0x12345678 + 76543*rank;
   *r = rr;
   PetscFunctionReturn(0);
 }
@@ -249,6 +256,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
 .  r - The random number generator context
 
    Level: intermediate
+
+   Usage:
+      PetscRandomSetSeed(r,a positive integer);
+      PetscRandomSeed(r);  PetscRandomGetValue() will now start with the new seed.
+
+      PetscRandomSeed(r) without a call to PetscRandomSetSeed() re-initializes
+        the seed. The random numbers generated will be the same as before.
 
    Concepts: random numbers^seed
 

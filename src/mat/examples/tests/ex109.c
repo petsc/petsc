@@ -13,16 +13,15 @@ int main(int argc,char **argv)
   PetscRandom    r;
   PetscTruth     equal;
   PetscReal      fill = 1.0;
-  PetscMPIInt    size,rank;
+  PetscMPIInt    size;
   PetscInt       rstart,rend,nza,col,am,an,bm,bn;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&r);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
 
   /* create a aij matrix A */
@@ -33,7 +32,7 @@ int main(int argc,char **argv)
   } else {
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   }
-  nza  = (PetscInt)(M); /* num of nozeros in each row of A */
+  nza  = (PetscInt)(.3*M); /* num of nozeros in each row of A */
   ierr = MatSeqAIJSetPreallocation(A,nza,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A,nza,PETSC_NULL,nza,PETSC_NULL);CHKERRQ(ierr);  
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
@@ -41,9 +40,8 @@ int main(int argc,char **argv)
   for (i=rstart; i<rend; i++) { 
     for (j=0; j<nza; j++) {
       ierr  = PetscRandomGetValue(r,&a[j]);CHKERRQ(ierr);
-      a[j] += rank;
-      col   = (PetscInt)(PetscRealPart(a[j])*M);
-      ierr  = MatSetValues(A,1,&i,1,&j,&a[j],ADD_VALUES);CHKERRQ(ierr);
+      col   = (PetscInt)(M*PetscRealPart(a[j]));
+      ierr  = MatSetValues(A,1,&i,1,&col,&a[j],ADD_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -65,7 +63,7 @@ int main(int argc,char **argv)
   k = 0;
   for (j=0; j<N; j++){ /* local column-wise entries */
     for (i=0; i<bm; i++){
-      ierr = PetscRandomGetValue(r,&array[k]);CHKERRQ(ierr); array[k] += rank;k++;
+      ierr = PetscRandomGetValue(r,&array[k++]);CHKERRQ(ierr); 
     }
   }
   ierr = MatRestoreArray(B,&array);CHKERRQ(ierr);
@@ -77,13 +75,13 @@ int main(int argc,char **argv)
 
   PetscViewerSetFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_MATLAB);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
-ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
 
   /* Test MatMatMult() */
   ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
 
-ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
-  
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"max(max(abs(Mat_3 - Mat_1*Mat_2)))\n");
    ierr = MatMatMultSymbolic(A,B,1.0,&D);CHKERRQ(ierr);
   for (i=0; i<2; i++){    
     ierr = MatMatMultNumeric(A,B,D);CHKERRQ(ierr);

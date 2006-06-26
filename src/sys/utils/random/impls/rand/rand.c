@@ -82,7 +82,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate_Rand(PetscRandom r)
 
   PetscFunctionBegin;
   ierr = PetscMemcpy(r->ops,&PetscRandomOps_Values,sizeof(PetscRandomOps_Values));CHKERRQ(ierr);
-  srand(r->seed);   
   ierr = PetscObjectChangeTypeName((PetscObject)r,PETSCRAND);CHKERRQ(ierr);
   ierr = PetscPublishAll(r);CHKERRQ(ierr);
   PetscFunctionReturn(0);

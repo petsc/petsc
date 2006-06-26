@@ -320,6 +320,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
     }
     b1 += bm;
   }
+  ierr = PetscLogFlops(cn*(2*a->nz - A->rmap.n));CHKERRQ(ierr);
   ierr = MatRestoreArray(B,&b);CHKERRQ(ierr);
   ierr = MatRestoreArray(C,&c);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -332,7 +333,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
 }
 
 /*
-   will replace with optimized version that uses rows[]
+   Note very similar to MatMult_SeqAIJ(), should generate both codes from same base
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMultNumericAdd_SeqAIJ_SeqDense"
@@ -341,8 +342,8 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscScalar    *b,*c,r1,r2,r3,r4,*aa,*b1,*b2,*b3,*b4;
-  PetscInt       cm=C->rmap.n, cn=B->cmap.n, bm=B->rmap.n, col, i,j,n,*aj, am = A->rmap.n;
-  PetscInt       am2 = 2*am, am3 = 3*am,  bm4 = 4*bm,colam;
+  PetscInt       cm=C->rmap.n, cn=B->cmap.n, bm=B->rmap.n, col, i,j,n,*aj, am = A->rmap.n,*ii,arm;
+  PetscInt       am2 = 2*am, am3 = 3*am,  bm4 = 4*bm,colam,*ridx;
 
   PetscFunctionBegin;
   if (!cm || !cn) PetscFunctionReturn(0);
@@ -351,43 +352,92 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   ierr = MatGetArray(B,&b);CHKERRQ(ierr);
   ierr = MatGetArray(C,&c);CHKERRQ(ierr);
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
-  for (col=0; col<cn-4; col += 4){  /* over columns of C */
-    colam = col*am;
-    for (i=0; i<am; i++) {        /* over rows of C in those columns */
-      r1 = r2 = r3 = r4 = 0.0;
-      n   = a->i[i+1] - a->i[i]; 
-      aj  = a->j + a->i[i];
-      aa  = a->a + a->i[i];
-      for (j=0; j<n; j++) {
-        r1 += (*aa)*b1[*aj]; 
-        r2 += (*aa)*b2[*aj]; 
-        r3 += (*aa)*b3[*aj]; 
-        r4 += (*aa++)*b4[*aj++]; 
-      }
-      c[colam + i]       += r1;
-      c[colam + am + i]  += r2;
-      c[colam + am2 + i] += r3;
-      c[colam + am3 + i] += r4;
-    }
-    b1 += bm4;
-    b2 += bm4;
-    b3 += bm4;
-    b4 += bm4;
-  }
-  for (;col<cn; col++){     /* over extra columns of C */
-    for (i=0; i<am; i++) {  /* over rows of C in those columns */
-      r1 = 0.0;
-      n   = a->i[i+1] - a->i[i]; 
-      aj  = a->j + a->i[i];
-      aa  = a->a + a->i[i];
 
-      for (j=0; j<n; j++) {
-        r1 += (*aa++)*b1[*aj++]; 
+  if (a->compressedrow.use){ /* use compressed row format */
+    for (col=0; col<cn-4; col += 4){  /* over columns of C */
+      colam = col*am;
+      arm   = a->compressedrow.nrows;
+      ii    = a->compressedrow.i;
+      ridx  = a->compressedrow.rindex;
+      for (i=0; i<arm; i++) {        /* over rows of C in those columns */
+	r1 = r2 = r3 = r4 = 0.0;
+	n   = ii[i+1] - ii[i]; 
+	aj  = a->j + ii[i];
+	aa  = a->a + ii[i];
+	for (j=0; j<n; j++) {
+	  r1 += (*aa)*b1[*aj]; 
+	  r2 += (*aa)*b2[*aj]; 
+	  r3 += (*aa)*b3[*aj]; 
+	  r4 += (*aa++)*b4[*aj++]; 
+	}
+	c[colam       + ridx[i]] += r1;
+	c[colam + am  + ridx[i]] += r2;
+	c[colam + am2 + ridx[i]] += r3;
+	c[colam + am3 + ridx[i]] += r4;
       }
-      c[col*am + i]     += r1;
+      b1 += bm4;
+      b2 += bm4;
+      b3 += bm4;
+      b4 += bm4;
     }
-    b1 += bm;
+    for (;col<cn; col++){     /* over extra columns of C */
+      colam = col*am;
+      arm   = a->compressedrow.nrows;
+      ii    = a->compressedrow.i;
+      ridx  = a->compressedrow.rindex;
+      for (i=0; i<arm; i++) {  /* over rows of C in those columns */
+	r1 = 0.0;
+	n   = ii[i+1] - ii[i]; 
+	aj  = a->j + ii[i];
+	aa  = a->a + ii[i];
+
+	for (j=0; j<n; j++) {
+	  r1 += (*aa++)*b1[*aj++]; 
+	}
+	c[col*am + ridx[i]] += r1;
+      }
+      b1 += bm;
+    }
+  } else {
+    for (col=0; col<cn-4; col += 4){  /* over columns of C */
+      colam = col*am;
+      for (i=0; i<am; i++) {        /* over rows of C in those columns */
+	r1 = r2 = r3 = r4 = 0.0;
+	n   = a->i[i+1] - a->i[i]; 
+	aj  = a->j + a->i[i];
+	aa  = a->a + a->i[i];
+	for (j=0; j<n; j++) {
+	  r1 += (*aa)*b1[*aj]; 
+	  r2 += (*aa)*b2[*aj]; 
+	  r3 += (*aa)*b3[*aj]; 
+	  r4 += (*aa++)*b4[*aj++]; 
+	}
+	c[colam + i]       += r1;
+	c[colam + am + i]  += r2;
+	c[colam + am2 + i] += r3;
+	c[colam + am3 + i] += r4;
+      }
+      b1 += bm4;
+      b2 += bm4;
+      b3 += bm4;
+      b4 += bm4;
+    }
+    for (;col<cn; col++){     /* over extra columns of C */
+      for (i=0; i<am; i++) {  /* over rows of C in those columns */
+	r1 = 0.0;
+	n   = a->i[i+1] - a->i[i]; 
+	aj  = a->j + a->i[i];
+	aa  = a->a + a->i[i];
+
+	for (j=0; j<n; j++) {
+	  r1 += (*aa++)*b1[*aj++]; 
+	}
+	c[col*am + i]     += r1;
+      }
+      b1 += bm;
+    }
   }
+  ierr = PetscLogFlops(cn*2*a->nz);CHKERRQ(ierr);
   ierr = MatRestoreArray(B,&b);CHKERRQ(ierr);
   ierr = MatRestoreArray(C,&c);CHKERRQ(ierr);
   if (PetscGlobalRank == -1) printf("A B result C in mult add\n");

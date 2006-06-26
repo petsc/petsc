@@ -97,7 +97,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate_Rand48(PetscRandom r)
   /* r->bops->publish   = PetscRandomPublish; */
   /*  r->petscnative     = PETSC_TRUE;  */
 
-  srand48(r->seed);  
   ierr = PetscObjectChangeTypeName((PetscObject)r,PETSCRAND48);CHKERRQ(ierr);
   ierr = PetscPublishAll(r);CHKERRQ(ierr);
   PetscFunctionReturn(0);

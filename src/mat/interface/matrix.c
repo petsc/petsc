@@ -6516,9 +6516,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat
    C will be created and must be destroyed by the user with MatDestroy().
    Unless scall is MAT_REUSE_MATRIX
 
-   This routine is currently implemented for 
-    - pairs of AIJ matrices and classes which inherit from AIJ, C will be of type MATAIJ.
-    - pairs of AIJ (A) and Dense (B) matrix, C will be of type MATDENSE.
+   If you have many matrices with the same non-zero structure to multiply, you 
+   should either 
+$   1) use MAT_REUSE_MATRIX in all calls but the first or
+$   2) call MatMatMultSymbolic() once and then MatMatMultNumeric() for each product needed
 
    Level: intermediate
 

@@ -184,28 +184,64 @@ PetscErrorCode MatMatMult_MPIAIJ_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal f
   PetscFunctionReturn(0);
 }
 
+typedef struct {
+  Mat         workB;
+  PetscScalar *rvalues,*svalues;
+  MPI_Request *rwaits,*swaits;
+} MPIAIJ_MPIDense;
+
+PetscErrorCode MPIAIJ_MPIDenseDestroy(void *ctx)
+{
+  MPIAIJ_MPIDense *contents = (MPIAIJ_MPIDense*) ctx;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (contents->workB) {ierr = MatDestroy(contents->workB);CHKERRQ(ierr);}
+  ierr = PetscFree4(contents->rvalues,contents->svalues,contents->rwaits,contents->swaits);CHKERRQ(ierr);
+  ierr = PetscFree(contents);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIDense"
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat *C) 
 {
   PetscErrorCode         ierr;
-  Mat                    workB;
   Mat_MPIAIJ             *aij = (Mat_MPIAIJ*) A->data;
   PetscInt               nz = aij->B->cmap.n;
+  PetscObjectContainer   cont;
+  MPIAIJ_MPIDense        *contents;
+  VecScatter             ctx = aij->Mvctx; 
+  VecScatter_MPI_General *from = (VecScatter_MPI_General*) ctx->fromdata;
+  VecScatter_MPI_General *to   = ( VecScatter_MPI_General*) ctx->todata;
 
   PetscFunctionBegin; 
   ierr = MatMatMultSymbolic_MPIDense_MPIDense(A,B,0.0,C);
 
+
+  ierr = PetscObjectContainerCreate(A->comm,&cont);CHKERRQ(ierr);
+  ierr = PetscNew(MPIAIJ_MPIDense,&contents);CHKERRQ(ierr);
+  ierr = PetscObjectContainerSetPointer(cont,contents);CHKERRQ(ierr);
+  ierr = PetscObjectContainerSetUserDestroy(cont,MPIAIJ_MPIDenseDestroy);CHKERRQ(ierr);
+
   /* Create work matrix used to store off processor rows of B needed for local product */
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,nz,B->cmap.N,PETSC_NULL,&workB);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)(*C),"workB",(PetscObject)workB);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,nz,B->cmap.N,PETSC_NULL,&contents->workB);CHKERRQ(ierr);
+
+  /* Create work arrays needed */
+  ierr = PetscMalloc4(B->cmap.N*from->starts[from->n],PetscScalar,&contents->rvalues,
+                      B->cmap.N*to->starts[to->n],PetscScalar,&contents->svalues,
+                      from->n,MPI_Request,&contents->rwaits,
+                      to->n,MPI_Request,&contents->swaits);CHKERRQ(ierr);
+
+  ierr = PetscObjectCompose((PetscObject)(*C),"workB",(PetscObject)cont);CHKERRQ(ierr);
+  ierr = PetscObjectContainerDestroy(cont);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
     Performs an efficient scatter on the rows of B needed by this process
 */
-PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat workB)
+PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
 {
   Mat_MPIAIJ             *aij = (Mat_MPIAIJ*)A->data;
   PetscErrorCode         ierr;
@@ -219,29 +255,36 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat workB)
   MPI_Comm               comm = A->comm;
   PetscMPIInt            tag = ctx->tag,ncols = B->cmap.N, nrows = aij->B->cmap.n,imdex,nrowsB = B->rmap.n;
   MPI_Status             status;
+  MPIAIJ_MPIDense        *contents;
+  PetscObjectContainer   cont;
+  Mat                    workB;
 
   PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)C,"workB",(PetscObject*)&cont);CHKERRQ(ierr);
+  ierr = PetscObjectContainerGetPointer(cont,(void**)&contents);CHKERRQ(ierr);
+
+  workB = *outworkB = contents->workB;
   if (nrows != workB->rmap.n) SETERRQ2(PETSC_ERR_PLIB,"Number of rows of workB %D not equal to columns of aij->B %D",nrows,workB->cmap.n);
   sindices  = to->indices;
   sstarts   = to->starts;
   sprocs    = to->procs;
+  swaits    = contents->swaits;
+  svalues   = contents->svalues;
 
   rindices  = from->indices;
   rstarts   = from->starts;
   rprocs    = from->procs;
+  rwaits    = contents->rwaits;
+  rvalues   = contents->rvalues;
 
   ierr = MatGetArray(B,&b);CHKERRQ(ierr);
   ierr = MatGetArray(workB,&w);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(from->n*sizeof(MPI_Request),&rwaits);CHKERRQ(ierr);
-  ierr = PetscMalloc(ncols*rstarts[from->n]*sizeof(PetscScalar),&rvalues);CHKERRQ(ierr);
   for (i=0; i<from->n; i++) {
     // printf("[%d]rstarts %d %d %d %d\n",PetscGlobalRank,rstarts[i],rstarts[i+1],ncols,rprocs[i]);
     ierr = MPI_Irecv(rvalues+ncols*rstarts[i],ncols*(rstarts[i+1]-rstarts[i]),MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
   } 
 
-  ierr = PetscMalloc(to->n*sizeof(MPI_Request),&swaits);CHKERRQ(ierr);
-  ierr = PetscMalloc(ncols*(sstarts[to->n])*sizeof(PetscScalar),&svalues);CHKERRQ(ierr);
   for (i=0; i<to->n; i++) {
     //    printf("[%d]sstarts %d %d %d %d\n",PetscGlobalRank,sstarts[i],sstarts[i+1],ncols,sprocs[i]);
     /* pack a message at a time */
@@ -276,13 +319,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat workB)
       }
     }
   }
-  ierr = PetscFree(rvalues);CHKERRQ(ierr);
-  ierr = PetscFree(rwaits);CHKERRQ(ierr);
-
   if (to->n) {ierr = MPI_Waitall(to->n,swaits,to->sstatus);CHKERRQ(ierr)}
-
-  ierr = PetscFree(svalues);CHKERRQ(ierr);
-  ierr = PetscFree(swaits);CHKERRQ(ierr); 
 
   ierr = MatRestoreArray(B,&b);CHKERRQ(ierr);
   ierr = MatRestoreArray(workB,&w);CHKERRQ(ierr);
@@ -300,11 +337,11 @@ extern PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat,Mat,Mat);
 #define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIDense"
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
 {
-  PetscErrorCode ierr;
-  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)A->data;
-  Mat_MPIDense   *bdense = (Mat_MPIDense*)B->data;
-  Mat_MPIDense   *cdense = (Mat_MPIDense*)C->data;
-  Mat            workB;
+  PetscErrorCode       ierr;
+  Mat_MPIAIJ           *aij = (Mat_MPIAIJ*)A->data;
+  Mat_MPIDense         *bdense = (Mat_MPIDense*)B->data;
+  Mat_MPIDense         *cdense = (Mat_MPIDense*)C->data;
+  Mat                  workB;
 
   PetscFunctionBegin;
 
@@ -312,8 +349,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
   ierr = MatMatMultNumeric_SeqAIJ_SeqDense(aij->A,bdense->A,cdense->A);CHKERRQ(ierr);
 
   /* get off processor parts of B needed to complete the product */
-  ierr = PetscObjectQuery((PetscObject)C,"workB",(PetscObject*)&workB);CHKERRQ(ierr);
-  ierr = MatMPIDenseScatter(A,B,workB);CHKERRQ(ierr);
+  ierr = MatMPIDenseScatter(A,B,C,&workB);CHKERRQ(ierr);
   CHKMEMQ;
 
   CHKMEMQ;

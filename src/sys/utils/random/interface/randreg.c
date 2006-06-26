@@ -51,6 +51,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomSetType(PetscRandom rnd, PetscRando
     ierr = (*rnd->ops->destroy)(rnd);CHKERRQ(ierr);
   }
   ierr = (*r)(rnd);CHKERRQ(ierr); 
+  ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)rnd, type);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -920,8 +920,8 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   aj  = a->j;
-  aa    = a->a;
-  ii   = a->i;
+  aa  = a->a;
+  ii  = a->i;
   if (usecprow){ /* use compressed row format */
     m    = a->compressedrow.nrows;
     ii   = a->compressedrow.i;
