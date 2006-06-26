@@ -123,23 +123,29 @@ namespace ALE {
         }
         return names;
       }
-      void buildFaces(int dim, std::map<int, int*> *curSimplex, Obj<PointArray> boundary, point_type& simplex) {
-        Obj<PointArray> faces = PointArray();
+      void buildGeneralFaces(int dim, std::map<int, int*> *curSimplex, PointArray *boundary, point_type& simplex, int corners) {
+        PointArray *faces = NULL;
 
-        if (debug > 1) {std::cout << "  Building faces for boundary(size " << boundary->size() << "), dim " << dim << std::endl;}
+        if (debug > 1) {std::cout << "  Building faces for boundary of " << simplex << " (size " << boundary->size() << "), dim " << dim << std::endl;}
         if (dim > 1) {
-          // Use the cone construction
-          for(PointArray::iterator b_itor = boundary->begin(); b_itor != boundary->end(); ++b_itor) {
-            Obj<PointArray> faceBoundary = PointArray();
-            point_type    face;
+          int boundarySize = (int) boundary->size();
+          faces = new PointArray();
 
-            for(PointArray::iterator i_itor = boundary->begin(); i_itor != boundary->end(); ++i_itor) {
-              if (i_itor != b_itor) {
-                faceBoundary->push_back(*i_itor);
-              }
+          for(int b = 0; b < boundarySize; b++) {
+            PointArray faceBoundary = PointArray();
+            point_type face;
+            int        faceCorners;
+
+            for(int c = 0; c < corners; c++) {
+              faceBoundary.push_back((*boundary)[(b+c)%boundarySize]);
             }
-            if (debug > 1) {std::cout << "    boundary point " << *b_itor << std::endl;}
-            this->buildFaces(dim-1, curSimplex, faceBoundary, face);
+            if ((this->dim == 2) && (corners == 2)) {
+              faceCorners = 1;
+            } else {
+              throw ALE::Exception("Could not determine number of face corners");
+            }
+            if (debug > 1) {std::cout << "    boundary point " << (*boundary)[b] << std::endl;}
+            this->buildGeneralFaces(dim-1, curSimplex, &faceBoundary, face, faceCorners);
             faces->push_back(face);
           }
         } else {
@@ -151,7 +157,7 @@ namespace ALE {
             std::cout << "  face point " << *f_itor << std::endl;
           }
         }
-        // We always create the toplevel, so we could shortcircuit somehow
+        // We always create the toplevel, so we could short circuit somehow
         // Should not have to loop here since the meet of just 2 boundary elements is an element
         PointArray::iterator f_itor = faces->begin();
         point_type           start = *f_itor;
@@ -171,6 +177,63 @@ namespace ALE {
           }
           if (debug > 1) {std::cout << "  Added simplex " << simplex << " dim " << dim << std::endl;}
         }
+        if (dim > 1) {
+          delete faces;
+        }
+      };
+      void buildFaces(int dim, std::map<int, int*> *curSimplex, PointArray *boundary, point_type& simplex) {
+        PointArray *faces = NULL;
+
+        if (debug > 1) {std::cout << "  Building faces for boundary of " << simplex << " (size " << boundary->size() << "), dim " << dim << std::endl;}
+        if (dim > 1) {
+          faces = new PointArray();
+
+          // Use the cone construction
+          for(PointArray::iterator b_itor = boundary->begin(); b_itor != boundary->end(); ++b_itor) {
+            PointArray faceBoundary = PointArray();
+            point_type face;
+
+            for(PointArray::iterator i_itor = boundary->begin(); i_itor != boundary->end(); ++i_itor) {
+              if (i_itor != b_itor) {
+                faceBoundary.push_back(*i_itor);
+              }
+            }
+            if (debug > 1) {std::cout << "    boundary point " << *b_itor << std::endl;}
+            this->buildFaces(dim-1, curSimplex, &faceBoundary, face);
+            faces->push_back(face);
+          }
+        } else {
+          if (debug > 1) {std::cout << "  Just set faces to boundary in 1d" << std::endl;}
+          faces = boundary;
+        }
+        if (debug > 1) {
+          for(PointArray::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
+            std::cout << "  face point " << *f_itor << std::endl;
+          }
+        }
+        // We always create the toplevel, so we could short circuit somehow
+        // Should not have to loop here since the meet of just 2 boundary elements is an element
+        PointArray::iterator f_itor = faces->begin();
+        point_type           start = *f_itor;
+        f_itor++;
+        point_type           next = *f_itor;
+        Obj<sieve_type::supportSet> preElement = this->topology->nJoin(start, next, 1);
+
+        if (preElement->size() > 0) {
+          simplex = *preElement->begin();
+          if (debug > 1) {std::cout << "  Found old simplex " << simplex << std::endl;}
+        } else {
+          int color = 0;
+
+          simplex = point_type(0, (*(*curSimplex)[dim])++);
+          for(PointArray::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
+            this->topology->addArrow(*f_itor, simplex, color++);
+          }
+          if (debug > 1) {std::cout << "  Added simplex " << simplex << " dim " << dim << std::endl;}
+        }
+        if (dim > 1) {
+          delete faces;
+        }
       };
 
       #undef __FUNCT__
@@ -179,7 +242,7 @@ namespace ALE {
       //   (0, 0)            ... (0, numSimplices-1):  dim-dimensional simplices
       //   (0, numSimplices) ... (0, numVertices):     vertices
       // The other simplices are numbered as they are requested
-      void buildTopology(int numSimplices, int simplices[], int numVertices, bool interpolate = true) {
+      void buildTopology(int numSimplices, int simplices[], int numVertices, bool interpolate = true, int corners = -1) {
         ALE_LOG_EVENT_BEGIN;
         if (this->commRank() != 0) {
           ALE_LOG_EVENT_END;
@@ -190,11 +253,12 @@ namespace ALE {
         int                curSimplex = 0;
         int                curVertex  = numSimplices;
         int                newElement = numSimplices+numVertices;
-        Obj<PointArray>    boundary   = PointArray();
+        PointArray         boundary   = PointArray();
 
-        curElement[0]   = &curVertex;
-        curElement[dim] = &curSimplex;
-        for(int d = 1; d < dim; d++) {
+        if (corners < 0) corners = this->dim+1;
+        curElement[0]         = &curVertex;
+        curElement[this->dim] = &curSimplex;
+        for(int d = 1; d < this->dim; d++) {
           curElement[d] = &newElement;
         }
         for(int s = 0; s < numSimplices; s++) {
@@ -202,19 +266,29 @@ namespace ALE {
 
           // Build the simplex
           if (interpolate) {
-            boundary->clear();
-            for(int b = 0; b < dim+1; b++) {
-              point_type vertex(0, simplices[s*(dim+1)+b]+numSimplices);
+            boundary.clear();
+            for(int b = 0; b < corners; b++) {
+              point_type vertex(0, simplices[s*corners+b]+numSimplices);
 
               if (debug > 1) {std::cout << "Adding boundary node " << vertex << std::endl;}
-              boundary->push_back(vertex);
+              boundary.push_back(vertex);
             }
-            if (debug) {std::cout << "simplex " << s << " boundary size " << boundary->size() << std::endl;}
+            if (debug) {std::cout << "simplex " << s << " boundary size " << boundary.size() << std::endl;}
 
-            this->buildFaces(this->dim, &curElement, boundary, simplex);
+            if (corners != this->dim+1) {
+              int faceCorners = 0;
+              if ((this->dim == 2) && (corners == 4)) {
+                faceCorners = 2;
+              } else {
+                throw ALE::Exception("Could not determine number of face corners");
+              }
+              this->buildGeneralFaces(this->dim, &curElement, &boundary, simplex, faceCorners);
+            } else {
+              this->buildFaces(this->dim, &curElement, &boundary, simplex);
+            }
           } else {
-            for(int b = 0; b < dim+1; b++) {
-              point_type p(0, simplices[s*(dim+1)+b]+numSimplices);
+            for(int b = 0; b < corners; b++) {
+              point_type p(0, simplices[s*corners+b]+numSimplices);
 
               this->topology->addArrow(p, simplex, b);
             }
@@ -225,7 +299,7 @@ namespace ALE {
 
       #undef __FUNCT__
       #define __FUNCT__ "Mesh::createVertBnd"
-      void createVertexBundle(int numSimplices, int simplices[], int elementOffset = 0) {
+      void createVertexBundle(int numSimplices, int simplices[], int elementOffset = 0, int corners = -1) {
         ALE_LOG_STAGE_BEGIN;
         Obj<bundle_type> vertexBundle = this->getBundle(0);
         Obj<sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
@@ -238,13 +312,14 @@ namespace ALE {
         } else {
           vertexOffset = numSimplices;
         }
+        if (corners < 0) corners = this->dim+1;
         for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
           // setFiberDimensionByDepth() does not work here since we only want it to apply to the patch cone
           //   What we really need is the depthStratum relative to the patch
           Obj<PointArray> patch = PointArray();
 
-          for(int b = 0; b < dim+1; b++) {
-            patch->push_back(point_type(0, simplices[((*e_iter).index - elementOffset)*(this->dim+1)+b]+vertexOffset));
+          for(int b = 0; b < corners; b++) {
+            patch->push_back(point_type(0, simplices[((*e_iter).index - elementOffset)*corners+b]+vertexOffset));
           }
           vertexBundle->setPatch(orderName, patch, *e_iter);
           for(PointArray::iterator p_iter = patch->begin(); p_iter != patch->end(); ++p_iter) {
@@ -372,20 +447,20 @@ namespace ALE {
       void createParallelCoordinates(int embedDim, Obj<field_type> serialCoordinates, Obj<OverlapType> partitionOverlap);
 
       // Create a serial mesh
-      void populate(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true) {
+      void populate(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true, int corners = -1) {
         this->topology->setStratification(false);
-        this->buildTopology(numSimplices, simplices, numVertices, interpolate);
+        this->buildTopology(numSimplices, simplices, numVertices, interpolate, corners);
         this->topology->stratify();
         this->topology->setStratification(true);
-        this->createVertexBundle(numSimplices, simplices);
+        this->createVertexBundle(numSimplices, simplices, 0, corners);
         this->createSerialCoordinates(this->dim, numSimplices, coords);
       };
-      void populateBd(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true) {
+      void populateBd(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true, int corners = -1) {
         this->topology->setStratification(false);
-        this->buildTopology(numSimplices, simplices, numVertices, interpolate);
+        this->buildTopology(numSimplices, simplices, numVertices, interpolate, corners);
         this->topology->stratify();
         this->topology->setStratification(true);
-        this->createVertexBundle(numSimplices, simplices);
+        this->createVertexBundle(numSimplices, simplices, 0, corners);
         this->createSerialCoordinates(this->dim+1, numSimplices, coords);
       };
 
@@ -1312,7 +1387,7 @@ namespace ALE {
     };
 
     class PCICEBuilder {
-      static void readConnectivity(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numElements, int *vertices[]) {
+      static void readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, bool useZeroBase, int& numElements, int *vertices[]) {
         PetscViewer    viewer;
         FILE          *f;
         PetscInt       numCells, cellCount = 0;
@@ -1330,18 +1405,27 @@ namespace ALE {
         ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
         ierr = PetscViewerFileSetName(viewer, filename.c_str());
         ierr = PetscViewerASCIIGetPointer(viewer, &f);
-        numCells = atoi(fgets(buf, 2048, f));
-        ierr = PetscMalloc(numCells*(dim+1) * sizeof(PetscInt), &verts);
+        if (fgets(buf, 2048, f) == NULL) {
+          throw ALE::Exception("Invalid connectivity file: Missing number of elements");
+        }
+        const char *sizes = strtok(buf, " ");
+        numCells = atoi(sizes);
+        sizes = strtok(NULL, " ");
+        if (sizes != NULL) {
+          corners = atoi(sizes);
+          std::cout << "Reset corners to " << corners << std::endl;
+        }
+        ierr = PetscMalloc(numCells*corners * sizeof(PetscInt), &verts);
         while(fgets(buf, 2048, f) != NULL) {
           const char *v = strtok(buf, " ");
       
           /* Ignore cell number */
           v = strtok(NULL, " ");
-          for(c = 0; c <= dim; c++) {
+          for(c = 0; c < corners; c++) {
             int vertex = atoi(v);
         
             if (!useZeroBase) vertex -= 1;
-            verts[cellCount*(dim+1)+c] = vertex;
+            verts[cellCount*corners+c] = vertex;
             v = strtok(NULL, " ");
           }
           cellCount++;
@@ -1393,11 +1477,11 @@ namespace ALE {
         Obj<ALE::Mesh> mesh = ALE::Mesh(comm, dim, debug);
         int      *vertices;
         double   *coordinates;
-        int       numElements = 0, numVertices = 0;
+        int       numElements = 0, numVertices = 0, numCorners = dim+1;
 
-        readConnectivity(comm, baseFilename+".lcon", dim, useZeroBase, numElements, &vertices);
+        readConnectivity(comm, baseFilename+".lcon", numCorners, useZeroBase, numElements, &vertices);
         readCoordinates(comm, baseFilename+".nodes", dim, numVertices, &coordinates);
-        mesh->populate(numElements, vertices, numVertices, coordinates);
+        mesh->populate(numElements, vertices, numVertices, coordinates, true, numCorners);
         return mesh;
       };
 

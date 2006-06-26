@@ -377,9 +377,21 @@ class VTKViewer {
         ierr = PetscViewerASCIIPrintf(viewer, "5\n");CHKERRQ(ierr);
       }
     } else if (corners == 4) {
-      // VTK_TETRA
+      if (mesh->getDimension() == 3) {
+        // VTK_TETRA
+        for(int e = 0; e < numElements; e++) {
+          ierr = PetscViewerASCIIPrintf(viewer, "10\n");CHKERRQ(ierr);
+        }
+      } else if (mesh->getDimension() == 2) {
+        // VTK_QUAD
+        for(int e = 0; e < numElements; e++) {
+          ierr = PetscViewerASCIIPrintf(viewer, "9\n");CHKERRQ(ierr);
+        }
+      }
+    } else if (corners == 8) {
+      // VTK_HEXAHEDRON
       for(int e = 0; e < numElements; e++) {
-        ierr = PetscViewerASCIIPrintf(viewer, "10\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "12\n");CHKERRQ(ierr);
       }
     }
     PetscFunctionReturn(0);
