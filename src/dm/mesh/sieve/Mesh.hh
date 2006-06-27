@@ -1138,7 +1138,7 @@ namespace ALE {
         while((fgets(buf, bufSize, f) != NULL) && (buf[0] == '#')) {}
       };
 
-      static void readConnectivity(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numElements, int *vertices[], int *materials[]) {
+      static void readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, bool useZeroBase, int& numElements, int *vertices[], int *materials[]) {
         PetscViewer    viewer;
         FILE          *f;
         PetscInt       maxCells = 1024, cellCount = 0;
@@ -1150,9 +1150,6 @@ namespace ALE {
         PetscErrorCode ierr;
 
         ierr = MPI_Comm_rank(comm, &commRank);
-        if (dim != 3) {
-          throw ALE::Exception("PyLith only works in 3D");
-        }
         if (commRank != 0) return;
         ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
         ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
@@ -1161,7 +1158,6 @@ namespace ALE {
         ierr = PetscViewerASCIIGetPointer(viewer, &f);
         /* Ignore comments */
         ignoreComments(buf, 2048, f);
-        ierr = PetscMalloc2(maxCells*(dim+1),PetscInt,&verts,maxCells,PetscInt,&mats);
         do {
           const char *v = strtok(buf, " ");
           int         elementType;
@@ -1171,18 +1167,28 @@ namespace ALE {
 
             vtmp = verts;
             mtmp = mats;
-            ierr = PetscMalloc2(maxCells*2*(dim+1),PetscInt,&verts,maxCells*2,PetscInt,&mats);
-            ierr = PetscMemcpy(verts, vtmp, maxCells*(dim+1) * sizeof(PetscInt));
+            ierr = PetscMalloc2(maxCells*2*corners,PetscInt,&verts,maxCells*2,PetscInt,&mats);
+            ierr = PetscMemcpy(verts, vtmp, maxCells*corners * sizeof(PetscInt));
             ierr = PetscMemcpy(mats,  mtmp, maxCells         * sizeof(PetscInt));
             ierr = PetscFree2(vtmp,mtmp);
             maxCells *= 2;
           }
           /* Ignore cell number */
           v = strtok(NULL, " ");
-          /* Verify element type is linear tetrahedron */
+          /* Get element type */
           elementType = atoi(v);
-          if (elementType != 5) {
-            throw ALE::Exception("We only accept linear tetrahedra right now");
+          if (elementType == 1) {
+            corners = 8;
+          } else if (elementType == 5) {
+            corners = 4;
+          } else {
+            ostringstream msg;
+
+            msg << "We do not accept element type " << elementType << " right now";
+            throw ALE::Exception(msg.str().c_str());
+          }
+          if (cellCount == 0) {
+            ierr = PetscMalloc2(maxCells*corners,PetscInt,&verts,maxCells,PetscInt,&mats);
           }
           v = strtok(NULL, " ");
           /* Store material type */
@@ -1190,11 +1196,11 @@ namespace ALE {
           v = strtok(NULL, " ");
           /* Ignore infinite domain element code */
           v = strtok(NULL, " ");
-          for(c = 0; c <= dim; c++) {
+          for(c = 0; c < corners; c++) {
             int vertex = atoi(v);
         
             if (!useZeroBase) vertex -= 1;
-            verts[cellCount*(dim+1)+c] = vertex;
+            verts[cellCount*corners+c] = vertex;
             v = strtok(NULL, " ");
           }
           cellCount++;
@@ -1374,14 +1380,14 @@ namespace ALE {
         double   *coordinates = NULL;
         int      *splitInd = NULL;
         double   *splitValues = NULL;
-        int       numElements = 0, numVertices = 0, numSplit = 0, hasSplit;
+        int       numElements = 0, numVertices = 0, numCorners = dim+1, numSplit = 0, hasSplit;
         PetscErrorCode ierr;
 
         mesh->debug = debug;
-        readConnectivity(comm, baseFilename+".connect", dim, useZeroBase, numElements, &vertices, &materials);
+        readConnectivity(comm, baseFilename+".connect", numCorners, useZeroBase, numElements, &vertices, &materials);
         readCoordinates(comm, baseFilename+".coord", dim, numVertices, &coordinates);
         readSplit(comm, baseFilename+".split", dim, useZeroBase, numSplit, &splitInd, &splitValues);
-        mesh->populate(numElements, vertices, numVertices, coordinates, interpolate);
+        mesh->populate(numElements, vertices, numVertices, coordinates, interpolate, numCorners);
         createMaterialField(numElements, materials, mesh, mesh->getField("material"));
         ierr = MPI_Allreduce(&numSplit, &hasSplit, 1, MPI_INT, MPI_MAX, comm);
         if (hasSplit) {
