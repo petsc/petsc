@@ -155,11 +155,11 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
   PetscErrorCode ierr;
   Vec            localX;
   DA             da = (DA)dmmg->dm;
+  PetscInt   N,n;
+  PetscTruth islocalX=PETSC_FALSE;
 
   PetscFunctionBegin;
   /* determine whether X=localX */
-  PetscInt   N,n;
-  PetscTruth islocalX=PETSC_FALSE;
   ierr = VecGetSize(X,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   if (n==N) {
@@ -213,11 +213,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void
   PetscErrorCode ierr;
   Vec            localX;
   DA             da = *(DA*)ptr;
+  PetscInt   N,n;
+  PetscTruth islocalX=PETSC_FALSE;
 
   PetscFunctionBegin;
   /* determine whether X=localX */
-  PetscInt   N,n;
-  PetscTruth islocalX=PETSC_FALSE;
   ierr = VecGetSize(X,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
   if (n==N) {
@@ -454,6 +454,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
 #endif
   PetscViewer    ascii;
   MPI_Comm       comm;
+    PetscMPIInt size;
   const char     *isctypes[] = {"IS_COLORING_LOCAL","IS_COLORING_GHOSTED"};
   ISColoringType ctype;
 
@@ -481,7 +482,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     if (mfad) mfadoperator = PETSC_TRUE;
 #endif
     
-    PetscMPIInt size;
     ierr = MPI_Comm_size(dmmg[0]->comm,&size);CHKERRQ(ierr);
     if (size > 1){
       isctype = 0; /* default isctype should be 1! */
