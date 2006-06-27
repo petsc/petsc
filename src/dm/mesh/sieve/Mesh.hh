@@ -123,29 +123,42 @@ namespace ALE {
         }
         return names;
       }
-      void buildGeneralFaces(int dim, std::map<int, int*> *curSimplex, PointArray *boundary, point_type& simplex, int corners) {
+      // For a hex, there are 2d faces
+      void buildHexFaces(int dim, std::map<int, int*> *curSimplex, PointArray *boundary, point_type& simplex) {
         PointArray *faces = NULL;
 
-        if (debug > 1) {std::cout << "  Building faces for boundary of " << simplex << " (size " << boundary->size() << "), dim " << dim << std::endl;}
-        if (dim > 1) {
+        if (debug > 1) {std::cout << "  Building hex faces for boundary of " << simplex << " (size " << boundary->size() << "), dim " << dim << std::endl;}
+        if (dim > 3) {
+          throw ALE::Exception("Cannot do hexes of dimension greater than three");
+        } else if (dim > 2) {
+          int nodes[24] = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 5, 4,
+                           1, 2, 6, 5, 2, 3, 7, 6, 3, 0, 4, 7};
+          faces = new PointArray();
+
+          for(int b = 0; b < 6; b++) {
+            PointArray faceBoundary = PointArray();
+            point_type face;
+
+            for(int c = 0; c < 4; c++) {
+              faceBoundary.push_back((*boundary)[nodes[b*4+c]]);
+            }
+            if (debug > 1) {std::cout << "    boundary point " << (*boundary)[b] << std::endl;}
+            this->buildHexFaces(dim-1, curSimplex, &faceBoundary, face);
+            faces->push_back(face);
+          }
+        } else if (dim > 1) {
           int boundarySize = (int) boundary->size();
           faces = new PointArray();
 
           for(int b = 0; b < boundarySize; b++) {
             PointArray faceBoundary = PointArray();
             point_type face;
-            int        faceCorners;
 
-            for(int c = 0; c < corners; c++) {
+            for(int c = 0; c < 2; c++) {
               faceBoundary.push_back((*boundary)[(b+c)%boundarySize]);
             }
-            if ((this->dim == 2) && (corners == 2)) {
-              faceCorners = 1;
-            } else {
-              throw ALE::Exception("Could not determine number of face corners");
-            }
             if (debug > 1) {std::cout << "    boundary point " << (*boundary)[b] << std::endl;}
-            this->buildGeneralFaces(dim-1, curSimplex, &faceBoundary, face, faceCorners);
+            this->buildHexFaces(dim-1, curSimplex, &faceBoundary, face);
             faces->push_back(face);
           }
         } else {
@@ -276,13 +289,7 @@ namespace ALE {
             if (debug) {std::cout << "simplex " << s << " boundary size " << boundary.size() << std::endl;}
 
             if (corners != this->dim+1) {
-              int faceCorners = 0;
-              if ((this->dim == 2) && (corners == 4)) {
-                faceCorners = 2;
-              } else {
-                throw ALE::Exception("Could not determine number of face corners");
-              }
-              this->buildGeneralFaces(this->dim, &curElement, &boundary, simplex, faceCorners);
+              this->buildHexFaces(this->dim, &curElement, &boundary, simplex);
             } else {
               this->buildFaces(this->dim, &curElement, &boundary, simplex);
             }
