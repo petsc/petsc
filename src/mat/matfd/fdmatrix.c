@@ -600,9 +600,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   // remove !
   PetscMPIInt rank;
   PetscInt    prid=10;
+  /*  ex5
   PetscTruth  fd_jacobian_ghost=PETSC_FALSE;
   DA          da;
-
+  */
 
   PetscFunctionBegin;
     

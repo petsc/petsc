@@ -31,8 +31,6 @@
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat mat,MatOperation op,PetscTruth *has)
 {
-  PetscErrorCode ierr;
- 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
