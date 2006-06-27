@@ -1486,7 +1486,7 @@ namespace ALE {
       PCICEBuilder() {};
       virtual ~PCICEBuilder() {};
 
-      static Obj<ALE::Mesh> createNew(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, int debug = 0) {
+      static Obj<ALE::Mesh> createNew(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, bool interpolate = true, int debug = 0) {
         Obj<ALE::Mesh> mesh = ALE::Mesh(comm, dim, debug);
         int      *vertices;
         double   *coordinates;
@@ -1494,7 +1494,7 @@ namespace ALE {
 
         readConnectivity(comm, baseFilename+".lcon", numCorners, useZeroBase, numElements, &vertices);
         readCoordinates(comm, baseFilename+".nodes", dim, numVertices, &coordinates);
-        mesh->populate(numElements, vertices, numVertices, coordinates, true, numCorners);
+        mesh->populate(numElements, vertices, numVertices, coordinates, interpolate, numCorners);
         return mesh;
       };
 

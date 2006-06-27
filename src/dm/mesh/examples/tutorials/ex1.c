@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
     if (fileType == PCICE) {
-      mesh = ALE::PCICEBuilder::createNew(comm, baseFilename, dim, useZeroBase, debug);
+      mesh = ALE::PCICEBuilder::createNew(comm, baseFilename, dim, useZeroBase, interpolate, debug);
     } else if (fileType == PYLITH) {
       mesh = ALE::PyLithBuilder::createNew(comm, baseFilename, interpolate, debug);
     }
@@ -194,7 +194,7 @@ PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Mesh> mesh, Vec *partition)
 
   PetscFunctionBegin;
   ALE_LOG_EVENT_BEGIN;
-  ierr = MeshCreateVector(mesh, mesh->getBundle(mesh->getDimension()), partition);CHKERRQ(ierr);
+  ierr = MeshCreateVector(mesh, mesh->getBundle(mesh->getTopology()->depth()), partition);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*partition, 1);CHKERRQ(ierr);
   ierr = VecGetLocalSize(*partition, &n);CHKERRQ(ierr);
   ierr = VecGetArray(*partition, &array);CHKERRQ(ierr);
@@ -225,7 +225,7 @@ PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh> mesh, const char fieldName[
 
   PetscFunctionBegin;
   ALE_LOG_EVENT_BEGIN;
-  ierr = MeshCreateVector(mesh, mesh->getBundle(mesh->getDimension()), fieldVec);CHKERRQ(ierr);
+  ierr = MeshCreateVector(mesh, mesh->getBundle(mesh->getTopology()->depth()), fieldVec);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *fieldVec, fieldName);CHKERRQ(ierr);
   ierr = MeshGetGlobalScatter(mesh, fieldName, *fieldVec, &injection); CHKERRQ(ierr);
 

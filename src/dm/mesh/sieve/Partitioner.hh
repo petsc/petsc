@@ -437,6 +437,7 @@ namespace ALE {
       int *offsets = NULL;
 
 
+      Obj<typename sieve_type::traits::heightSequence> elements = oldSieve->heightStratum(0);
       Obj<typename sieve_type::traits::heightSequence> faces = oldSieve->heightStratum(1);
       Obj<typename mesh_type::bundle_type> vertexBundle = oldMesh->getBundle(0);
       Obj<typename mesh_type::bundle_type> elementBundle = oldMesh->getBundle(oldSieve->depth());
@@ -468,31 +469,80 @@ namespace ALE {
         offsets = new int[nvtxs];
         mesh_dims[0] = size; mesh_dims[1] = 1; mesh_dims[2] = 1;
         ierr = PetscMemzero(start, (nvtxs+1) * sizeof(int));CHKERROR(ierr, "Error in PetscMemzero");
-        for(typename sieve_type::traits::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-          Obj<typename sieve_type::supportSequence> cells = oldSieve->support(*f_iter);
+        if (oldSieve->depth() == oldMesh->getDimension()) {
+          for(typename sieve_type::traits::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+            Obj<typename sieve_type::supportSequence> cells = oldSieve->support(*f_iter);
 
-          if (cells->size() == 2) {
-            start[elementBundle->getIndex(patch, *cells->begin()).prefix+1]++;
-            start[elementBundle->getIndex(patch, *(++cells->begin())).prefix+1]++;
+            if (cells->size() == 2) {
+              start[elementBundle->getIndex(patch, *cells->begin()).prefix+1]++;
+              start[elementBundle->getIndex(patch, *(++cells->begin())).prefix+1]++;
+            }
           }
-        }
-        for(int v = 1; v <= nvtxs; v++) {
-          offsets[v-1] = start[v-1];
-          start[v]    += start[v-1];
-        }
-        adjacency = new int[start[nvtxs]];
-        for(typename sieve_type::traits::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-          Obj<typename sieve_type::supportSequence> cells = oldSieve->support(*f_iter);
-
-          if (cells->size() == 2) {
-            int cellA = elementBundle->getIndex(patch, *cells->begin()).prefix;
-            int cellB = elementBundle->getIndex(patch, *(++cells->begin())).prefix;
-
-            adjacency[offsets[cellA]++] = cellB+1;
-            adjacency[offsets[cellB]++] = cellA+1;
+          for(int v = 1; v <= nvtxs; v++) {
+            offsets[v-1] = start[v-1];
+            start[v]    += start[v-1];
           }
-        }
+          adjacency = new int[start[nvtxs]];
+          for(typename sieve_type::traits::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+            Obj<typename sieve_type::supportSequence> cells = oldSieve->support(*f_iter);
 
+            if (cells->size() == 2) {
+              int cellA = elementBundle->getIndex(patch, *cells->begin()).prefix;
+              int cellB = elementBundle->getIndex(patch, *(++cells->begin())).prefix;
+
+              adjacency[offsets[cellA]++] = cellB+1;
+              adjacency[offsets[cellB]++] = cellA+1;
+            }
+          }
+        } else if (oldSieve->depth() == 1) {
+          int dim = oldMesh->getDimension();
+          int corners = oldSieve->cone(*elements->begin())->size();
+          int faceVertices = -1;
+          std::set<int> *adj = new std::set<int>[nvtxs];
+
+          if (corners == dim+1) {
+            faceVertices = dim;
+          } else if ((dim == 2) && (corners == 4)) {
+            faceVertices = 2;
+          } else if ((dim == 3) && (corners == 8)) {
+            faceVertices = 4;
+          } else {
+            throw ALE::Exception("Could not determine number of face vertices");
+          }
+          for(typename sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+            Obj<typename sieve_type::traits::coneSequence> vertices = oldSieve->cone(*e_iter);
+
+            for(typename sieve_type::traits::coneSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+              Obj<typename sieve_type::supportSequence> neighbors = oldSieve->support(*v_iter);
+
+              for(typename sieve_type::traits::supportSequence::iterator n_iter = neighbors->begin(); n_iter != neighbors->end(); ++n_iter) {
+                if ((int) oldSieve->join(*e_iter, *n_iter)->size() == faceVertices) {
+                  adj[elementBundle->getIndex(patch, *e_iter).prefix].insert(elementBundle->getIndex(patch, *n_iter).prefix);
+                }
+              }
+              
+            }
+          }
+          start[0] = 0;
+          for(int v = 1; v <= nvtxs; v++) {
+            start[v] = adj[v-1].size() + start[v-1];
+          }
+          adjacency = new int[start[nvtxs]];
+          int offset = 0;
+          for(int v = 0; v < nvtxs; v++) {
+            for(typename std::set<int>::iterator n_iter = adj[v].begin(); n_iter != adj[v].end(); ++n_iter) {
+              adjacency[offset++] = *n_iter;
+            }
+          }
+          delete [] adj;
+          if (offset != start[nvtxs]) {
+            ostringstream msg;
+            msg << "ERROR: Number of neighbors " << offset << " does not match the offset array " << start[nvtxs];
+            throw ALE::Exception(msg.str().c_str());
+          }
+        } else {
+          throw ALE::Exception("Cannot construct dual for incompletely interpolated sieve");
+        }
         assignment = new short int[nvtxs];
         ierr = PetscMemzero(assignment, nvtxs * sizeof(short));CHKERROR(ierr, "Error in PetscMemzero");
 
