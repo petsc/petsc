@@ -311,10 +311,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomView(PetscRandom rnd,PetscViewer viewe
   if (iascii) {
     PetscMPIInt rank;
     ierr = MPI_Comm_rank(rnd->comm,&rank);CHKERRQ(ierr);
-    if (!rank){
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Random type %s\n",rnd->type_name);CHKERRQ(ierr);
-    }
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%D] Random seed %D\n",rank,rnd->seed);CHKERRQ(ierr); 
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%D] Random type %s, seed %D\n",rank,rnd->type_name,rnd->seed);CHKERRQ(ierr); 
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
     const char *tname;
@@ -343,18 +340,18 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomView(PetscRandom rnd,PetscViewer viewe
 PetscErrorCode PETSC_DLLEXPORT PetscRandomViewFromOptions(PetscRandom rnd, char *title)
 {
   PetscTruth     opt;
-  /*
+  PetscViewer    viewer;
   char           *titleStr;
   char           typeName[1024];
   char           fileName[PETSC_MAX_PATH_LEN];
   size_t         len;
-  */
+  
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(rnd->prefix, "-random_view", &opt);CHKERRQ(ierr);
   if (opt) {
-    /*
+    
     ierr = PetscOptionsGetString(rnd->prefix, "-random_view", typeName, 1024, &opt);CHKERRQ(ierr);
     ierr = PetscStrlen(typeName, &len);CHKERRQ(ierr);
     if (len > 0) {
@@ -369,10 +366,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomViewFromOptions(PetscRandom rnd, char 
       ierr = PetscRandomView(rnd, viewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-    } else {
-    */
-    ierr = PetscRandomView(rnd, PETSC_VIEWER_STDOUT_(rnd->comm));CHKERRQ(ierr);
-    /* } */
+    } else {    
+      ierr = PetscRandomView(rnd, PETSC_VIEWER_STDOUT_(rnd->comm));CHKERRQ(ierr);
+    } 
   }
   PetscFunctionReturn(0);
 }
