@@ -177,7 +177,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm comm,const char nam
   size_t            len;
 
   PetscFunctionBegin;
-CHKERRQ(ierr);
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
   if (!len) {
     *lab = PETSC_VIEWER_STDOUT_(comm);

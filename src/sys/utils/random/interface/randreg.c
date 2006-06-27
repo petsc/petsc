@@ -29,7 +29,7 @@ PetscTruth PetscRandomRegisterAllCalled = PETSC_FALSE;
 .seealso: PetscRandomGetType(), PetscRandomCreate()
 @*/
 
-PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
 {
   PetscErrorCode (*r)(PetscRandom);
   PetscTruth     match;
@@ -75,7 +75,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomSetType(PetscRandom rnd, PetscRando
 .keywords: random, get, type, name
 .seealso: PetscRandomSetType(), PetscRandomCreate()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 {
   PetscErrorCode ierr;
 
@@ -88,120 +88,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomGetType(PetscRandom rnd, PetscRando
   *type = rnd->type_name;
   PetscFunctionReturn(0);
 }
-/* ------------------------------------------------------------------- */
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomSetTypeFromOptions_Private"
-/*
-  PetscRandomSetTypeFromOptions_Private - Sets the type of random generator from user options. Defaults to type PETSCRAND48 or PETSCRAND.
-
-  Collective on PetscRandom
-
-  Input Parameter:
-. rnd - The random number generator context
-
-  Level: intermediate
-
-.keywords: PetscRandom, set, options, database, type
-.seealso: PetscRandomSetFromOptions(), PetscRandomSetType()
-*/
-static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd)
-{
-  PetscTruth     opt;
-  const char     *defaultType;
-  char           typeName[256];
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (rnd->type_name) {
-    defaultType = rnd->type_name;
-  } else {
-#if defined(PETSC_HAVE_DRAND48)    
-    defaultType = PETSCRAND48;
-#elif defined(PETSC_HAVE_RAND)
-    defaultType = PETSCRAND;
-#endif
-  }
-
-  if (!PetscRandomRegisterAllCalled) {
-    ierr = PetscRandomRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsList("-random_type","PetscRandom type","PetscRandomSetType",PetscRandomList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscRandomSetType(rnd, typeName);CHKERRQ(ierr);
-  } else {
-    ierr = PetscRandomSetType(rnd, defaultType);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomSetFromOptions"
-/*@
-  PetscRandomSetFromOptions - Configures the random number generator from the options database.
-
-  Collective on PetscRandom
-
-  Input Parameter:
-. rnd - The random number generator context
-
-  Notes:  To see all options, run your program with the -help option, or consult the users manual.
-          Must be called after PetscRandomCreate() but before the rnd is used.
-
-  Level: beginner
-
-.keywords: PetscRandom, set, options, database
-.seealso: PetscRandomCreate(), PetscRandomSetType()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscRandomSetFromOptions(PetscRandom rnd)
-{
-  PetscTruth     opt;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(rnd,PETSC_RANDOM_COOKIE,1);
-
-  ierr = PetscOptionsBegin(rnd->comm, rnd->prefix, "PetscRandom options", "PetscRandom");CHKERRQ(ierr);
-
-  /* Handle generic options */
-  ierr = PetscOptionsHasName(PETSC_NULL, "-help", &opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscRandomPrintHelp(rnd);CHKERRQ(ierr);
-  }
-
-  /* Handle PetscRandom type options */
-  ierr = PetscRandomSetTypeFromOptions_Private(rnd);CHKERRQ(ierr);
-
-  /* Handle specific random generator's options */
-  if (rnd->ops->setfromoptions) {
-    ierr = (*rnd->ops->setfromoptions)(rnd);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomPrintHelp"
-/*@
-  PetscRandomPrintHelp - Prints some options for the PetscRandom.
-
-  Input Parameter:
-. rnd - The random number generator context
-
-  Options Database Keys:
-$  -help, -h
-
-  Level: intermediate
-
-.keywords: PetscRandom, help
-.seealso: PetscRandomSetFromOptions()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscRandomPrintHelp(PetscRandom rnd)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(rnd, PETSC_RANDOM_COOKIE,1);
-  PetscFunctionReturn(0);
-}
-/*--------------------------------------------------------------------------------------------------------------------*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomRegister"
@@ -210,7 +96,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomPrintHelp(PetscRandom rnd)
 
   Level: advanced
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(PetscRandom))
+PetscErrorCode PETSC_DLLEXPORT PetscRandomRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(PetscRandom))
 {
   char fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
@@ -237,7 +123,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomRegister(const char sname[], const 
 .keywords: PetscRandom, register, destroy
 .seealso: PetscRandomRegister(), PetscRandomRegisterAll(), PetscRandomRegisterDynamic()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomRegisterDestroy(void)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
@@ -252,13 +138,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomRegisterDestroy(void)
 
 EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_DRAND)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomCreate_Rand(PetscRandom);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate_Rand(PetscRandom);
 #endif
 #if defined(PETSC_HAVE_DRAND48)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomCreate_Rand48(PetscRandom);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate_Rand48(PetscRandom);
 #endif
 #if defined(PETSC_HAVE_SPRNG)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomCreate_Sprng(PetscRandom);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate_Sprng(PetscRandom);
 #endif
 EXTERN_C_END
 
@@ -277,7 +163,7 @@ EXTERN_C_END
 .keywords: PetscRandom, register, all
 .seealso:  PetscRandomRegister(), PetscRandomRegisterDestroy(), PetscRandomRegisterDynamic()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomRegisterAll(const char path[])
+PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterAll(const char path[])
 {
   PetscErrorCode ierr;
 
