@@ -120,23 +120,34 @@ class PyLithViewer {
   static PetscErrorCode writeElements(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer) {
     ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
     ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
-    ALE::Obj<ALE::Mesh::field_type> material = mesh->getField("material");
     ALE::Obj<ALE::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
     ALE::Obj<ALE::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
     ALE::Obj<ALE::Mesh::bundle_type> globalVertex = vertexBundle->getGlobalOrder();
     ALE::Obj<ALE::Mesh::bundle_type> globalElement = elementBundle->getGlobalOrder();
+    ALE::Obj<ALE::Mesh::field_type> material;
     ALE::Mesh::bundle_type::patch_type patch;
     std::string    orderName("element");
+    bool           hasMaterial = mesh->hasField("material");
     int            dim  = mesh->getDimension();
     int            corners = topology->nCone(*elements->begin(), topology->depth())->size();
+    int            elementType = -1;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
     if (dim != 3) {
       SETERRQ(PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
     }
-    if (corners != 4) {
-      SETERRQ(PETSC_ERR_SUP, "We only support linear tetrahedra for PyLith.");
+    if (corners == 4) {
+      // Linear tetrahedron
+      elementType = 5;
+    } else if (corners == 8) {
+      // Linear hexahedron
+      elementType = 1;
+    } else {
+      SETERRQ1(PETSC_ERR_SUP, "PyLith Error: Unsupported number of elements vertices: %d", corners);
+    }
+    if (hasMaterial) {
+      material = mesh->getField("material");
     }
     ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"#     N ETP MAT INF     N1     N2     N3     N4     N5     N6     N7     N8\n");CHKERRQ(ierr);
@@ -147,8 +158,14 @@ class PyLithViewer {
       for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
         ALE::Obj<ALE::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
-        // Only linear tetrahedra, material, no infinite elements
-        ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, (int) material->restrict(patch, *e_itor)[0], 0);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d", elementCount++, elementType);CHKERRQ(ierr);
+        if (hasMaterial) {
+          // No infinite elements
+          ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", (int) material->restrict(patch, *e_itor)[0], 0);CHKERRQ(ierr);
+        } else {
+          // No infinite elements
+          ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", 1, 0);CHKERRQ(ierr);
+        }
         for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
           ierr = PetscViewerASCIIPrintf(viewer, " %6d", globalVertex->getIndex(patch, *c_itor).prefix+1);CHKERRQ(ierr);
         }
@@ -166,7 +183,7 @@ class PyLithViewer {
           // Only linear tetrahedra, material, no infinite elements
           int mat = remoteVertices[e*(corners+1)+corners];
 
-          ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, mat, 0);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, elementType, mat, 0);CHKERRQ(ierr);
           for(int c = 0; c < corners; c++) {
             ierr = PetscViewerASCIIPrintf(viewer, " %6d", remoteVertices[e*(corners+1)+c]);CHKERRQ(ierr);
           }
@@ -188,7 +205,11 @@ class PyLithViewer {
           for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
             localVertices[k++] = globalVertex->getIndex(patch, *c_itor).prefix;
           }
-          localVertices[k++] = (int) material->restrict(patch, *e_itor)[0];
+          if (hasMaterial) {
+            localVertices[k++] = (int) material->restrict(patch, *e_itor)[0];
+          } else {
+            localVertices[k++] = 1;
+          }
         }
       }
       if (k != numLocalElements*corners) {
@@ -230,21 +251,32 @@ class PyLithViewer {
   static PetscErrorCode writeElementsLocal(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer) {
     ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
     ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
-    ALE::Obj<ALE::Mesh::field_type> material = mesh->getField("material");
     ALE::Obj<ALE::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
+    ALE::Obj<ALE::Mesh::field_type> material;
     ALE::Mesh::bundle_type::patch_type patch;
     std::string    orderName("element");
+    bool           hasMaterial = mesh->hasField("material");
     int            dim  = mesh->getDimension();
     int            corners = topology->nCone(*elements->begin(), topology->depth())->size();
     int            elementCount = 1;
+    int            elementType = -1;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
     if (dim != 3) {
       SETERRQ(PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
     }
-    if (corners != 4) {
-      SETERRQ(PETSC_ERR_SUP, "We only support linear tetrahedra for PyLith.");
+    if (corners == 4) {
+      // Linear tetrahedron
+      elementType = 5;
+    } else if (corners == 8) {
+      // Linear hexahedron
+      elementType = 1;
+    } else {
+      SETERRQ1(PETSC_ERR_SUP, "PyLith Error: Unsupported number of elements vertices: %d", corners);
+    }
+    if (hasMaterial) {
+      material = mesh->getField("material");
     }
     ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"#     N ETP MAT INF     N1     N2     N3     N4     N5     N6     N7     N8\n");CHKERRQ(ierr);
@@ -252,8 +284,14 @@ class PyLithViewer {
     for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
       ALE::Obj<ALE::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
-      // Only linear tetrahedra, material, no infinite elements
-      ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d %3d %3d", elementCount++, 5, (int) material->restrict(patch, *e_itor)[0], 0);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d", elementCount++, elementType);CHKERRQ(ierr);
+      if (hasMaterial) {
+        // No infinite elements
+        ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", (int) material->restrict(patch, *e_itor)[0], 0);CHKERRQ(ierr);
+      } else {
+        // No infinite elements
+        ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", 1, 0);CHKERRQ(ierr);
+      }
       for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
         ierr = PetscViewerASCIIPrintf(viewer, " %6d", vertexBundle->getIndex(patch, *c_itor).prefix+1);CHKERRQ(ierr);
       }

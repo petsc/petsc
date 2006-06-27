@@ -54,9 +54,9 @@ int main(int argc, char *argv[])
   char           baseFilename[2048];
   PetscTruth     useZeroBase;
   const char    *fileTypes[2] = {"pcice", "pylith"};
-  FileType       fileType;
-  PetscTruth     distribute, interpolate, outputLocal, outputVTK;
-  PetscInt       dim, ft;
+  FileType       fileType, outputFileType;
+  PetscTruth     distribute, interpolate, outputLocal, outputVTK, setOutputType;
+  PetscInt       dim, ft, outputFt;
   int            verbosity;
   int            debug;
   PetscErrorCode ierr;
@@ -73,6 +73,13 @@ int main(int argc, char *argv[])
     ft   = (PetscInt) PCICE;
     ierr = PetscOptionsEList("-file_type", "Type of input files", "ex1.c", fileTypes, 2, fileTypes[0], &ft, PETSC_NULL);CHKERRQ(ierr);
     fileType = (FileType) ft;
+    outputFt = (PetscInt) PCICE;
+    ierr = PetscOptionsEList("-output_file_type", "Type of output files", "ex1.c", fileTypes, 2, fileTypes[0], &outputFt, &setOutputType);CHKERRQ(ierr);
+    if (setOutputType) {
+      outputFileType = (FileType) outputFt;
+    } else {
+      outputFileType = fileType;
+    }
     ierr = PetscStrcpy(baseFilename, "data/ex1_2d");CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex33.c", "ex1", baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
     distribute = PETSC_TRUE;
@@ -137,10 +144,10 @@ int main(int argc, char *argv[])
     ierr = PetscPrintf(comm, "Creating original format mesh file\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-    if (fileType == PCICE) {
+    if (outputFileType == PCICE) {
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PCICE);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "testMesh.lcon");CHKERRQ(ierr);
-    } else if (fileType == PYLITH) {
+    } else if (outputFileType == PYLITH) {
       if (outputLocal) {
         ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH_LOCAL);CHKERRQ(ierr);
         ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
