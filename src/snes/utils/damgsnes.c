@@ -165,7 +165,7 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
   if (n==N) {
     islocalX = PETSC_TRUE;
     localX   = X;
-    //printf(" islocalX in DMMGFormFunctionFD...\n");
+    /*printf(" islocalX in DMMGFormFunctionFD...\n");*/
   }
 
   if (!islocalX){
@@ -223,7 +223,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void
   if (n==N) {
     islocalX = PETSC_TRUE;
     localX   = X;
-    //printf(" islocalX in SNESDAFormFunction...\n");
+    /*printf(" islocalX in SNESDAFormFunction...\n");*/
   }
 
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Looks like you called SNESSetFromFuntion(snes,SNESDAFormFunction,) without the DA context");
