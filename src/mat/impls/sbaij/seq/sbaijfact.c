@@ -185,7 +185,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInf
   /* ierr = PetscLogObjectParent(*B,iperm);CHKERRQ(ierr); */
   b = (Mat_SeqSBAIJ*)(*B)->data;
   b->singlemalloc = PETSC_FALSE;
-  b->freedata     = PETSC_TRUE;
+  b->free_a       = PETSC_TRUE;
+  b->free_ij       = PETSC_TRUE;
   ierr = PetscMalloc((iu[mbs]+1)*sizeof(MatScalar)*bs2,&b->a);CHKERRQ(ierr);
   b->j    = ju;
   b->i    = iu;
@@ -415,7 +416,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
 
   b = (Mat_SeqSBAIJ*)B->data;
   b->singlemalloc = PETSC_FALSE;
-  b->freedata     = PETSC_TRUE;
+  b->free_a       = PETSC_TRUE;
+  b->free_ij      = PETSC_TRUE;
   ierr = PetscMalloc((ui[mbs]+1)*sizeof(MatScalar),&b->a);CHKERRQ(ierr);
   b->j    = uj;
   b->i    = ui;

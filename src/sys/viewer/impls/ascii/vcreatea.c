@@ -177,7 +177,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm comm,const char nam
   size_t            len;
 
   PetscFunctionBegin;
-CHKERRQ(ierr);
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
   if (!len) {
     *lab = PETSC_VIEWER_STDOUT_(comm);
@@ -187,10 +186,8 @@ CHKERRQ(ierr);
   if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelViewer,&Petsc_Viewer_keyval,(void*)0);CHKERRQ(ierr);
   }
-  CHKMEMQ;
   /* make sure communicator is a PETSc communicator */
   ierr = PetscCommDuplicate(comm,&comm,PETSC_NULL);CHKERRQ(ierr);
-  CHKMEMQ;
   /* has file already been opened into a viewer */
   ierr = MPI_Attr_get(comm,Petsc_Viewer_keyval,(void**)&vlink,(PetscMPIInt*)&flg);CHKERRQ(ierr);
   if (flg) {
@@ -205,14 +202,11 @@ CHKERRQ(ierr);
       vlink = vlink->next;
     }
   }
-  CHKMEMQ;
   ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
   ierr = PetscViewerSetType(*lab,PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-  CHKMEMQ;
   if (name) {
     ierr = PetscViewerFileSetName(*lab,name);CHKERRQ(ierr);
   }
-  CHKMEMQ;
   /* save viewer into communicator if needed later */
   ierr       = PetscNew(PetscViewerLink,&nv);CHKERRQ(ierr);
   nv->viewer = *lab;
@@ -227,9 +221,7 @@ CHKERRQ(ierr);
       ierr = MPI_Attr_put(comm,Petsc_Viewer_keyval,nv);CHKERRQ(ierr);
     }
   }
-  CHKMEMQ;
   ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 

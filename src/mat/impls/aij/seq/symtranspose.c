@@ -190,8 +190,9 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,Mat *B)
   ierr = PetscFree(atfill);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJWithArrays(A->comm,an,am,ati,atj,ata,&At);CHKERRQ(ierr);
   at   = (Mat_SeqAIJ *)(At->data);
-  at->freedata = PETSC_TRUE;
-  at->nonew    = 0;
+  at->free_a  = PETSC_TRUE;
+  at->free_ij  = PETSC_TRUE;
+  at->nonew   = 0;
   if (B) {
     *B = At;
   } else {

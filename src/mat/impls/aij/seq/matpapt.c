@@ -135,8 +135,9 @@ PetscErrorCode MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* Since these are PETSc arrays, change flags to free them as necessary. */
   c = (Mat_SeqAIJ *)((*C)->data);
-  c->freedata = PETSC_TRUE;
-  c->nonew    = 0;
+  c->free_a  = PETSC_TRUE;
+  c->free_ij = PETSC_TRUE;
+  c->nonew   = 0;
 
   /* Clean up. */
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);

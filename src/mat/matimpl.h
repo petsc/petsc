@@ -253,56 +253,6 @@ struct _p_Mat {
 
 #define MatPreallocated(A)  ((!(A)->preallocated) ? MatSetUpPreallocation(A) : 0)
 extern PetscErrorCode MatAXPY_Basic(Mat,PetscScalar,Mat,MatStructure);
-/*
-    Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "MatSeqXAIJFreeAIJ"
-PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(PetscTruth singlemalloc,PetscScalar **a,PetscInt **j,PetscInt **i) {
-                                     PetscErrorCode ierr;
-                                     if (singlemalloc) {
-                                       ierr = PetscFree3(*a,*j,*i);CHKERRQ(ierr);
-                                     } else {
-                                       if (*a) {ierr = PetscFree(*a);CHKERRQ(ierr);}
-                                       if (*j) {ierr = PetscFree(*j);CHKERRQ(ierr);}
-                                       if (*i) {ierr = PetscFree(*i);CHKERRQ(ierr);}
-                                     }
-                                     *a = 0; *j = 0; *i = 0;
-                                     return 0;
-                                   }
-
-/*
-    Allocates larger a, i, and j arrays for the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
-*/
-#define MatSeqXAIJReallocateAIJ(A,BS2,NROW,ROW,COL,RMAX,AA,AI,AJ,AM,RP,AP,AIMAX,NONEW) \
-      if (NROW >= RMAX) { \
-        /* there is no extra room in row, therefore enlarge */ \
-        PetscInt    new_nz = AI[AM] + CHUNKSIZE,len,*new_i=0,*new_j=0; \
-        PetscScalar *new_a; \
- \
-        if (NONEW == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc",ROW,COL); \
-        /* malloc new storage space */ \
-        ierr = PetscMalloc3(BS2*new_nz,PetscScalar,&new_a,new_nz,PetscInt,&new_j,AM+1,PetscInt,&new_i);CHKERRQ(ierr);\
- \
-        /* copy over old data into new slots */ \
-        for (ii=0; ii<ROW+1; ii++) {new_i[ii] = AI[ii];} \
-        for (ii=ROW+1; ii<AM+1; ii++) {new_i[ii] = AI[ii]+CHUNKSIZE;} \
-        ierr = PetscMemcpy(new_j,AJ,(AI[ROW]+NROW)*sizeof(PetscInt));CHKERRQ(ierr); \
-        len = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
-        ierr = PetscMemcpy(new_j+AI[ROW]+NROW+CHUNKSIZE,AJ+AI[ROW]+NROW,len*sizeof(PetscInt));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a,AA,BS2*(AI[ROW]+NROW)*sizeof(PetscScalar));CHKERRQ(ierr); \
-        ierr = PetscMemzero(new_a+BS2*(AI[ROW]+NROW),BS2*CHUNKSIZE*sizeof(MatScalar));CHKERRQ(ierr);\
-        ierr = PetscMemcpy(new_a+BS2*(AI[ROW]+NROW+CHUNKSIZE),AA+BS2*(AI[ROW]+NROW),BS2*len*sizeof(PetscScalar));CHKERRQ(ierr);  \
-        /* free up old matrix storage */ \
-        ierr = MatSeqXAIJFreeAIJ(A->singlemalloc,&A->a,&A->j,&A->i);CHKERRQ(ierr);\
-        AA = A->a = new_a; AI = A->i = new_i; AJ = A->j = new_j;  \
-        A->singlemalloc = PETSC_TRUE; \
- \
-        RP        = AJ + AI[ROW]; AP = AA + BS2*AI[ROW]; \
-        RMAX      = AIMAX[ROW] = AIMAX[ROW] + CHUNKSIZE; \
-        A->maxnz += CHUNKSIZE; \
-        A->reallocs++; \
-      } \
 
 /*
     Object for partitioning graphs

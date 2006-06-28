@@ -102,7 +102,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
   c = (Mat_SeqAIJ *)((*C)->data);
-  c->freedata = PETSC_TRUE;
+  c->free_a   = PETSC_TRUE;
+  c->free_ij  = PETSC_TRUE;
   c->nonew    = 0;
 
   if (nspacedouble){

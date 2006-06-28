@@ -3884,7 +3884,7 @@ PetscErrorCode MatView_Private(Mat mat)
 
 .seealso: MatAssemblyBegin(), MatSetValues(), PetscDrawOpenX(), MatView(), MatAssembled(), PetscViewerSocketOpen()
 @*/
-\PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
+PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {
   PetscErrorCode  ierr;
   static PetscInt inassm = 0;
@@ -4600,9 +4600,7 @@ $      expected fill - as ratio of original fill.
 .  fact - the factored matrix
 
    Notes:
-   Currently only no-fill factorization is supported.
-
-   Most users should employ the simplified KSP interface for linear solvers
+   Most users should employ the KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
    See, e.g., KSPCreate().
 

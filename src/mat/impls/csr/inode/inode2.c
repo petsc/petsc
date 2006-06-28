@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
+#include "src/mat/impls/aij/seq/aij.h"
 
-#include "src/mat/impls/csr/inode/inode.h"
 EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_Inode(Mat,IS*,IS*);
@@ -11,7 +11,7 @@ EXTERN_C_END
 #define __FUNCT__ "MatView_Inode"
 PetscErrorCode MatView_Inode(Mat A,PetscViewer viewer)
 {
-  Mat_inode         *a=(Mat_inode*)A->data;
+  Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data;
   PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
@@ -52,7 +52,7 @@ PetscErrorCode MatAssemblyEnd_Inode(Mat A, MatAssemblyType mode)
 PetscErrorCode MatDestroy_Inode(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_inode      *a=(Mat_inode*)A->data;
+  Mat_SeqAIJ      *a=(Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
   if (a->inode.size) {
@@ -72,7 +72,7 @@ PetscErrorCode MatDestroy_Inode(Mat A)
 #define __FUNCT__ "MatCreate_Inode"
 PetscErrorCode MatCreate_Inode(Mat B)
 {
-  Mat_inode      *b=(Mat_inode*)B->data;
+  Mat_SeqAIJ      *b=(Mat_SeqAIJ*)B->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -95,7 +95,7 @@ PetscErrorCode MatCreate_Inode(Mat B)
 #define __FUNCT__ "MatSetOption_Inode"
 PetscErrorCode MatSetOption_Inode(Mat A,MatOption op)
 {
-  Mat_inode *a=(Mat_inode*)A->data;
+  Mat_SeqAIJ *a=(Mat_SeqAIJ*)A->data;
   PetscFunctionBegin;
   switch(op) {
     case MAT_USE_INODES:
@@ -148,7 +148,7 @@ PetscErrorCode MatPrintHelp_Inode(Mat A)
 PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
 {
   Mat            B=*C;
-  Mat_inode      *c=(Mat_inode*)B->data,*a=(Mat_inode*)A->data;
+  Mat_SeqAIJ      *c=(Mat_SeqAIJ*)B->data,*a=(Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       m=A->rmap.n;
 

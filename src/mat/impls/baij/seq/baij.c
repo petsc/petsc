@@ -834,9 +834,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D",A->rmap.N,A->cmap.n,a->nz);
 #endif
-  if (a->freedata){
-    ierr = MatSeqXAIJFreeAIJ(a->singlemalloc,&a->a,&a->j,&a->i);CHKERRQ(ierr);
-  }
+  ierr = MatSeqXAIJFreeAIJ(A,&a->a,&a->j,&a->i);CHKERRQ(ierr);
   if (a->row) {
     ierr = ISDestroy(a->row);CHKERRQ(ierr);
   }
@@ -1468,7 +1466,7 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat A,PetscInt m,const Pets
       } 
       if (nonew == 1) goto noinsert2;
       if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
-      MatSeqXAIJReallocateAIJ(a,bs2,nrow,row,col,rmax,aa,ai,aj,a->mbs,rp,ap,imax,nonew);
+      MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew);
       N = nrow++ - 1; high++;
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
@@ -1730,7 +1728,7 @@ PetscErrorCode MatSetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscIn
       } 
       if (nonew == 1) goto noinsert1;
       if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
-      MatSeqXAIJReallocateAIJ(a,bs2,nrow,brow,bcol,rmax,aa,ai,aj,a->mbs,rp,ap,imax,nonew);
+      MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,brow,bcol,rmax,aa,ai,aj,rp,ap,imax,nonew);
       N = nrow++ - 1; high++;
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
@@ -2328,9 +2326,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
     for (i=1; i<mbs+1; i++) {
       b->i[i] = b->i[i-1] + b->imax[i-1];
     }
-    b->freedata     = PETSC_TRUE;
+    b->free_a     = PETSC_TRUE;
+    b->free_ij    = PETSC_TRUE;
   } else {
-    b->freedata     = PETSC_FALSE;
+    b->free_a     = PETSC_FALSE;
+    b->free_ij    = PETSC_FALSE;
   }
 
   B->rmap.bs          = bs;
@@ -2485,7 +2485,8 @@ PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->maxnz              = a->maxnz;
   c->solve_work         = 0;
   c->mult_work          = 0;
-  c->freedata           = PETSC_TRUE;
+  c->free_a             = PETSC_TRUE;
+  c->free_ij            = PETSC_TRUE;
   C->preallocated       = PETSC_TRUE;
   C->assembled          = PETSC_TRUE;
 
@@ -2825,7 +2826,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqBAIJWithArrays(MPI_Comm comm,Petsc
   baij->a = a;
   baij->singlemalloc = PETSC_FALSE;
   baij->nonew        = -1;             /*this indicates that inserting a new value in the matrix that generates a new nonzero is an error*/
-  baij->freedata     = PETSC_FALSE; 
+  baij->free_a       = PETSC_FALSE; 
+  baij->free_ij       = PETSC_FALSE; 
 
   for (ii=0; ii<m; ii++) {
     baij->ilen[ii] = baij->imax[ii] = i[ii+1] - i[ii];

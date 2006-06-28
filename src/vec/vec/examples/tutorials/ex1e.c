@@ -20,6 +20,7 @@ T*/
      petsc.h       - base PETSc routines   petscis.h     - index sets
      petscsys.h    - system routines       petscviewer.h - viewers
 */
+#define PETSC_UNDERSCORE_CHKERR
 
 #include "petscvec.h"
 

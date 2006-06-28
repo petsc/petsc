@@ -2,6 +2,7 @@
 #if !defined(__BAIJ_H)
 #define __BAIJ_H
 #include "src/mat/matimpl.h"
+#include "src/mat/impls/aij/seq/aij.h"
 
 
 /*  
@@ -11,45 +12,26 @@
 
 /* This header is shared by the SeqSBAIJ matrix */
 #define SEQBAIJHEADER \
-  PetscTruth       sorted;       /* if true, rows are sorted by increasing columns */                \
-  PetscTruth       roworiented;  /* if true, row-oriented input, default */                          \
-  PetscInt         nonew;        /* 1 don't add new nonzeros, -1 generate error on new */            \
-  PetscTruth       singlemalloc; /* if true a, i, and j have been obtained with                      \
-                                        one big malloc */                                            \
-  PetscInt         bs2;          /*  square of block size */                                         \
-  PetscInt         mbs,nbs;      /* rows/bs, columns/bs */                                           \
-  PetscInt         nz,maxnz;     /* nonzeros, allocated nonzeros */                                  \
-  PetscInt         *diag;        /* pointers to diagonal elements */                                 \
-  PetscInt         *i;           /* pointer to beginning of each row */                              \
-  PetscInt         *imax;        /* maximum space allocated for each row */                          \
-  PetscInt         *ilen;        /* actual length of each row */                                     \
-  PetscInt         *j;           /* column values: j + i[k] - 1 is start of row k */                 \
-  MatScalar        *a;           /* nonzero elements */                                              \
-  IS               row,col,icol; /* index sets, used for reorderings */                              \
-  PetscScalar      *solve_work;  /* work space used in MatSolve */                                   \
-  PetscInt         reallocs;     /* number of mallocs done during MatSetValues()                     \
-                                    as more values are set then were preallocated */                 \
-  PetscScalar      *mult_work;   /* work array for matrix vector product*/                           \
+  PetscInt         bs2;              /*  square of block size */                                     \
+  PetscInt         mbs,nbs;          /* rows/bs, columns/bs */                                       \
+  PetscScalar      *mult_work;       /* work array for matrix vector product*/                       \
   PetscScalar      *saved_values;                                                                    \
                                                                                                      \
-  PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */    \
   Mat              sbaijMat;         /* mat in sbaij format */                                       \
                                                                                                      \
-  PetscInt         setvalueslen;   /* only used for single precision */                              \
-  MatScalar        *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied   \
+  PetscInt         setvalueslen;     /* only used for single precision */                            \
+  MatScalar        *setvaluescopy;   /* area double precision values in MatSetValuesXXX() are copied \
                                       before calling MatSetValuesXXX_SeqBAIJ_MatScalar() */          \
                                                                                                      \
-  PetscTruth       pivotinblocks;  /* pivot inside factorization of each diagonal block */           \
+  PetscTruth       pivotinblocks;    /* pivot inside factorization of each diagonal block */         \
                                                                                                      \
-  PetscInt         *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */      \
-  Mat              XtoY;             /* used by MatAXPY() */                                         \
   PetscScalar      *idiag;           /* inverse of block diagonal  */                                \
-  PetscTruth       idiagvalid;       /* if above has correct/current values */                       \
-  Mat_CompressedRow compressedrow;   /* use compressed row format */                                 \
-  PetscTruth       freedata;         /* free the i,j,a data when the matrix is destroyed; true by default */
+  PetscTruth       idiagvalid       /* if above has correct/current values */
+
 
 typedef struct {
-  SEQBAIJHEADER
+  SEQAIJHEADER;
+  SEQBAIJHEADER;
 } Mat_SeqBAIJ;
 
 EXTERN_C_BEGIN

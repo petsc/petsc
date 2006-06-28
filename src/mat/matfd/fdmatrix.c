@@ -642,7 +642,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-fd_jacobian_ghost",&fd_jacobian_ghost,0);CHKERRQ(ierr);
   if (fd_jacobian_ghost){ /* ex5 */
     da = *(DA*)fctx;
-    ierr = DAGetLocalVector(da,&x1_tmp);CHKERRQ(ierr);
+    /* CANNOT USE DA OPs from Mat code */
+    /*    ierr = DAGetLocalVector(da,&x1_tmp);CHKERRQ(ierr); */
   } 
 #endif
 
@@ -802,7 +803,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
 
 #if !defined(PETSC_USE_COMPLEX)
   if (fd_jacobian_ghost){ /* ex5 */
-    ierr = DARestoreLocalVector(da,&x1_tmp);CHKERRQ(ierr);
+    /*    ierr = DARestoreLocalVector(da,&x1_tmp);CHKERRQ(ierr); */
   }
 #endif
   PetscFunctionReturn(0);

@@ -229,7 +229,8 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info
   (*fact)->assembled = PETSC_TRUE;
 
   b = (Mat_SeqAIJ*)(*fact)->data;
-  b->freedata      = PETSC_TRUE;
+  b->free_a        = PETSC_TRUE;
+  b->free_ij       = PETSC_TRUE;
   b->sorted        = PETSC_FALSE;
   b->singlemalloc  = PETSC_FALSE;
   b->a             = new_a;
@@ -373,7 +374,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(*B,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*B,isicol);CHKERRQ(ierr);
   b    = (Mat_SeqAIJ*)(*B)->data;
-  b->freedata     = PETSC_TRUE;
+  b->free_a       = PETSC_TRUE;
+  b->free_ij      = PETSC_TRUE;
   b->singlemalloc = PETSC_FALSE;
   ierr          = PetscMalloc((bi[n]+1)*sizeof(PetscScalar),&b->a);CHKERRQ(ierr);
   b->j          = bj; 
@@ -1089,7 +1091,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(*fact,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*fact,isicol);CHKERRQ(ierr);
   b = (Mat_SeqAIJ*)(*fact)->data;
-  b->freedata     = PETSC_TRUE;
+  b->free_a       = PETSC_TRUE;
+  b->free_ij      = PETSC_TRUE;
   b->singlemalloc = PETSC_FALSE;
   len = (bi[n] )*sizeof(PetscScalar);
   ierr = PetscMalloc(len+1,&b->a);CHKERRQ(ierr);
@@ -1426,7 +1429,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   ierr    = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(B,(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = ui[am];
-  b->freedata = PETSC_TRUE; 
+  b->free_a  = PETSC_TRUE; 
+  b->free_ij = PETSC_TRUE; 
   
   B->factor                 = FACTOR_CHOLESKY;
   B->info.factor_mallocs    = reallocs;
@@ -1588,7 +1592,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
 
   b = (Mat_SeqSBAIJ*)B->data;
   b->singlemalloc = PETSC_FALSE;
-  b->freedata     = PETSC_TRUE;
+  b->free_a       = PETSC_TRUE;
+  b->free_ij      = PETSC_TRUE;
   ierr = PetscMalloc((ui[am]+1)*sizeof(MatScalar),&b->a);CHKERRQ(ierr);
   b->j    = uj;
   b->i    = ui;

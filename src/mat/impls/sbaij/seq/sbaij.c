@@ -99,9 +99,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)A,"Rows=%D, NZ=%D",A->rmap.N,a->nz);
 #endif
-  if (a->freedata){
-    ierr = MatSeqXAIJFreeAIJ(a->singlemalloc,&a->a,&a->j,&a->i);CHKERRQ(ierr);
-  }
+  ierr = MatSeqXAIJFreeAIJ(A,&a->a,&a->j,&a->i);CHKERRQ(ierr);
   if (a->row) {
     ierr = ISDestroy(a->row);CHKERRQ(ierr);
   }
@@ -648,7 +646,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
       } 
       if (nonew == 1) goto noinsert2;
       if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
-      MatSeqXAIJReallocateAIJ(a,bs2,nrow,row,col,rmax,aa,ai,aj,a->mbs,rp,ap,imax,nonew);
+      MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,row,col,rmax,aa,ai,aj,rp,ap,imax,nonew);
       N = nrow++ - 1; high++;
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
@@ -857,7 +855,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
         
         if (nonew == 1) goto noinsert1;
         if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
-        MatSeqXAIJReallocateAIJ(a,bs2,nrow,brow,bcol,rmax,aa,ai,aj,a->mbs,rp,ap,imax,nonew);
+        MatSeqXAIJReallocateAIJ(A,a->mbs,bs2,nrow,brow,bcol,rmax,aa,ai,aj,rp,ap,imax,nonew);
         
         N = nrow++ - 1; high++;
         /* shift up all the later entries in this row */
@@ -1554,9 +1552,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
     for (i=1; i<mbs+1; i++) {
       b->i[i] = b->i[i-1] + b->imax[i-1];
     }
-    b->freedata     = PETSC_TRUE;
+    b->free_a     = PETSC_TRUE;
+    b->free_ij    = PETSC_TRUE;
   } else {
-    b->freedata     = PETSC_FALSE;
+    b->free_a     = PETSC_FALSE;
+    b->free_ij    = PETSC_FALSE;
   }
   
   B->rmap.bs               = bs;
@@ -1837,7 +1837,8 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->maxnz        = a->maxnz;
   c->solve_work   = 0;
   c->mult_work    = 0;
-  c->freedata     = PETSC_TRUE;
+  c->free_a       = PETSC_TRUE;
+  c->free_ij      = PETSC_TRUE;
   *B = C;
   ierr = PetscFListDuplicate(A->qlist,&C->qlist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2036,9 +2037,9 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         v  = aa + ai[i] + 1; 
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;       
+        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
         x[i] = omega*t[i]/d;
         while (nz--) t[*vj++] -= x[i]*(*v++); /* update rhs */
-        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
       }
     } 
 
@@ -2050,17 +2051,17 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         v  = aa + ai[i] + 1; 
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;
-        while (nz--) t[*vj++] -= x[i]*(*v++);
         ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
+        while (nz--) t[*vj++] -= x[i]*(*v++);
       }
       for (i=m-1; i>=0; i--){
         d  = *(aa + ai[i]);  
         v  = aa + ai[i] + 1; 
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;
+        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
         sum = t[i];
         while (nz--) sum -= x[*vj++]*(*v++);
-        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
         x[i] =   (1-omega)*x[i] + omega*sum/d;        
       }
     }
@@ -2086,10 +2087,10 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         vj = aj + ai[i] + 1; vj1=vj;   
         nz = ai[i+1] - ai[i] - 1; nz1=nz;
         sum = t[i];
+        ierr = PetscLogFlops(4*nz-2);CHKERRQ(ierr);
         while (nz1--) sum -= (*v1++)*x[*vj1++]; 
         x[i] = (1-omega)*x[i] + omega*sum/d;
         while (nz--) t[*vj++] -= x[i]*(*v++); 
-        ierr = PetscLogFlops(4*nz-2);CHKERRQ(ierr);
       }
     }
   
@@ -2108,17 +2109,17 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         v  = aa + ai[i] + 1; 
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;
-        while (nz--) t[*vj++] -= x[i]*(*v++);
         ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
+        while (nz--) t[*vj++] -= x[i]*(*v++);
       }
       for (i=m-1; i>=0; i--){
         d  = *(aa + ai[i]);  
         v  = aa + ai[i] + 1; 
         vj = aj + ai[i] + 1;    
         nz = ai[i+1] - ai[i] - 1;
+        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
         sum = t[i];
         while (nz--) sum -= x[*vj++]*(*v++);
-        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
         x[i] =   (1-omega)*x[i] + omega*sum/d;        
       }
     }
@@ -2186,7 +2187,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqSBAIJWithArrays(MPI_Comm comm,Pets
   sbaij->a = a;
   sbaij->singlemalloc = PETSC_FALSE;
   sbaij->nonew        = -1;             /*this indicates that inserting a new value in the matrix that generates a new nonzero is an error*/
-  sbaij->freedata     = PETSC_FALSE; 
+  sbaij->free_a       = PETSC_FALSE; 
+  sbaij->free_ij      = PETSC_FALSE; 
 
   for (ii=0; ii<m; ii++) {
     sbaij->ilen[ii] = sbaij->imax[ii] = i[ii+1] - i[ii];

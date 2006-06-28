@@ -4,13 +4,13 @@
   This file provides high performance routines for the Inode format (compressed sparse row)
   by taking advantage of rows with identical nonzero structure (I-nodes).
 */
-#include "src/mat/impls/csr/inode/inode.h"                
+#include "src/mat/impls/aij/seq/aij.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "Mat_CreateColInode"
 static PetscErrorCode Mat_CreateColInode(Mat A,PetscInt* size,PetscInt ** ns)
 {
-  Mat_inode      *a = (Mat_inode*)A->data;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,count,m,n,min_mn,*ns_row,*ns_col;
 
@@ -61,7 +61,7 @@ static PetscErrorCode Mat_CreateColInode(Mat A,PetscInt* size,PetscInt ** ns)
 #define __FUNCT__ "MatGetRowIJ_Inode_Symmetric"
 static PetscErrorCode MatGetRowIJ_Inode_Symmetric(Mat A,PetscInt *iia[],PetscInt *jja[],PetscInt ishift,PetscInt oshift)
 {
-  Mat_inode      *a = (Mat_inode*)A->data;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       *work,*ia,*ja,*j,nz,nslim_row,nslim_col,m,row,col,*jmax,n;
   PetscInt       *tns,*tvc,*ns_row = a->inode.size,*ns_col,nsz,i1,i2,*ai= a->i,*aj = a->j;
@@ -153,7 +153,7 @@ static PetscErrorCode MatGetRowIJ_Inode_Symmetric(Mat A,PetscInt *iia[],PetscInt
 #define __FUNCT__ "MatGetRowIJ_Inode_Nonsymmetric"
 static PetscErrorCode MatGetRowIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],PetscInt *jja[],PetscInt ishift,PetscInt oshift)
 {
-  Mat_inode      *a = (Mat_inode*)A->data;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       *work,*ia,*ja,*j,nz,nslim_row,n,row,col,*ns_col,nslim_col;
   PetscInt       *tns,*tvc,*ns_row = a->inode.size,nsz,i1,i2,*ai= a->i,*aj = a->j;
@@ -233,7 +233,7 @@ static PetscErrorCode MatGetRowIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],Petsc
 #define __FUNCT__ "MatGetRowIJ_Inode"
 static PetscErrorCode MatGetRowIJ_Inode(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
-  Mat_inode      *a = (Mat_inode*)A->data;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;  
@@ -267,7 +267,7 @@ static PetscErrorCode MatRestoreRowIJ_Inode(Mat A,PetscInt oshift,PetscTruth sym
 #define __FUNCT__ "MatGetColumnIJ_Inode_Nonsymmetric" 
 static PetscErrorCode MatGetColumnIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],PetscInt *jja[],PetscInt ishift,PetscInt oshift)
 {
-  Mat_inode      *a = (Mat_inode*)A->data;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       *work,*ia,*ja,*j,nz,nslim_row, n,row,col,*ns_col,nslim_col;
   PetscInt       *tns,*tvc,*ns_row = a->inode.size,nsz,i1,i2,*ai= a->i,*aj = a->j;
@@ -383,7 +383,7 @@ static PetscErrorCode MatRestoreColumnIJ_Inode(Mat A,PetscInt oshift,PetscTruth 
 #define __FUNCT__ "MatMult_Inode"
 static PetscErrorCode MatMult_Inode(Mat A,Vec xx,Vec yy)
 {
-  Mat_inode      *a = (Mat_inode*)A->data; 
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data; 
   PetscScalar    sum1,sum2,sum3,sum4,sum5,tmp0,tmp1;
   PetscScalar    *v1,*v2,*v3,*v4,*v5,*x,*y;
   PetscErrorCode ierr;
@@ -569,7 +569,7 @@ static PetscErrorCode MatMult_Inode(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMultAdd_Inode"
 static PetscErrorCode MatMultAdd_Inode(Mat A,Vec xx,Vec zz,Vec yy)
 {
-  Mat_inode      *a = (Mat_inode*)A->data; 
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data; 
   PetscScalar    sum1,sum2,sum3,sum4,sum5,tmp0,tmp1;
   PetscScalar    *v1,*v2,*v3,*v4,*v5,*x,*y,*z,*zt;
   PetscErrorCode ierr;
@@ -761,7 +761,7 @@ static PetscErrorCode MatMultAdd_Inode(Mat A,Vec xx,Vec zz,Vec yy)
 #define __FUNCT__ "MatSolve_Inode"
 PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
 {
-  Mat_inode      *a = (Mat_inode*)A->data;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   IS             iscol = a->col,isrow = a->row;
   PetscErrorCode ierr;
   PetscInt       *r,*c,i,j,n = A->rmap.n,*ai = a->i,nz,*a_j = a->j;
@@ -1155,7 +1155,7 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
 PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
 {
   Mat            C = *B;
-  Mat_inode      *a = (Mat_inode*)A->data,*b = (Mat_inode*)C->data;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)C->data;
   IS             iscol = b->col,isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
   PetscInt       *r,*ic,*c,n = A->rmap.n,*bi = b->i; 
@@ -1590,7 +1590,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
 #define __FUNCT__ "MatColoringPatch_Inode"
 PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISColoringValue coloring[],ISColoring *iscoloring)
 {
-  Mat_inode       *a = (Mat_inode*)mat->data;
+  Mat_SeqAIJ       *a = (Mat_SeqAIJ*)mat->data;
   PetscErrorCode  ierr;
   PetscInt        n = mat->cmap.n,m = a->inode.node_count,j,*ns = a->inode.size,row;
   PetscInt        *colorused,i;
@@ -1634,7 +1634,7 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISCo
 #define __FUNCT__ "Mat_CheckInode"
 PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
 {
-  Mat_inode      *a = (Mat_inode*)A->data;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,j,m,nzx,nzy,*idx,*idy,*ns,*ii,node_count,blk_size;
   PetscTruth     flag,flg;
@@ -1722,7 +1722,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatAdjustForInodes_Inode"
 PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_Inode(Mat A,IS *rperm,IS *cperm)
 {
-  Mat_inode      *a=(Mat_inode*)A->data;
+  Mat_SeqAIJ      *a=(Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       m = A->rmap.n,n = A->cmap.n,i,j,*ridx,*cidx,nslim_row = a->inode.node_count;
   PetscInt       row,col,*permr,*permc,*ns_row =  a->inode.size,*tns,start_val,end_val,indx;
@@ -1825,7 +1825,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatInodeGetInodeSizes_Inode"
 PetscErrorCode PETSCMAT_DLLEXPORT MatInodeGetInodeSizes_Inode(Mat A,PetscInt *node_count,PetscInt *sizes[],PetscInt *limit)
 {
-  Mat_inode *a = (Mat_inode*)A->data;
+  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;  
   if (node_count) *node_count = a->inode.node_count;

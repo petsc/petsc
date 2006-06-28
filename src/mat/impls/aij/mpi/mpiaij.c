@@ -55,7 +55,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
       if (value == 0.0 && ignorezeroentries) goto a_noinsert; \
       if (nonew == 1) goto a_noinsert; \
       if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
-      MatSeqXAIJReallocateAIJ(a,1,nrow1,row,col,rmax1,aa,ai,aj,am,rp1,ap1,aimax,nonew); \
+      MatSeqXAIJReallocateAIJ(A,am,1,nrow1,row,col,rmax1,aa,ai,aj,rp1,ap1,aimax,nonew); \
       N = nrow1++ - 1; a->nz++; high1++; \
       /* shift up all the later entries in this row */ \
       for (ii=N; ii>=_i; ii--) { \
@@ -89,7 +89,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
       if (value == 0.0 && ignorezeroentries) goto b_noinsert; \
       if (nonew == 1) goto b_noinsert; \
       if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
-      MatSeqXAIJReallocateAIJ(b,1,nrow2,row,col,rmax2,ba,bi,bj,bm,rp2,ap2,bimax,nonew); \
+      MatSeqXAIJReallocateAIJ(B,bm,1,nrow2,row,col,rmax2,ba,bi,bj,rp2,ap2,bimax,nonew); \
       N = nrow2++ - 1; b->nz++; high2++;\
       /* shift up all the later entries in this row */ \
       for (ii=N; ii>=_i; ii--) { \
@@ -3491,9 +3491,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc
     ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,am,A->cmap.N,ci,cj,ca,A_loc);CHKERRQ(ierr);
     /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
     /* Since these are PETSc arrays, change flags to free them as necessary. */
-    mat = (Mat_SeqAIJ*)(*A_loc)->data;
-    mat->freedata = PETSC_TRUE;
-    mat->nonew    = 0;
+    mat          = (Mat_SeqAIJ*)(*A_loc)->data;
+    mat->free_a  = PETSC_TRUE;
+    mat->free_ij = PETSC_TRUE;
+    mat->nonew   = 0;
   } else if (scall == MAT_REUSE_MATRIX){
     mat=(Mat_SeqAIJ*)(*A_loc)->data; 
     ci = mat->i; cj = mat->j; ca = mat->a;
@@ -3871,9 +3872,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
 
     /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
     /* Since these are PETSc arrays, change flags to free them as necessary. */
-    b_oth = (Mat_SeqAIJ *)(*B_oth)->data;
-    b_oth->freedata = PETSC_TRUE;
-    b_oth->nonew    = 0;
+    b_oth          = (Mat_SeqAIJ *)(*B_oth)->data;
+    b_oth->free_a  = PETSC_TRUE;
+    b_oth->free_ij = PETSC_TRUE;
+    b_oth->nonew   = 0;
 
     ierr = PetscFree(bufj);CHKERRQ(ierr);
     if (!startsj || !bufa_ptr){

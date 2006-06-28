@@ -549,3 +549,19 @@ getsigs:
 
 
 
+petscao : petscmat petscao.f90.h
+petscda : petscksp petscda.f90.h
+petscdraw : petsc petscdraw.f90.h
+petscis : petsc petscis.f90.h
+petscksp : petscpc  petscksp.f90.h
+petsclog : petsc petsclog.f90.h
+petscmat : petscvec petscmat.f90.h
+petscmg : petscksp petscmg.f90.h
+petscpc : petscmat petscpc.f90.h
+petscsnes : petscksp petscsnes.f90.h
+petscsys : petsc petscsys.f90.h
+petscts : petscsnes petscts.f90.h
+petsc : petsc.f90.h
+petscvec : petscis petscvec.f90.h
+petscviewer : petsc petscviewer.f90.h
+modules : petscao petscda petscdraw petscis petscksp petsclog petscmat petscmg petscpc petscsnes petscsys petscts petsc petscvec petscviewer
