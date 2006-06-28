@@ -97,6 +97,12 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   }
  
   for (i=0; i<maxits; i++) {
+
+    /* Call general purpose update function */
+    if (snes->update) {
+      ierr = (*snes->update)(snes, snes->iter);CHKERRQ(ierr);
+    }
+
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
 
