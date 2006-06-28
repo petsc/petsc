@@ -228,7 +228,7 @@ class Configure(config.package.Package):
               for instance with --download-lam=1')
     return
 
-  def checkDownload(self,preOrPost):
+  def checkDownload(self, requireDownload = 1):
     '''Check if we should download LAM or MPICH'''
 
     if self.framework.argDB['download-lam'] and self.framework.argDB['download-mpich']:
@@ -241,7 +241,7 @@ class Configure(config.package.Package):
       self.liblist      = self.liblist_lam   # only generate LAM MPI guesses
       self.download     = self.download_lam
       self.downloadname = 'lam'
-      return config.package.Package.checkDownload(self,preOrPost)
+      return config.package.Package.checkDownload(self, requireDownload)
         
     # Check for MPICH
     if self.framework.argDB['download-mpich']:
@@ -250,7 +250,7 @@ class Configure(config.package.Package):
       self.liblist      = self.liblist_mpich   # only generate MPICH guesses
       self.download     = self.download_mpich
       self.downloadname = 'mpich'
-      return config.package.Package.checkDownload(self,preOrPost)
+      return config.package.Package.checkDownload(self, requireDownload)
     return None
 
   def Install(self):
