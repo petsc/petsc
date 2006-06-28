@@ -63,8 +63,14 @@ runex1_2:
 valex1_2:
 	-@${MPIRUN} -np ${NP} valgrind --tool=memcheck ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}
 
+runex1_2_hex:
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d_hex ${EXTRA_ARGS}
+
 runex1_3:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -use_zero_base 1 -base_file data/ex1_3d ${EXTRA_ARGS}
+
+runex1_3_hex:
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -use_zero_base 1 -base_file data/ex1_3d_hex ${EXTRA_ARGS}
 
 runex2:
 	-@${MPIRUN} -np ${NP} ./ex2 -dim 2 ${EXTRA_ARGS}

@@ -595,14 +595,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   Vec            w1=coloring->w1,w2=coloring->w2,w3;
   void           *fctx = coloring->fctx;
   PetscTruth     flg;
-  PetscInt       ctype=coloring->ctype,N,col_start,col_end;;
+  PetscInt       ctype=coloring->ctype,N,col_start,col_end;
   Vec            x1_tmp;
   // remove !
   PetscMPIInt rank;
   PetscInt    prid=10;
+  /*  ex5
   PetscTruth  fd_jacobian_ghost=PETSC_FALSE;
   DA          da;
-
+  */
 
   PetscFunctionBegin;
     
@@ -638,14 +639,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   }
 
   x1_tmp = x1; 
-#if !defined(PETSC_USE_COMPLEX)
+  /* used for ex5.c
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-fd_jacobian_ghost",&fd_jacobian_ghost,0);CHKERRQ(ierr);
-  if (fd_jacobian_ghost){ /* ex5 */
+  if (fd_jacobian_ghost){ 
     da = *(DA*)fctx;
     /* CANNOT USE DA OPs from Mat code */
     /*    ierr = DAGetLocalVector(da,&x1_tmp);CHKERRQ(ierr); */
   } 
-#endif
+  */
 
   if (ctype == IS_COLORING_GHOSTED && !coloring->vscale){ 
     ierr = VecDuplicate(x1_tmp,&coloring->vscale);CHKERRQ(ierr);
@@ -805,7 +806,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   if (fd_jacobian_ghost){ /* ex5 */
     /*    ierr = DARestoreLocalVector(da,&x1_tmp);CHKERRQ(ierr); */
   }
-#endif
+  */
   PetscFunctionReturn(0);
 }
 

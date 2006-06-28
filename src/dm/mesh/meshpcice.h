@@ -57,8 +57,8 @@ class PCICEViewer {
         }
       }
     } else {
-      ALE::Obj<ALE::Mesh::bundle_type> globalOrder = coordinates->getGlobalOrder();
-      ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> cone = globalOrder->getPatch(patch);
+      ALE::Obj<ALE::Mesh::bundle_type>                           globalOrder = coordinates->getGlobalOrder();
+      ALE::Obj<ALE::Mesh::bundle_type::order_type::coneSequence> cone        = globalOrder->getPatch(patch);
       const int *offsets = coordinates->getGlobalOffsets();
       int        embedDim = coordinates->getFiberDimension(patch, *mesh->getTopology()->depthStratum(0)->begin());
       int        numLocalVertices = (offsets[mesh->commRank()+1] - offsets[mesh->commRank()])/embedDim;
@@ -66,7 +66,7 @@ class PCICEViewer {
       int        k = 0;
 
       ierr = PetscMalloc(numLocalVertices*embedDim * sizeof(double), &localCoords);CHKERRQ(ierr);
-      for(ALE::Mesh::field_type::order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+      for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
         int dim = globalOrder->getFiberDimension(patch, *p_iter);
 
         if (dim > 0) {

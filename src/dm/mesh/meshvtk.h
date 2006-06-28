@@ -74,7 +74,7 @@ class VTKViewer {
       }
     } else {
       ALE::Obj<ALE::Mesh::bundle_type> globalOrder = coordinates->getGlobalOrder();
-      ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> cone = globalOrder->getPatch(patch);
+      ALE::Obj<ALE::Mesh::bundle_type::order_type::coneSequence> cone = globalOrder->getPatch(patch);
       const int *offsets = coordinates->getGlobalOffsets();
       int        embedDim = coordinates->getFiberDimension(patch, *mesh->getTopology()->depthStratum(0)->begin());
       int        numLocalVertices = (offsets[mesh->commRank()+1] - offsets[mesh->commRank()])/embedDim;
@@ -82,7 +82,7 @@ class VTKViewer {
       int        k = 0;
 
       ierr = PetscMalloc(numLocalVertices*embedDim * sizeof(double), &localCoords);CHKERRQ(ierr);
-      for(ALE::Mesh::field_type::order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+      for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
         int dim = globalOrder->getFiberDimension(patch, *p_iter);
 
         if (dim > 0) {
@@ -159,15 +159,15 @@ class VTKViewer {
         }
       }
     } else {
-      ALE::Obj<ALE::Mesh::bundle_type>                          fieldGlobalOrder = field->getGlobalOrder();
-      ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> elements = globalOrder->getPatch(patch);
+      ALE::Obj<ALE::Mesh::bundle_type>                           fieldGlobalOrder = field->getGlobalOrder();
+      ALE::Obj<ALE::Mesh::bundle_type::order_type::coneSequence> elements = globalOrder->getPatch(patch);
       const int *offsets          = field->getGlobalOffsets();
       int        numLocalElements = (offsets[mesh->commRank()+1] - offsets[mesh->commRank()])/fiberDim;
       double    *localValues;
       int        k = 0;
 
       ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(double), &localValues);CHKERRQ(ierr);
-      for(ALE::Mesh::field_type::order_type::coneSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+      for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
         int dim = fieldGlobalOrder->getFiberDimension(patch, *e_iter);
 
         if (dim > 0) {
@@ -252,22 +252,22 @@ class VTKViewer {
         }
       }
     } else {
-      ALE::Obj<ALE::Mesh::bundle_type>                          globalOrder = field->getGlobalOrder();
-      ALE::Obj<ALE::Mesh::field_type::order_type::baseSequence> patches     = globalOrder->getPatches();
-      const int                                                *offsets     = field->getGlobalOffsets();
-      int                                                       numLocalElements = 0;
-      int                                                       k           = 0;
-      double                                                   *localVals;
+      ALE::Obj<ALE::Mesh::bundle_type>                           globalOrder = field->getGlobalOrder();
+      ALE::Obj<ALE::Mesh::bundle_type::order_type::baseSequence> patches     = globalOrder->getPatches();
+      const int                                                 *offsets     = field->getGlobalOffsets();
+      int                                                        numLocalElements = 0;
+      int                                                        k           = 0;
+      double                                                    *localVals;
 
-      for(ALE::Mesh::field_type::order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
+      for(ALE::Mesh::bundle_type::order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
         numLocalElements += (offsets[mesh->commRank()+1] - offsets[mesh->commRank()])/fiberDim;
       }
       ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(double), &localVals);CHKERRQ(ierr);
-      for(ALE::Mesh::field_type::order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
-        ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> elements = globalOrder->getPatch(*p_iter);
+      for(ALE::Mesh::bundle_type::order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
+        ALE::Obj<ALE::Mesh::bundle_type::order_type::coneSequence> elements = globalOrder->getPatch(*p_iter);
         const double *array = field->restrict(*p_iter);
 
-        for(ALE::Mesh::field_type::order_type::coneSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+        for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
           int dim = globalOrder->getFiberDimension(*p_iter, *e_iter);
 
           if (dim > 0) {
@@ -377,9 +377,21 @@ class VTKViewer {
         ierr = PetscViewerASCIIPrintf(viewer, "5\n");CHKERRQ(ierr);
       }
     } else if (corners == 4) {
-      // VTK_TETRA
+      if (mesh->getDimension() == 3) {
+        // VTK_TETRA
+        for(int e = 0; e < numElements; e++) {
+          ierr = PetscViewerASCIIPrintf(viewer, "10\n");CHKERRQ(ierr);
+        }
+      } else if (mesh->getDimension() == 2) {
+        // VTK_QUAD
+        for(int e = 0; e < numElements; e++) {
+          ierr = PetscViewerASCIIPrintf(viewer, "9\n");CHKERRQ(ierr);
+        }
+      }
+    } else if (corners == 8) {
+      // VTK_HEXAHEDRON
       for(int e = 0; e < numElements; e++) {
-        ierr = PetscViewerASCIIPrintf(viewer, "10\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "12\n");CHKERRQ(ierr);
       }
     }
     PetscFunctionReturn(0);

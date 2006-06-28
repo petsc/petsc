@@ -178,7 +178,222 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetSeed(PetscRandom r,unsigned long se
   PetscFunctionReturn(0);
 }
 
+/* ------------------------------------------------------------------- */
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomSetTypeFromOptions_Private"
+/*
+  PetscRandomSetTypeFromOptions_Private - Sets the type of random generator from user options. Defaults to type PETSCRAND48 or PETSCRAND.
 
+  Collective on PetscRandom
+
+  Input Parameter:
+. rnd - The random number generator context
+
+  Level: intermediate
+
+.keywords: PetscRandom, set, options, database, type
+.seealso: PetscRandomSetFromOptions(), PetscRandomSetType()
+*/
+static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd)
+{
+  PetscTruth     opt;
+  const char     *defaultType;
+  char           typeName[256];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (rnd->type_name) {
+    defaultType = rnd->type_name;
+  } else {
+#if defined(PETSC_HAVE_DRAND48)    
+    defaultType = PETSCRAND48;
+#elif defined(PETSC_HAVE_RAND)
+    defaultType = PETSCRAND;
+#endif
+  }
+
+  if (!PetscRandomRegisterAllCalled) {
+    ierr = PetscRandomRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsList("-random_type","PetscRandom type","PetscRandomSetType",PetscRandomList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscRandomSetType(rnd, typeName);CHKERRQ(ierr);
+  } else {
+    ierr = PetscRandomSetType(rnd, defaultType);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomSetFromOptions"
+/*@
+  PetscRandomSetFromOptions - Configures the random number generator from the options database.
+
+  Collective on PetscRandom
+
+  Input Parameter:
+. rnd - The random number generator context
+
+  Notes:  To see all options, run your program with the -help option, or consult the users manual.
+          Must be called after PetscRandomCreate() but before the rnd is used.
+
+  Level: beginner
+
+.keywords: PetscRandom, set, options, database
+.seealso: PetscRandomCreate(), PetscRandomSetType()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRandomSetFromOptions(PetscRandom rnd)
+{
+  PetscTruth     opt;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(rnd,PETSC_RANDOM_COOKIE,1);
+
+  ierr = PetscOptionsBegin(rnd->comm, rnd->prefix, "PetscRandom options", "PetscRandom");CHKERRQ(ierr);
+
+  /* Handle generic options */
+  ierr = PetscOptionsHasName(PETSC_NULL, "-help", &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscRandomPrintHelp(rnd);CHKERRQ(ierr);
+  }
+
+  /* Handle PetscRandom type options */
+  ierr = PetscRandomSetTypeFromOptions_Private(rnd);CHKERRQ(ierr);
+
+  /* Handle specific random generator's options */
+  if (rnd->ops->setfromoptions) {
+    ierr = (*rnd->ops->setfromoptions)(rnd);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscRandomViewFromOptions(rnd, rnd->name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomView"
+/*@C
+   PetscRandomView - Views a random number generator object. 
+
+   Collective on PetscRandom
+
+   Input Parameters:
++  rnd - The random number generator context
+-  viewer - an optional visualization context
+
+   Notes:
+   The available visualization contexts include
++     PETSC_VIEWER_STDOUT_SELF - standard output (default)
+-     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
+         output where only the first processor opens
+         the file.  All other processors send their 
+         data to the first processor to print. 
+
+   You can change the format the vector is printed using the 
+   option PetscViewerSetFormat().
+
+   Level: beginner
+
+.seealso:  PetscRealView(), PetscScalarView(), PetscIntView()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRandomView(PetscRandom rnd,PetscViewer viewer)
+{
+  PetscErrorCode    ierr;
+  PetscTruth        iascii;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(rnd,PETSC_RANDOM_COOKIE,1);
+  PetscValidType(rnd,1);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(rnd->comm);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscCheckSameComm(rnd,1,viewer,2);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    PetscMPIInt rank;
+    ierr = MPI_Comm_rank(rnd->comm,&rank);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%D] Random type %s, seed %D\n",rank,rnd->type_name,rnd->seed);CHKERRQ(ierr); 
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  } else {
+    const char *tname;
+    ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this object",tname);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "PetscRandomViewFromOptions"
+/*@
+  PetscRandomViewFromOptions - This function visualizes the type and the seed of the generated random numbers based upon user options.
+
+  Collective on PetscRandom
+
+  Input Parameters:
+. rnd   - The random number generator context
+. title - The title
+
+  Level: intermediate
+
+.keywords: PetscRandom, view, options, database
+.seealso: PetscRandomSetFromOptions()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRandomViewFromOptions(PetscRandom rnd, char *title)
+{
+  PetscTruth     opt;
+  PetscViewer    viewer;
+  char           typeName[1024];
+  char           fileName[PETSC_MAX_PATH_LEN];
+  size_t         len;
+  
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHasName(rnd->prefix, "-random_view", &opt);CHKERRQ(ierr);
+  if (opt) {   
+    ierr = PetscOptionsGetString(rnd->prefix, "-random_view", typeName, 1024, &opt);CHKERRQ(ierr);
+    ierr = PetscStrlen(typeName, &len);CHKERRQ(ierr);
+    if (len > 0) {
+      ierr = PetscViewerCreate(rnd->comm, &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, typeName);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(rnd->prefix, "-random_view_file", fileName, 1024, &opt);CHKERRQ(ierr);
+      if (opt) {
+        ierr = PetscViewerFileSetName(viewer, fileName);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerFileSetName(viewer, rnd->name);CHKERRQ(ierr);
+      }
+      ierr = PetscRandomView(rnd, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    } else {    
+      ierr = PetscRandomView(rnd, PETSC_VIEWER_STDOUT_(rnd->comm));CHKERRQ(ierr);
+    } 
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomPrintHelp"
+/*@
+  PetscRandomPrintHelp - Prints some options for the PetscRandom.
+
+  Input Parameter:
+. rnd - The random number generator context
+
+  Options Database Keys:
+$  -help, -h
+
+  Level: intermediate
+
+.keywords: PetscRandom, help
+.seealso: PetscRandomSetFromOptions()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRandomPrintHelp(PetscRandom rnd)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(rnd, PETSC_RANDOM_COOKIE,1);
+  PetscFunctionReturn(0);
+}
+/*----------------------------------------------------------------------------------------------*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate" 

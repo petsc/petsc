@@ -5,7 +5,9 @@ static char help[] = "Tests PetscRandom functions.\n\n";
 #include "petscsys.h"
 
 /* Usage: 
-   ./ex1 -log_summary
+   mpirun -np <np> ./ex1 -n <num_of_random_numbers> -random_type <type> -log_summary
+                         -view_randomvalues <view_rank> 
+                         -random_view ascii -random_view_file <filename>
 */
 
 #undef __FUNCT__
@@ -17,9 +19,12 @@ int main(int argc,char **argv)
   PetscRandom    rnd;
   PetscScalar    value;
   PetscErrorCode ierr;
+  PetscMPIInt    rank,view_rank=-1;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-view_randomvalues",&view_rank,PETSC_NULL);CHKERRQ(ierr);
   
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rnd);CHKERRQ(ierr);
   ierr = PetscRandomSetType(rnd,PETSCRAND48);CHKERRQ(ierr); 
@@ -28,7 +33,9 @@ int main(int argc,char **argv)
   ierr = PetscMalloc(n*sizeof(PetscInt),&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
-    /* printf("value[%d] = %g\n",i,value); */
+    if (view_rank == rank) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] value[%d] = %g\n",rank,i,value);CHKERRQ(ierr);
+    }
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
   }
   ierr = PetscSortInt(n,values);CHKERRQ(ierr);
