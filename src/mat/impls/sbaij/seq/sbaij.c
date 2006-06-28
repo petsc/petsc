@@ -2044,16 +2044,10 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
     } 
 
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){ 
-      for (i=0; i<m; i++)
-        t[i] = b[i];
-  
-      for (i=0; i<m-1; i++){  /* update rhs */
-        v  = aa + ai[i] + 1; 
-        vj = aj + ai[i] + 1;    
-        nz = ai[i+1] - ai[i] - 1;
-        ierr = PetscLogFlops(2*nz-1);CHKERRQ(ierr);
-        while (nz--) t[*vj++] -= x[i]*(*v++);
+      if (!(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP)){ 
+        t = b;
       }
+  
       for (i=m-1; i>=0; i--){
         d  = *(aa + ai[i]);  
         v  = aa + ai[i] + 1; 
@@ -2064,6 +2058,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
         while (nz--) sum -= x[*vj++]*(*v++);
         x[i] =   (1-omega)*x[i] + omega*sum/d;        
       }
+      t = a->relax_work;
     }
     its--;
   } 
@@ -2094,14 +2089,15 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
       }
     }
   
-  if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){ 
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){ 
       /* 
        backward sweep:
        b = b - x[i]*U^T(i,:), i=0,...,n-2
        for i=m-1,...,0:
          sum[i] = (b[i] - U(i,:)x )/d[i];
          x[i]   = (1-omega)x[i] + omega*sum[i];
-      */ 
+      */
+      /* if there was a forward sweep done above then I thing the next two for loops are not needed */ 
       for (i=0; i<m; i++)
         t[i] = b[i];
   
