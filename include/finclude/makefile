@@ -33,32 +33,32 @@ makefile:
 	touch makefile
 
 # remake all
-forceall: clean all
+forceall: clean_all all
 
 # remake anly if we havn't allinone.h
 all: makemodules allinone.h tidy_up
 
 # clean all
-clean:
+clean_all:
 	rm -f modorder makefile.tmp ipath __tmp *.use *.xinc *.h *.f90 *.o *.mod
 
 # leave only final files
 tidy_up:
 	rm -f ipath __tmp *.xinc *.f90.h *.f90 *.use *.inc
-	
+
 makefile.tmp: moddeps
 	cp makefile makefile.tmp;\
 	cat moddeps|grep -v '^ *#'|grep ':'|\
 	sed 's/^ *\([^ ]*\)\(.*\)/\1\2 \1.f90.h/' >> makefile.tmp;\
 	MODS=`cat moddeps|grep -v '^ *#'|grep ':'|sed 's/^ *\([^ ]*\).*/\1 /'`;\
 	echo modules : $$MODS >> makefile.tmp
-	
+
 makemodules: makefile.tmp
 	if [ ! -e allinone.h ]; then\
 	  rm -f modorder;\
 	  make -f makefile.tmp modules;\
 	fi
-	
+
 allinone.h: modorder
 	LAST=`tail -n 1 modorder`;if [ -e $$LAST.xinc ]; then cat $$LAST.xinc >>allinone.h;fi;\
 
@@ -84,7 +84,7 @@ allinone.h: modorder
 	grep -v '^ *$$'|sed 's/^/use /' >$*.use 
 	#cat moddeps|grep "^ *$*"|sed 's/^[^:]*: *//'|sed 's/  */\n/g'|\
 	grep -v '^ *$$'|sed 's/^/use /' 
-	
+
 # find header file and all what it includes, merge it together, prepend by
 # previous *.xinc
 %.inc : ipath
@@ -111,12 +111,10 @@ allinone.h: modorder
 	if [ -e modorder ]; then LAST=`tail -n 1 modorder`;fi;\
 	if [ -e $$LAST.xinc ]; then cat $$LAST.xinc >>$*.inc;fi;\
 	cat $*.xinc|grep -v "^ *#include" >>$*.inc;\
-	
+
 
 ipath:
 	echo "-I/usr/include -I${SRCDIR} ${PETSC_FC_INCLUDES} "|sed 's/-I//g'>ipath
 
-	
-	
 
 
