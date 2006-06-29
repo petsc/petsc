@@ -9,7 +9,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['bk://parmetis.bkbits.net/ParMetis-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ParMetis.tar.gz']
+    self.download     = ['bk://parmetis.bkbits.net/ParMetis-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ParMetis-Jun-06.tar.gz']
     self.functions    = ['ParMETIS_V3_PartKway']
     self.includes     = ['parmetis.h']
     self.liblist      = [['libparmetis.a','libmetis.a']]
