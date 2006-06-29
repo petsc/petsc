@@ -1135,7 +1135,7 @@ namespace ALE {
     // Creation
     class PyLithBuilder {
       static inline void ignoreComments(char *buf, PetscInt bufSize, FILE *f) {
-        while((fgets(buf, bufSize, f) != NULL) && (buf[0] == '#')) {}
+        while((fgets(buf, bufSize, f) != NULL) && ((buf[0] == '#') || (buf[0] == '\0'))) {}
       };
 
       static void readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, bool useZeroBase, int& numElements, int *vertices[], int *materials[]) {
@@ -1215,6 +1215,7 @@ namespace ALE {
         FILE          *f;
         PetscInt       maxVerts = 1024, vertexCount = 0;
         PetscScalar   *coords;
+        double         scaleFactor = 1.0;
         char           buf[2048];
         PetscInt       c;
         PetscInt       commRank;
@@ -1227,9 +1228,23 @@ namespace ALE {
           ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
           ierr = PetscViewerFileSetName(viewer, filename.c_str());
           ierr = PetscViewerASCIIGetPointer(viewer, &f);
-          /* Ignore comments and units line */
+          /* Ignore comments */
           ignoreComments(buf, 2048, f);
           ierr = PetscMalloc(maxVerts*dim * sizeof(PetscScalar), &coords);
+          /* Read units */
+          const char *units = strtok(buf, " ");
+          if (strcmp(units, "coord_units")) {
+            throw ALE::Exception("Invalid coordinate units line");
+          }
+          units = strtok(NULL, " ");
+          if (strcmp(units, "=")) {
+            throw ALE::Exception("Invalid coordinate units line");
+          }
+          units = strtok(NULL, " ");
+          if (!strcmp(units, "km")) {
+            /* Should use Pythia to do units conversion */
+            scaleFactor = 1000.0;
+          }
           /* Ignore comments */
           ignoreComments(buf, 2048, f);
           do {
@@ -1247,7 +1262,7 @@ namespace ALE {
             /* Ignore vertex number */
             x = strtok(NULL, " ");
             for(c = 0; c < dim; c++) {
-              coords[vertexCount*dim+c] = atof(x);
+              coords[vertexCount*dim+c] = atof(x)*scaleFactor;
               x = strtok(NULL, " ");
             }
             vertexCount++;

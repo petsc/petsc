@@ -1131,6 +1131,78 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "preallocateMatrix"
+PetscErrorCode preallocateMatrix(Mat A, ALE::Mesh *mesh, ALE::Obj<ALE::Mesh::field_type> field)
+{
+  PetscInt numLocalRows, firstRow;
+  PetscInt *rnz, *dnz, *onz;
+  std::string orderName("element");
+  int *indices = NULL;
+  int indicesMaxSize = 12;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetLocalSize(A, &numLocalRows, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A, &firstRow, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc3(numLocalRows,PetscInt,&rnz,numLocalRows,PetscInt,&dnz,numLocalRows,PetscInt,&onz);CHKERRQ(ierr);
+  ierr = PetscMemzero(rnz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(dnz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(onz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc(indicesMaxSize * sizeof(PetscInt), &indices);CHKERRQ(ierr);
+  ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements    = mesh->getTopology()->heightStratum(0);
+  ALE::Obj<ALE::Mesh::bundle_type>                        globalOrder = field->getGlobalOrder();
+  std::set<int>                                          *localCols   = new std::set<int>[numLocalRows];
+
+  for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
+    ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> intervals = field->getPatch(orderName, *e_iter);
+    ALE::Mesh::bundle_type::patch_type patch;
+    int numIndices = 0;
+
+    for(ALE::Mesh::field_type::order_type::coneSequence::iterator i_itor = intervals->begin(); i_itor != intervals->end(); ++i_itor) {
+      numIndices += std::abs(globalOrder->getFiberDimension(patch, *i_itor));
+      if (field->debug) {
+        printf("[%d]Allocation mat interval (%d, %d)\n", field->commRank(), (*i_itor).prefix, (*i_itor).index);
+      }
+    }
+    if (numIndices > indicesMaxSize) {
+      int *tmpIndices = indices;
+
+      ierr = PetscMalloc(indicesMaxSize*2 * sizeof(PetscInt), &indices);CHKERRQ(ierr);
+      ierr = PetscMemcpy(indices, tmpIndices, indicesMaxSize * sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscFree(tmpIndices);CHKERRQ(ierr);
+      indicesMaxSize *= 2;
+    }
+    ierr = __expandCanonicalIntervals(intervals, globalOrder, indices); CHKERRQ(ierr);
+    for(int i = 0; i < numIndices; i++) {
+      int localRow = indices[i] - firstRow;
+
+      if ((localRow >= 0) && (localRow < numLocalRows)) {
+        for(int j = 0; j < numIndices; j++) {
+          localCols[localRow].insert(indices[j] - firstRow);
+        }
+      }
+    }
+  }
+  for(int r = 0; r < numLocalRows; r++) {
+    rnz[r] = localCols[r].size();
+
+    for(std::set<int>::iterator c_iter = localCols[r].begin(); c_iter != localCols[r].end(); ++c_iter) {
+      if ((*c_iter >= 0) && (*c_iter < numLocalRows)) {
+        dnz[r]++;
+      } else {
+        onz[r]++;
+      }
+    }
+  }
+  delete [] localCols;
+  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A, 0, rnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A, 0, dnz, 0, onz);CHKERRQ(ierr);
+  ierr = PetscFree3(rnz, dnz, onz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /******************************** C Wrappers **********************************/
 
 #undef __FUNCT__  
