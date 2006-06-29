@@ -38,7 +38,9 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #endif
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);}
-  ierr = PetscLogFlops(2*xin->map.n-1);CHKERRQ(ierr);
+  if (xin->map.n > 0) {
+    ierr = PetscLogFlops(2*xin->map.n-1);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -70,7 +72,9 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #endif
   ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);}
-  ierr = PetscLogFlops(2*xin->map.n-1);CHKERRQ(ierr);
+  if (xin->map.n > 0) {
+    ierr = PetscLogFlops(2*xin->map.n-1);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
