@@ -814,7 +814,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApplyTS(Mat J,MatFDColoring color
   PetscScalar    dx,*y,*xx,*w3_array;
   PetscScalar    *vscale_array;
   PetscReal      epsilon = coloring->error_rel,umin = coloring->umin; 
-  Vec            w1,w2,w3;
+  Vec            w1=coloring->w1,w2=coloring->w2,w3;
   void           *fctx = coloring->fctx;
   PetscTruth     flg;
 
@@ -824,15 +824,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApplyTS(Mat J,MatFDColoring color
   PetscValidHeaderSpecific(x1,VEC_COOKIE,4);
 
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
-  if (!coloring->w1) {
-    ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(coloring,coloring->w1);CHKERRQ(ierr);
-    ierr = VecDuplicate(x1,&coloring->w2);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(coloring,coloring->w2);CHKERRQ(ierr);
+  if (!coloring->w3) {
     ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(coloring,coloring->w3);CHKERRQ(ierr);
   }
-  w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
+  w3 = coloring->w3;
 
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
