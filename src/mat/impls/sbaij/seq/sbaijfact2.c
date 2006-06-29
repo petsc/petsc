@@ -1700,7 +1700,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
 
   /* put together the new matrix in MATSEQSBAIJ format */
   ierr = PetscMalloc((ui[am]+1)*sizeof(MatScalar),&ua);CHKERRQ(ierr);
-  ierr = MatCreateSeqBAIJWithArrays(PETSC_COMM_SELF,1,am,am,ui,uj,ua,fact);CHKERRQ(ierr);
+  ierr = MatCreateSeqSBAIJWithArrays(PETSC_COMM_SELF,1,am,am,ui,uj,ua,fact);CHKERRQ(ierr);
   B = *fact;
   b = (Mat_SeqSBAIJ*)B->data;
   ierr = PetscFree2(b->imax,b->ilen);CHKERRQ(ierr);
