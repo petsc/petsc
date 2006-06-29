@@ -86,7 +86,9 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
     z   += 4;
     i   -= 4;
   }
-  ierr = PetscLogFlops(nv*(2*xin->map.n-1));CHKERRQ(ierr);
+  if (xin->map.n > 0) {
+    ierr = PetscLogFlops(nv*(2*xin->map.n-1));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -286,7 +288,9 @@ PetscErrorCode VecMDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
     ierr = VecRestoreArray(yy[3],(PetscScalar **)&yy3);CHKERRQ(ierr);
     yy  += 4;
   }
-  ierr = PetscLogFlops(nv*(2*xin->map.n-1));CHKERRQ(ierr);
+  if (xin->map.n > 0) {
+    ierr = PetscLogFlops(nv*(2*xin->map.n-1));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 #endif
@@ -485,7 +489,9 @@ PetscErrorCode VecMTDot_Seq(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z)
     ierr = VecRestoreArray(yy[3],&yy3);CHKERRQ(ierr);
     yy  += 4;
   }
-  ierr = PetscLogFlops(nv*(2*xin->map.n-1));CHKERRQ(ierr);
+  if (xin->map.n > 0) {
+    ierr = PetscLogFlops(nv*(2*xin->map.n-1));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
     
