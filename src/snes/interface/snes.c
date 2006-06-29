@@ -975,7 +975,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES snes,Vec X,Mat *A,Ma
   PetscStackPop;
   ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
   /* make sure user returned a correct Jacobian and preconditioner */
-  /*PetscValidHeaderSpecific(*A,MAT_COOKIE,3);
+  /* PetscValidHeaderSpecific(*A,MAT_COOKIE,3);
     PetscValidHeaderSpecific(*B,MAT_COOKIE,4);   */
   PetscFunctionReturn(0);
 }

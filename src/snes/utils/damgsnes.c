@@ -155,33 +155,26 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
   PetscErrorCode ierr;
   Vec            localX;
   DA             da = (DA)dmmg->dm;
-  PetscInt   N,n;
-  PetscTruth islocalX=PETSC_FALSE;
-
+  PetscInt       N,n;
+ 
   PetscFunctionBegin;
   /* determine whether X=localX */
   ierr = VecGetSize(X,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-  if (n==N) {
-    islocalX = PETSC_TRUE;
-    localX   = X;
-    /*printf(" islocalX in DMMGFormFunctionFD...\n");*/
-  }
 
-  if (!islocalX){
-  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
-  /*
-     Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
-  */
-  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-
+  if (n != N){ /* X != localX */
+    ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+    /* Scatter ghost points to local vector, using the 2-step process
+       DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+    */
+    ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  } else {
+    localX = X;
   }
   ierr = DAFormFunction(da,dmmg->lfj,localX,F,dmmg->user);CHKERRQ(ierr);
-
-  if (!islocalX){
-  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  if (n != N){
+    ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0); 
 } 
@@ -213,31 +206,26 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void
   PetscErrorCode ierr;
   Vec            localX;
   DA             da = *(DA*)ptr;
-  PetscInt   N,n;
-  PetscTruth islocalX=PETSC_FALSE;
-
+  PetscInt       N,n;
+  
   PetscFunctionBegin;
   /* determine whether X=localX */
   ierr = VecGetSize(X,&N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
-  if (n==N) {
-    islocalX = PETSC_TRUE;
-    localX   = X;
-    /*printf(" islocalX in SNESDAFormFunction...\n");*/
-  }
-
+ 
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Looks like you called SNESSetFromFuntion(snes,SNESDAFormFunction,) without the DA context");
-  if (!islocalX){
+  if (n != N){ /* X != localX */
     ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
-    /*
-      Scatter ghost points to local vector, using the 2-step process
+    /* Scatter ghost points to local vector, using the 2-step process
         DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
     */
     ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
     ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  } else {
+    localX = X;
   }
   ierr = DAFormFunction1(da,localX,F,ptr);
-  if (!islocalX){
+  if (n != N){
     if (PetscExceptionValue(ierr)) {
       PetscErrorCode pierr = DARestoreLocalVector(da,&localX);CHKERRQ(pierr);
     }
@@ -247,7 +235,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void
   PetscFunctionReturn(0); 
 } 
 
-/* ---------------------------------------------------------------------------------------------------------------------------*/
+/* ------------------------------------------------------------------------------*/
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 #undef __FUNCT__
 #define __FUNCT__ "DMMGComputeJacobianWithFD"
@@ -262,6 +250,8 @@ PetscErrorCode DMMGComputeJacobianWithFD(SNES snes,Vec x1,Mat *J,Mat *B,MatStruc
     DA            da=(DA)dmmg->dm;
     Vec           x1_loc;
     ierr = DAGetLocalVector(da,&x1_loc);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalBegin(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalEnd(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr);
     ierr = SNESDefaultComputeJacobianColor(snes,x1_loc,J,B,flag,dmmg->fdcoloring);CHKERRQ(ierr);
     ierr = DARestoreLocalVector(da,&x1_loc);CHKERRQ(ierr);
   } else {
@@ -435,6 +425,7 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
 .    -dmmg_jacobian_mf_fd
 .    -dmmg_jacobian_mf_ad_operator
 .    -dmmg_jacobian_mf_ad
+.    -dmmg_iscoloring_type
 -    -dmmg_jacobian_period <p> - Indicates how often in the SNES solve the Jacobian is recomputed (on all levels)
                                  as suggested by Florin Dobrian if p is -1 then Jacobian is computed only on first
                                  SNES iteration (i.e. -1 is equivalent to infinity) 
@@ -454,7 +445,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
 #endif
   PetscViewer    ascii;
   MPI_Comm       comm;
-    PetscMPIInt size;
+  PetscMPIInt    size;
   const char     *isctypes[] = {"IS_COLORING_LOCAL","IS_COLORING_GHOSTED"};
   ISColoringType ctype;
 
@@ -481,13 +472,14 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     ierr = PetscOptionsTruthGroupEnd("-dmmg_jacobian_mf_ad","Apply Jacobian via matrix free ADIC (automatic differentiation) even in computing preconditioner","DMMGSetSNES",&mfad);CHKERRQ(ierr);
     if (mfad) mfadoperator = PETSC_TRUE;
 #endif
-    
     ierr = MPI_Comm_size(dmmg[0]->comm,&size);CHKERRQ(ierr);
-    if (size > 1){
-      isctype = 0; /* default isctype should be 1! */
-      ierr = PetscOptionsEList("-dmmg_iscoloring_type","Type of ISColoring","None",isctypes,2,isctypes[1],&isctype,PETSC_NULL);CHKERRQ(ierr);
+    if (size == 1){
+      isctype = 0;
+    } else {
+      isctype = 1; 
     }
-    
+    ierr = PetscOptionsEList("-dmmg_iscoloring_type","Type of ISColoring","None",isctypes,2,isctypes[isctype],&isctype,PETSC_NULL);CHKERRQ(ierr);
+        
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* create solvers for each level */

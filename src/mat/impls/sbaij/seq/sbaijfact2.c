@@ -1541,7 +1541,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   PetscInt           reallocs=0,*rip,i,*ai,*aj,*ui;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
   PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,ncols,*cols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
-  PetscReal          fill=info->fill,levels=info->levels;
+  PetscReal          fill=info->fill,levels=info->levels,ratio_needed;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
   PetscBT            lnkbt;
@@ -1569,9 +1569,10 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   if (!levels && perm_identity) {  
     a->permute = PETSC_FALSE;
     /* reuse the column pointers and row offsets for memory savings */
-    ui         = a->i; 
-    uj         = a->j;
-    free_ij    = PETSC_FALSE;
+    ui           = a->i; 
+    uj           = a->j;
+    free_ij      = PETSC_FALSE;
+    ratio_needed = 1.0;
   } else { /* case: levels>0 || (levels=0 && !perm_identity) */
     if (perm_identity){
       a->permute = PETSC_FALSE;
@@ -1690,6 +1691,11 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
     ierr = PetscFreeSpaceContiguous(&free_space,uj);CHKERRQ(ierr);
     ierr = PetscIncompleteLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
     ierr = PetscFreeSpaceDestroy(free_space_lvl);CHKERRQ(ierr);
+    if (ai[am] != 0) {
+      ratio_needed = ((PetscReal)ui[am])/((PetscReal)ai[am]);
+    } else {
+      ratio_needed = 0.0;
+    }
   } /* end of case: levels>0 || (levels=0 && !perm_identity) */
 
   /* put together the new matrix in MATSEQSBAIJ format */
@@ -1715,11 +1721,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   B->factor                 = FACTOR_CHOLESKY;
   B->info.factor_mallocs    = reallocs;
   B->info.fill_ratio_given  = fill;
-  if (ai[am] != 0) {
-    B->info.fill_ratio_needed = ((PetscReal)ui[am])/((PetscReal)ai[am]);
-  } else {
-    B->info.fill_ratio_needed = 0.0;
-  }
+  B->info.fill_ratio_needed = ratio_needed;
 
   if (perm_identity){
     switch (bs) {
