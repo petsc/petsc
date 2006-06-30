@@ -9,6 +9,8 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.sizes = {}
+    self.c99_complex = 0
+    self.cxx_complex = 0
     return
 
   def setupHelp(self, help):
@@ -82,19 +84,24 @@ void (*signal())();
     self.addDefine('RETSIGTYPE', returnType)
     return
 
-  def checkComplex(self):
-    '''Check for complex numbers in namespace std, and if --enable-complex is given, defines PETSC_USE_COMPLEX if they are present'''
+  def checkC99Complex(self):
+    '''Check for complex numbers in in C99 std'''
+    includes = '#include <complex.h>\n'
+    body     = 'double complex x;\n'
+    if self.checkLink(includes, body):
+      self.addDefine('HAVE_C99_COMPLEX', 1)
+      self.c99_complex = 1
+    return
+
+  def checkCxxComplex(self):
+    '''Check for complex numbers in namespace std'''
     self.pushLanguage('C++')
     includes = '#include <complex>\n'
     body     = 'std::complex<double> x;\n'
-    found    = 0
     if self.checkLink(includes, body):
-      self.addDefine('HAVE_COMPLEX', 1)
-      found = 1
+      self.addDefine('HAVE_CXX_COMPLEX', 1)
+      self.cxx_complex = 1
     self.popLanguage()
-
-    #if found and self.framework.argDB['enable-complex']:
-    #  self.addDefine('PETSC_USE_COMPLEX', 1)
     return
 
   def checkFortranStar(self):
@@ -328,8 +335,9 @@ void (*signal())();
     self.executeTest(self.checkPID)
     self.executeTest(self.checkUID)
     self.executeTest(self.checkSignal)
+    self.executeTest(self.checkC99Complex)
     if hasattr(self.compilers, 'CXX'):
-      self.executeTest(self.checkComplex)
+      self.executeTest(self.checkCxxComplex)
     if hasattr(self.compilers, 'FC'):
       #self.executeTest(self.checkFortranStar)
       self.executeTest(self.checkFortranKind)
