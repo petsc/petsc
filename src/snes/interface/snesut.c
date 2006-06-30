@@ -286,6 +286,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultSMonitor(SNES snes,PetscInt its,Pe
 
    Input Parameters:
 +  snes - the SNES context
+.  it - the iteration (0 indicates before any Newton steps)
 .  xnorm - 2-norm of current iterate
 .  pnorm - 2-norm of current step 
 .  fnorm - 2-norm of function at current iterate
@@ -314,28 +315,36 @@ $  SNES_CONVERGED_ITERATING       - (otherwise),
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_LS(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *reason = SNES_CONVERGED_ITERATING;
+
+  if (!it) {
+    /* set parameter for default relative tolerance convergence test */
+    snes->ttol = fnorm*snes->rtol;
+  }
   if (fnorm != fnorm) {
     ierr = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FNORM_NAN;
-  } else if (fnorm <= snes->ttol) {
-    ierr = PetscInfo2(snes,"Converged due to function norm %G < %G (relative tolerance)\n",fnorm,snes->ttol);CHKERRQ(ierr);
-    *reason = SNES_CONVERGED_FNORM_RELATIVE;
   } else if (fnorm < snes->abstol) {
     ierr = PetscInfo2(snes,"Converged due to function norm %G < %G\n",fnorm,snes->abstol);CHKERRQ(ierr);
     *reason = SNES_CONVERGED_FNORM_ABS;
-  } else if (pnorm < snes->xtol*xnorm) {
-    ierr = PetscInfo3(snes,"Converged due to small update length: %G < %G * %G\n",pnorm,snes->xtol,xnorm);CHKERRQ(ierr);
-    *reason = SNES_CONVERGED_PNORM_RELATIVE;
   } else if (snes->nfuncs >= snes->max_funcs) {
     ierr = PetscInfo2(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
-    *reason = SNES_DIVERGED_FUNCTION_COUNT ;
-  } else {
-    *reason = SNES_CONVERGED_ITERATING;
+    *reason = SNES_DIVERGED_FUNCTION_COUNT;
+  }
+
+  if (it && !*reason) {
+    if (fnorm <= snes->ttol) {
+      ierr = PetscInfo2(snes,"Converged due to function norm %G < %G (relative tolerance)\n",fnorm,snes->ttol);CHKERRQ(ierr);
+      *reason = SNES_CONVERGED_FNORM_RELATIVE;
+    } else if (pnorm < snes->xtol*xnorm) {
+      ierr = PetscInfo3(snes,"Converged due to small update length: %G < %G * %G\n",pnorm,snes->xtol,xnorm);CHKERRQ(ierr);
+      *reason = SNES_CONVERGED_PNORM_RELATIVE;
+    }
   }
   PetscFunctionReturn(0);
 }

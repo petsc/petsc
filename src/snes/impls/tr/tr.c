@@ -149,7 +149,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
       ierr = PetscInfo(snes,"Trying again in smaller region\n");CHKERRQ(ierr);
       /* check to see if progress is hopeless */
       neP->itflag = PETSC_FALSE;
-      ierr = (*snes->converged)(snes,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      ierr = (*snes->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (reason) {
         /* We're not progressing, so return with the current iterate */
         SNESMonitor(snes,i+1,fnorm);
@@ -172,7 +172,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
 
       /* Test for convergence */
       neP->itflag = PETSC_TRUE;
-      ierr = (*snes->converged)(snes,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      ierr = (*snes->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (reason) {
         break;
       } 
@@ -312,7 +312,7 @@ $  SNES_CONVERGED_ITERATING       - (otherwise)
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_TR(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_TR(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   SNES_TR *neP = (SNES_TR *)snes->data;
   PetscErrorCode ierr;
@@ -325,7 +325,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_TR(SNES snes,PetscReal xnorm,Pe
     ierr = PetscInfo3(snes,"Converged due to trust region param %G<%G*%G\n",neP->delta,xnorm,snes->deltatol);CHKERRQ(ierr);
     *reason = SNES_CONVERGED_TR_DELTA;
   } else if (neP->itflag) {
-    ierr = SNESConverged_LS(snes,xnorm,pnorm,fnorm,reason,dummy);CHKERRQ(ierr);
+    ierr = SNESConverged_LS(snes,it,xnorm,pnorm,fnorm,reason,dummy);CHKERRQ(ierr);
   } else if (snes->nfuncs >= snes->max_funcs) {
     ierr = PetscInfo2(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FUNCTION_COUNT;

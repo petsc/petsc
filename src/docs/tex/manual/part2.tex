@@ -3597,7 +3597,7 @@ The user can set this parameter with the option \trl{-snes_trtol <trtol>}
 Users can set their own customized convergence tests in SNES by using
 the command \findex{SNESSetConvergenceTest()}
 \begin{tabbing}
-  SNESSetConvergenceTest(\=SNES snes,PetscErrorCode (*test)(SNES snes,double xnorm,\\
+  SNESSetConvergenceTest(\=SNES snes,PetscErrorCode (*test)(SNES snes,int it,double xnorm,\\
                          \>double gnorm,double f,SNESConvergedReason reason,\\
                          \>void *cctx),void *cctx);
 \end{tabbing}

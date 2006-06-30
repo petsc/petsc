@@ -139,7 +139,7 @@ extern PetscScalar   TInterp(Field **x, PetscInt i, PetscInt j);
 /* Post-processing & misc */
 extern PetscErrorCode ViscosityField(DMMG,Vec,Vec);
 extern PetscErrorCode StressField(DMMG *dmmg);
-extern PetscErrorCode SNESConverged_Interactive(SNES, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
+extern PetscErrorCode SNESConverged_Interactive(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
 extern PetscErrorCode InteractiveHandler(int, void *);
 extern PetscTruth OptionsHasName(const char pre[],const char name[]);
 
@@ -1483,7 +1483,7 @@ PetscTruth OptionsHasName(const char pre[],const char name[])
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESConverged_Interactive"
-PetscErrorCode SNESConverged_Interactive(SNES snes, PetscReal xnorm, PetscReal pnorm, PetscReal fnorm, SNESConvergedReason *reason, void *ctx)
+PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm, PetscReal pnorm, PetscReal fnorm, SNESConvergedReason *reason, void *ctx)
 /* ------------------------------------------------------------------- */
 {
   AppCtx        *user = (AppCtx *) ctx;
@@ -1510,7 +1510,7 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscReal xnorm, PetscReal p
       PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: activating ksp singular value monitor. \n");
     }
   }
-  PetscFunctionReturn(SNESConverged_LS(snes, xnorm, pnorm, fnorm, reason, ctx));
+  PetscFunctionReturn(SNESConverged_LS(snes, it,xnorm, pnorm, fnorm, reason, ctx));
 }
 
 /* ------------------------------------------------------------------- */

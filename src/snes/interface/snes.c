@@ -1496,9 +1496,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESClearMonitor(SNES snes)
           (may be PETSC_NULL)
 
    Calling sequence of func:
-$     PetscErrorCode func (SNES snes,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConvergedReason *reason,void *cctx)
+$     PetscErrorCode func (SNES snes,PetscInt it,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConvergedReason *reason,void *cctx)
 
 +    snes - the SNES context
+.    it - current iteration (0 is the first and is before any Newton step)
 .    cctx - [optional] convergence context
 .    reason - reason for convergence/divergence
 .    xnorm - 2-norm of current iterate
@@ -1511,7 +1512,7 @@ $     PetscErrorCode func (SNES snes,PetscReal xnorm,PetscReal gnorm,PetscReal f
 
 .seealso: SNESConverged_LS(), SNESConverged_TR()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceTest(SNES snes,PetscErrorCode (*func)(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void *cctx)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceTest(SNES snes,PetscErrorCode (*func)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void *cctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);

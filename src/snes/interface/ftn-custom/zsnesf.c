@@ -63,7 +63,7 @@
 EXTERN_C_BEGIN
 static void (PETSC_STDCALL *f3)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*);
 static void (PETSC_STDCALL *f2)(SNES*,Vec*,Vec*,void*,PetscErrorCode*);
-static void (PETSC_STDCALL *f8)(SNES*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,PetscErrorCode*);
+static void (PETSC_STDCALL *f8)(SNES*,PetscInt *,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,PetscErrorCode*);
 static void (PETSC_STDCALL *f7)(SNES*,PetscInt*,PetscReal*,void*,PetscErrorCode*);
 static void (PETSC_STDCALL *f71)(void*,PetscErrorCode*);
 EXTERN_C_END
@@ -74,11 +74,11 @@ static PetscErrorCode oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
   (*f2)(&snes,&x,&f,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
-static PetscErrorCode oursnestest(SNES snes,PetscReal a,PetscReal d,PetscReal c,SNESConvergedReason*reason,void*ctx)
+static PetscErrorCode oursnestest(SNES snes,PetscInt it,PetscReal a,PetscReal d,PetscReal c,SNESConvergedReason*reason,void*ctx)
 {
   PetscErrorCode ierr = 0;
 
-  (*f8)(&snes,&a,&d,&c,reason,ctx,&ierr);CHKERRQ(ierr);
+  (*f8)(&snes,&it,&a,&d,&c,reason,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -226,21 +226,21 @@ void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void *func,void **ctx,Pets
 }
 /*----------------------------------------------------------------------*/
 
-void snesconverged_tr_(SNES *snes,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,
+void snesconverged_tr_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,
                                        void *ct,PetscErrorCode *ierr)
 {
-  *ierr = SNESConverged_TR(*snes,*a,*b,*c,r,ct);
+  *ierr = SNESConverged_TR(*snes,*it,*a,*b,*c,r,ct);
 }
 
-void snesconverged_ls_(SNES *snes,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,
+void snesconverged_ls_(SNES *snes,PetscInt *it, PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,
                                        void *ct,PetscErrorCode *ierr)
 {
-  *ierr = SNESConverged_LS(*snes,*a,*b,*c,r,ct);
+  *ierr = SNESConverged_LS(*snes,*it,*a,*b,*c,r,ct);
 }
 
 
 void PETSC_STDCALL snessetconvergencetest_(SNES *snes,
-       void (PETSC_STDCALL *func)(SNES*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,PetscErrorCode*),
+       void (PETSC_STDCALL *func)(SNES*,PetscInt*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,PetscErrorCode*),
        void *cctx,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(cctx);
