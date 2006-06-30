@@ -1,6 +1,4 @@
 
-/* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
-
 static char help[] = "Bratu nonlinear PDE in 2d.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
 domain, using distributed arrays (DAs) to partition the parallel grid.\n\
@@ -11,6 +9,7 @@ The command line options include:\n\
 /*T
    Concepts: SNES^parallel Bratu example
    Concepts: DA^using distributed arrays;
+   Concepts: IS coloirng types;
    Processors: n
 T*/
 
@@ -29,6 +28,10 @@ T*/
     is used to discretize the boundary value problem to obtain a nonlinear 
     system of equations.
 
+    Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] 
+     e.g.,
+      ./ex5 -fd_jacobian -mat_fd_coloring_view_draw -draw_pause -1
+      mpirun -np 2 ./ex5 -fd_jacobian_ghosted -log_summary
 
   ------------------------------------------------------------------------- */
 
@@ -61,6 +64,7 @@ typedef struct {
 extern PetscErrorCode FormInitialGuess(AppCtx*,Vec),FormFunctionMatlab(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DALocalInfo*,PetscScalar**,Mat,AppCtx*);
+extern PetscErrorCode MySNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -72,7 +76,7 @@ int main(int argc,char **argv)
   AppCtx                 user;                 /* user-defined work context */
   PetscInt               its;                  /* iterations for convergence */
   PetscTruth             matlab_function = PETSC_FALSE;
-  PetscTruth             fd_jacobian = PETSC_FALSE,adic_jacobian=PETSC_FALSE;
+  PetscTruth             fd_jacobian = PETSC_FALSE,adic_jacobian=PETSC_FALSE,fd_jacobian_ghosted=PETSC_FALSE;
   PetscTruth             adicmf_jacobian = PETSC_FALSE;
   PetscErrorCode         ierr;
   PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
@@ -129,6 +133,7 @@ int main(int argc,char **argv)
   
   A    = J;
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-fd_jacobian",&fd_jacobian,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-fd_jacobian_ghosted",&fd_jacobian_ghosted,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-adic_jacobian",&adic_jacobian,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-adicmf_jacobian",&adicmf_jacobian,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ADIC)
@@ -148,6 +153,14 @@ int main(int argc,char **argv)
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,A,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+  } else if (fd_jacobian_ghosted) {
+    ierr = DAGetColoring(user.da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+    /* now, call a customized SNESDefaultComputeJacobianColor() */
+    ierr = SNESSetJacobian(snes,A,J,MySNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ADIC)
   } else if (adic_jacobian) {
     ierr = DAGetColoring(user.da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
@@ -272,7 +285,6 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   for (j=ys; j<ys+ym; j++) {
     temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
     for (i=xs; i<xs+xm; i++) {
-
       if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
         /* boundary conditions are all zero Dirichlet */
         x[j][i] = 0.0; 
@@ -398,7 +410,6 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCt
   PetscFunctionReturn(0);
 }
 
-
 /*
       Variant of FormFunction() that computes the function in Matlab
 */
@@ -447,8 +458,55 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 } 
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "MySNESDefaultComputeJacobianColor"
+/*
+  MySNESDefaultComputeJacobianColor - Computes the Jacobian using
+    finite differences and coloring to exploit matrix sparsity. 
+    It is customized from SNESDefaultComputeJacobianColor.
+    The input global vector x1 is scattered to x1_local
+    which then is passed into MatFDColoringApply() for reducing the
+    VecScatterBingin/End.
+*/
+PetscErrorCode MySNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+{
+  MatFDColoring  color = (MatFDColoring) ctx;
+  PetscErrorCode ierr;
+  PetscInt       freq,it;
+  Vec            f;
+  PetscErrorCode (*ff)(void),(*fd)(void);
+  void           *fctx;
 
+  PetscFunctionBegin;
+  ierr = MatFDColoringGetFrequency(color,&freq);CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
+  if ((freq > 1) && ((it % freq))) {
+    ierr = PetscInfo2(color,"Skipping Jacobian recomputation, it %D, freq %D\n",it,freq);CHKERRQ(ierr);
+    *flag = SAME_PRECONDITIONER;
+  } else {
+    ierr = PetscInfo2(color,"Computing Jacobian, it %D, freq %D\n",it,freq);CHKERRQ(ierr);
+    *flag = SAME_NONZERO_PATTERN;
+    ierr  = SNESGetFunction(snes,&f,(PetscErrorCode (**)(SNES,Vec,Vec,void*))&ff,0);CHKERRQ(ierr);
+    ierr  = MatFDColoringGetFunction(color,&fd,&fctx);CHKERRQ(ierr);
+    if (fd == ff) { /* reuse function value computed in SNES */
+      ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);
+    }
+    /* Now, get x1_loc and scatter global x1 onto x1_loc */ 
+    DA     da = *(DA*)fctx;
+    Vec    x1_loc;
+    ierr = DAGetLocalVector(da,&x1_loc);CHKERRQ(ierr); 
+    ierr = DAGlobalToLocalBegin(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr); 
+    ierr = DAGlobalToLocalEnd(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr);   
+    ierr  = MatFDColoringApply(*B,color,x1_loc,flag,snes);CHKERRQ(ierr);   
+    ierr = DARestoreLocalVector(da,&x1_loc);CHKERRQ(ierr);
+  }
+  if (*J != *B) {
+    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 
 

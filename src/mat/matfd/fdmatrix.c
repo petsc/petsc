@@ -583,19 +583,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   PetscTruth     flg;
   PetscInt       ctype=coloring->ctype,N,col_start,col_end;
   Vec            x1_tmp;
-  /* remove ! */
-  PetscMPIInt rank;
-  PetscInt    prid=10;
-  /*  ex5
-  PetscTruth  fd_jacobian_ghost=PETSC_FALSE;
-  DA          da;
-  */
 
-  PetscFunctionBegin;
-    
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-prid",&prid,PETSC_NULL);CHKERRQ(ierr);    
-    
+  PetscFunctionBegin;    
   PetscValidHeaderSpecific(J,MAT_COOKIE,1);
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE,2);
   PetscValidHeaderSpecific(x1,VEC_COOKIE,3);
@@ -625,7 +614,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   }
 
   x1_tmp = x1; 
-
   if (ctype == IS_COLORING_GHOSTED && !coloring->vscale){ 
     ierr = VecDuplicate(x1_tmp,&coloring->vscale);CHKERRQ(ierr);
   }
@@ -714,8 +702,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
     ierr = VecCopy(x1_tmp,w3);CHKERRQ(ierr);
     ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
     if (ctype == IS_COLORING_LOCAL) w3_array = w3_array - start;
-      
-    if (prid == rank) printf(" [%d] color %d \n -----------\n",rank,k);
     /*
       Loop over each column associated with color 
       adding the perturbation to the vector w3.
@@ -771,7 +757,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   coloring->currentcolor = -1;
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  /*ierr = MatView(J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
   ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_null_space_test",&flg);CHKERRQ(ierr);
@@ -779,7 +764,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
     ierr = MatNullSpaceTest(J->nullsp,J);CHKERRQ(ierr);
   }
   ierr = MatFDColoringView_Private(coloring);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
