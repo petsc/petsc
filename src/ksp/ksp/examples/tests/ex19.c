@@ -39,7 +39,7 @@ typedef struct {
    GridCtx     coarse;
    KSP         ksp_coarse;
    PetscInt    ratio;
-   Mat         I;               /* interpolation from coarse to fine */
+   Mat         Ii;              /* interpolation from coarse to fine */
 } AppCtx;
 
 #define COARSE_LEVEL 0
@@ -130,9 +130,9 @@ int main(int argc,char **argv)
   ierr = PCMGSetResidual(pc,FINE_LEVEL,PCMGDefaultResidual,user.fine.J);CHKERRQ(ierr);
 
   /* Create interpolation between the levels */
-  ierr = DAGetInterpolation(user.coarse.da,user.fine.da,&user.I,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PCMGSetInterpolate(pc,FINE_LEVEL,user.I);CHKERRQ(ierr);
-  ierr = PCMGSetRestriction(pc,FINE_LEVEL,user.I);CHKERRQ(ierr);
+  ierr = DAGetInterpolation(user.coarse.da,user.fine.da,&user.Ii,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCMGSetInterpolate(pc,FINE_LEVEL,user.Ii);CHKERRQ(ierr);
+  ierr = PCMGSetRestriction(pc,FINE_LEVEL,user.Ii);CHKERRQ(ierr);
 
   ierr = KSPSetOperators(ksp,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
@@ -169,7 +169,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(user.coarse.localF);CHKERRQ(ierr);
 
   ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(user.I);CHKERRQ(ierr); 
+  ierr = MatDestroy(user.Ii);CHKERRQ(ierr); 
   ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;

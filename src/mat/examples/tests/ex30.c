@@ -15,7 +15,7 @@ directly.\n\n";
 int main(int argc,char **args)
 {
   Mat            C,A; 
-  PetscInt       i,j,m = 5,n = 5,I,J,lf = 0;
+  PetscInt       i,j,m = 5,n = 5,Ii,J,lf = 0;
   PetscErrorCode ierr;
   PetscTruth     flg1;
   PetscScalar    v;
@@ -40,12 +40,12 @@ int main(int argc,char **args)
   /* Create the matrix. (This is five-point stencil with some extra elements) */
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
-      v = -1.0;  I = j + n*i;
-      J = I - n; if (J>=0)  {ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      J = I + n; if (J<m*n) {ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      J = I - 1; if (J>=0)  {ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      J = I + 1; if (J<m*n) {ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRQ(ierr);
+      v = -1.0;  Ii = j + n*i;
+      J = Ii - n; if (J>=0)  {ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      J = Ii + n; if (J<m*n) {ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      J = Ii - 1; if (J>=0)  {ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      J = Ii + 1; if (J<m*n) {ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      v = 4.0; ierr = MatSetValues(C,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

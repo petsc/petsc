@@ -40,7 +40,7 @@ int main(int argc,char **args)
 {
   UserCtx        userctx;
   PetscErrorCode ierr;
-  PetscInt       m = 6,n = 7,t,tmax = 2,i,I,j,N;
+  PetscInt       m = 6,n = 7,t,tmax = 2,i,Ii,j,N;
   PetscScalar    *userx,*rho,*solution,*userb,hx,hy,x,y;
   PetscReal      enorm;
   /*
@@ -85,16 +85,16 @@ int main(int argc,char **args)
   hx = 1.0/(m+1); 
   hy = 1.0/(n+1);
   y  = hy;
-  I  = 0;
+  Ii = 0;
   for (j=0; j<n; j++) {
     x = hx;
     for (i=0; i<m; i++) {
-      rho[I]      = x;
-      solution[I] = PetscSinScalar(2.*PETSC_PI*x)*PetscSinScalar(2.*PETSC_PI*y);
-      userb[I]    = -2*PETSC_PI*PetscCosScalar(2*PETSC_PI*x)*PetscSinScalar(2*PETSC_PI*y) +
+      rho[Ii]      = x;
+      solution[Ii] = PetscSinScalar(2.*PETSC_PI*x)*PetscSinScalar(2.*PETSC_PI*y);
+      userb[Ii]    = -2*PETSC_PI*PetscCosScalar(2*PETSC_PI*x)*PetscSinScalar(2*PETSC_PI*y) +
                     8*PETSC_PI*PETSC_PI*x*PetscSinScalar(2*PETSC_PI*x)*PetscSinScalar(2*PETSC_PI*y);
       x += hx;
-      I++;
+      Ii++;
     }
     y += hy;
   }
@@ -190,7 +190,7 @@ PetscErrorCode UserInitializeLinearSolver(PetscInt m,PetscInt n,UserCtx *userctx
 PetscErrorCode UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,PetscScalar *userx)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j,I,J,m = userctx->m,n = userctx->n;
+  PetscInt       i,j,Ii,J,m = userctx->m,n = userctx->n;
   Mat            A = userctx->A;
   PC             pc;
   PetscScalar    v,hx2 = userctx->hx2,hy2 = userctx->hy2;
@@ -208,32 +208,32 @@ PetscErrorCode UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar 
      stencil is applied.  For a staggered grid, one would have to change
      things slightly.
   */
-  I = 0;
+  Ii = 0;
   for (j=0; j<n; j++) {
     for (i=0; i<m; i++) {
       if (j>0)   {
-        J    = I - m; 
-        v    = -.5*(rho[I] + rho[J])*hy2;
-        ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+        J    = Ii - m; 
+        v    = -.5*(rho[Ii] + rho[J])*hy2;
+        ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
       if (j<n-1) {
-        J    = I + m; 
-        v    = -.5*(rho[I] + rho[J])*hy2;
-        ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+        J    = Ii + m; 
+        v    = -.5*(rho[Ii] + rho[J])*hy2;
+        ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
       if (i>0)   {
-        J    = I - 1; 
-        v    = -.5*(rho[I] + rho[J])*hx2;
-        ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+        J    = Ii - 1; 
+        v    = -.5*(rho[Ii] + rho[J])*hx2;
+        ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
       if (i<m-1) {
-        J    = I + 1; 
-        v    = -.5*(rho[I] + rho[J])*hx2;
-        ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+        J    = Ii + 1; 
+        v    = -.5*(rho[Ii] + rho[J])*hx2;
+        ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
-      v    = 2.0*rho[I]*(hx2+hy2);
-      ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);CHKERRQ(ierr); 
-      I++;
+      v    = 2.0*rho[Ii]*(hx2+hy2);
+      ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr); 
+      Ii++;
     }
   }
 

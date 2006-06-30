@@ -17,7 +17,7 @@ int main(int argc,char **args)
 {
   Vec            x,b;
   Mat            A,U,V,LR;    
-  PetscInt       i,j,I,J,Istart,Iend,m = 8,n = 7,rstart,rend;
+  PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,rstart,rend;
   PetscErrorCode ierr;
   PetscTruth     flg;
   PetscScalar    *u,a;
@@ -33,13 +33,13 @@ int main(int argc,char **args)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
-  for (I=Istart; I<Iend; I++) { 
-    a = -1.0; i = I/n; j = I - i*n;  
-    if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&a,INSERT_VALUES);CHKERRQ(ierr);}
-    if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&a,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&a,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&a,INSERT_VALUES);CHKERRQ(ierr);}
-    a = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&a,INSERT_VALUES);CHKERRQ(ierr);
+  for (Ii=Istart; Ii<Iend; Ii++) { 
+    a = -1.0; i = Ii/n; j = Ii - i*n;  
+    if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&a,INSERT_VALUES);CHKERRQ(ierr);}
+    if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&a,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&a,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&a,INSERT_VALUES);CHKERRQ(ierr);}
+    a = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&a,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
