@@ -33,14 +33,6 @@ extern  MPI_Datatype PETSC_DLLEXPORT MPIU_2INT;
 */
 #include <complex>
 
-extern  MPI_Datatype PETSC_DLLEXPORT MPIU_COMPLEX;
-#define MPIU_SCALAR         MPIU_COMPLEX
-#if defined(PETSC_USE_MAT_SINGLE)
-#define MPIU_MATSCALAR        ??Notdone
-#else
-#define MPIU_MATSCALAR      MPIU_COMPLEX
-#endif
-
 #define PetscRealPart(a)        (a).real()
 #define PetscImaginaryPart(a)   (a).imag()
 #define PetscAbsScalar(a)   std::abs(a)
@@ -60,14 +52,6 @@ typedef std::complex<double> PetscScalar;
    C90 compliant compiler to work...
  */
 
-extern  MPI_Datatype PETSC_DLLEXPORT MPIU_COMPLEX;
-#define MPIU_SCALAR         MPIU_COMPLEX
-#if defined(PETSC_USE_MAT_SINGLE)
-#define MPIU_MATSCALAR        ??Notdone
-#else
-#define MPIU_MATSCALAR      MPIU_COMPLEX
-#endif
-
 #define PetscRealPart(a)        creal(a)
 #define PetscImaginaryPart(a)   cimag(a)
 #define PetscAbsScalar(a)   cabs(a)
@@ -79,6 +63,14 @@ extern  MPI_Datatype PETSC_DLLEXPORT MPIU_COMPLEX;
 #define PetscCosScalar(a)   ccos(a)
 
 typedef double complex PetscScalar;
+#endif
+
+extern  MPI_Datatype PETSC_DLLEXPORT MPIU_COMPLEX;
+#define MPIU_SCALAR         MPIU_COMPLEX
+#if defined(PETSC_USE_MAT_SINGLE)
+#define MPIU_MATSCALAR        ??Notdone
+#else
+#define MPIU_MATSCALAR      MPIU_COMPLEX
 #endif
 
 /* Compiling for real numbers only */

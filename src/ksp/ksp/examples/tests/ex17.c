@@ -97,7 +97,7 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
 
   PetscScalar    val[5];
   PetscErrorCode ierr;
-  PetscInt       i,j,I,J,col[5],Istart,Iend;
+  PetscInt       i,j,Ii,J,col[5],Istart,Iend;
 
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
   if (type == TEST_1) {
@@ -154,19 +154,19 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
-    for (I=Istart; I<Iend; I++) { 
-      *val = -1.0; i = I/n; j = I - i*n;  
+    for (Ii=Istart; Ii<Iend; Ii++) { 
+      *val = -1.0; i = Ii/n; j = Ii - i*n;  
       if (i>0) {
-        J = I-n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii-n; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
       if (i<n-1) {
-        J = I+n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii+n; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
       if (j>0) {
-        J = I-1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii-1; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
       if (j<n-1) {
-        J = I+1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii+1; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
       ierr = PetscRandomGetValueImaginary(rctx,&sigma2);CHKERRQ(ierr);
       *val = 4.0 - sigma1*h2 + sigma2*h2;
-      ierr = MatSetValues(A,1,&I,1,&I,val,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(A,1,&Ii,1,&Ii,val,ADD_VALUES);CHKERRQ(ierr);
     }
     ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
   }
@@ -183,19 +183,19 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
     ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
     alpha_h = (PETSC_i * 10.0) / (PetscReal)(n+1);  /* alpha_h = alpha * h */
-    for (I=Istart; I<Iend; I++) { 
-      *val = -1.0; i = I/n; j = I - i*n;  
+    for (Ii=Istart; Ii<Iend; Ii++) { 
+      *val = -1.0; i = Ii/n; j = Ii - i*n;  
       if (i>0) {
-        J = I-n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii-n; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
       if (i<n-1) {
-        J = I+n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii+n; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
       if (j>0) {
-        J = I-1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii-1; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
       if (j<n-1) {
-        J = I+1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
+        J = Ii+1; ierr = MatSetValues(A,1,&Ii,1,&J,val,ADD_VALUES);CHKERRQ(ierr);}
       *val = 4.0 - sigma1*h2;
-      if (!((I+1)%n)) *val += alpha_h;
-      ierr = MatSetValues(A,1,&I,1,&I,val,ADD_VALUES);CHKERRQ(ierr);
+      if (!((Ii+1)%n)) *val += alpha_h;
+      ierr = MatSetValues(A,1,&Ii,1,&Ii,val,ADD_VALUES);CHKERRQ(ierr);
     }
   }
   else SETERRQ(1,"FormTestMatrix: unknown test matrix type");

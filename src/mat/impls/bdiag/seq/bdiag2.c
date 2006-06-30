@@ -45,7 +45,7 @@ PetscErrorCode MatSetValues_SeqBDiag_1(Mat A,PetscInt m,const PetscInt im[],Pets
 #if !defined(PETSC_USE_COMPLEX)
           if (a->user_alloc && value) {
 #else
-          if (a->user_alloc && PetscRealPart(value) || PetscImaginaryPart(value)) {
+          if (a->user_alloc && (PetscRealPart(value) || PetscImaginaryPart(value))) {
 #endif
             ierr = PetscInfo1(A,"Nonzero in diagonal %D that user did not allocate\n",ldiag);CHKERRQ(ierr);
           }
@@ -134,7 +134,7 @@ PetscErrorCode MatSetValues_SeqBDiag_N(Mat A,PetscInt m,const PetscInt im[],Pets
 #if !defined(PETSC_USE_COMPLEX)
           if (a->user_alloc && value) {
 #else
-          if (a->user_alloc && PetscRealPart(value) || PetscImaginaryPart(value)) {
+          if (a->user_alloc && (PetscRealPart(value) || PetscImaginaryPart(value))) {
 #endif
             ierr = PetscInfo1(A,"Nonzero in diagonal %D that user did not allocate\n",ldiag);CHKERRQ(ierr);
           }

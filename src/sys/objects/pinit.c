@@ -449,15 +449,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
      are not called; at least on IRIX.
   */
   {
-#ifdef PETSC_CLANGUAGE_CXX
+#if defined(PETSC_CLANGUAGE_CXX)
     PetscScalar ic(0.0,1.0);
     PETSC_i = ic; 
 #else
     PetscScalar ic;
     ic = 1.I;
     PETSC_i = ic;
-  }
 #endif
+  }
+
   ierr = MPI_Type_contiguous(2,MPIU_REAL,&MPIU_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscSum_Local,1,&PetscSum_Op);CHKERRQ(ierr);
