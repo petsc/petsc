@@ -2787,7 +2787,7 @@ PetscErrorCode MatSeqAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Petsc
 EXTERN_C_BEGIN
 #undef  __FUNCT__
 #define __FUNCT__  "MatSeqAIJSetPreallocationCSR_SeqAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt I[],const PetscInt J[],const PetscScalar v[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt Ii[],const PetscInt J[],const PetscScalar v[])
 {
   PetscInt       i;
   PetscInt       m,n;
@@ -2799,12 +2799,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,cons
   PetscFunctionBegin;
   ierr = MatGetSize(B, &m, &n);CHKERRQ(ierr);
 
-  if (I[0]) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "I[0] must be 0 it is %D", I[0]);
+  if (Ii[0]) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Ii[0] must be 0 it is %D", Ii[0]);
   }
   ierr = PetscMalloc((m+1) * sizeof(PetscInt), &nnz);CHKERRQ(ierr);
   for(i = 0; i < m; i++) {
-    nz     = I[i+1]- I[i];
+    nz     = Ii[i+1]- Ii[i];
     nz_max = PetscMax(nz_max, nz);
     if (nz < 0) {
       SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Local row %D has a negative number of columns %D", i, nnz);
@@ -2824,8 +2824,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,cons
   ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
 
   for(i = 0; i < m; i++) {
-    nz  = I[i+1] - I[i];
-    ierr = MatSetValues_SeqAIJ(B, 1, &i, nz, J+I[i], values + (v ? I[i] : 0), INSERT_VALUES);CHKERRQ(ierr);
+    nz  = Ii[i+1] - Ii[i];
+    ierr = MatSetValues_SeqAIJ(B, 1, &i, nz, J+Ii[i], values + (v ? Ii[i] : 0), INSERT_VALUES);CHKERRQ(ierr);
   }
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

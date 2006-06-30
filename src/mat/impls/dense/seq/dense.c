@@ -750,6 +750,9 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
   const char        *name;
   PetscScalar       *v;
   PetscViewerFormat format;
+#if defined(PETSC_USE_COMPLEX)
+  PetscTruth allreal = PETSC_TRUE;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
@@ -781,7 +784,6 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    PetscTruth allreal = PETSC_TRUE;
     /* determine if matrix has all real values */
     v = a->v;
     for (i=0; i<A->rmap.n*A->cmap.n; i++) {
