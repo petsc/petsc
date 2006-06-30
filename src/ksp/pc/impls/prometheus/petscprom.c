@@ -52,16 +52,16 @@
 
 #include "private/pcimpl.h"     /*I "petscpc.h" I*/
 
-EXTERN PetscErrorCode PCCreate_Prometheus_private( PC pc );
-EXTERN PetscErrorCode PCSetUp_Prometheus( PC pc );
-EXTERN PetscErrorCode PCSetCoordinates_Prometheus( PC pc, PetscReal *coords );
-EXTERN PetscErrorCode PCSetFromOptions_Prometheus(PC pc);
-EXTERN PetscErrorCode PCSetUp_Prometheus_Symmetric(PC pc);
-EXTERN PetscErrorCode PCSetUp_Prometheus_NonSymmetric(PC pc);
-EXTERN PetscErrorCode PCApply_Prometheus( PC pc, Vec x, Vec y );
-EXTERN PetscErrorCode PCApplySymmetricLeftOrRight_Prometheus(PC pc,Vec ,Vec );
-EXTERN PetscErrorCode PCDestroy_Prometheus(PC pc);
-EXTERN PetscErrorCode PCView_Prometheus( PC pc, PetscViewer viewer);
+EXTERN PetscErrorCode PCCreate_Prometheus_private( PC);
+EXTERN PetscErrorCode PCSetUp_Prometheus(PC);
+EXTERN PetscErrorCode PCSetCoordinates_Prometheus(PC, PetscInt, PetscReal*);
+EXTERN PetscErrorCode PCSetFromOptions_Prometheus(PC);
+EXTERN PetscErrorCode PCSetUp_Prometheus_Symmetric(PC);
+EXTERN PetscErrorCode PCSetUp_Prometheus_NonSymmetric(PC);
+EXTERN PetscErrorCode PCApply_Prometheus( PC, Vec, Vec );
+EXTERN PetscErrorCode PCApplySymmetricLeftOrRight_Prometheus(PC,Vec ,Vec );
+EXTERN PetscErrorCode PCDestroy_Prometheus(PC);
+EXTERN PetscErrorCode PCView_Prometheus( PC, PetscViewer);
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -125,8 +125,11 @@ PetscErrorCode PCCreate_Prometheus(PC pc)
   ierr = PetscObjectComposeFunctionDynamic( (PetscObject)pc,
 					    "PCSetCoordinates_C",
 					    "PCSetCoordinates_Prometheus",
-					    PCSetCoordinates_Prometheus);
-  CHKERRQ(ierr);
+					    PCSetCoordinates_Prometheus);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic( (PetscObject)pc,
+					    "PCSASetVectors_C",
+					    "PCSASetVectors_Prometheus",
+					    PCSASetVectors_Prometheus);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -140,6 +143,7 @@ EXTERN_C_END
 
    Input Parameters:
 +  pc - the solver context
+.  dim - the dimension of the coordinates 1, 2, or 3
 -  coords - the coordinates
 
    Level: intermediate
@@ -154,11 +158,39 @@ EXTERN_C_END
 
 .seealso: PCPROMETHEUS
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetCoordinates(PC pc,PetscReal *coords)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSetCoordinates(PC pc,PetscInt dim,PetscReal *coords)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(pc,PCSetCoordinates_C,(PC,PetscReal*),(pc,coords));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,PCSetCoordinates_C,(PC,PetscInt,PetscReal*),(pc,dim,coords));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCSASetVectors"
+/*@
+   PCSASetVectors - sets the vectors of all the nodes on the local process
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the solver context
+.  nects - the number of vectors
+-  vects - the vectors
+
+   Level: intermediate
+
+   Notes: 'vects' is a dense tall skinny matrix with 'nvects' columns and 
+   the number of local equations rows.  'vects' is stored in row major order.
+
+.seealso: PCPROMETHEUS
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCSASetVectors(PC pc,PetscInt nvects,PetscReal *vects)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTryMethod(pc,PCSASetVectors_C,(PC,PetscInt,PetscReal*),(pc,nvects,vects));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

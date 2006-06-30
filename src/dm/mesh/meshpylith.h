@@ -48,7 +48,7 @@ class PyLithViewer {
       numVertices = mesh->getTopology()->depthStratum(0)->size();
     }
     ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"coord_units = km\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"coord_units = m\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"#  Node      X-coord           Y-coord           Z-coord\n");CHKERRQ(ierr);
@@ -233,7 +233,7 @@ class PyLithViewer {
 
     PetscFunctionBegin;
     ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"coord_units = km\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"coord_units = m\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"#  Node      X-coord           Y-coord           Z-coord\n");CHKERRQ(ierr);

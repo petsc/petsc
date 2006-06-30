@@ -347,9 +347,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFromOptions(MatFDColoring matf
   PetscErrorCode ierr;
   PetscTruth     flg;
   char           value[3];
-  PetscMPIInt    size;
-  const char     *isctypes[] = {"IS_COLORING_LOCAL","IS_COLORING_GHOSTED"};
-  PetscInt       isctype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
@@ -358,17 +355,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFromOptions(MatFDColoring matf
     ierr = PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_fd_coloring_freq","How often Jacobian is recomputed","MatFDColoringSetFrequency",matfd->freq,&matfd->freq,0);CHKERRQ(ierr);
-
-    ierr = MPI_Comm_size(matfd->comm,&size);CHKERRQ(ierr);
-    /* set default coloring type */
-    if (size == 1){
-      isctype      = 0; /* IS_COLORING_LOCAL */
-    } else {
-      isctype      = 0; /* should be 1, IS_COLORING_GHOSTED */
-    }
-    ierr = PetscOptionsEList("-mat_fd_coloring_type","Type of MatFDColoring","None",isctypes,2,isctypes[isctype],&isctype,PETSC_NULL);CHKERRQ(ierr);
-    matfd->ctype = (ISColoringType)isctype;
-
     ierr = PetscOptionsString("-mat_fd_type","Algorithm to compute h, wp or ds","MatFDColoringCreate",matfd->htype,value,2,&flg);CHKERRQ(ierr);
     if (flg) {
       if (value[0] == 'w' && value[1] == 'p') matfd->htype = "wp";
@@ -597,19 +583,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   PetscTruth     flg;
   PetscInt       ctype=coloring->ctype,N,col_start,col_end;
   Vec            x1_tmp;
-  /* remove ! */
-  PetscMPIInt rank;
-  PetscInt    prid=10;
-  /*  ex5
-  PetscTruth  fd_jacobian_ghost=PETSC_FALSE;
-  DA          da;
-  */
 
-  PetscFunctionBegin;
-    
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-prid",&prid,PETSC_NULL);CHKERRQ(ierr);    
-    
+  PetscFunctionBegin;    
   PetscValidHeaderSpecific(J,MAT_COOKIE,1);
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE,2);
   PetscValidHeaderSpecific(x1,VEC_COOKIE,3);
@@ -639,7 +614,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   }
 
   x1_tmp = x1; 
-
   if (ctype == IS_COLORING_GHOSTED && !coloring->vscale){ 
     ierr = VecDuplicate(x1_tmp,&coloring->vscale);CHKERRQ(ierr);
   }
@@ -728,8 +702,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
     ierr = VecCopy(x1_tmp,w3);CHKERRQ(ierr);
     ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
     if (ctype == IS_COLORING_LOCAL) w3_array = w3_array - start;
-      
-    if (prid == rank) printf(" [%d] color %d \n -----------\n",rank,k);
     /*
       Loop over each column associated with color 
       adding the perturbation to the vector w3.
@@ -785,7 +757,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   coloring->currentcolor = -1;
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  /*ierr = MatView(J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
   ierr = PetscLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_null_space_test",&flg);CHKERRQ(ierr);
@@ -793,7 +764,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
     ierr = MatNullSpaceTest(J->nullsp,J);CHKERRQ(ierr);
   }
   ierr = MatFDColoringView_Private(coloring);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -828,7 +798,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApplyTS(Mat J,MatFDColoring color
   PetscScalar    dx,*y,*xx,*w3_array;
   PetscScalar    *vscale_array;
   PetscReal      epsilon = coloring->error_rel,umin = coloring->umin; 
-  Vec            w1,w2,w3;
+  Vec            w1=coloring->w1,w2=coloring->w2,w3;
   void           *fctx = coloring->fctx;
   PetscTruth     flg;
 
@@ -838,15 +808,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApplyTS(Mat J,MatFDColoring color
   PetscValidHeaderSpecific(x1,VEC_COOKIE,4);
 
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
-  if (!coloring->w1) {
-    ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(coloring,coloring->w1);CHKERRQ(ierr);
-    ierr = VecDuplicate(x1,&coloring->w2);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(coloring,coloring->w2);CHKERRQ(ierr);
+  if (!coloring->w3) {
     ierr = VecDuplicate(x1,&coloring->w3);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(coloring,coloring->w3);CHKERRQ(ierr);
   }
-  w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
+  w3 = coloring->w3;
 
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
