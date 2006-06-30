@@ -336,6 +336,37 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal 
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPDefaultConvergedSetUIRNorm"
+/*@C
+   KSPDefaultConvergedSetUIRNorm - makes the default convergence test use || B*(b - A*(initial guess))||
+      instead of || B*b ||. In the case of right preconditioner or if KSPSetNormType(ksp,KSP_UNPRECONDIITONED_NORM)
+      is used there is no B in the above formula. UIRNorm is short for Use Initial Residual Norm.
+
+   Collective on KSP
+
+   Input Parameters:
+.  ksp   - iterative context
+
+   Use KSPSetTolerances() to alter the defaults for rtol, abstol, dtol.
+
+   The precise values of reason are macros such as KSP_CONVERGED_RTOL, which
+   are defined in petscksp.h.
+
+   Level: intermediate
+
+.keywords: KSP, default, convergence, residual
+
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP ksp)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  ksp->defaultconvergedinitialrtol = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPDefaultConverged"
 /*@C
    KSPDefaultConverged - Determines convergence of
@@ -364,7 +395,9 @@ $      rnorm > dtol * rnorm_0,
 +     rtol = relative tolerance,
 .     abstol = absolute tolerance.
 .     dtol = divergence tolerance,
--     rnorm_0 = initial residual norm
+-     rnorm_0 is the two norm of the right hand side. When initial guess is non-zero you 
+          can call KSPDefaultConvergedSetUIRNorm() to use the norm of (b - A*(initial guess))
+          as the starting point for relative norm convergence testing.
 
    Use KSPSetTolerances() to alter the defaults for rtol, abstol, dtol.
 
@@ -375,7 +408,8 @@ $      rnorm > dtol * rnorm_0,
 
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason()
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(),
+          KSPDefaultConvergedSetUIRNorm().
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
@@ -388,7 +422,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
 
   if (!n) {
     /* if user gives initial guess need to compute norm of b */
-    if (!ksp->guess_zero) {
+    if (!ksp->guess_zero && !ksp->defaultconvergedinitialrtol) {
       PetscReal      snorm;
       if (ksp->normtype == KSP_UNPRECONDITIONED_NORM || ksp->pc_side == PC_RIGHT) {
         ierr = PetscInfo(ksp,"user has provided nonzero initial guess, computing 2-norm of RHS\n");CHKERRQ(ierr);

@@ -112,7 +112,8 @@ $                 supported only by CG, Richardson, Bi-CG-stab, CR, and CGS meth
 $   KSP_PRECONDITIONED_NORM - the default for left preconditioned solves, uses the l2 norm
 $                 of the preconditioned residual
 $   KSP_UNPRECONDITIONED_NORM - uses the l2 norm of the true b - Ax residual, supported only by
-$                 CG, CHEBYCHEV, and RICHARDSON  
+$                 CG, CHEBYCHEV, and RICHARDSON, automatically true for right (see KSPSetPreconditioningSide) 
+$                 preconditioning..
 $   KSP_NATURAL_NORM - supported  by cg, cr, and cgs 
 
 
@@ -475,6 +476,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetType(KSP ksp,KSPType *type)
 .   -ksp_atol abstol - absolute tolerance used in default convergence test, i.e. if residual 
                 norm is less than this then convergence is declared
 .   -ksp_divtol tol - if residual norm increases by this factor than divergence is declared
+.   -ksp_converged_use_initial_residual_norm - see KSPDefaultConvergedSetUIRNorm()
 .   -ksp_norm_type - none - skip norms used in convergence tests (useful only when not using 
 $                       convergence test (say you always want to run with 5 iterations) to 
 $                       save on communication overhead
@@ -507,7 +509,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
   char           type[256], monfilename[PETSC_MAX_PATH_LEN];
   const char     *stype[] = {"none","preconditioned","unpreconditioned","natural"};
   PetscViewer    monviewer;
-  PetscTruth     flg;
+  PetscTruth     flg,flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -530,6 +532,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsReal("-ksp_rtol","Relative decrease in residual norm","KSPSetTolerances",ksp->rtol,&ksp->rtol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ksp_atol","Absolute value of residual norm","KSPSetTolerances",ksp->abstol,&ksp->abstol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ksp_divtol","Residual norm increase cause divergence","KSPSetTolerances",ksp->divtol,&ksp->divtol,PETSC_NULL);CHKERRQ(ierr);
+
+    ierr = PetscOptionsName("-ksp_converged_use_initial_residual_norm","Use initial residual residual norm for computing relative convergence","KSPDefaultConvergedSetUIRNorm",&flag);CHKERRQ(ierr);
+    if (flag) {ierr = KSPDefaultConvergedSetUIRNorm(ksp);CHKERRQ(ierr);}
+
     ierr = PetscOptionsTruth("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,
                                   &ksp->guess_knoll,PETSC_NULL);CHKERRQ(ierr);
 

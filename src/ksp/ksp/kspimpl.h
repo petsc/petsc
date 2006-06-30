@@ -44,6 +44,7 @@ struct _p_KSP {
             abstol,                     /* absolute tolerance */
             ttol,                     /* (not set by user)  */
             divtol;                   /* divergence tolerance */
+  PetscTruth defaultconvergedinitialrtol; /* default relative residual decrease is computing from initial residual, not rhs */
   PetscReal rnorm0;                   /* initial residual norm (used for divergence testing) */
   PetscReal rnorm;                    /* current residual norm */
   KSPConvergedReason reason;     
