@@ -61,12 +61,14 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #if defined(PETSC_USE_COMPLEX)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
-  PetscInt    i;
-  PetscScalar sum = 0.0;
-  for (i=0; i<xin->map.n; i++) {
-    sum += xa[i]*ya[i];
-  }
-  *z = sum;
+ {
+   PetscInt    i;
+   PetscScalar sum = 0.0;
+   for (i=0; i<xin->map.n; i++) {
+     sum += xa[i]*ya[i];
+   }
+   *z = sum;
+ }
 #else
   *z = BLASdot_(&bn,xa,&one,ya,&one);
 #endif

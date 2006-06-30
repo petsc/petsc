@@ -27,6 +27,7 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
+    self.types = framework.require('config.types', self)
     return
 
   def configureScalarType(self):
@@ -34,6 +35,10 @@ class Configure(config.base.Configure):
     self.scalartype = self.framework.argDB['with-scalar-type'].lower()
     if self.scalartype == 'complex':
       self.addDefine('USE_COMPLEX', '1')
+      if self.clanguage == 'C' and not self.types.c99_complex:
+        raise RuntimeError('C Compiler provided doest not support C99 complex')
+      if self.clanguage == 'Cxx' and not self.types.cxx_complex:
+        raise RuntimeError('Cxx compiler provided does not support std::complex')
     elif not self.scalartype == 'real':
       raise RuntimeError('--with-scalar-type must be real or complex')
     self.framework.logPrint('Scalar type is '+str(self.scalartype))
@@ -69,8 +74,9 @@ class Configure(config.base.Configure):
     self.clanguage = self.framework.argDB['with-clanguage'].upper().replace('+','x').replace('X','x')
     if not self.clanguage in ['C', 'Cxx']:
       raise RuntimeError('Invalid C language specified: '+str(self.clanguage))
-    if self.scalartype == 'complex':
-      self.clanguage = 'Cxx'
+
+  def configureLanguageSupport(self):
+    '''Check c-support c++-support and other misc tests'''
     if self.clanguage == 'C' and not self.framework.argDB['with-c++-support'] and not self.packagesHaveCxx():
       self.framework.argDB['with-cxx'] = '0'
       self.framework.logPrint('Turning off C++ support')
@@ -104,9 +110,10 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
+    self.executeTest(self.configureCLanguage)
     self.executeTest(self.configureScalarType)
     self.executeTest(self.configurePrecision)
-    self.executeTest(self.configureCLanguage)
+    self.executeTest(self.configureLanguageSupport)
     self.executeTest(self.configureExternC)
     self.executeTest(self.configureFortranLanguage)
     return

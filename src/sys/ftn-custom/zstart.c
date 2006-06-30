@@ -308,8 +308,14 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
      are not called; at least on IRIX.
   */
   {
+#if defined(PETSC_CLANGUAGE_CXX)
     PetscScalar ic(0.0,1.0);
     PETSC_i = ic;
+#else
+    PetscScalar ic;
+    ic = 1.I;
+    PETSC_i = ic;
+#endif
   }
   *ierr = MPI_Type_contiguous(2,MPIU_REAL,&MPIU_COMPLEX);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types");return;}

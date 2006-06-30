@@ -41,7 +41,7 @@ int main(int argc,char **args)
   Mat            A;            /* linear system matrix */
   KSP            ksp;         /* linear solver context */
   PetscReal      norm;         /* norm of solution error */
-  PetscInt       dim,i,j,I,J,Istart,Iend,n = 6,its,use_random;
+  PetscInt       dim,i,j,Ii,J,Istart,Iend,n = 6,its,use_random;
   PetscErrorCode ierr;
   PetscScalar    v,none = -1.0,sigma2,pfive = 0.5,*xa;
   PetscRandom    rctx;
@@ -96,19 +96,19 @@ int main(int argc,char **args)
     sigma2 = 10.0*PETSC_i;
   }
   h2 = 1.0/((n+1)*(n+1));
-  for (I=Istart; I<Iend; I++) { 
-    v = -1.0; i = I/n; j = I - i*n;  
+  for (Ii=Istart; Ii<Iend; Ii++) { 
+    v = -1.0; i = Ii/n; j = Ii - i*n;  
     if (i>0) {
-      J = I-n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      J = Ii-n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (i<n-1) {
-      J = I+n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      J = Ii+n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (j>0) {
-      J = I-1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      J = Ii-1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (j<n-1) {
-      J = I+1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      J = Ii+1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     if (use_random) {ierr = PetscRandomGetValueImaginary(rctx,&sigma2);CHKERRQ(ierr);}
     v = 4.0 - sigma1*h2 + sigma2*h2;
-    ierr = MatSetValues(A,1,&I,1,&I,&v,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
   }
   if (use_random) {ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);}
 

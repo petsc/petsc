@@ -137,7 +137,7 @@ static PetscErrorCode PetscSortIntWithArray_Private(PetscInt *v,PetscInt *V,Pets
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt I[])
+PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt Ii[])
 {
   PetscErrorCode ierr;
   PetscInt j,k,tmp,ik;
@@ -148,13 +148,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithArray(PetscInt n,PetscInt i[],Pet
       ik = i[k];
       for (j=k+1; j<n; j++) {
 	if (ik > i[j]) {
-	  SWAP2(i[k],i[j],I[k],I[j],tmp);
+	  SWAP2(i[k],i[j],Ii[k],Ii[j],tmp);
 	  ik = i[k];
 	}
       }
     }
   } else {
-    ierr = PetscSortIntWithArray_Private(i,I,n-1);CHKERRQ(ierr);
+    ierr = PetscSortIntWithArray_Private(i,Ii,n-1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -211,7 +211,7 @@ static PetscErrorCode PetscSortIntWithScalarArray_Private(PetscInt *v,PetscScala
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar I[])
+PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar Ii[])
 {
   PetscErrorCode ierr;
   PetscInt       j,k,tmp,ik;
@@ -223,13 +223,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithScalarArray(PetscInt n,PetscInt i
       ik = i[k];
       for (j=k+1; j<n; j++) {
 	if (ik > i[j]) {
-	  SWAP2IntScalar(i[k],i[j],I[k],I[j],tmp,stmp);
+	  SWAP2IntScalar(i[k],i[j],Ii[k],Ii[j],tmp,stmp);
 	  ik = i[k];
 	}
       }
     }
   } else {
-    ierr = PetscSortIntWithScalarArray_Private(i,I,n-1);CHKERRQ(ierr);
+    ierr = PetscSortIntWithScalarArray_Private(i,Ii,n-1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
