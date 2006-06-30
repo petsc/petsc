@@ -27,9 +27,9 @@ extern  MPI_Datatype PETSC_DLLEXPORT MPIU_2INT;
 #define PetscExpPassiveScalar(a) PetscExpScalar()
 
 #if defined(PETSC_USE_COMPLEX)
-
+#if defined(PETSC_CLANGUAGE_CXX)
 /*
-   PETSc now only supports std::complex
+   C++ support of complex numbers: Original support
 */
 #include <complex>
 
@@ -52,6 +52,34 @@ extern  MPI_Datatype PETSC_DLLEXPORT MPIU_COMPLEX;
 #define PetscCosScalar(a)   std::cos(a)
 
 typedef std::complex<double> PetscScalar;
+#else
+#include <complex.h>
+
+/* 
+   C support of complex numbers: Warning it needs a 
+   C90 compliant compiler to work...
+ */
+
+extern  MPI_Datatype PETSC_DLLEXPORT MPIU_COMPLEX;
+#define MPIU_SCALAR         MPIU_COMPLEX
+#if defined(PETSC_USE_MAT_SINGLE)
+#define MPIU_MATSCALAR        ??Notdone
+#else
+#define MPIU_MATSCALAR      MPIU_COMPLEX
+#endif
+
+#define PetscRealPart(a)        creal(a)
+#define PetscImaginaryPart(a)   cimag(a)
+#define PetscAbsScalar(a)   cabs(a)
+#define PetscConj(a)        conj(a)
+#define PetscSqrtScalar(a)  csqrt(a)
+#define PetscPowScalar(a,b) cpow(a,b)
+#define PetscExpScalar(a)   cexp(a)
+#define PetscSinScalar(a)   csin(a)
+#define PetscCosScalar(a)   ccos(a)
+
+typedef double complex PetscScalar;
+#endif
 
 /* Compiling for real numbers only */
 #else

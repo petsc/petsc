@@ -2285,7 +2285,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,PetscInt csize,M
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAIJSetPreallocationCSR_MPIAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt I[],const PetscInt J[],const PetscScalar v[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt Ii[],const PetscInt J[],const PetscScalar v[])
 {
   PetscInt       m,cstart, cend,j,nnz,i,d; 
   PetscInt       *d_nnz,*o_nnz,nnz_max = 0,rstart,ii;
@@ -2294,7 +2294,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,cons
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (I[0]) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"I[0] must be 0 it is %D",I[0]);
+  if (Ii[0]) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Ii[0] must be 0 it is %D",Ii[0]);
 
   B->rmap.bs = B->cmap.bs = 1;
   ierr = PetscMapInitialize(B->comm,&B->rmap);CHKERRQ(ierr);
@@ -2308,8 +2308,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,cons
   o_nnz = d_nnz + m;
 
   for (i=0; i<m; i++) {
-    nnz     = I[i+1]- I[i];
-    JJ      = J + I[i];
+    nnz     = Ii[i+1]- Ii[i];
+    JJ      = J + Ii[i];
     nnz_max = PetscMax(nnz_max,nnz);
     if (nnz < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative %D number of columns",i,nnz);
     for (j=0; j<nnz; j++) {
@@ -2336,8 +2336,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,cons
   ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     ii   = i + rstart;
-    nnz  = I[i+1]- I[i];
-    ierr = MatSetValues_MPIAIJ(B,1,&ii,nnz,J+I[i],values+(v ? I[i] : 0),INSERT_VALUES);CHKERRQ(ierr);
+    nnz  = Ii[i+1]- Ii[i];
+    ierr = MatSetValues_MPIAIJ(B,1,&ii,nnz,J+Ii[i],values+(v ? Ii[i] : 0),INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2880,7 +2880,7 @@ PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat A,PetscInt nl,void *advalues)
 PetscErrorCode PETSCMAT_DLLEXPORT MatMerge(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
   PetscErrorCode ierr;
-  PetscInt       m,N,i,rstart,nnz,I,*dnz,*onz;
+  PetscInt       m,N,i,rstart,nnz,Ii,*dnz,*onz;
   PetscInt       *indx;
   PetscScalar    *values;
 
@@ -2915,8 +2915,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge(MPI_Comm comm,Mat inmat,PetscInt n,Ma
 
   for (i=0;i<m;i++) {
     ierr = MatGetRow_SeqAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
-    I    = i + rstart;
-    ierr = MatSetValues(*outmat,1,&I,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
+    Ii    = i + rstart;
+    ierr = MatSetValues(*outmat,1,&Ii,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatRestoreRow_SeqAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
   }
   ierr = MatDestroy(inmat);CHKERRQ(ierr);

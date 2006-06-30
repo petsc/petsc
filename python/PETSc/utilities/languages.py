@@ -69,8 +69,8 @@ class Configure(config.base.Configure):
     self.clanguage = self.framework.argDB['with-clanguage'].upper().replace('+','x').replace('X','x')
     if not self.clanguage in ['C', 'Cxx']:
       raise RuntimeError('Invalid C language specified: '+str(self.clanguage))
-    if self.scalartype == 'complex':
-      self.clanguage = 'Cxx'
+#    if self.scalartype == 'complex':
+#      self.clanguage = 'Cxx'
     if self.clanguage == 'C' and not self.framework.argDB['with-c++-support'] and not self.packagesHaveCxx():
       self.framework.argDB['with-cxx'] = '0'
       self.framework.logPrint('Turning off C++ support')
