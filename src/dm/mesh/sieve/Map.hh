@@ -22,7 +22,7 @@ namespace ALE {
       typedef Point_  point_type;
       typedef Chart_  chart_type;
       typedef Index_  index_type;
-      typedef ASifter<Point_, Chart_, typename ALE::pair<int,int>, SifterDef::uniColor> sifter_type;
+      typedef ASifter<Point_, Chart_, typename ALE::pair<index_type,index_type>, SifterDef::uniColor> sifter_type;
     public:
       //
       // Basic interface
