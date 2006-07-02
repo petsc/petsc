@@ -1,0 +1,27 @@
+Map & ParMap concepts.
+-----------------------
+Because of the use of templating and generic programming techniques,
+Maps and ParMaps cannot be defined by making progressively specific class
+declarations within a given hierarchy. Instead, they must satisfy certain
+Concept requirements that make them acceptable inputs to various Algorithms.
+This reflects a shortcoming of the current compiler technology that Concepts
+have to be specified in documentation, rather than within the language.
+
+In their own turn, Maps and ParMaps can be viewed as encapsulating Algorithms
+acting on other objects implementing certain concepts.  Most importantly,
+a Map must advertise the Atlases (also concepts) of the input and output CoSifter
+types.  Furthermore, a Map acts essentially as a CoSifter relative to the output
+atlas, extends the CoSifter interface by defining restrictions to output 
+(point,chart) pairs with a given an input CoSifter.
+
+Particular Maps can impose further contstraints on the input/output atlases
+and expand the interface, so long as they conform to the Map concept outlined above.
+For example, a ParMap is itself a concept of a class that extends the Map concept AND
+that encapsulate three conceptual Maps: Gather,Scatter and the Fuser.
+  
+The Gather output atlas has the same structure as the ParMap input atlas,
+while the Gather output atlas  combines the ParMap input (point,chart) pairs into 
+the source and puts the communicator rank in the target.
+The Scatter input/output atlases have the structure of the output/input atlases of Gather
+respectively.
+The Fuser atlases have the same structure as the ParMap atlases.
