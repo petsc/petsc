@@ -1,27 +1,136 @@
+Concepts.
+-----------
+Because of the use of templating and generic programming techniques,
+many fundamental ALE types cannot be defined by making progressively specific 
+class declarations within a given hierarchy. Instead, they must satisfy certain
+Concept requirements that make them acceptable inputs to various Algorithms.
+This reflects a shortcoming of the current compiler technology that some defining
+features of Concepts have to be specified in documentation, rather than within the 
+language.  Sometimes, however, conceptual types can be viewed as themselves 
+encapsulating Algorithms acting on other types implementing certain concepts.
+This allows to define the structure of these algorithmic types using generic 
+programming techniques available in C++, for example.
+
+
+Atlas & Sec
+-----------------------
+In the past we have considered the Atlas concept, which, for the given
+Sifter, chart and ind types computed the assignment of indices
+to the points in the underlying Sieve (relative to a given chart).
+This mimics a system of local coordinate systems on a manifold or some
+such space. 
+
+Essentially, Atlas can be thought of as a Sifter, with the 
+underlying Sifter's points (base or cap?) in the cap, charts in the base
+and indices being the color on the edges.  However, any type that responds
+to the fundamental requests -- setting the number of indices over a point 
+(fiber dimension), (re)ordering the indices after some dimension modifications
+have been made, and retrieving the indices -- is an Atlas.
+
+An object that assigns data of a given type to the (point, chart) pairs of an Atlas 
+is called its section or Sec.  If an Atlas is viewed as a discrete model of a structure
+bundle over the point space, a Sec is a discrete model of a section of that bundle.
+Sec is required to define a restrict method, which, given a (point,chart) pair returns
+a data iterator.  
+
+If the Sifter underling the Atlas is a Sieve, we assume that to each
+covering arrow p --> q (within the same chart), corresponds a mapping of the data d(p) <-- d(q),
+reflecting the idea that d(q) can be 'restricted' to d(p) within the same chart (or perhaps 
+in any chart?).  This sort of behavior is certainly impossible to guarantee through
+an interface specification, but it remains a conceptual requirement on Sec that 
+the data over p are somehow "included" in the data over q.  This "inclusion" is partly specified
+in the Atlas (e.g., by ensuring that the indices over p are included in those over q),
+and partly in Sec itself.
+
+
 Map & ParMap concepts.
 -----------------------
-Because of the use of templating and generic programming techniques,
-Maps and ParMaps cannot be defined by making progressively specific class
-declarations within a given hierarchy. Instead, they must satisfy certain
-Concept requirements that make them acceptable inputs to various Algorithms.
-This reflects a shortcoming of the current compiler technology that Concepts
-have to be specified in documentation, rather than within the language.
+A Map is thought of as a type of mapping from a Sec class to another Sec class.
+Maps and ParMaps can be viewed as algorithmic types acting on the input/output Sec types.  
+Most importantly, a Map must advertise the Atlases of the input and output Sec
+types.  Furthermore, a Map acts essentially as a Sec relative to the output
+atlas: giving a fixed input Sec S, a Map extends the Sec interface by defining restrictions 
+to output  (point,chart) pairs relative to S.  Alternatively, a Map can return an output Sec T,
+containing the result of applying the map to S, which can be queried independently.
 
-In their own turn, Maps and ParMaps can be viewed as encapsulating Algorithms
-acting on other objects implementing certain concepts.  Most importantly,
-a Map must advertise the Atlases (also concepts) of the input and output CoSifter
-types.  Furthermore, a Map acts essentially as a CoSifter relative to the output
-atlas, extends the CoSifter interface by defining restrictions to output 
-(point,chart) pairs with a given an input CoSifter.
-
-Particular Maps can impose further contstraints on the input/output atlases
+With these features of a Map hardly define any implementation structure (rather an interface), 
+since the particular behavior of restrictions is unconstrained by this specification.  
+Particular Maps can impose further constraints on the input/output atlases
 and expand the interface, so long as they conform to the Map concept outlined above.
-For example, a ParMap is itself a concept of a class that extends the Map concept AND
-that encapsulate three conceptual Maps: Gather,Scatter and the Fuser.
-  
+For example, we can require that each output chart data depend only on the explicitly specified 
+input charts' data.  This is done by specifying the 'lightcone' Sifter or a Sieve, connecting 
+the input charts to the output charts they depend on.  Taking the cone (or the closure, if it's 
+a Sieve) of a given output chart in the lightcone returns all of the input charts necessary
+to compute the data over the output chart.
+
+The specification of a Map's lightcone is very necessary to enable preallocation of internal 
+data structures, such as the matrix storage, for linear maps.  In the distributed context
+it also enables the setup of communication structures.  This behavior is encapsulated in 
+a ParMap, which is itself a conceptual type that extends Map AND that encapsulate three conceptual 
+Map objects: Gather,Scatter and the Transform.  A ParMap is then an algorithm that acts
+on the encapsulated Maps an the lightcone;  it is also an object that behaves as a Map.
+
 The Gather output atlas has the same structure as the ParMap input atlas,
-while the Gather output atlas  combines the ParMap input (point,chart) pairs into 
-the source and puts the communicator rank in the target.
-The Scatter input/output atlases have the structure of the output/input atlases of Gather
-respectively.
-The Fuser atlases have the same structure as the ParMap atlases.
+while the Gather input atlas  combines the ParMap input (point,chart) pairs into 
+the source and puts the communicator rank in the target. The Scatter input/output atlases have the 
+structure of the output/input atlases of Gather respectively. The Transform atlases have the same 
+structure as the ParMap atlases.
+                  (Gather input)                  (Gather output == Transform input)            
+                                       
+                          index                            index                       
+            (point,chart) -----> rank     <==>       point -----> chart   
+
+                  (Scatter output)                (Scatter input == Transform input)            
+
+Gather constructs its input atlas from ParMap's input atlas using the lightcone.
+Since the Gather/Scatter pair are tightly coupled, it may be advantageous to treat them as a single 
+object implementing the BiMap concept, which in addition to restriction and map operations defines 
+inverse restriction and map operations.  This way we can guarantee the coherence of the input/output 
+atlas relations between Gather/Scatter, as well as the reuse of the encapsulated data structures.
+In general, it seems that BiMaps are useful any time there is an isomorphism (i.e., an invertible map).
+
+
+The Gather input/Scatter output atlas essentially applies the idea of a chart recursively:
+Transform input charts are distributed among different processes.  Given a single process, its overlap
+with other processes can be indexed by their remote communicator ranks.  All (point_in,chart_in) pairs shared
+with a given rank are part of a single rank-chart.  This way a single in-chart is "blown up"
+into a "multisheeted" covering by rank-charts; each (point_in,chart_in) pair becomes a rank-point within 
+one or many rank-charts.  
+
+The data over this rank-atlas are essentially the data in the send/receive buffers,
+and the Scatter map is responsible for (multiplexing) packing and moving the data from the input Sec into the rank-Sec 
+encapsulating these buffers. Once this has been done, ParMap executes the communication code (send/recv),
+and the rank-multisheeted data are transfered to the required processes.  
+
+                                    Scatter                                     send/recv
+                                                                   ... rank_0
+             point_in --> chart_in    ==>      (point_in,chart_in) --> rank_k      ==> 
+                                                                   ... rank_K
+
+Then Gather reduces the data over a single (point_in,chart_in) pair in all of the rank-charts.  This can be thought 
+of as gluing all of the partial sections over the overlaps with remote processes into a single "remote" Sec and then
+gluing it with the "local" Sec.  Once the remote data have been assimilated into the local input Sec, Transform does
+its thing.
+
+
+                                     rank_0    Gather                        Transform
+                                ...
+            (point_in,chart_in) -->  rank_n     ==>    point_in --> chart_in    ==>      point_out --> chart_out
+                                ...
+                                     rank_N
+
+
+            
+
+Observe that the structure of the Gather input atlas is essentially the same as the structure of the
+Overlap Sifter in ParDelta, therefore the Overlap code can be reused.  However, that code is not customizable,
+while we may want to allow Gather/Scatter the flexibility to massage the atlas (e.g., to keep only 
+s single rank for a given (point,chart) pair, thereby implementing the 'owner' concept).  Making Gather/Scatter
+a class will allow this flexibility by exposing the input atlas computation method to overloading.
+The prototypical Gather/Scatter object will be implemented to keep all of the ranks in the remote overlap under
+a given (point_in, chart_in) pair.  Custom Gather/Scatter objects may prune that so that the number and amount
+of data sent/recv'd by ParMap is only as required.  Here we assume that the overlap is small and computed only once
+or infrequently, while ParMap mappings are frequent.
+
+             
+            
