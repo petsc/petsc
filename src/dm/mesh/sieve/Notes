@@ -66,12 +66,39 @@ to compute the data over the output chart.
 The specification of a Map's lightcone is very necessary to enable preallocation of internal 
 data structures, such as the matrix storage, for linear maps.  In the distributed context
 it also enables the setup of communication structures.  This behavior is encapsulated in 
-a ParMap, which is itself a conceptual type that extends Map AND that encapsulate three conceptual 
-Map objects: Gather,Scatter and the Transform.  A ParMap is then an algorithm that acts
-on the encapsulated Maps an the lightcone;  it is also an object that behaves as a Map.
+a ParMap, which is itself a conceptual type that extends Map.  ParMap encapsulates (among other things) 
+three conceptual Map objects: Gather,Scatter and the Transform. A ParMap is then an algorithm that orchestrates 
+the action of other maps.
+
+***
+  The ParMap algorithm is a most clear illustration of the locazation principle underlying Sieves and computation over
+them: restrict-compute-assemble.  To compute the action of a ParMap on a distributed Sec the necessary data must be
+communicate to and from the processes requiring and holding the data.  The total overlap of a processes domain with the
+rest of the communicator is naturally covered by the individual overlaps indexed by the remote ranks. 
+  To communicate the local input Sec data to the remote processes, the Sec is first restricted to each of the overlap pieces, 
+forming another Sec, whose charts are the overlaps indexed by indices, and whose points are the (in_point,in_chart)
+pairs on which in the input Sec is defined.  This Sec can be viewed as multisheeted coverings of the overlap porition
+of the input Sec, and the multiplexing process forming the new Sec will be called Scatter.  It is a map between two Secs
+with the input atlas and the new rank-indexed atlas.
+  After Scatter maps the input Sec to a multisheeted covering, the multisheeted data are communicated to the processes according
+to the rank in each chart. This can be viewed as a map between two such Secs -- communication is certainly a mapping in
+the distributed context -- done 'locally' over each chart.  Thus, the data from the input Sec are first localized onto
+each rank-chart, then mapped, and finally must be assembled. 
+  To obtain a Sec over the local domain, the Scatter process must be reversed, using the a map called Gather.  Gather
+takes in the multisheeted covering of the overlap obtained after the communication phase, and obtains a single
+(in_point,in_chart) data point from the collection of all such points over all the rank charts.  During this reduction
+the overlap portion of the communicated input Sec is unified with the local data over the same (in_point,in_chart) pair,
+completing the assembly of the input Sec.
+  Once the input data have been communicate to the consuming processes, Transform locally maps the data from the input
+Sec to the output Sec.  The Gather/Scatter maps involved in the communication stage depend on the GatherAtlas, which
+describes the multisheeted covering of InAtlas.  Gather/Scatter maps can in principle operate on a Sec of any Atlas,
+unifying the data over the same point in different charts, producing a Sec over a single-charted atlas.  Different
+implementations of Gather/Scatter lead to different multiplexing/reduction procedures, while the atlas structure stays
+the same.  Gather/Scatter maps can be used locally as well and need not act on the result of a communication.
+***
 
 The Gather output atlas has the same structure as the ParMap input atlas,
-while the Gather input atlas  combines the ParMap input (point,chart) pairs into 
+while the Gather input atlas  -- GatherAtlas -- combines the ParMap input (point,chart) pairs into 
 the source and puts the communicator rank in the target. The Scatter input/output atlases have the 
 structure of the output/input atlases of Gather respectively. The Transform atlases have the same 
 structure as the ParMap atlases.
@@ -82,14 +109,7 @@ structure as the ParMap atlases.
 
                   (Scatter output)                (Scatter input == Transform input)            
 
-Gather constructs its input atlas from ParMap's input atlas using the lightcone.
-Since the Gather/Scatter pair are tightly coupled, it may be advantageous to treat them as a single 
-object implementing the BiMap concept, which in addition to restriction and map operations defines 
-inverse restriction and map operations.  This way we can guarantee the coherence of the input/output 
-atlas relations between Gather/Scatter, as well as the reuse of the encapsulated data structures.
-In general, it seems that BiMaps are useful any time there is an isomorphism (i.e., an invertible map).
-
-
+GatherAtlas is constructed from ParMap's input atlas using the lightcone.
 The Gather input/Scatter output atlas essentially applies the idea of a chart recursively:
 Transform input charts are distributed among different processes.  Given a single process, its overlap
 with other processes can be indexed by their remote communicator ranks.  All (point_in,chart_in) pairs shared
@@ -119,16 +139,13 @@ its thing.
                                 ...
                                      rank_N
 
-
-            
-
-Observe that the structure of the Gather input atlas is essentially the same as the structure of the
+Observe that the structure of the GatherAtlas is essentially the same as the structure of the
 Overlap Sifter in ParDelta, therefore the Overlap code can be reused.  However, that code is not customizable,
-while we may want to allow Gather/Scatter the flexibility to massage the atlas (e.g., to keep only 
-s single rank for a given (point,chart) pair, thereby implementing the 'owner' concept).  Making Gather/Scatter
+while we may want to allow the GatherAtlas  constructor the flexibility to massage the atlas (e.g., to keep only 
+s single rank for a given (point,chart) pair, thereby implementing the 'owner' concept).  Making GatherAtlas a class
 a class will allow this flexibility by exposing the input atlas computation method to overloading.
-The prototypical Gather/Scatter object will be implemented to keep all of the ranks in the remote overlap under
-a given (point_in, chart_in) pair.  Custom Gather/Scatter objects may prune that so that the number and amount
+The prototypical GatherAtlas object will be implemented to keep all of the ranks in the remote overlap under
+a given (point_in, chart_in) pair.  Custom GatherAtlas objects may prune that so that the number and amount
 of data sent/recv'd by ParMap is only as required.  Here we assume that the overlap is small and computed only once
 or infrequently, while ParMap mappings are frequent.
 
