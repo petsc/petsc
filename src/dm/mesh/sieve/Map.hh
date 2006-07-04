@@ -12,7 +12,7 @@
 namespace ALE {
   namespace X {
 
-    // We require that any class implementing the Atlas concept have a constructor from MPI_Comm.
+    // We require that any class implementing the Atlas concept extending Sifter.
     template <typename Point_, typename Chart_, typename Ind_>
     class Atlas : public ASifter<Point_, Chart_, typename ALE::pair<Ind_,Ind_>, SifterDef::uniColor> {
     public:
@@ -241,6 +241,16 @@ namespace ALE {
       };// computeAtlas()
 
     protected:
+      // Internal type definitions to ensure compatibility with the legacy code in the parallel subroutines
+      typedef ALE::Point                                Point;
+      typedef int                                            int32_t;
+      typedef ALE::pair<int32_t, int32_t>                    int_pair;
+      typedef ALE::set<std::pair<int32_t, int32_t> >         int_pair_set;
+      typedef ALE::map<int32_t,int32_t>                      int__int;
+      typedef ALE::map<Point, int32_t>                       Point__int;
+      typedef ALE::map<Point, std::pair<int32_t,int32_t> >   Point__int_int;
+      typedef ALE::map<Point, int_pair_set>                  Point__int_pair_set;
+
       template <typename Sequence>
       svoid __determinePointOwners(const Obj<Sequence>& points, int32_t *LeaseData, Point__int& owner) {
         PetscErrorCode ierr;
@@ -353,7 +363,7 @@ namespace ALE {
 
       template <typename BaseSequence_>
       void __pullbackAtlas(const BaseSequence& pointsB, Obj<gather_atlas_type>& gather_atlas) {
-        typedef typename graph_type::traits::baseSequence Sequence;
+        typedef typename in_atlas_type::traits::baseSequence Sequence;
         MPI_Comm       comm = _graphA->comm();
         int            size = _graphA->commSize();
         int            rank = _graphA->commRank();
@@ -766,13 +776,14 @@ namespace ALE {
     public:
     }; // class GatherAtlas
 
-    template <typename Data_, typename GatherAtlas_, typename Gather_, typename Scatter_, typename Transform_>
+    template <typename Data_, typename Transform_, typename GatherScatter_, typename Communicate_>
     class ParMap { // class ParMap
     public:
       //
       // Encapsulated types
       // 
-      //  GatherAtlas is an Atlas encapsulating two other atlases, InAtlas and OutAtlas, and Lightcone, which is a Sieve.
+      //  GatherScatter is an object that encapsulates GatherAtlas and Gather & Scatter objects.
+      // GatherAtlas is an Atlas encapsulating two other atlases, InAtlas and OutAtlas, and Lightcone, which is a Sieve.
       // InAtlas refers to the Sec, which is the argument of the ParMap, while OutAtlas refers to the Sec which is the result of ParMap.
       // InAtlas_ and OutAtlas_ have arrows from points to charts decorated with indices into Data_ storage of the input/output Sec 
       // respectively.  
@@ -782,23 +793,31 @@ namespace ALE {
       // a refinement of this can be achieved by subclassing (or implementing a new) GatherAtlas.
       //  Gather is  a Map that reduce a Sec over GatherAtlas with data over each ((in_point,in_chart),rank) pair to a Sec over InAtlas,
       // with data over each (in_point, in_chart) pair.  Scatter maps in the opposite direction by "multiplexing" the data onto a 
-      // rank-indexed covering. Transform is a Map sending an InAtlas Sec obtained from Gather, into an OutAtlas Sec.
-      typedef Data_                                      data_type;
-      typedef GatherAtlas_                               gather_atlas_type;
-      typedef typename gather_atlas_type::in_atlas_type  in_atlas_type;
-      typedef typename gather_atlas_type::out_atlas_type out_atlas_type;
-      typedef typename lightcone_type::out_atlas_type    lightcone_type;
+      // rank-indexed covering. 
+      //  Communicate is a map from a Sec of GatherAtlas to another such Sec. Transform is a Map sending an InAtlas Sec obtained from 
+      // Gather, into an OutAtlas Sec.
+      typedef Data_                                           data_type;
+      typedef GatherScatter__                                 gather_scatter_type;
+      typedef typename gather_scatter_type::gather_atlas_type gather_atlas_type;
+      typedef typename gather_atlas_type::in_atlas_type       in_atlas_type;
+      typedef typename gather_atlas_type::out_atlas_type      out_atlas_type;
+      typedef typename lightcone_type::out_atlas_type         lightcone_type;
       //
-      typedef Gather_                                    gather_type;
-      typedef Scatter_                                   scatter_type;
-      typedef Transform_                                 transform_type;
+      typedef typename gather_scatter_type::gather_type       gather_type;
+      typedef typename gather_scatter_type::scatter_type      scatter_type;
+      typedef Communicate_                                    communicat_type;
+      typedef Transform_                                      transform_type;
       //
     protected:
       int                             _debug;
+      //
+      Obj<transform_type>             _transform;
+      Obj<gather_scatter_type>        _gather_scatter;
+      Obj<communicate_type>           _communicate;
+      //
       Obj<gather_atlas_type>          _gather_atlas;
       Obj<gather_type>                _gather;
       Obj<scatter_type>               _scatter;
-      Obj<transform_type>             _transform;
       Obj<in_atlas_type>              _in_atlas;
       Obj<out_atlas_type>             _out_atlas;
       Obj<lightcone_type>             _lightcone;
@@ -813,11 +832,14 @@ namespace ALE {
       //
       // Basic interface
       //
-      ParMap(const Obj<gather_atlas_type>& gather_atlas,  Obj<gather_type>& gather, Obj<scatter_type>& scatter, Obj<transform_type>& transform) : _debug(0), _gather_atlas(gather_atlas), _gather(gather), _scatter(scatter), _transform(transform)
+      ParMap(const Obj<transform_type>& transform, const Obj<gather_scatter_type>& gather_scatter, const Obj<communicate_type>& communicate) : _debug(0), _transform(transform), _gather_scatter(gather_scatter), _communicate(communicate)
       {
-        this->_in_atlas  = gather_atlas->inAtlas();
-        this->_out_atlas = gather_atlas->outAtlas();
-        this->_lightcone = gather_atlas->lightcone();
+        this->_gather_atlas = this->_gather_scatter->gatherAtlas();
+        this->_gather       = this->_gather_scatter->gather();
+        this->_scatter      = this->_gather_scatter->scatter();
+        this->_in_atlas     = this->_gather_atlas->inAtlas();
+        this->_out_atlas    = this->_gather_atlas->outAtlas();
+        this->_lightcone    = this->_gather_atlas->lightcone();
       };
      ~ParMap(){};
       
