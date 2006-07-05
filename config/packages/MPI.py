@@ -52,6 +52,7 @@ class Configure(config.package.Package):
     help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded,filename>',  nargs.ArgDownload(None, 0, 'Download and install MPICH-2'))
     help.addArgument('MPI', '-with-mpirun=<prog>',                nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
+    help.addArgument('MPI', '-with-mpi-shared=<bool>',            nargs.ArgBool(None, None, 'Try to use shared MPI libraries'))
     help.addArgument('MPI', '-download-mpich-machines=[machine1,machine2...]',  nargs.Arg(None, ['localhost','localhost'], 'Machines for MPI to use'))
     help.addArgument('MPI', '-download-mpich-pm=gforker or mpd',  nargs.Arg(None, 'gforker', 'Launcher for MPI processes')) 
     help.addArgument('MPI', '-download-mpich-device=ch3:shm or see mpich2 docs', nargs.Arg(None, None, 'Communicator for MPI processes'))
