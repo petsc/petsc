@@ -41,7 +41,7 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
 PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Mesh>, Vec *);
-PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh>, const char[], Vec *);
+PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh>, const char[], int depth, Vec *);
 PetscErrorCode CreateSpacingFunction(ALE::Obj<ALE::Mesh>);
 
 typedef enum {PCICE, PYLITH} FileType;
@@ -115,18 +115,21 @@ int main(int argc, char *argv[])
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
     if (debug) {mesh->getTopology()->view("Serial topology");}
-    stage = ALE::LogStageRegister("MeshDistribution");
+
+    stage = ALE::LogStageRegister("Mesh Spacing");
     ALE::LogStagePush(stage);
     ierr = CreateSpacingFunction(mesh);CHKERRQ(ierr);
+    mesh->getField("spacing")->view("Mesh spacing");
     ALE::LogStagePop(stage);
+
     if (distribute) {
       stage = ALE::LogStageRegister("MeshDistribution");
       ALE::LogStagePush(stage);
       ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
       mesh = mesh->distribute();
       ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
-      ierr = CreateFieldVector(mesh, "material", &material);CHKERRQ(ierr);
-      ierr = CreateFieldVector(mesh, "spacing", &spacing);CHKERRQ(ierr);
+      ierr = CreateFieldVector(mesh, "material", mesh->getTopology()->depth(), &material);CHKERRQ(ierr);
+      ierr = CreateFieldVector(mesh, "spacing", 0, &spacing);CHKERRQ(ierr);
       ALE::LogStagePop(stage);
     }
 
@@ -206,6 +209,9 @@ PetscErrorCode CreateSpacingFunction(ALE::Obj<ALE::Mesh> mesh)
   ALE::Obj<ALE::Mesh::sieve_type::traits::depthSequence> vertices = topology->depthStratum(0);
   int                                                    dim      = coords->getFiberDimension(patch, *vertices->begin());
 
+  spacing->setPatch(vertices, patch);
+  spacing->setFiberDimensionByDepth(patch, 0, 1);
+  spacing->orderPatches();
   for(ALE::Mesh::sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
     ALE::Obj<ALE::Mesh::sieve_type::traits::supportSequence> support = topology->support(*v_iter);
     const double *vCoords = coords->restrict(patch, *v_iter);
@@ -262,7 +268,7 @@ PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Mesh> mesh, Vec *partition)
 /*
   Creates a vector whose value is the field value on each element
 */
-PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh> mesh, const char fieldName[], Vec *fieldVec)
+PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh> mesh, const char fieldName[], int depth, Vec *fieldVec)
 {
   if (!mesh->hasField(fieldName)) {
     *fieldVec = PETSC_NULL;
@@ -276,7 +282,7 @@ PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh> mesh, const char fieldName[
 
   PetscFunctionBegin;
   ALE_LOG_EVENT_BEGIN;
-  ierr = MeshCreateVector(mesh, mesh->getBundle(mesh->getTopology()->depth()), fieldVec);CHKERRQ(ierr);
+  ierr = MeshCreateVector(mesh, mesh->getBundle(depth), fieldVec);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *fieldVec, fieldName);CHKERRQ(ierr);
   ierr = MeshGetGlobalScatter(mesh, fieldName, *fieldVec, &injection); CHKERRQ(ierr);
 
