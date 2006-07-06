@@ -467,6 +467,15 @@ namespace ALE {
         throw ALE::Exception(msg.str().c_str());
       };
     public:
+      int getSize() {
+        Obj<typename order_type::baseSequence> patches = this->getPatches();
+        int totalSize = 0;
+
+        for(typename order_type::baseSequence::iterator p_iter = patches->begin(); p_iter != patches->end(); ++p_iter) {
+          totalSize += this->_storageSize[*p_iter];
+        }
+        return totalSize;
+      };
       int getSize(const patch_type& patch) {
         this->__checkPatch(patch);
         return this->_storageSize[patch];
