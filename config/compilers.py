@@ -763,7 +763,7 @@ class Configure(config.base.Configure):
     # check these monster libraries work from C++
     if hasattr(self.setCompilers, 'CXX'):
       self.logPrint('Check that Fortran libraries can be used from C++', 4, 'compilers')
-      self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+      self.setCompilers.LIBS = ' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])+' '+oldLibs
       try:
         self.setCompilers.checkCompiler('Cxx')
         self.logPrint('Fortran libraries can be used from C++', 4, 'compilers')
