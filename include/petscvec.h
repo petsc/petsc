@@ -46,6 +46,7 @@ E*/
 #define VECMPI         "mpi"
 #define VECFETI        "feti"
 #define VECSHARED      "shared"
+#define VECSIEVE       "sieve"
 #define VecType const char*
 
 /* Logging support */
