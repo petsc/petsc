@@ -109,6 +109,12 @@ runex4:
 runex5:
 	-@${MPIRUN} -np ${NP} ./ex5 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
 
+runex5_2:
+	-@${MPIRUN} -np ${NP} ./ex5 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}
+
+runex5_3:
+	-@${MPIRUN} -np ${NP} ./ex5 -dim 3 -use_zero_base 1 -base_file data/ex1_3d ${EXTRA_ARGS}
+
 testex1_1:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d > /dev/null 2>&1; \
     if (${DIFF} data/ex1_1d.lcon testMesh.lcon) then true; \
