@@ -2,4 +2,7 @@ syntax: glob
 *.pyc
 *~
 *.orig
+RDict.loc
+RDict.log
+
 
