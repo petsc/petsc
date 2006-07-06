@@ -619,7 +619,7 @@ static PetscErrorCode VecPublish_Seq(PetscObject obj)
 
 EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, VecType, Vec*);
 
-static struct _VecOps DvOps = {VecDuplicate_Seq,
+static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             VecDuplicateVecs_Default,
             VecDestroyVecs_Default,
             VecDot_Seq,
@@ -628,7 +628,7 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecTDot_Seq,
             VecMTDot_Seq,
             VecScale_Seq,
-            VecCopy_Seq,
+            VecCopy_Seq, /* 10 */
             VecSet_Seq,
             VecSwap_Seq,
             VecAXPY_Seq,
@@ -638,14 +638,15 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecWAXPY_Seq,
             VecPointwiseMult_Seq,
             VecPointwiseDivide_Seq, 
-            VecSetValues_Seq,0,0,
+            VecSetValues_Seq, /* 20 */
+            0,0,
             VecGetArray_Seq,
             VecGetSize_Seq,
             VecGetSize_Seq,
             VecRestoreArray_Seq,
             VecMax_Seq,
             VecMin_Seq,
-            VecSetRandom_Seq,0,
+            VecSetRandom_Seq,0, /* 30 */
             VecSetValuesBlocked_Seq,
             VecDestroy_Seq,
             VecView_Seq,
@@ -655,7 +656,7 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecTDot_Seq,
             VecNorm_Seq,
             VecMDot_Seq,
-            VecMTDot_Seq,
+            VecMTDot_Seq, /* 40 */
             VecLoadIntoVector_Default,
             VecReciprocal_Default,
             0, /* VecViewNative */
@@ -665,7 +666,7 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecResetArray_Seq,
             0,
             VecMaxPointwiseDivide_Seq,
-            VecLoad_Binary,
+            VecLoad_Binary, /* 50 */
             VecPointwiseMax_Seq,
             VecPointwiseMaxAbs_Seq,
             VecPointwiseMin_Seq,
