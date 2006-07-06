@@ -20,6 +20,7 @@ class Configure(config.base.Configure):
        - Otherwise return -I<include>'''
     if not include:
       return ''
+    include = include.replace(' ', '\\ ')
     if include[0] == '-':
       return include
     return '-I'+include
