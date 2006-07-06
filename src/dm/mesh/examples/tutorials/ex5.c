@@ -37,6 +37,7 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 #include "petscviewer.h"
 #include <stdlib.h>
 #include <string.h>
+#include <values.h>
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
 PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Mesh>, Vec *);
@@ -206,19 +207,23 @@ PetscErrorCode CreateSpacingFunction(ALE::Obj<ALE::Mesh> mesh)
   int                                                    dim      = coords->getFiberDimension(patch, *vertices->begin());
 
   for(ALE::Mesh::sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-    ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> neighbors = topology->cone(topology->support(*v_iter));
+    ALE::Obj<ALE::Mesh::sieve_type::traits::supportSequence> support = topology->support(*v_iter);
     const double *vCoords = coords->restrict(patch, *v_iter);
-    double        minDist = DBL_MAX;
+    double        minDist = MAXDOUBLE;
 
-    for(ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter = neighbors->begin(); n_iter != neighbors->end(); ++n_iter) {
-      if (*v_iter != *n_iter) {
-        const double *nCoords = coords->restrict(patch, *n_iter);
-        double        dist    = 0.0;
+    for(ALE::Mesh::sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
+      ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> neighbors = topology->cone(*s_iter);
 
-        for(int d = 0; d < dim; d++) {
-          dist += (vCoords[d] - nCoords[d])*(vCoords[d] - nCoords[d]);
+      for(ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter = neighbors->begin(); n_iter != neighbors->end(); ++n_iter) {
+        if (*v_iter != *n_iter) {
+          const double *nCoords = coords->restrict(patch, *n_iter);
+          double        dist    = 0.0;
+
+          for(int d = 0; d < dim; d++) {
+            dist += (vCoords[d] - nCoords[d])*(vCoords[d] - nCoords[d]);
+          }
+          if (dist < minDist) minDist = dist;
         }
-        if (dist < minDist) minDist = dist;
       }
     }
     spacing->update(patch, *v_iter, &minDist);
