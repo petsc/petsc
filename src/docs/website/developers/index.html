@@ -172,11 +172,34 @@ your PATH you can build the documentation with:<br>
       <ul>
         <li><font color="#800000">make alldoc LOC=${PETSC_DIR}</font></li>
       </ul>
-      <span style="font-weight: bold;"> </span></td>
+      <p style="font-weight: bold;" align="left"><big>Sending in
+Patches:</big></p>
+      <p align="left"><span style="font-weight: bold;"></span>One can
+send us changes to PETSc [perhaps bug fixes or new feature additions]
+via e-mail. One easy way to do this [if no new files get created] is:<br>
+      </p>
+      <ul style="color: rgb(128, 0, 0);">
+        <li>[get the latest version of petsc-dev using mercurial as
+descrbed above]<br>
+        </li>
+        <li>[make edits]</li>
+        <li>hg diff &gt; patchfile</li>
+        <li>[email patchfile to petsc-maint@mcs.anl.gov]</li>
+      </ul>
+To undo the changes, one can do 'hg revert' so that subsequent 'hg
+pull' or 'make pull' will continue to work.<br>
+      <br>
+Alternatively - one can send us patches using 'hg export' or 'hg
+bundle' as described at <a
+ href="http://www.selenic.com/mercurial/wiki/index.cgi/CommunicatingChanges">http://www.selenic.com/mercurial/wiki/index.cgi/CommunicatingChanges</a>
+      <br>
+      <br>
+      <a
+ href="http://www.selenic.com/mercurial/wiki/index.cgi/CommunicatingChanges"><span
+ style="font-weight: bold;"> </span></a> </td>
     </tr>
     <tr>
-      <td colspan="2" width="771">
-      <hr color="#ff5b5b" size="4"> </td>
+      <td colspan="2" width="771"> </td>
     </tr>
     <tr>
       <td colspan="2" width="771"><br>
