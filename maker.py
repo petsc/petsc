@@ -234,15 +234,23 @@ class BasicMake(Make):
   '''A basic make template that acts much like a traditional makefile'''
   languageNames = {'C': 'C', 'Cxx': 'Cxx', 'FC': 'Fortran', 'Python': 'Python'}
 
-  def __init__(self, implicitRoot = 0):
+  def __init__(self, implicitRoot = 0, configureParent = None):
     '''Setup the library and driver source descriptions'''
     if not implicitRoot:
       self.root = os.getcwd()
-    Make.__init__(self)
+    Make.__init__(self, configureParent = configureParent)
     self.lib = {}
     self.dylib = {}
     self.bin = {}
     return
+
+  def setupHelp(self, help):
+    import nargs
+
+    help = Make.setupHelp(self, help)
+    help.addArgument('basicMake', 'libdir', nargs.ArgDir(None, 'lib', 'Root for installation of libraries', mustExist = 0, isTemporary = 1))
+    help.addArgument('basicMake', 'bindir', nargs.ArgDir(None, 'bin', 'Root for installation of executables', mustExist = 0, isTemporary = 1))
+    return help
 
   def classifySource(self, srcList):
     src = {}
@@ -252,7 +260,7 @@ class BasicMake(Make):
         if not 'C' in src:
           src['C'] = []
         src['C'].append(f)
-      elif ext in ['.cc', '.hh', '.C', '.cpp']:
+      elif ext in ['.cc', '.hh', '.C', '.cpp', '.cxx']:
         if not 'Cxx' in src:
           src['Cxx'] = []
         src['Cxx'].append(f)
@@ -266,6 +274,20 @@ class BasicMake(Make):
         src['Python'].append(f)
     return src
 
+  def classifyIncludes(self, incList):
+    inc = {}
+    for f in incList:
+      base, ext = os.path.splitext(f)
+      if ext in ['.h']:
+        if not 'C' in inc:
+          inc['C'] = []
+        inc['C'].append(f)
+      elif ext in ['.hh']:
+        if not 'Cxx' in inc:
+          inc['Cxx'] = []
+        inc['Cxx'].append(f)
+    return inc
+
   def parseDocString(self, docstring, defaultName = None):
     parts = docstring.split(':', 1)
     if len(parts) < 2:
@@ -276,7 +298,7 @@ class BasicMake(Make):
     else:
       name = parts[0]
       src = parts[1].split()
-    return (name, self.classifySource(src))
+    return (name, self.classifySource(src), self.classifyIncludes(src))
 
   def setupConfigure(self, framework):
     '''We always want to configure'''
@@ -298,13 +320,21 @@ class BasicMake(Make):
   def getImplicitLibraries(self):
     import sys
     d = sys.modules['__main__']
+    if os.path.basename(d.__file__) == 'pdb.py':
+      sys.path.insert(0, '.')
+      import make
+      d = sys.modules['make']
+    else:
+      d = sys.modules['make']
     for name in dir(d):
       if not name.startswith('lib_'):
         continue
       func = getattr(d, name)
       lib = struct()
-      lib.name, lib.src = self.parseDocString(func.__doc__, name[4:])
-      lib.includes, lib.libs = func(self)
+      lib.name, lib.src, lib.inc = self.parseDocString(func.__doc__, name[4:])
+      params = func(self)
+      lib.includes, lib.libs = params[0:2]
+      if (len(params) == 3): lib.flags = params[2]
       lib.configuration = name[4:]
       self.logPrint('Found configuration '+lib.configuration+' for library '+lib.name)
       self.logPrint('  includes '+str(lib.includes)+' libraries '+str(lib.libs))
@@ -314,13 +344,21 @@ class BasicMake(Make):
   def getImplicitDynamicLibraries(self):
     import sys
     d = sys.modules['__main__']
+    if os.path.basename(d.__file__) == 'pdb.py':
+      sys.path.insert(0, '.')
+      import make
+      d = sys.modules['make']
+    else:
+      d = sys.modules['make']
     for name in dir(d):
       if not name.startswith('dylib_'):
         continue
       func = getattr(d, name)
       lib = struct()
-      lib.name, lib.src = self.parseDocString(func.__doc__, name[6:])
-      lib.includes, lib.libs = func(self)
+      lib.name, lib.src, lib.inc = self.parseDocString(func.__doc__, name[6:])
+      params = func(self)
+      lib.includes, lib.libs = params[0:2]
+      if (len(params) == 3): lib.flags = params[2]
       lib.configuration = name[6:]
       self.logPrint('Found configuration '+lib.configuration+' for dynamic library '+lib.name)
       self.logPrint('  includes '+str(lib.includes)+' libraries '+str(lib.libs))
@@ -330,13 +368,21 @@ class BasicMake(Make):
   def getImplicitExecutables(self):
     import sys
     d = sys.modules['__main__']
+    if os.path.basename(d.__file__) == 'pdb.py':
+      sys.path.insert(0, '.')
+      import make
+      d = sys.modules['make']
+    else:
+      d = sys.modules['make']
     for name in dir(d):
       if not name.startswith('bin_'):
         continue
       func = getattr(d, name)
       bin = struct()
-      bin.name, bin.src = self.parseDocString(func.__doc__, name[4:])
-      bin.includes, bin.libs = func(self)
+      bin.name, bin.src, bin.inc = self.parseDocString(func.__doc__, name[4:])
+      params = func(self)
+      bin.includes, bin.libs = params[0:2]
+      if (len(params) == 3): bin.flags = params[2]
       bin.configuration = name[4:]
       self.bin[bin.name] = bin
     return
@@ -349,9 +395,22 @@ class BasicMake(Make):
     self.includeDir = {}
     for language in languages:
       self.srcDir[language] = os.path.abspath(os.path.join('src', self.languageNames[language].lower()))
-      self.includeDir[language] = os.path.abspath('include')
-    self.libDir = os.path.abspath('lib')
-    self.binDir = os.path.abspath('bin')
+      self.logPrint('Source directory for '+language+' is '+self.srcDir[language])
+      if self.prefix is None:
+        self.includeDir[language] = os.path.abspath('include')
+      else:
+        self.includeDir[language] = os.path.abspath(os.path.join(self.prefix, 'include'))
+      self.logPrint('Include directory for '+language+' is '+self.includeDir[language])
+    if self.prefix is None:
+      self.logPrint('ERROR: prefix is None')
+      self.libDir = os.path.abspath(self.argDB['libdir'])
+      self.binDir = os.path.abspath(self.argDB['bindir'])
+    else:
+      self.logPrint('prefix '+self.prefix+' libDir '+self.argDB['libdir']+' totdir '+os.path.join(self.prefix, self.argDB['libdir']))
+      self.libDir = os.path.abspath(os.path.join(self.prefix, self.argDB['libdir']))
+      self.binDir = os.path.abspath(os.path.join(self.prefix, self.argDB['bindir']))
+    self.logPrint('Library directory is '+self.libDir)
+    self.logPrint('Executable directory is '+self.binDir)
     return
 
   def setupLibraries(self, builder):
@@ -362,6 +421,8 @@ class BasicMake(Make):
       builder.pushConfiguration(lib.configuration)
       for language in languages:
         builder.pushLanguage(language)
+        if hasattr(lib, 'flags'):
+          builder.setCompilerFlags(' '.join(lib.flags))
         compiler = builder.getCompilerObject()
         lib.includes = filter(lambda inc: inc, lib.includes)
         self.logPrint('  Adding includes '+str(lib.includes))
@@ -392,6 +453,8 @@ class BasicMake(Make):
       builder.pushConfiguration(lib.configuration)
       for language in languages:
         builder.pushLanguage(language)
+        if hasattr(lib, 'flags'):
+          builder.setCompilerFlags(' '.join(lib.flags))
         compiler = builder.getCompilerObject()
         lib.includes = filter(lambda inc: inc, lib.includes)
         self.logPrint('  Adding includes '+str(lib.includes))
@@ -422,6 +485,8 @@ class BasicMake(Make):
       builder.pushConfiguration(bin.configuration)
       for language in languages:
         builder.pushLanguage(language)
+        if hasattr(bin, 'flags'):
+          builder.setCompilerFlags(' '.join(bin.flags))
         compiler = builder.getCompilerObject()
         bin.includes = filter(lambda inc: inc, bin.includes)
         self.logPrint('  Adding includes '+str(bin.includes))
@@ -446,14 +511,17 @@ class BasicMake(Make):
   def buildDirectories(self, builder):
     '''Create the necessary directories'''
     languages = sets.Set()
-    [languages.update(lib.src.keys()) for lib in self.lib.values()]
+    [languages.update(lib.src.keys()) for lib in self.lib.values()+self.dylib.values()]
     for language in languages:
       if not os.path.isdir(self.includeDir[language]):
         os.mkdir(self.includeDir[language])
+        self.logPrint('Created include directory '+self.includeDir[language])
     if not os.path.isdir(self.libDir):
       os.mkdir(self.libDir)
+      self.logPrint('Created library directory '+self.libDir)
     if not os.path.isdir(self.binDir):
       os.mkdir(self.binDir)
+      self.logPrint('Created executable directory '+self.binDir)
     return
 
   def buildLibraries(self, builder):
@@ -467,7 +535,7 @@ class BasicMake(Make):
         sources = [os.path.join(self.srcDir, self.srcDir[language], f) for f in lib.src[language]]
         for f in sources:
           builder.compile([f])
-        objects.extend([self.builder.getCompilerTarget(f) for f in sources])
+        objects.extend([self.builder.getCompilerTarget(f) for f in sources if not self.builder.getCompilerTarget(f) is None])
         builder.popLanguage()
       builder.link(objects, os.path.join(self.libDir, lib.name+'.'+self.setCompilers.sharedLibraryExt), shared = 1)
       builder.popConfiguration()
@@ -484,7 +552,7 @@ class BasicMake(Make):
         sources = [os.path.join(self.srcDir, self.srcDir[language], f) for f in lib.src[language]]
         for f in sources:
           builder.compile([f])
-        objects.extend([self.builder.getCompilerTarget(f) for f in sources])
+        objects.extend([self.builder.getCompilerTarget(f) for f in sources if not self.builder.getCompilerTarget(f) is None])
         builder.popLanguage()
       builder.link(objects, os.path.join(self.libDir, lib.name+'.'+self.setCompilers.dynamicLibraryExt), shared = 'dynamic')
       builder.popConfiguration()
@@ -525,6 +593,23 @@ class BasicMake(Make):
     self.executeSection(self.buildLibraries, builder)
     self.executeSection(self.buildDynamicLibraries, builder)
     self.executeSection(self.buildExecutables, builder)
+    return
+
+  def installIncludes(self, builder):
+    import shutil
+    for lib in self.lib.values()+self.dylib.values():
+      self.logPrint('Installing library: '+lib.name)
+      for language in lib.inc:
+        for inc in lib.inc[language]:
+          installInc = os.path.join(self.includeDir[language], os.path.basename(inc))
+          if os.path.isfile(installInc):
+            os.remove(installInc)
+          self.logPrint('Installing '+inc+' into '+installInc)
+          shutil.copy(os.path.join(self.srcDir[language], inc), installInc)
+    return
+
+  def install(self, builder, argDB):
+    self.executeSection(self.installIncludes, builder)
     return
 
 class SIDLMake(Make):
