@@ -154,7 +154,6 @@ class Configure(config.package.Package):
     self.popLanguage()
     if not self.getExecutable(mpiruns, path = path, useDefaultPath = 1, resultName = 'mpirun',setMakeMacro=0):
       raise RuntimeError('Could not locate MPIRUN - please specify --with-mpirun option')
-    print 'xxx',self.mpirun
     self.addMakeMacro('MPIRUN',self.mpirun.replace(' -np 1','').replace(' ', '\\ '))
     return
         
