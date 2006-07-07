@@ -234,7 +234,7 @@ class BasicMake(Make):
   '''A basic make template that acts much like a traditional makefile'''
   languageNames = {'C': 'C', 'Cxx': 'Cxx', 'FC': 'Fortran', 'Python': 'Python'}
 
-  def __init__(self, implicitRoot = 0, configureParent = None):
+  def __init__(self, implicitRoot = 0, configureParent = None, module = None):
     '''Setup the library and driver source descriptions'''
     if not implicitRoot:
       self.root = os.getcwd()
@@ -242,6 +242,8 @@ class BasicMake(Make):
     self.lib = {}
     self.dylib = {}
     self.bin = {}
+    if not module is None:
+      self.module = module
     return
 
   def setupHelp(self, help):
@@ -251,6 +253,23 @@ class BasicMake(Make):
     help.addArgument('basicMake', 'libdir', nargs.ArgDir(None, 'lib', 'Root for installation of libraries', mustExist = 0, isTemporary = 1))
     help.addArgument('basicMake', 'bindir', nargs.ArgDir(None, 'bin', 'Root for installation of executables', mustExist = 0, isTemporary = 1))
     return help
+
+  def getMakeModule(self):
+    if not hasattr(self, '_module'):
+      import sys
+      d = sys.modules['__main__']
+      if os.path.basename(d.__file__) == 'pdb.py':
+        sys.path.insert(0, '.')
+        import make
+        d = sys.modules['make']
+      elif not 'Make' in dir(d):
+        d = sys.modules['make']
+      return d
+    return self._module
+  def setMakeModule(self, module):
+    self._module = module
+    return
+  module = property(getMakeModule, setMakeModule, doc = 'The make module for this build')
 
   def classifySource(self, srcList):
     src = {}
@@ -318,14 +337,7 @@ class BasicMake(Make):
     return framework
 
   def getImplicitLibraries(self):
-    import sys
-    d = sys.modules['__main__']
-    if os.path.basename(d.__file__) == 'pdb.py':
-      sys.path.insert(0, '.')
-      import make
-      d = sys.modules['make']
-    else:
-      d = sys.modules['make']
+    d = self.module
     for name in dir(d):
       if not name.startswith('lib_'):
         continue
@@ -342,14 +354,7 @@ class BasicMake(Make):
     return
 
   def getImplicitDynamicLibraries(self):
-    import sys
-    d = sys.modules['__main__']
-    if os.path.basename(d.__file__) == 'pdb.py':
-      sys.path.insert(0, '.')
-      import make
-      d = sys.modules['make']
-    else:
-      d = sys.modules['make']
+    d = self.module
     for name in dir(d):
       if not name.startswith('dylib_'):
         continue
@@ -366,14 +371,7 @@ class BasicMake(Make):
     return
 
   def getImplicitExecutables(self):
-    import sys
-    d = sys.modules['__main__']
-    if os.path.basename(d.__file__) == 'pdb.py':
-      sys.path.insert(0, '.')
-      import make
-      d = sys.modules['make']
-    else:
-      d = sys.modules['make']
+    d = self.module
     for name in dir(d):
       if not name.startswith('bin_'):
         continue
@@ -388,6 +386,19 @@ class BasicMake(Make):
     return
 
   def setupDirectories(self, builder):
+    if self.prefix is None:
+      self.logPrint('ERROR: prefix is None')
+      self.libDir = os.path.abspath(self.argDB['libdir'])
+      self.binDir = os.path.abspath(self.argDB['bindir'])
+    else:
+      self.logPrint('prefix '+self.prefix+' libDir '+self.argDB['libdir']+' totdir '+os.path.join(self.prefix, self.argDB['libdir']))
+      self.libDir = os.path.abspath(os.path.join(self.prefix, self.argDB['libdir']))
+      self.binDir = os.path.abspath(os.path.join(self.prefix, self.argDB['bindir']))
+    self.logPrint('Library directory is '+self.libDir)
+    self.logPrint('Executable directory is '+self.binDir)
+    return
+
+  def setupLibraryDirectories(self, builder):
     '''Determine the directories for source includes, libraries, and binaries'''
     languages = sets.Set()
     [languages.update(lib.src.keys()) for lib in self.lib.values()+self.dylib.values()]
@@ -401,16 +412,6 @@ class BasicMake(Make):
       else:
         self.includeDir[language] = os.path.abspath(os.path.join(self.prefix, 'include'))
       self.logPrint('Include directory for '+language+' is '+self.includeDir[language])
-    if self.prefix is None:
-      self.logPrint('ERROR: prefix is None')
-      self.libDir = os.path.abspath(self.argDB['libdir'])
-      self.binDir = os.path.abspath(self.argDB['bindir'])
-    else:
-      self.logPrint('prefix '+self.prefix+' libDir '+self.argDB['libdir']+' totdir '+os.path.join(self.prefix, self.argDB['libdir']))
-      self.libDir = os.path.abspath(os.path.join(self.prefix, self.argDB['libdir']))
-      self.binDir = os.path.abspath(os.path.join(self.prefix, self.argDB['bindir']))
-    self.logPrint('Library directory is '+self.libDir)
-    self.logPrint('Executable directory is '+self.binDir)
     return
 
   def setupLibraries(self, builder):
@@ -576,10 +577,11 @@ class BasicMake(Make):
     return
 
   def setupBuild(self, builder):
+    self.executeSection(self.setupDirectories, builder)
     self.getImplicitLibraries()
     self.getImplicitDynamicLibraries()
     self.getImplicitExecutables()
-    self.executeSection(self.setupDirectories, builder)
+    self.executeSection(self.setupLibraryDirectories, builder)
     self.executeSection(self.setupLibraries, builder)
     self.executeSection(self.setupDynamicLibraries, builder)
     self.executeSection(self.setupExecutables, builder)

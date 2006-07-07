@@ -291,7 +291,8 @@ class LanguageProcessor(args.ArgumentProcessor):
     if 'languageModule' in d:
       d['languageModule'] = dict([(lang,mod._loadName) for lang,mod in d['languageModule'].items()])
     for member in ['preprocessorObject', 'compilerObject', 'linkerObject', 'sharedLinkerObject', 'dynamicLinkerObject', 'framework']:
-      del d[member]
+      if member in d:
+        del d[member]
     return d
 
   def __setstate__(self, d):
