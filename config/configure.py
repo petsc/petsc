@@ -134,15 +134,15 @@ def petsc_configure(configure_options):
   if not os.path.isdir(bsDir):
     print '================================================================================='
     print '''++ Could not locate BuildSystem in %s/python.''' % os.getcwd()
-    print '''++ Downloading it using "bk clone http://sidl.bkbits.net/BuildSystem %s/python/BuildSystem"''' % os.getcwd()
+    print '''++ Downloading it using "hg clone http://www.mcs.anl.gov/petsc/BuildSystem %s/python/BuildSystem"''' % os.getcwd()
     print '================================================================================='
-    (status,output) = commands.getstatusoutput('bk clone http://sidl.bkbits.net/BuildSystem python/BuildSystem')
+    (status,output) = commands.getstatusoutput('hg clone http://www.mcs.anl.gov/petsc/BuildSystem python/BuildSystem')
     if status:
       if output.find('ommand not found') >= 0:
         print '================================================================================='
-        print '''** Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path'''
+        print '''** Unable to locate hg (Mercurial) to download BuildSystem; make sure hg is in your path'''
         print '''** or manually copy BuildSystem to $PETSC_DIR/python/BuildSystem from a machine where'''
-        print '''** you do have bk installed and can clone BuildSystem. '''
+        print '''** you do have hg installed and can clone BuildSystem. '''
         print '================================================================================='
       elif output.find('Cannot resolve host') >= 0:
         print '================================================================================='

@@ -92,7 +92,7 @@ int main(int argc,char **args)
       - Always specify global rows and columns of matrix entries.
    */
   for (Ii=Istart; Ii<Iend; Ii++) { 
-    v = -1.0; i = I/n; j = I - i*n;  
+    v = -1.0; i = Ii/n; j = Ii - i*n;  
     if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
     if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
     if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}

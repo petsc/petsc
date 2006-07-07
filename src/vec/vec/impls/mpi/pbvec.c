@@ -81,7 +81,7 @@ PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
 EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, VecType, Vec*);
 EXTERN PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt [],PetscScalar []);
 
-static struct _VecOps DvOps = { VecDuplicate_MPI,
+static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
             VecDuplicateVecs_Default,
             VecDestroyVecs_Default,
             VecDot_MPI,
@@ -90,7 +90,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecTDot_MPI,
             VecMTDot_MPI,
             VecScale_Seq,
-            VecCopy_Seq,
+            VecCopy_Seq, /* 10 */
             VecSet_Seq,
             VecSwap_Seq,
             VecAXPY_Seq,
@@ -100,7 +100,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecWAXPY_Seq,
             VecPointwiseMult_Seq,
             VecPointwiseDivide_Seq,
-            VecSetValues_MPI,
+            VecSetValues_MPI, /* 20 */
             VecAssemblyBegin_MPI,
             VecAssemblyEnd_MPI,
             VecGetArray_Seq,

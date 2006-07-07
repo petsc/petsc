@@ -1168,7 +1168,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec w, Vec x,Vec y)
 
    Example of Usage:
 .vb
-     PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);
+     PetscRandomCreate(PETSC_COMM_WORLD,&rctx);
      VecSetRandom(x,rctx);
      PetscRandomDestroy(rctx);
 .ve

@@ -6,7 +6,7 @@
 #define __PETSCSYS_H
 
 #define PetscRandom PetscFortranAddr
-#define PetscRandomType PetscEnum
+#define PetscRandomType character*(80)
 #define PetscBinarySeekType PetscEnum
 
 #endif
@@ -16,11 +16,9 @@
 !
 !     Random numbers
 !
-      PetscEnum RANDOM_DEFAULT,RANDOM_DEFAULT_REAL
-      PetscEnum RANDOM_DEFAULT_IMAGINARY     
-
-      parameter (RANDOM_DEFAULT=0,RANDOM_DEFAULT_REAL=1)
-      parameter (RANDOM_DEFAULT_IMAGINARY=2)     
+#define PETSCRAND 'petscrand'
+#define PETSCRAND48 'petscrand48'
+#define SPRNG 'sprng'          
 !
 !
 !
