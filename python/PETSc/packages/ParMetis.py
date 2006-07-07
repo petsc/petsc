@@ -1,15 +1,10 @@
 #!/usr/bin/env python
-from __future__ import generators
-import user
-import config.base
-import re
-import os
 import PETSc.package
 
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['bk://parmetis.bkbits.net/ParMetis-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ParMetis-Jun-06.tar.gz']
+    self.download     = ['hg://www.mcs.anl.gov/petsc/parmetis-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ParMetis-dev.tar.gz']
     self.functions    = ['ParMETIS_V3_PartKway']
     self.includes     = ['parmetis.h']
     self.liblist      = [['libparmetis.a','libmetis.a']]
@@ -24,7 +19,7 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
-    import sys
+    import os, sys
     parmetisDir = self.getDir()
     installDir = os.path.join(parmetisDir, self.arch.arch)
     if not os.path.isdir(installDir):
@@ -39,8 +34,10 @@ class Configure(PETSc.package.Package):
       os.chdir(parmetisDir)
       oldLog = logging.Logger.defaultLog
       logging.Logger.defaultLog = file(os.path.join(parmetisDir, 'build.log'), 'w')
-      make = self.getModule(parmetisDir, 'make').Make(configureParent = cPickle.loads(cPickle.dumps(self.framework)))
+      mod  = self.getModule(parmetisDir, 'make')
+      make = mod.Make(configureParent = cPickle.loads(cPickle.dumps(self.framework)), module = mod)
       make.prefix = installDir
+      make.framework.argDB['with-petsc'] = 1
       make.builder.argDB['ignoreCompileOutput'] = 1
       make.run()
       logging.Logger.defaultLog = oldLog
@@ -49,12 +46,3 @@ class Configure(PETSc.package.Package):
       raise RuntimeError('Error running configure on ParMetis: '+str(e))
     self.framework.actions.addArgument('ParMetis', 'Install', 'Installed ParMetis into '+installDir)
     return parmetisDir
-
-if __name__ == '__main__':
-  import config.framework
-  import sys
-  framework = config.framework.Framework(sys.argv[1:])
-  framework.setup()
-  framework.addChild(Configure(framework))
-  framework.configure()
-  framework.dumpSubstitutions()

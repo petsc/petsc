@@ -112,7 +112,7 @@ class tetgenio {
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download  = ['bk://triangle.bkbits.net/tetgen-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/TetGen.tar.gz']
+    self.download  = ['hg://www.mcs.anl.gov/petsc/tetgen-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/TetGen.tar.gz']
     self.functions = ['tetrahedralize']
     self.functionsCxx = [1, structDecl+'void tetrahedralize(char *switches, tetgenio *in, tetgenio *out);', 'tetrahedralize("", NULL, NULL)']
     self.includes  = ['tetgen.h']
@@ -143,7 +143,8 @@ class Configure(PETSc.package.Package):
       os.chdir(tetgenDir)
       oldLog = logging.Logger.defaultLog
       logging.Logger.defaultLog = file(os.path.join(tetgenDir, 'build.log'), 'w')
-      make = self.getModule(tetgenDir, 'make').Make(configureParent = cPickle.loads(cPickle.dumps(self.framework)))
+      mod  = self.getModule(tetgenDir, 'make')
+      make = mod.Make(configureParent = cPickle.loads(cPickle.dumps(self.framework)),module = mod)
       make.prefix = installDir
       make.framework.argDB['with-petsc'] = 1
       make.builder.argDB['ignoreCompileOutput'] = 1
