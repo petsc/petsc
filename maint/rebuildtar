@@ -6,13 +6,15 @@ export LC=C
 export LC_ALL=C
 
 RELEASE=2.3.1
-PETSC_DIR=/home/balay/bk-rep/petsc-release-${RELEASE}
+PETSC_DIR=/home/balay/hg-repo/petsc-release-${RELEASE}
 
 #automatically crankup the patchlevel
 # ${PETSC_DIR}/maint/createpatch
+# /home/balay/spetsc/maint/createpatch
 
 #create the tarfile
-${PETSC_DIR}/maint/builddist ${PETSC_DIR}
+#${PETSC_DIR}/maint/builddist ${PETSC_DIR}
+/home/balay/spetsc/maint/builddist ${PETSC_DIR}
 
 Now copy the generated tarfiles over to the website
 PATCH_VERSION=`grep '^#define PETSC_VERSION_PATCH ' ${PETSC_DIR}/include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`

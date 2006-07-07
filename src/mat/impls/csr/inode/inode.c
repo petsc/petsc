@@ -1155,21 +1155,20 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
 PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
 {
   Mat            C = *B;
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)C->data;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)C->data;
   IS             iscol = b->col,isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
   PetscInt       *r,*ic,*c,n = A->rmap.n,*bi = b->i; 
-  PetscInt       *bj = b->j,*nbj=b->j +1,*ajtmp,*bjtmp,nz,row,prow;
+  PetscInt       *bj = b->j,*nbj=b->j +1,*ajtmp,*bjtmp,nz,nz_tmp,row,prow;
   PetscInt       *ics,i,j,idx,*ai = a->i,*aj = a->j,*bd = b->diag,node_max,nodesz;
   PetscInt       *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj;
   PetscScalar    *rtmp1,*rtmp2,*rtmp3,*v1,*v2,*v3,*pc1,*pc2,*pc3,mul1,mul2,mul3;
-  PetscScalar    tmp,*ba = b->a,*aa = a->a,*pv,*rtmps1,*rtmps2,*rtmps3;
-  PetscReal      rs=0.0,rsum[3];
+  PetscScalar    tmp,*ba = b->a,*aa = a->a,*pv;
+  PetscReal      rs=0.0;
   LUShift_Ctx    sctx;
   PetscInt       newshift;
 
   PetscFunctionBegin;  
-
   sctx.shift_top  = 0;
   sctx.nshift_max = 0;
   sctx.shift_lo   = 0;
@@ -1196,22 +1195,22 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
       if (rs>sctx.shift_top) sctx.shift_top = rs;
     }
     if (sctx.shift_top == 0.0) sctx.shift_top += 1.e-12;
-    sctx.shift_top   *= 1.1;
-    sctx.nshift_max   = 5;
-    sctx.shift_lo     = 0.;
-    sctx.shift_hi     = 1.;
+    sctx.shift_top *= 1.1;
+    sctx.nshift_max = 5;
+    sctx.shift_lo   = 0.;
+    sctx.shift_hi   = 1.;
   }
   sctx.shift_amount = 0;
   sctx.nshift       = 0;
 
-  ierr   = ISGetIndices(isrow,&r);CHKERRQ(ierr);
-  ierr   = ISGetIndices(iscol,&c);CHKERRQ(ierr);
-  ierr   = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr = PetscMalloc((3*n+1)*sizeof(PetscScalar),&rtmp1);CHKERRQ(ierr);
-  ierr   = PetscMemzero(rtmp1,(3*n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  ics    = ic ; rtmps1 = rtmp1 ; 
-  rtmp2  = rtmp1 + n;  rtmps2 = rtmp2 ; 
-  rtmp3  = rtmp2 + n;  rtmps3 = rtmp3 ; 
+  ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr  = ISGetIndices(iscol,&c);CHKERRQ(ierr);
+  ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr  = PetscMalloc((3*n+1)*sizeof(PetscScalar),&rtmp1);CHKERRQ(ierr);
+  ierr  = PetscMemzero(rtmp1,(3*n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ics   = ic ; 
+  rtmp2 = rtmp1 + n;  
+  rtmp3 = rtmp2 + n;  
   
   node_max = a->inode.node_count; 
   ns       = a->inode.size ;
@@ -1247,8 +1246,8 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   /* Using nsmap, create a reordered ns structure */
   for (i=0,j=0; i< node_max; i++) {
     nodesz       = tmp_vec1[nsmap[r[j]]];    /* here the reordered row_no is in r[] */
-    tmp_vec2[i] = nodesz;
-    j        += nodesz;
+    tmp_vec2[i]  = nodesz;
+    j           += nodesz;
   }
   ierr = PetscFree(nsmap);CHKERRQ(ierr);
   ierr = PetscFree(tmp_vec1);CHKERRQ(ierr);
@@ -1259,30 +1258,29 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
     sctx.lushift = PETSC_FALSE;
     /* Now loop over each block-row, and do the factorization */
     for (i=0,row=0; i<node_max; i++) { 
-      nodesz   = ns[i];
-      nz    = bi[row+1] - bi[row];
-      bjtmp = bj + bi[row];
+      nodesz = ns[i];
+      nz     = bi[row+1] - bi[row];
+      bjtmp  = bj + bi[row];
 
       switch (nodesz){
       case 1:
         for  (j=0; j<nz; j++){
-          idx         = bjtmp[j];
-          rtmps1[idx] = 0.0;
+          idx        = bjtmp[j];
+          rtmp1[idx] = 0.0;
         }
       
         /* load in initial (unfactored row) */
-        idx   = r[row];
-        nz    = ai[idx+1] - ai[idx];
-        ajtmp = aj + ai[idx];
-        v1    = aa + ai[idx];
+        idx    = r[row];
+        nz_tmp = ai[idx+1] - ai[idx];
+        ajtmp  = aj + ai[idx];
+        v1     = aa + ai[idx];
 
-        for (j=0; j<nz; j++) {
+        for (j=0; j<nz_tmp; j++) {
           idx        = ics[ajtmp[j]];
           rtmp1[idx] = v1[j];
-          if (sctx.nshift && ajtmp[j] == r[row]) {
-            rtmp1[idx] += sctx.shift_amount;
-          }          
         }
+        rtmp1[ics[r[row]]] += sctx.shift_amount;
+
         prow = *bjtmp++ ;
         while (prow < row) {
           pc1 = rtmp1 + prow;
@@ -1291,59 +1289,53 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
             pj   = nbj + bd[prow];
             mul1 = *pc1 * *pv++;
             *pc1 = mul1;
-            nz   = bi[prow+1] - bd[prow] - 1;
-            ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
-            for (j=0; j<nz; j++) {
+            nz_tmp = bi[prow+1] - bd[prow] - 1;
+            ierr = PetscLogFlops(2*nz_tmp);CHKERRQ(ierr);
+            for (j=0; j<nz_tmp; j++) {
               tmp = pv[j];
               idx = pj[j];
-              rtmps1[idx] -= mul1 * tmp;
+              rtmp1[idx] -= mul1 * tmp;
             }
           }
           prow = *bjtmp++ ;
         }
-        nz  = bi[row+1] - bi[row];
         pj  = bj + bi[row];
         pc1 = ba + bi[row];
 
         sctx.pv    = rtmp1[row]; 
+        rtmp1[row] = 1.0/rtmp1[row]; /* invert diag */
         rs         = 0.0;
-        rtmp1[row] = 1.0/rtmp1[row]; 
         for (j=0; j<nz; j++) {
           idx    = pj[j];
-          pc1[j] = rtmps1[idx];
+          pc1[j] = rtmp1[idx]; /* rtmp1 -> ba */
           if (idx != row) rs += PetscAbsScalar(pc1[j]);
         }
-
         sctx.rs  = rs; 
         ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
         break;
       
       case 2:
-        for  (j=0; j<nz; j++) {
-          idx         = bjtmp[j];
-          rtmps1[idx] = 0.0;
-          rtmps2[idx] = 0.0;
+        for (j=0; j<nz; j++) {
+          idx        = bjtmp[j];
+          rtmp1[idx] = 0.0;
+          rtmp2[idx] = 0.0;
         }
       
         /* load in initial (unfactored row) */
-        idx   = r[row];
-        nz    = ai[idx+1] - ai[idx];
-        ajtmp = aj + ai[idx];
-        v1    = aa + ai[idx];
-        v2    = aa + ai[idx+1];
-      
-        for (j=0; j<nz; j++) {
+        idx    = r[row];
+        nz_tmp = ai[idx+1] - ai[idx];
+        ajtmp  = aj + ai[idx];
+        v1     = aa + ai[idx];
+        v2     = aa + ai[idx+1];     
+        for (j=0; j<nz_tmp; j++) {
           idx        = ics[ajtmp[j]];
           rtmp1[idx] = v1[j];
           rtmp2[idx] = v2[j];
-          if (sctx.nshift && ajtmp[j] == r[row]) {
-            rtmp1[idx] += sctx.shift_amount; 
-          }
-          if (sctx.nshift && ajtmp[j] == r[row+1]) {
-            rtmp2[idx] += sctx.shift_amount; 
-          }
         }
+        rtmp1[ics[r[row]]]   += sctx.shift_amount; 
+        rtmp2[ics[r[row+1]]] += sctx.shift_amount;
+
         prow = *bjtmp++ ;
         while (prow < row) {
           pc1 = rtmp1 + prow;
@@ -1357,96 +1349,90 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
             *pc1 = mul1;
             *pc2 = mul2;
           
-            nz   = bi[prow+1] - bd[prow] - 1;
-            ierr = PetscLogFlops(2*2*nz);CHKERRQ(ierr);
-            for (j=0; j<nz; j++) {
+            nz_tmp = bi[prow+1] - bd[prow] - 1;
+            for (j=0; j<nz_tmp; j++) {
               tmp = pv[j];
               idx = pj[j];
-              rtmps1[idx] -= mul1 * tmp;
-              rtmps2[idx] -= mul2 * tmp;
+              rtmp1[idx] -= mul1 * tmp;
+              rtmp2[idx] -= mul2 * tmp;
             }
+            ierr = PetscLogFlops(4*nz_tmp);CHKERRQ(ierr);
           }
           prow = *bjtmp++ ;
         }
-        /* Now take care of the odd element*/
+
+        /* Now take care of diagonal 2x2 block. Note: prow = row here */
         pc1 = rtmp1 + prow;
         pc2 = rtmp2 + prow;
-        if (*pc2 != 0.0){
-          pj   = nbj + bd[prow];
 
-          rs   = 0.0;
-          mul2 = (*pc2)/(*pc1); /* since diag is not yet inverted.*/
-          *pc2 = mul2;
-          nz   = bi[prow+1] - bd[prow] - 1;
-          ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
-          for (j=0; j<nz; j++) {
+        sctx.pv = *pc1;
+        pj      = bj + bi[prow];
+        rs      = 0.0;
+        for (j=0; j<nz; j++){
+          idx = pj[j]; 
+          if (idx != prow) rs += PetscAbsScalar(rtmp1[idx]);
+        }
+        sctx.rs = rs;  
+        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+        if (newshift == 1) goto endofwhile;
+
+        if (*pc2 != 0.0){
+          pj     = nbj + bd[prow];
+          mul2   = (*pc2)/(*pc1); /* since diag is not yet inverted.*/
+          *pc2   = mul2;
+          nz_tmp = bi[prow+1] - bd[prow] - 1;
+          for (j=0; j<nz_tmp; j++) {
             idx = pj[j] ;
             tmp = rtmp1[idx];
             rtmp2[idx] -= mul2 * tmp;
-            if (idx != prow) rs += PetscAbsScalar(rtmp2[idx]);
           }
-          
-          sctx.rs  = rs; 
-          sctx.pv  = *pc1;
-          ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
-          if (newshift == 1) goto endofwhile;
+          ierr = PetscLogFlops(2*nz_tmp);CHKERRQ(ierr);
         }
  
-        nz  = bi[row+1] - bi[row];
         pj  = bj + bi[row];
         pc1 = ba + bi[row];
         pc2 = ba + bi[row+1];
 
-        rsum[0] = rsum[1] = 0.0;
+        sctx.pv = rtmp2[row+1];
+        rs = 0.0;
         rtmp1[row]   = 1.0/rtmp1[row];
         rtmp2[row+1] = 1.0/rtmp2[row+1];
+        /* copy row entries from dense representation to sparse */
         for (j=0; j<nz; j++) {
           idx    = pj[j];
-          pc1[j] = rtmps1[idx];
-          pc2[j] = rtmps2[idx];
-          if (idx != row)   rsum[0] += PetscAbsScalar(pc1[j]);
-          if (idx != row+1) rsum[1] += PetscAbsScalar(pc2[j]);
+          pc1[j] = rtmp1[idx];
+          pc2[j] = rtmp2[idx];
+          if (idx != row+1) rs += PetscAbsScalar(pc2[j]);
         }
-
-        sctx.pv = 1.0/rtmp1[row]; /* rtmp1[row] = 1.0/diag[row] */
-        sctx.rs = rsum[0];
-        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
-        if (newshift == 1) goto endofwhile;
-        sctx.pv = 1.0/rtmp2[row+1]; 
-        sctx.rs = rsum[1];
-        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+        sctx.rs = rs;
+        ierr = MatLUCheckShift_inline(info,sctx,row+1,a->diag,newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
         break;
 
       case 3:
         for  (j=0; j<nz; j++) {
-          idx         = bjtmp[j];
-          rtmps1[idx] = 0.0;
-          rtmps2[idx] = 0.0;
-          rtmps3[idx] = 0.0;
+          idx        = bjtmp[j];
+          rtmp1[idx] = 0.0;
+          rtmp2[idx] = 0.0;
+          rtmp3[idx] = 0.0;
         }
         /* copy the nonzeros for the 3 rows from sparse representation to dense in rtmp*[] */
-        idx   = r[row];
-        nz    = ai[idx+1] - ai[idx];
+        idx    = r[row];
+        nz_tmp = ai[idx+1] - ai[idx];
         ajtmp = aj + ai[idx];
         v1    = aa + ai[idx];
         v2    = aa + ai[idx+1];
         v3    = aa + ai[idx+2];
-        for (j=0; j<nz; j++) {
+        for (j=0; j<nz_tmp; j++) {
           idx        = ics[ajtmp[j]];
           rtmp1[idx] = v1[j];
           rtmp2[idx] = v2[j];
           rtmp3[idx] = v3[j];
-          if (sctx.nshift && ajtmp[j] == r[row]) {
-            rtmp1[idx] += sctx.shift_amount; 
-          }
-          if (sctx.nshift && ajtmp[j] == r[row+1]) {
-            rtmp2[idx] += sctx.shift_amount; 
-          }
-          if (sctx.nshift && ajtmp[j] == r[row+2]) {
-            rtmp3[idx] += sctx.shift_amount; 
-          }
         }
+        rtmp1[ics[r[row]]]   += sctx.shift_amount; 
+        rtmp2[ics[r[row+1]]] += sctx.shift_amount;
+        rtmp3[ics[r[row+2]]] += sctx.shift_amount;
+
         /* loop over all pivot row blocks above this row block */
         prow = *bjtmp++ ;
         while (prow < row) {
@@ -1464,100 +1450,104 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
             *pc2 = mul2;
             *pc3 = mul3;
           
-            nz   = bi[prow+1] - bd[prow] - 1;
-            ierr = PetscLogFlops(3*2*nz);CHKERRQ(ierr);
+            nz_tmp = bi[prow+1] - bd[prow] - 1;
             /* update this row based on pivot row */
-            for (j=0; j<nz; j++) {
+            for (j=0; j<nz_tmp; j++) {
               tmp = pv[j];
               idx = pj[j];
-              rtmps1[idx] -= mul1 * tmp;
-              rtmps2[idx] -= mul2 * tmp;
-              rtmps3[idx] -= mul3 * tmp;
+              rtmp1[idx] -= mul1 * tmp;
+              rtmp2[idx] -= mul2 * tmp;
+              rtmp3[idx] -= mul3 * tmp;
             }
+            ierr = PetscLogFlops(6*nz_tmp);CHKERRQ(ierr);
           }
           prow = *bjtmp++ ;
         }
-        /* Now take care of diagonal block in this set of rows */
+
+        /* Now take care of diagonal 3x3 block in this set of rows */
+        /* note: prow = row here */
         pc1 = rtmp1 + prow;
         pc2 = rtmp2 + prow;
         pc3 = rtmp3 + prow;
-        if (*pc2 != 0.0 || *pc3 != 0.0){
-          pj   = nbj + bd[prow];
 
-          sctx.rs = 1.0; /* for simplicity, set rs=1.0 */
-          sctx.pv = *pc1;
-          ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
-          if (newshift == 1) goto endofwhile;
+        sctx.pv = *pc1;
+        pj      = bj + bi[prow];
+        rs      = 0.0;
+        for (j=0; j<nz; j++){
+          idx = pj[j]; 
+          if (idx != row) rs += PetscAbsScalar(rtmp1[idx]);
+        }
+        sctx.rs = rs;    
+        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+        if (newshift == 1) goto endofwhile;
 
+        if (*pc2 != 0.0 || *pc3 != 0.0){     
           mul2 = (*pc2)/(*pc1);
           mul3 = (*pc3)/(*pc1);
           *pc2 = mul2;
           *pc3 = mul3;
-          nz   = bi[prow+1] - bd[prow] - 1;
-          ierr = PetscLogFlops(2*2*nz);CHKERRQ(ierr);
-          for (j=0; j<nz; j++) {
+          nz_tmp = bi[prow+1] - bd[prow] - 1;
+          pj     = nbj + bd[prow];       
+          for (j=0; j<nz_tmp; j++) {
             idx = pj[j] ;
             tmp = rtmp1[idx];
             rtmp2[idx] -= mul2 * tmp;
             rtmp3[idx] -= mul3 * tmp;
           }
+          ierr = PetscLogFlops(4*nz_tmp);CHKERRQ(ierr);  
         }
         ++prow;
+
         pc2 = rtmp2 + prow;
         pc3 = rtmp3 + prow;
-        if (*pc3 != 0.0){
-          pj   = nbj + bd[prow];
-          pj   = nbj + bd[prow];
+        sctx.pv = *pc2;
+        pj      = bj + bi[prow];
+        rs      = 0.0;
+        for (j=0; j<nz; j++){
+          idx = pj[j]; 
+          if (idx != prow) rs += PetscAbsScalar(rtmp2[idx]);
+        }
+        sctx.rs = rs;    
+        ierr = MatLUCheckShift_inline(info,sctx,row+1,a->diag,newshift);CHKERRQ(ierr);
+        if (newshift == 1) goto endofwhile;
 
-          sctx.rs  = 1.0; /* for simplicity, set rs=1.0 */
-          sctx.pv  = *pc2;
-          ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
-          if (newshift == 1) goto endofwhile;
-          mul3 = (*pc3)/(*pc2);
-          *pc3 = mul3;
-          nz   = bi[prow+1] - bd[prow] - 1;
-          ierr = PetscLogFlops(2*2*nz);CHKERRQ(ierr);
-          for (j=0; j<nz; j++) {
+        if (*pc3 != 0.0){
+          mul3   = (*pc3)/(*pc2);
+          *pc3   = mul3;
+          pj     = nbj + bd[prow];
+          nz_tmp = bi[prow+1] - bd[prow] - 1;
+          for (j=0; j<nz_tmp; j++) {
             idx = pj[j] ;
             tmp = rtmp2[idx];
             rtmp3[idx] -= mul3 * tmp;
           }
+          ierr = PetscLogFlops(4*nz_tmp);CHKERRQ(ierr);
         }
-        nz  = bi[row+1] - bi[row];
+
         pj  = bj + bi[row];
         pc1 = ba + bi[row];
         pc2 = ba + bi[row+1];
         pc3 = ba + bi[row+2];
 
-        rsum[0] = rsum[1] = rsum[2] = 0.0;
+        sctx.pv = rtmp3[row+2];
+        rs = 0.0;
         rtmp1[row]   = 1.0/rtmp1[row];
         rtmp2[row+1] = 1.0/rtmp2[row+1];
         rtmp3[row+2] = 1.0/rtmp3[row+2];
         /* copy row entries from dense representation to sparse */
         for (j=0; j<nz; j++) {
           idx    = pj[j]; 
-          pc1[j] = rtmps1[idx];
-          pc2[j] = rtmps2[idx];
-          pc3[j] = rtmps3[idx];
-          if (idx != row) rsum[0] += PetscAbsScalar(pc1[j]);
-          if (idx != row+1) rsum[1] += PetscAbsScalar(pc2[j]);
-          if (idx != row+2) rsum[2] += PetscAbsScalar(pc3[j]);
+          pc1[j] = rtmp1[idx];
+          pc2[j] = rtmp2[idx];
+          pc3[j] = rtmp3[idx];
+          if (idx != row+2) rs += PetscAbsScalar(pc3[j]);
         }
 
-        /* sctx.rs = rs/3.0; */
-        sctx.pv = 1.0/rtmp1[row];
-        sctx.rs = rsum[0];
-        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
-        if (newshift == 1) goto endofwhile;
-        sctx.pv = 1.0/rtmp2[row+1];
-        sctx.rs = rsum[1];
-        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
-        if (newshift == 1) goto endofwhile;
-        sctx.pv = 1.0/rtmp3[row+2];
-        sctx.rs = rsum[2];
-        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+        sctx.rs = rs;
+        ierr = MatLUCheckShift_inline(info,sctx,row+2,a->diag,newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
         break;
+
       default:
         SETERRQ(PETSC_ERR_COR,"Node size not yet supported \n");
       }

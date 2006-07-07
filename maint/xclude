@@ -1,4 +1,5 @@
 petsc-dist/.hg
+petsc-dist/python/BuildSystem/.hg
 petsc-dist/src/tops/images
 petsc-dist/src/tops/slides.ppt
 petsc-dist/src/tops/twopager.ppt

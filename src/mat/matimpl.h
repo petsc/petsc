@@ -389,8 +389,9 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 @*/
 #define MatLUCheckShift_inline(info,sctx,row,idiag,newshift) 0;\
 {\
-  PetscInt _newshift;\
-  PetscReal _zero = info->zeropivot*rs;\
+  PetscInt  _newshift;\
+  PetscReal _rs   = sctx.rs;\
+  PetscReal _zero = info->zeropivot*_rs;\
   if (info->shiftnz && PetscAbsScalar(sctx.pv) <= _zero){\
     /* force |diag| > zeropivot*rs */\
     if (!sctx.nshift){\
@@ -419,7 +420,7 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
     _newshift = 1;\
   } else if (PetscAbsScalar(sctx.pv) <= _zero){\
     ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
-    SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G",row,PetscAbsScalar(sctx.pv),_zero,rs); \
+    SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rowsum %G",row,PetscAbsScalar(sctx.pv),_zero,_rs); \
   } else {\
     _newshift = 0;\
   }\
@@ -458,8 +459,9 @@ typedef struct {
 @*/
 #define MatCholeskyCheckShift_inline(info,sctx,row,newshift) 0;	\
 {\
-  PetscInt _newshift;\
-  PetscReal _zero = info->zeropivot*rs;\
+  PetscInt  _newshift;\
+  PetscReal _rs   = sctx.rs;\
+  PetscReal _zero = info->zeropivot*_rs;\
   if (info->shiftnz && PetscAbsScalar(sctx.pv) <= _zero){\
     /* force |diag| > zeropivot*sctx.rs */\
     if (!sctx.nshift){\
@@ -472,12 +474,12 @@ typedef struct {
     _newshift = 1;\
   } else if (info->shiftpd && PetscRealPart(sctx.pv) <= _zero){\
     /* calculate a shift that would make this row diagonally dominant */\
-    sctx.shift_amount = PetscMax(sctx.rs+PetscAbs(PetscRealPart(sctx.pv)),1.1*sctx.shift_amount);\
+    sctx.shift_amount = PetscMax(_rs+PetscAbs(PetscRealPart(sctx.pv)),1.1*sctx.shift_amount);\
     sctx.chshift      = PETSC_TRUE;\
     sctx.nshift++;\
     _newshift = 1;\
   } else if (PetscAbsScalar(sctx.pv) <= _zero){\
-    SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %G tolerance %G * rs %G",row,PetscAbsScalar(sctx.pv),_zero,rs); \
+    SETERRQ4(PETSC_ERR_MAT_CH_ZRPVT,"Zero pivot row %D value %G tolerance %G * rowsum %G",row,PetscAbsScalar(sctx.pv),_zero,_rs); \
   } else {\
     _newshift = 0; \
   }\
