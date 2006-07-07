@@ -56,6 +56,45 @@ typedef struct {
   PetscErrorCode (*MatDuplicate_SeqAIJ)(Mat,MatDuplicateOption,Mat*);
 } Mat_SeqCSRPERM;
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_SeqCSRPERM_SeqAIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqCSRPERM_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+{
+  /* This routine is only called to convert a MATCSRPERM to its base PETSc type, */
+  /* so we will ignore 'MatType type'. */
+  PetscErrorCode ierr;
+  Mat            B = *newmat;
+  Mat_SeqCSRPERM *csrperm=(Mat_SeqCSRPERM*)A->spptr;
+
+  PetscFunctionBegin;
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
+
+  /* Reset the original function pointers. */
+  B->ops->assemblyend = csrperm->AssemblyEnd_SeqAIJ;
+  B->ops->destroy   = csrperm->MatDestroy_SeqAIJ;
+  B->ops->duplicate = csrperm->MatDuplicate_SeqAIJ;
+
+  /* Free everything in the Mat_SeqCSRPERM data structure. */
+  if(csrperm->CleanUpCSRPERM) {
+    ierr = PetscFree(csrperm->xgroup);CHKERRQ(ierr);
+    ierr = PetscFree(csrperm->nzgroup);CHKERRQ(ierr);
+    ierr = PetscFree(csrperm->iperm);CHKERRQ(ierr);
+  }
+
+  /* Free the Mat_SeqCSRPERM struct itself. */
+  ierr = PetscFree(csrperm);CHKERRQ(ierr);
+
+  /* Change the type of B to MATSEQAIJ. */
+  ierr = PetscObjectChangeTypeName( (PetscObject)B, MATSEQAIJ);CHKERRQ(ierr);
+  
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqCSRPERM"
 PetscErrorCode MatDestroy_SeqCSRPERM(Mat A)
@@ -98,10 +137,23 @@ PetscErrorCode MatDuplicate_SeqCSRPERM(Mat A, MatDuplicateOption op, Mat *M)
 {
   PetscErrorCode ierr;
   Mat_SeqCSRPERM *csrperm = (Mat_SeqCSRPERM *) A->spptr;
+  Mat_SeqCSRPERM *csrperm_dest = (Mat_SeqCSRPERM *) (*M)->spptr;
 
   PetscFunctionBegin;
   ierr = (*csrperm->MatDuplicate_SeqAIJ)(A,op,M);CHKERRQ(ierr);
-  SETERRQ(PETSC_ERR_SUP,"Cannot duplicate CSRPERM matrices yet");    
+  ierr = PetscMemcpy((*M)->spptr,csrperm,sizeof(Mat_SeqCSRPERM));CHKERRQ(ierr);
+  /* Allocate space for, and copy the grouping and permutation info. 
+   * I note that when the groups are initially determined in 
+   * SeqCSRPERM_create_perm, xgroup and nzgroup may be sized larger than 
+   * necessary.  But at this point, we know how large they need to be, and 
+   * allocate only the necessary amount of memory.  So the duplicated matrix 
+   * may actually use slightly less storage than the original! */
+  ierr = PetscMalloc(A->rmap.n*sizeof(PetscInt), csrperm_dest->iperm); CHKERRQ(ierr);
+  ierr = PetscMalloc((csrperm->ngroup+1)*sizeof(PetscInt), csrperm_dest->xgroup); CHKERRQ(ierr);
+  ierr = PetscMalloc((csrperm->ngroup)*sizeof(PetscInt), csrperm_dest->nzgroup); CHKERRQ(ierr);
+  ierr = PetscMemcpy(csrperm_dest->iperm,csrperm->iperm,sizeof(PetscInt)*A->rmap.n);CHKERRQ(ierr);
+  ierr = PetscMemcpy(csrperm_dest->xgroup,csrperm->xgroup,sizeof(PetscInt)*(csrperm->ngroup+1));CHKERRQ(ierr);
+  ierr = PetscMemcpy(csrperm_dest->nzgroup,csrperm->nzgroup,sizeof(PetscInt)*csrperm->ngroup);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -588,6 +640,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,MatType typ
   if (A->assembled == PETSC_TRUE) {
     ierr = SeqCSRPERM_create_perm(B);CHKERRQ(ierr);
   }
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqcsrperm_C",
+                                           "MatConvert_SeqAIJ_SeqCSRPERM",MatConvert_SeqAIJ_SeqCSRPERM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqcsrperm_seqaij_C",
+                                           "MatConvert_SeqCSRPERM_SeqAIJ",MatConvert_SeqCSRPERM_SeqAIJ);CHKERRQ(ierr);
+
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQCSRPERM);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
