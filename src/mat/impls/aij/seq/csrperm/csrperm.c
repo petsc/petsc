@@ -77,15 +77,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqCSRPERM_SeqAIJ(Mat A,MatType typ
   B->ops->destroy   = csrperm->MatDestroy_SeqAIJ;
   B->ops->duplicate = csrperm->MatDuplicate_SeqAIJ;
 
-  /* Free everything in the Mat_SeqCSRPERM data structure. */
+  /* Free everything in the Mat_SeqCSRPERM data structure. 
+   * We don't free the Mat_SeqCSRPERM struct itself, as this will 
+   * cause problems later when MatDestroy() tries to free it. */
   if(csrperm->CleanUpCSRPERM) {
     ierr = PetscFree(csrperm->xgroup);CHKERRQ(ierr);
     ierr = PetscFree(csrperm->nzgroup);CHKERRQ(ierr);
     ierr = PetscFree(csrperm->iperm);CHKERRQ(ierr);
   }
-
-  /* Free the Mat_SeqCSRPERM struct itself. */
-  ierr = PetscFree(csrperm);CHKERRQ(ierr);
 
   /* Change the type of B to MATSEQAIJ. */
   ierr = PetscObjectChangeTypeName( (PetscObject)B, MATSEQAIJ);CHKERRQ(ierr);
@@ -113,15 +112,14 @@ PetscErrorCode MatDestroy_SeqCSRPERM(Mat A)
   A->ops->destroy   = csrperm->MatDestroy_SeqAIJ;
   A->ops->duplicate = csrperm->MatDuplicate_SeqAIJ;
 
-  /* Free everything in the Mat_SeqCSRPERM data structure. */
+  /* Free everything in the Mat_SeqCSRPERM data structure. 
+   * Note that we don't need to free the Mat_SeqCSRPERM struct 
+   * itself, as MatDestroy() will do so. */
   if(csrperm->CleanUpCSRPERM) {
     ierr = PetscFree(csrperm->xgroup);CHKERRQ(ierr);
     ierr = PetscFree(csrperm->nzgroup);CHKERRQ(ierr);
     ierr = PetscFree(csrperm->iperm);CHKERRQ(ierr);
   }
-
-  /* Free the Mat_SeqCSRPERM struct itself. */
-  ierr = PetscFree(csrperm);CHKERRQ(ierr);
 
   /* Change the type of A back to SEQAIJ and use MatDestroy_SeqAIJ() 
    * to destroy everything that remains. */
