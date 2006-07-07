@@ -40,6 +40,7 @@ class Configure(PETSc.package.Package):
       make.framework.argDB['with-petsc'] = 1
       make.builder.argDB['ignoreCompileOutput'] = 1
       make.run()
+      del sys.modules['make']
       logging.Logger.defaultLog = oldLog
       os.chdir(oldDir)
     except RuntimeError, e:
