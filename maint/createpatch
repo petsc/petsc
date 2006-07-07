@@ -8,34 +8,38 @@
 if [ $# = 1 ]; then
   petscrepo=$1
 else
-  echo 'Error: petscrepo not specified. Usge: createpatch petscrepo'
+  echo "Error: petscrepo not specified. Usge: createpatch petscrepo"
   exit
 fi
 
 # check petscrepo to be valid
 if [ ! -d $petscrepo ]; then
-  echo 'Error: dir $petscrepo does not exist'
+  echo "Error: dir $petscrepo does not exist"
+  exit
+fi
+if [ ! -d $petscrepo/python/BuildSystem ]; then
+  echo "Error: dir $petscrepo/python/BuildSystem does not exist"
   exit
 fi
 cd $petscrepo
 
 if [ ! -f include/petscversion.h ]; then
-  echo 'Error: dir $petscrepo/include/petscversion.h does not exist'
+  echo "Error: dir $petscrepo/include/petscversion.h does not exist"
   exit
 fi
 
 if [ ! -f src/docs/website/download/index.html ]; then
-  echo 'Error: dir $petscrepo/src/docs/website/download/index.html does not exist'
+  echo "Error: dir $petscrepo/src/docs/website/download/index.html does not exist"
   exit
 fi
 
 # check if all files are checked in
-a=`bk sfiles -l| wc -l`
-b=`bk sfiles -l python/BuildSystem | wc -l`
+a=`hg status -m | wc -l`
+b=`hg status -m -R python/BuildSystem | wc -l`
 if [ "${a}" != "0" -o "${b}" != "0" ]; then
-  echo "*** BK edited files exist. Cannot proceed! ****"
-  bk sfiles -l
-  bk sfiles -l python/BuildSystem
+  echo "*** Mercurial edited files exist. Cannot proceed! ****"
+  hg status -m
+  hg status -m -R python/BuildSystem
   exit
 fi
 
@@ -47,7 +51,7 @@ version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -
 version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 
 if  [ ${version_release} = 0 ]; then
-  echo 'Error: cannot update patchlevel for petsc-dev.'
+  echo "Error: cannot update patchlevel for petsc-dev."
   exit
 fi
 
@@ -60,7 +64,6 @@ echo #########################################################
 
 
 # Update patchlevel in petscversion.h
-bk edit -q include/petscversion.h
 /bin/mv include/petscversion.h include/petscversion.h.bak
 cat include/petscversion.h.bak | \
   sed -e "s/#define PETSC_VERSION_PATCH .*/#define PETSC_VERSION_PATCH      ${new_version_patch}/" > include/petscversion.h
@@ -69,17 +72,14 @@ cat include/petscversion.h.bak | \
 # Update patchlevel in download/index.html
 
 patchlevel=0
-bk edit src/docs/website/download/index.html
 /bin/mv src/docs/website/download/index.html src/docs/website/download/index.html.bak
 cat src/docs/website/download/index.html.bak | \
   sed -e "s/(patchlevel=.*)/(patchlevel=${new_version_patch})/" > src/docs/website/download/index.html
 /bin/rm -f src/docs/website/download/index.html.bak
 
 # now create a changeset
-bk ci -u -y"Cranked up patch level" include/petscversion.h
-bk ci -u -y"Cranked up patch level" src/docs/website/download/index.html
-bk commit -y"Cranked up patch level ${version_major}.${version_minor}.${version_subminor}-p${new_version_patch}"
+hg commit -m"Increase patchlevel to ${version_major}.${version_minor}.${version_subminor}-p${new_version_patch}" include/petscversion.h src/docs/website/download/index.html
 echo #########################################################
 echo # Created patch for the following change                #
 echo #########################################################
-bk export -tpatch -d -r+
+hg export tip

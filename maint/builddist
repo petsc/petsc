@@ -127,6 +127,8 @@ cat include/petscversion.h.bak | \
 /usr/bin/find src/contrib -type f -name "*.html" -exec /bin/rm -f {} \;
 # eliminate .pyc files if any
 /usr/bin/find . -type f -name "*.pyc" -exec /bin/rm -f {} \;
+# eliminate misc files mercurial leaves
+/usr/bin/find . -type f -name "*.orig" -exec /bin/rm -f {} \;
 # Create EMACS-TAGS
 ${PETSC_DIR}/maint/generateetags.py
 # Update project files
