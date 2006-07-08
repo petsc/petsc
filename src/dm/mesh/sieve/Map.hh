@@ -168,8 +168,8 @@ namespace ALE {
 
     // We require that any class implementing the Atlas concept extending Sifter.
     // FIX: should Atlas depend on a Sieve type?  A Sifter type?
-    template <typename Point_, typename Chart_, typename Ind_>
-    class Atlas : public ASifter<Point_, Chart_, typename ALE::pair<Ind_,Ind_>, SifterDef::uniColor> {
+    template <typename Ind_, typename Point_, typename Chart_>
+    class Atlas : public ASifter<Ind_, Point_, Chart_, SifterDef::multiColor> {
     public:
       // 
       // Encapsulated types
@@ -177,9 +177,9 @@ namespace ALE {
       typedef Point_                                 point_type;
       typedef Chart_                                 chart_type;
       typedef Ind_                                   ind_type;
-      typedef typename ALE::pair<ind_type, ind_type> index;
+      typedef ALE::pair<ind_type, ind_type>          index_type;
       //
-      typedef ASifter<point_type, chart_type, index_type, SifterDef::uniColor> sifter_type;
+      typedef ASifter<index_type, point_type, chart_type, SifterDef::multiColor> sifter_type;
     public:
       //
       // Basic interface
