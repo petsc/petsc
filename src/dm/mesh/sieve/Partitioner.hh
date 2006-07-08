@@ -629,7 +629,6 @@ namespace ALE {
         Distributer<order_type>::distribute(serialBoundary->__getOrder(), parallelBoundary->__getOrder(), false);
         parallelBoundary->reorderPatches();
         parallelBoundary->allocatePatches();
-        parallelBoundary->view("Parallel Boundary before global order");
         parallelBoundary->createGlobalOrder();
 
         VecScatter scatter = Distributer<order_type>::createMappingStoP(serialBoundary, parallelBoundary, partitionOverlap, true);

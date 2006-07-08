@@ -905,7 +905,7 @@ namespace ALE {
               if (out.edgemarkerlist[e]) {
                 Mesh::point_type vertexA(0, out.edgelist[e*2+0]+out.numberoftriangles);
                 Mesh::point_type vertexB(0, out.edgelist[e*2+1]+out.numberoftriangles);
-                Obj<Mesh::sieve_type::supportSet> join = topology->join(vertexA, vertexB);
+                Obj<Mesh::sieve_type::supportSet> join = topology->nJoin(vertexA, vertexB, 1);
 
                 boundary->setFiberDimension(Mesh::field_type::patch_type(0, out.edgemarkerlist[e]), *(join->begin()), 1);
               }
