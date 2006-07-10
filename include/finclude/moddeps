@@ -1,0 +1,21 @@
+# 
+# dependencies of modules
+#
+
+petsc :
+petscviewer : petsc
+petscdraw : petsc
+petscsys : petsc
+petsclog : petsc
+petscis : petsc
+
+petscvec : petscis
+petscmat : petscvec
+petscao : petscmat
+petscpc : petscmat
+petscksp : petscpc
+petscmg : petscksp
+petscda : petscksp
+petscsnes : petscksp
+petscts : petscsnes
+
