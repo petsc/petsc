@@ -39,12 +39,12 @@ forceall: clean_all all
 all: makemodules allinone.h tidy_up
 
 # clean all
-clean_all:
-	rm -f modorder makefile.tmp ipath __tmp *.use *.xinc *.h *.f90 *.o *.mod
+clean_all: tidy_up
+	rm -f *.mod
 
 # leave only final files
 tidy_up:
-	rm -f ipath __tmp *.xinc *.f90.h *.f90 *.use *.inc
+	rm -f ipath __tmp *.xinc *.f90.h *.f90 *.use *.inc modorder makefile.tmp allinone.h *.o *.f90
 
 makefile.tmp: moddeps
 	cp makefile makefile.tmp;\
@@ -114,7 +114,7 @@ allinone.h: modorder
 
 
 ipath:
-	echo "-I/usr/include -I${SRCDIR} ${PETSC_FC_INCLUDES} "|sed 's/-I//g'>ipath
+	echo "-I/usr/include ${PETSC_DIR}/externalpackages/mpich2-1.0.3/fortranreal/include ${PETSC_DIR}/bmake/${PETSC_ARCH} ${PETSC_DIR}/include/finclude ${PETSC_DIR}/include "|sed 's/-I//g' > ipath
 
 
 
