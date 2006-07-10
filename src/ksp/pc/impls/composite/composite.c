@@ -322,8 +322,8 @@ EXTERN_C_END
    Collective on PC
 
    Input Parameter:
-.  pc - the preconditioner context
-.  type - PC_COMPOSITE_ADDITIVE (default), PC_COMPOSITE_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL
++  pc - the preconditioner context
+-  type - PC_COMPOSITE_ADDITIVE (default), PC_COMPOSITE_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL
 
    Options Database Key:
 .  -pc_composite_type <type: one of multiplicative, additive, special> - Sets composite preconditioner type
@@ -382,8 +382,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSpecialSetAlpha(PC pc,PetscScalar a
    Collective on PC
 
    Input Parameters:
-.  pc - the preconditioner context
-.  type - the type of the new preconditioner
++  pc - the preconditioner context
+-  type - the type of the new preconditioner
 
    Level: Developer
 
@@ -410,8 +410,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeAddPC(PC pc,PCType type)
    Not Collective
 
    Input Parameter:
-.  pc - the preconditioner context
-.  n - the number of the pc requested
++  pc - the preconditioner context
+-  n - the number of the pc requested
 
    Output Parameters:
 .  subpc - the PC requested

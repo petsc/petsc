@@ -272,8 +272,8 @@ static const char *PetscErrorStrings[] = {
 PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int errnum,const char *text[],char **specific)
 {
   PetscFunctionBegin;
-  if (text && errnum >= PETSC_ERR_MEM && errnum <= PETSC_ERR_MEM_MALLOC_0) {
-    *text = PetscErrorStrings[errnum-PETSC_ERR_MEM];
+  if (text && errnum > PETSC_ERR_MIN_VALUE && errnum < PETSC_ERR_MAX_VALUE) {
+    *text = PetscErrorStrings[errnum-PETSC_ERR_MIN_VALUE];
   } else if (text) *text = 0;
 
   if (specific) {

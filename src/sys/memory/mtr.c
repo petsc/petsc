@@ -181,10 +181,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrMallocDefault(size_t a,int lineno,const ch
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!a) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Trying to malloc zero size array");
+  }
+
   if (TRdebugLevel) {
     ierr = PetscMallocValidate(lineno,function,filename,dir); if (ierr) PetscFunctionReturn(ierr);
   }
-  if (!a) SETERRQ(PETSC_ERR_MEM_MALLOC_0,"Cannot malloc size zero");
 
   nsize = a;
   if (nsize & TR_ALIGN_MASK) nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
@@ -265,7 +268,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void *aa,int line,const char f
   /* Do not try to handle empty blocks */
   if (!a) {
     (*PetscErrorPrintf)("PetscTrFreeDefault called from %s() line %d in %s%s\n",function,line,dir,file);
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Trying to free null block");
+    SETERRQ4(PETSC_ERR_ARG_OUTOFRANGE,"Trying to free null block: Free called from %s() line %d in %s%s\n",function,line,dir,file);
   }
   
   if (TRdebugLevel) {

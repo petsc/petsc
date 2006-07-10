@@ -35,8 +35,9 @@ PETSC_EXTERN_CXX_BEGIN
      must be also made there.
 
 */
+#define PETSC_ERR_MIN_VALUE        54   /* should always be one less then the smallest value */
+
 #define PETSC_ERR_MEM              55   /* unable to allocate requested memory */
-#define PETSC_ERR_MEM_MALLOC_0     85   /* cannot malloc zero size */
 #define PETSC_ERR_SUP              56   /* no support for requested operation */
 #define PETSC_ERR_SUP_SYS          57   /* no support for requested operation on this computer system */
 #define PETSC_ERR_ORDER            58   /* operation done in wrong order */
@@ -70,6 +71,8 @@ PETSC_EXTERN_CXX_BEGIN
 
 #define PETSC_ERR_MAT_LU_ZRPVT     71   /* detected a zero pivot during LU factorization */
 #define PETSC_ERR_MAT_CH_ZRPVT     81   /* detected a zero pivot during Cholesky factorization */
+
+#define PETSC_ERR_MAX_VALUE        88   /* this is always the one more than the largest error code */
 
 #if defined(PETSC_USE_ERRORCHECKING)
 

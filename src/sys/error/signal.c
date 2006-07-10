@@ -150,7 +150,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int sig,void *ptr)
     (*PetscErrorPrintf)("Caught signal\n");
   }
   (*PetscErrorPrintf)("Try option -start_in_debugger or -on_error_attach_debugger\n");
-  (*PetscErrorPrintf)("or try http://valgrind.org on linux to find memory corruption errors\n");
+  (*PetscErrorPrintf)("or see http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html#Signal");
+  (*PetscErrorPrintf)("or try http://valgrind.org on linux or man libgmalloc on Apple to find memory corruption errors\n");
 #if defined(PETSC_USE_DEBUG)
   if (!PetscStackActive) {
     (*PetscErrorPrintf)("  or try option -log_stack\n");

@@ -560,7 +560,7 @@ html:
               -e "s/ierr [ ]*= //g"  -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n  | \
               sed "s?splicer.begin(\([_A-Za-z0-9.]*\))?splicer.begin(\1)  <a name=\1></p>?g" | \
               ${PETSC_DIR}/maint/fixinclude $$i $${ROOT} | \
-              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C|extern )' | \
+              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|PetscLogEvent|#if !defined\(__|#define __|#undef __|EXTERN_C|extern )' | \
               ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
 	    fi; \
          done

@@ -7,7 +7,6 @@
 #define __PETSCERROR_H
 
 #define PETSC_ERR_MEM              55
-#define PETSC_ERR_MEM_MALLOC_0     85
 #define PETSC_ERR_SUP              56
 #define PETSC_ERR_SUP_SYS          57
 #define PETSC_ERR_ORDER            58

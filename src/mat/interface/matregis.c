@@ -29,6 +29,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPICRL(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_CRL(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPICSRPERM(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_CSRPERM(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat);
 #if defined(PETSC_HAVE_SPOOLES)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJSpooles(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJSpooles(Mat);
@@ -127,6 +128,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATSEQDENSE,  path,"MatCreate_SeqDense",  MatCreate_SeqDense);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATDENSE,     path,"MatCreate_Dense",     MatCreate_Dense);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPIADJ,    path,"MatCreate_MPIAdj",    MatCreate_MPIAdj);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSCATTER,   path,"MatCreate_Scatter",   MatCreate_Scatter);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SPOOLES)
   ierr = MatRegisterDynamic(MATSEQAIJSPOOLES,  path,"MatCreate_SeqAIJSpooles",  MatCreate_SeqAIJSpooles);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQSBAIJSPOOLES,path,"MatCreate_SeqSBAIJSpooles",MatCreate_SeqSBAIJSpooles);CHKERRQ(ierr);

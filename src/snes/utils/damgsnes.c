@@ -687,6 +687,7 @@ PetscErrorCode DMMGSetSNESLocalFD(DMMG *dmmg,DALocalFunction1 function)
   PetscFunctionReturn(0);
 }
 
+
 /*M
     DMMGSetSNESLocal - Sets the local user function that defines the nonlinear set of equations
     that will use the grid hierarchy and (optionally) its derivative.
@@ -849,5 +850,54 @@ PetscErrorCode DMMGSetSNESLocalib_Private(DMMG *dmmg,PetscErrorCode (*functioni)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode (*localfunc)(DALocalInfo*,void*) = 0;
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGInitialGuess_Local"
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuess_Local(DMMG dmmg,Vec x)
+{
+  PetscErrorCode ierr;
+  DALocalInfo    info;
+  void           *f;
+  DA             da = (DA)dmmg->dm;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,x,&f);CHKERRQ(ierr);
+
+  CHKMEMQ;
+  ierr = (*localfunc)(&info,f);CHKERRQ(ierr);
+  CHKMEMQ;
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetInitialGuessLocal"
+/*@
+    DMMGSetInitialGuessLocal - sets code to compute the initial guess for each level
+
+    Collective on DMMG
+
+    Input Parameter:
++   dmmg - the context
+-   localguess - the function that computes the initial guess
+
+    Level: intermediate
+
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(), DMMGSetSNESLocal()
+
+@*/
+PetscErrorCode DMMGSetInitialGuessLocal(DMMG *dmmg,PetscErrorCode (*localguess)(DALocalInfo*,void*))
+{
+  PetscErrorCode ierr;
+
+
+  PetscFunctionBegin;
+  localfunc = localguess;  /* stash into ugly static for now */
+
+  ierr = DMMGSetInitialGuess(dmmg,DMMGInitialGuess_Local);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 

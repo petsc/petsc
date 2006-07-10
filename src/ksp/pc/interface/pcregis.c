@@ -21,6 +21,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_NN(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Galerkin(PC);
 #if defined(PETSC_HAVE_ML)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC);
 #endif
@@ -86,6 +87,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCNN           ,path,"PCCreate_NN",PCCreate_NN);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCMAT          ,path,"PCCreate_Mat",PCCreate_Mat);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCFIELDSPLIT   ,path,"PCCreate_FieldSplit",PCCreate_FieldSplit);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCFIELDSPLIT   ,path,"PCCreate_Galerkin",PCCreate_Galerkin);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ML)
   ierr = PCRegisterDynamic(PCML           ,path,"PCCreate_ML",PCCreate_ML);CHKERRQ(ierr);
 #endif

@@ -62,6 +62,7 @@ E*/
 #define PCTFS             "tfs"
 #define PCML              "ml"
 #define PCPROMETHEUS      "prometheus"
+#define PCGALERKIN        "galerkin"
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT PC_COOKIE;
@@ -292,6 +293,10 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetTotalBlocks(PC,PetscInt*,co
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC,PetscInt,PetscInt*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC,PCCompositeType);
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetRestriction(PC,Mat);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetInterpolation(PC,Mat);
+
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetCoordinates(PC,PetscReal*);
 
