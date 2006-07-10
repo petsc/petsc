@@ -114,7 +114,7 @@ allinone.h: modorder
 
 
 ipath:
-	echo "-I/usr/include ${PETSC_DIR}/externalpackages/mpich2-1.0.3/fortranreal/include ${PETSC_DIR}/bmake/${PETSC_ARCH} ${PETSC_DIR}/include/finclude ${PETSC_DIR}/include "|sed 's/-I//g' > ipath
+	echo "-I/usr/include ${PETSC_DIR}/bmake/${PETSC_ARCH} ${PETSC_DIR}/include/finclude ${PACKAGES_INCLUDES} ${PETSC_DIR}/include "|sed 's/-I//g' > ipath
 
 
 
