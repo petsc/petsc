@@ -31,9 +31,6 @@ PetscErrorCode MatDestroy_SeqCRL(Mat A)
   /* Free everything in the Mat_CRL data structure. */
   ierr = PetscFree2(crl->acols,crl->icols);CHKERRQ(ierr);
 
-  /* Free the Mat_CRL struct itself. */
-  ierr = PetscFree(crl);CHKERRQ(ierr);
-
   /* Change the type of A back to SEQAIJ and use MatDestroy() 
    * to destroy everything that remains. */
   ierr = PetscObjectChangeTypeName( (PetscObject)A, MATSEQAIJ);CHKERRQ(ierr);
