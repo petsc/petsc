@@ -1,7 +1,7 @@
 
 CFLAGS	        = -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
 FFLAGS	        =
-CPPFLAGS        = -DALE_USE_DEBUGGING -DALE_HAVE_CXX_ABI -DALE_USE_LOGGING -DALE_LOGGING_USE_EVENTS # -DALE_LOGGING_USE_STAGES
+CPPFLAGS        = -DALE_USE_DEBUGGING -DALE_HAVE_CXX_ABI -DALE_USE_LOGGING -DALE_LOGGING_USE_EVENTS -DALE_LOGGING_LOG_MEM # -DALE_LOGGING_USE_STAGES
 FPPFLAGS        = 
 LOCDIR          = src/dm/mesh/examples/tutorials/
 EXAMPLESC       = ex1.c
@@ -32,6 +32,10 @@ ex4: ex4.o   chkopts
 ex5: ex5.o   chkopts
 	-${CLINKER} -o ex5 ex5.o  ${PETSC_DM_LIB}
 	${RM} -f ex5.o
+
+ex6: ex6.o   chkopts
+	-${CLINKER} -o ex6 ex6.o  ${PETSC_DM_LIB}
+	${RM} -f ex6.o
 
 #-----------------------------------------------------------------
 runex1:
@@ -114,6 +118,9 @@ runex5_2:
 
 runex5_3:
 	-@${MPIRUN} -np ${NP} ./ex5 -dim 3 -use_zero_base 1 -base_file data/ex1_3d ${EXTRA_ARGS}
+
+runex6:
+	-@${MPIRUN} -np ${NP} ./ex6 -dim 2 ${EXTRA_ARGS}
 
 testex1_1:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d > /dev/null 2>&1; \

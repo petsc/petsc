@@ -6,6 +6,160 @@
 #endif
 
 
+// Concepts.
+// -----------
+// Because of the use of templating and generic programming techniques,
+// many fundamental ALE types cannot be defined by making progressively specific 
+// class declarations within a given hierarchy. Instead, they must satisfy certain
+// Concept requirements that make them acceptable inputs to various Algorithms.
+// This reflects a shortcoming of the current compiler technology that some defining
+// features of Concepts have to be specified in documentation, rather than within the 
+// language.  Sometimes, however, conceptual types can be viewed as themselves 
+// encapsulating Algorithms acting on other types implementing certain concepts.
+// This allows to define the structure of these algorithmic types using generic 
+// programming techniques available in C++, for example.
+
+
+// Atlas & Sec
+// -----------------------
+// In the past we have considered the Atlas concept, which, for the given
+// Sifter, chart and ind types computed the assignment of indices
+// to the points in the underlying Sieve (relative to a given chart).
+// This mimics a system of local coordinate systems on a manifold or some
+// such space. 
+
+// Essentially, Atlas can be thought of as a Sifter, with the 
+// underlying Sifter's points (base or cap?) in the cap, charts in the base
+// and indices being the color on the edges.  However, any type that responds
+// to the fundamental requests -- setting the number of indices over a point 
+// (fiber dimension), (re)ordering the indices after some dimension modifications
+// have been made, and retrieving the indices -- is an Atlas.
+
+// An object that assigns data of a given type to the (point, chart) pairs of an Atlas 
+// is called its section or Sec.  If an Atlas is viewed as a discrete model of a structure
+// bundle over the point space, a Sec is a discrete model of a section of that bundle.
+// Sec is required to define a restrict method, which, given a (point,chart) pair returns
+// a data iterator.  
+
+// If the Sifter underling the Atlas is a Sieve, we assume that to each
+// covering arrow p --> q (within the same chart), corresponds a mapping of the data d(p) <-- d(q),
+// reflecting the idea that d(q) can be 'restricted' to d(p) within the same chart (or perhaps 
+// in any chart?).  This sort of behavior is certainly impossible to guarantee through
+// an interface specification, but it remains a conceptual requirement on Sec that 
+// the data over p are somehow "included" in the data over q.  This "inclusion" is partly specified
+// in the Atlas (e.g., by ensuring that the indices over p are included in those over q),
+// and partly in Sec itself.
+
+
+// Map & ParMap concepts.
+// -----------------------
+// A Map is thought of as a type of mapping from a Sec class to another Sec class.
+// Maps and ParMaps can be viewed as algorithmic types acting on the input/output Sec types.  
+// Most importantly, a Map must advertise the Atlases of the input and output Sec
+// types.  Furthermore, a Map acts essentially as a Sec relative to the output
+// atlas: giving a fixed input Sec S, a Map extends the Sec interface by defining restrictions 
+// to output  (point,chart) pairs relative to S.  Alternatively, a Map can return an output Sec T,
+// containing the result of applying the map to S, which can be queried independently.
+
+// With these features of a Map hardly define any implementation structure (rather an interface), 
+// since the particular behavior of restrictions is unconstrained by this specification.  
+// Particular Maps can impose further constraints on the input/output atlases
+// and expand the interface, so long as they conform to the Map concept outlined above.
+// For example, we can require that each output chart data depend only on the explicitly specified 
+// input charts' data.  This is done by specifying the 'lightcone' Sifter or a Sieve, connecting 
+// the input charts to the output charts they depend on.  Taking the cone (or the closure, if it's 
+// a Sieve) of a given output chart in the lightcone returns all of the input charts necessary
+// to compute the data over the output chart.
+
+// The specification of a Map's lightcone is very necessary to enable preallocation of internal 
+// data structures, such as the matrix storage, for linear maps.  In the distributed context
+// it also enables the setup of communication structures.  This behavior is encapsulated in 
+// a ParMap, which is itself a conceptual type that extends Map.  ParMap encapsulates (among other things) 
+// three conceptual Map objects: Gather,Scatter and the Transform. A ParMap is then an algorithm that orchestrates 
+// the action of other maps.
+
+// ***
+//   The ParMap algorithm is a most clear illustration of the locazation principle underlying Sieves and computation over
+// them: restrict-compute-assemble.  To compute the action of a ParMap on a distributed Sec the necessary data must be
+// communicate to and from the processes requiring and holding the data.  The total overlap of a processes domain with the
+// rest of the communicator is naturally covered by the individual overlaps indexed by the remote ranks. 
+//   To communicate the local input Sec data to the remote processes, the Sec is first restricted to each of the overlap pieces, 
+// forming another Sec, whose charts are the overlaps indexed by indices, and whose points are the (in_point,in_chart)
+// pairs on which in the input Sec is defined.  This Sec can be viewed as multisheeted coverings of the overlap porition
+// of the input Sec, and the multiplexing process forming the new Sec will be called Scatter.  It is a map between two Secs
+// with the input atlas and the new rank-indexed atlas.
+//   After Scatter maps the input Sec to a multisheeted covering, the multisheeted data are communicated to the processes according
+// to the rank in each chart. This can be viewed as a map between two such Secs -- communication is certainly a mapping in
+// the distributed context -- done 'locally' over each chart.  Thus, the data from the input Sec are first localized onto
+// each rank-chart, then mapped, and finally must be assembled. 
+//   To obtain a Sec over the local domain, the Scatter process must be reversed, using the a map called Gather.  Gather
+// takes in the multisheeted covering of the overlap obtained after the communication phase, and obtains a single
+// (in_point,in_chart) data point from the collection of all such points over all the rank charts.  During this reduction
+// the overlap portion of the communicated input Sec is unified with the local data over the same (in_point,in_chart) pair,
+// completing the assembly of the input Sec.
+//   Once the input data have been communicate to the consuming processes, Transform locally maps the data from the input
+// Sec to the output Sec.  The Gather/Scatter maps involved in the communication stage depend on the GatherAtlas, which
+// describes the multisheeted covering of InAtlas.  Gather/Scatter maps can in principle operate on a Sec of any Atlas,
+// unifying the data over the same point in different charts, producing a Sec over a single-charted atlas.  Different
+// implementations of Gather/Scatter lead to different multiplexing/reduction procedures, while the atlas structure stays
+// the same.  Gather/Scatter maps can be used locally as well and need not act on the result of a communication.
+// ***
+
+// The Gather output atlas has the same structure as the ParMap input atlas,
+// while the Gather input atlas  -- GatherAtlas -- combines the ParMap input (point,chart) pairs into 
+// the source and puts the communicator rank in the target. The Scatter input/output atlases have the 
+// structure of the output/input atlases of Gather respectively. The Transform atlases have the same 
+// structure as the ParMap atlases.
+//                   (Gather input)                  (Gather output == Transform input)            
+                                       
+//                           index                            index                       
+//             (point,chart) -----> rank     <==>       point -----> chart   
+
+//                   (Scatter output)                (Scatter input == Transform input)            
+
+// GatherAtlas is constructed from ParMap's input atlas using the lightcone.
+// The Gather input/Scatter output atlas essentially applies the idea of a chart recursively:
+// Transform input charts are distributed among different processes.  Given a single process, its overlap
+// with other processes can be indexed by their remote communicator ranks.  All (point_in,chart_in) pairs shared
+// with a given rank are part of a single rank-chart.  This way a single in-chart is "blown up"
+// into a "multisheeted" covering by rank-charts; each (point_in,chart_in) pair becomes a rank-point within 
+// one or many rank-charts.  
+
+// The data over this rank-atlas are essentially the data in the send/receive buffers,
+// and the Scatter map is responsible for (multiplexing) packing and moving the data from the input Sec into the rank-Sec 
+// encapsulating these buffers. Once this has been done, ParMap executes the communication code (send/recv),
+// and the rank-multisheeted data are transfered to the required processes.  
+
+//                                     Scatter                                     send/recv
+//                                                                    ... rank_0
+//              point_in --> chart_in    ==>      (point_in,chart_in) --> rank_k      ==> 
+//                                                                    ... rank_K
+
+// Then Gather reduces the data over a single (point_in,chart_in) pair in all of the rank-charts.  This can be thought 
+// of as gluing all of the partial sections over the overlaps with remote processes into a single "remote" Sec and then
+// gluing it with the "local" Sec.  Once the remote data have been assimilated into the local input Sec, Transform does
+// its thing.
+
+
+//                                      rank_0    Gather                        Transform
+//                                 ...
+//             (point_in,chart_in) -->  rank_n     ==>    point_in --> chart_in    ==>      point_out --> chart_out
+//                                 ...
+//                                      rank_N
+
+// Observe that the structure of the GatherAtlas is essentially the same as the structure of the
+// Overlap Sifter in ParDelta, therefore the Overlap code can be reused.  However, that code is not customizable,
+// while we may want to allow the GatherAtlas  constructor the flexibility to massage the atlas (e.g., to keep only 
+// s single rank for a given (point,chart) pair, thereby implementing the 'owner' concept).  Making GatherAtlas a class
+// a class will allow this flexibility by exposing the input atlas computation method to overloading.
+// The prototypical GatherAtlas object will be implemented to keep all of the ranks in the remote overlap under
+// a given (point_in, chart_in) pair.  Custom GatherAtlas objects may prune that so that the number and amount
+// of data sent/recv'd by ParMap is only as required.  Here we assume that the overlap is small and computed only once
+// or infrequently, while ParMap mappings are frequent.
+
+         
+
+
 //
 // Atlas, Sec and Map classes
 //
@@ -13,8 +167,9 @@ namespace ALE {
   namespace X {
 
     // We require that any class implementing the Atlas concept extending Sifter.
-    template <typename Point_, typename Chart_, typename Ind_>
-    class Atlas : public ASifter<Point_, Chart_, typename ALE::pair<Ind_,Ind_>, SifterDef::uniColor> {
+    // FIX: should Atlas depend on a Sieve type?  A Sifter type?
+    template <typename Ind_, typename Point_, typename Chart_>
+    class Atlas : public ASifter<Ind_, Point_, Chart_, SifterDef::multiColor> {
     public:
       // 
       // Encapsulated types
@@ -22,9 +177,9 @@ namespace ALE {
       typedef Point_                                 point_type;
       typedef Chart_                                 chart_type;
       typedef Ind_                                   ind_type;
-      typedef typename ALE::pair<ind_type, ind_type> index;
+      typedef ALE::pair<ind_type, ind_type>          index_type;
       //
-      typedef ASifter<point_type, chart_type, index_type, SifterDef::uniColor> sifter_type;
+      typedef ASifter<index_type, point_type, chart_type, SifterDef::multiColor> sifter_type;
     public:
       //
       // Basic interface
@@ -34,20 +189,59 @@ namespace ALE {
       //
       // Extended interface
       //
-      index_type size(){
-        index_type sz = 0;
+      ind_type size(){
+        ind_type sz = 0;
         // Here we simply look at each chart's cone and add up the sizes
         // In fact, we assume that within a chart indices are contiguous, 
         // so we simply add up the offset to the size of the last point of each chart's cone and sum them up.
         baseSequence base = this->base();
-        for(typename base::iterator bitor = base->begin(); bitor != base->end(); bitor++) {
-          ALE::pair<index_type,index_type> ii = this->cone(*bitor)->rbegin()->color();
+        for(typename baseSequence::iterator bitor = base->begin(); bitor != base->end(); bitor++) {
+          index_type ii = this->cone(*bitor)->rbegin()->color();
           sz += ii.first + ii.second;
         }
+        return sz;
       };
+      ind_type size(const chart_type& c) {
+        // Here we simply look at the chart's cone and add up the sizes.
+        // In fact, we assume that within a chart indices are contiguous, 
+        // so we simply return the sum of the offset to the size of the chart's last point.
+        index_type ii = this->cone(c).rbegin()->color();
+        ind_type sz = ii.first + ii.second;
+        return sz;
+      };
+      ind_type size(const chart_type& c, const point_type& p) {
+        // Here we assume that at most a single arrow between p and c exists
+        arrowSequence arrows = this->arrows(p,c);
+        ind_type sz = 0;
+        if(arrows.begin() != arrows.end()) {
+          sz = arrows.begin()->first;
+        }
+        return sz;
+      };
+      
+      ind_type offset(const chart_type& c) {
+        // We assume that within a chart indices are contiguous, so the offset of the chart
+        // is the offset of the first element in its cone.
+        ind_type off = this->cone(c).begin()->color().first;
+        return off;
+      };
+      ind_type offset(const chart_type& c, const point_type& p) {
+        // Here we assume that at most a single arrow between p and c exists
+        arrowSequence arrows = this->arrows(p,c);
+        // CONTINUE: what's the offset in case p is not in c
+        ind_type sz = 0;
+        if(arrows.begin() != arrows.end()) {
+          sz = arrows.begin()->first;
+        }
+        return sz;
+      };
+      
     };// class Atlas
 
-    template <typename Atlas_, typename Data_>
+    
+
+    // FIX: should Sec depend on a Sieve?  Perhaps Atlas should encapsulate a Sieve type?
+    template <typename Data_, typename Atlas_>
     class Sec {
     public:
       // 
@@ -145,7 +339,7 @@ namespace ALE {
       //
       Sec(const Obj<atlas_type> atlas, const (data_type*)& data) {this->setAtlas(atlas, false); this->_data = data;};
       Sec(const Obj<atlas_type> atlas = Obj<atlas_type>()) {this->_data = NULL; this->setAtlas(atlas);};
-      ~Sec(){if((this->_data != NULL)&&(this->_allocated)) {ierr = PetscFree(this->_data); CHKERROR(ierr, "Error in PetscFree");}};
+     ~Sec(){if((this->_data != NULL)&&(this->_allocated)) {ierr = PetscFree(this->_data); CHKERROR(ierr, "Error in PetscFree");}};
       //
       // Extended interface
       //
@@ -181,64 +375,111 @@ namespace ALE {
     };// class Sec
 
 
-    // GatherAtlas is an Atlas, InAtlas_ and OutAtlas_ are Atlases, Lightcone_ is a Sieve.
+    template <typename Data_, typename Atlas_>
+    class ArraySec : public Sec<Data_, Atlas_> {
+    public:
+      // 
+      // Encapsulated types
+      //
+      typedef Sec<Data_,Atlas_>                sec_type;
+      typedef Atlas_                           atlas_type;
+      typedef Data_                            data_type;      
+      typedef typename atlas_type::point_type  point_type;
+      typedef typename atlas_type::chart_type  chart_type;
+      typedef typename atlas_type::index_type  index_type;
+      //
+      // Basic interface
+      //
+      ArraySec(const Obj<atlas_type> atlas, const (data_type*)& data) {this->setAtlas(atlas, false); this->_data = data;};
+      ArraySec(const Obj<atlas_type> atlas = Obj<atlas_type>()) {this->_data = NULL; this->setAtlas(atlas);};
+     ~ArraySec(){if((this->_data != NULL)&&(this->_allocated)) {ierr = PetscFree(this->_data); CHKERROR(ierr, "Error in PetscFree");}};
+      //
+      // Extended interface
+      // 
+      data_type*
+      restrict(const chart_type& chart) { 
+        return this->_data + this->_atlas->offset(chart);
+      };
+      data_type*
+      restrict(const chart_type& chart, const point_type& point) { 
+        return this->_data + this->_atlas->offset(chart,point);
+      };
+    }; // class ArraySec
+
+
+    // Overlap is a container class that declares GatherAtlas and ScatterAtlas types as well as 
+    // defines their construction procedures.
+    // InAtlas_ and OutAtlas_ are Atlases, Lightcone_ is a Sifter.
     // Lightcone connects the charts of some ParMap's OutAtlas_ to the ParMap's InAtlas_.
-    // GatherAtlas has (point_in,chart_in) pairs as points and process ranks as charts.
-    // Preconditions: InAtlas, Lightcone, and OutAtlas share communicator;
-    //                we require that chart type be Point
-    template <typename InAtlas_, typename OutAtlas_, typename Lightcone_>
-    class GatherAtlas : Atlas<ALE::pair<in_atlas_type::point_type>, MPI_Int, in_atlas_type::ind_type> {
+    // GatherAtlas and ScatterAtlas have (point_in,chart_in) pairs as points and process ranks as charts.
+    // Preconditions: InAtlas, Lightcone, and OutAtlas share communicator; we require that chart type be Point
+    // FIX: should GatherAtlas/ScatterAtlas depend on an underlying Topology Sieve?
+    template <typename Data_, typename InAtlas_, typename OutAtlas_, typename Lightcone_>
+    class Overlap {
     public:
       // encapsulated types
-      typedef typename InAtlas_                                     in_atlas_type;
-      typedef typename Lightcone_                                   lightcone_type;
-      typedef typename OutAtlas_                                    out_atlas_type;
+      typedef Data_                                                 data_type;
+      typedef InAtlas_                                              in_atlas_type;
+      typedef Lightcone_                                            lightcone_type;
+      typedef OutAtlas_                                             out_atlas_type;
       typedef MPI_Int                                               chart_type;
       typedef ALE::pair<in_atlas_type::point_type, chart_type>      point_type;
       typedef typename in_atlas_type::ind_type                      ind_type;
       typedef typename in_atlas_type::index_type                    index_type;
       //
-      typedef typename Atlas<point_type, chart_type, ind_type>      atlas_type;
+      typedef typename Atlas<point_type, chart_type, ind_type>      gather_scatter_atlas_type;
     protected:
-      in_atlas_type  _in_atlas;
-      out_atlas_type _out_atlas;
-      lightcone_type _lightcone;
+      Obj<in_atlas_type>             _in_atlas;
+      Obj<out_atlas_type>            _out_atlas;
+      Obj<lightcone_type>            _lightcone;
+      //
+      Obj<gather_scatter_atlas_type> _gather_atlas;
+      Obj<gather_scatter_atlas_type> _scatter_atlas;
     public:
       //
-      // Basic interface
-      //
-      GatherAtlas(const Obj<in_atlas_type>& in_atlas, const Obj<out_atlas_type>& out_atlas,const Obj<lightcone_type>& lightcone):
-        : atlas_type(in_atlas->comm()), _in_atlas(in_atlas),_out_atlas(out_atlas),_lightcone(lightcone) {this->computeAtlas();};
-     ~GatherAtlas(){};
+      Overlap(const Obj<in_atlas_type>& in_atlas,const Obj<out_atlas_type>& out_atlas, const Obj<lightcone_type>& lightcone = Obj<lightcone_type>()) : atlas_type(in_atlas->comm()), _in_atlas(in_atlas),_out_atlas(out_atlas),_lightcone(lightcone) {
+        this->computeAtlases(this->_gather_atlas, this->_scatter_atlas);
+      };
+     ~Overlap(){};
       //
       // Extended interface
-      Obj<in_atlas_type>  inAtlas(){return this->_in_atlas();};
-      Obj<out_atlas_type> outAtlas(){return this->_out_atlas();};
+      Obj<in_atlas_type>  inAtlas()  {return this->_in_atlas();};
+      Obj<out_atlas_type> outAtlas() {return this->_out_atlas();};
       Obj<lightcone_type> lightcone(){return this->_lightcone();}
       //
-      Obj<gather_atlas_type> computeAtlas() {
-        // This function computes the gather atlas necessary for reducing the input data lying over the overlap with the remote 
-        // processes into the local data over the overlap points.
-        // The Lightcone sieve encodes the dependence between input and output charts of some map: each out-chart in the base 
-        // of the Lightcone depends on the in-chart in its Lightcone closure (depends for the computation of the map values).
+      void computeAtlases(Obj<gather_atlas_type> gather_atlas, Obj<scatter_atlas_type> scatter_atlas) {
+        // This function computes the gather and scatter atlases necessary for exchanging and fusing the input data lying over the 
+        // overlap with the remote processes into the local data over the overlap points.
+        // The Lightcone sifter encodes the dependence between input and output charts of some map: each out-chart in the base 
+        // of the Lightcone depends on the in-chart in its Lightcone cone (depends for the computation of the map values).
         // A Null Lightcone Obj is interpreted as an identity Lightcone, hence the if-else dichotomy in the code below.
         //
 
-        // In order to retrieve the remote points that OutAtlas depends on, we compute 'baseOverlap' of the InAtlas over a subset
-        // of Lightcone's cap.  The idea is that only the charts the in the cap of the Lightcone are required locally by the OutAtlas.
-        // Furthermore, at most the closure of OutAtlas' base in Lightcone is required, which is the set we use to computer overlap.
+        // In order to retrieve the remote points that OutAtlas depends on, we compute the overlap of the local bases of InAtlas 
+        // restricted to a suitable subset of Lightcone's cap.  The idea is that at most the charts the in the cap of the Lightcone 
+        // are required locally by the OutAtlas.
+        // Furthermore, at most the cone of OutAtlas' base in Lightcone is required, which is the set we use to compute the overlap.
         // If the Lightcone Obj is Null, we take all of the OutAtlas base as the base of the overlap in InAtlas.
         //
-        Obj<gather_atlas_type> gather_atlas = gather_atlas_type(this->_in_atlas->comm());
+        if(gather_atlas.isNull()) {
+          gather_atlas  = gather_atlas_type(this->_in_atlas->comm());
+        }
+        if(scatter_atlas.isNull()){
+          scatter_atlas = scatter_atlas_type(this->_in_atlas->comm());
+        }
+        //
         if(!lightcone.isNull()) {
           // Take all of out-charts & compute their lightcone closure; this will give all of the in-charts required locally
           typename out_atlas_type::capSequence out_base = this->_out_atlas->base();
           typename lightcone_type::coneSet in_charts = this->_lightcone->closure(out_base);
           // Now we compute the "overlap" of in_atlas with these local in-charts; this will be the gather atlas
-          this->__computeAtlas(in_charts, gather_atlas);
+          this->__pullbackAtlases(in_charts, gather_atlas, scatter_atlas);
 
         }// if(!lightcone.isNull())
-      };// computeAtlas()
+        else {
+          // FIX: handle the Null lightcone case
+        }
+      };// computeAtlases()
 
     protected:
       // Internal type definitions to ensure compatibility with the legacy code in the parallel subroutines
@@ -362,7 +603,7 @@ namespace ALE {
 
 
       template <typename BaseSequence_>
-      void __pullbackAtlas(const BaseSequence& pointsB, Obj<gather_atlas_type>& gather_atlas) {
+      void __pullbackAtlases(const BaseSequence& pointsB, Obj<gather_atlas_type>& gather_atlas, Obj<scatter_atlas_type>& scatter_atlas){
         typedef typename in_atlas_type::traits::baseSequence Sequence;
         MPI_Comm       comm = _graphA->comm();
         int            size = _graphA->commSize();
@@ -771,20 +1012,24 @@ namespace ALE {
             offset += msgSize;
           }
         }
-      }; // __pullbackAtlas()
+      }; // __pullbackAtlases()
 
     public:
-    }; // class GatherAtlas
+    }; // class Overlap
 
-    template <typename Data_, typename Transform_, typename GatherScatter_, typename Communicate_>
+    template <typename Data_, typename Map_, typename Overlap_, typename Fusion_>
     class ParMap { // class ParMap
     public:
       //
       // Encapsulated types
       // 
-      //  GatherScatter is an object that encapsulates GatherAtlas and Gather & Scatter objects.
-      // GatherAtlas is an Atlas encapsulating two other atlases, InAtlas and OutAtlas, and Lightcone, which is a Sieve.
-      // InAtlas refers to the Sec, which is the argument of the ParMap, while OutAtlas refers to the Sec which is the result of ParMap.
+      //  Overlap is an object that encapsulates GatherAtlas & ScatterAtlas objects, while Fusion encapsulates and the corresponding 
+      // Gather & Scatter map objects. The idea is that Gather & Scatter depend on the structure of the corresponding atlases, but
+      // do not necessarily control their construction.  Therefore the two types of objects and/or their constructors can be overloaded
+      // separately.
+      //  For convenience Overlap encapsulates the data it is constructed from: two atlases, InAtlas and OutAtlas, and Lightcone, 
+      // which is a Sifter.
+      // InAtlas refers to the input Sec (the argument of the ParMap), while OutAtlas refers to the output Sec (the result of ParMap).
       // InAtlas_ and OutAtlas_ have arrows from points to charts decorated with indices into Data_ storage of the input/output Sec 
       // respectively.  
       //  GatherAtlas is an Atlas lifting InAtlas into a rank-indexed covering by overlaps with remote processes.  
@@ -793,34 +1038,26 @@ namespace ALE {
       // a refinement of this can be achieved by subclassing (or implementing a new) GatherAtlas.
       //  Gather is  a Map that reduce a Sec over GatherAtlas with data over each ((in_point,in_chart),rank) pair to a Sec over InAtlas,
       // with data over each (in_point, in_chart) pair.  Scatter maps in the opposite direction by "multiplexing" the data onto a 
-      // rank-indexed covering. 
-      //  Communicate is a map from a Sec of GatherAtlas to another such Sec. Transform is a Map sending an InAtlas Sec obtained from 
-      // Gather, into an OutAtlas Sec.
-      typedef Data_                                           data_type;
-      typedef GatherScatter__                                 gather_scatter_type;
-      typedef typename gather_scatter_type::gather_atlas_type gather_atlas_type;
-      typedef typename gather_atlas_type::in_atlas_type       in_atlas_type;
-      typedef typename gather_atlas_type::out_atlas_type      out_atlas_type;
-      typedef typename lightcone_type::out_atlas_type         lightcone_type;
+      // rank-indexed covering.
+      //  Map is a Map sending an InAtlas Sec obtained from Gather, into an OutAtlas Sec.
       //
-      typedef typename gather_scatter_type::gather_type       gather_type;
-      typedef typename gather_scatter_type::scatter_type      scatter_type;
-      typedef Communicate_                                    communicat_type;
-      typedef Transform_                                      transform_type;
+      typedef Data_                                            data_type;
+      typedef Overlap_                                         overlap_type;
+      typedef typename overlap_type::in_atlas_type             in_atlas_type;
+      typedef typename overlap_type::out_atlas_type            out_atlas_type;
+      typedef typename lightcone_type::out_atlas_type          lightcone_type;
+      //
+      typedef Fusion_                                          fusion_type;
+      typedef typename fusion_type::gather_type                gather_type;
+      typedef typename fusion_type::scatter_type               scatter_type;
+      typedef Map_                                             map_type;
       //
     protected:
       int                             _debug;
       //
-      Obj<transform_type>             _transform;
-      Obj<gather_scatter_type>        _gather_scatter;
-      Obj<communicate_type>           _communicate;
-      //
-      Obj<gather_atlas_type>          _gather_atlas;
-      Obj<gather_type>                _gather;
-      Obj<scatter_type>               _scatter;
-      Obj<in_atlas_type>              _in_atlas;
-      Obj<out_atlas_type>             _out_atlas;
-      Obj<lightcone_type>             _lightcone;
+      Obj<map_type>                   _map;
+      Obj<overlap_type>               _overlap_type;
+      Obj<fusion_type>                _fusion;
     protected:
       void __init(MPI_Comm comm) {    
         PetscErrorCode ierr;
@@ -832,17 +1069,9 @@ namespace ALE {
       //
       // Basic interface
       //
-      ParMap(const Obj<transform_type>& transform, const Obj<gather_scatter_type>& gather_scatter, const Obj<communicate_type>& communicate) : _debug(0), _transform(transform), _gather_scatter(gather_scatter), _communicate(communicate)
-      {
-        this->_gather_atlas = this->_gather_scatter->gatherAtlas();
-        this->_gather       = this->_gather_scatter->gather();
-        this->_scatter      = this->_gather_scatter->scatter();
-        this->_in_atlas     = this->_gather_atlas->inAtlas();
-        this->_out_atlas    = this->_gather_atlas->outAtlas();
-        this->_lightcone    = this->_gather_atlas->lightcone();
-      };
-     ~ParMap(){};
-      
+      ParMap(const Obj<map_type>& map, const Obj<overlap_type>& overlap, const Obj<fusion_type>& fusion) 
+        : _debug(0), _map(map), _overlap(overlap), _fusion(fusion) {};
+     ~ParMap(){};      
       //
       // Extended interface
       //
