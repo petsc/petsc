@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   for (i=0; i<n; i++) {
     ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
     if (view_rank == rank) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] value[%d] = %g\n",rank,i,value);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] value[%d] = %g\n",rank,i,PetscRealPart(value));CHKERRQ(ierr);
     }
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
   }

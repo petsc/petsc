@@ -32,8 +32,6 @@ shared_hpux11: shared_hpux
 # rules for building different shared libraries
 shared_none:
 
-shared_cygwin:
-
 shared_linux_intel:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${CLINKER} -shared -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}

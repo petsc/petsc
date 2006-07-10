@@ -31,7 +31,7 @@ typedef struct {
    GridCtx     coarse;
    KSP         ksp_coarse;
    PetscInt    ratio;
-   Mat         I;               /* interpolation from coarse to fine */
+   Mat         Ii;              /* interpolation from coarse to fine */
 } AppCtx;
 
 #define COARSE_LEVEL 0

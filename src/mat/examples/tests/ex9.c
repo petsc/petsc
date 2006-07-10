@@ -11,7 +11,7 @@ int main(int argc,char **args)
   MatInfo        info;
   PetscMPIInt    rank,size;
   PetscInt       i,j,m = 3,n = 2,low,high,iglobal;
-  PetscInt       I,J,ldim;
+  PetscInt       Ii,J,ldim;
   PetscErrorCode ierr;
   PetscTruth     flg;
   PetscScalar    v,one = 1.0;
@@ -39,20 +39,20 @@ int main(int argc,char **args)
   /* Create the matrix for the five point stencil, YET AGAIN */
   for (i=0; i<m; i++) { 
     for (j=2*rank; j<2*rank+2; j++) {
-      v = -1.0;  I = j + n*i;
-      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRQ(ierr);
+      v = -1.0;  Ii = j + n*i;
+      if (i>0)   {J = Ii - n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (i<m-1) {J = Ii + n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (j>0)   {J = Ii - 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      if (j<n-1) {J = Ii + 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+      v = 4.0; ierr = MatSetValues(C,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
   /* Add extra elements (to illustrate variants of MatGetInfo) */
-  I = n; J = n-2; v = 100.0;
-  ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
-  I = n-2; J = n; v = 100.0;
-  ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+  Ii = n; J = n-2; v = 100.0;
+  ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+  Ii = n-2; J = n; v = 100.0;
+  ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

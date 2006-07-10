@@ -31,7 +31,7 @@ int main(int argc,char **args)
   Vec            x,u,b;          /* approx solution, RHS, exact solution */
   PetscReal      norm;             /* norm of solution error */
   PetscScalar    v,none = -1.0;
-  PetscInt       I,J,ldim,low,high,iglobal,Istart,Iend;
+  PetscInt       Ii,J,ldim,low,high,iglobal,Istart,Iend;
   PetscErrorCode ierr;
   PetscInt       i,j,m = 3,n = 2,its;
   PetscMPIInt    size,rank;
@@ -89,22 +89,22 @@ int main(int argc,char **args)
         appropriate processor during matrix assembly). 
       - Always specify global row and columns of matrix entries.
   */
-  for (I=Istart; I<Iend; I++) { 
-    v = -1.0; i = I/n; j = I - i*n;  
-    if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-    if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-    if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-    if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-    v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,ADD_VALUES);
+  for (Ii=Istart; Ii<Iend; Ii++) { 
+    v = -1.0; i = Ii/n; j = Ii - i*n;  
+    if (i>0)   {J = Ii - n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    if (i<m-1) {J = Ii + n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    if (j>0)   {J = Ii - 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    v = 4.0; ierr = MatSetValues(C,1,&Ii,1,&Ii,&v,ADD_VALUES);
   }
 
   /*
      Make the matrix nonsymmetric if desired
   */
   if (mat_nonsymmetric) {
-    for (I=Istart; I<Iend; I++) { 
-      v = -1.5; i = I/n;
-      if (i>1)   {J = I-n-1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    for (Ii=Istart; Ii<Iend; Ii++) { 
+      v = -1.5; i = Ii/n;
+      if (i>1)   {J = Ii-n-1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     }
   } else {
     ierr = MatSetOption(C,MAT_SYMMETRIC);CHKERRQ(ierr);
@@ -228,18 +228,18 @@ int main(int argc,char **args)
   */
   for (i=0; i<m; i++) { 
     for (j=2*rank; j<2*rank+2; j++) {
-      v = -1.0;  I = j + n*i;
-      if (i>0)   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      if (i<m-1) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      if (j>0)   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      if (j<n-1) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      v = 6.0; ierr = MatSetValues(C,1,&I,1,&I,&v,ADD_VALUES);CHKERRQ(ierr);
+      v = -1.0;  Ii = j + n*i;
+      if (i>0)   {J = Ii - n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      if (i<m-1) {J = Ii + n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      if (j>0)   {J = Ii - 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      if (j<n-1) {J = Ii + 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      v = 6.0; ierr = MatSetValues(C,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
     }
   } 
   if (mat_nonsymmetric) {
-    for (I=Istart; I<Iend; I++) { 
-      v = -1.5; i = I/n;
-      if (i>1)   {J = I-n-1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+    for (Ii=Istart; Ii<Iend; Ii++) { 
+      v = -1.5; i = Ii/n;
+      if (i>1)   {J = Ii-n-1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     }
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

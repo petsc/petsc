@@ -10,7 +10,7 @@ int main(int argc,char **args)
   Vec            x,y,b,s1,s2;      
   Mat            A;           /* linear system matrix */ 
   Mat            sA;         /* symmetric part of the matrices */ 
-  PetscInt       n,mbs=16,bs=1,nz=3,prob=2,i,j,col[3],row,I,J,n1,*ip_ptr;
+  PetscInt       n,mbs=16,bs=1,nz=3,prob=2,i,j,col[3],row,Ii,J,n1,*ip_ptr;
   PetscScalar    neg_one = -1.0,value[3],alpha=0.1;
   PetscMPIInt    size;
   PetscErrorCode ierr;
@@ -31,9 +31,9 @@ int main(int argc,char **args)
   ierr=MatCreateSeqSBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &sA);CHKERRQ(ierr);
 
   /* Test MatGetOwnershipRange() */
-  ierr = MatGetOwnershipRange(A,&I,&J);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(sA,&i,&j);CHKERRQ(ierr);
-  if (i-I || j-J){
+  if (i-Ii || j-J){
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");CHKERRQ(ierr);
   }
 
@@ -62,26 +62,26 @@ int main(int argc,char **args)
       if (n1*n1 - n) SETERRQ(PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive interger!"); 
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
-          I = j + n1*i;
+          Ii = j + n1*i;
           if (i>0)   {
-            J = I - n1; 
-            ierr = MatSetValues(A,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr); 
-            ierr = MatSetValues(sA,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
+            J = Ii - n1; 
+            ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr); 
+            ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
           }
           if (i<n1-1) {
-            J = I + n1; 
-            ierr = MatSetValues(A,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
-            ierr = MatSetValues(sA,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
+            J = Ii + n1; 
+            ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
           }
           if (j>0)   {
-            J = I - 1; 
-            ierr = MatSetValues(A,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
-            ierr = MatSetValues(sA,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
+            J = Ii - 1; 
+            ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
           }
           if (j<n1-1) {
-            J = I + 1; 
-            ierr = MatSetValues(A,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
-            ierr = MatSetValues(sA,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
+            J = Ii + 1; 
+            ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
+            ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
           }
           /*
           ierr = MatSetValues(A,1,&I,1,&I,&four,INSERT_VALUES);CHKERRQ(ierr);
@@ -163,15 +163,15 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetInfo()\n");CHKERRQ(ierr);
   }
 
-  ierr = MatGetSize(A,&I,&J);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&Ii,&J);CHKERRQ(ierr);
   ierr = MatGetSize(sA,&i,&j);CHKERRQ(ierr); 
-  if (i-I || j-J) {
+  if (i-Ii || j-J) {
     PetscPrintf(PETSC_COMM_SELF,"Error: MatGetSize()\n");CHKERRQ(ierr);
   }
  
-  ierr = MatGetBlockSize(A, &I);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(A, &Ii);CHKERRQ(ierr);
   ierr = MatGetBlockSize(sA, &i);CHKERRQ(ierr);
-  if (i-I){
+  if (i-Ii){
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetBlockSize()\n");CHKERRQ(ierr);
   }
 

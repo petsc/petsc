@@ -34,7 +34,7 @@ int main(int argc,char **args)
   KSP            ksp;     /* linear solver context */
   PetscReal      norm;     /* norm of solution error */
   PetscErrorCode ierr;
-  PetscInt       ntimes,i,j,k,I,J,Istart,Iend;
+  PetscInt       ntimes,i,j,k,Ii,J,Istart,Iend;
   PetscInt       m = 8,n = 7,its;
   PetscTruth     flg;
   PetscScalar    v,one = 1.0,neg_one = -1.0,rhs;
@@ -71,13 +71,13 @@ int main(int argc,char **args)
         appropriate processor during matrix assembly). 
       - Always specify global rows and columns of matrix entries.
    */
-  for (I=Istart; I<Iend; I++) { 
-    v = -1.0; i = I/n; j = I - i*n;  
-    if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);CHKERRQ(ierr);
+  for (Ii=Istart; Ii<Iend; Ii++) { 
+    v = -1.0; i = Ii/n; j = Ii - i*n;  
+    if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /* 

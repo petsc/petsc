@@ -6,23 +6,180 @@
 #endif
 
 
+// Concepts.
+// -----------
+// Because of the use of templating and generic programming techniques,
+// many fundamental ALE types cannot be defined by making progressively specific 
+// class declarations within a given hierarchy. Instead, they must satisfy certain
+// Concept requirements that make them acceptable inputs to various Algorithms.
+// This reflects a shortcoming of the current compiler technology that some defining
+// features of Concepts have to be specified in documentation, rather than within the 
+// language.  Sometimes, however, conceptual types can be viewed as themselves 
+// encapsulating Algorithms acting on other types implementing certain concepts.
+// This allows to define the structure of these algorithmic types using generic 
+// programming techniques available in C++, for example.
+
+
+// Atlas & Sec
+// -----------------------
+// In the past we have considered the Atlas concept, which, for the given
+// Sifter, chart and ind types computed the assignment of indices
+// to the points in the underlying Sieve (relative to a given chart).
+// This mimics a system of local coordinate systems on a manifold or some
+// such space. 
+
+// Essentially, Atlas can be thought of as a Sifter, with the 
+// underlying Sifter's points (base or cap?) in the cap, charts in the base
+// and indices being the color on the edges.  However, any type that responds
+// to the fundamental requests -- setting the number of indices over a point 
+// (fiber dimension), (re)ordering the indices after some dimension modifications
+// have been made, and retrieving the indices -- is an Atlas.
+
+// An object that assigns data of a given type to the (point, chart) pairs of an Atlas 
+// is called its section or Sec.  If an Atlas is viewed as a discrete model of a structure
+// bundle over the point space, a Sec is a discrete model of a section of that bundle.
+// Sec is required to define a restrict method, which, given a (point,chart) pair returns
+// a data iterator.  
+
+// If the Sifter underling the Atlas is a Sieve, we assume that to each
+// covering arrow p --> q (within the same chart), corresponds a mapping of the data d(p) <-- d(q),
+// reflecting the idea that d(q) can be 'restricted' to d(p) within the same chart (or perhaps 
+// in any chart?).  This sort of behavior is certainly impossible to guarantee through
+// an interface specification, but it remains a conceptual requirement on Sec that 
+// the data over p are somehow "included" in the data over q.  This "inclusion" is partly specified
+// in the Atlas (e.g., by ensuring that the indices over p are included in those over q),
+// and partly in Sec itself.
+
+
+// Map & ParMap concepts.
+// -----------------------
+// A Map is thought of as a type of mapping from a Sec class to another Sec class.
+// Maps and ParMaps can be viewed as algorithmic types acting on the input/output Sec types.  
+// Most importantly, a Map must advertise the Atlases of the input and output Sec
+// types.  Furthermore, a Map acts essentially as a Sec relative to the output
+// atlas: giving a fixed input Sec S, a Map extends the Sec interface by defining restrictions 
+// to output  (point,chart) pairs relative to S.  Alternatively, a Map can return an output Sec T,
+// containing the result of applying the map to S, which can be queried independently.
+
+// With these features of a Map hardly define any implementation structure (rather an interface), 
+// since the particular behavior of restrictions is unconstrained by this specification.  
+// Particular Maps can impose further constraints on the input/output atlases
+// and expand the interface, so long as they conform to the Map concept outlined above.
+// For example, we can require that each output chart data depend only on the explicitly specified 
+// input charts' data.  This is done by specifying the 'lightcone' Sifter or a Sieve, connecting 
+// the input charts to the output charts they depend on.  Taking the cone (or the closure, if it's 
+// a Sieve) of a given output chart in the lightcone returns all of the input charts necessary
+// to compute the data over the output chart.
+
+// The specification of a Map's lightcone is very necessary to enable preallocation of internal 
+// data structures, such as the matrix storage, for linear maps.  In the distributed context
+// it also enables the setup of communication structures.  This behavior is encapsulated in 
+// a ParMap, which is itself a conceptual type that extends Map.  ParMap encapsulates (among other things) 
+// three conceptual Map objects: Gather,Scatter and the Transform. A ParMap is then an algorithm that orchestrates 
+// the action of other maps.
+
+// ***
+//   The ParMap algorithm is a most clear illustration of the locazation principle underlying Sieves and computation over
+// them: restrict-compute-assemble.  To compute the action of a ParMap on a distributed Sec the necessary data must be
+// communicate to and from the processes requiring and holding the data.  The total overlap of a processes domain with the
+// rest of the communicator is naturally covered by the individual overlaps indexed by the remote ranks. 
+//   To communicate the local input Sec data to the remote processes, the Sec is first restricted to each of the overlap pieces, 
+// forming another Sec, whose charts are the overlaps indexed by indices, and whose points are the (in_point,in_chart)
+// pairs on which in the input Sec is defined.  This Sec can be viewed as multisheeted coverings of the overlap porition
+// of the input Sec, and the multiplexing process forming the new Sec will be called Scatter.  It is a map between two Secs
+// with the input atlas and the new rank-indexed atlas.
+//   After Scatter maps the input Sec to a multisheeted covering, the multisheeted data are communicated to the processes according
+// to the rank in each chart. This can be viewed as a map between two such Secs -- communication is certainly a mapping in
+// the distributed context -- done 'locally' over each chart.  Thus, the data from the input Sec are first localized onto
+// each rank-chart, then mapped, and finally must be assembled. 
+//   To obtain a Sec over the local domain, the Scatter process must be reversed, using the a map called Gather.  Gather
+// takes in the multisheeted covering of the overlap obtained after the communication phase, and obtains a single
+// (in_point,in_chart) data point from the collection of all such points over all the rank charts.  During this reduction
+// the overlap portion of the communicated input Sec is unified with the local data over the same (in_point,in_chart) pair,
+// completing the assembly of the input Sec.
+//   Once the input data have been communicate to the consuming processes, Transform locally maps the data from the input
+// Sec to the output Sec.  The Gather/Scatter maps involved in the communication stage depend on the GatherAtlas, which
+// describes the multisheeted covering of InAtlas.  Gather/Scatter maps can in principle operate on a Sec of any Atlas,
+// unifying the data over the same point in different charts, producing a Sec over a single-charted atlas.  Different
+// implementations of Gather/Scatter lead to different multiplexing/reduction procedures, while the atlas structure stays
+// the same.  Gather/Scatter maps can be used locally as well and need not act on the result of a communication.
+// ***
+
+// The Gather output atlas has the same structure as the ParMap input atlas,
+// while the Gather input atlas  -- GatherAtlas -- combines the ParMap input (point,chart) pairs into 
+// the source and puts the communicator rank in the target. The Scatter input/output atlases have the 
+// structure of the output/input atlases of Gather respectively. The Transform atlases have the same 
+// structure as the ParMap atlases.
+//                   (Gather input)                  (Gather output == Transform input)            
+                                       
+//                           index                            index                       
+//             (point,chart) -----> rank     <==>       point -----> chart   
+
+//                   (Scatter output)                (Scatter input == Transform input)            
+
+// GatherAtlas is constructed from ParMap's input atlas using the lightcone.
+// The Gather input/Scatter output atlas essentially applies the idea of a chart recursively:
+// Transform input charts are distributed among different processes.  Given a single process, its overlap
+// with other processes can be indexed by their remote communicator ranks.  All (point_in,chart_in) pairs shared
+// with a given rank are part of a single rank-chart.  This way a single in-chart is "blown up"
+// into a "multisheeted" covering by rank-charts; each (point_in,chart_in) pair becomes a rank-point within 
+// one or many rank-charts.  
+
+// The data over this rank-atlas are essentially the data in the send/receive buffers,
+// and the Scatter map is responsible for (multiplexing) packing and moving the data from the input Sec into the rank-Sec 
+// encapsulating these buffers. Once this has been done, ParMap executes the communication code (send/recv),
+// and the rank-multisheeted data are transfered to the required processes.  
+
+//                                     Scatter                                     send/recv
+//                                                                    ... rank_0
+//              point_in --> chart_in    ==>      (point_in,chart_in) --> rank_k      ==> 
+//                                                                    ... rank_K
+
+// Then Gather reduces the data over a single (point_in,chart_in) pair in all of the rank-charts.  This can be thought 
+// of as gluing all of the partial sections over the overlaps with remote processes into a single "remote" Sec and then
+// gluing it with the "local" Sec.  Once the remote data have been assimilated into the local input Sec, Transform does
+// its thing.
+
+
+//                                      rank_0    Gather                        Transform
+//                                 ...
+//             (point_in,chart_in) -->  rank_n     ==>    point_in --> chart_in    ==>      point_out --> chart_out
+//                                 ...
+//                                      rank_N
+
+// Observe that the structure of the GatherAtlas is essentially the same as the structure of the
+// Overlap Sifter in ParDelta, therefore the Overlap code can be reused.  However, that code is not customizable,
+// while we may want to allow the GatherAtlas  constructor the flexibility to massage the atlas (e.g., to keep only 
+// s single rank for a given (point,chart) pair, thereby implementing the 'owner' concept).  Making GatherAtlas a class
+// a class will allow this flexibility by exposing the input atlas computation method to overloading.
+// The prototypical GatherAtlas object will be implemented to keep all of the ranks in the remote overlap under
+// a given (point_in, chart_in) pair.  Custom GatherAtlas objects may prune that so that the number and amount
+// of data sent/recv'd by ParMap is only as required.  Here we assume that the overlap is small and computed only once
+// or infrequently, while ParMap mappings are frequent.
+
+         
+
 
 //
-// Classes and methods implementing  the parallel Overlap and Fusion algorithms on ASifter-like objects.
+// Atlas, Sec and Map classes
 //
 namespace ALE {
   namespace X {
 
-    template <typename Point_, typename Chart_, typename Index_>
-    class Atlas : public ASifter<Point_, Chart_, typename ALE::pair<Index_,Index_>, SifterDef::uniColor> {
+    // We require that any class implementing the Atlas concept extending Sifter.
+    // FIX: should Atlas depend on a Sieve type?  A Sifter type?
+    template <typename Ind_, typename Point_, typename Chart_>
+    class Atlas : public ASifter<Ind_, Point_, Chart_, SifterDef::multiColor> {
     public:
       // 
       // Encapsulated types
       //
-      typedef Point_  point_type;
-      typedef Chart_  chart_type;
-      typedef Index_  index_type;
-      typedef ASifter<Point_, Chart_, typename ALE::pair<int,int>, SifterDef::uniColor> sifter_type;
+      typedef Point_                                 point_type;
+      typedef Chart_                                 chart_type;
+      typedef Ind_                                   ind_type;
+      typedef ALE::pair<ind_type, ind_type>          index_type;
+      //
+      typedef ASifter<index_type, point_type, chart_type, SifterDef::multiColor> sifter_type;
     public:
       //
       // Basic interface
@@ -32,21 +189,60 @@ namespace ALE {
       //
       // Extended interface
       //
-      index_type size(){
-        index_type sz = 0;
+      ind_type size(){
+        ind_type sz = 0;
         // Here we simply look at each chart's cone and add up the sizes
         // In fact, we assume that within a chart indices are contiguous, 
         // so we simply add up the offset to the size of the last point of each chart's cone and sum them up.
         baseSequence base = this->base();
-        for(typename base::iterator bitor = base->begin(); bitor != base->end(); bitor++) {
-          ALE::pair<index_type,index_type> ii = this->cone(*bitor)->rbegin()->color();
+        for(typename baseSequence::iterator bitor = base->begin(); bitor != base->end(); bitor++) {
+          index_type ii = this->cone(*bitor)->rbegin()->color();
           sz += ii.first + ii.second;
         }
+        return sz;
       };
+      ind_type size(const chart_type& c) {
+        // Here we simply look at the chart's cone and add up the sizes.
+        // In fact, we assume that within a chart indices are contiguous, 
+        // so we simply return the sum of the offset to the size of the chart's last point.
+        index_type ii = this->cone(c).rbegin()->color();
+        ind_type sz = ii.first + ii.second;
+        return sz;
+      };
+      ind_type size(const chart_type& c, const point_type& p) {
+        // Here we assume that at most a single arrow between p and c exists
+        arrowSequence arrows = this->arrows(p,c);
+        ind_type sz = 0;
+        if(arrows.begin() != arrows.end()) {
+          sz = arrows.begin()->first;
+        }
+        return sz;
+      };
+      
+      ind_type offset(const chart_type& c) {
+        // We assume that within a chart indices are contiguous, so the offset of the chart
+        // is the offset of the first element in its cone.
+        ind_type off = this->cone(c).begin()->color().first;
+        return off;
+      };
+      ind_type offset(const chart_type& c, const point_type& p) {
+        // Here we assume that at most a single arrow between p and c exists
+        arrowSequence arrows = this->arrows(p,c);
+        // CONTINUE: what's the offset in case p is not in c
+        ind_type sz = 0;
+        if(arrows.begin() != arrows.end()) {
+          sz = arrows.begin()->first;
+        }
+        return sz;
+      };
+      
     };// class Atlas
 
-    template <typename Atlas_, typename Data_>
-    class CoSifter {
+    
+
+    // FIX: should Sec depend on a Sieve?  Perhaps Atlas should encapsulate a Sieve type?
+    template <typename Data_, typename Atlas_>
+    class Sec {
     public:
       // 
       // Encapsulated types
@@ -132,7 +328,7 @@ namespace ALE {
         iterator end()    {return iterator(this->_base_ptr+this->_size+1);};
         iterator rbegin() {return reverse_iterator(this->_base_ptr+this->_size);};
         iterator rend()   {return reverse_iterator(this->_base_ptr-1);};
-      }; // class CoSifter::DataSequence
+      }; // class Sec::DataSequence
     protected:
       Obj<atlas_type> _atlas;
       data_type*      _data;
@@ -141,9 +337,9 @@ namespace ALE {
       //
       // Basic interface
       //
-      CoSifter(const Obj<atlas_type> atlas, const (data_type*)& data) {this->setAtlas(atlas, false); this->_data = data;};
-      CoSifter(const Obj<atlas_type> atlas = Obj<atlas_type>()) {this->_data = NULL; this->setAtlas(atlas);};
-      ~CoSifter(){if((this->_data != NULL)&&(this->_allocated)) {ierr = PetscFree(this->_data); CHKERROR(ierr, "Error in PetscFree");}};
+      Sec(const Obj<atlas_type> atlas, const (data_type*)& data) {this->setAtlas(atlas, false); this->_data = data;};
+      Sec(const Obj<atlas_type> atlas = Obj<atlas_type>()) {this->_data = NULL; this->setAtlas(atlas);};
+     ~Sec(){if((this->_data != NULL)&&(this->_allocated)) {ierr = PetscFree(this->_data); CHKERROR(ierr, "Error in PetscFree");}};
       //
       // Extended interface
       //
@@ -176,97 +372,133 @@ namespace ALE {
       restrict(const chart_type& chart, const point_type& point) { 
         return DataSequence<typename atlas_type::coneSequence>(this->_data, this->_atlas->arrows(point, chart));
       };
-    };// class CoSifter
+    };// class Sec
 
 
-
-    template <typename InAtlas_, typename OutAtlas_, typename Data_, typename Crossbar_>
-    class Map { // class Map
+    template <typename Data_, typename Atlas_>
+    class ArraySec : public Sec<Data_, Atlas_> {
     public:
-      //
-      // Encapsulated types
       // 
-      // An InAtlas_ (and likewise for an OutAtlas_) has arrows from points to charts decorated with indices
-      // into Data_ storage of the corresponding CoSifter.
-      typedef InAtlas_   in_atlas_type;
-      typedef OutAtlas_  out_atlas_type;
-      typedef Crossbar_  crossbar_type;
-      typedef Data_      data_type;
+      // Encapsulated types
       //
-      // A ProjectionAtlas/FusionAtlas has the same types for points and colors as the In/OutAtlas_, 
-      // but its charts are prefixed with the process rank and the color carries indices into different Data_ storage -- 
-      // that encapsulated in Map.
-      //
-      typedef ASifter<typename in_atlas_type::source_type, 
-                      typename in_atlas_type::color_type, 
-                      typename ALE::pair<MPI_Int, in_atlas_type::target_type>, 
-                      SifterDef::uniColor>                                         fusion_atlas_type;
-      typedef ASifter<typename out_atlas_type::source_type, 
-                      typename out_atlas_type::color_type, 
-                      typename ALE::pair<MPI_Int, out_atlas_type::target_type>, 
-                      SifterDef::uniColor>                                         projection_atlas_type;
-      
-    protected:
-      Obj<in_atlas_type>         _in_atlas;
-      Obj<out_atlas_type>        _out_atlas;
-      Obj<crossbar_type>         _crossbar;
-      //
-      Obj<projection_atlas_type> _projection_atlas;
-      Obj<fusion_atlas_type>     _fusion_atlas;
-    public:
+      typedef Sec<Data_,Atlas_>                sec_type;
+      typedef Atlas_                           atlas_type;
+      typedef Data_                            data_type;      
+      typedef typename atlas_type::point_type  point_type;
+      typedef typename atlas_type::chart_type  chart_type;
+      typedef typename atlas_type::index_type  index_type;
       //
       // Basic interface
       //
-      Map(const Obj<in_atlas_type>& in_atlas, const Obj<out_atlas_type>& out_atlas, 
-          const Obj<crossbar_type>& crossbar = Obj<crossbar_type>()): _in_atlas(in_atlas), _out_atlas(out_atlas), _crossbar(crossbar) 
-      {};
-      ~Map(){};
-      
+      ArraySec(const Obj<atlas_type> atlas, const (data_type*)& data) {this->setAtlas(atlas, false); this->_data = data;};
+      ArraySec(const Obj<atlas_type> atlas = Obj<atlas_type>()) {this->_data = NULL; this->setAtlas(atlas);};
+     ~ArraySec(){if((this->_data != NULL)&&(this->_allocated)) {ierr = PetscFree(this->_data); CHKERROR(ierr, "Error in PetscFree");}};
       //
       // Extended interface
-      //
-      int  getDebug() {return this->debug;}
-      void setDebug(const int& d) {this->debug = d;};
-
-      // THE FOLLOWING RELATES TO OVERLAP/LIGHT-CONE COMPUTATION:
-      // Here we specialize to Atlases with int like-prefixed source points to enable parallel overlap discovery.
-      // We also assume that the atlas bases are ordered appropriately so we can use baseSequence.begin() and 
-      // baseSequence.end() as the extrema for global reduction.
-      #undef __FUNCT__
-      #define __FUNCT__ "Map::computeOverlap"
-      void computeOverlap(const Obj<graph_type> graphA, const Obj<graph_type> graphB) {
-        ALE_LOG_EVENT_BEGIN;
-        Obj<bioverlap_type> overlap = bioverlap_type(graphA->comm());
-        PetscMPIInt         comp;
-
-        MPI_Comm_compare(graphA->comm(), graphB->comm(), &comp);
-        if (comp != MPI_IDENT) {
-          throw ALE::Exception("Non-matching communicators for overlap");
-        }
-        __computeOverlapNew(graphA, graphB, overlap);
-        ALE_LOG_EVENT_END;
+      // 
+      data_type*
+      restrict(const chart_type& chart) { 
+        return this->_data + this->_atlas->offset(chart);
       };
+      data_type*
+      restrict(const chart_type& chart, const point_type& point) { 
+        return this->_data + this->_atlas->offset(chart,point);
+      };
+    }; // class ArraySec
+
+
+    // Overlap is a container class that declares GatherAtlas and ScatterAtlas types as well as 
+    // defines their construction procedures.
+    // InAtlas_ and OutAtlas_ are Atlases, Lightcone_ is a Sifter.
+    // Lightcone connects the charts of some ParMap's OutAtlas_ to the ParMap's InAtlas_.
+    // GatherAtlas and ScatterAtlas have (point_in,chart_in) pairs as points and process ranks as charts.
+    // Preconditions: InAtlas, Lightcone, and OutAtlas share communicator; we require that chart type be Point
+    // FIX: should GatherAtlas/ScatterAtlas depend on an underlying Topology Sieve?
+    template <typename Data_, typename InAtlas_, typename OutAtlas_, typename Lightcone_>
+    class Overlap {
+    public:
+      // encapsulated types
+      typedef Data_                                                 data_type;
+      typedef InAtlas_                                              in_atlas_type;
+      typedef Lightcone_                                            lightcone_type;
+      typedef OutAtlas_                                             out_atlas_type;
+      typedef MPI_Int                                               chart_type;
+      typedef ALE::pair<in_atlas_type::point_type, chart_type>      point_type;
+      typedef typename in_atlas_type::ind_type                      ind_type;
+      typedef typename in_atlas_type::index_type                    index_type;
+      //
+      typedef typename Atlas<point_type, chart_type, ind_type>      gather_scatter_atlas_type;
     protected:
-      int                debug;
+      Obj<in_atlas_type>             _in_atlas;
+      Obj<out_atlas_type>            _out_atlas;
+      Obj<lightcone_type>            _lightcone;
+      //
+      Obj<gather_scatter_atlas_type> _gather_atlas;
+      Obj<gather_scatter_atlas_type> _scatter_atlas;
+    public:
+      //
+      Overlap(const Obj<in_atlas_type>& in_atlas,const Obj<out_atlas_type>& out_atlas, const Obj<lightcone_type>& lightcone = Obj<lightcone_type>()) : atlas_type(in_atlas->comm()), _in_atlas(in_atlas),_out_atlas(out_atlas),_lightcone(lightcone) {
+        this->computeAtlases(this->_gather_atlas, this->_scatter_atlas);
+      };
+     ~Overlap(){};
+      //
+      // Extended interface
+      Obj<in_atlas_type>  inAtlas()  {return this->_in_atlas();};
+      Obj<out_atlas_type> outAtlas() {return this->_out_atlas();};
+      Obj<lightcone_type> lightcone(){return this->_lightcone();}
+      //
+      void computeAtlases(Obj<gather_atlas_type> gather_atlas, Obj<scatter_atlas_type> scatter_atlas) {
+        // This function computes the gather and scatter atlases necessary for exchanging and fusing the input data lying over the 
+        // overlap with the remote processes into the local data over the overlap points.
+        // The Lightcone sifter encodes the dependence between input and output charts of some map: each out-chart in the base 
+        // of the Lightcone depends on the in-chart in its Lightcone cone (depends for the computation of the map values).
+        // A Null Lightcone Obj is interpreted as an identity Lightcone, hence the if-else dichotomy in the code below.
+        //
+
+        // In order to retrieve the remote points that OutAtlas depends on, we compute the overlap of the local bases of InAtlas 
+        // restricted to a suitable subset of Lightcone's cap.  The idea is that at most the charts the in the cap of the Lightcone 
+        // are required locally by the OutAtlas.
+        // Furthermore, at most the cone of OutAtlas' base in Lightcone is required, which is the set we use to compute the overlap.
+        // If the Lightcone Obj is Null, we take all of the OutAtlas base as the base of the overlap in InAtlas.
+        //
+        if(gather_atlas.isNull()) {
+          gather_atlas  = gather_atlas_type(this->_in_atlas->comm());
+        }
+        if(scatter_atlas.isNull()){
+          scatter_atlas = scatter_atlas_type(this->_in_atlas->comm());
+        }
+        //
+        if(!lightcone.isNull()) {
+          // Take all of out-charts & compute their lightcone closure; this will give all of the in-charts required locally
+          typename out_atlas_type::capSequence out_base = this->_out_atlas->base();
+          typename lightcone_type::coneSet in_charts = this->_lightcone->closure(out_base);
+          // Now we compute the "overlap" of in_atlas with these local in-charts; this will be the gather atlas
+          this->__pullbackAtlases(in_charts, gather_atlas, scatter_atlas);
+
+        }// if(!lightcone.isNull())
+        else {
+          // FIX: handle the Null lightcone case
+        }
+      };// computeAtlases()
+
+    protected:
       // Internal type definitions to ensure compatibility with the legacy code in the parallel subroutines
       typedef ALE::Point                                Point;
       typedef int                                            int32_t;
-      typedef std::pair<int32_t, int32_t>                    int_pair;
-      typedef std::set<std::pair<int32_t, int32_t> >         int_pair_set;
-      typedef std::map<int32_t,int32_t>                      int__int;
-      typedef std::map<Point, int32_t>                       Point__int;
-      typedef std::map<Point, std::pair<int32_t,int32_t> >   Point__int_int;
-      typedef std::map<Point, int_pair_set>                  Point__int_pair_set;
+      typedef ALE::pair<int32_t, int32_t>                    int_pair;
+      typedef ALE::set<std::pair<int32_t, int32_t> >         int_pair_set;
+      typedef ALE::map<int32_t,int32_t>                      int__int;
+      typedef ALE::map<Point, int32_t>                       Point__int;
+      typedef ALE::map<Point, std::pair<int32_t,int32_t> >   Point__int_int;
+      typedef ALE::map<Point, int_pair_set>                  Point__int_pair_set;
 
-    protected:
-      //--------------------------------------------------------------------------------------------------------
       template <typename Sequence>
-      static void __determinePointOwners(const Obj<graph_type> _graph, const Obj<Sequence>& points, int32_t *LeaseData, Point__int& owner) {
+      svoid __determinePointOwners(const Obj<Sequence>& points, int32_t *LeaseData, Point__int& owner) {
         PetscErrorCode ierr;
         // The Sequence points will be referred to as 'base' throughout, although it may in fact represent a cap.
-        MPI_Comm comm = _graph->comm();
-        int  size     = _graph->commSize();
-        int  rank     = _graph->commRank();
+        MPI_Comm comm = this->comm();
+        MPI_Int  rank = this->commRank();
+        MPI_Int  size = this->commSize();
 
         // We need to partition global nodes among lessors, which we do by global prefix
         // First we determine the extent of global prefices and the bounds on the indices with each global prefix.
@@ -370,11 +602,9 @@ namespace ALE {
       }; // __determinePointOwners()
 
 
-      #undef  __FUNCT__
-      #define __FUNCT__ "__computeOverlapNew"
-      template <typename Overlap_>
-      static void __computeOverlapNew(const Obj<graph_type>& _graphA, const Obj<graph_type>& _graphB, Obj<Overlap_>& overlap) {
-        typedef typename graph_type::traits::baseSequence Sequence;
+      template <typename BaseSequence_>
+      void __pullbackAtlases(const BaseSequence& pointsB, Obj<gather_atlas_type>& gather_atlas, Obj<scatter_atlas_type>& scatter_atlas){
+        typedef typename in_atlas_type::traits::baseSequence Sequence;
         MPI_Comm       comm = _graphA->comm();
         int            size = _graphA->commSize();
         int            rank = _graphA->commRank();
@@ -782,305 +1012,75 @@ namespace ALE {
             offset += msgSize;
           }
         }
-      };
+      }; // __pullbackAtlases()
 
-      #undef  __FUNCT__
-      #define __FUNCT__ "commCycle"
-      /*
-        Seller:       A possessor of data
-        Buyer:        A requestor of data
+    public:
+    }; // class Overlap
 
-        Note that in this routine, the caller functions as BOTH a buyer and seller.
-
-        When we post receives, we use a buffer of the maximum size for each message
-        in order to simplify the size calculations (less communication).
-
-        BuyCount:     The number of sellers with which this process (buyer) communicates
-                      This is calculated locally
-        BuySizes:     The number of messages to buy from each seller
-        Sellers:      The process for each seller
-        BuyData:      The data to be bought from each seller. There are BuySizes[p] messages
-                      to be purchased from each process p, in order of rank.
-        SellCount:    The number of buyers with which this process (seller) communicates
-                      This requires communication
-        SellSizes:    The number of messages to be sold to each buyer
-        Buyers:       The process for each buyer
-        msgSize:      The number of integers in each message
-        SellData:     The data to be sold to each buyer. There are SellSizes[p] messages
-                      to be sold to each process p, in order of rank.
-      */
-      static void commCycle(MPI_Comm comm, PetscMPIInt tag, int msgSize, int BuyCount, int BuySizes[], int Sellers[], int32_t BuyData[], int SellCount, int SellSizes[], int Buyers[], int32_t *SellData[]) {
-        int32_t     *locSellData; // Messages to sell to buyers (received from buyers)
-        int          SellSize = 0;
-        int         *BuyOffsets, *SellOffsets;
-        MPI_Request *buyWaits,  *sellWaits;
-        MPI_Status  *buyStatus;
+    template <typename Data_, typename Map_, typename Overlap_, typename Fusion_>
+    class ParMap { // class ParMap
+    public:
+      //
+      // Encapsulated types
+      // 
+      //  Overlap is an object that encapsulates GatherAtlas & ScatterAtlas objects, while Fusion encapsulates and the corresponding 
+      // Gather & Scatter map objects. The idea is that Gather & Scatter depend on the structure of the corresponding atlases, but
+      // do not necessarily control their construction.  Therefore the two types of objects and/or their constructors can be overloaded
+      // separately.
+      //  For convenience Overlap encapsulates the data it is constructed from: two atlases, InAtlas and OutAtlas, and Lightcone, 
+      // which is a Sifter.
+      // InAtlas refers to the input Sec (the argument of the ParMap), while OutAtlas refers to the output Sec (the result of ParMap).
+      // InAtlas_ and OutAtlas_ have arrows from points to charts decorated with indices into Data_ storage of the input/output Sec 
+      // respectively.  
+      //  GatherAtlas is an Atlas lifting InAtlas into a rank-indexed covering by overlaps with remote processes.  
+      // The overlap is computed accroding to Lightcone, which connects the charts of OutAtlas_ to InAtlas_, which implies the two 
+      // atlases have charts of the same type.  The idea is that data dependencies are initially expressed at the chart level; 
+      // a refinement of this can be achieved by subclassing (or implementing a new) GatherAtlas.
+      //  Gather is  a Map that reduce a Sec over GatherAtlas with data over each ((in_point,in_chart),rank) pair to a Sec over InAtlas,
+      // with data over each (in_point, in_chart) pair.  Scatter maps in the opposite direction by "multiplexing" the data onto a 
+      // rank-indexed covering.
+      //  Map is a Map sending an InAtlas Sec obtained from Gather, into an OutAtlas Sec.
+      //
+      typedef Data_                                            data_type;
+      typedef Overlap_                                         overlap_type;
+      typedef typename overlap_type::in_atlas_type             in_atlas_type;
+      typedef typename overlap_type::out_atlas_type            out_atlas_type;
+      typedef typename lightcone_type::out_atlas_type          lightcone_type;
+      //
+      typedef Fusion_                                          fusion_type;
+      typedef typename fusion_type::gather_type                gather_type;
+      typedef typename fusion_type::scatter_type               scatter_type;
+      typedef Map_                                             map_type;
+      //
+    protected:
+      int                             _debug;
+      //
+      Obj<map_type>                   _map;
+      Obj<overlap_type>               _overlap_type;
+      Obj<fusion_type>                _fusion;
+    protected:
+      void __init(MPI_Comm comm) {    
         PetscErrorCode ierr;
-
-        // Allocation
-        ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERROR(ierr,"Memory corruption");
-        for(int s = 0; s < SellCount; s++) {SellSize += SellSizes[s];}
-        ierr = PetscMalloc2(BuyCount,int,&BuyOffsets,SellCount,int,&SellOffsets);CHKERROR(ierr,"Error in PetscMalloc");
-        ierr = PetscMalloc3(BuyCount,MPI_Request,&buyWaits,SellCount,MPI_Request,&sellWaits,BuyCount,MPI_Status,&buyStatus);
-        CHKERROR(ierr,"Error in PetscMalloc");
-        if (*SellData) {
-          locSellData = *SellData;
-        } else {
-          // Stupid, stupid, stupid fucking MPICH fails with 0-length storage
-          ierr = PetscMalloc(PetscMax(1, msgSize*SellSize) * sizeof(int32_t), &locSellData);CHKERROR(ierr,"Error in PetscMalloc");
-        }
-        // Initialization
-        for(int b = 0; b < BuyCount; b++) {
-          if (b == 0) {
-            BuyOffsets[0] = 0;
-          } else {
-            BuyOffsets[b] = BuyOffsets[b-1] + msgSize*BuySizes[b-1];
-          }
-        }
-        for(int s = 0; s < SellCount; s++) {
-          if (s == 0) {
-            SellOffsets[0] = 0;
-          } else {
-            SellOffsets[s] = SellOffsets[s-1] + msgSize*SellSizes[s-1];
-          }
-        }
-        ierr = PetscMemzero(locSellData, msgSize*SellSize * sizeof(int32_t));CHKERROR(ierr,"Error in PetscMemzero");
-
-        // Post receives for bill of sale (data request)
-        for(int s = 0; s < SellCount; s++) {
-          ierr = MPI_Irecv(&locSellData[SellOffsets[s]], msgSize*SellSizes[s], MPIU_INT, Buyers[s], tag, comm, &sellWaits[s]);
-          CHKERROR(ierr,"Error in MPI_Irecv");
-        }
-        // Post sends with bill of sale (data request)
-        for(int b = 0; b < BuyCount; b++) {
-          ierr = MPI_Isend(&BuyData[BuyOffsets[b]], msgSize*BuySizes[b], MPIU_INT, Sellers[b], tag, comm, &buyWaits[b]);
-          CHKERROR(ierr,"Error in MPI_Isend");
-        }
-        // Receive the bill of sale from buyer
-        for(int s = 0; s < SellCount; s++) {
-          MPI_Status sellStatus;
-          int        num;
-
-          ierr = MPI_Waitany(SellCount, sellWaits, &num, &sellStatus);CHKMPIERROR(ierr,ERRORMSG("Error in MPI_Waitany"));
-          // OUTPUT: Overwriting input buyer process
-          Buyers[num] = sellStatus.MPI_SOURCE;
-          // OUTPUT: Overwriting input sell size
-          ierr = MPI_Get_count(&sellStatus, MPIU_INT, &SellSizes[num]);CHKERROR(ierr,"Error in MPI_Get_count");
-          SellSizes[num] /= msgSize;
-        }
-        // Wait on send for bill of sale
-        if (BuyCount) {
-          ierr = MPI_Waitall(BuyCount, buyWaits, buyStatus); CHKERROR(ierr,"Error in MPI_Waitall");
-        }
-
-        ierr = PetscFree2(BuyOffsets, SellOffsets);CHKERROR(ierr,"Error in PetscFree");
-        ierr = PetscFree3(buyWaits, sellWaits, buyStatus);CHKERROR(ierr,"Error in PetscFree");
-        // OUTPUT: Providing data out
-        *SellData = locSellData;
-      }// commCycle()
-
-
-
-      #undef __FUNCT__
-      #define __FUNCT__ "__computeFusionNew"
-      template <typename Overlap_, typename Fusion_>
-      static void __computeFusionNew(const Obj<graph_type>& _graphA, const Obj<graph_type>& _graphB, const Obj<Overlap_>& overlap, Obj<Fusion_> fusion, const Obj<fuser_type>& fuser) {
-        typedef ConeArraySequence<typename graph_type::traits::arrow_type> cone_array_sequence;
-        typedef typename cone_array_sequence::cone_arrow_type              cone_arrow_type;
-        MPI_Comm       comm = _graphA->comm();
-        int            rank = _graphA->commRank();
-        PetscObject    petscObj = _graphA->petscObj();
-        PetscMPIInt    tag1;
-        PetscErrorCode ierr;
-
-        Obj<typename Overlap_::traits::capSequence> overlapCap = overlap->cap();
-        int msgSize = sizeof(cone_arrow_type)/sizeof(int); // Messages are arrows
-
-        int NeighborCountA = 0, NeighborCountB = 0;
-        for(typename Overlap_::traits::capSequence::iterator neighbor = overlapCap->begin(); neighbor != overlapCap->end(); ++neighbor) {
-          Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
-
-          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
-            if (((*p_iter).first == 0) && (p_iter.color().second.first || p_iter.color().second.second)) {
-              NeighborCountA++;
-              break;
-            }
-          }
-          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
-            if (((*p_iter).first == 1) && (p_iter.color().second.first || p_iter.color().second.second)) {
-              NeighborCountB++;
-              break;
-            }
-          } 
-        }
-
-        int *NeighborsA, *NeighborsB; // Neighbor processes
-        int *SellSizesA, *BuySizesA;  // Sizes of the A cones to transmit and B cones to receive
-        int *SellSizesB, *BuySizesB;  // Sizes of the B cones to transmit and A cones to receive
-        int *SellConesA = PETSC_NULL, *BuyConesA = PETSC_NULL;
-        int *SellConesB = PETSC_NULL, *BuyConesB = PETSC_NULL;
-        int nA, nB, offsetA, offsetB;
-        ierr = PetscMalloc2(NeighborCountA,int,&NeighborsA,NeighborCountB,int,&NeighborsB);CHKERROR(ierr, "Error in PetscMalloc");
-        ierr = PetscMalloc2(NeighborCountA,int,&SellSizesA,NeighborCountA,int,&BuySizesA);CHKERROR(ierr, "Error in PetscMalloc");
-        ierr = PetscMalloc2(NeighborCountB,int,&SellSizesB,NeighborCountB,int,&BuySizesB);CHKERROR(ierr, "Error in PetscMalloc");
-
-        nA = 0;
-        nB = 0;
-        for(typename Overlap_::traits::capSequence::iterator neighbor = overlapCap->begin(); neighbor != overlapCap->end(); ++neighbor) {
-          Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
-
-          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
-            if (((*p_iter).first == 0) && (p_iter.color().second.first || p_iter.color().second.second)) {
-              NeighborsA[nA] = *neighbor;
-              BuySizesA[nA] = 0;
-              SellSizesA[nA] = 0;
-              nA++;
-              break;
-            }
-          }
-          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
-            if (((*p_iter).first == 1) && (p_iter.color().second.first || p_iter.color().second.second)) {
-              NeighborsB[nB] = *neighbor;
-              BuySizesB[nB] = 0;
-              SellSizesB[nB] = 0;
-              nB++;
-              break;
-            }
-          } 
-        }
-        if ((nA != NeighborCountA) || (nB != NeighborCountB)) {
-          throw ALE::Exception("Invalid neighbor count");
-        }
-
-        nA = 0;
-        offsetA = 0;
-        nB = 0;
-        offsetB = 0;
-        for(typename Overlap_::traits::capSequence::iterator neighbor = overlapCap->begin(); neighbor != overlapCap->end(); ++neighbor) {
-          Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
-          int foundA = 0, foundB = 0;
-
-          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
-            if (((*p_iter).first == 0) && (p_iter.color().second.first || p_iter.color().second.second)) {
-              BuySizesA[nA] += p_iter.color().second.first;
-              SellSizesA[nA] += p_iter.color().second.second;
-              offsetA += _graphA->cone((*p_iter).second)->size();
-              foundA = 1;
-            } else if (((*p_iter).first == 1) && (p_iter.color().second.first || p_iter.color().second.second)) {
-              BuySizesB[nB] += p_iter.color().second.first;
-              SellSizesB[nB] += p_iter.color().second.second;
-              offsetB += _graphB->cone((*p_iter).second)->size();
-              foundB = 1;
-            }
-          }
-          if (foundA) nA++;
-          if (foundB) nB++;
-        }
-
-        ierr = PetscMalloc2(offsetA*msgSize,int,&SellConesA,offsetB*msgSize,int,&SellConesB);CHKERROR(ierr, "Error in PetscMalloc");
-        cone_arrow_type *ConesOutA = (cone_arrow_type *) SellConesA;
-        cone_arrow_type *ConesOutB = (cone_arrow_type *) SellConesB;
-        offsetA = 0;
-        offsetB = 0;
-        for(typename Overlap_::traits::capSequence::iterator neighbor = overlapCap->begin(); neighbor != overlapCap->end(); ++neighbor) {
-          Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
-
-          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
-            Obj<typename graph_type::traits::coneSequence> cone;
-            const Point& p = (*p_iter).second;
-
-            if ((*p_iter).first == 0) {
-              cone = _graphA->cone(p);
-              for(typename graph_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-                if (debug) {
-                  ostringstream txt;
-
-                  txt << "["<<rank<<"]Packing A arrow for " << *neighbor << "  " << *c_iter << "--" << c_iter.color() << "-->" << p << std::endl;
-                  ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-                }
-                cone_arrow_type::place(ConesOutA+offsetA, typename graph_type::traits::arrow_type(*c_iter, p, c_iter.color()));
-                offsetA++;
-              }
-            } else {
-              cone = _graphB->cone(p);
-              for(typename graph_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-                if (debug) {
-                  ostringstream txt;
-
-                  txt << "["<<rank<<"]Packing B arrow for " << *neighbor << "  " << *c_iter << "--" << c_iter.color() << "-->" << p << std::endl;
-                  ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-                }
-                cone_arrow_type::place(ConesOutB+offsetB, typename graph_type::traits::arrow_type(*c_iter, p, c_iter.color()));
-                offsetB++;
-              }
-            }
-            if (p_iter.color().second.second != (int) cone->size()) {
-              std::cout << "["<<rank<<"] " << p_iter.color() << " does not match cone size " << cone->size() << std::endl;
-              throw ALE::Exception("Non-matching sizes");
-            }
-          }
-        }
-        if (debug) {
-          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
-        }
-
-        // Send and retrieve cones of the base overlap
-        ierr = PetscObjectGetNewTag(petscObj, &tag1); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
-        commCycle(comm, tag1, msgSize, NeighborCountA, SellSizesA, NeighborsA, SellConesA, NeighborCountB, BuySizesB, NeighborsB, &BuyConesB);
-        commCycle(comm, tag1, msgSize, NeighborCountB, SellSizesB, NeighborsB, SellConesB, NeighborCountA, BuySizesA, NeighborsA, &BuyConesA);
-
-        // Must unpack with the BtoA overlap
-        //cone_arrow_type *ConesInA = (cone_arrow_type *) BuyConesA;
-        cone_arrow_type *ConesInB = (cone_arrow_type *) BuyConesB;
-        offsetA = 0;
-        offsetB = 0;
-        for(typename Overlap_::traits::capSequence::iterator neighbor = overlapCap->begin(); neighbor != overlapCap->end(); ++neighbor) {
-          Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
-
-          for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
-            Obj<typename graph_type::traits::coneSequence> localCone;
-            const Point& p = (*p_iter).second;
-            int remoteConeSize = p_iter.color().second.first;
-
-            // Right now we only provide the A->B fusion
-            if ((*p_iter).first == 0) {
-#if 0
-              cone_array_sequence remoteCone(&ConesInA[offsetA], remoteConeSize, p);
-
-              localCone = _graphA->cone(p);
-              offsetA += remoteConeSize;
-              if (debug) {
-                ostringstream txt;
-
-                txt << "["<<rank<<"]Unpacking B cone for " << p << " from " << *neighbor << std::endl;
-                remoteCone.view(txt, true);
-                ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-              }
-              // Fuse in received cones
-              fuser->fuseCones(localCone, remoteCone, fusion->cone(fuser->fuseBasePoints(p, p)));
-#endif
-            } else {
-              cone_array_sequence remoteCone(&ConesInB[offsetB], remoteConeSize, p);
-
-              localCone = _graphB->cone(p);
-              offsetB += remoteConeSize;
-              if (debug) {
-                ostringstream txt;
-
-                txt << "["<<rank<<"]Unpacking A cone for " << p <<  " from " << *neighbor << std::endl;
-                remoteCone.view(txt, true);
-                ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-              }
-              // Fuse in received cones
-              fuser->fuseCones(localCone, remoteCone, fusion->cone(fuser->fuseBasePoints(p, p)));
-            }
-          }
-        }
-        if (debug) {
-          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
-        }
+        this->_comm = comm;
+        ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
+        ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_rank"); 
       };
-    }; // class Map
+    public:
+      //
+      // Basic interface
+      //
+      ParMap(const Obj<map_type>& map, const Obj<overlap_type>& overlap, const Obj<fusion_type>& fusion) 
+        : _debug(0), _map(map), _overlap(overlap), _fusion(fusion) {};
+     ~ParMap(){};      
+      //
+      // Extended interface
+      //
+      int  getDebug() {return this->_debug;}
+      void setDebug(const int& d) {this->_debug = d;};
+      MPI_Comm comm() {return this->_comm;};
+      MPI_Int  commRank() {return this->_commRank;};
+      MPI_Int  commSize() {return this->_commSize;};
+    }; // class ParMap
   
 
 } // namespace X  

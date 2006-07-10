@@ -1,0 +1,12 @@
+I. Need to create a list of 'unit tests' -- cases that MUST be handled by any Sieve interface.
+   These should probably be documented with pictures and all, and done as a Tech Report. 
+   This way we can test the feasibility of any design changes against this list.
+   Here's a (probably vastly incomplete) version of the list.
+   1. Multicomponent fields.
+   2. Faults a la Pylith via a suitable chart mechanism.
+   3. Ordered data retrieval in Sec.
+   4. Independent mesh point insertion (on different procs); collision resolution via Overlap/Fusion.
+   5. Distribution via Overlap/Fusion.
+   6. Data preallocation and raw pointer extraction.
+             
+            

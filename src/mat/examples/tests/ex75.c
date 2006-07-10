@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscRandom       rctx;         
   PetscReal         r1,r2,rnorm,tol=1.e-10;
   PetscScalar       one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1;
-  PetscInt          n,col[3],n1,block,row,i,j,i2,j2,I,J,rstart,rend,bs=1,mbs=16,d_nz=3,o_nz=3,prob=2;
+  PetscInt          n,col[3],n1,block,row,i,j,i2,j2,Ii,J,rstart,rend,bs=1,mbs=16,d_nz=3,o_nz=3,prob=2;
   PetscErrorCode    ierr;
   PetscMPIInt       size,rank;
   PetscTruth        flg;
@@ -62,12 +62,12 @@ int main(int argc,char **args)
         
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
-          I = j + n1*i;
-          if (i>0)   {J = I - n1; ierr = MatSetValues(sA,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
-          if (i<n1-1) {J = I + n1; ierr = MatSetValues(sA,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
-          if (j>0)   {J = I - 1; ierr = MatSetValues(sA,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
-          if (j<n1-1) {J = I + 1; ierr = MatSetValues(sA,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
-          ierr = MatSetValues(sA,1,&I,1,&I,&four,INSERT_VALUES);CHKERRQ(ierr);
+          Ii = j + n1*i;
+          if (i>0)    {J = Ii - n1; ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
+          if (i<n1-1) {J = Ii + n1; ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
+          if (j>0)    {J = Ii - 1;  ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
+          if (j<n1-1) {J = Ii + 1;  ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
+          ierr = MatSetValues(sA,1,&Ii,1,&Ii,&four,INSERT_VALUES);CHKERRQ(ierr);
         }
       }                   
     }
@@ -127,12 +127,12 @@ int main(int argc,char **args)
       n1 = (int) sqrt((double)n); 
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
-          I = j + n1*i;
-          if (i>0)   {J = I - n1; ierr = MatSetValues(A,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
-          if (i<n1-1) {J = I + n1; ierr = MatSetValues(A,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
-          if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
-          if (j<n1-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
-          ierr = MatSetValues(A,1,&I,1,&I,&four,INSERT_VALUES);CHKERRQ(ierr);
+          Ii = j + n1*i;
+          if (i>0)    {J = Ii - n1; ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
+          if (i<n1-1) {J = Ii + n1; ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
+          if (j>0)    {J = Ii - 1;  ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
+          if (j<n1-1) {J = Ii + 1;  ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);}
+          ierr = MatSetValues(A,1,&Ii,1,&Ii,&four,INSERT_VALUES);CHKERRQ(ierr);
         }
       }                   
     }

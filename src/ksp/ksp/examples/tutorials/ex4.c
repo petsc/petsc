@@ -28,7 +28,7 @@ int main(int argc,char **args)
   Vec            x,b,u;   /* approx solution, RHS, exact solution */
   Vec            tmp;       /* work vector */
   PetscScalar    v,one = 1.0,scale = 0.0;
-  PetscInt       i,j,m = 15,n = 17,I,J,Istart,Iend;
+  PetscInt       i,j,m = 15,n = 17,Ii,J,Istart,Iend;
   PetscErrorCode ierr;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -76,28 +76,28 @@ int main(int argc,char **args)
   /*
      Set entries within the two matrices
   */
-  for (I=Istart; I<Iend; I++) { 
-    v = -1.0; i = I/n; j = I - i*n;  
+  for (Ii=Istart; Ii<Iend; Ii++) { 
+    v = -1.0; i = Ii/n; j = Ii - i*n;  
     if (i>0) {
-      J=I-n; 
-      ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValues(B,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+      J=Ii-n; 
+      ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(B,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (i<m-1) {
-      J=I+n; 
-      ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValues(B,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+      J=Ii+n; 
+      ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(B,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (j>0) {
-      J=I-1; 
-      ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+      J=Ii-1; 
+      ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (j<n-1) {
-      J=I+1; 
-      ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+      J=Ii+1; 
+      ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
-    v = 5.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);CHKERRQ(ierr);
-    v = 3.0; ierr = MatSetValues(B,1,&I,1,&I,&v,INSERT_VALUES);CHKERRQ(ierr);
+    v = 5.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
+    v = 3.0; ierr = MatSetValues(B,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /*
@@ -107,13 +107,13 @@ int main(int argc,char **args)
      transition by placing code between these two statements.
   */
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  for (I=Istart; I<Iend; I++) { 
-    v = -0.5; i = I/n;
+  for (Ii=Istart; Ii<Iend; Ii++) { 
+    v = -0.5; i = Ii/n;
     if (i>1) { 
-      J=I-(n+1); ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+      J=Ii-(n+1); ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
     if (i<m-2) {
-      J=I+n+1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+      J=Ii+n+1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

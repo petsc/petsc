@@ -154,6 +154,28 @@ int main(int argc,char **args)
       }
     }
 
+    /* Make A singular for testing zero-pivot of ilu factorization        */
+    /* Example: ./ex10 -f0 <datafile> -test_zeropivot -set_row_zero -pc_factor_shift_nonzero */
+    ierr = PetscOptionsHasName(PETSC_NULL, "-test_zeropivot", &flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscInt          row,ncols;
+      const PetscInt    *cols;
+      const PetscScalar *vals;
+      PetscTruth        flg1=PETSC_FALSE;
+      row = 0;      
+      ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);     
+      PetscScalar zeros[ncols+1];
+      ierr = PetscMemzero(zeros,(ncols+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(PETSC_NULL, "-set_row_zero", &flg1);CHKERRQ(ierr);
+      if (flg1){ /* set entire row as zero */
+        ierr = MatSetValues(A,1,&row,ncols,cols,zeros,INSERT_VALUES);CHKERRQ(ierr);
+      } else { /* only set (row,row) entry as zero */
+        ierr = MatSetValues(A,1,&row,1,&row,zeros,INSERT_VALUES);CHKERRQ(ierr);
+      }
+      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    }
+
     /* Check whether A is symmetric */
     ierr = PetscOptionsHasName(PETSC_NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
     if (flg) {

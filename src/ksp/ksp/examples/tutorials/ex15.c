@@ -55,7 +55,7 @@ int main(int argc,char **args)
   PetscReal      norm;      /* norm of solution error */
   SampleShellPC  *shell;    /* user-defined preconditioner context */
   PetscScalar    v,one = 1.0,none = -1.0;
-  PetscInt       i,j,I,J,Istart,Iend,m = 8,n = 7,its;
+  PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
   PetscErrorCode ierr;
   PetscTruth     user_defined_pc;
 
@@ -91,13 +91,13 @@ int main(int argc,char **args)
         appropriate processor during matrix assembly). 
       - Always specify global rows and columns of matrix entries.
    */
-  for (I=Istart; I<Iend; I++) { 
-    v = -1.0; i = I/n; j = I - i*n;  
-    if (i>0)   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (i<m-1) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j>0)   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j<n-1) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);CHKERRQ(ierr);
+  for (Ii=Istart; Ii<Iend; Ii++) { 
+    v = -1.0; i = Ii/n; j = Ii - i*n;  
+    if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
+    v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 
   /* 

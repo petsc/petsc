@@ -53,9 +53,9 @@ namespace ALE {
     // Reproducing the standard allocator interface
     pointer       address(reference _x) const          { return alloc.address(_x);                                    };
     const_pointer address(const_reference _x) const    { return alloc.address(_x);                                    };
-    T*           allocate(size_type _n)               { return (T*)universal_allocator::allocate(_n*sz);            };
+    T*            allocate(size_type _n)               { return (T*)universal_allocator::allocate(_n*sz);            };
     void          deallocate(pointer _p, size_type _n) { universal_allocator::deallocate((char*)_p, _n*sz);           };
-    void          construct(pointer _p, const T& _val){ alloc.construct(_p, _val);                                   };
+    void          construct(pointer _p, const T& _val) { alloc.construct(_p, _val);                                   };
     void          destroy(pointer _p)                  { alloc.destroy(_p);                                           };
     size_type     max_size() const                     { return (size_type)floor(universal_allocator::max_size()/sz); };
     // conversion typedef
@@ -110,20 +110,35 @@ namespace ALE {
     static int         _destroy_event;
     static int         _create_event;
     static int         _del_event;
-    static void __log_initialize();
+    //
+    static void     __log_initialize();
     static LogEvent __log_event_register(const char *class_name, const char *event_name);
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
+    // FIX: should PETSc memory logging machinery be wrapped by ALE_log like the rest of the logging stuff?
+    PetscObject _petscObj; // this object is used to log memory in PETSc
+#endif
+    void __alloc_initialize(); 
+    void __alloc_finalize();
   public:
-    typedef typename polymorphic_allocator<T>::size_type size_type;
-    logged_allocator()                                   : polymorphic_allocator<T>()  {__log_initialize();};    
-    logged_allocator(const logged_allocator& a)          : polymorphic_allocator<T>(a) {__log_initialize();};
+    // Present the correct allocator interface
+    typedef typename polymorphic_allocator<T>::size_type       size_type;
+    typedef typename polymorphic_allocator<T>::difference_type difference_type;
+    typedef typename polymorphic_allocator<T>::pointer         pointer;
+    typedef typename polymorphic_allocator<T>::const_pointer   const_pointer;
+    typedef typename polymorphic_allocator<T>::reference       reference;
+    typedef typename polymorphic_allocator<T>::const_reference const_reference;
+    typedef typename polymorphic_allocator<T>::value_type      value_type;
+    //
+    logged_allocator()                                   : polymorphic_allocator<T>()  {__log_initialize(); __alloc_initialize();};    
+    logged_allocator(const logged_allocator& a)          : polymorphic_allocator<T>(a) {__log_initialize(); __alloc_initialize();};
     template <class TT> 
-    logged_allocator(const logged_allocator<TT>& aa)    : polymorphic_allocator<T>(aa){__log_initialize();};
-    ~logged_allocator() {};
+    logged_allocator(const logged_allocator<TT>& aa)    : polymorphic_allocator<T>(aa){__log_initialize(); __alloc_initialize();};
+    ~logged_allocator() {__alloc_finalize();};
     // conversion typedef
     template <class TT>
     struct rebind { typedef logged_allocator<TT> other;};
 
-    T*  allocate(size_type _n);
+    T*   allocate(size_type _n);
     void deallocate(T*  _p, size_type _n);
     void construct(T* _p, const T& _val);
     void destroy(T* _p);
@@ -153,6 +168,13 @@ namespace ALE {
   template <class T, bool O>
   void logged_allocator<T, O>::__log_initialize() {
     if(!logged_allocator::_log_initialized) {
+      // First of all we make sure PETSc is initialized
+      PetscTruth flag;
+      PetscErrorCode ierr = PetscInitialized(&flag); CHKERROR(ierr, "Error in PetscInitialized");
+      if(!flag) {
+        // I guess it would be nice to initialize PETSc here, but we'd need argv/argc here
+        throw ALE::Exception("PETSc not initialized");
+      }
       // Get a new cookie based on T's typeid name
       const std::type_info& id = typeid(T);
       const char *id_name;
@@ -173,16 +195,16 @@ namespace ALE {
       // If demangling is not available, use the class name returned by typeid directly.
       id_name = id.name();
 #endif
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
       // Use id_name to register a cookie and events.
       logged_allocator::_cookie = LogCookieRegister(id_name); 
       // Register the basic allocator methods' invocations as events; use the mangled class name.
-      logged_allocator::_allocate_event = logged_allocator::__log_event_register(id_name, "allocate");
+      logged_allocator::_allocate_event   = logged_allocator::__log_event_register(id_name, "allocate");
       logged_allocator::_deallocate_event = logged_allocator::__log_event_register(id_name, "deallocate");
-      logged_allocator::_construct_event = logged_allocator::__log_event_register(id_name, "construct");
-      logged_allocator::_destroy_event = logged_allocator::__log_event_register(id_name, "destroy");
-      logged_allocator::_create_event = logged_allocator::__log_event_register(id_name, "create");
-      logged_allocator::_del_event = logged_allocator::__log_event_register(id_name, "del");
+      logged_allocator::_construct_event  = logged_allocator::__log_event_register(id_name, "construct");
+      logged_allocator::_destroy_event    = logged_allocator::__log_event_register(id_name, "destroy");
+      logged_allocator::_create_event     = logged_allocator::__log_event_register(id_name, "create");
+      logged_allocator::_del_event        = logged_allocator::__log_event_register(id_name, "del");
 #endif
 #ifdef ALE_HAVE_CXX_ABI
       // Free the name malloc'ed by __cxa_demangle
@@ -191,8 +213,24 @@ namespace ALE {
       logged_allocator::_log_initialized = true;
 
     }// if(!!logged_allocator::_log_initialized)
-  }
+  }// logged_allocator<T,O>::__log_initialize()
 
+  template <class T, bool O>
+  void logged_allocator<T, O>::__alloc_initialize() {
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
+    PetscErrorCode ierr = PetscObjectCreate(PETSC_COMM_WORLD, &this->_petscObj); 
+    CHKERROR(ierr, "Failed in PetscObjectCreate");
+#endif
+  }// logged_allocator<T,O>::__alloc_initialize
+
+  template <class T, bool O>
+  void logged_allocator<T, O>::__alloc_finalize() {
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
+    // FIX: destroying these PetscObjects will cause a meltdown
+    //PetscErrorCode ierr = PetscObjectDestroy(this->_petscObj); 
+    //CHKERROR(ierr, "Failed in PetscObjectDestroy");
+#endif
+  }// logged_allocator<T,O>::__alloc_finalize
 
   template <class T, bool O> 
   LogEvent logged_allocator<T, O>::__log_event_register(const char *class_name, const char *event_name){
@@ -201,18 +239,24 @@ namespace ALE {
     if(O) {
       txt << "Obj: ";
     }
+#ifdef ALE_LOGGING_VERBOSE
     txt << class_name;
+#else
+    txt << "<allocator>";
+#endif
     txt << ": " << event_name;
     return LogEventRegister(logged_allocator::_cookie, txt.str().c_str());
   }
 
   template <class T, bool O>
   T*  logged_allocator<T, O>::allocate(size_type _n) {
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
     LogEventBegin(logged_allocator::_allocate_event); 
 #endif
     T* _p = polymorphic_allocator<T>::allocate(_n);
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
+    PetscErrorCode ierr = PetscLogObjectMemory(this->_petscObj, _n*polymorphic_allocator<T>::sz); 
+    CHKERROR(ierr, "Error in PetscLogObjectMemory");
     LogEventEnd(logged_allocator::_allocate_event); 
 #endif
     return _p;
@@ -220,44 +264,46 @@ namespace ALE {
   
   template <class T, bool O>
   void logged_allocator<T, O>::deallocate(T* _p, size_type _n) {
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
     LogEventBegin(logged_allocator::_deallocate_event);
 #endif
     polymorphic_allocator<T>::deallocate(_p, _n);
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
     LogEventEnd(logged_allocator::_deallocate_event);
 #endif
   }
   
   template <class T, bool O>
   void logged_allocator<T, O>::construct(T* _p, const T& _val) {
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
     LogEventBegin(logged_allocator::_construct_event);
 #endif
     polymorphic_allocator<T>::construct(_p, _val);
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
     LogEventEnd(logged_allocator::_construct_event);
 #endif
   }
   
   template <class T, bool O>
   void logged_allocator<T, O>::destroy(T* _p) {
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
     LogEventBegin(logged_allocator::_destroy_event);
 #endif
     polymorphic_allocator<T>::destroy(_p);
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
     LogEventEnd(logged_allocator::_destroy_event);
 #endif
   }
   
   template <class T, bool O>
   T* logged_allocator<T, O>::create(const T& _val) {
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
     LogEventBegin(logged_allocator::_create_event); 
 #endif
     T* _p = polymorphic_allocator<T>::create(_val);
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
+    PetscErrorCode ierr = PetscLogObjectMemory(this->_petscObj, polymorphic_allocator<T>::sz); 
+    CHKERROR(ierr, "Error in PetscLogObjectMemory");
     LogEventEnd(logged_allocator::_create_event);
 #endif
     return _p;
@@ -265,22 +311,22 @@ namespace ALE {
 
   template <class T, bool O>
   void logged_allocator<T, O>::del(T* _p) {
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
     LogEventBegin(logged_allocator::_del_event);
 #endif
     polymorphic_allocator<T>::del(_p);
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
     LogEventEnd(logged_allocator::_del_event);
 #endif
   }
 
   template <class T, bool O> template <class TT>
   void logged_allocator<T, O>::del(TT* _p, size_type _sz) {
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
     LogEventBegin(logged_allocator::_del_event);
 #endif
     polymorphic_allocator<T>::del(_p, _sz);
-#ifdef ALE_USE_LOGGING_MEM
+#if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
     LogEventEnd(logged_allocator::_del_event);
 #endif
   }

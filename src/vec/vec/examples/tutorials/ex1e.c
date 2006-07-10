@@ -102,7 +102,7 @@ _ VecMDot(x,3,z,dots);___
      (when using real numbers) it is undefined.
   */
 #if defined(PETSC_USE_COMPLEX)
-_ PetscPrintf(PETSC_COMM_WORLD,"Vector length %D\n", int (PetscRealPart(dot)));___
+_ PetscPrintf(PETSC_COMM_WORLD,"Vector length %D\n", (int) (PetscRealPart(dot)));___
 _ PetscPrintf(PETSC_COMM_WORLD,"Vector length %D %D %D\n",(PetscInt)PetscRealPart(dots[0]),
                              (PetscInt)PetscRealPart(dots[1]),(PetscInt)PetscRealPart(dots[2]));___
 #else

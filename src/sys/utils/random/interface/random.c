@@ -526,7 +526,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSeed(PetscRandom r)
 
    Example of Usage:
 .vb
-      PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&r);
+      PetscRandomCreate(PETSC_COMM_WORLD,&r);
       PetscRandomGetValue(r,&value1);
       PetscRandomGetValue(r,&value2);
       PetscRandomGetValue(r,&value3);
@@ -572,7 +572,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValue(PetscRandom r,PetscScalar *va
 
    Example of Usage:
 .vb
-      PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&r);
+      PetscRandomCreate(PETSC_COMM_WORLD,&r);
       PetscRandomGetValueReal(r,&value1);
       PetscRandomGetValueReal(r,&value2);
       PetscRandomGetValueReal(r,&value3);
@@ -623,7 +623,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscReal *
 
    Example of Usage:
 .vb
-      PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&r);
+      PetscRandomCreate(PETSC_COMM_WORLD,&r);
       PetscRandomGetValueImaginary(r,&value1);
       PetscRandomGetValueImaginary(r,&value2);
       PetscRandomGetValueImaginary(r,&value3);
