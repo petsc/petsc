@@ -350,7 +350,7 @@ class Configure(config.package.Package):
       line = f.readline()
     f.close()
     g.close()
-    if os.path.isfile(os.path.join(libdir,'tmpmakefile')) and (sourceDB.getChecksum(os.path.join(libdir,'tmpmakefile')) == sourceDB.getChecksum(os.path.join(blasDir,'tmpmakefile'))):
+    if os.path.isfile(os.path.join(libdir,'tmpmakefile')) and (SourceDB.getChecksum(os.path.join(libdir,'tmpmakefile')) == SourceDB.getChecksum(os.path.join(blasDir,'tmpmakefile'))):
       self.framework.log.write('Do not need to compile '+l+'blaslapack, already compiled\n')
       return libdir
     try:
