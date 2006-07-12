@@ -856,8 +856,9 @@ class Configure(config.base.Configure):
         f90Guess = 'intel8'
       elif self.setCompilers.vendor in ['lahaye', 'nag']:
         f90Guess = 'nag'
-      elif self.setCompilers.vendor == 'portland':
-        f90Guess = 'pgi'
+##    This interface is not finished
+##      elif self.setCompilers.vendor == 'portland':
+##        f90Guess = 'pgi'
       elif self.setCompilers.vendor == 'sgi':
         f90Guess = 'IRIX'
       elif self.setCompilers.vendor == 'solaris':
