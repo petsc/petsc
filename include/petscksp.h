@@ -151,6 +151,8 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCBJacobiGetSubKSP(PC,PetscInt*,PetscIn
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetSubKSP(PC,PetscInt*,PetscInt*,KSP*[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSubKSP(PC,PetscInt*,KSP*[]);
 
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinGetKSP(PC,KSP *);
+
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildSolution(KSP,Vec,Vec *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBuildResidual(KSP,Vec,Vec,Vec *);
 
