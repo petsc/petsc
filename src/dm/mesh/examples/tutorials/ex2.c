@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
   char           baseFilename[2048];
   PetscInt       dim, debug;
   PetscReal      refinementLimit;
-  PetscTruth     interpolate, readFile;
+  PetscTruth     interpolate, readFile, outputPCICE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -47,6 +47,8 @@ int main(int argc, char *argv[])
     ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex2.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
     interpolate = PETSC_TRUE;
     ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex2.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
+    outputPCICE = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-output_pcice", "Output the mesh in PCICE format", "ex2.c", PETSC_FALSE, &outputPCICE, PETSC_NULL);CHKERRQ(ierr);
     refinementLimit = 0.0;
     ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex2.c", 1.0, &refinementLimit, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscStrcpy(baseFilename, "none");CHKERRQ(ierr);
@@ -107,6 +109,15 @@ int main(int argc, char *argv[])
     ierr = VecView(partition, viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    if (outputPCICE) {
+      ierr = PetscPrintf(comm, "Creating PCICE mesh file\n");CHKERRQ(ierr);
+      ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PCICE);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(viewer, "testMesh.lcon");CHKERRQ(ierr);
+      ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    }
     ALE::LogStagePop(stage);
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;

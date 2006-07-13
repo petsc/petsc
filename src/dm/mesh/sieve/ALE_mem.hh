@@ -226,9 +226,10 @@ namespace ALE {
   template <class T, bool O>
   void logged_allocator<T, O>::__alloc_finalize() {
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
-    // FIX: destroying these PetscObjects will cause a meltdown
-    //PetscErrorCode ierr = PetscObjectDestroy(this->_petscObj); 
-    //CHKERROR(ierr, "Failed in PetscObjectDestroy");
+    if (this->_petscObj) {
+      PetscErrorCode ierr = PetscObjectDestroy(this->_petscObj); 
+      CHKERROR(ierr, "Failed in PetscObjectDestroy");
+    }
 #endif
   }// logged_allocator<T,O>::__alloc_finalize
 
@@ -237,14 +238,14 @@ namespace ALE {
     // This routine assumes a cookie has been obtained.
     ostringstream txt;
     if(O) {
-      txt << "Obj: ";
+      txt << "Obj:";
     }
 #ifdef ALE_LOGGING_VERBOSE
     txt << class_name;
 #else
     txt << "<allocator>";
 #endif
-    txt << ": " << event_name;
+    txt << ":" << event_name;
     return LogEventRegister(logged_allocator::_cookie, txt.str().c_str());
   }
 
@@ -386,6 +387,7 @@ namespace ALE {
 
     // "Factory" methods
     Obj& create(const X& x = X());
+    void destroy();
 
     // predicates & assertions
     bool isNull() const {return (this->objPtr == NULL);};
@@ -473,6 +475,25 @@ namespace ALE {
   // Destructor
   template <class X>
   Obj<X>::~Obj(){
+    this->destroy();
+  }
+
+  template <class X>
+  Obj<X>& Obj<X>::create(const X& x) {
+    // Destroy the old state
+    this->destroy();
+    // Create the new state
+    this->objPtr = this->allocator.create(x); 
+    this->refCnt = this->int_allocator.create(1);
+    this->sz     = this->allocator.sz;
+    if (!this->sz) {
+      throw ALE::Exception("Making an Obj with zero size obtained from allocator");
+    }
+    return *this;
+  }
+
+  template <class X>
+  void Obj<X>::destroy() {
     if(ALE::getVerbosity() > 3) {
 #ifdef ALE_USE_DEBUGGING
       const char *id_name;
@@ -484,7 +505,7 @@ namespace ALE {
 #else 
       id_name = id.name();
 #endif
-      printf("~Obj<X>: Calling destructor for Obj<%s>", id_name);
+      printf("Obj<X>.destroy: Destroying Obj<%s>", id_name);
       if (!this->refCnt) {
         printf(" with no refCnt\n");
       } else {
@@ -521,22 +542,10 @@ namespace ALE {
         }
         // refCnt is always created/delete using the int_allocator.
         this->int_allocator.del(this->refCnt);
+        this->objPtr = NULL;
+        this->refCnt = NULL;
       }
     }
-  }
-
-  template <class X>
-  Obj<X>& Obj<X>::create(const X& x) {
-    // Destroy the old state
-    this->~Obj<X>();
-    // Create the new state
-    this->objPtr = this->allocator.create(x); 
-    this->refCnt = this->int_allocator.create(1);
-    this->sz     = this->allocator.sz;
-    if (!this->sz) {
-      throw ALE::Exception("Making an Obj with zero size obtained from allocator");
-    }
-    return *this;
   }
 
   // assignment operator
@@ -545,7 +554,7 @@ namespace ALE {
     if(this->objPtr == obj.objPtr) {return *this;}
     // Destroy 'this' Obj -- it will properly release the underlying object if the reference count is exhausted.
     if(this->objPtr) {
-      this->~Obj<X>();
+      this->destroy();
     }
     // Now copy the data from obj.
     this->objPtr = obj.objPtr;
@@ -613,7 +622,7 @@ namespace ALE {
     // Okay, we can proceed with the assignment
     if(this->objPtr == obj.objPtr) {return *this;}
     // Destroy 'this' Obj -- it will properly release the underlying object if the reference count is exhausted.
-    this->~Obj<X>();
+    this->destroy();
     // Now copy the data from obj.
     this->objPtr = xObjPtr;
     this->refCnt = obj.refCnt;

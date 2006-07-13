@@ -100,7 +100,7 @@ namespace ALE {
       // of as a CoSieve over the topology sieve.
     public:
       CoSifter(MPI_Comm comm = PETSC_COMM_SELF, int debug = 0) : _comm(comm), debug(debug) {
-        this->_order = order_type(this->_comm, debug);
+        this->_order = new order_type(this->_comm, debug);
         MPI_Comm_rank(this->_comm, &this->_commRank);
         MPI_Comm_size(this->_comm, &this->_commSize);
         this->offsets = NULL;

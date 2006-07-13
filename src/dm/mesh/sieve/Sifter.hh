@@ -15,6 +15,8 @@
 #include <ALE.hh>
 #endif
 
+extern PetscErrorCode PetscObjectDestroy_PetscObject(PetscObject);
+
 namespace ALE {
 
   namespace SifterDef {
@@ -518,7 +520,6 @@ namespace ALE {
     }; // class ArrowContainer<uniColor>
   }; // namespace SifterDef
 
-
   //
   // ASifter (short for Abstract Sifter, structurally a bipartite graph with colored arrows) implements a sequential interface 
   // similar to that of Sieve, except the source and target points may have different types and iterated operations (e.g., nCone, 
@@ -645,19 +646,29 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     int         _commRank;
     int         _commSize;
     PetscObject _petscObj;
-    void __init(MPI_Comm comm) {    
+    void __init(MPI_Comm comm) {
+      static PetscCookie sifterType = -1;
       PetscErrorCode ierr;
       this->_comm = comm;
       ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
       ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_rank"); 
-      ierr = PetscObjectCreate(this->_comm, &this->_petscObj); CHKERROR(ierr, "Failed in PetscObjectCreate");
+      if (sifterType < 0) {
+        ierr = PetscLogClassRegister(&sifterType, "Sifter");CHKERROR(ierr, "Error in MPI_Comm_rank"); 
+      }
+      ierr = PetscHeaderCreate(this->_petscObj,_p_PetscObject,-1,sifterType,0,"Sifter",this->_comm,PetscObjectDestroy_PetscObject,0);CHKERROR(ierr, "Error in PetscHeaderCreate");
     };
   public:
     // 
     // Basic interface
     //
-    ASifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) {__init(comm);  this->debug = debug;}
-    virtual ~ASifter(){};
+    ASifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : _petscObj(NULL) {__init(comm);  this->debug = debug;}
+    virtual ~ASifter() {
+      if (this->_petscObj) {
+        //PetscErrorCode ierr;
+        //ierr = PetscObjectDestroy(this->_petscObj); CHKERROR(ierr, "Failed in PetscObjectDestroy");
+        this->_petscObj = NULL;
+      }
+    };
     //
     // Query methods
     //

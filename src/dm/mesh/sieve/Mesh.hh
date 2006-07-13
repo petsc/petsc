@@ -53,10 +53,10 @@ namespace ALE {
     public:
       Mesh(MPI_Comm comm, int dimension, int debug = 0) : debug(debug), dim(dimension) {
         this->setComm(comm);
-        this->topology    = sieve_type(comm, debug);
-        this->coordinates = field_type(comm, debug);
-        this->boundary    = field_type(comm, debug);
-        this->boundaries  = foliation_type(comm, debug);
+        this->topology    = new sieve_type(comm, debug);
+        this->coordinates = new field_type(comm, debug);
+        this->boundary    = new field_type(comm, debug);
+        this->boundaries  = new foliation_type(comm, debug);
         this->distributed = false;
         this->coordinates->setTopology(this->topology);
         this->boundary->setTopology(this->topology);
@@ -81,7 +81,7 @@ namespace ALE {
       Obj<bundle_type> getBundle(const int dim) {
         ALE_LOG_EVENT_BEGIN;
         if (this->bundles.find(dim) == this->bundles.end()) {
-          Obj<bundle_type> bundle = bundle_type(this->comm(), debug);
+          Obj<bundle_type> bundle = new bundle_type(this->comm(), debug);
 
           // Need to globalize indices (that is what we might use the value ints for)
           std::cout << "Creating new bundle for dim " << dim << std::endl;
@@ -104,7 +104,7 @@ namespace ALE {
       };
       Obj<field_type> getField(const std::string& name) {
         if (this->fields.find(name) == this->fields.end()) {
-          Obj<field_type> field = field_type(this->comm(), debug);
+          Obj<field_type> field = new field_type(this->comm(), debug);
 
           std::cout << "Creating new field " << name << std::endl;
           field->setTopology(this->topology);
