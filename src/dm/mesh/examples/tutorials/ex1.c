@@ -59,12 +59,12 @@ typedef struct {
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
 PetscErrorCode ProcessOptions(MPI_Comm, Options *);
-PetscErrorCode CreateMesh(MPI_Comm, ALE::Obj<ALE::Mesh>, Options *);
+PetscErrorCode CreateMesh(MPI_Comm, ALE::Obj<ALE::Mesh>&, Options *);
 PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Mesh>, Vec *);
 PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh>, const char[], Vec *);
-PetscErrorCode DistributeMesh(ALE::Obj<ALE::Mesh>, Options *);
-PetscErrorCode OutputVTK(ALE::Obj<ALE::Mesh>, Options *);
-PetscErrorCode OutputMesh(ALE::Obj<ALE::Mesh>, Options *);
+PetscErrorCode DistributeMesh(ALE::Obj<ALE::Mesh>&, Options *);
+PetscErrorCode OutputVTK(const ALE::Obj<ALE::Mesh>&, Options *);
+PetscErrorCode OutputMesh(const ALE::Obj<ALE::Mesh>&, Options *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -82,8 +82,8 @@ int main(int argc, char *argv[])
     ALE::Obj<ALE::Mesh> mesh;
 
     ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
-    //ierr = CreateMesh(comm, mesh, &options);CHKERRQ(ierr);
-
+    ierr = CreateMesh(comm, mesh, &options);CHKERRQ(ierr);
+#if 0
     ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
     if (options.debug) {
       mesh->getTopology()->view("Serial topology");
     }
-
+#endif
     ierr = DistributeMesh(mesh, &options);CHKERRQ(ierr);
     ierr = OutputVTK(mesh, &options);CHKERRQ(ierr);
     ierr = OutputMesh(mesh, &options);CHKERRQ(ierr);
@@ -163,7 +163,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
-PetscErrorCode CreateMesh(MPI_Comm comm, ALE::Obj<ALE::Mesh> mesh, Options *options)
+PetscErrorCode CreateMesh(MPI_Comm comm, ALE::Obj<ALE::Mesh>& mesh, Options *options)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -171,7 +171,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, ALE::Obj<ALE::Mesh> mesh, Options *opti
   ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
   if (options->inputFileType == PCICE) {
-    mesh = ALE::PCICEBuilder::createNew(comm, options->baseFilename, options->dim, options->useZeroBase, options->interpolate, options->debug);
+    //mesh = ALE::PCICEBuilder::createNew(comm, options->baseFilename, options->dim, options->useZeroBase, options->interpolate, options->debug);
+    mesh = new ALE::Mesh(comm, 1, options->debug);
   } else if (options->inputFileType == PYLITH) {
     mesh = ALE::PyLithBuilder::createNew(comm, options->baseFilename, options->interpolate, options->debug);
   }
@@ -187,7 +188,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, ALE::Obj<ALE::Mesh> mesh, Options *opti
 
 #undef __FUNCT__
 #define __FUNCT__ "DistributeMesh"
-PetscErrorCode DistributeMesh(ALE::Obj<ALE::Mesh> mesh, Options *options)
+PetscErrorCode DistributeMesh(ALE::Obj<ALE::Mesh>& mesh, Options *options)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -205,7 +206,7 @@ PetscErrorCode DistributeMesh(ALE::Obj<ALE::Mesh> mesh, Options *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "OutputVTK"
-PetscErrorCode OutputVTK(ALE::Obj<ALE::Mesh> mesh, Options *options)
+PetscErrorCode OutputVTK(const ALE::Obj<ALE::Mesh>& mesh, Options *options)
 {
   PetscViewer    viewer;
   PetscErrorCode ierr;
@@ -238,7 +239,7 @@ PetscErrorCode OutputVTK(ALE::Obj<ALE::Mesh> mesh, Options *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "OutputMesh"
-PetscErrorCode OutputMesh(ALE::Obj<ALE::Mesh> mesh, Options *options)
+PetscErrorCode OutputMesh(const ALE::Obj<ALE::Mesh>& mesh, Options *options)
 {
   PetscViewer    viewer;
   PetscErrorCode ierr;

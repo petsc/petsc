@@ -13,6 +13,34 @@
 #endif
 
 namespace ALE {
+  template <class T>
+  static const char *getClassName() {
+    const std::type_info& id = typeid(T);
+    const char *id_name;
+
+#ifdef ALE_HAVE_CXX_ABI
+      // If the C++ ABI API is available, we can use it to demangle the class name provided by type_info.
+      // Here we assume the industry standard C++ ABI as described in http://www.codesourcery.com/cxx-abi/abi.html.
+      int   status;
+      char *id_name_demangled = abi::__cxa_demangle(id.name(), NULL, NULL, &status);
+
+      if (status != 0) {
+        id_name = id.name();
+      } else {
+        id_name = id_name_demangled;
+      }
+#else
+      id_name = id.name();
+#endif
+      return id_name;
+  };
+  template <class T>
+  static void restoreClassName(const char *id_name) {
+#ifdef ALE_HAVE_CXX_ABI
+    // Free the name malloc'ed by __cxa_demangle
+    free((char *) id_name);
+#endif
+  };
 
   // This UNIVERSAL allocator class is static and provides allocation/deallocation services to all allocators defined below.
   class universal_allocator {
@@ -169,32 +197,14 @@ namespace ALE {
   void logged_allocator<T, O>::__log_initialize() {
     if(!logged_allocator::_log_initialized) {
       // First of all we make sure PETSc is initialized
-      PetscTruth flag;
+      PetscTruth     flag;
       PetscErrorCode ierr = PetscInitialized(&flag); CHKERROR(ierr, "Error in PetscInitialized");
       if(!flag) {
         // I guess it would be nice to initialize PETSc here, but we'd need argv/argc here
         throw ALE::Exception("PETSc not initialized");
       }
-      // Get a new cookie based on T's typeid name
-      const std::type_info& id = typeid(T);
-      const char *id_name;
-#ifdef ALE_HAVE_CXX_ABI
-      // If the C++ ABI API is available, we can use it to demangle the class name provided by type_info.
-      // Here we assume the industry standard C++ ABI as described in http://www.codesourcery.com/cxx-abi/abi.html.
-      int status;
-      char *id_name_demangled = abi::__cxa_demangle(id.name(), NULL, NULL, &status);
-      if(status != 0) {
-        // Demangling failed, we use the mangled name.
-        id_name = id.name();
-      }
-      else {
-        // Use the demangled name to register a cookie.
-        id_name = id_name_demangled;
-      }
-#else
-      // If demangling is not available, use the class name returned by typeid directly.
-      id_name = id.name();
-#endif
+      // Get a new cookie based on the class name
+      const char *id_name = ALE::getClassName<T>();
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
       // Use id_name to register a cookie and events.
       logged_allocator::_cookie = LogCookieRegister(id_name); 
@@ -206,20 +216,18 @@ namespace ALE {
       logged_allocator::_create_event     = logged_allocator::__log_event_register(id_name, "create");
       logged_allocator::_del_event        = logged_allocator::__log_event_register(id_name, "del");
 #endif
-#ifdef ALE_HAVE_CXX_ABI
-      // Free the name malloc'ed by __cxa_demangle
-      free(id_name_demangled);
-#endif
+      ALE::restoreClassName<T>(id_name);
       logged_allocator::_log_initialized = true;
-
     }// if(!!logged_allocator::_log_initialized)
   }// logged_allocator<T,O>::__log_initialize()
 
   template <class T, bool O>
   void logged_allocator<T, O>::__alloc_initialize() {
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
-    PetscErrorCode ierr = PetscObjectCreate(PETSC_COMM_WORLD, &this->_petscObj); 
+    const char *id_name = ALE::getClassName<T>();
+    PetscErrorCode ierr = PetscObjectCreateGeneric(PETSC_COMM_WORLD, logged_allocator::_cookie, id_name, &this->_petscObj);
     CHKERROR(ierr, "Failed in PetscObjectCreate");
+    ALE::restoreClassName<T>(id_name);
 #endif
   }// logged_allocator<T,O>::__alloc_initialize
 
@@ -369,8 +377,8 @@ namespace ALE {
   public:
     // These are intended to be private or at least protected
     // allocators
-    Allocator_int          int_allocator;
-    Allocator              allocator;
+    Allocator_int         *int_allocator;
+    Allocator             *allocator;
     //
     X*                     objPtr; // object pointer
     int*                   refCnt; // reference count
@@ -379,7 +387,7 @@ namespace ALE {
     Obj(X *xx, int *refCnt, size_type sz);
   public:
     // Constructors & a destructor
-    Obj() : objPtr((X *)NULL), refCnt((int*)NULL), sz(0) {};
+    Obj() : objPtr((X *)NULL), refCnt((int*)NULL), sz(0) {this->createAllocators();};
     Obj(const X& x);
     Obj(X *xx);
     Obj(const Obj& obj);
@@ -388,6 +396,9 @@ namespace ALE {
     // "Factory" methods
     Obj& create(const X& x = X());
     void destroy();
+    void createAllocators();
+    void destroyAllocators();
+    void handleAllocators(const bool);
 
     // predicates & assertions
     bool isNull() const {return (this->objPtr == NULL);};
@@ -420,11 +431,11 @@ namespace ALE {
     
   };// class Obj<X>
 
-
   // Constructors 
   // New reference
   template <class X>
   Obj<X>::Obj(const X& x) {
+    this->createAllocators();
     this->refCnt = NULL;
     this->create(x);
   }
@@ -433,9 +444,10 @@ namespace ALE {
   template <class X>
   Obj<X>::Obj(X *xx){// such an object will be destroyed by calling 'delete' on its pointer 
                      // (e.g., we assume the pointer was obtained with new)
+    this->createAllocators();
     if (xx) {
       this->objPtr = xx; 
-      this->refCnt = this->int_allocator.create(1);
+      this->refCnt = this->int_allocator->create(1);
       //this->refCnt   = new int(1);
       this->sz = 0;
     } else {
@@ -447,6 +459,7 @@ namespace ALE {
   
   template <class X>
   Obj<X>::Obj(X *_xx, int *_refCnt, size_type _sz) {  // This is intended to be private.
+    this->createAllocators();
     if (!_xx) {
       throw ALE::Exception("Making an Obj with a NULL objPtr");
     }
@@ -461,6 +474,7 @@ namespace ALE {
   
   template <class X>
   Obj<X>::Obj(const Obj& obj) {
+    this->createAllocators();
     this->objPtr = obj.objPtr;
     this->refCnt = obj.refCnt;
     if (obj.refCnt) {
@@ -476,6 +490,41 @@ namespace ALE {
   template <class X>
   Obj<X>::~Obj(){
     this->destroy();
+    this->destroyAllocators();
+  }
+
+  template <class X>
+  void Obj<X>::createAllocators() {
+    this->handleAllocators(true);
+  }
+
+  template <class X>
+  void Obj<X>::destroyAllocators() {
+    this->handleAllocators(false);
+  }
+
+  template <class X>
+  void Obj<X>::handleAllocators(const bool create) {
+    static Allocator_int *s_int_allocator = NULL;
+    static Allocator     *s_allocator     = NULL;
+    static int            s_allocRefCnt   = 0;
+
+    if (create) {
+      if (s_allocRefCnt == 0) {
+        s_int_allocator = new Allocator_int();
+        s_allocator     = new Allocator();
+      }
+      s_allocRefCnt++;
+      this->int_allocator = s_int_allocator;
+      this->allocator     = s_allocator;
+    } else {
+      if (--s_allocRefCnt == 0) {
+        delete int_allocator;
+        delete allocator;
+      }
+      this->int_allocator = NULL;
+      this->allocator     = NULL;
+    }
   }
 
   template <class X>
@@ -483,9 +532,9 @@ namespace ALE {
     // Destroy the old state
     this->destroy();
     // Create the new state
-    this->objPtr = this->allocator.create(x); 
-    this->refCnt = this->int_allocator.create(1);
-    this->sz     = this->allocator.sz;
+    this->objPtr = this->allocator->create(x); 
+    this->refCnt = this->int_allocator->create(1);
+    this->sz     = this->allocator->sz;
     if (!this->sz) {
       throw ALE::Exception("Making an Obj with zero size obtained from allocator");
     }
@@ -496,24 +545,15 @@ namespace ALE {
   void Obj<X>::destroy() {
     if(ALE::getVerbosity() > 3) {
 #ifdef ALE_USE_DEBUGGING
-      const char *id_name;
-      const std::type_info& id = typeid(X);
-#ifdef ALE_HAVE_CXX_ABI
-      int status;
-      char *id_name_demangled = abi::__cxa_demangle(id.name(), NULL, NULL, &status);
-      id_name = id_name_demangled;
-#else 
-      id_name = id.name();
-#endif
+      const char *id_name = ALE::getClassName<X>();
+
       printf("Obj<X>.destroy: Destroying Obj<%s>", id_name);
       if (!this->refCnt) {
         printf(" with no refCnt\n");
       } else {
         printf(" with refCnt %d\n", *this->refCnt);
       }
-#ifdef ALE_HAVE_CXX_ABI
-      free(id_name_demangled);
-#endif
+      ALE::restoreClassName<X>(id_name);
 #endif
     }
     if (this->refCnt != NULL) {
@@ -526,7 +566,7 @@ namespace ALE {
             printf("  Calling deallocator on %p with size %d\n", this->objPtr, (int) this->sz);
           }
 #endif
-          this->allocator.del(this->objPtr, this->sz);
+          this->allocator->del(this->objPtr, this->sz);
           this->sz = 0;
         }
         else { // otherwise we use 'delete'
@@ -541,7 +581,7 @@ namespace ALE {
           delete this->objPtr;
         }
         // refCnt is always created/delete using the int_allocator.
-        this->int_allocator.del(this->refCnt);
+        this->int_allocator->del(this->refCnt);
         this->objPtr = NULL;
         this->refCnt = NULL;
       }
@@ -578,19 +618,15 @@ namespace ALE {
     Y* yObjPtr = dynamic_cast<Y*>(this->objPtr);
     // If the cast failed, throw an exception
     if(yObjPtr == NULL) {
-#ifdef ALE_HAVE_CXX_ABI 
-      int status;
-      const char *Xname = abi::__cxa_demangle(typeid(X).name(), NULL, NULL, &status);
-      const char *Yname = abi::__cxa_demangle(typeid(Y).name(), NULL, NULL, &status);
-#else
-      const char *Xname = typeid(X).name();
-      const char *Yname = typeid(Y).name();
-#endif
+      const char *Xname = ALE::getClassName<X>();
+      const char *Yname = ALE::getClassName<Y>();
       std::string msg("Bad cast Obj<");
       msg += Xname;
       msg += "> --> Obj<";
       msg += Yname;
       msg += ">";
+      ALE::restoreClassName<X>(Xname);
+      ALE::restoreClassName<X>(Yname);
       throw BadCast(msg.c_str());
     }
     // Okay, we can proceed 
@@ -604,19 +640,15 @@ namespace ALE {
     X* xObjPtr = dynamic_cast<X*>(obj.objPtr);
     // If the cast failed, throw an exception
     if(xObjPtr == NULL) {
-#ifdef ALE_HAVE_CXX_ABI 
-      int status;
-      const char *Xname = abi::__cxa_demangle(typeid(X).name(), NULL, NULL, &status);
-      const char *Yname = abi::__cxa_demangle(typeid(Y).name(), NULL, NULL, &status);
-#else
-      const char *Xname = typeid(X).name();
-      const char *Yname = typeid(Y).name();
-#endif
+      const char *Xname = ALE::getClassName<X>();
+      const char *Yname = ALE::getClassName<Y>();
       std::string msg("Bad assignment cast Obj<");
       msg += Yname;
       msg += "> --> Obj<";
       msg += Xname;
       msg += ">";
+      ALE::restoreClassName<X>(Xname);
+      ALE::restoreClassName<X>(Yname);
       throw BadCast(msg.c_str());
     }
     // Okay, we can proceed with the assignment

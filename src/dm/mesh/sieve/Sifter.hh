@@ -648,14 +648,18 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     PetscObject _petscObj;
     void __init(MPI_Comm comm) {
       static PetscCookie sifterType = -1;
-      PetscErrorCode ierr;
+      //const char        *id_name = ALE::getClassName<T>();
+      const char        *id_name = "Sifter";
+      PetscErrorCode     ierr;
+
+      if (sifterType < 0) {
+        ierr = PetscLogClassRegister(&sifterType, id_name);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
+      }
       this->_comm = comm;
       ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
       ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_rank"); 
-      if (sifterType < 0) {
-        ierr = PetscLogClassRegister(&sifterType, "Sifter");CHKERROR(ierr, "Error in MPI_Comm_rank"); 
-      }
-      ierr = PetscHeaderCreate(this->_petscObj,_p_PetscObject,-1,sifterType,0,"Sifter",this->_comm,PetscObjectDestroy_PetscObject,0);CHKERROR(ierr, "Error in PetscHeaderCreate");
+      ierr = PetscObjectCreateGeneric(this->_comm, sifterType, id_name, &this->_petscObj);CHKERROR(ierr, "Error in PetscObjectCreate");
+      //ALE::restoreClassName<T>(id_name);
     };
   public:
     // 
@@ -664,8 +668,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     ASifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : _petscObj(NULL) {__init(comm);  this->debug = debug;}
     virtual ~ASifter() {
       if (this->_petscObj) {
-        //PetscErrorCode ierr;
-        //ierr = PetscObjectDestroy(this->_petscObj); CHKERROR(ierr, "Failed in PetscObjectDestroy");
+        PetscErrorCode ierr;
+        ierr = PetscObjectDestroy(this->_petscObj); CHKERROR(ierr, "Failed in PetscObjectDestroy");
         this->_petscObj = NULL;
       }
     };
