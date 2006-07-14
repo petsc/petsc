@@ -320,10 +320,11 @@ namespace ALE {
           vertexOffset = numSimplices;
         }
         if (corners < 0) corners = this->dim+1;
+        Obj<PointArray> patch = new PointArray();
         for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
           // setFiberDimensionByDepth() does not work here since we only want it to apply to the patch cone
           //   What we really need is the depthStratum relative to the patch
-          Obj<PointArray> patch = PointArray();
+          patch->clear();
 
           for(int b = 0; b < corners; b++) {
             patch->push_back(point_type(0, simplices[((*e_iter).index - elementOffset)*corners+b]+vertexOffset));

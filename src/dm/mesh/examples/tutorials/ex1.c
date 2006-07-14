@@ -171,8 +171,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, ALE::Obj<ALE::Mesh>& mesh, Options *opt
   ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
   if (options->inputFileType == PCICE) {
-    //mesh = ALE::PCICEBuilder::createNew(comm, options->baseFilename, options->dim, options->useZeroBase, options->interpolate, options->debug);
-    mesh = new ALE::Mesh(comm, 1, options->debug);
+    mesh = ALE::PCICEBuilder::createNew(comm, options->baseFilename, options->dim, options->useZeroBase, options->interpolate, options->debug);
   } else if (options->inputFileType == PYLITH) {
     mesh = ALE::PyLithBuilder::createNew(comm, options->baseFilename, options->interpolate, options->debug);
   }
