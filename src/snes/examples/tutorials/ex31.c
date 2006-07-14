@@ -8,11 +8,6 @@ static char help[] = "\n\n";
    Processors: n
 T*/
 
-/* ------------------------------------------------------------------------
-
-
-  ------------------------------------------------------------------------- */
-
 /* 
    Include "petscda.h" so that we can use distributed arrays (DAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
@@ -34,16 +29,14 @@ typedef struct {
   PetscScalar h,uh;
 } Field;
 
-extern PetscErrorCode FormInitialGuess(DMMG,Vec);
-extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field*,Field
-*,void*);
+extern PetscErrorCode FormInitialGuessLocal(DALocalInfo*,Field[]);
+extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field*,Field*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   DMMG           *dmmg;               /* multilevel grid structure */
-  PetscInt       mx;
   PetscErrorCode ierr;
   MPI_Comm       comm;
   DA             da;
@@ -59,12 +52,10 @@ int main(int argc,char **argv)
       Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
     */
-    ierr = DACreate1d(comm,DA_XPERIODIC,-4,2,1,0,&da);CHKERRQ(ierr);
+    ierr = DACreate1d(comm,DA_XPERIODIC,-6,2,2,0,&da);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
-    ierr = DAGetInfo(DMMGGetDA(dmmg),0,&mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
     /* 
      Problem parameters 
     */
@@ -86,10 +77,11 @@ int main(int argc,char **argv)
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Solve the nonlinear system
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
+    ierr = DMMGSetInitialGuessLocal(dmmg,(PetscErrorCode (*)(DMMG,void*)) FormInitialGuessLocal);CHKERRQ(ierr);
 
   PreLoadStage("Solve");
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
+    ierr = DMMGSetInitialGuess(dmmg,PETSC_NULL);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Free work space.  All PETSc objects should be destroyed when they
@@ -107,9 +99,9 @@ int main(int argc,char **argv)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
+#define __FUNCT__ "FormInitialGuessLocal"
 /* 
-   FormInitialGuess - Forms initial approximation.
+   FormInitialGuessLocal - Forms initial approximation.
 
    Input Parameters:
    user - user-defined application context
@@ -118,48 +110,21 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
  */
-PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
+PetscErrorCode FormInitialGuessLocal(DALocalInfo* info,Field x[])
 {
-  DA             da = (DA)dmmg->dm;
-  PetscInt       i,mx,xs,xm;
+  PetscInt       i;
   PetscErrorCode ierr;
-  PetscReal      dx;
-  Field          *x;
+  PetscReal      dhx,hx;
 
+  PetscFunctionBegin;
+  dhx = (PetscReal)(info->mx-1);
+  hx = 1.0/dhx;                 
 
-  ierr = DAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  dx  = 1.0/(mx-1);
-
-  /*
-     Get local grid boundaries (for 2-dimensional DA):
-       xs, ys   - starting grid indices (no ghost points)
-       xm, ym   - widths of local grid (no ghost points)
-  */
-  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-
-  /*
-     Get a pointer to vector data.
-       - For default PETSc vectors, VecGetArray() returns a pointer to
-         the data array.  Otherwise, the routine is implementation dependent.
-       - You MUST call VecRestoreArray() when you no longer need access to
-         the array.
-  */
-  ierr = DAVecGetArray(da,X,&x);CHKERRQ(ierr);
-
-  /*
-     Compute initial guess over the locally owned part of the grid
-     Initial condition is motionless fluid and equilibrium temperature
-  */
-  for (i=xs; i<xs+xm; i++) {
-    x[i].h     = 0.0;
-    x[i].uh    = 0.0;
+  for (i=info->xs; i<info->xs+info->xm; i++) {
+    x[i].h   = 22.3;
+    x[i].uh  = 0.0;
   }
-
-  /*
-     Restore vector
-  */
-  ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
  
 PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field *x,Field *f,void *ptr)
@@ -169,7 +134,6 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field *x,Field *f,void *ptr)
   PetscReal      hx,dhx;
 
   PetscFunctionBegin;
-
   /* 
      Define mesh intervals ratios for uniform grid.
      [Note: FD formulae below are normalized by multiplying through by
@@ -179,14 +143,9 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field *x,Field *f,void *ptr)
   hx = 1.0/dhx;                 
 
   for (i=info->xs; i<info->xs+info->xm; i++) {
-    f[i].h   = 0.0;
-    f[i].uh  = 0.0;
+    f[i].h   = x[i].h;
+    f[i].uh  = x[i].uh;
   }
-
-  /*
-     Flop count (multiply-adds are counted as 2 operations)
-  */
-  ierr = PetscLogFlops(0.0*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 

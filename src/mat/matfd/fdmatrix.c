@@ -614,7 +614,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   }
 
   x1_tmp = x1; 
-  if (ctype == IS_COLORING_GHOSTED && !coloring->vscale){ 
+  if (!coloring->vscale){ 
     ierr = VecDuplicate(x1_tmp,&coloring->vscale);CHKERRQ(ierr);
   }
     
