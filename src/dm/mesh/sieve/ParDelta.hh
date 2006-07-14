@@ -159,7 +159,7 @@ namespace ALE {
       static Obj<overlap_type> 
       overlap(const Obj<graph_type> graph) {
         ALE_LOG_EVENT_BEGIN;
-        Obj<overlap_type> overlap = overlap_type(graph->comm());
+        Obj<overlap_type> overlap = new overlap_type(graph->comm());
         // If this is a serial object, we return an empty overlap
         if((graph->comm() != PETSC_COMM_SELF) && (graph->commSize() > 1)) {
           computeOverlap(graph, overlap);
@@ -178,7 +178,7 @@ namespace ALE {
       static Obj<bioverlap_type> 
       overlap(const Obj<graph_type> graphA, const Obj<graph_type> graphB) {
         ALE_LOG_EVENT_BEGIN;
-        Obj<bioverlap_type> overlap = bioverlap_type(graphA->comm());
+        Obj<bioverlap_type> overlap = new bioverlap_type(graphA->comm());
         PetscMPIInt         comp;
 
         MPI_Comm_compare(graphA->comm(), graphB->comm(), &comp);
@@ -197,8 +197,8 @@ namespace ALE {
 
       template <typename Overlap_>
       static Obj<fusion_type> 
-      fusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, const Obj<fuser_type>& fuser = fuser_type()) {
-        Obj<fusion_type> fusion = fusion_type(graph->comm());
+      fusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, const Obj<fuser_type>& fuser = new fuser_type()) {
+        Obj<fusion_type> fusion = new fusion_type(graph->comm());
         // If this is a serial object, we return an empty delta
         if((graph->comm() != PETSC_COMM_SELF) && (graph->commSize() > 1)) {
           computeFusion(graph, overlap, fusion, fuser);
@@ -207,14 +207,14 @@ namespace ALE {
       };
 
       template <typename Overlap_>
-      static void computeFusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, Obj<fusion_type>& fusion, const Obj<fuser_type>& fuser = fuser_type()){
+      static void computeFusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, Obj<fusion_type>& fusion, const Obj<fuser_type>& fuser = new fuser_type()){
         __computeFusionNew(graph, overlap, fusion, fuser);
       };
 
       template <typename Overlap_>
       static Obj<fusion_type> 
-      fusion(const Obj<graph_type>& graphA, const Obj<graph_type>& graphB, const Obj<Overlap_>& overlap, const Obj<fuser_type>& fuser = fuser_type()) {
-        Obj<fusion_type> fusion = fusion_type(graphA->comm());
+      fusion(const Obj<graph_type>& graphA, const Obj<graph_type>& graphB, const Obj<Overlap_>& overlap, const Obj<fuser_type>& fuser = new fuser_type()) {
+        Obj<fusion_type> fusion = new fusion_type(graphA->comm());
         PetscMPIInt       comp;
 
         MPI_Comm_compare(graphA->comm(), graphB->comm(), &comp);
@@ -226,7 +226,7 @@ namespace ALE {
       };
 
       template <typename Overlap_>
-      static void computeFusion(const Obj<graph_type>& graphA, const Obj<graph_type>& graphB, const Obj<Overlap_>& overlap, Obj<fusion_type>& fusion, const Obj<fuser_type>& fuser = fuser_type()){
+      static void computeFusion(const Obj<graph_type>& graphA, const Obj<graph_type>& graphB, const Obj<Overlap_>& overlap, Obj<fusion_type>& fusion, const Obj<fuser_type>& fuser = new fuser_type()){
         PetscMPIInt       comp;
 
         MPI_Comm_compare(graphA->comm(), graphB->comm(), &comp);
@@ -2337,7 +2337,7 @@ namespace ALE {
       static Obj<overlap_type> 
       overlap(const Obj<graph_type> graph) {
         ALE_LOG_EVENT_BEGIN;
-        Obj<overlap_type> overlap = overlap_type(graph->comm());
+        Obj<overlap_type> overlap = new overlap_type(graph->comm());
         // If this is a serial object, we return an empty overlap
         if((graph->comm() != PETSC_COMM_SELF) && (graph->commSize() > 1)) {
           computeOverlap(graph, overlap);
@@ -2359,7 +2359,7 @@ namespace ALE {
       static Obj<bioverlap_type> 
       overlap(const Obj<graph_type> graphA, const Obj<graph_type> graphB) {
         ALE_LOG_EVENT_BEGIN;
-        Obj<bioverlap_type> overlap = bioverlap_type(graphA->comm());
+        Obj<bioverlap_type> overlap = new bioverlap_type(graphA->comm());
         PetscMPIInt         comp;
 
         MPI_Comm_compare(graphA->comm(), graphB->comm(), &comp);
@@ -2378,7 +2378,7 @@ namespace ALE {
       template <typename Overlap_>
       static Obj<fusion_type> 
       fusion(const Obj<graph_type>& graphA, const Obj<graph_type>& graphB, const Obj<Overlap_>& overlap, const Obj<fuser_type>& fuser = fuser_type()) {
-        Obj<fusion_type> fusion = fusion_type(graphA->comm());
+        Obj<fusion_type> fusion = new fusion_type(graphA->comm());
         PetscMPIInt      comp;
 
         MPI_Comm_compare(graphA->comm(), graphB->comm(), &comp);
@@ -2397,8 +2397,8 @@ namespace ALE {
       // FIX: Is there a way to inherit this from ParConeDelta?  Right now it is a verbatim copy.
       template <typename Overlap_>
       static Obj<fusion_type> 
-      fusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, const Obj<fuser_type>& fuser = fuser_type()) {
-        Obj<fusion_type> fusion = fusion_type(graph->comm());
+      fusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, const Obj<fuser_type>& fuser = new fuser_type()) {
+        Obj<fusion_type> fusion = new fusion_type(graph->comm());
         // If this is a serial object, we return an empty delta
         if((graph->comm() != PETSC_COMM_SELF) && (graph->commSize() > 1)) {
           computeFusion(graph, overlap, fusion, fuser);
@@ -2407,7 +2407,7 @@ namespace ALE {
       };
 
       template <typename Overlap_, typename Fusion_>
-      static void computeFusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, Obj<Fusion_> fusion, const Obj<fuser_type>& fuser = fuser_type()){
+      static void computeFusion(const Obj<graph_type>& graph, const Obj<Overlap_>& overlap, Obj<Fusion_> fusion, const Obj<fuser_type>& fuser = new fuser_type()){
         // Flip the graph, the overlap and the fusion, and the use ParConeDelta's method
         Obj<Flip<graph_type> > graph_flip   = Flip<graph_type>(graph);
         Obj<Flip<Overlap_> >   overlap_flip = Flip<Overlap_>(overlap);
