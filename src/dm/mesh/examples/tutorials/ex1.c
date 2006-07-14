@@ -38,117 +38,223 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 #include <stdlib.h>
 #include <string.h>
 
+typedef enum {PCICE, PYLITH} FileType;
+
+typedef struct {
+  int            debug;              // The debugging level
+  PetscInt       dim;                // The topological mesh dimension
+  PetscTruth     useZeroBase;        // Use zero-based indexing
+  FileType       inputFileType;      // The input file type, e.g. PCICE
+  FileType       outputFileType;     // The output file type, e.g. PCICE
+  char           baseFilename[2048]; // The base filename for mesh files
+  PetscTruth     output;             // Output the mesh
+  PetscTruth     outputLocal;        // Output the local form of the mesh
+  PetscTruth     outputVTK;          // Output the mesh in VTK
+  PetscTruth     distribute;         // Distribute the mesh among processes
+  PetscTruth     interpolate;        // Construct missing elements of the mesh
+
+  Vec            partition;          // Field over cells indicating process number
+  Vec            material;           // Field over cells indicating material type
+} Options;
+
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
+PetscErrorCode ProcessOptions(MPI_Comm, Options *);
+PetscErrorCode CreateMesh(MPI_Comm, ALE::Obj<ALE::Mesh>&, Options *);
 PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Mesh>, Vec *);
 PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh>, const char[], Vec *);
-
-typedef enum {PCICE, PYLITH} FileType;
+PetscErrorCode DistributeMesh(ALE::Obj<ALE::Mesh>&, Options *);
+PetscErrorCode OutputVTK(const ALE::Obj<ALE::Mesh>&, Options *);
+PetscErrorCode OutputMesh(const ALE::Obj<ALE::Mesh>&, Options *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  PetscViewer    viewer;
-  Vec            partition, material;
-  char           baseFilename[2048];
-  PetscTruth     useZeroBase;
-  const char    *fileTypes[2] = {"pcice", "pylith"};
-  FileType       fileType, outputFileType;
-  PetscTruth     distribute, interpolate, outputLocal, outputVTK, setOutputType;
-  PetscInt       dim, ft, outputFt;
-  int            verbosity;
-  int            debug;
+  Options        options;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(comm, "", "Options for mesh loading", "DMMG");
-    debug = 0;
-    ierr = PetscOptionsInt("-debug", "The debugging flag", "ex1.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
-    dim  = 2;
-    ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex1.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
-    useZeroBase = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "ex1.c", PETSC_FALSE, &useZeroBase, PETSC_NULL);CHKERRQ(ierr);
-    ft   = (PetscInt) PCICE;
-    ierr = PetscOptionsEList("-file_type", "Type of input files", "ex1.c", fileTypes, 2, fileTypes[0], &ft, PETSC_NULL);CHKERRQ(ierr);
-    fileType = (FileType) ft;
-    outputFt = (PetscInt) PCICE;
-    ierr = PetscOptionsEList("-output_file_type", "Type of output files", "ex1.c", fileTypes, 2, fileTypes[0], &outputFt, &setOutputType);CHKERRQ(ierr);
-    if (setOutputType) {
-      outputFileType = (FileType) outputFt;
-    } else {
-      outputFileType = fileType;
-    }
-    ierr = PetscStrcpy(baseFilename, "data/ex1_2d");CHKERRQ(ierr);
-    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex33.c", "ex1", baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
-    distribute = PETSC_TRUE;
-    ierr = PetscOptionsTruth("-distribute", "Distribute the mesh among processes", "ex1.c", PETSC_TRUE, &distribute, PETSC_NULL);CHKERRQ(ierr);
-    outputLocal = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-output_local", "Output the local form of the mesh", "ex1.c", PETSC_FALSE, &outputLocal, PETSC_NULL);CHKERRQ(ierr);
-    outputVTK = PETSC_TRUE;
-    ierr = PetscOptionsTruth("-output_vtk", "Output the mesh in VTK", "ex1.c", PETSC_TRUE, &outputVTK, PETSC_NULL);CHKERRQ(ierr);
-    interpolate = PETSC_TRUE;
-    ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex1.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
-  ierr = PetscOptionsBegin(comm, "", "Debugging options", "ALE");
-    verbosity = 0;
-    ierr = PetscOptionsInt("-verbosity", "Verbosity level", "ex1.c", 0, &verbosity, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd(); 
   comm = PETSC_COMM_WORLD;
 
-  ALE::Obj<ALE::Mesh> mesh;
-
   try {
+    ALE::Obj<ALE::Mesh> mesh;
+
+    ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
+    ierr = CreateMesh(comm, mesh, &options);CHKERRQ(ierr);
+#if 0
     ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
-    if (fileType == PCICE) {
-      mesh = ALE::PCICEBuilder::createNew(comm, baseFilename, dim, useZeroBase, interpolate, debug);
-    } else if (fileType == PYLITH) {
-      mesh = ALE::PyLithBuilder::createNew(comm, baseFilename, interpolate, debug);
+    if (options.inputFileType == PCICE) {
+      mesh = ALE::PCICEBuilder::createNew(comm, options.baseFilename, options.dim, options.useZeroBase, options.interpolate, options.debug);
+    } else if (options.inputFileType == PYLITH) {
+      mesh = ALE::PyLithBuilder::createNew(comm, options.baseFilename, options.interpolate, options.debug);
     }
     ALE::LogStagePop(stage);
     ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
     ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
-    if (debug) {mesh->getTopology()->view("Serial topology");}
-    if (distribute) {
-      stage = ALE::LogStageRegister("MeshDistribution");
-      ALE::LogStagePush(stage);
-      ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
-      mesh = mesh->distribute();
-      ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
-      ierr = CreateFieldVector(mesh, "material", &material);CHKERRQ(ierr);
-      ALE::LogStagePop(stage);
+    if (options.debug) {
+      mesh->getTopology()->view("Serial topology");
     }
+#endif
+    ierr = DistributeMesh(mesh, &options);CHKERRQ(ierr);
+    ierr = OutputVTK(mesh, &options);CHKERRQ(ierr);
+    ierr = OutputMesh(mesh, &options);CHKERRQ(ierr);
+  } catch (ALE::Exception e) {
+    std::cout << e << std::endl;
+  }
+  ierr = PetscFinalize();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-    stage = ALE::LogStageRegister("MeshOutput");
+#undef __FUNCT__
+#define __FUNCT__ "ProcessOptions"
+PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
+{
+  const char    *fileTypes[2] = {"pcice", "pylith"};
+  PetscInt       inputFt, outputFt;
+  PetscTruth     setOutputType;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  options->debug          = 0;
+  options->dim            = 2;
+  options->useZeroBase    = PETSC_FALSE;
+  options->inputFileType  = PCICE;
+  options->outputFileType = PCICE;
+  ierr = PetscStrcpy(options->baseFilename, "data/ex1_2d");CHKERRQ(ierr);
+  options->distribute     = PETSC_TRUE;
+  options->output         = PETSC_TRUE;
+  options->outputLocal    = PETSC_FALSE;
+  options->outputVTK      = PETSC_TRUE;
+  options->distribute     = PETSC_TRUE;
+  options->interpolate    = PETSC_TRUE;
+  options->partition      = PETSC_NULL;
+  options->material       = PETSC_NULL;
+
+  inputFt  = (PetscInt) options->inputFileType;
+  outputFt = (PetscInt) options->outputFileType;
+
+  ierr = PetscOptionsBegin(comm, "", "Options for mesh loading", "DMMG");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", 0, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex1.c", 2, &options->dim, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "ex1.c", PETSC_FALSE, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-file_type", "Type of input files", "ex1.c", fileTypes, 2, fileTypes[0], &inputFt, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-output_file_type", "Type of output files", "ex1.c", fileTypes, 2, fileTypes[0], &outputFt, &setOutputType);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex33.c", "ex1", options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-output", "Output the mesh", "ex1.c", PETSC_TRUE, &options->output, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-output_local", "Output the local form of the mesh", "ex1.c", PETSC_FALSE, &options->outputLocal, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-output_vtk", "Output the mesh in VTK", "ex1.c", PETSC_TRUE, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-distribute", "Distribute the mesh among processes", "ex1.c", PETSC_TRUE, &options->distribute, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex1.c", PETSC_TRUE, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
+
+  options->inputFileType = (FileType) inputFt;
+  if (setOutputType) {
+    options->outputFileType = (FileType) outputFt;
+  } else {
+    options->outputFileType = options->inputFileType;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateMesh"
+PetscErrorCode CreateMesh(MPI_Comm comm, ALE::Obj<ALE::Mesh>& mesh, Options *options)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
+  ALE::LogStagePush(stage);
+  ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
+  if (options->inputFileType == PCICE) {
+    mesh = ALE::PCICEBuilder::createNew(comm, options->baseFilename, options->dim, options->useZeroBase, options->interpolate, options->debug);
+  } else if (options->inputFileType == PYLITH) {
+    mesh = ALE::PyLithBuilder::createNew(comm, options->baseFilename, options->interpolate, options->debug);
+  }
+  ALE::LogStagePop(stage);
+  ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
+  ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
+  if (options->debug) {
+    mesh->getTopology()->view("Serial topology");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DistributeMesh"
+PetscErrorCode DistributeMesh(ALE::Obj<ALE::Mesh>& mesh, Options *options)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (options->distribute) {
+    ALE::LogStage stage = ALE::LogStageRegister("MeshDistribution");
     ALE::LogStagePush(stage);
-    if (outputVTK) {
-      ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
-      ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-      ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
-      ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
-      ierr = VecView(partition, viewer);CHKERRQ(ierr);
-      if (material) {
-        ierr = VecView(material, viewer);CHKERRQ(ierr);
-      }
-      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-    }
+    ierr = PetscPrintf(mesh->comm(), "Distributing mesh\n");CHKERRQ(ierr);
+    mesh = mesh->distribute();
+    ierr = CreatePartitionVector(mesh, &options->partition);CHKERRQ(ierr);
+    ierr = CreateFieldVector(mesh, "material", &options->material);CHKERRQ(ierr);
+    ALE::LogStagePop(stage);
+  }
+  PetscFunctionReturn(0);
+}
 
-    ierr = PetscPrintf(comm, "Creating original format mesh file\n");CHKERRQ(ierr);
-    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+#undef __FUNCT__
+#define __FUNCT__ "OutputVTK"
+PetscErrorCode OutputVTK(const ALE::Obj<ALE::Mesh>& mesh, Options *options)
+{
+  PetscViewer    viewer;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (options->outputVTK) {
+    ALE::LogStage stage = ALE::LogStageRegister("VTKOutput");
+    ALE::LogStagePush(stage);
+    ierr = PetscPrintf(mesh->comm(), "Creating VTK mesh file\n");CHKERRQ(ierr);
+    ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-    if (outputFileType == PCICE) {
+    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
+    ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
+    if (options->partition) {
+      ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
+      ierr = VecView(options->partition, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    }
+    if (options->material) {
+      ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
+      ierr = VecView(options->material, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ALE::LogStagePop(stage);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "OutputMesh"
+PetscErrorCode OutputMesh(const ALE::Obj<ALE::Mesh>& mesh, Options *options)
+{
+  PetscViewer    viewer;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (options->output) {
+    ALE::LogStage stage = ALE::LogStageRegister("MeshOutput");
+    ALE::LogStagePush(stage);
+    ierr = PetscPrintf(mesh->comm(), "Creating original format mesh file\n");CHKERRQ(ierr);
+    ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    if (options->outputFileType == PCICE) {
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PCICE);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "testMesh.lcon");CHKERRQ(ierr);
-    } else if (outputFileType == PYLITH) {
-      if (outputLocal) {
+    } else if (options->outputFileType == PYLITH) {
+      if (options->outputLocal) {
         ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH_LOCAL);CHKERRQ(ierr);
         ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
         ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, "testMesh"), PETSC_ERR_FILE_OPEN);
@@ -173,10 +279,7 @@ int main(int argc, char *argv[])
     ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
-  } catch (ALE::Exception e) {
-    std::cout << e << std::endl;
   }
-  ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

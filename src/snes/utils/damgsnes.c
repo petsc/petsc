@@ -874,7 +874,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuess_Local(DMMG dmmg,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetInitialGuessLocal"
-/*@
+/*@C
     DMMGSetInitialGuessLocal - sets code to compute the initial guess for each level
 
     Collective on DMMG

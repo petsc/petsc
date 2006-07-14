@@ -62,6 +62,51 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscObjectCreateGeneric"
+/*@C
+   PetscObjectCreateGeneric - Creates a PetscObject
+
+   Collective on PetscObject
+
+   Input Parameter:
++  comm - An MPI communicator
+.  cookie - The class cookie
+-  name - The class name
+
+   Output Parameter:
+.  obj - The object
+
+   Level: developer
+
+   Notes: This is a template intended as a starting point to cut and paste with PetscObjectDestroy_PetscObject()
+          to make new object classes.
+
+    Concepts: destroying object
+    Concepts: freeing object
+    Concepts: deleting object
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm comm, PetscCookie cookie, const char name[], PetscObject *obj)
+{
+  PetscObject    o;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(obj,2);
+
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
+  ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+  ierr = PetscHeaderCreate(o,_p_PetscObject,-1,cookie,0,name,comm,PetscObjectDestroy_PetscObject,0);CHKERRQ(ierr);
+  /* records not yet defined in PetscObject 
+  o->data        = 0;
+  o->setupcalled = 0;
+  */
+  *obj = o;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscObjectDestroy"
 /*@
    PetscObjectDestroy - Destroys any PetscObject, regardless of the type. 

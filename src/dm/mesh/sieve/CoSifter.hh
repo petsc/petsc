@@ -100,7 +100,7 @@ namespace ALE {
       // of as a CoSieve over the topology sieve.
     public:
       CoSifter(MPI_Comm comm = PETSC_COMM_SELF, int debug = 0) : _comm(comm), debug(debug) {
-        this->_order = order_type(this->_comm, debug);
+        this->_order = new order_type(this->_comm, debug);
         MPI_Comm_rank(this->_comm, &this->_commRank);
         MPI_Comm_size(this->_comm, &this->_commSize);
         this->offsets = NULL;
@@ -155,7 +155,7 @@ namespace ALE {
       Obj<order_type> __getOrder(const std::string& orderName) {
         if (this->_reorders.find(orderName) == this->_reorders.end()) {
           if (this->debug) {std::cout << "Creating new order: " << orderName << std::endl;}
-          this->_reorders[orderName] = order_type(this->_comm, this->debug);
+          this->_reorders[orderName] = new order_type(this->_comm, this->debug);
         }
         return this->_reorders[orderName];
       };
@@ -406,8 +406,8 @@ namespace ALE {
         this->orderPatches(trueTester());
       };
       void orderPatches(const std::string& orderName) {
-        ALE_LOG_EVENT_BEGIN;
         this->__checkOrderName(orderName);
+        ALE_LOG_EVENT_BEGIN;
         Obj<typename order_type::baseSequence> base = this->_reorders[orderName]->base();
 
         for(typename order_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
@@ -447,7 +447,7 @@ namespace ALE {
       };
       Obj<IndexArray> getIndices(const std::string& orderName, const patch_type& patch) {
         Obj<typename order_type::coneSequence> cone = getPatch(orderName, patch);
-        Obj<IndexArray>                        array = IndexArray();
+        Obj<IndexArray>                        array = new IndexArray();
         patch_type                             oldPatch;
 
         // We have no way to map the the old patch yet
