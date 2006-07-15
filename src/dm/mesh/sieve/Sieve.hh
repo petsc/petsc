@@ -618,8 +618,8 @@ namespace ALE {
 
     template <typename Point_, typename Marker_, typename Color_> 
     Obj<typename Sieve<Point_,Marker_,Color_>::coneArray> Sieve<Point_,Marker_,Color_>::nCone(const Point_& p, int n, const Color_& color, bool useColor) {
-      Obj<coneArray> cone = coneArray();
-      Obj<coneSet>   seen = coneSet();
+      Obj<coneArray> cone = new coneArray();
+      Obj<coneSet>   seen = new coneSet();
 
       this->__nCone(this->cone(p), n-1, color, useColor, cone, seen);
       return cone;
@@ -655,7 +655,7 @@ namespace ALE {
     template <typename Point_, typename Marker_, typename Color_> 
     template<class InputSequence> 
     Obj<typename Sieve<Point_,Marker_,Color_>::coneSet> Sieve<Point_,Marker_,Color_>::nCone(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor ) {
-      Obj<coneSet> cone = coneSet();
+      Obj<coneSet> cone = new coneSet();
       cone->insert(points->begin(), points->end());
       return this->__nCone(cone, n, color, useColor);
     };
@@ -663,7 +663,7 @@ namespace ALE {
     template <typename Point_, typename Marker_, typename Color_> 
     template<class InputSequence> 
     Obj<typename Sieve<Point_,Marker_,Color_>::coneSet> Sieve<Point_,Marker_,Color_>::__nCone(Obj<InputSequence>& cone, int n, const Color_& color, bool useColor) {
-      Obj<coneSet> base = coneSet();
+      Obj<coneSet> base = new coneSet();
 
       for(int i = 0; i < n; ++i) {
         Obj<coneSet> tmp = cone; cone = base; base = tmp;
