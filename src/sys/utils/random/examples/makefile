@@ -20,16 +20,10 @@ ex2: ex2.o chkopts
 
 #----------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ./ex1 > ex1_1.tmp 2>&1;   \
-	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
-	   else echo "Possible problem with ex1_1, diffs above"; fi; \
-	   ${RM} -f ex1_1.tmp
+	-@${MPIRUN} -np 1 ./ex1 
 
 runex1_2:
-	-@${MPIRUN}  -np 2 ./ex1 > ex1_2.tmp 2>&1;\
-	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true ;  \
-	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
-	   ${RM} -f ex1_2.tmp
+	-@${MPIRUN}  -np 2 ./ex1
 
 runex2:
 	-@${MPIRUN} -np 2 ./ex2
