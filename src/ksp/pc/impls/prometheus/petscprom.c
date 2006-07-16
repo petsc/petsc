@@ -62,7 +62,7 @@ EXTERN PetscErrorCode PCApply_Prometheus( PC, Vec, Vec );
 EXTERN PetscErrorCode PCApplySymmetricLeftOrRight_Prometheus(PC,Vec ,Vec );
 EXTERN PetscErrorCode PCDestroy_Prometheus(PC);
 EXTERN PetscErrorCode PCView_Prometheus( PC, PetscViewer);
-EXTERN PetscErrorCode PCSetVectors_Prometheus( PC, PetscReal *, const int );
+EXTERN PetscErrorCode PCSASetVectors_Prometheus( PC, PetscReal *, const int );
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -130,7 +130,7 @@ PetscErrorCode PCCreate_Prometheus(PC pc)
   ierr = PetscObjectComposeFunctionDynamic( (PetscObject)pc,
 					    "PCSASetVectors_C",
 					    "PCSASetVectors_Prometheus",
-					    PCSetVectors_Prometheus);CHKERRQ(ierr);
+					    PCSASetVectors_Prometheus);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
