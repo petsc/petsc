@@ -62,6 +62,7 @@ EXTERN PetscErrorCode PCApply_Prometheus( PC, Vec, Vec );
 EXTERN PetscErrorCode PCApplySymmetricLeftOrRight_Prometheus(PC,Vec ,Vec );
 EXTERN PetscErrorCode PCDestroy_Prometheus(PC);
 EXTERN PetscErrorCode PCView_Prometheus( PC, PetscViewer);
+EXTERN PetscErrorCode PCSASetVectors_Prometheus( PC, PetscReal *, const int );
 
 /* -------------------------------------------------------------------------- */
 /*

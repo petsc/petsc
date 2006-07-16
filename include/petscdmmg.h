@@ -65,7 +65,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG*,PetscErrorCode (*)(DMMG,Vec),PetscErrorCode (*)(DMMG,Mat,Mat));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG*,PetscErrorCode (*)(SNES,Vec,Vec,void*),PetscErrorCode (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetInitialGuessLocal(DMMG*,PetscErrorCode (*)(DMMG,void*));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetInitialGuessLocal(DMMG*,PetscErrorCode (*)(DALocalInfo*,void*));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetInitialGuess(DMMG*,PetscErrorCode (*)(DMMG,Vec));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuessCurrent(DMMG,Vec);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG*,PetscViewer);
