@@ -1178,8 +1178,8 @@ namespace ALE {
           txt << "[" << this->commRank() << "]: empty" << std::endl; 
         }
         for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
-          typename traits::supportSequence supp = this->support(*capi);
-          for(typename traits::supportSequence::iterator suppi = supp.begin(); suppi != supp.end(); suppi++) {
+          const Obj<typename traits::supportSequence>& supp = this->support(*capi);
+          for(typename traits::supportSequence::iterator suppi = supp->begin(); suppi != supp->end(); suppi++) {
             txt << "[" << this->commRank() << "]: " << *capi << "--(" << suppi.color() << ")-->" << *suppi << std::endl;
           }
         }
@@ -1194,8 +1194,8 @@ namespace ALE {
           txt1 << "[" << this->commRank() << "]: empty" << std::endl; 
         }
         for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
-          typename traits::coneSequence cone = this->cone(*basei);
-          for(typename traits::coneSequence::iterator conei = cone.begin(); conei != cone.end(); conei++) {
+          const Obj<typename traits::coneSequence>& cone = this->cone(*basei);
+          for(typename traits::coneSequence::iterator conei = cone->begin(); conei != cone->end(); conei++) {
             txt1 << "[" << this->commRank() << "]: " << *basei << "<--(" << conei.color() << ")--" << *conei << std::endl;
           }
         }

@@ -53,3 +53,10 @@ II. Coding guidelines
 
   - Mark EVERYTHING const that can be
   - Try to make Obj<> returns references to prevent extra creations
+  - Have a format for each class:
+
+    - public typedefs
+    - protected data
+    - public constructor/destructor
+    - public data accessors
+    - public/private methods

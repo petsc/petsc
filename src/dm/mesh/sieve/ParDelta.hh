@@ -1998,7 +1998,7 @@ namespace ALE {
           Obj<typename Overlap_::traits::supportSequence> support = overlap->support(*neighbor);
 
           for(typename Overlap_::traits::supportSequence::iterator p_iter = support->begin(); p_iter != support->end(); ++p_iter) {
-            typename graph_type::traits::coneSequence localCone = _graph->cone(*p_iter);
+            const Obj<typename graph_type::traits::coneSequence>& localCone = _graph->cone(*p_iter);
             int remoteConeSize = p_iter.color().second.first;
             cone_array_sequence remoteCone(&ConesIn[offset], remoteConeSize, *p_iter);
             if (debug) {

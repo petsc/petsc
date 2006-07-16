@@ -907,8 +907,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
           txt << "[" << this->commRank() << "]: empty" << std::endl; 
         }
         for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
-          typename traits::supportSequence supp = this->support(*capi);
-          for(typename traits::supportSequence::iterator suppi = supp.begin(); suppi != supp.end(); suppi++) {
+          const Obj<typename traits::supportSequence>& supp = this->support(*capi);
+          for(typename traits::supportSequence::iterator suppi = supp->begin(); suppi != supp->end(); suppi++) {
             txt << "[" << this->commRank() << "]: " << *capi << "--(" << suppi.color() << ")-->" << *suppi << std::endl;
           }
         }
@@ -1113,18 +1113,18 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         std::cout << "clearCone: removing cone over " << t;
         if(useColor) {
           std::cout << " with color" << color << std::endl;
-          typename traits::coneSequence cone = this->cone(t,color);
+          const Obj<typename traits::coneSequence>& cone = this->cone(t,color);
           std::cout << "[";
-          for(typename traits::coneSequence::iterator ci = cone.begin(); ci != cone.end(); ci++) {
+          for(typename traits::coneSequence::iterator ci = cone->begin(); ci != cone->end(); ci++) {
             std::cout << "  " << ci.arrow();
           }
           std::cout << "]" << std::endl;
         }
         else {
           std::cout << std::endl;
-          typename traits::coneSequence cone = this->cone(t);
+          const Obj<typename traits::coneSequence>& cone = this->cone(t);
           std::cout << "[";
-          for(typename traits::coneSequence::iterator ci = cone.begin(); ci != cone.end(); ci++) {
+          for(typename traits::coneSequence::iterator ci = cone->begin(); ci != cone->end(); ci++) {
             std::cout << "  " << ci.arrow();
           }
           std::cout << "]" << std::endl;
