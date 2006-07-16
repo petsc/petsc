@@ -1,12 +1,55 @@
 I. Need to create a list of 'unit tests' -- cases that MUST be handled by any Sieve interface.
    These should probably be documented with pictures and all, and done as a Tech Report. 
    This way we can test the feasibility of any design changes against this list.
-   Here's a (probably vastly incomplete) version of the list.
-   1. Multicomponent fields.
-   2. Faults a la Pylith via a suitable chart mechanism.
-   3. Ordered data retrieval in Sec.
-   4. Independent mesh point insertion (on different procs); collision resolution via Overlap/Fusion.
-   5. Distribution via Overlap/Fusion.
-   6. Data preallocation and raw pointer extraction.
-             
-            
+   We should put common test components in a namespace so that we can build more complicated
+   tests on top of simpler ones.
+
+   Sifter:
+   -------
+   - Performance stress tests
+     - Many cone/supports
+   Sieve:
+   -------
+   - Memory stress tests
+     - Largest cell-vertex mesh
+     - Largest full 2D and 3D, tet and hex meshes
+   - Performance stress tests
+     - Many closure/stars
+     - Many meet/joins
+   - Distribution via Overlap/Fusion
+   - Global numbering of points
+   Mesh (Topology + Coordinates):
+   ------------------------------
+   - Reading other mesh formats
+     - PCICE
+     - PyLith
+     - VTK?
+   - Interpolation of missing elements
+     - Tet and hex meshes
+   - Stratification
+   - Calculation of a mesh partition
+     - With and without intermediate elements
+   - Independent mesh point insertion on different procs
+     - Collision resolution via Overlap/Fusion
+   Section:
+   --------
+   - Data preallocation and raw pointer extraction
+     - Linear and cubic Lagrange
+   - Performance stress tests
+     - Many getIndex
+     - Many restrict/update
+   - Memory stress tests
+     - Largest linear and cubic Lagrange fields
+     - Shared indices
+   - Distribution via Overlap/Fusion
+   - Multicomponent fields.
+   - Faults a la Pylith via a suitable chart mechanism.
+   - Ordered data retrieval (restrict)
+     - Element Geometry Computation
+     - Linear and cubic Lagrange
+   - Global numbering of dofs
+
+II. Coding guidelines
+
+  - Mark EVERYTHING const that can be
+  - Try to make Obj<> returns references to prevent extra creations
