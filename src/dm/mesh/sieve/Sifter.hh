@@ -329,9 +329,9 @@ namespace ALE {
         typedef SubKey_                                                 subkey_type;
       protected:
         typename traits::index_type&                                    _index;
-        const key_type                                                  key;
-        const subkey_type                                               subkey;
-        const bool                                                      useSubkey;
+        key_type                                                  key;
+        subkey_type                                               subkey;
+        bool                                                      useSubkey;
       public:
         // Need to extend the inherited iterators to be able to extract arrow color
         class iterator : public traits::iterator {
@@ -360,6 +360,10 @@ namespace ALE {
         ArrowSequence(typename traits::index_type& index, const key_type& k, const subkey_type& kk) : 
           _index(index), key(k), subkey(kk), useSubkey(1){};
         virtual ~ArrowSequence() {};
+
+        void setKey(const key_type& key) {this->key = key;};
+        void setSubkey(const subkey_type& subkey) {this->subkey = subkey;};
+        void setUseSubkey(const bool& useSubkey) {this->useSubkey = useSubkey;};
         
         virtual bool         empty() {return this->_index.empty();};
 
@@ -661,11 +665,19 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       ierr = PetscObjectCreateGeneric(this->_comm, sifterType, id_name, &this->_petscObj);CHKERROR(ierr, "Error in PetscObjectCreate");
       //ALE::restoreClassName<T>(id_name);
     };
+    // We store these sequence objects to avoid creating them each query
+    Obj<typename traits::coneSequence> _coneSeq;
+    Obj<typename traits::supportSequence> _supportSeq;
   public:
     // 
     // Basic interface
     //
-    ASifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : _petscObj(NULL) {__init(comm);  this->debug = debug;}
+    ASifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : _petscObj(NULL) {
+      __init(comm);
+      this->debug = debug;
+      this->_coneSeq    = new typename traits::coneSequence(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), typename traits::target_type()); 
+      this->_supportSeq = new typename traits::supportSequence(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), typename traits::source_type());
+   }
     virtual ~ASifter() {
       if (this->_petscObj) {
         PetscErrorCode ierr;
@@ -697,19 +709,38 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     arrows(const typename traits::source_type& s) {
       return typename traits::arrowSequence(::boost::multi_index::get<typename traits::arrowInd>(this->_arrows.set), s);
     };
+#ifdef SLOW
     Obj<typename traits::coneSequence> 
     cone(const typename traits::target_type& p) {
       return typename traits::coneSequence(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), p);
     };
+#else
+    const Obj<typename traits::coneSequence>&
+    cone(const typename traits::target_type& p) {
+      this->_coneSeq->setKey(p);
+      this->_coneSeq->setUseSubkey(false);
+      return this->_coneSeq;
+    };
+#endif
     template<class InputSequence> 
     Obj<typename traits::coneSet> 
     cone(const Obj<InputSequence>& points) {
       return this->cone(points, typename traits::color_type(), false);
     };
+#ifdef SLOW
     Obj<typename traits::coneSequence> 
     cone(const typename traits::target_type& p, const typename traits::color_type& color) {
       return typename traits::coneSequence(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), p, color);
     };
+#else
+    const Obj<typename traits::coneSequence>&
+    cone(const typename traits::target_type& p, const typename traits::color_type& color) {
+      this->_coneSeq->setKey(p);
+      this->_coneSeq->setSubkey(color);
+      this->_coneSeq->setUseSubkey(true);
+      return this->_coneSeq;
+    };
+#endif
     template<class InputSequence>
     Obj<typename traits::coneSet> 
     cone(const Obj<InputSequence>& points, const typename traits::color_type& color, bool useColor = true) {
@@ -742,21 +773,38 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         processor(*c_iter, p);
       }
     };
+#ifdef SLOW
     Obj<typename traits::supportSequence> 
     support(const typename traits::source_type& p) {
       return typename traits::supportSequence(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p);
     };
+#else
+    const Obj<typename traits::supportSequence>&
+    support(const typename traits::source_type& p) {
+      this->_supportSeq->setKey(p);
+      this->_supportSeq->setUseSubkey(false);
+      return this->_supportSeq;
+    };
+#endif
+#ifdef SLOW
     Obj<typename traits::supportSequence> 
     support(const typename traits::source_type& p, const typename traits::color_type& color) {
       return typename traits::supportSequence(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p, color);
     };
-
+#else
+    const Obj<typename traits::supportSequence>&
+    support(const typename traits::source_type& p, const typename traits::color_type& color) {
+      this->_supportSeq->setKey(p);
+      this->_supportSeq->setSubkey(color);
+      this->_supportSeq->setUseSubkey(true);
+      return this->_supportSeq;
+    };
+#endif
     template<class InputSequence>
     Obj<typename traits::supportSet>      
     support(const Obj<InputSequence>& sources) {
       return this->support(sources, typename traits::color_type(), false);
     };
-
     template<class InputSequence>
     Obj<typename traits::supportSet>      
     support(const Obj<InputSequence>& points, const typename traits::color_type& color, bool useColor = true){
