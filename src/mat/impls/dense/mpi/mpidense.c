@@ -1324,6 +1324,8 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   a->nvec              = oldmat->nvec;
   a->donotstash        = oldmat->donotstash;
  
+  ierr = PetscFree(mat->rmap.range);CHKERRQ(ierr);
+  ierr = PetscFree(mat->cmap.range);CHKERRQ(ierr);
   ierr = PetscMalloc((a->size+1)*sizeof(PetscInt),&mat->rmap.range);CHKERRQ(ierr);
   ierr = PetscMalloc((a->size+1)*sizeof(PetscInt),&mat->cmap.range);CHKERRQ(ierr);
   ierr = PetscMemcpy(mat->rmap.range,A->rmap.range,(a->size+1)*sizeof(PetscInt));CHKERRQ(ierr);
