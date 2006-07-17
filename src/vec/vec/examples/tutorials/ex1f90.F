@@ -42,7 +42,8 @@
       Vec, pointer :: z(:)
       double precision norm,v,v1,v2
       integer          n,ierr,flg,rank
-      PetscScalar      one,two,three,dots(3),dot
+      PetscScalar      one,two,three
+      PetscScalar      dots(3),dot
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program

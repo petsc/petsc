@@ -190,10 +190,13 @@
       INTEGER, DIMENSION(0:2) :: offt
       INTEGER, DIMENSION(:), POINTER :: tonatural,fromnatural,                &
      &     to,from,indices
-      PetscScalar, DIMENSION(1) :: globalarray,localarray,toarray
+      PetscScalar, DIMENSION(1) :: globalarray
+      PetscScalar, DIMENSION(1) :: localarray
+      PetscScalar, DIMENSION(1) :: toarray
 
       DA :: da1=0,da2=0,da3=0
-      Vec :: vl1=0,vl2=0,vl3=0,vg1=0,vg2=0,vg3=0
+      Vec :: vl1=0,vl2=0,vl3=0
+      Vec :: vg1=0,vg2=0,vg3=0
       AO :: toao,globalao
       IS :: tois,globalis,is
       Vec :: tovec,globalvec,localvec
@@ -676,7 +679,8 @@
       REAL(8), DIMENSION(1) :: va
       TYPE(patch_type), DIMENSION(0:2) :: patch
       PetscDraw :: draw
-      PetscReal :: xmin,xmax,ymin,ymax,ymint,xmint,ymaxt,xmaxt
+      PetscReal :: xmin,xmax,ymin,ymax
+      PetscReal :: ymint,xmint,ymaxt,xmaxt
 !-----------------------------------------------------------------------
 !     set extrema.
 !-----------------------------------------------------------------------
