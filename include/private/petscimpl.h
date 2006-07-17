@@ -6,6 +6,7 @@
 #if !defined(_PETSCHEAD_H)
 #define _PETSCHEAD_H
 #include "petsc.h"  
+PETSC_EXTERN_CXX_BEGIN
 
 /*
    All major PETSc data structures have a common core; this is defined 
@@ -658,5 +659,6 @@ M*/
 /* some vars for logging */
 extern PETSC_DLLEXPORT PetscTruth PetscPreLoadingUsed;       /* true if we are or have done preloading */
 extern PETSC_DLLEXPORT PetscTruth PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
+PETSC_EXTERN_CXX_END
 
 #endif /* _PETSCHEAD_H */

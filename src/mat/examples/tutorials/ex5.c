@@ -5,8 +5,10 @@
 #include "petscviewer.h"
 
 #if defined(USE_FAST_MAT_SET_VALUES)
+EXTERN_C_BEGIN
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #define MatSetValues MatSetValues_MPIAIJ
+EXTERN_C_END
 #else 
 #include "petscmat.h"
 #endif

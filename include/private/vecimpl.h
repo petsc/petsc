@@ -10,6 +10,7 @@
 #define __VECIMPL_H
 
 #include "petscvec.h"
+PETSC_EXTERN_CXX_BEGIN
 
 typedef struct {
   PetscInt  n,N;         /* local, global vector size */
@@ -304,6 +305,6 @@ EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);
 EXTERN_C_END
 #endif
 
-
+PETSC_EXTERN_CXX_END
 #endif
 
