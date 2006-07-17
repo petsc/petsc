@@ -90,7 +90,7 @@ PetscErrorCode CharacteristicCreate_DA(Characteristic c)
   PetscFunctionBegin;
   ierr = PetscNew(Characteristic_DA, &da);CHKERRQ(ierr);
   ierr = PetscMemzero(da, sizeof(Characteristic_DA));CHKERRQ(ierr);
-  PetscLogObjectMemory(c, sizeof(Characteristic_DA));
+  ierr = PetscLogObjectMemory(c, sizeof(Characteristic_DA));CHKERRQ(ierr);
   c->data = (void *) da;
 
   c->ops->setup   = CharacteristicSetUp_DA;
