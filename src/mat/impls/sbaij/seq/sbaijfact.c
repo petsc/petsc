@@ -498,7 +498,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,MatFactorInfo *info,Mat
   PetscErrorCode ierr;
   PetscInt       *perm_ptr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
   PetscInt       *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
-  PetscInt       bs=A->rmap.bs,bs2 = a->bs2,bslog;
+  PetscInt       bs=A->rmap.bs,bs2 = a->bs2,bslog = 0;
   MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
   MatScalar      *work;
