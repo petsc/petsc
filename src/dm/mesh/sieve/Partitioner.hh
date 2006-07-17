@@ -43,7 +43,7 @@ struct calcNeighborSize {
   calcNeighborSize(ALE::Obj<FieldType> serialSifter, ALE::Obj<typename FieldType::order_type::baseSequence> serialPatches, int *BuySizesA, int *SellSizesA, int& offsetA, ALE::Obj<FieldType> parallelSifter, ALE::Obj<typename FieldType::order_type::baseSequence> parallelPatches, int *BuySizesB, int *SellSizesB, int& offsetB) : serialSifter(serialSifter), serialPatches(serialPatches), BuySizesA(BuySizesA), SellSizesA(SellSizesA), offsetA(offsetA), parallelSifter(parallelSifter), parallelPatches(parallelPatches), BuySizesB(BuySizesB), SellSizesB(SellSizesB), offsetB(offsetB) {foundA = 0; foundB = 0;};
   void operator()(const typename OverlapType::traits::source_type& p, const typename OverlapType::traits::target_type& t) {
     if (p.first == 0) {
-      ALE::Obj<typename FieldType::order_type::supportSequence> patches = serialSifter->__getOrder()->support(p.second);
+      const ALE::Obj<typename FieldType::order_type::supportSequence>& patches = serialSifter->__getOrder()->support(p.second);
 
       for(typename FieldType::order_type::supportSequence::iterator sp_iter = patches->begin(); sp_iter != patches->end(); ++sp_iter) {
         // Assume the same index sizes
@@ -55,7 +55,7 @@ struct calcNeighborSize {
         foundA         = 1;
       }
     } else {
-      ALE::Obj<typename FieldType::order_type::supportSequence> patches = parallelSifter->__getOrder()->support(p.second);
+      const ALE::Obj<typename FieldType::order_type::supportSequence>& patches = parallelSifter->__getOrder()->support(p.second);
 
       for(typename FieldType::order_type::supportSequence::iterator pp_iter = patches->begin(); pp_iter != patches->end(); ++pp_iter) {
         // Assume the same index sizes
@@ -86,7 +86,7 @@ struct fillNeighborCones {
   fillNeighborCones(ALE::Obj<FieldType> serialSifter, ALE::Obj<typename FieldType::order_type::baseSequence> serialPatches, std::map<typename FieldType::patch_type,int>& serialOffsets, int *SellConesA, int &offsetA, ALE::Obj<FieldType> parallelSifter, ALE::Obj<typename FieldType::order_type::baseSequence> parallelPatches, std::map<typename FieldType::patch_type,int>& parallelOffsets, int *SellConesB, int& offsetB) : serialSifter(serialSifter), serialPatches(serialPatches), serialOffsets(serialOffsets), SellConesA(SellConesA), offsetA(offsetA), parallelSifter(parallelSifter), parallelPatches(parallelPatches), parallelOffsets(parallelOffsets), SellConesB(SellConesB), offsetB(offsetB) {};
   void operator()(const typename OverlapType::traits::source_type& p, const typename OverlapType::traits::target_type& t) {
     if (p.first == 0) {
-      ALE::Obj<typename FieldType::order_type::supportSequence> patches = serialSifter->__getOrder()->support(p.second);
+      const ALE::Obj<typename FieldType::order_type::supportSequence>& patches = serialSifter->__getOrder()->support(p.second);
 
       for(typename FieldType::order_type::supportSequence::iterator sp_iter = patches->begin(); sp_iter != patches->end(); ++sp_iter) {
         const typename FieldType::index_type& idx = serialSifter->getIndex(*sp_iter, p.second);
@@ -103,7 +103,7 @@ struct fillNeighborCones {
         }
       }
     } else {
-      ALE::Obj<typename FieldType::order_type::supportSequence> patches = parallelSifter->__getOrder()->support(p.second);
+      const ALE::Obj<typename FieldType::order_type::supportSequence>& patches = parallelSifter->__getOrder()->support(p.second);
 
       for(typename FieldType::order_type::supportSequence::iterator pp_iter = patches->begin(); pp_iter != patches->end(); ++pp_iter) {
         const typename FieldType::index_type& idx = parallelSifter->getIndex(*pp_iter, p.second);
@@ -471,7 +471,7 @@ namespace ALE {
         ierr = PetscMemzero(start, (nvtxs+1) * sizeof(int));CHKERROR(ierr, "Error in PetscMemzero");
         if (oldSieve->depth() == oldMesh->getDimension()) {
           for(typename sieve_type::traits::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-            Obj<typename sieve_type::supportSequence> cells = oldSieve->support(*f_iter);
+            const Obj<typename sieve_type::supportSequence>& cells = oldSieve->support(*f_iter);
 
             if (cells->size() == 2) {
               start[elementBundle->getIndex(patch, *cells->begin()).prefix+1]++;
@@ -484,7 +484,7 @@ namespace ALE {
           }
           adjacency = new int[start[nvtxs]];
           for(typename sieve_type::traits::heightSequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-            Obj<typename sieve_type::supportSequence> cells = oldSieve->support(*f_iter);
+            const Obj<typename sieve_type::supportSequence>& cells = oldSieve->support(*f_iter);
 
             if (cells->size() == 2) {
               int cellA = elementBundle->getIndex(patch, *cells->begin()).prefix;
@@ -510,12 +510,14 @@ namespace ALE {
             throw ALE::Exception("Could not determine number of face vertices");
           }
           for(typename sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-            Obj<typename sieve_type::traits::coneSequence> vertices = oldSieve->cone(*e_iter);
+            const Obj<typename sieve_type::traits::coneSequence>& vertices  = oldSieve->cone(*e_iter);
+            typename sieve_type::traits::coneSequence::iterator vEnd = vertices->end();
 
-            for(typename sieve_type::traits::coneSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-              Obj<typename sieve_type::supportSequence> neighbors = oldSieve->support(*v_iter);
+            for(typename sieve_type::traits::coneSequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
+              const Obj<typename sieve_type::traits::supportSequence>& neighbors = oldSieve->support(*v_iter);
+              typename sieve_type::traits::supportSequence::iterator nEnd = neighbors->end();
 
-              for(typename sieve_type::traits::supportSequence::iterator n_iter = neighbors->begin(); n_iter != neighbors->end(); ++n_iter) {
+              for(typename sieve_type::traits::supportSequence::iterator n_iter = neighbors->begin(); n_iter != nEnd; ++n_iter) {
                 if ((int) oldSieve->join(*e_iter, *n_iter)->size() == faceVertices) {
                   adj[elementBundle->getIndex(patch, *e_iter).prefix].insert(elementBundle->getIndex(patch, *n_iter).prefix);
                 }

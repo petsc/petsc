@@ -7,7 +7,7 @@ I. Need to create a list of 'unit tests' -- cases that MUST be handled by any Si
    Sifter:
    -------
    - Performance stress tests
-     - Many cone/supports
+     - Many cone/supports (sifter1)
    Sieve:
    -------
    - Memory stress tests
@@ -18,6 +18,7 @@ I. Need to create a list of 'unit tests' -- cases that MUST be handled by any Si
      - Many meet/joins
    - Distribution via Overlap/Fusion
    - Global numbering of points
+   - Stratification
    Mesh (Topology + Coordinates):
    ------------------------------
    - Reading other mesh formats
@@ -26,7 +27,6 @@ I. Need to create a list of 'unit tests' -- cases that MUST be handled by any Si
      - VTK?
    - Interpolation of missing elements
      - Tet and hex meshes
-   - Stratification
    - Calculation of a mesh partition
      - With and without intermediate elements
    - Independent mesh point insertion on different procs
