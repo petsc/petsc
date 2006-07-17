@@ -636,7 +636,8 @@ namespace ALE {
           }
         }
       } else {
-        for(typename pointSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
+        typename pointSequence::iterator end = points->end();
+        for(typename pointSequence::iterator p_itor = points->begin(); p_itor != end; ++p_itor) {
           if (useColor) {
             this->__nCone(this->cone(*p_itor, color), n-1, color, useColor, cone, seen);
           } else {
