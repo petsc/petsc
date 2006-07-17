@@ -1042,6 +1042,8 @@ class Configure(config.base.Configure):
     '''Test whether we need to explicitly include libc in shared linking
        - Mac OSX requires an explicit reference to libc for shared linking'''
     self.explicitLibc = None
+    if self.staticLibraries:
+      return
     tmpCompilerDefines   = self.compilerDefines
     self.compilerDefines = ''
     code = '#include <stdlib.h> \nint foo(void) {void *chunk = malloc(31); free(chunk); return 0;}\n'
@@ -1177,8 +1179,7 @@ if (dlclose(handle)) {
     if Configure.isDarwin():
       self.executeTest(self.checkLinkerMac)
     self.executeTest(self.checkSharedLinkerPaths)
-    if not self.staticLibraries:
-      self.executeTest(self.checkLibC)
+    self.executeTest(self.checkLibC)
     self.executeTest(self.checkDynamicLinker)
     self.executeTest(self.output)
     return
