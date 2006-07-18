@@ -7,8 +7,8 @@ static char help[] = "Tests MatGetArray().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat              A; 
-  PetscInt         i,j,m = 3,n = 2,rstart,rend;
+  Mat              A,B; 
+  PetscInt         i,j,m = 6,n = 9,rstart,rend;
   PetscErrorCode   ierr;
   PetscScalar      v,*array;
 
@@ -19,7 +19,6 @@ int main(int argc,char **args)
   */
   ierr = MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,&A);
         CHKERRQ(ierr);
-
   /*
      Set values into the matrix 
   */
@@ -31,6 +30,8 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  // ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&B);CHKERRQ(ierr);
+  ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   /*
        Print the matrix to the screen 
   */
@@ -55,6 +56,7 @@ int main(int argc,char **args)
       Free the space used by the matrix
   */
   ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy(B);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
